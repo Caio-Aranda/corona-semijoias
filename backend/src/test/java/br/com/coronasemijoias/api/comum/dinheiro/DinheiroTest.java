@@ -4,7 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
+import java.util.TreeSet;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +26,7 @@ class DinheiroTest {
     }
 
     private static List<BigDecimal> ds(String... valores) {
-        return java.util.Arrays.stream(valores).map(BigDecimal::new).toList();
+        return Arrays.stream(valores).map(BigDecimal::new).toList();
     }
 
     @Nested
@@ -69,6 +74,28 @@ class DinheiroTest {
 
             assertThat(estornos).containsExactly(d("2.50"), d("5.00"));
             assertThat(Dinheiro.somar(estornos)).isEqualTo(d("7.50"));
+        }
+
+        @Test
+        void estornoPeloAcumuladoEmDezDevolucoesDe10Centavos() {
+            // Comissão de 0,05 sobre venda de 1,00, devolvida em 10 x 0,10. Arredondando cada estorno
+            // sozinho, os 9 primeiros dariam 0,01 (0,09 estornado) e o último -0,04.
+            List<BigDecimal> estornos = Dinheiro.estornosProporcionais(d("0.05"), d("1.00"), dezVezes("0.10"));
+
+            assertThat(estornos).containsExactly(
+                    d("0.01"), d("0.00"), d("0.01"), d("0.00"), d("0.01"),
+                    d("0.00"), d("0.01"), d("0.00"), d("0.01"), d("0.00"));
+            assertThat(estornos).allSatisfy(e -> assertThat(e.signum()).isNotNegative());
+            BigDecimal parcial = d("0.00");
+            for (BigDecimal estorno : estornos) {
+                parcial = parcial.add(estorno);
+                assertThat(parcial).isLessThanOrEqualTo(d("0.05"));
+            }
+            assertThat(Dinheiro.somar(estornos)).isEqualTo(d("0.05"));
+        }
+
+        private static List<BigDecimal> dezVezes(String valor) {
+            return Collections.nCopies(10, d(valor));
         }
     }
 
@@ -259,12 +286,79 @@ class DinheiroTest {
         }
 
         @Test
-        void oUltimoQueFechaABaseLevaOResto() {
-            // 1,00 / 3 = 0,333... vira 0,33 nas duas primeiras; a terceira fecha a base e leva 0,34.
+        void calculaPeloAcumuladoEADevolucaoQueCompletaABaseFechaExata() {
+            // Acumulados de 1,00 x (1, 2, 3) / 3: 0,33; 0,67; 1,00. Estornos: 0,33; 0,34; 0,33.
             assertThat(Dinheiro.estornosProporcionais(d("1.00"), d("3.00"), ds("1.00", "1.00", "1.00")))
-                    .containsExactly(d("0.33"), d("0.33"), d("0.34"));
+                    .containsExactly(d("0.33"), d("0.34"), d("0.33"));
             assertThat(Dinheiro.estornosProporcionais(d("7.50"), d("100.00"), ds("33.33", "33.33", "33.34")))
                     .containsExactly(d("2.50"), d("2.50"), d("2.50"));
+        }
+
+        @Test
+        void trintaDevolucoesIguaisFicamTodasEntre75e76Centavos() {
+            // Comissão de 22,73 sobre 303,00, devolvida em 30 x 10,10 (22,73 / 30 = 0,7577 cada).
+            // Arredondando cada um sozinho: 29 x 0,76 e o último 0,69.
+            List<BigDecimal> estornos = Dinheiro.estornosProporcionais(
+                    d("22.73"), d("303.00"), Collections.nCopies(30, d("10.10")));
+
+            assertThat(estornos).hasSize(30).allSatisfy(e -> assertThat(e).isBetween(d("0.75"), d("0.76")));
+            assertThat(Dinheiro.somar(estornos)).isEqualTo(d("22.73"));
+        }
+
+        @Test
+        void propriedadeComDevolucoesAleatorias() {
+            // Semente fixa: se falhar, o caso se repete igual.
+            Random aleatorio = new Random(20261109L);
+            for (int caso = 0; caso < 5000; caso++) {
+                // Metade dos casos com centavos (onde o erro de arredondamento pesa), metade com valores grandes.
+                boolean centavos = aleatorio.nextBoolean();
+                BigDecimal original = centavos
+                        ? BigDecimal.valueOf(aleatorio.nextLong(-100, 101), 2)
+                        : BigDecimal.valueOf(aleatorio.nextLong(-1_000_000, 1_000_001), 2);
+                int devolucoes = 1 + aleatorio.nextInt(30);
+                long baseEmCentavos = devolucoes + aleatorio.nextLong(centavos ? 500 : 10_000_000);
+                BigDecimal base = BigDecimal.valueOf(baseEmCentavos, 2);
+                boolean completa = aleatorio.nextBoolean();
+                List<BigDecimal> partes = repartir(aleatorio, baseEmCentavos, devolucoes, completa);
+                String descricao = "original " + original + ", base " + base + ", devoluções " + partes;
+
+                List<BigDecimal> estornos = Dinheiro.estornosProporcionais(original, base, partes);
+
+                assertThat(estornos).as(descricao).hasSize(partes.size());
+                BigDecimal parcial = d("0.00");
+                for (BigDecimal estorno : estornos) {
+                    assertThat(estorno.signum()).as(descricao).isIn(0, original.signum());
+                    parcial = parcial.add(estorno);
+                    if (original.signum() >= 0) {
+                        assertThat(parcial).as(descricao).isBetween(d("0.00"), original);
+                    } else {
+                        assertThat(parcial).as(descricao).isBetween(original, d("0.00"));
+                    }
+                }
+                if (completa) {
+                    assertThat(parcial).as(descricao).isEqualByComparingTo(original);
+                }
+            }
+        }
+
+        /** Reparte a base em devoluções positivas; se não for completa, deixa pelo menos 1 centavo de fora. */
+        private static List<BigDecimal> repartir(Random aleatorio, long base, int partes, boolean completa) {
+            long total = completa ? base : 1 + aleatorio.nextLong(Math.max(1, base - 1));
+            if (total < partes) {
+                partes = (int) total;
+            }
+            TreeSet<Long> cortes = new TreeSet<>();
+            while (cortes.size() < partes - 1) {
+                cortes.add(1 + aleatorio.nextLong(total - 1));
+            }
+            List<BigDecimal> valores = new ArrayList<>();
+            long anterior = 0;
+            for (long corte : cortes) {
+                valores.add(BigDecimal.valueOf(corte - anterior, 2));
+                anterior = corte;
+            }
+            valores.add(BigDecimal.valueOf(total - anterior, 2));
+            return valores;
         }
 
         @Test
