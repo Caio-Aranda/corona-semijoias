@@ -86,6 +86,14 @@ class SubidaDaApiTest extends TesteDeIntegracao {
         throw new AssertionError("A API devia recusar a configuração, mas deu: " + erro, erro);
     }
 
+    private static long quantidadeDeUsuarios() throws Exception {
+        try (Connection conexao = conectar(BANCO_VAZIO, APP_USUARIO, APP_SENHA);
+                ResultSet linhas = conexao.createStatement().executeQuery("SELECT count(*) FROM corona.usuarios")) {
+            linhas.next();
+            return linhas.getLong(1);
+        }
+    }
+
     private static List<String> administradores() throws Exception {
         List<String> logins = new ArrayList<>();
         try (Connection conexao = conectar(BANCO_VAZIO, APP_USUARIO, APP_SENHA);
@@ -118,6 +126,27 @@ class SubidaDaApiTest extends TesteDeIntegracao {
 
     @Test
     @Order(2)
+    void loginDoAdministradorQueNuncaEntrariaImpedeASubida(CapturedOutput saida) throws Exception {
+        // Com espaço no meio ou caractere invisível, o login seria recusado para sempre, e depois de
+        // criado o ADMIN as variáveis não são mais lidas: a API precisa recusar antes de criar.
+        for (String login : new String[] {"Maria Silva", "maria​silva", "maria	silva"}) {
+            int inicio = saida.getAll().length();
+            Map<String, String> configuracao = configuracao();
+            configuracao.put("corona.admin-inicial.login", login);
+            ConfiguracaoInvalidaException erro = erroDeConfiguracaoAoSubir(configuracao);
+            assertThat(erro.descricao()).contains("ADMIN_LOGIN")
+                    .contains("não pode ter espaço no meio nem caracteres especiais invisíveis");
+            assertThat(erro.acao()).isEqualTo("Escolha um login sem espaços para ADMIN_LOGIN no arquivo .env "
+                    + "(por exemplo, maria.silva) e rode de novo.");
+            assertThat(saida.getAll().substring(inicio))
+                    .contains("o login em ADMIN_LOGIN não pode ter espaço no meio")
+                    .contains("(por exemplo, maria.silva)");
+        }
+        assertThat(quantidadeDeUsuarios()).isZero();
+    }
+
+    @Test
+    @Order(3)
     void semAChaveDoTokenNaoSobe(CapturedOutput saida) {
         Map<String, String> configuracao = configuracao();
         configuracao.put("corona.seguranca.jwt.chave-atual.valor", "");
@@ -127,7 +156,7 @@ class SubidaDaApiTest extends TesteDeIntegracao {
     }
 
     @Test
-    @Order(3)
+    @Order(4)
     void primeiraSubidaCriaOAdministrador(CapturedOutput saida) throws Exception {
         assertThat(administradores()).isEmpty();
         try (ConfigurableApplicationContext contexto = subir(configuracao())) {
@@ -139,7 +168,7 @@ class SubidaDaApiTest extends TesteDeIntegracao {
     }
 
     @Test
-    @Order(4)
+    @Order(5)
     void segundaSubidaNaoDuplica(CapturedOutput saida) throws Exception {
         int inicio = saida.getAll().length();  // a saída capturada acumula os passos anteriores
         try (ConfigurableApplicationContext contexto = subir(configuracao())) {
@@ -151,7 +180,7 @@ class SubidaDaApiTest extends TesteDeIntegracao {
     }
 
     @Test
-    @Order(5)
+    @Order(6)
     void comAdministradorExistenteAsVariaveisNaoSaoMaisExigidas() throws Exception {
         Map<String, String> configuracao = configuracao();
         configuracao.put("corona.admin-inicial.senha", "");

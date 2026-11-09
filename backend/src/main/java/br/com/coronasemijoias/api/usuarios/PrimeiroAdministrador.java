@@ -63,6 +63,15 @@ public class PrimeiroAdministrador implements SmartInitializingSingleton {
         String nome = exigir(dados.nome(), "ADMIN_NOME");
         String login = Logins.normalizar(exigir(dados.login(), "ADMIN_LOGIN"));
         String senha = exigir(dados.senha(), "ADMIN_SENHA");
+        if (!Logins.podeExistir(login)) {
+            // Um login assim nunca entraria (o login recusa), e depois de criado o ADMIN as variáveis
+            // não são mais lidas: só daria para consertar mexendo no banco.
+            throw new ConfiguracaoInvalidaException(
+                    "A API não conseguiu começar porque o login em ADMIN_LOGIN não pode ter espaço no meio "
+                            + "nem caracteres especiais invisíveis.",
+                    "Escolha um login sem espaços para ADMIN_LOGIN no arquivo .env (por exemplo, maria.silva) "
+                            + "e rode de novo.");
+        }
         if (!ConferenciaDeSenha.cabe(senha)) {
             throw new ConfiguracaoInvalidaException(
                     "A API não conseguiu começar porque a senha em ADMIN_SENHA é longa demais "

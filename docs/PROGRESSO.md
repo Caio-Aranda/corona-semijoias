@@ -375,4 +375,5 @@ Atualize `docs/PROGRESSO.md` e abra o PR em Conventional Commits (`feat(backend)
 - O login ignora um token velho no cabeçalho (um token vencido não impede de entrar).
 - `perfis` usa a convenção de histórico (`editavel => false`, recusa UPDATE): perfil só nasce por migração.
 - `ConferenciaDeSenha` fica em `usuarios` e lê o custo direto da configuração, para não criar dependência circular entre `usuarios` e `seguranca`.
+- **Correção pedida na revisão do PR 14:** o primeiro administrador recusa `ADMIN_LOGIN` com espaço no meio ou caractere invisível (a mesma regra `Logins.podeExistir` do login). Antes, "Maria Silva" virava o login "maria silva", que nunca entraria; como as variáveis deixam de ser lidas depois que existe um ADMIN, só daria para consertar no banco. Agora a API não sobe, explica em português e não cria nenhum usuário (`SubidaDaApiTest`).
 
