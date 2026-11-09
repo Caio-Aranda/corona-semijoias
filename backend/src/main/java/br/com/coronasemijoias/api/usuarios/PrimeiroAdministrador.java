@@ -17,7 +17,8 @@ import org.springframework.transaction.support.TransactionTemplate;
  * português. Depois que o administrador existe, elas não são mais lidas (a senha inicial pode sair do
  * {@code .env} do servidor). A senha nunca vai para o log.
  *
- * <p>A marca de "troca obrigatória" no primeiro acesso é da tarefa 10.
+ * <p>O primeiro administrador nasce com a troca de senha obrigatória, <strong>sem vencimento</strong>: na
+ * primeira entrada ele só consegue criar a senha nova.
  */
 @Component
 public class PrimeiroAdministrador implements SmartInitializingSingleton {
@@ -83,7 +84,9 @@ public class PrimeiroAdministrador implements SmartInitializingSingleton {
                     "A API não conseguiu começar porque o login em ADMIN_LOGIN já é de outro usuário.",
                     "Escolha outro login para ADMIN_LOGIN no arquivo .env e rode de novo.");
         }
-        Usuario admin = Usuario.novo(nome.strip(), login, conferencia.gerarHash(senha), PERFIL, null);
+        // Troca obrigatória, mas sem vencimento: a senha veio do .env, não foi gerada pelo sistema.
+        Usuario admin = Usuario.novoComSenhaSemVencimento(
+                nome.strip(), login, conferencia.gerarHash(senha), PERFIL, null);
         usuarios.save(admin);
         LOG.info("Primeiro administrador criado: login {}", login);
     }

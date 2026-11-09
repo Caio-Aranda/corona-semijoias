@@ -269,6 +269,56 @@ Avisos no campo:
 
 > A senha nova precisa ser diferente da temporária. Escolha outra.
 
+Senha com mais de 72 bytes (o limite do BCrypt, ADR-0004, item 6). Na tela, nunca aparecem "72" nem "bytes": o texto fala em caracteres, e 36 é a conta de letras com acento, que ocupam o dobro do espaço:
+
+> **Esta senha é longa demais.**
+> Escolha uma senha mais curta, com no máximo 36 caracteres.
+
+**Troca de senha obrigatória (resposta do servidor)**
+
+Quem entra com a senha temporária só consegue criar a senha nova. Qualquer outra tela ou chamada recebe o mesmo texto de "Crie sua senha nova", acima. A mensagem que o servidor devolve:
+
+> **Crie sua senha nova.**
+> A senha que você recebeu é temporária. Para continuar, crie uma senha nova que só você saiba.
+
+**Senha temporária vencida**
+
+A senha temporária vale por alguns dias (7, na configuração do servidor). Depois disso não entra mais, e o texto só aparece quando a senha estava certa, para não revelar quais usuários existem. Quem monta o texto é sempre o servidor (os aplicativos nunca montam texto de erro). Até a tarefa 12, ele devolve o título e a primeira frase (código `SENHA_TEMPORARIA_VENCIDA`); a partir da tarefa 12, com o cabeçalho de tipo de app, o próprio servidor acrescenta a última frase certa de cada aplicativo, como no "Não foi possível entrar". A dona também pode receber este aviso: a senha temporária dela, gerada pelo comando do servidor ou por outro administrador, vence do mesmo jeito.
+
+> **Sua senha temporária venceu.**
+> A senha que você recebeu só vale por alguns dias, e esse prazo acabou.
+
+Última frase, por aplicativo:
+
+- Corona Vendas: "Peça uma senha nova à dona da loja."
+- Corona Gestão: "Peça uma senha nova a outra pessoa administradora ou fale com o suporte do sistema."
+
+**Cadastro de usuário pela dona**
+
+Login já usado:
+
+> **Este usuário já existe.**
+> Escolha outro, por exemplo juntando o sobrenome.
+
+Na tela, o campo do login se chama **Usuário**. Usuário fora do formato (o servidor tira os espaços das pontas e passa as letras para minúsculas antes de conferir, então maiúsculas não são problema):
+
+> **Este usuário não pode ser usado.**
+> Use de 3 a 40 letras sem acento, números ou ponto, sem espaços. Por exemplo: maria.silva.
+
+Usuário que não existe (ao redefinir a senha):
+
+> **Não encontramos esta pessoa no cadastro.**
+> Atualize a tela e tente de novo.
+
+A dona não redefine a própria senha pela tela, para não ficar sem acesso:
+
+> **Você não pode redefinir a sua própria senha por aqui.**
+> Peça a outra pessoa administradora ou fale com o suporte do sistema.
+
+Se a dona esquece a própria senha e não há outro administrador, vale o comando do servidor `redefinir-senha-admin`, que quem opera o servidor roda (passo a passo em `docs/redefinir-senha-da-dona.md`). Ele mostra a senha temporária no terminal, sem tela.
+
+Quando a dona cria o usuário ou redefine a senha, a senha temporária aparece **uma única vez**. Texto da tela (a tela vem na Fase 1): "Anote esta senha agora. Ela não aparece de novo."
+
 **Aplicativo errado para o perfil**
 
 Dona no app do vendedor:

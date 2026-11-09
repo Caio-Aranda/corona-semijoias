@@ -26,6 +26,7 @@ import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
 import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -39,6 +40,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  *   <li>Grupo do prefixo: {@code /api/<grupo>/**} só aceita os perfis de
  *       {@code corona.seguranca.grupos.<grupo>}.</li>
  *   <li>Qualquer outra rota: exige token válido de usuário ativo.</li>
+ *   <li>Token restrito da troca de senha: {@link FiltroDoTokenRestrito} barra tudo, menos a troca.</li>
  *   <li>Segunda camada: {@link InterceptadorDePerfil} exige a {@link ExigePerfil} da rota.</li>
  * </ol>
  *
@@ -80,6 +82,9 @@ public class ConfiguracaoDeSeguranca implements WebMvcConfigurer {
                         .authenticationEntryPoint(respostas)
                         .accessDeniedHandler(respostas)
                         .jwt(j -> j.decoder(decodificador).jwtAuthenticationConverter(conversor)))
+                // Token restrito (troca de senha obrigatória): só a troca de senha responde. Depende de o
+                // token já ter sido conferido, por isso vem logo depois do filtro do token.
+                .addFilterAfter(new FiltroDoTokenRestrito(respostas), BearerTokenAuthenticationFilter.class)
                 .authorizeHttpRequests(a -> {
                     // A página de erro do servidor (despacho de ERRO) só existe depois de uma falha já tratada.
                     a.dispatcherTypeMatchers(DispatcherType.ERROR).permitAll();

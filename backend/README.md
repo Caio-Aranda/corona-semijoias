@@ -21,15 +21,31 @@ Pacote base `br.com.coronasemijoias.api`, organizado **por funcionalidade**, nã
   `ConfiguracaoDeSeguranca`), usuário da requisição conferido no banco a cada chamada
   (`ConversorDoToken`, `UsuarioAutenticado`), `@ExigePerfil`, lista pública fechada (`RotasPublicas`) e
   as respostas 401/403;
-- `usuarios`: `Usuario`, conferência de senha com BCrypt (`ConferenciaDeSenha`) e o primeiro
-  administrador criado ao subir (`PrimeiroAdministrador`);
-- `autenticacao`: `POST /api/auth/login` e `GET /api/auth/eu`.
+- `usuarios`: `Usuario`, conferência de senha com BCrypt (`ConferenciaDeSenha`), regras da senha
+  (`RegrasDaSenha`), senha temporária (`GeradorDeSenhaTemporaria`), criação de usuários e redefinição
+  (`ServicoDeUsuarios`, `UsuariosDaDonaController`), o primeiro administrador criado ao subir
+  (`PrimeiroAdministrador`) e o comando do servidor `redefinir-senha-admin`
+  (`ComandoRedefinirSenhaDeAdministrador`, passo a passo em `docs/redefinir-senha-da-dona.md`);
+- `autenticacao`: `POST /api/auth/login`, `POST /api/auth/trocar-senha` e `GET /api/auth/eu`.
 
 Cada funcionalidade nova ganha o próprio pacote (por exemplo `produtos`) e, dentro dele, os
 subpacotes `dona` e `vendedor` para controladores e DTOs. Regra do ADR-0003: o subpacote
 `vendedor` nunca depende do `dona` (nem o contrário); o que for comum fica no pacote da funcionalidade.
 
 Migrações Flyway ficam em `src/main/resources/db/migration` e, depois de publicadas, nunca são editadas.
+
+## Senha temporária e token restrito
+
+Quem tem a marca `troca_de_senha_obrigatoria` (usuário novo, senha redefinida, primeiro administrador)
+só recebe do login o **token restrito** (`escopo=TROCA_SENHA`). O `FiltroDoTokenRestrito` nega com 403
+`TROCA_DE_SENHA_OBRIGATORIA` toda requisição que não esteja em `ROTAS_PERMITIDAS` (hoje só
+`POST /api/auth/trocar-senha`): uma rota nova nasce barrada, sem ninguém ter de lembrar. Para o token
+restrito abrir mais uma rota (por exemplo a saída, na tarefa 11), acrescente-a a essa lista.
+
+A redefinição e a troca de senha gravam `usuarios.credencial_alterada_em`; o `ConversorDoToken` recusa
+(401 `SESSAO_TERMINADA`) o token com `iat` anterior a ela, comparando em segundos inteiros. Um token
+emitido no mesmo segundo da redefinição ainda vale até vencer (15 minutos); a tarefa 11 fecha isso com as
+famílias de sessão. Nos testes, `RelogioDeTeste` avança o tempo (reinicie-o no `@AfterEach`).
 
 ## Como proteger uma rota
 

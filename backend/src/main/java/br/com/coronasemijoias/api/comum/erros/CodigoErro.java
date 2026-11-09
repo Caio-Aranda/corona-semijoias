@@ -49,7 +49,56 @@ public enum CodigoErro {
     /** Sem token, token vencido ou inválido (HTTP 401). */
     SESSAO_TERMINADA(
             "Sua sessão terminou.",
-            "Sua sessão terminou. Entre de novo com seu usuário e sua senha para continuar.");
+            "Sua sessão terminou. Entre de novo com seu usuário e sua senha para continuar."),
+
+    // --- Senha temporária e cadastro de usuário (glossário, parte 6; tarefa 10) ---
+
+    /**
+     * Senha temporária certa, mas depois do prazo (HTTP 401). Como no {@link #LOGIN_INVALIDO}, a última
+     * frase depende do aplicativo e a tarefa 12 a acrescenta (glossário, parte 6).
+     */
+    SENHA_TEMPORARIA_VENCIDA(
+            "Sua senha temporária venceu.",
+            "Sua senha temporária venceu. A senha que você recebeu só vale por alguns dias, e esse prazo acabou."),
+
+    /** Quem entrou com a senha temporária só pode criar a senha nova (HTTP 403). */
+    TROCA_DE_SENHA_OBRIGATORIA(
+            "Crie sua senha nova.",
+            "Crie sua senha nova. A senha que você recebeu é temporária. "
+                    + "Para continuar, crie uma senha nova que só você saiba."),
+
+    /** Senha nova com mais de 72 bytes, o limite do BCrypt (HTTP 400). */
+    SENHA_LONGA_DEMAIS(
+            "Esta senha é longa demais.",
+            "Esta senha é longa demais. Escolha uma senha mais curta, com no máximo 36 caracteres."),
+
+    /** Senha nova com menos de 8 caracteres, ou sem letras, ou sem números (HTTP 400). */
+    SENHA_FRACA(
+            "A senha nova ainda não está boa.",
+            "A senha nova ainda não está boa. Ela precisa ter pelo menos 8 caracteres, com letras e números."),
+
+    /** Senha nova igual à temporária (HTTP 400). */
+    SENHA_IGUAL_A_TEMPORARIA(
+            "A senha nova precisa ser diferente da temporária.",
+            "A senha nova precisa ser diferente da temporária. Escolha outra."),
+
+    LOGIN_JA_USADO(
+            "Este usuário já existe.",
+            "Este usuário já existe. Escolha outro, por exemplo juntando o sobrenome."),
+
+    LOGIN_FORA_DO_FORMATO(
+            "Este usuário não pode ser usado.",
+            "Este usuário não pode ser usado. Use de 3 a 40 letras sem acento, números ou ponto, "
+                    + "sem espaços. Por exemplo: maria.silva."),
+
+    USUARIO_NAO_ENCONTRADO(
+            "Não encontramos esta pessoa no cadastro.",
+            "Não encontramos esta pessoa no cadastro. Atualize a tela e tente de novo."),
+
+    NAO_REDEFINIR_A_PROPRIA_SENHA(
+            "Você não pode redefinir a sua própria senha por aqui.",
+            "Você não pode redefinir a sua própria senha por aqui. "
+                    + "Peça a outra pessoa administradora ou fale com o suporte do sistema.");
 
     private final String titulo;
     private final String mensagem;

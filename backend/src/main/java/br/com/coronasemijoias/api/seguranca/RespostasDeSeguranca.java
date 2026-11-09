@@ -27,7 +27,8 @@ import tools.jackson.databind.json.JsonMapper;
  * <ul>
  *   <li>401 {@code SESSAO_TERMINADA}: sem token, vencido, adulterado, chave desconhecida...;</li>
  *   <li>401 {@code USUARIO_DESATIVADO}: token ainda válido de um usuário desativado;</li>
- *   <li>403 {@code SEM_PERMISSAO}: perfil fora do grupo da rota.</li>
+ *   <li>403 {@code SEM_PERMISSAO}: perfil fora do grupo da rota;</li>
+ *   <li>403 {@code TROCA_DE_SENHA_OBRIGATORIA}: token restrito fora da troca de senha.</li>
  * </ul>
  */
 @Component
@@ -51,6 +52,12 @@ public class RespostasDeSeguranca implements AuthenticationEntryPoint, AccessDen
     public void handle(HttpServletRequest requisicao, HttpServletResponse resposta, AccessDeniedException erro)
             throws IOException {
         escrever(requisicao, resposta, HttpStatus.FORBIDDEN, CodigoErro.SEM_PERMISSAO);
+    }
+
+    /** 403: quem tem o token restrito só pode criar a senha nova. */
+    public void trocaDeSenhaObrigatoria(HttpServletRequest requisicao, HttpServletResponse resposta)
+            throws IOException {
+        escrever(requisicao, resposta, HttpStatus.FORBIDDEN, CodigoErro.TROCA_DE_SENHA_OBRIGATORIA);
     }
 
     private static boolean desativado(Throwable erro) {
