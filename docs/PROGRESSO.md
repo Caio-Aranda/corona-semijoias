@@ -16,7 +16,7 @@ Lista oficial, aprovada pelo responsável. Os ADRs e as tarefas usam estes núme
 | 3 | docs: ADRs de fundação | Concluída (PR 4) |
 | 4 | chore: esqueleto do monorepo e higiene do repositório (npm workspaces, TS, ESLint, Prettier, .gitignore, .gitattributes, .env.example, modelo de PR, README) | Concluída (PR 5) |
 | 5 | chore(infra): Docker Compose com PostgreSQL de desenvolvimento | Concluída (PR 6) |
-| 6 | feat(backend): esqueleto Spring Boot 4.1.x com Flyway, OpenAPI e Testcontainers (UTC, erros em português, grupos dona/vendedor no OpenAPI) | Pendente |
+| 6 | feat(backend): esqueleto Spring Boot 4.1.x com Flyway, OpenAPI e Testcontainers (UTC, erros em português, grupos dona/vendedor no OpenAPI) | Concluída (PR 7) |
 | 7 | ci: GitHub Actions e Dependabot | Pendente |
 | 8 | feat(backend): convenções do schema e sync_seq seguro (gatilho, pull com limite seguro, utilitário de dinheiro HALF_UP, teste de convenções, testes de concorrência e de estresse) | Pendente |
 | 9 | feat(auth): usuários, perfis e login com JWT (perfis extensíveis, rotas por perfil, primeiro admin pelo .env) | Pendente |
@@ -154,3 +154,28 @@ Lista oficial, aprovada pelo responsável. Os ADRs e as tarefas usam estes núme
 - Volume montado em `/var/lib/postgresql` (formato da imagem 18) e com nome fixo; `.env.example` não precisou mudar.
 - O script só roda com o volume vazio; mudou o script, rode `npm run db:reset`.
 - Nesta máquina a porta 5432 está reservada pelo Windows; os testes usaram `DB_PORT=5433` no `.env` local.
+
+### Tarefa 6: esqueleto do backend
+
+**O que foi feito**
+- `backend/` com Maven (`br.com.coronasemijoias:corona-api`, pacote base `br.com.coronasemijoias.api`), Java 21 e Spring Boot 4.1.2. Maven wrapper 3.3.4 em modo só-script (sem `.jar`), apontando para o Maven 3.9.16; `mvnw` versionado com bit de execução. Dependências: web (MVC), validação, JPA, Flyway com `flyway-database-postgresql`, driver PostgreSQL, actuator, springdoc 3.2.0 (única versão fixada à mão) e, nos testes, Testcontainers (PostgreSQL).
+- Configuração pelo `.env` da raiz (`spring.config.import` opcional com `../.env` e `./.env`): datasource com `DB_APP_*`, Flyway com `DB_MIGRACAO_*` e schema `corona` sem criar schema. Se faltar o arquivo ou uma variável `DB_*`, um `FailureAnalyzer` explica em português o que fazer.
+- `V001__base.sql`: só um `COMMENT ON SCHEMA`. UTC na JVM (`TimeZone.setDefault` e `-Duser.timezone=UTC` no Maven), no Hibernate e no Jackson.
+- Dinheiro estrito no JSON (ADR-0002, R6): `BigDecimal` sai como texto com duas casas (`"7.50"`) e só entra como texto no padrão `^-?\d{1,12}(\.\d{1,2})?$`; número JSON, notação científica e mais de 2 casas dão `DADOS_INVALIDOS`. No OpenAPI o `BigDecimal` aparece como `string`, `format: decimal` e o mesmo `pattern`, nos dois grupos.
+- Tratador global de erros: `ProblemDetail` com `codigo` (`ROTA_NAO_ENCONTRADA`, `DADOS_INVALIDOS`, `PEDIDO_INVALIDO`, `ERRO_INTERNO`), título e mensagem em português, lista `campos` na validação. Erro interno devolve texto genérico e registra o detalhe só no log. Os textos foram acrescentados antes ao `docs/glossario-interface.md` ("Erros gerais da API").
+- Actuator: só `/actuator/health`, sem detalhes e sem a página de descoberta `/actuator`. OpenAPI com os grupos `dona` e `vendedor` (`/api/auth/**` nos dois); Swagger e JSON só no perfil `dev`.
+- Testes (26, em `./mvnw verify`): classe base que sobe `postgres:18.6` rodando o mesmo `infra/postgres/init/01-papeis.sh`, com os dois usuários reais (sem `@ServiceConnection`, que entregaria o superusuário). Cobrem Flyway, dono do histórico, `current_user`, fuso `UTC`, `Instant` com `Z`, dinheiro, erros sem nada técnico, health, grupos do OpenAPI nos dois perfis e a mensagem de variável ausente.
+- Scripts `api:run` e `api:test` na raiz, via `scripts/mvnw.mjs` (escolhe `mvnw.cmd` ou `./mvnw`). README com a seção "API" e aviso sobre `$` nas senhas (também no `.env.example`). Seção "Comandos" do CLAUDE.md preenchida com os comandos de banco e de API.
+
+**O que ficou pendente**
+- Spring Security, login, usuários e JWT (tarefas 9 a 11); tabelas, gatilho de sync e utilitário de dinheiro (tarefa 8); CI (tarefa 7); Dockerfile e deploy (Fase 9).
+- Configuração do VS Code (Boot Dashboard com o perfil `dev`): tarefa 17.
+- A mensagem de falha de inicialização usa o cabeçalho do Spring ("APPLICATION FAILED TO START"), em inglês; só a descrição e a ação estão em português. É texto de desenvolvedor, não de tela.
+- Teste automático das palavras proibidas do glossário contra as mensagens da API: fica para a tarefa que ler os blocos do glossário.
+
+**Decisões tomadas**
+- Subpacotes `dona` e `vendedor` dentro de cada funcionalidade (regra de dependência do ADR-0003), registrados em `backend/README.md`.
+- O perfil `dev` é ligado por `spring-boot.run.profiles` no `pom.xml`: só `spring-boot:run` (e `npm run api:run`) o ativam; um jar de produção nunca sobe com Swagger por engano.
+- O valor de dinheiro sai sempre com pelo menos duas casas (completa com zeros, sem arredondar); o arredondamento HALF_UP continua só no utilitário da tarefa 8.
+- Erros de dado dentro do corpo (`DatabindException`) viram `DADOS_INVALIDOS`; JSON quebrado, método e tipo de conteúdo errados viram `PEDIDO_INVALIDO`.
+- `JAVA_HOME` desta máquina aponta para o Temurin 21.0.12.1, enquanto o `java` do PATH é o 21.0.13 do ADR-0001; o build funciona nos dois.
