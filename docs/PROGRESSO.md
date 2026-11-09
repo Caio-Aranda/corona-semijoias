@@ -20,7 +20,7 @@ Lista oficial, aprovada pelo responsável. Os ADRs e as tarefas usam estes núme
 | 7 | ci: GitHub Actions e Dependabot | Concluída (PR 8) |
 | 8 | feat(backend): convenções do schema e sync_seq seguro (gatilho, pull com limite seguro, utilitário de dinheiro HALF_UP, teste de convenções, testes de concorrência e de estresse) | Concluída (PR 12) |
 | 8.1 | docs: três moedas e cotação diária (especificação v1.5, ADR-0006, glossário, CLAUDE.md) | Concluída (PR 13) |
-| 9 | feat(auth): usuários, perfis e login com JWT (perfis extensíveis, rotas por perfil, primeiro admin pelo .env) | Pendente |
+| 9 | feat(auth): usuários, perfis e login com JWT (perfis extensíveis, rotas por perfil, primeiro admin pelo .env) | Em revisão (PR 14) |
 | 10 | feat(auth): a dona cria usuários e redefine a senha temporária (troca obrigatória, regras da senha) | Pendente |
 | 11 | feat(auth): sessão longa, limite de tentativas e registro de acessos (refresh com rotação, identificador do aparelho, bloqueio 5/15, prazo offline guardado) | Pendente |
 | 12 | feat(api): versão mínima e tipo de app (cabeçalhos; o tipo é conveniência, não segurança) | Pendente |
@@ -337,3 +337,43 @@ Rotas e telas (Fase 1 para a dona, Fase 4 para o vendedor), pull (Fase 5), `cota
 ## Ao terminar
 Atualize `docs/PROGRESSO.md` e abra o PR em Conventional Commits (`feat(backend): ...`). No relatório, diga o que fez, o que não fez e as dúvidas.
 ```
+
+### Tarefa 9: usuários, perfis e login com JWT
+
+**O que foi feito**
+- `V004__usuarios_e_perfis.sql`: `perfis` (só do servidor, só inserção, a aplicação só lê; linhas ADMIN e VENDEDOR) e `usuarios` (só do servidor, editável: nome, login único e guardado normalizado, `senha_hash` BCrypt, perfil com chave estrangeira para `perfis.codigo`, `ativo`, `vendedor_id` sem chave estrangeira até a Fase 1, `CHECK` de ADMIN sem vendedor). As duas no `RegistroDeTabelas`; o teste de convenções passa sem exceção nova.
+- Biblioteca: `spring-boot-starter-security-oauth2-resource-server` (Spring Security 7.1.2 e Nimbus JOSE 10.9.1, gerenciados pelo Boot 4.1.2; nenhuma versão fixada à mão). O `NimbusJwtEncoder` assina; o `NimbusJwtDecoder` confere com um seletor de chave próprio (só HS256, `kid` obrigatório e igual ao da chave atual ou da anterior), validade sem tolerância de relógio, `iss` e presença de `sub`, `perfil` e `jti`.
+- `POST /api/auth/login`: token de 15 minutos com `sub`, `perfil`, `vendedor_id` (só vendedor), `jti`, `iat`, `exp`, `iss` e `kid` no cabeçalho; devolve `tokenDeAcesso`, `tipoDoToken`, `expiraEm`, `validadeEmSegundos` e `horaDoServidor`. `ConteudoDoToken` e `UsuarioAutenticado` já têm `sid`, `dispositivoId` e `escopo`, vazios até as tarefas 10 e 11.
+- Senha: BCrypt com custo da configuração (12); conferência aceita custo menor e regrava no login certo; login inexistente confere contra um hash fixo gerado ao subir com o custo configurado; senha com mais de 72 bytes é senha errada (com a mesma passada no BCrypt).
+- Respostas: login errado, inexistente e inativo com senha errada dão o mesmo corpo (401 `LOGIN_INVALIDO`); inativo com senha certa, 403 `USUARIO_DESATIVADO`; sem token, vencido ou adulterado, 401 `SESSAO_TERMINADA`; perfil errado, 403 `SEM_PERMISSAO`. Tudo em `ProblemDetail` com `codigo`, pela fábrica comum `Problemas`.
+- A cada requisição, o usuário é lido pela chave primária: desativado perde o acesso no próximo uso (401 `USUARIO_DESATIVADO`), e token com perfil ou vendedor diferentes do cadastro é recusado.
+- Permissão em duas camadas: o grupo do prefixo no Spring Security (`corona.seguranca.grupos.dona` e `.vendedor`) e a anotação `@ExigePerfil` (controlador ou método), conferida por um interceptador antes de ler o corpo. Rota sem anotação é negada; a lista pública fechada (`RotasPublicas`) tem só o login, `/actuator/health` e a documentação no perfil dev.
+- `GET /api/auth/eu`: id, nome, login, perfil e vendedorId, lidos do banco.
+- Primeiro administrador (`PrimeiroAdministrador`): roda depois do Flyway e antes de abrir a porta, numa transação com trava; cria só se não houver ADMIN; sem as variáveis (ou com "troque-isto"), não sobe e explica em português; a senha nunca vai para o log.
+- Configuração: chaves `JWT_CHAVE_ATUAL(_ID)` e `JWT_CHAVE_ANTERIOR(_ID)` no `.env`; chave ausente, fora do Base64, com menos de 256 bits ou com nome inválido impede a subida, com explicação em português (`ConfiguracaoInvalidaException` e `AnalisadorConfiguracaoInvalida`). `.env.example` com os comandos de geração e o passo a passo da troca de chave. Os testes geram as chaves na hora.
+- OpenAPI: esquema `bearer` nos dois grupos, exigido em toda operação menos nas públicas (`security: []` no login).
+- Glossário: texto do 403 ("Você não tem acesso a esta parte do sistema.") em "Erros gerais da API", antes do código; nota de que quem monta o "Não foi possível entrar" é sempre o servidor (até a tarefa 12, sem a última frase).
+- Login vazio, com espaço no meio ou com caractere de controle depois de normalizado: nem é procurado no banco, passa pela mesma conferência BCrypt (hash fixo) e recebe o mesmo 401 `LOGIN_INVALIDO` da senha errada. Só o campo ausente no corpo é 400.
+- O hash da senha nunca sai do servidor: `Usuario.toString()` sem o hash, nenhum DTO com ele e log de SQL sem os valores em todos os perfis (`application.properties`). Um teste confere que a resposta do login, a de `/api/auth/eu` e o log capturado durante o login não têm o hash nem a senha.
+- Testes (PostgreSQL real): `LoginTest`, `TokenTest`, `PermissaoTest`, `TodasAsRotasTest` (percorre todos os mapeamentos, inclusive Actuator e documentação no perfil dev), `RotaSemPerfilTest` (prova com uma rota sem anotação), `VerificadorDeRotasTest`, `SubidaDaApiTest` (sobe a API de verdade num PostgreSQL vazio: sem variáveis não sobe; primeira subida cria; segunda não duplica), `ChavesDoTokenTest`, `ConferenciaDeSenhaTest`. Os testes antigos passam a mandar token.
+- `README.md` (variáveis novas, o que fazer com a senha inicial depois da primeira subida e como testar no Swagger) e `backend/README.md` ("Como proteger uma rota" e os pacotes novos).
+
+**O que ficou pendente**
+- **O comentário do `.env.example` sobre trocar a senha na primeira entrada ainda não vale:** a marca de troca obrigatória é da tarefa 10.
+- Senha temporária, regras da senha nova, criação de usuários pela dona, **as regras de formato do login ao criar usuário** e o comando do servidor (tarefa 10); token de renovação, sessões, aparelho, tentativas e bloqueio (tarefa 11); cabeçalhos de versão e tipo de app e a recusa do perfil incompatível com o app (tarefa 12).
+- **Tarefa 12:** com o `X-App-Tipo`, o servidor acrescenta ao `LOGIN_INVALIDO` a última frase certa do glossário ("peça uma nova à dona da loja" no Corona Vendas, "fale com o suporte do sistema" no Corona Gestão). Os apps nunca montam texto de erro.
+- **Sem limite de tentativas até a tarefa 11:** cada pedido de login custa um BCrypt de custo 12. A API não deve ir para um servidor público antes da tarefa 11.
+- Chave estrangeira de `usuarios.vendedor_id` para `vendedores` e o `CHECK` "VENDEDOR tem vendedor_id" (Fase 1; escrito no `COMMENT` da coluna).
+- Quem já tem `.env` precisa acrescentar as chaves do token (a antiga `JWT_SECRET` não é mais usada); sem elas, a API não sobe e explica.
+
+**Decisões tomadas**
+- Aprovadas pela orquestradora com o plano: texto do 403; o servidor manda o "Não foi possível entrar" sem a última frase até a tarefa 12 (quem completa é o servidor, não o app); as variáveis do primeiro administrador só são exigidas enquanto não houver ADMIN (a senha inicial pode sair do `.env` depois); `vendedor_id` opcional também para VENDEDOR até a Fase 1 (o token só leva o campo quando preenchido); endereço inexistente sem token dá 401 (com token, continua 404).
+- Ajustes da orquestradora na aprovação: (A) hash da senha fora de toString, DTO e log; (B) login de formato impossível responde como senha errada, com a mesma conferência BCrypt; (C) o PR registra que o login ainda não tem limite de tentativas.
+- A conferência do perfil pela anotação fica num interceptador do Spring MVC, que roda antes de ler o corpo e da validação: o perfil errado nunca recebe 400. O grupo do prefixo fica no Spring Security; as duas camadas valem juntas, então o método só restringe.
+- Os perfis aceitos em cada grupo ficam na configuração (`corona.seguranca.grupos.*`): perfil novo é uma linha na migração, a anotação e, se ele entrar num grupo, um valor na configuração. Nenhuma classe muda.
+- A página de erro do servidor (`/error`) só atende o despacho de erro do contêiner; a chamada direta é negada (401 sem token, 403 com token). É a única rota que o verificador ignora.
+- O login ignora um token velho no cabeçalho (um token vencido não impede de entrar).
+- `perfis` usa a convenção de histórico (`editavel => false`, recusa UPDATE): perfil só nasce por migração.
+- `ConferenciaDeSenha` fica em `usuarios` e lê o custo direto da configuração, para não criar dependência circular entre `usuarios` e `seguranca`.
+- **Correção pedida na revisão do PR 14:** o primeiro administrador recusa `ADMIN_LOGIN` com espaço no meio ou caractere invisível (a mesma regra `Logins.podeExistir` do login). Antes, "Maria Silva" virava o login "maria silva", que nunca entraria; como as variáveis deixam de ser lidas depois que existe um ADMIN, só daria para consertar no banco. Agora a API não sobe, explica em português e não cria nenhum usuário (`SubidaDaApiTest`).
+

@@ -1,6 +1,8 @@
 package br.com.coronasemijoias.api.testes;
 
 import java.nio.file.Path;
+import java.security.SecureRandom;
+import java.util.Base64;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -22,7 +24,7 @@ import org.testcontainers.utility.MountableFile;
  */
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import({RotasDeTeste.class, TabelasDeTeste.class})
+@Import({RotasDeTeste.class, TabelasDeTeste.class, UsuariosDeTeste.class})
 public abstract class TesteDeIntegracao {
 
     // Valores falsos, só de teste (o contêiner some quando os testes terminam).
@@ -32,6 +34,17 @@ public abstract class TesteDeIntegracao {
     protected static final String MIGRACAO_SENHA = "senha-migracao-teste";
     protected static final String APP_USUARIO = "app_teste";
     protected static final String APP_SENHA = "senha-app-teste";
+
+    // Chaves do token geradas a cada execução: nenhum segredo real no repositório.
+    public static final String ID_CHAVE_ATUAL = "teste-atual";
+    public static final byte[] CHAVE_ATUAL = bytesAleatorios(32);
+    public static final String ID_CHAVE_ANTERIOR = "teste-anterior";
+    public static final byte[] CHAVE_ANTERIOR = bytesAleatorios(32);
+    public static final String EMISSOR = "corona-api";
+
+    // Primeiro administrador criado ao subir o contexto de teste (senha aleatória, nunca usada).
+    public static final String ADMIN_INICIAL_LOGIN = "dona.inicial";
+    public static final String ADMIN_INICIAL_SENHA = Base64.getEncoder().encodeToString(bytesAleatorios(18));
 
     /** Um único contêiner para todos os testes da execução. */
     protected static final PostgreSQLContainer POSTGRES = novoContainer();
@@ -44,7 +57,7 @@ public abstract class TesteDeIntegracao {
      * Um PostgreSQL novo, igual ao do Compose e com o mesmo {@code 01-papeis.sh}. Quem chama o
      * {@code start()} e o {@code stop()} é o teste (por exemplo, o segundo servidor da restauração).
      */
-    protected static PostgreSQLContainer novoContainer() {
+    public static PostgreSQLContainer novoContainer() {
         Path script = Path.of("..", "infra", "postgres", "init", "01-papeis.sh").toAbsolutePath().normalize();
         return new PostgreSQLContainer("postgres:18.6")
                 .withDatabaseName(BANCO)
@@ -73,9 +86,28 @@ public abstract class TesteDeIntegracao {
         registro.add("spring.flyway.password", () -> MIGRACAO_SENHA);
         // As tabelas só de teste (db/migration-teste, V9000+) entram só aqui, nunca no jar.
         registro.add("spring.flyway.locations", () -> "classpath:db/migration,classpath:db/migration-teste");
+        registrarSeguranca(registro);
     }
 
-    protected static String urlJdbc(PostgreSQLContainer container) {
+    /** Chaves do token e primeiro administrador de teste (sobrepõem o que vier do .env). */
+    protected static void registrarSeguranca(DynamicPropertyRegistry registro) {
+        Base64.Encoder base64 = Base64.getEncoder();
+        registro.add("corona.seguranca.jwt.chave-atual.id", () -> ID_CHAVE_ATUAL);
+        registro.add("corona.seguranca.jwt.chave-atual.valor", () -> base64.encodeToString(CHAVE_ATUAL));
+        registro.add("corona.seguranca.jwt.chave-anterior.id", () -> ID_CHAVE_ANTERIOR);
+        registro.add("corona.seguranca.jwt.chave-anterior.valor", () -> base64.encodeToString(CHAVE_ANTERIOR));
+        registro.add("corona.admin-inicial.nome", () -> "Dona Inicial");
+        registro.add("corona.admin-inicial.login", () -> ADMIN_INICIAL_LOGIN);
+        registro.add("corona.admin-inicial.senha", () -> ADMIN_INICIAL_SENHA);
+    }
+
+    public static byte[] bytesAleatorios(int quantidade) {
+        byte[] bytes = new byte[quantidade];
+        new SecureRandom().nextBytes(bytes);
+        return bytes;
+    }
+
+    public static String urlJdbc(PostgreSQLContainer container) {
         return "jdbc:postgresql://" + container.getHost() + ":" + container.getMappedPort(5432) + "/" + BANCO;
     }
 

@@ -16,13 +16,45 @@ Pacote base `br.com.coronasemijoias.api`, organizado **por funcionalidade**, nã
   `OrigemDoDispositivo` e o dialeto do PostgreSQL;
 - `sync`: `RegistroDeTabelas` (lista única das tabelas) e o serviço de pull com limite seguro
   (`ServicoDePull`, sem rota; a rota `/sync/pull` é da Fase 5);
-- `documentacao`: grupos `dona` e `vendedor` do OpenAPI.
+- `documentacao`: grupos `dona` e `vendedor` do OpenAPI, com o esquema `bearer`;
+- `seguranca`: token de acesso (JWT HS256 com `kid`, duas chaves; `EmissorDeToken`, conferência em
+  `ConfiguracaoDeSeguranca`), usuário da requisição conferido no banco a cada chamada
+  (`ConversorDoToken`, `UsuarioAutenticado`), `@ExigePerfil`, lista pública fechada (`RotasPublicas`) e
+  as respostas 401/403;
+- `usuarios`: `Usuario`, conferência de senha com BCrypt (`ConferenciaDeSenha`) e o primeiro
+  administrador criado ao subir (`PrimeiroAdministrador`);
+- `autenticacao`: `POST /api/auth/login` e `GET /api/auth/eu`.
 
 Cada funcionalidade nova ganha o próprio pacote (por exemplo `produtos`) e, dentro dele, os
 subpacotes `dona` e `vendedor` para controladores e DTOs. Regra do ADR-0003: o subpacote
 `vendedor` nunca depende do `dona` (nem o contrário); o que for comum fica no pacote da funcionalidade.
 
 Migrações Flyway ficam em `src/main/resources/db/migration` e, depois de publicadas, nunca são editadas.
+
+## Como proteger uma rota
+
+Toda rota declara quem pode usá-la com `@ExigePerfil` (ADR-0004, item 9), no controlador ou no método.
+**Rota sem a anotação é negada** (403), e o `TodasAsRotasTest` reprova o build. Só a lista fechada de
+`RotasPublicas` responde sem token (login, saúde e, no perfil `dev`, a documentação).
+
+```java
+@ExigePerfil("ADMIN")
+@RestController
+@RequestMapping("/api/dona/produtos")
+class ProdutosDaDonaController {
+
+    @GetMapping
+    List<ProdutoDaDona> listar(@AuthenticationPrincipal UsuarioAutenticado usuario) { ... }
+}
+```
+
+- O grupo do prefixo também vale: `/api/dona/**` só aceita os perfis de `corona.seguranca.grupos.dona`
+  e `/api/vendedor/**` os de `corona.seguranca.grupos.vendedor` (`application.properties`). A anotação
+  do método vale sobre a do controlador e só pode restringir.
+- O perfil é conferido antes de ler o corpo: o perfil errado recebe 403, nunca um 400.
+- Filtro "só do vendedor": sempre pelo `usuario.vendedorId()` do token, nunca por parâmetro (ADR-0003).
+- Perfil novo (por exemplo, um gerente): uma linha numa migração nova em `perfis`, a anotação nas rotas
+  que ele usa e, se ele entrar num grupo, o valor em `corona.seguranca.grupos.*`. Nenhuma classe muda.
 
 ## Como criar uma tabela
 

@@ -4,10 +4,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import br.com.coronasemijoias.api.seguranca.PropriedadesDeSeguranca;
+import br.com.coronasemijoias.api.seguranca.RotasPublicas;
+import br.com.coronasemijoias.api.seguranca.VerificadorDeRotas;
 import br.com.coronasemijoias.api.testes.TesteDeIntegracao;
 import java.nio.charset.StandardCharsets;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
@@ -21,6 +26,15 @@ class OpenApiDesenvolvimentoTest extends TesteDeIntegracao {
 
     @Autowired
     JsonMapper json;
+
+    @Autowired
+    ApplicationContext contexto;
+
+    @Autowired
+    RotasPublicas publicas;
+
+    @Autowired
+    PropriedadesDeSeguranca propriedades;
 
     private JsonNode documento(String caminho) throws Exception {
         String corpo = mvc.perform(get(caminho))
@@ -63,5 +77,39 @@ class OpenApiDesenvolvimentoTest extends TesteDeIntegracao {
     @Test
     void interfaceDoSwaggerAbre() throws Exception {
         mvc.perform(get("/swagger-ui/index.html")).andExpect(status().isOk());
+    }
+
+    @Test
+    void loginEEuNosDoisGruposComOEsquemaBearer() throws Exception {
+        for (String grupo : new String[] {"dona", "vendedor"}) {
+            JsonNode documento = documento("/v3/api-docs/" + grupo);
+            JsonNode bearer = documento.get("components").get("securitySchemes").get("bearer");
+            assertThat(bearer.get("type").asString()).as(grupo).isEqualTo("http");
+            assertThat(bearer.get("scheme").asString()).as(grupo).isEqualTo("bearer");
+            assertThat(bearer.get("bearerFormat").asString()).as(grupo).isEqualTo("JWT");
+
+            JsonNode paths = documento.get("paths");
+            // O login não exige token; o resto exige.
+            JsonNode login = paths.get("/api/auth/login").get("post");
+            assertThat(login.get("security").isArray()).as(grupo).isTrue();
+            assertThat(login.get("security").isEmpty()).as(grupo).isTrue();
+            JsonNode eu = paths.get("/api/auth/eu").get("get");
+            assertThat(eu.get("security").get(0).has("bearer")).as(grupo).isTrue();
+        }
+    }
+
+    @Test
+    void grupoVendedorNaoTemNadaDaDona() throws Exception {
+        String documento = documento("/v3/api-docs/vendedor").toString();
+        assertThat(documento).doesNotContain("/api/dona");
+    }
+
+    @Test
+    void comADocumentacaoLigadaTodaRotaTemPerfilOuEhPublica() {
+        // No perfil dev entram as rotas da documentação: elas estão na lista pública.
+        assertThat(VerificadorDeRotas.violacoes(VerificadorDeRotas.rotasDo(contexto), publicas,
+                propriedades.grupos(), Set.of("ADMIN", "VENDEDOR"))).isEmpty();
+        assertThat(VerificadorDeRotas.rotasDo(contexto).keySet().stream().flatMap(i -> i.getPatternValues().stream()))
+                .anyMatch(p -> p.startsWith("/v3/api-docs"));
     }
 }

@@ -234,6 +234,8 @@ No Corona Gestão (app da dona), a última frase é:
 
 > Se esqueceu a senha, fale com o suporte do sistema.
 
+Quem monta o texto é sempre o servidor (os aplicativos nunca montam texto de erro). Até a tarefa 12, ele devolve o título e as duas primeiras frases (código `LOGIN_INVALIDO`); a partir da tarefa 12, com o cabeçalho de tipo de app, o próprio servidor acrescenta a última frase certa de cada aplicativo.
+
 **Bloqueio temporário por tentativas**
 
 > **Acesso bloqueado por alguns minutos.**
@@ -315,6 +317,11 @@ Endereço que o servidor não conhece (em geral, aplicativo desatualizado):
 
 > **Não encontramos o que você pediu.**
 > Não encontramos o que você pediu. Atualize o aplicativo e tente de novo. Se continuar, fale com o suporte do sistema.
+
+Perfil sem acesso à parte pedida (por exemplo, o vendedor numa função da dona; em uso normal, só um aplicativo desatualizado ou errado chega aqui):
+
+> **Você não tem acesso a esta parte do sistema.**
+> Você não tem acesso a esta parte do sistema. Atualize o aplicativo e tente de novo. Se continuar, fale com o suporte do sistema.
 
 Dados que não passaram na conferência:
 

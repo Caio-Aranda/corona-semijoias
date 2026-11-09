@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import br.com.coronasemijoias.api.testes.TesteDeIntegracao;
+import br.com.coronasemijoias.api.testes.UsuariosDeTeste;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MockMvc;
@@ -14,6 +15,9 @@ class ActuatorTest extends TesteDeIntegracao {
 
     @Autowired
     MockMvc mvc;
+
+    @Autowired
+    UsuariosDeTeste usuarios;
 
     @Test
     void saudeRespondeUpSemDetalhes() throws Exception {
@@ -27,7 +31,9 @@ class ActuatorTest extends TesteDeIntegracao {
     @Test
     void outrosEndpointsNaoSaoExpostos() throws Exception {
         for (String caminho : new String[] {"/actuator", "/actuator/env", "/actuator/beans", "/actuator/info"}) {
-            mvc.perform(get(caminho)).andExpect(status().isNotFound());
+            // Sem token: nada além da saúde responde. Com token: o endereço não existe.
+            mvc.perform(get(caminho)).andExpect(status().isUnauthorized());
+            mvc.perform(get(caminho).with(usuarios.comoDona())).andExpect(status().isNotFound());
         }
     }
 }

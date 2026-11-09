@@ -1,2 +1,3 @@
 org.springframework.boot.diagnostics.FailureAnalyzer=\
-br.com.coronasemijoias.api.comum.configuracao.AnalisadorVariavelAusente
+br.com.coronasemijoias.api.comum.configuracao.AnalisadorVariavelAusente,\
+br.com.coronasemijoias.api.comum.configuracao.AnalisadorConfiguracaoInvalida

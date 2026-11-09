@@ -43,7 +43,9 @@ public final class RegistroDeTabelas {
                         // Sincronizáveis entram aqui a partir da Fase 1 (clientes, produtos, vendas...).
                 ),
                 List.of(
-                        new TabelaDoServidor("sync_estado", false)));
+                        new TabelaDoServidor("sync_estado", false),
+                        new TabelaDoServidor("perfis", true),
+                        new TabelaDoServidor("usuarios", false)));
     }
 
     /** Este registro somado a outro (usado pelos testes para acrescentar as tabelas de teste). */

@@ -110,6 +110,13 @@ Sobe a API em `http://localhost:8080`, aplica as migrações com o usuário das 
 
 Fora do perfil `dev` (produção), o Swagger e o OpenAPI ficam desligados. Se faltar o `.env` (ou alguma variável do banco), a API não sobe e explica em português o que fazer.
 
+**Login e token de acesso.** A API também precisa, no `.env`:
+
+- `JWT_CHAVE_ATUAL_ID` e `JWT_CHAVE_ATUAL`: a chave que assina os tokens (gere o valor com `openssl rand -base64 32`; o comando do PowerShell está no `.env.example`). O valor em Base64 pode ter `+`, `/` e `=`, e isso não atrapalha;
+- `ADMIN_NOME`, `ADMIN_LOGIN` e `ADMIN_SENHA`: a conta da dona, criada na primeira subida sem nenhum administrador no banco. Elas só são exigidas enquanto o banco não tem administrador: depois da primeira subida, não são mais lidas, e a senha inicial pode (e deve) sair do `.env` do servidor.
+
+Quem já tinha um `.env` de antes precisa acrescentar essas variáveis (a antiga `JWT_SECRET` não é mais usada). Para testar no Swagger: `POST /api/auth/login` com o login e a senha da dona, copie o `tokenDeAcesso` e use o botão **Authorize**. Toda rota, menos o login, a saúde e (no perfil `dev`) a documentação, exige o token.
+
 ```bash
 npm run api:test
 ```
