@@ -1,0 +1,393 @@
+{
+  "components": {
+    "schemas": {
+      "CadastroDeTeste": {
+        "properties": {
+          "nome": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": ["nome"],
+        "type": "object"
+      },
+      "DadosDoUsuario": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "login": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "perfil": {
+            "type": "string"
+          },
+          "vendedorId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PedidoDeLogin": {
+        "properties": {
+          "dispositivoId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "login": {
+            "maxLength": 200,
+            "minLength": 0,
+            "type": "string"
+          },
+          "senha": {
+            "type": "string"
+          }
+        },
+        "required": ["login", "senha"],
+        "type": "object"
+      },
+      "PedidoDeRenovacao": {
+        "properties": {
+          "dispositivoId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "tokenDeRenovacao": {
+            "maxLength": 200,
+            "minLength": 0,
+            "type": "string"
+          }
+        },
+        "required": ["tokenDeRenovacao"],
+        "type": "object"
+      },
+      "PedidoDeTrocaDeSenha": {
+        "properties": {
+          "senhaNova": {
+            "type": "string"
+          }
+        },
+        "required": ["senhaNova"],
+        "type": "object"
+      },
+      "RespostaDoLogin": {
+        "properties": {
+          "expiraEm": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "horaDoServidor": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "tempoMaximoOfflineDias": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "tipoDoToken": {
+            "type": "string"
+          },
+          "tokenDeAcesso": {
+            "type": "string"
+          },
+          "tokenDeRenovacao": {
+            "type": "string"
+          },
+          "tokenDeRenovacaoExpiraEm": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "trocaDeSenhaObrigatoria": {
+            "type": "boolean"
+          },
+          "validadeEmSegundos": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Tempo": {
+        "properties": {
+          "instante": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ValorDeTeste": {
+        "properties": {
+          "valor": {
+            "example": "123.45",
+            "format": "decimal",
+            "pattern": "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "bearer": {
+        "bearerFormat": "JWT",
+        "description": "Token de acesso devolvido por POST /api/auth/login (vale 15 minutos).",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "title": "OpenAPI definition",
+    "version": "v0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/auth/eu": {
+      "get": {
+        "operationId": "eu",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DadosDoUsuario"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Dados de quem está usando o token",
+        "tags": ["autenticacao-controller"]
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "description": "Devolve o token de acesso (15 minutos) e o de renovação (30 dias). O Corona Vendas manda dispositivoId; o Corona Gestão não. Depois de 5 erros seguidos do mesmo endereço, responde 429 com Retry-After até o fim do bloqueio.",
+        "operationId": "entrar",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PedidoDeLogin"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/RespostaDoLogin"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [],
+        "summary": "Entrar com login e senha",
+        "tags": ["autenticacao-controller"]
+      }
+    },
+    "/api/auth/renovar": {
+      "post": {
+        "description": "Troca o token de renovação por um novo (o anterior deixa de valer) e devolve um token de acesso novo. Mande o mesmo dispositivoId do login. Não precisa do token de acesso.",
+        "operationId": "renovar",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PedidoDeRenovacao"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/RespostaDoLogin"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [],
+        "summary": "Renovar a sessão",
+        "tags": ["autenticacao-controller"]
+      }
+    },
+    "/api/auth/sair": {
+      "post": {
+        "description": "Encerra a sessão do token (o de acesso e o de renovação).",
+        "operationId": "sair",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Sair",
+        "tags": ["autenticacao-controller"]
+      }
+    },
+    "/api/auth/teste": {
+      "get": {
+        "operationId": "rotaDeLogin",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tempo"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["rotas-de-teste"]
+      }
+    },
+    "/api/auth/teste/so-vendedor": {
+      "get": {
+        "operationId": "soVendedor",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tempo"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["rotas-de-teste"]
+      }
+    },
+    "/api/auth/trocar-senha": {
+      "post": {
+        "description": "Só aceita o token restrito devolvido pelo login com senha temporária. A senha nova precisa ter pelo menos 8 caracteres, com letras e números, ser diferente da temporária e caber em 72 bytes. Encerra todas as sessões abertas e devolve os tokens normais.",
+        "operationId": "trocarSenha",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PedidoDeTrocaDeSenha"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/RespostaDoLogin"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Criar a senha nova (troca obrigatória)",
+        "tags": ["autenticacao-controller"]
+      }
+    },
+    "/api/vendedor/teste/dinheiro": {
+      "get": {
+        "operationId": "valorDoVendedor",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValorDeTeste"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["rotas-de-teste"]
+      }
+    },
+    "/api/vendedor/teste/validar": {
+      "post": {
+        "operationId": "validarDoVendedor",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CadastroDeTeste"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CadastroDeTeste"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": ["rotas-de-teste"]
+      }
+    }
+  }
+}

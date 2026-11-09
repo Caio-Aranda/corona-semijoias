@@ -20,6 +20,7 @@
     "format:check": "prettier --check .",
     "api:run": "node scripts/mvnw.mjs spring-boot:run",
     "api:test": "node scripts/mvnw.mjs verify",
+    "api:clientes": "node scripts/gerar-clientes.mjs",
     "api:redefinir-senha": "node scripts/redefinir-senha-admin.mjs",
     "db:up": "docker compose up -d --wait",
     "db:down": "docker compose down",
