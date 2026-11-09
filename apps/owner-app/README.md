@@ -1,0 +1,56 @@
+# Corona Gestão (`apps/owner-app`)
+
+Aplicativo da dona da loja. Electron + React, só funciona com internet. Usa `@corona/ui` (tema e componentes) e `@corona/api-client-dona`. **Nunca** importa o Corona Vendas (`apps/seller-app`) nem `api-client-vendedor` (ADR-0003).
+
+## Como rodar em desenvolvimento
+
+1. Banco e API de pé (na raiz do projeto):
+
+   ```bash
+   npm run db:up
+   ```
+
+   ```bash
+   npm run api:run
+   ```
+
+   A API precisa de um `.env` completo na raiz. **Quem já tinha um `.env` de antes** precisa acrescentar `JWT_CHAVE_ATUAL_ID`, `JWT_CHAVE_ATUAL` e `SESSAO_SEGREDO_RENOVACAO` (a API não sobe sem elas e explica). Veja o `.env.example` da raiz e a seção "API" do `README.md`.
+
+2. Abra o Corona Gestão (na raiz):
+
+   ```bash
+   npm run owner:dev
+   ```
+
+   Abre a janela do aplicativo com recarga automática. Entre com a conta da dona (a de `ADMIN_LOGIN` no `.env`). Na primeira vez a API pede para criar a senha nova.
+
+O endereço da API fica em `MAIN_VITE_CORONA_API_URL` (padrão `http://localhost:8080`). Para mudar, copie `apps/owner-app/.env.example` para `apps/owner-app/.env`. O endereço só pode ser `http://` quando for deste computador; fora dele precisa ser `https://`. Nada nesse arquivo é segredo.
+
+## Outros comandos
+
+```bash
+npm run owner:build
+```
+
+Gera o pacote de código em `apps/owner-app/out/` (processo principal, ponte e tela), sem instalador. O instalador e a atualização automática ficam para a Fase 9.
+
+```bash
+npm test -w @corona/owner-app
+```
+
+Testes (Vitest, sem abrir janela).
+
+## Como é por dentro
+
+| Parte              | Pasta           | O que faz                                                                   |
+| ------------------ | --------------- | --------------------------------------------------------------------------- |
+| Processo principal | `src/main/`     | Cria a janela, guarda os tokens, fala com a API.                            |
+| Ponte (preload)    | `src/preload/`  | A única ligação entre a tela e o processo principal. Lista fixa de funções. |
+| Tela (React)       | `src/renderer/` | Telas em português da loja. Não sabe o que é token.                         |
+| Contrato           | `src/shared/`   | Os nomes e formatos que a tela e o processo principal combinam.             |
+
+**Tokens (ADR-0004, item 3).** Só o processo principal os vê. O de acesso fica na memória; o de renovação, na memória e cifrado em disco pelo cofre do sistema (`safeStorage`). Sem cofre disponível, nada é gravado em claro e a pessoa entra de novo na próxima abertura. A tela chama a ponte (`entrar`, `trocarSenha`, `sair`, `estouLogado`, `chamarApi`, `aoMudarASessao`) e recebe só resultados; as chamadas à API levam o token por conta do processo principal. A renovação é uma por vez (fila única) e acontece 1 minuto antes de o token de acesso vencer ou ao receber 401.
+
+**Janela.** `contextIsolation` ligado, `nodeIntegration` desligado, `sandbox` ligado, sem `remote`, sem `webview`, janelas novas e navegação para fora bloqueadas, nenhuma permissão do navegador concedida, e política de conteúdo (CSP) que só deixa carregar o que o próprio aplicativo empacotou e não deixa a tela falar com a rede.
+
+**Versão.** O `version` do `package.json` (três números) vai em `X-App-Versao`. Ele precisa ser igual ou maior que `APP_VERSAO_MINIMA_GESTAO` do `.env` da API (padrão `1.0.0`); abaixo disso a API responde que o aplicativo está desatualizado.

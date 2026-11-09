@@ -26,7 +26,7 @@ Lista oficial, aprovada pelo responsável. Os ADRs e as tarefas usam estes núme
 | 12 | feat(api): versão mínima e tipo de app (cabeçalhos; o tipo é conveniência, não segurança) | Concluída (PR 18) · [detalhe](progresso/fase-0.md#tarefa-12-versão-mínima-e-tipo-de-app) |
 | 13 | feat(api-client): clientes gerados do OpenAPI, um da dona e um do vendedor | Concluída (PR 19) · [detalhe](progresso/fase-0.md#tarefa-13-clientes-gerados-do-openapi) |
 | 14 | feat(ui): tema da marca e componentes base em packages/ui | Concluída (PR 20) · [detalhe](progresso/fase-0.md#tarefa-14-tema-e-componentes-base) |
-| 15 | feat(owner-app): Corona Gestão com login e tela inicial | Pendente |
+| 15 | feat(owner-app): Corona Gestão com login e tela inicial | Concluída (PR a abrir) · [detalhe](progresso/fase-0.md#tarefa-15-corona-gestão-com-login-e-tela-inicial) |
 | 16 | feat(seller-app): Corona Vendas com login online e barreira contra código da dona | Pendente |
 | 17 | chore: VS Code, comando único de setup e roteiro do teste de uso | Pendente |
 | 18 | spike: SQLCipher no Electron dentro do monorepo (tempo limitado, gera o ADR-0005) | Pendente |
@@ -55,7 +55,7 @@ O que ainda está em aberto nas tarefas concluídas (o que já foi resolvido por
 - Fase 1: auditoria "pelo servidor" da ação do comando; telas (senha mostrada uma vez, listar, editar e desativar usuários). ([tarefa 10](progresso/fase-0.md#tarefa-10-a-dona-cria-usuários-e-redefine-a-senha-temporária))
 - `npm run api:redefinir-senha` e `docker compose exec api ...` não rodados de ponta a ponta (contêiner só na Fase 9). ([tarefa 10](progresso/fase-0.md#tarefa-10-a-dona-cria-usuários-e-redefine-a-senha-temporária))
 - Mais de uma instância da API pede um ADR (a trava por IP fica na memória). ([tarefa 11](progresso/fase-0.md#tarefa-11-sessão-longa-limite-de-tentativas-e-registro-de-acessos))
-- Tarefas 15 e 16: o processo principal do Electron renova uma vez por vez. ([tarefa 11](progresso/fase-0.md#tarefa-11-sessão-longa-limite-de-tentativas-e-registro-de-acessos))
+- Tarefa 16: o processo principal do Electron renova uma vez por vez (no Corona Gestão, tarefa 15, já é assim). ([tarefa 11](progresso/fase-0.md#tarefa-11-sessão-longa-limite-de-tentativas-e-registro-de-acessos))
 - Fase 1: desativar usuário revoga as famílias. Fase 5: tabela `dispositivos`, segundo aparelho e prazo offline. ([tarefa 11](progresso/fase-0.md#tarefa-11-sessão-longa-limite-de-tentativas-e-registro-de-acessos))
 
 ### Prompt sugerido para a tarefa 19

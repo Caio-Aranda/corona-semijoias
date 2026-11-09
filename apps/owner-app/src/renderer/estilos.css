@@ -1,0 +1,68 @@
+/* Telas do Corona Gestão. Cores e medidas vêm dos tokens de @corona/ui. */
+.gestao-pagina {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--cor-fundo-suave);
+}
+
+.gestao-conteudo {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: var(--espaco-8) var(--espaco-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-6);
+}
+
+.gestao-cartao {
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
+  padding: var(--espaco-6);
+  background: var(--cor-fundo);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+}
+
+.gestao-titulo {
+  margin: 0;
+  font-size: var(--texto-titulo);
+  line-height: 1.2;
+}
+
+.gestao-texto {
+  margin: 0;
+}
+
+.gestao-regras {
+  margin: 0;
+  padding-left: var(--espaco-6);
+}
+
+.gestao-botoes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--espaco-4);
+}
+
+.gestao-atencao {
+  background: var(--cor-fundo);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-2);
+  padding: var(--espaco-4) var(--espaco-6);
+}
+
+.gestao-atencao h2 {
+  margin: 0 0 var(--espaco-2);
+  font-size: var(--texto-grande);
+}
+
+.gestao-atencao p {
+  margin: 0;
+  color: var(--cor-texto-suave);
+}
