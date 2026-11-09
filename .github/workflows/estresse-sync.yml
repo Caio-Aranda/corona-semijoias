@@ -4,6 +4,10 @@ name: Estresse do sync
 # (20 s) roda em todo Pull Request, dentro do job "backend" do ci.yml. Semanal, e não diário,
 # para poupar os minutos do GitHub Actions.
 on:
+  # TEMPORÁRIO (tarefa 8): o workflow_dispatch só existe depois que o arquivo chega à main.
+  # Este gatilho roda o estresse longo uma vez neste branch, para o link do PR, e sai antes da revisão.
+  push:
+    branches: [feat/convencoes-schema-sync]
   workflow_dispatch:
     inputs:
       duracao:
