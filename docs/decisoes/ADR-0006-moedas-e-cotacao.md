@@ -1,7 +1,7 @@
 # ADR-0006: Moedas e cotação
 
-- **Status:** Proposto
-- **Data:** 09/11/2026
+- **Status:** Aceito
+- **Data:** 09/11/2026 (aceito no mesmo dia: as regras são do responsável; a fonte, a taxa de venda, as fases e o número da tarefa 19 foram decididos pela orquestradora na revisão do plano)
 - **Tarefas que implementam:** 19 (backend das cotações, antes da Fase 1); telas da dona na Fase 1; app do vendedor online na Fase 4; pull e uso sem internet na Fase 5; acerto na Fase 7
 
 ## Contexto
@@ -80,6 +80,7 @@ Qualquer desvio, inclusive uma coluna a mais em qualquer linha, faz a leitura se
 O PTAX do dia sai depois das 13h de Brasília, ou seja, 16:00 UTC (Brasília é UTC-3 e hoje não tem horário de verão). Em 09/11/2026 às 14:42 UTC o arquivo do dia ainda não existia. O BCB não publica arquivo em fim de semana nem em feriado bancário nacional. Conferido em 09/11/2026:
 
 - 404 no sábado 07/11/2026, em Finados (segunda, 02/11/2026) e na segunda e na terça de Carnaval (16 e 17/02/2026);
+- 404 também na Sexta-feira Santa (18/04/2025 e 03/04/2026), em Corpus Christi (19/06/2025), no Dia da Consciência Negra (20/11/2025) e na segunda e na terça de Carnaval de 2025 (03 e 04/03/2025);
 - 200 na Quarta-feira de Cinzas (18/02/2026), em 24/12/2025, em 31/12/2025 e em 02/01/2026.
 
 **Regras:**
@@ -119,7 +120,7 @@ As oito colunas são `NOT NULL`, e por isso a tabela não aceita cotação parci
 
 ### 5. Qual taxa a tela usa: a de venda
 
-A tela usa a **taxa de venda** nas duas moedas:
+A tela usa a **taxa de venda** nas duas moedas (decidido em 09/11/2026):
 
 - é a que o mercado chama de "dólar PTAX" e a referência usual dos contratos em dólar;
 - é **uma regra só** para o Dólar e o Guarani.
@@ -138,8 +139,9 @@ Gs. = arredondar(R$ ÷ pyg_venda, 0 casas)
 
 ### 7. Que cotação vale para cada valor
 
-- **Lançamento** (venda, pagamento, devolução, troca, acerto, conta, caixa): vale a cotação de **maior `data_cotacao` que seja menor ou igual à data do lançamento**, contada em **horário de Brasília** (§7.5). Sábado, domingo e feriado caem no último dia útil.
+- **Lançamento** (venda, pagamento, devolução, troca, conta, caixa): vale a cotação de **maior `data_cotacao` que seja menor ou igual à data do lançamento**, contada em **horário de Brasília** (§7.5). Sábado, domingo e feriado caem no último dia útil.
 - **Valor que não é lançamento** (preço da peça, limite de consignação, saldo da maleta em valor): vale a **cotação mais recente**.
+- **Acerto:** vale a cotação mais recente que existe **no momento em que o acerto é fechado**, gravada nele (item 11).
 - **Hoje, antes da busca:** o lançamento de hoje aparece pela cotação do último dia útil, com a data dela na tela. Depois que a cotação do dia é gravada, passa a aparecer pela de hoje. A conversão é só para a tela, então essa troca não muda nada gravado. O acerto não muda, porque grava a sua (item 11).
 
 ### 8. Tipo no banco e o teste de convenções
@@ -162,12 +164,18 @@ A cotação **não é dinheiro**: 1 guarani vale frações pequenas de real (0,0
 - **HALF_UP**, com **2 casas no Dólar** e **0 no Guarani**.
 - O valor convertido é **só para mostrar** e **nunca é gravado** como valor de lançamento. Nenhuma regra de dinheiro do ADR-0002 muda.
 - Em Java, a conversão fica numa classe própria, `ConversaoDeMoeda`, no pacote `comum.dinheiro`. O `Dinheiro` não muda. O `ArredondamentoSoNoUtilitarioTest` passa a aceitar `RoundingMode` **só** em `Dinheiro` e em `ConversaoDeMoeda`.
-- **TypeScript**, só com inteiros (ADR-0002: `number` fracionário nunca representa dinheiro):
-  - o valor em reais vem em **centavos inteiros** (`c`);
-  - a taxa vem do texto como **inteiro em unidades de 10⁻⁸** (`t`; por exemplo `"5.50130000"` vira 550130000);
+- **TypeScript**, só com inteiros **`BigInt`** (ADR-0002: `number` fracionário nunca representa dinheiro):
+  - o valor em reais vem em **centavos** (`c`);
+  - a taxa vem do texto como **inteiro em unidades de 10⁻⁸** (`t`; por exemplo `"5.50130000"` vira `550130000n`);
   - US$ em centavos = arredondar(c × 10⁸ ÷ t);
-  - Gs. = arredondar(c × 10⁶ ÷ t);
-  - a divisão inteira com HALF_UP é `(2n + d) div 2d` para valores positivos, e o mesmo com o sinal invertido para os negativos, afastando do zero como o Java.
+  - Gs. = arredondar(c × 10⁶ ÷ t).
+- **Por que `BigInt` e não `number`.** O maior valor de `NUMERIC(14,2)` é R$ 999.999.999.999,99, ou seja, cerca de 10¹⁴ centavos. Vezes 10⁸, chega a cerca de 10²², muito acima do maior inteiro exato do `number` (2⁵³ − 1 = 9.007.199.254.740.991). Com `number`, a conta perderia dígitos sem dar erro.
+  - A conversão faz **toda** a conta em `BigInt`: leitura dos textos, multiplicação, divisão e arredondamento.
+  - O resultado continua `BigInt` até virar texto para a tela. Nunca passa por `Number()` nem por `parseFloat`.
+- **HALF_UP em `BigInt`.** A divisão do `BigInt` corta as casas em direção ao zero. Para numerador `n` e divisor `d > 0`:
+  - se `n ≥ 0`: `(2n + d) / (2d)`;
+  - se `n < 0`: `-((-2n + d) / (2d))`.
+  - Isso afasta do zero no meio exato, como o `RoundingMode.HALF_UP` do Java.
 - Java e TypeScript usam **a mesma tabela de exemplos** (item 14) como teste, para darem o mesmo resultado.
 
 ### 10. Totais convertidos: soma dos lançamentos convertidos
@@ -187,9 +195,16 @@ Exemplo de dois dias: ver a tabela do item 14.
 
 ### 11. O que o acerto grava
 
-O acerto grava **`cotacao_id`**, a ligação com a linha de `cotacoes` que usou. Como a linha é imutável, a **data da cotação** e as **taxas** ficam fixas para sempre. Os valores do próprio acerto (vendido, descontos, comissão, líquido, repasse) são convertidos por essa cotação: o acerto é um lançamento do dia em que é fechado.
+- **Qual cotação:** a **mais recente que existe no momento em que o acerto é fechado**.
+- **O que grava:** **`cotacao_id`**, a ligação com essa linha de `cotacoes`. Como a linha é imutável, a **data da cotação** e as **taxas** ficam fixas para sempre.
+- **Uma cotação só para o acerto inteiro:** todos os valores do acerto (vendido, descontos, comissão, líquido, repasse) são convertidos por essa mesma cotação, cada um arredondado sozinho.
+- **Tela:** a tela do acerto (e o PDF dele) sempre mostra "Cotação do Banco Central de dd/mm/aaaa", com a data da cotação gravada (texto do glossário, parte 11).
 
-**Por que gravar, se a tabela é imutável:** se o acerto foi feito num dia em que a busca falhou, ele usou a cotação anterior. Quando a recuperação grava depois a cotação daquele dia, os relatórios passam a usá-la, mas o acerto **continua mostrando o que mostrou** na hora em que foi feito e assinado. A coluna entra quando a tabela `acertos` for criada (Fase 7).
+**Consequência: o acerto pode diferir do relatório de vendas.** O relatório de vendas da mesma semana converte cada venda pela cotação do seu dia (item 7), e o acerto converte o total pela cotação única do fechamento. Por isso o total do acerto em US$ e Gs. pode diferir do total do relatório, mesmo com o mesmo valor em reais. O valor que vale é sempre o em reais, e esse é igual nos dois. Exemplo no item 14.
+
+**Consequência: as linhas do acerto podem não fechar em US$.** Como cada valor é arredondado sozinho, "vendido − comissão" em US$ ou Gs. pode diferir em 1 centavo, ou em 1 guarani, do "líquido" convertido. A conta que fecha é a em reais. Exemplo no item 14.
+
+**Por que gravar, se a tabela é imutável:** se o acerto foi fechado num dia em que a busca falhou, ou antes da busca do dia, ele usou a cotação anterior. Quando a cotação daquele dia é gravada depois, os relatórios passam a usá-la, mas o acerto **continua mostrando o que mostrou** na hora em que foi fechado e assinado. A coluna entra quando a tabela `acertos` for criada (Fase 7).
 
 ### 12. Aviso à dona
 
@@ -226,6 +241,10 @@ Conferidos à mão e com `decimal` do Python, com as **taxas de venda reais** pu
 | Venda de R$ 100,00 em Finados, segunda 02/11/2026 | sem arquivo (feriado); vale a de 30/10: 100 ÷ 5,42120 = 18,4461…; 100 ÷ 0,0009296 = 107.573,149… | US$ 18,45; Gs. 107.573; **sem aviso** |
 | Busca falha na segunda 09/11 (por exemplo, arquivo com 9 colunas) | nada é gravado; vale a de 06/11; às 21:00 UTC aparece o aviso | os relatórios de 09/11 usam 06/11. Em 10/11 a recuperação grava 09/11, o aviso some e os relatórios de 09/11 passam à cotação de 09/11. Um acerto feito em 09/11 continua com a de 06/11 (gravou `cotacao_id`) |
 | Conta em inteiros do TypeScript: R$ 1.234,56 em 06/11 | c = 123456; t(USD) = 550130000; t(PYG) = 89500; 123456 × 10⁸ ÷ 550130000 = 22441,24…; 123456 × 10⁶ ÷ 89500 = 1.379.396,6… | 22441 centavos = **US$ 224,41**; **Gs. 1.379.397** (igual ao Java) |
+| Acerto fechado na segunda 09/11 às 11h de Brasília (14:00 UTC, antes da busca do dia): vendas da semana de R$ 49,90 (05/11) e R$ 100,00 (06/11); comissão de 7,5% sobre o total, só para o exemplo (a base ainda não está decidida, ADR-0002) | cotação mais recente no fechamento: 06/11. Vendido 149,90 ÷ 5,50130 = 27,2481…; comissão 149,90 × 0,075 = 11,2425, que vira R$ 11,24, e 11,24 ÷ 5,50130 = 2,0431…; líquido R$ 138,66, e 138,66 ÷ 5,50130 = 25,2049…. No Guarani: 167.486,03…; 12.558,65…; 154.927,37… | o acerto grava a cotação de 06/11 e mostra: vendido **US$ 27,25** / **Gs. 167.486**; comissão US$ 2,04 / Gs. 12.559; líquido **US$ 25,20** / Gs. 154.927 |
+| O mesmo acerto comparado com o relatório de vendas da semana | o relatório converte cada venda pela cotação do seu dia (linha "Relatório de dois dias") | relatório: **US$ 27,32** / **Gs. 167.945**; acerto: US$ 27,25 / Gs. 167.486. Diferença de US$ 0,07 e Gs. 459, com os mesmos R$ 149,90 |
+| As linhas do acerto em US$ não fecham por 1 centavo | 27,25 − 2,04 = 25,21, mas o líquido convertido é 25,20; no Guarani, 167.486 − 12.559 = 154.927, igual | normal: cada valor é arredondado sozinho; a conta que fecha é a em reais (149,90 − 11,24 = 138,66) |
+| Valor máximo de `NUMERIC(14,2)` no TypeScript: R$ 999.999.999.999,99 em 06/11 | c = 99.999.999.999.999n; c × 10⁸ = 9.999.999.999.999.900.000.000, que passa de 2⁵³ − 1 = 9.007.199.254.740.991; ÷ 550130000 = 18.177.521.676.694,4…; c × 10⁶ ÷ 89500 = 1.117.318.435.754.178,77… | **US$ 181.775.216.766,94**; **Gs. 1.117.318.435.754.179**. Só dá certo com `BigInt`; com `number`, a multiplicação perde dígitos |
 | Por que a coluna publicada do PYG e não a paridade | 5,50130 ÷ 6147 = 0,00089496… | o BCB publica 0,0008950; a conversão usa 0,0008950 |
 
 ## Consequências
@@ -244,6 +263,8 @@ Conferidos à mão e com `decimal` do Python, com as **taxas de venda reais** pu
 - O calendário de feriados fica no código e precisa ser revisado se surgir feriado nacional novo.
 - Uma tabela a mais no pull e um tipo numérico a mais no teste de convenções.
 - O spread grande do Guarani (cerca de 3,4%) faz a escolha entre compra e venda pesar. A venda foi escolhida e pode ser revista sem perder dado.
+- **O acerto e o relatório de vendas da mesma semana podem mostrar US$ e Gs. diferentes**, com os mesmos reais. O acerto usa uma cotação só, a do fechamento, e o relatório usa a do dia de cada venda (item 11; no exemplo do item 14, US$ 27,25 contra US$ 27,32). Isso precisa ser explicado à dona na validação (§13.7), junto com a regra de que vale sempre o valor em reais.
+- No TypeScript, a conversão exige `BigInt`, um tipo que a equipe ainda não usa. Um teste com o valor máximo de `NUMERIC(14,2)` protege contra quem trocar por `number`.
 
 ### Riscos
 
@@ -272,6 +293,7 @@ Conferidos à mão e com `decimal` do Python, com as **taxas de venda reais** pu
 
 ## Dúvidas
 
-1. **Taxa de venda ou de compra** para a tela: a proposta é a venda (item 5). O responsável confirma ao aceitar este ADR.
-2. **"Cartão" como forma de pagamento:** a decisão de 09/11/2026 cita "cartão" entre as formas de pagamento só registradas, e a §7.5 v1.5 registra isso. A §7.4 (pagamento do repasse) e o glossário ainda não listam o cartão. Falta o responsável dizer se ele entra na venda, no acerto ou nos dois. Isso fica para a tarefa que criar as formas de pagamento.
-3. **A §19.3** ("O que precisa da sua atenção") lista exemplos de avisos e não cita o da cotação. A §7.5 já manda o aviso para esse bloco. Acrescentar o item na §19.3 fica para quando o responsável quiser mexer nela.
+1. **A §19.3** ("O que precisa da sua atenção") lista exemplos de avisos e não cita o da cotação. A §7.5 já manda o aviso para esse bloco. Acrescentar o item na §19.3 fica para quando o responsável quiser mexer nela.
+2. **Cartão:** a especificação não lista o cartão como forma de pagamento. A §17.13 pergunta ao cliente se o cliente final paga com cartão na maquininha do próprio vendedor. Se pagar, o cartão entra como forma de pagamento registrada, sem integração. Não muda nada deste ADR.
+
+Resolvidas em 09/11/2026, na revisão do plano: a taxa de venda nas duas moedas (item 5); o vendedor recebe a cotação pela API na Fase 4 e pelo pull na Fase 5; o número 19 para a tarefa de backend das cotações.
