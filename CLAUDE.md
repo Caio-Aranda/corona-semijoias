@@ -32,7 +32,7 @@ TypeScript (dois apps separados) · SQLite criptografado no app do vendedor.
 - Plano antes do código nas partes críticas (sync, acerto, financeiro).
 - Regras de dinheiro e estoque: escrever os testes primeiro.
 - Uma funcionalidade por branch; commits no padrão Conventional Commits.
-- Trabalhar a partir de uma issue do GitHub; abrir PR com "Closes #N".
+- Trabalhar a partir do prompt de tarefa entregue pela orquestradora; ao terminar, atualizar docs/PROGRESSO.md e abrir um Pull Request.
 - Ao terminar, informar: o que fez, o que não fez e as dúvidas.
 - Nada de segredos no repositório (usar .env, com .env.example versionado).
 - Pronto = funcionalidade + testes + relatório correspondente + conciliação passando.
