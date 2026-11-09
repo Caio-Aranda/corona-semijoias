@@ -15,7 +15,7 @@ Lista oficial, aprovada pelo responsável. Os ADRs e as tarefas usam estes núme
 | 2.1 | docs: decisões do responsável, especificação v1.3 e glossário (PR 3) | Concluída |
 | 3 | docs: ADRs de fundação | Concluída (PR 4) |
 | 4 | chore: esqueleto do monorepo e higiene do repositório (npm workspaces, TS, ESLint, Prettier, .gitignore, .gitattributes, .env.example, modelo de PR, README) | Concluída (PR 5) |
-| 5 | chore(infra): Docker Compose com PostgreSQL de desenvolvimento | Pendente |
+| 5 | chore(infra): Docker Compose com PostgreSQL de desenvolvimento | Concluída (PR 6) |
 | 6 | feat(backend): esqueleto Spring Boot 4.1.x com Flyway, OpenAPI e Testcontainers (UTC, erros em português, grupos dona/vendedor no OpenAPI) | Pendente |
 | 7 | ci: GitHub Actions e Dependabot | Pendente |
 | 8 | feat(backend): convenções do schema e sync_seq seguro (gatilho, pull com limite seguro, utilitário de dinheiro HALF_UP, teste de convenções, testes de concorrência e de estresse) | Pendente |
@@ -137,3 +137,20 @@ Lista oficial, aprovada pelo responsável. Os ADRs e as tarefas usam estes núme
 - `.env.example` segue o ADR-0002 (papéis separados no banco): administrador do container, usuário das migrações e usuário da aplicação; mais `JWT_SECRET` e o primeiro administrador. Os nomes das variáveis foram aprovados pelo responsável.
 - `.claude/settings.local.json` entrou no `.gitignore`, para o repositório não depender da regra global de cada máquina.
 - `core.autocrlf=true` nesta máquina deixava a documentação em CRLF na pasta de trabalho; o índice já estava em LF e nenhum conteúdo mudou (`git add --renormalize .` não alterou arquivo algum da documentação).
+
+### Tarefa 5: PostgreSQL de desenvolvimento
+
+**O que foi feito**
+- `docker-compose.yml` na raiz: serviço `postgres` (`postgres:18.6`), volume nomeado `corona_pg_dev`, healthcheck com `pg_isready`, porta só em `127.0.0.1:${DB_PORT}`, credenciais todas do `.env` (o Compose falha com mensagem em português se faltar alguma). `max_prepared_transactions=0` e `timezone=UTC` explícitos (ADR-0002).
+- `infra/postgres/init/01-papeis.sh`: cria o usuário das migrações (dono do schema `corona`) e o usuário da aplicação (sem superusuário, sem CREATE, `transaction_timeout` 60s e `idle_in_transaction_session_timeout` 30s só para ele), `search_path` dos dois no schema `corona`, `REVOKE` do acesso público ao banco e ao `public`, e privilégios padrão (SELECT, INSERT, UPDATE nas tabelas futuras; USAGE e SELECT nas sequências; nada de DELETE nem TRUNCATE).
+- Scripts na raiz: `db:up`, `db:down`, `db:reset`. README com a seção "Banco de desenvolvimento".
+
+**O que ficou pendente**
+- Container da API, Nginx, HTTPS, backup e restauração (Fase 9; a restauração do ADR-0002 é testada na tarefa 8). Migrações e tabelas (tarefas 6 e 8). CI (tarefa 7).
+
+**Decisões tomadas**
+- Schema `corona`: curto, igual ao nome do banco e da marca, e evita usar `public`.
+- Script em `.sh` (não `.sql`), para ler as senhas do ambiente; elas entram no SQL por variáveis do psql (`:'var'`), então caracteres especiais não quebram.
+- Volume montado em `/var/lib/postgresql` (formato da imagem 18) e com nome fixo; `.env.example` não precisou mudar.
+- O script só roda com o volume vazio; mudou o script, rode `npm run db:reset`.
+- Nesta máquina a porta 5432 está reservada pelo Windows; os testes usaram `DB_PORT=5433` no `.env` local.
