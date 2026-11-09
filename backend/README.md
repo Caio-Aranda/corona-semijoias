@@ -26,7 +26,14 @@ Pacote base `br.com.coronasemijoias.api`, organizado **por funcionalidade**, nã
   (`ServicoDeUsuarios`, `UsuariosDaDonaController`), o primeiro administrador criado ao subir
   (`PrimeiroAdministrador`) e o comando do servidor `redefinir-senha-admin`
   (`ComandoRedefinirSenhaDeAdministrador`, passo a passo em `docs/redefinir-senha-da-dona.md`);
-- `autenticacao`: `POST /api/auth/login`, `POST /api/auth/trocar-senha` e `GET /api/auth/eu`.
+- `autenticacao`: `POST /api/auth/login`, `POST /api/auth/trocar-senha`, `POST /api/auth/renovar`,
+  `POST /api/auth/sair` e `GET /api/auth/eu`;
+- `sessoes`: a sessão longa (ADR-0004, item 2): famílias (`sessoes`), tokens de renovação com rotação e
+  janela de tolerância (`ServicoDeSessoes`, `SegredoDeRenovacao`). Não depende de `usuarios` nem de
+  `seguranca`;
+- `acessos`: tentativas de login e bloqueio (`ControleDeTentativas`), a vez de cada IP (`TravaPorIp`), o
+  IP real atrás do proxy (`IpDoCliente`) e o alerta de muitos erros num login (`AlertaDeErrosPorLogin`);
+- `configuracoes`: leitura da tabela `configuracoes` (§9) por chave (`Configuracoes`, `ChaveDeConfiguracao`).
 
 Cada funcionalidade nova ganha o próprio pacote (por exemplo `produtos`) e, dentro dele, os
 subpacotes `dona` e `vendedor` para controladores e DTOs. Regra do ADR-0003: o subpacote
@@ -38,20 +45,29 @@ Migrações Flyway ficam em `src/main/resources/db/migration` e, depois de publi
 
 Quem tem a marca `troca_de_senha_obrigatoria` (usuário novo, senha redefinida, primeiro administrador)
 só recebe do login o **token restrito** (`escopo=TROCA_SENHA`). O `FiltroDoTokenRestrito` nega com 403
-`TROCA_DE_SENHA_OBRIGATORIA` toda requisição que não esteja em `ROTAS_PERMITIDAS` (hoje só
-`POST /api/auth/trocar-senha`): uma rota nova nasce barrada, sem ninguém ter de lembrar. Para o token
-restrito abrir mais uma rota (por exemplo a saída, na tarefa 11), acrescente-a a essa lista.
+`TROCA_DE_SENHA_OBRIGATORIA` toda requisição que não esteja em `ROTAS_PERMITIDAS` (a troca de senha
+e a saída): uma rota nova nasce barrada, sem ninguém ter de lembrar. Para o token restrito abrir mais
+uma rota, acrescente-a a essa lista.
 
-A redefinição e a troca de senha gravam `usuarios.credencial_alterada_em`; o `ConversorDoToken` recusa
-(401 `SESSAO_TERMINADA`) o token com `iat` anterior a ela, comparando em segundos inteiros. Um token
-emitido no mesmo segundo da redefinição ainda vale até vencer (15 minutos); a tarefa 11 fecha isso com as
-famílias de sessão. Nos testes, `RelogioDeTeste` avança o tempo (reinicie-o no `@AfterEach`).
+## Sessões e revogação
+
+Todo token de acesso leva o `sid` da família da sessão (tabela `sessoes`), inclusive o restrito, que
+tem uma família própria (`TROCA_SENHA`, sem token de renovação). A cada requisição o `ConversorDoToken`
+lê a família pela chave primária: revogada, de outro usuário, de outro aparelho ou do tipo errado dá 401
+`SESSAO_TERMINADA`. A saída revoga a família; redefinir ou trocar a senha revoga todas as do usuário, e
+por isso nenhum token anterior vale depois, nem o do mesmo segundo. A comparação do `iat` com
+`usuarios.credencial_alterada_em` continua como segunda barreira.
+
+Nos testes: `RelogioDeTeste` avança ou para o tempo (`avancar`, `fixar`; reinicie-o no `@AfterEach`);
+cada pedido do MockMvc sai de um IP aleatório (`IpsDeTeste`), e quem testa o limite de tentativas fixa o
+IP com `IpsDeTeste.de(ip)`; o login de um vendedor de teste manda o aparelho
+`UsuariosDeTeste.APARELHO` (`usuarios.corpoDoLogin(login, senha)`).
 
 ## Como proteger uma rota
 
 Toda rota declara quem pode usá-la com `@ExigePerfil` (ADR-0004, item 9), no controlador ou no método.
 **Rota sem a anotação é negada** (403), e o `TodasAsRotasTest` reprova o build. Só a lista fechada de
-`RotasPublicas` responde sem token (login, saúde e, no perfil `dev`, a documentação).
+`RotasPublicas` responde sem token (login, renovação, saúde e, no perfil `dev`, a documentação).
 
 ```java
 @ExigePerfil("ADMIN")
