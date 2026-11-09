@@ -117,6 +117,8 @@ Fora do perfil `dev` (produção), o Swagger e o OpenAPI ficam desligados. Se fa
 
 Quem já tinha um `.env` de antes precisa acrescentar essas variáveis (a antiga `JWT_SECRET` não é mais usada). Para testar no Swagger: `POST /api/auth/login` com o login e a senha da dona, copie o `tokenDeAcesso` e use o botão **Authorize**. Toda rota, menos o login, a saúde e (no perfil `dev`) a documentação, exige o token.
 
+**Primeira entrada e senha temporária.** A conta do `.env` nasce com a troca de senha obrigatória: o login devolve só um token restrito (`trocaDeSenhaObrigatoria: true`), que só abre `POST /api/auth/trocar-senha` (senha nova com pelo menos 8 caracteres, letras e números, diferente da atual e com até 72 bytes); essa rota devolve o token normal. A dona cria os outros usuários em `POST /api/dona/usuarios` (a senha temporária aparece uma única vez na resposta e vale 7 dias) e redefine senhas em `POST /api/dona/usuarios/{id}/redefinir-senha`. Se a dona esquecer a senha e não houver outro administrador: `npm run api:redefinir-senha -- <login>` em desenvolvimento, e o passo a passo de produção em [`docs/redefinir-senha-da-dona.md`](docs/redefinir-senha-da-dona.md).
+
 ```bash
 npm run api:test
 ```
