@@ -13,8 +13,8 @@ Lista oficial, aprovada pelo responsável. Os ADRs e as tarefas usam estes núme
 | 1 | docs: registrar na especificação as decisões da Fase 0 (PR 1) | Concluída |
 | 2 | docs: glossário da interface (PR 2) | Concluída |
 | 2.1 | docs: decisões do responsável, especificação v1.3 e glossário (PR 3) | Concluída |
-| 3 | docs: ADRs de fundação | Em andamento |
-| 4 | chore: esqueleto do monorepo e higiene do repositório (npm workspaces, TS, ESLint, Prettier, .gitignore, .gitattributes, .env.example, modelo de PR, README) | Pendente |
+| 3 | docs: ADRs de fundação | Concluída (PR 4) |
+| 4 | chore: esqueleto do monorepo e higiene do repositório (npm workspaces, TS, ESLint, Prettier, .gitignore, .gitattributes, .env.example, modelo de PR, README) | Concluída (PR 5) |
 | 5 | chore(infra): Docker Compose com PostgreSQL de desenvolvimento | Pendente |
 | 6 | feat(backend): esqueleto Spring Boot 4.1.x com Flyway, OpenAPI e Testcontainers (UTC, erros em português, grupos dona/vendedor no OpenAPI) | Pendente |
 | 7 | ci: GitHub Actions e Dependabot | Pendente |
@@ -110,3 +110,30 @@ Lista oficial, aprovada pelo responsável. Os ADRs e as tarefas usam estes núme
 - Muitos erros num mesmo login vindos de IPs diferentes: sem bloqueio; mais de 20 erros em 1 hora geram aviso em "O que precisa da sua atenção" (limite no servidor).
 - ADR-0002: a época viaja dentro do cursor `época:xid:seq`; o valor atual fica na tabela do servidor `sync_estado` (escolha da implementadora, porque `configuracoes` só guarda as chaves da §9); na Fase 4 a situação da venda é calculada a partir dos lançamentos, não gravada por cima.
 - **Especificação v1.4 (09/11/2026):** cabeçalho; §5 (Spring Boot 4, versão menor mais recente com suporte); §9 (`produtos` sem `preco_custo`, nova `produtos_custos`); §11 (senha temporária de 7 dias, senha definitiva sem expiração, alerta sem bloqueio para muitos erros num login); §22 com a entrada v1.4. Nenhuma outra regra mudou.
+
+### Tarefa 4: esqueleto do monorepo
+
+**O que foi feito**
+- npm workspaces na raiz (`apps/*` e `packages/*`) com `@corona/owner-app`, `@corona/seller-app`, `@corona/ui` e `@corona/shared`, cada um com `tsconfig.json` que estende a base e um `src/index.ts` mínimo. `backend/` só com um `README.md`.
+- Versões do ADR-0001 fixadas sem `^` nem `~`: TypeScript 6.0.3, typescript-eslint 8.72.1, ESLint 10.14.0, `@eslint/js` 10.0.1, eslint-config-prettier 10.1.8 e Prettier 3.9.10. `.nvmrc` (26.13.0), `engines`, `packageManager` (`npm@11.20.0`) e `package-lock.json` versionado.
+- `tsconfig.base.json` estrito: `strict`, `noUncheckedIndexedAccess`, `noImplicitOverride`, `noFallthroughCasesInSwitch`.
+- ESLint em formato flat, com verificação de tipos e Prettier sem conflito. Barreira de importação, primeira camada (ADR-0003): o Corona Vendas não importa `apps/owner-app` nem `@corona/api-client-dona`; `packages/*` não importa `apps/*` nem `@corona/api-client-dona`. As mensagens de erro estão em português.
+- `.prettierrc.json`, `.prettierignore`, `.editorconfig`, `.gitattributes` (LF; CRLF só para `.bat`, `.cmd` e `.ps1`; binários marcados), `.gitignore` corrigido (`.vscode/` e `build/` deixam de ser ignorados; exceção para `maven-wrapper.jar`; `release/`, logs e arquivos do sistema), `.env.example`, modelo de PR e `README.md`.
+- Scripts na raiz: `lint`, `typecheck`, `format` e `format:check`.
+
+**O que ficou pendente**
+- Electron, React, Vite, clientes da API, backend, Docker, CI e Dependabot (tarefas 5 a 7 e 13 a 16).
+- Conteúdo de `.vscode/` e seção "Comandos" do CLAUDE.md (tarefa 17).
+- Vitest, que entra com o primeiro código testável.
+- A regra do `../` que sai da pasta do Corona Vendas (ADR-0003, camada 1) fica para a tarefa 16.
+- Node 26.13.0 e npm 11.20.0 ainda não estão instalados na máquina de desenvolvimento (Node 24.18.1 e npm 11.16.0): o `npm ci` avisa sobre `engines`, mas funciona. O CI (tarefa 7) usa o 26.13.0.
+- `npm audit` acusa 10 avisos de gravidade moderada, em dependências de desenvolvimento do ESLint e do typescript-eslint (por exemplo `minimatch`). Não corrigi com `--force`; ver o Dependabot na tarefa 7.
+
+**Decisões tomadas**
+- ESLint 10 (aceito pelo typescript-eslint 8.72.1) e integração com o Prettier só por `eslint-config-prettier`. O formato é conferido por `format:check`, não pelo lint.
+- `docs/`, `CLAUDE.md` e `.claude/` ficam fora do Prettier, para esta tarefa não reescrever a documentação.
+- `.npmrc` com `save-exact=true`, para que instalações futuras não gravem `^`.
+- `moduleResolution` Bundler, pois o `node10` está obsoleto no TypeScript 6.
+- `.env.example` segue o ADR-0002 (papéis separados no banco): administrador do container, usuário das migrações e usuário da aplicação; mais `JWT_SECRET` e o primeiro administrador. Os nomes das variáveis foram aprovados pelo responsável.
+- `.claude/settings.local.json` entrou no `.gitignore`, para o repositório não depender da regra global de cada máquina.
+- `core.autocrlf=true` nesta máquina deixava a documentação em CRLF na pasta de trabalho; o índice já estava em LF e nenhum conteúdo mudou (`git add --renormalize .` não alterou arquivo algum da documentação).
