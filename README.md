@@ -120,6 +120,8 @@ Os comandos passam por `scripts/mvnw.mjs`, que escolhe `mvnw.cmd` no Windows e `
 
 O `.env` é encontrado tanto rodando de `backend/` quanto da raiz do projeto (por exemplo, pelo VS Code). O perfil `dev` (documentação ligada) só é ativado por `npm run api:run`; ao subir de outra forma, a API funciona igual, mas sem o Swagger. A configuração do VS Code entra na tarefa 17.
 
+Como criar uma tabela nova (convenções do ADR-0002) e como rodar os testes do sync: [backend/README.md](backend/README.md). Restauração de backup sem perder registros na sincronização: [docs/restauracao-de-backup.md](docs/restauracao-de-backup.md).
+
 ## CI
 
 A cada Pull Request e a cada push na `main`, o GitHub Actions (`.github/workflows/ci.yml`) roda quatro conferências:
@@ -130,5 +132,7 @@ A cada Pull Request e a cada push na `main`, o GitHub Actions (`.github/workflow
 - `dependencias`: `npm audit` e OSV-Scanner; reprova com falha de segurança alta ou crítica (nota 7.0 ou mais).
 
 Para ver o resultado, abra o Pull Request e olhe a lista de verificações no fim da página, ou a aba **Actions** do repositório. O Dependabot abre, toda segunda, PRs de atualização agrupados (`.github/dependabot.yml`).
+
+Além do CI, o workflow **Estresse do sync** (`.github/workflows/estresse-sync.yml`) roda toda segunda, às 3h de Brasília, a versão longa (10 minutos) do teste de estresse da sincronização. Para rodar na hora: aba **Actions**, "Estresse do sync", **Run workflow** (dá para mudar a duração e a semente).
 
 **Não se faz merge com CI vermelho.** A `main` não tem proteção técnica no plano gratuito; essa regra é de disciplina.

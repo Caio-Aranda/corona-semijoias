@@ -18,7 +18,7 @@ Lista oficial, aprovada pelo responsável. Os ADRs e as tarefas usam estes núme
 | 5 | chore(infra): Docker Compose com PostgreSQL de desenvolvimento | Concluída (PR 6) |
 | 6 | feat(backend): esqueleto Spring Boot 4.1.x com Flyway, OpenAPI e Testcontainers (UTC, erros em português, grupos dona/vendedor no OpenAPI) | Concluída (PR 7) |
 | 7 | ci: GitHub Actions e Dependabot | Concluída (PR 8) |
-| 8 | feat(backend): convenções do schema e sync_seq seguro (gatilho, pull com limite seguro, utilitário de dinheiro HALF_UP, teste de convenções, testes de concorrência e de estresse) | Pendente |
+| 8 | feat(backend): convenções do schema e sync_seq seguro (gatilho, pull com limite seguro, utilitário de dinheiro HALF_UP, teste de convenções, testes de concorrência e de estresse) | Concluída (PR a definir) |
 | 9 | feat(auth): usuários, perfis e login com JWT (perfis extensíveis, rotas por perfil, primeiro admin pelo .env) | Pendente |
 | 10 | feat(auth): a dona cria usuários e redefine a senha temporária (troca obrigatória, regras da senha) | Pendente |
 | 11 | feat(auth): sessão longa, limite de tentativas e registro de acessos (refresh com rotação, identificador do aparelho, bloqueio 5/15, prazo offline guardado) | Pendente |
@@ -199,3 +199,40 @@ Lista oficial, aprovada pelo responsável. Os ADRs e as tarefas usam estes núme
 - `cancel-in-progress` só em PR, nunca na `main`.
 - Versão do Flyway: `V001_1` equivale a 1.1, ou seja, maior que `V001`; por isso a regra de "número maior" usa a ordem de versões do Flyway.
 
+
+### Tarefa 8: convenções do schema e sync_seq seguro
+
+**O que foi feito**
+- `V002__convencoes_do_schema.sql`: sequência global `corona.sync_seq_global`; gatilho `corona.controle_sincronizavel` (preenche `sync_seq`, `sync_xid`, `version`, `created_at`, `updated_at`, preserva `id` e `origem_dispositivo` no update, ignora o que o cliente mandar); gatilho `corona.controle_do_servidor`; recusa de DELETE, TRUNCATE e (nas imutáveis) UPDATE; funções `corona.aplicar_convencoes_sincronizavel(tabela, imutavel)` e `corona.aplicar_convencoes_do_servidor(tabela, editavel)`, que criam as colunas de controle, o `CHECK` de UUID v4 ou v7, os gatilhos e o índice `(sync_xid, sync_seq)`; tabela `sync_estado` (uma linha só, época começando em 1).
+- `V003__restauracao_do_sync.sql`: `corona.preparar_sync_apos_restauracao()` (sync_xid = 0 com os gatilhos desligados e época + 1), rodada pelo usuário das migrações. Passo a passo em `docs/restauracao-de-backup.md`.
+- Tabelas só de teste em `src/test/resources/db/migration-teste` (`V9001`), ligadas só nos testes; o job `migracoes` do CI não olha essa pasta (conferido: o script conta só V002 e V003).
+- Java: `Dinheiro` (arredondar, somar, subtrair, preço da linha, porcentagem, parcelas, estornos proporcionais, comissão por venda e sobre o total; testes escritos antes, com os 7 exemplos do ADR e os casos de borda), com um teste de guarda que reprova `RoundingMode` fora dele; `UuidV7` e `Identificadores`; superclasses `EntidadeSincronizavel` e `EntidadeDoServidor`; `OrigemDoDispositivo`; `RegistroDeTabelas`; `CursorDeSync` (`época:xid:seq`); `ServicoDePull` (sem rota) com `FiltroDoVendedor` como parâmetro.
+- Testes (todos no `./mvnw verify`): gatilhos e privilégios, superclasses JPA e edição otimista, pull determinístico com duas conexões, cursor, teste de convenções (com o "teste do teste" que cria tabelas erradas numa transação e desfaz), restauração com um segundo PostgreSQL e estresse de 20 s.
+- Workflow `.github/workflows/estresse-sync.yml`: estresse de 10 minutos toda segunda às 3h de Brasília e sob demanda (`workflow_dispatch`, com duração e semente).
+- `backend/README.md` ("Como criar uma tabela" e "Testes do sync"), `README.md` (links e o workflow novo) e uma linha no "Comandos" do `CLAUDE.md`.
+
+**O que ficou pendente**
+- Rotas `/sync/push` e `/sync/pull`, `sync_log` e as respostas de idempotência (Fase 5). A resposta "cursor inválido" vira rota e mensagem do glossário na Fase 5.
+- A regra do filtro por vendedor (Fase 5). Atenção registrada no `FiltroDoVendedor`: uma linha que passa a ser do vendedor sem ser alterada (por exemplo, um produto que entra numa maleta nova) não volta sozinha no pull.
+- Chave estrangeira de `origem_dispositivo` para `dispositivos`, quando a tabela existir.
+- Validação do id nos DTOs (anotação de Bean Validation): fica para quando existirem DTOs com id; hoje há `Identificadores.aceito` e o `CHECK` no banco.
+- Alerta de atraso do pull (idade da transação mais antiga, ADR-0002): não estava nesta tarefa.
+- Valor mínimo de parcela é regra de negócio (Fase 4); o utilitário só recusa a divisão que inverteria o sinal da última parcela.
+- Usuário do backup de produção e envio para fora da VPS (Fase 9).
+
+**Decisões tomadas**
+- As funções `aplicar_convencoes_*` **criam** as colunas de controle (a tabela declara só `id uuid PRIMARY KEY` e as colunas de negócio), para nenhuma tarefa futura errar tipo ou esquecer peça. Elas recusam com mensagem clara tabela sem `id uuid`, com coluna de controle declarada à mão ou, na sincronizável, com linhas.
+- As recusas de DELETE, TRUNCATE e UPDATE são gatilhos `BEFORE ... FOR EACH STATEMENT`: disparam antes de qualquer linha e recusam até o comando que não acharia nada. A recusa de TRUNCATE é proteção extra contra o dono da tabela. Consequência para a Fase 5: `INSERT ... ON CONFLICT DO UPDATE` é recusado em tabela imutável; a idempotência usa `ON CONFLICT DO NOTHING` (ADR-0002, item 6).
+- `origem_dispositivo` vem de `set_config('corona.origem_dispositivo', ..., true)`, que vale só até o fim da transação (o pool nunca leva o valor para outra requisição); o gatilho ignora o corpo e preserva a origem no update.
+- UUID v4 ou v7 também no banco: `CHECK (coalesce(uuid_extract_version(id), 0) IN (4, 7))`.
+- `sync_estado`: `id uuid` com `uuidv7()`, coluna `unica` com `CHECK` e `UNIQUE` (uma linha só); a aplicação só lê.
+- `flyway_schema_history`: a aplicação perdeu todo acesso (decisão da orquestradora); o `BancoDeDadosTest` passou a ler o histórico com o usuário das migrações.
+- Funções novas não ficam executáveis por todos (`ALTER DEFAULT PRIVILEGES ... REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC` para o usuário das migrações).
+- **Edição otimista:** `@Version` + `@Generated` (o Java nunca grava a versão). O Hibernate 7.4.13 usa `UPDATE ... RETURNING` para reler os campos do gatilho e, quando a versão já mudou, devolve um erro genérico ("no natively generated values") em vez de `OptimisticLockException`. Por isso a API usa `DialetoPostgreSqlCorona`, igual ao do PostgreSQL mas sem `RETURNING` no UPDATE (a inserção continua com `RETURNING`). O teste `SuperclassesJpaTest` prova o conflito certo.
+- **UUID v7 próprio** (cerca de 30 linhas, `SecureRandom`): evita uma dependência a mais para uma função pequena e de especificação curta; testado com o exemplo da RFC 9562.
+- **Pull:** transação própria `REPEATABLE READ READ ONLY`, limite `pg_snapshot_xmin` calculado uma vez e usado em todas as tabelas, junção pela ordem `(sync_xid, sync_seq)` e corte no lote.
+- **Defeito achado pelo estresse e corrigido:** a primeira versão da consulta dava ao texto do xid o apelido `sync_xid` e ordenava por `sync_xid`; no `ORDER BY` o apelido vale antes da coluna, a ordem virava a do texto ('1000' antes de '999') e o `LIMIT` cortava as linhas erradas, perdendo registros perto do xid 1000. Agora a posição sai como `posicao_xid` e a ordem usa `t.sync_xid, t.sync_seq`; há um teste de regressão determinístico (xid 999 e 1000). O ADR não muda: o desenho estava certo, o erro era da consulta.
+- `Dinheiro.somar` recusa valor com mais de duas casas (total é soma de valores já arredondados); `dividirEmParcelas` recusa quando a regra deixaria a última parcela com o sinal invertido (por exemplo 0,18 em 12 vezes); estornos proporcionais recebem todas as devoluções da venda em ordem.
+- Estresse curto (20 s): pausas de 0 a 250 ms e transação longa de 2 s, para gerar volume em pouco tempo; o longo (10 min) usa os números do ADR (0 a 2 s e 5 s). Antes de comparar, o teste espera o `xmin` passar de um identificador novo (todas as transações, inclusive as do autovacuum, terminaram).
+- O estresse longo é semanal (pedido da tarefa), na madrugada de segunda. Como o `workflow_dispatch` só funciona com o arquivo na `main`, a execução de prova do PR usou um gatilho de `push` temporário neste branch, retirado antes da revisão.
+- Restauração: `pg_dump -Fc -n corona` e `pg_restore` com a lista do backup sem a linha `SCHEMA - corona` (o schema já existe no servidor novo, criado pelo `01-papeis.sh`).
