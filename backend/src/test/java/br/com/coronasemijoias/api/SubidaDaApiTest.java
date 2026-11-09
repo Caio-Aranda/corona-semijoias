@@ -68,6 +68,7 @@ class SubidaDaApiTest extends TesteDeIntegracao {
         c.put("corona.seguranca.jwt.chave-atual.valor", Base64.getEncoder().encodeToString(bytesAleatorios(32)));
         c.put("corona.seguranca.jwt.chave-anterior.id", "");
         c.put("corona.seguranca.jwt.chave-anterior.valor", "");
+        c.put("corona.seguranca.sessao.segredo-de-renovacao", Base64.getEncoder().encodeToString(bytesAleatorios(32)));
         c.put("corona.admin-inicial.nome", "Dona da Loja");
         c.put("corona.admin-inicial.login", "  Dona.Loja ");
         c.put("corona.admin-inicial.senha", SENHA_DA_DONA);

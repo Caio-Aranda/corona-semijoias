@@ -79,7 +79,7 @@ class SenhaTemporariaTest extends TesteDeIntegracao {
 
     private ResultActions entrar(String login, String senha) throws Exception {
         return mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
-                .content(json.writeValueAsString(Map.of("login", login, "senha", senha))));
+                .content(json.writeValueAsString(usuarios.corpoDoLogin(login, senha))));
     }
 
     private String tokenRestritoDe(Criado criado) throws Exception {
@@ -110,9 +110,16 @@ class SenhaTemporariaTest extends TesteDeIntegracao {
         String token = resposta.get("tokenDeAcesso").asString();
         JsonNode conteudo = json.readTree(TokensDeTeste.parte(token, 1));
         assertThat(conteudo.get("escopo").asString()).isEqualTo("TROCA_SENHA");
-        assertThat(conteudo.has("sid")).isFalse();
+        // O restrito tem família própria (TROCA_SENHA), sem token de renovação.
+        String sid = conteudo.get("sid").asString();
+        assertThat(jdbc.queryForObject("SELECT tipo FROM corona.sessoes WHERE id = ?::uuid", String.class, sid))
+                .isEqualTo("TROCA_SENHA");
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM corona.tokens_de_renovacao WHERE sessao_id = ?::uuid",
+                Long.class, sid)).isZero();
+        assertThat(conteudo.get("dispositivo_id").asString()).isEqualTo(UsuariosDeTeste.APARELHO.toString());
         assertThat(conteudo.get("exp").asLong() - conteudo.get("iat").asLong()).isEqualTo(900);
-        assertThat(resposta.has("tokenDeRenovacao")).isFalse();
+        assertThat(resposta.get("tokenDeRenovacao").isNull()).isTrue();
+        assertThat(resposta.get("tokenDeRenovacaoExpiraEm").isNull()).isTrue();
     }
 
     @Test
@@ -149,7 +156,11 @@ class SenhaTemporariaTest extends TesteDeIntegracao {
 
         assertThat(resposta.get("trocaDeSenhaObrigatoria").asBoolean()).isFalse();
         String normal = resposta.get("tokenDeAcesso").asString();
-        assertThat(json.readTree(TokensDeTeste.parte(normal, 1)).has("escopo")).isFalse();
+        JsonNode conteudoNormal = json.readTree(TokensDeTeste.parte(normal, 1));
+        assertThat(conteudoNormal.has("escopo")).isFalse();
+        // A troca devolve a sessão longa, com o aparelho herdado do login.
+        assertThat(resposta.get("tokenDeRenovacao").asString()).isNotBlank();
+        assertThat(conteudoNormal.get("dispositivo_id").asString()).isEqualTo(UsuariosDeTeste.APARELHO.toString());
         // O token normal vale em toda rota.
         mvc.perform(get("/api/auth/eu").with(UsuariosDeTeste.comToken(normal)))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.login").value(criado.login()));

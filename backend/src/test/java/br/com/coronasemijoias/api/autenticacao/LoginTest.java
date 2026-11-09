@@ -12,6 +12,7 @@ import br.com.coronasemijoias.api.testes.UsuariosDeTeste;
 import br.com.coronasemijoias.api.testes.UsuariosDeTeste.UsuarioDeTeste;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -20,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -41,8 +43,11 @@ class LoginTest extends TesteDeIntegracao {
     @Autowired
     JsonMapper json;
 
+    @Autowired
+    JdbcTemplate jdbc;
+
     private ResultActions entrar(String login, String senha) throws Exception {
-        String corpo = json.writeValueAsString(Map.of("login", login, "senha", senha));
+        String corpo = json.writeValueAsString(usuarios.corpoDoLogin(login, senha));
         return mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON).content(corpo));
     }
 
@@ -72,7 +77,12 @@ class LoginTest extends TesteDeIntegracao {
         assertThat(cabecalho.get("kid").asString()).isEqualTo(ID_CHAVE_ATUAL);
 
         JsonNode conteudo = json.readTree(TokensDeTeste.parte(token, 1));
-        assertThat(conteudo.propertyNames()).containsExactlyInAnyOrder("sub", "perfil", "jti", "iat", "exp", "iss");
+        // A dona (Corona Gestão) não tem aparelho; o sid é a família aberta pelo login.
+        assertThat(conteudo.propertyNames()).containsExactlyInAnyOrder("sub", "perfil", "sid", "jti", "iat", "exp", "iss");
+        assertThat(resposta.get("tokenDeRenovacao").asString()).hasSize(43);
+        assertThat(Instant.parse(resposta.get("tokenDeRenovacaoExpiraEm").asString()))
+                .isBetween(hora.plus(java.time.Duration.ofDays(30)), hora.plus(java.time.Duration.ofDays(30)).plusSeconds(1));
+        assertThat(resposta.get("tempoMaximoOfflineDias").asInt()).isEqualTo(10);
         assertThat(conteudo.get("sub").asString()).isEqualTo(dona.id().toString());
         assertThat(conteudo.get("perfil").asString()).isEqualTo("ADMIN");
         assertThat(conteudo.get("iss").asString()).isEqualTo(EMISSOR);
@@ -93,9 +103,43 @@ class LoginTest extends TesteDeIntegracao {
                 .get("tokenDeAcesso").asString();
         JsonNode conteudo = json.readTree(TokensDeTeste.parte(token, 1));
         assertThat(conteudo.propertyNames())
-                .containsExactlyInAnyOrder("sub", "perfil", "vendedor_id", "jti", "iat", "exp", "iss");
+                .containsExactlyInAnyOrder("sub", "perfil", "vendedor_id", "sid", "dispositivo_id", "jti", "iat", "exp", "iss");
         assertThat(conteudo.get("perfil").asString()).isEqualTo("VENDEDOR");
         assertThat(conteudo.get("vendedor_id").asString()).isEqualTo(vendedor.vendedorId().toString());
+        assertThat(conteudo.get("dispositivo_id").asString()).isEqualTo(UsuariosDeTeste.APARELHO.toString());
+        assertThat(jdbc.queryForObject("SELECT dispositivo_id FROM corona.sessoes WHERE id = ?::uuid", UUID.class,
+                conteudo.get("sid").asString())).isEqualTo(UsuariosDeTeste.APARELHO);
+    }
+
+    @Test
+    void aparelhoTemDeCombinarComOPerfil() throws Exception {
+        // Vendedor sem aparelho, ou dona com aparelho: só depois da senha certa, 400 e nada de token.
+        UsuarioDeTeste vendedor = usuarios.criarVendedor();
+        UsuarioDeTeste dona = usuarios.criarDona();
+        for (Map<String, Object> corpo : List.of(
+                Map.<String, Object>of("login", vendedor.login(), "senha", vendedor.senha()),
+                Map.<String, Object>of("login", dona.login(), "senha", dona.senha(), "dispositivoId", UUID.randomUUID()))) {
+            mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+                            .content(json.writeValueAsString(corpo)))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.codigo").value("PEDIDO_INVALIDO"))
+                    .andExpect(jsonPath("$.tokenDeAcesso").doesNotExist());
+        }
+        // Com a senha errada, continua sendo a resposta da senha errada (não revela o perfil).
+        mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+                        .content(json.writeValueAsString(Map.of("login", vendedor.login(), "senha", "errada-123"))))
+                .andExpect(status().isUnauthorized()).andExpect(jsonPath("$.codigo").value("LOGIN_INVALIDO"));
+        assertThat(jdbc.queryForList("SELECT resultado FROM corona.tentativas_login WHERE login IN (?, ?) ORDER BY ocorrida_em",
+                String.class, vendedor.login(), dona.login()))
+                .containsExactly("PEDIDO_INVALIDO", "PEDIDO_INVALIDO", "SENHA_INCORRETA");
+    }
+
+    @Test
+    void identificadorDeAparelhoForaDoFormatoEhPedidoMalformado() throws Exception {
+        UsuarioDeTeste vendedor = usuarios.criarVendedor();
+        mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(
+                        Map.of("login", vendedor.login(), "senha", vendedor.senha(), "dispositivoId", "notebook-da-maria"))))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.codigo").value("DADOS_INVALIDOS"));
     }
 
     @Test

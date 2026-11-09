@@ -11,8 +11,8 @@ import java.util.UUID;
  * @param perfil        perfil atual, lido do banco
  * @param vendedorId    vendedor do usuário, lido do banco (só perfil VENDEDOR)
  * @param jti           identificador do token
- * @param sid           família da sessão (tarefa 11; hoje sempre vazio)
- * @param dispositivoId aparelho (tarefa 11; hoje sempre vazio)
+ * @param sid           família da sessão (tabela {@code sessoes}); conferida a cada requisição
+ * @param dispositivoId aparelho do Corona Vendas (vazio no Corona Gestão)
  * @param escopo        escopo restrito ({@code TROCA_SENHA}) ou vazio no token de acesso comum
  */
 public record UsuarioAutenticado(

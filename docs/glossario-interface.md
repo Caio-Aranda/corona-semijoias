@@ -241,7 +241,7 @@ Quem monta o texto é sempre o servidor (os aplicativos nunca montam texto de er
 > **Acesso bloqueado por alguns minutos.**
 > Você errou a senha várias vezes. Por segurança, espere {minutos} minutos e tente de novo.
 
-`{minutos}` é o tempo de bloqueio configurado (padrão 15 minutos, depois de 5 erros seguidos).
+`{minutos}` é o tempo que **falta** do bloqueio, em minutos inteiros arredondados para cima, no mínimo 1 (quem tenta de novo aos 10 minutos lê "espere 5 minutos", não "espere 15 minutos"). Com 1, o servidor escreve "espere 1 minuto", no singular. O bloqueio padrão é de 15 minutos, depois de 5 erros seguidos no mesmo usuário vindos do mesmo endereço de internet. O mesmo texto vale também quando o bloqueio é do endereço inteiro (muitos erros com usuários diferentes) e quando o servidor recusa por excesso de tentativas ao mesmo tempo. A resposta leva ainda o tempo exato de espera, para o aplicativo (não aparece na tela).
 
 **Usuário desativado**
 

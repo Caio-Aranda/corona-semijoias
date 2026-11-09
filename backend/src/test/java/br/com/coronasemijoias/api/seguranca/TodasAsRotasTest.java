@@ -102,20 +102,23 @@ class TodasAsRotasTest extends TesteDeIntegracao {
     }
 
     @Test
-    void aTrocaDeSenhaEhAUnicaRotaDoTokenRestrito() {
+    void aTrocaDeSenhaEASaidaSaoAsUnicasRotasDoTokenRestrito() {
         assertThat(FiltroDoTokenRestrito.ROTAS_PERMITIDAS)
                 .extracting(r -> r.metodo().name() + " " + r.padrao())
-                .containsExactly("POST /api/auth/trocar-senha");
-        // E ela existe de verdade, exigindo token (não está na lista pública).
+                .containsExactly("POST /api/auth/trocar-senha", "POST /api/auth/sair");
+        // E elas existem de verdade, exigindo token (não estão na lista pública).
         assertThat(VerificadorDeRotas.rotasDo(contexto).keySet().stream()
-                .flatMap(i -> i.getPatternValues().stream())).contains("/api/auth/trocar-senha");
+                .flatMap(i -> i.getPatternValues().stream())).contains("/api/auth/trocar-senha", "/api/auth/sair");
         assertThat(publicas.ehPublica("POST", "/api/auth/trocar-senha")).isFalse();
+        assertThat(publicas.ehPublica("POST", "/api/auth/sair")).isFalse();
     }
 
     @Test
     void listaPublicaEhFechada() {
-        // Fora do perfil dev a documentação não é pública.
+        // Fora do perfil dev a documentação não é pública. A renovação é pública: o token de acesso
+        // pode já ter vencido, e quem prova a sessão é o token de renovação.
         assertThat(publicas.rotas()).extracting(r -> r.metodo().name() + " " + r.padrao())
-                .containsExactly("POST /api/auth/login", "GET /actuator/health", "GET /actuator/health/**");
+                .containsExactly("POST /api/auth/login", "POST /api/auth/renovar", "GET /actuator/health",
+                        "GET /actuator/health/**");
     }
 }

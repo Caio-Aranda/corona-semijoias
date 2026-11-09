@@ -14,15 +14,21 @@ servidor (ADR-0004, item 8). Quem tem acesso à VPS faz o passo a passo abaixo.
 2. Gera uma senha temporária aleatória, que obedece às regras da senha (12 letras e números, sem os
    caracteres que se confundem: `0 O o 1 l I`).
 3. Grava só o hash da senha, marca a **troca de senha obrigatória**, dá **7 dias** de prazo (configuração
-   `corona.seguranca.senha-temporaria.validade`) e grava a hora da troca de credencial. **Isso encerra
-   todos os acessos abertos desse usuário**: os tokens emitidos antes deixam de valer no próximo uso.
-4. Mostra a senha **uma única vez, no terminal**. Ela não vai para o log nem para nenhum arquivo.
-5. Deixa uma linha no log da API, sem a senha:
+   `corona.seguranca.senha-temporaria.validade`) e grava a hora da troca de credencial.
+4. **Encerra todos os acessos abertos desse usuário:** revoga todas as sessões dele (tabela `sessoes`,
+   motivo `SENHA_REDEFINIDA_PELO_SERVIDOR`). Nenhum token emitido antes vale depois, nem o do mesmo
+   segundo, nem o de renovação, nem o restrito da troca de senha.
+5. **Retira o bloqueio por tentativas desse login**, em qualquer endereço (grava uma linha
+   `BLOQUEIO_LIMPO` em `tentativas_login`; a tabela é só de inserção). O bloqueio **só por endereço**
+   (muitos erros com logins variados vindos do mesmo IP) não é retirado: ele acaba sozinho em 15 minutos.
+6. Mostra a senha **uma única vez, no terminal**. Ela não vai para o log nem para nenhum arquivo.
+7. Deixa uma linha no log da API, sem a senha:
    `Senha temporária do administrador <login> redefinida pelo servidor; vence em <data>`.
 
-Ainda não fazem parte do comando (chegam com as próximas tarefas): limpar o bloqueio por tentativas
-de login (tarefa 11) e gravar a ação na auditoria como feita "pelo servidor" (Fase 1). Até lá não existe
-bloqueio por tentativas para limpar.
+Tudo isso acontece numa transação só: ou tudo vale, ou nada muda. A redefinição pela tela (outro
+administrador) faz o mesmo, com o motivo `SENHA_REDEFINIDA`.
+
+Ainda não faz parte do comando: gravar a ação na auditoria como feita "pelo servidor" (Fase 1).
 
 ## Passo a passo em produção
 
@@ -47,6 +53,9 @@ então pode rodar com a API no ar. O contêiner da API nasce na Fase 9; o format
        Vale até: 16/11/2026 às 14:30 (horário de Brasília)
 
    Anote esta senha agora: ela não será mostrada de novo.
+   Os acessos abertos desse usuário foram encerrados. Na próxima entrada, ele usa esta
+   senha e é obrigado a criar uma senha nova.
+   O bloqueio por tentativas erradas desse login foi retirado.
    ```
 
 4. Passe a senha à dona por um meio seguro (pessoalmente ou por telefone, nunca por mensagem
@@ -59,7 +68,7 @@ então pode rodar com a API no ar. O contêiner da API nasce na Fase 9; o format
 > API, porque sobe a mesma aplicação (só não abre o servidor web). Por isso, em produção, use sempre o
 > **mesmo jar da API** (a mesma versão que está rodando): um jar mais antigo ou mais novo mexeria no
 > banco de forma que a API em execução não espera. Ele também confere a configuração da API (chaves do
-> token e, se o banco ainda não tiver nenhum administrador, as variáveis `ADMIN_*`).
+> token, `SESSAO_SEGREDO_RENOVACAO` e, se o banco ainda não tiver nenhum administrador, as variáveis `ADMIN_*`).
 
 Códigos de saída: `0` deu certo; `1` recusado ou falhou (a mensagem diz o motivo); `2` faltou o login.
 

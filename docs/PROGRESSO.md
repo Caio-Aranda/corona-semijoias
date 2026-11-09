@@ -20,9 +20,9 @@ Lista oficial, aprovada pelo responsável. Os ADRs e as tarefas usam estes núme
 | 7 | ci: GitHub Actions e Dependabot | Concluída (PR 8) |
 | 8 | feat(backend): convenções do schema e sync_seq seguro (gatilho, pull com limite seguro, utilitário de dinheiro HALF_UP, teste de convenções, testes de concorrência e de estresse) | Concluída (PR 12) |
 | 8.1 | docs: três moedas e cotação diária (especificação v1.5, ADR-0006, glossário, CLAUDE.md) | Concluída (PR 13) |
-| 9 | feat(auth): usuários, perfis e login com JWT (perfis extensíveis, rotas por perfil, primeiro admin pelo .env) | Em revisão (PR 14) |
-| 10 | feat(auth): a dona cria usuários e redefine a senha temporária (troca obrigatória, regras da senha) | Pendente |
-| 11 | feat(auth): sessão longa, limite de tentativas e registro de acessos (refresh com rotação, identificador do aparelho, bloqueio 5/15, prazo offline guardado) | Pendente |
+| 9 | feat(auth): usuários, perfis e login com JWT (perfis extensíveis, rotas por perfil, primeiro admin pelo .env) | Concluída (PR 14) |
+| 10 | feat(auth): a dona cria usuários e redefine a senha temporária (troca obrigatória, regras da senha) | Concluída (PR 15) |
+| 11 | feat(auth): sessão longa, limite de tentativas e registro de acessos (refresh com rotação, identificador do aparelho, bloqueio 5/15, prazo offline guardado) | Em revisão |
 | 12 | feat(api): versão mínima e tipo de app (cabeçalhos; o tipo é conveniência, não segurança) | Pendente |
 | 13 | feat(api-client): clientes gerados do OpenAPI, um da dona e um do vendedor | Pendente |
 | 14 | feat(ui): tema da marca e componentes base em packages/ui | Pendente |
@@ -362,7 +362,7 @@ Atualize `docs/PROGRESSO.md` e abra o PR em Conventional Commits (`feat(backend)
 - **O comentário do `.env.example` sobre trocar a senha na primeira entrada ainda não vale:** a marca de troca obrigatória é da tarefa 10.
 - Senha temporária, regras da senha nova, criação de usuários pela dona, **as regras de formato do login ao criar usuário** e o comando do servidor (tarefa 10); token de renovação, sessões, aparelho, tentativas e bloqueio (tarefa 11); cabeçalhos de versão e tipo de app e a recusa do perfil incompatível com o app (tarefa 12).
 - **Tarefa 12:** com o `X-App-Tipo`, o servidor acrescenta ao `LOGIN_INVALIDO` a última frase certa do glossário ("peça uma nova à dona da loja" no Corona Vendas, "fale com o suporte do sistema" no Corona Gestão). Os apps nunca montam texto de erro.
-- **Sem limite de tentativas até a tarefa 11:** cada pedido de login custa um BCrypt de custo 12. A API não deve ir para um servidor público antes da tarefa 11.
+- ~~**Sem limite de tentativas até a tarefa 11.**~~ Resolvido na tarefa 11 (bloqueio 5/15, limite por IP e um pedido por vez de cada IP).
 - Chave estrangeira de `usuarios.vendedor_id` para `vendedores` e o `CHECK` "VENDEDOR tem vendedor_id" (Fase 1; escrito no `COMMENT` da coluna).
 - Quem já tem `.env` precisa acrescentar as chaves do token (a antiga `JWT_SECRET` não é mais usada); sem elas, a API não sobe e explica.
 
@@ -394,9 +394,8 @@ Atualize `docs/PROGRESSO.md` e abra o PR em Conventional Commits (`feat(backend)
 - Testes: `RegrasDaSenhaTest`, `GeradorDeSenhaTemporariaTest` (1000 senhas), `LoginsTest`, `UsuarioTest` (prazo com relógio fixo: vale até o fim do 7º dia e vence no 8º), `UsuariosDaDonaTest`, `SenhaTemporariaTest` (token restrito, cada regra da senha, vencimento no dia 8, redefinição que invalida senha e tokens, primeiro administrador), `ComandoRedefinirSenhaDeAdministradorTest` e o caso novo do `SubidaDaApiTest`. `RelogioDeTeste` (hora real + deslocamento, `@Primary`) deixa os testes avançarem dias sem criar contexto novo.
 
 **O que ficou pendente**
-- Limpar o bloqueio por tentativas no comando do servidor (a tabela e o bloqueio são da tarefa 11) e gravar a ação na auditoria "pelo servidor" (Fase 1). Está escrito em `docs/redefinir-senha-da-dona.md`.
-- **Tarefa 11:** fechar a janela do mesmo segundo. O `iat` do token e a hora da troca têm precisão de segundos, então um token emitido no mesmo segundo da redefinição, antes dela, ainda vale até vencer (no máximo 15 minutos). As famílias de sessão resolvem.
-- A saída (logout) entra em `ROTAS_PERMITIDAS` junto com a tarefa 11.
+- Gravar a ação do comando do servidor na auditoria "pelo servidor" (Fase 1). Limpar o bloqueio por tentativas ficou pronto na tarefa 11.
+- A janela do "mesmo segundo" e a saída no token restrito foram resolvidas na tarefa 11.
 - **Tarefa 12:** o `SENHA_TEMPORARIA_VENCIDA` sai do servidor só com o título e "A senha que você recebeu só vale por alguns dias, e esse prazo acabou.", como o `LOGIN_INVALIDO`. A última frase por aplicativo (Corona Vendas: "Peça uma senha nova à dona da loja."; Corona Gestão: "Peça uma senha nova a outra pessoa administradora ou fale com o suporte do sistema.") está no glossário e é acrescentada pela tarefa 12.
 - Telas (Fase 1): a tela da dona mostra a senha uma vez ("Anote esta senha agora. Ela não aparece de novo.", texto já no glossário). Listar, editar e desativar usuários também são da Fase 1.
 - O `npm run api:redefinir-senha` e o `docker compose exec api ...` não foram rodados de ponta a ponta contra o banco do Compose (o `.env` de desenvolvimento ainda não tem as chaves do token); o caminho real do comando, sem servidor web, é coberto pelo `SubidaDaApiTest` num PostgreSQL de verdade. O contêiner da API só nasce na Fase 9.
@@ -410,3 +409,43 @@ Atualize `docs/PROGRESSO.md` e abra o PR em Conventional Commits (`feat(backend)
 - Redefinir a senha de usuário desativado é permitido (ele continua sem entrar); o comando do servidor recusa administrador desativado e nunca reativa ninguém.
 - "36 caracteres" no texto de `SENHA_LONGA_DEMAIS` é a conta de 72 bytes com letras acentuadas de 2 bytes; a regra do servidor continua sendo 72 bytes.
 - Acréscimos ao glossário, além do pedido, aprovados pela orquestradora: `USUARIO_NAO_ENCONTRADO` e `NAO_REDEFINIR_A_PROPRIA_SENHA` (a trava evita a única administradora se trancar do lado de fora).
+
+
+### Tarefa 11: sessão longa, limite de tentativas e registro de acessos
+
+Itens 2, 4, 5 e 7 do ADR-0004 e, do item 8, revogar as sessões e limpar o bloqueio.
+
+**O que foi feito**
+- Documentos antes do código: nota do glossário (`{minutos}` = o que falta, arredondado para cima, mínimo 1, no singular com 1; o mesmo texto vale para o bloqueio por IP e para a espera esgotada); linha "Detalhado em 09/11/2026 (tarefa 11)" no ADR-0004; `tokens_de_renovacao` na lista "só do servidor" do ADR-0002. Nenhum texto de tela novo.
+- `V006__configuracoes.sql`: uma linha por chave, com o valor numa coluna tipada (`tipo` + `valor_inteiro`; tipo novo = migração nova com a coluna dele) e faixas por chave em `CHECK`. Só as 3 chaves desta tarefa: `tempo_maximo_offline_dias` (10), `tentativas_login_antes_do_bloqueio` (5), `tempo_bloqueio_login_minutos` (15). A aplicação lê e altera, não insere. Lida a cada uso (`Configuracoes`), sem cache.
+- `V007__sessoes.sql`: `sessoes` (a família; o `id` é o `sid`; tipo `NORMAL` ou `TROCA_SENHA`; aparelho; criada, usada, revogada e motivo) e `tokens_de_renovacao` (um por token: só o SHA-256, o anterior com `UNIQUE`, vencimento, uso e a única reapresentação). As horas vêm do relógio da aplicação.
+- `V008__tentativas_login.sql`: histórico só de inserção (login normalizado, IP `inet`, aparelho, `tipo_app` vazio até a tarefa 12, resultado, hora). O fim de um bloqueio fica na linha do erro que o completou (`bloqueio_ate`, `bloqueio_do_ip_ate`); retirar o bloqueio é uma linha `BLOQUEIO_LIMPO`.
+- Login e troca de senha devolvem também `tokenDeRenovacao`, `tokenDeRenovacaoExpiraEm`, `horaDoServidor` e `tempoMaximoOfflineDias`, com `Cache-Control: no-store`. O token de acesso leva `sid` e, no Corona Vendas, `dispositivo_id`.
+- `POST /api/auth/renovar` (pública): rotação com trava da linha da família (`FOR UPDATE`), janela de 2 minutos com o mesmo sucessor (HMAC-SHA256 com `SESSAO_SEGREDO_RENOVACAO` sobre o id do registro filho) e revogação em cada caso do item 2 (`REUSO_FORA_DA_JANELA`, `SEGUNDA_REAPRESENTACAO`, `ANTERIOR_DEPOIS_DO_SUCESSOR`, `OUTRO_APARELHO`). Token vencido (30 dias da última renovação) recusa sem revogar. Usuário desativado: 403 `USUARIO_DESATIVADO`.
+- `POST /api/auth/sair` (204) revoga a família e entrou em `ROTAS_PERMITIDAS` do token restrito.
+- Conferência por requisição (`ConversorDoToken`): a família do `sid` precisa existir, ser do usuário, não estar revogada, ter o mesmo aparelho e o tipo que combina com o escopo.
+- Token restrito: o login com senha temporária abre uma família `TROCA_SENHA`, sem token de renovação. Redefinir (rota ou comando) e trocar a senha revogam todas as famílias do usuário na mesma transação; a troca abre uma família nova com o aparelho herdado da restrita. Fecha a janela do "mesmo segundo", inclusive para o restrito.
+- Aparelho (item 4), pelo perfil até a tarefa 12: VENDEDOR sem `dispositivoId`, ou ADMIN com ele, recebe 400 `PEDIDO_INVALIDO` depois da senha conferida. Só registrado (sessão, token, tentativa).
+- Tentativas (item 7, pacote `acessos`): bloqueio de login + IP (5 erros seguidos, 15 minutos, de `configuracoes`), limite só por IP (50 em 15 minutos, janela móvel, bloqueio de 15 minutos, na configuração da aplicação). Login inexistente conta igual. Durante o bloqueio nem a senha certa entra: 429 `ACESSO_BLOQUEADO` com `Retry-After` exato, sem BCrypt. `SENHA_TEMPORARIA_VENCIDA`, `PEDIDO_INVALIDO` e `USUARIO_DESATIVADO` não contam como erro.
+- Um pedido de login por vez de cada IP (`TravaPorIp`, 1024 travas fixas na memória, `tryLock` de no máximo 5 s, `corona.seguranca.tentativas.espera-da-trava`). Esgotada a espera: 429 com `Retry-After` de 5 s, sem BCrypt, gravado como `BLOQUEADO`. O login não tem transação por fora e `spring.jpa.open-in-view=false`: quem espera a vez nunca segura conexão do banco.
+- IP real (`IpDoCliente`): o `X-Forwarded-For` só vale vindo de `CORONA_PROXIES_CONFIAVEIS` (lido da direita para a esquerda, pulando os proxies; nunca consulta DNS); `server.forward-headers-strategy=none` explícito.
+- Alerta de mais de 20 erros por hora no mesmo login, somando os IPs: `acessos/AlertaDeErrosPorLogin.loginsComMuitosErros(agora)`, calculado de `tentativas_login`, para o bloco "O que precisa da sua atenção" chamar quando existir. Sem rota, tela nem texto.
+- Comando `redefinir-senha-admin`: também revoga as famílias e retira o bloqueio daquele login; nova linha no terminal. `docs/redefinir-senha-da-dona.md` atualizado. A redefinição pela rota faz o mesmo (pedido da orquestradora).
+- `SESSAO_SEGREDO_RENOVACAO` e `CORONA_PROXIES_CONFIAVEIS` no `.env.example`; o segredo ausente, curto ou igual a uma chave do JWT impede a subida, com explicação em português.
+- Testes (PostgreSQL real): `RenovacaoTest` (cada ramo da rotação, aparelho, 30 dias, desativado, saída, restrito saindo), `CorridaDaRenovacaoTest` (20 rodadas com 2 chamadas paralelas: 1 sucessor e o mesmo valor; 10 rodadas com 8: nunca 2 sucessores), `RevogacaoNaTrocaDeCredencialTest` (relógio parado: redefinição e troca derrubam o token de acesso, o de renovação e o restrito do mesmo segundo; a redefinição pela rota tira o bloqueio), `LimiteDeTentativasTest` (5/15 com o que falta no texto, sucesso que zera, outro IP, login inexistente, temporária vencida, limite por IP e janela, 10 pedidos paralelos = 5 erros e 5 bloqueados, espera esgotada, proxy confiável e de fora), `AlertaDeErrosPorLoginTest`, `ConfiguracoesTest`, `SegredoDeRenovacaoTest`, `IpDoClienteTest`, casos novos em `LoginTest`, `TokenTest`, `SenhaTemporariaTest`, `ComandoRedefinirSenhaDeAdministradorTest` e `TodasAsRotasTest`.
+
+**O que ficou pendente**
+- **Rodar mais de uma instância da API pede um ADR:** a trava por IP fica na memória de uma instância só.
+- **Tarefas 15 e 16:** o processo principal do Electron renova **uma vez por vez**. Três renovações paralelas com o mesmo token revogam a família (`SEGUNDA_REAPRESENTACAO`), e isso está certo pelo ADR.
+- Tarefa 12: preencher `tentativas_login.tipo_app`, a regra do aparelho passa a ser por `X-App-Tipo` e o perfil incompatível vira `APP_INCOMPATIVEL` (o valor já está no `CHECK`).
+- Fase 1: auditoria "pelo servidor"; desativar usuário revoga as famílias (o motivo entra no `CHECK` com ela). Fase 5: tabela `dispositivos`, bloqueio do segundo aparelho e regra do prazo offline. Retenção de `sessoes` e `tentativas_login` continua em aberto (ADR-0002, dúvida 3).
+- Quem já tem `.env` precisa acrescentar `SESSAO_SEGREDO_RENOVACAO`; sem ela, a API não sobe e explica.
+
+**Decisões tomadas**
+- Aprovadas pela orquestradora com o plano: duas tabelas de sessão; os três resultados novos (`SENHA_TEMPORARIA_VENCIDA`, `PEDIDO_INVALIDO`, `BLOQUEIO_LIMPO`); dona com aparelho recebe 400; trava por IP na memória com espera máxima; a redefinição pela rota também limpa o bloqueio; `configuracoes` só do servidor; `{minutos}` = o que falta; renovação de desativado = 403.
+- A rotação, a gravação das tentativas e as revogações são transações próprias que devolvem resultado em vez de lançar exceção: a revogação de uma família suspeita e o erro de senha ficam gravados mesmo com a resposta de erro.
+- O 5º erro ainda responde 401 (a tentativa foi avaliada); o bloqueio vale a partir do pedido seguinte.
+- O fim do bloqueio é gravado na linha do erro: uma mudança na configuração vale para os bloqueios novos, e a contagem recomeça depois de cada bloqueio.
+- O primeiro token da família é aleatório; só os sucessores são derivados. Trocar `SESSAO_SEGREDO_RENOVACAO` só afeta quem estiver dentro dos 2 minutos de uma renovação.
+- Login de mais de 200 caracteres é 400 e não é gravado; caractere de controle no login vira "?" na tabela (o PostgreSQL não guarda o nulo).
+- Nos testes, cada pedido do MockMvc sai de um IP aleatório (o banco é compartilhado e o limite conta por IP), o limite por IP é 12 (produção: 50) e a espera da trava é 2 s.

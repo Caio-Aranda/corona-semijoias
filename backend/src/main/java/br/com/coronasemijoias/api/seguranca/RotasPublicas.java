@@ -20,6 +20,8 @@ import org.springframework.web.util.pattern.PathPatternParser;
  *
  * <ul>
  *   <li>{@code POST /api/auth/login};</li>
+ *   <li>{@code POST /api/auth/renovar} (o token de acesso já pode ter vencido; quem prova a sessão é o
+ *       token de renovação do corpo);</li>
  *   <li>{@code GET /actuator/health} (só a saúde, sem detalhes; os subcaminhos são do mesmo endpoint);</li>
  *   <li>a documentação do OpenAPI, só quando ela está ligada (perfil {@code dev}).</li>
  * </ul>
@@ -37,6 +39,7 @@ public class RotasPublicas {
     public RotasPublicas(Environment ambiente) {
         List<RotaPublica> lista = new ArrayList<>(List.of(
                 new RotaPublica(HttpMethod.POST, "/api/auth/login"),
+                new RotaPublica(HttpMethod.POST, "/api/auth/renovar"),
                 new RotaPublica(HttpMethod.GET, "/actuator/health"),
                 new RotaPublica(HttpMethod.GET, "/actuator/health/**")));
         if (ambiente.getProperty("springdoc.api-docs.enabled", Boolean.class, true)) {

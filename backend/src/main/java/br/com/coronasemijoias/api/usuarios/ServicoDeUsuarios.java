@@ -1,6 +1,9 @@
 package br.com.coronasemijoias.api.usuarios;
 
+import br.com.coronasemijoias.api.acessos.ControleDeTentativas;
 import br.com.coronasemijoias.api.comum.erros.CampoInvalido;
+import br.com.coronasemijoias.api.sessoes.MotivoDaRevogacao;
+import br.com.coronasemijoias.api.sessoes.ServicoDeSessoes;
 import br.com.coronasemijoias.api.comum.erros.CodigoErro;
 import br.com.coronasemijoias.api.comum.erros.ErroDaApi;
 import java.time.Clock;
@@ -53,16 +56,20 @@ public class ServicoDeUsuarios {
     private final PropriedadesDaSenhaTemporaria propriedades;
     private final Clock relogio;
     private final JdbcTemplate jdbc;
+    private final ServicoDeSessoes sessoes;
+    private final ControleDeTentativas tentativas;
 
     public ServicoDeUsuarios(UsuarioRepositorio usuarios, ConferenciaDeSenha conferencia,
             GeradorDeSenhaTemporaria gerador, PropriedadesDaSenhaTemporaria propriedades, Clock relogio,
-            JdbcTemplate jdbc) {
+            JdbcTemplate jdbc, ServicoDeSessoes sessoes, ControleDeTentativas tentativas) {
         this.usuarios = usuarios;
         this.conferencia = conferencia;
         this.gerador = gerador;
         this.propriedades = propriedades;
         this.relogio = relogio;
         this.jdbc = jdbc;
+        this.sessoes = sessoes;
+        this.tentativas = tentativas;
     }
 
     @Transactional
@@ -102,7 +109,7 @@ public class ServicoDeUsuarios {
         }
         Usuario usuario = usuarios.findById(id)
                 .orElseThrow(() -> new ErroDaApi(HttpStatus.NOT_FOUND, CodigoErro.USUARIO_NAO_ENCONTRADO));
-        UsuarioComSenhaTemporaria redefinido = redefinir(usuario);
+        UsuarioComSenhaTemporaria redefinido = redefinir(usuario, MotivoDaRevogacao.SENHA_REDEFINIDA);
         LOG.info("Senha temporária redefinida: login {}, vence em {}", usuario.getLogin(), redefinido.venceEm());
         return redefinido;
     }
@@ -122,18 +129,25 @@ public class ServicoDeUsuarios {
             throw new RecusaDoComando("O administrador \"" + login + "\" está desativado. "
                     + "Este comando não reativa ninguém: nada foi alterado.");
         }
-        UsuarioComSenhaTemporaria redefinido = redefinir(usuario);
+        UsuarioComSenhaTemporaria redefinido = redefinir(usuario, MotivoDaRevogacao.SENHA_REDEFINIDA_PELO_SERVIDOR);
         LOG.info("Senha temporária do administrador {} redefinida pelo servidor; vence em {}",
                 login, redefinido.venceEm());
         return redefinido;
     }
 
-    private UsuarioComSenhaTemporaria redefinir(Usuario usuario) {
+    /**
+     * Senha temporária nova, na mesma transação: revoga todas as sessões do usuário (nenhum token de
+     * antes vale depois, nem o do mesmo segundo, nem o restrito) e retira o bloqueio por tentativas
+     * daquele login (ADR-0004, itens 2, 7 e 8): quem errou 5 vezes não fica preso mais 15 minutos.
+     */
+    private UsuarioComSenhaTemporaria redefinir(Usuario usuario, MotivoDaRevogacao motivo) {
         String senha = gerador.gerar();
         Instant agora = agora();
         Instant venceEm = venceEm(agora);
         usuario.redefinirSenha(conferencia.gerarHash(senha), venceEm, agora);
         usuarios.saveAndFlush(usuario);
+        sessoes.revogarTodasDoUsuario(usuario.getId(), motivo);
+        tentativas.limparBloqueio(usuario.getLogin(), relogio.instant().truncatedTo(ChronoUnit.MICROS));
         return new UsuarioComSenhaTemporaria(usuario, senha, venceEm);
     }
 

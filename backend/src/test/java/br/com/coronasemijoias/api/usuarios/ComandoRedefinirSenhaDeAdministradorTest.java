@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import br.com.coronasemijoias.api.testes.IpsDeTeste;
 import br.com.coronasemijoias.api.testes.RelogioDeTeste;
 import br.com.coronasemijoias.api.testes.TesteDeIntegracao;
 import br.com.coronasemijoias.api.testes.UsuariosDeTeste;
@@ -14,6 +15,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -115,6 +118,38 @@ class ComandoRedefinirSenhaDeAdministradorTest extends TesteDeIntegracao {
         mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
                 .content(json.writeValueAsString(Map.of("login", admin.login(), "senha", senha))))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.trocaDeSenhaObrigatoria").value(true));
+    }
+
+    @Test
+    void limpaOBloqueioDoLoginERevogaAsSessoesNoMesmoSegundo() throws Exception {
+        UsuarioDeTeste admin = usuarios.criarDona();
+        String ip = IpsDeTeste.aleatorio();
+        relogio.fixar(Instant.now().truncatedTo(ChronoUnit.SECONDS).plusMillis(100));
+        String tokenAntigo = usuarios.token(admin);
+        for (int i = 0; i < 5; i++) {
+            entrar(admin.login(), "senha-errada-1", ip).andExpect(status().isUnauthorized());
+        }
+        entrar(admin.login(), admin.senha(), ip).andExpect(status().isTooManyRequests());
+
+        // No mesmo segundo do token antigo (relógio parado).
+        Resultado resultado = executar(admin.login());
+        assertThat(resultado.terminal()).contains("O bloqueio por tentativas erradas desse login foi retirado.");
+        String senha = senhaDoTerminal(resultado.terminal());
+        mvc.perform(get("/api/auth/eu").with(UsuariosDeTeste.comToken(tokenAntigo)))
+                .andExpect(status().isUnauthorized()).andExpect(jsonPath("$.codigo").value("SESSAO_TERMINADA"));
+        // Do mesmo IP, a senha nova entra na hora, sem esperar os 15 minutos.
+        entrar(admin.login(), senha, ip).andExpect(status().isOk())
+                .andExpect(jsonPath("$.trocaDeSenhaObrigatoria").value(true));
+        assertThat(jdbc.queryForObject("""
+                SELECT count(*) FROM corona.sessoes
+                 WHERE usuario_id = ? AND motivo_da_revogacao = 'SENHA_REDEFINIDA_PELO_SERVIDOR'""",
+                Long.class, admin.id())).isEqualTo(1);
+    }
+
+    private org.springframework.test.web.servlet.ResultActions entrar(String login, String senha, String ip)
+            throws Exception {
+        return mvc.perform(post("/api/auth/login").with(IpsDeTeste.de(ip)).contentType(MediaType.APPLICATION_JSON)
+                .content(json.writeValueAsString(Map.of("login", login, "senha", senha))));
     }
 
     @Test
