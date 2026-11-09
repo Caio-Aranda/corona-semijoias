@@ -36,6 +36,11 @@ export default defineConfig(
     files: ['**/*.{js,mjs,cjs}'],
     extends: [tseslint.configs.disableTypeChecked],
   },
+  // Nos testes, `expect(objeto.metodo)` sobre métodos de mentira (vi.fn) é normal e não perde o `this`.
+  {
+    files: ['**/*.test.{ts,tsx}'],
+    rules: { '@typescript-eslint/unbound-method': 'off' },
+  },
   // Scripts de apoio rodam no Node.
   {
     files: ['scripts/**/*.mjs'],

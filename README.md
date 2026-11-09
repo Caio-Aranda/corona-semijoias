@@ -10,7 +10,7 @@ A especificação completa está em [docs/ESPECIFICACAO.md](docs/ESPECIFICACAO.m
 corona-semijoias/
 ├── .github/            modelo de Pull Request (workflows entram na tarefa 7)
 ├── backend/            API Spring Boot (Maven wrapper em backend/mvnw)
-├── apps/owner-app/     Corona Gestão (Electron + React; só online)
+├── apps/owner-app/     Corona Gestão (Electron + React; só online) — veja apps/owner-app/README.md
 ├── apps/seller-app/    Corona Vendas (Electron + React; offline)
 ├── packages/ui/        componentes de interface compartilhados
 ├── packages/shared/    validações e formatadores compartilhados
@@ -54,6 +54,10 @@ npm run format:check
 ```
 
 Para arrumar o formato dos arquivos automaticamente, use `npm run format`. Os próximos comandos entram nas tarefas seguintes.
+
+## Corona Gestão (aplicativo da dona)
+
+`npm run owner:dev` abre o aplicativo contra a API deste computador. O passo a passo e o que fazer com o `.env` estão em [apps/owner-app/README.md](apps/owner-app/README.md).
 
 ## Banco de desenvolvimento
 

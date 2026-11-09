@@ -442,3 +442,28 @@ ESPECIFICAÇÃO §18 e §19, glossário (partes 4, 5 e 11), ADR-0003 item 3.
 - Botão primário: fundo dourado com texto escuro (contraste AA); dourado nunca é cor de texto pequeno.
 - O contraste é testado sobre o CSS, que é a fonte única dos valores.
 - Pacote consumido direto do código-fonte (`main` aponta para `src/index.ts`), sem etapa de build.
+
+### Tarefa 15: Corona Gestão com login e tela inicial
+
+ADR-0004 (itens 1 a 3, 5, 6 e 10), ADR-0003 (itens 1 a 3 e dois builds), ADR-0001, glossário (partes 1, 2, 4, 5 e 6), §19.3 e §18.
+
+**O que foi feito**
+- `apps/owner-app` (`@corona/owner-app`, produto "Corona Gestão", versão 1.0.0): Electron 45.2.3, electron-vite 6.0.0, Vite 8.3.6 e React 19.3.1, todos exatos (`@vitejs/plugin-react` 6.3.0). Três partes: processo principal (`src/main`), ponte (`src/preload`) e tela (`src/renderer`). Scripts `dev`, `build` (pacote de código em `out/`, sem instalador), `test` e `typecheck`; na raiz, `npm run owner:dev` e `owner:build`.
+- Janela: `contextIsolation` ligado, `nodeIntegration` desligado, `sandbox` ligado, sem `remote` nem `webview`, janelas novas e navegação para fora bloqueadas, permissões do navegador negadas, instância única e CSP restrita (`default-src 'none'`, `script-src 'self'`, `connect-src 'none'`: a tela não fala com a rede). Cada chamada da ponte confere quem chamou e o formato do que chegou.
+- Guarda de tokens (`guarda-de-tokens.ts`): acesso na memória; renovação na memória e cifrada em disco com `safeStorage` (API assíncrona: a síncrona está obsoleta no Electron 45). Sem cofre, nada é gravado em claro e a pessoa entra de novo. Nenhum método devolve token: quem precisa passa uma função para `comToken`. A ponte tem 6 funções fixas (`entrar`, `trocarSenha`, `sair`, `estouLogado`, `chamarApi`, `aoMudarASessao`) e `chamarApi` só aceita operações de uma lista (hoje, `eu`).
+- Renovação em fila única: 3 pedidos juntos viram 1 chamada; renova 1 minuto antes de vencer e em 401, uma vez só (várias chamadas com 401 juntas disparam uma renovação e cada uma é repetida uma vez); falha definitiva (400, 401, 403, 404) leva à tela de entrar; sem internet mantém a sessão. Nunca apresenta o mesmo token pela 3ª vez (revogaria a família): na 3ª tentativa pede novo login. Sair chama `/api/auth/sair` (revoga no servidor) e apaga tudo daqui.
+- Telas: Entrar (Usuário, Senha, Entrar), troca obrigatória de senha (token restrito, só na memória), aviso de aplicativo desatualizado (sem "Atualizar agora"), sem internet com "Tentar de novo", e a tela inicial (5 botões grandes com "Em breve", bloco "O que precisa da sua atenção" vazio e Sair). As mensagens de erro vêm da API; só os textos fixos do glossário (sem internet, algo deu errado, sessão terminou, regras da senha) estão no app. Os textos novos da tela inicial entraram no glossário (parte 6).
+- Testes (Vitest 5.1.0, 68, sem abrir janela): guarda de tokens, ponte e canais, adaptador da API, configuração e segurança, telas e varredura (nada de `seller-app` nem `api-client-vendedor`, nada de storage na tela, janela com as opções seguras). Regra de lint `unbound-method` desligada só nos arquivos de teste.
+- Visto de verdade: `electron-vite dev` e `electron-vite preview` (pacote de produção) contra a API local, por porta de depuração. A tela de entrar renderiza com marca e fontes; um usuário que não existe mostra a mensagem da API (com a frase do Corona Gestão); `require` e `process` não existem na tela; `localStorage`, `sessionStorage` e cookies ficam vazios; `fetch` da tela é bloqueado pela CSP.
+
+**O que ficou pendente**
+- Instalador, ícone e atualização automática (Fase 9); o botão "Atualizar agora" vem junto.
+- Não vi com conta real o login que entra, a troca de senha e a tela inicial (só nos testes), porque não usei a senha da dona do `.env` do desenvolvedor. A API de dev precisou de `JWT_CHAVE_ATUAL_ID`, `JWT_CHAVE_ATUAL` e `SESSAO_SEGREDO_RENOVACAO` por variável de ambiente (o `.env` local é anterior à tarefa 9).
+- `npm audit --audit-level=high`: sem avisos altos; os 10 moderados anteriores (ESLint e typescript-eslint) continuam.
+
+**Decisões tomadas**
+- Versão do app 1.0.0, igual ao mínimo padrão da API (`APP_VERSAO_MINIMA_GESTAO=1.0.0`); com 0.x a API recusaria todas as chamadas.
+- Processo principal e ponte saem em CommonJS (`.cjs`): a janela é "sandbox" e a ponte não pode ser módulo.
+- Endereço da API em `MAIN_VITE_CORONA_API_URL` (`apps/owner-app/.env`, exemplo versionado); `http://` só para este computador, `https://` no resto.
+- Perder a sessão em vez de apresentar o mesmo token pela 3ª vez: prefiro pedir novo login a arriscar revogar a família.
+- A tela só valida o que ajuda (8 caracteres, letras e números, senhas iguais); o servidor decide.

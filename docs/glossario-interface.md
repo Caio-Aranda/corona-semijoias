@@ -387,6 +387,17 @@ Pedido que o servidor não entendeu (em geral, aplicativo desatualizado):
 > **Não foi possível entender o pedido.**
 > Não foi possível entender o pedido. Atualize o aplicativo e tente de novo. Se continuar, fale com o suporte do sistema.
 
+**Tela inicial da dona (Corona Gestão)**
+
+Os cinco botões grandes são os da parte 1. Enquanto uma função não existe (Fase 0), o botão mostra:
+
+> **Em breve.**
+> {Nome do botão} ainda está sendo preparado. Logo você poderá usar por aqui.
+
+Bloco "O que precisa da sua atenção" quando não há nada a mostrar:
+
+> Tudo em dia por aqui. Quando algo precisar de você, aparece neste espaço.
+
 ## 7. Estado de conexão do app do vendedor
 
 Sempre em palavras comuns (§19.11). Nunca "fila", "sincronização" ou "pendentes".
