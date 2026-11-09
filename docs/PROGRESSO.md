@@ -17,7 +17,7 @@ Lista oficial, aprovada pelo responsável. Os ADRs e as tarefas usam estes núme
 | 4 | chore: esqueleto do monorepo e higiene do repositório (npm workspaces, TS, ESLint, Prettier, .gitignore, .gitattributes, .env.example, modelo de PR, README) | Concluída (PR 5) |
 | 5 | chore(infra): Docker Compose com PostgreSQL de desenvolvimento | Concluída (PR 6) |
 | 6 | feat(backend): esqueleto Spring Boot 4.1.x com Flyway, OpenAPI e Testcontainers (UTC, erros em português, grupos dona/vendedor no OpenAPI) | Concluída (PR 7) |
-| 7 | ci: GitHub Actions e Dependabot | Pendente |
+| 7 | ci: GitHub Actions e Dependabot | Concluída (PR a preencher) |
 | 8 | feat(backend): convenções do schema e sync_seq seguro (gatilho, pull com limite seguro, utilitário de dinheiro HALF_UP, teste de convenções, testes de concorrência e de estresse) | Pendente |
 | 9 | feat(auth): usuários, perfis e login com JWT (perfis extensíveis, rotas por perfil, primeiro admin pelo .env) | Pendente |
 | 10 | feat(auth): a dona cria usuários e redefine a senha temporária (troca obrigatória, regras da senha) | Pendente |
@@ -179,3 +179,23 @@ Lista oficial, aprovada pelo responsável. Os ADRs e as tarefas usam estes núme
 - O valor de dinheiro sai sempre com pelo menos duas casas (completa com zeros, sem arredondar); o arredondamento HALF_UP continua só no utilitário da tarefa 8.
 - Erros de dado dentro do corpo (`DatabindException`) viram `DADOS_INVALIDOS`; JSON quebrado, método e tipo de conteúdo errados viram `PEDIDO_INVALIDO`.
 - `JAVA_HOME` desta máquina aponta para o Temurin 21.0.12.1, enquanto o `java` do PATH é o 21.0.13 do ADR-0001; o build funciona nos dois.
+
+### Tarefa 7: CI e Dependabot
+
+**O que foi feito**
+- `.github/workflows/ci.yml` (em `pull_request` e push na `main`; `permissions: contents: read`; `concurrency` que cancela a execução anterior só em PR). Jobs: `frontend` (Node pela `.nvmrc`, cache do npm, lint, typecheck, format:check, test e build com `--if-present`), `backend` (Temurin 21.0.13+9, cache do Maven, `./mvnw -B verify`), `migracoes` (só em PR) e `dependencias` (`npm audit --audit-level=high` e OSV-Scanner com filtro de gravidade).
+- `scripts/verificar-migracoes.sh`: reprova migração alterada, renomeada ou apagada, versão nova que não seja maior que a maior da base e versão repetida, com mensagens em português citando a regra do CLAUDE.md.
+- Actions de terceiros fixadas pelo SHA do commit, com a versão em comentário.
+- Mockito como agente do Java no surefire (`maven-dependency-plugin` `properties` e `-javaagent`), sem o aviso do modo antigo.
+- `.github/dependabot.yml`: npm, maven, github-actions e docker-compose; semanal, patch e minor agrupados por ecossistema, major em PR separado, limite de 3 PRs por ecossistema, prefixos `chore(deps)` e `ci(deps)`.
+- Seção "CI" no README.
+
+**O que ficou pendente**
+- Tempos dos jobs e prova do job `migracoes`: no texto do PR.
+- Vulnerabilidades sem nota de gravidade no OSV não reprovam (só aparecem no log).
+
+**Decisões tomadas**
+- Limite que reprova: alta ou crítica (CVSS 7.0 ou mais), nos dois verificadores.
+- `cancel-in-progress` só em PR, nunca na `main`.
+- Versão do Flyway: `V001_1` equivale a 1.1, ou seja, maior que `V001`; por isso a regra de "número maior" usa a ordem de versões do Flyway.
+

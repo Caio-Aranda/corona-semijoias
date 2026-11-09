@@ -1,0 +1,92 @@
+name: CI
+
+# Regra da casa (especificação §14): não se faz merge com CI vermelho.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  # Cancela a execução anterior só em Pull Request, nunca na main.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  frontend:
+    name: frontend
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run format:check
+      # Tarefas 13 a 16 só acrescentam os scripts "test" e "build" nos workspaces.
+      - run: npm test --workspaces --if-present
+      - run: npm run build --workspaces --if-present
+
+  backend:
+    name: backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        with:
+          distribution: temurin
+          # Mesma versão do ADR-0001 (fixa, sem "21" flutuante).
+          java-version: '21.0.13+9'
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+      # Os testes usam o Docker do runner (Testcontainers com PostgreSQL de verdade, ADR-0002).
+      - run: ./mvnw -B verify
+        working-directory: backend
+
+  migracoes:
+    name: migracoes
+    # No push na main não há "base de PR" para comparar.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - run: bash scripts/verificar-migracoes.sh "${{ github.event.pull_request.base.sha }}"
+
+  dependencias:
+    name: dependencias
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # Reprova com vulnerabilidade alta ou crítica (CVSS 7.0 ou mais). As menores só aparecem no log.
+      - run: npm audit --audit-level=high
+      # OSV-Scanner cobre o package-lock.json e o pom.xml. Ele grava o resultado e quem
+      # decide é o filtro de gravidade logo abaixo; se o scanner quebrar, não haverá arquivo e o job falha.
+      - name: OSV-Scanner
+        uses: google/osv-scanner-action/osv-scanner-action@b1d267aea5211fa648d9d442fa64b90dbdcbdd36 # v2.7.0
+        continue-on-error: true
+        with:
+          scan-args: |-
+            --lockfile=package-lock.json
+            --lockfile=backend/pom.xml
+            --format=json
+            --output-file=osv.json
+      - name: Conferir gravidade (reprova com CVSS 7.0 ou mais)
+        run: |
+          test -s osv.json || { echo "::error::O OSV-Scanner não gerou resultado. Veja o passo anterior."; exit 1; }
+          jq -r '.results[]?.packages[]? | .package.name as $p | .groups[]? | "\($p) \(.ids | join(",")) gravidade=\(.max_severity // "desconhecida")"' osv.json
+          altas="$(jq '[.results[]?.packages[]?.groups[]? | select((.max_severity // "0") | tonumber? // 0 | . >= 7)] | length' osv.json)"
+          if [ "$altas" -gt 0 ]; then
+            echo "::error::Há $altas vulnerabilidade(s) alta(s) ou crítica(s) nas dependências. Atualize os pacotes listados acima."
+            exit 1
+          fi
