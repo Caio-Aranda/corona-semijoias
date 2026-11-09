@@ -53,11 +53,13 @@ public enum CodigoErro {
 
     // --- Senha temporária e cadastro de usuário (glossário, parte 6; tarefa 10) ---
 
-    /** Senha temporária certa, mas depois do prazo (HTTP 401). A tarefa 12 acrescenta a última frase por app. */
+    /**
+     * Senha temporária certa, mas depois do prazo (HTTP 401). Como no {@link #LOGIN_INVALIDO}, a última
+     * frase depende do aplicativo e a tarefa 12 a acrescenta (glossário, parte 6).
+     */
     SENHA_TEMPORARIA_VENCIDA(
             "Sua senha temporária venceu.",
-            "Sua senha temporária venceu. A senha que você recebeu só vale por alguns dias, e esse prazo acabou. "
-                    + "Peça uma senha nova à dona da loja."),
+            "Sua senha temporária venceu. A senha que você recebeu só vale por alguns dias, e esse prazo acabou."),
 
     /** Quem entrou com a senha temporária só pode criar a senha nova (HTTP 403). */
     TROCA_DE_SENHA_OBRIGATORIA(

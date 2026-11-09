@@ -16,8 +16,10 @@ if (login.trim() === '') {
   );
   process.exit(2);
 }
-if (/[\s,"]/.test(login)) {
-  console.error('O login não pode ter espaços, vírgulas nem aspas.');
+// Lista do que é permitido (a mesma do servidor ao criar usuário), não do que é proibido: no Windows o
+// Maven roda por um shell, e caracteres como & | ^ < > virariam comando.
+if (!/^[A-Za-z0-9.]+$/.test(login)) {
+  console.error('O login só pode ter letras sem acento, números e ponto.');
   process.exit(2);
 }
 

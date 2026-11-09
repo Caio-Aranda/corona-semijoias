@@ -283,10 +283,15 @@ Quem entra com a senha temporária só consegue criar a senha nova. Qualquer out
 
 **Senha temporária vencida**
 
-A senha temporária vale por alguns dias (7, na configuração do servidor). Depois disso não entra mais, e o texto só aparece quando a senha estava certa, para não revelar quais usuários existem. O servidor monta o texto; a tarefa 12 acrescenta a última frase certa de cada aplicativo ("Fale com o suporte do sistema." no Corona Gestão).
+A senha temporária vale por alguns dias (7, na configuração do servidor). Depois disso não entra mais, e o texto só aparece quando a senha estava certa, para não revelar quais usuários existem. Quem monta o texto é sempre o servidor (os aplicativos nunca montam texto de erro). Até a tarefa 12, ele devolve o título e a primeira frase (código `SENHA_TEMPORARIA_VENCIDA`); a partir da tarefa 12, com o cabeçalho de tipo de app, o próprio servidor acrescenta a última frase certa de cada aplicativo, como no "Não foi possível entrar". A dona também pode receber este aviso: a senha temporária dela, gerada pelo comando do servidor ou por outro administrador, vence do mesmo jeito.
 
 > **Sua senha temporária venceu.**
-> A senha que você recebeu só vale por alguns dias, e esse prazo acabou. Peça uma senha nova à dona da loja.
+> A senha que você recebeu só vale por alguns dias, e esse prazo acabou.
+
+Última frase, por aplicativo:
+
+- Corona Vendas: "Peça uma senha nova à dona da loja."
+- Corona Gestão: "Peça uma senha nova a outra pessoa administradora ou fale com o suporte do sistema."
 
 **Cadastro de usuário pela dona**
 
