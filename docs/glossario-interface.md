@@ -352,9 +352,9 @@ Sempre em palavras comuns (§19.11). Nunca "fila", "sincronização" ou "pendent
 | Dinheiro | R$, ponto nos milhares, vírgula nos centavos, sempre 2 casas | R$ 1.234,56 |
 | Dinheiro negativo | sinal na frente | -R$ 50,00 |
 | Dólar | US$, ponto nos milhares, vírgula nos centavos, sempre 2 casas | US$ 1.234,56 |
-| Dólar negativo | sinal na frente | -US$ 50,00 |
+| Dólar negativo | sinal na frente, igual ao dinheiro negativo | -US$ 50,00 |
 | Guarani | Gs., ponto nos milhares, **sem centavos** | Gs. 1.379.397 |
-| Guarani negativo | sinal na frente | -Gs. 55.754 |
+| Guarani negativo | sinal na frente, igual ao dinheiro negativo | -Gs. 55.754 |
 | Cotação | 4 casas; o Guarani por mil | US$ 1,00 = R$ 5,5013 · Gs. 1.000 = R$ 0,8950 |
 | Data | dd/mm/aaaa | 09/11/2026 |
 | Hora | 24 horas, horário de Brasília (nunca "UTC" nem "GMT") | 14:30 |
@@ -385,6 +385,7 @@ Termos que dependem de resposta do cliente. **Não usar nas telas** até a respo
 | VD | Provavelmente "valor vendido". A confirmar. | §2 e §17.1 |
 | Numeração da semana | Como numerar as semanas e quais são o primeiro e o último dia. A confirmar. | §17.8 |
 | Diferença da troca | Se o crédito do cliente pode ser devolvido em dinheiro. A confirmar. | §17.7 |
+| Cartão | Não é forma de pagamento hoje. Falta perguntar ao cliente se o cliente final paga com cartão na maquininha do vendedor; se pagar, o cartão entra só como forma registrada, sem integração. A confirmar. | §17.13 |
 | Entrada | Forma de pagamento da §7.4 cujo significado não foi confirmado. Hipótese 1: valor pago pelo vendedor ao levar a maleta, abatido no acerto. Hipótese 2: entrada de uma venda parcelada. A confirmar. | §17.12 |
 
 ## 10. Dúvidas para a dona
@@ -412,6 +413,12 @@ Tudo é gravado em Real. Dólar e Guarani aparecem ao lado de todo valor, nos do
 - Ninguém digita cotação nem valor em Dólar ou Guarani: os campos de valor são sempre em reais.
 
 ### Textos
+
+**Cotação no acerto** (na tela e no PDF do acerto, sempre, com a data da cotação que o acerto gravou)
+
+> Cotação do Banco Central de 06/11/2026.
+
+O acerto usa uma cotação só, a mais recente no momento do fechamento (ADR-0006). Por isso os valores em Dólar e Guarani do acerto podem ser um pouco diferentes dos do relatório de vendas da mesma semana. O valor em reais é sempre o mesmo e é o que vale.
 
 **Cotação no Corona Vendas, com internet**
 
