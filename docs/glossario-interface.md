@@ -234,7 +234,7 @@ No Corona Gestão (app da dona), a última frase é:
 
 > Se esqueceu a senha, fale com o suporte do sistema.
 
-O servidor devolve o título e as duas primeiras frases (código `LOGIN_INVALIDO`); cada aplicativo acrescenta a sua última frase.
+Quem monta o texto é sempre o servidor (os aplicativos nunca montam texto de erro). Até a tarefa 12, ele devolve o título e as duas primeiras frases (código `LOGIN_INVALIDO`); a partir da tarefa 12, com o cabeçalho de tipo de app, o próprio servidor acrescenta a última frase certa de cada aplicativo.
 
 **Bloqueio temporário por tentativas**
 
