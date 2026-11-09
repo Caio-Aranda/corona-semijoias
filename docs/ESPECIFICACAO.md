@@ -1,6 +1,6 @@
 # Especificação completa: Sistema de Semijoias Consignadas
 
-Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.0, 08/11/2026.
+Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.1, 08/11/2026.
 
 ## 1. Objetivo e contexto
 
@@ -47,6 +47,8 @@ O layout deve **seguir a organização** dessas telas, que a equipe já conhece,
 | **Admin (dona)** | Acesso total. Poucos usuários. |
 | **Vendedor** | Acessa apenas o app do vendedor e apenas os próprios dados. |
 
+Hoje existem dois perfis (Admin e Vendedor), mas o sistema deve permitir acrescentar perfis novos depois, sem refatoração. Cada app aceita só o seu perfil: a dona não entra no app do vendedor e o vendedor não entra no app da dona. No login, a API recusa o perfil incompatível com o app, e cada rota exige o perfil certo (ver §11).
+
 Permissões são **validadas na API**, nunca só na tela. Rotas por perfil são separadas.
 
 ## 4. Os dois sistemas
@@ -72,7 +74,7 @@ O código exclusivo da dona **não pode ir dentro do instalador do vendedor**. E
 | Camada | Escolha |
 | --- | --- |
 | Apps desktop | Electron + React + TypeScript (dois instaladores .exe, só Windows) |
-| API | Java 21 + Spring Boot, Flyway, OpenAPI/Swagger |
+| API | Java 21 + Spring Boot 4.1.x (versão exata fixada no ADR-0001), Flyway, OpenAPI/Swagger |
 | Banco central | PostgreSQL |
 | Banco local (vendedor) | SQLite criptografado (SQLCipher), com migrações versionadas |
 | Servidor | VPS Linux, Docker Compose (API + PostgreSQL), Nginx, HTTPS com Let's Encrypt, domínio próprio |
@@ -110,6 +112,7 @@ O app **nunca acessa o banco direto**, apenas a API. Segurança (ninguém tem a 
 12. Peça com código EAN-13 vem etiquetada pelo fornecedor; a dona cadastra os códigos no sistema.
 13. Roda só em Windows.
 14. Assinatura de código e VPS entram no orçamento do cliente.
+15. Cada vendedor usa o **próprio notebook**, um aparelho por vendedor. Desde a Fase 0 a sessão guarda o identificador do aparelho. Impedir um segundo aparelho fica para a Fase 5 (tabela `dispositivos`).
 
 ## 7. Regras de negócio
 
@@ -177,7 +180,7 @@ Regras:
 - **Contas a pagar** a fornecedores, ligadas às compras.
 - **Lançamentos de caixa**, **comissões** (por vendedor e semana, pagas e a pagar), **cheques** (a compensar, compensado, devolvido), **reembolsos**.
 - O **servidor recalcula** totais, parcelas e comissão e nunca confia no que o app mandou. Preço, desconto e saldo são validados; divergência vira alerta, não rejeição silenciosa.
-- Valores em `NUMERIC(14,2)`, **nunca float**, com regra única de arredondamento.
+- Valores em `NUMERIC(14,2)`, **nunca float**, com regra única de arredondamento: **HALF_UP com escala 2**.
 - Datas em UTC, exibidas em horário de Brasília.
 - **O preço de custo nunca chega ao PC do vendedor.**
 
@@ -242,7 +245,7 @@ Risco: etiquetas muito pequenas ou de baixa qualidade podem exigir leitor 2D ou 
 
 ### Campos de controle em toda tabela sincronizável
 
-`id` (**UUID gerado no app**, nunca auto-incremento), `created_at`, `updated_at`, `version`, `deleted_at` (**exclusão lógica**), `origem_dispositivo`. No servidor, também `sync_seq` (sequência crescente para o pull).
+`id` (**UUID gerado no app**, nunca auto-incremento), `created_at`, `updated_at`, `version`, `deleted_at` (**exclusão lógica**), `origem_dispositivo`. No servidor, também `sync_seq` (sequência crescente para o pull). O pull usa um **limite seguro** sobre essa sequência, que não perde registros de transações que confirmam fora de ordem (exemplo: o app puxa até o `sync_seq` 11 e o 10 só confirma depois). A estratégia exata fica no ADR-0002.
 
 ### Cadastros
 
@@ -295,7 +298,7 @@ Risco: etiquetas muito pequenas ou de baixa qualidade podem exigir leitor 2D ou 
 
 ### Controle
 
-- `configuracoes` (prazo\_arrependimento\_dias, prazo\_defeito\_dias, limite\_desconto, limite\_reembolso\_semanal, aprovação acima de valor, percentual de alerta de devolução, tempo máximo offline)
+- `configuracoes` (prazo\_arrependimento\_dias, prazo\_defeito\_dias, limite\_desconto, limite\_reembolso\_semanal, aprovação acima de valor, percentual de alerta de devolução, tempo máximo offline (padrão 10 dias, configurável))
 - `auditoria` (usuário, ação, tabela, registro, antes/depois, data)
 - `dispositivos` (vendedor, identificação, ativo, bloqueado, último contato)
 - `sync_log` (dispositivo, lote, resultado por item)
@@ -311,7 +314,7 @@ O app é **offline-first**: lê e grava sempre no SQLite local, e um processo em
 
 **Push:** cada ação offline vira item na `outbox`. Quando há internet, o app envia em lotes para `POST /sync/push`. O servidor responde **item por item** (aceito, rejeitado, conflito).
 
-**Pull:** `GET /sync/pull?since=cursor` devolve tudo que mudou desde o último `sync_seq`. O app aplica no banco local.
+**Pull:** `GET /sync/pull?since=cursor` devolve tudo que mudou desde o último `sync_seq`. O app aplica no banco local. O pull usa um **limite seguro**, que não perde registros de transações que confirmam fora de ordem (exemplo: o app puxa até o `sync_seq` 11 e o 10 só confirma depois). A estratégia exata fica no ADR-0002.
 
 **Gatilhos:** abrir o app, voltar a conexão, a cada X segundos se online e depois de cada gravação.
 
@@ -345,7 +348,10 @@ O app é **offline-first**: lê e grava sempre no SQLite local, e um processo em
 
 ## 11. Segurança
 
-- Senhas com **BCrypt**; JWT de acesso curto; **refresh token longo** (por exemplo 30 dias) para login offline; prazo máximo offline configurável.
+- Senhas com **BCrypt**; JWT de acesso curto; **sessão longa (refresh token) de 30 dias, com rotação**, para login offline; **prazo máximo offline padrão de 10 dias**, configurável.
+- A dona cria o usuário com **senha temporária** e a redefine quando preciso; a **troca da senha é obrigatória no primeiro acesso**.
+- Os dois apps enviam **cabeçalhos de versão e de tipo de app** desde a Fase 0.
+- O cabeçalho de tipo de app é **conveniência de experiência, não segurança**: a proteção real é a permissão por perfil nas rotas, e nenhum código pode depender só dele.
 - Permissões por perfil **validadas na API**; rotas de dona e de vendedor separadas.
 - Limite de tentativas de login.
 - Banco central **nunca exposto** à internet, só a API (HTTPS).
@@ -402,7 +408,7 @@ Como o app é offline, o relatório sai do banco local com o aviso: **dados até
    - total recebido = lançamentos de caixa;
    - total do acerto = vendas − descontos − reembolsos − comissão.
 4. **Testes automatizados** para cada relatório, com massa de dados conhecida e resultado calculado à mão, rodando no CI a cada Pull Request (backend com PostgreSQL via Testcontainers).
-5. `NUMERIC(14,2)`, sem float, com arredondamento padronizado.
+5. `NUMERIC(14,2)`, sem float, com arredondamento HALF_UP e escala 2 (regra única, §7.5).
 6. Datas em UTC, exibição em horário de Brasília, **semanas fechadas imutáveis**.
 7. **Validação com o cliente:** comparar os relatórios com as planilhas dele numa semana real antes da entrega.
 
@@ -413,28 +419,28 @@ Cada fase só é considerada pronta quando seus **relatórios e testes de confer
 **Monorepo único no GitHub (privado):**
 
 ```
-loja-semijoias/
-├── .github/            workflows (ci, release), templates de issue e PR
+corona-semijoias/
+├── .github/            workflows (ci, release) e modelo de PR
 ├── .vscode/            launch, tasks, extensions, settings
 ├── .claude/            agents, skills, commands, settings do Claude Code
 ├── backend/            Spring Boot + Flyway + testes
 ├── apps/owner-app/     Electron + React (somente online)
 ├── apps/seller-app/    Electron + React + SQLite + sync
-├── packages/ui | api-client | shared
+├── packages/ui | shared | api-client-dona | api-client-vendedor
 ├── docs/               especificação, diagramas, decisões (ADRs)
 ├── docker-compose.yml
 ├── CLAUDE.md
 └── README.md
 ```
 
-Os apps compartilham `packages/` (componentes, cliente da API gerado do OpenAPI, validações de CPF e EAN-13, formatadores), mas **o app do vendedor nunca importa código exclusivo da dona**.
+Os apps compartilham `packages/` (componentes, clientes da API gerados do OpenAPI, validações de CPF e EAN-13, formatadores), mas **o app do vendedor nunca importa código exclusivo da dona**: ele depende só de `api-client-vendedor` e nunca de `api-client-dona`.
 
 **Fluxo Git:**
 
-- `main` protegida: sem push direto, só Pull Request com CI verde.
+- `main` sem proteção técnica (repositório privado no plano gratuito do GitHub). Regra de disciplina: sem push direto, só Pull Request com CI verde, conferido pela orquestradora.
 - Branches curtas: `feat/...`, `fix/...`, `chore/...`. Sem `develop`.
 - **Conventional Commits** (`feat(remessa): bloquear venda acima do saldo`).
-- Uma **issue por funcionalidade** no GitHub Projects, PR referenciando a issue (`Closes #12`).
+- Cada tarefa é entregue pela orquestradora como prompt. Uma branch e um Pull Request por tarefa.
 - Versionamento semântico; tag na `main` gera os instaladores; release-please ou semantic-release para changelog.
 - **Dependabot** ativo.
 
@@ -550,7 +556,7 @@ Tela inicial com quatro botões grandes: **Vender**, **Minha maleta**, **Meus cl
 - **Teste de uso com a dona** ao fim de cada fase: ela executa tarefas reais enquanto alguém observa, sem ajudar. Anotar onde hesitou ou errou e corrigir.
 - **Teste com um vendedor real** do app, de preferência numa situação sem internet.
 - **Revisão de textos** da interface por alguém da loja.
-- Registrar no GitHub como issues os problemas de uso encontrados, na mesma fila dos bugs.
+- Registrar os problemas de uso encontrados em `docs/PROBLEMAS-DE-USO.md`.
 
 ## 20. Fotos de produto
 
@@ -638,3 +644,17 @@ Importação com nome de arquivo inválido, foto duplicada, arquivo corrompido, 
 3. Quantos produtos e quantas fotos por produto, em média, para dimensionar o armazenamento da VPS?
 4. A nota de remessa deve ter foto dos itens?
 5. Quem da loja vai participar dos testes de uso (a dona e pelo menos um vendedor)?
+
+## 22. Histórico de mudanças
+
+- **v1.0, 08/11/2026:** versão inicial.
+- **v1.1, 08/11/2026:** decisões da Fase 0.
+  - §3: perfis extensíveis sem refatoração; cada app aceita só o seu perfil, e a API recusa o perfil incompatível no login.
+  - §5: API em Spring Boot 4.1.x, com a versão exata fixada no ADR-0001.
+  - §6: nova premissa 15, um aparelho por vendedor; a sessão guarda o identificador do aparelho desde a Fase 0 e o bloqueio de um segundo aparelho fica para a Fase 5.
+  - §7.5 e §13: regra única de arredondamento HALF_UP com escala 2.
+  - §9: tempo máximo offline padrão de 10 dias, configurável.
+  - §9 e §10: o pull usa um limite seguro que não perde registros de transações que confirmam fora de ordem (ADR-0002).
+  - §11: sessão longa de 30 dias com rotação; senha temporária com troca obrigatória no primeiro acesso; cabeçalhos de versão e de tipo de app, sendo o de tipo apenas conveniência e não segurança.
+  - §14: a `main` deixa de ser "main protegida" (sem proteção técnica no plano gratuito; disciplina de PR com CI verde conferido pela orquestradora); cada tarefa chega como prompt, com uma branch e um PR, sem issues do GitHub e sem "Closes #"; raiz `corona-semijoias/` (antes `loja-semijoias/`); `packages/` com um cliente de API por app; modelo de PR, sem modelos de issue; o app do vendedor depende só de `api-client-vendedor`.
+  - §19: problemas de uso registrados em `docs/PROBLEMAS-DE-USO.md`.
