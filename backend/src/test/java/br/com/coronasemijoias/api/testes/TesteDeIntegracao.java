@@ -24,7 +24,7 @@ import org.testcontainers.utility.MountableFile;
  */
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import({RotasDeTeste.class, TabelasDeTeste.class, UsuariosDeTeste.class, RelogioDeTeste.class})
+@Import({RotasDeTeste.class, TabelasDeTeste.class, UsuariosDeTeste.class, RelogioDeTeste.class, IpsDeTeste.class})
 public abstract class TesteDeIntegracao {
 
     // Valores falsos, só de teste (o contêiner some quando os testes terminam).
@@ -41,6 +41,11 @@ public abstract class TesteDeIntegracao {
     public static final String ID_CHAVE_ANTERIOR = "teste-anterior";
     public static final byte[] CHAVE_ANTERIOR = bytesAleatorios(32);
     public static final String EMISSOR = "corona-api";
+    public static final byte[] SEGREDO_DE_RENOVACAO = bytesAleatorios(32);
+    /** Limite de erros por IP nos testes (produção: 50). */
+    public static final int LIMITE_POR_IP = 12;
+    /** O "Nginx" dos testes (endereço de documentação, RFC 5737): só dele vale o X-Forwarded-For. */
+    public static final String PROXY_CONFIAVEL = "192.0.2.10";
 
     // Primeiro administrador criado ao subir o contexto de teste (senha aleatória, nunca usada).
     public static final String ADMIN_INICIAL_LOGIN = "dona.inicial";
@@ -96,6 +101,11 @@ public abstract class TesteDeIntegracao {
         registro.add("corona.seguranca.jwt.chave-atual.valor", () -> base64.encodeToString(CHAVE_ATUAL));
         registro.add("corona.seguranca.jwt.chave-anterior.id", () -> ID_CHAVE_ANTERIOR);
         registro.add("corona.seguranca.jwt.chave-anterior.valor", () -> base64.encodeToString(CHAVE_ANTERIOR));
+        registro.add("corona.seguranca.sessao.segredo-de-renovacao", () -> base64.encodeToString(SEGREDO_DE_RENOVACAO));
+        // Limite por IP menor que o de produção (50): o teste chega nele sem 50 conferências BCrypt.
+        registro.add("corona.seguranca.tentativas.limite-por-ip", () -> LIMITE_POR_IP);
+        registro.add("corona.seguranca.tentativas.espera-da-trava", () -> "PT2S");
+        registro.add("corona.seguranca.tentativas.proxies-confiaveis", () -> PROXY_CONFIAVEL);
         registro.add("corona.admin-inicial.nome", () -> "Dona Inicial");
         registro.add("corona.admin-inicial.login", () -> ADMIN_INICIAL_LOGIN);
         registro.add("corona.admin-inicial.senha", () -> ADMIN_INICIAL_SENHA);

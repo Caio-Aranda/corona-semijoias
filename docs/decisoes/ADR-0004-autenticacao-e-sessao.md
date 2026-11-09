@@ -2,6 +2,7 @@
 
 - **Status:** Aceito
 - **Data:** 09/11/2026
+- **Detalhado em 09/11/2026 (tarefa 11):** a sessão usa duas tabelas só do servidor, `sessoes` (a família; o `id` é o `sid`) e `tokens_de_renovacao` (um registro por token da família, com o anterior e o sucessor); o login com senha temporária também abre uma família, do tipo `TROCA_SENHA` e sem token de renovação, e o token restrito leva o `sid` dela (assim a redefinição o derruba como qualquer outro); `tentativas_login` ganha três resultados além dos do item 7: `SENHA_TEMPORARIA_VENCIDA` (senha certa, prazo vencido: não conta como erro), `PEDIDO_INVALIDO` (vendedor sem identificador de aparelho ou dona com ele: não conta como erro) e `BLOQUEIO_LIMPO` (registro gravado pela redefinição da senha, que retira o bloqueio daquele login)
 - **Tarefas que implementam:** 9 (usuários, perfis, JWT, BCrypt, rotas por perfil, primeiro admin), 10 (criação de usuários, senha temporária, regras da senha, redefinição, comando de servidor para a dona), 11 (sessão longa, tentativas, registro de acessos, aparelho, prazo offline guardado), 12 (cabeçalhos e versão mínima), 15 e 16 (guarda dos tokens no Electron). Fase 5: bloqueio de segundo aparelho e regra do prazo offline. Tarefa 18: banco local criptografado
 
 ## Contexto

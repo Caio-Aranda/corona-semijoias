@@ -45,7 +45,11 @@ public final class RegistroDeTabelas {
                 List.of(
                         new TabelaDoServidor("sync_estado", false),
                         new TabelaDoServidor("perfis", true),
-                        new TabelaDoServidor("usuarios", false)));
+                        new TabelaDoServidor("usuarios", false),
+                        new TabelaDoServidor("configuracoes", false),
+                        new TabelaDoServidor("sessoes", false),
+                        new TabelaDoServidor("tokens_de_renovacao", false),
+                        new TabelaDoServidor("tentativas_login", true)));
     }
 
     /** Este registro somado a outro (usado pelos testes para acrescentar as tabelas de teste). */

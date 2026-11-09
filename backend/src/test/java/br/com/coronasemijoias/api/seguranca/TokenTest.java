@@ -5,6 +5,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import br.com.coronasemijoias.api.sessoes.ServicoDeSessoes.SessaoAberta;
+import br.com.coronasemijoias.api.sessoes.TipoDeSessao;
 import br.com.coronasemijoias.api.testes.TesteDeIntegracao;
 import br.com.coronasemijoias.api.testes.TokensDeTeste;
 import br.com.coronasemijoias.api.testes.UsuariosDeTeste;
@@ -13,6 +15,7 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MockMvc;
@@ -42,8 +45,40 @@ class TokenTest extends TesteDeIntegracao {
                 .andExpect(jsonPath("$.title").value("Sua sessão terminou."));
     }
 
-    private static JWTClaimsSet.Builder conteudoDe(UsuarioDeTeste usuario) {
-        return TokensDeTeste.conteudo(usuario.id(), usuario.perfil(), usuario.vendedorId());
+    /** Conteúdo de um token válido, com uma família de sessão aberta de verdade. */
+    private JWTClaimsSet.Builder conteudoDe(UsuarioDeTeste usuario) {
+        SessaoAberta sessao = usuarios.abrirSessao(usuario, TipoDeSessao.NORMAL);
+        JWTClaimsSet.Builder conteudo = TokensDeTeste.conteudo(usuario.id(), usuario.perfil(), usuario.vendedorId())
+                .claim("sid", sessao.sid().toString());
+        if (sessao.dispositivoId() != null) {
+            conteudo.claim("dispositivo_id", sessao.dispositivoId().toString());
+        }
+        return conteudo;
+    }
+
+    @Test
+    void tokenSemSessaoOuComSessaoQueNaoConfereEhRecusado() throws Exception {
+        UsuarioDeTeste vendedor = usuarios.criarVendedor();
+        // Sem sid.
+        recusado(TokensDeTeste.assinar(conteudoDe(vendedor).claim("sid", null).build(), CHAVE_ATUAL, ID_CHAVE_ATUAL));
+        // sid que não existe.
+        recusado(TokensDeTeste.assinar(conteudoDe(vendedor).claim("sid", UUID.randomUUID().toString()).build(),
+                CHAVE_ATUAL, ID_CHAVE_ATUAL));
+        // sid da sessão de outra pessoa.
+        UUID deOutro = usuarios.abrirSessao(usuarios.criarVendedor(), TipoDeSessao.NORMAL).sid();
+        recusado(TokensDeTeste.assinar(conteudoDe(vendedor).claim("sid", deOutro.toString()).build(),
+                CHAVE_ATUAL, ID_CHAVE_ATUAL));
+        // Outro aparelho, ou sem aparelho, na mesma sessão.
+        recusado(TokensDeTeste.assinar(conteudoDe(vendedor).claim("dispositivo_id", UUID.randomUUID().toString()).build(),
+                CHAVE_ATUAL, ID_CHAVE_ATUAL));
+        recusado(TokensDeTeste.assinar(conteudoDe(vendedor).claim("dispositivo_id", null).build(),
+                CHAVE_ATUAL, ID_CHAVE_ATUAL));
+        // Token comum com o sid de uma sessão da troca de senha.
+        UUID restrita = usuarios.abrirSessao(vendedor, TipoDeSessao.TROCA_SENHA).sid();
+        recusado(TokensDeTeste.assinar(conteudoDe(vendedor).claim("sid", restrita.toString()).build(),
+                CHAVE_ATUAL, ID_CHAVE_ATUAL));
+        // O mesmo token, certo, é aceito.
+        eu(TokensDeTeste.assinar(conteudoDe(vendedor).build(), CHAVE_ATUAL, ID_CHAVE_ATUAL)).andExpect(status().isOk());
     }
 
     @Test

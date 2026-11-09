@@ -1,5 +1,8 @@
 package br.com.coronasemijoias.api.seguranca;
 
+import br.com.coronasemijoias.api.sessoes.ServicoDeSessoes;
+import br.com.coronasemijoias.api.sessoes.ServicoDeSessoes.SituacaoDaSessao;
+import br.com.coronasemijoias.api.sessoes.TipoDeSessao;
 import br.com.coronasemijoias.api.usuarios.Usuario;
 import br.com.coronasemijoias.api.usuarios.UsuarioRepositorio;
 import java.time.Instant;
@@ -20,7 +23,8 @@ import org.springframework.stereotype.Component;
  * Transforma o token já conferido (assinatura, validade, {@code iss}) no usuário da requisição. A cada
  * chamada consulta o usuário pela chave primária (ADR-0004, item 1): desativado perde o acesso no
  * próximo uso, mesmo com o token ainda válido. O perfil e o vendedor valem os do banco; se o token
- * disser outra coisa, ele está desatualizado e é recusado.
+ * disser outra coisa, ele está desatualizado e é recusado. Também confere pela chave primária a família
+ * da sessão ({@code sid}): família revogada derruba o token no próximo uso.
  */
 @Component
 public class ConversorDoToken implements Converter<Jwt, AbstractAuthenticationToken> {
@@ -29,9 +33,11 @@ public class ConversorDoToken implements Converter<Jwt, AbstractAuthenticationTo
     public static final String PREFIXO_DA_AUTORIDADE = "PERFIL_";
 
     private final UsuarioRepositorio usuarios;
+    private final ServicoDeSessoes sessoes;
 
-    public ConversorDoToken(UsuarioRepositorio usuarios) {
+    public ConversorDoToken(UsuarioRepositorio usuarios, ServicoDeSessoes sessoes) {
         this.usuarios = usuarios;
+        this.sessoes = sessoes;
     }
 
     @Override
@@ -58,11 +64,21 @@ public class ConversorDoToken implements Converter<Jwt, AbstractAuthenticationTo
         if ((escopo != null && !restrito) || restrito != usuario.isTrocaDeSenhaObrigatoria()) {
             throw new BadCredentialsException("escopo do token não confere com a situação da senha");
         }
+        // A família da sessão (ADR-0004, item 1): existe, é deste usuário, não foi revogada, é do mesmo
+        // aparelho e do tipo que combina com o escopo. Revogar a família derruba o token na hora,
+        // inclusive o emitido no mesmo segundo de uma redefinição.
+        UUID sid = uuid(token.getClaimAsString(ConteudoDoToken.SID));
+        UUID dispositivo = uuid(token.getClaimAsString(ConteudoDoToken.DISPOSITIVO_ID));
+        SituacaoDaSessao sessao = sessoes.situacao(sid)
+                .orElseThrow(() -> new BadCredentialsException("token sem sessão"));
+        TipoDeSessao tipoEsperado = restrito ? TipoDeSessao.TROCA_SENHA : TipoDeSessao.NORMAL;
+        if (sessao.revogada() || !sessao.usuarioId().equals(usuario.getId()) || sessao.tipo() != tipoEsperado
+                || !Objects.equals(sessao.dispositivoId(), dispositivo)) {
+            throw new BadCredentialsException("sessão do token revogada ou diferente");
+        }
         UsuarioAutenticado principal = new UsuarioAutenticado(
                 usuario.getId(), usuario.getPerfil(), usuario.getVendedorId(), token.getId(),
-                uuid(token.getClaimAsString(ConteudoDoToken.SID)),
-                uuid(token.getClaimAsString(ConteudoDoToken.DISPOSITIVO_ID)),
-                token.getClaimAsString(ConteudoDoToken.ESCOPO));
+                sid, dispositivo, escopo);
         return new AutenticacaoPorToken(principal, token,
                 List.of(new SimpleGrantedAuthority(PREFIXO_DA_AUTORIDADE + usuario.getPerfil())));
     }

@@ -24,9 +24,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
  */
 public class FiltroDoTokenRestrito extends OncePerRequestFilter {
 
-    /** As únicas rotas que o token restrito abre. A saída (logout) entra aqui na tarefa 11. */
+    /** As únicas rotas que o token restrito abre: criar a senha nova e sair. */
     public static final List<RotaPublica> ROTAS_PERMITIDAS = List.of(
-            new RotaPublica(HttpMethod.POST, "/api/auth/trocar-senha"));
+            new RotaPublica(HttpMethod.POST, "/api/auth/trocar-senha"),
+            new RotaPublica(HttpMethod.POST, "/api/auth/sair"));
 
     private final RespostasDeSeguranca respostas;
     private final RequestMatcher permitidas = new OrRequestMatcher(ROTAS_PERMITIDAS.stream()

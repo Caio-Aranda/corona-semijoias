@@ -2,7 +2,13 @@ package br.com.coronasemijoias.api.testes;
 
 import br.com.coronasemijoias.api.seguranca.ConteudoDoToken;
 import br.com.coronasemijoias.api.seguranca.EmissorDeToken;
+import br.com.coronasemijoias.api.sessoes.ServicoDeSessoes;
+import br.com.coronasemijoias.api.sessoes.ServicoDeSessoes.SessaoAberta;
+import br.com.coronasemijoias.api.sessoes.TipoDeSessao;
 import java.time.Instant;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.boot.test.context.TestComponent;
 import org.springframework.http.HttpHeaders;
@@ -27,13 +33,15 @@ public class UsuariosDeTeste {
 
     private final JdbcTemplate jdbc;
     private final EmissorDeToken emissor;
+    private final ServicoDeSessoes sessoes;
 
     private UsuarioDeTeste dona;
     private UsuarioDeTeste vendedor;
 
-    public UsuariosDeTeste(JdbcTemplate jdbc, EmissorDeToken emissor) {
+    public UsuariosDeTeste(JdbcTemplate jdbc, EmissorDeToken emissor, ServicoDeSessoes sessoes) {
         this.jdbc = jdbc;
         this.emissor = emissor;
+        this.sessoes = sessoes;
     }
 
     public UsuarioDeTeste criarDona() {
@@ -69,15 +77,50 @@ public class UsuariosDeTeste {
         return jdbc.queryForObject("SELECT senha_hash FROM corona.usuarios WHERE id = ?", String.class, usuario.id());
     }
 
-    /** Token válido emitido pela própria API. */
+    /** O aparelho dos logins de teste do vendedor (um computador só para todos). */
+    public static final UUID APARELHO = UUID.fromString("0190a1b2-c3d4-7e5f-8a9b-0c1d2e3f4a5b");
+
+    /**
+     * O corpo do login como o aplicativo certo mandaria: com o {@link #APARELHO} se o login for de um
+     * vendedor (Corona Vendas), sem aparelho nos demais (Corona Gestão ou login que não existe).
+     */
+    public Map<String, Object> corpoDoLogin(String login, String senha) {
+        Map<String, Object> corpo = new LinkedHashMap<>();
+        corpo.put("login", login);
+        corpo.put("senha", senha);
+        if (login.indexOf('\u0000') >= 0) {
+            return corpo; // o PostgreSQL nem aceita o caractere nulo numa consulta: login que não existe
+        }
+        List<String> perfil = jdbc.queryForList("SELECT perfil FROM corona.usuarios WHERE login = ?", String.class,
+                login.strip().toLowerCase(java.util.Locale.ROOT));
+        if (perfil.contains("VENDEDOR")) {
+            corpo.put("dispositivoId", APARELHO.toString());
+        }
+        return corpo;
+    }
+
+    /** O aparelho que o perfil manda no login: o vendedor manda um; a dona, nenhum (ADR-0004, item 4). */
+    public static UUID aparelhoPara(String perfil) {
+        return "VENDEDOR".equals(perfil) ? UUID.randomUUID() : null;
+    }
+
+    /** Abre uma família de sessão de verdade (como o login) e devolve o que ela tem. */
+    public SessaoAberta abrirSessao(UsuarioDeTeste usuario, TipoDeSessao tipo) {
+        return sessoes.abrir(usuario.id(), tipo, aparelhoPara(usuario.perfil()));
+    }
+
+    /** Token válido emitido pela própria API, com uma família de sessão nova. */
     public String token(UsuarioDeTeste usuario) {
-        return emissor.emitir(ConteudoDoToken.de(usuario.id(), usuario.perfil(), usuario.vendedorId())).valor();
+        SessaoAberta sessao = abrirSessao(usuario, TipoDeSessao.NORMAL);
+        return emissor.emitir(ConteudoDoToken.de(
+                usuario.id(), usuario.perfil(), usuario.vendedorId(), sessao.sid(), sessao.dispositivoId())).valor();
     }
 
     /** Token restrito da troca de senha, emitido pela própria API (mesmo que o usuário não esteja marcado). */
     public String tokenRestrito(UsuarioDeTeste usuario) {
+        SessaoAberta sessao = abrirSessao(usuario, TipoDeSessao.TROCA_SENHA);
         return emissor.emitir(ConteudoDoToken.restritoParaTrocaDeSenha(
-                usuario.id(), usuario.perfil(), usuario.vendedorId())).valor();
+                usuario.id(), usuario.perfil(), usuario.vendedorId(), sessao.sid(), sessao.dispositivoId())).valor();
     }
 
     /** Uma dona ativa, criada uma vez por contexto. */

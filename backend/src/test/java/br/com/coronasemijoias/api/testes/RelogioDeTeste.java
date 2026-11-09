@@ -19,13 +19,23 @@ import org.springframework.context.annotation.Primary;
 public class RelogioDeTeste extends Clock {
 
     private volatile Duration deslocamento = Duration.ZERO;
+    private volatile Instant fixo;
 
     public void avancar(Duration tempo) {
         deslocamento = deslocamento.plus(tempo);
     }
 
+    /**
+     * Para o relógio num instante (mais o deslocamento): tudo o que o teste fizer acontece "no mesmo
+     * segundo". Desfeito por {@link #reiniciar()}.
+     */
+    public void fixar(Instant instante) {
+        fixo = instante;
+    }
+
     public void reiniciar() {
         deslocamento = Duration.ZERO;
+        fixo = null;
     }
 
     @Override
@@ -40,6 +50,7 @@ public class RelogioDeTeste extends Clock {
 
     @Override
     public Instant instant() {
-        return Instant.now().plus(deslocamento);
+        Instant base = fixo;
+        return (base == null ? Instant.now() : base).plus(deslocamento);
     }
 }

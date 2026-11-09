@@ -51,6 +51,16 @@ public enum CodigoErro {
             "Sua sessão terminou.",
             "Sua sessão terminou. Entre de novo com seu usuário e sua senha para continuar."),
 
+    /**
+     * Bloqueio por tentativas (HTTP 429). {@code {minutos}} é o que falta, arredondado para cima e no
+     * mínimo 1; com 1, o texto fica no singular (glossário, parte 6). Montado por
+     * {@link ErroDaApi#acessoBloqueado(java.time.Duration)}.
+     */
+    ACESSO_BLOQUEADO(
+            "Acesso bloqueado por alguns minutos.",
+            "Acesso bloqueado por alguns minutos. Você errou a senha várias vezes. Por segurança, "
+                    + "espere {minutos} minutos e tente de novo."),
+
     // --- Senha temporária e cadastro de usuário (glossário, parte 6; tarefa 10) ---
 
     /**

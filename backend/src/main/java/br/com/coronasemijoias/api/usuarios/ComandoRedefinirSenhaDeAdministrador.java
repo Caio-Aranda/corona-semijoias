@@ -24,8 +24,8 @@ import org.springframework.stereotype.Component;
  * java -jar corona-api.jar redefinir-senha-admin --login=maria.silva
  * </pre>
  *
- * <p>Gera uma senha temporária, mostra no terminal UMA vez, marca a troca obrigatória e grava a hora
- * da troca de credencial (isso derruba as sessões abertas). A senha vai só para o terminal: o log
+ * <p>Gera uma senha temporária, mostra no terminal UMA vez, marca a troca obrigatória, revoga todas as
+ * sessões do usuário e retira o bloqueio por tentativas daquele login. A senha vai só para o terminal: o log
  * registra a ação, sem a senha. Passo a passo em {@code docs/redefinir-senha-da-dona.md}.
  */
 @Component
@@ -98,6 +98,7 @@ public class ComandoRedefinirSenhaDeAdministrador {
             terminal.println("Anote esta senha agora: ela não será mostrada de novo.");
             terminal.println("Os acessos abertos desse usuário foram encerrados. Na próxima entrada, ele usa esta");
             terminal.println("senha e é obrigado a criar uma senha nova.");
+            terminal.println("O bloqueio por tentativas erradas desse login foi retirado.");
             return SAIDA_OK;
         } catch (RecusaDoComando recusa) {
             terminal.println(recusa.getMessage());

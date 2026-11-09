@@ -9,14 +9,20 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import br.com.coronasemijoias.api.acessos.ControleDeTentativas;
+import br.com.coronasemijoias.api.acessos.PropriedadesDasTentativas;
+import br.com.coronasemijoias.api.acessos.TravaPorIp;
+import br.com.coronasemijoias.api.autenticacao.ServicoDeLogin.PedidoDeEntrada;
 import br.com.coronasemijoias.api.comum.erros.CodigoErro;
 import br.com.coronasemijoias.api.comum.erros.ErroDaApi;
 import br.com.coronasemijoias.api.seguranca.EmissorDeToken;
+import br.com.coronasemijoias.api.sessoes.ServicoDeSessoes;
 import br.com.coronasemijoias.api.usuarios.ConferenciaDeSenha;
 import br.com.coronasemijoias.api.usuarios.UsuarioRepositorio;
 import java.time.Clock;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
+import org.springframework.transaction.support.TransactionOperations;
 
 /**
  * Todo login passa por uma conferência BCrypt, para o tempo de resposta não revelar quais logins
@@ -27,10 +33,13 @@ class ServicoDeLoginTest {
     private final UsuarioRepositorio usuarios = mock(UsuarioRepositorio.class);
     private final ConferenciaDeSenha conferencia = mock(ConferenciaDeSenha.class);
     private final ServicoDeLogin servico = new ServicoDeLogin(
-            usuarios, conferencia, mock(EmissorDeToken.class), Clock.systemUTC());
+            usuarios, conferencia, mock(EmissorDeToken.class), mock(ServicoDeSessoes.class),
+            mock(ControleDeTentativas.class), new TravaPorIp(),
+            new PropriedadesDasTentativas(0, null, null, 0, null, null, null),
+            TransactionOperations.withoutTransaction(), Clock.systemUTC());
 
     private void recusadoComoLoginInvalido(String login, String senha) {
-        assertThatThrownBy(() -> servico.entrar(login, senha))
+        assertThatThrownBy(() -> servico.entrar(new PedidoDeEntrada(login, senha, null, "10.0.0.1")))
                 .isInstanceOfSatisfying(ErroDaApi.class, e -> org.assertj.core.api.Assertions
                         .assertThat(e.codigo()).isEqualTo(CodigoErro.LOGIN_INVALIDO));
     }
