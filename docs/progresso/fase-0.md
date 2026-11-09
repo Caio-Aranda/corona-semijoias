@@ -399,3 +399,25 @@ Item 10 do ADR-0004 e, dos itens 4 e 7, o aparelho por aplicativo e o `tipo_app`
 - Tela de "aplicativo desatualizado" e envio dos cabeçalhos pelos apps: tarefas 13, 15 e 16 (o cliente gerado deve mandar `X-App-Tipo` e `X-App-Versao`).
 - Renovação, troca de senha e demais rotas não gravam tipo (só o login grava, como pede o ADR).
 
+
+### Tarefa 13: clientes gerados do OpenAPI
+
+ADR-0003 (itens 1 a 3 e barreira) e ADR-0004 (cabeçalhos).
+
+**O que foi feito**
+- `packages/api-client-dona` (`@corona/api-client-dona`, grupo `dona`) e `packages/api-client-vendedor` (`@corona/api-client-vendedor`, grupo `vendedor`), ambos com `/api/auth/**`. Gerador `@hey-api/openapi-ts` 0.99.0 (exato), plugins client-fetch, typescript e sdk.
+- Cada pacote tem `openapi.json` versionado (gravado pelo backend, fora do Prettier) e o código gerado em `src/gerado/`, também versionado (fora do ESLint e do Prettier).
+- Comando único: `npm run api:clientes` (precisa do Docker aberto): o teste `ClientesDoOpenApiEmDiaTest` regrava os dois JSON e o gerador refaz o código. `npm run api:clientes -- --so-gerar` só refaz o código a partir dos JSON.
+- CI: o job `backend` já roda o teste, que, sem a opção de gravar, **falha** se o OpenAPI da API divergir do arquivo; o job `frontend` ganhou um passo que regera o código e falha se houver diferença. Os 4 nomes de job continuam.
+- `criarClienteDaApi({ baseUrl, versaoDoApp })` em cada pacote manda `X-App-Tipo` (`gestao` / `vendas`) e `X-App-Versao` em toda chamada. 426 `APP_DESATUALIZADO` vira `ErroAppDesatualizado` (com `versaoMinima` e `versaoAtual`) e 400 `APP_TIPO_INVALIDO` vira `ErroTipoDeAppInvalido`; a mensagem é a `detail` da API. Reconhecer com `ehAppDesatualizado(erro)` / `ehTipoDeAppInvalido(erro)`. Uso: `eu({ client })`; o erro chega em `error` (ou é lançado com `throwOnError`).
+- Vitest 5.1.0 (já na tabela do ADR-0001). Testes: cabeçalhos, 426, 400 e outro 400 comum, e a barreira (o cliente do vendedor não contém `preco_custo`, `precoCusto`, `/api/dona`, `api-client-dona` nem `owner-app`). `@types/node` 26.6.6 só no pacote do vendedor, para esse teste.
+
+**O que ficou pendente**
+- Tela de "aplicativo desatualizado" e uso real do cliente: tarefas 15 e 16.
+- O cliente ainda não guarda token nem renova a sessão (tarefas 15 e 16).
+- Só 426 e 400 viram erro tipado; 401 e 403 ficam para a tela de cada app.
+
+**Decisões tomadas**
+- Código gerado versionado (ADR-0003, item 3): o CI de front-end não precisa de Java.
+- Erro tipado por interceptador de resposta, para valer em toda rota sem repetir código.
+- `erros.ts` e `cliente.ts` são iguais nos dois pacotes, de propósito: um pacote não importa o outro (ADR-0003).

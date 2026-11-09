@@ -19,6 +19,7 @@ export default defineConfig(
       '**/coverage/',
       '**/target/',
       'docs/',
+      'packages/api-client-*/src/gerado/',
     ],
   },
   eslint.configs.recommended,

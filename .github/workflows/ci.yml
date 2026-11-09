@@ -26,10 +26,19 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      # Cliente gerado em dia com o OpenAPI versionado (o backend confere o OpenAPI com a API, no job backend).
+      - run: npm run api:clientes -- --so-gerar
+      - name: Código gerado não pode divergir
+        run: |
+          if [ -n "$(git status --porcelain -- packages/api-client-dona packages/api-client-vendedor)" ]; then
+            git status --short -- packages/api-client-dona packages/api-client-vendedor
+            echo "::error::O código gerado dos clientes está desatualizado. Rode npm run api:clientes e inclua o resultado no commit."
+            exit 1
+          fi
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run format:check
-      # Tarefas 13 a 16 só acrescentam os scripts "test" e "build" nos workspaces.
+      # Tarefas 14 a 16 só acrescentam os scripts "test" e "build" nos workspaces.
       - run: npm test --workspaces --if-present
       - run: npm run build --workspaces --if-present
 
