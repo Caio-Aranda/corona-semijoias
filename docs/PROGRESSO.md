@@ -24,7 +24,7 @@ Lista oficial, aprovada pelo responsável. Os ADRs e as tarefas usam estes núme
 | 10 | feat(auth): a dona cria usuários e redefine a senha temporária (troca obrigatória, regras da senha) | Concluída (PR 15) · [detalhe](progresso/fase-0.md#tarefa-10-a-dona-cria-usuários-e-redefine-a-senha-temporária) |
 | 11 | feat(auth): sessão longa, limite de tentativas e registro de acessos (refresh com rotação, identificador do aparelho, bloqueio 5/15, prazo offline guardado) | Concluída (PR 16) · [detalhe](progresso/fase-0.md#tarefa-11-sessão-longa-limite-de-tentativas-e-registro-de-acessos) |
 | 12 | feat(api): versão mínima e tipo de app (cabeçalhos; o tipo é conveniência, não segurança) | Concluída (PR 18) · [detalhe](progresso/fase-0.md#tarefa-12-versão-mínima-e-tipo-de-app) |
-| 13 | feat(api-client): clientes gerados do OpenAPI, um da dona e um do vendedor | Concluída (PR a informar) · [detalhe](progresso/fase-0.md#tarefa-13-clientes-gerados-do-openapi) |
+| 13 | feat(api-client): clientes gerados do OpenAPI, um da dona e um do vendedor | Concluída (PR 19) · [detalhe](progresso/fase-0.md#tarefa-13-clientes-gerados-do-openapi) |
 | 14 | feat(ui): tema da marca e componentes base em packages/ui | Pendente |
 | 15 | feat(owner-app): Corona Gestão com login e tela inicial | Pendente |
 | 16 | feat(seller-app): Corona Vendas com login online e barreira contra código da dona | Pendente |
