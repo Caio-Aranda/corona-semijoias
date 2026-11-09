@@ -30,7 +30,7 @@ class BancoDeDadosTest extends TesteDeIntegracao {
                 versoes.add(linhas.getString(1));
             }
         }
-        assertThat(versoes).contains("001", "002", "9001");
+        assertThat(versoes).contains("001", "002", "003", "9001");
     }
 
     @Test
