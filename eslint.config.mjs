@@ -35,6 +35,11 @@ export default defineConfig(
     files: ['**/*.{js,mjs,cjs}'],
     extends: [tseslint.configs.disableTypeChecked],
   },
+  // Scripts de apoio rodam no Node.
+  {
+    files: ['scripts/**/*.mjs'],
+    languageOptions: { globals: { process: 'readonly', console: 'readonly' } },
+  },
   // Barreira de importação, primeira camada (ADR-0003).
   {
     files: ['apps/seller-app/**/*.{ts,tsx}'],

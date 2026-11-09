@@ -299,6 +299,34 @@ Quando passa o prazo máximo sem internet (Corona Vendas, §11):
 > O Corona Gestão só funciona com internet. Conecte-se e tente de novo.
 > Botão: **Tentar de novo**.
 
+**Erros gerais da API**
+
+Textos que o servidor devolve quando o problema não é de um assunto específico (tarefa 6). O servidor não sabe qual é a tela, então os textos servem para qualquer uma, inclusive consultas. Cada um vai na resposta como título (a frase em negrito) e mensagem (o texto inteiro, que repete o título).
+
+Algo inesperado no servidor:
+
+> **Algo deu errado agora.**
+> Algo deu errado agora. Tente de novo. Se continuar, fale com o suporte do sistema.
+
+Endereço que o servidor não conhece (em geral, aplicativo desatualizado):
+
+> **Não encontramos o que você pediu.**
+> Não encontramos o que você pediu. Atualize o aplicativo e tente de novo. Se continuar, fale com o suporte do sistema.
+
+Dados que não passaram na conferência:
+
+> **Alguns dados não estão corretos.**
+> Alguns dados não estão corretos. Confira o que você preencheu e tente de novo.
+
+Campo sem texto próprio (aviso ao lado do campo):
+
+> Confira este campo e tente de novo.
+
+Pedido que o servidor não entendeu (em geral, aplicativo desatualizado):
+
+> **Não foi possível entender o pedido.**
+> Não foi possível entender o pedido. Atualize o aplicativo e tente de novo. Se continuar, fale com o suporte do sistema.
+
 ## 7. Estado de conexão do app do vendedor
 
 Sempre em palavras comuns (§19.11). Nunca "fila", "sincronização" ou "pendentes".
