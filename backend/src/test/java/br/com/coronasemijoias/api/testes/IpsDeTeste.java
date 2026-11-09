@@ -21,7 +21,7 @@ public class IpsDeTeste {
     MockMvcBuilderCustomizer ipAleatorioEmCadaPedido() {
         return construtor -> construtor.defaultRequest(get("/").with(requisicao -> {
             requisicao.setRemoteAddr(aleatorio());
-            return requisicao;
+            return CabecalhosDeAppDeTeste.completar(requisicao);
         }));
     }
 

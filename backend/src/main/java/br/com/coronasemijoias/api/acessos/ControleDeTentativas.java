@@ -1,5 +1,6 @@
 package br.com.coronasemijoias.api.acessos;
 
+import br.com.coronasemijoias.api.aplicativo.TipoDeApp;
 import br.com.coronasemijoias.api.comum.identificadores.UuidV7;
 import br.com.coronasemijoias.api.configuracoes.ChaveDeConfiguracao;
 import br.com.coronasemijoias.api.configuracoes.Configuracoes;
@@ -48,8 +49,8 @@ public class ControleDeTentativas {
     }
 
     /** Uma tentativa a gravar. {@code ip} é nulo só no {@code BLOQUEIO_LIMPO}. */
-    public record Tentativa(String login, String ip, UUID dispositivoId, ResultadoDaTentativa resultado,
-            Instant ocorridaEm) {
+    public record Tentativa(String login, String ip, UUID dispositivoId, TipoDeApp tipoApp,
+            ResultadoDaTentativa resultado, Instant ocorridaEm) {
     }
 
     private final JdbcTemplate jdbc;
@@ -93,7 +94,7 @@ public class ControleDeTentativas {
      * Grava um erro de senha e, se ele completar um limite, o fim do bloqueio na mesma linha. Devolve o
      * bloqueio que este erro começou, se começou.
      */
-    public Optional<Bloqueio> registrarErro(String login, String ip, UUID dispositivoId, Instant agora) {
+    public Optional<Bloqueio> registrarErro(String login, String ip, UUID dispositivoId, TipoDeApp tipoApp, Instant agora) {
         String registro = paraRegistro(login);
         Long errosDoLogin = jdbc.queryForObject("""
                 SELECT count(*) FROM corona.tentativas_login
@@ -117,7 +118,7 @@ public class ControleDeTentativas {
                 ? agora.plus(Duration.ofMinutes(configuracoes.inteiro(ChaveDeConfiguracao.TEMPO_BLOQUEIO_LOGIN_MINUTOS)))
                 : null;
         Instant bloqueioDoIp = errosDoIp + 1 >= propriedades.limitePorIp() ? agora.plus(propriedades.bloqueioPorIp()) : null;
-        inserir(new Tentativa(login, ip, dispositivoId, ResultadoDaTentativa.SENHA_INCORRETA, agora),
+        inserir(new Tentativa(login, ip, dispositivoId, tipoApp, ResultadoDaTentativa.SENHA_INCORRETA, agora),
                 bloqueioDoLogin, bloqueioDoIp);
         return Stream.of(bloqueioDoLogin, bloqueioDoIp).filter(i -> i != null).max(Comparator.naturalOrder())
                 .map(Bloqueio::new);
@@ -125,15 +126,16 @@ public class ControleDeTentativas {
 
     /** Redefinição de senha: retira o bloqueio daquele login, em qualquer IP (o bloqueio só por IP continua). */
     public void limparBloqueio(String login, Instant agora) {
-        inserir(new Tentativa(login, null, null, ResultadoDaTentativa.BLOQUEIO_LIMPO, agora), null, null);
+        inserir(new Tentativa(login, null, null, null, ResultadoDaTentativa.BLOQUEIO_LIMPO, agora), null, null);
     }
 
     private void inserir(Tentativa t, Instant bloqueioAte, Instant bloqueioDoIpAte) {
         jdbc.update("""
                 INSERT INTO corona.tentativas_login
-                    (id, login, ip, dispositivo_id, resultado, bloqueio_ate, bloqueio_do_ip_ate, ocorrida_em)
-                VALUES (?, ?, ?::inet, ?, ?, ?, ?, ?)""",
-                UuidV7.gerar(), paraRegistro(t.login()), t.ip(), t.dispositivoId(), t.resultado().name(),
+                    (id, login, ip, dispositivo_id, tipo_app, resultado, bloqueio_ate, bloqueio_do_ip_ate, ocorrida_em)
+                VALUES (?, ?, ?::inet, ?, ?, ?, ?, ?, ?)""",
+                UuidV7.gerar(), paraRegistro(t.login()), t.ip(), t.dispositivoId(),
+                t.tipoApp() == null ? null : t.tipoApp().codigo(), t.resultado().name(),
                 bloqueioAte == null ? null : Timestamp.from(bloqueioAte),
                 bloqueioDoIpAte == null ? null : Timestamp.from(bloqueioDoIpAte),
                 Timestamp.from(t.ocorridaEm()));

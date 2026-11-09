@@ -32,7 +32,8 @@ import tools.jackson.databind.json.JsonMapper;
 class LoginTest extends TesteDeIntegracao {
 
     private static final String NAO_FOI_POSSIVEL_ENTRAR =
-            "Não foi possível entrar. Usuário ou senha incorretos. Confira o que você digitou e tente de novo.";
+            "Não foi possível entrar. Usuário ou senha incorretos. Confira o que você digitou e tente de novo. "
+                    + "Se esqueceu a senha, fale com o suporte do sistema.";
 
     @Autowired
     MockMvc mvc;
@@ -116,11 +117,14 @@ class LoginTest extends TesteDeIntegracao {
         // Vendedor sem aparelho, ou dona com aparelho: só depois da senha certa, 400 e nada de token.
         UsuarioDeTeste vendedor = usuarios.criarVendedor();
         UsuarioDeTeste dona = usuarios.criarDona();
-        for (Map<String, Object> corpo : List.of(
-                Map.<String, Object>of("login", vendedor.login(), "senha", vendedor.senha()),
-                Map.<String, Object>of("login", dona.login(), "senha", dona.senha(), "dispositivoId", UUID.randomUUID()))) {
+        // O aparelho é exigido pelo aplicativo (vendas), não pelo perfil.
+        for (Map.Entry<String, Map<String, Object>> caso : List.of(
+                Map.entry("vendas", Map.<String, Object>of("login", vendedor.login(), "senha", vendedor.senha())),
+                Map.entry("gestao", Map.<String, Object>of("login", dona.login(), "senha", dona.senha(),
+                        "dispositivoId", UUID.randomUUID())))) {
             mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
-                            .content(json.writeValueAsString(corpo)))
+                            .header("X-App-Tipo", caso.getKey())
+                            .content(json.writeValueAsString(caso.getValue())))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.codigo").value("PEDIDO_INVALIDO"))
                     .andExpect(jsonPath("$.tokenDeAcesso").doesNotExist());
@@ -156,7 +160,7 @@ class LoginTest extends TesteDeIntegracao {
     @Test
     void senhaErradaLoginInexistenteEInativoComSenhaErradaDaoAMesmaResposta() throws Exception {
         UsuarioDeTeste ativo = usuarios.criarDona();
-        UsuarioDeTeste inativo = usuarios.criarVendedor();
+        UsuarioDeTeste inativo = usuarios.criarDona();
         usuarios.desativar(inativo);
 
         String senhaErrada = corpoTexto(entrar(ativo.login(), "senha-errada-1").andExpect(status().isUnauthorized()));

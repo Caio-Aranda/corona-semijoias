@@ -71,7 +71,12 @@ public class RespostasDeSeguranca implements AuthenticationEntryPoint, AccessDen
 
     private void escrever(HttpServletRequest requisicao, HttpServletResponse resposta, HttpStatus status,
             CodigoErro codigo) throws IOException {
-        ProblemDetail problema = Problemas.de(status, codigo);
+        escrever(requisicao, resposta, status, Problemas.de(status, codigo));
+    }
+
+    /** Escreve um erro já montado, no mesmo formato do Spring MVC (usado também pelo filtro de tipo e versão). */
+    public void escrever(HttpServletRequest requisicao, HttpServletResponse resposta, HttpStatus status,
+            ProblemDetail problema) throws IOException {
         // Os mesmos campos que o Spring MVC escreve para um ProblemDetail.
         Map<String, Object> corpo = new LinkedHashMap<>();
         if (problema.getType() != null) {
