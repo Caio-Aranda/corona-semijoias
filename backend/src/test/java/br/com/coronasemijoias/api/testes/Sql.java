@@ -13,9 +13,11 @@ public final class Sql {
     private Sql() {
     }
 
+    /** Executa qualquer comando (inclusive um SELECT de função) e devolve as linhas alteradas, ou -1. */
     public static int executar(Connection conexao, String sql, Object... parametros) throws SQLException {
         try (PreparedStatement comando = preparar(conexao, sql, parametros)) {
-            return comando.executeUpdate();
+            comando.execute();
+            return comando.getUpdateCount();
         }
     }
 
