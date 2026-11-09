@@ -1,0 +1,49 @@
+name: Estresse do sync
+
+# ADR-0002, item 5: versão longa (cerca de 10 minutos) do EstresseDoPullTest. A versão curta
+# (20 s) roda em todo Pull Request, dentro do job "backend" do ci.yml. Semanal, e não diário,
+# para poupar os minutos do GitHub Actions.
+on:
+  workflow_dispatch:
+    inputs:
+      duracao:
+        description: 'Duração no formato ISO-8601 (PT10M = 10 minutos)'
+        required: false
+        default: 'PT10M'
+      semente:
+        description: 'Semente para repetir uma execução (vazio = número da execução)'
+        required: false
+        default: ''
+  schedule:
+    # Segunda-feira às 06:00 UTC (03:00 em Brasília).
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: estresse-sync-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  estresse:
+    name: estresse
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        with:
+          distribution: temurin
+          # Mesma versão do ADR-0001 e do ci.yml.
+          java-version: '21.0.13+9'
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+      # As entradas chegam por variável de ambiente, nunca coladas no script.
+      # A semente sai no log ("Estresse do pull: semente=...") para repetir a execução.
+      - name: Estresse longo do pull
+        working-directory: backend
+        env:
+          DURACAO: ${{ inputs.duracao || 'PT10M' }}
+          SEMENTE: ${{ inputs.semente || github.run_id }}
+        run: ./mvnw -B test -Dtest=EstresseDoPullTest -Dcorona.estresse.duracao="$DURACAO" -Dcorona.estresse.semente="$SEMENTE"
