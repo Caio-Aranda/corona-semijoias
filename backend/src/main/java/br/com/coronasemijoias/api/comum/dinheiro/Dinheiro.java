@@ -89,9 +89,12 @@ public final class Dinheiro {
 
     /**
      * Estornos proporcionais de um valor (por exemplo, a comissão de uma venda) conforme a base é
-     * devolvida aos poucos. Cada estorno é {@code valorOriginal x devolvido / baseOriginal},
-     * arredondado; o estorno da devolução que completa a base inteira leva o resto, para a soma
-     * dos estornos fechar exata com o valor original.
+     * devolvida aos poucos, calculados <strong>pelo acumulado</strong> (ADR-0002, item 2):
+     * {@code estorno_k = arredondar(valorOriginal x devolvidoAcumulado / baseOriginal) - jaEstornado}.
+     *
+     * <p>Assim os arredondamentos não se acumulam: nenhum estorno inverte o sinal, a soma dos estornos
+     * nunca passa do valor original e a devolução que completa a base fecha exata, sem caso especial
+     * (o acumulado dela é o próprio valor original).
      *
      * @param basesDevolvidas todas as devoluções, na ordem em que aconteceram (a última é a nova)
      * @return um estorno por devolução, na mesma ordem
@@ -110,16 +113,13 @@ public final class Dinheiro {
                 throw new IllegalArgumentException("Cada valor devolvido precisa ser maior que zero.");
             }
             devolvido = devolvido.add(base);
-            int comparacao = devolvido.compareTo(baseOriginal);
-            if (comparacao > 0) {
+            if (devolvido.compareTo(baseOriginal) > 0) {
                 throw new IllegalArgumentException("As devoluções (" + devolvido.toPlainString()
                         + ") passam da base original (" + baseOriginal.toPlainString() + ").");
             }
-            BigDecimal estorno = comparacao == 0
-                    ? valorOriginal.subtract(estornado).setScale(ESCALA)
-                    : valorOriginal.multiply(base).divide(baseOriginal, ESCALA, ARREDONDAMENTO);
-            estornos.add(estorno);
-            estornado = estornado.add(estorno);
+            BigDecimal estornadoAteAqui = valorOriginal.multiply(devolvido).divide(baseOriginal, ESCALA, ARREDONDAMENTO);
+            estornos.add(estornadoAteAqui.subtract(estornado));
+            estornado = estornadoAteAqui;
         }
         return List.copyOf(estornos);
     }
