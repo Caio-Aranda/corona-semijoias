@@ -19,3 +19,19 @@ Atualizado pela implementadora ao fim de cada tarefa: o que foi feito, o que fic
 - Os termos "issue", "Closes #", "main protegida" e `loja-semijoias` aparecem só na seção 22. Nas seções 14 e 19 o novo fluxo é descrito sem citá-los.
 - Os nomes exatos dos cabeçalhos de versão e de tipo de app não foram definidos na especificação.
 - A estratégia do limite seguro do pull não foi detalhada; fica no ADR-0002.
+
+### Tarefa 2: glossário da interface e especificação v1.2
+
+**O que foi feito**
+- Criado `docs/glossario-interface.md` com as 10 partes pedidas: termos da loja, lista de palavras proibidas em dois blocos com marcadores (A, sem diferenciar maiúsculas; B, só a forma exata em maiúsculas), situações na tela, botões e posição, modelo de mensagem, mensagens padrão da Fase 0, estado de conexão do app do vendedor, formatos, termos a confirmar e dúvidas para a dona.
+- `docs/ESPECIFICACAO.md` na versão 1.2 (09/11/2026): §14 passa a dizer que o prefixo da branch é o tipo do Conventional Commits; §22 com a entrada da v1.2. Nenhuma outra linha mudou.
+
+**O que ficou pendente**
+- Verificador automático das palavras proibidas (fora de escopo; o glossário só entrega as listas).
+- As 12 dúvidas da parte 10 do glossário, que dependem da dona ou do responsável.
+
+**Decisões tomadas**
+- "Cancelar" segue a §19.5: o botão genérico é "desistir sem salvar"; cancelar venda, pagamento ou devolução é ação nomeada com o objeto, com confirmação dizendo que nada é apagado. "Anular" não foi adotado e ficou só como dúvida para a dona.
+- Posição dos botões (Voltar no alto à esquerda; Cancelar e depois o botão principal no rodapé, à direita) é proposta deste glossário, pois a especificação só pede posição igual.
+- Regras da senha nova e `{minutos}` do bloqueio são valores propostos, a fixar na decisão de autenticação.
+- Conflito não resolvido na especificação (registrado como dúvida 12, sem alterar a especificação): a §12 usa "Remessas", "Movimentações" e "sincronização" em nomes de relatório e no aviso de dados, o que conflita com §19.1 e §19.11.
