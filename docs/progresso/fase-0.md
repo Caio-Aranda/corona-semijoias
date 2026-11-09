@@ -421,3 +421,24 @@ ADR-0003 (itens 1 a 3 e barreira) e ADR-0004 (cabeçalhos).
 - Código gerado versionado (ADR-0003, item 3): o CI de front-end não precisa de Java.
 - Erro tipado por interceptador de resposta, para valer em toda rota sem repetir código.
 - `erros.ts` e `cliente.ts` são iguais nos dois pacotes, de propósito: um pacote não importa o outro (ADR-0003).
+
+### Tarefa 14: tema e componentes base
+
+ESPECIFICAÇÃO §18 e §19, glossário (partes 4, 5 e 11), ADR-0003 item 3.
+
+**O que foi feito**
+- `@corona/ui` (React 19.3.1, sem importar `api-client-*` nem `apps/*`). Os apps importam `@corona/ui/estilos.css` uma vez e os componentes de `@corona/ui`.
+- Tokens como variáveis CSS em `src/tema.css`: dourado `#C9A24B` e champanhe `#F3E2C7` só na marca; telas de dados com texto marrom escuro sobre branco/bege claro; verde e vermelho claros para sucesso e erro, fora da paleta da marca; espaçamento, raios e alvos de clique grandes.
+- Fontes empacotadas, sem CDN: `@fontsource/cormorant-garamond` e `@fontsource/inter` 5.3.0 (exatas, licença OFL-1.1 conferida no `package.json` de cada uma). Cormorant só no título de marca; Inter nos dados.
+- Componentes: `Botao` (primário, secundário, perigoso, `grande`), `RodapeDeAcoes` (Cancelar à esquerda, principal à direita), `Tabela`, `Campo` (rótulo, ajuda e erro ligados ao campo), `Aviso`, `CabecalhoDeMarca` (texto "Corona Semijoias"), `ValorTresMoedas` (recebe textos prontos, não converte) e `PainelDePecaLida` (foto grande; sem foto ou foto quebrada mostra "Sem foto" e nada trava; sucesso e erro com cor e texto).
+- Foco visível em todo elemento, alvos de pelo menos 44 px (56 px no tamanho grande).
+- Testes (Vitest 5.1.0 + Testing Library): componentes, contraste AA dos pares de cor lidos do próprio `tema.css`, e a varredura de termos proibidos (ADR-0003 item 3). 33 testes.
+
+**O que ficou pendente**
+- Som do leitor, logotipo (o corrigido ainda não existe) e língua das telas (pendente de decisão).
+- Uso real nos apps: tarefas 15 e 16.
+
+**Decisões tomadas**
+- Botão primário: fundo dourado com texto escuro (contraste AA); dourado nunca é cor de texto pequeno.
+- O contraste é testado sobre o CSS, que é a fonte única dos valores.
+- Pacote consumido direto do código-fonte (`main` aponta para `src/index.ts`), sem etapa de build.

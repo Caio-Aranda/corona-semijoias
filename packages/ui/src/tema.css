@@ -1,0 +1,54 @@
+/*
+ * Tokens da marca Corona Semijoias (especificação §18).
+ * Dourado: só detalhes, bordas, ícones e títulos grandes; nunca texto pequeno.
+ * Esta é a fonte única dos valores: o teste de contraste lê este arquivo.
+ */
+:root {
+  /* Marca */
+  --cor-ouro: #c9a24b;
+  --cor-champanhe: #f3e2c7;
+
+  /* Telas de dados: fundo claro, texto escuro */
+  --cor-fundo: #ffffff;
+  --cor-fundo-suave: #fbf7f0;
+  --cor-texto: #2b211a;
+  --cor-texto-suave: #5c4a3d;
+  --cor-borda: #e4d5bc;
+
+  /* Estados do leitor e dos avisos: verde e vermelho de verdade, fora da paleta da marca */
+  --cor-sucesso-fundo: #dff3e3;
+  --cor-sucesso-texto: #14532d;
+  --cor-sucesso-borda: #1e7a3a;
+  --cor-erro-fundo: #fbe0e0;
+  --cor-erro-texto: #7f1d1d;
+  --cor-erro-borda: #b42318;
+  --cor-aviso-fundo: #fff3d6;
+  --cor-aviso-texto: #5c3d00;
+  --cor-aviso-borda: #b7791f;
+
+  /* Botões e foco */
+  --cor-botao-perigo-fundo: #b42318;
+  --cor-botao-perigo-texto: #ffffff;
+  --cor-foco: #1d4ed8;
+
+  /* Tipografia: serifada só em títulos de marca; Inter nos dados */
+  --fonte-marca: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --fonte-dados: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --texto-pequeno: 0.875rem;
+  --texto-base: 1rem;
+  --texto-grande: 1.25rem;
+  --texto-titulo: 2rem;
+  --texto-titulo-marca: 2.75rem;
+
+  /* Espaçamento, raios, alvos de clique */
+  --espaco-1: 0.25rem;
+  --espaco-2: 0.5rem;
+  --espaco-3: 0.75rem;
+  --espaco-4: 1rem;
+  --espaco-6: 1.5rem;
+  --espaco-8: 2rem;
+  --raio-1: 0.375rem;
+  --raio-2: 0.75rem;
+  --alvo-minimo: 2.75rem;
+  --alvo-grande: 3.5rem;
+}

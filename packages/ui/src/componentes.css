@@ -1,0 +1,227 @@
+body {
+  margin: 0;
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
+  font-family: var(--fonte-dados);
+  font-size: var(--texto-base);
+  line-height: 1.5;
+}
+
+:focus-visible {
+  outline: 3px solid var(--cor-foco);
+  outline-offset: 2px;
+}
+
+.cs-botao {
+  min-height: var(--alvo-minimo);
+  padding: var(--espaco-2) var(--espaco-6);
+  border: 2px solid var(--cor-ouro);
+  border-radius: var(--raio-1);
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
+  font: 600 var(--texto-base) var(--fonte-dados);
+  cursor: pointer;
+}
+.cs-botao--grande {
+  min-height: var(--alvo-grande);
+  padding: var(--espaco-3) var(--espaco-8);
+  font-size: var(--texto-grande);
+}
+.cs-botao--primario {
+  background: var(--cor-ouro);
+  border-color: var(--cor-texto);
+}
+.cs-botao--perigoso {
+  background: var(--cor-botao-perigo-fundo);
+  border-color: var(--cor-botao-perigo-fundo);
+  color: var(--cor-botao-perigo-texto);
+}
+.cs-botao:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.cs-rodape-acoes {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--espaco-4);
+  padding: var(--espaco-4) 0;
+}
+.cs-rodape-acoes--so-principal {
+  justify-content: flex-end;
+}
+
+.cs-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--cor-texto);
+  font-size: var(--texto-base);
+}
+.cs-tabela caption {
+  text-align: left;
+  font-weight: 600;
+  padding-bottom: var(--espaco-2);
+}
+.cs-tabela th,
+.cs-tabela td {
+  height: 3.25rem;
+  padding: var(--espaco-2) var(--espaco-4);
+  border-bottom: 1px solid var(--cor-borda);
+  text-align: left;
+}
+.cs-tabela th {
+  background: var(--cor-fundo-suave);
+  font-weight: 600;
+}
+.cs-tabela .cs-numero {
+  text-align: right;
+}
+
+.cs-campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-1);
+  margin-bottom: var(--espaco-4);
+}
+.cs-campo label {
+  font-weight: 600;
+}
+.cs-campo input,
+.cs-campo select,
+.cs-campo textarea {
+  min-height: var(--alvo-minimo);
+  padding: var(--espaco-2) var(--espaco-3);
+  border: 2px solid var(--cor-texto-suave);
+  border-radius: var(--raio-1);
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
+  font: var(--texto-base) var(--fonte-dados);
+}
+.cs-campo--erro input,
+.cs-campo--erro select,
+.cs-campo--erro textarea {
+  border-color: var(--cor-erro-borda);
+}
+.cs-campo__ajuda {
+  color: var(--cor-texto-suave);
+  font-size: var(--texto-pequeno);
+}
+.cs-campo__erro {
+  color: var(--cor-erro-texto);
+  font-size: var(--texto-pequeno);
+  font-weight: 600;
+}
+
+.cs-aviso {
+  padding: var(--espaco-4);
+  border-left: 6px solid;
+  border-radius: var(--raio-1);
+}
+.cs-aviso__titulo {
+  margin: 0 0 var(--espaco-1);
+  font-weight: 700;
+}
+.cs-aviso__texto {
+  margin: 0;
+}
+.cs-aviso--informacao {
+  background: var(--cor-fundo-suave);
+  border-color: var(--cor-ouro);
+  color: var(--cor-texto);
+}
+.cs-aviso--sucesso {
+  background: var(--cor-sucesso-fundo);
+  border-color: var(--cor-sucesso-borda);
+  color: var(--cor-sucesso-texto);
+}
+.cs-aviso--atencao {
+  background: var(--cor-aviso-fundo);
+  border-color: var(--cor-aviso-borda);
+  color: var(--cor-aviso-texto);
+}
+.cs-aviso--erro {
+  background: var(--cor-erro-fundo);
+  border-color: var(--cor-erro-borda);
+  color: var(--cor-erro-texto);
+}
+
+.cs-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-4);
+  padding: var(--espaco-4) var(--espaco-6);
+  background: var(--cor-champanhe);
+  border-bottom: 3px solid var(--cor-ouro);
+}
+.cs-cabecalho__marca {
+  margin: 0;
+  color: var(--cor-ouro);
+  font: 600 var(--texto-titulo-marca) / 1.1 var(--fonte-marca);
+}
+.cs-cabecalho__app {
+  color: var(--cor-texto);
+  font-weight: 600;
+}
+
+.cs-valor__real {
+  display: block;
+  color: var(--cor-texto);
+  font-size: var(--texto-grande);
+  font-weight: 700;
+}
+.cs-valor__outras {
+  display: block;
+  color: var(--cor-texto);
+  font-size: var(--texto-pequeno);
+}
+
+.cs-peca {
+  display: grid;
+  grid-template-columns: minmax(16rem, 24rem) 1fr;
+  gap: var(--espaco-6);
+  padding: var(--espaco-6);
+  border: 3px solid var(--cor-borda);
+  border-radius: var(--raio-2);
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
+}
+.cs-peca--sucesso {
+  border-color: var(--cor-sucesso-borda);
+  background: var(--cor-sucesso-fundo);
+}
+.cs-peca--erro {
+  border-color: var(--cor-erro-borda);
+  background: var(--cor-erro-fundo);
+}
+.cs-peca__foto,
+.cs-peca__sem-foto {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: var(--raio-1);
+}
+.cs-peca__foto {
+  object-fit: cover;
+}
+.cs-peca__sem-foto {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cor-fundo-suave);
+  border: 2px dashed var(--cor-ouro);
+  color: var(--cor-texto-suave);
+  text-align: center;
+}
+.cs-peca__nome {
+  margin: 0;
+  font-size: var(--texto-titulo);
+  font-weight: 700;
+}
+.cs-peca__codigo {
+  color: var(--cor-texto-suave);
+  font-size: var(--texto-grande);
+}
+.cs-peca__situacao {
+  margin: var(--espaco-3) 0 0;
+  font-size: var(--texto-grande);
+  font-weight: 700;
+}
