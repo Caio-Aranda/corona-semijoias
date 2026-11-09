@@ -13,7 +13,7 @@ import java.util.UUID;
  * @param jti           identificador do token
  * @param sid           família da sessão (tarefa 11; hoje sempre vazio)
  * @param dispositivoId aparelho (tarefa 11; hoje sempre vazio)
- * @param escopo        escopo restrito (tarefa 10; hoje sempre vazio)
+ * @param escopo        escopo restrito ({@code TROCA_SENHA}) ou vazio no token de acesso comum
  */
 public record UsuarioAutenticado(
         UUID id, String perfil, UUID vendedorId, String jti, UUID sid, UUID dispositivoId, String escopo) {

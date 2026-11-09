@@ -14,6 +14,7 @@ import br.com.coronasemijoias.api.comum.erros.ErroDaApi;
 import br.com.coronasemijoias.api.seguranca.EmissorDeToken;
 import br.com.coronasemijoias.api.usuarios.ConferenciaDeSenha;
 import br.com.coronasemijoias.api.usuarios.UsuarioRepositorio;
+import java.time.Clock;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +26,8 @@ class ServicoDeLoginTest {
 
     private final UsuarioRepositorio usuarios = mock(UsuarioRepositorio.class);
     private final ConferenciaDeSenha conferencia = mock(ConferenciaDeSenha.class);
-    private final ServicoDeLogin servico = new ServicoDeLogin(usuarios, conferencia, mock(EmissorDeToken.class));
+    private final ServicoDeLogin servico = new ServicoDeLogin(
+            usuarios, conferencia, mock(EmissorDeToken.class), Clock.systemUTC());
 
     private void recusadoComoLoginInvalido(String login, String senha) {
         assertThatThrownBy(() -> servico.entrar(login, senha))

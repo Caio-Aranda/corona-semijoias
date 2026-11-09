@@ -2,6 +2,7 @@ package br.com.coronasemijoias.api.testes;
 
 import br.com.coronasemijoias.api.seguranca.ConteudoDoToken;
 import br.com.coronasemijoias.api.seguranca.EmissorDeToken;
+import java.time.Instant;
 import java.util.UUID;
 import org.springframework.boot.test.context.TestComponent;
 import org.springframework.http.HttpHeaders;
@@ -54,6 +55,12 @@ public class UsuariosDeTeste {
         return new UsuarioDeTeste(id, nome, login, senha, perfil, vendedorId);
     }
 
+    /** Marca o usuário como "com senha temporária" (troca obrigatória), com ou sem vencimento. */
+    public void marcarTrocaObrigatoria(UsuarioDeTeste usuario, Instant venceEm) {
+        jdbc.update("UPDATE corona.usuarios SET troca_de_senha_obrigatoria = true, senha_temporaria_vence_em = ? WHERE id = ?",
+                venceEm == null ? null : java.sql.Timestamp.from(venceEm), usuario.id());
+    }
+
     public void desativar(UsuarioDeTeste usuario) {
         jdbc.update("UPDATE corona.usuarios SET ativo = false WHERE id = ?", usuario.id());
     }
@@ -65,6 +72,12 @@ public class UsuariosDeTeste {
     /** Token válido emitido pela própria API. */
     public String token(UsuarioDeTeste usuario) {
         return emissor.emitir(ConteudoDoToken.de(usuario.id(), usuario.perfil(), usuario.vendedorId())).valor();
+    }
+
+    /** Token restrito da troca de senha, emitido pela própria API (mesmo que o usuário não esteja marcado). */
+    public String tokenRestrito(UsuarioDeTeste usuario) {
+        return emissor.emitir(ConteudoDoToken.restritoParaTrocaDeSenha(
+                usuario.id(), usuario.perfil(), usuario.vendedorId())).valor();
     }
 
     /** Uma dona ativa, criada uma vez por contexto. */

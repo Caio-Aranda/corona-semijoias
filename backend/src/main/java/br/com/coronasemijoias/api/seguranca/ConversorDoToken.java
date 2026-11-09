@@ -2,6 +2,8 @@ package br.com.coronasemijoias.api.seguranca;
 
 import br.com.coronasemijoias.api.usuarios.Usuario;
 import br.com.coronasemijoias.api.usuarios.UsuarioRepositorio;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -43,6 +45,18 @@ public class ConversorDoToken implements Converter<Jwt, AbstractAuthenticationTo
         if (!usuario.getPerfil().equals(token.getClaimAsString(ConteudoDoToken.PERFIL))
                 || !Objects.equals(usuario.getVendedorId(), uuid(token.getClaimAsString(ConteudoDoToken.VENDEDOR_ID)))) {
             throw new BadCredentialsException("perfil ou vendedor do token diferentes do cadastro");
+        }
+        // Senha redefinida ou trocada depois da emissão: o token é de antes e não vale mais. A hora da
+        // troca é gravada em segundos inteiros, a mesma precisão do iat (ADR-0004, item 2).
+        Instant alterada = usuario.getCredencialAlteradaEm();
+        if (alterada != null && token.getIssuedAt().isBefore(alterada.truncatedTo(ChronoUnit.SECONDS))) {
+            throw new BadCredentialsException("token emitido antes da última troca de credencial");
+        }
+        // Token restrito só para quem ainda deve trocar a senha; token comum só para quem já trocou.
+        String escopo = token.getClaimAsString(ConteudoDoToken.ESCOPO);
+        boolean restrito = ConteudoDoToken.ESCOPO_TROCA_SENHA.equals(escopo);
+        if ((escopo != null && !restrito) || restrito != usuario.isTrocaDeSenhaObrigatoria()) {
+            throw new BadCredentialsException("escopo do token não confere com a situação da senha");
         }
         UsuarioAutenticado principal = new UsuarioAutenticado(
                 usuario.getId(), usuario.getPerfil(), usuario.getVendedorId(), token.getId(),
