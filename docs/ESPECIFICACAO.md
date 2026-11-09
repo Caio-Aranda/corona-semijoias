@@ -1,6 +1,6 @@
 # Especificação completa: Sistema de Semijoias Consignadas
 
-Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.4, 09/11/2026.
+Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.5, 09/11/2026.
 
 ## 1. Objetivo e contexto
 
@@ -183,6 +183,13 @@ Regras:
 - Valores em `NUMERIC(14,2)`, **nunca float**, com regra única de arredondamento: **HALF_UP com escala 2**.
 - Datas em UTC, exibidas em horário de Brasília.
 - **O preço de custo nunca chega ao PC do vendedor.**
+- O financeiro é completo, mas o sistema **não executa pagamentos**. Dinheiro, Pix, cartão, cheque, boleto e entrada são só **formas de pagamento registradas**, sem integração com banco, Pix ou maquininha.
+- **Três moedas.** A moeda padrão é o **Real**: todo valor é **gravado em Real** (`NUMERIC(14,2)`, regras do ADR-0002). Todo valor mostrado na tela, no app da dona e no do vendedor (acertos, relatórios, telas de valores, preço da peça), aparece **também em Dólar e em Guarani** (o Guarani sem centavos). A conversão é **só para mostrar** e nunca é gravada como valor de lançamento.
+- **Cotação diária.** Vale a cotação oficial do Banco Central, que o servidor busca online uma vez por dia útil e guarda dia a dia, como histórico: **nunca se apaga nem se corrige por cima**. Cada lançamento é convertido pela cotação do **dia em que aconteceu**, nunca pela de hoje.
+  - Fim de semana e feriado sem cotação publicada **não são falha**: vale a do último dia útil.
+  - Busca que falhou: vale a do dia anterior, e a dona recebe um aviso em "O que precisa da sua atenção".
+  - O **acerto grava a cotação que usou**.
+  - Fonte, regras da busca, conversão e arredondamento: ADR-0006.
 
 ### 7.6 Estoque central e compras
 
@@ -289,7 +296,7 @@ Risco: etiquetas muito pequenas ou de baixa qualidade podem exigir leitor 2D ou 
 
 ### Acerto e financeiro
 
-- `acertos` (vendedor, semana, remessa, esperado, contado, faltas, descontos, comissão, líquido, status)
+- `acertos` (vendedor, semana, remessa, esperado, contado, faltas, descontos, comissão, líquido, status, cotação usada)
 - `pendencias_acerto` (acerto, produto, quantidade, valor, status, resolvida\_por)
 - `contas_receber` (venda ou acerto, devedor cliente/vendedor, parcela, vencimento, valor, status, data\_pagamento)
 - `contas_pagar` (fornecedor, compra, vencimento, valor, status)
@@ -301,6 +308,7 @@ Risco: etiquetas muito pequenas ou de baixa qualidade podem exigir leitor 2D ou 
 
 - `configuracoes` (prazo\_arrependimento\_dias, prazo\_defeito\_dias, limite\_desconto, limite\_reembolso\_semanal, aprovação acima de valor, percentual de alerta de devolução, tempo máximo offline (padrão 10 dias, configurável), tentativas de login antes do bloqueio (padrão 5), tempo de bloqueio (padrão 15 minutos))
 - `auditoria` (usuário, ação, tabela, registro, antes/depois, data)
+- `cotacoes` (data da cotação; compra, venda e as duas paridades do Dólar e do Guarani; hora da busca; endereço de origem). Uma linha por dia útil. **Nasce só no servidor**, é **imutável** e chega ao app do vendedor só para leitura (ADR-0006)
 - `dispositivos` (vendedor, identificação, ativo, bloqueado, último contato)
 - `sync_log` (dispositivo, lote, resultado por item)
 - `importacoes` (arquivo, criados, atualizados, recusados, erros)
@@ -338,8 +346,9 @@ O app é **offline-first**: lê e grava sempre no SQLite local, e um processo em
 | Produtos, preços, códigos | Somente a dona edita; **servidor vence**. O vendedor só recebe. |
 | Contas a receber, comissões, acertos | Gerados **pelo servidor**. O app só exibe. |
 | Maleta e acerto | Estados controlados pelo servidor. |
+| Cotações | Geradas **pelo servidor** e imutáveis. O app só recebe e **nunca usa cotação própria**. |
 
-**O que cada vendedor sincroniza (somente o necessário):** suas maletas abertas e os produtos delas (com foto e **todos os códigos de barras**, sem custo), seus clientes, suas vendas, devoluções, trocas, pagamentos e a configuração de garantia e descontos. **Nada** de financeiro geral, fornecedores, custo ou dados de outros vendedores.
+**O que cada vendedor sincroniza (somente o necessário):** suas maletas abertas e os produtos delas (com foto e **todos os códigos de barras**, sem custo), seus clientes, suas vendas, devoluções, trocas, pagamentos, a configuração de garantia e descontos e as **cotações do Dólar e do Guarani**. Sem internet, o app usa a última cotação que recebeu e **mostra a data dela**. **Nada** de financeiro geral, fornecedores, custo ou dados de outros vendedores.
 
 **Ao receber o push, o servidor:** confere a idempotência; valida que a maleta pertence ao vendedor e está ativa; valida preço, desconto, garantia e saldo (saldo negativo só ocorre por bug ou fraude e vira **alerta**, não rejeição silenciosa); **recalcula** total, parcelas e comissão; gera `contas_receber` e `comissoes`.
 
@@ -379,6 +388,7 @@ O app é **offline-first**: lê e grava sempre no SQLite local, e um processo em
 - Filtros: período, semana, vendedor, praça, cliente, produto, categoria e situação.
 - Exportação em **PDF, Excel e CSV**, com cabeçalho (loja, filtros usados, data, usuário que gerou) e totais no rodapé.
 - **Detalhamento:** clicar no total abre os registros que o compõem.
+- **Três moedas (§7.5):** todo valor aparece em Real, Dólar e Guarani. Cada lançamento é convertido pela **cotação do seu dia**, nunca pela de hoje, e o total em Dólar ou em Guarani é a **soma dos lançamentos já convertidos**. O Excel e o CSV trazem as três moedas e a data da cotação de cada linha. O cabeçalho do PDF diz que o Dólar e o Guarani seguem a cotação do Banco Central do dia de cada lançamento.
 
 Os nomes de relatório desta seção são descrição interna. O nome de tela de cada relatório segue `docs/glossario-interface.md` e é definido na tarefa daquele relatório.
 
@@ -402,7 +412,7 @@ Os nomes de relatório desta seção são descrição interna. O nome de tela de
 
 Minha maleta (saldo e peças); minhas vendas por período, cliente e produto; meus clientes e valores a receber deles; minhas devoluções e trocas; meu acerto da semana e minha comissão; recebimentos por forma de pagamento.
 
-Como o app é offline, o relatório sai do banco local com o aviso: **Dados até dd/mm às hh:mm. N itens aguardando envio** (ou **N vendas aguardando envio**, quando só houver vendas).
+Como o app é offline, o relatório sai do banco local com o aviso: **Dados até dd/mm às hh:mm. N itens aguardando envio** (ou **N vendas aguardando envio**, quando só houver vendas). O Dólar e o Guarani usam as cotações recebidas do servidor, e a data da última cotação aparece junto desse aviso.
 
 ## 13. Garantia de que tudo esteja correto
 
@@ -414,8 +424,10 @@ Como o app é offline, o relatório sai do banco local com o aviso: **Dados até
    - soma das vendas = contas a receber geradas;
    - total recebido = lançamentos de caixa;
    - total do acerto = vendas − descontos − reembolsos − comissão.
+
+   As conciliações são feitas **em Real**, com os valores gravados. Dólar e Guarani **nunca entram em conferência**, porque são só conversão para a tela (§7.5).
 4. **Testes automatizados** para cada relatório, com massa de dados conhecida e resultado calculado à mão, rodando no CI a cada Pull Request (backend com PostgreSQL via Testcontainers).
-5. `NUMERIC(14,2)`, sem float, com arredondamento HALF_UP e escala 2 (regra única, §7.5).
+5. `NUMERIC(14,2)`, sem float, com arredondamento HALF_UP e escala 2 (regra única, §7.5). A cotação não é dinheiro: fica em `NUMERIC(18,8)`, só nas colunas de cotação (ADR-0006).
 6. Datas em UTC, exibição em horário de Brasília, **semanas fechadas imutáveis**.
 7. **Validação com o cliente:** comparar os relatórios com as planilhas dele numa semana real antes da entrega.
 
@@ -462,11 +474,11 @@ Os apps compartilham `packages/` (componentes, clientes da API gerados do OpenAP
 | Fase | Entrega | Resultado |
 | --- | --- | --- |
 | **0. Fundação** | Monorepo, VS Code, Docker, CI, Flyway, login JWT, perfis, `CLAUDE.md` | Projeto roda do zero com um comando |
-| **1. Cadastros (dona)** | CRUD de fornecedor, produto (com `produto_codigos`, leitura de código, EAN-13), cliente, vendedor completo (limite, restrição, comissão, praça, abas da referência), pracas, semanas, relatórios de cadastro | Base de dados da loja |
+| **1. Cadastros (dona)** | CRUD de fornecedor, produto (com `produto_codigos`, leitura de código, EAN-13), cliente, vendedor completo (limite, restrição, comissão, praça, abas da referência), pracas, semanas, relatórios de cadastro, cotação diária do Banco Central e valores em Real, Dólar e Guarani no app da dona | Base de dados da loja |
 | **2. Estoque e compras** | Entrada de compra com leitor, cadastro rápido, **importação por planilha**, movimentações, estoque mínimo, **inventário por leitor**, relatórios de estoque | Estoque central confiável |
 | **3. Maleta** | Montagem por leitor, limite e restrição, preço congelado, reposição, **PDF da nota de remessa**, relatórios de maleta | A dona entrega a maleta |
-| **4. App do vendedor online** | Login, conferência, venda, clientes, consulta, relatórios próprios | Vendedor vende com internet |
-| **5. Offline e sync** | SQLite criptografado, outbox, push e pull, indicador, bloqueio remoto, testes de sync | Vendedor vende sem internet |
+| **4. App do vendedor online** | Login, conferência, venda, clientes, consulta, relatórios próprios, valores nas três moedas | Vendedor vende com internet |
+| **5. Offline e sync** | SQLite criptografado, outbox, push e pull (inclusive as cotações), indicador, bloqueio remoto, testes de sync | Vendedor vende sem internet |
 | **6. Devolução e troca** | Garantia, reembolso, crédito, autorização da dona, relatórios | Pós-venda completo |
 | **7. Acerto e financeiro** | Acerto semanal, comissões, contas a receber e a pagar, caixa, cheques, relatórios financeiros | Fechamento semanal |
 | **8. Painel, relatórios avançados e conciliações** | Gerenciamento semanal (referência), curva ABC, DRE, conciliações automáticas, auditoria | Visão gerencial e confiança nos números |
@@ -646,6 +658,14 @@ Importação com nome de arquivo inválido, foto duplicada, arquivo corrompido, 
 - **Fase 5:** download de fotos em segundo plano, cache em disco, retomada e limpeza.
 - **Todas as fases:** teste de uso com a dona ao final.
 
+**Três moedas (§7.5, ADR-0006)**
+
+- **Antes da Fase 1:** tarefa de backend das cotações: tabela `cotacoes`, busca diária, conversão com arredondamento por moeda e aviso de falha.
+- **Fase 1:** o app da dona mostra os valores em Real, Dólar e Guarani e o aviso de falha da busca em "O que precisa da sua atenção".
+- **Fase 4:** o app do vendedor, online, mostra os valores nas três moedas com a cotação que recebe da API.
+- **Fase 5:** as cotações chegam pelo pull; sem internet, o app usa a última cotação recebida e mostra a data dela.
+- **Fase 7:** o acerto grava a cotação que usou.
+
 **Novas pendências para o cliente**
 
 1. O vendedor deve ver **só as peças da própria maleta** ou o **catálogo completo** (para mostrar outras opções ao cliente)? Isso define quantas fotos baixar.
@@ -680,3 +700,10 @@ Importação com nome de arquivo inválido, foto duplicada, arquivo corrompido, 
   - §5: Spring Boot 4, na versão menor mais recente com suporte; a versão exata fica no ADR-0001.
   - §9: `preco_custo` sai de `produtos` e vai para a nova tabela `produtos_custos`, só do servidor e nunca sincronizada.
   - §11: senha temporária vale 7 dias; a senha definitiva não expira; muitos erros num mesmo login vindos de IPs diferentes geram só um alerta, sem bloqueio.
+- **v1.5, 09/11/2026:** decisão do responsável sobre moedas e pagamentos (ADR-0006).
+  - §7.5: o sistema não executa pagamentos; as formas de pagamento são só registradas. Tudo é gravado em Real; todo valor da tela aparece também em Dólar e em Guarani (sem centavos), pela cotação oficial do Banco Central do dia de cada lançamento, guardada dia a dia sem correção por cima. Fim de semana e feriado usam a do último dia útil; busca que falhou usa a do dia anterior e avisa a dona; o acerto grava a cotação usada.
+  - §9: nova tabela `cotacoes` (só o servidor grava, imutável, enviada ao vendedor); `acertos` com a cotação usada.
+  - §10: cotações no que o vendedor recebe e na política de conflito; sem internet, a última cotação recebida, com a data dela.
+  - §12: relatórios nas três moedas, cada lançamento pela cotação do seu dia, total como soma dos convertidos; a data da cotação no aviso do app do vendedor.
+  - §13: conciliações em Real; a cotação em `NUMERIC(18,8)`.
+  - §15 e §21: em que fase entra cada parte (backend antes da Fase 1; dona na Fase 1; vendedor online na Fase 4; pull e uso sem internet na Fase 5; acerto na Fase 7).
