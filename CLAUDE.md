@@ -41,5 +41,6 @@ TypeScript (dois apps separados) · SQLite criptografado no app do vendedor.
 - `npm run db:up` / `db:down` / `db:reset`: PostgreSQL de desenvolvimento (Docker Compose).
 - `npm run api:run`: sobe a API (perfil `dev`, Swagger ligado) contra o banco do Compose.
 - `npm run api:test`: `./mvnw verify` na pasta `backend/` (precisa do Docker aberto; Testcontainers).
+- Estresse longo do sync: `./mvnw test -Dtest=EstresseDoPullTest -Dcorona.estresse.duracao=PT10M` na pasta `backend/`.
 
 (demais comandos: preencher conforme o projeto for criado)
