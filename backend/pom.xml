@@ -24,6 +24,10 @@
         <springdoc.version>3.2.0</springdoc.version>
         <!-- "./mvnw spring-boot:run" sobe com o perfil de desenvolvimento (Swagger ligado). -->
         <spring-boot.run.profiles>dev</spring-boot.run.profiles>
+        <!-- Estresse do pull (EstresseDoPullTest): curto em todo PR; o workflow semanal
+             passa -Dcorona.estresse.duracao=PT10M. A semente fixa é impressa no log. -->
+        <corona.estresse.duracao>PT20S</corona.estresse.duracao>
+        <corona.estresse.semente>20261109</corona.estresse.semente>
     </properties>
 
     <dependencies>
@@ -118,6 +122,10 @@
                     <!-- Mockito como agente do Java (documentação do Mockito e do Spring Boot):
                          evita o aviso de que o modo atual deixará de funcionar em versão futura do Java. -->
                     <argLine>-javaagent:${org.mockito:mockito-core:jar} -Xshare:off -Duser.timezone=UTC -Dfile.encoding=UTF-8</argLine>
+                    <systemPropertyVariables>
+                        <corona.estresse.duracao>${corona.estresse.duracao}</corona.estresse.duracao>
+                        <corona.estresse.semente>${corona.estresse.semente}</corona.estresse.semente>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
         </plugins>
