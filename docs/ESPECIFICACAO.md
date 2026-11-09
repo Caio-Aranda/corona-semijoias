@@ -1,6 +1,6 @@
 # Especificação completa: Sistema de Semijoias Consignadas
 
-Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.2, 09/11/2026.
+Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.3, 09/11/2026.
 
 ## 1. Objetivo e contexto
 
@@ -226,7 +226,7 @@ O leitor USB/Bluetooth funciona como **teclado**: digita o código e envia **Ent
 - **Importação em massa** por planilha Excel/CSV (código, nome, categoria, custo, preço), com **prévia de erros** e relatório do resultado (criados, atualizados, recusados).
 - **Um produto pode ter vários códigos**: tabela `produto_codigos` em vez de um campo único.
 - Código **único globalmente**, guardado como **texto** (zeros à esquerda).
-- **Validar o dígito verificador do EAN-13** e avisar quando a leitura vier truncada ("bipe novamente").
+- **Validar o dígito verificador do EAN-13** e avisar quando a leitura vier truncada ("leia o código de novo").
 - Aceitar outros formatos (Code 128, códigos curtos) **com aviso**, caso algum fornecedor fuja do padrão. Se a premissa do EAN-13 falhar, só se ajusta a regra de validação.
 - Códigos curtos iguais de fornecedores diferentes: avisar no cadastro e a dona decide (código interno ou código vinculado ao fornecedor).
 - **Código interno** para peça sem etiqueta ou ilegível: EAN-13 com prefixo `2` (faixa de uso interno), nunca conflita com os dos fornecedores. Etiquetadora é **opcional**, só para esses casos.
@@ -298,7 +298,7 @@ Risco: etiquetas muito pequenas ou de baixa qualidade podem exigir leitor 2D ou 
 
 ### Controle
 
-- `configuracoes` (prazo\_arrependimento\_dias, prazo\_defeito\_dias, limite\_desconto, limite\_reembolso\_semanal, aprovação acima de valor, percentual de alerta de devolução, tempo máximo offline (padrão 10 dias, configurável))
+- `configuracoes` (prazo\_arrependimento\_dias, prazo\_defeito\_dias, limite\_desconto, limite\_reembolso\_semanal, aprovação acima de valor, percentual de alerta de devolução, tempo máximo offline (padrão 10 dias, configurável), tentativas de login antes do bloqueio (padrão 5), tempo de bloqueio (padrão 15 minutos))
 - `auditoria` (usuário, ação, tabela, registro, antes/depois, data)
 - `dispositivos` (vendedor, identificação, ativo, bloqueado, último contato)
 - `sync_log` (dispositivo, lote, resultado por item)
@@ -349,11 +349,14 @@ O app é **offline-first**: lê e grava sempre no SQLite local, e um processo em
 ## 11. Segurança
 
 - Senhas com **BCrypt**; JWT de acesso curto; **sessão longa (refresh token) de 30 dias, com rotação**, para login offline; **prazo máximo offline padrão de 10 dias**, configurável.
+- Ao esgotar o prazo máximo offline, as vendas guardadas **nunca se perdem**: o Corona Vendas bloqueia vendas novas, pede para conectar e envia tudo assim que houver internet.
 - A dona cria o usuário com **senha temporária** e a redefine quando preciso; a **troca da senha é obrigatória no primeiro acesso**.
+- A senha nova tem **pelo menos 8 caracteres, com letras e números**, e é diferente da senha temporária.
+- Senha da própria dona: **outro admin** redefine. Se não houver outro admin, vale um **procedimento documentado no servidor** (comando de redefinição), sem e-mail.
 - Os dois apps enviam **cabeçalhos de versão e de tipo de app** desde a Fase 0.
 - O cabeçalho de tipo de app é **conveniência de experiência, não segurança**: a proteção real é a permissão por perfil nas rotas, e nenhum código pode depender só dele.
 - Permissões por perfil **validadas na API**; rotas de dona e de vendedor separadas.
-- Limite de tentativas de login.
+- Limite de tentativas de login: **bloqueio de 15 minutos depois de 5 erros seguidos**. Os dois números são configuráveis.
 - Banco central **nunca exposto** à internet, só a API (HTTPS).
 - Banco local **criptografado**, porque notebook de vendedor pode ser perdido ou roubado.
 - **Bloqueio remoto**: a dona desativa o usuário ou dispositivo e o app apaga os dados locais no próximo contato com o servidor.
@@ -375,6 +378,8 @@ O app é **offline-first**: lê e grava sempre no SQLite local, e um processo em
 - Exportação em **PDF, Excel e CSV**, com cabeçalho (loja, filtros usados, data, usuário que gerou) e totais no rodapé.
 - **Detalhamento:** clicar no total abre os registros que o compõem.
 
+Os nomes de relatório desta seção são descrição interna. O nome de tela de cada relatório segue `docs/glossario-interface.md` e é definido na tarefa daquele relatório.
+
 ### App da dona
 
 | Área | Relatórios |
@@ -395,7 +400,7 @@ O app é **offline-first**: lê e grava sempre no SQLite local, e um processo em
 
 Minha maleta (saldo e peças); minhas vendas por período, cliente e produto; meus clientes e valores a receber deles; minhas devoluções e trocas; meu acerto da semana e minha comissão; recebimentos por forma de pagamento.
 
-Como o app é offline, o relatório sai do banco local com o aviso: **dados até a última sincronização em dd/mm hh:mm, com N operações pendentes**.
+Como o app é offline, o relatório sai do banco local com o aviso: **Dados até dd/mm às hh:mm. N itens aguardando envio** (ou **N vendas aguardando envio**, quando só houver vendas).
 
 ## 13. Garantia de que tudo esteja correto
 
@@ -484,6 +489,7 @@ Nota fiscal eletrônica (a nota de remessa é só interna), loja virtual, aplica
 9. Quantos vendedores e quantos produtos aproximadamente (dimensionar a VPS).
 10. Quem paga VPS, domínio e certificado de assinatura de código.
 11. Existe alguma planilha atual do cliente para usar na validação dos relatórios e na migração de cadastros?
+12. **Entrada:** o que significa na tela de referência? Valor pago pela vendedora ao levar a maleta, abatido no acerto, ou entrada de venda parcelada? É obrigatória? Como se calcula e o que acontece no acerto? Precisa de resposta antes da Fase 3.
 
 ## 18. Identidade visual: Corona Semijoias
 
@@ -519,6 +525,7 @@ A loja se chama **Corona Semijoias**. O nome aparece nos dois apps, no instalado
 
 **Onde a marca aparece:**
 
+- Nome dos aplicativos: **Corona Gestão** (app da dona) e **Corona Vendas** (app do vendedor), com ícones diferentes.
 - Tela de login e abertura dos dois apps, com o ícone da janela e da barra de tarefas.
 - Instalador `.exe` e tela de atualização automática.
 - Cabeçalho de todos os relatórios em PDF, Excel e CSV (nome da loja, logotipo horizontal), e da nota de remessa.
@@ -533,9 +540,9 @@ A dona não é da área de tecnologia. **Se ela não consegue usar sozinha, o si
 
 ### Princípios
 
-1. **Linguagem da loja, não do programador.** Usar: maleta, acerto, vendedor, cliente, peça, semana, garantia. Evitar na tela: remessa (só no PDF), movimentação, outbox, sync, payload, UUID, status técnicos. Manter um **glossário de termos da interface** em `docs/glossario-interface.md` e usá-lo em todas as telas.
+1. **Linguagem da loja, não do programador.** Usar: maleta, acerto, vendedor, cliente, peça, semana, garantia. Evitar na tela: remessa (só no PDF), movimentação, outbox, sync, payload, UUID, status técnicos. Na tela, sempre "vendedor" e "ler o código" (nunca "bipar"). Usar "produto" no cadastro, na consulta e nos relatórios, e "peça" na maleta, na venda, na troca, na devolução e na leitura do código. Manter um **glossário de termos da interface** em `docs/glossario-interface.md` e usá-lo em todas as telas.
 2. **Uma tarefa principal por tela.** Poucos campos visíveis; o que é raro fica em "Mais opções".
-3. **Tela inicial com tarefas, não com menus.** Botões grandes: Montar maleta, Receber compra, Fazer acerto, Cadastrar produto, Relatórios. Abaixo, um bloco **"O que precisa da sua atenção"**: acertos pendentes, devoluções para autorizar, estoque baixo, maletas atrasadas, divergências de sincronização.
+3. **Tela inicial com tarefas, não com menus.** Botões grandes: Montar maleta, Receber compra, Fazer acerto, Cadastrar produto, Relatórios. Abaixo, um bloco **"O que precisa da sua atenção"**: acertos pendentes, devoluções para autorizar, estoque baixo, maletas atrasadas, envios com problema.
 4. **Fluxos guiados passo a passo** para o que é complexo (montar maleta, acerto, entrada de compra), com indicação de progresso e uma **tela de conferência antes de confirmar**.
 5. **Confirmação clara em ações sem volta** (enviar maleta, fechar semana, aprovar reembolso), com resumo do que vai acontecer. Como vendas e movimentos são imutáveis, o texto explica "cancelar" como um novo lançamento e não como apagar.
 6. **Mensagens de erro em português simples, dizendo o que fazer.** Exemplo: "Esta peça não está na maleta da Maria. Confira o código ou escolha outra peça." Nada de códigos técnicos ou mensagens em inglês.
@@ -659,3 +666,11 @@ Importação com nome de arquivo inválido, foto duplicada, arquivo corrompido, 
   - §14: a `main` deixa de ser "main protegida" (sem proteção técnica no plano gratuito; disciplina de PR com CI verde conferido pela orquestradora); cada tarefa chega como prompt, com uma branch e um PR, sem issues do GitHub e sem "Closes #"; raiz `corona-semijoias/` (antes `loja-semijoias/`); `packages/` com um cliente de API por app; modelo de PR, sem modelos de issue; o app do vendedor depende só de `api-client-vendedor`.
   - §19: problemas de uso registrados em `docs/PROBLEMAS-DE-USO.md`.
 - **v1.2, 09/11/2026:** §14, prefixos de branch seguem os tipos do Conventional Commits.
+- **v1.3, 09/11/2026:** decisões do responsável sobre as dúvidas do glossário.
+  - §18: nomes dos aplicativos, Corona Gestão (dona) e Corona Vendas (vendedor), com ícones diferentes.
+  - §8: o aviso de leitura truncada passa de "bipe novamente" para "leia o código de novo".
+  - §9 e §11: tentativas de login antes do bloqueio (padrão 5) e tempo de bloqueio (padrão 15 minutos), configuráveis; senha nova com pelo menos 8 caracteres, letras e números, diferente da temporária; redefinição da senha da própria dona; prazo offline esgotado sem perda de vendas.
+  - §12: o aviso de dados do app do vendedor passa de "última sincronização… operações pendentes" para "Dados até dd/mm às hh:mm. N itens aguardando envio"; os nomes de relatório são descrição interna.
+  - §17: nova pendência 12, "Entrada".
+  - §19.1: na tela, "vendedor", "ler o código" e a regra de "produto" e "peça".
+  - §19.3: "divergências de sincronização" passa a ser "envios com problema".
