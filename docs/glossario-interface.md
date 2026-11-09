@@ -269,6 +269,49 @@ Avisos no campo:
 
 > A senha nova precisa ser diferente da temporária. Escolha outra.
 
+Senha com mais de 72 bytes (o limite do BCrypt, ADR-0004, item 6). Na tela, nunca aparecem "72" nem "bytes": o texto fala em caracteres, e 36 é a conta de letras com acento, que ocupam o dobro do espaço:
+
+> **Esta senha é longa demais.**
+> Escolha uma senha mais curta, com no máximo 36 caracteres.
+
+**Troca de senha obrigatória (resposta do servidor)**
+
+Quem entra com a senha temporária só consegue criar a senha nova. Qualquer outra tela ou chamada recebe o mesmo texto de "Crie sua senha nova", acima. A mensagem que o servidor devolve:
+
+> **Crie sua senha nova.**
+> A senha que você recebeu é temporária. Para continuar, crie uma senha nova que só você saiba.
+
+**Senha temporária vencida**
+
+A senha temporária vale por alguns dias (7, na configuração do servidor). Depois disso não entra mais, e o texto só aparece quando a senha estava certa, para não revelar quais usuários existem. O servidor monta o texto; a tarefa 12 acrescenta a última frase certa de cada aplicativo ("Fale com o suporte do sistema." no Corona Gestão).
+
+> **Sua senha temporária venceu.**
+> A senha que você recebeu só vale por alguns dias, e esse prazo acabou. Peça uma senha nova à dona da loja.
+
+**Cadastro de usuário pela dona**
+
+Login já usado:
+
+> **Este login já está em uso.**
+> Escolha outro login para esta pessoa, por exemplo juntando o sobrenome.
+
+Login fora do formato (a tela corrige para minúsculas e tira os espaços das pontas; o servidor confere de novo):
+
+> **Este login não pode ser usado.**
+> Use de 3 a 40 letras minúsculas sem acento, números, ponto, traço ou traço baixo, sem espaços. Por exemplo: maria.silva.
+
+Usuário que não existe (ao redefinir a senha):
+
+> **Não encontramos este usuário.**
+> Confira o usuário e tente de novo.
+
+A dona não redefine a própria senha pela tela, para não ficar sem acesso:
+
+> **Você não pode redefinir a sua própria senha por aqui.**
+> Peça a outra pessoa administradora ou fale com o suporte do sistema.
+
+Quando a dona cria o usuário ou redefine a senha, a senha temporária aparece **uma única vez**. Texto da tela (a tela vem na Fase 1): "Anote esta senha agora. Ela não aparece de novo."
+
 **Aplicativo errado para o perfil**
 
 Dona no app do vendedor:

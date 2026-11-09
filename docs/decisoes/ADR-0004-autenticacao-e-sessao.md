@@ -144,4 +144,9 @@ Aprovado em 09/11/2026: os parâmetros técnicos ficam **na configuração do se
 
 Nenhuma em aberto. Resolvidas na aprovação de 09/11/2026: parâmetros na configuração do servidor, validade da senha temporária (7 dias), alerta (sem bloqueio) para muitos erros num login e a janela de tolerância do refresh.
 
-Duas escolhas ficam para a tarefa 10, sem ADR: o nome e o local do comando de servidor que redefine a senha da dona, e a mensagem de tela para "senha com mais de 72 bytes" (acrescentada ao glossário antes de ser usada, como a de "senha temporária vencida").
+Duas escolhas ficaram para a tarefa 10, sem ADR, e foram resolvidas nela:
+
+- **Comando do servidor:** `redefinir-senha-admin`, no mesmo jar da API em modo sem servidor web (`java -jar corona-api.jar redefinir-senha-admin --login=<login>`). Passo a passo em `docs/redefinir-senha-da-dona.md`. Revoga as sessões pela hora da troca de credencial (`credencial_alterada_em`); a limpeza do bloqueio por tentativas vem com a tarefa 11 e a auditoria "pelo servidor" com a Fase 1.
+- **Mensagens:** "senha com mais de 72 bytes" e "senha temporária vencida" estão no glossário (parte 6), assim como os erros de criação de usuário.
+
+Até a tarefa 11 trazer as famílias de sessão, "revoga as sessões" é feito assim: o token de acesso com `iat` anterior a `credencial_alterada_em` é recusado (401 `SESSAO_TERMINADA`). A comparação é em segundos, então um token emitido no mesmo segundo da redefinição, antes dela, ainda vale até vencer (15 minutos no máximo).
