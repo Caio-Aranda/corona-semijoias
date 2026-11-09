@@ -5,6 +5,11 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 
 import br.com.coronasemijoias.api.comum.configuracao.ConfiguracaoInvalidaException;
 import br.com.coronasemijoias.api.testes.TesteDeIntegracao;
+import br.com.coronasemijoias.api.usuarios.ComandoRedefinirSenhaDeAdministrador;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.net.ServerSocket;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -188,5 +193,35 @@ class SubidaDaApiTest extends TesteDeIntegracao {
             assertThat(contexto.isRunning()).isTrue();
         }
         assertThat(administradores()).containsExactly("dona.loja");
+    }
+
+    @Test
+    @Order(7)
+    void comandoDoServidorRedefineASenhaSemAbrirAPortaDaApi(CapturedOutput saida) throws Exception {
+        // A porta da API está ocupada (como estaria com a API rodando): o comando não pode tentar abri-la.
+        try (ServerSocket ocupada = new ServerSocket(0)) {
+            List<String> argumentos = new ArrayList<>(
+                    List.of(ComandoRedefinirSenhaDeAdministrador.NOME, "--login=Dona.Loja"));
+            configuracao().forEach((chave, valor) -> argumentos.add("--" + chave + "=" + valor));
+            argumentos.add("--server.port=" + ocupada.getLocalPort());
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+
+            int codigo = ComandoRedefinirSenhaDeAdministrador.rodar(
+                    argumentos.toArray(String[]::new), new PrintStream(bytes, true, StandardCharsets.UTF_8), () -> null);
+
+            String terminal = bytes.toString(StandardCharsets.UTF_8);
+            assertThat(codigo).as(terminal + saida.getAll()).isEqualTo(ComandoRedefinirSenhaDeAdministrador.SAIDA_OK);
+            java.util.regex.Matcher achou = java.util.regex.Pattern.compile("Senha temporária: (\\S+)").matcher(terminal);
+            assertThat(achou.find()).as(terminal).isTrue();
+            assertThat(saida.getAll()).contains("redefinida pelo servidor").doesNotContain(achou.group(1));
+        }
+        try (Connection conexao = conectar(BANCO_VAZIO, APP_USUARIO, APP_SENHA);
+                ResultSet linhas = conexao.createStatement().executeQuery(
+                        "SELECT troca_de_senha_obrigatoria, credencial_alterada_em FROM corona.usuarios "
+                                + "WHERE login = 'dona.loja'")) {
+            linhas.next();
+            assertThat(linhas.getBoolean(1)).isTrue();
+            assertThat(linhas.getTimestamp(2)).isNotNull();
+        }
     }
 }
