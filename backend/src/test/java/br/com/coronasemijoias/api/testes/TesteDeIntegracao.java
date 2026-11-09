@@ -44,6 +44,9 @@ public abstract class TesteDeIntegracao {
     public static final byte[] SEGREDO_DE_RENOVACAO = bytesAleatorios(32);
     /** Limite de erros por IP nos testes (produção: 50). */
     public static final int LIMITE_POR_IP = 12;
+    /** Versões mínimas dos apps nos testes (produção: as do .env). */
+    public static final String VERSAO_MINIMA_GESTAO = "1.2.0";
+    public static final String VERSAO_MINIMA_VENDAS = "2.0.1";
     /** O "Nginx" dos testes (endereço de documentação, RFC 5737): só dele vale o X-Forwarded-For. */
     public static final String PROXY_CONFIAVEL = "192.0.2.10";
 
@@ -106,6 +109,8 @@ public abstract class TesteDeIntegracao {
         registro.add("corona.seguranca.tentativas.limite-por-ip", () -> LIMITE_POR_IP);
         registro.add("corona.seguranca.tentativas.espera-da-trava", () -> "PT2S");
         registro.add("corona.seguranca.tentativas.proxies-confiaveis", () -> PROXY_CONFIAVEL);
+        registro.add("corona.app.versao-minima.gestao", () -> VERSAO_MINIMA_GESTAO);
+        registro.add("corona.app.versao-minima.vendas", () -> VERSAO_MINIMA_VENDAS);
         registro.add("corona.admin-inicial.nome", () -> "Dona Inicial");
         registro.add("corona.admin-inicial.login", () -> ADMIN_INICIAL_LOGIN);
         registro.add("corona.admin-inicial.senha", () -> ADMIN_INICIAL_SENHA);

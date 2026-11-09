@@ -1,6 +1,7 @@
 package br.com.coronasemijoias.api.autenticacao;
 
 import br.com.coronasemijoias.api.acessos.IpDoCliente;
+import br.com.coronasemijoias.api.aplicativo.FiltroDeTipoEVersao;
 import br.com.coronasemijoias.api.autenticacao.ServicoDeLogin.PedidoDeEntrada;
 import br.com.coronasemijoias.api.autenticacao.ServicoDeLogin.ResultadoDoLogin;
 import br.com.coronasemijoias.api.comum.erros.CodigoErro;
@@ -40,7 +41,7 @@ public class AutenticacaoController {
     /**
      * Pedido de login. Campo ausente é pedido malformado (400); vazio ou com formato que não pode
      * existir é tratado como senha errada (401), sem revelar nada. {@code dispositivoId} é o
-     * identificador do aparelho: obrigatório no Corona Vendas (perfil VENDEDOR), ausente no Corona
+     * identificador do aparelho: obrigatório no Corona Vendas (X-App-Tipo: vendas), ausente no Corona
      * Gestão (ADR-0004, item 4).
      */
     public record PedidoDeLogin(@NotNull @Size(max = 200) String login, @NotNull String senha, UUID dispositivoId) {
@@ -120,7 +121,8 @@ public class AutenticacaoController {
     @PostMapping("/login")
     public ResponseEntity<RespostaDoLogin> entrar(@Valid @RequestBody PedidoDeLogin pedido, HttpServletRequest requisicao) {
         return resposta(servicoDeLogin.entrar(new PedidoDeEntrada(
-                pedido.login(), pedido.senha(), pedido.dispositivoId(), ipDoCliente.de(requisicao))));
+                pedido.login(), pedido.senha(), pedido.dispositivoId(), ipDoCliente.de(requisicao),
+                FiltroDeTipoEVersao.tipoDe(requisicao).orElseThrow())));
     }
 
     @Operation(summary = "Criar a senha nova (troca obrigatória)",

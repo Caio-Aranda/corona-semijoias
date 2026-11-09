@@ -1,5 +1,6 @@
 package br.com.coronasemijoias.api.comum.erros;
 
+import br.com.coronasemijoias.api.aplicativo.TipoDeApp;
 import java.time.Duration;
 import java.util.List;
 import org.springframework.http.HttpHeaders;
@@ -46,6 +47,40 @@ public class ErroDaApi extends ErrorResponseException {
         ErroDaApi erro = new ErroDaApi(HttpStatus.TOO_MANY_REQUESTS, codigo, corpo);
         erro.getHeaders().set(HttpHeaders.RETRY_AFTER, Long.toString(segundos));
         return erro;
+    }
+
+    /** 401 do login: o servidor acrescenta a última frase do glossário conforme o aplicativo. */
+    public static ErroDaApi loginInvalido(TipoDeApp app) {
+        String frase = app == TipoDeApp.GESTAO
+                ? "Se esqueceu a senha, fale com o suporte do sistema."
+                : "Se esqueceu a senha, peça uma nova à dona da loja.";
+        return comFrase(HttpStatus.UNAUTHORIZED, CodigoErro.LOGIN_INVALIDO, frase);
+    }
+
+    /** 401 da senha temporária vencida: última frase por aplicativo (glossário). */
+    public static ErroDaApi senhaTemporariaVencida(TipoDeApp app) {
+        String frase = app == TipoDeApp.GESTAO
+                ? "Peça uma senha nova a outra pessoa administradora ou fale com o suporte do sistema."
+                : "Peça uma senha nova à dona da loja.";
+        return comFrase(HttpStatus.UNAUTHORIZED, CodigoErro.SENHA_TEMPORARIA_VENCIDA, frase);
+    }
+
+    /** 403 do perfil que não entra neste aplicativo (glossário, "Aplicativo errado para o perfil"). */
+    public static ErroDaApi appIncompativel(TipoDeApp app) {
+        String titulo = "Este é o " + app.nome() + ".";
+        String resto = app == TipoDeApp.VENDAS
+                ? "Seu acesso é de dona da loja. Para entrar, abra o Corona Gestão."
+                : "Seu acesso é de vendedor. Para entrar, abra o Corona Vendas.";
+        ProblemDetail corpo = Problemas.de(HttpStatus.FORBIDDEN, CodigoErro.APP_INCOMPATIVEL);
+        corpo.setTitle(titulo);
+        corpo.setDetail(titulo + " " + resto);
+        return new ErroDaApi(HttpStatus.FORBIDDEN, CodigoErro.APP_INCOMPATIVEL, corpo);
+    }
+
+    private static ErroDaApi comFrase(HttpStatus status, CodigoErro codigo, String frase) {
+        ProblemDetail corpo = Problemas.de(status, codigo);
+        corpo.setDetail(codigo.mensagem() + " " + frase);
+        return new ErroDaApi(status, codigo, corpo);
     }
 
     private static ProblemDetail comCampos(HttpStatusCode status, CodigoErro codigo, List<CampoInvalido> campos) {

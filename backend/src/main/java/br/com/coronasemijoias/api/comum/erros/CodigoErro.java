@@ -105,6 +105,27 @@ public enum CodigoErro {
             "Não encontramos esta pessoa no cadastro.",
             "Não encontramos esta pessoa no cadastro. Atualize a tela e tente de novo."),
 
+    // --- Tipo e versão do aplicativo (glossário, parte 6; tarefa 12) ---
+
+    /** Cabeçalho X-App-Tipo ausente ou desconhecido (HTTP 400): erro do programa, não da pessoa. */
+    APP_TIPO_INVALIDO(
+            "Não foi possível entender o pedido.",
+            "Não foi possível entender o pedido. Atualize o aplicativo e tente de novo. "
+                    + "Se continuar, fale com o suporte do sistema."),
+
+    /** Versão do aplicativo abaixo do mínimo, ausente ou ilegível (HTTP 426). */
+    APP_DESATUALIZADO(
+            "Seu aplicativo está desatualizado.",
+            "Seu aplicativo está desatualizado. Atualize para continuar usando."),
+
+    /**
+     * Perfil que não entra neste aplicativo (HTTP 403, só com a senha certa). O texto depende do app:
+     * {@link ErroDaApi#appIncompativel(br.com.coronasemijoias.api.aplicativo.TipoDeApp)}.
+     */
+    APP_INCOMPATIVEL(
+            "Este não é o aplicativo do seu acesso.",
+            "Este não é o aplicativo do seu acesso. Abra o outro aplicativo da Corona Semijoias."),
+
     NAO_REDEFINIR_A_PROPRIA_SENHA(
             "Você não pode redefinir a sua própria senha por aqui.",
             "Você não pode redefinir a sua própria senha por aqui. "

@@ -6,6 +6,8 @@ import br.com.coronasemijoias.api.acessos.ControleDeTentativas.Tentativa;
 import br.com.coronasemijoias.api.acessos.PropriedadesDasTentativas;
 import br.com.coronasemijoias.api.acessos.ResultadoDaTentativa;
 import br.com.coronasemijoias.api.acessos.TravaPorIp;
+import br.com.coronasemijoias.api.aplicativo.PropriedadesDoApp;
+import br.com.coronasemijoias.api.aplicativo.TipoDeApp;
 import br.com.coronasemijoias.api.comum.erros.CodigoErro;
 import br.com.coronasemijoias.api.comum.erros.ErroDaApi;
 import br.com.coronasemijoias.api.seguranca.ConteudoDoToken;
@@ -22,7 +24,6 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -45,19 +46,12 @@ import org.springframework.transaction.support.TransactionOperations;
 @Service
 public class ServicoDeLogin {
 
-    /**
-     * Perfis que entram pelo Corona Vendas e, por isso, mandam o identificador do aparelho (item 4).
-     * Até a tarefa 12 a API não sabe qual aplicativo chamou e decide pelo perfil; com o
-     * {@code X-App-Tipo}, a regra passa a ser pelo aplicativo.
-     */
-    static final Set<String> PERFIS_COM_APARELHO = Set.of("VENDEDOR");
-
     /** O que chega no login: o IP já é o real ({@code IpDoCliente}). */
-    public record PedidoDeEntrada(String login, String senha, UUID dispositivoId, String ip) {
+    public record PedidoDeEntrada(String login, String senha, UUID dispositivoId, String ip, TipoDeApp app) {
 
         @Override
         public String toString() {
-            return "PedidoDeEntrada[login=" + login + ", senha=(oculta), dispositivoId=" + dispositivoId + ", ip=" + ip + "]";
+            return "PedidoDeEntrada[login=" + login + ", senha=(oculta), dispositivoId=" + dispositivoId + ", ip=" + ip + ", app=" + app + "]";
         }
     }
 
@@ -76,12 +70,14 @@ public class ServicoDeLogin {
     private final ControleDeTentativas tentativas;
     private final TravaPorIp travas;
     private final PropriedadesDasTentativas propriedades;
+    private final PropriedadesDoApp propriedadesDoApp;
     private final TransactionOperations transacao;
     private final Clock relogio;
 
     public ServicoDeLogin(UsuarioRepositorio usuarios, ConferenciaDeSenha conferencia, EmissorDeToken emissor,
             ServicoDeSessoes sessoes, ControleDeTentativas tentativas, TravaPorIp travas,
-            PropriedadesDasTentativas propriedades, TransactionOperations transacao, Clock relogio) {
+            PropriedadesDasTentativas propriedades, PropriedadesDoApp propriedadesDoApp,
+            TransactionOperations transacao, Clock relogio) {
         this.usuarios = usuarios;
         this.conferencia = conferencia;
         this.emissor = emissor;
@@ -89,6 +85,7 @@ public class ServicoDeLogin {
         this.tentativas = tentativas;
         this.travas = travas;
         this.propriedades = propriedades;
+        this.propriedadesDoApp = propriedadesDoApp;
         this.transacao = transacao;
         this.relogio = relogio;
     }
@@ -122,8 +119,8 @@ public class ServicoDeLogin {
                 : Optional.empty();
         String hash = encontrado.map(Usuario::getSenhaHash).orElse(null);
         if (!conferencia.confere(pedido.senha(), hash)) {
-            tentativas.registrarErro(normalizado, pedido.ip(), pedido.dispositivoId(), agora());
-            throw new ErroDaApi(HttpStatus.UNAUTHORIZED, CodigoErro.LOGIN_INVALIDO);
+            tentativas.registrarErro(normalizado, pedido.ip(), pedido.dispositivoId(), pedido.app(), agora());
+            throw ErroDaApi.loginInvalido(pedido.app());
         }
         Usuario usuario = encontrado.orElseThrow();
         if (!usuario.isAtivo()) {
@@ -131,12 +128,16 @@ public class ServicoDeLogin {
             throw new ErroDaApi(HttpStatus.FORBIDDEN, CodigoErro.USUARIO_DESATIVADO);
         }
         // Só depois de a senha conferir (e o usuário estar ativo): não revela que o login existe.
+        if (!propriedadesDoApp.aceitaPerfil(pedido.app(), usuario.getPerfil())) {
+            registrar(normalizado, pedido, ResultadoDaTentativa.APP_INCOMPATIVEL);
+            throw ErroDaApi.appIncompativel(pedido.app());
+        }
         if (usuario.senhaTemporariaVencida(relogio.instant())) {
             registrar(normalizado, pedido, ResultadoDaTentativa.SENHA_TEMPORARIA_VENCIDA);
-            throw new ErroDaApi(HttpStatus.UNAUTHORIZED, CodigoErro.SENHA_TEMPORARIA_VENCIDA);
+            throw ErroDaApi.senhaTemporariaVencida(pedido.app());
         }
-        // Aparelho (item 4): obrigatório para quem entra pelo Corona Vendas, ausente nos demais.
-        if (PERFIS_COM_APARELHO.contains(usuario.getPerfil()) != (pedido.dispositivoId() != null)) {
+        // Aparelho (item 4): obrigatório no Corona Vendas, ausente no Corona Gestão.
+        if ((pedido.app() == TipoDeApp.VENDAS) != (pedido.dispositivoId() != null)) {
             registrar(normalizado, pedido, ResultadoDaTentativa.PEDIDO_INVALIDO);
             throw new ErroDaApi(HttpStatus.BAD_REQUEST, CodigoErro.PEDIDO_INVALIDO);
         }
@@ -163,7 +164,7 @@ public class ServicoDeLogin {
     }
 
     private void registrar(String normalizado, PedidoDeEntrada pedido, ResultadoDaTentativa resultado) {
-        tentativas.registrar(new Tentativa(normalizado, pedido.ip(), pedido.dispositivoId(), resultado, agora()));
+        tentativas.registrar(new Tentativa(normalizado, pedido.ip(), pedido.dispositivoId(), pedido.app(), resultado, agora()));
     }
 
     private Instant agora() {

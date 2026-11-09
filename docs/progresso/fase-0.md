@@ -381,3 +381,21 @@ Itens 2, 4, 5 e 7 do ADR-0004 e, do item 8, revogar as sessões e limpar o bloqu
 - O primeiro token da família é aleatório; só os sucessores são derivados. Trocar `SESSAO_SEGREDO_RENOVACAO` só afeta quem estiver dentro dos 2 minutos de uma renovação.
 - Login de mais de 200 caracteres é 400 e não é gravado; caractere de controle no login vira "?" na tabela (o PostgreSQL não guarda o nulo).
 - Nos testes, cada pedido do MockMvc sai de um IP aleatório (o banco é compartilhado e o limite conta por IP), o limite por IP é 12 (produção: 50) e a espera da trava é 2 s.
+
+### Tarefa 12: versão mínima e tipo de app
+
+Item 10 do ADR-0004 e, dos itens 4 e 7, o aparelho por aplicativo e o `tipo_app`.
+
+**O que foi feito**
+- Pacote `aplicativo`: `FiltroDeTipoEVersao` (antes da cadeia de segurança) lê `X-App-Tipo` e `X-App-Versao` em toda chamada, login incluído. Tipo ausente ou fora de `gestao`/`vendas`: 400 `APP_TIPO_INVALIDO`. Versão ausente, ilegível ou abaixo do mínimo do tipo: 426 `APP_DESATUALIZADO`, com `versaoMinima` e `versaoAtual`. Comparação número a número (`VersaoDoApp`). Isentos: `/actuator/health` e a documentação (`/v3/api-docs`, Swagger).
+- `corona.app.versao-minima.gestao|vendas` (`APP_VERSAO_MINIMA_GESTAO|VENDAS` no `.env`, padrão 1.0.0, validado na subida) e `corona.app.perfis-aceitos.gestao|vendas` (ADMIN / VENDEDOR). `.env.example` atualizado.
+- O servidor acrescenta a última frase do glossário em `LOGIN_INVALIDO` e `SENHA_TEMPORARIA_VENCIDA` conforme o tipo (`ErroDaApi.loginInvalido(app)` e `senhaTemporariaVencida(app)`).
+- `dispositivoId` é exigido por `vendas` e proibido em `gestao` (400 `PEDIDO_INVALIDO`, depois da senha); `PERFIS_COM_APARELHO` removido.
+- Perfil que não entra no app: depois da senha certa e do usuário ativo, 403 `APP_INCOMPATIVEL` com as mensagens do glossário, tentativa registrada. Com senha errada continua o `LOGIN_INVALIDO` de sempre.
+- `tentativas_login.tipo_app` gravado em toda tentativa de login (sem migração: a coluna e o `CHECK` já existiam).
+- Testes: `VersaoDoAppTest`, `TipoEVersaoDoAppTest` (400, 426 por tipo, versão ilegível, isenções, frases, aparelho, 403, `tipo_app`, permissão decidida pelo perfil do token com o cabeçalho "errado"). O MockMvc de teste completa os cabeçalhos que faltarem (`CabecalhosDeAppDeTeste`).
+
+**O que ficou pendente**
+- Tela de "aplicativo desatualizado" e envio dos cabeçalhos pelos apps: tarefas 13, 15 e 16 (o cliente gerado deve mandar `X-App-Tipo` e `X-App-Versao`).
+- Renovação, troca de senha e demais rotas não gravam tipo (só o login grava, como pede o ADR).
+

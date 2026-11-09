@@ -269,7 +269,7 @@ class SenhaTemporariaTest extends TesteDeIntegracao {
                 .andExpect(jsonPath("$.codigo").value("SENHA_TEMPORARIA_VENCIDA"))
                 .andExpect(jsonPath("$.title").value("Sua senha temporária venceu."))
                 .andExpect(jsonPath("$.detail").value("Sua senha temporária venceu. A senha que você recebeu "
-                        + "só vale por alguns dias, e esse prazo acabou."));
+                        + "só vale por alguns dias, e esse prazo acabou. Peça uma senha nova à dona da loja."));
         // Sem nenhum token na resposta.
         assertThat(corpo(vencida).has("tokenDeAcesso")).isFalse();
     }

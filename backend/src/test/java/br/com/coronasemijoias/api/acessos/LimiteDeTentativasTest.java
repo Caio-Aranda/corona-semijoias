@@ -251,7 +251,7 @@ class LimiteDeTentativasTest extends TesteDeIntegracao {
                     largada.await(10, TimeUnit.SECONDS);
                     try {
                         servicoDeLogin.entrar(new PedidoDeEntrada(vendedor.login(), "senha-errada-1",
-                                UsuariosDeTeste.APARELHO, ip));
+                                UsuariosDeTeste.APARELHO, ip, br.com.coronasemijoias.api.aplicativo.TipoDeApp.VENDAS));
                         return 200;
                     } catch (ErroDaApi erro) {
                         return erro.getStatusCode().value();
@@ -278,7 +278,8 @@ class LimiteDeTentativasTest extends TesteDeIntegracao {
             // Outro pedido do mesmo IP segura a vez: este espera 2 s (configuração dos testes) e desiste.
             Future<ErroDaApi> pedido = executor.submit(() -> {
                 try {
-                    servicoDeLogin.entrar(new PedidoDeEntrada(dona.login(), dona.senha(), null, ip));
+                    servicoDeLogin.entrar(new PedidoDeEntrada(dona.login(), dona.senha(), null, ip,
+                            br.com.coronasemijoias.api.aplicativo.TipoDeApp.GESTAO));
                     return null;
                 } catch (ErroDaApi erro) {
                     return erro;

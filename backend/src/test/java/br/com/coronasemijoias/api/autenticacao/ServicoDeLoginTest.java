@@ -10,6 +10,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import br.com.coronasemijoias.api.acessos.ControleDeTentativas;
+import br.com.coronasemijoias.api.aplicativo.PropriedadesDoApp;
+import br.com.coronasemijoias.api.aplicativo.TipoDeApp;
 import br.com.coronasemijoias.api.acessos.PropriedadesDasTentativas;
 import br.com.coronasemijoias.api.acessos.TravaPorIp;
 import br.com.coronasemijoias.api.autenticacao.ServicoDeLogin.PedidoDeEntrada;
@@ -36,10 +38,12 @@ class ServicoDeLoginTest {
             usuarios, conferencia, mock(EmissorDeToken.class), mock(ServicoDeSessoes.class),
             mock(ControleDeTentativas.class), new TravaPorIp(),
             new PropriedadesDasTentativas(0, null, null, 0, null, null, null),
+            new PropriedadesDoApp(java.util.Map.of("gestao", "1.0.0", "vendas", "1.0.0"),
+                    java.util.Map.of("gestao", java.util.List.of("ADMIN"), "vendas", java.util.List.of("VENDEDOR"))),
             TransactionOperations.withoutTransaction(), Clock.systemUTC());
 
     private void recusadoComoLoginInvalido(String login, String senha) {
-        assertThatThrownBy(() -> servico.entrar(new PedidoDeEntrada(login, senha, null, "10.0.0.1")))
+        assertThatThrownBy(() -> servico.entrar(new PedidoDeEntrada(login, senha, null, "10.0.0.1", TipoDeApp.GESTAO)))
                 .isInstanceOfSatisfying(ErroDaApi.class, e -> org.assertj.core.api.Assertions
                         .assertThat(e.codigo()).isEqualTo(CodigoErro.LOGIN_INVALIDO));
     }

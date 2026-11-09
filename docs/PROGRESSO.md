@@ -23,7 +23,7 @@ Lista oficial, aprovada pelo responsável. Os ADRs e as tarefas usam estes núme
 | 9 | feat(auth): usuários, perfis e login com JWT (perfis extensíveis, rotas por perfil, primeiro admin pelo .env) | Concluída (PR 14) · [detalhe](progresso/fase-0.md#tarefa-9-usuários-perfis-e-login-com-jwt) |
 | 10 | feat(auth): a dona cria usuários e redefine a senha temporária (troca obrigatória, regras da senha) | Concluída (PR 15) · [detalhe](progresso/fase-0.md#tarefa-10-a-dona-cria-usuários-e-redefine-a-senha-temporária) |
 | 11 | feat(auth): sessão longa, limite de tentativas e registro de acessos (refresh com rotação, identificador do aparelho, bloqueio 5/15, prazo offline guardado) | Concluída (PR 16) · [detalhe](progresso/fase-0.md#tarefa-11-sessão-longa-limite-de-tentativas-e-registro-de-acessos) |
-| 12 | feat(api): versão mínima e tipo de app (cabeçalhos; o tipo é conveniência, não segurança) | Pendente |
+| 12 | feat(api): versão mínima e tipo de app (cabeçalhos; o tipo é conveniência, não segurança) | Concluída (PR 18) · [detalhe](progresso/fase-0.md#tarefa-12-versão-mínima-e-tipo-de-app) |
 | 13 | feat(api-client): clientes gerados do OpenAPI, um da dona e um do vendedor | Pendente |
 | 14 | feat(ui): tema da marca e componentes base em packages/ui | Pendente |
 | 15 | feat(owner-app): Corona Gestão com login e tela inicial | Pendente |
@@ -52,13 +52,10 @@ O que ainda está em aberto nas tarefas concluídas (o que já foi resolvido por
 - Tarefa 19 (prompt abaixo); telas da Fase 1; rota do vendedor na Fase 4; pull na Fase 5; `cotacao_id` no acerto na Fase 7. ([tarefa 8.1](progresso/fase-0.md#tarefa-81-três-moedas-e-cotação-diária-só-documentos))
 - Dúvida do ADR-0006: incluir o aviso da cotação na lista da §19.3; pendência 13 da §17 (cartão), para o cliente. ([tarefa 8.1](progresso/fase-0.md#tarefa-81-três-moedas-e-cotação-diária-só-documentos))
 - Chave estrangeira de `usuarios.vendedor_id` para `vendedores` e `CHECK` "VENDEDOR tem vendedor_id" (Fase 1). ([tarefa 9](progresso/fase-0.md#tarefa-9-usuários-perfis-e-login-com-jwt))
-- Tarefa 12: o servidor completa a última frase do `LOGIN_INVALIDO` conforme o `X-App-Tipo`. ([tarefa 9](progresso/fase-0.md#tarefa-9-usuários-perfis-e-login-com-jwt))
-- Tarefa 12: última frase do `SENHA_TEMPORARIA_VENCIDA` por aplicativo. ([tarefa 10](progresso/fase-0.md#tarefa-10-a-dona-cria-usuários-e-redefine-a-senha-temporária))
 - Fase 1: auditoria "pelo servidor" da ação do comando; telas (senha mostrada uma vez, listar, editar e desativar usuários). ([tarefa 10](progresso/fase-0.md#tarefa-10-a-dona-cria-usuários-e-redefine-a-senha-temporária))
 - `npm run api:redefinir-senha` e `docker compose exec api ...` não rodados de ponta a ponta (contêiner só na Fase 9). ([tarefa 10](progresso/fase-0.md#tarefa-10-a-dona-cria-usuários-e-redefine-a-senha-temporária))
 - Mais de uma instância da API pede um ADR (a trava por IP fica na memória). ([tarefa 11](progresso/fase-0.md#tarefa-11-sessão-longa-limite-de-tentativas-e-registro-de-acessos))
 - Tarefas 15 e 16: o processo principal do Electron renova uma vez por vez. ([tarefa 11](progresso/fase-0.md#tarefa-11-sessão-longa-limite-de-tentativas-e-registro-de-acessos))
-- Tarefa 12: preencher `tentativas_login.tipo_app`, aparelho por `X-App-Tipo` e `APP_INCOMPATIVEL`. ([tarefa 11](progresso/fase-0.md#tarefa-11-sessão-longa-limite-de-tentativas-e-registro-de-acessos))
 - Fase 1: desativar usuário revoga as famílias. Fase 5: tabela `dispositivos`, segundo aparelho e prazo offline. ([tarefa 11](progresso/fase-0.md#tarefa-11-sessão-longa-limite-de-tentativas-e-registro-de-acessos))
 
 ### Prompt sugerido para a tarefa 19

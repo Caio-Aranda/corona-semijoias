@@ -31,7 +31,7 @@ class AlertaDeErrosPorLoginTest extends TesteDeIntegracao {
     /** {@code quantos} erros do login, cada um de um IP, terminando em {@code ultimo}, um por minuto para trás. */
     private void errar(String login, int quantos, Instant ultimo) {
         for (int i = 0; i < quantos; i++) {
-            tentativas.registrarErro(login, "198.51.100." + (i + 1), null, ultimo.minus(Duration.ofMinutes(i)));
+            tentativas.registrarErro(login, "198.51.100." + (i + 1), null, null, ultimo.minus(Duration.ofMinutes(i)));
         }
     }
 
@@ -63,7 +63,7 @@ class AlertaDeErrosPorLoginTest extends TesteDeIntegracao {
         String login = login();
         // 21 erros, mas o mais antigo tem 1 h 01 min: na última hora só há 20.
         errar(login, 20, agora);
-        tentativas.registrarErro(login, "198.51.100.99", null, agora.minus(Duration.ofMinutes(61)));
+        tentativas.registrarErro(login, "198.51.100.99", null, null, agora.minus(Duration.ofMinutes(61)));
 
         assertThat(alertados(agora, login)).isEmpty();
         // Meia hora depois, a janela ainda tem os mesmos 20 erros: continua sem alerta.
