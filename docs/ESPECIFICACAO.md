@@ -1,6 +1,6 @@
 # Especificação completa: Sistema de Semijoias Consignadas
 
-Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.1, 08/11/2026.
+Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.2, 09/11/2026.
 
 ## 1. Objetivo e contexto
 
@@ -438,7 +438,7 @@ Os apps compartilham `packages/` (componentes, clientes da API gerados do OpenAP
 **Fluxo Git:**
 
 - `main` sem proteção técnica (repositório privado no plano gratuito do GitHub). Regra de disciplina: sem push direto, só Pull Request com CI verde, conferido pela orquestradora.
-- Branches curtas: `feat/...`, `fix/...`, `chore/...`. Sem `develop`.
+- Branches curtas. O prefixo da branch é o tipo do Conventional Commits do trabalho (`feat/`, `fix/`, `docs/`, `chore/`, `ci/`, `test/`, `refactor/`, `build/`, `perf/`, `style/`). Sem `develop`.
 - **Conventional Commits** (`feat(remessa): bloquear venda acima do saldo`).
 - Cada tarefa é entregue pela orquestradora como prompt. Uma branch e um Pull Request por tarefa.
 - Versionamento semântico; tag na `main` gera os instaladores; release-please ou semantic-release para changelog.
@@ -658,3 +658,4 @@ Importação com nome de arquivo inválido, foto duplicada, arquivo corrompido, 
   - §11: sessão longa de 30 dias com rotação; senha temporária com troca obrigatória no primeiro acesso; cabeçalhos de versão e de tipo de app, sendo o de tipo apenas conveniência e não segurança.
   - §14: a `main` deixa de ser "main protegida" (sem proteção técnica no plano gratuito; disciplina de PR com CI verde conferido pela orquestradora); cada tarefa chega como prompt, com uma branch e um PR, sem issues do GitHub e sem "Closes #"; raiz `corona-semijoias/` (antes `loja-semijoias/`); `packages/` com um cliente de API por app; modelo de PR, sem modelos de issue; o app do vendedor depende só de `api-client-vendedor`.
   - §19: problemas de uso registrados em `docs/PROBLEMAS-DE-USO.md`.
+- **v1.2, 09/11/2026:** §14, prefixos de branch seguem os tipos do Conventional Commits.
