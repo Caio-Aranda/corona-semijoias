@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -43,9 +45,27 @@ public class TratadorGlobalDeErros extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(problema);
     }
 
+    /** Recusa de permissão que chegue ao controlador: nunca vira 500. */
+    @ExceptionHandler(AccessDeniedException.class)
+    ResponseEntity<Object> tratarSemPermissao(AccessDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(problema(HttpStatus.FORBIDDEN, CodigoErro.SEM_PERMISSAO));
+    }
+
+    /** Falta de autenticação que chegue ao controlador: nunca vira 500. */
+    @ExceptionHandler(AuthenticationException.class)
+    ResponseEntity<Object> tratarSemSessao(AuthenticationException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .header(HttpHeaders.WWW_AUTHENTICATE, "Bearer")
+                .body(problema(HttpStatus.UNAUTHORIZED, CodigoErro.SESSAO_TERMINADA));
+    }
+
     @Override
     protected ResponseEntity<Object> handleExceptionInternal(
             Exception ex, Object corpo, HttpHeaders cabecalhos, HttpStatusCode status, WebRequest requisicao) {
+        if (corpo == null && ex instanceof ErroDaApi previsto) {
+            // Erro previsto: o corpo já vem pronto, com o código certo.
+            corpo = previsto.getBody();
+        }
         if (corpo instanceof ProblemDetail pronto && pronto.getProperties() != null
                 && pronto.getProperties().containsKey("codigo")) {
             return super.handleExceptionInternal(ex, pronto, cabecalhos, status, requisicao);
@@ -132,10 +152,6 @@ public class TratadorGlobalDeErros extends ResponseEntityExceptionHandler {
     }
 
     private static ProblemDetail problema(HttpStatusCode status, CodigoErro codigo) {
-        ProblemDetail problema = ProblemDetail.forStatus(status);
-        problema.setTitle(codigo.titulo());
-        problema.setDetail(codigo.mensagem());
-        problema.setProperty("codigo", codigo.name());
-        return problema;
+        return Problemas.de(status, codigo);
     }
 }

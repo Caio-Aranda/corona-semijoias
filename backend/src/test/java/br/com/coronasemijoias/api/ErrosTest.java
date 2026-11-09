@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import br.com.coronasemijoias.api.testes.TesteDeIntegracao;
+import br.com.coronasemijoias.api.testes.UsuariosDeTeste;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,9 +34,12 @@ class ErrosTest extends TesteDeIntegracao {
     @Autowired
     MockMvc mvc;
 
+    @Autowired
+    UsuariosDeTeste usuarios;
+
     @Test
     void rotaInexistenteDevolveProblemaEmPortugues() throws Exception {
-        MvcResult resultado = mvc.perform(get("/rota/que/nao/existe"))
+        MvcResult resultado = mvc.perform(get("/rota/que/nao/existe").with(usuarios.comoDona()))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.codigo").value("ROTA_NAO_ENCONTRADA"))
                 .andExpect(jsonPath("$.detail").value(
@@ -47,8 +51,42 @@ class ErrosTest extends TesteDeIntegracao {
     }
 
     @Test
+    void semTokenAteRotaInexistenteDevolveSessaoTerminada() throws Exception {
+        for (String caminho : new String[] {"/rota/que/nao/existe", "/api/dona/teste/tempo"}) {
+            MvcResult resultado = mvc.perform(get(caminho))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.codigo").value("SESSAO_TERMINADA"))
+                    .andExpect(jsonPath("$.detail").value(
+                            "Sua sessão terminou. Entre de novo com seu usuário e sua senha para continuar."))
+                    .andReturn();
+            assertThat(resultado.getResponse().getContentType()).startsWith("application/problem+json");
+            assertThat(resultado.getResponse().getHeader("WWW-Authenticate")).isEqualTo("Bearer");
+            semNadaTecnico(resultado);
+        }
+    }
+
+    @Test
+    void paginaDeErroDoServidorNaoAtendeChamadaDireta() throws Exception {
+        // Ela só serve ao despacho de erro do contêiner; não tem @ExigePerfil, então é negada.
+        mvc.perform(get("/error")).andExpect(status().isUnauthorized());
+        mvc.perform(get("/error").with(usuarios.comoDona()))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.codigo").value("SEM_PERMISSAO"));
+    }
+
+    @Test
+    void perfilErradoDevolveSemPermissao() throws Exception {
+        MvcResult resultado = mvc.perform(get("/api/dona/teste/tempo").with(usuarios.comoVendedor()))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.codigo").value("SEM_PERMISSAO"))
+                .andExpect(jsonPath("$.title").value("Você não tem acesso a esta parte do sistema."))
+                .andReturn();
+        semNadaTecnico(resultado);
+    }
+
+    @Test
     void metodoNaoPermitidoDevolvePedidoInvalido() throws Exception {
-        MvcResult resultado = mvc.perform(post("/api/dona/teste/tempo"))
+        MvcResult resultado = mvc.perform(post("/api/dona/teste/tempo").with(usuarios.comoDona()))
                 .andExpect(status().isMethodNotAllowed())
                 .andExpect(jsonPath("$.codigo").value("PEDIDO_INVALIDO"))
                 .andReturn();
@@ -57,7 +95,7 @@ class ErrosTest extends TesteDeIntegracao {
 
     @Test
     void jsonQuebradoDevolvePedidoInvalido() throws Exception {
-        MvcResult resultado = mvc.perform(post("/api/dona/teste/validar")
+        MvcResult resultado = mvc.perform(post("/api/dona/teste/validar").with(usuarios.comoDona())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{nome:"))
                 .andExpect(status().isBadRequest())
@@ -68,7 +106,7 @@ class ErrosTest extends TesteDeIntegracao {
 
     @Test
     void dadosInvalidosListamOsCampos() throws Exception {
-        MvcResult resultado = mvc.perform(post("/api/dona/teste/validar")
+        MvcResult resultado = mvc.perform(post("/api/dona/teste/validar").with(usuarios.comoDona())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"nome\":\"\"}"))
                 .andExpect(status().isBadRequest())
@@ -80,7 +118,7 @@ class ErrosTest extends TesteDeIntegracao {
 
     @Test
     void erroInternoNaoVazaDetalheMasRegistraNoLog(CapturedOutput saida) throws Exception {
-        MvcResult resultado = mvc.perform(get("/api/dona/teste/falha"))
+        MvcResult resultado = mvc.perform(get("/api/dona/teste/falha").with(usuarios.comoDona()))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.codigo").value("ERRO_INTERNO"))
                 .andExpect(jsonPath("$.detail").value(
