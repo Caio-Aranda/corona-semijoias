@@ -35,3 +35,18 @@ Atualizado pela implementadora ao fim de cada tarefa: o que foi feito, o que fic
 - Posição dos botões (Voltar no alto à esquerda; Cancelar e depois o botão principal no rodapé, à direita) é proposta deste glossário, pois a especificação só pede posição igual.
 - Regras da senha nova e `{minutos}` do bloqueio são valores propostos, a fixar na decisão de autenticação.
 - Conflito não resolvido na especificação (registrado como dúvida 12, sem alterar a especificação): a §12 usa "Remessas", "Movimentações" e "sincronização" em nomes de relatório e no aviso de dados, o que conflita com §19.1 e §19.11.
+
+### Tarefa 2.1: decisões do responsável (especificação v1.3 e glossário)
+
+**O que foi feito**
+- `docs/ESPECIFICACAO.md` na versão 1.3 (09/11/2026): nomes Corona Gestão e Corona Vendas (§18); "leia o código de novo" no lugar de "bipe novamente" (§8); senha nova, senha da própria dona, prazo offline esgotado e bloqueio de 15 minutos após 5 erros (§11); `configuracoes` com tentativas de login e tempo de bloqueio (§9); novo aviso de dados e nota sobre nomes de relatório (§12); pendência 12, "Entrada" (§17); regras de "vendedor", "ler o código", "produto" e "peça" (§19.1); "envios com problema" (§19.3); entrada v1.3 na §22.
+- `docs/glossario-interface.md`: seção "Decisões tomadas"; "bipar" e "bipe" no bloco A de palavras proibidas; nomes dos aplicativos nos termos e nas mensagens de aplicativo errado; senha, bloqueio e prazo offline com os valores definitivos; textos de "itens" e "vendas" aguardando envio; "Entrada" como a confirmar; parte 10 só com a dúvida da "Entrada".
+
+**O que ficou pendente**
+- Pendência 12 da §17 ("Entrada"): precisa de resposta do cliente antes da Fase 3. A regra de negócio não foi definida.
+- Nome de tela de cada relatório: definido na tarefa daquele relatório.
+
+**Decisões tomadas**
+- Acréscimo autorizado pelo responsável: a §9 `configuracoes` passou a listar "tentativas de login antes do bloqueio (padrão 5)" e "tempo de bloqueio (padrão 15 minutos)", coerente com a §11.
+- A §7, a §8 e a §20 continuam com "bipar" como descrição técnica, como a decisão permite.
+- A §12 e a §22 da especificação não alteram nenhuma outra regra.
