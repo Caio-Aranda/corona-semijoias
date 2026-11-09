@@ -119,3 +119,16 @@ Roda `./mvnw verify`: compila e executa todos os testes. **O Docker Desktop prec
 Os comandos passam por `scripts/mvnw.mjs`, que escolhe `mvnw.cmd` no Windows e `./mvnw` no Linux; os dois funcionam no PowerShell e no Git Bash. Para rodar o Maven direto, entre em `backend/` e use `./mvnw` (Git Bash) ou `.\mvnw.cmd` (PowerShell). O Maven em si não precisa estar instalado: o wrapper baixa o 3.9.16 na primeira vez.
 
 O `.env` é encontrado tanto rodando de `backend/` quanto da raiz do projeto (por exemplo, pelo VS Code). O perfil `dev` (documentação ligada) só é ativado por `npm run api:run`; ao subir de outra forma, a API funciona igual, mas sem o Swagger. A configuração do VS Code entra na tarefa 17.
+
+## CI
+
+A cada Pull Request e a cada push na `main`, o GitHub Actions (`.github/workflows/ci.yml`) roda quatro conferências:
+
+- `frontend`: instala, lint, verificação de tipos, formatação, testes e builds dos apps;
+- `backend`: `./mvnw -B verify` com Java 21.0.13 e PostgreSQL de verdade (Testcontainers);
+- `migracoes`: só migrações novas, com número maior que o da `main` e sem repetir (só em Pull Request; rode `bash scripts/verificar-migracoes.sh <commit-da-base>` para conferir no seu computador);
+- `dependencias`: `npm audit` e OSV-Scanner; reprova com falha de segurança alta ou crítica (nota 7.0 ou mais).
+
+Para ver o resultado, abra o Pull Request e olhe a lista de verificações no fim da página, ou a aba **Actions** do repositório. O Dependabot abre, toda segunda, PRs de atualização agrupados (`.github/dependabot.yml`).
+
+**Não se faz merge com CI vermelho.** A `main` não tem proteção técnica no plano gratuito; essa regra é de disciplina.

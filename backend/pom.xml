@@ -99,11 +99,25 @@
                     <jvmArguments>-Duser.timezone=UTC</jvmArguments>
                 </configuration>
             </plugin>
+            <!-- Expõe o caminho do jar do Mockito (${org.mockito:mockito-core:jar}) para o agente. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>properties</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <argLine>-Duser.timezone=UTC -Dfile.encoding=UTF-8</argLine>
+                    <!-- Mockito como agente do Java (documentação do Mockito e do Spring Boot):
+                         evita o aviso de que o modo atual deixará de funcionar em versão futura do Java. -->
+                    <argLine>-javaagent:${org.mockito:mockito-core:jar} -Xshare:off -Duser.timezone=UTC -Dfile.encoding=UTF-8</argLine>
                 </configuration>
             </plugin>
         </plugins>
