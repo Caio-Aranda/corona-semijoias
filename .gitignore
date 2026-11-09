@@ -5,17 +5,18 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 dist/
-build/
+out/
+release/
 coverage/
 .npm/
 
 # Java
 *.class
 *.jar
+!.mvn/wrapper/maven-wrapper.jar
 *.war
 *.ear
 target/
-out/
 .gradle/
 hs_err_pid*
 
@@ -24,9 +25,16 @@ hs_err_pid*
 .env.*
 !.env.example
 
+# Logs
+*.log
+logs/
+
 # IDE / SO
 .idea/
-.vscode/
 *.iml
 .DS_Store
 Thumbs.db
+Desktop.ini
+
+# Claude Code (arquivo pessoal da máquina)
+.claude/settings.local.json

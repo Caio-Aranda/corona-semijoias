@@ -1,0 +1,11 @@
+node_modules/
+dist/
+out/
+release/
+coverage/
+target/
+package-lock.json
+# Documentação e instruções do Claude Code não são formatadas pelo Prettier.
+docs/
+CLAUDE.md
+.claude/
