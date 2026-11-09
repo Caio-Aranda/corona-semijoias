@@ -23,6 +23,7 @@ Em 09/11/2026 o responsável resolveu as dúvidas que estavam abertas neste glos
 - Envios esperando: "N vendas aguardando envio" quando só houver vendas; "N itens aguardando envio" quando houver outros registros (clientes, devoluções etc.).
 - Bloqueio por tentativas: 15 minutos depois de 5 erros seguidos. Os dois números são configuráveis.
 - Os nomes de relatório da §12 são descrição interna. O nome de tela de cada relatório segue este glossário e é definido na tarefa daquele relatório.
+- Três moedas (09/11/2026): tudo é gravado em Real; todo valor da tela aparece também em Dólar e em Guarani, pela cotação do Banco Central do dia de cada lançamento (§7.5, ADR-0006). Formatos na parte 8; como mostrar e textos na parte 11.
 
 ## 1. Termos da loja
 
@@ -56,6 +57,7 @@ Em 09/11/2026 o responsável resolveu as dúvidas que estavam abertas neste glos
 | limite de consignação | `limite_consignacao` | Valor máximo de peças que o vendedor pode levar na maleta. |
 | foto | `produtos_fotos` | Aparece junto com a peça sempre que ela é lida ou pesquisada (§20). |
 | sem foto | imagem padrão "sem foto" | Imagem com a marca, nunca um espaço quebrado. A falta de foto nunca trava a venda. |
+| cotação | taxa PTAX de venda do Banco Central, tabela `cotacoes` (ADR-0006) | Quanto valem o Dólar e o Guarani em reais num dia, segundo o Banco Central. Sempre com a data: "Cotação do Banco Central de 06/11/2026". Ver parte 11. |
 | O que precisa da sua atenção | bloco da tela inicial da dona | Acertos pendentes, devoluções para autorizar, estoque baixo, maletas atrasadas, envios com problema (§19.3). |
 
 Botões da tela inicial (§19.3 e §19.7):
@@ -95,6 +97,7 @@ movimentação
 remessa
 bipar
 bipe
+PTAX
 ```
 <!-- PROIBIDAS-A:FIM -->
 
@@ -348,6 +351,11 @@ Sempre em palavras comuns (§19.11). Nunca "fila", "sincronização" ou "pendent
 | --- | --- | --- |
 | Dinheiro | R$, ponto nos milhares, vírgula nos centavos, sempre 2 casas | R$ 1.234,56 |
 | Dinheiro negativo | sinal na frente | -R$ 50,00 |
+| Dólar | US$, ponto nos milhares, vírgula nos centavos, sempre 2 casas | US$ 1.234,56 |
+| Dólar negativo | sinal na frente, igual ao dinheiro negativo | -US$ 50,00 |
+| Guarani | Gs., ponto nos milhares, **sem centavos** | Gs. 1.379.397 |
+| Guarani negativo | sinal na frente, igual ao dinheiro negativo | -Gs. 55.754 |
+| Cotação | 4 casas; o Guarani por mil | US$ 1,00 = R$ 5,5013 · Gs. 1.000 = R$ 0,8950 |
 | Data | dd/mm/aaaa | 09/11/2026 |
 | Hora | 24 horas, horário de Brasília (nunca "UTC" nem "GMT") | 14:30 |
 | Data e hora | data, "às", hora | 09/11/2026 às 14:30 |
@@ -362,6 +370,10 @@ Sempre em palavras comuns (§19.11). Nunca "fila", "sincronização" ou "pendent
 
 Os exemplos de CPF, CNPJ, telefone e CEP são só para mostrar o formato.
 
+**Por que "Gs." no Guarani:** é a forma que o Paraguai usa nos preços (por exemplo "Gs. 50.000"), usa o mesmo ponto nos milhares do real e não depende do símbolo ₲, que pode faltar nas fontes da tela e do PDF. O Guarani não tem centavos (ADR-0006).
+
+**Por que a cotação do Guarani é por mil:** 1 guarani vale R$ 0,000895. "Gs. 1.000 = R$ 0,8950" é mais fácil de ler e tem as mesmas casas que o Banco Central publica.
+
 ## 9. A confirmar
 
 Termos que dependem de resposta do cliente. **Não usar nas telas** até a resposta.
@@ -373,6 +385,7 @@ Termos que dependem de resposta do cliente. **Não usar nas telas** até a respo
 | VD | Provavelmente "valor vendido". A confirmar. | §2 e §17.1 |
 | Numeração da semana | Como numerar as semanas e quais são o primeiro e o último dia. A confirmar. | §17.8 |
 | Diferença da troca | Se o crédito do cliente pode ser devolvido em dinheiro. A confirmar. | §17.7 |
+| Cartão | Não é forma de pagamento hoje. Falta perguntar ao cliente se o cliente final paga com cartão na maquininha do vendedor; se pagar, o cartão entra só como forma registrada, sem integração. A confirmar. | §17.13 |
 | Entrada | Forma de pagamento da §7.4 cujo significado não foi confirmado. Hipótese 1: valor pago pelo vendedor ao levar a maleta, abatido no acerto. Hipótese 2: entrada de uma venda parcelada. A confirmar. | §17.12 |
 
 ## 10. Dúvidas para a dona
@@ -380,3 +393,53 @@ Termos que dependem de resposta do cliente. **Não usar nas telas** até a respo
 Só uma dúvida segue em aberto. As outras foram resolvidas em 09/11/2026 (ver "Decisões tomadas", no topo).
 
 1. **"Entrada".** O que significa "Entrada" na tela de referência: o valor pago pelo vendedor ao levar a maleta, abatido no acerto, ou a entrada de uma venda parcelada? Ela é obrigatória? Como se calcula e o que acontece no acerto? Até a resposta, a palavra não aparece em nenhuma tela (§17.12). A resposta é necessária antes da Fase 3.
+
+## 11. Três moedas na tela
+
+Tudo é gravado em Real. Dólar e Guarani aparecem ao lado de todo valor, nos dois apps (acertos, relatórios, telas de valores, preço da peça), pela cotação do Banco Central do dia de cada lançamento (§7.5, ADR-0006). Os formatos estão na parte 8.
+
+### Como as três aparecem juntas
+
+- **Ordem fixa:** Real, Dólar, Guarani. Sempre nessa ordem, em todas as telas e relatórios.
+- **O Real em destaque:** maior e em negrito, porque é o valor que vale e que fica gravado.
+- **Dólar e Guarani logo abaixo** (ou ao lado, quando faltar altura), menores, separados por um ponto no meio. Sempre texto escuro sobre fundo claro, nunca dourado (§18).
+- Modelo:
+
+> **R$ 100,00**
+> US$ 18,18 · Gs. 111.732
+
+- **Grades e relatórios:** uma coluna para cada moeda, na ordem R$, US$ e Gs., e os totais do rodapé nas três. O total em Dólar e em Guarani é a soma das linhas, então o detalhamento sempre fecha.
+- **Linha da cotação**, embaixo de telas de valores e no cabeçalho dos relatórios: "Cotação do Banco Central de 06/11/2026". Nos relatórios de vários dias: "Dólar e Guarani pela cotação do Banco Central do dia de cada lançamento".
+- Ninguém digita cotação nem valor em Dólar ou Guarani: os campos de valor são sempre em reais.
+
+### Textos
+
+**Cotação no acerto** (na tela e no PDF do acerto, sempre, com a data da cotação que o acerto gravou)
+
+> Cotação do Banco Central de 06/11/2026.
+
+O acerto usa uma cotação só, a mais recente no momento do fechamento (ADR-0006). Por isso os valores em Dólar e Guarani do acerto podem ser um pouco diferentes dos do relatório de vendas da mesma semana. O valor em reais é sempre o mesmo e é o que vale.
+
+**Cotação no Corona Vendas, com internet**
+
+> Cotação do Banco Central de 06/11/2026.
+
+**Cotação no Corona Vendas, sem internet** (a última que o computador recebeu é de um dia anterior)
+
+> Cotação de 05/11/2026, a última que este computador recebeu. Conecte-se à internet para receber a mais nova.
+
+Nos relatórios do Corona Vendas, junto do aviso de dados (parte 7):
+
+> Dados até 09/11 às 14:30. Cotação de 06/11/2026. 3 vendas aguardando envio
+
+**Aviso à dona em "O que precisa da sua atenção"** (a cotação de um dia útil não chegou até o fim da tarde)
+
+> **A cotação de hoje ainda não chegou.**
+> Os valores em Dólar e Guarani estão usando a cotação de 06/11/2026. O sistema tenta de novo sozinho. Se o aviso continuar amanhã, fale com o suporte do sistema.
+
+Quando o dia sem cotação não é hoje (por exemplo, ontem):
+
+> **A cotação de 09/11/2026 não chegou.**
+> Os valores em Dólar e Guarani desse dia estão usando a cotação de 06/11/2026. O sistema tenta de novo sozinho. Se o aviso continuar amanhã, fale com o suporte do sistema.
+
+O aviso some sozinho quando a cotação chega. Fim de semana e feriado não têm aviso: nesses dias o Banco Central não publica cotação, e vale a do último dia útil.

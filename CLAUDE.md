@@ -10,6 +10,7 @@ TypeScript (dois apps separados) · SQLite criptografado no app do vendedor.
 
 ## Regras inegociáveis
 - Dinheiro em NUMERIC(14,2), nunca float. Datas em UTC.
+- Tudo é gravado em Real; Dólar e Guarani só aparecem na tela, pela cotação do dia do lançamento (ADR-0006).
 - IDs são UUID gerados no cliente. Exclusão lógica (deleted_at), nunca DELETE.
 - Vendas, pagamentos e movimentos de maleta/estoque são imutáveis: correção = estorno.
 - O servidor recalcula totais, parcelas e comissões; nunca confia no app.

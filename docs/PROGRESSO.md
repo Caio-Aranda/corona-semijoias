@@ -19,6 +19,7 @@ Lista oficial, aprovada pelo responsável. Os ADRs e as tarefas usam estes núme
 | 6 | feat(backend): esqueleto Spring Boot 4.1.x com Flyway, OpenAPI e Testcontainers (UTC, erros em português, grupos dona/vendedor no OpenAPI) | Concluída (PR 7) |
 | 7 | ci: GitHub Actions e Dependabot | Concluída (PR 8) |
 | 8 | feat(backend): convenções do schema e sync_seq seguro (gatilho, pull com limite seguro, utilitário de dinheiro HALF_UP, teste de convenções, testes de concorrência e de estresse) | Concluída (PR 12) |
+| 8.1 | docs: três moedas e cotação diária (especificação v1.5, ADR-0006, glossário, CLAUDE.md) | Concluída (PR 13) |
 | 9 | feat(auth): usuários, perfis e login com JWT (perfis extensíveis, rotas por perfil, primeiro admin pelo .env) | Pendente |
 | 10 | feat(auth): a dona cria usuários e redefine a senha temporária (troca obrigatória, regras da senha) | Pendente |
 | 11 | feat(auth): sessão longa, limite de tentativas e registro de acessos (refresh com rotação, identificador do aparelho, bloqueio 5/15, prazo offline guardado) | Pendente |
@@ -29,6 +30,7 @@ Lista oficial, aprovada pelo responsável. Os ADRs e as tarefas usam estes núme
 | 16 | feat(seller-app): Corona Vendas com login online e barreira contra código da dona | Pendente |
 | 17 | chore: VS Code, comando único de setup e roteiro do teste de uso | Pendente |
 | 18 | spike: SQLCipher no Electron dentro do monorepo (tempo limitado, gera o ADR-0005) | Pendente |
+| 19 | feat(backend): cotações do Banco Central (tabela `cotacoes`, busca diária, conversão para Dólar e Guarani, aviso de falha; ADR-0006). Antes da Fase 1. Sem rota nem tela, por isso não depende das tarefas 9 a 18 | Pendente |
 
 ### Tarefa 1: especificação v1.1 com as decisões da Fase 0
 
@@ -239,3 +241,99 @@ Lista oficial, aprovada pelo responsável. Os ADRs e as tarefas usam estes núme
 - **Correção pedida na revisão do PR 12 (estorno proporcional):** a primeira versão arredondava cada estorno sozinho e o último levava o resto; os erros se acumulavam (comissão de 0,05 devolvida em 10 x 0,10 dava 0,09 estornado e o último -0,04; 22,73 em 30 x 10,10 dava 29 x 0,76 e o último 0,69). Agora o cálculo é pelo acumulado, `arredondar(original x devolvido acumulado / base) - já estornado`, e o ADR-0002 foi alterado antes do código (regra no item 2 e o exemplo das 10 devoluções na tabela). Testes escritos antes: os dois casos e uma propriedade com 5000 casos aleatórios de semente fixa (metade em centavos, onde o erro pesa; com valores só grandes a propriedade não pegava o defeito antigo).
 - ADR-0002, item 5: o estresse longo passou a ser descrito como "semanal (segunda às 03:00 de Brasília) e sob demanda pelo botão do workflow". O ADR ganhou uma linha "Alterado em" no cabeçalho, porque o `docs/decisoes/README.md` diz que ADR aceito não se reescreve; a alteração foi pedida pela orquestradora neste PR.
 - Revisão do PR 12 (orquestradora): aprovados o dialeto sem `RETURNING` no UPDATE, as recusas por comando e as pausas menores do estresse curto.
+
+### Tarefa 8.1: três moedas e cotação diária (só documentos)
+
+**O que foi feito**
+- `docs/ESPECIFICACAO.md` na versão 1.5 (09/11/2026). Mudaram só estas partes:
+  - cabeçalho;
+  - §7.5: sem execução de pagamentos; três moedas; cotação diária; falha; fim de semana e feriado; acerto grava a cotação;
+  - §9: `cotacoes`, e `acertos` com a cotação usada;
+  - §10: cotações no que o vendedor recebe, na política de conflito e sem internet;
+  - §12: relatórios nas três moedas e data da cotação no aviso do vendedor;
+  - §13: conciliações em Real; cotação em `NUMERIC(18,8)`;
+  - §15 e §21: fases;
+  - §17: pendência 13, pagamento com cartão;
+  - §22: entrada v1.5.
+- `docs/decisoes/ADR-0006-moedas-e-cotacao.md` (Aceito na revisão do plano). Decide:
+  - fonte: o arquivo diário de fechamento do BCB;
+  - leitura estrita;
+  - calendário, horário em UTC, tentativas e recuperação;
+  - tabela `cotacoes` com as quatro colunas de cada moeda;
+  - taxa de venda;
+  - fórmula;
+  - que cotação vale para cada valor;
+  - `NUMERIC(18,8)` e a mudança no teste de convenções;
+  - JSON e OpenAPI;
+  - arredondamento HALF_UP (2 casas no Dólar, 0 no Guarani), também no TypeScript, com `BigInt`;
+  - totais como soma dos convertidos;
+  - acerto: a cotação mais recente no fechamento, uma só para todos os valores dele, gravada em `cotacao_id`;
+  - aviso à dona;
+  - proteções;
+  - 17 exemplos numéricos com as cotações reais de 30/10, 05/11 e 06/11/2026, inclusive a diferença entre o acerto e o relatório de vendas e o valor máximo em `BigInt`.
+  - Índice dos ADRs atualizado.
+- `docs/glossario-interface.md`:
+  - termo "cotação";
+  - `PTAX` no bloco A das palavras proibidas;
+  - formatos de Dólar, Guarani (Gs. 1.379.397) e cotação;
+  - parte 11, "Três moedas na tela": ordem, destaque, grades e os textos do acerto, do vendedor e do aviso à dona;
+  - "Cartão" na parte 9 (a confirmar).
+- `CLAUDE.md`: linha nova nas regras inegociáveis.
+
+**O que ficou pendente**
+- Tudo o que é código: tarefa 19 (prompt sugerido abaixo), telas da Fase 1, rota do vendedor na Fase 4, pull na Fase 5 e `cotacao_id` no acerto na Fase 7.
+- Dúvida do ADR-0006: incluir o aviso da cotação na lista da §19.3.
+- Pendência 13 da §17 (cartão), para o cliente.
+
+**Decisões tomadas**
+- **Fonte:** a API PTAX (Olinda) não publica o Guarani; em 09/11/2026 só listava 10 moedas. A orquestradora escolheu a alternativa A: o arquivo diário de fechamento do BCB para as duas moedas, o mesmo que a página oficial do PTAX mostra. O PYG vem por paridade com o Dólar.
+- **Fases:** a tarefa propunha o envio ao vendedor só na Fase 5. Como o vendedor já vê preços na Fase 4 (online), a §21 põe a cotação pela API do vendedor na Fase 4 e o pull na Fase 5.
+- **Ajustes da orquestradora na aprovação do plano (09/11/2026):**
+  - ADR-0006 aceito, com a taxa de venda, as Fases 4 e 5 e o número 19;
+  - `BigInt` obrigatório no TypeScript, porque centavos × 10⁸ passa de 2⁵³;
+  - acerto com a cotação mais recente no fechamento, uma só para todos os valores, e a diferença para o relatório de vendas registrada nas consequências;
+  - o cartão sai da §7.5 (entrou por engano) e vira pendência 13 da §17;
+  - negativos do Dólar e do Guarani iguais ao do Real;
+  - testes de calendário no prompt da tarefa 19.
+- **Classificação:** `cotacoes` nasce só no servidor, mas, pelo critério do ADR-0002, é sincronizável só de leitura (chega ao app) e imutável. O ADR-0002 não foi alterado; o ADR-0006 o complementa.
+- **Antes da busca do dia,** o lançamento de hoje aparece pela cotação do último dia útil, com a data na tela, e muda para a de hoje quando ela chega. O acerto não muda, porque grava `cotacao_id`.
+- **Formato do Guarani:** "Gs." com ponto nos milhares e sem centavos. O símbolo ₲ foi evitado porque pode faltar nas fontes e no PDF.
+- **Nenhuma pendência nova na §17:** as dúvidas são do responsável, não do cliente.
+
+### Prompt sugerido para a tarefa 19
+
+> **Recomendação de sessão:** modo Plan, modelo Opus 5.5, esforço alto (dinheiro e dado imutável), conversa nova.
+
+```markdown
+# Tarefa 19: cotações do Banco Central (backend, antes da Fase 1)
+
+Leia o `CLAUDE.md`, a `docs/ESPECIFICACAO.md` (v1.5, §7.5, §9, §10, §12 e §13), o ADR-0002 e o ADR-0006 inteiro antes de planejar. Atualize a main e crie a branch `feat/cotacoes-banco-central`. Comece em modo de plano: mostre o plano e espere a aprovação. É parte crítica (dinheiro e dado imutável): escreva os testes primeiro.
+
+## Objetivo
+Implementar no backend a regra do ADR-0006: a tabela `cotacoes`, a busca diária no arquivo de fechamento do BCB, a recuperação de dias perdidos, a conversão de Real para Dólar e Guarani e o cálculo do aviso de falha. Sem rota e sem tela.
+
+## Entregas
+1. Migração nova (`V004__cotacoes.sql` ou a próxima livre): tabela `cotacoes` como no item 4 do ADR (`data_cotacao date UNIQUE`, 8 colunas `NUMERIC(18,8) NOT NULL`, `buscada_em`, `fonte`), criada com `corona.aplicar_convencoes_sincronizavel('cotacoes', true)`. Registrar no `RegistroDeTabelas` como sincronizável.
+2. Teste de convenções: `numeric(18,8)` aceito só nas 8 colunas de `cotacoes` (lista explícita `tabela.coluna`); em outra coluna, a mensagem "numeric(18,8) só em colunas de cotação (ADR-0006)"; caso novo no `ConvencoesDoSchemaTest`.
+3. `ConversaoDeMoeda` em `comum.dinheiro`: US$ = R$ ÷ usd_venda com 2 casas, Gs. = R$ ÷ pyg_venda com 0 casas, HALF_UP numa divisão só. Nunca grava. Inclui o valor máximo de `NUMERIC(14,2)`. `ArredondamentoSoNoUtilitarioTest` aceita `RoundingMode` só em `Dinheiro` e em `ConversaoDeMoeda`. Testes com **todos** os exemplos do item 14 do ADR.
+4. Leitor estrito do CSV (item 2 do ADR): 8 colunas em toda linha, data igual ao dia pedido, uma linha 220/A/USD e uma 450/A/PYG, números no padrão, maiores que zero, compra ≤ venda, paridade do USD igual a 1. Testes com arquivos de exemplo em `src/test/resources` (sem rede): o arquivo real de 06/11/2026 e um arquivo para cada regra quebrada (coluna a mais, data trocada, PYG ausente, PYG duplicado, ponto decimal, zero, compra > venda).
+5. Calendário de feriados bancários nacionais (fixos + Carnaval, Sexta-feira Santa e Corpus Christi pela Páscoa). Testes:
+   - 2026: Carnaval 16 e 17/02, Sexta-feira Santa 03/04, Corpus Christi 04/06;
+   - 2027: Carnaval 08 e 09/02, Sexta-feira Santa 26/03, Corpus Christi 27/05;
+   - Finados numa segunda (02/11/2026) e 20/11/2026 (sexta);
+   - a Quarta-feira de Cinzas (18/02/2026) é dia útil.
+6. Busca agendada (item 3 do ADR): segunda a sexta, 16:30 a 21:00 UTC a cada 30 min, 20 s por pedido, gravação das duas moedas na mesma transação, recuperação dos últimos 10 dias, dia gravado nunca relido. O relógio e o cliente HTTP entram por parâmetro, para os testes não dependerem da hora nem da internet. Testes: atrasado (404 antes das 21:00 UTC, sem aviso), feriado (404 na última tentativa, sem aviso), falha (404 num dia útil, erro de rede, arquivo fora da regra até o fim), **arquivo existe num dia marcado como feriado: grava**, recuperação, nunca parcial, nunca sobrescreve.
+7. Serviço "qual cotação vale" (item 7): maior `data_cotacao` ≤ data do lançamento em Brasília; a mais recente para o que não é lançamento e para o acerto no momento do fechamento. Testes: sábado, 23:30 de sexta em Brasília, Finados.
+8. Serviço do aviso (item 12): dias úteis sem cotação nos últimos 10 dias, contando hoje só depois das 21:00 UTC; devolve a data da cotação em uso. Sem rota: a tela e a rota vêm na Fase 1, depois do login.
+9. JSON e OpenAPI: tipo próprio para a cotação, texto com 8 casas (`^\d{1,10}\.\d{8}$`), sem passar pelo padrão de dinheiro. Teste de serialização.
+10. URL do arquivo e horários na configuração da aplicação (`application.properties`), sem segredo.
+
+## Fora de escopo
+Rotas e telas (Fase 1 para a dona, Fase 4 para o vendedor), pull (Fase 5), `cotacao_id` no acerto (Fase 7), TypeScript (a conversão com `BigInt` entra com o primeiro front-end que mostrar valores, com os mesmos exemplos do ADR), mudar o `Dinheiro`.
+
+## Verificação
+`npm run api:test` verde; os exemplos do ADR-0006 batem nos testes; nenhum teste depende da internet; o diff das migrações publicadas está vazio (só migração nova).
+
+## Ao terminar
+Atualize `docs/PROGRESSO.md` e abra o PR em Conventional Commits (`feat(backend): ...`). No relatório, diga o que fez, o que não fez e as dúvidas.
+```
