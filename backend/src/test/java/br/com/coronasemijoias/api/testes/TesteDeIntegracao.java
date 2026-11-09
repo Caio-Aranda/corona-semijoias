@@ -22,7 +22,7 @@ import org.testcontainers.utility.MountableFile;
  */
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import(RotasDeTeste.class)
+@Import({RotasDeTeste.class, TabelasDeTeste.class})
 public abstract class TesteDeIntegracao {
 
     // Valores falsos, só de teste (o contêiner some quando os testes terminam).
