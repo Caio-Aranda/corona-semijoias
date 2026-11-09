@@ -3,6 +3,7 @@
 - **Status:** Aceito
 - **Data:** 09/11/2026
 - **Tarefas que implementam:** 5 (papéis do banco), 6 (UTC e formato do JSON), 8 (convenções do schema, gatilho, pull seguro, utilitário de dinheiro e todos os testes), 9 e 11 (tabelas só do servidor: usuários, sessões, tentativas de login)
+- **Alterado em 09/11/2026** (tarefa 8, PR 12, a pedido da orquestradora): estorno proporcional calculado pelo acumulado (item 2) e estresse longo semanal (item 5)
 
 ## Contexto
 
@@ -33,7 +34,7 @@ Migração Flyway publicada nunca é editada (CLAUDE.md). Por isso o formato dos
 - **Desconto em porcentagem:** incide **por linha** e é arredondado por linha. O desconto da venda é a soma dos descontos das linhas. *(Padrão proposto, a confirmar na Fase 4; ver dúvida 1.)*
 - **Desconto em valor:** gravado como foi digitado, 2 casas.
 - **Parcelas:** as n-1 primeiras são `total / n` arredondado; a última é `total` menos a soma das anteriores, para fechar exato.
-- **Estornos e reembolsos:** são registros negativos, **gravados já arredondados e nunca recalculados**. O estorno proporcional de uma comissão é arredondado, e o último estorno leva o resto para a soma fechar exata.
+- **Estornos e reembolsos:** são registros negativos, **gravados já arredondados e nunca recalculados**. O estorno proporcional de uma comissão é calculado **pelo acumulado**: estorno_k = arredondar(valor original x devolvido acumulado / base original) - já estornado. Assim os arredondamentos não se acumulam: nenhum estorno inverte o sinal, a soma dos estornos nunca passa do valor original e a devolução que completa a base fecha exata, sem caso especial.
 - **Comissão:** a base de cálculo ainda **não está decidida** (ver dúvida 2). A regra de arredondamento vale nos dois casos possíveis, e o utilitário de dinheiro da tarefa 8 oferece os dois:
   - **(a) por venda:** comissão da venda = líquido da venda x porcentagem, arredondada; a do acerto é a soma das comissões das vendas;
   - **(b) sobre o total do acerto:** comissão = (soma dos líquidos vendidos no acerto) x porcentagem, arredondada uma vez.
@@ -48,7 +49,8 @@ Migração Flyway publicada nunca é editada (CLAUDE.md). Por isso o formato dos
 | Parcelas de R$ 100,00 em 3 vezes | 33,33 + 33,33 + o resto | **33,33 + 33,33 + 33,34** |
 | Comissão de 7,5%, três vendas de R$ 10,05, caso (a) por venda | 0,75375 vira 0,75 em cada venda; soma | **2,25** |
 | O mesmo, caso (b) sobre o total do acerto | 30,15 x 0,075 = 2,26125 | **2,26** (os dois casos diferem em R$ 0,01) |
-| Estorno proporcional: venda de R$ 100,00 com comissão de 7,50; o cliente devolve R$ 33,33 e depois R$ 66,67 | 7,50 x 33,33 / 100,00 = 2,49975 vira 2,50; o último estorno é 7,50 - 2,50 | estornos **2,50** e **5,00** (soma 7,50) |
+| Estorno proporcional: venda de R$ 100,00 com comissão de 7,50; o cliente devolve R$ 33,33 e depois R$ 66,67 | acumulado 1: 7,50 x 33,33 / 100,00 = 2,49975 vira 2,50; acumulado 2: 7,50 x 100,00 / 100,00 = 7,50, menos os 2,50 já estornados | estornos **2,50** e **5,00** (soma 7,50) |
+| Estorno proporcional pelo acumulado: comissão de 0,05 sobre venda de R$ 1,00; o cliente devolve 10 x R$ 0,10 | acumulado k = 0,05 x (k x 0,10) / 1,00, arredondado: 0,01; 0,01; 0,02; 0,02; 0,03; 0,03; 0,04; 0,04; 0,05; 0,05; cada estorno é o acumulado menos o já estornado | estornos **0,01; 0,00; 0,01; 0,00; 0,01; 0,00; 0,01; 0,00; 0,01; 0,00** (soma 0,05). Arredondando cada estorno sozinho, os 9 primeiros dariam 0,01 (0,09 estornado de uma comissão de 0,05) e o último -0,04 |
 
 **Dinheiro fora do banco (R6):**
 
@@ -167,7 +169,7 @@ Um app com cursor de época antiga recebe a resposta "cursor inválido" e **refa
 - N escritores (por exemplo 8) em paralelo, cada transação com 1 a 20 inserts, updates e exclusões lógicas em várias tabelas, pausas aleatórias de 0 a 2 s antes de confirmar, cerca de 15% de `ROLLBACK`, uso de `SAVEPOINT`, e de tempos em tempos uma transação longa (cerca de 5 s).
 - Um leitor pagina o pull sem parar, com lotes aleatórios de 1 a 50, aplicando tudo em um mapa na memória (id para versão mais recente).
 - No fim, depois que todas as transações terminam, o leitor esvazia o pull. **Afirmação:** o mapa é idêntico ao conteúdo das tabelas (todo id, toda versão, todo `deleted_at`); o cursor nunca andou para trás.
-- Duração: curta (cerca de 20 s) em todo Pull Request; longa (cerca de 10 minutos) em execução agendada à noite e sob demanda.
+- Duração: curta (cerca de 20 s) em todo Pull Request; longa (cerca de 10 minutos) semanal (segunda às 03:00 de Brasília) e sob demanda pelo botão do workflow.
 
 ### 6. Idempotência
 
