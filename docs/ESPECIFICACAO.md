@@ -183,12 +183,12 @@ Regras:
 - Valores em `NUMERIC(14,2)`, **nunca float**, com regra única de arredondamento: **HALF_UP com escala 2**.
 - Datas em UTC, exibidas em horário de Brasília.
 - **O preço de custo nunca chega ao PC do vendedor.**
-- O financeiro é completo, mas o sistema **não executa pagamentos**. Dinheiro, Pix, cartão, cheque, boleto e entrada são só **formas de pagamento registradas**, sem integração com banco, Pix ou maquininha.
+- O financeiro é completo, mas o sistema **não executa pagamentos**. As formas de pagamento (dinheiro, Pix, cheque, boleto e entrada) são só **registradas**: nenhuma é executada pelo sistema, e não há integração com banco, Pix ou maquininha.
 - **Três moedas.** A moeda padrão é o **Real**: todo valor é **gravado em Real** (`NUMERIC(14,2)`, regras do ADR-0002). Todo valor mostrado na tela, no app da dona e no do vendedor (acertos, relatórios, telas de valores, preço da peça), aparece **também em Dólar e em Guarani** (o Guarani sem centavos). A conversão é **só para mostrar** e nunca é gravada como valor de lançamento.
 - **Cotação diária.** Vale a cotação oficial do Banco Central, que o servidor busca online uma vez por dia útil e guarda dia a dia, como histórico: **nunca se apaga nem se corrige por cima**. Cada lançamento é convertido pela cotação do **dia em que aconteceu**, nunca pela de hoje.
   - Fim de semana e feriado sem cotação publicada **não são falha**: vale a do último dia útil.
   - Busca que falhou: vale a do dia anterior, e a dona recebe um aviso em "O que precisa da sua atenção".
-  - O **acerto grava a cotação que usou**.
+  - O **acerto grava a cotação que usou**: a mais recente no momento em que é fechado. Todos os valores do acerto são convertidos por ela, e a tela do acerto mostra a data dessa cotação.
   - Fonte, regras da busca, conversão e arredondamento: ADR-0006.
 
 ### 7.6 Estoque central e compras
@@ -504,6 +504,7 @@ Nota fiscal eletrônica (a nota de remessa é só interna), loja virtual, aplica
 10. Quem paga VPS, domínio e certificado de assinatura de código.
 11. Existe alguma planilha atual do cliente para usar na validação dos relatórios e na migração de cadastros?
 12. **Entrada:** o que significa na tela de referência? Valor pago pela vendedora ao levar a maleta, abatido no acerto, ou entrada de venda parcelada? É obrigatória? Como se calcula e o que acontece no acerto? Precisa de resposta antes da Fase 3.
+13. **Cartão:** o cliente final paga com cartão (na maquininha do próprio vendedor)? Se sim, entra como forma de pagamento registrada, sem integração.
 
 ## 18. Identidade visual: Corona Semijoias
 
@@ -701,9 +702,10 @@ Importação com nome de arquivo inválido, foto duplicada, arquivo corrompido, 
   - §9: `preco_custo` sai de `produtos` e vai para a nova tabela `produtos_custos`, só do servidor e nunca sincronizada.
   - §11: senha temporária vale 7 dias; a senha definitiva não expira; muitos erros num mesmo login vindos de IPs diferentes geram só um alerta, sem bloqueio.
 - **v1.5, 09/11/2026:** decisão do responsável sobre moedas e pagamentos (ADR-0006).
-  - §7.5: o sistema não executa pagamentos; as formas de pagamento são só registradas. Tudo é gravado em Real; todo valor da tela aparece também em Dólar e em Guarani (sem centavos), pela cotação oficial do Banco Central do dia de cada lançamento, guardada dia a dia sem correção por cima. Fim de semana e feriado usam a do último dia útil; busca que falhou usa a do dia anterior e avisa a dona; o acerto grava a cotação usada.
+  - §7.5: o sistema não executa pagamentos; as formas de pagamento são só registradas. Tudo é gravado em Real; todo valor da tela aparece também em Dólar e em Guarani (sem centavos), pela cotação oficial do Banco Central do dia de cada lançamento, guardada dia a dia sem correção por cima. Fim de semana e feriado usam a do último dia útil; busca que falhou usa a do dia anterior e avisa a dona; o acerto grava a cotação usada (a mais recente no fechamento) e converte todos os seus valores por ela.
   - §9: nova tabela `cotacoes` (só o servidor grava, imutável, enviada ao vendedor); `acertos` com a cotação usada.
   - §10: cotações no que o vendedor recebe e na política de conflito; sem internet, a última cotação recebida, com a data dela.
   - §12: relatórios nas três moedas, cada lançamento pela cotação do seu dia, total como soma dos convertidos; a data da cotação no aviso do app do vendedor.
   - §13: conciliações em Real; a cotação em `NUMERIC(18,8)`.
   - §15 e §21: em que fase entra cada parte (backend antes da Fase 1; dona na Fase 1; vendedor online na Fase 4; pull e uso sem internet na Fase 5; acerto na Fase 7).
+  - §17: nova pendência 13, pagamento com cartão.
