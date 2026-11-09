@@ -5,7 +5,7 @@ Sistema de semijoias consignadas: app da dona (online), app do vendedor
 (leia antes de qualquer tarefa; se uma regra mudar, atualize o documento primeiro).
 
 ## Stack
-Java 21 + Spring Boot 3 + Flyway + PostgreSQL (backend) · Electron + React +
+Java 21 + Spring Boot 4 + Flyway + PostgreSQL (backend) · Electron + React +
 TypeScript (dois apps separados) · SQLite criptografado no app do vendedor.
 
 ## Regras inegociáveis
