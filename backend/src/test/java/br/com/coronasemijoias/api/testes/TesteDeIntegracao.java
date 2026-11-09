@@ -1,6 +1,9 @@
 package br.com.coronasemijoias.api.testes;
 
 import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
@@ -31,13 +34,17 @@ public abstract class TesteDeIntegracao {
     protected static final String APP_SENHA = "senha-app-teste";
 
     /** Um único contêiner para todos os testes da execução. */
-    private static final PostgreSQLContainer POSTGRES = criarContainer();
+    protected static final PostgreSQLContainer POSTGRES = novoContainer();
 
     static {
         POSTGRES.start();
     }
 
-    private static PostgreSQLContainer criarContainer() {
+    /**
+     * Um PostgreSQL novo, igual ao do Compose e com o mesmo {@code 01-papeis.sh}. Quem chama o
+     * {@code start()} e o {@code stop()} é o teste (por exemplo, o segundo servidor da restauração).
+     */
+    protected static PostgreSQLContainer novoContainer() {
         Path script = Path.of("..", "infra", "postgres", "init", "01-papeis.sh").toAbsolutePath().normalize();
         return new PostgreSQLContainer("postgres:18.6")
                 .withDatabaseName(BANCO)
@@ -57,12 +64,35 @@ public abstract class TesteDeIntegracao {
 
     @DynamicPropertySource
     static void configurarBanco(DynamicPropertyRegistry registro) {
-        String url = "jdbc:postgresql://" + POSTGRES.getHost() + ":" + POSTGRES.getMappedPort(5432) + "/" + BANCO;
+        String url = urlJdbc(POSTGRES);
         registro.add("spring.datasource.url", () -> url);
         registro.add("spring.datasource.username", () -> APP_USUARIO);
         registro.add("spring.datasource.password", () -> APP_SENHA);
         registro.add("spring.flyway.url", () -> url);
         registro.add("spring.flyway.user", () -> MIGRACAO_USUARIO);
         registro.add("spring.flyway.password", () -> MIGRACAO_SENHA);
+        // As tabelas só de teste (db/migration-teste, V9000+) entram só aqui, nunca no jar.
+        registro.add("spring.flyway.locations", () -> "classpath:db/migration,classpath:db/migration-teste");
+    }
+
+    protected static String urlJdbc(PostgreSQLContainer container) {
+        return "jdbc:postgresql://" + container.getHost() + ":" + container.getMappedPort(5432) + "/" + BANCO;
+    }
+
+    /** Conexão JDBC pura com o usuário da aplicação, sem autocommit (o teste controla a transação). */
+    protected static Connection conectarComoAplicacao() throws SQLException {
+        return conectar(POSTGRES, APP_USUARIO, APP_SENHA);
+    }
+
+    /** Conexão JDBC pura com o usuário das migrações (dono das tabelas), sem autocommit. */
+    protected static Connection conectarComoMigracao() throws SQLException {
+        return conectar(POSTGRES, MIGRACAO_USUARIO, MIGRACAO_SENHA);
+    }
+
+    protected static Connection conectar(PostgreSQLContainer container, String usuario, String senha)
+            throws SQLException {
+        Connection conexao = DriverManager.getConnection(urlJdbc(container), usuario, senha);
+        conexao.setAutoCommit(false);
+        return conexao;
     }
 }
