@@ -10,3 +10,4 @@ docs/
 CLAUDE.md
 .claude/
 packages/api-client-*/src/gerado/
+packages/api-client-*/openapi.json

@@ -24,7 +24,7 @@ Lista oficial, aprovada pelo responsável. Os ADRs e as tarefas usam estes núme
 | 10 | feat(auth): a dona cria usuários e redefine a senha temporária (troca obrigatória, regras da senha) | Concluída (PR 15) · [detalhe](progresso/fase-0.md#tarefa-10-a-dona-cria-usuários-e-redefine-a-senha-temporária) |
 | 11 | feat(auth): sessão longa, limite de tentativas e registro de acessos (refresh com rotação, identificador do aparelho, bloqueio 5/15, prazo offline guardado) | Concluída (PR 16) · [detalhe](progresso/fase-0.md#tarefa-11-sessão-longa-limite-de-tentativas-e-registro-de-acessos) |
 | 12 | feat(api): versão mínima e tipo de app (cabeçalhos; o tipo é conveniência, não segurança) | Concluída (PR 18) · [detalhe](progresso/fase-0.md#tarefa-12-versão-mínima-e-tipo-de-app) |
-| 13 | feat(api-client): clientes gerados do OpenAPI, um da dona e um do vendedor | Pendente |
+| 13 | feat(api-client): clientes gerados do OpenAPI, um da dona e um do vendedor | Concluída (PR a informar) · [detalhe](progresso/fase-0.md#tarefa-13-clientes-gerados-do-openapi) |
 | 14 | feat(ui): tema da marca e componentes base em packages/ui | Pendente |
 | 15 | feat(owner-app): Corona Gestão com login e tela inicial | Pendente |
 | 16 | feat(seller-app): Corona Vendas com login online e barreira contra código da dona | Pendente |
@@ -41,7 +41,7 @@ O que ainda está em aberto nas tarefas concluídas (o que já foi resolvido por
 - Nome de tela de cada relatório: definido na tarefa daquele relatório. ([tarefa 2.1](progresso/fase-0.md#tarefa-21-decisões-do-responsável-especificação-v13-e-glossário))
 - Base da comissão (§17.6), desconto em porcentagem por linha (confirmar na Fase 4) e retenção de `sessoes` e `tentativas_login` (ADR futuro). ([tarefa 3](progresso/fase-0.md#tarefa-3-adrs-de-fundação))
 - ADR-0005 (SQLCipher): tarefa 18. ([tarefa 3](progresso/fase-0.md#tarefa-3-adrs-de-fundação))
-- Vitest (entra com o primeiro código testável) e a regra do `../` do Corona Vendas (tarefa 16). ([tarefa 4](progresso/fase-0.md#tarefa-4-esqueleto-do-monorepo))
+- A regra do `../` do Corona Vendas (tarefa 16); o Vitest entrou na tarefa 13. ([tarefa 4](progresso/fase-0.md#tarefa-4-esqueleto-do-monorepo))
 - Node 26.13.0 e npm 11.20.0 ainda não instalados na máquina de desenvolvimento; `npm audit` com avisos moderados em dependências de desenvolvimento (Dependabot). ([tarefa 4](progresso/fase-0.md#tarefa-4-esqueleto-do-monorepo))
 - VS Code (Boot Dashboard com o perfil `dev`) e `.vscode/`: tarefa 17. ([tarefa 6](progresso/fase-0.md#tarefa-6-esqueleto-do-backend))
 - Teste automático das palavras proibidas do glossário contra as mensagens da API (tarefa que ler os blocos do glossário). ([tarefa 6](progresso/fase-0.md#tarefa-6-esqueleto-do-backend))
