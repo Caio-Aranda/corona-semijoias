@@ -1,6 +1,6 @@
 # ADR-0003: Separação entre o Corona Gestão e o Corona Vendas
 
-- **Status:** Proposto
+- **Status:** Aceito
 - **Data:** 09/11/2026
 - **Tarefas que implementam:** 4 (regras de lint do monorepo), 6 (grupos do OpenAPI e pacotes de DTOs), 13 (clientes gerados), 14 (`packages/ui`), 15 (Corona Gestão), 16 (Corona Vendas e a barreira)
 
@@ -24,6 +24,7 @@ A separação precisa valer em **todas as camadas ao mesmo tempo**, porque uma �
 
 - Cada grupo tem os próprios DTOs, em pacotes separados e sem herança entre eles. O nome base dos pacotes é definido na tarefa 6; a regra é uma só: **o pacote do grupo vendedor nunca depende do pacote do grupo dona, nem o contrário**. O que os dois usam fica num pacote comum de tipos neutros (por exemplo, o texto decimal de dinheiro do ADR-0002).
 - **Nenhum DTO do grupo vendedor tem `preco_custo` (nem `precoCusto`, nem dados de outro vendedor).** O DTO de produto do vendedor é escrito à mão, campo a campo, sem herdar do DTO da dona e sem o mapeamento automático de toda a entidade.
+- **O custo do produto mora em `produtos_custos`** (ADR-0002), tabela só do servidor, sem `sync_seq`, fora do pull e fora de qualquer rota do grupo vendedor. Assim o custo não pode vazar nem por um DTO mal escrito nem por um `SELECT *`: ele simplesmente não está na tabela que o vendedor lê. Só os DTOs do grupo dona leem `produtos_custos`.
 - O filtro "somente do vendedor" é aplicado **sempre a partir do vendedor do token**, nunca de parâmetro da requisição. Rota do vendedor não recebe `vendedor_id`.
 - O pull de sincronização (Fase 5) usa lista explícita de colunas por tabela.
 
@@ -87,6 +88,9 @@ A lista de marcadores fica em **um único arquivo** versionado, lido pelo lint e
 
 ## Dúvidas
 
-1. **Nome dos pacotes Java dos dois grupos:** definido na tarefa 6; este ADR só fixa a regra de dependência.
-2. **Uma pasta única para a lista de marcadores proibidos** (nome e formato): decisão da tarefa 4.
-3. **`preco_custo` em tabela só do servidor:** reforçaria esta separação; é a dúvida 4 do ADR-0002.
+Nenhuma em aberto. Duas escolhas ficam para a tarefa que implementa, sem ADR:
+
+- o nome base dos pacotes Java dos dois grupos (tarefa 6; o ADR só fixa a regra de dependência);
+- o nome e o formato do arquivo único com a lista de marcadores proibidos (tarefa 4).
+
+O custo do produto em tabela só do servidor, que era dúvida, foi aprovado em 09/11/2026 (ADR-0002).

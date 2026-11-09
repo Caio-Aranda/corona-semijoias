@@ -1,6 +1,6 @@
 # Especificação completa: Sistema de Semijoias Consignadas
 
-Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.3, 09/11/2026.
+Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.4, 09/11/2026.
 
 ## 1. Objetivo e contexto
 
@@ -74,7 +74,7 @@ O código exclusivo da dona **não pode ir dentro do instalador do vendedor**. E
 | Camada | Escolha |
 | --- | --- |
 | Apps desktop | Electron + React + TypeScript (dois instaladores .exe, só Windows) |
-| API | Java 21 + Spring Boot 4.1.x (versão exata fixada no ADR-0001), Flyway, OpenAPI/Swagger |
+| API | Java 21 + Spring Boot 4 (a versão menor mais recente com suporte; versão exata no ADR-0001), Flyway, OpenAPI/Swagger |
 | Banco central | PostgreSQL |
 | Banco local (vendedor) | SQLite criptografado (SQLCipher), com migrações versionadas |
 | Servidor | VPS Linux, Docker Compose (API + PostgreSQL), Nginx, HTTPS com Let's Encrypt, domínio próprio |
@@ -256,7 +256,8 @@ Risco: etiquetas muito pequenas ou de baixa qualidade podem exigir leitor 2D ou 
 - `clientes` (nome, CPF opcional, telefone, WhatsApp, endereço, observações, vendedor\_responsavel\_id)
 - `fornecedores` (razão social, CNPJ, contato, endereço)
 - `categorias`
-- `produtos` (nome, referência, categoria, fornecedor, preco\_custo, preco\_venda, estoque\_minimo, estoque\_atual, foto, ativo)
+- `produtos` (nome, referência, categoria, fornecedor, preco\_venda, estoque\_minimo, estoque\_atual, foto, ativo)
+- `produtos_custos` (produto\_id, preco\_custo; **só do servidor, nunca sincronizada**; 1 para 1 com `produtos`, gravada na mesma transação)
 - `produto_codigos` (produto\_id, codigo único e indexado, fornecedor\_id, principal, ativo)
 
 ### Estoque e compras
@@ -350,13 +351,14 @@ O app é **offline-first**: lê e grava sempre no SQLite local, e um processo em
 
 - Senhas com **BCrypt**; JWT de acesso curto; **sessão longa (refresh token) de 30 dias, com rotação**, para login offline; **prazo máximo offline padrão de 10 dias**, configurável.
 - Ao esgotar o prazo máximo offline, as vendas guardadas **nunca se perdem**: o Corona Vendas bloqueia vendas novas, pede para conectar e envia tudo assim que houver internet.
-- A dona cria o usuário com **senha temporária** e a redefine quando preciso; a **troca da senha é obrigatória no primeiro acesso**.
+- A dona cria o usuário com **senha temporária** e a redefine quando preciso; a **troca da senha é obrigatória no primeiro acesso**. A senha temporária **vale 7 dias** a partir da criação ou da redefinição; vencida, não entra mais e a dona gera outra. A **senha definitiva** (do vendedor e da dona) **não expira**.
 - A senha nova tem **pelo menos 8 caracteres, com letras e números**, e é diferente da senha temporária.
 - Senha da própria dona: **outro admin** redefine. Se não houver outro admin, vale um **procedimento documentado no servidor** (comando de redefinição), sem e-mail.
 - Os dois apps enviam **cabeçalhos de versão e de tipo de app** desde a Fase 0.
 - O cabeçalho de tipo de app é **conveniência de experiência, não segurança**: a proteção real é a permissão por perfil nas rotas, e nenhum código pode depender só dele.
 - Permissões por perfil **validadas na API**; rotas de dona e de vendedor separadas.
 - Limite de tentativas de login: **bloqueio de 15 minutos depois de 5 erros seguidos**. Os dois números são configuráveis.
+- Muitos erros num mesmo login vindos de IPs diferentes **não bloqueiam** (para ninguém trancar a conta de outra pessoa): geram só um **alerta** à dona.
 - Banco central **nunca exposto** à internet, só a API (HTTPS).
 - Banco local **criptografado**, porque notebook de vendedor pode ser perdido ou roubado.
 - **Bloqueio remoto**: a dona desativa o usuário ou dispositivo e o app apaga os dados locais no próximo contato com o servidor.
@@ -674,3 +676,7 @@ Importação com nome de arquivo inválido, foto duplicada, arquivo corrompido, 
   - §17: nova pendência 12, "Entrada".
   - §19.1: na tela, "vendedor", "ler o código" e a regra de "produto" e "peça".
   - §19.3: "divergências de sincronização" passa a ser "envios com problema".
+- **v1.4, 09/11/2026:** decisões do responsável sobre os ADRs de fundação.
+  - §5: Spring Boot 4, na versão menor mais recente com suporte; a versão exata fica no ADR-0001.
+  - §9: `preco_custo` sai de `produtos` e vai para a nova tabela `produtos_custos`, só do servidor e nunca sincronizada.
+  - §11: senha temporária vale 7 dias; a senha definitiva não expira; muitos erros num mesmo login vindos de IPs diferentes geram só um alerta, sem bloqueio.

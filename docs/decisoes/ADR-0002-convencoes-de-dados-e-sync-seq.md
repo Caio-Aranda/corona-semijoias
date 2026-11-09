@@ -1,6 +1,6 @@
 # ADR-0002: Convenções de dados e `sync_seq` seguro
 
-- **Status:** Proposto
+- **Status:** Aceito
 - **Data:** 09/11/2026
 - **Tarefas que implementam:** 5 (papéis do banco), 6 (UTC e formato do JSON), 8 (convenções do schema, gatilho, pull seguro, utilitário de dinheiro e todos os testes), 9 e 11 (tabelas só do servidor: usuários, sessões, tentativas de login)
 
@@ -30,7 +30,7 @@ Migração Flyway publicada nunca é editada (CLAUDE.md). Por isso o formato dos
 **Em que momento se arredonda:** **cada valor calculado é arredondado no instante em que é calculado e gravado. Totais são a soma dos valores já arredondados**; nunca se arredonda o resultado de uma conta feita com valores intermediários sem arredondar. Quem grava um valor grava o valor final, e ninguém o recalcula depois (relatórios somam o que está gravado).
 
 - **Preço da linha:** quantidade (inteira) x preço unitário. Já tem 2 casas; não há arredondamento.
-- **Desconto em porcentagem:** incide **por linha** e é arredondado por linha. O desconto da venda é a soma dos descontos das linhas. *(Padrão proposto, a confirmar na Fase 4; ver dúvida 3.)*
+- **Desconto em porcentagem:** incide **por linha** e é arredondado por linha. O desconto da venda é a soma dos descontos das linhas. *(Padrão proposto, a confirmar na Fase 4; ver dúvida 1.)*
 - **Desconto em valor:** gravado como foi digitado, 2 casas.
 - **Parcelas:** as n-1 primeiras são `total / n` arredondado; a última é `total` menos a soma das anteriores, para fechar exato.
 - **Estornos e reembolsos:** são registros negativos, **gravados já arredondados e nunca recalculados**. O estorno proporcional de uma comissão é arredondado, e o último estorno leva o resto para a soma fechar exata.
@@ -77,24 +77,22 @@ Toda tabela sincronizável tem os campos da tabela abaixo. O gatilho (`BEFORE IN
 | Grupo | Tabelas (a lista final de cada fase é fechada na tarefa que cria a tabela) |
 | --- | --- |
 | Sincronizáveis (nascem no app) | `clientes`, `vendas`, `itens_venda`, `pagamentos_cliente`, `movimentos_remessa`, `devolucoes`, `itens_devolucao`, `trocas`, `itens_troca`, `autorizacoes_excecao` (pedido) |
-| Sincronizáveis (chegam ao app, só leitura) | `produtos` (sem custo), `produto_codigos`, `produtos_fotos`, `categorias`, `remessas`, `itens_remessa`, `creditos_cliente`, `contas_receber`, `comissoes`, `acertos`, `pendencias_acerto` (somente os do próprio vendedor), parte de `configuracoes` (garantia e descontos) |
-| **Só do servidor** | `usuarios`, `perfis`, `sessoes`, `tentativas_login`, `auditoria`, `sync_log`, `dispositivos`, `importacoes`, `fornecedores`, `compras`, `itens_compra`, `contas_pagar`, `lancamentos_caixa`, `cheques`, `movimentacoes_estoque`, `inventarios`, `itens_inventario`, `vendedores` e suas tabelas filhas (o vendedor só enxerga o próprio resumo, pelos DTOs do ADR-0003), o restante de `configuracoes` |
+| Sincronizáveis (chegam ao app, só leitura) | `produtos` (o custo fica em `produtos_custos`, que não é sincronizada), `produto_codigos`, `produtos_fotos`, `categorias`, `remessas`, `itens_remessa`, `creditos_cliente`, `contas_receber`, `comissoes`, `acertos`, `pendencias_acerto` (somente os do próprio vendedor), parte de `configuracoes` (garantia e descontos) |
+| **Só do servidor** | `produtos_custos`, `sync_estado`, `usuarios`, `perfis`, `sessoes`, `tentativas_login`, `auditoria`, `sync_log`, `dispositivos`, `importacoes`, `fornecedores`, `compras`, `itens_compra`, `contas_pagar`, `lancamentos_caixa`, `cheques`, `movimentacoes_estoque`, `inventarios`, `itens_inventario`, `vendedores` e suas tabelas filhas (o vendedor só enxerga o próprio resumo, pelos DTOs do ADR-0003), o restante de `configuracoes` |
 
 **O que muda numa tabela só do servidor:** não tem `sync_seq`, `sync_xid` nem `origem_dispositivo`, e não tem o gatilho de sincronização. O `id` é gerado no servidor (UUID v7). Mantém `created_at`, e `updated_at`, `version` e `deleted_at` quando faz sentido editar ou excluir. **Tabelas de histórico** (`auditoria`, `tentativas_login`) só recebem inserção e não têm `updated_at`, `version` nem `deleted_at`. Permissão, dados de outros vendedores e custo nunca passam pelo pull porque essas tabelas **não estão no pull**.
 
 **Regras em todas as tabelas (testadas na tarefa 8):**
 
 - **Nunca `DELETE`.** Um gatilho `BEFORE DELETE` recusa a operação em todas as tabelas, inclusive as só do servidor. Exclusão é lógica; correção é novo registro.
-- Tabelas imutáveis pela especificação (vendas, itens, pagamentos, movimentos de maleta e de estoque) têm também um gatilho que recusa `UPDATE`. Cancelar é inserir um registro novo (estorno).
-- **Nada é apagado na Fase 0**, nem de `sessoes` nem de `tentativas_login`. A política de retenção desses dados (quanto tempo guardar e como descartar sem `DELETE`) fica para um ADR futuro (ver dúvida 5).
+- Tabelas imutáveis pela especificação (vendas, itens, pagamentos, movimentos de maleta e de estoque) têm também um gatilho que recusa `UPDATE`. Cancelar é inserir um registro novo (estorno). **Consequência para a Fase 4:** a situação de uma venda (por exemplo, ativa ou cancelada) **não é gravada por cima** da venda, porque a tabela recusa `UPDATE`; ela é **calculada a partir dos lançamentos** (a venda mais o lançamento de cancelamento, se houver). Vale o mesmo para pagamentos e movimentos.
+- **Nada é apagado na Fase 0**, nem de `sessoes` nem de `tentativas_login`. A política de retenção desses dados (quanto tempo guardar e como descartar sem `DELETE`) fica para um ADR futuro (ver dúvida 3).
 
-**`preco_custo` fora de `produtos`? (avaliação pedida)**
+**Custo do produto: `produtos_custos` (decidido).** O `preco_custo` **não fica em `produtos`**. Ele fica em `produtos_custos` (`produto_id`, `preco_custo`), tabela **só do servidor**, 1 para 1 com `produtos`, **nunca sincronizada** e fora de qualquer rota do grupo vendedor. O produto e o custo são gravados **na mesma transação**. A especificação v1.4 (§9) registra essa tabela.
 
-A §9 coloca `preco_custo` em `produtos`. Avaliei guardar o custo em uma tabela só do servidor, `produtos_custos` (1 para 1, chave `produto_id`).
-
-- *Prós:* o custo **não pode** vazar pelo pull, porque a tabela não está no pull e não tem `sync_seq`, nem por descuido de quem mapeia a entidade ou escreve `SELECT *`; mudar o custo não gera nova versão do produto (hoje cada alteração de custo mandaria o produto de novo a todos os vendedores); o histórico de custo e a auditoria ficam separados; é fácil dar permissão de banco diferente.
-- *Contras:* diverge da §9; telas e relatórios da dona (lucro por produto, cadastro, importação por planilha) precisam de uma junção; o produto e o custo precisam ser gravados na mesma transação.
-- **Recomendação: criar `produtos_custos`.** Como a §9 diz o contrário, **não foi adotada**: fica como dúvida 4. Enquanto não houver resposta, vale a §9 (`preco_custo` em `produtos`) com duas proteções: o pull usa **lista explícita de colunas** (nunca `SELECT *`), e o teste do ADR-0003 confere que o custo não aparece em nada que o vendedor recebe.
+- *Prós:* o custo **não pode** vazar pelo pull, porque a tabela não tem `sync_seq` nem entra no pull, nem por descuido de quem mapeia a entidade ou escreve `SELECT *`; mudar o custo não gera nova versão do produto (senão cada alteração de custo mandaria o produto de novo a todos os vendedores); o histórico de custo e a auditoria ficam separados; é fácil dar permissão de banco diferente.
+- *Contras:* telas e relatórios da dona (lucro por produto, cadastro, importação por planilha) precisam de uma junção; o produto e o custo precisam ser gravados na mesma transação.
+- *Proteções que continuam valendo:* o pull usa **lista explícita de colunas** (nunca `SELECT *`), e o teste do ADR-0003 confere que o custo não aparece em nada que o vendedor recebe.
 
 ### 4. Exclusão lógica e o pull
 
@@ -131,7 +129,7 @@ SELECT ... FROM <tabela>
 
 **Detalhes do desenho.**
 - **Uma sequência global** para todas as tabelas sincronizáveis, então o cursor é um só. O pull consulta cada tabela com o mesmo critério, junta pelo par `(sync_xid, sync_seq)` e corta no limite do lote; cortar depois de juntar é seguro porque todo candidato fora do corte vem depois do último entregue.
-- **Cursor opaco** para o app: `época:xid:seq` (o app só guarda e devolve; o campo local `ultimo_sync_seq` da §10 guarda esse texto). Pull sem linhas novas devolve o mesmo cursor.
+- **Cursor opaco** para o app: `época:xid:seq`. **A época viaja dentro do cursor**: o app só guarda e devolve o texto inteiro (o campo local `ultimo_sync_seq` da §10 guarda esse texto), sem interpretar. O valor atual da época fica guardado no servidor, na tabela `sync_estado` (uma linha só, sem rota própria); `configuracoes` guarda apenas as chaves da §9. Pull sem linhas novas devolve o mesmo cursor.
 - **Só transações que gravaram algo seguram o pull.** O `xmin` considera transações que já receberam identificador. Sessões paradas e leituras (inclusive o `pg_dump`) não seguram.
 - `max_prepared_transactions` fica em 0 (transações preparadas segurariam o `xmin` indefinidamente).
 - O índice `(sync_xid, sync_seq)` existe em toda tabela sincronizável.
@@ -147,7 +145,7 @@ SELECT ... FROM <tabela>
 1. Parar a API (ninguém escreve durante o procedimento).
 2. Restaurar o dump no banco novo.
 3. Reescrever o `sync_xid` de **todas as linhas de todas as tabelas sincronizáveis** para o valor mínimo (`'0'::xid8`), **com os gatilhos do usuário desligados** (`ALTER TABLE ... DISABLE TRIGGER USER`, e `ENABLE TRIGGER USER` no fim), para não mexer em `sync_seq`, `version` nem `updated_at`. A ordem entre as linhas antigas continua a do `sync_seq`, e toda linha nova gravada depois recebe um identificador maior que zero.
-4. Subir a **época** do cursor (valor interno `sync_epoca`, guardado em `configuracoes` e **nunca** enviado ao app, mais 1).
+4. Subir a **época** do cursor (o valor guardado em `sync_estado` mais 1; o app recebe a época nova dentro dos cursores seguintes).
 5. Subir a API.
 
 Um app com cursor de época antiga recebe a resposta "cursor inválido" e **refaz a carga completa** do que pertence ao vendedor. O que o app guardou para enviar (vendas, clientes) **não é afetado**: o envio segue normal. O teste periódico de restauração da §11 passa a incluir um pull completo depois do procedimento. Um restore físico (cópia do diretório de dados) e o `pg_upgrade` preservam o contador, mas o mesmo roteiro é usado sempre, para existir um só procedimento.
@@ -212,9 +210,10 @@ A chave de idempotência é o **UUID gerado no app** (`vendas.id`, `movimentos_r
 
 ## Dúvidas
 
+Continuam em aberto, sem mudança:
+
 1. **Desconto em porcentagem por linha (padrão proposto):** confirmar na Fase 4 com a dona (é o que torna a soma das linhas igual ao total).
 2. **Base de cálculo da comissão:** a §6.8 diz "sobre o vendido no acerto" e a §17.6 está pendente com o cliente. Este ADR **não decide**: descreve o arredondamento por venda e sobre o total do acerto. A resposta define qual dos dois a tarefa de comissões implementa na Fase 7.
-3. **Onde fica a época do cursor:** proposto como valor interno de `configuracoes`; se o responsável preferir uma tabela própria, o restante do ADR não muda.
-4. **`preco_custo` numa tabela só do servidor (`produtos_custos`):** recomendado, mas diverge da §9. Precisa de aprovação do responsável e, se aprovado, de uma linha na revisão da especificação.
-5. **Retenção de `sessoes` e `tentativas_login`:** nada é apagado na Fase 0. Falta definir por quanto tempo guardar e como descartar sem `DELETE` (por exemplo, partições). Fica para um ADR futuro.
-6. **Biblioteca de UUID v7** no TypeScript e no Java: escolha da tarefa 8 (e da 4 no front-end), sem ADR.
+3. **Retenção de `sessoes` e `tentativas_login`:** nada é apagado na Fase 0. Falta definir por quanto tempo guardar e como descartar sem `DELETE` (por exemplo, partições). Fica para um ADR futuro.
+
+Resolvidas na aprovação de 09/11/2026: `preco_custo` em `produtos_custos` (acima) e a tabela `sync_estado` para a época. A biblioteca de UUID v7 (TypeScript e Java) é escolha da tarefa 8, e da 4 no front-end, sem ADR.

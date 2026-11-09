@@ -1,12 +1,12 @@
 # ADR-0004: Autenticação e sessão
 
-- **Status:** Proposto
+- **Status:** Aceito
 - **Data:** 09/11/2026
 - **Tarefas que implementam:** 9 (usuários, perfis, JWT, BCrypt, rotas por perfil, primeiro admin), 10 (criação de usuários, senha temporária, regras da senha, redefinição, comando de servidor para a dona), 11 (sessão longa, tentativas, registro de acessos, aparelho, prazo offline guardado), 12 (cabeçalhos e versão mínima), 15 e 16 (guarda dos tokens no Electron). Fase 5: bloqueio de segundo aparelho e regra do prazo offline. Tarefa 18: banco local criptografado
 
 ## Contexto
 
-A autenticação precisa funcionar nos dois apps, com uma exigência especial: o Corona Vendas trabalha sem internet por dias (§6, §10), então a sessão não pode depender de consulta ao servidor a cada tela. Ao mesmo tempo, o notebook do vendedor pode ser perdido (§11), a dona não é da área de tecnologia (§19), e o servidor nunca confia no que o app diz (CLAUDE.md). Este ADR fixa as regras da §3, §6.15 e §11 e as mensagens da parte 6 do glossário. Nada aqui altera a especificação.
+A autenticação precisa funcionar nos dois apps, com uma exigência especial: o Corona Vendas trabalha sem internet por dias (§6, §10), então a sessão não pode depender de consulta ao servidor a cada tela. Ao mesmo tempo, o notebook do vendedor pode ser perdido (§11), a dona não é da área de tecnologia (§19), e o servidor nunca confia no que o app diz (CLAUDE.md). Este ADR fixa as regras da §3, §6.15 e §11 (v1.4) e as mensagens da parte 6 do glossário. Nada aqui altera a especificação.
 
 ## Decisão
 
@@ -54,6 +54,7 @@ A autenticação precisa funcionar nos dois apps, com uma exigência especial: o
 - **BCrypt, custo 12** (cerca de um quarto de segundo por conferência num servidor pequeno; sobe com o tempo por ADR novo). O custo fica em configuração da aplicação, e a conferência aceita hash de custo menor e regrava o hash no próximo login, para poder subir o custo depois. BCrypt só lê os primeiros **72 bytes** da senha: a senha com mais de 72 bytes (em UTF-8) é recusada, e a mensagem de tela correspondente é criada no glossário pela tarefa 10, antes de usá-la.
 - **Regras da senha nova (§11):** pelo menos **8 caracteres**, com **letras e números**, **diferente da senha temporária**. Valem no servidor (a tela só ajuda). Os textos são os da parte 6 do glossário.
 - **Senha temporária:** a dona cria o usuário com senha temporária gerada pelo sistema (aleatória, sem caracteres que se confundem, mostrada uma vez) e pode gerar outra quando precisar. O usuário fica com a marca "troca obrigatória".
+- **A senha temporária vale 7 dias** a partir da criação do usuário ou da redefinição (cada redefinição começa uma contagem nova de 7 dias; o prazo fica na configuração do servidor). O servidor guarda a data de vencimento junto da marca "troca obrigatória". **Vencida, não entra mais**: o login com a senha temporária certa, depois do prazo, é recusado com o código `SENHA_TEMPORARIA_VENCIDA`, não devolve nenhum token e **não conta** como erro de senha para o bloqueio (a senha estava certa); a dona gera outra senha temporária. Essa recusa só é mostrada depois de a senha ser conferida, para não revelar que o login existe. A tarefa 10 implementa e **acrescenta ao glossário a mensagem "senha temporária vencida"** antes de usá-la. **A senha definitiva** (do vendedor e da dona) **não expira.**
 - **Troca obrigatória no primeiro acesso:** o login com senha temporária correta devolve **só um token restrito** (`escopo=TROCA_SENHA`, 15 minutos, **sem token de renovação**). Esse token abre apenas a rota de troca de senha em `/api/auth/` e a de saída. **Qualquer outra rota responde que a troca é obrigatória** (HTTP 403, código `TROCA_DE_SENHA_OBRIGATORIA`), então "nenhuma outra rota responde" é garantido no servidor, não na tela. Só depois da troca a API entrega o token de acesso e o de renovação normais.
 - A senha nunca aparece em log, em auditoria, em resposta ou em mensagem de erro.
 
@@ -66,7 +67,8 @@ A autenticação precisa funcionar nos dois apps, com uma exigência especial: o
 - **Durante o bloqueio, nem a senha certa entra.** Resposta: HTTP 429 com `Retry-After` e o texto "Acesso bloqueado por alguns minutos" do glossário, com `{minutos}` preenchido pelo sistema.
 - **IP real:** a API fica atrás do Nginx (§5, §11) e só confia no cabeçalho de IP encaminhado quando a conexão vem do proxy configurado. Sem isso, qualquer um poderia mudar o próprio IP.
 - **Registro de cada tentativa** na tabela só de inserção `tentativas_login`: login normalizado, IP, identificador do aparelho (quando houver), tipo de app, resultado (`SUCESSO`, `SENHA_INCORRETA`, `BLOQUEADO`, `USUARIO_DESATIVADO`, `APP_INCOMPATIVEL`), hora. É o "pronto" da Fase 0. Nada é apagado (ADR-0002).
-- **Risco aceito:** um atacante que varie login **e** IP a cada tentativa não é limitado pelo IP nem pela combinação; o limite por IP e o BCrypt tornam isso lento, não impossível. Um limite global por login seria ainda mais forte, mas permitiria bloquear de fora a conta de outra pessoa (ver dúvida 3).
+- **Muitos erros num mesmo login, vindos de IPs diferentes: só alerta, nunca bloqueio.** Bloquear por login (qualquer IP) deixaria qualquer pessoa trancar de fora a conta de outra. Em vez disso, **mais de 20 erros no mesmo login em 1 hora** (somando todos os IPs) geram um **aviso em "O que precisa da sua atenção"** da dona (§19.3), registrado a partir de `tentativas_login`. O limite (20 por hora) fica na configuração do servidor. A tarefa 11 gera o alerta; o texto do aviso é acrescentado ao glossário pela tarefa que o mostra, antes de usá-lo, e ele aparece assim que o bloco "O que precisa da sua atenção" existir.
+- **Risco aceito:** um atacante que varie login **e** IP a cada tentativa não é limitado pelo IP nem pela combinação; o limite por IP, o BCrypt e o alerta tornam isso lento e visível, não impossível.
 
 ### 8. Redefinição da senha da própria dona
 
@@ -78,7 +80,7 @@ A autenticação precisa funcionar nos dois apps, com uma exigência especial: o
 
 - Hoje: `ADMIN` e `VENDEDOR`. O perfil é um **dado**, não um tipo fechado: tabela `perfis` (só do servidor) com chave estrangeira em `usuarios.perfil`; criar um perfil é uma linha numa migração nova.
 - **Quem declara o perfil exigido é a rota.** Cada controlador ou método declara com uma anotação própria (por exemplo `@ExigePerfil("ADMIN")`), que o framework traduz em permissão. O padrão do grupo vem do prefixo (`/api/dona/**` aceita `ADMIN`; `/api/vendedor/**` aceita `VENDEDOR`; ADR-0003), e o método pode restringir mais. **Rota sem declaração de perfil é negada**, e um teste percorre todas as rotas registradas para garantir isso.
-- **Acrescentar um perfil novo** (por exemplo, um gerente): uma migração que insere o perfil, a anotação nas rotas que ele pode usar (`@ExigePerfil({"ADMIN","GERENTE"})`) e uma linha na tabela de configuração "aplicativo para perfis aceitos" (item 10). Nenhuma outra classe muda.
+- **Acrescentar um perfil novo** (por exemplo, um gerente): uma migração que insere o perfil, a anotação nas rotas que ele pode usar (`@ExigePerfil({"ADMIN","GERENTE"})`) e uma linha no mapa "aplicativo para perfis aceitos" da configuração do servidor (item 10). Nenhuma outra classe muda.
 - Permissão é sempre validada na API, não só na tela (§3).
 
 ### 10. Cabeçalhos de versão e de tipo de app
@@ -95,7 +97,7 @@ A autenticação precisa funcionar nos dois apps, com uma exigência especial: o
   O botão "Atualizar agora" só existe com a atualização automática (Fase 9); antes, a tela mostra só o texto (glossário).
 - **Exceções à verificação** (não exigem cabeçalho): o teste de saúde do servidor (`/actuator/health`) e a documentação do OpenAPI (`/v3/api-docs/**` e a tela do Swagger). O Nginx e a verificação de saúde do Docker não enviam cabeçalho de aplicativo.
 - `X-App-Tipo` ausente ou diferente de `gestao`/`vendas` recebe 400 (`APP_TIPO_INVALIDO`).
-- **Login com perfil incompatível:** o perfil `ADMIN` só entra no tipo `gestao` e o `VENDEDOR` só no `vendas` (tabela de configuração aplicativo → perfis aceitos). A comparação é feita **depois** de a senha estar correta, para não revelar que o login existe. Resposta: HTTP 403, código `APP_INCOMPATIVEL`, com as mensagens "Este é o Corona Vendas." / "Este é o Corona Gestão." do glossário. A tentativa é registrada (item 7).
+- **Login com perfil incompatível:** o perfil `ADMIN` só entra no tipo `gestao` e o `VENDEDOR` só no `vendas` (mapa "aplicativo para perfis aceitos" da configuração do servidor). A comparação é feita **depois** de a senha estar correta, para não revelar que o login existe. Resposta: HTTP 403, código `APP_INCOMPATIVEL`, com as mensagens "Este é o Corona Vendas." / "Este é o Corona Gestão." do glossário. A tentativa é registrada (item 7).
 
 > ### O cabeçalho de tipo de app é conveniência de experiência, NÃO é segurança
 >
@@ -126,7 +128,7 @@ A autenticação precisa funcionar nos dois apps, com uma exigência especial: o
 - **Token de acesso de longa duração, sem refresh:** um token roubado valeria por dias. Descartada.
 - **Guardar o refresh token em `localStorage` ou no banco local:** legível por qualquer código da tela e por quem copiar o arquivo. Descartada.
 - **Identificador do aparelho derivado do hardware:** rastreável e instável. Descartado.
-- **Bloquear por login (qualquer IP) ou só por IP:** o primeiro deixaria qualquer pessoa trancar a conta do vendedor de fora; o segundo trancaria a loja inteira por um erro. Descartados em favor de login + IP, mais um limite maior só por IP.
+- **Bloquear por login (qualquer IP) ou só por IP:** o primeiro deixaria qualquer pessoa trancar a conta do vendedor de fora (por isso, nesse caso, só há alerta); o segundo trancaria a loja inteira por um erro. Descartados em favor de login + IP, mais um limite maior só por IP.
 - **Argon2 no lugar de BCrypt:** melhor, mas a especificação escolheu BCrypt (§5, §11).
 - **Redefinição por e-mail ou perguntas secretas:** a especificação decidiu "sem e-mail" (§11). Descartada.
 
@@ -134,10 +136,12 @@ A autenticação precisa funcionar nos dois apps, com uma exigência especial: o
 
 §3 (perfis), §5 (autenticação), §6.15 (um aparelho por vendedor), §9 (`configuracoes`, `dispositivos`), §10 (offline), §11 (segurança), §19 (facilidade de uso), parte 6 do glossário (mensagens padrão).
 
+## Parâmetros técnicos e onde ficam
+
+Aprovado em 09/11/2026: os parâmetros técnicos ficam **na configuração do servidor** (arquivo de configuração da aplicação e variáveis de ambiente do `.env`), **sem tela**; mudar um deles é mudança de configuração e nova subida da API. São eles: duração do token de acesso (15 minutos), validade do refresh (30 dias), janela de tolerância (2 minutos), validade da senha temporária (7 dias), limite de erros por IP (50 em 15 minutos), limite do alerta por login (20 por hora), custo do BCrypt (12) e versões mínimas dos apps. **A tabela `configuracoes` mantém só as chaves da §9:** tempo máximo offline (padrão 10 dias), tentativas de login antes do bloqueio (padrão 5) e tempo de bloqueio (padrão 15 minutos), além das demais chaves já listadas lá.
+
 ## Dúvidas
 
-1. **Parâmetros que ficam na configuração da aplicação, não em `configuracoes`:** duração do token de acesso, validade do refresh (30 dias), janela de tolerância, limite por IP, custo do BCrypt, versões mínimas. A §9 lista só três chaves de segurança em `configuracoes` (prazo offline, tentativas e tempo de bloqueio). Se o responsável quiser que a dona (ou o suporte) altere os outros pela tela, a §9 precisa ganhar essas chaves.
-2. **Mensagem de tela para "senha com mais de 72 bytes":** não existe no glossário; a tarefa 10 acrescenta ao glossário antes de usar.
-3. **Limite global por login (em qualquer IP):** seria mais forte contra ataque distribuído, mas permite bloquear de fora a conta de outra pessoa. Não adotado; precisa de decisão.
-4. **Validade da senha temporária:** a especificação não diz se ela expira. A proposta é não expirar até o primeiro uso; confirmar.
-5. **Nome e local do comando de servidor** para redefinir a senha da dona: definidos na tarefa 10.
+Nenhuma em aberto. Resolvidas na aprovação de 09/11/2026: parâmetros na configuração do servidor, validade da senha temporária (7 dias), alerta (sem bloqueio) para muitos erros num login e a janela de tolerância do refresh.
+
+Duas escolhas ficam para a tarefa 10, sem ADR: o nome e o local do comando de servidor que redefine a senha da dona, e a mensagem de tela para "senha com mais de 72 bytes" (acrescentada ao glossário antes de ser usada, como a de "senha temporária vencida").

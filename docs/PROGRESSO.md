@@ -89,8 +89,8 @@ Lista oficial, aprovada pelo responsável. Os ADRs e as tarefas usam estes núme
 - O desenho do `sync_seq` foi provado à parte num PostgreSQL 18.6 (pull fora de ordem, savepoint, rollback, lápide e restauração de backup). O script não foi versionado.
 
 **O que ficou pendente**
-- Aprovação dos ADRs pelo responsável (todos seguem Propostos).
-- Dúvidas registradas dentro de cada ADR, entre elas: TypeScript 6.0.3 ou 7; gerador de cliente 0.x; Flyway 12.4.0 ou 13; Spring Boot 4.2 (exige mudar a "4.1.x" da §5); Node 26 ou 24; base da comissão (§17.6); `preco_custo` em `produtos_custos` (diverge da §9); retenção de `sessoes` e `tentativas_login`; parâmetros de autenticação fora de `configuracoes`.
+- Revisão e merge do PR 4 pela orquestradora.
+- Dúvidas que continuam abertas: base da comissão (§17.6, ADR-0002); desconto em porcentagem por linha (confirmar na Fase 4); retenção de `sessoes` e `tentativas_login` (ADR futuro).
 - ADR-0005 (SQLCipher) fica para a tarefa 18.
 
 **Decisões tomadas**
@@ -98,4 +98,15 @@ Lista oficial, aprovada pelo responsável. Os ADRs e as tarefas usam estes núme
 - Dinheiro como texto decimal no JSON e centavos inteiros só para conta no TypeScript.
 - `sync_xid` (`xid8`) ao lado do `sync_seq`, cursor com época, reescrita do `sync_xid` na restauração, limites de transação só para o usuário da aplicação.
 - JWT HS256 com `kid`, 15 minutos; refresh com SHA-256, 30 dias, rotação, janela de 2 minutos com sucessor derivado; BCrypt custo 12; token restrito na senha temporária; bloqueio 5/15 por login + IP e limite separado de 50 erros por IP; versão mínima na configuração da aplicação; resposta 426 com exceção para a saúde do servidor e a documentação.
-- Nenhum arquivo da especificação, do glossário ou do CLAUDE.md foi alterado.
+- Na primeira entrega, nenhum arquivo da especificação, do glossário ou do CLAUDE.md foi alterado (a especificação mudou na segunda, abaixo).
+
+**Decisões aprovadas pelo responsável (09/11/2026)**
+- Os ADRs 0001 a 0004 passam a **Aceito**.
+- Custo do produto: `produtos_custos` (só do servidor, 1 para 1 com `produtos`, gravada na mesma transação, nunca sincronizada). ADR-0002 e ADR-0003 atualizados.
+- Spring Boot: política "Spring Boot 4, a versão menor mais recente com suporte; versão exata no ADR-0001". Hoje é a 4.1.2; a 4.2 entra pelo Dependabot com o CI verde, sem ADR novo.
+- Versões aceitas: TypeScript 6.0.3, @hey-api/openapi-ts 0.99.0 (versão fixa), Flyway 12.4.0, Node 26.13.0 com npm 11.20.0, electron-builder 26.18.0 e electron-updater 6.8.11. Exceção do Electron aceita (versões novas sem ADR novo, sempre entre as 3 com suporte).
+- Parâmetros técnicos de autenticação ficam na configuração do servidor, sem tela; `configuracoes` mantém só as chaves da §9.
+- Senha temporária vale 7 dias (a tarefa 10 implementa e acrescenta ao glossário a mensagem "senha temporária vencida"); a senha definitiva não expira.
+- Muitos erros num mesmo login vindos de IPs diferentes: sem bloqueio; mais de 20 erros em 1 hora geram aviso em "O que precisa da sua atenção" (limite no servidor).
+- ADR-0002: a época viaja dentro do cursor `época:xid:seq`; o valor atual fica na tabela do servidor `sync_estado` (escolha da implementadora, porque `configuracoes` só guarda as chaves da §9); na Fase 4 a situação da venda é calculada a partir dos lançamentos, não gravada por cima.
+- **Especificação v1.4 (09/11/2026):** cabeçalho; §5 (Spring Boot 4, versão menor mais recente com suporte); §9 (`produtos` sem `preco_custo`, nova `produtos_custos`); §11 (senha temporária de 7 dias, senha definitiva sem expiração, alerta sem bloqueio para muitos erros num login); §22 com a entrada v1.4. Nenhuma outra regra mudou.

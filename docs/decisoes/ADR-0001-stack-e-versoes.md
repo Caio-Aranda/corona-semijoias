@@ -1,12 +1,12 @@
 # ADR-0001: Stack e versões
 
-- **Status:** Proposto
+- **Status:** Aceito
 - **Data:** 09/11/2026
 - **Tarefas que implementam:** 4 (monorepo, Node, TypeScript, ESLint), 5 (PostgreSQL no Docker), 6 (backend), 7 (CI e Dependabot), 13 (clientes gerados), 15 e 16 (aplicativos Electron)
 
 ## Contexto
 
-A especificação (§5) escolhe as tecnologias, mas deixa a versão exata do Spring Boot para este ADR ("4.1.x, versão exata fixada no ADR-0001") e não fixa nenhuma outra. Versão errada no começo custa caro: o Flyway, o PostgreSQL e o Electron têm ciclos de suporte curtos, e algumas bibliotecas de front-end ainda não aceitam a versão mais nova do TypeScript.
+A especificação (§5) escolhe as tecnologias, mas deixa a versão exata do Spring Boot para este ADR ("Spring Boot 4, a versão menor mais recente com suporte; versão exata no ADR-0001") e não fixa nenhuma outra. Versão errada no começo custa caro: o Flyway, o PostgreSQL e o Electron têm ciclos de suporte curtos, e algumas bibliotecas de front-end ainda não aceitam a versão mais nova do TypeScript.
 
 Todas as versões abaixo foram **consultadas na fonte oficial em 09/11/2026**. Onde a fonte não publica data de fim de suporte, a tabela diz "sem data publicada" em vez de inventar uma.
 
@@ -38,7 +38,7 @@ Também vêm do Boot 4.1.2 e valem para o backend: Spring Framework 7.0.10 e dri
 ### Por que cada uma
 
 - **Java 21 (Temurin):** é o que a especificação pede (§5), é versão LTS e o Boot 4.1 suporta de 17 a 27. Temurin é a distribuição aberta mantida pela Adoptium, sem custo de licença. É também o JDK que já está instalado na máquina de desenvolvimento.
-- **Spring Boot 4.1.2:** é o patch estável mais recente da linha 4.1 que a especificação pede. Traz Flyway, Testcontainers e driver do PostgreSQL já compatíveis entre si.
+- **Spring Boot 4.1.2:** a política da especificação é "Spring Boot 4, a versão menor mais recente com suporte". Hoje a menor mais recente com versão final é a 4.1, e a 4.1.2 é o patch estável mais novo dela. A linha 4.2 sai em 30/11/2026 e entra pelo Dependabot, com o CI verde (ver a regra de atualização). Traz Flyway, Testcontainers e driver do PostgreSQL já compatíveis entre si.
 - **Maven 3.9.16 pelo wrapper:** o wrapper fixa a versão do Maven no repositório, então ninguém depende do Maven instalado na máquina (§5, §14). O Maven 4 ainda não saiu de candidata a versão.
 - **Flyway 12.4.0:** é a que o Boot 4.1.2 gerencia e testa; trocar para a 13.x exigiria sobrepor a versão do Boot, e o ganho não compensa o risco logo na fundação. Suporta PostgreSQL 18. O módulo `flyway-database-postgresql` é obrigatório desde o Flyway 10.
 - **springdoc 3.2.0:** é a linha 3.x, feita para o Spring Boot 4, e a 3.2.0 foi construída sobre o Boot 4.1.2. É quem gera o OpenAPI (§5) de onde saem os clientes (ADR-0003).
@@ -63,8 +63,8 @@ Também vêm do Boot 4.1.2 e valem para o backend: Spring Framework 7.0.10 e dri
 - **Dependabot** abre os Pull Requests de atualização toda semana, agrupados por ecossistema (Maven, npm, GitHub Actions, Docker) (tarefa 7).
 - **Patch e minor** entram por Pull Request com o CI verde, sem ADR novo.
 - **Troca de versão maior exige ADR novo** que substitui este (por exemplo: Java 21 para 25, Spring Boot 4 para 5, Flyway 12 para 13, PostgreSQL 18 para 19, Node 26 para 28, React 19 para 20, TypeScript 6 para 7). Isso vale também para o gerador de cliente enquanto for 0.x: cada minor dele é tratado como major.
-- **Exceção proposta, o Electron:** cada versão maior do Electron tem suporte por cerca de 6 meses e sai a cada cerca de 8 semanas; exigir um ADR a cada uma seria impraticável. Os majors do Electron entram por Pull Request com lista de conferência (instalador, atualização automática, ponte entre processos, teste de uso) e **sem ADR novo**, desde que fiquem sempre dentro dos 3 majors com suporte. Antes da entrega (Fase 9), o major em uso precisa estar dentro do suporte.
-- Spring Boot 4.1 para 4.2 é mudança de minor, mas a especificação diz "4.1.x"; por isso depende de uma revisão da especificação (ver dúvida 4).
+- **Exceção aceita, o Electron:** cada versão maior do Electron tem suporte por cerca de 6 meses e sai a cada cerca de 8 semanas; exigir um ADR a cada uma seria impraticável. Os majors do Electron entram por Pull Request com lista de conferência (instalador, atualização automática, ponte entre processos, teste de uso) e **sem ADR novo**, desde que fiquem sempre dentro dos 3 majors com suporte. Antes da entrega (Fase 9), o major em uso precisa estar dentro do suporte.
+- **Spring Boot:** a especificação (v1.4, §5) diz "Spring Boot 4, a versão menor mais recente com suporte". Passar de 4.1 para 4.2, e depois para as menores seguintes, é atualização de minor: o Dependabot abre o Pull Request, que entra com o CI verde, **sem ADR novo**, e a tabela de versões deste ADR deixa de ser a fonte da verdade (ver abaixo). Spring Boot 5 seria troca de major e pede ADR novo.
 
 ## Consequências
 
@@ -74,7 +74,7 @@ Também vêm do Boot 4.1.2 e valem para o backend: Spring Framework 7.0.10 e dri
 - Regra de atualização clara: patch e minor andam sozinhos; major pede decisão.
 
 ### Ruins ou custos
-- O suporte aberto do Spring Boot 4.1 termina em 31/07/2027, antes de a dona completar um ano de uso. Será preciso migrar para a linha 4.2 (ou seguinte) e rever a especificação.
+- O suporte aberto do Spring Boot 4.1 termina em 31/07/2027, antes de a dona completar um ano de uso. Será preciso migrar para a linha 4.2 (ou seguinte); como a política é "a menor mais recente com suporte", isso entra pelo Dependabot, mas pede teste cuidadoso, porque Flyway, springdoc e Testcontainers andam junto com o Boot.
 - O Electron 45 termina em 27/04/2027 (provisório): haverá pelo menos uma troca de major do Electron antes ou logo depois da entrega.
 - TypeScript 6.0.3 e gerador 0.x são escolhas defensivas; a 7 e o gerador mudarão de situação em poucos meses e haverá retrabalho moderado.
 - Dois Nodes diferentes: o de desenvolvimento (26) e o embutido no Electron (24.22). Um teste verde no Node 26 não prova o comportamento dentro do aplicativo.
@@ -84,13 +84,13 @@ Também vêm do Boot 4.1.2 e valem para o backend: Spring Framework 7.0.10 e dri
 ## Alternativas consideradas
 
 - **Spring Boot 4.0.9:** o suporte aberto termina em 31/12/2026, em semanas. Descartado.
-- **Spring Boot 4.2.0 (candidata a versão 2):** sai em 30/11/2026 e contraria a especificação ("4.1.x"). Descartado por ora; ver dúvida 4.
+- **Spring Boot 4.2.0 (candidata a versão 2):** sai em 30/11/2026 e ainda não tem versão final. Descartado para a fundação; entra pelo Dependabot quando sair, com o CI verde.
 - **Java 25 (LTS):** o Boot 4.1 aceita, mas a especificação fixa o Java 21 e o JDK 21 já está instalado. Fica para um ADR futuro.
 - **Flyway 13.12.1:** é a mais nova, mas sobrepõe a versão gerenciada pelo Boot. Descartada para a fundação.
 - **PostgreSQL 17.11:** funciona, mas perde suporte em 11/2029, um ano antes da 18, e não há migração a fazer num projeto novo.
 - **Maven 4.0.0-rc-7:** ainda é candidata a versão. Descartada.
 - **Gradle:** a especificação escolheu Maven (§5).
-- **Node 24 (suporte de manutenção):** é o Node que o Electron embute, o que alinharia desenvolvimento e aplicativo, mas o pedido foi "LTS ativo". Ver dúvida 5.
+- **Node 24 (suporte de manutenção):** é o Node que o Electron embute, o que alinharia desenvolvimento e aplicativo, mas o pedido foi "LTS ativo", e o responsável aprovou o Node 26.
 - **Electron 44 e 43:** suporte até 03/2027 e 01/2027. Descartados pelo prazo menor.
 - **TypeScript 7.0.2:** quebra o lint hoje. Descartado por ora.
 - **openapi-typescript 7.13.0:** declara compatibilidade só com TypeScript 5. **Orval 8.47.0:** gera clientes de acesso à API mais pesados do que o necessário aqui. Ambos descartados.
@@ -101,13 +101,6 @@ Também vêm do Boot 4.1.2 e valem para o backend: Spring Framework 7.0.10 e dri
 
 ## Dúvidas
 
-Nenhuma delas foi decidida sozinha; para cada uma, o texto acima mostra a proposta usada enquanto a resposta não vem.
+Nenhuma em aberto. O responsável aprovou em 09/11/2026: TypeScript 6.0.3, @hey-api/openapi-ts 0.99.0 (versão fixa), Flyway 12.4.0 (a do Boot), Node 26.13.0 com npm 11.20.0, electron-builder 26.18.0 com electron-updater 6.8.11, a exceção do Electron e a política do Spring Boot. Quando o typescript-eslint passar a aceitar o TypeScript 7, a troca é troca de major e pede ADR novo.
 
-1. **TypeScript 6.0.3 ou 7.0.2?** A proposta usa a 6.0.3 porque o typescript-eslint não aceita a 7. Rever quando o lint aceitar.
-2. **Gerador de cliente:** o @hey-api/openapi-ts é 0.x e pode mudar entre minors. Alternativas: openapi-typescript (exige TypeScript 5) ou Orval.
-3. **Flyway 12.4.0 (a do Boot) ou 13.12.1?** A proposta segue o Boot.
-4. **Spring Boot 4.2:** o suporte aberto da linha 4.1 acaba em 31/07/2027 e a 4.2.0 sai em 30/11/2026. Migrar exige mudar o "4.1.x" da §5 da especificação. Quem decide é o responsável.
-5. **Node 26 (LTS ativo, o pedido) ou Node 24 (o que o Electron embute, em manutenção)?**
-6. **electron-builder 26.18.0 (tag `latest`) ou 26.18.1 (tag `v26`)?** O registro marca versões diferentes em cada tag; a proposta segue a `latest` (e electron-updater 6.8.11 pelo mesmo motivo).
-7. **Exceção do Electron** (majors sem ADR novo): precisa de aprovação.
-8. **Datas de suporte:** só o Spring Boot, a Adoptium, o PostgreSQL, o Node e o Electron publicam. Para as demais bibliotecas não há data a registrar.
+Observação: só o Spring Boot, a Adoptium, o PostgreSQL, o Node e o Electron publicam datas de suporte. Para as demais bibliotecas não há data a registrar.

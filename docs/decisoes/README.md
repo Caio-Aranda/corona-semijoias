@@ -8,10 +8,10 @@ A especificação (`docs/ESPECIFICACAO.md`) manda. Um ADR detalha a especificaç
 
 | ADR | Título | Status | Tarefas da Fase 0 que implementam |
 | --- | --- | --- | --- |
-| [0001](ADR-0001-stack-e-versoes.md) | Stack e versões | Proposto | 4, 5, 6, 7, 13, 15, 16 |
-| [0002](ADR-0002-convencoes-de-dados-e-sync-seq.md) | Convenções de dados e `sync_seq` seguro | Proposto | 5, 6, 8, 9, 11 |
-| [0003](ADR-0003-separacao-gestao-vendas.md) | Separação entre o Corona Gestão e o Corona Vendas | Proposto | 4, 6, 13, 14, 15, 16 |
-| [0004](ADR-0004-autenticacao-e-sessao.md) | Autenticação e sessão | Proposto | 9, 10, 11, 12, 15, 16 |
+| [0001](ADR-0001-stack-e-versoes.md) | Stack e versões | Aceito | 4, 5, 6, 7, 13, 15, 16 |
+| [0002](ADR-0002-convencoes-de-dados-e-sync-seq.md) | Convenções de dados e `sync_seq` seguro | Aceito | 5, 6, 8, 9, 11 |
+| [0003](ADR-0003-separacao-gestao-vendas.md) | Separação entre o Corona Gestão e o Corona Vendas | Aceito | 4, 6, 13, 14, 15, 16 |
+| [0004](ADR-0004-autenticacao-e-sessao.md) | Autenticação e sessão | Aceito | 9, 10, 11, 12, 15, 16 |
 | 0005 | SQLCipher no Electron | Reservado | 18 (spike) |
 
 A numeração das tarefas é a do "Plano da Fase 0" em `docs/PROGRESSO.md`.
