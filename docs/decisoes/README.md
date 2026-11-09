@@ -13,6 +13,7 @@ A especificação (`docs/ESPECIFICACAO.md`) manda. Um ADR detalha a especificaç
 | [0003](ADR-0003-separacao-gestao-vendas.md) | Separação entre o Corona Gestão e o Corona Vendas | Aceito | 4, 6, 13, 14, 15, 16 |
 | [0004](ADR-0004-autenticacao-e-sessao.md) | Autenticação e sessão | Aceito | 9, 10, 11, 12, 15, 16 |
 | 0005 | SQLCipher no Electron | Reservado | 18 (spike) |
+| [0006](ADR-0006-moedas-e-cotacao.md) | Moedas e cotação | Proposto | 19 (e telas das Fases 1, 4, 5 e 7) |
 
 A numeração das tarefas é a do "Plano da Fase 0" em `docs/PROGRESSO.md`.
 
