@@ -184,6 +184,38 @@ class PullConcorrenteTest extends TesteDeIntegracao {
     }
 
     @Test
+    void aOrdemEPelaPosicaoNumericaQuandoOXidMudaDeQuantidadeDeDigitos() throws SQLException {
+        // Regressão achada pelo estresse: ordenar pelo texto do xid põe '1000' antes de '999' e o
+        // LIMIT corta a linha errada. As duas linhas recebem sync_xid à mão (gatilhos desligados).
+        UUID de999 = UuidV7.gerar();
+        UUID de1000 = UuidV7.gerar();
+        try (Connection dono = conectarComoMigracao()) {
+            executar(dono, "ALTER TABLE teste_sync_a DISABLE TRIGGER USER");
+            executar(dono, "INSERT INTO teste_sync_a (id, texto, sync_seq, sync_xid)"
+                    + " VALUES (?, 'xid 1000', nextval('corona.sync_seq_global'), '1000'::xid8)", de1000);
+            executar(dono, "INSERT INTO teste_sync_a (id, texto, sync_seq, sync_xid)"
+                    + " VALUES (?, 'xid 999', nextval('corona.sync_seq_global'), '999'::xid8)", de999);
+            executar(dono, "ALTER TABLE teste_sync_a ENABLE TRIGGER USER");
+            dono.commit();
+        }
+        // O limite seguro precisa estar acima de 1000.
+        try (Connection app = conectarComoAplicacao()) {
+            app.setAutoCommit(true);
+            while (Long.parseLong(valor(app, String.class, "SELECT pg_current_xact_id()::text")) <= 1001) {
+                // cada SELECT em autocommit é uma transação nova e gasta um identificador
+            }
+        }
+        long epoca = CursorDeSync.ler(fimAtual()).epoca();
+        FiltroDoVendedor soAsDuas = tabela -> tabela.nome().equals("teste_sync_a")
+                ? new CondicaoSql("id IN (?, ?)", List.of(de999, de1000))
+                : CondicaoSql.NENHUMA_LINHA;
+
+        LoteDoPull primeiro = pull.puxar(epoca + ":998:0", 1, soAsDuas);
+        assertThat(ids(primeiro)).containsExactly(de999);
+        assertThat(ids(pull.puxar(primeiro.proximoCursor(), 1, soAsDuas))).containsExactly(de1000);
+    }
+
+    @Test
     void oFiltroDoVendedorEntraComoParametro() throws SQLException {
         String inicio = fimAtual();
         UUID doVendedor1 = UuidV7.gerar();

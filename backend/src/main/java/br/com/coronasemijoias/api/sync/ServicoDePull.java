@@ -111,14 +111,20 @@ public class ServicoDePull {
         return new LoteDoPull(lote, proximo.texto(), haMais);
     }
 
+    /**
+     * A posição sai com outro nome ({@code posicao_xid}, em texto) e a ordem usa as colunas
+     * qualificadas pela tabela. Cuidado: num {@code ORDER BY}, um nome solto vale primeiro como
+     * nome de coluna da saída; com {@code sync_xid::text AS sync_xid}, a ordem seria a do texto
+     * ('1000' antes de '999') e o {@code LIMIT} cortaria as linhas erradas. O estresse pegou isso.
+     */
     private static String consulta(TabelaSincronizavel tabela, FiltroDoVendedor.CondicaoSql condicao) {
-        String colunas = tabela.colunasDoPull().stream().map(c -> '"' + c + '"').collect(Collectors.joining(", "));
-        return "SELECT " + colunas + ", sync_xid::text AS sync_xid, sync_seq"
-                + " FROM corona.\"" + tabela.nome() + "\""
-                + " WHERE sync_xid < ?::xid8"
-                + " AND (sync_xid, sync_seq) > (?::xid8, ?)"
+        String colunas = tabela.colunasDoPull().stream().map(c -> "t.\"" + c + '"').collect(Collectors.joining(", "));
+        return "SELECT " + colunas + ", t.sync_xid::text AS posicao_xid, t.sync_seq AS posicao_seq"
+                + " FROM corona.\"" + tabela.nome() + "\" AS t"
+                + " WHERE t.sync_xid < ?::xid8"
+                + " AND (t.sync_xid, t.sync_seq) > (?::xid8, ?)"
                 + " AND (" + condicao.sql() + ")"
-                + " ORDER BY sync_xid, sync_seq"
+                + " ORDER BY t.sync_xid, t.sync_seq"
                 + " LIMIT ?";
     }
 
@@ -136,8 +142,8 @@ public class ServicoDePull {
                     ((Number) valores.get("version")).intValue(),
                     (Instant) valores.get("deleted_at"),
                     Collections.unmodifiableMap(valores),
-                    Long.parseUnsignedLong(linha.getString("sync_xid")),
-                    linha.getLong("sync_seq"));
+                    Long.parseUnsignedLong(linha.getString("posicao_xid")),
+                    linha.getLong("posicao_seq"));
         };
     }
 
