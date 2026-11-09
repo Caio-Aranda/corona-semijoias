@@ -281,6 +281,18 @@ class SenhaTemporariaTest extends TesteDeIntegracao {
     }
 
     @Test
+    void tokenRestritoEmitidoNoPrazoTrocaASenhaMesmoSeATemporariaVencerNosMinutosSeguintes() throws Exception {
+        UsuarioDeTeste vendedor = usuarios.criarVendedor();
+        usuarios.marcarTrocaObrigatoria(vendedor, Instant.now().plus(Duration.ofMinutes(5)));
+        String restrito = tokenRestritoDe(new Criado(vendedor.id().toString(), vendedor.login(), vendedor.senha(), null));
+
+        // 10 minutos depois a senha temporária já venceu, mas o token restrito (15 minutos) ainda vale.
+        relogio.avancar(Duration.ofMinutes(10));
+        recusadoComo(entrar(vendedor.login(), vendedor.senha()), 401, "SENHA_TEMPORARIA_VENCIDA");
+        trocarSenha(restrito, "Minha-Senha-Nova-1").andExpect(status().isOk());
+    }
+
+    @Test
     void senhaDefinitivaNaoExpira() throws Exception {
         Criado criado = criarPelaDona("VENDEDOR");
         trocarSenha(tokenRestritoDe(criado), "Minha-Senha-Nova-1").andExpect(status().isOk());

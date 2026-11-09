@@ -81,17 +81,17 @@ public enum CodigoErro {
             "A senha nova precisa ser diferente da temporária. Escolha outra."),
 
     LOGIN_JA_USADO(
-            "Este login já está em uso.",
-            "Este login já está em uso. Escolha outro login para esta pessoa, por exemplo juntando o sobrenome."),
+            "Este usuário já existe.",
+            "Este usuário já existe. Escolha outro, por exemplo juntando o sobrenome."),
 
     LOGIN_FORA_DO_FORMATO(
-            "Este login não pode ser usado.",
-            "Este login não pode ser usado. Use de 3 a 40 letras minúsculas sem acento, números, ponto, traço "
-                    + "ou traço baixo, sem espaços. Por exemplo: maria.silva."),
+            "Este usuário não pode ser usado.",
+            "Este usuário não pode ser usado. Use de 3 a 40 letras sem acento, números ou ponto, "
+                    + "sem espaços. Por exemplo: maria.silva."),
 
     USUARIO_NAO_ENCONTRADO(
-            "Não encontramos este usuário.",
-            "Não encontramos este usuário. Confira o usuário e tente de novo."),
+            "Não encontramos esta pessoa no cadastro.",
+            "Não encontramos esta pessoa no cadastro. Atualize a tela e tente de novo."),
 
     NAO_REDEFINIR_A_PROPRIA_SENHA(
             "Você não pode redefinir a sua própria senha por aqui.",

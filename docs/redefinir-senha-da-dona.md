@@ -55,6 +55,12 @@ então pode rodar com a API no ar. O contêiner da API nasce na Fase 9; o format
 5. Se a senha vencer (7 dias) sem a dona ter entrado, rode o comando de novo: cada execução gera uma
    senha nova e uma contagem nova de 7 dias.
 
+> **Atenção: o comando também aplica as migrações pendentes do banco**, exatamente como a subida da
+> API, porque sobe a mesma aplicação (só não abre o servidor web). Por isso, em produção, use sempre o
+> **mesmo jar da API** (a mesma versão que está rodando): um jar mais antigo ou mais novo mexeria no
+> banco de forma que a API em execução não espera. Ele também confere a configuração da API (chaves do
+> token e, se o banco ainda não tiver nenhum administrador, as variáveis `ADMIN_*`).
+
 Códigos de saída: `0` deu certo; `1` recusado ou falhou (a mensagem diz o motivo); `2` faltou o login.
 
 O comando precisa das mesmas variáveis de ambiente da API (banco e chaves do token), que o contêiner

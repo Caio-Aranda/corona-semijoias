@@ -292,23 +292,25 @@ A senha temporária vale por alguns dias (7, na configuração do servidor). Dep
 
 Login já usado:
 
-> **Este login já está em uso.**
-> Escolha outro login para esta pessoa, por exemplo juntando o sobrenome.
+> **Este usuário já existe.**
+> Escolha outro, por exemplo juntando o sobrenome.
 
-Login fora do formato (a tela corrige para minúsculas e tira os espaços das pontas; o servidor confere de novo):
+Na tela, o campo do login se chama **Usuário**. Usuário fora do formato (o servidor tira os espaços das pontas e passa as letras para minúsculas antes de conferir, então maiúsculas não são problema):
 
-> **Este login não pode ser usado.**
-> Use de 3 a 40 letras minúsculas sem acento, números, ponto, traço ou traço baixo, sem espaços. Por exemplo: maria.silva.
+> **Este usuário não pode ser usado.**
+> Use de 3 a 40 letras sem acento, números ou ponto, sem espaços. Por exemplo: maria.silva.
 
 Usuário que não existe (ao redefinir a senha):
 
-> **Não encontramos este usuário.**
-> Confira o usuário e tente de novo.
+> **Não encontramos esta pessoa no cadastro.**
+> Atualize a tela e tente de novo.
 
 A dona não redefine a própria senha pela tela, para não ficar sem acesso:
 
 > **Você não pode redefinir a sua própria senha por aqui.**
 > Peça a outra pessoa administradora ou fale com o suporte do sistema.
+
+Se a dona esquece a própria senha e não há outro administrador, vale o comando do servidor `redefinir-senha-admin`, que quem opera o servidor roda (passo a passo em `docs/redefinir-senha-da-dona.md`). Ele mostra a senha temporária no terminal, sem tela.
 
 Quando a dona cria o usuário ou redefine a senha, a senha temporária aparece **uma única vez**. Texto da tela (a tela vem na Fase 1): "Anote esta senha agora. Ela não aparece de novo."
 

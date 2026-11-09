@@ -7,10 +7,10 @@ import java.util.regex.Pattern;
 public final class Logins {
 
     /**
-     * Formato do login ao CRIAR usuário: 3 a 40 caracteres, só minúsculas sem acento, números, ponto,
-     * hífen e sublinhado, começando e terminando com letra ou número.
+     * Formato do login ao CRIAR usuário (já normalizado, ou seja, em minúsculas): 3 a 40 caracteres, só
+     * letras sem acento, números e ponto, começando e terminando com letra ou número.
      */
-    private static final Pattern FORMATO_DE_CRIACAO = Pattern.compile("^[a-z0-9][a-z0-9._-]{1,38}[a-z0-9]$");
+    private static final Pattern FORMATO_DE_CRIACAO = Pattern.compile("^[a-z0-9][a-z0-9.]{1,38}[a-z0-9]$");
 
     private Logins() {
     }

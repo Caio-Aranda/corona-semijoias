@@ -141,10 +141,9 @@ class UsuariosDaDonaTest extends TesteDeIntegracao {
             criar(usuarios.comoDona(), pedido(repetido, "VENDEDOR"))
                     .andExpect(status().isConflict())
                     .andExpect(jsonPath("$.codigo").value("LOGIN_JA_USADO"))
-                    .andExpect(jsonPath("$.title").value("Este login já está em uso."))
+                    .andExpect(jsonPath("$.title").value("Este usuário já existe."))
                     .andExpect(jsonPath("$.detail").value(
-                            "Este login já está em uso. Escolha outro login para esta pessoa, "
-                                    + "por exemplo juntando o sobrenome."));
+                            "Este usuário já existe. Escolha outro, por exemplo juntando o sobrenome."));
         }
         assertThat(jdbc.queryForObject("SELECT count(*) FROM corona.usuarios WHERE login = ?", Integer.class, login))
                 .isEqualTo(1);
@@ -161,14 +160,14 @@ class UsuariosDaDonaTest extends TesteDeIntegracao {
     @Test
     void loginForaDoFormatoEhRecusado() throws Exception {
         for (String login : new String[] {"", "ab", "x".repeat(41), "maria silva", "joão", "maria!", ".maria", "maria.",
-                "maria@loja"}) {
+                "maria@loja", "maria-silva", "maria_silva"}) {
             criar(usuarios.comoDona(), pedido(login, "VENDEDOR"))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.codigo").value("LOGIN_FORA_DO_FORMATO"))
-                    .andExpect(jsonPath("$.title").value("Este login não pode ser usado."))
+                    .andExpect(jsonPath("$.title").value("Este usuário não pode ser usado."))
                     .andExpect(jsonPath("$.detail").value(
-                            "Este login não pode ser usado. Use de 3 a 40 letras minúsculas sem acento, números, "
-                                    + "ponto, traço ou traço baixo, sem espaços. Por exemplo: maria.silva."));
+                            "Este usuário não pode ser usado. Use de 3 a 40 letras sem acento, números ou ponto, "
+                                    + "sem espaços. Por exemplo: maria.silva."));
         }
     }
 
@@ -257,7 +256,8 @@ class UsuariosDaDonaTest extends TesteDeIntegracao {
         redefinir(usuarios.comoDona(), UUID.randomUUID())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.codigo").value("USUARIO_NAO_ENCONTRADO"))
-                .andExpect(jsonPath("$.detail").value("Não encontramos este usuário. Confira o usuário e tente de novo."));
+                .andExpect(jsonPath("$.detail").value(
+                        "Não encontramos esta pessoa no cadastro. Atualize a tela e tente de novo."));
     }
 
     @Test
