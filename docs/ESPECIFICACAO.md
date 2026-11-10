@@ -606,6 +606,7 @@ Toda vez que um produto aparece por **leitura de código de barras** ou por **pe
 - Formas de inserir: escolher arquivo, **arrastar e soltar**, **colar** da área de transferência e, opcionalmente, **tirar pela webcam**.
 - **Importação em massa:** pasta com fotos nomeadas pelo código do produto (por exemplo `7891234567895.jpg` ou `A-0123.jpg`). O sistema associa cada foto ao produto, e a prévia mostra as que não encontraram produto e os produtos que ficaram sem foto.
 - Formatos aceitos: JPG, PNG e WebP. **Limite de 10 MB por arquivo.** Recusar arquivo que não seja imagem, com mensagem clara.
+  - O tipo vale pelo **conteúdo** do arquivo, não pelo nome. Também há limite de **25 milhões de pontos** (largura x altura), conferido antes de abrir a imagem, contra imagem-bomba (tarefa 1.6).
 - **Processamento no servidor:** corrigir a rotação, remover dados EXIF (como localização), gerar três tamanhos, e guardar o original reduzido:
   - miniatura (cerca de 150 px), para listas;
   - média (cerca de 600 px), para o painel da peça lida;

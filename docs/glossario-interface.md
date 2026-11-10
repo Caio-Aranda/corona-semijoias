@@ -511,6 +511,43 @@ Avisos junto ao campo:
 - Preço negativo: "O valor não pode ser menor que zero."
 - Categoria ou fornecedor que não existe mais: "Esta categoria não existe mais. Atualize a tela e escolha de novo."
 
+**Fotos de produto (tarefa 1.6)**
+
+Arquivo que não é uma foto aceita (por exemplo, um PDF ou um programa com nome de foto):
+
+> **Esta não é uma foto que o sistema aceite.**
+> Envie uma foto nos formatos JPG, PNG ou WebP.
+
+Arquivo com cara de foto, mas que não abre (danificado):
+
+> **Não foi possível abrir esta foto.**
+> O arquivo pode estar danificado. Tire ou salve a foto de novo e envie outra vez.
+
+Foto com tamanho de imagem enorme (mesmo pesando menos de 10 MB):
+
+> **Esta foto é grande demais em tamanho de imagem.**
+> Reduza a foto (até 25 milhões de pontos, por exemplo 5000 por 5000) e envie de novo.
+
+Peça que já tem 5 fotos:
+
+> **Esta peça já tem 5 fotos.**
+> Exclua uma das fotos para poder enviar outra.
+
+Foto que não existe mais, ou que pertence a outro produto: usa o "não achou" dos cadastros.
+
+Importação de várias fotos (cada foto da lista leva um destes textos, sem derrubar as outras):
+
+- Gravada: "Foto gravada na peça {nome}."
+- Já estava na peça: "Esta foto já estava na peça {nome}. Nada mudou."
+- Nome sem peça: "Nenhuma peça tem o código {código}. Confira o nome do arquivo ou cadastre a peça."
+- Nome repetido: "Há mais de um arquivo para o código {código}. Deixe só um e envie de novo."
+- Foto recusada: o mesmo texto do erro correspondente acima.
+
+Avisos junto ao campo:
+
+- Lista de ordem das fotos que não bate com as fotos da peça: "A lista de fotos não confere com a peça. Atualize a tela e tente de novo."
+
+
 ## 7. Estado de conexão do app do vendedor
 
 Sempre em palavras comuns (§19.11). Nunca "fila", "sincronização" ou "pendentes".

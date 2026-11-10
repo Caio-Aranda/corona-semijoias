@@ -40,6 +40,10 @@ public class Produto extends EntidadeSincronizavel {
     @Column(name = "ativo", nullable = false)
     private boolean ativo = true;
 
+    /** Hash da foto principal: somente leitura aqui, quem o muda é o serviço de fotos (tarefa 1.6). */
+    @Column(name = "foto_principal_hash", insertable = false, updatable = false)
+    private String fotoPrincipalHash;
+
     protected Produto() {
         // Hibernate
     }
@@ -90,6 +94,10 @@ public class Produto extends EntidadeSincronizavel {
 
     public int getEstoqueAtual() {
         return estoqueAtual;
+    }
+
+    public String getFotoPrincipalHash() {
+        return fotoPrincipalHash;
     }
 
     public boolean isAtivo() {

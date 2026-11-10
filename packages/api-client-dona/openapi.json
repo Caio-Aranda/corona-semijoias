@@ -1,6 +1,45 @@
 {
   "components" : {
     "schemas" : {
+      "Ambigua" : {
+        "properties" : {
+          "codigo" : {
+            "type" : "string"
+          },
+          "mensagem" : {
+            "type" : "string"
+          },
+          "nomes" : {
+            "items" : {
+              "type" : "string"
+            },
+            "type" : "array"
+          }
+        },
+        "type" : "object"
+      },
+      "Associada" : {
+        "properties" : {
+          "codigo" : {
+            "type" : "string"
+          },
+          "fotosAtuais" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "produtoNome" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "CadastroDeTeste" : {
         "properties" : {
           "nome" : {
@@ -76,6 +115,58 @@
           "vendedorId" : {
             "format" : "uuid",
             "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "Item" : {
+        "properties" : {
+          "ativo" : {
+            "type" : "boolean"
+          },
+          "categoriaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "codigoPrincipal" : {
+            "type" : "string"
+          },
+          "fornecedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "referencia" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "PaginaItem" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Item"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
           }
         },
         "type" : "object"
@@ -274,6 +365,29 @@
         "required" : [ "login", "senha" ],
         "type" : "object"
       },
+      "PedidoDeOrdem" : {
+        "properties" : {
+          "ids" : {
+            "items" : {
+              "format" : "uuid",
+              "type" : "string"
+            },
+            "type" : "array"
+          }
+        },
+        "type" : "object"
+      },
+      "PedidoDePrevia" : {
+        "properties" : {
+          "nomes" : {
+            "items" : {
+              "type" : "string"
+            },
+            "type" : "array"
+          }
+        },
+        "type" : "object"
+      },
       "PedidoDeProduto" : {
         "properties" : {
           "categoriaId" : {
@@ -385,6 +499,85 @@
           "version" : {
             "format" : "int32",
             "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "Previa" : {
+        "properties" : {
+          "ambiguas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Ambigua"
+            },
+            "type" : "array"
+          },
+          "associadas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Associada"
+            },
+            "type" : "array"
+          },
+          "produtosSemFoto" : {
+            "$ref" : "#/components/schemas/ProdutosSemFoto"
+          },
+          "semProduto" : {
+            "items" : {
+              "$ref" : "#/components/schemas/SemProduto"
+            },
+            "type" : "array"
+          }
+        },
+        "type" : "object"
+      },
+      "ProdutoSemFoto" : {
+        "properties" : {
+          "codigoPrincipal" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ProdutosSemFoto" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ProdutoSemFoto"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "Relatorio" : {
+        "properties" : {
+          "gravadas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "jaExistiam" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "naoGravadas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "resultados" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ResultadoDaFoto"
+            },
+            "type" : "array"
           }
         },
         "type" : "object"
@@ -512,6 +705,54 @@
         },
         "type" : "object"
       },
+      "RespostaDaFoto" : {
+        "properties" : {
+          "altura" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "grandeUrl" : {
+            "type" : "string"
+          },
+          "hash" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "largura" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "mediaUrl" : {
+            "type" : "string"
+          },
+          "miniaturaUrl" : {
+            "type" : "string"
+          },
+          "ordem" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "principal" : {
+            "type" : "boolean"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "tamanhoBytes" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "version" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "RespostaDoLogin" : {
         "properties" : {
           "expiraEm" : {
@@ -545,6 +786,42 @@
           "validadeEmSegundos" : {
             "format" : "int64",
             "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "ResultadoDaFoto" : {
+        "properties" : {
+          "mensagem" : {
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "produtoNome" : {
+            "type" : "string"
+          },
+          "situacao" : {
+            "enum" : [ "GRAVADA", "JA_EXISTIA", "SEM_PRODUTO", "AMBIGUA", "RECUSADA" ],
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "SemProduto" : {
+        "properties" : {
+          "codigo" : {
+            "type" : "string"
+          },
+          "mensagem" : {
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
           }
         },
         "type" : "object"
@@ -763,7 +1040,7 @@
     "/api/dona/categorias" : {
       "get" : {
         "description" : "Busca pelo nome. A página começa em 0 (até 100 por página).",
-        "operationId" : "listar_9",
+        "operationId" : "listar_10",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
@@ -934,7 +1211,7 @@
     "/api/dona/clientes" : {
       "get" : {
         "description" : "Busca pelo nome, telefone, WhatsApp ou CPF. A página começa em 0 (até 100 por página).",
-        "operationId" : "listar_8",
+        "operationId" : "listar_9",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
@@ -1105,7 +1382,7 @@
     "/api/dona/fornecedores" : {
       "get" : {
         "description" : "Busca pela razão social, pelo contato ou pelo CNPJ. A página começa em 0 (até 100 por página).",
-        "operationId" : "listar_7",
+        "operationId" : "listar_8",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
@@ -1276,7 +1553,7 @@
     "/api/dona/pracas" : {
       "get" : {
         "description" : "Busca pelo nome. A página começa em 0 (até 100 por página).",
-        "operationId" : "listar_6",
+        "operationId" : "listar_7",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
@@ -1568,6 +1845,126 @@
         "tags" : [ "produtos-da-dona-controller" ]
       }
     },
+    "/api/dona/produtos/fotos/importacao/confirmar" : {
+      "post" : {
+        "description" : "Formulário com vários campos 'arquivos' (até 10 por vez; mande a pasta em lotes). Cada foto é gravada sozinha: uma que falha não derruba as outras, e a resposta diz o que aconteceu com cada uma. Repetir o mesmo lote não duplica nada.",
+        "operationId" : "confirmar",
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "properties" : {
+                  "arquivos" : {
+                    "items" : {
+                      "format" : "binary",
+                      "type" : "string"
+                    },
+                    "type" : "array"
+                  }
+                },
+                "type" : "object"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Relatorio"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Importação de fotos: confirmar",
+        "tags" : [ "fotos-dos-produtos-controller" ]
+      }
+    },
+    "/api/dona/produtos/fotos/importacao/previa" : {
+      "post" : {
+        "description" : "Recebe só os NOMES dos arquivos (nada é enviado nem gravado). O nome sem a extensão é o código da peça (sem diferenciar maiúsculas). Devolve as fotos associadas, as sem peça, os nomes repetidos para a mesma peça e as peças que ficarão sem foto.",
+        "operationId" : "previa",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDePrevia"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Previa"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Importação de fotos: prévia",
+        "tags" : [ "fotos-dos-produtos-controller" ]
+      }
+    },
+    "/api/dona/produtos/fotos/{hash}/{tamanho}" : {
+      "get" : {
+        "description" : "tamanho = miniatura (cerca de 150 pontos), media (600) ou grande (1600). Só com login. O endereço leva o hash do conteúdo, então a resposta pode ficar no cache do aplicativo (Cache-Control e ETag). Foto excluída ou hash desconhecido: 404.",
+        "operationId" : "imagem",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "hash",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "path",
+          "name" : "tamanho",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "header",
+          "name" : "If-None-Match",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "format" : "byte",
+                  "type" : "string"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Baixar um tamanho da foto",
+        "tags" : [ "fotos-dos-produtos-controller" ]
+      }
+    },
     "/api/dona/produtos/por-codigo" : {
       "get" : {
         "description" : "Procura o código inteiro (sem espaços nas pontas, sem diferenciar maiúsculas). Sem produto, 404.",
@@ -1597,6 +1994,76 @@
         } ],
         "summary" : "Achar o produto pelo código",
         "tags" : [ "produtos-da-dona-controller" ]
+      }
+    },
+    "/api/dona/produtos/sem-foto" : {
+      "get" : {
+        "description" : "Relatório das peças sem nenhuma foto. Por padrão só as ativas (ativo=false mostra as inativas). Filtros: busca, categoriaId, fornecedorId. A página começa em 0 (até 100 por página).",
+        "operationId" : "semFoto",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "categoriaId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "fornecedorId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ativo",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaginaItem"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Produtos sem foto",
+        "tags" : [ "fotos-dos-produtos-controller" ]
       }
     },
     "/api/dona/produtos/{id}" : {
@@ -1732,6 +2199,206 @@
         } ],
         "summary" : "Alterar os códigos do produto",
         "tags" : [ "produtos-da-dona-controller" ]
+      }
+    },
+    "/api/dona/produtos/{id}/fotos" : {
+      "get" : {
+        "description" : "Na ordem da tela; a principal vem marcada. Até 5 fotos.",
+        "operationId" : "listar_6",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/RespostaDaFoto"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Listar as fotos da peça",
+        "tags" : [ "fotos-dos-produtos-controller" ]
+      },
+      "post" : {
+        "description" : "Formulário com o campo 'arquivo'. Aceita JPG, PNG e WebP de até 10 MB; o tipo vale pelo conteúdo, não pelo nome. O servidor corrige a rotação, tira os dados escondidos (como o local) e gera miniatura, tamanho médio e grande. A primeira foto vira a principal. Enviar de novo a mesma foto não duplica (responde 200 com a que já existe). Uma peça tem no máximo 5 fotos.",
+        "operationId" : "enviar_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "properties" : {
+                  "arquivo" : {
+                    "format" : "binary",
+                    "type" : "string"
+                  }
+                },
+                "type" : "object"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDaFoto"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Enviar uma foto da peça",
+        "tags" : [ "fotos-dos-produtos-controller" ]
+      }
+    },
+    "/api/dona/produtos/{id}/fotos/ordem" : {
+      "put" : {
+        "description" : "Mande os ids de todas as fotos da peça, uma vez cada, na ordem nova. A principal não muda.",
+        "operationId" : "ordem",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeOrdem"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/RespostaDaFoto"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Mudar a ordem das fotos",
+        "tags" : [ "fotos-dos-produtos-controller" ]
+      }
+    },
+    "/api/dona/produtos/{id}/fotos/{fotoId}" : {
+      "delete" : {
+        "description" : "Exclusão lógica. Se era a principal, a próxima da ordem passa a ser a principal.",
+        "operationId" : "excluir_9",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "path",
+          "name" : "fotoId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Excluir uma foto",
+        "tags" : [ "fotos-dos-produtos-controller" ]
+      }
+    },
+    "/api/dona/produtos/{id}/fotos/{fotoId}/principal" : {
+      "post" : {
+        "operationId" : "principal",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "path",
+          "name" : "fotoId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/RespostaDaFoto"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Escolher a foto principal",
+        "tags" : [ "fotos-dos-produtos-controller" ]
       }
     },
     "/api/dona/produtos/{id}/inativar" : {

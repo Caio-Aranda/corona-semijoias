@@ -4,6 +4,20 @@ export type ClientOptions = {
     baseUrl: `${string}://${string}` | (string & {});
 };
 
+export type Ambigua = {
+    codigo?: string;
+    mensagem?: string;
+    nomes?: Array<string>;
+};
+
+export type Associada = {
+    codigo?: string;
+    fotosAtuais?: number;
+    nome?: string;
+    produtoId?: string;
+    produtoNome?: string;
+};
+
 export type CadastroDeTeste = {
     nome: string;
 };
@@ -28,6 +42,23 @@ export type DadosDoUsuario = {
     nome?: string;
     perfil?: string;
     vendedorId?: string;
+};
+
+export type Item = {
+    ativo?: boolean;
+    categoriaId?: string;
+    codigoPrincipal?: string;
+    fornecedorId?: string;
+    id?: string;
+    nome?: string;
+    referencia?: string;
+};
+
+export type PaginaItem = {
+    itens?: Array<Item>;
+    pagina?: number;
+    tamanho?: number;
+    total?: number;
 };
 
 export type PaginaResposta = {
@@ -82,6 +113,14 @@ export type PedidoDeLogin = {
     senha: string;
 };
 
+export type PedidoDeOrdem = {
+    ids?: Array<string>;
+};
+
+export type PedidoDePrevia = {
+    nomes?: Array<string>;
+};
+
 export type PedidoDeProduto = {
     categoriaId: string;
     codigos?: Array<PedidoDeCodigo>;
@@ -114,6 +153,31 @@ export type PedidoDeUsuario = {
 export type PedidoDosCodigos = {
     codigos?: Array<PedidoDeCodigo>;
     version?: number;
+};
+
+export type Previa = {
+    ambiguas?: Array<Ambigua>;
+    associadas?: Array<Associada>;
+    produtosSemFoto?: ProdutosSemFoto;
+    semProduto?: Array<SemProduto>;
+};
+
+export type ProdutoSemFoto = {
+    codigoPrincipal?: string;
+    id?: string;
+    nome?: string;
+};
+
+export type ProdutosSemFoto = {
+    itens?: Array<ProdutoSemFoto>;
+    total?: number;
+};
+
+export type Relatorio = {
+    gravadas?: number;
+    jaExistiam?: number;
+    naoGravadas?: number;
+    resultados?: Array<ResultadoDaFoto>;
 };
 
 export type Resposta = {
@@ -154,6 +218,21 @@ export type RespostaComSenhaTemporaria = {
     vendedorId?: string;
 };
 
+export type RespostaDaFoto = {
+    altura?: number;
+    grandeUrl?: string;
+    hash?: string;
+    id?: string;
+    largura?: number;
+    mediaUrl?: string;
+    miniaturaUrl?: string;
+    ordem?: number;
+    principal?: boolean;
+    produtoId?: string;
+    tamanhoBytes?: number;
+    version?: number;
+};
+
 export type RespostaDoLogin = {
     expiraEm?: string;
     horaDoServidor?: string;
@@ -164,6 +243,20 @@ export type RespostaDoLogin = {
     tokenDeRenovacaoExpiraEm?: string;
     trocaDeSenhaObrigatoria?: boolean;
     validadeEmSegundos?: number;
+};
+
+export type ResultadoDaFoto = {
+    mensagem?: string;
+    nome?: string;
+    produtoId?: string;
+    produtoNome?: string;
+    situacao?: 'GRAVADA' | 'JA_EXISTIA' | 'SEM_PRODUTO' | 'AMBIGUA' | 'RECUSADA';
+};
+
+export type SemProduto = {
+    codigo?: string;
+    mensagem?: string;
+    nome?: string;
 };
 
 export type Tempo = {
@@ -284,7 +377,7 @@ export type TrocarSenhaResponses = {
 
 export type TrocarSenhaResponse = TrocarSenhaResponses[keyof TrocarSenhaResponses];
 
-export type Listar9Data = {
+export type Listar10Data = {
     body?: never;
     path?: never;
     query?: {
@@ -295,14 +388,14 @@ export type Listar9Data = {
     url: '/api/dona/categorias';
 };
 
-export type Listar9Responses = {
+export type Listar10Responses = {
     /**
      * OK
      */
     200: PaginaResposta;
 };
 
-export type Listar9Response = Listar9Responses[keyof Listar9Responses];
+export type Listar10Response = Listar10Responses[keyof Listar10Responses];
 
 export type Criar8Data = {
     body: Pedido;
@@ -372,7 +465,7 @@ export type Editar8Responses = {
 
 export type Editar8Response = Editar8Responses[keyof Editar8Responses];
 
-export type Listar8Data = {
+export type Listar9Data = {
     body?: never;
     path?: never;
     query?: {
@@ -383,14 +476,14 @@ export type Listar8Data = {
     url: '/api/dona/clientes';
 };
 
-export type Listar8Responses = {
+export type Listar9Responses = {
     /**
      * OK
      */
     200: PaginaResposta;
 };
 
-export type Listar8Response = Listar8Responses[keyof Listar8Responses];
+export type Listar9Response = Listar9Responses[keyof Listar9Responses];
 
 export type Criar7Data = {
     body: Pedido;
@@ -460,7 +553,7 @@ export type Editar7Responses = {
 
 export type Editar7Response = Editar7Responses[keyof Editar7Responses];
 
-export type Listar7Data = {
+export type Listar8Data = {
     body?: never;
     path?: never;
     query?: {
@@ -471,14 +564,14 @@ export type Listar7Data = {
     url: '/api/dona/fornecedores';
 };
 
-export type Listar7Responses = {
+export type Listar8Responses = {
     /**
      * OK
      */
     200: PaginaResposta;
 };
 
-export type Listar7Response = Listar7Responses[keyof Listar7Responses];
+export type Listar8Response = Listar8Responses[keyof Listar8Responses];
 
 export type Criar6Data = {
     body: Pedido;
@@ -548,7 +641,7 @@ export type Editar6Responses = {
 
 export type Editar6Response = Editar6Responses[keyof Editar6Responses];
 
-export type Listar6Data = {
+export type Listar7Data = {
     body?: never;
     path?: never;
     query?: {
@@ -559,14 +652,14 @@ export type Listar6Data = {
     url: '/api/dona/pracas';
 };
 
-export type Listar6Responses = {
+export type Listar7Responses = {
     /**
      * OK
      */
     200: PaginaResposta;
 };
 
-export type Listar6Response = Listar6Responses[keyof Listar6Responses];
+export type Listar7Response = Listar7Responses[keyof Listar7Responses];
 
 export type Criar5Data = {
     body: Pedido;
@@ -691,6 +784,62 @@ export type ProximoCodigoResponses = {
 
 export type ProximoCodigoResponse = ProximoCodigoResponses[keyof ProximoCodigoResponses];
 
+export type ConfirmarData = {
+    body?: {
+        arquivos?: Array<Blob | File>;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/dona/produtos/fotos/importacao/confirmar';
+};
+
+export type ConfirmarResponses = {
+    /**
+     * OK
+     */
+    200: Relatorio;
+};
+
+export type ConfirmarResponse = ConfirmarResponses[keyof ConfirmarResponses];
+
+export type PreviaData = {
+    body: PedidoDePrevia;
+    path?: never;
+    query?: never;
+    url: '/api/dona/produtos/fotos/importacao/previa';
+};
+
+export type PreviaResponses = {
+    /**
+     * OK
+     */
+    200: Previa;
+};
+
+export type PreviaResponse = PreviaResponses[keyof PreviaResponses];
+
+export type ImagemData = {
+    body?: never;
+    headers?: {
+        'If-None-Match'?: string;
+    };
+    path: {
+        hash: string;
+        tamanho: string;
+    };
+    query?: never;
+    url: '/api/dona/produtos/fotos/{hash}/{tamanho}';
+};
+
+export type ImagemResponses = {
+    /**
+     * OK
+     */
+    200: string;
+};
+
+export type ImagemResponse = ImagemResponses[keyof ImagemResponses];
+
 export type PorCodigoData = {
     body?: never;
     path?: never;
@@ -708,6 +857,29 @@ export type PorCodigoResponses = {
 };
 
 export type PorCodigoResponse = PorCodigoResponses[keyof PorCodigoResponses];
+
+export type SemFotoData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        categoriaId?: string;
+        fornecedorId?: string;
+        ativo?: boolean;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/produtos/sem-foto';
+};
+
+export type SemFotoResponses = {
+    /**
+     * OK
+     */
+    200: PaginaItem;
+};
+
+export type SemFotoResponse = SemFotoResponses[keyof SemFotoResponses];
 
 export type Excluir3Data = {
     body?: never;
@@ -778,6 +950,98 @@ export type AlterarCodigosResponses = {
 };
 
 export type AlterarCodigosResponse = AlterarCodigosResponses[keyof AlterarCodigosResponses];
+
+export type Listar6Data = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/produtos/{id}/fotos';
+};
+
+export type Listar6Responses = {
+    /**
+     * OK
+     */
+    200: Array<RespostaDaFoto>;
+};
+
+export type Listar6Response = Listar6Responses[keyof Listar6Responses];
+
+export type Enviar1Data = {
+    body?: {
+        arquivo?: Blob | File;
+    };
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/produtos/{id}/fotos';
+};
+
+export type Enviar1Responses = {
+    /**
+     * OK
+     */
+    200: RespostaDaFoto;
+};
+
+export type Enviar1Response = Enviar1Responses[keyof Enviar1Responses];
+
+export type OrdemData = {
+    body: PedidoDeOrdem;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/produtos/{id}/fotos/ordem';
+};
+
+export type OrdemResponses = {
+    /**
+     * OK
+     */
+    200: Array<RespostaDaFoto>;
+};
+
+export type OrdemResponse = OrdemResponses[keyof OrdemResponses];
+
+export type Excluir9Data = {
+    body?: never;
+    path: {
+        id: string;
+        fotoId: string;
+    };
+    query?: never;
+    url: '/api/dona/produtos/{id}/fotos/{fotoId}';
+};
+
+export type Excluir9Responses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
+export type PrincipalData = {
+    body?: never;
+    path: {
+        id: string;
+        fotoId: string;
+    };
+    query?: never;
+    url: '/api/dona/produtos/{id}/fotos/{fotoId}/principal';
+};
+
+export type PrincipalResponses = {
+    /**
+     * OK
+     */
+    200: Array<RespostaDaFoto>;
+};
+
+export type PrincipalResponse = PrincipalResponses[keyof PrincipalResponses];
 
 export type Inativar1Data = {
     body?: never;

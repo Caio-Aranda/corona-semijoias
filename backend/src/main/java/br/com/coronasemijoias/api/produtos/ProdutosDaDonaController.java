@@ -2,6 +2,7 @@ package br.com.coronasemijoias.api.produtos;
 
 import br.com.coronasemijoias.api.cadastros.Mensagens;
 import br.com.coronasemijoias.api.cadastros.Pagina;
+import br.com.coronasemijoias.api.fotos.FotosDosProdutosController.FotoPrincipal;
 import br.com.coronasemijoias.api.produtos.CodigosDosProdutos.Codigo;
 import br.com.coronasemijoias.api.produtos.CodigosDosProdutos.Pedido;
 import br.com.coronasemijoias.api.produtos.ServicoDeProdutos.Dados;
@@ -84,13 +85,14 @@ public class ProdutosDaDonaController {
 
     public record Resposta(UUID id, int version, String nome, String referencia, UUID categoriaId, UUID fornecedorId,
             BigDecimal precoVenda, BigDecimal precoCusto, int estoqueMinimo, int estoqueAtual, boolean ativo,
-            List<RespostaDeCodigo> codigos) {
+            List<RespostaDeCodigo> codigos, FotoPrincipal fotoPrincipal) {
 
         static Resposta de(Detalhe d) {
             Produto p = d.produto();
             return new Resposta(p.getId(), p.getVersion(), p.getNome(), p.getReferencia(), p.getCategoriaId(),
                     p.getFornecedorId(), p.getPrecoVenda(), d.precoCusto(), p.getEstoqueMinimo(), p.getEstoqueAtual(),
-                    p.isAtivo(), d.codigos().stream().map(RespostaDeCodigo::de).toList());
+                    p.isAtivo(), d.codigos().stream().map(RespostaDeCodigo::de).toList(),
+                    FotoPrincipal.de(p.getFotoPrincipalHash()));
         }
     }
 
