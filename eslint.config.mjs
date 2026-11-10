@@ -41,6 +41,22 @@ export default defineConfig(
     files: ['scripts/**/*.mjs'],
     languageOptions: { globals: { process: 'readonly', console: 'readonly' } },
   },
+  // Spike do SQLCipher (ADR-0005): código descartável que roda no Node e no Electron.
+  {
+    files: ['spikes/**/*.{js,mjs,cjs}'],
+    languageOptions: {
+      globals: {
+        process: 'readonly',
+        console: 'readonly',
+        Buffer: 'readonly',
+        performance: 'readonly',
+        require: 'readonly',
+        module: 'writable',
+        __dirname: 'readonly',
+      },
+    },
+    rules: { '@typescript-eslint/no-require-imports': 'off' },
+  },
   // Barreira de importação, primeira camada (ADR-0003). Os nomes proibidos moram em scripts/marcadores-proibidos.json.
   ...configuracaoDaBarreira(),
   // Por último: desliga regras de estilo que brigariam com o Prettier.

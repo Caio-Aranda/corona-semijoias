@@ -506,3 +506,18 @@ ADR-0003 (inteiro), ADR-0004 (itens 2 a 5, 6 e 10), ADR-0001 (Electron, electron
 **Decisões tomadas**
 - O vendedor de teste nasce sem troca de senha obrigatória, para o teste do Corona Vendas não parar na tela de senha nova.
 - `JAVA_HOME` é conferido pelo nome da pasta conter "21"; é um aviso, não um bloqueio.
+
+### Tarefa 18: spike do SQLCipher no Electron
+
+**O que foi feito**
+- `docs/decisoes/ADR-0005-sqlcipher-no-electron.md` (Proposto): `better-sqlite3-multiple-ciphers` 13.0.3 (N-API, binário `win32-x64` no pacote do npm, sem compilador), SQLCipher 4, chave de 256 bits no `safeStorage`, migrações com `user_version` e hash, riscos da chave perdida.
+- `spikes/sqlcipher/` (fora dos workspaces, descartável): `app/banco.cjs`, 7 testes Vitest (chave certa/errada, arquivo ilegível, parâmetros, migrações, 10 mil linhas, processo morto no meio da transação, cofre da chave) e execução no Electron 45 real e no pacote `electron-builder --dir`.
+- Linha nova no ADR-0001, índice dos ADRs e regra de globals no ESLint para `spikes/`.
+
+**O que ficou pendente**
+- Não provado: abrir o arquivo com um SQLCipher padrão externo; queda de energia real; passo "Barreira do pacote" com o módulo integrado; tempo do `npm ci` no Ubuntu com o módulo. Estão como itens da Fase 5 no ADR.
+- Os testes do spike não rodam no CI (pasta fora dos workspaces; a parte do Electron abre o Electron de verdade).
+
+**Decisões tomadas**
+- O código não virou pacote em `packages/`: depende de `safeStorage` e do esquema da Fase 5.
+- CI não alterado.
