@@ -550,7 +550,7 @@ Avisos junto ao campo:
 
 ### Corona Gestão: menu, listas e usuários (tarefa 1.8)
 
-**Menu lateral.** Início · Cadastros (Produtos, Fornecedores, Categorias, Praças, Semanas, Restrições) · Pessoas (Vendedores, Clientes, Usuários). Item que ainda não foi feito: "{Nome} ainda está sendo preparado. Logo você poderá usar por aqui."
+**Menu lateral.** Início · Cadastros (Produtos, Fornecedores, Categorias, Praças, Semanas, Restrições) · Pessoas (Vendedores, Clientes, Usuários) · Relatórios de cadastros (um item por relatório, nomes na seção da tarefa 1.12). Item que ainda não foi feito: "{Nome} ainda está sendo preparado. Logo você poderá usar por aqui."
 
 **Listas.** Carregando: "Buscando..." (com o nome do que se busca, por exemplo "Buscando os usuários..."). Nada na lista: "Ainda não há nenhum {item}." Busca sem resultado: "Nenhum {item} encontrado. Confira o que você digitou ou limpe a busca." Total: "{N} usuário" / "{N} usuários". Erro ao buscar: "Não foi possível buscar agora. Tente de novo. Se continuar, fale com o suporte do sistema."
 
@@ -579,6 +579,30 @@ Avisos junto ao campo:
 **Cotação do dia na tela da dona.** Rodapé e cartão: "Cotação do Banco Central de 06/11/2026." Quando a cotação em uso é a de um dia anterior (fim de semana, feriado ou busca que falhou): "Cotação do Banco Central de 06/11/2026, a última publicada." Sem nenhuma cotação ainda: "Ainda não há cotação. Os valores em Dólar e Guarani aparecem quando ela chegar."
 
 **Tudo em dia.** Quando não há aviso em "O que precisa da sua atenção": "Tudo em dia."
+
+### Corona Gestão: relatórios de cadastro (tarefa 1.12)
+
+**Nome de cada relatório na tela** (grupo do menu: **Relatórios de cadastros**; a §12 só descreve, o nome de tela é este):
+
+| Relatório (§12) | Nome na tela |
+| --- | --- |
+| Vendedores (limite, restrição, situação) | **Vendedores: limite e situação** |
+| Clientes | **Clientes cadastrados** |
+| Fornecedores | **Fornecedores cadastrados** |
+| Produtos (com custo) | **Produtos e custos** |
+| Produtos sem foto | **Produtos sem foto** |
+| Produtos sem código de barras | **Produtos sem código de barras** |
+| Códigos duplicados ou em conflito | **Códigos repetidos ou parecidos** |
+| Aniversariantes | **Aniversariantes do mês** |
+| Resultado das importações (por enquanto, o que foi cadastrado e alterado) | **Mudanças nos produtos** |
+
+- **Filtros:** **Buscar**, **Situação** (**Só ativos**, **Só inativos**, **Todos**), **Categoria**, **Fornecedor**, **Praça**, **Vendedor**, **Restrição**, **De** e **Até** (data do cadastro) e **Mês**. Sem escolher, a lista mostra só os ativos. Botão **Limpar filtros**. Data final antes da inicial: "A data final não pode ser antes da data inicial."
+- **Totais:** bloco **Totais** no fim da lista, com **Ver os registros** em cada total. Aberto o detalhe: "Mostrando só: {total}." e o botão **Ver o relatório inteiro**. Os totais em Dólar e em Guarani são a soma das linhas já convertidas.
+- **Exportar:** **Baixar em PDF**, **Baixar em Excel**, **Baixar em CSV**, sempre o relatório inteiro com os filtros da tela. Preparando: "Preparando o arquivo...". Pronto: "O arquivo {nome} foi preparado. Escolha onde guardar." Sem linhas: "Não há nada para exportar com estes filtros." Muitas linhas: "Este relatório tem linhas demais para exportar de uma vez. Use os filtros para reduzir e tente de novo." Erro: "Não foi possível preparar o arquivo agora. Tente de novo."
+- **Cabeçalho do arquivo:** Corona Semijoias, nome do relatório, "Filtros: ...", "Gerado em 10/11/2026 às 09:30 por {nome}", "Cotação do Banco Central de 06/11/2026. Neste relatório, o Dólar e o Guarani seguem a cotação de hoje." No Excel e no CSV, cada valor em dinheiro vira três colunas (**(R$)**, **(US$)**, **(Gs.)**) e há a coluna **Data da cotação**.
+- **Avisos fixos:** Aniversariantes: "Só vendedores: o cadastro de cliente ainda não tem data de nascimento." Mudanças nos produtos: "Mostra o que foi cadastrado e alterado, e quem fez. O resultado da importação de uma planilha (linhas aceitas e recusadas) ainda não fica guardado." Produtos sem código de barras: "Só para informar: o código de barras não é obrigatório, a loja pode usar só o código dela."
+- **Listas vazias:** "Nenhum vendedor com estes filtros." (e o mesmo para cliente, fornecedor, produto), "Todos os produtos têm foto.", "Todos os produtos têm código de barras.", "Nenhum código repetido ou parecido.", "Nenhum aniversariante neste mês.", "Nenhuma mudança neste período."
+- **Códigos em conflito (texto na coluna):** "Parecido com o código de outro fornecedor" · "Parecido com outro código (muda só espaço, traço ou letra maiúscula)" · "Código de barras com número errado ou incompleto".
 
 ## 7. Estado de conexão do app do vendedor
 

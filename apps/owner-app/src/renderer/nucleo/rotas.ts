@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { TEXTOS } from '../textos';
+import { TEXTOS_RELATORIOS } from '../textos-relatorios';
+import { ORDEM_DOS_RELATORIOS, RELATORIOS } from './relatorios';
 
 /** As telas do menu. A chave aparece na barra de endereço (#/pessoas/usuarios), nunca na tela. */
 export const ROTAS = [
@@ -13,6 +15,15 @@ export const ROTAS = [
   'pessoas/vendedores',
   'pessoas/clientes',
   'pessoas/usuarios',
+  'relatorios/vendedores',
+  'relatorios/clientes',
+  'relatorios/fornecedores',
+  'relatorios/produtos',
+  'relatorios/sem-foto',
+  'relatorios/sem-codigo-de-barras',
+  'relatorios/codigos-em-conflito',
+  'relatorios/aniversariantes',
+  'relatorios/alteracoes-de-produtos',
 ] as const;
 export type Rota = (typeof ROTAS)[number];
 
@@ -36,6 +47,13 @@ export const MENU = [
       { chave: 'pessoas/clientes', rotulo: TEXTOS.menu.clientes },
       { chave: 'pessoas/usuarios', rotulo: TEXTOS.menu.usuarios },
     ],
+  },
+  {
+    titulo: TEXTOS_RELATORIOS.grupoDoMenu,
+    itens: ORDEM_DOS_RELATORIOS.map((nome) => ({
+      chave: `relatorios/${nome}`,
+      rotulo: RELATORIOS[nome].titulo,
+    })),
   },
 ];
 

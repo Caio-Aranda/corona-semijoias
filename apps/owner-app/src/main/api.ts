@@ -66,6 +66,15 @@ import {
   listar7,
   listar8,
   listar9,
+  alteracoesDeProdutos as relatorioDeAlteracoes,
+  aniversariantes as relatorioDeAniversariantes,
+  clientes as relatorioDeClientes,
+  codigosEmConflito as relatorioDeCodigos,
+  fornecedores as relatorioDeFornecedores,
+  produtos as relatorioDeProdutos,
+  semCodigoDeBarras as relatorioSemCodigoDeBarras,
+  semFoto as relatorioSemFoto,
+  vendedores as relatorioDeVendedores,
   criarClienteDaApi,
   desativar,
   editar1,
@@ -86,6 +95,7 @@ import {
 import type { NomeDoCadastro } from '../shared/cadastros';
 import type { ParametrosConferidos, ParametrosDeVendedor } from '../shared/validacao-parametros';
 import type { ParametrosDeProduto } from '../shared/validacao-produtos';
+import type { ParametrosDeRelatorio } from '../shared/validacao-relatorios';
 import type { AbaDoVendedor, ArquivoBaixado } from '../shared/vendedores';
 import type { ApiDeAutenticacao, Credenciais, Falha, Resultado } from './tipos';
 
@@ -341,6 +351,51 @@ function comoArquivoDeFoto(a: { nome: string; bytes: Uint8Array }): File {
   });
 }
 
+/** Relatórios de cadastro (só ADMIN; o servidor confere). O de produtos traz o custo, por isso só existe aqui. */
+async function executarRelatorio(
+  client: ReturnType<typeof criarClienteDaApi>,
+  headers: { Authorization: string },
+  pedido: ParametrosDeRelatorio,
+): Promise<Resultado<unknown>> {
+  const base = { client, headers };
+  const q = pedido.consulta;
+  switch (pedido.relatorio) {
+    case 'vendedores':
+      return executar(() => relatorioDeVendedores({ ...base, query: q }));
+    case 'clientes':
+      return executar(() => relatorioDeClientes({ ...base, query: q }));
+    case 'fornecedores':
+      return executar(() => relatorioDeFornecedores({ ...base, query: q }));
+    case 'produtos':
+      return executar(() => relatorioDeProdutos({ ...base, query: q }));
+    case 'sem-codigo-de-barras':
+      return executar(() => relatorioSemCodigoDeBarras({ ...base, query: q }));
+    case 'codigos-em-conflito':
+      return executar(() => relatorioDeCodigos({ ...base, query: q }));
+    case 'aniversariantes':
+      return executar(() => relatorioDeAniversariantes({ ...base, query: q }));
+    case 'alteracoes-de-produtos':
+      return executar(() => relatorioDeAlteracoes({ ...base, query: q }));
+    case 'sem-foto': {
+      // A rota que já existia (tarefa 1.6) usa "ativo" em vez de "situação" e não tem "todos".
+      const { situacao, busca, categoriaId, fornecedorId, pagina, tamanho } = q;
+      return executar(() =>
+        relatorioSemFoto({
+          ...base,
+          query: {
+            pagina,
+            tamanho,
+            ...(busca ? { busca } : {}),
+            ...(categoriaId ? { categoriaId } : {}),
+            ...(fornecedorId ? { fornecedorId } : {}),
+            ...(situacao === 'INATIVOS' ? { ativo: false } : {}),
+          },
+        }),
+      );
+    }
+  }
+}
+
 /** Produtos: lista, ficha, códigos, fotos e importação de fotos (só ADMIN; o servidor confere). */
 async function executarProduto(
   client: ReturnType<typeof criarClienteDaApi>,
@@ -485,6 +540,9 @@ export function criarApiDoGestao(opcoes: OpcoesDaApi): ApiDoGestao {
             ...(corpo ? { body: corpo } : {}),
           }),
         );
+      }
+      if (pedido.operacao === 'relatorios.cadastros') {
+        return executarRelatorio(client, headers, pedido);
       }
       if (pedido.operacao.startsWith('produtos.')) {
         return executarProduto(client, headers, pedido as ParametrosDeProduto);

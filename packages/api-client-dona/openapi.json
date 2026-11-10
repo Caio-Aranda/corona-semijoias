@@ -276,6 +276,287 @@
         },
         "type" : "object"
       },
+      "Linha" : {
+        "properties" : {
+          "ativo" : {
+            "type" : "boolean"
+          },
+          "codigo" : {
+            "type" : "string"
+          },
+          "codigoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "descricao" : {
+            "type" : "string"
+          },
+          "fornecedor" : {
+            "type" : "string"
+          },
+          "motivo" : {
+            "type" : "string"
+          },
+          "produto" : {
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "LinhaDeAlteracao" : {
+        "properties" : {
+          "acao" : {
+            "type" : "string"
+          },
+          "descricao" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "produto" : {
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "quando" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "quem" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "LinhaDeAniversariante" : {
+        "properties" : {
+          "ativo" : {
+            "type" : "boolean"
+          },
+          "dataNascimento" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "dia" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "mes" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "praca" : {
+            "type" : "string"
+          },
+          "telefone" : {
+            "type" : "string"
+          },
+          "whatsapp" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "LinhaDeCliente" : {
+        "properties" : {
+          "cadastradoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "cidade" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "praca" : {
+            "type" : "string"
+          },
+          "telefone" : {
+            "type" : "string"
+          },
+          "uf" : {
+            "type" : "string"
+          },
+          "vendedor" : {
+            "type" : "string"
+          },
+          "whatsapp" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "LinhaDeFornecedor" : {
+        "properties" : {
+          "cidade" : {
+            "type" : "string"
+          },
+          "cnpj" : {
+            "type" : "string"
+          },
+          "contato" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "produtosAtivos" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "razaoSocial" : {
+            "type" : "string"
+          },
+          "telefone" : {
+            "type" : "string"
+          },
+          "uf" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "LinhaDeProduto" : {
+        "properties" : {
+          "ativo" : {
+            "type" : "boolean"
+          },
+          "categoria" : {
+            "type" : "string"
+          },
+          "codigoPrincipal" : {
+            "type" : "string"
+          },
+          "estoqueAtual" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "estoqueMinimo" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "fornecedor" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "precoCusto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "precoVenda" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "referencia" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "LinhaDeVendedor" : {
+        "properties" : {
+          "ativo" : {
+            "type" : "boolean"
+          },
+          "bloqueiaRemessa" : {
+            "type" : "boolean"
+          },
+          "codigo" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "comissaoPercentual" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "limiteConsignacao" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "praca" : {
+            "type" : "string"
+          },
+          "restricao" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "LinhaSemCodigoDeBarras" : {
+        "properties" : {
+          "ativo" : {
+            "type" : "boolean"
+          },
+          "categoria" : {
+            "type" : "string"
+          },
+          "codigos" : {
+            "type" : "string"
+          },
+          "fornecedor" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "referencia" : {
+            "type" : "string"
+          },
+          "temCodigoDoFornecedor" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
       "PaginaItem" : {
         "properties" : {
           "itens" : {
@@ -710,6 +991,262 @@
         },
         "type" : "object"
       },
+      "RelatorioDeCadastroLinha" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Linha"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatorioDeCadastroLinhaDeAlteracao" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDeAlteracao"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatorioDeCadastroLinhaDeAniversariante" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDeAniversariante"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatorioDeCadastroLinhaDeCliente" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDeCliente"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatorioDeCadastroLinhaDeFornecedor" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDeFornecedor"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatorioDeCadastroLinhaDeProduto" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDeProduto"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatorioDeCadastroLinhaDeVendedor" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDeVendedor"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatorioDeCadastroLinhaSemCodigoDeBarras" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaSemCodigoDeBarras"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "Resposta" : {
         "properties" : {
           "ativo" : {
@@ -958,6 +1495,27 @@
         "properties" : {
           "instante" : {
             "format" : "date-time",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "Total" : {
+        "properties" : {
+          "chave" : {
+            "type" : "string"
+          },
+          "quantidade" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "rotulo" : {
+            "type" : "string"
+          },
+          "valorEmReais" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           }
         },
@@ -2668,6 +3226,631 @@
           "bearer" : [ ]
         } ],
         "tags" : [ "produtos-da-dona-controller" ]
+      }
+    },
+    "/api/dona/relatorios/cadastros/alteracoes-de-produtos" : {
+      "get" : {
+        "description" : "Produtos cadastrados e preços alterados no período, com quem fez (pela auditoria). Não é o resultado da importação em massa: o servidor não guarda esse resultado (pendência da Fase 2). Filtros: busca (produto ou pessoa), de e ate. Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.",
+        "operationId" : "alteracoesDeProdutos",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeAlteracao"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Relatório de cadastros e alterações de produtos",
+        "tags" : [ "relatorios-de-cadastro-controller" ]
+      }
+    },
+    "/api/dona/relatorios/cadastros/aniversariantes" : {
+      "get" : {
+        "description" : "Vendedores que fazem aniversário no mês (mes de 1 a 12; sem mes, o mês de hoje em Brasília). O cadastro de cliente não tem data de nascimento, por isso só vendedores. A data é de calendário, sem fuso. Filtros: busca, pracaId, situacao. Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.",
+        "operationId" : "aniversariantes",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "mes",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pracaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeAniversariante"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Relatório de aniversariantes (vendedores)",
+        "tags" : [ "relatorios-de-cadastro-controller" ]
+      }
+    },
+    "/api/dona/relatorios/cadastros/clientes" : {
+      "get" : {
+        "description" : "Filtros: busca, vendedorId, pracaId (a do vendedor responsável), de e ate (data do cadastro). Cliente não tem situação: só os excluídos ficam de fora. Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.",
+        "operationId" : "clientes",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pracaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeCliente"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Relatório de clientes",
+        "tags" : [ "relatorios-de-cadastro-controller" ]
+      }
+    },
+    "/api/dona/relatorios/cadastros/codigos-em-conflito" : {
+      "get" : {
+        "description" : "Códigos quase iguais (muda só espaço, traço ou maiúscula), do mesmo código em fornecedores diferentes, e códigos de barras com número errado. O servidor já recusa o código repetido de verdade. Filtros: busca, fornecedorId, situacao (a do produto). Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.",
+        "operationId" : "codigosEmConflito",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "fornecedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinha"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Relatório de códigos duplicados ou em conflito",
+        "tags" : [ "relatorios-de-cadastro-controller" ]
+      }
+    },
+    "/api/dona/relatorios/cadastros/fornecedores" : {
+      "get" : {
+        "description" : "Filtros: busca, de e ate (data do cadastro). Fornecedor não tem situação. Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.",
+        "operationId" : "fornecedores",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeFornecedor"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Relatório de fornecedores",
+        "tags" : [ "relatorios-de-cadastro-controller" ]
+      }
+    },
+    "/api/dona/relatorios/cadastros/produtos" : {
+      "get" : {
+        "description" : "Só a dona vê o custo. Filtros: busca (nome, referência ou código), categoriaId, fornecedorId, situacao, de e ate (data do cadastro). Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.",
+        "operationId" : "produtos",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "categoriaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "fornecedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeProduto"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Relatório de produtos (com preço de custo)",
+        "tags" : [ "relatorios-de-cadastro-controller" ]
+      }
+    },
+    "/api/dona/relatorios/cadastros/produtos-sem-codigo-de-barras" : {
+      "get" : {
+        "description" : "Informativo: o código de barras (EAN-13) não é obrigatório, a loja pode usar só o código dela. Filtros: busca, categoriaId, fornecedorId, situacao. Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.",
+        "operationId" : "semCodigoDeBarras",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "categoriaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "fornecedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaSemCodigoDeBarras"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Relatório de produtos sem código de barras",
+        "tags" : [ "relatorios-de-cadastro-controller" ]
+      }
+    },
+    "/api/dona/relatorios/cadastros/vendedores" : {
+      "get" : {
+        "description" : "Limite de consignação, restrição, situação, praça e comissão. Filtros: busca, pracaId, restricaoId, situacao, de e ate (data do cadastro). Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.",
+        "operationId" : "vendedores",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pracaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "restricaoId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeVendedor"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Relatório de vendedores",
+        "tags" : [ "relatorios-de-cadastro-controller" ]
       }
     },
     "/api/dona/restricoes" : {

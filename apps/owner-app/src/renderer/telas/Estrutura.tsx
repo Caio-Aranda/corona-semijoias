@@ -9,6 +9,8 @@ import { TelaEmBreve } from './TelaEmBreve';
 import { TelaInicial } from './TelaInicial';
 import { TelaDeCadastro } from './cadastros/TelaDeCadastro';
 import { TelaProdutos } from './produtos/TelaProdutos';
+import { TelaDeRelatorio } from './relatorios/TelaDeRelatorio';
+import { NOMES_DOS_RELATORIOS, type NomeDoRelatorio } from '../../shared/relatorios';
 import { TelaUsuarios } from './usuarios/TelaUsuarios';
 import { TelaVendedores } from './vendedores/TelaVendedores';
 
@@ -49,6 +51,12 @@ function Conteudo({
     case 'pessoas/clientes':
       return <TelaDeCadastro ponte={ponte} cadastro="clientes" />;
     default:
+      if (rota.startsWith('relatorios/')) {
+        const qual = rota.slice('relatorios/'.length) as NomeDoRelatorio;
+        if ((NOMES_DOS_RELATORIOS as readonly string[]).includes(qual)) {
+          return <TelaDeRelatorio ponte={ponte} relatorio={qual} usuario={nome} />;
+        }
+      }
       return <TelaEmBreve nome={rotuloDaRota(rota)} />;
   }
 }
