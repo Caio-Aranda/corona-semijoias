@@ -1,5 +1,6 @@
 package br.com.coronasemijoias.api.autenticacao;
 
+import br.com.coronasemijoias.api.cadastros.Mensagens;
 import br.com.coronasemijoias.api.acessos.IpDoCliente;
 import br.com.coronasemijoias.api.aplicativo.FiltroDeTipoEVersao;
 import br.com.coronasemijoias.api.autenticacao.ServicoDeLogin.PedidoDeEntrada;
@@ -44,7 +45,7 @@ public class AutenticacaoController {
      * identificador do aparelho: obrigatório no Corona Vendas (X-App-Tipo: vendas), ausente no Corona
      * Gestão (ADR-0004, item 4).
      */
-    public record PedidoDeLogin(@NotNull @Size(max = 200) String login, @NotNull String senha, UUID dispositivoId) {
+    public record PedidoDeLogin(@NotNull(message = Mensagens.OBRIGATORIO) @Size(max = 200, message = Mensagens.LIMITE_LONGO) String login, @NotNull(message = Mensagens.OBRIGATORIO) String senha, UUID dispositivoId) {
 
         @Override
         public String toString() {
@@ -53,7 +54,7 @@ public class AutenticacaoController {
     }
 
     /** Pedido de troca de senha: só a senha nova (o "repita a senha" é da tela). */
-    public record PedidoDeTrocaDeSenha(@NotNull String senhaNova) {
+    public record PedidoDeTrocaDeSenha(@NotNull(message = Mensagens.OBRIGATORIO) String senhaNova) {
 
         @Override
         public String toString() {
@@ -62,7 +63,7 @@ public class AutenticacaoController {
     }
 
     /** Pedido de renovação: o token de renovação e o mesmo aparelho do login. */
-    public record PedidoDeRenovacao(@NotNull @Size(max = 200) String tokenDeRenovacao, UUID dispositivoId) {
+    public record PedidoDeRenovacao(@NotNull(message = Mensagens.OBRIGATORIO) @Size(max = 200, message = Mensagens.LIMITE_LONGO) String tokenDeRenovacao, UUID dispositivoId) {
 
         @Override
         public String toString() {

@@ -46,7 +46,7 @@ Cadastros da dona (§15). Segue o mesmo formato da Fase 0. O código das etiquet
 | 1.1 | docs: plano da Fase 1 e códigos das etiquetas (este PR) | Em revisão |
 | 1.2 | backend: fornecedores, categorias, praças, semanas, restrições e clientes (migração, regras, rotas da dona, testes) | Concluída · [detalhe](progresso/fase-1.md#tarefa-12-cadastros-básicos-backend) |
 | 1.3 | backend: vendedor completo (tabelas filhas, limite, restrição, comissão, praça, documentos como arquivos) + FK `usuarios.vendedor_id` + CHECK "VENDEDOR tem vendedor_id" + vendedor de demonstração com cadastro | Concluída · [detalhe](progresso/fase-1.md#tarefa-13-vendedor-completo-backend) |
-| 1.4 | backend: usuários da dona (listar, editar, desativar revogando as famílias de sessão), auditoria "pelo servidor" na redefinição de senha, teste das palavras proibidas do glossário contra as mensagens da API | A fazer |
+| 1.4 | backend: usuários da dona (listar, editar, desativar revogando as famílias de sessão), auditoria "pelo servidor" na redefinição de senha, teste das palavras proibidas do glossário contra as mensagens da API | Concluída · [detalhe](progresso/fase-1.md#tarefa-14-usuários-da-dona-auditoria-e-teste-do-glossário-backend) |
 | 1.5 | backend: produtos, `produtos_custos` e `produto_codigos` (regras do código, ADR-0007), rotas da dona | A fazer |
 | 1.6 | backend: fotos de produto (arquivos, três tamanhos, importação em massa) e relatório de produtos sem foto | A fazer |
 | 1.7 | backend: rota da cotação do dia e do aviso de falha (`AvisoDeCotacao`) | A fazer |

@@ -131,6 +131,19 @@ public enum CodigoErro {
             "Você não pode redefinir a sua própria senha por aqui. "
                     + "Peça a outra pessoa administradora ou fale com o suporte do sistema."),
 
+    NAO_DESATIVAR_A_SI_MESMA(
+            "Você não pode desativar o seu próprio acesso.",
+            "Você não pode desativar o seu próprio acesso. Peça a outra pessoa administradora para fazer isso."),
+
+    NAO_MUDAR_O_PROPRIO_ACESSO(
+            "Você não pode mudar o seu próprio tipo de acesso.",
+            "Você não pode mudar o seu próprio tipo de acesso. Peça a outra pessoa administradora para fazer isso."),
+
+    ULTIMA_ADMINISTRADORA(
+            "Precisa continuar existindo pelo menos uma pessoa administradora com acesso.",
+            "Precisa continuar existindo pelo menos uma pessoa administradora com acesso. "
+                    + "Dê o acesso de administradora a outra pessoa antes de fazer esta mudança."),
+
     // --- Cadastros da dona (glossário, parte 6; tarefa 1.2) ---
 
     CADASTRO_NAO_ENCONTRADO(

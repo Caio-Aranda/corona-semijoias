@@ -24,6 +24,8 @@ servidor (ADR-0004, item 8). Quem tem acesso à VPS faz o passo a passo abaixo.
 6. Mostra a senha **uma única vez, no terminal**. Ela não vai para o log nem para nenhum arquivo.
 7. Deixa uma linha no log da API, sem a senha:
    `Senha temporária do administrador <login> redefinida pelo servidor; vence em <data>`.
+8. Registra a ação na tabela `auditoria` (ação `SENHA_REDEFINIDA`, origem `COMANDO`, sem pessoa logada: aparece
+   como feita "pelo servidor"), também sem a senha.
 
 Tudo isso acontece numa transação só: ou tudo vale, ou nada muda. A redefinição pela tela (outro
 administrador) faz o mesmo, com o motivo `SENHA_REDEFINIDA`.

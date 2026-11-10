@@ -17,6 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -76,6 +77,34 @@ class ComandoRedefinirSenhaDeAdministradorTest extends TesteDeIntegracao {
         Matcher achou = SENHA_NO_TERMINAL.matcher(terminal);
         assertThat(achou.find()).as(terminal).isTrue();
         return achou.group(1);
+    }
+
+    @Test
+    void registraNaAuditoriaComoFeitoPeloServidor() {
+        UsuarioDeTeste admin = usuarios.criarDona();
+        Resultado resultado = executar(admin.login());
+        String senha = senhaDoTerminal(resultado.terminal());
+
+        List<Map<String, Object>> trilha = jdbc.queryForList(
+                "SELECT ator_usuario_id, origem, acao, tabela, antes::text AS antes, depois::text AS depois "
+                        + "FROM corona.auditoria WHERE registro_id = ?", admin.id());
+        assertThat(trilha).hasSize(1);
+        Map<String, Object> linha = trilha.get(0);
+        assertThat(linha.get("origem")).isEqualTo("COMANDO");
+        assertThat(linha.get("ator_usuario_id")).isNull();
+        assertThat(linha.get("acao")).isEqualTo("SENHA_REDEFINIDA");
+        assertThat(linha.get("tabela")).isEqualTo("usuarios");
+        assertThat(String.valueOf(linha.get("antes")) + linha.get("depois")).doesNotContain(senha).doesNotContain("$2");
+    }
+
+    @Test
+    void recusaDoComandoNaoGravaAuditoria() {
+        UsuarioDeTeste desativada = usuarios.criarDona();
+        usuarios.desativar(desativada);
+        Resultado resultado = executar(desativada.login());
+        assertThat(resultado.saida()).isEqualTo(ComandoRedefinirSenhaDeAdministrador.SAIDA_RECUSADO);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM corona.auditoria WHERE registro_id = ?", Integer.class,
+                desativada.id())).isZero();
     }
 
     @Test
