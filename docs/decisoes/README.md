@@ -21,6 +21,7 @@ A numeração das tarefas é a do "Plano da Fase 0" em `docs/PROGRESSO.md`.
 
 - **Status:** `Proposto` (escrito, aguardando o responsável), `Aceito` (aprovado), `Substituído por ADR-NNNN` ou `Rejeitado`. Só o responsável muda um ADR de `Proposto` para `Aceito`, e isso é feito num Pull Request que altera apenas a linha de status.
 - **ADR aceito não se reescreve.** Para mudar uma decisão, crie um ADR novo que a substitui e marque o antigo como `Substituído por ADR-NNNN`. Correção de erro de digitação pode ser feita direto.
+- **Corrigir uma regra ainda não usada.** Se nenhuma tarefa usou a regra, ela pode ser corrigida no próprio ADR, com uma linha datada no cabeçalho (por exemplo, "Corrigido em dd/mm/aaaa: ..."). Mudança de decisão que já está em uso pede um ADR novo.
 - **Quando criar um ADR:** troca de versão maior de qualquer item do ADR-0001 (com a exceção do Electron descrita lá), mudança de formato de dados, de sincronização, de autenticação ou da barreira entre os dois aplicativos. Dúvida de produto vai para a seção de dúvidas da especificação ou do glossário, não para um ADR.
 - **Nome do arquivo:** `ADR-NNNN-titulo-curto.md`, em português, sem acentos no nome do arquivo.
 

@@ -95,7 +95,6 @@ Histórico detalhado das tarefas 1 a 11 da Fase 0 (movido de `docs/PROGRESSO.md`
 
 **O que ficou pendente**
 - Electron, React, Vite, clientes da API, backend, Docker, CI e Dependabot (tarefas 5 a 7 e 13 a 16).
-- Conteúdo de `.vscode/` e seção "Comandos" do CLAUDE.md (tarefa 17).
 - Vitest, que entra com o primeiro código testável.
 - A regra do `../` que sai da pasta do Corona Vendas (ADR-0003, camada 1) fica para a tarefa 16.
 - Node 26.13.0 e npm 11.20.0 ainda não estão instalados na máquina de desenvolvimento (Node 24.18.1 e npm 11.16.0): o `npm ci` avisa sobre `engines`, mas funciona. O CI (tarefa 7) usa o 26.13.0.
@@ -141,7 +140,6 @@ Histórico detalhado das tarefas 1 a 11 da Fase 0 (movido de `docs/PROGRESSO.md`
 
 **O que ficou pendente**
 - Spring Security, login, usuários e JWT (tarefas 9 a 11); tabelas, gatilho de sync e utilitário de dinheiro (tarefa 8); CI (tarefa 7); Dockerfile e deploy (Fase 9).
-- Configuração do VS Code (Boot Dashboard com o perfil `dev`): tarefa 17.
 - A mensagem de falha de inicialização usa o cabeçalho do Spring ("APPLICATION FAILED TO START"), em inglês; só a descrição e a ação estão em português. É texto de desenvolvedor, não de tela.
 - Teste automático das palavras proibidas do glossário contra as mensagens da API: fica para a tarefa que ler os blocos do glossário.
 
@@ -492,3 +490,19 @@ ADR-0003 (inteiro), ADR-0004 (itens 2 a 5, 6 e 10), ADR-0001 (Electron, electron
 - A regra do `../` é uma regra local de ESLint (o `no-restricted-imports` não sabe de que pasta o arquivo é). Os testes dela carregam a configuração por caminho calculado, pois um `import` com `../` violaria a própria regra.
 - O identificador do aparelho é gerado no processo principal e, se não der para gravar, vale só naquela abertura (o app não deixa de abrir).
 - Texto novo no glossário (sem internet ao entrar e tela inicial do vendedor), pois o do app da dona fala do Corona Gestão.
+
+### Tarefa 17: VS Code, setup e roteiro do teste de uso
+
+**O que foi feito**
+- `.vscode/`: extensões recomendadas, `settings.json` mínimo (Prettier ao salvar, LF), `launch.json` (API com perfil `dev`, Corona Gestão e Corona Vendas) e `tasks.json` chamando os scripts npm.
+- `npm run setup` (`scripts/setup.mjs`, lógica pura em `scripts/setup/logica.mjs`, testada por `npm run setup:test`): confere Node (`.nvmrc`), Java 21, `JAVA_HOME` e Docker, só avisa em português; `npm ci`; cria o `.env` só se não existir (segredos aleatórios, nunca impressos); lista, sem valores, as variáveis que faltam num `.env` existente; sobe o banco.
+- Vendedor de demonstração (`VendedorDeDemonstracao`, `@Profile("dev")`): lê `DEMO_VENDEDOR_NOME/LOGIN/SENHA` do `.env`; sem a senha (ou com "troque-isto") não cria; se o login existe, não mexe. `VendedorDeDemonstracaoTest` prova que nasce no perfil `dev` (uma vez só) e não nasce em outro perfil. Sem migração.
+- `docs/roteiro-teste-de-uso.md`, regra de correção de ADR em `docs/decisoes/README.md`, seção "Comandos" do CLAUDE.md e README atualizados.
+
+**O que ficou pendente**
+- O usuário de teste não tem `vendedor_id` (a tabela `vendedores` é da Fase 1; a coluna é opcional desde a tarefa 9).
+- `npm run setup` não foi rodado de ponta a ponta nesta máquina (só a lógica pura tem teste).
+
+**Decisões tomadas**
+- O vendedor de teste nasce sem troca de senha obrigatória, para o teste do Corona Vendas não parar na tela de senha nova.
+- `JAVA_HOME` é conferido pelo nome da pasta conter "21"; é um aviso, não um bloqueio.

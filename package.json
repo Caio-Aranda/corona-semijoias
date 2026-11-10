@@ -18,6 +18,8 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "setup": "node scripts/setup.mjs",
+    "setup:test": "node --test scripts/setup/",
     "owner:dev": "npm run dev -w @corona/owner-app",
     "owner:build": "npm run build -w @corona/owner-app",
     "seller:dev": "npm run dev -w @corona/seller-app",

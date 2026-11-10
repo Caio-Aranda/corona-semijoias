@@ -1,0 +1,10 @@
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "files.eol": "\n",
+  "files.insertFinalNewline": true,
+  "[java]": {
+    "editor.defaultFormatter": "redhat.java"
+  },
+  "eslint.useFlatConfig": true
+}

@@ -1,0 +1,40 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    { "label": "Banco: subir", "type": "npm", "script": "db:up", "problemMatcher": [] },
+    {
+      "label": "API: rodar (perfil dev)",
+      "type": "npm",
+      "script": "api:run",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "API: testes",
+      "type": "npm",
+      "script": "api:test",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Corona Gestão: rodar",
+      "type": "npm",
+      "script": "owner:dev",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Corona Vendas: rodar",
+      "type": "npm",
+      "script": "seller:dev",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Preparar o computador (setup)",
+      "type": "npm",
+      "script": "setup",
+      "problemMatcher": []
+    }
+  ]
+}
