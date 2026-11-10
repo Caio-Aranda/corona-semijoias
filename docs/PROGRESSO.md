@@ -69,7 +69,7 @@ Estoque e compras (§15). Segue o mesmo formato da Fase 1. O modelo do estoque e
 
 | Nº | Tarefa | Situação |
 | --- | --- | --- |
-| 2.1 | docs: plano da Fase 2 e ADR do estoque | Em revisão · [detalhe](progresso/fase-2.md#tarefa-21-plano-da-fase-2-e-adr-do-estoque-só-documentos) |
+| 2.1 | docs: plano da Fase 2 e ADR do estoque | Em revisão (PR 41) · [detalhe](progresso/fase-2.md#tarefa-21-plano-da-fase-2-e-adr-do-estoque-só-documentos) |
 | 2.2 | backend: movimentações de estoque (migração, serviço único que muda `estoque_atual`, estorno, ajuste, rotas da dona, testes de concorrência) | A fazer |
 | 2.3 | backend: compras e itens de compra (entrada de compra por código, idempotência, custo por compra e histórico de custo) | A fazer |
 | 2.4 | backend: estoque mínimo com aviso e inventário (contagem, divergências, fechamento que gera ajuste) | A fazer |
