@@ -87,6 +87,10 @@ public final class RegistroDeTabelas {
                         new TabelaDoServidor("compras", false),
                         new TabelaDoServidor("itens_compra", true),
                         new TabelaDoServidor("historico_custo", true),
+                        // Inventário (tarefa 2.4): contagem do estoque central, só da dona.
+                        new TabelaDoServidor("inventarios", false),
+                        new TabelaDoServidor("itens_inventario", false),
+                        new TabelaDoServidor("leituras_inventario", true),
                         // Cadastros que o vendedor nunca recebe (ESPECIFICACAO §10): fornecedores, praças, restrições.
                         new TabelaDoServidor("fornecedores", false),
                         new TabelaDoServidor("pracas", false),

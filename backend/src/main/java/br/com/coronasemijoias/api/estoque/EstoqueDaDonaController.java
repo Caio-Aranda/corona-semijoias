@@ -99,6 +99,13 @@ public class EstoqueDaDonaController {
         }
     }
 
+    public record RespostaDoAbaixoDoMinimo(RespostaDoProduto produto, int saldo, int minimo, int falta) {
+
+        static RespostaDoAbaixoDoMinimo de(ConsultasDeEstoque.AbaixoDoMinimo a) {
+            return new RespostaDoAbaixoDoMinimo(RespostaDoProduto.de(a.produto()), a.saldo(), a.minimo(), a.falta());
+        }
+    }
+
     public record RespostaDaFicha(RespostaDoProduto produto, int saldo, Pagina<RespostaDaLinha> historico) {
     }
 
@@ -170,6 +177,18 @@ public class EstoqueDaDonaController {
             @RequestParam(required = false) Integer pagina, @RequestParam(required = false) Integer tamanho) {
         return Pagina.de(consultas.listar(new Filtro(produtoId, tipo, origem, usuarioId, de, ate), pagina, tamanho),
                 RespostaDaLinha::de);
+    }
+
+    @Operation(summary = "Produtos com estoque baixo",
+            description = "Produtos ativos com estoque mínimo definido cujo saldo está no mínimo ou abaixo. Mostra a foto, "
+                    + "quantas peças há (saldo), o mínimo e quantas faltam para chegar ao mínimo (falta). Quem mais falta vem "
+                    + "primeiro. Filtros: categoriaId, fornecedorId e busca (nome, referência ou parte do código). "
+                    + "O mínimo de cada peça se edita pela rota de produtos. A página começa em 0 (até 200 por página).")
+    @GetMapping("/abaixo-do-minimo")
+    public Pagina<RespostaDoAbaixoDoMinimo> abaixoDoMinimo(@RequestParam(required = false) UUID categoriaId,
+            @RequestParam(required = false) UUID fornecedorId, @RequestParam(required = false) String busca,
+            @RequestParam(required = false) Integer pagina, @RequestParam(required = false) Integer tamanho) {
+        return Pagina.de(consultas.abaixoDoMinimo(categoriaId, fornecedorId, busca, pagina, tamanho), RespostaDoAbaixoDoMinimo::de);
     }
 
     @Operation(summary = "Ficha do produto no estoque", description = "Quantas peças há e o histórico do produto (mais novo primeiro).")

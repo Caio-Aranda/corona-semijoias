@@ -34,6 +34,10 @@ public class ConsultasDeEstoque {
     public record Filtro(UUID produtoId, String tipo, String origem, UUID usuarioId, LocalDate de, LocalDate ate) {
     }
 
+    /** Um produto que precisa de reposição: {@code falta} é quantas peças faltam para chegar ao mínimo (zero se está no mínimo). */
+    public record AbaixoDoMinimo(ProdutoResumo produto, int saldo, int minimo, int falta) {
+    }
+
     public record Ficha(ProdutoResumo produto, int saldo, Page<Linha> historico) {
     }
 
@@ -119,6 +123,61 @@ public class ConsultasDeEstoque {
         }
         Page<Linha> historico = listar(new Filtro(produtoId, null, null, null, null, null), pagina, tamanho);
         return new Ficha(achados.get(0).produto(), achados.get(0).saldo(), historico);
+    }
+
+    private static final String ONDE_ABAIXO_DO_MINIMO =
+            " WHERE p.deleted_at IS NULL AND p.ativo AND p.estoque_minimo > 0 AND p.estoque_atual <= p.estoque_minimo";
+
+    /**
+     * Produtos ativos com estoque mínimo definido (maior que zero) cujo saldo está no mínimo ou abaixo. Quem mais
+     * falta vem primeiro. Filtros: categoria, fornecedor e busca (nome, referência ou parte de um código).
+     */
+    @Transactional(readOnly = true)
+    public Page<AbaixoDoMinimo> abaixoDoMinimo(UUID categoriaId, UUID fornecedorId, String busca, Integer pagina, Integer tamanho) {
+        List<Object> args = new ArrayList<>();
+        StringBuilder onde = new StringBuilder(ONDE_ABAIXO_DO_MINIMO);
+        if (categoriaId != null) {
+            onde.append(" AND p.categoria_id = ?");
+            args.add(categoriaId);
+        }
+        if (fornecedorId != null) {
+            onde.append(" AND p.fornecedor_id = ?");
+            args.add(fornecedorId);
+        }
+        String texto = Validacoes.limpar(busca);
+        if (texto != null) {
+            String padrao = "%" + texto.toLowerCase().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%";
+            onde.append(" ").append("""
+                     AND (lower(p.nome) LIKE ? OR lower(coalesce(p.referencia, '')) LIKE ?
+                          OR EXISTS (SELECT 1 FROM corona.produto_codigos cx
+                                      WHERE cx.produto_id = p.id AND cx.deleted_at IS NULL AND lower(cx.codigo) LIKE ?))""");
+            args.add(padrao);
+            args.add(padrao);
+            args.add(padrao);
+        }
+        PageRequest pedida = pagina(pagina, tamanho);
+        Long total = jdbc.queryForObject("SELECT count(*) FROM corona.produtos p" + onde, Long.class, args.toArray());
+        List<Object> comPagina = new ArrayList<>(args);
+        comPagina.add(pedida.getPageSize());
+        comPagina.add(pedida.getOffset());
+        List<AbaixoDoMinimo> itens = jdbc.query("""
+                SELECT p.id AS produto_id, p.nome AS produto_nome, p.referencia, p.estoque_minimo, p.ativo,
+                       p.foto_principal_hash, p.estoque_atual,
+                       (SELECT c.codigo FROM corona.produto_codigos c
+                         WHERE c.produto_id = p.id AND c.principal AND c.deleted_at IS NULL LIMIT 1) AS codigo
+                  FROM corona.produtos p""" + onde
+                + " ORDER BY (p.estoque_minimo - p.estoque_atual) DESC, lower(p.nome), p.id LIMIT ? OFFSET ?",
+                (rs, i) -> new AbaixoDoMinimo(resumo(rs), rs.getInt("estoque_atual"), rs.getInt("estoque_minimo"),
+                        rs.getInt("estoque_minimo") - rs.getInt("estoque_atual")),
+                comPagina.toArray());
+        return new PageImpl<>(itens, pedida, total == null ? 0 : total);
+    }
+
+    /** Quantos produtos precisam de reposição (para o aviso da tela inicial). */
+    @Transactional(readOnly = true)
+    public long contarAbaixoDoMinimo() {
+        Long total = jdbc.queryForObject("SELECT count(*) FROM corona.produtos p" + ONDE_ABAIXO_DO_MINIMO, Long.class);
+        return total == null ? 0 : total;
     }
 
     private static <E extends Enum<E>> void conhecido(Class<E> tipo, String valor, String campo) {

@@ -244,6 +244,20 @@ export type PaginaRespostaDaLinhaDeCusto = {
     total?: number;
 };
 
+export type PaginaRespostaDoAbaixoDoMinimo = {
+    itens?: Array<RespostaDoAbaixoDoMinimo>;
+    pagina?: number;
+    tamanho?: number;
+    total?: number;
+};
+
+export type PaginaRespostaDoItem = {
+    itens?: Array<RespostaDoItem>;
+    pagina?: number;
+    tamanho?: number;
+    total?: number;
+};
+
 export type PaginaRespostaDoResumo = {
     itens?: Array<RespostaDoResumo>;
     pagina?: number;
@@ -300,6 +314,13 @@ export type PedidoDeCodigo = {
     tipo: string;
 };
 
+export type PedidoDeContagem = {
+    codigo?: string;
+    contado?: number;
+    id?: string;
+    produtoId?: string;
+};
+
 export type PedidoDeEdicao = {
     nome: string;
     perfil: string;
@@ -315,6 +336,13 @@ export type PedidoDeEstorno = {
 export type PedidoDeItem = {
     codigo?: string;
     custoUnitario?: string;
+    produtoId?: string;
+    quantidade?: number;
+};
+
+export type PedidoDeLeitura = {
+    codigo?: string;
+    id?: string;
     produtoId?: string;
     quantidade?: number;
 };
@@ -391,9 +419,24 @@ export type PedidoDosCodigos = {
     version?: number;
 };
 
+export type PedidoParaCancelar = {
+    motivo?: string;
+};
+
+export type PedidoParaComecar = {
+    escopo?: string;
+    escopoId?: string;
+    id?: string;
+    observacoes?: string;
+};
+
 export type PedidoParaDesfazer = {
     id?: string;
     motivo?: string;
+};
+
+export type PedidoParaFechar = {
+    zerarNaoLidos?: boolean;
 };
 
 export type Previa = {
@@ -556,6 +599,24 @@ export type RespostaDaConciliacao = {
     produtosConferidos?: number;
 };
 
+export type RespostaDaContagem = {
+    ajustes?: number;
+    canceladoEm?: string;
+    escopo?: string;
+    escopoId?: string;
+    escopoNome?: string;
+    fechadoEm?: string;
+    fechadoPorNome?: string;
+    id?: string;
+    iniciadoEm?: string;
+    iniciadoPorNome?: string;
+    motivoDoCancelamento?: string;
+    observacoes?: string;
+    resumo?: RespostaDoResumo;
+    situacao?: string;
+    zerouNaoLidos?: boolean;
+};
+
 export type RespostaDaDivergencia = {
     diferenca?: number;
     produto?: RespostaDoProduto;
@@ -584,20 +645,21 @@ export type RespostaDaFoto = {
     version?: number;
 };
 
+export type RespostaDaLeitura = {
+    item?: RespostaDoItem;
+    resumo?: RespostaDoResumo;
+};
+
 export type RespostaDaLinha = {
-    desfeitoPorId?: string;
-    estornaId?: string;
+    escopo?: string;
+    escopoId?: string;
+    escopoNome?: string;
+    fechadoEm?: string;
     id?: string;
-    motivo?: string;
-    ocorridaEm?: string;
-    origem?: string;
-    origemId?: string;
-    produto?: RespostaDoProduto;
-    quantidade?: number;
-    saldoDepois?: number;
-    tipo?: string;
-    usuarioId?: string;
-    usuarioNome?: string;
+    iniciadoEm?: string;
+    lidos?: number;
+    situacao?: string;
+    totalDePecas?: number;
 };
 
 export type RespostaDaLinhaDeCusto = {
@@ -618,6 +680,13 @@ export type RespostaDaPeca = {
     referencia?: string;
 };
 
+export type RespostaDoAbaixoDoMinimo = {
+    falta?: number;
+    minimo?: number;
+    produto?: RespostaDoProduto;
+    saldo?: number;
+};
+
 export type RespostaDoHistoricoDeCusto = {
     custoAtual?: string;
     historico?: PaginaRespostaDaLinhaDeCusto;
@@ -625,11 +694,12 @@ export type RespostaDoHistoricoDeCusto = {
 };
 
 export type RespostaDoItem = {
-    custoUnitario?: string;
-    id?: string;
-    produto?: RespostaDaPeca;
-    quantidade?: number;
-    total?: string;
+    ajustada?: boolean;
+    contado?: number;
+    diferenca?: number;
+    esperado?: number;
+    produto?: RespostaDoProduto;
+    saldoAtual?: number;
 };
 
 export type RespostaDoLogin = {
@@ -669,16 +739,14 @@ export type RespostaDoProduto = {
 };
 
 export type RespostaDoResumo = {
-    dataCompra?: string;
-    fornecedorId?: string;
-    fornecedorNome?: string;
-    id?: string;
-    itens?: number;
-    numero?: string;
-    pecas?: number;
-    registradaEm?: string;
-    situacao?: string;
-    total?: string;
+    comDiferenca?: number;
+    faltam?: number;
+    lidos?: number;
+    naoLidos?: number;
+    pecasContadas?: number;
+    pecasEsperadas?: number;
+    sobram?: number;
+    totalDePecas?: number;
 };
 
 export type ResultadoDaFoto = {
@@ -820,23 +888,23 @@ export type TrocarSenhaResponses = {
 
 export type TrocarSenhaResponse = TrocarSenhaResponses[keyof TrocarSenhaResponses];
 
-export type Listar13Data = {
+export type Listar14Data = {
     body?: never;
     path?: never;
     query?: never;
     url: '/api/dona/avisos';
 };
 
-export type Listar13Responses = {
+export type Listar14Responses = {
     /**
      * OK
      */
     200: AvisosResposta;
 };
 
-export type Listar13Response = Listar13Responses[keyof Listar13Responses];
+export type Listar14Response = Listar14Responses[keyof Listar14Responses];
 
-export type Listar12Data = {
+export type Listar13Data = {
     body?: never;
     path?: never;
     query?: {
@@ -848,14 +916,14 @@ export type Listar12Data = {
     url: '/api/dona/categorias';
 };
 
-export type Listar12Responses = {
+export type Listar13Responses = {
     /**
      * OK
      */
     200: PaginaResposta;
 };
 
-export type Listar12Response = Listar12Responses[keyof Listar12Responses];
+export type Listar13Response = Listar13Responses[keyof Listar13Responses];
 
 export type Criar8Data = {
     body: Pedido;
@@ -961,7 +1029,7 @@ export type Reativar7Responses = {
 
 export type Reativar7Response = Reativar7Responses[keyof Reativar7Responses];
 
-export type Listar11Data = {
+export type Listar12Data = {
     body?: never;
     path?: never;
     query?: {
@@ -973,14 +1041,14 @@ export type Listar11Data = {
     url: '/api/dona/clientes';
 };
 
-export type Listar11Responses = {
+export type Listar12Responses = {
     /**
      * OK
      */
     200: PaginaResposta;
 };
 
-export type Listar11Response = Listar11Responses[keyof Listar11Responses];
+export type Listar12Response = Listar12Responses[keyof Listar12Responses];
 
 export type Criar7Data = {
     body: Pedido;
@@ -1086,7 +1154,7 @@ export type Reativar6Responses = {
 
 export type Reativar6Response = Reativar6Responses[keyof Reativar6Responses];
 
-export type Listar10Data = {
+export type Listar11Data = {
     body?: never;
     path?: never;
     query?: {
@@ -1101,14 +1169,14 @@ export type Listar10Data = {
     url: '/api/dona/compras';
 };
 
-export type Listar10Responses = {
+export type Listar11Responses = {
     /**
      * OK
      */
     200: PaginaRespostaDoResumo;
 };
 
-export type Listar10Response = Listar10Responses[keyof Listar10Responses];
+export type Listar11Response = Listar11Responses[keyof Listar11Responses];
 
 export type ReceberData = {
     body: PedidoDaCompra;
@@ -1147,7 +1215,7 @@ export type CustosResponses = {
 
 export type CustosResponse = CustosResponses[keyof CustosResponses];
 
-export type Ver9Data = {
+export type Ver10Data = {
     body?: never;
     path: {
         id: string;
@@ -1156,14 +1224,14 @@ export type Ver9Data = {
     url: '/api/dona/compras/{id}';
 };
 
-export type Ver9Responses = {
+export type Ver10Responses = {
     /**
      * OK
      */
     200: RespostaDaCompra;
 };
 
-export type Ver9Response = Ver9Responses[keyof Ver9Responses];
+export type Ver10Response = Ver10Responses[keyof Ver10Responses];
 
 export type Desfazer1Data = {
     body: PedidoParaDesfazer;
@@ -1215,6 +1283,28 @@ export type HojeResponses = {
 
 export type HojeResponse = HojeResponses[keyof HojeResponses];
 
+export type AbaixoDoMinimoData = {
+    body?: never;
+    path?: never;
+    query?: {
+        categoriaId?: string;
+        fornecedorId?: string;
+        busca?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/estoque/abaixo-do-minimo';
+};
+
+export type AbaixoDoMinimoResponses = {
+    /**
+     * OK
+     */
+    200: PaginaRespostaDoAbaixoDoMinimo;
+};
+
+export type AbaixoDoMinimoResponse = AbaixoDoMinimoResponses[keyof AbaixoDoMinimoResponses];
+
 export type AjustarData = {
     body: PedidoDeAjuste;
     path?: never;
@@ -1247,7 +1337,7 @@ export type ConciliarResponses = {
 
 export type ConciliarResponse = ConciliarResponses[keyof ConciliarResponses];
 
-export type Listar9Data = {
+export type Listar10Data = {
     body?: never;
     path?: never;
     query?: {
@@ -1263,14 +1353,14 @@ export type Listar9Data = {
     url: '/api/dona/estoque/movimentacoes';
 };
 
-export type Listar9Responses = {
+export type Listar10Responses = {
     /**
      * OK
      */
     200: PaginaRespostaDaLinha;
 };
 
-export type Listar9Response = Listar9Responses[keyof Listar9Responses];
+export type Listar10Response = Listar10Responses[keyof Listar10Responses];
 
 export type LancarData = {
     body: PedidoDeMovimento;
@@ -1327,7 +1417,7 @@ export type FichaResponses = {
 
 export type FichaResponse = FichaResponses[keyof FichaResponses];
 
-export type Listar8Data = {
+export type Listar9Data = {
     body?: never;
     path?: never;
     query?: {
@@ -1339,14 +1429,14 @@ export type Listar8Data = {
     url: '/api/dona/fornecedores';
 };
 
-export type Listar8Responses = {
+export type Listar9Responses = {
     /**
      * OK
      */
     200: PaginaResposta;
 };
 
-export type Listar8Response = Listar8Responses[keyof Listar8Responses];
+export type Listar9Response = Listar9Responses[keyof Listar9Responses];
 
 export type Criar6Data = {
     body: Pedido;
@@ -1467,6 +1557,155 @@ export type RegistrarResponses = {
      */
     200: unknown;
 };
+
+export type Listar8Data = {
+    body?: never;
+    path?: never;
+    query?: {
+        situacao?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/inventarios';
+};
+
+export type Listar8Responses = {
+    /**
+     * OK
+     */
+    200: PaginaRespostaDaLinha;
+};
+
+export type Listar8Response = Listar8Responses[keyof Listar8Responses];
+
+export type ComecarData = {
+    body: PedidoParaComecar;
+    path?: never;
+    query?: never;
+    url: '/api/dona/inventarios';
+};
+
+export type ComecarResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDaContagem;
+};
+
+export type ComecarResponse = ComecarResponses[keyof ComecarResponses];
+
+export type Ver9Data = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/inventarios/{id}';
+};
+
+export type Ver9Responses = {
+    /**
+     * OK
+     */
+    200: RespostaDaContagem;
+};
+
+export type Ver9Response = Ver9Responses[keyof Ver9Responses];
+
+export type CancelarData = {
+    body?: PedidoParaCancelar;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/inventarios/{id}/cancelar';
+};
+
+export type CancelarResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDaContagem;
+};
+
+export type CancelarResponse = CancelarResponses[keyof CancelarResponses];
+
+export type CorrigirData = {
+    body: PedidoDeContagem;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/inventarios/{id}/contagens';
+};
+
+export type CorrigirResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDaLeitura;
+};
+
+export type CorrigirResponse = CorrigirResponses[keyof CorrigirResponses];
+
+export type FecharData = {
+    body?: PedidoParaFechar;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/inventarios/{id}/fechar';
+};
+
+export type FecharResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDaContagem;
+};
+
+export type FecharResponse = FecharResponses[keyof FecharResponses];
+
+export type ItensData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: {
+        filtro?: string;
+        busca?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/inventarios/{id}/itens';
+};
+
+export type ItensResponses = {
+    /**
+     * OK
+     */
+    200: PaginaRespostaDoItem;
+};
+
+export type ItensResponse = ItensResponses[keyof ItensResponses];
+
+export type LerData = {
+    body: PedidoDeLeitura;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/inventarios/{id}/leituras';
+};
+
+export type LerResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDaLeitura;
+};
+
+export type LerResponse = LerResponses[keyof LerResponses];
 
 export type Listar7Data = {
     body?: never;

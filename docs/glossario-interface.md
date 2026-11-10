@@ -770,5 +770,13 @@ Termos de tela do estoque e das compras. Vale a regra da §19.1: nada de termo t
 - Compra que não dá para desfazer: **Não é possível desfazer esta compra.** De "{produto}" já saíram peças e há só {n} no estoque.
 - Compra já desfeita: **Esta compra já foi desfeita.**
 - Compra não encontrada: **Não encontramos esta compra.** Atualize a tela e tente de novo.
+- Aviso na tela inicial: **{n} produtos estão acabando.** Esses produtos chegaram ao estoque mínimo. Veja a lista e faça a reposição. (Com um só: **1 produto está acabando.**)
+- Já existe contagem com essas peças: **Já existe uma contagem em andamento.** Feche ou cancele essa contagem antes de começar outra.
+- Contagem fechada ou cancelada: **Esta contagem já foi encerrada.** Comece uma nova contagem se precisar.
+- Contagem que não dá para fechar: **Não é possível fechar esta contagem.** De "{produto}" há {n} no estoque agora e a contagem pede tirar {m}. Confira a peça, lance a compra que falta ou refaça a contagem dela.
+- Peça fora da contagem: **Esta peça não faz parte desta contagem.**
+- Contagem sem peças: **Não há peças nesta seleção para contar.** Escolha outra.
+- Leitura repetida com outra quantidade: **Esta leitura já foi registrada com outros dados.** Atualize a tela e confira a quantidade contada.
+- Contagem não encontrada: **Não encontramos esta contagem do estoque.** Atualize a tela e tente de novo.
 - Lista vazia: "Ainda não há entradas e saídas.", "Nenhum produto está acabando." e "Ainda não há compras."
 
