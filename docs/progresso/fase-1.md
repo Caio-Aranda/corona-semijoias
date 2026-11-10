@@ -147,3 +147,25 @@ Uma seção por tarefa concluída, no mesmo formato de [fase-0.md](fase-0.md). A
 - 25 milhões de pontos bastam? Celulares de 48 ou 108 megapixels passam do limite e a pessoa precisa reduzir.
 - No Corona Vendas a foto grande será baixada sob demanda: a rota para o vendedor entra com a Fase 5 (escolher entre token no cabeçalho ou URL assinada).
 
+
+### Tarefa 1.7: rota da cotação do dia e dos avisos (backend)
+
+**O que foi feito**
+- `GET /api/dona/cotacoes/hoje`: a cotação em vigor hoje (data de Brasília, `CotacaoVigente`): data, Dólar e Guarani (taxa de venda, reais por unidade, texto de 8 casas), fonte, `deDiaAnterior` (fim de semana, feriado ou busca que falhou) e a `linha` pronta ("Cotação do Banco Central de 06/11/2026"). Sem nenhuma cotação: **200** com `disponivel = false` e a mensagem em português; nunca erro.
+- `POST /api/dona/cotacoes/converter`: `{ "valorEmReais": "100.00", "data": "2026-11-06" }` (data opcional, hoje se vazia). Responde Dólar com 2 casas e Guarani sem casas, como texto, pela `ConversaoDeMoeda` (nenhum arredondamento novo). Aceita negativo (estorno) e o máximo de `NUMERIC(14,2)`; número JSON, vírgula ou mais de 2 casas são recusados com 400 (mesmo desserializador do dinheiro). Sem cotação para a data: 200 com `disponivel = false`.
+- `GET /api/dona/avisos`: lista de "O que precisa da sua atenção", `{ avisos: [{ tipo, titulo, texto, dias }] }`. Extensível: cada tipo novo é um `@Component` que implementa `FonteDeAvisos` (pacote `avisos`). O primeiro é o `COTACAO_NAO_CHEGOU`, montado a partir do `AvisoDeCotacao` com os textos do glossário (hoje / um dia / vários dias / sem nenhuma cotação). Calculado na hora, nunca gravado: some quando a busca recupera o dia.
+- Só ADMIN (vendedor 403, sem token 401). Sem migração. Clientes regerados (`api-client-dona`; o do vendedor não mudou).
+- Testes (`CotacoesDaDonaTest`, 17): permissões, indisponível, dia de Brasília, sábado/segunda, conversões com os exemplos do ADR-0006, negativo, valor máximo, valores inválidos, e cada forma do aviso (hoje, ontem, vários dias, fim de semana, nenhum, some ao gravar). Relógio parado; banco desfeito no fim de cada teste.
+
+**O que ficou pendente**
+- A tela (1.8) e a conversão em TypeScript com `BigInt` na tela. Nenhuma rota do vendedor (Fase 4).
+
+**Decisões tomadas**
+- A fonte aparece como "Banco Central do Brasil"; o endereço guardado em `cotacoes.fonte` é técnico e não sai da API.
+- A conversão pela data usa a regra de lançamento (última cotação até aquela data); sem `data`, a de hoje. A mais recente "para o que não é lançamento" fica para quando houver telas que a peçam.
+- O aviso reúne todos os dias sem cotação num só item (um aviso, não um por dia).
+- O Guarani sai em reais por 1 Guarani (0.00089500); mostrar "por mil" é da tela (glossário, parte 8).
+- Corrigidas no PROGRESSO as linhas 1.5 e 1.6 ("Em revisão" para "Concluída", PR 31 e 32).
+
+**Dúvidas**
+- Nenhuma.
