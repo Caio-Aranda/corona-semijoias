@@ -38,7 +38,9 @@ Em 09/11/2026 o responsável resolveu as dúvidas que estavam abertas neste glos
 | semana | `semanas` | Período de controle: maleta, cobrança e acerto são semanais. Como numerar as semanas: a confirmar (parte 9). |
 | peça | produto / item de maleta, venda ou troca | Usar na maleta, na venda, na troca, na devolução e na leitura do código. |
 | produto | `produtos` | Usar no cadastro, na consulta e nos relatórios (por exemplo, o botão "Cadastrar produto"). |
-| código de barras | `produto_codigos` | Pode haver mais de um por peça. Mostrado sem máscara, como texto. |
+| código de barras | `produto_codigos` | Pode haver mais de um por peça. Mostrado sem máscara, como texto. Quando a tela precisa distinguir, usar "código da loja" ou "código do fornecedor". |
+| código da loja | `produto_codigos`, tipo `LOJA` (COD) | O código que a loja imprime na própria etiqueta. Sequencial, interno. |
+| código do fornecedor | `produto_codigos`, tipo `FORNECEDOR` (COD Fábrica) | O código que o fornecedor deu à peça (letras e números). Pode haver o mesmo em fornecedores diferentes: a tela avisa e a dona decide. |
 | ler o código | bipar | O leitor "digita" o código. Na tela, sempre "ler o código" ("Leia o código de novo"). |
 | Corona Gestão | app da dona (`owner-app`) | Nome do aplicativo da dona. Ícone diferente do Corona Vendas (§18). |
 | Corona Vendas | app do vendedor (`seller-app`) | Nome do aplicativo do vendedor. Ícone diferente do Corona Gestão (§18). |

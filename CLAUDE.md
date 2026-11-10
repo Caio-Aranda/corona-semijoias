@@ -18,7 +18,7 @@ TypeScript (dois apps separados) · SQLite criptografado no app do vendedor.
   nem dados de outros vendedores.
 - Permissões validadas na API, não só na tela.
 - Migrações Flyway publicadas nunca são editadas: criar uma nova.
-- Código de barras é texto (EAN-13, validar dígito verificador).
+- Código da peça é texto livre, único (sem diferenciar maiúsculas, sem espaços nas pontas), com tipo LOJA, FORNECEDOR ou EAN13; o dígito verificador só vale para EAN13 com 13 dígitos, e EAN-13 não é obrigatório (ADR-0007).
 - Fotos de produto são arquivos (nunca binário no PostgreSQL); toda leitura ou
   pesquisa de produto mostra a foto, e a falta de foto nunca trava a venda.
 
