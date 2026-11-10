@@ -173,7 +173,7 @@ export async function lerPlanilha(nome: string, bytes: Uint8Array): Promise<Tabe
 
 // ---------------------------------------------------------------- Prévia
 
-const semAcento = (s: string): string =>
+export const semAcento = (s: string): string =>
   s.normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toLowerCase().replace(/\s+/g, ' ');
 
 export type ColunaDaPlanilha = 'codigo' | 'nome' | 'categoria' | 'custo' | 'preco';

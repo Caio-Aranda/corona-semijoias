@@ -18,6 +18,10 @@ import {
   reativar3 as reativarProduto,
   ver4 as verProduto,
   baixar,
+  desfazer1 as desfazerCompra,
+  listar11 as listarCompras,
+  receber as receberCompra,
+  ver10 as verCompra,
   converter,
   criar as criarVendedor,
   criarReferencia,
@@ -62,12 +66,12 @@ import {
   editar6,
   editar7,
   editar8,
-  listar10,
+  listar13,
   listar3,
   listar4,
   listar7,
-  listar8,
   listar9,
+  listar12,
   alteracoesDeProdutos as relatorioDeAlteracoes,
   aniversariantes as relatorioDeAniversariantes,
   clientes as relatorioDeClientes,
@@ -85,7 +89,7 @@ import {
   eu,
   hoje,
   listar,
-  listar11,
+  listar14,
   listar2,
   inativar1,
   inativar3,
@@ -106,6 +110,7 @@ import {
 } from '@corona/api-client-dona';
 import type { NomeDoCadastro } from '../shared/cadastros';
 import type { ParametrosConferidos, ParametrosDeVendedor } from '../shared/validacao-parametros';
+import type { ParametrosDeCompra } from '../shared/validacao-compras';
 import type { ParametrosDeProduto } from '../shared/validacao-produtos';
 import type { ParametrosDeRelatorio } from '../shared/validacao-relatorios';
 import type { AbaDoVendedor, ArquivoBaixado } from '../shared/vendedores';
@@ -201,7 +206,7 @@ type ChamadaGerada = (o: Record<string, unknown>) => Promise<RetornoDoCliente<un
 /** As quatro rotas de cada cadastro, no cliente gerado (os números vêm da ordem do OpenAPI). */
 const ROTAS_DOS_CADASTROS = {
   fornecedores: {
-    listar: listar8,
+    listar: listar9,
     criar: criar6,
     editar: editar6,
     excluir: excluir5,
@@ -209,7 +214,7 @@ const ROTAS_DOS_CADASTROS = {
     reativar: reativar5,
   },
   categorias: {
-    listar: listar10,
+    listar: listar13,
     criar: criar8,
     editar: editar8,
     excluir: excluir7,
@@ -234,7 +239,7 @@ const ROTAS_DOS_CADASTROS = {
     reativar: reativar2,
   },
   clientes: {
-    listar: listar9,
+    listar: listar12,
     criar: criar7,
     editar: editar7,
     excluir: excluir6,
@@ -399,6 +404,32 @@ function comoArquivoDeFoto(a: { nome: string; bytes: Uint8Array }): File {
   return new File([a.bytes as BlobPart], a.nome, {
     type: TIPOS_DE_FOTO[extensao] ?? 'application/octet-stream',
   });
+}
+
+/** Compras: receber, ver, listar e desfazer (só ADMIN; o servidor confere e recalcula tudo). */
+async function executarCompra(
+  client: ReturnType<typeof criarClienteDaApi>,
+  headers: { Authorization: string },
+  pedido: ParametrosDeCompra,
+): Promise<Resultado<unknown>> {
+  const base = { client, headers };
+  const id = pedido.id as string;
+  switch (pedido.operacao) {
+    case 'compras.listar':
+      return executar(() => listarCompras({ ...base, query: pedido.lista as never }));
+    case 'compras.ver':
+      return executar(() => verCompra({ ...base, path: { id } }));
+    case 'compras.receber':
+      return executar(() => receberCompra({ ...base, body: pedido.corpo as never }));
+    case 'compras.desfazer':
+      return executar(() =>
+        desfazerCompra({
+          ...base,
+          path: { id },
+          body: { id: pedido.pedidoId, motivo: pedido.motivo },
+        }),
+      );
+  }
 }
 
 /** Relatórios de cadastro (só ADMIN; o servidor confere). O de produtos traz o custo, por isso só existe aqui. */
@@ -627,6 +658,9 @@ export function criarApiDoGestao(opcoes: OpcoesDaApi): ApiDoGestao {
       if (pedido.operacao.startsWith('produtos.') || pedido.operacao === 'importacoes.registrar') {
         return executarProduto(client, headers, pedido as ParametrosDeProduto, fotos);
       }
+      if (pedido.operacao.startsWith('compras.')) {
+        return executarCompra(client, headers, pedido as ParametrosDeCompra);
+      }
       if (pedido.operacao.startsWith('vendedores.') && pedido.operacao !== 'vendedores.escolha') {
         return executarVendedor(client, headers, pedido as ParametrosDeVendedor);
       }
@@ -661,7 +695,7 @@ export function criarApiDoGestao(opcoes: OpcoesDaApi): ApiDoGestao {
             }),
           );
         case 'avisos.listar':
-          return executar(() => listar11({ client, headers }));
+          return executar(() => listar14({ client, headers }));
         case 'vendedores.escolha':
           return executar(() =>
             listar({ client, headers, query: { situacao: 'ATIVOS', pagina: 0, tamanho: 100 } }),

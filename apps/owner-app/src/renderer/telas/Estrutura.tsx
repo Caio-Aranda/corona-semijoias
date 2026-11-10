@@ -8,6 +8,8 @@ import { TEXTOS } from '../textos';
 import { TelaEmBreve } from './TelaEmBreve';
 import { TelaInicial } from './TelaInicial';
 import { TelaDeCadastro } from './cadastros/TelaDeCadastro';
+import { ListaDeCompras } from './compras/ListaDeCompras';
+import { TelaReceberCompra } from './compras/TelaReceberCompra';
 import { TelaProdutos } from './produtos/TelaProdutos';
 import { TelaDeRelatorio } from './relatorios/TelaDeRelatorio';
 import { NOMES_DOS_RELATORIOS, type NomeDoRelatorio } from '../../shared/relatorios';
@@ -34,6 +36,24 @@ function Conteudo({
       return <TelaInicial ponte={ponte} nome={nome} />;
     case 'cadastros/produtos':
       return <TelaProdutos ponte={ponte} />;
+    case 'estoque/receber-compra':
+      return (
+        <TelaReceberCompra
+          ponte={ponte}
+          aoVerLista={() => {
+            window.location.hash = '/estoque/compras';
+          }}
+        />
+      );
+    case 'estoque/compras':
+      return (
+        <ListaDeCompras
+          ponte={ponte}
+          aoReceber={() => {
+            window.location.hash = '/estoque/receber-compra';
+          }}
+        />
+      );
     case 'pessoas/vendedores':
       return <TelaVendedores ponte={ponte} />;
     case 'pessoas/usuarios':

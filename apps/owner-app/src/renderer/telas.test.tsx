@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import type {
@@ -238,7 +238,11 @@ describe('tela inicial da dona', () => {
       'Cadastrar produto',
       'Relatórios',
     ]) {
-      expect(await screen.findByRole('button', { name: nome })).toBeInTheDocument();
+      expect(
+        await within(
+          await screen.findByRole('navigation', { name: 'O que você quer fazer?' }),
+        ).findByRole('button', { name: nome }),
+      ).toBeInTheDocument();
     }
     expect(
       screen.getByRole('heading', { name: 'O que precisa da sua atenção' }),

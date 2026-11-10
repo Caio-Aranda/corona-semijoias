@@ -9,6 +9,7 @@ import {
   type NomeDoCadastro,
 } from './cadastros';
 import type { OperacaoDaApi } from './ponte';
+import { conferirCompra, type ParametrosDeCompra } from './validacao-compras';
 import { conferirProduto, type ParametrosDeProduto } from './validacao-produtos';
 import { conferirRelatorio, type ParametrosDeRelatorio } from './validacao-relatorios';
 import {
@@ -111,6 +112,7 @@ export type ParametrosConferidos =
   | ParametrosDeCadastro
   | ParametrosDeVendedor
   | ParametrosDeProduto
+  | ParametrosDeCompra
   | ParametrosDeRelatorio
   | { operacao: 'eu' | 'cotacao.hoje' | 'avisos.listar' | 'vendedores.escolha' }
   | { operacao: 'usuarios.listar'; lista: ParametrosDaLista }
@@ -467,6 +469,11 @@ export function conferirParametros(
     case 'produtos.importacao.previa':
     case 'produtos.importacao.confirmar':
       return conferirProduto(operacao, p);
+    case 'compras.listar':
+    case 'compras.ver':
+    case 'compras.receber':
+    case 'compras.desfazer':
+      return conferirCompra(operacao, p);
     case 'relatorios.cadastros':
       return conferirRelatorio(p);
     default:
