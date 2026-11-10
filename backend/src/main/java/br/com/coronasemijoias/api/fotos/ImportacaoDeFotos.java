@@ -2,6 +2,7 @@ package br.com.coronasemijoias.api.fotos;
 
 import br.com.coronasemijoias.api.cadastros.Validacoes;
 import br.com.coronasemijoias.api.comum.erros.ErroDaApi;
+import br.com.coronasemijoias.api.importacoes.RegistroDeImportacoes;
 import java.io.IOException;
 import java.text.Normalizer;
 import java.util.ArrayList;
@@ -71,10 +72,12 @@ public class ImportacaoDeFotos {
 
     private final NamedParameterJdbcTemplate jdbc;
     private final ServicoDeFotos fotos;
+    private final RegistroDeImportacoes registro;
 
-    public ImportacaoDeFotos(NamedParameterJdbcTemplate jdbc, ServicoDeFotos fotos) {
+    public ImportacaoDeFotos(NamedParameterJdbcTemplate jdbc, ServicoDeFotos fotos, RegistroDeImportacoes registro) {
         this.jdbc = jdbc;
         this.fotos = fotos;
+        this.registro = registro;
     }
 
     // --- nome do arquivo ---
@@ -158,6 +161,37 @@ public class ImportacaoDeFotos {
     // --- confirmar ---
 
     public Relatorio confirmar(List<MultipartFile> enviados) {
+        return confirmar(enviados, null, null);
+    }
+
+    /**
+     * Igual a {@link #confirmar(List)}; quando vem o id do lote (o aplicativo gera um por pasta), o resultado de
+     * cada foto também é gravado para o relatório "Resultado das importações" (tarefa 1.13).
+     */
+    public Relatorio confirmar(List<MultipartFile> enviados, UUID loteId, UUID usuarioId) {
+        Relatorio relatorio = gravarLote(enviados);
+        if (loteId != null && usuarioId != null) {
+            registrarLote(relatorio, loteId, usuarioId);
+        }
+        return relatorio;
+    }
+
+    private void registrarLote(Relatorio relatorio, UUID loteId, UUID usuarioId) {
+        List<RegistroDeImportacoes.Linha> linhas = relatorio.resultados().stream().map(r -> new RegistroDeImportacoes.Linha(
+                r.nome().isBlank() ? "(sem nome)" : r.nome(), switch (r.situacao()) {
+                    case GRAVADA -> "CRIADO";
+                    case JA_EXISTIA -> "JA_EXISTIA";
+                    default -> "RECUSADO";
+                }, r.situacao() == Situacao.GRAVADA || r.situacao() == Situacao.JA_EXISTIA ? null : r.mensagem())).toList();
+        try {
+            registro.registrar(loteId, "FOTOS", null, usuarioId, linhas);
+        } catch (RuntimeException e) {
+            // As fotos já estão gravadas; o registro do lote nunca derruba a importação.
+            LOG.warn("Não foi possível registrar o lote {} da importação de fotos", loteId, e);
+        }
+    }
+
+    private Relatorio gravarLote(List<MultipartFile> enviados) {
         if (enviados == null || enviados.isEmpty()) {
             throw Validacoes.recusar("arquivos", "Escolha pelo menos uma foto para enviar.");
         }

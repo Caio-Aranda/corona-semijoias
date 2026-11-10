@@ -9,6 +9,7 @@ import {
 import { AvisoDeErro } from '../../componentes/AvisoDeErro';
 import { lerBytes } from '../../nucleo/arquivos';
 import { chamar, type ErroDaTela } from '../../nucleo/chamadas';
+import { guardarResultadoDaImportacao, novoLoteDeImportacao } from '../../nucleo/importacoes';
 import { TEXTOS } from '../../textos';
 
 const T = TEXTOS.produtos.importacaoDeFotos;
@@ -75,7 +76,7 @@ type Fase =
   | { fase: 'conferindo' }
   | { fase: 'previa'; arquivos: File[]; ignorados: number; previa: Previa }
   | { fase: 'enviando'; feitas: number; total: number }
-  | { fase: 'relatorio'; resultados: ResultadoDoArquivo[] };
+  | { fase: 'relatorio'; resultados: ResultadoDoArquivo[]; guardado: boolean };
 
 export interface ImportacaoDeFotosProps {
   ponte: PonteDoCorona;
@@ -126,13 +127,18 @@ export function ImportacaoDeFotos({ ponte, aoMudar }: ImportacaoDeFotosProps) {
         a.nomes.map((nome) => ({ nome, situacao: 'AMBIGUA' as const, mensagem: a.mensagem })),
       ),
     ];
+    // Um lote por pasta: o servidor grava o resultado de cada foto enviada sob este número.
+    const loteId = novoLoteDeImportacao();
     setEstado({ fase: 'enviando', feitas: 0, total: aEnviar.length });
     for (let i = 0; i < aEnviar.length; i += FOTOS_POR_LOTE) {
       const lote = aEnviar.slice(i, i + FOTOS_POR_LOTE);
       const pedido = await Promise.all(
         lote.map(async (f) => ({ nome: f.name, bytes: await lerBytes(f) })),
       );
-      const r = await chamar(ponte, 'produtos.importacao.confirmar', { arquivos: pedido });
+      const r = await chamar(ponte, 'produtos.importacao.confirmar', {
+        arquivos: pedido,
+        importacaoId: loteId,
+      });
       if (r.ok) resultados.push(...lerResultados(r.dados));
       else {
         resultados.push(
@@ -149,7 +155,24 @@ export function ImportacaoDeFotos({ ponte, aoMudar }: ImportacaoDeFotosProps) {
         total: aEnviar.length,
       });
     }
-    setEstado({ fase: 'relatorio', resultados });
+    // As fotos que nem foram enviadas (sem peça ou repetidas) o servidor não viu: o aplicativo informa.
+    const naoEnviadas = resultados.filter(
+      (r) => r.situacao === 'SEM_PRODUTO' || r.situacao === 'AMBIGUA',
+    );
+    const guardado =
+      naoEnviadas.length === 0 ||
+      (await guardarResultadoDaImportacao(
+        ponte,
+        loteId,
+        'FOTOS',
+        undefined,
+        naoEnviadas.map((r) => ({
+          referencia: r.nome,
+          resultado: 'RECUSADO' as const,
+          ...(r.mensagem ? { motivo: r.mensagem } : {}),
+        })),
+      ));
+    setEstado({ fase: 'relatorio', resultados, guardado });
     aoMudar();
   }
 
@@ -283,6 +306,7 @@ export function ImportacaoDeFotos({ ponte, aoMudar }: ImportacaoDeFotosProps) {
                 <Aviso tipo={naoGravadas === 0 ? 'sucesso' : 'atencao'} titulo={T.relatorio}>
                   {T.relatorioResumo(conta('GRAVADA'), conta('JA_EXISTIA'), naoGravadas)}
                 </Aviso>
+                {estado.guardado ? null : <Aviso tipo="atencao">{T.naoGuardou}</Aviso>}
                 <Tabela
                   legenda={T.legendaRelatorio}
                   colunas={[

@@ -56,7 +56,9 @@ Cadastros da dona (§15). Segue o mesmo formato da Fase 0. O código das etiquet
 | 1.11 | owner-app: produtos, fotos, importação em massa e leitura de código | Concluída (PR 37) · [detalhe](progresso/fase-1.md#tarefa-111-produtos-códigos-custo-fotos-importação-em-massa-e-leitor-owner-app) |
 | 1.12 | relatórios de cadastro (backend + tela) | Concluída (PR 38) · [detalhe](progresso/fase-1.md#tarefa-112-relatórios-de-cadastro-backend--tela--fecha-a-fase-1) |
 
-**Fase 1 concluída** (tarefas 1.1 a 1.12). O próximo passo é a Fase 2.
+| 1.13 | ajustes de fechamento: fotos rápidas (cache em disco), filtros que faltavam nos relatórios de cadastro e resultado das importações | Concluída (PR 39) · [detalhe](progresso/fase-1.md#tarefa-113-ajustes-de-fechamento-da-fase-1) |
+
+**Fase 1 concluída** (tarefas 1.1 a 1.13). O próximo passo é a Fase 2.
 
 ## Pendências abertas
 
@@ -86,4 +88,4 @@ O que ainda está em aberto nas tarefas concluídas (o que já foi resolvido por
 - Cotações: o calendário de feriados fica no código (feriado nacional novo exige mudança); a busca roda dentro da API (uma instância só); retenção de `cotacoes` não definida. ([tarefa 19](progresso/fase-0.md#tarefa-19-cotações-do-banco-central))
 - Etiquetas: a dona ainda não confirmou o formato (leitura no Bloco de Notas, impressora, preço = custo x 7?); a Fase 1 usa o padrão seguro do ADR-0007, que está Proposto, aguardando o responsável. ([tarefa 1.1](decisoes/ADR-0007-codigos-das-etiquetas.md))
 - Cadastros básicos: excluir categoria ou fornecedor em uso só pode ser bloqueado quando o produto existir (1.5); praça e restrição em uso já são bloqueadas (1.3); divisão sincronizável x só do servidor a confirmar. ([tarefa 1.2](progresso/fase-1.md#tarefa-12-cadastros-básicos-backend)) **Categoria e fornecedor em uso por produto: resolvido na tarefa 1.5.**
-- Resultado das importações (linhas aceitas e recusadas) não é guardado no servidor: gravar o lote da importação e ligar o relatório na Fase 2. Aniversariantes de clientes: o cadastro de cliente não tem data de nascimento. ([tarefa 1.12](progresso/fase-1.md#tarefa-112-relatórios-de-cadastro-backend--tela--fecha-a-fase-1))
+- Aniversariantes de clientes: o cadastro de cliente não tem data de nascimento (decisão da dona). **Resultado das importações: resolvido na tarefa 1.13.** Cliente e fornecedor não têm situação ativo/inativo no modelo. ([tarefa 1.13](progresso/fase-1.md#tarefa-113-ajustes-de-fechamento-da-fase-1))

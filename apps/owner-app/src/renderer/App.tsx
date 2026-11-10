@@ -3,6 +3,7 @@ import type { AvisoDeSessao, EstadoDaSessao, PonteDoCorona } from '../shared/pon
 import { TelaAppDesatualizado } from './telas/TelaAppDesatualizado';
 import { TelaEntrar } from './telas/TelaEntrar';
 import { ProvedorDaCotacao } from './nucleo/cotacao';
+import { esquecerImagens } from './nucleo/imagens';
 import { Estrutura } from './telas/Estrutura';
 import { TelaSemConexao } from './telas/TelaSemConexao';
 import { TelaTrocarSenha } from './telas/TelaTrocarSenha';
@@ -36,6 +37,7 @@ export function App({ ponte }: AppProps) {
         setTela({ estado: 'app-desatualizado', mensagem: aviso.mensagem ?? '' });
         return;
       }
+      esquecerImagens();
       setSessaoTerminou(true);
       setTela({ estado: 'fora' });
     });
@@ -69,6 +71,7 @@ export function App({ ponte }: AppProps) {
             nome={tela.usuario?.nome ?? null}
             aoSair={async () => {
               await ponte.sair();
+              esquecerImagens();
               setSessaoTerminou(false);
               window.location.hash = '';
               await conferir();

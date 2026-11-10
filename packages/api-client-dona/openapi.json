@@ -440,6 +440,47 @@
         },
         "type" : "object"
       },
+      "LinhaDeImportacao" : {
+        "properties" : {
+          "arquivo" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "loteId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "motivo" : {
+            "type" : "string"
+          },
+          "quando" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "quem" : {
+            "type" : "string"
+          },
+          "referencia" : {
+            "type" : "string"
+          },
+          "resultado" : {
+            "type" : "string"
+          },
+          "resultadoNaTela" : {
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "tipoNaTela" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "LinhaDeProduto" : {
         "properties" : {
           "ativo" : {
@@ -756,6 +797,20 @@
         "required" : [ "nome", "perfil", "version" ],
         "type" : "object"
       },
+      "PedidoDeLinha" : {
+        "properties" : {
+          "motivo" : {
+            "type" : "string"
+          },
+          "referencia" : {
+            "type" : "string"
+          },
+          "resultado" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "PedidoDeLogin" : {
         "properties" : {
           "dispositivoId" : {
@@ -772,6 +827,23 @@
           }
         },
         "required" : [ "login", "senha" ],
+        "type" : "object"
+      },
+      "PedidoDeLote" : {
+        "properties" : {
+          "arquivoNome" : {
+            "type" : "string"
+          },
+          "linhas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/PedidoDeLinha"
+            },
+            "type" : "array"
+          },
+          "tipo" : {
+            "type" : "string"
+          }
+        },
         "type" : "object"
       },
       "PedidoDeOrdem" : {
@@ -1124,6 +1196,38 @@
           "itens" : {
             "items" : {
               "$ref" : "#/components/schemas/LinhaDeFornecedor"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatorioDeCadastroLinhaDeImportacao" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDeImportacao"
             },
             "type" : "array"
           },
@@ -2315,6 +2419,41 @@
         "tags" : [ "fornecedores-da-dona-controller" ]
       }
     },
+    "/api/dona/importacoes/{id}/linhas" : {
+      "post" : {
+        "description" : "O aplicativo gera o id do lote (UUID) e manda as linhas em partes de até 500; repetir o mesmo id junta as partes ao mesmo lote. Cada linha diz a referência (por exemplo \"Linha 12\"), o resultado (CRIADO, ATUALIZADO, JA_EXISTIA ou RECUSADO) e o motivo. Este registro é o que o aplicativo informa: o que mudou nos produtos já foi gravado e conferido pelas rotas de produto.",
+        "operationId" : "registrar",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeLote"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Registrar o resultado de uma importação",
+        "tags" : [ "importacoes-controller" ]
+      }
+    },
     "/api/dona/pracas" : {
       "get" : {
         "description" : "Busca pelo nome. A página começa em 0 (até 100 por página).",
@@ -2612,8 +2751,17 @@
     },
     "/api/dona/produtos/fotos/importacao/confirmar" : {
       "post" : {
-        "description" : "Formulário com vários campos 'arquivos' (até 10 por vez; mande a pasta em lotes). Cada foto é gravada sozinha: uma que falha não derruba as outras, e a resposta diz o que aconteceu com cada uma. Repetir o mesmo lote não duplica nada.",
+        "description" : "Formulário com vários campos 'arquivos' (até 10 por vez; mande a pasta em lotes). Cada foto é gravada sozinha: uma que falha não derruba as outras, e a resposta diz o que aconteceu com cada uma. Repetir o mesmo lote não duplica nada. Com importacaoId (um UUID por pasta), o resultado de cada foto também fica gravado para o relatório \"Resultado das importações\".",
         "operationId" : "confirmar",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "importacaoId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
         "requestBody" : {
           "content" : {
             "multipart/form-data" : {
@@ -3230,7 +3378,7 @@
     },
     "/api/dona/relatorios/cadastros/alteracoes-de-produtos" : {
       "get" : {
-        "description" : "Produtos cadastrados e preços alterados no período, com quem fez (pela auditoria). Não é o resultado da importação em massa: o servidor não guarda esse resultado (pendência da Fase 2). Filtros: busca (produto ou pessoa), de e ate. Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.",
+        "description" : "Produtos cadastrados e preços alterados no período, com quem fez (pela auditoria). O resultado das importações em massa tem o relatório próprio (resultado-das-importacoes). Filtros: busca (produto ou pessoa), de e ate. Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.",
         "operationId" : "alteracoesDeProdutos",
         "parameters" : [ {
           "in" : "query",
@@ -3376,11 +3524,18 @@
     },
     "/api/dona/relatorios/cadastros/clientes" : {
       "get" : {
-        "description" : "Filtros: busca, vendedorId, pracaId (a do vendedor responsável), de e ate (data do cadastro). Cliente não tem situação: só os excluídos ficam de fora. Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.",
+        "description" : "Filtros: busca, vendedorId, pracaId (a do vendedor responsável), comVendedor (SIM ou NAO), de e ate (data do cadastro). Cliente não tem situação: só os excluídos ficam de fora. Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.",
         "operationId" : "clientes",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "comVendedor",
           "required" : false,
           "schema" : {
             "type" : "string"
@@ -3528,11 +3683,18 @@
     },
     "/api/dona/relatorios/cadastros/fornecedores" : {
       "get" : {
-        "description" : "Filtros: busca, de e ate (data do cadastro). Fornecedor não tem situação. Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.",
+        "description" : "Filtros: busca, comProdutos (SIM ou NAO: tem produtos ativos), de e ate (data do cadastro). Fornecedor não tem situação. Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.",
         "operationId" : "fornecedores",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "comProdutos",
           "required" : false,
           "schema" : {
             "type" : "string"
@@ -3598,11 +3760,39 @@
     },
     "/api/dona/relatorios/cadastros/produtos" : {
       "get" : {
-        "description" : "Só a dona vê o custo. Filtros: busca (nome, referência ou código), categoriaId, fornecedorId, situacao, de e ate (data do cadastro). Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.",
+        "description" : "Só a dona vê o custo. Filtros: busca (nome, referência ou código), categoriaId, fornecedorId, situacao, estoque (ZERADO, ABAIXO_DO_MINIMO ou COM_ESTOQUE), precoDe e precoAte (preço de venda, em reais), foto (COM ou SEM), de e ate (data do cadastro). Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.",
         "operationId" : "produtos",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "estoque",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "precoDe",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "precoAte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "foto",
           "required" : false,
           "schema" : {
             "type" : "string"
@@ -3762,13 +3952,118 @@
         "tags" : [ "relatorios-de-cadastro-controller" ]
       }
     },
+    "/api/dona/relatorios/cadastros/resultado-das-importacoes" : {
+      "get" : {
+        "description" : "Cada linha da planilha e cada foto importadas em massa: o que aconteceu, o motivo se foi recusada, quem importou e quando. Filtros: busca, tipo (PLANILHA ou FOTOS), resultado (CRIADO, ATUALIZADO, JA_EXISTIA ou RECUSADO), de e ate (quando foi importado). Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.",
+        "operationId" : "resultadoDasImportacoes",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tipo",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "resultado",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeImportacao"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Relatório de resultado das importações",
+        "tags" : [ "relatorios-de-cadastro-controller" ]
+      }
+    },
     "/api/dona/relatorios/cadastros/vendedores" : {
       "get" : {
-        "description" : "Limite de consignação, restrição, situação, praça e comissão. Filtros: busca, pracaId, restricaoId, situacao, de e ate (data do cadastro). Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.",
+        "description" : "Limite de consignação, restrição, situação, praça e comissão. Filtros: busca, pracaId, restricaoId, situacao, limiteDe e limiteAte (faixa do limite, em reais), comRestricao (SIM ou NAO), de e ate (data do cadastro). Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.",
         "operationId" : "vendedores",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "limiteDe",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "limiteAte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "comRestricao",
           "required" : false,
           "schema" : {
             "type" : "string"

@@ -33,7 +33,28 @@ public class ConsultasDeCadastro {
     /** Filtros comuns; cada relatório usa só os que fazem sentido para ele. */
     public record Filtros(String busca, String categoriaId, String fornecedorId, String pracaId, String vendedorId,
             String restricaoId, String situacao, LocalDate de, LocalDate ate, Integer mes, String recorte,
-            Integer pagina, Integer tamanho) {
+            Integer pagina, Integer tamanho, Mais mais) {
+
+        /** Os filtros antigos, sem os da tarefa 1.13. */
+        public Filtros(String busca, String categoriaId, String fornecedorId, String pracaId, String vendedorId,
+                String restricaoId, String situacao, LocalDate de, LocalDate ate, Integer mes, String recorte,
+                Integer pagina, Integer tamanho) {
+            this(busca, categoriaId, fornecedorId, pracaId, vendedorId, restricaoId, situacao, de, ate, mes, recorte,
+                    pagina, tamanho, Mais.NENHUM);
+        }
+
+        public Mais mais() {
+            return mais == null ? Mais.NENHUM : mais;
+        }
+    }
+
+    /**
+     * Filtros de um relatório só (tarefa 1.13), como texto da URL e validados aqui: SIM/NAO, faixas de valor
+     * em reais, estoque (ABAIXO_DO_MINIMO, ZERADO, COM_ESTOQUE) e foto (COM, SEM).
+     */
+    public record Mais(String comRestricao, String limiteDe, String limiteAte, String estoque, String precoDe,
+            String precoAte, String foto, String comProdutos, String comVendedor) {
+        static final Mais NENHUM = new Mais(null, null, null, null, null, null, null, null, null);
     }
 
     public record LinhaDeVendedor(UUID id, int codigo, String nome, String praca, String restricao,
@@ -63,6 +84,10 @@ public class ConsultasDeCadastro {
 
     public record LinhaDeAlteracao(UUID id, String acao, String descricao, UUID produtoId, String produto, String quem,
             Instant quando) {
+    }
+
+    public record LinhaDeImportacao(UUID id, UUID loteId, String tipo, String tipoNaTela, String arquivo, String referencia,
+            String resultado, String resultadoNaTela, String motivo, String quem, Instant quando) {
     }
 
     private final MotorDeRelatorio motor;
@@ -96,6 +121,59 @@ public class ConsultasDeCadastro {
         c.periodo(coluna, f.de(), f.ate());
     }
 
+    private static boolean preenchido(String v) {
+        return v != null && !v.isBlank();
+    }
+
+    /** SIM ou NAO (ou vazio): devolve true, false ou null. */
+    private static Boolean simNao(String valor, String campo) {
+        if (!preenchido(valor)) {
+            return null;
+        }
+        return switch (valor.strip().toUpperCase()) {
+            case "SIM" -> true;
+            case "NAO" -> false;
+            default -> throw Validacoes.recusar(campo, "Escolha sim ou não.");
+        };
+    }
+
+    private static BigDecimal valorOpcional(String valor, String campo) {
+        if (!preenchido(valor)) {
+            return null;
+        }
+        try {
+            BigDecimal v = new BigDecimal(valor.strip());
+            if (v.signum() < 0 || v.scale() > 2 || v.precision() - v.scale() > 12) {
+                throw new NumberFormatException();
+            }
+            return v;
+        } catch (NumberFormatException e) {
+            throw Validacoes.recusar(campo, "Digite um valor em reais, como 150 ou 150.50.");
+        }
+    }
+
+    /** Faixa de valores sobre uma expressão; "de" e "até" valem inclusive. */
+    private static void faixa(Consulta c, String expressao, String deTexto, String ateTexto, String campoDe,
+            String campoAte) {
+        BigDecimal de = valorOpcional(deTexto, campoDe);
+        BigDecimal ate = valorOpcional(ateTexto, campoAte);
+        if (de != null && ate != null && ate.compareTo(de) < 0) {
+            throw Validacoes.recusar(campoAte, "O valor final não pode ser menor que o inicial.");
+        }
+        if (de != null) {
+            c.onde(expressao + " >= :" + campoDe, campoDe, de);
+        }
+        if (ate != null) {
+            c.onde(expressao + " <= :" + campoAte, campoAte, ate);
+        }
+    }
+
+    private static void existencia(Consulta c, Boolean quer, String existe) {
+        if (quer != null) {
+            c.onde(quer ? existe : "NOT (" + existe + ")");
+        }
+    }
+
     private static void filtroDeUuid(Consulta c, String valor, String campo, String condicao) {
         UUID id = idOpcional(valor, campo);
         if (id != null) {
@@ -126,6 +204,8 @@ public class ConsultasDeCadastro {
         filtroDeUuid(c, f.pracaId(), "praca", "v.praca_id = :praca");
         filtroDeUuid(c, f.restricaoId(), "restricao", "v.restricao_id = :restricao");
         periodo(c, "v.created_at", f);
+        faixa(c, "v.limite_consignacao", f.mais().limiteDe(), f.mais().limiteAte(), "limiteDe", "limiteAte");
+        existencia(c, simNao(f.mais().comRestricao(), "comRestricao"), "v.restricao_id IS NOT NULL");
         return motor.executar(c, f.recorte(), f.pagina(), f.tamanho(), (rs, n) -> {
             String codigo = rs.getString("restricao_codigo");
             return new LinhaDeVendedor(rs.getObject("id", UUID.class), rs.getInt("codigo"), rs.getString("nome"),
@@ -153,6 +233,7 @@ public class ConsultasDeCadastro {
         filtroDeUuid(c, f.vendedorId(), "vendedor", "c.vendedor_responsavel_id = :vendedor");
         filtroDeUuid(c, f.pracaId(), "praca", "v.praca_id = :praca");
         periodo(c, "c.created_at", f);
+        existencia(c, simNao(f.mais().comVendedor(), "comVendedor"), "c.vendedor_responsavel_id IS NOT NULL");
         return motor.executar(c, f.recorte(), f.pagina(), f.tamanho(),
                 (rs, n) -> new LinhaDeCliente(rs.getObject("id", UUID.class), rs.getString("nome"),
                         rs.getString("telefone"), rs.getString("whatsapp"), rs.getString("endereco_cidade"),
@@ -176,6 +257,7 @@ public class ConsultasDeCadastro {
         c.onde("f.deleted_at IS NULL");
         c.busca(f.busca(), "f.razao_social", "f.cnpj", "f.contato_nome", "f.telefone");
         periodo(c, "f.created_at", f);
+        existencia(c, simNao(f.mais().comProdutos(), "comProdutos"), comProdutos);
         return motor.executar(c, f.recorte(), f.pagina(), f.tamanho(),
                 (rs, n) -> new LinhaDeFornecedor(rs.getObject("id", UUID.class), rs.getString("razao_social"),
                         rs.getString("cnpj"), rs.getString("contato_nome"), rs.getString("telefone"),
@@ -200,6 +282,31 @@ public class ConsultasDeCadastro {
         }
     }
 
+    private static void porEstoque(Consulta c, String estoque) {
+        if (!preenchido(estoque)) {
+            return;
+        }
+        switch (estoque.strip().toUpperCase()) {
+            case "ZERADO" -> c.onde("p.estoque_atual <= 0");
+            case "ABAIXO_DO_MINIMO" -> c.onde("p.estoque_atual < p.estoque_minimo");
+            case "COM_ESTOQUE" -> c.onde("p.estoque_atual > 0");
+            default -> throw Validacoes.recusar("estoque", "Escolha: sem estoque, abaixo do mínimo ou com estoque.");
+        }
+    }
+
+    private static void porFoto(Consulta c, String foto) {
+        if (!preenchido(foto)) {
+            return;
+        }
+        String temFoto = "EXISTS (SELECT 1 FROM corona.produtos_fotos pf WHERE pf.produto_id = p.id "
+                + "AND pf.deleted_at IS NULL)";
+        switch (foto.strip().toUpperCase()) {
+            case "COM" -> c.onde(temFoto);
+            case "SEM" -> c.onde("NOT " + temFoto);
+            default -> throw Validacoes.recusar("foto", "Escolha: com foto ou sem foto.");
+        }
+    }
+
     @Transactional(readOnly = true)
     public RelatorioDeCadastro<LinhaDeProduto> produtos(Filtros f) {
         Consulta c = new Consulta("p.id, p.nome, p.referencia, " + CODIGO_PRINCIPAL + """
@@ -221,6 +328,9 @@ public class ConsultasDeCadastro {
         filtroDeUuid(c, f.categoriaId(), "categoria", "p.categoria_id = :categoria");
         filtroDeUuid(c, f.fornecedorId(), "fornecedor", "p.fornecedor_id = :fornecedor");
         periodo(c, "p.created_at", f);
+        faixa(c, "p.preco_venda", f.mais().precoDe(), f.mais().precoAte(), "precoDe", "precoAte");
+        porEstoque(c, f.mais().estoque());
+        porFoto(c, f.mais().foto());
         return motor.executar(c, f.recorte(), f.pagina(), f.tamanho(),
                 (rs, n) -> new LinhaDeProduto(rs.getObject("id", UUID.class), rs.getString("nome"),
                         rs.getString("referencia"), rs.getString("codigo_principal"), rs.getString("categoria"),
@@ -320,5 +430,51 @@ public class ConsultasDeCadastro {
             case "PRECO_CUSTO_ALTERADO" -> "Custo alterado";
             default -> acao;
         };
+    }
+
+    // --- resultado das importações (tarefa 1.13) ---
+
+    @Transactional(readOnly = true)
+    public RelatorioDeCadastro<LinhaDeImportacao> resultadoDasImportacoes(Filtros f, String tipo, String resultado) {
+        Consulta c = new Consulta("""
+                l.id, i.id AS lote_id, i.tipo, i.arquivo_nome, l.referencia, l.resultado, l.motivo, u.nome AS quem,
+                l.created_at""", """
+                corona.importacoes_linhas l
+                JOIN corona.importacoes i ON i.id = l.importacao_id
+                LEFT JOIN corona.usuarios u ON u.id = i.usuario_id""", "l.created_at DESC, i.id, l.ordem", List.of(
+                contagem(TODOS, "Linhas e fotos importadas", null),
+                contagem("criados", "Criados", "l.resultado = 'CRIADO'"),
+                contagem("atualizados", "Atualizados", "l.resultado = 'ATUALIZADO'"),
+                contagem("ja-existiam", "Já existiam", "l.resultado = 'JA_EXISTIA'"),
+                contagem("recusados", "Recusados", "l.resultado = 'RECUSADO'")));
+        c.busca(f.busca(), "l.referencia", "l.motivo", "i.arquivo_nome", "u.nome");
+        if (tipo != null && !tipo.isBlank()) {
+            String t = tipo.strip().toUpperCase();
+            if (!List.of("PLANILHA", "FOTOS").contains(t)) {
+                throw Validacoes.recusar("tipo", "Escolha planilha ou fotos.");
+            }
+            c.onde("i.tipo = :tipoDoLote", "tipoDoLote", t);
+        }
+        if (resultado != null && !resultado.isBlank()) {
+            String r = resultado.strip().toUpperCase();
+            if (!List.of("CRIADO", "ATUALIZADO", "JA_EXISTIA", "RECUSADO").contains(r)) {
+                throw Validacoes.recusar("resultado", "Escolha criado, atualizado, já existia ou recusado.");
+            }
+            c.onde("l.resultado = :resultadoDaLinha", "resultadoDaLinha", r);
+        }
+        periodo(c, "l.created_at", f);
+        return motor.executar(c, f.recorte(), f.pagina(), f.tamanho(), (rs, n) -> {
+            String t = rs.getString("tipo");
+            String r = rs.getString("resultado");
+            return new LinhaDeImportacao(rs.getObject("id", UUID.class), rs.getObject("lote_id", UUID.class), t,
+                    "FOTOS".equals(t) ? "Fotos em massa" : "Planilha de produtos", rs.getString("arquivo_nome"),
+                    rs.getString("referencia"), r, switch (r) {
+                        case "CRIADO" -> "Criado";
+                        case "ATUALIZADO" -> "Atualizado";
+                        case "JA_EXISTIA" -> "Já existia";
+                        default -> "Recusado";
+                    }, rs.getString("motivo"), rs.getString("quem"),
+                    rs.getObject("created_at", OffsetDateTime.class).toInstant());
+        });
     }
 }

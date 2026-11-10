@@ -432,6 +432,7 @@ export function conferirParametros(
     case 'vendedores.documentos.baixar':
     case 'vendedores.documentos.excluir':
       return conferirVendedor(operacao, p);
+    case 'importacoes.registrar':
     case 'produtos.listar':
     case 'produtos.ver':
     case 'produtos.porCodigo':

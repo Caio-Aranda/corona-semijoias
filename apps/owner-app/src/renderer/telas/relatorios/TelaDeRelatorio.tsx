@@ -46,6 +46,8 @@ interface Filtros {
   de: string;
   ate: string;
   mes: string;
+  /** Filtros próprios do relatório (tarefa 1.13), pelo nome na API. */
+  extras: Record<string, string>;
 }
 
 const SEM_FILTROS: Filtros = {
@@ -59,6 +61,7 @@ const SEM_FILTROS: Filtros = {
   de: '',
   ate: '',
   mes: '',
+  extras: {},
 };
 
 function mesDeHoje(): string {
@@ -88,8 +91,17 @@ function consultaDe(
     if (f.ate) c.ate = f.ate;
   }
   if (def.filtros.includes('mes')) c.mes = Number(f.mes || mesDeHoje());
+  for (const e of def.extras ?? []) {
+    const bruto = (f.extras[e.chave] ?? '').trim().replace(',', '.');
+    if (bruto === '') continue;
+    // Valor digitado pela metade (por exemplo "12.") ainda não vira filtro.
+    if (e.tipo === 'valor' && !VALOR_EM_REAIS.test(bruto)) continue;
+    c[e.chave] = bruto;
+  }
   return c;
 }
+
+const VALOR_EM_REAIS = /^\d{1,12}(\.\d{1,2})?$/;
 
 function nomeDaOpcao(lista: Opcao[], id: string): string {
   return lista.find((o) => o.id === id)?.nome ?? '';
@@ -130,6 +142,12 @@ function filtrosEmPalavras(def: DefinicaoDeRelatorio, f: Filtros, o: Opcoes): st
     x.push(
       `Período: ${f.de ? dataParaTela(f.de) : 'o começo'} a ${f.ate ? dataParaTela(f.ate) : 'hoje'}`,
     );
+  }
+  for (const e of def.extras ?? []) {
+    const v = (f.extras[e.chave] ?? '').trim();
+    if (!v) continue;
+    const texto = e.tipo === 'escolha' ? (e.opcoes.find((o) => o.valor === v)?.rotulo ?? v) : v;
+    x.push(`${e.rotulo}: ${texto}`);
   }
   return x;
 }
@@ -387,14 +405,18 @@ export function TelaDeRelatorio({ ponte, relatorio, usuario }: TelaDeRelatorioPr
     }
   }
 
-  function mudar(campo: keyof Filtros, valor: string) {
+  function mudarExtra(chave: string, valor: string) {
+    setRascunho((r) => ({ ...r, extras: { ...r.extras, [chave]: valor } }));
+  }
+
+  function mudar(campo: Exclude<keyof Filtros, 'extras'>, valor: string) {
     setRascunho((r) => ({ ...r, [campo]: valor }));
   }
 
   function seletor(
     id: string,
     rotulo: string,
-    campo: keyof Filtros,
+    campo: Exclude<keyof Filtros, 'extras'>,
     itens: Opcao[],
     qualquer: string,
   ) {
@@ -561,6 +583,35 @@ export function TelaDeRelatorio({ ponte, relatorio, usuario }: TelaDeRelatorioPr
             />
           </>
         ) : null}
+        {(def.extras ?? []).map((e) =>
+          e.tipo === 'escolha' ? (
+            <div className="cs-campo" key={e.chave}>
+              <label htmlFor={`filtro-${e.chave}`}>{e.rotulo}</label>
+              <select
+                id={`filtro-${e.chave}`}
+                value={rascunho.extras[e.chave] ?? ''}
+                onChange={(ev) => mudarExtra(e.chave, ev.target.value)}
+              >
+                <option value="">{e.qualquer}</option>
+                {e.opcoes.map((o) => (
+                  <option key={o.valor} value={o.valor}>
+                    {o.rotulo}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : (
+            <Campo
+              key={e.chave}
+              id={`filtro-${e.chave}`}
+              rotulo={e.rotulo}
+              inputMode="decimal"
+              autoComplete="off"
+              value={rascunho.extras[e.chave] ?? ''}
+              onChange={(ev) => mudarExtra(e.chave, ev.target.value)}
+            />
+          ),
+        )}
         {filtrando ? (
           <Botao
             onClick={() => {

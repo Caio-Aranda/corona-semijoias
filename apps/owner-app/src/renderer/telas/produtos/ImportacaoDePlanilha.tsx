@@ -4,6 +4,7 @@ import type { PonteDoCorona } from '../../../shared/ponte';
 import { AvisoDeErro } from '../../componentes/AvisoDeErro';
 import { lerBytes } from '../../nucleo/arquivos';
 import { chamar, type ErroDaTela } from '../../nucleo/chamadas';
+import { guardarResultadoDaImportacao, novoLoteDeImportacao } from '../../nucleo/importacoes';
 import { chaveDoCodigo, digitoDoEan13Confere } from '../../nucleo/codigos';
 import {
   TAMANHO_MAXIMO_DA_PLANILHA,
@@ -33,7 +34,7 @@ type Fase =
   | { fase: 'lendo'; etapa: string }
   | { fase: 'previa'; linhas: LinhaDaPrevia[] }
   | { fase: 'importando'; feitos: number; total: number }
-  | { fase: 'relatorio'; resultados: Resultado[] };
+  | { fase: 'relatorio'; resultados: Resultado[]; guardado: boolean };
 
 export interface ImportacaoDePlanilhaProps {
   ponte: PonteDoCorona;
@@ -132,12 +133,14 @@ export function ImportacaoDePlanilha({ ponte, aoMudar }: ImportacaoDePlanilhaPro
   const [mensagem, setMensagem] = useState<string | null>(null);
   const [erro, setErro] = useState<ErroDaTela | null>(null);
   const entrada = useRef<HTMLInputElement>(null);
+  const nomeDoArquivo = useRef<string | undefined>(undefined);
 
   async function escolher(arquivo: File) {
     setMensagem(null);
     setErro(null);
     if (!/\.(xlsx|csv)$/i.test(arquivo.name)) return setMensagem(T.arquivoInvalido);
     if (arquivo.size > TAMANHO_MAXIMO_DA_PLANILHA) return setMensagem(T.arquivoGrande);
+    nomeDoArquivo.current = arquivo.name;
     setEstado({ fase: 'lendo', etapa: T.lendo });
     let tabela;
     try {
@@ -173,7 +176,24 @@ export function ImportacaoDePlanilha({ ponte, aoMudar }: ImportacaoDePlanilhaPro
       resultados.push(await gravarLinha(ponte, l));
       setEstado({ fase: 'importando', feitos: resultados.length, total: linhas.length });
     }
-    setEstado({ fase: 'relatorio', resultados });
+    // O resultado vai para o servidor (relatório "Resultado das importações"); se falhar, a importação já está feita.
+    const guardado = await guardarResultadoDaImportacao(
+      ponte,
+      novoLoteDeImportacao(),
+      'PLANILHA',
+      nomeDoArquivo.current,
+      resultados.map((r) => ({
+        referencia: `Linha ${r.linha.linha} (${r.linha.codigo || 'sem código'})`,
+        resultado:
+          r.resultado === 'criado'
+            ? 'CRIADO'
+            : r.resultado === 'atualizado'
+              ? 'ATUALIZADO'
+              : 'RECUSADO',
+        ...(r.resultado === 'recusado' && r.motivo ? { motivo: r.motivo } : {}),
+      })),
+    );
+    setEstado({ fase: 'relatorio', resultados, guardado });
     aoMudar();
   }
 
@@ -275,6 +295,7 @@ export function ImportacaoDePlanilha({ ponte, aoMudar }: ImportacaoDePlanilhaPro
                 <Aviso tipo={recusados.length === 0 ? 'sucesso' : 'atencao'} titulo={T.relatorio}>
                   {T.relatorioResumo(c, a, recusados.length)}
                 </Aviso>
+                {estado.guardado ? null : <Aviso tipo="atencao">{T.naoGuardou}</Aviso>}
                 <Tabela
                   legenda={T.legendaRelatorio}
                   colunas={[

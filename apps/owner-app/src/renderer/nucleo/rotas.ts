@@ -24,6 +24,7 @@ export const ROTAS = [
   'relatorios/codigos-em-conflito',
   'relatorios/aniversariantes',
   'relatorios/alteracoes-de-produtos',
+  'relatorios/resultado-das-importacoes',
 ] as const;
 export type Rota = (typeof ROTAS)[number];
 

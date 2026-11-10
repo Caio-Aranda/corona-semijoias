@@ -68,5 +68,7 @@ export const TEXTOS_RELATORIOS = {
   aniversariantesSemClientes:
     'Só vendedores: o cadastro de cliente ainda não tem data de nascimento.',
   alteracoesSemImportacao:
-    'Mostra o que foi cadastrado e alterado, e quem fez. O resultado da importação de uma planilha (linhas aceitas e recusadas) ainda não fica guardado.',
+    'Mostra o que foi cadastrado e alterado, e quem fez. O resultado das importações em massa está no relatório "Resultado das importações".',
+  importacoesNota:
+    'Mostra as importações feitas a partir de agora. Na planilha, o resultado é o que o aplicativo informou ao terminar; se a internet cair no meio, as últimas linhas podem não aparecer aqui.',
 };

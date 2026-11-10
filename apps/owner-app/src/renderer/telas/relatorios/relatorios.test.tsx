@@ -152,6 +152,7 @@ describe('Relatórios de cadastro: menu e tabela', () => {
       'Códigos repetidos ou parecidos',
       'Aniversariantes do mês',
       'Mudanças nos produtos',
+      'Resultado das importações',
     ]) {
       expect(await screen.findByRole('button', { name: nome })).toBeInTheDocument();
     }
@@ -183,6 +184,86 @@ describe('Relatórios de cadastro: menu e tabela', () => {
     await waitFor(() => expect(dosRelatorios(m).at(-1)).toMatchObject({ situacao: 'TODOS' }));
     await u.selectOptions(await screen.findByLabelText('Categoria'), 'Anéis');
     await waitFor(() => expect(dosRelatorios(m).at(-1)).toMatchObject({ categoriaId: ID_CAT }));
+  });
+
+  it('produtos: estoque, faixa de preço e foto viram parâmetros (valor pela metade não vira filtro)', async () => {
+    const m = montar();
+    const u = await abrir(m, 'Produtos e custos');
+    await screen.findByText('Anel Solitário');
+    await u.selectOptions(screen.getByLabelText('Estoque'), 'Abaixo do mínimo');
+    await waitFor(() =>
+      expect(dosRelatorios(m).at(-1)).toMatchObject({ estoque: 'ABAIXO_DO_MINIMO' }),
+    );
+    await u.selectOptions(screen.getByLabelText('Foto'), 'Só sem foto');
+    await waitFor(() => expect(dosRelatorios(m).at(-1)).toMatchObject({ foto: 'SEM' }));
+    await u.type(screen.getByLabelText('Preço de venda a partir de (R$)'), '10,5');
+    await waitFor(() => expect(dosRelatorios(m).at(-1)).toMatchObject({ precoDe: '10.5' }));
+    for (const p of dosRelatorios(m)) {
+      expect(typeof p.precoDe === 'string' ? /^\d+(\.\d{1,2})?$/.test(p.precoDe) : true).toBe(true);
+    }
+  });
+
+  it('vendedores: faixa do limite e com restrição; fornecedores e clientes: filtros de vínculo', async () => {
+    const m = montar({
+      'relatorios.cadastros': () => ({
+        ok: true,
+        dados: { itens: [], total: 0, pagina: 0, tamanho: 20, totais: [] },
+      }),
+    });
+    const u = await abrir(m, 'Vendedores: limite e situação');
+    await u.type(await screen.findByLabelText('Limite a partir de (R$)'), '200');
+    await u.selectOptions(screen.getByLabelText('Com restrição'), 'Só com restrição');
+    await waitFor(() =>
+      expect(dosRelatorios(m).at(-1)).toMatchObject({ limiteDe: '200', comRestricao: 'SIM' }),
+    );
+    await u.click(screen.getByRole('button', { name: 'Fornecedores cadastrados' }));
+    await u.selectOptions(
+      await screen.findByLabelText('Produtos ativos'),
+      'Só quem não tem produtos',
+    );
+    await waitFor(() => expect(dosRelatorios(m).at(-1)).toMatchObject({ comProdutos: 'NAO' }));
+    await u.click(screen.getByRole('button', { name: 'Clientes cadastrados' }));
+    await u.selectOptions(await screen.findByLabelText('Vendedor responsável'), 'Só sem vendedor');
+    await waitFor(() => expect(dosRelatorios(m).at(-1)).toMatchObject({ comVendedor: 'NAO' }));
+  });
+
+  it('resultado das importações: filtros de tipo e resultado, e a linha recusada mostra o motivo', async () => {
+    const m = montar({
+      'relatorios.cadastros': () => ({
+        ok: true,
+        dados: {
+          itens: [
+            {
+              id: ID_CAT,
+              tipoNaTela: 'Planilha de produtos',
+              arquivo: 'produtos.xlsx',
+              referencia: 'Linha 4',
+              resultadoNaTela: 'Recusado',
+              motivo: 'Preço de venda inválido',
+              quem: 'Maria',
+              quando: '2026-11-10T12:00:00Z',
+            },
+          ],
+          total: 1,
+          pagina: 0,
+          tamanho: 20,
+          totais: [
+            {
+              chave: 'todos',
+              rotulo: 'Linhas e fotos importadas',
+              quantidade: 1,
+              valorEmReais: null,
+            },
+          ],
+        },
+      }),
+    });
+    const u = await abrir(m, 'Resultado das importações');
+    expect(await screen.findByText('Preço de venda inválido')).toBeInTheDocument();
+    await u.selectOptions(screen.getByLabelText('Resultado'), 'Recusado');
+    await waitFor(() => expect(dosRelatorios(m).at(-1)).toMatchObject({ resultado: 'RECUSADO' }));
+    await u.selectOptions(screen.getByLabelText('O que foi importado'), 'Fotos em massa');
+    await waitFor(() => expect(dosRelatorios(m).at(-1)).toMatchObject({ tipo: 'FOTOS' }));
   });
 
   it('período invertido mostra o aviso e não busca de novo', async () => {
