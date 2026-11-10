@@ -227,7 +227,27 @@ public enum CodigoErro {
     /** O mesmo identificador voltou com outros dados (HTTP 409). */
     LANCAMENTO_JA_REGISTRADO_DIFERENTE(
             "Este lançamento já foi registrado com outros dados.",
-            "Este lançamento já foi registrado com outros dados. Atualize a tela, confira o histórico e lance de novo se precisar.");
+            "Este lançamento já foi registrado com outros dados. Atualize a tela, confira o histórico e lance de novo se precisar."),
+
+    // --- Compras (glossário, parte 12; tarefa 2.3) ---
+
+    COMPRA_NAO_ENCONTRADA(
+            "Não encontramos esta compra.",
+            "Não encontramos esta compra. Atualize a tela e tente de novo."),
+
+    /** O mesmo identificador voltou com outros dados (HTTP 409). */
+    COMPRA_JA_REGISTRADA_DIFERENTE(
+            "Esta compra já foi registrada com outros dados.",
+            "Esta compra já foi registrada com outros dados. Confira a lista de compras antes de lançar de novo."),
+
+    COMPRA_JA_DESFEITA(
+            "Esta compra já foi desfeita.",
+            "Esta compra já foi desfeita."),
+
+    /** Já saíram peças da compra e o estoque não cobre o que seria desfeito (HTTP 409). O servidor monta o texto. */
+    COMPRA_NAO_PODE_SER_DESFEITA(
+            "Não é possível desfazer esta compra.",
+            "Não é possível desfazer esta compra porque já saíram peças dela.");
 
     private final String titulo;
     private final String mensagem;

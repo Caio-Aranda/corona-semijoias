@@ -28,7 +28,7 @@ import org.springframework.stereotype.Component;
  * O dígito verificador só vale para o tipo EAN13 com 13 dígitos.
  */
 @Component
-class CodigosDosProdutos {
+public class CodigosDosProdutos {
 
     static final int TAMANHO_MAXIMO = 60;
     private static final String CAMPO = "codigos";
@@ -235,7 +235,7 @@ class CodigosDosProdutos {
     }
 
     /** O produto que usa exatamente este código (sem espaços nas pontas, sem diferenciar maiúsculas). */
-    Optional<UUID> produtoDoCodigo(String digitado) {
+    public Optional<UUID> produtoDoCodigo(String digitado) {
         String codigo = digitado == null ? "" : digitado.strip();
         if (codigo.isEmpty()) {
             return Optional.empty();

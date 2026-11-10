@@ -697,6 +697,52 @@
         },
         "type" : "object"
       },
+      "PaginaRespostaDaLinhaDeCusto" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/RespostaDaLinhaDeCusto"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PaginaRespostaDoResumo" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/RespostaDoResumo"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "Pedido" : {
         "properties" : {
           "comissaoPercentual" : {
@@ -798,6 +844,35 @@
         "required" : [ "nome" ],
         "type" : "object"
       },
+      "PedidoDaCompra" : {
+        "properties" : {
+          "dataCompra" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "fornecedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/PedidoDeItem"
+            },
+            "type" : "array"
+          },
+          "numero" : {
+            "type" : "string"
+          },
+          "observacoes" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "PedidoDeAjuste" : {
         "properties" : {
           "diferenca" : {
@@ -887,6 +962,28 @@
             "maxLength" : 500,
             "minLength" : 0,
             "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "PedidoDeItem" : {
+        "properties" : {
+          "codigo" : {
+            "type" : "string"
+          },
+          "custoUnitario" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
           }
         },
         "type" : "object"
@@ -1109,6 +1206,18 @@
           "version" : {
             "format" : "int32",
             "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PedidoParaDesfazer" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "motivo" : {
+            "type" : "string"
           }
         },
         "type" : "object"
@@ -1603,6 +1712,37 @@
         },
         "type" : "object"
       },
+      "RespostaDaCompra" : {
+        "properties" : {
+          "compra" : {
+            "$ref" : "#/components/schemas/RespostaDoResumo"
+          },
+          "desfeitaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/RespostaDoItem"
+            },
+            "type" : "array"
+          },
+          "motivoDeDesfeita" : {
+            "type" : "string"
+          },
+          "observacoes" : {
+            "type" : "string"
+          },
+          "usuarioId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "usuarioNome" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "RespostaDaConciliacao" : {
         "properties" : {
           "divergencias" : {
@@ -1757,6 +1897,107 @@
         },
         "type" : "object"
       },
+      "RespostaDaLinhaDeCusto" : {
+        "properties" : {
+          "compraId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "custo" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "custoAnterior" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "dataCompra" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "fornecedorNome" : {
+            "type" : "string"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "situacaoDaCompra" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "RespostaDaPeca" : {
+        "properties" : {
+          "codigo" : {
+            "type" : "string"
+          },
+          "fotoPrincipal" : {
+            "$ref" : "#/components/schemas/FotoPrincipal"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "referencia" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "RespostaDoHistoricoDeCusto" : {
+        "properties" : {
+          "custoAtual" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "historico" : {
+            "$ref" : "#/components/schemas/PaginaRespostaDaLinhaDeCusto"
+          },
+          "produto" : {
+            "$ref" : "#/components/schemas/RespostaDaPeca"
+          }
+        },
+        "type" : "object"
+      },
+      "RespostaDoItem" : {
+        "properties" : {
+          "custoUnitario" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "produto" : {
+            "$ref" : "#/components/schemas/RespostaDaPeca"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "total" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "RespostaDoLogin" : {
         "properties" : {
           "expiraEm" : {
@@ -1863,6 +2104,50 @@
             "type" : "string"
           },
           "referencia" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "RespostaDoResumo" : {
+        "properties" : {
+          "dataCompra" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "fornecedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "fornecedorNome" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "itens" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "numero" : {
+            "type" : "string"
+          },
+          "pecas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "registradaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "situacao" : {
+            "type" : "string"
+          },
+          "total" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           }
         },
@@ -2139,7 +2424,7 @@
     "/api/dona/avisos" : {
       "get" : {
         "description" : "Os avisos que valem agora, calculados na hora (nada é gravado): cada um some sozinho quando o problema some. Lista vazia quando não há nada. Hoje: a cotação do Dólar e do Guarani que não chegou.",
-        "operationId" : "listar_12",
+        "operationId" : "listar_13",
         "responses" : {
           "200" : {
             "content" : {
@@ -2162,7 +2447,7 @@
     "/api/dona/categorias" : {
       "get" : {
         "description" : "Busca pelo nome. A página começa em 0 (até 100 por página).",
-        "operationId" : "listar_11",
+        "operationId" : "listar_12",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
@@ -2422,7 +2707,7 @@
     "/api/dona/clientes" : {
       "get" : {
         "description" : "Busca pelo nome, telefone, WhatsApp ou CPF. A página começa em 0 (até 100 por página).",
-        "operationId" : "listar_10",
+        "operationId" : "listar_11",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
@@ -2677,6 +2962,238 @@
         } ],
         "summary" : "Reativar cliente",
         "tags" : [ "clientes-da-dona-controller" ]
+      }
+    },
+    "/api/dona/compras" : {
+      "get" : {
+        "description" : "Filtros: período (de, ate: data da compra, as duas inclusivas), fornecedorId, produtoId e situacao (REGISTRADA ou ESTORNADA). Mais nova primeiro. A página começa em 0 (até 200 por página).",
+        "operationId" : "listar_10",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "fornecedorId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "produtoId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaginaRespostaDoResumo"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Lista de compras",
+        "tags" : [ "compras-da-dona-controller" ]
+      },
+      "post" : {
+        "description" : "Vários itens, cada um por produtoId OU por codigo (texto do código da etiqueta, sem diferenciar maiúsculas). Uma transação só: grava a compra, soma as peças no estoque e atualiza o custo. O servidor recalcula os totais (custo com 2 casas, arredondado para cima na metade). Mesma peça duas vezes na mesma compra é recusada. Código que não existe volta 400 com o erro de cada linha e nada é gravado. O id (UUID) torna o reenvio seguro: mesmo id e mesmos dados devolve a compra (200) sem somar de novo; outros dados, 409.",
+        "operationId" : "receber",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDaCompra"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDaCompra"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Receber uma compra",
+        "tags" : [ "compras-da-dona-controller" ]
+      }
+    },
+    "/api/dona/compras/produtos/{produtoId}/custos" : {
+      "get" : {
+        "description" : "Custo atual e cada custo que uma compra deu à peça.",
+        "operationId" : "custos",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "produtoId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDoHistoricoDeCusto"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Histórico de custo do produto",
+        "tags" : [ "compras-da-dona-controller" ]
+      }
+    },
+    "/api/dona/compras/{id}" : {
+      "get" : {
+        "description" : "Com os itens, as fotos das peças, os custos e o total.",
+        "operationId" : "ver_9",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDaCompra"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ver uma compra",
+        "tags" : [ "compras-da-dona-controller" ]
+      }
+    },
+    "/api/dona/compras/{id}/desfazer" : {
+      "post" : {
+        "description" : "Desfaz as entradas no estoque e marca a compra como desfeita (ela continua no histórico). Exige o motivo. Recusa (409) se já saíram peças e o estoque não cobre, ou se a compra já foi desfeita. O custo do produto só volta se esta era a compra mais recente dele.",
+        "operationId" : "desfazer_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoParaDesfazer"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDaCompra"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Desfazer uma compra",
+        "tags" : [ "compras-da-dona-controller" ]
       }
     },
     "/api/dona/cotacoes/converter" : {

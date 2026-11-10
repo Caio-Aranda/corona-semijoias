@@ -764,5 +764,11 @@ Termos de tela do estoque e das compras. Vale a regra da §19.1: nada de termo t
 - Reenvio da mesma compra (não é erro para a pessoa): **Esta compra já estava registrada.** Nada foi somado de novo.
 - Fechar a contagem (confirmação): **Fechar a contagem?** O estoque será ajustado nos {n} produtos com diferença. Depois de fechada, a contagem não muda; para corrigir, faça um ajuste. Botões: **Fechar a contagem** e **Continuar contando**.
 - Produto da contagem que não foi lido: **{n} produtos não foram lidos.** Marque se devem ficar com zero peças ou se ficam como estão.
+- Compra com o mesmo identificador e outros dados: **Esta compra já foi registrada com outros dados.** Confira a lista de compras antes de lançar de novo.
+- Compra com peça repetida: **A peça "{produto}" aparece mais de uma vez nesta compra.** Some as quantidades numa linha só.
+- Código que não existe na compra: **Não encontramos nenhuma peça com o código {código}.** Cadastre a peça antes de receber a compra.
+- Compra que não dá para desfazer: **Não é possível desfazer esta compra.** De "{produto}" já saíram peças e há só {n} no estoque.
+- Compra já desfeita: **Esta compra já foi desfeita.**
+- Compra não encontrada: **Não encontramos esta compra.** Atualize a tela e tente de novo.
 - Lista vazia: "Ainda não há entradas e saídas.", "Nenhum produto está acabando." e "Ainda não há compras."
 

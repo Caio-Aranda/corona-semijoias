@@ -100,6 +100,15 @@ public class ErroDaApi extends ErrorResponseException {
         return new ErroDaApi(HttpStatus.CONFLICT, tipo, corpo);
     }
 
+    /** 409 de compra que não dá para desfazer: já saíram peças e o estoque não cobre (glossário, parte 12). */
+    public static ErroDaApi compraNaoPodeSerDesfeita(String nomeDoProduto, int ha) {
+        CodigoErro tipo = CodigoErro.COMPRA_NAO_PODE_SER_DESFEITA;
+        ProblemDetail corpo = Problemas.de(HttpStatus.CONFLICT, tipo);
+        corpo.setDetail("Não é possível desfazer esta compra. De \"" + nomeDoProduto + "\" já saíram peças e há só " + ha
+                + " no estoque. Confira o estoque antes de desfazer.");
+        return new ErroDaApi(HttpStatus.CONFLICT, tipo, corpo);
+    }
+
     private static ErroDaApi comFrase(HttpStatus status, CodigoErro codigo, String frase) {
         ProblemDetail corpo = Problemas.de(status, codigo);
         corpo.setDetail(codigo.mensagem() + " " + frase);

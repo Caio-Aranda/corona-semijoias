@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
  * da dona, na mesma transação do produto. Nenhuma rota do vendedor chega aqui.
  */
 @Component
-class CustosDosProdutos {
+public class CustosDosProdutos {
 
     private final JdbcTemplate jdbc;
 
@@ -22,13 +22,13 @@ class CustosDosProdutos {
         this.jdbc = jdbc;
     }
 
-    void gravar(UUID produtoId, BigDecimal custo) {
+    public void gravar(UUID produtoId, BigDecimal custo) {
         jdbc.update("""
                 INSERT INTO corona.produtos_custos (produto_id, preco_custo) VALUES (?, ?)
                 ON CONFLICT (produto_id) DO UPDATE SET preco_custo = EXCLUDED.preco_custo""", produtoId, custo);
     }
 
-    Optional<BigDecimal> obter(UUID produtoId) {
+    public Optional<BigDecimal> obter(UUID produtoId) {
         return jdbc.query("SELECT preco_custo FROM corona.produtos_custos WHERE produto_id = ?",
                 (rs, n) -> rs.getBigDecimal(1), produtoId).stream().findFirst();
     }
