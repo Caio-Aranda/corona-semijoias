@@ -2,12 +2,7 @@ import eslint from '@eslint/js';
 import { defineConfig } from 'eslint/config';
 import prettier from 'eslint-config-prettier';
 import tseslint from 'typescript-eslint';
-
-const mensagemVendas =
-  'O Corona Vendas não pode usar código da dona (ADR-0003). Use só o que é compartilhado em packages/ ou o cliente do vendedor.';
-
-const mensagemPacotes =
-  'Os pacotes compartilhados não podem usar código de aplicativos nem o cliente da dona (ADR-0003). Quem importa pacotes é o aplicativo, nunca o contrário.';
+import { configuracaoDaBarreira } from './scripts/barreira/configuracao-eslint.mjs';
 
 export default defineConfig(
   {
@@ -46,54 +41,8 @@ export default defineConfig(
     files: ['scripts/**/*.mjs'],
     languageOptions: { globals: { process: 'readonly', console: 'readonly' } },
   },
-  // Barreira de importação, primeira camada (ADR-0003).
-  {
-    files: ['apps/seller-app/**/*.{ts,tsx}'],
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: [
-            {
-              group: [
-                '@corona/api-client-dona',
-                '@corona/api-client-dona/*',
-                '@corona/owner-app',
-                '@corona/owner-app/*',
-                '**/owner-app',
-                '**/owner-app/**',
-              ],
-              message: mensagemVendas,
-            },
-          ],
-        },
-      ],
-    },
-  },
-  {
-    files: ['packages/**/*.{ts,tsx}'],
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: [
-            {
-              group: [
-                '@corona/owner-app',
-                '@corona/owner-app/*',
-                '@corona/seller-app',
-                '@corona/seller-app/*',
-                '@corona/api-client-dona',
-                '@corona/api-client-dona/*',
-                '**/apps/**',
-              ],
-              message: mensagemPacotes,
-            },
-          ],
-        },
-      ],
-    },
-  },
+  // Barreira de importação, primeira camada (ADR-0003). Os nomes proibidos moram em scripts/marcadores-proibidos.json.
+  ...configuracaoDaBarreira(),
   // Por último: desliga regras de estilo que brigariam com o Prettier.
   prettier,
 );

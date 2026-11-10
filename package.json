@@ -20,6 +20,10 @@
     "format:check": "prettier --check .",
     "owner:dev": "npm run dev -w @corona/owner-app",
     "owner:build": "npm run build -w @corona/owner-app",
+    "seller:dev": "npm run dev -w @corona/seller-app",
+    "seller:build": "npm run build -w @corona/seller-app",
+    "seller:empacotar": "npm run empacotar -w @corona/seller-app",
+    "barreira:varrer": "node scripts/barreira/varrer-pacote.mjs",
     "api:run": "node scripts/mvnw.mjs spring-boot:run",
     "api:test": "node scripts/mvnw.mjs verify",
     "api:clientes": "node scripts/gerar-clientes.mjs",
@@ -29,6 +33,7 @@
     "db:reset": "docker compose down -v && docker compose up -d --wait"
   },
   "devDependencies": {
+    "@electron/asar": "3.4.1",
     "@eslint/js": "10.0.1",
     "eslint": "10.14.0",
     "eslint-config-prettier": "10.1.8",
