@@ -304,13 +304,16 @@ class EstresseDoPullTest extends TesteDeIntegracao {
                 recebeuAlguma = true;
                 ultimoXid = linha.syncXid();
                 ultimoSeq = linha.syncSeq();
+                linhasRecebidas++;
+                if (!java.util.Arrays.asList(TODAS).contains(linha.tabela())) {
+                    continue; // tabela real de outro teste (cadastros, cotações): só confere a ordem do cursor
+                }
                 String chave = linha.tabela() + ":" + linha.id();
                 Estado antes = mapa.get(chave);
                 if (antes != null && linha.versao() <= antes.versao()) {
                     throw new AssertionError("A versão de " + chave + " voltou: " + antes.versao() + " e depois " + linha.versao());
                 }
                 mapa.put(chave, new Estado(linha.versao(), linha.excluidaEm()));
-                linhasRecebidas++;
             }
             CursorDeSync proximo = CursorDeSync.ler(lote.proximoCursor());
             if (ultimoCursor != null
