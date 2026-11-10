@@ -54,14 +54,16 @@ Cadastros da dona (§15). Segue o mesmo formato da Fase 0. O código das etiquet
 | 1.9 | owner-app: fornecedores, categorias, praças, semanas, restrições e clientes | Concluída (PR 35) · [detalhe](progresso/fase-1.md#tarefa-19-cadastros-básicos-owner-app) |
 | 1.10 | owner-app: vendedores (abas da referência) | Concluída (PR 36) · [detalhe](progresso/fase-1.md#tarefa-110-vendedores-owner-app) |
 | 1.11 | owner-app: produtos, fotos, importação em massa e leitura de código | Concluída (PR 37) · [detalhe](progresso/fase-1.md#tarefa-111-produtos-códigos-custo-fotos-importação-em-massa-e-leitor-owner-app) |
-| 1.12 | relatórios de cadastro (backend + tela) | A fazer |
+| 1.12 | relatórios de cadastro (backend + tela) | Concluída (PR 38) · [detalhe](progresso/fase-1.md#tarefa-112-relatórios-de-cadastro-backend--tela--fecha-a-fase-1) |
+
+**Fase 1 concluída** (tarefas 1.1 a 1.12). O próximo passo é a Fase 2.
 
 ## Pendências abertas
 
 O que ainda está em aberto nas tarefas concluídas (o que já foi resolvido por tarefa seguinte não entra). Atualize ao fechar cada item.
 
 - Pendências do cliente (§17 e §21 da especificação), entre elas a pendência 12, "Entrada" (resposta do cliente antes da Fase 3). ([tarefa 1](progresso/fase-0.md#tarefa-1-especificação-v11-com-as-decisões-da-fase-0))
-- Nome de tela de cada relatório: definido na tarefa daquele relatório. ([tarefa 2.1](progresso/fase-0.md#tarefa-21-decisões-do-responsável-especificação-v13-e-glossário))
+- Nome de tela de cada relatório: definido na tarefa daquele relatório. ([tarefa 2.1](progresso/fase-0.md#tarefa-21-decisões-do-responsável-especificação-v13-e-glossário)) **Relatórios de cadastro: resolvido na tarefa 1.12 (glossário).** Os das outras áreas seguem a regra.
 - Base da comissão (§17.6), desconto em porcentagem por linha (confirmar na Fase 4) e retenção de `sessoes` e `tentativas_login` (ADR futuro). ([tarefa 3](progresso/fase-0.md#tarefa-3-adrs-de-fundação))
 - ADR-0005 (SQLCipher) está Proposto, aguardando o responsável; itens da Fase 5: SQLCipher padrão abrir o arquivo, barreira com o módulo integrado, perda da chave e da `outbox`. ([tarefa 18](progresso/fase-0.md#tarefa-18-spike-do-sqlcipher-no-electron))
 - `npm audit` com avisos moderados em dependências de desenvolvimento (Dependabot). ([tarefa 4](progresso/fase-0.md#tarefa-4-esqueleto-do-monorepo))
@@ -84,3 +86,4 @@ O que ainda está em aberto nas tarefas concluídas (o que já foi resolvido por
 - Cotações: o calendário de feriados fica no código (feriado nacional novo exige mudança); a busca roda dentro da API (uma instância só); retenção de `cotacoes` não definida. ([tarefa 19](progresso/fase-0.md#tarefa-19-cotações-do-banco-central))
 - Etiquetas: a dona ainda não confirmou o formato (leitura no Bloco de Notas, impressora, preço = custo x 7?); a Fase 1 usa o padrão seguro do ADR-0007, que está Proposto, aguardando o responsável. ([tarefa 1.1](decisoes/ADR-0007-codigos-das-etiquetas.md))
 - Cadastros básicos: excluir categoria ou fornecedor em uso só pode ser bloqueado quando o produto existir (1.5); praça e restrição em uso já são bloqueadas (1.3); divisão sincronizável x só do servidor a confirmar. ([tarefa 1.2](progresso/fase-1.md#tarefa-12-cadastros-básicos-backend)) **Categoria e fornecedor em uso por produto: resolvido na tarefa 1.5.**
+- Resultado das importações (linhas aceitas e recusadas) não é guardado no servidor: gravar o lote da importação e ligar o relatório na Fase 2. Aniversariantes de clientes: o cadastro de cliente não tem data de nascimento. ([tarefa 1.12](progresso/fase-1.md#tarefa-112-relatórios-de-cadastro-backend--tela--fecha-a-fase-1))

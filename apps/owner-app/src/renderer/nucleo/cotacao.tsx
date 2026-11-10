@@ -20,6 +20,8 @@ export interface CotacaoDoDia {
   taxas: CotacaoParaTela | null;
   /** "Cotação do Banco Central de 06/11/2026." (ou a versão "a última publicada"). */
   linha: string;
+  /** Data da cotação em uso (AAAA-MM-DD), para os arquivos dos relatórios. */
+  data: string | null;
   /** A de hoje não chegou e vale a de um dia anterior. */
   deDiaAnterior: boolean;
   carregando: boolean;
@@ -28,6 +30,7 @@ export interface CotacaoDoDia {
 const SEM_COTACAO: CotacaoDoDia = {
   taxas: null,
   linha: TEXTOS.dinheiro.semCotacao,
+  data: null,
   deDiaAnterior: false,
   carregando: false,
 };
@@ -46,6 +49,7 @@ export function lerCotacao(bruto: unknown): CotacaoDoDia {
     linha: deDiaAnterior
       ? TEXTOS.dinheiro.cotacaoDeDiaAnterior(data)
       : TEXTOS.dinheiro.cotacaoDoDia(data),
+    data: c.dataCotacao,
     deDiaAnterior,
     carregando: false,
   };

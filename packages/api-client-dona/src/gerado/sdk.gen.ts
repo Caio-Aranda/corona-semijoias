@@ -2,7 +2,7 @@
 
 import { type Client, type ClientMeta, formDataBodySerializer, type Options as Options2, type RequestResult, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { AlterarCodigosData, AlterarCodigosResponses, BaixarData, BaixarResponses, ConfirmarData, ConfirmarResponses, ConverterData, ConverterResponses, Criar1Data, Criar1Responses, Criar2Data, Criar2Responses, Criar3Data, Criar3Responses, Criar4Data, Criar4Responses, Criar5Data, Criar5Responses, Criar6Data, Criar6Responses, Criar7Data, Criar7Responses, Criar8Data, Criar8Responses, CriarData, CriarReferenciaData, CriarReferenciaResponses, CriarResponses, DesativarData, DesativarResponses, EcoData, EcoResponses, Editar1Data, Editar1Responses, Editar2Data, Editar2Responses, Editar3Data, Editar3Responses, Editar4Data, Editar4Responses, Editar5Data, Editar5Responses, Editar6Data, Editar6Responses, Editar7Data, Editar7Responses, Editar8Data, Editar8Responses, EditarData, EditarReferenciaData, EditarReferenciaResponses, EditarResponses, EntrarData, EntrarResponses, Enviar1Data, Enviar1Responses, EnviarData, EnviarResponses, EuData, EuResponses, Excluir1Data, Excluir1Responses, Excluir2Data, Excluir2Responses, Excluir3Data, Excluir3Responses, Excluir4Data, Excluir4Responses, Excluir5Data, Excluir5Responses, Excluir6Data, Excluir6Responses, Excluir7Data, Excluir7Responses, Excluir8Data, Excluir8Responses, Excluir9Data, Excluir9Responses, ExcluirData, ExcluirReferenciaData, ExcluirReferenciaResponses, ExcluirResponses, FalhaData, FalhaResponses, GravarConjugeData, GravarConjugeResponses, GravarContatoData, GravarContatoResponses, GravarEnderecoData, GravarEnderecoResponses, GravarMeiData, GravarMeiResponses, GravarObservacoesData, GravarObservacoesResponses, GravarTrabalhoData, GravarTrabalhoResponses, HojeData, HojeResponses, ImagemData, ImagemResponses, Inativar1Data, Inativar1Responses, InativarData, InativarResponses, Listar10Data, Listar10Responses, Listar11Data, Listar11Responses, Listar1Data, Listar1Responses, Listar2Data, Listar2Responses, Listar3Data, Listar3Responses, Listar4Data, Listar4Responses, Listar5Data, Listar5Responses, Listar6Data, Listar6Responses, Listar7Data, Listar7Responses, Listar8Data, Listar8Responses, Listar9Data, Listar9Responses, ListarData, ListarReferenciasData, ListarReferenciasResponses, ListarResponses, OrdemData, OrdemResponses, PorCodigoData, PorCodigoResponses, PreviaData, PreviaResponses, PrincipalData, PrincipalResponses, ProximoCodigoData, ProximoCodigoResponses, Reativar1Data, Reativar1Responses, Reativar2Data, Reativar2Responses, ReativarData, ReativarResponses, RedefinirSenhaData, RedefinirSenhaResponses, RenovarData, RenovarResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SemFotoData, SemFotoResponses, SoVendedorData, SoVendedorResponses, TempoData, TempoResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarData, ValidarResponses, ValorDaDonaData, ValorDaDonaResponses, Ver1Data, Ver1Responses, Ver2Data, Ver2Responses, Ver3Data, Ver3Responses, Ver4Data, Ver4Responses, Ver5Data, Ver5Responses, Ver6Data, Ver6Responses, Ver7Data, Ver7Responses, Ver8Data, Ver8Responses, VerConjugeData, VerConjugeResponses, VerContatoData, VerContatoResponses, VerData, VerEnderecoData, VerEnderecoResponses, VerMeiData, VerMeiResponses, VerObservacoesData, VerObservacoesResponses, VerResponses, VerTrabalhoData, VerTrabalhoResponses } from './types.gen';
+import type { AlteracoesDeProdutosData, AlteracoesDeProdutosResponses, AlterarCodigosData, AlterarCodigosResponses, AniversariantesData, AniversariantesResponses, BaixarData, BaixarResponses, ClientesData, ClientesResponses, CodigosEmConflitoData, CodigosEmConflitoResponses, ConfirmarData, ConfirmarResponses, ConverterData, ConverterResponses, Criar1Data, Criar1Responses, Criar2Data, Criar2Responses, Criar3Data, Criar3Responses, Criar4Data, Criar4Responses, Criar5Data, Criar5Responses, Criar6Data, Criar6Responses, Criar7Data, Criar7Responses, Criar8Data, Criar8Responses, CriarData, CriarReferenciaData, CriarReferenciaResponses, CriarResponses, DesativarData, DesativarResponses, EcoData, EcoResponses, Editar1Data, Editar1Responses, Editar2Data, Editar2Responses, Editar3Data, Editar3Responses, Editar4Data, Editar4Responses, Editar5Data, Editar5Responses, Editar6Data, Editar6Responses, Editar7Data, Editar7Responses, Editar8Data, Editar8Responses, EditarData, EditarReferenciaData, EditarReferenciaResponses, EditarResponses, EntrarData, EntrarResponses, Enviar1Data, Enviar1Responses, EnviarData, EnviarResponses, EuData, EuResponses, Excluir1Data, Excluir1Responses, Excluir2Data, Excluir2Responses, Excluir3Data, Excluir3Responses, Excluir4Data, Excluir4Responses, Excluir5Data, Excluir5Responses, Excluir6Data, Excluir6Responses, Excluir7Data, Excluir7Responses, Excluir8Data, Excluir8Responses, Excluir9Data, Excluir9Responses, ExcluirData, ExcluirReferenciaData, ExcluirReferenciaResponses, ExcluirResponses, FalhaData, FalhaResponses, FornecedoresData, FornecedoresResponses, GravarConjugeData, GravarConjugeResponses, GravarContatoData, GravarContatoResponses, GravarEnderecoData, GravarEnderecoResponses, GravarMeiData, GravarMeiResponses, GravarObservacoesData, GravarObservacoesResponses, GravarTrabalhoData, GravarTrabalhoResponses, HojeData, HojeResponses, ImagemData, ImagemResponses, Inativar1Data, Inativar1Responses, InativarData, InativarResponses, Listar10Data, Listar10Responses, Listar11Data, Listar11Responses, Listar1Data, Listar1Responses, Listar2Data, Listar2Responses, Listar3Data, Listar3Responses, Listar4Data, Listar4Responses, Listar5Data, Listar5Responses, Listar6Data, Listar6Responses, Listar7Data, Listar7Responses, Listar8Data, Listar8Responses, Listar9Data, Listar9Responses, ListarData, ListarReferenciasData, ListarReferenciasResponses, ListarResponses, OrdemData, OrdemResponses, PorCodigoData, PorCodigoResponses, PreviaData, PreviaResponses, PrincipalData, PrincipalResponses, ProdutosData, ProdutosResponses, ProximoCodigoData, ProximoCodigoResponses, Reativar1Data, Reativar1Responses, Reativar2Data, Reativar2Responses, ReativarData, ReativarResponses, RedefinirSenhaData, RedefinirSenhaResponses, RenovarData, RenovarResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SemCodigoDeBarrasData, SemCodigoDeBarrasResponses, SemFotoData, SemFotoResponses, SoVendedorData, SoVendedorResponses, TempoData, TempoResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarData, ValidarResponses, ValorDaDonaData, ValorDaDonaResponses, VendedoresData, VendedoresResponses, Ver1Data, Ver1Responses, Ver2Data, Ver2Responses, Ver3Data, Ver3Responses, Ver4Data, Ver4Responses, Ver5Data, Ver5Responses, Ver6Data, Ver6Responses, Ver7Data, Ver7Responses, Ver8Data, Ver8Responses, VerConjugeData, VerConjugeResponses, VerContatoData, VerContatoResponses, VerData, VerEnderecoData, VerEnderecoResponses, VerMeiData, VerMeiResponses, VerObservacoesData, VerObservacoesResponses, VerResponses, VerTrabalhoData, VerTrabalhoResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -586,6 +586,94 @@ export const inativar1 = <ThrowOnError extends boolean = false>(options: Options
 export const reativar2 = <ThrowOnError extends boolean = false>(options: Options<Reativar2Data, ThrowOnError>): RequestResult<Reativar2Responses, unknown, ThrowOnError> => (options.client ?? client).post<Reativar2Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/produtos/{id}/reativar',
+    ...options
+});
+
+/**
+ * Relatório de cadastros e alterações de produtos
+ *
+ * Produtos cadastrados e preços alterados no período, com quem fez (pela auditoria). Não é o resultado da importação em massa: o servidor não guarda esse resultado (pendência da Fase 2). Filtros: busca (produto ou pessoa), de e ate. Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.
+ */
+export const alteracoesDeProdutos = <ThrowOnError extends boolean = false>(options?: Options<AlteracoesDeProdutosData, ThrowOnError>): RequestResult<AlteracoesDeProdutosResponses, unknown, ThrowOnError> => (options?.client ?? client).get<AlteracoesDeProdutosResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/relatorios/cadastros/alteracoes-de-produtos',
+    ...options
+});
+
+/**
+ * Relatório de aniversariantes (vendedores)
+ *
+ * Vendedores que fazem aniversário no mês (mes de 1 a 12; sem mes, o mês de hoje em Brasília). O cadastro de cliente não tem data de nascimento, por isso só vendedores. A data é de calendário, sem fuso. Filtros: busca, pracaId, situacao. Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.
+ */
+export const aniversariantes = <ThrowOnError extends boolean = false>(options?: Options<AniversariantesData, ThrowOnError>): RequestResult<AniversariantesResponses, unknown, ThrowOnError> => (options?.client ?? client).get<AniversariantesResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/relatorios/cadastros/aniversariantes',
+    ...options
+});
+
+/**
+ * Relatório de clientes
+ *
+ * Filtros: busca, vendedorId, pracaId (a do vendedor responsável), de e ate (data do cadastro). Cliente não tem situação: só os excluídos ficam de fora. Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.
+ */
+export const clientes = <ThrowOnError extends boolean = false>(options?: Options<ClientesData, ThrowOnError>): RequestResult<ClientesResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ClientesResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/relatorios/cadastros/clientes',
+    ...options
+});
+
+/**
+ * Relatório de códigos duplicados ou em conflito
+ *
+ * Códigos quase iguais (muda só espaço, traço ou maiúscula), do mesmo código em fornecedores diferentes, e códigos de barras com número errado. O servidor já recusa o código repetido de verdade. Filtros: busca, fornecedorId, situacao (a do produto). Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.
+ */
+export const codigosEmConflito = <ThrowOnError extends boolean = false>(options?: Options<CodigosEmConflitoData, ThrowOnError>): RequestResult<CodigosEmConflitoResponses, unknown, ThrowOnError> => (options?.client ?? client).get<CodigosEmConflitoResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/relatorios/cadastros/codigos-em-conflito',
+    ...options
+});
+
+/**
+ * Relatório de fornecedores
+ *
+ * Filtros: busca, de e ate (data do cadastro). Fornecedor não tem situação. Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.
+ */
+export const fornecedores = <ThrowOnError extends boolean = false>(options?: Options<FornecedoresData, ThrowOnError>): RequestResult<FornecedoresResponses, unknown, ThrowOnError> => (options?.client ?? client).get<FornecedoresResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/relatorios/cadastros/fornecedores',
+    ...options
+});
+
+/**
+ * Relatório de produtos (com preço de custo)
+ *
+ * Só a dona vê o custo. Filtros: busca (nome, referência ou código), categoriaId, fornecedorId, situacao, de e ate (data do cadastro). Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.
+ */
+export const produtos = <ThrowOnError extends boolean = false>(options?: Options<ProdutosData, ThrowOnError>): RequestResult<ProdutosResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ProdutosResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/relatorios/cadastros/produtos',
+    ...options
+});
+
+/**
+ * Relatório de produtos sem código de barras
+ *
+ * Informativo: o código de barras (EAN-13) não é obrigatório, a loja pode usar só o código dela. Filtros: busca, categoriaId, fornecedorId, situacao. Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.
+ */
+export const semCodigoDeBarras = <ThrowOnError extends boolean = false>(options?: Options<SemCodigoDeBarrasData, ThrowOnError>): RequestResult<SemCodigoDeBarrasResponses, unknown, ThrowOnError> => (options?.client ?? client).get<SemCodigoDeBarrasResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/relatorios/cadastros/produtos-sem-codigo-de-barras',
+    ...options
+});
+
+/**
+ * Relatório de vendedores
+ *
+ * Limite de consignação, restrição, situação, praça e comissão. Filtros: busca, pracaId, restricaoId, situacao, de e ate (data do cadastro). Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.
+ */
+export const vendedores = <ThrowOnError extends boolean = false>(options?: Options<VendedoresData, ThrowOnError>): RequestResult<VendedoresResponses, unknown, ThrowOnError> => (options?.client ?? client).get<VendedoresResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/relatorios/cadastros/vendedores',
     ...options
 });
 

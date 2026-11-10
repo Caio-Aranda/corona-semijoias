@@ -97,6 +97,100 @@ export type Item = {
     referencia?: string;
 };
 
+export type Linha = {
+    ativo?: boolean;
+    codigo?: string;
+    codigoId?: string;
+    descricao?: string;
+    fornecedor?: string;
+    motivo?: string;
+    produto?: string;
+    produtoId?: string;
+    tipo?: string;
+};
+
+export type LinhaDeAlteracao = {
+    acao?: string;
+    descricao?: string;
+    id?: string;
+    produto?: string;
+    produtoId?: string;
+    quando?: string;
+    quem?: string;
+};
+
+export type LinhaDeAniversariante = {
+    ativo?: boolean;
+    dataNascimento?: string;
+    dia?: number;
+    id?: string;
+    mes?: number;
+    nome?: string;
+    praca?: string;
+    telefone?: string;
+    whatsapp?: string;
+};
+
+export type LinhaDeCliente = {
+    cadastradoEm?: string;
+    cidade?: string;
+    id?: string;
+    nome?: string;
+    praca?: string;
+    telefone?: string;
+    uf?: string;
+    vendedor?: string;
+    whatsapp?: string;
+};
+
+export type LinhaDeFornecedor = {
+    cidade?: string;
+    cnpj?: string;
+    contato?: string;
+    id?: string;
+    produtosAtivos?: number;
+    razaoSocial?: string;
+    telefone?: string;
+    uf?: string;
+};
+
+export type LinhaDeProduto = {
+    ativo?: boolean;
+    categoria?: string;
+    codigoPrincipal?: string;
+    estoqueAtual?: number;
+    estoqueMinimo?: number;
+    fornecedor?: string;
+    id?: string;
+    nome?: string;
+    precoCusto?: string;
+    precoVenda?: string;
+    referencia?: string;
+};
+
+export type LinhaDeVendedor = {
+    ativo?: boolean;
+    bloqueiaRemessa?: boolean;
+    codigo?: number;
+    comissaoPercentual?: string;
+    id?: string;
+    limiteConsignacao?: string;
+    nome?: string;
+    praca?: string;
+    restricao?: string;
+};
+
+export type LinhaSemCodigoDeBarras = {
+    ativo?: boolean;
+    categoria?: string;
+    codigos?: string;
+    fornecedor?: string;
+    id?: string;
+    nome?: string;
+    referencia?: string;
+    temCodigoDoFornecedor?: boolean;
+};
+
 export type PaginaItem = {
     itens?: Array<Item>;
     pagina?: number;
@@ -223,6 +317,78 @@ export type Relatorio = {
     resultados?: Array<ResultadoDaFoto>;
 };
 
+export type RelatorioDeCadastroLinha = {
+    itens?: Array<Linha>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroLinhaDeAlteracao = {
+    itens?: Array<LinhaDeAlteracao>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroLinhaDeAniversariante = {
+    itens?: Array<LinhaDeAniversariante>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroLinhaDeCliente = {
+    itens?: Array<LinhaDeCliente>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroLinhaDeFornecedor = {
+    itens?: Array<LinhaDeFornecedor>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroLinhaDeProduto = {
+    itens?: Array<LinhaDeProduto>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroLinhaDeVendedor = {
+    itens?: Array<LinhaDeVendedor>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroLinhaSemCodigoDeBarras = {
+    itens?: Array<LinhaSemCodigoDeBarras>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
 export type Resposta = {
     ativo?: boolean;
     cadastradoPor?: string;
@@ -304,6 +470,13 @@ export type SemProduto = {
 
 export type Tempo = {
     instante?: string;
+};
+
+export type Total = {
+    chave?: string;
+    quantidade?: number;
+    rotulo?: string;
+    valorEmReais?: string;
 };
 
 export type ValorDeTeste = {
@@ -1169,6 +1342,200 @@ export type Reativar2Responses = {
 };
 
 export type Reativar2Response = Reativar2Responses[keyof Reativar2Responses];
+
+export type AlteracoesDeProdutosData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/cadastros/alteracoes-de-produtos';
+};
+
+export type AlteracoesDeProdutosResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeAlteracao;
+};
+
+export type AlteracoesDeProdutosResponse = AlteracoesDeProdutosResponses[keyof AlteracoesDeProdutosResponses];
+
+export type AniversariantesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        mes?: number;
+        busca?: string;
+        pracaId?: string;
+        situacao?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/cadastros/aniversariantes';
+};
+
+export type AniversariantesResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeAniversariante;
+};
+
+export type AniversariantesResponse = AniversariantesResponses[keyof AniversariantesResponses];
+
+export type ClientesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        pracaId?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/cadastros/clientes';
+};
+
+export type ClientesResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeCliente;
+};
+
+export type ClientesResponse = ClientesResponses[keyof ClientesResponses];
+
+export type CodigosEmConflitoData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        fornecedorId?: string;
+        situacao?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/cadastros/codigos-em-conflito';
+};
+
+export type CodigosEmConflitoResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinha;
+};
+
+export type CodigosEmConflitoResponse = CodigosEmConflitoResponses[keyof CodigosEmConflitoResponses];
+
+export type FornecedoresData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/cadastros/fornecedores';
+};
+
+export type FornecedoresResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeFornecedor;
+};
+
+export type FornecedoresResponse = FornecedoresResponses[keyof FornecedoresResponses];
+
+export type ProdutosData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        categoriaId?: string;
+        fornecedorId?: string;
+        situacao?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/cadastros/produtos';
+};
+
+export type ProdutosResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeProduto;
+};
+
+export type ProdutosResponse = ProdutosResponses[keyof ProdutosResponses];
+
+export type SemCodigoDeBarrasData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        categoriaId?: string;
+        fornecedorId?: string;
+        situacao?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/cadastros/produtos-sem-codigo-de-barras';
+};
+
+export type SemCodigoDeBarrasResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaSemCodigoDeBarras;
+};
+
+export type SemCodigoDeBarrasResponse = SemCodigoDeBarrasResponses[keyof SemCodigoDeBarrasResponses];
+
+export type VendedoresData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        pracaId?: string;
+        restricaoId?: string;
+        situacao?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/cadastros/vendedores';
+};
+
+export type VendedoresResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeVendedor;
+};
+
+export type VendedoresResponse = VendedoresResponses[keyof VendedoresResponses];
 
 export type Listar4Data = {
     body?: never;
