@@ -30,3 +30,33 @@ Uma seção por tarefa concluída, no mesmo formato de [fase-0.md](fase-0.md). A
 **Dúvidas**
 - Confirmar a divisão "só do servidor" x "sincronizável" acima, em especial **semanas** (o vendedor precisa saber a semana?) e **praças/restrições**.
 - A semana pode ser editada (datas e situação) mesmo depois de FECHADA? Hoje pode; a regra de "semana fechada não aceita alterações" é das vendas e do acerto, e entra nas tarefas daquelas fases.
+
+### Tarefa 1.3: vendedor completo (backend)
+
+**O que foi feito**
+- Migração `V011__vendedores.sql`: `vendedores` (código sequencial, nome, datas, sexo, estrangeiro, RG/IE, RG UF, CPF/CNPJ, naturalidade, escolaridade, telefones, WhatsApp, e-mail, redes, `limite_consignacao` NUMERIC(14,2) ≥ 0, `comissao_percentual` NUMERIC(5,2) de 0 a 100, restrição, praça, ativo, cadastrado por) e as filhas: endereço, contato (filiação), trabalho, cônjuge, MEI, observações (uma linha por vendedor), referências e documentos (várias, com exclusão lógica). Todas só do servidor, registradas no `RegistroDeTabelas`. Também põe a FK `clientes.vendedor_responsavel_id → vendedores`.
+- Migração `V012__usuario_vendedor_com_cadastro.sql`: usuário VENDEDOR sem cadastro ganha um (nome do usuário, limite 0, comissão 0); `vendedor_id` órfão vira cadastro com o mesmo id; depois a FK `usuarios.vendedor_id` e o CHECK "VENDEDOR tem vendedor_id". Testada sobre dados antigos (`MigracaoDosVendedoresTest`).
+- Rotas `/api/dona/vendedores` (só ADMIN, vendedor recebe 403): listar (busca por nome, código, CPF/CNPJ e telefones; filtro `situacao`), criar, editar com `version`, inativar/reativar, excluir (lógico); abas `GET/PUT /{id}/{endereco|contato|trabalho|conjuge|mei|observacoes}` (cada uma com a própria `version`; aba nunca gravada vem vazia com versão 0); referências (`/referencias`); documentos (`/documentos`: enviar, listar, baixar, excluir lógico).
+- Pacote `arquivos`: `ArmazenamentoDeArquivos` (interface) e `ArmazenamentoEmDisco` (pasta `ARQUIVOS_PASTA`, chave gerada pelo servidor, gravação atômica, chave que sai da pasta é recusada), `TipoDeArquivo` (PDF, JPG, PNG, WebP reconhecidos pelo conteúdo) e limite de 10 MB. Pronto para a tarefa 1.6 (fotos). O banco guarda só nome, tipo, tamanho, hash e chave.
+- Criar usuário VENDEDOR exige `vendedorId` de um cadastro que existe. Cliente só aceita vendedor responsável que existe. Excluir praça ou restrição em uso por vendedor dá 409 `CADASTRO_EM_USO`. O vendedor de demonstração (dev) agora cria o cadastro e liga.
+- Erros novos no glossário (parte 6) e em `CodigoErro`: `ARQUIVO_TIPO_NAO_ACEITO` (415), `ARQUIVO_GRANDE_DEMAIS` (413), `CADASTRO_EM_USO` (409).
+
+**O que ficou pendente**
+- Inativar ou excluir um vendedor **não** desativa o usuário dele: ainda não há rota para desativar usuário (listar, editar e desativar usuários ficam para depois). Hoje um vendedor inativo ainda entra no Corona Vendas.
+- Auditoria de mudança de limite, comissão e restrição (§11) não existe ainda no backend.
+- Arquivos excluídos (logicamente) continuam na pasta; o backup diário precisa incluir `ARQUIVOS_PASTA`. Não há limpeza de arquivo órfão se a gravação do banco falhar depois do arquivo.
+- Sem telas (tarefa 1.9).
+
+**Decisões tomadas**
+- Vendedores e filhas são **só do servidor** (§10: "nada de dados de outros vendedores"). Se a Fase 5 precisar do próprio vendedor no app, uma migração nova cria a tabela sincronizável.
+- CPF/CNPJ do vendedor é opcional (estrangeiro) e **único** entre os não excluídos (diferente do cliente, onde é revisão).
+- Código do vendedor: sequência do banco; pode haver buracos.
+- Cada aba tem a própria versão (conflito 409 só na aba, não no cadastro todo).
+- O tipo do arquivo vale pelo conteúdo, não pelo nome ou pelo tipo informado; download sempre como anexo, sem cache.
+- A migração V011 zera `clientes.vendedor_responsavel_id` (nenhum vendedor existia; era um id sem cadastro).
+- Praça/restrição inexistente ou excluída é recusada (400) com o campo.
+
+**Dúvidas**
+- Inativar o vendedor deve bloquear o acesso dele ao Corona Vendas? Hoje não bloqueia (ver pendências).
+- Um vendedor pode ter mais de um usuário? Hoje o banco permite.
+- A lista de opções de sexo (feminino, masculino, outro), escolaridade e residência (hoje texto livre) está certa para a dona?

@@ -30,6 +30,7 @@ public class ServicoDeUsuarios {
     private static final Logger LOG = LoggerFactory.getLogger(ServicoDeUsuarios.class);
 
     static final String PERFIL_ADMIN = "ADMIN";
+    static final String PERFIL_VENDEDOR = "VENDEDOR";
 
     /** Um usuário e a senha temporária que acabou de ganhar (a única vez em que ela existe em texto). */
     public record UsuarioComSenhaTemporaria(Usuario usuario, String senhaTemporaria, Instant venceEm) {
@@ -87,6 +88,7 @@ public class ServicoDeUsuarios {
         if (usuarios.findByLogin(login).isPresent()) {
             throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.LOGIN_JA_USADO);
         }
+        conferirVendedor(perfil, vendedorId);
         String senha = gerador.gerar();
         Instant venceEm = venceEm(agora());
         Usuario usuario = Usuario.novoComSenhaTemporaria(
@@ -158,6 +160,25 @@ public class ServicoDeUsuarios {
 
     private Instant venceEm(Instant agora) {
         return agora.plus(propriedades.validade());
+    }
+
+    /** Usuário VENDEDOR precisa estar ligado a um cadastro de vendedor que existe (e não foi excluído). */
+    private void conferirVendedor(String perfil, UUID vendedorId) {
+        if (!PERFIL_VENDEDOR.equals(perfil)) {
+            return;
+        }
+        if (vendedorId == null) {
+            throw campoInvalido("vendedorId", "Escolha o vendedor deste acesso.");
+        }
+        Boolean existe = jdbc.queryForObject(
+                "SELECT EXISTS (SELECT 1 FROM corona.vendedores WHERE id = ? AND deleted_at IS NULL)", Boolean.class, vendedorId);
+        if (!Boolean.TRUE.equals(existe)) {
+            throw campoInvalido("vendedorId", "Esta opção não existe mais. Atualize a tela e escolha de novo.");
+        }
+    }
+
+    private static ErroDaApi campoInvalido(String campo, String mensagem) {
+        return new ErroDaApi(HttpStatus.BAD_REQUEST, CodigoErro.DADOS_INVALIDOS, List.of(new CampoInvalido(campo, mensagem)));
     }
 
     private boolean perfilExiste(String perfil) {

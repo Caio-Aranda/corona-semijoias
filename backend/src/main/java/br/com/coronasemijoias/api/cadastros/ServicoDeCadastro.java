@@ -23,10 +23,10 @@ import org.springframework.transaction.annotation.Transactional;
  * <p>Quem confere a unicidade é o banco (índices parciais, que ignoram o excluído): a conferência
  * de aplicação não impediria dois pedidos ao mesmo tempo.
  */
-abstract class ServicoDeCadastro<E extends Excluivel> {
+public abstract class ServicoDeCadastro<E extends Excluivel> {
 
-    static final int TAMANHO_PADRAO = 20;
-    static final int TAMANHO_MAXIMO = 100;
+    public static final int TAMANHO_PADRAO = 20;
+    public static final int TAMANHO_MAXIMO = 100;
 
     private final RepositorioDeCadastro<E> repositorio;
     private final Clock relogio;
@@ -126,7 +126,7 @@ abstract class ServicoDeCadastro<E extends Excluivel> {
         return e;
     }
 
-    static ErroDaApi naoEncontrado() {
+    public static ErroDaApi naoEncontrado() {
         return new ErroDaApi(HttpStatus.NOT_FOUND, CodigoErro.CADASTRO_NAO_ENCONTRADO);
     }
 }

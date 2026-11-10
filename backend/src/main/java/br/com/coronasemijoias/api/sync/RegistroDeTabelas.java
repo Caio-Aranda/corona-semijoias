@@ -67,7 +67,17 @@ public final class RegistroDeTabelas {
                         // Cadastros que o vendedor nunca recebe (ESPECIFICACAO §10): fornecedores, praças, restrições.
                         new TabelaDoServidor("fornecedores", false),
                         new TabelaDoServidor("pracas", false),
-                        new TabelaDoServidor("restricoes", false)));
+                        new TabelaDoServidor("restricoes", false),
+                        // Cadastro do vendedor e abas (tarefa 1.3): dados de pessoas, nunca vão ao Corona Vendas.
+                        new TabelaDoServidor("vendedores", false),
+                        new TabelaDoServidor("vendedores_enderecos", false),
+                        new TabelaDoServidor("vendedores_contatos", false),
+                        new TabelaDoServidor("vendedores_trabalhos", false),
+                        new TabelaDoServidor("vendedores_conjuges", false),
+                        new TabelaDoServidor("vendedores_mei", false),
+                        new TabelaDoServidor("vendedores_observacoes", false),
+                        new TabelaDoServidor("vendedores_referencias", false),
+                        new TabelaDoServidor("vendedores_documentos", false)));
     }
 
     /** Este registro somado a outro (usado pelos testes para acrescentar as tabelas de teste). */

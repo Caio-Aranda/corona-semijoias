@@ -343,7 +343,7 @@ class CadastrosBasicosTest extends TesteDeIntegracao {
     @Test
     void clienteGuardaCpfSoComDigitosEAceitaCpfRepetido() throws Exception {
         String nome = unico("Maria Cliente");
-        UUID vendedor = UUID.randomUUID();
+        UUID vendedor = usuarios.criarCadastroDeVendedor();
         JsonNode criado = criar("/api/dona/clientes", mapa(
                 "nome", nome, "cpf", "529.982.247-25", "telefone", "67 3333-0000", "whatsapp", "67 99999-0000",
                 "observacoes", "Paga em dia", "vendedorResponsavelId", vendedor.toString(),
