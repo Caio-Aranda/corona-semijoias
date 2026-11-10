@@ -8,6 +8,7 @@ import {
   type NomeDoCadastro,
 } from './cadastros';
 import type { OperacaoDaApi } from './ponte';
+import { conferirProduto, type ParametrosDeProduto } from './validacao-produtos';
 import {
   ABAS_DO_VENDEDOR,
   CAMPOS_DA_REFERENCIA,
@@ -105,6 +106,7 @@ export type ParametrosDeVendedor =
 export type ParametrosConferidos =
   | ParametrosDeCadastro
   | ParametrosDeVendedor
+  | ParametrosDeProduto
   | { operacao: 'eu' | 'cotacao.hoje' | 'avisos.listar' | 'vendedores.escolha' }
   | { operacao: 'usuarios.listar'; lista: ParametrosDaLista }
   | { operacao: 'usuarios.criar'; novo: ParametrosDeUsuarioNovo }
@@ -428,6 +430,23 @@ export function conferirParametros(
     case 'vendedores.documentos.baixar':
     case 'vendedores.documentos.excluir':
       return conferirVendedor(operacao, p);
+    case 'produtos.listar':
+    case 'produtos.ver':
+    case 'produtos.porCodigo':
+    case 'produtos.criar':
+    case 'produtos.editar':
+    case 'produtos.codigos.gravar':
+    case 'produtos.codigoProximo':
+    case 'produtos.inativar':
+    case 'produtos.reativar':
+    case 'produtos.fotos.listar':
+    case 'produtos.fotos.enviar':
+    case 'produtos.fotos.principal':
+    case 'produtos.fotos.excluir':
+    case 'produtos.fotos.imagem':
+    case 'produtos.importacao.previa':
+    case 'produtos.importacao.confirmar':
+      return conferirProduto(operacao, p);
     default:
       return conferirCadastro(operacao, p);
   }

@@ -249,3 +249,37 @@ Uma seção por tarefa concluída, no mesmo formato de [fase-0.md](fase-0.md). A
 **Dúvidas**
 - Desativar o vendedor deve também desativar o acesso dele? (repete a dúvida da 1.3)
 - O limite de consignação e a comissão devem pedir confirmação extra ao mudar (a §11 pede auditoria no servidor, que ainda não existe para estes campos)?
+
+### Tarefa 1.11: produtos, códigos, custo, fotos, importação em massa e leitor (owner-app)
+
+**O que foi feito**
+- Cadastros → Produtos saiu de "Em breve", com quatro abas: **Lista**, **Importar planilha**, **Importar fotos** e **Consultar produto**.
+- **Lista:** foto em miniatura em toda linha (a foto vem da API pela ponte e fica guardada por hash); sem foto, foto que não carrega ou internet fora mostram o marcador "Sem foto" e nunca travam nada. Busca por nome, código (qualquer um) ou referência; filtros de categoria, fornecedor e situação; páginas de 20.
+- **Ficha/cadastro:** cursor já em Código; o leitor age como teclado (Enter confere o código e não envia o formulário). A **velocidade das teclas** (`DetectorDeLeitor`) separa leitor de digitação: lido pelo leitor mostra "Código lido pelo leitor." e sugere o tipo "Código de barras" se o EAN-13 de 13 números confere. Duplicidade conferida na hora ("Já existe: {produto}", com botão para abrir esse produto; para código do fornecedor repetido, o texto diz que a dona decide). Código sempre como texto (zeros à esquerda). Tipos Código da loja / do fornecedor / de barras, vários códigos e um principal; dígito verificador só para EAN-13 de 13 números; EAN-13 com poucos números avisa "Leia o código de novo". **Gerar código da loja** usa a rota do servidor (a numeração é só dele). Preço de venda e **custo** (campo de dinheiro com Real, Dólar e Guarani; o custo só aparece aqui), estoque mínimo, categoria, fornecedor, referência. Salvar manda os dados (com a versão lida) e, se os códigos mudaram, a lista de códigos com a versão nova. 409 de versão mostra o texto do servidor com **Atualizar**. Desativar e reativar com confirmação (foco em Voltar). Aviso de alterações não salvas (mesma guarda da 1.10).
+- **Fotos na ficha:** escolher arquivo, **colar (Ctrl+V)** e **arrastar**; tipo (JPG, PNG, WebP), tamanho (10 MB) e arquivo vazio conferidos na tela e na ponte antes de enviar; foto colada sem extensão ganha a do tipo. Miniatura/grande vêm da API; tornar principal, ver maior, remover com confirmação; com 5 fotos o envio fica bloqueado com o texto do glossário. Depois de mexer nas fotos a ficha lê o produto de novo só para pegar a versão nova (não apaga o que foi digitado).
+- **Importação por planilha (.xlsx ou CSV):** colunas código, nome, categoria, custo e preço (em qualquer ordem, com ou sem acento; valores como "1.234,56", "12,5" ou "12.5"). Escolher → **prévia linha a linha sem gravar nada** (cadastrar, atualizar ou não importar, com o motivo) → confirmar → **relatório** (cadastrados, atualizados e não importados, com o motivo de cada recusa, inclusive a do servidor). Código que já existe atualiza (mantém referência, fornecedor e estoque mínimo); categoria precisa existir. Até 5000 linhas e 20 MB.
+- **Importação de fotos em massa:** escolher fotos ou uma pasta → prévia só com os nomes (nenhuma foto sai do computador) → confirmar → envio em lotes de 10 → relatório por arquivo (gravada, já estava, sem produto, nome repetido, recusada, com a mensagem). Nomes repetidos na prévia **não são enviados** (entre lotes o servidor não veria a repetição).
+- **Consulta de produto:** campo de leitura que mostra foto, preço em três moedas, código principal e **saldo** (a rota já devolve `estoqueAtual`, que fica 0 até as movimentações da Fase 2). O foco volta ao campo depois de cada leitura; código inexistente tem texto próprio.
+- **Ponte:** 16 operações novas `produtos.*` (`shared/produtos.ts`, `shared/validacao-produtos.ts`), conferidas de novo no processo principal: só campos conhecidos (campo desconhecido, inclusive `estoqueAtual`, recusa tudo), dinheiro como texto decimal, `version` obrigatória ao editar, tipo de código da lista, foto só JPG/PNG/WebP até 10 MB, prévia só com nomes, no máximo 10 fotos por lote, hash de foto de 64 letras/números. A foto volta como bytes. A tela continua sem token. Nenhuma rota nova no backend e nenhuma regeneração do cliente.
+- A CSP da tela ganhou `blob:` em `img-src` (as fotos viram imagens locais; o resto continua fechado).
+- Testes: 29 de tela, 9 da conferência da ponte, 2 do adaptador da API, 11 das regras de código e leitor, 22 da planilha (CSV, .xlsx com zip real, prévia) e 3 das fotos. O teste do menu deixou de usar Produtos como exemplo de "Em breve".
+
+**O que ficou pendente**
+- **Webcam:** não feita (precisa de permissão de câmera no Electron e de uma tela de captura; não era simples). Fica como pendência; escolher, colar e arrastar cobrem o uso.
+- **Histórico de custos:** não existe rota para listar o histórico (a API só guarda o custo atual e a auditoria `PRECO_CUSTO_ALTERADO`). A ficha mostra o custo atual e avisa que o histórico ainda não aparece. Precisa de rota de leitura da auditoria/histórico no backend.
+- **Limite de partes do Tomcat (pendência da 1.6):** conferido só pela configuração (`server.tomcat.max-part-count=20`, pedido de até 110 MB): a tela manda no máximo **10 partes por pedido**, abaixo do limite. Não rodei uma importação real contra a API em execução.
+- A importação por planilha grava linha a linha pelas rotas normais de produto (não há rota de importação em massa de produtos); 5000 linhas fazem 5000 pedidos. Se ficar lento, falta uma rota de lote no backend.
+- Planilha com várias abas: só a primeira é lida. Preço sugerido (custo x 7) continua sem cálculo (ADR-0007).
+- Rodar o Electron de ponta a ponta contra a API real, o leitor físico e o Windows abrindo o seletor de arquivos/pasta não foram testados aqui (cobertura de testes de componente e lógica).
+
+**Decisões tomadas**
+- Produtos é uma tela só com abas (lista, planilha, fotos, consulta) em vez de itens novos no menu.
+- O .xlsx é lido sem biblioteca nova: um leitor de zip/XML de ~100 linhas (a biblioteca comum, SheetJS, tem vulnerabilidades conhecidas no npm). Só planilhas simples (texto e números); fórmulas aparecem como o último valor calculado.
+- Importação por planilha atualiza o produto que já tem o código (como a especificação pede "atualizados"); o servidor continua dono das regras (código repetido, categoria que sumiu), e a recusa dele vira o motivo da linha.
+- Código lido que confere como EAN-13 troca o tipo para "Código de barras" sozinho; digitado à mão, o tipo escolhido fica.
+- Quem aparece como "Já existe" é sempre outro produto; o próprio produto não conta.
+
+**Dúvidas**
+- A planilha atual da loja já tem essas cinco colunas e esses títulos? Se vier com outros nomes (por exemplo "COD", "COD Fábrica"), é só acrescentar os apelidos.
+- Importar planilha deve poder trocar a categoria de produto que já existe? Hoje troca (a categoria da planilha vale).
+- Webcam é desejada no balcão? Se sim, vira tarefa própria.

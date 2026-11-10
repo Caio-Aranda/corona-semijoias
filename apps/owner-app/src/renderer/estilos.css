@@ -234,3 +234,89 @@
   border-color: var(--cor-borda);
   box-shadow: inset 0 -3px 0 var(--cor-ouro);
 }
+
+/* Produtos: foto, códigos, fotos da ficha e consulta */
+.gestao-foto {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  object-fit: cover;
+  background: var(--cor-fundo-suave, #f3f0ea);
+  color: var(--cor-texto);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-2);
+  font-size: var(--texto-pequeno, 0.8125rem);
+  text-align: center;
+}
+
+.gestao-foto--miniatura {
+  width: 48px;
+  height: 48px;
+}
+
+.gestao-foto--media {
+  width: 160px;
+  height: 160px;
+}
+
+.gestao-foto--grande {
+  width: min(100%, 520px);
+  height: auto;
+  max-height: 70vh;
+  object-fit: contain;
+}
+
+.gestao-foto--grande.gestao-foto--vazia {
+  height: 240px;
+}
+
+.gestao-codigo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+  padding-bottom: var(--espaco-3);
+  border-bottom: 1px solid var(--cor-borda);
+}
+
+.gestao-marcacao {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+}
+
+.gestao-zona-de-foto {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--espaco-2);
+  padding: var(--espaco-4);
+  border: 2px dashed var(--cor-borda);
+  border-radius: var(--raio-2);
+}
+
+.gestao-zona-de-foto--sobre {
+  border-color: var(--cor-texto);
+  background: var(--cor-fundo-suave, #f3f0ea);
+}
+
+.gestao-fotos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-4);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.gestao-fotos__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+  max-width: 200px;
+}
+
+.gestao-consulta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-6);
+}

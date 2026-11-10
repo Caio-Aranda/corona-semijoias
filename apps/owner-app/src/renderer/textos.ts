@@ -1,3 +1,4 @@
+import { TEXTOS_DE_PRODUTOS } from './textos-produtos';
 import { TEXTOS_DE_VENDEDORES } from './textos-vendedores';
 
 /**
@@ -313,4 +314,5 @@ export const TEXTOS = {
     },
   },
   vendedores: TEXTOS_DE_VENDEDORES,
+  produtos: TEXTOS_DE_PRODUTOS,
 } as const;

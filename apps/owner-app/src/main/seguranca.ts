@@ -3,7 +3,7 @@ export const POLITICA_DE_CONTEUDO = [
   "default-src 'none'",
   "script-src 'self'",
   "style-src 'self'",
-  "img-src 'self' data:",
+  "img-src 'self' data: blob:",
   "font-src 'self' data:",
   "connect-src 'none'",
   "base-uri 'none'",

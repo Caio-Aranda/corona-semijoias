@@ -1,4 +1,20 @@
 import {
+  alterarCodigos,
+  confirmar as confirmarFotos,
+  editar4 as editarProduto,
+  excluir9 as excluirFoto,
+  criar4 as criarProduto,
+  enviar1 as enviarFoto,
+  imagem as baixarImagem,
+  inativar1 as inativarProduto,
+  listar5 as listarProdutos,
+  listar6 as listarFotos,
+  porCodigo as produtoPorCodigo,
+  previa as previaDasFotos,
+  principal as fotoPrincipal,
+  proximoCodigo,
+  reativar2 as reativarProduto,
+  ver4 as verProduto,
   baixar,
   converter,
   criar as criarVendedor,
@@ -69,6 +85,7 @@ import {
 } from '@corona/api-client-dona';
 import type { NomeDoCadastro } from '../shared/cadastros';
 import type { ParametrosConferidos, ParametrosDeVendedor } from '../shared/validacao-parametros';
+import type { ParametrosDeProduto } from '../shared/validacao-produtos';
 import type { AbaDoVendedor, ArquivoBaixado } from '../shared/vendedores';
 import type { ApiDeAutenticacao, Credenciais, Falha, Resultado } from './tipos';
 
@@ -310,6 +327,110 @@ async function executarVendedor(
   }
 }
 
+const TIPOS_DE_FOTO: Record<string, string> = {
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+  webp: 'image/webp',
+};
+
+function comoArquivoDeFoto(a: { nome: string; bytes: Uint8Array }): File {
+  const extensao = a.nome.slice(a.nome.lastIndexOf('.') + 1).toLowerCase();
+  return new File([a.bytes as BlobPart], a.nome, {
+    type: TIPOS_DE_FOTO[extensao] ?? 'application/octet-stream',
+  });
+}
+
+/** Produtos: lista, ficha, códigos, fotos e importação de fotos (só ADMIN; o servidor confere). */
+async function executarProduto(
+  client: ReturnType<typeof criarClienteDaApi>,
+  headers: { Authorization: string },
+  pedido: ParametrosDeProduto,
+): Promise<Resultado<unknown>> {
+  const base = { client, headers };
+  const id = pedido.id as string;
+  switch (pedido.operacao) {
+    case 'produtos.listar':
+      return executar(() => listarProdutos({ ...base, query: pedido.lista as never }));
+    case 'produtos.ver':
+      return executar(() => verProduto({ ...base, path: { id } }));
+    case 'produtos.porCodigo':
+      return executar(() =>
+        produtoPorCodigo({ ...base, query: { codigo: pedido.codigo as string } }),
+      );
+    case 'produtos.criar':
+      return executar(() => criarProduto({ ...base, body: pedido.corpo as never }));
+    case 'produtos.editar':
+      return executar(() => editarProduto({ ...base, path: { id }, body: pedido.corpo as never }));
+    case 'produtos.codigos.gravar':
+      return executar(() =>
+        alterarCodigos({
+          ...base,
+          path: { id },
+          body: { version: pedido.version, codigos: pedido.codigos },
+        }),
+      );
+    case 'produtos.codigoProximo':
+      return executar(() => proximoCodigo({ ...base }));
+    case 'produtos.inativar':
+      return executar(() => inativarProduto({ ...base, path: { id } }));
+    case 'produtos.reativar':
+      return executar(() => reativarProduto({ ...base, path: { id } }));
+    case 'produtos.fotos.listar':
+      return executar(() => listarFotos({ ...base, path: { id } }));
+    case 'produtos.fotos.enviar':
+      return executar(() =>
+        enviarFoto({
+          ...base,
+          path: { id },
+          body: { arquivo: comoArquivoDeFoto(pedido.arquivo as never) },
+        }),
+      );
+    case 'produtos.fotos.principal':
+      return executar(() =>
+        fotoPrincipal({ ...base, path: { id, fotoId: pedido.fotoId as string } }),
+      );
+    case 'produtos.fotos.excluir':
+      return executar(() =>
+        excluirFoto({ ...base, path: { id, fotoId: pedido.fotoId as string } }),
+      );
+    case 'produtos.importacao.previa':
+      return executar(() => previaDasFotos({ ...base, body: { nomes: pedido.nomes } }));
+    case 'produtos.importacao.confirmar':
+      return executar(() =>
+        confirmarFotos({
+          ...base,
+          body: { arquivos: (pedido.arquivos ?? []).map(comoArquivoDeFoto) },
+        }),
+      );
+    case 'produtos.fotos.imagem': {
+      try {
+        const { data, error, response } = (await baixarImagem({
+          ...base,
+          path: { hash: pedido.hash as string, tamanho: pedido.tamanho as string },
+          parseAs: 'arrayBuffer',
+        } as never)) as RetornoDoCliente<ArrayBuffer>;
+        if (error !== undefined && error !== '') {
+          return { ok: false, falha: comoFalha(error, response) };
+        }
+        if (response && !response.ok) return { ok: false, falha: comoFalha(undefined, response) };
+        if (!response || !(data instanceof ArrayBuffer)) {
+          return { ok: false, falha: { tipo: 'resposta-invalida' } };
+        }
+        const arquivo: ArquivoBaixado = {
+          nome: `${pedido.hash}.jpg`,
+          tipo: response.headers.get('content-type') ?? 'image/jpeg',
+          bytes: new Uint8Array(data),
+        };
+        return { ok: true, dados: arquivo };
+      } catch (e) {
+        if (ehAppDesatualizado(e)) return { ok: false, falha: comoFalha(e, undefined) };
+        return { ok: false, falha: { tipo: 'sem-conexao' } };
+      }
+    }
+  }
+}
+
 /**
  * Chamadas à API do Corona Gestão. O cliente gerado já manda X-App-Tipo e X-App-Versao em toda
  * chamada; aqui só se acrescenta o token de acesso, que nunca sai do processo principal.
@@ -364,6 +485,9 @@ export function criarApiDoGestao(opcoes: OpcoesDaApi): ApiDoGestao {
             ...(corpo ? { body: corpo } : {}),
           }),
         );
+      }
+      if (pedido.operacao.startsWith('produtos.')) {
+        return executarProduto(client, headers, pedido as ParametrosDeProduto);
       }
       if (pedido.operacao.startsWith('vendedores.') && pedido.operacao !== 'vendedores.escolha') {
         return executarVendedor(client, headers, pedido as ParametrosDeVendedor);

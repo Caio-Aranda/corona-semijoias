@@ -4,6 +4,7 @@
  */
 
 import { OPERACOES_DE_CADASTRO } from './cadastros';
+import { OPERACOES_DE_PRODUTOS } from './produtos';
 import { OPERACOES_DE_VENDEDORES } from './vendedores';
 
 /** Operações de consulta que o processo principal aceita fazer em nome da tela. */
@@ -21,6 +22,7 @@ export const OPERACOES_DA_API = [
   'vendedores.escolha',
   ...OPERACOES_DE_CADASTRO,
   ...OPERACOES_DE_VENDEDORES,
+  ...OPERACOES_DE_PRODUTOS,
 ] as const;
 export type OperacaoDaApi = (typeof OPERACOES_DA_API)[number];
 
