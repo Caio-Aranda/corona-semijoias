@@ -187,3 +187,50 @@
   padding: 0 var(--espaco-2);
   font-weight: 600;
 }
+
+.gestao-formulario--larga {
+  max-width: 720px;
+}
+
+.gestao-rodape-do-formulario {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-3);
+}
+
+.gestao-aba {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+}
+
+.gestao-abas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-1);
+  border-bottom: 1px solid var(--cor-borda);
+}
+
+.gestao-aba-botao {
+  padding: var(--espaco-2) var(--espaco-4);
+  color: var(--cor-texto);
+  background: transparent;
+  border: 1px solid transparent;
+  border-bottom: 0;
+  border-radius: var(--raio-2) var(--raio-2) 0 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+.gestao-aba-botao:disabled {
+  color: var(--cor-texto-suave);
+  cursor: not-allowed;
+}
+
+.gestao-aba-botao--atual {
+  font-weight: 700;
+  background: var(--cor-fundo);
+  border-color: var(--cor-borda);
+  box-shadow: inset 0 -3px 0 var(--cor-ouro);
+}

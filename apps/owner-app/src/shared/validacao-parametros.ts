@@ -8,6 +8,19 @@ import {
   type NomeDoCadastro,
 } from './cadastros';
 import type { OperacaoDaApi } from './ponte';
+import {
+  ABAS_DO_VENDEDOR,
+  CAMPOS_DA_REFERENCIA,
+  CAMPOS_DAS_ABAS,
+  CAMPOS_DO_VENDEDOR,
+  SITUACOES_DA_LISTA,
+  TAMANHO_MAXIMO_DO_DOCUMENTO,
+  TAMANHO_MAXIMO_DO_NOME_DO_ARQUIVO,
+  extensaoAceita,
+  type AbaDoVendedor,
+  type ArquivoParaEnviar,
+  type OperacaoDeVendedores,
+} from './vendedores';
 
 const ehTexto = (v: unknown): v is string => typeof v === 'string';
 const ehObjeto = (v: unknown): v is Record<string, unknown> =>
@@ -15,6 +28,8 @@ const ehObjeto = (v: unknown): v is Record<string, unknown> =>
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const DECIMAL = /^-?\d{1,14}(\.\d{1,2})?$/;
 const DATA = /^\d{4}-\d{2}-\d{2}$/;
+const DINHEIRO = /^\d{1,12}(\.\d{1,2})?$/;
+const PERCENTUAL = /^\d{1,3}(\.\d{1,2})?$/;
 const PERFIS = ['ADMIN', 'VENDEDOR'];
 /** Tamanho máximo dos textos; o servidor confere de novo o que é regra de negócio. */
 const MAX_TEXTO = 200;
@@ -54,8 +69,42 @@ export interface ParametrosDeCadastro {
   corpo?: Record<string, unknown>;
 }
 
+export type ParametrosDeVendedor =
+  | { operacao: 'vendedores.listar'; lista: ParametrosDaLista; situacao?: string }
+  | { operacao: 'vendedores.ver' | 'vendedores.inativar' | 'vendedores.reativar'; id: string }
+  | { operacao: 'vendedores.criar'; corpo: Record<string, unknown> }
+  | { operacao: 'vendedores.editar'; id: string; corpo: Record<string, unknown> }
+  | { operacao: 'vendedores.aba.ver'; id: string; aba: AbaDoVendedor }
+  | {
+      operacao: 'vendedores.aba.gravar';
+      id: string;
+      aba: AbaDoVendedor;
+      corpo: Record<string, unknown>;
+    }
+  | { operacao: 'vendedores.referencias.listar' | 'vendedores.documentos.listar'; id: string }
+  | { operacao: 'vendedores.referencias.criar'; id: string; corpo: Record<string, unknown> }
+  | {
+      operacao: 'vendedores.referencias.editar';
+      id: string;
+      referenciaId: string;
+      corpo: Record<string, unknown>;
+    }
+  | { operacao: 'vendedores.referencias.excluir'; id: string; referenciaId: string }
+  | {
+      operacao: 'vendedores.documentos.enviar';
+      id: string;
+      descricao?: string;
+      arquivo: ArquivoParaEnviar;
+    }
+  | {
+      operacao: 'vendedores.documentos.baixar' | 'vendedores.documentos.excluir';
+      id: string;
+      documentoId: string;
+    };
+
 export type ParametrosConferidos =
   | ParametrosDeCadastro
+  | ParametrosDeVendedor
   | { operacao: 'eu' | 'cotacao.hoje' | 'avisos.listar' | 'vendedores.escolha' }
   | { operacao: 'usuarios.listar'; lista: ParametrosDaLista }
   | { operacao: 'usuarios.criar'; novo: ParametrosDeUsuarioNovo }
@@ -89,6 +138,12 @@ function valorDoCampo(campo: CampoDaApi, v: unknown): unknown {
       return ehTexto(v) && UUID.test(v) ? v : undefined;
     case 'situacao':
       return v === 'ABERTA' || v === 'FECHADA' ? v : undefined;
+    case 'dinheiro':
+      return ehTexto(v) && DINHEIRO.test(v) ? v : undefined;
+    case 'percentual':
+      return ehTexto(v) && PERCENTUAL.test(v) && Number(v) <= 100 ? v : undefined;
+    case 'sexo':
+      return v === 'FEMININO' || v === 'MASCULINO' || v === 'OUTRO' ? v : undefined;
   }
 }
 
@@ -174,6 +229,120 @@ function conferirCadastro(
   }
 }
 
+const idValido = (v: unknown): v is string => ehTexto(v) && UUID.test(v);
+
+function versaoValida(v: unknown): v is number {
+  return typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= 1_000_000_000;
+}
+
+/** Corpo de uma aba, da referência ou do vendedor: só campos conhecidos; `version` só quando `comVersao`. */
+function corpoComVersao(
+  campos: readonly CampoDaApi[],
+  p: Record<string, unknown>,
+  comVersao: boolean,
+  ignorar: readonly string[],
+): Record<string, unknown> | null {
+  const corpo = conferirCampos(campos, p, ['version', ...ignorar]);
+  if (corpo === null) return null;
+  if (comVersao) {
+    if (!versaoValida(p.version)) return null;
+    corpo.version = p.version;
+  } else if (p.version !== undefined) {
+    return null;
+  }
+  return corpo;
+}
+
+function conferirArquivo(v: unknown): ArquivoParaEnviar | null {
+  if (!ehObjeto(v) || !ehTexto(v.nome) || !(v.bytes instanceof Uint8Array)) return null;
+  if (v.nome.length === 0 || v.nome.length > TAMANHO_MAXIMO_DO_NOME_DO_ARQUIVO) return null;
+  if (!extensaoAceita(v.nome)) return null;
+  if (v.bytes.byteLength === 0 || v.bytes.byteLength > TAMANHO_MAXIMO_DO_DOCUMENTO) return null;
+  for (const k of Object.keys(v)) if (k !== 'nome' && k !== 'bytes') return null;
+  return { nome: v.nome, bytes: v.bytes };
+}
+
+function conferirVendedor(
+  operacao: OperacaoDeVendedores,
+  p: Record<string, unknown>,
+): ParametrosDeVendedor | null {
+  const soCom = (...nomes: string[]) => Object.keys(p).every((k) => nomes.includes(k));
+  switch (operacao) {
+    case 'vendedores.listar': {
+      if (!soCom('busca', 'situacao', 'pagina', 'tamanho')) return null;
+      const busca = textoOpcional(p.busca);
+      if (busca === null) return null;
+      const pagina = p.pagina ?? 0;
+      const tamanho = p.tamanho ?? 20;
+      if (typeof pagina !== 'number' || !Number.isInteger(pagina) || pagina < 0) return null;
+      if (typeof tamanho !== 'number' || !Number.isInteger(tamanho)) return null;
+      if (tamanho < 1 || tamanho > 100) return null;
+      const lista: ParametrosDaLista = { pagina, tamanho };
+      if (busca) lista.busca = busca;
+      if (p.situacao === undefined) return { operacao, lista };
+      if (!(SITUACOES_DA_LISTA as readonly unknown[]).includes(p.situacao)) return null;
+      return { operacao, lista, situacao: p.situacao as string };
+    }
+    case 'vendedores.ver':
+    case 'vendedores.inativar':
+    case 'vendedores.reativar':
+      return soCom('id') && idValido(p.id) ? { operacao, id: p.id } : null;
+    case 'vendedores.criar': {
+      const corpo = corpoComVersao(CAMPOS_DO_VENDEDOR, p, false, []);
+      return corpo ? { operacao, corpo } : null;
+    }
+    case 'vendedores.editar': {
+      if (!idValido(p.id)) return null;
+      const corpo = corpoComVersao(CAMPOS_DO_VENDEDOR, p, true, ['id']);
+      return corpo ? { operacao, id: p.id, corpo } : null;
+    }
+    case 'vendedores.aba.ver': {
+      if (!soCom('id', 'aba') || !idValido(p.id)) return null;
+      return (ABAS_DO_VENDEDOR as readonly unknown[]).includes(p.aba)
+        ? { operacao, id: p.id, aba: p.aba as AbaDoVendedor }
+        : null;
+    }
+    case 'vendedores.aba.gravar': {
+      if (!idValido(p.id)) return null;
+      if (!(ABAS_DO_VENDEDOR as readonly unknown[]).includes(p.aba)) return null;
+      const aba = p.aba as AbaDoVendedor;
+      const corpo = corpoComVersao(CAMPOS_DAS_ABAS[aba], p, true, ['id', 'aba']);
+      return corpo ? { operacao, id: p.id, aba, corpo } : null;
+    }
+    case 'vendedores.referencias.listar':
+    case 'vendedores.documentos.listar':
+      return soCom('id') && idValido(p.id) ? { operacao, id: p.id } : null;
+    case 'vendedores.referencias.criar': {
+      if (!idValido(p.id)) return null;
+      const corpo = corpoComVersao(CAMPOS_DA_REFERENCIA, p, false, ['id']);
+      return corpo ? { operacao, id: p.id, corpo } : null;
+    }
+    case 'vendedores.referencias.editar': {
+      if (!idValido(p.id) || !idValido(p.referenciaId)) return null;
+      const corpo = corpoComVersao(CAMPOS_DA_REFERENCIA, p, true, ['id', 'referenciaId']);
+      return corpo ? { operacao, id: p.id, referenciaId: p.referenciaId, corpo } : null;
+    }
+    case 'vendedores.referencias.excluir':
+      return soCom('id', 'referenciaId') && idValido(p.id) && idValido(p.referenciaId)
+        ? { operacao, id: p.id, referenciaId: p.referenciaId }
+        : null;
+    case 'vendedores.documentos.enviar': {
+      if (!soCom('id', 'descricao', 'arquivo') || !idValido(p.id)) return null;
+      const descricao = textoOpcional(p.descricao);
+      const arquivo = conferirArquivo(p.arquivo);
+      if (descricao === null || arquivo === null) return null;
+      return descricao
+        ? { operacao, id: p.id, descricao, arquivo }
+        : { operacao, id: p.id, arquivo };
+    }
+    case 'vendedores.documentos.baixar':
+    case 'vendedores.documentos.excluir':
+      return soCom('id', 'documentoId') && idValido(p.id) && idValido(p.documentoId)
+        ? { operacao, id: p.id, documentoId: p.documentoId }
+        : null;
+  }
+}
+
 /** Confere os dados de cada operação; o que não bate vira `null` e a chamada é recusada. */
 export function conferirParametros(
   operacao: OperacaoDaApi,
@@ -242,6 +411,23 @@ export function conferirParametros(
         ? { operacao, valorEmReais: p.valorEmReais }
         : { operacao, valorEmReais: p.valorEmReais, data: p.data };
     }
+    case 'vendedores.listar':
+    case 'vendedores.ver':
+    case 'vendedores.criar':
+    case 'vendedores.editar':
+    case 'vendedores.inativar':
+    case 'vendedores.reativar':
+    case 'vendedores.aba.ver':
+    case 'vendedores.aba.gravar':
+    case 'vendedores.referencias.listar':
+    case 'vendedores.referencias.criar':
+    case 'vendedores.referencias.editar':
+    case 'vendedores.referencias.excluir':
+    case 'vendedores.documentos.listar':
+    case 'vendedores.documentos.enviar':
+    case 'vendedores.documentos.baixar':
+    case 'vendedores.documentos.excluir':
+      return conferirVendedor(operacao, p);
     default:
       return conferirCadastro(operacao, p);
   }

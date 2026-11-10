@@ -1,3 +1,5 @@
+import { TEXTOS_DE_VENDEDORES } from './textos-vendedores';
+
 /**
  * Textos fixos que o servidor não consegue montar (por exemplo, quando nem chegamos a falar com ele).
  * Vêm do glossário da interface (docs/glossario-interface.md, partes 4 e 6).
@@ -310,4 +312,5 @@ export const TEXTOS = {
       reativado: (nome: string) => `${nome} foi reativado.`,
     },
   },
+  vendedores: TEXTOS_DE_VENDEDORES,
 } as const;

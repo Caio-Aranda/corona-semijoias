@@ -179,17 +179,17 @@ describe('menu lateral', () => {
       expect(screen.getByRole('button', { name: nome })).toBeInTheDocument();
     }
     expect(screen.getByRole('button', { name: 'Início' })).toHaveAttribute('aria-current', 'page');
-    await u.click(screen.getByRole('button', { name: 'Vendedores' }));
+    await u.click(screen.getByRole('button', { name: 'Produtos' }));
     expect(
       await screen.findByText(
-        'Vendedores ainda está sendo preparado. Logo você poderá usar por aqui.',
+        'Produtos ainda está sendo preparado. Logo você poderá usar por aqui.',
       ),
     ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Vendedores' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: 'Produtos' })).toHaveAttribute(
       'aria-current',
       'page',
     );
-    expect(window.location.hash).toBe('#/pessoas/vendedores');
+    expect(window.location.hash).toBe('#/cadastros/produtos');
   });
 });
 
