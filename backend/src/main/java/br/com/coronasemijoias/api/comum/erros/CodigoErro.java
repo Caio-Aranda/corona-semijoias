@@ -202,7 +202,32 @@ public enum CodigoErro {
 
     PRODUTO_COM_FOTOS_DEMAIS(
             "Esta peça já tem 5 fotos.",
-            "Esta peça já tem 5 fotos. Exclua uma das fotos para poder enviar outra.");
+            "Esta peça já tem 5 fotos. Exclua uma das fotos para poder enviar outra."),
+
+    // --- Estoque (glossário, parte 12; tarefa 2.2) ---
+
+    /** Saída, perda, ajuste ou "desfazer" que deixaria o estoque abaixo de zero (HTTP 409). O servidor monta o texto com o que há. */
+    ESTOQUE_INSUFICIENTE(
+            "Não há peças suficientes no estoque.",
+            "Não há peças suficientes no estoque. Confira a quantidade ou receba a compra antes."),
+
+    LANCAMENTO_NAO_ENCONTRADO(
+            "Não encontramos este lançamento.",
+            "Não encontramos este lançamento. Atualize a tela e tente de novo."),
+
+    LANCAMENTO_JA_DESFEITO(
+            "Este lançamento já foi desfeito.",
+            "Este lançamento já foi desfeito."),
+
+    /** Pedido de desfazer um lançamento que já é um "desfazer" (HTTP 409). */
+    LANCAMENTO_NAO_PODE_SER_DESFEITO(
+            "Este lançamento não pode ser desfeito.",
+            "Este lançamento já desfez outro e não pode ser desfeito. Se precisar, faça um novo lançamento."),
+
+    /** O mesmo identificador voltou com outros dados (HTTP 409). */
+    LANCAMENTO_JA_REGISTRADO_DIFERENTE(
+            "Este lançamento já foi registrado com outros dados.",
+            "Este lançamento já foi registrado com outros dados. Atualize a tela, confira o histórico e lance de novo se precisar.");
 
     private final String titulo;
     private final String mensagem;

@@ -56,9 +56,9 @@ public final class RegistroDeTabelas {
                                 "endereco_cidade", "endereco_uf", "endereco_cep",
                                 "observacoes", "vendedor_responsavel_id"), false),
                         // Produtos e códigos (tarefa 1.5). Sem custo e sem fornecedor: o vendedor nunca os recebe.
-                        // O filtro por maleta (só os produtos dele) é da Fase 5.
+                        // O filtro por maleta (só os produtos dele) é da Fase 5. Sem estoque_atual nem estoque_minimo (ADR-0008, item 11).
                         new TabelaSincronizavel("produtos", List.of(
-                                "nome", "referencia", "categoria_id", "preco_venda", "estoque_minimo", "estoque_atual",
+                                "nome", "referencia", "categoria_id", "preco_venda",
                                 "ativo", "foto_principal_hash"), false),
                         new TabelaSincronizavel("produto_codigos", List.of(
                                 "produto_id", "codigo", "tipo", "principal", "ativo"), false),
@@ -81,6 +81,8 @@ public final class RegistroDeTabelas {
                         // Resultado das importações em massa (tarefa 1.13): histórico, só inserção.
                         new TabelaDoServidor("importacoes", true),
                         new TabelaDoServidor("importacoes_linhas", true),
+                        // Movimentações do estoque central (tarefa 2.2): histórico imutável, nunca vai ao vendedor.
+                        new TabelaDoServidor("movimentacoes_estoque", true),
                         // Cadastros que o vendedor nunca recebe (ESPECIFICACAO §10): fornecedores, praças, restrições.
                         new TabelaDoServidor("fornecedores", false),
                         new TabelaDoServidor("pracas", false),

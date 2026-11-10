@@ -87,6 +87,13 @@ export type DadosDoUsuario = {
     vendedorId?: string;
 };
 
+export type FotoPrincipal = {
+    grandeUrl?: string;
+    hash?: string;
+    mediaUrl?: string;
+    miniaturaUrl?: string;
+};
+
 export type Item = {
     ativo?: boolean;
     categoriaId?: string;
@@ -223,6 +230,13 @@ export type PaginaResposta = {
     total?: number;
 };
 
+export type PaginaRespostaDaLinha = {
+    itens?: Array<RespostaDaLinha>;
+    pagina?: number;
+    tamanho?: number;
+    total?: number;
+};
+
 export type Pedido = {
     comissaoPercentual?: string;
     cpfCnpj?: string;
@@ -246,6 +260,14 @@ export type Pedido = {
     whatsapp?: string;
 };
 
+export type PedidoDeAjuste = {
+    diferenca?: number;
+    id?: string;
+    motivo?: string;
+    novaQuantidade?: number;
+    produtoId: string;
+};
+
 export type PedidoDeCodigo = {
     ativo?: boolean;
     codigo: string;
@@ -260,6 +282,11 @@ export type PedidoDeEdicao = {
     perfil: string;
     vendedorId?: string;
     version: number;
+};
+
+export type PedidoDeEstorno = {
+    id?: string;
+    motivo?: string;
 };
 
 export type PedidoDeLinha = {
@@ -278,6 +305,14 @@ export type PedidoDeLote = {
     arquivoNome?: string;
     linhas?: Array<PedidoDeLinha>;
     tipo?: string;
+};
+
+export type PedidoDeMovimento = {
+    id?: string;
+    motivo?: string;
+    produtoId: string;
+    quantidade: number;
+    tipo: string;
 };
 
 export type PedidoDeOrdem = {
@@ -470,6 +505,25 @@ export type RespostaComSenhaTemporaria = {
     vendedorId?: string;
 };
 
+export type RespostaDaConciliacao = {
+    divergencias?: Array<RespostaDaDivergencia>;
+    geradaEm?: string;
+    produtosConferidos?: number;
+};
+
+export type RespostaDaDivergencia = {
+    diferenca?: number;
+    produto?: RespostaDoProduto;
+    saldoGuardado?: number;
+    somaDosMovimentos?: number;
+};
+
+export type RespostaDaFicha = {
+    historico?: PaginaRespostaDaLinha;
+    produto?: RespostaDoProduto;
+    saldo?: number;
+};
+
 export type RespostaDaFoto = {
     altura?: number;
     grandeUrl?: string;
@@ -485,6 +539,22 @@ export type RespostaDaFoto = {
     version?: number;
 };
 
+export type RespostaDaLinha = {
+    desfeitoPorId?: string;
+    estornaId?: string;
+    id?: string;
+    motivo?: string;
+    ocorridaEm?: string;
+    origem?: string;
+    origemId?: string;
+    produto?: RespostaDoProduto;
+    quantidade?: number;
+    saldoDepois?: number;
+    tipo?: string;
+    usuarioId?: string;
+    usuarioNome?: string;
+};
+
 export type RespostaDoLogin = {
     expiraEm?: string;
     horaDoServidor?: string;
@@ -495,6 +565,30 @@ export type RespostaDoLogin = {
     tokenDeRenovacaoExpiraEm?: string;
     trocaDeSenhaObrigatoria?: boolean;
     validadeEmSegundos?: number;
+};
+
+export type RespostaDoMovimento = {
+    estornaId?: string;
+    id?: string;
+    motivo?: string;
+    ocorridaEm?: string;
+    origem?: string;
+    origemId?: string;
+    produtoId?: string;
+    quantidade?: number;
+    saldoDepois?: number;
+    tipo?: string;
+    usuarioId?: string;
+};
+
+export type RespostaDoProduto = {
+    ativo?: boolean;
+    codigo?: string;
+    estoqueMinimo?: number;
+    fotoPrincipal?: FotoPrincipal;
+    id?: string;
+    nome?: string;
+    referencia?: string;
 };
 
 export type ResultadoDaFoto = {
@@ -636,23 +730,23 @@ export type TrocarSenhaResponses = {
 
 export type TrocarSenhaResponse = TrocarSenhaResponses[keyof TrocarSenhaResponses];
 
-export type Listar11Data = {
+export type Listar12Data = {
     body?: never;
     path?: never;
     query?: never;
     url: '/api/dona/avisos';
 };
 
-export type Listar11Responses = {
+export type Listar12Responses = {
     /**
      * OK
      */
     200: AvisosResposta;
 };
 
-export type Listar11Response = Listar11Responses[keyof Listar11Responses];
+export type Listar12Response = Listar12Responses[keyof Listar12Responses];
 
-export type Listar10Data = {
+export type Listar11Data = {
     body?: never;
     path?: never;
     query?: {
@@ -664,14 +758,14 @@ export type Listar10Data = {
     url: '/api/dona/categorias';
 };
 
-export type Listar10Responses = {
+export type Listar11Responses = {
     /**
      * OK
      */
     200: PaginaResposta;
 };
 
-export type Listar10Response = Listar10Responses[keyof Listar10Responses];
+export type Listar11Response = Listar11Responses[keyof Listar11Responses];
 
 export type Criar8Data = {
     body: Pedido;
@@ -777,7 +871,7 @@ export type Reativar7Responses = {
 
 export type Reativar7Response = Reativar7Responses[keyof Reativar7Responses];
 
-export type Listar9Data = {
+export type Listar10Data = {
     body?: never;
     path?: never;
     query?: {
@@ -789,14 +883,14 @@ export type Listar9Data = {
     url: '/api/dona/clientes';
 };
 
-export type Listar9Responses = {
+export type Listar10Responses = {
     /**
      * OK
      */
     200: PaginaResposta;
 };
 
-export type Listar9Response = Listar9Responses[keyof Listar9Responses];
+export type Listar10Response = Listar10Responses[keyof Listar10Responses];
 
 export type Criar7Data = {
     body: Pedido;
@@ -933,6 +1027,118 @@ export type HojeResponses = {
 };
 
 export type HojeResponse = HojeResponses[keyof HojeResponses];
+
+export type AjustarData = {
+    body: PedidoDeAjuste;
+    path?: never;
+    query?: never;
+    url: '/api/dona/estoque/ajustes';
+};
+
+export type AjustarResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDoMovimento;
+};
+
+export type AjustarResponse = AjustarResponses[keyof AjustarResponses];
+
+export type ConciliarData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/dona/estoque/conciliacao';
+};
+
+export type ConciliarResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDaConciliacao;
+};
+
+export type ConciliarResponse = ConciliarResponses[keyof ConciliarResponses];
+
+export type Listar9Data = {
+    body?: never;
+    path?: never;
+    query?: {
+        produtoId?: string;
+        tipo?: string;
+        origem?: string;
+        usuarioId?: string;
+        de?: string;
+        ate?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/estoque/movimentacoes';
+};
+
+export type Listar9Responses = {
+    /**
+     * OK
+     */
+    200: PaginaRespostaDaLinha;
+};
+
+export type Listar9Response = Listar9Responses[keyof Listar9Responses];
+
+export type LancarData = {
+    body: PedidoDeMovimento;
+    path?: never;
+    query?: never;
+    url: '/api/dona/estoque/movimentacoes';
+};
+
+export type LancarResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDoMovimento;
+};
+
+export type LancarResponse = LancarResponses[keyof LancarResponses];
+
+export type DesfazerData = {
+    body: PedidoDeEstorno;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/estoque/movimentacoes/{id}/estorno';
+};
+
+export type DesfazerResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDoMovimento;
+};
+
+export type DesfazerResponse = DesfazerResponses[keyof DesfazerResponses];
+
+export type FichaData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: {
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/estoque/produtos/{id}';
+};
+
+export type FichaResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDaFicha;
+};
+
+export type FichaResponse = FichaResponses[keyof FichaResponses];
 
 export type Listar8Data = {
     body?: never;
