@@ -1,0 +1,19 @@
+{
+  "name": "@corona/spike-sqlcipher",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Spike da tarefa 18 (ADR-0005). Descartável. Fora dos workspaces.",
+  "main": "app/main.cjs",
+  "scripts": {
+    "test": "vitest run",
+    "electron": "node rodar-electron.mjs",
+    "empacotar": "node rodar-electron.mjs --empacotar"
+  },
+  "dependencies": {
+    "better-sqlite3-multiple-ciphers": "13.0.3"
+  },
+  "devDependencies": {
+    "vitest": "5.1.0"
+  }
+}

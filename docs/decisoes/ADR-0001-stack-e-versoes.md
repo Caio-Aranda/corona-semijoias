@@ -32,6 +32,7 @@ Todas as versões abaixo foram **consultadas na fonte oficial em 09/11/2026**. O
 | TypeScript | **6.0.3** (e não a 7.0.2) | [Registro do npm](https://registry.npmjs.org/typescript). A 7.0.2 é a marcada como `latest`, mas o [typescript-eslint 8.72.1](https://registry.npmjs.org/typescript-eslint/latest) só aceita TypeScript abaixo de 6.1.0. Consulta em 09/11/2026 | Sem data publicada |
 | Vitest | **5.1.0** | [Registro do npm](https://registry.npmjs.org/vitest/latest) (02/11/2026): exige Node 22.12 ou mais novo. Consulta em 09/11/2026 | Sem data publicada |
 | Gerador de cliente a partir do OpenAPI | **@hey-api/openapi-ts 0.99.0**, versão fixa (sem `^`) | [Registro do npm](https://registry.npmjs.org/@hey-api/openapi-ts/latest): aceita TypeScript 5.5.3 em diante, inclusive o 6. Consulta em 09/11/2026 | Sem data publicada; a biblioteca ainda é 0.x |
+| Banco local cifrado (linha acrescentada em 09/11/2026, ADR-0005) | **better-sqlite3-multiple-ciphers 13.0.3**, versão fixa; entra no `apps/seller-app` na Fase 5 | [Registro do npm](https://registry.npmjs.org/better-sqlite3-multiple-ciphers/13.0.3) (publicada em 07/08/2026), MIT, binário `win32-x64` já no pacote. Consulta em 09/11/2026 | Sem data publicada |
 
 Também vêm do Boot 4.1.2 e valem para o backend: Spring Framework 7.0.10 e driver JDBC do PostgreSQL 42.7.14. A tarefa 6 não deve fixá-las à mão, e sim herdar do Boot.
 
