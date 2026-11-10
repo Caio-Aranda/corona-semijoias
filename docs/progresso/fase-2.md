@@ -63,3 +63,31 @@ Uma seção por tarefa, no mesmo formato de [fase-1.md](fase-1.md). A tabela de 
 
 - A dona aceita que o sistema recuse a saída quando faltar peça no estoque (ela precisa lançar a compra antes)? Se preferir avisar e deixar passar, o ADR-0008 muda antes da 2.2.
 - Ao fechar uma contagem, a peça que não foi lida deve virar "zero em estoque" ou ficar só como diferença para a dona decidir? Adotei: só vira zero se ela confirmar.
+
+### Tarefa 2.2: backend, movimentações de estoque
+
+**Em revisão.** Segue o [ADR-0008](../decisoes/ADR-0008-estoque-e-movimentacoes.md); a especificação não mudou.
+
+**O que foi feito**
+
+- Migração **V018**: `movimentacoes_estoque` (histórico imutável: gatilhos recusam `UPDATE` e `DELETE`), com `quantidade` com sinal (nunca zero), `saldo_depois`, origem (`MANUAL`, `AJUSTE_MANUAL`, `COMPRA`, `INVENTARIO`, `MALETA`, `ESTORNO`), motivo, usuário, `ocorrida_em` (UTC) e `estorna_id`. `CHECK` do sinal por tipo (exceto estorno), motivo obrigatório em ajuste e estorno, índice único em `estorna_id` (um movimento só é desfeito uma vez), índices por produto e por data. `CHECK (estoque_atual >= 0)` em `produtos`.
+- **`ServicoDeEstoque`**, o único código que faz `UPDATE` em `produtos.estoque_atual`: grava o movimento e o saldo na mesma transação, trava os produtos (`FOR UPDATE`) um a um em ordem de id, recusa saldo negativo (409, "Há N peça(s) de …"), é idempotente pelo UUID (mesmo id e mesmos dados devolve o gravado; dados diferentes, 409) e aceita lotes de vários produtos, tudo ou nada (para a 2.3, a 2.4 e a Fase 3).
+- **Estorno**: movimento novo, mesmo tipo, sinal oposto, `estorna_id`, motivo obrigatório; recusa desfazer duas vezes, desfazer um "desfazer" e o que deixaria o saldo negativo. **Ajuste manual** por nova quantidade ou por diferença, com motivo, na auditoria (`ESTOQUE_AJUSTADO`, `MOVIMENTO_ESTORNADO`).
+- Rotas `/api/dona/estoque` (só ADMIN): `POST /movimentacoes` (entrada, saída, perda), `POST /ajustes`, `POST /movimentacoes/{id}/estorno`, `GET /movimentacoes` (filtros produto, tipo, origem, usuário, período; paginada), `GET /produtos/{id}` (saldo e histórico) e `GET /conciliacao`. Toda resposta com produto traz `fotoPrincipal`.
+- **Conciliação**: `soma(movimentos) = estoque_atual` por produto, em serviço, rota e teste (inclusive provocando a divergência direto no banco).
+- `estoque_atual` e `estoque_minimo` **saíram do contrato do pull** de produtos (estavam na lista desde a 1.5); teste de arquitetura garante isso e que só o `ServicoDeEstoque` altera o saldo.
+- Testes: concorrência real (entradas e saídas no mesmo produto, saídas disputando saldo curto, lotes com ordens cruzadas, estorno simultâneo, reenvio simultâneo), idempotência, todas as recusas do estorno, imutabilidade, permissão, auditoria e o teste de glossário existente.
+
+**Decisões que tomei**
+
+- **Quantidade com sinal na tabela** (como manda o ADR), embora o prompt falasse em quantidade positiva: o app manda só a quantidade positiva e o servidor põe o sinal.
+- **Produto inativo pode ser lançado** (a peça ainda existe na loja); **excluído é 404**. O ADR não dizia.
+- **A rota manual aceita só ENTRADA, SAIDA e AVARIA**; `REMESSA` e `DEVOLUCAO` existem no serviço e só serão usados na Fase 3. O ajuste tem rota própria.
+- **Ajuste por nova quantidade**: a diferença é calculada com o produto travado; o reenvio com o mesmo id compara o saldo final pedido. Ajuste que não muda nada é recusado.
+- **O saldo muda a `version` do produto** (o gatilho de controle é por linha e não dá para pular): uma edição de cadastro aberta na tela pode receber "cadastro alterado por outra pessoa" depois de uma entrada. Aceitável com poucas pessoas; se incomodar, separar o saldo numa tabela própria.
+- Período do histórico em datas UTC, `de` e `ate` inclusivos.
+
+**O que ficou de fora**
+
+- Compras (2.3), inventário e aviso de estoque mínimo (2.4), relatórios (2.5), telas (2.6 a 2.8).
+- Relatório de conciliação em PDF/Excel/CSV: só a rota JSON e o teste; a exportação vem com a 2.5.

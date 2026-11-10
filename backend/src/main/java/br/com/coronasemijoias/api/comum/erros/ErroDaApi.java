@@ -91,6 +91,15 @@ public class ErroDaApi extends ErrorResponseException {
         return new ErroDaApi(HttpStatus.CONFLICT, tipo, corpo);
     }
 
+    /** 409 do estoque que não basta: diz quanto há e de qual produto (glossário, parte 12). */
+    public static ErroDaApi estoqueInsuficiente(int ha, String nomeDoProduto) {
+        CodigoErro tipo = CodigoErro.ESTOQUE_INSUFICIENTE;
+        ProblemDetail corpo = Problemas.de(HttpStatus.CONFLICT, tipo);
+        corpo.setDetail("Não há peças suficientes no estoque. Há " + ha + " peça(s) de \"" + nomeDoProduto
+                + "\". Confira a quantidade ou receba a compra antes.");
+        return new ErroDaApi(HttpStatus.CONFLICT, tipo, corpo);
+    }
+
     private static ErroDaApi comFrase(HttpStatus status, CodigoErro codigo, String frase) {
         ProblemDetail corpo = Problemas.de(status, codigo);
         corpo.setDetail(codigo.mensagem() + " " + frase);

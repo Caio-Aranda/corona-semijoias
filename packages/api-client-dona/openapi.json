@@ -247,6 +247,23 @@
         },
         "type" : "object"
       },
+      "FotoPrincipal" : {
+        "properties" : {
+          "grandeUrl" : {
+            "type" : "string"
+          },
+          "hash" : {
+            "type" : "string"
+          },
+          "mediaUrl" : {
+            "type" : "string"
+          },
+          "miniaturaUrl" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "Item" : {
         "properties" : {
           "ativo" : {
@@ -657,6 +674,29 @@
         },
         "type" : "object"
       },
+      "PaginaRespostaDaLinha" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/RespostaDaLinha"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "Pedido" : {
         "properties" : {
           "comissaoPercentual" : {
@@ -758,6 +798,33 @@
         "required" : [ "nome" ],
         "type" : "object"
       },
+      "PedidoDeAjuste" : {
+        "properties" : {
+          "diferenca" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "motivo" : {
+            "maxLength" : 500,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "novaQuantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "required" : [ "produtoId" ],
+        "type" : "object"
+      },
       "PedidoDeCodigo" : {
         "properties" : {
           "ativo" : {
@@ -810,6 +877,20 @@
         "required" : [ "nome", "perfil", "version" ],
         "type" : "object"
       },
+      "PedidoDeEstorno" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "motivo" : {
+            "maxLength" : 500,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "PedidoDeLinha" : {
         "properties" : {
           "motivo" : {
@@ -857,6 +938,32 @@
             "type" : "string"
           }
         },
+        "type" : "object"
+      },
+      "PedidoDeMovimento" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "motivo" : {
+            "maxLength" : 500,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "tipo" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "produtoId", "quantidade", "tipo" ],
         "type" : "object"
       },
       "PedidoDeOrdem" : {
@@ -1496,6 +1603,60 @@
         },
         "type" : "object"
       },
+      "RespostaDaConciliacao" : {
+        "properties" : {
+          "divergencias" : {
+            "items" : {
+              "$ref" : "#/components/schemas/RespostaDaDivergencia"
+            },
+            "type" : "array"
+          },
+          "geradaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "produtosConferidos" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RespostaDaDivergencia" : {
+        "properties" : {
+          "diferenca" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "produto" : {
+            "$ref" : "#/components/schemas/RespostaDoProduto"
+          },
+          "saldoGuardado" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "somaDosMovimentos" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RespostaDaFicha" : {
+        "properties" : {
+          "historico" : {
+            "$ref" : "#/components/schemas/PaginaRespostaDaLinha"
+          },
+          "produto" : {
+            "$ref" : "#/components/schemas/RespostaDoProduto"
+          },
+          "saldo" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "RespostaDaFoto" : {
         "properties" : {
           "altura" : {
@@ -1544,6 +1705,58 @@
         },
         "type" : "object"
       },
+      "RespostaDaLinha" : {
+        "properties" : {
+          "desfeitoPorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "estornaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "motivo" : {
+            "type" : "string"
+          },
+          "ocorridaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "origem" : {
+            "type" : "string"
+          },
+          "origemId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "produto" : {
+            "$ref" : "#/components/schemas/RespostaDoProduto"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "saldoDepois" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "usuarioId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "usuarioNome" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "RespostaDoLogin" : {
         "properties" : {
           "expiraEm" : {
@@ -1577,6 +1790,80 @@
           "validadeEmSegundos" : {
             "format" : "int64",
             "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RespostaDoMovimento" : {
+        "properties" : {
+          "estornaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "motivo" : {
+            "type" : "string"
+          },
+          "ocorridaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "origem" : {
+            "type" : "string"
+          },
+          "origemId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "saldoDepois" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "usuarioId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "RespostaDoProduto" : {
+        "properties" : {
+          "ativo" : {
+            "type" : "boolean"
+          },
+          "codigo" : {
+            "type" : "string"
+          },
+          "estoqueMinimo" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "fotoPrincipal" : {
+            "$ref" : "#/components/schemas/FotoPrincipal"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "referencia" : {
+            "type" : "string"
           }
         },
         "type" : "object"
@@ -1852,7 +2139,7 @@
     "/api/dona/avisos" : {
       "get" : {
         "description" : "Os avisos que valem agora, calculados na hora (nada é gravado): cada um some sozinho quando o problema some. Lista vazia quando não há nada. Hoje: a cotação do Dólar e do Guarani que não chegou.",
-        "operationId" : "listar_11",
+        "operationId" : "listar_12",
         "responses" : {
           "200" : {
             "content" : {
@@ -1875,7 +2162,7 @@
     "/api/dona/categorias" : {
       "get" : {
         "description" : "Busca pelo nome. A página começa em 0 (até 100 por página).",
-        "operationId" : "listar_10",
+        "operationId" : "listar_11",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
@@ -2135,7 +2422,7 @@
     "/api/dona/clientes" : {
       "get" : {
         "description" : "Busca pelo nome, telefone, WhatsApp ou CPF. A página começa em 0 (até 100 por página).",
-        "operationId" : "listar_9",
+        "operationId" : "listar_10",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
@@ -2446,6 +2733,269 @@
         } ],
         "summary" : "Cotação do dia",
         "tags" : [ "cotacoes-da-dona-controller" ]
+      }
+    },
+    "/api/dona/estoque/ajustes" : {
+      "post" : {
+        "description" : "Corrige a quantidade e exige o motivo. Mande novaQuantidade (como o estoque deve ficar) OU diferenca (peças a mais, ou a menos se negativa), nunca os dois. Não passa de zero. Vai para a auditoria.",
+        "operationId" : "ajustar",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeAjuste"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDoMovimento"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ajustar o estoque",
+        "tags" : [ "estoque-da-dona-controller" ]
+      }
+    },
+    "/api/dona/estoque/conciliacao" : {
+      "get" : {
+        "description" : "Para cada produto, compara o estoque guardado com a soma dos lançamentos. A lista de divergências deve vir vazia.",
+        "operationId" : "conciliar",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDaConciliacao"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Conferir o estoque",
+        "tags" : [ "estoque-da-dona-controller" ]
+      }
+    },
+    "/api/dona/estoque/movimentacoes" : {
+      "get" : {
+        "description" : "Filtros: produtoId, tipo, origem (MANUAL, AJUSTE_MANUAL, COMPRA, INVENTARIO, MALETA, ESTORNO), usuarioId e período (de, ate: datas em UTC, as duas inclusivas). Mais novo primeiro. A página começa em 0 (até 200 por página).",
+        "operationId" : "listar_9",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "produtoId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tipo",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "origem",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "usuarioId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaginaRespostaDaLinha"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Entradas e saídas (histórico do estoque)",
+        "tags" : [ "estoque-da-dona-controller" ]
+      },
+      "post" : {
+        "description" : "Tipos: ENTRADA, SAIDA e AVARIA (perda). Mande a quantidade positiva: o servidor põe o sinal. O id (UUID) é opcional e torna o reenvio seguro: o mesmo id com os mesmos dados devolve o lançamento já gravado (200) sem somar de novo; com dados diferentes, 409. Saída que deixaria o estoque abaixo de zero volta 409 dizendo quanto há. Produto inativo ainda pode ser lançado; excluído, não.",
+        "operationId" : "lancar",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeMovimento"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDoMovimento"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Lançar entrada, saída ou perda",
+        "tags" : [ "estoque-da-dona-controller" ]
+      }
+    },
+    "/api/dona/estoque/movimentacoes/{id}/estorno" : {
+      "post" : {
+        "description" : "Cria um lançamento novo que cancela o anterior (o antigo continua no histórico). Exige o motivo. Recusa (409) desfazer duas vezes, desfazer um lançamento que já é um \"desfazer\" e o que deixaria o estoque abaixo de zero. Vai para a auditoria.",
+        "operationId" : "desfazer",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeEstorno"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDoMovimento"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Desfazer um lançamento",
+        "tags" : [ "estoque-da-dona-controller" ]
+      }
+    },
+    "/api/dona/estoque/produtos/{id}" : {
+      "get" : {
+        "description" : "Quantas peças há e o histórico do produto (mais novo primeiro).",
+        "operationId" : "ficha",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDaFicha"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ficha do produto no estoque",
+        "tags" : [ "estoque-da-dona-controller" ]
       }
     },
     "/api/dona/fornecedores" : {
