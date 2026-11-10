@@ -18,7 +18,21 @@ import {
   reativar3 as reativarProduto,
   ver4 as verProduto,
   baixar,
+  abaixoDoMinimo1 as acabandoNoEstoque,
+  ajustar as ajustarEstoque,
+  cancelar as cancelarContagem,
+  comecar as comecarContagem,
+  corrigir as corrigirContagem,
+  desfazer as desfazerLancamento,
   desfazer1 as desfazerCompra,
+  ficha as fichaDoEstoque,
+  fechar as fecharContagem,
+  itens as itensDaContagem,
+  lancar as lancarNoEstoque,
+  ler as lerNaContagem,
+  listar10 as listarLancamentos,
+  listar8 as listarContagens,
+  ver9 as verContagem,
   listar11 as listarCompras,
   receber as receberCompra,
   ver10 as verCompra,
@@ -111,6 +125,7 @@ import {
 import type { NomeDoCadastro } from '../shared/cadastros';
 import type { ParametrosConferidos, ParametrosDeVendedor } from '../shared/validacao-parametros';
 import type { ParametrosDeCompra } from '../shared/validacao-compras';
+import type { ParametrosDeEstoque } from '../shared/validacao-estoque';
 import type { ParametrosDeProduto } from '../shared/validacao-produtos';
 import type { ParametrosDeRelatorio } from '../shared/validacao-relatorios';
 import type { AbaDoVendedor, ArquivoBaixado } from '../shared/vendedores';
@@ -432,6 +447,49 @@ async function executarCompra(
   }
 }
 
+/** Estoque e contagem (só ADMIN; o servidor recalcula saldo e ajustes, a tela só manda o que a pessoa fez). */
+async function executarEstoque(
+  client: ReturnType<typeof criarClienteDaApi>,
+  headers: { Authorization: string },
+  pedido: ParametrosDeEstoque,
+): Promise<Resultado<unknown>> {
+  const base = { client, headers };
+  const id = pedido.id as string;
+  const path = { id };
+  const query = pedido.consulta as never;
+  const body = pedido.corpo as never;
+  switch (pedido.operacao) {
+    case 'estoque.ficha':
+      return executar(() => fichaDoEstoque({ ...base, path, query }));
+    case 'estoque.lancar':
+      return executar(() => lancarNoEstoque({ ...base, body }));
+    case 'estoque.ajustar':
+      return executar(() => ajustarEstoque({ ...base, body }));
+    case 'estoque.desfazer':
+      return executar(() => desfazerLancamento({ ...base, path, body }));
+    case 'estoque.lancamentos':
+      return executar(() => listarLancamentos({ ...base, query }));
+    case 'estoque.acabando':
+      return executar(() => acabandoNoEstoque({ ...base, query }));
+    case 'contagens.listar':
+      return executar(() => listarContagens({ ...base, query }));
+    case 'contagens.comecar':
+      return executar(() => comecarContagem({ ...base, body }));
+    case 'contagens.ver':
+      return executar(() => verContagem({ ...base, path }));
+    case 'contagens.itens':
+      return executar(() => itensDaContagem({ ...base, path, query }));
+    case 'contagens.ler':
+      return executar(() => lerNaContagem({ ...base, path, body }));
+    case 'contagens.corrigir':
+      return executar(() => corrigirContagem({ ...base, path, body }));
+    case 'contagens.fechar':
+      return executar(() => fecharContagem({ ...base, path, body }));
+    case 'contagens.cancelar':
+      return executar(() => cancelarContagem({ ...base, path, body }));
+  }
+}
+
 /** Relatórios de cadastro (só ADMIN; o servidor confere). O de produtos traz o custo, por isso só existe aqui. */
 async function executarRelatorio(
   client: ReturnType<typeof criarClienteDaApi>,
@@ -657,6 +715,9 @@ export function criarApiDoGestao(opcoes: OpcoesDaApi): ApiDoGestao {
       }
       if (pedido.operacao.startsWith('produtos.') || pedido.operacao === 'importacoes.registrar') {
         return executarProduto(client, headers, pedido as ParametrosDeProduto, fotos);
+      }
+      if (pedido.operacao.startsWith('estoque.') || pedido.operacao.startsWith('contagens.')) {
+        return executarEstoque(client, headers, pedido as ParametrosDeEstoque);
       }
       if (pedido.operacao.startsWith('compras.')) {
         return executarCompra(client, headers, pedido as ParametrosDeCompra);

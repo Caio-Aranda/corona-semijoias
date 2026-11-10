@@ -10,6 +10,7 @@ import {
 } from './cadastros';
 import type { OperacaoDaApi } from './ponte';
 import { conferirCompra, type ParametrosDeCompra } from './validacao-compras';
+import { conferirEstoque, type ParametrosDeEstoque } from './validacao-estoque';
 import { conferirProduto, type ParametrosDeProduto } from './validacao-produtos';
 import { conferirRelatorio, type ParametrosDeRelatorio } from './validacao-relatorios';
 import {
@@ -113,6 +114,7 @@ export type ParametrosConferidos =
   | ParametrosDeVendedor
   | ParametrosDeProduto
   | ParametrosDeCompra
+  | ParametrosDeEstoque
   | ParametrosDeRelatorio
   | { operacao: 'eu' | 'cotacao.hoje' | 'avisos.listar' | 'vendedores.escolha' }
   | { operacao: 'usuarios.listar'; lista: ParametrosDaLista }
@@ -474,6 +476,21 @@ export function conferirParametros(
     case 'compras.receber':
     case 'compras.desfazer':
       return conferirCompra(operacao, p);
+    case 'estoque.ficha':
+    case 'estoque.lancar':
+    case 'estoque.ajustar':
+    case 'estoque.desfazer':
+    case 'estoque.lancamentos':
+    case 'estoque.acabando':
+    case 'contagens.listar':
+    case 'contagens.comecar':
+    case 'contagens.ver':
+    case 'contagens.itens':
+    case 'contagens.ler':
+    case 'contagens.corrigir':
+    case 'contagens.fechar':
+    case 'contagens.cancelar':
+      return conferirEstoque(operacao, p);
     case 'relatorios.cadastros':
       return conferirRelatorio(p);
     default:

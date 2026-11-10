@@ -356,4 +356,41 @@ describe('API do Corona Gestão: rotas certas no cliente gerado', () => {
       } as never),
     ).toBe(`POST /api/dona/compras/${ID}/desfazer`);
   });
+
+  it('estoque e contagens chamam as rotas certas', async () => {
+    const c = (operacao: string, extra: object = {}) => caminhoDe({ operacao, ...extra } as never);
+    const consulta = { pagina: 0, tamanho: 20 };
+    expect(await c('estoque.ficha', { id: ID, consulta })).toBe(
+      `GET /api/dona/estoque/produtos/${ID}`,
+    );
+    expect(await c('estoque.lancar', { corpo: {} })).toBe('POST /api/dona/estoque/movimentacoes');
+    expect(await c('estoque.ajustar', { corpo: {} })).toBe('POST /api/dona/estoque/ajustes');
+    expect(await c('estoque.desfazer', { id: ID, corpo: {} })).toBe(
+      `POST /api/dona/estoque/movimentacoes/${ID}/estorno`,
+    );
+    expect(await c('estoque.lancamentos', { consulta })).toBe(
+      'GET /api/dona/estoque/movimentacoes',
+    );
+    expect(await c('estoque.acabando', { consulta })).toBe(
+      'GET /api/dona/estoque/abaixo-do-minimo',
+    );
+    expect(await c('contagens.listar', { consulta })).toBe('GET /api/dona/inventarios');
+    expect(await c('contagens.comecar', { corpo: {} })).toBe('POST /api/dona/inventarios');
+    expect(await c('contagens.ver', { id: ID })).toBe(`GET /api/dona/inventarios/${ID}`);
+    expect(await c('contagens.itens', { id: ID, consulta })).toBe(
+      `GET /api/dona/inventarios/${ID}/itens`,
+    );
+    expect(await c('contagens.ler', { id: ID, corpo: {} })).toBe(
+      `POST /api/dona/inventarios/${ID}/leituras`,
+    );
+    expect(await c('contagens.corrigir', { id: ID, corpo: {} })).toBe(
+      `POST /api/dona/inventarios/${ID}/contagens`,
+    );
+    expect(await c('contagens.fechar', { id: ID, corpo: {} })).toBe(
+      `POST /api/dona/inventarios/${ID}/fechar`,
+    );
+    expect(await c('contagens.cancelar', { id: ID, corpo: {} })).toBe(
+      `POST /api/dona/inventarios/${ID}/cancelar`,
+    );
+  });
 });

@@ -407,3 +407,22 @@
   gap: 0.5rem;
   align-items: center;
 }
+
+/* Estoque (tarefa 2.7): "Está acabando" em destaque, sempre texto escuro sobre fundo claro. */
+.gestao-acabando {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px solid var(--cor-borda);
+  border-left: 4px solid var(--cor-ouro);
+  background: var(--cor-fundo-suave);
+  color: var(--cor-texto);
+}
+
+.gestao-opcao {
+  display: block;
+  margin: 4px 0;
+}
+
+.gestao-peca-lida .gestao-consulta {
+  align-items: flex-start;
+}

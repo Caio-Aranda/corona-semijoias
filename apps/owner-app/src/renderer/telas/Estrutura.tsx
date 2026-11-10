@@ -10,6 +10,9 @@ import { TelaInicial } from './TelaInicial';
 import { TelaDeCadastro } from './cadastros/TelaDeCadastro';
 import { ListaDeCompras } from './compras/ListaDeCompras';
 import { TelaReceberCompra } from './compras/TelaReceberCompra';
+import { ListaDeLancamentos } from './estoque/ListaDeLancamentos';
+import { ListaDoEstoque } from './estoque/ListaDoEstoque';
+import { TelaContagem } from './estoque/TelaContagem';
 import { TelaProdutos } from './produtos/TelaProdutos';
 import { TelaDeRelatorio } from './relatorios/TelaDeRelatorio';
 import { NOMES_DOS_RELATORIOS, type NomeDoRelatorio } from '../../shared/relatorios';
@@ -36,6 +39,14 @@ function Conteudo({
       return <TelaInicial ponte={ponte} nome={nome} />;
     case 'cadastros/produtos':
       return <TelaProdutos ponte={ponte} />;
+    case 'estoque/posicao':
+      return <ListaDoEstoque ponte={ponte} modo="posicao" />;
+    case 'estoque/acabando':
+      return <ListaDoEstoque ponte={ponte} modo="acabando" />;
+    case 'estoque/entradas-e-saidas':
+      return <ListaDeLancamentos ponte={ponte} />;
+    case 'estoque/contagem':
+      return <TelaContagem ponte={ponte} />;
     case 'estoque/receber-compra':
       return (
         <TelaReceberCompra

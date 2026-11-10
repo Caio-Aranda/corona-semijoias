@@ -3,6 +3,7 @@ import { useState } from 'react';
 import type { PonteDoCorona } from '../../shared/ponte';
 import { chamar, useBusca } from '../nucleo/chamadas';
 import { TEXTOS } from '../textos';
+import { TEXTOS_DE_ESTOQUE } from '../textos-estoque';
 
 const BOTOES = [
   'Montar maleta',
@@ -78,6 +79,15 @@ export function TelaInicial({ ponte, nome }: TelaInicialProps) {
             {lista.map((a) => (
               <Aviso key={`${a.titulo}${a.texto}`} tipo="atencao" titulo={a.titulo}>
                 {a.texto}
+                {/acabando/i.test(a.titulo) ? (
+                  <Botao
+                    onClick={() => {
+                      window.location.hash = '/estoque/acabando';
+                    }}
+                  >
+                    {TEXTOS_DE_ESTOQUE.aviso.verLista}
+                  </Botao>
+                ) : null}
               </Aviso>
             ))}
           </div>
