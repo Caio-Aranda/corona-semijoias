@@ -1,6 +1,6 @@
 # Especificação completa: Sistema de Semijoias Consignadas
 
-Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.5, 09/11/2026.
+Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.6, 10/11/2026.
 
 ## 1. Objetivo e contexto
 
@@ -108,8 +108,8 @@ O app **nunca acessa o banco direto**, apenas a API. Segurança (ninguém tem a 
 8. Comissão é percentual por vendedor, calculado sobre o vendido no acerto.
 9. Acerto **semanal**.
 10. A **nota de remessa não tem validade fiscal**: é um documento interno em PDF.
-11. Fornecedores usam **EAN-13** (premissa provisória, a confirmar).
-12. Peça com código EAN-13 vem etiquetada pelo fornecedor; a dona cadastra os códigos no sistema.
+11. A loja imprime as próprias etiquetas de joia (código curto da loja, não EAN-13); cada peça tem também o código do fornecedor. EAN-13 é opcional (padrão seguro, a confirmar com a dona; ADR-0007).
+12. A dona cadastra os códigos no sistema: o código da loja, o do fornecedor e, se houver, o EAN-13.
 13. Roda só em Windows.
 14. Assinatura de código e VPS entram no orçamento do cliente.
 15. Cada vendedor usa o **próprio notebook**, um aparelho por vendedor. Desde a Fase 0 a sessão guarda o identificador do aparelho. Impedir um segundo aparelho fica para a Fase 5 (tabela `dispositivos`).
@@ -225,24 +225,25 @@ O leitor USB/Bluetooth funciona como **teclado**: digita o código e envia **Ent
 - No app do vendedor a busca é no **banco local**, instantânea e offline.
 - **Busca manual** por nome ou referência sempre disponível.
 
-### Cadastro dos códigos (EAN-13)
+### Cadastro dos códigos
 
-- O fornecedor envia a peça já com código; a dona **cadastra os códigos** no sistema.
-- Fluxo 1: no cadastro do produto, o cursor já fica em Código de barras; ela bipa.
+Padrão seguro (ADR-0007), até a dona confirmar como são as etiquetas: a loja imprime as próprias etiquetas, não EAN-13.
+
+- Cada peça tem o **código da loja** (COD: interno, sequencial, da loja) e o **código do fornecedor** (COD Fábrica: do fornecedor, alfanumérico). Pode ter também um EAN-13, se existir.
+- Fluxo 1: no cadastro do produto, o cursor já fica em Código; ela lê o código com o leitor.
 - Fluxo 2 (principal no dia a dia): na entrada da compra, código conhecido soma; desconhecido abre **cadastro rápido**.
 - **Importação em massa** por planilha Excel/CSV (código, nome, categoria, custo, preço), com **prévia de erros** e relatório do resultado (criados, atualizados, recusados).
-- **Um produto pode ter vários códigos**: tabela `produto_codigos` em vez de um campo único.
-- Código **único globalmente**, guardado como **texto** (zeros à esquerda).
-- **Validar o dígito verificador do EAN-13** e avisar quando a leitura vier truncada ("leia o código de novo").
-- Aceitar outros formatos (Code 128, códigos curtos) **com aviso**, caso algum fornecedor fuja do padrão. Se a premissa do EAN-13 falhar, só se ajusta a regra de validação.
-- Códigos curtos iguais de fornecedores diferentes: avisar no cadastro e a dona decide (código interno ou código vinculado ao fornecedor).
-- **Código interno** para peça sem etiqueta ou ilegível: EAN-13 com prefixo `2` (faixa de uso interno), nunca conflita com os dos fornecedores. Etiquetadora é **opcional**, só para esses casos.
+- **Um produto pode ter vários códigos**: tabela `produto_codigos` em vez de um campo único. Cada linha tem **tipo** (`LOJA`, `FORNECEDOR`, `EAN13`), `fornecedor_id` opcional e `principal`.
+- O código é **texto livre**, guardado como **texto** (zeros à esquerda), e **único** em `produto_codigos`, sem diferenciar maiúsculas de minúsculas e sem espaços nas pontas.
+- O **dígito verificador** só é validado quando o tipo é `EAN13` e o código tem 13 dígitos. EAN-13 **não é obrigatório**. Quando a leitura de um EAN-13 vier truncada, avisar "leia o código de novo".
+- Código do fornecedor igual em fornecedores diferentes: como o código é único, avisar no cadastro e a dona decide (usar outro código ou vincular ao fornecedor correto).
+- Peça sem etiqueta ou ilegível: a loja gera um **código da loja** novo (sequencial) e imprime a etiqueta. Etiquetadora é **opcional**.
 - Todos os códigos sincronizam para o app do vendedor.
 
 ### Pendências sobre o leitor (levar ao cliente)
 
 1. **Qual modelo** de leitor vai comprar? Pedir que **não compre antes de testar** com as etiquetas reais.
-2. Confirmar se os fornecedores usam **EAN-13**. Pedir foto ou amostra de 3 a 4 etiquetas.
+2. Confirmar como são as etiquetas (a loja imprime as próprias; os fornecedores usam EAN-13 ou só código alfanumérico?). Pedir foto ou amostra de 3 a 4 etiquetas.
 3. Leitor com fio (USB) ou sem fio (Bluetooth)? Sem fio é mais prático para o vendedor na rua.
 4. Requisitos: modo teclado (HID) com sufixo Enter; um modelo **2D/imager** lê melhor etiquetas minúsculas de semijoia. Marcas comuns: Elgin, Bematech, Zebra, Honeywell, Datalogic.
 
@@ -265,7 +266,7 @@ Risco: etiquetas muito pequenas ou de baixa qualidade podem exigir leitor 2D ou 
 - `categorias`
 - `produtos` (nome, referência, categoria, fornecedor, preco\_venda, estoque\_minimo, estoque\_atual, foto, ativo)
 - `produtos_custos` (produto\_id, preco\_custo; **só do servidor, nunca sincronizada**; 1 para 1 com `produtos`, gravada na mesma transação)
-- `produto_codigos` (produto\_id, codigo único e indexado, fornecedor\_id, principal, ativo)
+- `produto_codigos` (produto\_id, codigo único (sem diferenciar maiúsculas e sem espaços nas pontas) e indexado, **tipo** `LOJA`/`FORNECEDOR`/`EAN13`, fornecedor\_id opcional, principal, ativo)
 
 ### Estoque e compras
 
@@ -474,7 +475,7 @@ Os apps compartilham `packages/` (componentes, clientes da API gerados do OpenAP
 | Fase | Entrega | Resultado |
 | --- | --- | --- |
 | **0. Fundação** | Monorepo, VS Code, Docker, CI, Flyway, login JWT, perfis, `CLAUDE.md` | Projeto roda do zero com um comando |
-| **1. Cadastros (dona)** | CRUD de fornecedor, produto (com `produto_codigos`, leitura de código, EAN-13), cliente, vendedor completo (limite, restrição, comissão, praça, abas da referência), pracas, semanas, relatórios de cadastro, cotação diária do Banco Central e valores em Real, Dólar e Guarani no app da dona | Base de dados da loja |
+| **1. Cadastros (dona)** | CRUD de fornecedor, produto (com `produto_codigos`, leitura de código, códigos da loja e do fornecedor, EAN-13 opcional), cliente, vendedor completo (limite, restrição, comissão, praça, abas da referência), pracas, semanas, relatórios de cadastro, cotação diária do Banco Central e valores em Real, Dólar e Guarani no app da dona | Base de dados da loja |
 | **2. Estoque e compras** | Entrada de compra com leitor, cadastro rápido, **importação por planilha**, movimentações, estoque mínimo, **inventário por leitor**, relatórios de estoque | Estoque central confiável |
 | **3. Maleta** | Montagem por leitor, limite e restrição, preço congelado, reposição, **PDF da nota de remessa**, relatórios de maleta | A dona entrega a maleta |
 | **4. App do vendedor online** | Login, conferência, venda, clientes, consulta, relatórios próprios, valores nas três moedas | Vendedor vende com internet |
@@ -494,7 +495,7 @@ Nota fiscal eletrônica (a nota de remessa é só interna), loja virtual, aplica
 
 1. DX = valor consignado, DV = devolvido, VD = vendido (confirmar o significado na referência).
 2. **Modelo do leitor** de código de barras (não comprar antes de testar com etiquetas reais), com ou sem fio.
-3. Fornecedores realmente usam **EAN-13**? Obter fotos ou amostras de 3 a 4 etiquetas de fornecedores diferentes.
+3. Como são as etiquetas? A loja imprime as próprias (código da loja) e o fornecedor manda código alfanumérico, ou algum fornecedor usa **EAN-13**? Obter fotos ou amostras de 3 a 4 etiquetas. O leitor funciona no Bloco de Notas? Qual impressora de etiquetas? O preço de venda é o custo vezes 7? (ADR-0007)
 4. Prazos de garantia (arrependimento e defeito) e se variam por categoria.
 5. Limite de desconto, limite de reembolso semanal e valor que exige aprovação da dona.
 6. Percentual de comissão (único ou por vendedor, por categoria?) e base de cálculo exata.
@@ -603,7 +604,7 @@ Toda vez que um produto aparece por **leitura de código de barras** ou por **pe
 
 - Cada produto tem **uma foto principal e até 5 fotos** no total.
 - Formas de inserir: escolher arquivo, **arrastar e soltar**, **colar** da área de transferência e, opcionalmente, **tirar pela webcam**.
-- **Importação em massa:** pasta com fotos nomeadas pelo código de barras (por exemplo `7891234567895.jpg`). O sistema associa cada foto ao produto, e a prévia mostra as que não encontraram produto e os produtos que ficaram sem foto.
+- **Importação em massa:** pasta com fotos nomeadas pelo código do produto (por exemplo `7891234567895.jpg` ou `A-0123.jpg`). O sistema associa cada foto ao produto, e a prévia mostra as que não encontraram produto e os produtos que ficaram sem foto.
 - Formatos aceitos: JPG, PNG e WebP. **Limite de 10 MB por arquivo.** Recusar arquivo que não seja imagem, com mensagem clara.
 - **Processamento no servidor:** corrigir a rotação, remover dados EXIF (como localização), gerar três tamanhos, e guardar o original reduzido:
   - miniatura (cerca de 150 px), para listas;
@@ -709,3 +710,8 @@ Importação com nome de arquivo inválido, foto duplicada, arquivo corrompido, 
   - §13: conciliações em Real; a cotação em `NUMERIC(18,8)`.
   - §15 e §21: em que fase entra cada parte (backend antes da Fase 1; dona na Fase 1; vendedor online na Fase 4; pull e uso sem internet na Fase 5; acerto na Fase 7).
   - §17: nova pendência 13, pagamento com cartão.
+- **v1.6, 10/11/2026:** códigos das etiquetas (ADR-0007) e plano da Fase 1.
+  - §6: premissas 11 e 12, a loja imprime as próprias etiquetas; EAN-13 é opcional.
+  - §8: "Cadastro dos códigos" reescrito: código da loja e código do fornecedor, texto livre e único sem diferenciar maiúsculas, dígito verificador só para o tipo EAN-13 com 13 dígitos; peça sem etiqueta ganha novo código da loja.
+  - §9: `produto_codigos` ganha o tipo (`LOJA`, `FORNECEDOR`, `EAN13`).
+  - §15, §17 e §20: texto ajustado aos códigos; nova pendência do leitor no Bloco de Notas, da impressora e da regra do preço.

@@ -35,6 +35,27 @@ Lista oficial, aprovada pelo responsável. Os ADRs e as tarefas usam estes núme
 **Fase 0 concluída** (tarefas 1 a 19). A próxima é a Fase 1.
 
 
+## Fase 1
+
+### Plano da Fase 1
+
+Cadastros da dona (§15). Segue o mesmo formato da Fase 0. O código das etiquetas está no [ADR-0007](decisoes/ADR-0007-codigos-das-etiquetas.md).
+
+| Nº | Tarefa | Situação |
+| --- | --- | --- |
+| 1.1 | docs: plano da Fase 1 e códigos das etiquetas (este PR) | Em revisão |
+| 1.2 | backend: fornecedores, categorias, praças, semanas, restrições e clientes (migração, regras, rotas da dona, testes) | A fazer |
+| 1.3 | backend: vendedor completo (tabelas filhas, limite, restrição, comissão, praça, documentos como arquivos) + FK `usuarios.vendedor_id` + CHECK "VENDEDOR tem vendedor_id" + vendedor de demonstração com cadastro | A fazer |
+| 1.4 | backend: usuários da dona (listar, editar, desativar revogando as famílias de sessão), auditoria "pelo servidor" na redefinição de senha, teste das palavras proibidas do glossário contra as mensagens da API | A fazer |
+| 1.5 | backend: produtos, `produtos_custos` e `produto_codigos` (regras do código, ADR-0007), rotas da dona | A fazer |
+| 1.6 | backend: fotos de produto (arquivos, três tamanhos, importação em massa) e relatório de produtos sem foto | A fazer |
+| 1.7 | backend: rota da cotação do dia e do aviso de falha (`AvisoDeCotacao`) | A fazer |
+| 1.8 | owner-app: base de navegação e listas, telas de usuários (senha temporária mostrada uma vez), cotação em Real/Dólar/Guarani e aviso em "O que precisa da sua atenção", mitigação das 3 falhas de renovação sem internet | A fazer |
+| 1.9 | owner-app: fornecedores, categorias, praças, semanas, restrições e clientes | A fazer |
+| 1.10 | owner-app: vendedores (abas da referência) | A fazer |
+| 1.11 | owner-app: produtos, fotos, importação em massa e leitura de código | A fazer |
+| 1.12 | relatórios de cadastro (backend + tela) | A fazer |
+
 ## Pendências abertas
 
 O que ainda está em aberto nas tarefas concluídas (o que já foi resolvido por tarefa seguinte não entra). Atualize ao fechar cada item.
@@ -44,20 +65,21 @@ O que ainda está em aberto nas tarefas concluídas (o que já foi resolvido por
 - Base da comissão (§17.6), desconto em porcentagem por linha (confirmar na Fase 4) e retenção de `sessoes` e `tentativas_login` (ADR futuro). ([tarefa 3](progresso/fase-0.md#tarefa-3-adrs-de-fundação))
 - ADR-0005 (SQLCipher) está Proposto, aguardando o responsável; itens da Fase 5: SQLCipher padrão abrir o arquivo, barreira com o módulo integrado, perda da chave e da `outbox`. ([tarefa 18](progresso/fase-0.md#tarefa-18-spike-do-sqlcipher-no-electron))
 - `npm audit` com avisos moderados em dependências de desenvolvimento (Dependabot). ([tarefa 4](progresso/fase-0.md#tarefa-4-esqueleto-do-monorepo))
-- Teste automático das palavras proibidas do glossário contra as mensagens da API (tarefa que ler os blocos do glossário). ([tarefa 6](progresso/fase-0.md#tarefa-6-esqueleto-do-backend))
+- Teste automático das palavras proibidas do glossário contra as mensagens da API (tarefa que ler os blocos do glossário). ([tarefa 6](progresso/fase-0.md#tarefa-6-esqueleto-do-backend)) **Resolvida na tarefa 1.4.**
 - Vulnerabilidade sem nota de gravidade no OSV não reprova o CI. ([tarefa 7](progresso/fase-0.md#tarefa-7-ci-e-dependabot))
 - Rotas `/sync/push` e `/sync/pull`, `sync_log`, idempotência, cursor inválido e filtro por vendedor (Fase 5). ([tarefa 8](progresso/fase-0.md#tarefa-8-convenções-do-schema-e-sync_seq-seguro))
 - Chave estrangeira de `origem_dispositivo` para `dispositivos`; validação do id nos DTOs; alerta de atraso do pull. ([tarefa 8](progresso/fase-0.md#tarefa-8-convenções-do-schema-e-sync_seq-seguro))
 - Valor mínimo de parcela (Fase 4); backup de produção e envio para fora da VPS (Fase 9). ([tarefa 8](progresso/fase-0.md#tarefa-8-convenções-do-schema-e-sync_seq-seguro))
-- Telas e rota das cotações na Fase 1 (a dona, com o aviso); rota do vendedor na Fase 4; pull na Fase 5; `cotacao_id` no acerto na Fase 7; conversão com `BigInt` no TypeScript quando o primeiro front-end mostrar valores (mesmos exemplos do ADR-0006). ([tarefa 8.1](progresso/fase-0.md#tarefa-81-três-moedas-e-cotação-diária-só-documentos))
+- Telas e rota das cotações na Fase 1 (a dona, com o aviso); rota do vendedor na Fase 4; pull na Fase 5; `cotacao_id` no acerto na Fase 7; conversão com `BigInt` no TypeScript quando o primeiro front-end mostrar valores (mesmos exemplos do ADR-0006). ([tarefa 8.1](progresso/fase-0.md#tarefa-81-três-moedas-e-cotação-diária-só-documentos)) **Resolvida na tarefa 1.7 (rota) e 1.8 (tela).**
 - Dúvida do ADR-0006: incluir o aviso da cotação na lista da §19.3; pendência 13 da §17 (cartão), para o cliente. ([tarefa 8.1](progresso/fase-0.md#tarefa-81-três-moedas-e-cotação-diária-só-documentos))
-- Chave estrangeira de `usuarios.vendedor_id` para `vendedores` e `CHECK` "VENDEDOR tem vendedor_id" (Fase 1). ([tarefa 9](progresso/fase-0.md#tarefa-9-usuários-perfis-e-login-com-jwt))
-- Fase 1: auditoria "pelo servidor" da ação do comando; telas (senha mostrada uma vez, listar, editar e desativar usuários). ([tarefa 10](progresso/fase-0.md#tarefa-10-a-dona-cria-usuários-e-redefine-a-senha-temporária))
+- Chave estrangeira de `usuarios.vendedor_id` para `vendedores` e `CHECK` "VENDEDOR tem vendedor_id" (Fase 1). ([tarefa 9](progresso/fase-0.md#tarefa-9-usuários-perfis-e-login-com-jwt)) **Resolvida na tarefa 1.3.**
+- Fase 1: auditoria "pelo servidor" da ação do comando; telas (senha mostrada uma vez, listar, editar e desativar usuários). ([tarefa 10](progresso/fase-0.md#tarefa-10-a-dona-cria-usuários-e-redefine-a-senha-temporária)) **Resolvida na tarefa 1.4 (auditoria) e 1.8 (telas).**
 - `npm run api:redefinir-senha` e `docker compose exec api ...` não rodados de ponta a ponta (contêiner só na Fase 9). ([tarefa 10](progresso/fase-0.md#tarefa-10-a-dona-cria-usuários-e-redefine-a-senha-temporária))
 - Mais de uma instância da API pede um ADR (a trava por IP fica na memória). ([tarefa 11](progresso/fase-0.md#tarefa-11-sessão-longa-limite-de-tentativas-e-registro-de-acessos))
-- Fase 1: desativar usuário revoga as famílias. Fase 5: tabela `dispositivos`, segundo aparelho e prazo offline. ([tarefa 11](progresso/fase-0.md#tarefa-11-sessão-longa-limite-de-tentativas-e-registro-de-acessos))
+- Fase 1: desativar usuário revoga as famílias. Fase 5: tabela `dispositivos`, segundo aparelho e prazo offline. ([tarefa 11](progresso/fase-0.md#tarefa-11-sessão-longa-limite-de-tentativas-e-registro-de-acessos)) **Resolvida na tarefa 1.4 (a parte da Fase 1).**
 - Corona Vendas: instalador, ícone e atualização automática (Fase 9); prazo offline guardado mas ainda não aplicado, login offline e bloqueio do segundo aparelho (Fase 5). ([tarefa 16](progresso/fase-0.md#tarefa-16-corona-vendas-com-login-online-e-barreira-contra-código-da-dona))
 - Corona Vendas: o login que entra, a troca de senha e a tela inicial só foram vistos nos testes, não com conta de vendedor real (fica para o teste de uso, com o vendedor de teste da tarefa 17). ([tarefa 16](progresso/fase-0.md#tarefa-16-corona-vendas-com-login-online-e-barreira-contra-código-da-dona))
 
-- Vendedor de demonstração sem cadastro de vendedor (`vendedor_id` vazio) até a Fase 1. ([tarefa 17](progresso/fase-0.md#tarefa-17-vs-code-setup-e-roteiro-do-teste-de-uso))
+- Vendedor de demonstração sem cadastro de vendedor (`vendedor_id` vazio) até a Fase 1. ([tarefa 17](progresso/fase-0.md#tarefa-17-vs-code-setup-e-roteiro-do-teste-de-uso)) **Resolvida na tarefa 1.3.**
 - Cotações: o calendário de feriados fica no código (feriado nacional novo exige mudança); a busca roda dentro da API (uma instância só); retenção de `cotacoes` não definida. ([tarefa 19](progresso/fase-0.md#tarefa-19-cotações-do-banco-central))
+- Etiquetas: a dona ainda não confirmou o formato (leitura no Bloco de Notas, impressora, preço = custo x 7?); a Fase 1 usa o padrão seguro do ADR-0007, que está Proposto, aguardando o responsável. ([tarefa 1.1](decisoes/ADR-0007-codigos-das-etiquetas.md))
