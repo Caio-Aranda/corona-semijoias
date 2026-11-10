@@ -116,6 +116,20 @@ export type Linha = {
     tipo?: string;
 };
 
+export type LinhaAbaixoDoMinimo = {
+    ativo?: boolean;
+    categoria?: string;
+    codigo?: string;
+    falta?: number;
+    fornecedor?: string;
+    fotoPrincipalHash?: string;
+    minimo?: number;
+    nome?: string;
+    produtoId?: string;
+    referencia?: string;
+    saldo?: number;
+};
+
 export type LinhaDeAlteracao = {
     acao?: string;
     descricao?: string;
@@ -153,6 +167,31 @@ export type LinhaDeCliente = {
     whatsapp?: string;
 };
 
+export type LinhaDeCompra = {
+    dataCompra?: string;
+    estornada?: boolean;
+    estornadaEm?: string;
+    fornecedor?: string;
+    fornecedorId?: string;
+    id?: string;
+    itens?: number;
+    motivoDoEstorno?: string;
+    numero?: string;
+    pecas?: number;
+    situacao?: string;
+    total?: string;
+    usuario?: string;
+};
+
+export type LinhaDeConciliacao = {
+    diferenca?: number;
+    fotoPrincipalHash?: string;
+    nome?: string;
+    produtoId?: string;
+    saldoGuardado?: number;
+    somaDosMovimentos?: number;
+};
+
 export type LinhaDeFornecedor = {
     ativo?: boolean;
     cidade?: string;
@@ -163,6 +202,34 @@ export type LinhaDeFornecedor = {
     razaoSocial?: string;
     telefone?: string;
     uf?: string;
+};
+
+export type LinhaDeFornecedorNasCompras = {
+    compras?: number;
+    comprasEstornadas?: number;
+    fornecedor?: string;
+    fornecedorId?: string;
+    pecas?: number;
+    total?: string;
+    totalEstornado?: string;
+};
+
+export type LinhaDeHistoricoDeCusto = {
+    codigo?: string;
+    compraEstornada?: boolean;
+    compraId?: string;
+    custo?: string;
+    custoAnterior?: string;
+    dataCompra?: string;
+    fornecedor?: string;
+    fotoPrincipalHash?: string;
+    id?: string;
+    nome?: string;
+    numeroDaCompra?: string;
+    produtoId?: string;
+    referencia?: string;
+    variacao?: string;
+    variacaoPercentual?: string;
 };
 
 export type LinhaDeImportacao = {
@@ -179,6 +246,80 @@ export type LinhaDeImportacao = {
     tipoNaTela?: string;
 };
 
+export type LinhaDeInventario = {
+    ajuste?: number;
+    categoria?: string;
+    codigo?: string;
+    contado?: number;
+    diferenca?: number;
+    escopo?: string;
+    escopoNome?: string;
+    esperado?: number;
+    fechadoEm?: string;
+    fornecedor?: string;
+    fotoPrincipalHash?: string;
+    iniciadoEm?: string;
+    inventarioId?: string;
+    nome?: string;
+    produtoId?: string;
+    referencia?: string;
+    situacao?: string;
+};
+
+export type LinhaDeItemDeCompra = {
+    codigo?: string;
+    compraId?: string;
+    custoUnitario?: string;
+    dataCompra?: string;
+    fornecedor?: string;
+    fotoPrincipalHash?: string;
+    itemId?: string;
+    nome?: string;
+    numero?: string;
+    produtoId?: string;
+    quantidade?: number;
+    referencia?: string;
+    situacaoDaCompra?: string;
+    total?: string;
+};
+
+export type LinhaDeMovimento = {
+    categoria?: string;
+    codigo?: string;
+    desfeito?: boolean;
+    estorno?: boolean;
+    fornecedor?: string;
+    fotoPrincipalHash?: string;
+    id?: string;
+    motivo?: string;
+    nome?: string;
+    ocorridaEm?: string;
+    origem?: string;
+    origemId?: string;
+    produtoId?: string;
+    quantidade?: number;
+    referencia?: string;
+    saldoDepois?: number;
+    tipo?: string;
+    usuario?: string;
+    usuarioId?: string;
+};
+
+export type LinhaDePosicao = {
+    ativo?: boolean;
+    categoria?: string;
+    codigo?: string;
+    custoUnitario?: string;
+    estoqueMinimo?: number;
+    fornecedor?: string;
+    fotoPrincipalHash?: string;
+    nome?: string;
+    produtoId?: string;
+    referencia?: string;
+    saldo?: number;
+    valorACusto?: string;
+};
+
 export type LinhaDeProduto = {
     ativo?: boolean;
     categoria?: string;
@@ -191,6 +332,21 @@ export type LinhaDeProduto = {
     precoCusto?: string;
     precoVenda?: string;
     referencia?: string;
+};
+
+export type LinhaDeProdutoParado = {
+    ativo?: boolean;
+    categoria?: string;
+    codigo?: string;
+    diasSemSair?: number;
+    fornecedor?: string;
+    fotoPrincipalHash?: string;
+    nome?: string;
+    produtoId?: string;
+    referencia?: string;
+    saldo?: number;
+    ultimaSaidaEm?: string;
+    valorACusto?: string;
 };
 
 export type LinhaDeVendedor = {
@@ -473,6 +629,15 @@ export type RelatorioDeCadastroLinha = {
     total?: number;
 };
 
+export type RelatorioDeCadastroLinhaAbaixoDoMinimo = {
+    itens?: Array<LinhaAbaixoDoMinimo>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
 export type RelatorioDeCadastroLinhaDeAlteracao = {
     itens?: Array<LinhaDeAlteracao>;
     pagina?: number;
@@ -500,8 +665,44 @@ export type RelatorioDeCadastroLinhaDeCliente = {
     total?: number;
 };
 
+export type RelatorioDeCadastroLinhaDeCompra = {
+    itens?: Array<LinhaDeCompra>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroLinhaDeConciliacao = {
+    itens?: Array<LinhaDeConciliacao>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
 export type RelatorioDeCadastroLinhaDeFornecedor = {
     itens?: Array<LinhaDeFornecedor>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroLinhaDeFornecedorNasCompras = {
+    itens?: Array<LinhaDeFornecedorNasCompras>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroLinhaDeHistoricoDeCusto = {
+    itens?: Array<LinhaDeHistoricoDeCusto>;
     pagina?: number;
     recorte?: string;
     tamanho?: number;
@@ -518,8 +719,53 @@ export type RelatorioDeCadastroLinhaDeImportacao = {
     total?: number;
 };
 
+export type RelatorioDeCadastroLinhaDeInventario = {
+    itens?: Array<LinhaDeInventario>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroLinhaDeItemDeCompra = {
+    itens?: Array<LinhaDeItemDeCompra>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroLinhaDeMovimento = {
+    itens?: Array<LinhaDeMovimento>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroLinhaDePosicao = {
+    itens?: Array<LinhaDePosicao>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
 export type RelatorioDeCadastroLinhaDeProduto = {
     itens?: Array<LinhaDeProduto>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroLinhaDeProdutoParado = {
+    itens?: Array<LinhaDeProdutoParado>;
     pagina?: number;
     recorte?: string;
     tamanho?: number;
@@ -769,6 +1015,7 @@ export type Tempo = {
 
 export type Total = {
     chave?: string;
+    pecas?: number;
     quantidade?: number;
     rotulo?: string;
     valorEmReais?: string;
@@ -1283,7 +1530,7 @@ export type HojeResponses = {
 
 export type HojeResponse = HojeResponses[keyof HojeResponses];
 
-export type AbaixoDoMinimoData = {
+export type AbaixoDoMinimo1Data = {
     body?: never;
     path?: never;
     query?: {
@@ -1296,14 +1543,14 @@ export type AbaixoDoMinimoData = {
     url: '/api/dona/estoque/abaixo-do-minimo';
 };
 
-export type AbaixoDoMinimoResponses = {
+export type AbaixoDoMinimo1Responses = {
     /**
      * OK
      */
     200: PaginaRespostaDoAbaixoDoMinimo;
 };
 
-export type AbaixoDoMinimoResponse = AbaixoDoMinimoResponses[keyof AbaixoDoMinimoResponses];
+export type AbaixoDoMinimo1Response = AbaixoDoMinimo1Responses[keyof AbaixoDoMinimo1Responses];
 
 export type AjustarData = {
     body: PedidoDeAjuste;
@@ -2414,6 +2661,269 @@ export type VendedoresResponses = {
 };
 
 export type VendedoresResponse = VendedoresResponses[keyof VendedoresResponses];
+
+export type HistoricoDeCustoData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        categoriaId?: string;
+        fornecedorId?: string;
+        produtoId?: string;
+        situacao?: string;
+        usuarioId?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/compras/historico-de-custo';
+};
+
+export type HistoricoDeCustoResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeHistoricoDeCusto;
+};
+
+export type HistoricoDeCustoResponse = HistoricoDeCustoResponses[keyof HistoricoDeCustoResponses];
+
+export type ComprasData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        categoriaId?: string;
+        fornecedorId?: string;
+        produtoId?: string;
+        situacao?: string;
+        usuarioId?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/compras/por-compra';
+};
+
+export type ComprasResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeCompra;
+};
+
+export type ComprasResponse = ComprasResponses[keyof ComprasResponses];
+
+export type ItensDaCompraData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: {
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/compras/por-compra/{id}/itens';
+};
+
+export type ItensDaCompraResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeItemDeCompra;
+};
+
+export type ItensDaCompraResponse = ItensDaCompraResponses[keyof ItensDaCompraResponses];
+
+export type PorFornecedorData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        categoriaId?: string;
+        fornecedorId?: string;
+        produtoId?: string;
+        situacao?: string;
+        usuarioId?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/compras/por-fornecedor';
+};
+
+export type PorFornecedorResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeFornecedorNasCompras;
+};
+
+export type PorFornecedorResponse = PorFornecedorResponses[keyof PorFornecedorResponses];
+
+export type AbaixoDoMinimoData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        categoriaId?: string;
+        fornecedorId?: string;
+        produtoId?: string;
+        situacao?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/estoque/abaixo-do-minimo';
+};
+
+export type AbaixoDoMinimoResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaAbaixoDoMinimo;
+};
+
+export type AbaixoDoMinimoResponse = AbaixoDoMinimoResponses[keyof AbaixoDoMinimoResponses];
+
+export type ConciliacaoData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        produtoId?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/estoque/conciliacao';
+};
+
+export type ConciliacaoResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeConciliacao;
+};
+
+export type ConciliacaoResponse = ConciliacaoResponses[keyof ConciliacaoResponses];
+
+export type InventariosData = {
+    body?: never;
+    path?: never;
+    query?: {
+        inventarioId?: string;
+        situacao?: string;
+        divergencia?: string;
+        busca?: string;
+        categoriaId?: string;
+        fornecedorId?: string;
+        produtoId?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/estoque/inventarios';
+};
+
+export type InventariosResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeInventario;
+};
+
+export type InventariosResponse = InventariosResponses[keyof InventariosResponses];
+
+export type MovimentacoesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        categoriaId?: string;
+        fornecedorId?: string;
+        produtoId?: string;
+        situacao?: string;
+        tipo?: string;
+        origem?: string;
+        usuarioId?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/estoque/movimentacoes';
+};
+
+export type MovimentacoesResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeMovimento;
+};
+
+export type MovimentacoesResponse = MovimentacoesResponses[keyof MovimentacoesResponses];
+
+export type ParadosData = {
+    body?: never;
+    path?: never;
+    query?: {
+        dias?: number;
+        busca?: string;
+        categoriaId?: string;
+        fornecedorId?: string;
+        produtoId?: string;
+        situacao?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/estoque/parados';
+};
+
+export type ParadosResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeProdutoParado;
+};
+
+export type ParadosResponse = ParadosResponses[keyof ParadosResponses];
+
+export type PosicaoAtualData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        categoriaId?: string;
+        fornecedorId?: string;
+        produtoId?: string;
+        situacao?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/estoque/posicao-atual';
+};
+
+export type PosicaoAtualResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDePosicao;
+};
+
+export type PosicaoAtualResponse = PosicaoAtualResponses[keyof PosicaoAtualResponses];
 
 export type Listar4Data = {
     body?: never;

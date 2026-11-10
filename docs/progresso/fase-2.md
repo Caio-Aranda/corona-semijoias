@@ -153,3 +153,54 @@ Uma seção por tarefa, no mesmo formato de [fase-1.md](fase-1.md). A tabela de 
 **Dúvidas**
 
 - Nenhuma nova. A da 2.1 (peça não lida) foi resolvida como a recomendação: só vira zero se a dona confirmar.
+
+### Tarefa 2.5: backend, relatórios de estoque e de compras
+
+**O que foi feito**
+
+- Dez relatórios em `/api/dona/relatorios/...`, **só ADMIN** (vendedor 403, sem login 401), no mesmo motor da 1.12 (`MotorDeRelatorio`): linhas paginadas, rodapé, detalhamento de cada total (`recorte`), tudo das mesmas condições. O motor ganhou só o campo `pecas` no total (soma de peças) e o total com valor e predicado; nada mudou para os relatórios de cadastro.
+  - `estoque/posicao-atual`: saldo, custo e **valor a custo** (saldo × custo) por produto; rodapé com peças e valor a custo geral, com estoque, sem estoque e "com estoque e sem custo informado".
+  - `estoque/movimentacoes`: tipo, produto (com foto), quantidade com sinal, saldo depois, origem, motivo, quem fez, se é desfazer ou foi desfeito; rodapé com entradas e saídas (peças) e um total por tipo.
+  - `estoque/abaixo-do-minimo`: mesma regra do aviso da 2.4; mostra quanto falta.
+  - `estoque/parados?dias=N` (padrão 30): com saldo e sem saída há N dias.
+  - `estoque/inventarios`: por inventário e produto, esperado, contado, diferença e o ajuste gerado; rodapé com divergentes, não lidos, sobras e faltas.
+  - `estoque/conciliacao`: a mesma conta da 2.2; deve vir vazio e mostra o que diverge.
+  - `compras/por-compra`: uma linha por compra; `compras/por-compra/{id}/itens`: itens de uma compra (produto com foto, quantidade, custo, total); `compras/por-fornecedor`: total por fornecedor e geral, somado dos itens; `compras/historico-de-custo`: data, compra, fornecedor, custo, custo anterior e variação (em reais e em %).
+- **Filtros** (§12): período (de/até), fornecedor, categoria, produto (busca por nome, referência ou código, ou `produtoId`), situação (do produto, da compra ou do inventário), tipo e origem do movimento, usuário. Cada relatório aceita só os que fazem sentido (listados no Swagger).
+- **Exportação:** o PDF, o Excel e o CSV são gerados pelo Corona Gestão (padrão da 1.12), com o relatório inteiro pedido em páginas de 100 e os **mesmos filtros** da tela. O backend garante isso: a rota não tem filtro que a exportação não use. Cada relatório tem teste que compara a tela (páginas pequenas até o fim) com a exportação (páginas de 100): mesmas linhas e mesmo rodapé. O cabeçalho, as três moedas e a foto no PDF são da tela 2.8 (as linhas já trazem `fotoPrincipalHash`, e a falta de foto nunca trava nada).
+- Sem migração nova. Dinheiro em NUMERIC(14,2), `HALF_UP`, nunca float; fuso: datas em UTC (de/até inclusive); a data da compra é de calendário e é comparada como está.
+- Testes (`RelatoriosDeEstoqueEComprasTest`, 16): números conferidos à mão (valor a custo, totais por fornecedor, estorno fora do total, variação do custo), cada filtro, tela × exportação, rodapé = detalhamento = soma das linhas, soma dos itens = total da compra, permissão, nada de custo, compra ou estoque no pull do vendedor, 10 mil produtos e 50 mil movimentos paginados em poucos segundos (dentro de uma transação desfeita no fim) e mensagens sem termos técnicos.
+
+**Relatório × linha da §12**
+
+| Linha da §12 | Relatório | Situação |
+| --- | --- | --- |
+| Estoque: posição atual | `estoque/posicao-atual` | Feito |
+| Estoque: movimentações por período | `estoque/movimentacoes` | Feito |
+| Estoque: estoque mínimo | `estoque/abaixo-do-minimo` | Feito |
+| Estoque: produtos parados | `estoque/parados` | Feito |
+| Estoque: inventário e divergências | `estoque/inventarios` | Feito |
+| Estoque: curva ABC | — | Fase 8 (precisa de vendas) |
+| Estoque: mercadoria em maletas por vendedor | — | Fase 3 (a maleta ainda não existe) |
+| Compras: por fornecedor e período | `compras/por-fornecedor`, `compras/por-compra` e itens | Feito |
+| Compras: histórico de custo por produto | `compras/historico-de-custo` | Feito |
+| (§13) conciliação do estoque | `estoque/conciliacao` | Feito |
+| Filtros: semana, vendedor, praça, cliente | — | Não se aplicam a estoque e compras |
+
+**Decisões que tomei**
+
+- **Estornadas:** por padrão a lista de compras mostra só as registradas; `situacao=TODAS` mostra as estornadas marcadas, e elas **nunca** entram no total geral (o rodapé tem "registradas" e "estornadas, fora do total" separados). Em "por fornecedor" as estornadas têm colunas próprias.
+- **Por fornecedor soma os itens**, então categoria e produto somam só os itens daquele produto ou categoria; em "por compra" esses filtros só escolhem as compras que têm o item (o total da linha é o da compra inteira).
+- **Parado** = saldo > 0 e nenhuma saída (`SAIDA` ou `REMESSA` que não foi desfeita) nos últimos N dias; perda, ajuste e devolução não contam como saída, e produto cadastrado há menos de N dias ainda não é "parado".
+- **Estoque mínimo** reaproveita a regra da 2.4 (mínimo definido e saldo no mínimo ou abaixo), então a lista e o aviso nunca discordam.
+- **Situação do produto** é ATIVOS por padrão em posição, mínimo e parados; em movimentações e histórico de custo o padrão é TODOS (o histórico não some porque o produto foi desativado). No relatório de inventário "situação" é a do inventário.
+- O histórico de custo mostra também os custos de compras depois estornadas, marcados.
+
+**O que ficou de fora**
+
+- Telas e geração dos arquivos PDF, Excel e CSV (2.8); curva ABC (Fase 8); mercadoria em maletas por vendedor (Fase 3).
+- Nenhum índice novo: medido com 10 mil produtos e 50 mil movimentos, sem necessidade.
+
+**Dúvidas**
+
+- Nenhuma.

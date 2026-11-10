@@ -3,6 +3,7 @@ package br.com.coronasemijoias.api.relatorios;
 import br.com.coronasemijoias.api.cadastros.Validacoes;
 import br.com.coronasemijoias.api.relatorios.RelatorioDeCadastro.Total;
 import java.math.BigDecimal;
+import br.com.coronasemijoias.api.comum.dinheiro.Dinheiro;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -28,14 +29,24 @@ class MotorDeRelatorio {
     static final String TODOS = "todos";
 
     /** Um número do rodapé: as linhas que o formam (predicado) e, se tiver, o valor que se soma. */
-    record DefinicaoDeTotal(String chave, String rotulo, String predicado, String valor) {
+    record DefinicaoDeTotal(String chave, String rotulo, String predicado, String valor, String pecas) {
 
         static DefinicaoDeTotal contagem(String chave, String rotulo, String predicado) {
-            return new DefinicaoDeTotal(chave, rotulo, predicado, null);
+            return new DefinicaoDeTotal(chave, rotulo, predicado, null, null);
         }
 
         static DefinicaoDeTotal soma(String chave, String rotulo, String valor) {
-            return new DefinicaoDeTotal(chave, rotulo, null, valor);
+            return new DefinicaoDeTotal(chave, rotulo, null, valor, null);
+        }
+
+        /** Linhas que formam o total, com a soma de um valor em Real. */
+        static DefinicaoDeTotal somaDe(String chave, String rotulo, String predicado, String valor) {
+            return new DefinicaoDeTotal(chave, rotulo, predicado, valor, null);
+        }
+
+        /** Linhas que formam o total, com a soma de peças (inteiro) e, se tiver, de um valor em Real. */
+        static DefinicaoDeTotal pecas(String chave, String rotulo, String predicado, String pecas, String valor) {
+            return new DefinicaoDeTotal(chave, rotulo, predicado, valor, pecas);
         }
     }
 
@@ -168,9 +179,12 @@ class MotorDeRelatorio {
                 filtro = (where.isEmpty() ? " WHERE " : where + " AND ") + "(" + d.predicado() + ")";
             }
             String soma = d.valor() == null ? "0" : "coalesce(sum(" + d.valor() + "), 0)";
-            Total feito = jdbc.queryForObject("SELECT count(*) AS quantidade, " + soma + " AS valor FROM " + c.de + filtro,
+            String pecas = d.pecas() == null ? "0" : "coalesce(sum(" + d.pecas() + "), 0)";
+            Total feito = jdbc.queryForObject("SELECT count(*) AS quantidade, " + soma + " AS valor, " + pecas
+                    + " AS pecas FROM " + c.de + filtro,
                     c.parametros, (rs, n) -> new Total(d.chave(), d.rotulo(), rs.getLong("quantidade"),
-                            d.valor() == null ? null : rs.getBigDecimal("valor").setScale(2)));
+                            d.valor() == null ? null : Dinheiro.arredondar(rs.getBigDecimal("valor")),
+                            d.pecas() == null ? null : rs.getLong("pecas")));
             totais.add(feito);
         }
         return new RelatorioDeCadastro<>(itens, total == null ? 0 : total, p, t, totais, pedido);
