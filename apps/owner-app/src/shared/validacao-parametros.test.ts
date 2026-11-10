@@ -115,6 +115,44 @@ describe('cadastros básicos', () => {
     expect(conferirParametros('clientes.listar', { pagina: -1 })).toBeNull();
   });
 
+  it('lista aceita situação (ATIVOS, INATIVOS, TODOS) e recusa outra; semanas não têm', () => {
+    expect(conferirParametros('pracas.listar', { situacao: 'TODOS' })).toMatchObject({
+      lista: { situacao: 'TODOS' },
+    });
+    expect(conferirParametros('pracas.listar', { situacao: 'QUALQUER' })).toBeNull();
+    expect(conferirParametros('semanas.listar', { situacao: 'ATIVOS' })).toBeNull();
+  });
+
+  it('inativar e reativar: só id e versão; semanas não têm', () => {
+    for (const nome of [
+      'fornecedores',
+      'categorias',
+      'pracas',
+      'restricoes',
+      'clientes',
+    ] as const) {
+      expect(conferirParametros(`${nome}.inativar`, { id: ID, version: 3 })).toMatchObject({
+        id: ID,
+        acao: 'inativar',
+        corpo: { version: 3 },
+      });
+      expect(conferirParametros(`${nome}.reativar`, { id: ID })).toMatchObject({ id: ID });
+      expect(conferirParametros(`${nome}.inativar`, { id: 'x', version: 3 })).toBeNull();
+      expect(conferirParametros(`${nome}.inativar`, { id: ID, version: 'a' })).toBeNull();
+      expect(conferirParametros(`${nome}.inativar`, { id: ID, nome: 'x' })).toBeNull();
+    }
+    expect(conferirParametros('semanas.inativar', { id: ID })).toBeNull();
+  });
+
+  it('cliente aceita data de nascimento no formato ISO e recusa outro', () => {
+    expect(
+      conferirParametros('clientes.criar', { nome: 'Ana', dataNascimento: '1990-05-17' }),
+    ).toMatchObject({ corpo: { dataNascimento: '1990-05-17' } });
+    expect(
+      conferirParametros('clientes.criar', { nome: 'Ana', dataNascimento: '17/05/1990' }),
+    ).toBeNull();
+  });
+
   it('cria só com campos conhecidos e do tipo certo', () => {
     const ok = conferirParametros('fornecedores.criar', {
       razaoSocial: 'Ouro Fino',

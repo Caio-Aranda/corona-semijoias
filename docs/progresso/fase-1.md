@@ -341,8 +341,7 @@ Uma seção por tarefa concluída, no mesmo formato de [fase-0.md](fase-0.md). A
 - Tela: relatório "Resultado das importações" no menu de relatórios; aviso fixo dizendo o que vale.
 
 **O que ficou de fora e por quê**
-- **Situação (ativo/inativo) de cliente e de fornecedor:** o modelo não tem essa coluna (só exclusão lógica). Criar exigiria coluna nova na tabela sincronizável `clientes` (contrato do sync com o app do vendedor), telas de ativar/desativar e regra nas buscas. Os filtros úteis que existem hoje foram feitos: `comVendedor` e `comProdutos`.
-- **Data de nascimento do cliente / aniversariantes de clientes:** avaliado e **não** adicionado. `clientes` é sincronizável (vai ao app do vendedor, que não pediu esse dado) e mexer nela mexe no contrato do sync, na tela 1.9 e na privacidade; a dona ainda não confirmou que quer. Sem a confirmação, não vale o risco no fechamento. Fica como dúvida.
+- ~~Situação (ativo/inativo) de cliente e de fornecedor~~ e ~~data de nascimento do cliente / aniversariantes de clientes~~: **resolvidos na tarefa 1.14** (decisão do responsável de 10/11/2026).
 - **Filtros "semana", "cliente" e "produto" nos relatórios de cadastro:** não se aplicam ao cadastro (semana, cliente e produto como filtro são de vendas, maletas e acerto, nas Fases 3 e seguintes). Vendedor, praça, categoria, fornecedor, período e situação existem onde o dado existe.
 - **Relatórios de cadastro por produto:** não filtra por "código" em faixa nem por tipo de código; a busca por texto cobre nome, referência e código.
 - Resultado de importação anterior a esta tarefa não existe (nunca foi guardado).
@@ -355,6 +354,34 @@ Uma seção por tarefa concluída, no mesmo formato de [fase-0.md](fase-0.md). A
 - Filtros novos entram como `Mais` (um registro à parte) no servidor, para não mexer em todos os relatórios.
 
 **Dúvidas**
-- A dona quer data de nascimento no cadastro de cliente (e aniversariantes de clientes)?
-- Cliente e fornecedor precisam de "inativo"? Hoje só se exclui.
 - 200 MB é um bom teto para o cache de fotos no computador dela?
+
+### Tarefa 1.14: ativo/inativo em todos os cadastros e data de nascimento do cliente
+**Concluída (PR a informar).** Decisões do responsável de 10/11/2026 (ESPECIFICACAO v1.7: §9, §10, §12 e registro de mudanças, escritas antes do código).
+
+**O que foi feito**
+- **Migração V017** (nova; nenhuma publicada foi editada): `ativo boolean NOT NULL DEFAULT true` em `fornecedores`, `pracas`, `restricoes`, `categorias` e `clientes`; `clientes.data_nascimento date` (opcional, o banco só recusa antes de 1900; "não futura" é conferido pela API) e índice do mês para os aniversariantes. As linhas que já existiam ficam ativas; o `ADD COLUMN` com valor padrão constante não dispara o gatilho de `sync_seq`.
+- **Contrato do sync:** `RegistroDeTabelas` ganha `ativo` em `categorias` e em `clientes`, e `data_nascimento` em `clientes`. O teste de convenções confere as colunas. O cliente da API do vendedor não mudou (as rotas do sync não estão no OpenAPI dele).
+- **API da dona** (só ADMIN, sem mudar o que já existia): `POST /{id}/inativar` e `/{id}/reativar` em fornecedores, categorias, praças, restrições e clientes, com `version` opcional no corpo (se vier e estiver velha, 409; sem ela vale a versão de agora), auditoria (`INATIVADO`/`REATIVADO`, na mesma transação) e 404 para o que não existe ou foi excluído. As listas ganham `situacao` (ATIVOS por padrão, INATIVOS, TODOS; outro valor dá 400 "Escolha ATIVOS, INATIVOS ou TODOS."). As respostas trazem `ativo`; o cliente traz `dataNascimento`. `DELETE` continua só lógico. Base nova `ServicoDeCadastroAtivavel` (uma só implementação para os cinco).
+- **Relatórios (1.12/1.13):** `situacao` em clientes e fornecedores (ATIVOS por padrão) e coluna Situação; clientes mostram a data de nascimento; aniversariantes passa a unir vendedores e clientes (`quem`: TODOS, VENDEDORES ou CLIENTES; a praça do cliente é a do vendedor responsável), com os totais "Vendedores" e "Clientes" no rodapé conciliados com as linhas e o detalhamento. A nota "Só vendedores..." saiu.
+- **owner-app:** em cada tela de cadastro (menos semanas) filtro Situação, coluna Situação (marca "Inativo"), botões Inativar (com confirmação "pode voltar a qualquer hora") e Reativar; campo Data de nascimento no cliente. Ponte com validação em `shared/` (`situacao` na lista, `inativar`/`reativar` com `id` e `version`, `dataNascimento`, `quem` nos relatórios). Listas de escolha (categoria e fornecedor do produto, praça e restrição do vendedor) só com ativos, mostrando o inativo já escolhido com "(inativo/a)"; filtros e importação continuam enxergando todos. Clientes da API regerados; `main/api.ts` ajustado porque dois nomes numerados do cliente gerado mudaram (`inativar1`→`inativar2`, `reativar2`→`reativar3` do produto).
+- Glossário: Ativo, Inativo, Inativar, Reativar, Situação, Data de nascimento, textos de confirmação e do relatório de aniversariantes.
+
+**Decisões que tomei**
+- **Semanas não ganham `ativo`:** ABERTA/FECHADA já diz se a semana está em uso (documentado na §9). A rota `/inativar` não existe para elas.
+- **Inativar é permitido com o cadastro em uso e preserva os vínculos** (sem aviso nem bloqueio, como pedido). Só as listas de ESCOLHA escondem inativos; a ficha mostra o inativo já ligado.
+- **Data de nascimento do cliente vai ao app do vendedor** (padrão seguro pedido): é o vendedor quem cadastra o cliente, e o filtro por vendedor da Fase 5 já limita ao que é dele. Decidido e escrito na §10.
+- `version` é opcional em inativar/reativar (como nas rotas de vendedores e produtos); a tela sempre manda.
+- Reativar não pede confirmação (não tem risco); inativar pede.
+- A validação "não escolher inativo" é só da tela. A API aceita salvar um produto ou vendedor ligado a um cadastro inativo, para a ficha antiga continuar salvando sem mudar o vínculo.
+- Os relatórios de clientes e fornecedores passam a mostrar só ativos por padrão (como os de vendedores e produtos); como tudo nasce ativo, nada some até alguém inativar.
+
+**O que ficou de fora**
+- **Vendedores, produtos e usuários** não foram mexidos: já tinham ativo, mas a lista de vendedores continua com padrão TODOS (a tela manda ATIVOS explicitamente) e as telas ainda dizem "Desativar/Desativados" (usuários) e "Desativados" (produtos); alinhar a "Inativar" é um ajuste de texto à parte.
+- Validação no servidor de "não ligar a um cadastro inativo" ao criar um vínculo novo (hoje é só a tela).
+- O app do vendedor (Fase 5) ainda não consome `ativo`/`data_nascimento`: o contrato do pull já leva os campos, mas o filtro por vendedor e a tela dele são daquela fase.
+- Telas não conferidas dentro do Electron de verdade (testes de componente).
+
+**Dúvidas**
+- A dona confirma que a data de nascimento do cliente pode ir ao app do vendedor (só dos clientes dele)?
+- Alinhar o texto das telas de usuários e produtos ("Desativar") para "Inativar" também?

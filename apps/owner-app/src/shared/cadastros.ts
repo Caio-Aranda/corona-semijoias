@@ -12,13 +12,33 @@ export const NOMES_DOS_CADASTROS = [
 ] as const;
 export type NomeDoCadastro = (typeof NOMES_DOS_CADASTROS)[number];
 
-export const ACOES_DE_CADASTRO = ['listar', 'criar', 'editar', 'excluir'] as const;
+export const ACOES_DE_CADASTRO = [
+  'listar',
+  'criar',
+  'editar',
+  'excluir',
+  'inativar',
+  'reativar',
+] as const;
 export type AcaoDeCadastro = (typeof ACOES_DE_CADASTRO)[number];
 
 export type OperacaoDeCadastro = `${NomeDoCadastro}.${AcaoDeCadastro}`;
 
+/** Todos os cadastros têm ativo e inativo, menos as semanas (elas têm Aberta e Fechada). */
+export const TEM_ATIVO: Record<NomeDoCadastro, boolean> = {
+  fornecedores: true,
+  categorias: true,
+  pracas: true,
+  semanas: false,
+  restricoes: true,
+  clientes: true,
+};
+
 export const OPERACOES_DE_CADASTRO: readonly OperacaoDeCadastro[] = NOMES_DOS_CADASTROS.flatMap(
-  (n) => ACOES_DE_CADASTRO.map((a): OperacaoDeCadastro => `${n}.${a}`),
+  (n) =>
+    ACOES_DE_CADASTRO.filter((a) => TEM_ATIVO[n] || (a !== 'inativar' && a !== 'reativar')).map(
+      (a): OperacaoDeCadastro => `${n}.${a}`,
+    ),
 );
 
 export type TipoDeCampoDaApi =
@@ -77,6 +97,7 @@ export const CAMPOS_DOS_CADASTROS: Record<NomeDoCadastro, readonly CampoDaApi[]>
   clientes: [
     { nome: 'nome', tipo: 'texto', max: 200 },
     { nome: 'cpf', tipo: 'texto', max: 20 },
+    { nome: 'dataNascimento', tipo: 'data' },
     { nome: 'telefone', tipo: 'texto', max: 30 },
     { nome: 'whatsapp', tipo: 'texto', max: 30 },
     { nome: 'observacoes', tipo: 'texto', max: 2000 },

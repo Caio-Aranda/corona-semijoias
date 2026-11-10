@@ -41,16 +41,24 @@ export interface Definicao {
     legenda: string;
     editar: string;
     excluir: string;
+    inativar: string;
+    reativar: string;
     colunaAcoes: string;
     vazio: string;
     semResultado: string;
+    semInativos: string;
+    marcaInativo: string;
     formulario: { tituloNovo: string; tituloEditar: string };
     confirmar: {
       titulo: (nome: string) => string;
       texto: (nome: string) => string;
       voltar: string;
+      tituloInativar: (nome: string) => string;
+      textoInativar: (nome: string) => string;
     };
     feito: {
+      inativado: (nome: string) => string;
+      reativado: (nome: string) => string;
       criado: (nome: string) => string;
       editado: (nome: string) => string;
       excluido: (nome: string) => string;
@@ -263,6 +271,12 @@ export const DEFINICOES: Record<NomeDoCadastro, Definicao> = {
         tipo: 'texto',
         max: 20,
         ajuda: T.clientes.campos.cpfAjuda,
+      },
+      {
+        nome: 'dataNascimento',
+        rotulo: T.clientes.campos.dataNascimento,
+        tipo: 'data',
+        ajuda: T.clientes.campos.dataNascimentoAjuda,
       },
       { nome: 'telefone', rotulo: T.clientes.campos.telefone, tipo: 'texto', max: 30 },
       { nome: 'whatsapp', rotulo: T.clientes.campos.whatsapp, tipo: 'texto', max: 30 },

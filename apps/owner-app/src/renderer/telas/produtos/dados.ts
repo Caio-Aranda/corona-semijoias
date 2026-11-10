@@ -131,12 +131,16 @@ export function codigoPrincipal(p: Produto): string {
 }
 
 /** Itens de uma lista da API que têm `id` e `nome` (categorias, fornecedores). */
-export function lerOpcoes(bruto: unknown): { id: string; nome: string }[] {
+export function lerOpcoes(bruto: unknown): { id: string; nome: string; ativo: boolean }[] {
   const itens = objeto(bruto).itens;
   return (Array.isArray(itens) ? itens : [])
     .map(objeto)
     .filter((o) => typeof o.id === 'string')
-    .map((o) => ({ id: o.id as string, nome: texto(o.nome) || texto(o.razaoSocial) }));
+    .map((o) => ({
+      id: o.id as string,
+      nome: texto(o.nome) || texto(o.razaoSocial),
+      ativo: o.ativo !== false,
+    }));
 }
 
 export function lerProximoCodigo(bruto: unknown): string {

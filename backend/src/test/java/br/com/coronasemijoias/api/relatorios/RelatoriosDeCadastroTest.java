@@ -349,6 +349,68 @@ class RelatoriosDeCadastroTest extends TesteDeIntegracao {
         conciliar("aniversariantes", null, null, "busca", m, "mes", "3");
     }
 
+    @Test
+    void aniversariantesIncluemClientesComFiltroQuemEPracaDoVendedor() throws Exception {
+        String m = marca();
+        UUID praca = UUID.fromString(criarVia("/api/dona/pracas", mapa("nome", "Praça " + m)).get("id").asString());
+        UUID vendedor = UUID.fromString(criarVia("/api/dona/vendedores",
+                mapa("nome", m + " Vendedora", "dataNascimento", "1980-03-15", "pracaId", praca)).get("id").asString());
+        criarVia("/api/dona/clientes", mapa("nome", m + " Cliente Ana", "dataNascimento", "1995-03-02",
+                "vendedorResponsavelId", vendedor));
+        criarVia("/api/dona/clientes", mapa("nome", m + " Cliente Bia", "dataNascimento", "1990-03-20"));
+        criarVia("/api/dona/clientes", mapa("nome", m + " Cliente Abril", "dataNascimento", "1990-04-20"));
+        criarVia("/api/dona/clientes", mapa("nome", m + " Cliente sem data"));
+        JsonNode inativa = criarVia("/api/dona/clientes", mapa("nome", m + " Cliente Inativa", "dataNascimento", "1991-03-05"));
+        mvc.perform(post("/api/dona/clientes/" + inativa.get("id").asString() + "/inativar").with(usuarios.comoDona()))
+                .andExpect(status().isOk());
+
+        JsonNode todos = relatorio("aniversariantes", "busca", m, "mes", "3");
+        assertThat(todos.get("total").asLong()).isEqualTo(3);
+        assertThat(total(todos, "vendedores").get("quantidade").asLong()).isEqualTo(1);
+        assertThat(total(todos, "clientes").get("quantidade").asLong()).isEqualTo(2);
+        assertThat(todos.get("itens").get(0).get("tipo").asString()).isEqualTo("CLIENTE");
+        assertThat(todos.get("itens").get(1).get("tipo").asString()).isEqualTo("VENDEDOR");
+        assertThat(relatorio("aniversariantes", "busca", m, "mes", "3", "quem", "CLIENTES").get("total").asLong()).isEqualTo(2);
+        assertThat(relatorio("aniversariantes", "busca", m, "mes", "3", "quem", "VENDEDORES").get("total").asLong()).isEqualTo(1);
+        assertThat(relatorio("aniversariantes", "busca", m, "mes", "3", "situacao", "INATIVOS").get("total").asLong()).isEqualTo(1);
+        assertThat(relatorio("aniversariantes", "busca", m, "mes", "3", "situacao", "TODOS").get("total").asLong()).isEqualTo(4);
+        // A praça do cliente é a do vendedor responsável.
+        assertThat(relatorio("aniversariantes", "busca", m, "mes", "3", "pracaId", praca.toString()).get("total").asLong())
+                .isEqualTo(2);
+        mvc.perform(get(BASE + "aniversariantes").param("quem", "TALVEZ").with(usuarios.comoDona()))
+                .andExpect(status().isBadRequest());
+        conciliar("aniversariantes", null, null, "busca", m, "mes", "3");
+        conciliar("aniversariantes", null, null, "busca", m, "mes", "3", "quem", "CLIENTES", "situacao", "TODOS");
+    }
+
+    @Test
+    void clientesEFornecedoresComFiltroDeSituacao() throws Exception {
+        String m = marca();
+        JsonNode ativo = criarVia("/api/dona/clientes", mapa("nome", m + " Ativo"));
+        JsonNode inativo = criarVia("/api/dona/clientes", mapa("nome", m + " Inativo", "dataNascimento", "1990-01-01"));
+        JsonNode fAtivo = criarVia("/api/dona/fornecedores", mapa("razaoSocial", m + " Forn Ativo"));
+        JsonNode fInativo = criarVia("/api/dona/fornecedores", mapa("razaoSocial", m + " Forn Inativo"));
+        for (String caminho : List.of("/api/dona/clientes/" + inativo.get("id").asString(),
+                "/api/dona/fornecedores/" + fInativo.get("id").asString())) {
+            mvc.perform(post(caminho + "/inativar").with(usuarios.comoDona())).andExpect(status().isOk());
+        }
+        assertThat(ativo.get("id").asString()).isNotBlank();
+        assertThat(fAtivo.get("id").asString()).isNotBlank();
+        for (String nome : List.of("clientes", "fornecedores")) {
+            assertThat(relatorio(nome, "busca", m).get("total").asLong()).as(nome + " padrão").isEqualTo(1);
+            assertThat(relatorio(nome, "busca", m, "situacao", "ATIVOS").get("total").asLong()).isEqualTo(1);
+            JsonNode inativos = relatorio(nome, "busca", m, "situacao", "INATIVOS");
+            assertThat(inativos.get("total").asLong()).isEqualTo(1);
+            assertThat(inativos.get("itens").get(0).get("ativo").asBoolean()).isFalse();
+            assertThat(relatorio(nome, "busca", m, "situacao", "TODOS").get("total").asLong()).isEqualTo(2);
+            conciliar(nome, null, null, "busca", m, "situacao", "TODOS");
+            mvc.perform(get(BASE + nome).param("situacao", "QUALQUER").with(usuarios.comoDona()))
+                    .andExpect(status().isBadRequest());
+        }
+        assertThat(relatorio("clientes", "busca", m, "situacao", "INATIVOS").get("itens").get(0).get("dataNascimento")
+                .asString()).isEqualTo("1990-01-01");
+    }
+
     // --- alterações de produtos (auditoria) ---
 
     @Test

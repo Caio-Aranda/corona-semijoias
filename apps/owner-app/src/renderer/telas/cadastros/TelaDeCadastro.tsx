@@ -8,7 +8,7 @@ import {
   Tabela,
 } from '@corona/ui';
 import { useEffect, useState } from 'react';
-import type { NomeDoCadastro } from '../../../shared/cadastros';
+import { TEM_ATIVO, type NomeDoCadastro } from '../../../shared/cadastros';
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { AvisoDeErro } from '../../componentes/AvisoDeErro';
 import { chamar, useBusca, type ErroDaTela } from '../../nucleo/chamadas';
@@ -17,6 +17,8 @@ import { DEFINICOES, lerPagina, type Registro } from './definicoes';
 import { FormularioDeCadastro } from './FormularioDeCadastro';
 
 const TAMANHO = 20;
+
+type SituacaoDaLista = 'ATIVOS' | 'INATIVOS' | 'TODOS';
 
 type Modo = { tela: 'lista' } | { tela: 'formulario'; registro: Registro | null };
 
@@ -37,6 +39,10 @@ export function TelaDeCadastro({ ponte, cadastro }: TelaDeCadastroProps) {
   const [buscaAplicada, setBuscaAplicada] = useState('');
   const [pagina, setPagina] = useState(0);
   const [excluindo, setExcluindo] = useState<Registro | null>(null);
+  const [inativando, setInativando] = useState<Registro | null>(null);
+  const [situacao, setSituacao] = useState<SituacaoDaLista>('ATIVOS');
+  const temAtivo = TEM_ATIVO[cadastro];
+  const S = TEXTOS.cadastros.situacao;
   const [executando, setExecutando] = useState(false);
   const [erroDaAcao, setErroDaAcao] = useState<ErroDaTela | null>(null);
   const [feito, setFeito] = useState<string | null>(null);
@@ -56,11 +62,12 @@ export function TelaDeCadastro({ ponte, cadastro }: TelaDeCadastroProps) {
         pagina,
         tamanho: TAMANHO,
         ...(buscaAplicada ? { busca: buscaAplicada } : {}),
+        ...(temAtivo ? { situacao } : {}),
       }),
-    `${cadastro}|${buscaAplicada}|${pagina}`,
+    `${cadastro}|${buscaAplicada}|${situacao}|${pagina}`,
   );
   const dados = lista.dados ? lerPagina(lista.dados) : null;
-  const filtrando = buscaAplicada !== '';
+  const filtrando = buscaAplicada !== '' || situacao !== 'ATIVOS';
 
   async function excluir() {
     if (!excluindo || executando) return;
@@ -77,6 +84,25 @@ export function TelaDeCadastro({ ponte, cadastro }: TelaDeCadastroProps) {
     setFeito(T.feito.excluido(definicao.nome(alvo)));
     // Se era a única linha da última página, volta uma página.
     if (dados && dados.itens.length === 1 && pagina > 0) setPagina(pagina - 1);
+    else lista.recarregar();
+  }
+
+  /** Inativar e reativar usam a versão que a tela leu; se outra pessoa mexeu antes, o servidor avisa. */
+  async function mudarSituacao(alvo: Registro, acao: 'inativar' | 'reativar') {
+    if (executando) return;
+    setExecutando(true);
+    setErroDaAcao(null);
+    const r = await chamar(ponte, `${cadastro}.${acao}`, { id: alvo.id, version: alvo.version });
+    setExecutando(false);
+    setInativando(null);
+    if (!r.ok) {
+      setErroDaAcao(r.erro);
+      return;
+    }
+    const nome = definicao.nome(alvo);
+    setFeito(acao === 'inativar' ? T.feito.inativado(nome) : T.feito.reativado(nome));
+    if (dados && dados.itens.length === 1 && pagina > 0 && situacao !== 'TODOS')
+      setPagina(pagina - 1);
     else lista.recarregar();
   }
 
@@ -107,9 +133,30 @@ export function TelaDeCadastro({ ponte, cadastro }: TelaDeCadastroProps) {
 
   const linhas = (dados?.itens ?? []).map((r) => ({
     ...Object.fromEntries(definicao.colunas.map((c) => [c.chave, c.valor(r)])),
+    situacaoDoCadastro: r.ativo === false ? S.inativo : S.ativo,
     acoes: (
       <span className="gestao-acoes-da-linha">
         <Botao onClick={() => setModo({ tela: 'formulario', registro: r })}>{T.editar}</Botao>
+        {temAtivo && r.ativo === false ? (
+          <Botao
+            onClick={() => {
+              setFeito(null);
+              void mudarSituacao(r, 'reativar');
+            }}
+          >
+            {T.reativar}
+          </Botao>
+        ) : null}
+        {temAtivo && r.ativo !== false ? (
+          <Botao
+            onClick={() => {
+              setFeito(null);
+              setInativando(r);
+            }}
+          >
+            {T.inativar}
+          </Botao>
+        ) : null}
         <Botao
           onClick={() => {
             setFeito(null);
@@ -157,11 +204,29 @@ export function TelaDeCadastro({ ponte, cadastro }: TelaDeCadastroProps) {
           autoFocus
           onChange={(e) => setBusca(e.target.value)}
         />
+        {temAtivo ? (
+          <div className="cs-campo">
+            <label htmlFor="filtro-situacao-cadastro">{S.rotulo}</label>
+            <select
+              id="filtro-situacao-cadastro"
+              value={situacao}
+              onChange={(e) => {
+                setSituacao(e.target.value as SituacaoDaLista);
+                setPagina(0);
+              }}
+            >
+              <option value="ATIVOS">{S.ativos}</option>
+              <option value="INATIVOS">{S.inativos}</option>
+              <option value="TODOS">{S.todos}</option>
+            </select>
+          </div>
+        ) : null}
         {filtrando ? (
           <Botao
             onClick={() => {
               setBusca('');
               setBuscaAplicada('');
+              setSituacao('ATIVOS');
               setPagina(0);
             }}
           >
@@ -183,10 +248,17 @@ export function TelaDeCadastro({ ponte, cadastro }: TelaDeCadastroProps) {
           legenda={T.legenda}
           colunas={[
             ...definicao.colunas.map((c) => ({ chave: c.chave, titulo: c.titulo })),
+            ...(temAtivo ? [{ chave: 'situacaoDoCadastro', titulo: S.coluna }] : []),
             { chave: 'acoes', titulo: T.colunaAcoes },
           ]}
           linhas={linhas}
-          textoVazio={filtrando ? T.semResultado : T.vazio}
+          textoVazio={
+            buscaAplicada === '' && situacao === 'INATIVOS'
+              ? T.semInativos
+              : filtrando
+                ? T.semResultado
+                : T.vazio
+          }
         />
         {dados ? (
           <Paginacao
@@ -198,6 +270,19 @@ export function TelaDeCadastro({ ponte, cadastro }: TelaDeCadastroProps) {
           />
         ) : null}
       </EstadoDaLista>
+
+      {inativando ? (
+        <JanelaDeConfirmacao
+          titulo={T.confirmar.tituloInativar(definicao.nome(inativando))}
+          rotuloConfirmar={T.inativar}
+          rotuloCancelar={T.confirmar.voltar}
+          ocupado={executando}
+          aoCancelar={() => setInativando(null)}
+          aoConfirmar={() => void mudarSituacao(inativando, 'inativar')}
+        >
+          {T.confirmar.textoInativar(definicao.nome(inativando))}
+        </JanelaDeConfirmacao>
+      ) : null}
 
       {excluindo ? (
         <JanelaDeConfirmacao

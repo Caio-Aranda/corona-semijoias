@@ -46,11 +46,12 @@ public final class RegistroDeTabelas {
                                 "usd_compra", "usd_venda", "usd_paridade_compra", "usd_paridade_venda",
                                 "pyg_compra", "pyg_venda", "pyg_paridade_compra", "pyg_paridade_venda",
                                 "buscada_em", "fonte"), true),
-                        // Cadastros básicos (tarefa 1.2). O filtro por vendedor (clientes dele) é da Fase 5.
-                        new TabelaSincronizavel("categorias", List.of("nome"), false),
+                        // Cadastros básicos (tarefa 1.2). O filtro por vendedor (clientes dele) é da Fase 5. A tarefa 1.14 pôs "ativo" em
+                        // categorias e clientes e a data de nascimento em clientes: o vendedor cadastra o cliente, então ela vai (só dos dele).
+                        new TabelaSincronizavel("categorias", List.of("nome", "ativo"), false),
                         new TabelaSincronizavel("semanas", List.of("numero", "inicio", "fim", "situacao"), false),
                         new TabelaSincronizavel("clientes", List.of(
-                                "nome", "cpf", "telefone", "whatsapp",
+                                "nome", "cpf", "data_nascimento", "telefone", "whatsapp", "ativo",
                                 "endereco_logradouro", "endereco_numero", "endereco_complemento", "endereco_bairro",
                                 "endereco_cidade", "endereco_uf", "endereco_cep",
                                 "observacoes", "vendedor_responsavel_id"), false),

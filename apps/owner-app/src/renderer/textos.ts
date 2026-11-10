@@ -26,17 +26,29 @@ function cadastroBasico(c: {
     legenda: `Lista de ${c.plural}`,
     editar: 'Editar',
     excluir: `Excluir ${c.singular}`,
+    inativar: `Inativar ${c.singular}`,
+    reativar: `Reativar ${c.singular}`,
     colunaAcoes: 'O que fazer',
     vazio: `Ainda não há ${c.genero === 'a' ? 'nenhuma' : 'nenhum'} ${c.singular}.`,
     semResultado: `${c.genero === 'a' ? 'Nenhuma' : 'Nenhum'} ${c.singular} encontrad${c.genero}. Confira o que você digitou ou limpe a busca.`,
+    /** Lista sem ninguém na situação Inativos. */
+    semInativos: `${c.genero === 'a' ? 'Nenhuma' : 'Nenhum'} ${c.singular} inativ${c.genero}.`,
+    /** Marca de quem está inativo nas listas de escolha. */
+    marcaInativo: `(inativ${c.genero})`,
     formulario: { tituloNovo: `${novo} ${c.singular}`, tituloEditar: `Editar ${c.singular}` },
     confirmar: {
       titulo: (nome: string) => `Excluir ${nome}?`,
       texto: (nome: string) =>
         `${nome} some das listas. O que já foi registrado com ${c.genero === 'a' ? 'ela' : 'ele'} continua guardado. Por aqui não dá para desfazer.`,
       voltar: 'Voltar',
+      /** Inativar não é excluir: some das escolhas, fica nos relatórios e pode voltar. */
+      tituloInativar: (nome: string) => `Inativar ${nome}?`,
+      textoInativar: (nome: string) =>
+        `${nome} deixa de aparecer nas listas de escolha e nas buscas, mas continua nos relatórios e no histórico. Pode voltar a qualquer hora, é só reativar.`,
     },
     feito: {
+      inativado: (nome: string) => `${nome} foi inativad${c.genero}. Pode voltar a qualquer hora.`,
+      reativado: (nome: string) => `${nome} voltou a ficar ativ${c.genero}.`,
       criado: (nome: string) => `${nome} foi cadastrad${c.genero}.`,
       editado: (nome: string) => `Os dados de ${nome} foram salvos.`,
       excluido: (nome: string) => `${nome} foi exclu${c.genero === 'a' ? 'ída' : 'ído'}.`,
@@ -135,6 +147,16 @@ export const TEXTOS = {
     semVendedor: 'Nenhum vendedor',
     vendedorAtual: 'Vendedor já escolhido antes',
     numeroInvalido: 'Digite só números, sem vírgula nem ponto.',
+    /** Filtro e coluna de situação dos cadastros que podem ser inativados. */
+    situacao: {
+      rotulo: 'Situação',
+      coluna: 'Situação',
+      ativos: 'Ativos',
+      inativos: 'Inativos',
+      todos: 'Todos',
+      ativo: 'Ativo',
+      inativo: 'Inativo',
+    },
     fornecedores: {
       ...cadastroBasico({
         genero: 'o',
@@ -226,6 +248,9 @@ export const TEXTOS = {
         nome: 'Nome do cliente',
         cpf: 'CPF',
         cpfAjuda: 'Pode digitar com ou sem pontos. Se não souber, deixe em branco.',
+        dataNascimento: 'Data de nascimento',
+        dataNascimentoAjuda:
+          'Se não souber, deixe em branco. Serve para avisar dos aniversariantes.',
         telefone: 'Telefone',
         whatsapp: 'WhatsApp',
         observacoes: 'Observações',

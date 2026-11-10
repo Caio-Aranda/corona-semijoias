@@ -128,12 +128,15 @@ export type LinhaDeAniversariante = {
     nome?: string;
     praca?: string;
     telefone?: string;
+    tipo?: string;
     whatsapp?: string;
 };
 
 export type LinhaDeCliente = {
+    ativo?: boolean;
     cadastradoEm?: string;
     cidade?: string;
+    dataNascimento?: string;
     id?: string;
     nome?: string;
     praca?: string;
@@ -144,6 +147,7 @@ export type LinhaDeCliente = {
 };
 
 export type LinhaDeFornecedor = {
+    ativo?: boolean;
     cidade?: string;
     cnpj?: string;
     contato?: string;
@@ -300,6 +304,10 @@ export type PedidoDeProduto = {
 export type PedidoDeRenovacao = {
     dispositivoId?: string;
     tokenDeRenovacao: string;
+};
+
+export type PedidoDeSituacao = {
+    version?: number;
 };
 
 export type PedidoDeTrocaDeSenha = {
@@ -649,6 +657,7 @@ export type Listar10Data = {
     path?: never;
     query?: {
         busca?: string;
+        situacao?: string;
         pagina?: number;
         tamanho?: number;
     };
@@ -732,11 +741,48 @@ export type Editar8Responses = {
 
 export type Editar8Response = Editar8Responses[keyof Editar8Responses];
 
+export type Inativar6Data = {
+    body?: PedidoDeSituacao;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/categorias/{id}/inativar';
+};
+
+export type Inativar6Responses = {
+    /**
+     * OK
+     */
+    200: Resposta;
+};
+
+export type Inativar6Response = Inativar6Responses[keyof Inativar6Responses];
+
+export type Reativar7Data = {
+    body?: PedidoDeSituacao;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/categorias/{id}/reativar';
+};
+
+export type Reativar7Responses = {
+    /**
+     * OK
+     */
+    200: Resposta;
+};
+
+export type Reativar7Response = Reativar7Responses[keyof Reativar7Responses];
+
 export type Listar9Data = {
     body?: never;
     path?: never;
     query?: {
         busca?: string;
+        situacao?: string;
         pagina?: number;
         tamanho?: number;
     };
@@ -820,6 +866,42 @@ export type Editar7Responses = {
 
 export type Editar7Response = Editar7Responses[keyof Editar7Responses];
 
+export type Inativar5Data = {
+    body?: PedidoDeSituacao;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/clientes/{id}/inativar';
+};
+
+export type Inativar5Responses = {
+    /**
+     * OK
+     */
+    200: Resposta;
+};
+
+export type Inativar5Response = Inativar5Responses[keyof Inativar5Responses];
+
+export type Reativar6Data = {
+    body?: PedidoDeSituacao;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/clientes/{id}/reativar';
+};
+
+export type Reativar6Responses = {
+    /**
+     * OK
+     */
+    200: Resposta;
+};
+
+export type Reativar6Response = Reativar6Responses[keyof Reativar6Responses];
+
 export type ConverterData = {
     body: ConversaoPedido;
     path?: never;
@@ -857,6 +939,7 @@ export type Listar8Data = {
     path?: never;
     query?: {
         busca?: string;
+        situacao?: string;
         pagina?: number;
         tamanho?: number;
     };
@@ -940,6 +1023,42 @@ export type Editar6Responses = {
 
 export type Editar6Response = Editar6Responses[keyof Editar6Responses];
 
+export type Inativar4Data = {
+    body?: PedidoDeSituacao;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/fornecedores/{id}/inativar';
+};
+
+export type Inativar4Responses = {
+    /**
+     * OK
+     */
+    200: Resposta;
+};
+
+export type Inativar4Response = Inativar4Responses[keyof Inativar4Responses];
+
+export type Reativar5Data = {
+    body?: PedidoDeSituacao;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/fornecedores/{id}/reativar';
+};
+
+export type Reativar5Responses = {
+    /**
+     * OK
+     */
+    200: Resposta;
+};
+
+export type Reativar5Response = Reativar5Responses[keyof Reativar5Responses];
+
 export type RegistrarData = {
     body: PedidoDeLote;
     path: {
@@ -961,6 +1080,7 @@ export type Listar7Data = {
     path?: never;
     query?: {
         busca?: string;
+        situacao?: string;
         pagina?: number;
         tamanho?: number;
     };
@@ -1043,6 +1163,42 @@ export type Editar5Responses = {
 };
 
 export type Editar5Response = Editar5Responses[keyof Editar5Responses];
+
+export type Inativar3Data = {
+    body?: PedidoDeSituacao;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/pracas/{id}/inativar';
+};
+
+export type Inativar3Responses = {
+    /**
+     * OK
+     */
+    200: Resposta;
+};
+
+export type Inativar3Response = Inativar3Responses[keyof Inativar3Responses];
+
+export type Reativar4Data = {
+    body?: PedidoDeSituacao;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/pracas/{id}/reativar';
+};
+
+export type Reativar4Responses = {
+    /**
+     * OK
+     */
+    200: Resposta;
+};
+
+export type Reativar4Response = Reativar4Responses[keyof Reativar4Responses];
 
 export type Listar5Data = {
     body?: never;
@@ -1360,7 +1516,7 @@ export type PrincipalResponses = {
 
 export type PrincipalResponse = PrincipalResponses[keyof PrincipalResponses];
 
-export type Inativar1Data = {
+export type Inativar2Data = {
     body?: never;
     path: {
         id: string;
@@ -1369,16 +1525,16 @@ export type Inativar1Data = {
     url: '/api/dona/produtos/{id}/inativar';
 };
 
-export type Inativar1Responses = {
+export type Inativar2Responses = {
     /**
      * OK
      */
     200: Resposta;
 };
 
-export type Inativar1Response = Inativar1Responses[keyof Inativar1Responses];
+export type Inativar2Response = Inativar2Responses[keyof Inativar2Responses];
 
-export type Reativar2Data = {
+export type Reativar3Data = {
     body?: never;
     path: {
         id: string;
@@ -1387,14 +1543,14 @@ export type Reativar2Data = {
     url: '/api/dona/produtos/{id}/reativar';
 };
 
-export type Reativar2Responses = {
+export type Reativar3Responses = {
     /**
      * OK
      */
     200: Resposta;
 };
 
-export type Reativar2Response = Reativar2Responses[keyof Reativar2Responses];
+export type Reativar3Response = Reativar3Responses[keyof Reativar3Responses];
 
 export type AlteracoesDeProdutosData = {
     body?: never;
@@ -1424,6 +1580,7 @@ export type AniversariantesData = {
     path?: never;
     query?: {
         mes?: number;
+        quem?: string;
         busca?: string;
         pracaId?: string;
         situacao?: string;
@@ -1448,6 +1605,7 @@ export type ClientesData = {
     path?: never;
     query?: {
         busca?: string;
+        situacao?: string;
         comVendedor?: string;
         vendedorId?: string;
         pracaId?: string;
@@ -1497,6 +1655,7 @@ export type FornecedoresData = {
     path?: never;
     query?: {
         busca?: string;
+        situacao?: string;
         comProdutos?: string;
         de?: string;
         ate?: string;
@@ -1629,6 +1788,7 @@ export type Listar4Data = {
     path?: never;
     query?: {
         busca?: string;
+        situacao?: string;
         pagina?: number;
         tamanho?: number;
     };
@@ -1711,6 +1871,42 @@ export type Editar3Responses = {
 };
 
 export type Editar3Response = Editar3Responses[keyof Editar3Responses];
+
+export type Inativar1Data = {
+    body?: PedidoDeSituacao;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/restricoes/{id}/inativar';
+};
+
+export type Inativar1Responses = {
+    /**
+     * OK
+     */
+    200: Resposta;
+};
+
+export type Inativar1Response = Inativar1Responses[keyof Inativar1Responses];
+
+export type Reativar2Data = {
+    body?: PedidoDeSituacao;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/restricoes/{id}/reativar';
+};
+
+export type Reativar2Responses = {
+    /**
+     * OK
+     */
+    200: Resposta;
+};
+
+export type Reativar2Response = Reativar2Responses[keyof Reativar2Responses];
 
 export type Listar3Data = {
     body?: never;

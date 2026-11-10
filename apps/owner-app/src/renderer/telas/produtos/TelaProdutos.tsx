@@ -44,11 +44,11 @@ export function TelaProdutos({ ponte }: TelaProdutosProps) {
   }, [busca]);
 
   const categorias = useBusca(
-    () => chamar(ponte, 'categorias.listar', { pagina: 0, tamanho: 100 }),
+    () => chamar(ponte, 'categorias.listar', { pagina: 0, tamanho: 100, situacao: 'TODOS' }),
     'categorias-do-filtro',
   );
   const fornecedores = useBusca(
-    () => chamar(ponte, 'fornecedores.listar', { pagina: 0, tamanho: 100 }),
+    () => chamar(ponte, 'fornecedores.listar', { pagina: 0, tamanho: 100, situacao: 'TODOS' }),
     'fornecedores-do-filtro',
   );
   const listaDeCategorias = categorias.dados ? lerOpcoes(categorias.dados) : [];

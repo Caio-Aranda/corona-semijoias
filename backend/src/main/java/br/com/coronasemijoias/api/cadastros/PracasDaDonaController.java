@@ -1,12 +1,14 @@
 package br.com.coronasemijoias.api.cadastros;
 
 import br.com.coronasemijoias.api.seguranca.ExigePerfil;
+import br.com.coronasemijoias.api.seguranca.UsuarioAutenticado;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,10 +32,10 @@ public class PracasDaDonaController {
             Integer version) {
     }
 
-    public record Resposta(UUID id, int version, String nome) {
+    public record Resposta(UUID id, int version, String nome, boolean ativo) {
 
         static Resposta de(Praca p) {
-            return new Resposta(p.getId(), p.getVersion(), p.getNome());
+            return new Resposta(p.getId(), p.getVersion(), p.getNome(), p.isAtivo());
         }
     }
 
@@ -46,8 +48,9 @@ public class PracasDaDonaController {
     @Operation(summary = "Listar praças", description = "Busca pelo nome. A página começa em 0 (até 100 por página).")
     @GetMapping
     public Pagina<Resposta> listar(@RequestParam(required = false) String busca,
+            @RequestParam(required = false) String situacao,
             @RequestParam(required = false) Integer pagina, @RequestParam(required = false) Integer tamanho) {
-        return Pagina.de(servico.listar(busca, pagina, tamanho), Resposta::de);
+        return Pagina.de(servico.listar(busca, situacao, pagina, tamanho), Resposta::de);
     }
 
     @GetMapping("/{id}")
@@ -65,6 +68,22 @@ public class PracasDaDonaController {
     @PutMapping("/{id}")
     public Resposta editar(@PathVariable UUID id, @Valid @RequestBody Pedido pedido) {
         return Resposta.de(servico.editar(id, pedido.version(), pedido.nome()));
+    }
+
+    @Operation(summary = "Inativar praça",
+            description = "Inativar não é excluir: a praça some das escolhas e das buscas (a lista de ativos), mas continua nos relatórios "
+                    + "e nos históricos, e pode ser reativada a qualquer hora. Mande a version que a tela leu (opcional).")
+    @PostMapping("/{id}/inativar")
+    public Resposta inativar(@PathVariable UUID id, @RequestBody(required = false) PedidoDeSituacao pedido,
+            @AuthenticationPrincipal UsuarioAutenticado quem) {
+        return Resposta.de(servico.definirAtivo(id, pedido == null ? null : pedido.version(), false, quem.id()));
+    }
+
+    @Operation(summary = "Reativar praça", description = "Desfaz a inativação: volta para as escolhas e para a lista de ativos.")
+    @PostMapping("/{id}/reativar")
+    public Resposta reativar(@PathVariable UUID id, @RequestBody(required = false) PedidoDeSituacao pedido,
+            @AuthenticationPrincipal UsuarioAutenticado quem) {
+        return Resposta.de(servico.definirAtivo(id, pedido == null ? null : pedido.version(), true, quem.id()));
     }
 
     @Operation(summary = "Excluir praça", description = "Exclusão lógica: o registro some das listas e o nome fica livre.")

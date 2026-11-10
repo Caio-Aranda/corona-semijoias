@@ -2,6 +2,7 @@ package br.com.coronasemijoias.api.cadastros;
 
 import br.com.coronasemijoias.api.comum.erros.CodigoErro;
 import br.com.coronasemijoias.api.comum.erros.ErroDaApi;
+import br.com.coronasemijoias.api.auditoria.ServicoDeAuditoria;
 import java.time.Clock;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -11,7 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class ServicoDeFornecedores extends ServicoDeCadastro<Fornecedor> {
+public class ServicoDeFornecedores extends ServicoDeCadastroAtivavel<Fornecedor> {
 
     /** Os campos de um fornecedor como a dona preencheu. */
     public record Dados(String razaoSocial, String cnpj, String contatoNome, String telefone, String email,
@@ -21,15 +22,16 @@ public class ServicoDeFornecedores extends ServicoDeCadastro<Fornecedor> {
     private final RepositorioDeFornecedores fornecedores;
     private final JdbcTemplate jdbc;
 
-    public ServicoDeFornecedores(RepositorioDeFornecedores fornecedores, Clock relogio, JdbcTemplate jdbc) {
-        super(fornecedores, relogio);
+    public ServicoDeFornecedores(RepositorioDeFornecedores fornecedores, Clock relogio, JdbcTemplate jdbc,
+            ServicoDeAuditoria auditoria) {
+        super(fornecedores, relogio, auditoria, "fornecedores");
         this.fornecedores = fornecedores;
         this.jdbc = jdbc;
     }
 
     @Transactional(readOnly = true)
-    public Page<Fornecedor> listar(String busca, Integer pagina, Integer tamanho) {
-        return fornecedores.buscar(padraoDeTexto(busca), padraoDeDocumento(busca), pagina(pagina, tamanho));
+    public Page<Fornecedor> listar(String busca, String situacao, Integer pagina, Integer tamanho) {
+        return fornecedores.buscar(padraoDeTexto(busca), padraoDeDocumento(busca), Situacao.ler(situacao).valores(), pagina(pagina, tamanho));
     }
 
     @Transactional

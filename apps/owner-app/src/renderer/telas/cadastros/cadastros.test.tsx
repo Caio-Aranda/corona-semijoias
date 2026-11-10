@@ -85,6 +85,7 @@ describe('Cadastros: lista', () => {
         pagina: 0,
         tamanho: 20,
         busca: 'zzz',
+        situacao: 'ATIVOS',
       }),
     );
   });
@@ -306,5 +307,171 @@ describe('Cadastros: excluir', () => {
     await u.click(within(janela).getByRole('button', { name: 'Excluir praça' }));
     expect(await screen.findByText(/está em uso/)).toBeInTheDocument();
     expect(screen.getByText('Centro')).toBeInTheDocument();
+  });
+});
+
+describe('Cadastros: ativo e inativo', () => {
+  it('mostra só os ativos por padrão e o filtro troca para Inativos e Todos', async () => {
+    const m = montar({
+      'pracas.listar': (p) => {
+        const situacao = p.parametros?.situacao;
+        return pagina(
+          situacao === 'INATIVOS'
+            ? [{ id: ID_B, version: 3, nome: 'Norte', ativo: false }]
+            : situacao === 'TODOS'
+              ? [
+                  { id: ID_A, version: 1, nome: 'Centro', ativo: true },
+                  { id: ID_B, version: 3, nome: 'Norte', ativo: false },
+                ]
+              : [{ id: ID_A, version: 1, nome: 'Centro', ativo: true }],
+        );
+      },
+    });
+    const u = await abrir(m, 'Praças', 'Centro');
+    expect(screen.queryByText('Norte')).toBeNull();
+    expect(screen.getByLabelText('Situação')).toHaveValue('ATIVOS');
+    await u.selectOptions(screen.getByLabelText('Situação'), 'TODOS');
+    const norte = await screen.findByRole('row', { name: /Norte/ });
+    expect(within(norte).getByText('Inativo')).toBeInTheDocument();
+    expect(
+      within(screen.getByRole('row', { name: /Centro/ })).getByText('Ativo'),
+    ).toBeInTheDocument();
+    await u.selectOptions(screen.getByLabelText('Situação'), 'INATIVOS');
+    await waitFor(() => expect(screen.queryByText('Centro')).toBeNull());
+    expect(screen.getByText('Norte')).toBeInTheDocument();
+  });
+
+  it('Inativar pede confirmação que explica que pode voltar, e manda a versão lida', async () => {
+    let inativa = false;
+    const m = montar({
+      'pracas.listar': () =>
+        pagina(inativa ? [] : [{ id: ID_A, version: 4, nome: 'Centro', ativo: true }]),
+      'pracas.inativar': () => {
+        inativa = true;
+        return { ok: true, dados: { id: ID_A, version: 5, nome: 'Centro', ativo: false } };
+      },
+    });
+    const u = await abrir(m, 'Praças', 'Centro');
+    await u.click(screen.getByRole('button', { name: 'Inativar praça' }));
+    const janela = await screen.findByRole('dialog');
+    expect(within(janela).getByText(/Pode voltar a qualquer hora/)).toBeInTheDocument();
+    expect(within(janela).getByText(/continua nos relatórios/)).toBeInTheDocument();
+    await u.click(within(janela).getByRole('button', { name: 'Voltar' }));
+    expect(m.chamadas.some((c) => c.operacao === 'pracas.inativar')).toBe(false);
+
+    await u.click(screen.getByRole('button', { name: 'Inativar praça' }));
+    await u.click(
+      within(await screen.findByRole('dialog')).getByRole('button', { name: 'Inativar praça' }),
+    );
+    expect(
+      await screen.findByText('Centro foi inativada. Pode voltar a qualquer hora.'),
+    ).toBeInTheDocument();
+    expect(m.chamadas.find((c) => c.operacao === 'pracas.inativar')?.parametros).toEqual({
+      id: ID_A,
+      version: 4,
+    });
+  });
+
+  it('Reativar não pede confirmação e avisa que voltou', async () => {
+    const m = montar({
+      'clientes.listar': () => pagina([{ id: ID_A, version: 2, nome: 'Ana', ativo: false }]),
+      'clientes.reativar': () => ({
+        ok: true,
+        dados: { id: ID_A, version: 3, nome: 'Ana', ativo: true },
+      }),
+    });
+    const u = await abrir(m, 'Clientes', 'Ana');
+    expect(screen.queryByRole('button', { name: 'Inativar cliente' })).toBeNull();
+    await u.click(screen.getByRole('button', { name: 'Reativar cliente' }));
+    expect(await screen.findByText('Ana voltou a ficar ativo.')).toBeInTheDocument();
+    expect(m.chamadas.find((c) => c.operacao === 'clientes.reativar')?.parametros).toEqual({
+      id: ID_A,
+      version: 2,
+    });
+  });
+
+  it('se outra pessoa mexeu antes, mostra o aviso do servidor e não diz que inativou', async () => {
+    const m = montar({
+      'categorias.listar': () => pagina([{ id: ID_A, version: 1, nome: 'Brincos', ativo: true }]),
+      'categorias.inativar': () => ({
+        ok: false,
+        motivo: 'erro',
+        status: 409,
+        codigo: 'CADASTRO_ALTERADO',
+        mensagem: 'Outra pessoa alterou este cadastro. Atualize a tela e tente de novo.',
+      }),
+    });
+    const u = await abrir(m, 'Categorias', 'Brincos');
+    await u.click(screen.getByRole('button', { name: 'Inativar categoria' }));
+    await u.click(
+      within(await screen.findByRole('dialog')).getByRole('button', { name: 'Inativar categoria' }),
+    );
+    expect(await screen.findByText(/Outra pessoa alterou/)).toBeInTheDocument();
+    expect(screen.queryByText(/foi inativada/)).toBeNull();
+  });
+
+  it('semanas não têm filtro de situação nem botão de inativar', async () => {
+    const m = montar({
+      'semanas.listar': () =>
+        pagina([
+          {
+            id: ID_A,
+            version: 0,
+            numero: 3,
+            inicio: '2026-11-09',
+            fim: '2026-11-15',
+            situacao: 'ABERTA',
+          },
+        ]),
+    });
+    await abrir(m, 'Semanas', '09/11/2026');
+    expect(screen.queryByRole('button', { name: /Inativar/ })).toBeNull();
+    expect(m.chamadas.find((c) => c.operacao === 'semanas.listar')?.parametros).not.toHaveProperty(
+      'situacao',
+    );
+  });
+});
+
+describe('Cadastros: data de nascimento do cliente', () => {
+  it('o campo é opcional, aparece ao editar e vai para a API', async () => {
+    const m = montar({
+      'clientes.listar': () =>
+        pagina([{ id: ID_A, version: 2, nome: 'Ana', dataNascimento: '1990-05-17', ativo: true }]),
+      'clientes.editar': () => ({ ok: true, dados: { id: ID_A, version: 3, nome: 'Ana' } }),
+    });
+    const u = await abrir(m, 'Clientes', 'Ana');
+    await u.click(screen.getByRole('button', { name: 'Editar' }));
+    const campo = await screen.findByLabelText('Data de nascimento');
+    expect(campo).toHaveValue('1990-05-17');
+    await u.click(screen.getByRole('button', { name: 'Salvar' }));
+    await screen.findByText('Os dados de Ana foram salvos.');
+    expect(m.chamadas.find((c) => c.operacao === 'clientes.editar')?.parametros).toMatchObject({
+      dataNascimento: '1990-05-17',
+      version: 2,
+    });
+  });
+
+  it('erro do servidor (data no futuro) aparece no campo, em português', async () => {
+    const m = montar({
+      'clientes.listar': () => pagina([]),
+      'clientes.criar': () => ({
+        ok: false,
+        motivo: 'erro',
+        status: 400,
+        codigo: 'DADOS_INVALIDOS',
+        mensagem: 'Confira os dados.',
+        campos: [
+          { campo: 'dataNascimento', mensagem: 'A data de nascimento não pode ser no futuro.' },
+        ],
+      }),
+    });
+    const u = await abrir(m, 'Clientes', 'Ainda não há nenhum cliente.');
+    await u.click(screen.getByRole('button', { name: 'Novo cliente' }));
+    await u.type(screen.getByLabelText('Nome do cliente'), 'Ana');
+    await u.type(screen.getByLabelText('Data de nascimento'), '2999-01-01');
+    await u.click(screen.getByRole('button', { name: 'Salvar' }));
+    expect(
+      await screen.findByText('A data de nascimento não pode ser no futuro.'),
+    ).toBeInTheDocument();
   });
 });

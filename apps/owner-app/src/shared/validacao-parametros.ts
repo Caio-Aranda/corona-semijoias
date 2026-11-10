@@ -4,6 +4,7 @@ import {
   CAMPOS_DOS_CADASTROS,
   TEM_ENDERECO,
   type AcaoDeCadastro,
+  TEM_ATIVO,
   type CampoDaApi,
   type NomeDoCadastro,
 } from './cadastros';
@@ -53,6 +54,8 @@ export interface ParametrosDeUsuarioEditado {
 
 export interface ParametrosDaLista {
   busca?: string;
+  /** Só nos cadastros: ATIVOS (padrão do servidor), INATIVOS ou TODOS. */
+  situacao?: string;
   perfil?: string;
   ativo?: boolean;
   pagina: number;
@@ -65,9 +68,9 @@ export interface ParametrosDeCadastro {
   acao: AcaoDeCadastro;
   /** Só em `listar`. */
   lista?: ParametrosDaLista;
-  /** Só em `editar` e `excluir`. */
+  /** Só em `editar`, `excluir`, `inativar` e `reativar`. */
   id?: string;
-  /** Só em `criar` e `editar`: os campos já conferidos. */
+  /** Em `criar` e `editar`: os campos já conferidos. Em `inativar` e `reativar`: só a `version`. */
   corpo?: Record<string, unknown>;
 }
 
@@ -217,10 +220,24 @@ function conferirCadastro(
       if (tamanho < 1 || tamanho > 100) return null;
       const lista: ParametrosDaLista = { pagina, tamanho };
       if (busca) lista.busca = busca;
+      if (p.situacao !== undefined) {
+        if (!TEM_ATIVO[cadastro]) return null;
+        if (!(SITUACOES_DA_LISTA as readonly unknown[]).includes(p.situacao)) return null;
+        lista.situacao = p.situacao as string;
+      }
       return { ...base, lista };
     }
     case 'excluir':
       return ehTexto(p.id) && UUID.test(p.id) ? { ...base, id: p.id } : null;
+    case 'inativar':
+    case 'reativar': {
+      if (!TEM_ATIVO[cadastro]) return null;
+      if (Object.keys(p).some((k) => k !== 'id' && k !== 'version')) return null;
+      if (!ehTexto(p.id) || !UUID.test(p.id)) return null;
+      if (p.version === undefined) return { ...base, id: p.id };
+      if (!versaoValida(p.version)) return null;
+      return { ...base, id: p.id, corpo: { version: p.version } };
+    }
     case 'criar': {
       const corpo = conferirCorpoDeCadastro(cadastro, 'criar', p);
       return corpo ? { ...base, corpo } : null;

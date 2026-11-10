@@ -369,6 +369,9 @@
           "telefone" : {
             "type" : "string"
           },
+          "tipo" : {
+            "type" : "string"
+          },
           "whatsapp" : {
             "type" : "string"
           }
@@ -377,11 +380,18 @@
       },
       "LinhaDeCliente" : {
         "properties" : {
+          "ativo" : {
+            "type" : "boolean"
+          },
           "cadastradoEm" : {
             "format" : "date-time",
             "type" : "string"
           },
           "cidade" : {
+            "type" : "string"
+          },
+          "dataNascimento" : {
+            "format" : "date",
             "type" : "string"
           },
           "id" : {
@@ -411,6 +421,9 @@
       },
       "LinhaDeFornecedor" : {
         "properties" : {
+          "ativo" : {
+            "type" : "boolean"
+          },
           "cidade" : {
             "type" : "string"
           },
@@ -936,6 +949,15 @@
           }
         },
         "required" : [ "tokenDeRenovacao" ],
+        "type" : "object"
+      },
+      "PedidoDeSituacao" : {
+        "properties" : {
+          "version" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
         "type" : "object"
       },
       "PedidoDeTrocaDeSenha" : {
@@ -1863,6 +1885,13 @@
           }
         }, {
           "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
           "name" : "pagina",
           "required" : false,
           "schema" : {
@@ -2021,6 +2050,88 @@
         "tags" : [ "categorias-da-dona-controller" ]
       }
     },
+    "/api/dona/categorias/{id}/inativar" : {
+      "post" : {
+        "description" : "Inativar não é excluir: a categoria some das escolhas e das buscas (a lista de ativos), mas continua nos relatórios e nos históricos, e pode ser reativada a qualquer hora. Mande a version que a tela leu (opcional).",
+        "operationId" : "inativar_6",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeSituacao"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Resposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Inativar categoria",
+        "tags" : [ "categorias-da-dona-controller" ]
+      }
+    },
+    "/api/dona/categorias/{id}/reativar" : {
+      "post" : {
+        "description" : "Desfaz a inativação: volta para as escolhas e para a lista de ativos.",
+        "operationId" : "reativar_7",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeSituacao"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Resposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Reativar categoria",
+        "tags" : [ "categorias-da-dona-controller" ]
+      }
+    },
     "/api/dona/clientes" : {
       "get" : {
         "description" : "Busca pelo nome, telefone, WhatsApp ou CPF. A página começa em 0 (até 100 por página).",
@@ -2028,6 +2139,13 @@
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
           "required" : false,
           "schema" : {
             "type" : "string"
@@ -2192,6 +2310,88 @@
         "tags" : [ "clientes-da-dona-controller" ]
       }
     },
+    "/api/dona/clientes/{id}/inativar" : {
+      "post" : {
+        "description" : "Inativar não é excluir: o cliente some das escolhas e das buscas (a lista de ativos), mas continua nos relatórios e nos históricos, e pode ser reativado a qualquer hora. Mande a version que a tela leu (opcional).",
+        "operationId" : "inativar_5",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeSituacao"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Resposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Inativar cliente",
+        "tags" : [ "clientes-da-dona-controller" ]
+      }
+    },
+    "/api/dona/clientes/{id}/reativar" : {
+      "post" : {
+        "description" : "Desfaz a inativação: volta para as escolhas e para a lista de ativos.",
+        "operationId" : "reativar_6",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeSituacao"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Resposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Reativar cliente",
+        "tags" : [ "clientes-da-dona-controller" ]
+      }
+    },
     "/api/dona/cotacoes/converter" : {
       "post" : {
         "description" : "Só para mostrar, nada é gravado. valorEmReais é texto decimal com ponto e até 2 casas (número JSON é recusado; pode ser negativo, para estorno); data é opcional (hoje, se vier vazia) e usa a cotação em vigor naquela data. Dólar com 2 casas e Guarani sem casas. Sem cotação: 200 com disponivel = false.",
@@ -2255,6 +2455,13 @@
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
           "required" : false,
           "schema" : {
             "type" : "string"
@@ -2419,6 +2626,88 @@
         "tags" : [ "fornecedores-da-dona-controller" ]
       }
     },
+    "/api/dona/fornecedores/{id}/inativar" : {
+      "post" : {
+        "description" : "Inativar não é excluir: o fornecedor some das escolhas e das buscas (a lista de ativos), mas continua nos relatórios e nos históricos, e pode ser reativado a qualquer hora. Mande a version que a tela leu (opcional).",
+        "operationId" : "inativar_4",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeSituacao"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Resposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Inativar fornecedor",
+        "tags" : [ "fornecedores-da-dona-controller" ]
+      }
+    },
+    "/api/dona/fornecedores/{id}/reativar" : {
+      "post" : {
+        "description" : "Desfaz a inativação: volta para as escolhas e para a lista de ativos.",
+        "operationId" : "reativar_5",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeSituacao"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Resposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Reativar fornecedor",
+        "tags" : [ "fornecedores-da-dona-controller" ]
+      }
+    },
     "/api/dona/importacoes/{id}/linhas" : {
       "post" : {
         "description" : "O aplicativo gera o id do lote (UUID) e manda as linhas em partes de até 500; repetir o mesmo id junta as partes ao mesmo lote. Cada linha diz a referência (por exemplo \"Linha 12\"), o resultado (CRIADO, ATUALIZADO, JA_EXISTIA ou RECUSADO) e o motivo. Este registro é o que o aplicativo informa: o que mudou nos produtos já foi gravado e conferido pelas rotas de produto.",
@@ -2461,6 +2750,13 @@
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
           "required" : false,
           "schema" : {
             "type" : "string"
@@ -2622,6 +2918,88 @@
           "bearer" : [ ]
         } ],
         "summary" : "Editar praça",
+        "tags" : [ "pracas-da-dona-controller" ]
+      }
+    },
+    "/api/dona/pracas/{id}/inativar" : {
+      "post" : {
+        "description" : "Inativar não é excluir: a praça some das escolhas e das buscas (a lista de ativos), mas continua nos relatórios e nos históricos, e pode ser reativada a qualquer hora. Mande a version que a tela leu (opcional).",
+        "operationId" : "inativar_3",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeSituacao"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Resposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Inativar praça",
+        "tags" : [ "pracas-da-dona-controller" ]
+      }
+    },
+    "/api/dona/pracas/{id}/reativar" : {
+      "post" : {
+        "description" : "Desfaz a inativação: volta para as escolhas e para a lista de ativos.",
+        "operationId" : "reativar_4",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeSituacao"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Resposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Reativar praça",
         "tags" : [ "pracas-da-dona-controller" ]
       }
     },
@@ -3317,7 +3695,7 @@
     "/api/dona/produtos/{id}/inativar" : {
       "post" : {
         "description" : "Sai das escolhas, mas o histórico fica. Pode ser reativado.",
-        "operationId" : "inativar_1",
+        "operationId" : "inativar_2",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -3348,7 +3726,7 @@
     },
     "/api/dona/produtos/{id}/reativar" : {
       "post" : {
-        "operationId" : "reativar_2",
+        "operationId" : "reativar_3",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -3448,7 +3826,7 @@
     },
     "/api/dona/relatorios/cadastros/aniversariantes" : {
       "get" : {
-        "description" : "Vendedores que fazem aniversário no mês (mes de 1 a 12; sem mes, o mês de hoje em Brasília). O cadastro de cliente não tem data de nascimento, por isso só vendedores. A data é de calendário, sem fuso. Filtros: busca, pracaId, situacao. Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.",
+        "description" : "Quem faz aniversário no mês (mes de 1 a 12; sem mes, o mês de hoje em Brasília). quem: TODOS (padrão), VENDEDORES ou CLIENTES. A praça do cliente é a do vendedor responsável. A data é de calendário, sem fuso. Filtros: busca, quem, pracaId, situacao. Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.",
         "operationId" : "aniversariantes",
         "parameters" : [ {
           "in" : "query",
@@ -3457,6 +3835,13 @@
           "schema" : {
             "format" : "int32",
             "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "quem",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
           }
         }, {
           "in" : "query",
@@ -3518,17 +3903,24 @@
         "security" : [ {
           "bearer" : [ ]
         } ],
-        "summary" : "Relatório de aniversariantes (vendedores)",
+        "summary" : "Relatório de aniversariantes (vendedores e clientes)",
         "tags" : [ "relatorios-de-cadastro-controller" ]
       }
     },
     "/api/dona/relatorios/cadastros/clientes" : {
       "get" : {
-        "description" : "Filtros: busca, vendedorId, pracaId (a do vendedor responsável), comVendedor (SIM ou NAO), de e ate (data do cadastro). Cliente não tem situação: só os excluídos ficam de fora. Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.",
+        "description" : "Filtros: busca, situacao, vendedorId, pracaId (a do vendedor responsável), comVendedor (SIM ou NAO), de e ate (data do cadastro). Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.",
         "operationId" : "clientes",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
           "required" : false,
           "schema" : {
             "type" : "string"
@@ -3683,11 +4075,18 @@
     },
     "/api/dona/relatorios/cadastros/fornecedores" : {
       "get" : {
-        "description" : "Filtros: busca, comProdutos (SIM ou NAO: tem produtos ativos), de e ate (data do cadastro). Fornecedor não tem situação. Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.",
+        "description" : "Filtros: busca, situacao, comProdutos (SIM ou NAO: tem produtos ativos), de e ate (data do cadastro). Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.",
         "operationId" : "fornecedores",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
           "required" : false,
           "schema" : {
             "type" : "string"
@@ -4161,6 +4560,13 @@
           }
         }, {
           "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
           "name" : "pagina",
           "required" : false,
           "schema" : {
@@ -4316,6 +4722,88 @@
           "bearer" : [ ]
         } ],
         "summary" : "Editar restrição",
+        "tags" : [ "restricoes-da-dona-controller" ]
+      }
+    },
+    "/api/dona/restricoes/{id}/inativar" : {
+      "post" : {
+        "description" : "Inativar não é excluir: a restrição some das escolhas e das buscas (a lista de ativos), mas continua nos relatórios e nos históricos, e pode ser reativada a qualquer hora. Mande a version que a tela leu (opcional).",
+        "operationId" : "inativar_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeSituacao"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Resposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Inativar restrição",
+        "tags" : [ "restricoes-da-dona-controller" ]
+      }
+    },
+    "/api/dona/restricoes/{id}/reativar" : {
+      "post" : {
+        "description" : "Desfaz a inativação: volta para as escolhas e para a lista de ativos.",
+        "operationId" : "reativar_2",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeSituacao"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Resposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Reativar restrição",
         "tags" : [ "restricoes-da-dona-controller" ]
       }
     },

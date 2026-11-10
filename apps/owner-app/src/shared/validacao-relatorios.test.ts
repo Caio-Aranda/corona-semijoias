@@ -15,6 +15,15 @@ describe('relatórios de cadastro na ponte', () => {
     expect(r?.parametros).toMatchObject({ relatorio: 'produtos' });
   });
 
+  it('aniversariantes aceita quem (TODOS, VENDEDORES, CLIENTES) e situação nos clientes', () => {
+    for (const quem of ['TODOS', 'VENDEDORES', 'CLIENTES']) {
+      expect(chamar({ relatorio: 'aniversariantes', mes: 3, quem })).not.toBeNull();
+    }
+    expect(chamar({ relatorio: 'aniversariantes', quem: 'TALVEZ' })).toBeNull();
+    expect(chamar({ relatorio: 'clientes', situacao: 'INATIVOS' })).not.toBeNull();
+    expect(chamar({ relatorio: 'fornecedores', situacao: 'TODOS' })).not.toBeNull();
+  });
+
   it('aceita os filtros novos da tarefa 1.13', () => {
     const r = chamar({
       relatorio: 'produtos',
