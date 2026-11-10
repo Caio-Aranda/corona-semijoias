@@ -1,5 +1,30 @@
 import {
+  baixar,
   converter,
+  criar as criarVendedor,
+  criarReferencia,
+  editar as editarVendedor,
+  editarReferencia,
+  enviar as enviarDocumento,
+  excluir8 as excluirDocumento,
+  excluirReferencia,
+  gravarConjuge,
+  gravarContato,
+  gravarEndereco,
+  gravarMei,
+  gravarObservacoes,
+  gravarTrabalho,
+  inativar as inativarVendedor,
+  listar1 as listarDocumentos,
+  listarReferencias,
+  reativar as reativarVendedor,
+  ver as verVendedor,
+  verConjuge,
+  verContato,
+  verEndereco,
+  verMei,
+  verObservacoes,
+  verTrabalho,
   criar1,
   criar2,
   criar3,
@@ -43,7 +68,8 @@ import {
   type RespostaDoLogin,
 } from '@corona/api-client-dona';
 import type { NomeDoCadastro } from '../shared/cadastros';
-import type { ParametrosConferidos } from '../shared/validacao-parametros';
+import type { ParametrosConferidos, ParametrosDeVendedor } from '../shared/validacao-parametros';
+import type { AbaDoVendedor, ArquivoBaixado } from '../shared/vendedores';
 import type { ApiDeAutenticacao, Credenciais, Falha, Resultado } from './tipos';
 
 export interface DadosDoUsuario {
@@ -140,6 +166,150 @@ const ROTAS_DOS_CADASTROS = {
   clientes: { listar: listar9, criar: criar7, editar: editar7, excluir: excluir6 },
 } as unknown as Record<NomeDoCadastro, Record<string, ChamadaGerada>>;
 
+type ChamadaDaAba = (o: Record<string, unknown>) => Promise<RetornoDoCliente<unknown>>;
+
+/** As duas rotas (ver e gravar) de cada aba da ficha do vendedor. */
+const ROTAS_DAS_ABAS = {
+  endereco: { ver: verEndereco, gravar: gravarEndereco },
+  contato: { ver: verContato, gravar: gravarContato },
+  trabalho: { ver: verTrabalho, gravar: gravarTrabalho },
+  conjuge: { ver: verConjuge, gravar: gravarConjuge },
+  mei: { ver: verMei, gravar: gravarMei },
+  observacoes: { ver: verObservacoes, gravar: gravarObservacoes },
+} as unknown as Record<AbaDoVendedor, Record<'ver' | 'gravar', ChamadaDaAba>>;
+
+const TIPOS_DE_ARQUIVO: Record<string, string> = {
+  pdf: 'application/pdf',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+  webp: 'image/webp',
+};
+
+/** Nome do arquivo no cabeçalho Content-Disposition (aceita `filename*=UTF-8''...` e `filename="..."`). */
+export function nomeDoArquivoNoCabecalho(cabecalho: string | null): string {
+  if (cabecalho) {
+    const estendido = /filename\*\s*=\s*UTF-8''([^;]+)/i.exec(cabecalho);
+    if (estendido?.[1]) {
+      try {
+        return decodeURIComponent(estendido[1].trim());
+      } catch {
+        // cai para o nome simples
+      }
+    }
+    const simples = /filename\s*=\s*"?([^";]+)"?/i.exec(cabecalho);
+    if (simples?.[1]) return simples[1].trim();
+  }
+  return 'documento';
+}
+
+/** As rotas do vendedor: cadastro, abas, referências e documentos (só ADMIN; o servidor confere). */
+async function executarVendedor(
+  client: ReturnType<typeof criarClienteDaApi>,
+  headers: { Authorization: string },
+  pedido: ParametrosDeVendedor,
+): Promise<Resultado<unknown>> {
+  const base = { client, headers };
+  switch (pedido.operacao) {
+    case 'vendedores.listar': {
+      const { pagina, tamanho, busca } = pedido.lista;
+      return executar(() =>
+        listar({
+          ...base,
+          query: {
+            pagina,
+            tamanho,
+            ...(busca ? { busca } : {}),
+            ...(pedido.situacao ? { situacao: pedido.situacao } : {}),
+          },
+        }),
+      );
+    }
+    case 'vendedores.ver':
+      return executar(() => verVendedor({ ...base, path: { id: pedido.id } }));
+    case 'vendedores.criar':
+      return executar(() => criarVendedor({ ...base, body: pedido.corpo as never }));
+    case 'vendedores.editar':
+      return executar(() =>
+        editarVendedor({ ...base, path: { id: pedido.id }, body: pedido.corpo as never }),
+      );
+    case 'vendedores.inativar':
+      return executar(() => inativarVendedor({ ...base, path: { id: pedido.id } }));
+    case 'vendedores.reativar':
+      return executar(() => reativarVendedor({ ...base, path: { id: pedido.id } }));
+    case 'vendedores.aba.ver':
+      return executar(() => ROTAS_DAS_ABAS[pedido.aba].ver({ ...base, path: { id: pedido.id } }));
+    case 'vendedores.aba.gravar':
+      return executar(() =>
+        ROTAS_DAS_ABAS[pedido.aba].gravar({ ...base, path: { id: pedido.id }, body: pedido.corpo }),
+      );
+    case 'vendedores.referencias.listar':
+      return executar(() => listarReferencias({ ...base, path: { id: pedido.id } }));
+    case 'vendedores.referencias.criar':
+      return executar(() =>
+        criarReferencia({ ...base, path: { id: pedido.id }, body: pedido.corpo as never }),
+      );
+    case 'vendedores.referencias.editar':
+      return executar(() =>
+        editarReferencia({
+          ...base,
+          path: { id: pedido.id, referenciaId: pedido.referenciaId },
+          body: pedido.corpo as never,
+        }),
+      );
+    case 'vendedores.referencias.excluir':
+      return executar(() =>
+        excluirReferencia({ ...base, path: { id: pedido.id, referenciaId: pedido.referenciaId } }),
+      );
+    case 'vendedores.documentos.listar':
+      return executar(() => listarDocumentos({ ...base, path: { id: pedido.id } }));
+    case 'vendedores.documentos.enviar': {
+      const { nome, bytes } = pedido.arquivo;
+      const extensao = nome.slice(nome.lastIndexOf('.') + 1).toLowerCase();
+      const arquivo = new File([bytes as BlobPart], nome, {
+        type: TIPOS_DE_ARQUIVO[extensao] ?? 'application/octet-stream',
+      });
+      return executar(() =>
+        enviarDocumento({
+          ...base,
+          path: { id: pedido.id },
+          ...(pedido.descricao ? { query: { descricao: pedido.descricao } } : {}),
+          body: { arquivo },
+        }),
+      );
+    }
+    case 'vendedores.documentos.excluir':
+      return executar(() =>
+        excluirDocumento({ ...base, path: { id: pedido.id, documentoId: pedido.documentoId } }),
+      );
+    case 'vendedores.documentos.baixar': {
+      try {
+        const { data, error, response } = (await baixar({
+          ...base,
+          path: { id: pedido.id, documentoId: pedido.documentoId },
+          parseAs: 'arrayBuffer',
+        } as never)) as RetornoDoCliente<ArrayBuffer>;
+        if (error !== undefined && error !== '') {
+          return { ok: false, falha: comoFalha(error, response) };
+        }
+        if (response && !response.ok) return { ok: false, falha: comoFalha(undefined, response) };
+        if (!response || !(data instanceof ArrayBuffer)) {
+          return { ok: false, falha: { tipo: 'resposta-invalida' } };
+        }
+        const arquivo: ArquivoBaixado = {
+          nome: nomeDoArquivoNoCabecalho(response.headers.get('content-disposition')),
+          tipo: response.headers.get('content-type') ?? 'application/octet-stream',
+          bytes: new Uint8Array(data),
+        };
+        return { ok: true, dados: arquivo };
+      } catch (e) {
+        if (ehAppDesatualizado(e)) return { ok: false, falha: comoFalha(e, undefined) };
+        return { ok: false, falha: { tipo: 'sem-conexao' } };
+      }
+    }
+  }
+}
+
 /**
  * Chamadas à API do Corona Gestão. O cliente gerado já manda X-App-Tipo e X-App-Versao em toda
  * chamada; aqui só se acrescenta o token de acesso, que nunca sai do processo principal.
@@ -195,6 +365,9 @@ export function criarApiDoGestao(opcoes: OpcoesDaApi): ApiDoGestao {
           }),
         );
       }
+      if (pedido.operacao.startsWith('vendedores.') && pedido.operacao !== 'vendedores.escolha') {
+        return executarVendedor(client, headers, pedido as ParametrosDeVendedor);
+      }
       switch (pedido.operacao) {
         case 'eu':
           return executar(() => eu({ client, headers }));
@@ -231,6 +404,8 @@ export function criarApiDoGestao(opcoes: OpcoesDaApi): ApiDoGestao {
           return executar(() =>
             listar({ client, headers, query: { situacao: 'ATIVOS', pagina: 0, tamanho: 100 } }),
           );
+        default:
+          return { ok: false, falha: { tipo: 'resposta-invalida' } };
       }
     },
   };

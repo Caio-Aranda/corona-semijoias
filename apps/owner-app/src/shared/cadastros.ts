@@ -21,7 +21,18 @@ export const OPERACOES_DE_CADASTRO: readonly OperacaoDeCadastro[] = NOMES_DOS_CA
   (n) => ACOES_DE_CADASTRO.map((a): OperacaoDeCadastro => `${n}.${a}`),
 );
 
-export type TipoDeCampoDaApi = 'texto' | 'inteiro' | 'data' | 'booleano' | 'uuid' | 'situacao';
+export type TipoDeCampoDaApi =
+  | 'texto'
+  | 'inteiro'
+  | 'data'
+  | 'booleano'
+  | 'uuid'
+  | 'situacao'
+  /** Dinheiro em reais como texto com ponto ("1500.00"), nunca negativo. */
+  | 'dinheiro'
+  /** Porcentagem de 0 a 100 como texto com ponto ("12.50"). */
+  | 'percentual'
+  | 'sexo';
 
 export interface CampoDaApi {
   nome: string;

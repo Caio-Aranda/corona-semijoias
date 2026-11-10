@@ -223,3 +223,29 @@ Uma seção por tarefa concluída, no mesmo formato de [fase-0.md](fase-0.md). A
 - Falta de "reativar": a dona precisa recuperar um cadastro excluído? Se sim, a API precisa de uma rota (tarefa de backend).
 - Semana FECHADA ainda pode ser editada na tela (regra da 1.2 mantida).
 
+
+### Tarefa 1.10: vendedores (owner-app)
+
+**O que foi feito**
+- Pessoas → Vendedores saiu de "Em breve": lista (busca por nome, CPF, CNPJ, telefone ou código; filtros de praça e situação; páginas de 20) e ficha com nove abas: Cadastro, Endereço, Filiação e contato, Trabalho, Cônjuge, MEI, Referências, Observações e Documentos. Código, limite de consignação (com Real, Dólar e Guarani logo abaixo, pelo `CampoDeDinheiro`), restrição, comissão (%) e praça ficam na aba Cadastro; desativar e reativar pedem confirmação (exclusão lógica; não há botão de excluir).
+- Cada aba se grava sozinha com a própria `version` (aba nunca gravada vem vazia, versão 0). Erros de campo aparecem no campo, 409 mostra o texto do servidor com **Atualizar**. Vendedor novo só libera as outras abas depois de salvar o Cadastro. As abas visitadas continuam montadas, então trocar de aba não perde o que foi digitado; a aba com alteração não salva leva um "•".
+- Aviso de alterações não salvas ao voltar para a lista, ao escolher outro item do menu e ao fechar a janela (`nucleo/guarda-de-saida.ts`).
+- Referências: lista, nova, editar e excluir (com confirmação). Documentos: enviar (foto ou PDF de até 10 MB), baixar e excluir (com confirmação). O arquivo vai e volta pela ponte como bytes (`Uint8Array`) e o processo principal o manda ao servidor em formulário (multipart); nunca como texto codificado. Tipo (JPG, PNG, WebP, PDF), tamanho e arquivo vazio são conferidos na tela e na ponte; o servidor confere o tipo pelo conteúdo.
+- Ligação com usuário: a ficha mostra o usuário que tem este `vendedor_id` (ou diz onde criar o acesso). Só informação.
+- Ponte: 16 operações novas `vendedores.*` (`shared/vendedores.ts`), conferidas no processo principal: só campos conhecidos, dinheiro como texto decimal não negativo, comissão de 0 a 100, sexo da lista, `version` obrigatória ao editar, arquivo com nome, tipo e tamanho válidos. Campo desconhecido (inclusive `ativo`) recusa tudo. `main/api.ts` liga cada operação às rotas do cliente gerado (nenhuma rota nova no backend).
+- Testes: 24 de tela, 9 de conferência da ponte e 5 do adaptador da API (baixar, enviar em multipart, editar com versão, rota das abas). O teste antigo do menu passou a usar Produtos como exemplo de "Em breve".
+
+**O que ficou pendente**
+- O filtro de praça da lista é feito na tela (a API não filtra por praça): com praça escolhida a tela busca até 100 vendedores e separa. Se a loja passar de 100 vendedores, precisa de um filtro na API.
+- Baixar documento usa o download do navegador embutido (link de `Blob`); a CSP da tela não foi mexida. Não rodei o Electron de ponta a ponta para ver o Windows perguntando onde guardar.
+- Inativar o vendedor não desativa o usuário dele (pendência da 1.3).
+- Sem máscara de CPF, CNPJ, telefone e CEP (igual à 1.9). Sem botão de excluir vendedor (só desativar).
+
+**Decisões tomadas**
+- Uma ficha com um formulário genérico por lista de campos (`FormularioDeCampos`) para o Cadastro e as seis abas de dados, em vez de nove formulários.
+- Arquivo como bytes pela ponte, em vez de caminho do disco: a tela nunca passa caminho ao processo principal.
+- A aba "Cadastro" não tem caixa "Ativo": a situação muda pelo botão Desativar/Reativar, com confirmação, porque a API tem rotas próprias para isso.
+
+**Dúvidas**
+- Desativar o vendedor deve também desativar o acesso dele? (repete a dúvida da 1.3)
+- O limite de consignação e a comissão devem pedir confirmação extra ao mudar (a §11 pede auditoria no servidor, que ainda não existe para estes campos)?

@@ -52,7 +52,7 @@ Cadastros da dona (§15). Segue o mesmo formato da Fase 0. O código das etiquet
 | 1.7 | backend: rota da cotação do dia e do aviso de falha (`AvisoDeCotacao`) | Concluída (PR 33) · [detalhe](progresso/fase-1.md#tarefa-17-rota-da-cotação-do-dia-e-dos-avisos-backend) |
 | 1.8 | owner-app: base de navegação e listas, telas de usuários (senha temporária mostrada uma vez), cotação em Real/Dólar/Guarani e aviso em "O que precisa da sua atenção", mitigação das 3 falhas de renovação sem internet | Concluída (PR 34) · [detalhe](progresso/fase-1.md#tarefa-18-base-do-corona-gestão-usuários-cotação-e-sessão-sem-internet-owner-app) |
 | 1.9 | owner-app: fornecedores, categorias, praças, semanas, restrições e clientes | Concluída (PR 35) · [detalhe](progresso/fase-1.md#tarefa-19-cadastros-básicos-owner-app) |
-| 1.10 | owner-app: vendedores (abas da referência) | A fazer |
+| 1.10 | owner-app: vendedores (abas da referência) | Concluída (PR 36) · [detalhe](progresso/fase-1.md#tarefa-110-vendedores-owner-app) |
 | 1.11 | owner-app: produtos, fotos, importação em massa e leitura de código | A fazer |
 | 1.12 | relatórios de cadastro (backend + tela) | A fazer |
 

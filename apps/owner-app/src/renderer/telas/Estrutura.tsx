@@ -1,12 +1,15 @@
-import { Botao, CabecalhoDeMarca, MenuLateral } from '@corona/ui';
+import { Botao, CabecalhoDeMarca, JanelaDeConfirmacao, MenuLateral } from '@corona/ui';
+import { useState } from 'react';
 import type { PonteDoCorona } from '../../shared/ponte';
 import { RodapeDaCotacao } from '../nucleo/cotacao';
+import { temAlteracoesNaoSalvas } from '../nucleo/guarda-de-saida';
 import { MENU, rotuloDaRota, useRota, type Rota } from '../nucleo/rotas';
 import { TEXTOS } from '../textos';
 import { TelaEmBreve } from './TelaEmBreve';
 import { TelaInicial } from './TelaInicial';
 import { TelaDeCadastro } from './cadastros/TelaDeCadastro';
 import { TelaUsuarios } from './usuarios/TelaUsuarios';
+import { TelaVendedores } from './vendedores/TelaVendedores';
 
 export interface EstruturaProps {
   ponte: PonteDoCorona;
@@ -26,6 +29,8 @@ function Conteudo({
   switch (rota) {
     case 'inicio':
       return <TelaInicial ponte={ponte} nome={nome} />;
+    case 'pessoas/vendedores':
+      return <TelaVendedores ponte={ponte} />;
     case 'pessoas/usuarios':
       return <TelaUsuarios ponte={ponte} />;
     case 'cadastros/fornecedores':
@@ -48,6 +53,8 @@ function Conteudo({
 /** Cabeçalho, menu lateral, a tela escolhida e a linha da cotação do dia no rodapé. */
 export function Estrutura({ ponte, nome, aoSair }: EstruturaProps) {
   const [rota, irPara] = useRota();
+  // Menu escolhido com alterações por salvar: pergunta antes de sair da tela.
+  const [destino, setDestino] = useState<Rota | null>(null);
   return (
     <div className="gestao-pagina">
       <CabecalhoDeMarca
@@ -64,7 +71,9 @@ export function Estrutura({ ponte, nome, aoSair }: EstruturaProps) {
           grupos={MENU}
           atual={rota}
           rotulo={TEXTOS.menu.rotulo}
-          aoEscolher={(chave) => irPara(chave as Rota)}
+          aoEscolher={(chave) =>
+            temAlteracoesNaoSalvas() ? setDestino(chave as Rota) : irPara(chave as Rota)
+          }
         />
         <main className="gestao-conteudo">
           {/* A chave faz a tela começar do zero ao trocar de item: senhas e formulários não vazam. */}
@@ -72,6 +81,21 @@ export function Estrutura({ ponte, nome, aoSair }: EstruturaProps) {
           <RodapeDaCotacao />
         </main>
       </div>
+      {destino ? (
+        <JanelaDeConfirmacao
+          titulo={TEXTOS.vendedores.sair.titulo}
+          rotuloConfirmar={TEXTOS.vendedores.sair.sair}
+          rotuloCancelar={TEXTOS.vendedores.sair.continuar}
+          perigosa
+          aoCancelar={() => setDestino(null)}
+          aoConfirmar={() => {
+            irPara(destino);
+            setDestino(null);
+          }}
+        >
+          {TEXTOS.vendedores.sair.texto}
+        </JanelaDeConfirmacao>
+      ) : null}
     </div>
   );
 }
