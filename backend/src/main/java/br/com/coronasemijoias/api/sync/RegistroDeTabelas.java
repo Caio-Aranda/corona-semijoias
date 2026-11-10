@@ -64,6 +64,8 @@ public final class RegistroDeTabelas {
                         new TabelaDoServidor("sessoes", false),
                         new TabelaDoServidor("tokens_de_renovacao", false),
                         new TabelaDoServidor("tentativas_login", true),
+                        // Auditoria (tarefa 1.4): histórico de quem fez o quê, só inserção.
+                        new TabelaDoServidor("auditoria", true),
                         // Cadastros que o vendedor nunca recebe (ESPECIFICACAO §10): fornecedores, praças, restrições.
                         new TabelaDoServidor("fornecedores", false),
                         new TabelaDoServidor("pracas", false),

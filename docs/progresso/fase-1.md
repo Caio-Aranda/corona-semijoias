@@ -60,3 +60,30 @@ Uma seção por tarefa concluída, no mesmo formato de [fase-0.md](fase-0.md). A
 - Inativar o vendedor deve bloquear o acesso dele ao Corona Vendas? Hoje não bloqueia (ver pendências).
 - Um vendedor pode ter mais de um usuário? Hoje o banco permite.
 - A lista de opções de sexo (feminino, masculino, outro), escolaridade e residência (hoje texto livre) está certa para a dona?
+
+### Tarefa 1.4: usuários da dona, auditoria e teste do glossário (backend)
+
+**O que foi feito**
+- Rotas novas em `/api/dona/usuarios` (só ADMIN; vendedor 403, sem token 401): `GET` (busca por nome ou usuário, filtros `perfil` e `ativo`, `pagina` a partir de 0 e `tamanho` até 100), `GET /{id}`, `PUT /{id}` (nome, perfil e vendedor, com a `version` lida), `POST /{id}/desativar` e `POST /{id}/reativar`. Criar e redefinir a senha já existiam (tarefa 10) e ganharam auditoria. A resposta nunca leva hash nem senha; a senha temporária continua saindo uma única vez, só em criar e redefinir.
+- Desativar encerra, na mesma transação, todas as famílias de sessão do usuário (motivo novo `USUARIO_DESATIVADO`). O token de acesso para de valer na hora, o de renovação antigo falha e o login é recusado. Reativar não ressuscita as sessões antigas: a pessoa entra de novo com a senha dela.
+- Regras da dona: não desativa a si mesma (`NAO_DESATIVAR_A_SI_MESMA`), não muda o próprio perfil (`NAO_MUDAR_O_PROPRIO_ACESSO`) e o sistema nunca fica sem administradora ativa (`ULTIMA_ADMINISTRADORA`). As mudanças que contam administradoras pegam uma trava do PostgreSQL (`pg_advisory_xact_lock`), então duas donas que se desativam ao mesmo tempo não deixam o sistema sem ninguém (teste com duas chamadas em paralelo, 6 rodadas).
+- Editar: perfil `ADMIN` não leva vendedor; `VENDEDOR` exige cadastro que existe. Mudar o perfil ou o vendedor também encerra as sessões (`ACESSO_ALTERADO`), porque o token antigo leva esses dados. Mudar só o nome não encerra.
+- `V013__auditoria.sql`: tabela `auditoria` (só do servidor, só inserção: ator, origem `API` ou `COMANDO`, ação, tabela, registro, antes/depois em `jsonb`, hora) e os dois motivos novos no CHECK de `sessoes` (a V007 não foi editada). `ServicoDeAuditoria` grava na mesma transação da mudança. Ações: `USUARIO_CRIADO`, `USUARIO_EDITADO`, `USUARIO_DESATIVADO`, `USUARIO_REATIVADO`, `SENHA_REDEFINIDA`. Antes/depois só levam nome, usuário, perfil, vendedor e se está ativo.
+- O comando `redefinir-senha-admin` (`npm run api:redefinir-senha`) grava `SENHA_REDEFINIDA` com origem `COMANDO` e ator vazio ("pelo servidor"). Comando recusado não grava nada.
+- `GlossarioDasMensagensTest`: lê os blocos `PROIBIDAS-A` e `PROIBIDAS-B` do glossário e confere todos os textos de `CodigoErro`, as frases montadas por `ErroDaApi`, as constantes de `Mensagens` e os textos escritos no código (`message = "..."`, `recusar(...)`, `campoInvalido(...)`). Falha listando a palavra, a mensagem e a origem. Um segundo teste reprova qualquer anotação de conferência de campo sem `message` (o validador devolveria o texto padrão dele, que pode sair em inglês); quatro campos de login, senha, troca de senha e renovação estavam assim e ganharam mensagem.
+- Glossário (parte 6): os três erros novos, escritos antes do código. Clientes da API regerados.
+
+**O que ficou pendente**
+- Telas de usuários (tarefa 1.8). Tela para ler a auditoria: não existe ainda, só a tabela.
+- Auditoria de limite, comissão e restrição do vendedor e das demais ações da §11 (preço, estoque, desconto...) entram com as funcionalidades que as criam; o mecanismo (`ServicoDeAuditoria`) já está pronto para elas.
+- Inativar ou excluir vendedor ainda não desativa o usuário dele (pendência da 1.3; ver dúvidas).
+
+**Decisões tomadas**
+- Desativar ou reativar quem já está nessa situação responde 200 sem mudar nada e sem registrar na auditoria.
+- O login do usuário não muda pela edição (é a identidade nos registros de acesso).
+- Redefinir a senha de usuário desativado continua permitido (tarefa 10).
+- A auditoria guarda o ator por chave estrangeira para `usuarios`; origem `COMANDO` exige ator vazio e `API` exige ator (CHECK).
+
+**Dúvidas**
+- Inativar o vendedor (cadastro) deveria desativar o usuário dele? Hoje não, e a dona desativa os dois separadamente.
+- Quem lê a auditoria e por quanto tempo ela fica guardada (retenção)?

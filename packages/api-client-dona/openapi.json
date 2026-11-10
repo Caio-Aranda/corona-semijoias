@@ -196,6 +196,29 @@
         "required" : [ "nome" ],
         "type" : "object"
       },
+      "PedidoDeEdicao" : {
+        "properties" : {
+          "nome" : {
+            "maxLength" : 120,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "perfil" : {
+            "minLength" : 1,
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "version" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "required" : [ "nome", "perfil", "version" ],
+        "type" : "object"
+      },
       "PedidoDeLogin" : {
         "properties" : {
           "dispositivoId" : {
@@ -634,7 +657,7 @@
     "/api/dona/categorias" : {
       "get" : {
         "description" : "Busca pelo nome. A página começa em 0 (até 100 por página).",
-        "operationId" : "listar_7",
+        "operationId" : "listar_8",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
@@ -734,7 +757,7 @@
         "tags" : [ "categorias-da-dona-controller" ]
       },
       "get" : {
-        "operationId" : "ver_6",
+        "operationId" : "ver_7",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -763,7 +786,7 @@
       },
       "put" : {
         "description" : "Mande a version que a tela leu; se outra pessoa alterou antes, volta 409.",
-        "operationId" : "editar_6",
+        "operationId" : "editar_7",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -805,7 +828,7 @@
     "/api/dona/clientes" : {
       "get" : {
         "description" : "Busca pelo nome, telefone, WhatsApp ou CPF. A página começa em 0 (até 100 por página).",
-        "operationId" : "listar_6",
+        "operationId" : "listar_7",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
@@ -905,7 +928,7 @@
         "tags" : [ "clientes-da-dona-controller" ]
       },
       "get" : {
-        "operationId" : "ver_5",
+        "operationId" : "ver_6",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -934,7 +957,7 @@
       },
       "put" : {
         "description" : "Mande a version que a tela leu; se outra pessoa alterou antes, volta 409.",
-        "operationId" : "editar_5",
+        "operationId" : "editar_6",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -976,7 +999,7 @@
     "/api/dona/fornecedores" : {
       "get" : {
         "description" : "Busca pela razão social, pelo contato ou pelo CNPJ. A página começa em 0 (até 100 por página).",
-        "operationId" : "listar_5",
+        "operationId" : "listar_6",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
@@ -1076,7 +1099,7 @@
         "tags" : [ "fornecedores-da-dona-controller" ]
       },
       "get" : {
-        "operationId" : "ver_4",
+        "operationId" : "ver_5",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1105,7 +1128,7 @@
       },
       "put" : {
         "description" : "Mande a version que a tela leu; se outra pessoa alterou antes, volta 409.",
-        "operationId" : "editar_4",
+        "operationId" : "editar_5",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1147,7 +1170,7 @@
     "/api/dona/pracas" : {
       "get" : {
         "description" : "Busca pelo nome. A página começa em 0 (até 100 por página).",
-        "operationId" : "listar_4",
+        "operationId" : "listar_5",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
@@ -1247,7 +1270,7 @@
         "tags" : [ "pracas-da-dona-controller" ]
       },
       "get" : {
-        "operationId" : "ver_3",
+        "operationId" : "ver_4",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1276,7 +1299,7 @@
       },
       "put" : {
         "description" : "Mande a version que a tela leu; se outra pessoa alterou antes, volta 409.",
-        "operationId" : "editar_3",
+        "operationId" : "editar_4",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1318,7 +1341,7 @@
     "/api/dona/restricoes" : {
       "get" : {
         "description" : "Busca pelo código ou pela descrição. A página começa em 0 (até 100 por página).",
-        "operationId" : "listar_3",
+        "operationId" : "listar_4",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
@@ -1418,7 +1441,7 @@
         "tags" : [ "restricoes-da-dona-controller" ]
       },
       "get" : {
-        "operationId" : "ver_2",
+        "operationId" : "ver_3",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1447,7 +1470,7 @@
       },
       "put" : {
         "description" : "Mande a version que a tela leu; se outra pessoa alterou antes, volta 409.",
-        "operationId" : "editar_2",
+        "operationId" : "editar_3",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1489,7 +1512,7 @@
     "/api/dona/semanas" : {
       "get" : {
         "description" : "Busca pelo número; a mais nova primeiro. A página começa em 0 (até 100 por página).",
-        "operationId" : "listar_2",
+        "operationId" : "listar_3",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
@@ -1589,7 +1612,7 @@
         "tags" : [ "semanas-da-dona-controller" ]
       },
       "get" : {
-        "operationId" : "ver_1",
+        "operationId" : "ver_2",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1618,7 +1641,7 @@
       },
       "put" : {
         "description" : "Mande a version que a tela leu; se outra pessoa alterou antes, volta 409.",
-        "operationId" : "editar_1",
+        "operationId" : "editar_2",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1774,6 +1797,65 @@
       }
     },
     "/api/dona/usuarios" : {
+      "get" : {
+        "description" : "Busca pelo nome ou pelo usuário (login). Filtros: perfil (ADMIN ou VENDEDOR) e ativo (true ou false). A página começa em 0 (até 100 por página).",
+        "operationId" : "listar_2",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "perfil",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ativo",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaginaResposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Listar usuários",
+        "tags" : [ "usuarios-da-dona-controller" ]
+      },
       "post" : {
         "description" : "Devolve a senha temporária uma única vez. Ela vale 7 dias (configuração do servidor) e a pessoa precisa trocá-la na primeira entrada.",
         "operationId" : "criar_1",
@@ -1803,6 +1885,140 @@
           "bearer" : [ ]
         } ],
         "summary" : "Criar usuário com senha temporária",
+        "tags" : [ "usuarios-da-dona-controller" ]
+      }
+    },
+    "/api/dona/usuarios/{id}" : {
+      "get" : {
+        "operationId" : "ver_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Resposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "tags" : [ "usuarios-da-dona-controller" ]
+      },
+      "put" : {
+        "description" : "Muda nome, tipo de acesso e vendedor. Mande a version que a tela leu; se outra pessoa alterou antes, volta 409. Mudar o tipo de acesso ou o vendedor encerra as sessões da pessoa. A dona não muda o próprio tipo de acesso nem deixa o sistema sem administradora.",
+        "operationId" : "editar_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeEdicao"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Resposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Editar usuário",
+        "tags" : [ "usuarios-da-dona-controller" ]
+      }
+    },
+    "/api/dona/usuarios/{id}/desativar" : {
+      "post" : {
+        "description" : "A pessoa perde o acesso na hora: todas as sessões dela terminam e ela não entra nem renova. A dona não desativa a si mesma nem a última administradora.",
+        "operationId" : "desativar",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Resposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Desativar usuário",
+        "tags" : [ "usuarios-da-dona-controller" ]
+      }
+    },
+    "/api/dona/usuarios/{id}/reativar" : {
+      "post" : {
+        "description" : "A pessoa volta a poder entrar com a senha que já tinha. As sessões antigas continuam encerradas.",
+        "operationId" : "reativar_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Resposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Reativar usuário",
         "tags" : [ "usuarios-da-dona-controller" ]
       }
     },

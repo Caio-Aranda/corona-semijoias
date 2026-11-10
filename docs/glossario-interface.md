@@ -317,6 +317,23 @@ A dona não redefine a própria senha pela tela, para não ficar sem acesso:
 > **Você não pode redefinir a sua própria senha por aqui.**
 > Peça a outra pessoa administradora ou fale com o suporte do sistema.
 
+Desativar o próprio acesso (a dona não se desativa, para não ficar sem acesso):
+
+> **Você não pode desativar o seu próprio acesso.**
+> Peça a outra pessoa administradora para fazer isso.
+
+Mudar o próprio tipo de acesso (a dona não se rebaixa):
+
+> **Você não pode mudar o seu próprio tipo de acesso.**
+> Peça a outra pessoa administradora para fazer isso.
+
+Desativar ou rebaixar a última pessoa administradora ativa:
+
+> **Precisa continuar existindo pelo menos uma pessoa administradora com acesso.**
+> Dê o acesso de administradora a outra pessoa antes de fazer esta mudança.
+
+Editar um usuário que outra pessoa já alterou: vale o texto de cadastro alterado (parte 6, cadastros da dona).
+
 Se a dona esquece a própria senha e não há outro administrador, vale o comando do servidor `redefinir-senha-admin`, que quem opera o servidor roda (passo a passo em `docs/redefinir-senha-da-dona.md`). Ele mostra a senha temporária no terminal, sem tela.
 
 Quando a dona cria o usuário ou redefine a senha, a senha temporária aparece **uma única vez**. Texto da tela (a tela vem na Fase 1): "Anote esta senha agora. Ela não aparece de novo."

@@ -25,5 +25,11 @@ public enum MotivoDaRevogacao {
     SENHA_REDEFINIDA_PELO_SERVIDOR,
 
     /** A pessoa criou a senha nova (troca obrigatória). */
-    SENHA_TROCADA
+    SENHA_TROCADA,
+
+    /** A dona desativou o usuário. */
+    USUARIO_DESATIVADO,
+
+    /** A dona mudou o tipo de acesso ou o vendedor do usuário: o token antigo leva dados que não valem mais. */
+    ACESSO_ALTERADO
 }

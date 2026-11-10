@@ -31,7 +31,7 @@ public class Usuario extends EntidadeDoServidor {
     @Column(name = "ativo", nullable = false)
     private boolean ativo;
 
-    /** Sem chave estrangeira até a Fase 1 (a tabela {@code vendedores} ainda não existe). */
+    /** O cadastro de vendedor ligado a este acesso (obrigatório para o perfil VENDEDOR; chave estrangeira desde a V012). */
     @Column(name = "vendedor_id")
     private UUID vendedorId;
 
@@ -86,6 +86,17 @@ public class Usuario extends EntidadeDoServidor {
         this.trocaDeSenhaObrigatoria = true;
         this.senhaTemporariaVenceEm = venceEm;
         this.credencialAlteradaEm = agora;
+    }
+
+    /** A dona editou o cadastro do usuário (o login e a senha não mudam por aqui). */
+    public void editar(String novoNome, String novoPerfil, UUID novoVendedorId) {
+        this.nome = novoNome;
+        this.perfil = novoPerfil;
+        this.vendedorId = novoVendedorId;
+    }
+
+    public void definirAtivo(boolean ativo) {
+        this.ativo = ativo;
     }
 
     /** A pessoa criou a senha nova: tira a marca e o vencimento. */

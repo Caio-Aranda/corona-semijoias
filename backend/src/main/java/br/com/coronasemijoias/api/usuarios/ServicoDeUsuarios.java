@@ -1,6 +1,8 @@
 package br.com.coronasemijoias.api.usuarios;
 
 import br.com.coronasemijoias.api.acessos.ControleDeTentativas;
+import br.com.coronasemijoias.api.auditoria.ServicoDeAuditoria;
+import br.com.coronasemijoias.api.auditoria.ServicoDeAuditoria.Ator;
 import br.com.coronasemijoias.api.comum.erros.CampoInvalido;
 import br.com.coronasemijoias.api.sessoes.MotivoDaRevogacao;
 import br.com.coronasemijoias.api.sessoes.ServicoDeSessoes;
@@ -9,7 +11,9 @@ import br.com.coronasemijoias.api.comum.erros.ErroDaApi;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,10 +63,12 @@ public class ServicoDeUsuarios {
     private final JdbcTemplate jdbc;
     private final ServicoDeSessoes sessoes;
     private final ControleDeTentativas tentativas;
+    private final ServicoDeAuditoria auditoria;
 
     public ServicoDeUsuarios(UsuarioRepositorio usuarios, ConferenciaDeSenha conferencia,
             GeradorDeSenhaTemporaria gerador, PropriedadesDaSenhaTemporaria propriedades, Clock relogio,
-            JdbcTemplate jdbc, ServicoDeSessoes sessoes, ControleDeTentativas tentativas) {
+            JdbcTemplate jdbc, ServicoDeSessoes sessoes, ControleDeTentativas tentativas,
+            ServicoDeAuditoria auditoria) {
         this.usuarios = usuarios;
         this.conferencia = conferencia;
         this.gerador = gerador;
@@ -71,10 +77,12 @@ public class ServicoDeUsuarios {
         this.jdbc = jdbc;
         this.sessoes = sessoes;
         this.tentativas = tentativas;
+        this.auditoria = auditoria;
     }
 
     @Transactional
-    public UsuarioComSenhaTemporaria criar(String nome, String loginDigitado, String perfil, UUID vendedorId) {
+    public UsuarioComSenhaTemporaria criar(String nome, String loginDigitado, String perfil, UUID vendedorId,
+            UUID quemCriou) {
         String login = Logins.normalizar(loginDigitado);
         if (!Logins.temFormatoParaCriar(login)) {
             throw new ErroDaApi(HttpStatus.BAD_REQUEST, CodigoErro.LOGIN_FORA_DO_FORMATO);
@@ -99,6 +107,8 @@ public class ServicoDeUsuarios {
             // Dois pedidos com o mesmo login ao mesmo tempo: o banco (login único) decide.
             throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.LOGIN_JA_USADO);
         }
+        auditoria.registrar(Ator.usuario(quemCriou), "USUARIO_CRIADO", "usuarios", usuario.getId(),
+                null, instantaneo(usuario));
         LOG.info("Usuário criado com senha temporária: login {}, perfil {}, vence em {}", login, perfil, venceEm);
         return new UsuarioComSenhaTemporaria(usuario, senha, venceEm);
     }
@@ -112,6 +122,7 @@ public class ServicoDeUsuarios {
         Usuario usuario = usuarios.findById(id)
                 .orElseThrow(() -> new ErroDaApi(HttpStatus.NOT_FOUND, CodigoErro.USUARIO_NAO_ENCONTRADO));
         UsuarioComSenhaTemporaria redefinido = redefinir(usuario, MotivoDaRevogacao.SENHA_REDEFINIDA);
+        auditoria.registrar(Ator.usuario(quemPediu), "SENHA_REDEFINIDA", "usuarios", usuario.getId(), null, null);
         LOG.info("Senha temporária redefinida: login {}, vence em {}", usuario.getLogin(), redefinido.venceEm());
         return redefinido;
     }
@@ -132,6 +143,7 @@ public class ServicoDeUsuarios {
                     + "Este comando não reativa ninguém: nada foi alterado.");
         }
         UsuarioComSenhaTemporaria redefinido = redefinir(usuario, MotivoDaRevogacao.SENHA_REDEFINIDA_PELO_SERVIDOR);
+        auditoria.registrar(Ator.PELO_SERVIDOR, "SENHA_REDEFINIDA", "usuarios", usuario.getId(), null, null);
         LOG.info("Senha temporária do administrador {} redefinida pelo servidor; vence em {}",
                 login, redefinido.venceEm());
         return redefinido;
@@ -163,7 +175,7 @@ public class ServicoDeUsuarios {
     }
 
     /** Usuário VENDEDOR precisa estar ligado a um cadastro de vendedor que existe (e não foi excluído). */
-    private void conferirVendedor(String perfil, UUID vendedorId) {
+    void conferirVendedor(String perfil, UUID vendedorId) {
         if (!PERFIL_VENDEDOR.equals(perfil)) {
             return;
         }
@@ -177,17 +189,31 @@ public class ServicoDeUsuarios {
         }
     }
 
-    private static ErroDaApi campoInvalido(String campo, String mensagem) {
+    static ErroDaApi campoInvalido(String campo, String mensagem) {
         return new ErroDaApi(HttpStatus.BAD_REQUEST, CodigoErro.DADOS_INVALIDOS, List.of(new CampoInvalido(campo, mensagem)));
     }
 
-    private boolean perfilExiste(String perfil) {
+    boolean perfilExiste(String perfil) {
         Integer total = jdbc.queryForObject("SELECT count(*) FROM corona.perfis WHERE codigo = ?", Integer.class, perfil);
         return total != null && total > 0;
     }
 
-    private static ErroDaApi dadosInvalidos(String campo) {
+    static ErroDaApi dadosInvalidos(String campo) {
         return new ErroDaApi(HttpStatus.BAD_REQUEST, CodigoErro.DADOS_INVALIDOS,
                 List.of(new CampoInvalido(campo, "Confira este campo e tente de novo.")));
+    }
+
+    /**
+     * Os campos do usuário que a auditoria guarda. Nunca o hash nem a senha: só o que a dona vê e
+     * decide (nome, login, tipo de acesso, vendedor e se está ativo).
+     */
+    static Map<String, Object> instantaneo(Usuario u) {
+        Map<String, Object> campos = new LinkedHashMap<>();
+        campos.put("nome", u.getNome());
+        campos.put("login", u.getLogin());
+        campos.put("perfil", u.getPerfil());
+        campos.put("vendedorId", u.getVendedorId() == null ? null : u.getVendedorId().toString());
+        campos.put("ativo", u.isAtivo());
+        return campos;
     }
 }
