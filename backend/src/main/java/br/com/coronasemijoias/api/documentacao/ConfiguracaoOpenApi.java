@@ -1,6 +1,7 @@
 package br.com.coronasemijoias.api.documentacao;
 
 import br.com.coronasemijoias.api.comum.json.DinheiroJsonModule;
+import br.com.coronasemijoias.api.cotacoes.TaxaDeCotacao;
 import br.com.coronasemijoias.api.seguranca.RotasPublicas;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.Operation;
@@ -38,6 +39,13 @@ public class ConfiguracaoOpenApi {
                 BigDecimal.class,
                 new StringSchema().format("decimal").pattern(DinheiroJsonModule.PADRAO)
                         .example("123.45"));
+
+        // A cotação tem tipo próprio: texto com 8 casas (ADR-0006, item 8). O padrão de dinheiro
+        // (até 2 casas) recusaria a cotação.
+        SpringDocUtils.getConfig().replaceWithSchema(
+                TaxaDeCotacao.class,
+                new StringSchema().format("decimal").pattern(TaxaDeCotacao.PADRAO)
+                        .example("5.50130000"));
     }
 
     @Bean

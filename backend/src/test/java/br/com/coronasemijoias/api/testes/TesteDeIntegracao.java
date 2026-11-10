@@ -94,6 +94,8 @@ public abstract class TesteDeIntegracao {
         registro.add("spring.flyway.password", () -> MIGRACAO_SENHA);
         // As tabelas só de teste (db/migration-teste, V9000+) entram só aqui, nunca no jar.
         registro.add("spring.flyway.locations", () -> "classpath:db/migration,classpath:db/migration-teste");
+        // A busca de cotações na internet nunca roda nos testes (ADR-0006): quem testa chama a busca com cliente falso.
+        registro.add("corona.cotacoes.busca-agendada", () -> "false");
         registrarSeguranca(registro);
     }
 

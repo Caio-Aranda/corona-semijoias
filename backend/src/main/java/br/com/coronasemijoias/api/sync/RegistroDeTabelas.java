@@ -36,11 +36,17 @@ public final class RegistroDeTabelas {
         }
     }
 
-    /** As tabelas da aplicação. Fase 0: nenhuma de negócio ainda. */
+    /** As tabelas da aplicação. Fase 0: só as cotações (tarefa 19). */
     public static RegistroDeTabelas daAplicacao() {
         return new RegistroDeTabelas(
                 List.of(
-                        // Sincronizáveis entram aqui a partir da Fase 1 (clientes, produtos, vendas...).
+                        // Cotações do Banco Central (ADR-0006): só de leitura para o app, sem filtro por vendedor.
+                        new TabelaSincronizavel("cotacoes", List.of(
+                                "data_cotacao",
+                                "usd_compra", "usd_venda", "usd_paridade_compra", "usd_paridade_venda",
+                                "pyg_compra", "pyg_venda", "pyg_paridade_compra", "pyg_paridade_venda",
+                                "buscada_em", "fonte"), true)
+                        // As demais sincronizáveis entram aqui a partir da Fase 1 (clientes, produtos, vendas...).
                 ),
                 List.of(
                         new TabelaDoServidor("sync_estado", false),

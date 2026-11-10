@@ -43,7 +43,7 @@ class ConvencoesDoSchemaTest extends TesteDeIntegracao {
             executar(dono, """
                     CREATE TABLE corona.errada_tipos (
                         id uuid PRIMARY KEY, valor real, preco double precision, taxa numeric(10,3),
-                        solto numeric, quando timestamp, caixa money)""");
+                        solto numeric, quando timestamp, caixa money, cotacao_solta numeric(18,8))""");
             executar(dono, "GRANT DELETE, TRUNCATE ON corona.errada_tipos TO " + APP_USUARIO);
             executar(dono, "GRANT SELECT ON corona.flyway_schema_history TO " + APP_USUARIO);
 
@@ -75,6 +75,7 @@ class ConvencoesDoSchemaTest extends TesteDeIntegracao {
                     "errada_tipos: coluna preco é double precision (proibido float: dinheiro é NUMERIC(14,2))",
                     "errada_tipos: coluna taxa é numeric(10,3) (numeric só como NUMERIC(14,2) para dinheiro ou NUMERIC(5,2) para porcentagem)",
                     "errada_tipos: coluna solto é numeric (numeric só como NUMERIC(14,2) para dinheiro ou NUMERIC(5,2) para porcentagem)",
+                    "errada_tipos: coluna cotacao_solta é numeric(18,8) (numeric(18,8) só em colunas de cotação (ADR-0006))",
                     "errada_tipos: coluna quando é timestamp without time zone (datas sempre com fuso: timestamptz)",
                     "errada_tipos: coluna caixa é money (dinheiro é NUMERIC(14,2))",
                     "errada_tipos: não está em nenhuma das duas listas do RegistroDeTabelas (sincronizável ou só do servidor)",

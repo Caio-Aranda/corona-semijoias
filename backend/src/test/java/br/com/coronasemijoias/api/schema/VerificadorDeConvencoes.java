@@ -42,6 +42,11 @@ public final class VerificadorDeConvencoes {
     }
 
     private static final Set<String> NUMERIC_PERMITIDOS = Set.of("numeric(14,2)", "numeric(5,2)");
+
+    /** O único lugar onde numeric(18,8) é aceito: as oito colunas de taxa e paridade (ADR-0006, item 8). */
+    private static final Set<String> COLUNAS_DE_COTACAO = Set.of(
+            "cotacoes.usd_compra", "cotacoes.usd_venda", "cotacoes.usd_paridade_compra", "cotacoes.usd_paridade_venda",
+            "cotacoes.pyg_compra", "cotacoes.pyg_venda", "cotacoes.pyg_paridade_compra", "cotacoes.pyg_paridade_venda");
     private static final Set<String> SO_DAS_SINCRONIZAVEIS = Set.of("sync_seq", "sync_xid", "origem_dispositivo");
 
     private record Coluna(String tipo, boolean naoNulo) {
@@ -173,6 +178,10 @@ public final class VerificadorDeConvencoes {
                 violacao(tabela, "coluna " + nome + " é " + coluna.tipo() + " (proibido float: dinheiro é NUMERIC(14,2))");
             } else if (tipo.equals("money")) {
                 violacao(tabela, "coluna " + nome + " é money (dinheiro é NUMERIC(14,2))");
+            } else if (tipo.equals("numeric(18,8)")) {
+                if (!COLUNAS_DE_COTACAO.contains(tabela + "." + nome)) {
+                    violacao(tabela, "coluna " + nome + " é numeric(18,8) (numeric(18,8) só em colunas de cotação (ADR-0006))");
+                }
             } else if (tipo.startsWith("numeric") && !NUMERIC_PERMITIDOS.contains(tipo)) {
                 violacao(tabela, "coluna " + nome + " é " + coluna.tipo()
                         + " (numeric só como NUMERIC(14,2) para dinheiro ou NUMERIC(5,2) para porcentagem)");

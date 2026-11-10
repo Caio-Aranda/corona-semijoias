@@ -521,3 +521,21 @@ ADR-0003 (inteiro), ADR-0004 (itens 2 a 5, 6 e 10), ADR-0001 (Electron, electron
 **Decisões tomadas**
 - O código não virou pacote em `packages/`: depende de `safeStorage` e do esquema da Fase 5.
 - CI não alterado.
+
+### Tarefa 19: cotações do Banco Central
+
+**O que foi feito**
+- Migração `V009__cotacoes.sql`: tabela `cotacoes` (sincronizável e imutável, `data_cotacao` única, 8 colunas `NUMERIC(18,8) NOT NULL`, `buscada_em`, `fonte`), registrada no `RegistroDeTabelas`. O teste de convenções aceita `numeric(18,8)` só nessas 8 colunas (caso novo no `ConvencoesDoSchemaTest`).
+- `ConversaoDeMoeda` (`comum.dinheiro`): US$ com 2 casas e Gs. com 0 casas, HALF_UP numa divisão só; `ArredondamentoSoNoUtilitarioTest` aceita `RoundingMode` só nela e em `Dinheiro`. Testes com todos os exemplos do item 14 do ADR-0006, inclusive o valor máximo de `NUMERIC(14,2)`.
+- Pacote `cotacoes`: `LeitorDoArquivoDeFechamento` (estrito, item 2 do ADR), `CalendarioBancario` (fixos e Páscoa), `BuscaDeCotacoes` + `AgendaDaBuscaDeCotacoes` (16:30 a 21:00 UTC, 30 em 30 min, 20 s por pedido, recuperação de 10 dias, dia gravado nunca relido), `CotacaoVigente` (qual cotação vale), `AvisoDeCotacao` (calculado, nunca gravado), `TaxaDeCotacao`/`CotacaoResposta` (JSON em texto com 8 casas, esquema próprio no OpenAPI). URL, horários, tempo limite e janela em `application.properties`.
+- Arquivo real do BCB de 06/11/2026 e um arquivo para cada regra quebrada em `src/test/resources/cotacoes`. Nenhum teste usa a internet: o relógio e o cliente HTTP são falsos.
+
+**O que ficou pendente**
+- Sem rota e sem tela (Fase 1 para a dona; Fase 4 para o vendedor); pull na Fase 5; `cotacao_id` no acerto na Fase 7; conversão em TypeScript com `BigInt` com o primeiro front-end que mostrar valores.
+- A busca de verdade (HTTP ao BCB) não foi exercida nos testes; só foi conferido à mão que o arquivo de 06/11/2026 responde 200.
+
+**Decisões tomadas**
+- Dia de hoje conta pela data em UTC (a janela 16:30 a 21:00 UTC cai no mesmo dia em UTC e em Brasília). A janela do aviso e da recuperação é "hoje menos 10 dias até ontem", mais hoje depois das 21:00 UTC.
+- A recuperação só corre atrás de dia útil pelo calendário; o dia de hoje é sempre tentado, mesmo marcado como feriado (se houver arquivo, grava).
+- A agenda dispara de 30 em 30 minutos das 16:00 às 21:30 UTC e a `BuscaDeCotacoes` descarta o que cai fora de 16:30 a 21:00; assim a janela mora só nas propriedades.
+- `corona.cotacoes.busca-agendada=false` nos testes de integração, para o agendador nunca ir à internet.
