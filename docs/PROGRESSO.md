@@ -28,7 +28,7 @@ Lista oficial, aprovada pelo responsável. Os ADRs e as tarefas usam estes núme
 | 14 | feat(ui): tema da marca e componentes base em packages/ui | Concluída (PR 20) · [detalhe](progresso/fase-0.md#tarefa-14-tema-e-componentes-base) |
 | 15 | feat(owner-app): Corona Gestão com login e tela inicial | Concluída (PR 21) · [detalhe](progresso/fase-0.md#tarefa-15-corona-gestão-com-login-e-tela-inicial) |
 | 16 | feat(seller-app): Corona Vendas com login online e barreira contra código da dona | Concluída (PR 22) · [detalhe](progresso/fase-0.md#tarefa-16-corona-vendas-com-login-online-e-barreira-contra-código-da-dona) |
-| 17 | chore: VS Code, comando único de setup e roteiro do teste de uso | Concluída (PR 22) · [detalhe](progresso/fase-0.md#tarefa-17-vs-code-setup-e-roteiro-do-teste-de-uso) |
+| 17 | chore: VS Code, comando único de setup e roteiro do teste de uso | Concluída (PR 23) · [detalhe](progresso/fase-0.md#tarefa-17-vs-code-setup-e-roteiro-do-teste-de-uso) |
 | 18 | spike: SQLCipher no Electron dentro do monorepo (tempo limitado, gera o ADR-0005) | Concluída (PR 24) · [detalhe](progresso/fase-0.md#tarefa-18-spike-do-sqlcipher-no-electron) |
 | 19 | feat(backend): cotações do Banco Central (tabela `cotacoes`, busca diária, conversão para Dólar e Guarani, aviso de falha; ADR-0006). Antes da Fase 1. Sem rota nem tela, por isso não depende das tarefas 9 a 18 | Concluída (PR 25) · [detalhe](progresso/fase-0.md#tarefa-19-cotações-do-banco-central) |
 
