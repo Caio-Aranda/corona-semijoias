@@ -40,6 +40,38 @@
         },
         "type" : "object"
       },
+      "AvisoDaDona" : {
+        "properties" : {
+          "dias" : {
+            "items" : {
+              "format" : "date",
+              "type" : "string"
+            },
+            "type" : "array"
+          },
+          "texto" : {
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "titulo" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "AvisosResposta" : {
+        "properties" : {
+          "avisos" : {
+            "items" : {
+              "$ref" : "#/components/schemas/AvisoDaDona"
+            },
+            "type" : "array"
+          }
+        },
+        "type" : "object"
+      },
       "CadastroDeTeste" : {
         "properties" : {
           "nome" : {
@@ -53,6 +85,102 @@
       "CodigoGerado" : {
         "properties" : {
           "codigo" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ConversaoPedido" : {
+        "properties" : {
+          "data" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "valorEmReais" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "required" : [ "valorEmReais" ],
+        "type" : "object"
+      },
+      "ConversaoResposta" : {
+        "properties" : {
+          "dataDaCotacao" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "disponivel" : {
+            "type" : "boolean"
+          },
+          "dolar" : {
+            "type" : "string"
+          },
+          "guarani" : {
+            "type" : "string"
+          },
+          "mensagem" : {
+            "type" : "string"
+          },
+          "valorEmReais" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "CotacaoDeHojeResposta" : {
+        "properties" : {
+          "cotacao" : {
+            "$ref" : "#/components/schemas/CotacaoDoDia"
+          },
+          "dataDeHoje" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "disponivel" : {
+            "type" : "boolean"
+          },
+          "mensagem" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "CotacaoDoDia" : {
+        "properties" : {
+          "buscadaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "dataCotacao" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "deDiaAnterior" : {
+            "type" : "boolean"
+          },
+          "dolar" : {
+            "example" : "5.50130000",
+            "format" : "decimal",
+            "pattern" : "^\\d{1,10}\\.\\d{8}$",
+            "type" : "string"
+          },
+          "fonte" : {
+            "type" : "string"
+          },
+          "guarani" : {
+            "example" : "5.50130000",
+            "format" : "decimal",
+            "pattern" : "^\\d{1,10}\\.\\d{8}$",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "linha" : {
             "type" : "string"
           }
         },
@@ -1037,6 +1165,29 @@
         "tags" : [ "autenticacao-controller" ]
       }
     },
+    "/api/dona/avisos" : {
+      "get" : {
+        "description" : "Os avisos que valem agora, calculados na hora (nada é gravado): cada um some sozinho quando o problema some. Lista vazia quando não há nada. Hoje: a cotação do Dólar e do Guarani que não chegou.",
+        "operationId" : "listar_11",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AvisosResposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "O que precisa da sua atenção",
+        "tags" : [ "avisos-da-dona-controller" ]
+      }
+    },
     "/api/dona/categorias" : {
       "get" : {
         "description" : "Busca pelo nome. A página começa em 0 (até 100 por página).",
@@ -1377,6 +1528,62 @@
         } ],
         "summary" : "Editar cliente",
         "tags" : [ "clientes-da-dona-controller" ]
+      }
+    },
+    "/api/dona/cotacoes/converter" : {
+      "post" : {
+        "description" : "Só para mostrar, nada é gravado. valorEmReais é texto decimal com ponto e até 2 casas (número JSON é recusado; pode ser negativo, para estorno); data é opcional (hoje, se vier vazia) e usa a cotação em vigor naquela data. Dólar com 2 casas e Guarani sem casas. Sem cotação: 200 com disponivel = false.",
+        "operationId" : "converter",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ConversaoPedido"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConversaoResposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Converter um valor em Real para Dólar e Guarani",
+        "tags" : [ "cotacoes-da-dona-controller" ]
+      }
+    },
+    "/api/dona/cotacoes/hoje" : {
+      "get" : {
+        "description" : "A cotação em vigor hoje (data de Brasília): a do próprio dia, ou a do último dia útil em fim de semana, feriado ou busca que falhou (deDiaAnterior). Sem nenhuma cotação ainda, responde 200 com disponivel = false e uma mensagem; nunca é erro.",
+        "operationId" : "hoje",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CotacaoDeHojeResposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Cotação do dia",
+        "tags" : [ "cotacoes-da-dona-controller" ]
       }
     },
     "/api/dona/fornecedores" : {

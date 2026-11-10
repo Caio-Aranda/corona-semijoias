@@ -18,12 +18,55 @@ export type Associada = {
     produtoNome?: string;
 };
 
+export type AvisoDaDona = {
+    dias?: Array<string>;
+    texto?: string;
+    tipo?: string;
+    titulo?: string;
+};
+
+export type AvisosResposta = {
+    avisos?: Array<AvisoDaDona>;
+};
+
 export type CadastroDeTeste = {
     nome: string;
 };
 
 export type CodigoGerado = {
     codigo?: string;
+};
+
+export type ConversaoPedido = {
+    data?: string;
+    valorEmReais: string;
+};
+
+export type ConversaoResposta = {
+    dataDaCotacao?: string;
+    disponivel?: boolean;
+    dolar?: string;
+    guarani?: string;
+    mensagem?: string;
+    valorEmReais?: string;
+};
+
+export type CotacaoDeHojeResposta = {
+    cotacao?: CotacaoDoDia;
+    dataDeHoje?: string;
+    disponivel?: boolean;
+    mensagem?: string;
+};
+
+export type CotacaoDoDia = {
+    buscadaEm?: string;
+    dataCotacao?: string;
+    deDiaAnterior?: boolean;
+    dolar?: string;
+    fonte?: string;
+    guarani?: string;
+    id?: string;
+    linha?: string;
 };
 
 export type Dados = {
@@ -377,6 +420,22 @@ export type TrocarSenhaResponses = {
 
 export type TrocarSenhaResponse = TrocarSenhaResponses[keyof TrocarSenhaResponses];
 
+export type Listar11Data = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/dona/avisos';
+};
+
+export type Listar11Responses = {
+    /**
+     * OK
+     */
+    200: AvisosResposta;
+};
+
+export type Listar11Response = Listar11Responses[keyof Listar11Responses];
+
 export type Listar10Data = {
     body?: never;
     path?: never;
@@ -552,6 +611,38 @@ export type Editar7Responses = {
 };
 
 export type Editar7Response = Editar7Responses[keyof Editar7Responses];
+
+export type ConverterData = {
+    body: ConversaoPedido;
+    path?: never;
+    query?: never;
+    url: '/api/dona/cotacoes/converter';
+};
+
+export type ConverterResponses = {
+    /**
+     * OK
+     */
+    200: ConversaoResposta;
+};
+
+export type ConverterResponse = ConverterResponses[keyof ConverterResponses];
+
+export type HojeData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/dona/cotacoes/hoje';
+};
+
+export type HojeResponses = {
+    /**
+     * OK
+     */
+    200: CotacaoDeHojeResposta;
+};
+
+export type HojeResponse = HojeResponses[keyof HojeResponses];
 
 export type Listar8Data = {
     body?: never;
