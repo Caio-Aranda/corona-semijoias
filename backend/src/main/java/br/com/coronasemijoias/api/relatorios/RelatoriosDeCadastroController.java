@@ -62,31 +62,31 @@ public class RelatoriosDeCadastroController {
     }
 
     @Operation(summary = "Relatório de clientes",
-            description = "Filtros: busca, vendedorId, pracaId (a do vendedor responsável), comVendedor (SIM ou NAO), de e ate (data do cadastro). "
-                    + "Cliente não tem situação: só os excluídos ficam de fora." + PADRAO)
+            description = "Filtros: busca, situacao, vendedorId, pracaId (a do vendedor responsável), comVendedor (SIM ou NAO), de e ate (data do cadastro)." + PADRAO)
     @GetMapping("/clientes")
     public RelatorioDeCadastro<LinhaDeCliente> clientes(@RequestParam(required = false) String busca,
+            @RequestParam(required = false) String situacao,
             @RequestParam(required = false) String comVendedor,
             @RequestParam(required = false) String vendedorId, @RequestParam(required = false) String pracaId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate de,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ate,
             @RequestParam(required = false) String recorte, @RequestParam(required = false) Integer pagina,
             @RequestParam(required = false) Integer tamanho) {
-        return consultas.clientes(new Filtros(busca, null, null, pracaId, vendedorId, null, null, de, ate, null, recorte,
+        return consultas.clientes(new Filtros(busca, null, null, pracaId, vendedorId, null, situacao, de, ate, null, recorte,
                 pagina, tamanho, new Mais(null, null, null, null, null, null, null, null, comVendedor)));
     }
 
     @Operation(summary = "Relatório de fornecedores",
-            description = "Filtros: busca, comProdutos (SIM ou NAO: tem produtos ativos), de e ate (data do cadastro). "
-                    + "Fornecedor não tem situação." + PADRAO)
+            description = "Filtros: busca, situacao, comProdutos (SIM ou NAO: tem produtos ativos), de e ate (data do cadastro)." + PADRAO)
     @GetMapping("/fornecedores")
     public RelatorioDeCadastro<LinhaDeFornecedor> fornecedores(@RequestParam(required = false) String busca,
+            @RequestParam(required = false) String situacao,
             @RequestParam(required = false) String comProdutos,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate de,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ate,
             @RequestParam(required = false) String recorte, @RequestParam(required = false) Integer pagina,
             @RequestParam(required = false) Integer tamanho) {
-        return consultas.fornecedores(new Filtros(busca, null, null, null, null, null, null, de, ate, null, recorte,
+        return consultas.fornecedores(new Filtros(busca, null, null, null, null, null, situacao, de, ate, null, recorte,
                 pagina, tamanho, new Mais(null, null, null, null, null, null, null, comProdutos, null)));
     }
 
@@ -132,17 +132,17 @@ public class RelatoriosDeCadastroController {
         return conflitos.relatorio(busca, fornecedorId, situacao, recorte, pagina, tamanho);
     }
 
-    @Operation(summary = "Relatório de aniversariantes (vendedores)",
-            description = "Vendedores que fazem aniversário no mês (mes de 1 a 12; sem mes, o mês de hoje em Brasília). "
-                    + "O cadastro de cliente não tem data de nascimento, por isso só vendedores. A data é de calendário, "
-                    + "sem fuso. Filtros: busca, pracaId, situacao." + PADRAO)
+    @Operation(summary = "Relatório de aniversariantes (vendedores e clientes)",
+            description = "Quem faz aniversário no mês (mes de 1 a 12; sem mes, o mês de hoje em Brasília). quem: TODOS (padrão), "
+                    + "VENDEDORES ou CLIENTES. A praça do cliente é a do vendedor responsável. A data é de calendário, "
+                    + "sem fuso. Filtros: busca, quem, pracaId, situacao." + PADRAO)
     @GetMapping("/aniversariantes")
     public RelatorioDeCadastro<LinhaDeAniversariante> aniversariantes(@RequestParam(required = false) Integer mes,
-            @RequestParam(required = false) String busca, @RequestParam(required = false) String pracaId,
+            @RequestParam(required = false) String quem, @RequestParam(required = false) String busca, @RequestParam(required = false) String pracaId,
             @RequestParam(required = false) String situacao, @RequestParam(required = false) String recorte,
             @RequestParam(required = false) Integer pagina, @RequestParam(required = false) Integer tamanho) {
         return consultas.aniversariantes(new Filtros(busca, null, null, pracaId, null, null, situacao, null, null, mes,
-                recorte, pagina, tamanho));
+                recorte, pagina, tamanho, new Mais(null, null, null, null, null, null, null, null, null, quem)));
     }
 
     @Operation(summary = "Relatório de resultado das importações",

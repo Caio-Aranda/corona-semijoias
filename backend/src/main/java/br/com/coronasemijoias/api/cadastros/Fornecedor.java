@@ -11,7 +11,7 @@ import jakarta.persistence.Table;
  */
 @Entity
 @Table(name = "fornecedores", schema = "corona")
-public class Fornecedor extends CadastroDoServidor {
+public class Fornecedor extends CadastroDoServidor implements Ativavel {
 
     @Column(name = "razao_social", nullable = false)
     private String razaoSocial;
@@ -71,5 +71,18 @@ public class Fornecedor extends CadastroDoServidor {
 
     public Endereco getEndereco() {
         return endereco;
+    }
+
+    @Column(name = "ativo", nullable = false)
+    private boolean ativo = true;
+
+    @Override
+    public boolean isAtivo() {
+        return ativo;
+    }
+
+    @Override
+    public void definirAtivo(boolean ativo) {
+        this.ativo = ativo;
     }
 }

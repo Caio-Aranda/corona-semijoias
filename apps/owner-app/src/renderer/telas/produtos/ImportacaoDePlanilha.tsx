@@ -45,7 +45,11 @@ export interface ImportacaoDePlanilhaProps {
 async function todasAsCategorias(ponte: PonteDoCorona) {
   const todas: { id: string; nome: string }[] = [];
   for (let pagina = 0; pagina < 50; pagina++) {
-    const r = await chamar(ponte, 'categorias.listar', { pagina, tamanho: 100 });
+    const r = await chamar(ponte, 'categorias.listar', {
+      pagina,
+      tamanho: 100,
+      situacao: 'TODOS',
+    });
     if (!r.ok) return r;
     const itens = lerOpcoes(r.dados);
     todas.push(...itens);

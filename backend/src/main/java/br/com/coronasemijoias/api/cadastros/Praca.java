@@ -8,7 +8,7 @@ import jakarta.persistence.Table;
 /** Região ou rota atendida pelo vendedor (tabela só do servidor {@code pracas}). */
 @Entity
 @Table(name = "pracas", schema = "corona")
-public class Praca extends CadastroDoServidor {
+public class Praca extends CadastroDoServidor implements Ativavel {
 
     @Column(name = "nome", nullable = false)
     private String nome;
@@ -27,5 +27,18 @@ public class Praca extends CadastroDoServidor {
 
     public String getNome() {
         return nome;
+    }
+
+    @Column(name = "ativo", nullable = false)
+    private boolean ativo = true;
+
+    @Override
+    public boolean isAtivo() {
+        return ativo;
+    }
+
+    @Override
+    public void definirAtivo(boolean ativo) {
+        this.ativo = ativo;
     }
 }

@@ -2,6 +2,7 @@ package br.com.coronasemijoias.api.cadastros;
 
 import br.com.coronasemijoias.api.comum.erros.CodigoErro;
 import br.com.coronasemijoias.api.comum.erros.ErroDaApi;
+import br.com.coronasemijoias.api.auditoria.ServicoDeAuditoria;
 import java.time.Clock;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -11,20 +12,21 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class ServicoDeCategorias extends ServicoDeCadastro<Categoria> {
+public class ServicoDeCategorias extends ServicoDeCadastroAtivavel<Categoria> {
 
     private final RepositorioDeCategorias categorias;
     private final JdbcTemplate jdbc;
 
-    public ServicoDeCategorias(RepositorioDeCategorias categorias, Clock relogio, JdbcTemplate jdbc) {
-        super(categorias, relogio);
+    public ServicoDeCategorias(RepositorioDeCategorias categorias, Clock relogio, JdbcTemplate jdbc,
+            ServicoDeAuditoria auditoria) {
+        super(categorias, relogio, auditoria, "categorias");
         this.categorias = categorias;
         this.jdbc = jdbc;
     }
 
     @Transactional(readOnly = true)
-    public Page<Categoria> listar(String busca, Integer pagina, Integer tamanho) {
-        return categorias.buscar(padraoDeTexto(busca), pagina(pagina, tamanho));
+    public Page<Categoria> listar(String busca, String situacao, Integer pagina, Integer tamanho) {
+        return categorias.buscar(padraoDeTexto(busca), Situacao.ler(situacao).valores(), pagina(pagina, tamanho));
     }
 
     @Transactional

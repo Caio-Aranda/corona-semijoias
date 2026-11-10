@@ -9,7 +9,7 @@ import java.util.UUID;
 /** Categoria de produto (tabela sincronizável {@code categorias}). */
 @Entity
 @Table(name = "categorias", schema = "corona")
-public class Categoria extends EntidadeSincronizavel {
+public class Categoria extends EntidadeSincronizavel implements Ativavel {
 
     @Column(name = "nome", nullable = false)
     private String nome;
@@ -29,5 +29,18 @@ public class Categoria extends EntidadeSincronizavel {
 
     public String getNome() {
         return nome;
+    }
+
+    @Column(name = "ativo", nullable = false)
+    private boolean ativo = true;
+
+    @Override
+    public boolean isAtivo() {
+        return ativo;
+    }
+
+    @Override
+    public void definirAtivo(boolean ativo) {
+        this.ativo = ativo;
     }
 }

@@ -30,7 +30,8 @@ export type ChaveDeExtra =
   | 'comProdutos'
   | 'comVendedor'
   | 'tipo'
-  | 'resultado';
+  | 'resultado'
+  | 'quem';
 
 export type ExtraDoRelatorio =
   | {
@@ -107,7 +108,7 @@ export const RELATORIOS: Record<NomeDoRelatorio, DefinicaoDeRelatorio> = {
     nome: 'clientes',
     titulo: 'Clientes cadastrados',
     explicacao: 'Os clientes, com o vendedor responsável e a praça dele.',
-    filtros: ['busca', 'vendedor', 'praca', 'periodo'],
+    filtros: ['busca', 'situacao', 'vendedor', 'praca', 'periodo'],
     extras: [
       {
         chave: 'comVendedor',
@@ -129,7 +130,9 @@ export const RELATORIOS: Record<NomeDoRelatorio, DefinicaoDeRelatorio> = {
       { chave: 'uf', titulo: 'Estado', tipo: 'texto' },
       { chave: 'vendedor', titulo: 'Vendedor responsável', tipo: 'texto' },
       { chave: 'praca', titulo: 'Praça', tipo: 'texto' },
+      { chave: 'dataNascimento', titulo: 'Nascimento', tipo: 'data' },
       { chave: 'cadastradoEm', titulo: 'Cadastrado em', tipo: 'dataHora' },
+      { chave: 'ativo', titulo: 'Situação', tipo: 'simNao' },
     ],
     totaisDeValor: {},
     itens: { um: 'cliente', varios: 'clientes' },
@@ -139,7 +142,7 @@ export const RELATORIOS: Record<NomeDoRelatorio, DefinicaoDeRelatorio> = {
     nome: 'fornecedores',
     titulo: 'Fornecedores cadastrados',
     explicacao: 'Os fornecedores e quantos produtos ativos cada um tem.',
-    filtros: ['busca', 'periodo'],
+    filtros: ['busca', 'situacao', 'periodo'],
     extras: [
       {
         chave: 'comProdutos',
@@ -161,6 +164,7 @@ export const RELATORIOS: Record<NomeDoRelatorio, DefinicaoDeRelatorio> = {
       { chave: 'cidade', titulo: 'Cidade', tipo: 'texto' },
       { chave: 'uf', titulo: 'Estado', tipo: 'texto' },
       { chave: 'produtosAtivos', titulo: 'Produtos ativos', tipo: 'inteiro' },
+      { chave: 'ativo', titulo: 'Situação', tipo: 'simNao' },
     ],
     totaisDeValor: {},
     itens: { um: 'fornecedor', varios: 'fornecedores' },
@@ -274,13 +278,25 @@ export const RELATORIOS: Record<NomeDoRelatorio, DefinicaoDeRelatorio> = {
   aniversariantes: {
     nome: 'aniversariantes',
     titulo: 'Aniversariantes do mês',
-    explicacao: 'Os vendedores que fazem aniversário no mês escolhido.',
+    explicacao: 'Os vendedores e os clientes que fazem aniversário no mês escolhido.',
     filtros: ['mes', 'busca', 'situacao', 'praca'],
+    extras: [
+      {
+        chave: 'quem',
+        rotulo: 'Quem mostrar',
+        tipo: 'escolha',
+        qualquer: 'Vendedores e clientes',
+        opcoes: [
+          { valor: 'VENDEDORES', rotulo: 'Só vendedores' },
+          { valor: 'CLIENTES', rotulo: 'Só clientes' },
+        ],
+      },
+    ],
     buscaRotulo: 'Buscar por nome ou telefone',
-    nota: T.aniversariantesSemClientes,
     colunas: [
       { chave: 'dia', titulo: 'Dia', tipo: 'inteiro' },
-      { chave: 'nome', titulo: 'Vendedor', tipo: 'texto' },
+      { chave: 'tipoNaTela', titulo: 'Quem', tipo: 'texto' },
+      { chave: 'nome', titulo: 'Nome', tipo: 'texto' },
       { chave: 'dataNascimento', titulo: 'Nascimento', tipo: 'data' },
       { chave: 'whatsapp', titulo: 'WhatsApp', tipo: 'texto' },
       { chave: 'telefone', titulo: 'Telefone', tipo: 'texto' },
@@ -452,7 +468,7 @@ export function prepararLinha(
         tipoNaTela: T.tiposDeCodigo[String(linha.tipo)] ?? '',
       };
     case 'aniversariantes':
-      return { ...linha, telefone: linha.telefone };
+      return { ...linha, tipoNaTela: T.tiposDeAniversariante[String(linha.tipo)] ?? '' };
     default:
       return linha;
   }

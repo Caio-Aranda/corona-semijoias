@@ -1,6 +1,6 @@
 # Especificação completa: Sistema de Semijoias Consignadas
 
-Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.6, 10/11/2026.
+Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.7, 10/11/2026.
 
 ## 1. Objetivo e contexto
 
@@ -259,14 +259,16 @@ Risco: etiquetas muito pequenas ou de baixa qualidade podem exigir leitor 2D ou 
 
 - `usuarios` (login, senha\_hash, perfil, ativo, vendedor\_id opcional)
 - `vendedores` (código, nome, datas, sexo, estrangeiro, RG/IE, RG UF, CPF/CNPJ, naturalidade, escolaridade, telefones, WhatsApp, e-mail, redes sociais, **limite\_consignacao**, **restricao\_id**, **comissao\_percentual**, **praca\_id**, ativo, cadastrado\_por) e tabelas filhas: endereço, filiação/contato, trabalho, cônjuge, MEI, referências, documentos (arquivos), observações
-- `restricoes` (código, descrição, bloqueia\_remessa)
-- `pracas`, `semanas` (número, início, fim, situação ABERTA/FECHADA)
-- `clientes` (nome, CPF opcional, telefone, WhatsApp, endereço, observações, vendedor\_responsavel\_id)
-- `fornecedores` (razão social, CNPJ, contato, endereço)
-- `categorias`
+- `restricoes` (código, descrição, bloqueia\_remessa, **ativo**)
+- `pracas` (nome, **ativo**), `semanas` (número, início, fim, situação ABERTA/FECHADA; **sem `ativo`**: ABERTA/FECHADA já diz se a semana está em uso)
+- `clientes` (nome, CPF opcional, **data\_nascimento opcional, não futura**, telefone, WhatsApp, endereço, observações, vendedor\_responsavel\_id, **ativo**)
+- `fornecedores` (razão social, CNPJ, contato, endereço, **ativo**)
+- `categorias` (nome, **ativo**)
 - `produtos` (nome, referência, categoria, fornecedor, preco\_venda, estoque\_minimo, estoque\_atual, foto, ativo)
 - `produtos_custos` (produto\_id, preco\_custo; **só do servidor, nunca sincronizada**; 1 para 1 com `produtos`, gravada na mesma transação)
 - `produto_codigos` (produto\_id, codigo único (sem diferenciar maiúsculas e sem espaços nas pontas) e indexado, **tipo** `LOJA`/`FORNECEDOR`/`EAN13`, fornecedor\_id opcional, principal, ativo)
+
+**Ativo e inativo (todo cadastro, v1.7):** vendedores, usuários, produtos, fornecedores, categorias, praças, restrições e clientes têm `ativo` (padrão verdadeiro). **Inativar não é excluir**: o cadastro some das listas de escolha (formulários) e das buscas por padrão, continua nos relatórios e nos históricos e pode ser reativado a qualquer hora. Inativar é permitido mesmo com o cadastro em uso e **preserva os vínculos**: a ficha de quem já está ligado a um inativo continua mostrando o inativo. As listas ganham o filtro `situacao` (ATIVOS por padrão, INATIVOS ou TODOS). `DELETE` continua só lógico. A mudança de situação vai para a auditoria e usa a versão do registro (edição otimista). Semanas não ganham `ativo` (têm ABERTA/FECHADA).
 
 ### Estoque e compras
 
@@ -349,7 +351,7 @@ O app é **offline-first**: lê e grava sempre no SQLite local, e um processo em
 | Maleta e acerto | Estados controlados pelo servidor. |
 | Cotações | Geradas **pelo servidor** e imutáveis. O app só recebe e **nunca usa cotação própria**. |
 
-**O que cada vendedor sincroniza (somente o necessário):** suas maletas abertas e os produtos delas (com foto e **todos os códigos de barras**, sem custo), seus clientes, suas vendas, devoluções, trocas, pagamentos, a configuração de garantia e descontos e as **cotações do Dólar e do Guarani**. Sem internet, o app usa a última cotação que recebeu e **mostra a data dela**. **Nada** de financeiro geral, fornecedores, custo ou dados de outros vendedores.
+**O que cada vendedor sincroniza (somente o necessário):** suas maletas abertas e os produtos delas (com foto e **todos os códigos de barras**, sem custo), seus clientes (**com a data de nascimento e a situação**; só os dele, filtro da Fase 5), suas vendas, devoluções, trocas, pagamentos, a configuração de garantia e descontos e as **cotações do Dólar e do Guarani**. Sem internet, o app usa a última cotação que recebeu e **mostra a data dela**. **Nada** de financeiro geral, fornecedores, custo ou dados de outros vendedores.
 
 **Ao receber o push, o servidor:** confere a idempotência; valida que a maleta pertence ao vendedor e está ativa; valida preço, desconto, garantia e saldo (saldo negativo só ocorre por bug ou fraude e vira **alerta**, não rejeição silenciosa); **recalcula** total, parcelas e comissão; gera `contas_receber` e `comissoes`.
 
@@ -397,7 +399,7 @@ Os nomes de relatório desta seção são descrição interna. O nome de tela de
 
 | Área | Relatórios |
 | --- | --- |
-| Cadastros | Vendedores (limite, restrição, situação), clientes, fornecedores, produtos, produtos sem código de barras, códigos duplicados ou em conflito, resultado das importações, aniversariantes |
+| Cadastros | Vendedores (limite, restrição, situação), clientes e fornecedores (com filtro de situação), produtos, produtos sem código de barras, códigos duplicados ou em conflito, resultado das importações, aniversariantes (vendedores e clientes) |
 | Estoque | Posição atual, movimentações por período, estoque mínimo, produtos parados, curva ABC, inventário e divergências, mercadoria em maletas por vendedor |
 | Compras | Por fornecedor e período, histórico de custo por produto |
 | Maletas | Remessas por vendedor e semana, **nota de remessa (PDF)**, saldo atual por maleta, maletas em aberto e atrasadas, reposições |
@@ -717,3 +719,7 @@ Importação com nome de arquivo inválido, foto duplicada, arquivo corrompido, 
   - §8: "Cadastro dos códigos" reescrito: código da loja e código do fornecedor, texto livre e único sem diferenciar maiúsculas, dígito verificador só para o tipo EAN-13 com 13 dígitos; peça sem etiqueta ganha novo código da loja.
   - §9: `produto_codigos` ganha o tipo (`LOJA`, `FORNECEDOR`, `EAN13`).
   - §15, §17 e §20: texto ajustado aos códigos; nova pendência do leitor no Bloco de Notas, da impressora e da regra do preço.
+- **v1.7, 10/11/2026:** decisões do responsável sobre ativo/inativo e data de nascimento do cliente (tarefa 1.14).
+  - §9: todo cadastro tem `ativo` e pode ser recuperado (fornecedores, categorias, praças, restrições e clientes passam a ter; semanas não, pois têm ABERTA/FECHADA). Inativar não exclui, preserva os vínculos e some só das escolhas e buscas. `clientes` ganha `data_nascimento` opcional (não futura).
+  - §10: `clientes` e `categorias` levam `ativo` ao vendedor; `clientes` leva também a data de nascimento, porque o vendedor é quem cadastra o cliente (só dos clientes dele, filtro da Fase 5). Padrão seguro adotado na tarefa.
+  - §12: filtro de situação em clientes e fornecedores; aniversariantes passa a incluir clientes.

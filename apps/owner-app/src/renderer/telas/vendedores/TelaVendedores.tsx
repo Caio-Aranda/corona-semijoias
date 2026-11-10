@@ -36,7 +36,7 @@ export function TelaVendedores({ ponte }: TelaVendedoresProps) {
   }, [busca]);
 
   const pracas = useBusca(
-    () => chamar(ponte, 'pracas.listar', { pagina: 0, tamanho: 100 }),
+    () => chamar(ponte, 'pracas.listar', { pagina: 0, tamanho: 100, situacao: 'TODOS' }),
     'pracas-do-filtro',
   );
   const listaDePracas = pracas.dados

@@ -11,6 +11,8 @@ const T = TEXTOS.vendedores;
 export interface OpcaoDaLista {
   valor: string;
   rotulo: string;
+  /** Inativo some das escolhas, menos quando é o que já está escolhido. */
+  ativo?: boolean;
 }
 
 export interface FormularioDeCamposProps {
@@ -121,7 +123,9 @@ export function FormularioDeCampos({
         );
       case 'selecao': {
         const lista = c.lista ? listas[c.lista] : null;
-        const opcoes = c.lista ? (lista ?? []) : (c.opcoes ?? []);
+        const opcoes = (c.lista ? (lista ?? []) : (c.opcoes ?? [])).filter(
+          (o) => !('ativo' in o) || o.ativo !== false || o.valor === valor,
+        );
         const foraDaLista =
           c.lista !== undefined &&
           lista !== null &&

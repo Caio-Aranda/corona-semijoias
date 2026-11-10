@@ -53,8 +53,14 @@ public class ConsultasDeCadastro {
      * em reais, estoque (ABAIXO_DO_MINIMO, ZERADO, COM_ESTOQUE) e foto (COM, SEM).
      */
     public record Mais(String comRestricao, String limiteDe, String limiteAte, String estoque, String precoDe,
-            String precoAte, String foto, String comProdutos, String comVendedor) {
-        static final Mais NENHUM = new Mais(null, null, null, null, null, null, null, null, null);
+            String precoAte, String foto, String comProdutos, String comVendedor, String quem) {
+        static final Mais NENHUM = new Mais(null, null, null, null, null, null, null, null, null, null);
+
+        /** Sem o filtro "quem" (só dos aniversariantes). */
+        public Mais(String comRestricao, String limiteDe, String limiteAte, String estoque, String precoDe,
+                String precoAte, String foto, String comProdutos, String comVendedor) {
+            this(comRestricao, limiteDe, limiteAte, estoque, precoDe, precoAte, foto, comProdutos, comVendedor, null);
+        }
     }
 
     public record LinhaDeVendedor(UUID id, int codigo, String nome, String praca, String restricao,
@@ -62,11 +68,11 @@ public class ConsultasDeCadastro {
     }
 
     public record LinhaDeCliente(UUID id, String nome, String telefone, String whatsapp, String cidade, String uf,
-            String vendedor, String praca, Instant cadastradoEm) {
+            String vendedor, String praca, LocalDate dataNascimento, boolean ativo, Instant cadastradoEm) {
     }
 
     public record LinhaDeFornecedor(UUID id, String razaoSocial, String cnpj, String contato, String telefone,
-            String cidade, String uf, long produtosAtivos) {
+            String cidade, String uf, long produtosAtivos, boolean ativo) {
     }
 
     public record LinhaDeProduto(UUID id, String nome, String referencia, String codigoPrincipal, String categoria,
@@ -78,7 +84,7 @@ public class ConsultasDeCadastro {
             String fornecedor, boolean temCodigoDoFornecedor, boolean ativo) {
     }
 
-    public record LinhaDeAniversariante(UUID id, String nome, int dia, int mes, LocalDate dataNascimento,
+    public record LinhaDeAniversariante(UUID id, String tipo, String nome, int dia, int mes, LocalDate dataNascimento,
             String telefone, String whatsapp, String praca, boolean ativo) {
     }
 
@@ -221,7 +227,7 @@ public class ConsultasDeCadastro {
     public RelatorioDeCadastro<LinhaDeCliente> clientes(Filtros f) {
         Consulta c = new Consulta("""
                 c.id, c.nome, c.telefone, c.whatsapp, c.endereco_cidade, c.endereco_uf, v.nome AS vendedor,
-                pr.nome AS praca, c.created_at""", """
+                pr.nome AS praca, c.data_nascimento, c.ativo, c.created_at""", """
                 corona.clientes c
                 LEFT JOIN corona.vendedores v ON v.id = c.vendedor_responsavel_id
                 LEFT JOIN corona.pracas pr ON pr.id = v.praca_id""", "lower(c.nome), c.id", List.of(
@@ -229,6 +235,7 @@ public class ConsultasDeCadastro {
                 contagem("com-vendedor", "Com vendedor responsável", "c.vendedor_responsavel_id IS NOT NULL"),
                 contagem("sem-vendedor", "Sem vendedor responsável", "c.vendedor_responsavel_id IS NULL")));
         c.onde("c.deleted_at IS NULL");
+        porSituacao(c, f.situacao(), "c.ativo");
         c.busca(f.busca(), "c.nome", "c.cpf", "c.telefone", "c.whatsapp");
         filtroDeUuid(c, f.vendedorId(), "vendedor", "c.vendedor_responsavel_id = :vendedor");
         filtroDeUuid(c, f.pracaId(), "praca", "v.praca_id = :praca");
@@ -238,6 +245,7 @@ public class ConsultasDeCadastro {
                 (rs, n) -> new LinhaDeCliente(rs.getObject("id", UUID.class), rs.getString("nome"),
                         rs.getString("telefone"), rs.getString("whatsapp"), rs.getString("endereco_cidade"),
                         rs.getString("endereco_uf"), rs.getString("vendedor"), rs.getString("praca"),
+                        rs.getObject("data_nascimento", LocalDate.class), rs.getBoolean("ativo"),
                         rs.getObject("created_at", OffsetDateTime.class).toInstant()));
     }
 
@@ -250,18 +258,20 @@ public class ConsultasDeCadastro {
         Consulta c = new Consulta("""
                 f.id, f.razao_social, f.cnpj, f.contato_nome, f.telefone, f.endereco_cidade, f.endereco_uf,
                 (SELECT count(*) FROM corona.produtos p WHERE p.fornecedor_id = f.id AND p.deleted_at IS NULL
-                   AND p.ativo) AS produtos_ativos""", "corona.fornecedores f", "lower(f.razao_social), f.id", List.of(
+                   AND p.ativo) AS produtos_ativos, f.ativo""", "corona.fornecedores f", "lower(f.razao_social), f.id", List.of(
                 contagem(TODOS, "Fornecedores", null),
                 contagem("com-produtos", "Com produtos ativos", comProdutos),
                 contagem("sem-produtos", "Sem produtos ativos", "NOT " + comProdutos)));
         c.onde("f.deleted_at IS NULL");
+        porSituacao(c, f.situacao(), "f.ativo");
         c.busca(f.busca(), "f.razao_social", "f.cnpj", "f.contato_nome", "f.telefone");
         periodo(c, "f.created_at", f);
         existencia(c, simNao(f.mais().comProdutos(), "comProdutos"), comProdutos);
         return motor.executar(c, f.recorte(), f.pagina(), f.tamanho(),
                 (rs, n) -> new LinhaDeFornecedor(rs.getObject("id", UUID.class), rs.getString("razao_social"),
                         rs.getString("cnpj"), rs.getString("contato_nome"), rs.getString("telefone"),
-                        rs.getString("endereco_cidade"), rs.getString("endereco_uf"), rs.getLong("produtos_ativos")));
+                        rs.getString("endereco_cidade"), rs.getString("endereco_uf"), rs.getLong("produtos_ativos"),
+                        rs.getBoolean("ativo")));
     }
 
     // --- produtos (com custo: só a dona) ---
@@ -368,7 +378,7 @@ public class ConsultasDeCadastro {
                         rs.getString("fornecedor"), rs.getBoolean("tem_codigo_do_fornecedor"), rs.getBoolean("ativo")));
     }
 
-    // --- aniversariantes (vendedores) ---
+    // --- aniversariantes (vendedores e clientes) ---
 
     @Transactional(readOnly = true)
     public RelatorioDeCadastro<LinhaDeAniversariante> aniversariantes(Filtros f) {
@@ -376,25 +386,48 @@ public class ConsultasDeCadastro {
         if (mes < 1 || mes > 12) {
             throw Validacoes.recusar("mes", "Escolha um mês de 1 a 12.");
         }
+        String quem = quem(f.mais().quem());
+        // Vendedores e clientes numa lista só. A praça do cliente é a do vendedor responsável. A data de
+        // nascimento é uma data de calendário (sem hora): nunca passa por fuso.
         Consulta c = new Consulta("""
-                v.id, v.nome, v.data_nascimento, extract(day FROM v.data_nascimento)::int AS dia,
-                extract(month FROM v.data_nascimento)::int AS mes, coalesce(v.whatsapp, v.telefone1) AS contato,
-                v.telefone1, v.whatsapp, pr.nome AS praca, v.ativo""", """
-                corona.vendedores v
-                LEFT JOIN corona.pracas pr ON pr.id = v.praca_id""",
-                "extract(day FROM v.data_nascimento), lower(v.nome), v.id", List.of(contagem(TODOS, "Aniversariantes", null)));
-        c.onde("v.deleted_at IS NULL");
-        c.onde("v.data_nascimento IS NOT NULL");
-        // A data de nascimento é uma data de calendário (sem hora): nunca passa por fuso.
-        c.onde("extract(month FROM v.data_nascimento) = :mes", "mes", mes);
-        porSituacao(c, f.situacao(), "v.ativo");
-        c.busca(f.busca(), "v.nome", "v.telefone1", "v.whatsapp");
-        filtroDeUuid(c, f.pracaId(), "praca", "v.praca_id = :praca");
+                a.id, a.tipo, a.nome, a.data_nascimento, extract(day FROM a.data_nascimento)::int AS dia,
+                extract(month FROM a.data_nascimento)::int AS mes, a.telefone, a.whatsapp, a.praca, a.ativo""", """
+                (SELECT 'VENDEDOR' AS tipo, v.id, v.nome, v.data_nascimento, v.telefone1 AS telefone, v.whatsapp,
+                        pr.nome AS praca, v.praca_id, v.ativo, v.deleted_at
+                   FROM corona.vendedores v LEFT JOIN corona.pracas pr ON pr.id = v.praca_id
+                 UNION ALL
+                 SELECT 'CLIENTE', c.id, c.nome, c.data_nascimento, c.telefone, c.whatsapp,
+                        pr.nome, v.praca_id, c.ativo, c.deleted_at
+                   FROM corona.clientes c
+                   LEFT JOIN corona.vendedores v ON v.id = c.vendedor_responsavel_id
+                   LEFT JOIN corona.pracas pr ON pr.id = v.praca_id) a""",
+                "extract(day FROM a.data_nascimento), lower(a.nome), a.id", List.of(
+                contagem(TODOS, "Aniversariantes", null),
+                contagem("vendedores", "Vendedores", "a.tipo = 'VENDEDOR'"),
+                contagem("clientes", "Clientes", "a.tipo = 'CLIENTE'")));
+        c.onde("a.deleted_at IS NULL");
+        c.onde("a.data_nascimento IS NOT NULL");
+        c.onde("extract(month FROM a.data_nascimento) = :mes", "mes", mes);
+        if (!quem.equals("TODOS")) {
+            c.onde("a.tipo = '" + (quem.equals("VENDEDORES") ? "VENDEDOR" : "CLIENTE") + "'");
+        }
+        porSituacao(c, f.situacao(), "a.ativo");
+        c.busca(f.busca(), "a.nome", "a.telefone", "a.whatsapp");
+        filtroDeUuid(c, f.pracaId(), "praca", "a.praca_id = :praca");
         return motor.executar(c, f.recorte(), f.pagina(), f.tamanho(),
-                (rs, n) -> new LinhaDeAniversariante(rs.getObject("id", UUID.class), rs.getString("nome"),
-                        rs.getInt("dia"), rs.getInt("mes"), rs.getObject("data_nascimento", LocalDate.class),
-                        rs.getString("telefone1"), rs.getString("whatsapp"), rs.getString("praca"),
-                        rs.getBoolean("ativo")));
+                (rs, n) -> new LinhaDeAniversariante(rs.getObject("id", UUID.class), rs.getString("tipo"),
+                        rs.getString("nome"), rs.getInt("dia"), rs.getInt("mes"),
+                        rs.getObject("data_nascimento", LocalDate.class), rs.getString("telefone"),
+                        rs.getString("whatsapp"), rs.getString("praca"), rs.getBoolean("ativo")));
+    }
+
+    /** TODOS (padrão), VENDEDORES ou CLIENTES. */
+    private static String quem(String pedido) {
+        String q = pedido == null || pedido.isBlank() ? "TODOS" : pedido.strip().toUpperCase();
+        if (!List.of("TODOS", "VENDEDORES", "CLIENTES").contains(q)) {
+            throw Validacoes.recusar("quem", "Escolha vendedores, clientes ou todos.");
+        }
+        return q;
     }
 
     // --- alterações de produtos, pela auditoria ---

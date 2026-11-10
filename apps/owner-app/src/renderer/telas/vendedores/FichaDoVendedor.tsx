@@ -15,6 +15,10 @@ import { FormularioDeCampos, type OpcaoDaLista } from './FormularioDeCampos';
 
 const T = TEXTOS.vendedores;
 
+/** Marca o inativo no nome ("Centro (inativa)"); o formulário só mostra o inativo que já estava escolhido. */
+const comMarcaDeInativo = (rotulo: string, r: Registro, marca: string): string =>
+  r.ativo === false ? `${rotulo} ${marca}` : rotulo;
+
 export interface FichaDoVendedorProps {
   ponte: PonteDoCorona;
   /** `null`: vendedor novo (só a aba Cadastro, até salvar). */
@@ -48,11 +52,11 @@ export function FichaDoVendedor({ ponte, vendedorId, aoVoltar }: FichaDoVendedor
   const novo = vendedorId === null && vendedor === null;
 
   const pracas = useBusca(
-    () => chamar(ponte, 'pracas.listar', { pagina: 0, tamanho: 100 }),
+    () => chamar(ponte, 'pracas.listar', { pagina: 0, tamanho: 100, situacao: 'TODOS' }),
     'pracas',
   );
   const restricoes = useBusca(
-    () => chamar(ponte, 'restricoes.listar', { pagina: 0, tamanho: 100 }),
+    () => chamar(ponte, 'restricoes.listar', { pagina: 0, tamanho: 100, situacao: 'TODOS' }),
     'restricoes',
   );
   const listas = useMemo<Record<string, readonly OpcaoDaLista[] | null>>(() => {
@@ -61,13 +65,35 @@ export function FichaDoVendedor({ ponte, vendedorId, aoVoltar }: FichaDoVendedor
     return {
       pracas: pracas.dados
         ? itens(pracas.dados).flatMap((p) =>
-            p.id ? [{ valor: p.id, rotulo: texto(p, 'nome') }] : [],
+            p.id
+              ? [
+                  {
+                    valor: p.id,
+                    rotulo: comMarcaDeInativo(
+                      texto(p, 'nome'),
+                      p,
+                      TEXTOS.cadastros.pracas.marcaInativo,
+                    ),
+                    ativo: p.ativo !== false,
+                  },
+                ]
+              : [],
           )
         : null,
       restricoes: restricoes.dados
         ? itens(restricoes.dados).flatMap((r) =>
             r.id
-              ? [{ valor: r.id, rotulo: `${texto(r, 'codigo')} - ${texto(r, 'descricao')}` }]
+              ? [
+                  {
+                    valor: r.id,
+                    rotulo: comMarcaDeInativo(
+                      `${texto(r, 'codigo')} - ${texto(r, 'descricao')}`,
+                      r,
+                      TEXTOS.cadastros.restricoes.marcaInativo,
+                    ),
+                    ativo: r.ativo !== false,
+                  },
+                ]
               : [],
           )
         : null,

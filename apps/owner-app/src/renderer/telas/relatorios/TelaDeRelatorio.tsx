@@ -176,7 +176,9 @@ async function carregarOpcoes(
 ): Promise<Retorno<Opcoes>> {
   const tem = (f: DefinicaoDeRelatorio['filtros'][number]) => def.filtros.includes(f);
   const pedir = (op: Parameters<typeof chamar>[1], ativo: boolean) =>
-    ativo ? chamar(ponte, op, { pagina: 0, tamanho: 100 }) : Promise.resolve(null);
+    ativo
+      ? chamar(ponte, op, { pagina: 0, tamanho: 100, situacao: 'TODOS' })
+      : Promise.resolve(null);
   const [cat, forn, praca, restr, vend] = await Promise.all([
     pedir('categorias.listar', tem('categoria') || def.nome === 'sem-foto'),
     pedir('fornecedores.listar', tem('fornecedor') || def.nome === 'sem-foto'),

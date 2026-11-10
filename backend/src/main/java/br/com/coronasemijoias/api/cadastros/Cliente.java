@@ -4,6 +4,7 @@ import br.com.coronasemijoias.api.comum.persistencia.EntidadeSincronizavel;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import java.time.LocalDate;
 import java.util.UUID;
 
 /**
@@ -12,13 +13,16 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "clientes", schema = "corona")
-public class Cliente extends EntidadeSincronizavel {
+public class Cliente extends EntidadeSincronizavel implements Ativavel {
 
     @Column(name = "nome", nullable = false)
     private String nome;
 
     @Column(name = "cpf")
     private String cpf;
+
+    @Column(name = "data_nascimento")
+    private LocalDate dataNascimento;
 
     @Column(name = "telefone")
     private String telefone;
@@ -38,16 +42,17 @@ public class Cliente extends EntidadeSincronizavel {
         // Hibernate
     }
 
-    public Cliente(UUID id, String nome, String cpf, String telefone, String whatsapp, Endereco endereco,
+    public Cliente(UUID id, String nome, String cpf, LocalDate dataNascimento, String telefone, String whatsapp, Endereco endereco,
             String observacoes, UUID vendedorResponsavelId) {
         super(id);
-        alterar(nome, cpf, telefone, whatsapp, endereco, observacoes, vendedorResponsavelId);
+        alterar(nome, cpf, dataNascimento, telefone, whatsapp, endereco, observacoes, vendedorResponsavelId);
     }
 
-    public void alterar(String nome, String cpf, String telefone, String whatsapp, Endereco endereco,
+    public void alterar(String nome, String cpf, LocalDate dataNascimento, String telefone, String whatsapp, Endereco endereco,
             String observacoes, UUID vendedorResponsavelId) {
         this.nome = nome;
         this.cpf = cpf;
+        this.dataNascimento = dataNascimento;
         this.telefone = telefone;
         this.whatsapp = whatsapp;
         this.endereco = endereco;
@@ -61,6 +66,10 @@ public class Cliente extends EntidadeSincronizavel {
 
     public String getCpf() {
         return cpf;
+    }
+
+    public LocalDate getDataNascimento() {
+        return dataNascimento;
     }
 
     public String getTelefone() {
@@ -81,5 +90,18 @@ public class Cliente extends EntidadeSincronizavel {
 
     public UUID getVendedorResponsavelId() {
         return vendedorResponsavelId;
+    }
+
+    @Column(name = "ativo", nullable = false)
+    private boolean ativo = true;
+
+    @Override
+    public boolean isAtivo() {
+        return ativo;
+    }
+
+    @Override
+    public void definirAtivo(boolean ativo) {
+        this.ativo = ativo;
     }
 }

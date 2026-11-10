@@ -8,7 +8,7 @@ import jakarta.persistence.Table;
 /** Restrição que a dona põe num vendedor; {@code bloqueiaRemessa} impede montar maleta (tabela {@code restricoes}). */
 @Entity
 @Table(name = "restricoes", schema = "corona")
-public class Restricao extends CadastroDoServidor {
+public class Restricao extends CadastroDoServidor implements Ativavel {
 
     @Column(name = "codigo", nullable = false)
     private String codigo;
@@ -43,5 +43,18 @@ public class Restricao extends CadastroDoServidor {
 
     public boolean isBloqueiaRemessa() {
         return bloqueiaRemessa;
+    }
+
+    @Column(name = "ativo", nullable = false)
+    private boolean ativo = true;
+
+    @Override
+    public boolean isAtivo() {
+        return ativo;
+    }
+
+    @Override
+    public void definirAtivo(boolean ativo) {
+        this.ativo = ativo;
     }
 }

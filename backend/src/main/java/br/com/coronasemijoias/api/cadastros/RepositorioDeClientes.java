@@ -1,5 +1,6 @@
 package br.com.coronasemijoias.api.cadastros;
 
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
@@ -9,9 +10,9 @@ interface RepositorioDeClientes extends RepositorioDeCadastro<Cliente> {
 
     @Query("""
             select c from Cliente c
-            where c.deletedAt is null
+            where c.deletedAt is null and c.ativo in :situacoes
               and (lower(c.nome) like :texto or c.cpf like :documento
                    or lower(coalesce(c.telefone, '')) like :texto or lower(coalesce(c.whatsapp, '')) like :texto)
             order by lower(c.nome), c.id""")
-    Page<Cliente> buscar(@Param("texto") String texto, @Param("documento") String documento, Pageable pagina);
+    Page<Cliente> buscar(@Param("texto") String texto, @Param("documento") String documento, @Param("situacoes") List<Boolean> situacoes, Pageable pagina);
 }

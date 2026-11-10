@@ -2,12 +2,15 @@ package br.com.coronasemijoias.api.cadastros;
 
 import br.com.coronasemijoias.api.cadastros.ServicoDeClientes.Dados;
 import br.com.coronasemijoias.api.seguranca.ExigePerfil;
+import br.com.coronasemijoias.api.seguranca.UsuarioAutenticado;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import java.time.LocalDate;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,6 +37,7 @@ public class ClientesDaDonaController {
             UUID id,
             @NotBlank(message = Mensagens.OBRIGATORIO) @Size(max = 200, message = Mensagens.LIMITE_LONGO) String nome,
             @Size(max = 20, message = Mensagens.LIMITE_CURTO) String cpf,
+            LocalDate dataNascimento,
             @Size(max = 30, message = Mensagens.LIMITE_CURTO) String telefone,
             @Size(max = 30, message = Mensagens.LIMITE_CURTO) String whatsapp,
             @Valid Endereco endereco,
@@ -42,16 +46,16 @@ public class ClientesDaDonaController {
             Integer version) {
 
         Dados dados() {
-            return new Dados(nome, cpf, telefone, whatsapp, endereco, observacoes, vendedorResponsavelId);
+            return new Dados(nome, cpf, dataNascimento, telefone, whatsapp, endereco, observacoes, vendedorResponsavelId);
         }
     }
 
-    public record Resposta(UUID id, int version, String nome, String cpf, String telefone, String whatsapp,
-            Endereco endereco, String observacoes, UUID vendedorResponsavelId) {
+    public record Resposta(UUID id, int version, String nome, String cpf, LocalDate dataNascimento, String telefone, String whatsapp,
+            Endereco endereco, String observacoes, UUID vendedorResponsavelId, boolean ativo) {
 
         static Resposta de(Cliente c) {
-            return new Resposta(c.getId(), c.getVersion(), c.getNome(), c.getCpf(), c.getTelefone(), c.getWhatsapp(),
-                    c.getEndereco(), c.getObservacoes(), c.getVendedorResponsavelId());
+            return new Resposta(c.getId(), c.getVersion(), c.getNome(), c.getCpf(), c.getDataNascimento(), c.getTelefone(), c.getWhatsapp(),
+                    c.getEndereco(), c.getObservacoes(), c.getVendedorResponsavelId(), c.isAtivo());
         }
     }
 
@@ -65,8 +69,9 @@ public class ClientesDaDonaController {
             description = "Busca pelo nome, telefone, WhatsApp ou CPF. A página começa em 0 (até 100 por página).")
     @GetMapping
     public Pagina<Resposta> listar(@RequestParam(required = false) String busca,
+            @RequestParam(required = false) String situacao,
             @RequestParam(required = false) Integer pagina, @RequestParam(required = false) Integer tamanho) {
-        return Pagina.de(servico.listar(busca, pagina, tamanho), Resposta::de);
+        return Pagina.de(servico.listar(busca, situacao, pagina, tamanho), Resposta::de);
     }
 
     @GetMapping("/{id}")
@@ -85,6 +90,22 @@ public class ClientesDaDonaController {
     @PutMapping("/{id}")
     public Resposta editar(@PathVariable UUID id, @Valid @RequestBody Pedido pedido) {
         return Resposta.de(servico.editar(id, pedido.version(), pedido.dados()));
+    }
+
+    @Operation(summary = "Inativar cliente",
+            description = "Inativar não é excluir: o cliente some das escolhas e das buscas (a lista de ativos), mas continua nos relatórios "
+                    + "e nos históricos, e pode ser reativado a qualquer hora. Mande a version que a tela leu (opcional).")
+    @PostMapping("/{id}/inativar")
+    public Resposta inativar(@PathVariable UUID id, @RequestBody(required = false) PedidoDeSituacao pedido,
+            @AuthenticationPrincipal UsuarioAutenticado quem) {
+        return Resposta.de(servico.definirAtivo(id, pedido == null ? null : pedido.version(), false, quem.id()));
+    }
+
+    @Operation(summary = "Reativar cliente", description = "Desfaz a inativação: volta para as escolhas e para a lista de ativos.")
+    @PostMapping("/{id}/reativar")
+    public Resposta reativar(@PathVariable UUID id, @RequestBody(required = false) PedidoDeSituacao pedido,
+            @AuthenticationPrincipal UsuarioAutenticado quem) {
+        return Resposta.de(servico.definirAtivo(id, pedido == null ? null : pedido.version(), true, quem.id()));
     }
 
     @Operation(summary = "Excluir cliente", description = "Exclusão lógica: o cliente some das listas, mas o histórico fica.")

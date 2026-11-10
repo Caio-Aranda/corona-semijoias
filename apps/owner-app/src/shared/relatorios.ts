@@ -54,6 +54,8 @@ export interface ConsultaDeRelatorio {
   tipo?: string;
   /** CRIADO, ATUALIZADO, JA_EXISTIA ou RECUSADO (resultado das importações). */
   resultado?: string;
+  /** TODOS, VENDEDORES ou CLIENTES (aniversariantes). */
+  quem?: string;
   /** 1 a 12 (aniversariantes). */
   mes?: number;
   /** A chave de um total do rodapé: mostra só as linhas que formam esse total. */

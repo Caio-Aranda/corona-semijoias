@@ -65,8 +65,7 @@ export const TEXTOS_RELATORIOS = {
     FORNECEDOR: 'Código do fornecedor',
     EAN13: 'Código de barras',
   } as Record<string, string>,
-  aniversariantesSemClientes:
-    'Só vendedores: o cadastro de cliente ainda não tem data de nascimento.',
+  tiposDeAniversariante: { VENDEDOR: 'Vendedor', CLIENTE: 'Cliente' } as Record<string, string>,
   alteracoesSemImportacao:
     'Mostra o que foi cadastrado e alterado, e quem fez. O resultado das importações em massa está no relatório "Resultado das importações".',
   importacoesNota:

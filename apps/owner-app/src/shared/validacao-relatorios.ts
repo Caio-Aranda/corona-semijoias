@@ -14,7 +14,16 @@ const RECORTE = /^[a-z0-9-]{1,40}$/;
 const VALOR = /^\d{1,12}(\.\d{1,2})?$/;
 const SIM_NAO = ['SIM', 'NAO'];
 const ESCOLHAS: [
-  'comRestricao' | 'comProdutos' | 'comVendedor' | 'estoque' | 'foto' | 'tipo' | 'resultado',
+  (
+    | 'comRestricao'
+    | 'comProdutos'
+    | 'comVendedor'
+    | 'estoque'
+    | 'foto'
+    | 'tipo'
+    | 'resultado'
+    | 'quem'
+  ),
   string[],
 ][] = [
   ['comRestricao', SIM_NAO],
@@ -24,6 +33,7 @@ const ESCOLHAS: [
   ['foto', ['COM', 'SEM']],
   ['tipo', ['PLANILHA', 'FOTOS']],
   ['resultado', ['CRIADO', 'ATUALIZADO', 'JA_EXISTIA', 'RECUSADO']],
+  ['quem', ['TODOS', 'VENDEDORES', 'CLIENTES']],
 ];
 
 export interface ParametrosDeRelatorio {
@@ -55,6 +65,7 @@ const CAMPOS = [
   'comVendedor',
   'tipo',
   'resultado',
+  'quem',
   'recorte',
   'pagina',
   'tamanho',

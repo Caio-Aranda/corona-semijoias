@@ -2,7 +2,7 @@
 
 import { type Client, type ClientMeta, formDataBodySerializer, type Options as Options2, type RequestResult, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { AlteracoesDeProdutosData, AlteracoesDeProdutosResponses, AlterarCodigosData, AlterarCodigosResponses, AniversariantesData, AniversariantesResponses, BaixarData, BaixarResponses, ClientesData, ClientesResponses, CodigosEmConflitoData, CodigosEmConflitoResponses, ConfirmarData, ConfirmarResponses, ConverterData, ConverterResponses, Criar1Data, Criar1Responses, Criar2Data, Criar2Responses, Criar3Data, Criar3Responses, Criar4Data, Criar4Responses, Criar5Data, Criar5Responses, Criar6Data, Criar6Responses, Criar7Data, Criar7Responses, Criar8Data, Criar8Responses, CriarData, CriarReferenciaData, CriarReferenciaResponses, CriarResponses, DesativarData, DesativarResponses, EcoData, EcoResponses, Editar1Data, Editar1Responses, Editar2Data, Editar2Responses, Editar3Data, Editar3Responses, Editar4Data, Editar4Responses, Editar5Data, Editar5Responses, Editar6Data, Editar6Responses, Editar7Data, Editar7Responses, Editar8Data, Editar8Responses, EditarData, EditarReferenciaData, EditarReferenciaResponses, EditarResponses, EntrarData, EntrarResponses, Enviar1Data, Enviar1Responses, EnviarData, EnviarResponses, EuData, EuResponses, Excluir1Data, Excluir1Responses, Excluir2Data, Excluir2Responses, Excluir3Data, Excluir3Responses, Excluir4Data, Excluir4Responses, Excluir5Data, Excluir5Responses, Excluir6Data, Excluir6Responses, Excluir7Data, Excluir7Responses, Excluir8Data, Excluir8Responses, Excluir9Data, Excluir9Responses, ExcluirData, ExcluirReferenciaData, ExcluirReferenciaResponses, ExcluirResponses, FalhaData, FalhaResponses, FornecedoresData, FornecedoresResponses, GravarConjugeData, GravarConjugeResponses, GravarContatoData, GravarContatoResponses, GravarEnderecoData, GravarEnderecoResponses, GravarMeiData, GravarMeiResponses, GravarObservacoesData, GravarObservacoesResponses, GravarTrabalhoData, GravarTrabalhoResponses, HojeData, HojeResponses, ImagemData, ImagemResponses, Inativar1Data, Inativar1Responses, InativarData, InativarResponses, Listar10Data, Listar10Responses, Listar11Data, Listar11Responses, Listar1Data, Listar1Responses, Listar2Data, Listar2Responses, Listar3Data, Listar3Responses, Listar4Data, Listar4Responses, Listar5Data, Listar5Responses, Listar6Data, Listar6Responses, Listar7Data, Listar7Responses, Listar8Data, Listar8Responses, Listar9Data, Listar9Responses, ListarData, ListarReferenciasData, ListarReferenciasResponses, ListarResponses, OrdemData, OrdemResponses, PorCodigoData, PorCodigoResponses, PreviaData, PreviaResponses, PrincipalData, PrincipalResponses, ProdutosData, ProdutosResponses, ProximoCodigoData, ProximoCodigoResponses, Reativar1Data, Reativar1Responses, Reativar2Data, Reativar2Responses, ReativarData, ReativarResponses, RedefinirSenhaData, RedefinirSenhaResponses, RegistrarData, RegistrarResponses, RenovarData, RenovarResponses, ResultadoDasImportacoesData, ResultadoDasImportacoesResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SemCodigoDeBarrasData, SemCodigoDeBarrasResponses, SemFotoData, SemFotoResponses, SoVendedorData, SoVendedorResponses, TempoData, TempoResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarData, ValidarResponses, ValorDaDonaData, ValorDaDonaResponses, VendedoresData, VendedoresResponses, Ver1Data, Ver1Responses, Ver2Data, Ver2Responses, Ver3Data, Ver3Responses, Ver4Data, Ver4Responses, Ver5Data, Ver5Responses, Ver6Data, Ver6Responses, Ver7Data, Ver7Responses, Ver8Data, Ver8Responses, VerConjugeData, VerConjugeResponses, VerContatoData, VerContatoResponses, VerData, VerEnderecoData, VerEnderecoResponses, VerMeiData, VerMeiResponses, VerObservacoesData, VerObservacoesResponses, VerResponses, VerTrabalhoData, VerTrabalhoResponses } from './types.gen';
+import type { AlteracoesDeProdutosData, AlteracoesDeProdutosResponses, AlterarCodigosData, AlterarCodigosResponses, AniversariantesData, AniversariantesResponses, BaixarData, BaixarResponses, ClientesData, ClientesResponses, CodigosEmConflitoData, CodigosEmConflitoResponses, ConfirmarData, ConfirmarResponses, ConverterData, ConverterResponses, Criar1Data, Criar1Responses, Criar2Data, Criar2Responses, Criar3Data, Criar3Responses, Criar4Data, Criar4Responses, Criar5Data, Criar5Responses, Criar6Data, Criar6Responses, Criar7Data, Criar7Responses, Criar8Data, Criar8Responses, CriarData, CriarReferenciaData, CriarReferenciaResponses, CriarResponses, DesativarData, DesativarResponses, EcoData, EcoResponses, Editar1Data, Editar1Responses, Editar2Data, Editar2Responses, Editar3Data, Editar3Responses, Editar4Data, Editar4Responses, Editar5Data, Editar5Responses, Editar6Data, Editar6Responses, Editar7Data, Editar7Responses, Editar8Data, Editar8Responses, EditarData, EditarReferenciaData, EditarReferenciaResponses, EditarResponses, EntrarData, EntrarResponses, Enviar1Data, Enviar1Responses, EnviarData, EnviarResponses, EuData, EuResponses, Excluir1Data, Excluir1Responses, Excluir2Data, Excluir2Responses, Excluir3Data, Excluir3Responses, Excluir4Data, Excluir4Responses, Excluir5Data, Excluir5Responses, Excluir6Data, Excluir6Responses, Excluir7Data, Excluir7Responses, Excluir8Data, Excluir8Responses, Excluir9Data, Excluir9Responses, ExcluirData, ExcluirReferenciaData, ExcluirReferenciaResponses, ExcluirResponses, FalhaData, FalhaResponses, FornecedoresData, FornecedoresResponses, GravarConjugeData, GravarConjugeResponses, GravarContatoData, GravarContatoResponses, GravarEnderecoData, GravarEnderecoResponses, GravarMeiData, GravarMeiResponses, GravarObservacoesData, GravarObservacoesResponses, GravarTrabalhoData, GravarTrabalhoResponses, HojeData, HojeResponses, ImagemData, ImagemResponses, Inativar1Data, Inativar1Responses, Inativar2Data, Inativar2Responses, Inativar3Data, Inativar3Responses, Inativar4Data, Inativar4Responses, Inativar5Data, Inativar5Responses, Inativar6Data, Inativar6Responses, InativarData, InativarResponses, Listar10Data, Listar10Responses, Listar11Data, Listar11Responses, Listar1Data, Listar1Responses, Listar2Data, Listar2Responses, Listar3Data, Listar3Responses, Listar4Data, Listar4Responses, Listar5Data, Listar5Responses, Listar6Data, Listar6Responses, Listar7Data, Listar7Responses, Listar8Data, Listar8Responses, Listar9Data, Listar9Responses, ListarData, ListarReferenciasData, ListarReferenciasResponses, ListarResponses, OrdemData, OrdemResponses, PorCodigoData, PorCodigoResponses, PreviaData, PreviaResponses, PrincipalData, PrincipalResponses, ProdutosData, ProdutosResponses, ProximoCodigoData, ProximoCodigoResponses, Reativar1Data, Reativar1Responses, Reativar2Data, Reativar2Responses, Reativar3Data, Reativar3Responses, Reativar4Data, Reativar4Responses, Reativar5Data, Reativar5Responses, Reativar6Data, Reativar6Responses, Reativar7Data, Reativar7Responses, ReativarData, ReativarResponses, RedefinirSenhaData, RedefinirSenhaResponses, RegistrarData, RegistrarResponses, RenovarData, RenovarResponses, ResultadoDasImportacoesData, ResultadoDasImportacoesResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SemCodigoDeBarrasData, SemCodigoDeBarrasResponses, SemFotoData, SemFotoResponses, SoVendedorData, SoVendedorResponses, TempoData, TempoResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarData, ValidarResponses, ValorDaDonaData, ValorDaDonaResponses, VendedoresData, VendedoresResponses, Ver1Data, Ver1Responses, Ver2Data, Ver2Responses, Ver3Data, Ver3Responses, Ver4Data, Ver4Responses, Ver5Data, Ver5Responses, Ver6Data, Ver6Responses, Ver7Data, Ver7Responses, Ver8Data, Ver8Responses, VerConjugeData, VerConjugeResponses, VerContatoData, VerContatoResponses, VerData, VerEnderecoData, VerEnderecoResponses, VerMeiData, VerMeiResponses, VerObservacoesData, VerObservacoesResponses, VerResponses, VerTrabalhoData, VerTrabalhoResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -163,6 +163,36 @@ export const editar8 = <ThrowOnError extends boolean = false>(options: Options<E
 });
 
 /**
+ * Inativar categoria
+ *
+ * Inativar não é excluir: a categoria some das escolhas e das buscas (a lista de ativos), mas continua nos relatórios e nos históricos, e pode ser reativada a qualquer hora. Mande a version que a tela leu (opcional).
+ */
+export const inativar6 = <ThrowOnError extends boolean = false>(options: Options<Inativar6Data, ThrowOnError>): RequestResult<Inativar6Responses, unknown, ThrowOnError> => (options.client ?? client).post<Inativar6Responses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/categorias/{id}/inativar',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Reativar categoria
+ *
+ * Desfaz a inativação: volta para as escolhas e para a lista de ativos.
+ */
+export const reativar7 = <ThrowOnError extends boolean = false>(options: Options<Reativar7Data, ThrowOnError>): RequestResult<Reativar7Responses, unknown, ThrowOnError> => (options.client ?? client).post<Reativar7Responses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/categorias/{id}/reativar',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * Listar clientes
  *
  * Busca pelo nome, telefone, WhatsApp ou CPF. A página começa em 0 (até 100 por página).
@@ -213,6 +243,36 @@ export const ver7 = <ThrowOnError extends boolean = false>(options: Options<Ver7
 export const editar7 = <ThrowOnError extends boolean = false>(options: Options<Editar7Data, ThrowOnError>): RequestResult<Editar7Responses, unknown, ThrowOnError> => (options.client ?? client).put<Editar7Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/clientes/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Inativar cliente
+ *
+ * Inativar não é excluir: o cliente some das escolhas e das buscas (a lista de ativos), mas continua nos relatórios e nos históricos, e pode ser reativado a qualquer hora. Mande a version que a tela leu (opcional).
+ */
+export const inativar5 = <ThrowOnError extends boolean = false>(options: Options<Inativar5Data, ThrowOnError>): RequestResult<Inativar5Responses, unknown, ThrowOnError> => (options.client ?? client).post<Inativar5Responses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/clientes/{id}/inativar',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Reativar cliente
+ *
+ * Desfaz a inativação: volta para as escolhas e para a lista de ativos.
+ */
+export const reativar6 = <ThrowOnError extends boolean = false>(options: Options<Reativar6Data, ThrowOnError>): RequestResult<Reativar6Responses, unknown, ThrowOnError> => (options.client ?? client).post<Reativar6Responses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/clientes/{id}/reativar',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -305,6 +365,36 @@ export const editar6 = <ThrowOnError extends boolean = false>(options: Options<E
 });
 
 /**
+ * Inativar fornecedor
+ *
+ * Inativar não é excluir: o fornecedor some das escolhas e das buscas (a lista de ativos), mas continua nos relatórios e nos históricos, e pode ser reativado a qualquer hora. Mande a version que a tela leu (opcional).
+ */
+export const inativar4 = <ThrowOnError extends boolean = false>(options: Options<Inativar4Data, ThrowOnError>): RequestResult<Inativar4Responses, unknown, ThrowOnError> => (options.client ?? client).post<Inativar4Responses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/fornecedores/{id}/inativar',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Reativar fornecedor
+ *
+ * Desfaz a inativação: volta para as escolhas e para a lista de ativos.
+ */
+export const reativar5 = <ThrowOnError extends boolean = false>(options: Options<Reativar5Data, ThrowOnError>): RequestResult<Reativar5Responses, unknown, ThrowOnError> => (options.client ?? client).post<Reativar5Responses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/fornecedores/{id}/reativar',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * Registrar o resultado de uma importação
  *
  * O aplicativo gera o id do lote (UUID) e manda as linhas em partes de até 500; repetir o mesmo id junta as partes ao mesmo lote. Cada linha diz a referência (por exemplo "Linha 12"), o resultado (CRIADO, ATUALIZADO, JA_EXISTIA ou RECUSADO) e o motivo. Este registro é o que o aplicativo informa: o que mudou nos produtos já foi gravado e conferido pelas rotas de produto.
@@ -370,6 +460,36 @@ export const ver5 = <ThrowOnError extends boolean = false>(options: Options<Ver5
 export const editar5 = <ThrowOnError extends boolean = false>(options: Options<Editar5Data, ThrowOnError>): RequestResult<Editar5Responses, unknown, ThrowOnError> => (options.client ?? client).put<Editar5Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/pracas/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Inativar praça
+ *
+ * Inativar não é excluir: a praça some das escolhas e das buscas (a lista de ativos), mas continua nos relatórios e nos históricos, e pode ser reativada a qualquer hora. Mande a version que a tela leu (opcional).
+ */
+export const inativar3 = <ThrowOnError extends boolean = false>(options: Options<Inativar3Data, ThrowOnError>): RequestResult<Inativar3Responses, unknown, ThrowOnError> => (options.client ?? client).post<Inativar3Responses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/pracas/{id}/inativar',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Reativar praça
+ *
+ * Desfaz a inativação: volta para as escolhas e para a lista de ativos.
+ */
+export const reativar4 = <ThrowOnError extends boolean = false>(options: Options<Reativar4Data, ThrowOnError>): RequestResult<Reativar4Responses, unknown, ThrowOnError> => (options.client ?? client).post<Reativar4Responses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/pracas/{id}/reativar',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -592,13 +712,13 @@ export const principal = <ThrowOnError extends boolean = false>(options: Options
  *
  * Sai das escolhas, mas o histórico fica. Pode ser reativado.
  */
-export const inativar1 = <ThrowOnError extends boolean = false>(options: Options<Inativar1Data, ThrowOnError>): RequestResult<Inativar1Responses, unknown, ThrowOnError> => (options.client ?? client).post<Inativar1Responses, unknown, ThrowOnError>({
+export const inativar2 = <ThrowOnError extends boolean = false>(options: Options<Inativar2Data, ThrowOnError>): RequestResult<Inativar2Responses, unknown, ThrowOnError> => (options.client ?? client).post<Inativar2Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/produtos/{id}/inativar',
     ...options
 });
 
-export const reativar2 = <ThrowOnError extends boolean = false>(options: Options<Reativar2Data, ThrowOnError>): RequestResult<Reativar2Responses, unknown, ThrowOnError> => (options.client ?? client).post<Reativar2Responses, unknown, ThrowOnError>({
+export const reativar3 = <ThrowOnError extends boolean = false>(options: Options<Reativar3Data, ThrowOnError>): RequestResult<Reativar3Responses, unknown, ThrowOnError> => (options.client ?? client).post<Reativar3Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/produtos/{id}/reativar',
     ...options
@@ -616,9 +736,9 @@ export const alteracoesDeProdutos = <ThrowOnError extends boolean = false>(optio
 });
 
 /**
- * Relatório de aniversariantes (vendedores)
+ * Relatório de aniversariantes (vendedores e clientes)
  *
- * Vendedores que fazem aniversário no mês (mes de 1 a 12; sem mes, o mês de hoje em Brasília). O cadastro de cliente não tem data de nascimento, por isso só vendedores. A data é de calendário, sem fuso. Filtros: busca, pracaId, situacao. Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.
+ * Quem faz aniversário no mês (mes de 1 a 12; sem mes, o mês de hoje em Brasília). quem: TODOS (padrão), VENDEDORES ou CLIENTES. A praça do cliente é a do vendedor responsável. A data é de calendário, sem fuso. Filtros: busca, quem, pracaId, situacao. Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.
  */
 export const aniversariantes = <ThrowOnError extends boolean = false>(options?: Options<AniversariantesData, ThrowOnError>): RequestResult<AniversariantesResponses, unknown, ThrowOnError> => (options?.client ?? client).get<AniversariantesResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -629,7 +749,7 @@ export const aniversariantes = <ThrowOnError extends boolean = false>(options?: 
 /**
  * Relatório de clientes
  *
- * Filtros: busca, vendedorId, pracaId (a do vendedor responsável), comVendedor (SIM ou NAO), de e ate (data do cadastro). Cliente não tem situação: só os excluídos ficam de fora. Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.
+ * Filtros: busca, situacao, vendedorId, pracaId (a do vendedor responsável), comVendedor (SIM ou NAO), de e ate (data do cadastro). Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.
  */
 export const clientes = <ThrowOnError extends boolean = false>(options?: Options<ClientesData, ThrowOnError>): RequestResult<ClientesResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ClientesResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -651,7 +771,7 @@ export const codigosEmConflito = <ThrowOnError extends boolean = false>(options?
 /**
  * Relatório de fornecedores
  *
- * Filtros: busca, comProdutos (SIM ou NAO: tem produtos ativos), de e ate (data do cadastro). Fornecedor não tem situação. Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.
+ * Filtros: busca, situacao, comProdutos (SIM ou NAO: tem produtos ativos), de e ate (data do cadastro). Por padrão só aparecem os ativos (situacao=TODOS ou INATIVOS para os outros). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.
  */
 export const fornecedores = <ThrowOnError extends boolean = false>(options?: Options<FornecedoresData, ThrowOnError>): RequestResult<FornecedoresResponses, unknown, ThrowOnError> => (options?.client ?? client).get<FornecedoresResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -754,6 +874,36 @@ export const ver3 = <ThrowOnError extends boolean = false>(options: Options<Ver3
 export const editar3 = <ThrowOnError extends boolean = false>(options: Options<Editar3Data, ThrowOnError>): RequestResult<Editar3Responses, unknown, ThrowOnError> => (options.client ?? client).put<Editar3Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/restricoes/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Inativar restrição
+ *
+ * Inativar não é excluir: a restrição some das escolhas e das buscas (a lista de ativos), mas continua nos relatórios e nos históricos, e pode ser reativada a qualquer hora. Mande a version que a tela leu (opcional).
+ */
+export const inativar1 = <ThrowOnError extends boolean = false>(options: Options<Inativar1Data, ThrowOnError>): RequestResult<Inativar1Responses, unknown, ThrowOnError> => (options.client ?? client).post<Inativar1Responses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/restricoes/{id}/inativar',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Reativar restrição
+ *
+ * Desfaz a inativação: volta para as escolhas e para a lista de ativos.
+ */
+export const reativar2 = <ThrowOnError extends boolean = false>(options: Options<Reativar2Data, ThrowOnError>): RequestResult<Reativar2Responses, unknown, ThrowOnError> => (options.client ?? client).post<Reativar2Responses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/restricoes/{id}/reativar',
     ...options,
     headers: {
         'Content-Type': 'application/json',

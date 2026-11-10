@@ -9,6 +9,7 @@ import { useGuardaDeSaida } from '../../nucleo/guarda-de-saida';
 import { TEXTOS } from '../../textos';
 import { CamposDeCodigos, novaLinhaDeCodigo, type LinhaDeCodigo } from './CamposDeCodigos';
 import { PainelDeFotos } from './PainelDeFotos';
+import { soAtivosMaisAtual } from '../../nucleo/escolhas';
 import { lerOpcoes, lerProduto, type Produto } from './dados';
 
 const T = TEXTOS.produtos.ficha;
@@ -105,15 +106,26 @@ export function FichaDoProduto({ ponte, produtoId, aoVoltar, aoAbrirOutro }: Fic
   const [tentouSalvar, setTentouSalvar] = useState(false);
 
   const categorias = useBusca(
-    () => chamar(ponte, 'categorias.listar', { pagina: 0, tamanho: 100 }),
+    () => chamar(ponte, 'categorias.listar', { pagina: 0, tamanho: 100, situacao: 'TODOS' }),
     'categorias-do-produto',
   );
   const fornecedores = useBusca(
-    () => chamar(ponte, 'fornecedores.listar', { pagina: 0, tamanho: 100 }),
+    () => chamar(ponte, 'fornecedores.listar', { pagina: 0, tamanho: 100, situacao: 'TODOS' }),
     'fornecedores-do-produto',
   );
-  const listaDeCategorias = categorias.dados ? lerOpcoes(categorias.dados) : [];
-  const listaDeFornecedores = fornecedores.dados ? lerOpcoes(fornecedores.dados) : [];
+  // Só ativos nas escolhas; o que a peça já tem continua aparecendo, marcado como inativo.
+  const todasAsCategorias = categorias.dados ? lerOpcoes(categorias.dados) : [];
+  const listaDeCategorias = soAtivosMaisAtual(
+    todasAsCategorias,
+    form.categoriaId,
+    TEXTOS.cadastros.categorias.marcaInativo,
+  );
+  const todosOsFornecedores = fornecedores.dados ? lerOpcoes(fornecedores.dados) : [];
+  const listaDeFornecedores = soAtivosMaisAtual(
+    todosOsFornecedores,
+    form.fornecedorId,
+    TEXTOS.cadastros.fornecedores.marcaInativo,
+  );
 
   const carregar = useCallback(
     () => chamar(ponte, 'produtos.ver', { id: idAtual ?? '' }),
