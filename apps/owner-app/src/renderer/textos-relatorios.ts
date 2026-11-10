@@ -2,6 +2,8 @@
 export const TEXTOS_RELATORIOS = {
   loja: 'Corona Semijoias',
   grupoDoMenu: 'Relatórios de cadastros',
+  grupoDoEstoque: 'Relatórios de estoque',
+  grupoDasCompras: 'Relatórios de compras',
   rotuloDosFiltros: 'Filtros do relatório',
   buscando: 'Buscando o relatório...',
   filtros: {
@@ -18,6 +20,7 @@ export const TEXTOS_RELATORIOS = {
     de: 'De',
     ate: 'Até',
     mes: 'Mês',
+    usuario: 'Quem lançou',
     qualquer: 'Todas',
     qualquerUm: 'Todos',
     limpar: 'Limpar filtros',
@@ -42,6 +45,7 @@ export const TEXTOS_RELATORIOS = {
     verRegistros: 'Ver os registros',
     voltarAoRelatorio: 'Ver o relatório inteiro',
     mostrando: (rotulo: string) => `Mostrando só: ${rotulo}.`,
+    pecas: (n: number) => (n === 1 ? '1 peça' : `${n} peças`),
     calculando: 'Calculando...',
   },
   exportar: {
@@ -70,4 +74,45 @@ export const TEXTOS_RELATORIOS = {
     'Mostra o que foi cadastrado e alterado, e quem fez. O resultado das importações em massa está no relatório "Resultado das importações".',
   importacoesNota:
     'Mostra as importações feitas a partir de agora. Na planilha, o resultado é o que o aplicativo informou ao terminar; se a internet cair no meio, as últimas linhas podem não aparecer aqui.',
+  /** Relatórios de estoque e de compras (tarefa 2.8). */
+  estoqueECompras: {
+    origens: {
+      MANUAL: 'Lançamento feito à mão',
+      AJUSTE_MANUAL: 'Ajuste do estoque',
+      COMPRA: 'Compra',
+      INVENTARIO: 'Contagem do estoque',
+      MALETA: 'Maleta',
+      ESTORNO: 'Desfazer lançamento',
+    } as Record<string, string>,
+    desfeito: 'Desfeito',
+    desfazOutro: 'Desfaz outro lançamento',
+    compraRegistrada: 'Registrada',
+    compraDesfeita: 'Desfeita',
+    situacoesDaContagem: {
+      EM_ANDAMENTO: 'Em andamento',
+      FECHADO: 'Fechada',
+      CANCELADO: 'Cancelada',
+    } as Record<string, string>,
+    escopoDaContagem: (escopo: string, nome: string) =>
+      escopo === 'CATEGORIA'
+        ? `Categoria ${nome}`
+        : escopo === 'FORNECEDOR'
+          ? `Fornecedor ${nome}`
+          : 'Todas as peças',
+    acoes: {
+      verAsPecas: 'Ver as peças',
+      soEstaContagem: 'Ver só esta contagem',
+      historicoDeCusto: 'Ver o histórico de custo',
+      tituloDaCompra: (data: string, fornecedor: string) =>
+        `Compra de ${data}${fornecedor ? ` — ${fornecedor}` : ''}`,
+      tituloDaContagem: (inicio: string) => `Contagem de ${inicio}`,
+      tituloDaPeca: (nome: string) => `Histórico de custo: ${nome}`,
+      voltar: 'Voltar ao relatório',
+      filtroFixo: (texto: string) => `Mostrando só: ${texto}.`,
+      coluna: 'Abrir',
+    },
+    dias: { padrao: (n: number) => `Sem saída há ${n} dias` },
+    fotoNaoVaiNoArquivo:
+      'A foto aparece na tela; os arquivos PDF, Excel e CSV levam o nome e o código da peça.',
+  },
 };

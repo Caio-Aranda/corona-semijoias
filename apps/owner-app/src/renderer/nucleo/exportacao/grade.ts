@@ -14,7 +14,17 @@ import {
 } from '../moedas';
 
 export type TipoDeColuna =
-  'texto' | 'inteiro' | 'dinheiro' | 'percentual' | 'data' | 'dataHora' | 'simNao';
+  | 'texto'
+  | 'inteiro'
+  /** Quantidade com sinal: na tela +3 e -2; no arquivo, o número. */
+  | 'sinal'
+  | 'dinheiro'
+  | 'percentual'
+  | 'data'
+  | 'dataHora'
+  | 'simNao'
+  /** Foto do produto: só na tela; os arquivos não levam imagem. */
+  | 'foto';
 
 export interface ColunaDoRelatorio {
   chave: string;
@@ -27,6 +37,8 @@ export interface TotalDoRelatorio {
   rotulo: string;
   quantidade: number;
   valorEmReais?: string | null;
+  /** Soma de peças, quando o total é de peças. */
+  pecas?: number | null;
 }
 
 export interface PedidoDeExportacao {
@@ -47,6 +59,8 @@ export interface PedidoDeExportacao {
   totais: TotalDoRelatorio[];
   /** Qual campo das linhas forma cada total de valor ({ 'preco-venda': 'precoVenda' }). */
   totaisDeValor: Record<string, string>;
+  /** Linhas que entram na soma de cada total de valor (ex.: compras desfeitas ficam fora do total). */
+  linhasDoTotal?: Record<string, (linha: Record<string, unknown>) => boolean>;
 }
 
 /** Uma célula: o texto e se é número (decimal com ponto), para o Excel guardar como número. */
@@ -130,6 +144,7 @@ function celula(tipo: TipoDeColuna, valor: unknown): Celula[] {
   if (v === '') return [texto('')];
   switch (tipo) {
     case 'inteiro':
+    case 'sinal':
     case 'percentual':
       return [numero(v)];
     case 'data':
@@ -152,12 +167,14 @@ export function somarConvertido(
   linhas: Record<string, unknown>[],
   campo: string,
   cotacao: CotacaoParaTela | null,
+  entra: (linha: Record<string, unknown>) => boolean = () => true,
 ): { dolarEmCentavos: bigint; guarani: bigint } | null {
   const t = taxas(cotacao);
   if (!t) return null;
   let dolarEmCentavos_ = 0n;
   let guarani = 0n;
   for (const l of linhas) {
+    if (!entra(l)) continue;
     const c = typeof l[campo] === 'string' ? centavosDeTexto(l[campo]) : null;
     if (c === null) continue;
     dolarEmCentavos_ += dolarEmCentavos(c, t.dolar);
@@ -166,7 +183,8 @@ export function somarConvertido(
   return { dolarEmCentavos: dolarEmCentavos_, guarani };
 }
 
-export function montarGrade(p: PedidoDeExportacao): Grade {
+export function montarGrade(pedido: PedidoDeExportacao): Grade {
+  const p = { ...pedido, colunas: pedido.colunas.filter((c) => c.tipo !== 'foto') };
   const t = taxas(p.cotacao);
   const temDinheiro = p.colunas.some((c) => c.tipo === 'dinheiro');
   const titulos: string[] = [];
@@ -177,7 +195,7 @@ export function montarGrade(p: PedidoDeExportacao): Grade {
       numericas.push(true, true, true);
     } else {
       titulos.push(c.titulo);
-      numericas.push(c.tipo === 'inteiro' || c.tipo === 'percentual');
+      numericas.push(c.tipo === 'inteiro' || c.tipo === 'sinal' || c.tipo === 'percentual');
     }
   }
   if (temDinheiro) {
@@ -209,13 +227,13 @@ export function montarGrade(p: PedidoDeExportacao): Grade {
       for (let i = 0; i < colunaDoCampo; i++) inicio += p.colunas[i]!.tipo === 'dinheiro' ? 3 : 1;
       const real = centavosDeTexto(total.valorEmReais);
       linha[inicio] = real === null ? texto('') : numero(centavosParaDecimal(real));
-      const soma = somarConvertido(p.linhas, campo, p.cotacao);
+      const soma = somarConvertido(p.linhas, campo, p.cotacao, p.linhasDoTotal?.[total.chave]);
       if (soma) {
         linha[inicio + 1] = numero(centavosParaDecimal(soma.dolarEmCentavos));
         linha[inicio + 2] = numero(soma.guarani.toString());
       }
     } else if (titulos.length > 1) {
-      linha[1] = texto(String(total.quantidade));
+      linha[1] = texto(String(total.pecas ?? total.quantidade));
     }
     return linha;
   });

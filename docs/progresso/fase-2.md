@@ -277,3 +277,59 @@ Uma seção por tarefa, no mesmo formato de [fase-1.md](fase-1.md). A tabela de 
 **Dúvidas**
 
 - Nenhuma que trave. Falta na API (só para registrar): rota que mude apenas o estoque mínimo, sem reenviar o cadastro inteiro, e o código 200 ou 201 nas respostas de reenvio.
+
+### Tarefa 2.8: Corona Gestão, relatórios de estoque e de compras (fecha a Fase 2)
+
+**Em revisão.** Só `apps/owner-app` (nenhuma linha de backend, nenhuma migração, nenhum cliente novo da API: as dez rotas da 2.5 já estavam em `api-client-dona`). A especificação não mudou. Nomes de tela em [glossário, parte 12](../glossario-interface.md).
+
+**O que foi feito**
+
+- **Menu:** dois grupos novos, **Relatórios de estoque** (6) e **Relatórios de compras** (3), depois dos relatórios de cadastro. O décimo, **Peças da compra**, abre a partir de uma compra.
+- **Mesma tela da 1.12** (`TelaDeRelatorio`), agora genérica: filtros que a API aceita (período, busca por nome, referência ou código, situação, categoria, fornecedor, **Quem lançou**, tipo de lançamento, origem, **Sem sair há quantos dias**, **Diferença**), totais no topo e rodapé com "Ver os registros" (recorte pedido à API), páginas de 20, estado vazio e erro em português, foto miniatura em toda linha de peça ("Sem foto" nunca trava).
+- **Abrir uma linha:** compra → peças da compra; contagem → só as peças daquela contagem; peça (estoque, paradas, peças da compra) → histórico de custo dela. Cada um é o mesmo relatório com um filtro fixo, aviso "Mostrando só: ..." e **Voltar ao relatório**; a exportação da tela aberta leva o mesmo filtro.
+- **Exportação PDF, Excel e CSV** no padrão da 1.12: relatório inteiro em páginas de 100 com os mesmos filtros da tela; cabeçalho (loja, título, filtros em palavras, data, quem gerou, cotação). Compra desfeita fica marcada e **fora** da soma em Dólar e Guarani (`linhasDoTotal`), como a API faz no Real.
+- **Dinheiro** só do que a API devolve; Dólar e Guarani pela cotação, como na 1.12. O rodapé mostra "N peças · valor".
+- **Textos:** o rótulo dos totais é trocado por chave no cliente (o servidor manda "Remessas", "estornadas", "divergência" e "Movimentos", que a tela não pode mostrar); tipo, origem e situação em palavras da loja.
+- **Ponte:** `relatorios.cadastros` aceita os dez nomes novos e os filtros novos (`produtoId`, `usuarioId`, `origem`, `dias`, `inventarioId`, `divergencia`, `compraId`), todos conferidos no processo principal; `tipo` vale conforme o relatório; "peças da compra" exige o id da compra. Teste do caminho de cada rota (protege da renumeração do cliente gerado).
+- **Testes:** por relatório (linhas, totais, vazio, erro, **tela × arquivo**: mesmas chamadas em páginas de 100, mesmos filtros e todas as linhas), filtros, foto, compra desfeita fora do total, abrir linha, textos proibidos (inclusive o texto cru do servidor), validação da ponte, rotas e a grade (foto fora dos arquivos, sinal, peças, linhas fora do total).
+
+**Relatório (§12) × tela**
+
+| Linha da §12 | Tela | Situação |
+| --- | --- | --- |
+| Estoque: posição atual (valor a custo, só dona) | Estoque agora, com valor a custo | Feito |
+| Estoque: movimentações por período | Entradas e saídas por período | Feito |
+| Estoque: estoque mínimo | Peças que estão acabando | Feito |
+| Estoque: produtos parados (N dias) | Peças paradas | Feito |
+| Estoque: inventário e divergências | Contagens do estoque e diferenças | Feito |
+| (§13) conciliação do estoque | Conferência do estoque | Feito |
+| Compras: por fornecedor e período | Compras por período, Compras por fornecedor e Peças da compra | Feito |
+| Compras: histórico de custo por produto | Histórico de custo das peças | Feito |
+| Estoque: curva ABC | — | **Fora**: Fase 8 (precisa de vendas) |
+| Estoque: mercadoria em maletas por vendedor | — | **Fora**: Fase 3 (a maleta ainda não existe) |
+| Filtros: semana, vendedor, praça, cliente | — | Não se aplicam a estoque e compras |
+| Padrão: filtros, exportação PDF/Excel/CSV, detalhamento, três moedas | Todas as telas acima | Feito |
+
+**Decisões que tomei**
+
+- **A foto aparece na tela, não nos arquivos.** A 2.5 deixava a foto do PDF para esta tarefa; o gerador de PDF é feito à mão (sem biblioteca) e as imagens ficam no cache do app. Os arquivos levam nome e código da peça. Se a dona quiser foto no PDF, vira tarefa própria.
+- **Sem ordenação por coluna:** a API da 2.5 não aceita ordenação, então a tela não a oferece (o servidor já devolve na ordem útil de cada relatório).
+- **Filtro de peça = busca** (nome, referência ou código) e, ao abrir uma linha, o `produtoId` fixo; não há lista de todas as peças para escolher.
+- **"Quem lançou"** (usuário) só aparece onde a API aceita (entradas e saídas, compras e histórico de custo).
+- **Abrir linha troca a tela inteira** (com Voltar), em vez de janela, para manter filtros, totais e exportação do detalhe.
+- **Situação no cabeçalho do arquivo** usa o texto da loja (ex.: "Só desfeitas"), nunca o valor da API.
+
+**O que ficou de fora**
+
+- Foto dentro de PDF, Excel e CSV; ordenação por coluna (a API não tem).
+- Curva ABC (Fase 8) e mercadoria em maletas (Fase 3).
+- Não testei com o pacote instalado nem com milhares de linhas reais; o volume foi coberto pelos testes de 230 linhas (3 páginas de 100) e pelo teste de 10 mil produtos do backend (2.5).
+
+**Dúvidas abertas das tarefas 2.1 a 2.8**
+
+- **2.1:** a dona aceita que o sistema recuse a saída quando faltar peça (ela lança a compra antes)? Se preferir avisar e deixar passar, o ADR-0008 muda.
+- **2.1 / 2.6:** formato do código da loja gerado no cadastro rápido (ADR-0007, item 5) segue a confirmar com a dona; a 2.6 usa o padrão da 1.5.
+- **2.6 e 2.7 (falta na API):** a ponte entrega só o corpo da resposta, sem o 200 ou 201; por isso a tela não avisa "esta compra/leitura já estava registrada" (o reenvio é seguro, nada duplica). Também falta uma rota que mude só o estoque mínimo.
+- **2.6 / 2.7:** leitor de código de verdade e pacote instalado no Windows ainda não testados (só como teclado nos testes).
+- **2.8:** foto nos arquivos exportados e ordenação por coluna: decidir com a dona se fazem falta.
+- Resolvidas: peça não lida na contagem (só vira zero se a dona confirmar, 2.4); filtro de compras por usuário (a API da 2.5 aceita e a tela tem "Quem lançou").

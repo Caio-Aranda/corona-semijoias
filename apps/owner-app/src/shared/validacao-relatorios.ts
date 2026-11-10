@@ -13,6 +13,8 @@ const DATA = /^\d{4}-\d{2}-\d{2}$/;
 const RECORTE = /^[a-z0-9-]{1,40}$/;
 const VALOR = /^\d{1,12}(\.\d{1,2})?$/;
 const SIM_NAO = ['SIM', 'NAO'];
+/** "tipo" é do resultado das importações ou do tipo do lançamento no estoque. */
+const TIPOS_DO_LANCAMENTO = ['ENTRADA', 'SAIDA', 'AJUSTE', 'REMESSA', 'DEVOLUCAO', 'AVARIA'];
 const ESCOLHAS: [
   (
     | 'comRestricao'
@@ -23,6 +25,8 @@ const ESCOLHAS: [
     | 'tipo'
     | 'resultado'
     | 'quem'
+    | 'origem'
+    | 'divergencia'
   ),
   string[],
 ][] = [
@@ -31,9 +35,11 @@ const ESCOLHAS: [
   ['comVendedor', SIM_NAO],
   ['estoque', ['ZERADO', 'ABAIXO_DO_MINIMO', 'COM_ESTOQUE']],
   ['foto', ['COM', 'SEM']],
-  ['tipo', ['PLANILHA', 'FOTOS']],
+  ['tipo', ['PLANILHA', 'FOTOS', ...TIPOS_DO_LANCAMENTO]],
   ['resultado', ['CRIADO', 'ATUALIZADO', 'JA_EXISTIA', 'RECUSADO']],
   ['quem', ['TODOS', 'VENDEDORES', 'CLIENTES']],
+  ['origem', ['MANUAL', 'AJUSTE_MANUAL', 'COMPRA', 'INVENTARIO', 'MALETA', 'ESTORNO']],
+  ['divergencia', SIM_NAO],
 ];
 
 export interface ParametrosDeRelatorio {
@@ -67,6 +73,13 @@ const CAMPOS = [
   'resultado',
   'quem',
   'recorte',
+  'produtoId',
+  'usuarioId',
+  'origem',
+  'dias',
+  'inventarioId',
+  'divergencia',
+  'compraId',
   'pagina',
   'tamanho',
 ];
@@ -91,6 +104,10 @@ export function conferirRelatorio(p: Record<string, unknown>): ParametrosDeRelat
     'pracaId',
     'vendedorId',
     'restricaoId',
+    'produtoId',
+    'usuarioId',
+    'inventarioId',
+    'compraId',
   ] as const) {
     if (p[k] !== undefined && p[k] !== '') {
       if (!ehTexto(p[k]) || !UUID.test(p[k])) return null;
@@ -124,9 +141,22 @@ export function conferirRelatorio(p: Record<string, unknown>): ParametrosDeRelat
       return null;
     consulta.mes = p.mes;
   }
+  if (p.dias !== undefined && p.dias !== '') {
+    if (typeof p.dias !== 'number' || !Number.isInteger(p.dias) || p.dias < 1 || p.dias > 3650)
+      return null;
+    consulta.dias = p.dias;
+  }
+  // "tipo" das importações só vale nelas, e o do lançamento só no estoque.
+  if (p.tipo !== undefined && p.tipo !== '') {
+    const eDeImportacao = p.relatorio === 'resultado-das-importacoes';
+    const aceitos = eDeImportacao ? ['PLANILHA', 'FOTOS'] : TIPOS_DO_LANCAMENTO;
+    if (!ehTexto(p.tipo) || !aceitos.includes(p.tipo)) return null;
+  }
   if (p.recorte !== undefined && p.recorte !== '') {
     if (!ehTexto(p.recorte) || !RECORTE.test(p.recorte)) return null;
     consulta.recorte = p.recorte;
   }
+  // A lista das peças de uma compra só existe para uma compra.
+  if (p.relatorio === 'compras-pecas' && !consulta.compraId) return null;
   return { operacao: 'relatorios.cadastros', relatorio: p.relatorio as NomeDoRelatorio, consulta };
 }

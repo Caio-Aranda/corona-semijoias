@@ -83,3 +83,57 @@ describe('relatórios de cadastro na ponte', () => {
     expect(chamar(dados)).toBeNull();
   });
 });
+
+describe('relatórios de estoque e de compras na ponte (tarefa 2.8)', () => {
+  const CONTAGEM = '0190a1b2-c3d4-7e5f-8a9b-0c1d2e3f4a5c';
+
+  it('aceita os filtros novos de cada relatório', () => {
+    const r = conferirRelatorio({
+      relatorio: 'estoque-movimentos',
+      tipo: 'AVARIA',
+      origem: 'COMPRA',
+      usuarioId: ID,
+      produtoId: ID,
+      de: '2026-11-01',
+      ate: '2026-11-09',
+    });
+    expect(r?.consulta).toMatchObject({ tipo: 'AVARIA', origem: 'COMPRA', usuarioId: ID });
+    expect(conferirRelatorio({ relatorio: 'estoque-parados', dias: 60 })?.consulta.dias).toBe(60);
+    expect(
+      conferirRelatorio({
+        relatorio: 'estoque-contagens',
+        inventarioId: CONTAGEM,
+        divergencia: 'SIM',
+        situacao: 'FECHADO',
+      })?.consulta,
+    ).toMatchObject({ inventarioId: CONTAGEM, divergencia: 'SIM', situacao: 'FECHADO' });
+    expect(
+      conferirRelatorio({ relatorio: 'compras-por-compra', situacao: 'TODAS' })?.consulta.situacao,
+    ).toBe('TODAS');
+  });
+
+  it('recusa valor fora da lista, dias fora de 1 a 3650 e tipo de outro relatório', () => {
+    expect(conferirRelatorio({ relatorio: 'estoque-movimentos', origem: 'XIS' })).toBeNull();
+    expect(conferirRelatorio({ relatorio: 'estoque-movimentos', tipo: 'PLANILHA' })).toBeNull();
+    expect(
+      conferirRelatorio({ relatorio: 'resultado-das-importacoes', tipo: 'ENTRADA' }),
+    ).toBeNull();
+    expect(conferirRelatorio({ relatorio: 'estoque-parados', dias: 0 })).toBeNull();
+    expect(conferirRelatorio({ relatorio: 'estoque-parados', dias: 3651 })).toBeNull();
+    expect(conferirRelatorio({ relatorio: 'estoque-parados', dias: 1.5 })).toBeNull();
+    expect(conferirRelatorio({ relatorio: 'estoque-contagens', divergencia: 'TALVEZ' })).toBeNull();
+    expect(conferirRelatorio({ relatorio: 'estoque-movimentos', usuarioId: 'abc' })).toBeNull();
+  });
+
+  it('as peças de uma compra só existem para uma compra (id certo)', () => {
+    expect(conferirRelatorio({ relatorio: 'compras-pecas' })).toBeNull();
+    expect(conferirRelatorio({ relatorio: 'compras-pecas', compraId: 'abc' })).toBeNull();
+    expect(conferirRelatorio({ relatorio: 'compras-pecas', compraId: ID })?.consulta.compraId).toBe(
+      ID,
+    );
+  });
+
+  it('a validação da chamada também aceita os relatórios novos', () => {
+    expect(chamar({ relatorio: 'compras-por-fornecedor', pagina: 0, tamanho: 100 })).not.toBeNull();
+  });
+});

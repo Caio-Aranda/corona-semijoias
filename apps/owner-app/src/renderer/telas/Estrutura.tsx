@@ -15,6 +15,7 @@ import { ListaDoEstoque } from './estoque/ListaDoEstoque';
 import { TelaContagem } from './estoque/TelaContagem';
 import { TelaProdutos } from './produtos/TelaProdutos';
 import { TelaDeRelatorio } from './relatorios/TelaDeRelatorio';
+import { RELATORIOS } from '../nucleo/relatorios';
 import { NOMES_DOS_RELATORIOS, type NomeDoRelatorio } from '../../shared/relatorios';
 import { TelaUsuarios } from './usuarios/TelaUsuarios';
 import { TelaVendedores } from './vendedores/TelaVendedores';
@@ -84,7 +85,10 @@ function Conteudo({
     default:
       if (rota.startsWith('relatorios/')) {
         const qual = rota.slice('relatorios/'.length) as NomeDoRelatorio;
-        if ((NOMES_DOS_RELATORIOS as readonly string[]).includes(qual)) {
+        if (
+          (NOMES_DOS_RELATORIOS as readonly string[]).includes(qual) &&
+          !RELATORIOS[qual].soAbreDeUmaLinha
+        ) {
           return <TelaDeRelatorio ponte={ponte} relatorio={qual} usuario={nome} />;
         }
       }

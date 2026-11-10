@@ -86,6 +86,16 @@ import {
   listar7,
   listar9,
   listar12,
+  abaixoDoMinimo as relatorioDeEstoqueMinimo,
+  compras as relatorioDeCompras,
+  conciliacao as relatorioDeConferencia,
+  historicoDeCusto as relatorioDeCustos,
+  inventarios as relatorioDeContagens,
+  itensDaCompra as relatorioDePecasDaCompra,
+  movimentacoes as relatorioDeMovimentos,
+  parados as relatorioDeParados,
+  porFornecedor as relatorioDeComprasPorFornecedor,
+  posicaoAtual as relatorioDePosicao,
   alteracoesDeProdutos as relatorioDeAlteracoes,
   aniversariantes as relatorioDeAniversariantes,
   clientes as relatorioDeClientes,
@@ -497,8 +507,36 @@ async function executarRelatorio(
   pedido: ParametrosDeRelatorio,
 ): Promise<Resultado<unknown>> {
   const base = { client, headers };
-  const q = pedido.consulta;
+  const { compraId, ...q } = pedido.consulta;
   switch (pedido.relatorio) {
+    case 'estoque-posicao':
+      return executar(() => relatorioDePosicao({ ...base, query: q }));
+    case 'estoque-movimentos':
+      return executar(() => relatorioDeMovimentos({ ...base, query: q }));
+    case 'estoque-minimo':
+      return executar(() => relatorioDeEstoqueMinimo({ ...base, query: q }));
+    case 'estoque-parados':
+      return executar(() => relatorioDeParados({ ...base, query: q }));
+    case 'estoque-contagens':
+      return executar(() => relatorioDeContagens({ ...base, query: q }));
+    case 'estoque-conferencia':
+      return executar(() => relatorioDeConferencia({ ...base, query: q }));
+    case 'compras-por-compra':
+      return executar(() => relatorioDeCompras({ ...base, query: q }));
+    case 'compras-por-fornecedor':
+      return executar(() => relatorioDeComprasPorFornecedor({ ...base, query: q }));
+    case 'compras-custos':
+      return executar(() => relatorioDeCustos({ ...base, query: q }));
+    case 'compras-pecas': {
+      const { recorte, pagina, tamanho } = q;
+      return executar(() =>
+        relatorioDePecasDaCompra({
+          ...base,
+          path: { id: compraId ?? '' },
+          query: { pagina, tamanho, ...(recorte ? { recorte } : {}) },
+        }),
+      );
+    }
     case 'vendedores':
       return executar(() => relatorioDeVendedores({ ...base, query: q }));
     case 'clientes':
