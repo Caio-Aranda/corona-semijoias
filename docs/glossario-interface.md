@@ -798,3 +798,27 @@ Termos de tela do estoque e das compras. Vale a regra da §19.1: nada de termo t
 - **Desfazer lançamento:** botão **Desfazer** na linha; o desfeito mostra **Desfeito** e o que desfaz mostra "Desfaz Entrada +5 de 10/11/2026". Pede o **Motivo**.
 - **Ajuste:** "Como você quer ajustar?" · **Eu contei** · **Quero dizer a diferença** (3 para mais, -3 para menos) · **Motivo do ajuste**.
 - **Contagem do estoque:** **Começar a contagem** (todas as peças, uma categoria ou um fornecedor), **Continuar contando**, **Ver a contagem**, **Fechar a contagem**, **Cancelar a contagem**. Campo **Código da peça**; "Última peça lida"; **Definir a quantidade**; lista "Esperado e contado" com **Mostrar** (Só as que têm diferença, As que ainda não li, As que já li, Todas as peças). Situações: **Em andamento**, **Fechada**, **Cancelada**. Pergunta do fechamento: "Eles devem ficar com zero peças ou ficam como estão?" (**Ficam com zero peças** · **Ficam como estão**).
+
+**Relatórios de estoque e de compras (tarefa 2.8, Corona Gestão)**
+
+Menu: **Relatórios de estoque** e **Relatórios de compras** (depois de "Relatórios de cadastros"). Os nomes de tela abaixo são os únicos usados; a §12 só descreve.
+
+| Relatório (§12) | Nome na tela |
+| --- | --- |
+| Posição atual (valor a custo, só dona) | **Estoque agora, com valor a custo** |
+| Movimentações por período | **Entradas e saídas por período** |
+| Estoque mínimo | **Peças que estão acabando** |
+| Produtos parados | **Peças paradas** (filtro **Sem sair há quantos dias**, padrão 30) |
+| Inventário e divergências | **Contagens do estoque e diferenças** |
+| Conciliação do estoque | **Conferência do estoque** (deve ficar vazio: "Tudo certo: a quantidade de todas as peças bate com o que entrou e saiu.") |
+| Compras por período | **Compras por período** |
+| Compras por fornecedor | **Compras por fornecedor** |
+| Itens de uma compra | **Peças da compra** (abre a partir da compra, botão **Ver as peças**) |
+| Histórico de custo por produto | **Histórico de custo das peças** (botão **Ver o histórico de custo** na linha de uma peça) |
+
+- Filtros: **De**, **Até**, **Buscar**, **Situação**, **Categoria**, **Fornecedor**, **Quem lançou**, **Tipo de lançamento**, **De onde veio**, **Diferença**, **Limpar filtros**. Situação das compras: **Registradas**, **Só desfeitas**, **Todas (desfeitas marcadas)**; das contagens: **Todas**, **Em andamento**, **Fechadas**, **Canceladas**.
+- Compra desfeita aparece como **Desfeita** e fica **fora do total** ("Compras registradas (valem no total)" e "Compras desfeitas (fora do total)").
+- Origem do lançamento: **Lançamento feito à mão**, **Ajuste do estoque**, **Compra**, **Contagem do estoque**, **Maleta**, **Desfazer lançamento**.
+- Totais do rodapé usam estas palavras no lugar do texto do servidor ("Peças que entraram", "Peças que saíram", "Com diferença", "Peças a mais", "Peças a menos", "Peças que faltam para chegar ao mínimo").
+- Abrir uma linha: **Ver as peças** (compra), **Ver só esta contagem** (contagem), **Ver o histórico de custo** (peça), com **Voltar ao relatório**.
+- A foto aparece em toda linha de peça na tela ("Sem foto" quando não há); os arquivos PDF, Excel e CSV levam o nome e o código da peça, sem a imagem.

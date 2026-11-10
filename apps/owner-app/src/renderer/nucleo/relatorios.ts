@@ -3,9 +3,10 @@
  * total de valor. A tela e a exportação usam esta mesma definição, então o arquivo sempre bate com o
  * que está na tela.
  */
-import type { NomeDoRelatorio } from '../../shared/relatorios';
+import type { NomeDoRelatorio, NomeDoRelatorioDeCadastro } from '../../shared/relatorios';
 import { TEXTOS_RELATORIOS } from '../textos-relatorios';
 import type { ColunaDoRelatorio } from './exportacao/grade';
+import { RELATORIOS_DE_ESTOQUE, prepararLinhaDeEstoque } from './relatorios-estoque';
 
 export type FiltroDoRelatorio =
   | 'busca'
@@ -16,7 +17,8 @@ export type FiltroDoRelatorio =
   | 'vendedor'
   | 'restricao'
   | 'periodo'
-  | 'mes';
+  | 'mes'
+  | 'usuario';
 
 /** Os filtros que só um relatório tem (tarefa 1.13); a chave é o nome do filtro na API. */
 export type ChaveDeExtra =
@@ -31,7 +33,10 @@ export type ChaveDeExtra =
   | 'comVendedor'
   | 'tipo'
   | 'resultado'
-  | 'quem';
+  | 'quem'
+  | 'origem'
+  | 'dias'
+  | 'divergencia';
 
 export type ExtraDoRelatorio =
   | {
@@ -42,7 +47,23 @@ export type ExtraDoRelatorio =
       /** Texto da opção "sem filtro". */
       qualquer: string;
     }
-  | { chave: ChaveDeExtra; rotulo: string; tipo: 'valor' };
+  | { chave: ChaveDeExtra; rotulo: string; tipo: 'valor' }
+  /** Número inteiro (por exemplo, quantos dias). */
+  | { chave: ChaveDeExtra; rotulo: string; tipo: 'inteiro'; padrao?: number };
+
+/** Um jeito de abrir uma linha: outra tela de relatório com um filtro fixo tirado da linha. */
+export interface AcaoDaLinha {
+  rotulo: string;
+  /** O relatório que abre. */
+  abre: NomeDoRelatorio;
+  /** O filtro fixo (nome na API) e o campo da linha que o preenche. */
+  filtro: 'compraId' | 'inventarioId' | 'produtoId';
+  campo: string;
+  /** Como a pessoa chama o que foi aberto ("Compra 123 de Ouro Ltda"). */
+  titulo: (linha: Record<string, unknown>) => string;
+  /** A linha só tem esta ação quando isto vale. */
+  quando?: (linha: Record<string, unknown>) => boolean;
+}
 
 export interface DefinicaoDeRelatorio {
   nome: NomeDoRelatorio;
@@ -64,11 +85,24 @@ export interface DefinicaoDeRelatorio {
   vazio: string;
   /** Aviso fixo embaixo do título, se houver. */
   nota?: string;
+  /** As opções do filtro de situação, se não forem as de produto; o valor vazio é o padrão do servidor. */
+  situacoes?: { valor: string; rotulo: string }[];
+  /** Rótulo na tela de cada total, pela chave (o texto do servidor tem termos que a tela não usa). */
+  rotulosDosTotais?: Record<string, string>;
+  /** Linhas que entram na soma em Dólar e Guarani de cada total de valor. */
+  linhasDoTotal?: Record<string, (linha: Record<string, unknown>) => boolean>;
+  /** Abrir uma linha (compra → peças; contagem → diferenças; peça → histórico de custo). */
+  acoes?: AcaoDaLinha[];
+  /** Grupo do menu: o dos relatórios de cadastro, de estoque ou de compras. */
+  grupo?: 'estoque' | 'compras';
+  /** Fora do menu: só abre a partir de outra linha. */
+  soAbreDeUmaLinha?: boolean;
 }
 
 const T = TEXTOS_RELATORIOS;
 
 export const RELATORIOS: Record<NomeDoRelatorio, DefinicaoDeRelatorio> = {
+  ...RELATORIOS_DE_ESTOQUE,
   vendedores: {
     nome: 'vendedores',
     titulo: 'Vendedores: limite e situação',
@@ -371,7 +405,7 @@ export const RELATORIOS: Record<NomeDoRelatorio, DefinicaoDeRelatorio> = {
   },
 };
 
-export const ORDEM_DOS_RELATORIOS: NomeDoRelatorio[] = [
+export const ORDEM_DOS_RELATORIOS: NomeDoRelatorioDeCadastro[] = [
   'vendedores',
   'clientes',
   'fornecedores',
@@ -389,6 +423,8 @@ export interface TotalLido {
   rotulo: string;
   quantidade: number;
   valorEmReais: string | null;
+  /** Soma de peças, nos totais que são de peças. */
+  pecas: number | null;
 }
 
 export interface RelatorioLido {
@@ -416,13 +452,16 @@ export function lerRelatorio(bruto: unknown, nome: NomeDoRelatorio): RelatorioLi
       rotulo: typeof t.rotulo === 'string' ? t.rotulo : String(t.chave),
       quantidade: typeof t.quantidade === 'number' ? t.quantidade : 0,
       valorEmReais: typeof t.valorEmReais === 'string' ? t.valorEmReais : null,
-    }));
+      pecas: typeof t.pecas === 'number' ? t.pecas : null,
+    }))
+    .map((t) => ({ ...t, rotulo: RELATORIOS[nome].rotulosDosTotais?.[t.chave] ?? t.rotulo }));
   if (nome === 'sem-foto' && totais.length === 0) {
     totais.push({
       chave: 'todos',
       rotulo: 'Produtos sem foto',
       quantidade: total,
       valorEmReais: null,
+      pecas: null,
     });
   }
   return {
@@ -440,6 +479,7 @@ export interface Opcao {
 }
 
 export interface Opcoes {
+  usuarios: Opcao[];
   categorias: Opcao[];
   fornecedores: Opcao[];
   pracas: Opcao[];
@@ -470,6 +510,6 @@ export function prepararLinha(
     case 'aniversariantes':
       return { ...linha, tipoNaTela: T.tiposDeAniversariante[String(linha.tipo)] ?? '' };
     default:
-      return linha;
+      return prepararLinhaDeEstoque(nome, linha);
   }
 }

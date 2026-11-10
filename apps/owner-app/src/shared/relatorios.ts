@@ -16,10 +16,38 @@ export const NOMES_DOS_RELATORIOS = [
   'aniversariantes',
   'alteracoes-de-produtos',
   'resultado-das-importacoes',
+  // Estoque e compras (tarefa 2.8). O último é a lista de peças de uma compra, aberta a partir da compra.
+  'estoque-posicao',
+  'estoque-movimentos',
+  'estoque-minimo',
+  'estoque-parados',
+  'estoque-contagens',
+  'estoque-conferencia',
+  'compras-por-compra',
+  'compras-por-fornecedor',
+  'compras-custos',
+  'compras-pecas',
 ] as const;
 export type NomeDoRelatorio = (typeof NOMES_DOS_RELATORIOS)[number];
+export type NomeDoRelatorioDeEstoqueOuCompras = Extract<
+  NomeDoRelatorio,
+  `estoque-${string}` | `compras-${string}`
+>;
+export type NomeDoRelatorioDeCadastro = Exclude<NomeDoRelatorio, NomeDoRelatorioDeEstoqueOuCompras>;
 
-export const SITUACOES_DO_RELATORIO = ['ATIVOS', 'INATIVOS', 'TODOS'] as const;
+export const SITUACOES_DO_RELATORIO = [
+  'ATIVOS',
+  'INATIVOS',
+  'TODOS',
+  // Compras
+  'REGISTRADAS',
+  'ESTORNADAS',
+  'TODAS',
+  // Contagens do estoque
+  'EM_ANDAMENTO',
+  'FECHADO',
+  'CANCELADO',
+] as const;
 export type SituacaoDoRelatorio = (typeof SITUACOES_DO_RELATORIO)[number];
 
 /** Filtros que a tela pode mandar (cada relatório usa só os seus; o servidor ignora os outros). */
@@ -58,6 +86,19 @@ export interface ConsultaDeRelatorio {
   quem?: string;
   /** 1 a 12 (aniversariantes). */
   mes?: number;
+  /** Estoque e compras (tarefa 2.8). */
+  produtoId?: string;
+  usuarioId?: string;
+  /** Origem do lançamento no estoque (entradas e saídas). */
+  origem?: string;
+  /** Peças sem saída há N dias (peças paradas). */
+  dias?: number;
+  /** Uma contagem do estoque só. */
+  inventarioId?: string;
+  /** SIM ou NAO (contagens: só com diferença). */
+  divergencia?: string;
+  /** Uma compra só (lista das peças da compra). */
+  compraId?: string;
   /** A chave de um total do rodapé: mostra só as linhas que formam esse total. */
   recorte?: string;
   pagina: number;

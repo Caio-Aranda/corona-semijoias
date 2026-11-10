@@ -4,6 +4,10 @@ import { TEXTOS_DE_COMPRAS } from '../textos-compras';
 import { TEXTOS_DE_ESTOQUE } from '../textos-estoque';
 import { TEXTOS_RELATORIOS } from '../textos-relatorios';
 import { ORDEM_DOS_RELATORIOS, RELATORIOS } from './relatorios';
+import {
+  ORDEM_DOS_RELATORIOS_DE_COMPRAS,
+  ORDEM_DOS_RELATORIOS_DE_ESTOQUE,
+} from './relatorios-estoque';
 
 /** As telas do menu. A chave aparece na barra de endereço (#/pessoas/usuarios), nunca na tela. */
 export const ROTAS = [
@@ -33,6 +37,15 @@ export const ROTAS = [
   'relatorios/aniversariantes',
   'relatorios/alteracoes-de-produtos',
   'relatorios/resultado-das-importacoes',
+  'relatorios/estoque-posicao',
+  'relatorios/estoque-movimentos',
+  'relatorios/estoque-minimo',
+  'relatorios/estoque-parados',
+  'relatorios/estoque-contagens',
+  'relatorios/estoque-conferencia',
+  'relatorios/compras-por-compra',
+  'relatorios/compras-por-fornecedor',
+  'relatorios/compras-custos',
 ] as const;
 export type Rota = (typeof ROTAS)[number];
 
@@ -71,6 +84,20 @@ export const MENU = [
   {
     titulo: TEXTOS_RELATORIOS.grupoDoMenu,
     itens: ORDEM_DOS_RELATORIOS.map((nome) => ({
+      chave: `relatorios/${nome}`,
+      rotulo: RELATORIOS[nome].titulo,
+    })),
+  },
+  {
+    titulo: TEXTOS_RELATORIOS.grupoDoEstoque,
+    itens: ORDEM_DOS_RELATORIOS_DE_ESTOQUE.map((nome) => ({
+      chave: `relatorios/${nome}`,
+      rotulo: RELATORIOS[nome].titulo,
+    })),
+  },
+  {
+    titulo: TEXTOS_RELATORIOS.grupoDasCompras,
+    itens: ORDEM_DOS_RELATORIOS_DE_COMPRAS.map((nome) => ({
       chave: `relatorios/${nome}`,
       rotulo: RELATORIOS[nome].titulo,
     })),

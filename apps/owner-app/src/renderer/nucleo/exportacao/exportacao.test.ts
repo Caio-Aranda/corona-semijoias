@@ -226,3 +226,58 @@ describe('PDF', () => {
     expect(pdf).toContain('Anel \\(ouro\\) \\\\ 18k');
   });
 });
+
+describe('grade: foto, quantidade com sinal e totais em peças (tarefa 2.8)', () => {
+  const base = {
+    loja: 'Corona Semijoias',
+    titulo: 'Estoque',
+    filtros: [],
+    geradoEm: '10/11/2026 às 09:30',
+    geradoPor: 'Maria',
+    linhaDaCotacao: null,
+    dataDaCotacao: null,
+    cotacao: null,
+    totaisDeValor: {},
+  };
+
+  it('a foto não vai para os arquivos e a quantidade com sinal sai como número', () => {
+    const grade = montarGrade({
+      ...base,
+      colunas: [
+        { chave: 'fotoPrincipalHash', titulo: 'Foto', tipo: 'foto' },
+        { chave: 'nome', titulo: 'Produto', tipo: 'texto' },
+        { chave: 'quantidade', titulo: 'Quantidade', tipo: 'sinal' },
+      ],
+      linhas: [{ fotoPrincipalHash: 'abc', nome: 'Anel', quantidade: -2 }],
+      totais: [{ chave: 'saidas', rotulo: 'Peças que saíram', quantidade: 1, pecas: 2 }],
+    });
+    expect(grade.titulos).toEqual(['Produto', 'Quantidade']);
+    expect(grade.linhas[0]!.map((c) => c.v)).toEqual(['Anel', '-2']);
+    expect(grade.linhas[0]![1]!.numero).toBe(true);
+    expect(grade.rodape[0]!.map((c) => c.v)).toEqual(['Peças que saíram', '2']);
+  });
+
+  it('a soma em Dólar e Guarani pode deixar de fora as linhas que não valem no total', () => {
+    const taxas = { dataCotacao: '2026-11-06', dolar: '5.50130000', guarani: '0.00089500' };
+    const grade = montarGrade({
+      ...base,
+      cotacao: taxas,
+      dataDaCotacao: '2026-11-06',
+      colunas: [
+        { chave: 'nome', titulo: 'Compra', tipo: 'texto' },
+        { chave: 'total', titulo: 'Total', tipo: 'dinheiro' },
+      ],
+      linhas: [
+        { nome: 'A', total: '100.00', estornada: false },
+        { nome: 'B', total: '50.00', estornada: true },
+      ],
+      totais: [
+        { chave: 'registradas', rotulo: 'Registradas', quantidade: 1, valorEmReais: '100.00' },
+      ],
+      totaisDeValor: { registradas: 'total' },
+      linhasDoTotal: { registradas: (l) => l.estornada !== true },
+    });
+    // 100,00 ÷ 5,5013 = US$ 18,18 (a compra desfeita de 50,00 não entra).
+    expect(grade.rodape[0]!.map((c) => c.v)).toContain('18.18');
+  });
+});

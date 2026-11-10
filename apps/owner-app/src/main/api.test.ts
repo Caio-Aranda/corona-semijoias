@@ -393,4 +393,26 @@ describe('API do Corona Gestão: rotas certas no cliente gerado', () => {
       `POST /api/dona/inventarios/${ID}/cancelar`,
     );
   });
+
+  it('cada relatório de estoque e de compras chama a rota dele', async () => {
+    const c = (relatorio: string, extra: object = {}) =>
+      caminhoDe({
+        operacao: 'relatorios.cadastros',
+        relatorio,
+        consulta: { pagina: 0, tamanho: 20, ...extra },
+      } as never);
+    const base = 'GET /api/dona/relatorios';
+    expect(await c('estoque-posicao')).toBe(`${base}/estoque/posicao-atual`);
+    expect(await c('estoque-movimentos')).toBe(`${base}/estoque/movimentacoes`);
+    expect(await c('estoque-minimo')).toBe(`${base}/estoque/abaixo-do-minimo`);
+    expect(await c('estoque-parados')).toBe(`${base}/estoque/parados`);
+    expect(await c('estoque-contagens')).toBe(`${base}/estoque/inventarios`);
+    expect(await c('estoque-conferencia')).toBe(`${base}/estoque/conciliacao`);
+    expect(await c('compras-por-compra')).toBe(`${base}/compras/por-compra`);
+    expect(await c('compras-por-fornecedor')).toBe(`${base}/compras/por-fornecedor`);
+    expect(await c('compras-custos')).toBe(`${base}/compras/historico-de-custo`);
+    expect(await c('compras-pecas', { compraId: ID })).toBe(
+      `${base}/compras/por-compra/${ID}/itens`,
+    );
+  });
 });

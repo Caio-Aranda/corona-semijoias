@@ -3,6 +3,9 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { ConsultaDeRelatorio, NomeDoRelatorio } from '../../../shared/relatorios';
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { AvisoDeErro } from '../../componentes/AvisoDeErro';
+import { ImagemDoProduto } from '../../componentes/ImagemDoProduto';
+import { quantidadeComSinal } from '../../nucleo/estoque';
+import { lerPaginaDeUsuarios } from '../usuarios/dados';
 import { chamar, useBusca, type Retorno } from '../../nucleo/chamadas';
 import { useCotacao } from '../../nucleo/cotacao';
 import { entregarArquivo } from '../../nucleo/arquivos';
@@ -22,6 +25,7 @@ import {
   RELATORIOS,
   lerRelatorio,
   prepararLinha,
+  type AcaoDaLinha,
   type DefinicaoDeRelatorio,
   type Opcao,
   type Opcoes,
@@ -43,6 +47,7 @@ interface Filtros {
   pracaId: string;
   vendedorId: string;
   restricaoId: string;
+  usuarioId: string;
   de: string;
   ate: string;
   mes: string;
@@ -58,6 +63,7 @@ const SEM_FILTROS: Filtros = {
   pracaId: '',
   vendedorId: '',
   restricaoId: '',
+  usuarioId: '',
   de: '',
   ate: '',
   mes: '',
@@ -72,11 +78,22 @@ function mesDeHoje(): string {
   return partes;
 }
 
+/** O filtro que a linha aberta fixa (a compra, a contagem ou a peça), pelo nome na API. */
+export interface FiltroFixo {
+  filtro: AcaoDaLinha['filtro'];
+  valor: string;
+  /** Em palavras: "Compra de 10/11/2026 — Ouro Ltda". */
+  texto: string;
+}
+
 function consultaDe(
   def: DefinicaoDeRelatorio,
   f: Filtros,
+  fixo: FiltroFixo | null,
 ): Omit<ConsultaDeRelatorio, 'pagina' | 'tamanho'> {
   const c: Omit<ConsultaDeRelatorio, 'pagina' | 'tamanho'> = {};
+  if (fixo) c[fixo.filtro] = fixo.valor;
+  if (def.filtros.includes('usuario') && f.usuarioId) c.usuarioId = f.usuarioId;
   if (def.filtros.includes('busca') && f.busca) c.busca = f.busca;
   if (def.filtros.includes('situacao') && f.situacao) {
     c.situacao = f.situacao as ConsultaDeRelatorio['situacao'] & string;
@@ -96,34 +113,48 @@ function consultaDe(
     if (bruto === '') continue;
     // Valor digitado pela metade (por exemplo "12.") ainda não vira filtro.
     if (e.tipo === 'valor' && !VALOR_EM_REAIS.test(bruto)) continue;
-    c[e.chave] = bruto;
+    if (e.tipo === 'inteiro') {
+      // Só número inteiro; o que está pela metade ou fora de 1 a 3650 ainda não vira filtro.
+      if (!/^\d{1,4}$/.test(bruto) || Number(bruto) < 1 || Number(bruto) > 3650) continue;
+      if (e.chave === 'dias') c.dias = Number(bruto);
+      continue;
+    }
+    c[e.chave as Exclude<typeof e.chave, 'dias'>] = bruto;
   }
   return c;
 }
 
 const VALOR_EM_REAIS = /^\d{1,12}(\.\d{1,2})?$/;
 
+const SITUACOES_DE_PRODUTO = [
+  { valor: '', rotulo: T.filtros.ativos },
+  { valor: 'INATIVOS', rotulo: T.filtros.inativos },
+  { valor: 'TODOS', rotulo: T.filtros.todos },
+];
+
 function nomeDaOpcao(lista: Opcao[], id: string): string {
   return lista.find((o) => o.id === id)?.nome ?? '';
 }
 
 /** Os filtros usados, em palavras, para o cabeçalho dos arquivos. */
-function filtrosEmPalavras(def: DefinicaoDeRelatorio, f: Filtros, o: Opcoes): string[] {
+function filtrosEmPalavras(
+  def: DefinicaoDeRelatorio,
+  f: Filtros,
+  o: Opcoes,
+  fixo: FiltroFixo | null,
+): string[] {
   const x: string[] = [];
+  if (fixo) x.push(fixo.texto);
   const tem = (nome: DefinicaoDeRelatorio['filtros'][number]) => def.filtros.includes(nome);
   if (tem('mes'))
     x.push(`${T.filtros.mes}: ${T.filtros.meses[Number(f.mes || mesDeHoje()) - 1] ?? ''}`);
   if (tem('busca') && f.busca) x.push(`${T.filtros.busca}: ${f.busca}`);
   if (tem('situacao')) {
-    x.push(
-      `${T.filtros.situacao}: ${
-        f.situacao === 'INATIVOS'
-          ? T.filtros.inativos
-          : f.situacao === 'TODOS'
-            ? T.filtros.todos
-            : T.filtros.ativos
-      }`,
-    );
+    const opcao = (def.situacoes ?? SITUACOES_DE_PRODUTO).find((s) => s.valor === f.situacao);
+    x.push(`${T.filtros.situacao}: ${opcao?.rotulo ?? T.filtros.ativos}`);
+  }
+  if (tem('usuario') && f.usuarioId) {
+    x.push(`${T.filtros.usuario}: ${nomeDaOpcao(o.usuarios, f.usuarioId)}`);
   }
   if (tem('categoria') && f.categoriaId) {
     x.push(`${T.filtros.categoria}: ${nomeDaOpcao(o.categorias, f.categoriaId)}`);
@@ -145,6 +176,10 @@ function filtrosEmPalavras(def: DefinicaoDeRelatorio, f: Filtros, o: Opcoes): st
   }
   for (const e of def.extras ?? []) {
     const v = (f.extras[e.chave] ?? '').trim();
+    if (!v && e.tipo === 'inteiro' && e.padrao !== undefined) {
+      x.push(`${e.rotulo}: ${e.padrao}`);
+      continue;
+    }
     if (!v) continue;
     const texto = e.tipo === 'escolha' ? (e.opcoes.find((o) => o.valor === v)?.rotulo ?? v) : v;
     x.push(`${e.rotulo}: ${texto}`);
@@ -162,6 +197,7 @@ function listaDe(bruto: unknown, nome: (i: Record<string, unknown>) => string): 
 }
 
 const OPCOES_VAZIAS: Opcoes = {
+  usuarios: [],
   categorias: [],
   fornecedores: [],
   pracas: [],
@@ -179,14 +215,17 @@ async function carregarOpcoes(
     ativo
       ? chamar(ponte, op, { pagina: 0, tamanho: 100, situacao: 'TODOS' })
       : Promise.resolve(null);
-  const [cat, forn, praca, restr, vend] = await Promise.all([
+  const [cat, forn, praca, restr, vend, usu] = await Promise.all([
     pedir('categorias.listar', tem('categoria') || def.nome === 'sem-foto'),
     pedir('fornecedores.listar', tem('fornecedor') || def.nome === 'sem-foto'),
     pedir('pracas.listar', tem('praca')),
     pedir('restricoes.listar', tem('restricao')),
     tem('vendedor') ? chamar(ponte, 'vendedores.escolha') : Promise.resolve(null),
+    tem('usuario')
+      ? chamar(ponte, 'usuarios.listar', { pagina: 0, tamanho: 100 })
+      : Promise.resolve(null),
   ]);
-  for (const r of [cat, forn, praca, restr, vend]) {
+  for (const r of [cat, forn, praca, restr, vend, usu]) {
     if (r && !r.ok) return r;
   }
   const dados = (r: Retorno<unknown> | null) => (r && r.ok ? r.dados : null);
@@ -201,6 +240,10 @@ async function carregarOpcoes(
         (i) => `${comoTexto(i.codigo)} - ${comoTexto(i.descricao)}`,
       ),
       vendedores: listaDe(dados(vend), (i) => comoTexto(i.nome)),
+      usuarios:
+        usu && usu.ok
+          ? lerPaginaDeUsuarios(usu.dados).itens.map((u) => ({ id: u.id, nome: u.nome }))
+          : [],
     },
   };
 }
@@ -209,10 +252,25 @@ function valorNaTela(
   coluna: ColunaDoRelatorio,
   valor: unknown,
   cotacao: ReturnType<typeof useCotacao>,
+  ponte: PonteDoCorona,
+  linha: Record<string, unknown>,
 ): ReactNode {
+  // A foto nunca trava: sem foto (ou com falha) aparece o marcador "Sem foto".
+  if (coluna.tipo === 'foto') {
+    return (
+      <ImagemDoProduto
+        ponte={ponte}
+        hash={typeof valor === 'string' && valor !== '' ? valor : null}
+        tamanho="miniatura"
+        nome={comoTexto(linha.nome)}
+      />
+    );
+  }
   const v = comoTexto(valor);
   if (v === '') return '';
   switch (coluna.tipo) {
+    case 'sinal':
+      return typeof valor === 'number' ? quantidadeComSinal(valor) : v;
     case 'dinheiro': {
       const m = tresMoedas(v, cotacao.taxas);
       return m ? (
@@ -245,15 +303,29 @@ export interface TelaDeRelatorioProps {
   relatorio: NomeDoRelatorio;
   /** Quem está gerando (vai no cabeçalho dos arquivos). */
   usuario: string | null;
+  /** Relatório aberto a partir de uma linha: um filtro fixo e o caminho de volta. */
+  fixo?: FiltroFixo;
+  aoVoltar?: () => void;
 }
 
 /**
  * Um relatório de cadastro (tarefa 1.12, §12): filtros, tabela, totais no rodapé com "Ver os registros"
  * e exportação em CSV, Excel e PDF. O relatório inteiro é montado pelo servidor; aqui só se mostra.
  */
-export function TelaDeRelatorio({ ponte, relatorio, usuario }: TelaDeRelatorioProps) {
+export function TelaDeRelatorio({
+  ponte,
+  relatorio,
+  usuario,
+  fixo,
+  aoVoltar,
+}: TelaDeRelatorioProps) {
   const def = RELATORIOS[relatorio];
   const cotacao = useCotacao();
+  const filtroFixo = fixo ?? null;
+  // Linha aberta (compra → peças; contagem → diferenças; peça → histórico de custo).
+  const [aberto, setAberto] = useState<{ relatorio: NomeDoRelatorio; fixo: FiltroFixo } | null>(
+    null,
+  );
   const [rascunho, setRascunho] = useState<Filtros>(SEM_FILTROS);
   const [filtros, setFiltros] = useState<Filtros>(SEM_FILTROS);
   const [pagina, setPagina] = useState(0);
@@ -281,7 +353,7 @@ export function TelaDeRelatorio({ ponte, relatorio, usuario }: TelaDeRelatorioPr
   const opcoes = useBusca(() => carregarOpcoes(ponte, def), `opcoes|${relatorio}`);
   const listas = opcoes.dados ?? OPCOES_VAZIAS;
 
-  const consulta = useMemo(() => consultaDe(def, filtros), [def, filtros]);
+  const consulta = useMemo(() => consultaDe(def, filtros, filtroFixo), [def, filtros, filtroFixo]);
   const chaveDosFiltros = `${relatorio}|${JSON.stringify(consulta)}`;
 
   const lista = useBusca(
@@ -369,7 +441,7 @@ export function TelaDeRelatorio({ ponte, relatorio, usuario }: TelaDeRelatorioPr
       const pedido: PedidoDeExportacao = {
         loja: T.loja,
         titulo: def.titulo,
-        filtros: filtrosEmPalavras(def, filtros, listas),
+        filtros: filtrosEmPalavras(def, filtros, listas, filtroFixo),
         geradoEm: dataEHoraParaTela(agora),
         geradoPor: usuario ?? 'Dona',
         linhaDaCotacao: cotacao.taxas ? `${cotacao.linha} ${T.cotacao.deHoje}` : null,
@@ -379,6 +451,7 @@ export function TelaDeRelatorio({ ponte, relatorio, usuario }: TelaDeRelatorioPr
         linhas: r.dados,
         totais: totais.map((t) => ({ ...t })),
         totaisDeValor: def.totaisDeValor,
+        ...(def.linhasDoTotal ? { linhasDoTotal: def.linhasDoTotal } : {}),
       };
       const grade = montarGrade(pedido);
       const base = `${def.nome}-${agora.toISOString().slice(0, 10)}`;
@@ -443,38 +516,103 @@ export function TelaDeRelatorio({ ponte, relatorio, usuario }: TelaDeRelatorioPr
     titulo: c.titulo,
     numerica: c.tipo === 'inteiro' || c.tipo === 'dinheiro' || c.tipo === 'percentual',
   }));
+  const acoes = def.acoes ?? [];
+  if (acoes.length > 0)
+    colunasDaTabela.push({
+      chave: '_abrir',
+      titulo: T.estoqueECompras.acoes.coluna,
+      numerica: false,
+    });
   const linhasDaTabela = (dados?.itens ?? []).map((l) => {
     const linha = prepararLinha(relatorio, l, listas);
-    return Object.fromEntries(
-      def.colunas.map((c) => [c.chave, valorNaTela(c, linha[c.chave], cotacao)]),
+    const celulas: Record<string, ReactNode> = Object.fromEntries(
+      def.colunas.map((c) => [c.chave, valorNaTela(c, linha[c.chave], cotacao, ponte, linha)]),
     );
+    if (acoes.length > 0) {
+      celulas._abrir = (
+        <span className="gestao-acoes-da-linha">
+          {acoes
+            .filter((a) => (a.quando ? a.quando(linha) : true))
+            .map((a) => {
+              const valor = comoTexto(linha[a.campo]);
+              if (valor === '') return null;
+              const titulo = a.titulo(linha);
+              return (
+                <Botao
+                  key={a.rotulo}
+                  aria-label={`${a.rotulo}: ${titulo}`}
+                  onClick={() =>
+                    setAberto({
+                      relatorio: a.abre,
+                      fixo: { filtro: a.filtro, valor, texto: titulo },
+                    })
+                  }
+                >
+                  {a.rotulo}
+                </Botao>
+              );
+            })}
+        </span>
+      );
+    }
+    return celulas;
   });
 
   function totalNaTela(t: TotalLido): ReactNode {
-    if (t.valorEmReais === null) return String(t.quantidade);
+    if (t.valorEmReais === null) {
+      return t.pecas !== null ? T.totais.pecas(t.pecas) : String(t.quantidade);
+    }
     const campo = def.totaisDeValor[t.chave];
     const m = tresMoedas(t.valorEmReais, null);
     const soma =
       campo && linhasParaSomar?.chave === chaveDosFiltros
-        ? somarConvertido(linhasParaSomar.linhas, campo, cotacao.taxas)
+        ? somarConvertido(
+            linhasParaSomar.linhas,
+            campo,
+            cotacao.taxas,
+            def.linhasDoTotal?.[t.chave],
+          )
         : null;
     const dolar = soma ? formatarDolar(soma.dolarEmCentavos) : undefined;
     const guarani = soma ? formatarGuarani(soma.guarani) : undefined;
     return (
-      <ValorTresMoedas
-        real={m?.real ?? ''}
-        {...(dolar ? { dolar } : {})}
-        {...(guarani ? { guarani } : {})}
+      <>
+        {t.pecas !== null ? `${T.totais.pecas(t.pecas)} · ` : null}
+        <ValorTresMoedas
+          real={m?.real ?? ''}
+          {...(dolar ? { dolar } : {})}
+          {...(guarani ? { guarani } : {})}
+        />
+      </>
+    );
+  }
+
+  if (aberto) {
+    return (
+      <TelaDeRelatorio
+        ponte={ponte}
+        relatorio={aberto.relatorio}
+        usuario={usuario}
+        fixo={aberto.fixo}
+        aoVoltar={() => setAberto(null)}
       />
     );
   }
 
   return (
     <div className="gestao-tela">
+      {aoVoltar ? (
+        <div>
+          <Botao onClick={aoVoltar}>{T.estoqueECompras.acoes.voltar}</Botao>
+        </div>
+      ) : null}
       <div className="gestao-tela__topo">
         <h1 className="gestao-titulo">{def.titulo}</h1>
       </div>
       <p className="gestao-texto">{def.explicacao}</p>
+      {filtroFixo ? (
+        <Aviso tipo="informacao">{T.estoqueECompras.acoes.filtroFixo(filtroFixo.texto)}</Aviso>
+      ) : null}
       {def.nota ? <Aviso tipo="informacao">{def.nota}</Aviso> : null}
 
       <form
@@ -523,9 +661,13 @@ export function TelaDeRelatorio({ ponte, relatorio, usuario }: TelaDeRelatorioPr
               value={rascunho.situacao}
               onChange={(e) => mudar('situacao', e.target.value)}
             >
-              <option value="">{T.filtros.ativos}</option>
-              <option value="INATIVOS">{T.filtros.inativos}</option>
-              {def.semOpcaoTodos ? null : <option value="TODOS">{T.filtros.todos}</option>}
+              {(def.situacoes ?? SITUACOES_DE_PRODUTO)
+                .filter((o) => !(def.semOpcaoTodos && o.valor === 'TODOS'))
+                .map((o) => (
+                  <option key={o.valor} value={o.valor}>
+                    {o.rotulo}
+                  </option>
+                ))}
             </select>
           </div>
         ) : null}
@@ -568,6 +710,15 @@ export function TelaDeRelatorio({ ponte, relatorio, usuario }: TelaDeRelatorioPr
               T.filtros.qualquer,
             )
           : null}
+        {def.filtros.includes('usuario')
+          ? seletor(
+              'filtro-usuario',
+              T.filtros.usuario,
+              'usuarioId',
+              listas.usuarios,
+              T.filtros.qualquerUm,
+            )
+          : null}
         {def.filtros.includes('periodo') ? (
           <>
             <Campo
@@ -607,7 +758,10 @@ export function TelaDeRelatorio({ ponte, relatorio, usuario }: TelaDeRelatorioPr
               key={e.chave}
               id={`filtro-${e.chave}`}
               rotulo={e.rotulo}
-              inputMode="decimal"
+              {...(e.tipo === 'inteiro' && e.padrao !== undefined
+                ? { placeholder: String(e.padrao) }
+                : {})}
+              inputMode={e.tipo === 'inteiro' ? 'numeric' : 'decimal'}
               autoComplete="off"
               value={rascunho.extras[e.chave] ?? ''}
               onChange={(ev) => mudarExtra(e.chave, ev.target.value)}
