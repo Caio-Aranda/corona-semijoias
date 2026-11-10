@@ -169,3 +169,32 @@ Uma seção por tarefa concluída, no mesmo formato de [fase-0.md](fase-0.md). A
 
 **Dúvidas**
 - Nenhuma.
+
+
+### Tarefa 1.8: base do Corona Gestão, usuários, cotação e sessão sem internet (owner-app)
+
+**O que foi feito**
+- **Base de navegação:** menu lateral (Início · Cadastros · Pessoas), rota pelo endereço da janela (`#/pessoas/usuarios`, voltar e avançar funcionam) e cabeçalho com Sair; itens ainda não feitos mostram "Em breve". O glossário ganhou a seção "Corona Gestão: menu, listas e usuários" antes do código.
+- **Componentes reutilizáveis** (as telas 1.9 a 1.11 usam): em `packages/ui`, `MenuLateral`, `Paginacao`, `EstadoDaLista` (carregando e erro) e `JanelaDeConfirmacao` (foco em Voltar, Esc cancela, botão principal com o nome da ação); no app, `CampoDeDinheiro` (digita em reais com vírgula e mostra Real, Dólar e Guarani), `AvisoDeErro` (texto do servidor; "alterado por outra pessoa" com **Atualizar**; sem internet com **Tentar de novo**), `useBusca` (busca, descarta resposta velha e tenta de novo sozinho se a internet cair) e `chamar`/`traduzirErro`.
+- **Ponte:** `chamarApi` agora leva dados (`parametros`). Cada operação é de uma lista fixa e os dados são conferidos de novo no processo principal (`validacao-parametros.ts`: identificadores, perfis, limites, valor em reais como texto). A tela continua sem token. O erro devolve `status`, `codigo` e `campos` com o texto do servidor.
+- **Usuários (Pessoas → Usuários):** lista (busca, tipo de acesso, situação, páginas), criar, editar (versão lida; usuário não muda), desativar e reativar (com confirmação que explica "sai do sistema agora"), nova senha temporária. A senha temporária aparece uma única vez, com **Copiar senha**, só em estado da tela: some ao fechar e ao sair da tela, não vai para `localStorage`, `sessionStorage` nem registro (testado). Regras do servidor (não desativar a si mesma, última administradora, usuário repetido) aparecem com o texto dele; usuário repetido ou fora do formato aparece no campo.
+- **Cotação:** `moedas.ts` converte só com `BigInt` (HALF_UP, ADR-0006 itens 6 e 9), testado com os exemplos do ADR (inclusive o valor máximo de `NUMERIC(14,2)` e negativos). A cotação do dia vem de `/api/dona/cotacoes/hoje` uma vez, vale para todas as telas, e a linha "Cotação do Banco Central de dd/mm/aaaa." fica no rodapé (com "a última publicada" quando é de dia anterior; "Ainda não há cotação..." quando não há).
+- **Tela inicial:** o bloco "O que precisa da sua atenção" lê `/api/dona/avisos`; lista vazia mostra "Tudo em dia.".
+- **Sessão sem internet:** a guarda só apaga a sessão por recusa do servidor (400/401/403/404 na renovação). Falha de rede ou servidor fora (5xx, 429) mantém a sessão; ela não gasta uma das duas apresentações do token (`apresentacoes` volta a no máximo 1), então várias quedas seguidas não derrubam mais. A tela de espera mostra "Sem conexão com a internet. Tente de novo." e tenta sozinha a cada 15 segundos; dentro das telas, a lista mostra o mesmo texto e repete sozinha. Continua uma renovação por vez (fila única) e o limite de apresentações.
+
+**O que ficou pendente**
+- As telas 1.9 a 1.11 (itens do menu em "Em breve"). Rota `/api/dona/cotacoes/converter` já está na ponte (`cotacao.converter`), mas nenhuma tela a usa ainda: a conversão exibida é local com `BigInt`.
+- Texto de "Em breve" ainda é por item; sai quando cada tela existir.
+- Rodar o aplicativo Electron de ponta a ponta (login real, lista de usuários contra a API) não foi feito aqui; a cobertura é de testes de componente e de lógica.
+
+**Decisões tomadas**
+- Sem biblioteca de rotas: um `useRota` de 30 linhas sobre o endereço da janela. Troca de item reinicia a tela (a chave é a rota), o que também apaga qualquer senha temporária.
+- Conversão local em `BigInt` (e não a rota `converter`): é instantânea no campo de dinheiro e funciona com a cotação já carregada. A rota segue disponível para valores de datas passadas.
+- Falha de rede na renovação não conta como apresentação do token. Risco assumido: se a primeira tentativa chegou ao servidor e a resposta se perdeu, e a segunda também, uma terceira seria a "terceira apresentação" e o servidor revogaria a sessão; aí a sessão acaba por recusa do servidor (caso seguro) e a pessoa entra de novo.
+- A tela não conhece o nome dos erros do servidor: decide só por `status`, `codigo` conhecido (`CADASTRO_ALTERADO`, `LOGIN_JA_USADO`, `LOGIN_FORA_DO_FORMATO`) e `campos`; o texto sempre é o do servidor.
+- O vendedor ligado ao usuário é escolhido numa lista de vendedores ativos (até 100); um vendedor já ligado mas inativo aparece como "Vendedor já ligado a este acesso".
+- Tipo de acesso na tela: "Dona" (perfil ADMIN) e "Vendedor".
+
+**Dúvidas**
+- O tipo de acesso ADMIN deve aparecer como "Dona" ou "Administradora"? O servidor usa "pessoa administradora" nas mensagens; a tela usa "Dona" (glossário, parte 1).
+- Mais de 100 vendedores ativos: precisa de busca na escolha? Hoje não cabe mais que 100.

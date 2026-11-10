@@ -49,7 +49,7 @@ export function registrarPonte(
     protegido(async (pedido: unknown) => {
       const v = validarChamada(pedido);
       if (!v) return { ok: false as const, motivo: 'erro' as const };
-      return servico.chamarApi(v.operacao);
+      return servico.chamarApi(v.operacao, v.parametros);
     }),
   );
 }

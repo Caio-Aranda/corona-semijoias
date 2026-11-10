@@ -4,6 +4,8 @@ import type {
   ResultadoDeChamada,
   ResultadoDeEntrada,
 } from '../shared/ponte';
+import type { ParametrosConferidos } from '../shared/validacao-parametros';
+import { conferirParametros } from '../shared/validacao-parametros';
 import type { DadosDoUsuario } from './api';
 import type { GuardaDeTokens } from './guarda-de-tokens';
 import type { Falha, Resultado } from './tipos';
@@ -11,6 +13,7 @@ import type { Falha, Resultado } from './tipos';
 /** Chamadas de negócio que o processo principal faz em nome da tela. Hoje só existe "eu". */
 export interface ChamadasDaApi {
   eu(tokenDeAcesso: string): Promise<Resultado<DadosDoUsuario>>;
+  executar(tokenDeAcesso: string, pedido: ParametrosConferidos): Promise<Resultado<unknown>>;
 }
 
 /**
@@ -71,13 +74,18 @@ export class ServicoDeSessao {
     }
   }
 
-  async chamarApi(operacao: OperacaoDaApi): Promise<ResultadoDeChamada> {
-    switch (operacao) {
-      case 'eu': {
-        const r = await this.guarda.comToken((token) => this.api.eu(token));
-        return r.ok ? { ok: true, dados: r.dados } : this.falhaDaChamada(r.falha);
-      }
+  async chamarApi(
+    operacao: OperacaoDaApi,
+    parametros?: Record<string, unknown>,
+  ): Promise<ResultadoDeChamada> {
+    const conferido = conferirParametros(operacao, parametros);
+    if (!conferido) return { ok: false, motivo: 'erro' };
+    if (conferido.operacao === 'eu') {
+      const r = await this.guarda.comToken((token) => this.api.eu(token));
+      return r.ok ? { ok: true, dados: r.dados } : this.falhaDaChamada(r.falha);
     }
+    const r = await this.guarda.comToken((token) => this.api.executar(token, conferido));
+    return r.ok ? { ok: true, dados: r.dados } : this.falhaDaChamada(r.falha);
   }
 
   private async usuario(): Promise<{ nome: string } | null> {
@@ -115,9 +123,14 @@ export class ServicoDeSessao {
         return { ok: false, motivo: 'sem-conexao' };
       case 'recusada':
         if (f.status === 401) return { ok: false, motivo: 'sessao-terminou' };
-        return f.mensagem
-          ? { ok: false, motivo: 'erro', mensagem: f.mensagem }
-          : { ok: false, motivo: 'erro' };
+        return {
+          ok: false,
+          motivo: 'erro',
+          status: f.status,
+          ...(f.mensagem ? { mensagem: f.mensagem } : {}),
+          ...(f.codigo ? { codigo: f.codigo } : {}),
+          ...(f.campos ? { campos: f.campos } : {}),
+        };
       case 'resposta-invalida':
         return { ok: false, motivo: 'erro' };
     }

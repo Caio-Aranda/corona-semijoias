@@ -129,7 +129,25 @@ describe('ponte (processo principal)', () => {
       dados: { nome: 'Maria' },
     });
     expect(servico.chamarApi).toHaveBeenCalledTimes(1);
-    expect(servico.chamarApi).toHaveBeenCalledWith('eu');
+    expect(servico.chamarApi).toHaveBeenCalledWith('eu', undefined);
+  });
+
+  it('confere os dados de cada operação antes de chamar o serviço', async () => {
+    const servico = await registrar();
+    const chamar = manipuladores.get(CANAIS.chamarApi);
+    const id = '8f14e45f-ceea-4672-a1b9-3a1a0f7c4d11';
+    // id que não é identificador, perfil inventado e página fora do limite: recusados.
+    for (const pedido of [
+      { operacao: 'usuarios.desativar', parametros: { id: '../../x' } },
+      { operacao: 'usuarios.criar', parametros: { nome: 'A', login: 'a', perfil: 'DONA' } },
+      { operacao: 'usuarios.listar', parametros: { tamanho: 5000 } },
+      { operacao: 'cotacao.converter', parametros: { valorEmReais: '1e5' } },
+    ]) {
+      expect(await chamar?.(evento, pedido)).toEqual({ ok: false, motivo: 'erro' });
+    }
+    expect(servico.chamarApi).not.toHaveBeenCalled();
+    await chamar?.(evento, { operacao: 'usuarios.desativar', parametros: { id } });
+    expect(servico.chamarApi).toHaveBeenCalledWith('usuarios.desativar', { id });
   });
 
   it('o serviço nunca devolve token à tela', async () => {

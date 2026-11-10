@@ -4,7 +4,19 @@
  */
 
 /** Operações de consulta que o processo principal aceita fazer em nome da tela. */
-export const OPERACOES_DA_API = ['eu'] as const;
+export const OPERACOES_DA_API = [
+  'eu',
+  'usuarios.listar',
+  'usuarios.criar',
+  'usuarios.editar',
+  'usuarios.desativar',
+  'usuarios.reativar',
+  'usuarios.redefinirSenha',
+  'cotacao.hoje',
+  'cotacao.converter',
+  'avisos.listar',
+  'vendedores.escolha',
+] as const;
 export type OperacaoDaApi = (typeof OPERACOES_DA_API)[number];
 
 /** Nomes dos canais. Só o processo principal e a ponte (preload) os usam. */
@@ -36,8 +48,16 @@ export interface DadosDeNovaSenha {
   senhaNova: string;
 }
 
+/** Uma operação com os dados que ela precisa. Os dados são conferidos de novo no processo principal. */
 export interface PedidoDeChamada {
   operacao: OperacaoDaApi;
+  parametros?: Record<string, unknown>;
+}
+
+/** Um campo que o servidor recusou, com o texto em português que ele devolveu. */
+export interface CampoRecusado {
+  campo: string;
+  mensagem: string;
 }
 
 export interface UsuarioLogado {
@@ -69,6 +89,11 @@ export type ResultadoDeChamada =
       ok: false;
       motivo: 'sessao-terminou' | 'sem-conexao' | 'app-desatualizado' | 'erro';
       mensagem?: string;
+      /** Código HTTP da recusa (400, 403, 409...), quando o servidor respondeu. */
+      status?: number;
+      /** Código do erro (ex.: CADASTRO_ALTERADO), só para a tela decidir o que mostrar. */
+      codigo?: string;
+      campos?: CampoRecusado[];
     };
 
 /** Aviso do processo principal de que a pessoa precisa entrar de novo. */

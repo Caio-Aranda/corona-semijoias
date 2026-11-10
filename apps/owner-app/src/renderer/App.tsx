@@ -2,7 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 import type { AvisoDeSessao, EstadoDaSessao, PonteDoCorona } from '../shared/ponte';
 import { TelaAppDesatualizado } from './telas/TelaAppDesatualizado';
 import { TelaEntrar } from './telas/TelaEntrar';
-import { TelaInicial } from './telas/TelaInicial';
+import { ProvedorDaCotacao } from './nucleo/cotacao';
+import { Estrutura } from './telas/Estrutura';
 import { TelaSemConexao } from './telas/TelaSemConexao';
 import { TelaTrocarSenha } from './telas/TelaTrocarSenha';
 
@@ -62,14 +63,18 @@ export function App({ ponte }: AppProps) {
       return <TelaAppDesatualizado mensagem={tela.mensagem} />;
     case 'dentro':
       return (
-        <TelaInicial
-          nome={tela.usuario?.nome ?? null}
-          aoSair={async () => {
-            await ponte.sair();
-            setSessaoTerminou(false);
-            await conferir();
-          }}
-        />
+        <ProvedorDaCotacao ponte={ponte}>
+          <Estrutura
+            ponte={ponte}
+            nome={tela.usuario?.nome ?? null}
+            aoSair={async () => {
+              await ponte.sair();
+              setSessaoTerminou(false);
+              window.location.hash = '';
+              await conferir();
+            }}
+          />
+        </ProvedorDaCotacao>
       );
   }
 }

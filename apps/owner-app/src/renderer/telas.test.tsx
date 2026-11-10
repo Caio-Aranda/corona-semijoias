@@ -217,7 +217,9 @@ describe('sem conexão ao abrir', () => {
     });
     const u = userEvent.setup();
     render(<App ponte={ponte} />);
-    expect(await screen.findByText('Sem internet.')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Sem conexão com a internet. Tente de novo.'),
+    ).toBeInTheDocument();
     await u.click(screen.getByRole('button', { name: 'Tentar de novo' }));
     expect(await screen.findByLabelText('Usuário')).toBeInTheDocument();
   });
@@ -241,7 +243,7 @@ describe('tela inicial da dona', () => {
     expect(
       screen.getByRole('heading', { name: 'O que precisa da sua atenção' }),
     ).toBeInTheDocument();
-    expect(screen.getByText(/Tudo em dia por aqui/)).toBeInTheDocument();
+    expect(await screen.findByText('Tudo em dia.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Sair' })).toBeInTheDocument();
   });
 

@@ -1,6 +1,12 @@
 /** Por que uma chamada à API não deu certo. Só o processo principal enxerga isto. */
 export type Falha =
-  | { tipo: 'recusada'; status: number; codigo?: string; mensagem?: string }
+  | {
+      tipo: 'recusada';
+      status: number;
+      codigo?: string;
+      mensagem?: string;
+      campos?: { campo: string; mensagem: string }[];
+    }
   | { tipo: 'sem-conexao' }
   | { tipo: 'app-desatualizado'; mensagem: string }
   | { tipo: 'resposta-invalida' };

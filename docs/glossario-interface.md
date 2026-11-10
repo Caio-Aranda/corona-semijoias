@@ -548,6 +548,30 @@ Avisos junto ao campo:
 - Lista de ordem das fotos que não bate com as fotos da peça: "A lista de fotos não confere com a peça. Atualize a tela e tente de novo."
 
 
+### Corona Gestão: menu, listas e usuários (tarefa 1.8)
+
+**Menu lateral.** Início · Cadastros (Produtos, Fornecedores, Categorias, Praças, Semanas, Restrições) · Pessoas (Vendedores, Clientes, Usuários). Item que ainda não foi feito: "{Nome} ainda está sendo preparado. Logo você poderá usar por aqui."
+
+**Listas.** Carregando: "Buscando..." (com o nome do que se busca, por exemplo "Buscando os usuários..."). Nada na lista: "Ainda não há nenhum {item}." Busca sem resultado: "Nenhum {item} encontrado. Confira o que você digitou ou limpe a busca." Total: "{N} usuário" / "{N} usuários". Erro ao buscar: "Não foi possível buscar agora. Tente de novo. Se continuar, fale com o suporte do sistema."
+
+**Sem internet (já com a pessoa dentro).** "Sem conexão com a internet. Tente de novo." Quando a internet volta, o aplicativo tenta sozinho. A pessoa não precisa entrar de novo: só uma recusa do servidor encerra a sessão.
+
+**Alterado por outra pessoa (409 de versão).** Vale o texto do servidor (parte 6, cadastros da dona), e a tela oferece **Atualizar** para buscar o cadastro de novo.
+
+**Usuários (Pessoas → Usuários).**
+
+- Campos: **Nome**, **Usuário**, **Tipo de acesso** (**Dona** ou **Vendedor**) e, para o vendedor, **Vendedor**. Filtros: **Tipo de acesso** (Todos, Dona, Vendedor) e **Situação** (Todos, Ativos, Desativados).
+- Botões: **Novo usuário**, **Editar**, **Desativar usuário**, **Reativar usuário**, **Nova senha temporária**.
+- Senha temporária (aparece uma única vez, com o botão **Copiar senha**): "Anote esta senha agora. Ela não aparece de novo." e "Entregue a senha só para {nome}. No primeiro acesso, ele ou ela cria uma senha nova." A senha vale por 7 dias.
+- Desativar: "{Nome} vai sair do sistema agora e não vai mais conseguir entrar. Você pode reativar depois." Botões: **Voltar** e **Desativar usuário**.
+- Reativar: "{Nome} volta a poder entrar com a senha que já tinha. Quem estava dentro precisa entrar de novo." Botões: **Voltar** e **Reativar usuário**.
+- Nova senha temporária: "A senha atual de {nome} deixa de valer e quem estiver dentro sai do sistema agora. Será criada uma senha temporária nova." Botões: **Voltar** e **Criar senha temporária**.
+- As regras do servidor (não desativar a si mesma, não mudar o próprio acesso, manter uma administradora) aparecem com o texto do servidor, acima.
+
+**Cotação do dia na tela da dona.** Rodapé e cartão: "Cotação do Banco Central de 06/11/2026." Quando a cotação em uso é a de um dia anterior (fim de semana, feriado ou busca que falhou): "Cotação do Banco Central de 06/11/2026, a última publicada." Sem nenhuma cotação ainda: "Ainda não há cotação. Os valores em Dólar e Guarani aparecem quando ela chegar."
+
+**Tudo em dia.** Quando não há aviso em "O que precisa da sua atenção": "Tudo em dia."
+
 ## 7. Estado de conexão do app do vendedor
 
 Sempre em palavras comuns (§19.11). Nunca "fila", "sincronização" ou "pendentes".

@@ -285,16 +285,62 @@ describe('guarda de tokens: renovação', () => {
     expect(disco.estado.conteudo).not.toBeNull();
   });
 
-  it('nunca apresenta o mesmo token pela terceira vez (revogaria a sessão inteira)', async () => {
-    const renovar = vi.fn(() => Promise.resolve(falhou({ tipo: 'sem-conexao' })));
-    const { guarda, aoPerder } = montar({ api: { renovar } });
+  it('várias quedas de internet seguidas não apagam a sessão e a renovação volta quando a internet volta', async () => {
+    let tentativa = 0;
+    const renovar = vi.fn(() => {
+      tentativa += 1;
+      return Promise.resolve(
+        tentativa <= 5 ? falhou({ tipo: 'sem-conexao' }) : ok(credenciais(10)),
+      );
+    });
+    const { guarda, aoPerder, disco } = montar({ api: { renovar } });
     await guarda.entrar('maria', 'senha');
-    await guarda.renovar();
-    await guarda.renovar();
-    await guarda.renovar();
-    expect(renovar).toHaveBeenCalledTimes(2);
+    for (let i = 0; i < 5; i++) expect(await guarda.renovar()).toBe(false);
+    expect(guarda.situacao()).not.toBe('fora');
+    expect(aoPerder).not.toHaveBeenCalled();
+    expect(disco.estado.conteudo).not.toBeNull();
+    expect(await guarda.renovar()).toBe(true);
+    expect(guarda.situacao()).toBe('dentro');
+  });
+
+  it('servidor fora do ar (5xx) também mantém a sessão', async () => {
+    const { guarda, aoPerder } = montar({
+      api: { renovar: () => Promise.resolve(falhou({ tipo: 'recusada', status: 503 })) },
+    });
+    await guarda.entrar('maria', 'senha');
+    for (let i = 0; i < 4; i++) await guarda.renovar();
+    expect(guarda.situacao()).not.toBe('fora');
+    expect(aoPerder).not.toHaveBeenCalled();
+  });
+
+  it('depois de quedas de internet, a recusa do servidor ainda apaga a sessão', async () => {
+    let tentativa = 0;
+    const renovar = vi.fn(() => {
+      tentativa += 1;
+      return Promise.resolve(tentativa <= 3 ? falhou({ tipo: 'sem-conexao' }) : naoAutorizado);
+    });
+    const { guarda, aoPerder, disco } = montar({ api: { renovar } });
+    await guarda.entrar('maria', 'senha');
+    for (let i = 0; i < 4; i++) await guarda.renovar();
     expect(guarda.situacao()).toBe('fora');
+    expect(disco.estado.conteudo).toBeNull();
     expect(aoPerder).toHaveBeenCalledWith({ estado: 'fora' });
+  });
+
+  it('nunca apresenta o mesmo token em paralelo, mesmo com a internet caindo', async () => {
+    let soltar: (r: Resultado<Credenciais>) => void = () => undefined;
+    const renovar = vi.fn(
+      () =>
+        new Promise<Resultado<Credenciais>>((resolve) => {
+          soltar = resolve;
+        }),
+    );
+    const { guarda } = montar({ api: { renovar } });
+    await guarda.entrar('maria', 'senha');
+    const duas = [guarda.renovar(), guarda.renovar()];
+    soltar(falhou({ tipo: 'sem-conexao' }));
+    await Promise.all(duas);
+    expect(renovar).toHaveBeenCalledTimes(1);
   });
 
   it('aplicativo desatualizado na renovação avisa a tela com a mensagem da API', async () => {
