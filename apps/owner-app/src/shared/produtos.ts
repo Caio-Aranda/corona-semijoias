@@ -8,6 +8,7 @@ export const OPERACOES_DE_PRODUTOS = [
   'produtos.porCodigo',
   'produtos.criar',
   'produtos.editar',
+  'produtos.estoqueMinimo',
   'produtos.codigos.gravar',
   'produtos.codigoProximo',
   'produtos.inativar',

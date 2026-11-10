@@ -249,6 +249,13 @@ export function conferirProduto(
       const corpo = conferirCorpoDoProduto(p, 'editar');
       return corpo ? { operacao, id: p.id, corpo } : null;
     }
+    case 'produtos.estoqueMinimo': {
+      if (!soCom('id', 'version', 'estoqueMinimo') || !idValido(p.id) || !versaoValida(p.version))
+        return null;
+      const m = p.estoqueMinimo;
+      if (typeof m !== 'number' || !Number.isInteger(m) || m < 0 || m > 1_000_000) return null;
+      return { operacao, id: p.id, corpo: { version: p.version, estoqueMinimo: m } };
+    }
     case 'produtos.codigos.gravar': {
       if (!soCom('id', 'version', 'codigos') || !idValido(p.id) || !versaoValida(p.version))
         return null;

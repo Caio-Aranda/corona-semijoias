@@ -415,6 +415,33 @@ describe('Receber compra: confirmar', () => {
     expect(screen.getByRole('button', { name: 'Desfazer compra' })).toBeInTheDocument();
   });
 
+  it('compra que o servidor já tinha registrado (200) avisa que nada foi somado de novo', async () => {
+    const m = montar({
+      'compras.receber': () => ({ ok: true, criado: false, dados: compraGravada() }),
+    });
+    const u = await comUmaPeca(m);
+    await u.click(screen.getByRole('button', { name: 'Confirmar compra' }));
+    await u.click(
+      within(await screen.findByRole('dialog')).getByRole('button', { name: 'Confirmar compra' }),
+    );
+    expect(
+      await screen.findByText('Esta compra já estava registrada. Nada foi somado de novo.'),
+    ).toBeInTheDocument();
+  });
+
+  it('compra nova (201) não mostra o aviso de já registrada', async () => {
+    const m = montar({
+      'compras.receber': () => ({ ok: true, criado: true, dados: compraGravada() }),
+    });
+    const u = await comUmaPeca(m);
+    await u.click(screen.getByRole('button', { name: 'Confirmar compra' }));
+    await u.click(
+      within(await screen.findByRole('dialog')).getByRole('button', { name: 'Confirmar compra' }),
+    );
+    await screen.findByText('Compra gravada.');
+    expect(screen.queryByText(/já estava registrada/)).toBeNull();
+  });
+
   it('duplo clique em Confirmar não grava duas vezes', async () => {
     let liberar: (r: ResultadoDeChamada) => void = () => undefined;
     const m = montar({

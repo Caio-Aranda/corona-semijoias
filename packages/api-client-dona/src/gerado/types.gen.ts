@@ -570,6 +570,11 @@ export type PedidoDeUsuario = {
     vendedorId?: string;
 };
 
+export type PedidoDoEstoqueMinimo = {
+    estoqueMinimo: number;
+    version?: number;
+};
+
 export type PedidoDosCodigos = {
     codigos?: Array<PedidoDeCodigo>;
     version?: number;
@@ -857,6 +862,7 @@ export type RespostaDaContagem = {
     iniciadoEm?: string;
     iniciadoPorNome?: string;
     motivoDoCancelamento?: string;
+    naoAjustadas?: Array<RespostaDaNaoAjustada>;
     observacoes?: string;
     resumo?: RespostaDoResumo;
     situacao?: string;
@@ -916,6 +922,15 @@ export type RespostaDaLinhaDeCusto = {
     fornecedorNome?: string;
     quantidade?: number;
     situacaoDaCompra?: string;
+};
+
+export type RespostaDaNaoAjustada = {
+    contado?: number;
+    diferenca?: number;
+    esperado?: number;
+    motivo?: string;
+    nome?: string;
+    produtoId?: string;
 };
 
 export type RespostaDaPeca = {
@@ -2302,6 +2317,24 @@ export type AlterarCodigosResponses = {
 };
 
 export type AlterarCodigosResponse = AlterarCodigosResponses[keyof AlterarCodigosResponses];
+
+export type MudarEstoqueMinimoData = {
+    body: PedidoDoEstoqueMinimo;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/produtos/{id}/estoque-minimo';
+};
+
+export type MudarEstoqueMinimoResponses = {
+    /**
+     * OK
+     */
+    200: Resposta;
+};
+
+export type MudarEstoqueMinimoResponse = MudarEstoqueMinimoResponses[keyof MudarEstoqueMinimoResponses];
 
 export type Listar6Data = {
     body?: never;

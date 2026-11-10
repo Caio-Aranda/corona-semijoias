@@ -2,6 +2,7 @@ package br.com.coronasemijoias.api.estoque;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -191,5 +192,56 @@ class EstoqueMinimoTest extends TesteDeIntegracao {
         RequestPostProcessor vendedor = usuarios.comoVendedor();
         mvc.perform(get(ROTA).with(vendedor)).andExpect(status().isForbidden());
         mvc.perform(get(ROTA)).andExpect(status().isUnauthorized());
+    }
+
+    // --- mudar só o estoque mínimo (tarefa 2.9) ---
+
+    private ResultActions mudarMinimo(UUID produto, Object corpo, org.springframework.test.web.servlet.request.RequestPostProcessor quem)
+            throws Exception {
+        return mvc.perform(patch("/api/dona/produtos/" + produto + "/estoque-minimo").with(quem)
+                .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(corpo)));
+    }
+
+    private int versao(UUID produto) {
+        return jdbc.queryForObject("SELECT version FROM corona.produtos WHERE id = ?", Integer.class, produto);
+    }
+
+    @Test
+    void mudarSoOEstoqueMinimoGravaSobeAVersaoEAuditaAntesEDepois() throws Exception {
+        UUID p = produto(categoria(), null, 4, 0);
+        int v = versao(p);
+        JsonNode r = corpoDe(mudarMinimo(p, mapa("version", v, "estoqueMinimo", 9), usuarios.comoDona()).andExpect(status().isOk()));
+        assertThat(r.get("estoqueMinimo").asInt()).isEqualTo(9);
+        assertThat(r.get("version").asInt()).isGreaterThan(v);
+        assertThat(jdbc.queryForObject("SELECT estoque_minimo FROM corona.produtos WHERE id = ?", Integer.class, p)).isEqualTo(9);
+        assertThat(jdbc.queryForObject("SELECT preco_venda::text FROM corona.produtos WHERE id = ?", String.class, p)).isEqualTo("70.00");
+        Map<String, Object> aud = jdbc.queryForMap("SELECT antes::text AS antes, depois::text AS depois FROM corona.auditoria "
+                + "WHERE registro_id = ? AND acao = 'ESTOQUE_MINIMO_ALTERADO'", p);
+        assertThat((String) aud.get("antes")).contains("4");
+        assertThat((String) aud.get("depois")).contains("9");
+    }
+
+    @Test
+    void versaoVelhaDa409EValoresInvalidosOuInexistentesSaoRecusados() throws Exception {
+        UUID p = produto(categoria(), null, 4, 0);
+        int v = versao(p);
+        mudarMinimo(p, mapa("version", v, "estoqueMinimo", 6), usuarios.comoDona()).andExpect(status().isOk());
+        mudarMinimo(p, mapa("version", v, "estoqueMinimo", 7), usuarios.comoDona()).andExpect(status().isConflict());
+        assertThat(jdbc.queryForObject("SELECT estoque_minimo FROM corona.produtos WHERE id = ?", Integer.class, p)).isEqualTo(6);
+        mudarMinimo(p, mapa("version", versao(p), "estoqueMinimo", -1), usuarios.comoDona()).andExpect(status().isBadRequest());
+        mudarMinimo(p, mapa("version", versao(p)), usuarios.comoDona()).andExpect(status().isBadRequest());
+        mudarMinimo(p, mapa("estoqueMinimo", 3), usuarios.comoDona()).andExpect(status().isBadRequest());
+        mudarMinimo(UUID.randomUUID(), mapa("version", 1, "estoqueMinimo", 3), usuarios.comoDona()).andExpect(status().isNotFound());
+        // Zero é válido (sem aviso).
+        mudarMinimo(p, mapa("version", versao(p), "estoqueMinimo", 0), usuarios.comoDona()).andExpect(status().isOk());
+    }
+
+    @Test
+    void soAdminMudaOEstoqueMinimo() throws Exception {
+        UUID p = produto(categoria(), null, 4, 0);
+        mudarMinimo(p, mapa("version", versao(p), "estoqueMinimo", 5), usuarios.comoVendedor()).andExpect(status().isForbidden());
+        mvc.perform(patch("/api/dona/produtos/" + p + "/estoque-minimo").contentType(MediaType.APPLICATION_JSON).content("{}"))
+                .andExpect(status().isUnauthorized());
+        assertThat(jdbc.queryForObject("SELECT estoque_minimo FROM corona.produtos WHERE id = ?", Integer.class, p)).isEqualTo(4);
     }
 }

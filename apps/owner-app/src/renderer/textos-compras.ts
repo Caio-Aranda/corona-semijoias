@@ -67,6 +67,7 @@ export const TEXTOS_DE_COMPRAS = {
       voltar: 'Voltar',
     },
     gravada: 'Compra gravada.',
+    jaRegistrada: 'Esta compra já estava registrada. Nada foi somado de novo.',
     gravadaTexto: (pecas: string, total: string) =>
       `Entraram ${pecas} no estoque, num total de ${total}.`,
     receberOutra: 'Receber outra compra',

@@ -70,21 +70,22 @@ Estoque e compras (§15). Segue o mesmo formato da Fase 1. O modelo do estoque e
 | Nº | Tarefa | Situação |
 | --- | --- | --- |
 | 2.1 | docs: plano da Fase 2 e ADR do estoque | Mesclada (PR 41) · [detalhe](progresso/fase-2.md#tarefa-21-plano-da-fase-2-e-adr-do-estoque-só-documentos) |
-| 2.2 | backend: movimentações de estoque (migração, serviço único que muda `estoque_atual`, estorno, ajuste, rotas da dona, testes de concorrência) | Em revisão · [detalhe](progresso/fase-2.md#tarefa-22-backend-movimentações-de-estoque) |
-| 2.3 | backend: compras e itens de compra (entrada de compra por código, idempotência, custo por compra e histórico de custo) | Em revisão · [detalhe](progresso/fase-2.md#tarefa-23-backend-compras) |
-| 2.4 | backend: estoque mínimo com aviso e inventário (contagem, divergências, fechamento que gera ajuste) | Em revisão · [detalhe](progresso/fase-2.md#tarefa-24-backend-estoque-minimo-e-contagem-do-estoque) |
-| 2.5 | backend: relatórios de estoque e de compras (posição atual, movimentações por período, estoque mínimo, produtos parados, inventário e divergências, compras por fornecedor e período, histórico de custo por produto) com exportação | Em revisão · [detalhe](progresso/fase-2.md#tarefa-25-backend-relatórios-de-estoque-e-de-compras) |
-| 2.6 | owner-app: entrada de compra com leitor, cadastro rápido e importação da compra por planilha | Em revisão · [detalhe](progresso/fase-2.md#tarefa-26-corona-gestão-entrada-de-compra) |
-| 2.7 | owner-app: movimentações e ajustes, estoque mínimo e inventário por leitor | Em revisão · [detalhe](progresso/fase-2.md#tarefa-27-corona-gestão-estoque-ajustes-e-contagem) |
-| 2.8 | owner-app: telas dos relatórios de estoque e compras (filtros, totais, exportação) | Em revisão · [detalhe](progresso/fase-2.md#tarefa-28-corona-gestão-relatórios-de-estoque-e-de-compras-fecha-a-fase-2) |
+| 2.2 | backend: movimentações de estoque (migração, serviço único que muda `estoque_atual`, estorno, ajuste, rotas da dona, testes de concorrência) | Mesclada (PR 42) · [detalhe](progresso/fase-2.md#tarefa-22-backend-movimentações-de-estoque) |
+| 2.3 | backend: compras e itens de compra (entrada de compra por código, idempotência, custo por compra e histórico de custo) | Mesclada (PR 43) · [detalhe](progresso/fase-2.md#tarefa-23-backend-compras) |
+| 2.4 | backend: estoque mínimo com aviso e inventário (contagem, divergências, fechamento que gera ajuste) | Mesclada (PR 44) · [detalhe](progresso/fase-2.md#tarefa-24-backend-estoque-minimo-e-contagem-do-estoque) |
+| 2.5 | backend: relatórios de estoque e de compras (posição atual, movimentações por período, estoque mínimo, produtos parados, inventário e divergências, compras por fornecedor e período, histórico de custo por produto) com exportação | Mesclada (PR 45) · [detalhe](progresso/fase-2.md#tarefa-25-backend-relatórios-de-estoque-e-de-compras) |
+| 2.6 | owner-app: entrada de compra com leitor, cadastro rápido e importação da compra por planilha | Mesclada (PR 46) · [detalhe](progresso/fase-2.md#tarefa-26-corona-gestão-entrada-de-compra) |
+| 2.7 | owner-app: movimentações e ajustes, estoque mínimo e inventário por leitor | Mesclada (PR 47) · [detalhe](progresso/fase-2.md#tarefa-27-corona-gestão-estoque-ajustes-e-contagem) |
+| 2.8 | owner-app: telas dos relatórios de estoque e compras (filtros, totais, exportação) | Mesclada (PR 48) · [detalhe](progresso/fase-2.md#tarefa-28-corona-gestão-relatórios-de-estoque-e-de-compras-fecha-a-fase-2) |
+| 2.9 | fechamento da Fase 2: fechar contagem com peça excluída, rota só do estoque mínimo, aviso de reenvio (200 x 201) na ponte | Concluída (PR 49) · [detalhe](progresso/fase-2.md#tarefa-29-fechamento-da-fase-2) |
 
 **Fora desta fase:** mercadoria em maletas por vendedor (Fase 3) e curva ABC (Fase 8).
 
-**Fase 2 concluída** (tarefas 2.1 a 2.8, com a 2.8 em revisão). Resumo: o estoque tem um único serviço que muda a quantidade (movimentos imutáveis, desfazer lançamento, saldo nunca negativo, conferência automática); as compras entram com custo e histórico; há aviso de estoque mínimo e contagem do estoque por leitor; a dona tem as telas de estoque, entradas e saídas, compras e dez relatórios com exportação em PDF, Excel e CSV. **Segue para a Fase 3:** mercadoria em maletas por vendedor nos relatórios de estoque, uso dos tipos Maleta e Devolução da maleta e a conciliação "estoque + maletas". **Segue para a Fase 8:** curva ABC. Dúvidas abertas: [fase-2.md](progresso/fase-2.md#tarefa-28-corona-gestão-relatórios-de-estoque-e-de-compras-fecha-a-fase-2).
+**Fase 2 concluída** (tarefas 2.1 a 2.9; a 2.9 foi a revisão de fechamento). Resumo: o estoque tem um único serviço que muda a quantidade (movimentos imutáveis, desfazer lançamento, saldo nunca negativo, conferência automática); as compras entram com custo e histórico; há aviso de estoque mínimo e contagem do estoque por leitor; a dona tem as telas de estoque, entradas e saídas, compras e dez relatórios com exportação em PDF, Excel e CSV. **Segue para a Fase 3:** mercadoria em maletas por vendedor nos relatórios de estoque, uso dos tipos Maleta e Devolução da maleta e a conciliação "estoque + maletas". **Segue para a Fase 8:** curva ABC. Dúvidas abertas: [fase-2.md](progresso/fase-2.md#tarefa-28-corona-gestão-relatórios-de-estoque-e-de-compras-fecha-a-fase-2).
 
 ## Pendências abertas
 
-- Fase 2: a dona aceitar a saída recusada quando falta peça (ADR-0008); formato do código da loja no cadastro rápido (ADR-0007, item 5); a ponte não devolve o 200 ou 201 (aviso de reenvio) e falta rota só do estoque mínimo; foto nos arquivos exportados e ordenação por coluna dos relatórios de estoque; leitor de código real e pacote instalado ainda não testados. ([tarefas 2.1 a 2.8](progresso/fase-2.md#tarefa-28-corona-gestão-relatórios-de-estoque-e-de-compras-fecha-a-fase-2))
+- Fase 2: a dona aceitar a saída recusada quando falta peça (ADR-0008); formato do código da loja no cadastro rápido (ADR-0007, item 5); foto nos arquivos exportados e ordenação por coluna dos relatórios de estoque; leitor de código real e pacote instalado ainda não testados. ([tarefas 2.1 a 2.9](progresso/fase-2.md#tarefa-29-fechamento-da-fase-2))
 
 O que ainda está em aberto nas tarefas concluídas (o que já foi resolvido por tarefa seguinte não entra). Atualize ao fechar cada item.
 

@@ -23,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -71,6 +72,9 @@ public class ProdutosDaDonaController {
         Dados dados() {
             return new Dados(nome, referencia, categoriaId, fornecedorId, precoVenda, precoCusto, estoqueMinimo);
         }
+    }
+
+    public record PedidoDoEstoqueMinimo(Integer version, @NotNull(message = Mensagens.OBRIGATORIO) Integer estoqueMinimo) {
     }
 
     public record PedidoDosCodigos(Integer version, List<@Valid PedidoDeCodigo> codigos) {
@@ -163,6 +167,15 @@ public class ProdutosDaDonaController {
     public Resposta alterarCodigos(@PathVariable UUID id, @Valid @RequestBody PedidoDosCodigos pedido) {
         List<Pedido> codigos = pedido.codigos() == null ? null : pedido.codigos().stream().map(PedidoDeCodigo::paraServico).toList();
         return Resposta.de(servico.alterarCodigos(id, pedido.version(), codigos));
+    }
+
+    @Operation(summary = "Mudar só o estoque mínimo",
+            description = "Mande a version que a tela leu (se outra pessoa alterou antes, volta 409) e o novo estoque mínimo "
+                    + "(zero ou mais; zero desliga o aviso). Nada mais do cadastro muda. A mudança vai para a auditoria.")
+    @PatchMapping("/{id}/estoque-minimo")
+    public Resposta mudarEstoqueMinimo(@PathVariable UUID id, @Valid @RequestBody PedidoDoEstoqueMinimo pedido,
+            @AuthenticationPrincipal UsuarioAutenticado quem) {
+        return Resposta.de(servico.alterarEstoqueMinimo(id, pedido.version(), pedido.estoqueMinimo(), quem.id()));
     }
 
     @Operation(summary = "Inativar produto", description = "Sai das escolhas, mas o histórico fica. Pode ser reativado.")

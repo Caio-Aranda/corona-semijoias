@@ -762,6 +762,8 @@ Termos de tela do estoque e das compras. Vale a regra da §19.1: nada de termo t
 - Desfazer lançamento (confirmação): **Desfazer este lançamento?** O sistema cria um novo lançamento que cancela este. O antigo continua no histórico. Botões: **Desfazer lançamento** e **Voltar**.
 - Lançamento já desfeito: **Este lançamento já foi desfeito.**
 - Reenvio da mesma compra (não é erro para a pessoa): **Esta compra já estava registrada.** Nada foi somado de novo.
+- Reenvio da mesma leitura na contagem (não é erro): **Esta leitura já estava registrada.** Nada foi somado de novo.
+- Contagem fechada com peça excluída durante a contagem: **Sem ajuste, porque a peça foi excluída durante a contagem: {peças}.** A diferença ficou registrada.
 - Fechar a contagem (confirmação): **Fechar a contagem?** O estoque será ajustado nos {n} produtos com diferença. Depois de fechada, a contagem não muda; para corrigir, faça um ajuste. Botões: **Fechar a contagem** e **Continuar contando**.
 - Produto da contagem que não foi lido: **{n} produtos não foram lidos.** Marque se devem ficar com zero peças ou se ficam como estão.
 - Compra com o mesmo identificador e outros dados: **Esta compra já foi registrada com outros dados.** Confira a lista de compras antes de lançar de novo.

@@ -91,6 +91,11 @@ function Encerrada({ ponte, contagem }: { ponte: PonteDoCorona; contagem: Contag
           {E.ajustes(contagem.ajustes)} {contagem.zerouNaoLidos ? E.zerou : E.nZerou}
         </p>
       ) : null}
+      {fechada && contagem.naoAjustadas.length > 0 ? (
+        <p className="gestao-texto">
+          {TEXTOS_DE_ESTOQUE.fechar.naoAjustadas(contagem.naoAjustadas.map((p) => p.nome))}
+        </p>
+      ) : null}
       <ItensDaContagem ponte={ponte} contagemId={contagem.id} versao={0} aoCorrigir={null} />
     </>
   );
@@ -142,7 +147,11 @@ function Contando({
       if (leitura) {
         setUltimo(leitura.item);
         setResumo(leitura.resumo);
-        setMensagem(T.leitor.somou(leitura.item.peca.nome, leitura.item.contado ?? 0));
+        setMensagem(
+          r.jaRegistrado
+            ? T.leitor.jaRegistrada
+            : T.leitor.somou(leitura.item.peca.nome, leitura.item.contado ?? 0),
+        );
         setVersao((v) => v + 1);
       }
       setTexto('');
@@ -292,7 +301,12 @@ function PecaLida({ ponte, contagemId, item, aoMudar }: PecaLidaProps) {
       return;
     }
     const leitura = lerLeitura(r.dados);
-    if (leitura) aoMudar(leitura.item, leitura.resumo, P.definida(item.peca.nome, contado));
+    if (leitura)
+      aoMudar(
+        leitura.item,
+        leitura.resumo,
+        r.jaRegistrado ? P.jaRegistrada : P.definida(item.peca.nome, contado),
+      );
     leituraId.current = crypto.randomUUID();
     ultimoValor.current = '';
   }

@@ -36,6 +36,8 @@ import org.springframework.transaction.annotation.Transactional;
  * cruzam), então a conferência é por peça: se alguma peça da nova seleção já está numa contagem aberta, é recusada.</li>
  * <li>Cada leitura SOMA ao contado (o leitor lê uma peça por vez); a correção é "definir o contado", que SUBSTITUI.
  * Ambas são idempotentes pelo UUID da leitura.</li>
+ * <li>Peça EXCLUÍDA durante a contagem não recebe ajuste (não se mexe em saldo de produto excluído): o fechamento conclui e a
+ * diferença fica no inventário e no relatório de divergências. Peça inativada é ajustada normalmente.</li>
  * <li>Peça sem leitura só vira zero se a dona confirmar ao fechar; senão fica como está, sem ajuste.</li>
  * </ul>
  */
@@ -59,7 +61,7 @@ public class ServicoDeInventario {
     public record ResultadoDaLeitura(UUID inventarioId, UUID produtoId, boolean jaExistia) {
     }
 
-    private record ItemParaFechar(UUID produtoId, String nome, int esperado, Integer contado) {
+    private record ItemParaFechar(UUID produtoId, String nome, int esperado, Integer contado, boolean excluida) {
     }
 
     private final JdbcTemplate jdbc;
@@ -256,11 +258,11 @@ public class ServicoDeInventario {
             throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.CONTAGEM_ENCERRADA);
         }
         List<ItemParaFechar> itens = jdbc.query("""
-                SELECT i.produto_id, p.nome, i.esperado, i.contado FROM corona.itens_inventario i
+                SELECT i.produto_id, p.nome, i.esperado, i.contado, (p.deleted_at IS NOT NULL) AS excluida FROM corona.itens_inventario i
                   JOIN corona.produtos p ON p.id = i.produto_id
                  WHERE i.inventario_id = ? ORDER BY i.produto_id""",
                 (rs, n) -> new ItemParaFechar(rs.getObject(1, UUID.class), rs.getString(2), rs.getInt(3),
-                        (Integer) rs.getObject(4)), inventarioId);
+                        (Integer) rs.getObject(4), rs.getBoolean(5)), inventarioId);
 
         List<Pedido> ajustes = new ArrayList<>();
         Map<UUID, ItemParaFechar> porProduto = new LinkedHashMap<>();
@@ -276,7 +278,8 @@ public class ServicoDeInventario {
                         inventarioId, item.produtoId());
             }
             int dif = efetivo - item.esperado();
-            if (dif == 0) {
+            if (dif == 0 || item.excluida()) {
+                // Peça excluída durante a contagem: a diferença fica registrada, mas o saldo dela não se mexe.
                 continue;
             }
             UUID movimento = UuidV7.gerar();

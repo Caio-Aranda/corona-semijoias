@@ -36,7 +36,9 @@ export function FichaDaPeca({ ponte, pecaId, aoVoltar }: FichaDaPecaProps) {
     `custo|${pecaId}|${recarga}`,
   );
   const dados = ficha.dados ? lerFicha(ficha.dados) : null;
-  const custo = produto.dados ? lerProduto(produto.dados)?.precoCusto : null;
+  const cadastro = produto.dados ? lerProduto(produto.dados) : null;
+  const custo = cadastro?.precoCusto ?? null;
+  const versao = cadastro?.version ?? null;
 
   const [lancando, setLancando] = useState<ModoDoLancamento | null>(null);
   const [desfazendo, setDesfazendo] = useState<Lancamento | null>(null);
@@ -157,10 +159,11 @@ export function FichaDaPeca({ ponte, pecaId, aoVoltar }: FichaDaPecaProps) {
           aoCancelar={() => setDesfazendo(null)}
         />
       ) : null}
-      {mudandoMinimo && dados ? (
+      {mudandoMinimo && dados && versao !== null ? (
         <MudarMinimo
           ponte={ponte}
           pecaId={pecaId}
+          version={versao ?? 0}
           atual={dados.peca.minimo}
           aoFeito={() => atualizar(T.minimoAtualizado)}
           aoCancelar={() => setMudandoMinimo(false)}
@@ -173,13 +176,15 @@ export function FichaDaPeca({ ponte, pecaId, aoVoltar }: FichaDaPecaProps) {
 interface MudarMinimoProps {
   ponte: PonteDoCorona;
   pecaId: string;
+  /** Versão do cadastro que a tela leu; se mudou, o servidor recusa e a pessoa atualiza. */
+  version: number;
   atual: number;
   aoFeito: () => void;
   aoCancelar: () => void;
 }
 
-/** Muda só o estoque mínimo: lê a peça de novo (versão e custo atuais) e grava com o mínimo novo. */
-function MudarMinimo({ ponte, pecaId, atual, aoFeito, aoCancelar }: MudarMinimoProps) {
+/** Muda só o estoque mínimo, pela rota própria (não reenvia o cadastro). */
+function MudarMinimo({ ponte, pecaId, version, atual, aoFeito, aoCancelar }: MudarMinimoProps) {
   const [texto, setTexto] = useState(String(atual));
   const [tentou, setTentou] = useState(false);
   const [ocupado, setOcupado] = useState(false);
@@ -197,23 +202,9 @@ function MudarMinimo({ ponte, pecaId, atual, aoFeito, aoCancelar }: MudarMinimoP
     trava.current = true;
     setOcupado(true);
     setErro(null);
-    const lido = await chamar(ponte, 'produtos.ver', { id: pecaId });
-    const p = lido.ok ? lerProduto(lido.dados) : null;
-    if (!p) {
-      trava.current = false;
-      setOcupado(false);
-      if (!lido.ok) setErro(lido.erro);
-      return;
-    }
-    const r = await chamar(ponte, 'produtos.editar', {
+    const r = await chamar(ponte, 'produtos.estoqueMinimo', {
       id: pecaId,
-      version: p.version,
-      nome: p.nome,
-      ...(p.referencia ? { referencia: p.referencia } : {}),
-      categoriaId: p.categoriaId,
-      ...(p.fornecedorId ? { fornecedorId: p.fornecedorId } : {}),
-      precoVenda: p.precoVenda,
-      ...(p.precoCusto === null ? {} : { precoCusto: p.precoCusto }),
+      version,
       estoqueMinimo: conferido.valor,
     });
     trava.current = false;

@@ -143,6 +143,8 @@ export interface Contagem {
   motivoDoCancelamento: string;
   zerouNaoLidos: boolean;
   ajustes: number;
+  /** Peças com diferença que não foram ajustadas porque foram excluídas durante a contagem. */
+  naoAjustadas: { nome: string; diferenca: number }[];
   resumo: ResumoDaContagem;
 }
 
@@ -162,6 +164,10 @@ export function lerContagem(bruto: unknown): Contagem | null {
     motivoDoCancelamento: texto(o.motivoDoCancelamento),
     zerouNaoLidos: o.zerouNaoLidos === true,
     ajustes: inteiro(o.ajustes),
+    naoAjustadas: (Array.isArray(o.naoAjustadas) ? o.naoAjustadas : []).map((x) => ({
+      nome: texto(objeto(x).nome),
+      diferenca: inteiro(objeto(x).diferenca),
+    })),
     resumo: lerResumo(o.resumo),
   };
 }

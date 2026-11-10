@@ -97,7 +97,7 @@ export type EstadoDaSessao =
   | { estado: 'app-desatualizado'; mensagem: string };
 
 export type ResultadoDeChamada =
-  | { ok: true; dados: unknown }
+  | { ok: true; dados: unknown; criado?: boolean }
   | {
       ok: false;
       motivo: 'sessao-terminou' | 'sem-conexao' | 'app-desatualizado' | 'erro';

@@ -325,11 +325,31 @@ Uma seção por tarefa, no mesmo formato de [fase-1.md](fase-1.md). A tabela de 
 - Curva ABC (Fase 8) e mercadoria em maletas (Fase 3).
 - Não testei com o pacote instalado nem com milhares de linhas reais; o volume foi coberto pelos testes de 230 linhas (3 páginas de 100) e pelo teste de 10 mil produtos do backend (2.5).
 
-**Dúvidas abertas das tarefas 2.1 a 2.8**
+**Dúvidas abertas das tarefas 2.1 a 2.9**
 
 - **2.1:** a dona aceita que o sistema recuse a saída quando faltar peça (ela lança a compra antes)? Se preferir avisar e deixar passar, o ADR-0008 muda.
 - **2.1 / 2.6:** formato do código da loja gerado no cadastro rápido (ADR-0007, item 5) segue a confirmar com a dona; a 2.6 usa o padrão da 1.5.
-- **2.6 e 2.7 (falta na API):** a ponte entrega só o corpo da resposta, sem o 200 ou 201; por isso a tela não avisa "esta compra/leitura já estava registrada" (o reenvio é seguro, nada duplica). Também falta uma rota que mude só o estoque mínimo.
+- **2.6 e 2.7:** resolvidas na 2.9 (ponte distingue 200 de 201; rota própria do estoque mínimo).
 - **2.6 / 2.7:** leitor de código de verdade e pacote instalado no Windows ainda não testados (só como teclado nos testes).
 - **2.8:** foto nos arquivos exportados e ordenação por coluna: decidir com a dona se fazem falta.
 - Resolvidas: peça não lida na contagem (só vira zero se a dona confirmar, 2.4); filtro de compras por usuário (a API da 2.5 aceita e a tela tem "Quem lançou").
+
+### Tarefa 2.9: fechamento da Fase 2
+
+**Concluída.** Revisão pós-fase: um defeito do fechamento da contagem e duas faltas que a 2.6 e a 2.7 deixaram anotadas.
+
+**O que foi feito**
+
+- **Defeito (backend):** fechar a contagem falhava (404) se uma peça fosse excluída durante a contagem. Agora a peça excluída **não recebe ajuste** (não se mexe em saldo de produto excluído), o fechamento conclui e a resposta traz `naoAjustadas` (peça, esperado, contado, diferença e o motivo "Peça excluída"). A divergência continua no inventário (imutável) e no relatório de divergências; fechar de novo devolve o mesmo resultado. Peça inativada é ajustada normalmente. A tela avisa, em português simples, quais peças ficaram sem ajuste.
+- **Rota só do estoque mínimo:** `PATCH /api/dona/produtos/{id}/estoque-minimo` (só ADMIN, versão otimista com 409, valor de zero para cima, auditoria `ESTOQUE_MINIMO_ALTERADO` com antes e depois). A ficha da peça passou a usar essa rota em vez de reenviar o cadastro inteiro; a ponte confere os parâmetros como as demais.
+- **Aviso de reenvio:** a ponte agora distingue 201 (criado) de 200 (já registrado) em receber compra, ler e corrigir a contagem, e a tela mostra "Esta compra já estava registrada." e "Esta leitura já estava registrada.", sem dizer que somou.
+- Clientes da API regerados.
+
+**Decisões que tomei**
+
+- A peça excluída fica de fora do ajuste (e não é "ressuscitada" nem tem o saldo mexido); a lista `naoAjustadas` é calculada ao ler a contagem fechada, então vale também para quem fecha de novo.
+- Peça excluída que não foi lida e a dona manda "zerar não lidas": o contado vira zero (fica registrado), mas o saldo não muda e ela entra em `naoAjustadas`.
+
+**O que ficou de fora:** foto nos arquivos exportados, ordenação por coluna, curva ABC e maletas.
+
+**Testes:** peça excluída com e sem diferença, excluída não lida com "zerar", inativada, fechar de novo, entrada de compra durante a contagem (esperado congelado; ajuste = contado − esperado); estoque mínimo (grava, versão, auditoria, 409, valores inválidos, 403/401); ponte (PATCH, 201 x 200) e telas.

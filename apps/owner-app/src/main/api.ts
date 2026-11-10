@@ -4,6 +4,7 @@ import {
   registrar as registrarImportacao,
   resultadoDasImportacoes,
   editar4 as editarProduto,
+  mudarEstoqueMinimo,
   excluir9 as excluirFoto,
   criar4 as criarProduto,
   enviar1 as enviarFoto,
@@ -213,12 +214,16 @@ type RetornoDoCliente<T> = { data?: T; error?: unknown; response?: Response };
 /** Executa uma chamada do cliente gerado e traduz o resultado, inclusive a falta de internet. */
 async function executar<T>(
   chamada: () => Promise<RetornoDoCliente<T>>,
+  /** Quando a tela precisa saber se o servidor criou (201) ou já tinha registrado (200). */
+  distinguirCriado = false,
 ): Promise<Resultado<T | undefined>> {
   try {
     const { data, error, response } = await chamada();
     if (error !== undefined && error !== '')
       return { ok: false, falha: comoFalha(error, response) };
     if (response && !response.ok) return { ok: false, falha: comoFalha(undefined, response) };
+    if (distinguirCriado && response)
+      return { ok: true, dados: data, criado: response.status === 201 };
     return { ok: true, dados: data };
   } catch (e) {
     if (ehAppDesatualizado(e)) return { ok: false, falha: comoFalha(e, undefined) };
@@ -445,7 +450,7 @@ async function executarCompra(
     case 'compras.ver':
       return executar(() => verCompra({ ...base, path: { id } }));
     case 'compras.receber':
-      return executar(() => receberCompra({ ...base, body: pedido.corpo as never }));
+      return executar(() => receberCompra({ ...base, body: pedido.corpo as never }), true);
     case 'compras.desfazer':
       return executar(() =>
         desfazerCompra({
@@ -490,9 +495,9 @@ async function executarEstoque(
     case 'contagens.itens':
       return executar(() => itensDaContagem({ ...base, path, query }));
     case 'contagens.ler':
-      return executar(() => lerNaContagem({ ...base, path, body }));
+      return executar(() => lerNaContagem({ ...base, path, body }), true);
     case 'contagens.corrigir':
-      return executar(() => corrigirContagem({ ...base, path, body }));
+      return executar(() => corrigirContagem({ ...base, path, body }), true);
     case 'contagens.fechar':
       return executar(() => fecharContagem({ ...base, path, body }));
     case 'contagens.cancelar':
@@ -597,6 +602,10 @@ async function executarProduto(
       return executar(() => criarProduto({ ...base, body: pedido.corpo as never }));
     case 'produtos.editar':
       return executar(() => editarProduto({ ...base, path: { id }, body: pedido.corpo as never }));
+    case 'produtos.estoqueMinimo':
+      return executar(() =>
+        mudarEstoqueMinimo({ ...base, path: { id }, body: pedido.corpo as never }),
+      );
     case 'produtos.codigos.gravar':
       return executar(() =>
         alterarCodigos({

@@ -357,6 +357,36 @@ describe('API do Corona Gestão: rotas certas no cliente gerado', () => {
     ).toBe(`POST /api/dona/compras/${ID}/desfazer`);
   });
 
+  it('estoque mínimo vai por PATCH, só com versão e valor', async () => {
+    expect(
+      await caminhoDe({
+        operacao: 'produtos.estoqueMinimo',
+        id: ID,
+        corpo: { version: 1, estoqueMinimo: 4 },
+      } as never),
+    ).toBe(`PATCH /api/dona/produtos/${ID}/estoque-minimo`);
+  });
+
+  it('compra e leituras dizem se o servidor criou (201) ou já tinha registrado (200)', async () => {
+    async function resposta(status: number, pedido: object) {
+      const fetchFalso = (): Promise<Response> =>
+        Promise.resolve(
+          new Response('{}', { status, headers: { 'Content-Type': 'application/json' } }),
+        );
+      return criarApiDoGestao({ ...base, fetch: fetchFalso }).executar('tk', pedido as never);
+    }
+    const receber = { operacao: 'compras.receber', corpo: {} };
+    const ler = { operacao: 'contagens.ler', id: ID, corpo: {} };
+    const corrigir = { operacao: 'contagens.corrigir', id: ID, corpo: {} };
+    for (const pedido of [receber, ler, corrigir]) {
+      expect(await resposta(201, pedido)).toMatchObject({ ok: true, criado: true });
+      expect(await resposta(200, pedido)).toMatchObject({ ok: true, criado: false });
+    }
+    // As demais chamadas não carregam essa informação.
+    const outra = await resposta(200, { operacao: 'compras.ver', id: ID });
+    expect(outra).toEqual({ ok: true, dados: {} });
+  });
+
   it('estoque e contagens chamam as rotas certas', async () => {
     const c = (operacao: string, extra: object = {}) => caminhoDe({ operacao, ...extra } as never);
     const consulta = { pagina: 0, tamanho: 20 };
