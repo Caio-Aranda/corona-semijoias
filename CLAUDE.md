@@ -39,9 +39,12 @@ TypeScript (dois apps separados) · SQLite criptografado no app do vendedor.
 - Pronto = funcionalidade + testes + relatório correspondente + conciliação passando.
 
 ## Comandos
+- `npm run setup`: prepara o computador (confere Node, Java 21 e Docker, `npm ci`, cria `.env` sem sobrescrever, sobe o banco).
 - `npm run db:up` / `db:down` / `db:reset`: PostgreSQL de desenvolvimento (Docker Compose).
 - `npm run api:run`: sobe a API (perfil `dev`, Swagger ligado) contra o banco do Compose.
 - `npm run api:test`: `./mvnw verify` na pasta `backend/` (precisa do Docker aberto; Testcontainers).
+- `npm run api:clientes`: gera os clientes da API a partir do OpenAPI. `npm run api:redefinir-senha -- <login>`: nova senha temporária da dona.
+- `npm run owner:dev` / `owner:build`: Corona Gestão. `npm run seller:dev` / `seller:build` / `seller:empacotar`: Corona Vendas.
+- `npm run barreira:varrer`: confere que o pacote do Corona Vendas não leva código da dona.
+- `npm run lint`, `typecheck`, `format:check` (e `format`); `npm run setup:test` testa o script de setup.
 - Estresse longo do sync: `./mvnw test -Dtest=EstresseDoPullTest -Dcorona.estresse.duracao=PT10M` na pasta `backend/`.
-
-(demais comandos: preencher conforme o projeto for criado)

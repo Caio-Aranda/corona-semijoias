@@ -1,0 +1,26 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "API (perfil dev)",
+      "request": "launch",
+      "mainClass": "br.com.coronasemijoias.api.CoronaApiApplication",
+      "projectName": "corona-api",
+      "cwd": "${workspaceFolder}/backend",
+      "vmArgs": "-Dspring.profiles.active=dev -Duser.timezone=UTC"
+    },
+    {
+      "type": "node-terminal",
+      "name": "Corona Gestão (desenvolvimento)",
+      "request": "launch",
+      "command": "npm run owner:dev"
+    },
+    {
+      "type": "node-terminal",
+      "name": "Corona Vendas (desenvolvimento)",
+      "request": "launch",
+      "command": "npm run seller:dev"
+    }
+  ]
+}

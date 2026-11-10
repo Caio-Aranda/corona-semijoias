@@ -8,7 +8,8 @@ A especificação completa está em [docs/ESPECIFICACAO.md](docs/ESPECIFICACAO.m
 
 ```
 corona-semijoias/
-├── .github/            modelo de Pull Request (workflows entram na tarefa 7)
+├── .github/            modelo de Pull Request, workflows do CI e Dependabot
+├── .vscode/            extensões, tarefas e execução no VS Code
 ├── backend/            API Spring Boot (Maven wrapper em backend/mvnw)
 ├── apps/owner-app/     Corona Gestão (Electron + React; só online) — veja apps/owner-app/README.md
 ├── apps/seller-app/    Corona Vendas (Electron + React; offline)
@@ -22,7 +23,7 @@ corona-semijoias/
 └── README.md
 ```
 
-Ainda vão entrar: `packages/api-client-dona`, `packages/api-client-vendedor`, `.vscode/`. O Corona Vendas nunca importa código da dona (ADR-0003).
+O Corona Vendas nunca importa código da dona (ADR-0003).
 
 ## Pré-requisitos
 
@@ -53,7 +54,11 @@ npm run typecheck
 npm run format:check
 ```
 
-Para arrumar o formato dos arquivos automaticamente, use `npm run format`. Os próximos comandos entram nas tarefas seguintes.
+Para arrumar o formato dos arquivos automaticamente, use `npm run format`.
+
+**Atalho:** `npm run setup` faz tudo de uma vez no primeiro uso: confere Node, Java 21 (e se `JAVA_HOME` aponta para ele) e Docker, roda `npm ci`, cria o `.env` com senhas e chaves de desenvolvimento geradas (nunca sobrescreve um `.env` que já existe; só avisa as variáveis que faltam) e sobe o banco. Pode rodar de novo sem estragar nada. No VS Code, as tarefas e a execução da API (perfil `dev`) e dos dois aplicativos estão em `.vscode/`.
+
+Em desenvolvimento, a API cria um vendedor de teste (variáveis `DEMO_VENDEDOR_*` do `.env`) para entrar no Corona Vendas. Isso só acontece no perfil `dev`, nunca em produção. O roteiro do teste com a dona está em [docs/roteiro-teste-de-uso.md](docs/roteiro-teste-de-uso.md).
 
 ## Corona Gestão (aplicativo da dona)
 
@@ -135,7 +140,7 @@ Roda `./mvnw verify`: compila e executa todos os testes. **O Docker Desktop prec
 
 Os comandos passam por `scripts/mvnw.mjs`, que escolhe `mvnw.cmd` no Windows e `./mvnw` no Linux; os dois funcionam no PowerShell e no Git Bash. Para rodar o Maven direto, entre em `backend/` e use `./mvnw` (Git Bash) ou `.\mvnw.cmd` (PowerShell). O Maven em si não precisa estar instalado: o wrapper baixa o 3.9.16 na primeira vez.
 
-O `.env` é encontrado tanto rodando de `backend/` quanto da raiz do projeto (por exemplo, pelo VS Code). O perfil `dev` (documentação ligada) só é ativado por `npm run api:run`; ao subir de outra forma, a API funciona igual, mas sem o Swagger. A configuração do VS Code entra na tarefa 17.
+O `.env` é encontrado tanto rodando de `backend/` quanto da raiz do projeto (por exemplo, pelo VS Code). O perfil `dev` (documentação ligada) só é ativado por `npm run api:run`; ao subir de outra forma, a API funciona igual, mas sem o Swagger. A configuração do VS Code está em `.vscode/`.
 
 Como criar uma tabela nova (convenções do ADR-0002) e como rodar os testes do sync: [backend/README.md](backend/README.md). Restauração de backup sem perder registros na sincronização: [docs/restauracao-de-backup.md](docs/restauracao-de-backup.md).
 

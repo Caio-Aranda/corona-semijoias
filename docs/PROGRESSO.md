@@ -26,9 +26,9 @@ Lista oficial, aprovada pelo responsável. Os ADRs e as tarefas usam estes núme
 | 12 | feat(api): versão mínima e tipo de app (cabeçalhos; o tipo é conveniência, não segurança) | Concluída (PR 18) · [detalhe](progresso/fase-0.md#tarefa-12-versão-mínima-e-tipo-de-app) |
 | 13 | feat(api-client): clientes gerados do OpenAPI, um da dona e um do vendedor | Concluída (PR 19) · [detalhe](progresso/fase-0.md#tarefa-13-clientes-gerados-do-openapi) |
 | 14 | feat(ui): tema da marca e componentes base em packages/ui | Concluída (PR 20) · [detalhe](progresso/fase-0.md#tarefa-14-tema-e-componentes-base) |
-| 15 | feat(owner-app): Corona Gestão com login e tela inicial | Concluída (PR a abrir) · [detalhe](progresso/fase-0.md#tarefa-15-corona-gestão-com-login-e-tela-inicial) |
-| 16 | feat(seller-app): Corona Vendas com login online e barreira contra código da dona | Concluída (PR a abrir) · [detalhe](progresso/fase-0.md#tarefa-16-corona-vendas-com-login-online-e-barreira-contra-código-da-dona) |
-| 17 | chore: VS Code, comando único de setup e roteiro do teste de uso | Pendente |
+| 15 | feat(owner-app): Corona Gestão com login e tela inicial | Concluída (PR 21) · [detalhe](progresso/fase-0.md#tarefa-15-corona-gestão-com-login-e-tela-inicial) |
+| 16 | feat(seller-app): Corona Vendas com login online e barreira contra código da dona | Concluída (PR 22) · [detalhe](progresso/fase-0.md#tarefa-16-corona-vendas-com-login-online-e-barreira-contra-código-da-dona) |
+| 17 | chore: VS Code, comando único de setup e roteiro do teste de uso | Concluída (PR a abrir) · [detalhe](progresso/fase-0.md#tarefa-17-vs-code-setup-e-roteiro-do-teste-de-uso) |
 | 18 | spike: SQLCipher no Electron dentro do monorepo (tempo limitado, gera o ADR-0005) | Pendente |
 | 19 | feat(backend): cotações do Banco Central (tabela `cotacoes`, busca diária, conversão para Dólar e Guarani, aviso de falha; ADR-0006). Antes da Fase 1. Sem rota nem tela, por isso não depende das tarefas 9 a 18 | Pendente |
 
@@ -41,8 +41,7 @@ O que ainda está em aberto nas tarefas concluídas (o que já foi resolvido por
 - Nome de tela de cada relatório: definido na tarefa daquele relatório. ([tarefa 2.1](progresso/fase-0.md#tarefa-21-decisões-do-responsável-especificação-v13-e-glossário))
 - Base da comissão (§17.6), desconto em porcentagem por linha (confirmar na Fase 4) e retenção de `sessoes` e `tentativas_login` (ADR futuro). ([tarefa 3](progresso/fase-0.md#tarefa-3-adrs-de-fundação))
 - ADR-0005 (SQLCipher): tarefa 18. ([tarefa 3](progresso/fase-0.md#tarefa-3-adrs-de-fundação))
-- Node 26.13.0 e npm 11.20.0 ainda não instalados na máquina de desenvolvimento; `npm audit` com avisos moderados em dependências de desenvolvimento (Dependabot). ([tarefa 4](progresso/fase-0.md#tarefa-4-esqueleto-do-monorepo))
-- VS Code (Boot Dashboard com o perfil `dev`) e `.vscode/`: tarefa 17. ([tarefa 6](progresso/fase-0.md#tarefa-6-esqueleto-do-backend))
+- `npm audit` com avisos moderados em dependências de desenvolvimento (Dependabot). ([tarefa 4](progresso/fase-0.md#tarefa-4-esqueleto-do-monorepo))
 - Teste automático das palavras proibidas do glossário contra as mensagens da API (tarefa que ler os blocos do glossário). ([tarefa 6](progresso/fase-0.md#tarefa-6-esqueleto-do-backend))
 - Vulnerabilidade sem nota de gravidade no OSV não reprova o CI. ([tarefa 7](progresso/fase-0.md#tarefa-7-ci-e-dependabot))
 - Rotas `/sync/push` e `/sync/pull`, `sync_log`, idempotência, cursor inválido e filtro por vendedor (Fase 5). ([tarefa 8](progresso/fase-0.md#tarefa-8-convenções-do-schema-e-sync_seq-seguro))
@@ -56,7 +55,7 @@ O que ainda está em aberto nas tarefas concluídas (o que já foi resolvido por
 - Mais de uma instância da API pede um ADR (a trava por IP fica na memória). ([tarefa 11](progresso/fase-0.md#tarefa-11-sessão-longa-limite-de-tentativas-e-registro-de-acessos))
 - Fase 1: desativar usuário revoga as famílias. Fase 5: tabela `dispositivos`, segundo aparelho e prazo offline. ([tarefa 11](progresso/fase-0.md#tarefa-11-sessão-longa-limite-de-tentativas-e-registro-de-acessos))
 - Corona Vendas: instalador, ícone e atualização automática (Fase 9); prazo offline guardado mas ainda não aplicado, login offline e bloqueio do segundo aparelho (Fase 5). ([tarefa 16](progresso/fase-0.md#tarefa-16-corona-vendas-com-login-online-e-barreira-contra-código-da-dona))
-- Corona Vendas: o login que entra, a troca de senha e a tela inicial só foram vistos nos testes, não com conta de vendedor real (fica para o teste de uso da tarefa 17). ([tarefa 16](progresso/fase-0.md#tarefa-16-corona-vendas-com-login-online-e-barreira-contra-código-da-dona))
+- Corona Vendas: o login que entra, a troca de senha e a tela inicial só foram vistos nos testes, não com conta de vendedor real (fica para o teste de uso, com o vendedor de teste da tarefa 17). ([tarefa 16](progresso/fase-0.md#tarefa-16-corona-vendas-com-login-online-e-barreira-contra-código-da-dona))
 
 ### Prompt sugerido para a tarefa 19
 
@@ -95,3 +94,4 @@ Rotas e telas (Fase 1 para a dona, Fase 4 para o vendedor), pull (Fase 5), `cota
 ## Ao terminar
 Atualize `docs/PROGRESSO.md` e abra o PR em Conventional Commits (`feat(backend): ...`). No relatório, diga o que fez, o que não fez e as dúvidas.
 ```
+- Vendedor de demonstração sem cadastro de vendedor (`vendedor_id` vazio) até a Fase 1. ([tarefa 17](progresso/fase-0.md#tarefa-17-vs-code-setup-e-roteiro-do-teste-de-uso))
