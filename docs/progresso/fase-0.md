@@ -467,3 +467,28 @@ ADR-0004 (itens 1 a 3, 5, 6 e 10), ADR-0003 (itens 1 a 3 e dois builds), ADR-000
 - Endereço da API em `MAIN_VITE_CORONA_API_URL` (`apps/owner-app/.env`, exemplo versionado); `http://` só para este computador, `https://` no resto.
 - Perder a sessão em vez de apresentar o mesmo token pela 3ª vez: prefiro pedir novo login a arriscar revogar a família.
 - A tela só valida o que ajuda (8 caracteres, letras e números, senhas iguais); o servidor decide.
+
+### Tarefa 16: Corona Vendas com login online e barreira contra código da dona
+
+ADR-0003 (inteiro), ADR-0004 (itens 2 a 5, 6 e 10), ADR-0001 (Electron, electron-vite, Vite, electron-builder, React), glossário (partes 1, 2, 4 a 7), §19.7 e §18.
+
+**O que foi feito**
+- `apps/seller-app` (`@corona/seller-app`, produto "Corona Vendas", versão 1.0.0): copiado do desenho do Corona Gestão, sem importar nada dele. `X-App-Tipo: vendas`, cliente `@corona/api-client-vendedor`, mesma janela segura, ponte fixa, guarda de tokens só no processo principal, renovação em fila única e cofre `safeStorage` obrigatório. Telas: Entrar, troca obrigatória de senha, aplicativo desatualizado (sem "Atualizar agora"), sem internet com "Tentar de novo" e a tela inicial (Vender, Minha maleta, Meus clientes, Meus números com "Em breve", e Sair). As mensagens de erro vêm da API (inclusive `APP_INCOMPATIVEL`). Scripts na raiz: `seller:dev`, `seller:build`, `seller:empacotar`, `barreira:varrer`.
+- Identificador do aparelho (ADR-0004, item 4): UUID v4 gerado na primeira abertura, em `aparelho/identificador.txt` na pasta de dados; vai como `dispositivoId` no corpo do login e da renovação; a tela e a ponte nunca o conhecem (um teste confere). Prazo offline (item 5): a hora do servidor e o prazo da resposta ficam em `aparelho/ultimo-contato.json`; só guarda, não aplica.
+- Barreira, camada 1 (lint): a lista de marcadores mora num arquivo só, `scripts/marcadores-proibidos.json`, lido pelo lint e pela varredura. Regra de importações restritas no Corona Vendas (`api-client-dona`, `owner-app`) e regra local `corona/importacao-dentro-do-app` (nenhum `../`, caminho absoluto ou `require` que saia da pasta do app), com mensagens em português. `packages/*` agora proíbe qualquer `@corona/api-client-*` (antes só o da dona). O `package.json` do app não lista `api-client-dona`. Teste com ESLint de verdade e arquivos de exemplo que violam (18 casos).
+- Camada 2 (CI): `electron-builder --dir` (26.18.0, com `electronDist` apontando para o Electron que o npm já baixou, sem baixar nada) gera o `app.asar` real; `scripts/barreira/varrer-pacote.mjs` o desempacota (`@electron/asar`) e falha se achar um marcador no conteúdo ou no nome. Passo novo no job `frontend`, que também varre `packages/shared` e `packages/ui` (camada 3). Mapas de código desligados (`sourcemap: false` nas três partes e `!**/*.map` no pacote). Teste planta cada marcador (e um `app.asar` sujo) e confere que a varredura falha.
+- A varredura já valeu a pena: o `app.asar` continha "Corona Gestão" num comentário do cliente gerado, vindo da descrição do login na API ("o Corona Gestão não"). Troquei o texto da API por "os outros aplicativos não", regerei os dois clientes e o teste do OpenAPI do vendedor passou a conferir `preco_custo`, `precoCusto`, `custo`, `owner-app`, `api-client-dona` e "Corona Gestão" (ADR-0003, item 2). Os testes de `packages/ui` e do cliente do vendedor passaram a ler a lista única.
+- Testes (Vitest, sem janela): 113 no app (guarda de tokens, ponte, aparelho, contato com o servidor, API, telas, varredura de código, barreira). Lint, typecheck, format:check, testes e build verdes; `npm audit --audit-level=high` sem avisos altos (15 moderados, todos de `minimatch`/ESLint/electron-builder, dependências de desenvolvimento).
+- Visto de verdade: o app construído abriu contra a API local (porta de depuração). A tela de entrar renderiza com a marca; um usuário que não existe mostra a mensagem da API com a frase do Corona Vendas; a API registrou `tipo_app=vendas` e o mesmo `dispositivo_id` do arquivo; `require`/`process` não existem na tela, `localStorage`, `sessionStorage` e cookies ficam vazios e o `fetch` da tela é bloqueado pela CSP.
+
+**O que ficou pendente**
+- Não vi com conta de vendedor real o login que entra, a troca de senha e a tela inicial (só nos testes), por não usar a senha da dona do `.env` para criar um vendedor.
+- Instalador, ícone e atualização automática (Fase 9). Prazo offline aplicado, login sem internet e bloqueio do segundo aparelho (Fase 5).
+- Camada 3 do servidor: nada novo além do teste do OpenAPI; ArchUnit e o teste com dois vendedores esperam as rotas e os DTOs reais do vendedor (Fase 4 em diante).
+
+**Decisões tomadas**
+- Toda dependência do app vai em `devDependencies`: o electron-vite empacota tudo (inclusive os pacotes do monorepo) e o electron-builder só leva `out/` e o `package.json`, então o `app.asar` não carrega `node_modules`.
+- `electronDist` aponta para `node_modules/electron/dist`: empacotar leva cerca de 5 segundos, sem download. O CI roda `electron/install.js` só se a pasta não existir.
+- A regra do `../` é uma regra local de ESLint (o `no-restricted-imports` não sabe de que pasta o arquivo é). Os testes dela carregam a configuração por caminho calculado, pois um `import` com `../` violaria a própria regra.
+- O identificador do aparelho é gerado no processo principal e, se não der para gravar, vale só naquela abertura (o app não deixa de abrir).
+- Texto novo no glossário (sem internet ao entrar e tela inicial do vendedor), pois o do app da dona fala do Corona Gestão.

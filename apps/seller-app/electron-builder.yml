@@ -1,0 +1,19 @@
+# Pacote do Corona Vendas (ADR-0003, item 5). Só o que o electron-vite gerou entra: nada de node_modules.
+# Instalador, ícone e atualização automática ficam para a Fase 9; aqui só interessa o app.asar real,
+# que o CI desempacota e varre atrás de marcadores proibidos.
+appId: br.com.coronasemijoias.vendas
+productName: Corona Vendas
+asar: true
+# Usa o Electron que o npm já baixou: o empacotamento não baixa nada.
+electronDist: ../../node_modules/electron/dist
+electronVersion: 45.2.3
+npmRebuild: false
+nodeGypRebuild: false
+directories:
+  output: release
+files:
+  - out/**
+  - package.json
+  - '!**/*.map'
+win:
+  signAndEditExecutable: false

@@ -116,7 +116,7 @@ public class AutenticacaoController {
 
     @Operation(summary = "Entrar com login e senha",
             description = "Devolve o token de acesso (15 minutos) e o de renovação (30 dias). O Corona Vendas manda "
-                    + "dispositivoId; o Corona Gestão não. Depois de 5 erros seguidos do mesmo endereço, responde 429 "
+                    + "dispositivoId; os outros aplicativos não. Depois de 5 erros seguidos do mesmo endereço, responde 429 "
                     + "com Retry-After até o fim do bloqueio.")
     @PostMapping("/login")
     public ResponseEntity<RespostaDoLogin> entrar(@Valid @RequestBody PedidoDeLogin pedido, HttpServletRequest requisicao) {

@@ -104,6 +104,17 @@ class OpenApiDesenvolvimentoTest extends TesteDeIntegracao {
         assertThat(documento).doesNotContain("/api/dona");
     }
 
+    /**
+     * ADR-0003, item 2: o documento do vendedor não tem custo nem texto que cite o outro aplicativo.
+     * "Corona Gestão" aqui já pegou uma descrição que vazava para o código gerado do Corona Vendas.
+     */
+    @Test
+    void grupoVendedorNaoTemCustoNemMarcadoresDaDona() throws Exception {
+        String documento = documento("/v3/api-docs/vendedor").toString();
+        assertThat(documento).doesNotContain("preco_custo", "precoCusto", "custo", "owner-app",
+                "api-client-dona", "Corona Gestão");
+    }
+
     @Test
     void comADocumentacaoLigadaTodaRotaTemPerfilOuEhPublica() {
         // No perfil dev entram as rotas da documentação: elas estão na lista pública.

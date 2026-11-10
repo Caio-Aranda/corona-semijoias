@@ -348,6 +348,12 @@ Quando passa o prazo máximo sem internet (Corona Vendas, §11):
 > **Este computador ficou muitos dias sem internet.**
 > Suas vendas estão salvas e serão enviadas assim que você conectar. Para fazer vendas novas, conecte-se à internet.
 
+**Sem conexão ao entrar no app do vendedor** (nesta etapa o Corona Vendas só entra com internet; o modo sem internet vem na Fase 5)
+
+> **Sem internet.**
+> Para entrar no Corona Vendas é preciso internet. Conecte-se e tente de novo.
+> Botão: **Tentar de novo**.
+
 **Sem conexão no app da dona** (o app da dona só funciona com internet, §4)
 
 > **Sem internet.**
@@ -397,6 +403,10 @@ Os cinco botões grandes são os da parte 1. Enquanto uma função não existe (
 Bloco "O que precisa da sua atenção" quando não há nada a mostrar:
 
 > Tudo em dia por aqui. Quando algo precisar de você, aparece neste espaço.
+
+**Tela inicial do vendedor (Corona Vendas)**
+
+Os quatro botões grandes são os da parte 1 (**Vender**, **Minha maleta**, **Meus clientes**, **Meus números**) e, no canto, **Sair**. Enquanto uma função não existe (Fase 0), o botão mostra o mesmo texto "Em breve." da tela inicial da dona, com o nome do botão no lugar de {Nome do botão}.
 
 ## 7. Estado de conexão do app do vendedor
 

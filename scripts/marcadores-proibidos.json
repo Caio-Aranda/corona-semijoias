@@ -1,0 +1,12 @@
+{
+  "descricao": "ADR-0003, item 4: marcadores que nunca podem aparecer no Corona Vendas. Este é o ÚNICO lugar onde a lista mora: o lint (eslint.config.mjs) e a varredura do pacote no CI (scripts/barreira/varrer-pacote.mjs) leem este arquivo. Acrescentar uma palavra proibida é uma linha em \"marcadores\".",
+  "marcadores": [
+    "/api/dona",
+    "preco_custo",
+    "precoCusto",
+    "api-client-dona",
+    "owner-app",
+    "Corona Gestão"
+  ],
+  "importacoesProibidas": ["api-client-dona", "owner-app"]
+}

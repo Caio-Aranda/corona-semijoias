@@ -3,8 +3,13 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 // Barreira do ADR-0003: o cliente do vendedor não pode ter rota nem tipo que só existe na dona.
-const MARCADORES = ['preco_custo', 'precoCusto', '/api/dona', 'api-client-dona', 'owner-app'];
 const raiz = join(import.meta.dirname, '..');
+// A lista mora num arquivo só, lido também pelo lint e pela varredura do pacote no CI.
+const MARCADORES = (
+  JSON.parse(
+    readFileSync(join(raiz, '..', '..', 'scripts', 'marcadores-proibidos.json'), 'utf8'),
+  ) as { marcadores: string[] }
+).marcadores;
 
 function arquivos(pasta: string): string[] {
   return readdirSync(pasta).flatMap((nome) => {

@@ -41,6 +41,16 @@ jobs:
       # Tarefas 14 a 16 só acrescentam os scripts "test" e "build" nos workspaces.
       - run: npm test --workspaces --if-present
       - run: npm run build --workspaces --if-present
+      # Barreira do ADR-0003, camada 2: empacota o Corona Vendas de verdade (electron-builder --dir, com o
+      # Electron que o npm já baixou: nada novo é baixado) e varre o app.asar atrás dos marcadores proibidos
+      # (scripts/marcadores-proibidos.json). A camada 3 varre packages/shared e packages/ui.
+      - name: Barreira do pacote (Corona Vendas)
+        run: |
+          test -d node_modules/electron/dist || node node_modules/electron/install.js
+          npm run seller:empacotar
+          pacote="$(find apps/seller-app/release -name app.asar | head -n 1)"
+          test -n "$pacote" || { echo "::error::O electron-builder não gerou o app.asar do Corona Vendas."; exit 1; }
+          node scripts/barreira/varrer-pacote.mjs "$pacote" packages/shared packages/ui
 
   backend:
     name: backend
