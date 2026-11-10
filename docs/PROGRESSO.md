@@ -50,7 +50,7 @@ Cadastros da dona (§15). Segue o mesmo formato da Fase 0. O código das etiquet
 | 1.5 | backend: produtos, `produtos_custos` e `produto_codigos` (regras do código, ADR-0007), rotas da dona | Concluída (PR 31) · [detalhe](progresso/fase-1.md#tarefa-15-produtos-custos-e-códigos-backend) |
 | 1.6 | backend: fotos de produto (arquivos, três tamanhos, importação em massa) e relatório de produtos sem foto | Concluída (PR 32) · [detalhe](progresso/fase-1.md#tarefa-16-fotos-de-produto-backend) |
 | 1.7 | backend: rota da cotação do dia e do aviso de falha (`AvisoDeCotacao`) | Concluída (PR 33) · [detalhe](progresso/fase-1.md#tarefa-17-rota-da-cotação-do-dia-e-dos-avisos-backend) |
-| 1.8 | owner-app: base de navegação e listas, telas de usuários (senha temporária mostrada uma vez), cotação em Real/Dólar/Guarani e aviso em "O que precisa da sua atenção", mitigação das 3 falhas de renovação sem internet | Em revisão (PR a definir) · [detalhe](progresso/fase-1.md#tarefa-18-base-do-corona-gestão-usuários-cotação-e-sessão-sem-internet-owner-app) |
+| 1.8 | owner-app: base de navegação e listas, telas de usuários (senha temporária mostrada uma vez), cotação em Real/Dólar/Guarani e aviso em "O que precisa da sua atenção", mitigação das 3 falhas de renovação sem internet | Concluída (PR 34) · [detalhe](progresso/fase-1.md#tarefa-18-base-do-corona-gestão-usuários-cotação-e-sessão-sem-internet-owner-app) |
 | 1.9 | owner-app: fornecedores, categorias, praças, semanas, restrições e clientes | A fazer |
 | 1.10 | owner-app: vendedores (abas da referência) | A fazer |
 | 1.11 | owner-app: produtos, fotos, importação em massa e leitura de código | A fazer |
