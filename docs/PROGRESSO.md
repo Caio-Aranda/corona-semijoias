@@ -57,9 +57,28 @@ Cadastros da dona (§15). Segue o mesmo formato da Fase 0. O código das etiquet
 | 1.12 | relatórios de cadastro (backend + tela) | Concluída (PR 38) · [detalhe](progresso/fase-1.md#tarefa-112-relatórios-de-cadastro-backend--tela--fecha-a-fase-1) |
 
 | 1.13 | ajustes de fechamento: fotos rápidas (cache em disco), filtros que faltavam nos relatórios de cadastro e resultado das importações | Concluída (PR 39) · [detalhe](progresso/fase-1.md#tarefa-113-ajustes-de-fechamento-da-fase-1) |
-| 1.14 | ativo/inativo em todos os cadastros e data de nascimento do cliente (aniversariantes de clientes) | Concluída (PR a informar) · [detalhe](progresso/fase-1.md#tarefa-114-ativoinativo-em-todos-os-cadastros-e-data-de-nascimento-do-cliente) |
+| 1.14 | ativo/inativo em todos os cadastros e data de nascimento do cliente (aniversariantes de clientes) | Concluída (PR 40) · [detalhe](progresso/fase-1.md#tarefa-114-ativoinativo-em-todos-os-cadastros-e-data-de-nascimento-do-cliente) |
 
 **Fase 1 concluída** (tarefas 1.1 a 1.14). O próximo passo é a Fase 2.
+
+## Fase 2
+
+### Plano da Fase 2
+
+Estoque e compras (§15). Segue o mesmo formato da Fase 1. O modelo do estoque está no [ADR-0008](decisoes/ADR-0008-estoque-e-movimentacoes.md).
+
+| Nº | Tarefa | Situação |
+| --- | --- | --- |
+| 2.1 | docs: plano da Fase 2 e ADR do estoque | Em revisão · [detalhe](progresso/fase-2.md#tarefa-21-plano-da-fase-2-e-adr-do-estoque-só-documentos) |
+| 2.2 | backend: movimentações de estoque (migração, serviço único que muda `estoque_atual`, estorno, ajuste, rotas da dona, testes de concorrência) | A fazer |
+| 2.3 | backend: compras e itens de compra (entrada de compra por código, idempotência, custo por compra e histórico de custo) | A fazer |
+| 2.4 | backend: estoque mínimo com aviso e inventário (contagem, divergências, fechamento que gera ajuste) | A fazer |
+| 2.5 | backend: relatórios de estoque e de compras (posição atual, movimentações por período, estoque mínimo, produtos parados, inventário e divergências, compras por fornecedor e período, histórico de custo por produto) com exportação | A fazer |
+| 2.6 | owner-app: entrada de compra com leitor, cadastro rápido e importação da compra por planilha | A fazer |
+| 2.7 | owner-app: movimentações e ajustes, estoque mínimo e inventário por leitor | A fazer |
+| 2.8 | owner-app: telas dos relatórios de estoque e compras | A fazer |
+
+**Fora desta fase:** mercadoria em maletas por vendedor (Fase 3) e curva ABC (Fase 8).
 
 ## Pendências abertas
 
