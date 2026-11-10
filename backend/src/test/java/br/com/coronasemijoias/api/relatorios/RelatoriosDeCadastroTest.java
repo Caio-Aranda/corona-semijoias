@@ -16,6 +16,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import br.com.coronasemijoias.api.estoque.ServicoDeEstoque;
+import br.com.coronasemijoias.api.estoque.ServicoDeEstoque.OrigemDoMovimento;
+import br.com.coronasemijoias.api.estoque.ServicoDeEstoque.Pedido;
+import br.com.coronasemijoias.api.estoque.ServicoDeEstoque.TipoDeMovimento;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -48,6 +52,9 @@ class RelatoriosDeCadastroTest extends TesteDeIntegracao {
 
     @Autowired
     UsuariosDeTeste usuarios;
+
+    @Autowired
+    ServicoDeEstoque servico;
 
     @Autowired
     JsonMapper json;
@@ -479,10 +486,13 @@ class RelatoriosDeCadastroTest extends TesteDeIntegracao {
         JsonNode zerado = criarProduto(m + " Zerado", cat, null, "1.00", "10.00", m + "-Z", "LOJA");
         JsonNode baixo = criarProduto(m + " Baixo", cat, null, "1.00", "20.00", m + "-B", "LOJA");
         JsonNode bom = criarProduto(m + " Bom", cat, null, "1.00", "30.00", m + "-G", "LOJA");
-        jdbc.update("UPDATE corona.produtos SET estoque_minimo = 5, estoque_atual = 2 WHERE id = ?::uuid",
-                baixo.get("id").asString());
-        jdbc.update("UPDATE corona.produtos SET estoque_minimo = 5, estoque_atual = 9 WHERE id = ?::uuid",
-                bom.get("id").asString());
+        // O estoque entra pelo serviço (com movimento), senão a conciliação enxergaria saldo sem lançamento.
+        jdbc.update("UPDATE corona.produtos SET estoque_minimo = 5 WHERE id = ?::uuid", baixo.get("id").asString());
+        jdbc.update("UPDATE corona.produtos SET estoque_minimo = 5 WHERE id = ?::uuid", bom.get("id").asString());
+        servico.registrar(new Pedido(null, UUID.fromString(baixo.get("id").asString()), TipoDeMovimento.ENTRADA, 2, null,
+                OrigemDoMovimento.MANUAL, null), usuarios.dona().id());
+        servico.registrar(new Pedido(null, UUID.fromString(bom.get("id").asString()), TipoDeMovimento.ENTRADA, 9, null,
+                OrigemDoMovimento.MANUAL, null), usuarios.dona().id());
         jdbc.update("""
                 INSERT INTO corona.produtos_fotos (id, produto_id, arquivo_hash, principal, ordem, largura, altura,
                     tamanho_bytes, chave_miniatura, chave_media, chave_grande)
