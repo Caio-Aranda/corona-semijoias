@@ -5,6 +5,7 @@
 
 import { OPERACOES_DE_CADASTRO } from './cadastros';
 import { OPERACOES_DE_COMPRAS } from './compras';
+import { OPERACOES_DE_ESTOQUE } from './estoque';
 import { OPERACOES_DE_PRODUTOS } from './produtos';
 import { OPERACOES_DE_RELATORIOS } from './relatorios';
 import { OPERACOES_DE_VENDEDORES } from './vendedores';
@@ -26,6 +27,7 @@ export const OPERACOES_DA_API = [
   ...OPERACOES_DE_VENDEDORES,
   ...OPERACOES_DE_PRODUTOS,
   ...OPERACOES_DE_COMPRAS,
+  ...OPERACOES_DE_ESTOQUE,
   ...OPERACOES_DE_RELATORIOS,
 ] as const;
 export type OperacaoDaApi = (typeof OPERACOES_DA_API)[number];

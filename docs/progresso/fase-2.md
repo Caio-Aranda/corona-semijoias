@@ -242,3 +242,38 @@ Uma seção por tarefa, no mesmo formato de [fase-1.md](fase-1.md). A tabela de 
 **Dúvidas**
 
 - Nenhuma que trave. A única a confirmar com a dona: o formato do código da loja gerado no cadastro rápido segue o da 1.5 (ADR-0007, item 5), como já estava pendente.
+
+### Tarefa 2.7: Corona Gestão, estoque, ajustes e contagem
+
+**Em revisão.** Só `apps/owner-app` (nenhuma linha de backend, nenhuma migração, nenhum cliente da API novo). A especificação não mudou. Termos de tela em [glossário, parte 12](../glossario-interface.md).
+
+**O que foi feito**
+
+- **Menu Estoque** ganhou **Estoque**, **Entradas e saídas**, **Está acabando** e **Contagem do estoque** (antes de Receber compra e Compras).
+- **Estoque (posição):** lista com **foto**, nome, código, quantidade, estoque mínimo e situação (**Está acabando** em destaque, texto escuro sobre fundo claro); busca, categoria, fornecedor, "Só os que estão acabando" e páginas de 20. **Ficha da peça:** foto grande, quantidade, mínimo, **custo só para a dona** (vem do cadastro, nunca vai para registro de diagnóstico) e o histórico (data, tipo em palavras da loja, quantidade com sinal, "ficou com", quem, motivo).
+- **Lançamentos** pela ficha: **Entrada**, **Saída**, **Perda** e **Ajustar o estoque** ("eu contei X" ou "diferença com sinal", motivo obrigatório; recusa antes de enviar o que passaria de zero). O identificador do lançamento nasce ao abrir a janela; o botão fica desligado durante o envio (trava síncrona, então duplo clique não duplica); reenviar o mesmo conteúdo usa o mesmo identificador, conteúdo mudado vira lançamento novo. Recusas da API (ex.: "Não há peças suficientes no estoque") aparecem com o texto do servidor, na própria janela.
+- **Desfazer lançamento** em cada linha do histórico (ficha e lista geral): pede o motivo, explica que o antigo continua no histórico, pedido com identificador próprio. O "desfazer" aparece ligado ao original ("Desfaz Entrada +5 de 10/11/2026") e o original mostra "Desfeito"; nenhum dos dois oferece desfazer de novo.
+- **Entradas e saídas** (todas as peças): filtros de período (data invertida avisa), tipo, quem lançou e peça (pelo código); páginas de 20; desfazer também funciona aqui.
+- **Estoque mínimo:** a tela **Está acabando** lista as peças com foto e quanto falta; o painel "O que precisa da sua atenção" já recebia o aviso do servidor e agora o aviso "estão acabando" tem o botão **Ver a lista**; edição do mínimo na ficha (inteiro, zero vale, negativo recusado).
+- **Contagem do estoque:** começar (todas as peças, uma categoria ou um fornecedor, com a explicação em linguagem simples de que o sistema anota o que esperava de cada produto), tela de contagem com o campo do leitor sempre focado (Enter lê e soma 1, foto grande da última peça lida, campo para **definir** a quantidade contada, zero vale), lista **Esperado × Contado × Diferença** que se atualiza a cada leitura (filtros: só com diferença, ainda não li, já li, todas, e busca), **Fechar a contagem** (mostra os ajustes e, havendo peças não lidas, exige escolher entre "ficam com zero" e "ficam como estão"), **Cancelar a contagem** (motivo opcional) e **ver as anteriores** (fechadas e canceladas, só leitura). Recusas (já existe contagem em andamento, peça abaixo de zero no fechamento) vêm do servidor, em português.
+- **Ponte** (`shared/estoque.ts`, `shared/validacao-estoque.ts`, `main/api.ts`): `estoque.ficha|lancar|ajustar|desfazer|lancamentos|acabando` e `contagens.listar|comecar|ver|itens|ler|corrigir|fechar|cancelar`, conferidas no processo principal (tipo fora de entrada, saída e perda, quantidade fora de 1 a 1.000.000, ajuste sem motivo ou com as duas formas, escopo sem id e campo desconhecido recusam tudo). Teste do caminho de cada rota (protege da renumeração do cliente gerado).
+- Testes: regras da tela (`nucleo/estoque.test.ts`: rótulos, sinais, desfazer, mínimo, ajuste, fechamento), validação da ponte, rotas, e o fluxo das telas (`telas/estoque/estoque.test.tsx`: foto e destaque, filtros, histórico, desfazer, duplo clique, reenvio com o mesmo identificador, recusas, ajuste, mínimo, leitor da contagem com foco, correção, não lidas, fechar com e sem peças não lidas, recusa do fechamento, cancelar, contagens anteriores, aviso da tela inicial e texto proibido nas telas novas). `lint`, `typecheck`, `format:check`, os testes do owner-app e a varredura da barreira (`node scripts/barreira/varrer-pacote.mjs apps/seller-app/out`) passam.
+
+**Decisões que tomei**
+
+- **A posição do Estoque usa a lista de produtos** (que já traz quantidade, mínimo e foto), e "Só os que estão acabando" troca para a lista de aviso do servidor; assim a regra de "acabando" é a do servidor.
+- **Mínimo editado pelo cadastro do produto** (`produtos.editar`, lendo a peça antes para pegar versão e custo atuais): a API de estoque não tem rota só do mínimo.
+- **"Corrigir" na lista de contagem** leva a peça para o painel da última peça lida (foto grande), em vez de editar na linha.
+- **Os não lidos exigem escolha explícita** (sem opção marcada, o botão de fechar recusa), como combinado na pergunta ao fim da 2.1.
+- **Filtro por peça nas entradas e saídas é pelo código** (campo + Enter); evita lista gigante de peças.
+- **Leitura que falha por falta de internet é repetida com o mesmo identificador** (não soma duas vezes se a primeira chegou).
+
+**O que ficou de fora**
+
+- "Esta leitura/compra já estava registrada" como aviso à parte: a ponte entrega só o corpo da resposta, sem 200 ou 201 (mesma limitação da 2.6); o reenvio é seguro.
+- Os tipos Maleta e Devolução da maleta já têm nome na tela, mas só passam a existir com a Fase 3.
+- Relatórios de estoque e de compras na tela (2.8). Não testei com leitor de código de verdade nem com o pacote instalado: o leitor foi testado como teclado (digitar e Enter).
+
+**Dúvidas**
+
+- Nenhuma que trave. Falta na API (só para registrar): rota que mude apenas o estoque mínimo, sem reenviar o cadastro inteiro, e o código 200 ou 201 nas respostas de reenvio.

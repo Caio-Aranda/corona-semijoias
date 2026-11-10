@@ -790,3 +790,11 @@ Termos de tela do estoque e das compras. Vale a regra da §19.1: nada de termo t
 - Ao ler a mesma peça de novo: "{peça}: agora são {n} peças nesta compra." A mesma frase vale para o leitor e para quem digita.
 - Confirmação: **Confirmar esta compra?** "Vão entrar {n} peças no estoque, num total de {valor}. Se precisar corrigir depois, é preciso desfazer a compra." Depois: **Compra gravada.** "Entraram {n} peças no estoque, num total de {valor}." (o valor é o que o sistema conferiu).
 - Planilha: colunas **código, quantidade e custo**; botão **Baixar a planilha modelo**; situações da linha **Entra na compra**, **Peça não cadastrada** e **Não entra**; ações **Cadastrar peça**, **Corrigir código**, **Tirar linha**. A compra só grava com todas as linhas boas. Fim: **Compra importada.**
+
+**Telas de estoque (tarefa 2.7, Corona Gestão)**
+
+- **Menu Estoque** · Estoque · Entradas e saídas · Está acabando · Contagem do estoque · Receber compra · Compras.
+- **Estoque:** colunas **No estoque**, **Estoque mínimo**, **Situação** (**Está acabando** ou **Em dia**); filtro **Só os que estão acabando**. Ficha: **Entrada**, **Saída**, **Perda**, **Ajustar o estoque**, **Mudar o estoque mínimo**; coluna do histórico **Ficou com**; ao lado do custo: "Só você vê o custo."
+- **Desfazer lançamento:** botão **Desfazer** na linha; o desfeito mostra **Desfeito** e o que desfaz mostra "Desfaz Entrada +5 de 10/11/2026". Pede o **Motivo**.
+- **Ajuste:** "Como você quer ajustar?" · **Eu contei** · **Quero dizer a diferença** (3 para mais, -3 para menos) · **Motivo do ajuste**.
+- **Contagem do estoque:** **Começar a contagem** (todas as peças, uma categoria ou um fornecedor), **Continuar contando**, **Ver a contagem**, **Fechar a contagem**, **Cancelar a contagem**. Campo **Código da peça**; "Última peça lida"; **Definir a quantidade**; lista "Esperado e contado" com **Mostrar** (Só as que têm diferença, As que ainda não li, As que já li, Todas as peças). Situações: **Em andamento**, **Fechada**, **Cancelada**. Pergunta do fechamento: "Eles devem ficar com zero peças ou ficam como estão?" (**Ficam com zero peças** · **Ficam como estão**).
