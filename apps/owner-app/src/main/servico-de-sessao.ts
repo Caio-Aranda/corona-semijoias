@@ -29,6 +29,8 @@ export class ServicoDeSessao {
     private readonly api: ChamadasDaApi,
     /** Termina quando a sessão guardada no disco já foi retomada (ou descartada). */
     private readonly prontidao: Promise<void> = Promise.resolve(),
+    /** Chamado ao sair da sessão: apaga o que ficou guardado no disco (fotos de produto). */
+    private readonly aoSair: () => Promise<void> = () => Promise.resolve(),
   ) {}
 
   /** Chamado quando a guarda avisa que o aplicativo está desatualizado. */
@@ -51,6 +53,7 @@ export class ServicoDeSessao {
     this.nome = null;
     this.desatualizado = null;
     await this.guarda.sair();
+    await this.aoSair().catch(() => undefined);
   }
 
   async estouLogado(): Promise<EstadoDaSessao> {

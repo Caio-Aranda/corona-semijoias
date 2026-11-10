@@ -112,6 +112,46 @@ describe('conferência dos dados de produtos', () => {
     expect(conferirParametros('produtos.importacao.confirmar', { arquivos: [] })).toBeNull();
   });
 
+  it('importação: o lote é conferido e o id do lote é opcional nas fotos', () => {
+    const lote = {
+      tipo: 'PLANILHA',
+      arquivoNome: 'produtos.xlsx',
+      linhas: [{ referencia: 'Linha 2', resultado: 'RECUSADO', motivo: 'Preço inválido' }],
+    };
+    expect(
+      conferirParametros('importacoes.registrar', { importacaoId: ID, importacao: lote }),
+    ).not.toBeNull();
+    for (const ruim of [
+      { importacaoId: 'x', importacao: lote },
+      { importacaoId: ID, importacao: { ...lote, tipo: 'OUTRO' } },
+      { importacaoId: ID, importacao: { ...lote, linhas: [] } },
+      {
+        importacaoId: ID,
+        importacao: { ...lote, linhas: Array.from({ length: 501 }, () => lote.linhas[0]) },
+      },
+      {
+        importacaoId: ID,
+        importacao: { ...lote, linhas: [{ referencia: 'x', resultado: 'FEITO' }] },
+      },
+      {
+        importacaoId: ID,
+        importacao: { ...lote, linhas: [{ referencia: ' ', resultado: 'CRIADO' }] },
+      },
+      { importacaoId: ID, importacao: { ...lote, extra: 1 } },
+    ]) {
+      expect(conferirParametros('importacoes.registrar', ruim)).toBeNull();
+    }
+    expect(
+      conferirParametros('produtos.importacao.confirmar', { arquivos: [foto()], importacaoId: ID }),
+    ).not.toBeNull();
+    expect(
+      conferirParametros('produtos.importacao.confirmar', {
+        arquivos: [foto()],
+        importacaoId: 'x',
+      }),
+    ).toBeNull();
+  });
+
   it('as demais operações exigem id válido', () => {
     expect(conferirParametros('produtos.inativar', { id: 'x' })).toBeNull();
     expect(conferirParametros('produtos.fotos.principal', { id: ID, fotoId: ID })).not.toBeNull();

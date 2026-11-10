@@ -11,6 +11,20 @@ const ehTexto = (v: unknown): v is string => typeof v === 'string';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const DATA = /^\d{4}-\d{2}-\d{2}$/;
 const RECORTE = /^[a-z0-9-]{1,40}$/;
+const VALOR = /^\d{1,12}(\.\d{1,2})?$/;
+const SIM_NAO = ['SIM', 'NAO'];
+const ESCOLHAS: [
+  'comRestricao' | 'comProdutos' | 'comVendedor' | 'estoque' | 'foto' | 'tipo' | 'resultado',
+  string[],
+][] = [
+  ['comRestricao', SIM_NAO],
+  ['comProdutos', SIM_NAO],
+  ['comVendedor', SIM_NAO],
+  ['estoque', ['ZERADO', 'ABAIXO_DO_MINIMO', 'COM_ESTOQUE']],
+  ['foto', ['COM', 'SEM']],
+  ['tipo', ['PLANILHA', 'FOTOS']],
+  ['resultado', ['CRIADO', 'ATUALIZADO', 'JA_EXISTIA', 'RECUSADO']],
+];
 
 export interface ParametrosDeRelatorio {
   operacao: 'relatorios.cadastros';
@@ -30,6 +44,17 @@ const CAMPOS = [
   'de',
   'ate',
   'mes',
+  'limiteDe',
+  'limiteAte',
+  'comRestricao',
+  'estoque',
+  'precoDe',
+  'precoAte',
+  'foto',
+  'comProdutos',
+  'comVendedor',
+  'tipo',
+  'resultado',
   'recorte',
   'pagina',
   'tamanho',
@@ -68,6 +93,18 @@ export function conferirRelatorio(p: Record<string, unknown>): ParametrosDeRelat
   for (const k of ['de', 'ate'] as const) {
     if (p[k] !== undefined && p[k] !== '') {
       if (!ehTexto(p[k]) || !DATA.test(p[k]) || Number.isNaN(Date.parse(p[k]))) return null;
+      consulta[k] = p[k];
+    }
+  }
+  for (const k of ['limiteDe', 'limiteAte', 'precoDe', 'precoAte'] as const) {
+    if (p[k] !== undefined && p[k] !== '') {
+      if (!ehTexto(p[k]) || !VALOR.test(p[k])) return null;
+      consulta[k] = p[k];
+    }
+  }
+  for (const [k, aceitos] of ESCOLHAS) {
+    if (p[k] !== undefined && p[k] !== '') {
+      if (!ehTexto(p[k]) || !aceitos.includes(p[k])) return null;
       consulta[k] = p[k];
     }
   }

@@ -4,6 +4,7 @@ import type { PonteDoCorona } from '../../../shared/ponte';
 import { AvisoDeErro } from '../../componentes/AvisoDeErro';
 import { ImagemDoProduto } from '../../componentes/ImagemDoProduto';
 import { chamar, useBusca } from '../../nucleo/chamadas';
+import { preBuscarImagens } from '../../nucleo/imagens';
 import { tresMoedas } from '../../nucleo/moedas';
 import { TEXTOS } from '../../textos';
 import { ConsultaDeProduto } from './ConsultaDeProduto';
@@ -70,6 +71,14 @@ export function TelaProdutos({ ponte }: TelaProdutosProps) {
     `${buscaAplicada}|${categoria}|${fornecedor}|${situacao}|${pagina}`,
   );
   const dados = lista.dados ? lerPaginaDeProdutos(lista.dados) : null;
+  // As miniaturas da página começam a vir já, antes de cada linha aparecer.
+  useEffect(() => {
+    if (dados)
+      preBuscarImagens(
+        ponte,
+        dados.itens.map((p) => p.fotoPrincipal?.hash),
+      );
+  }, [lista.dados]);
   const filtrando =
     buscaAplicada !== '' || categoria !== '' || fornecedor !== '' || situacao !== 'TODOS';
   const nomeDaCategoria = (id: string) => listaDeCategorias.find((c) => c.id === id)?.nome ?? '';

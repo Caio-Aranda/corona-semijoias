@@ -3,6 +3,7 @@ import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { CANAIS, type AvisoDeSessao } from '../shared/ponte';
 import { criarApiDoGestao } from './api';
+import { CacheDeFotos } from './cache-de-fotos';
 import { enderecoDaApi, versaoDoApp } from './configuracao';
 import { GuardaDeTokens } from './guarda-de-tokens';
 import { registrarPonte } from './ipc';
@@ -102,9 +103,15 @@ function iniciar(): void {
   });
   session.defaultSession.setPermissionCheckHandler(() => false);
 
+  // Fotos já baixadas ficam em disco (por hash, nunca mudam). Saiu da sessão, a pasta é apagada.
+  const cacheDeFotos = new CacheDeFotos({
+    pasta: join(app.getPath('userData'), 'fotos'),
+    limiteEmBytes: 200 * 1024 * 1024,
+  });
   const api = criarApiDoGestao({
     baseUrl: enderecoDaApi(process.env['MAIN_VITE_CORONA_API_URL']),
     versaoDoApp: versaoDoApp(app.getVersion()),
+    cacheDeFotos,
   });
   // `servico` nasce depois da guarda, e a guarda avisa o serviço pelo `aoPerderASessao`.
   let servico: ServicoDeSessao | null = null;
@@ -114,6 +121,7 @@ function iniciar(): void {
     arquivo: criarArquivoDoToken(),
     relogio,
     aoPerderASessao: (aviso) => {
+      if (aviso.estado === 'fora') void cacheDeFotos.limpar().catch(() => undefined);
       if (aviso.estado === 'app-desatualizado' && aviso.mensagem) {
         servico?.marcarDesatualizado(aviso.mensagem);
       }
@@ -121,7 +129,7 @@ function iniciar(): void {
     },
   });
   // A sessão guardada é retomada antes de a tela perguntar "estou logado?".
-  servico = new ServicoDeSessao(guarda, api, guarda.restaurar());
+  servico = new ServicoDeSessao(guarda, api, guarda.restaurar(), () => cacheDeFotos.limpar());
 
   registrarPonte(servico, (e) => {
     const quadro = e.senderFrame;

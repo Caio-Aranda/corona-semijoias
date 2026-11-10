@@ -266,6 +266,10 @@
   object-fit: contain;
 }
 
+.gestao-foto--provisoria {
+  opacity: 0.85;
+}
+
 .gestao-foto--grande.gestao-foto--vazia {
   height: 240px;
 }

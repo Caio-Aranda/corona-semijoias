@@ -19,6 +19,7 @@ export const OPERACOES_DE_PRODUTOS = [
   'produtos.fotos.imagem',
   'produtos.importacao.previa',
   'produtos.importacao.confirmar',
+  'importacoes.registrar',
 ] as const;
 export type OperacaoDeProdutos = (typeof OPERACOES_DE_PRODUTOS)[number];
 

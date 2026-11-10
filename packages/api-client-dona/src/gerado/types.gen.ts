@@ -154,6 +154,20 @@ export type LinhaDeFornecedor = {
     uf?: string;
 };
 
+export type LinhaDeImportacao = {
+    arquivo?: string;
+    id?: string;
+    loteId?: string;
+    motivo?: string;
+    quando?: string;
+    quem?: string;
+    referencia?: string;
+    resultado?: string;
+    resultadoNaTela?: string;
+    tipo?: string;
+    tipoNaTela?: string;
+};
+
 export type LinhaDeProduto = {
     ativo?: boolean;
     categoria?: string;
@@ -244,10 +258,22 @@ export type PedidoDeEdicao = {
     version: number;
 };
 
+export type PedidoDeLinha = {
+    motivo?: string;
+    referencia?: string;
+    resultado?: string;
+};
+
 export type PedidoDeLogin = {
     dispositivoId?: string;
     login: string;
     senha: string;
+};
+
+export type PedidoDeLote = {
+    arquivoNome?: string;
+    linhas?: Array<PedidoDeLinha>;
+    tipo?: string;
 };
 
 export type PedidoDeOrdem = {
@@ -355,6 +381,15 @@ export type RelatorioDeCadastroLinhaDeCliente = {
 
 export type RelatorioDeCadastroLinhaDeFornecedor = {
     itens?: Array<LinhaDeFornecedor>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroLinhaDeImportacao = {
+    itens?: Array<LinhaDeImportacao>;
     pagina?: number;
     recorte?: string;
     tamanho?: number;
@@ -905,6 +940,22 @@ export type Editar6Responses = {
 
 export type Editar6Response = Editar6Responses[keyof Editar6Responses];
 
+export type RegistrarData = {
+    body: PedidoDeLote;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/importacoes/{id}/linhas';
+};
+
+export type RegistrarResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
 export type Listar7Data = {
     body?: never;
     path?: never;
@@ -1053,7 +1104,9 @@ export type ConfirmarData = {
         arquivos?: Array<Blob | File>;
     };
     path?: never;
-    query?: never;
+    query?: {
+        importacaoId?: string;
+    };
     url: '/api/dona/produtos/fotos/importacao/confirmar';
 };
 
@@ -1395,6 +1448,7 @@ export type ClientesData = {
     path?: never;
     query?: {
         busca?: string;
+        comVendedor?: string;
         vendedorId?: string;
         pracaId?: string;
         de?: string;
@@ -1443,6 +1497,7 @@ export type FornecedoresData = {
     path?: never;
     query?: {
         busca?: string;
+        comProdutos?: string;
         de?: string;
         ate?: string;
         recorte?: string;
@@ -1466,6 +1521,10 @@ export type ProdutosData = {
     path?: never;
     query?: {
         busca?: string;
+        estoque?: string;
+        precoDe?: string;
+        precoAte?: string;
+        foto?: string;
         categoriaId?: string;
         fornecedorId?: string;
         situacao?: string;
@@ -1511,11 +1570,39 @@ export type SemCodigoDeBarrasResponses = {
 
 export type SemCodigoDeBarrasResponse = SemCodigoDeBarrasResponses[keyof SemCodigoDeBarrasResponses];
 
+export type ResultadoDasImportacoesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        tipo?: string;
+        resultado?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/cadastros/resultado-das-importacoes';
+};
+
+export type ResultadoDasImportacoesResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeImportacao;
+};
+
+export type ResultadoDasImportacoesResponse = ResultadoDasImportacoesResponses[keyof ResultadoDasImportacoesResponses];
+
 export type VendedoresData = {
     body?: never;
     path?: never;
     query?: {
         busca?: string;
+        limiteDe?: string;
+        limiteAte?: string;
+        comRestricao?: string;
         pracaId?: string;
         restricaoId?: string;
         situacao?: string;

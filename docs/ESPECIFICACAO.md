@@ -613,6 +613,7 @@ Toda vez que um produto aparece por **leitura de código de barras** ou por **pe
   - grande (cerca de 1600 px), para o zoom.
 - Fotos guardadas **como arquivos** (volume da VPS ou bucket S3 ou Backblaze), **nunca como binário dentro do PostgreSQL**. O banco guarda só caminho, hash e tamanho. O **backup diário inclui as fotos**.
 - Acesso às fotos **somente autenticado** (URL assinada ou token), nunca pública.
+- **App da dona (tarefa 1.13):** as fotos já baixadas ficam em **cache em disco** no processo principal, por hash e tamanho, com limite de tamanho (descarta a mais antiga). A foto é imutável por hash, então nunca se pergunta ao servidor se mudou. Só entra foto entregue a sessão autenticada e a pasta é **apagada ao sair da sessão**. No máximo 4 fotos são buscadas ao mesmo tempo, e as miniaturas da página da lista são buscadas antes de a linha aparecer.
 - **Somente a dona** envia, troca ou apaga fotos. O vendedor não cadastra produto, então também não mexe nelas.
 
 ### Modelo de dados

@@ -18,6 +18,31 @@ export type FiltroDoRelatorio =
   | 'periodo'
   | 'mes';
 
+/** Os filtros que só um relatório tem (tarefa 1.13); a chave é o nome do filtro na API. */
+export type ChaveDeExtra =
+  | 'limiteDe'
+  | 'limiteAte'
+  | 'comRestricao'
+  | 'estoque'
+  | 'precoDe'
+  | 'precoAte'
+  | 'foto'
+  | 'comProdutos'
+  | 'comVendedor'
+  | 'tipo'
+  | 'resultado';
+
+export type ExtraDoRelatorio =
+  | {
+      chave: ChaveDeExtra;
+      rotulo: string;
+      tipo: 'escolha';
+      opcoes: { valor: string; rotulo: string }[];
+      /** Texto da opção "sem filtro". */
+      qualquer: string;
+    }
+  | { chave: ChaveDeExtra; rotulo: string; tipo: 'valor' };
+
 export interface DefinicaoDeRelatorio {
   nome: NomeDoRelatorio;
   /** Nome do relatório na tela, no menu e no cabeçalho dos arquivos. */
@@ -25,6 +50,8 @@ export interface DefinicaoDeRelatorio {
   /** Uma frase dizendo o que o relatório mostra. */
   explicacao: string;
   filtros: FiltroDoRelatorio[];
+  /** Filtros próprios deste relatório, além dos comuns. */
+  extras?: ExtraDoRelatorio[];
   /** O relatório de produtos sem foto só separa ativos e inativos (a rota não tem "todos"). */
   semOpcaoTodos?: boolean;
   /** Situação que vale quando a pessoa não escolhe: o servidor mostra só ativos. */
@@ -47,6 +74,20 @@ export const RELATORIOS: Record<NomeDoRelatorio, DefinicaoDeRelatorio> = {
     explicacao:
       'O limite de consignação, a restrição, a situação, a praça e a comissão de cada vendedor.',
     filtros: ['busca', 'situacao', 'praca', 'restricao', 'periodo'],
+    extras: [
+      { chave: 'limiteDe', rotulo: 'Limite a partir de (R$)', tipo: 'valor' },
+      { chave: 'limiteAte', rotulo: 'Limite até (R$)', tipo: 'valor' },
+      {
+        chave: 'comRestricao',
+        rotulo: 'Com restrição',
+        tipo: 'escolha',
+        qualquer: 'Tanto faz',
+        opcoes: [
+          { valor: 'SIM', rotulo: 'Só com restrição' },
+          { valor: 'NAO', rotulo: 'Só sem restrição' },
+        ],
+      },
+    ],
     buscaRotulo: 'Buscar por nome, número, CPF ou telefone',
     colunas: [
       { chave: 'codigo', titulo: 'Número', tipo: 'inteiro' },
@@ -67,6 +108,18 @@ export const RELATORIOS: Record<NomeDoRelatorio, DefinicaoDeRelatorio> = {
     titulo: 'Clientes cadastrados',
     explicacao: 'Os clientes, com o vendedor responsável e a praça dele.',
     filtros: ['busca', 'vendedor', 'praca', 'periodo'],
+    extras: [
+      {
+        chave: 'comVendedor',
+        rotulo: 'Vendedor responsável',
+        tipo: 'escolha',
+        qualquer: 'Tanto faz',
+        opcoes: [
+          { valor: 'SIM', rotulo: 'Só com vendedor' },
+          { valor: 'NAO', rotulo: 'Só sem vendedor' },
+        ],
+      },
+    ],
     buscaRotulo: 'Buscar por nome, CPF ou telefone',
     colunas: [
       { chave: 'nome', titulo: 'Cliente', tipo: 'texto' },
@@ -87,6 +140,18 @@ export const RELATORIOS: Record<NomeDoRelatorio, DefinicaoDeRelatorio> = {
     titulo: 'Fornecedores cadastrados',
     explicacao: 'Os fornecedores e quantos produtos ativos cada um tem.',
     filtros: ['busca', 'periodo'],
+    extras: [
+      {
+        chave: 'comProdutos',
+        rotulo: 'Produtos ativos',
+        tipo: 'escolha',
+        qualquer: 'Tanto faz',
+        opcoes: [
+          { valor: 'SIM', rotulo: 'Só quem tem produtos' },
+          { valor: 'NAO', rotulo: 'Só quem não tem produtos' },
+        ],
+      },
+    ],
     buscaRotulo: 'Buscar por nome, CNPJ ou contato',
     colunas: [
       { chave: 'razaoSocial', titulo: 'Fornecedor', tipo: 'texto' },
@@ -107,6 +172,31 @@ export const RELATORIOS: Record<NomeDoRelatorio, DefinicaoDeRelatorio> = {
     explicacao:
       'Os produtos com preço de venda e preço de custo. O custo aparece só aqui, para a dona.',
     filtros: ['busca', 'situacao', 'categoria', 'fornecedor', 'periodo'],
+    extras: [
+      {
+        chave: 'estoque',
+        rotulo: 'Estoque',
+        tipo: 'escolha',
+        qualquer: 'Qualquer',
+        opcoes: [
+          { valor: 'ZERADO', rotulo: 'Sem estoque' },
+          { valor: 'ABAIXO_DO_MINIMO', rotulo: 'Abaixo do mínimo' },
+          { valor: 'COM_ESTOQUE', rotulo: 'Com estoque' },
+        ],
+      },
+      { chave: 'precoDe', rotulo: 'Preço de venda a partir de (R$)', tipo: 'valor' },
+      { chave: 'precoAte', rotulo: 'Preço de venda até (R$)', tipo: 'valor' },
+      {
+        chave: 'foto',
+        rotulo: 'Foto',
+        tipo: 'escolha',
+        qualquer: 'Tanto faz',
+        opcoes: [
+          { valor: 'COM', rotulo: 'Só com foto' },
+          { valor: 'SEM', rotulo: 'Só sem foto' },
+        ],
+      },
+    ],
     buscaRotulo: 'Buscar por nome, referência ou código',
     colunas: [
       { chave: 'nome', titulo: 'Produto', tipo: 'texto' },
@@ -218,6 +308,51 @@ export const RELATORIOS: Record<NomeDoRelatorio, DefinicaoDeRelatorio> = {
     itens: { um: 'mudança', varios: 'mudanças' },
     vazio: 'Nenhuma mudança neste período.',
   },
+  'resultado-das-importacoes': {
+    nome: 'resultado-das-importacoes',
+    titulo: 'Resultado das importações',
+    explicacao:
+      'Cada linha da planilha e cada foto importadas de uma vez: o que aconteceu, por que foi recusada, quem importou e quando.',
+    filtros: ['busca', 'periodo'],
+    extras: [
+      {
+        chave: 'tipo',
+        rotulo: 'O que foi importado',
+        tipo: 'escolha',
+        qualquer: 'Planilhas e fotos',
+        opcoes: [
+          { valor: 'PLANILHA', rotulo: 'Planilha de produtos' },
+          { valor: 'FOTOS', rotulo: 'Fotos em massa' },
+        ],
+      },
+      {
+        chave: 'resultado',
+        rotulo: 'Resultado',
+        tipo: 'escolha',
+        qualquer: 'Todos',
+        opcoes: [
+          { valor: 'CRIADO', rotulo: 'Criado' },
+          { valor: 'ATUALIZADO', rotulo: 'Atualizado' },
+          { valor: 'JA_EXISTIA', rotulo: 'Já existia' },
+          { valor: 'RECUSADO', rotulo: 'Recusado' },
+        ],
+      },
+    ],
+    buscaRotulo: 'Buscar por linha, arquivo, motivo ou pessoa',
+    nota: T.importacoesNota,
+    colunas: [
+      { chave: 'quando', titulo: 'Quando', tipo: 'dataHora' },
+      { chave: 'tipoNaTela', titulo: 'O que foi importado', tipo: 'texto' },
+      { chave: 'arquivo', titulo: 'Arquivo', tipo: 'texto' },
+      { chave: 'referencia', titulo: 'Linha ou foto', tipo: 'texto' },
+      { chave: 'resultadoNaTela', titulo: 'Resultado', tipo: 'texto' },
+      { chave: 'motivo', titulo: 'Motivo', tipo: 'texto' },
+      { chave: 'quem', titulo: 'Quem importou', tipo: 'texto' },
+    ],
+    totaisDeValor: {},
+    itens: { um: 'linha', varios: 'linhas' },
+    vazio: 'Nenhuma importação com estes filtros.',
+  },
 };
 
 export const ORDEM_DOS_RELATORIOS: NomeDoRelatorio[] = [
@@ -230,6 +365,7 @@ export const ORDEM_DOS_RELATORIOS: NomeDoRelatorio[] = [
   'codigos-em-conflito',
   'aniversariantes',
   'alteracoes-de-produtos',
+  'resultado-das-importacoes',
 ];
 
 export interface TotalLido {

@@ -317,3 +317,44 @@ Uma seção por tarefa concluída, no mesmo formato de [fase-0.md](fase-0.md). A
 **Dúvidas**
 - A dona quer a data de nascimento no cadastro de clientes? Se sim, vira uma tarefa pequena (campo, tela e relatório).
 - As colunas dos relatórios servem para ela? Deixei de fora CPF e endereço do vendedor de propósito, para o arquivo não circular com dados pessoais.
+
+### Tarefa 1.13: ajustes de fechamento da Fase 1
+
+**O que foi feito**
+
+*A) Fotos sem demora (owner-app, processo principal e tela)*
+- **Cache em disco** (`main/cache-de-fotos.ts`, pasta `fotos/` dentro da pasta de dados do app): um arquivo por `hash.tamanho`. A foto é imutável por hash, então **nunca se pergunta ao servidor se mudou**; trocou a foto, o hash é outro. Só entra o que o servidor entregou a uma sessão autenticada, e a leitura só acontece dentro de uma chamada já autenticada (`produtos.fotos.imagem`). Limite de **200 MB**: passou, o arquivo mais antigo (último uso) é descartado. Hash e tamanho viram nome de arquivo só nos formatos exatos (64 hexadecimais; miniatura, media, grande), então nada de `../`.
+- **Ao sair da sessão a pasta é apagada** (sair pelo botão ou sessão perdida): a foto de produto não fica no computador de quem não está logado. A tela também revoga os endereços `blob:`.
+- **No máximo 4 fotos sendo buscadas ao mesmo tempo** (`LimiteDeBuscas`): uma lista com 100 miniaturas não trava as outras chamadas.
+- **Tela** (`nucleo/imagens.ts`): a mesma foto é pedida uma vez; `URL.revokeObjectURL` quando passa de 300 fotos na memória (só as que ninguém está mostrando); **pré-busca** das miniaturas da página da lista assim que ela chega; na consulta por código e na ficha, a **miniatura aparece na hora** (levemente apagada) enquanto a média ou a grande carrega.
+- **Medido** (teste automático com servidor simulado de 150 ms): 1ª exibição ~157 ms; 2ª exibição da mesma foto ~0,2 ms e **nenhuma chamada de rede** (o teste conta as chamadas). Servidor real e disco de verdade não foram medidos aqui: a 1ª depende da rede e do tamanho da foto (a miniatura tem cerca de 150 px).
+
+*B) Filtros dos relatórios de cadastro (§12)*
+- API (parâmetros validados, 400 em português simples; o rodapé e o detalhamento continuam saindo das mesmas condições): **vendedores** `limiteDe`/`limiteAte` e `comRestricao` (SIM/NAO); **clientes** `comVendedor`; **fornecedores** `comProdutos`; **produtos** `estoque` (ZERADO, ABAIXO_DO_MINIMO, COM_ESTOQUE), `precoDe`/`precoAte` (preço de venda) e `foto` (COM/SEM). Ponte (`shared/relatorios.ts`, `validacao-relatorios.ts`) e tela (filtros próprios de cada relatório, também nos cabeçalhos dos arquivos).
+- **Conferido contra a §12** (período, semana, vendedor, praça, cliente, produto, categoria, situação): ver "O que ficou de fora".
+
+*C) Resultado das importações*
+- Migração **V016**: `importacoes` (lote: tipo PLANILHA/FOTOS, arquivo, quem, quando) e `importacoes_linhas` (referência, resultado CRIADO/ATUALIZADO/JA_EXISTIA/RECUSADO, motivo). Só do servidor e só inserção (histórico). O id do lote é UUID do aplicativo: repetir o envio não duplica, e enviar em partes junta ao mesmo lote.
+- Rota `POST /api/dona/importacoes/{id}/linhas` (só ADMIN, até 500 linhas por envio) e relatório `GET /api/dona/relatorios/cadastros/resultado-das-importacoes` (busca, tipo, resultado, período `de`/`ate`; rodapé: criados, atualizados, já existiam, recusados).
+- **Fotos:** o próprio servidor grava o resultado de cada foto enviada (`confirmar?importacaoId=`), então o resultado de foto gravada não depende do app. As fotos que a tela nem enviou (sem peça, nome repetido) o servidor não viu: o app informa essas, pelo mesmo lote.
+- **Planilha:** o produto é criado/atualizado pelas rotas normais, uma a uma; no fim o app informa o resultado de cada linha. Esse registro é **declarado pelo app** (o servidor valida formato, mas não confere se a linha de fato virou produto). Se o registro falhar, a tela avisa e a importação já feita não é desfeita.
+- Tela: relatório "Resultado das importações" no menu de relatórios; aviso fixo dizendo o que vale.
+
+**O que ficou de fora e por quê**
+- **Situação (ativo/inativo) de cliente e de fornecedor:** o modelo não tem essa coluna (só exclusão lógica). Criar exigiria coluna nova na tabela sincronizável `clientes` (contrato do sync com o app do vendedor), telas de ativar/desativar e regra nas buscas. Os filtros úteis que existem hoje foram feitos: `comVendedor` e `comProdutos`.
+- **Data de nascimento do cliente / aniversariantes de clientes:** avaliado e **não** adicionado. `clientes` é sincronizável (vai ao app do vendedor, que não pediu esse dado) e mexer nela mexe no contrato do sync, na tela 1.9 e na privacidade; a dona ainda não confirmou que quer. Sem a confirmação, não vale o risco no fechamento. Fica como dúvida.
+- **Filtros "semana", "cliente" e "produto" nos relatórios de cadastro:** não se aplicam ao cadastro (semana, cliente e produto como filtro são de vendas, maletas e acerto, nas Fases 3 e seguintes). Vendedor, praça, categoria, fornecedor, período e situação existem onde o dado existe.
+- **Relatórios de cadastro por produto:** não filtra por "código" em faixa nem por tipo de código; a busca por texto cobre nome, referência e código.
+- Resultado de importação anterior a esta tarefa não existe (nunca foi guardado).
+- Telas não conferidas dentro do Electron de verdade (testes de componente) e cache em disco só testado com pasta temporária e servidor simulado.
+
+**Decisões tomadas**
+- Cache em disco no processo principal, não no navegador: a pasta é apagada ao sair da sessão e o app do vendedor não é tocado (a barreira de código continua passando).
+- Sem revalidar: foto é imutável por hash (o servidor já manda `Cache-Control: immutable`).
+- Resultado de planilha declarado pelo app e resultado de foto gravado pelo servidor; a diferença está escrita na nota do relatório.
+- Filtros novos entram como `Mais` (um registro à parte) no servidor, para não mexer em todos os relatórios.
+
+**Dúvidas**
+- A dona quer data de nascimento no cadastro de cliente (e aniversariantes de clientes)?
+- Cliente e fornecedor precisam de "inativo"? Hoje só se exclui.
+- 200 MB é um bom teto para o cache de fotos no computador dela?

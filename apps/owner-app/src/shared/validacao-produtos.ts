@@ -45,6 +45,62 @@ export interface ParametrosDeProduto {
   arquivo?: ArquivoParaEnviar;
   arquivos?: ArquivoParaEnviar[];
   nomes?: string[];
+  /** Lote da importação (UUID gerado pela tela): liga o resultado ao relatório. */
+  importacaoId?: string;
+  importacao?: LoteDeImportacao;
+}
+
+export interface LinhaDeImportacao {
+  referencia: string;
+  resultado: 'CRIADO' | 'ATUALIZADO' | 'JA_EXISTIA' | 'RECUSADO';
+  motivo?: string;
+}
+
+export interface LoteDeImportacao {
+  tipo: 'PLANILHA' | 'FOTOS';
+  arquivoNome?: string;
+  linhas: LinhaDeImportacao[];
+}
+
+/** O servidor aceita até 500 linhas por envio. */
+export const LINHAS_POR_ENVIO_DE_IMPORTACAO = 500;
+
+function conferirLote(v: unknown): LoteDeImportacao | null {
+  if (!ehObjeto(v)) return null;
+  if (Object.keys(v).some((k) => !['tipo', 'arquivoNome', 'linhas'].includes(k))) return null;
+  if (v.tipo !== 'PLANILHA' && v.tipo !== 'FOTOS') return null;
+  if (v.arquivoNome !== undefined && (!ehTexto(v.arquivoNome) || v.arquivoNome.length > 255)) {
+    return null;
+  }
+  if (
+    !Array.isArray(v.linhas) ||
+    v.linhas.length === 0 ||
+    v.linhas.length > LINHAS_POR_ENVIO_DE_IMPORTACAO
+  ) {
+    return null;
+  }
+  const linhas: LinhaDeImportacao[] = [];
+  for (const l of v.linhas) {
+    if (
+      !ehObjeto(l) ||
+      Object.keys(l).some((k) => !['referencia', 'resultado', 'motivo'].includes(k))
+    ) {
+      return null;
+    }
+    if (!ehTexto(l.referencia) || l.referencia.trim() === '' || l.referencia.length > 500) {
+      return null;
+    }
+    if (!['CRIADO', 'ATUALIZADO', 'JA_EXISTIA', 'RECUSADO'].includes(l.resultado as string)) {
+      return null;
+    }
+    if (l.motivo !== undefined && (!ehTexto(l.motivo) || l.motivo.length > 500)) return null;
+    linhas.push({
+      referencia: l.referencia,
+      resultado: l.resultado as LinhaDeImportacao['resultado'],
+      ...(l.motivo ? { motivo: l.motivo } : {}),
+    });
+  }
+  return { tipo: v.tipo, ...(v.arquivoNome ? { arquivoNome: v.arquivoNome } : {}), linhas };
 }
 
 function conferirCodigo(v: unknown): CodigoParaGravar | null {
@@ -224,8 +280,14 @@ export function conferirProduto(
       if (!p.nomes.every((n) => ehTexto(n) && n.length > 0 && n.length <= 255)) return null;
       return { operacao, nomes: p.nomes as string[] };
     }
+    case 'importacoes.registrar': {
+      if (!soCom('importacaoId', 'importacao') || !idValido(p.importacaoId)) return null;
+      const lote = conferirLote(p.importacao);
+      return lote ? { operacao, importacaoId: p.importacaoId, importacao: lote } : null;
+    }
     case 'produtos.importacao.confirmar': {
-      if (!soCom('arquivos') || !Array.isArray(p.arquivos)) return null;
+      if (!soCom('arquivos', 'importacaoId') || !Array.isArray(p.arquivos)) return null;
+      if (p.importacaoId !== undefined && !idValido(p.importacaoId)) return null;
       if (p.arquivos.length === 0 || p.arquivos.length > FOTOS_POR_LOTE) return null;
       const arquivos: ArquivoParaEnviar[] = [];
       for (const a of p.arquivos) {
@@ -233,7 +295,11 @@ export function conferirProduto(
         if (!ok) return null;
         arquivos.push(ok);
       }
-      return { operacao, arquivos };
+      return {
+        operacao,
+        arquivos,
+        ...(p.importacaoId ? { importacaoId: p.importacaoId } : {}),
+      };
     }
   }
 }

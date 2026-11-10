@@ -1,6 +1,8 @@
 import {
   alterarCodigos,
   confirmar as confirmarFotos,
+  registrar as registrarImportacao,
+  resultadoDasImportacoes,
   editar4 as editarProduto,
   excluir9 as excluirFoto,
   criar4 as criarProduto,
@@ -97,6 +99,7 @@ import type { ParametrosConferidos, ParametrosDeVendedor } from '../shared/valid
 import type { ParametrosDeProduto } from '../shared/validacao-produtos';
 import type { ParametrosDeRelatorio } from '../shared/validacao-relatorios';
 import type { AbaDoVendedor, ArquivoBaixado } from '../shared/vendedores';
+import { CacheDeFotos, LimiteDeBuscas } from './cache-de-fotos';
 import type { ApiDeAutenticacao, Credenciais, Falha, Resultado } from './tipos';
 
 export interface DadosDoUsuario {
@@ -113,6 +116,8 @@ export interface ApiDoGestao extends ApiDeAutenticacao {
 interface OpcoesDaApi {
   baseUrl: string;
   versaoDoApp: string;
+  /** Cache em disco das fotos de produto (a foto é imutável por hash). Sem ele, toda foto vem da rede. */
+  cacheDeFotos?: CacheDeFotos;
   /** Só para testes. */
   fetch?: typeof globalThis.fetch;
 }
@@ -376,6 +381,8 @@ async function executarRelatorio(
       return executar(() => relatorioDeAniversariantes({ ...base, query: q }));
     case 'alteracoes-de-produtos':
       return executar(() => relatorioDeAlteracoes({ ...base, query: q }));
+    case 'resultado-das-importacoes':
+      return executar(() => resultadoDasImportacoes({ ...base, query: q }));
     case 'sem-foto': {
       // A rota que já existia (tarefa 1.6) usa "ativo" em vez de "situação" e não tem "todos".
       const { situacao, busca, categoriaId, fornecedorId, pagina, tamanho } = q;
@@ -401,6 +408,7 @@ async function executarProduto(
   client: ReturnType<typeof criarClienteDaApi>,
   headers: { Authorization: string },
   pedido: ParametrosDeProduto,
+  fotos: { cache?: CacheDeFotos; limite: LimiteDeBuscas },
 ): Promise<Resultado<unknown>> {
   const base = { client, headers };
   const id = pedido.id as string;
@@ -455,16 +463,37 @@ async function executarProduto(
       return executar(() =>
         confirmarFotos({
           ...base,
+          ...(pedido.importacaoId ? { query: { importacaoId: pedido.importacaoId } } : {}),
           body: { arquivos: (pedido.arquivos ?? []).map(comoArquivoDeFoto) },
         }),
       );
-    case 'produtos.fotos.imagem': {
-      try {
-        const { data, error, response } = (await baixarImagem({
+    case 'importacoes.registrar':
+      return executar(() =>
+        registrarImportacao({
           ...base,
-          path: { hash: pedido.hash as string, tamanho: pedido.tamanho as string },
-          parseAs: 'arrayBuffer',
-        } as never)) as RetornoDoCliente<ArrayBuffer>;
+          path: { id: pedido.importacaoId ?? '' },
+          body: { ...pedido.importacao },
+        }),
+      );
+    case 'produtos.fotos.imagem': {
+      const hash = pedido.hash as string;
+      const tamanho = pedido.tamanho as string;
+      // A foto é imutável por hash: se já está no disco, nunca se pergunta ao servidor de novo.
+      const guardada = await fotos.cache?.ler(hash, tamanho);
+      if (guardada) {
+        return {
+          ok: true,
+          dados: { nome: `${hash}.jpg`, tipo: guardada.tipo, bytes: guardada.bytes },
+        };
+      }
+      try {
+        const { data, error, response } = (await fotos.limite.executar(() =>
+          baixarImagem({
+            ...base,
+            path: { hash, tamanho },
+            parseAs: 'arrayBuffer',
+          } as never),
+        )) as RetornoDoCliente<ArrayBuffer>;
         if (error !== undefined && error !== '') {
           return { ok: false, falha: comoFalha(error, response) };
         }
@@ -473,10 +502,11 @@ async function executarProduto(
           return { ok: false, falha: { tipo: 'resposta-invalida' } };
         }
         const arquivo: ArquivoBaixado = {
-          nome: `${pedido.hash}.jpg`,
+          nome: `${hash}.jpg`,
           tipo: response.headers.get('content-type') ?? 'image/jpeg',
           bytes: new Uint8Array(data),
         };
+        await fotos.cache?.gravar(hash, tamanho, arquivo.bytes);
         return { ok: true, dados: arquivo };
       } catch (e) {
         if (ehAppDesatualizado(e)) return { ok: false, falha: comoFalha(e, undefined) };
@@ -497,6 +527,11 @@ export function criarApiDoGestao(opcoes: OpcoesDaApi): ApiDoGestao {
     ...(opcoes.fetch ? { fetch: opcoes.fetch } : {}),
   });
   const comToken = (token: string) => ({ Authorization: `Bearer ${token}` });
+  // No máximo 4 fotos sendo buscadas ao mesmo tempo: uma lista com 100 miniaturas não trava as outras chamadas.
+  const fotos = {
+    ...(opcoes.cacheDeFotos ? { cache: opcoes.cacheDeFotos } : {}),
+    limite: new LimiteDeBuscas(4),
+  };
 
   const credenciais = async (
     chamada: () => Promise<RetornoDoCliente<RespostaDoLogin>>,
@@ -544,8 +579,8 @@ export function criarApiDoGestao(opcoes: OpcoesDaApi): ApiDoGestao {
       if (pedido.operacao === 'relatorios.cadastros') {
         return executarRelatorio(client, headers, pedido);
       }
-      if (pedido.operacao.startsWith('produtos.')) {
-        return executarProduto(client, headers, pedido as ParametrosDeProduto);
+      if (pedido.operacao.startsWith('produtos.') || pedido.operacao === 'importacoes.registrar') {
+        return executarProduto(client, headers, pedido as ParametrosDeProduto, fotos);
       }
       if (pedido.operacao.startsWith('vendedores.') && pedido.operacao !== 'vendedores.escolha') {
         return executarVendedor(client, headers, pedido as ParametrosDeVendedor);

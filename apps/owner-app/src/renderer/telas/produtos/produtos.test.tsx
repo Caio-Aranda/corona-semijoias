@@ -491,6 +491,50 @@ describe('Produtos: importação por planilha', () => {
     });
   });
 
+  it('o resultado de cada linha é guardado no servidor (relatório de importações)', async () => {
+    const m = montar({
+      'produtos.porCodigo': (p) =>
+        (p.parametros as { codigo: string }).codigo === '0012'
+          ? { ok: true, dados: ANEL }
+          : naoAchou,
+      'produtos.criar': () => ({ ok: true, dados: ANEL }),
+      'produtos.editar': () => ({ ok: true, dados: ANEL }),
+      'importacoes.registrar': () => ({ ok: true, dados: null }),
+    });
+    const u = await escolher(m);
+    await u.click(await screen.findByRole('button', { name: 'Importar produtos' }));
+    await screen.findByText('Importação concluída.');
+    expect(quantas(m, 'importacoes.registrar')).toBe(1);
+    const lote = ultima(m, 'importacoes.registrar') as {
+      importacaoId: string;
+      importacao: {
+        tipo: string;
+        arquivoNome: string;
+        linhas: { referencia: string; resultado: string; motivo?: string }[];
+      };
+    };
+    expect(lote.importacaoId).toMatch(/^[0-9a-f-]{36}$/);
+    expect(lote.importacao).toMatchObject({ tipo: 'PLANILHA', arquivoNome: 'produtos.csv' });
+    expect(lote.importacao.linhas.map((l) => l.resultado)).toEqual([
+      'ATUALIZADO',
+      'CRIADO',
+      'RECUSADO',
+    ]);
+    expect(lote.importacao.linhas[2]?.motivo).toContain('Colares');
+    expect(screen.queryByText(/não pôde ser guardado/)).toBeNull();
+  });
+
+  it('se o servidor não guardar o resultado, avisa sem desfazer a importação', async () => {
+    const m = montar({
+      'produtos.criar': () => ({ ok: true, dados: ANEL }),
+      'importacoes.registrar': () => ({ ok: false, motivo: 'sem-conexao' }),
+    });
+    const u = await escolher(m, 'código;nome;categoria;custo;preço\n0200;Anel Novo;Anéis;5;30\n');
+    await u.click(await screen.findByRole('button', { name: 'Importar produtos' }));
+    expect(await screen.findByText(/não pôde ser guardado/)).toBeInTheDocument();
+    expect(screen.getByText('1 cadastrados, 0 atualizados, 0 não importados.')).toBeInTheDocument();
+  });
+
   it('recusa do servidor vira motivo da linha no relatório', async () => {
     const m = montar({
       'produtos.criar': () => ({
@@ -578,6 +622,43 @@ describe('Produtos: importação de fotos em massa', () => {
       screen.getByText('12 gravadas, 0 já estavam no produto, 1 não gravadas.'),
     ).toBeInTheDocument();
     expect(screen.getByText('Nenhuma peça tem o código zzz.')).toBeInTheDocument();
+  });
+
+  it('cada lote de fotos leva o mesmo número da importação e as fotos sem peça também são guardadas', async () => {
+    const m = montar({
+      'produtos.importacao.previa': () => ({
+        ok: true,
+        dados: {
+          associadas: [{ nome: 'a.jpg', produtoNome: 'A' }],
+          semProduto: [{ nome: 'zzz.jpg', mensagem: 'Nenhuma peça tem o código zzz.' }],
+          ambiguas: [],
+          produtosSemFoto: { total: 0, itens: [] },
+        },
+      }),
+      'produtos.importacao.confirmar': () => ({
+        ok: true,
+        dados: { resultados: [{ nome: 'a.jpg', situacao: 'GRAVADA', mensagem: 'ok' }] },
+      }),
+      'importacoes.registrar': () => ({ ok: true, dados: null }),
+    });
+    const u = await abrirLista(m);
+    await u.click(screen.getByRole('tab', { name: 'Importar fotos' }));
+    fireEvent.change(screen.getByTestId('escolher-fotos'), {
+      target: { files: [foto('a.jpg'), foto('zzz.jpg')] },
+    });
+    await u.click(await screen.findByRole('button', { name: 'Enviar as fotos' }));
+    await screen.findByText('Envio concluído.');
+    const enviado = ultima(m, 'produtos.importacao.confirmar') as { importacaoId: string };
+    const guardado = ultima(m, 'importacoes.registrar') as {
+      importacaoId: string;
+      importacao: { tipo: string; linhas: { referencia: string; resultado: string }[] };
+    };
+    expect(enviado.importacaoId).toMatch(/^[0-9a-f-]{36}$/);
+    expect(guardado.importacaoId).toBe(enviado.importacaoId);
+    expect(guardado.importacao.tipo).toBe('FOTOS');
+    expect(guardado.importacao.linhas).toEqual([
+      { referencia: 'zzz.jpg', resultado: 'RECUSADO', motivo: 'Nenhuma peça tem o código zzz.' },
+    ]);
   });
 
   it('nomes repetidos não são enviados', async () => {

@@ -173,6 +173,8 @@ export const TEXTOS_DE_PRODUTOS = {
     },
     situacoes: { criar: 'Cadastrar', atualizar: 'Atualizar', recusar: 'Não importar' },
     relatorio: 'Importação concluída.',
+    naoGuardou:
+      'A importação foi feita, mas o resultado não pôde ser guardado no relatório "Resultado das importações".',
     relatorioResumo: (c: number, a: number, r: number) =>
       `${c} cadastrados, ${a} atualizados, ${r} não importados.`,
     resultadoLinha: { criado: 'Cadastrado', atualizado: 'Atualizado', recusado: 'Não importado' },
@@ -202,6 +204,8 @@ export const TEXTOS_DE_PRODUTOS = {
     confirmar: 'Enviar as fotos',
     enviando: (feitas: number, total: number) => `Enviando... ${feitas} de ${total}`,
     relatorio: 'Envio concluído.',
+    naoGuardou:
+      'O envio foi feito, mas o resultado não pôde ser guardado no relatório "Resultado das importações".',
     relatorioResumo: (g: number, j: number, n: number) =>
       `${g} gravadas, ${j} já estavam no produto, ${n} não gravadas.`,
     situacoes: {
