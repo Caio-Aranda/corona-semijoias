@@ -3,6 +3,8 @@
  * conhece do processo principal. Nada aqui carrega token: a tela só recebe o resultado.
  */
 
+import { OPERACOES_DE_CADASTRO } from './cadastros';
+
 /** Operações de consulta que o processo principal aceita fazer em nome da tela. */
 export const OPERACOES_DA_API = [
   'eu',
@@ -16,6 +18,7 @@ export const OPERACOES_DA_API = [
   'cotacao.converter',
   'avisos.listar',
   'vendedores.escolha',
+  ...OPERACOES_DE_CADASTRO,
 ] as const;
 export type OperacaoDaApi = (typeof OPERACOES_DA_API)[number];
 

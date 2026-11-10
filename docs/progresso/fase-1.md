@@ -198,3 +198,28 @@ Uma seção por tarefa concluída, no mesmo formato de [fase-0.md](fase-0.md). A
 **Dúvidas**
 - O tipo de acesso ADMIN deve aparecer como "Dona" ou "Administradora"? O servidor usa "pessoa administradora" nas mensagens; a tela usa "Dona" (glossário, parte 1).
 - Mais de 100 vendedores ativos: precisa de busca na escolha? Hoje não cabe mais que 100.
+
+### Tarefa 1.9: cadastros básicos (owner-app)
+
+**O que foi feito**
+- Seis telas no Corona Gestão, saindo de "Em breve": Cadastros → Fornecedores, Categorias, Praças, Semanas, Restrições e Pessoas → Clientes. Uma só tela genérica (`telas/cadastros/TelaDeCadastro.tsx` + `FormularioDeCadastro.tsx`) guiada por uma definição por cadastro (`definicoes.ts`: colunas, campos, textos). Reaproveita a base da 1.8 (`Tabela`, `Paginacao`, `EstadoDaLista`, `JanelaDeConfirmacao`, `AvisoDeErro`, `useBusca`, `chamar`).
+- Lista com busca (espera a pessoa parar de digitar), páginas de 20, estados de carregando, vazio, busca sem resultado e erro. Criar e editar: cursor no primeiro campo, Enter salva, campo obrigatório vazio avisado no campo, erro de campo do servidor no campo (inclusive `endereco.cep`), mensagens que o app não mostra num campo vão no topo. 409 de versão mostra o texto do servidor com **Atualizar**.
+- Excluir com confirmação (foco em **Voltar**); exclusão lógica pela API. Se o servidor recusa (praça ou restrição em uso etc.), mostra o texto dele e a linha continua.
+- Clientes: CPF, telefone e WhatsApp como a pessoa digitou (o servidor confere o CPF e devolve o texto); endereço em grupo; vendedor responsável escolhido numa lista (`vendedores.escolha`). Fornecedores: CNPJ e endereço. Semanas: número, primeiro e último dia (datas dd/mm/aaaa na lista) e situação Aberta/Fechada. Restrições: código, descrição e "Impede montar maleta" (o campo `bloqueiaRemessa` da API; "remessa" não aparece na tela).
+- Ponte: 24 operações novas (`<cadastro>.listar|criar|editar|excluir`) em `shared/cadastros.ts`, conferidas de novo no processo principal (`validacao-parametros.ts`): só campos conhecidos, tipo e tamanho certos, endereço só onde existe, `id` do app só em categorias, semanas e clientes, `version` obrigatória ao editar. `main/api.ts` liga cada operação à rota do cliente gerado; nenhuma rota nova foi preciso gerar.
+- Testes: 11 de tela (lista, busca, criar com Enter, campo obrigatório, erro no campo do CPF, escolha de vendedor, semana, 409, excluir, excluir recusado) e 6 de conferência da ponte.
+
+**O que ficou pendente**
+- Reativar: a API só tem excluir (exclusão lógica) para estes seis cadastros; não há rota de reativar nem de listar excluídos. A tela oferece **Excluir** (não "Desativar/Reativar") e o texto diz que não dá para desfazer por aqui.
+- Rodar o Electron de ponta a ponta contra a API real não foi feito; a cobertura é de testes de componente e de lógica.
+- Sem máscara de CPF, CNPJ, telefone e CEP (a §19 pede máscaras); fica para uma melhoria depois de confirmar o formato do Paraguai.
+
+**Decisões tomadas**
+- Uma tela genérica por definição, em vez de seis telas: menos código e o mesmo comportamento em todas.
+- `id` (UUID) é gerado no app ao criar categoria, semana e cliente (a API aceita); assim repetir o envio não duplica (409 em vez de segundo cadastro).
+- O nome mostrado nas mensagens: razão social, nome, "Semana N" e a descrição da restrição.
+
+**Dúvidas**
+- Falta de "reativar": a dona precisa recuperar um cadastro excluído? Se sim, a API precisa de uma rota (tarefa de backend).
+- Semana FECHADA ainda pode ser editada na tela (regra da 1.2 mantida).
+
