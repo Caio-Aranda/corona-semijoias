@@ -185,7 +185,24 @@ public enum CodigoErro {
     ARQUIVO_GRANDE_DEMAIS(
             "Este arquivo é grande demais.",
             "Este arquivo é grande demais. Envie um arquivo de até 10 MB. Se for uma foto, "
-                    + "tire-a com menos qualidade ou reduza o tamanho antes de enviar.");
+                    + "tire-a com menos qualidade ou reduza o tamanho antes de enviar."),
+
+    FOTO_TIPO_NAO_ACEITO(
+            "Esta não é uma foto que o sistema aceite.",
+            "Esta não é uma foto que o sistema aceite. Envie uma foto nos formatos JPG, PNG ou WebP."),
+
+    FOTO_NAO_LIDA(
+            "Não foi possível abrir esta foto.",
+            "Não foi possível abrir esta foto. O arquivo pode estar danificado. Tire ou salve a foto de novo e envie outra vez."),
+
+    FOTO_GRANDE_DEMAIS_EM_PONTOS(
+            "Esta foto é grande demais em tamanho de imagem.",
+            "Esta foto é grande demais em tamanho de imagem. Reduza a foto (até 25 milhões de pontos, "
+                    + "por exemplo 5000 por 5000) e envie de novo."),
+
+    PRODUTO_COM_FOTOS_DEMAIS(
+            "Esta peça já tem 5 fotos.",
+            "Esta peça já tem 5 fotos. Exclua uma das fotos para poder enviar outra.");
 
     private final String titulo;
     private final String mensagem;

@@ -60,7 +60,11 @@ public final class RegistroDeTabelas {
                                 "nome", "referencia", "categoria_id", "preco_venda", "estoque_minimo", "estoque_atual",
                                 "ativo", "foto_principal_hash"), false),
                         new TabelaSincronizavel("produto_codigos", List.of(
-                                "produto_id", "codigo", "tipo", "principal", "ativo"), false)
+                                "produto_id", "codigo", "tipo", "principal", "ativo"), false),
+                        // Fotos (tarefa 1.6): só o que o vendedor precisa para baixar a imagem. As chaves dos
+                        // arquivos e as medidas ficam no servidor.
+                        new TabelaSincronizavel("produtos_fotos", List.of(
+                                "produto_id", "arquivo_hash", "principal", "ordem"), false)
                         // As demais sincronizáveis entram aqui (produtos, vendas...).
                 ),
                 List.of(

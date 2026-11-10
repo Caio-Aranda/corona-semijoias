@@ -114,3 +114,36 @@ Uma seção por tarefa concluída, no mesmo formato de [fase-0.md](fase-0.md). A
 **Dúvidas**
 - O código da loja pode ser só número, ou ela quer prefixo/letras?
 - A dona quer reaproveitar um código de produto excluído? Hoje fica livre.
+
+### Tarefa 1.6: fotos de produto (backend)
+
+**O que foi feito**
+- Migração `V015__produtos_fotos.sql`: `produtos_fotos` (sincronizável: produto, `arquivo_hash` SHA-256, principal, ordem, largura, altura, tamanho, e as chaves dos três arquivos). Nunca binário no banco (teste confere que não há coluna `bytea`). Índices: uma principal por produto e o mesmo hash só uma vez por produto (entre as não excluídas). No sync entram só `produto_id`, `arquivo_hash`, `principal` e `ordem`; as chaves e as medidas ficam no servidor. `produtos.foto_principal_hash` (reservado na V014) agora é mantido pela API.
+- Envio `POST /api/dona/produtos/{id}/fotos` (multipart, campo `arquivo`; só ADMIN): o tipo vale pelo **conteúdo** (JPEG, PNG ou WebP; PDF e programa renomeado são recusados), até 10 MB e **25 milhões de pontos** (`corona.fotos.maximo-de-pontos`). O tamanho em pontos é lido do cabeçalho **antes** de abrir a imagem (imagem-bomba: um PNG de 100 000 x 100 000 em poucos bytes é recusado com 413). A foto é sempre recodificada: gira pelo EXIF, descarta EXIF/GPS/comentários, fundo transparente vira branco, gera miniatura (150), média (600) e grande (1600) em JPEG, sem aumentar foto pequena. O nome do arquivo é a chave gerada pelo servidor; o nome enviado nunca é usado. O hash é o SHA-256 do tamanho grande já recodificado.
+- Regras: até 5 fotos por peça (409 `PRODUTO_COM_FOTOS_DEMAIS`), a primeira vira principal, a mesma foto na mesma peça não duplica (200 com a que já existe), em outra peça reaproveita os arquivos. A linha do produto é travada (`FOR UPDATE`) em toda mudança: 8 envios em paralelo terminam com exatamente 5 fotos e 1 principal (teste). Rotas: listar, principal (`POST .../{fotoId}/principal`), ordem (`PUT .../fotos/ordem` com todos os ids), excluir (lógico; se era a principal, a próxima vira principal).
+- Download `GET /api/dona/produtos/fotos/{hash}/{miniatura|media|grande}`: só autenticado, `Cache-Control: private, max-age=1 ano, immutable`, `ETag` pelo hash+tamanho (304 em `If-None-Match`), `X-Content-Type-Options: nosniff`, CSP `sandbox`. Foto excluída ou hash desconhecido: 404.
+- Importação em massa (`/api/dona/produtos/fotos/importacao`): **prévia** recebe só os nomes (JSON, nada é enviado nem gravado) e devolve associadas, sem peça, nomes ambíguos e quantas peças ficarão sem foto (com as 200 primeiras); **confirmar** recebe até 10 fotos por vez (multipart `arquivos`), grava cada uma sozinha e devolve, por arquivo, `GRAVADA`, `JA_EXISTIA`, `SEM_PRODUTO`, `AMBIGUA` ou `RECUSADA` com a mensagem em português. Uma foto ruim não derruba as outras; repetir o lote não duplica. O nome sem a extensão (.jpg, .jpeg, .png, .webp) é o código: sem pasta, sem espaços nas pontas, sem diferenciar maiúsculas (ADR-0007).
+- Relatório `GET /api/dona/produtos/sem-foto` (busca, `categoriaId`, `fornecedorId`, `ativo` — por padrão só as ativas —, página). Tela na 1.12.
+- Toda leitura de produto da dona (lista, `/{id}`, `/por-codigo`) devolve `fotoPrincipal` com o hash e o endereço dos três tamanhos, ou `null`. A falta de foto nunca é erro.
+- Erros novos no glossário (parte 6) e em `CodigoErro`: `FOTO_TIPO_NAO_ACEITO` (415), `FOTO_NAO_LIDA` (400), `FOTO_GRANDE_DEMAIS_EM_PONTOS` (413), `PRODUTO_COM_FOTOS_DEMAIS` (409). O limite de pedido multipart subiu para 110 MB (a importação manda até 10 fotos de 10 MB). WebP é lido pela biblioteca TwelveMonkeys `imageio-webp` (só leitura; a saída é sempre JPEG). Clientes da API regerados.
+- Testes: `ProcessadorDeImagemTest` (tamanhos, EXIF/rotação, WebP, transparência, danificada, imagem-bomba) e `FotosDosProdutosTest` (permissão, envio, conteúdo x nome, arquivos fora do banco, 5 fotos, paralelo, principal/ordem/exclusão, download e cache, relatório, prévia e confirmar).
+
+**O que ficou pendente**
+- Telas (1.11 cadastro/importação, 1.12 relatório). Webcam, colar e arrastar são da tela.
+- A rota de download das fotos para o **vendedor** e o filtro por maleta entram na Fase 5; hoje só a dona baixa. O sync já leva os metadados (`produtos_fotos`) e `foto_principal_hash`.
+- Arquivos de fotos excluídas ficam na pasta (backup diário precisa incluir `ARQUIVOS_PASTA`); não há limpeza de arquivo órfão se o banco falhar depois de gravar o arquivo.
+- Limites do Tomcat para muitas partes no mesmo pedido (`server.tomcat.max-part-count=20`) não são exercitados pelo MockMvc; conferir com a importação real na 1.11.
+- Foto em WebP animado ou CMYK: lida como uma foto só quando o leitor consegue; senão, "Não foi possível abrir esta foto".
+
+**Decisões tomadas**
+- A prévia manda só nomes; erros de conteúdo (arquivo danificado, PDF com nome de foto) aparecem no confirmar, por arquivo.
+- Dois arquivos para a mesma peça no mesmo lote (inclusive códigos diferentes da mesma peça) são "ambíguos": nenhum é gravado. Entre lotes diferentes o servidor não vê a repetição e a segunda vira mais uma foto da peça.
+- Na importação a foto nova **entra como mais uma foto** da peça (a primeira vira principal); com 5 fotos ela é recusada com a mensagem de limite. Não troca a principal.
+- Mexer na foto principal sobe a `version` do produto (precisa, para o sync do vendedor ver o hash novo); uma tela de edição aberta antes recebe o aviso de "alterado por outra pessoa" ao gravar, então a tela deve reler o produto depois de mexer nas fotos.
+- O hash é do conteúdo servido; uma atualização do Java que mude a codificação do JPEG pode gerar hash novo para a mesma foto original (a foto entraria como nova, nunca perdida).
+
+**Dúvidas**
+- Importando uma foto para uma peça que já tem fotos: adicionar (como está) ou trocar a principal?
+- 25 milhões de pontos bastam? Celulares de 48 ou 108 megapixels passam do limite e a pessoa precisa reduzir.
+- No Corona Vendas a foto grande será baixada sob demanda: a rota para o vendedor entra com a Fase 5 (escolher entre token no cabeçalho ou URL assinada).
+
