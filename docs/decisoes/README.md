@@ -15,6 +15,7 @@ A especificação (`docs/ESPECIFICACAO.md`) manda. Um ADR detalha a especificaç
 | [0005](ADR-0005-sqlcipher-no-electron.md) | SQLCipher no Electron | Proposto | 18 (spike) |
 | [0006](ADR-0006-moedas-e-cotacao.md) | Moedas e cotação | Aceito | 19 (e telas das Fases 1, 4, 5 e 7) |
 | [0007](ADR-0007-codigos-das-etiquetas.md) | Códigos das etiquetas | Proposto | 1.5, 1.11 (Fase 1) |
+| [0008](ADR-0008-estoque-e-movimentacoes.md) | Estoque e movimentações | Aceito | 2.2 a 2.5 (Fase 2); reutilizado na Fase 3 |
 
 A numeração das tarefas é a do "Plano da Fase 0" em `docs/PROGRESSO.md`.
 

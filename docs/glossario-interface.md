@@ -58,6 +58,14 @@ Em 09/11/2026 o responsável resolveu as dúvidas que estavam abertas neste glos
 | pedido de autorização | `autorizacoes_excecao` | O vendedor pede à dona para aceitar uma devolução fora do prazo. |
 | limite de consignação | `limite_consignacao` | Valor máximo de peças que o vendedor pode levar na maleta. |
 | foto | `produtos_fotos` | Aparece junto com a peça sempre que ela é lida ou pesquisada (§20). |
+| estoque | `produtos.estoque_atual`, estoque central | Quantidade de cada produto guardada na loja (fora das maletas). Ver parte 12. |
+| entrada de compra | `compras`, `itens_compra` | Registro das peças que chegaram de um fornecedor. Na tela, "Receber compra". Ver parte 12. |
+| entradas e saídas | `movimentacoes_estoque` | Histórico de tudo o que aumentou ou diminuiu o estoque. A palavra "movimentação" nunca aparece na tela (parte 2). |
+| ajuste | movimento `AJUSTE` | Correção do estoque feita pela dona, sempre com o motivo. |
+| contagem do estoque | `inventarios` | Conferir peça por peça o que há na loja, lendo os códigos. A palavra "inventário" não aparece na tela. |
+| diferença | divergência, `itens_inventario` | Quando o que foi contado não bate com o que o sistema esperava. |
+| estoque mínimo | `produtos.estoque_minimo` | Quantidade abaixo da qual o sistema avisa que está acabando. |
+| produtos parados | relatório de produtos parados | Produtos que não saem do estoque há muito tempo. |
 | sem foto | imagem padrão "sem foto" | Imagem com a marca, nunca um espaço quebrado. A falta de foto nunca trava a venda. |
 | cotação | taxa PTAX de venda do Banco Central, tabela `cotacoes` (ADR-0006) | Quanto valem o Dólar e o Guarani em reais num dia, segundo o Banco Central. Sempre com a data: "Cotação do Banco Central de 06/11/2026". Ver parte 11. |
 | O que precisa da sua atenção | bloco da tela inicial da dona | Acertos pendentes, devoluções para autorizar, estoque baixo, maletas atrasadas, envios com problema (§19.3). |
@@ -723,3 +731,38 @@ Quando o dia sem cotação não é hoje (por exemplo, ontem):
 > Os valores em Dólar e Guarani desse dia estão usando a cotação de 06/11/2026. O sistema tenta de novo sozinho. Se o aviso continuar amanhã, fale com o suporte do sistema.
 
 O aviso some sozinho quando a cotação chega. Fim de semana e feriado não têm aviso: nesses dias o Banco Central não publica cotação, e vale a do último dia útil.
+
+## 12. Estoque e compras (Fase 2)
+
+Termos de tela do estoque e das compras. Vale a regra da §19.1: nada de termo técnico. Toda correção é um novo lançamento; nada é apagado (§19.5).
+
+| Na tela | Nunca na tela | Observação |
+| --- | --- | --- |
+| Estoque | estoque central, saldo, `estoque_atual` | Quantas peças de cada produto há na loja. As peças que estão nas maletas aparecem em "Maletas" (Fase 3). |
+| Receber compra | entrada de compra, entrada de mercadoria, bipar a compra | Botão e tela para registrar o que chegou do fornecedor, lendo o código de cada peça. |
+| Compra | pedido de compra, NF de entrada | Uma chegada de peças de um fornecedor, com data, itens e valores. |
+| Custo da compra | preço de custo do item | Quanto a loja pagou por peça nesta compra. O custo só aparece para a dona. |
+| Entradas e saídas | movimentação, movimento, lançamento de estoque, log | Nome do histórico do estoque, por produto e por período. |
+| Entrada · Saída · Perda · Ajuste | `ENTRADA`, `SAIDA`, `AVARIA`, `AJUSTE` | Tipos mostrados nas entradas e saídas. "Perda" é a peça com defeito ou extraviada. "Maleta" e "Devolução da maleta" entram na Fase 3, no lugar de `REMESSA` e `DEVOLUCAO`. |
+| Ajustar o estoque | corrigir saldo, acertar saldo, inventariar | Corrige a quantidade e pede o motivo. |
+| Desfazer lançamento | estornar, estorno, anular, apagar | Cria um novo lançamento que cancela o anterior e deixa o histórico. Explicar na confirmação: "O lançamento antigo continua no histórico." |
+| Contagem do estoque | inventário | Conferir o que há na loja lendo os códigos. |
+| Começar a contagem · Fechar a contagem | abrir inventário, fechar inventário, congelar | Ao começar, o sistema anota quantas peças esperava de cada produto. |
+| Contado · Esperado | contagem física, saldo do sistema | Colunas da contagem: o que foi lido e o que o sistema esperava. |
+| Diferença | divergência, discrepância | Contado menos esperado. Pode ser para mais ou para menos. |
+| Estoque mínimo | ponto de pedido, alerta de estoque, `estoque_minimo` | Campo do produto. Aviso: "Está acabando". |
+| Está acabando | alerta, estoque crítico, abaixo do mínimo | Aviso do produto que chegou ao estoque mínimo ou ficou abaixo. |
+| Produtos parados | giro baixo, produtos sem giro, estoque encalhado | Produtos com estoque que não tiveram saída no período escolhido. |
+| Cadastro rápido | cadastro simplificado, produto provisório | Cadastrar o produto na hora, ao receber a compra, quando o código lido não existe. |
+
+**Textos padrão**
+
+- Saída sem estoque suficiente: **Não há peças suficientes no estoque.** Há {n} peça(s) de "{produto}". Confira a quantidade ou receba a compra antes.
+- Ajuste sem motivo: **Diga o motivo do ajuste.** Isso ajuda a entender a mudança depois.
+- Desfazer lançamento (confirmação): **Desfazer este lançamento?** O sistema cria um novo lançamento que cancela este. O antigo continua no histórico. Botões: **Desfazer lançamento** e **Voltar**.
+- Lançamento já desfeito: **Este lançamento já foi desfeito.**
+- Reenvio da mesma compra (não é erro para a pessoa): **Esta compra já estava registrada.** Nada foi somado de novo.
+- Fechar a contagem (confirmação): **Fechar a contagem?** O estoque será ajustado nos {n} produtos com diferença. Depois de fechada, a contagem não muda; para corrigir, faça um ajuste. Botões: **Fechar a contagem** e **Continuar contando**.
+- Produto da contagem que não foi lido: **{n} produtos não foram lidos.** Marque se devem ficar com zero peças ou se ficam como estão.
+- Lista vazia: "Ainda não há entradas e saídas.", "Nenhum produto está acabando." e "Ainda não há compras."
+
