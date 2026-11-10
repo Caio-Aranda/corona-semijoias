@@ -1,9 +1,38 @@
 {
   "name": "@corona/seller-app",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
+  "productName": "Corona Vendas",
+  "description": "Corona Vendas, o aplicativo do vendedor da Corona Semijoias.",
+  "author": "Corona Semijoias",
+  "main": "./out/main/index.cjs",
   "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "empacotar": "electron-builder --dir --config electron-builder.yml",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@corona/api-client-vendedor": "0.0.0",
+    "@corona/ui": "0.0.0",
+    "@testing-library/dom": "10.4.2",
+    "@testing-library/jest-dom": "7.0.1",
+    "@testing-library/react": "16.3.3",
+    "@testing-library/user-event": "14.6.8",
+    "@types/node": "26.6.6",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.3.0",
+    "electron": "45.2.3",
+    "electron-builder": "26.18.0",
+    "electron-vite": "6.0.0",
+    "jsdom": "31.0.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "vite": "8.3.6",
+    "vitest": "5.1.0"
   }
 }
