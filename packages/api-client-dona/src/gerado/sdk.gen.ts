@@ -2,7 +2,7 @@
 
 import { type Client, type ClientMeta, formDataBodySerializer, type Options as Options2, type RequestResult, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { AjustarData, AjustarResponses, AlteracoesDeProdutosData, AlteracoesDeProdutosResponses, AlterarCodigosData, AlterarCodigosResponses, AniversariantesData, AniversariantesResponses, BaixarData, BaixarResponses, ClientesData, ClientesResponses, CodigosEmConflitoData, CodigosEmConflitoResponses, ConciliarData, ConciliarResponses, ConfirmarData, ConfirmarResponses, ConverterData, ConverterResponses, Criar1Data, Criar1Responses, Criar2Data, Criar2Responses, Criar3Data, Criar3Responses, Criar4Data, Criar4Responses, Criar5Data, Criar5Responses, Criar6Data, Criar6Responses, Criar7Data, Criar7Responses, Criar8Data, Criar8Responses, CriarData, CriarReferenciaData, CriarReferenciaResponses, CriarResponses, DesativarData, DesativarResponses, DesfazerData, DesfazerResponses, EcoData, EcoResponses, Editar1Data, Editar1Responses, Editar2Data, Editar2Responses, Editar3Data, Editar3Responses, Editar4Data, Editar4Responses, Editar5Data, Editar5Responses, Editar6Data, Editar6Responses, Editar7Data, Editar7Responses, Editar8Data, Editar8Responses, EditarData, EditarReferenciaData, EditarReferenciaResponses, EditarResponses, EntrarData, EntrarResponses, Enviar1Data, Enviar1Responses, EnviarData, EnviarResponses, EuData, EuResponses, Excluir1Data, Excluir1Responses, Excluir2Data, Excluir2Responses, Excluir3Data, Excluir3Responses, Excluir4Data, Excluir4Responses, Excluir5Data, Excluir5Responses, Excluir6Data, Excluir6Responses, Excluir7Data, Excluir7Responses, Excluir8Data, Excluir8Responses, Excluir9Data, Excluir9Responses, ExcluirData, ExcluirReferenciaData, ExcluirReferenciaResponses, ExcluirResponses, FalhaData, FalhaResponses, FichaData, FichaResponses, FornecedoresData, FornecedoresResponses, GravarConjugeData, GravarConjugeResponses, GravarContatoData, GravarContatoResponses, GravarEnderecoData, GravarEnderecoResponses, GravarMeiData, GravarMeiResponses, GravarObservacoesData, GravarObservacoesResponses, GravarTrabalhoData, GravarTrabalhoResponses, HojeData, HojeResponses, ImagemData, ImagemResponses, Inativar1Data, Inativar1Responses, Inativar2Data, Inativar2Responses, Inativar3Data, Inativar3Responses, Inativar4Data, Inativar4Responses, Inativar5Data, Inativar5Responses, Inativar6Data, Inativar6Responses, InativarData, InativarResponses, LancarData, LancarResponses, Listar10Data, Listar10Responses, Listar11Data, Listar11Responses, Listar12Data, Listar12Responses, Listar1Data, Listar1Responses, Listar2Data, Listar2Responses, Listar3Data, Listar3Responses, Listar4Data, Listar4Responses, Listar5Data, Listar5Responses, Listar6Data, Listar6Responses, Listar7Data, Listar7Responses, Listar8Data, Listar8Responses, Listar9Data, Listar9Responses, ListarData, ListarReferenciasData, ListarReferenciasResponses, ListarResponses, OrdemData, OrdemResponses, PorCodigoData, PorCodigoResponses, PreviaData, PreviaResponses, PrincipalData, PrincipalResponses, ProdutosData, ProdutosResponses, ProximoCodigoData, ProximoCodigoResponses, Reativar1Data, Reativar1Responses, Reativar2Data, Reativar2Responses, Reativar3Data, Reativar3Responses, Reativar4Data, Reativar4Responses, Reativar5Data, Reativar5Responses, Reativar6Data, Reativar6Responses, Reativar7Data, Reativar7Responses, ReativarData, ReativarResponses, RedefinirSenhaData, RedefinirSenhaResponses, RegistrarData, RegistrarResponses, RenovarData, RenovarResponses, ResultadoDasImportacoesData, ResultadoDasImportacoesResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SemCodigoDeBarrasData, SemCodigoDeBarrasResponses, SemFotoData, SemFotoResponses, SoVendedorData, SoVendedorResponses, TempoData, TempoResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarData, ValidarResponses, ValorDaDonaData, ValorDaDonaResponses, VendedoresData, VendedoresResponses, Ver1Data, Ver1Responses, Ver2Data, Ver2Responses, Ver3Data, Ver3Responses, Ver4Data, Ver4Responses, Ver5Data, Ver5Responses, Ver6Data, Ver6Responses, Ver7Data, Ver7Responses, Ver8Data, Ver8Responses, VerConjugeData, VerConjugeResponses, VerContatoData, VerContatoResponses, VerData, VerEnderecoData, VerEnderecoResponses, VerMeiData, VerMeiResponses, VerObservacoesData, VerObservacoesResponses, VerResponses, VerTrabalhoData, VerTrabalhoResponses } from './types.gen';
+import type { AjustarData, AjustarResponses, AlteracoesDeProdutosData, AlteracoesDeProdutosResponses, AlterarCodigosData, AlterarCodigosResponses, AniversariantesData, AniversariantesResponses, BaixarData, BaixarResponses, ClientesData, ClientesResponses, CodigosEmConflitoData, CodigosEmConflitoResponses, ConciliarData, ConciliarResponses, ConfirmarData, ConfirmarResponses, ConverterData, ConverterResponses, Criar1Data, Criar1Responses, Criar2Data, Criar2Responses, Criar3Data, Criar3Responses, Criar4Data, Criar4Responses, Criar5Data, Criar5Responses, Criar6Data, Criar6Responses, Criar7Data, Criar7Responses, Criar8Data, Criar8Responses, CriarData, CriarReferenciaData, CriarReferenciaResponses, CriarResponses, CustosData, CustosResponses, DesativarData, DesativarResponses, Desfazer1Data, Desfazer1Responses, DesfazerData, DesfazerResponses, EcoData, EcoResponses, Editar1Data, Editar1Responses, Editar2Data, Editar2Responses, Editar3Data, Editar3Responses, Editar4Data, Editar4Responses, Editar5Data, Editar5Responses, Editar6Data, Editar6Responses, Editar7Data, Editar7Responses, Editar8Data, Editar8Responses, EditarData, EditarReferenciaData, EditarReferenciaResponses, EditarResponses, EntrarData, EntrarResponses, Enviar1Data, Enviar1Responses, EnviarData, EnviarResponses, EuData, EuResponses, Excluir1Data, Excluir1Responses, Excluir2Data, Excluir2Responses, Excluir3Data, Excluir3Responses, Excluir4Data, Excluir4Responses, Excluir5Data, Excluir5Responses, Excluir6Data, Excluir6Responses, Excluir7Data, Excluir7Responses, Excluir8Data, Excluir8Responses, Excluir9Data, Excluir9Responses, ExcluirData, ExcluirReferenciaData, ExcluirReferenciaResponses, ExcluirResponses, FalhaData, FalhaResponses, FichaData, FichaResponses, FornecedoresData, FornecedoresResponses, GravarConjugeData, GravarConjugeResponses, GravarContatoData, GravarContatoResponses, GravarEnderecoData, GravarEnderecoResponses, GravarMeiData, GravarMeiResponses, GravarObservacoesData, GravarObservacoesResponses, GravarTrabalhoData, GravarTrabalhoResponses, HojeData, HojeResponses, ImagemData, ImagemResponses, Inativar1Data, Inativar1Responses, Inativar2Data, Inativar2Responses, Inativar3Data, Inativar3Responses, Inativar4Data, Inativar4Responses, Inativar5Data, Inativar5Responses, Inativar6Data, Inativar6Responses, InativarData, InativarResponses, LancarData, LancarResponses, Listar10Data, Listar10Responses, Listar11Data, Listar11Responses, Listar12Data, Listar12Responses, Listar13Data, Listar13Responses, Listar1Data, Listar1Responses, Listar2Data, Listar2Responses, Listar3Data, Listar3Responses, Listar4Data, Listar4Responses, Listar5Data, Listar5Responses, Listar6Data, Listar6Responses, Listar7Data, Listar7Responses, Listar8Data, Listar8Responses, Listar9Data, Listar9Responses, ListarData, ListarReferenciasData, ListarReferenciasResponses, ListarResponses, OrdemData, OrdemResponses, PorCodigoData, PorCodigoResponses, PreviaData, PreviaResponses, PrincipalData, PrincipalResponses, ProdutosData, ProdutosResponses, ProximoCodigoData, ProximoCodigoResponses, Reativar1Data, Reativar1Responses, Reativar2Data, Reativar2Responses, Reativar3Data, Reativar3Responses, Reativar4Data, Reativar4Responses, Reativar5Data, Reativar5Responses, Reativar6Data, Reativar6Responses, Reativar7Data, Reativar7Responses, ReativarData, ReativarResponses, ReceberData, ReceberResponses, RedefinirSenhaData, RedefinirSenhaResponses, RegistrarData, RegistrarResponses, RenovarData, RenovarResponses, ResultadoDasImportacoesData, ResultadoDasImportacoesResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SemCodigoDeBarrasData, SemCodigoDeBarrasResponses, SemFotoData, SemFotoResponses, SoVendedorData, SoVendedorResponses, TempoData, TempoResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarData, ValidarResponses, ValorDaDonaData, ValorDaDonaResponses, VendedoresData, VendedoresResponses, Ver1Data, Ver1Responses, Ver2Data, Ver2Responses, Ver3Data, Ver3Responses, Ver4Data, Ver4Responses, Ver5Data, Ver5Responses, Ver6Data, Ver6Responses, Ver7Data, Ver7Responses, Ver8Data, Ver8Responses, Ver9Data, Ver9Responses, VerConjugeData, VerConjugeResponses, VerContatoData, VerContatoResponses, VerData, VerEnderecoData, VerEnderecoResponses, VerMeiData, VerMeiResponses, VerObservacoesData, VerObservacoesResponses, VerResponses, VerTrabalhoData, VerTrabalhoResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -98,7 +98,7 @@ export const trocarSenha = <ThrowOnError extends boolean = false>(options: Optio
  *
  * Os avisos que valem agora, calculados na hora (nada é gravado): cada um some sozinho quando o problema some. Lista vazia quando não há nada. Hoje: a cotação do Dólar e do Guarani que não chegou.
  */
-export const listar12 = <ThrowOnError extends boolean = false>(options?: Options<Listar12Data, ThrowOnError>): RequestResult<Listar12Responses, unknown, ThrowOnError> => (options?.client ?? client).get<Listar12Responses, unknown, ThrowOnError>({
+export const listar13 = <ThrowOnError extends boolean = false>(options?: Options<Listar13Data, ThrowOnError>): RequestResult<Listar13Responses, unknown, ThrowOnError> => (options?.client ?? client).get<Listar13Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/avisos',
     ...options
@@ -109,7 +109,7 @@ export const listar12 = <ThrowOnError extends boolean = false>(options?: Options
  *
  * Busca pelo nome. A página começa em 0 (até 100 por página).
  */
-export const listar11 = <ThrowOnError extends boolean = false>(options?: Options<Listar11Data, ThrowOnError>): RequestResult<Listar11Responses, unknown, ThrowOnError> => (options?.client ?? client).get<Listar11Responses, unknown, ThrowOnError>({
+export const listar12 = <ThrowOnError extends boolean = false>(options?: Options<Listar12Data, ThrowOnError>): RequestResult<Listar12Responses, unknown, ThrowOnError> => (options?.client ?? client).get<Listar12Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/categorias',
     ...options
@@ -197,7 +197,7 @@ export const reativar7 = <ThrowOnError extends boolean = false>(options: Options
  *
  * Busca pelo nome, telefone, WhatsApp ou CPF. A página começa em 0 (até 100 por página).
  */
-export const listar10 = <ThrowOnError extends boolean = false>(options?: Options<Listar10Data, ThrowOnError>): RequestResult<Listar10Responses, unknown, ThrowOnError> => (options?.client ?? client).get<Listar10Responses, unknown, ThrowOnError>({
+export const listar11 = <ThrowOnError extends boolean = false>(options?: Options<Listar11Data, ThrowOnError>): RequestResult<Listar11Responses, unknown, ThrowOnError> => (options?.client ?? client).get<Listar11Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/clientes',
     ...options
@@ -273,6 +273,69 @@ export const inativar5 = <ThrowOnError extends boolean = false>(options: Options
 export const reativar6 = <ThrowOnError extends boolean = false>(options: Options<Reativar6Data, ThrowOnError>): RequestResult<Reativar6Responses, unknown, ThrowOnError> => (options.client ?? client).post<Reativar6Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/clientes/{id}/reativar',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Lista de compras
+ *
+ * Filtros: período (de, ate: data da compra, as duas inclusivas), fornecedorId, produtoId e situacao (REGISTRADA ou ESTORNADA). Mais nova primeiro. A página começa em 0 (até 200 por página).
+ */
+export const listar10 = <ThrowOnError extends boolean = false>(options?: Options<Listar10Data, ThrowOnError>): RequestResult<Listar10Responses, unknown, ThrowOnError> => (options?.client ?? client).get<Listar10Responses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/compras',
+    ...options
+});
+
+/**
+ * Receber uma compra
+ *
+ * Vários itens, cada um por produtoId OU por codigo (texto do código da etiqueta, sem diferenciar maiúsculas). Uma transação só: grava a compra, soma as peças no estoque e atualiza o custo. O servidor recalcula os totais (custo com 2 casas, arredondado para cima na metade). Mesma peça duas vezes na mesma compra é recusada. Código que não existe volta 400 com o erro de cada linha e nada é gravado. O id (UUID) torna o reenvio seguro: mesmo id e mesmos dados devolve a compra (200) sem somar de novo; outros dados, 409.
+ */
+export const receber = <ThrowOnError extends boolean = false>(options: Options<ReceberData, ThrowOnError>): RequestResult<ReceberResponses, unknown, ThrowOnError> => (options.client ?? client).post<ReceberResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/compras',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Histórico de custo do produto
+ *
+ * Custo atual e cada custo que uma compra deu à peça.
+ */
+export const custos = <ThrowOnError extends boolean = false>(options: Options<CustosData, ThrowOnError>): RequestResult<CustosResponses, unknown, ThrowOnError> => (options.client ?? client).get<CustosResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/compras/produtos/{produtoId}/custos',
+    ...options
+});
+
+/**
+ * Ver uma compra
+ *
+ * Com os itens, as fotos das peças, os custos e o total.
+ */
+export const ver9 = <ThrowOnError extends boolean = false>(options: Options<Ver9Data, ThrowOnError>): RequestResult<Ver9Responses, unknown, ThrowOnError> => (options.client ?? client).get<Ver9Responses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/compras/{id}',
+    ...options
+});
+
+/**
+ * Desfazer uma compra
+ *
+ * Desfaz as entradas no estoque e marca a compra como desfeita (ela continua no histórico). Exige o motivo. Recusa (409) se já saíram peças e o estoque não cobre, ou se a compra já foi desfeita. O custo do produto só volta se esta era a compra mais recente dele.
+ */
+export const desfazer1 = <ThrowOnError extends boolean = false>(options: Options<Desfazer1Data, ThrowOnError>): RequestResult<Desfazer1Responses, unknown, ThrowOnError> => (options.client ?? client).post<Desfazer1Responses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/compras/{id}/desfazer',
     ...options,
     headers: {
         'Content-Type': 'application/json',

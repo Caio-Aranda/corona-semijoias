@@ -91,3 +91,35 @@ Uma seção por tarefa, no mesmo formato de [fase-1.md](fase-1.md). A tabela de 
 
 - Compras (2.3), inventário e aviso de estoque mínimo (2.4), relatórios (2.5), telas (2.6 a 2.8).
 - Relatório de conciliação em PDF/Excel/CSV: só a rota JSON e o teste; a exportação vem com a 2.5.
+
+### Tarefa 2.3: backend, compras
+
+**Em revisão.** Segue o [ADR-0008](../decisoes/ADR-0008-estoque-e-movimentacoes.md); a especificação não mudou.
+
+**O que foi feito**
+
+- Migração **V019**: `compras` (só a situação muda, por gatilho; o resto é imutável), `itens_compra` e `historico_custo` (imutáveis; recusam `UPDATE` e `DELETE`). Todas só do servidor: o vendedor nunca recebe compra nem custo (conferido no pull).
+- **`ServicoDeCompras`**: uma transação grava a compra e os itens, chama o `ServicoDeEstoque` (ENTRADA, origem COMPRA, produtos em ordem de id), atualiza `produtos_custos` e grava o histórico. O servidor recalcula tudo; o total enviado pelo app é ignorado.
+- Cada item vem por `produtoId` OU por `codigo` (busca do ADR-0007: sem diferenciar maiúsculas, sem espaços nas pontas). Código desconhecido ou linha inválida dá erro por linha (`itens[2].codigo`) e nada é gravado.
+- **Idempotência**: mesmo UUID e mesmo conteúdo (em qualquer ordem, por produto ou por código) devolve a compra com 200, sem somar de novo; conteúdo diferente, 409. Envios simultâneos do mesmo id são serializados por trava de transação.
+- **Desfazer a compra** (`POST /{id}/desfazer`, motivo obrigatório): desfaz cada entrada pelo serviço de estoque; tudo ou nada. Recusa com 409 se já saíram peças ("há só N no estoque") e se já foi desfeita (o mesmo id de pedido devolve 200). Auditoria de compra e de desfazer.
+- Rotas só ADMIN em `/api/dona/compras`: criar, ver (itens, fotos, total), listar (período, fornecedor, produto, situação; paginada) e `/produtos/{id}/custos` (custo atual e histórico).
+- Textos novos no glossário (parte 12) e em `CodigoErro`, sem palavras proibidas (teste).
+
+**Decisões que tomei**
+
+- **Mesmo produto duas vezes na mesma compra é recusado** (inclusive uma vez por código e outra por produto): evita custos diferentes para a mesma peça na mesma compra; a dona soma numa linha só.
+- **Custo vem como texto com até 2 casas** (regra do JSON de dinheiro do projeto): o contrato recusa 3 casas. O serviço ainda arredonda HALF_UP a 2 casas e só então multiplica pela quantidade, para o total de cada item bater com o custo mostrado.
+- **Custo do produto = o da compra gravada agora** (a mais recente a ser lançada, não a de data maior). O custo anterior fica em `historico_custo`.
+- **Custo ao desfazer**: só volta se esta compra era a mais recente entre as não desfeitas E o custo atual ainda é o dela (se a dona mudou o custo à mão depois, fica como está). Volta para o custo da compra anterior que continua valendo; sem outra, para o custo que o produto tinha antes da primeira compra. O histórico nunca é apagado.
+- **Fornecedor é obrigatório**; data da compra não pode passar de amanhã (UTC); até 500 itens por compra.
+- Compra desfeita não pode ser reativada: lança-se de novo com outro id.
+
+**O que ficou de fora**
+
+- Cadastro rápido de produto e importação por planilha (2.6); contas a pagar e pagamento ao fornecedor (Fase 7); custo médio; relatórios de compras (2.5); telas.
+- Rascunho de compra (a compra é confirmada de uma vez, como decidido na 2.1).
+
+**Dúvidas**
+
+- A dona quer poder ver a compra por quem lançou/filtrar por usuário? Não incluí o filtro.

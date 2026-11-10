@@ -83,6 +83,10 @@ public final class RegistroDeTabelas {
                         new TabelaDoServidor("importacoes_linhas", true),
                         // Movimentações do estoque central (tarefa 2.2): histórico imutável, nunca vai ao vendedor.
                         new TabelaDoServidor("movimentacoes_estoque", true),
+                        // Compras (tarefa 2.3): custo e fornecedor são só da dona, nunca vão ao vendedor.
+                        new TabelaDoServidor("compras", false),
+                        new TabelaDoServidor("itens_compra", true),
+                        new TabelaDoServidor("historico_custo", true),
                         // Cadastros que o vendedor nunca recebe (ESPECIFICACAO §10): fornecedores, praças, restrições.
                         new TabelaDoServidor("fornecedores", false),
                         new TabelaDoServidor("pracas", false),
