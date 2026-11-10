@@ -100,3 +100,63 @@ describe('conferência dos dados de cada operação', () => {
     expect(conferirParametros('vendedores.escolha', [])).toBeNull();
   });
 });
+
+describe('cadastros básicos', () => {
+  it('lista com busca e página', () => {
+    expect(conferirParametros('clientes.listar', { busca: 'ana', pagina: 1, tamanho: 20 })).toEqual(
+      {
+        operacao: 'clientes.listar',
+        cadastro: 'clientes',
+        acao: 'listar',
+        lista: { busca: 'ana', pagina: 1, tamanho: 20 },
+      },
+    );
+    expect(conferirParametros('clientes.listar', { tamanho: 101 })).toBeNull();
+    expect(conferirParametros('clientes.listar', { pagina: -1 })).toBeNull();
+  });
+
+  it('cria só com campos conhecidos e do tipo certo', () => {
+    const ok = conferirParametros('fornecedores.criar', {
+      razaoSocial: 'Ouro Fino',
+      endereco: { cidade: 'Foz' },
+    });
+    expect(ok).toMatchObject({ corpo: { razaoSocial: 'Ouro Fino', endereco: { cidade: 'Foz' } } });
+    expect(conferirParametros('fornecedores.criar', { razaoSocial: 'A', preco: '1' })).toBeNull();
+    expect(conferirParametros('fornecedores.criar', { razaoSocial: 1 })).toBeNull();
+    expect(
+      conferirParametros('fornecedores.criar', { razaoSocial: 'A', endereco: { rua: 'x' } }),
+    ).toBeNull();
+    expect(
+      conferirParametros('categorias.criar', { nome: 'A', endereco: { cidade: 'x' } }),
+    ).toBeNull();
+  });
+
+  it('só categorias, semanas e clientes aceitam id do aplicativo', () => {
+    expect(conferirParametros('categorias.criar', { nome: 'A', id: ID })).not.toBeNull();
+    expect(conferirParametros('pracas.criar', { nome: 'A', id: ID })).toBeNull();
+    expect(conferirParametros('categorias.criar', { nome: 'A', id: 'abc' })).toBeNull();
+  });
+
+  it('semana confere número, datas e situação', () => {
+    const base = { numero: 12, inicio: '2026-11-09', fim: '2026-11-15', situacao: 'ABERTA' };
+    expect(conferirParametros('semanas.criar', base)).not.toBeNull();
+    expect(conferirParametros('semanas.criar', { ...base, inicio: '09/11/2026' })).toBeNull();
+    expect(conferirParametros('semanas.criar', { ...base, situacao: 'X' })).toBeNull();
+    expect(conferirParametros('semanas.criar', { ...base, numero: 1.5 })).toBeNull();
+  });
+
+  it('editar e excluir exigem identificador; editar exige a versão lida', () => {
+    expect(conferirParametros('pracas.editar', { id: ID, nome: 'A', version: 2 })).toMatchObject({
+      id: ID,
+      corpo: { nome: 'A', version: 2 },
+    });
+    expect(conferirParametros('pracas.editar', { id: ID, nome: 'A' })).toBeNull();
+    expect(conferirParametros('pracas.editar', { id: 'x', nome: 'A', version: 1 })).toBeNull();
+    expect(conferirParametros('pracas.excluir', { id: ID })).toMatchObject({ id: ID });
+    expect(conferirParametros('pracas.excluir', {})).toBeNull();
+  });
+
+  it('texto grande demais é recusado', () => {
+    expect(conferirParametros('categorias.criar', { nome: 'a'.repeat(101) })).toBeNull();
+  });
+});

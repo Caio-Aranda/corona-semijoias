@@ -5,6 +5,7 @@ import { MENU, rotuloDaRota, useRota, type Rota } from '../nucleo/rotas';
 import { TEXTOS } from '../textos';
 import { TelaEmBreve } from './TelaEmBreve';
 import { TelaInicial } from './TelaInicial';
+import { TelaDeCadastro } from './cadastros/TelaDeCadastro';
 import { TelaUsuarios } from './usuarios/TelaUsuarios';
 
 export interface EstruturaProps {
@@ -27,6 +28,18 @@ function Conteudo({
       return <TelaInicial ponte={ponte} nome={nome} />;
     case 'pessoas/usuarios':
       return <TelaUsuarios ponte={ponte} />;
+    case 'cadastros/fornecedores':
+      return <TelaDeCadastro ponte={ponte} cadastro="fornecedores" />;
+    case 'cadastros/categorias':
+      return <TelaDeCadastro ponte={ponte} cadastro="categorias" />;
+    case 'cadastros/pracas':
+      return <TelaDeCadastro ponte={ponte} cadastro="pracas" />;
+    case 'cadastros/semanas':
+      return <TelaDeCadastro ponte={ponte} cadastro="semanas" />;
+    case 'cadastros/restricoes':
+      return <TelaDeCadastro ponte={ponte} cadastro="restricoes" />;
+    case 'pessoas/clientes':
+      return <TelaDeCadastro ponte={ponte} cadastro="clientes" />;
     default:
       return <TelaEmBreve nome={rotuloDaRota(rota)} />;
   }

@@ -1,0 +1,310 @@
+// @vitest-environment jsdom
+import { render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type {
+  EstadoDaSessao,
+  PedidoDeChamada,
+  PonteDoCorona,
+  ResultadoDeChamada,
+} from '../../../shared/ponte';
+import { App } from '../../App';
+
+const ID_A = '8f14e45f-ceea-4672-a1b9-3a1a0f7c4d11';
+const ID_B = '1b4e28ba-2fa1-41d3-b9a5-2c3a9a8f6b22';
+
+type Manipulador = (p: PedidoDeChamada) => ResultadoDeChamada | Promise<ResultadoDeChamada>;
+
+const pagina = (itens: unknown[]) => ({
+  ok: true as const,
+  dados: { itens, pagina: 0, tamanho: 20, total: itens.length },
+});
+
+function montar(manipuladores: Record<string, Manipulador>) {
+  const chamadas: PedidoDeChamada[] = [];
+  const padrao: Record<string, Manipulador> = {
+    'avisos.listar': () => ({ ok: true, dados: { avisos: [] } }),
+    'cotacao.hoje': () => ({ ok: true, dados: { disponivel: false } }),
+    'vendedores.escolha': () => pagina([{ id: ID_B, nome: 'Joana Vendedora', codigo: 7 }]),
+  };
+  const todos = { ...padrao, ...manipuladores };
+  const ponte: PonteDoCorona = {
+    entrar: vi.fn(),
+    trocarSenha: vi.fn(),
+    sair: vi.fn(() => Promise.resolve()),
+    estouLogado: vi.fn(() =>
+      Promise.resolve<EstadoDaSessao>({ estado: 'dentro', usuario: { nome: 'Maria' } }),
+    ),
+    chamarApi: vi.fn(async (pedido: PedidoDeChamada) => {
+      chamadas.push(pedido);
+      const m = todos[pedido.operacao];
+      return m ? m(pedido) : { ok: false as const, motivo: 'erro' as const };
+    }),
+    aoMudarASessao: () => () => undefined,
+  };
+  return { ponte, chamadas };
+}
+
+async function abrir(m: ReturnType<typeof montar>, item: string, esperar: string) {
+  const u = userEvent.setup();
+  render(<App ponte={m.ponte} />);
+  await u.click(await screen.findByRole('button', { name: item }));
+  await screen.findByText(esperar);
+  return u;
+}
+
+beforeEach(() => {
+  window.location.hash = '';
+});
+
+describe('Cadastros: lista', () => {
+  it('categorias mostram os nomes e o total; o cursor está na busca', async () => {
+    const m = montar({
+      'categorias.listar': () =>
+        pagina([
+          { id: ID_A, version: 0, nome: 'Brincos' },
+          { id: ID_B, version: 0, nome: 'Anéis' },
+        ]),
+    });
+    await abrir(m, 'Categorias', 'Brincos');
+    expect(screen.getByText('2 categorias')).toBeInTheDocument();
+    expect(screen.getByLabelText('Buscar pelo nome')).toHaveFocus();
+  });
+
+  it('lista vazia e busca sem resultado têm textos diferentes', async () => {
+    const m = montar({ 'pracas.listar': () => pagina([]) });
+    const u = await abrir(m, 'Praças', 'Ainda não há nenhuma praça.');
+    await u.type(screen.getByLabelText('Buscar pelo nome'), 'zzz');
+    expect(
+      await screen.findByText(
+        'Nenhuma praça encontrada. Confira o que você digitou ou limpe a busca.',
+      ),
+    ).toBeInTheDocument();
+    await waitFor(() =>
+      expect(m.chamadas.filter((c) => c.operacao === 'pracas.listar').at(-1)?.parametros).toEqual({
+        pagina: 0,
+        tamanho: 20,
+        busca: 'zzz',
+      }),
+    );
+  });
+
+  it('semanas mostram datas no formato do Brasil e a situação em português', async () => {
+    const m = montar({
+      'semanas.listar': () =>
+        pagina([
+          {
+            id: ID_A,
+            version: 0,
+            numero: 12,
+            inicio: '2026-11-09',
+            fim: '2026-11-15',
+            situacao: 'FECHADA',
+          },
+        ]),
+    });
+    await abrir(m, 'Semanas', '09/11/2026');
+    const linha = screen.getByRole('row', { name: /09\/11\/2026/ });
+    expect(within(linha).getByText('15/11/2026')).toBeInTheDocument();
+    expect(within(linha).getByText('Fechada')).toBeInTheDocument();
+  });
+
+  it('restrições mostram Sim ou Não, sem a palavra remessa', async () => {
+    const m = montar({
+      'restricoes.listar': () =>
+        pagina([
+          { id: ID_A, version: 0, codigo: 'R1', descricao: 'Atraso', bloqueiaRemessa: true },
+        ]),
+    });
+    await abrir(m, 'Restrições', 'Atraso');
+    expect(screen.getByText('Impede montar maleta')).toBeInTheDocument();
+    expect(screen.queryByText(/remessa/i)).toBeNull();
+  });
+});
+
+describe('Cadastros: criar e editar', () => {
+  it('cria categoria: cursor no nome, Enter envia, id gerado no app', async () => {
+    let criada = false;
+    const m = montar({
+      'categorias.listar': () => pagina(criada ? [{ id: ID_A, version: 0, nome: 'Colares' }] : []),
+      'categorias.criar': () => {
+        criada = true;
+        return { ok: true, dados: { id: ID_A, version: 0, nome: 'Colares' } };
+      },
+    });
+    const u = await abrir(m, 'Categorias', 'Ainda não há nenhuma categoria.');
+    await u.click(screen.getByRole('button', { name: 'Nova categoria' }));
+    expect(screen.getByLabelText('Nome da categoria')).toHaveFocus();
+    await u.keyboard('Colares{Enter}');
+    expect(await screen.findByText('Colares foi cadastrada.')).toBeInTheDocument();
+    const pedido = m.chamadas.find((c) => c.operacao === 'categorias.criar');
+    expect(pedido?.parametros).toMatchObject({ nome: 'Colares' });
+    expect(pedido?.parametros?.id).toMatch(/^[0-9a-f-]{36}$/);
+  });
+
+  it('campo obrigatório vazio mostra o aviso no campo e não chama a API', async () => {
+    const m = montar({ 'pracas.listar': () => pagina([]) });
+    const u = await abrir(m, 'Praças', 'Ainda não há nenhuma praça.');
+    await u.click(screen.getByRole('button', { name: 'Nova praça' }));
+    await u.click(screen.getByRole('button', { name: 'Salvar' }));
+    expect(await screen.findByText('Preencha este campo.')).toBeInTheDocument();
+    expect(m.chamadas.some((c) => c.operacao === 'pracas.criar')).toBe(false);
+  });
+
+  it('cliente: erro do servidor aparece no campo do CPF, com o texto dele', async () => {
+    const m = montar({
+      'clientes.listar': () => pagina([]),
+      'clientes.criar': () => ({
+        ok: false,
+        motivo: 'erro',
+        status: 400,
+        codigo: 'DADOS_INVALIDOS',
+        mensagem: 'Confira os dados.',
+        campos: [{ campo: 'cpf', mensagem: 'Confira o CPF: ele não parece estar certo.' }],
+      }),
+    });
+    const u = await abrir(m, 'Clientes', 'Ainda não há nenhum cliente.');
+    await u.click(screen.getByRole('button', { name: 'Novo cliente' }));
+    await u.type(screen.getByLabelText('Nome do cliente'), 'Ana');
+    await u.type(screen.getByLabelText('CPF'), '111');
+    await u.type(screen.getByLabelText('Cidade'), 'Foz do Iguaçu');
+    await u.click(screen.getByRole('button', { name: 'Salvar' }));
+    expect(
+      await screen.findByText('Confira o CPF: ele não parece estar certo.'),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText('CPF')).toHaveAttribute('aria-invalid', 'true');
+    const pedido = m.chamadas.find((c) => c.operacao === 'clientes.criar');
+    expect(pedido?.parametros).toMatchObject({
+      nome: 'Ana',
+      cpf: '111',
+      endereco: { cidade: 'Foz do Iguaçu' },
+    });
+  });
+
+  it('cliente: escolhe o vendedor responsável pela lista', async () => {
+    const m = montar({
+      'clientes.listar': () => pagina([]),
+      'clientes.criar': () => ({ ok: true, dados: { id: ID_A, version: 0, nome: 'Ana' } }),
+    });
+    const u = await abrir(m, 'Clientes', 'Ainda não há nenhum cliente.');
+    await u.click(screen.getByRole('button', { name: 'Novo cliente' }));
+    await u.type(screen.getByLabelText('Nome do cliente'), 'Ana');
+    await screen.findByRole('option', { name: 'Joana Vendedora' });
+    await u.selectOptions(screen.getByLabelText('Vendedor responsável'), ID_B);
+    await u.click(screen.getByRole('button', { name: 'Salvar' }));
+    await screen.findByText('Ana foi cadastrado.');
+    expect(m.chamadas.find((c) => c.operacao === 'clientes.criar')?.parametros).toMatchObject({
+      vendedorResponsavelId: ID_B,
+    });
+  });
+
+  it('semana: número, datas e situação vão para a API', async () => {
+    const m = montar({
+      'semanas.listar': () => pagina([]),
+      'semanas.criar': () => ({ ok: true, dados: {} }),
+    });
+    const u = await abrir(m, 'Semanas', 'Ainda não há nenhuma semana.');
+    await u.click(screen.getByRole('button', { name: 'Nova semana' }));
+    await u.type(screen.getByLabelText('Número da semana'), '12');
+    await u.type(screen.getByLabelText('Primeiro dia'), '2026-11-09');
+    await u.type(screen.getByLabelText('Último dia'), '2026-11-15');
+    await u.click(screen.getByRole('button', { name: 'Salvar' }));
+    await screen.findByText('Semana 12 foi cadastrada.');
+    expect(m.chamadas.find((c) => c.operacao === 'semanas.criar')?.parametros).toMatchObject({
+      numero: 12,
+      inicio: '2026-11-09',
+      fim: '2026-11-15',
+      situacao: 'ABERTA',
+    });
+  });
+
+  it('editar manda a versão lida; 409 mostra o aviso com Atualizar', async () => {
+    const m = montar({
+      'fornecedores.listar': () =>
+        pagina([
+          {
+            id: ID_A,
+            version: 3,
+            razaoSocial: 'Ouro Fino',
+            cnpj: '',
+            endereco: { cidade: 'Foz' },
+          },
+        ]),
+      'fornecedores.editar': () => ({
+        ok: false,
+        motivo: 'erro',
+        status: 409,
+        codigo: 'CADASTRO_ALTERADO',
+        mensagem:
+          'Este cadastro foi alterado por outra pessoa. Atualize a tela e faça a alteração de novo.',
+      }),
+    });
+    const u = await abrir(m, 'Fornecedores', 'Ouro Fino');
+    await u.click(screen.getByRole('button', { name: 'Editar' }));
+    expect(screen.getByLabelText('Cidade')).toHaveValue('Foz');
+    await u.click(screen.getByRole('button', { name: 'Salvar' }));
+    expect(await screen.findByText(/alterado por outra pessoa/)).toBeInTheDocument();
+    expect(m.chamadas.find((c) => c.operacao === 'fornecedores.editar')?.parametros).toMatchObject({
+      id: ID_A,
+      version: 3,
+      razaoSocial: 'Ouro Fino',
+    });
+    await u.click(screen.getByRole('button', { name: 'Atualizar' }));
+    expect(await screen.findByText('Ouro Fino')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Cidade')).toBeNull();
+  });
+});
+
+describe('Cadastros: excluir', () => {
+  it('pede confirmação, com foco em Voltar; Voltar não chama a API', async () => {
+    const m = montar({
+      'pracas.listar': () => pagina([{ id: ID_A, version: 0, nome: 'Centro' }]),
+    });
+    const u = await abrir(m, 'Praças', 'Centro');
+    await u.click(screen.getByRole('button', { name: 'Excluir praça' }));
+    const janela = await screen.findByRole('dialog');
+    expect(within(janela).getByRole('button', { name: 'Voltar' })).toHaveFocus();
+    await u.click(within(janela).getByRole('button', { name: 'Voltar' }));
+    expect(m.chamadas.some((c) => c.operacao === 'pracas.excluir')).toBe(false);
+  });
+
+  it('confirmar exclui, avisa e atualiza a lista', async () => {
+    let excluida = false;
+    const m = montar({
+      'pracas.listar': () => pagina(excluida ? [] : [{ id: ID_A, version: 0, nome: 'Centro' }]),
+      'pracas.excluir': () => {
+        excluida = true;
+        return { ok: true, dados: undefined };
+      },
+    });
+    const u = await abrir(m, 'Praças', 'Centro');
+    await u.click(screen.getByRole('button', { name: 'Excluir praça' }));
+    const janela = await screen.findByRole('dialog');
+    await u.click(within(janela).getByRole('button', { name: 'Excluir praça' }));
+    expect(await screen.findByText('Centro foi excluída.')).toBeInTheDocument();
+    expect(await screen.findByText('Ainda não há nenhuma praça.')).toBeInTheDocument();
+    expect(m.chamadas.find((c) => c.operacao === 'pracas.excluir')?.parametros).toEqual({
+      id: ID_A,
+    });
+  });
+
+  it('praça em uso: mostra o texto do servidor e a praça continua na lista', async () => {
+    const m = montar({
+      'pracas.listar': () => pagina([{ id: ID_A, version: 0, nome: 'Centro' }]),
+      'pracas.excluir': () => ({
+        ok: false,
+        motivo: 'erro',
+        status: 409,
+        codigo: 'CADASTRO_EM_USO',
+        mensagem:
+          'Este cadastro está em uso. Troque a praça ou a restrição dos vendedores que a usam e tente de novo.',
+      }),
+    });
+    const u = await abrir(m, 'Praças', 'Centro');
+    await u.click(screen.getByRole('button', { name: 'Excluir praça' }));
+    const janela = await screen.findByRole('dialog');
+    await u.click(within(janela).getByRole('button', { name: 'Excluir praça' }));
+    expect(await screen.findByText(/está em uso/)).toBeInTheDocument();
+    expect(screen.getByText('Centro')).toBeInTheDocument();
+  });
+});

@@ -1,6 +1,30 @@
 import {
   converter,
   criar1,
+  criar2,
+  criar3,
+  criar5,
+  criar6,
+  criar7,
+  criar8,
+  excluir1,
+  excluir2,
+  excluir4,
+  excluir5,
+  excluir6,
+  excluir7,
+  editar2,
+  editar3,
+  editar5,
+  editar6,
+  editar7,
+  editar8,
+  listar10,
+  listar3,
+  listar4,
+  listar7,
+  listar8,
+  listar9,
   criarClienteDaApi,
   desativar,
   editar1,
@@ -18,6 +42,7 @@ import {
   trocarSenha,
   type RespostaDoLogin,
 } from '@corona/api-client-dona';
+import type { NomeDoCadastro } from '../shared/cadastros';
 import type { ParametrosConferidos } from '../shared/validacao-parametros';
 import type { ApiDeAutenticacao, Credenciais, Falha, Resultado } from './tipos';
 
@@ -103,6 +128,18 @@ async function executar<T>(
   }
 }
 
+type ChamadaGerada = (o: Record<string, unknown>) => Promise<RetornoDoCliente<unknown>>;
+
+/** As quatro rotas de cada cadastro, no cliente gerado (os números vêm da ordem do OpenAPI). */
+const ROTAS_DOS_CADASTROS = {
+  fornecedores: { listar: listar8, criar: criar6, editar: editar6, excluir: excluir5 },
+  categorias: { listar: listar10, criar: criar8, editar: editar8, excluir: excluir7 },
+  pracas: { listar: listar7, criar: criar5, editar: editar5, excluir: excluir4 },
+  semanas: { listar: listar3, criar: criar2, editar: editar2, excluir: excluir1 },
+  restricoes: { listar: listar4, criar: criar3, editar: editar3, excluir: excluir2 },
+  clientes: { listar: listar9, criar: criar7, editar: editar7, excluir: excluir6 },
+} as unknown as Record<NomeDoCadastro, Record<string, ChamadaGerada>>;
+
 /**
  * Chamadas à API do Corona Gestão. O cliente gerado já manda X-App-Tipo e X-App-Versao em toda
  * chamada; aqui só se acrescenta o token de acesso, que nunca sai do processo principal.
@@ -144,6 +181,20 @@ export function criarApiDoGestao(opcoes: OpcoesDaApi): ApiDoGestao {
     },
     async executar(token, pedido) {
       const headers = comToken(token);
+      if ('cadastro' in pedido) {
+        const rota = ROTAS_DOS_CADASTROS[pedido.cadastro]?.[pedido.acao];
+        if (!rota) return { ok: false, falha: { tipo: 'resposta-invalida' } };
+        const { id, corpo, lista } = pedido;
+        return executar(() =>
+          rota({
+            client,
+            headers,
+            ...(lista ? { query: lista } : {}),
+            ...(id ? { path: { id } } : {}),
+            ...(corpo ? { body: corpo } : {}),
+          }),
+        );
+      }
       switch (pedido.operacao) {
         case 'eu':
           return executar(() => eu({ client, headers }));

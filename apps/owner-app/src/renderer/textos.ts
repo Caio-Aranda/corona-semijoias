@@ -3,6 +3,44 @@
  * Vêm do glossário da interface (docs/glossario-interface.md, partes 4 e 6).
  * Mensagens de erro da API nunca são escritas aqui: a tela mostra o que o servidor devolveu.
  */
+
+/** Textos de um cadastro básico (a palavra e o gênero mudam; a estrutura é a mesma). */
+function cadastroBasico(c: {
+  genero: 'o' | 'a';
+  titulo: string;
+  singular: string;
+  plural: string;
+  buscaRotulo: string;
+}) {
+  const novo = c.genero === 'a' ? 'Nova' : 'Novo';
+  return {
+    titulo: c.titulo,
+    item: c.singular,
+    itens: [c.singular, c.plural] as const,
+    novo: `${novo} ${c.singular}`,
+    buscando: `Buscando ${c.genero === 'a' ? 'as' : 'os'} ${c.plural}...`,
+    buscaRotulo: c.buscaRotulo,
+    legenda: `Lista de ${c.plural}`,
+    editar: 'Editar',
+    excluir: `Excluir ${c.singular}`,
+    colunaAcoes: 'O que fazer',
+    vazio: `Ainda não há ${c.genero === 'a' ? 'nenhuma' : 'nenhum'} ${c.singular}.`,
+    semResultado: `${c.genero === 'a' ? 'Nenhuma' : 'Nenhum'} ${c.singular} encontrad${c.genero}. Confira o que você digitou ou limpe a busca.`,
+    formulario: { tituloNovo: `${novo} ${c.singular}`, tituloEditar: `Editar ${c.singular}` },
+    confirmar: {
+      titulo: (nome: string) => `Excluir ${nome}?`,
+      texto: (nome: string) =>
+        `${nome} some das listas. O que já foi registrado com ${c.genero === 'a' ? 'ela' : 'ele'} continua guardado. Por aqui não dá para desfazer.`,
+      voltar: 'Voltar',
+    },
+    feito: {
+      criado: (nome: string) => `${nome} foi cadastrad${c.genero}.`,
+      editado: (nome: string) => `Os dados de ${nome} foram salvos.`,
+      excluido: (nome: string) => `${nome} foi exclu${c.genero === 'a' ? 'ída' : 'ído'}.`,
+    },
+  };
+}
+
 export const TEXTOS = {
   semInternet: {
     titulo: 'Sem internet.',
@@ -86,6 +124,120 @@ export const TEXTOS = {
     titulo: 'O que precisa da sua atenção',
     tudoEmDia: 'Tudo em dia.',
     erro: 'Não foi possível buscar os avisos agora. Tente de novo mais tarde.',
+  },
+  cadastros: {
+    enderecoTitulo: 'Endereço',
+    sim: 'Sim',
+    nao: 'Não',
+    semVendedor: 'Nenhum vendedor',
+    vendedorAtual: 'Vendedor já escolhido antes',
+    numeroInvalido: 'Digite só números, sem vírgula nem ponto.',
+    fornecedores: {
+      ...cadastroBasico({
+        genero: 'o',
+        titulo: 'Fornecedores',
+        singular: 'fornecedor',
+        plural: 'fornecedores',
+        buscaRotulo: 'Buscar por nome, contato ou CNPJ',
+      }),
+      colunas: { nome: 'Fornecedor', cnpj: 'CNPJ', contato: 'Contato', telefone: 'Telefone' },
+      campos: {
+        razaoSocial: 'Nome do fornecedor (razão social)',
+        cnpj: 'CNPJ',
+        cnpjAjuda: 'Pode digitar com ou sem pontos. Se não souber, deixe em branco.',
+        contatoNome: 'Nome do contato',
+        telefone: 'Telefone',
+        email: 'E-mail',
+      },
+    },
+    categorias: {
+      ...cadastroBasico({
+        genero: 'a',
+        titulo: 'Categorias',
+        singular: 'categoria',
+        plural: 'categorias',
+        buscaRotulo: 'Buscar pelo nome',
+      }),
+      colunas: { nome: 'Categoria' },
+      campos: { nome: 'Nome da categoria' },
+    },
+    pracas: {
+      ...cadastroBasico({
+        genero: 'a',
+        titulo: 'Praças',
+        singular: 'praça',
+        plural: 'praças',
+        buscaRotulo: 'Buscar pelo nome',
+      }),
+      colunas: { nome: 'Praça' },
+      campos: { nome: 'Nome da praça' },
+    },
+    semanas: {
+      ...cadastroBasico({
+        genero: 'a',
+        titulo: 'Semanas',
+        singular: 'semana',
+        plural: 'semanas',
+        buscaRotulo: 'Buscar pelo número',
+      }),
+      colunas: {
+        numero: 'Semana',
+        inicio: 'Primeiro dia',
+        fim: 'Último dia',
+        situacao: 'Situação',
+      },
+      campos: {
+        numero: 'Número da semana',
+        inicio: 'Primeiro dia',
+        fim: 'Último dia',
+        situacao: 'Situação',
+      },
+      situacao: { ABERTA: 'Aberta', FECHADA: 'Fechada' } as Record<string, string>,
+      nome: (numero: string) => `Semana ${numero}`,
+    },
+    restricoes: {
+      ...cadastroBasico({
+        genero: 'a',
+        titulo: 'Restrições',
+        singular: 'restrição',
+        plural: 'restrições',
+        buscaRotulo: 'Buscar pelo código ou pela descrição',
+      }),
+      colunas: { codigo: 'Código', descricao: 'Descrição', bloqueia: 'Impede montar maleta' },
+      campos: {
+        codigo: 'Código',
+        descricao: 'Descrição',
+        bloqueiaRemessa: 'Impede montar maleta para o vendedor com esta restrição',
+      },
+    },
+    clientes: {
+      ...cadastroBasico({
+        genero: 'o',
+        titulo: 'Clientes',
+        singular: 'cliente',
+        plural: 'clientes',
+        buscaRotulo: 'Buscar por nome, telefone ou CPF',
+      }),
+      colunas: { nome: 'Cliente', cpf: 'CPF', telefone: 'Telefone', whatsapp: 'WhatsApp' },
+      campos: {
+        nome: 'Nome do cliente',
+        cpf: 'CPF',
+        cpfAjuda: 'Pode digitar com ou sem pontos. Se não souber, deixe em branco.',
+        telefone: 'Telefone',
+        whatsapp: 'WhatsApp',
+        observacoes: 'Observações',
+        vendedorResponsavelId: 'Vendedor responsável',
+      },
+    },
+    endereco: {
+      logradouro: 'Rua ou avenida',
+      numero: 'Número',
+      complemento: 'Complemento',
+      bairro: 'Bairro',
+      cidade: 'Cidade',
+      uf: 'Estado',
+      cep: 'CEP',
+    },
   },
   usuarios: {
     titulo: 'Usuários',
