@@ -56,7 +56,7 @@ Cadastros da dona (§15). Segue o mesmo formato da Fase 0. O código das etiquet
 | 1.11 | owner-app: produtos, fotos, importação em massa e leitura de código | Concluída (PR 37) · [detalhe](progresso/fase-1.md#tarefa-111-produtos-códigos-custo-fotos-importação-em-massa-e-leitor-owner-app) |
 | 1.12 | relatórios de cadastro (backend + tela) | Concluída (PR 38) · [detalhe](progresso/fase-1.md#tarefa-112-relatórios-de-cadastro-backend--tela--fecha-a-fase-1) |
 
-| 1.13 | ajustes de fechamento: fotos rápidas (cache em disco), filtros que faltavam nos relatórios de cadastro e resultado das importações | Concluída (PR N) · [detalhe](progresso/fase-1.md#tarefa-113-ajustes-de-fechamento-da-fase-1) |
+| 1.13 | ajustes de fechamento: fotos rápidas (cache em disco), filtros que faltavam nos relatórios de cadastro e resultado das importações | Concluída (PR 39) · [detalhe](progresso/fase-1.md#tarefa-113-ajustes-de-fechamento-da-fase-1) |
 
 **Fase 1 concluída** (tarefas 1.1 a 1.13). O próximo passo é a Fase 2.
 
