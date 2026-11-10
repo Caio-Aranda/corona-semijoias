@@ -241,4 +241,56 @@ describe('API do Corona Gestão: vendedores (processo principal)', () => {
     expect(pedidos[1]?.method).toBe('PUT');
     expect(pedidos[1]?.url).toBe(`http://api.teste/api/dona/vendedores/${ID}/conjuge`);
   });
+
+  it('produtos: foto em formulário, importação com várias fotos, códigos com a versão', async () => {
+    const { pedidos, fetch } = fetchQueGuarda(
+      () => new Response('{}', { status: 200, headers: { 'Content-Type': 'application/json' } }),
+    );
+    const api = criarApiDoGestao({ ...base, fetch });
+    await api.executar('tk', {
+      operacao: 'produtos.fotos.enviar',
+      id: ID,
+      arquivo: { nome: 'a.PNG', bytes: new Uint8Array([1, 2]) },
+    });
+    const foto = (await pedidos[0]!.clone().formData()).get('arquivo') as File;
+    expect(pedidos[0]?.url).toBe(`http://api.teste/api/dona/produtos/${ID}/fotos`);
+    expect(foto.type).toBe('image/png');
+    await api.executar('tk', {
+      operacao: 'produtos.importacao.confirmar',
+      arquivos: [
+        { nome: '1.jpg', bytes: new Uint8Array([1]) },
+        { nome: '2.webp', bytes: new Uint8Array([2]) },
+      ],
+    });
+    expect((await pedidos[1]!.clone().formData()).getAll('arquivos')).toHaveLength(2);
+    await api.executar('tk', {
+      operacao: 'produtos.codigos.gravar',
+      id: ID,
+      version: 4,
+      codigos: [{ codigo: '0012', tipo: 'LOJA', principal: true }],
+    });
+    expect(pedidos[2]?.method).toBe('PUT');
+    expect(await pedidos[2]?.clone().json()).toEqual({
+      version: 4,
+      codigos: [{ codigo: '0012', tipo: 'LOJA', principal: true }],
+    });
+  });
+
+  it('produtos: a imagem volta como bytes', async () => {
+    const { fetch } = fetchQueGuarda(
+      () =>
+        new Response(new Uint8Array([9, 8]), {
+          status: 200,
+          headers: { 'Content-Type': 'image/jpeg' },
+        }),
+    );
+    const api = criarApiDoGestao({ ...base, fetch });
+    const r = await api.executar('tk', {
+      operacao: 'produtos.fotos.imagem',
+      hash: 'a'.repeat(64),
+      tamanho: 'miniatura',
+    });
+    expect(r).toMatchObject({ ok: true, dados: { tipo: 'image/jpeg' } });
+    expect((r as { dados: { bytes: Uint8Array } }).dados.bytes).toEqual(new Uint8Array([9, 8]));
+  });
 });

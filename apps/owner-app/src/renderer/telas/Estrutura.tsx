@@ -8,6 +8,7 @@ import { TEXTOS } from '../textos';
 import { TelaEmBreve } from './TelaEmBreve';
 import { TelaInicial } from './TelaInicial';
 import { TelaDeCadastro } from './cadastros/TelaDeCadastro';
+import { TelaProdutos } from './produtos/TelaProdutos';
 import { TelaUsuarios } from './usuarios/TelaUsuarios';
 import { TelaVendedores } from './vendedores/TelaVendedores';
 
@@ -29,6 +30,8 @@ function Conteudo({
   switch (rota) {
     case 'inicio':
       return <TelaInicial ponte={ponte} nome={nome} />;
+    case 'cadastros/produtos':
+      return <TelaProdutos ponte={ponte} />;
     case 'pessoas/vendedores':
       return <TelaVendedores ponte={ponte} />;
     case 'pessoas/usuarios':

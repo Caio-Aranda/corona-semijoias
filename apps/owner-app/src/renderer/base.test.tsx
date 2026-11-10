@@ -180,11 +180,7 @@ describe('menu lateral', () => {
     }
     expect(screen.getByRole('button', { name: 'Início' })).toHaveAttribute('aria-current', 'page');
     await u.click(screen.getByRole('button', { name: 'Produtos' }));
-    expect(
-      await screen.findByText(
-        'Produtos ainda está sendo preparado. Logo você poderá usar por aqui.',
-      ),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Produtos' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Produtos' })).toHaveAttribute(
       'aria-current',
       'page',
