@@ -172,6 +172,16 @@ public enum CodigoErro {
             "Este tipo de arquivo não pode ser enviado.",
             "Este tipo de arquivo não pode ser enviado. Envie uma foto (JPG, PNG ou WebP) ou um arquivo PDF."),
 
+    // --- Produtos e códigos (glossário, parte 6; tarefa 1.5) ---
+
+    CODIGO_JA_USADO(
+            "Este código já está em uso.",
+            "Este código já está em uso por outro produto. Use outro código ou abra o produto que já o usa."),
+
+    CADASTRO_EM_USO_POR_PRODUTOS(
+            "Este cadastro está em uso por produtos.",
+            "Este cadastro está em uso por produtos. Troque a categoria ou o fornecedor desses produtos e tente de novo."),
+
     ARQUIVO_GRANDE_DEMAIS(
             "Este arquivo é grande demais.",
             "Este arquivo é grande demais. Envie um arquivo de até 10 MB. Se for uma foto, "

@@ -87,3 +87,30 @@ Uma seção por tarefa concluída, no mesmo formato de [fase-0.md](fase-0.md). A
 **Dúvidas**
 - Inativar o vendedor (cadastro) deveria desativar o usuário dele? Hoje não, e a dona desativa os dois separadamente.
 - Quem lê a auditoria e por quanto tempo ela fica guardada (retenção)?
+
+### Tarefa 1.5: produtos, custos e códigos (backend)
+
+**O que foi feito**
+- Migração `V014__produtos.sql`: `produtos` (sincronizável, **sem custo**: nome, referência, categoria, fornecedor, `preco_venda` NUMERIC(14,2) ≥ 0, `estoque_minimo` ≥ 0, `estoque_atual`, ativo, `foto_principal_hash` reservado para a 1.6), `produtos_custos` (só do servidor, 1 para 1, `preco_custo` NUMERIC(14,2), nunca sincronizada) e `produto_codigos` (sincronizável: código texto, tipo `LOJA`/`FORNECEDOR`/`EAN13`, fornecedor opcional, principal, ativo), mais a sequência `codigo_loja_seq`. Registradas no `RegistroDeTabelas` (o teste de convenções passa).
+- Código (ADR-0007): índice único parcial em `lower(codigo)` entre os não excluídos, CHECK de que não tem espaço nas pontas e índice parcial de **um principal por produto**. Dígito verificador só para `EAN13` com 13 dígitos (`Ean13`); zeros à esquerda ficam. Código repetido → 409 `CODIGO_JA_USADO` dizendo o nome do produto que já o usa; se dois pedidos chegam juntos, o banco deixa passar só um (teste com 6 pedidos em paralelo).
+- Rotas `/api/dona/produtos` (só ADMIN; vendedor 403, sem token 401): `GET` (busca por nome, referência ou parte de qualquer código; filtros `categoriaId`, `fornecedorId`, `ativo`; página), `GET /{id}`, `GET /por-codigo?codigo=` (código exato, sem espaços nas pontas, sem diferenciar maiúsculas; 404 se não houver), `POST` (produto + custo + códigos na mesma transação), `PUT /{id}` (com `version`), `PUT /{id}/codigos` (a lista enviada vira a lista do produto; a `version` do produto sobe e a linha fica travada), `POST /{id}/inativar` e `/reativar`, `DELETE /{id}` (lógico: os códigos ficam livres) e `POST /codigos/proximo` (próximo número da loja pela sequência do banco, pulando números já usados; teste com 24 chamadas em paralelo sem repetição).
+- O `estoque_atual` nunca é aceito de entrada (a coluna é só leitura na entidade); fica 0 até as movimentações da Fase 2.
+- Preço: recusa negativo e mais de duas casas (nada é arredondado em silêncio).
+- Auditoria (`ServicoDeAuditoria`, mesma transação): `PRODUTO_CRIADO`, `PRECO_VENDA_ALTERADO` e `PRECO_CUSTO_ALTERADO` com valores antes e depois. O custo só é lido pelas rotas da dona.
+- Categoria ou fornecedor em uso por um produto não pode ser excluído: 409 `CADASTRO_EM_USO_POR_PRODUTOS` (pendência da 1.2).
+- Testes: `ProdutosDaDonaTest` (permissão, custo fora do contrato do vendedor e fora das tabelas sincronizadas, criar/editar/auditoria, busca, códigos, concorrência) e `Ean13Test`.
+
+**O que ficou pendente**
+- Fotos (tarefa 1.6): só existe o campo reservado `foto_principal_hash`. Importação em massa e telas (1.11).
+- Preço sugerido (custo x 7) **não** é calculado (pendente com a dona, ADR-0007).
+- O filtro "só os produtos da maleta do vendedor" e a rota de leitura do vendedor entram nas Fases 4 e 5.
+
+**Decisões tomadas**
+- `fornecedor_id` **não** vai nas colunas sincronizadas de `produtos` nem de `produto_codigos` (o vendedor não recebe nada de fornecedor, §10); a coluna existe no banco. Dá para incluir depois sem risco.
+- Produto novo exige **pelo menos um código**; sem nenhum marcado como principal, o primeiro ativo vira principal; dois principais é erro; o principal não pode estar desativado.
+- O formato do código da loja é **só o número sequencial** (1, 2, 3...), a confirmar com a dona (ADR-0007, item 5).
+- Mudar só o custo não sobe a `version` do produto (o custo fica em tabela à parte, só do servidor).
+
+**Dúvidas**
+- O código da loja pode ser só número, ou ela quer prefixo/letras?
+- A dona quer reaproveitar um código de produto excluído? Hoje fica livre.

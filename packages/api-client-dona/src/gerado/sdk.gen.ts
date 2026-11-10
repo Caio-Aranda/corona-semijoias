@@ -2,7 +2,7 @@
 
 import { type Client, type ClientMeta, formDataBodySerializer, type Options as Options2, type RequestResult, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { BaixarData, BaixarResponses, Criar1Data, Criar1Responses, Criar2Data, Criar2Responses, Criar3Data, Criar3Responses, Criar4Data, Criar4Responses, Criar5Data, Criar5Responses, Criar6Data, Criar6Responses, Criar7Data, Criar7Responses, CriarData, CriarReferenciaData, CriarReferenciaResponses, CriarResponses, DesativarData, DesativarResponses, EcoData, EcoResponses, Editar1Data, Editar1Responses, Editar2Data, Editar2Responses, Editar3Data, Editar3Responses, Editar4Data, Editar4Responses, Editar5Data, Editar5Responses, Editar6Data, Editar6Responses, Editar7Data, Editar7Responses, EditarData, EditarReferenciaData, EditarReferenciaResponses, EditarResponses, EntrarData, EntrarResponses, EnviarData, EnviarResponses, EuData, EuResponses, Excluir1Data, Excluir1Responses, Excluir2Data, Excluir2Responses, Excluir3Data, Excluir3Responses, Excluir4Data, Excluir4Responses, Excluir5Data, Excluir5Responses, Excluir6Data, Excluir6Responses, Excluir7Data, Excluir7Responses, ExcluirData, ExcluirReferenciaData, ExcluirReferenciaResponses, ExcluirResponses, FalhaData, FalhaResponses, GravarConjugeData, GravarConjugeResponses, GravarContatoData, GravarContatoResponses, GravarEnderecoData, GravarEnderecoResponses, GravarMeiData, GravarMeiResponses, GravarObservacoesData, GravarObservacoesResponses, GravarTrabalhoData, GravarTrabalhoResponses, InativarData, InativarResponses, Listar1Data, Listar1Responses, Listar2Data, Listar2Responses, Listar3Data, Listar3Responses, Listar4Data, Listar4Responses, Listar5Data, Listar5Responses, Listar6Data, Listar6Responses, Listar7Data, Listar7Responses, Listar8Data, Listar8Responses, ListarData, ListarReferenciasData, ListarReferenciasResponses, ListarResponses, Reativar1Data, Reativar1Responses, ReativarData, ReativarResponses, RedefinirSenhaData, RedefinirSenhaResponses, RenovarData, RenovarResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SoVendedorData, SoVendedorResponses, TempoData, TempoResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarData, ValidarResponses, ValorDaDonaData, ValorDaDonaResponses, Ver1Data, Ver1Responses, Ver2Data, Ver2Responses, Ver3Data, Ver3Responses, Ver4Data, Ver4Responses, Ver5Data, Ver5Responses, Ver6Data, Ver6Responses, Ver7Data, Ver7Responses, VerConjugeData, VerConjugeResponses, VerContatoData, VerContatoResponses, VerData, VerEnderecoData, VerEnderecoResponses, VerMeiData, VerMeiResponses, VerObservacoesData, VerObservacoesResponses, VerResponses, VerTrabalhoData, VerTrabalhoResponses } from './types.gen';
+import type { AlterarCodigosData, AlterarCodigosResponses, BaixarData, BaixarResponses, Criar1Data, Criar1Responses, Criar2Data, Criar2Responses, Criar3Data, Criar3Responses, Criar4Data, Criar4Responses, Criar5Data, Criar5Responses, Criar6Data, Criar6Responses, Criar7Data, Criar7Responses, Criar8Data, Criar8Responses, CriarData, CriarReferenciaData, CriarReferenciaResponses, CriarResponses, DesativarData, DesativarResponses, EcoData, EcoResponses, Editar1Data, Editar1Responses, Editar2Data, Editar2Responses, Editar3Data, Editar3Responses, Editar4Data, Editar4Responses, Editar5Data, Editar5Responses, Editar6Data, Editar6Responses, Editar7Data, Editar7Responses, Editar8Data, Editar8Responses, EditarData, EditarReferenciaData, EditarReferenciaResponses, EditarResponses, EntrarData, EntrarResponses, EnviarData, EnviarResponses, EuData, EuResponses, Excluir1Data, Excluir1Responses, Excluir2Data, Excluir2Responses, Excluir3Data, Excluir3Responses, Excluir4Data, Excluir4Responses, Excluir5Data, Excluir5Responses, Excluir6Data, Excluir6Responses, Excluir7Data, Excluir7Responses, Excluir8Data, Excluir8Responses, ExcluirData, ExcluirReferenciaData, ExcluirReferenciaResponses, ExcluirResponses, FalhaData, FalhaResponses, GravarConjugeData, GravarConjugeResponses, GravarContatoData, GravarContatoResponses, GravarEnderecoData, GravarEnderecoResponses, GravarMeiData, GravarMeiResponses, GravarObservacoesData, GravarObservacoesResponses, GravarTrabalhoData, GravarTrabalhoResponses, Inativar1Data, Inativar1Responses, InativarData, InativarResponses, Listar1Data, Listar1Responses, Listar2Data, Listar2Responses, Listar3Data, Listar3Responses, Listar4Data, Listar4Responses, Listar5Data, Listar5Responses, Listar6Data, Listar6Responses, Listar7Data, Listar7Responses, Listar8Data, Listar8Responses, Listar9Data, Listar9Responses, ListarData, ListarReferenciasData, ListarReferenciasResponses, ListarResponses, PorCodigoData, PorCodigoResponses, ProximoCodigoData, ProximoCodigoResponses, Reativar1Data, Reativar1Responses, Reativar2Data, Reativar2Responses, ReativarData, ReativarResponses, RedefinirSenhaData, RedefinirSenhaResponses, RenovarData, RenovarResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SoVendedorData, SoVendedorResponses, TempoData, TempoResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarData, ValidarResponses, ValorDaDonaData, ValorDaDonaResponses, Ver1Data, Ver1Responses, Ver2Data, Ver2Responses, Ver3Data, Ver3Responses, Ver4Data, Ver4Responses, Ver5Data, Ver5Responses, Ver6Data, Ver6Responses, Ver7Data, Ver7Responses, Ver8Data, Ver8Responses, VerConjugeData, VerConjugeResponses, VerContatoData, VerContatoResponses, VerData, VerEnderecoData, VerEnderecoResponses, VerMeiData, VerMeiResponses, VerObservacoesData, VerObservacoesResponses, VerResponses, VerTrabalhoData, VerTrabalhoResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -98,7 +98,7 @@ export const trocarSenha = <ThrowOnError extends boolean = false>(options: Optio
  *
  * Busca pelo nome. A página começa em 0 (até 100 por página).
  */
-export const listar8 = <ThrowOnError extends boolean = false>(options?: Options<Listar8Data, ThrowOnError>): RequestResult<Listar8Responses, unknown, ThrowOnError> => (options?.client ?? client).get<Listar8Responses, unknown, ThrowOnError>({
+export const listar9 = <ThrowOnError extends boolean = false>(options?: Options<Listar9Data, ThrowOnError>): RequestResult<Listar9Responses, unknown, ThrowOnError> => (options?.client ?? client).get<Listar9Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/categorias',
     ...options
@@ -109,7 +109,7 @@ export const listar8 = <ThrowOnError extends boolean = false>(options?: Options<
  *
  * O nome não pode repetir (sem diferenciar maiúsculas).
  */
-export const criar7 = <ThrowOnError extends boolean = false>(options: Options<Criar7Data, ThrowOnError>): RequestResult<Criar7Responses, unknown, ThrowOnError> => (options.client ?? client).post<Criar7Responses, unknown, ThrowOnError>({
+export const criar8 = <ThrowOnError extends boolean = false>(options: Options<Criar8Data, ThrowOnError>): RequestResult<Criar8Responses, unknown, ThrowOnError> => (options.client ?? client).post<Criar8Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/categorias',
     ...options,
@@ -124,13 +124,13 @@ export const criar7 = <ThrowOnError extends boolean = false>(options: Options<Cr
  *
  * Exclusão lógica: o registro some das listas e o nome fica livre.
  */
-export const excluir6 = <ThrowOnError extends boolean = false>(options: Options<Excluir6Data, ThrowOnError>): RequestResult<Excluir6Responses, unknown, ThrowOnError> => (options.client ?? client).delete<Excluir6Responses, unknown, ThrowOnError>({
+export const excluir7 = <ThrowOnError extends boolean = false>(options: Options<Excluir7Data, ThrowOnError>): RequestResult<Excluir7Responses, unknown, ThrowOnError> => (options.client ?? client).delete<Excluir7Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/categorias/{id}',
     ...options
 });
 
-export const ver7 = <ThrowOnError extends boolean = false>(options: Options<Ver7Data, ThrowOnError>): RequestResult<Ver7Responses, unknown, ThrowOnError> => (options.client ?? client).get<Ver7Responses, unknown, ThrowOnError>({
+export const ver8 = <ThrowOnError extends boolean = false>(options: Options<Ver8Data, ThrowOnError>): RequestResult<Ver8Responses, unknown, ThrowOnError> => (options.client ?? client).get<Ver8Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/categorias/{id}',
     ...options
@@ -141,7 +141,7 @@ export const ver7 = <ThrowOnError extends boolean = false>(options: Options<Ver7
  *
  * Mande a version que a tela leu; se outra pessoa alterou antes, volta 409.
  */
-export const editar7 = <ThrowOnError extends boolean = false>(options: Options<Editar7Data, ThrowOnError>): RequestResult<Editar7Responses, unknown, ThrowOnError> => (options.client ?? client).put<Editar7Responses, unknown, ThrowOnError>({
+export const editar8 = <ThrowOnError extends boolean = false>(options: Options<Editar8Data, ThrowOnError>): RequestResult<Editar8Responses, unknown, ThrowOnError> => (options.client ?? client).put<Editar8Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/categorias/{id}',
     ...options,
@@ -156,7 +156,7 @@ export const editar7 = <ThrowOnError extends boolean = false>(options: Options<E
  *
  * Busca pelo nome, telefone, WhatsApp ou CPF. A página começa em 0 (até 100 por página).
  */
-export const listar7 = <ThrowOnError extends boolean = false>(options?: Options<Listar7Data, ThrowOnError>): RequestResult<Listar7Responses, unknown, ThrowOnError> => (options?.client ?? client).get<Listar7Responses, unknown, ThrowOnError>({
+export const listar8 = <ThrowOnError extends boolean = false>(options?: Options<Listar8Data, ThrowOnError>): RequestResult<Listar8Responses, unknown, ThrowOnError> => (options?.client ?? client).get<Listar8Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/clientes',
     ...options
@@ -167,7 +167,7 @@ export const listar7 = <ThrowOnError extends boolean = false>(options?: Options<
  *
  * O CPF é opcional; se vier, o servidor confere os dígitos e guarda só os números. CPF repetido é aceito.
  */
-export const criar6 = <ThrowOnError extends boolean = false>(options: Options<Criar6Data, ThrowOnError>): RequestResult<Criar6Responses, unknown, ThrowOnError> => (options.client ?? client).post<Criar6Responses, unknown, ThrowOnError>({
+export const criar7 = <ThrowOnError extends boolean = false>(options: Options<Criar7Data, ThrowOnError>): RequestResult<Criar7Responses, unknown, ThrowOnError> => (options.client ?? client).post<Criar7Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/clientes',
     ...options,
@@ -182,13 +182,13 @@ export const criar6 = <ThrowOnError extends boolean = false>(options: Options<Cr
  *
  * Exclusão lógica: o cliente some das listas, mas o histórico fica.
  */
-export const excluir5 = <ThrowOnError extends boolean = false>(options: Options<Excluir5Data, ThrowOnError>): RequestResult<Excluir5Responses, unknown, ThrowOnError> => (options.client ?? client).delete<Excluir5Responses, unknown, ThrowOnError>({
+export const excluir6 = <ThrowOnError extends boolean = false>(options: Options<Excluir6Data, ThrowOnError>): RequestResult<Excluir6Responses, unknown, ThrowOnError> => (options.client ?? client).delete<Excluir6Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/clientes/{id}',
     ...options
 });
 
-export const ver6 = <ThrowOnError extends boolean = false>(options: Options<Ver6Data, ThrowOnError>): RequestResult<Ver6Responses, unknown, ThrowOnError> => (options.client ?? client).get<Ver6Responses, unknown, ThrowOnError>({
+export const ver7 = <ThrowOnError extends boolean = false>(options: Options<Ver7Data, ThrowOnError>): RequestResult<Ver7Responses, unknown, ThrowOnError> => (options.client ?? client).get<Ver7Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/clientes/{id}',
     ...options
@@ -199,7 +199,7 @@ export const ver6 = <ThrowOnError extends boolean = false>(options: Options<Ver6
  *
  * Mande a version que a tela leu; se outra pessoa alterou antes, volta 409.
  */
-export const editar6 = <ThrowOnError extends boolean = false>(options: Options<Editar6Data, ThrowOnError>): RequestResult<Editar6Responses, unknown, ThrowOnError> => (options.client ?? client).put<Editar6Responses, unknown, ThrowOnError>({
+export const editar7 = <ThrowOnError extends boolean = false>(options: Options<Editar7Data, ThrowOnError>): RequestResult<Editar7Responses, unknown, ThrowOnError> => (options.client ?? client).put<Editar7Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/clientes/{id}',
     ...options,
@@ -214,7 +214,7 @@ export const editar6 = <ThrowOnError extends boolean = false>(options: Options<E
  *
  * Busca pela razão social, pelo contato ou pelo CNPJ. A página começa em 0 (até 100 por página).
  */
-export const listar6 = <ThrowOnError extends boolean = false>(options?: Options<Listar6Data, ThrowOnError>): RequestResult<Listar6Responses, unknown, ThrowOnError> => (options?.client ?? client).get<Listar6Responses, unknown, ThrowOnError>({
+export const listar7 = <ThrowOnError extends boolean = false>(options?: Options<Listar7Data, ThrowOnError>): RequestResult<Listar7Responses, unknown, ThrowOnError> => (options?.client ?? client).get<Listar7Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/fornecedores',
     ...options
@@ -225,7 +225,7 @@ export const listar6 = <ThrowOnError extends boolean = false>(options?: Options<
  *
  * O CNPJ é opcional; se vier, o servidor confere os dígitos e guarda só os caracteres do número. Não pode repetir.
  */
-export const criar5 = <ThrowOnError extends boolean = false>(options: Options<Criar5Data, ThrowOnError>): RequestResult<Criar5Responses, unknown, ThrowOnError> => (options.client ?? client).post<Criar5Responses, unknown, ThrowOnError>({
+export const criar6 = <ThrowOnError extends boolean = false>(options: Options<Criar6Data, ThrowOnError>): RequestResult<Criar6Responses, unknown, ThrowOnError> => (options.client ?? client).post<Criar6Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/fornecedores',
     ...options,
@@ -240,13 +240,13 @@ export const criar5 = <ThrowOnError extends boolean = false>(options: Options<Cr
  *
  * Exclusão lógica: o registro some das listas e o CNPJ fica livre.
  */
-export const excluir4 = <ThrowOnError extends boolean = false>(options: Options<Excluir4Data, ThrowOnError>): RequestResult<Excluir4Responses, unknown, ThrowOnError> => (options.client ?? client).delete<Excluir4Responses, unknown, ThrowOnError>({
+export const excluir5 = <ThrowOnError extends boolean = false>(options: Options<Excluir5Data, ThrowOnError>): RequestResult<Excluir5Responses, unknown, ThrowOnError> => (options.client ?? client).delete<Excluir5Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/fornecedores/{id}',
     ...options
 });
 
-export const ver5 = <ThrowOnError extends boolean = false>(options: Options<Ver5Data, ThrowOnError>): RequestResult<Ver5Responses, unknown, ThrowOnError> => (options.client ?? client).get<Ver5Responses, unknown, ThrowOnError>({
+export const ver6 = <ThrowOnError extends boolean = false>(options: Options<Ver6Data, ThrowOnError>): RequestResult<Ver6Responses, unknown, ThrowOnError> => (options.client ?? client).get<Ver6Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/fornecedores/{id}',
     ...options
@@ -257,7 +257,7 @@ export const ver5 = <ThrowOnError extends boolean = false>(options: Options<Ver5
  *
  * Mande a version que a tela leu; se outra pessoa alterou antes, volta 409.
  */
-export const editar5 = <ThrowOnError extends boolean = false>(options: Options<Editar5Data, ThrowOnError>): RequestResult<Editar5Responses, unknown, ThrowOnError> => (options.client ?? client).put<Editar5Responses, unknown, ThrowOnError>({
+export const editar6 = <ThrowOnError extends boolean = false>(options: Options<Editar6Data, ThrowOnError>): RequestResult<Editar6Responses, unknown, ThrowOnError> => (options.client ?? client).put<Editar6Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/fornecedores/{id}',
     ...options,
@@ -272,7 +272,7 @@ export const editar5 = <ThrowOnError extends boolean = false>(options: Options<E
  *
  * Busca pelo nome. A página começa em 0 (até 100 por página).
  */
-export const listar5 = <ThrowOnError extends boolean = false>(options?: Options<Listar5Data, ThrowOnError>): RequestResult<Listar5Responses, unknown, ThrowOnError> => (options?.client ?? client).get<Listar5Responses, unknown, ThrowOnError>({
+export const listar6 = <ThrowOnError extends boolean = false>(options?: Options<Listar6Data, ThrowOnError>): RequestResult<Listar6Responses, unknown, ThrowOnError> => (options?.client ?? client).get<Listar6Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/pracas',
     ...options
@@ -283,7 +283,7 @@ export const listar5 = <ThrowOnError extends boolean = false>(options?: Options<
  *
  * O nome não pode repetir (sem diferenciar maiúsculas).
  */
-export const criar4 = <ThrowOnError extends boolean = false>(options: Options<Criar4Data, ThrowOnError>): RequestResult<Criar4Responses, unknown, ThrowOnError> => (options.client ?? client).post<Criar4Responses, unknown, ThrowOnError>({
+export const criar5 = <ThrowOnError extends boolean = false>(options: Options<Criar5Data, ThrowOnError>): RequestResult<Criar5Responses, unknown, ThrowOnError> => (options.client ?? client).post<Criar5Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/pracas',
     ...options,
@@ -298,13 +298,13 @@ export const criar4 = <ThrowOnError extends boolean = false>(options: Options<Cr
  *
  * Exclusão lógica: o registro some das listas e o nome fica livre.
  */
-export const excluir3 = <ThrowOnError extends boolean = false>(options: Options<Excluir3Data, ThrowOnError>): RequestResult<Excluir3Responses, unknown, ThrowOnError> => (options.client ?? client).delete<Excluir3Responses, unknown, ThrowOnError>({
+export const excluir4 = <ThrowOnError extends boolean = false>(options: Options<Excluir4Data, ThrowOnError>): RequestResult<Excluir4Responses, unknown, ThrowOnError> => (options.client ?? client).delete<Excluir4Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/pracas/{id}',
     ...options
 });
 
-export const ver4 = <ThrowOnError extends boolean = false>(options: Options<Ver4Data, ThrowOnError>): RequestResult<Ver4Responses, unknown, ThrowOnError> => (options.client ?? client).get<Ver4Responses, unknown, ThrowOnError>({
+export const ver5 = <ThrowOnError extends boolean = false>(options: Options<Ver5Data, ThrowOnError>): RequestResult<Ver5Responses, unknown, ThrowOnError> => (options.client ?? client).get<Ver5Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/pracas/{id}',
     ...options
@@ -315,7 +315,7 @@ export const ver4 = <ThrowOnError extends boolean = false>(options: Options<Ver4
  *
  * Mande a version que a tela leu; se outra pessoa alterou antes, volta 409.
  */
-export const editar4 = <ThrowOnError extends boolean = false>(options: Options<Editar4Data, ThrowOnError>): RequestResult<Editar4Responses, unknown, ThrowOnError> => (options.client ?? client).put<Editar4Responses, unknown, ThrowOnError>({
+export const editar5 = <ThrowOnError extends boolean = false>(options: Options<Editar5Data, ThrowOnError>): RequestResult<Editar5Responses, unknown, ThrowOnError> => (options.client ?? client).put<Editar5Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/pracas/{id}',
     ...options,
@@ -323,6 +323,118 @@ export const editar4 = <ThrowOnError extends boolean = false>(options: Options<E
         'Content-Type': 'application/json',
         ...options.headers
     }
+});
+
+/**
+ * Listar produtos
+ *
+ * Busca pelo nome, pela referência ou por parte de qualquer código (sem diferenciar maiúsculas). Filtros: categoriaId, fornecedorId e ativo. A página começa em 0 (até 100 por página).
+ */
+export const listar5 = <ThrowOnError extends boolean = false>(options?: Options<Listar5Data, ThrowOnError>): RequestResult<Listar5Responses, unknown, ThrowOnError> => (options?.client ?? client).get<Listar5Responses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/produtos',
+    ...options
+});
+
+/**
+ * Criar produto
+ *
+ * Grava o produto, o preço de custo e os códigos juntos. Precisa de pelo menos um código; o código não pode repetir (409 diz qual produto já o usa). O estoque atual não é aceito: começa em 0.
+ */
+export const criar4 = <ThrowOnError extends boolean = false>(options: Options<Criar4Data, ThrowOnError>): RequestResult<Criar4Responses, unknown, ThrowOnError> => (options.client ?? client).post<Criar4Responses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/produtos',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Gerar o próximo código da loja
+ *
+ * Para a peça sem etiqueta: o servidor entrega um número sequencial que ninguém mais recebe. Números pulados ficam sem uso.
+ */
+export const proximoCodigo = <ThrowOnError extends boolean = false>(options?: Options<ProximoCodigoData, ThrowOnError>): RequestResult<ProximoCodigoResponses, unknown, ThrowOnError> => (options?.client ?? client).post<ProximoCodigoResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/produtos/codigos/proximo',
+    ...options
+});
+
+/**
+ * Achar o produto pelo código
+ *
+ * Procura o código inteiro (sem espaços nas pontas, sem diferenciar maiúsculas). Sem produto, 404.
+ */
+export const porCodigo = <ThrowOnError extends boolean = false>(options: Options<PorCodigoData, ThrowOnError>): RequestResult<PorCodigoResponses, unknown, ThrowOnError> => (options.client ?? client).get<PorCodigoResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/produtos/por-codigo',
+    ...options
+});
+
+/**
+ * Excluir produto
+ *
+ * Exclusão lógica: o produto some das listas e os códigos dele ficam livres.
+ */
+export const excluir3 = <ThrowOnError extends boolean = false>(options: Options<Excluir3Data, ThrowOnError>): RequestResult<Excluir3Responses, unknown, ThrowOnError> => (options.client ?? client).delete<Excluir3Responses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/produtos/{id}',
+    ...options
+});
+
+export const ver4 = <ThrowOnError extends boolean = false>(options: Options<Ver4Data, ThrowOnError>): RequestResult<Ver4Responses, unknown, ThrowOnError> => (options.client ?? client).get<Ver4Responses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/produtos/{id}',
+    ...options
+});
+
+/**
+ * Editar produto
+ *
+ * Mande a version que a tela leu; se outra pessoa alterou antes, volta 409. Os códigos mudam pela rota própria. Mudança de preço de venda ou de custo vai para a auditoria.
+ */
+export const editar4 = <ThrowOnError extends boolean = false>(options: Options<Editar4Data, ThrowOnError>): RequestResult<Editar4Responses, unknown, ThrowOnError> => (options.client ?? client).put<Editar4Responses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/produtos/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Alterar os códigos do produto
+ *
+ * A lista enviada passa a ser a lista do produto: o código com id é atualizado, o sem id entra e o que ficou de fora é excluído (e o código fica livre). Mande a version do produto.
+ */
+export const alterarCodigos = <ThrowOnError extends boolean = false>(options: Options<AlterarCodigosData, ThrowOnError>): RequestResult<AlterarCodigosResponses, unknown, ThrowOnError> => (options.client ?? client).put<AlterarCodigosResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/produtos/{id}/codigos',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Inativar produto
+ *
+ * Sai das escolhas, mas o histórico fica. Pode ser reativado.
+ */
+export const inativar1 = <ThrowOnError extends boolean = false>(options: Options<Inativar1Data, ThrowOnError>): RequestResult<Inativar1Responses, unknown, ThrowOnError> => (options.client ?? client).post<Inativar1Responses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/produtos/{id}/inativar',
+    ...options
+});
+
+export const reativar2 = <ThrowOnError extends boolean = false>(options: Options<Reativar2Data, ThrowOnError>): RequestResult<Reativar2Responses, unknown, ThrowOnError> => (options.client ?? client).post<Reativar2Responses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/produtos/{id}/reativar',
+    ...options
 });
 
 /**
@@ -693,7 +805,7 @@ export const enviar = <ThrowOnError extends boolean = false>(options: Options<En
  *
  * Exclusão lógica: o documento some da lista e do download.
  */
-export const excluir7 = <ThrowOnError extends boolean = false>(options: Options<Excluir7Data, ThrowOnError>): RequestResult<Excluir7Responses, unknown, ThrowOnError> => (options.client ?? client).delete<Excluir7Responses, unknown, ThrowOnError>({
+export const excluir8 = <ThrowOnError extends boolean = false>(options: Options<Excluir8Data, ThrowOnError>): RequestResult<Excluir8Responses, unknown, ThrowOnError> => (options.client ?? client).delete<Excluir8Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/vendedores/{id}/documentos/{documentoId}',
     ...options

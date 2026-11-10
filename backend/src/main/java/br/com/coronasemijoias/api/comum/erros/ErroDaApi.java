@@ -77,6 +77,20 @@ public class ErroDaApi extends ErrorResponseException {
         return new ErroDaApi(HttpStatus.FORBIDDEN, CodigoErro.APP_INCOMPATIVEL, corpo);
     }
 
+    /**
+     * 409 do código que outro produto já usa (ADR-0007). Diz qual produto, quando se sabe; se dois pedidos
+     * chegaram ao mesmo tempo, o banco só diz que o código já foi usado.
+     */
+    public static ErroDaApi codigoJaUsado(String codigo, String nomeDoProduto) {
+        CodigoErro tipo = CodigoErro.CODIGO_JA_USADO;
+        ProblemDetail corpo = Problemas.de(HttpStatus.CONFLICT, tipo);
+        if (codigo != null && nomeDoProduto != null) {
+            corpo.setDetail("O código " + codigo + " já é usado pelo produto " + nomeDoProduto
+                    + ". Use outro código ou abra esse produto.");
+        }
+        return new ErroDaApi(HttpStatus.CONFLICT, tipo, corpo);
+    }
+
     private static ErroDaApi comFrase(HttpStatus status, CodigoErro codigo, String frase) {
         ProblemDetail corpo = Problemas.de(status, codigo);
         corpo.setDetail(codigo.mensagem() + " " + frase);
