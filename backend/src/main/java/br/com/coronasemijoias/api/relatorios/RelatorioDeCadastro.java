@@ -17,8 +17,13 @@ public record RelatorioDeCadastro<L>(List<L> itens, long total, int pagina, int 
 
     /**
      * Um número do rodapé. {@code quantidade} são as linhas que o formam (o detalhamento mostra essas
-     * linhas); {@code valorEmReais}, quando existe, é a soma de um valor dessas linhas, em Real.
+     * linhas); {@code valorEmReais}, quando existe, é a soma de um valor dessas linhas, em Real; {@code pecas},
+     * quando existe, é a soma de peças (estoque e compras).
      */
-    public record Total(String chave, String rotulo, long quantidade, BigDecimal valorEmReais) {
+    public record Total(String chave, String rotulo, long quantidade, BigDecimal valorEmReais, Long pecas) {
+
+        public Total(String chave, String rotulo, long quantidade, BigDecimal valorEmReais) {
+            this(chave, rotulo, quantidade, valorEmReais, null);
+        }
     }
 }

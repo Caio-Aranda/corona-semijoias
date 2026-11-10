@@ -327,6 +327,48 @@
         },
         "type" : "object"
       },
+      "LinhaAbaixoDoMinimo" : {
+        "properties" : {
+          "ativo" : {
+            "type" : "boolean"
+          },
+          "categoria" : {
+            "type" : "string"
+          },
+          "codigo" : {
+            "type" : "string"
+          },
+          "falta" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "fornecedor" : {
+            "type" : "string"
+          },
+          "fotoPrincipalHash" : {
+            "type" : "string"
+          },
+          "minimo" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "referencia" : {
+            "type" : "string"
+          },
+          "saldo" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "LinhaDeAlteracao" : {
         "properties" : {
           "acao" : {
@@ -436,6 +478,86 @@
         },
         "type" : "object"
       },
+      "LinhaDeCompra" : {
+        "properties" : {
+          "dataCompra" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "estornada" : {
+            "type" : "boolean"
+          },
+          "estornadaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "fornecedor" : {
+            "type" : "string"
+          },
+          "fornecedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "itens" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "motivoDoEstorno" : {
+            "type" : "string"
+          },
+          "numero" : {
+            "type" : "string"
+          },
+          "pecas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "situacao" : {
+            "type" : "string"
+          },
+          "total" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "usuario" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "LinhaDeConciliacao" : {
+        "properties" : {
+          "diferenca" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "fotoPrincipalHash" : {
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "saldoGuardado" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "somaDosMovimentos" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "LinhaDeFornecedor" : {
         "properties" : {
           "ativo" : {
@@ -465,6 +587,108 @@
             "type" : "string"
           },
           "uf" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "LinhaDeFornecedorNasCompras" : {
+        "properties" : {
+          "compras" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "comprasEstornadas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "fornecedor" : {
+            "type" : "string"
+          },
+          "fornecedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "pecas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "total" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "totalEstornado" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "LinhaDeHistoricoDeCusto" : {
+        "properties" : {
+          "codigo" : {
+            "type" : "string"
+          },
+          "compraEstornada" : {
+            "type" : "boolean"
+          },
+          "compraId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "custo" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "custoAnterior" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "dataCompra" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "fornecedor" : {
+            "type" : "string"
+          },
+          "fotoPrincipalHash" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "numeroDaCompra" : {
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "referencia" : {
+            "type" : "string"
+          },
+          "variacao" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "variacaoPercentual" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           }
         },
@@ -506,6 +730,247 @@
             "type" : "string"
           },
           "tipoNaTela" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "LinhaDeInventario" : {
+        "properties" : {
+          "ajuste" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "categoria" : {
+            "type" : "string"
+          },
+          "codigo" : {
+            "type" : "string"
+          },
+          "contado" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "diferenca" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "escopo" : {
+            "type" : "string"
+          },
+          "escopoNome" : {
+            "type" : "string"
+          },
+          "esperado" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "fechadoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "fornecedor" : {
+            "type" : "string"
+          },
+          "fotoPrincipalHash" : {
+            "type" : "string"
+          },
+          "iniciadoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "inventarioId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "referencia" : {
+            "type" : "string"
+          },
+          "situacao" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "LinhaDeItemDeCompra" : {
+        "properties" : {
+          "codigo" : {
+            "type" : "string"
+          },
+          "compraId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "custoUnitario" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "dataCompra" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "fornecedor" : {
+            "type" : "string"
+          },
+          "fotoPrincipalHash" : {
+            "type" : "string"
+          },
+          "itemId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "numero" : {
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "referencia" : {
+            "type" : "string"
+          },
+          "situacaoDaCompra" : {
+            "type" : "string"
+          },
+          "total" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "LinhaDeMovimento" : {
+        "properties" : {
+          "categoria" : {
+            "type" : "string"
+          },
+          "codigo" : {
+            "type" : "string"
+          },
+          "desfeito" : {
+            "type" : "boolean"
+          },
+          "estorno" : {
+            "type" : "boolean"
+          },
+          "fornecedor" : {
+            "type" : "string"
+          },
+          "fotoPrincipalHash" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "motivo" : {
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "ocorridaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "origem" : {
+            "type" : "string"
+          },
+          "origemId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "referencia" : {
+            "type" : "string"
+          },
+          "saldoDepois" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "usuario" : {
+            "type" : "string"
+          },
+          "usuarioId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "LinhaDePosicao" : {
+        "properties" : {
+          "ativo" : {
+            "type" : "boolean"
+          },
+          "categoria" : {
+            "type" : "string"
+          },
+          "codigo" : {
+            "type" : "string"
+          },
+          "custoUnitario" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "estoqueMinimo" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "fornecedor" : {
+            "type" : "string"
+          },
+          "fotoPrincipalHash" : {
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "referencia" : {
+            "type" : "string"
+          },
+          "saldo" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "valorACusto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           }
         },
@@ -553,6 +1018,54 @@
             "type" : "string"
           },
           "referencia" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "LinhaDeProdutoParado" : {
+        "properties" : {
+          "ativo" : {
+            "type" : "boolean"
+          },
+          "categoria" : {
+            "type" : "string"
+          },
+          "codigo" : {
+            "type" : "string"
+          },
+          "diasSemSair" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "fornecedor" : {
+            "type" : "string"
+          },
+          "fotoPrincipalHash" : {
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "referencia" : {
+            "type" : "string"
+          },
+          "saldo" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "ultimaSaidaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "valorACusto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           }
         },
@@ -1458,6 +1971,38 @@
         },
         "type" : "object"
       },
+      "RelatorioDeCadastroLinhaAbaixoDoMinimo" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaAbaixoDoMinimo"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "RelatorioDeCadastroLinhaDeAlteracao" : {
         "properties" : {
           "itens" : {
@@ -1554,11 +2099,139 @@
         },
         "type" : "object"
       },
+      "RelatorioDeCadastroLinhaDeCompra" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDeCompra"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatorioDeCadastroLinhaDeConciliacao" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDeConciliacao"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "RelatorioDeCadastroLinhaDeFornecedor" : {
         "properties" : {
           "itens" : {
             "items" : {
               "$ref" : "#/components/schemas/LinhaDeFornecedor"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatorioDeCadastroLinhaDeFornecedorNasCompras" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDeFornecedorNasCompras"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatorioDeCadastroLinhaDeHistoricoDeCusto" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDeHistoricoDeCusto"
             },
             "type" : "array"
           },
@@ -1618,11 +2291,171 @@
         },
         "type" : "object"
       },
+      "RelatorioDeCadastroLinhaDeInventario" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDeInventario"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatorioDeCadastroLinhaDeItemDeCompra" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDeItemDeCompra"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatorioDeCadastroLinhaDeMovimento" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDeMovimento"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatorioDeCadastroLinhaDePosicao" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDePosicao"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "RelatorioDeCadastroLinhaDeProduto" : {
         "properties" : {
           "itens" : {
             "items" : {
               "$ref" : "#/components/schemas/LinhaDeProduto"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatorioDeCadastroLinhaDeProdutoParado" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDeProdutoParado"
             },
             "type" : "array"
           },
@@ -2392,6 +3225,10 @@
         "properties" : {
           "chave" : {
             "type" : "string"
+          },
+          "pecas" : {
+            "format" : "int64",
+            "type" : "integer"
           },
           "quantidade" : {
             "format" : "int64",
@@ -3445,7 +4282,7 @@
     "/api/dona/estoque/abaixo-do-minimo" : {
       "get" : {
         "description" : "Produtos ativos com estoque mínimo definido cujo saldo está no mínimo ou abaixo. Mostra a foto, quantas peças há (saldo), o mínimo e quantas faltam para chegar ao mínimo (falta). Quem mais falta vem primeiro. Filtros: categoriaId, fornecedorId e busca (nome, referência ou parte do código). O mínimo de cada peça se edita pela rota de produtos. A página começa em 0 (até 200 por página).",
-        "operationId" : "abaixoDoMinimo",
+        "operationId" : "abaixoDoMinimo_1",
         "parameters" : [ {
           "in" : "query",
           "name" : "categoriaId",
@@ -6203,6 +7040,922 @@
         } ],
         "summary" : "Relatório de vendedores",
         "tags" : [ "relatorios-de-cadastro-controller" ]
+      }
+    },
+    "/api/dona/relatorios/compras/historico-de-custo" : {
+      "get" : {
+        "description" : "Cada custo que uma compra deu ao produto: data, compra, fornecedor, custo, custo anterior e variação (em reais e em %). Compras estornadas aparecem marcadas. Filtros: usuarioId, de e ate (data da compra), situacao do produto (TODOS por padrão). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Filtros de produto: busca (nome, referência ou código), categoriaId, fornecedorId, produtoId.",
+        "operationId" : "historicoDeCusto",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "categoriaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "fornecedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "produtoId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "usuarioId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeHistoricoDeCusto"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Histórico de custo por produto",
+        "tags" : [ "relatorios-de-estoque-e-compras-controller" ]
+      }
+    },
+    "/api/dona/relatorios/compras/por-compra" : {
+      "get" : {
+        "description" : "situacao: REGISTRADAS (padrão), ESTORNADAS ou TODAS (as estornadas aparecem marcadas e ficam FORA do total geral). Filtros: fornecedorId, usuarioId, categoriaId e produtoId (compras que têm esse produto), busca (número, fornecedor ou produto), de e ate (data da compra, data de calendário). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Filtros de produto: busca (nome, referência ou código), categoriaId, fornecedorId, produtoId.",
+        "operationId" : "compras",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "categoriaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "fornecedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "produtoId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "usuarioId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeCompra"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Compras por período (uma linha por compra)",
+        "tags" : [ "relatorios-de-estoque-e-compras-controller" ]
+      }
+    },
+    "/api/dona/relatorios/compras/por-compra/{id}/itens" : {
+      "get" : {
+        "description" : "Detalhamento da compra: produto (com foto), quantidade, custo unitário e total; o rodapé soma peças e total (igual ao total da compra). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Filtros de produto: busca (nome, referência ou código), categoriaId, fornecedorId, produtoId.",
+        "operationId" : "itensDaCompra",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeItemDeCompra"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Itens de uma compra",
+        "tags" : [ "relatorios-de-estoque-e-compras-controller" ]
+      }
+    },
+    "/api/dona/relatorios/compras/por-fornecedor" : {
+      "get" : {
+        "description" : "Total por fornecedor (compras, peças e valor) e total geral no rodapé, somados dos itens. As compras estornadas ficam em colunas próprias e FORA do total. Mesmos filtros das compras; categoriaId e produtoId somam só os itens desse produto ou categoria. Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Filtros de produto: busca (nome, referência ou código), categoriaId, fornecedorId, produtoId.",
+        "operationId" : "porFornecedor",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "categoriaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "fornecedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "produtoId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "usuarioId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeFornecedorNasCompras"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Compras por fornecedor e período",
+        "tags" : [ "relatorios-de-estoque-e-compras-controller" ]
+      }
+    },
+    "/api/dona/relatorios/estoque/abaixo-do-minimo" : {
+      "get" : {
+        "description" : "Mesma regra do aviso: mínimo definido e saldo menor ou igual a ele. falta = peças para chegar ao mínimo. situacao do produto: ATIVOS (padrão), INATIVOS ou TODOS. Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Filtros de produto: busca (nome, referência ou código), categoriaId, fornecedorId, produtoId.",
+        "operationId" : "abaixoDoMinimo",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "categoriaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "fornecedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "produtoId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaAbaixoDoMinimo"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Produtos no estoque mínimo ou abaixo",
+        "tags" : [ "relatorios-de-estoque-e-compras-controller" ]
+      }
+    },
+    "/api/dona/relatorios/estoque/conciliacao" : {
+      "get" : {
+        "description" : "Produtos em que o saldo guardado não é a soma dos movimentos. Deve vir vazio; se não vier, mostra o que diverge. Filtros: busca (nome), produtoId. Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Filtros de produto: busca (nome, referência ou código), categoriaId, fornecedorId, produtoId.",
+        "operationId" : "conciliacao",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "produtoId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeConciliacao"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Conciliação do estoque",
+        "tags" : [ "relatorios-de-estoque-e-compras-controller" ]
+      }
+    },
+    "/api/dona/relatorios/estoque/inventarios" : {
+      "get" : {
+        "description" : "Por inventário e produto: esperado, contado, diferença e o ajuste que o fechamento gerou. Filtros: inventarioId, situacao do inventário (EM_ANDAMENTO, FECHADO, CANCELADO ou TODOS), divergencia (SIM: só quem tem diferença; NAO), de e ate (quando o inventário começou). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Filtros de produto: busca (nome, referência ou código), categoriaId, fornecedorId, produtoId.",
+        "operationId" : "inventarios",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "inventarioId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "divergencia",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "categoriaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "fornecedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "produtoId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeInventario"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Inventário e divergências",
+        "tags" : [ "relatorios-de-estoque-e-compras-controller" ]
+      }
+    },
+    "/api/dona/relatorios/estoque/movimentacoes" : {
+      "get" : {
+        "description" : "Cada entrada, saída, ajuste, perda e desfazer, com quem fez. Totais por tipo, entradas e saídas (em peças). Filtros: tipo (ENTRADA, SAIDA, AJUSTE, REMESSA, DEVOLUCAO ou AVARIA), origem (MANUAL, AJUSTE_MANUAL, COMPRA, INVENTARIO, MALETA ou ESTORNO), usuarioId, de, ate, situacao do produto (TODOS por padrão). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Filtros de produto: busca (nome, referência ou código), categoriaId, fornecedorId, produtoId.",
+        "operationId" : "movimentacoes",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "categoriaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "fornecedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "produtoId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tipo",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "origem",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "usuarioId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeMovimento"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Movimentações do estoque por período",
+        "tags" : [ "relatorios-de-estoque-e-compras-controller" ]
+      }
+    },
+    "/api/dona/relatorios/estoque/parados" : {
+      "get" : {
+        "description" : "Com saldo e sem saída (SAIDA ou REMESSA, não desfeita) há N dias (dias, de 1 a 3650; padrão 30). Produto cadastrado há menos de N dias não entra. situacao do produto: ATIVOS (padrão), INATIVOS ou TODOS. Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Filtros de produto: busca (nome, referência ou código), categoriaId, fornecedorId, produtoId.",
+        "operationId" : "parados",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "dias",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "categoriaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "fornecedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "produtoId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeProdutoParado"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Produtos parados",
+        "tags" : [ "relatorios-de-estoque-e-compras-controller" ]
+      }
+    },
+    "/api/dona/relatorios/estoque/posicao-atual" : {
+      "get" : {
+        "description" : "Saldo de cada produto e valor a custo (saldo x custo); total geral no rodapé. situacao do produto: ATIVOS (padrão), INATIVOS ou TODOS. Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Filtros de produto: busca (nome, referência ou código), categoriaId, fornecedorId, produtoId.",
+        "operationId" : "posicaoAtual",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "categoriaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "fornecedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "produtoId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDePosicao"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Posição atual do estoque (com valor a custo)",
+        "tags" : [ "relatorios-de-estoque-e-compras-controller" ]
       }
     },
     "/api/dona/restricoes" : {
