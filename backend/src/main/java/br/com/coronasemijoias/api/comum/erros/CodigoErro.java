@@ -247,7 +247,38 @@ public enum CodigoErro {
     /** Já saíram peças da compra e o estoque não cobre o que seria desfeito (HTTP 409). O servidor monta o texto. */
     COMPRA_NAO_PODE_SER_DESFEITA(
             "Não é possível desfazer esta compra.",
-            "Não é possível desfazer esta compra porque já saíram peças dela.");
+            "Não é possível desfazer esta compra porque já saíram peças dela."),
+
+    // --- Contagem do estoque (glossário, parte 12; tarefa 2.4) ---
+
+    CONTAGEM_NAO_ENCONTRADA(
+            "Não encontramos esta contagem.",
+            "Não encontramos esta contagem do estoque. Atualize a tela e tente de novo."),
+
+    /** O mesmo identificador voltou com outros dados (HTTP 409). */
+    CONTAGEM_JA_REGISTRADA_DIFERENTE(
+            "Esta contagem já foi registrada com outros dados.",
+            "Esta contagem já foi iniciada com outros dados. Confira a lista de contagens antes de começar de novo."),
+
+    /** Já existe contagem em andamento com peças da mesma seleção (HTTP 409). */
+    CONTAGEM_JA_EM_ANDAMENTO(
+            "Já existe uma contagem em andamento.",
+            "Já existe uma contagem em andamento com peças desta seleção. Feche ou cancele essa contagem antes de começar outra."),
+
+    /** Contagem fechada ou cancelada não aceita mais mudança (HTTP 409). */
+    CONTAGEM_ENCERRADA(
+            "Esta contagem já foi encerrada.",
+            "Esta contagem já foi encerrada e não pode mais mudar. Comece uma nova contagem se precisar."),
+
+    /** A leitura voltou com outros dados (HTTP 409). */
+    LEITURA_JA_REGISTRADA_DIFERENTE(
+            "Esta leitura já foi registrada com outros dados.",
+            "Esta leitura já foi registrada com outros dados. Atualize a tela e confira a quantidade contada."),
+
+    /** Fechar deixaria alguma peça com menos de zero (HTTP 409). O servidor monta o texto com a peça. */
+    CONTAGEM_NAO_PODE_FECHAR(
+            "Não é possível fechar esta contagem.",
+            "Não é possível fechar esta contagem porque o estoque de uma peça ficaria menor que zero.");
 
     private final String titulo;
     private final String mensagem;

@@ -109,6 +109,16 @@ public class ErroDaApi extends ErrorResponseException {
         return new ErroDaApi(HttpStatus.CONFLICT, tipo, corpo);
     }
 
+    /** 409 do fechamento da contagem: o ajuste deixaria a peça abaixo de zero (glossário, parte 12). */
+    public static ErroDaApi contagemNaoPodeFechar(String nomeDoProduto, int ha, int diferenca) {
+        CodigoErro tipo = CodigoErro.CONTAGEM_NAO_PODE_FECHAR;
+        ProblemDetail corpo = Problemas.de(HttpStatus.CONFLICT, tipo);
+        corpo.setDetail("Não é possível fechar esta contagem. De \"" + nomeDoProduto + "\" há " + ha
+                + " no estoque agora e a contagem pede tirar " + Math.abs(diferenca)
+                + ". Confira a peça, lance a compra que falta ou refaça a contagem dela.");
+        return new ErroDaApi(HttpStatus.CONFLICT, tipo, corpo);
+    }
+
     private static ErroDaApi comFrase(HttpStatus status, CodigoErro codigo, String frase) {
         ProblemDetail corpo = Problemas.de(status, codigo);
         corpo.setDetail(codigo.mensagem() + " " + frase);

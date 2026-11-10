@@ -123,3 +123,33 @@ Uma seção por tarefa, no mesmo formato de [fase-1.md](fase-1.md). A tabela de 
 **Dúvidas**
 
 - A dona quer poder ver a compra por quem lançou/filtrar por usuário? Não incluí o filtro.
+
+### Tarefa 2.4: backend, estoque mínimo e contagem do estoque
+
+**Em revisão.** Segue o [ADR-0008](../decisoes/ADR-0008-estoque-e-movimentacoes.md) (itens 8, 9 e 12); a especificação não mudou.
+
+**O que foi feito**
+
+- **Estoque mínimo:** `GET /api/dona/estoque/abaixo-do-minimo` (só ADMIN) lista os produtos ativos com `estoque_minimo > 0` e saldo no mínimo ou abaixo, com foto, saldo, mínimo e quanto falta (quem mais falta primeiro); filtros categoria, fornecedor e busca; paginada. Novo item "N produtos estão acabando" em "O que precisa da sua atenção" (`AvisoDeEstoqueBaixo`, calculado na hora). O mínimo continua sendo editado pela rota de produtos (recusa valor menor que zero; coberto por teste).
+- Migração **V020**: `inventarios`, `itens_inventario` (esperado congelado, contado, ajuste gerado) e `leituras_inventario` (cada leitura, imutável). Só do servidor, fora do pull. Gatilhos: contagem fechada ou cancelada não muda mais; o esperado nunca muda.
+- **`ServicoDeInventario`** (só chama o `ServicoDeEstoque`; nunca altera o saldo): começar (congela o esperado com as peças travadas em ordem de id), ler por código ou produto (soma), corrigir (define o contado), fechar, cancelar. Fechar é uma transação: um AJUSTE por peça com diferença (`contado − esperado congelado`), motivo "Contagem do estoque", origem `INVENTARIO`, em ordem de id; se algum ajuste deixaria o saldo abaixo de zero, nada é gravado, a contagem continua aberta e a mensagem diz a peça. Fechar de novo devolve o já fechado.
+- Rotas `/api/dona/inventarios` (só ADMIN): começar, ver, listar, peças da contagem (filtros todas, divergentes, não lidas, lidas; busca; paginação; foto), leituras, contagens, fechar, cancelar. Auditoria de começar, fechar e cancelar.
+- Textos novos no glossário (parte 12) e em `CodigoErro`, sem palavras proibidas (teste).
+
+**Decisões que tomei**
+
+- **Uma peça só pode estar em uma contagem em andamento.** Comparar "escopos" não basta (categoria e fornecedor se cruzam), então a conferência é por peça. Começar contagens é serializado por trava de transação.
+- **Leitura repetida SOMA** (o leitor lê uma peça por vez); a **correção define o valor** e substitui. As duas são idempotentes pelo UUID da leitura: mesmo id e mesmos dados não soma de novo; outros dados, 409.
+- **Peça não lida:** sem confirmação fica como está, sem ajuste; com `zerarNaoLidos` o contado vira 0 e gera o ajuste.
+- **Peça nova depois do começo** não entra na contagem (ler o código dela dá erro "não faz parte desta contagem").
+- **Só produtos ativos** entram no aviso e na lista de estoque baixo; a contagem inclui todos os não excluídos (inativo ainda tem peças).
+- O esperado é lido com `FOR SHARE`, então é o saldo de um instante entre dois lançamentos.
+
+**O que ficou de fora**
+
+- Telas (2.7), relatório de inventário e divergências (2.5), inventário por vendedor/maleta (Fase 3).
+- Fechar ajusta pelo esperado congelado: se a contagem foi física mas a dona quiser "forçar" o saldo ao contado, usa o ajuste manual.
+
+**Dúvidas**
+
+- Nenhuma nova. A da 2.1 (peça não lida) foi resolvida como a recomendação: só vira zero se a dona confirmar.

@@ -95,7 +95,12 @@ class CotacoesDaDonaTest extends TesteDeIntegracao {
         return mvc.perform(get("/api/dona/cotacoes/hoje").with(usuarios.comoDona()));
     }
 
+    @Autowired
+    org.springframework.jdbc.core.JdbcTemplate jdbcDoAviso;
+
     private ResultActions avisos() throws Exception {
+        // O aviso de estoque baixo (tarefa 2.4) também sai desta rota; produtos de outros testes não podem entrar aqui.
+        jdbcDoAviso.update("UPDATE corona.produtos SET estoque_minimo = 0 WHERE estoque_minimo <> 0");
         return mvc.perform(get("/api/dona/avisos").with(usuarios.comoDona()));
     }
 

@@ -2,7 +2,7 @@
 
 import { type Client, type ClientMeta, formDataBodySerializer, type Options as Options2, type RequestResult, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { AjustarData, AjustarResponses, AlteracoesDeProdutosData, AlteracoesDeProdutosResponses, AlterarCodigosData, AlterarCodigosResponses, AniversariantesData, AniversariantesResponses, BaixarData, BaixarResponses, ClientesData, ClientesResponses, CodigosEmConflitoData, CodigosEmConflitoResponses, ConciliarData, ConciliarResponses, ConfirmarData, ConfirmarResponses, ConverterData, ConverterResponses, Criar1Data, Criar1Responses, Criar2Data, Criar2Responses, Criar3Data, Criar3Responses, Criar4Data, Criar4Responses, Criar5Data, Criar5Responses, Criar6Data, Criar6Responses, Criar7Data, Criar7Responses, Criar8Data, Criar8Responses, CriarData, CriarReferenciaData, CriarReferenciaResponses, CriarResponses, CustosData, CustosResponses, DesativarData, DesativarResponses, Desfazer1Data, Desfazer1Responses, DesfazerData, DesfazerResponses, EcoData, EcoResponses, Editar1Data, Editar1Responses, Editar2Data, Editar2Responses, Editar3Data, Editar3Responses, Editar4Data, Editar4Responses, Editar5Data, Editar5Responses, Editar6Data, Editar6Responses, Editar7Data, Editar7Responses, Editar8Data, Editar8Responses, EditarData, EditarReferenciaData, EditarReferenciaResponses, EditarResponses, EntrarData, EntrarResponses, Enviar1Data, Enviar1Responses, EnviarData, EnviarResponses, EuData, EuResponses, Excluir1Data, Excluir1Responses, Excluir2Data, Excluir2Responses, Excluir3Data, Excluir3Responses, Excluir4Data, Excluir4Responses, Excluir5Data, Excluir5Responses, Excluir6Data, Excluir6Responses, Excluir7Data, Excluir7Responses, Excluir8Data, Excluir8Responses, Excluir9Data, Excluir9Responses, ExcluirData, ExcluirReferenciaData, ExcluirReferenciaResponses, ExcluirResponses, FalhaData, FalhaResponses, FichaData, FichaResponses, FornecedoresData, FornecedoresResponses, GravarConjugeData, GravarConjugeResponses, GravarContatoData, GravarContatoResponses, GravarEnderecoData, GravarEnderecoResponses, GravarMeiData, GravarMeiResponses, GravarObservacoesData, GravarObservacoesResponses, GravarTrabalhoData, GravarTrabalhoResponses, HojeData, HojeResponses, ImagemData, ImagemResponses, Inativar1Data, Inativar1Responses, Inativar2Data, Inativar2Responses, Inativar3Data, Inativar3Responses, Inativar4Data, Inativar4Responses, Inativar5Data, Inativar5Responses, Inativar6Data, Inativar6Responses, InativarData, InativarResponses, LancarData, LancarResponses, Listar10Data, Listar10Responses, Listar11Data, Listar11Responses, Listar12Data, Listar12Responses, Listar13Data, Listar13Responses, Listar1Data, Listar1Responses, Listar2Data, Listar2Responses, Listar3Data, Listar3Responses, Listar4Data, Listar4Responses, Listar5Data, Listar5Responses, Listar6Data, Listar6Responses, Listar7Data, Listar7Responses, Listar8Data, Listar8Responses, Listar9Data, Listar9Responses, ListarData, ListarReferenciasData, ListarReferenciasResponses, ListarResponses, OrdemData, OrdemResponses, PorCodigoData, PorCodigoResponses, PreviaData, PreviaResponses, PrincipalData, PrincipalResponses, ProdutosData, ProdutosResponses, ProximoCodigoData, ProximoCodigoResponses, Reativar1Data, Reativar1Responses, Reativar2Data, Reativar2Responses, Reativar3Data, Reativar3Responses, Reativar4Data, Reativar4Responses, Reativar5Data, Reativar5Responses, Reativar6Data, Reativar6Responses, Reativar7Data, Reativar7Responses, ReativarData, ReativarResponses, ReceberData, ReceberResponses, RedefinirSenhaData, RedefinirSenhaResponses, RegistrarData, RegistrarResponses, RenovarData, RenovarResponses, ResultadoDasImportacoesData, ResultadoDasImportacoesResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SemCodigoDeBarrasData, SemCodigoDeBarrasResponses, SemFotoData, SemFotoResponses, SoVendedorData, SoVendedorResponses, TempoData, TempoResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarData, ValidarResponses, ValorDaDonaData, ValorDaDonaResponses, VendedoresData, VendedoresResponses, Ver1Data, Ver1Responses, Ver2Data, Ver2Responses, Ver3Data, Ver3Responses, Ver4Data, Ver4Responses, Ver5Data, Ver5Responses, Ver6Data, Ver6Responses, Ver7Data, Ver7Responses, Ver8Data, Ver8Responses, Ver9Data, Ver9Responses, VerConjugeData, VerConjugeResponses, VerContatoData, VerContatoResponses, VerData, VerEnderecoData, VerEnderecoResponses, VerMeiData, VerMeiResponses, VerObservacoesData, VerObservacoesResponses, VerResponses, VerTrabalhoData, VerTrabalhoResponses } from './types.gen';
+import type { AbaixoDoMinimoData, AbaixoDoMinimoResponses, AjustarData, AjustarResponses, AlteracoesDeProdutosData, AlteracoesDeProdutosResponses, AlterarCodigosData, AlterarCodigosResponses, AniversariantesData, AniversariantesResponses, BaixarData, BaixarResponses, CancelarData, CancelarResponses, ClientesData, ClientesResponses, CodigosEmConflitoData, CodigosEmConflitoResponses, ComecarData, ComecarResponses, ConciliarData, ConciliarResponses, ConfirmarData, ConfirmarResponses, ConverterData, ConverterResponses, CorrigirData, CorrigirResponses, Criar1Data, Criar1Responses, Criar2Data, Criar2Responses, Criar3Data, Criar3Responses, Criar4Data, Criar4Responses, Criar5Data, Criar5Responses, Criar6Data, Criar6Responses, Criar7Data, Criar7Responses, Criar8Data, Criar8Responses, CriarData, CriarReferenciaData, CriarReferenciaResponses, CriarResponses, CustosData, CustosResponses, DesativarData, DesativarResponses, Desfazer1Data, Desfazer1Responses, DesfazerData, DesfazerResponses, EcoData, EcoResponses, Editar1Data, Editar1Responses, Editar2Data, Editar2Responses, Editar3Data, Editar3Responses, Editar4Data, Editar4Responses, Editar5Data, Editar5Responses, Editar6Data, Editar6Responses, Editar7Data, Editar7Responses, Editar8Data, Editar8Responses, EditarData, EditarReferenciaData, EditarReferenciaResponses, EditarResponses, EntrarData, EntrarResponses, Enviar1Data, Enviar1Responses, EnviarData, EnviarResponses, EuData, EuResponses, Excluir1Data, Excluir1Responses, Excluir2Data, Excluir2Responses, Excluir3Data, Excluir3Responses, Excluir4Data, Excluir4Responses, Excluir5Data, Excluir5Responses, Excluir6Data, Excluir6Responses, Excluir7Data, Excluir7Responses, Excluir8Data, Excluir8Responses, Excluir9Data, Excluir9Responses, ExcluirData, ExcluirReferenciaData, ExcluirReferenciaResponses, ExcluirResponses, FalhaData, FalhaResponses, FecharData, FecharResponses, FichaData, FichaResponses, FornecedoresData, FornecedoresResponses, GravarConjugeData, GravarConjugeResponses, GravarContatoData, GravarContatoResponses, GravarEnderecoData, GravarEnderecoResponses, GravarMeiData, GravarMeiResponses, GravarObservacoesData, GravarObservacoesResponses, GravarTrabalhoData, GravarTrabalhoResponses, HojeData, HojeResponses, ImagemData, ImagemResponses, Inativar1Data, Inativar1Responses, Inativar2Data, Inativar2Responses, Inativar3Data, Inativar3Responses, Inativar4Data, Inativar4Responses, Inativar5Data, Inativar5Responses, Inativar6Data, Inativar6Responses, InativarData, InativarResponses, ItensData, ItensResponses, LancarData, LancarResponses, LerData, LerResponses, Listar10Data, Listar10Responses, Listar11Data, Listar11Responses, Listar12Data, Listar12Responses, Listar13Data, Listar13Responses, Listar14Data, Listar14Responses, Listar1Data, Listar1Responses, Listar2Data, Listar2Responses, Listar3Data, Listar3Responses, Listar4Data, Listar4Responses, Listar5Data, Listar5Responses, Listar6Data, Listar6Responses, Listar7Data, Listar7Responses, Listar8Data, Listar8Responses, Listar9Data, Listar9Responses, ListarData, ListarReferenciasData, ListarReferenciasResponses, ListarResponses, OrdemData, OrdemResponses, PorCodigoData, PorCodigoResponses, PreviaData, PreviaResponses, PrincipalData, PrincipalResponses, ProdutosData, ProdutosResponses, ProximoCodigoData, ProximoCodigoResponses, Reativar1Data, Reativar1Responses, Reativar2Data, Reativar2Responses, Reativar3Data, Reativar3Responses, Reativar4Data, Reativar4Responses, Reativar5Data, Reativar5Responses, Reativar6Data, Reativar6Responses, Reativar7Data, Reativar7Responses, ReativarData, ReativarResponses, ReceberData, ReceberResponses, RedefinirSenhaData, RedefinirSenhaResponses, RegistrarData, RegistrarResponses, RenovarData, RenovarResponses, ResultadoDasImportacoesData, ResultadoDasImportacoesResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SemCodigoDeBarrasData, SemCodigoDeBarrasResponses, SemFotoData, SemFotoResponses, SoVendedorData, SoVendedorResponses, TempoData, TempoResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarData, ValidarResponses, ValorDaDonaData, ValorDaDonaResponses, VendedoresData, VendedoresResponses, Ver10Data, Ver10Responses, Ver1Data, Ver1Responses, Ver2Data, Ver2Responses, Ver3Data, Ver3Responses, Ver4Data, Ver4Responses, Ver5Data, Ver5Responses, Ver6Data, Ver6Responses, Ver7Data, Ver7Responses, Ver8Data, Ver8Responses, Ver9Data, Ver9Responses, VerConjugeData, VerConjugeResponses, VerContatoData, VerContatoResponses, VerData, VerEnderecoData, VerEnderecoResponses, VerMeiData, VerMeiResponses, VerObservacoesData, VerObservacoesResponses, VerResponses, VerTrabalhoData, VerTrabalhoResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -98,7 +98,7 @@ export const trocarSenha = <ThrowOnError extends boolean = false>(options: Optio
  *
  * Os avisos que valem agora, calculados na hora (nada é gravado): cada um some sozinho quando o problema some. Lista vazia quando não há nada. Hoje: a cotação do Dólar e do Guarani que não chegou.
  */
-export const listar13 = <ThrowOnError extends boolean = false>(options?: Options<Listar13Data, ThrowOnError>): RequestResult<Listar13Responses, unknown, ThrowOnError> => (options?.client ?? client).get<Listar13Responses, unknown, ThrowOnError>({
+export const listar14 = <ThrowOnError extends boolean = false>(options?: Options<Listar14Data, ThrowOnError>): RequestResult<Listar14Responses, unknown, ThrowOnError> => (options?.client ?? client).get<Listar14Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/avisos',
     ...options
@@ -109,7 +109,7 @@ export const listar13 = <ThrowOnError extends boolean = false>(options?: Options
  *
  * Busca pelo nome. A página começa em 0 (até 100 por página).
  */
-export const listar12 = <ThrowOnError extends boolean = false>(options?: Options<Listar12Data, ThrowOnError>): RequestResult<Listar12Responses, unknown, ThrowOnError> => (options?.client ?? client).get<Listar12Responses, unknown, ThrowOnError>({
+export const listar13 = <ThrowOnError extends boolean = false>(options?: Options<Listar13Data, ThrowOnError>): RequestResult<Listar13Responses, unknown, ThrowOnError> => (options?.client ?? client).get<Listar13Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/categorias',
     ...options
@@ -197,7 +197,7 @@ export const reativar7 = <ThrowOnError extends boolean = false>(options: Options
  *
  * Busca pelo nome, telefone, WhatsApp ou CPF. A página começa em 0 (até 100 por página).
  */
-export const listar11 = <ThrowOnError extends boolean = false>(options?: Options<Listar11Data, ThrowOnError>): RequestResult<Listar11Responses, unknown, ThrowOnError> => (options?.client ?? client).get<Listar11Responses, unknown, ThrowOnError>({
+export const listar12 = <ThrowOnError extends boolean = false>(options?: Options<Listar12Data, ThrowOnError>): RequestResult<Listar12Responses, unknown, ThrowOnError> => (options?.client ?? client).get<Listar12Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/clientes',
     ...options
@@ -285,7 +285,7 @@ export const reativar6 = <ThrowOnError extends boolean = false>(options: Options
  *
  * Filtros: período (de, ate: data da compra, as duas inclusivas), fornecedorId, produtoId e situacao (REGISTRADA ou ESTORNADA). Mais nova primeiro. A página começa em 0 (até 200 por página).
  */
-export const listar10 = <ThrowOnError extends boolean = false>(options?: Options<Listar10Data, ThrowOnError>): RequestResult<Listar10Responses, unknown, ThrowOnError> => (options?.client ?? client).get<Listar10Responses, unknown, ThrowOnError>({
+export const listar11 = <ThrowOnError extends boolean = false>(options?: Options<Listar11Data, ThrowOnError>): RequestResult<Listar11Responses, unknown, ThrowOnError> => (options?.client ?? client).get<Listar11Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/compras',
     ...options
@@ -322,7 +322,7 @@ export const custos = <ThrowOnError extends boolean = false>(options: Options<Cu
  *
  * Com os itens, as fotos das peças, os custos e o total.
  */
-export const ver9 = <ThrowOnError extends boolean = false>(options: Options<Ver9Data, ThrowOnError>): RequestResult<Ver9Responses, unknown, ThrowOnError> => (options.client ?? client).get<Ver9Responses, unknown, ThrowOnError>({
+export const ver10 = <ThrowOnError extends boolean = false>(options: Options<Ver10Data, ThrowOnError>): RequestResult<Ver10Responses, unknown, ThrowOnError> => (options.client ?? client).get<Ver10Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/compras/{id}',
     ...options
@@ -370,6 +370,17 @@ export const hoje = <ThrowOnError extends boolean = false>(options?: Options<Hoj
 });
 
 /**
+ * Produtos com estoque baixo
+ *
+ * Produtos ativos com estoque mínimo definido cujo saldo está no mínimo ou abaixo. Mostra a foto, quantas peças há (saldo), o mínimo e quantas faltam para chegar ao mínimo (falta). Quem mais falta vem primeiro. Filtros: categoriaId, fornecedorId e busca (nome, referência ou parte do código). O mínimo de cada peça se edita pela rota de produtos. A página começa em 0 (até 200 por página).
+ */
+export const abaixoDoMinimo = <ThrowOnError extends boolean = false>(options?: Options<AbaixoDoMinimoData, ThrowOnError>): RequestResult<AbaixoDoMinimoResponses, unknown, ThrowOnError> => (options?.client ?? client).get<AbaixoDoMinimoResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/estoque/abaixo-do-minimo',
+    ...options
+});
+
+/**
  * Ajustar o estoque
  *
  * Corrige a quantidade e exige o motivo. Mande novaQuantidade (como o estoque deve ficar) OU diferenca (peças a mais, ou a menos se negativa), nunca os dois. Não passa de zero. Vai para a auditoria.
@@ -400,7 +411,7 @@ export const conciliar = <ThrowOnError extends boolean = false>(options?: Option
  *
  * Filtros: produtoId, tipo, origem (MANUAL, AJUSTE_MANUAL, COMPRA, INVENTARIO, MALETA, ESTORNO), usuarioId e período (de, ate: datas em UTC, as duas inclusivas). Mais novo primeiro. A página começa em 0 (até 200 por página).
  */
-export const listar9 = <ThrowOnError extends boolean = false>(options?: Options<Listar9Data, ThrowOnError>): RequestResult<Listar9Responses, unknown, ThrowOnError> => (options?.client ?? client).get<Listar9Responses, unknown, ThrowOnError>({
+export const listar10 = <ThrowOnError extends boolean = false>(options?: Options<Listar10Data, ThrowOnError>): RequestResult<Listar10Responses, unknown, ThrowOnError> => (options?.client ?? client).get<Listar10Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/estoque/movimentacoes',
     ...options
@@ -452,7 +463,7 @@ export const ficha = <ThrowOnError extends boolean = false>(options: Options<Fic
  *
  * Busca pela razão social, pelo contato ou pelo CNPJ. A página começa em 0 (até 100 por página).
  */
-export const listar8 = <ThrowOnError extends boolean = false>(options?: Options<Listar8Data, ThrowOnError>): RequestResult<Listar8Responses, unknown, ThrowOnError> => (options?.client ?? client).get<Listar8Responses, unknown, ThrowOnError>({
+export const listar9 = <ThrowOnError extends boolean = false>(options?: Options<Listar9Data, ThrowOnError>): RequestResult<Listar9Responses, unknown, ThrowOnError> => (options?.client ?? client).get<Listar9Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/fornecedores',
     ...options
@@ -543,6 +554,114 @@ export const reativar5 = <ThrowOnError extends boolean = false>(options: Options
 export const registrar = <ThrowOnError extends boolean = false>(options: Options<RegistrarData, ThrowOnError>): RequestResult<RegistrarResponses, unknown, ThrowOnError> => (options.client ?? client).post<RegistrarResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/importacoes/{id}/linhas',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Lista de contagens
+ *
+ * Filtro: situacao (EM_ANDAMENTO, FECHADO ou CANCELADO). Mais nova primeiro. A página começa em 0 (até 200 por página).
+ */
+export const listar8 = <ThrowOnError extends boolean = false>(options?: Options<Listar8Data, ThrowOnError>): RequestResult<Listar8Responses, unknown, ThrowOnError> => (options?.client ?? client).get<Listar8Responses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/inventarios',
+    ...options
+});
+
+/**
+ * Começar a contagem do estoque
+ *
+ * escopo: TODOS, CATEGORIA ou FORNECEDOR (com escopoId nos dois últimos). O servidor anota quantas peças esperava de cada produto nesse instante (esperado). Uma peça não pode estar em duas contagens em andamento: se alguma peça da seleção já está em outra, volta 409. O id (UUID) torna o reenvio seguro: mesmo id e mesmos dados devolve a contagem (200); outros dados, 409.
+ */
+export const comecar = <ThrowOnError extends boolean = false>(options: Options<ComecarData, ThrowOnError>): RequestResult<ComecarResponses, unknown, ThrowOnError> => (options.client ?? client).post<ComecarResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/inventarios',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Ver a contagem
+ *
+ * Situação e totais: lidas, não lidas, com diferença, peças que faltam e que sobram.
+ */
+export const ver9 = <ThrowOnError extends boolean = false>(options: Options<Ver9Data, ThrowOnError>): RequestResult<Ver9Responses, unknown, ThrowOnError> => (options.client ?? client).get<Ver9Responses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/inventarios/{id}',
+    ...options
+});
+
+/**
+ * Cancelar a contagem
+ *
+ * Não gera ajuste. Depois de fechada, não cancela (409). Cancelar de novo devolve a contagem.
+ */
+export const cancelar = <ThrowOnError extends boolean = false>(options: Options<CancelarData, ThrowOnError>): RequestResult<CancelarResponses, unknown, ThrowOnError> => (options.client ?? client).post<CancelarResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/inventarios/{id}/cancelar',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Corrigir a contagem de uma peça
+ *
+ * Define quantas peças foram contadas (substitui o que estava; zero vale). Mande o codigo OU o produtoId. Mesmo id de leitura, mesmo efeito de reenvio das leituras.
+ */
+export const corrigir = <ThrowOnError extends boolean = false>(options: Options<CorrigirData, ThrowOnError>): RequestResult<CorrigirResponses, unknown, ThrowOnError> => (options.client ?? client).post<CorrigirResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/inventarios/{id}/contagens',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Fechar a contagem
+ *
+ * Ajusta o estoque nas peças com diferença (contado menos o esperado do começo), com o motivo "Contagem do estoque", tudo numa operação só. Entradas e saídas feitas durante a contagem continuam valendo. Peça que não foi lida só vira zero se zerarNaoLidos for verdadeiro; senão fica como está. Se algum ajuste deixaria uma peça com menos de zero, nada é gravado e volta 409 dizendo a peça. Fechar de novo devolve a contagem já fechada.
+ */
+export const fechar = <ThrowOnError extends boolean = false>(options: Options<FecharData, ThrowOnError>): RequestResult<FecharResponses, unknown, ThrowOnError> => (options.client ?? client).post<FecharResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/inventarios/{id}/fechar',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Peças da contagem (esperado x contado)
+ *
+ * filtro: TODOS (padrão), DIVERGENTES (lidas com diferença), NAO_LIDOS ou LIDOS. busca: nome, referência ou parte do código. Cada peça traz a foto, o esperado do começo, o contado, a diferença e o saldo de agora.
+ */
+export const itens = <ThrowOnError extends boolean = false>(options: Options<ItensData, ThrowOnError>): RequestResult<ItensResponses, unknown, ThrowOnError> => (options.client ?? client).get<ItensResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/inventarios/{id}/itens',
+    ...options
+});
+
+/**
+ * Ler uma peça (soma ao contado)
+ *
+ * Mande o codigo (texto da etiqueta, sem diferenciar maiúsculas) OU o produtoId, e a quantidade (padrão 1). Cada leitura SOMA ao que já foi contado. O id (UUID) da leitura torna o reenvio seguro: mesmo id e mesmos dados não soma de novo (200); outros dados, 409. Peça de fora da contagem ou código que não existe volta 400.
+ */
+export const ler = <ThrowOnError extends boolean = false>(options: Options<LerData, ThrowOnError>): RequestResult<LerResponses, unknown, ThrowOnError> => (options.client ?? client).post<LerResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/inventarios/{id}/leituras',
     ...options,
     headers: {
         'Content-Type': 'application/json',

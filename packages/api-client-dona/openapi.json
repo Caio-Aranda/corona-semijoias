@@ -720,6 +720,52 @@
         },
         "type" : "object"
       },
+      "PaginaRespostaDoAbaixoDoMinimo" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/RespostaDoAbaixoDoMinimo"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PaginaRespostaDoItem" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/RespostaDoItem"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "PaginaRespostaDoResumo" : {
         "properties" : {
           "itens" : {
@@ -929,6 +975,26 @@
         "required" : [ "codigo", "tipo" ],
         "type" : "object"
       },
+      "PedidoDeContagem" : {
+        "properties" : {
+          "codigo" : {
+            "type" : "string"
+          },
+          "contado" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "PedidoDeEdicao" : {
         "properties" : {
           "nome" : {
@@ -975,6 +1041,26 @@
             "example" : "123.45",
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PedidoDeLeitura" : {
+        "properties" : {
+          "codigo" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
             "type" : "string"
           },
           "produtoId" : {
@@ -1210,6 +1296,37 @@
         },
         "type" : "object"
       },
+      "PedidoParaCancelar" : {
+        "properties" : {
+          "motivo" : {
+            "maxLength" : 500,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "PedidoParaComecar" : {
+        "properties" : {
+          "escopo" : {
+            "type" : "string"
+          },
+          "escopoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "observacoes" : {
+            "maxLength" : 1000,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "PedidoParaDesfazer" : {
         "properties" : {
           "id" : {
@@ -1218,6 +1335,14 @@
           },
           "motivo" : {
             "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "PedidoParaFechar" : {
+        "properties" : {
+          "zerarNaoLidos" : {
+            "type" : "boolean"
           }
         },
         "type" : "object"
@@ -1762,6 +1887,62 @@
         },
         "type" : "object"
       },
+      "RespostaDaContagem" : {
+        "properties" : {
+          "ajustes" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "canceladoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "escopo" : {
+            "type" : "string"
+          },
+          "escopoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "escopoNome" : {
+            "type" : "string"
+          },
+          "fechadoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "fechadoPorNome" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "iniciadoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "iniciadoPorNome" : {
+            "type" : "string"
+          },
+          "motivoDoCancelamento" : {
+            "type" : "string"
+          },
+          "observacoes" : {
+            "type" : "string"
+          },
+          "resumo" : {
+            "$ref" : "#/components/schemas/RespostaDoResumo"
+          },
+          "situacao" : {
+            "type" : "string"
+          },
+          "zerouNaoLidos" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
       "RespostaDaDivergencia" : {
         "properties" : {
           "diferenca" : {
@@ -1845,54 +2026,51 @@
         },
         "type" : "object"
       },
+      "RespostaDaLeitura" : {
+        "properties" : {
+          "item" : {
+            "$ref" : "#/components/schemas/RespostaDoItem"
+          },
+          "resumo" : {
+            "$ref" : "#/components/schemas/RespostaDoResumo"
+          }
+        },
+        "type" : "object"
+      },
       "RespostaDaLinha" : {
         "properties" : {
-          "desfeitoPorId" : {
+          "escopo" : {
+            "type" : "string"
+          },
+          "escopoId" : {
             "format" : "uuid",
             "type" : "string"
           },
-          "estornaId" : {
-            "format" : "uuid",
+          "escopoNome" : {
+            "type" : "string"
+          },
+          "fechadoEm" : {
+            "format" : "date-time",
             "type" : "string"
           },
           "id" : {
             "format" : "uuid",
             "type" : "string"
           },
-          "motivo" : {
-            "type" : "string"
-          },
-          "ocorridaEm" : {
+          "iniciadoEm" : {
             "format" : "date-time",
             "type" : "string"
           },
-          "origem" : {
-            "type" : "string"
-          },
-          "origemId" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "produto" : {
-            "$ref" : "#/components/schemas/RespostaDoProduto"
-          },
-          "quantidade" : {
+          "lidos" : {
             "format" : "int32",
             "type" : "integer"
           },
-          "saldoDepois" : {
+          "situacao" : {
+            "type" : "string"
+          },
+          "totalDePecas" : {
             "format" : "int32",
             "type" : "integer"
-          },
-          "tipo" : {
-            "type" : "string"
-          },
-          "usuarioId" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "usuarioNome" : {
-            "type" : "string"
           }
         },
         "type" : "object"
@@ -1953,6 +2131,26 @@
         },
         "type" : "object"
       },
+      "RespostaDoAbaixoDoMinimo" : {
+        "properties" : {
+          "falta" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "minimo" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "produto" : {
+            "$ref" : "#/components/schemas/RespostaDoProduto"
+          },
+          "saldo" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "RespostaDoHistoricoDeCusto" : {
         "properties" : {
           "custoAtual" : {
@@ -1972,28 +2170,27 @@
       },
       "RespostaDoItem" : {
         "properties" : {
-          "custoUnitario" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
+          "ajustada" : {
+            "type" : "boolean"
           },
-          "id" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "produto" : {
-            "$ref" : "#/components/schemas/RespostaDaPeca"
-          },
-          "quantidade" : {
+          "contado" : {
             "format" : "int32",
             "type" : "integer"
           },
-          "total" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
+          "diferenca" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "esperado" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "produto" : {
+            "$ref" : "#/components/schemas/RespostaDoProduto"
+          },
+          "saldoAtual" : {
+            "format" : "int32",
+            "type" : "integer"
           }
         },
         "type" : "object"
@@ -2111,44 +2308,37 @@
       },
       "RespostaDoResumo" : {
         "properties" : {
-          "dataCompra" : {
-            "format" : "date",
-            "type" : "string"
-          },
-          "fornecedorId" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "fornecedorNome" : {
-            "type" : "string"
-          },
-          "id" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "itens" : {
+          "comDiferenca" : {
             "format" : "int32",
             "type" : "integer"
           },
-          "numero" : {
-            "type" : "string"
+          "faltam" : {
+            "format" : "int64",
+            "type" : "integer"
           },
-          "pecas" : {
+          "lidos" : {
             "format" : "int32",
             "type" : "integer"
           },
-          "registradaEm" : {
-            "format" : "date-time",
-            "type" : "string"
+          "naoLidos" : {
+            "format" : "int32",
+            "type" : "integer"
           },
-          "situacao" : {
-            "type" : "string"
+          "pecasContadas" : {
+            "format" : "int64",
+            "type" : "integer"
           },
-          "total" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
+          "pecasEsperadas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "sobram" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "totalDePecas" : {
+            "format" : "int32",
+            "type" : "integer"
           }
         },
         "type" : "object"
@@ -2424,7 +2614,7 @@
     "/api/dona/avisos" : {
       "get" : {
         "description" : "Os avisos que valem agora, calculados na hora (nada é gravado): cada um some sozinho quando o problema some. Lista vazia quando não há nada. Hoje: a cotação do Dólar e do Guarani que não chegou.",
-        "operationId" : "listar_13",
+        "operationId" : "listar_14",
         "responses" : {
           "200" : {
             "content" : {
@@ -2447,7 +2637,7 @@
     "/api/dona/categorias" : {
       "get" : {
         "description" : "Busca pelo nome. A página começa em 0 (até 100 por página).",
-        "operationId" : "listar_12",
+        "operationId" : "listar_13",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
@@ -2707,7 +2897,7 @@
     "/api/dona/clientes" : {
       "get" : {
         "description" : "Busca pelo nome, telefone, WhatsApp ou CPF. A página começa em 0 (até 100 por página).",
-        "operationId" : "listar_11",
+        "operationId" : "listar_12",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
@@ -2967,7 +3157,7 @@
     "/api/dona/compras" : {
       "get" : {
         "description" : "Filtros: período (de, ate: data da compra, as duas inclusivas), fornecedorId, produtoId e situacao (REGISTRADA ou ESTORNADA). Mais nova primeiro. A página começa em 0 (até 200 por página).",
-        "operationId" : "listar_10",
+        "operationId" : "listar_11",
         "parameters" : [ {
           "in" : "query",
           "name" : "de",
@@ -3125,7 +3315,7 @@
     "/api/dona/compras/{id}" : {
       "get" : {
         "description" : "Com os itens, as fotos das peças, os custos e o total.",
-        "operationId" : "ver_9",
+        "operationId" : "ver_10",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -3252,6 +3442,69 @@
         "tags" : [ "cotacoes-da-dona-controller" ]
       }
     },
+    "/api/dona/estoque/abaixo-do-minimo" : {
+      "get" : {
+        "description" : "Produtos ativos com estoque mínimo definido cujo saldo está no mínimo ou abaixo. Mostra a foto, quantas peças há (saldo), o mínimo e quantas faltam para chegar ao mínimo (falta). Quem mais falta vem primeiro. Filtros: categoriaId, fornecedorId e busca (nome, referência ou parte do código). O mínimo de cada peça se edita pela rota de produtos. A página começa em 0 (até 200 por página).",
+        "operationId" : "abaixoDoMinimo",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "categoriaId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "fornecedorId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaginaRespostaDoAbaixoDoMinimo"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Produtos com estoque baixo",
+        "tags" : [ "estoque-da-dona-controller" ]
+      }
+    },
     "/api/dona/estoque/ajustes" : {
       "post" : {
         "description" : "Corrige a quantidade e exige o motivo. Mande novaQuantidade (como o estoque deve ficar) OU diferenca (peças a mais, ou a menos se negativa), nunca os dois. Não passa de zero. Vai para a auditoria.",
@@ -3311,7 +3564,7 @@
     "/api/dona/estoque/movimentacoes" : {
       "get" : {
         "description" : "Filtros: produtoId, tipo, origem (MANUAL, AJUSTE_MANUAL, COMPRA, INVENTARIO, MALETA, ESTORNO), usuarioId e período (de, ate: datas em UTC, as duas inclusivas). Mais novo primeiro. A página começa em 0 (até 200 por página).",
-        "operationId" : "listar_9",
+        "operationId" : "listar_10",
         "parameters" : [ {
           "in" : "query",
           "name" : "produtoId",
@@ -3518,7 +3771,7 @@
     "/api/dona/fornecedores" : {
       "get" : {
         "description" : "Busca pela razão social, pelo contato ou pelo CNPJ. A página começa em 0 (até 100 por página).",
-        "operationId" : "listar_8",
+        "operationId" : "listar_9",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
@@ -3808,6 +4061,344 @@
         } ],
         "summary" : "Registrar o resultado de uma importação",
         "tags" : [ "importacoes-controller" ]
+      }
+    },
+    "/api/dona/inventarios" : {
+      "get" : {
+        "description" : "Filtro: situacao (EM_ANDAMENTO, FECHADO ou CANCELADO). Mais nova primeiro. A página começa em 0 (até 200 por página).",
+        "operationId" : "listar_8",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaginaRespostaDaLinha"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Lista de contagens",
+        "tags" : [ "inventarios-da-dona-controller" ]
+      },
+      "post" : {
+        "description" : "escopo: TODOS, CATEGORIA ou FORNECEDOR (com escopoId nos dois últimos). O servidor anota quantas peças esperava de cada produto nesse instante (esperado). Uma peça não pode estar em duas contagens em andamento: se alguma peça da seleção já está em outra, volta 409. O id (UUID) torna o reenvio seguro: mesmo id e mesmos dados devolve a contagem (200); outros dados, 409.",
+        "operationId" : "comecar",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoParaComecar"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDaContagem"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Começar a contagem do estoque",
+        "tags" : [ "inventarios-da-dona-controller" ]
+      }
+    },
+    "/api/dona/inventarios/{id}" : {
+      "get" : {
+        "description" : "Situação e totais: lidas, não lidas, com diferença, peças que faltam e que sobram.",
+        "operationId" : "ver_9",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDaContagem"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ver a contagem",
+        "tags" : [ "inventarios-da-dona-controller" ]
+      }
+    },
+    "/api/dona/inventarios/{id}/cancelar" : {
+      "post" : {
+        "description" : "Não gera ajuste. Depois de fechada, não cancela (409). Cancelar de novo devolve a contagem.",
+        "operationId" : "cancelar",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoParaCancelar"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDaContagem"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Cancelar a contagem",
+        "tags" : [ "inventarios-da-dona-controller" ]
+      }
+    },
+    "/api/dona/inventarios/{id}/contagens" : {
+      "post" : {
+        "description" : "Define quantas peças foram contadas (substitui o que estava; zero vale). Mande o codigo OU o produtoId. Mesmo id de leitura, mesmo efeito de reenvio das leituras.",
+        "operationId" : "corrigir",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeContagem"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDaLeitura"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Corrigir a contagem de uma peça",
+        "tags" : [ "inventarios-da-dona-controller" ]
+      }
+    },
+    "/api/dona/inventarios/{id}/fechar" : {
+      "post" : {
+        "description" : "Ajusta o estoque nas peças com diferença (contado menos o esperado do começo), com o motivo \"Contagem do estoque\", tudo numa operação só. Entradas e saídas feitas durante a contagem continuam valendo. Peça que não foi lida só vira zero se zerarNaoLidos for verdadeiro; senão fica como está. Se algum ajuste deixaria uma peça com menos de zero, nada é gravado e volta 409 dizendo a peça. Fechar de novo devolve a contagem já fechada.",
+        "operationId" : "fechar",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoParaFechar"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDaContagem"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Fechar a contagem",
+        "tags" : [ "inventarios-da-dona-controller" ]
+      }
+    },
+    "/api/dona/inventarios/{id}/itens" : {
+      "get" : {
+        "description" : "filtro: TODOS (padrão), DIVERGENTES (lidas com diferença), NAO_LIDOS ou LIDOS. busca: nome, referência ou parte do código. Cada peça traz a foto, o esperado do começo, o contado, a diferença e o saldo de agora.",
+        "operationId" : "itens",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "filtro",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaginaRespostaDoItem"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Peças da contagem (esperado x contado)",
+        "tags" : [ "inventarios-da-dona-controller" ]
+      }
+    },
+    "/api/dona/inventarios/{id}/leituras" : {
+      "post" : {
+        "description" : "Mande o codigo (texto da etiqueta, sem diferenciar maiúsculas) OU o produtoId, e a quantidade (padrão 1). Cada leitura SOMA ao que já foi contado. O id (UUID) da leitura torna o reenvio seguro: mesmo id e mesmos dados não soma de novo (200); outros dados, 409. Peça de fora da contagem ou código que não existe volta 400.",
+        "operationId" : "ler",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeLeitura"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDaLeitura"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ler uma peça (soma ao contado)",
+        "tags" : [ "inventarios-da-dona-controller" ]
       }
     },
     "/api/dona/pracas" : {
