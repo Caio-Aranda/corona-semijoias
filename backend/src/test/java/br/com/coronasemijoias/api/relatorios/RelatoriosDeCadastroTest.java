@@ -378,6 +378,96 @@ class RelatoriosDeCadastroTest extends TesteDeIntegracao {
 
     // --- erros ---
 
+    // --- filtros que faltavam (tarefa 1.13, §12) ---
+
+    @Test
+    void vendedoresPorFaixaDeLimiteEComRestricao() throws Exception {
+        String m = marca();
+        UUID restricao = UUID.fromString(
+                criarVia("/api/dona/restricoes", mapa("codigo", "R" + m, "descricao", "Atraso", "bloqueiaRemessa", false))
+                        .get("id").asString());
+        criarVia("/api/dona/vendedores", mapa("nome", m + " A", "limiteConsignacao", "100.00"));
+        criarVia("/api/dona/vendedores", mapa("nome", m + " B", "limiteConsignacao", "500.00", "restricaoId", restricao));
+        criarVia("/api/dona/vendedores", mapa("nome", m + " C", "limiteConsignacao", "900.00"));
+
+        assertThat(relatorio("vendedores", "busca", m, "limiteDe", "200", "limiteAte", "900").get("total").asLong())
+                .isEqualTo(2);
+        assertThat(relatorio("vendedores", "busca", m, "limiteDe", "500.00", "limiteAte", "500.00").get("total").asLong())
+                .isEqualTo(1);
+        assertThat(relatorio("vendedores", "busca", m, "limiteAte", "99.99").get("total").asLong()).isZero();
+        JsonNode com = relatorio("vendedores", "busca", m, "comRestricao", "SIM");
+        assertThat(com.get("total").asLong()).isEqualTo(1);
+        assertThat(total(com, "limite").get("valorEmReais").asString()).isEqualTo("500.00");
+        assertThat(relatorio("vendedores", "busca", m, "comRestricao", "NAO").get("total").asLong()).isEqualTo(2);
+        conciliar("vendedores", "limiteConsignacao", "limite", "busca", m, "limiteDe", "200", "comRestricao", "SIM");
+        conciliar("vendedores", "limiteConsignacao", "limite", "busca", m, "limiteDe", "50", "limiteAte", "600");
+
+        for (String[] ruim : new String[][] { { "limiteDe", "abc" }, { "limiteAte", "-1" }, { "comRestricao", "TALVEZ" } }) {
+            mvc.perform(get(BASE + "vendedores").param(ruim[0], ruim[1]).with(usuarios.comoDona()))
+                    .andExpect(status().isBadRequest());
+        }
+        mvc.perform(get(BASE + "vendedores").param("limiteDe", "10").param("limiteAte", "5").with(usuarios.comoDona()))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void produtosPorEstoquePrecoEFoto() throws Exception {
+        String m = marca();
+        UUID cat = UUID.fromString(criarVia("/api/dona/categorias", mapa("nome", "Cat " + m)).get("id").asString());
+        JsonNode zerado = criarProduto(m + " Zerado", cat, null, "1.00", "10.00", m + "-Z", "LOJA");
+        JsonNode baixo = criarProduto(m + " Baixo", cat, null, "1.00", "20.00", m + "-B", "LOJA");
+        JsonNode bom = criarProduto(m + " Bom", cat, null, "1.00", "30.00", m + "-G", "LOJA");
+        jdbc.update("UPDATE corona.produtos SET estoque_minimo = 5, estoque_atual = 2 WHERE id = ?::uuid",
+                baixo.get("id").asString());
+        jdbc.update("UPDATE corona.produtos SET estoque_minimo = 5, estoque_atual = 9 WHERE id = ?::uuid",
+                bom.get("id").asString());
+        jdbc.update("""
+                INSERT INTO corona.produtos_fotos (id, produto_id, arquivo_hash, principal, ordem, largura, altura,
+                    tamanho_bytes, chave_miniatura, chave_media, chave_grande)
+                VALUES (?::uuid, ?::uuid, ?, true, 0, 10, 10, 10, 'a', 'b', 'c')""", UUID.randomUUID().toString(),
+                bom.get("id").asString(), "a".repeat(64));
+
+        assertThat(relatorio("produtos", "busca", m, "estoque", "ZERADO").get("total").asLong()).isEqualTo(1);
+        assertThat(relatorio("produtos", "busca", m, "estoque", "ABAIXO_DO_MINIMO").get("total").asLong()).isEqualTo(1);
+        assertThat(relatorio("produtos", "busca", m, "estoque", "COM_ESTOQUE").get("total").asLong()).isEqualTo(2);
+        assertThat(relatorio("produtos", "busca", m, "precoDe", "15", "precoAte", "30").get("total").asLong())
+                .isEqualTo(2);
+        assertThat(relatorio("produtos", "busca", m, "foto", "SEM").get("total").asLong()).isEqualTo(2);
+        assertThat(relatorio("produtos", "busca", m, "foto", "COM").get("total").asLong()).isEqualTo(1);
+        JsonNode comFoto = relatorio("produtos", "busca", m, "foto", "COM");
+        assertThat(comFoto.get("itens").get(0).get("nome").asString()).isEqualTo(m + " Bom");
+        assertThat(total(comFoto, "preco-venda").get("valorEmReais").asString()).isEqualTo("30.00");
+        assertThat(zerado.get("id").asString()).isNotBlank();
+        conciliar("produtos", "precoVenda", "preco-venda", "busca", m, "foto", "SEM", "precoDe", "5");
+        conciliar("produtos", "precoCusto", "custo", "busca", m, "estoque", "COM_ESTOQUE");
+
+        for (String[] ruim : new String[][] { { "estoque", "MUITO" }, { "foto", "TALVEZ" }, { "precoDe", "x" } }) {
+            mvc.perform(get(BASE + "produtos").param(ruim[0], ruim[1]).with(usuarios.comoDona()))
+                    .andExpect(status().isBadRequest());
+        }
+    }
+
+    @Test
+    void fornecedoresEClientesComFiltroDeVinculo() throws Exception {
+        String m = marca();
+        UUID com = UUID.fromString(criarVia("/api/dona/fornecedores", mapa("razaoSocial", m + " Com")).get("id").asString());
+        criarVia("/api/dona/fornecedores", mapa("razaoSocial", m + " Sem"));
+        UUID cat = UUID.fromString(criarVia("/api/dona/categorias", mapa("nome", "Cat " + m)).get("id").asString());
+        criarProduto(m + " P1", cat, com, "10.00", "30.00", m + "-1", "LOJA");
+        assertThat(relatorio("fornecedores", "busca", m, "comProdutos", "SIM").get("total").asLong()).isEqualTo(1);
+        assertThat(relatorio("fornecedores", "busca", m, "comProdutos", "NAO").get("total").asLong()).isEqualTo(1);
+        conciliar("fornecedores", null, null, "busca", m, "comProdutos", "SIM");
+
+        UUID vendedor = UUID.fromString(criarVia("/api/dona/vendedores", mapa("nome", m + " V")).get("id").asString());
+        criarVia("/api/dona/clientes", mapa("nome", m + " Ana", "vendedorResponsavelId", vendedor));
+        criarVia("/api/dona/clientes", mapa("nome", m + " Bia"));
+        assertThat(relatorio("clientes", "busca", m, "comVendedor", "SIM").get("total").asLong()).isEqualTo(1);
+        assertThat(relatorio("clientes", "busca", m, "comVendedor", "NAO").get("total").asLong()).isEqualTo(1);
+        conciliar("clientes", null, null, "busca", m, "comVendedor", "NAO");
+        mvc.perform(get(BASE + "clientes").param("comVendedor", "TALVEZ").with(usuarios.comoDona()))
+                .andExpect(status().isBadRequest());
+    }
+
     @Test
     void recorteDesconhecidoEPaginaInvalidaViramErroClaro() throws Exception {
         mvc.perform(get(BASE + "vendedores").param("recorte", "nao-existe").with(usuarios.comoDona()))

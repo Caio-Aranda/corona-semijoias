@@ -8,6 +8,7 @@ import br.com.coronasemijoias.api.fotos.RelatorioDeProdutosSemFoto.Item;
 import br.com.coronasemijoias.api.fotos.ServicoDeFotos.Baixada;
 import br.com.coronasemijoias.api.fotos.ServicoDeFotos.Foto;
 import br.com.coronasemijoias.api.seguranca.ExigePerfil;
+import br.com.coronasemijoias.api.seguranca.UsuarioAutenticado;
 import io.swagger.v3.oas.annotations.Operation;
 import java.io.IOException;
 import java.time.Duration;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -165,10 +167,13 @@ public class FotosDosProdutosController {
     @Operation(summary = "Importação de fotos: confirmar",
             description = "Formulário com vários campos 'arquivos' (até 10 por vez; mande a pasta em lotes). Cada foto "
                     + "é gravada sozinha: uma que falha não derruba as outras, e a resposta diz o que aconteceu com "
-                    + "cada uma. Repetir o mesmo lote não duplica nada.")
+                    + "cada uma. Repetir o mesmo lote não duplica nada. Com importacaoId (um UUID por pasta), o resultado de cada "
+                    + "foto também fica gravado para o relatório \"Resultado das importações\".")
     @PostMapping(path = "/fotos/importacao/confirmar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public Relatorio confirmar(@RequestPart(name = "arquivos", required = false) List<MultipartFile> arquivos) {
-        return importacao.confirmar(arquivos);
+    public Relatorio confirmar(@RequestPart(name = "arquivos", required = false) List<MultipartFile> arquivos,
+            @RequestParam(name = "importacaoId", required = false) UUID importacaoId,
+            @AuthenticationPrincipal UsuarioAutenticado quem) {
+        return importacao.confirmar(arquivos, importacaoId, quem.id());
     }
 
     // --- relatório ---

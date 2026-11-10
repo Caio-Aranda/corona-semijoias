@@ -5,8 +5,10 @@ import br.com.coronasemijoias.api.relatorios.ConsultasDeCadastro.LinhaDeAlteraca
 import br.com.coronasemijoias.api.relatorios.ConsultasDeCadastro.LinhaDeAniversariante;
 import br.com.coronasemijoias.api.relatorios.ConsultasDeCadastro.LinhaDeCliente;
 import br.com.coronasemijoias.api.relatorios.ConsultasDeCadastro.LinhaDeFornecedor;
+import br.com.coronasemijoias.api.relatorios.ConsultasDeCadastro.LinhaDeImportacao;
 import br.com.coronasemijoias.api.relatorios.ConsultasDeCadastro.LinhaDeProduto;
 import br.com.coronasemijoias.api.relatorios.ConsultasDeCadastro.LinhaDeVendedor;
+import br.com.coronasemijoias.api.relatorios.ConsultasDeCadastro.Mais;
 import br.com.coronasemijoias.api.relatorios.ConsultasDeCadastro.LinhaSemCodigoDeBarras;
 import br.com.coronasemijoias.api.seguranca.ExigePerfil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,9 +44,12 @@ public class RelatoriosDeCadastroController {
 
     @Operation(summary = "Relatório de vendedores",
             description = "Limite de consignação, restrição, situação, praça e comissão. Filtros: busca, pracaId, restricaoId, "
-                    + "situacao, de e ate (data do cadastro)." + PADRAO)
+                    + "situacao, limiteDe e limiteAte (faixa do limite, em reais), comRestricao (SIM ou NAO), de e ate (data do cadastro)."
+                    + PADRAO)
     @GetMapping("/vendedores")
     public RelatorioDeCadastro<LinhaDeVendedor> vendedores(@RequestParam(required = false) String busca,
+            @RequestParam(required = false) String limiteDe, @RequestParam(required = false) String limiteAte,
+            @RequestParam(required = false) String comRestricao,
             @RequestParam(required = false) String pracaId, @RequestParam(required = false) String restricaoId,
             @RequestParam(required = false) String situacao,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate de,
@@ -52,40 +57,47 @@ public class RelatoriosDeCadastroController {
             @RequestParam(required = false) String recorte, @RequestParam(required = false) Integer pagina,
             @RequestParam(required = false) Integer tamanho) {
         return consultas.vendedores(new Filtros(busca, null, null, pracaId, null, restricaoId, situacao, de, ate, null,
-                recorte, pagina, tamanho));
+                recorte, pagina, tamanho,
+                new Mais(comRestricao, limiteDe, limiteAte, null, null, null, null, null, null)));
     }
 
     @Operation(summary = "Relatório de clientes",
-            description = "Filtros: busca, vendedorId, pracaId (a do vendedor responsável), de e ate (data do cadastro). "
+            description = "Filtros: busca, vendedorId, pracaId (a do vendedor responsável), comVendedor (SIM ou NAO), de e ate (data do cadastro). "
                     + "Cliente não tem situação: só os excluídos ficam de fora." + PADRAO)
     @GetMapping("/clientes")
     public RelatorioDeCadastro<LinhaDeCliente> clientes(@RequestParam(required = false) String busca,
+            @RequestParam(required = false) String comVendedor,
             @RequestParam(required = false) String vendedorId, @RequestParam(required = false) String pracaId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate de,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ate,
             @RequestParam(required = false) String recorte, @RequestParam(required = false) Integer pagina,
             @RequestParam(required = false) Integer tamanho) {
         return consultas.clientes(new Filtros(busca, null, null, pracaId, vendedorId, null, null, de, ate, null, recorte,
-                pagina, tamanho));
+                pagina, tamanho, new Mais(null, null, null, null, null, null, null, null, comVendedor)));
     }
 
     @Operation(summary = "Relatório de fornecedores",
-            description = "Filtros: busca, de e ate (data do cadastro). Fornecedor não tem situação." + PADRAO)
+            description = "Filtros: busca, comProdutos (SIM ou NAO: tem produtos ativos), de e ate (data do cadastro). "
+                    + "Fornecedor não tem situação." + PADRAO)
     @GetMapping("/fornecedores")
     public RelatorioDeCadastro<LinhaDeFornecedor> fornecedores(@RequestParam(required = false) String busca,
+            @RequestParam(required = false) String comProdutos,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate de,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ate,
             @RequestParam(required = false) String recorte, @RequestParam(required = false) Integer pagina,
             @RequestParam(required = false) Integer tamanho) {
         return consultas.fornecedores(new Filtros(busca, null, null, null, null, null, null, de, ate, null, recorte,
-                pagina, tamanho));
+                pagina, tamanho, new Mais(null, null, null, null, null, null, null, comProdutos, null)));
     }
 
     @Operation(summary = "Relatório de produtos (com preço de custo)",
             description = "Só a dona vê o custo. Filtros: busca (nome, referência ou código), categoriaId, fornecedorId, "
-                    + "situacao, de e ate (data do cadastro)." + PADRAO)
+                    + "situacao, estoque (ZERADO, ABAIXO_DO_MINIMO ou COM_ESTOQUE), precoDe e precoAte (preço de venda, em reais), "
+                    + "foto (COM ou SEM), de e ate (data do cadastro)." + PADRAO)
     @GetMapping("/produtos")
     public RelatorioDeCadastro<LinhaDeProduto> produtos(@RequestParam(required = false) String busca,
+            @RequestParam(required = false) String estoque, @RequestParam(required = false) String precoDe,
+            @RequestParam(required = false) String precoAte, @RequestParam(required = false) String foto,
             @RequestParam(required = false) String categoriaId, @RequestParam(required = false) String fornecedorId,
             @RequestParam(required = false) String situacao,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate de,
@@ -93,7 +105,7 @@ public class RelatoriosDeCadastroController {
             @RequestParam(required = false) String recorte, @RequestParam(required = false) Integer pagina,
             @RequestParam(required = false) Integer tamanho) {
         return consultas.produtos(new Filtros(busca, categoriaId, fornecedorId, null, null, null, situacao, de, ate, null,
-                recorte, pagina, tamanho));
+                recorte, pagina, tamanho, new Mais(null, null, null, estoque, precoDe, precoAte, foto, null, null)));
     }
 
     @Operation(summary = "Relatório de produtos sem código de barras",
@@ -133,9 +145,24 @@ public class RelatoriosDeCadastroController {
                 recorte, pagina, tamanho));
     }
 
+    @Operation(summary = "Relatório de resultado das importações",
+            description = "Cada linha da planilha e cada foto importadas em massa: o que aconteceu, o motivo se foi recusada, "
+                    + "quem importou e quando. Filtros: busca, tipo (PLANILHA ou FOTOS), resultado (CRIADO, ATUALIZADO, "
+                    + "JA_EXISTIA ou RECUSADO), de e ate (quando foi importado)." + PADRAO)
+    @GetMapping("/resultado-das-importacoes")
+    public RelatorioDeCadastro<LinhaDeImportacao> resultadoDasImportacoes(@RequestParam(required = false) String busca,
+            @RequestParam(required = false) String tipo, @RequestParam(required = false) String resultado,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate de,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ate,
+            @RequestParam(required = false) String recorte, @RequestParam(required = false) Integer pagina,
+            @RequestParam(required = false) Integer tamanho) {
+        return consultas.resultadoDasImportacoes(new Filtros(busca, null, null, null, null, null, null, de, ate, null,
+                recorte, pagina, tamanho), tipo, resultado);
+    }
+
     @Operation(summary = "Relatório de cadastros e alterações de produtos",
-            description = "Produtos cadastrados e preços alterados no período, com quem fez (pela auditoria). Não é o "
-                    + "resultado da importação em massa: o servidor não guarda esse resultado (pendência da Fase 2). "
+            description = "Produtos cadastrados e preços alterados no período, com quem fez (pela auditoria). O resultado "
+                    + "das importações em massa tem o relatório próprio (resultado-das-importacoes). "
                     + "Filtros: busca (produto ou pessoa), de e ate." + PADRAO)
     @GetMapping("/alteracoes-de-produtos")
     public RelatorioDeCadastro<LinhaDeAlteracao> alteracoesDeProdutos(@RequestParam(required = false) String busca,
