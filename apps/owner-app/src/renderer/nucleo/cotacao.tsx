@@ -1,0 +1,82 @@
+import { createContext, useContext, useMemo, type ReactNode } from 'react';
+import type { PonteDoCorona } from '../../shared/ponte';
+import { chamar, useBusca } from './chamadas';
+import { dataParaTela, type CotacaoParaTela } from './moedas';
+import { TEXTOS } from '../textos';
+
+/** O que a API devolve em /api/dona/cotacoes/hoje (campos que a tela usa). */
+interface RespostaDaCotacao {
+  disponivel?: boolean;
+  cotacao?: {
+    dataCotacao?: string;
+    dolar?: string;
+    guarani?: string;
+    deDiaAnterior?: boolean;
+  };
+}
+
+export interface CotacaoDoDia {
+  /** Taxas para converter. Nulo enquanto não houver cotação. */
+  taxas: CotacaoParaTela | null;
+  /** "Cotação do Banco Central de 06/11/2026." (ou a versão "a última publicada"). */
+  linha: string;
+  /** A de hoje não chegou e vale a de um dia anterior. */
+  deDiaAnterior: boolean;
+  carregando: boolean;
+}
+
+const SEM_COTACAO: CotacaoDoDia = {
+  taxas: null,
+  linha: TEXTOS.dinheiro.semCotacao,
+  deDiaAnterior: false,
+  carregando: false,
+};
+
+const Contexto = createContext<CotacaoDoDia>(SEM_COTACAO);
+
+/** Lê a resposta da rota "cotação do dia". Qualquer coisa fora do formato vira "sem cotação". */
+export function lerCotacao(bruto: unknown): CotacaoDoDia {
+  const r = (typeof bruto === 'object' && bruto !== null ? bruto : {}) as RespostaDaCotacao;
+  const c = r.cotacao;
+  if (r.disponivel === false || !c?.dolar || !c.guarani || !c.dataCotacao) return SEM_COTACAO;
+  const data = dataParaTela(c.dataCotacao);
+  const deDiaAnterior = c.deDiaAnterior === true;
+  return {
+    taxas: { dolar: c.dolar, guarani: c.guarani },
+    linha: deDiaAnterior
+      ? TEXTOS.dinheiro.cotacaoDeDiaAnterior(data)
+      : TEXTOS.dinheiro.cotacaoDoDia(data),
+    deDiaAnterior,
+    carregando: false,
+  };
+}
+
+/** Busca a cotação do dia uma vez e a oferece a toda a tela (campos de dinheiro e rodapé). */
+export function ProvedorDaCotacao({
+  ponte,
+  children,
+}: {
+  ponte: PonteDoCorona;
+  children: ReactNode;
+}) {
+  const busca = useBusca(() => chamar(ponte, 'cotacao.hoje'), 'cotacao');
+  const valor = useMemo<CotacaoDoDia>(
+    () =>
+      busca.dados === null
+        ? { ...SEM_COTACAO, carregando: busca.carregando }
+        : lerCotacao(busca.dados),
+    [busca.dados, busca.carregando],
+  );
+  return <Contexto.Provider value={valor}>{children}</Contexto.Provider>;
+}
+
+export function useCotacao(): CotacaoDoDia {
+  return useContext(Contexto);
+}
+
+/** Linha da cotação embaixo das telas de valores (glossário, parte 11). */
+export function RodapeDaCotacao() {
+  const { linha, carregando } = useCotacao();
+  if (carregando) return null;
+  return <p className="gestao-cotacao">{linha}</p>;
+}

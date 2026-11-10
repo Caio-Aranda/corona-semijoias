@@ -199,7 +199,13 @@ export class GuardaDeTokens {
       await this.perderASessao();
       return false;
     }
-    // Sem internet, servidor fora do ar ou excesso de tentativas: a sessão continua guardada.
+    // Sem internet, servidor fora do ar ou excesso de tentativas: a sessão continua guardada e a
+    // pessoa pode tentar de novo depois. Só a recusa do servidor (acima) apaga a sessão.
+    // Uma falha dessas quase sempre nem chegou ao servidor, então não gasta uma das duas
+    // apresentações permitidas do token: no máximo a primeira fica "em dúvida". Assim, várias
+    // quedas de internet seguidas não derrubam a sessão; se o servidor chegar a ver a terceira
+    // apresentação, ele mesmo recusa (revoga) e aí a sessão acaba por recusa, que é o caso seguro.
+    this.apresentacoes = Math.min(this.apresentacoes, 1);
     return false;
   }
 

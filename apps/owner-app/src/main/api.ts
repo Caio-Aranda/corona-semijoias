@@ -1,13 +1,24 @@
 import {
+  converter,
+  criar1,
   criarClienteDaApi,
+  desativar,
+  editar1,
   ehAppDesatualizado,
   entrar,
   eu,
+  hoje,
+  listar,
+  listar11,
+  listar2,
+  reativar1,
+  redefinirSenha,
   renovar,
   sair,
   trocarSenha,
   type RespostaDoLogin,
 } from '@corona/api-client-dona';
+import type { ParametrosConferidos } from '../shared/validacao-parametros';
 import type { ApiDeAutenticacao, Credenciais, Falha, Resultado } from './tipos';
 
 export interface DadosDoUsuario {
@@ -17,6 +28,8 @@ export interface DadosDoUsuario {
 
 export interface ApiDoGestao extends ApiDeAutenticacao {
   eu(tokenDeAcesso: string): Promise<Resultado<DadosDoUsuario>>;
+  /** Uma consulta ou ação da dona, já conferida. Devolve o que a API respondeu, sem mexer. */
+  executar(tokenDeAcesso: string, pedido: ParametrosConferidos): Promise<Resultado<unknown>>;
 }
 
 interface OpcoesDaApi {
@@ -29,6 +42,18 @@ interface OpcoesDaApi {
 interface CorpoDeErro {
   detail?: unknown;
   codigo?: unknown;
+  campos?: unknown;
+}
+
+function comoCampos(v: unknown): { campo: string; mensagem: string }[] | undefined {
+  if (!Array.isArray(v)) return undefined;
+  const lista: { campo: string; mensagem: string }[] = [];
+  for (const item of v) {
+    if (typeof item !== 'object' || item === null) continue;
+    const { campo, mensagem } = item as { campo?: unknown; mensagem?: unknown };
+    if (typeof campo === 'string' && typeof mensagem === 'string') lista.push({ campo, mensagem });
+  }
+  return lista.length > 0 ? lista : undefined;
 }
 
 const texto = (v: unknown): string | undefined => (typeof v === 'string' && v ? v : undefined);
@@ -42,6 +67,8 @@ function comoFalha(erro: unknown, resposta: Response | undefined): Falha {
   const codigo = texto(corpo.codigo);
   if (mensagem) falha.mensagem = mensagem;
   if (codigo) falha.codigo = codigo;
+  const campos = comoCampos(corpo.campos);
+  if (campos) falha.campos = campos;
   return falha;
 }
 
@@ -114,6 +141,46 @@ export function criarApiDoGestao(opcoes: OpcoesDaApi): ApiDoGestao {
       if (r.dados?.nome) d.nome = r.dados.nome;
       if (r.dados?.perfil) d.perfil = r.dados.perfil;
       return { ok: true, dados: d };
+    },
+    async executar(token, pedido) {
+      const headers = comToken(token);
+      switch (pedido.operacao) {
+        case 'eu':
+          return executar(() => eu({ client, headers }));
+        case 'usuarios.listar':
+          return executar(() => listar2({ client, headers, query: pedido.lista }));
+        case 'usuarios.criar':
+          return executar(() => criar1({ client, headers, body: pedido.novo }));
+        case 'usuarios.editar': {
+          const { id, ...corpo } = pedido.editado;
+          return executar(() => editar1({ client, headers, path: { id }, body: corpo }));
+        }
+        case 'usuarios.desativar':
+          return executar(() => desativar({ client, headers, path: { id: pedido.id } }));
+        case 'usuarios.reativar':
+          return executar(() => reativar1({ client, headers, path: { id: pedido.id } }));
+        case 'usuarios.redefinirSenha':
+          return executar(() => redefinirSenha({ client, headers, path: { id: pedido.id } }));
+        case 'cotacao.hoje':
+          return executar(() => hoje({ client, headers }));
+        case 'cotacao.converter':
+          return executar(() =>
+            converter({
+              client,
+              headers,
+              body: {
+                valorEmReais: pedido.valorEmReais,
+                ...(pedido.data ? { data: pedido.data } : {}),
+              },
+            }),
+          );
+        case 'avisos.listar':
+          return executar(() => listar11({ client, headers }));
+        case 'vendedores.escolha':
+          return executar(() =>
+            listar({ client, headers, query: { situacao: 'ATIVOS', pagina: 0, tamanho: 100 } }),
+          );
+      }
     },
   };
 }

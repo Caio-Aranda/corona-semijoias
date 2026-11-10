@@ -1,5 +1,6 @@
 import type { DadosDeEntrada, DadosDeNovaSenha, PedidoDeChamada } from './ponte';
 import { OPERACOES_DA_API } from './ponte';
+import { conferirParametros } from './validacao-parametros';
 
 /** Tamanhos máximos aceitos na ponte. O servidor tem a palavra final sobre a senha (72 bytes). */
 const MAX_USUARIO = 200;
@@ -28,8 +29,12 @@ export function validarNovaSenha(v: unknown): DadosDeNovaSenha | null {
 
 export function validarChamada(v: unknown): PedidoDeChamada | null {
   if (!ehObjeto(v)) return null;
-  const { operacao } = v;
+  const { operacao, parametros } = v;
   if (!ehTexto(operacao)) return null;
-  const permitida = (OPERACOES_DA_API as readonly string[]).includes(operacao);
-  return permitida ? { operacao: operacao as PedidoDeChamada['operacao'] } : null;
+  if (!(OPERACOES_DA_API as readonly string[]).includes(operacao)) return null;
+  const op = operacao as PedidoDeChamada['operacao'];
+  if (conferirParametros(op, parametros) === null) return null;
+  return parametros === undefined
+    ? { operacao: op }
+    : { operacao: op, parametros: parametros as Record<string, unknown> };
 }
