@@ -30,7 +30,7 @@ export const eu = <ThrowOnError extends boolean = false>(options?: Options<EuDat
 /**
  * Entrar com login e senha
  *
- * Devolve o token de acesso (15 minutos) e o de renovação (30 dias). O Corona Vendas manda dispositivoId; o Corona Gestão não. Depois de 5 erros seguidos do mesmo endereço, responde 429 com Retry-After até o fim do bloqueio.
+ * Devolve o token de acesso (15 minutos) e o de renovação (30 dias). O Corona Vendas manda dispositivoId; os outros aplicativos não. Depois de 5 erros seguidos do mesmo endereço, responde 429 com Retry-After até o fim do bloqueio.
  */
 export const entrar = <ThrowOnError extends boolean = false>(options: Options<EntrarData, ThrowOnError>): RequestResult<EntrarResponses, unknown, ThrowOnError> => (options.client ?? client).post<EntrarResponses, unknown, ThrowOnError>({
     url: '/api/auth/login',

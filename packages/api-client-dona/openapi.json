@@ -223,7 +223,7 @@
     },
     "/api/auth/login" : {
       "post" : {
-        "description" : "Devolve o token de acesso (15 minutos) e o de renovação (30 dias). O Corona Vendas manda dispositivoId; o Corona Gestão não. Depois de 5 erros seguidos do mesmo endereço, responde 429 com Retry-After até o fim do bloqueio.",
+        "description" : "Devolve o token de acesso (15 minutos) e o de renovação (30 dias). O Corona Vendas manda dispositivoId; os outros aplicativos não. Depois de 5 erros seguidos do mesmo endereço, responde 429 com Retry-After até o fim do bloqueio.",
         "operationId" : "entrar",
         "requestBody" : {
           "content" : {
