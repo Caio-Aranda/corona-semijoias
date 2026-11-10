@@ -11,28 +11,32 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
 /**
- * ADR-0002 (R6): o utilitário de dinheiro é o único lugar com arredondamento. Este teste varre o
- * código de produção e reprova qualquer uso de {@code RoundingMode} fora de {@link Dinheiro}.
+ * ADR-0002 (R6) e ADR-0006 (item 9): o arredondamento só existe em {@link Dinheiro} (dinheiro em Real)
+ * e em {@link ConversaoDeMoeda} (Real para Dólar e Guarani, só para a tela). Este teste varre o código
+ * de produção e reprova qualquer uso de {@code RoundingMode} fora dessas duas classes.
  */
 class ArredondamentoSoNoUtilitarioTest {
 
     private static final Path CODIGO = Path.of("src", "main", "java");
-    private static final Path UTILITARIO =
-            CODIGO.resolve(Path.of("br", "com", "coronasemijoias", "api", "comum", "dinheiro", "Dinheiro.java"));
+    private static final Path PASTA_DO_DINHEIRO =
+            CODIGO.resolve(Path.of("br", "com", "coronasemijoias", "api", "comum", "dinheiro"));
+    private static final List<Path> PERMITIDOS = List.of(
+            PASTA_DO_DINHEIRO.resolve("Dinheiro.java"),
+            PASTA_DO_DINHEIRO.resolve("ConversaoDeMoeda.java"));
 
     @Test
-    void roundingModeSoApareceNoUtilitarioDeDinheiro() throws IOException {
-        assertThat(UTILITARIO).exists();
+    void roundingModeSoApareceNosUtilitariosDeDinheiro() throws IOException {
+        PERMITIDOS.forEach(permitido -> assertThat(permitido).exists());
         List<Path> violacoes;
         try (Stream<Path> arquivos = Files.walk(CODIGO)) {
             violacoes = arquivos
                     .filter(p -> p.toString().endsWith(".java"))
-                    .filter(p -> !p.normalize().equals(UTILITARIO.normalize()))
+                    .filter(p -> PERMITIDOS.stream().noneMatch(permitido -> permitido.normalize().equals(p.normalize())))
                     .filter(ArredondamentoSoNoUtilitarioTest::usaRoundingMode)
                     .toList();
         }
         assertThat(violacoes)
-                .as("Arredondamento fora do utilitário de dinheiro: use Dinheiro.arredondar (ADR-0002)")
+                .as("Arredondamento fora de Dinheiro e ConversaoDeMoeda: use Dinheiro.arredondar (ADR-0002)")
                 .isEmpty();
     }
 

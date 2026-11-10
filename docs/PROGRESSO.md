@@ -30,7 +30,9 @@ Lista oficial, aprovada pelo responsável. Os ADRs e as tarefas usam estes núme
 | 16 | feat(seller-app): Corona Vendas com login online e barreira contra código da dona | Concluída (PR 22) · [detalhe](progresso/fase-0.md#tarefa-16-corona-vendas-com-login-online-e-barreira-contra-código-da-dona) |
 | 17 | chore: VS Code, comando único de setup e roteiro do teste de uso | Concluída (PR a abrir) · [detalhe](progresso/fase-0.md#tarefa-17-vs-code-setup-e-roteiro-do-teste-de-uso) |
 | 18 | spike: SQLCipher no Electron dentro do monorepo (tempo limitado, gera o ADR-0005) | Concluída (PR a abrir) · [detalhe](progresso/fase-0.md#tarefa-18-spike-do-sqlcipher-no-electron) |
-| 19 | feat(backend): cotações do Banco Central (tabela `cotacoes`, busca diária, conversão para Dólar e Guarani, aviso de falha; ADR-0006). Antes da Fase 1. Sem rota nem tela, por isso não depende das tarefas 9 a 18 | Pendente |
+| 19 | feat(backend): cotações do Banco Central (tabela `cotacoes`, busca diária, conversão para Dólar e Guarani, aviso de falha; ADR-0006). Antes da Fase 1. Sem rota nem tela, por isso não depende das tarefas 9 a 18 | Concluída (PR a abrir) · [detalhe](progresso/fase-0.md#tarefa-19-cotações-do-banco-central) |
+
+**Fase 0 concluída** (tarefas 1 a 19). A próxima é a Fase 1.
 
 
 ## Pendências abertas
@@ -47,7 +49,7 @@ O que ainda está em aberto nas tarefas concluídas (o que já foi resolvido por
 - Rotas `/sync/push` e `/sync/pull`, `sync_log`, idempotência, cursor inválido e filtro por vendedor (Fase 5). ([tarefa 8](progresso/fase-0.md#tarefa-8-convenções-do-schema-e-sync_seq-seguro))
 - Chave estrangeira de `origem_dispositivo` para `dispositivos`; validação do id nos DTOs; alerta de atraso do pull. ([tarefa 8](progresso/fase-0.md#tarefa-8-convenções-do-schema-e-sync_seq-seguro))
 - Valor mínimo de parcela (Fase 4); backup de produção e envio para fora da VPS (Fase 9). ([tarefa 8](progresso/fase-0.md#tarefa-8-convenções-do-schema-e-sync_seq-seguro))
-- Tarefa 19 (prompt abaixo); telas da Fase 1; rota do vendedor na Fase 4; pull na Fase 5; `cotacao_id` no acerto na Fase 7. ([tarefa 8.1](progresso/fase-0.md#tarefa-81-três-moedas-e-cotação-diária-só-documentos))
+- Telas e rota das cotações na Fase 1 (a dona, com o aviso); rota do vendedor na Fase 4; pull na Fase 5; `cotacao_id` no acerto na Fase 7; conversão com `BigInt` no TypeScript quando o primeiro front-end mostrar valores (mesmos exemplos do ADR-0006). ([tarefa 8.1](progresso/fase-0.md#tarefa-81-três-moedas-e-cotação-diária-só-documentos))
 - Dúvida do ADR-0006: incluir o aviso da cotação na lista da §19.3; pendência 13 da §17 (cartão), para o cliente. ([tarefa 8.1](progresso/fase-0.md#tarefa-81-três-moedas-e-cotação-diária-só-documentos))
 - Chave estrangeira de `usuarios.vendedor_id` para `vendedores` e `CHECK` "VENDEDOR tem vendedor_id" (Fase 1). ([tarefa 9](progresso/fase-0.md#tarefa-9-usuários-perfis-e-login-com-jwt))
 - Fase 1: auditoria "pelo servidor" da ação do comando; telas (senha mostrada uma vez, listar, editar e desativar usuários). ([tarefa 10](progresso/fase-0.md#tarefa-10-a-dona-cria-usuários-e-redefine-a-senha-temporária))
@@ -57,41 +59,5 @@ O que ainda está em aberto nas tarefas concluídas (o que já foi resolvido por
 - Corona Vendas: instalador, ícone e atualização automática (Fase 9); prazo offline guardado mas ainda não aplicado, login offline e bloqueio do segundo aparelho (Fase 5). ([tarefa 16](progresso/fase-0.md#tarefa-16-corona-vendas-com-login-online-e-barreira-contra-código-da-dona))
 - Corona Vendas: o login que entra, a troca de senha e a tela inicial só foram vistos nos testes, não com conta de vendedor real (fica para o teste de uso, com o vendedor de teste da tarefa 17). ([tarefa 16](progresso/fase-0.md#tarefa-16-corona-vendas-com-login-online-e-barreira-contra-código-da-dona))
 
-### Prompt sugerido para a tarefa 19
-
-> **Recomendação de sessão:** modo Plan, modelo Opus 5.5, esforço alto (dinheiro e dado imutável), conversa nova.
-
-```markdown
-# Tarefa 19: cotações do Banco Central (backend, antes da Fase 1)
-
-Leia o `CLAUDE.md`, a `docs/ESPECIFICACAO.md` (v1.5, §7.5, §9, §10, §12 e §13), o ADR-0002 e o ADR-0006 inteiro antes de planejar. Atualize a main e crie a branch `feat/cotacoes-banco-central`. Comece em modo de plano: mostre o plano e espere a aprovação. É parte crítica (dinheiro e dado imutável): escreva os testes primeiro.
-
-## Objetivo
-Implementar no backend a regra do ADR-0006: a tabela `cotacoes`, a busca diária no arquivo de fechamento do BCB, a recuperação de dias perdidos, a conversão de Real para Dólar e Guarani e o cálculo do aviso de falha. Sem rota e sem tela.
-
-## Entregas
-1. Migração nova (`V004__cotacoes.sql` ou a próxima livre): tabela `cotacoes` como no item 4 do ADR (`data_cotacao date UNIQUE`, 8 colunas `NUMERIC(18,8) NOT NULL`, `buscada_em`, `fonte`), criada com `corona.aplicar_convencoes_sincronizavel('cotacoes', true)`. Registrar no `RegistroDeTabelas` como sincronizável.
-2. Teste de convenções: `numeric(18,8)` aceito só nas 8 colunas de `cotacoes` (lista explícita `tabela.coluna`); em outra coluna, a mensagem "numeric(18,8) só em colunas de cotação (ADR-0006)"; caso novo no `ConvencoesDoSchemaTest`.
-3. `ConversaoDeMoeda` em `comum.dinheiro`: US$ = R$ ÷ usd_venda com 2 casas, Gs. = R$ ÷ pyg_venda com 0 casas, HALF_UP numa divisão só. Nunca grava. Inclui o valor máximo de `NUMERIC(14,2)`. `ArredondamentoSoNoUtilitarioTest` aceita `RoundingMode` só em `Dinheiro` e em `ConversaoDeMoeda`. Testes com **todos** os exemplos do item 14 do ADR.
-4. Leitor estrito do CSV (item 2 do ADR): 8 colunas em toda linha, data igual ao dia pedido, uma linha 220/A/USD e uma 450/A/PYG, números no padrão, maiores que zero, compra ≤ venda, paridade do USD igual a 1. Testes com arquivos de exemplo em `src/test/resources` (sem rede): o arquivo real de 06/11/2026 e um arquivo para cada regra quebrada (coluna a mais, data trocada, PYG ausente, PYG duplicado, ponto decimal, zero, compra > venda).
-5. Calendário de feriados bancários nacionais (fixos + Carnaval, Sexta-feira Santa e Corpus Christi pela Páscoa). Testes:
-   - 2026: Carnaval 16 e 17/02, Sexta-feira Santa 03/04, Corpus Christi 04/06;
-   - 2027: Carnaval 08 e 09/02, Sexta-feira Santa 26/03, Corpus Christi 27/05;
-   - Finados numa segunda (02/11/2026) e 20/11/2026 (sexta);
-   - a Quarta-feira de Cinzas (18/02/2026) é dia útil.
-6. Busca agendada (item 3 do ADR): segunda a sexta, 16:30 a 21:00 UTC a cada 30 min, 20 s por pedido, gravação das duas moedas na mesma transação, recuperação dos últimos 10 dias, dia gravado nunca relido. O relógio e o cliente HTTP entram por parâmetro, para os testes não dependerem da hora nem da internet. Testes: atrasado (404 antes das 21:00 UTC, sem aviso), feriado (404 na última tentativa, sem aviso), falha (404 num dia útil, erro de rede, arquivo fora da regra até o fim), **arquivo existe num dia marcado como feriado: grava**, recuperação, nunca parcial, nunca sobrescreve.
-7. Serviço "qual cotação vale" (item 7): maior `data_cotacao` ≤ data do lançamento em Brasília; a mais recente para o que não é lançamento e para o acerto no momento do fechamento. Testes: sábado, 23:30 de sexta em Brasília, Finados.
-8. Serviço do aviso (item 12): dias úteis sem cotação nos últimos 10 dias, contando hoje só depois das 21:00 UTC; devolve a data da cotação em uso. Sem rota: a tela e a rota vêm na Fase 1, depois do login.
-9. JSON e OpenAPI: tipo próprio para a cotação, texto com 8 casas (`^\d{1,10}\.\d{8}$`), sem passar pelo padrão de dinheiro. Teste de serialização.
-10. URL do arquivo e horários na configuração da aplicação (`application.properties`), sem segredo.
-
-## Fora de escopo
-Rotas e telas (Fase 1 para a dona, Fase 4 para o vendedor), pull (Fase 5), `cotacao_id` no acerto (Fase 7), TypeScript (a conversão com `BigInt` entra com o primeiro front-end que mostrar valores, com os mesmos exemplos do ADR), mudar o `Dinheiro`.
-
-## Verificação
-`npm run api:test` verde; os exemplos do ADR-0006 batem nos testes; nenhum teste depende da internet; o diff das migrações publicadas está vazio (só migração nova).
-
-## Ao terminar
-Atualize `docs/PROGRESSO.md` e abra o PR em Conventional Commits (`feat(backend): ...`). No relatório, diga o que fez, o que não fez e as dúvidas.
-```
 - Vendedor de demonstração sem cadastro de vendedor (`vendedor_id` vazio) até a Fase 1. ([tarefa 17](progresso/fase-0.md#tarefa-17-vs-code-setup-e-roteiro-do-teste-de-uso))
+- Cotações: o calendário de feriados fica no código (feriado nacional novo exige mudança); a busca roda dentro da API (uma instância só); retenção de `cotacoes` não definida. ([tarefa 19](progresso/fase-0.md#tarefa-19-cotações-do-banco-central))
