@@ -2,6 +2,7 @@ package br.com.coronasemijoias.api.estoque;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -726,5 +727,117 @@ class InventariosDaDonaTest extends TesteDeIntegracao {
         for (String texto : textos) {
             assertThat(texto.toLowerCase()).doesNotContain("estorn", "moviment", "invent", "sync", "idempot", "uuid");
         }
+    }
+
+    // --- peça excluída ou inativada durante a contagem (tarefa 2.9) ---
+
+    private void excluirPeca(Peca p) throws Exception {
+        mvc.perform(delete("/api/dona/produtos/" + p.id()).with(dona())).andExpect(status().isNoContent());
+    }
+
+    @Test
+    void pecaExcluidaComDiferencaNaoGeraAjusteOFechamentoConcluiEAPecaFicaListada() throws Exception {
+        UUID cat = categoria();
+        Peca excluida = peca(cat, null, 6);
+        Peca normal = peca(cat, null, 5);
+        UUID inv = UUID.fromString(iniciar(cat).get("id").asString());
+        somar(inv, excluida, 4);
+        somar(inv, normal, 3);
+        excluirPeca(excluida);
+        JsonNode fechado = corpoDe(fechar(inv, false).andExpect(status().isOk()));
+        assertThat(fechado.get("situacao").asString()).isEqualTo("FECHADO");
+        assertThat(fechado.get("ajustes").asInt()).isEqualTo(1);
+        assertThat(saldo(excluida.id())).isEqualTo(6);
+        assertThat(quantosMovimentos(excluida.id(), "INVENTARIO")).isEqualTo(0);
+        assertThat(saldo(normal.id())).isEqualTo(3);
+        JsonNode nao = fechado.get("naoAjustadas");
+        assertThat(nao).hasSize(1);
+        assertThat(nao.get(0).get("produtoId").asString()).isEqualTo(excluida.id().toString());
+        assertThat(nao.get(0).get("esperado").asInt()).isEqualTo(6);
+        assertThat(nao.get(0).get("contado").asInt()).isEqualTo(4);
+        assertThat(nao.get(0).get("diferenca").asInt()).isEqualTo(-2);
+        assertThat(nao.get(0).get("motivo").asString()).isEqualTo("Peça excluída");
+        // A divergência continua registrada na contagem e no relatório de divergências.
+        JsonNode divergentes = corpoDe(ler(BASE + "/" + inv + "/itens?filtro=DIVERGENTES").andExpect(status().isOk())).get("itens");
+        assertThat(divergentes).hasSize(2);
+        JsonNode relatorio = corpoDe(ler("/api/dona/relatorios/estoque/inventarios?inventarioId=" + inv + "&divergencia=SIM")
+                .andExpect(status().isOk()));
+        assertThat(relatorio.toString()).contains(excluida.id().toString());
+        conciliado();
+    }
+
+    @Test
+    void pecaExcluidaSemDiferencaFechaSemListarNada() throws Exception {
+        UUID cat = categoria();
+        Peca excluida = peca(cat, null, 3);
+        Peca normal = peca(cat, null, 5);
+        UUID inv = UUID.fromString(iniciar(cat).get("id").asString());
+        somar(inv, excluida, 3);
+        somar(inv, normal, 4);
+        excluirPeca(excluida);
+        JsonNode fechado = corpoDe(fechar(inv, false).andExpect(status().isOk()));
+        assertThat(fechado.get("ajustes").asInt()).isEqualTo(1);
+        assertThat(fechado.get("naoAjustadas")).isEmpty();
+        assertThat(saldo(excluida.id())).isEqualTo(3);
+    }
+
+    @Test
+    void pecaExcluidaNaoLidaEZeradaPelaDonaNaoMexeNoSaldoMasFicaListada() throws Exception {
+        UUID cat = categoria();
+        Peca excluida = peca(cat, null, 3);
+        Peca normal = peca(cat, null, 5);
+        UUID inv = UUID.fromString(iniciar(cat).get("id").asString());
+        somar(inv, normal, 5);
+        excluirPeca(excluida);
+        JsonNode fechado = corpoDe(fechar(inv, true).andExpect(status().isOk()));
+        assertThat(saldo(excluida.id())).isEqualTo(3);
+        assertThat(fechado.get("naoAjustadas")).hasSize(1);
+        assertThat(fechado.get("naoAjustadas").get(0).get("diferenca").asInt()).isEqualTo(-3);
+    }
+
+    @Test
+    void pecaInativadaDuranteAContagemEAjustadaNormalmente() throws Exception {
+        UUID cat = categoria();
+        Peca inativa = peca(cat, null, 6);
+        UUID inv = UUID.fromString(iniciar(cat).get("id").asString());
+        somar(inv, inativa, 4);
+        enviar("/api/dona/produtos/" + inativa.id() + "/inativar", mapa()).andExpect(status().isOk());
+        JsonNode fechado = corpoDe(fechar(inv, false).andExpect(status().isOk()));
+        assertThat(fechado.get("ajustes").asInt()).isEqualTo(1);
+        assertThat(fechado.get("naoAjustadas")).isEmpty();
+        assertThat(saldo(inativa.id())).isEqualTo(4);
+        conciliado();
+    }
+
+    @Test
+    void fecharDeNovoComPecaExcluidaDevolveOMesmoResultadoSemAjustarNada() throws Exception {
+        UUID cat = categoria();
+        Peca excluida = peca(cat, null, 6);
+        UUID inv = UUID.fromString(iniciar(cat).get("id").asString());
+        somar(inv, excluida, 4);
+        excluirPeca(excluida);
+        fechar(inv, false).andExpect(status().isOk());
+        JsonNode segunda = corpoDe(fechar(inv, false).andExpect(status().isOk()));
+        assertThat(segunda.get("situacao").asString()).isEqualTo("FECHADO");
+        assertThat(segunda.get("naoAjustadas")).hasSize(1);
+        assertThat(quantosMovimentos(excluida.id(), "INVENTARIO")).isEqualTo(0);
+        assertThat(saldo(excluida.id())).isEqualTo(6);
+    }
+
+    @Test
+    void entradaDeCompraDuranteAContagemMantemOEsperadoCongeladoEOAjusteSobreEle() throws Exception {
+        UUID cat = categoria();
+        Peca a = peca(cat, null, 10);
+        UUID inv = UUID.fromString(iniciar(cat).get("id").asString());
+        // Entrada de compra de verdade (rota da compra), durante a contagem.
+        enviar("/api/dona/compras", mapa("id", UUID.randomUUID(), "fornecedorId", fornecedor(), "dataCompra", "2026-11-01", "itens",
+                List.of(mapa("produtoId", a.id(), "quantidade", 5, "custoUnitario", "8.00")))).andExpect(status().isCreated());
+        assertThat(saldo(a.id())).isEqualTo(15);
+        somar(inv, a, 8);
+        JsonNode item = item(inv, a);
+        assertThat(item.get("esperado").asInt()).isEqualTo(10);
+        fechar(inv, false).andExpect(status().isOk());
+        assertThat(saldo(a.id())).isEqualTo(13);   // 15 + (8 - 10)
+        conciliado();
     }
 }

@@ -73,15 +73,22 @@ public class InventariosDaDonaController {
         }
     }
 
+    /** Peça com diferença que não foi ajustada porque foi excluída durante a contagem. */
+    public record RespostaDaNaoAjustada(UUID produtoId, String nome, int esperado, int contado, int diferenca, String motivo) {
+    }
+
     /** {@code ajustes} é quantos lançamentos de ajuste o fechamento gerou. */
     public record RespostaDaContagem(UUID id, String escopo, UUID escopoId, String escopoNome, String situacao, Instant iniciadoEm,
             String iniciadoPorNome, Instant fechadoEm, String fechadoPorNome, Boolean zerouNaoLidos, Instant canceladoEm,
-            String motivoDoCancelamento, String observacoes, int ajustes, RespostaDoResumo resumo) {
+            String motivoDoCancelamento, String observacoes, int ajustes, RespostaDoResumo resumo,
+            java.util.List<RespostaDaNaoAjustada> naoAjustadas) {
 
         static RespostaDaContagem de(Detalhe d) {
             return new RespostaDaContagem(d.id(), d.escopo(), d.escopoId(), d.escopoNome(), d.situacao(), d.iniciadoEm(),
                     d.iniciadoPorNome(), d.fechadoEm(), d.fechadoPorNome(), d.zerouNaoLidos(), d.canceladoEm(),
-                    d.motivoDoCancelamento(), d.observacoes(), d.ajustes(), RespostaDoResumo.de(d.resumo()));
+                    d.motivoDoCancelamento(), d.observacoes(), d.ajustes(), RespostaDoResumo.de(d.resumo()),
+                    d.naoAjustadas().stream().map(n -> new RespostaDaNaoAjustada(n.produtoId(), n.nome(), n.esperado(), n.contado(),
+                            n.diferenca(), n.motivo())).toList());
         }
     }
 
@@ -143,7 +150,7 @@ public class InventariosDaDonaController {
             description = "Ajusta o estoque nas peças com diferença (contado menos o esperado do começo), com o motivo \"Contagem do "
                     + "estoque\", tudo numa operação só. Entradas e saídas feitas durante a contagem continuam valendo. Peça que "
                     + "não foi lida só vira zero se zerarNaoLidos for verdadeiro; senão fica como está. Se algum ajuste deixaria uma "
-                    + "peça com menos de zero, nada é gravado e volta 409 dizendo a peça. Fechar de novo devolve a contagem já fechada.")
+                    + "peça com menos de zero, nada é gravado e volta 409 dizendo a peça. Peça excluída durante a contagem não recebe ajuste: vem em naoAjustadas, com a diferença. Fechar de novo devolve a contagem já fechada.")
     @PostMapping("/{id}/fechar")
     public RespostaDaContagem fechar(@PathVariable UUID id, @RequestBody(required = false) PedidoParaFechar pedido,
             @AuthenticationPrincipal UsuarioAutenticado quem) {

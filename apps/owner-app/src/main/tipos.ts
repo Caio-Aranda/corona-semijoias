@@ -11,7 +11,8 @@ export type Falha =
   | { tipo: 'app-desatualizado'; mensagem: string }
   | { tipo: 'resposta-invalida' };
 
-export type Resultado<T> = { ok: true; dados: T } | { ok: false; falha: Falha };
+/** {@code criado} só vem nas chamadas que distinguem 201 (criado) de 200 (já estava registrado). */
+export type Resultado<T> = { ok: true; dados: T; criado?: boolean } | { ok: false; falha: Falha };
 
 /** Resposta de entrar, renovar ou trocar a senha, já conferida pelo adaptador da API. */
 export interface Credenciais {

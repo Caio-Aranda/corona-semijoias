@@ -1794,6 +1794,20 @@
         "required" : [ "login", "nome", "perfil" ],
         "type" : "object"
       },
+      "PedidoDoEstoqueMinimo" : {
+        "properties" : {
+          "estoqueMinimo" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "version" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "required" : [ "estoqueMinimo" ],
+        "type" : "object"
+      },
       "PedidoDosCodigos" : {
         "properties" : {
           "codigos" : {
@@ -2761,6 +2775,12 @@
           "motivoDoCancelamento" : {
             "type" : "string"
           },
+          "naoAjustadas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/RespostaDaNaoAjustada"
+            },
+            "type" : "array"
+          },
           "observacoes" : {
             "type" : "string"
           },
@@ -2938,6 +2958,33 @@
             "type" : "integer"
           },
           "situacaoDaCompra" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "RespostaDaNaoAjustada" : {
+        "properties" : {
+          "contado" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "diferenca" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "esperado" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "motivo" : {
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
             "type" : "string"
           }
         },
@@ -5095,7 +5142,7 @@
     },
     "/api/dona/inventarios/{id}/fechar" : {
       "post" : {
-        "description" : "Ajusta o estoque nas peças com diferença (contado menos o esperado do começo), com o motivo \"Contagem do estoque\", tudo numa operação só. Entradas e saídas feitas durante a contagem continuam valendo. Peça que não foi lida só vira zero se zerarNaoLidos for verdadeiro; senão fica como está. Se algum ajuste deixaria uma peça com menos de zero, nada é gravado e volta 409 dizendo a peça. Fechar de novo devolve a contagem já fechada.",
+        "description" : "Ajusta o estoque nas peças com diferença (contado menos o esperado do começo), com o motivo \"Contagem do estoque\", tudo numa operação só. Entradas e saídas feitas durante a contagem continuam valendo. Peça que não foi lida só vira zero se zerarNaoLidos for verdadeiro; senão fica como está. Se algum ajuste deixaria uma peça com menos de zero, nada é gravado e volta 409 dizendo a peça. Peça excluída durante a contagem não recebe ajuste: vem em naoAjustadas, com a diferença. Fechar de novo devolve a contagem já fechada.",
         "operationId" : "fechar",
         "parameters" : [ {
           "in" : "path",
@@ -5984,6 +6031,48 @@
           "bearer" : [ ]
         } ],
         "summary" : "Alterar os códigos do produto",
+        "tags" : [ "produtos-da-dona-controller" ]
+      }
+    },
+    "/api/dona/produtos/{id}/estoque-minimo" : {
+      "patch" : {
+        "description" : "Mande a version que a tela leu (se outra pessoa alterou antes, volta 409) e o novo estoque mínimo (zero ou mais; zero desliga o aviso). Nada mais do cadastro muda. A mudança vai para a auditoria.",
+        "operationId" : "mudarEstoqueMinimo",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDoEstoqueMinimo"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Resposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Mudar só o estoque mínimo",
         "tags" : [ "produtos-da-dona-controller" ]
       }
     },

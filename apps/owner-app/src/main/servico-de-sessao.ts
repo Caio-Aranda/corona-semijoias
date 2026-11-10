@@ -88,7 +88,10 @@ export class ServicoDeSessao {
       return r.ok ? { ok: true, dados: r.dados } : this.falhaDaChamada(r.falha);
     }
     const r = await this.guarda.comToken((token) => this.api.executar(token, conferido));
-    return r.ok ? { ok: true, dados: r.dados } : this.falhaDaChamada(r.falha);
+    if (!r.ok) return this.falhaDaChamada(r.falha);
+    return r.criado === undefined
+      ? { ok: true, dados: r.dados }
+      : { ok: true, dados: r.dados, criado: r.criado };
   }
 
   private async usuario(): Promise<{ nome: string } | null> {

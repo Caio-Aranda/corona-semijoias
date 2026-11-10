@@ -64,6 +64,10 @@ public class Produto extends EntidadeSincronizavel {
         this.estoqueMinimo = estoqueMinimo;
     }
 
+    public void definirEstoqueMinimo(int estoqueMinimo) {
+        this.estoqueMinimo = estoqueMinimo;
+    }
+
     public void definirAtivo(boolean ativo) {
         this.ativo = ativo;
     }

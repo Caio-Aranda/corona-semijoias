@@ -70,7 +70,11 @@ export function FecharContagem({ ponte, contagemId, aoFechar, aoContinuar }: Fec
       setErro(r.erro);
       return;
     }
-    aoFechar(F.fechada(lerContagem(r.dados)?.ajustes ?? 0));
+    const fechada = lerContagem(r.dados);
+    const nomes = (fechada?.naoAjustadas ?? []).map((p) => p.nome);
+    aoFechar(
+      `${F.fechada(fechada?.ajustes ?? 0)}${nomes.length > 0 ? ` ${F.naoAjustadas(nomes)}` : ''}`,
+    );
   }
 
   return (

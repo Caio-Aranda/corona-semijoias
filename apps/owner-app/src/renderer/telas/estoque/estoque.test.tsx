@@ -140,6 +140,7 @@ function montar(manipuladores: Record<string, Manipulador> = {}) {
     'produtos.ver': () => ({ ok: true, dados: CADASTRO }),
     'produtos.porCodigo': () => ({ ok: true, dados: CADASTRO }),
     'produtos.editar': () => ({ ok: true, dados: CADASTRO }),
+    'produtos.estoqueMinimo': () => ({ ok: true, dados: CADASTRO }),
     'produtos.fotos.imagem': () => ({
       ok: true,
       dados: { nome: 'x.jpg', tipo: 'image/jpeg', bytes: new Uint8Array([1]) },
@@ -472,17 +473,19 @@ describe('Estoque mínimo', () => {
     await u.type(campo, '-1');
     await u.click(within(janela).getByRole('button', { name: 'Salvar' }));
     expect(await within(janela).findByText(/número inteiro/)).toBeInTheDocument();
-    expect(chamadasDe(m, 'produtos.editar')).toHaveLength(0);
+    expect(chamadasDe(m, 'produtos.estoqueMinimo')).toHaveLength(0);
     await u.clear(campo);
     await u.type(campo, '5');
     await u.click(within(janela).getByRole('button', { name: 'Salvar' }));
     await waitFor(() =>
-      expect(ultima(m, 'produtos.editar')).toMatchObject({
+      expect(ultima(m, 'produtos.estoqueMinimo')).toEqual({
         id: ID_P,
         version: 4,
         estoqueMinimo: 5,
       }),
     );
+    // Só o estoque mínimo vai: o cadastro inteiro não é reenviado.
+    expect(chamadasDe(m, 'produtos.editar')).toHaveLength(0);
     await screen.findByText('Pronto. O estoque mínimo foi atualizado.');
   });
 });
@@ -599,6 +602,22 @@ describe('Contagem do estoque', () => {
     expect(screen.getByLabelText('Código da peça')).toHaveValue('');
   });
 
+  it('leitura que o servidor já tinha registrado (200) avisa e não diz que somou', async () => {
+    const m = montar({
+      'contagens.ler': () => ({
+        ok: true,
+        criado: false,
+        dados: { item: item({ contado: 5, diferenca: 0 }), resumo: resumo() },
+      }),
+    });
+    const u = await comecarContagem(m);
+    await u.type(screen.getByLabelText('Código da peça'), '0012{Enter}');
+    expect(
+      await screen.findByText('Esta leitura já estava registrada. Nada foi somado de novo.'),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/agora são 5 peças contadas/)).toBeNull();
+  });
+
   it('cada leitura atualiza a lista de diferenças na hora', async () => {
     const m = montar();
     const u = await comecarContagem(m);
@@ -682,6 +701,31 @@ describe('Contagem do estoque', () => {
     const naoLida = await screen.findByRole('row', { name: /Brinco de Argola/ });
     expect(within(naoLida).getByText('Não lido')).toBeInTheDocument();
     expect(within(naoLida).getByText('Sem foto')).toBeInTheDocument();
+  });
+
+  it('fechamento que deixou peça excluída sem ajuste avisa quais peças', async () => {
+    const m = montar({
+      'contagens.fechar': () => ({
+        ok: true,
+        dados: contagem({
+          situacao: 'FECHADO',
+          fechadoEm: '2026-11-10T16:00:00Z',
+          ajustes: 1,
+          naoAjustadas: [{ nome: 'Colar Antigo', diferenca: -2 }],
+        }),
+      }),
+    });
+    const u = await comecarContagem(m);
+    await u.click(screen.getByRole('button', { name: 'Fechar a contagem' }));
+    const janela = await screen.findByRole('dialog', { name: 'Fechar a contagem?' });
+    await u.click(within(janela).getByRole('button', { name: 'Fechar a contagem' }));
+    await u.click(await within(janela).findByLabelText('Ficam como estão'));
+    await u.click(within(janela).getByRole('button', { name: 'Fechar a contagem' }));
+    expect(
+      await screen.findByText(
+        /Sem ajuste, porque a peça foi excluída durante a contagem: Colar Antigo\. A diferença ficou registrada\./,
+      ),
+    ).toBeInTheDocument();
   });
 
   it('fechar com peças não lidas: mostra os ajustes e só fecha depois de escolher o que fazer com elas', async () => {

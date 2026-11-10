@@ -65,7 +65,9 @@ export function traduzirErro(r: Extract<ResultadoDeChamada, { ok: false }>): Err
   }
 }
 
-export type Retorno<T> = { ok: true; dados: T } | { ok: false; erro: ErroDaTela };
+/** {@code jaRegistrado}: o servidor respondeu 200 (reenvio), não 201; só nas chamadas que distinguem. */
+export type Retorno<T> =
+  { ok: true; dados: T; jaRegistrado?: boolean } | { ok: false; erro: ErroDaTela };
 
 /** Uma chamada à API pela ponte, já com o erro traduzido. Nunca lança. */
 export async function chamar<T = unknown>(
@@ -75,7 +77,11 @@ export async function chamar<T = unknown>(
 ): Promise<Retorno<T>> {
   try {
     const r = await ponte.chamarApi(parametros ? { operacao, parametros } : { operacao });
-    if (r.ok) return { ok: true, dados: r.dados as T };
+    if (r.ok) {
+      return r.criado === false
+        ? { ok: true, dados: r.dados as T, jaRegistrado: true }
+        : { ok: true, dados: r.dados as T };
+    }
     return { ok: false, erro: traduzirErro(r) };
   } catch {
     return { ok: false, erro: { tipo: 'outro', mensagem: TEXTOS.algoDeuErrado, campos: {} } };

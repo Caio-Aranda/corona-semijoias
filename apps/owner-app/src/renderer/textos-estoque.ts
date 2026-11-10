@@ -214,6 +214,7 @@ export const TEXTOS_DE_ESTOQUE = {
       ajuda: 'O leitor já aperta Enter sozinho. Cada leitura soma 1 peça contada.',
       ler: 'Ler a peça',
       lendo: 'Lendo a peça...',
+      jaRegistrada: 'Esta leitura já estava registrada. Nada foi somado de novo.',
       somou: (nome: string, n: number) => `${nome}: agora são ${pecas(n)} contadas.`,
     },
     peca: {
@@ -226,6 +227,7 @@ export const TEXTOS_DE_ESTOQUE = {
         'Se contou de outro jeito, digite a quantidade certa. Ela substitui a leitura.',
       definir: 'Definir a quantidade',
       quantidadeInvalida: 'Digite a quantidade com número inteiro. Pode ser zero.',
+      jaRegistrada: 'Esta leitura já estava registrada. Nada foi somado de novo.',
       definida: (nome: string, n: number) => `${nome}: a quantidade contada agora é ${n}.`,
     },
     resumo: {
@@ -285,6 +287,8 @@ export const TEXTOS_DE_ESTOQUE = {
     confirmar: 'Fechar a contagem',
     continuar: 'Continuar contando',
     carregando: 'Conferindo os ajustes...',
+    naoAjustadas: (nomes: string[]) =>
+      `Sem ajuste, porque a peça foi excluída durante a contagem: ${nomes.join(', ')}. A diferença ficou registrada.`,
     fechada: (n: number) =>
       n === 0
         ? 'Contagem fechada. O estoque não precisou de ajuste.'

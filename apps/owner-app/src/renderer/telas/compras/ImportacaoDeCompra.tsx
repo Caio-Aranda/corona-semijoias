@@ -33,7 +33,7 @@ type Fase =
   | { fase: 'lendo'; etapa: string }
   | { fase: 'previa' }
   | { fase: 'gravando' }
-  | { fase: 'resultado'; compra: CompraGravada };
+  | { fase: 'resultado'; compra: CompraGravada; jaRegistrada: boolean };
 
 export interface ImportacaoDeCompraProps {
   ponte: PonteDoCorona;
@@ -173,7 +173,7 @@ export function ImportacaoDeCompra({ ponte }: ImportacaoDeCompraProps) {
       return;
     }
     const compra = lerCompra(r.dados);
-    if (compra) setFase({ fase: 'resultado', compra });
+    if (compra) setFase({ fase: 'resultado', compra, jaRegistrada: r.jaRegistrado === true });
     else setFase({ fase: 'previa' });
   }
 
@@ -247,7 +247,7 @@ export function ImportacaoDeCompra({ ponte }: ImportacaoDeCompraProps) {
               setErro(null);
             }}
           />
-          <Aviso tipo="informacao">{T.previa}</Aviso>
+          <Aviso tipo="atencao">{T.previa}</Aviso>
           <p className="gestao-texto">
             {T.resumo(contagem.ok, contagem.desconhecido, contagem.erro)}
           </p>
@@ -374,6 +374,9 @@ export function ImportacaoDeCompra({ ponte }: ImportacaoDeCompraProps) {
               formatarReais(centavosDeTexto(fase.compra.resumo.total) ?? 0n),
             )}
           </Aviso>
+          {fase.jaRegistrada ? (
+            <Aviso tipo="atencao">{TEXTOS_DE_COMPRAS.receber.jaRegistrada}</Aviso>
+          ) : null}
           <div className="gestao-acoes-da-linha">
             <Botao
               variante="primario"

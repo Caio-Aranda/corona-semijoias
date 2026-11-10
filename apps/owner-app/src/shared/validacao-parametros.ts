@@ -459,6 +459,7 @@ export function conferirParametros(
     case 'produtos.porCodigo':
     case 'produtos.criar':
     case 'produtos.editar':
+    case 'produtos.estoqueMinimo':
     case 'produtos.codigos.gravar':
     case 'produtos.codigoProximo':
     case 'produtos.inativar':

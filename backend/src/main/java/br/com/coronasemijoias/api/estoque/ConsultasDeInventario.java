@@ -35,8 +35,14 @@ public class ConsultasDeInventario {
 
     public record Detalhe(UUID id, String escopo, UUID escopoId, String escopoNome, String situacao, Instant iniciadoEm,
             String iniciadoPorNome, Instant fechadoEm, String fechadoPorNome, Boolean zerouNaoLidos, Instant canceladoEm,
-            String motivoDoCancelamento, String observacoes, int ajustes, Resumo resumo) {
+            String motivoDoCancelamento, String observacoes, int ajustes, Resumo resumo, List<NaoAjustada> naoAjustadas) {
     }
+
+    /** Peça com diferença que o fechamento não ajustou: foi excluída durante a contagem. */
+    public record NaoAjustada(UUID produtoId, String nome, int esperado, int contado, int diferenca, String motivo) {
+    }
+
+    public static final String MOTIVO_PECA_EXCLUIDA = "Peça excluída";
 
     public record Linha(UUID id, String escopo, UUID escopoId, String escopoNome, String situacao, Instant iniciadoEm,
             Instant fechadoEm, int totalDePecas, int lidos) {
@@ -69,14 +75,28 @@ public class ConsultasDeInventario {
                         rs.getString("escopo_nome"), rs.getString("situacao"), instant(rs, "iniciado_em"), rs.getString("iniciado_por"),
                         instant(rs, "fechado_em"), rs.getString("fechado_por"), (Boolean) rs.getObject("zerou_nao_lidos"),
                         instant(rs, "cancelado_em"), rs.getString("motivo_cancelamento"), rs.getString("observacoes"),
-                        rs.getInt("ajustes"), null), id);
+                        rs.getInt("ajustes"), null, null), id);
         if (achados.isEmpty()) {
             throw new ErroDaApi(HttpStatus.NOT_FOUND, CodigoErro.CONTAGEM_NAO_ENCONTRADA);
         }
         Detalhe d = achados.get(0);
         return new Detalhe(d.id(), d.escopo(), d.escopoId(), d.escopoNome(), d.situacao(), d.iniciadoEm(), d.iniciadoPorNome(),
                 d.fechadoEm(), d.fechadoPorNome(), d.zerouNaoLidos(), d.canceladoEm(), d.motivoDoCancelamento(), d.observacoes(),
-                d.ajustes(), resumo(id));
+                d.ajustes(), resumo(id), naoAjustadas(id, d.situacao()));
+    }
+
+    private List<NaoAjustada> naoAjustadas(UUID id, String situacao) {
+        if (!"FECHADO".equals(situacao)) {
+            return List.of();
+        }
+        return jdbc.query("""
+                SELECT p.id, p.nome, i.esperado, i.contado FROM corona.itens_inventario i
+                  JOIN corona.produtos p ON p.id = i.produto_id
+                 WHERE i.inventario_id = ? AND p.deleted_at IS NOT NULL AND i.movimento_id IS NULL
+                   AND i.contado IS NOT NULL AND i.contado <> i.esperado
+                 ORDER BY lower(p.nome), p.id""",
+                (rs, n) -> new NaoAjustada(rs.getObject(1, UUID.class), rs.getString(2), rs.getInt(3), rs.getInt(4),
+                        rs.getInt(4) - rs.getInt(3), MOTIVO_PECA_EXCLUIDA), id);
     }
 
     private Resumo resumo(UUID id) {

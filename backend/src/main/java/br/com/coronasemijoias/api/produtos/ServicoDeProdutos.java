@@ -153,6 +153,20 @@ public class ServicoDeProdutos extends ServicoDeCadastro<Produto> {
         return detalhar(obter(id));
     }
 
+    /** Muda só o estoque mínimo, com a versão que a tela leu. A versão sobe (o vendedor vê a mudança) e vai para a auditoria. */
+    @Transactional
+    public Detalhe alterarEstoqueMinimo(UUID id, Integer versao, Integer minimo, UUID quem) {
+        int versaoLida = Validacoes.versaoDoPedido(versao);
+        if (minimo == null || minimo < 0) {
+            throw Validacoes.recusar("estoqueMinimo", "O estoque mínimo não pode ser menor que zero.");
+        }
+        int antes = obter(id).getEstoqueMinimo();
+        Produto editado = editarComVersao(id, versaoLida, p -> p.definirEstoqueMinimo(minimo));
+        auditoria.registrar(Ator.usuario(quem), "ESTOQUE_MINIMO_ALTERADO", "produtos", id, Map.of("estoque_minimo", antes),
+                Map.of("estoque_minimo", minimo));
+        return detalhar(editado);
+    }
+
     @Transactional
     public Detalhe definirAtivo(UUID id, boolean ativo) {
         Produto p = obter(id);

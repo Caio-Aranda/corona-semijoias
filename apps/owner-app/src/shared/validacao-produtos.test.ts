@@ -41,6 +41,29 @@ describe('conferência dos dados de produtos', () => {
     expect(conferirParametros('produtos.editar', { ...base, version: 2, codigos: [] })).toBeNull();
   });
 
+  it('estoque mínimo: só id, versão e um inteiro de zero para cima', () => {
+    const ok = { id: ID, version: 3, estoqueMinimo: 5 };
+    expect(conferirParametros('produtos.estoqueMinimo', ok)).toEqual({
+      operacao: 'produtos.estoqueMinimo',
+      id: ID,
+      corpo: { version: 3, estoqueMinimo: 5 },
+    });
+    expect(
+      conferirParametros('produtos.estoqueMinimo', { ...ok, estoqueMinimo: 0 }),
+    ).not.toBeNull();
+    for (const ruim of [
+      { ...ok, estoqueMinimo: -1 },
+      { ...ok, estoqueMinimo: 1.5 },
+      { ...ok, estoqueMinimo: '5' },
+      { ...ok, estoqueMinimo: 2_000_000 },
+      { ...ok, version: undefined },
+      { ...ok, id: 'x' },
+      { ...ok, nome: 'Anel' },
+    ]) {
+      expect(conferirParametros('produtos.estoqueMinimo', ruim)).toBeNull();
+    }
+  });
+
   it('códigos: versão obrigatória e código vazio recusado', () => {
     expect(
       conferirParametros('produtos.codigos.gravar', {

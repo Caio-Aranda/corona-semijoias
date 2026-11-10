@@ -58,6 +58,7 @@ export function ReceberPelaLeitura({ ponte, aoVerLista }: ReceberPelaLeituraProp
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<ErroDaTela | null>(null);
   const [gravada, setGravada] = useState<CompraGravada | null>(null);
+  const [jaRegistrada, setJaRegistrada] = useState(false);
   // O identificador nasce ao abrir a tela e só muda depois de gravar: reenviar depois de uma falha
   // de rede não duplica a compra.
   const idDaCompra = useRef(crypto.randomUUID());
@@ -137,6 +138,7 @@ export function ReceberPelaLeitura({ ponte, aoVerLista }: ReceberPelaLeituraProp
     const compra = lerCompra(r.dados);
     if (compra) {
       setGravada(compra);
+      setJaRegistrada(r.jaRegistrado === true);
       mudarLinhas([]);
     }
   }
@@ -159,6 +161,7 @@ export function ReceberPelaLeitura({ ponte, aoVerLista }: ReceberPelaLeituraProp
         <Aviso tipo="sucesso" titulo={T.gravada}>
           {T.gravadaTexto(pecas, total)}
         </Aviso>
+        {jaRegistrada ? <Aviso tipo="atencao">{T.jaRegistrada}</Aviso> : null}
         <div className="gestao-acoes-da-linha">
           <Botao variante="primario" onClick={recomecar}>
             {T.receberOutra}
