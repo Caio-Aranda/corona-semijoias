@@ -487,6 +487,30 @@ Avisos junto ao campo:
 - Usuário do tipo vendedor sem escolher o vendedor: "Escolha o vendedor deste acesso."
 - Arquivo vazio: "Este arquivo está vazio. Escolha outro."
 
+**Produtos e códigos (tarefa 1.5)**
+
+Código que outro produto já usa (a mensagem diz qual produto):
+
+> **Este código já está em uso.**
+> O código {código} já é usado pelo produto {nome}. Use outro código ou abra esse produto.
+
+(Quando duas pessoas gravam o mesmo código ao mesmo tempo, o texto é: "Este código já está em uso por outro produto. Use outro código ou abra o produto que já o usa.")
+
+Categoria ou fornecedor que ainda está em algum produto e a dona tenta excluir:
+
+> **Este cadastro está em uso por produtos.**
+> Troque a categoria ou o fornecedor desses produtos e tente de novo.
+
+Avisos junto ao campo:
+
+- Peça sem nenhum código: "Informe pelo menos um código para a peça."
+- Código de barras com número que não confere: "O código de barras {código} não confere. Leia o código de novo ou confira os números."
+- Dois códigos iguais na mesma peça: "O código {código} aparece mais de uma vez nesta peça."
+- Mais de um código principal: "Escolha apenas um código principal."
+- Preço com mais de duas casas depois da vírgula: "Use no máximo duas casas depois da vírgula."
+- Preço negativo: "O valor não pode ser menor que zero."
+- Categoria ou fornecedor que não existe mais: "Esta categoria não existe mais. Atualize a tela e escolha de novo."
+
 ## 7. Estado de conexão do app do vendedor
 
 Sempre em palavras comuns (§19.11). Nunca "fila", "sincronização" ou "pendentes".

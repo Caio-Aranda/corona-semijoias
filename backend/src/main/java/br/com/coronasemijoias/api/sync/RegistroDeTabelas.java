@@ -53,7 +53,14 @@ public final class RegistroDeTabelas {
                                 "nome", "cpf", "telefone", "whatsapp",
                                 "endereco_logradouro", "endereco_numero", "endereco_complemento", "endereco_bairro",
                                 "endereco_cidade", "endereco_uf", "endereco_cep",
-                                "observacoes", "vendedor_responsavel_id"), false)
+                                "observacoes", "vendedor_responsavel_id"), false),
+                        // Produtos e códigos (tarefa 1.5). Sem custo e sem fornecedor: o vendedor nunca os recebe.
+                        // O filtro por maleta (só os produtos dele) é da Fase 5.
+                        new TabelaSincronizavel("produtos", List.of(
+                                "nome", "referencia", "categoria_id", "preco_venda", "estoque_minimo", "estoque_atual",
+                                "ativo", "foto_principal_hash"), false),
+                        new TabelaSincronizavel("produto_codigos", List.of(
+                                "produto_id", "codigo", "tipo", "principal", "ativo"), false)
                         // As demais sincronizáveis entram aqui (produtos, vendas...).
                 ),
                 List.of(
@@ -70,6 +77,8 @@ public final class RegistroDeTabelas {
                         new TabelaDoServidor("fornecedores", false),
                         new TabelaDoServidor("pracas", false),
                         new TabelaDoServidor("restricoes", false),
+                        // Preço de custo (tarefa 1.5): só do servidor, NUNCA sincronizada.
+                        new TabelaDoServidor("produtos_custos", false),
                         // Cadastro do vendedor e abas (tarefa 1.3): dados de pessoas, nunca vão ao Corona Vendas.
                         new TabelaDoServidor("vendedores", false),
                         new TabelaDoServidor("vendedores_enderecos", false),

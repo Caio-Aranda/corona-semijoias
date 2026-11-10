@@ -100,7 +100,7 @@ public abstract class ServicoDeCadastro<E extends Excluivel> {
         gravar(registro);
     }
 
-    private E gravar(E registro) {
+    protected E gravar(E registro) {
         try {
             return repositorio.saveAndFlush(registro);
         } catch (OptimisticLockingFailureException e) {

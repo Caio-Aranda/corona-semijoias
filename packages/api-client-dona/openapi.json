@@ -11,6 +11,14 @@
         "required" : [ "nome" ],
         "type" : "object"
       },
+      "CodigoGerado" : {
+        "properties" : {
+          "codigo" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "Dados" : {
         "properties" : {
           "dataAdmissao" : {
@@ -196,6 +204,35 @@
         "required" : [ "nome" ],
         "type" : "object"
       },
+      "PedidoDeCodigo" : {
+        "properties" : {
+          "ativo" : {
+            "type" : "boolean"
+          },
+          "codigo" : {
+            "maxLength" : 60,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "fornecedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "principal" : {
+            "type" : "boolean"
+          },
+          "tipo" : {
+            "minLength" : 1,
+            "type" : "string"
+          }
+        },
+        "required" : [ "codigo", "tipo" ],
+        "type" : "object"
+      },
       "PedidoDeEdicao" : {
         "properties" : {
           "nome" : {
@@ -235,6 +272,60 @@
           }
         },
         "required" : [ "login", "senha" ],
+        "type" : "object"
+      },
+      "PedidoDeProduto" : {
+        "properties" : {
+          "categoriaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "codigos" : {
+            "items" : {
+              "$ref" : "#/components/schemas/PedidoDeCodigo"
+            },
+            "type" : "array"
+          },
+          "estoqueMinimo" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "fornecedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nome" : {
+            "maxLength" : 200,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "precoCusto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "precoVenda" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "referencia" : {
+            "maxLength" : 100,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "version" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "required" : [ "categoriaId", "nome", "precoCusto", "precoVenda" ],
         "type" : "object"
       },
       "PedidoDeRenovacao" : {
@@ -281,6 +372,21 @@
           }
         },
         "required" : [ "login", "nome", "perfil" ],
+        "type" : "object"
+      },
+      "PedidoDosCodigos" : {
+        "properties" : {
+          "codigos" : {
+            "items" : {
+              "$ref" : "#/components/schemas/PedidoDeCodigo"
+            },
+            "type" : "array"
+          },
+          "version" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
         "type" : "object"
       },
       "Resposta" : {
@@ -657,7 +763,7 @@
     "/api/dona/categorias" : {
       "get" : {
         "description" : "Busca pelo nome. A página começa em 0 (até 100 por página).",
-        "operationId" : "listar_8",
+        "operationId" : "listar_9",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
@@ -702,7 +808,7 @@
       },
       "post" : {
         "description" : "O nome não pode repetir (sem diferenciar maiúsculas).",
-        "operationId" : "criar_7",
+        "operationId" : "criar_8",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -735,7 +841,7 @@
     "/api/dona/categorias/{id}" : {
       "delete" : {
         "description" : "Exclusão lógica: o registro some das listas e o nome fica livre.",
-        "operationId" : "excluir_6",
+        "operationId" : "excluir_7",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -757,7 +863,7 @@
         "tags" : [ "categorias-da-dona-controller" ]
       },
       "get" : {
-        "operationId" : "ver_7",
+        "operationId" : "ver_8",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -786,7 +892,7 @@
       },
       "put" : {
         "description" : "Mande a version que a tela leu; se outra pessoa alterou antes, volta 409.",
-        "operationId" : "editar_7",
+        "operationId" : "editar_8",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -828,7 +934,7 @@
     "/api/dona/clientes" : {
       "get" : {
         "description" : "Busca pelo nome, telefone, WhatsApp ou CPF. A página começa em 0 (até 100 por página).",
-        "operationId" : "listar_7",
+        "operationId" : "listar_8",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
@@ -873,7 +979,7 @@
       },
       "post" : {
         "description" : "O CPF é opcional; se vier, o servidor confere os dígitos e guarda só os números. CPF repetido é aceito.",
-        "operationId" : "criar_6",
+        "operationId" : "criar_7",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -906,7 +1012,7 @@
     "/api/dona/clientes/{id}" : {
       "delete" : {
         "description" : "Exclusão lógica: o cliente some das listas, mas o histórico fica.",
-        "operationId" : "excluir_5",
+        "operationId" : "excluir_6",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -928,7 +1034,7 @@
         "tags" : [ "clientes-da-dona-controller" ]
       },
       "get" : {
-        "operationId" : "ver_6",
+        "operationId" : "ver_7",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -957,7 +1063,7 @@
       },
       "put" : {
         "description" : "Mande a version que a tela leu; se outra pessoa alterou antes, volta 409.",
-        "operationId" : "editar_6",
+        "operationId" : "editar_7",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -999,7 +1105,7 @@
     "/api/dona/fornecedores" : {
       "get" : {
         "description" : "Busca pela razão social, pelo contato ou pelo CNPJ. A página começa em 0 (até 100 por página).",
-        "operationId" : "listar_6",
+        "operationId" : "listar_7",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
@@ -1044,7 +1150,7 @@
       },
       "post" : {
         "description" : "O CNPJ é opcional; se vier, o servidor confere os dígitos e guarda só os caracteres do número. Não pode repetir.",
-        "operationId" : "criar_5",
+        "operationId" : "criar_6",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -1077,7 +1183,7 @@
     "/api/dona/fornecedores/{id}" : {
       "delete" : {
         "description" : "Exclusão lógica: o registro some das listas e o CNPJ fica livre.",
-        "operationId" : "excluir_4",
+        "operationId" : "excluir_5",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1099,7 +1205,7 @@
         "tags" : [ "fornecedores-da-dona-controller" ]
       },
       "get" : {
-        "operationId" : "ver_5",
+        "operationId" : "ver_6",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1128,7 +1234,7 @@
       },
       "put" : {
         "description" : "Mande a version que a tela leu; se outra pessoa alterou antes, volta 409.",
-        "operationId" : "editar_5",
+        "operationId" : "editar_6",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1170,7 +1276,7 @@
     "/api/dona/pracas" : {
       "get" : {
         "description" : "Busca pelo nome. A página começa em 0 (até 100 por página).",
-        "operationId" : "listar_5",
+        "operationId" : "listar_6",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
@@ -1215,7 +1321,7 @@
       },
       "post" : {
         "description" : "O nome não pode repetir (sem diferenciar maiúsculas).",
-        "operationId" : "criar_4",
+        "operationId" : "criar_5",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -1248,7 +1354,7 @@
     "/api/dona/pracas/{id}" : {
       "delete" : {
         "description" : "Exclusão lógica: o registro some das listas e o nome fica livre.",
-        "operationId" : "excluir_3",
+        "operationId" : "excluir_4",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1270,7 +1376,7 @@
         "tags" : [ "pracas-da-dona-controller" ]
       },
       "get" : {
-        "operationId" : "ver_4",
+        "operationId" : "ver_5",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1299,7 +1405,7 @@
       },
       "put" : {
         "description" : "Mande a version que a tela leu; se outra pessoa alterou antes, volta 409.",
-        "operationId" : "editar_4",
+        "operationId" : "editar_5",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1336,6 +1442,358 @@
         } ],
         "summary" : "Editar praça",
         "tags" : [ "pracas-da-dona-controller" ]
+      }
+    },
+    "/api/dona/produtos" : {
+      "get" : {
+        "description" : "Busca pelo nome, pela referência ou por parte de qualquer código (sem diferenciar maiúsculas). Filtros: categoriaId, fornecedorId e ativo. A página começa em 0 (até 100 por página).",
+        "operationId" : "listar_5",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "categoriaId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "fornecedorId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ativo",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaginaResposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Listar produtos",
+        "tags" : [ "produtos-da-dona-controller" ]
+      },
+      "post" : {
+        "description" : "Grava o produto, o preço de custo e os códigos juntos. Precisa de pelo menos um código; o código não pode repetir (409 diz qual produto já o usa). O estoque atual não é aceito: começa em 0.",
+        "operationId" : "criar_4",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeProduto"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Resposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Criar produto",
+        "tags" : [ "produtos-da-dona-controller" ]
+      }
+    },
+    "/api/dona/produtos/codigos/proximo" : {
+      "post" : {
+        "description" : "Para a peça sem etiqueta: o servidor entrega um número sequencial que ninguém mais recebe. Números pulados ficam sem uso.",
+        "operationId" : "proximoCodigo",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CodigoGerado"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Gerar o próximo código da loja",
+        "tags" : [ "produtos-da-dona-controller" ]
+      }
+    },
+    "/api/dona/produtos/por-codigo" : {
+      "get" : {
+        "description" : "Procura o código inteiro (sem espaços nas pontas, sem diferenciar maiúsculas). Sem produto, 404.",
+        "operationId" : "porCodigo",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "codigo",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Resposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Achar o produto pelo código",
+        "tags" : [ "produtos-da-dona-controller" ]
+      }
+    },
+    "/api/dona/produtos/{id}" : {
+      "delete" : {
+        "description" : "Exclusão lógica: o produto some das listas e os códigos dele ficam livres.",
+        "operationId" : "excluir_3",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Excluir produto",
+        "tags" : [ "produtos-da-dona-controller" ]
+      },
+      "get" : {
+        "operationId" : "ver_4",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Resposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "tags" : [ "produtos-da-dona-controller" ]
+      },
+      "put" : {
+        "description" : "Mande a version que a tela leu; se outra pessoa alterou antes, volta 409. Os códigos mudam pela rota própria. Mudança de preço de venda ou de custo vai para a auditoria.",
+        "operationId" : "editar_4",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeProduto"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Resposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Editar produto",
+        "tags" : [ "produtos-da-dona-controller" ]
+      }
+    },
+    "/api/dona/produtos/{id}/codigos" : {
+      "put" : {
+        "description" : "A lista enviada passa a ser a lista do produto: o código com id é atualizado, o sem id entra e o que ficou de fora é excluído (e o código fica livre). Mande a version do produto.",
+        "operationId" : "alterarCodigos",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDosCodigos"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Resposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Alterar os códigos do produto",
+        "tags" : [ "produtos-da-dona-controller" ]
+      }
+    },
+    "/api/dona/produtos/{id}/inativar" : {
+      "post" : {
+        "description" : "Sai das escolhas, mas o histórico fica. Pode ser reativado.",
+        "operationId" : "inativar_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Resposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Inativar produto",
+        "tags" : [ "produtos-da-dona-controller" ]
+      }
+    },
+    "/api/dona/produtos/{id}/reativar" : {
+      "post" : {
+        "operationId" : "reativar_2",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Resposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "tags" : [ "produtos-da-dona-controller" ]
       }
     },
     "/api/dona/restricoes" : {
@@ -2462,7 +2920,7 @@
     "/api/dona/vendedores/{id}/documentos/{documentoId}" : {
       "delete" : {
         "description" : "Exclusão lógica: o documento some da lista e do download.",
-        "operationId" : "excluir_7",
+        "operationId" : "excluir_8",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
