@@ -356,3 +356,54 @@
   flex-direction: column;
   gap: var(--espaco-3);
 }
+
+/* Compras (Estoque → Receber compra e Compras) */
+.gestao-campo-da-tabela {
+  width: 7rem;
+  min-height: 2.5rem;
+  padding: 0.25rem 0.5rem;
+  font: inherit;
+  color: var(--cs-texto, #1f1b16);
+  background: var(--cs-fundo-campo, #fff);
+  border: 1px solid var(--cs-borda, #8a8175);
+  border-radius: 4px;
+  text-align: right;
+}
+.gestao-erro-da-linha {
+  display: block;
+}
+.gestao-total-da-compra {
+  margin: 1rem 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+.gestao-resumo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0.75rem 1.5rem;
+  margin: 1rem 0;
+}
+.gestao-resumo dt {
+  font-size: 0.875rem;
+  color: var(--cs-texto-suave, #4d463d);
+}
+.gestao-resumo dd {
+  margin: 0;
+  font-weight: 600;
+}
+.gestao-lista-de-opcoes {
+  list-style: none;
+  margin: 0.5rem 0;
+  padding: 0;
+}
+.gestao-opcao-de-peca {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+}
+.gestao-correcao-de-codigo {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+}

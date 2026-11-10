@@ -74,7 +74,7 @@ Estoque e compras (§15). Segue o mesmo formato da Fase 1. O modelo do estoque e
 | 2.3 | backend: compras e itens de compra (entrada de compra por código, idempotência, custo por compra e histórico de custo) | Em revisão · [detalhe](progresso/fase-2.md#tarefa-23-backend-compras) |
 | 2.4 | backend: estoque mínimo com aviso e inventário (contagem, divergências, fechamento que gera ajuste) | Em revisão · [detalhe](progresso/fase-2.md#tarefa-24-backend-estoque-minimo-e-contagem-do-estoque) |
 | 2.5 | backend: relatórios de estoque e de compras (posição atual, movimentações por período, estoque mínimo, produtos parados, inventário e divergências, compras por fornecedor e período, histórico de custo por produto) com exportação | Em revisão · [detalhe](progresso/fase-2.md#tarefa-25-backend-relatórios-de-estoque-e-de-compras) |
-| 2.6 | owner-app: entrada de compra com leitor, cadastro rápido e importação da compra por planilha | A fazer |
+| 2.6 | owner-app: entrada de compra com leitor, cadastro rápido e importação da compra por planilha | Em revisão · [detalhe](progresso/fase-2.md#tarefa-26-corona-gestão-entrada-de-compra) |
 | 2.7 | owner-app: movimentações e ajustes, estoque mínimo e inventário por leitor | A fazer |
 | 2.8 | owner-app: telas dos relatórios de estoque e compras | A fazer |
 

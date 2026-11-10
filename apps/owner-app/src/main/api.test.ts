@@ -294,3 +294,66 @@ describe('API do Corona Gestão: vendedores (processo principal)', () => {
     expect((r as { dados: { bytes: Uint8Array } }).dados.bytes).toEqual(new Uint8Array([9, 8]));
   });
 });
+
+describe('API do Corona Gestão: rotas certas no cliente gerado', () => {
+  const ID = '8f14e45f-ceea-4672-a1b9-3a1a0f7c4d11';
+  const PEDIDO = '9a14e45f-ceea-4672-a1b9-3a1a0f7c4d99';
+
+  /** Devolve o caminho que a operação chamou (o cliente gerado renumera as funções quando a API cresce). */
+  async function caminhoDe(pedido: Parameters<ReturnType<typeof criarApiDoGestao>['executar']>[1]) {
+    const urls: string[] = [];
+    const fetchFalso = (p: Request | string | URL): Promise<Response> => {
+      const r = p as Request;
+      urls.push(`${r.method} ${new URL(r.url).pathname}`);
+      return Promise.resolve(
+        new Response('{}', { status: 200, headers: { 'Content-Type': 'application/json' } }),
+      );
+    };
+    const api = criarApiDoGestao({ ...base, fetch: fetchFalso });
+    await api.executar('tk', pedido);
+    return urls[0];
+  }
+
+  it('cada lista de cadastro e os avisos chamam a rota deles', async () => {
+    const lista = { pagina: 0, tamanho: 20 };
+    for (const cadastro of [
+      'fornecedores',
+      'categorias',
+      'pracas',
+      'semanas',
+      'restricoes',
+      'clientes',
+    ]) {
+      expect(await caminhoDe({ cadastro, acao: 'listar', lista } as never)).toBe(
+        `GET /api/dona/${cadastro}`,
+      );
+    }
+    expect(await caminhoDe({ operacao: 'avisos.listar' })).toBe('GET /api/dona/avisos');
+    expect(await caminhoDe({ operacao: 'usuarios.listar', lista } as never)).toBe(
+      'GET /api/dona/usuarios',
+    );
+  });
+
+  it('compras: listar, ver, receber e desfazer', async () => {
+    expect(
+      await caminhoDe({ operacao: 'compras.listar', lista: { pagina: 0, tamanho: 20 } } as never),
+    ).toBe('GET /api/dona/compras');
+    expect(await caminhoDe({ operacao: 'compras.ver', id: ID } as never)).toBe(
+      `GET /api/dona/compras/${ID}`,
+    );
+    expect(
+      await caminhoDe({
+        operacao: 'compras.receber',
+        corpo: { id: ID, fornecedorId: ID, dataCompra: '2026-11-10', itens: [] },
+      } as never),
+    ).toBe('POST /api/dona/compras');
+    expect(
+      await caminhoDe({
+        operacao: 'compras.desfazer',
+        id: ID,
+        pedidoId: PEDIDO,
+        motivo: 'Peças erradas',
+      } as never),
+    ).toBe(`POST /api/dona/compras/${ID}/desfazer`);
+  });
+});

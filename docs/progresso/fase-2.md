@@ -204,3 +204,41 @@ Uma seção por tarefa, no mesmo formato de [fase-1.md](fase-1.md). A tabela de 
 **Dúvidas**
 
 - Nenhuma.
+
+### Tarefa 2.6: Corona Gestão, entrada de compra
+
+**Em revisão.** Só `apps/owner-app` (nenhuma linha de backend, nenhuma migração). A especificação não mudou. Termos de tela em [glossário, parte 12](../glossario-interface.md).
+
+**O que foi feito**
+
+- **Menu Estoque** (novo grupo): **Receber compra** e **Compras**. O botão grande "Receber compra" da tela inicial passou a abrir a tela (os outros quatro seguem "em breve").
+- **Receber compra, pela leitura:** fornecedor, data (hoje), número da nota e observações; leitor (age como teclado, Enter confirma, o foco volta ao campo) ou digitar código ou nome. Cada linha mostra **foto**, nome, código, quantidade e custo de cada peça (editáveis), total da linha e total da compra nas três moedas. Ler a mesma peça de novo **soma 1** na linha. Custo sugerido = custo atual do produto. Falta de foto mostra "Sem foto" e nunca trava.
+- **Cadastro rápido:** código lido que não existe abre o mini-formulário na própria tela (tipo de código segundo o ADR-0007, nome, categoria, preço de venda, custo), cria o produto pela API de produtos e já põe na compra. O identificador do produto nasce com o formulário: tentar de novo depois de falha de rede não cadastra duas vezes.
+- **Confirmar:** janela de confirmação, identificador da compra gerado ao abrir a tela (reenviar depois de falha de rede usa o mesmo), botão seguro contra duplo clique (trava síncrona + botão desabilitado). O app manda só produto, quantidade e custo; **nunca o total**. O resumo mostrado é o que o servidor devolveu. Erros por linha (`itens[i].campo`) aparecem na linha certa; erros do cabeçalho, no campo.
+- **Compra gravada:** mostra os dados, as peças com foto e **Desfazer compra** (pede o motivo; identificador de pedido próprio e trava contra duplo clique; a recusa "já saíram peças" aparece com o texto do servidor, na própria janela).
+- **Lista de compras:** filtros de período, fornecedor e situação (Registrada ou Desfeita), páginas de 20, abrir uma compra.
+- **Importar a compra por planilha** (Excel ou CSV: código, quantidade, custo; modelo para baixar): prévia linha a linha **antes de gravar**; código desconhecido tem **Cadastrar peça** (cadastro rápido) ou **Corrigir código**; qualquer linha pode ser tirada; a compra só grava quando **todas** as linhas estão boas, numa única compra (uma transação na API); no fim, o resultado mostra a compra gravada com as fotos.
+- **Cálculo** (`nucleo/compra.ts`): tudo em centavos inteiros (`BigInt`), custo com 2 casas arredondado para cima na metade e só então vezes a quantidade, igual ao servidor. Custo de planilha com 3 ou 4 casas é arredondado do mesmo jeito.
+- **Ponte** (`shared/compras.ts`, `shared/validacao-compras.ts`, `main/api.ts`): `compras.listar`, `compras.ver`, `compras.receber`, `compras.desfazer`, conferidas no processo principal (campo desconhecido, total, mais de 500 itens, custo com mais de 2 casas e quantidade fora de 1 a 1.000.000 recusam tudo).
+- **Correção que estava quebrada na main:** a Fase 2 fez o gerador do cliente da API **renumerar** as funções (`listar8`, `listar9`, `listar10`, `listar11`...), e o `main/api.ts` passou a chamar a rota errada (lista de fornecedores chamava a de contagens, categorias chamava a de entradas e saídas, clientes chamava a de fornecedores e o aviso da tela inicial chamava a de compras). Corrigi os quatro nomes e acrescentei teste que confere o caminho de cada lista e de cada rota de compra, para a próxima renumeração não passar batida.
+- Testes: 421 no total do owner-app, entre eles os novos: cálculo de totais e de arredondamento, validação da ponte, leitura da planilha e prévia, fluxo de ler/somar/editar, cadastro rápido (inclusive falha de rede e mesmo identificador), duplo clique em confirmar e em desfazer, reenvio com o mesmo identificador, erro por linha e de cabeçalho, desfazer com motivo e recusa, lista com filtros, importação (prévia, cadastrar, corrigir, tirar, recusa do servidor, arquivo errado), "nenhum custo no registro de diagnóstico" e texto proibido nas telas novas.
+
+**Decisões que tomei**
+
+- **A compra pela planilha só grava com todas as linhas boas.** Na importação de produtos (1.11) a linha ruim fica de fora e o resto entra; numa compra isso esconderia peça que faltou no estoque. A pessoa corrige, cadastra ou tira a linha.
+- **Mesma peça duas vezes na planilha** (mesmo código, ou dois códigos da mesma peça) recusa a segunda linha, igual ao servidor; ler a mesma peça no leitor soma 1.
+- **Busca por nome no leitor:** se o texto não é um código, procura por nome entre os produtos ativos; uma peça entra direto, várias pedem que a pessoa escolha, nenhuma oferece o cadastro rápido.
+- **Data da compra** começa em hoje (UTC, como o servidor confere); o número da nota e as observações são opcionais.
+- **O custo sugerido vem do `precoCusto` do produto** (o servidor já atualiza com a compra mais recente); não há chamada extra ao histórico de custo.
+- **Confirmação antes de gravar** (janela com peças e total): dinheiro e estoque, e "desfazer" é uma compra a menos, não um botão de voltar.
+- **Importação por planilha não entra no relatório "Resultado das importações"** (a rota aceita só `PLANILHA` de produtos e `FOTOS`); o resultado da compra fica na própria lista de compras.
+
+**O que ficou de fora**
+
+- **"Esta compra já estava registrada" (reenvio):** a ponte entrega só o corpo da resposta, sem o código 200 ou 201, então a tela não sabe distinguir. O reenvio é seguro (a compra não duplica) e a pessoa vê a compra gravada.
+- Rascunho de compra, contas a pagar e pagamento ao fornecedor (Fase 7), custo médio; telas de entradas e saídas, ajuste e contagem (2.7) e relatórios (2.8).
+- Não fiz o pacote do Corona Gestão para testar no Windows com leitor de verdade: testei o leitor como teclado (digitar e Enter) nos testes automáticos.
+
+**Dúvidas**
+
+- Nenhuma que trave. A única a confirmar com a dona: o formato do código da loja gerado no cadastro rápido segue o da 1.5 (ADR-0007, item 5), como já estava pendente.

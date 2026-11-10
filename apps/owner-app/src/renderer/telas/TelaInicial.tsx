@@ -12,6 +12,11 @@ const BOTOES = [
   'Relatórios',
 ] as const;
 
+/** Botões que já levam a uma tela; os outros dizem "em breve" até a tarefa deles. */
+const ROTA_DO_BOTAO: Partial<Record<(typeof BOTOES)[number], string>> = {
+  'Receber compra': 'estoque/receber-compra',
+};
+
 export interface TelaInicialProps {
   ponte: PonteDoCorona;
   /** Nome da pessoa, quando já se sabe. */
@@ -52,7 +57,11 @@ export function TelaInicial({ ponte, nome }: TelaInicialProps) {
             key={nomeDoBotao}
             variante="primario"
             grande
-            onClick={() => setEmBreve(nomeDoBotao)}
+            onClick={() => {
+              const rota = ROTA_DO_BOTAO[nomeDoBotao];
+              if (rota) window.location.hash = `/${rota}`;
+              else setEmBreve(nomeDoBotao);
+            }}
           >
             {nomeDoBotao}
           </Botao>

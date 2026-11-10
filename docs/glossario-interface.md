@@ -780,3 +780,13 @@ Termos de tela do estoque e das compras. Vale a regra da §19.1: nada de termo t
 - Contagem não encontrada: **Não encontramos esta contagem do estoque.** Atualize a tela e tente de novo.
 - Lista vazia: "Ainda não há entradas e saídas.", "Nenhum produto está acabando." e "Ainda não há compras."
 
+
+**Telas de compras (tarefa 2.6, Corona Gestão)**
+
+- **Menu Estoque** · Receber compra · Compras. Abas de Receber compra: **Ler as peças** e **Importar planilha**.
+- Campos: **Fornecedor**, **Data da compra**, **Número da nota (se tiver)**, **Observações (se quiser)**, **Código da peça ou nome**, **Quantidade**, **Custo de cada peça**, **Total da linha**, **Total da compra**. Botões: **Adicionar peça**, **Tirar**, **Começar de novo**, **Confirmar compra**, **Receber outra compra**, **Ver na lista de compras**, **Desfazer compra** (pede o **Motivo**).
+- Situação da compra na lista: **Registrada** ou **Desfeita** (nunca "estornada"). Filtros: **De**, **Até**, **Fornecedor**, **Situação**, **Limpar filtros**.
+- **Cadastro rápido:** "Não encontramos a peça com o código {código}. Cadastre agora e ela já entra na compra." Botões **Cadastrar esta peça agora**, **Cadastrar e pôr na compra**, **Agora não**.
+- Ao ler a mesma peça de novo: "{peça}: agora são {n} peças nesta compra." A mesma frase vale para o leitor e para quem digita.
+- Confirmação: **Confirmar esta compra?** "Vão entrar {n} peças no estoque, num total de {valor}. Se precisar corrigir depois, é preciso desfazer a compra." Depois: **Compra gravada.** "Entraram {n} peças no estoque, num total de {valor}." (o valor é o que o sistema conferiu).
+- Planilha: colunas **código, quantidade e custo**; botão **Baixar a planilha modelo**; situações da linha **Entra na compra**, **Peça não cadastrada** e **Não entra**; ações **Cadastrar peça**, **Corrigir código**, **Tirar linha**. A compra só grava com todas as linhas boas. Fim: **Compra importada.**
