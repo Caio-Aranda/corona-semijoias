@@ -45,8 +45,16 @@ public final class RegistroDeTabelas {
                                 "data_cotacao",
                                 "usd_compra", "usd_venda", "usd_paridade_compra", "usd_paridade_venda",
                                 "pyg_compra", "pyg_venda", "pyg_paridade_compra", "pyg_paridade_venda",
-                                "buscada_em", "fonte"), true)
-                        // As demais sincronizáveis entram aqui a partir da Fase 1 (clientes, produtos, vendas...).
+                                "buscada_em", "fonte"), true),
+                        // Cadastros básicos (tarefa 1.2). O filtro por vendedor (clientes dele) é da Fase 5.
+                        new TabelaSincronizavel("categorias", List.of("nome"), false),
+                        new TabelaSincronizavel("semanas", List.of("numero", "inicio", "fim", "situacao"), false),
+                        new TabelaSincronizavel("clientes", List.of(
+                                "nome", "cpf", "telefone", "whatsapp",
+                                "endereco_logradouro", "endereco_numero", "endereco_complemento", "endereco_bairro",
+                                "endereco_cidade", "endereco_uf", "endereco_cep",
+                                "observacoes", "vendedor_responsavel_id"), false)
+                        // As demais sincronizáveis entram aqui (produtos, vendas...).
                 ),
                 List.of(
                         new TabelaDoServidor("sync_estado", false),
@@ -55,7 +63,11 @@ public final class RegistroDeTabelas {
                         new TabelaDoServidor("configuracoes", false),
                         new TabelaDoServidor("sessoes", false),
                         new TabelaDoServidor("tokens_de_renovacao", false),
-                        new TabelaDoServidor("tentativas_login", true)));
+                        new TabelaDoServidor("tentativas_login", true),
+                        // Cadastros que o vendedor nunca recebe (ESPECIFICACAO §10): fornecedores, praças, restrições.
+                        new TabelaDoServidor("fornecedores", false),
+                        new TabelaDoServidor("pracas", false),
+                        new TabelaDoServidor("restricoes", false)));
     }
 
     /** Este registro somado a outro (usado pelos testes para acrescentar as tabelas de teste). */

@@ -129,7 +129,25 @@ public enum CodigoErro {
     NAO_REDEFINIR_A_PROPRIA_SENHA(
             "Você não pode redefinir a sua própria senha por aqui.",
             "Você não pode redefinir a sua própria senha por aqui. "
-                    + "Peça a outra pessoa administradora ou fale com o suporte do sistema.");
+                    + "Peça a outra pessoa administradora ou fale com o suporte do sistema."),
+
+    // --- Cadastros da dona (glossário, parte 6; tarefa 1.2) ---
+
+    CADASTRO_NAO_ENCONTRADO(
+            "Não encontramos este cadastro.",
+            "Não encontramos este cadastro. Atualize a tela e tente de novo."),
+
+    CADASTRO_JA_EXISTE(
+            "Este cadastro já existe.",
+            "Este cadastro já existe. Confira a lista ou use outro nome ou código."),
+
+    CADASTRO_ALTERADO(
+            "Este cadastro foi alterado por outra pessoa.",
+            "Este cadastro foi alterado por outra pessoa. Atualize a tela e faça a alteração de novo."),
+
+    SEMANA_SOBREPOSTA(
+            "Estas datas já fazem parte de outra semana.",
+            "Estas datas já fazem parte de outra semana. Escolha dias que não estejam em outra semana.");
 
     private final String titulo;
     private final String mensagem;

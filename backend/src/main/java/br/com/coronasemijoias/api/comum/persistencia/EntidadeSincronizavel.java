@@ -24,7 +24,7 @@ import org.hibernate.generator.EventType;
  * gravação falha com {@code OptimisticLockException}.
  */
 @MappedSuperclass
-public abstract class EntidadeSincronizavel {
+public abstract class EntidadeSincronizavel implements Excluivel {
 
     @Id
     @Column(name = "id", nullable = false, updatable = false)
@@ -71,10 +71,12 @@ public abstract class EntidadeSincronizavel {
     }
 
     /** Exclusão lógica: é um update que preenche {@code deleted_at} (o registro volta no pull como lápide). */
+    @Override
     public void marcarComoExcluida(Instant quando) {
         this.deletedAt = Objects.requireNonNull(quando, "quando");
     }
 
+    @Override
     public boolean estaExcluida() {
         return deletedAt != null;
     }

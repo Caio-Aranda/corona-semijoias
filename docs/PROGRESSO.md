@@ -44,7 +44,7 @@ Cadastros da dona (§15). Segue o mesmo formato da Fase 0. O código das etiquet
 | Nº | Tarefa | Situação |
 | --- | --- | --- |
 | 1.1 | docs: plano da Fase 1 e códigos das etiquetas (este PR) | Em revisão |
-| 1.2 | backend: fornecedores, categorias, praças, semanas, restrições e clientes (migração, regras, rotas da dona, testes) | A fazer |
+| 1.2 | backend: fornecedores, categorias, praças, semanas, restrições e clientes (migração, regras, rotas da dona, testes) | Concluída · [detalhe](progresso/fase-1.md#tarefa-12-cadastros-básicos-backend) |
 | 1.3 | backend: vendedor completo (tabelas filhas, limite, restrição, comissão, praça, documentos como arquivos) + FK `usuarios.vendedor_id` + CHECK "VENDEDOR tem vendedor_id" + vendedor de demonstração com cadastro | A fazer |
 | 1.4 | backend: usuários da dona (listar, editar, desativar revogando as famílias de sessão), auditoria "pelo servidor" na redefinição de senha, teste das palavras proibidas do glossário contra as mensagens da API | A fazer |
 | 1.5 | backend: produtos, `produtos_custos` e `produto_codigos` (regras do código, ADR-0007), rotas da dona | A fazer |
@@ -83,3 +83,4 @@ O que ainda está em aberto nas tarefas concluídas (o que já foi resolvido por
 - Vendedor de demonstração sem cadastro de vendedor (`vendedor_id` vazio) até a Fase 1. ([tarefa 17](progresso/fase-0.md#tarefa-17-vs-code-setup-e-roteiro-do-teste-de-uso)) **Resolvida na tarefa 1.3.**
 - Cotações: o calendário de feriados fica no código (feriado nacional novo exige mudança); a busca roda dentro da API (uma instância só); retenção de `cotacoes` não definida. ([tarefa 19](progresso/fase-0.md#tarefa-19-cotações-do-banco-central))
 - Etiquetas: a dona ainda não confirmou o formato (leitura no Bloco de Notas, impressora, preço = custo x 7?); a Fase 1 usa o padrão seguro do ADR-0007, que está Proposto, aguardando o responsável. ([tarefa 1.1](decisoes/ADR-0007-codigos-das-etiquetas.md))
+- Cadastros básicos: `vendedor_responsavel_id` do cliente sem FK (entra na 1.3); excluir praça, restrição, categoria ou fornecedor em uso só pode ser bloqueado quando os vínculos existirem (1.3 e 1.5); divisão sincronizável x só do servidor a confirmar. ([tarefa 1.2](progresso/fase-1.md#tarefa-12-cadastros-básicos-backend))

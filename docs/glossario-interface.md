@@ -410,6 +410,36 @@ Bloco "O que precisa da sua atenção" quando não há nada a mostrar:
 
 Os quatro botões grandes são os da parte 1 (**Vender**, **Minha maleta**, **Meus clientes**, **Meus números**) e, no canto, **Sair**. Enquanto uma função não existe (Fase 0), o botão mostra o mesmo texto "Em breve." da tela inicial da dona, com o nome do botão no lugar de {Nome do botão}.
 
+**Cadastros da dona (fornecedores, categorias, praças, semanas, restrições, clientes; tarefa 1.2)**
+
+Cadastro que não existe mais (ou já foi excluído):
+
+> **Não encontramos este cadastro.**
+> Atualize a tela e tente de novo.
+
+Nome, código, CNPJ ou número de semana que já estão em uso por outro cadastro (o que foi excluído não conta):
+
+> **Este cadastro já existe.**
+> Confira a lista ou use outro nome ou código.
+
+Duas pessoas editando o mesmo cadastro (a segunda a gravar recebe o aviso e não apaga a alteração da primeira):
+
+> **Este cadastro foi alterado por outra pessoa.**
+> Atualize a tela e faça a alteração de novo.
+
+Semana com dias que já estão em outra semana:
+
+> **Estas datas já fazem parte de outra semana.**
+> Escolha dias que não estejam em outra semana.
+
+Avisos junto ao campo (aparecem embaixo do campo, em português simples):
+
+- Campo obrigatório vazio: "Preencha este campo."
+- Texto grande demais: "Use no máximo {max} caracteres."
+- CPF com número errado: "Confira o CPF: ele não parece estar certo."
+- CNPJ com número errado: "Confira o CNPJ: ele não parece estar certo."
+- Semana que termina antes de começar: "O último dia não pode ser antes do primeiro dia."
+
 ## 7. Estado de conexão do app do vendedor
 
 Sempre em palavras comuns (§19.11). Nunca "fila", "sincronização" ou "pendentes".
