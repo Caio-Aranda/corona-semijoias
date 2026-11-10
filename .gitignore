@@ -38,3 +38,6 @@ Desktop.ini
 
 # Claude Code (arquivo pessoal da máquina)
 .claude/settings.local.json
+
+# Arquivos enviados em desenvolvimento (documentos, fotos)
+dados/

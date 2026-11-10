@@ -8,6 +8,16 @@ export type CadastroDeTeste = {
     nome: string;
 };
 
+export type Dados = {
+    dataAdmissao?: string;
+    empresa?: string;
+    endereco?: string;
+    funcao?: string;
+    renda?: string;
+    telefone?: string;
+    version?: number;
+};
+
 export type DadosDoUsuario = {
     id?: string;
     login?: string;
@@ -24,12 +34,26 @@ export type PaginaResposta = {
 };
 
 export type Pedido = {
-    fim: string;
-    id?: string;
-    inicio: string;
-    numero: number;
-    situacao?: 'ABERTA' | 'FECHADA';
+    comissaoPercentual?: string;
+    cpfCnpj?: string;
+    dataNascimento?: string;
+    email?: string;
+    escolaridade?: string;
+    estrangeiro?: boolean;
+    facebook?: string;
+    limiteConsignacao?: string;
+    naturalidade?: string;
+    nome: string;
+    outrasMidias?: string;
+    pracaId?: string;
+    restricaoId?: string;
+    rgIe?: string;
+    rgUf?: string;
+    sexo?: string;
+    telefone1?: string;
+    telefone2?: string;
     version?: number;
+    whatsapp?: string;
 };
 
 export type PedidoDeLogin = {
@@ -55,12 +79,31 @@ export type PedidoDeUsuario = {
 };
 
 export type Resposta = {
-    fim?: string;
+    ativo?: boolean;
+    cadastradoPor?: string;
+    codigo?: number;
+    comissaoPercentual?: string;
+    cpfCnpj?: string;
+    dataCadastro?: string;
+    dataNascimento?: string;
+    email?: string;
+    escolaridade?: string;
+    estrangeiro?: boolean;
+    facebook?: string;
     id?: string;
-    inicio?: string;
-    numero?: number;
-    situacao?: 'ABERTA' | 'FECHADA';
+    limiteConsignacao?: string;
+    naturalidade?: string;
+    nome?: string;
+    outrasMidias?: string;
+    pracaId?: string;
+    restricaoId?: string;
+    rgIe?: string;
+    rgUf?: string;
+    sexo?: string;
+    telefone1?: string;
+    telefone2?: string;
     version?: number;
+    whatsapp?: string;
 };
 
 export type RespostaComSenhaTemporaria = {
@@ -203,7 +246,7 @@ export type TrocarSenhaResponses = {
 
 export type TrocarSenhaResponse = TrocarSenhaResponses[keyof TrocarSenhaResponses];
 
-export type Listar5Data = {
+export type Listar7Data = {
     body?: never;
     path?: never;
     query?: {
@@ -214,20 +257,108 @@ export type Listar5Data = {
     url: '/api/dona/categorias';
 };
 
-export type Listar5Responses = {
+export type Listar7Responses = {
     /**
      * OK
      */
     200: PaginaResposta;
 };
 
-export type Listar5Response = Listar5Responses[keyof Listar5Responses];
+export type Listar7Response = Listar7Responses[keyof Listar7Responses];
+
+export type Criar7Data = {
+    body: Pedido;
+    path?: never;
+    query?: never;
+    url: '/api/dona/categorias';
+};
+
+export type Criar7Responses = {
+    /**
+     * OK
+     */
+    200: Resposta;
+};
+
+export type Criar7Response = Criar7Responses[keyof Criar7Responses];
+
+export type Excluir6Data = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/categorias/{id}';
+};
+
+export type Excluir6Responses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
+export type Ver6Data = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/categorias/{id}';
+};
+
+export type Ver6Responses = {
+    /**
+     * OK
+     */
+    200: Resposta;
+};
+
+export type Ver6Response = Ver6Responses[keyof Ver6Responses];
+
+export type Editar6Data = {
+    body: Pedido;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/categorias/{id}';
+};
+
+export type Editar6Responses = {
+    /**
+     * OK
+     */
+    200: Resposta;
+};
+
+export type Editar6Response = Editar6Responses[keyof Editar6Responses];
+
+export type Listar6Data = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/clientes';
+};
+
+export type Listar6Responses = {
+    /**
+     * OK
+     */
+    200: PaginaResposta;
+};
+
+export type Listar6Response = Listar6Responses[keyof Listar6Responses];
 
 export type Criar6Data = {
     body: Pedido;
     path?: never;
     query?: never;
-    url: '/api/dona/categorias';
+    url: '/api/dona/clientes';
 };
 
 export type Criar6Responses = {
@@ -245,7 +376,7 @@ export type Excluir5Data = {
         id: string;
     };
     query?: never;
-    url: '/api/dona/categorias/{id}';
+    url: '/api/dona/clientes/{id}';
 };
 
 export type Excluir5Responses = {
@@ -261,7 +392,7 @@ export type Ver5Data = {
         id: string;
     };
     query?: never;
-    url: '/api/dona/categorias/{id}';
+    url: '/api/dona/clientes/{id}';
 };
 
 export type Ver5Responses = {
@@ -279,7 +410,7 @@ export type Editar5Data = {
         id: string;
     };
     query?: never;
-    url: '/api/dona/categorias/{id}';
+    url: '/api/dona/clientes/{id}';
 };
 
 export type Editar5Responses = {
@@ -291,7 +422,7 @@ export type Editar5Responses = {
 
 export type Editar5Response = Editar5Responses[keyof Editar5Responses];
 
-export type Listar4Data = {
+export type Listar5Data = {
     body?: never;
     path?: never;
     query?: {
@@ -299,23 +430,23 @@ export type Listar4Data = {
         pagina?: number;
         tamanho?: number;
     };
-    url: '/api/dona/clientes';
+    url: '/api/dona/fornecedores';
 };
 
-export type Listar4Responses = {
+export type Listar5Responses = {
     /**
      * OK
      */
     200: PaginaResposta;
 };
 
-export type Listar4Response = Listar4Responses[keyof Listar4Responses];
+export type Listar5Response = Listar5Responses[keyof Listar5Responses];
 
 export type Criar5Data = {
     body: Pedido;
     path?: never;
     query?: never;
-    url: '/api/dona/clientes';
+    url: '/api/dona/fornecedores';
 };
 
 export type Criar5Responses = {
@@ -333,7 +464,7 @@ export type Excluir4Data = {
         id: string;
     };
     query?: never;
-    url: '/api/dona/clientes/{id}';
+    url: '/api/dona/fornecedores/{id}';
 };
 
 export type Excluir4Responses = {
@@ -349,7 +480,7 @@ export type Ver4Data = {
         id: string;
     };
     query?: never;
-    url: '/api/dona/clientes/{id}';
+    url: '/api/dona/fornecedores/{id}';
 };
 
 export type Ver4Responses = {
@@ -367,7 +498,7 @@ export type Editar4Data = {
         id: string;
     };
     query?: never;
-    url: '/api/dona/clientes/{id}';
+    url: '/api/dona/fornecedores/{id}';
 };
 
 export type Editar4Responses = {
@@ -379,7 +510,7 @@ export type Editar4Responses = {
 
 export type Editar4Response = Editar4Responses[keyof Editar4Responses];
 
-export type Listar3Data = {
+export type Listar4Data = {
     body?: never;
     path?: never;
     query?: {
@@ -387,23 +518,23 @@ export type Listar3Data = {
         pagina?: number;
         tamanho?: number;
     };
-    url: '/api/dona/fornecedores';
+    url: '/api/dona/pracas';
 };
 
-export type Listar3Responses = {
+export type Listar4Responses = {
     /**
      * OK
      */
     200: PaginaResposta;
 };
 
-export type Listar3Response = Listar3Responses[keyof Listar3Responses];
+export type Listar4Response = Listar4Responses[keyof Listar4Responses];
 
 export type Criar4Data = {
     body: Pedido;
     path?: never;
     query?: never;
-    url: '/api/dona/fornecedores';
+    url: '/api/dona/pracas';
 };
 
 export type Criar4Responses = {
@@ -421,7 +552,7 @@ export type Excluir3Data = {
         id: string;
     };
     query?: never;
-    url: '/api/dona/fornecedores/{id}';
+    url: '/api/dona/pracas/{id}';
 };
 
 export type Excluir3Responses = {
@@ -437,7 +568,7 @@ export type Ver3Data = {
         id: string;
     };
     query?: never;
-    url: '/api/dona/fornecedores/{id}';
+    url: '/api/dona/pracas/{id}';
 };
 
 export type Ver3Responses = {
@@ -455,7 +586,7 @@ export type Editar3Data = {
         id: string;
     };
     query?: never;
-    url: '/api/dona/fornecedores/{id}';
+    url: '/api/dona/pracas/{id}';
 };
 
 export type Editar3Responses = {
@@ -467,7 +598,7 @@ export type Editar3Responses = {
 
 export type Editar3Response = Editar3Responses[keyof Editar3Responses];
 
-export type Listar2Data = {
+export type Listar3Data = {
     body?: never;
     path?: never;
     query?: {
@@ -475,23 +606,23 @@ export type Listar2Data = {
         pagina?: number;
         tamanho?: number;
     };
-    url: '/api/dona/pracas';
+    url: '/api/dona/restricoes';
 };
 
-export type Listar2Responses = {
+export type Listar3Responses = {
     /**
      * OK
      */
     200: PaginaResposta;
 };
 
-export type Listar2Response = Listar2Responses[keyof Listar2Responses];
+export type Listar3Response = Listar3Responses[keyof Listar3Responses];
 
 export type Criar3Data = {
     body: Pedido;
     path?: never;
     query?: never;
-    url: '/api/dona/pracas';
+    url: '/api/dona/restricoes';
 };
 
 export type Criar3Responses = {
@@ -509,7 +640,7 @@ export type Excluir2Data = {
         id: string;
     };
     query?: never;
-    url: '/api/dona/pracas/{id}';
+    url: '/api/dona/restricoes/{id}';
 };
 
 export type Excluir2Responses = {
@@ -525,7 +656,7 @@ export type Ver2Data = {
         id: string;
     };
     query?: never;
-    url: '/api/dona/pracas/{id}';
+    url: '/api/dona/restricoes/{id}';
 };
 
 export type Ver2Responses = {
@@ -543,7 +674,7 @@ export type Editar2Data = {
         id: string;
     };
     query?: never;
-    url: '/api/dona/pracas/{id}';
+    url: '/api/dona/restricoes/{id}';
 };
 
 export type Editar2Responses = {
@@ -555,7 +686,7 @@ export type Editar2Responses = {
 
 export type Editar2Response = Editar2Responses[keyof Editar2Responses];
 
-export type Listar1Data = {
+export type Listar2Data = {
     body?: never;
     path?: never;
     query?: {
@@ -563,23 +694,23 @@ export type Listar1Data = {
         pagina?: number;
         tamanho?: number;
     };
-    url: '/api/dona/restricoes';
+    url: '/api/dona/semanas';
 };
 
-export type Listar1Responses = {
+export type Listar2Responses = {
     /**
      * OK
      */
     200: PaginaResposta;
 };
 
-export type Listar1Response = Listar1Responses[keyof Listar1Responses];
+export type Listar2Response = Listar2Responses[keyof Listar2Responses];
 
 export type Criar2Data = {
     body: Pedido;
     path?: never;
     query?: never;
-    url: '/api/dona/restricoes';
+    url: '/api/dona/semanas';
 };
 
 export type Criar2Responses = {
@@ -597,7 +728,7 @@ export type Excluir1Data = {
         id: string;
     };
     query?: never;
-    url: '/api/dona/restricoes/{id}';
+    url: '/api/dona/semanas/{id}';
 };
 
 export type Excluir1Responses = {
@@ -613,7 +744,7 @@ export type Ver1Data = {
         id: string;
     };
     query?: never;
-    url: '/api/dona/restricoes/{id}';
+    url: '/api/dona/semanas/{id}';
 };
 
 export type Ver1Responses = {
@@ -631,7 +762,7 @@ export type Editar1Data = {
         id: string;
     };
     query?: never;
-    url: '/api/dona/restricoes/{id}';
+    url: '/api/dona/semanas/{id}';
 };
 
 export type Editar1Responses = {
@@ -642,94 +773,6 @@ export type Editar1Responses = {
 };
 
 export type Editar1Response = Editar1Responses[keyof Editar1Responses];
-
-export type ListarData = {
-    body?: never;
-    path?: never;
-    query?: {
-        busca?: string;
-        pagina?: number;
-        tamanho?: number;
-    };
-    url: '/api/dona/semanas';
-};
-
-export type ListarResponses = {
-    /**
-     * OK
-     */
-    200: PaginaResposta;
-};
-
-export type ListarResponse = ListarResponses[keyof ListarResponses];
-
-export type Criar1Data = {
-    body: Pedido;
-    path?: never;
-    query?: never;
-    url: '/api/dona/semanas';
-};
-
-export type Criar1Responses = {
-    /**
-     * OK
-     */
-    200: Resposta;
-};
-
-export type Criar1Response = Criar1Responses[keyof Criar1Responses];
-
-export type ExcluirData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/dona/semanas/{id}';
-};
-
-export type ExcluirResponses = {
-    /**
-     * OK
-     */
-    200: unknown;
-};
-
-export type VerData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/dona/semanas/{id}';
-};
-
-export type VerResponses = {
-    /**
-     * OK
-     */
-    200: Resposta;
-};
-
-export type VerResponse = VerResponses[keyof VerResponses];
-
-export type EditarData = {
-    body: Pedido;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/dona/semanas/{id}';
-};
-
-export type EditarResponses = {
-    /**
-     * OK
-     */
-    200: Resposta;
-};
-
-export type EditarResponse = EditarResponses[keyof EditarResponses];
 
 export type ValorDaDonaData = {
     body?: never;
@@ -809,21 +852,21 @@ export type ValidarResponses = {
 
 export type ValidarResponse = ValidarResponses[keyof ValidarResponses];
 
-export type CriarData = {
+export type Criar1Data = {
     body: PedidoDeUsuario;
     path?: never;
     query?: never;
     url: '/api/dona/usuarios';
 };
 
-export type CriarResponses = {
+export type Criar1Responses = {
     /**
      * OK
      */
     200: RespostaComSenhaTemporaria;
 };
 
-export type CriarResponse = CriarResponses[keyof CriarResponses];
+export type Criar1Response = Criar1Responses[keyof Criar1Responses];
 
 export type RedefinirSenhaData = {
     body?: never;
@@ -842,3 +885,492 @@ export type RedefinirSenhaResponses = {
 };
 
 export type RedefinirSenhaResponse = RedefinirSenhaResponses[keyof RedefinirSenhaResponses];
+
+export type ListarData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        situacao?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/vendedores';
+};
+
+export type ListarResponses = {
+    /**
+     * OK
+     */
+    200: PaginaResposta;
+};
+
+export type ListarResponse = ListarResponses[keyof ListarResponses];
+
+export type CriarData = {
+    body: Pedido;
+    path?: never;
+    query?: never;
+    url: '/api/dona/vendedores';
+};
+
+export type CriarResponses = {
+    /**
+     * OK
+     */
+    200: Resposta;
+};
+
+export type CriarResponse = CriarResponses[keyof CriarResponses];
+
+export type ExcluirData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/vendedores/{id}';
+};
+
+export type ExcluirResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
+export type VerData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/vendedores/{id}';
+};
+
+export type VerResponses = {
+    /**
+     * OK
+     */
+    200: Resposta;
+};
+
+export type VerResponse = VerResponses[keyof VerResponses];
+
+export type EditarData = {
+    body: Pedido;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/vendedores/{id}';
+};
+
+export type EditarResponses = {
+    /**
+     * OK
+     */
+    200: Resposta;
+};
+
+export type EditarResponse = EditarResponses[keyof EditarResponses];
+
+export type VerConjugeData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/vendedores/{id}/conjuge';
+};
+
+export type VerConjugeResponses = {
+    /**
+     * OK
+     */
+    200: Dados;
+};
+
+export type VerConjugeResponse = VerConjugeResponses[keyof VerConjugeResponses];
+
+export type GravarConjugeData = {
+    body: Dados;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/vendedores/{id}/conjuge';
+};
+
+export type GravarConjugeResponses = {
+    /**
+     * OK
+     */
+    200: Dados;
+};
+
+export type GravarConjugeResponse = GravarConjugeResponses[keyof GravarConjugeResponses];
+
+export type VerContatoData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/vendedores/{id}/contato';
+};
+
+export type VerContatoResponses = {
+    /**
+     * OK
+     */
+    200: Dados;
+};
+
+export type VerContatoResponse = VerContatoResponses[keyof VerContatoResponses];
+
+export type GravarContatoData = {
+    body: Dados;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/vendedores/{id}/contato';
+};
+
+export type GravarContatoResponses = {
+    /**
+     * OK
+     */
+    200: Dados;
+};
+
+export type GravarContatoResponse = GravarContatoResponses[keyof GravarContatoResponses];
+
+export type Listar1Data = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/vendedores/{id}/documentos';
+};
+
+export type Listar1Responses = {
+    /**
+     * OK
+     */
+    200: Array<Resposta>;
+};
+
+export type Listar1Response = Listar1Responses[keyof Listar1Responses];
+
+export type EnviarData = {
+    body?: {
+        arquivo?: Blob | File;
+    };
+    path: {
+        id: string;
+    };
+    query?: {
+        descricao?: string;
+    };
+    url: '/api/dona/vendedores/{id}/documentos';
+};
+
+export type EnviarResponses = {
+    /**
+     * OK
+     */
+    200: Resposta;
+};
+
+export type EnviarResponse = EnviarResponses[keyof EnviarResponses];
+
+export type Excluir7Data = {
+    body?: never;
+    path: {
+        id: string;
+        documentoId: string;
+    };
+    query?: never;
+    url: '/api/dona/vendedores/{id}/documentos/{documentoId}';
+};
+
+export type Excluir7Responses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
+export type BaixarData = {
+    body?: never;
+    path: {
+        id: string;
+        documentoId: string;
+    };
+    query?: never;
+    url: '/api/dona/vendedores/{id}/documentos/{documentoId}/arquivo';
+};
+
+export type BaixarResponses = {
+    /**
+     * OK
+     */
+    200: string;
+};
+
+export type BaixarResponse = BaixarResponses[keyof BaixarResponses];
+
+export type VerEnderecoData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/vendedores/{id}/endereco';
+};
+
+export type VerEnderecoResponses = {
+    /**
+     * OK
+     */
+    200: Dados;
+};
+
+export type VerEnderecoResponse = VerEnderecoResponses[keyof VerEnderecoResponses];
+
+export type GravarEnderecoData = {
+    body: Dados;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/vendedores/{id}/endereco';
+};
+
+export type GravarEnderecoResponses = {
+    /**
+     * OK
+     */
+    200: Dados;
+};
+
+export type GravarEnderecoResponse = GravarEnderecoResponses[keyof GravarEnderecoResponses];
+
+export type InativarData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/vendedores/{id}/inativar';
+};
+
+export type InativarResponses = {
+    /**
+     * OK
+     */
+    200: Resposta;
+};
+
+export type InativarResponse = InativarResponses[keyof InativarResponses];
+
+export type VerMeiData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/vendedores/{id}/mei';
+};
+
+export type VerMeiResponses = {
+    /**
+     * OK
+     */
+    200: Dados;
+};
+
+export type VerMeiResponse = VerMeiResponses[keyof VerMeiResponses];
+
+export type GravarMeiData = {
+    body: Dados;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/vendedores/{id}/mei';
+};
+
+export type GravarMeiResponses = {
+    /**
+     * OK
+     */
+    200: Dados;
+};
+
+export type GravarMeiResponse = GravarMeiResponses[keyof GravarMeiResponses];
+
+export type VerObservacoesData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/vendedores/{id}/observacoes';
+};
+
+export type VerObservacoesResponses = {
+    /**
+     * OK
+     */
+    200: Dados;
+};
+
+export type VerObservacoesResponse = VerObservacoesResponses[keyof VerObservacoesResponses];
+
+export type GravarObservacoesData = {
+    body: Dados;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/vendedores/{id}/observacoes';
+};
+
+export type GravarObservacoesResponses = {
+    /**
+     * OK
+     */
+    200: Dados;
+};
+
+export type GravarObservacoesResponse = GravarObservacoesResponses[keyof GravarObservacoesResponses];
+
+export type ReativarData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/vendedores/{id}/reativar';
+};
+
+export type ReativarResponses = {
+    /**
+     * OK
+     */
+    200: Resposta;
+};
+
+export type ReativarResponse = ReativarResponses[keyof ReativarResponses];
+
+export type ListarReferenciasData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/vendedores/{id}/referencias';
+};
+
+export type ListarReferenciasResponses = {
+    /**
+     * OK
+     */
+    200: Array<Resposta>;
+};
+
+export type ListarReferenciasResponse = ListarReferenciasResponses[keyof ListarReferenciasResponses];
+
+export type CriarReferenciaData = {
+    body: Pedido;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/vendedores/{id}/referencias';
+};
+
+export type CriarReferenciaResponses = {
+    /**
+     * OK
+     */
+    200: Resposta;
+};
+
+export type CriarReferenciaResponse = CriarReferenciaResponses[keyof CriarReferenciaResponses];
+
+export type ExcluirReferenciaData = {
+    body?: never;
+    path: {
+        id: string;
+        referenciaId: string;
+    };
+    query?: never;
+    url: '/api/dona/vendedores/{id}/referencias/{referenciaId}';
+};
+
+export type ExcluirReferenciaResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
+export type EditarReferenciaData = {
+    body: Pedido;
+    path: {
+        id: string;
+        referenciaId: string;
+    };
+    query?: never;
+    url: '/api/dona/vendedores/{id}/referencias/{referenciaId}';
+};
+
+export type EditarReferenciaResponses = {
+    /**
+     * OK
+     */
+    200: Resposta;
+};
+
+export type EditarReferenciaResponse = EditarReferenciaResponses[keyof EditarReferenciaResponses];
+
+export type VerTrabalhoData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/vendedores/{id}/trabalho';
+};
+
+export type VerTrabalhoResponses = {
+    /**
+     * OK
+     */
+    200: Dados;
+};
+
+export type VerTrabalhoResponse = VerTrabalhoResponses[keyof VerTrabalhoResponses];
+
+export type GravarTrabalhoData = {
+    body: Dados;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/vendedores/{id}/trabalho';
+};
+
+export type GravarTrabalhoResponses = {
+    /**
+     * OK
+     */
+    200: Dados;
+};
+
+export type GravarTrabalhoResponse = GravarTrabalhoResponses[keyof GravarTrabalhoResponses];

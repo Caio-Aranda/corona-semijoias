@@ -70,6 +70,9 @@ class SenhaTemporariaTest extends TesteDeIntegracao {
         pedido.put("nome", "Pessoa " + login);
         pedido.put("login", login);
         pedido.put("perfil", perfil);
+        if ("VENDEDOR".equals(perfil)) {
+            pedido.put("vendedorId", usuarios.criarCadastroDeVendedor().toString());
+        }
         JsonNode criado = corpo(mvc.perform(post("/api/dona/usuarios").with(usuarios.comoDona())
                 .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(pedido)))
                 .andExpect(status().isCreated()));

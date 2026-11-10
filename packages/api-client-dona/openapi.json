@@ -11,6 +11,45 @@
         "required" : [ "nome" ],
         "type" : "object"
       },
+      "Dados" : {
+        "properties" : {
+          "dataAdmissao" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "empresa" : {
+            "maxLength" : 200,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "endereco" : {
+            "maxLength" : 300,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "funcao" : {
+            "maxLength" : 100,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "renda" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "telefone" : {
+            "maxLength" : 30,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "version" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "DadosDoUsuario" : {
         "properties" : {
           "id" : {
@@ -58,34 +97,103 @@
       },
       "Pedido" : {
         "properties" : {
-          "fim" : {
+          "comissaoPercentual" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "cpfCnpj" : {
+            "maxLength" : 30,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "dataNascimento" : {
             "format" : "date",
             "type" : "string"
           },
-          "id" : {
+          "email" : {
+            "maxLength" : 200,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "escolaridade" : {
+            "maxLength" : 100,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "estrangeiro" : {
+            "type" : "boolean"
+          },
+          "facebook" : {
+            "maxLength" : 200,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "limiteConsignacao" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "naturalidade" : {
+            "maxLength" : 100,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "nome" : {
+            "maxLength" : 200,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "outrasMidias" : {
+            "maxLength" : 300,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "pracaId" : {
             "format" : "uuid",
             "type" : "string"
           },
-          "inicio" : {
-            "format" : "date",
+          "restricaoId" : {
+            "format" : "uuid",
             "type" : "string"
           },
-          "numero" : {
-            "format" : "int32",
-            "maximum" : 100000,
-            "minimum" : 1,
-            "type" : "integer"
+          "rgIe" : {
+            "maxLength" : 30,
+            "minLength" : 0,
+            "type" : "string"
           },
-          "situacao" : {
-            "enum" : [ "ABERTA", "FECHADA" ],
+          "rgUf" : {
+            "maxLength" : 20,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "sexo" : {
+            "pattern" : "FEMININO|MASCULINO|OUTRO",
+            "type" : "string"
+          },
+          "telefone1" : {
+            "maxLength" : 30,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "telefone2" : {
+            "maxLength" : 30,
+            "minLength" : 0,
             "type" : "string"
           },
           "version" : {
             "format" : "int32",
             "type" : "integer"
+          },
+          "whatsapp" : {
+            "maxLength" : 30,
+            "minLength" : 0,
+            "type" : "string"
           }
         },
-        "required" : [ "fim", "inicio", "numero" ],
+        "required" : [ "nome" ],
         "type" : "object"
       },
       "PedidoDeLogin" : {
@@ -154,29 +262,94 @@
       },
       "Resposta" : {
         "properties" : {
-          "fim" : {
+          "ativo" : {
+            "type" : "boolean"
+          },
+          "cadastradoPor" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "codigo" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "comissaoPercentual" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "cpfCnpj" : {
+            "type" : "string"
+          },
+          "dataCadastro" : {
             "format" : "date",
+            "type" : "string"
+          },
+          "dataNascimento" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "email" : {
+            "type" : "string"
+          },
+          "escolaridade" : {
+            "type" : "string"
+          },
+          "estrangeiro" : {
+            "type" : "boolean"
+          },
+          "facebook" : {
             "type" : "string"
           },
           "id" : {
             "format" : "uuid",
             "type" : "string"
           },
-          "inicio" : {
-            "format" : "date",
+          "limiteConsignacao" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           },
-          "numero" : {
-            "format" : "int32",
-            "type" : "integer"
+          "naturalidade" : {
+            "type" : "string"
           },
-          "situacao" : {
-            "enum" : [ "ABERTA", "FECHADA" ],
+          "nome" : {
+            "type" : "string"
+          },
+          "outrasMidias" : {
+            "type" : "string"
+          },
+          "pracaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "restricaoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "rgIe" : {
+            "type" : "string"
+          },
+          "rgUf" : {
+            "type" : "string"
+          },
+          "sexo" : {
+            "type" : "string"
+          },
+          "telefone1" : {
+            "type" : "string"
+          },
+          "telefone2" : {
             "type" : "string"
           },
           "version" : {
             "format" : "int32",
             "type" : "integer"
+          },
+          "whatsapp" : {
+            "type" : "string"
           }
         },
         "type" : "object"
@@ -461,7 +634,7 @@
     "/api/dona/categorias" : {
       "get" : {
         "description" : "Busca pelo nome. A página começa em 0 (até 100 por página).",
-        "operationId" : "listar_5",
+        "operationId" : "listar_7",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
@@ -506,7 +679,7 @@
       },
       "post" : {
         "description" : "O nome não pode repetir (sem diferenciar maiúsculas).",
-        "operationId" : "criar_6",
+        "operationId" : "criar_7",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -539,7 +712,7 @@
     "/api/dona/categorias/{id}" : {
       "delete" : {
         "description" : "Exclusão lógica: o registro some das listas e o nome fica livre.",
-        "operationId" : "excluir_5",
+        "operationId" : "excluir_6",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -561,7 +734,7 @@
         "tags" : [ "categorias-da-dona-controller" ]
       },
       "get" : {
-        "operationId" : "ver_5",
+        "operationId" : "ver_6",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -590,7 +763,7 @@
       },
       "put" : {
         "description" : "Mande a version que a tela leu; se outra pessoa alterou antes, volta 409.",
-        "operationId" : "editar_5",
+        "operationId" : "editar_6",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -632,7 +805,7 @@
     "/api/dona/clientes" : {
       "get" : {
         "description" : "Busca pelo nome, telefone, WhatsApp ou CPF. A página começa em 0 (até 100 por página).",
-        "operationId" : "listar_4",
+        "operationId" : "listar_6",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
@@ -677,7 +850,7 @@
       },
       "post" : {
         "description" : "O CPF é opcional; se vier, o servidor confere os dígitos e guarda só os números. CPF repetido é aceito.",
-        "operationId" : "criar_5",
+        "operationId" : "criar_6",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -710,7 +883,7 @@
     "/api/dona/clientes/{id}" : {
       "delete" : {
         "description" : "Exclusão lógica: o cliente some das listas, mas o histórico fica.",
-        "operationId" : "excluir_4",
+        "operationId" : "excluir_5",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -732,7 +905,7 @@
         "tags" : [ "clientes-da-dona-controller" ]
       },
       "get" : {
-        "operationId" : "ver_4",
+        "operationId" : "ver_5",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -761,7 +934,7 @@
       },
       "put" : {
         "description" : "Mande a version que a tela leu; se outra pessoa alterou antes, volta 409.",
-        "operationId" : "editar_4",
+        "operationId" : "editar_5",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -803,7 +976,7 @@
     "/api/dona/fornecedores" : {
       "get" : {
         "description" : "Busca pela razão social, pelo contato ou pelo CNPJ. A página começa em 0 (até 100 por página).",
-        "operationId" : "listar_3",
+        "operationId" : "listar_5",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
@@ -848,7 +1021,7 @@
       },
       "post" : {
         "description" : "O CNPJ é opcional; se vier, o servidor confere os dígitos e guarda só os caracteres do número. Não pode repetir.",
-        "operationId" : "criar_4",
+        "operationId" : "criar_5",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -881,7 +1054,7 @@
     "/api/dona/fornecedores/{id}" : {
       "delete" : {
         "description" : "Exclusão lógica: o registro some das listas e o CNPJ fica livre.",
-        "operationId" : "excluir_3",
+        "operationId" : "excluir_4",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -903,7 +1076,7 @@
         "tags" : [ "fornecedores-da-dona-controller" ]
       },
       "get" : {
-        "operationId" : "ver_3",
+        "operationId" : "ver_4",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -932,7 +1105,7 @@
       },
       "put" : {
         "description" : "Mande a version que a tela leu; se outra pessoa alterou antes, volta 409.",
-        "operationId" : "editar_3",
+        "operationId" : "editar_4",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -974,7 +1147,7 @@
     "/api/dona/pracas" : {
       "get" : {
         "description" : "Busca pelo nome. A página começa em 0 (até 100 por página).",
-        "operationId" : "listar_2",
+        "operationId" : "listar_4",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
@@ -1019,7 +1192,7 @@
       },
       "post" : {
         "description" : "O nome não pode repetir (sem diferenciar maiúsculas).",
-        "operationId" : "criar_3",
+        "operationId" : "criar_4",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -1052,7 +1225,7 @@
     "/api/dona/pracas/{id}" : {
       "delete" : {
         "description" : "Exclusão lógica: o registro some das listas e o nome fica livre.",
-        "operationId" : "excluir_2",
+        "operationId" : "excluir_3",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1074,7 +1247,7 @@
         "tags" : [ "pracas-da-dona-controller" ]
       },
       "get" : {
-        "operationId" : "ver_2",
+        "operationId" : "ver_3",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1103,7 +1276,7 @@
       },
       "put" : {
         "description" : "Mande a version que a tela leu; se outra pessoa alterou antes, volta 409.",
-        "operationId" : "editar_2",
+        "operationId" : "editar_3",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1145,7 +1318,7 @@
     "/api/dona/restricoes" : {
       "get" : {
         "description" : "Busca pelo código ou pela descrição. A página começa em 0 (até 100 por página).",
-        "operationId" : "listar_1",
+        "operationId" : "listar_3",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
@@ -1190,7 +1363,7 @@
       },
       "post" : {
         "description" : "O código não pode repetir (sem diferenciar maiúsculas).",
-        "operationId" : "criar_2",
+        "operationId" : "criar_3",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -1223,7 +1396,7 @@
     "/api/dona/restricoes/{id}" : {
       "delete" : {
         "description" : "Exclusão lógica: o registro some das listas e o código fica livre.",
-        "operationId" : "excluir_1",
+        "operationId" : "excluir_2",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1245,7 +1418,7 @@
         "tags" : [ "restricoes-da-dona-controller" ]
       },
       "get" : {
-        "operationId" : "ver_1",
+        "operationId" : "ver_2",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1274,7 +1447,7 @@
       },
       "put" : {
         "description" : "Mande a version que a tela leu; se outra pessoa alterou antes, volta 409.",
-        "operationId" : "editar_1",
+        "operationId" : "editar_2",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1316,7 +1489,7 @@
     "/api/dona/semanas" : {
       "get" : {
         "description" : "Busca pelo número; a mais nova primeiro. A página começa em 0 (até 100 por página).",
-        "operationId" : "listar",
+        "operationId" : "listar_2",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
@@ -1361,7 +1534,7 @@
       },
       "post" : {
         "description" : "O número não repete e as datas (as duas pontas contam) não podem estar em outra semana.",
-        "operationId" : "criar_1",
+        "operationId" : "criar_2",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -1394,7 +1567,7 @@
     "/api/dona/semanas/{id}" : {
       "delete" : {
         "description" : "Exclusão lógica: o número e as datas ficam livres.",
-        "operationId" : "excluir",
+        "operationId" : "excluir_1",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1416,7 +1589,7 @@
         "tags" : [ "semanas-da-dona-controller" ]
       },
       "get" : {
-        "operationId" : "ver",
+        "operationId" : "ver_1",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1445,7 +1618,7 @@
       },
       "put" : {
         "description" : "Mande a version que a tela leu; se outra pessoa alterou antes, volta 409.",
-        "operationId" : "editar",
+        "operationId" : "editar_1",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -1603,7 +1776,7 @@
     "/api/dona/usuarios" : {
       "post" : {
         "description" : "Devolve a senha temporária uma única vez. Ela vale 7 dias (configuração do servidor) e a pessoa precisa trocá-la na primeira entrada.",
-        "operationId" : "criar",
+        "operationId" : "criar_1",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -1663,6 +1836,984 @@
         } ],
         "summary" : "Redefinir a senha de um usuário",
         "tags" : [ "usuarios-da-dona-controller" ]
+      }
+    },
+    "/api/dona/vendedores" : {
+      "get" : {
+        "description" : "Busca pelo nome, CPF ou CNPJ e telefones; só números com até 6 dígitos buscam pelo código. situacao: ATIVOS, INATIVOS ou TODOS (padrão). A página começa em 0 (até 100 por página).",
+        "operationId" : "listar",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaginaResposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Listar vendedores",
+        "tags" : [ "vendedores-da-dona-controller" ]
+      },
+      "post" : {
+        "description" : "O código do vendedor é dado pelo servidor, em sequência. Limite e comissão começam em zero.",
+        "operationId" : "criar",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Pedido"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Resposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Cadastrar vendedor",
+        "tags" : [ "vendedores-da-dona-controller" ]
+      }
+    },
+    "/api/dona/vendedores/{id}" : {
+      "delete" : {
+        "description" : "Exclusão lógica: some das listas, mas o histórico fica.",
+        "operationId" : "excluir",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Excluir vendedor",
+        "tags" : [ "vendedores-da-dona-controller" ]
+      },
+      "get" : {
+        "operationId" : "ver",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Resposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "tags" : [ "vendedores-da-dona-controller" ]
+      },
+      "put" : {
+        "description" : "Mande a version que a tela leu; se outra pessoa alterou antes, volta 409.",
+        "operationId" : "editar",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Pedido"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Resposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Editar vendedor",
+        "tags" : [ "vendedores-da-dona-controller" ]
+      }
+    },
+    "/api/dona/vendedores/{id}/conjuge" : {
+      "get" : {
+        "operationId" : "verConjuge",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Dados"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ver a aba Cônjuge",
+        "tags" : [ "secoes-do-vendedor-controller" ]
+      },
+      "put" : {
+        "description" : "O CPF é conferido e guardado só com os números.",
+        "operationId" : "gravarConjuge",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Dados"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Dados"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Gravar a aba Cônjuge",
+        "tags" : [ "secoes-do-vendedor-controller" ]
+      }
+    },
+    "/api/dona/vendedores/{id}/contato" : {
+      "get" : {
+        "operationId" : "verContato",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Dados"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ver a aba Filiação / Contato",
+        "tags" : [ "secoes-do-vendedor-controller" ]
+      },
+      "put" : {
+        "operationId" : "gravarContato",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Dados"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Dados"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Gravar a aba Filiação / Contato",
+        "tags" : [ "secoes-do-vendedor-controller" ]
+      }
+    },
+    "/api/dona/vendedores/{id}/documentos" : {
+      "get" : {
+        "operationId" : "listar_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/Resposta"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Listar os documentos do vendedor",
+        "tags" : [ "documentos-do-vendedor-controller" ]
+      },
+      "post" : {
+        "description" : "Formulário com 'descricao' e 'arquivo'. Aceita PDF, JPG, PNG e WebP de até 10 MB; o tipo vale pelo conteúdo do arquivo.",
+        "operationId" : "enviar",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "descricao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "properties" : {
+                  "arquivo" : {
+                    "format" : "binary",
+                    "type" : "string"
+                  }
+                },
+                "type" : "object"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Resposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Enviar um documento",
+        "tags" : [ "documentos-do-vendedor-controller" ]
+      }
+    },
+    "/api/dona/vendedores/{id}/documentos/{documentoId}" : {
+      "delete" : {
+        "description" : "Exclusão lógica: o documento some da lista e do download.",
+        "operationId" : "excluir_7",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "path",
+          "name" : "documentoId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Excluir um documento",
+        "tags" : [ "documentos-do-vendedor-controller" ]
+      }
+    },
+    "/api/dona/vendedores/{id}/documentos/{documentoId}/arquivo" : {
+      "get" : {
+        "operationId" : "baixar",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "path",
+          "name" : "documentoId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "format" : "byte",
+                  "type" : "string"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Baixar um documento",
+        "tags" : [ "documentos-do-vendedor-controller" ]
+      }
+    },
+    "/api/dona/vendedores/{id}/endereco" : {
+      "get" : {
+        "description" : "Aba nunca gravada: campos vazios e version 0.",
+        "operationId" : "verEndereco",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Dados"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ver a aba Endereço",
+        "tags" : [ "secoes-do-vendedor-controller" ]
+      },
+      "put" : {
+        "description" : "Mande a version que a tela leu (0 se a aba é nova).",
+        "operationId" : "gravarEndereco",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Dados"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Dados"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Gravar a aba Endereço",
+        "tags" : [ "secoes-do-vendedor-controller" ]
+      }
+    },
+    "/api/dona/vendedores/{id}/inativar" : {
+      "post" : {
+        "description" : "O vendedor sai das listas de ativos, mas o histórico fica.",
+        "operationId" : "inativar",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Resposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Inativar vendedor",
+        "tags" : [ "vendedores-da-dona-controller" ]
+      }
+    },
+    "/api/dona/vendedores/{id}/mei" : {
+      "get" : {
+        "operationId" : "verMei",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Dados"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ver a aba MEI",
+        "tags" : [ "secoes-do-vendedor-controller" ]
+      },
+      "put" : {
+        "description" : "O CNPJ é conferido e guardado só com os caracteres do número.",
+        "operationId" : "gravarMei",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Dados"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Dados"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Gravar a aba MEI",
+        "tags" : [ "secoes-do-vendedor-controller" ]
+      }
+    },
+    "/api/dona/vendedores/{id}/observacoes" : {
+      "get" : {
+        "operationId" : "verObservacoes",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Dados"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ver a aba Observação",
+        "tags" : [ "secoes-do-vendedor-controller" ]
+      },
+      "put" : {
+        "operationId" : "gravarObservacoes",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Dados"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Dados"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Gravar a aba Observação",
+        "tags" : [ "secoes-do-vendedor-controller" ]
+      }
+    },
+    "/api/dona/vendedores/{id}/reativar" : {
+      "post" : {
+        "operationId" : "reativar",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Resposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Reativar vendedor",
+        "tags" : [ "vendedores-da-dona-controller" ]
+      }
+    },
+    "/api/dona/vendedores/{id}/referencias" : {
+      "get" : {
+        "operationId" : "listarReferencias",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/Resposta"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Listar as referências do vendedor",
+        "tags" : [ "secoes-do-vendedor-controller" ]
+      },
+      "post" : {
+        "operationId" : "criarReferencia",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Pedido"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Resposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Acrescentar uma referência",
+        "tags" : [ "secoes-do-vendedor-controller" ]
+      }
+    },
+    "/api/dona/vendedores/{id}/referencias/{referenciaId}" : {
+      "delete" : {
+        "description" : "Exclusão lógica.",
+        "operationId" : "excluirReferencia",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "path",
+          "name" : "referenciaId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Excluir uma referência",
+        "tags" : [ "secoes-do-vendedor-controller" ]
+      },
+      "put" : {
+        "description" : "Mande a version que a tela leu.",
+        "operationId" : "editarReferencia",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "path",
+          "name" : "referenciaId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Pedido"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Resposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Editar uma referência",
+        "tags" : [ "secoes-do-vendedor-controller" ]
+      }
+    },
+    "/api/dona/vendedores/{id}/trabalho" : {
+      "get" : {
+        "operationId" : "verTrabalho",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Dados"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ver a aba Trabalho",
+        "tags" : [ "secoes-do-vendedor-controller" ]
+      },
+      "put" : {
+        "operationId" : "gravarTrabalho",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Dados"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Dados"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Gravar a aba Trabalho",
+        "tags" : [ "secoes-do-vendedor-controller" ]
       }
     }
   }

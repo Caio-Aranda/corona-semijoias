@@ -147,7 +147,22 @@ public enum CodigoErro {
 
     SEMANA_SOBREPOSTA(
             "Estas datas já fazem parte de outra semana.",
-            "Estas datas já fazem parte de outra semana. Escolha dias que não estejam em outra semana.");
+            "Estas datas já fazem parte de outra semana. Escolha dias que não estejam em outra semana."),
+
+    // --- Cadastro do vendedor e arquivos (glossário, parte 6; tarefa 1.3) ---
+
+    CADASTRO_EM_USO(
+            "Este cadastro está em uso.",
+            "Este cadastro está em uso. Troque a praça ou a restrição dos vendedores que a usam e tente de novo."),
+
+    ARQUIVO_TIPO_NAO_ACEITO(
+            "Este tipo de arquivo não pode ser enviado.",
+            "Este tipo de arquivo não pode ser enviado. Envie uma foto (JPG, PNG ou WebP) ou um arquivo PDF."),
+
+    ARQUIVO_GRANDE_DEMAIS(
+            "Este arquivo é grande demais.",
+            "Este arquivo é grande demais. Envie um arquivo de até 10 MB. Se for uma foto, "
+                    + "tire-a com menos qualidade ou reduza o tamanho antes de enviar.");
 
     private final String titulo;
     private final String mensagem;

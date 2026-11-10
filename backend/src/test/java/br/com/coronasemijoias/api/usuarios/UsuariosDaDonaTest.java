@@ -59,11 +59,14 @@ class UsuariosDaDonaTest extends TesteDeIntegracao {
         return "teste." + UUID.randomUUID().toString().substring(0, 8);
     }
 
-    private static Map<String, Object> pedido(String login, String perfil) {
+    private Map<String, Object> pedido(String login, String perfil) {
         Map<String, Object> corpo = new LinkedHashMap<>();
         corpo.put("nome", "Maria da Silva");
         corpo.put("login", login);
         corpo.put("perfil", perfil);
+        if ("VENDEDOR".equals(perfil)) {
+            corpo.put("vendedorId", usuarios.criarCadastroDeVendedor().toString());
+        }
         return corpo;
     }
 
@@ -79,7 +82,7 @@ class UsuariosDaDonaTest extends TesteDeIntegracao {
     @Test
     void criaVendedorComSenhaTemporariaQueObedeceAsRegras(CapturedOutput saida) throws Exception {
         String login = loginNovo();
-        UUID vendedorId = UUID.randomUUID();
+        UUID vendedorId = usuarios.criarCadastroDeVendedor();
         Map<String, Object> corpoDoPedido = pedido("  " + login.toUpperCase() + " ", "VENDEDOR");
         corpoDoPedido.put("vendedorId", vendedorId.toString());
 

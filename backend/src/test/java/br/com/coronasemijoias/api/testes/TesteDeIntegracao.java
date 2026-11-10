@@ -1,5 +1,8 @@
 package br.com.coronasemijoias.api.testes;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.SecureRandom;
 import java.util.Base64;
@@ -54,6 +57,9 @@ public abstract class TesteDeIntegracao {
     public static final String ADMIN_INICIAL_LOGIN = "dona.inicial";
     public static final String ADMIN_INICIAL_SENHA = Base64.getEncoder().encodeToString(bytesAleatorios(18));
 
+    /** Pasta dos arquivos enviados nos testes (documentos de vendedor), uma por execução. */
+    protected static final Path PASTA_DE_ARQUIVOS = pastaTemporaria();
+
     /** Um único contêiner para todos os testes da execução. */
     protected static final PostgreSQLContainer POSTGRES = novoContainer();
 
@@ -96,6 +102,8 @@ public abstract class TesteDeIntegracao {
         registro.add("spring.flyway.locations", () -> "classpath:db/migration,classpath:db/migration-teste");
         // A busca de cotações na internet nunca roda nos testes (ADR-0006): quem testa chama a busca com cliente falso.
         registro.add("corona.cotacoes.busca-agendada", () -> "false");
+        // Os arquivos enviados nos testes vão para uma pasta temporária, nunca para o projeto.
+        registro.add("corona.arquivos.pasta", () -> PASTA_DE_ARQUIVOS.toString());
         registrarSeguranca(registro);
     }
 
@@ -143,5 +151,15 @@ public abstract class TesteDeIntegracao {
         Connection conexao = DriverManager.getConnection(urlJdbc(container), usuario, senha);
         conexao.setAutoCommit(false);
         return conexao;
+    }
+
+    private static Path pastaTemporaria() {
+        try {
+            Path pasta = Files.createTempDirectory("corona-arquivos-teste");
+            pasta.toFile().deleteOnExit();
+            return pasta;
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 }

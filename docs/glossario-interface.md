@@ -440,6 +440,36 @@ Avisos junto ao campo (aparecem embaixo do campo, em português simples):
 - CNPJ com número errado: "Confira o CNPJ: ele não parece estar certo."
 - Semana que termina antes de começar: "O último dia não pode ser antes do primeiro dia."
 
+**Cadastro do vendedor (tarefa 1.3)**
+
+Os erros de "não achou", "já existe" e "alterado por outra pessoa" são os mesmos dos cadastros acima. O CPF e o CNPJ repetidos de outro vendedor voltam como "Este cadastro já existe."
+
+Praça ou restrição que ainda está no cadastro de algum vendedor e a dona tenta excluir:
+
+> **Este cadastro está em uso.**
+> Troque a praça ou a restrição dos vendedores que a usam e tente de novo.
+
+Documento do vendedor (foto ou PDF) que não é de um tipo aceito:
+
+> **Este tipo de arquivo não pode ser enviado.**
+> Envie uma foto (JPG, PNG ou WebP) ou um arquivo PDF.
+
+Documento maior que 10 MB:
+
+> **Este arquivo é grande demais.**
+> Envie um arquivo de até 10 MB. Se for uma foto, tire-a com menos qualidade ou reduza o tamanho antes de enviar.
+
+Avisos junto ao campo:
+
+- CPF ou CNPJ do vendedor com número errado: "Confira o CPF ou o CNPJ: o número não parece estar certo."
+- Valor em dinheiro negativo nas abas (renda, valor da moradia): "O valor não pode ser menor que zero."
+- Campo de lista com opção que não existe (por exemplo, o sexo): "Escolha uma das opções da lista."
+- Limite de consignação negativo: "O limite não pode ser menor que zero."
+- Comissão fora de 0 a 100: "A comissão deve ficar entre 0 e 100."
+- Praça, restrição ou vendedor que não existe mais: "Esta opção não existe mais. Atualize a tela e escolha de novo."
+- Usuário do tipo vendedor sem escolher o vendedor: "Escolha o vendedor deste acesso."
+- Arquivo vazio: "Este arquivo está vazio. Escolha outro."
+
 ## 7. Estado de conexão do app do vendedor
 
 Sempre em palavras comuns (§19.11). Nunca "fila", "sincronização" ou "pendentes".

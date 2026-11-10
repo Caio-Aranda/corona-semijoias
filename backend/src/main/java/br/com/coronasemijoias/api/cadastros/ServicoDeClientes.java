@@ -3,6 +3,7 @@ package br.com.coronasemijoias.api.cadastros;
 import java.time.Clock;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,10 +20,12 @@ public class ServicoDeClientes extends ServicoDeCadastro<Cliente> {
     }
 
     private final RepositorioDeClientes clientes;
+    private final JdbcTemplate jdbc;
 
-    public ServicoDeClientes(RepositorioDeClientes clientes, Clock relogio) {
+    public ServicoDeClientes(RepositorioDeClientes clientes, Clock relogio, JdbcTemplate jdbc) {
         super(clientes, relogio);
         this.clientes = clientes;
+        this.jdbc = jdbc;
     }
 
     @Transactional(readOnly = true)
@@ -32,6 +35,7 @@ public class ServicoDeClientes extends ServicoDeCadastro<Cliente> {
 
     @Transactional
     public Cliente criar(UUID id, Dados d) {
+        conferirVendedorResponsavel(d.vendedorResponsavelId());
         return gravarNovo(new Cliente(Validacoes.idDoPedido(id), d.nome().strip(), Validacoes.cpfOpcional(d.cpf()),
                 Validacoes.limpar(d.telefone()), Validacoes.limpar(d.whatsapp()), Endereco.limpo(d.endereco()),
                 Validacoes.limpar(d.observacoes()), d.vendedorResponsavelId()));
@@ -40,8 +44,21 @@ public class ServicoDeClientes extends ServicoDeCadastro<Cliente> {
     @Transactional
     public Cliente editar(UUID id, Integer versao, Dados d) {
         String cpf = Validacoes.cpfOpcional(d.cpf());
+        conferirVendedorResponsavel(d.vendedorResponsavelId());
         return editarComVersao(id, Validacoes.versaoDoPedido(versao), cliente -> cliente.alterar(
                 d.nome().strip(), cpf, Validacoes.limpar(d.telefone()), Validacoes.limpar(d.whatsapp()),
                 Endereco.limpo(d.endereco()), Validacoes.limpar(d.observacoes()), d.vendedorResponsavelId()));
+    }
+
+    /** O vendedor responsável, quando vem, precisa existir (e não estar excluído). */
+    private void conferirVendedorResponsavel(UUID vendedorId) {
+        if (vendedorId == null) {
+            return;
+        }
+        Boolean existe = jdbc.queryForObject(
+                "SELECT EXISTS (SELECT 1 FROM corona.vendedores WHERE id = ? AND deleted_at IS NULL)", Boolean.class, vendedorId);
+        if (!Boolean.TRUE.equals(existe)) {
+            throw Validacoes.recusar("vendedorResponsavelId", Mensagens.OPCAO_INEXISTENTE);
+        }
     }
 }

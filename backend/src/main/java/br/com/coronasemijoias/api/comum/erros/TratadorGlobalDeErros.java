@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.DatabindException;
@@ -75,6 +76,14 @@ public class TratadorGlobalDeErros extends ResponseEntityExceptionHandler {
             LOG.error("Erro do servidor ({}): {}", ex.getClass().getSimpleName(), ex.getMessage(), ex);
         }
         return super.handleExceptionInternal(ex, problema(status, codigo), cabecalhos, status, requisicao);
+    }
+
+    /** Arquivo maior que o limite do servidor (alguns MB acima dos 10 MB da regra): mesmo aviso da regra. */
+    @Override
+    protected ResponseEntity<Object> handleMaxUploadSizeExceededException(
+            MaxUploadSizeExceededException ex, HttpHeaders cabecalhos, HttpStatusCode status, WebRequest requisicao) {
+        return handleExceptionInternal(ex, problema(HttpStatus.PAYLOAD_TOO_LARGE, CodigoErro.ARQUIVO_GRANDE_DEMAIS),
+                cabecalhos, HttpStatus.PAYLOAD_TOO_LARGE, requisicao);
     }
 
     @Override

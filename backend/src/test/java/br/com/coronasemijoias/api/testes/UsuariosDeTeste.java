@@ -52,10 +52,21 @@ public class UsuariosDeTeste {
         return criar("VENDEDOR", UUID.randomUUID(), true, "senha-do-vendedor-1", RAPIDO);
     }
 
+    /** Um cadastro de vendedor mínimo (o que o usuário VENDEDOR precisa ter ligado), devolvendo o id. */
+    public UUID criarCadastroDeVendedor() {
+        UUID id = UUID.randomUUID();
+        jdbc.update("INSERT INTO corona.vendedores (id, nome) VALUES (?, ?)", id, "Vendedor de Teste " + id);
+        return id;
+    }
+
     public UsuarioDeTeste criar(String perfil, UUID vendedorId, boolean ativo, String senha, BCryptPasswordEncoder bcrypt) {
         UUID id = UUID.randomUUID();
         String login = perfil.toLowerCase() + "." + id.toString().substring(0, 8);
         String nome = "Pessoa de Teste " + login;
+        if (vendedorId != null) {
+            jdbc.update("INSERT INTO corona.vendedores (id, nome) VALUES (?, ?) ON CONFLICT (id) DO NOTHING",
+                    vendedorId, "Vendedor de " + login);
+        }
         jdbc.update("""
                 INSERT INTO corona.usuarios (id, nome, login, senha_hash, perfil, ativo, vendedor_id)
                 VALUES (?, ?, ?, ?, ?, ?, ?)""",

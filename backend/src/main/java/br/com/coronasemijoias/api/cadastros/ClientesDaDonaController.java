@@ -27,8 +27,8 @@ public class ClientesDaDonaController {
 
     /**
      * {@code id} (opcional, UUID do aplicativo) só vale ao criar; {@code version} (a que a tela leu) só ao
-     * editar. O CPF pode vir com ou sem pontos e traço. {@code vendedorResponsavelId} ainda não é conferido
-     * contra os vendedores (a tabela nasce na tarefa 1.3).
+     * editar. O CPF pode vir com ou sem pontos e traço. {@code vendedorResponsavelId} precisa ser de um vendedor
+     * que existe.
      */
     public record Pedido(
             UUID id,

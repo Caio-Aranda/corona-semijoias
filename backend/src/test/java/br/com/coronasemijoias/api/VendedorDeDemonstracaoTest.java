@@ -73,6 +73,18 @@ class VendedorDeDemonstracaoTest extends TesteDeIntegracao {
             assertThat(vendedores(banco)).containsExactly("vendedora.teste");
             subirEFechar(configuracao(banco, "dev"));
             assertThat(vendedores(banco)).containsExactly("vendedora.teste");
+            assertThat(cadastrosLigados(banco)).isEqualTo(1);
+        }
+    }
+
+    /** Quantos vendedores o usuário de demonstração tem ligados (1: o cadastro criado junto com ele). */
+    private static int cadastrosLigados(PostgreSQLContainer banco) throws Exception {
+        try (Connection conexao = conectar(banco, APP_USUARIO, APP_SENHA);
+                ResultSet linhas = conexao.createStatement().executeQuery("""
+                        SELECT count(*) FROM corona.usuarios u JOIN corona.vendedores v ON v.id = u.vendedor_id
+                         WHERE u.login = 'vendedora.teste' AND v.nome = 'Vendedora de Teste'""")) {
+            linhas.next();
+            return linhas.getInt(1);
         }
     }
 

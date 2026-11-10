@@ -8,7 +8,7 @@ import java.util.UUID;
 
 /**
  * Cliente de quem vende (tabela sincronizável {@code clientes}). CPF só com dígitos. O vendedor
- * responsável ainda não tem chave estrangeira: a tabela de vendedores nasce na tarefa 1.3.
+ * responsável aponta para um vendedor (chave estrangeira desde a tarefa 1.3).
  */
 @Entity
 @Table(name = "clientes", schema = "corona")
