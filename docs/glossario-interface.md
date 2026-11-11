@@ -435,6 +435,20 @@ Bloco "O que precisa da sua atenção" quando não há nada a mostrar:
 
 Os quatro botões grandes são os da parte 1 (**Vender**, **Minha maleta**, **Meus clientes**, **Meus números**) e, no canto, **Sair**. Enquanto uma função não existe (Fase 0), o botão mostra o mesmo texto "Em breve." da tela inicial da dona, com o nome do botão no lugar de {Nome do botão}.
 
+Desde a Fase 4 os quatro botões funcionam (o "Em breve." só vale para função que ainda não existe).
+
+**Telas do vendedor (Corona Vendas, Fase 4)**
+
+Os textos moram em `apps/seller-app/src/renderer/textos.ts`. Termos: **Minha maleta** (peças com saldo, preço e foto), **Conferir maleta** (o vendedor lê o código de cada peça recebida; ação sem volta: **Concluir conferência**), **Vender**, **Concluir venda** (nunca "OK"), **Estornar venda** (o vendedor só estorna no mesmo dia; depois, a dona), **Meus clientes**, **Cadastrar cliente**, **Meus números** (vendas por cliente, peça ou dia; recebimentos por forma; o que os clientes ainda devem). Forma de pagamento: **Dinheiro, Pix, Cartão, Cheque** ou **A prazo (fiado)**. Frases fixas:
+
+> Esta peça não consta na sua maleta. (peça de fora, no leitor)
+> Esta peça acabou na sua maleta. Escolha outra peça ou fale com a dona. (saldo zero)
+> Esta maleta já está em outro aparelho. Peça à dona para liberar este aparelho.
+> O desconto passa do limite que a dona definiu. Diminua o desconto.
+> Sem internet. Conecte-se e tente de novo.
+
+Na ficha da maleta, no Corona Gestão: **Conferência do vendedor** mostra "Na maleta", "Ele contou" e "Diferença" por peça; os movimentos aparecem como "Vendida pelo vendedor" e "Venda desfeita (estorno)".
+
 **Cadastros da dona (fornecedores, categorias, praças, semanas, restrições, clientes; tarefa 1.2)**
 
 Cadastro que não existe mais (ou já foi excluído):

@@ -1,16 +1,26 @@
 import { Aviso, Botao, CabecalhoDeMarca } from '@corona/ui';
 import { useState } from 'react';
 
-const BOTOES = ['Vender', 'Minha maleta', 'Meus clientes', 'Meus números'] as const;
+export type Destino = 'vender' | 'maleta' | 'clientes' | 'numeros';
+
+const BOTOES: readonly { destino: Destino; nome: string }[] = [
+  { destino: 'vender', nome: 'Vender' },
+  { destino: 'maleta', nome: 'Minha maleta' },
+  { destino: 'clientes', nome: 'Meus clientes' },
+  { destino: 'numeros', nome: 'Meus números' },
+];
 
 export interface TelaInicialProps {
   /** Nome da pessoa, quando já se sabe. */
   nome: string | null;
   aoSair: () => void | Promise<void>;
+  /** Abre uma das funções. Quem ainda não existe fica fora de `prontos` e mostra "Em breve". */
+  aoEscolher?: (destino: Destino) => void;
+  prontos?: readonly Destino[];
 }
 
-/** Tela inicial do vendedor (§19.7): quatro botões grandes. Ainda sem função: mostram "Em breve". */
-export function TelaInicial({ nome, aoSair }: TelaInicialProps) {
+/** Tela inicial do vendedor (§19.7): quatro botões grandes. O que ainda não existe mostra "Em breve". */
+export function TelaInicial({ nome, aoSair, aoEscolher, prontos = [] }: TelaInicialProps) {
   const [emBreve, setEmBreve] = useState<string | null>(null);
 
   return (
@@ -32,12 +42,15 @@ export function TelaInicial({ nome, aoSair }: TelaInicialProps) {
           </Aviso>
         ) : null}
         <nav className="vendas-botoes" aria-label="O que você quer fazer?">
-          {BOTOES.map((nomeDoBotao) => (
+          {BOTOES.map(({ destino, nome: nomeDoBotao }) => (
             <Botao
-              key={nomeDoBotao}
+              key={destino}
               variante="primario"
               grande
-              onClick={() => setEmBreve(nomeDoBotao)}
+              onClick={() => {
+                if (aoEscolher && prontos.includes(destino)) aoEscolher(destino);
+                else setEmBreve(nomeDoBotao);
+              }}
             >
               {nomeDoBotao}
             </Botao>

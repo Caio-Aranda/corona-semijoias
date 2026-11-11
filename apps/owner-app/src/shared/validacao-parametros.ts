@@ -488,6 +488,7 @@ export function conferirParametros(
     case 'maletas.enviar':
     case 'maletas.emAberto':
     case 'maletas.saldo':
+    case 'maletas.conferencia':
     case 'maletas.devolver':
     case 'maletas.desfazerDevolucao':
     case 'maletas.cancelar':

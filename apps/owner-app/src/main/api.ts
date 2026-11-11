@@ -46,6 +46,7 @@ import {
   cancelarRemessa,
   desfazerDevolucaoDaMaleta,
   devolverPecasDaMaleta,
+  verConferenciaDaMaleta,
   verMaletaDaRemessa,
   listarRemessas,
   tirarItemDaRemessa,
@@ -529,6 +530,8 @@ async function executarMaleta(
       return executar(() => notaDaRemessa({ ...base, path: { id: pedido.id } }));
     case 'maletas.saldo':
       return executar(() => verMaletaDaRemessa({ ...base, path: { id: pedido.id } }));
+    case 'maletas.conferencia':
+      return executar(() => verConferenciaDaMaleta({ ...base, path: { id: pedido.id } }));
     case 'maletas.devolver':
       return executar(
         () =>

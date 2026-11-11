@@ -11,6 +11,64 @@
         "required" : [ "nome" ],
         "type" : "object"
       },
+      "Cliente" : {
+        "properties" : {
+          "ativo" : {
+            "type" : "boolean"
+          },
+          "cpf" : {
+            "type" : "string"
+          },
+          "dataNascimento" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "observacoes" : {
+            "type" : "string"
+          },
+          "telefone" : {
+            "type" : "string"
+          },
+          "whatsapp" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "Conferencia" : {
+        "properties" : {
+          "conferidaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "divergencias" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Linha"
+            },
+            "type" : "array"
+          },
+          "remessaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "Cotacao" : {
         "properties" : {
           "data" : {
@@ -27,6 +85,31 @@
             "example" : "123.45",
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "CotacaoDoVendedor" : {
+        "properties" : {
+          "dataDaCotacao" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "dataDeHoje" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "deDiaAnterior" : {
+            "type" : "boolean"
+          },
+          "disponivel" : {
+            "type" : "boolean"
+          },
+          "dolar" : {
+            "type" : "string"
+          },
+          "guarani" : {
             "type" : "string"
           }
         },
@@ -54,6 +137,36 @@
         },
         "type" : "object"
       },
+      "Devedor" : {
+        "properties" : {
+          "aReceber" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "clienteId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "clienteNome" : {
+            "type" : "string"
+          },
+          "pago" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendido" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "Item" : {
         "properties" : {
           "desconto" : {
@@ -76,6 +189,76 @@
             "type" : "integer"
           },
           "total" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "Linha" : {
+        "properties" : {
+          "contado" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "diferenca" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "esperado" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "produtoNome" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "Maleta" : {
+        "properties" : {
+          "dispositivoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "enviadaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Linha"
+            },
+            "type" : "array"
+          },
+          "numero" : {
+            "type" : "string"
+          },
+          "pecasEmAberto" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "semanaNumero" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "valorEmAberto" : {
             "example" : "123.45",
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
@@ -119,6 +302,19 @@
             "type" : "string"
           },
           "nome" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "PedidoDaContagem" : {
+        "properties" : {
+          "contada" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "produtoId" : {
+            "format" : "uuid",
             "type" : "string"
           }
         },
@@ -174,6 +370,49 @@
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "PedidoDeCliente" : {
+        "properties" : {
+          "cpf" : {
+            "type" : "string"
+          },
+          "dataNascimento" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "observacoes" : {
+            "type" : "string"
+          },
+          "telefone" : {
+            "type" : "string"
+          },
+          "whatsapp" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "PedidoDeConferencia" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/PedidoDaContagem"
+            },
+            "type" : "array"
           }
         },
         "type" : "object"
@@ -250,6 +489,34 @@
         },
         "type" : "object"
       },
+      "Relatorio" : {
+        "properties" : {
+          "linhas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Linha"
+            },
+            "type" : "array"
+          },
+          "totais" : {
+            "$ref" : "#/components/schemas/Totais"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatorioAReceber" : {
+        "properties" : {
+          "clientes" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Devedor"
+            },
+            "type" : "array"
+          },
+          "totais" : {
+            "$ref" : "#/components/schemas/Totais"
+          }
+        },
+        "type" : "object"
+      },
       "RespostaDoLogin" : {
         "properties" : {
           "expiraEm" : {
@@ -291,6 +558,33 @@
         "properties" : {
           "instante" : {
             "format" : "date-time",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "Totais" : {
+        "properties" : {
+          "dataDaCotacao" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "total" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "totalEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "totalEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           }
         },
@@ -591,6 +885,448 @@
         } ],
         "summary" : "Criar a senha nova (troca obrigatória)",
         "tags" : [ "autenticacao-controller" ]
+      }
+    },
+    "/api/vendedor/clientes" : {
+      "get" : {
+        "description" : "Só os clientes ativos em que o vendedor logado é o responsável (até 100, por nome). A busca procura no nome, telefone, WhatsApp e CPF.",
+        "operationId" : "listarMeusClientes",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/Cliente"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Meus clientes",
+        "tags" : [ "clientes-do-vendedor-controller" ]
+      },
+      "post" : {
+        "description" : "O cliente novo entra com o vendedor logado como responsável. O CPF é opcional e conferido pelo servidor. Mesmo id e mesmos dados devolve 200; mesmo id com dados diferentes, 409.",
+        "operationId" : "cadastrarMeuCliente",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeCliente"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Cliente"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Cadastrar um cliente",
+        "tags" : [ "clientes-do-vendedor-controller" ]
+      }
+    },
+    "/api/vendedor/clientes/{id}" : {
+      "get" : {
+        "operationId" : "verMeuCliente",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Cliente"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ver um dos meus clientes",
+        "tags" : [ "clientes-do-vendedor-controller" ]
+      }
+    },
+    "/api/vendedor/cotacao" : {
+      "get" : {
+        "description" : "Reais por 1 Dólar e por 1 Guarani (taxa de venda) em vigor hoje, só para mostrar os valores nas três moedas. Sem nenhuma cotação ainda: disponivel = false (nunca é erro).",
+        "operationId" : "verCotacaoDeHoje",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CotacaoDoVendedor"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Cotação do dia",
+        "tags" : [ "apoio-do-vendedor-controller" ]
+      }
+    },
+    "/api/vendedor/fotos/{hash}/{tamanho}" : {
+      "get" : {
+        "description" : "tamanho = miniatura, media ou grande. Só fotos de peças que estão em maletas do vendedor logado; as outras dão 404. O endereço leva o hash do conteúdo, então a resposta pode ficar no cache.",
+        "operationId" : "baixarFotoDaMinhaMaleta",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "hash",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "path",
+          "name" : "tamanho",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "header",
+          "name" : "If-None-Match",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "format" : "byte",
+                  "type" : "string"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Foto de uma peça da minha maleta",
+        "tags" : [ "apoio-do-vendedor-controller" ]
+      }
+    },
+    "/api/vendedor/maletas" : {
+      "get" : {
+        "description" : "As maletas que estão com o vendedor logado (enviadas ou conferidas): peças, vendida, devolvida, saldo, preço de venda e foto.",
+        "operationId" : "listarMinhasMaletas",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/Maleta"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Minhas maletas",
+        "tags" : [ "maletas-do-vendedor-controller" ]
+      }
+    },
+    "/api/vendedor/maletas/{id}" : {
+      "get" : {
+        "operationId" : "verMinhaMaleta",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Maleta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ver uma das minhas maletas",
+        "tags" : [ "maletas-do-vendedor-controller" ]
+      }
+    },
+    "/api/vendedor/maletas/{id}/conferencia" : {
+      "get" : {
+        "operationId" : "verConferenciaDaMinhaMaleta",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Conferencia"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ver a conferência da maleta",
+        "tags" : [ "maletas-do-vendedor-controller" ]
+      },
+      "post" : {
+        "description" : "O vendedor manda quantas peças contou de cada produto (o que faltar na lista conta como zero). O servidor compara com o saldo da maleta, grava a diferença e liga a maleta a este aparelho. Uma conferência por maleta: mesmo id e mesma contagem devolve 200; outra tentativa, 409.",
+        "operationId" : "conferirMinhaMaleta",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeConferencia"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Conferencia"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Conferir a maleta",
+        "tags" : [ "maletas-do-vendedor-controller" ]
+      }
+    },
+    "/api/vendedor/maletas/{id}/pecas" : {
+      "get" : {
+        "description" : "O leitor manda o código; só responde peça que está na maleta (404 com \"Esta peça não consta na sua maleta\" nas outras). Devolve a linha com a foto e o saldo.",
+        "operationId" : "acharPecaDaMinhaMaleta",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "codigo",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Linha"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ler uma peça pelo código",
+        "tags" : [ "maletas-do-vendedor-controller" ]
+      }
+    },
+    "/api/vendedor/relatorios/a-receber" : {
+      "get" : {
+        "description" : "Por cliente do vendedor: vendido (sem estornos), pago e a receber; só quem deve.",
+        "operationId" : "relatorioDeValoresAReceber",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioAReceber"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Quanto meus clientes ainda devem",
+        "tags" : [ "apoio-do-vendedor-controller" ]
+      }
+    },
+    "/api/vendedor/relatorios/recebimentos" : {
+      "get" : {
+        "description" : "O que os clientes do vendedor pagaram no período, por forma, já descontados os reembolsos.",
+        "operationId" : "relatorioDeMeusRecebimentos",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Relatorio"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Meus recebimentos por forma de pagamento",
+        "tags" : [ "apoio-do-vendedor-controller" ]
+      }
+    },
+    "/api/vendedor/relatorios/vendas" : {
+      "get" : {
+        "description" : "Só as vendas do vendedor logado, sem as estornadas, no período (de e até, horário de Brasília; ambos opcionais). agrupar = cliente (padrão), peca ou dia. Totais também em Dólar e Guarani pela cotação de hoje.",
+        "operationId" : "relatorioDeMinhasVendas",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "agrupar",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Relatorio"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Minhas vendas por cliente, peça ou dia",
+        "tags" : [ "apoio-do-vendedor-controller" ]
       }
     },
     "/api/vendedor/teste/dinheiro" : {

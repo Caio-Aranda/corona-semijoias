@@ -97,6 +97,7 @@ Colocar o Corona Gestão no ar para a dona (prazo: sexta, 14/11/2026). É infrae
 | 9.4 | Corona Gestão: instalador `.exe` (NSIS), endereço e certificado fixado como configuração de build, `npm run owner:empacotar` | Em revisão · [detalhe](progresso/fase-9.md#tarefa-94-instalador-do-corona-gestão-e-certificado-fixado) |
 | 9.5 | Corona Gestão: atualização automática (publicação na VPS, checagem, hash, instalação ao fechar, aviso na tela) | Em revisão · [detalhe](progresso/fase-9.md#tarefa-95-atualização-automática) |
 | 9.6 | roteiro de entrega (`docs/entrega-corona-gestao.md`) | Em revisão · [detalhe](progresso/fase-9.md#tarefa-96-roteiro-de-entrega) |
+| 9.7 | extra: Corona Vendas com instalador e atualização automática reaproveitando o mecanismo (pacote neutro `conexao-segura`) | Em revisão · [detalhe](progresso/fase-9.md#tarefa-97-corona-vendas-instalador-e-atualização-reaproveitáveis-extra) |
 
 **Fora desta fase mínima:** domínio e Let's Encrypt, assinatura do instalador, backup diário fora da VPS, atualização do Corona Vendas (Fase 9 completa).
 
@@ -139,12 +140,14 @@ App do vendedor online (§15): login, conferência, venda, clientes, consulta, r
 | --- | --- | --- |
 | 4.1 | docs: plano da Fase 4 e ADR-0011 (venda do vendedor) | Em revisão · [detalhe](progresso/fase-4.md#tarefa-41-plano-da-fase-4-e-adr-da-venda-só-documentos) |
 | 4.2 | backend (alto): vendas, itens e pagamentos, venda a partir da maleta, preço congelado, desconto, idempotência (200/201/409), estorno, totais no servidor, cotação | Em revisão · [detalhe](progresso/fase-4.md#tarefa-42-backend-das-vendas-vender-estornar-totais-no-servidor) |
-| 4.3 | backend: rotas do vendedor (própria maleta sem custo, conferência e dispositivo único, clientes dele, cotação, relatórios próprios), 403 cruzado nos dois sentidos | A fazer |
-| 4.4 | seller-app (alto): base de telas, conferência por leitor com foto grande, venda, escolha e cadastro de cliente, estorno | A fazer |
-| 4.5 | seller-app: Minha maleta, Meus clientes, Meus números (relatórios próprios) e valores nas três moedas | A fazer |
-| 4.6 | fechamento da Fase 4 (revisão pós-fase) | A fazer |
+| 4.3 | backend: rotas do vendedor (própria maleta sem custo, conferência e dispositivo único, clientes dele, cotação, relatórios próprios), 403 cruzado nos dois sentidos | Em revisão · [detalhe](progresso/fase-4.md#tarefa-43-backend-das-rotas-do-vendedor-maleta-conferência-clientes-cotação-relatórios) |
+| 4.4 | seller-app (alto): base de telas, conferência por leitor com foto grande, venda, escolha e cadastro de cliente, estorno | Em revisão · [detalhe](progresso/fase-4.md#tarefa-44-corona-vendas-conferência-da-maleta-venda-cliente-e-estorno) |
+| 4.5 | seller-app: Minha maleta, Meus clientes, Meus números (relatórios próprios) e valores nas três moedas | Em revisão · [detalhe](progresso/fase-4.md#tarefa-45-corona-vendas-meus-clientes-e-meus-números) |
+| 4.6 | fechamento da Fase 4 (revisão pós-fase) | Em revisão · [detalhe](progresso/fase-4.md#tarefa-46-fechamento-da-fase-4-revisão-pós-fase) |
 
 **Fora desta fase:** SQLite criptografado, outbox e sync (Fase 5); devolução, troca e garantia (Fase 6); acerto, comissão e contas a receber completas (Fase 7).
+
+**Fase 4 concluída** (tarefas 4.1 a 4.6; a 4.6 foi a revisão de fechamento). Resumo: o vendedor entra no Corona Vendas e, com internet, vê a própria maleta (sem custo), confere as peças lendo o código, vende (preço congelado, desconto dentro do limite da dona, à vista ou a prazo), estorna a venda no mesmo dia, cadastra e busca clientes e vê os números dele (vendas, recebimentos e quanto os clientes devem) em Real, Dólar e Guarani. O servidor recalcula tudo, nunca recebe preço do app e liga cada maleta a um aparelho só. **Segue para a Fase 5:** sem internet (SQLite, outbox, sync). Pendências: [fase-4.md](progresso/fase-4.md#tarefa-46-fechamento-da-fase-4-revisão-pós-fase).
 
 ## Pendências abertas
 

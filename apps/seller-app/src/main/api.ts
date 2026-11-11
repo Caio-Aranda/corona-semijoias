@@ -1,13 +1,31 @@
 import {
+  acharPecaDaMinhaMaleta,
+  baixarFotoDaMinhaMaleta,
+  cadastrarMeuCliente,
+  conferirMinhaMaleta,
   criarClienteDaApi,
   ehAppDesatualizado,
   entrar,
+  estornarVendaDoVendedor,
   eu,
+  listarMeusClientes,
+  listarMinhasMaletas,
+  listarVendasDoVendedor,
+  relatorioDeMeusRecebimentos,
+  relatorioDeMinhasVendas,
+  relatorioDeValoresAReceber,
   renovar,
   sair,
   trocarSenha,
+  venderNaMaleta,
+  verConferenciaDaMinhaMaleta,
+  verCotacaoDeHoje,
+  verMeuCliente,
+  verMinhaMaleta,
+  verVendaDoVendedor,
   type RespostaDoLogin,
 } from '@corona/api-client-vendedor';
+import type { PedidoDeChamada } from '../shared/operacoes';
 import type { ApiDeAutenticacao, Credenciais, Falha, Resultado } from './tipos';
 
 export interface DadosDoUsuario {
@@ -17,6 +35,8 @@ export interface DadosDoUsuario {
 
 export interface ApiDoVendas extends ApiDeAutenticacao {
   eu(tokenDeAcesso: string): Promise<Resultado<DadosDoUsuario>>;
+  /** Qualquer outra operação da tela (maleta, venda, clientes, cotação, foto, relatórios). Já validada na ponte. */
+  chamar(tokenDeAcesso: string, pedido: PedidoDeChamada): Promise<Resultado<unknown>>;
 }
 
 interface OpcoesDaApi {
@@ -102,7 +122,110 @@ export function criarApiDoVendas(opcoes: OpcoesDaApi): ApiDoVendas {
     return r.dados ? comoCredenciais(r.dados) : { ok: false, falha: { tipo: 'resposta-invalida' } };
   };
 
+  /** Foto como endereço de dados (a tela não fala com a rede nem leva o token). */
+  const foto = async (
+    token: string,
+    hash: string,
+    tamanho: string,
+  ): Promise<Resultado<unknown>> => {
+    const r = await executar<unknown>(() =>
+      baixarFotoDaMinhaMaleta({
+        client,
+        headers: comToken(token),
+        path: { hash, tamanho },
+        parseAs: 'arrayBuffer',
+      }),
+    );
+    if (!r.ok) return r;
+    if (!(r.dados instanceof ArrayBuffer) || r.dados.byteLength === 0) {
+      return { ok: false, falha: { tipo: 'resposta-invalida' } };
+    }
+    const base64 = Buffer.from(r.dados).toString('base64');
+    return { ok: true, dados: { dataUrl: `data:image/jpeg;base64,${base64}` } };
+  };
+
+  const chamar = (token: string, pedido: PedidoDeChamada): Promise<Resultado<unknown>> => {
+    const base = { client, headers: comToken(token) };
+    const periodo = (p: { de?: string; ate?: string }) => ({
+      ...(p.de ? { de: p.de } : {}),
+      ...(p.ate ? { ate: p.ate } : {}),
+    });
+    switch (pedido.operacao) {
+      case 'eu':
+        return executar(() => eu(base));
+      case 'maletas.listar':
+        return executar(() => listarMinhasMaletas(base));
+      case 'maletas.ver':
+        return executar(() => verMinhaMaleta({ ...base, path: { id: pedido.id } }));
+      case 'maletas.peca':
+        return executar(() =>
+          acharPecaDaMinhaMaleta({
+            ...base,
+            path: { id: pedido.id },
+            query: { codigo: pedido.codigo },
+          }),
+        );
+      case 'maletas.conferir':
+        return executar(() =>
+          conferirMinhaMaleta({
+            ...base,
+            path: { id: pedido.id },
+            body: { id: pedido.conferenciaId, itens: pedido.itens },
+          }),
+        );
+      case 'maletas.verConferencia':
+        return executar(() => verConferenciaDaMinhaMaleta({ ...base, path: { id: pedido.id } }));
+      case 'vendas.vender':
+        return executar(() => venderNaMaleta({ ...base, body: pedido.venda }));
+      case 'vendas.listar':
+        return executar(() =>
+          listarVendasDoVendedor({
+            ...base,
+            query: {
+              ...periodo(pedido),
+              ...(pedido.clienteId ? { clienteId: pedido.clienteId } : {}),
+              ...(pedido.status ? { status: pedido.status } : {}),
+            },
+          }),
+        );
+      case 'vendas.ver':
+        return executar(() => verVendaDoVendedor({ ...base, path: { id: pedido.id } }));
+      case 'vendas.estornar':
+        return executar(() =>
+          estornarVendaDoVendedor({
+            ...base,
+            path: { id: pedido.id },
+            body: { id: pedido.estornoId, motivo: pedido.motivo },
+          }),
+        );
+      case 'clientes.listar':
+        return executar(() =>
+          listarMeusClientes({ ...base, query: pedido.busca ? { busca: pedido.busca } : {} }),
+        );
+      case 'clientes.ver':
+        return executar(() => verMeuCliente({ ...base, path: { id: pedido.id } }));
+      case 'clientes.cadastrar':
+        return executar(() => cadastrarMeuCliente({ ...base, body: pedido.cliente }));
+      case 'cotacao.hoje':
+        return executar(() => verCotacaoDeHoje(base));
+      case 'fotos.ver':
+        return foto(token, pedido.hash, pedido.tamanho);
+      case 'relatorios.vendas':
+        return executar(() =>
+          relatorioDeMinhasVendas({
+            ...base,
+            query: { ...periodo(pedido), ...(pedido.agrupar ? { agrupar: pedido.agrupar } : {}) },
+          }),
+        );
+      case 'relatorios.recebimentos':
+        return executar(() => relatorioDeMeusRecebimentos({ ...base, query: periodo(pedido) }));
+      case 'relatorios.aReceber':
+        return executar(() => relatorioDeValoresAReceber(base));
+    }
+  };
+
   return {
+    chamar,
     entrar: (usuario, senha) =>
       credenciais(() =>
         entrar({ client, body: { login: usuario, senha, dispositivoId: opcoes.dispositivoId } }),

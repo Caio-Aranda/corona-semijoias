@@ -12,6 +12,7 @@ export const OPERACOES_DE_MALETAS = [
   'maletas.enviar',
   'maletas.emAberto',
   'maletas.saldo',
+  'maletas.conferencia',
   'maletas.devolver',
   'maletas.desfazerDevolucao',
   'maletas.cancelar',

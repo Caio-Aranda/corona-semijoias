@@ -83,7 +83,12 @@ public final class RegistroDeTabelas {
                         new TabelaSincronizavel("itens_venda", List.of(
                                 "venda_id", "produto_id", "quantidade", "preco_unitario", "desconto"), true),
                         new TabelaSincronizavel("pagamentos_cliente", List.of(
-                                "venda_id", "tipo", "forma", "valor", "pago_em"), true)
+                                "venda_id", "tipo", "forma", "valor", "pago_em"), true),
+                        // Conferência da maleta (tarefa 4.3): do próprio vendedor.
+                        new TabelaSincronizavel("conferencias", List.of(
+                                "remessa_id", "vendedor_id", "dispositivo_id", "divergencias", "conferida_em"), true),
+                        new TabelaSincronizavel("itens_conferencia", List.of(
+                                "conferencia_id", "produto_id", "esperado", "contado"), true)
                         // As demais sincronizáveis entram aqui (produtos, vendas...).
                 ),
                 List.of(

@@ -8,8 +8,36 @@ export type CadastroDeTeste = {
     nome: string;
 };
 
+export type Cliente = {
+    ativo?: boolean;
+    cpf?: string;
+    dataNascimento?: string;
+    id?: string;
+    nome?: string;
+    observacoes?: string;
+    telefone?: string;
+    whatsapp?: string;
+};
+
+export type Conferencia = {
+    conferidaEm?: string;
+    divergencias?: number;
+    id?: string;
+    itens?: Array<Linha>;
+    remessaId?: string;
+};
+
 export type Cotacao = {
     data?: string;
+    dolar?: string;
+    guarani?: string;
+};
+
+export type CotacaoDoVendedor = {
+    dataDaCotacao?: string;
+    dataDeHoje?: string;
+    deDiaAnterior?: boolean;
+    disponivel?: boolean;
     dolar?: string;
     guarani?: string;
 };
@@ -22,12 +50,41 @@ export type DadosDoUsuario = {
     vendedorId?: string;
 };
 
+export type Devedor = {
+    aReceber?: string;
+    clienteId?: string;
+    clienteNome?: string;
+    pago?: string;
+    vendido?: string;
+};
+
 export type Item = {
     desconto?: string;
     precoUnitario?: string;
     produto?: Peca;
     quantidade?: number;
     total?: string;
+};
+
+export type Linha = {
+    contado?: number;
+    diferenca?: number;
+    esperado?: number;
+    produtoId?: string;
+    produtoNome?: string;
+};
+
+export type Maleta = {
+    dispositivoId?: string;
+    enviadaEm?: string;
+    id?: string;
+    itens?: Array<Linha>;
+    numero?: string;
+    pecasEmAberto?: number;
+    semanaNumero?: number;
+    status?: string;
+    tipo?: string;
+    valorEmAberto?: string;
 };
 
 export type PagamentoLido = {
@@ -44,6 +101,11 @@ export type Peca = {
     nome?: string;
 };
 
+export type PedidoDaContagem = {
+    contada?: number;
+    produtoId?: string;
+};
+
 export type PedidoDaLinha = {
     desconto?: string;
     produtoId?: string;
@@ -57,6 +119,21 @@ export type PedidoDaVenda = {
     pagamentos?: Array<PedidoDoPagamento>;
     remessaId?: string;
     totalConferido?: string;
+};
+
+export type PedidoDeCliente = {
+    cpf?: string;
+    dataNascimento?: string;
+    id?: string;
+    nome?: string;
+    observacoes?: string;
+    telefone?: string;
+    whatsapp?: string;
+};
+
+export type PedidoDeConferencia = {
+    id?: string;
+    itens?: Array<PedidoDaContagem>;
 };
 
 export type PedidoDeEstorno = {
@@ -85,6 +162,16 @@ export type PedidoDoPagamento = {
     valor?: string;
 };
 
+export type Relatorio = {
+    linhas?: Array<Linha>;
+    totais?: Totais;
+};
+
+export type RelatorioAReceber = {
+    clientes?: Array<Devedor>;
+    totais?: Totais;
+};
+
 export type RespostaDoLogin = {
     expiraEm?: string;
     horaDoServidor?: string;
@@ -99,6 +186,13 @@ export type RespostaDoLogin = {
 
 export type Tempo = {
     instante?: string;
+};
+
+export type Totais = {
+    dataDaCotacao?: string;
+    total?: string;
+    totalEmDolar?: string;
+    totalEmGuarani?: string;
 };
 
 export type ValorDeTeste = {
@@ -236,6 +330,241 @@ export type TrocarSenhaResponses = {
 };
 
 export type TrocarSenhaResponse = TrocarSenhaResponses[keyof TrocarSenhaResponses];
+
+export type ListarMeusClientesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+    };
+    url: '/api/vendedor/clientes';
+};
+
+export type ListarMeusClientesResponses = {
+    /**
+     * OK
+     */
+    200: Array<Cliente>;
+};
+
+export type ListarMeusClientesResponse = ListarMeusClientesResponses[keyof ListarMeusClientesResponses];
+
+export type CadastrarMeuClienteData = {
+    body: PedidoDeCliente;
+    path?: never;
+    query?: never;
+    url: '/api/vendedor/clientes';
+};
+
+export type CadastrarMeuClienteResponses = {
+    /**
+     * OK
+     */
+    200: Cliente;
+};
+
+export type CadastrarMeuClienteResponse = CadastrarMeuClienteResponses[keyof CadastrarMeuClienteResponses];
+
+export type VerMeuClienteData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/vendedor/clientes/{id}';
+};
+
+export type VerMeuClienteResponses = {
+    /**
+     * OK
+     */
+    200: Cliente;
+};
+
+export type VerMeuClienteResponse = VerMeuClienteResponses[keyof VerMeuClienteResponses];
+
+export type VerCotacaoDeHojeData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/vendedor/cotacao';
+};
+
+export type VerCotacaoDeHojeResponses = {
+    /**
+     * OK
+     */
+    200: CotacaoDoVendedor;
+};
+
+export type VerCotacaoDeHojeResponse = VerCotacaoDeHojeResponses[keyof VerCotacaoDeHojeResponses];
+
+export type BaixarFotoDaMinhaMaletaData = {
+    body?: never;
+    headers?: {
+        'If-None-Match'?: string;
+    };
+    path: {
+        hash: string;
+        tamanho: string;
+    };
+    query?: never;
+    url: '/api/vendedor/fotos/{hash}/{tamanho}';
+};
+
+export type BaixarFotoDaMinhaMaletaResponses = {
+    /**
+     * OK
+     */
+    200: string;
+};
+
+export type BaixarFotoDaMinhaMaletaResponse = BaixarFotoDaMinhaMaletaResponses[keyof BaixarFotoDaMinhaMaletaResponses];
+
+export type ListarMinhasMaletasData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/vendedor/maletas';
+};
+
+export type ListarMinhasMaletasResponses = {
+    /**
+     * OK
+     */
+    200: Array<Maleta>;
+};
+
+export type ListarMinhasMaletasResponse = ListarMinhasMaletasResponses[keyof ListarMinhasMaletasResponses];
+
+export type VerMinhaMaletaData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/vendedor/maletas/{id}';
+};
+
+export type VerMinhaMaletaResponses = {
+    /**
+     * OK
+     */
+    200: Maleta;
+};
+
+export type VerMinhaMaletaResponse = VerMinhaMaletaResponses[keyof VerMinhaMaletaResponses];
+
+export type VerConferenciaDaMinhaMaletaData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/vendedor/maletas/{id}/conferencia';
+};
+
+export type VerConferenciaDaMinhaMaletaResponses = {
+    /**
+     * OK
+     */
+    200: Conferencia;
+};
+
+export type VerConferenciaDaMinhaMaletaResponse = VerConferenciaDaMinhaMaletaResponses[keyof VerConferenciaDaMinhaMaletaResponses];
+
+export type ConferirMinhaMaletaData = {
+    body: PedidoDeConferencia;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/vendedor/maletas/{id}/conferencia';
+};
+
+export type ConferirMinhaMaletaResponses = {
+    /**
+     * OK
+     */
+    200: Conferencia;
+};
+
+export type ConferirMinhaMaletaResponse = ConferirMinhaMaletaResponses[keyof ConferirMinhaMaletaResponses];
+
+export type AcharPecaDaMinhaMaletaData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query: {
+        codigo: string;
+    };
+    url: '/api/vendedor/maletas/{id}/pecas';
+};
+
+export type AcharPecaDaMinhaMaletaResponses = {
+    /**
+     * OK
+     */
+    200: Linha;
+};
+
+export type AcharPecaDaMinhaMaletaResponse = AcharPecaDaMinhaMaletaResponses[keyof AcharPecaDaMinhaMaletaResponses];
+
+export type RelatorioDeValoresAReceberData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/vendedor/relatorios/a-receber';
+};
+
+export type RelatorioDeValoresAReceberResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioAReceber;
+};
+
+export type RelatorioDeValoresAReceberResponse = RelatorioDeValoresAReceberResponses[keyof RelatorioDeValoresAReceberResponses];
+
+export type RelatorioDeMeusRecebimentosData = {
+    body?: never;
+    path?: never;
+    query?: {
+        de?: string;
+        ate?: string;
+    };
+    url: '/api/vendedor/relatorios/recebimentos';
+};
+
+export type RelatorioDeMeusRecebimentosResponses = {
+    /**
+     * OK
+     */
+    200: Relatorio;
+};
+
+export type RelatorioDeMeusRecebimentosResponse = RelatorioDeMeusRecebimentosResponses[keyof RelatorioDeMeusRecebimentosResponses];
+
+export type RelatorioDeMinhasVendasData = {
+    body?: never;
+    path?: never;
+    query?: {
+        de?: string;
+        ate?: string;
+        agrupar?: string;
+    };
+    url: '/api/vendedor/relatorios/vendas';
+};
+
+export type RelatorioDeMinhasVendasResponses = {
+    /**
+     * OK
+     */
+    200: Relatorio;
+};
+
+export type RelatorioDeMinhasVendasResponse = RelatorioDeMinhasVendasResponses[keyof RelatorioDeMinhasVendasResponses];
 
 export type ValorDoVendedorData = {
     body?: never;

@@ -3,9 +3,10 @@
  * conhece do processo principal. Nada aqui carrega token: a tela só recebe o resultado.
  */
 
-/** Operações de consulta que o processo principal aceita fazer em nome da tela. */
-export const OPERACOES_DA_API = ['eu'] as const;
-export type OperacaoDaApi = (typeof OPERACOES_DA_API)[number];
+import type { PedidoDeChamada } from './operacoes';
+
+export { OPERACOES_DA_API } from './operacoes';
+export type { OperacaoDaApi, PedidoDeChamada } from './operacoes';
 
 /** Nomes dos canais. Só o processo principal e a ponte (preload) os usam. */
 export const CANAIS = {
@@ -37,10 +38,6 @@ export interface DadosDeEntrada {
 
 export interface DadosDeNovaSenha {
   senhaNova: string;
-}
-
-export interface PedidoDeChamada {
-  operacao: OperacaoDaApi;
 }
 
 export interface UsuarioLogado {
