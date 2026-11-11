@@ -1,8 +1,14 @@
-import type { AvisoDeAtualizacao } from '../shared/ponte';
-import type { Relogio } from './tipos';
+/** Estado da atualização automática do aplicativo (ADR-0009). Só o processo principal decide. */
+export type AvisoDeAtualizacao = { estado: 'nenhuma' } | { estado: 'pronta'; versao: string };
+
+export interface Relogio {
+  agora(): number;
+  /** Agenda `fn` daqui a `ms` milissegundos e devolve a função que cancela. */
+  agendar(ms: number, fn: () => void): () => void;
+}
 
 /**
- * Atualização automática do Corona Gestão (ADR-0009, item 3). Usa o `electron-updater` sobre o MESMO canal
+ * Atualização automática dos aplicativos Corona (ADR-0009, item 3). Usa o `electron-updater` sobre o MESMO canal
  * fixado da API: o certificado do servidor é conferido pelo verificador da sessão (conexao-fixada.ts) e o
  * SHA-512 do instalador, publicado em latest.yml, é conferido pelo próprio atualizador antes de instalar.
  * Instalador com hash diferente é descartado. A pessoa nunca reinstala: a versão nova é baixada em segundo
@@ -27,6 +33,8 @@ interface Opcoes {
   atualizador: AtualizadorDoElectron;
   /** Endereço do servidor (https://IP), o mesmo da API. */
   endereco: string;
+  /** Pasta das atualizações no servidor. Padrão "atualizacoes"; o Corona Vendas usa "atualizacoes/vendas". */
+  pasta?: string;
   relogio: Relogio;
   aoMudar: (aviso: AvisoDeAtualizacao) => void;
   /** Só para o registro técnico (nunca vai para a tela). */
@@ -70,7 +78,7 @@ export class ServicoDeAtualizacao {
     a.logger = null;
     a.setFeedURL({
       provider: 'generic',
-      url: `${this.opcoes.endereco.replace(/\/+$/, '')}/atualizacoes/`,
+      url: `${this.opcoes.endereco.replace(/\/+$/, '')}/${(this.opcoes.pasta ?? 'atualizacoes').replace(/^\/+|\/+$/g, '')}/`,
       channel: 'latest',
     });
 

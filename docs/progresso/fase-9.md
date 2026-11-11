@@ -73,7 +73,7 @@ Subi a pilha inteira de produção no computador de desenvolvimento (build da im
 - `src/main/conexao-fixada.ts`: o app só confia no certificado do servidor pela **impressão digital da chave pública** (a atual e uma reserva). A exceção vale só para o endereço do servidor; todo outro endereço segue a verificação normal. A verificação nunca é desligada de forma geral. Testes (`conexao-fixada.test.ts`) cobrem chave certa, chave errada, reserva, outro endereço e lista vazia.
 - `configuracao.ts`: leitura e validação das impressões, e `validarConfiguracaoDeProducao` (recusa endereço local, `http` e impressão faltando). Sem impressão, o app não conecta fora deste computador.
 - `index.ts`: as chamadas à API passam a usar a rede do Chromium (`session.defaultSession.fetch`), que é a que consulta o verificador.
-- `electron-builder.yml` (NSIS por usuário, dois cliques, sem administrador, atalhos, "Corona Gestão", ícone provisório de `docs/marca`) e `npm run owner:empacotar` (`scripts/owner-empacotar.mjs`): lê `apps/owner-app/.env.producao` (ignorado pelo Git; `.env.producao.example` versionado), confere, compila, empacota e mostra o SHA-512.
+- `electron-builder.yml` (NSIS por usuário, dois cliques, sem administrador, atalhos, "Corona Gestão", ícone provisório de `docs/marca`) e `npm run owner:empacotar` (`scripts/empacotar-app.mjs`): lê `apps/owner-app/.env.producao` (ignorado pelo Git; `.env.producao.example` versionado), confere, compila, empacota e mostra o SHA-512.
 - `electron-builder` 26.18.0 (a versão do ADR-0001) como dependência de desenvolvimento do app da dona.
 
 **Defeito encontrado e corrigido:** o endereço da API era lido de `process.env`, que o build **não** preenche. O app empacotado ficaria sempre com `localhost:8080`. Agora vem de `import.meta.env`, embutido na compilação. (O Corona Vendas lê o endereço do mesmo jeito; fica avisado para a Fase 9 completa, não foi mexido.)
@@ -96,14 +96,14 @@ Subi a pilha inteira de produção no computador de desenvolvimento (build da im
 
 ### Tarefa 9.5: atualização automática
 
-**Em revisão.** Só atualização em `apps/owner-app`, mais `scripts/owner-publicar.mjs`. Decisão no [ADR-0009](../decisoes/ADR-0009-implantacao-certificado-atualizacao-e-backup.md), item 3 (com a correção do resultado da prova).
+**Em revisão.** Só atualização em `apps/owner-app`, mais `scripts/publicar-app.mjs`. Decisão no [ADR-0009](../decisoes/ADR-0009-implantacao-certificado-atualizacao-e-backup.md), item 3 (com a correção do resultado da prova).
 
 **O que foi feito**
 
 - `src/main/atualizacao.ts` (`ServicoDeAtualizacao`) sobre o `electron-updater` 6.8.11: confere 20 segundos depois de abrir e a cada 2 a 6 horas; baixa em segundo plano; só versão **maior** e final; sem atualização diferencial; instala quando a pessoa **fecha** o programa. Erros (rede, certificado, hash) não aparecem para a dona e a conferência continua agendada. Só no app instalado.
 - O certificado fixado também na partição `electron-updater` (a que a biblioteca usa para baixar), com teste que confere o nome contra a biblioteca.
 - Ponte e tela: faixa "Há uma versão nova. Ela será instalada quando você fechar o programa." (sem botão), que também aparece para quem abriu a janela depois do download. Glossário atualizado.
-- `electron-builder.yml` gera o `latest.yml` (com SHA-512) e `npm run owner:publicar` (`scripts/owner-publicar.mjs`): recusa versão igual ou menor que a do servidor, envia o instalador e só depois o `latest.yml`, confere o hash no servidor antes de anunciar, mantém os 3 instaladores mais novos. Peças puras testadas (`npm run scripts:test`, agora também no CI).
+- `electron-builder.yml` gera o `latest.yml` (com SHA-512) e `npm run owner:publicar` (`scripts/publicar-app.mjs`): recusa versão igual ou menor que a do servidor, envia o instalador e só depois o `latest.yml`, confere o hash no servidor antes de anunciar, mantém os 3 instaladores mais novos. Peças puras testadas (`npm run scripts:test`, agora também no CI).
 - `owner:empacotar` apaga instaladores antigos antes e `--para-teste` permite apontar para este computador (com aviso).
 
 **Como foi verificado (de verdade)**
@@ -117,6 +117,20 @@ Pilha de produção local (nginx real, certificado autoassinado fixado). Versão
 - Atualização do Corona Vendas (Fase 9 completa).
 
 **Dúvidas:** nenhuma nova.
+
+### Tarefa 9.7: Corona Vendas, instalador e atualização reaproveitáveis (extra)
+
+**Em revisão.** Mesmo mecanismo do Corona Gestão para o Corona Vendas, sem mexer em venda, sincronização, banco local nem bloqueio de aparelho (Fase 5). Roteiro: [entrega-corona-vendas.md](../entrega-corona-vendas.md).
+
+**O que foi feito**
+
+- Pacote **neutro** `packages/conexao-segura`: certificado fixado, endereço, versão, validação de produção e o serviço de atualização, extraídos do Corona Gestão (que passa a usá-los) e usados pelo Corona Vendas. Sem nenhuma palavra de gestão (a varredura confere; entrou nos pacotes varridos do CI).
+- Corona Vendas: instalador NSIS (`electron-builder.yml`, nome "Corona Vendas", ícone provisório), `extraMetadata.name`, endereço e impressões digitais como configuração de build, certificado fixado nas duas sessões do Chromium, atualização automática no canal `/atualizacoes/vendas/`, faixa "Há uma versão nova..." e ponte. **Corrigido** o endereço da API lido de `process.env` (o build não preenche): agora `import.meta.env`.
+- Scripts dos dois aplicativos unificados (`scripts/empacotar-app.mjs`, `scripts/publicar-app.mjs`): `vendas:empacotar` e `vendas:publicar`.
+
+**Verificado de verdade:** ciclo completo no computador (pilha de produção local): Corona Vendas 1.0.0 instalado, 1.0.1 publicada em `/atualizacoes/vendas/`, o app abriu, baixou e se instalou sozinho ao ser fechado. `npm run barreira:varrer` limpa (inclui o pacote novo), lint, typecheck, testes (Gestão e Vendas), `scripts:test`.
+
+**O que não foi feito:** nada de venda, banco local criptografado nem bloqueio do segundo aparelho (Fase 5); ícone definitivo; publicação pela rede (`ssh`) sem VPS.
 
 ### Tarefa 9.6: roteiro de entrega
 

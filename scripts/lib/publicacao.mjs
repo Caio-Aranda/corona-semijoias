@@ -32,12 +32,12 @@ export function conferirVersaoNova(publicada, nova) {
   if (publicada === null) return;
   if (compararVersoes(nova, publicada) <= 0) {
     throw new Error(
-      `A versão no servidor é ${publicada} e esta é ${nova}. Aumente a "version" em apps/owner-app/package.json (por exemplo para o próximo número) e tente de novo.`,
+      `A versão no servidor é ${publicada} e esta é ${nova}. Aumente a "version" no package.json do aplicativo (por exemplo para o próximo número) e tente de novo.`,
     );
   }
 }
 
 /** Nome do instalador: só o que o electron-builder gera, sem caminho. */
-export function nomeDoInstaladorValido(nome) {
-  return /^Corona-Gestao-Setup-\d+\.\d+\.\d+\.exe$/.test(nome);
+export function nomeDoInstaladorValido(nome, prefixo = 'Corona-Gestao') {
+  return new RegExp(String.raw`^${prefixo}-Setup-\d+\.\d+\.\d+\.exe$`).test(nome);
 }
