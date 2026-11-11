@@ -95,7 +95,7 @@ Colocar o Corona Gestão no ar para a dona (prazo: sexta, 14/11/2026). É infrae
 | 9.2 | deploy: Docker Compose de produção (API, PostgreSQL, proxy HTTPS), perfil `prod`, script de instalação do servidor, saúde e aviso de queda | Em revisão · [detalhe](progresso/fase-9.md#tarefa-92-implantação-da-api) |
 | 9.3 | backup e restauração: `pg_dump` diário, cópia semanal por `rclone`, restauração testada num banco limpo | Em revisão · [detalhe](progresso/fase-9.md#tarefa-93-backup-e-restauração) |
 | 9.4 | Corona Gestão: instalador `.exe` (NSIS), endereço e certificado fixado como configuração de build, `npm run owner:empacotar` | Em revisão · [detalhe](progresso/fase-9.md#tarefa-94-instalador-do-corona-gestão-e-certificado-fixado) |
-| 9.5 | Corona Gestão: atualização automática (publicação na VPS, checagem, hash, instalação ao fechar, aviso na tela) | A fazer |
+| 9.5 | Corona Gestão: atualização automática (publicação na VPS, checagem, hash, instalação ao fechar, aviso na tela) | Em revisão · [detalhe](progresso/fase-9.md#tarefa-95-atualização-automática) |
 | 9.6 | roteiro de entrega (`docs/entrega-corona-gestao.md`) | A fazer |
 
 **Fora desta fase mínima:** domínio e Let's Encrypt, assinatura do instalador, backup diário fora da VPS, atualização do Corona Vendas (Fase 9 completa).

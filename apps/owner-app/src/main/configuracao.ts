@@ -94,17 +94,24 @@ export interface ConfiguracaoDeProducao {
  * Confere a configuração do INSTALADOR da dona antes de compilar (npm run owner:empacotar): endereço do
  * servidor (nunca este computador) e as impressões digitais do certificado.
  */
-export function validarConfiguracaoDeProducao(env: {
-  MAIN_VITE_CORONA_API_URL?: string | undefined;
-  MAIN_VITE_CORONA_API_PINS?: string | undefined;
-}): ConfiguracaoDeProducao {
+export function validarConfiguracaoDeProducao(
+  env: {
+    MAIN_VITE_CORONA_API_URL?: string | undefined;
+    MAIN_VITE_CORONA_API_PINS?: string | undefined;
+  },
+  /** Só para testar o instalador neste computador (npm run owner:empacotar -- --para-teste). */
+  opcoes: { permitirEsteComputador?: boolean } = {},
+): ConfiguracaoDeProducao {
   if (!(env.MAIN_VITE_CORONA_API_URL ?? '').trim()) {
     throw new ErroDeConfiguracao(
       'Falta o endereço do servidor (MAIN_VITE_CORONA_API_URL), com https:// e o IP da VPS.',
     );
   }
   const endereco = enderecoDaApi(env.MAIN_VITE_CORONA_API_URL);
-  if (ENDERECOS_DESTE_COMPUTADOR.has(new URL(endereco).hostname)) {
+  if (
+    !opcoes.permitirEsteComputador &&
+    ENDERECOS_DESTE_COMPUTADOR.has(new URL(endereco).hostname)
+  ) {
     throw new ErroDeConfiguracao(
       'O instalador da dona não pode apontar para este computador. Preencha MAIN_VITE_CORONA_API_URL com o endereço do servidor (https://IP).',
     );

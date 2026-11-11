@@ -94,3 +94,27 @@ Subi a pilha inteira de produção no computador de desenvolvimento (build da im
 
 **Dúvidas:** troca do logo provisório pelo definitivo.
 
+### Tarefa 9.5: atualização automática
+
+**Em revisão.** Só atualização em `apps/owner-app`, mais `scripts/owner-publicar.mjs`. Decisão no [ADR-0009](../decisoes/ADR-0009-implantacao-certificado-atualizacao-e-backup.md), item 3 (com a correção do resultado da prova).
+
+**O que foi feito**
+
+- `src/main/atualizacao.ts` (`ServicoDeAtualizacao`) sobre o `electron-updater` 6.8.11: confere 20 segundos depois de abrir e a cada 2 a 6 horas; baixa em segundo plano; só versão **maior** e final; sem atualização diferencial; instala quando a pessoa **fecha** o programa. Erros (rede, certificado, hash) não aparecem para a dona e a conferência continua agendada. Só no app instalado.
+- O certificado fixado também na partição `electron-updater` (a que a biblioteca usa para baixar), com teste que confere o nome contra a biblioteca.
+- Ponte e tela: faixa "Há uma versão nova. Ela será instalada quando você fechar o programa." (sem botão), que também aparece para quem abriu a janela depois do download. Glossário atualizado.
+- `electron-builder.yml` gera o `latest.yml` (com SHA-512) e `npm run owner:publicar` (`scripts/owner-publicar.mjs`): recusa versão igual ou menor que a do servidor, envia o instalador e só depois o `latest.yml`, confere o hash no servidor antes de anunciar, mantém os 3 instaladores mais novos. Peças puras testadas (`npm run scripts:test`, agora também no CI).
+- `owner:empacotar` apaga instaladores antigos antes e `--para-teste` permite apontar para este computador (com aviso).
+
+**Como foi verificado (de verdade)**
+
+Pilha de produção local (nginx real, certificado autoassinado fixado). Versão 1.0.0 instalada no Windows, 1.0.1 publicada com `owner:publicar`; o app abriu, baixou o instalador, conferiu o hash e, ao ser fechado, se instalou sozinho: a versão instalada passou de 1.0.0 para 1.0.1. A 1.0.1 abre normalmente. Publicar a mesma versão de novo é recusado. A primeira tentativa **falhou** (`ERR_CERT_AUTHORITY_INVALID`): o `electron-updater` usa uma sessão própria; corrigido e provado de novo (ver ADR).
+
+**O que não foi feito**
+
+- **A publicação pela rede (`ssh` e `scp`) não foi testada**: só o modo de pasta local (`CORONA_PUBLICAR_LOCAL`); precisa da VPS e da chave SSH.
+- O aviso com o programa realmente aberto na tela da dona (só a lógica e a faixa foram testadas); o computador dela pode ter antivírus que segure o instalador sem assinatura.
+- Atualização do Corona Vendas (Fase 9 completa).
+
+**Dúvidas:** nenhuma nova.
+

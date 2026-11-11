@@ -2,7 +2,7 @@
 // Lê o endereço do servidor e as impressões digitais do certificado de apps/owner-app/.env.producao (ou das
 // variáveis de ambiente), confere tudo ANTES de compilar e só então empacota. Nada disso mora no código.
 import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -43,7 +43,12 @@ function principal() {
   };
   let config;
   try {
-    config = validarConfiguracaoDeProducao(env);
+    const paraTeste = process.argv.includes('--para-teste');
+    if (paraTeste)
+      console.warn(
+        'ATENÇÃO: instalador PARA TESTE (pode apontar para este computador). Não entregue à dona.',
+      );
+    config = validarConfiguracaoDeProducao(env, { permitirEsteComputador: paraTeste });
   } catch (erro) {
     if (!(erro instanceof ErroDeConfiguracao)) throw erro;
     console.error(`\nNão deu para gerar o instalador: ${erro.message}`);
@@ -55,17 +60,36 @@ function principal() {
   console.log(`Servidor: ${config.endereco}`);
   console.log(`Impressões digitais fixadas: ${config.impressoes.length}`);
 
+  // Instaladores de versões anteriores ficam de fora: o que sai daqui é só desta versão (e nunca se
+  // publica um arquivo velho por engano).
+  const pastaDeSaida = join(app, 'release');
+  if (existsSync(pastaDeSaida)) {
+    for (const nome of readdirSync(pastaDeSaida)) {
+      if (/^(Corona-Gestao-Setup-.*|latest\.yml)$/.test(nome))
+        rmSync(join(pastaDeSaida, nome), { force: true });
+    }
+  }
+
   // As variáveis do ambiente valem na compilação (o Vite as lê); o arquivo .env.producao também.
-  const ambiente = { ...process.env, ...env };
+  const ambiente = {
+    ...process.env,
+    ...env,
+    CORONA_URL_ATUALIZACOES: `${config.endereco}/atualizacoes/`,
+  };
   executar('npx', ['electron-vite', 'build', '--mode', 'producao'], { cwd: app, env: ambiente });
-  executar('npx', ['electron-builder', '--config', 'electron-builder.yml', '--win', 'nsis'], {
-    cwd: app,
-    env: ambiente,
-  });
+  executar(
+    'npx',
+    ['electron-builder', '--config', 'electron-builder.yml', '--win', 'nsis', '--publish', 'never'],
+    {
+      cwd: app,
+      env: ambiente,
+    },
+  );
 
   const pasta = join(app, 'release');
-  const instalador = readdirSync(pasta).find((f) => /^Corona-Gestao-Setup-.*\.exe$/.test(f));
-  if (!instalador) {
+  const versao = JSON.parse(readFileSync(join(app, 'package.json'), 'utf8')).version;
+  const instalador = `Corona-Gestao-Setup-${versao}.exe`;
+  if (!existsSync(join(pasta, instalador))) {
     console.error(
       'O electron-builder terminou, mas não achei o instalador em apps/owner-app/release.',
     );

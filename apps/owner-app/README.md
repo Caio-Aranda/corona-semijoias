@@ -38,7 +38,13 @@ Gera o pacote de código em `apps/owner-app/out/` (processo principal, ponte e t
 npm run owner:empacotar
 ```
 
-Gera o **instalador do Windows** (`apps/owner-app/release/Corona-Gestao-Setup-<versão>.exe`, NSIS por usuário, sem assinatura). Antes, copie `apps/owner-app/.env.producao.example` para `.env.producao` e preencha o endereço do servidor (`https://IP`) e as impressões digitais do certificado (`MAIN_VITE_CORONA_API_PINS`, a atual e a reserva). O comando confere os dois **antes** de compilar e recusa endereço local ou impressão faltando. Esses valores são embutidos no pacote na compilação (`import.meta.env`) e **nunca ficam no código versionado**. O app só confia no certificado do servidor pela impressão digital da chave (`src/main/conexao-fixada.ts`, ADR-0009); para qualquer outro endereço vale a verificação normal. Ao terminar, mostra o SHA-512 do instalador. A atualização automática é a tarefa 9.5.
+Gera o **instalador do Windows** (`apps/owner-app/release/Corona-Gestao-Setup-<versão>.exe`, NSIS por usuário, sem assinatura). Antes, copie `apps/owner-app/.env.producao.example` para `.env.producao` e preencha o endereço do servidor (`https://IP`) e as impressões digitais do certificado (`MAIN_VITE_CORONA_API_PINS`, a atual e a reserva). O comando confere os dois **antes** de compilar e recusa endereço local ou impressão faltando. Esses valores são embutidos no pacote na compilação (`import.meta.env`) e **nunca ficam no código versionado**. O app só confia no certificado do servidor pela impressão digital da chave (`src/main/conexao-fixada.ts`, ADR-0009); para qualquer outro endereço vale a verificação normal. Ao terminar, mostra o SHA-512 do instalador.
+
+```bash
+npm run owner:publicar
+```
+
+Publica uma versão nova na VPS: gera o instalador, confere que a `version` do `package.json` é **maior** que a do servidor, envia o instalador e **só depois** o `latest.yml` (que anuncia a versão), confere o SHA-512 no servidor e guarda só os 3 instaladores mais novos. Precisa de `apps/owner-app/.env.publicar` (veja `.env.publicar.example`; acesso por chave SSH). Os computadores se atualizam sozinhos: o app confere ao abrir e a cada 2 a 6 horas (`src/main/atualizacao.ts`), baixa em segundo plano, confere o hash e instala quando a pessoa fecha o programa, com a faixa "Há uma versão nova. Ela será instalada quando você fechar o programa.". Só funciona no app instalado (em desenvolvimento não procura). Para testar o instalador neste computador: `npm run owner:empacotar -- --para-teste` (aceita endereço local; nunca entregue esse instalador).
 
 ```bash
 npm test -w @corona/owner-app

@@ -23,6 +23,8 @@
     "owner:dev": "npm run dev -w @corona/owner-app",
     "owner:build": "npm run build -w @corona/owner-app",
     "owner:empacotar": "node scripts/owner-empacotar.mjs",
+    "owner:publicar": "node scripts/owner-publicar.mjs",
+    "scripts:test": "node --test scripts/lib/",
     "seller:dev": "npm run dev -w @corona/seller-app",
     "seller:build": "npm run build -w @corona/seller-app",
     "seller:empacotar": "npm run empacotar -w @corona/seller-app",

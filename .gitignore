@@ -44,3 +44,4 @@ dados/
 
 # Configuração do instalador do Corona Gestão (os valores reais ficam só no computador de quem gera o instalador)
 !.env.producao.example
+!.env.publicar.example

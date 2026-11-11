@@ -40,6 +40,8 @@ export const CANAIS = {
   estouLogado: 'corona:estou-logado',
   chamarApi: 'corona:chamar-api',
   sessaoMudou: 'corona:sessao-mudou',
+  atualizacaoEstado: 'corona:atualizacao-estado',
+  atualizacaoMudou: 'corona:atualizacao-mudou',
 } as const;
 
 /** A lista fixa de funções que a ponte oferece à tela. Acrescentar uma função exige mexer aqui. */
@@ -50,6 +52,7 @@ export const FUNCOES_DA_PONTE = [
   'estouLogado',
   'chamarApi',
   'aoMudarASessao',
+  'aoMudarAAtualizacao',
 ] as const;
 
 export interface DadosDeEntrada {
@@ -115,6 +118,9 @@ export interface AvisoDeSessao {
   mensagem?: string;
 }
 
+/** Estado da atualização automática do aplicativo (ADR-0009). Só o processo principal decide. */
+export type AvisoDeAtualizacao = { estado: 'nenhuma' } | { estado: 'pronta'; versao: string };
+
 /** O que a tela enxerga em `window.corona`. */
 export interface PonteDoCorona {
   entrar(dados: DadosDeEntrada): Promise<ResultadoDeEntrada>;
@@ -124,4 +130,9 @@ export interface PonteDoCorona {
   chamarApi(pedido: PedidoDeChamada): Promise<ResultadoDeChamada>;
   /** Avisa quando a sessão terminar sozinha. Devolve a função que cancela o aviso. */
   aoMudarASessao(ouvinte: (aviso: AvisoDeSessao) => void): () => void;
+  /**
+   * Avisa o estado da atualização automática: já na hora de assinar (se uma versão nova já foi baixada) e
+   * sempre que mudar. Devolve a função que cancela o aviso.
+   */
+  aoMudarAAtualizacao(ouvinte: (aviso: AvisoDeAtualizacao) => void): () => void;
 }
