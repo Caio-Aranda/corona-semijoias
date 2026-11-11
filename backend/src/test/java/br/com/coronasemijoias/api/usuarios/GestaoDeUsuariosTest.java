@@ -278,12 +278,13 @@ class GestaoDeUsuariosTest extends TesteDeIntegracao {
         enviar(post(BASE + "/" + v.id() + "/desativar"), usuarios.comoDona(), null).andExpect(status().isOk())
                 .andExpect(jsonPath("$.ativo").value(false));
 
-        // o token de acesso que ainda não venceu para de valer
-        mvc.perform(get("/api/auth/eu").with(UsuariosDeTeste.comToken(acesso))).andExpect(status().isUnauthorized());
+        // o token de acesso que ainda não venceu para de valer (no Corona Vendas, com a ordem de apagar; tarefa 5.3)
+        mvc.perform(get("/api/auth/eu").with(UsuariosDeTeste.comToken(acesso))).andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.acao").value("APAGAR_DADOS"));
         // o token de renovação antigo falha
         Map<String, Object> pedidoDeRenovacao = new HashMap<>();
         pedidoDeRenovacao.put("tokenDeRenovacao", renovacao);
-        pedidoDeRenovacao.put("dispositivoId", UsuariosDeTeste.APARELHO);
+        pedidoDeRenovacao.put("dispositivoId", usuarios.aparelhoDe(v));
         mvc.perform(post("/api/auth/renovar").contentType(MediaType.APPLICATION_JSON)
                 .content(json.writeValueAsString(pedidoDeRenovacao))).andExpect(status().is4xxClientError());
         // o login com a senha certa é recusado
@@ -311,7 +312,7 @@ class GestaoDeUsuariosTest extends TesteDeIntegracao {
         mvc.perform(get("/api/auth/eu").with(UsuariosDeTeste.comToken(acessoAntigo))).andExpect(status().isUnauthorized());
         Map<String, Object> pedido = new HashMap<>();
         pedido.put("tokenDeRenovacao", renovacaoAntiga);
-        pedido.put("dispositivoId", UsuariosDeTeste.APARELHO);
+        pedido.put("dispositivoId", usuarios.aparelhoDe(v));
         mvc.perform(post("/api/auth/renovar").contentType(MediaType.APPLICATION_JSON)
                 .content(json.writeValueAsString(pedido))).andExpect(status().isUnauthorized());
         mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)

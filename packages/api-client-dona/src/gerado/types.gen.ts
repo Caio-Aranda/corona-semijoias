@@ -10,6 +10,24 @@ export type Ambigua = {
     nomes?: Array<string>;
 };
 
+export type AparelhoDoVendedor = {
+    aguardandoEnvio?: number;
+    aguardandoInformadoEm?: string;
+    bloqueadoEm?: string;
+    id?: string;
+    liberadoEm?: string;
+    motivoBloqueio?: string;
+    primeiroContatoEm?: string;
+    situacao?: 'ATIVO' | 'AGUARDANDO_LIBERACAO' | 'SUBSTITUIDO' | 'BLOQUEADO';
+    substituidoEm?: string;
+    substituidoPor?: string;
+    ultimoContatoEm?: string;
+    ultimoEnvioCompletoEm?: string;
+    ultimoPullEm?: string;
+    ultimoPushEm?: string;
+    versaoApp?: string;
+};
+
 export type Associada = {
     codigo?: string;
     fotosAtuais?: number;
@@ -929,6 +947,10 @@ export type PedidoDeAjuste = {
     produtoId: string;
 };
 
+export type PedidoDeBloqueio = {
+    motivo?: string;
+};
+
 export type PedidoDeCodigo = {
     ativo?: boolean;
     codigo: string;
@@ -1485,11 +1507,6 @@ export type RespostaDaLeitura = {
     resumo?: InventariosDaDonaControllerRespostaDoResumo;
 };
 
-export type RespostaDaLiberacao = {
-    remessaId?: string;
-    tinhaAparelho?: boolean;
-};
-
 export type RespostaDaLinhaDeCusto = {
     compraId?: string;
     custo?: string;
@@ -1885,6 +1902,42 @@ export type TrocarSenhaResponses = {
 };
 
 export type TrocarSenhaResponse = TrocarSenhaResponses[keyof TrocarSenhaResponses];
+
+export type BloquearAparelhoData = {
+    body?: PedidoDeBloqueio;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/aparelhos/{id}/bloquear';
+};
+
+export type BloquearAparelhoResponses = {
+    /**
+     * OK
+     */
+    200: AparelhoDoVendedor;
+};
+
+export type BloquearAparelhoResponse = BloquearAparelhoResponses[keyof BloquearAparelhoResponses];
+
+export type LiberarAparelhoData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/aparelhos/{id}/liberar';
+};
+
+export type LiberarAparelhoResponses = {
+    /**
+     * OK
+     */
+    200: AparelhoDoVendedor;
+};
+
+export type LiberarAparelhoResponse = LiberarAparelhoResponses[keyof LiberarAparelhoResponses];
 
 export type Listar14Data = {
     body?: never;
@@ -4033,24 +4086,6 @@ export type ColocarItemNaRemessaResponses = {
 
 export type ColocarItemNaRemessaResponse = ColocarItemNaRemessaResponses[keyof ColocarItemNaRemessaResponses];
 
-export type LiberarAparelhoDaMaletaData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/dona/remessas/{id}/liberar-aparelho';
-};
-
-export type LiberarAparelhoDaMaletaResponses = {
-    /**
-     * OK
-     */
-    200: RespostaDaLiberacao;
-};
-
-export type LiberarAparelhoDaMaletaResponse = LiberarAparelhoDaMaletaResponses[keyof LiberarAparelhoDaMaletaResponses];
-
 export type VerMaletaDaRemessaData = {
     body?: never;
     path: {
@@ -5030,3 +5065,21 @@ export type GravarTrabalhoResponses = {
 };
 
 export type GravarTrabalhoResponse = GravarTrabalhoResponses[keyof GravarTrabalhoResponses];
+
+export type ListarAparelhosDoVendedorData = {
+    body?: never;
+    path: {
+        vendedorId: string;
+    };
+    query?: never;
+    url: '/api/dona/vendedores/{vendedorId}/aparelhos';
+};
+
+export type ListarAparelhosDoVendedorResponses = {
+    /**
+     * OK
+     */
+    200: Array<AparelhoDoVendedor>;
+};
+
+export type ListarAparelhosDoVendedorResponse = ListarAparelhosDoVendedorResponses[keyof ListarAparelhosDoVendedorResponses];

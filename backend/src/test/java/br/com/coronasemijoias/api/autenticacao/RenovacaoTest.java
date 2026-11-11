@@ -68,7 +68,13 @@ class RenovacaoTest extends TesteDeIntegracao {
         return new Sessao(acesso, resposta.get("tokenDeRenovacao").asString(), sid, resposta);
     }
 
+    /** O computador do último login do teste (cada vendedor tem o seu; tarefa 5.3). */
+    private UUID aparelho = UsuariosDeTeste.APARELHO;
+
     private Sessao entrar(UsuarioDeTeste usuario) throws Exception {
+        if ("VENDEDOR".equals(usuario.perfil())) {
+            aparelho = usuarios.aparelhoDe(usuario);
+        }
         return sessao(corpo(mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
                 .content(json.writeValueAsString(usuarios.corpoDoLogin(usuario.login(), usuario.senha()))))
                 .andExpect(status().isOk())));
@@ -109,7 +115,7 @@ class RenovacaoTest extends TesteDeIntegracao {
         // A conferência de cada requisição recusa o token de acesso da família revogada.
         eu(sessao.acesso()).andExpect(status().isUnauthorized()).andExpect(jsonPath("$.codigo").value("SESSAO_TERMINADA"));
         for (String renovacao : renovacoes) {
-            recusada(renovacao, UsuariosDeTeste.APARELHO);
+            recusada(renovacao, aparelho);
         }
     }
 
@@ -121,14 +127,14 @@ class RenovacaoTest extends TesteDeIntegracao {
         Sessao login = entrar(vendedor);
         relogio.avancar(Duration.ofMinutes(20)); // o token de acesso já venceu
 
-        ResultActions resposta = renovar(login.renovacao(), UsuariosDeTeste.APARELHO).andExpect(status().isOk());
+        ResultActions resposta = renovar(login.renovacao(), aparelho).andExpect(status().isOk());
         assertThat(resposta.andReturn().getResponse().getHeader(HttpHeaders.CACHE_CONTROL)).contains("no-store");
         Sessao renovada = sessao(corpo(resposta));
 
         assertThat(renovada.renovacao()).hasSize(43).isNotEqualTo(login.renovacao());
         assertThat(renovada.sid()).isEqualTo(login.sid());
         JsonNode conteudo = json.readTree(TokensDeTeste.parte(renovada.acesso(), 1));
-        assertThat(conteudo.get("dispositivo_id").asString()).isEqualTo(UsuariosDeTeste.APARELHO.toString());
+        assertThat(conteudo.get("dispositivo_id").asString()).isEqualTo(aparelho.toString());
         assertThat(conteudo.get("vendedor_id").asString()).isEqualTo(vendedor.vendedorId().toString());
         Instant hora = Instant.parse(renovada.resposta().get("horaDoServidor").asString());
         assertThat(hora).isAfter(Instant.now().plus(Duration.ofMinutes(19)));
@@ -147,16 +153,16 @@ class RenovacaoTest extends TesteDeIntegracao {
     @Test
     void reapresentacaoDentroDaJanelaDevolveOMesmoSucessorSemCriarOutro() throws Exception {
         Sessao login = entrar(usuarios.criarVendedor());
-        Sessao primeira = renovou(login.renovacao(), UsuariosDeTeste.APARELHO);
+        Sessao primeira = renovou(login.renovacao(), aparelho);
 
         // A resposta se perdeu; o app volta com o token anterior 1 min 59 s depois.
         relogio.avancar(Duration.ofMinutes(1).plusSeconds(59));
-        Sessao reapresentada = renovou(login.renovacao(), UsuariosDeTeste.APARELHO);
+        Sessao reapresentada = renovou(login.renovacao(), aparelho);
 
         assertThat(reapresentada.renovacao()).isEqualTo(primeira.renovacao());
         assertThat(tokensDaFamilia(login.sid())).isEqualTo(2);
         // O sucessor continua valendo e renova normalmente.
-        Sessao seguinte = renovou(reapresentada.renovacao(), UsuariosDeTeste.APARELHO);
+        Sessao seguinte = renovou(reapresentada.renovacao(), aparelho);
         assertThat(seguinte.renovacao()).isNotEqualTo(primeira.renovacao());
         eu(seguinte.acesso()).andExpect(status().isOk());
     }
@@ -166,10 +172,10 @@ class RenovacaoTest extends TesteDeIntegracao {
     @Test
     void reapresentacaoForaDaJanelaRevogaAFamilia() throws Exception {
         Sessao login = entrar(usuarios.criarVendedor());
-        Sessao primeira = renovou(login.renovacao(), UsuariosDeTeste.APARELHO);
+        Sessao primeira = renovou(login.renovacao(), aparelho);
 
         relogio.avancar(Duration.ofMinutes(2).plusSeconds(1));
-        recusada(login.renovacao(), UsuariosDeTeste.APARELHO);
+        recusada(login.renovacao(), aparelho);
 
         familiaRevogada(primeira, "REUSO_FORA_DA_JANELA", primeira.renovacao());
     }
@@ -177,10 +183,10 @@ class RenovacaoTest extends TesteDeIntegracao {
     @Test
     void segundaReapresentacaoRevogaAFamilia() throws Exception {
         Sessao login = entrar(usuarios.criarVendedor());
-        Sessao primeira = renovou(login.renovacao(), UsuariosDeTeste.APARELHO);
-        renovou(login.renovacao(), UsuariosDeTeste.APARELHO);
+        Sessao primeira = renovou(login.renovacao(), aparelho);
+        renovou(login.renovacao(), aparelho);
 
-        recusada(login.renovacao(), UsuariosDeTeste.APARELHO);
+        recusada(login.renovacao(), aparelho);
 
         familiaRevogada(primeira, "SEGUNDA_REAPRESENTACAO", primeira.renovacao());
     }
@@ -188,11 +194,11 @@ class RenovacaoTest extends TesteDeIntegracao {
     @Test
     void tokenAnteriorDepoisDeOSucessorSerUsadoRevogaAFamilia() throws Exception {
         Sessao login = entrar(usuarios.criarVendedor());
-        Sessao primeira = renovou(login.renovacao(), UsuariosDeTeste.APARELHO);
-        Sessao segunda = renovou(primeira.renovacao(), UsuariosDeTeste.APARELHO);
+        Sessao primeira = renovou(login.renovacao(), aparelho);
+        Sessao segunda = renovou(primeira.renovacao(), aparelho);
 
         // Ainda dentro da janela, mas o sucessor já foi usado: alguém tem uma cópia.
-        recusada(login.renovacao(), UsuariosDeTeste.APARELHO);
+        recusada(login.renovacao(), aparelho);
 
         familiaRevogada(segunda, "ANTERIOR_DEPOIS_DO_SUCESSOR", segunda.renovacao());
     }
@@ -228,13 +234,13 @@ class RenovacaoTest extends TesteDeIntegracao {
         Sessao login = entrar(usuarios.criarVendedor());
         recusada(login.renovacao(), UUID.randomUUID());
         // Nem com o aparelho certo: a família já caiu.
-        recusada(login.renovacao(), UsuariosDeTeste.APARELHO);
+        recusada(login.renovacao(), aparelho);
     }
 
     @Test
     void tokenQueNaoExisteEhSessaoTerminada() throws Exception {
-        recusada("nao-existe-" + UUID.randomUUID(), UsuariosDeTeste.APARELHO);
-        renovar("", UsuariosDeTeste.APARELHO).andExpect(status().isUnauthorized());
+        recusada("nao-existe-" + UUID.randomUUID(), aparelho);
+        renovar("", aparelho).andExpect(status().isUnauthorized());
         mvc.perform(post("/api/auth/renovar").contentType(MediaType.APPLICATION_JSON).content("{}"))
                 .andExpect(status().isBadRequest()).andExpect(jsonPath("$.codigo").value("DADOS_INVALIDOS"));
     }
@@ -246,12 +252,12 @@ class RenovacaoTest extends TesteDeIntegracao {
         Sessao login = entrar(usuarios.criarVendedor());
 
         relogio.avancar(Duration.ofDays(29));
-        Sessao renovada = renovou(login.renovacao(), UsuariosDeTeste.APARELHO);
+        Sessao renovada = renovou(login.renovacao(), aparelho);
         relogio.avancar(Duration.ofDays(29));
-        renovada = renovou(renovada.renovacao(), UsuariosDeTeste.APARELHO);
+        renovada = renovou(renovada.renovacao(), aparelho);
 
         relogio.avancar(Duration.ofDays(30).plusSeconds(1));
-        recusada(renovada.renovacao(), UsuariosDeTeste.APARELHO);
+        recusada(renovada.renovacao(), aparelho);
         // Vencer não é suspeita: a família não é revogada, só não renova mais.
         assertThat(motivo(login.sid())).isNull();
     }
@@ -262,7 +268,7 @@ class RenovacaoTest extends TesteDeIntegracao {
         Sessao login = entrar(vendedor);
         usuarios.desativar(vendedor);
 
-        renovar(login.renovacao(), UsuariosDeTeste.APARELHO).andExpect(status().isForbidden())
+        renovar(login.renovacao(), aparelho).andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.codigo").value("USUARIO_DESATIVADO"))
                 .andExpect(jsonPath("$.title").value("Seu acesso foi desativado."));
     }
@@ -281,7 +287,7 @@ class RenovacaoTest extends TesteDeIntegracao {
         familiaRevogada(estaSessao, "SAIDA", estaSessao.renovacao());
         // A outra família da mesma pessoa continua.
         eu(outraSessao.acesso()).andExpect(status().isOk());
-        renovou(outraSessao.renovacao(), UsuariosDeTeste.APARELHO);
+        renovou(outraSessao.renovacao(), aparelho);
     }
 
     @Test

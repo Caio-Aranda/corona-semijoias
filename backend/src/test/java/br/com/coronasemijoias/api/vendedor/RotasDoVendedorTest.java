@@ -329,32 +329,7 @@ class RotasDoVendedorTest extends TesteDeIntegracao {
         assertThat(jdbc.queryForObject("SELECT status FROM corona.remessas WHERE id = ?", String.class, maleta)).isEqualTo("ENVIADA");
     }
 
-    @Test
-    void umaMaletaSoVendeNoAparelhoQueAProvouAteADonaLiberar() throws Exception {
-        UsuarioDeTeste a = usuarios.criarVendedor();
-        Peca anel = peca("30.00", 10);
-        UUID maleta = maleta(a, anel, 5);
-        UUID cliente = cliente(a);
-        RequestPostProcessor aparelho1 = como(a); // cada token de teste leva um aparelho novo
-        RequestPostProcessor aparelho2 = como(a);
-
-        vender(aparelho1, maleta, cliente, anel, 1, List.of()).andExpect(status().isCreated());
-        // O segundo aparelho não vende, não confere e recebe o aviso em português.
-        vender(aparelho2, maleta, cliente, anel, 1, List.of()).andExpect(status().isConflict());
-        postar("/api/vendedor/maletas/" + maleta + "/conferencia", aparelho2,
-                mapa("id", UUID.randomUUID(), "itens", List.of(contada(anel, 4)))).andExpect(status().isConflict());
-        // O vendedor não libera sozinho.
-        postar(REMESSAS + "/" + maleta + "/liberar-aparelho", aparelho1, null).andExpect(status().isForbidden());
-
-        assertThat(corpoDe(postar(REMESSAS + "/" + maleta + "/liberar-aparelho", dona(), null).andExpect(status().isOk()))
-                .get("tinhaAparelho").asBoolean()).isTrue();
-        vender(aparelho2, maleta, cliente, anel, 1, List.of()).andExpect(status().isCreated());
-        vender(aparelho1, maleta, cliente, anel, 1, List.of()).andExpect(status().isConflict());
-        // Liberar maleta que já está livre não muda nada.
-        UUID outra = maleta(a, peca("10.00", 3), 1);
-        assertThat(corpoDe(postar(REMESSAS + "/" + outra + "/liberar-aparelho", dona(), null).andExpect(status().isOk()))
-                .get("tinhaAparelho").asBoolean()).isFalse();
-    }
+    // A troca de computador (e as maletas passando para o novo) está em aparelhos.AparelhosTest (tarefa 5.3).
 
     // --- clientes ---
 
@@ -481,6 +456,9 @@ class RotasDoVendedorTest extends TesteDeIntegracao {
         UUID maria = cliente(a);
         UUID joao = cliente(a);
         RequestPostProcessor quem = como(a);
+        // Vender só depois de conferir (tarefa 5.3).
+        postar("/api/vendedor/maletas/" + maleta + "/conferencia", quem,
+                mapa("id", UUID.randomUUID(), "itens", List.of(contada(anel, 10), contada(colar, 10)))).andExpect(status().isCreated());
 
         // Maria: 2 anéis (100) pagos 60 em dinheiro. João: 1 colar (100) pago em Pix. Uma venda estornada não conta.
         vender(quem, maleta, maria, anel, 2, List.of(pagamento("60.00", "DINHEIRO"))).andExpect(status().isCreated());

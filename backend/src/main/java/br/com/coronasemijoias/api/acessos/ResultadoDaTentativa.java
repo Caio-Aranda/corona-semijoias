@@ -27,5 +27,11 @@ public enum ResultadoDaTentativa {
     PEDIDO_INVALIDO,
 
     /** A senha foi redefinida e o bloqueio daquele login foi retirado (sem IP). */
-    BLOQUEIO_LIMPO
+    BLOQUEIO_LIMPO,
+
+    /** Senha certa, mas o computador foi bloqueado pela dona (tarefa 5.3): não entra e recebe a ordem de apagar. */
+    APARELHO_BLOQUEADO,
+
+    /** Senha certa, mas o identificador do computador já é de outra pessoa (tarefa 5.3). */
+    APARELHO_DE_OUTRA_PESSOA
 }

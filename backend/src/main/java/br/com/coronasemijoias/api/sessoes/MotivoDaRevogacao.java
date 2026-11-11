@@ -31,5 +31,13 @@ public enum MotivoDaRevogacao {
     USUARIO_DESATIVADO,
 
     /** A dona mudou o tipo de acesso ou o vendedor do usuário: o token antigo leva dados que não valem mais. */
-    ACESSO_ALTERADO
+    ACESSO_ALTERADO,
+
+    /** A dona bloqueou o computador (perdido ou roubado): a próxima chamada recebe a ordem de apagar os dados (tarefa 5.3). */
+    APARELHO_BLOQUEADO;
+
+    /** Revogações que mandam o Corona Vendas apagar os dados do computador (ADR-0013, item 14), e não só entrar de novo. */
+    public boolean apagaOsDados() {
+        return this == APARELHO_BLOQUEADO || this == USUARIO_DESATIVADO;
+    }
 }

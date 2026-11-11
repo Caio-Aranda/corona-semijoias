@@ -88,12 +88,40 @@ public class UsuariosDeTeste {
         return jdbc.queryForObject("SELECT senha_hash FROM corona.usuarios WHERE id = ?", String.class, usuario.id());
     }
 
-    /** O aparelho dos logins de teste do vendedor (um computador só para todos). */
+    /**
+     * Um computador fixo para testes que não fazem login de vendedor (só o formato do pedido). Desde a tarefa 5.3 cada
+     * computador é de uma pessoa só: o login de vendedor usa {@link #aparelhoDe(String)}.
+     */
     public static final UUID APARELHO = UUID.fromString("0190a1b2-c3d4-7e5f-8a9b-0c1d2e3f4a5b");
 
+    /** O computador de cada login de vendedor nos testes (um por pessoa, como no app; ADR-0013, item 13). */
+    private final Map<String, UUID> aparelhos = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** O computador do login (o mesmo em todo login e token de teste dessa pessoa). */
+    public UUID aparelhoDe(String login) {
+        return aparelhos.computeIfAbsent(login.strip().toLowerCase(java.util.Locale.ROOT), l -> UUID.randomUUID());
+    }
+
+    public UUID aparelhoDe(UsuarioDeTeste usuario) {
+        return aparelhoDe(usuario.login());
+    }
+
     /**
-     * O corpo do login como o aplicativo certo mandaria: com o {@link #APARELHO} se o login for de um
-     * vendedor (Corona Vendas), sem aparelho nos demais (Corona Gestão ou login que não existe).
+     * Grava o computador direto no banco, na situação pedida (atalho dos testes; o caminho real é o login). Devolve o
+     * identificador.
+     */
+    public UUID registrarAparelho(UsuarioDeTeste usuario, UUID aparelho, String situacao) {
+        jdbc.update("""
+                INSERT INTO corona.dispositivos (id, usuario_id, situacao, primeiro_contato_em, ultimo_contato_em, bloqueado_em,
+                    substituido_em)
+                VALUES (?, ?, ?, now(), now(), CASE WHEN ? = 'BLOQUEADO' THEN now() END, CASE WHEN ? = 'SUBSTITUIDO' THEN now() END)
+                ON CONFLICT (id) DO NOTHING""", aparelho, usuario.id(), situacao, situacao, situacao);
+        return aparelho;
+    }
+
+    /**
+     * O corpo do login como o aplicativo certo mandaria: com o computador da pessoa ({@link #aparelhoDe(String)}) se o
+     * login for de um vendedor (Corona Vendas), sem computador nos demais (Corona Gestão ou login que não existe).
      */
     public Map<String, Object> corpoDoLogin(String login, String senha) {
         Map<String, Object> corpo = new LinkedHashMap<>();
@@ -105,19 +133,36 @@ public class UsuariosDeTeste {
         List<String> perfil = jdbc.queryForList("SELECT perfil FROM corona.usuarios WHERE login = ?", String.class,
                 login.strip().toLowerCase(java.util.Locale.ROOT));
         if (perfil.contains("VENDEDOR")) {
-            corpo.put("dispositivoId", APARELHO.toString());
+            corpo.put("dispositivoId", aparelhoDe(login).toString());
         }
         return corpo;
     }
 
-    /** O aparelho que o perfil manda no login: o vendedor manda um; a dona, nenhum (ADR-0004, item 4). */
-    public static UUID aparelhoPara(String perfil) {
-        return "VENDEDOR".equals(perfil) ? UUID.randomUUID() : null;
+    /**
+     * Abre uma família de sessão de verdade (como o login) e devolve o que ela tem. O vendedor usa o computador dele, já
+     * em uso (ativo) se ainda não existir; a dona, nenhum (ADR-0004, item 4).
+     */
+    public SessaoAberta abrirSessao(UsuarioDeTeste usuario, TipoDeSessao tipo) {
+        if (!"VENDEDOR".equals(usuario.perfil())) {
+            return sessoes.abrir(usuario.id(), tipo, null);
+        }
+        return abrirSessaoNoAparelho(usuario, tipo, aparelhoDe(usuario));
     }
 
-    /** Abre uma família de sessão de verdade (como o login) e devolve o que ela tem. */
-    public SessaoAberta abrirSessao(UsuarioDeTeste usuario, TipoDeSessao tipo) {
-        return sessoes.abrir(usuario.id(), tipo, aparelhoPara(usuario.perfil()));
+    /** Abre a família num computador escolhido (registrado como ativo se ainda não existir e se a pessoa não tiver outro). */
+    public SessaoAberta abrirSessaoNoAparelho(UsuarioDeTeste usuario, TipoDeSessao tipo, UUID aparelho) {
+        Long ativos = jdbc.queryForObject(
+                "SELECT count(*) FROM corona.dispositivos WHERE usuario_id = ? AND situacao = 'ATIVO' AND id <> ?",
+                Long.class, usuario.id(), aparelho);
+        registrarAparelho(usuario, aparelho, ativos == 0 ? "ATIVO" : "AGUARDANDO_LIBERACAO");
+        return sessoes.abrir(usuario.id(), tipo, aparelho);
+    }
+
+    /** Token válido num computador escolhido do vendedor (para os testes de dois computadores). */
+    public String tokenNoAparelho(UsuarioDeTeste usuario, UUID aparelho) {
+        SessaoAberta sessao = abrirSessaoNoAparelho(usuario, TipoDeSessao.NORMAL, aparelho);
+        return emissor.emitir(ConteudoDoToken.de(
+                usuario.id(), usuario.perfil(), usuario.vendedorId(), sessao.sid(), sessao.dispositivoId())).valor();
     }
 
     /** Token válido emitido pela própria API, com uma família de sessão nova. */

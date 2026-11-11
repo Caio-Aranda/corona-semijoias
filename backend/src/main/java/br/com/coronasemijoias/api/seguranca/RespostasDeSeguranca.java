@@ -26,7 +26,9 @@ import tools.jackson.databind.json.JsonMapper;
  *
  * <ul>
  *   <li>401 {@code SESSAO_TERMINADA}: sem token, vencido, adulterado, chave desconhecida...;</li>
- *   <li>401 {@code USUARIO_DESATIVADO}: token ainda válido de um usuário desativado;</li>
+ *   <li>401 {@code USUARIO_DESATIVADO}: token ainda válido de um usuário desativado (Corona Gestão);</li>
+ *   <li>403 {@code APARELHO_BLOQUEADO} ou {@code USUARIO_DESATIVADO} com {@code acao: APAGAR_DADOS}: token de um
+ *       computador do Corona Vendas bloqueado pela dona, ou de vendedor desativado (ADR-0013, item 14);</li>
  *   <li>403 {@code SEM_PERMISSAO}: perfil fora do grupo da rota;</li>
  *   <li>403 {@code TROCA_DE_SENHA_OBRIGATORIA}: token restrito fora da troca de senha.</li>
  * </ul>
@@ -43,6 +45,13 @@ public class RespostasDeSeguranca implements AuthenticationEntryPoint, AccessDen
     @Override
     public void commence(HttpServletRequest requisicao, HttpServletResponse resposta, AuthenticationException erro)
             throws IOException {
+        ComputadorDesligado desligado = desligado(erro);
+        if (desligado != null) {
+            // Computador bloqueado ou vendedor desativado: 403 com a ordem de apagar (ADR-0013, item 14).
+            escrever(requisicao, resposta, HttpStatus.FORBIDDEN,
+                    br.com.coronasemijoias.api.comum.erros.ErroDaApi.corpoComOrdemDeApagar(desligado.codigo()));
+            return;
+        }
         CodigoErro codigo = desativado(erro) ? CodigoErro.USUARIO_DESATIVADO : CodigoErro.SESSAO_TERMINADA;
         resposta.setHeader(HttpHeaders.WWW_AUTHENTICATE, "Bearer");
         escrever(requisicao, resposta, HttpStatus.UNAUTHORIZED, codigo);
@@ -58,6 +67,15 @@ public class RespostasDeSeguranca implements AuthenticationEntryPoint, AccessDen
     public void trocaDeSenhaObrigatoria(HttpServletRequest requisicao, HttpServletResponse resposta)
             throws IOException {
         escrever(requisicao, resposta, HttpStatus.FORBIDDEN, CodigoErro.TROCA_DE_SENHA_OBRIGATORIA);
+    }
+
+    private static ComputadorDesligado desligado(Throwable erro) {
+        for (Throwable atual = erro; atual != null; atual = atual.getCause()) {
+            if (atual instanceof ComputadorDesligado desligado) {
+                return desligado;
+            }
+        }
+        return null;
     }
 
     private static boolean desativado(Throwable erro) {
