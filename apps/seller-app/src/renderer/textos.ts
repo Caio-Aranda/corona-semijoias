@@ -61,6 +61,8 @@ export const TEXTOS = {
     },
     legenda: 'Peças da maleta',
     semPecas: 'Nenhuma peça nesta maleta.',
+    cotacaoDeHoje: 'Dólar e Guarani pela cotação de hoje.',
+    cotacaoSem: 'Sem cotação do Dólar e do Guarani por enquanto: os valores aparecem só em Real.',
   },
 
   conferencia: {
