@@ -593,8 +593,8 @@ Toda vez que um produto aparece por **leitura de código de barras** ou por **pe
 | --- | --- |
 | Bipou o código (venda, maleta, conferência, inventário, devolução, acerto, compra) | **Foto grande da última peça lida** ao lado da lista, mais miniatura em cada linha dos itens |
 | Pesquisa por nome, referência ou código | Lista de resultados com **miniatura** em cada linha; ao selecionar, foto em tamanho maior |
-| Consulta de produto | Foto principal grande, com as demais ao lado; clique amplia (zoom) |
-| Cadastro e edição de produto (dona) | Área de fotos com a principal em destaque |
+| Consulta de produto | Foto grande da peça; clique amplia (zoom) |
+| Cadastro e edição de produto (dona) | Área da foto, com o botão "Trocar foto" |
 | Nota de remessa em PDF | Miniatura ao lado de cada item (opção que a dona liga ou desliga) |
 | Relatório "Catálogo de produtos" | Foto, nome, código, preço e saldo; exportável em PDF para mostrar a clientes |
 
@@ -604,9 +604,9 @@ Toda vez que um produto aparece por **leitura de código de barras** ou por **pe
 
 ### Cadastro das fotos (app da dona)
 
-- Cada produto tem **uma foto principal e até 5 fotos** no total.
+- **Uma foto só por peça** (decisão do responsável, 11/11/2026): a foto serve só para reconhecer a peça. Enviar uma foto nova **substitui** a anterior (a antiga sai da peça por exclusão lógica e o arquivo dela sai do disco depois, numa limpeza diária). O servidor garante uma só foto ativa por produto (índice único parcial, migração V027). Não há mais foto principal nem ordem; as colunas `principal` e `ordem` ficam na tabela só por compatibilidade (a foto ativa é sempre a principal).
 - Formas de inserir: escolher arquivo, **arrastar e soltar**, **colar** da área de transferência e, opcionalmente, **tirar pela webcam**.
-- **Importação em massa:** pasta com fotos nomeadas pelo código do produto (por exemplo `7891234567895.jpg` ou `A-0123.jpg`). O sistema associa cada foto ao produto, e a prévia mostra as que não encontraram produto e os produtos que ficaram sem foto.
+- **Importação em massa:** pasta com fotos nomeadas pelo código do produto (por exemplo `7891234567895.jpg` ou `A-0123.jpg`). O sistema associa cada foto ao produto (é uma foto por código: se vier outra para o mesmo código, ela substitui a que a peça já tinha), e a prévia mostra as que não encontraram produto e os produtos que ficaram sem foto.
 - Formatos aceitos: JPG, PNG e WebP. **Limite de 10 MB por arquivo.** Recusar arquivo que não seja imagem, com mensagem clara.
   - O tipo vale pelo **conteúdo** do arquivo, não pelo nome. Também há limite de **25 milhões de pontos** (largura x altura), conferido antes de abrir a imagem, contra imagem-bomba (tarefa 1.6).
 - **Processamento no servidor:** corrigir a rotação, remover dados EXIF (como localização), gerar três tamanhos, e guardar o original reduzido:
@@ -616,7 +616,7 @@ Toda vez que um produto aparece por **leitura de código de barras** ou por **pe
 - Fotos guardadas **como arquivos** (volume da VPS ou bucket S3 ou Backblaze), **nunca como binário dentro do PostgreSQL**. O banco guarda só caminho, hash e tamanho. O **backup diário inclui as fotos**.
 - Acesso às fotos **somente autenticado** (URL assinada ou token), nunca pública.
 - **App da dona (tarefa 1.13):** as fotos já baixadas ficam em **cache em disco** no processo principal, por hash e tamanho, com limite de tamanho (descarta a mais antiga). A foto é imutável por hash, então nunca se pergunta ao servidor se mudou. Só entra foto entregue a sessão autenticada e a pasta é **apagada ao sair da sessão**. No máximo 4 fotos são buscadas ao mesmo tempo, e as miniaturas da página da lista são buscadas antes de a linha aparecer.
-- **Somente a dona** envia, troca ou apaga fotos. O vendedor não cadastra produto, então também não mexe nelas.
+- **Somente a dona** envia, troca ou apaga a foto. O vendedor não cadastra produto, então também não mexe nelas.
 
 ### Modelo de dados
 
@@ -624,7 +624,7 @@ Toda vez que um produto aparece por **leitura de código de barras** ou por **pe
 produtos_fotos (
   id uuid PK, produto_id,
   arquivo_hash,          -- identifica o conteúdo (evita baixar de novo)
-  principal boolean, ordem int,
+  principal boolean, ordem int,   -- sem uso desde 11/11/2026: uma foto ativa por produto (índice único parcial)
   largura int, altura int, tamanho_bytes int,
   + campos de sync (updated_at, version, deleted_at, sync_seq)
 )
@@ -639,8 +639,8 @@ Substitui o campo simples `foto` da tabela `produtos`. Os três tamanhos são de
 - **Quando:** logo depois de receber a maleta, em segundo plano. A conferência da maleta só é liberada quando as fotos principais já baixaram, ou mostra o aviso "Baixando fotos: 45 de 120".
 - Guardar em **cache em disco** (pasta do app, fora do banco), referenciado por hash. Se a dona trocar a foto, o hash muda e o app baixa a nova e apaga a antiga. Foto de produto que saiu das maletas é removida do cache após o acerto.
 - Se uma foto não estiver disponível, mostrar a imagem "sem foto" e **nunca travar a venda**.
-- O pull de sincronização traz **metadados** das fotos (hash, ordem); o download das imagens é uma fila separada, com retomada se a conexão cair.
-- Dimensionar: 5 fotos por produto e 500 produtos em maleta, em tamanho miniatura e médio, cabem em algumas dezenas de MB. Validar com fotos reais.
+- O pull de sincronização traz **metadados** das fotos (hash); o download das imagens é uma fila separada, com retomada se a conexão cair.
+- Dimensionar: 1 foto por produto e 500 produtos em maleta, em tamanho miniatura e médio, cabem em algumas dezenas de MB. Validar com fotos reais.
 
 ### Desempenho
 

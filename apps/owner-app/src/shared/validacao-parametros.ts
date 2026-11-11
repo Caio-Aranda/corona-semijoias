@@ -468,7 +468,6 @@ export function conferirParametros(
     case 'produtos.reativar':
     case 'produtos.fotos.listar':
     case 'produtos.fotos.enviar':
-    case 'produtos.fotos.principal':
     case 'produtos.fotos.excluir':
     case 'produtos.fotos.imagem':
     case 'produtos.importacao.previa':

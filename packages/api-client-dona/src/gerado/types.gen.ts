@@ -991,10 +991,6 @@ export type PedidoDeMovimento = {
     tipo: string;
 };
 
-export type PedidoDeOrdem = {
-    ids?: Array<string>;
-};
-
 export type PedidoDePrevia = {
     nomes?: Array<string>;
 };
@@ -1470,8 +1466,6 @@ export type RespostaDaFoto = {
     largura?: number;
     mediaUrl?: string;
     miniaturaUrl?: string;
-    ordem?: number;
-    principal?: boolean;
     produtoId?: string;
     tamanhoBytes?: number;
     version?: number;
@@ -3101,24 +3095,6 @@ export type Enviar1Responses = {
 
 export type Enviar1Response = Enviar1Responses[keyof Enviar1Responses];
 
-export type OrdemData = {
-    body: PedidoDeOrdem;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/dona/produtos/{id}/fotos/ordem';
-};
-
-export type OrdemResponses = {
-    /**
-     * OK
-     */
-    200: Array<RespostaDaFoto>;
-};
-
-export type OrdemResponse = OrdemResponses[keyof OrdemResponses];
-
 export type Excluir9Data = {
     body?: never;
     path: {
@@ -3135,25 +3111,6 @@ export type Excluir9Responses = {
      */
     200: unknown;
 };
-
-export type PrincipalData = {
-    body?: never;
-    path: {
-        id: string;
-        fotoId: string;
-    };
-    query?: never;
-    url: '/api/dona/produtos/{id}/fotos/{fotoId}/principal';
-};
-
-export type PrincipalResponses = {
-    /**
-     * OK
-     */
-    200: Array<RespostaDaFoto>;
-};
-
-export type PrincipalResponse = PrincipalResponses[keyof PrincipalResponses];
 
 export type Inativar2Data = {
     body?: never;

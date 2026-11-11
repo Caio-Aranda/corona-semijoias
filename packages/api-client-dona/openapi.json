@@ -3203,18 +3203,6 @@
         "required" : [ "produtoId", "quantidade", "tipo" ],
         "type" : "object"
       },
-      "PedidoDeOrdem" : {
-        "properties" : {
-          "ids" : {
-            "items" : {
-              "format" : "uuid",
-              "type" : "string"
-            },
-            "type" : "array"
-          }
-        },
-        "type" : "object"
-      },
       "PedidoDePrevia" : {
         "properties" : {
           "nomes" : {
@@ -4779,13 +4767,6 @@
           },
           "miniaturaUrl" : {
             "type" : "string"
-          },
-          "ordem" : {
-            "format" : "int32",
-            "type" : "integer"
-          },
-          "principal" : {
-            "type" : "boolean"
           },
           "produtoId" : {
             "format" : "uuid",
@@ -8558,7 +8539,7 @@
     },
     "/api/dona/produtos/{id}/fotos" : {
       "get" : {
-        "description" : "Na ordem da tela; a principal vem marcada. Até 5 fotos.",
+        "description" : "Uma foto só por peça: a lista tem no máximo uma foto.",
         "operationId" : "listar_6",
         "parameters" : [ {
           "in" : "path",
@@ -8591,7 +8572,7 @@
         "tags" : [ "fotos-dos-produtos-controller" ]
       },
       "post" : {
-        "description" : "Formulário com o campo 'arquivo'. Aceita JPG, PNG e WebP de até 10 MB; o tipo vale pelo conteúdo, não pelo nome. O servidor corrige a rotação, tira os dados escondidos (como o local) e gera miniatura, tamanho médio e grande. A primeira foto vira a principal. Enviar de novo a mesma foto não duplica (responde 200 com a que já existe). Uma peça tem no máximo 5 fotos.",
+        "description" : "Formulário com o campo 'arquivo'. Aceita JPG, PNG e WebP de até 10 MB; o tipo vale pelo conteúdo, não pelo nome. O servidor corrige a rotação, tira os dados escondidos (como o local) e gera miniatura, tamanho médio e grande. A foto nova SUBSTITUI a que a peça já tinha (responde 201). Enviar de novo a mesma foto não muda nada (responde 200).",
         "operationId" : "enviar_1",
         "parameters" : [ {
           "in" : "path",
@@ -8636,54 +8617,9 @@
         "tags" : [ "fotos-dos-produtos-controller" ]
       }
     },
-    "/api/dona/produtos/{id}/fotos/ordem" : {
-      "put" : {
-        "description" : "Mande os ids de todas as fotos da peça, uma vez cada, na ordem nova. A principal não muda.",
-        "operationId" : "ordem",
-        "parameters" : [ {
-          "in" : "path",
-          "name" : "id",
-          "required" : true,
-          "schema" : {
-            "format" : "uuid",
-            "type" : "string"
-          }
-        } ],
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/PedidoDeOrdem"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "items" : {
-                    "$ref" : "#/components/schemas/RespostaDaFoto"
-                  },
-                  "type" : "array"
-                }
-              }
-            },
-            "description" : "OK"
-          }
-        },
-        "security" : [ {
-          "bearer" : [ ]
-        } ],
-        "summary" : "Mudar a ordem das fotos",
-        "tags" : [ "fotos-dos-produtos-controller" ]
-      }
-    },
     "/api/dona/produtos/{id}/fotos/{fotoId}" : {
       "delete" : {
-        "description" : "Exclusão lógica. Se era a principal, a próxima da ordem passa a ser a principal.",
+        "description" : "Exclusão lógica: a peça fica sem foto.",
         "operationId" : "excluir_9",
         "parameters" : [ {
           "in" : "path",
@@ -8711,48 +8647,6 @@
           "bearer" : [ ]
         } ],
         "summary" : "Excluir uma foto",
-        "tags" : [ "fotos-dos-produtos-controller" ]
-      }
-    },
-    "/api/dona/produtos/{id}/fotos/{fotoId}/principal" : {
-      "post" : {
-        "operationId" : "principal",
-        "parameters" : [ {
-          "in" : "path",
-          "name" : "id",
-          "required" : true,
-          "schema" : {
-            "format" : "uuid",
-            "type" : "string"
-          }
-        }, {
-          "in" : "path",
-          "name" : "fotoId",
-          "required" : true,
-          "schema" : {
-            "format" : "uuid",
-            "type" : "string"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "items" : {
-                    "$ref" : "#/components/schemas/RespostaDaFoto"
-                  },
-                  "type" : "array"
-                }
-              }
-            },
-            "description" : "OK"
-          }
-        },
-        "security" : [ {
-          "bearer" : [ ]
-        } ],
-        "summary" : "Escolher a foto principal",
         "tags" : [ "fotos-dos-produtos-controller" ]
       }
     },

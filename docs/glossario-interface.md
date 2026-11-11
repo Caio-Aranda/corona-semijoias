@@ -57,7 +57,7 @@ Em 09/11/2026 o responsável resolveu as dúvidas que estavam abertas neste glos
 | pendência | `pendencias_acerto` | Peça que faltou ou valor que ficou em aberto no acerto. |
 | pedido de autorização | `autorizacoes_excecao` | O vendedor pede à dona para aceitar uma devolução fora do prazo. |
 | limite de consignação | `limite_consignacao` | Valor máximo de peças que o vendedor pode levar na maleta. |
-| foto | `produtos_fotos` | Aparece junto com a peça sempre que ela é lida ou pesquisada (§20). |
+| foto | `produtos_fotos` | Uma foto só por peça, para reconhecer a peça. Aparece junto com a peça sempre que ela é lida ou pesquisada (§20). Na tela da dona, o botão é **Trocar foto** (a nova substitui a anterior); não existe "foto principal" nem ordem das fotos. |
 | estoque | `produtos.estoque_atual`, estoque central | Quantidade de cada produto guardada na loja (fora das maletas). Ver parte 12. |
 | entrada de compra | `compras`, `itens_compra` | Registro das peças que chegaram de um fornecedor. Na tela, "Receber compra". Ver parte 12. |
 | entradas e saídas | `movimentacoes_estoque` | Histórico de tudo o que aumentou ou diminuiu o estoque. A palavra "movimentação" nunca aparece na tela (parte 2). |
@@ -550,10 +550,10 @@ Foto com tamanho de imagem enorme (mesmo pesando menos de 10 MB):
 > **Esta foto é grande demais em tamanho de imagem.**
 > Reduza a foto (até 25 milhões de pontos, por exemplo 5000 por 5000) e envie de novo.
 
-Peça que já tem 5 fotos:
+Peça que já tem foto (decisão de 11/11/2026: uma foto só por peça, a nova substitui a antiga; não há mais o aviso de "5 fotos"):
 
-> **Esta peça já tem 5 fotos.**
-> Exclua uma das fotos para poder enviar outra.
+> **Foto trocada.**
+> A foto nova substituiu a anterior desta peça.
 
 Foto que não existe mais, ou que pertence a outro produto: usa o "não achou" dos cadastros.
 

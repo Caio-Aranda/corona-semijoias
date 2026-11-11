@@ -128,6 +128,8 @@ Uma seção por tarefa concluída, no mesmo formato de [fase-0.md](fase-0.md). A
 - Erros novos no glossário (parte 6) e em `CodigoErro`: `FOTO_TIPO_NAO_ACEITO` (415), `FOTO_NAO_LIDA` (400), `FOTO_GRANDE_DEMAIS_EM_PONTOS` (413), `PRODUTO_COM_FOTOS_DEMAIS` (409). O limite de pedido multipart subiu para 110 MB (a importação manda até 10 fotos de 10 MB). WebP é lido pela biblioteca TwelveMonkeys `imageio-webp` (só leitura; a saída é sempre JPEG). Clientes da API regerados.
 - Testes: `ProcessadorDeImagemTest` (tamanhos, EXIF/rotação, WebP, transparência, danificada, imagem-bomba) e `FotosDosProdutosTest` (permissão, envio, conteúdo x nome, arquivos fora do banco, 5 fotos, paralelo, principal/ordem/exclusão, download e cache, relatório, prévia e confirmar).
 
+**Mudança de 11/11/2026 (decisão do responsável): uma foto só por peça.** Enviar uma foto nova substitui a anterior (exclusão lógica da antiga, e o arquivo sai do disco por limpeza diária depois de 7 dias); a importação em massa também substitui. Acabam o limite de 5 fotos (`PRODUTO_COM_FOTOS_DEMAIS` deixou de existir), a foto principal e a ordem (rotas `principal` e `ordem` removidas; as colunas ficam, sem uso). Migração `V027` (nunca se edita a V015): índice único parcial de uma foto ativa por produto. O que o vendedor e a Fase 5 leem (`foto_principal_hash` e `produtos_fotos.arquivo_hash`) continua igual. ESPECIFICACAO §20 e glossário atualizados.
+
 **O que ficou pendente**
 - Telas (1.11 cadastro/importação, 1.12 relatório). Webcam, colar e arrastar são da tela.
 - A rota de download das fotos para o **vendedor** e o filtro por maleta entram na Fase 5; hoje só a dona baixa. O sync já leva os metadados (`produtos_fotos`) e `foto_principal_hash`.
