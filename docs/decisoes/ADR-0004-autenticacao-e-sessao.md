@@ -146,3 +146,5 @@ Aprovado em 09/11/2026: os parâmetros técnicos ficam **na configuração do se
 Nenhuma em aberto. Resolvidas na aprovação de 09/11/2026: parâmetros na configuração do servidor, validade da senha temporária (7 dias), alerta (sem bloqueio) para muitos erros num login e a janela de tolerância do refresh.
 
 Duas escolhas ficam para a tarefa 10, sem ADR: o nome e o local do comando de servidor que redefine a senha da dona, e a mensagem de tela para "senha com mais de 72 bytes" (acrescentada ao glossário antes de ser usada, como a de "senha temporária vencida").
+
+**Linha datada, 11/11/2026:** `sessoes` encerradas, `tokens_de_renovacao` e `tentativas_login` são apagadas de verdade depois de 90 dias (exceção à exclusão lógica; ver ADR-0002, mesma data). A contagem de erros por login e IP olha só minutos, então nada do que é apagado alimenta o bloqueio.
