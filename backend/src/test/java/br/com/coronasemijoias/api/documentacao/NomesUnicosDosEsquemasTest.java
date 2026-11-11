@@ -58,6 +58,15 @@ class NomesUnicosDosEsquemasTest extends TesteDeIntegracao {
         assertThat(dona.has("Resposta")).isFalse();
     }
 
+    @Test
+    void oContratoDoVendedorNaoTemEstoqueDaLojaNemEmMaletasEODaDonaTem() throws Exception {
+        String vendedor = mvc.perform(get("/v3/api-docs/vendedor")).andReturn().getResponse()
+                .getContentAsString(StandardCharsets.UTF_8);
+        assertThat(vendedor).doesNotContain("emMaletas").doesNotContain("vendedoresEmMaletas").doesNotContain("estoqueAtual");
+        String dona = mvc.perform(get("/v3/api-docs/dona")).andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        assertThat(dona).contains("emMaletas").contains("vendedoresEmMaletas");
+    }
+
     private JsonNode documento(String grupo) throws Exception {
         return json.readTree(mvc.perform(get("/v3/api-docs/" + grupo)).andReturn().getResponse()
                 .getContentAsString(StandardCharsets.UTF_8));

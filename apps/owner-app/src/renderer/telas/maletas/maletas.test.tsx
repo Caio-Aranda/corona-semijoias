@@ -311,6 +311,29 @@ describe('Montagem pelo leitor', () => {
     expect(chamadasDe(m, 'maletas.colocarPeca')).toHaveLength(1);
   });
 
+  it('peça sem estoque na loja mas em maleta de alguém diz de quem é, em vez da recusa genérica', async () => {
+    const m = montar({
+      'produtos.porCodigo': (p) => {
+        const codigo = String((p.parametros as { codigo?: string }).codigo ?? '').toLowerCase();
+        if (codigo === 'p-0') {
+          return {
+            ok: true,
+            dados: {
+              ...SEM_ESTOQUE,
+              emMaletas: 1,
+              vendedoresEmMaletas: [{ nome: 'Maria', quantidade: 1 }],
+            },
+          };
+        }
+        return { ok: true, dados: PRODUTOS[codigo] };
+      },
+    });
+    const u = await comecarMaleta(m);
+    await ler(u, 'P-0');
+    expect(await screen.findByText('Sem estoque na loja. Está na maleta de Maria.')).toBeTruthy();
+    expect(chamadasDe(m, 'maletas.colocarPeca')).toHaveLength(0);
+  });
+
   it('muda a quantidade digitada e tira a peça', async () => {
     const m = montar();
     const u = await comecarMaleta(m);

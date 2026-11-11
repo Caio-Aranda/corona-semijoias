@@ -30,6 +30,9 @@ export interface Produto {
   precoCusto: string | null;
   estoqueMinimo: number;
   estoqueAtual: number;
+  /** Quantas estão nas maletas dos vendedores e com quem (só da dona; item 13). */
+  emMaletas: number;
+  vendedoresEmMaletas: { nome: string; quantidade: number }[];
   ativo: boolean;
   codigos: CodigoDoProduto[];
   fotoPrincipal: FotoPrincipal | null;
@@ -75,6 +78,18 @@ function lerCodigo(bruto: unknown): CodigoDoProduto | null {
   };
 }
 
+/** Quem está com a peça em maleta, como o servidor mandou (a maior quantidade primeiro). */
+export function lerVendedoresEmMaletas(bruto: unknown): { nome: string; quantidade: number }[] {
+  const saida: { nome: string; quantidade: number }[] = [];
+  for (const b of Array.isArray(bruto) ? bruto : []) {
+    const o = objeto(b);
+    if (typeof o.nome === 'string' && typeof o.quantidade === 'number') {
+      saida.push({ nome: o.nome, quantidade: o.quantidade });
+    }
+  }
+  return saida;
+}
+
 export function lerProduto(bruto: unknown): Produto | null {
   const o = objeto(bruto);
   if (typeof o.id !== 'string') return null;
@@ -90,6 +105,8 @@ export function lerProduto(bruto: unknown): Produto | null {
     precoCusto: dinheiroEmTexto(o.precoCusto),
     estoqueMinimo: typeof o.estoqueMinimo === 'number' ? o.estoqueMinimo : 0,
     estoqueAtual: typeof o.estoqueAtual === 'number' ? o.estoqueAtual : 0,
+    emMaletas: typeof o.emMaletas === 'number' ? o.emMaletas : 0,
+    vendedoresEmMaletas: lerVendedoresEmMaletas(o.vendedoresEmMaletas),
     ativo: o.ativo !== false,
     codigos: (Array.isArray(o.codigos) ? o.codigos : [])
       .map(lerCodigo)
