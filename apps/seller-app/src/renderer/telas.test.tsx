@@ -237,13 +237,16 @@ describe('tela inicial do vendedor', () => {
     expect(screen.getByRole('heading', { name: 'Olá, Maria.' })).toBeInTheDocument();
   });
 
-  it('botão sem função mostra "Em breve" em linguagem da loja', async () => {
-    const { ponte } = ponteFalsa({ estouLogado: vi.fn(() => Promise.resolve(dentro)) });
+  it('os quatro botões abrem a sua tela (nenhum fica "Em breve")', async () => {
+    const { ponte } = ponteFalsa({
+      estouLogado: vi.fn(() => Promise.resolve(dentro)),
+      chamarApi: vi.fn(() => Promise.resolve({ ok: true as const, dados: [] })),
+    });
     const u = userEvent.setup();
     render(<App ponte={ponte} />);
     await u.click(await screen.findByRole('button', { name: 'Meus clientes' }));
-    expect(screen.getByText('Em breve.')).toBeInTheDocument();
-    expect(screen.getByText(/Meus clientes ainda está sendo preparado/)).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Meus clientes' })).toBeInTheDocument();
+    expect(screen.queryByText('Em breve.')).not.toBeInTheDocument();
   });
 
   it('Sair chama a ponte e volta para Entrar', async () => {

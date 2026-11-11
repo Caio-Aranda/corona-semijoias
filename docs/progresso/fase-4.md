@@ -76,3 +76,21 @@ Uma seção por tarefa, no mesmo formato de [fase-3.md](fase-3.md). A tabela de 
 - A conta de moedas (`renderer/moedas.ts`) é uma cópia da do Corona Gestão: o Vendas não importa código da dona (ADR-0003). Mover para um pacote neutro fica como melhoria (dívida registrada no PR).
 - A foto vem como `data:` (a CSP já permitia) e fica em cache de memória por tamanho.
 - Sem a tela de cotação ou de configuração de desconto: o limite é do servidor.
+
+### Tarefa 4.5: Corona Vendas, Meus clientes e Meus números
+
+**Em revisão.** Completa as quatro funções da tela inicial do vendedor.
+
+**O que foi feito**
+
+- **Meus clientes**: busca (nome, telefone, WhatsApp, CPF), lista com o que cada cliente deve, cadastro e ficha (contato, o que deve e as compras feitas com este vendedor). Só os clientes dele: o servidor filtra pelo login.
+- **Meus números** (§12, "App do vendedor"): vendas por cliente, peça ou dia, recebimentos por forma de pagamento (já sem os reembolsos) e quanto os clientes ainda devem, com período (de, até) e totais. Vendas estornadas não entram. Real, Dólar e Guarani em todos os valores, pela cotação de hoje; sem cotação, só Real e um aviso.
+- **Valores nas três moedas** em toda a tela do vendedor (maleta, venda, vendas, clientes, números): o componente de valor usa a cotação do dia, que a tela busca uma vez.
+- O botão **Ver minhas vendas** (lista, detalhe e estorno da 4.4) também abre a partir de Meus números.
+- Testes das duas telas (lista, busca, ficha, cadastro e recusa do servidor, períodos, agrupamentos, vazio, falha, três moedas).
+
+**Decisões**
+
+- A consulta de produtos fora da maleta não existe nesta fase (dúvida 6 do ADR-0011): "consulta com foto" é a Minha maleta e a leitura do código na conferência e na venda.
+- Os totais mostram Dólar e Guarani calculados na tela a partir do total em Real do servidor (a mesma cotação e o mesmo arredondamento do servidor, ADR-0006); nada disso é gravado.
+- Sem o aviso "Dados até dd/mm às hh:mm" da §12: ele só vale no modo sem internet (Fase 5).

@@ -5,6 +5,8 @@ import { TelaAppDesatualizado } from './telas/TelaAppDesatualizado';
 import { TelaConferirMaleta } from './telas/TelaConferirMaleta';
 import { TelaEntrar } from './telas/TelaEntrar';
 import { TelaInicial, type Destino } from './telas/TelaInicial';
+import { TelaMeusClientes } from './telas/TelaMeusClientes';
+import { TelaMeusNumeros } from './telas/TelaMeusNumeros';
 import { TelaMinhaMaleta } from './telas/TelaMinhaMaleta';
 import { TelaMinhasVendas } from './telas/TelaMinhasVendas';
 import { TelaSemConexao } from './telas/TelaSemConexao';
@@ -20,9 +22,11 @@ type Rota =
   | { tela: 'maleta' }
   | { tela: 'conferir'; maleta: Maleta }
   | { tela: 'vender' }
-  | { tela: 'vendas' };
+  | { tela: 'vendas'; voltarPara: 'vender' | 'numeros' }
+  | { tela: 'clientes' }
+  | { tela: 'numeros' };
 
-const PRONTOS: readonly Destino[] = ['vender', 'maleta'];
+const PRONTOS: readonly Destino[] = ['vender', 'maleta', 'clientes', 'numeros'];
 
 export interface AppProps {
   ponte: PonteDoCorona;
@@ -109,19 +113,29 @@ export function App({ ponte }: AppProps) {
               <TelaVender
                 ponte={ponte}
                 aoVoltar={inicio}
-                aoVerVendas={() => setRota({ tela: 'vendas' })}
+                aoVerVendas={() => setRota({ tela: 'vendas', voltarPara: 'vender' })}
               />
             );
           case 'vendas':
-            return <TelaMinhasVendas ponte={ponte} aoVoltar={() => setRota({ tela: 'vender' })} />;
+            return (
+              <TelaMinhasVendas ponte={ponte} aoVoltar={() => setRota({ tela: rota.voltarPara })} />
+            );
+          case 'clientes':
+            return <TelaMeusClientes ponte={ponte} aoVoltar={inicio} />;
+          case 'numeros':
+            return (
+              <TelaMeusNumeros
+                ponte={ponte}
+                aoVoltar={inicio}
+                aoVerVendas={() => setRota({ tela: 'vendas', voltarPara: 'numeros' })}
+              />
+            );
           case 'inicio':
             return (
               <TelaInicial
                 nome={tela.usuario?.nome ?? null}
                 prontos={PRONTOS}
-                aoEscolher={(destino) =>
-                  setRota({ tela: destino === 'vender' ? 'vender' : 'maleta' })
-                }
+                aoEscolher={(destino) => setRota({ tela: destino })}
                 aoSair={async () => {
                   await ponte.sair();
                   setSessaoTerminou(false);

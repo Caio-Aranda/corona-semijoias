@@ -142,7 +142,7 @@ App do vendedor online (§15): login, conferência, venda, clientes, consulta, r
 | 4.2 | backend (alto): vendas, itens e pagamentos, venda a partir da maleta, preço congelado, desconto, idempotência (200/201/409), estorno, totais no servidor, cotação | Em revisão · [detalhe](progresso/fase-4.md#tarefa-42-backend-das-vendas-vender-estornar-totais-no-servidor) |
 | 4.3 | backend: rotas do vendedor (própria maleta sem custo, conferência e dispositivo único, clientes dele, cotação, relatórios próprios), 403 cruzado nos dois sentidos | Em revisão · [detalhe](progresso/fase-4.md#tarefa-43-backend-das-rotas-do-vendedor-maleta-conferência-clientes-cotação-relatórios) |
 | 4.4 | seller-app (alto): base de telas, conferência por leitor com foto grande, venda, escolha e cadastro de cliente, estorno | Em revisão · [detalhe](progresso/fase-4.md#tarefa-44-corona-vendas-conferência-da-maleta-venda-cliente-e-estorno) |
-| 4.5 | seller-app: Minha maleta, Meus clientes, Meus números (relatórios próprios) e valores nas três moedas | A fazer |
+| 4.5 | seller-app: Minha maleta, Meus clientes, Meus números (relatórios próprios) e valores nas três moedas | Em revisão · [detalhe](progresso/fase-4.md#tarefa-45-corona-vendas-meus-clientes-e-meus-números) |
 | 4.6 | fechamento da Fase 4 (revisão pós-fase) | A fazer |
 
 **Fora desta fase:** SQLite criptografado, outbox e sync (Fase 5); devolução, troca e garantia (Fase 6); acerto, comissão e contas a receber completas (Fase 7).
