@@ -1,6 +1,7 @@
 package br.com.coronasemijoias.api.remessas;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -16,6 +17,8 @@ import br.com.coronasemijoias.api.testes.TesteDeIntegracao;
 import br.com.coronasemijoias.api.testes.UsuariosDeTeste;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -555,6 +558,41 @@ class DevolucaoDaMaletaTest extends TesteDeIntegracao {
     }
 
     // --- concorrência ---
+
+    /**
+     * Segunda trava do saldo da maleta, no banco, como o CHECK do estoque central (ADR-0008, item 4): um movimento que
+     * deixaria a peça negativa na maleta é recusado mesmo sem passar pelo serviço (a Fase 5 grava movimentos que vêm do
+     * aparelho). Cada tentativa roda numa transação desfeita no fim, para não deixar a conciliação diferente.
+     */
+    @Test
+    void bancoRecusaMovimentoQueDeixariaOSaldoDaMaletaNegativo() throws Exception {
+        UUID p = peca("50.00", 5);
+        UUID remessa = enviada(vendedor(null), p, 2);
+        try (Connection c = conectarComoAplicacao()) {
+            assertThatThrownBy(() -> movimentoCru(c, remessa, p, -3)).hasMessageContaining("saldo negativo");
+            c.rollback();
+            movimentoCru(c, remessa, p, -2); // até zero pode
+            assertThatThrownBy(() -> movimentoCru(c, remessa, p, -1)).hasMessageContaining("saldo negativo");
+            c.rollback();
+            movimentoCru(c, remessa, p, -1);
+            movimentoCru(c, remessa, p, 1); // o que volta para a maleta não é conferido
+            c.rollback();
+        }
+        assertThat(saldoDaMaleta(remessa, p)).isEqualTo(2);
+        assertThat(movimentosDaMaleta(remessa)).isZero();
+    }
+
+    private static void movimentoCru(Connection c, UUID remessa, UUID produto, int quantidade) throws Exception {
+        try (PreparedStatement ps = c.prepareStatement("""
+                INSERT INTO corona.movimentos_remessa (id, remessa_id, produto_id, tipo, quantidade)
+                VALUES (?, ?, ?, 'DEVOLUCAO_DONA', ?)""")) {
+            ps.setObject(1, UUID.randomUUID());
+            ps.setObject(2, remessa);
+            ps.setObject(3, produto);
+            ps.setInt(4, quantidade);
+            ps.executeUpdate();
+        }
+    }
 
     @Test
     @SuppressWarnings("unchecked")
