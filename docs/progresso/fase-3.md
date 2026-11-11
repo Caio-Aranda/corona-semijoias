@@ -4,7 +4,7 @@ Uma seção por tarefa, no mesmo formato de [fase-2.md](fase-2.md). A tabela de 
 
 ### Tarefa 3.1: plano da Fase 3 e ADR da maleta (só documentos)
 
-**Em revisão.** Nenhum código. A especificação não mudou: tudo cabe na §7.1, na §9 e na §13.
+**Mesclada.** Nenhum código. A especificação não mudou: tudo cabe na §7.1, na §9 e na §13.
 
 **O que foi feito**
 
@@ -37,7 +37,7 @@ Uma seção por tarefa, no mesmo formato de [fase-2.md](fase-2.md). A tabela de 
 
 ### Tarefa 3.2: backend das remessas (montar, enviar, limite, restrição, preço congelado)
 
-**Em revisão.** Migração V021, rotas só da dona em `/api/dona/remessas`, serviço de envio e testes. Nenhuma tela.
+**Mesclada.** Migração V021, rotas só da dona em `/api/dona/remessas`, serviço de envio e testes. Nenhuma tela.
 
 **O que foi feito**
 
@@ -62,7 +62,7 @@ Uma seção por tarefa, no mesmo formato de [fase-2.md](fase-2.md). A tabela de 
 
 ### Tarefa 3.3: backend: devolução da maleta, cancelamento e conciliação
 
-**Em revisão.** Sem migração nova (a V021 já tinha tudo). Rotas só ADMIN em `/api/dona/remessas`; nenhuma tela, PDF, relatório ou venda.
+**Mesclada.** Sem migração nova (a V021 já tinha tudo). Rotas só ADMIN em `/api/dona/remessas`; nenhuma tela, PDF, relatório ou venda.
 
 **O que foi feito**
 
@@ -91,7 +91,7 @@ Uma seção por tarefa, no mesmo formato de [fase-2.md](fase-2.md). A tabela de 
 
 ### Tarefa 3.4: backend: dados da nota de remessa e relatórios da maleta
 
-**Em revisão.** Sem migração e sem escrita: só leitura, sobre os registros da 3.2 e da 3.3. Rotas só ADMIN; nenhuma tela nem PDF.
+**Mesclada.** Sem migração e sem escrita: só leitura, sobre os registros da 3.2 e da 3.3. Rotas só ADMIN; nenhuma tela nem PDF.
 
 **O que foi feito**
 
@@ -120,7 +120,7 @@ Uma seção por tarefa, no mesmo formato de [fase-2.md](fase-2.md). A tabela de 
 
 ### Tarefa 3.5: Corona Gestão: montar a maleta por leitor
 
-**Em revisão.** Só tela e ponte do app da dona; nenhuma mudança no servidor. Menu novo **Maletas → Montar maleta**.
+**Mesclada.** Só tela e ponte do app da dona; nenhuma mudança no servidor. Menu novo **Maletas → Montar maleta**.
 
 **O que foi feito**
 
@@ -149,7 +149,7 @@ Uma seção por tarefa, no mesmo formato de [fase-2.md](fase-2.md). A tabela de 
 
 ### Tarefa 3.6: Corona Gestão: gerir a maleta
 
-**Em revisão.** Só tela e ponte do app da dona; nenhuma mudança no servidor. Menu novo **Maletas → Maletas** (a tela **Montar maleta** da 3.5 continua).
+**Mesclada.** Só tela e ponte do app da dona; nenhuma mudança no servidor. Menu novo **Maletas → Maletas** (a tela **Montar maleta** da 3.5 continua).
 
 **O que foi feito**
 
@@ -174,7 +174,7 @@ Uma seção por tarefa, no mesmo formato de [fase-2.md](fase-2.md). A tabela de 
 
 ### Tarefa 3.7: Corona Gestão: relatórios da maleta e nota de remessa
 
-**Em revisão.** Só tela e ponte do app da dona; nenhuma mudança no servidor. Menu novo **Relatórios da maleta** com os cinco relatórios da 3.4, e o botão **Imprimir nota** ligado.
+**Mesclada.** Só tela e ponte do app da dona; nenhuma mudança no servidor. Menu novo **Relatórios da maleta** com os cinco relatórios da 3.4, e o botão **Imprimir nota** ligado.
 
 **O que foi feito**
 
@@ -199,7 +199,7 @@ Uma seção por tarefa, no mesmo formato de [fase-2.md](fase-2.md). A tabela de 
 
 ### Tarefa 3.8: fechamento da Fase 3
 
-**Em revisão.** Revisão pós-fase (como a 2.9): leitura do backend das remessas e da maleta, das consultas e das telas, procurando erro real de estoque e de dinheiro. Dois erros achados e corrigidos com teste; o resto foi conferido e registrado.
+**Mesclada.** Revisão pós-fase (como a 2.9): leitura do backend das remessas e da maleta, das consultas e das telas, procurando erro real de estoque e de dinheiro. Dois erros achados e corrigidos com teste; o resto foi conferido e registrado.
 
 **O que foi feito**
 
