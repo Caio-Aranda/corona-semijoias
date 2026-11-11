@@ -24,3 +24,33 @@ describe('segurança da janela', () => {
     expect(enderecoDoApp('file:///C:/qualquer.html', dev)).toBe(false);
   });
 });
+
+describe('configuração do instalador da dona', () => {
+  const pins = `${IMPRESSAO_A},${IMPRESSAO_B}`;
+
+  it('aceita o servidor por IP com as duas impressões digitais', () => {
+    expect(
+      validarConfiguracaoDeProducao({
+        MAIN_VITE_CORONA_API_URL: 'https://203.0.113.10/',
+        MAIN_VITE_CORONA_API_PINS: pins,
+      }),
+    ).toEqual({ endereco: 'https://203.0.113.10', impressoes: [IMPRESSAO_A, IMPRESSAO_B] });
+  });
+
+  it.each([
+    [undefined, pins],
+    ['', pins],
+    ['http://203.0.113.10', pins],
+    ['https://203.0.113.10', undefined],
+    ['https://203.0.113.10', ''],
+    ['http://localhost:8080', pins],
+    ['https://127.0.0.1:8443', pins],
+  ])('recusa o endereço %s com as impressões %s', (url, impressoes) => {
+    expect(() =>
+      validarConfiguracaoDeProducao({
+        MAIN_VITE_CORONA_API_URL: url,
+        MAIN_VITE_CORONA_API_PINS: impressoes,
+      }),
+    ).toThrow(ErroDeConfiguracao);
+  });
+});
