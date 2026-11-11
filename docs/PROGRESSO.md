@@ -83,7 +83,28 @@ Estoque e compras (§15). Segue o mesmo formato da Fase 1. O modelo do estoque e
 
 **Fase 2 concluída** (tarefas 2.1 a 2.9; a 2.9 foi a revisão de fechamento). Resumo: o estoque tem um único serviço que muda a quantidade (movimentos imutáveis, desfazer lançamento, saldo nunca negativo, conferência automática); as compras entram com custo e histórico; há aviso de estoque mínimo e contagem do estoque por leitor; a dona tem as telas de estoque, entradas e saídas, compras e dez relatórios com exportação em PDF, Excel e CSV. **Segue para a Fase 3:** mercadoria em maletas por vendedor nos relatórios de estoque, uso dos tipos Maleta e Devolução da maleta e a conciliação "estoque + maletas". **Segue para a Fase 8:** curva ABC. Dúvidas abertas: [fase-2.md](progresso/fase-2.md#tarefa-28-corona-gestão-relatórios-de-estoque-e-de-compras-fecha-a-fase-2).
 
+## Fase 3
+
+### Plano da Fase 3
+
+Maleta (§15). Segue o mesmo formato da Fase 2. O modelo da maleta está no [ADR-0010](decisoes/ADR-0010-maleta-e-remessa.md).
+
+| Nº | Tarefa | Situação |
+| --- | --- | --- |
+| 3.1 | docs: plano da Fase 3 e ADR-0010 (maleta e remessa) | Em revisão · [detalhe](progresso/fase-3.md#tarefa-31-plano-da-fase-3-e-adr-da-maleta-só-documentos) |
+| 3.2 | backend: remessas e itens (migração V021 ou a próxima livre, remessa NOVA/REPOSICAO pelo serviço de estoque, limite e restrição no servidor, preço congelado, idempotência por UUID, rotas só ADMIN) | Pendente |
+| 3.3 | backend: devolução da maleta à dona, cancelamento/estorno, conciliação "estoque central + maletas" | Pendente |
+| 3.4 | backend: nota de remessa em PDF e relatórios de maleta (remessas por vendedor e semana, saldo por maleta, mercadoria em maletas por vendedor, maletas em aberto/atrasadas, reposições) com exportação | Pendente |
+| 3.5 | owner-app: montagem por leitor (foto grande, bloqueios claros) | Pendente |
+| 3.6 | owner-app: lista e ficha da maleta, reposição, devolução, cancelamento | Pendente |
+| 3.7 | owner-app: telas dos relatórios de maleta e impressão da nota | Pendente |
+| 3.8 | fechamento da Fase 3 (revisão pós-fase) | Pendente |
+
+**Fora desta fase:** conferência pelo vendedor e um dispositivo por maleta (Fase 4); venda, perda e troca (Fases 4 e 6); acerto (Fase 7); conciliação completa com vendas (Fase 8).
+
 ## Pendências abertas
+
+- Fase 3 (maleta), para a dona ou o responsável: limite conta preço de venda ou custo; reposição conta no limite; peça repetida na mesma maleta; foto na nota; dias para a maleta ser atrasada; vendedor sem limite. O ADR-0010 está Proposto. ([tarefa 3.1](progresso/fase-3.md#tarefa-31-plano-da-fase-3-e-adr-da-maleta-só-documentos))
 
 - Fase 2: a dona aceitar a saída recusada quando falta peça (ADR-0008); formato do código da loja no cadastro rápido (ADR-0007, item 5); foto nos arquivos exportados e ordenação por coluna dos relatórios de estoque; leitor de código real e pacote instalado ainda não testados. ([tarefas 2.1 a 2.9](progresso/fase-2.md#tarefa-29-fechamento-da-fase-2))
 
