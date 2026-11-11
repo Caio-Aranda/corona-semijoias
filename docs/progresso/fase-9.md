@@ -118,3 +118,13 @@ Pilha de produção local (nginx real, certificado autoassinado fixado). Versão
 
 **Dúvidas:** nenhuma nova.
 
+### Tarefa 9.6: roteiro de entrega
+
+**Em revisão.** Só documentação: [docs/entrega-corona-gestao.md](../entrega-corona-gestao.md).
+
+**O que tem:** o que só o responsável faz; preparar a VPS; configurar e subir; certificado e reserva; backup e **teste de restauração obrigatório**; aviso de queda; gerar o instalador e publicar a primeira versão; instalar no computador da dona (inclusive o aviso "editor desconhecido" do Windows); primeiro acesso, senha temporária e importação dos produtos pela planilha; lista de conferência antes do dado real; o que fazer se algo falhar (sem conexão, IP mudou, certificado, senha esquecida, atualização que não chega, disco cheio); como restaurar; como publicar uma atualização.
+
+**O que não foi feito:** o roteiro não foi seguido por outra pessoa numa VPS de verdade (só os pedaços foram testados no computador de desenvolvimento).
+
+**Dúvidas:** nenhuma nova.
+
