@@ -575,6 +575,19 @@ export type PedidoDoEstoqueMinimo = {
     version?: number;
 };
 
+export type PedidoDoItem = {
+    quantidade?: number;
+    version?: number;
+};
+
+export type PedidoDoRascunho = {
+    id?: string;
+    pracaId?: string;
+    semanaId?: string;
+    tipo?: string;
+    vendedorId?: string;
+};
+
 export type PedidoDosCodigos = {
     codigos?: Array<PedidoDeCodigo>;
     version?: number;
@@ -941,6 +954,25 @@ export type RespostaDaPeca = {
     referencia?: string;
 };
 
+export type RespostaDaRemessa = {
+    avisos?: Array<string>;
+    criadaEm?: string;
+    enviadaEm?: string;
+    id?: string;
+    itens?: Array<RespostaDoItem>;
+    pracaId?: string;
+    pracaNome?: string;
+    semanaId?: string;
+    semanaNumero?: number;
+    status?: string;
+    tipo?: string;
+    totalPecas?: number;
+    totalValor?: string;
+    vendedorId?: string;
+    vendedorNome?: string;
+    version?: number;
+};
+
 export type RespostaDoAbaixoDoMinimo = {
     falta?: number;
     minimo?: number;
@@ -955,12 +987,12 @@ export type RespostaDoHistoricoDeCusto = {
 };
 
 export type RespostaDoItem = {
-    ajustada?: boolean;
-    contado?: number;
-    diferenca?: number;
-    esperado?: number;
-    produto?: RespostaDoProduto;
-    saldoAtual?: number;
+    id?: string;
+    precoCongelado?: boolean;
+    precoUnitario?: string;
+    produto?: RespostaDaPeca;
+    quantidade?: number;
+    total?: string;
 };
 
 export type RespostaDoLogin = {
@@ -2957,6 +2989,140 @@ export type PosicaoAtualResponses = {
 };
 
 export type PosicaoAtualResponse = PosicaoAtualResponses[keyof PosicaoAtualResponses];
+
+export type ListarRemessasData = {
+    body?: never;
+    path?: never;
+    query?: {
+        vendedorId?: string;
+        semanaId?: string;
+        status?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/remessas';
+};
+
+export type ListarRemessasResponses = {
+    /**
+     * OK
+     */
+    200: PaginaRespostaDoResumo;
+};
+
+export type ListarRemessasResponse = ListarRemessasResponses[keyof ListarRemessasResponses];
+
+export type CriarRemessaData = {
+    body: PedidoDoRascunho;
+    path?: never;
+    query?: never;
+    url: '/api/dona/remessas';
+};
+
+export type CriarRemessaResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDaRemessa;
+};
+
+export type CriarRemessaResponse = CriarRemessaResponses[keyof CriarRemessaResponses];
+
+export type ExcluirRascunhoDeRemessaData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query: {
+        version: number;
+    };
+    url: '/api/dona/remessas/{id}';
+};
+
+export type ExcluirRascunhoDeRemessaResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ExcluirRascunhoDeRemessaResponse = ExcluirRascunhoDeRemessaResponses[keyof ExcluirRascunhoDeRemessaResponses];
+
+export type VerRemessaData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/remessas/{id}';
+};
+
+export type VerRemessaResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDaRemessa;
+};
+
+export type VerRemessaResponse = VerRemessaResponses[keyof VerRemessaResponses];
+
+export type EnviarRemessaData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/remessas/{id}/enviar';
+};
+
+export type EnviarRemessaResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDaRemessa;
+};
+
+export type EnviarRemessaResponse = EnviarRemessaResponses[keyof EnviarRemessaResponses];
+
+export type TirarItemDaRemessaData = {
+    body?: never;
+    path: {
+        id: string;
+        produtoId: string;
+    };
+    query: {
+        version: number;
+    };
+    url: '/api/dona/remessas/{id}/itens/{produtoId}';
+};
+
+export type TirarItemDaRemessaResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDaRemessa;
+};
+
+export type TirarItemDaRemessaResponse = TirarItemDaRemessaResponses[keyof TirarItemDaRemessaResponses];
+
+export type ColocarItemNaRemessaData = {
+    body: PedidoDoItem;
+    path: {
+        id: string;
+        produtoId: string;
+    };
+    query?: never;
+    url: '/api/dona/remessas/{id}/itens/{produtoId}';
+};
+
+export type ColocarItemNaRemessaResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDaRemessa;
+};
+
+export type ColocarItemNaRemessaResponse = ColocarItemNaRemessaResponses[keyof ColocarItemNaRemessaResponses];
 
 export type Listar4Data = {
     body?: never;

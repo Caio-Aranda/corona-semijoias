@@ -1808,6 +1808,43 @@
         "required" : [ "estoqueMinimo" ],
         "type" : "object"
       },
+      "PedidoDoItem" : {
+        "properties" : {
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "version" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PedidoDoRascunho" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "pracaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "semanaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "PedidoDosCodigos" : {
         "properties" : {
           "codigos" : {
@@ -3011,6 +3048,77 @@
         },
         "type" : "object"
       },
+      "RespostaDaRemessa" : {
+        "properties" : {
+          "avisos" : {
+            "items" : {
+              "type" : "string"
+            },
+            "type" : "array"
+          },
+          "criadaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "enviadaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/RespostaDoItem"
+            },
+            "type" : "array"
+          },
+          "pracaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "pracaNome" : {
+            "type" : "string"
+          },
+          "semanaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "semanaNumero" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "totalPecas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totalValor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "vendedorNome" : {
+            "type" : "string"
+          },
+          "version" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "RespostaDoAbaixoDoMinimo" : {
         "properties" : {
           "falta" : {
@@ -3050,27 +3158,31 @@
       },
       "RespostaDoItem" : {
         "properties" : {
-          "ajustada" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "precoCongelado" : {
             "type" : "boolean"
           },
-          "contado" : {
-            "format" : "int32",
-            "type" : "integer"
-          },
-          "diferenca" : {
-            "format" : "int32",
-            "type" : "integer"
-          },
-          "esperado" : {
-            "format" : "int32",
-            "type" : "integer"
+          "precoUnitario" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
           },
           "produto" : {
-            "$ref" : "#/components/schemas/RespostaDoProduto"
+            "$ref" : "#/components/schemas/RespostaDaPeca"
           },
-          "saldoAtual" : {
+          "quantidade" : {
             "format" : "int32",
             "type" : "integer"
+          },
+          "total" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
           }
         },
         "type" : "object"
@@ -8045,6 +8157,291 @@
         } ],
         "summary" : "Posição atual do estoque (com valor a custo)",
         "tags" : [ "relatorios-de-estoque-e-compras-controller" ]
+      }
+    },
+    "/api/dona/remessas" : {
+      "get" : {
+        "description" : "Filtros: vendedorId, semanaId e status (RASCUNHO, ENVIADA, CONFERIDA, EM_ACERTO, ACERTADA, CANCELADA). Mais nova primeiro. A página começa em 0 (até 200 por página).",
+        "operationId" : "listarRemessas",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "semanaId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "status",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaginaRespostaDoResumo"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Lista de remessas",
+        "tags" : [ "remessas-da-dona-controller" ]
+      },
+      "post" : {
+        "description" : "Cria o rascunho: vendedor, semana, praça (se vazia, a do vendedor) e tipo NOVA ou REPOSICAO. Rascunho não mexe no estoque. Recusa (409) vendedor inativo ou com restrição que impede montar maleta. O id (UUID) vem do aplicativo: mesmo id e mesmos dados devolve o rascunho (200); primeira vez 201; outros dados, 409.",
+        "operationId" : "criarRemessa",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDoRascunho"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDaRemessa"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Começar uma maleta (rascunho)",
+        "tags" : [ "remessas-da-dona-controller" ]
+      }
+    },
+    "/api/dona/remessas/{id}" : {
+      "delete" : {
+        "description" : "Exclusão lógica; exige a version lida. Só rascunho.",
+        "operationId" : "excluirRascunhoDeRemessa",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "version",
+          "required" : true,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Excluir o rascunho",
+        "tags" : [ "remessas-da-dona-controller" ]
+      },
+      "get" : {
+        "description" : "Com os itens, fotos, preços e totais calculados pelo servidor, e avisos.",
+        "operationId" : "verRemessa",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDaRemessa"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ver uma remessa",
+        "tags" : [ "remessas-da-dona-controller" ]
+      }
+    },
+    "/api/dona/remessas/{id}/enviar" : {
+      "post" : {
+        "description" : "RASCUNHO para ENVIADA, numa transação só: confere vendedor (ativo, sem restrição que impede), peças e limite de consignação (valor em aberto a preço de venda mais esta remessa; vendedor sem limite não é bloqueado), congela o preço de venda de hoje e baixa o estoque central (tudo ou nada; falta de peça recusa a remessa inteira dizendo qual). Enviar de novo uma remessa já enviada devolve 200 sem baixar o estoque.",
+        "operationId" : "enviarRemessa",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDaRemessa"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Enviar a maleta",
+        "tags" : [ "remessas-da-dona-controller" ]
+      }
+    },
+    "/api/dona/remessas/{id}/itens/{produtoId}" : {
+      "delete" : {
+        "description" : "Exige a version lida. Só rascunho.",
+        "operationId" : "tirarItemDaRemessa",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "path",
+          "name" : "produtoId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "version",
+          "required" : true,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDaRemessa"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Tirar uma peça do rascunho",
+        "tags" : [ "remessas-da-dona-controller" ]
+      },
+      "put" : {
+        "description" : "Põe a peça (produto e quantidade) ou troca a quantidade dela. O app manda só produto e quantidade; o servidor calcula preço e totais. Exige a version lida (409 se outra pessoa mudou antes). Só rascunho.",
+        "operationId" : "colocarItemNaRemessa",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "path",
+          "name" : "produtoId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDoItem"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDaRemessa"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Colocar uma peça no rascunho",
+        "tags" : [ "remessas-da-dona-controller" ]
       }
     },
     "/api/dona/restricoes" : {
