@@ -109,6 +109,8 @@ class DevolucaoDaMaletaTest extends TesteDeIntegracao {
         Map<String, Object> corpo = mapa("nome", "Vendedor " + UUID.randomUUID().toString().substring(0, 8));
         if (limite != null) {
             corpo.put("limiteConsignacao", limite);
+        } else {
+            corpo.put("semLimite", true); // o limite é obrigatório (V026)
         }
         return UUID.fromString(corpoDe(enviarPost("/api/dona/vendedores", corpo).andExpect(status().isCreated())).get("id").asString());
     }
@@ -552,6 +554,13 @@ class DevolucaoDaMaletaTest extends TesteDeIntegracao {
         JsonNode r = corpoDe(ler(BASE + "/em-aberto?vendedorId=" + v).andExpect(status().isOk()));
         assertThat(r.get("limite").isNull()).isTrue();
         assertThat(r.get("limiteRestante").isNull()).isTrue();
+        assertThat(r.get("semLimite").asBoolean()).isTrue();
+        assertThat(r.get("limiteDefinido").asBoolean()).isTrue();
+        // Sem limite definido (vendedor antigo): o limite aparece como "não definido", nunca como "sem limite".
+        jdbc.update("UPDATE corona.vendedores SET limite_consignacao_ilimitado = false WHERE id = ?", v);
+        JsonNode indefinido = corpoDe(ler(BASE + "/em-aberto?vendedorId=" + v).andExpect(status().isOk()));
+        assertThat(indefinido.get("semLimite").asBoolean()).isFalse();
+        assertThat(indefinido.get("limiteDefinido").asBoolean()).isFalse();
         assertThat(r.get("maletas")).isEmpty();
         ler(BASE + "/em-aberto").andExpect(status().isBadRequest());
         ler(BASE + "/em-aberto?vendedorId=" + UUID.randomUUID()).andExpect(status().isNotFound());

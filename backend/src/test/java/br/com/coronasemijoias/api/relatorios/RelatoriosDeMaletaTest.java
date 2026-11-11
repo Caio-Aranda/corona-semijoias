@@ -137,6 +137,8 @@ class RelatoriosDeMaletaTest extends TesteDeIntegracao {
         Map<String, Object> corpo = mapa("nome", "Vend " + UUID.randomUUID().toString().substring(0, 8));
         if (limite != null) {
             corpo.put("limiteConsignacao", limite);
+        } else {
+            corpo.put("semLimite", true); // o limite é obrigatório (V026)
         }
         return UUID.fromString(corpoDe(enviarPost("/api/dona/vendedores", corpo).andExpect(status().isCreated())).get("id").asString());
     }

@@ -1837,6 +1837,9 @@
             "minLength" : 0,
             "type" : "string"
           },
+          "semLimite" : {
+            "type" : "boolean"
+          },
           "sexo" : {
             "pattern" : "FEMININO|MASCULINO|OUTRO",
             "type" : "string"
@@ -3280,6 +3283,9 @@
           "rgUf" : {
             "type" : "string"
           },
+          "semLimite" : {
+            "type" : "boolean"
+          },
           "sexo" : {
             "type" : "string"
           },
@@ -3874,6 +3880,9 @@
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           },
+          "limiteDefinido" : {
+            "type" : "boolean"
+          },
           "limiteRestante" : {
             "example" : "123.45",
             "format" : "decimal",
@@ -3885,6 +3894,9 @@
               "$ref" : "#/components/schemas/RespostaDaMaletaEmAberto"
             },
             "type" : "array"
+          },
+          "semLimite" : {
+            "type" : "boolean"
           },
           "valorEmAberto" : {
             "example" : "123.45",
@@ -9738,7 +9750,7 @@
     },
     "/api/dona/remessas/em-aberto" : {
       "get" : {
-        "description" : "Maletas enviadas com o valor em aberto de cada uma, o total, o limite de consignação (vazio se o vendedor não tem limite) e quanto ainda sobra do limite.",
+        "description" : "Maletas enviadas com o valor em aberto de cada uma, o total, o limite de consignação (vazio se o vendedor está sem limite ou ainda não tem limite definido; veja semLimite e limiteDefinido) e quanto ainda sobra do limite.",
         "operationId" : "listarMaletasEmAbertoDoVendedor",
         "parameters" : [ {
           "in" : "query",

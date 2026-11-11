@@ -348,7 +348,7 @@ public class ConsultasDeMaleta {
         // O limite que sobra conta TUDO o que o vendedor tem em aberto, não só o recorte pedido nos filtros.
         String base = "SELECT w.vendedor_id, w.vendedor, count(*) AS maletas, count(*) FILTER (WHERE w.atrasada) AS atrasadas, "
                 + "sum(w.pecas) AS pecas, sum(w.valor) AS valor, sum(w.dolar) AS dolar, sum(w.guarani) AS guarani, "
-                + "CASE WHEN w.limite_consignacao > 0 THEN w.limite_consignacao END AS limite, "
+                + "w.limite_consignacao AS limite, "
                 + "(SELECT coalesce(sum((i2.qtd_enviada + coalesce(m2.soma, 0)) * i2.preco_remessa), 0) "
                 + "FROM corona.remessas r2 JOIN corona.itens_remessa i2 ON i2.remessa_id = r2.id AND i2.deleted_at IS NULL "
                 + "LEFT JOIN (SELECT remessa_id, produto_id, sum(quantidade) AS soma FROM corona.movimentos_remessa "

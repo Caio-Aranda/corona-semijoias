@@ -270,6 +270,11 @@ public enum CodigoErro {
             "Este vendedor não pode receber maleta.",
             "Este vendedor não pode receber maleta agora."),
 
+    /** O vendedor não tem limite de consignação definido nem "Sem limite" marcado (HTTP 409; V026). */
+    LIMITE_DE_CONSIGNACAO_NAO_DEFINIDO(
+            "O limite de consignação do vendedor não está definido.",
+            "Defina o limite deste vendedor antes de montar a maleta."),
+
     /** O valor da maleta passa o limite de consignação do vendedor (HTTP 409). O servidor monta o texto. */
     LIMITE_DE_CONSIGNACAO_EXCEDIDO(
             "O valor da maleta passa o limite do vendedor.",

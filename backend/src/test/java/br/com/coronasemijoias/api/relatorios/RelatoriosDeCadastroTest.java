@@ -211,7 +211,7 @@ class RelatoriosDeCadastroTest extends TesteDeIntegracao {
     @Test
     void clientesPorVendedorEComExclusaoLogica() throws Exception {
         String m = marca();
-        UUID vendedor = UUID.fromString(criarVia("/api/dona/vendedores", mapa("nome", m + " V")).get("id").asString());
+        UUID vendedor = UUID.fromString(criarVia("/api/dona/vendedores", mapa("nome", m + " V", "semLimite", true)).get("id").asString());
         criarVia("/api/dona/clientes", mapa("nome", m + " Ana", "vendedorResponsavelId", vendedor, "telefone", "11999"));
         criarVia("/api/dona/clientes", mapa("nome", m + " Bia", "vendedorResponsavelId", vendedor));
         criarVia("/api/dona/clientes", mapa("nome", m + " Cleo"));
@@ -339,10 +339,10 @@ class RelatoriosDeCadastroTest extends TesteDeIntegracao {
     @Test
     void aniversariantesDoMesSemDeslocarODia() throws Exception {
         String m = marca();
-        criarVia("/api/dona/vendedores", mapa("nome", m + " Fim", "dataNascimento", "1990-03-31"));
-        criarVia("/api/dona/vendedores", mapa("nome", m + " Inicio", "dataNascimento", "1985-03-01"));
-        criarVia("/api/dona/vendedores", mapa("nome", m + " Abril", "dataNascimento", "1992-04-10"));
-        criarVia("/api/dona/vendedores", mapa("nome", m + " Sem data"));
+        criarVia("/api/dona/vendedores", mapa("nome", m + " Fim", "semLimite", true, "dataNascimento", "1990-03-31"));
+        criarVia("/api/dona/vendedores", mapa("nome", m + " Inicio", "semLimite", true, "dataNascimento", "1985-03-01"));
+        criarVia("/api/dona/vendedores", mapa("nome", m + " Abril", "semLimite", true, "dataNascimento", "1992-04-10"));
+        criarVia("/api/dona/vendedores", mapa("nome", m + " Sem data", "semLimite", true));
 
         JsonNode marco = relatorio("aniversariantes", "busca", m, "mes", "3");
         assertThat(marco.get("total").asLong()).isEqualTo(2);
@@ -361,7 +361,7 @@ class RelatoriosDeCadastroTest extends TesteDeIntegracao {
         String m = marca();
         UUID praca = UUID.fromString(criarVia("/api/dona/pracas", mapa("nome", "Praça " + m)).get("id").asString());
         UUID vendedor = UUID.fromString(criarVia("/api/dona/vendedores",
-                mapa("nome", m + " Vendedora", "dataNascimento", "1980-03-15", "pracaId", praca)).get("id").asString());
+                mapa("nome", m + " Vendedora", "semLimite", true, "dataNascimento", "1980-03-15", "pracaId", praca)).get("id").asString());
         criarVia("/api/dona/clientes", mapa("nome", m + " Cliente Ana", "dataNascimento", "1995-03-02",
                 "vendedorResponsavelId", vendedor));
         criarVia("/api/dona/clientes", mapa("nome", m + " Cliente Bia", "dataNascimento", "1990-03-20"));
@@ -530,7 +530,7 @@ class RelatoriosDeCadastroTest extends TesteDeIntegracao {
         assertThat(relatorio("fornecedores", "busca", m, "comProdutos", "NAO").get("total").asLong()).isEqualTo(1);
         conciliar("fornecedores", null, null, "busca", m, "comProdutos", "SIM");
 
-        UUID vendedor = UUID.fromString(criarVia("/api/dona/vendedores", mapa("nome", m + " V")).get("id").asString());
+        UUID vendedor = UUID.fromString(criarVia("/api/dona/vendedores", mapa("nome", m + " V", "semLimite", true)).get("id").asString());
         criarVia("/api/dona/clientes", mapa("nome", m + " Ana", "vendedorResponsavelId", vendedor));
         criarVia("/api/dona/clientes", mapa("nome", m + " Bia"));
         assertThat(relatorio("clientes", "busca", m, "comVendedor", "SIM").get("total").asLong()).isEqualTo(1);

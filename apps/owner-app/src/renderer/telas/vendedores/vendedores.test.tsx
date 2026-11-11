@@ -176,9 +176,49 @@ describe('Vendedores: ficha, aba Cadastro', () => {
       nome: 'Joana Souza',
       estrangeiro: false,
       limiteConsignacao: '1500.00',
+      semLimite: false,
       comissaoPercentual: '12.50',
     });
     expect(screen.getByRole('tab', { name: 'Endereço' })).toBeEnabled();
+  });
+
+  it('o limite é obrigatório: sem valor e sem "Sem limite" o vendedor não é salvo', async () => {
+    const m = montar();
+    const u = userEvent.setup();
+    render(<App ponte={m.ponte} />);
+    await u.click(await screen.findByRole('button', { name: 'Vendedores' }));
+    await u.click(await screen.findByRole('button', { name: 'Novo vendedor' }));
+    await u.type(await screen.findByLabelText('Nome do vendedor'), 'Joana Souza');
+    await u.click(screen.getByRole('button', { name: 'Salvar' }));
+    expect(
+      await screen.findByText('Informe o limite em reais ou marque "Sem limite".'),
+    ).toBeInTheDocument();
+    expect(m.chamadas.some((c) => c.operacao === 'vendedores.criar')).toBe(false);
+  });
+
+  it('"Sem limite" desabilita o valor e manda semLimite, sem limite em reais', async () => {
+    const m = montar({
+      'vendedores.criar': (p) => ({
+        ok: true,
+        dados: { ...JOANA, nome: (p.parametros as { nome: string }).nome, version: 0 },
+      }),
+    });
+    const u = userEvent.setup();
+    render(<App ponte={m.ponte} />);
+    await u.click(await screen.findByRole('button', { name: 'Vendedores' }));
+    await u.click(await screen.findByRole('button', { name: 'Novo vendedor' }));
+    await u.type(await screen.findByLabelText('Nome do vendedor'), 'Joana Souza');
+    await u.type(screen.getByLabelText('Limite de consignação'), '300,00');
+    await u.click(screen.getByLabelText('Sem limite'));
+    expect(screen.getByLabelText('Limite de consignação')).toBeDisabled();
+    expect(screen.getByLabelText('Limite de consignação')).toHaveValue('');
+    await u.click(screen.getByRole('button', { name: 'Salvar' }));
+    await screen.findByText(/foi cadastrado/);
+    expect(ultima(m, 'vendedores.criar')).toEqual({
+      nome: 'Joana Souza',
+      estrangeiro: false,
+      semLimite: true,
+    });
   });
 
   it('o limite aparece também nas três moedas', async () => {

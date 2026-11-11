@@ -68,7 +68,9 @@ export const TEXTOS_DE_VENDEDORES = {
   opcaoAntiga: 'Opção já escolhida antes',
   comissaoInvalida: 'A comissão deve ficar entre 0 e 100.',
   comissaoAjuda: 'De 0 a 100. Por exemplo: 12,5.',
-  limiteAjuda: 'O valor máximo de peças que o vendedor pode levar na maleta.',
+  limiteAjuda:
+    'O valor máximo, em reais, das peças que o vendedor pode ter em mãos (pelo preço de venda). Preencha o valor ou marque "Sem limite".',
+  limiteObrigatorio: 'Informe o limite em reais ou marque "Sem limite".',
   rotulos: {
     nome: 'Nome do vendedor',
     dataNascimento: 'Data de nascimento',
@@ -87,6 +89,7 @@ export const TEXTOS_DE_VENDEDORES = {
     outrasMidias: 'Outras redes sociais',
     pracaId: 'Praça',
     limiteConsignacao: 'Limite de consignação',
+    semLimite: 'Sem limite',
     restricaoId: 'Restrição',
     comissaoPercentual: 'Comissão (%)',
     logradouro: 'Rua',

@@ -12,6 +12,8 @@ export interface CampoDeDinheiroProps {
   erro?: string;
   ajuda?: string;
   autoFocus?: boolean;
+  /** Campo apagado (por exemplo, "Sem limite" marcado). */
+  desabilitado?: boolean;
   id?: string;
 }
 
@@ -26,6 +28,7 @@ export function CampoDeDinheiro({
   erro,
   ajuda = TEXTOS.dinheiro.ajuda,
   autoFocus,
+  desabilitado = false,
   id,
 }: CampoDeDinheiroProps) {
   const { taxas } = useCotacao();
@@ -41,6 +44,7 @@ export function CampoDeDinheiro({
         value={valor}
         inputMode="decimal"
         autoComplete="off"
+        disabled={desabilitado}
         {...(autoFocus ? { autoFocus } : {})}
         {...(mensagem ? { erro: mensagem } : {})}
         {...(ajuda ? { ajuda } : {})}

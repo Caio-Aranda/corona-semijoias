@@ -340,13 +340,53 @@ describe('Montagem pelo leitor', () => {
     expect(within(limite).getByText('Sobra').nextSibling?.textContent).toBe('R$ 230,00');
   });
 
-  it('vendedor sem limite cadastrado não mostra sobra', async () => {
+  it('vendedor com "Sem limite" marcado não mostra sobra', async () => {
     const m = montar({
-      'maletas.emAberto': () => ({ ok: true, dados: { limite: 0, valorEmAberto: 0, maletas: [] } }),
+      'maletas.emAberto': () => ({
+        ok: true,
+        dados: {
+          limite: null,
+          semLimite: true,
+          limiteDefinido: true,
+          valorEmAberto: 0,
+          maletas: [],
+        },
+      }),
     });
     await comecarMaleta(m);
-    expect(await screen.findByText('Sem limite cadastrado')).toBeTruthy();
+    expect((await screen.findAllByText('Sem limite')).length).toBeGreaterThan(0);
     expect(screen.queryByText('Sobra')).toBeNull();
+  });
+
+  it('limite ainda não definido avisa para definir antes de montar (zero não é "sem limite")', async () => {
+    const m = montar({
+      'maletas.emAberto': () => ({
+        ok: true,
+        dados: {
+          limite: null,
+          semLimite: false,
+          limiteDefinido: false,
+          valorEmAberto: 0,
+          maletas: [],
+        },
+      }),
+    });
+    await comecarMaleta(m);
+    expect(
+      (await screen.findAllByText(/Defina o limite deste vendedor antes de montar a maleta/))
+        .length,
+    ).toBeGreaterThan(0);
+    expect(screen.queryByText('Sem limite')).toBeNull();
+  });
+
+  it('com limite definido mostra "Limite, em mãos, pode levar mais"', async () => {
+    const m = montar();
+    const u = await comecarMaleta(m);
+    await ler(u, '0012');
+    await screen.findByText('Anel Solitário entrou na maleta.');
+    expect(
+      await screen.findByText('Limite R$ 500,00 — em mãos R$ 200,00 — pode levar mais R$ 230,00'),
+    ).toBeTruthy();
   });
 });
 

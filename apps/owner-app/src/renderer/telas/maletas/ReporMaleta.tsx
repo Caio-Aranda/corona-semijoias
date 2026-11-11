@@ -96,7 +96,15 @@ export function ReporMaleta({
           </div>
           <div>
             <dt>{T.limite}</dt>
-            <dd>{aberto.limite === null ? T.semLimite : <Dinheiro valor={aberto.limite} />}</dd>
+            <dd>
+              {aberto.limite !== null ? (
+                <Dinheiro valor={aberto.limite} />
+              ) : aberto.semLimite ? (
+                T.semLimite
+              ) : (
+                T.naoDefinido
+              )}
+            </dd>
           </div>
           {aberto.sobra !== null ? (
             <div>
