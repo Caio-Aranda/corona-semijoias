@@ -41,6 +41,9 @@ export function TelaMinhaMaleta({ ponte, aoVoltar, aoConferir }: TelaMinhaMaleta
         aoTentarDeNovo={() => void carregar()}
         rotuloTentarDeNovo={TEXTOS.tentarDeNovo}
       >
+        {maletas !== null && maletas.length > 0 ? (
+          <p className="vendas-texto">{cotacao ? T.cotacaoDeHoje : T.cotacaoSem}</p>
+        ) : null}
         {maletas !== null && maletas.length === 0 ? (
           <p className="vendas-texto">{T.vazia}</p>
         ) : null}
