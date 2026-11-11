@@ -91,19 +91,19 @@ Colocar o Corona Gestão no ar para a dona (prazo: sexta, 14/11/2026). É infrae
 
 | Nº | Tarefa | Situação |
 | --- | --- | --- |
-| 9.1 | docs: plano da Fase 9 mínima e ADR-0009 (implantação, certificado fixado, atualização, backup, riscos) | Em revisão · [detalhe](progresso/fase-9.md#tarefa-91-plano-e-adr-só-documentos) |
-| 9.2 | deploy: Docker Compose de produção (API, PostgreSQL, proxy HTTPS), perfil `prod`, script de instalação do servidor, saúde e aviso de queda | Em revisão · [detalhe](progresso/fase-9.md#tarefa-92-implantação-da-api) |
-| 9.3 | backup e restauração: `pg_dump` diário, cópia semanal por `rclone`, restauração testada num banco limpo | Em revisão · [detalhe](progresso/fase-9.md#tarefa-93-backup-e-restauração) |
-| 9.4 | Corona Gestão: instalador `.exe` (NSIS), endereço e certificado fixado como configuração de build, `npm run owner:empacotar` | Em revisão · [detalhe](progresso/fase-9.md#tarefa-94-instalador-do-corona-gestão-e-certificado-fixado) |
-| 9.5 | Corona Gestão: atualização automática (publicação na VPS, checagem, hash, instalação ao fechar, aviso na tela) | Em revisão · [detalhe](progresso/fase-9.md#tarefa-95-atualização-automática) |
-| 9.6 | roteiro de entrega (`docs/entrega-corona-gestao.md`) | Em revisão · [detalhe](progresso/fase-9.md#tarefa-96-roteiro-de-entrega) |
-| 9.7 | extra: Corona Vendas com instalador e atualização automática reaproveitando o mecanismo (pacote neutro `conexao-segura`) | Em revisão · [detalhe](progresso/fase-9.md#tarefa-97-corona-vendas-instalador-e-atualização-reaproveitáveis-extra) |
+| 9.1 | docs: plano da Fase 9 mínima e ADR-0009 (implantação, certificado fixado, atualização, backup, riscos) | Mesclada (PR 50, junto no PR 57) · [detalhe](progresso/fase-9.md#tarefa-91-plano-e-adr-só-documentos) |
+| 9.2 | deploy: Docker Compose de produção (API, PostgreSQL, proxy HTTPS), perfil `prod`, script de instalação do servidor, saúde e aviso de queda | Mesclada (PR 52, junto no PR 57) · [detalhe](progresso/fase-9.md#tarefa-92-implantação-da-api) |
+| 9.3 | backup e restauração: `pg_dump` diário, cópia semanal por `rclone`, restauração testada num banco limpo | Mesclada (PR 53, junto no PR 57) · [detalhe](progresso/fase-9.md#tarefa-93-backup-e-restauração) |
+| 9.4 | Corona Gestão: instalador `.exe` (NSIS), endereço e certificado fixado como configuração de build, `npm run owner:empacotar` | Mesclada (PR 54, junto no PR 57) · [detalhe](progresso/fase-9.md#tarefa-94-instalador-do-corona-gestão-e-certificado-fixado) |
+| 9.5 | Corona Gestão: atualização automática (publicação na VPS, checagem, hash, instalação ao fechar, aviso na tela) | Mesclada (PR 56, junto no PR 57) · [detalhe](progresso/fase-9.md#tarefa-95-atualização-automática) |
+| 9.6 | roteiro de entrega (`docs/entrega-corona-gestao.md`) | Mesclada (PR 57) · [detalhe](progresso/fase-9.md#tarefa-96-roteiro-de-entrega) |
+| 9.7 | extra: Corona Vendas com instalador e atualização automática reaproveitando o mecanismo (pacote neutro `conexao-segura`) | Mesclada (PR 61) · [detalhe](progresso/fase-9.md#tarefa-97-corona-vendas-instalador-e-atualização-reaproveitáveis-extra) |
 
 **Fora desta fase mínima:** domínio e Let's Encrypt, assinatura do instalador, backup diário fora da VPS, atualização do Corona Vendas (Fase 9 completa).
 
 **Depende do responsável:** contratar a VPS, entregar o IP e a chave SSH, autorizar o Google Drive no `rclone`, escolher o aviso de queda.
 
-**Estado (tarefas 9.1 a 9.6 escritas e testadas no computador de desenvolvimento).** A pilha de produção, o backup, a restauração, o instalador e a atualização automática foram provados com a pilha de produção rodando localmente (inclusive instalar a versão 1.0.0, publicar a 1.0.1 e ver o app se atualizar sozinho). **Falta, e só dá com a VPS:** rodar `instalar-servidor.sh`, `verificar-portas.sh` e os timers; o **teste de restauração na VPS com produtos reais** (obrigatório antes de dado real); o envio ao Google Drive; a publicação pela rede (`ssh`/`scp`); e a primeira instalação no computador da dona. Lista de conferência: [entrega-corona-gestao.md](entrega-corona-gestao.md#10-antes-de-a-dona-lançar-dado-real-lista-de-conferência).
+**Estado (tarefas 9.1 a 9.7 mescladas; testadas no computador de desenvolvimento).** A pilha de produção, o backup, a restauração, o instalador e a atualização automática foram provados com a pilha de produção rodando localmente (inclusive instalar a versão 1.0.0, publicar a 1.0.1 e ver o app se atualizar sozinho). **Falta, e só dá com a VPS:** rodar `instalar-servidor.sh`, `verificar-portas.sh` e os timers; o **teste de restauração na VPS com produtos reais** (obrigatório antes de dado real); o envio ao Google Drive; a publicação pela rede (`ssh`/`scp`); e a primeira instalação no computador da dona. Lista de conferência: [entrega-corona-gestao.md](entrega-corona-gestao.md#10-antes-de-a-dona-lançar-dado-real-lista-de-conferência).
 
 ## Fase 3
 
@@ -120,7 +120,7 @@ Maleta (§15). Segue o mesmo formato da Fase 2. O modelo da maleta está no [ADR
 | 3.5 | owner-app: montagem por leitor (foto grande, bloqueios claros) | Mesclada (PR 62) · [detalhe](progresso/fase-3.md#tarefa-35-corona-gestão-montar-a-maleta-por-leitor) |
 | 3.6 | owner-app: lista e ficha da maleta, reposição, devolução, cancelamento | Mesclada (PR 63) · [detalhe](progresso/fase-3.md#tarefa-36-corona-gestão-gerir-a-maleta) |
 | 3.7 | owner-app: telas dos relatórios de maleta e impressão da nota | Mesclada (PR 64) · [detalhe](progresso/fase-3.md#tarefa-37-corona-gestão-relatórios-da-maleta-e-nota-de-remessa) |
-| 3.8 | fechamento da Fase 3 (revisão pós-fase) | Em revisão (PR 65) · [detalhe](progresso/fase-3.md#tarefa-38-fechamento-da-fase-3) |
+| 3.8 | fechamento da Fase 3 (revisão pós-fase) | Mesclada (PR 65) · [detalhe](progresso/fase-3.md#tarefa-38-fechamento-da-fase-3) |
 
 **Fora desta fase:** conferência pelo vendedor e um dispositivo por maleta (Fase 4); venda, perda e troca (Fases 4 e 6); acerto (Fase 7); conciliação completa com vendas (Fase 8).
 
@@ -128,7 +128,7 @@ Maleta (§15). Segue o mesmo formato da Fase 2. O modelo da maleta está no [ADR
 
 ## Extra: testes de ponta a ponta
 
-Playwright com o Electron de verdade (`npm run e2e`, pasta `testes-e2e/`): login da dona com troca obrigatória de senha, cadastro de fornecedor, entrada de compra lendo o código (digitar + Enter) com conferência do estoque e exportação de relatório em CSV. Banco e API de teste isolados (porta 5499 e 8099, projeto `corona-e2e`, sem volume), limpos no fim; nunca o banco de desenvolvimento nem a pilha de produção. **Não está no CI de cada PR** (sobe Docker, API e Electron, vários minutos): o workflow `E2E` roda à mão e toda segunda. O workflow ainda não foi executado no GitHub (só localmente, 4 testes verdes). Nada do Corona Vendas antes da Fase 4.
+Playwright com o Electron de verdade (`npm run e2e`, pasta `testes-e2e/`): login da dona com troca obrigatória de senha, cadastro de fornecedor, entrada de compra lendo o código (digitar + Enter) com conferência do estoque e exportação de relatório em CSV. Banco e API de teste isolados (porta 5499 e 8099, projeto `corona-e2e`, sem volume), limpos no fim; nunca o banco de desenvolvimento nem a pilha de produção. **Não está no CI de cada PR** (sobe Docker, API e Electron, vários minutos): o workflow `E2E` roda à mão e toda segunda. O workflow rodou no GitHub pela primeira vez em 11/11/2026, disparado à mão na auditoria (run 43025414672: 4 testes verdes em 1,4 min). Nada do Corona Vendas antes da Fase 4.
 
 ## Fase 4
 
@@ -138,16 +138,40 @@ App do vendedor online (§15): login, conferência, venda, clientes, consulta, r
 
 | Nº | Tarefa | Situação |
 | --- | --- | --- |
-| 4.1 | docs: plano da Fase 4 e ADR-0011 (venda do vendedor) | Em revisão · [detalhe](progresso/fase-4.md#tarefa-41-plano-da-fase-4-e-adr-da-venda-só-documentos) |
-| 4.2 | backend (alto): vendas, itens e pagamentos, venda a partir da maleta, preço congelado, desconto, idempotência (200/201/409), estorno, totais no servidor, cotação | Em revisão · [detalhe](progresso/fase-4.md#tarefa-42-backend-das-vendas-vender-estornar-totais-no-servidor) |
-| 4.3 | backend: rotas do vendedor (própria maleta sem custo, conferência e dispositivo único, clientes dele, cotação, relatórios próprios), 403 cruzado nos dois sentidos | Em revisão · [detalhe](progresso/fase-4.md#tarefa-43-backend-das-rotas-do-vendedor-maleta-conferência-clientes-cotação-relatórios) |
-| 4.4 | seller-app (alto): base de telas, conferência por leitor com foto grande, venda, escolha e cadastro de cliente, estorno | Em revisão · [detalhe](progresso/fase-4.md#tarefa-44-corona-vendas-conferência-da-maleta-venda-cliente-e-estorno) |
-| 4.5 | seller-app: Minha maleta, Meus clientes, Meus números (relatórios próprios) e valores nas três moedas | Em revisão · [detalhe](progresso/fase-4.md#tarefa-45-corona-vendas-meus-clientes-e-meus-números) |
-| 4.6 | fechamento da Fase 4 (revisão pós-fase) | Em revisão · [detalhe](progresso/fase-4.md#tarefa-46-fechamento-da-fase-4-revisão-pós-fase) |
+| 4.1 | docs: plano da Fase 4 e ADR-0011 (venda do vendedor) | Mesclada (PR 66) · [detalhe](progresso/fase-4.md#tarefa-41-plano-da-fase-4-e-adr-da-venda-só-documentos) |
+| 4.2 | backend (alto): vendas, itens e pagamentos, venda a partir da maleta, preço congelado, desconto, idempotência (200/201/409), estorno, totais no servidor, cotação | Mesclada (PR 67) · [detalhe](progresso/fase-4.md#tarefa-42-backend-das-vendas-vender-estornar-totais-no-servidor) |
+| 4.3 | backend: rotas do vendedor (própria maleta sem custo, conferência e dispositivo único, clientes dele, cotação, relatórios próprios), 403 cruzado nos dois sentidos | Mesclada (PR 68, junto no PR 71) · [detalhe](progresso/fase-4.md#tarefa-43-backend-das-rotas-do-vendedor-maleta-conferência-clientes-cotação-relatórios) |
+| 4.4 | seller-app (alto): base de telas, conferência por leitor com foto grande, venda, escolha e cadastro de cliente, estorno | Mesclada (PR 69, junto no PR 71) · [detalhe](progresso/fase-4.md#tarefa-44-corona-vendas-conferência-da-maleta-venda-cliente-e-estorno) |
+| 4.5 | seller-app: Minha maleta, Meus clientes, Meus números (relatórios próprios) e valores nas três moedas | Mesclada (PR 70, junto no PR 71) · [detalhe](progresso/fase-4.md#tarefa-45-corona-vendas-meus-clientes-e-meus-números) |
+| 4.6 | fechamento da Fase 4 (revisão pós-fase) | Mesclada (PR 71) · [detalhe](progresso/fase-4.md#tarefa-46-fechamento-da-fase-4-revisão-pós-fase) |
 
 **Fora desta fase:** SQLite criptografado, outbox e sync (Fase 5); devolução, troca e garantia (Fase 6); acerto, comissão e contas a receber completas (Fase 7).
 
 **Fase 4 concluída** (tarefas 4.1 a 4.6; a 4.6 foi a revisão de fechamento). Resumo: o vendedor entra no Corona Vendas e, com internet, vê a própria maleta (sem custo), confere as peças lendo o código, vende (preço congelado, desconto dentro do limite da dona, à vista ou a prazo), estorna a venda no mesmo dia, cadastra e busca clientes e vê os números dele (vendas, recebimentos e quanto os clientes devem) em Real, Dólar e Guarani. O servidor recalcula tudo, nunca recebe preço do app e liga cada maleta a um aparelho só. **Segue para a Fase 5:** sem internet (SQLite, outbox, sync). Pendências: [fase-4.md](progresso/fase-4.md#tarefa-46-fechamento-da-fase-4-revisão-pós-fase).
+
+## Fase 5
+
+### Plano da Fase 5
+
+App do vendedor sem internet: SQLite criptografado, fila de envios e sincronização. O modelo está no [ADR-0013](decisoes/ADR-0013-sincronizacao-e-offline.md) (Proposto); as tarefas, no [plano da Fase 5](progresso/fase-5-plano.md).
+
+| Nº | Tarefa | Situação |
+| --- | --- | --- |
+| 5.1 | docs: plano da Fase 5 e ADR-0013 (sincronização e offline) | Mesclada (PR 74) · [plano](progresso/fase-5-plano.md) |
+
+As tarefas 5.2 a 5.15 estão no plano e ainda não começaram. **Antes da 5.2:** os achados da [auditoria de 11/11/2026](auditoria/2026-11-11-checkup.md).
+
+## Fase 7 (só o plano)
+
+Acerto semanal e financeiro. O modelo está no [ADR-0012](decisoes/ADR-0012-acerto-e-financeiro.md) (Proposto); as tarefas, no [plano da Fase 7](progresso/fase-7-plano.md).
+
+| Nº | Tarefa | Situação |
+| --- | --- | --- |
+| 7.1 | docs: plano da Fase 7 e ADR-0012 (acerto e financeiro) | Mesclada (PR 73) · [plano](progresso/fase-7-plano.md) |
+
+## Auditoria geral (check-up) de 11/11/2026
+
+Revisão do que foi feito nas Fases 0 a 4 e na Fase 9 mínima, antes da Fase 5: [relatório](auditoria/2026-11-11-checkup.md) (PR 75). Três achados altos, cada um com PR próprio e teste que falha antes: ordem das travas do estoque (PR 76), segunda trava do saldo da maleta no banco (PR 77) e Dólar e Guarani pela cotação do dia de cada lançamento no Corona Vendas (PR 78). Médios e baixos ficam no relatório como tarefas.
 
 ## Pendências abertas
 
@@ -157,9 +181,11 @@ App do vendedor online (§15): login, conferência, venda, clientes, consulta, r
 
 O que ainda está em aberto nas tarefas concluídas (o que já foi resolvido por tarefa seguinte não entra). Atualize ao fechar cada item.
 
+- Auditoria de 11/11/2026: os achados médios e baixos e as decisões D1 e D2 de [auditoria/2026-11-11-checkup.md](auditoria/2026-11-11-checkup.md) viram tarefas. ([auditoria](auditoria/2026-11-11-checkup.md))
+
 - Pendências do cliente (§17 e §21 da especificação), entre elas a pendência 12, "Entrada" (resposta do cliente antes da Fase 3). ([tarefa 1](progresso/fase-0.md#tarefa-1-especificação-v11-com-as-decisões-da-fase-0))
 - Nome de tela de cada relatório: definido na tarefa daquele relatório. ([tarefa 2.1](progresso/fase-0.md#tarefa-21-decisões-do-responsável-especificação-v13-e-glossário)) **Relatórios de cadastro: resolvido na tarefa 1.12 (glossário).** Os das outras áreas seguem a regra.
-- Base da comissão (§17.6), desconto em porcentagem por linha (confirmar na Fase 4) e retenção de `sessoes` e `tentativas_login` (ADR futuro). ([tarefa 3](progresso/fase-0.md#tarefa-3-adrs-de-fundação))
+- Base da comissão (§17.6) e retenção de `sessoes` e `tentativas_login` (ADR futuro). ([tarefa 3](progresso/fase-0.md#tarefa-3-adrs-de-fundação))
 - ADR-0005 (SQLCipher) está Proposto, aguardando o responsável; itens da Fase 5: SQLCipher padrão abrir o arquivo, barreira com o módulo integrado, perda da chave e da `outbox`. ([tarefa 18](progresso/fase-0.md#tarefa-18-spike-do-sqlcipher-no-electron))
 - `npm audit` com avisos moderados em dependências de desenvolvimento (Dependabot). ([tarefa 4](progresso/fase-0.md#tarefa-4-esqueleto-do-monorepo))
 - Teste automático das palavras proibidas do glossário contra as mensagens da API (tarefa que ler os blocos do glossário). ([tarefa 6](progresso/fase-0.md#tarefa-6-esqueleto-do-backend)) **Resolvida na tarefa 1.4.**
@@ -174,7 +200,7 @@ O que ainda está em aberto nas tarefas concluídas (o que já foi resolvido por
 - `npm run api:redefinir-senha` e `docker compose exec api ...` não rodados de ponta a ponta (o contêiner existe desde a tarefa 9.2, mas o comando ainda não foi rodado nele; fica para o teste na VPS). ([tarefa 10](progresso/fase-0.md#tarefa-10-a-dona-cria-usuários-e-redefine-a-senha-temporária))
 - Mais de uma instância da API pede um ADR (a trava por IP fica na memória). ([tarefa 11](progresso/fase-0.md#tarefa-11-sessão-longa-limite-de-tentativas-e-registro-de-acessos))
 - Fase 1: desativar usuário revoga as famílias. Fase 5: tabela `dispositivos`, segundo aparelho e prazo offline. ([tarefa 11](progresso/fase-0.md#tarefa-11-sessão-longa-limite-de-tentativas-e-registro-de-acessos)) **Resolvida na tarefa 1.4 (a parte da Fase 1).**
-- Corona Vendas: instalador, ícone e atualização automática (Fase 9 completa; o Corona Gestão já tem, tarefas 9.4 e 9.5; atenção: o Corona Vendas lê o endereço da API de `process.env`, que o build não preenche, ver tarefa 9.4); prazo offline guardado mas ainda não aplicado, login offline e bloqueio do segundo aparelho (Fase 5). ([tarefa 16](progresso/fase-0.md#tarefa-16-corona-vendas-com-login-online-e-barreira-contra-código-da-dona))
+- Corona Vendas: prazo offline guardado mas ainda não aplicado, login offline e bloqueio do segundo aparelho (Fase 5). **Instalador, ícone, atualização automática e endereço da API no build: resolvidos na tarefa 9.7 (PR 61).** ([tarefa 16](progresso/fase-0.md#tarefa-16-corona-vendas-com-login-online-e-barreira-contra-código-da-dona))
 - Corona Vendas: o login que entra, a troca de senha e a tela inicial só foram vistos nos testes, não com conta de vendedor real (fica para o teste de uso, com o vendedor de teste da tarefa 17). ([tarefa 16](progresso/fase-0.md#tarefa-16-corona-vendas-com-login-online-e-barreira-contra-código-da-dona))
 
 - Vendedor de demonstração sem cadastro de vendedor (`vendedor_id` vazio) até a Fase 1. ([tarefa 17](progresso/fase-0.md#tarefa-17-vs-code-setup-e-roteiro-do-teste-de-uso)) **Resolvida na tarefa 1.3.**

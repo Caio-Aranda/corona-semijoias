@@ -44,8 +44,9 @@ TypeScript (dois apps separados) · SQLite criptografado no app do vendedor.
 - `npm run api:run`: sobe a API (perfil `dev`, Swagger ligado) contra o banco do Compose.
 - `npm run api:test`: `./mvnw verify` na pasta `backend/` (precisa do Docker aberto; Testcontainers).
 - `npm run api:clientes`: gera os clientes da API a partir do OpenAPI. `npm run api:redefinir-senha -- <login>`: nova senha temporária da dona.
-- `npm run owner:dev` / `owner:build`: Corona Gestão. `npm run seller:dev` / `seller:build` / `seller:empacotar`: Corona Vendas.
-- `npm run barreira:varrer`: confere que o pacote do Corona Vendas não leva código da dona.
-- `npm run lint`, `typecheck`, `format:check` (e `format`); `npm run setup:test` testa o script de setup.
+- `npm run owner:dev` / `owner:build`: Corona Gestão. `npm run seller:dev` / `seller:build` / `seller:empacotar` (pacote sem instalador, para a barreira): Corona Vendas.
+- `npm run owner:empacotar` / `vendas:empacotar`: instalador de produção (lê `apps/<app>/.env.producao`; ADR-0009). `npm run owner:publicar` / `vendas:publicar`: publica a versão nova na VPS (`apps/<app>/.env.publicar`).
+- `npm run barreira:varrer -- <app.asar> packages/shared packages/ui packages/conexao-segura`: confere que o pacote do Corona Vendas não leva código da dona. Precisa do caminho: rode antes `npm run seller:empacotar` e passe `apps/seller-app/release/win-unpacked/resources/app.asar` (no Linux, `linux-unpacked`), como o CI faz.
+- `npm run lint`, `typecheck`, `format:check` (e `format`); `npm run setup:test` testa o script de setup; `npm run scripts:test`, os scripts de empacotar e publicar.
 - `npm run e2e`: testes de ponta a ponta (Playwright + Electron) contra um banco e uma API de teste isolados (precisa do Docker aberto; veja `testes-e2e/README.md`). Roda à mão ou toda segunda no workflow E2E; não faz parte do CI de cada PR.
 - Estresse longo do sync: `./mvnw test -Dtest=EstresseDoPullTest -Dcorona.estresse.duracao=PT10M` na pasta `backend/`.

@@ -4,7 +4,7 @@ Uma seção por tarefa, no mesmo formato de [fase-1.md](fase-1.md). A tabela de 
 
 ### Tarefa 2.1: plano da Fase 2 e ADR do estoque (só documentos)
 
-**Em revisão.** Nenhum código. A especificação (v1.7) não mudou: tudo o que foi decidido cabe na §7.6, na §9 e na §13.
+**Mesclada.** Nenhum código. A especificação (v1.7) não mudou: tudo o que foi decidido cabe na §7.6, na §9 e na §13.
 
 **O que foi feito**
 
@@ -66,7 +66,7 @@ Uma seção por tarefa, no mesmo formato de [fase-1.md](fase-1.md). A tabela de 
 
 ### Tarefa 2.2: backend, movimentações de estoque
 
-**Em revisão.** Segue o [ADR-0008](../decisoes/ADR-0008-estoque-e-movimentacoes.md); a especificação não mudou.
+**Mesclada.** Segue o [ADR-0008](../decisoes/ADR-0008-estoque-e-movimentacoes.md); a especificação não mudou.
 
 **O que foi feito**
 
@@ -94,7 +94,7 @@ Uma seção por tarefa, no mesmo formato de [fase-1.md](fase-1.md). A tabela de 
 
 ### Tarefa 2.3: backend, compras
 
-**Em revisão.** Segue o [ADR-0008](../decisoes/ADR-0008-estoque-e-movimentacoes.md); a especificação não mudou.
+**Mesclada.** Segue o [ADR-0008](../decisoes/ADR-0008-estoque-e-movimentacoes.md); a especificação não mudou.
 
 **O que foi feito**
 
@@ -126,7 +126,7 @@ Uma seção por tarefa, no mesmo formato de [fase-1.md](fase-1.md). A tabela de 
 
 ### Tarefa 2.4: backend, estoque mínimo e contagem do estoque
 
-**Em revisão.** Segue o [ADR-0008](../decisoes/ADR-0008-estoque-e-movimentacoes.md) (itens 8, 9 e 12); a especificação não mudou.
+**Mesclada.** Segue o [ADR-0008](../decisoes/ADR-0008-estoque-e-movimentacoes.md) (itens 8, 9 e 12); a especificação não mudou.
 
 **O que foi feito**
 
@@ -207,7 +207,7 @@ Uma seção por tarefa, no mesmo formato de [fase-1.md](fase-1.md). A tabela de 
 
 ### Tarefa 2.6: Corona Gestão, entrada de compra
 
-**Em revisão.** Só `apps/owner-app` (nenhuma linha de backend, nenhuma migração). A especificação não mudou. Termos de tela em [glossário, parte 12](../glossario-interface.md).
+**Mesclada.** Só `apps/owner-app` (nenhuma linha de backend, nenhuma migração). A especificação não mudou. Termos de tela em [glossário, parte 12](../glossario-interface.md).
 
 **O que foi feito**
 
@@ -245,7 +245,7 @@ Uma seção por tarefa, no mesmo formato de [fase-1.md](fase-1.md). A tabela de 
 
 ### Tarefa 2.7: Corona Gestão, estoque, ajustes e contagem
 
-**Em revisão.** Só `apps/owner-app` (nenhuma linha de backend, nenhuma migração, nenhum cliente da API novo). A especificação não mudou. Termos de tela em [glossário, parte 12](../glossario-interface.md).
+**Mesclada.** Só `apps/owner-app` (nenhuma linha de backend, nenhuma migração, nenhum cliente da API novo). A especificação não mudou. Termos de tela em [glossário, parte 12](../glossario-interface.md).
 
 **O que foi feito**
 
@@ -280,7 +280,7 @@ Uma seção por tarefa, no mesmo formato de [fase-1.md](fase-1.md). A tabela de 
 
 ### Tarefa 2.8: Corona Gestão, relatórios de estoque e de compras (fecha a Fase 2)
 
-**Em revisão.** Só `apps/owner-app` (nenhuma linha de backend, nenhuma migração, nenhum cliente novo da API: as dez rotas da 2.5 já estavam em `api-client-dona`). A especificação não mudou. Nomes de tela em [glossário, parte 12](../glossario-interface.md).
+**Mesclada.** Só `apps/owner-app` (nenhuma linha de backend, nenhuma migração, nenhum cliente novo da API: as dez rotas da 2.5 já estavam em `api-client-dona`). A especificação não mudou. Nomes de tela em [glossário, parte 12](../glossario-interface.md).
 
 **O que foi feito**
 

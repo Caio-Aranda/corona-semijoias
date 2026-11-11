@@ -4,7 +4,7 @@ Uma seção por tarefa, no mesmo formato de [fase-3.md](fase-3.md). A tabela de 
 
 ### Tarefa 4.1: plano da Fase 4 e ADR da venda (só documentos)
 
-**Em revisão.** Nenhum código. A especificação não mudou: tudo cabe nas §7.1, §7.2, §9, §11 e §12.
+**Mesclada.** Nenhum código. A especificação não mudou: tudo cabe nas §7.1, §7.2, §9, §11 e §12.
 
 **O que foi feito**
 
@@ -24,7 +24,7 @@ Uma seção por tarefa, no mesmo formato de [fase-3.md](fase-3.md). A tabela de 
 
 ### Tarefa 4.2: backend das vendas (vender, estornar, totais no servidor)
 
-**Em revisão.** Migração `V022__vendas.sql`; pacote `vendas` (`ServicoDeVendas`, `ConsultasDeVendas`, `VendasDoVendedorController`, `VendasDaDonaController`).
+**Mesclada.** Migração `V022__vendas.sql`; pacote `vendas` (`ServicoDeVendas`, `ConsultasDeVendas`, `VendasDoVendedorController`, `VendasDaDonaController`).
 
 **O que foi feito**
 
@@ -43,7 +43,7 @@ Uma seção por tarefa, no mesmo formato de [fase-3.md](fase-3.md). A tabela de 
 
 ### Tarefa 4.3: backend das rotas do vendedor (maleta, conferência, clientes, cotação, relatórios)
 
-**Em revisão.** Migração `V023__conferencia_da_maleta.sql`; pacote `vendedor` (`ConsultasDaMaletaDoVendedor`, `ServicoDeConferencia`, `ClientesDoVendedor`, `RelatoriosDoVendedor` e cinco controladores).
+**Mesclada.** Migração `V023__conferencia_da_maleta.sql`; pacote `vendedor` (`ConsultasDaMaletaDoVendedor`, `ServicoDeConferencia`, `ClientesDoVendedor`, `RelatoriosDoVendedor` e cinco controladores).
 
 **O que foi feito**
 
@@ -59,7 +59,7 @@ Uma seção por tarefa, no mesmo formato de [fase-3.md](fase-3.md). A tabela de 
 
 ### Tarefa 4.4: Corona Vendas, conferência da maleta, venda, cliente e estorno
 
-**Em revisão.** Primeira tarefa de telas do vendedor (`apps/seller-app`).
+**Mesclada.** Primeira tarefa de telas do vendedor (`apps/seller-app`).
 
 **O que foi feito**
 
@@ -79,13 +79,13 @@ Uma seção por tarefa, no mesmo formato de [fase-3.md](fase-3.md). A tabela de 
 
 ### Tarefa 4.5: Corona Vendas, Meus clientes e Meus números
 
-**Em revisão.** Completa as quatro funções da tela inicial do vendedor.
+**Mesclada.** Completa as quatro funções da tela inicial do vendedor.
 
 **O que foi feito**
 
 - **Meus clientes**: busca (nome, telefone, WhatsApp, CPF), lista com o que cada cliente deve, cadastro e ficha (contato, o que deve e as compras feitas com este vendedor). Só os clientes dele: o servidor filtra pelo login.
-- **Meus números** (§12, "App do vendedor"): vendas por cliente, peça ou dia, recebimentos por forma de pagamento (já sem os reembolsos) e quanto os clientes ainda devem, com período (de, até) e totais. Vendas estornadas não entram. Real, Dólar e Guarani em todos os valores, pela cotação de hoje; sem cotação, só Real e um aviso.
-- **Valores nas três moedas** em toda a tela do vendedor (maleta, venda, vendas, clientes, números): o componente de valor usa a cotação do dia, que a tela busca uma vez.
+- **Meus números** (§12, "App do vendedor"): vendas por cliente, peça ou dia, recebimentos por forma de pagamento (já sem os reembolsos) e quanto os clientes ainda devem, com período (de, até) e totais. Vendas estornadas não entram. Real, Dólar e Guarani em todos os valores, pela cotação de hoje; sem cotação, só Real e um aviso. **Corrigido na auditoria de 11/11/2026 (PR 78):** o ADR-0006, item 10, manda a cotação do dia de cada lançamento, somada pelo servidor.
+- **Valores nas três moedas** em toda a tela do vendedor (maleta, venda, vendas, clientes, números): o componente de valor usa a cotação do dia, que a tela busca uma vez. **Corrigido na auditoria (PR 78):** vendas e relatórios usam a cotação do dia de cada lançamento; a de hoje fica só para a venda e a conferência, e a "Minha maleta" espera a decisão D1 da auditoria.
 - O botão **Ver minhas vendas** (lista, detalhe e estorno da 4.4) também abre a partir de Meus números.
 - Testes das duas telas (lista, busca, ficha, cadastro e recusa do servidor, períodos, agrupamentos, vazio, falha, três moedas).
 
@@ -97,7 +97,7 @@ Uma seção por tarefa, no mesmo formato de [fase-3.md](fase-3.md). A tabela de 
 
 ### Tarefa 4.6: fechamento da Fase 4 (revisão pós-fase)
 
-**Em revisão.** Revisão do que a Fase 4 entregou, como a 2.9 e a 3.8.
+**Mesclada.** Revisão do que a Fase 4 entregou, como a 2.9 e a 3.8.
 
 **Bugs achados e corrigidos**
 

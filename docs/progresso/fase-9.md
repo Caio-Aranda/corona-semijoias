@@ -4,7 +4,7 @@ Uma seção por tarefa, no mesmo formato de [fase-2.md](fase-2.md). A tabela est
 
 ### Tarefa 9.1: plano e ADR (só documentos)
 
-**Em revisão.** Nenhum código.
+**Mesclada.** Nenhum código.
 
 **O que foi feito**
 
@@ -17,7 +17,7 @@ Uma seção por tarefa, no mesmo formato de [fase-2.md](fase-2.md). A tabela est
 
 ### Tarefa 9.2: implantação da API
 
-**Em revisão.** Pasta `deploy/` e perfil `prod`. Nenhuma regra de negócio, migração ou tela mudou.
+**Mesclada.** Pasta `deploy/` e perfil `prod`. Nenhuma regra de negócio, migração ou tela mudou.
 
 **O que foi feito**
 
@@ -44,7 +44,7 @@ Subi a pilha inteira de produção no computador de desenvolvimento (build da im
 
 ### Tarefa 9.3: backup e restauração
 
-**Em revisão.** Scripts em `deploy/backup/` e seção "Backup em produção" em `docs/restauracao-de-backup.md`.
+**Mesclada.** Scripts em `deploy/backup/` e seção "Backup em produção" em `docs/restauracao-de-backup.md`.
 
 **O que foi feito**
 
@@ -66,7 +66,7 @@ Subi a pilha inteira de produção no computador de desenvolvimento (build da im
 
 ### Tarefa 9.4: instalador do Corona Gestão e certificado fixado
 
-**Em revisão.** Só empacotamento e configuração de conexão em `apps/owner-app`, mais um script na raiz. Telas, cadastros e estoque não mudaram; o Corona Vendas e a barreira não foram tocados.
+**Mesclada.** Só empacotamento e configuração de conexão em `apps/owner-app`, mais um script na raiz. Telas, cadastros e estoque não mudaram; o Corona Vendas e a barreira não foram tocados.
 
 **O que foi feito**
 
@@ -96,7 +96,7 @@ Subi a pilha inteira de produção no computador de desenvolvimento (build da im
 
 ### Tarefa 9.5: atualização automática
 
-**Em revisão.** Só atualização em `apps/owner-app`, mais `scripts/publicar-app.mjs`. Decisão no [ADR-0009](../decisoes/ADR-0009-implantacao-certificado-atualizacao-e-backup.md), item 3 (com a correção do resultado da prova).
+**Mesclada.** Só atualização em `apps/owner-app`, mais `scripts/publicar-app.mjs`. Decisão no [ADR-0009](../decisoes/ADR-0009-implantacao-certificado-atualizacao-e-backup.md), item 3 (com a correção do resultado da prova).
 
 **O que foi feito**
 
@@ -120,7 +120,7 @@ Pilha de produção local (nginx real, certificado autoassinado fixado). Versão
 
 ### Tarefa 9.7: Corona Vendas, instalador e atualização reaproveitáveis (extra)
 
-**Em revisão.** Mesmo mecanismo do Corona Gestão para o Corona Vendas, sem mexer em venda, sincronização, banco local nem bloqueio de aparelho (Fase 5). Roteiro: [entrega-corona-vendas.md](../entrega-corona-vendas.md).
+**Mesclada.** Mesmo mecanismo do Corona Gestão para o Corona Vendas, sem mexer em venda, sincronização, banco local nem bloqueio de aparelho (Fase 5). Roteiro: [entrega-corona-vendas.md](../entrega-corona-vendas.md).
 
 **O que foi feito**
 
@@ -134,7 +134,7 @@ Pilha de produção local (nginx real, certificado autoassinado fixado). Versão
 
 ### Tarefa 9.6: roteiro de entrega
 
-**Em revisão.** Só documentação: [docs/entrega-corona-gestao.md](../entrega-corona-gestao.md).
+**Mesclada.** Só documentação: [docs/entrega-corona-gestao.md](../entrega-corona-gestao.md).
 
 **O que tem:** o que só o responsável faz; preparar a VPS; configurar e subir; certificado e reserva; backup e **teste de restauração obrigatório**; aviso de queda; gerar o instalador e publicar a primeira versão; instalar no computador da dona (inclusive o aviso "editor desconhecido" do Windows); primeiro acesso, senha temporária e importação dos produtos pela planilha; lista de conferência antes do dado real; o que fazer se algo falhar (sem conexão, IP mudou, certificado, senha esquecida, atualização que não chega, disco cheio); como restaurar; como publicar uma atualização.
 
