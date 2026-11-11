@@ -25,6 +25,7 @@ export const ROTAS = [
   'estoque/contagem',
   'estoque/receber-compra',
   'estoque/compras',
+  'maletas/lista',
   'maletas/montar',
   'pessoas/vendedores',
   'pessoas/clientes',
@@ -77,7 +78,10 @@ export const MENU = [
   },
   {
     titulo: TEXTOS_DE_MALETAS.menu.grupo,
-    itens: [{ chave: 'maletas/montar', rotulo: TEXTOS_DE_MALETAS.menu.montar }],
+    itens: [
+      { chave: 'maletas/lista', rotulo: TEXTOS_DE_MALETAS.menu.lista },
+      { chave: 'maletas/montar', rotulo: TEXTOS_DE_MALETAS.menu.montar },
+    ],
   },
   {
     titulo: TEXTOS.menu.pessoas,

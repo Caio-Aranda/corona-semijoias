@@ -383,6 +383,29 @@ describe('API do Corona Gestão: rotas certas no cliente gerado', () => {
       [{ operacao: 'maletas.excluir', id: ID, version: 2 }, `DELETE /api/dona/remessas/${ID}`],
       [{ operacao: 'maletas.enviar', id: ID }, `POST /api/dona/remessas/${ID}/enviar`],
       [{ operacao: 'maletas.emAberto', vendedorId: ID }, 'GET /api/dona/remessas/em-aberto'],
+      [{ operacao: 'maletas.saldo', id: ID }, `GET /api/dona/remessas/${ID}/maleta`],
+      [
+        {
+          operacao: 'maletas.devolver',
+          id: ID,
+          itens: [{ id: ID, produtoId: PROD, quantidade: 1 }],
+        },
+        `POST /api/dona/remessas/${ID}/devolucoes`,
+      ],
+      [
+        {
+          operacao: 'maletas.desfazerDevolucao',
+          id: ID,
+          devolucaoId: ID,
+          estornoId: PROD,
+          motivo: 'Engano',
+        },
+        `POST /api/dona/remessas/${ID}/devolucoes/${ID}/estorno`,
+      ],
+      [
+        { operacao: 'maletas.cancelar', id: ID, motivo: 'Vendedor desistiu' },
+        `POST /api/dona/remessas/${ID}/cancelar`,
+      ],
     ];
     for (const [pedido, esperado] of casos) {
       expect(await caminhoDe(pedido as never)).toBe(esperado);

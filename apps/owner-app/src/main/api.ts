@@ -43,6 +43,10 @@ import {
   enviarRemessa,
   excluirRascunhoDeRemessa,
   listarMaletasEmAbertoDoVendedor,
+  cancelarRemessa,
+  desfazerDevolucaoDaMaleta,
+  devolverPecasDaMaleta,
+  verMaletaDaRemessa,
   listarRemessas,
   tirarItemDaRemessa,
   verRemessa,
@@ -514,6 +518,32 @@ async function executarMaleta(
     case 'maletas.emAberto':
       return executar(() =>
         listarMaletasEmAbertoDoVendedor({ ...base, query: { vendedorId: pedido.vendedorId } }),
+      );
+    case 'maletas.saldo':
+      return executar(() => verMaletaDaRemessa({ ...base, path: { id: pedido.id } }));
+    case 'maletas.devolver':
+      return executar(
+        () =>
+          devolverPecasDaMaleta({
+            ...base,
+            path: { id: pedido.id },
+            body: { itens: pedido.itens },
+          }),
+        true,
+      );
+    case 'maletas.desfazerDevolucao':
+      return executar(
+        () =>
+          desfazerDevolucaoDaMaleta({
+            ...base,
+            path: { id: pedido.id, devolucaoId: pedido.devolucaoId },
+            body: { id: pedido.estornoId, motivo: pedido.motivo },
+          }),
+        true,
+      );
+    case 'maletas.cancelar':
+      return executar(() =>
+        cancelarRemessa({ ...base, path: { id: pedido.id }, body: { motivo: pedido.motivo } }),
       );
   }
 }

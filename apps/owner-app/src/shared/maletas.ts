@@ -11,6 +11,10 @@ export const OPERACOES_DE_MALETAS = [
   'maletas.excluir',
   'maletas.enviar',
   'maletas.emAberto',
+  'maletas.saldo',
+  'maletas.devolver',
+  'maletas.desfazerDevolucao',
+  'maletas.cancelar',
 ] as const;
 export type OperacaoDeMaletas = (typeof OPERACOES_DE_MALETAS)[number];
 
@@ -28,3 +32,6 @@ export const SITUACOES_DA_MALETA = [
   'ACERTADA',
   'CANCELADA',
 ] as const;
+
+/** Motivo de cancelamento e de desfazer devolução: o servidor aceita até 400 caracteres. */
+export const MAXIMO_DO_MOTIVO_DA_MALETA = 400;
