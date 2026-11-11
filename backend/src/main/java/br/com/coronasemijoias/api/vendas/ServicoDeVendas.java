@@ -6,6 +6,7 @@ import br.com.coronasemijoias.api.cadastros.Validacoes;
 import br.com.coronasemijoias.api.comum.dinheiro.Dinheiro;
 import br.com.coronasemijoias.api.comum.erros.CodigoErro;
 import br.com.coronasemijoias.api.comum.erros.ErroDaApi;
+import br.com.coronasemijoias.api.comum.identificadores.OrdemDoBanco;
 import br.com.coronasemijoias.api.comum.identificadores.UuidV7;
 import br.com.coronasemijoias.api.comum.persistencia.OrigemDoDispositivo;
 import br.com.coronasemijoias.api.configuracoes.ChaveDeConfiguracao;
@@ -136,7 +137,7 @@ public class ServicoDeVendas {
 
         // Preço, saldo e totais: tudo do servidor, em ordem estável de produto.
         List<Linha> ordenadas = new ArrayList<>(linhas);
-        ordenadas.sort(Comparator.comparing(Linha::produtoId));
+        ordenadas.sort(Comparator.comparing(Linha::produtoId, OrdemDoBanco.UUIDS));
         Map<UUID, Peca> pecas = new LinkedHashMap<>();
         BigDecimal subtotal = BigDecimal.ZERO.setScale(Dinheiro.ESCALA);
         BigDecimal desconto = BigDecimal.ZERO.setScale(Dinheiro.ESCALA);

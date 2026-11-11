@@ -7,6 +7,7 @@ import br.com.coronasemijoias.api.comum.dinheiro.Dinheiro;
 import br.com.coronasemijoias.api.comum.erros.CampoInvalido;
 import br.com.coronasemijoias.api.comum.erros.CodigoErro;
 import br.com.coronasemijoias.api.comum.erros.ErroDaApi;
+import br.com.coronasemijoias.api.comum.identificadores.OrdemDoBanco;
 import br.com.coronasemijoias.api.comum.identificadores.UuidV7;
 import br.com.coronasemijoias.api.estoque.ServicoDeEstoque;
 import br.com.coronasemijoias.api.estoque.ServicoDeEstoque.OrigemDoMovimento;
@@ -238,7 +239,7 @@ public class ServicoDeCompras {
             throw new ErroDaApi(HttpStatus.BAD_REQUEST, CodigoErro.DADOS_INVALIDOS, erros);
         }
         List<Resolvido> ordenados = new ArrayList<>(porProduto.values());
-        ordenados.sort(Comparator.comparing(Resolvido::produtoId));
+        ordenados.sort(Comparator.comparing(Resolvido::produtoId, OrdemDoBanco.UUIDS));
         return ordenados;
     }
 

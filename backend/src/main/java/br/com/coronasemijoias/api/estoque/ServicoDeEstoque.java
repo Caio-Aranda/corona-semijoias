@@ -7,6 +7,7 @@ import br.com.coronasemijoias.api.cadastros.Validacoes;
 import br.com.coronasemijoias.api.comum.erros.CodigoErro;
 import br.com.coronasemijoias.api.comum.erros.ErroDaApi;
 import br.com.coronasemijoias.api.comum.identificadores.Identificadores;
+import br.com.coronasemijoias.api.comum.identificadores.OrdemDoBanco;
 import br.com.coronasemijoias.api.comum.identificadores.UuidV7;
 import java.sql.Timestamp;
 import java.time.Clock;
@@ -133,7 +134,7 @@ public class ServicoDeEstoque {
         produtos.values().forEach(b -> saldos.put(b.id(), b.saldo()));
 
         List<Resultado> resultados = new ArrayList<>();
-        Set<UUID> mudados = new TreeSet<>();
+        Set<UUID> mudados = new TreeSet<>(OrdemDoBanco.UUIDS);
         for (Pedido p : conferidos) {
             Movimento ja = existentes.get(p.id());
             if (ja != null) {
@@ -359,10 +360,16 @@ public class ServicoDeEstoque {
         return (int) depois;
     }
 
-    /** Trava os produtos UM A UM em ordem de id (sem deadlock entre operações que se cruzam). Excluído = não existe. */
+    /**
+     * Trava os produtos UM A UM na ordem do banco ({@code ORDER BY id}; ver {@link OrdemDoBanco}), a mesma dos caminhos
+     * que travam peça por peça (estorno da compra, cancelamento da maleta, contagem): sem deadlock entre operações que se
+     * cruzam. Excluído = não existe.
+     */
     private Map<UUID, Bloqueado> bloquear(List<UUID> produtoIds) {
         Map<UUID, Bloqueado> travados = new LinkedHashMap<>();
-        for (UUID id : new TreeSet<>(produtoIds)) {
+        Set<UUID> emOrdem = new TreeSet<>(OrdemDoBanco.UUIDS);
+        emOrdem.addAll(produtoIds);
+        for (UUID id : emOrdem) {
             Optional<Bloqueado> achado = jdbc.query(
                     "SELECT id, nome, estoque_atual FROM corona.produtos WHERE id = ? AND deleted_at IS NULL FOR UPDATE",
                     (rs, i) -> new Bloqueado(rs.getObject("id", UUID.class), rs.getString("nome"), rs.getInt("estoque_atual")),
