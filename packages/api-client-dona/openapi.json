@@ -1808,6 +1808,43 @@
         "required" : [ "estoqueMinimo" ],
         "type" : "object"
       },
+      "PedidoDoItem" : {
+        "properties" : {
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "version" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PedidoDoRascunho" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "pracaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "semanaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "PedidoDosCodigos" : {
         "properties" : {
           "codigos" : {
@@ -3011,6 +3048,77 @@
         },
         "type" : "object"
       },
+      "RespostaDaRemessa" : {
+        "properties" : {
+          "avisos" : {
+            "items" : {
+              "type" : "string"
+            },
+            "type" : "array"
+          },
+          "criadaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "enviadaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/RespostaDoItem"
+            },
+            "type" : "array"
+          },
+          "pracaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "pracaNome" : {
+            "type" : "string"
+          },
+          "semanaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "semanaNumero" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "totalPecas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totalValor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "vendedorNome" : {
+            "type" : "string"
+          },
+          "version" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "RespostaDoAbaixoDoMinimo" : {
         "properties" : {
           "falta" : {
@@ -3050,27 +3158,31 @@
       },
       "RespostaDoItem" : {
         "properties" : {
-          "ajustada" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "precoCongelado" : {
             "type" : "boolean"
           },
-          "contado" : {
-            "format" : "int32",
-            "type" : "integer"
-          },
-          "diferenca" : {
-            "format" : "int32",
-            "type" : "integer"
-          },
-          "esperado" : {
-            "format" : "int32",
-            "type" : "integer"
+          "precoUnitario" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
           },
           "produto" : {
-            "$ref" : "#/components/schemas/RespostaDoProduto"
+            "$ref" : "#/components/schemas/RespostaDaPeca"
           },
-          "saldoAtual" : {
+          "quantidade" : {
             "format" : "int32",
             "type" : "integer"
+          },
+          "total" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
           }
         },
         "type" : "object"
@@ -3498,7 +3610,7 @@
     "/api/dona/avisos" : {
       "get" : {
         "description" : "Os avisos que valem agora, calculados na hora (nada é gravado): cada um some sozinho quando o problema some. Lista vazia quando não há nada. Hoje: a cotação do Dólar e do Guarani que não chegou.",
-        "operationId" : "listar_14",
+        "operationId" : "listar_15",
         "responses" : {
           "200" : {
             "content" : {
@@ -3521,7 +3633,7 @@
     "/api/dona/categorias" : {
       "get" : {
         "description" : "Busca pelo nome. A página começa em 0 (até 100 por página).",
-        "operationId" : "listar_13",
+        "operationId" : "listar_14",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
@@ -3573,7 +3685,7 @@
       },
       "post" : {
         "description" : "O nome não pode repetir (sem diferenciar maiúsculas).",
-        "operationId" : "criar_8",
+        "operationId" : "criar_9",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -3781,7 +3893,7 @@
     "/api/dona/clientes" : {
       "get" : {
         "description" : "Busca pelo nome, telefone, WhatsApp ou CPF. A página começa em 0 (até 100 por página).",
-        "operationId" : "listar_12",
+        "operationId" : "listar_13",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
@@ -3833,7 +3945,7 @@
       },
       "post" : {
         "description" : "O CPF é opcional; se vier, o servidor confere os dígitos e guarda só os números. CPF repetido é aceito.",
-        "operationId" : "criar_7",
+        "operationId" : "criar_8",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -4041,7 +4153,7 @@
     "/api/dona/compras" : {
       "get" : {
         "description" : "Filtros: período (de, ate: data da compra, as duas inclusivas), fornecedorId, produtoId e situacao (REGISTRADA ou ESTORNADA). Mais nova primeiro. A página começa em 0 (até 200 por página).",
-        "operationId" : "listar_11",
+        "operationId" : "listar_12",
         "parameters" : [ {
           "in" : "query",
           "name" : "de",
@@ -4199,7 +4311,7 @@
     "/api/dona/compras/{id}" : {
       "get" : {
         "description" : "Com os itens, as fotos das peças, os custos e o total.",
-        "operationId" : "ver_10",
+        "operationId" : "ver_11",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -4448,7 +4560,7 @@
     "/api/dona/estoque/movimentacoes" : {
       "get" : {
         "description" : "Filtros: produtoId, tipo, origem (MANUAL, AJUSTE_MANUAL, COMPRA, INVENTARIO, MALETA, ESTORNO), usuarioId e período (de, ate: datas em UTC, as duas inclusivas). Mais novo primeiro. A página começa em 0 (até 200 por página).",
-        "operationId" : "listar_10",
+        "operationId" : "listar_11",
         "parameters" : [ {
           "in" : "query",
           "name" : "produtoId",
@@ -4655,7 +4767,7 @@
     "/api/dona/fornecedores" : {
       "get" : {
         "description" : "Busca pela razão social, pelo contato ou pelo CNPJ. A página começa em 0 (até 100 por página).",
-        "operationId" : "listar_9",
+        "operationId" : "listar_10",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
@@ -4707,7 +4819,7 @@
       },
       "post" : {
         "description" : "O CNPJ é opcional; se vier, o servidor confere os dígitos e guarda só os caracteres do número. Não pode repetir.",
-        "operationId" : "criar_6",
+        "operationId" : "criar_7",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -4950,7 +5062,7 @@
     "/api/dona/inventarios" : {
       "get" : {
         "description" : "Filtro: situacao (EM_ANDAMENTO, FECHADO ou CANCELADO). Mais nova primeiro. A página começa em 0 (até 200 por página).",
-        "operationId" : "listar_8",
+        "operationId" : "listar_9",
         "parameters" : [ {
           "in" : "query",
           "name" : "situacao",
@@ -5028,7 +5140,7 @@
     "/api/dona/inventarios/{id}" : {
       "get" : {
         "description" : "Situação e totais: lidas, não lidas, com diferença, peças que faltam e que sobram.",
-        "operationId" : "ver_9",
+        "operationId" : "ver_10",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -5288,7 +5400,7 @@
     "/api/dona/pracas" : {
       "get" : {
         "description" : "Busca pelo nome. A página começa em 0 (até 100 por página).",
-        "operationId" : "listar_7",
+        "operationId" : "listar_8",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
@@ -5340,7 +5452,7 @@
       },
       "post" : {
         "description" : "O nome não pode repetir (sem diferenciar maiúsculas).",
-        "operationId" : "criar_5",
+        "operationId" : "criar_6",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -5548,7 +5660,7 @@
     "/api/dona/produtos" : {
       "get" : {
         "description" : "Busca pelo nome, pela referência ou por parte de qualquer código (sem diferenciar maiúsculas). Filtros: categoriaId, fornecedorId e ativo. A página começa em 0 (até 100 por página).",
-        "operationId" : "listar_5",
+        "operationId" : "listar_6",
         "parameters" : [ {
           "in" : "query",
           "name" : "busca",
@@ -5616,7 +5728,7 @@
       },
       "post" : {
         "description" : "Grava o produto, o preço de custo e os códigos juntos. Precisa de pelo menos um código; o código não pode repetir (409 diz qual produto já o usa). O estoque atual não é aceito: começa em 0.",
-        "operationId" : "criar_4",
+        "operationId" : "criar_5",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -6079,7 +6191,7 @@
     "/api/dona/produtos/{id}/fotos" : {
       "get" : {
         "description" : "Na ordem da tela; a principal vem marcada. Até 5 fotos.",
-        "operationId" : "listar_6",
+        "operationId" : "listar_7",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -6112,7 +6224,7 @@
       },
       "post" : {
         "description" : "Formulário com o campo 'arquivo'. Aceita JPG, PNG e WebP de até 10 MB; o tipo vale pelo conteúdo, não pelo nome. O servidor corrige a rotação, tira os dados escondidos (como o local) e gera miniatura, tamanho médio e grande. A primeira foto vira a principal. Enviar de novo a mesma foto não duplica (responde 200 com a que já existe). Uma peça tem no máximo 5 fotos.",
-        "operationId" : "enviar_1",
+        "operationId" : "enviar_2",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -6204,7 +6316,7 @@
     "/api/dona/produtos/{id}/fotos/{fotoId}" : {
       "delete" : {
         "description" : "Exclusão lógica. Se era a principal, a próxima da ordem passa a ser a principal.",
-        "operationId" : "excluir_9",
+        "operationId" : "excluir_10",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -8047,6 +8159,291 @@
         "tags" : [ "relatorios-de-estoque-e-compras-controller" ]
       }
     },
+    "/api/dona/remessas" : {
+      "get" : {
+        "description" : "Filtros: vendedorId, semanaId e status (RASCUNHO, ENVIADA, CONFERIDA, EM_ACERTO, ACERTADA, CANCELADA). Mais nova primeiro. A página começa em 0 (até 200 por página).",
+        "operationId" : "listar_5",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "semanaId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "status",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaginaRespostaDoResumo"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Lista de remessas",
+        "tags" : [ "remessas-da-dona-controller" ]
+      },
+      "post" : {
+        "description" : "Cria o rascunho: vendedor, semana, praça (se vazia, a do vendedor) e tipo NOVA ou REPOSICAO. Rascunho não mexe no estoque. Recusa (409) vendedor inativo ou com restrição que impede montar maleta. O id (UUID) vem do aplicativo: mesmo id e mesmos dados devolve o rascunho (200); primeira vez 201; outros dados, 409.",
+        "operationId" : "criar_4",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDoRascunho"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDaRemessa"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Começar uma maleta (rascunho)",
+        "tags" : [ "remessas-da-dona-controller" ]
+      }
+    },
+    "/api/dona/remessas/{id}" : {
+      "delete" : {
+        "description" : "Exclusão lógica; exige a version lida. Só rascunho.",
+        "operationId" : "excluir_8",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "version",
+          "required" : true,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Excluir o rascunho",
+        "tags" : [ "remessas-da-dona-controller" ]
+      },
+      "get" : {
+        "description" : "Com os itens, fotos, preços e totais calculados pelo servidor, e avisos.",
+        "operationId" : "ver_9",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDaRemessa"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ver uma remessa",
+        "tags" : [ "remessas-da-dona-controller" ]
+      }
+    },
+    "/api/dona/remessas/{id}/enviar" : {
+      "post" : {
+        "description" : "RASCUNHO para ENVIADA, numa transação só: confere vendedor (ativo, sem restrição que impede), peças e limite de consignação (valor em aberto a preço de venda mais esta remessa; vendedor sem limite não é bloqueado), congela o preço de venda de hoje e baixa o estoque central (tudo ou nada; falta de peça recusa a remessa inteira dizendo qual). Enviar de novo uma remessa já enviada devolve 200 sem baixar o estoque.",
+        "operationId" : "enviar_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDaRemessa"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Enviar a maleta",
+        "tags" : [ "remessas-da-dona-controller" ]
+      }
+    },
+    "/api/dona/remessas/{id}/itens/{produtoId}" : {
+      "delete" : {
+        "description" : "Exige a version lida. Só rascunho.",
+        "operationId" : "tirarItem",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "path",
+          "name" : "produtoId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "version",
+          "required" : true,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDaRemessa"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Tirar uma peça do rascunho",
+        "tags" : [ "remessas-da-dona-controller" ]
+      },
+      "put" : {
+        "description" : "Põe a peça (produto e quantidade) ou troca a quantidade dela. O app manda só produto e quantidade; o servidor calcula preço e totais. Exige a version lida (409 se outra pessoa mudou antes). Só rascunho.",
+        "operationId" : "colocarItem",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "path",
+          "name" : "produtoId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDoItem"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDaRemessa"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Colocar uma peça no rascunho",
+        "tags" : [ "remessas-da-dona-controller" ]
+      }
+    },
     "/api/dona/restricoes" : {
       "get" : {
         "description" : "Busca pelo código ou pela descrição. A página começa em 0 (até 100 por página).",
@@ -9260,7 +9657,7 @@
     "/api/dona/vendedores/{id}/documentos/{documentoId}" : {
       "delete" : {
         "description" : "Exclusão lógica: o documento some da lista e do download.",
-        "operationId" : "excluir_8",
+        "operationId" : "excluir_9",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",

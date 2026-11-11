@@ -65,7 +65,17 @@ public final class RegistroDeTabelas {
                         // Fotos (tarefa 1.6): só o que o vendedor precisa para baixar a imagem. As chaves dos
                         // arquivos e as medidas ficam no servidor.
                         new TabelaSincronizavel("produtos_fotos", List.of(
-                                "produto_id", "arquivo_hash", "principal", "ordem"), false)
+                                "produto_id", "arquivo_hash", "principal", "ordem"), false),
+                        // Remessas (tarefa 3.2, ADR-0010): o vendedor lerá só a própria maleta (Fases 4 e 5, com filtro por
+                        // vendedor). Sem custo em nenhuma coluna; dispositivo_id só é preenchido na conferência (Fase 4).
+                        new TabelaSincronizavel("remessas", List.of(
+                                "vendedor_id", "semana_id", "praca_id", "tipo", "status", "dispositivo_id",
+                                "total_pecas", "total_valor", "enviada_em", "motivo_cancelamento"), false),
+                        new TabelaSincronizavel("itens_remessa", List.of(
+                                "remessa_id", "produto_id", "qtd_enviada", "preco_remessa"), false),
+                        new TabelaSincronizavel("movimentos_remessa", List.of(
+                                "remessa_id", "produto_id", "tipo", "quantidade", "venda_id", "dispositivo_id",
+                                "estorna_id"), true)
                         // As demais sincronizáveis entram aqui (produtos, vendas...).
                 ),
                 List.of(
