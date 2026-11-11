@@ -5,7 +5,7 @@
 # Configuração em /etc/corona/backup.env (permissão 600, fora do Git):
 #   RCLONE_CONFIG=/etc/corona/rclone.conf        (criado por "rclone config"; o responsável autoriza o Drive)
 #   RCLONE_DESTINO=drive-corona:corona-backups   ("nome-do-remoto:pasta")
-#   SEMANAS_NO_DRIVE=8                           (quantas semanas ficam no Drive; padrão 8)
+#   SEMANAS_NO_DRIVE=8                           (quantas cópias semanais ficam no Drive; padrão 8)
 # Se usar um remoto "crypt" do rclone, o conteúdo fica criptografado no Drive.
 set -euo pipefail
 
@@ -35,8 +35,17 @@ rclone copy "$ORIGEM" "$RCLONE_DESTINO" --include "corona-$CARIMBO.dump" --inclu
 # Confere que o que está no Drive é igual ao que está aqui.
 rclone check "$ORIGEM" "$RCLONE_DESTINO" --one-way --include "corona-$CARIMBO.dump" --include "arquivos-$CARIMBO.tar.gz" --include "soma-$CARIMBO.sha256"
 
-# Retenção no Drive.
-rclone delete "$RCLONE_DESTINO" --min-age "$((SEMANAS * 7))d" || true
+# Retenção no Drive: ficam só as SEMANAS_NO_DRIVE cópias mais recentes (conta cópias, não dias: se um envio falhar numa
+# semana, as outras não são apagadas por idade). Cada cópia são três arquivos com o mesmo carimbo.
+mapfile -t CARIMBOS < <(rclone lsf "$RCLONE_DESTINO" --files-only --include 'corona-*.dump' | sed -E 's/^corona-(.*)\.dump$/\1/' | sort -r)
+if [[ ${#CARIMBOS[@]} -gt $SEMANAS ]]; then
+  for VELHO in "${CARIMBOS[@]:$SEMANAS}"; do
+    echo "Apagando do Drive a cópia antiga $VELHO"
+    rclone deletefile "$RCLONE_DESTINO/corona-$VELHO.dump" || true
+    rclone deletefile "$RCLONE_DESTINO/arquivos-$VELHO.tar.gz" || true
+    rclone deletefile "$RCLONE_DESTINO/soma-$VELHO.sha256" || true
+  done
+fi
 
 echo "Envio concluído: $CARIMBO"
 "$DIR/../monitoramento/avisar.sh" "Corona: backup semanal enviado" "Cópia $CARIMBO conferida no Google Drive." || true

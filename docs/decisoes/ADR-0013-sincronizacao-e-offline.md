@@ -307,3 +307,5 @@ A devolução fora do prazo offline (§10) e o acerto com sobra e falta entram n
 ## Dúvidas
 
 Estão no [plano da Fase 5](../progresso/fase-5-plano.md#dúvidas), cada uma com o padrão seguro que vale enquanto não houver resposta. Nada aqui muda a especificação; se o responsável decidir algo contra a §10 ou a §11, a especificação muda primeiro, em tarefa própria.
+
+**Linha datada, 11/11/2026 (decisão do responsável): retenção do `sync_log`.** O `sync_log` guarda o JSON completo de cada operação por **90 dias**; depois, só o resumo (quem, quando, tipo, resultado e o resumo SHA-256 do JSON): o JSON é apagado (a linha do resumo fica; a 5.5 decide como esvaziar o JSON sem `DELETE` da linha). A tarefa 5.5 já cria a tabela assim, com a tarefa agendada de resumo. Isto muda o item 5 deste ADR ("ela fica em `sync_log` com o JSON inteiro") só quanto ao tempo: o JSON inteiro fica 90 dias.

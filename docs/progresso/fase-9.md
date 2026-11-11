@@ -26,7 +26,7 @@ Uma seção por tarefa, no mesmo formato de [fase-2.md](fase-2.md). A tabela est
 - Proxy: HTTPS 1.2/1.3, limite de 10 logins por minuto por endereço, `/atualizacoes/` só leitura e sem listagem, tudo o mais (Swagger, `/actuator/env`...) responde 404.
 - `deploy/certificado/gerar-certificado.sh` (novo, renovar com a mesma chave, reserva, pin) e o `README.md` do certificado (gerar, renovar, trocar a chave, o que acontece se o IP mudar).
 - `deploy/servidor/instalar-servidor.sh` (ufw só 22 e 443, SSH só por chave com trava para não se trancar para fora, fail2ban, atualizações automáticas, UTC, Docker) e `verificar-portas.sh`.
-- `deploy/monitoramento/`: verificação de saúde a cada 5 minutos (2 falhas seguidas avisam; avisa de novo só a cada 6 horas; avisa disco acima de 85%), aviso por `ntfy` ou e-mail.
+- `deploy/monitoramento/`: verificação de saúde a cada 5 minutos (2 falhas seguidas avisam; avisa de novo só a cada 6 horas; avisa disco acima de 80%), aviso por `ntfy` ou e-mail.
 - `deploy/.env.example` e `deploy/README.md`.
 - Primeiro acesso: o mecanismo que já existe (`ADMIN_*` no `.env`, troca obrigatória da senha).
 

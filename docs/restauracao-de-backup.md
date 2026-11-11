@@ -95,7 +95,7 @@ Decisões: [ADR-0009](decisoes/ADR-0009-implantacao-certificado-atualizacao-e-ba
 Cada backup é conferido na hora (`pg_restore -l` precisa listar tabelas); a cópia do Drive é conferida com `rclone check`. Qualquer falha avisa o responsável (`deploy/monitoramento/avisar.sh`).
 Perda máxima aceita: até 24 horas (do último diário); se a VPS e o snapshot se perderem juntos, até 7 dias.
 
-**Ligar o envio ao Google Drive (uma vez, o responsável autoriza):** `rclone config` na VPS (remoto do tipo `drive`; se quiser criptografar, crie também um remoto `crypt` sobre ele), com `RCLONE_CONFIG=/etc/corona/rclone.conf`. Depois crie `/etc/corona/backup.env` (permissão 600) com `RCLONE_CONFIG`, `RCLONE_DESTINO` e, se quiser, `SEMANAS_NO_DRIVE`. Nada disso vai para o Git. Instalar os timers: `sudo deploy/backup/instalar-timers.sh`.
+**Ligar o envio ao Google Drive (uma vez, o responsável autoriza):** `rclone config` na VPS (remoto do tipo `drive`; se quiser criptografar, crie também um remoto `crypt` sobre ele), com `RCLONE_CONFIG=/etc/corona/rclone.conf`. Depois crie `/etc/corona/backup.env` (permissão 600) com `RCLONE_CONFIG`, `RCLONE_DESTINO` e, se quiser, `SEMANAS_NO_DRIVE` (quantas cópias semanais ficam no Drive; padrão 8: o envio apaga as mais antigas no Drive, contando cópias e não dias). Nada disso vai para o Git. Instalar os timers: `sudo deploy/backup/instalar-timers.sh`.
 
 ### Restaurar em produção (a VPS caiu ou o banco estragou)
 

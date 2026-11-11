@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import {
   compararVersoes,
   conferirVersaoNova,
+  instaladoresAntigos,
   lerLatest,
   nomeDoInstaladorValido,
 } from './publicacao.mjs';
@@ -38,6 +39,24 @@ test('recusa publicar versão igual ou menor que a do servidor', () => {
   assert.doesNotThrow(() => conferirVersaoNova('1.0.0', '1.0.1'));
   assert.throws(() => conferirVersaoNova('1.0.1', '1.0.1'), /Aumente a "version"/);
   assert.throws(() => conferirVersaoNova('1.0.2', '1.0.1'));
+});
+
+test('guarda só os 3 instaladores mais novos, pela versão e não pela ordem alfabética', () => {
+  const nomes = [
+    'Corona-Gestao-Setup-1.0.9.exe',
+    'Corona-Gestao-Setup-1.0.10.exe',
+    'Corona-Gestao-Setup-1.0.8.exe',
+    'Corona-Gestao-Setup-1.0.11.exe',
+    'Corona-Gestao-Setup-1.0.7.exe',
+    'latest.yml',
+    'Corona-Vendas-Setup-1.0.1.exe',
+  ];
+  assert.deepEqual(instaladoresAntigos(nomes, 'Corona-Gestao', 3), [
+    'Corona-Gestao-Setup-1.0.7.exe',
+    'Corona-Gestao-Setup-1.0.8.exe',
+  ]);
+  assert.deepEqual(instaladoresAntigos(nomes, 'Corona-Vendas', 3), []);
+  assert.deepEqual(instaladoresAntigos([], 'Corona-Gestao', 3), []);
 });
 
 test('só aceita o nome de instalador que o electron-builder gera', () => {
