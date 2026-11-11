@@ -83,6 +83,25 @@ Estoque e compras (§15). Segue o mesmo formato da Fase 1. O modelo do estoque e
 
 **Fase 2 concluída** (tarefas 2.1 a 2.9; a 2.9 foi a revisão de fechamento). Resumo: o estoque tem um único serviço que muda a quantidade (movimentos imutáveis, desfazer lançamento, saldo nunca negativo, conferência automática); as compras entram com custo e histórico; há aviso de estoque mínimo e contagem do estoque por leitor; a dona tem as telas de estoque, entradas e saídas, compras e dez relatórios com exportação em PDF, Excel e CSV. **Segue para a Fase 3:** mercadoria em maletas por vendedor nos relatórios de estoque, uso dos tipos Maleta e Devolução da maleta e a conciliação "estoque + maletas". **Segue para a Fase 8:** curva ABC. Dúvidas abertas: [fase-2.md](progresso/fase-2.md#tarefa-28-corona-gestão-relatórios-de-estoque-e-de-compras-fecha-a-fase-2).
 
+## Fase 9 mínima
+
+### Plano da Fase 9 mínima
+
+Colocar o Corona Gestão no ar para a dona (prazo: sexta, 14/11/2026). É infraestrutura, empacotamento e atualização: não muda regra de negócio, migração publicada, cadastros nem estoque. As decisões estão no [ADR-0009](decisoes/ADR-0009-implantacao-certificado-atualizacao-e-backup.md).
+
+| Nº | Tarefa | Situação |
+| --- | --- | --- |
+| 9.1 | docs: plano da Fase 9 mínima e ADR-0009 (implantação, certificado fixado, atualização, backup, riscos) | Em revisão · [detalhe](progresso/fase-9.md#tarefa-91-plano-e-adr-só-documentos) |
+| 9.2 | deploy: Docker Compose de produção (API, PostgreSQL, proxy HTTPS), perfil `prod`, script de instalação do servidor, saúde e aviso de queda | A fazer |
+| 9.3 | backup e restauração: `pg_dump` diário, cópia semanal por `rclone`, restauração testada num banco limpo | A fazer |
+| 9.4 | Corona Gestão: instalador `.exe` (NSIS), endereço e certificado fixado como configuração de build, `npm run owner:empacotar` | A fazer |
+| 9.5 | Corona Gestão: atualização automática (publicação na VPS, checagem, hash, instalação ao fechar, aviso na tela) | A fazer |
+| 9.6 | roteiro de entrega (`docs/entrega-corona-gestao.md`) | A fazer |
+
+**Fora desta fase mínima:** domínio e Let's Encrypt, assinatura do instalador, backup diário fora da VPS, atualização do Corona Vendas (Fase 9 completa).
+
+**Depende do responsável:** contratar a VPS, entregar o IP e a chave SSH, autorizar o Google Drive no `rclone`, escolher o aviso de queda.
+
 ## Pendências abertas
 
 - Fase 2: a dona aceitar a saída recusada quando falta peça (ADR-0008); formato do código da loja no cadastro rápido (ADR-0007, item 5); foto nos arquivos exportados e ordenação por coluna dos relatórios de estoque; leitor de código real e pacote instalado ainda não testados. ([tarefas 2.1 a 2.9](progresso/fase-2.md#tarefa-29-fechamento-da-fase-2))

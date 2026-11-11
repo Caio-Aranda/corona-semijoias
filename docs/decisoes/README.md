@@ -16,6 +16,7 @@ A especificação (`docs/ESPECIFICACAO.md`) manda. Um ADR detalha a especificaç
 | [0006](ADR-0006-moedas-e-cotacao.md) | Moedas e cotação | Aceito | 19 (e telas das Fases 1, 4, 5 e 7) |
 | [0007](ADR-0007-codigos-das-etiquetas.md) | Códigos das etiquetas | Proposto | 1.5, 1.11 (Fase 1) |
 | [0008](ADR-0008-estoque-e-movimentacoes.md) | Estoque e movimentações | Aceito | 2.2 a 2.5 (Fase 2); reutilizado na Fase 3 |
+| [0009](ADR-0009-implantacao-certificado-atualizacao-e-backup.md) | Implantação, certificado fixado, atualização e backup | Proposto | 9.2 a 9.6 (Fase 9 mínima) |
 
 A numeração das tarefas é a do "Plano da Fase 0" em `docs/PROGRESSO.md`.
 
