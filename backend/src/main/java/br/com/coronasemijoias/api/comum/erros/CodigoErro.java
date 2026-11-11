@@ -280,6 +280,23 @@ public enum CodigoErro {
             "Esta peça não pode ir para a maleta.",
             "Esta peça está desativada ou foi excluída e não pode ir para a maleta."),
 
+    // --- Devolução e cancelamento da maleta (ADR-0010, itens 4 e 5; tarefa 3.3) ---
+
+    /** Devolução de mais peças do que ainda há na maleta (HTTP 409). O servidor monta o texto com o que há. */
+    DEVOLUCAO_MAIOR_QUE_O_SALDO(
+            "Há menos peças na maleta do que o informado.",
+            "Há menos peças na maleta do que o informado. Confira a quantidade."),
+
+    /** Cancelar uma maleta enviada que já teve devolução, venda ou conferência (HTTP 409). */
+    MALETA_JA_MOVIMENTADA(
+            "Esta maleta já teve peças devolvidas ou vendidas.",
+            "Esta maleta já teve peças devolvidas ou vendidas e não pode ser cancelada. Desfaça as devoluções antes, se foi engano."),
+
+    /** Desfazer a devolução faria faltar peça no estoque da loja (HTTP 409). O servidor monta o texto. */
+    DEVOLUCAO_NAO_PODE_SER_DESFEITA(
+            "Não é possível desfazer esta devolução.",
+            "Não é possível desfazer esta devolução porque as peças já saíram do estoque da loja."),
+
     // --- Contagem do estoque (glossário, parte 12; tarefa 2.4) ---
 
     CONTAGEM_NAO_ENCONTRADA(

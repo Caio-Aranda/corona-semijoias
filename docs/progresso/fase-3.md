@@ -59,3 +59,32 @@ Uma seção por tarefa, no mesmo formato de [fase-2.md](fase-2.md). A tabela de 
 **Dúvidas abertas:** as do ADR-0010 (limite 0 como "sem limite" entra na dúvida 6).
 
 **Não feito:** devolução, cancelamento de remessa enviada, PDF, relatórios e telas.
+
+### Tarefa 3.3: backend: devolução da maleta, cancelamento e conciliação
+
+**Em revisão.** Sem migração nova (a V021 já tinha tudo). Rotas só ADMIN em `/api/dona/remessas`; nenhuma tela, PDF, relatório ou venda.
+
+**O que foi feito**
+
+- **Devolução à dona** (`POST /{id}/devolucoes`): várias peças por chamada, cada uma com id do aplicativo. Grava `DEVOLUCAO_DONA` (quantidade negativa) em `movimentos_remessa` e `DEVOLUCAO` (origem MALETA) no estoque central, na mesma transação, em ordem estável de produto, tudo ou nada. Nunca passa do saldo da maleta (`qtd_enviada` + movimentos). Só maleta enviada.
+- **Cancelar** (`POST /{id}/cancelar`, motivo obrigatório): rascunho vira cancelada sem mexer no estoque; enviada só cancela se não há movimento ativo, e então estorna a baixa do envio pelo serviço de estoque. Cancelada não aceita mais nada; cancelar de novo = 200.
+- **Desfazer devolução** (`POST /{id}/devolucoes/{devolucaoId}/estorno`): movimento de sinal oposto com `estorna_id` (único) e o estoque central baixa de novo; se o central não tiver as peças, 409 com texto simples.
+- **Leitura**: `GET /{id}/maleta` (por peça: enviada, devolvida, saldo; valor em aberto a preço congelado; movimentos) e `GET /em-aberto?vendedorId=` (valor em aberto por maleta, total, limite e quanto sobra).
+- **Conciliação** (`GET /api/dona/estoque/conciliacao`, a que já existia, sem rota nova): além de `divergencias`, traz `diferencasComMaletas` = estoque central + saldo das maletas enviadas contra o que entrou e saiu fora da maleta (compras, entradas, saídas, perdas, ajustes e estornos). Os movimentos da maleta só trocam peça de lugar e ficam de fora do lado direito.
+- Testes primeiro (22 em `DevolucaoDaMaletaTest`): saldo, parcial e total, idempotência 201/200/409, cancelamentos, estorno, permissão (vendedor 403), limite que libera depois da devolução, concorrência (devoluções, devolução x cancelamento, central sob saída simultânea) e conciliação depois de compra, maleta, devolução, estorno, cancelamento, perda e inventário, inclusive com operações simultâneas.
+- `operationId` explícito em todas as rotas novas; clientes regerados e `npm run typecheck` passando.
+
+**Decisões que tomei**
+
+- O id da devolução do aplicativo é também o id do movimento no estoque central: o reenvio é idempotente nos dois lados e o estorno acha o movimento certo.
+- "Movimento ativo" (que impede cancelar maleta enviada) = movimento da maleta que não é estorno e não foi estornado: devolução desfeita deixa cancelar.
+- Idempotência vem antes da conferência de status: reenviar uma devolução já gravada dá 200 mesmo que a maleta tenha sido cancelada depois (porque a devolução foi desfeita).
+- A mesma peça não pode aparecer duas vezes na mesma chamada de devolução.
+- Maleta cancelada ou em rascunho mostra saldo 0 e valor em aberto 0 na leitura. A lista de "em aberto" inclui todas as maletas enviadas, mesmo com saldo 0 (maleta toda devolvida segue enviada até as Fases 4 e 7).
+- Todo movimento da maleta trava primeiro a linha da remessa e depois os produtos (ordem de id): a Fase 4 (vendas) deve seguir a mesma ordem.
+- Motivo de cancelamento e de estorno: até 400 caracteres.
+
+**Dúvidas abertas:** as do ADR-0010. Nova: depois de devolver tudo, a maleta deve virar "encerrada" sozinha? Hoje continua enviada.
+
+**Não feito:** PDF, relatórios, telas e vendas.
+

@@ -75,7 +75,20 @@ public class ServicoDeEstoque {
         }
     }
 
-    public record Conciliacao(Instant geradaEm, long produtosConferidos, List<Divergencia> divergencias) {
+    /**
+     * Estoque central mais o saldo das maletas enviadas contra o que entrou e saiu fora da maleta (entradas, saídas
+     * manuais, perdas, ajustes e compras, com os estornos). Deve ser igual em todo produto (ADR-0010, item 12).
+     */
+    public record DiferencaComMaletas(UUID produtoId, String nome, String fotoHash, int estoqueCentral, long saldoNasMaletas,
+            long esperado) {
+
+        public long diferenca() {
+            return estoqueCentral + saldoNasMaletas - esperado;
+        }
+    }
+
+    public record Conciliacao(Instant geradaEm, long produtosConferidos, List<Divergencia> divergencias,
+            List<DiferencaComMaletas> diferencasComMaletas) {
     }
 
     private record Bloqueado(UUID id, String nome, int saldo) {
@@ -247,7 +260,37 @@ public class ServicoDeEstoque {
                 (rs, i) -> new Divergencia(rs.getObject("id", UUID.class), rs.getString("nome"),
                         rs.getString("foto_principal_hash"), rs.getInt("estoque_atual"), rs.getLong("soma")));
         Long total = jdbc.queryForObject("SELECT count(*) FROM corona.produtos", Long.class);
-        return new Conciliacao(relogio.instant(), total == null ? 0 : total, divergencias);
+        return new Conciliacao(relogio.instant(), total == null ? 0 : total, divergencias, diferencasComMaletas());
+    }
+
+    /**
+     * Central + saldo das maletas (ENVIADA em diante, que é o que está com o vendedor) = tudo o que entrou e saiu do estoque
+     * fora da maleta. Os movimentos da maleta (REMESSA, DEVOLUCAO e os estornos deles) não entram no lado direito: eles só
+     * trocam peça de lugar entre o central e as maletas. Num único SELECT, para olhar um retrato só do banco.
+     */
+    private List<DiferencaComMaletas> diferencasComMaletas() {
+        return jdbc.query("""
+                SELECT p.id, p.nome, p.foto_principal_hash, p.estoque_atual,
+                       coalesce(maletas.saldo, 0) AS nas_maletas, coalesce(fora.soma, 0) AS esperado
+                  FROM corona.produtos p
+                  LEFT JOIN (SELECT me.produto_id, sum(me.quantidade) AS soma
+                               FROM corona.movimentacoes_estoque me
+                               LEFT JOIN corona.movimentacoes_estoque original ON original.id = me.estorna_id
+                              WHERE me.origem_tipo <> 'MALETA' AND coalesce(original.origem_tipo, '') <> 'MALETA'
+                              GROUP BY me.produto_id) fora ON fora.produto_id = p.id
+                  LEFT JOIN (SELECT i.produto_id, sum(i.qtd_enviada + coalesce(m.soma, 0)) AS saldo
+                               FROM corona.remessas r
+                               JOIN corona.itens_remessa i ON i.remessa_id = r.id AND i.deleted_at IS NULL
+                               LEFT JOIN (SELECT remessa_id, produto_id, sum(quantidade) AS soma
+                                            FROM corona.movimentos_remessa GROUP BY remessa_id, produto_id) m
+                                      ON m.remessa_id = i.remessa_id AND m.produto_id = i.produto_id
+                              WHERE r.deleted_at IS NULL AND r.status IN ('ENVIADA', 'CONFERIDA', 'EM_ACERTO')
+                              GROUP BY i.produto_id) maletas ON maletas.produto_id = p.id
+                 WHERE p.estoque_atual + coalesce(maletas.saldo, 0) <> coalesce(fora.soma, 0)
+                 ORDER BY p.nome, p.id""",
+                (rs, i) -> new DiferencaComMaletas(rs.getObject("id", UUID.class), rs.getString("nome"),
+                        rs.getString("foto_principal_hash"), rs.getInt("estoque_atual"), rs.getLong("nas_maletas"),
+                        rs.getLong("esperado")));
     }
 
     // --- internos ---
