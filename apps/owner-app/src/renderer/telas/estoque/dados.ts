@@ -1,3 +1,4 @@
+import { lerVendedoresEmMaletas } from '../produtos/dados';
 /** Formatos que a API de estoque e de contagem devolve, lidos com cuidado (nada aqui confia no formato). */
 
 const objeto = (v: unknown): Record<string, unknown> =>
@@ -85,6 +86,8 @@ export function lerLancamento(bruto: unknown): Lancamento | null {
 export interface FichaDoEstoque {
   peca: PecaDoEstoque;
   saldo: number;
+  emMaletas: number;
+  vendedoresEmMaletas: { nome: string; quantidade: number }[];
   historico: Pagina<Lancamento>;
 }
 
@@ -92,12 +95,20 @@ export function lerFicha(bruto: unknown): FichaDoEstoque | null {
   const o = objeto(bruto);
   const peca = lerPeca(o.produto);
   if (!peca) return null;
-  return { peca, saldo: inteiro(o.saldo), historico: lerPagina(o.historico, lerLancamento) };
+  return {
+    peca,
+    saldo: inteiro(o.saldo),
+    emMaletas: inteiro(o.emMaletas),
+    vendedoresEmMaletas: lerVendedoresEmMaletas(o.vendedoresEmMaletas),
+    historico: lerPagina(o.historico, lerLancamento),
+  };
 }
 
 export interface PecaAcabando {
   peca: PecaDoEstoque;
   saldo: number;
+  emMaletas: number;
+  vendedoresEmMaletas: { nome: string; quantidade: number }[];
   minimo: number;
   falta: number;
 }
@@ -106,7 +117,14 @@ export function lerAcabando(bruto: unknown): PecaAcabando | null {
   const o = objeto(bruto);
   const peca = lerPeca(o.produto);
   if (!peca) return null;
-  return { peca, saldo: inteiro(o.saldo), minimo: inteiro(o.minimo), falta: inteiro(o.falta) };
+  return {
+    peca,
+    saldo: inteiro(o.saldo),
+    emMaletas: inteiro(o.emMaletas),
+    vendedoresEmMaletas: lerVendedoresEmMaletas(o.vendedoresEmMaletas),
+    minimo: inteiro(o.minimo),
+    falta: inteiro(o.falta),
+  };
 }
 
 export interface ResumoDaContagem {

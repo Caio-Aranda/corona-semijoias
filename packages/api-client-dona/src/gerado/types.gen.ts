@@ -248,6 +248,11 @@ export type DadosDoUsuario = {
     vendedorId?: string;
 };
 
+export type DoVendedor = {
+    nome?: string;
+    quantidade?: number;
+};
+
 export type DocumentoDoVendedorResposta = {
     descricao?: string;
     enviadoEm?: string;
@@ -1110,6 +1115,7 @@ export type ProdutosDaDonaControllerResposta = {
     ativo?: boolean;
     categoriaId?: string;
     codigos?: Array<RespostaDeCodigo>;
+    emMaletas?: number;
     estoqueAtual?: number;
     estoqueMinimo?: number;
     fornecedorId?: string;
@@ -1119,6 +1125,7 @@ export type ProdutosDaDonaControllerResposta = {
     precoCusto?: string;
     precoVenda?: string;
     referencia?: string;
+    vendedoresEmMaletas?: Array<DoVendedor>;
     version?: number;
 };
 
@@ -1457,9 +1464,11 @@ export type RespostaDaDivergencia = {
 };
 
 export type RespostaDaFicha = {
+    emMaletas?: number;
     historico?: PaginaEstoqueDaDonaControllerRespostaDaLinha;
     produto?: RespostaDoProduto;
     saldo?: number;
+    vendedoresEmMaletas?: Array<DoVendedor>;
 };
 
 export type RespostaDaFoto = {
@@ -1558,10 +1567,12 @@ export type RespostaDeCodigo = {
 };
 
 export type RespostaDoAbaixoDoMinimo = {
+    emMaletas?: number;
     falta?: number;
     minimo?: number;
     produto?: RespostaDoProduto;
     saldo?: number;
+    vendedoresEmMaletas?: Array<DoVendedor>;
 };
 
 export type RespostaDoEmAberto = {

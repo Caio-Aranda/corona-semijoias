@@ -729,9 +729,34 @@ describe('Produtos: consulta', () => {
     await u.type(await screen.findByLabelText('Código da peça'), '0012{Enter}');
     expect(await screen.findByRole('heading', { name: 'Anel Solitário' })).toBeInTheDocument();
     expect(screen.getByText(/Preço:/)).toHaveTextContent('R$ 70,00');
-    expect(screen.getByText(/Saldo no estoque: 0/)).toBeInTheDocument();
+    // Zero na loja e nenhuma em maleta: "Acabou".
+    expect(screen.getByText(/Saldo no estoque:/)).toHaveTextContent('Acabou');
     await waitFor(() => expect(screen.getByLabelText('Código da peça')).toHaveFocus());
     expect(screen.getByLabelText('Código da peça')).toHaveValue('');
+  });
+
+  it('zero na loja com a peça em maleta: "0 na loja" e quem está com ela, sem dizer que acabou', async () => {
+    const m = montar({
+      'produtos.porCodigo': () => ({
+        ok: true,
+        dados: {
+          ...ANEL,
+          emMaletas: 2,
+          vendedoresEmMaletas: [
+            { nome: 'Maria', quantidade: 1 },
+            { nome: 'João', quantidade: 1 },
+          ],
+        },
+      }),
+    });
+    const u = await abrirLista(m);
+    await u.click(screen.getByRole('tab', { name: 'Consultar produto' }));
+    await u.type(await screen.findByLabelText('Código da peça'), '0012{Enter}');
+    expect(await screen.findByRole('heading', { name: 'Anel Solitário' })).toBeInTheDocument();
+    const saldo = screen.getByText(/Saldo no estoque:/);
+    expect(saldo).toHaveTextContent('0 na loja');
+    expect(saldo).toHaveTextContent('Está em maleta: 2 (Maria, João)');
+    expect(saldo).not.toHaveTextContent('Acabou');
   });
 
   it('código que não existe tem texto próprio, sem travar', async () => {
