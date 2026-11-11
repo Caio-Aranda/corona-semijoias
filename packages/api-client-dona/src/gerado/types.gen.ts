@@ -202,7 +202,9 @@ export type LinhaDeCompra = {
 
 export type LinhaDeConciliacao = {
     diferenca?: number;
+    diferencaComMaletas?: number;
     fotoPrincipalHash?: string;
+    nasMaletas?: number;
     nome?: string;
     produtoId?: string;
     saldoGuardado?: number;

@@ -216,6 +216,7 @@ export const TEXTOS_DE_MALETAS = {
       valor: 'Valor com o vendedor',
     },
     semPecas: 'Esta maleta não tem peças.',
+    semPecasComOVendedor: 'Sem peças com o vendedor',
     totais: (pecas: number) => `Peças ainda com o vendedor: ${pecas}`,
     valorEmAberto: 'Valor ainda com o vendedor',
     movimentos: {

@@ -1,6 +1,7 @@
 package br.com.coronasemijoias.api.remessas;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -407,6 +408,17 @@ class DevolucaoDaMaletaTest extends TesteDeIntegracao {
     }
 
     @Test
+    void pecaQueEstaComOVendedorNaoPodeSerExcluidaMasDepoisDeDevolverPode() throws Exception {
+        UUID p = peca("10.00", 10);
+        UUID r = enviada(vendedor("1000.00"), p, 5);
+        mvc.perform(delete("/api/dona/produtos/" + p).with(dona())).andExpect(status().isConflict())
+                .andExpect(jsonPath("$.codigo").value("PECA_ESTA_EM_MALETA"));
+        // a devolução segue funcionando e, com a maleta vazia, a peça pode ser excluída
+        devolverOk(r, p, 5);
+        mvc.perform(delete("/api/dona/produtos/" + p).with(dona())).andExpect(status().isNoContent());
+    }
+
+    @Test
     @SuppressWarnings("unchecked")
     void devolucaoDesfeitaLiberaOCancelamento() throws Exception {
         UUID p = peca("10.00", 10);
@@ -668,6 +680,22 @@ class DevolucaoDaMaletaTest extends TesteDeIntegracao {
         assertThat(saldoDaMaleta(a, p)).isGreaterThanOrEqualTo(0);
         assertThat(estoque.conciliar().divergencias()).isEmpty();
         assertThat(estoque.conciliar().diferencasComMaletas()).isEmpty();
+    }
+
+    @Test
+    void relatorioDeConferenciaDoEstoqueMostraADiferencaComAsMaletas() throws Exception {
+        UUID p = peca("10.00", 10);
+        UUID r = enviada(vendedor("1000.00"), p, 5);
+        String rota = "/api/dona/relatorios/estoque/conciliacao?produtoId=" + p;
+        assertThat(corpoDe(ler(rota).andExpect(status().isOk())).get("total").asLong()).isZero();
+        jdbc.update("INSERT INTO corona.movimentos_remessa (id, remessa_id, produto_id, tipo, quantidade) VALUES (?, ?, ?, 'DEVOLUCAO_DONA', -1)",
+                UUID.randomUUID(), r, p);
+        JsonNode corpo = corpoDe(ler(rota).andExpect(status().isOk()));
+        assertThat(corpo.get("total").asLong()).isEqualTo(1);
+        JsonNode linha = corpo.get("itens").get(0);
+        assertThat(linha.get("saldoGuardado").asInt()).isEqualTo(5);
+        assertThat(linha.get("nasMaletas").asLong()).isEqualTo(4);
+        assertThat(linha.get("diferencaComMaletas").asLong()).isEqualTo(1);
     }
 
     @Test

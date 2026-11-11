@@ -88,6 +88,9 @@ export function GestaoDaMaleta({ ponte, id, aoVoltar, aoRepor, aoDevolver }: Ges
             : ''}
         </Aviso>
       ) : null}
+      {enviada && saldo.pecasEmAberto === 0 ? (
+        <Aviso tipo="atencao">{F.semPecasComOVendedor}</Aviso>
+      ) : null}
       <section className="gestao-grupo" aria-labelledby="titulo-gestao-maleta">
         <h2 id="titulo-gestao-maleta" className="gestao-subtitulo">
           {E.tituloDaFicha}
