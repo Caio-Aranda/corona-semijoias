@@ -86,9 +86,9 @@ Deve responder `{"groups":["liveness","readiness"],"status":"UP"}`. `verificar-p
    Crie `/etc/corona/backup.env` (permissão 600):
    ```
    RCLONE_CONFIG=/etc/corona/rclone.conf
-   RCLONE_DESTINO=nome-do-remoto:corona-backups
+   RCLONE_DESTINO=nome-do-remoto-crypt:corona-backups
    ```
-   e rode de novo `instalar-timers.sh` para ligar o envio semanal.
+   (o remoto `crypt`, não o do Drive puro) e rode de novo `instalar-timers.sh` para ligar o envio semanal.
 3. **Snapshot da Hostinger**: agende no painel (diário ou semanal).
 4. **Teste de restauração, de verdade, na VPS**:
    ```bash
