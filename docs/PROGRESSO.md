@@ -93,7 +93,7 @@ Colocar o Corona Gestão no ar para a dona (prazo: sexta, 14/11/2026). É infrae
 | --- | --- | --- |
 | 9.1 | docs: plano da Fase 9 mínima e ADR-0009 (implantação, certificado fixado, atualização, backup, riscos) | Em revisão · [detalhe](progresso/fase-9.md#tarefa-91-plano-e-adr-só-documentos) |
 | 9.2 | deploy: Docker Compose de produção (API, PostgreSQL, proxy HTTPS), perfil `prod`, script de instalação do servidor, saúde e aviso de queda | Em revisão · [detalhe](progresso/fase-9.md#tarefa-92-implantação-da-api) |
-| 9.3 | backup e restauração: `pg_dump` diário, cópia semanal por `rclone`, restauração testada num banco limpo | A fazer |
+| 9.3 | backup e restauração: `pg_dump` diário, cópia semanal por `rclone`, restauração testada num banco limpo | Em revisão · [detalhe](progresso/fase-9.md#tarefa-93-backup-e-restauração) |
 | 9.4 | Corona Gestão: instalador `.exe` (NSIS), endereço e certificado fixado como configuração de build, `npm run owner:empacotar` | A fazer |
 | 9.5 | Corona Gestão: atualização automática (publicação na VPS, checagem, hash, instalação ao fechar, aviso na tela) | A fazer |
 | 9.6 | roteiro de entrega (`docs/entrega-corona-gestao.md`) | A fazer |

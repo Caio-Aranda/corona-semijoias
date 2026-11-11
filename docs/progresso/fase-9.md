@@ -42,3 +42,25 @@ Subi a pilha inteira de produção no computador de desenvolvimento (build da im
 
 **Dúvidas:** a mesma do ADR-0009 (o tipo de aviso).
 
+### Tarefa 9.3: backup e restauração
+
+**Em revisão.** Scripts em `deploy/backup/` e seção "Backup em produção" em `docs/restauracao-de-backup.md`.
+
+**O que foi feito**
+
+- `fazer-backup.sh` (diário, 03:30 UTC): `pg_dump -Fc` do schema `corona` pelo usuário das migrações, conferido com `pg_restore -l`; cópia compactada das fotos e documentos; soma SHA-256; retenção de 14 dias (nunca menos de 3 cópias); falha avisa o responsável.
+- `enviar-semanal.sh` (domingo): `rclone` para o Google Drive do responsável, conferido com `rclone check`, retenção de 8 semanas; recusa enviar backup com mais de 2 dias.
+- `testar-restauracao.sh`: restaura um backup num PostgreSQL novo e descartável, roda o procedimento do sync e confere, com o tempo de cada etapa.
+- Timers do systemd e `instalar-timers.sh`; o envio semanal só liga quando o responsável cria `/etc/corona/backup.env`.
+- Roteiro de restauração em produção e registro dos testes em `docs/restauracao-de-backup.md`.
+
+**Como foi verificado:** com a pilha de produção local, o backup gerou banco (208 KB), arquivos e soma; o teste de restauração num banco limpo voltou 38 tabelas, 1 administradora e 20 migrações, época do sync 2, em 4 s. Defeito achado e corrigido: ler o `.env` com `source` quebra com o nome da dona (tem espaço).
+
+**O que não foi feito**
+
+- **Teste de restauração na VPS, com backup real**: pendente (precisa da VPS) e **obrigatório antes de a dona lançar dado real**. A linha "(a fazer)" do registro fica aberta.
+- Envio ao Google Drive: não testado (o responsável autoriza o `rclone`). Snapshot da Hostinger: o responsável agenda no painel.
+- Os timers do systemd só tiveram a sintaxe conferida.
+
+**Dúvidas:** criptografar a cópia do Drive com `rclone crypt` (recomendado, mas exige guardar a senha do `crypt` fora da VPS)?
+
