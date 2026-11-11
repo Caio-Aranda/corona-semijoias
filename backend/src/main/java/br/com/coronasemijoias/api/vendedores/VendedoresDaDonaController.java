@@ -126,14 +126,14 @@ public class VendedoresDaDonaController {
 
     @Operation(summary = "Inativar vendedor", description = "O vendedor sai das listas de ativos, mas o histórico fica.")
     @PostMapping("/{id}/inativar")
-    public Resposta inativar(@PathVariable UUID id) {
-        return Resposta.de(servico.definirAtivo(id, false));
+    public Resposta inativar(@PathVariable UUID id, @AuthenticationPrincipal UsuarioAutenticado quem) {
+        return Resposta.de(servico.definirAtivo(id, false, quem.id()));
     }
 
     @Operation(summary = "Reativar vendedor")
     @PostMapping("/{id}/reativar")
-    public Resposta reativar(@PathVariable UUID id) {
-        return Resposta.de(servico.definirAtivo(id, true));
+    public Resposta reativar(@PathVariable UUID id, @AuthenticationPrincipal UsuarioAutenticado quem) {
+        return Resposta.de(servico.definirAtivo(id, true, quem.id()));
     }
 
     @Operation(summary = "Excluir vendedor", description = "Exclusão lógica: some das listas, mas o histórico fica.")

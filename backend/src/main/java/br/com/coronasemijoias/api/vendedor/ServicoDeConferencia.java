@@ -72,6 +72,7 @@ public class ServicoDeConferencia {
             throw new ErroDaApi(HttpStatus.CONFLICT, id.equals(f.get("id")) ? CodigoErro.LANCAMENTO_JA_REGISTRADO_DIFERENTE
                     : CodigoErro.MALETA_JA_CONFERIDA);
         }
+        VendedorAtivo.exigir(jdbc, vendedorId);
         if (!"ENVIADA".equals(status)) {
             throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.MALETA_NAO_ESTA_COM_VOCE);
         }

@@ -128,6 +128,9 @@ Si no responde, usamos: **hasta 50 vendedores y 10 mil piezas; la prueba la hace
 **24. Si usted desactiva un vendedor, ¿también se le corta la entrada al programa?**
 Si no responde, usamos: **sí, se le corta la entrada.** (Hoy usted tiene que desactivar las dos cosas por separado.)
 
+**25. Un vendedor con el registro desactivado (pero con la entrada al programa todavía activa), ¿puede seguir vendiendo lo que ya tiene en la maleta?**
+Si no responde, usamos: **no.** Con el registro desactivado no vende, no cuenta la maleta y no recibe maleta nueva; y al desactivar el registro también se le corta la entrada al programa.
+
 ---
 
 Muchas gracias.
@@ -135,6 +138,6 @@ Muchas gracias.
 <!--
 Notas para o time (não enviar à dona):
 - Fora desta lista por decisão ou resposta do responsável em 11/11/2026: ver docs/pendencias-do-responsavel.md (saída sem estoque, limite de consignação, vender só depois de conferir, troca de aparelho só pela dona, catálogo só da maleta, prazo do estorno, data de nascimento, garantia de 1 ano, troca e reembolso só registrados).
-- Os padrões de 6 e 8 vêm do ADR-0011; 1 a 5 do ADR-0010 e da fase 3; 16 a 20 do ADR-0007; 21 da tarefa 2.8; 24 da Fase 1.
+- Os padrões de 6 e 8 vêm do ADR-0011; 1 a 5 do ADR-0010 e da fase 3; 16 a 20 do ADR-0007; 21 da tarefa 2.8; 24 da Fase 1; 25 da auditoria de 11/11/2026 (D2, padrão adotado pelo responsável até a dona responder; é a "pergunta 31" da orquestração: confirmar com ela).
 - Os padrões de 9 a 15 e 23 ainda não estão no código: são a proposta para quando a fase chegar (6 e 7). Confirmar com o responsável antes de implementar se a dona não responder.
 -->
