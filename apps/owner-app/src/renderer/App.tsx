@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { AvisoDeSessao, EstadoDaSessao, PonteDoCorona } from '../shared/ponte';
+import { FaixaDeAtualizacao } from './componentes/FaixaDeAtualizacao';
 import { TelaAppDesatualizado } from './telas/TelaAppDesatualizado';
 import { TelaEntrar } from './telas/TelaEntrar';
 import { ProvedorDaCotacao } from './nucleo/cotacao';
@@ -43,41 +44,50 @@ export function App({ ponte }: AppProps) {
     });
   }, [ponte]);
 
-  switch (tela.estado) {
-    case 'carregando':
-      return <main className="gestao-pagina" aria-busy="true" />;
-    case 'fora':
-      return (
-        <TelaEntrar
-          ponte={ponte}
-          sessaoTerminou={sessaoTerminou}
-          aoMudar={() => {
-            setSessaoTerminou(false);
-            void conferir();
-          }}
-        />
-      );
-    case 'trocar-senha':
-      return <TelaTrocarSenha ponte={ponte} aoMudar={() => void conferir()} />;
-    case 'sem-conexao':
-      return <TelaSemConexao aoTentarDeNovo={() => void conferir()} />;
-    case 'app-desatualizado':
-      return <TelaAppDesatualizado mensagem={tela.mensagem} />;
-    case 'dentro':
-      return (
-        <ProvedorDaCotacao ponte={ponte}>
-          <Estrutura
+  return (
+    <>
+      <FaixaDeAtualizacao ponte={ponte} />
+      {telaAtual()}
+    </>
+  );
+
+  function telaAtual() {
+    switch (tela.estado) {
+      case 'carregando':
+        return <main className="gestao-pagina" aria-busy="true" />;
+      case 'fora':
+        return (
+          <TelaEntrar
             ponte={ponte}
-            nome={tela.usuario?.nome ?? null}
-            aoSair={async () => {
-              await ponte.sair();
-              esquecerImagens();
+            sessaoTerminou={sessaoTerminou}
+            aoMudar={() => {
               setSessaoTerminou(false);
-              window.location.hash = '';
-              await conferir();
+              void conferir();
             }}
           />
-        </ProvedorDaCotacao>
-      );
+        );
+      case 'trocar-senha':
+        return <TelaTrocarSenha ponte={ponte} aoMudar={() => void conferir()} />;
+      case 'sem-conexao':
+        return <TelaSemConexao aoTentarDeNovo={() => void conferir()} />;
+      case 'app-desatualizado':
+        return <TelaAppDesatualizado mensagem={tela.mensagem} />;
+      case 'dentro':
+        return (
+          <ProvedorDaCotacao ponte={ponte}>
+            <Estrutura
+              ponte={ponte}
+              nome={tela.usuario?.nome ?? null}
+              aoSair={async () => {
+                await ponte.sair();
+                esquecerImagens();
+                setSessaoTerminou(false);
+                window.location.hash = '';
+                await conferir();
+              }}
+            />
+          </ProvedorDaCotacao>
+        );
+    }
   }
 }

@@ -1,12 +1,20 @@
 import { app, BrowserWindow, safeStorage, session, type WebContents } from 'electron';
+import electronUpdater from 'electron-updater';
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
-import { CANAIS, type AvisoDeSessao } from '../shared/ponte';
+import { CANAIS, type AvisoDeAtualizacao, type AvisoDeSessao } from '../shared/ponte';
 import { criarApiDoGestao } from './api';
 import { CacheDeFotos } from './cache-de-fotos';
-import { enderecoDaApi, versaoDoApp } from './configuracao';
+import {
+  enderecoDaApi,
+  exigirImpressoesFora,
+  impressoesDoServidor,
+  versaoDoApp,
+} from './configuracao';
+import { instalarCertificadoFixado } from './conexao-fixada';
 import { GuardaDeTokens } from './guarda-de-tokens';
-import { registrarPonte } from './ipc';
+import { registrarAtualizacao, registrarPonte } from './ipc';
+import { PARTICAO_DO_ATUALIZADOR, ServicoDeAtualizacao } from './atualizacao';
 import { enderecoDoApp } from './seguranca';
 import { ServicoDeSessao } from './servico-de-sessao';
 import type { ArquivoDoToken, Cofre, Relogio } from './tipos';
@@ -55,6 +63,10 @@ const relogio: Relogio = {
 
 function avisarATela(aviso: AvisoDeSessao): void {
   if (janela && !janela.isDestroyed()) janela.webContents.send(CANAIS.sessaoMudou, aviso);
+}
+
+function avisarAtualizacao(aviso: AvisoDeAtualizacao): void {
+  if (janela && !janela.isDestroyed()) janela.webContents.send(CANAIS.atualizacaoMudou, aviso);
 }
 
 /** A janela só carrega a tela do próprio aplicativo e não abre nada além dela. */
@@ -108,10 +120,26 @@ function iniciar(): void {
     pasta: join(app.getPath('userData'), 'fotos'),
     limiteEmBytes: 200 * 1024 * 1024,
   });
+  // Servidor sem domínio: o HTTPS usa um certificado autoassinado e o app só confia na chave dele (ADR-0009).
+  // Sem impressão digital, fora deste computador, o app não conecta. A verificação nunca é desligada.
+  const enderecoDoServidor = enderecoDaApi(import.meta.env.MAIN_VITE_CORONA_API_URL);
+  const impressoes = impressoesDoServidor(import.meta.env.MAIN_VITE_CORONA_API_PINS);
+  exigirImpressoesFora(enderecoDoServidor, impressoes);
+  if (impressoes.length > 0) {
+    const servidor = { endereco: enderecoDoServidor, impressoes };
+    instalarCertificadoFixado(session.defaultSession, servidor);
+    // A atualização automática baixa por outra sessão do Chromium; a mesma regra vale nela (ADR-0009).
+    instalarCertificadoFixado(
+      session.fromPartition(PARTICAO_DO_ATUALIZADOR, { cache: false }),
+      servidor,
+    );
+  }
   const api = criarApiDoGestao({
-    baseUrl: enderecoDaApi(process.env['MAIN_VITE_CORONA_API_URL']),
+    baseUrl: enderecoDoServidor,
     versaoDoApp: versaoDoApp(app.getVersion()),
     cacheDeFotos,
+    // Rede do Chromium: é ela que consulta o verificador de certificado acima.
+    fetch: (entrada, inicio) => session.defaultSession.fetch(entrada as string | Request, inicio),
   });
   // `servico` nasce depois da guarda, e a guarda avisa o serviço pelo `aoPerderASessao`.
   let servico: ServicoDeSessao | null = null;
@@ -140,6 +168,26 @@ function iniciar(): void {
       enderecoDoApp(quadro.url, enderecoDeDesenvolvimento)
     );
   });
+
+  // Atualização automática: só no aplicativo instalado (em desenvolvimento não há instalador para buscar).
+  // O servidor é o mesmo da API, e o canal já é o do certificado fixado.
+  const atualizacao = new ServicoDeAtualizacao({
+    atualizador: electronUpdater.autoUpdater,
+    endereco: enderecoDoServidor,
+    relogio,
+    aoMudar: avisarAtualizacao,
+    registrar: (mensagem) => console.warn(mensagem),
+  });
+  registrarAtualizacao(atualizacao, (e) => {
+    const quadro = e.senderFrame;
+    return (
+      quadro !== null &&
+      janela !== null &&
+      e.sender === janela.webContents &&
+      enderecoDoApp(quadro.url, enderecoDeDesenvolvimento)
+    );
+  });
+  if (app.isPackaged) atualizacao.iniciar();
 
   criarJanela();
 }

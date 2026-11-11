@@ -70,6 +70,7 @@ function montar(manipuladores: Record<string, Manipulador> = {}) {
       return m ? m(pedido) : { ok: false as const, motivo: 'erro' as const };
     }),
     aoMudarASessao: () => () => undefined,
+    aoMudarAAtualizacao: () => () => undefined,
   };
   return { ponte, chamadas };
 }
