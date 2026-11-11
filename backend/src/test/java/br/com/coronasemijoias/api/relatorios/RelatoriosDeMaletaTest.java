@@ -22,13 +22,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -36,7 +39,12 @@ import tools.jackson.databind.json.JsonMapper;
  * Relatórios da maleta e dados da nota de remessa (tarefa 3.4; ADR-0010, itens 13 e 15). Tudo é criado pelas rotas e pelo
  * serviço de estoque (envio, devolução, cancelamento); cada teste usa os próprios vendedores e peças. Os envios são
  * "colocados" em datas distantes (anos 2285) para a cotação do dia do envio ser a que o teste cadastrou, nunca a de hoje.
+ *
+ * <p>Roda numa transação desfeita no fim de cada teste, como os testes de cotações: a tabela de cotações é imutável (não dá
+ * para apagar o que o teste grava) e as cotações de 2285 não podem vazar para os testes de cotações.
  */
+@Transactional
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class RelatoriosDeMaletaTest extends TesteDeIntegracao {
 
     private static final String REL = "/api/dona/relatorios/maleta/";
@@ -61,6 +69,16 @@ class RelatoriosDeMaletaTest extends TesteDeIntegracao {
 
     @Autowired
     ServicoDeEstoque estoque;
+
+    /**
+     * As contas de teste ficam guardadas para todas as classes: têm de nascer FORA da transação desfeita de cada teste,
+     * senão a conta some no fim do teste e as outras classes encontram uma sessão sem usuário.
+     */
+    @BeforeAll
+    void contasDeTeste() {
+        usuarios.dona();
+        usuarios.vendedor();
+    }
 
     // --- apoio ---
 
