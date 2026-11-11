@@ -71,8 +71,11 @@ class VendasDoVendedorTest extends TesteDeIntegracao {
         return usuarios.comoDona();
     }
 
+    /** Um token por vendedor e por teste: o token leva o aparelho, e a maleta fica ligada ao primeiro que vende. */
+    private final Map<UUID, RequestPostProcessor> aparelhos = new java.util.concurrent.ConcurrentHashMap<>();
+
     private RequestPostProcessor como(UsuarioDeTeste vendedor) {
-        return UsuariosDeTeste.comToken(usuarios.token(vendedor));
+        return aparelhos.computeIfAbsent(vendedor.id(), id -> UsuariosDeTeste.comToken(usuarios.token(vendedor)));
     }
 
     private static Map<String, Object> mapa(Object... pares) {
@@ -424,6 +427,28 @@ class VendasDoVendedorTest extends TesteDeIntegracao {
         postar("/api/dona/vendas/" + antiga + "/estorno", dona(), mapa("id", UUID.randomUUID(), "motivo", "engano"))
                 .andExpect(status().isCreated());
         assertThat(saldo(maleta, anel)).isEqualTo(4);
+    }
+
+    // --- conciliação ---
+
+    @Test
+    void aConciliacaoEstoqueMaisMaletasContinuaFechandoComVendasEEstornos() throws Exception {
+        UsuarioDeTeste v = novoVendedor();
+        UUID anel = peca("50.00", 10);
+        UUID maleta = maleta(v, anel, 6);
+        UUID cliente = cliente(v);
+        UUID vendaA = UUID.randomUUID();
+        postar(VENDAS, como(v), venda(vendaA, maleta, cliente, List.of(linha(anel, 2, null)), List.of())).andExpect(status().isCreated());
+        postar(VENDAS, como(v), venda(UUID.randomUUID(), maleta, cliente, List.of(linha(anel, 1, null)), List.of()))
+                .andExpect(status().isCreated());
+        postar(VENDAS + "/" + vendaA + "/estorno", como(v), mapa("id", UUID.randomUUID(), "motivo", "engano")).andExpect(status().isCreated());
+
+        // Central 4 + na maleta 5 (6 - 1 vendida) = 9 = 10 que entraram - 1 vendida.
+        // Só esta peça: outros testes podem deixar diferença de propósito no mesmo banco.
+        assertThat(estoque.conciliar().divergencias()).noneMatch(d -> d.produtoId().equals(anel));
+        assertThat(estoque.conciliar().diferencasComMaletas()).noneMatch(d -> d.produtoId().equals(anel));
+        JsonNode relatorio = corpoDe(ler("/api/dona/relatorios/estoque/conciliacao?produtoId=" + anel, dona()).andExpect(status().isOk()));
+        assertThat(relatorio.get("total").asLong()).isZero();
     }
 
     // --- imutabilidade ---
