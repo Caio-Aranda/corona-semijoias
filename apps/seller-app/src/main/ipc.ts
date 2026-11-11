@@ -1,6 +1,7 @@
 import { ipcMain, type IpcMainInvokeEvent } from 'electron';
 import { CANAIS } from '../shared/ponte';
 import { validarChamada, validarEntrada, validarNovaSenha } from '../shared/validacao';
+import type { ServicoDeAtualizacao } from '@corona/conexao-segura';
 import type { ServicoDeSessao } from './servico-de-sessao';
 
 /**
@@ -52,4 +53,15 @@ export function registrarPonte(
       return servico.chamarApi(v.operacao);
     }),
   );
+}
+
+/** Canal que informa a tela sobre a atualização automática (só leitura; a tela não manda nada para o atualizador). */
+export function registrarAtualizacao(
+  servico: ServicoDeAtualizacao,
+  remetenteConfiavel: (e: IpcMainInvokeEvent) => boolean,
+): void {
+  ipcMain.handle(CANAIS.atualizacaoEstado, (e: IpcMainInvokeEvent) => {
+    if (!remetenteConfiavel(e)) return Promise.reject(new Error('Chamada recusada.'));
+    return Promise.resolve(servico.estado());
+  });
 }
