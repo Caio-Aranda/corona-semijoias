@@ -1,3 +1,4 @@
+import { SaldoDaLoja } from '../../componentes/SaldoDaLoja';
 import { Aviso, Botao, Campo, JanelaDeConfirmacao } from '@corona/ui';
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import type { PonteDoCorona } from '../../../shared/ponte';
@@ -327,6 +328,15 @@ export function FichaDoProduto({ ponte, produtoId, aoVoltar, aoAbrirOutro }: Fic
           {produto ? (
             <p className="gestao-texto">
               {T.situacaoAtual(produto.ativo)} {T.saldo(produto.estoqueAtual)}
+            </p>
+          ) : null}
+          {produto && produto.estoqueAtual === 0 ? (
+            <p className="gestao-texto">
+              <SaldoDaLoja
+                estoque={produto.estoqueAtual}
+                emMaletas={produto.emMaletas}
+                vendedores={produto.vendedoresEmMaletas}
+              />
             </p>
           ) : null}
 

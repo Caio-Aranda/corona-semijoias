@@ -3,6 +3,7 @@ import { useState, type FormEvent } from 'react';
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { AvisoDeErro } from '../../componentes/AvisoDeErro';
 import { ImagemDoProduto } from '../../componentes/ImagemDoProduto';
+import { SaldoDaLoja } from '../../componentes/SaldoDaLoja';
 import { chamar, useBusca } from '../../nucleo/chamadas';
 import { estaAcabando } from '../../nucleo/estoque';
 import { TEXTOS_DE_ESTOQUE } from '../../textos-estoque';
@@ -18,6 +19,8 @@ interface Linha {
   codigo: string;
   fotoHash: string | null;
   saldo: number;
+  emMaletas: number;
+  vendedoresEmMaletas: { nome: string; quantidade: number }[];
   minimo: number;
   falta: number;
 }
@@ -70,6 +73,8 @@ export function ListaDoEstoque({ ponte, modo }: ListaDoEstoqueProps) {
             codigo: a.peca.codigo,
             fotoHash: a.peca.fotoHash,
             saldo: a.saldo,
+            emMaletas: a.emMaletas,
+            vendedoresEmMaletas: a.vendedoresEmMaletas,
             minimo: a.minimo,
             falta: a.falta,
           })),
@@ -89,6 +94,8 @@ export function ListaDoEstoque({ ponte, modo }: ListaDoEstoqueProps) {
           codigo: codigoPrincipal(x),
           fotoHash: x.fotoPrincipal?.hash ?? null,
           saldo: x.estoqueAtual,
+          emMaletas: x.emMaletas,
+          vendedoresEmMaletas: x.vendedoresEmMaletas,
           minimo: x.estoqueMinimo,
           falta: Math.max(0, x.estoqueMinimo - x.estoqueAtual),
         })),
@@ -132,7 +139,9 @@ export function ListaDoEstoque({ ponte, modo }: ListaDoEstoqueProps) {
       foto: <ImagemDoProduto ponte={ponte} hash={l.fotoHash} tamanho="miniatura" nome={l.nome} />,
       nome: l.nome,
       codigo: l.codigo,
-      saldo: l.saldo,
+      saldo: (
+        <SaldoDaLoja estoque={l.saldo} emMaletas={l.emMaletas} vendedores={l.vendedoresEmMaletas} />
+      ),
       minimo: l.minimo,
       falta: l.falta,
       situacao: acabando ? (

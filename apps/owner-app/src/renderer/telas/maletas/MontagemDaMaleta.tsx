@@ -1,3 +1,5 @@
+import { SaldoDaLoja } from '../../componentes/SaldoDaLoja';
+import { TEXTOS } from '../../textos';
 import { Aviso, Botao, JanelaDeConfirmacao, Tabela } from '@corona/ui';
 import { useRef, useState } from 'react';
 import { MAXIMO_DA_QUANTIDADE_NA_MALETA } from '../../../shared/maletas';
@@ -128,7 +130,14 @@ export function MontagemDaMaleta({ ponte, inicial, aoVoltar, aoEnviar }: Montage
     const jaNaMaleta = atual.current.itens.find((i) => i.produtoId === produto.id)?.quantidade ?? 0;
     const recusa = (texto: string) => setLida({ produto, resultado: { tipo: 'erro', texto } });
     if (!produto.ativo) return recusa(T.leitor.desativada(produto.nome));
-    if (produto.estoqueAtual <= 0) return recusa(T.leitor.semEstoque(produto.nome));
+    if (produto.estoqueAtual <= 0) {
+      // Sem estoque na loja: se a peça está na maleta de alguém, diz de quem (item 13).
+      return recusa(
+        produto.emMaletas > 0
+          ? TEXTOS.saldoDaLoja.semEstoqueNaMontagem(produto.vendedoresEmMaletas.map((v) => v.nome))
+          : T.leitor.semEstoque(produto.nome),
+      );
+    }
     if (jaNaMaleta + 1 > produto.estoqueAtual) {
       return recusa(T.leitor.passaDoEstoque(produto.nome, produto.estoqueAtual));
     }
@@ -247,7 +256,13 @@ export function MontagemDaMaleta({ ponte, inicial, aoVoltar, aoEnviar }: Montage
                 </div>
                 <div>
                   <dt>{T.peca.estoque}</dt>
-                  <dd>{lida.produto.estoqueAtual}</dd>
+                  <dd>
+                    <SaldoDaLoja
+                      estoque={lida.produto.estoqueAtual}
+                      emMaletas={lida.produto.emMaletas}
+                      vendedores={lida.produto.vendedoresEmMaletas}
+                    />
+                  </dd>
                 </div>
                 <div>
                   <dt>{T.peca.nestaMaleta}</dt>

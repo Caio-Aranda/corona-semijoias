@@ -435,3 +435,10 @@
   padding: 0.5rem 1rem;
   background: var(--cor-fundo-suave);
 }
+
+/* Estoque da loja em zero com a peça em maleta: um aviso calmo, sem a cor de "acabou". */
+.gestao-em-maleta {
+  display: block;
+  color: var(--cor-texto);
+  font-size: 0.9em;
+}

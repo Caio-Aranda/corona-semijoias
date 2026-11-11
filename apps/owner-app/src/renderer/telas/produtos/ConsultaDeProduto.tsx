@@ -1,3 +1,4 @@
+import { SaldoDaLoja } from '../../componentes/SaldoDaLoja';
 import { Aviso, Botao, Campo, ValorTresMoedas } from '@corona/ui';
 import { useEffect, useState, type FormEvent } from 'react';
 import type { PonteDoCorona } from '../../../shared/ponte';
@@ -102,7 +103,12 @@ export function ConsultaDeProduto({ ponte, aoAbrir }: ConsultaDeProdutoProps) {
               </p>
             ) : null}
             <p className="gestao-texto">
-              {T.saldo}: {produto.estoqueAtual}
+              {T.saldo}:{' '}
+              <SaldoDaLoja
+                estoque={produto.estoqueAtual}
+                emMaletas={produto.emMaletas}
+                vendedores={produto.vendedoresEmMaletas}
+              />
             </p>
             <Botao onClick={() => aoAbrir(produto.id)}>{T.abrir}</Botao>
           </div>

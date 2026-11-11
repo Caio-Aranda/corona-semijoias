@@ -57,6 +57,26 @@ function cadastroBasico(c: {
 }
 
 export const TEXTOS = {
+  /** Estoque da loja x peça em maleta (item 13; glossário: "Acabou", "Está em maleta"). */
+  saldoDaLoja: {
+    acabou: 'Acabou',
+    zeroNaLoja: '0 na loja',
+    emMaleta: (total: number, nomes: string) => `Está em maleta: ${total} (${nomes})`,
+    /** Até três nomes; com mais gente, "e mais N". */
+    nomes: (lista: readonly string[]): string =>
+      lista.length <= 3
+        ? lista.join(', ')
+        : `${lista.slice(0, 3).join(', ')} e mais ${lista.length - 3}`,
+    /** Ao ler a peça na montagem da maleta e não haver nenhuma na loja. */
+    semEstoqueNaMontagem: (lista: readonly string[]): string =>
+      lista.length === 1
+        ? `Sem estoque na loja. Está na maleta de ${lista[0] as string}.`
+        : `Sem estoque na loja. Está nas maletas de ${
+            lista.length <= 3
+              ? lista.slice(0, -1).join(', ') + ' e ' + (lista[lista.length - 1] as string)
+              : `${lista.slice(0, 3).join(', ')} e mais ${lista.length - 3}`
+          }.`,
+  },
   semInternet: {
     titulo: 'Sem internet.',
     texto: 'O Corona Gestão só funciona com internet. Conecte-se e tente de novo.',
