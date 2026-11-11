@@ -19,7 +19,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class ConsultasDaMaletaDoVendedor {
 
-    public record Peca(UUID id, String nome, String codigo, String fotoHash) {
+    /**
+     * A peça como o vendedor vê: nome, código da loja, foto, categoria e o código do fornecedor (COD Fábrica, quando
+     * houver). Nunca custo nem estoque da loja.
+     */
+    public record Peca(UUID id, String nome, String codigo, String fotoHash, String categoria, String codigoFornecedor) {
     }
 
     public record Linha(Peca produto, int enviada, int vendida, int devolvida, int saldo, BigDecimal precoUnitario,
@@ -69,6 +73,33 @@ public class ConsultasDaMaletaDoVendedor {
                 "Esta peça não consta na sua maleta.");
     }
 
+    /** No máximo isto de peças na busca pelo nome. */
+    static final int LIMITE_DA_BUSCA = 20;
+
+    /**
+     * Procura SÓ entre as peças da maleta do vendedor, pelo nome, pela referência ou por parte de um código (A etiqueta
+     * não lê? Procure pelo nome). Mesma linha da leitura por código, com foto e saldo; nunca peça de fora da maleta.
+     * Texto vazio devolve lista vazia (não despeja a maleta toda).
+     */
+    public List<Linha> buscar(UUID maletaId, UUID vendedorId, String texto) {
+        Maleta m = ver(maletaId, vendedorId);
+        String procurado = texto == null ? "" : texto.strip().toLowerCase(java.util.Locale.ROOT);
+        if (procurado.isEmpty() || procurado.length() > 100 || m.itens().isEmpty()) {
+            return List.of();
+        }
+        String padrao = "%" + procurado.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%";
+        List<UUID> achados = jdbc.query("""
+                SELECT p.id FROM corona.produtos p
+                 WHERE p.id = ANY (?::uuid[]) AND p.deleted_at IS NULL
+                   AND (lower(p.nome) LIKE ? OR lower(coalesce(p.referencia, '')) LIKE ?
+                        OR EXISTS (SELECT 1 FROM corona.produto_codigos c WHERE c.produto_id = p.id AND c.ativo
+                                    AND c.deleted_at IS NULL AND lower(c.codigo) LIKE ?))""",
+                (rs, n) -> rs.getObject(1, UUID.class),
+                m.itens().stream().map(l -> l.produto().id().toString()).collect(java.util.stream.Collectors.joining(",", "{", "}")),
+                padrao, padrao, padrao);
+        return m.itens().stream().filter(l -> achados.contains(l.produto().id())).limit(LIMITE_DA_BUSCA).toList();
+    }
+
     private List<Maleta> consultar(String onde, Object... args) {
         List<Maleta> cabecas = jdbc.query("""
                 SELECT r.id, """ + SqlDaMaleta.NUMERO + " AS numero, " + """
@@ -85,6 +116,10 @@ public class ConsultasDaMaletaDoVendedor {
                     SELECT i.produto_id, p.nome, p.foto_principal_hash, i.qtd_enviada, i.preco_remessa,
                            (SELECT c.codigo FROM corona.produto_codigos c WHERE c.produto_id = p.id AND c.ativo
                                AND c.deleted_at IS NULL ORDER BY c.principal DESC, c.codigo LIMIT 1) AS codigo,
+                           (SELECT c.codigo FROM corona.produto_codigos c WHERE c.produto_id = p.id AND c.ativo
+                               AND c.deleted_at IS NULL AND c.tipo = 'FORNECEDOR' ORDER BY c.principal DESC, c.codigo LIMIT 1)
+                               AS codigo_fornecedor,
+                           (SELECT g.nome FROM corona.categorias g WHERE g.id = p.categoria_id) AS categoria,
                            coalesce((SELECT -sum(x.quantidade) FROM corona.movimentos_remessa x WHERE x.remessa_id = i.remessa_id
                                AND x.produto_id = i.produto_id AND x.tipo IN ('VENDA', 'ESTORNO_VENDA')), 0) AS vendida,
                            coalesce((SELECT -sum(x.quantidade) FROM corona.movimentos_remessa x WHERE x.remessa_id = i.remessa_id
@@ -96,7 +131,8 @@ public class ConsultasDaMaletaDoVendedor {
                         int saldo = rs.getInt("saldo");
                         BigDecimal preco = rs.getBigDecimal("preco_remessa");
                         return new Linha(new Peca(rs.getObject("produto_id", UUID.class), rs.getString("nome"),
-                                rs.getString("codigo"), rs.getString("foto_principal_hash")), rs.getInt("qtd_enviada"),
+                                rs.getString("codigo"), rs.getString("foto_principal_hash"), rs.getString("categoria"),
+                                rs.getString("codigo_fornecedor")), rs.getInt("qtd_enviada"),
                                 rs.getInt("vendida"), rs.getInt("devolvida"), saldo, preco,
                                 preco.multiply(BigDecimal.valueOf(saldo)));
                     }, m.id());

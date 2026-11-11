@@ -211,6 +211,11 @@ body {
   color: var(--cor-texto-suave);
   text-align: center;
 }
+.cs-peca__detalhe {
+  margin-top: 4px;
+  color: var(--cor-texto);
+}
+
 .cs-peca__nome {
   margin: 0;
   font-size: var(--texto-titulo);

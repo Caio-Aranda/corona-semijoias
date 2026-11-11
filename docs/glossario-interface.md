@@ -67,6 +67,8 @@ Em 09/11/2026 o responsável resolveu as dúvidas que estavam abertas neste glos
 | estoque mínimo | `produtos.estoque_minimo` | Quantidade abaixo da qual o sistema avisa que está acabando. |
 | produtos parados | relatório de produtos parados | Produtos que não saem do estoque há muito tempo. |
 | sem foto | imagem padrão "sem foto" | Imagem com a marca, nunca um espaço quebrado. A falta de foto nunca trava a venda. |
+| Procurar pelo nome | busca na própria maleta (`/pecas/busca`) | Corona Vendas, nas telas Vender e Conferir maleta: "A etiqueta não lê? Procure pelo nome." Procura só entre as peças da maleta do vendedor (nome, referência ou parte do código); mostra miniatura, nome, código e "Na maleta: N"; escolher age como ler o código. |
+| COD Fábrica | código do tipo `FORNECEDOR` | O código que o fornecedor deu à peça. Aparece no painel da peça lida, junto com a categoria e "Na maleta: N" (na conferência, "Esperado: 3 · Contadas: 2"), quando existir. |
 | cotação | taxa PTAX de venda do Banco Central, tabela `cotacoes` (ADR-0006) | Quanto valem o Dólar e o Guarani em reais num dia, segundo o Banco Central. Sempre com a data: "Cotação do Banco Central de 06/11/2026". Ver parte 11. |
 | O que precisa da sua atenção | bloco da tela inicial da dona | Acertos pendentes, devoluções para autorizar, estoque baixo, maletas atrasadas, envios com problema (§19.3). |
 
