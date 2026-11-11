@@ -88,3 +88,32 @@ Uma seção por tarefa, no mesmo formato de [fase-2.md](fase-2.md). A tabela de 
 
 **Não feito:** PDF, relatórios, telas e vendas.
 
+
+### Tarefa 3.4: backend: dados da nota de remessa e relatórios da maleta
+
+**Em revisão.** Sem migração e sem escrita: só leitura, sobre os registros da 3.2 e da 3.3. Rotas só ADMIN; nenhuma tela nem PDF.
+
+**O que foi feito**
+
+- **Nota** (`GET /api/dona/remessas/{id}/nota`, `notaDaRemessa`): loja, número legível, vendedor, praça, semana, tipo, data do envio, peças (código, nome, quantidade, preço congelado, subtotal), totais e a cotação do dia do envio com o total em Dólar e em Guarani. Rascunho: 409 "A nota só fica pronta depois que a maleta for enviada. Envie a maleta e tente de novo."; cancelada vem com `cancelada = true` e o motivo (cancelada antes do envio, que nunca teve nota, cai na mesma recusa do rascunho). Sem custo em nenhum campo.
+- **Cinco relatórios** em `/api/dona/relatorios/maleta/` (mesmo motor, forma, filtros, paginação e `recorte` dos da 2.5): `remessas` (por vendedor e semana), `reposicoes`, `saldo` (peça a peça: enviada, devolvida, saldo, valor), `mercadoria-por-vendedor` (peças, valor, limite e quanto sobra) e `em-aberto` (em aberto e atrasadas). `operationId` explícito em todas as rotas.
+- **Três moedas:** cada linha traz Real, Dólar, Guarani e `dataDaCotacao`, pela cotação do dia do **envio** da maleta (maior data menor ou igual ao dia do envio em Brasília, ADR-0006). O rodapé soma as linhas já convertidas (`Total` ganhou `valorEmDolar` e `valorEmGuarani`, opcionais; os relatórios antigos não mudam).
+- **Exportação:** como na 2.5, o servidor entrega as páginas com os mesmos filtros e o Corona Gestão monta PDF, Excel e CSV (as colunas de Real/Dólar/Guarani e a data da cotação já vêm em cada linha).
+- Glossário: nomes de tela, filtros, totais e texto da nota (parte da tarefa 3.4).
+- Testes (14, `RelatoriosDeMaletaTest`): maleta enviada, com devolução, cancelada, reposição e dois vendedores; cotação do dia de cada envio (nunca a de hoje); rodapé igual à soma das linhas; rascunho e cancelada fora dos saldos; filtros; atraso; preço congelado depois de mudar o preço da peça; vendedor 403; nota de rascunho recusada.
+
+**Decisões que tomei**
+
+- **Atrasada** = mais de **7 dias** desde o envio (calendário de Brasília) e ainda com peça com o vendedor. O prazo é o parâmetro `diasDeAtraso` (0 a 365, padrão 7), não uma configuração gravada. Dúvida 5 do ADR-0010 continua aberta para a dona.
+- **Número legível da maleta** sem coluna nova: `S{semana}-V{código do vendedor}-{ordem do envio daquele vendedor naquela semana}` (ex.: S12-V7-1), calculado pela ordem de envio, que não muda depois de enviada. Uma coluna sequencial real exigiria migração e mexeria nas colunas sincronizáveis; fica para quando a dona disser se quer outro formato.
+- **Loja** na nota = "Corona Semijoias" (a marca; não há cadastro do nome da loja).
+- Relatórios mostram só maletas **enviadas** (ou adiante); rascunho nunca. "Registradas" (padrão) deixa de fora as canceladas, que ficam marcadas e **fora do total** com `situacao=TODAS`.
+- O saldo e o em aberto contam só maletas com o vendedor (`ENVIADA`, `CONFERIDA`, `EM_ACERTO`); o saldo é `qtd_enviada` + movimentos, como na 3.3.
+- A **sobra do limite** do relatório por vendedor conta tudo o que ele tem em aberto, mesmo quando os filtros mostram só parte. Limite 0 no cadastro = sem limite (sobra vazia), como na 3.2.
+- Maleta enviada antes da primeira cotação do sistema fica com Dólar e Guarani vazios (a nota traz `cotacao` vazia); o rodapé ignora essas linhas.
+- Praça = praça da maleta (a que foi gravada na montagem), não a atual do vendedor.
+- Peça e categoria nos filtros: nos relatórios por maleta, a maleta só entra se tiver a peça; no saldo e no em aberto, só as peças filtradas contam.
+
+**Dúvidas abertas:** as do ADR-0010 (a 5, prazo de atraso, com o padrão acima). Nova: a dona quer um número de maleta sequencial próprio (1, 2, 3...) em vez de S12-V7-1?
+
+**Não feito:** telas (3.6), geração do PDF da nota (app da dona, 3.5/3.6), conferência e vendas. O gerador de PDF à mão aguentar a nota (várias páginas, assinatura) é verificação da tarefa do app, não dos dados.

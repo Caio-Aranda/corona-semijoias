@@ -824,3 +824,24 @@ Menu: **Relatórios de estoque** e **Relatórios de compras** (depois de "Relat�
 - Totais do rodapé usam estas palavras no lugar do texto do servidor ("Peças que entraram", "Peças que saíram", "Com diferença", "Peças a mais", "Peças a menos", "Peças que faltam para chegar ao mínimo").
 - Abrir uma linha: **Ver as peças** (compra), **Ver só esta contagem** (contagem), **Ver o histórico de custo** (peça), com **Voltar ao relatório**.
 - A foto aparece em toda linha de peça na tela ("Sem foto" quando não há); os arquivos PDF, Excel e CSV levam o nome e o código da peça, sem a imagem.
+
+**Relatórios da maleta e nota da maleta (tarefa 3.4, só os dados; as telas vêm na 3.6)**
+
+Menu: **Relatórios da maleta** (depois de "Relatórios de compras"). Os nomes de tela abaixo são os únicos usados; a §12 só descreve.
+
+| Relatório (§12) | Nome na tela |
+| --- | --- |
+| Remessas por vendedor e semana | **Maletas por vendedor e semana** |
+| Saldo atual por maleta | **O que ainda está com o vendedor, peça a peça** (abre a partir da maleta, botão **Ver as peças**) |
+| Mercadoria em maletas por vendedor | **Mercadoria com cada vendedor** |
+| Maletas em aberto e atrasadas | **Maletas em aberto e atrasadas** |
+| Reposições | **Reposições** |
+| Nota de remessa (PDF) | **Nota da maleta** (botão **Imprimir a nota**; o PDF se chama "Nota de remessa", a única vez que a palavra aparece) |
+
+- Filtros: **De**, **Até** (sobre o dia em que a maleta foi enviada), **Semana**, **Vendedor**, **Praça**, **Tipo** (**Nova**, **Reposição**), **Produto**, **Categoria**, **Buscar**, **Situação**, **Prazo para atrasar (dias)** (já vem 7), **Limpar filtros**.
+- Situação das maletas: **Enviadas** (já vem escolhida), **Canceladas**, **Todas (canceladas marcadas)**. Do saldo: **Com peças** (já vem escolhida), **Sem peças**, **Todas**. Das maletas em aberto: **Todas**, **Atrasadas**, **No prazo**.
+- Maleta cancelada aparece como **Cancelada** e fica **fora do total** ("Maletas enviadas (valem no total)" e "Maletas canceladas (fora do total)"). Maleta ainda sendo montada nunca aparece nos relatórios.
+- Totais do rodapé: "Maletas enviadas", "Maletas novas", "Reposições", "Peças enviadas", "Peças devolvidas à dona", "Peças ainda com o vendedor", "Mercadoria em maletas", "Vendedores com maleta atrasada", "Vendedores acima do limite", "Maletas em aberto", "Maletas atrasadas", "Maletas no prazo". Colunas: **Número da maleta** (por exemplo S12-V7-1: semana 12, vendedor 7, primeira maleta dele na semana), **Enviada**, **Devolvida**, **Saldo**, **Preço da maleta**, **Dias desde o envio**, **Limite**, **Sobra do limite**.
+- Maleta **atrasada**: passaram mais de 7 dias desde o envio e ainda há peça com o vendedor (o prazo de 7 dias é provisório; a dona confirma).
+- Dólar e Guarani seguem a cotação do dia em que **cada maleta foi enviada**. Maleta enviada antes da primeira cotação do sistema mostra "Sem cotação" no Dólar e no Guarani.
+- Nota da maleta: loja, número da maleta, vendedor, praça, semana, tipo, data do envio, lista de peças (código, nome, quantidade, preço, subtotal), total de peças e de valor, e a linha "Cotação do Banco Central de {data do envio}" com o total em Dólar e em Guarani. Linha de assinatura do vendedor ao fim. Maleta cancelada sai com a marca **Cancelada**. Maleta ainda em montagem: "A nota só fica pronta depois que a maleta for enviada. Envie a maleta e tente de novo."

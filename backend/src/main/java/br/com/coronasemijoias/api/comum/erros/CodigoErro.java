@@ -297,6 +297,11 @@ public enum CodigoErro {
             "Não é possível desfazer esta devolução.",
             "Não é possível desfazer esta devolução porque as peças já saíram do estoque da loja."),
 
+    /** Pediram a nota de uma maleta que ainda é rascunho (HTTP 409): ela só sai depois do envio (ADR-0010, item 13). */
+    NOTA_SO_DEPOIS_DO_ENVIO(
+            "A nota só fica pronta depois que a maleta for enviada.",
+            "A nota só fica pronta depois que a maleta for enviada. Envie a maleta e tente de novo."),
+
     // --- Contagem do estoque (glossário, parte 12; tarefa 2.4) ---
 
     CONTAGEM_NAO_ENCONTRADA(
