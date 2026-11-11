@@ -127,6 +127,7 @@ public class ServicoDeVendas {
             }
         }
 
+        br.com.coronasemijoias.api.vendedor.VendedorAtivo.exigir(jdbc, vendedorId);
         String status = (String) remessa.get("status");
         if (!"ENVIADA".equals(status) && !"CONFERIDA".equals(status)) {
             throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.MALETA_NAO_ESTA_COM_VOCE);

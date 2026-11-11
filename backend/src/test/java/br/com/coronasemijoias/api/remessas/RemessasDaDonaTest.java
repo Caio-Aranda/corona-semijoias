@@ -238,6 +238,18 @@ class RemessasDaDonaTest extends TesteDeIntegracao {
     }
 
     @Test
+    void vendedorComCadastroInativoNaoRecebeMaletaMesmoComRascunhoPronto() throws Exception {
+        UUID vendedor = vendedor("1000.00", null);
+        UUID p = peca("10.00", 5);
+        JsonNode r = comItem(rascunho(UUID.randomUUID(), vendedor, semana()), p, 1);
+        jdbc.update("UPDATE corona.vendedores SET ativo = false WHERE id = ?", vendedor);
+        enviarRemessa(r).andExpect(status().is4xxClientError());
+        assertThat(saldo(p)).isEqualTo(5);
+        assertThat(jdbc.queryForObject("SELECT status FROM corona.remessas WHERE id = ?", String.class,
+                UUID.fromString(r.get("id").asString()))).isEqualTo("RASCUNHO");
+    }
+
+    @Test
     void quantidadeInvalidaEProdutoExcluidoOuInativoSaoRecusadosNoRascunho() throws Exception {
         UUID p = peca("10.00", 5);
         JsonNode r = rascunho(UUID.randomUUID(), vendedor("100.00", null), semana());

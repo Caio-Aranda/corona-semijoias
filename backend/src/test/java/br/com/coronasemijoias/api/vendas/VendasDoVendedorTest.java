@@ -255,6 +255,41 @@ class VendasDoVendedorTest extends TesteDeIntegracao {
     }
 
     @Test
+    void vendedorComCadastroInativoNaoVendeNemConfereMesmoComUsuarioAtivo() throws Exception {
+        UsuarioDeTeste v = novoVendedor();
+        UUID anel = peca("30.00", 10);
+        UUID maleta = maleta(v, anel, 10);
+        UUID cliente = cliente(v);
+        // Só o cadastro fica inativo (o usuário continua ativo): o servidor recusa mesmo assim.
+        jdbc.update("UPDATE corona.vendedores SET ativo = false WHERE id = ?", v.vendedorId());
+        UUID id = UUID.randomUUID();
+        JsonNode erro = corpoDe(postar(VENDAS, como(v), venda(id, maleta, cliente, List.of(linha(anel, 1, null)), List.of()))
+                .andExpect(status().isConflict()));
+        assertThat(erro.get("detail").asString()).isEqualTo("Este vendedor está desativado. Fale com a dona.");
+        assertThat(saldo(maleta, anel)).isEqualTo(10);
+        postar("/api/vendedor/maletas/" + maleta + "/conferencia", como(v),
+                mapa("id", UUID.randomUUID(), "itens", List.of(mapa("produtoId", anel, "contada", 10))))
+                .andExpect(status().isConflict());
+        // Reativado o cadastro, volta a vender.
+        jdbc.update("UPDATE corona.vendedores SET ativo = true WHERE id = ?", v.vendedorId());
+        postar(VENDAS, como(v), venda(id, maleta, cliente, List.of(linha(anel, 1, null)), List.of())).andExpect(status().isCreated());
+        assertThat(saldo(maleta, anel)).isEqualTo(9);
+    }
+
+    @Test
+    void inativarOCadastroDoVendedorDesativaOUsuarioEEncerraAsSessoesComAuditoria() throws Exception {
+        UsuarioDeTeste v = novoVendedor();
+        ler(VENDAS, como(v)).andExpect(status().isOk());
+        postar("/api/dona/vendedores/" + v.vendedorId() + "/inativar", dona(), null).andExpect(status().isOk());
+        assertThat(jdbc.queryForObject("SELECT ativo FROM corona.usuarios WHERE id = ?", Boolean.class, v.id())).isFalse();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM corona.sessoes WHERE usuario_id = ? AND revogada_em IS NULL",
+                Integer.class, v.id())).isZero();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM corona.auditoria WHERE registro_id = ? AND acao = 'USUARIO_DESATIVADO'",
+                Integer.class, v.id())).isEqualTo(1);
+        ler(VENDAS, como(v)).andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void pagamentoComIdJaUsadoEmOutraVendaDa409ESemGravarNada() throws Exception {
         UsuarioDeTeste v = novoVendedor();
         UUID anel = peca("30.00", 10);

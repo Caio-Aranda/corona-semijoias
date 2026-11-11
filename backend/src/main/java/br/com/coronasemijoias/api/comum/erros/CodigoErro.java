@@ -344,6 +344,11 @@ public enum CodigoErro {
             "Não encontramos esta venda.",
             "Não encontramos esta venda. Atualize a tela e tente de novo."),
 
+    /** O cadastro do vendedor está inativo: não vende, não confere maleta (HTTP 409; ADR-0011, linha de 11/11/2026). */
+    VENDEDOR_DESATIVADO(
+            "Este vendedor está desativado.",
+            "Este vendedor está desativado. Fale com a dona."),
+
     /** O mesmo identificador voltou com outros dados (HTTP 409). */
     VENDA_JA_REGISTRADA_DIFERENTE(
             "Esta venda já foi registrada com outros dados.",

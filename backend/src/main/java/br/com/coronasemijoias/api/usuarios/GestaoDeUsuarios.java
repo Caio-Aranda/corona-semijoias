@@ -135,6 +135,19 @@ public class GestaoDeUsuarios {
         return usuario;
     }
 
+    /**
+     * Desativa os usuários ligados a um vendedor (a dona inativou o cadastro dele): mesma regra de {@link #desativar},
+     * com sessões encerradas e auditoria de cada um. Quem já está desativado fica como está.
+     */
+    @Transactional
+    public void desativarDoVendedor(UUID vendedorId, UUID quem) {
+        List<UUID> ids = jdbc.queryForList("SELECT id FROM corona.usuarios WHERE vendedor_id = ? AND ativo ORDER BY id",
+                UUID.class, vendedorId);
+        for (UUID id : ids) {
+            desativar(id, quem);
+        }
+    }
+
     /** Reativa. As sessões antigas continuam encerradas: a pessoa entra de novo com a senha dela. */
     @Transactional
     public Usuario reativar(UUID id, UUID quem) {

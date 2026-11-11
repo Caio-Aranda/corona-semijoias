@@ -4,6 +4,7 @@ import br.com.coronasemijoias.api.cadastros.Documentos;
 import br.com.coronasemijoias.api.cadastros.Mensagens;
 import br.com.coronasemijoias.api.cadastros.ServicoDeCadastro;
 import br.com.coronasemijoias.api.cadastros.Validacoes;
+import br.com.coronasemijoias.api.usuarios.GestaoDeUsuarios;
 import br.com.coronasemijoias.api.vendedores.Vendedor.Dados;
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -26,10 +27,14 @@ public class ServicoDeVendedores extends ServicoDeCadastro<Vendedor> {
     private final RepositorioDeVendedores vendedores;
     private final JdbcTemplate jdbc;
 
-    public ServicoDeVendedores(RepositorioDeVendedores vendedores, Clock relogio, JdbcTemplate jdbc) {
+    private final GestaoDeUsuarios usuarios;
+
+    public ServicoDeVendedores(RepositorioDeVendedores vendedores, Clock relogio, JdbcTemplate jdbc,
+            GestaoDeUsuarios usuarios) {
         super(vendedores, relogio);
         this.vendedores = vendedores;
         this.jdbc = jdbc;
+        this.usuarios = usuarios;
     }
 
     /** Quais vendedores a lista mostra. */
@@ -75,10 +80,19 @@ public class ServicoDeVendedores extends ServicoDeCadastro<Vendedor> {
         return editarComVersao(id, Validacoes.versaoDoPedido(versao), vendedor -> vendedor.alterar(conferidos));
     }
 
+    /**
+     * Inativa ou reativa o cadastro. Ao inativar, os usuários ligados ao vendedor também são desativados e as sessões
+     * deles encerradas, com auditoria (ADR-0011, linha de 11/11/2026). Reativar o cadastro não reativa o usuário: a
+     * dona faz isso nos usuários.
+     */
     @Transactional
-    public Vendedor definirAtivo(UUID id, boolean ativo) {
+    public Vendedor definirAtivo(UUID id, boolean ativo, UUID quem) {
         int versao = obter(id).getVersion();
-        return editarComVersao(id, versao, vendedor -> vendedor.definirAtivo(ativo));
+        Vendedor vendedor = editarComVersao(id, versao, v -> v.definirAtivo(ativo));
+        if (!ativo) {
+            usuarios.desativarDoVendedor(id, quem);
+        }
+        return vendedor;
     }
 
     /** Confere e limpa os campos: o que o banco também recusa, a API recusa antes com o nome do campo. */
