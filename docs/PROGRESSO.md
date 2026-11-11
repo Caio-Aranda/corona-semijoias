@@ -130,6 +130,23 @@ Maleta (§15). Segue o mesmo formato da Fase 2. O modelo da maleta está no [ADR
 
 Playwright com o Electron de verdade (`npm run e2e`, pasta `testes-e2e/`): login da dona com troca obrigatória de senha, cadastro de fornecedor, entrada de compra lendo o código (digitar + Enter) com conferência do estoque e exportação de relatório em CSV. Banco e API de teste isolados (porta 5499 e 8099, projeto `corona-e2e`, sem volume), limpos no fim; nunca o banco de desenvolvimento nem a pilha de produção. **Não está no CI de cada PR** (sobe Docker, API e Electron, vários minutos): o workflow `E2E` roda à mão e toda segunda. O workflow ainda não foi executado no GitHub (só localmente, 4 testes verdes). Nada do Corona Vendas antes da Fase 4.
 
+## Fase 4
+
+### Plano da Fase 4
+
+App do vendedor online (§15): login, conferência, venda, clientes, consulta, relatórios próprios e três moedas. Funciona **online, mas já preparado para sync** (UUID, vendas imutáveis, idempotência). O modelo está no [ADR-0011](decisoes/ADR-0011-venda-do-vendedor-online.md).
+
+| Nº | Tarefa | Situação |
+| --- | --- | --- |
+| 4.1 | docs: plano da Fase 4 e ADR-0011 (venda do vendedor) | Em revisão · [detalhe](progresso/fase-4.md#tarefa-41-plano-da-fase-4-e-adr-da-venda-só-documentos) |
+| 4.2 | backend (alto): vendas, itens e pagamentos, venda a partir da maleta, preço congelado, desconto, idempotência (200/201/409), estorno, totais no servidor, cotação | A fazer |
+| 4.3 | backend: rotas do vendedor (própria maleta sem custo, conferência e dispositivo único, clientes dele, cotação, relatórios próprios), 403 cruzado nos dois sentidos | A fazer |
+| 4.4 | seller-app (alto): base de telas, conferência por leitor com foto grande, venda, escolha e cadastro de cliente, estorno | A fazer |
+| 4.5 | seller-app: Minha maleta, Meus clientes, Meus números (relatórios próprios) e valores nas três moedas | A fazer |
+| 4.6 | fechamento da Fase 4 (revisão pós-fase) | A fazer |
+
+**Fora desta fase:** SQLite criptografado, outbox e sync (Fase 5); devolução, troca e garantia (Fase 6); acerto, comissão e contas a receber completas (Fase 7).
+
 ## Pendências abertas
 
 - Fase 3 (maleta), para a dona ou o responsável: limite a **preço de venda** (dúvida 1 do ADR-0010); **reposição** dentro do limite (dúvida 2); vendedor sem limite recebe maleta sem limite (dúvida 6; limite 0 = sem limite); peça repetida na mesma maleta (dúvida 3, hoje uma linha por peça); foto na nota (dúvida 4); prazo de atraso (hoje 7 dias, dúvida 5); formato do número da maleta (hoje S12-V7-1). Com o responsável: leitor de código físico e app instalado ainda não testados. **A Fase 4 herda:** conferência da maleta, dispositivo único por maleta e leitura da própria maleta pelo vendedor sem custo. O ADR-0010 está Aceito. ([tarefa 3.8](progresso/fase-3.md#tarefa-38-fechamento-da-fase-3))
