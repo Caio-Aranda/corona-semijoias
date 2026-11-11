@@ -4,9 +4,9 @@ import type { PonteDoCorona } from '../../../shared/ponte';
 import { AvisoDeErro } from '../../componentes/AvisoDeErro';
 import { ImagemDoProduto } from '../../componentes/ImagemDoProduto';
 import { chamar, useBusca } from '../../nucleo/chamadas';
-import { imprimirNotaDaMaleta, NOTA_DA_MALETA_PRONTA } from '../../nucleo/nota-da-maleta';
 import { TEXTOS_DE_MALETAS } from '../../textos-maletas';
 import { dataNaTela } from '../cadastros/definicoes';
+import { BotaoImprimirNota } from './BotaoImprimirNota';
 import { Dinheiro } from './Dinheiro';
 import { PedirMotivo } from './PedirMotivo';
 import {
@@ -191,8 +191,12 @@ export function GestaoDaMaleta({ ponte, id, aoVoltar, aoRepor, aoDevolver }: Ges
               <Botao onClick={() => setCancelando(true)}>{F.cancelar}</Botao>
             </>
           ) : null}
-          {NOTA_DA_MALETA_PRONTA && !cancelada ? (
-            <Botao onClick={() => void imprimirNotaDaMaleta(ponte, maleta.id)}>{E.imprimir}</Botao>
+          {maleta.status !== 'RASCUNHO' && maleta.enviadaEm ? (
+            <BotaoImprimirNota
+              ponte={ponte}
+              maletaId={maleta.id}
+              vendedorNome={maleta.vendedorNome}
+            />
           ) : null}
           <Botao onClick={aoVoltar}>{T.gerir.voltarAMaletas}</Botao>
         </div>

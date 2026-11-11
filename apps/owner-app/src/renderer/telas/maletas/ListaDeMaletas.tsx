@@ -6,6 +6,7 @@ import { chamar, useBusca, type Retorno } from '../../nucleo/chamadas';
 import { formatarReais } from '../../nucleo/moedas';
 import { TEXTOS_DE_MALETAS } from '../../textos-maletas';
 import { dataNaTela } from '../cadastros/definicoes';
+import { BotaoImprimirNota } from './BotaoImprimirNota';
 import { Dinheiro } from './Dinheiro';
 import {
   lerEmAberto,
@@ -172,12 +173,17 @@ function TodasAsMaletas({
                 {L.continuar}
               </Botao>
             ) : (
-              <Botao
-                aria-label={L.abrirDe(m.vendedorNome, m.semanaNumero)}
-                onClick={() => aoAbrir(m)}
-              >
-                {L.abrir}
-              </Botao>
+              <>
+                <Botao
+                  aria-label={L.abrirDe(m.vendedorNome, m.semanaNumero)}
+                  onClick={() => aoAbrir(m)}
+                >
+                  {L.abrir}
+                </Botao>
+                {m.enviadaEm ? (
+                  <BotaoImprimirNota ponte={ponte} maletaId={m.id} vendedorNome={m.vendedorNome} />
+                ) : null}
+              </>
             ),
         }))}
       />

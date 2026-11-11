@@ -32,8 +32,17 @@ type Passo =
   | { passo: 'cancelarRascunho'; maleta: Maleta };
 
 /** Maletas → Maletas: lista, ficha da maleta enviada, reposição, devolução e cancelamento. */
-export function TelaMaletas({ ponte }: { ponte: PonteDoCorona }) {
-  const [passo, setPasso] = useState<Passo>({ passo: 'lista' });
+export function TelaMaletas({
+  ponte,
+  abrirId,
+}: {
+  ponte: PonteDoCorona;
+  /** Vem de um relatório da maleta: já abre a ficha desta maleta. */
+  abrirId?: string | null;
+}) {
+  const [passo, setPasso] = useState<Passo>(
+    abrirId ? { passo: 'ficha', id: abrirId } : { passo: 'lista' },
+  );
   const [volta, setVolta] = useState(0);
   const [aviso, setAviso] = useState<string | null>(null);
   const [erroAoAbrir, setErroAoAbrir] = useState<string | null>(null);

@@ -50,6 +50,7 @@ import {
   listarRemessas,
   tirarItemDaRemessa,
   verRemessa,
+  notaDaRemessa,
   criar as criarVendedor,
   criarReferencia,
   editar as editarVendedor,
@@ -99,6 +100,11 @@ import {
   listar7,
   listar9,
   listar12,
+  relatorioDeMaletasEmAbertoEAtrasadas,
+  relatorioDeMercadoriaPorVendedor,
+  relatorioDeRemessasPorVendedorESemana,
+  relatorioDeReposicoes,
+  relatorioDeSaldoPorMaleta,
   abaixoDoMinimo as relatorioDeEstoqueMinimo,
   compras as relatorioDeCompras,
   conciliacao as relatorioDeConferencia,
@@ -519,6 +525,8 @@ async function executarMaleta(
       return executar(() =>
         listarMaletasEmAbertoDoVendedor({ ...base, query: { vendedorId: pedido.vendedorId } }),
       );
+    case 'maletas.nota':
+      return executar(() => notaDaRemessa({ ...base, path: { id: pedido.id } }));
     case 'maletas.saldo':
       return executar(() => verMaletaDaRemessa({ ...base, path: { id: pedido.id } }));
     case 'maletas.devolver':
@@ -628,6 +636,16 @@ async function executarRelatorio(
         }),
       );
     }
+    case 'maleta-remessas':
+      return executar(() => relatorioDeRemessasPorVendedorESemana({ ...base, query: q }));
+    case 'maleta-reposicoes':
+      return executar(() => relatorioDeReposicoes({ ...base, query: q }));
+    case 'maleta-saldo':
+      return executar(() => relatorioDeSaldoPorMaleta({ ...base, query: q }));
+    case 'maleta-mercadoria':
+      return executar(() => relatorioDeMercadoriaPorVendedor({ ...base, query: q }));
+    case 'maleta-em-aberto':
+      return executar(() => relatorioDeMaletasEmAbertoEAtrasadas({ ...base, query: q }));
     case 'vendedores':
       return executar(() => relatorioDeVendedores({ ...base, query: q }));
     case 'clientes':

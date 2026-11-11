@@ -384,6 +384,7 @@ describe('API do Corona Gestão: rotas certas no cliente gerado', () => {
       [{ operacao: 'maletas.enviar', id: ID }, `POST /api/dona/remessas/${ID}/enviar`],
       [{ operacao: 'maletas.emAberto', vendedorId: ID }, 'GET /api/dona/remessas/em-aberto'],
       [{ operacao: 'maletas.saldo', id: ID }, `GET /api/dona/remessas/${ID}/maleta`],
+      [{ operacao: 'maletas.nota', id: ID }, `GET /api/dona/remessas/${ID}/nota`],
       [
         {
           operacao: 'maletas.devolver',

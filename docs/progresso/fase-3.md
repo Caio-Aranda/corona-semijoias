@@ -171,3 +171,28 @@ Uma seção por tarefa, no mesmo formato de [fase-2.md](fase-2.md). A tabela de 
 **Dúvidas abertas:** as do ADR-0010. Nenhuma rota faltou. Reforço: depois de devolver tudo a maleta deve "encerrar" sozinha? Hoje continua enviada (dúvida da 3.3).
 
 **Não feito:** PDF da nota e relatórios (3.7), conferência e venda (app do vendedor).
+
+### Tarefa 3.7: Corona Gestão: relatórios da maleta e nota de remessa
+
+**Em revisão.** Só tela e ponte do app da dona; nenhuma mudança no servidor. Menu novo **Relatórios da maleta** com os cinco relatórios da 3.4, e o botão **Imprimir nota** ligado.
+
+**O que foi feito**
+
+- **Cinco relatórios** (**Maletas por vendedor e semana**, **O que ainda está com o vendedor, peça a peça**, **Mercadoria com cada vendedor**, **Maletas em aberto e atrasadas**, **Reposições**) na mesma `TelaDeRelatorio` da 2.8: filtros (busca, semana, vendedor, praça, período, categoria, tipo, situação, **Prazo para atrasar (dias)** já em 7), rodapé com **Ver os registros**, exportação em PDF, Excel e CSV com os mesmos filtros. **Ver a maleta** em cada linha abre a ficha na tela Maletas. "Atrasada" é escrita na coluna Situação (não só cor); vendedor acima do limite ou com maleta atrasada também sai em palavras.
+- **Três moedas pela cotação do envio:** Dólar e Guarani de cada linha e do rodapé vêm prontos do servidor (cotação do dia do envio da maleta); a tela e os arquivos usam esses valores e a data da cotação de cada linha, sem recalcular com a cotação de hoje. Limite e sobra do limite saem só em Real.
+- **Nota de remessa (PDF):** ponte nova `maletas.nota` (rota da 3.4) e `gerarPdfDaNota` no gerador à mão da 2.8 (agora com `montarArquivoPdf` compartilhado): A4 em pé, Corona Semijoias, número, vendedor, praça, semana, tipo, data do envio, tabela (código, peça, quantidade, preço, subtotal) com nomes longos quebrados em linhas, totais, Real e Dólar/Guarani do dia do envio com o aviso "Cotação do Banco Central do dia do envio", marca **CANCELADA** (com o motivo) e linhas de assinatura da dona e do vendedor. Maleta grande vira várias páginas: cabeçalho curto e títulos da tabela repetidos; totais e assinatura só na última (se não couberem, ganham uma página). Sem foto.
+- **Onde aparece:** botão **Imprimir nota** na lista (maleta enviada ou cancelada depois de enviada), na ficha da 3.5 e na da 3.6; rascunho não tem botão. O arquivo sai pelo mesmo `entregarArquivo` da 2.8 (o Windows pergunta onde guardar); a tela não escolhe caminho.
+- **Testes:** 6 do gerador (páginas, texto, assinatura só na última, cancelada, sem cotação, leitura da rota), 5 de relatórios (menu, Atrasada, Dólar do envio, prazo, ficha, arquivo, limite), 3 do botão da nota e 1 de rota da ponte. Lint, typecheck, format e testes do owner-app (587) passando.
+
+**Decisões que tomei**
+
+- O gerador à mão aguentou a nota (várias páginas, quebra de linha, assinatura): sem troca de biblioteca, portanto sem ADR novo.
+- O total em Dólar/Guarani do rodapé é o do servidor (soma das linhas já convertidas); a soma local da 2.8 não roda nos relatórios de maleta.
+- O número da maleta no nome do arquivo (`nota-da-maleta-S12-V7-1.pdf`) é o do servidor, limpo de símbolos.
+- Maleta cancelada depois do envio imprime a nota com a marca CANCELADA; cancelada antes do envio não tem nota (o servidor recusa e a tela mostra a mensagem dele).
+- O filtro **Produto** do glossário não entrou; **Buscar** já acha por peça e código nos cinco relatórios.
+
+**Dúvidas abertas:** as do ADR-0010 (a 5, prazo de atraso: hoje 7 dias, editável na tela). Foto no PDF segue fora (miniatura é dúvida aberta). A dona quer um número de maleta sequencial próprio em vez de S12-V7-1 (dúvida da 3.4)?
+
+**Não feito:** foto na nota, filtro por produto específico, conferência e venda (app do vendedor).
+

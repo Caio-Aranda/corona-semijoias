@@ -11,6 +11,43 @@ import type {
 import { App } from '../../App';
 import { esquecerImagens } from '../../componentes/ImagemDoProduto';
 
+const entregues: { nome: string; tipo: string; bytes: Uint8Array }[] = [];
+vi.mock('../../nucleo/arquivos', async (original) => ({
+  ...(await original<typeof import('../../nucleo/arquivos')>()),
+  entregarArquivo: (nome: string, tipo: string, bytes: Uint8Array) => {
+    entregues.push({ nome, tipo, bytes });
+  },
+}));
+
+const NOTA = {
+  loja: 'Corona Semijoias',
+  numero: 'S12-V7-1',
+  vendedor: { id: '8f14e45f-ceea-4672-a1b9-3a1a0f7c4d11', codigo: 7, nome: 'Joana Vendedora' },
+  praca: 'Centro',
+  semana: { numero: 12 },
+  tipo: 'NOVA',
+  enviadaEm: '2026-11-10T12:00:00Z',
+  cancelada: false,
+  itens: [
+    {
+      codigo: '0012',
+      nome: 'Anel Solitário',
+      quantidade: 3,
+      precoRemessa: '70.00',
+      subtotal: '210.00',
+    },
+  ],
+  totalPecas: 3,
+  totalValor: '210.00',
+  cotacao: {
+    data: '2026-11-10',
+    dolar: '5.5',
+    guarani: '0.0009',
+    totalEmDolar: '38.18',
+    totalEmGuarani: '233000.00',
+  },
+};
+
 const ID_VEND = '8f14e45f-ceea-4672-a1b9-3a1a0f7c4d11';
 const ID_SEMANA = '9a14e45f-ceea-4672-a1b9-3a1a0f7c4d99';
 const ID_PRACA = '1b4e28ba-2fa1-41d3-b9a5-2c3a9a8f6b22';
@@ -187,6 +224,7 @@ async function abrirFicha(m: Montagem) {
 }
 
 beforeEach(() => {
+  entregues.length = 0;
   window.location.hash = '';
   esquecerImagens();
   URL.createObjectURL = vi.fn(() => 'blob:foto');
@@ -416,5 +454,67 @@ describe('Reposição', () => {
     await u.click(await screen.findByRole('button', { name: 'Começar a repor' }));
     expect(await screen.findByText('Escolha a semana.')).toBeTruthy();
     expect(chamadasDe(m, 'maletas.criar')).toHaveLength(0);
+  });
+});
+
+describe('Imprimir nota', () => {
+  it('na lista e na ficha da maleta enviada gera o PDF da nota pela ponte de arquivos', async () => {
+    const m = montar({ 'maletas.nota': () => ({ ok: true, dados: NOTA }) });
+    const u = await abrirLista(m);
+    await u.click(await screen.findByRole('button', { name: 'Imprimir nota: Joana Vendedora' }));
+    await waitFor(() => expect(entregues).toHaveLength(1));
+    expect(ultima(m, 'maletas.nota')).toEqual({ id: ID_MALETA });
+    expect(entregues[0]).toMatchObject({
+      nome: 'nota-da-maleta-S12-V7-1.pdf',
+      tipo: 'application/pdf',
+    });
+    const pdf = new TextDecoder('latin1').decode(entregues[0]!.bytes);
+    expect(pdf).toContain('Anel Solitário');
+    expect(
+      await screen.findByText(/A nota nota-da-maleta-S12-V7-1.pdf foi preparada/),
+    ).toBeTruthy();
+
+    await u.click(
+      await screen.findByRole('button', { name: 'Abrir a maleta de Joana Vendedora, semana 12' }),
+    );
+    await screen.findByRole('heading', { name: 'Maleta enviada' });
+    await u.click(screen.getByRole('button', { name: 'Imprimir nota: Joana Vendedora' }));
+    await waitFor(() => expect(entregues).toHaveLength(2));
+  });
+
+  it('se o servidor recusar (maleta ainda em montagem), mostra o texto dele e não gera arquivo', async () => {
+    const m = montar({
+      'maletas.nota': () => ({
+        ok: false,
+        motivo: 'erro',
+        status: 409,
+        mensagem:
+          'A nota só fica pronta depois que a maleta for enviada. Envie a maleta e tente de novo.',
+      }),
+    });
+    const u = await abrirLista(m);
+    await u.click(await screen.findByRole('button', { name: 'Imprimir nota: Joana Vendedora' }));
+    expect(
+      await screen.findByText(/A nota só fica pronta depois que a maleta for enviada/),
+    ).toBeTruthy();
+    expect(entregues).toHaveLength(0);
+  });
+
+  it('rascunho não tem botão de nota', async () => {
+    const m = montar({
+      'maletas.listar': () =>
+        pagina([
+          {
+            ...maletaEnviada('RASCUNHO'),
+            enviadaEm: null,
+            itens: [],
+            totalPecas: 0,
+            totalValor: 0,
+          },
+        ]),
+    });
+    await abrirLista(m);
+    await screen.findByText('Joana Vendedora', { selector: 'td' });
+    expect(screen.queryByRole('button', { name: /Imprimir nota/ })).toBeNull();
   });
 });

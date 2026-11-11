@@ -1,9 +1,9 @@
 import { Aviso, Botao, Tabela } from '@corona/ui';
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { ImagemDoProduto } from '../../componentes/ImagemDoProduto';
-import { imprimirNotaDaMaleta, NOTA_DA_MALETA_PRONTA } from '../../nucleo/nota-da-maleta';
 import { TEXTOS_DE_MALETAS } from '../../textos-maletas';
 import { dataNaTela } from '../cadastros/definicoes';
+import { BotaoImprimirNota } from './BotaoImprimirNota';
 import { Dinheiro } from './Dinheiro';
 import type { Maleta } from './dados';
 
@@ -95,9 +95,11 @@ export function FichaDaMaleta({
           <Dinheiro valor={maleta.totalValor} />
         </p>
         <div className="gestao-acoes-da-linha">
-          {NOTA_DA_MALETA_PRONTA ? (
-            <Botao onClick={() => void imprimirNotaDaMaleta(ponte, maleta.id)}>{E.imprimir}</Botao>
-          ) : null}
+          <BotaoImprimirNota
+            ponte={ponte}
+            maletaId={maleta.id}
+            vendedorNome={maleta.vendedorNome}
+          />
           <Botao variante="primario" onClick={aoMontarOutra}>
             {E.montarOutra}
           </Botao>
