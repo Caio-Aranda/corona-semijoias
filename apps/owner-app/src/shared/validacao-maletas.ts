@@ -1,6 +1,7 @@
 /** Conferência, no processo principal, dos dados das operações de maletas. */
 import {
   MAXIMO_DA_QUANTIDADE_NA_MALETA,
+  MAXIMO_DO_MOTIVO_DA_MALETA,
   SITUACOES_DA_MALETA,
   TIPOS_DE_MALETA,
   type OperacaoDeMaletas,
@@ -43,7 +44,25 @@ export type ParametrosDeMaleta =
     }
   | { operacao: 'maletas.tirarPeca'; id: string; produtoId: string; version: number }
   | { operacao: 'maletas.excluir'; id: string; version: number }
-  | { operacao: 'maletas.emAberto'; vendedorId: string };
+  | { operacao: 'maletas.emAberto'; vendedorId: string }
+  | { operacao: 'maletas.saldo'; id: string }
+  | {
+      operacao: 'maletas.devolver';
+      id: string;
+      itens: { id: string; produtoId: string; quantidade: number }[];
+    }
+  | {
+      operacao: 'maletas.desfazerDevolucao';
+      id: string;
+      devolucaoId: string;
+      estornoId: string;
+      motivo: string;
+    }
+  | { operacao: 'maletas.cancelar'; id: string; motivo: string };
+
+function motivoValido(v: unknown): v is string {
+  return typeof v === 'string' && v.trim() !== '' && v.length <= MAXIMO_DO_MOTIVO_DA_MALETA;
+}
 
 export function conferirMaleta(
   operacao: OperacaoDeMaletas,
@@ -68,6 +87,7 @@ export function conferirMaleta(
       return { operacao, corpo };
     }
     case 'maletas.ver':
+    case 'maletas.saldo':
     case 'maletas.enviar':
       return soCom('id') && idValido(p.id) ? { operacao, id: p.id } : null;
     case 'maletas.emAberto':
@@ -103,6 +123,48 @@ export function conferirMaleta(
         quantidade: p.quantidade,
         version: p.version,
       };
+    }
+    case 'maletas.cancelar':
+      return soCom('id', 'motivo') && idValido(p.id) && motivoValido(p.motivo)
+        ? { operacao, id: p.id, motivo: p.motivo.trim() }
+        : null;
+    case 'maletas.desfazerDevolucao':
+      return soCom('id', 'devolucaoId', 'estornoId', 'motivo') &&
+        idValido(p.id) &&
+        idValido(p.devolucaoId) &&
+        idValido(p.estornoId) &&
+        motivoValido(p.motivo)
+        ? {
+            operacao,
+            id: p.id,
+            devolucaoId: p.devolucaoId,
+            estornoId: p.estornoId,
+            motivo: p.motivo.trim(),
+          }
+        : null;
+    case 'maletas.devolver': {
+      if (!soCom('id', 'itens') || !idValido(p.id) || !Array.isArray(p.itens)) return null;
+      if (p.itens.length < 1 || p.itens.length > 500) return null;
+      const itens: { id: string; produtoId: string; quantidade: number }[] = [];
+      for (const bruto of p.itens as unknown[]) {
+        const i = (typeof bruto === 'object' && bruto !== null ? bruto : {}) as Record<
+          string,
+          unknown
+        >;
+        if (Object.keys(i).some((k) => !['id', 'produtoId', 'quantidade'].includes(k))) return null;
+        if (!idValido(i.id) || !idValido(i.produtoId)) return null;
+        const q = i.quantidade;
+        if (
+          typeof q !== 'number' ||
+          !Number.isInteger(q) ||
+          q < 1 ||
+          q > MAXIMO_DA_QUANTIDADE_NA_MALETA
+        ) {
+          return null;
+        }
+        itens.push({ id: i.id, produtoId: i.produtoId, quantidade: q });
+      }
+      return { operacao, id: p.id, itens };
     }
     case 'maletas.listar': {
       if (!soCom('vendedorId', 'semanaId', 'status', 'pagina', 'tamanho')) return null;

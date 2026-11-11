@@ -96,7 +96,7 @@ Maleta (§15). Segue o mesmo formato da Fase 2. O modelo da maleta está no [ADR
 | 3.3 | backend: devolução da maleta à dona, cancelamento/estorno, conciliação "estoque central + maletas" | Em revisão · [detalhe](progresso/fase-3.md#tarefa-33-backend-devolução-da-maleta-cancelamento-e-conciliação) |
 | 3.4 | backend: nota de remessa em PDF e relatórios de maleta (remessas por vendedor e semana, saldo por maleta, mercadoria em maletas por vendedor, maletas em aberto/atrasadas, reposições) com exportação | Em revisão · [detalhe](progresso/fase-3.md#tarefa-34-backend-nota-de-remessa-e-relatórios-da-maleta) |
 | 3.5 | owner-app: montagem por leitor (foto grande, bloqueios claros) | Em revisão · [detalhe](progresso/fase-3.md#tarefa-35-corona-gestão-montar-a-maleta-por-leitor) |
-| 3.6 | owner-app: lista e ficha da maleta, reposição, devolução, cancelamento | Pendente |
+| 3.6 | owner-app: lista e ficha da maleta, reposição, devolução, cancelamento | Em revisão · [detalhe](progresso/fase-3.md#tarefa-36-corona-gestão-gerir-a-maleta) |
 | 3.7 | owner-app: telas dos relatórios de maleta e impressão da nota | Pendente |
 | 3.8 | fechamento da Fase 3 (revisão pós-fase) | Pendente |
 

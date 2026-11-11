@@ -146,3 +146,28 @@ Uma seção por tarefa, no mesmo formato de [fase-2.md](fase-2.md). A tabela de 
 **Dúvidas abertas:** as do ADR-0010. Nova: o botão **Imprimir nota** deve aparecer já na ficha da 3.5 ou só quando a 3.7 existir? (Está escondido.)
 
 **Não feito:** lista geral e ficha completa da maleta enviada, devolução, cancelamento, reposição guiada (3.6), PDF e relatórios (3.7), qualquer coisa do vendedor.
+
+### Tarefa 3.6: Corona Gestão: gerir a maleta
+
+**Em revisão.** Só tela e ponte do app da dona; nenhuma mudança no servidor. Menu novo **Maletas → Maletas** (a tela **Montar maleta** da 3.5 continua).
+
+**O que foi feito**
+
+- **Lista** com filtros (**Vendedor**, **Semana**, **Situação**: em montagem, enviada, cancelada) e colunas vendedor, semana, tipo, situação, peças, valor (3 moedas) e data do envio; **Abrir** leva à ficha, e maleta em montagem abre a montagem da 3.5. Visão **Por vendedor**: quanto tem em aberto, limite e quanto sobra (**Passou X** quando excede), com **Nova reposição**.
+- **Ficha da maleta enviada:** foto, enviada, devolvida, saldo e preço congelado de cada peça; movimentos em ordem (**Devolvida à dona**, **Devolução desfeita**); situação e, se cancelada, o motivo. **Imprimir nota** segue atrás do gancho da 3.5 (a 3.7 liga).
+- **Reposição** (**Repor esta maleta** na ficha ou **Nova reposição** por vendedor): cria rascunho tipo reposição do mesmo vendedor, semana e praça, sem copiar peças, mostrando o que ele já tem e o limite; abre a montagem da 3.5.
+- **Devolução à dona:** leitor com foto (cada leitura soma 1) ou quantidade digitada, nunca acima do saldo (a tela mostra o saldo; o servidor confere de novo). O id de cada linha nasce na tela; **Esta devolução já estava registrada** quando o servidor responde 200. **Desfazer devolução** pede o motivo e mostra a mensagem do servidor se as peças já saíram do estoque.
+- **Cancelar maleta** (rascunho ou enviada): motivo obrigatório e aviso "As peças voltam para o estoque"; se o servidor recusa por já ter movimento, mostra a mensagem dele e sugere devolver as peças.
+- **Ponte:** quatro operações novas (`maletas.saldo`, `devolver`, `desfazerDevolucao`, `cancelar`) com conferência de parâmetros e testes de rota.
+- **Testes:** 12 de tela (`gerir-maletas.test.tsx`), 2 de conferência e 1 de rotas. Lint, typecheck, format e testes do owner-app (573) passando.
+
+**Decisões que tomei**
+
+- Cada linha de devolução tem id próprio; mudar a quantidade de uma linha gera id novo (o servidor recusa o mesmo id com outro valor). O id do "desfazer" vale por movimento e motivo, e tentar de novo com o mesmo motivo reenvia o mesmo pedido.
+- A visão **Por vendedor** busca a rota de maletas em aberto de cada vendedor ativo (uma chamada por vendedor); basta para o tamanho da loja.
+- Cancelar rascunho fica na própria tela de montagem (botão **Cancelar maleta**); **Excluir** (3.5) continua na lista de rascunhos de Montar maleta.
+- Ações da ficha (devolver, repor, cancelar, desfazer) só aparecem em maleta **Enviada**; as fases seguintes (conferida, em acerto) ganham regras próprias.
+
+**Dúvidas abertas:** as do ADR-0010. Nenhuma rota faltou. Reforço: depois de devolver tudo a maleta deve "encerrar" sozinha? Hoje continua enviada (dúvida da 3.3).
+
+**Não feito:** PDF da nota e relatórios (3.7), conferência e venda (app do vendedor).

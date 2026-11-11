@@ -22,6 +22,8 @@ export interface Maleta {
   version: number;
   vendedorId: string;
   vendedorNome: string;
+  semanaId: string;
+  pracaId: string;
   semanaNumero: number;
   pracaNome: string;
   tipo: string;
@@ -58,6 +60,8 @@ export function lerMaleta(bruto: unknown): Maleta | null {
     version: inteiro(o.version),
     vendedorId: texto(o.vendedorId),
     vendedorNome: texto(o.vendedorNome),
+    semanaId: texto(o.semanaId),
+    pracaId: texto(o.pracaId),
     semanaNumero: inteiro(o.semanaNumero),
     pracaNome: texto(o.pracaNome),
     tipo: texto(o.tipo),
@@ -130,4 +134,132 @@ export function lerSemanasParaEscolher(bruto: unknown): OpcaoDeSemana[] {
       numero: typeof s.numero === 'number' || typeof s.numero === 'string' ? String(s.numero) : '',
       aberta: s.situacao !== 'FECHADA',
     }));
+}
+
+export interface LinhaDoSaldo {
+  produtoId: string;
+  nome: string;
+  codigo: string;
+  fotoHash: string | null;
+  enviada: number;
+  devolvida: number;
+  saldo: number;
+  precoUnitario: string;
+  valorEmAberto: string;
+}
+
+export interface MovimentoDaMaleta {
+  id: string;
+  /** DEVOLUCAO_DONA, os estornos dela ou (nas fases seguintes) outros tipos. */
+  tipo: string;
+  produtoId: string;
+  produtoNome: string;
+  /** Sinal do servidor: devolução à dona é negativa. */
+  quantidade: number;
+  estornaId: string;
+  desfeito: boolean;
+  em: string;
+}
+
+export interface SaldoDaMaleta {
+  status: string;
+  motivoDoCancelamento: string;
+  pecasEmAberto: number;
+  valorEmAberto: string;
+  linhas: LinhaDoSaldo[];
+  movimentos: MovimentoDaMaleta[];
+}
+
+/** O que há na maleta, peça a peça, e os movimentos em ordem (devoluções e as desfeitas). */
+export function lerSaldoDaMaleta(bruto: unknown): SaldoDaMaleta | null {
+  const o = objeto(bruto);
+  if (typeof o.status !== 'string') return null;
+  const linhas: LinhaDoSaldo[] = [];
+  for (const b of Array.isArray(o.itens) ? o.itens : []) {
+    const l = objeto(b);
+    const p = objeto(l.produto);
+    if (typeof p.id !== 'string') continue;
+    const foto = objeto(p.fotoPrincipal);
+    linhas.push({
+      produtoId: p.id,
+      nome: texto(p.nome),
+      codigo: texto(p.codigo),
+      fotoHash: typeof foto.hash === 'string' ? foto.hash : null,
+      enviada: inteiro(l.enviada),
+      devolvida: inteiro(l.devolvida),
+      saldo: inteiro(l.saldo),
+      precoUnitario: dinheiroEmTexto(l.precoUnitario) ?? '0.00',
+      valorEmAberto: dinheiroEmTexto(l.valorEmAberto) ?? '0.00',
+    });
+  }
+  const movimentos: MovimentoDaMaleta[] = [];
+  for (const b of Array.isArray(o.movimentos) ? o.movimentos : []) {
+    const m = objeto(b);
+    if (typeof m.id !== 'string') continue;
+    movimentos.push({
+      id: m.id,
+      tipo: texto(m.tipo),
+      produtoId: texto(m.produtoId),
+      produtoNome: texto(m.produtoNome),
+      quantidade: inteiro(m.quantidade),
+      estornaId: texto(m.estornaId),
+      desfeito: m.desfeito === true,
+      em: texto(m.em),
+    });
+  }
+  return {
+    status: o.status,
+    motivoDoCancelamento: texto(o.motivoDoCancelamento),
+    pecasEmAberto: inteiro(o.pecasEmAberto),
+    valorEmAberto: dinheiroEmTexto(o.valorEmAberto) ?? '0.00',
+    linhas,
+    movimentos,
+  };
+}
+
+export interface MaletaEmAberto {
+  id: string;
+  semanaNumero: number;
+  tipo: string;
+  enviadaEm: string;
+  pecasEmAberto: number;
+  valorEmAberto: string;
+}
+
+export interface EmAbertoDoVendedor {
+  vendedorId: string;
+  vendedorNome: string;
+  /** Em centavos; null = sem limite cadastrado (limite 0 também, como no servidor). */
+  limite: bigint | null;
+  valorEmAberto: bigint;
+  /** Quanto sobra do limite; null quando não há limite. Pode ser negativo (passou). */
+  sobra: bigint | null;
+  maletas: MaletaEmAberto[];
+}
+
+export function lerEmAberto(bruto: unknown): EmAbertoDoVendedor {
+  const o = objeto(bruto);
+  const situacao = lerSituacaoDoLimite(o);
+  const restante = centavosDeTexto(dinheiroEmTexto(o.limiteRestante) ?? '');
+  const maletas: MaletaEmAberto[] = [];
+  for (const b of Array.isArray(o.maletas) ? o.maletas : []) {
+    const m = objeto(b);
+    if (typeof m.id !== 'string') continue;
+    maletas.push({
+      id: m.id,
+      semanaNumero: inteiro(m.semanaNumero),
+      tipo: texto(m.tipo),
+      enviadaEm: texto(m.enviadaEm),
+      pecasEmAberto: inteiro(m.pecasEmAberto),
+      valorEmAberto: dinheiroEmTexto(m.valorEmAberto) ?? '0.00',
+    });
+  }
+  return {
+    vendedorId: texto(o.vendedorId),
+    vendedorNome: texto(o.vendedorNome),
+    limite: situacao.limite,
+    valorEmAberto: situacao.jaComEle,
+    sobra: situacao.limite === null ? null : (restante ?? situacao.limite - situacao.jaComEle),
+    maletas,
+  };
 }

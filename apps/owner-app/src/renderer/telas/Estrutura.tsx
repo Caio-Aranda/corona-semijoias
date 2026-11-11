@@ -13,6 +13,7 @@ import { TelaReceberCompra } from './compras/TelaReceberCompra';
 import { ListaDeLancamentos } from './estoque/ListaDeLancamentos';
 import { ListaDoEstoque } from './estoque/ListaDoEstoque';
 import { TelaContagem } from './estoque/TelaContagem';
+import { TelaMaletas } from './maletas/TelaMaletas';
 import { TelaMontarMaleta } from './maletas/TelaMontarMaleta';
 import { TelaProdutos } from './produtos/TelaProdutos';
 import { TelaDeRelatorio } from './relatorios/TelaDeRelatorio';
@@ -67,6 +68,8 @@ function Conteudo({
           }}
         />
       );
+    case 'maletas/lista':
+      return <TelaMaletas ponte={ponte} />;
     case 'maletas/montar':
       return <TelaMontarMaleta ponte={ponte} />;
     case 'pessoas/vendedores':

@@ -69,4 +69,32 @@ describe('conferência dos dados das maletas', () => {
     expect(conferirParametros('maletas.listar', { status: 'QUALQUER' })).toBeNull();
     expect(conferirParametros('maletas.listar', { tamanho: 201 })).toBeNull();
   });
+
+  it('devolver pede linhas com id, peça e quantidade inteira positiva', () => {
+    const linha = { id: ID, produtoId: OUTRO, quantidade: 2 };
+    expect(conferirParametros('maletas.devolver', { id: ID, itens: [linha] })).not.toBeNull();
+    for (const ruim of [
+      { id: ID, itens: [] },
+      { id: ID, itens: [{ ...linha, quantidade: 0 }] },
+      { id: ID, itens: [{ ...linha, quantidade: 1.5 }] },
+      { id: ID, itens: [{ ...linha, id: 'x' }] },
+      { id: ID, itens: [{ ...linha, preco: 1 }] },
+    ]) {
+      expect(conferirParametros('maletas.devolver', ruim)).toBeNull();
+    }
+  });
+
+  it('cancelar e desfazer devolução exigem motivo', () => {
+    expect(conferirParametros('maletas.cancelar', { id: ID, motivo: ' Engano ' })).toMatchObject({
+      motivo: 'Engano',
+    });
+    expect(conferirParametros('maletas.cancelar', { id: ID, motivo: '  ' })).toBeNull();
+    expect(conferirParametros('maletas.cancelar', { id: ID, motivo: 'x'.repeat(401) })).toBeNull();
+    const desfazer = { id: ID, devolucaoId: OUTRO, estornoId: ID, motivo: 'Engano' };
+    expect(conferirParametros('maletas.desfazerDevolucao', desfazer)).not.toBeNull();
+    expect(conferirParametros('maletas.desfazerDevolucao', { ...desfazer, motivo: '' })).toBeNull();
+    expect(
+      conferirParametros('maletas.desfazerDevolucao', { ...desfazer, estornoId: 'x' }),
+    ).toBeNull();
+  });
 });
