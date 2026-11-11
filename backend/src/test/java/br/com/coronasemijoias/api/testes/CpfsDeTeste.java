@@ -3,7 +3,7 @@ package br.com.coronasemijoias.api.testes;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * CPFs válidos e diferentes a cada chamada. O CPF é único entre os clientes (V029) e o banco dos testes é
+ * CPFs válidos e diferentes a cada chamada. O CPF é único entre os clientes (V030) e o banco dos testes é
  * compartilhado entre as classes, então um teste nunca pode usar um CPF fixo que outro também usa.
  */
 public final class CpfsDeTeste {

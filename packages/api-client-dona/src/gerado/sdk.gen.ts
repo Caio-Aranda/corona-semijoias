@@ -450,7 +450,7 @@ export const desfazer = <ThrowOnError extends boolean = false>(options: Options<
 /**
  * Ficha do produto no estoque
  *
- * Quantas peças há e o histórico do produto (mais novo primeiro).
+ * Quantas peças há na loja, quantas estão nas maletas dos vendedores (e com quem) e o histórico do produto (mais novo primeiro).
  */
 export const ficha = <ThrowOnError extends boolean = false>(options: Options<FichaData, ThrowOnError>): RequestResult<FichaResponses, unknown, ThrowOnError> => (options.client ?? client).get<FichaResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],

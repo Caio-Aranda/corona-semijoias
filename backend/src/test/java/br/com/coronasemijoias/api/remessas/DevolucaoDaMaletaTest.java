@@ -711,6 +711,69 @@ class DevolucaoDaMaletaTest extends TesteDeIntegracao {
         assertThat(estoque.conciliar().divergencias()).extracting(d -> d.produtoId()).doesNotContain(p);
     }
 
+    // --- estoque zerado na loja x peça que está em maleta (item 13, 11/11/2026) ---
+
+    private String nomeDoVendedor(UUID vendedor) {
+        return jdbc.queryForObject("SELECT nome FROM corona.vendedores WHERE id = ?", String.class, vendedor);
+    }
+
+    @Test
+    void pecaComZeroNaLojaEEmMaletaDizOndeEstaEAPecaSemMaletaAcabou() throws Exception {
+        UUID p = peca("10.00", 5);
+        UUID maria = vendedor(null);
+        UUID joao = vendedor(null);
+        UUID semMaleta = peca("10.00", 0);
+        enviada(maria, p, 3);
+        enviada(joao, p, 2);
+
+        // Produto (ficha e leitura por código): 0 na loja, 5 nas maletas, com quem está cada uma (a maior primeiro).
+        JsonNode ficha = corpoDe(ler("/api/dona/produtos/" + p).andExpect(status().isOk()));
+        assertThat(ficha.get("estoqueAtual").asInt()).isZero();
+        assertThat(ficha.get("emMaletas").asInt()).isEqualTo(5);
+        assertThat(ficha.get("vendedoresEmMaletas")).hasSize(2);
+        assertThat(ficha.get("vendedoresEmMaletas").get(0).get("nome").asString()).isEqualTo(nomeDoVendedor(maria));
+        assertThat(ficha.get("vendedoresEmMaletas").get(0).get("quantidade").asInt()).isEqualTo(3);
+        assertThat(ficha.get("vendedoresEmMaletas").get(1).get("nome").asString()).isEqualTo(nomeDoVendedor(joao));
+        String codigo = ficha.get("codigos").get(0).get("codigo").asString();
+        JsonNode porCodigo = corpoDe(ler("/api/dona/produtos/por-codigo?codigo=" + codigo).andExpect(status().isOk()));
+        assertThat(porCodigo.get("emMaletas").asInt()).isEqualTo(5);
+
+        // Lista de produtos: uma consulta para a página inteira traz os dois casos.
+        JsonNode lista = corpoDe(ler("/api/dona/produtos?busca=" + codigo + "&tamanho=100").andExpect(status().isOk()));
+        assertThat(lista.get("itens").get(0).get("emMaletas").asInt()).isEqualTo(5);
+        JsonNode semMaletaFicha = corpoDe(ler("/api/dona/produtos/" + semMaleta).andExpect(status().isOk()));
+        assertThat(semMaletaFicha.get("estoqueAtual").asInt()).isZero();
+        assertThat(semMaletaFicha.get("emMaletas").asInt()).isZero();
+        assertThat(semMaletaFicha.get("vendedoresEmMaletas")).isEmpty();
+
+        // Estoque: "Está acabando" e a ficha do produto no estoque separam "acabou de verdade" de "está nas maletas".
+        JsonNode abaixo = corpoDe(ler("/api/dona/estoque/abaixo-do-minimo?busca=" + codigo).andExpect(status().isOk()));
+        assertThat(abaixo.get("itens").get(0).get("saldo").asInt()).isZero();
+        assertThat(abaixo.get("itens").get(0).get("emMaletas").asInt()).isEqualTo(5);
+        assertThat(abaixo.get("itens").get(0).get("vendedoresEmMaletas")).hasSize(2);
+        JsonNode estoqueFicha = corpoDe(ler("/api/dona/estoque/produtos/" + p).andExpect(status().isOk()));
+        assertThat(estoqueFicha.get("emMaletas").asInt()).isEqualTo(5);
+    }
+
+    @Test
+    void maletaCanceladaDevolvidaOuSoRascunhoNaoContamComoEmMaleta() throws Exception {
+        UUID p = peca("10.00", 6);
+        UUID v = vendedor(null);
+        UUID cancelada = enviada(v, p, 2);
+        cancelar(cancelada, "Enviada por engano").andExpect(status().isOk());
+        UUID devolvida = enviada(v, p, 3);
+        devolverOk(devolvida, p, 3);
+        rascunho(v, p, 1); // rascunho ainda não saiu do estoque
+        JsonNode ficha = corpoDe(ler("/api/dona/produtos/" + p).andExpect(status().isOk()));
+        assertThat(ficha.get("estoqueAtual").asInt()).isEqualTo(6);
+        assertThat(ficha.get("emMaletas").asInt()).isZero();
+        assertThat(ficha.get("vendedoresEmMaletas")).isEmpty();
+        // Uma maleta ainda com o vendedor conta, e só o saldo (o que voltou sai da conta).
+        UUID aberta = enviada(v, p, 4);
+        devolverOk(aberta, p, 1);
+        assertThat(corpoDe(ler("/api/dona/produtos/" + p)).get("emMaletas").asInt()).isEqualTo(3);
+    }
+
     // --- conciliação ---
 
     @Test

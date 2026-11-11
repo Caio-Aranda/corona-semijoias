@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
 /**
- * Banco que já tinha clientes com o mesmo CPF antes da V029, que torna o CPF único entre os não excluídos: nada se
+ * Banco que já tinha clientes com o mesmo CPF antes da V030, que torna o CPF único entre os não excluídos: nada se
  * perde, fica o cadastro mais antigo com o CPF e os outros ganham o aviso nas observações.
  */
 class MigracaoDoCpfUnicoTest extends TesteDeIntegracao {
