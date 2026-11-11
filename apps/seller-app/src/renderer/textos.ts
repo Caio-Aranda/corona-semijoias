@@ -208,8 +208,8 @@ export const TEXTOS = {
     ninguemDeve: 'Nenhum cliente deve nada agora.',
     totalAReceber: 'Total a receber',
     minhasVendas: 'Ver minhas vendas',
-    cotacaoDe: (data: string) => `Dólar e Guarani pela cotação de ${data}.`,
-    semCotacao: 'Sem cotação do Dólar e do Guarani por enquanto: os valores aparecem só em Real.',
+    cotacaoDeCadaLancamento:
+      'Dólar e Guarani pela cotação do dia de cada venda e de cada pagamento. Sem cotação, só Real.',
     vendasEstornadasNaoContam: 'Vendas estornadas não entram nas contas.',
   },
 

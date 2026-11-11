@@ -34,9 +34,10 @@ const venda: Venda = {
   subtotal: '100.00',
   desconto: '0.00',
   total: '100.00',
-  totalDolar: null,
-  totalGuarani: null,
-  cotacao: null,
+  totalDolar: '25.00',
+  totalGuarani: '125000',
+  // A cotação do dia da venda (US$ 4,00); a de hoje, no teste, é 5,00.
+  cotacao: { data: '2026-11-04', dolar: '4.00000000', guarani: '0.00080000' },
   pago: '60.00',
   aReceber: '40.00',
   vendidaEm: '2026-11-11T15:00:00Z',
@@ -54,8 +55,21 @@ const totais = (total: string) => ({
 });
 
 const vendasPorCliente: RelatorioDeVendas = {
-  linhas: [{ id: MARIA, nome: 'Maria Souza', quantidade: 2, total: '200.00', desconto: '10.00' }],
-  totais: totais('200.00'),
+  // O servidor já somou cada venda pela cotação do dia dela: US$ 45,00 (pela de hoje daria 40,00).
+  linhas: [
+    {
+      id: MARIA,
+      nome: 'Maria Souza',
+      quantidade: 2,
+      total: '200.00',
+      desconto: '10.00',
+      totalEmDolar: '45.00',
+      totalEmGuarani: '262500',
+      descontoEmDolar: '2.25',
+      descontoEmGuarani: '13125',
+    },
+  ],
+  totais: { ...totais('200.00'), totalEmDolar: '45.00', totalEmGuarani: '262500' },
 };
 const recebimentos: RelatorioDeVendas = {
   linhas: [
@@ -72,6 +86,12 @@ const aReceber: RelatorioAReceber = {
       vendido: '200.00',
       pago: '160.00',
       aReceber: '40.00',
+      vendidoEmDolar: '45.00',
+      vendidoEmGuarani: '262500',
+      pagoEmDolar: '35.00',
+      pagoEmGuarani: '212500',
+      aReceberEmDolar: '10.00',
+      aReceberEmGuarani: '50000',
     },
   ],
   totais: totais('40.00'),
@@ -157,6 +177,9 @@ describe('Meus clientes', () => {
     expect(screen.getByText(/01\/05\/1990/)).toBeInTheDocument();
     const tabela = await screen.findByRole('table', { name: 'Vendas deste cliente' });
     expect(within(tabela).getByText('R$ 100,00')).toBeInTheDocument();
+    // A venda pela cotação do dia dela (US$ 4,00): US$ 25,00, e não US$ 20,00 pela de hoje.
+    expect(within(tabela).getByText(/US\$ 25,00/)).toBeInTheDocument();
+    expect(within(tabela).queryByText(/US\$ 20,00/)).toBeNull();
     expect(daOperacao('vendas.listar').some((c) => 'clienteId' in c && c.clienteId === MARIA)).toBe(
       true,
     );
@@ -202,7 +225,9 @@ describe('Meus números', () => {
     const vendas = await screen.findByRole('table', { name: /Minhas vendas no período/ });
     expect(within(vendas).getByText('Maria Souza')).toBeInTheDocument();
     expect(within(vendas).getAllByText('R$ 200,00').length).toBeGreaterThan(0);
-    expect(within(vendas).getAllByText(/US\$ 40,00/).length).toBeGreaterThan(0);
+    // Os valores convertidos vêm do servidor (cada venda pela cotação do seu dia), nunca da cotação de hoje.
+    expect(within(vendas).getAllByText(/US\$ 45,00/).length).toBeGreaterThan(0);
+    expect(within(vendas).queryAllByText(/US\$ 40,00/)).toHaveLength(0);
 
     const receb = screen.getByRole('table', { name: 'Recebimentos por forma de pagamento' });
     expect(within(receb).getByText('Pix')).toBeInTheDocument();
@@ -212,7 +237,10 @@ describe('Meus números', () => {
     const deve = screen.getByRole('table', { name: 'Quanto os clientes ainda devem' });
     expect(within(deve).getByText('Maria Souza')).toBeInTheDocument();
     expect(screen.getByText(/Total a receber/)).toHaveTextContent('R$ 40,00');
-    expect(screen.getByText(/Dólar e Guarani pela cotação de 11\/11\/2026/)).toBeInTheDocument();
+    expect(within(deve).getAllByText(/US\$ 10,00/).length).toBeGreaterThan(0);
+    expect(
+      screen.getByText(/pela cotação do dia de cada venda e de cada pagamento/),
+    ).toBeInTheDocument();
     expect(screen.getByText(/estornadas não entram/)).toBeInTheDocument();
   });
 
@@ -260,7 +288,8 @@ describe('Meus números', () => {
     expect(await screen.findByText('Nenhuma venda neste período.')).toBeInTheDocument();
     expect(screen.getByText('Nenhum recebimento neste período.')).toBeInTheDocument();
     expect(screen.getByText('Nenhum cliente deve nada agora.')).toBeInTheDocument();
-    expect(screen.getByText(/Sem cotação do Dólar e do Guarani/)).toBeInTheDocument();
+    expect(screen.getByText(/Total vendido/)).toHaveTextContent('R$ 0,00');
+    expect(screen.getByText(/Total vendido/)).not.toHaveTextContent('US$');
   });
 
   it('falha do servidor aparece em português e o botão Ver minhas vendas abre a lista', async () => {

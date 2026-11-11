@@ -2,7 +2,7 @@ import { Aviso, Botao, Campo, EstadoDaLista, JanelaDeConfirmacao, Tabela } from 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Venda } from '../../shared/dados';
 import type { PonteDoCorona } from '../../shared/ponte';
-import { chamar, Dinheiro, novoId, useCotacao } from '../chamadas';
+import { chamar, cotacaoDaVenda, Dinheiro, novoId } from '../chamadas';
 import { dataParaTela } from '../moedas';
 import { TEXTOS } from '../textos';
 import { PaginaDoVendedor } from './PaginaDoVendedor';
@@ -15,7 +15,6 @@ export interface TelaMinhasVendasProps {
 /** Minhas vendas: a lista, o detalhe de cada venda e o estorno (a venda nunca é editada nem apagada). */
 export function TelaMinhasVendas({ ponte, aoVoltar }: TelaMinhasVendasProps) {
   const T = TEXTOS.vendas;
-  const { cotacao } = useCotacao(ponte);
   const [vendas, setVendas] = useState<Venda[] | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [aberta, setAberta] = useState<Venda | null>(null);
@@ -69,6 +68,8 @@ export function TelaMinhasVendas({ ponte, aoVoltar }: TelaMinhasVendasProps) {
   }
 
   if (aberta) {
+    // Os valores da venda, pela cotação do dia dela (ADR-0006), nunca pela de hoje.
+    const cotacao = cotacaoDaVenda(aberta);
     return (
       <PaginaDoVendedor
         titulo={`${T.detalhe}: ${aberta.clienteNome}`}
@@ -174,7 +175,7 @@ export function TelaMinhasVendas({ ponte, aoVoltar }: TelaMinhasVendasProps) {
             linhas={vendas.map((v) => ({
               data: dataParaTela(v.vendidaEm),
               cliente: v.clienteNome,
-              total: <Dinheiro reais={v.total} cotacao={cotacao} />,
+              total: <Dinheiro reais={v.total} cotacao={cotacaoDaVenda(v)} />,
               situacao: T.situacao[v.status] ?? v.status,
               acoes: (
                 <Botao
