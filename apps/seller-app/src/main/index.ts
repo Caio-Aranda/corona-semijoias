@@ -10,6 +10,7 @@ import { dirname, join } from 'node:path';
 import { CANAIS, type AvisoDeAtualizacao, type AvisoDeSessao } from '../shared/ponte';
 import { criarApiDoVendas } from './api';
 import { arquivoDeTexto } from './arquivo-de-texto';
+import { ServicoDoBanco } from './banco/servico-do-banco';
 import { RegistroDeContato } from './contato-com-servidor';
 import { identificadorDoAparelho } from './dispositivo';
 import {
@@ -163,8 +164,12 @@ async function iniciar(): Promise<void> {
       avisarATela(aviso);
     },
   });
+  // Banco local cifrado (tarefa 5.2; ADR-0005): só o processo principal o abre, com a chave embrulhada pela senha do
+  // vendedor e o resgate pelo cofre do Windows. Por enquanto é preparado a cada entrada com internet.
+  const bancoLocal = new ServicoDoBanco({ pasta: join(app.getPath('userData'), 'dados'), cofre });
+  app.on('will-quit', () => bancoLocal.fechar());
   // A sessão guardada é retomada antes de a tela perguntar "estou logado?".
-  servico = new ServicoDeSessao(guarda, api, guarda.restaurar());
+  servico = new ServicoDeSessao(guarda, api, guarda.restaurar(), bancoLocal);
 
   registrarPonte(servico, (e) => {
     const quadro = e.senderFrame;
