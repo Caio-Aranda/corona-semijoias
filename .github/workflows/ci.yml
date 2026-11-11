@@ -1,22 +1,68 @@
 name: CI
 
-# Regra da casa (especificação §14): não se faz merge com CI vermelho.
+# Regra da casa (especificação §14): não se faz merge com CI vermelho. Para gastar poucos minutos do GitHub Actions
+# sem enfraquecer nenhuma verificação (ver docs/ci.md): PR em rascunho não roda; push novo cancela o run antigo do PR;
+# cada job só roda quando o PR mexe no que ele confere; o job "ci" (o da regra de merge) sempre reporta no fim.
+# A main não roda o CI a cada merge (o PR já passou): há uma rodada completa agendada toda segunda e uma sob demanda.
 on:
   pull_request:
-  push:
-    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+  schedule:
+    - cron: '0 5 * * 1'
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.ref }}
-  # Cancela a execução anterior só em Pull Request, nunca na main.
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  # Push novo no PR cancela o run antigo; o run agendado e o manual nunca se cancelam entre si.
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # Decide, pelos arquivos que o PR muda, quais jobs pesados rodam. Fora de PR (agendado e manual), roda tudo.
+  mudancas:
+    name: mudancas
+    if: github.event.pull_request.draft != true
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    outputs:
+      frontend: ${{ steps.arquivos.outputs.frontend }}
+      backend: ${{ steps.arquivos.outputs.backend }}
+      migracoes: ${{ steps.arquivos.outputs.migracoes }}
+      dependencias: ${{ steps.arquivos.outputs.dependencias }}
+      docs: ${{ steps.arquivos.outputs.docs }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - id: arquivos
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            for k in frontend backend dependencias docs; do echo "$k=true" >> "$GITHUB_OUTPUT"; done
+            echo "migracoes=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          mudou="$(git diff --name-only "$BASE" HEAD)"
+          echo "$mudou"
+          tem() { echo "$mudou" | grep -Eq "$1" && echo true || echo false; }
+          {
+            # O front confere apps, packages, scripts e a configuração da raiz (e o próprio workflow).
+            echo "frontend=$(tem '^(apps/|packages/|scripts/|testes-e2e/|package(-lock)?\.json$|eslint\.config\.mjs$|tsconfig\.base\.json$|\.nvmrc$|\.prettier|\.github/)')"
+            # O backend roda com PostgreSQL de verdade; também quando o contrato OpenAPI versionado muda.
+            echo "backend=$(tem '^(backend/|infra/|packages/api-client-[a-z]+/openapi\.json$|\.github/)')"
+            echo "migracoes=$(tem '^backend/src/main/resources/db/migration/')"
+            echo "dependencias=$(tem '(^|/)package(-lock)?\.json$|^backend/pom\.xml$|^\.github/')"
+            # Só documentos: roda apenas a conferência de formatação (job "docs").
+            echo "docs=$(tem '^docs/|\.md$')"
+          } >> "$GITHUB_OUTPUT"
+
   frontend:
     name: frontend
+    needs: mudancas
+    if: needs.mudancas.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -56,6 +102,8 @@ jobs:
 
   backend:
     name: backend
+    needs: mudancas
+    if: needs.mudancas.outputs.backend == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -73,8 +121,9 @@ jobs:
 
   migracoes:
     name: migracoes
-    # No push na main não há "base de PR" para comparar.
-    if: github.event_name == 'pull_request'
+    needs: mudancas
+    # Só em PR (fora dele não há "base" para comparar) e quando o PR mexe em migração.
+    if: github.event_name == 'pull_request' && needs.mudancas.outputs.migracoes == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -85,6 +134,9 @@ jobs:
 
   dependencias:
     name: dependencias
+    needs: mudancas
+    # Quando o PR mexe em package*.json, pom.xml ou no workflow; no mais, a rodada semanal da main confere (npm audit e OSV).
+    if: needs.mudancas.outputs.dependencias == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -111,3 +163,37 @@ jobs:
             echo "::error::Há $altas vulnerabilidade(s) alta(s) ou crítica(s) nas dependências. Atualize os pacotes listados acima."
             exit 1
           fi
+
+  # PR que só mexe em documentos não roda o front: só confere a formatação (o mesmo prettier do job frontend).
+  docs:
+    name: docs
+    needs: mudancas
+    if: needs.mudancas.outputs.docs == 'true' && needs.mudancas.outputs.frontend != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run format:check
+
+  # O ÚNICO status para a regra de merge: roda sempre no fim (menos em rascunho) e só reprova se algum job rodou e falhou
+  # ou foi cancelado. Job pulado por filtro de caminho não reprova: PR nunca fica sem status.
+  ci:
+    name: ci
+    if: always() && github.event.pull_request.draft != true
+    needs: [mudancas, frontend, backend, migracoes, dependencias, docs]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Resultado dos jobs
+        env:
+          RESULTADOS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "Resultados: $RESULTADOS"
+          case " $RESULTADOS " in
+            *" failure "*|*" cancelled "*) echo "::error::Algum job do CI falhou ou foi cancelado."; exit 1 ;;
+          esac
