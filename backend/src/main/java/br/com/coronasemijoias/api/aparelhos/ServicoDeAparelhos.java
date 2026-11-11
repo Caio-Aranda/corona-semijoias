@@ -120,6 +120,15 @@ public class ServicoDeAparelhos {
         }
     }
 
+    /** O computador recebeu dados (pull, tarefa 5.4): guarda a hora, para a dona ver o último contato. */
+    @Transactional
+    public void registrarPull(UUID dispositivoId) {
+        if (dispositivoId != null) {
+            Timestamp agora = Timestamp.from(agora());
+            jdbc.update("UPDATE corona.dispositivos SET ultimo_pull_em = ?, ultimo_contato_em = ? WHERE id = ?",
+                    agora, agora, dispositivoId);
+        }
+    }
     /** A situação do computador desta pessoa (vazio se o computador não é dela ou não existe). */
     @Transactional(readOnly = true)
     public Optional<SituacaoDoAparelho> situacao(UUID dispositivoId, UUID usuarioId) {

@@ -67,14 +67,62 @@ public class ServicoDePull {
      * @throws CursorInvalidoException cursor de outra época ou malformado: o app refaz a carga completa
      */
     public LoteDoPull puxar(String cursor, int tamanhoDoLote, FiltroDoVendedor filtro) {
+        return puxar(cursor, tamanhoDoLote, filtro, null);
+    }
+
+    /**
+     * @param soTabela recarga de uma tabela só (a conferência por resumo achou diferença nela; ADR-0013, item 6), ou
+     *                 nulo para todas
+     */
+    public LoteDoPull puxar(String cursor, int tamanhoDoLote, FiltroDoVendedor filtro, String soTabela) {
         if (tamanhoDoLote < 1 || tamanhoDoLote > LOTE_MAXIMO) {
             throw new IllegalArgumentException("O lote do pull vai de 1 a " + LOTE_MAXIMO + ", veio " + tamanhoDoLote + ".");
         }
         Objects.requireNonNull(filtro, "filtro");
-        return transacao.execute(estado -> puxarNaTransacao(cursor, tamanhoDoLote, filtro));
+        List<TabelaSincronizavel> tabelas = soTabela == null ? registro.sincronizaveis()
+                : List.of(registro.sincronizavel(soTabela).orElseThrow(
+                        () -> new IllegalArgumentException("Tabela desconhecida no pull: " + soTabela)));
+        return transacao.execute(estado -> puxarNaTransacao(cursor, tamanhoDoLote, filtro, tabelas));
     }
 
-    private LoteDoPull puxarNaTransacao(String textoDoCursor, int tamanhoDoLote, FiltroDoVendedor filtro) {
+    /**
+     * Conferência por resumo (ADR-0013, item 6): por tabela, quantas linhas são do vendedor e o SHA-256 da lista
+     * ordenada {@code id:version} (lápides incluídas), numa fotografia só do banco.
+     */
+    public java.util.Map<String, ResumoDaTabela> conferir(FiltroDoVendedor filtro) {
+        Objects.requireNonNull(filtro, "filtro");
+        return transacao.execute(estado -> {
+            java.util.Map<String, ResumoDaTabela> resumos = new LinkedHashMap<>();
+            for (TabelaSincronizavel tabela : registro.sincronizaveis()) {
+                FiltroDoVendedor.CondicaoSql condicao = filtro.condicaoPara(tabela);
+                java.security.MessageDigest sha = sha256();
+                long[] quantidade = {0};
+                jdbc.query("SELECT t.id, t.version FROM corona.\"" + tabela.nome() + "\" AS t WHERE (" + condicao.sql()
+                        + ") ORDER BY t.id", linha -> {
+                            quantidade[0]++;
+                            sha.update((linha.getObject(1, UUID.class) + ":" + linha.getInt(2) + "\n")
+                                    .getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                        }, condicao.parametros().toArray());
+                resumos.put(tabela.nome(), new ResumoDaTabela(quantidade[0], java.util.HexFormat.of().formatHex(sha.digest())));
+            }
+            return resumos;
+        });
+    }
+
+    /** Uma tabela na conferência por resumo. */
+    public record ResumoDaTabela(long quantidade, String resumo) {
+    }
+
+    private static java.security.MessageDigest sha256() {
+        try {
+            return java.security.MessageDigest.getInstance("SHA-256");
+        } catch (java.security.NoSuchAlgorithmException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private LoteDoPull puxarNaTransacao(String textoDoCursor, int tamanhoDoLote, FiltroDoVendedor filtro,
+            List<TabelaSincronizavel> tabelas) {
         long epoca = jdbc.queryForObject("SELECT epoca FROM corona.sync_estado", Long.class);
         CursorDeSync cursor = textoDoCursor == null || textoDoCursor.isBlank()
                 ? CursorDeSync.inicio(epoca)
@@ -86,7 +134,7 @@ public class ServicoDePull {
 
         List<LinhaDoPull> candidatos = new ArrayList<>();
         boolean algumaTabelaEncheuOLote = false;
-        for (TabelaSincronizavel tabela : registro.sincronizaveis()) {
+        for (TabelaSincronizavel tabela : tabelas) {
             FiltroDoVendedor.CondicaoSql condicao = Objects.requireNonNull(filtro.condicaoPara(tabela),
                     () -> "O filtro não deu condição para a tabela " + tabela.nome());
             List<Object> parametros = new ArrayList<>();
@@ -95,7 +143,7 @@ public class ServicoDePull {
             parametros.add(cursor.seq());
             parametros.addAll(condicao.parametros());
             parametros.add(tamanhoDoLote);
-            List<LinhaDoPull> linhas = jdbc.query(consulta(tabela, condicao), leitor(tabela), parametros.toArray());
+            List<LinhaDoPull> linhas = jdbc.query(consulta(tabela, condicao, filtro), leitor(tabela), parametros.toArray());
             algumaTabelaEncheuOLote |= linhas.size() == tamanhoDoLote;
             candidatos.addAll(linhas);
         }
@@ -108,7 +156,55 @@ public class ServicoDePull {
             LinhaDoPull ultima = lote.get(lote.size() - 1);
             proximo = new CursorDeSync(epoca, ultima.syncXid(), ultima.syncSeq());
         }
-        return new LoteDoPull(lote, proximo.texto(), haMais);
+        List<LinhaDoPull> entregues = filtro.expande() ? expandir(lote, filtro) : lote;
+        return new LoteDoPull(entregues, proximo.texto(), haMais);
+    }
+
+    /**
+     * Regra 1 do item 5 do ADR-0013: a linha que faz outras passarem a ser do vendedor leva junto o estado atual delas,
+     * da mesma fotografia (esta transação). As expandidas não mexem no cursor; uma linha que chegar de novo pelo caminho
+     * normal é ignorada pelo app (a {@code version} não é maior). O lote pode passar do limite pelo tamanho da expansão,
+     * que nunca é cortada no meio. Cada expandida passa também pela condição do filtro (segunda barreira).
+     */
+    private List<LinhaDoPull> expandir(List<LinhaDoPull> lote, FiltroDoVendedor filtro) {
+        List<LinhaDoPull> entregues = new ArrayList<>(lote);
+        java.util.Set<String> vistas = new java.util.HashSet<>();
+        lote.forEach(l -> vistas.add(l.tabela() + ':' + l.id()));
+        java.util.ArrayDeque<LinhaDoPull> fila = new java.util.ArrayDeque<>(lote);
+        while (!fila.isEmpty()) {
+            LinhaDoPull linha = fila.poll();
+            TabelaSincronizavel origem = registro.sincronizavel(linha.tabela()).orElse(null);
+            if (origem == null) {
+                continue;
+            }
+            for (RegraDoVendedor.Expansao expansao : origem.regra().expansoes()) {
+                TabelaSincronizavel alvo = registro.sincronizavel(expansao.tabela()).orElse(null);
+                Object valor = linha.colunas().get(expansao.colunaNaLinha());
+                if (alvo == null || valor == null) {
+                    continue;
+                }
+                FiltroDoVendedor.CondicaoSql condicao = filtro.condicaoPara(alvo);
+                List<Object> parametros = new ArrayList<>();
+                parametros.add(valor);
+                parametros.addAll(condicao.parametros());
+                String sql = "SELECT " + colunas(alvo, filtro) + ", t.sync_xid::text AS posicao_xid, t.sync_seq AS posicao_seq"
+                        + " FROM corona.\"" + alvo.nome() + "\" AS t"
+                        + " WHERE t.\"" + expansao.colunaNaTabela() + "\" = ? AND (" + condicao.sql() + ")"
+                        + " ORDER BY t.sync_xid, t.sync_seq";
+                for (LinhaDoPull expandida : jdbc.query(sql, leitor(alvo), parametros.toArray())) {
+                    if (vistas.add(expandida.tabela() + ':' + expandida.id())) {
+                        entregues.add(expandida);
+                        fila.add(expandida);
+                    }
+                }
+            }
+        }
+        return entregues;
+    }
+
+    private static String colunas(TabelaSincronizavel tabela, FiltroDoVendedor filtro) {
+        return tabela.colunasDoPull().stream().map(c -> filtro.expressao(tabela, c) + " AS \"" + c + '"')
+                .collect(Collectors.joining(", "));
     }
 
     /**
@@ -117,9 +213,8 @@ public class ServicoDePull {
      * nome de coluna da saída; com {@code sync_xid::text AS sync_xid}, a ordem seria a do texto
      * ('1000' antes de '999') e o {@code LIMIT} cortaria as linhas erradas. O estresse pegou isso.
      */
-    private static String consulta(TabelaSincronizavel tabela, FiltroDoVendedor.CondicaoSql condicao) {
-        String colunas = tabela.colunasDoPull().stream().map(c -> "t.\"" + c + '"').collect(Collectors.joining(", "));
-        return "SELECT " + colunas + ", t.sync_xid::text AS posicao_xid, t.sync_seq AS posicao_seq"
+    private static String consulta(TabelaSincronizavel tabela, FiltroDoVendedor.CondicaoSql condicao, FiltroDoVendedor filtro) {
+        return "SELECT " + colunas(tabela, filtro) + ", t.sync_xid::text AS posicao_xid, t.sync_seq AS posicao_seq"
                 + " FROM corona.\"" + tabela.nome() + "\" AS t"
                 + " WHERE t.sync_xid < ?::xid8"
                 + " AND (t.sync_xid, t.sync_seq) > (?::xid8, ?)"
@@ -152,6 +247,9 @@ public class ServicoDePull {
         if ("timestamptz".equals(metadados.getColumnTypeName(coluna))) {
             OffsetDateTime quando = linha.getObject(coluna, OffsetDateTime.class);
             return quando == null ? null : quando.toInstant();
+        }
+        if ("date".equals(metadados.getColumnTypeName(coluna))) {
+            return linha.getObject(coluna, java.time.LocalDate.class);
         }
         return linha.getObject(coluna);
     }

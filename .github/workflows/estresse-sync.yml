@@ -46,4 +46,4 @@ jobs:
         env:
           DURACAO: ${{ inputs.duracao || 'PT10M' }}
           SEMENTE: ${{ inputs.semente || github.run_id }}
-        run: ./mvnw -B test -Dtest=EstresseDoPullTest -Dcorona.estresse.duracao="$DURACAO" -Dcorona.estresse.semente="$SEMENTE"
+        run: ./mvnw -B test -Dtest=EstresseDoPullTest,EstresseDoPullComFiltroTest -Dcorona.estresse.duracao="$DURACAO" -Dcorona.estresse.semente="$SEMENTE"

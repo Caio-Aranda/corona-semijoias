@@ -13,8 +13,14 @@ import java.util.regex.Pattern;
  * entram sempre; {@code sync_seq}, {@code sync_xid} e {@code origem_dispositivo} ficam no servidor.
  *
  * @param imutavel a tabela recusa UPDATE (vendas, itens, pagamentos, movimentos)
+ * @param regra    o que o vendedor recebe desta tabela (ADR-0013, itens 4 e 5; tarefa 5.4)
  */
-public record TabelaSincronizavel(String nome, List<String> colunas, boolean imutavel) {
+public record TabelaSincronizavel(String nome, List<String> colunas, boolean imutavel, RegraDoVendedor regra) {
+
+    /** Tabela sem regra do vendedor declarada (só as de teste): o filtro do vendedor não entrega nada dela. */
+    public TabelaSincronizavel(String nome, List<String> colunas, boolean imutavel) {
+        this(nome, colunas, imutavel, RegraDoVendedor.NAO_DECLARADA);
+    }
 
     /** Colunas de controle que todo registro do pull leva. */
     public static final List<String> COLUNAS_DE_CONTROLE = List.of("id", "version", "created_at", "updated_at", "deleted_at");
@@ -27,6 +33,7 @@ public record TabelaSincronizavel(String nome, List<String> colunas, boolean imu
     public TabelaSincronizavel {
         nome = identificador(nome, "tabela");
         colunas = List.copyOf(colunas);
+        Objects.requireNonNull(regra, "regra");
         Set<String> vistas = new HashSet<>();
         for (String coluna : colunas) {
             identificador(coluna, "coluna de " + nome);
@@ -37,6 +44,9 @@ public record TabelaSincronizavel(String nome, List<String> colunas, boolean imu
             if (!vistas.add(coluna)) {
                 throw new IllegalArgumentException("A coluna " + coluna + " de " + nome + " está repetida.");
             }
+        }
+        if (!regra.diretorio().isEmpty() && (!vistas.containsAll(regra.diretorio()) || !vistas.contains(regra.colunaDoDono()))) {
+            throw new IllegalArgumentException("O diretório de " + nome + " cita coluna que a tabela não entrega.");
         }
     }
 

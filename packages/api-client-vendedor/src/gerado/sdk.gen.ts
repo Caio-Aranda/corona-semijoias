@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AcharPecaDaMinhaMaletaData, AcharPecaDaMinhaMaletaResponses, BaixarFotoDaMinhaMaletaData, BaixarFotoDaMinhaMaletaResponses, BuscarPecaDaMinhaMaletaData, BuscarPecaDaMinhaMaletaResponses, CadastrarMeuClienteData, CadastrarMeuClienteResponses, ConferirMinhaMaletaData, ConferirMinhaMaletaResponses, EntrarData, EntrarResponses, EstornarVendaDoVendedorData, EstornarVendaDoVendedorResponses, EuData, EuResponses, ListarMeusClientesData, ListarMeusClientesResponses, ListarMinhasMaletasData, ListarMinhasMaletasResponses, ListarVendasDoVendedorData, ListarVendasDoVendedorResponses, RelatorioDeMeusRecebimentosData, RelatorioDeMeusRecebimentosResponses, RelatorioDeMinhasVendasData, RelatorioDeMinhasVendasResponses, RelatorioDeValoresAReceberData, RelatorioDeValoresAReceberResponses, RenovarData, RenovarResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SoVendedorData, SoVendedorResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarDoVendedorData, ValidarDoVendedorResponses, ValorDoVendedorData, ValorDoVendedorResponses, VenderNaMaletaData, VenderNaMaletaResponses, VerConferenciaDaMinhaMaletaData, VerConferenciaDaMinhaMaletaResponses, VerCotacaoDeHojeData, VerCotacaoDeHojeResponses, VerMeuClienteData, VerMeuClienteResponses, VerMinhaMaletaData, VerMinhaMaletaResponses, VerVendaDoVendedorData, VerVendaDoVendedorResponses } from './types.gen';
+import type { AcharPecaDaMinhaMaletaData, AcharPecaDaMinhaMaletaResponses, AvisarDiferencaNaConferenciaData, AvisarDiferencaNaConferenciaResponses, BaixarFotoDaMinhaMaletaData, BaixarFotoDaMinhaMaletaResponses, BuscarPecaDaMinhaMaletaData, BuscarPecaDaMinhaMaletaResponses, CadastrarMeuClienteData, CadastrarMeuClienteResponses, ConferirDadosData, ConferirDadosResponses, ConferirMinhaMaletaData, ConferirMinhaMaletaResponses, EntrarData, EntrarResponses, EstornarVendaDoVendedorData, EstornarVendaDoVendedorResponses, EuData, EuResponses, ListarMeusClientesData, ListarMeusClientesResponses, ListarMinhasMaletasData, ListarMinhasMaletasResponses, ListarVendasDoVendedorData, ListarVendasDoVendedorResponses, ReceberDadosData, ReceberDadosResponses, RelatorioDeMeusRecebimentosData, RelatorioDeMeusRecebimentosResponses, RelatorioDeMinhasVendasData, RelatorioDeMinhasVendasResponses, RelatorioDeValoresAReceberData, RelatorioDeValoresAReceberResponses, RenovarData, RenovarResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SoVendedorData, SoVendedorResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarDoVendedorData, ValidarDoVendedorResponses, ValorDoVendedorData, ValorDoVendedorResponses, VenderNaMaletaData, VenderNaMaletaResponses, VerConferenciaDaMinhaMaletaData, VerConferenciaDaMinhaMaletaResponses, VerCotacaoDeHojeData, VerCotacaoDeHojeResponses, VerMeuClienteData, VerMeuClienteResponses, VerMinhaMaletaData, VerMinhaMaletaResponses, VerVendaDoVendedorData, VerVendaDoVendedorResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -246,6 +246,43 @@ export const relatorioDeMeusRecebimentos = <ThrowOnError extends boolean = false
 export const relatorioDeMinhasVendas = <ThrowOnError extends boolean = false>(options?: Options<RelatorioDeMinhasVendasData, ThrowOnError>): RequestResult<RelatorioDeMinhasVendasResponses, unknown, ThrowOnError> => (options?.client ?? client).get<RelatorioDeMinhasVendasResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/vendedor/relatorios/vendas',
+    ...options
+});
+
+/**
+ * Conferência por resumo dos dados do vendedor
+ *
+ * Por tabela, quantas linhas são do vendedor (lápides incluídas) e o SHA-256 da lista ordenada "id:version" (uma por linha, com quebra de linha). O app compara com o que guardou depois de receber tudo; havendo diferença, recarrega a tabela e avisa em /conferencia/diferencas.
+ */
+export const conferirDados = <ThrowOnError extends boolean = false>(options?: Options<ConferirDadosData, ThrowOnError>): RequestResult<ConferirDadosResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ConferirDadosResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/sync/conferencia',
+    ...options
+});
+
+/**
+ * Avisar diferença na conferência por resumo
+ *
+ * O computador achou diferença entre o que guardou e o resumo do servidor: é defeito do filtro (ADR-0013, item 6). Fica no log como alerta; o app recarrega as tabelas.
+ */
+export const avisarDiferencaNaConferencia = <ThrowOnError extends boolean = false>(options: Options<AvisarDiferencaNaConferenciaData, ThrowOnError>): RequestResult<AvisarDiferencaNaConferenciaResponses, unknown, ThrowOnError> => (options.client ?? client).post<AvisarDiferencaNaConferenciaResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/sync/conferencia/diferencas',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Receber os dados do vendedor (pull)
+ *
+ * Devolve o que mudou desde o cursor, só do vendedor do token: maletas enviadas e itens, peças delas (com códigos e fotos), vendas, pagamentos, conferências, cotações, categorias, semanas e o diretório de clientes da loja. Cursor vazio é a carga inicial. Aplique cada linha só se a version for maior que a guardada. 409 CURSOR_INVALIDO: refaça a carga inicial sem tocar no que aguarda envio. Limite padrão 500 linhas, máximo 1000 (a expansão de uma maleta pode passar do limite).
+ */
+export const receberDados = <ThrowOnError extends boolean = false>(options?: Options<ReceberDadosData, ThrowOnError>): RequestResult<ReceberDadosResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ReceberDadosResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/sync/pull',
     ...options
 });
 

@@ -482,6 +482,11 @@ Na ficha da maleta, no Corona Gestão: **Conferência do vendedor** mostra "Na m
 
 Depois de apagar os dados (tarefa 5.8), o Corona Vendas mostra: "Este computador foi desligado da loja. Os dados foram apagados."
 
+**Receber os dados (Fase 5, tarefa 5.4).** Quando o ponto de onde o computador recebe os dados não vale mais (a loja restaurou uma cópia de segurança), o servidor responde:
+
+> **Os dados deste computador vão ser baixados de novo.**
+> Os dados deste computador vão ser baixados de novo. Suas vendas guardadas continuam salvas.
+
 **Cadastros da dona (fornecedores, categorias, praças, semanas, restrições, clientes; tarefa 1.2)**
 
 Cadastro que não existe mais (ou já foi excluído):

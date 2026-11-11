@@ -442,7 +442,14 @@ public enum CodigoErro {
 
     APARELHO_NAO_ENCONTRADO(
             "Não encontramos este computador.",
-            "Não encontramos este computador. Atualize a tela e tente de novo.");
+            "Não encontramos este computador. Atualize a tela e tente de novo."),
+
+    // --- Receber os dados (Fase 5, tarefa 5.4; ADR-0013, item 3) ---
+
+    /** O ponto de onde o computador recebe os dados não vale mais (backup restaurado): ele baixa tudo de novo (HTTP 409). */
+    CURSOR_INVALIDO(
+            "Os dados deste computador vão ser baixados de novo.",
+            "Os dados deste computador vão ser baixados de novo. Suas vendas guardadas continuam salvas.");
 
     private final String titulo;
     private final String mensagem;
