@@ -125,6 +125,10 @@ Maleta (§15). Segue o mesmo formato da Fase 2. O modelo da maleta está no [ADR
 
 **Fase 3 concluída** (tarefas 3.1 a 3.8; a 3.8 foi a revisão de fechamento). Resumo: a dona monta a maleta com o leitor (rascunho não mexe no estoque), envia (baixa o estoque central de uma vez, preço congelado, limite e restrição conferidos no servidor), devolve peças, desfaz devolução, cancela e repõe; a conciliação "estoque da loja + maletas" fecha e aparece na tela Conferência do estoque; há cinco relatórios da maleta e a nota de remessa em PDF. **Segue para a Fase 4:** conferência pelo vendedor, um aparelho por maleta e a leitura da própria maleta pelo vendedor, sem custo. O encerramento da maleta é o acerto (Fase 7): maleta com tudo devolvido continua enviada.
 
+## Extra: testes de ponta a ponta
+
+Playwright com o Electron de verdade (`npm run e2e`, pasta `testes-e2e/`): login da dona com troca obrigatória de senha, cadastro de fornecedor, entrada de compra lendo o código (digitar + Enter) com conferência do estoque e exportação de relatório em CSV. Banco e API de teste isolados (porta 5499 e 8099, projeto `corona-e2e`, sem volume), limpos no fim; nunca o banco de desenvolvimento nem a pilha de produção. **Não está no CI de cada PR** (sobe Docker, API e Electron, vários minutos): o workflow `E2E` roda à mão e toda segunda. O workflow ainda não foi executado no GitHub (só localmente, 4 testes verdes). Nada do Corona Vendas antes da Fase 4.
+
 ## Pendências abertas
 
 - Fase 3 (maleta), para a dona ou o responsável: limite a **preço de venda** (dúvida 1 do ADR-0010); **reposição** dentro do limite (dúvida 2); vendedor sem limite recebe maleta sem limite (dúvida 6; limite 0 = sem limite); peça repetida na mesma maleta (dúvida 3, hoje uma linha por peça); foto na nota (dúvida 4); prazo de atraso (hoje 7 dias, dúvida 5); formato do número da maleta (hoje S12-V7-1). Com o responsável: leitor de código físico e app instalado ainda não testados. **A Fase 4 herda:** conferência da maleta, dispositivo único por maleta e leitura da própria maleta pelo vendedor sem custo. O ADR-0010 está Aceito. ([tarefa 3.8](progresso/fase-3.md#tarefa-38-fechamento-da-fase-3))
