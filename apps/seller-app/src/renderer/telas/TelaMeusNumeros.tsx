@@ -1,10 +1,9 @@
 import { Aviso, Botao, Campo, Tabela } from '@corona/ui';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import type { RelatorioAReceber, RelatorioDeVendas } from '../../shared/dados';
+import type { RelatorioAReceber, RelatorioDeVendas, TotaisDeRelatorio } from '../../shared/dados';
 import type { AgrupamentoDeVendas } from '../../shared/operacoes';
 import type { PonteDoCorona } from '../../shared/ponte';
-import { chamar, Dinheiro, useCotacao } from '../chamadas';
-import { dataParaTela } from '../moedas';
+import { chamar, DinheiroConvertido } from '../chamadas';
 import { TEXTOS } from '../textos';
 import { PaginaDoVendedor } from './PaginaDoVendedor';
 
@@ -22,12 +21,11 @@ interface Numeros {
 
 /**
  * Meus números (§12, "App do vendedor"): vendas por cliente, peça ou dia, recebimentos por forma e o que os clientes
- * ainda devem. Só dados dele, sem custo; vendas estornadas não contam. Os valores aparecem em Real, Dólar e Guarani
- * pela cotação de hoje (só para mostrar; o banco guarda Real).
+ * ainda devem. Só dados dele, sem custo; vendas estornadas não contam. Os valores aparecem em Real, Dólar e Guarani,
+ * cada venda e cada pagamento pela cotação do seu dia, já somados pelo servidor (ADR-0006, item 10; o banco guarda Real).
  */
 export function TelaMeusNumeros({ ponte, aoVoltar, aoVerVendas }: TelaMeusNumerosProps) {
   const T = TEXTOS.numeros;
-  const { cotacao, data: dataDaCotacao, carregada } = useCotacao(ponte);
   const [de, setDe] = useState('');
   const [ate, setAte] = useState('');
   const [agrupar, setAgrupar] = useState<AgrupamentoDeVendas>('cliente');
@@ -111,12 +109,9 @@ export function TelaMeusNumeros({ ponte, aoVoltar, aoVerVendas }: TelaMeusNumero
       ) : null}
       {numeros ? (
         <>
-          {carregada ? (
-            <p className="vendas-texto vendas-texto--pequeno">
-              {cotacao && dataDaCotacao ? T.cotacaoDe(dataParaTela(dataDaCotacao)) : T.semCotacao}{' '}
-              {T.vendasEstornadasNaoContam}
-            </p>
-          ) : null}
+          <p className="vendas-texto vendas-texto--pequeno">
+            {T.cotacaoDeCadaLancamento} {T.vendasEstornadasNaoContam}
+          </p>
 
           <section aria-label={T.vendasTitulo}>
             <h2 className="vendas-subtitulo">{T.vendasTitulo}</h2>
@@ -132,12 +127,24 @@ export function TelaMeusNumeros({ ponte, aoVoltar, aoVerVendas }: TelaMeusNumero
               linhas={numeros.vendas.linhas.map((l) => ({
                 chave: l.nome,
                 quantidade: l.quantidade,
-                total: <Dinheiro reais={l.total} cotacao={cotacao} />,
-                desconto: <Dinheiro reais={l.desconto} cotacao={cotacao} />,
+                total: (
+                  <DinheiroConvertido
+                    reais={l.total}
+                    dolar={l.totalEmDolar}
+                    guarani={l.totalEmGuarani}
+                  />
+                ),
+                desconto: (
+                  <DinheiroConvertido
+                    reais={l.desconto}
+                    dolar={l.descontoEmDolar}
+                    guarani={l.descontoEmGuarani}
+                  />
+                ),
               }))}
             />
             <p className="vendas-total">
-              {T.totalVendido}: <Dinheiro reais={numeros.vendas.totais.total} cotacao={cotacao} />
+              {T.totalVendido}: <Totais totais={numeros.vendas.totais} />
             </p>
             <Botao onClick={aoVerVendas}>{T.minhasVendas}</Botao>
           </section>
@@ -155,12 +162,17 @@ export function TelaMeusNumeros({ ponte, aoVoltar, aoVerVendas }: TelaMeusNumero
               linhas={numeros.recebimentos.linhas.map((l) => ({
                 forma: TEXTOS.venda.formas[l.nome] ?? l.nome,
                 pagamentos: l.quantidade,
-                total: <Dinheiro reais={l.total} cotacao={cotacao} />,
+                total: (
+                  <DinheiroConvertido
+                    reais={l.total}
+                    dolar={l.totalEmDolar}
+                    guarani={l.totalEmGuarani}
+                  />
+                ),
               }))}
             />
             <p className="vendas-total">
-              {T.totalRecebido}:{' '}
-              <Dinheiro reais={numeros.recebimentos.totais.total} cotacao={cotacao} />
+              {T.totalRecebido}: <Totais totais={numeros.recebimentos.totais} />
             </p>
           </section>
 
@@ -177,18 +189,45 @@ export function TelaMeusNumeros({ ponte, aoVoltar, aoVerVendas }: TelaMeusNumero
               ]}
               linhas={numeros.aReceber.clientes.map((c) => ({
                 cliente: c.clienteNome,
-                vendido: <Dinheiro reais={c.vendido} cotacao={cotacao} />,
-                pago: <Dinheiro reais={c.pago} cotacao={cotacao} />,
-                aReceber: <Dinheiro reais={c.aReceber} cotacao={cotacao} />,
+                vendido: (
+                  <DinheiroConvertido
+                    reais={c.vendido}
+                    dolar={c.vendidoEmDolar}
+                    guarani={c.vendidoEmGuarani}
+                  />
+                ),
+                pago: (
+                  <DinheiroConvertido
+                    reais={c.pago}
+                    dolar={c.pagoEmDolar}
+                    guarani={c.pagoEmGuarani}
+                  />
+                ),
+                aReceber: (
+                  <DinheiroConvertido
+                    reais={c.aReceber}
+                    dolar={c.aReceberEmDolar}
+                    guarani={c.aReceberEmGuarani}
+                  />
+                ),
               }))}
             />
             <p className="vendas-total">
-              {T.totalAReceber}:{' '}
-              <Dinheiro reais={numeros.aReceber.totais.total} cotacao={cotacao} />
+              {T.totalAReceber}: <Totais totais={numeros.aReceber.totais} />
             </p>
           </section>
         </>
       ) : null}
     </PaginaDoVendedor>
+  );
+}
+
+function Totais({ totais }: { totais: TotaisDeRelatorio }) {
+  return (
+    <DinheiroConvertido
+      reais={totais.total}
+      dolar={totais.totalEmDolar}
+      guarani={totais.totalEmGuarani}
+    />
   );
 }

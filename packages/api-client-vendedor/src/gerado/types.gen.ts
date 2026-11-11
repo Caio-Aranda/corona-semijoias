@@ -52,10 +52,16 @@ export type DadosDoUsuario = {
 
 export type Devedor = {
     aReceber?: string;
+    aReceberEmDolar?: string;
+    aReceberEmGuarani?: string;
     clienteId?: string;
     clienteNome?: string;
     pago?: string;
+    pagoEmDolar?: string;
+    pagoEmGuarani?: string;
     vendido?: string;
+    vendidoEmDolar?: string;
+    vendidoEmGuarani?: string;
 };
 
 export type Item = {

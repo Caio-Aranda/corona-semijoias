@@ -1,8 +1,15 @@
 import { ValorTresMoedas } from '@corona/ui';
 import { useEffect, useState } from 'react';
-import type { CotacaoDoDia, FotoPronta } from '../shared/dados';
+import type { CotacaoDaVenda, CotacaoDoDia, FotoPronta } from '../shared/dados';
 import type { PedidoDeChamada, PonteDoCorona } from '../shared/ponte';
-import { tresMoedas, type CotacaoParaTela } from './moedas';
+import {
+  centavosDeTexto,
+  formatarDolar,
+  formatarGuarani,
+  formatarReais,
+  tresMoedas,
+  type CotacaoParaTela,
+} from './moedas';
 import { TEXTOS } from './textos';
 
 export type Resposta<T> = { ok: true; dados: T } | { ok: false; mensagem: string };
@@ -80,6 +87,41 @@ export function Dinheiro({ reais, cotacao }: { reais: string; cotacao: CotacaoPa
       {...(v.guarani ? { guarani: v.guarani } : {})}
     />
   );
+}
+
+/**
+ * Valor que o servidor já converteu, cada lançamento pela cotação do seu dia (ADR-0006, item 10): a tela só formata.
+ * Sem Dólar ou Guarani (faltou cotação), só Real.
+ */
+export function DinheiroConvertido({
+  reais,
+  dolar,
+  guarani,
+}: {
+  reais: string;
+  dolar?: string | null | undefined;
+  guarani?: string | null | undefined;
+}) {
+  const real = centavosDeTexto(reais);
+  if (real === null) return <span>{reais}</span>;
+  const centavosDeDolar = dolar ? centavosDeTexto(dolar) : null;
+  const centavosDeGuarani = guarani ? centavosDeTexto(guarani) : null;
+  return (
+    <ValorTresMoedas
+      real={formatarReais(real)}
+      {...(centavosDeDolar !== null && centavosDeGuarani !== null
+        ? {
+            dolar: formatarDolar(centavosDeDolar),
+            guarani: formatarGuarani(centavosDeGuarani / 100n),
+          }
+        : {})}
+    />
+  );
+}
+
+/** A cotação gravada na venda (a do dia dela), para mostrar os valores dela em Dólar e Guarani. */
+export function cotacaoDaVenda(venda: { cotacao: CotacaoDaVenda | null }): CotacaoParaTela | null {
+  return venda.cotacao ? { dolar: venda.cotacao.dolar, guarani: venda.cotacao.guarani } : null;
 }
 
 const FOTOS_PRONTAS = new Map<string, string>();

@@ -1,8 +1,8 @@
 import { Aviso, Botao, Campo, EstadoDaLista, Tabela } from '@corona/ui';
 import { useCallback, useEffect, useState } from 'react';
-import type { Cliente, RelatorioAReceber, Venda } from '../../shared/dados';
+import type { Cliente, Devedor, RelatorioAReceber, Venda } from '../../shared/dados';
 import type { PonteDoCorona } from '../../shared/ponte';
-import { chamar, Dinheiro, useCotacao } from '../chamadas';
+import { chamar, cotacaoDaVenda, Dinheiro, DinheiroConvertido } from '../chamadas';
 import { dataParaTela } from '../moedas';
 import { TEXTOS } from '../textos';
 import { FormularioDeCliente } from './FormularioDeCliente';
@@ -16,10 +16,9 @@ export interface TelaMeusClientesProps {
 /** Meus clientes: busca, cadastro e a ficha de cada um (o que ele deve e as compras feitas com este vendedor). */
 export function TelaMeusClientes({ ponte, aoVoltar }: TelaMeusClientesProps) {
   const T = TEXTOS.clientes;
-  const { cotacao } = useCotacao(ponte);
   const [busca, setBusca] = useState('');
   const [clientes, setClientes] = useState<Cliente[] | null>(null);
-  const [devedores, setDevedores] = useState<Record<string, string>>({});
+  const [devedores, setDevedores] = useState<Record<string, Devedor>>({});
   const [erro, setErro] = useState<string | null>(null);
   const [cadastrando, setCadastrando] = useState(false);
   const [aberto, setAberto] = useState<Cliente | null>(null);
@@ -46,7 +45,7 @@ export function TelaMeusClientes({ ponte, aoVoltar }: TelaMeusClientesProps) {
     let ativo = true;
     void chamar<RelatorioAReceber>(ponte, { operacao: 'relatorios.aReceber' }).then((r) => {
       if (!ativo || !r.ok || !Array.isArray(r.dados.clientes)) return;
-      setDevedores(Object.fromEntries(r.dados.clientes.map((d) => [d.clienteId, d.aReceber])));
+      setDevedores(Object.fromEntries(r.dados.clientes.map((d) => [d.clienteId, d])));
     });
     return () => {
       ativo = false;
@@ -111,7 +110,7 @@ export function TelaMeusClientes({ ponte, aoVoltar }: TelaMeusClientesProps) {
           ) : null}
         </ul>
         <p className="vendas-total">
-          {TEXTOS.vendas.aReceber}: <Dinheiro reais={deve ?? '0.00'} cotacao={cotacao} />
+          {TEXTOS.vendas.aReceber}: <AReceber devedor={deve} />
         </p>
         <h2 className="vendas-subtitulo">{T.vendasDoCliente}</h2>
         {vendas === null ? (
@@ -129,7 +128,7 @@ export function TelaMeusClientes({ ponte, aoVoltar }: TelaMeusClientesProps) {
             ]}
             linhas={vendas.map((v) => ({
               data: dataParaTela(v.vendidaEm),
-              total: <Dinheiro reais={v.total} cotacao={cotacao} />,
+              total: <Dinheiro reais={v.total} cotacao={cotacaoDaVenda(v)} />,
               situacao: TEXTOS.vendas.situacao[v.status] ?? v.status,
             }))}
           />
@@ -169,11 +168,7 @@ export function TelaMeusClientes({ ponte, aoVoltar }: TelaMeusClientesProps) {
             linhas={clientes.map((c) => ({
               nome: c.nome,
               telefone: c.telefone ?? c.whatsapp ?? '',
-              aReceber: devedores[c.id] ? (
-                <Dinheiro reais={devedores[c.id] ?? '0.00'} cotacao={cotacao} />
-              ) : (
-                ''
-              ),
+              aReceber: devedores[c.id] ? <AReceber devedor={devedores[c.id]} /> : '',
               acoes: (
                 <Botao
                   aria-label={`${T.ver}: ${c.nome}`}
@@ -193,5 +188,20 @@ export function TelaMeusClientes({ ponte, aoVoltar }: TelaMeusClientesProps) {
         {T.cadastrar}
       </Botao>
     </PaginaDoVendedor>
+  );
+}
+
+/**
+ * O que o cliente ainda deve, como o servidor somou: cada venda pela cotação do dia dela e cada pagamento pela do dia em
+ * que foi pago (ADR-0006, item 10). Quem não deve nada aparece com zero.
+ */
+function AReceber({ devedor }: { devedor: Devedor | undefined }) {
+  if (!devedor) return <DinheiroConvertido reais="0.00" dolar="0.00" guarani="0" />;
+  return (
+    <DinheiroConvertido
+      reais={devedor.aReceber}
+      dolar={devedor.aReceberEmDolar}
+      guarani={devedor.aReceberEmGuarani}
+    />
   );
 }

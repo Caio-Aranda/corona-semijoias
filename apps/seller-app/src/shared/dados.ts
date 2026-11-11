@@ -121,6 +121,11 @@ export interface LinhaDeRelatorio {
   quantidade: number;
   total: string;
   desconto: string;
+  /** Soma dos lançamentos da linha, cada um pela cotação do seu dia; vazio se faltou cotação. */
+  totalEmDolar?: string | null;
+  totalEmGuarani?: string | null;
+  descontoEmDolar?: string | null;
+  descontoEmGuarani?: string | null;
 }
 
 export interface TotaisDeRelatorio {
@@ -141,6 +146,12 @@ export interface Devedor {
   vendido: string;
   pago: string;
   aReceber: string;
+  vendidoEmDolar?: string | null;
+  vendidoEmGuarani?: string | null;
+  pagoEmDolar?: string | null;
+  pagoEmGuarani?: string | null;
+  aReceberEmDolar?: string | null;
+  aReceberEmGuarani?: string | null;
 }
 
 export interface RelatorioAReceber {
