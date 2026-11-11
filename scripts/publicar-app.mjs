@@ -24,7 +24,12 @@ import {
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { alvoDoArgumento } from './lib/alvos.mjs';
-import { conferirVersaoNova, lerLatest, nomeDoInstaladorValido } from './lib/publicacao.mjs';
+import {
+  conferirVersaoNova,
+  instaladoresAntigos,
+  lerLatest,
+  nomeDoInstaladorValido,
+} from './lib/publicacao.mjs';
 
 const raiz = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const alvo = alvoDoArgumento(process.argv);
@@ -136,10 +141,7 @@ if (local) {
   }
   writeFileSync(join(local, 'latest.yml.envio'), latestTexto);
   renameSync(join(local, 'latest.yml.envio'), join(local, 'latest.yml'));
-  const aposentar = readdirSync(local)
-    .filter((n) => nomeDoInstaladorValido(n, alvo.prefixo))
-    .sort()
-    .slice(0, -3);
+  const aposentar = instaladoresAntigos(readdirSync(local), alvo.prefixo, 3);
   for (const n of aposentar) {
     rmSync(join(local, n));
     rmSync(join(local, `${n}.blockmap`), { force: true });
