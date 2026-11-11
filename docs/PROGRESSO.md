@@ -173,9 +173,13 @@ Acerto semanal e financeiro. O modelo está no [ADR-0012](decisoes/ADR-0012-acer
 
 Revisão do que foi feito nas Fases 0 a 4 e na Fase 9 mínima, antes da Fase 5: [relatório](auditoria/2026-11-11-checkup.md) (PR 75). Três achados altos, cada um com PR próprio e teste que falha antes: ordem das travas do estoque (PR 76), segunda trava do saldo da maleta no banco (PR 77) e Dólar e Guarani pela cotação do dia de cada lançamento no Corona Vendas (PR 78). Médios e baixos ficam no relatório como tarefas.
 
+## Leva de correções antes da Fase 5 (11/11/2026)
+
+Um PR por item, a partir do relatório da auditoria: **PR 80** (M7, testes isolados), **PR 81** (M2 e B4, 409 na idempotência), **PR 82** (B7, `CHECK` do sinal na maleta, V025), **PR 83** (M1, nomes únicos no OpenAPI), **PR 84** (D1, "Minha maleta" pela cotação de hoje), **PR 85** (D2, vendedor inativo não vende e inativar desativa o usuário), **PR 86** (limite de consignação obrigatório com "Sem limite", V026) e este de documentos. Antes da Fase 5 ficam só os médios M3, M4, M5 e M6 e os baixos B1, B2, B3 e B6 do relatório.
+
 ## Pendências abertas
 
-- Fase 3 (maleta), para a dona ou o responsável: limite a **preço de venda** (dúvida 1 do ADR-0010); **reposição** dentro do limite (dúvida 2); vendedor sem limite recebe maleta sem limite (dúvida 6; limite 0 = sem limite); peça repetida na mesma maleta (dúvida 3, hoje uma linha por peça); foto na nota (dúvida 4); prazo de atraso (hoje 7 dias, dúvida 5); formato do número da maleta (hoje S12-V7-1). Com o responsável: leitor de código físico e app instalado ainda não testados. **A Fase 4 herda:** conferência da maleta, dispositivo único por maleta e leitura da própria maleta pelo vendedor sem custo. O ADR-0010 está Aceito. ([tarefa 3.8](progresso/fase-3.md#tarefa-38-fechamento-da-fase-3))
+- Fase 3 (maleta), para a dona ou o responsável: limite a **preço de venda** (dúvida 1 do ADR-0010); **reposição** dentro do limite (dúvida 2); (dúvida 6 respondida em 11/11/2026: limite obrigatório, com "Sem limite" explícito; zero vale zero; PR 86); peça repetida na mesma maleta (dúvida 3, hoje uma linha por peça); foto na nota (dúvida 4); prazo de atraso (hoje 7 dias, dúvida 5); formato do número da maleta (hoje S12-V7-1). Com o responsável: leitor de código físico e app instalado ainda não testados. **A Fase 4 herda:** conferência da maleta, dispositivo único por maleta e leitura da própria maleta pelo vendedor sem custo. O ADR-0010 está Aceito. ([tarefa 3.8](progresso/fase-3.md#tarefa-38-fechamento-da-fase-3))
 
 - Fase 2: a dona aceitar a saída recusada quando falta peça (ADR-0008); formato do código da loja no cadastro rápido (ADR-0007, item 5); foto nos arquivos exportados e ordenação por coluna dos relatórios de estoque; leitor de código real e pacote instalado ainda não testados. ([tarefas 2.1 a 2.9](progresso/fase-2.md#tarefa-29-fechamento-da-fase-2))
 
