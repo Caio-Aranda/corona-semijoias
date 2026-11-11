@@ -336,7 +336,47 @@ public enum CodigoErro {
     /** Fechar deixaria alguma peça com menos de zero (HTTP 409). O servidor monta o texto com a peça. */
     CONTAGEM_NAO_PODE_FECHAR(
             "Não é possível fechar esta contagem.",
-            "Não é possível fechar esta contagem porque o estoque de uma peça ficaria menor que zero.");
+            "Não é possível fechar esta contagem porque o estoque de uma peça ficaria menor que zero."),
+
+    // --- Venda do vendedor (Fase 4, ADR-0011) ---
+
+    VENDA_NAO_ENCONTRADA(
+            "Não encontramos esta venda.",
+            "Não encontramos esta venda. Atualize a tela e tente de novo."),
+
+    /** O mesmo identificador voltou com outros dados (HTTP 409). */
+    VENDA_JA_REGISTRADA_DIFERENTE(
+            "Esta venda já foi registrada com outros dados.",
+            "Esta venda já foi registrada com outros dados. Confira suas vendas antes de lançar de novo."),
+
+    /** A peça pedida é maior que o saldo da maleta (HTTP 409). O servidor monta o texto com a peça. */
+    VENDA_SEM_SALDO(
+            "Não há peças suficientes na sua maleta.",
+            "Não há peças suficientes na sua maleta para esta venda."),
+
+    /** Desconto acima do limite da dona (HTTP 409). O servidor monta o texto com o limite. */
+    DESCONTO_ACIMA_DO_LIMITE(
+            "O desconto passa do limite que a dona definiu.",
+            "O desconto passa do limite que a dona definiu. Diminua o desconto."),
+
+    VENDA_JA_ESTORNADA(
+            "Esta venda já foi estornada.",
+            "Esta venda já foi estornada e não pode mudar."),
+
+    /** O vendedor só estorna no dia da venda (HTTP 409). */
+    ESTORNO_SO_DA_DONA(
+            "Esta venda só pode ser estornada pela dona.",
+            "Só dá para estornar a venda no mesmo dia. Peça à dona para estornar."),
+
+    /** A maleta não está com o vendedor para vender (HTTP 409): rascunho, cancelada ou já acertada. */
+    MALETA_NAO_ESTA_COM_VOCE(
+            "Esta maleta não está com você.",
+            "Esta maleta não está disponível para vender. Atualize a tela."),
+
+    /** A maleta está ligada a outro aparelho do mesmo vendedor (HTTP 409). */
+    MALETA_EM_OUTRO_APARELHO(
+            "Esta maleta já está em outro aparelho.",
+            "Esta maleta já está em outro aparelho. Peça à dona para liberar este aparelho.");
 
     private final String titulo;
     private final String mensagem;

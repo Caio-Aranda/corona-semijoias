@@ -21,3 +21,22 @@ Uma seção por tarefa, no mesmo formato de [fase-3.md](fase-3.md). A tabela de 
 - Dinheiro e estoque: testes primeiro.
 
 **Dúvidas abertas:** as seis do ADR-0011 (desconto em valor ou %, parcela mínima, prazo do estorno, quem troca o aparelho, vender sem conferir, consulta fora da maleta).
+
+### Tarefa 4.2: backend das vendas (vender, estornar, totais no servidor)
+
+**Em revisão.** Migração `V022__vendas.sql`; pacote `vendas` (`ServicoDeVendas`, `ConsultasDeVendas`, `VendasDoVendedorController`, `VendasDaDonaController`).
+
+**O que foi feito**
+
+- Tabelas `vendas`, `itens_venda` e `pagamentos_cliente` (sincronizáveis; itens e pagamentos imutáveis; a venda só muda de status no estorno, protegida por gatilho). Chave nova `limite_desconto_percentual` em `configuracoes` (padrão 0).
+- `POST /api/vendedor/vendas`: baixa a maleta pelo movimento `VENDA`, preço do `preco_remessa`, desconto em valor por linha respeitando o limite, pagamentos opcionais (à vista ou a prazo), cotação do dia guardada para mostrar Dólar e Guarani. 201 na primeira gravação, 200 no reenvio igual, 409 com o mesmo id e dados diferentes.
+- Estorno da venda inteira (`POST /api/vendedor/vendas/{id}/estorno`, só no dia da venda; `POST /api/dona/vendas/{id}/estorno`, sem prazo): movimentos `ESTORNO_VENDA` e reembolso negativo por pagamento. Reenvio com o mesmo id: 200.
+- Leitura: `GET /api/vendedor/vendas` (filtros por dia, cliente e situação) e `GET /{id}`; `GET /api/dona/vendas/{id}`. Sem custo em nenhuma resposta.
+- 15 testes de integração: preço congelado, totais, a prazo, idempotência, saldo, peça fora da maleta, cliente e maleta de outro vendedor, maleta em rascunho ou cancelada, limite de desconto, pagamento a mais, estorno e seus reenvios, prazo do estorno, imutabilidade no banco, isolamento, 403 cruzado e concorrência (seis vendas da última peça: só uma entra).
+
+**Decisões que valem daqui para a frente**
+
+- O app nunca manda preço nem total; `totalConferido` só gera alerta na auditoria.
+- A conferência da maleta e a troca de aparelho ficam na 4.3; a venda já recusa maleta ligada a outro aparelho (`MALETA_EM_OUTRO_APARELHO`).
+- A tela de configuração do limite de desconto não existe (sem rota da dona): o valor 0 só muda no banco até a dona ter essa tela (pendência).
+- A conciliação "estoque + maletas" já enxerga as vendas porque o saldo vem dos movimentos; a conciliação completa com vendas é da Fase 8.

@@ -13,7 +13,10 @@ public enum ChaveDeConfiguracao {
     TENTATIVAS_LOGIN_ANTES_DO_BLOQUEIO("tentativas_login_antes_do_bloqueio"),
 
     /** Duração do bloqueio de login + IP, em minutos (padrão 15; ADR-0004, item 7). */
-    TEMPO_BLOQUEIO_LOGIN_MINUTOS("tempo_bloqueio_login_minutos");
+    TEMPO_BLOQUEIO_LOGIN_MINUTOS("tempo_bloqueio_login_minutos"),
+
+    /** Desconto máximo de uma venda, em % do subtotal (padrão 0 até a dona definir; ADR-0011, item 5). */
+    LIMITE_DESCONTO_PERCENTUAL("limite_desconto_percentual");
 
     private final String chave;
 
