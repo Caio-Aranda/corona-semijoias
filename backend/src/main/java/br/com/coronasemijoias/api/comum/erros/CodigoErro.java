@@ -249,6 +249,54 @@ public enum CodigoErro {
             "Não é possível desfazer esta compra.",
             "Não é possível desfazer esta compra porque já saíram peças dela."),
 
+    // --- Maleta e remessa (ADR-0010; tarefa 3.2) ---
+
+    REMESSA_NAO_ENCONTRADA(
+            "Não encontramos esta maleta.",
+            "Não encontramos esta maleta. Atualize a tela e tente de novo."),
+
+    /** O mesmo identificador voltou com outros dados (HTTP 409). */
+    REMESSA_JA_REGISTRADA_DIFERENTE(
+            "Esta maleta já foi registrada com outros dados.",
+            "Esta maleta já foi registrada com outros dados. Confira a lista de maletas antes de montar de novo."),
+
+    /** A remessa já foi enviada (ou cancelada) e não pode mais ser mudada (HTTP 409). */
+    REMESSA_NAO_EDITAVEL(
+            "Esta maleta não pode mais ser mudada.",
+            "Esta maleta já foi enviada e não pode mais ser mudada. Para corrigir, faça uma nova maleta."),
+
+    /** Vendedor inativo ou com restrição que impede montar maleta (HTTP 409). O servidor monta o texto. */
+    VENDEDOR_NAO_RECEBE_MALETA(
+            "Este vendedor não pode receber maleta.",
+            "Este vendedor não pode receber maleta agora."),
+
+    /** O valor da maleta passa o limite de consignação do vendedor (HTTP 409). O servidor monta o texto. */
+    LIMITE_DE_CONSIGNACAO_EXCEDIDO(
+            "O valor da maleta passa o limite do vendedor.",
+            "O valor da maleta passa o limite de consignação do vendedor."),
+
+    /** Peça desativada ou excluída não vai para a maleta (HTTP 409). O servidor monta o texto. */
+    PECA_FORA_DA_MALETA(
+            "Esta peça não pode ir para a maleta.",
+            "Esta peça está desativada ou foi excluída e não pode ir para a maleta."),
+
+    // --- Devolução e cancelamento da maleta (ADR-0010, itens 4 e 5; tarefa 3.3) ---
+
+    /** Devolução de mais peças do que ainda há na maleta (HTTP 409). O servidor monta o texto com o que há. */
+    DEVOLUCAO_MAIOR_QUE_O_SALDO(
+            "Há menos peças na maleta do que o informado.",
+            "Há menos peças na maleta do que o informado. Confira a quantidade."),
+
+    /** Cancelar uma maleta enviada que já teve devolução, venda ou conferência (HTTP 409). */
+    MALETA_JA_MOVIMENTADA(
+            "Esta maleta já teve peças devolvidas ou vendidas.",
+            "Esta maleta já teve peças devolvidas ou vendidas e não pode ser cancelada. Desfaça as devoluções antes, se foi engano."),
+
+    /** Desfazer a devolução faria faltar peça no estoque da loja (HTTP 409). O servidor monta o texto. */
+    DEVOLUCAO_NAO_PODE_SER_DESFEITA(
+            "Não é possível desfazer esta devolução.",
+            "Não é possível desfazer esta devolução porque as peças já saíram do estoque da loja."),
+
     // --- Contagem do estoque (glossário, parte 12; tarefa 2.4) ---
 
     CONTAGEM_NAO_ENCONTRADA(

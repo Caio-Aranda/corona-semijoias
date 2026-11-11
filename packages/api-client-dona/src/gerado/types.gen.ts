@@ -444,6 +444,10 @@ export type Pedido = {
     whatsapp?: string;
 };
 
+export type PedidoComMotivo = {
+    motivo?: string;
+};
+
 export type PedidoDaCompra = {
     dataCompra?: string;
     fornecedorId?: string;
@@ -451,6 +455,12 @@ export type PedidoDaCompra = {
     itens?: Array<PedidoDeItem>;
     numero?: string;
     observacoes?: string;
+};
+
+export type PedidoDaLinha = {
+    id?: string;
+    produtoId?: string;
+    quantidade?: number;
 };
 
 export type PedidoDeAjuste = {
@@ -475,6 +485,10 @@ export type PedidoDeContagem = {
     contado?: number;
     id?: string;
     produtoId?: string;
+};
+
+export type PedidoDeDevolucao = {
+    itens?: Array<PedidoDaLinha>;
 };
 
 export type PedidoDeEdicao = {
@@ -573,6 +587,19 @@ export type PedidoDeUsuario = {
 export type PedidoDoEstoqueMinimo = {
     estoqueMinimo: number;
     version?: number;
+};
+
+export type PedidoDoItem = {
+    quantidade?: number;
+    version?: number;
+};
+
+export type PedidoDoRascunho = {
+    id?: string;
+    pracaId?: string;
+    semanaId?: string;
+    tipo?: string;
+    vendedorId?: string;
 };
 
 export type PedidoDosCodigos = {
@@ -845,6 +872,7 @@ export type RespostaDaCompra = {
 };
 
 export type RespostaDaConciliacao = {
+    diferencasComMaletas?: Array<RespostaDaDiferencaComMaletas>;
     divergencias?: Array<RespostaDaDivergencia>;
     geradaEm?: string;
     produtosConferidos?: number;
@@ -867,6 +895,14 @@ export type RespostaDaContagem = {
     resumo?: RespostaDoResumo;
     situacao?: string;
     zerouNaoLidos?: boolean;
+};
+
+export type RespostaDaDiferencaComMaletas = {
+    diferenca?: number;
+    esperado?: number;
+    estoqueCentral?: number;
+    produto?: RespostaDoProduto;
+    saldoNasMaletas?: number;
 };
 
 export type RespostaDaDivergencia = {
@@ -903,15 +939,12 @@ export type RespostaDaLeitura = {
 };
 
 export type RespostaDaLinha = {
-    escopo?: string;
-    escopoId?: string;
-    escopoNome?: string;
-    fechadoEm?: string;
-    id?: string;
-    iniciadoEm?: string;
-    lidos?: number;
-    situacao?: string;
-    totalDePecas?: number;
+    devolvida?: number;
+    enviada?: number;
+    precoUnitario?: string;
+    produto?: RespostaDaPeca;
+    saldo?: number;
+    valorEmAberto?: string;
 };
 
 export type RespostaDaLinhaDeCusto = {
@@ -922,6 +955,29 @@ export type RespostaDaLinhaDeCusto = {
     fornecedorNome?: string;
     quantidade?: number;
     situacaoDaCompra?: string;
+};
+
+export type RespostaDaMaleta = {
+    id?: string;
+    itens?: Array<RespostaDaLinha>;
+    motivoDoCancelamento?: string;
+    movimentos?: Array<RespostaDoMovimento>;
+    pecasEmAberto?: number;
+    status?: string;
+    valorEmAberto?: string;
+    vendedorId?: string;
+};
+
+export type RespostaDaMaletaEmAberto = {
+    enviadaEm?: string;
+    id?: string;
+    pecasEmAberto?: number;
+    semanaNumero?: number;
+    status?: string;
+    tipo?: string;
+    totalPecas?: number;
+    totalValor?: string;
+    valorEmAberto?: string;
 };
 
 export type RespostaDaNaoAjustada = {
@@ -941,11 +997,39 @@ export type RespostaDaPeca = {
     referencia?: string;
 };
 
+export type RespostaDaRemessa = {
+    avisos?: Array<string>;
+    criadaEm?: string;
+    enviadaEm?: string;
+    id?: string;
+    itens?: Array<RespostaDoItem>;
+    pracaId?: string;
+    pracaNome?: string;
+    semanaId?: string;
+    semanaNumero?: number;
+    status?: string;
+    tipo?: string;
+    totalPecas?: number;
+    totalValor?: string;
+    vendedorId?: string;
+    vendedorNome?: string;
+    version?: number;
+};
+
 export type RespostaDoAbaixoDoMinimo = {
     falta?: number;
     minimo?: number;
     produto?: RespostaDoProduto;
     saldo?: number;
+};
+
+export type RespostaDoEmAberto = {
+    limite?: string;
+    limiteRestante?: string;
+    maletas?: Array<RespostaDaMaletaEmAberto>;
+    valorEmAberto?: string;
+    vendedorId?: string;
+    vendedorNome?: string;
 };
 
 export type RespostaDoHistoricoDeCusto = {
@@ -955,12 +1039,12 @@ export type RespostaDoHistoricoDeCusto = {
 };
 
 export type RespostaDoItem = {
-    ajustada?: boolean;
-    contado?: number;
-    diferenca?: number;
-    esperado?: number;
-    produto?: RespostaDoProduto;
-    saldoAtual?: number;
+    id?: string;
+    precoCongelado?: boolean;
+    precoUnitario?: string;
+    produto?: RespostaDaPeca;
+    quantidade?: number;
+    total?: string;
 };
 
 export type RespostaDoLogin = {
@@ -976,17 +1060,14 @@ export type RespostaDoLogin = {
 };
 
 export type RespostaDoMovimento = {
+    desfeito?: boolean;
+    em?: string;
     estornaId?: string;
     id?: string;
-    motivo?: string;
-    ocorridaEm?: string;
-    origem?: string;
-    origemId?: string;
     produtoId?: string;
+    produtoNome?: string;
     quantidade?: number;
-    saldoDepois?: number;
     tipo?: string;
-    usuarioId?: string;
 };
 
 export type RespostaDoProduto = {
@@ -2957,6 +3038,231 @@ export type PosicaoAtualResponses = {
 };
 
 export type PosicaoAtualResponse = PosicaoAtualResponses[keyof PosicaoAtualResponses];
+
+export type ListarRemessasData = {
+    body?: never;
+    path?: never;
+    query?: {
+        vendedorId?: string;
+        semanaId?: string;
+        status?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/remessas';
+};
+
+export type ListarRemessasResponses = {
+    /**
+     * OK
+     */
+    200: PaginaRespostaDoResumo;
+};
+
+export type ListarRemessasResponse = ListarRemessasResponses[keyof ListarRemessasResponses];
+
+export type CriarRemessaData = {
+    body: PedidoDoRascunho;
+    path?: never;
+    query?: never;
+    url: '/api/dona/remessas';
+};
+
+export type CriarRemessaResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDaRemessa;
+};
+
+export type CriarRemessaResponse = CriarRemessaResponses[keyof CriarRemessaResponses];
+
+export type ListarMaletasEmAbertoDoVendedorData = {
+    body?: never;
+    path?: never;
+    query: {
+        vendedorId: string;
+    };
+    url: '/api/dona/remessas/em-aberto';
+};
+
+export type ListarMaletasEmAbertoDoVendedorResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDoEmAberto;
+};
+
+export type ListarMaletasEmAbertoDoVendedorResponse = ListarMaletasEmAbertoDoVendedorResponses[keyof ListarMaletasEmAbertoDoVendedorResponses];
+
+export type ExcluirRascunhoDeRemessaData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query: {
+        version: number;
+    };
+    url: '/api/dona/remessas/{id}';
+};
+
+export type ExcluirRascunhoDeRemessaResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ExcluirRascunhoDeRemessaResponse = ExcluirRascunhoDeRemessaResponses[keyof ExcluirRascunhoDeRemessaResponses];
+
+export type VerRemessaData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/remessas/{id}';
+};
+
+export type VerRemessaResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDaRemessa;
+};
+
+export type VerRemessaResponse = VerRemessaResponses[keyof VerRemessaResponses];
+
+export type CancelarRemessaData = {
+    body: PedidoComMotivo;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/remessas/{id}/cancelar';
+};
+
+export type CancelarRemessaResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDaRemessa;
+};
+
+export type CancelarRemessaResponse = CancelarRemessaResponses[keyof CancelarRemessaResponses];
+
+export type DevolverPecasDaMaletaData = {
+    body: PedidoDeDevolucao;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/remessas/{id}/devolucoes';
+};
+
+export type DevolverPecasDaMaletaResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDaMaleta;
+};
+
+export type DevolverPecasDaMaletaResponse = DevolverPecasDaMaletaResponses[keyof DevolverPecasDaMaletaResponses];
+
+export type DesfazerDevolucaoDaMaletaData = {
+    body: PedidoDeEstorno;
+    path: {
+        id: string;
+        devolucaoId: string;
+    };
+    query?: never;
+    url: '/api/dona/remessas/{id}/devolucoes/{devolucaoId}/estorno';
+};
+
+export type DesfazerDevolucaoDaMaletaResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDaMaleta;
+};
+
+export type DesfazerDevolucaoDaMaletaResponse = DesfazerDevolucaoDaMaletaResponses[keyof DesfazerDevolucaoDaMaletaResponses];
+
+export type EnviarRemessaData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/remessas/{id}/enviar';
+};
+
+export type EnviarRemessaResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDaRemessa;
+};
+
+export type EnviarRemessaResponse = EnviarRemessaResponses[keyof EnviarRemessaResponses];
+
+export type TirarItemDaRemessaData = {
+    body?: never;
+    path: {
+        id: string;
+        produtoId: string;
+    };
+    query: {
+        version: number;
+    };
+    url: '/api/dona/remessas/{id}/itens/{produtoId}';
+};
+
+export type TirarItemDaRemessaResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDaRemessa;
+};
+
+export type TirarItemDaRemessaResponse = TirarItemDaRemessaResponses[keyof TirarItemDaRemessaResponses];
+
+export type ColocarItemNaRemessaData = {
+    body: PedidoDoItem;
+    path: {
+        id: string;
+        produtoId: string;
+    };
+    query?: never;
+    url: '/api/dona/remessas/{id}/itens/{produtoId}';
+};
+
+export type ColocarItemNaRemessaResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDaRemessa;
+};
+
+export type ColocarItemNaRemessaResponse = ColocarItemNaRemessaResponses[keyof ColocarItemNaRemessaResponses];
+
+export type VerMaletaDaRemessaData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/remessas/{id}/maleta';
+};
+
+export type VerMaletaDaRemessaResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDaMaleta;
+};
+
+export type VerMaletaDaRemessaResponse = VerMaletaDaRemessaResponses[keyof VerMaletaDaRemessaResponses];
 
 export type Listar4Data = {
     body?: never;
