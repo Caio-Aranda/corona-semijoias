@@ -357,13 +357,30 @@ export function MontagemDaMaleta({ ponte, inicial, aoVoltar, aoEnviar }: Montage
             {limite.erro && !situacaoDoLimite ? (
               <AvisoDeErro erro={limite.erro} aoTentarDeNovo={limite.recarregar} />
             ) : null}
+            {situacaoDoLimite && situacaoDoLimite.limite !== null && sobra !== null ? (
+              <p className="gestao-texto">
+                {L.resumo(
+                  formatarReais(situacaoDoLimite.limite),
+                  formatarReais(situacaoDoLimite.jaComEle),
+                  formatarReais(sobra < 0n ? 0n : sobra),
+                )}
+              </p>
+            ) : null}
+            {situacaoDoLimite?.semLimite ? <p className="gestao-texto">{L.semLimite}</p> : null}
+            {situacaoDoLimite && !situacaoDoLimite.definido ? (
+              <Aviso tipo="atencao">{L.naoDefinido}</Aviso>
+            ) : null}
             {situacaoDoLimite ? (
               <dl className="gestao-resumo">
                 <div>
                   <dt>{L.limite}</dt>
                   <dd>
                     {situacaoDoLimite.limite === null ? (
-                      L.semLimite
+                      situacaoDoLimite.semLimite ? (
+                        L.semLimite
+                      ) : (
+                        L.naoDefinido
+                      )
                     ) : (
                       <Dinheiro valor={situacaoDoLimite.limite} />
                     )}

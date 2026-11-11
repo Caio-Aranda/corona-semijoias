@@ -56,7 +56,7 @@ Em 09/11/2026 o responsável resolveu as dúvidas que estavam abertas neste glos
 | comissão | `comissoes` | Parte da venda que fica com o vendedor. |
 | pendência | `pendencias_acerto` | Peça que faltou ou valor que ficou em aberto no acerto. |
 | pedido de autorização | `autorizacoes_excecao` | O vendedor pede à dona para aceitar uma devolução fora do prazo. |
-| limite de consignação | `limite_consignacao` | Valor máximo de peças que o vendedor pode levar na maleta. |
+| limite de consignação | `limite_consignacao`, `limite_consignacao_ilimitado` | Valor máximo, em reais e a preço de venda, das peças que o vendedor pode ter em mãos. É obrigatório: a dona preenche o valor ou marca **Sem limite**. Zero vale zero (não é "sem limite"). Sem uma das duas escolhas, o vendedor não recebe maleta. |
 | foto | `produtos_fotos` | Aparece junto com a peça sempre que ela é lida ou pesquisada (§20). |
 | estoque | `produtos.estoque_atual`, estoque central | Quantidade de cada produto guardada na loja (fora das maletas). Ver parte 12. |
 | entrada de compra | `compras`, `itens_compra` | Registro das peças que chegaram de um fornecedor. Na tela, "Receber compra". Ver parte 12. |
@@ -504,6 +504,7 @@ Avisos junto ao campo:
 - Valor em dinheiro negativo nas abas (renda, valor da moradia): "O valor não pode ser menor que zero."
 - Campo de lista com opção que não existe (por exemplo, o sexo): "Escolha uma das opções da lista."
 - Limite de consignação negativo: "O limite não pode ser menor que zero."
+- Limite de consignação vazio: "Informe o limite em reais ou marque \"Sem limite\"."
 - Comissão fora de 0 a 100: "A comissão deve ficar entre 0 e 100."
 - Praça, restrição ou vendedor que não existe mais: "Esta opção não existe mais. Atualize a tela e escolha de novo."
 - Usuário do tipo vendedor sem escolher o vendedor: "Escolha o vendedor deste acesso."
@@ -869,5 +870,5 @@ Menu: grupo **Maletas**, item **Montar maleta**. Os textos desta tela são os ú
 - Maletas em montagem: **Continuar montando** e **Excluir** (confirmação: "As peças continuam no estoque, nada foi enviado").
 - Leitura: **Ler uma peça**, campo **Código da peça ou nome**, botão **Colocar na maleta**. Peça lida: **Última peça lida** com **No estoque**, **Nesta maleta** e **Preço**. Recusas: **Peça não encontrada**, "está desativada", "está sem estoque", "Só há N peças ... no estoque".
 - Lista: **Quantidade**, **Atualizar**, **Tirar**; totais **Peças na maleta** e **Valor da maleta**.
-- Limite: **Limite do vendedor**, **Já está com ele**, **Esta maleta**, **Sobra**; sem limite cadastrado: **Sem limite cadastrado**.
+- Limite: **Limite do vendedor**, **Já está com ele**, **Esta maleta**, **Sobra**; "Sem limite" marcado: **Sem limite**; ainda não definido: **Limite não definido** e "Defina o limite deste vendedor antes de montar a maleta". Frase da montagem: "Limite R$ X — em mãos R$ Y — pode levar mais R$ Z".
 - Envio: botão **Enviar maleta**, confirmação "Enviar esta maleta?" (vendedor, peças e valor), depois **Maleta enviada**; reenvio: **Esta maleta já estava enviada**. O botão **Imprimir nota** só aparece quando a tarefa 3.7 ligar a impressão.

@@ -121,7 +121,7 @@ O app **nunca acessa o banco direto**, apenas a API. Segurança (ninguém tem a 
 - Ciclo de estados: `RASCUNHO → ENVIADA → CONFERIDA → EM_ACERTO → ACERTADA` (mais `CANCELADA`).
 - A dona monta a maleta **online**, bipando os produtos. O estoque central é baixado ao enviar.
 - **Preço congelado** no envio (`preco_remessa`). O vendedor vende por esse preço, mesmo que a dona mude o preço depois.
-- **Bloqueios:** valor total da maleta não pode passar o **limite de consignação** do vendedor; vendedor com **restrição** ou inativo não recebe maleta; produto sem saldo central não entra.
+- **Bloqueios:** valor total da maleta não pode passar o **limite de consignação** do vendedor (campo obrigatório do cadastro: um valor em reais ou "Sem limite"; sem uma das duas escolhas o vendedor não recebe maleta; ADR-0010, item 7); vendedor com **restrição** ou inativo não recebe maleta; produto sem saldo central não entra.
 - O vendedor sincroniza, **confere** bipando as peças recebidas e registra divergências.
 - **Saldo por eventos**, nunca por número digitado: `saldo = enviada − vendas − devoluções à dona − perdas − avarias + estornos de venda + devoluções de clientes boas + entradas de troca − saídas de troca`.
 - **Reposição** é uma maleta complementar criada online. Se faltar peça no meio do caminho, a dona cria nova remessa.

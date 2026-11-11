@@ -83,18 +83,25 @@ export function lerPaginaDeMaletas(bruto: unknown): Maleta[] {
 }
 
 export interface SituacaoDoLimite {
-  /** Em centavos; null = vendedor sem limite cadastrado. */
+  /** Em centavos; null = "Sem limite" ou limite ainda não definido. Zero vale zero. */
   limite: bigint | null;
+  /** A dona marcou "Sem limite" de propósito. */
+  semLimite: boolean;
+  /** Falso = limite ainda não definido: o servidor recusa a maleta até a dona definir. */
+  definido: boolean;
   /** Valor que o vendedor já tem em maletas enviadas. */
   jaComEle: bigint;
 }
 
-/** Limite e valor em aberto do vendedor, como o servidor calculou (limite 0 = sem limite cadastrado). */
+/** Limite e valor em aberto do vendedor, como o servidor calculou (zero vale zero; "Sem limite" é explícito). */
 export function lerSituacaoDoLimite(bruto: unknown): SituacaoDoLimite {
   const o = objeto(bruto);
   const limite = centavosDeTexto(dinheiroEmTexto(o.limite) ?? '');
+  const semLimite = o.semLimite === true;
   return {
-    limite: limite === null || limite === 0n ? null : limite,
+    limite: semLimite ? null : limite,
+    semLimite,
+    definido: semLimite || (o.limiteDefinido !== false && limite !== null),
     jaComEle: centavosDeTexto(dinheiroEmTexto(o.valorEmAberto) ?? '') ?? 0n,
   };
 }
@@ -262,8 +269,10 @@ export interface MaletaEmAberto {
 export interface EmAbertoDoVendedor {
   vendedorId: string;
   vendedorNome: string;
-  /** Em centavos; null = sem limite cadastrado (limite 0 também, como no servidor). */
+  /** Em centavos; null = "Sem limite" ou ainda não definido. */
   limite: bigint | null;
+  semLimite: boolean;
+  definido: boolean;
   valorEmAberto: bigint;
   /** Quanto sobra do limite; null quando não há limite. Pode ser negativo (passou). */
   sobra: bigint | null;
@@ -291,6 +300,8 @@ export function lerEmAberto(bruto: unknown): EmAbertoDoVendedor {
     vendedorId: texto(o.vendedorId),
     vendedorNome: texto(o.vendedorNome),
     limite: situacao.limite,
+    semLimite: situacao.semLimite,
+    definido: situacao.definido,
     valorEmAberto: situacao.jaComEle,
     sobra: situacao.limite === null ? null : (restante ?? situacao.limite - situacao.jaComEle),
     maletas,

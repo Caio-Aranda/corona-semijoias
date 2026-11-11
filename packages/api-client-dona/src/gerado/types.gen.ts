@@ -1566,8 +1566,10 @@ export type RespostaDoAbaixoDoMinimo = {
 
 export type RespostaDoEmAberto = {
     limite?: string;
+    limiteDefinido?: boolean;
     limiteRestante?: string;
     maletas?: Array<RespostaDaMaletaEmAberto>;
+    semLimite?: boolean;
     valorEmAberto?: string;
     vendedorId?: string;
     vendedorNome?: string;
@@ -1732,6 +1734,7 @@ export type VendedoresDaDonaControllerPedido = {
     restricaoId?: string;
     rgIe?: string;
     rgUf?: string;
+    semLimite?: boolean;
     sexo?: string;
     telefone1?: string;
     telefone2?: string;
@@ -1760,6 +1763,7 @@ export type VendedoresDaDonaControllerResposta = {
     restricaoId?: string;
     rgIe?: string;
     rgUf?: string;
+    semLimite?: boolean;
     sexo?: string;
     telefone1?: string;
     telefone2?: string;

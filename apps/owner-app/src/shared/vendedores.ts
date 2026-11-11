@@ -44,6 +44,7 @@ export const CAMPOS_DO_VENDEDOR: readonly CampoDaApi[] = [
   { nome: 'facebook', tipo: 'texto', max: 200 },
   { nome: 'outrasMidias', tipo: 'texto', max: 300 },
   { nome: 'limiteConsignacao', tipo: 'dinheiro' },
+  { nome: 'semLimite', tipo: 'booleano' },
   { nome: 'restricaoId', tipo: 'uuid' },
   { nome: 'comissaoPercentual', tipo: 'percentual' },
   { nome: 'pracaId', tipo: 'uuid' },

@@ -59,7 +59,7 @@ public class VendedorDeDemonstracao implements SmartInitializingSingleton {
         }
         // Todo usuário VENDEDOR tem um cadastro de vendedor (limite e comissão zerados; a dona completa na tela).
         UUID vendedorId = UUID.randomUUID();
-        jdbc.update("INSERT INTO corona.vendedores (id, nome) VALUES (?, ?)", vendedorId, dados.nome().strip());
+        jdbc.update("INSERT INTO corona.vendedores (id, nome, limite_consignacao_ilimitado) VALUES (?, ?, true)", vendedorId, dados.nome().strip());
         usuarios.save(Usuario.novo(dados.nome().strip(), login, conferencia.gerarHash(dados.senha()), "VENDEDOR", vendedorId));
         LOG.info("Vendedor de demonstração criado (só em desenvolvimento): login {}", login);
     }

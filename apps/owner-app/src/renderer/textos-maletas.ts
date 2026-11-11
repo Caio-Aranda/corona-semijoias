@@ -111,7 +111,11 @@ export const TEXTOS_DE_MALETAS = {
     jaComEle: 'Já está com ele',
     estaMaleta: 'Esta maleta',
     sobra: 'Sobra',
-    semLimite: 'Sem limite cadastrado',
+    semLimite: 'Sem limite',
+    naoDefinido:
+      'Defina o limite deste vendedor antes de montar a maleta. Na ficha dele, preencha o limite de consignação ou marque "Sem limite".',
+    resumo: (limite: string, emMaos: string, podeLevar: string) =>
+      `Limite ${limite} — em mãos ${emMaos} — pode levar mais ${podeLevar}`,
     passou: (quanto: string) =>
       `Esta maleta passa do limite em ${quanto}. Tire algumas peças ou aumente o limite na ficha do vendedor.`,
     carregando: 'Conferindo o limite...',
@@ -195,7 +199,8 @@ export const TEXTOS_DE_MALETAS = {
         sobra: 'Sobra do limite',
         acoes: 'O que fazer',
       },
-      semLimite: 'Sem limite cadastrado',
+      semLimite: 'Sem limite',
+      naoDefinido: 'Limite não definido',
       passou: (quanto: string) => `Passou ${quanto}`,
       repor: 'Nova reposição',
       reporDe: (vendedor: string) => `Nova reposição para ${vendedor}`,
@@ -271,7 +276,8 @@ export const TEXTOS_DE_MALETAS = {
     jaTem: 'Já está com ele',
     limite: 'Limite do vendedor',
     sobra: 'Sobra',
-    semLimite: 'Sem limite cadastrado',
+    semLimite: 'Sem limite',
+    naoDefinido: 'Limite não definido',
     conferindo: 'Conferindo o que ele tem...',
     voltar: 'Voltar',
   },

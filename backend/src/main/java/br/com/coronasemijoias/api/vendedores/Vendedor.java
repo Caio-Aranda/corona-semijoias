@@ -23,7 +23,7 @@ public class Vendedor extends CadastroDoServidor {
     public record Dados(String nome, LocalDate dataNascimento, String sexo, boolean estrangeiro, String rgIe,
             String rgUf, String cpfCnpj, String naturalidade, String escolaridade, String telefone1, String telefone2,
             String whatsapp, String email, String facebook, String outrasMidias, BigDecimal limiteConsignacao,
-            UUID restricaoId, BigDecimal comissaoPercentual, UUID pracaId) {
+            boolean semLimite, UUID restricaoId, BigDecimal comissaoPercentual, UUID pracaId) {
     }
 
     /** O banco dá o código na gravação (sequência); aqui só se lê. */
@@ -80,8 +80,12 @@ public class Vendedor extends CadastroDoServidor {
     @Column(name = "outras_midias")
     private String outrasMidias;
 
-    @Column(name = "limite_consignacao", nullable = false)
+    /** Nulo quando a dona escolheu "Sem limite" ou ainda não definiu o limite (V026). */
+    @Column(name = "limite_consignacao")
     private BigDecimal limiteConsignacao;
+
+    @Column(name = "limite_consignacao_ilimitado", nullable = false)
+    private boolean limiteConsignacaoIlimitado;
 
     @Column(name = "restricao_id")
     private UUID restricaoId;
@@ -124,6 +128,7 @@ public class Vendedor extends CadastroDoServidor {
         this.facebook = d.facebook();
         this.outrasMidias = d.outrasMidias();
         this.limiteConsignacao = d.limiteConsignacao();
+        this.limiteConsignacaoIlimitado = d.semLimite();
         this.restricaoId = d.restricaoId();
         this.comissaoPercentual = d.comissaoPercentual();
         this.pracaId = d.pracaId();
@@ -203,6 +208,10 @@ public class Vendedor extends CadastroDoServidor {
 
     public BigDecimal getLimiteConsignacao() {
         return limiteConsignacao;
+    }
+
+    public boolean isLimiteConsignacaoIlimitado() {
+        return limiteConsignacaoIlimitado;
     }
 
     public UUID getRestricaoId() {

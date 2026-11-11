@@ -40,8 +40,12 @@ public class ConsultasDaMaleta {
             BigDecimal totalValor, int pecasEmAberto, BigDecimal valorEmAberto) {
     }
 
-    public record EmAberto(UUID vendedorId, String vendedorNome, BigDecimal limite, BigDecimal valorEmAberto,
-            BigDecimal limiteRestante, List<MaletaEmAberto> maletas) {
+    /**
+     * {@code limite} é vazio quando o vendedor está "sem limite" ({@code semLimite}) ou sem limite definido
+     * ({@code limiteDefinido} falso: a remessa é recusada até a dona definir; V026).
+     */
+    public record EmAberto(UUID vendedorId, String vendedorNome, BigDecimal limite, boolean semLimite, boolean limiteDefinido,
+            BigDecimal valorEmAberto, BigDecimal limiteRestante, List<MaletaEmAberto> maletas) {
     }
 
     private final JdbcTemplate jdbc;
@@ -109,7 +113,7 @@ public class ConsultasDaMaleta {
     @Transactional(readOnly = true)
     public EmAberto emAberto(UUID vendedorId) {
         var vendedor = jdbc.queryForList(
-                "SELECT nome, limite_consignacao FROM corona.vendedores WHERE id = ? AND deleted_at IS NULL", vendedorId);
+                "SELECT nome, limite_consignacao, limite_consignacao_ilimitado FROM corona.vendedores WHERE id = ? AND deleted_at IS NULL", vendedorId);
         if (vendedor.isEmpty()) {
             throw ServicoDeCadastro.naoEncontrado();
         }
@@ -133,9 +137,11 @@ public class ConsultasDaMaleta {
         BigDecimal total = Dinheiro.arredondar(maletas.stream().map(MaletaEmAberto::valorEmAberto)
                 .reduce(BigDecimal.ZERO, BigDecimal::add));
         BigDecimal cadastrado = (BigDecimal) vendedor.get(0).get("limite_consignacao");
-        // Limite 0 no cadastro significa "sem limite cadastrado" (decisão da tarefa 3.2).
-        BigDecimal limite = cadastrado != null && cadastrado.signum() > 0 ? Dinheiro.arredondar(cadastrado) : null;
+        boolean semLimite = Boolean.TRUE.equals(vendedor.get(0).get("limite_consignacao_ilimitado"));
+        // Zero vale zero (V026); vazio com "Sem limite" desmarcado é limite ainda não definido.
+        BigDecimal limite = cadastrado == null ? null : Dinheiro.arredondar(cadastrado);
         BigDecimal restante = limite == null ? null : limite.subtract(total).max(BigDecimal.ZERO);
-        return new EmAberto(vendedorId, (String) vendedor.get(0).get("nome"), limite, total, restante, maletas);
+        return new EmAberto(vendedorId, (String) vendedor.get(0).get("nome"), limite, semLimite, semLimite || limite != null, total,
+                restante, maletas);
     }
 }

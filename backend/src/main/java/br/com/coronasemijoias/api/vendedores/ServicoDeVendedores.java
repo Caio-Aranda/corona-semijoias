@@ -97,9 +97,19 @@ public class ServicoDeVendedores extends ServicoDeCadastro<Vendedor> {
 
     /** Confere e limpa os campos: o que o banco também recusa, a API recusa antes com o nome do campo. */
     private Dados conferir(Dados d) {
-        BigDecimal limite = d.limiteConsignacao() == null ? BigDecimal.ZERO : d.limiteConsignacao();
-        if (limite.signum() < 0) {
+        // O limite é obrigatório: um valor em reais (zero vale zero) OU "Sem limite" marcado de propósito, nunca os dois.
+        BigDecimal limite = d.limiteConsignacao();
+        if (d.semLimite()) {
+            if (limite != null) {
+                throw Validacoes.recusar("limiteConsignacao", "Escolha um valor para o limite ou marque \"Sem limite\", não os dois.");
+            }
+        } else if (limite == null) {
+            throw Validacoes.recusar("limiteConsignacao",
+                    "Informe o limite de consignação em reais ou marque \"Sem limite\".");
+        } else if (limite.signum() < 0) {
             throw Validacoes.recusar("limiteConsignacao", "O limite não pode ser menor que zero.");
+        } else if (limite.scale() > 2 && limite.stripTrailingZeros().scale() > 2) {
+            throw Validacoes.recusar("limiteConsignacao", "Use no máximo 2 casas depois da vírgula.");
         }
         BigDecimal comissao = d.comissaoPercentual() == null ? BigDecimal.ZERO : d.comissaoPercentual();
         if (comissao.signum() < 0 || comissao.compareTo(CEM) > 0) {
@@ -112,7 +122,7 @@ public class ServicoDeVendedores extends ServicoDeCadastro<Vendedor> {
                 Validacoes.limpar(d.naturalidade()), Validacoes.limpar(d.escolaridade()),
                 Validacoes.limpar(d.telefone1()), Validacoes.limpar(d.telefone2()), Validacoes.limpar(d.whatsapp()),
                 Validacoes.limpar(d.email()), Validacoes.limpar(d.facebook()), Validacoes.limpar(d.outrasMidias()),
-                limite.setScale(2), d.restricaoId(), comissao.setScale(2), d.pracaId());
+                limite == null ? null : limite.setScale(2), d.semLimite(), d.restricaoId(), comissao.setScale(2), d.pracaId());
     }
 
     /** CPF (11 dígitos) ou CNPJ (14 caracteres) com os dígitos verificadores certos; só o número é guardado. */

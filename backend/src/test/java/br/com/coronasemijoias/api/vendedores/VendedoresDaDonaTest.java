@@ -92,6 +92,9 @@ class VendedoresDaDonaTest extends TesteDeIntegracao {
         Map<String, Object> corpo = mapa("nome", unico("Vendedora"));
         Map<String, Object> extras = mapa(campos);
         corpo.putAll(extras);
+        if (!extras.containsKey("limiteConsignacao") && !extras.containsKey("semLimite")) {
+            corpo.put("semLimite", true); // o limite é obrigatório (V026): "Sem limite" de propósito
+        }
         return ler(enviar("POST", BASE, dona(), corpo).andExpect(status().isCreated()));
     }
 
@@ -172,9 +175,41 @@ class VendedoresDaDonaTest extends TesteDeIntegracao {
 
         JsonNode segundo = criarVendedor();
         assertThat(segundo.get("codigo").asInt()).isGreaterThan(primeiro.get("codigo").asInt());
-        // Sem limite e sem comissão informados: zero, nunca vazio.
-        assertThat(segundo.get("limiteConsignacao").asString()).isEqualTo("0.00");
+        // "Sem limite" marcado: o limite fica vazio (nunca zero); sem comissão informada: zero, nunca vazio.
+        assertThat(segundo.get("limiteConsignacao").isNull()).isTrue();
+        assertThat(segundo.get("semLimite").asBoolean()).isTrue();
         assertThat(segundo.get("comissaoPercentual").asString()).isEqualTo("0.00");
+    }
+
+    // --- limite de consignação obrigatório (V026) ---
+
+    @Test
+    void limiteDeConsignacaoEObrigatorioOuSemLimiteMarcadoDePropositoNuncaOsDoisENuncaZeroComoSemLimite() throws Exception {
+        enviar("POST", BASE, dona(), mapa("nome", unico("V"))).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.campos[0].campo").value("limiteConsignacao"))
+                .andExpect(jsonPath("$.campos[0].mensagem").value("Informe o limite de consignação em reais ou marque \"Sem limite\"."));
+        enviar("POST", BASE, dona(), mapa("nome", unico("V"), "limiteConsignacao", "100.00", "semLimite", true))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.campos[0].campo").value("limiteConsignacao"));
+        JsonNode zero = criarVendedor("limiteConsignacao", "0.00");
+        assertThat(zero.get("limiteConsignacao").asString()).isEqualTo("0.00");
+        assertThat(zero.get("semLimite").asBoolean()).isFalse();
+        JsonNode sem = criarVendedor("semLimite", true);
+        assertThat(sem.get("limiteConsignacao").isNull()).isTrue();
+        assertThat(sem.get("semLimite").asBoolean()).isTrue();
+        // Editar também exige: tirar o limite sem marcar "Sem limite" é recusado.
+        String id = sem.get("id").asString();
+        enviar("PUT", BASE + "/" + id, dona(), mapa("nome", unico("V"), "version", 1)).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.campos[0].campo").value("limiteConsignacao"));
+        enviar("PUT", BASE + "/" + id, dona(), mapa("nome", unico("V"), "limiteConsignacao", "300.00", "version", 1))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.semLimite").value(false))
+                .andExpect(jsonPath("$.limiteConsignacao").value("300.00"));
+    }
+
+    @Test
+    void obancoRecusaSemLimiteJuntoComUmValorDeLimite() {
+        UUID id = UUID.randomUUID();
+        assertThatThrownBy(() -> jdbc.update("INSERT INTO corona.vendedores (id, nome, limite_consignacao, limite_consignacao_ilimitado) "
+                + "VALUES (?, 'x', 10, true)", id)).hasMessageContaining("vendedores_limite_ou_sem_limite");
     }
 
     @Test
@@ -215,34 +250,34 @@ class VendedoresDaDonaTest extends TesteDeIntegracao {
 
     @Test
     void praçaERestricaoPrecisamExistir() throws Exception {
-        enviar("POST", BASE, dona(), mapa("nome", unico("V"), "pracaId", UUID.randomUUID().toString()))
+        enviar("POST", BASE, dona(), mapa("nome", unico("V"), "semLimite", true, "pracaId", UUID.randomUUID().toString()))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.campos[0].campo").value("pracaId"))
                 .andExpect(jsonPath("$.campos[0].mensagem")
                         .value("Esta opção não existe mais. Atualize a tela e escolha de novo."));
-        enviar("POST", BASE, dona(), mapa("nome", unico("V"), "restricaoId", UUID.randomUUID().toString()))
+        enviar("POST", BASE, dona(), mapa("nome", unico("V"), "semLimite", true, "restricaoId", UUID.randomUUID().toString()))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.campos[0].campo").value("restricaoId"));
         // Praça excluída também não vale.
         UUID praca = criarPraca();
         enviar("DELETE", "/api/dona/pracas/" + praca, dona(), null).andExpect(status().isNoContent());
-        enviar("POST", BASE, dona(), mapa("nome", unico("V"), "pracaId", praca.toString()))
+        enviar("POST", BASE, dona(), mapa("nome", unico("V"), "semLimite", true, "pracaId", praca.toString()))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void cpfOuCnpjErradoEhRecusadoERepetidoEhConflitoMasLiberaDepoisDeExcluir() throws Exception {
-        enviar("POST", BASE, dona(), mapa("nome", unico("V"), "cpfCnpj", "111.111.111-11"))
+        enviar("POST", BASE, dona(), mapa("nome", unico("V"), "semLimite", true, "cpfCnpj", "111.111.111-11"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.campos[0].campo").value("cpfCnpj"));
-        enviar("POST", BASE, dona(), mapa("nome", unico("V"), "cpfCnpj", "1234"))
+        enviar("POST", BASE, dona(), mapa("nome", unico("V"), "semLimite", true, "cpfCnpj", "1234"))
                 .andExpect(status().isBadRequest());
         // CNPJ válido (14 caracteres) também serve para quem é empresa.
         JsonNode empresa = criarVendedor("cpfCnpj", "11.222.333/0001-81");
         assertThat(empresa.get("cpfCnpj").asString()).isEqualTo("11222333000181");
 
         JsonNode criado = criarVendedor("cpfCnpj", "390.533.447-05");
-        enviar("POST", BASE, dona(), mapa("nome", unico("V"), "cpfCnpj", "39053344705"))
+        enviar("POST", BASE, dona(), mapa("nome", unico("V"), "semLimite", true, "cpfCnpj", "39053344705"))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.codigo").value("CADASTRO_JA_EXISTE"));
         enviar("DELETE", BASE + "/" + criado.get("id").asString(), dona(), null).andExpect(status().isNoContent());

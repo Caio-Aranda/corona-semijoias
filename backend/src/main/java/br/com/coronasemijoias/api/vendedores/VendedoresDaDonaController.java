@@ -60,6 +60,7 @@ public class VendedoresDaDonaController {
             @Size(max = 200, message = Mensagens.LIMITE_LONGO) String facebook,
             @Size(max = 300, message = Mensagens.LIMITE_LONGO) String outrasMidias,
             @DecimalMin(value = "0", message = "O limite não pode ser menor que zero.") BigDecimal limiteConsignacao,
+            Boolean semLimite,
             UUID restricaoId,
             @DecimalMin(value = "0", message = MENSAGEM_COMISSAO) @DecimalMax(value = "100", message = MENSAGEM_COMISSAO)
             BigDecimal comissaoPercentual,
@@ -69,21 +70,21 @@ public class VendedoresDaDonaController {
         Vendedor.Dados dados() {
             return new Vendedor.Dados(nome, dataNascimento, sexo, Boolean.TRUE.equals(estrangeiro), rgIe, rgUf,
                     cpfCnpj, naturalidade, escolaridade, telefone1, telefone2, whatsapp, email, facebook, outrasMidias,
-                    limiteConsignacao, restricaoId, comissaoPercentual, pracaId);
+                    limiteConsignacao, Boolean.TRUE.equals(semLimite), restricaoId, comissaoPercentual, pracaId);
         }
     }
 
     public record Resposta(UUID id, int version, int codigo, String nome, LocalDate dataCadastro,
             LocalDate dataNascimento, String sexo, boolean estrangeiro, String rgIe, String rgUf, String cpfCnpj,
             String naturalidade, String escolaridade, String telefone1, String telefone2, String whatsapp,
-            String email, String facebook, String outrasMidias, BigDecimal limiteConsignacao, UUID restricaoId,
-            BigDecimal comissaoPercentual, UUID pracaId, boolean ativo, UUID cadastradoPor) {
+            String email, String facebook, String outrasMidias, BigDecimal limiteConsignacao, boolean semLimite,
+            UUID restricaoId, BigDecimal comissaoPercentual, UUID pracaId, boolean ativo, UUID cadastradoPor) {
 
         static Resposta de(Vendedor v) {
             return new Resposta(v.getId(), v.getVersion(), v.getCodigo(), v.getNome(), v.getDataCadastro(),
                     v.getDataNascimento(), v.getSexo(), v.isEstrangeiro(), v.getRgIe(), v.getRgUf(), v.getCpfCnpj(),
                     v.getNaturalidade(), v.getEscolaridade(), v.getTelefone1(), v.getTelefone2(), v.getWhatsapp(),
-                    v.getEmail(), v.getFacebook(), v.getOutrasMidias(), v.getLimiteConsignacao(), v.getRestricaoId(),
+                    v.getEmail(), v.getFacebook(), v.getOutrasMidias(), v.getLimiteConsignacao(), v.isLimiteConsignacaoIlimitado(), v.getRestricaoId(),
                     v.getComissaoPercentual(), v.getPracaId(), v.isAtivo(), v.getCadastradoPor());
         }
     }
