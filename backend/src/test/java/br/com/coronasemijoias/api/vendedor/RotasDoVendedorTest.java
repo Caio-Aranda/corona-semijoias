@@ -392,4 +392,81 @@ class RotasDoVendedorTest extends TesteDeIntegracao {
         ler("/api/vendedor/relatorios/recebimentos", dona()).andExpect(status().isForbidden());
         ler("/api/vendedor/relatorios/a-receber", dona()).andExpect(status().isForbidden());
     }
+
+    /**
+     * CLAUDE.md e ADR-0006 (itens 7 e 10): Dólar e Guarani pela cotação do dia de cada lançamento, e o total em outra moeda
+     * é a soma dos lançamentos já convertidos ("a de hoje" é proibida). A venda usa a cotação gravada nela (ADR-0011, item
+     * 10); o pagamento, a do dia em que foi pago. As vendas são de 1990, longe de qualquer cotação de outro teste.
+     */
+    @Test
+    void relatoriosConvertemCadaLancamentoPelaCotacaoDoSeuDia() throws Exception {
+        UsuarioDeTeste v = usuarios.criarVendedor();
+        Peca anel = peca("100.00", 10);
+        UUID maleta = maleta(v, anel, 5);
+        UUID cliente = cliente(v);
+        // 05/01/1990: US$ 5,00 e Gs. 0,001 real. 06/01/1990: US$ 4,00 e Gs. 0,002 real.
+        UUID dia5 = cotacao("1990-01-05", "5.00000000", "0.00100000");
+        UUID dia6 = cotacao("1990-01-06", "4.00000000", "0.00200000");
+        vendaAntiga(v, maleta, cliente, anel, "1990-01-05T15:00:00Z", dia5, "100.00", "30.00");
+        vendaAntiga(v, maleta, cliente, anel, "1990-01-06T15:00:00Z", dia6, "100.00", "40.00");
+        RequestPostProcessor quem = como(v);
+
+        // Vendas: 100 ÷ 5 = 20,00 e 100 ÷ 4 = 25,00, US$ 45,00; Gs. 100.000 + 50.000 = 150.000. A conversão do total
+        // (R$ 200 por uma cotação só) daria outro número.
+        JsonNode porCliente = corpoDe(ler("/api/vendedor/relatorios/vendas", quem).andExpect(status().isOk()));
+        JsonNode linha = porCliente.get("linhas").get(0);
+        assertThat(dec(linha.get("total"))).isEqualByComparingTo("200.00");
+        assertThat(dec(linha.get("totalEmDolar"))).isEqualByComparingTo("45.00");
+        assertThat(dec(linha.get("totalEmGuarani"))).isEqualByComparingTo("150000");
+        assertThat(dec(linha.get("descontoEmDolar"))).isEqualByComparingTo("0.00");
+        assertThat(dec(porCliente.get("totais").get("totalEmDolar"))).isEqualByComparingTo("45.00");
+        assertThat(dec(porCliente.get("totais").get("totalEmGuarani"))).isEqualByComparingTo("150000");
+
+        JsonNode porDia = corpoDe(ler("/api/vendedor/relatorios/vendas?agrupar=dia", quem).andExpect(status().isOk()));
+        assertThat(dec(porDia.get("linhas").get(0).get("totalEmDolar"))).isEqualByComparingTo("20.00");
+        assertThat(dec(porDia.get("linhas").get(1).get("totalEmDolar"))).isEqualByComparingTo("25.00");
+        JsonNode porPeca = corpoDe(ler("/api/vendedor/relatorios/vendas?agrupar=peca", quem).andExpect(status().isOk()));
+        assertThat(dec(porPeca.get("totais").get("totalEmDolar"))).isEqualByComparingTo("45.00");
+
+        // Recebimentos: 30 ÷ 5 = 6,00 e 40 ÷ 4 = 10,00, US$ 16,00; Gs. 30.000 + 20.000 = 50.000.
+        JsonNode receb = corpoDe(ler("/api/vendedor/relatorios/recebimentos", quem).andExpect(status().isOk()));
+        assertThat(dec(receb.get("linhas").get(0).get("totalEmDolar"))).isEqualByComparingTo("16.00");
+        assertThat(dec(receb.get("totais").get("totalEmDolar"))).isEqualByComparingTo("16.00");
+        assertThat(dec(receb.get("totais").get("totalEmGuarani"))).isEqualByComparingTo("50000");
+
+        // A receber: vendido US$ 45,00 menos pago US$ 16,00 = US$ 29,00 (R$ 130,00).
+        JsonNode devedores = corpoDe(ler("/api/vendedor/relatorios/a-receber", quem).andExpect(status().isOk()));
+        JsonNode devedor = devedores.get("clientes").get(0);
+        assertThat(dec(devedor.get("aReceber"))).isEqualByComparingTo("130.00");
+        assertThat(dec(devedor.get("vendidoEmDolar"))).isEqualByComparingTo("45.00");
+        assertThat(dec(devedor.get("pagoEmDolar"))).isEqualByComparingTo("16.00");
+        assertThat(dec(devedor.get("aReceberEmDolar"))).isEqualByComparingTo("29.00");
+        assertThat(dec(devedor.get("aReceberEmGuarani"))).isEqualByComparingTo("100000");
+        assertThat(dec(devedores.get("totais").get("totalEmDolar"))).isEqualByComparingTo("29.00");
+    }
+
+    private UUID cotacao(String dia, String usd, String pyg) {
+        jdbc.update("""
+                INSERT INTO corona.cotacoes (id, data_cotacao, usd_compra, usd_venda, usd_paridade_compra,
+                    usd_paridade_venda, pyg_compra, pyg_venda, pyg_paridade_compra, pyg_paridade_venda, buscada_em, fonte)
+                VALUES (uuidv7(), ?::date, ?::numeric, ?::numeric, 1, 1, ?::numeric, ?::numeric, 1, 1, now(), 'teste')""",
+                dia, usd, usd, pyg, pyg);
+        return jdbc.queryForObject("SELECT id FROM corona.cotacoes WHERE data_cotacao = ?::date", UUID.class, dia);
+    }
+
+    /** Venda de outro dia, gravada direto (o gatilho só impede alterar), com um item e um pagamento no mesmo instante. */
+    private void vendaAntiga(UsuarioDeTeste v, UUID maleta, UUID cliente, Peca peca, String quando, UUID cotacao,
+            String total, String pago) {
+        UUID venda = UUID.randomUUID();
+        jdbc.update("""
+                INSERT INTO corona.vendas (id, vendedor_id, cliente_id, remessa_id, subtotal, desconto, total, cotacao_id, vendida_em)
+                VALUES (?, ?, ?, ?, ?::numeric, 0, ?::numeric, ?, ?::timestamptz)""",
+                venda, v.vendedorId(), cliente, maleta, total, total, cotacao, quando);
+        jdbc.update("""
+                INSERT INTO corona.itens_venda (id, venda_id, produto_id, quantidade, preco_unitario, desconto)
+                VALUES (uuidv7(), ?, ?, 1, ?::numeric, 0)""", venda, peca.id(), total);
+        jdbc.update("""
+                INSERT INTO corona.pagamentos_cliente (id, venda_id, tipo, forma, valor, pago_em)
+                VALUES (uuidv7(), ?, 'PAGAMENTO', 'DINHEIRO', ?::numeric, ?::timestamptz)""", venda, pago, quando);
+    }
 }
