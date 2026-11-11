@@ -1,7 +1,7 @@
 import { ipcMain, type IpcMainInvokeEvent } from 'electron';
 import { CANAIS } from '../shared/ponte';
 import { validarChamada, validarEntrada, validarNovaSenha } from '../shared/validacao';
-import type { ServicoDeAtualizacao } from './atualizacao';
+import type { ServicoDeAtualizacao } from '@corona/conexao-segura';
 import type { ServicoDeSessao } from './servico-de-sessao';
 
 /**

@@ -1,6 +1,6 @@
-# Pacote do Corona Vendas (ADR-0003, item 5). Só o que o electron-vite gerou entra: nada de node_modules.
-# Instalador, ícone e atualização automática ficam para a Fase 9; aqui só interessa o app.asar real,
-# que o CI desempacota e varre atrás de marcadores proibidos.
+# Pacote e instalador do Corona Vendas (ADR-0003, item 5, e ADR-0009). Só o que o electron-vite gerou entra: nada
+# de node_modules. O CI roda "electron-builder --dir" (sem rede) e varre o app.asar atrás de marcadores proibidos.
+# O instalador (NSIS) e o canal de atualização vêm de: npm run vendas:empacotar (que passa a publicação por argumento).
 appId: br.com.coronasemijoias.vendas
 productName: Corona Vendas
 asar: true
@@ -9,11 +9,31 @@ electronDist: ../../node_modules/electron/dist
 electronVersion: 45.2.3
 npmRebuild: false
 nodeGypRebuild: false
+# Pasta de instalação do instalador por usuário usa o nome do pacote; sem isto ficaria "@coronaseller-app".
+extraMetadata:
+  name: corona-vendas
 directories:
   output: release
+  buildResources: build
 files:
   - out/**
   - package.json
   - '!**/*.map'
 win:
   signAndEditExecutable: false
+  target:
+    - target: nsis
+      arch: [x64]
+  # Logo provisório (docs/marca), o mesmo do outro aplicativo até haver os ícones definitivos (os dois precisam ser diferentes, §18).
+  icon: build/icon.png
+nsis:
+  oneClick: true
+  perMachine: false
+  allowToChangeInstallationDirectory: false
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Corona Vendas
+  runAfterFinish: true
+  uninstallDisplayName: Corona Vendas
+  deleteAppDataOnUninstall: false
+  artifactName: Corona-Vendas-Setup-${version}.${ext}

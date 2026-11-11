@@ -1,9 +1,10 @@
-// Publica uma versão nova do Corona Gestão na VPS (ADR-0009, item 3): npm run owner:publicar.
-// 1) gera o instalador (npm run owner:empacotar); 2) confere que a versão é MAIOR que a do servidor;
+// Publica uma versão nova de um aplicativo na VPS (ADR-0009, item 3): npm run owner:publicar (Corona Gestão)
+// ou npm run vendas:publicar (Corona Vendas, que usa o canal /atualizacoes/vendas/).
+// 1) gera o instalador (npm run owner:empacotar ou vendas:empacotar); 2) confere que a versão é MAIOR que a do servidor;
 // 3) envia o instalador e, SÓ DEPOIS, o latest.yml (o arquivo que anuncia a versão); 4) confere o SHA-512
 // no servidor; 5) mantém só os 3 instaladores mais novos lá. Os computadores se atualizam sozinhos.
 //
-// Configuração (apps/owner-app/.env.publicar, ignorado pelo Git, ou variáveis de ambiente):
+// Configuração (apps/<app>/.env.publicar, ignorado pelo Git, ou variáveis de ambiente):
 //   CORONA_VPS=usuario@IP-da-VPS        (o acesso é por chave SSH)
 //   CORONA_VPS_CHAVE=C:\caminho\chave    (opcional: arquivo da chave privada)
 //   CORONA_VPS_PASTA=/srv/corona/atualizacoes   (opcional)
@@ -22,10 +23,12 @@ import {
 } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { alvoDoArgumento } from './lib/alvos.mjs';
 import { conferirVersaoNova, lerLatest, nomeDoInstaladorValido } from './lib/publicacao.mjs';
 
 const raiz = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const app = join(raiz, 'apps', 'owner-app');
+const alvo = alvoDoArgumento(process.argv);
+const app = join(raiz, 'apps', alvo.pasta);
 const pasta = join(app, 'release');
 
 function falhar(mensagem) {
@@ -49,15 +52,16 @@ const cfg = {
 };
 const local = cfg.CORONA_PUBLICAR_LOCAL;
 const vps = cfg.CORONA_VPS;
-const destino = cfg.CORONA_VPS_PASTA || '/srv/corona/atualizacoes';
+const pastaBase = cfg.CORONA_VPS_PASTA || '/srv/corona/atualizacoes';
+const destino = alvo.canal ? `${pastaBase}/${alvo.canal}` : pastaBase;
 if (!local && !vps) {
   falhar(
-    'falta CORONA_VPS (usuario@IP) em apps/owner-app/.env.publicar. Veja .env.publicar.example e docs/entrega-corona-gestao.md.',
+    `falta CORONA_VPS (usuario@IP) em apps/${alvo.pasta}/.env.publicar. Veja .env.publicar.example e docs/entrega-corona-gestao.md.`,
   );
 }
 if (vps && !/^[A-Za-z0-9._-]+@[A-Za-z0-9.-]+$/.test(vps))
   falhar('CORONA_VPS precisa ter o formato usuario@IP.');
-if (!/^\/[A-Za-z0-9._/-]+$/.test(destino))
+if (!/^\/[A-Za-z0-9._/-]+$/.test(pastaBase))
   falhar('CORONA_VPS_PASTA tem caracteres que não são aceitos.');
 
 const chave = cfg.CORONA_VPS_CHAVE ? ['-i', cfg.CORONA_VPS_CHAVE] : [];
@@ -77,18 +81,26 @@ function scp(arquivo, remoto) {
 
 // 1) Instalador
 if (!process.argv.includes('--sem-empacotar')) {
-  const r = spawnSync('node', [join(raiz, 'scripts', 'owner-empacotar.mjs')], { stdio: 'inherit' });
+  const r = spawnSync(
+    'node',
+    [
+      join(raiz, 'scripts', 'empacotar-app.mjs'),
+      ...process.argv.filter((a) => a.startsWith('--app=') || a === '--para-teste'),
+    ],
+    { stdio: 'inherit' },
+  );
   if (r.status !== 0) process.exit(r.status ?? 1);
 }
 const latestTexto = existsSync(join(pasta, 'latest.yml'))
   ? readFileSync(join(pasta, 'latest.yml'), 'utf8')
   : null;
 if (!latestTexto)
-  falhar('não achei apps/owner-app/release/latest.yml. Rode npm run owner:empacotar.');
+  falhar(`não achei apps/${alvo.pasta}/release/latest.yml. Rode npm run ${alvo.npm}:empacotar.`);
 const novo = lerLatest(latestTexto);
-if (!nomeDoInstaladorValido(novo.arquivo)) falhar(`nome de instalador inesperado: ${novo.arquivo}`);
+if (!nomeDoInstaladorValido(novo.arquivo, alvo.prefixo))
+  falhar(`nome de instalador inesperado: ${novo.arquivo}`);
 const caminhoExe = join(pasta, novo.arquivo);
-if (!existsSync(caminhoExe)) falhar(`não achei ${novo.arquivo} em apps/owner-app/release.`);
+if (!existsSync(caminhoExe)) falhar(`não achei ${novo.arquivo} em apps/${alvo.pasta}/release.`);
 const hashLocal = createHash('sha512').update(readFileSync(caminhoExe)).digest('base64');
 if (hashLocal !== novo.sha512)
   falhar('o SHA-512 do instalador não bate com o do latest.yml. Gere o instalador de novo.');
@@ -125,7 +137,7 @@ if (local) {
   writeFileSync(join(local, 'latest.yml.envio'), latestTexto);
   renameSync(join(local, 'latest.yml.envio'), join(local, 'latest.yml'));
   const aposentar = readdirSync(local)
-    .filter((n) => nomeDoInstaladorValido(n))
+    .filter((n) => nomeDoInstaladorValido(n, alvo.prefixo))
     .sort()
     .slice(0, -3);
   for (const n of aposentar) {
@@ -152,11 +164,11 @@ if (local) {
   );
   // 5) Guarda só os 3 instaladores mais novos.
   ssh(
-    `cd '${destino}' && ls -1 Corona-Gestao-Setup-*.exe | sort -V | head -n -3 | while read f; do rm -f "$f" "$f.blockmap"; done; chmod 644 *.exe *.blockmap latest.yml 2>/dev/null || true`,
+    `cd '${destino}' && ls -1 ${alvo.prefixo}-Setup-*.exe | sort -V | head -n -3 | while read f; do rm -f "$f" "$f.blockmap"; done; chmod 644 *.exe *.blockmap latest.yml 2>/dev/null || true`,
   );
 }
 
-console.log(`\nPublicado: Corona Gestão ${novo.versao}.`);
+console.log(`\nPublicado: ${alvo.nome} ${novo.versao}.`);
 console.log(
   'Os computadores se atualizam sozinhos (ao abrir o programa e a cada poucas horas); a versão entra quando a pessoa fechar o programa.',
 );
