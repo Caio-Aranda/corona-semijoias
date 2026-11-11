@@ -726,14 +726,29 @@ class DevolucaoDaMaletaTest extends TesteDeIntegracao {
         UUID r = enviada(vendedor("1000.00"), p, 5);
         String rota = "/api/dona/relatorios/estoque/conciliacao?produtoId=" + p;
         assertThat(corpoDe(ler(rota).andExpect(status().isOk())).get("total").asLong()).isZero();
+        UUID movimento = UUID.randomUUID();
         jdbc.update("INSERT INTO corona.movimentos_remessa (id, remessa_id, produto_id, tipo, quantidade) VALUES (?, ?, ?, 'DEVOLUCAO_DONA', -1)",
-                UUID.randomUUID(), r, p);
-        JsonNode corpo = corpoDe(ler(rota).andExpect(status().isOk()));
-        assertThat(corpo.get("total").asLong()).isEqualTo(1);
-        JsonNode linha = corpo.get("itens").get(0);
-        assertThat(linha.get("saldoGuardado").asInt()).isEqualTo(5);
-        assertThat(linha.get("nasMaletas").asLong()).isEqualTo(4);
-        assertThat(linha.get("diferencaComMaletas").asLong()).isEqualTo(1);
+                movimento, r, p);
+        try {
+            JsonNode corpo = corpoDe(ler(rota).andExpect(status().isOk()));
+            assertThat(corpo.get("total").asLong()).isEqualTo(1);
+            JsonNode linha = corpo.get("itens").get(0);
+            assertThat(linha.get("saldoGuardado").asInt()).isEqualTo(5);
+            assertThat(linha.get("nasMaletas").asLong()).isEqualTo(4);
+            assertThat(linha.get("diferencaComMaletas").asLong()).isEqualTo(1);
+        } finally {
+            desfazerDivergenciaProvocada(r, p, movimento);
+        }
+        assertThat(estoque.conciliar().diferencasComMaletas()).extracting(d -> d.produtoId()).doesNotContain(p);
+    }
+
+    /**
+     * Regra para teste que provoca divergência de propósito: o movimento é imutável, então o conserto é um estorno
+     * (feito num {@code finally}, para não sujar a conciliação dos outros testes nem quando uma conferência falha).
+     */
+    private void desfazerDivergenciaProvocada(UUID remessa, UUID produto, UUID movimento) {
+        jdbc.update("INSERT INTO corona.movimentos_remessa (id, remessa_id, produto_id, tipo, quantidade, estorna_id) "
+                + "VALUES (?, ?, ?, 'DEVOLUCAO_DONA', 1, ?)", UUID.randomUUID(), remessa, produto, movimento);
     }
 
     @Test
@@ -746,21 +761,22 @@ class DevolucaoDaMaletaTest extends TesteDeIntegracao {
         UUID movimento = UUID.randomUUID();
         jdbc.update("INSERT INTO corona.movimentos_remessa (id, remessa_id, produto_id, tipo, quantidade) VALUES (?, ?, ?, 'DEVOLUCAO_DONA', -1)",
                 movimento, r, p);
-        JsonNode corpo = corpoDe(ler("/api/dona/estoque/conciliacao").andExpect(status().isOk()));
-        JsonNode achada = null;
-        for (JsonNode d : corpo.get("diferencasComMaletas")) {
-            if (p.toString().equals(d.get("produto").get("id").asString())) {
-                achada = d;
+        try {
+            JsonNode corpo = corpoDe(ler("/api/dona/estoque/conciliacao").andExpect(status().isOk()));
+            JsonNode achada = null;
+            for (JsonNode d : corpo.get("diferencasComMaletas")) {
+                if (p.toString().equals(d.get("produto").get("id").asString())) {
+                    achada = d;
+                }
             }
+            assertThat(achada).isNotNull();
+            assertThat(achada.get("estoqueCentral").asInt()).isEqualTo(5);
+            assertThat(achada.get("saldoNasMaletas").asInt()).isEqualTo(4);
+            assertThat(achada.get("esperado").asInt()).isEqualTo(10);
+            assertThat(achada.get("diferenca").asInt()).isEqualTo(-1);
+        } finally {
+            desfazerDivergenciaProvocada(r, p, movimento);
         }
-        assertThat(achada).isNotNull();
-        assertThat(achada.get("estoqueCentral").asInt()).isEqualTo(5);
-        assertThat(achada.get("saldoNasMaletas").asInt()).isEqualTo(4);
-        assertThat(achada.get("esperado").asInt()).isEqualTo(10);
-        assertThat(achada.get("diferenca").asInt()).isEqualTo(-1);
-        // Conserta (movimento imutável: um estorno de volta) para não sujar os outros testes.
-        jdbc.update("INSERT INTO corona.movimentos_remessa (id, remessa_id, produto_id, tipo, quantidade, estorna_id) "
-                + "VALUES (?, ?, ?, 'DEVOLUCAO_DONA', 1, ?)", UUID.randomUUID(), r, p, movimento);
         assertThat(estoque.conciliar().diferencasComMaletas()).extracting(d -> d.produtoId()).doesNotContain(p);
     }
 }
