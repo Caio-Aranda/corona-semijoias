@@ -104,6 +104,23 @@ Maleta (§15). Segue o mesmo formato da Fase 2. O modelo da maleta está no [ADR
 
 **Fase 3 concluída** (tarefas 3.1 a 3.8; a 3.8 foi a revisão de fechamento). Resumo: a dona monta a maleta com o leitor (rascunho não mexe no estoque), envia (baixa o estoque central de uma vez, preço congelado, limite e restrição conferidos no servidor), devolve peças, desfaz devolução, cancela e repõe; a conciliação "estoque da loja + maletas" fecha e aparece na tela Conferência do estoque; há cinco relatórios da maleta e a nota de remessa em PDF. **Segue para a Fase 4:** conferência pelo vendedor, um aparelho por maleta e a leitura da própria maleta pelo vendedor, sem custo. O encerramento da maleta é o acerto (Fase 7): maleta com tudo devolvido continua enviada.
 
+## Fase 4
+
+### Plano da Fase 4
+
+App do vendedor online (§15): login, conferência, venda, clientes, consulta, relatórios próprios e três moedas. Funciona **online, mas já preparado para sync** (UUID, vendas imutáveis, idempotência). O modelo está no [ADR-0011](decisoes/ADR-0011-venda-do-vendedor-online.md).
+
+| Nº | Tarefa | Situação |
+| --- | --- | --- |
+| 4.1 | docs: plano da Fase 4 e ADR-0011 (venda do vendedor) | Em revisão · [detalhe](progresso/fase-4.md#tarefa-41-plano-da-fase-4-e-adr-da-venda-só-documentos) |
+| 4.2 | backend (alto): vendas, itens e pagamentos, venda a partir da maleta, preço congelado, desconto, idempotência (200/201/409), estorno, totais no servidor, cotação | A fazer |
+| 4.3 | backend: rotas do vendedor (própria maleta sem custo, conferência e dispositivo único, clientes dele, cotação, relatórios próprios), 403 cruzado nos dois sentidos | A fazer |
+| 4.4 | seller-app (alto): base de telas, conferência por leitor com foto grande, venda, escolha e cadastro de cliente, estorno | A fazer |
+| 4.5 | seller-app: Minha maleta, Meus clientes, Meus números (relatórios próprios) e valores nas três moedas | A fazer |
+| 4.6 | fechamento da Fase 4 (revisão pós-fase) | A fazer |
+
+**Fora desta fase:** SQLite criptografado, outbox e sync (Fase 5); devolução, troca e garantia (Fase 6); acerto, comissão e contas a receber completas (Fase 7).
+
 ## Pendências abertas
 
 - Fase 3 (maleta), para a dona ou o responsável: limite a **preço de venda** (dúvida 1 do ADR-0010); **reposição** dentro do limite (dúvida 2); vendedor sem limite recebe maleta sem limite (dúvida 6; limite 0 = sem limite); peça repetida na mesma maleta (dúvida 3, hoje uma linha por peça); foto na nota (dúvida 4); prazo de atraso (hoje 7 dias, dúvida 5); formato do número da maleta (hoje S12-V7-1). Com o responsável: leitor de código físico e app instalado ainda não testados. **A Fase 4 herda:** conferência da maleta, dispositivo único por maleta e leitura da própria maleta pelo vendedor sem custo. O ADR-0010 está Aceito. ([tarefa 3.8](progresso/fase-3.md#tarefa-38-fechamento-da-fase-3))
