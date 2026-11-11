@@ -59,8 +59,11 @@ public class ServicoDeRemessas {
     private final ServicoDeEstoque estoque;
     private final ServicoDeAuditoria auditoria;
     private final Clock relogio;
+    private final ConsultasDaMaleta maleta;
 
-    ServicoDeRemessas(JdbcTemplate jdbc, ServicoDeEstoque estoque, ServicoDeAuditoria auditoria, Clock relogio) {
+    ServicoDeRemessas(JdbcTemplate jdbc, ServicoDeEstoque estoque, ServicoDeAuditoria auditoria, Clock relogio,
+            ConsultasDaMaleta maleta) {
+        this.maleta = maleta;
         this.jdbc = jdbc;
         this.estoque = estoque;
         this.auditoria = auditoria;
@@ -233,7 +236,7 @@ public class ServicoDeRemessas {
         total = Dinheiro.arredondar(total);
 
         if (vendedor.limite().signum() > 0) {
-            BigDecimal emAberto = valorEmAberto(vendedorId);
+            BigDecimal emAberto = maleta.valorEmAberto(vendedorId);
             if (emAberto.add(total).compareTo(vendedor.limite()) > 0) {
                 BigDecimal falta = emAberto.add(total).subtract(vendedor.limite());
                 throw ErroDaApi.comDetalhe(HttpStatus.CONFLICT, CodigoErro.LIMITE_DE_CONSIGNACAO_EXCEDIDO,
@@ -293,20 +296,6 @@ public class ServicoDeRemessas {
                             + "). Resolva a restrição no cadastro dele antes de montar a maleta.");
         }
         return new VendedorDaMaleta((BigDecimal) v.get("limite_consignacao"), (UUID) v.get("praca_id"));
-    }
-
-    /** Valor, a preço de venda congelado, do que ainda está com o vendedor (saldo atual das maletas enviadas). */
-    private BigDecimal valorEmAberto(UUID vendedorId) {
-        BigDecimal valor = jdbc.queryForObject("""
-                SELECT coalesce(sum((i.qtd_enviada + coalesce(m.soma, 0)) * i.preco_remessa), 0)
-                  FROM corona.remessas r
-                  JOIN corona.itens_remessa i ON i.remessa_id = r.id AND i.deleted_at IS NULL
-                  LEFT JOIN (SELECT remessa_id, produto_id, sum(quantidade) AS soma
-                               FROM corona.movimentos_remessa GROUP BY remessa_id, produto_id) m
-                         ON m.remessa_id = i.remessa_id AND m.produto_id = i.produto_id
-                 WHERE r.vendedor_id = ? AND r.deleted_at IS NULL AND r.status IN ('ENVIADA', 'CONFERIDA', 'EM_ACERTO')""",
-                BigDecimal.class, vendedorId);
-        return valor == null ? BigDecimal.ZERO : Dinheiro.arredondar(valor);
     }
 
     /** Uma {@link Peca} por id pedido, na mesma ordem; {@code null} onde o produto não existe (ou foi excluído). */

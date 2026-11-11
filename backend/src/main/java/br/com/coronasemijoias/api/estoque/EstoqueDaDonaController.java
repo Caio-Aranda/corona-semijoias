@@ -112,7 +112,12 @@ public class EstoqueDaDonaController {
     public record RespostaDaDivergencia(RespostaDoProduto produto, int saldoGuardado, long somaDosMovimentos, long diferenca) {
     }
 
-    public record RespostaDaConciliacao(Instant geradaEm, long produtosConferidos, List<RespostaDaDivergencia> divergencias) {
+    public record RespostaDaDiferencaComMaletas(RespostaDoProduto produto, int estoqueCentral, long saldoNasMaletas, long esperado,
+            long diferenca) {
+    }
+
+    public record RespostaDaConciliacao(Instant geradaEm, long produtosConferidos, List<RespostaDaDivergencia> divergencias,
+            List<RespostaDaDiferencaComMaletas> diferencasComMaletas) {
     }
 
     private final ServicoDeEstoque servico;
@@ -200,12 +205,17 @@ public class EstoqueDaDonaController {
     }
 
     @Operation(summary = "Conferir o estoque",
-            description = "Para cada produto, compara o estoque guardado com a soma dos lançamentos. A lista de divergências deve vir vazia.")
+            description = "Para cada produto, compara o estoque guardado com a soma dos lançamentos (divergencias) e o estoque da loja "
+                    + "mais o saldo das maletas enviadas com o que entrou e saiu fora da maleta (diferencasComMaletas). As duas "
+                    + "listas devem vir vazias.")
     @GetMapping("/conciliacao")
     public RespostaDaConciliacao conciliar() {
         Conciliacao c = servico.conciliar();
         List<RespostaDaDivergencia> itens = c.divergencias().stream().map(this::divergencia).toList();
-        return new RespostaDaConciliacao(c.geradaEm(), c.produtosConferidos(), itens);
+        List<RespostaDaDiferencaComMaletas> comMaletas = c.diferencasComMaletas().stream().map(d -> new RespostaDaDiferencaComMaletas(
+                RespostaDoProduto.de(new ProdutoResumo(d.produtoId(), d.nome(), null, null, 0, true, d.fotoHash())),
+                d.estoqueCentral(), d.saldoNasMaletas(), d.esperado(), d.diferenca())).toList();
+        return new RespostaDaConciliacao(c.geradaEm(), c.produtosConferidos(), itens, comMaletas);
     }
 
     private RespostaDaDivergencia divergencia(Divergencia d) {
