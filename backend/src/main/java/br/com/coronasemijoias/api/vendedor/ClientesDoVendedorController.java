@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Clientes do próprio vendedor (tarefa 4.3; ADR-0011, item 13). Só VENDEDOR; o dono do cliente vem do token. */
+/** Clientes da loja vistos pelo vendedor (tarefa 4.3; ADR-0011, item 13). Só VENDEDOR; o vendedor vem do token. */
 @RestController
 @RequestMapping("/api/vendedor/clientes")
 @ExigePerfil("VENDEDOR")
@@ -38,21 +38,23 @@ public class ClientesDoVendedorController {
     }
 
     @Operation(operationId = "listarMeusClientes", summary = "Meus clientes",
-            description = "Só os clientes ativos em que o vendedor logado é o responsável (até 100, por nome). A busca procura no "
-                    + "nome, telefone, WhatsApp e CPF.")
+            description = "Os clientes ativos da LOJA (até 100, por nome), só com nome, CPF, telefone e cidade; nascimento, WhatsApp e "
+                    + "observações vêm só dos que o vendedor logado cadastrou (meu = verdadeiro). A busca procura no nome, telefone, CPF e, "
+                    + "nos clientes dele, no WhatsApp.")
     @GetMapping
     public List<Cliente> listar(@RequestParam(required = false) String busca, @AuthenticationPrincipal UsuarioAutenticado quem) {
         return clientes.listar(quem.vendedorId(), busca);
     }
 
-    @Operation(operationId = "verMeuCliente", summary = "Ver um dos meus clientes")
+    @Operation(operationId = "verMeuCliente", summary = "Ver um cliente da loja")
     @GetMapping("/{id}")
     public Cliente ver(@PathVariable UUID id, @AuthenticationPrincipal UsuarioAutenticado quem) {
         return clientes.ver(id, quem.vendedorId());
     }
 
     @Operation(operationId = "cadastrarMeuCliente", summary = "Cadastrar um cliente",
-            description = "O cliente novo entra com o vendedor logado como responsável. O CPF é opcional e conferido pelo servidor. "
+            description = "O cliente novo entra com o vendedor logado como responsável. O CPF é opcional, conferido pelo servidor e único: "
+                    + "CPF já cadastrado devolve 409 CLIENTE_CPF_JA_CADASTRADO com o cliente existente em clienteExistente. "
                     + "Mesmo id e mesmos dados devolve 200; mesmo id com dados diferentes, 409.")
     @PostMapping
     public ResponseEntity<Cliente> cadastrar(@RequestBody PedidoDeCliente pedido, @AuthenticationPrincipal UsuarioAutenticado quem) {

@@ -1,6 +1,20 @@
 /** Por que uma chamada à API não deu certo. Só o processo principal enxerga isto. */
+/** O cliente que já tem o CPF digitado (409 do cadastro): só o que o servidor mostra do diretório da loja. */
+export interface ClienteExistente {
+  id: string;
+  nome: string;
+  telefone?: string;
+  cidade?: string;
+}
+
 export type Falha =
-  | { tipo: 'recusada'; status: number; codigo?: string; mensagem?: string }
+  | {
+      tipo: 'recusada';
+      status: number;
+      codigo?: string;
+      mensagem?: string;
+      clienteExistente?: ClienteExistente;
+    }
   | { tipo: 'sem-conexao' }
   | { tipo: 'app-desatualizado'; mensagem: string }
   | { tipo: 'resposta-invalida' };

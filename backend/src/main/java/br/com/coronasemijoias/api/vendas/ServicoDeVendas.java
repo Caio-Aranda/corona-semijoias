@@ -385,12 +385,13 @@ public class ServicoDeVendas {
         return r.get(0);
     }
 
+    /** O cliente é da loja: qualquer cliente ativo serve (11/11/2026); o vendedor não entra na conta. */
     private void conferirCliente(UUID clienteId, UUID vendedorId) {
         boolean meu = Boolean.TRUE.equals(jdbc.queryForObject("""
-                SELECT EXISTS (SELECT 1 FROM corona.clientes WHERE id = ? AND vendedor_responsavel_id = ?
-                                AND deleted_at IS NULL AND ativo)""", Boolean.class, clienteId, vendedorId));
+                SELECT EXISTS (SELECT 1 FROM corona.clientes WHERE id = ? AND deleted_at IS NULL AND ativo)""",
+                Boolean.class, clienteId));
         if (!meu) {
-            throw Validacoes.recusar("clienteId", "Este cliente não está na sua lista. Escolha ou cadastre o cliente.");
+            throw Validacoes.recusar("clienteId", "Este cliente não está na lista da loja. Escolha ou cadastre o cliente.");
         }
     }
 

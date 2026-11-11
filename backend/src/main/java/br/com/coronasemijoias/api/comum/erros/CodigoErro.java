@@ -394,6 +394,14 @@ public enum CodigoErro {
             "Esta maleta já foi conferida.",
             "Esta maleta já foi conferida. Atualize a tela para ver o resultado."),
 
+    /**
+     * Já existe cliente (não excluído) com este CPF (HTTP 409; 11/11/2026: clientes são da loja e o CPF é único). O corpo
+     * traz o cliente existente (id, nome, telefone e cidade) para a pessoa escolher o que já está cadastrado.
+     */
+    CLIENTE_CPF_JA_CADASTRADO(
+            "Este cliente já está cadastrado.",
+            "Este cliente já está cadastrado. Escolha o cliente que já existe, em vez de cadastrar de novo."),
+
     /** O mesmo identificador de cliente voltou com outros dados (HTTP 409). */
     CLIENTE_JA_REGISTRADO_DIFERENTE(
             "Este cliente já foi cadastrado com outros dados.",

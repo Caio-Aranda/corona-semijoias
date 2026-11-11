@@ -67,6 +67,7 @@ Em 09/11/2026 o responsável resolveu as dúvidas que estavam abertas neste glos
 | estoque mínimo | `produtos.estoque_minimo` | Quantidade abaixo da qual o sistema avisa que está acabando. |
 | produtos parados | relatório de produtos parados | Produtos que não saem do estoque há muito tempo. |
 | sem foto | imagem padrão "sem foto" | Imagem com a marca, nunca um espaço quebrado. A falta de foto nunca trava a venda. |
+| cliente (do vendedor) | diretório de clientes da loja | O vendedor não tem "os clientes dele": o cliente é da loja e qualquer vendedor vende para ele. Vendas, fiado e pagamentos continuam só de quem vendeu (ADR-0011, item 13). |
 | Procurar pelo nome | busca na própria maleta (`/pecas/busca`) | Corona Vendas, nas telas Vender e Conferir maleta: "A etiqueta não lê? Procure pelo nome." Procura só entre as peças da maleta do vendedor (nome, referência ou parte do código); mostra miniatura, nome, código e "Na maleta: N"; escolher age como ler o código. |
 | COD Fábrica | código do tipo `FORNECEDOR` | O código que o fornecedor deu à peça. Aparece no painel da peça lida, junto com a categoria e "Na maleta: N" (na conferência, "Esperado: 3 · Contadas: 2"), quando existir. |
 | Acabou · Está em maleta | `estoque_atual` e saldo das maletas | Estoque da loja em zero **sem** peça em maleta: **Acabou** (destaque). Em zero **com** peças nas maletas dos vendedores: **0 na loja** e "**Está em maleta: 2 (Maria, João)**" (até três nomes; com mais, "e mais N"). Só no Corona Gestão. Na montagem da maleta: "Sem estoque na loja. Está na maleta de Maria." |
@@ -76,7 +77,9 @@ Em 09/11/2026 o responsável resolveu as dúvidas que estavam abertas neste glos
 Botões da tela inicial (§19.3 e §19.7):
 
 - App da dona: **Montar maleta**, **Receber compra**, **Fazer acerto**, **Cadastrar produto**, **Relatórios**.
-- App do vendedor: **Vender**, **Minha maleta**, **Meus clientes**, **Meus números**.
+- App do vendedor: **Vender**, **Minha maleta**, **Clientes**, **Meus números**.
+
+- **Clientes (11/11/2026):** os clientes são **da loja**. O vendedor busca e vende para qualquer cliente; vê só nome, CPF, telefone e cidade dos que outro vendedor cadastrou (nascimento, WhatsApp e observações só dos que ele cadastrou). CPF repetido: "**Este cliente já está cadastrado: {nome}.**" com o botão **Usar este cliente**.
 
 ## 2. Proibido na tela
 
@@ -436,7 +439,7 @@ Bloco "O que precisa da sua atenção" quando não há nada a mostrar:
 
 **Tela inicial do vendedor (Corona Vendas)**
 
-Os quatro botões grandes são os da parte 1 (**Vender**, **Minha maleta**, **Meus clientes**, **Meus números**) e, no canto, **Sair**. Enquanto uma função não existe (Fase 0), o botão mostra o mesmo texto "Em breve." da tela inicial da dona, com o nome do botão no lugar de {Nome do botão}.
+Os quatro botões grandes são os da parte 1 (**Vender**, **Minha maleta**, **Clientes**, **Meus números**) e, no canto, **Sair**. Enquanto uma função não existe (Fase 0), o botão mostra o mesmo texto "Em breve." da tela inicial da dona, com o nome do botão no lugar de {Nome do botão}.
 
 Desde a Fase 4 os quatro botões funcionam (o "Em breve." só vale para função que ainda não existe).
 

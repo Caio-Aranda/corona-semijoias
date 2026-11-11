@@ -20,6 +20,8 @@ const maria: Cliente = {
   cpf: '52998224725',
   dataNascimento: '1990-05-01',
   telefone: '(11) 98888-7777',
+  cidade: 'Ponta Porã',
+  meu: true,
   whatsapp: null,
   observacoes: 'Prefere ouro',
   ativo: true,
@@ -146,10 +148,10 @@ async function abrir(ponte: PonteDoCorona, botao: string) {
   return u;
 }
 
-describe('Meus clientes', () => {
+describe('Clientes', () => {
   it('lista só o que o servidor mandou, com o que cada um deve, e busca pelo texto digitado', async () => {
     const { ponte, daOperacao } = ponteDeConsulta();
-    const u = await abrir(ponte, 'Meus clientes');
+    const u = await abrir(ponte, 'Clientes');
     expect(await screen.findByText('Maria Souza')).toBeInTheDocument();
     expect(await screen.findByText('R$ 40,00')).toBeInTheDocument();
     await u.type(screen.getByLabelText('Buscar (nome, telefone ou CPF)'), 'maria');
@@ -162,15 +164,15 @@ describe('Meus clientes', () => {
 
   it('sem clientes convida a cadastrar o primeiro; busca sem resultado diz "Nenhum cliente encontrado"', async () => {
     const { ponte } = ponteDeConsulta({ 'clientes.listar': () => ({ ok: true, dados: [] }) });
-    const u = await abrir(ponte, 'Meus clientes');
-    expect(await screen.findByText(/ainda não tem clientes/)).toBeInTheDocument();
+    const u = await abrir(ponte, 'Clientes');
+    expect(await screen.findByText(/Ainda não há clientes/)).toBeInTheDocument();
     await u.type(screen.getByLabelText('Buscar (nome, telefone ou CPF)'), 'zzz');
     expect(await screen.findByText('Nenhum cliente encontrado.')).toBeInTheDocument();
   });
 
   it('a ficha mostra o contato, o que a pessoa deve e as compras dela', async () => {
     const { ponte, daOperacao } = ponteDeConsulta();
-    const u = await abrir(ponte, 'Meus clientes');
+    const u = await abrir(ponte, 'Clientes');
     await u.click(await screen.findByRole('button', { name: 'Ver: Maria Souza' }));
     expect(await screen.findByText(/\(11\) 98888-7777/)).toBeInTheDocument();
     expect(screen.getByText(/Prefere ouro/)).toBeInTheDocument();
@@ -194,7 +196,7 @@ describe('Meus clientes', () => {
     const { ponte, daOperacao } = ponteDeConsulta({
       'clientes.cadastrar': () => ({ ok: true, dados: novo }),
     });
-    const u = await abrir(ponte, 'Meus clientes');
+    const u = await abrir(ponte, 'Clientes');
     await u.click(await screen.findByRole('button', { name: 'Cadastrar cliente' }));
     await u.type(await screen.findByLabelText('Nome'), 'Joana Lima');
     await u.click(screen.getByRole('button', { name: 'Salvar cliente' }));
@@ -203,12 +205,62 @@ describe('Meus clientes', () => {
     expect(daOperacao('clientes.cadastrar')).toHaveLength(1);
   });
 
+  it('cliente de outro vendedor aparece só com o diretório: nome, telefone e cidade, sem nascimento nem observações', async () => {
+    const deOutro: Cliente = {
+      ...maria,
+      id: '66666666-6666-4666-8666-666666666666',
+      nome: 'Rosa Prado',
+      cidade: 'Dourados',
+      meu: false,
+      dataNascimento: null,
+      whatsapp: null,
+      observacoes: null,
+    };
+    const { ponte } = ponteDeConsulta({
+      'clientes.listar': () => ({ ok: true, dados: [deOutro] }),
+    });
+    const u = await abrir(ponte, 'Clientes');
+    expect(await screen.findByText('Rosa Prado')).toBeInTheDocument();
+    expect(screen.getByText('Dourados')).toBeInTheDocument();
+    await u.click(await screen.findByRole('button', { name: 'Ver: Rosa Prado' }));
+    expect(await screen.findByText(/\(11\) 98888-7777/)).toBeInTheDocument();
+    expect(screen.queryByText(/Observações/)).toBeNull();
+    expect(screen.queryByText(/Nascimento/)).toBeNull();
+  });
+
+  it('CPF repetido: avisa que o cliente já está cadastrado e deixa usar o que já existe', async () => {
+    const existente: Cliente = { ...maria, meu: false, observacoes: null, dataNascimento: null };
+    const { ponte, daOperacao } = ponteDeConsulta({
+      'clientes.cadastrar': () => ({
+        ok: false,
+        motivo: 'erro',
+        mensagem: 'Este cliente já está cadastrado: Maria Souza. Escolha o cliente que já existe.',
+        clienteExistente: { id: MARIA, nome: 'Maria Souza', telefone: '(11) 98888-7777' },
+      }),
+      'clientes.ver': () => ({ ok: true, dados: existente }),
+    });
+    const u = await abrir(ponte, 'Clientes');
+    await u.click(await screen.findByRole('button', { name: 'Cadastrar cliente' }));
+    await u.type(await screen.findByLabelText('Nome'), 'Maria S.');
+    await u.type(screen.getByLabelText('CPF (opcional)'), '52998224725');
+    await u.click(screen.getByRole('button', { name: 'Salvar cliente' }));
+    expect(
+      await screen.findByText('Este cliente já está cadastrado: Maria Souza.'),
+    ).toBeInTheDocument();
+    await u.click(screen.getByRole('button', { name: 'Usar este cliente' }));
+    expect(
+      await screen.findByRole('heading', { name: 'Cliente: Maria Souza' }),
+    ).toBeInTheDocument();
+    expect(daOperacao('clientes.ver').some((c) => 'id' in c && c.id === MARIA)).toBe(true);
+    expect(daOperacao('clientes.cadastrar')).toHaveLength(1);
+  });
+
   it('mostra a recusa do servidor no cadastro (por exemplo, CPF errado)', async () => {
     const mensagem = 'Confira o CPF: ele não parece estar certo.';
     const { ponte } = ponteDeConsulta({
       'clientes.cadastrar': () => ({ ok: false, motivo: 'erro', mensagem }),
     });
-    const u = await abrir(ponte, 'Meus clientes');
+    const u = await abrir(ponte, 'Clientes');
     await u.click(await screen.findByRole('button', { name: 'Cadastrar cliente' }));
     await u.type(await screen.findByLabelText('Nome'), 'Joana');
     await u.type(screen.getByLabelText('CPF (opcional)'), '111');

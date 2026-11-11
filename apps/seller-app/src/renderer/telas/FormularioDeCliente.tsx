@@ -22,6 +22,7 @@ export function FormularioDeCliente({ ponte, aoSalvar, aoCancelar }: FormularioD
   const [nascimento, setNascimento] = useState('');
   const [erroDoNome, setErroDoNome] = useState<string | undefined>();
   const [erro, setErro] = useState<string | null>(null);
+  const [existente, setExistente] = useState<{ id: string; nome: string } | null>(null);
   const [salvando, setSalvando] = useState(false);
   // Salvar de novo depois de uma falha de rede reaproveita o mesmo id: o cliente não duplica.
   const id = useRef(novoId());
@@ -35,6 +36,7 @@ export function FormularioDeCliente({ ponte, aoSalvar, aoCancelar }: FormularioD
     }
     setErroDoNome(undefined);
     setErro(null);
+    setExistente(null);
     setSalvando(true);
     const cliente: ClienteParaCadastrar = { id: id.current, nome: nome.trim() };
     if (telefone.trim()) cliente.telefone = telefone.trim();
@@ -42,6 +44,19 @@ export function FormularioDeCliente({ ponte, aoSalvar, aoCancelar }: FormularioD
     if (cpf.trim()) cliente.cpf = cpf.trim();
     if (nascimento) cliente.dataNascimento = nascimento;
     const r = await chamar<Cliente>(ponte, { operacao: 'clientes.cadastrar', cliente });
+    setSalvando(false);
+    if (r.ok) aoSalvar(r.dados);
+    else if (r.clienteExistente) {
+      // CPF repetido: em vez de cadastrar de novo, a pessoa escolhe o cliente que já existe.
+      setExistente(r.clienteExistente);
+      setErro(T.jaCadastrado(r.clienteExistente.nome));
+    } else setErro(r.mensagem);
+  }
+
+  async function usarExistente() {
+    if (!existente || salvando) return;
+    setSalvando(true);
+    const r = await chamar<Cliente>(ponte, { operacao: 'clientes.ver', id: existente.id });
     setSalvando(false);
     if (r.ok) aoSalvar(r.dados);
     else setErro(r.mensagem);
@@ -55,6 +70,11 @@ export function FormularioDeCliente({ ponte, aoSalvar, aoCancelar }: FormularioD
     >
       <h2 className="vendas-subtitulo">{T.titulo}</h2>
       {erro ? <Aviso tipo="erro">{erro}</Aviso> : null}
+      {existente ? (
+        <Botao variante="primario" disabled={salvando} onClick={() => void usarExistente()}>
+          {T.usarExistente}
+        </Botao>
+      ) : null}
       <Campo
         rotulo={T.nome}
         value={nome}

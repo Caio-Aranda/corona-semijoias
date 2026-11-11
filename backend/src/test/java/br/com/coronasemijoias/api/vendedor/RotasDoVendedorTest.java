@@ -10,6 +10,7 @@ import br.com.coronasemijoias.api.estoque.ServicoDeEstoque;
 import br.com.coronasemijoias.api.estoque.ServicoDeEstoque.OrigemDoMovimento;
 import br.com.coronasemijoias.api.estoque.ServicoDeEstoque.Pedido;
 import br.com.coronasemijoias.api.estoque.ServicoDeEstoque.TipoDeMovimento;
+import br.com.coronasemijoias.api.testes.CpfsDeTeste;
 import br.com.coronasemijoias.api.testes.TesteDeIntegracao;
 import br.com.coronasemijoias.api.testes.UsuariosDeTeste;
 import br.com.coronasemijoias.api.testes.UsuariosDeTeste.UsuarioDeTeste;
@@ -358,16 +359,19 @@ class RotasDoVendedorTest extends TesteDeIntegracao {
     // --- clientes ---
 
     @Test
-    void cadastraEBuscaSoOsProprioClientes() throws Exception {
+    void clientesSaoDaLojaDiretorioParaTodosEDadosAMaisSoParaOResponsavel() throws Exception {
         UsuarioDeTeste a = usuarios.criarVendedor();
         UsuarioDeTeste b = usuarios.criarVendedor();
         RequestPostProcessor quemA = como(a);
         UUID id = UUID.randomUUID();
+        String cpf = CpfsDeTeste.novo();
         String nome = "Maria da Silva " + UUID.randomUUID().toString().substring(0, 6);
-        Map<String, Object> pedido = mapa("id", id, "nome", nome, "telefone", "(11) 98888-7777", "cpf", "529.982.247-25");
+        Map<String, Object> pedido = mapa("id", id, "nome", nome, "telefone", "(11) 98888-7777", "cpf", CpfsDeTeste.comMascara(cpf),
+                "whatsapp", "(11) 97777-6666", "observacoes", "Só paga em dinheiro", "dataNascimento", "1990-05-20");
 
         JsonNode criado = corpoDe(postar("/api/vendedor/clientes", quemA, pedido).andExpect(status().isCreated()));
-        assertThat(criado.get("cpf").asString()).isEqualTo("52998224725");
+        assertThat(criado.get("cpf").asString()).isEqualTo(cpf);
+        assertThat(criado.get("meu").asBoolean()).isTrue();
         postar("/api/vendedor/clientes", quemA, pedido).andExpect(status().isOk());
         postar("/api/vendedor/clientes", quemA, mapa("id", id, "nome", "Outro nome")).andExpect(status().isConflict());
         // O mesmo id vindo de outro vendedor também é 409, sem dizer de quem é o cliente.
@@ -379,24 +383,77 @@ class RotasDoVendedorTest extends TesteDeIntegracao {
                 .isEqualTo(a.vendedorId());
         assertThat(corpoDe(ler("/api/vendedor/clientes?busca=maria da silva", quemA)).size()).isEqualTo(1);
         assertThat(corpoDe(ler("/api/vendedor/clientes?busca=98888", quemA)).size()).isEqualTo(1);
-        assertThat(corpoDe(ler("/api/vendedor/clientes?busca=52998224", quemA)).size()).isEqualTo(1);
+        assertThat(corpoDe(ler("/api/vendedor/clientes?busca=" + cpf.substring(0, 8), quemA)).size()).isEqualTo(1);
         assertThat(corpoDe(ler("/api/vendedor/clientes?busca=%25", quemA)).size()).isZero(); // curinga digitado vale ao pé da letra
-        assertThat(corpoDe(ler("/api/vendedor/clientes", como(b))).size()).isZero();
-        ler("/api/vendedor/clientes/" + id, como(b)).andExpect(status().isNotFound());
-        ler("/api/vendedor/clientes/" + id, quemA).andExpect(status().isOk());
         ler("/api/vendedor/clientes", dona()).andExpect(status().isForbidden());
         postar("/api/vendedor/clientes", dona(), pedido).andExpect(status().isForbidden());
+
+        // O outro vendedor B vê o cliente da loja, mas só o diretório: nome, CPF e telefone, sem nascimento, WhatsApp nem observações.
+        JsonNode paraB = corpoDe(ler("/api/vendedor/clientes?busca=maria da silva", como(b)).andExpect(status().isOk()));
+        assertThat(paraB).hasSize(1);
+        JsonNode c = paraB.get(0);
+        assertThat(c.get("nome").asString()).isEqualTo(nome);
+        assertThat(c.get("cpf").asString()).isEqualTo(cpf);
+        assertThat(c.get("telefone").asString()).isEqualTo("(11) 98888-7777");
+        assertThat(c.get("meu").asBoolean()).isFalse();
+        assertThat(c.get("dataNascimento").isNull()).isTrue();
+        assertThat(c.get("whatsapp").isNull()).isTrue();
+        assertThat(c.get("observacoes").isNull()).isTrue();
+        // A busca de B não acha o cliente pelo WhatsApp (só o responsável acha), mas acha pelo telefone e pelo CPF.
+        assertThat(corpoDe(ler("/api/vendedor/clientes?busca=97777", como(b))).size()).isZero();
+        assertThat(corpoDe(ler("/api/vendedor/clientes?busca=" + cpf.substring(0, 8), como(b))).size()).isEqualTo(1);
+        JsonNode verParaB = corpoDe(ler("/api/vendedor/clientes/" + id, como(b)).andExpect(status().isOk()));
+        assertThat(verParaB.get("observacoes").isNull()).isTrue();
+        JsonNode verParaA = corpoDe(ler("/api/vendedor/clientes/" + id, quemA).andExpect(status().isOk()));
+        assertThat(verParaA.get("observacoes").asString()).isEqualTo("Só paga em dinheiro");
+        assertThat(verParaA.get("dataNascimento").asString()).isEqualTo("1990-05-20");
+        // Cliente excluído ou inativo deixa de aparecer para todos.
+        jdbc.update("UPDATE corona.clientes SET ativo = false WHERE id = ?", id);
+        ler("/api/vendedor/clientes/" + id, como(b)).andExpect(status().isOk()); // inativo ainda se vê pelo id (histórico)
+        assertThat(corpoDe(ler("/api/vendedor/clientes?busca=maria da silva", como(b))).size()).isZero();
     }
 
     @Test
-    void reenviarClienteQueADonaExcluiuDa409ComMensagemSimples() throws Exception {
+    void cpfRepetidoEBarradoComOClienteExistenteInclusiveDeOutroVendedor() throws Exception {
         UsuarioDeTeste a = usuarios.criarVendedor();
-        UUID id = UUID.randomUUID();
-        Map<String, Object> pedido = mapa("id", id, "nome", "Cliente excluído " + id);
-        postar("/api/vendedor/clientes", como(a), pedido).andExpect(status().isCreated());
-        jdbc.update("UPDATE corona.clientes SET deleted_at = now() WHERE id = ?", id);
-        JsonNode erro = corpoDe(postar("/api/vendedor/clientes", como(a), pedido).andExpect(status().isConflict()));
-        assertThat(erro.get("detail").asString()).contains("já foi cadastrado");
+        UsuarioDeTeste b = usuarios.criarVendedor();
+        String cpf = CpfsDeTeste.novo();
+        UUID idDeA = UUID.randomUUID();
+        postar("/api/vendedor/clientes", como(a), mapa("id", idDeA, "nome", "Cliente de A", "cpf", cpf, "telefone", "(67) 3333-0000"))
+                .andExpect(status().isCreated());
+        JsonNode erro = corpoDe(postar("/api/vendedor/clientes", como(b), mapa("id", UUID.randomUUID(), "nome", "Outra pessoa", "cpf", CpfsDeTeste.comMascara(cpf)))
+                .andExpect(status().isConflict()));
+        assertThat(erro.get("codigo").asString()).isEqualTo("CLIENTE_CPF_JA_CADASTRADO");
+        assertThat(erro.get("detail").asString()).contains("Este cliente já está cadastrado").contains("Cliente de A");
+        assertThat(erro.get("clienteExistente").get("id").asString()).isEqualTo(idDeA.toString());
+        assertThat(erro.get("clienteExistente").get("nome").asString()).isEqualTo("Cliente de A");
+        assertThat(erro.get("clienteExistente").get("telefone").asString()).isEqualTo("(67) 3333-0000");
+        assertThat(erro.get("clienteExistente").has("observacoes")).isFalse();
+        // Nada foi gravado para B, e o reenvio idêntico do cliente de A continua 200.
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM corona.clientes WHERE cpf = ?", Integer.class, cpf)).isEqualTo(1);
+        postar("/api/vendedor/clientes", como(a), mapa("id", idDeA, "nome", "Cliente de A", "cpf", cpf, "telefone", "(67) 3333-0000"))
+                .andExpect(status().isOk());
+        // Dois cadastros do mesmo CPF ao mesmo tempo: um só entra.
+        String cpfNovo = CpfsDeTeste.novo();
+        java.util.List<Integer> codigos = new java.util.concurrent.CopyOnWriteArrayList<>();
+        Thread t1 = new Thread(() -> codigos.add(statusDe(() -> postar("/api/vendedor/clientes", como(a),
+                mapa("id", UUID.randomUUID(), "nome", "Paralelo 1", "cpf", cpfNovo)))));
+        Thread t2 = new Thread(() -> codigos.add(statusDe(() -> postar("/api/vendedor/clientes", como(b),
+                mapa("id", UUID.randomUUID(), "nome", "Paralelo 2", "cpf", cpfNovo)))));
+        t1.start();
+        t2.start();
+        t1.join();
+        t2.join();
+        assertThat(codigos).containsExactlyInAnyOrder(201, 409);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM corona.clientes WHERE cpf = ?", Integer.class, cpfNovo)).isEqualTo(1);
+    }
+
+    private int statusDe(java.util.concurrent.Callable<org.springframework.test.web.servlet.ResultActions> chamada) {
+        try {
+            return chamada.call().andReturn().getResponse().getStatus();
+        } catch (Exception e) {
+            return -1;
+        }
     }
 
     // --- cotação e foto ---
