@@ -33,7 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
  * confere vendedor, peças e limite, congela o preço de venda, baixa o estoque central pelo {@link ServicoDeEstoque}
  * (tudo ou nada) e marca a remessa como enviada. O servidor recalcula tudo; o aplicativo manda só produto e quantidade.
  *
- * <p>Decisões: uma linha por produto e remessa; limite 0 no cadastro do vendedor significa "sem limite cadastrado"
+ * <p>Decisões: uma linha por produto e remessa; o limite do vendedor é obrigatório (valor em reais, onde zero vale zero, ou "Sem limite"; V026)
  * (o banco guarda 0 por padrão); não há movimento de "saldo inicial" na maleta, pois o saldo é {@code qtd_enviada}
  * mais os movimentos (§7.1); dois envios do mesmo vendedor esperam um pelo outro (trava por vendedor), para o limite
  * não ser furado.
@@ -235,7 +235,7 @@ public class ServicoDeRemessas {
         }
         total = Dinheiro.arredondar(total);
 
-        if (vendedor.limite().signum() > 0) {
+        if (vendedor.limite() != null) {
             BigDecimal emAberto = maleta.valorEmAberto(vendedorId);
             if (emAberto.add(total).compareTo(vendedor.limite()) > 0) {
                 BigDecimal falta = emAberto.add(total).subtract(vendedor.limite());
@@ -272,13 +272,14 @@ public class ServicoDeRemessas {
 
     // --- internos ---
 
+    /** {@code limite} vazio só quando o vendedor está "sem limite" (sem limite definido nem chega aqui). */
     private record VendedorDaMaleta(BigDecimal limite, UUID praca) {
     }
 
     /** Vendedor existente, ativo e sem restrição que impede montar maleta (na criação do rascunho e no envio). */
     private VendedorDaMaleta conferirVendedor(UUID vendedorId) {
         List<Map<String, Object>> achados = jdbc.queryForList("""
-                SELECT v.nome, v.ativo, v.limite_consignacao, v.praca_id, r.descricao AS restricao,
+                SELECT v.nome, v.ativo, v.limite_consignacao, v.limite_consignacao_ilimitado, v.praca_id, r.descricao AS restricao,
                        coalesce(r.bloqueia_remessa, false) AS impede
                   FROM corona.vendedores v LEFT JOIN corona.restricoes r ON r.id = v.restricao_id AND r.deleted_at IS NULL
                  WHERE v.id = ? AND v.deleted_at IS NULL""", vendedorId);
@@ -295,7 +296,13 @@ public class ServicoDeRemessas {
                     "Este vendedor tem uma restrição que impede montar maleta (" + v.get("restricao")
                             + "). Resolva a restrição no cadastro dele antes de montar a maleta.");
         }
-        return new VendedorDaMaleta((BigDecimal) v.get("limite_consignacao"), (UUID) v.get("praca_id"));
+        BigDecimal limite = (BigDecimal) v.get("limite_consignacao");
+        if (limite == null && !Boolean.TRUE.equals(v.get("limite_consignacao_ilimitado"))) {
+            throw ErroDaApi.comDetalhe(HttpStatus.CONFLICT, CodigoErro.LIMITE_DE_CONSIGNACAO_NAO_DEFINIDO,
+                    "Defina o limite deste vendedor antes de montar a maleta. No cadastro dele, preencha o limite de "
+                            + "consignação ou marque \"Sem limite\".");
+        }
+        return new VendedorDaMaleta(limite, (UUID) v.get("praca_id"));
     }
 
     /** Uma {@link Peca} por id pedido, na mesma ordem; {@code null} onde o produto não existe (ou foi excluído). */

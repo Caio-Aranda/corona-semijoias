@@ -248,7 +248,14 @@ function PorVendedor({
             // Maleta com tudo devolvido (saldo zero) continua enviada, mas não conta aqui.
             maletas: v.maletas.filter((m) => m.pecasEmAberto > 0).length,
             emAberto: <Dinheiro valor={v.valorEmAberto} />,
-            limite: v.limite === null ? P.semLimite : <Dinheiro valor={v.limite} />,
+            limite:
+              v.limite !== null ? (
+                <Dinheiro valor={v.limite} />
+              ) : v.semLimite ? (
+                P.semLimite
+              ) : (
+                P.naoDefinido
+              ),
             sobra:
               v.sobra === null ? (
                 '—'

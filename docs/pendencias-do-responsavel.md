@@ -12,7 +12,12 @@ Estas saíram da lista da dona: são do sistema ou do responsável.
    - conta o **preço de venda congelado na remessa** (não o custo);
    - a **reposição entra na conta**: conta tudo o que o vendedor tem em mãos;
    - o campo do limite no cadastro do vendedor passa a ser **obrigatório**, com a opção explícita **"Sem limite"**. **Zero deixa de significar "sem limite".**
-   - A mudança no código (migração, tela, mensagens e testes) é **outra tarefa**, ainda não feita. O ADR-0010 e a §17/§21 da especificação devem ser atualizados nessa tarefa.
+   - Feito em 11/11/2026 (PR 86): migração V026, ficha do vendedor, montagem da maleta, mensagens e testes; ADR-0010 (item 7) e §7.1 atualizados.
+
+10. **Backup fora da VPS:** `rclone crypt` **sim** (a senha do `crypt` fica guardada fora da VPS); **aviso de queda por `ntfy`** (pendências 3 e 4 abaixo: falta só executar a configuração).
+11. **ADR-0009 (certificado pelo IP) aceito.** Vale o certificado fixado no IP; domínio próprio é melhoria futura (pendência 12).
+12. **D1 da auditoria:** "Minha maleta" mostra Dólar e Guarani pela **cotação de hoje**, com o texto "pela cotação de hoje" (PR 84).
+13. **D2 da auditoria (padrão até a dona responder, pergunta 25):** vendedor com o cadastro inativo **não vende**; inativar o cadastro desativa o usuário (PR 85).
 
 ## Respostas do responsável (11/11/2026)
 
@@ -32,8 +37,8 @@ Também saíram da lista da dona:
 | --- | --- | --- | --- |
 | 1 | **Contratar a VPS e entregar o IP fixo** | Sem IP não há certificado (ele é gerado para o IP) nem instalador apontando para o servidor. Se o IP mudar depois, os programas instalados param de conectar (ADR-0009). | Implantação real, teste de ponta a ponta na VPS, `api:redefinir-senha` dentro do contêiner, entrega à dona ([entrega-corona-gestao.md](entrega-corona-gestao.md)). |
 | 2 | **Cadastrar a chave SSH pública na VPS** | Sem ela não há acesso seguro (a senha do SSH é desligada). | Script de preparação da VPS e publicação das atualizações pela rede (`ssh`/`scp`), testada só em pasta local (tarefa 9.5). |
-| 3 | **Autorizar o Google Drive no `rclone`** e decidir se usa `rclone crypt` (a senha do `crypt` fica guardada fora da VPS) | Sem isso o backup fica só dentro da VPS: se ela for perdida, os dados vão junto. | Cópia semanal fora da VPS e o teste de restauração a partir do Drive ([restauracao-de-backup.md](restauracao-de-backup.md)). |
-| 4 | **Escolher o aviso de queda** (`ntfy` ou e-mail) e ligar a verificação externa (UptimeRobot) | Sem aviso, ninguém fica sabendo se a API cair ou o disco encher. | Monitoramento da tarefa 9.2 (pronto, mas desligado). |
+| 3 | **Autorizar o Google Drive no `rclone`** (decidido: com `rclone crypt`; guardar a senha do `crypt` fora da VPS) | Sem isso o backup fica só dentro da VPS: se ela for perdida, os dados vão junto. | Cópia semanal fora da VPS e o teste de restauração a partir do Drive ([restauracao-de-backup.md](restauracao-de-backup.md)). |
+| 4 | **Ligar o aviso de queda por `ntfy`** (decidido) e a verificação externa (UptimeRobot) | Sem aviso, ninguém fica sabendo se a API cair ou o disco encher. | Monitoramento da tarefa 9.2 (pronto, mas desligado). |
 | 5 | **Aceitar o ADR-0005** (SQLCipher no Electron) | É a base do banco criptografado do Corona Vendas. Inclui aceitar o risco de perder a `outbox` num computador reinstalado sem internet. | **Fase 5** (offline e sync) inteira. |
 | 6 | **Aceitar o ADR-0011** (venda do vendedor online) | Regras de venda, estorno e totais no servidor; os padrões provisórios das dúvidas 1 a 6 valem até a dona responder. | Fechamento da Fase 4 (tarefas 4.3 a 4.5 já usam o ADR). |
 | 7 | **Aceitar o ADR-0007** (códigos das etiquetas) | A Fase 1 e 2 usam o padrão seguro dele (aceita código da loja, do fornecedor e EAN-13). Pode esperar as respostas 16 a 20 da dona. | Ajuste da §8, do `CLAUDE.md` e do glossário; impressão de etiquetas, se a dona quiser. |

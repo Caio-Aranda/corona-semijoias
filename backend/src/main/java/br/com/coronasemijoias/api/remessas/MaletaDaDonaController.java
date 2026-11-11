@@ -86,11 +86,13 @@ public class MaletaDaDonaController {
         }
     }
 
-    public record RespostaDoEmAberto(UUID vendedorId, String vendedorNome, BigDecimal limite, BigDecimal valorEmAberto,
-            BigDecimal limiteRestante, List<RespostaDaMaletaEmAberto> maletas) {
+    public record RespostaDoEmAberto(UUID vendedorId, String vendedorNome, BigDecimal limite, boolean semLimite,
+            boolean limiteDefinido, BigDecimal valorEmAberto, BigDecimal limiteRestante,
+            List<RespostaDaMaletaEmAberto> maletas) {
 
         static RespostaDoEmAberto de(EmAberto e) {
-            return new RespostaDoEmAberto(e.vendedorId(), e.vendedorNome(), e.limite(), e.valorEmAberto(), e.limiteRestante(),
+            return new RespostaDoEmAberto(e.vendedorId(), e.vendedorNome(), e.limite(), e.semLimite(),
+                    e.limiteDefinido(), e.valorEmAberto(), e.limiteRestante(),
                     e.maletas().stream().map(RespostaDaMaletaEmAberto::de).toList());
         }
     }
@@ -149,7 +151,7 @@ public class MaletaDaDonaController {
 
     @Operation(operationId = "listarMaletasEmAbertoDoVendedor", summary = "Maletas em aberto de um vendedor",
             description = "Maletas enviadas com o valor em aberto de cada uma, o total, o limite de consignação (vazio se o vendedor "
-                    + "não tem limite) e quanto ainda sobra do limite.")
+                    + "está sem limite ou ainda não tem limite definido; veja semLimite e limiteDefinido) e quanto ainda sobra do limite.")
     @GetMapping("/em-aberto")
     public RespostaDoEmAberto emAberto(@RequestParam UUID vendedorId) {
         return RespostaDoEmAberto.de(consultas.emAberto(vendedorId));

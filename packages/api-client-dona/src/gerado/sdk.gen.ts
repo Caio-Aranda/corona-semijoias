@@ -1268,7 +1268,7 @@ export const criarRemessa = <ThrowOnError extends boolean = false>(options: Opti
 /**
  * Maletas em aberto de um vendedor
  *
- * Maletas enviadas com o valor em aberto de cada uma, o total, o limite de consignação (vazio se o vendedor não tem limite) e quanto ainda sobra do limite.
+ * Maletas enviadas com o valor em aberto de cada uma, o total, o limite de consignação (vazio se o vendedor está sem limite ou ainda não tem limite definido; veja semLimite e limiteDefinido) e quanto ainda sobra do limite.
  */
 export const listarMaletasEmAbertoDoVendedor = <ThrowOnError extends boolean = false>(options: Options<ListarMaletasEmAbertoDoVendedorData, ThrowOnError>): RequestResult<ListarMaletasEmAbertoDoVendedorResponses, unknown, ThrowOnError> => (options.client ?? client).get<ListarMaletasEmAbertoDoVendedorResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],

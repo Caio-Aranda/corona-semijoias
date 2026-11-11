@@ -69,7 +69,12 @@ export function FormularioDeCampos({
   useEffect(() => () => avisar.current(false), []);
 
   function mudar(nome: string, valor: string) {
-    setValores((v) => ({ ...v, [nome]: valor }));
+    setValores((v) => {
+      const novo = { ...v, [nome]: valor };
+      // Marcar "Sem limite" esvazia o campo de valor do limite.
+      for (const c of campos) if (c.desabilitaSe === nome && valor === 'sim') novo[c.nome] = '';
+      return novo;
+    });
     setLocais((l) => ({ ...l, [nome]: '' }));
     setErro((e) => (e ? { ...e, campos: { ...e.campos, [nome]: '' } } : e));
   }
@@ -117,6 +122,7 @@ export function FormularioDeCampos({
             valor={valor}
             aoMudar={(digitado) => mudar(c.nome, digitado)}
             autoFocus={foco}
+            desabilitado={c.desabilitaSe !== undefined && valores[c.desabilitaSe] === 'sim'}
             {...(msg ? { erro: msg } : {})}
             {...(c.ajuda ? { ajuda: c.ajuda } : {})}
           />

@@ -103,6 +103,7 @@ public abstract class TesteDeIntegracao {
         // A busca de cotações na internet nunca roda nos testes (ADR-0006): quem testa chama a busca com cliente falso.
         registro.add("corona.cotacoes.busca-agendada", () -> "false");
         registro.add("corona.fotos.limpeza-agendada", () -> "false");
+        registro.add("corona.limpeza-tecnica.agendada", () -> "false");
         // Os arquivos enviados nos testes vão para uma pasta temporária, nunca para o projeto.
         registro.add("corona.arquivos.pasta", () -> PASTA_DE_ARQUIVOS.toString());
         registrarSeguranca(registro);

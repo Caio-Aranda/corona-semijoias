@@ -16,7 +16,13 @@ const AJUSTES: Record<string, Partial<CampoDaFicha>> = {
   sexo: { opcoes: T.sexo, semOpcao: T.semSexo },
   pracaId: { lista: 'pracas', semOpcao: T.semPraca },
   restricaoId: { lista: 'restricoes', semOpcao: T.semRestricao },
-  limiteConsignacao: { ajuda: T.limiteAjuda },
+  limiteConsignacao: {
+    ajuda: T.limiteAjuda,
+    obrigatorio: true,
+    obrigatorioExcetoSe: 'semLimite',
+    mensagemObrigatorio: T.limiteObrigatorio,
+    desabilitaSe: 'semLimite',
+  },
   comissaoPercentual: { ajuda: T.comissaoAjuda },
 };
 
@@ -43,6 +49,7 @@ const ORDEM_DO_CADASTRO = [
   'outrasMidias',
   'pracaId',
   'limiteConsignacao',
+  'semLimite',
   'restricaoId',
   'comissaoPercentual',
 ];

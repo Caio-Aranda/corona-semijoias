@@ -59,6 +59,10 @@ public final class VerificadorDeConvencoes {
         }
     }
 
+    /** A única exceção ao "nunca DELETE" (V028, ADR-0002 de 11/11/2026): dados técnicos apagados após 90 dias. */
+    private static final java.util.Set<String> DELETE_DA_LIMPEZA_TECNICA =
+            java.util.Set.of("sessoes", "tokens_de_renovacao", "tentativas_login");
+
     private final JdbcTemplate jdbc;
     private final List<String> violacoes = new ArrayList<>();
     private final Map<String, Map<String, Coluna>> colunas = new HashMap<>();
@@ -279,7 +283,7 @@ public final class VerificadorDeConvencoes {
                  WHERE n.nspname = 'corona' AND c.relkind IN ('r', 'p')""",
                 linha -> {
                     String tabela = linha.getString(1);
-                    if (linha.getBoolean(2)) {
+                    if (linha.getBoolean(2) && !DELETE_DA_LIMPEZA_TECNICA.contains(tabela)) {
                         violacao(tabela, "o usuário da aplicação tem DELETE");
                     }
                     if (linha.getBoolean(3)) {

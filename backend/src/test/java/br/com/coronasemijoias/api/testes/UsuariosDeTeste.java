@@ -55,7 +55,7 @@ public class UsuariosDeTeste {
     /** Um cadastro de vendedor mínimo (o que o usuário VENDEDOR precisa ter ligado), devolvendo o id. */
     public UUID criarCadastroDeVendedor() {
         UUID id = UUID.randomUUID();
-        jdbc.update("INSERT INTO corona.vendedores (id, nome) VALUES (?, ?)", id, "Vendedor de Teste " + id);
+        jdbc.update("INSERT INTO corona.vendedores (id, nome, limite_consignacao_ilimitado) VALUES (?, ?, true)", id, "Vendedor de Teste " + id);
         return id;
     }
 
@@ -64,7 +64,7 @@ public class UsuariosDeTeste {
         String login = perfil.toLowerCase() + "." + id.toString().substring(0, 8);
         String nome = "Pessoa de Teste " + login;
         if (vendedorId != null) {
-            jdbc.update("INSERT INTO corona.vendedores (id, nome) VALUES (?, ?) ON CONFLICT (id) DO NOTHING",
+            jdbc.update("INSERT INTO corona.vendedores (id, nome, limite_consignacao_ilimitado) VALUES (?, ?, true) ON CONFLICT (id) DO NOTHING",
                     vendedorId, "Vendedor de " + login);
         }
         jdbc.update("""

@@ -84,7 +84,8 @@ class MigracaoDosVendedoresTest extends TesteDeIntegracao {
                 assertThat(linhas.getString("login")).isEqualTo("vendedor.um");
                 assertThat(linhas.getObject("vendedor_id", UUID.class)).isNotNull();
                 assertThat(linhas.getString("nome")).isEqualTo("Nome vendedor.um");
-                assertThat(linhas.getBigDecimal("limite_consignacao")).isEqualByComparingTo("0");
+                // V026: o limite 0 de antes virou "sem limite definido" (vazio), não "sem limite".
+                assertThat(linhas.getBigDecimal("limite_consignacao")).isNull();
                 assertThat(linhas.getBigDecimal("comissao_percentual")).isEqualByComparingTo("0");
                 assertThat(linhas.getBoolean("ativo")).isTrue();
             }

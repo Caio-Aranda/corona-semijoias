@@ -37,6 +37,18 @@ export function conferirVersaoNova(publicada, nova) {
   }
 }
 
+/**
+ * Instaladores a apagar da pasta de atualizações: todos menos os {@code manter} mais novos (por versão, não por
+ * ordem alfabética: 1.0.10 é mais novo que 1.0.9).
+ */
+export function instaladoresAntigos(nomes, prefixo = 'Corona-Gestao', manter = 3) {
+  const versaoDe = (n) => /-Setup-(\d+\.\d+\.\d+)\.exe$/.exec(n)?.[1];
+  return nomes
+    .filter((n) => nomeDoInstaladorValido(n, prefixo))
+    .sort((a, b) => compararVersoes(versaoDe(a), versaoDe(b)))
+    .slice(0, Math.max(0, nomes.filter((n) => nomeDoInstaladorValido(n, prefixo)).length - manter));
+}
+
 /** Nome do instalador: só o que o electron-builder gera, sem caminho. */
 export function nomeDoInstaladorValido(nome, prefixo = 'Corona-Gestao') {
   return new RegExp(String.raw`^${prefixo}-Setup-\d+\.\d+\.\d+\.exe$`).test(nome);

@@ -1,4 +1,4 @@
--- V027: uma foto só por peça (decisão do responsável de 11/11/2026; ESPECIFICACAO §20).
+-- V029: uma foto só por peça (decisão do responsável de 11/11/2026; ESPECIFICACAO §20).
 --
 -- A foto serve só para reconhecer a peça. Enviar uma foto nova substitui a anterior (exclusão lógica da antiga; o
 -- arquivo sai do disco depois, por limpeza). As colunas principal e ordem da V015 ficam (migração publicada não se
@@ -27,4 +27,4 @@ CREATE UNIQUE INDEX produtos_fotos_uma_ativa ON corona.produtos_fotos (produto_i
 -- Só do servidor: quando a limpeza tirou os arquivos desta foto (já excluída) do disco.
 ALTER TABLE corona.produtos_fotos ADD COLUMN arquivos_removidos_em timestamptz;
 COMMENT ON COLUMN corona.produtos_fotos.arquivos_removidos_em IS
-    'Quando a limpeza diária apagou do disco os arquivos desta foto já excluída (V027). Nunca vai no sync.';
+    'Quando a limpeza diária apagou do disco os arquivos desta foto já excluída (V029). Nunca vai no sync.';

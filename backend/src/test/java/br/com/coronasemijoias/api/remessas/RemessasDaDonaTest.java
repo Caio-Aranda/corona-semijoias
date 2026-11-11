@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import br.com.coronasemijoias.api.estoque.ServicoDeEstoque;
@@ -106,6 +107,8 @@ class RemessasDaDonaTest extends TesteDeIntegracao {
         Map<String, Object> corpo = mapa("nome", "Vendedor " + UUID.randomUUID().toString().substring(0, 8));
         if (limite != null) {
             corpo.put("limiteConsignacao", limite);
+        } else {
+            corpo.put("semLimite", true); // o limite é obrigatório (V026)
         }
         if (restricao != null) {
             corpo.put("restricaoId", restricao);
@@ -235,6 +238,18 @@ class RemessasDaDonaTest extends TesteDeIntegracao {
         mvc.perform(put(BASE + "/" + r.get("id").asString() + "/itens/" + p).with(dona()).contentType(MediaType.APPLICATION_JSON)
                 .content(json.writeValueAsString(mapa("quantidade", 2, "version", r.get("version").asInt()))))
                 .andExpect(status().isConflict());
+    }
+
+    @Test
+    void vendedorComCadastroInativoNaoRecebeMaletaMesmoComRascunhoPronto() throws Exception {
+        UUID vendedor = vendedor("1000.00", null);
+        UUID p = peca("10.00", 5);
+        JsonNode r = comItem(rascunho(UUID.randomUUID(), vendedor, semana()), p, 1);
+        jdbc.update("UPDATE corona.vendedores SET ativo = false WHERE id = ?", vendedor);
+        enviarRemessa(r).andExpect(status().is4xxClientError());
+        assertThat(saldo(p)).isEqualTo(5);
+        assertThat(jdbc.queryForObject("SELECT status FROM corona.remessas WHERE id = ?", String.class,
+                UUID.fromString(r.get("id").asString()))).isEqualTo("RASCUNHO");
     }
 
     @Test
@@ -431,10 +446,38 @@ class RemessasDaDonaTest extends TesteDeIntegracao {
     }
 
     @Test
-    void semLimiteCadastradoNaoBloqueia() throws Exception {
+    void semLimiteMarcadoDePropositoNaoBloqueia() throws Exception {
         UUID p = peca("1000.00", 20);
-        UUID v = vendedor(null, null);
+        UUID v = vendedor(null, null); // o helper marca "Sem limite"
         enviarRemessa(montada(v, p, 15)).andExpect(status().isCreated());
+    }
+
+    @Test
+    void vendedorSemLimiteDefinidoNaoRecebeMaletaNemRascunho() throws Exception {
+        UUID p = peca("10.00", 20);
+        UUID v = vendedor(null, null);
+        UUID semana = semana();
+        JsonNode pronto = comItem(rascunho(UUID.randomUUID(), v, semana), p, 1);
+        // Como ficam os vendedores antigos (limite 0 virou "sem limite definido" na V026): os dois campos vazios.
+        jdbc.update("UPDATE corona.vendedores SET limite_consignacao = NULL, limite_consignacao_ilimitado = false WHERE id = ?", v);
+        String texto = textoDe(enviarRemessa(pronto).andExpect(status().isConflict())
+                .andExpect(jsonPath("$.codigo").value("LIMITE_DE_CONSIGNACAO_NAO_DEFINIDO")));
+        assertThat(texto).contains("Defina o limite deste vendedor antes de montar a maleta");
+        enviarPost(BASE, mapa("id", UUID.randomUUID(), "vendedorId", v, "semanaId", semana, "tipo", "NOVA"))
+                .andExpect(status().isConflict()).andExpect(jsonPath("$.codigo").value("LIMITE_DE_CONSIGNACAO_NAO_DEFINIDO"));
+        assertThat(saldo(p)).isEqualTo(20);
+        // Definido o limite (ou "Sem limite"), a mesma remessa segue.
+        jdbc.update("UPDATE corona.vendedores SET limite_consignacao_ilimitado = true WHERE id = ?", v);
+        enviarRemessa(pronto).andExpect(status().isCreated());
+    }
+
+    @Test
+    void limiteZeroValeZeroENaoSignificaSemLimite() throws Exception {
+        UUID p = peca("10.00", 20);
+        UUID v = vendedor("0.00", null);
+        enviarRemessa(montada(v, p, 1)).andExpect(status().isConflict())
+                .andExpect(jsonPath("$.codigo").value("LIMITE_DE_CONSIGNACAO_EXCEDIDO"));
+        assertThat(saldo(p)).isEqualTo(20);
     }
 
     @Test

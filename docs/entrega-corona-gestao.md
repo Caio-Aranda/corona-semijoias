@@ -108,7 +108,7 @@ Faça este teste **de novo depois de importar os produtos** (seção 9), com cat
    (aviso por **ntfy**, decisão do responsável: instale o app ntfy no celular e assine o mesmo nome).
 2. `sudo /opt/corona/deploy/monitoramento/avisar.sh teste "ola"` deve chegar no celular.
 3. `sudo /opt/corona/deploy/monitoramento/instalar-timers.sh` (verifica a cada 5 minutos e avisa também se o
-   disco passar de 85%).
+   disco passar de 80%).
 4. Recomendado: uma verificação externa gratuita (por exemplo UptimeRobot) em `https://<IP>/actuator/health`
    **aceitando certificado não confiável** (o serviço externo não conhece o nosso certificado; a rota não mostra dado nenhum).
 

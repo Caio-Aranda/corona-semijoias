@@ -108,3 +108,5 @@ Domínio próprio com Let's Encrypt, assinatura de código do instalador, backup
 1. Confirmar este ADR (Proposto para Aceito).
 2. IP fixo da VPS, chave SSH e a conta do Google Drive para o `rclone`: só o responsável cria e entrega.
 3. Aviso de queda: e-mail ou `ntfy`?
+
+**Linha datada, 11/11/2026 (decisão do responsável): não deixar banco e disco crescerem à toa.** (a) Aviso pelo `ntfy` quando o disco da VPS passar de **80%** (`deploy/monitoramento`, antes 85%). (b) Logs do Docker com `max-size: 50m` e `max-file: 3` em cada serviço de `deploy/docker-compose.yml`. (c) Backups: **14 diários** na VPS (já era assim; sempre sobram pelo menos 3) e as **8 últimas cópias semanais** no Google Drive: o envio semanal conta cópias e apaga as mais antigas no remoto (antes apagava por idade). (d) Atualizações: só os **3 últimos instaladores** de cada aplicativo na pasta de atualizações da VPS (a publicação já fazia; o caminho local de teste ordenava por texto e passou a ordenar por versão). (e) Sessões encerradas e tentativas de login com mais de 90 dias são apagadas pelo servidor (ADR-0002, mesma data).

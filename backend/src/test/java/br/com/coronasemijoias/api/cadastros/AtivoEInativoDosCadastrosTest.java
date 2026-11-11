@@ -168,7 +168,7 @@ class AtivoEInativoDosCadastrosTest extends TesteDeIntegracao {
         String praca = criar("pracas", mapa("nome", unico("Praça em uso"))).get("id").asString();
         String restricao = criar("restricoes", mapa("codigo", unico("R"), "descricao", "Teste")).get("id").asString();
         JsonNode vendedor = json.readTree(enviar("POST", "/api/dona/vendedores", true,
-                mapa("nome", unico("Vendedora"), "pracaId", praca, "restricaoId", restricao))
+                mapa("nome", unico("Vendedora"), "semLimite", true, "pracaId", praca, "restricaoId", restricao))
                 .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString());
 
         enviar("POST", "/api/dona/pracas/" + praca + "/inativar", true, null).andExpect(status().isOk());
@@ -178,7 +178,7 @@ class AtivoEInativoDosCadastrosTest extends TesteDeIntegracao {
                 .andExpect(jsonPath("$.pracaId").value(praca)).andExpect(jsonPath("$.restricaoId").value(restricao));
         // E o inativo ainda pode ser ligado de novo ao salvar a ficha como está.
         enviar("PUT", "/api/dona/vendedores/" + vendedor.get("id").asString(), true,
-                mapa("nome", vendedor.get("nome").asString(), "pracaId", praca, "restricaoId", restricao, "version", 1))
+                mapa("nome", vendedor.get("nome").asString(), "semLimite", true, "pracaId", praca, "restricaoId", restricao, "version", 1))
                 .andExpect(status().isOk());
     }
 

@@ -82,6 +82,12 @@ export interface CampoDaFicha {
   opcoes?: readonly { valor: string; rotulo: string }[];
   /** Texto da primeira opção, a que significa "nenhuma". */
   semOpcao?: string;
+  /** Campo "sim ou não" que, marcado, dispensa este campo obrigatório (ex.: "Sem limite"). */
+  obrigatorioExcetoSe?: string;
+  /** Texto próprio de campo obrigatório vazio. */
+  mensagemObrigatorio?: string;
+  /** Campo "sim ou não" que, marcado, desabilita e esvazia este campo. */
+  desabilitaSe?: string;
 }
 
 /** O mesmo campo pelo que a API conhece, para o tipo e o tamanho. */
@@ -163,8 +169,12 @@ export function montarCorpo(
       corpo[c.nome] = v === 'sim';
       continue;
     }
+    if (c.desabilitaSe && valores[c.desabilitaSe] === 'sim') continue;
     if (v === '') {
-      if (c.obrigatorio) erros[c.nome] = TEXTOS.formulario.obrigatorio;
+      const dispensado = c.obrigatorioExcetoSe && valores[c.obrigatorioExcetoSe] === 'sim';
+      if (c.obrigatorio && !dispensado) {
+        erros[c.nome] = c.mensagemObrigatorio ?? TEXTOS.formulario.obrigatorio;
+      }
       continue;
     }
     if (c.tipo === 'dinheiro') {

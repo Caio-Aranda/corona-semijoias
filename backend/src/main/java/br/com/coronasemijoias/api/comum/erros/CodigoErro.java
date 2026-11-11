@@ -266,6 +266,11 @@ public enum CodigoErro {
             "Este vendedor não pode receber maleta.",
             "Este vendedor não pode receber maleta agora."),
 
+    /** O vendedor não tem limite de consignação definido nem "Sem limite" marcado (HTTP 409; V026). */
+    LIMITE_DE_CONSIGNACAO_NAO_DEFINIDO(
+            "O limite de consignação do vendedor não está definido.",
+            "Defina o limite deste vendedor antes de montar a maleta."),
+
     /** O valor da maleta passa o limite de consignação do vendedor (HTTP 409). O servidor monta o texto. */
     LIMITE_DE_CONSIGNACAO_EXCEDIDO(
             "O valor da maleta passa o limite do vendedor.",
@@ -339,6 +344,11 @@ public enum CodigoErro {
     VENDA_NAO_ENCONTRADA(
             "Não encontramos esta venda.",
             "Não encontramos esta venda. Atualize a tela e tente de novo."),
+
+    /** O cadastro do vendedor está inativo: não vende, não confere maleta (HTTP 409; ADR-0011, linha de 11/11/2026). */
+    VENDEDOR_DESATIVADO(
+            "Este vendedor está desativado.",
+            "Este vendedor está desativado. Fale com a dona."),
 
     /** O mesmo identificador voltou com outros dados (HTTP 409). */
     VENDA_JA_REGISTRADA_DIFERENTE(

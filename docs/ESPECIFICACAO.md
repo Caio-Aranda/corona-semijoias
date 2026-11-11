@@ -121,7 +121,7 @@ O app **nunca acessa o banco direto**, apenas a API. Segurança (ninguém tem a 
 - Ciclo de estados: `RASCUNHO → ENVIADA → CONFERIDA → EM_ACERTO → ACERTADA` (mais `CANCELADA`).
 - A dona monta a maleta **online**, bipando os produtos. O estoque central é baixado ao enviar.
 - **Preço congelado** no envio (`preco_remessa`). O vendedor vende por esse preço, mesmo que a dona mude o preço depois.
-- **Bloqueios:** valor total da maleta não pode passar o **limite de consignação** do vendedor; vendedor com **restrição** ou inativo não recebe maleta; produto sem saldo central não entra.
+- **Bloqueios:** valor total da maleta não pode passar o **limite de consignação** do vendedor (campo obrigatório do cadastro: um valor em reais ou "Sem limite"; sem uma das duas escolhas o vendedor não recebe maleta; ADR-0010, item 7); vendedor com **restrição** ou inativo não recebe maleta; produto sem saldo central não entra.
 - O vendedor sincroniza, **confere** bipando as peças recebidas e registra divergências.
 - **Saldo por eventos**, nunca por número digitado: `saldo = enviada − vendas − devoluções à dona − perdas − avarias + estornos de venda + devoluções de clientes boas + entradas de troca − saídas de troca`.
 - **Reposição** é uma maleta complementar criada online. Se faltar peça no meio do caminho, a dona cria nova remessa.
@@ -604,7 +604,7 @@ Toda vez que um produto aparece por **leitura de código de barras** ou por **pe
 
 ### Cadastro das fotos (app da dona)
 
-- **Uma foto só por peça** (decisão do responsável, 11/11/2026): a foto serve só para reconhecer a peça. Enviar uma foto nova **substitui** a anterior (a antiga sai da peça por exclusão lógica e o arquivo dela sai do disco depois, numa limpeza diária). O servidor garante uma só foto ativa por produto (índice único parcial, migração V027). Não há mais foto principal nem ordem; as colunas `principal` e `ordem` ficam na tabela só por compatibilidade (a foto ativa é sempre a principal).
+- **Uma foto só por peça** (decisão do responsável, 11/11/2026): a foto serve só para reconhecer a peça. Enviar uma foto nova **substitui** a anterior (a antiga sai da peça por exclusão lógica e o arquivo dela sai do disco depois, numa limpeza diária). O servidor garante uma só foto ativa por produto (índice único parcial, migração V029). Não há mais foto principal nem ordem; as colunas `principal` e `ordem` ficam na tabela só por compatibilidade (a foto ativa é sempre a principal).
 - Formas de inserir: escolher arquivo, **arrastar e soltar**, **colar** da área de transferência e, opcionalmente, **tirar pela webcam**.
 - **Importação em massa:** pasta com fotos nomeadas pelo código do produto (por exemplo `7891234567895.jpg` ou `A-0123.jpg`). O sistema associa cada foto ao produto (é uma foto por código: se vier outra para o mesmo código, ela substitui a que a peça já tinha), e a prévia mostra as que não encontraram produto e os produtos que ficaram sem foto.
 - Formatos aceitos: JPG, PNG e WebP. **Limite de 10 MB por arquivo.** Recusar arquivo que não seja imagem, com mensagem clara.
