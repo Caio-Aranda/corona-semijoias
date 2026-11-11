@@ -14,13 +14,15 @@ O orçamento de minutos do GitHub Actions é pequeno até o fim do projeto. O CI
 | Job | Roda no PR quando muda... |
 | --- | --- |
 | `frontend` (lint, typecheck, formatação, testes dos apps e pacotes, build, barreira) | `apps/`, `packages/`, `scripts/`, `testes-e2e/`, `package*.json`, configuração da raiz ou o workflow |
-| `backend` (`./mvnw verify`, com PostgreSQL de verdade) | `backend/`, `infra/`, o `openapi.json` dos clientes ou o workflow |
+| `backend` (`./mvnw verify`, com PostgreSQL de verdade) | `backend/`, `infra/`, o `openapi.json` dos clientes, `docs/glossario-interface.md` (o `GlossarioDasMensagensTest` lê esse arquivo) ou o workflow |
 | `migracoes` | `backend/src/main/resources/db/migration/` |
 | `dependencias` (`npm audit` e OSV) | `package*.json`, `backend/pom.xml` ou o workflow |
 | `docs` (só a formatação) | só documentos (`docs/`, `*.md`), sem nada do front |
 | `mudancas` | sempre (é o que decide os outros; custa segundos) |
 
 Um PR só de `docs/` roda só `docs`; só de `apps/` ou `packages/` não sobe o backend com Testcontainers; só de `backend/` não roda o front.
+
+Fora de qualquer job: `deploy/` (scripts de shell e compose da VPS) não é coberto pelo CI; só se confere à mão (`bash -n`, `docker compose config`).
 
 ## O job da regra de merge: `ci`
 

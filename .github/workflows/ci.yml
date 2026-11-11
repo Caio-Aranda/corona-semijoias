@@ -51,8 +51,9 @@ jobs:
           {
             # O front confere apps, packages, scripts e a configuração da raiz (e o próprio workflow).
             echo "frontend=$(tem '^(apps/|packages/|scripts/|testes-e2e/|package(-lock)?\.json$|eslint\.config\.mjs$|tsconfig\.base\.json$|\.nvmrc$|\.prettier|\.github/)')"
-            # O backend roda com PostgreSQL de verdade; também quando o contrato OpenAPI versionado muda.
-            echo "backend=$(tem '^(backend/|infra/|packages/api-client-[a-z]+/openapi\.json$|\.github/)')"
+            # O backend roda com PostgreSQL de verdade; também quando o contrato OpenAPI versionado muda e quando muda o
+            # glossário (o GlossarioDasMensagensTest lê docs/glossario-interface.md).
+            echo "backend=$(tem '^(backend/|infra/|packages/api-client-[a-z]+/openapi\.json$|docs/glossario-interface\.md$|\.github/)')"
             echo "migracoes=$(tem '^backend/src/main/resources/db/migration/')"
             echo "dependencias=$(tem '(^|/)package(-lock)?\.json$|^backend/pom\.xml$|^\.github/')"
             # Só documentos: roda apenas a conferência de formatação (job "docs").
