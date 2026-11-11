@@ -117,3 +117,32 @@ Uma seção por tarefa, no mesmo formato de [fase-2.md](fase-2.md). A tabela de 
 **Dúvidas abertas:** as do ADR-0010 (a 5, prazo de atraso, com o padrão acima). Nova: a dona quer um número de maleta sequencial próprio (1, 2, 3...) em vez de S12-V7-1?
 
 **Não feito:** telas (3.6), geração do PDF da nota (app da dona, 3.5/3.6), conferência e vendas. O gerador de PDF à mão aguentar a nota (várias páginas, assinatura) é verificação da tarefa do app, não dos dados.
+
+### Tarefa 3.5: Corona Gestão: montar a maleta por leitor
+
+**Em revisão.** Só tela e ponte do app da dona; nenhuma mudança no servidor. Menu novo **Maletas → Montar maleta**.
+
+**O que foi feito**
+
+- **Nova maleta:** vendedor, semana (só as abertas), praça (padrão: a do vendedor) e tipo (**Maleta nova** ou **Reposição**). O id (UUID) nasce na tela e só muda depois de gravar. Vendedor com restrição que impede ou outro bloqueio: aparece a mensagem do servidor e a pessoa não segue.
+- **Montagem pelo leitor:** campo sempre em foco; cada leitura grava na hora no rascunho (soma 1; ler de novo soma mais 1). Painel da última peça com **foto grande**, nome, código, saldo no estoque, quantidade já na maleta e preço. Lista com foto pequena, quantidade editável (com **Atualizar**), preço e subtotal, e **Tirar**. Peça sem foto segue normal.
+- **Recusas na tela, sem chamar o servidor:** código que não existe (**Peça não encontrada**, nunca cadastra, ADR-0010 item 16), peça desativada, sem estoque e quantidade acima do estoque.
+- **Limite:** ao lado dos totais, **Limite do vendedor / Já está com ele / Esta maleta / Sobra** (Real, Dólar e Guarani pelos componentes de moeda; ADR-0006). Vendedor sem limite cadastrado: **Sem limite cadastrado**, sem sobra.
+- **Enviar maleta:** confirmação com vendedor, peças e valor. Recusas do servidor (limite, saldo de uma peça, restrição) aparecem com o texto dele, e a pessoa continua montando. Resposta 200 mostra **Esta maleta já estava enviada**. Depois do envio, ficha só para ler.
+- **Rascunhos:** lista (**Continuar montando**, **Excluir** com confirmação; exclusão lógica, estoque intacto).
+- **Ponte:** oito operações novas (`maletas.*`) com conferência de parâmetros no processo principal (UUIDs, quantidade inteira de 1 a 100.000, tipo e situação conhecidos; nenhum campo de preço aceito) e testes de rota.
+- **Testes:** 17 de tela (`maletas.test.tsx`), 4 de conferência e 1 de rotas da ponte. Lint, typecheck, format, testes do owner-app (560) e barreira do Corona Vendas passando.
+
+**Decisões que tomei**
+
+- **Uma única tela** (Montar maleta) com nova maleta e rascunhos juntos, sem rota separada para rascunhos.
+- **Cada leitura grava no servidor** (o rascunho já fica guardado) e as chamadas vão em fila, para a versão nunca ficar para trás; "outra pessoa mudou" mostra o botão **Atualizar**.
+- **Sem som:** o app ainda não tem padrão de som; a leitura aceita ou recusada aparece em aviso colorido com texto.
+- **Passou do limite não bloqueia o botão:** a tela só avisa e quanto passou; o servidor tem a palavra final e a mensagem dele aparece.
+- **Quantidade maior que o estoque** é recusada na leitura (usando o saldo da busca); ao digitar a quantidade na lista quem confere é o servidor.
+- **Imprimir nota:** botão escondido até a 3.7 (`NOTA_DA_MALETA_PRONTA` e `imprimirNotaDaMaleta` em `nucleo/nota-da-maleta.ts`; a 3.7 completa e liga). Nenhum PDF aqui.
+- Busca por nome (se o código não existe) vale como na compra: um achado entra, vários pedem escolha.
+
+**Dúvidas abertas:** as do ADR-0010. Nova: o botão **Imprimir nota** deve aparecer já na ficha da 3.5 ou só quando a 3.7 existir? (Está escondido.)
+
+**Não feito:** lista geral e ficha completa da maleta enviada, devolução, cancelamento, reposição guiada (3.6), PDF e relatórios (3.7), qualquer coisa do vendedor.

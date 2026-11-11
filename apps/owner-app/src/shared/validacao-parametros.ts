@@ -10,6 +10,7 @@ import {
 } from './cadastros';
 import type { OperacaoDaApi } from './ponte';
 import { conferirCompra, type ParametrosDeCompra } from './validacao-compras';
+import { conferirMaleta, type ParametrosDeMaleta } from './validacao-maletas';
 import { conferirEstoque, type ParametrosDeEstoque } from './validacao-estoque';
 import { conferirProduto, type ParametrosDeProduto } from './validacao-produtos';
 import { conferirRelatorio, type ParametrosDeRelatorio } from './validacao-relatorios';
@@ -114,6 +115,7 @@ export type ParametrosConferidos =
   | ParametrosDeVendedor
   | ParametrosDeProduto
   | ParametrosDeCompra
+  | ParametrosDeMaleta
   | ParametrosDeEstoque
   | ParametrosDeRelatorio
   | { operacao: 'eu' | 'cotacao.hoje' | 'avisos.listar' | 'vendedores.escolha' }
@@ -477,6 +479,15 @@ export function conferirParametros(
     case 'compras.receber':
     case 'compras.desfazer':
       return conferirCompra(operacao, p);
+    case 'maletas.criar':
+    case 'maletas.ver':
+    case 'maletas.listar':
+    case 'maletas.colocarPeca':
+    case 'maletas.tirarPeca':
+    case 'maletas.excluir':
+    case 'maletas.enviar':
+    case 'maletas.emAberto':
+      return conferirMaleta(operacao, p);
     case 'estoque.ficha':
     case 'estoque.lancar':
     case 'estoque.ajustar':

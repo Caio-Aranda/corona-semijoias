@@ -845,3 +845,14 @@ Menu: **Relatórios da maleta** (depois de "Relatórios de compras"). Os nomes d
 - Maleta **atrasada**: passaram mais de 7 dias desde o envio e ainda há peça com o vendedor (o prazo de 7 dias é provisório; a dona confirma).
 - Dólar e Guarani seguem a cotação do dia em que **cada maleta foi enviada**. Maleta enviada antes da primeira cotação do sistema mostra "Sem cotação" no Dólar e no Guarani.
 - Nota da maleta: loja, número da maleta, vendedor, praça, semana, tipo, data do envio, lista de peças (código, nome, quantidade, preço, subtotal), total de peças e de valor, e a linha "Cotação do Banco Central de {data do envio}" com o total em Dólar e em Guarani. Linha de assinatura do vendedor ao fim. Maleta cancelada sai com a marca **Cancelada**. Maleta ainda em montagem: "A nota só fica pronta depois que a maleta for enviada. Envie a maleta e tente de novo."
+
+**Montar maleta (tarefa 3.5, Corona Gestão)**
+
+Menu: grupo **Maletas**, item **Montar maleta**. Os textos desta tela são os únicos usados; erros de regra (limite, saldo, restrição) vêm do servidor.
+
+- Nova maleta: **Vendedor**, **Semana**, **Praça** (já vem "A praça do vendedor"), **Tipo da maleta** (**Maleta nova**, **Reposição**), botão **Começar a montar**.
+- Maletas em montagem: **Continuar montando** e **Excluir** (confirmação: "As peças continuam no estoque, nada foi enviado").
+- Leitura: **Ler uma peça**, campo **Código da peça ou nome**, botão **Colocar na maleta**. Peça lida: **Última peça lida** com **No estoque**, **Nesta maleta** e **Preço**. Recusas: **Peça não encontrada**, "está desativada", "está sem estoque", "Só há N peças ... no estoque".
+- Lista: **Quantidade**, **Atualizar**, **Tirar**; totais **Peças na maleta** e **Valor da maleta**.
+- Limite: **Limite do vendedor**, **Já está com ele**, **Esta maleta**, **Sobra**; sem limite cadastrado: **Sem limite cadastrado**.
+- Envio: botão **Enviar maleta**, confirmação "Enviar esta maleta?" (vendedor, peças e valor), depois **Maleta enviada**; reenvio: **Esta maleta já estava enviada**. O botão **Imprimir nota** só aparece quando a tarefa 3.7 ligar a impressão.
