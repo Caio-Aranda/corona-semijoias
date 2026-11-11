@@ -39,7 +39,7 @@ Uma seção por tarefa, no mesmo formato de [fase-3.md](fase-3.md). A tabela de 
 - O app nunca manda preço nem total; `totalConferido` só gera alerta na auditoria.
 - A conferência da maleta e a troca de aparelho ficam na 4.3; a venda já recusa maleta ligada a outro aparelho (`MALETA_EM_OUTRO_APARELHO`).
 - A tela de configuração do limite de desconto não existe (sem rota da dona): o valor 0 só muda no banco até a dona ter essa tela (pendência).
-- A conciliação "estoque + maletas" já enxerga as vendas porque o saldo vem dos movimentos; a conciliação completa com vendas é da Fase 8.
+- A conciliação "estoque + maletas" subtrai as vendas líquidas de estorno (o CI do PR 67 mostrou que, sem isso, a primeira venda a quebrava); a conciliação completa com vendas e perdas é da Fase 8.
 
 ### Tarefa 4.3: backend das rotas do vendedor (maleta, conferência, clientes, cotação, relatórios)
 
@@ -101,7 +101,7 @@ Uma seção por tarefa, no mesmo formato de [fase-3.md](fase-3.md). A tabela de 
 
 **Bugs achados e corrigidos**
 
-- **Conciliação "estoque + maletas" quebrava com a primeira venda** (a venda tira peça da maleta sem mexer no estoque central, e a conta só somava entradas e saídas do estoque). A conta agora subtrai as vendas líquidas de estorno (`ServicoDeEstoque.conciliar` e o relatório de conferência do estoque), como o ADR-0010, item 12, já previa. Teste novo com venda, venda e estorno.
+- **Conciliação "estoque + maletas" quebrava com a primeira venda** (a venda tira peça da maleta sem mexer no estoque central). Foi achada pelo CI do PR 67 e **corrigida lá (tarefa 4.2)**: a conta (`ServicoDeEstoque.conciliar` e o relatório de conferência do estoque) subtrai as vendas líquidas de estorno, como o ADR-0010, item 12, já previa; teste novo com venda, venda e estorno. Registrada aqui porque a revisão confirmou a regra.
 - **A ficha da maleta da dona sumia com Devolver, Repor e os movimentos quando a maleta virava Conferida** (só olhava o status Enviada). Agora Conferida mantém Devolver e Repor (Cancelar continua só para Enviada, como no servidor), o filtro da lista ganhou "Conferida" e os movimentos mostram "Vendida pelo vendedor" e "Venda desfeita".
 - **A dona não via o resultado da conferência** (os textos diziam que sim). Nova rota `GET /api/dona/remessas/{id}/conferencia` e a seção "Conferência do vendedor" na ficha.
 
