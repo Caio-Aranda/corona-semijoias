@@ -1,0 +1,7 @@
+[Unit]
+Description=Corona: verifica se a API está respondendo
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=@DIR@/verificar-saude.sh
