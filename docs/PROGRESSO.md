@@ -123,6 +123,10 @@ Maleta (§15). Segue o mesmo formato da Fase 2. O modelo da maleta está no [ADR
 
 **Fora desta fase:** conferência pelo vendedor e um dispositivo por maleta (Fase 4); venda, perda e troca (Fases 4 e 6); acerto (Fase 7); conciliação completa com vendas (Fase 8).
 
+## Extra: testes de ponta a ponta
+
+Playwright com o Electron de verdade (`npm run e2e`, pasta `testes-e2e/`): login da dona com troca obrigatória de senha, cadastro de fornecedor, entrada de compra lendo o código (digitar + Enter) com conferência do estoque e exportação de relatório em CSV. Banco e API de teste isolados (porta 5499 e 8099, projeto `corona-e2e`, sem volume), limpos no fim; nunca o banco de desenvolvimento nem a pilha de produção. **Não está no CI de cada PR** (sobe Docker, API e Electron, vários minutos): o workflow `E2E` roda à mão e toda segunda. O workflow ainda não foi executado no GitHub (só localmente, 4 testes verdes). Nada do Corona Vendas antes da Fase 4.
+
 ## Pendências abertas
 
 - Fase 3 (maleta), para a dona ou o responsável: limite conta preço de venda ou custo; reposição conta no limite; peça repetida na mesma maleta; foto na nota; dias para a maleta ser atrasada; vendedor sem limite. O ADR-0010 está Proposto. ([tarefa 3.1](progresso/fase-3.md#tarefa-31-plano-da-fase-3-e-adr-da-maleta-só-documentos))

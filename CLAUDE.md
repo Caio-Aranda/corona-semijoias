@@ -47,4 +47,5 @@ TypeScript (dois apps separados) · SQLite criptografado no app do vendedor.
 - `npm run owner:dev` / `owner:build`: Corona Gestão. `npm run seller:dev` / `seller:build` / `seller:empacotar`: Corona Vendas.
 - `npm run barreira:varrer`: confere que o pacote do Corona Vendas não leva código da dona.
 - `npm run lint`, `typecheck`, `format:check` (e `format`); `npm run setup:test` testa o script de setup.
+- `npm run e2e`: testes de ponta a ponta (Playwright + Electron) contra um banco e uma API de teste isolados (precisa do Docker aberto; veja `testes-e2e/README.md`). Roda à mão ou toda segunda no workflow E2E; não faz parte do CI de cada PR.
 - Estresse longo do sync: `./mvnw test -Dtest=EstresseDoPullTest -Dcorona.estresse.duracao=PT10M` na pasta `backend/`.
