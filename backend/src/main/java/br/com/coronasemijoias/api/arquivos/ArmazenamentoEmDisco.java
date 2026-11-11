@@ -72,6 +72,15 @@ public class ArmazenamentoEmDisco implements ArmazenamentoDeArquivos {
         return Files.isRegularFile(caminhoDe(chave));
     }
 
+    @Override
+    public void apagar(String chave) {
+        try {
+            Files.deleteIfExists(caminhoDe(chave));
+        } catch (IOException e) {
+            throw new UncheckedIOException("Não foi possível apagar o arquivo " + chave, e);
+        }
+    }
+
     private Path caminhoDe(String chave) {
         if (chave == null || !CHAVE.matcher(chave).matches()) {
             throw new IllegalArgumentException("Chave de arquivo inválida: " + chave);

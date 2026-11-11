@@ -200,10 +200,6 @@ public enum CodigoErro {
             "Esta foto é grande demais em tamanho de imagem. Reduza a foto (até 25 milhões de pontos, "
                     + "por exemplo 5000 por 5000) e envie de novo."),
 
-    PRODUTO_COM_FOTOS_DEMAIS(
-            "Esta peça já tem 5 fotos.",
-            "Esta peça já tem 5 fotos. Exclua uma das fotos para poder enviar outra."),
-
     // --- Estoque (glossário, parte 12; tarefa 2.2) ---
 
     /** Saída, perda, ajuste ou "desfazer" que deixaria o estoque abaixo de zero (HTTP 409). O servidor monta o texto com o que há. */

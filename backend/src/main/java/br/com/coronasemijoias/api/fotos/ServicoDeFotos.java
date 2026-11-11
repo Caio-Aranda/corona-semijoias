@@ -10,10 +10,8 @@ import br.com.coronasemijoias.api.comum.erros.ErroDaApi;
 import br.com.coronasemijoias.api.comum.identificadores.UuidV7;
 import java.sql.Timestamp;
 import java.time.Clock;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -24,15 +22,14 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Fotos do produto (§20). Cada foto vira três arquivos JPEG (miniatura, média e grande) guardados pelo
- * {@link ArmazenamentoDeArquivos}; o banco guarda só o hash, a ordem e as chaves. Até 5 fotos por peça,
- * uma principal. Todas as mudanças de uma peça travam a linha do produto, então duas pessoas (ou dois
- * envios ao mesmo tempo) não passam de 5 fotos nem criam duas principais. O produto ganha uma cópia do
+ * {@link ArmazenamentoDeArquivos}; o banco guarda só o hash, a ordem e as chaves. Uma foto só por peça
+ * (decisão de 11/11/2026): enviar outra substitui a anterior. Todas as mudanças de uma peça travam a linha do
+ * produto, então dois envios ao mesmo tempo não deixam duas fotos ativas (e há um índice único parcial por trás). O produto ganha uma cópia do
  * hash da foto principal ({@code foto_principal_hash}), que o aplicativo do vendedor recebe no sync.
  */
 @Service
 public class ServicoDeFotos {
 
-    public static final int MAXIMO_POR_PECA = 5;
     private static final Pattern HASH = Pattern.compile("[0-9a-f]{64}");
 
     /** Os três tamanhos de uma foto. */
@@ -56,8 +53,7 @@ public class ServicoDeFotos {
     }
 
     /** Uma foto como está gravada (sem as chaves dos arquivos, que não saem do servidor). */
-    public record Foto(UUID id, UUID produtoId, String hash, boolean principal, int ordem, int largura, int altura,
-            int tamanhoBytes, int version) {
+    public record Foto(UUID id, UUID produtoId, String hash, int largura, int altura, int tamanhoBytes, int version) {
     }
 
     /** Resultado de um envio: {@code nova} é falso quando a peça já tinha exatamente esta foto. */
@@ -115,33 +111,25 @@ public class ServicoDeFotos {
         if (existente.isPresent()) {
             return new Enviada(existente.get(), false);
         }
-        Integer ativas = jdbc.queryForObject(
-                "SELECT count(*) FROM corona.produtos_fotos WHERE produto_id = ? AND deleted_at IS NULL", Integer.class, produtoId);
-        if (ativas != null && ativas >= MAXIMO_POR_PECA) {
-            throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.PRODUTO_COM_FOTOS_DEMAIS);
-        }
+        // Uma foto só por peça: a nova substitui a anterior (exclusão lógica; o arquivo sai do disco na limpeza).
+        jdbc.update("UPDATE corona.produtos_fotos SET deleted_at = ?, principal = false WHERE produto_id = ? AND deleted_at IS NULL",
+                Timestamp.from(relogio.instant()), produtoId);
         // Os arquivos de uma foto que já existe em outra peça são reaproveitados (mesmo hash = mesmo conteúdo).
         List<String[]> chaves = jdbc.query("""
                 SELECT chave_miniatura, chave_media, chave_grande FROM corona.produtos_fotos
-                WHERE arquivo_hash = ? ORDER BY created_at LIMIT 1""",
+                WHERE arquivo_hash = ? AND arquivos_removidos_em IS NULL ORDER BY created_at LIMIT 1""",
                 (rs, n) -> new String[] {rs.getString(1), rs.getString(2), rs.getString(3)}, pronta.hash());
         String[] arquivosDaFoto = chaves.isEmpty()
                 ? new String[] {guardar(pronta.miniatura()), guardar(pronta.media()), guardar(pronta.grande())}
                 : chaves.get(0);
         int tamanho = pronta.miniatura().length + pronta.media().length + pronta.grande().length;
-        Integer proximaOrdem = jdbc.queryForObject(
-                "SELECT coalesce(max(ordem) + 1, 0) FROM corona.produtos_fotos WHERE produto_id = ? AND deleted_at IS NULL",
-                Integer.class, produtoId);
-        boolean principal = ativas == null || ativas == 0;
         UUID id = UuidV7.gerar();
         jdbc.update("""
                 INSERT INTO corona.produtos_fotos (id, produto_id, arquivo_hash, principal, ordem, largura, altura,
                     tamanho_bytes, chave_miniatura, chave_media, chave_grande)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", id, produtoId, pronta.hash(), principal, proximaOrdem,
+                VALUES (?, ?, ?, true, 0, ?, ?, ?, ?, ?, ?)""", id, produtoId, pronta.hash(),
                 pronta.largura(), pronta.altura(), tamanho, arquivosDaFoto[0], arquivosDaFoto[1], arquivosDaFoto[2]);
-        if (principal) {
-            copiarPrincipalParaOProduto(produtoId, pronta.hash());
-        }
+        copiarPrincipalParaOProduto(produtoId, pronta.hash());
         return new Enviada(procurar(produtoId, id), true);
     }
 
@@ -162,7 +150,7 @@ public class ServicoDeFotos {
     }
 
     private List<Foto> fotosDe(UUID produtoId) {
-        return jdbc.query(SELECIONAR_FOTO + " WHERE produto_id = ? AND deleted_at IS NULL ORDER BY ordem, created_at, id",
+        return jdbc.query(SELECIONAR_FOTO + " WHERE produto_id = ? AND deleted_at IS NULL ORDER BY created_at, id",
                 (rs, n) -> foto(rs), produtoId);
     }
 
@@ -193,58 +181,16 @@ public class ServicoDeFotos {
         }
     }
 
-    // --- principal, ordem e exclusão ---
+    // --- exclusão ---
 
-    public List<Foto> definirPrincipal(UUID produtoId, UUID fotoId) {
-        return transacao.execute(status -> {
-            travar(produtoId);
-            Foto alvo = procurar(produtoId, fotoId);
-            if (!alvo.principal()) {
-                jdbc.update("UPDATE corona.produtos_fotos SET principal = false WHERE produto_id = ? AND principal AND deleted_at IS NULL",
-                        produtoId);
-                jdbc.update("UPDATE corona.produtos_fotos SET principal = true WHERE id = ?", fotoId);
-                copiarPrincipalParaOProduto(produtoId, alvo.hash());
-            }
-            return fotosDe(produtoId);
-        });
-    }
-
-    /** A lista precisa ter exatamente as fotos da peça, cada uma uma vez, na ordem nova. */
-    public List<Foto> reordenar(UUID produtoId, List<UUID> ids) {
-        return transacao.execute(status -> {
-            travar(produtoId);
-            List<Foto> atuais = fotosDe(produtoId);
-            Set<UUID> esperados = new HashSet<>();
-            atuais.forEach(f -> esperados.add(f.id()));
-            if (ids == null || ids.size() != esperados.size() || !esperados.equals(new HashSet<>(ids))) {
-                throw Validacoes.recusar("ids", "A lista de fotos não confere com a peça. Atualize a tela e tente de novo.");
-            }
-            for (int i = 0; i < ids.size(); i++) {
-                jdbc.update("UPDATE corona.produtos_fotos SET ordem = ? WHERE id = ? AND ordem <> ?", i, ids.get(i), i);
-            }
-            return fotosDe(produtoId);
-        });
-    }
-
-    /** Exclusão lógica: a foto some da lista e do download, mas os arquivos ficam guardados. */
+    /** Exclusão lógica: a foto some da peça e do download; os arquivos saem do disco na limpeza diária. */
     public void excluir(UUID produtoId, UUID fotoId) {
         transacao.executeWithoutResult(status -> {
             travar(produtoId);
-            Foto alvo = procurar(produtoId, fotoId);
+            procurar(produtoId, fotoId);
             jdbc.update("UPDATE corona.produtos_fotos SET deleted_at = ?, principal = false WHERE id = ?",
                     Timestamp.from(relogio.instant()), fotoId);
-            List<Foto> restantes = fotosDe(produtoId);
-            for (int i = 0; i < restantes.size(); i++) {
-                jdbc.update("UPDATE corona.produtos_fotos SET ordem = ? WHERE id = ? AND ordem <> ?", i, restantes.get(i).id(), i);
-            }
-            if (alvo.principal()) {
-                if (restantes.isEmpty()) {
-                    copiarPrincipalParaOProduto(produtoId, null);
-                } else {
-                    jdbc.update("UPDATE corona.produtos_fotos SET principal = true WHERE id = ?", restantes.get(0).id());
-                    copiarPrincipalParaOProduto(produtoId, restantes.get(0).hash());
-                }
-            }
+            copiarPrincipalParaOProduto(produtoId, null);
         });
     }
 
@@ -274,12 +220,12 @@ public class ServicoDeFotos {
     }
 
     private static final String SELECIONAR_FOTO = """
-            SELECT id, produto_id, arquivo_hash, principal, ordem, largura, altura, tamanho_bytes, version
+            SELECT id, produto_id, arquivo_hash, largura, altura, tamanho_bytes, version
             FROM corona.produtos_fotos""";
 
     private static Foto foto(java.sql.ResultSet rs) throws java.sql.SQLException {
         return new Foto(rs.getObject("id", UUID.class), rs.getObject("produto_id", UUID.class), rs.getString("arquivo_hash"),
-                rs.getBoolean("principal"), rs.getInt("ordem"), rs.getInt("largura"), rs.getInt("altura"),
+                rs.getInt("largura"), rs.getInt("altura"),
                 rs.getInt("tamanho_bytes"), rs.getInt("version"));
     }
 }

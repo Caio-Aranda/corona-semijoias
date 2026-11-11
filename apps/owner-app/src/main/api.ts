@@ -14,7 +14,6 @@ import {
   listar6 as listarFotos,
   porCodigo as produtoPorCodigo,
   previa as previaDasFotos,
-  principal as fotoPrincipal,
   proximoCodigo,
   reativar3 as reativarProduto,
   ver4 as verProduto,
@@ -736,10 +735,6 @@ async function executarProduto(
           path: { id },
           body: { arquivo: comoArquivoDeFoto(pedido.arquivo as never) },
         }),
-      );
-    case 'produtos.fotos.principal':
-      return executar(() =>
-        fotoPrincipal({ ...base, path: { id, fotoId: pedido.fotoId as string } }),
       );
     case 'produtos.fotos.excluir':
       return executar(() =>

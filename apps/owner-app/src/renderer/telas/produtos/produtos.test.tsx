@@ -386,7 +386,7 @@ describe('Produtos: fotos', () => {
     fireEvent.change(screen.getByTestId('escolher-foto'), {
       target: { files: [arquivo('a.png', 'image/png')] },
     });
-    await screen.findByText('Foto enviada.');
+    await screen.findByText('Foto trocada.');
     const p = ultima(m, 'produtos.fotos.enviar') as {
       id: string;
       arquivo: { nome: string; bytes: Uint8Array };
@@ -408,7 +408,7 @@ describe('Produtos: fotos', () => {
     expect((ultima(m, 'produtos.fotos.enviar') as { arquivo: { nome: string } }).arquivo.nome).toBe(
       'image.png',
     );
-    await screen.findByText('Foto enviada.');
+    await screen.findByText('Foto trocada.');
     fireEvent.drop(screen.getByRole('group', { name: 'Área para soltar ou colar a foto' }), {
       dataTransfer: { files: [arquivo('b.jpg', 'image/jpeg')] },
     });
@@ -426,17 +426,25 @@ describe('Produtos: fotos', () => {
     expect(ultima(m, 'produtos.fotos.excluir')).toEqual({ id: ID_P, fotoId: ID_FOTO });
   });
 
-  it('com 5 fotos o envio fica bloqueado com o texto do glossário', async () => {
-    const cinco = Array.from({ length: 5 }, (_, i) => ({
-      id: `3d4e28ba-2fa1-41d3-b9a5-2c3a9a8f6b4${i}`,
-      hash: String(i).repeat(64),
-      principal: i === 0,
-      ordem: i,
-    }));
-    const m = montar({ 'produtos.fotos.listar': () => ({ ok: true, dados: cinco }) });
+  it('uma foto só por peça: com foto o botão é Trocar foto, sem principal nem limite', async () => {
+    const m = montar();
     await abrirFicha(m);
-    expect(await screen.findByText(/Esta peça já tem 5 fotos/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Escolher foto' })).toBeDisabled();
+    expect(await screen.findByRole('button', { name: 'Trocar foto' })).toBeEnabled();
+    expect(screen.queryByText(/foto principal/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/5 fotos/)).not.toBeInTheDocument();
+  });
+
+  it('peça sem foto: Escolher foto e, depois de enviar, a mensagem de foto enviada', async () => {
+    const m = montar({
+      'produtos.fotos.listar': () => ({ ok: true, dados: [] }),
+      'produtos.fotos.enviar': () => ({ ok: true, dados: {} }),
+    });
+    await abrirFicha(m);
+    expect(await screen.findByRole('button', { name: 'Escolher foto' })).toBeEnabled();
+    fireEvent.change(screen.getByTestId('escolher-foto'), {
+      target: { files: [arquivo('a.png', 'image/png')] },
+    });
+    await screen.findByText('Foto enviada.');
   });
 });
 

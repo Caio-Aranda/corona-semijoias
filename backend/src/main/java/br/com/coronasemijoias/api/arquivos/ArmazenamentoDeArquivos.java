@@ -5,8 +5,9 @@ package br.com.coronasemijoias.api.arquivos;
  * PostgreSQL, que guarda só a {@code chave} devolvida aqui. Hoje é uma pasta do servidor
  * ({@link ArmazenamentoEmDisco}); um bucket S3 ou Backblaze entra trocando a implementação.
  *
- * <p>A chave é gerada aqui (nunca digitada por alguém) e não muda. Nada é apagado por aqui: a
- * exclusão do cadastro é lógica e o arquivo fica para o backup e para a auditoria.
+ * <p>A chave é gerada aqui (nunca digitada por alguém) e não muda. A exclusão do
+ * cadastro é lógica e o arquivo fica para o backup e para a auditoria; só a limpeza de fotos trocadas apaga
+ * arquivo, depois de uma semana.
  */
 public interface ArmazenamentoDeArquivos {
 
@@ -22,4 +23,7 @@ public interface ArmazenamentoDeArquivos {
     byte[] ler(String chave);
 
     boolean existe(String chave);
+
+    /** Apaga o arquivo da chave; não é erro se ele já não existe. Só a limpeza de fotos trocadas usa. */
+    void apagar(String chave);
 }

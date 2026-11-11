@@ -54,6 +54,12 @@ class FotosDosProdutosTest extends TesteDeIntegracao {
     @Autowired
     JdbcTemplate jdbc;
 
+    @Autowired
+    br.com.coronasemijoias.api.arquivos.ArmazenamentoDeArquivos armazenamento;
+
+    @Autowired
+    LimpezaDeArquivosDeFotos limpeza;
+
     private RequestPostProcessor dona() {
         return usuarios.comoDona();
     }
@@ -174,8 +180,6 @@ class FotosDosProdutosTest extends TesteDeIntegracao {
                 .andExpect(jsonPath("$.fotoPrincipal").value((Object) null));
 
         JsonNode foto = enviarFotoBoa(produto, 10);
-        assertThat(foto.get("principal").asBoolean()).isTrue();
-        assertThat(foto.get("ordem").asInt()).isEqualTo(0);
         assertThat(foto.get("largura").asInt()).isEqualTo(900);
         assertThat(foto.get("altura").asInt()).isEqualTo(600);
         String hash = foto.get("hash").asString();
@@ -288,22 +292,45 @@ class FotosDosProdutosTest extends TesteDeIntegracao {
     }
 
     @Test
-    void ateCincoFotosPorPeca() throws Exception {
+    void fotoNovaSubstituiAAnteriorEUmaSoPorPeca() throws Exception {
         UUID produto = produto();
-        for (int i = 0; i < 5; i++) {
-            enviarFotoBoa(produto, 100 + i);
-        }
-        enviarFoto(produto, "a.jpg", "image/jpeg", ImagensDeTeste.jpeg(300, 300, 999), dona()).andExpect(status().isConflict())
-                .andExpect(jsonPath("$.codigo").value("PRODUTO_COM_FOTOS_DEMAIS"));
-        assertThat(fotosDe(produto)).hasSize(5);
-        // Excluir uma libera a vaga.
-        String id = fotosDe(produto).get(4).get("id").asString();
-        mvc.perform(delete(BASE + "/" + produto + "/fotos/" + id).with(dona())).andExpect(status().isNoContent());
-        enviarFoto(produto, "a.jpg", "image/jpeg", ImagensDeTeste.jpeg(300, 300, 999), dona()).andExpect(status().isCreated());
+        JsonNode a = enviarFotoBoa(produto, 41);
+        assertThat(fotosDe(produto)).hasSize(1);
+        JsonNode b = ler(enviarFoto(produto, "b.jpg", "image/jpeg", ImagensDeTeste.jpeg(300, 300, 42), dona())
+                .andExpect(status().isCreated()));
+        assertThat(b.get("hash").asString()).isNotEqualTo(a.get("hash").asString());
+        JsonNode lista = fotosDe(produto);
+        assertThat(lista).hasSize(1);
+        assertThat(lista.get(0).get("id").asString()).isEqualTo(b.get("id").asString());
+        // A antiga ganhou exclusão lógica (nunca DELETE) e a peça leva o hash da nova.
+        assertThat(jdbc.queryForObject("SELECT deleted_at IS NOT NULL FROM corona.produtos_fotos WHERE id = ?", Boolean.class,
+                UUID.fromString(a.get("id").asString()))).isTrue();
+        mvc.perform(get(BASE + "/" + produto).with(dona())).andExpect(jsonPath("$.fotoPrincipal.hash").value(b.get("hash").asString()));
+        assertThat(jdbc.queryForObject("SELECT foto_principal_hash FROM corona.produtos WHERE id = ?", String.class, produto))
+                .isEqualTo(b.get("hash").asString());
+        // A foto antiga não baixa mais; a nova baixa.
+        mvc.perform(get(BASE + "/fotos/" + a.get("hash").asString() + "/miniatura").with(dona())).andExpect(status().isNotFound());
+        mvc.perform(get(BASE + "/fotos/" + b.get("hash").asString() + "/miniatura").with(dona())).andExpect(status().isOk());
+        // As rotas de foto principal e de ordem deixaram de existir.
+        json(post(BASE + "/" + produto + "/fotos/" + b.get("id").asString() + "/principal"), null).andExpect(status().is4xxClientError());
+        json(put(BASE + "/" + produto + "/fotos/ordem"), mapa("ids", List.of(b.get("id").asString()))).andExpect(status().is4xxClientError());
     }
 
     @Test
-    void envioEmParaleloNuncaPassaDeCincoNemTemDoisPrincipais() throws Exception {
+    void obancoRecusaDuasFotosAtivasNaMesmaPeca() throws Exception {
+        UUID produto = produto();
+        JsonNode a = enviarFotoBoa(produto, 51);
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> jdbc.update("""
+                INSERT INTO corona.produtos_fotos (id, produto_id, arquivo_hash, largura, altura, tamanho_bytes,
+                    chave_miniatura, chave_media, chave_grande)
+                VALUES (?, ?, repeat('a', 64), 10, 10, 10, 'x', 'y', 'z')""", UUID.randomUUID(), produto))
+                .hasMessageContaining("produtos_fotos_uma_ativa");
+        assertThat(fotosDe(produto)).hasSize(1);
+        assertThat(a.get("hash").asString()).isNotBlank();
+    }
+
+    @Test
+    void enviosEmParaleloDeixamSempreUmaSoFotoAtiva() throws Exception {
         UUID produto = produto();
         ExecutorService pool = Executors.newFixedThreadPool(8);
         try {
@@ -313,79 +340,75 @@ class FotosDosProdutosTest extends TesteDeIntegracao {
                 tarefas.add(() -> enviarFoto(produto, "a.jpg", "image/jpeg", ImagensDeTeste.jpeg(400, 300, semente), dona())
                         .andReturn().getResponse().getStatus());
             }
-            List<Integer> codigos = new ArrayList<>();
             for (Future<Integer> f : pool.invokeAll(tarefas)) {
-                codigos.add(f.get());
+                assertThat(f.get()).isIn(200, 201);
             }
-            assertThat(codigos).filteredOn(c -> c == 201).hasSize(5);
-            assertThat(codigos).filteredOn(c -> c == 409).hasSize(3);
         } finally {
             pool.shutdownNow();
         }
         assertThat(jdbc.queryForObject(
-                "SELECT count(*) FROM corona.produtos_fotos WHERE produto_id = ? AND principal AND deleted_at IS NULL",
-                Integer.class, produto)).isEqualTo(1);
-        assertThat(jdbc.queryForObject(
-                "SELECT count(DISTINCT ordem) FROM corona.produtos_fotos WHERE produto_id = ? AND deleted_at IS NULL",
-                Integer.class, produto)).isEqualTo(5);
+                "SELECT count(*) FROM corona.produtos_fotos WHERE produto_id = ? AND deleted_at IS NULL", Integer.class, produto)).isEqualTo(1);
+        assertThat(jdbc.queryForObject("SELECT foto_principal_hash FROM corona.produtos WHERE id = ?", String.class, produto))
+                .isEqualTo(jdbc.queryForObject("SELECT arquivo_hash FROM corona.produtos_fotos WHERE produto_id = ? AND deleted_at IS NULL",
+                        String.class, produto));
     }
 
-    // --- principal, ordem e exclusão ---
+    // --- exclusão e limpeza dos arquivos ---
 
     @Test
-    void principalOrdemEExclusao() throws Exception {
+    void excluirDeixaAPecaSemFotoENuncaEErro() throws Exception {
         UUID produto = produto();
-        JsonNode a = enviarFotoBoa(produto, 41);
-        JsonNode b = enviarFotoBoa(produto, 42);
-        JsonNode c = enviarFotoBoa(produto, 43);
-        assertThat(List.of(a.get("principal").asBoolean(), b.get("principal").asBoolean(), c.get("principal").asBoolean()))
-                .containsExactly(true, false, false);
-        assertThat(List.of(a.get("ordem").asInt(), b.get("ordem").asInt(), c.get("ordem").asInt())).containsExactly(0, 1, 2);
-
-        // Trocar a principal.
-        json(post(BASE + "/" + produto + "/fotos/" + c.get("id").asString() + "/principal"), null).andExpect(status().isOk());
-        JsonNode lista = fotosDe(produto);
-        assertThat(lista.get(2).get("principal").asBoolean()).isTrue();
-        assertThat(lista.get(0).get("principal").asBoolean()).isFalse();
-        mvc.perform(get(BASE + "/" + produto).with(dona())).andExpect(jsonPath("$.fotoPrincipal.hash").value(c.get("hash").asString()));
-
-        // Mudar a ordem: c, a, b (a ordem não muda quem é a principal).
-        List<String> nova = List.of(c.get("id").asString(), a.get("id").asString(), b.get("id").asString());
-        JsonNode reordenada = ler(json(put(BASE + "/" + produto + "/fotos/ordem"), mapa("ids", nova)).andExpect(status().isOk()));
-        assertThat(reordenada.get(0).get("id").asString()).isEqualTo(c.get("id").asString());
-        assertThat(reordenada.get(1).get("id").asString()).isEqualTo(a.get("id").asString());
-        assertThat(reordenada.get(2).get("ordem").asInt()).isEqualTo(2);
-        assertThat(reordenada.get(0).get("principal").asBoolean()).isTrue();
-
-        // Lista que não bate com as fotos da peça (faltando uma, ou com uma de fora): recusada, nada muda.
-        json(put(BASE + "/" + produto + "/fotos/ordem"), mapa("ids", nova.subList(0, 2))).andExpect(status().isBadRequest());
-        json(put(BASE + "/" + produto + "/fotos/ordem"), mapa("ids", List.of(nova.get(0), nova.get(1), UUID.randomUUID().toString())))
-                .andExpect(status().isBadRequest());
-        assertThat(fotosDe(produto).get(0).get("id").asString()).isEqualTo(c.get("id").asString());
-
-        // Excluir a principal: a próxima na ordem vira principal. Exclusão é lógica.
-        json(delete(BASE + "/" + produto + "/fotos/" + c.get("id").asString()), null).andExpect(status().isNoContent());
-        lista = fotosDe(produto);
-        assertThat(lista).hasSize(2);
-        assertThat(lista.get(0).get("id").asString()).isEqualTo(a.get("id").asString());
-        assertThat(lista.get(0).get("principal").asBoolean()).isTrue();
-        assertThat(lista.get(0).get("ordem").asInt()).isEqualTo(0);
-        assertThat(jdbc.queryForObject("SELECT deleted_at IS NOT NULL FROM corona.produtos_fotos WHERE id = ?", Boolean.class,
-                UUID.fromString(c.get("id").asString()))).isTrue();
-        mvc.perform(get(BASE + "/" + produto).with(dona())).andExpect(jsonPath("$.fotoPrincipal.hash").value(a.get("hash").asString()));
-        // Foto excluída não responde mais, nem para marcar como principal.
-        json(post(BASE + "/" + produto + "/fotos/" + c.get("id").asString() + "/principal"), null).andExpect(status().isNotFound());
-        json(delete(BASE + "/" + produto + "/fotos/" + c.get("id").asString()), null).andExpect(status().isNotFound());
-
-        // Foto de outra peça não pode ser mexida por esta rota.
-        UUID outro = produto();
-        json(delete(BASE + "/" + outro + "/fotos/" + a.get("id").asString()), null).andExpect(status().isNotFound());
-
-        // Sem nenhuma foto, a principal volta a ser vazia (e nunca é erro).
+        JsonNode a = enviarFotoBoa(produto, 61);
         json(delete(BASE + "/" + produto + "/fotos/" + a.get("id").asString()), null).andExpect(status().isNoContent());
-        json(delete(BASE + "/" + produto + "/fotos/" + b.get("id").asString()), null).andExpect(status().isNoContent());
+        assertThat(fotosDe(produto)).isEmpty();
+        assertThat(jdbc.queryForObject("SELECT deleted_at IS NOT NULL FROM corona.produtos_fotos WHERE id = ?", Boolean.class,
+                UUID.fromString(a.get("id").asString()))).isTrue();
         mvc.perform(get(BASE + "/" + produto).with(dona())).andExpect(status().isOk()).andExpect(jsonPath("$.fotoPrincipal").value((Object) null));
         assertThat(jdbc.queryForObject("SELECT foto_principal_hash FROM corona.produtos WHERE id = ?", String.class, produto)).isNull();
+        json(delete(BASE + "/" + produto + "/fotos/" + a.get("id").asString()), null).andExpect(status().isNotFound());
+        // Foto de outra peça não pode ser mexida por esta rota.
+        UUID outro = produto();
+        JsonNode b = enviarFotoBoa(outro, 62);
+        json(delete(BASE + "/" + produto + "/fotos/" + b.get("id").asString()), null).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void limpezaTiraDoDiscoOsArquivosDaFotoTrocadaSoDepoisDeUmaSemanaESoSeNinguemMaisUsa() throws Exception {
+        UUID produto = produto();
+        JsonNode antiga = enviarFotoBoa(produto, 71);
+        // A mesma imagem em outra peça reaproveita os arquivos: eles não podem sair do disco.
+        UUID outra = produto();
+        enviarFotoBoa(outra, 71);
+        UUID idAntiga = UUID.fromString(antiga.get("id").asString());
+        // Troca a foto da primeira peça.
+        enviarFotoBoa(produto, 72);
+        String chave = jdbc.queryForObject("SELECT chave_grande FROM corona.produtos_fotos WHERE id = ?", String.class, idAntiga);
+        assertThat(armazenamento.existe(chave)).isTrue();
+        // Recém trocada: a limpeza não mexe.
+        limpeza.limpar();
+        assertThat(armazenamento.existe(chave)).isTrue();
+        // Passada a carência, mas a outra peça ainda usa os mesmos arquivos: ficam.
+        jdbc.update("UPDATE corona.produtos_fotos SET deleted_at = now() - interval '8 days' WHERE id = ?", idAntiga);
+        limpeza.limpar();
+        assertThat(armazenamento.existe(chave)).isTrue();
+        // Troca a foto da outra peça também: agora ninguém usa e, passada a carência, o arquivo sai.
+        UUID idDaOutra = jdbc.queryForObject("SELECT id FROM corona.produtos_fotos WHERE produto_id = ? AND deleted_at IS NULL",
+                UUID.class, outra);
+        enviarFoto(outra, "c.jpg", "image/jpeg", ImagensDeTeste.jpeg(800, 600, 73), dona()).andExpect(status().isCreated());
+        jdbc.update("UPDATE corona.produtos_fotos SET deleted_at = now() - interval '8 days', arquivos_removidos_em = NULL WHERE id = ?", idDaOutra);
+        jdbc.update("UPDATE corona.produtos_fotos SET arquivos_removidos_em = NULL WHERE id = ?", idAntiga);
+        assertThat(limpeza.limpar()).isGreaterThanOrEqualTo(3);
+        assertThat(armazenamento.existe(chave)).isFalse();
+        assertThat(jdbc.queryForObject("SELECT arquivos_removidos_em IS NOT NULL FROM corona.produtos_fotos WHERE id = ?", Boolean.class,
+                idAntiga)).isTrue();
+        // A foto atual de cada peça continua lá, e rodar de novo não apaga nada nem dá erro.
+        assertThat(limpeza.limpar()).isZero();
+        mvc.perform(get(BASE + "/" + produto).with(dona())).andExpect(jsonPath("$.fotoPrincipal.hash").isNotEmpty());
+        // Enviar de novo a imagem apagada grava arquivos novos (nunca reaproveita os que saíram do disco).
+        enviarFotoBoa(produto, 71);
+        String novaChave = jdbc.queryForObject("SELECT chave_grande FROM corona.produtos_fotos WHERE produto_id = ? AND deleted_at IS NULL",
+                String.class, produto);
+        assertThat(armazenamento.existe(novaChave)).isTrue();
     }
 
     @Test
@@ -588,20 +611,19 @@ class FotosDosProdutosTest extends TesteDeIntegracao {
     }
 
     @Test
-    void confirmarSemArquivosEPecaComCincoFotosDaoMensagemSimples() throws Exception {
+    void importacaoSubstituiAFotoQueAPecaJaTinha() throws Exception {
         importar("confirmar", dona()).andExpect(status().isBadRequest());
         UUID categoria = categoria();
         String m = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
-        JsonNode p = produto(categoria, null, unico("Cheia"), "CH-" + m);
+        JsonNode p = produto(categoria, null, unico("Com foto"), "CF-" + m);
         UUID id = UUID.fromString(p.get("id").asString());
-        for (int i = 0; i < 5; i++) {
-            enviarFotoBoa(id, 300 + i);
-        }
-        JsonNode r = ler(importar("confirmar", dona(), arquivo("ch-" + m + ".jpg", ImagensDeTeste.jpeg(200, 200, 399)))
+        JsonNode antiga = enviarFotoBoa(id, 300);
+        JsonNode r = ler(importar("confirmar", dona(), arquivo("cf-" + m + ".jpg", ImagensDeTeste.jpeg(200, 200, 399)))
                 .andExpect(status().isOk()));
-        assertThat(r.get("resultados").get(0).get("situacao").asString()).isEqualTo("RECUSADA");
-        assertThat(r.get("resultados").get(0).get("mensagem").asString()).startsWith("Esta peça já tem 5 fotos.");
-        assertThat(fotosDe(id)).hasSize(5);
+        assertThat(r.get("resultados").get(0).get("situacao").asString()).isEqualTo("GRAVADA");
+        JsonNode lista = fotosDe(id);
+        assertThat(lista).hasSize(1);
+        assertThat(lista.get(0).get("hash").asString()).isNotEqualTo(antiga.get("hash").asString());
     }
 
     @Test
