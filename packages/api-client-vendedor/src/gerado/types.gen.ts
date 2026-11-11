@@ -8,12 +8,60 @@ export type CadastroDeTeste = {
     nome: string;
 };
 
+export type Cotacao = {
+    data?: string;
+    dolar?: string;
+    guarani?: string;
+};
+
 export type DadosDoUsuario = {
     id?: string;
     login?: string;
     nome?: string;
     perfil?: string;
     vendedorId?: string;
+};
+
+export type Item = {
+    desconto?: string;
+    precoUnitario?: string;
+    produto?: Peca;
+    quantidade?: number;
+    total?: string;
+};
+
+export type PagamentoLido = {
+    em?: string;
+    forma?: string;
+    id?: string;
+    tipo?: string;
+    valor?: string;
+};
+
+export type Peca = {
+    fotoHash?: string;
+    id?: string;
+    nome?: string;
+};
+
+export type PedidoDaLinha = {
+    desconto?: string;
+    produtoId?: string;
+    quantidade?: number;
+};
+
+export type PedidoDaVenda = {
+    clienteId?: string;
+    id?: string;
+    itens?: Array<PedidoDaLinha>;
+    pagamentos?: Array<PedidoDoPagamento>;
+    remessaId?: string;
+    totalConferido?: string;
+};
+
+export type PedidoDeEstorno = {
+    id?: string;
+    motivo?: string;
 };
 
 export type PedidoDeLogin = {
@@ -29,6 +77,12 @@ export type PedidoDeRenovacao = {
 
 export type PedidoDeTrocaDeSenha = {
     senhaNova: string;
+};
+
+export type PedidoDoPagamento = {
+    forma?: string;
+    id?: string;
+    valor?: string;
 };
 
 export type RespostaDoLogin = {
@@ -49,6 +103,28 @@ export type Tempo = {
 
 export type ValorDeTeste = {
     valor?: string;
+};
+
+export type Venda = {
+    aReceber?: string;
+    clienteId?: string;
+    clienteNome?: string;
+    cotacao?: Cotacao;
+    desconto?: string;
+    estornadaEm?: string;
+    id?: string;
+    itens?: Array<Item>;
+    motivoDoEstorno?: string;
+    pagamentos?: Array<PagamentoLido>;
+    pago?: string;
+    remessaId?: string;
+    status?: string;
+    subtotal?: string;
+    total?: string;
+    totalDolar?: string;
+    totalGuarani?: string;
+    vendedorId?: string;
+    vendidaEm?: string;
 };
 
 export type EuData = {
@@ -192,3 +268,76 @@ export type ValidarDoVendedorResponses = {
 };
 
 export type ValidarDoVendedorResponse = ValidarDoVendedorResponses[keyof ValidarDoVendedorResponses];
+
+export type ListarVendasDoVendedorData = {
+    body?: never;
+    path?: never;
+    query?: {
+        de?: string;
+        ate?: string;
+        clienteId?: string;
+        status?: string;
+    };
+    url: '/api/vendedor/vendas';
+};
+
+export type ListarVendasDoVendedorResponses = {
+    /**
+     * OK
+     */
+    200: Array<Venda>;
+};
+
+export type ListarVendasDoVendedorResponse = ListarVendasDoVendedorResponses[keyof ListarVendasDoVendedorResponses];
+
+export type VenderNaMaletaData = {
+    body: PedidoDaVenda;
+    path?: never;
+    query?: never;
+    url: '/api/vendedor/vendas';
+};
+
+export type VenderNaMaletaResponses = {
+    /**
+     * OK
+     */
+    200: Venda;
+};
+
+export type VenderNaMaletaResponse = VenderNaMaletaResponses[keyof VenderNaMaletaResponses];
+
+export type VerVendaDoVendedorData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/vendedor/vendas/{id}';
+};
+
+export type VerVendaDoVendedorResponses = {
+    /**
+     * OK
+     */
+    200: Venda;
+};
+
+export type VerVendaDoVendedorResponse = VerVendaDoVendedorResponses[keyof VerVendaDoVendedorResponses];
+
+export type EstornarVendaDoVendedorData = {
+    body: PedidoDeEstorno;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/vendedor/vendas/{id}/estorno';
+};
+
+export type EstornarVendaDoVendedorResponses = {
+    /**
+     * OK
+     */
+    200: Venda;
+};
+
+export type EstornarVendaDoVendedorResponse = EstornarVendaDoVendedorResponses[keyof EstornarVendaDoVendedorResponses];

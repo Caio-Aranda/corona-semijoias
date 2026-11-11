@@ -385,7 +385,9 @@ public class ConsultasDeEstoqueECompras {
                         coalesce((SELECT sum(me.quantidade) FROM corona.movimentacoes_estoque me
                                     LEFT JOIN corona.movimentacoes_estoque original ON original.id = me.estorna_id
                                    WHERE me.produto_id = p.id AND me.origem_tipo <> 'MALETA'
-                                     AND coalesce(original.origem_tipo, '') <> 'MALETA'), 0) AS fora
+                                     AND coalesce(original.origem_tipo, '') <> 'MALETA'), 0)
+                        + coalesce((SELECT sum(mv.quantidade) FROM corona.movimentos_remessa mv
+                                     WHERE mv.produto_id = p.id AND mv.tipo IN ('VENDA', 'ESTORNO_VENDA')), 0) AS fora
                    FROM corona.produtos p) c""", "lower(c.nome), c.produto_id", List.of(
                 contagem(TODOS, "Produtos com diferença", null)));
         c.onde("(c.saldo <> c.soma OR c.saldo + c.nas_maletas <> c.fora)");

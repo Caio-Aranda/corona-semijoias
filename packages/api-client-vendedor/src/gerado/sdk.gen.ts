@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { EntrarData, EntrarResponses, EuData, EuResponses, RenovarData, RenovarResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SoVendedorData, SoVendedorResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarDoVendedorData, ValidarDoVendedorResponses, ValorDoVendedorData, ValorDoVendedorResponses } from './types.gen';
+import type { EntrarData, EntrarResponses, EstornarVendaDoVendedorData, EstornarVendaDoVendedorResponses, EuData, EuResponses, ListarVendasDoVendedorData, ListarVendasDoVendedorResponses, RenovarData, RenovarResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SoVendedorData, SoVendedorResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarDoVendedorData, ValidarDoVendedorResponses, ValorDoVendedorData, ValorDoVendedorResponses, VenderNaMaletaData, VenderNaMaletaResponses, VerVendaDoVendedorData, VerVendaDoVendedorResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -102,6 +102,56 @@ export const valorDoVendedor = <ThrowOnError extends boolean = false>(options?: 
 export const validarDoVendedor = <ThrowOnError extends boolean = false>(options: Options<ValidarDoVendedorData, ThrowOnError>): RequestResult<ValidarDoVendedorResponses, unknown, ThrowOnError> => (options.client ?? client).post<ValidarDoVendedorResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/vendedor/teste/validar',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Minhas vendas
+ *
+ * Só as vendas do vendedor logado, da mais nova para a mais antiga. Filtros opcionais por dia (de e até, no horário de Brasília), cliente e situação (CONCLUIDA ou ESTORNADA).
+ */
+export const listarVendasDoVendedor = <ThrowOnError extends boolean = false>(options?: Options<ListarVendasDoVendedorData, ThrowOnError>): RequestResult<ListarVendasDoVendedorResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ListarVendasDoVendedorResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/vendas',
+    ...options
+});
+
+/**
+ * Registrar uma venda da maleta
+ *
+ * Baixa as peças da maleta do vendedor pelo preço congelado da remessa. O servidor recalcula subtotal, desconto e total; o desconto respeita o limite da dona. Pagamentos opcionais (venda a prazo grava só o que foi pago na hora). Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409.
+ */
+export const venderNaMaleta = <ThrowOnError extends boolean = false>(options: Options<VenderNaMaletaData, ThrowOnError>): RequestResult<VenderNaMaletaResponses, unknown, ThrowOnError> => (options.client ?? client).post<VenderNaMaletaResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/vendas',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Ver uma das minhas vendas
+ */
+export const verVendaDoVendedor = <ThrowOnError extends boolean = false>(options: Options<VerVendaDoVendedorData, ThrowOnError>): RequestResult<VerVendaDoVendedorResponses, unknown, ThrowOnError> => (options.client ?? client).get<VerVendaDoVendedorResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/vendas/{id}',
+    ...options
+});
+
+/**
+ * Estornar a própria venda (no mesmo dia)
+ *
+ * Estorna a venda inteira: as peças voltam para a maleta e o que o cliente pagou vira reembolso. Só no dia da venda; depois, só a dona. Exige o id do estorno (do aplicativo) e o motivo. Mesmo id devolve 200.
+ */
+export const estornarVendaDoVendedor = <ThrowOnError extends boolean = false>(options: Options<EstornarVendaDoVendedorData, ThrowOnError>): RequestResult<EstornarVendaDoVendedorResponses, unknown, ThrowOnError> => (options.client ?? client).post<EstornarVendaDoVendedorResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/vendas/{id}/estorno',
     ...options,
     headers: {
         'Content-Type': 'application/json',

@@ -130,6 +130,27 @@
         },
         "type" : "object"
       },
+      "Cotacao" : {
+        "properties" : {
+          "data" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "dolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "guarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "CotacaoDaNota" : {
         "properties" : {
           "data" : {
@@ -299,28 +320,29 @@
       },
       "Item" : {
         "properties" : {
-          "ativo" : {
-            "type" : "boolean"
-          },
-          "categoriaId" : {
-            "format" : "uuid",
+          "desconto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           },
-          "codigoPrincipal" : {
+          "precoUnitario" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           },
-          "fornecedorId" : {
-            "format" : "uuid",
-            "type" : "string"
+          "produto" : {
+            "$ref" : "#/components/schemas/Peca"
           },
-          "id" : {
-            "format" : "uuid",
-            "type" : "string"
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
           },
-          "nome" : {
-            "type" : "string"
-          },
-          "referencia" : {
+          "total" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           }
         },
@@ -1523,6 +1545,31 @@
         },
         "type" : "object"
       },
+      "PagamentoLido" : {
+        "properties" : {
+          "em" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "forma" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "PaginaItem" : {
         "properties" : {
           "itens" : {
@@ -1680,6 +1727,21 @@
           "total" : {
             "format" : "int64",
             "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "Peca" : {
+        "properties" : {
+          "fotoHash" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
           }
         },
         "type" : "object"
@@ -4104,6 +4166,101 @@
             "example" : "123.45",
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "Venda" : {
+        "properties" : {
+          "aReceber" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "clienteId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "clienteNome" : {
+            "type" : "string"
+          },
+          "cotacao" : {
+            "$ref" : "#/components/schemas/Cotacao"
+          },
+          "desconto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "estornadaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Item"
+            },
+            "type" : "array"
+          },
+          "motivoDoEstorno" : {
+            "type" : "string"
+          },
+          "pagamentos" : {
+            "items" : {
+              "$ref" : "#/components/schemas/PagamentoLido"
+            },
+            "type" : "array"
+          },
+          "pago" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "remessaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "subtotal" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "total" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "totalDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "totalGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "vendidaEm" : {
+            "format" : "date-time",
             "type" : "string"
           }
         },
@@ -10774,6 +10931,79 @@
         } ],
         "summary" : "Redefinir a senha de um usuário",
         "tags" : [ "usuarios-da-dona-controller" ]
+      }
+    },
+    "/api/dona/vendas/{id}" : {
+      "get" : {
+        "operationId" : "verVenda",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Venda"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ver uma venda",
+        "tags" : [ "vendas-da-dona-controller" ]
+      }
+    },
+    "/api/dona/vendas/{id}/estorno" : {
+      "post" : {
+        "description" : "Estorna a venda inteira, sem limite de prazo: as peças voltam para a maleta e o que o cliente pagou vira reembolso. Motivo obrigatório; mesmo id de estorno devolve 200.",
+        "operationId" : "estornarVenda",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeEstorno"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Venda"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Estornar uma venda",
+        "tags" : [ "vendas-da-dona-controller" ]
       }
     },
     "/api/dona/vendedores" : {

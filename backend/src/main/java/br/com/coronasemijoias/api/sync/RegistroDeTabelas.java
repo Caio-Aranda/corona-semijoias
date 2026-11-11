@@ -75,7 +75,15 @@ public final class RegistroDeTabelas {
                                 "remessa_id", "produto_id", "qtd_enviada", "preco_remessa"), false),
                         new TabelaSincronizavel("movimentos_remessa", List.of(
                                 "remessa_id", "produto_id", "tipo", "quantidade", "venda_id", "dispositivo_id",
-                                "estorna_id"), true)
+                                "estorna_id"), true),
+                        // Vendas (tarefa 4.2, ADR-0011): do próprio vendedor (filtro na Fase 5). Sem custo.
+                        new TabelaSincronizavel("vendas", List.of(
+                                "vendedor_id", "cliente_id", "remessa_id", "status", "subtotal", "desconto", "total",
+                                "cotacao_id", "vendida_em", "estorno_id", "estornada_em", "motivo_estorno"), false),
+                        new TabelaSincronizavel("itens_venda", List.of(
+                                "venda_id", "produto_id", "quantidade", "preco_unitario", "desconto"), true),
+                        new TabelaSincronizavel("pagamentos_cliente", List.of(
+                                "venda_id", "tipo", "forma", "valor", "pago_em"), true)
                         // As demais sincronizáveis entram aqui (produtos, vendas...).
                 ),
                 List.of(

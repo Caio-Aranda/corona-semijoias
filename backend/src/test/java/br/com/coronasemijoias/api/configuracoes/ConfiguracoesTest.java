@@ -21,10 +21,11 @@ class ConfiguracoesTest extends TesteDeIntegracao {
     JdbcTemplate jdbc;
 
     @Test
-    void asTresChavesComOsPadroes() {
+    void asChavesComOsPadroes() {
         assertThat(jdbc.queryForList("SELECT chave FROM corona.configuracoes ORDER BY chave", String.class))
-                .containsExactly("tempo_bloqueio_login_minutos", "tempo_maximo_offline_dias",
+                .containsExactly("limite_desconto_percentual", "tempo_bloqueio_login_minutos", "tempo_maximo_offline_dias",
                         "tentativas_login_antes_do_bloqueio");
+        assertThat(configuracoes.inteiro(ChaveDeConfiguracao.LIMITE_DESCONTO_PERCENTUAL)).isZero();
         assertThat(configuracoes.inteiro(ChaveDeConfiguracao.TEMPO_MAXIMO_OFFLINE_DIAS)).isEqualTo(10);
         assertThat(configuracoes.inteiro(ChaveDeConfiguracao.TENTATIVAS_LOGIN_ANTES_DO_BLOQUEIO)).isEqualTo(5);
         assertThat(configuracoes.inteiro(ChaveDeConfiguracao.TEMPO_BLOQUEIO_LOGIN_MINUTOS)).isEqualTo(15);

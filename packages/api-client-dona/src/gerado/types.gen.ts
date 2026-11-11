@@ -51,6 +51,12 @@ export type ConversaoResposta = {
     valorEmReais?: string;
 };
 
+export type Cotacao = {
+    data?: string;
+    dolar?: string;
+    guarani?: string;
+};
+
 export type CotacaoDaNota = {
     data?: string;
     dolar?: string;
@@ -103,13 +109,11 @@ export type FotoPrincipal = {
 };
 
 export type Item = {
-    ativo?: boolean;
-    categoriaId?: string;
-    codigoPrincipal?: string;
-    fornecedorId?: string;
-    id?: string;
-    nome?: string;
-    referencia?: string;
+    desconto?: string;
+    precoUnitario?: string;
+    produto?: Peca;
+    quantidade?: number;
+    total?: string;
 };
 
 export type ItemDaNota = {
@@ -475,6 +479,14 @@ export type NotaDeRemessa = {
     vendedor?: Pessoa;
 };
 
+export type PagamentoLido = {
+    em?: string;
+    forma?: string;
+    id?: string;
+    tipo?: string;
+    valor?: string;
+};
+
 export type PaginaItem = {
     itens?: Array<Item>;
     pagina?: number;
@@ -522,6 +534,12 @@ export type PaginaRespostaDoResumo = {
     pagina?: number;
     tamanho?: number;
     total?: number;
+};
+
+export type Peca = {
+    fotoHash?: string;
+    id?: string;
+    nome?: string;
 };
 
 export type Pedido = {
@@ -1264,6 +1282,28 @@ export type Total = {
 
 export type ValorDeTeste = {
     valor?: string;
+};
+
+export type Venda = {
+    aReceber?: string;
+    clienteId?: string;
+    clienteNome?: string;
+    cotacao?: Cotacao;
+    desconto?: string;
+    estornadaEm?: string;
+    id?: string;
+    itens?: Array<Item>;
+    motivoDoEstorno?: string;
+    pagamentos?: Array<PagamentoLido>;
+    pago?: string;
+    remessaId?: string;
+    status?: string;
+    subtotal?: string;
+    total?: string;
+    totalDolar?: string;
+    totalGuarani?: string;
+    vendedorId?: string;
+    vendidaEm?: string;
 };
 
 export type EuData = {
@@ -3996,6 +4036,42 @@ export type RedefinirSenhaResponses = {
 };
 
 export type RedefinirSenhaResponse = RedefinirSenhaResponses[keyof RedefinirSenhaResponses];
+
+export type VerVendaData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/vendas/{id}';
+};
+
+export type VerVendaResponses = {
+    /**
+     * OK
+     */
+    200: Venda;
+};
+
+export type VerVendaResponse = VerVendaResponses[keyof VerVendaResponses];
+
+export type EstornarVendaData = {
+    body: PedidoDeEstorno;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/vendas/{id}/estorno';
+};
+
+export type EstornarVendaResponses = {
+    /**
+     * OK
+     */
+    200: Venda;
+};
+
+export type EstornarVendaResponse = EstornarVendaResponses[keyof EstornarVendaResponses];
 
 export type ListarData = {
     body?: never;
