@@ -26,7 +26,7 @@ Fora de qualquer job: `deploy/` (scripts de shell e compose da VPS) não é cobe
 
 ## O job da regra de merge: `ci`
 
-O job **`ci`** roda sempre no fim (menos em rascunho) e só fica vermelho se algum job que rodou falhou ou foi cancelado. Job pulado por filtro **não** reprova, então nenhum PR fica sem status. **A regra de merge deve exigir o `ci`** (os outros jobs podem ser pulados e não devem ser exigidos um a um).
+O job **`ci`** roda sempre no fim (menos em rascunho) e só fica verde se o `mudancas` terminou com sucesso (senão nada foi decidido) e nenhum job que rodou falhou ou foi cancelado. Em run cancelado por um push novo ele nem roda (`!cancelled()`), então nunca termina verde por engano. Job pulado por filtro **não** reprova, então nenhum PR fica sem status. **A regra de merge deve exigir o `ci`** (os outros jobs podem ser pulados e não devem ser exigidos um a um).
 
 ## Regra para quem abre o PR
 

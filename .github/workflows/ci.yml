@@ -182,10 +182,11 @@ jobs:
       - run: npm run format:check
 
   # O ÚNICO status para a regra de merge: roda sempre no fim (menos em rascunho) e só reprova se algum job rodou e falhou
-  # ou foi cancelado. Job pulado por filtro de caminho não reprova: PR nunca fica sem status.
+  # ou foi cancelado, ou se o "mudancas" não teve sucesso (sem ele nada foi decidido). Job pulado por filtro de caminho não reprova: PR nunca fica sem status.
   ci:
     name: ci
-    if: always() && github.event.pull_request.draft != true
+    # !cancelled(): um run cancelado (push novo) não pode terminar verde; o run novo reporta no lugar dele.
+    if: ${{ !cancelled() && github.event.pull_request.draft != true }}
     needs: [mudancas, frontend, backend, migracoes, dependencias, docs]
     runs-on: ubuntu-latest
     timeout-minutes: 2
@@ -193,8 +194,14 @@ jobs:
       - name: Resultado dos jobs
         env:
           RESULTADOS: ${{ join(needs.*.result, ' ') }}
+          MUDANCAS: ${{ needs.mudancas.result }}
         run: |
-          echo "Resultados: $RESULTADOS"
+          echo "Resultados: $RESULTADOS (mudancas: $MUDANCAS)"
+          # Sem o "mudancas" bem-sucedido nada foi decidido nem rodado: nunca fica verde (pulado, cancelado ou falho).
+          if [ "$MUDANCAS" != "success" ]; then
+            echo "::error::O job mudancas não terminou com sucesso ($MUDANCAS): o CI não rodou de verdade."
+            exit 1
+          fi
           case " $RESULTADOS " in
             *" failure "*|*" cancelled "*) echo "::error::Algum job do CI falhou ou foi cancelado."; exit 1 ;;
           esac
