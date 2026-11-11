@@ -29,24 +29,34 @@ class MotorDeRelatorio {
     static final String TODOS = "todos";
 
     /** Um número do rodapé: as linhas que o formam (predicado) e, se tiver, o valor que se soma. */
-    record DefinicaoDeTotal(String chave, String rotulo, String predicado, String valor, String pecas) {
+    record DefinicaoDeTotal(String chave, String rotulo, String predicado, String valor, String pecas, String dolar,
+            String guarani) {
 
         static DefinicaoDeTotal contagem(String chave, String rotulo, String predicado) {
-            return new DefinicaoDeTotal(chave, rotulo, predicado, null, null);
+            return new DefinicaoDeTotal(chave, rotulo, predicado, null, null, null, null);
         }
 
         static DefinicaoDeTotal soma(String chave, String rotulo, String valor) {
-            return new DefinicaoDeTotal(chave, rotulo, null, valor, null);
+            return new DefinicaoDeTotal(chave, rotulo, null, valor, null, null, null);
         }
 
         /** Linhas que formam o total, com a soma de um valor em Real. */
         static DefinicaoDeTotal somaDe(String chave, String rotulo, String predicado, String valor) {
-            return new DefinicaoDeTotal(chave, rotulo, predicado, valor, null);
+            return new DefinicaoDeTotal(chave, rotulo, predicado, valor, null, null, null);
         }
 
         /** Linhas que formam o total, com a soma de peças (inteiro) e, se tiver, de um valor em Real. */
         static DefinicaoDeTotal pecas(String chave, String rotulo, String predicado, String pecas, String valor) {
-            return new DefinicaoDeTotal(chave, rotulo, predicado, valor, pecas);
+            return new DefinicaoDeTotal(chave, rotulo, predicado, valor, pecas, null, null);
+        }
+
+        /**
+         * Como {@link #pecas}, com o valor também em Dólar e em Guarani: {@code dolar} e {@code guarani} são as
+         * expressões já convertidas de cada linha (pela cotação do dia dela); o rodapé é a soma delas (§12).
+         */
+        static DefinicaoDeTotal emTresMoedas(String chave, String rotulo, String predicado, String pecas, String valor,
+                String dolar, String guarani) {
+            return new DefinicaoDeTotal(chave, rotulo, predicado, valor, pecas, dolar, guarani);
         }
     }
 
@@ -180,11 +190,15 @@ class MotorDeRelatorio {
             }
             String soma = d.valor() == null ? "0" : "coalesce(sum(" + d.valor() + "), 0)";
             String pecas = d.pecas() == null ? "0" : "coalesce(sum(" + d.pecas() + "), 0)";
+            String dolar = d.dolar() == null ? "0" : "coalesce(sum(" + d.dolar() + "), 0)";
+            String guarani = d.guarani() == null ? "0" : "coalesce(sum(" + d.guarani() + "), 0)";
             Total feito = jdbc.queryForObject("SELECT count(*) AS quantidade, " + soma + " AS valor, " + pecas
-                    + " AS pecas FROM " + c.de + filtro,
+                    + " AS pecas, " + dolar + " AS dolar, " + guarani + " AS guarani FROM " + c.de + filtro,
                     c.parametros, (rs, n) -> new Total(d.chave(), d.rotulo(), rs.getLong("quantidade"),
                             d.valor() == null ? null : Dinheiro.arredondar(rs.getBigDecimal("valor")),
-                            d.pecas() == null ? null : rs.getLong("pecas")));
+                            d.pecas() == null ? null : rs.getLong("pecas"),
+                            d.dolar() == null ? null : Dinheiro.arredondar(rs.getBigDecimal("dolar")),
+                            d.guarani() == null ? null : rs.getBigDecimal("guarani")));
             totais.add(feito);
         }
         return new RelatorioDeCadastro<>(itens, total == null ? 0 : total, p, t, totais, pedido);

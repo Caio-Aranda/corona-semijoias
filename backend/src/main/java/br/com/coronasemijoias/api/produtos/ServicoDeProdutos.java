@@ -181,6 +181,18 @@ public class ServicoDeProdutos extends ServicoDeCadastro<Produto> {
     @Override
     @Transactional
     public void excluir(UUID id) {
+        // Peça com o vendedor não some: a devolução e o cancelamento da maleta precisam dela (tarefa 3.8).
+        Boolean naMaleta = jdbc.queryForObject("""
+                SELECT EXISTS (SELECT 1 FROM corona.remessas r
+                                 JOIN corona.itens_remessa i ON i.remessa_id = r.id AND i.deleted_at IS NULL
+                                WHERE i.produto_id = ? AND r.deleted_at IS NULL
+                                  AND r.status IN ('ENVIADA', 'CONFERIDA', 'EM_ACERTO')
+                                  AND i.qtd_enviada + coalesce((SELECT sum(m.quantidade) FROM corona.movimentos_remessa m
+                                        WHERE m.remessa_id = i.remessa_id AND m.produto_id = i.produto_id), 0) > 0)""",
+                Boolean.class, id);
+        if (Boolean.TRUE.equals(naMaleta)) {
+            throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.PECA_ESTA_EM_MALETA);
+        }
         super.excluir(id);
         jdbc.update("UPDATE corona.produto_codigos SET deleted_at = ? WHERE produto_id = ? AND deleted_at IS NULL",
                 Timestamp.from(relogio.instant()), id);

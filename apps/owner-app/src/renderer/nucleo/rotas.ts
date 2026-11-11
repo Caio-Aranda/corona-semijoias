@@ -2,12 +2,14 @@ import { useCallback, useEffect, useState } from 'react';
 import { TEXTOS } from '../textos';
 import { TEXTOS_DE_COMPRAS } from '../textos-compras';
 import { TEXTOS_DE_ESTOQUE } from '../textos-estoque';
+import { TEXTOS_DE_MALETAS } from '../textos-maletas';
 import { TEXTOS_RELATORIOS } from '../textos-relatorios';
 import { ORDEM_DOS_RELATORIOS, RELATORIOS } from './relatorios';
 import {
   ORDEM_DOS_RELATORIOS_DE_COMPRAS,
   ORDEM_DOS_RELATORIOS_DE_ESTOQUE,
 } from './relatorios-estoque';
+import { ORDEM_DOS_RELATORIOS_DE_MALETA } from './relatorios-maleta';
 
 /** As telas do menu. A chave aparece na barra de endereço (#/pessoas/usuarios), nunca na tela. */
 export const ROTAS = [
@@ -24,6 +26,8 @@ export const ROTAS = [
   'estoque/contagem',
   'estoque/receber-compra',
   'estoque/compras',
+  'maletas/lista',
+  'maletas/montar',
   'pessoas/vendedores',
   'pessoas/clientes',
   'pessoas/usuarios',
@@ -46,6 +50,11 @@ export const ROTAS = [
   'relatorios/compras-por-compra',
   'relatorios/compras-por-fornecedor',
   'relatorios/compras-custos',
+  'relatorios/maleta-remessas',
+  'relatorios/maleta-saldo',
+  'relatorios/maleta-mercadoria',
+  'relatorios/maleta-em-aberto',
+  'relatorios/maleta-reposicoes',
 ] as const;
 export type Rota = (typeof ROTAS)[number];
 
@@ -74,6 +83,13 @@ export const MENU = [
     ],
   },
   {
+    titulo: TEXTOS_DE_MALETAS.menu.grupo,
+    itens: [
+      { chave: 'maletas/lista', rotulo: TEXTOS_DE_MALETAS.menu.lista },
+      { chave: 'maletas/montar', rotulo: TEXTOS_DE_MALETAS.menu.montar },
+    ],
+  },
+  {
     titulo: TEXTOS.menu.pessoas,
     itens: [
       { chave: 'pessoas/vendedores', rotulo: TEXTOS.menu.vendedores },
@@ -98,6 +114,13 @@ export const MENU = [
   {
     titulo: TEXTOS_RELATORIOS.grupoDasCompras,
     itens: ORDEM_DOS_RELATORIOS_DE_COMPRAS.map((nome) => ({
+      chave: `relatorios/${nome}`,
+      rotulo: RELATORIOS[nome].titulo,
+    })),
+  },
+  {
+    titulo: TEXTOS_DE_MALETAS.relatorios.grupoDoMenu,
+    itens: ORDEM_DOS_RELATORIOS_DE_MALETA.map((nome) => ({
       chave: `relatorios/${nome}`,
       rotulo: RELATORIOS[nome].titulo,
     })),
