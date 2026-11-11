@@ -79,11 +79,11 @@ public class ClientesDoVendedor {
 
         // Mesmo id: só é "o mesmo cliente" se for dele e com os mesmos dados (nunca diz de quem é outro).
         List<Map<String, Object>> existente = jdbc.queryForList("""
-                SELECT nome, cpf, data_nascimento, telefone, whatsapp, observacoes, vendedor_responsavel_id
+                SELECT nome, cpf, data_nascimento, telefone, whatsapp, observacoes, vendedor_responsavel_id, deleted_at
                   FROM corona.clientes WHERE id = ?""", id);
         if (!existente.isEmpty()) {
             Map<String, Object> e = existente.get(0);
-            boolean igual = vendedorId.equals(e.get("vendedor_responsavel_id")) && nome.equals(e.get("nome"))
+            boolean igual = e.get("deleted_at") == null && vendedorId.equals(e.get("vendedor_responsavel_id")) && nome.equals(e.get("nome"))
                     && Objects.equals(cpf, e.get("cpf")) && Objects.equals(telefone, e.get("telefone"))
                     && Objects.equals(whatsapp, e.get("whatsapp")) && Objects.equals(observacoes, e.get("observacoes"))
                     && Objects.equals(nascimento, e.get("data_nascimento") == null ? null

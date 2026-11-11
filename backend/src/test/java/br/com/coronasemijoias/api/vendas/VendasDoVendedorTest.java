@@ -290,6 +290,23 @@ class VendasDoVendedorTest extends TesteDeIntegracao {
     }
 
     @Test
+    void pagamentoComIdJaUsadoEmOutraVendaDa409ESemGravarNada() throws Exception {
+        UsuarioDeTeste v = novoVendedor();
+        UUID anel = peca("30.00", 10);
+        UUID maleta = maleta(v, anel, 10);
+        UUID cliente = cliente(v);
+        Map<String, Object> pagamento = pagamento("30.00", "PIX");
+        postar(VENDAS, como(v), venda(UUID.randomUUID(), maleta, cliente, List.of(linha(anel, 1, null)), List.of(pagamento)))
+                .andExpect(status().isCreated());
+        UUID outra = UUID.randomUUID();
+        JsonNode erro = corpoDe(postar(VENDAS, como(v), venda(outra, maleta, cliente, List.of(linha(anel, 1, null)),
+                List.of(pagamento))).andExpect(status().isConflict()));
+        assertThat(erro.get("detail").asString()).contains("já foi registrada");
+        assertThat(saldo(maleta, anel)).isEqualTo(9);
+        assertThat(movimentosDaVenda(outra)).isZero();
+    }
+
+    @Test
     void recusaAPecaQueNaoEstaNaMaletaESaldoQueNaoBasta() throws Exception {
         UsuarioDeTeste v = novoVendedor();
         UUID anel = peca("30.00", 3);

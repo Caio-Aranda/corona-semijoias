@@ -712,6 +712,7 @@ Tudo é gravado em Real. Dólar e Guarani aparecem ao lado de todo valor, nos do
 
 - **Grades e relatórios:** uma coluna para cada moeda, na ordem R$, US$ e Gs., e os totais do rodapé nas três. O total em Dólar e em Guarani é a soma das linhas, então o detalhamento sempre fecha.
 - **Linha da cotação**, embaixo de telas de valores e no cabeçalho dos relatórios: "Cotação do Banco Central de 06/11/2026". Nos relatórios de vários dias: "Dólar e Guarani pela cotação do Banco Central do dia de cada lançamento".
+- **Minha maleta (Corona Vendas)**, decisão de 11/11/2026 (D1): preço e valor em aberto em Dólar e Guarani pela cotação de hoje, com a frase "Dólar e Guarani pela cotação de hoje." (é preço para vender agora; a venda grava a cotação do dia dela). Sem cotação: "Sem cotação do Dólar e do Guarani por enquanto: os valores aparecem só em Real."
 - Ninguém digita cotação nem valor em Dólar ou Guarani: os campos de valor são sempre em reais.
 
 ### Textos

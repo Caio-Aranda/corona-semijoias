@@ -82,9 +82,266 @@
         "required" : [ "nome" ],
         "type" : "object"
       },
+      "CategoriasDaDonaControllerPedido" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nome" : {
+            "maxLength" : 100,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "version" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "required" : [ "nome" ],
+        "type" : "object"
+      },
+      "CategoriasDaDonaControllerResposta" : {
+        "properties" : {
+          "ativo" : {
+            "type" : "boolean"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "version" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "ClientesDaDonaControllerPedido" : {
+        "properties" : {
+          "cpf" : {
+            "maxLength" : 20,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "dataNascimento" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "endereco" : {
+            "$ref" : "#/components/schemas/Endereco"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nome" : {
+            "maxLength" : 200,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "observacoes" : {
+            "maxLength" : 2000,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "telefone" : {
+            "maxLength" : 30,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "vendedorResponsavelId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "version" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "whatsapp" : {
+            "maxLength" : 30,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        },
+        "required" : [ "nome" ],
+        "type" : "object"
+      },
+      "ClientesDaDonaControllerResposta" : {
+        "properties" : {
+          "ativo" : {
+            "type" : "boolean"
+          },
+          "cpf" : {
+            "type" : "string"
+          },
+          "dataNascimento" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "endereco" : {
+            "$ref" : "#/components/schemas/Endereco"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "observacoes" : {
+            "type" : "string"
+          },
+          "telefone" : {
+            "type" : "string"
+          },
+          "vendedorResponsavelId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "version" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "whatsapp" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "CodigoGerado" : {
         "properties" : {
           "codigo" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "CodigosEmConflitoLinha" : {
+        "properties" : {
+          "ativo" : {
+            "type" : "boolean"
+          },
+          "codigo" : {
+            "type" : "string"
+          },
+          "codigoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "descricao" : {
+            "type" : "string"
+          },
+          "fornecedor" : {
+            "type" : "string"
+          },
+          "motivo" : {
+            "type" : "string"
+          },
+          "produto" : {
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ComprasDaDonaControllerRespostaDaPeca" : {
+        "properties" : {
+          "codigo" : {
+            "type" : "string"
+          },
+          "fotoPrincipal" : {
+            "$ref" : "#/components/schemas/FotoPrincipal"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "referencia" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ComprasDaDonaControllerRespostaDoItem" : {
+        "properties" : {
+          "custoUnitario" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "produto" : {
+            "$ref" : "#/components/schemas/ComprasDaDonaControllerRespostaDaPeca"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "total" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ComprasDaDonaControllerRespostaDoResumo" : {
+        "properties" : {
+          "dataCompra" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "fornecedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "fornecedorNome" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "itens" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "numero" : {
+            "type" : "string"
+          },
+          "pecas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "registradaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "situacao" : {
+            "type" : "string"
+          },
+          "total" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           }
         },
@@ -106,13 +363,280 @@
           },
           "itens" : {
             "items" : {
-              "$ref" : "#/components/schemas/Linha"
+              "$ref" : "#/components/schemas/ConsultasDaConferenciaLinha"
             },
             "type" : "array"
           },
           "remessaId" : {
             "format" : "uuid",
             "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ConjugeDoVendedorDados" : {
+        "properties" : {
+          "cpf" : {
+            "maxLength" : 20,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "dataNascimento" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "empresa" : {
+            "maxLength" : 200,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "nome" : {
+            "maxLength" : 200,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "profissao" : {
+            "maxLength" : 100,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "renda" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "rg" : {
+            "maxLength" : 30,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "telefone" : {
+            "maxLength" : 30,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "version" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "ConsultasDaConferenciaLinha" : {
+        "properties" : {
+          "contado" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "diferenca" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "esperado" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "produtoNome" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ConsultasDeCadastroLinhaDeVendedor" : {
+        "properties" : {
+          "ativo" : {
+            "type" : "boolean"
+          },
+          "bloqueiaRemessa" : {
+            "type" : "boolean"
+          },
+          "codigo" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "comissaoPercentual" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "limiteConsignacao" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "praca" : {
+            "type" : "string"
+          },
+          "restricao" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ConsultasDeMaletaLinhaDeVendedor" : {
+        "properties" : {
+          "limite" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "maletasAtrasadas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "maletasEmAberto" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "pecasEmAberto" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "sobraDoLimite" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorEmReais" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendedor" : {
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ConsultasDeVendasCotacao" : {
+        "properties" : {
+          "data" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "dolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "guarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ConsultasDeVendasItem" : {
+        "properties" : {
+          "desconto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "precoUnitario" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "produto" : {
+            "$ref" : "#/components/schemas/ConsultasDeVendasPeca"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "total" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ConsultasDeVendasPeca" : {
+        "properties" : {
+          "fotoHash" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ContatoDoVendedorDados" : {
+        "properties" : {
+          "contatoNome" : {
+            "maxLength" : 200,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "contatoParentesco" : {
+            "maxLength" : 100,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "contatoTelefone" : {
+            "maxLength" : 30,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "nomeMae" : {
+            "maxLength" : 200,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "nomePai" : {
+            "maxLength" : 200,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "version" : {
+            "format" : "int32",
+            "type" : "integer"
           }
         },
         "type" : "object"
@@ -152,27 +676,6 @@
             "type" : "string"
           },
           "valorEmReais" : {
-            "type" : "string"
-          }
-        },
-        "type" : "object"
-      },
-      "Cotacao" : {
-        "properties" : {
-          "data" : {
-            "format" : "date",
-            "type" : "string"
-          },
-          "dolar" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          },
-          "guarani" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           }
         },
@@ -267,45 +770,6 @@
         },
         "type" : "object"
       },
-      "Dados" : {
-        "properties" : {
-          "dataAdmissao" : {
-            "format" : "date",
-            "type" : "string"
-          },
-          "empresa" : {
-            "maxLength" : 200,
-            "minLength" : 0,
-            "type" : "string"
-          },
-          "endereco" : {
-            "maxLength" : 300,
-            "minLength" : 0,
-            "type" : "string"
-          },
-          "funcao" : {
-            "maxLength" : 100,
-            "minLength" : 0,
-            "type" : "string"
-          },
-          "renda" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          },
-          "telefone" : {
-            "maxLength" : 30,
-            "minLength" : 0,
-            "type" : "string"
-          },
-          "version" : {
-            "format" : "int32",
-            "type" : "integer"
-          }
-        },
-        "type" : "object"
-      },
       "DadosDoUsuario" : {
         "properties" : {
           "id" : {
@@ -328,6 +792,323 @@
         },
         "type" : "object"
       },
+      "DocumentoDoVendedorResposta" : {
+        "properties" : {
+          "descricao" : {
+            "type" : "string"
+          },
+          "enviadoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "hashSha256" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nomeOriginal" : {
+            "type" : "string"
+          },
+          "tamanhoBytes" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "tipoConteudo" : {
+            "type" : "string"
+          },
+          "version" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "Endereco" : {
+        "properties" : {
+          "bairro" : {
+            "maxLength" : 100,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "cep" : {
+            "maxLength" : 20,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "cidade" : {
+            "maxLength" : 100,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "complemento" : {
+            "maxLength" : 100,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "logradouro" : {
+            "maxLength" : 200,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "numero" : {
+            "maxLength" : 20,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "uf" : {
+            "maxLength" : 20,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "EnderecoDoVendedorDados" : {
+        "properties" : {
+          "bairro" : {
+            "maxLength" : 100,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "cep" : {
+            "maxLength" : 20,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "cidade" : {
+            "maxLength" : 100,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "complemento" : {
+            "maxLength" : 100,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "localReferencia" : {
+            "maxLength" : 200,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "logradouro" : {
+            "maxLength" : 200,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "numero" : {
+            "maxLength" : 20,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "residencia" : {
+            "maxLength" : 100,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "uf" : {
+            "maxLength" : 20,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "valorResidencia" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "version" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "EstoqueDaDonaControllerPedidoDeEstorno" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "motivo" : {
+            "maxLength" : 500,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "EstoqueDaDonaControllerRespostaDaLinha" : {
+        "properties" : {
+          "desfeitoPorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "estornaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "motivo" : {
+            "type" : "string"
+          },
+          "ocorridaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "origem" : {
+            "type" : "string"
+          },
+          "origemId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "produto" : {
+            "$ref" : "#/components/schemas/RespostaDoProduto"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "saldoDepois" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "usuarioId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "usuarioNome" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "EstoqueDaDonaControllerRespostaDoMovimento" : {
+        "properties" : {
+          "estornaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "motivo" : {
+            "type" : "string"
+          },
+          "ocorridaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "origem" : {
+            "type" : "string"
+          },
+          "origemId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "saldoDepois" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "usuarioId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "FornecedoresDaDonaControllerPedido" : {
+        "properties" : {
+          "cnpj" : {
+            "maxLength" : 30,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "contatoNome" : {
+            "maxLength" : 100,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "email" : {
+            "maxLength" : 200,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "endereco" : {
+            "$ref" : "#/components/schemas/Endereco"
+          },
+          "razaoSocial" : {
+            "maxLength" : 200,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "telefone" : {
+            "maxLength" : 30,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "version" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "required" : [ "razaoSocial" ],
+        "type" : "object"
+      },
+      "FornecedoresDaDonaControllerResposta" : {
+        "properties" : {
+          "ativo" : {
+            "type" : "boolean"
+          },
+          "cnpj" : {
+            "type" : "string"
+          },
+          "contatoNome" : {
+            "type" : "string"
+          },
+          "email" : {
+            "type" : "string"
+          },
+          "endereco" : {
+            "$ref" : "#/components/schemas/Endereco"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "razaoSocial" : {
+            "type" : "string"
+          },
+          "telefone" : {
+            "type" : "string"
+          },
+          "version" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "FotoPrincipal" : {
         "properties" : {
           "grandeUrl" : {
@@ -345,32 +1126,127 @@
         },
         "type" : "object"
       },
-      "Item" : {
+      "ImportacaoDeFotosRelatorio" : {
         "properties" : {
-          "desconto" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          },
-          "precoUnitario" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          },
-          "produto" : {
-            "$ref" : "#/components/schemas/Peca"
-          },
-          "quantidade" : {
+          "gravadas" : {
             "format" : "int32",
             "type" : "integer"
           },
-          "total" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+          "jaExistiam" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "naoGravadas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "resultados" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ResultadoDaFoto"
+            },
+            "type" : "array"
+          }
+        },
+        "type" : "object"
+      },
+      "InventariosDaDonaControllerRespostaDaLinha" : {
+        "properties" : {
+          "escopo" : {
             "type" : "string"
+          },
+          "escopoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "escopoNome" : {
+            "type" : "string"
+          },
+          "fechadoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "iniciadoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "lidos" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "situacao" : {
+            "type" : "string"
+          },
+          "totalDePecas" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "InventariosDaDonaControllerRespostaDoItem" : {
+        "properties" : {
+          "ajustada" : {
+            "type" : "boolean"
+          },
+          "contado" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "diferenca" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "esperado" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "produto" : {
+            "$ref" : "#/components/schemas/RespostaDoProduto"
+          },
+          "saldoAtual" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "InventariosDaDonaControllerRespostaDoResumo" : {
+        "properties" : {
+          "comDiferenca" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "faltam" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "lidos" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "naoLidos" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "pecasContadas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "pecasEsperadas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "sobram" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "totalDePecas" : {
+            "format" : "int32",
+            "type" : "integer"
           }
         },
         "type" : "object"
@@ -401,30 +1277,6 @@
             "example" : "123.45",
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          }
-        },
-        "type" : "object"
-      },
-      "Linha" : {
-        "properties" : {
-          "contado" : {
-            "format" : "int32",
-            "type" : "integer"
-          },
-          "diferenca" : {
-            "format" : "int32",
-            "type" : "integer"
-          },
-          "esperado" : {
-            "format" : "int32",
-            "type" : "integer"
-          },
-          "produtoId" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "produtoNome" : {
             "type" : "string"
           }
         },
@@ -1419,60 +2271,6 @@
         },
         "type" : "object"
       },
-      "LinhaDeVendedor" : {
-        "properties" : {
-          "limite" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          },
-          "maletasAtrasadas" : {
-            "format" : "int64",
-            "type" : "integer"
-          },
-          "maletasEmAberto" : {
-            "format" : "int64",
-            "type" : "integer"
-          },
-          "pecasEmAberto" : {
-            "format" : "int64",
-            "type" : "integer"
-          },
-          "sobraDoLimite" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          },
-          "valorEmDolar" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          },
-          "valorEmGuarani" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          },
-          "valorEmReais" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          },
-          "vendedor" : {
-            "type" : "string"
-          },
-          "vendedorId" : {
-            "format" : "uuid",
-            "type" : "string"
-          }
-        },
-        "type" : "object"
-      },
       "LinhaSemCodigoDeBarras" : {
         "properties" : {
           "ativo" : {
@@ -1499,6 +2297,134 @@
           },
           "temCodigoDoFornecedor" : {
             "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "MaletaDaDonaControllerPedidoDaLinha" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "MaletaDaDonaControllerPedidoDeEstorno" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "motivo" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "MaletaDaDonaControllerRespostaDaLinha" : {
+        "properties" : {
+          "devolvida" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "enviada" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "precoUnitario" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "produto" : {
+            "$ref" : "#/components/schemas/RemessasDaDonaControllerRespostaDaPeca"
+          },
+          "saldo" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "valorEmAberto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "MaletaDaDonaControllerRespostaDoMovimento" : {
+        "properties" : {
+          "desfeito" : {
+            "type" : "boolean"
+          },
+          "em" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "estornaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "produtoNome" : {
+            "type" : "string"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "tipo" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "MeiDoVendedorDados" : {
+        "properties" : {
+          "atividade" : {
+            "maxLength" : 200,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "cnpj" : {
+            "maxLength" : 20,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "dataAbertura" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "nomeFantasia" : {
+            "maxLength" : 200,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "razaoSocial" : {
+            "maxLength" : 200,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "version" : {
+            "format" : "int32",
+            "type" : "integer"
           }
         },
         "type" : "object"
@@ -1538,7 +2464,7 @@
             "type" : "string"
           },
           "semana" : {
-            "$ref" : "#/components/schemas/Semana"
+            "$ref" : "#/components/schemas/NotaDeRemessaControllerSemana"
           },
           "status" : {
             "type" : "string"
@@ -1558,6 +2484,41 @@
           },
           "vendedor" : {
             "$ref" : "#/components/schemas/Pessoa"
+          }
+        },
+        "type" : "object"
+      },
+      "NotaDeRemessaControllerSemana" : {
+        "properties" : {
+          "fim" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "inicio" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "numero" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "ObservacaoDoVendedorDados" : {
+        "properties" : {
+          "texto" : {
+            "maxLength" : 4000,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "version" : {
+            "format" : "int32",
+            "type" : "integer"
           }
         },
         "type" : "object"
@@ -1587,11 +2548,11 @@
         },
         "type" : "object"
       },
-      "PaginaItem" : {
+      "PaginaCategoriasDaDonaControllerResposta" : {
         "properties" : {
           "itens" : {
             "items" : {
-              "$ref" : "#/components/schemas/Item"
+              "$ref" : "#/components/schemas/CategoriasDaDonaControllerResposta"
             },
             "type" : "array"
           },
@@ -1610,11 +2571,11 @@
         },
         "type" : "object"
       },
-      "PaginaResposta" : {
+      "PaginaClientesDaDonaControllerResposta" : {
         "properties" : {
           "itens" : {
             "items" : {
-              "$ref" : "#/components/schemas/Resposta"
+              "$ref" : "#/components/schemas/ClientesDaDonaControllerResposta"
             },
             "type" : "array"
           },
@@ -1633,11 +2594,195 @@
         },
         "type" : "object"
       },
-      "PaginaRespostaDaLinha" : {
+      "PaginaComprasDaDonaControllerRespostaDoResumo" : {
         "properties" : {
           "itens" : {
             "items" : {
-              "$ref" : "#/components/schemas/RespostaDaLinha"
+              "$ref" : "#/components/schemas/ComprasDaDonaControllerRespostaDoResumo"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PaginaEstoqueDaDonaControllerRespostaDaLinha" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/EstoqueDaDonaControllerRespostaDaLinha"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PaginaFornecedoresDaDonaControllerResposta" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/FornecedoresDaDonaControllerResposta"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PaginaInventariosDaDonaControllerRespostaDaLinha" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/InventariosDaDonaControllerRespostaDaLinha"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PaginaInventariosDaDonaControllerRespostaDoItem" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/InventariosDaDonaControllerRespostaDoItem"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PaginaPracasDaDonaControllerResposta" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/PracasDaDonaControllerResposta"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PaginaProdutosDaDonaControllerResposta" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ProdutosDaDonaControllerResposta"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PaginaRelatorioDeProdutosSemFotoItem" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/RelatorioDeProdutosSemFotoItem"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PaginaRemessasDaDonaControllerRespostaDoResumo" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/RemessasDaDonaControllerRespostaDoResumo"
             },
             "type" : "array"
           },
@@ -1702,11 +2847,11 @@
         },
         "type" : "object"
       },
-      "PaginaRespostaDoItem" : {
+      "PaginaRestricoesDaDonaControllerResposta" : {
         "properties" : {
           "itens" : {
             "items" : {
-              "$ref" : "#/components/schemas/RespostaDoItem"
+              "$ref" : "#/components/schemas/RestricoesDaDonaControllerResposta"
             },
             "type" : "array"
           },
@@ -1725,11 +2870,11 @@
         },
         "type" : "object"
       },
-      "PaginaRespostaDoResumo" : {
+      "PaginaSemanasDaDonaControllerResposta" : {
         "properties" : {
           "itens" : {
             "items" : {
-              "$ref" : "#/components/schemas/RespostaDoResumo"
+              "$ref" : "#/components/schemas/SemanasDaDonaControllerResposta"
             },
             "type" : "array"
           },
@@ -1748,120 +2893,50 @@
         },
         "type" : "object"
       },
-      "Peca" : {
+      "PaginaUsuariosDaDonaControllerResposta" : {
         "properties" : {
-          "fotoHash" : {
-            "type" : "string"
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/UsuariosDaDonaControllerResposta"
+            },
+            "type" : "array"
           },
-          "id" : {
-            "format" : "uuid",
-            "type" : "string"
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
           },
-          "nome" : {
-            "type" : "string"
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
           }
         },
         "type" : "object"
       },
-      "Pedido" : {
+      "PaginaVendedoresDaDonaControllerResposta" : {
         "properties" : {
-          "comissaoPercentual" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/VendedoresDaDonaControllerResposta"
+            },
+            "type" : "array"
           },
-          "cpfCnpj" : {
-            "maxLength" : 30,
-            "minLength" : 0,
-            "type" : "string"
-          },
-          "dataNascimento" : {
-            "format" : "date",
-            "type" : "string"
-          },
-          "email" : {
-            "maxLength" : 200,
-            "minLength" : 0,
-            "type" : "string"
-          },
-          "escolaridade" : {
-            "maxLength" : 100,
-            "minLength" : 0,
-            "type" : "string"
-          },
-          "estrangeiro" : {
-            "type" : "boolean"
-          },
-          "facebook" : {
-            "maxLength" : 200,
-            "minLength" : 0,
-            "type" : "string"
-          },
-          "limiteConsignacao" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          },
-          "naturalidade" : {
-            "maxLength" : 100,
-            "minLength" : 0,
-            "type" : "string"
-          },
-          "nome" : {
-            "maxLength" : 200,
-            "minLength" : 0,
-            "type" : "string"
-          },
-          "outrasMidias" : {
-            "maxLength" : 300,
-            "minLength" : 0,
-            "type" : "string"
-          },
-          "pracaId" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "restricaoId" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "rgIe" : {
-            "maxLength" : 30,
-            "minLength" : 0,
-            "type" : "string"
-          },
-          "rgUf" : {
-            "maxLength" : 20,
-            "minLength" : 0,
-            "type" : "string"
-          },
-          "sexo" : {
-            "pattern" : "FEMININO|MASCULINO|OUTRO",
-            "type" : "string"
-          },
-          "telefone1" : {
-            "maxLength" : 30,
-            "minLength" : 0,
-            "type" : "string"
-          },
-          "telefone2" : {
-            "maxLength" : 30,
-            "minLength" : 0,
-            "type" : "string"
-          },
-          "version" : {
+          "pagina" : {
             "format" : "int32",
             "type" : "integer"
           },
-          "whatsapp" : {
-            "maxLength" : 30,
-            "minLength" : 0,
-            "type" : "string"
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
           }
         },
-        "required" : [ "nome" ],
         "type" : "object"
       },
       "PedidoComMotivo" : {
@@ -1897,23 +2972,6 @@
           },
           "observacoes" : {
             "type" : "string"
-          }
-        },
-        "type" : "object"
-      },
-      "PedidoDaLinha" : {
-        "properties" : {
-          "id" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "produtoId" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "quantidade" : {
-            "format" : "int32",
-            "type" : "integer"
           }
         },
         "type" : "object"
@@ -1998,7 +3056,7 @@
         "properties" : {
           "itens" : {
             "items" : {
-              "$ref" : "#/components/schemas/PedidoDaLinha"
+              "$ref" : "#/components/schemas/MaletaDaDonaControllerPedidoDaLinha"
             },
             "type" : "array"
           }
@@ -2026,18 +3084,6 @@
           }
         },
         "required" : [ "nome", "perfil", "version" ],
-        "type" : "object"
-      },
-      "PedidoDeEstorno" : {
-        "properties" : {
-          "id" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "motivo" : {
-            "type" : "string"
-          }
-        },
         "type" : "object"
       },
       "PedidoDeItem" : {
@@ -2422,6 +3468,40 @@
         },
         "type" : "object"
       },
+      "PracasDaDonaControllerPedido" : {
+        "properties" : {
+          "nome" : {
+            "maxLength" : 100,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "version" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "required" : [ "nome" ],
+        "type" : "object"
+      },
+      "PracasDaDonaControllerResposta" : {
+        "properties" : {
+          "ativo" : {
+            "type" : "boolean"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "version" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "Previa" : {
         "properties" : {
           "ambiguas" : {
@@ -2463,6 +3543,65 @@
         },
         "type" : "object"
       },
+      "ProdutosDaDonaControllerResposta" : {
+        "properties" : {
+          "ativo" : {
+            "type" : "boolean"
+          },
+          "categoriaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "codigos" : {
+            "items" : {
+              "$ref" : "#/components/schemas/RespostaDeCodigo"
+            },
+            "type" : "array"
+          },
+          "estoqueAtual" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "estoqueMinimo" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "fornecedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "fotoPrincipal" : {
+            "$ref" : "#/components/schemas/FotoPrincipal"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "precoCusto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "precoVenda" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "referencia" : {
+            "type" : "string"
+          },
+          "version" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "ProdutosSemFoto" : {
         "properties" : {
           "itens" : {
@@ -2478,34 +3617,130 @@
         },
         "type" : "object"
       },
-      "Relatorio" : {
+      "ReferenciaDoVendedorPedido" : {
         "properties" : {
-          "gravadas" : {
+          "nome" : {
+            "maxLength" : 200,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "observacao" : {
+            "maxLength" : 1000,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "parentesco" : {
+            "maxLength" : 100,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "telefone" : {
+            "maxLength" : 30,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "version" : {
             "format" : "int32",
             "type" : "integer"
+          }
+        },
+        "required" : [ "nome" ],
+        "type" : "object"
+      },
+      "ReferenciaDoVendedorResposta" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
           },
-          "jaExistiam" : {
+          "nome" : {
+            "type" : "string"
+          },
+          "observacao" : {
+            "type" : "string"
+          },
+          "parentesco" : {
+            "type" : "string"
+          },
+          "telefone" : {
+            "type" : "string"
+          },
+          "version" : {
             "format" : "int32",
             "type" : "integer"
-          },
-          "naoGravadas" : {
-            "format" : "int32",
-            "type" : "integer"
-          },
-          "resultados" : {
-            "items" : {
-              "$ref" : "#/components/schemas/ResultadoDaFoto"
-            },
-            "type" : "array"
           }
         },
         "type" : "object"
       },
-      "RelatorioDeCadastroLinha" : {
+      "RelatorioDeCadastroCodigosEmConflitoLinha" : {
         "properties" : {
           "itens" : {
             "items" : {
-              "$ref" : "#/components/schemas/Linha"
+              "$ref" : "#/components/schemas/CodigosEmConflitoLinha"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatorioDeCadastroConsultasDeCadastroLinhaDeVendedor" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ConsultasDeCadastroLinhaDeVendedor"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatorioDeCadastroConsultasDeMaletaLinhaDeVendedor" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ConsultasDeMaletaLinhaDeVendedor"
             },
             "type" : "array"
           },
@@ -3141,38 +4376,6 @@
         },
         "type" : "object"
       },
-      "RelatorioDeCadastroLinhaDeVendedor" : {
-        "properties" : {
-          "itens" : {
-            "items" : {
-              "$ref" : "#/components/schemas/LinhaDeVendedor"
-            },
-            "type" : "array"
-          },
-          "pagina" : {
-            "format" : "int32",
-            "type" : "integer"
-          },
-          "recorte" : {
-            "type" : "string"
-          },
-          "tamanho" : {
-            "format" : "int32",
-            "type" : "integer"
-          },
-          "totais" : {
-            "items" : {
-              "$ref" : "#/components/schemas/Total"
-            },
-            "type" : "array"
-          },
-          "total" : {
-            "format" : "int64",
-            "type" : "integer"
-          }
-        },
-        "type" : "object"
-      },
       "RelatorioDeCadastroLinhaSemCodigoDeBarras" : {
         "properties" : {
           "itens" : {
@@ -3205,96 +4408,142 @@
         },
         "type" : "object"
       },
-      "Resposta" : {
+      "RelatorioDeProdutosSemFotoItem" : {
         "properties" : {
           "ativo" : {
             "type" : "boolean"
           },
-          "cadastradoPor" : {
+          "categoriaId" : {
             "format" : "uuid",
             "type" : "string"
           },
-          "codigo" : {
-            "format" : "int32",
-            "type" : "integer"
-          },
-          "comissaoPercentual" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+          "codigoPrincipal" : {
             "type" : "string"
           },
-          "cpfCnpj" : {
-            "type" : "string"
-          },
-          "dataCadastro" : {
-            "format" : "date",
-            "type" : "string"
-          },
-          "dataNascimento" : {
-            "format" : "date",
-            "type" : "string"
-          },
-          "email" : {
-            "type" : "string"
-          },
-          "escolaridade" : {
-            "type" : "string"
-          },
-          "estrangeiro" : {
-            "type" : "boolean"
-          },
-          "facebook" : {
+          "fornecedorId" : {
+            "format" : "uuid",
             "type" : "string"
           },
           "id" : {
             "format" : "uuid",
             "type" : "string"
           },
-          "limiteConsignacao" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+          "nome" : {
             "type" : "string"
           },
-          "naturalidade" : {
+          "referencia" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "RemessasDaDonaControllerRespostaDaPeca" : {
+        "properties" : {
+          "codigo" : {
+            "type" : "string"
+          },
+          "fotoPrincipal" : {
+            "$ref" : "#/components/schemas/FotoPrincipal"
+          },
+          "id" : {
+            "format" : "uuid",
             "type" : "string"
           },
           "nome" : {
             "type" : "string"
           },
-          "outrasMidias" : {
+          "referencia" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "RemessasDaDonaControllerRespostaDoItem" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "precoCongelado" : {
+            "type" : "boolean"
+          },
+          "precoUnitario" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "produto" : {
+            "$ref" : "#/components/schemas/RemessasDaDonaControllerRespostaDaPeca"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "total" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "RemessasDaDonaControllerRespostaDoResumo" : {
+        "properties" : {
+          "criadaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "enviadaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
             "type" : "string"
           },
           "pracaId" : {
             "format" : "uuid",
             "type" : "string"
           },
-          "restricaoId" : {
+          "pracaNome" : {
+            "type" : "string"
+          },
+          "semanaId" : {
             "format" : "uuid",
             "type" : "string"
           },
-          "rgIe" : {
+          "semanaNumero" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "status" : {
             "type" : "string"
           },
-          "rgUf" : {
+          "tipo" : {
             "type" : "string"
           },
-          "sexo" : {
+          "totalPecas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totalValor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           },
-          "telefone1" : {
+          "vendedorId" : {
+            "format" : "uuid",
             "type" : "string"
           },
-          "telefone2" : {
+          "vendedorNome" : {
             "type" : "string"
           },
           "version" : {
             "format" : "int32",
             "type" : "integer"
-          },
-          "whatsapp" : {
-            "type" : "string"
           }
         },
         "type" : "object"
@@ -3331,7 +4580,7 @@
       "RespostaDaCompra" : {
         "properties" : {
           "compra" : {
-            "$ref" : "#/components/schemas/RespostaDoResumo"
+            "$ref" : "#/components/schemas/ComprasDaDonaControllerRespostaDoResumo"
           },
           "desfeitaEm" : {
             "format" : "date-time",
@@ -3339,7 +4588,7 @@
           },
           "itens" : {
             "items" : {
-              "$ref" : "#/components/schemas/RespostaDoItem"
+              "$ref" : "#/components/schemas/ComprasDaDonaControllerRespostaDoItem"
             },
             "type" : "array"
           },
@@ -3435,7 +4684,7 @@
             "type" : "string"
           },
           "resumo" : {
-            "$ref" : "#/components/schemas/RespostaDoResumo"
+            "$ref" : "#/components/schemas/InventariosDaDonaControllerRespostaDoResumo"
           },
           "situacao" : {
             "type" : "string"
@@ -3493,7 +4742,7 @@
       "RespostaDaFicha" : {
         "properties" : {
           "historico" : {
-            "$ref" : "#/components/schemas/PaginaRespostaDaLinha"
+            "$ref" : "#/components/schemas/PaginaEstoqueDaDonaControllerRespostaDaLinha"
           },
           "produto" : {
             "$ref" : "#/components/schemas/RespostaDoProduto"
@@ -3556,10 +4805,10 @@
       "RespostaDaLeitura" : {
         "properties" : {
           "item" : {
-            "$ref" : "#/components/schemas/RespostaDoItem"
+            "$ref" : "#/components/schemas/InventariosDaDonaControllerRespostaDoItem"
           },
           "resumo" : {
-            "$ref" : "#/components/schemas/RespostaDoResumo"
+            "$ref" : "#/components/schemas/InventariosDaDonaControllerRespostaDoResumo"
           }
         },
         "type" : "object"
@@ -3572,38 +4821,6 @@
           },
           "tinhaAparelho" : {
             "type" : "boolean"
-          }
-        },
-        "type" : "object"
-      },
-      "RespostaDaLinha" : {
-        "properties" : {
-          "devolvida" : {
-            "format" : "int32",
-            "type" : "integer"
-          },
-          "enviada" : {
-            "format" : "int32",
-            "type" : "integer"
-          },
-          "precoUnitario" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          },
-          "produto" : {
-            "$ref" : "#/components/schemas/RespostaDaPeca"
-          },
-          "saldo" : {
-            "format" : "int32",
-            "type" : "integer"
-          },
-          "valorEmAberto" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
           }
         },
         "type" : "object"
@@ -3651,7 +4868,7 @@
           },
           "itens" : {
             "items" : {
-              "$ref" : "#/components/schemas/RespostaDaLinha"
+              "$ref" : "#/components/schemas/MaletaDaDonaControllerRespostaDaLinha"
             },
             "type" : "array"
           },
@@ -3660,7 +4877,7 @@
           },
           "movimentos" : {
             "items" : {
-              "$ref" : "#/components/schemas/RespostaDoMovimento"
+              "$ref" : "#/components/schemas/MaletaDaDonaControllerRespostaDoMovimento"
             },
             "type" : "array"
           },
@@ -3754,27 +4971,6 @@
         },
         "type" : "object"
       },
-      "RespostaDaPeca" : {
-        "properties" : {
-          "codigo" : {
-            "type" : "string"
-          },
-          "fotoPrincipal" : {
-            "$ref" : "#/components/schemas/FotoPrincipal"
-          },
-          "id" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "nome" : {
-            "type" : "string"
-          },
-          "referencia" : {
-            "type" : "string"
-          }
-        },
-        "type" : "object"
-      },
       "RespostaDaRemessa" : {
         "properties" : {
           "avisos" : {
@@ -3797,7 +4993,7 @@
           },
           "itens" : {
             "items" : {
-              "$ref" : "#/components/schemas/RespostaDoItem"
+              "$ref" : "#/components/schemas/RemessasDaDonaControllerRespostaDoItem"
             },
             "type" : "array"
           },
@@ -3842,6 +5038,31 @@
           "version" : {
             "format" : "int32",
             "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RespostaDeCodigo" : {
+        "properties" : {
+          "ativo" : {
+            "type" : "boolean"
+          },
+          "codigo" : {
+            "type" : "string"
+          },
+          "fornecedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "principal" : {
+            "type" : "boolean"
+          },
+          "tipo" : {
+            "type" : "string"
           }
         },
         "type" : "object"
@@ -3914,38 +5135,7 @@
             "$ref" : "#/components/schemas/PaginaRespostaDaLinhaDeCusto"
           },
           "produto" : {
-            "$ref" : "#/components/schemas/RespostaDaPeca"
-          }
-        },
-        "type" : "object"
-      },
-      "RespostaDoItem" : {
-        "properties" : {
-          "id" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "precoCongelado" : {
-            "type" : "boolean"
-          },
-          "precoUnitario" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          },
-          "produto" : {
-            "$ref" : "#/components/schemas/RespostaDaPeca"
-          },
-          "quantidade" : {
-            "format" : "int32",
-            "type" : "integer"
-          },
-          "total" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
+            "$ref" : "#/components/schemas/ComprasDaDonaControllerRespostaDaPeca"
           }
         },
         "type" : "object"
@@ -3987,40 +5177,6 @@
         },
         "type" : "object"
       },
-      "RespostaDoMovimento" : {
-        "properties" : {
-          "desfeito" : {
-            "type" : "boolean"
-          },
-          "em" : {
-            "format" : "date-time",
-            "type" : "string"
-          },
-          "estornaId" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "id" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "produtoId" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "produtoNome" : {
-            "type" : "string"
-          },
-          "quantidade" : {
-            "format" : "int32",
-            "type" : "integer"
-          },
-          "tipo" : {
-            "type" : "string"
-          }
-        },
-        "type" : "object"
-      },
       "RespostaDoProduto" : {
         "properties" : {
           "ativo" : {
@@ -4049,37 +5205,48 @@
         },
         "type" : "object"
       },
-      "RespostaDoResumo" : {
+      "RestricoesDaDonaControllerPedido" : {
         "properties" : {
-          "comDiferenca" : {
+          "bloqueiaRemessa" : {
+            "type" : "boolean"
+          },
+          "codigo" : {
+            "maxLength" : 30,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "descricao" : {
+            "maxLength" : 200,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "version" : {
             "format" : "int32",
             "type" : "integer"
+          }
+        },
+        "required" : [ "codigo", "descricao" ],
+        "type" : "object"
+      },
+      "RestricoesDaDonaControllerResposta" : {
+        "properties" : {
+          "ativo" : {
+            "type" : "boolean"
           },
-          "faltam" : {
-            "format" : "int64",
-            "type" : "integer"
+          "bloqueiaRemessa" : {
+            "type" : "boolean"
           },
-          "lidos" : {
-            "format" : "int32",
-            "type" : "integer"
+          "codigo" : {
+            "type" : "string"
           },
-          "naoLidos" : {
-            "format" : "int32",
-            "type" : "integer"
+          "descricao" : {
+            "type" : "string"
           },
-          "pecasContadas" : {
-            "format" : "int64",
-            "type" : "integer"
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
           },
-          "pecasEsperadas" : {
-            "format" : "int64",
-            "type" : "integer"
-          },
-          "sobram" : {
-            "format" : "int64",
-            "type" : "integer"
-          },
-          "totalDePecas" : {
+          "version" : {
             "format" : "int32",
             "type" : "integer"
           }
@@ -4122,7 +5289,7 @@
         },
         "type" : "object"
       },
-      "Semana" : {
+      "SemanasDaDonaControllerPedido" : {
         "properties" : {
           "fim" : {
             "format" : "date",
@@ -4137,6 +5304,46 @@
             "type" : "string"
           },
           "numero" : {
+            "format" : "int32",
+            "maximum" : 100000,
+            "minimum" : 1,
+            "type" : "integer"
+          },
+          "situacao" : {
+            "enum" : [ "ABERTA", "FECHADA" ],
+            "type" : "string"
+          },
+          "version" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "required" : [ "fim", "inicio", "numero" ],
+        "type" : "object"
+      },
+      "SemanasDaDonaControllerResposta" : {
+        "properties" : {
+          "fim" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "inicio" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "numero" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "situacao" : {
+            "enum" : [ "ABERTA", "FECHADA" ],
+            "type" : "string"
+          },
+          "version" : {
             "format" : "int32",
             "type" : "integer"
           }
@@ -4189,6 +5396,81 @@
         },
         "type" : "object"
       },
+      "TrabalhoDoVendedorDados" : {
+        "properties" : {
+          "dataAdmissao" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "empresa" : {
+            "maxLength" : 200,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "endereco" : {
+            "maxLength" : 300,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "funcao" : {
+            "maxLength" : 100,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "renda" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "telefone" : {
+            "maxLength" : 30,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "version" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "UsuariosDaDonaControllerResposta" : {
+        "properties" : {
+          "ativo" : {
+            "type" : "boolean"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "login" : {
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "perfil" : {
+            "type" : "string"
+          },
+          "senhaTemporariaVenceEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "trocaDeSenhaObrigatoria" : {
+            "type" : "boolean"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "version" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "ValorDeTeste" : {
         "properties" : {
           "valor" : {
@@ -4216,7 +5498,7 @@
             "type" : "string"
           },
           "cotacao" : {
-            "$ref" : "#/components/schemas/Cotacao"
+            "$ref" : "#/components/schemas/ConsultasDeVendasCotacao"
           },
           "desconto" : {
             "example" : "123.45",
@@ -4234,7 +5516,7 @@
           },
           "itens" : {
             "items" : {
-              "$ref" : "#/components/schemas/Item"
+              "$ref" : "#/components/schemas/ConsultasDeVendasItem"
             },
             "type" : "array"
           },
@@ -4290,6 +5572,213 @@
           },
           "vendidaEm" : {
             "format" : "date-time",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "VendasDoVendedorControllerPedidoDeEstorno" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "motivo" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "VendedoresDaDonaControllerPedido" : {
+        "properties" : {
+          "comissaoPercentual" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "cpfCnpj" : {
+            "maxLength" : 30,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "dataNascimento" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "email" : {
+            "maxLength" : 200,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "escolaridade" : {
+            "maxLength" : 100,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "estrangeiro" : {
+            "type" : "boolean"
+          },
+          "facebook" : {
+            "maxLength" : 200,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "limiteConsignacao" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "naturalidade" : {
+            "maxLength" : 100,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "nome" : {
+            "maxLength" : 200,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "outrasMidias" : {
+            "maxLength" : 300,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "pracaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "restricaoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "rgIe" : {
+            "maxLength" : 30,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "rgUf" : {
+            "maxLength" : 20,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "sexo" : {
+            "pattern" : "FEMININO|MASCULINO|OUTRO",
+            "type" : "string"
+          },
+          "telefone1" : {
+            "maxLength" : 30,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "telefone2" : {
+            "maxLength" : 30,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "version" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "whatsapp" : {
+            "maxLength" : 30,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        },
+        "required" : [ "nome" ],
+        "type" : "object"
+      },
+      "VendedoresDaDonaControllerResposta" : {
+        "properties" : {
+          "ativo" : {
+            "type" : "boolean"
+          },
+          "cadastradoPor" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "codigo" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "comissaoPercentual" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "cpfCnpj" : {
+            "type" : "string"
+          },
+          "dataCadastro" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "dataNascimento" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "email" : {
+            "type" : "string"
+          },
+          "escolaridade" : {
+            "type" : "string"
+          },
+          "estrangeiro" : {
+            "type" : "boolean"
+          },
+          "facebook" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "limiteConsignacao" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "naturalidade" : {
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "outrasMidias" : {
+            "type" : "string"
+          },
+          "pracaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "restricaoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "rgIe" : {
+            "type" : "string"
+          },
+          "rgUf" : {
+            "type" : "string"
+          },
+          "sexo" : {
+            "type" : "string"
+          },
+          "telefone1" : {
+            "type" : "string"
+          },
+          "telefone2" : {
+            "type" : "string"
+          },
+          "version" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "whatsapp" : {
             "type" : "string"
           }
         },
@@ -4549,7 +6038,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/PaginaResposta"
+                  "$ref" : "#/components/schemas/PaginaCategoriasDaDonaControllerResposta"
                 }
               }
             },
@@ -4569,7 +6058,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/Pedido"
+                "$ref" : "#/components/schemas/CategoriasDaDonaControllerPedido"
               }
             }
           },
@@ -4580,7 +6069,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/CategoriasDaDonaControllerResposta"
                 }
               }
             },
@@ -4634,7 +6123,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/CategoriasDaDonaControllerResposta"
                 }
               }
             },
@@ -4662,7 +6151,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/Pedido"
+                "$ref" : "#/components/schemas/CategoriasDaDonaControllerPedido"
               }
             }
           },
@@ -4673,7 +6162,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/CategoriasDaDonaControllerResposta"
                 }
               }
             },
@@ -4714,7 +6203,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/CategoriasDaDonaControllerResposta"
                 }
               }
             },
@@ -4755,7 +6244,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/CategoriasDaDonaControllerResposta"
                 }
               }
             },
@@ -4809,7 +6298,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/PaginaResposta"
+                  "$ref" : "#/components/schemas/PaginaClientesDaDonaControllerResposta"
                 }
               }
             },
@@ -4829,7 +6318,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/Pedido"
+                "$ref" : "#/components/schemas/ClientesDaDonaControllerPedido"
               }
             }
           },
@@ -4840,7 +6329,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/ClientesDaDonaControllerResposta"
                 }
               }
             },
@@ -4894,7 +6383,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/ClientesDaDonaControllerResposta"
                 }
               }
             },
@@ -4922,7 +6411,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/Pedido"
+                "$ref" : "#/components/schemas/ClientesDaDonaControllerPedido"
               }
             }
           },
@@ -4933,7 +6422,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/ClientesDaDonaControllerResposta"
                 }
               }
             },
@@ -4974,7 +6463,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/ClientesDaDonaControllerResposta"
                 }
               }
             },
@@ -5015,7 +6504,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/ClientesDaDonaControllerResposta"
                 }
               }
             },
@@ -5094,7 +6583,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/PaginaRespostaDoResumo"
+                  "$ref" : "#/components/schemas/PaginaComprasDaDonaControllerRespostaDoResumo"
                 }
               }
             },
@@ -5399,7 +6888,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/RespostaDoMovimento"
+                  "$ref" : "#/components/schemas/EstoqueDaDonaControllerRespostaDoMovimento"
                 }
               }
             },
@@ -5508,7 +6997,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/PaginaRespostaDaLinha"
+                  "$ref" : "#/components/schemas/PaginaEstoqueDaDonaControllerRespostaDaLinha"
                 }
               }
             },
@@ -5539,7 +7028,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/RespostaDoMovimento"
+                  "$ref" : "#/components/schemas/EstoqueDaDonaControllerRespostaDoMovimento"
                 }
               }
             },
@@ -5570,7 +7059,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/PedidoDeEstorno"
+                "$ref" : "#/components/schemas/EstoqueDaDonaControllerPedidoDeEstorno"
               }
             }
           },
@@ -5581,7 +7070,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/RespostaDoMovimento"
+                  "$ref" : "#/components/schemas/EstoqueDaDonaControllerRespostaDoMovimento"
                 }
               }
             },
@@ -5683,7 +7172,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/PaginaResposta"
+                  "$ref" : "#/components/schemas/PaginaFornecedoresDaDonaControllerResposta"
                 }
               }
             },
@@ -5703,7 +7192,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/Pedido"
+                "$ref" : "#/components/schemas/FornecedoresDaDonaControllerPedido"
               }
             }
           },
@@ -5714,7 +7203,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/FornecedoresDaDonaControllerResposta"
                 }
               }
             },
@@ -5768,7 +7257,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/FornecedoresDaDonaControllerResposta"
                 }
               }
             },
@@ -5796,7 +7285,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/Pedido"
+                "$ref" : "#/components/schemas/FornecedoresDaDonaControllerPedido"
               }
             }
           },
@@ -5807,7 +7296,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/FornecedoresDaDonaControllerResposta"
                 }
               }
             },
@@ -5848,7 +7337,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/FornecedoresDaDonaControllerResposta"
                 }
               }
             },
@@ -5889,7 +7378,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/FornecedoresDaDonaControllerResposta"
                 }
               }
             },
@@ -5971,7 +7460,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/PaginaRespostaDaLinha"
+                  "$ref" : "#/components/schemas/PaginaInventariosDaDonaControllerRespostaDaLinha"
                 }
               }
             },
@@ -6220,7 +7709,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/PaginaRespostaDoItem"
+                  "$ref" : "#/components/schemas/PaginaInventariosDaDonaControllerRespostaDoItem"
                 }
               }
             },
@@ -6316,7 +7805,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/PaginaResposta"
+                  "$ref" : "#/components/schemas/PaginaPracasDaDonaControllerResposta"
                 }
               }
             },
@@ -6336,7 +7825,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/Pedido"
+                "$ref" : "#/components/schemas/PracasDaDonaControllerPedido"
               }
             }
           },
@@ -6347,7 +7836,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/PracasDaDonaControllerResposta"
                 }
               }
             },
@@ -6401,7 +7890,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/PracasDaDonaControllerResposta"
                 }
               }
             },
@@ -6429,7 +7918,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/Pedido"
+                "$ref" : "#/components/schemas/PracasDaDonaControllerPedido"
               }
             }
           },
@@ -6440,7 +7929,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/PracasDaDonaControllerResposta"
                 }
               }
             },
@@ -6481,7 +7970,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/PracasDaDonaControllerResposta"
                 }
               }
             },
@@ -6522,7 +8011,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/PracasDaDonaControllerResposta"
                 }
               }
             },
@@ -6592,7 +8081,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/PaginaResposta"
+                  "$ref" : "#/components/schemas/PaginaProdutosDaDonaControllerResposta"
                 }
               }
             },
@@ -6623,7 +8112,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/ProdutosDaDonaControllerResposta"
                 }
               }
             },
@@ -6696,7 +8185,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Relatorio"
+                  "$ref" : "#/components/schemas/ImportacaoDeFotosRelatorio"
                 }
               }
             },
@@ -6806,7 +8295,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/ProdutosDaDonaControllerResposta"
                 }
               }
             },
@@ -6876,7 +8365,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/PaginaItem"
+                  "$ref" : "#/components/schemas/PaginaRelatorioDeProdutosSemFotoItem"
                 }
               }
             },
@@ -6930,7 +8419,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/ProdutosDaDonaControllerResposta"
                 }
               }
             },
@@ -6969,7 +8458,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/ProdutosDaDonaControllerResposta"
                 }
               }
             },
@@ -7011,7 +8500,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/ProdutosDaDonaControllerResposta"
                 }
               }
             },
@@ -7053,7 +8542,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/ProdutosDaDonaControllerResposta"
                 }
               }
             },
@@ -7285,7 +8774,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/ProdutosDaDonaControllerResposta"
                 }
               }
             },
@@ -7316,7 +8805,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/ProdutosDaDonaControllerResposta"
                 }
               }
             },
@@ -7634,7 +9123,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinha"
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroCodigosEmConflitoLinha"
                 }
               }
             },
@@ -8108,7 +9597,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeVendedor"
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroConsultasDeCadastroLinhaDeVendedor"
                 }
               }
             },
@@ -9271,7 +10760,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeVendedor"
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroConsultasDeMaletaLinhaDeVendedor"
                 }
               }
             },
@@ -9691,7 +11180,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/PaginaRespostaDoResumo"
+                  "$ref" : "#/components/schemas/PaginaRemessasDaDonaControllerRespostaDoResumo"
                 }
               }
             },
@@ -9972,7 +11461,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/PedidoDeEstorno"
+                "$ref" : "#/components/schemas/MaletaDaDonaControllerPedidoDeEstorno"
               }
             }
           },
@@ -10261,7 +11750,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/PaginaResposta"
+                  "$ref" : "#/components/schemas/PaginaRestricoesDaDonaControllerResposta"
                 }
               }
             },
@@ -10281,7 +11770,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/Pedido"
+                "$ref" : "#/components/schemas/RestricoesDaDonaControllerPedido"
               }
             }
           },
@@ -10292,7 +11781,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/RestricoesDaDonaControllerResposta"
                 }
               }
             },
@@ -10346,7 +11835,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/RestricoesDaDonaControllerResposta"
                 }
               }
             },
@@ -10374,7 +11863,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/Pedido"
+                "$ref" : "#/components/schemas/RestricoesDaDonaControllerPedido"
               }
             }
           },
@@ -10385,7 +11874,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/RestricoesDaDonaControllerResposta"
                 }
               }
             },
@@ -10426,7 +11915,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/RestricoesDaDonaControllerResposta"
                 }
               }
             },
@@ -10467,7 +11956,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/RestricoesDaDonaControllerResposta"
                 }
               }
             },
@@ -10514,7 +12003,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/PaginaResposta"
+                  "$ref" : "#/components/schemas/PaginaSemanasDaDonaControllerResposta"
                 }
               }
             },
@@ -10534,7 +12023,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/Pedido"
+                "$ref" : "#/components/schemas/SemanasDaDonaControllerPedido"
               }
             }
           },
@@ -10545,7 +12034,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/SemanasDaDonaControllerResposta"
                 }
               }
             },
@@ -10599,7 +12088,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/SemanasDaDonaControllerResposta"
                 }
               }
             },
@@ -10627,7 +12116,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/Pedido"
+                "$ref" : "#/components/schemas/SemanasDaDonaControllerPedido"
               }
             }
           },
@@ -10638,7 +12127,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/SemanasDaDonaControllerResposta"
                 }
               }
             },
@@ -10815,7 +12304,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/PaginaResposta"
+                  "$ref" : "#/components/schemas/PaginaUsuariosDaDonaControllerResposta"
                 }
               }
             },
@@ -10877,7 +12366,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/UsuariosDaDonaControllerResposta"
                 }
               }
             },
@@ -10916,7 +12405,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/UsuariosDaDonaControllerResposta"
                 }
               }
             },
@@ -10948,7 +12437,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/UsuariosDaDonaControllerResposta"
                 }
               }
             },
@@ -10980,7 +12469,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/UsuariosDaDonaControllerResposta"
                 }
               }
             },
@@ -11074,7 +12563,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/PedidoDeEstorno"
+                "$ref" : "#/components/schemas/VendasDoVendedorControllerPedidoDeEstorno"
               }
             }
           },
@@ -11139,7 +12628,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/PaginaResposta"
+                  "$ref" : "#/components/schemas/PaginaVendedoresDaDonaControllerResposta"
                 }
               }
             },
@@ -11159,7 +12648,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/Pedido"
+                "$ref" : "#/components/schemas/VendedoresDaDonaControllerPedido"
               }
             }
           },
@@ -11170,7 +12659,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/VendedoresDaDonaControllerResposta"
                 }
               }
             },
@@ -11224,7 +12713,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/VendedoresDaDonaControllerResposta"
                 }
               }
             },
@@ -11252,7 +12741,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/Pedido"
+                "$ref" : "#/components/schemas/VendedoresDaDonaControllerPedido"
               }
             }
           },
@@ -11263,7 +12752,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/VendedoresDaDonaControllerResposta"
                 }
               }
             },
@@ -11294,7 +12783,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Dados"
+                  "$ref" : "#/components/schemas/ConjugeDoVendedorDados"
                 }
               }
             },
@@ -11323,7 +12812,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/Dados"
+                "$ref" : "#/components/schemas/ConjugeDoVendedorDados"
               }
             }
           },
@@ -11334,7 +12823,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Dados"
+                  "$ref" : "#/components/schemas/ConjugeDoVendedorDados"
                 }
               }
             },
@@ -11365,7 +12854,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Dados"
+                  "$ref" : "#/components/schemas/ContatoDoVendedorDados"
                 }
               }
             },
@@ -11393,7 +12882,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/Dados"
+                "$ref" : "#/components/schemas/ContatoDoVendedorDados"
               }
             }
           },
@@ -11404,7 +12893,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Dados"
+                  "$ref" : "#/components/schemas/ContatoDoVendedorDados"
                 }
               }
             },
@@ -11436,7 +12925,7 @@
               "*/*" : {
                 "schema" : {
                   "items" : {
-                    "$ref" : "#/components/schemas/Resposta"
+                    "$ref" : "#/components/schemas/DocumentoDoVendedorResposta"
                   },
                   "type" : "array"
                 }
@@ -11490,7 +12979,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/DocumentoDoVendedorResposta"
                 }
               }
             },
@@ -11595,7 +13084,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Dados"
+                  "$ref" : "#/components/schemas/EnderecoDoVendedorDados"
                 }
               }
             },
@@ -11624,7 +13113,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/Dados"
+                "$ref" : "#/components/schemas/EnderecoDoVendedorDados"
               }
             }
           },
@@ -11635,7 +13124,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Dados"
+                  "$ref" : "#/components/schemas/EnderecoDoVendedorDados"
                 }
               }
             },
@@ -11667,7 +13156,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/VendedoresDaDonaControllerResposta"
                 }
               }
             },
@@ -11698,7 +13187,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Dados"
+                  "$ref" : "#/components/schemas/MeiDoVendedorDados"
                 }
               }
             },
@@ -11727,7 +13216,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/Dados"
+                "$ref" : "#/components/schemas/MeiDoVendedorDados"
               }
             }
           },
@@ -11738,7 +13227,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Dados"
+                  "$ref" : "#/components/schemas/MeiDoVendedorDados"
                 }
               }
             },
@@ -11769,7 +13258,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Dados"
+                  "$ref" : "#/components/schemas/ObservacaoDoVendedorDados"
                 }
               }
             },
@@ -11797,7 +13286,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/Dados"
+                "$ref" : "#/components/schemas/ObservacaoDoVendedorDados"
               }
             }
           },
@@ -11808,7 +13297,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Dados"
+                  "$ref" : "#/components/schemas/ObservacaoDoVendedorDados"
                 }
               }
             },
@@ -11839,7 +13328,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/VendedoresDaDonaControllerResposta"
                 }
               }
             },
@@ -11871,7 +13360,7 @@
               "*/*" : {
                 "schema" : {
                   "items" : {
-                    "$ref" : "#/components/schemas/Resposta"
+                    "$ref" : "#/components/schemas/ReferenciaDoVendedorResposta"
                   },
                   "type" : "array"
                 }
@@ -11901,7 +13390,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/Pedido"
+                "$ref" : "#/components/schemas/ReferenciaDoVendedorPedido"
               }
             }
           },
@@ -11912,7 +13401,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/ReferenciaDoVendedorResposta"
                 }
               }
             },
@@ -11982,7 +13471,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/Pedido"
+                "$ref" : "#/components/schemas/ReferenciaDoVendedorPedido"
               }
             }
           },
@@ -11993,7 +13482,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Resposta"
+                  "$ref" : "#/components/schemas/ReferenciaDoVendedorResposta"
                 }
               }
             },
@@ -12024,7 +13513,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Dados"
+                  "$ref" : "#/components/schemas/TrabalhoDoVendedorDados"
                 }
               }
             },
@@ -12052,7 +13541,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/Dados"
+                "$ref" : "#/components/schemas/TrabalhoDoVendedorDados"
               }
             }
           },
@@ -12063,7 +13552,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Dados"
+                  "$ref" : "#/components/schemas/TrabalhoDoVendedorDados"
                 }
               }
             },

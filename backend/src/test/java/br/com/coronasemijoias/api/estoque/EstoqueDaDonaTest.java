@@ -702,17 +702,20 @@ class EstoqueDaDonaTest extends TesteDeIntegracao {
         assertThat(servico.conciliar().divergencias()).isEmpty();
 
         // alguém mexe no saldo por fora do serviço (só um teste faz isto)
-        jdbc.update("UPDATE corona.produtos SET estoque_atual = 99 WHERE id = ?", p);
-        JsonNode apontou = corpoDe(ler(BASE + "/conciliacao").andExpect(status().isOk()));
-        assertThat(apontou.get("divergencias")).hasSize(1);
-        JsonNode d = apontou.get("divergencias").get(0);
-        assertThat(d.get("produto").get("id").asString()).isEqualTo(p.toString());
-        assertThat(d.get("produto").has("fotoPrincipal")).isTrue();
-        assertThat(d.get("saldoGuardado").asInt()).isEqualTo(99);
-        assertThat(d.get("somaDosMovimentos").asInt()).isEqualTo(5);
-        assertThat(d.get("diferenca").asInt()).isEqualTo(94);
+        try {
+            jdbc.update("UPDATE corona.produtos SET estoque_atual = 99 WHERE id = ?", p);
+            JsonNode apontou = corpoDe(ler(BASE + "/conciliacao").andExpect(status().isOk()));
+            assertThat(apontou.get("divergencias")).hasSize(1);
+            JsonNode d = apontou.get("divergencias").get(0);
+            assertThat(d.get("produto").get("id").asString()).isEqualTo(p.toString());
+            assertThat(d.get("produto").has("fotoPrincipal")).isTrue();
+            assertThat(d.get("saldoGuardado").asInt()).isEqualTo(99);
+            assertThat(d.get("somaDosMovimentos").asInt()).isEqualTo(5);
+            assertThat(d.get("diferenca").asInt()).isEqualTo(94);
 
-        jdbc.update("UPDATE corona.produtos SET estoque_atual = 5 WHERE id = ?", p);
+        } finally {
+            jdbc.update("UPDATE corona.produtos SET estoque_atual = 5 WHERE id = ?", p);
+        }
         assertThat(servico.conciliar().divergencias()).isEmpty();
     }
 
@@ -720,8 +723,11 @@ class EstoqueDaDonaTest extends TesteDeIntegracao {
     void produtoSemMovimentoComSaldoNaoZeroTambemDiverge() throws Exception {
         UUID p = produto();
         jdbc.update("UPDATE corona.produtos SET estoque_atual = 4 WHERE id = ?", p);
-        assertThat(servico.conciliar().divergencias()).extracting(d -> d.produtoId()).contains(p);
-        jdbc.update("UPDATE corona.produtos SET estoque_atual = 0 WHERE id = ?", p);
+        try {
+            assertThat(servico.conciliar().divergencias()).extracting(d -> d.produtoId()).contains(p);
+        } finally {
+            jdbc.update("UPDATE corona.produtos SET estoque_atual = 0 WHERE id = ?", p);
+        }
         assertThat(servico.conciliar().divergencias()).isEmpty();
     }
 }

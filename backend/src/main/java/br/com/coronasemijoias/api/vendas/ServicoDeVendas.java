@@ -119,6 +119,13 @@ public class ServicoDeVendas {
             }
             return new Resultado(id, true);
         }
+        // O id do pagamento também vem do aplicativo: já usado em outra venda é o mesmo caso do 409, não erro de banco.
+        for (Pagamento p : pagamentos) {
+            if (Boolean.TRUE.equals(jdbc.queryForObject(
+                    "SELECT EXISTS (SELECT 1 FROM corona.pagamentos_cliente WHERE id = ?)", Boolean.class, p.id()))) {
+                throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.VENDA_JA_REGISTRADA_DIFERENTE);
+            }
+        }
 
         br.com.coronasemijoias.api.vendedor.VendedorAtivo.exigir(jdbc, vendedorId);
         String status = (String) remessa.get("status");
