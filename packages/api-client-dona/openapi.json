@@ -130,6 +130,39 @@
         },
         "type" : "object"
       },
+      "CotacaoDaNota" : {
+        "properties" : {
+          "data" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "dolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "guarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "totalEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "totalEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "CotacaoDeHojeResposta" : {
         "properties" : {
           "cotacao" : {
@@ -288,6 +321,37 @@
             "type" : "string"
           },
           "referencia" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ItemDaNota" : {
+        "properties" : {
+          "codigo" : {
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "precoRemessa" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "subtotal" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           }
         },
@@ -537,8 +601,16 @@
             "format" : "int64",
             "type" : "integer"
           },
+          "diferencaComMaletas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
           "fotoPrincipalHash" : {
             "type" : "string"
+          },
+          "nasMaletas" : {
+            "format" : "int64",
+            "type" : "integer"
           },
           "nome" : {
             "type" : "string"
@@ -857,6 +929,75 @@
         },
         "type" : "object"
       },
+      "LinhaDeMaletaEmAberto" : {
+        "properties" : {
+          "atrasada" : {
+            "type" : "boolean"
+          },
+          "dataDaCotacao" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "diasDesdeOEnvio" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "enviadaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "numero" : {
+            "type" : "string"
+          },
+          "pecasEmAberto" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "praca" : {
+            "type" : "string"
+          },
+          "remessaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "semana" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "valorEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorEmReais" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendedor" : {
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "LinhaDeMovimento" : {
         "properties" : {
           "categoria" : {
@@ -1071,41 +1212,223 @@
         },
         "type" : "object"
       },
-      "LinhaDeVendedor" : {
+      "LinhaDeRemessa" : {
         "properties" : {
-          "ativo" : {
+          "cancelada" : {
             "type" : "boolean"
           },
-          "bloqueiaRemessa" : {
-            "type" : "boolean"
+          "dataDaCotacao" : {
+            "format" : "date",
+            "type" : "string"
           },
-          "codigo" : {
-            "format" : "int32",
-            "type" : "integer"
-          },
-          "comissaoPercentual" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+          "enviadaEm" : {
+            "format" : "date-time",
             "type" : "string"
           },
           "id" : {
             "format" : "uuid",
             "type" : "string"
           },
-          "limiteConsignacao" : {
+          "motivoDoCancelamento" : {
+            "type" : "string"
+          },
+          "numero" : {
+            "type" : "string"
+          },
+          "pecas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "praca" : {
+            "type" : "string"
+          },
+          "pracaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "semana" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "semanaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "valorEmDolar" : {
             "example" : "123.45",
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           },
+          "valorEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorEmReais" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendedor" : {
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "LinhaDeSaldo" : {
+        "properties" : {
+          "codigo" : {
+            "type" : "string"
+          },
+          "dataDaCotacao" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "devolvida" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "enviada" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "enviadaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "fotoPrincipalHash" : {
+            "type" : "string"
+          },
           "nome" : {
+            "type" : "string"
+          },
+          "numero" : {
             "type" : "string"
           },
           "praca" : {
             "type" : "string"
           },
-          "restricao" : {
+          "precoCongelado" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "referencia" : {
+            "type" : "string"
+          },
+          "remessaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "saldo" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "semana" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "valorEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorEmReais" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendedor" : {
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "LinhaDeVendedor" : {
+        "properties" : {
+          "limite" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "maletasAtrasadas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "maletasEmAberto" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "pecasEmAberto" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "sobraDoLimite" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorEmReais" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendedor" : {
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
             "type" : "string"
           }
         },
@@ -1137,6 +1460,65 @@
           },
           "temCodigoDoFornecedor" : {
             "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "NotaDeRemessa" : {
+        "properties" : {
+          "cancelada" : {
+            "type" : "boolean"
+          },
+          "cotacao" : {
+            "$ref" : "#/components/schemas/CotacaoDaNota"
+          },
+          "enviadaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ItemDaNota"
+            },
+            "type" : "array"
+          },
+          "loja" : {
+            "type" : "string"
+          },
+          "motivoDoCancelamento" : {
+            "type" : "string"
+          },
+          "numero" : {
+            "type" : "string"
+          },
+          "praca" : {
+            "type" : "string"
+          },
+          "remessaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "semana" : {
+            "$ref" : "#/components/schemas/Semana"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "totalPecas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totalValor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendedor" : {
+            "$ref" : "#/components/schemas/Pessoa"
           }
         },
         "type" : "object"
@@ -1945,6 +2327,22 @@
         },
         "type" : "object"
       },
+      "Pessoa" : {
+        "properties" : {
+          "codigo" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "Previa" : {
         "properties" : {
           "ambiguas" : {
@@ -2440,6 +2838,38 @@
         },
         "type" : "object"
       },
+      "RelatorioDeCadastroLinhaDeMaletaEmAberto" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDeMaletaEmAberto"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "RelatorioDeCadastroLinhaDeMovimento" : {
         "properties" : {
           "itens" : {
@@ -2541,6 +2971,70 @@
           "itens" : {
             "items" : {
               "$ref" : "#/components/schemas/LinhaDeProdutoParado"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatorioDeCadastroLinhaDeRemessa" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDeRemessa"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatorioDeCadastroLinhaDeSaldo" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDeSaldo"
             },
             "type" : "array"
           },
@@ -3537,6 +4031,27 @@
         },
         "type" : "object"
       },
+      "Semana" : {
+        "properties" : {
+          "fim" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "inicio" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "numero" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "Tempo" : {
         "properties" : {
           "instante" : {
@@ -3560,6 +4075,18 @@
             "type" : "integer"
           },
           "rotulo" : {
+            "type" : "string"
+          },
+          "valorEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           },
           "valorEmReais" : {
@@ -8325,6 +8852,610 @@
         "tags" : [ "relatorios-de-estoque-e-compras-controller" ]
       }
     },
+    "/api/dona/relatorios/maleta/em-aberto" : {
+      "get" : {
+        "description" : "Uma linha por maleta enviada que ainda tem peça com o vendedor: dias desde o envio (calendário de Brasília), se está atrasada, peças e valor em aberto. Atrasada = mais de diasDeAtraso dias desde o envio (padrão 7; de 0 a 365). situacao: TODAS (padrão), ATRASADAS ou NO_PRAZO. Filtros: vendedorId, pracaId, semanaId, tipo, produtoId, categoriaId, busca, de e ate. Rascunho nunca entra. Datas em UTC (de e ate inclusive, sobre a data do envio). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Cada valor vem em Real, Dólar e Guarani pela cotação do dia do envio (dataDaCotacao; vazio se ainda não havia cotação).",
+        "operationId" : "relatorioDeMaletasEmAbertoEAtrasadas",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pracaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "semanaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "produtoId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "categoriaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tipo",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "diasDeAtraso",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeMaletaEmAberto"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Maletas em aberto e atrasadas",
+        "tags" : [ "relatorios-de-maleta-controller" ]
+      }
+    },
+    "/api/dona/relatorios/maleta/mercadoria-por-vendedor" : {
+      "get" : {
+        "description" : "Por vendedor com peça ainda em maleta: maletas em aberto, atrasadas, peças e valor a preço congelado, limite de consignação e quanto sobra dele (o limite 0 do cadastro vale como sem limite; a sobra conta tudo o que o vendedor tem em aberto, mesmo com filtros). Filtros: vendedorId, pracaId, semanaId, tipo, produtoId, categoriaId, busca, de e ate (das maletas), diasDeAtraso (padrão 7). Rascunho nunca entra. Datas em UTC (de e ate inclusive, sobre a data do envio). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Cada valor vem em Real, Dólar e Guarani pela cotação do dia do envio (dataDaCotacao; vazio se ainda não havia cotação).",
+        "operationId" : "relatorioDeMercadoriaPorVendedor",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pracaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "semanaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "produtoId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "categoriaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tipo",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "diasDeAtraso",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeVendedor"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Mercadoria em maletas por vendedor",
+        "tags" : [ "relatorios-de-maleta-controller" ]
+      }
+    },
+    "/api/dona/relatorios/maleta/remessas" : {
+      "get" : {
+        "description" : "Uma linha por maleta enviada (valor congelado no envio). situacao: REGISTRADAS (padrão: enviadas e adiante), CANCELADAS, TODAS (as canceladas aparecem marcadas e ficam FORA do total geral) ou um estado (ENVIADA, CONFERIDA, EM_ACERTO, ACERTADA). Filtros: vendedorId, pracaId, semanaId, tipo (NOVA ou REPOSICAO), produtoId e categoriaId (maletas que têm a peça), busca (vendedor ou praça), de e ate. Para ver as peças de uma maleta use o relatório de saldo com remessaId. Rascunho nunca entra. Datas em UTC (de e ate inclusive, sobre a data do envio). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Cada valor vem em Real, Dólar e Guarani pela cotação do dia do envio (dataDaCotacao; vazio se ainda não havia cotação).",
+        "operationId" : "relatorioDeRemessasPorVendedorESemana",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pracaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "semanaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "produtoId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "categoriaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tipo",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeRemessa"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Maletas por vendedor e semana",
+        "tags" : [ "relatorios-de-maleta-controller" ]
+      }
+    },
+    "/api/dona/relatorios/maleta/reposicoes" : {
+      "get" : {
+        "description" : "As maletas do tipo REPOSICAO, no mesmo formato de maletas por vendedor e semana. Filtros: vendedorId, pracaId, semanaId, produtoId, categoriaId, busca, situacao, de e ate. Rascunho nunca entra. Datas em UTC (de e ate inclusive, sobre a data do envio). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Cada valor vem em Real, Dólar e Guarani pela cotação do dia do envio (dataDaCotacao; vazio se ainda não havia cotação).",
+        "operationId" : "relatorioDeReposicoes",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pracaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "semanaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "produtoId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "categoriaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeRemessa"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Reposições",
+        "tags" : [ "relatorios-de-maleta-controller" ]
+      }
+    },
+    "/api/dona/relatorios/maleta/saldo" : {
+      "get" : {
+        "description" : "Por peça de cada maleta com o vendedor: enviada, devolvida à dona, saldo (enviada mais os movimentos) e valor a preço congelado. situacao: COM_SALDO (padrão), ZERADAS ou TODAS. Só maletas enviadas (rascunho e cancelada ficam de fora). Filtros: remessaId (detalha uma maleta), vendedorId, pracaId, semanaId, tipo, produtoId, categoriaId, busca (nome, referência ou código da peça), de e ate. Rascunho nunca entra. Datas em UTC (de e ate inclusive, sobre a data do envio). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Cada valor vem em Real, Dólar e Guarani pela cotação do dia do envio (dataDaCotacao; vazio se ainda não havia cotação).",
+        "operationId" : "relatorioDeSaldoPorMaleta",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "remessaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pracaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "semanaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "produtoId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "categoriaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tipo",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeSaldo"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Saldo atual por maleta (peça a peça)",
+        "tags" : [ "relatorios-de-maleta-controller" ]
+      }
+    },
     "/api/dona/remessas" : {
       "get" : {
         "description" : "Filtros: vendedorId, semanaId e status (RASCUNHO, ENVIADA, CONFERIDA, EM_ACERTO, ACERTADA, CANCELADA). Mais nova primeiro. A página começa em 0 (até 200 por página).",
@@ -8806,6 +9937,38 @@
         } ],
         "summary" : "Ver o que há na maleta",
         "tags" : [ "maleta-da-dona-controller" ]
+      }
+    },
+    "/api/dona/remessas/{id}/nota" : {
+      "get" : {
+        "description" : "Só depois do envio (rascunho: 409). Maleta cancelada vem com cancelada = true e o motivo. Valores em Real, congelados no envio; cotacao é a do dia do envio (vazia se ainda não havia cotação).",
+        "operationId" : "notaDaRemessa",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/NotaDeRemessa"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Dados da nota da maleta (para imprimir)",
+        "tags" : [ "nota-de-remessa-controller" ]
       }
     },
     "/api/dona/restricoes" : {

@@ -27,13 +27,23 @@ export const NOMES_DOS_RELATORIOS = [
   'compras-por-fornecedor',
   'compras-custos',
   'compras-pecas',
+  // Maletas (tarefa 3.7): os cinco relatórios da 3.4.
+  'maleta-remessas',
+  'maleta-reposicoes',
+  'maleta-saldo',
+  'maleta-mercadoria',
+  'maleta-em-aberto',
 ] as const;
 export type NomeDoRelatorio = (typeof NOMES_DOS_RELATORIOS)[number];
 export type NomeDoRelatorioDeEstoqueOuCompras = Extract<
   NomeDoRelatorio,
   `estoque-${string}` | `compras-${string}`
 >;
-export type NomeDoRelatorioDeCadastro = Exclude<NomeDoRelatorio, NomeDoRelatorioDeEstoqueOuCompras>;
+export type NomeDoRelatorioDeMaleta = Extract<NomeDoRelatorio, `maleta-${string}`>;
+export type NomeDoRelatorioDeCadastro = Exclude<
+  NomeDoRelatorio,
+  NomeDoRelatorioDeEstoqueOuCompras | NomeDoRelatorioDeMaleta
+>;
 
 export const SITUACOES_DO_RELATORIO = [
   'ATIVOS',
@@ -47,6 +57,12 @@ export const SITUACOES_DO_RELATORIO = [
   'EM_ANDAMENTO',
   'FECHADO',
   'CANCELADO',
+  // Maletas
+  'CANCELADAS',
+  'COM_SALDO',
+  'ZERADAS',
+  'ATRASADAS',
+  'NO_PRAZO',
 ] as const;
 export type SituacaoDoRelatorio = (typeof SITUACOES_DO_RELATORIO)[number];
 
@@ -99,6 +115,10 @@ export interface ConsultaDeRelatorio {
   divergencia?: string;
   /** Uma compra só (lista das peças da compra). */
   compraId?: string;
+  /** Maletas (tarefa 3.7): semana, uma maleta só e o prazo (em dias) para a maleta contar como atrasada. */
+  semanaId?: string;
+  remessaId?: string;
+  diasDeAtraso?: number;
   /** A chave de um total do rodapé: mostra só as linhas que formam esse total. */
   recorte?: string;
   pagina: number;

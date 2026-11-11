@@ -270,7 +270,7 @@ export const RELATORIOS_DE_ESTOQUE: Record<
     grupo: 'estoque',
     titulo: 'Conferência do estoque',
     explicacao:
-      'Confere se a quantidade de cada peça bate com tudo o que entrou e saiu. Deve ficar vazio; se aparecer alguma peça, algo precisa ser conferido.',
+      'Confere se a quantidade de cada peça bate com tudo o que entrou e saiu, e se as peças da loja mais as que estão nas maletas fecham a conta. Deve ficar vazio; se aparecer alguma peça, algo precisa ser conferido.',
     filtros: ['busca'],
     buscaRotulo: 'Buscar por nome da peça',
     colunas: [
@@ -279,6 +279,8 @@ export const RELATORIOS_DE_ESTOQUE: Record<
       { chave: 'saldoGuardado', titulo: 'Quantidade guardada', tipo: 'inteiro' },
       { chave: 'somaDosMovimentos', titulo: 'Entradas menos saídas', tipo: 'inteiro' },
       { chave: 'diferenca', titulo: 'Diferença', tipo: 'sinal' },
+      { chave: 'nasMaletas', titulo: 'Com os vendedores (maletas)', tipo: 'inteiro' },
+      { chave: 'diferencaComMaletas', titulo: 'Diferença contando as maletas', tipo: 'sinal' },
     ],
     totaisDeValor: {},
     rotulosDosTotais: { todos: 'Peças com diferença' },

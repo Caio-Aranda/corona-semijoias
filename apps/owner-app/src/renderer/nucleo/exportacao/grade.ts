@@ -30,6 +30,13 @@ export interface ColunaDoRelatorio {
   chave: string;
   titulo: string;
   tipo: TipoDeColuna;
+  /**
+   * Maletas (tarefa 3.7): o servidor já manda o Dólar e o Guarani de cada linha, pela cotação do dia em
+   * que a maleta foi enviada (não a de hoje). Os campos da linha que os trazem, e o da data da cotação.
+   */
+  convertido?: { dolar: string; guarani: string; data: string };
+  /** Dinheiro que não depende de cotação (o limite do vendedor): sai só em Real. */
+  soReal?: boolean;
 }
 
 export interface TotalDoRelatorio {
@@ -59,6 +66,8 @@ export interface PedidoDeExportacao {
   totais: TotalDoRelatorio[];
   /** Qual campo das linhas forma cada total de valor ({ 'preco-venda': 'precoVenda' }). */
   totaisDeValor: Record<string, string>;
+  /** Total já convertido pelo servidor (Dólar e Guarani), pela chave do total. Vale no lugar da soma local. */
+  totaisConvertidos?: Record<string, { dolar: string; guarani: string }>;
   /** Linhas que entram na soma de cada total de valor (ex.: compras desfeitas ficam fora do total). */
   linhasDoTotal?: Record<string, (linha: Record<string, unknown>) => boolean>;
 }
@@ -130,6 +139,19 @@ function celulasDeDinheiro(valor: unknown, t: Taxas | null): Celula[] {
   ];
 }
 
+function celulasJaConvertidas(real: unknown, dolar: unknown, guarani: unknown): Celula[] {
+  const r = typeof real === 'string' ? centavosDeTexto(real) : null;
+  if (r === null) return [texto(''), texto(''), texto('')];
+  const d = typeof dolar === 'string' ? centavosDeTexto(dolar) : null;
+  const g = typeof guarani === 'string' ? centavosDeTexto(guarani) : null;
+  return [
+    numero(centavosParaDecimal(r)),
+    d === null ? texto('') : numero(centavosParaDecimal(d)),
+    // O Guarani é inteiro: o servidor manda "1234567.00"; tira os centavos.
+    g === null ? texto('') : numero((g / 100n).toString()),
+  ];
+}
+
 /** O valor de uma linha como texto; objeto ou lista nunca viram "[object Object]". */
 export function comoTexto(valor: unknown): string {
   if (typeof valor === 'string') return valor;
@@ -184,13 +206,21 @@ export function somarConvertido(
 }
 
 export function montarGrade(pedido: PedidoDeExportacao): Grade {
-  const p = { ...pedido, colunas: pedido.colunas.filter((c) => c.tipo !== 'foto') };
+  // A data da cotação das maletas já sai na última coluna do arquivo; não repete.
+  const dataPropria = pedido.colunas.find((c) => c.convertido)?.convertido?.data;
+  const p = {
+    ...pedido,
+    colunas: pedido.colunas.filter((c) => c.tipo !== 'foto' && c.chave !== dataPropria),
+  };
   const t = taxas(p.cotacao);
-  const temDinheiro = p.colunas.some((c) => c.tipo === 'dinheiro');
+  const temDinheiro = p.colunas.some((c) => c.tipo === 'dinheiro' && !c.soReal);
   const titulos: string[] = [];
   const numericas: boolean[] = [];
   for (const c of p.colunas) {
-    if (c.tipo === 'dinheiro') {
+    if (c.tipo === 'dinheiro' && c.soReal) {
+      titulos.push(`${c.titulo} (R$)`);
+      numericas.push(true);
+    } else if (c.tipo === 'dinheiro') {
       titulos.push(`${c.titulo} (R$)`, `${c.titulo} (US$)`, `${c.titulo} (Gs.)`);
       numericas.push(true, true, true);
     } else {
@@ -208,11 +238,20 @@ export function montarGrade(pedido: PedidoDeExportacao): Grade {
     const celulas: Celula[] = [];
     for (const c of p.colunas) {
       const valor = linha[c.chave];
-      if (c.tipo === 'dinheiro') celulas.push(...celulasDeDinheiro(valor, t));
+      if (c.tipo === 'dinheiro' && c.soReal) {
+        celulas.push(celulasDeDinheiro(valor, null)[0]!);
+      } else if (c.tipo === 'dinheiro' && c.convertido) {
+        celulas.push(
+          ...celulasJaConvertidas(valor, linha[c.convertido.dolar], linha[c.convertido.guarani]),
+        );
+      } else if (c.tipo === 'dinheiro') celulas.push(...celulasDeDinheiro(valor, t));
       else if (c.tipo === 'simNao') celulas.push(celulaSimNao(c, valor));
       else celulas.push(...celula(c.tipo, valor));
     }
-    if (temDinheiro) celulas.push(texto(dataDaCotacao));
+    if (temDinheiro) {
+      const propria = p.colunas.find((c) => c.convertido)?.convertido?.data;
+      celulas.push(texto(propria ? dataParaTela(comoTexto(linha[propria])) : dataDaCotacao));
+    }
     return celulas;
   });
 
@@ -224,11 +263,22 @@ export function montarGrade(pedido: PedidoDeExportacao): Grade {
     const colunaDoCampo = campo ? p.colunas.findIndex((c) => c.chave === campo) : -1;
     if (campo && colunaDoCampo >= 0 && total.valorEmReais != null) {
       let inicio = 0;
-      for (let i = 0; i < colunaDoCampo; i++) inicio += p.colunas[i]!.tipo === 'dinheiro' ? 3 : 1;
+      for (let i = 0; i < colunaDoCampo; i++) {
+        const ci = p.colunas[i]!;
+        inicio += ci.tipo === 'dinheiro' && !ci.soReal ? 3 : 1;
+      }
       const real = centavosDeTexto(total.valorEmReais);
       linha[inicio] = real === null ? texto('') : numero(centavosParaDecimal(real));
-      const soma = somarConvertido(p.linhas, campo, p.cotacao, p.linhasDoTotal?.[total.chave]);
-      if (soma) {
+      const pronto = p.totaisConvertidos?.[total.chave];
+      const soma = pronto
+        ? null
+        : somarConvertido(p.linhas, campo, p.cotacao, p.linhasDoTotal?.[total.chave]);
+      if (pronto) {
+        const d = centavosDeTexto(pronto.dolar);
+        const g = centavosDeTexto(pronto.guarani);
+        if (d !== null) linha[inicio + 1] = numero(centavosParaDecimal(d));
+        if (g !== null) linha[inicio + 2] = numero((g / 100n).toString());
+      } else if (soma) {
         linha[inicio + 1] = numero(centavosParaDecimal(soma.dolarEmCentavos));
         linha[inicio + 2] = numero(soma.guarani.toString());
       }

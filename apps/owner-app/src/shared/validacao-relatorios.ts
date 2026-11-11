@@ -14,6 +14,7 @@ const RECORTE = /^[a-z0-9-]{1,40}$/;
 const VALOR = /^\d{1,12}(\.\d{1,2})?$/;
 const SIM_NAO = ['SIM', 'NAO'];
 /** "tipo" é do resultado das importações ou do tipo do lançamento no estoque. */
+const TIPOS_DA_MALETA = ['NOVA', 'REPOSICAO'];
 const TIPOS_DO_LANCAMENTO = ['ENTRADA', 'SAIDA', 'AJUSTE', 'REMESSA', 'DEVOLUCAO', 'AVARIA'];
 const ESCOLHAS: [
   (
@@ -35,7 +36,7 @@ const ESCOLHAS: [
   ['comVendedor', SIM_NAO],
   ['estoque', ['ZERADO', 'ABAIXO_DO_MINIMO', 'COM_ESTOQUE']],
   ['foto', ['COM', 'SEM']],
-  ['tipo', ['PLANILHA', 'FOTOS', ...TIPOS_DO_LANCAMENTO]],
+  ['tipo', ['PLANILHA', 'FOTOS', ...TIPOS_DO_LANCAMENTO, ...TIPOS_DA_MALETA]],
   ['resultado', ['CRIADO', 'ATUALIZADO', 'JA_EXISTIA', 'RECUSADO']],
   ['quem', ['TODOS', 'VENDEDORES', 'CLIENTES']],
   ['origem', ['MANUAL', 'AJUSTE_MANUAL', 'COMPRA', 'INVENTARIO', 'MALETA', 'ESTORNO']],
@@ -80,6 +81,9 @@ const CAMPOS = [
   'inventarioId',
   'divergencia',
   'compraId',
+  'semanaId',
+  'remessaId',
+  'diasDeAtraso',
   'pagina',
   'tamanho',
 ];
@@ -108,6 +112,8 @@ export function conferirRelatorio(p: Record<string, unknown>): ParametrosDeRelat
     'usuarioId',
     'inventarioId',
     'compraId',
+    'semanaId',
+    'remessaId',
   ] as const) {
     if (p[k] !== undefined && p[k] !== '') {
       if (!ehTexto(p[k]) || !UUID.test(p[k])) return null;
@@ -146,10 +152,25 @@ export function conferirRelatorio(p: Record<string, unknown>): ParametrosDeRelat
       return null;
     consulta.dias = p.dias;
   }
+  if (p.diasDeAtraso !== undefined && p.diasDeAtraso !== '') {
+    if (
+      typeof p.diasDeAtraso !== 'number' ||
+      !Number.isInteger(p.diasDeAtraso) ||
+      p.diasDeAtraso < 0 ||
+      p.diasDeAtraso > 365
+    )
+      return null;
+    consulta.diasDeAtraso = p.diasDeAtraso;
+  }
   // "tipo" das importações só vale nelas, e o do lançamento só no estoque.
   if (p.tipo !== undefined && p.tipo !== '') {
     const eDeImportacao = p.relatorio === 'resultado-das-importacoes';
-    const aceitos = eDeImportacao ? ['PLANILHA', 'FOTOS'] : TIPOS_DO_LANCAMENTO;
+    const eDeMaleta = typeof p.relatorio === 'string' && p.relatorio.startsWith('maleta-');
+    const aceitos = eDeImportacao
+      ? ['PLANILHA', 'FOTOS']
+      : eDeMaleta
+        ? TIPOS_DA_MALETA
+        : TIPOS_DO_LANCAMENTO;
     if (!ehTexto(p.tipo) || !aceitos.includes(p.tipo)) return null;
   }
   if (p.recorte !== undefined && p.recorte !== '') {

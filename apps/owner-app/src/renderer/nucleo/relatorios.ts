@@ -7,6 +7,7 @@ import type { NomeDoRelatorio, NomeDoRelatorioDeCadastro } from '../../shared/re
 import { TEXTOS_RELATORIOS } from '../textos-relatorios';
 import type { ColunaDoRelatorio } from './exportacao/grade';
 import { RELATORIOS_DE_ESTOQUE, prepararLinhaDeEstoque } from './relatorios-estoque';
+import { RELATORIOS_DE_MALETA, prepararLinhaDeMaleta } from './relatorios-maleta';
 
 export type FiltroDoRelatorio =
   | 'busca'
@@ -17,6 +18,7 @@ export type FiltroDoRelatorio =
   | 'vendedor'
   | 'restricao'
   | 'periodo'
+  | 'semana'
   | 'mes'
   | 'usuario';
 
@@ -36,6 +38,7 @@ export type ChaveDeExtra =
   | 'quem'
   | 'origem'
   | 'dias'
+  | 'diasDeAtraso'
   | 'divergencia';
 
 export type ExtraDoRelatorio =
@@ -94,7 +97,9 @@ export interface DefinicaoDeRelatorio {
   /** Abrir uma linha (compra → peças; contagem → diferenças; peça → histórico de custo). */
   acoes?: AcaoDaLinha[];
   /** Grupo do menu: o dos relatórios de cadastro, de estoque ou de compras. */
-  grupo?: 'estoque' | 'compras';
+  grupo?: 'estoque' | 'compras' | 'maletas';
+  /** Maletas: o campo da linha com o código da maleta; a linha ganha o botão "Ver a maleta". */
+  fichaDaMaleta?: string;
   /** Fora do menu: só abre a partir de outra linha. */
   soAbreDeUmaLinha?: boolean;
 }
@@ -103,6 +108,7 @@ const T = TEXTOS_RELATORIOS;
 
 export const RELATORIOS: Record<NomeDoRelatorio, DefinicaoDeRelatorio> = {
   ...RELATORIOS_DE_ESTOQUE,
+  ...RELATORIOS_DE_MALETA,
   vendedores: {
     nome: 'vendedores',
     titulo: 'Vendedores: limite e situação',
@@ -423,6 +429,9 @@ export interface TotalLido {
   rotulo: string;
   quantidade: number;
   valorEmReais: string | null;
+  /** Maletas: o total já convertido pelo servidor, pela cotação do envio de cada maleta. */
+  valorEmDolar: string | null;
+  valorEmGuarani: string | null;
   /** Soma de peças, nos totais que são de peças. */
   pecas: number | null;
 }
@@ -452,6 +461,8 @@ export function lerRelatorio(bruto: unknown, nome: NomeDoRelatorio): RelatorioLi
       rotulo: typeof t.rotulo === 'string' ? t.rotulo : String(t.chave),
       quantidade: typeof t.quantidade === 'number' ? t.quantidade : 0,
       valorEmReais: typeof t.valorEmReais === 'string' ? t.valorEmReais : null,
+      valorEmDolar: typeof t.valorEmDolar === 'string' ? t.valorEmDolar : null,
+      valorEmGuarani: typeof t.valorEmGuarani === 'string' ? t.valorEmGuarani : null,
       pecas: typeof t.pecas === 'number' ? t.pecas : null,
     }))
     .map((t) => ({ ...t, rotulo: RELATORIOS[nome].rotulosDosTotais?.[t.chave] ?? t.rotulo }));
@@ -461,6 +472,8 @@ export function lerRelatorio(bruto: unknown, nome: NomeDoRelatorio): RelatorioLi
       rotulo: 'Produtos sem foto',
       quantidade: total,
       valorEmReais: null,
+      valorEmDolar: null,
+      valorEmGuarani: null,
       pecas: null,
     });
   }
@@ -485,6 +498,7 @@ export interface Opcoes {
   pracas: Opcao[];
   restricoes: Opcao[];
   vendedores: Opcao[];
+  semanas: Opcao[];
 }
 
 /** Acrescenta às linhas o que a tela mostra e a rota não manda: nomes por id e o tipo do código em palavras. */
@@ -510,6 +524,8 @@ export function prepararLinha(
     case 'aniversariantes':
       return { ...linha, tipoNaTela: T.tiposDeAniversariante[String(linha.tipo)] ?? '' };
     default:
-      return prepararLinhaDeEstoque(nome, linha);
+      return nome.startsWith('maleta-')
+        ? prepararLinhaDeMaleta(nome, linha)
+        : prepararLinhaDeEstoque(nome, linha);
   }
 }
