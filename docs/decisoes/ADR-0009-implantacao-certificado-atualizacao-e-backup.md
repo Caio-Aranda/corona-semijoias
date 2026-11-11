@@ -1,6 +1,6 @@
 # ADR-0009: Implantação na VPS, certificado fixado, atualização automática e backup (Fase 9 mínima)
 
-- **Status:** Proposto (aguardando o responsável)
+- **Status:** Aceito (responsável, 11/11/2026)
 - **Data:** 10/11/2026
 - **Tarefas que implementam:** 9.2 a 9.6 da Fase 9 mínima
 - **Relação com a especificação:** a §5 prevê domínio próprio e Let's Encrypt, e a §11 prevê assinatura de código e backup no S3 ou Backblaze. O responsável decidiu, para a entrega de 14/11/2026, **IP sem domínio, certificado autoassinado fixado no app, instalador sem assinatura e backup no Google Drive**. Isto é uma **entrega mínima**: o domínio, o Let's Encrypt e a assinatura continuam sendo o destino (item 9). A especificação não muda agora; a mudança entra com a Fase 9 completa.
@@ -96,7 +96,14 @@ Regras de negócio, migrações publicadas e o código de cadastros e estoque. N
 
 Domínio próprio com Let's Encrypt, assinatura de código do instalador, backup diário fora da VPS (S3 ou Backblaze), Corona Vendas no mesmo canal de atualização, e monitoramento melhor. Cada um vira tarefa da Fase 9 completa.
 
-## Dúvidas para o responsável
+## Respostas do responsável (11/11/2026)
+
+1. ADR aceito. Certificado fixado e sem domínio, como construído; domínio e Let's Encrypt, se um dia houver, entram num PR novo.
+2. Aviso de queda por **`ntfy`**.
+3. A cópia do Drive é **criptografada com `rclone crypt`**; o responsável guarda a senha fora da VPS.
+4. Ícone definitivo quando houver o logo.
+
+## Dúvidas para o responsável (resolvidas, abaixo o que eram)
 
 1. Confirmar este ADR (Proposto para Aceito).
 2. IP fixo da VPS, chave SSH e a conta do Google Drive para o `rclone`: só o responsável cria e entrega.

@@ -82,7 +82,7 @@ Deve responder `{"groups":["liveness","readiness"],"status":"UP"}`. `verificar-p
 
 1. **Diário e semanal**: `sudo /opt/corona/deploy/backup/instalar-timers.sh`.
 2. **Google Drive**: `sudo rclone config --config /etc/corona/rclone.conf` (novo remoto do tipo `drive`;
-   se quiser a cópia criptografada, crie também um remoto `crypt` por cima e **guarde a senha dele no cofre**).
+   crie também um remoto `crypt` por cima dele, **decisão do responsável: a cópia vai criptografada**; guarde as duas senhas do `crypt` no cofre, fora da VPS; sem elas a cópia não abre).
    Crie `/etc/corona/backup.env` (permissão 600):
    ```
    RCLONE_CONFIG=/etc/corona/rclone.conf
@@ -105,7 +105,7 @@ Faça este teste **de novo depois de importar os produtos** (seção 9), com cat
 ## 6. Aviso de queda
 
 1. Crie `/etc/corona/aviso.env` (permissão 600): `NTFY_URL=https://ntfy.sh/um-nome-longo-e-dificil-de-adivinhar`
-   (instale o app ntfy no celular e assine o mesmo nome) **ou** `AVISO_EMAIL=...` (exige `msmtp`).
+   (aviso por **ntfy**, decisão do responsável: instale o app ntfy no celular e assine o mesmo nome).
 2. `sudo /opt/corona/deploy/monitoramento/avisar.sh teste "ola"` deve chegar no celular.
 3. `sudo /opt/corona/deploy/monitoramento/instalar-timers.sh` (verifica a cada 5 minutos e avisa também se o
    disco passar de 85%).
