@@ -61,7 +61,9 @@ export type ConsultasDaMaletaDoVendedorMaleta = {
 };
 
 export type ConsultasDaMaletaDoVendedorPeca = {
+    categoria?: string;
     codigo?: string;
+    codigoFornecedor?: string;
     fotoHash?: string;
     id?: string;
     nome?: string;
@@ -547,6 +549,26 @@ export type AcharPecaDaMinhaMaletaResponses = {
 };
 
 export type AcharPecaDaMinhaMaletaResponse = AcharPecaDaMinhaMaletaResponses[keyof AcharPecaDaMinhaMaletaResponses];
+
+export type BuscarPecaDaMinhaMaletaData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: {
+        texto?: string;
+    };
+    url: '/api/vendedor/maletas/{id}/pecas/busca';
+};
+
+export type BuscarPecaDaMinhaMaletaResponses = {
+    /**
+     * OK
+     */
+    200: Array<ConsultasDaMaletaDoVendedorLinha>;
+};
+
+export type BuscarPecaDaMinhaMaletaResponse = BuscarPecaDaMinhaMaletaResponses[keyof BuscarPecaDaMinhaMaletaResponses];
 
 export type RelatorioDeValoresAReceberData = {
     body?: never;

@@ -6,7 +6,6 @@ import { ImagemDoProduto } from '../../componentes/ImagemDoProduto';
 import { lerBytes } from '../../nucleo/arquivos';
 import { chamar, useBusca, type ErroDaTela } from '../../nucleo/chamadas';
 import { conferirArquivoDeFoto, nomeParaEnviar } from '../../nucleo/fotos';
-import { FOTOS_POR_PECA } from '../../../shared/produtos';
 import { TEXTOS } from '../../textos';
 import { lerFotos, type FotoDoProduto } from './dados';
 
@@ -16,11 +15,11 @@ export interface PainelDeFotosProps {
   ponte: PonteDoCorona;
   produtoId: string;
   nome: string;
-  /** Mexer na foto principal muda a versão do produto: a ficha lê o produto de novo. */
+  /** Trocar a foto muda a versão do produto: a ficha lê o produto de novo. */
   aoMudar: () => void;
 }
 
-/** Fotos do produto: escolher arquivo, colar (Ctrl+V), arrastar; tornar principal e remover. */
+/** Foto do produto (uma só por peça): escolher arquivo, colar (Ctrl+V) ou arrastar; trocar e remover. */
 export function PainelDeFotos({ ponte, produtoId, nome, aoMudar }: PainelDeFotosProps) {
   const busca = useBusca(
     () => chamar(ponte, 'produtos.fotos.listar', { id: produtoId }),
@@ -34,17 +33,12 @@ export function PainelDeFotos({ ponte, produtoId, nome, aoMudar }: PainelDeFotos
   const [vendo, setVendo] = useState<FotoDoProduto | null>(null);
   const [arrastando, setArrastando] = useState(false);
   const entrada = useRef<HTMLInputElement>(null);
-  const cheio = fotos.length >= FOTOS_POR_PECA;
   const ocupado = useRef(false);
 
   const enviar = useCallback(
     async (arquivo: File) => {
       if (ocupado.current) return;
       setErro(null);
-      if (cheio) {
-        setMensagem({ tipo: 'erro', texto: T.limite });
-        return;
-      }
       const problema = conferirArquivoDeFoto(arquivo);
       if (problema) {
         setMensagem({ tipo: 'erro', texto: problema });
@@ -60,7 +54,7 @@ export function PainelDeFotos({ ponte, produtoId, nome, aoMudar }: PainelDeFotos
           arquivo: { nome: nomeParaEnviar(arquivo), bytes },
         });
         if (r.ok) {
-          setMensagem({ tipo: 'ok', texto: T.enviada });
+          setMensagem({ tipo: 'ok', texto: fotos.length > 0 ? T.trocada : T.enviada });
           busca.recarregar();
           aoMudar();
         } else setErro(r.erro);
@@ -71,7 +65,7 @@ export function PainelDeFotos({ ponte, produtoId, nome, aoMudar }: PainelDeFotos
         setEnviando(false);
       }
     },
-    [ponte, produtoId, cheio, busca, aoMudar],
+    [ponte, produtoId, fotos.length, busca, aoMudar],
   );
 
   // Ctrl+V com uma imagem na área de transferência.
@@ -103,11 +97,7 @@ export function PainelDeFotos({ ponte, produtoId, nome, aoMudar }: PainelDeFotos
     if (arquivo) void enviar(arquivo);
   };
 
-  const acao = async (
-    operacao: 'produtos.fotos.principal' | 'produtos.fotos.excluir',
-    foto: FotoDoProduto,
-    ok?: string,
-  ) => {
+  const acao = async (operacao: 'produtos.fotos.excluir', foto: FotoDoProduto, ok?: string) => {
     setErro(null);
     setMensagem(null);
     const r = await chamar(ponte, operacao, { id: produtoId, fotoId: foto.id });
@@ -149,11 +139,10 @@ export function PainelDeFotos({ ponte, produtoId, nome, aoMudar }: PainelDeFotos
             if (arquivo) void enviar(arquivo);
           }}
         />
-        <Botao disabled={enviando || cheio} onClick={() => entrada.current?.click()}>
-          {T.escolher}
+        <Botao disabled={enviando} onClick={() => entrada.current?.click()}>
+          {fotos.length > 0 ? T.trocar : T.escolher}
         </Botao>
       </div>
-      {cheio ? <Aviso tipo="atencao">{T.limite}</Aviso> : null}
       {enviando ? <p role="status">{T.enviando}</p> : null}
       {mensagem ? (
         <Aviso tipo={mensagem.tipo === 'ok' ? 'sucesso' : 'erro'}>{mensagem.texto}</Aviso>
@@ -168,14 +157,8 @@ export function PainelDeFotos({ ponte, produtoId, nome, aoMudar }: PainelDeFotos
         {fotos.map((f) => (
           <li key={f.id} className="gestao-fotos__item">
             <ImagemDoProduto ponte={ponte} hash={f.hash} tamanho="media" nome={nome} />
-            {f.principal ? <strong>{T.principal}</strong> : null}
             <div className="gestao-acoes-da-linha">
               <Botao onClick={() => setVendo(f)}>{T.ver}</Botao>
-              {f.principal ? null : (
-                <Botao onClick={() => void acao('produtos.fotos.principal', f)}>
-                  {T.tornarPrincipal}
-                </Botao>
-              )}
               <Botao variante="perigoso" onClick={() => setARemover(f)}>
                 {T.remover}
               </Botao>

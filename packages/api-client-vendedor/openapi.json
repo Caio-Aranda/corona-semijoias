@@ -183,7 +183,13 @@
       },
       "ConsultasDaMaletaDoVendedorPeca" : {
         "properties" : {
+          "categoria" : {
+            "type" : "string"
+          },
           "codigo" : {
+            "type" : "string"
+          },
+          "codigoFornecedor" : {
             "type" : "string"
           },
           "fotoHash" : {
@@ -1363,6 +1369,48 @@
           "bearer" : [ ]
         } ],
         "summary" : "Ler uma peça pelo código",
+        "tags" : [ "maletas-do-vendedor-controller" ]
+      }
+    },
+    "/api/vendedor/maletas/{id}/pecas/busca" : {
+      "get" : {
+        "description" : "Para quando a etiqueta não lê: procura só entre as peças da maleta do vendedor, pelo nome, pela referência ou por parte de um código (até 20, sem diferenciar maiúsculas). Devolve a mesma linha da leitura por código, com foto e saldo. Texto vazio devolve lista vazia; peça de fora da maleta nunca aparece.",
+        "operationId" : "buscarPecaDaMinhaMaleta",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "texto",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/ConsultasDaMaletaDoVendedorLinha"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Procurar uma peça pelo nome",
         "tags" : [ "maletas-do-vendedor-controller" ]
       }
     },

@@ -23,7 +23,14 @@ const linha = (
   saldo: number,
   preco: string,
 ): LinhaDaMaleta => ({
-  produto: { id, nome, codigo, fotoHash: null },
+  produto: {
+    id,
+    nome,
+    codigo,
+    fotoHash: null,
+    categoria: 'Anéis',
+    codigoFornecedor: 'FAB-' + codigo,
+  },
   enviada: saldo,
   vendida: 0,
   devolvida: 0,
@@ -255,6 +262,24 @@ describe('Conferir a maleta', () => {
     );
   });
 
+  it('na conferência o painel mostra Esperado e Contadas, e escolher pelo nome conta uma peça como a leitura', async () => {
+    const { ponte, daOperacao } = ponteDeTrabalho({
+      'maletas.peca': () => ({ ok: true, dados: LINHA_ANEL }),
+      'maletas.buscarPeca': () => ({ ok: true, dados: [LINHA_ANEL] }),
+    });
+    const u = await abrir(ponte, 'Minha maleta');
+    await u.click(await screen.findByRole('button', { name: 'Conferir maleta' }));
+    await u.type(await screen.findByLabelText('Ler o código da peça'), 'A-1{Enter}');
+    const painel = await screen.findByRole('region', { name: 'Peça lida: Anel de prata' });
+    expect(within(painel).getByText('Esperado: 3 · Contadas: 1')).toBeInTheDocument();
+    expect(within(painel).getByText('COD Fábrica: FAB-A-1')).toBeInTheDocument();
+    await u.click(screen.getByRole('button', { name: 'Procurar pelo nome' }));
+    await u.type(screen.getByLabelText('Nome, referência ou parte do código'), 'anel');
+    await u.click(await screen.findByRole('button', { name: 'Escolher Anel de prata' }));
+    expect(await screen.findByText('Esperado: 3 · Contadas: 2')).toBeInTheDocument();
+    expect(daOperacao('maletas.peca')).toHaveLength(1);
+  });
+
   it('peça que não é da maleta mostra o aviso do servidor e não conta', async () => {
     const mensagem = 'Esta peça não consta na sua maleta.';
     const { ponte } = ponteDeTrabalho({
@@ -344,6 +369,46 @@ describe('Vender', () => {
     // Nada de preço nem de vendedor no que sai da tela.
     const texto = JSON.stringify(enviada);
     expect(texto).not.toMatch(/preco|vendedor|custo/i);
+  });
+
+  it('o painel da peça lida mostra quantas há na maleta, o COD Fábrica e a categoria, sem custo', async () => {
+    const { ponte } = ponteDeTrabalho({ 'maletas.peca': () => ({ ok: true, dados: LINHA_ANEL }) });
+    const u = await abrir(ponte, 'Vender');
+    await u.type(await screen.findByLabelText('Ler o código da peça'), 'A-1{Enter}');
+    const painel = await screen.findByRole('region', { name: 'Peça lida: Anel de prata' });
+    expect(within(painel).getByText('Na maleta: 3')).toBeInTheDocument();
+    expect(within(painel).getByText('COD Fábrica: FAB-A-1')).toBeInTheDocument();
+    expect(within(painel).getByText('Categoria: Anéis')).toBeInTheDocument();
+    expect(painel.textContent ?? '').not.toMatch(/custo|estoque da loja/i);
+  });
+
+  it('"Procurar pelo nome": acha só o que o servidor mandou e escolher age como ler o código', async () => {
+    const { ponte, daOperacao } = ponteDeTrabalho({
+      'maletas.buscarPeca': () => ({ ok: true, dados: [LINHA_ANEL] }),
+    });
+    const u = await abrir(ponte, 'Vender');
+    await screen.findByLabelText('Ler o código da peça');
+    await u.click(screen.getByRole('button', { name: 'Procurar pelo nome' }));
+    expect(screen.getByText('A etiqueta não lê? Procure pelo nome.')).toBeInTheDocument();
+    await u.type(screen.getByLabelText('Nome, referência ou parte do código'), 'anel');
+    expect(await screen.findByText('Na maleta: 3')).toBeInTheDocument();
+    expect(screen.getByText('Código A-1')).toBeInTheDocument();
+    expect(screen.getByText('Sem foto')).toBeInTheDocument();
+    expect(daOperacao('maletas.buscarPeca')[0]).toMatchObject({ id: MALETA, texto: 'anel' });
+    await u.click(screen.getByRole('button', { name: 'Escolher Anel de prata' }));
+    // A peça entra na venda como se o código tivesse sido lido (e a busca fecha).
+    expect(await screen.findByText(/Anel de prata: 1/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Procurar pelo nome' })).toBeInTheDocument();
+    expect(daOperacao('maletas.peca')).toHaveLength(0);
+  });
+
+  it('busca sem resultado diz que não há peça da maleta com esse nome', async () => {
+    const { ponte } = ponteDeTrabalho({ 'maletas.buscarPeca': () => ({ ok: true, dados: [] }) });
+    const u = await abrir(ponte, 'Vender');
+    await screen.findByLabelText('Ler o código da peça');
+    await u.click(screen.getByRole('button', { name: 'Procurar pelo nome' }));
+    await u.type(screen.getByLabelText('Nome, referência ou parte do código'), 'zzz');
+    expect(await screen.findByText(/Nenhuma peça da sua maleta com esse nome/)).toBeInTheDocument();
   });
 
   it('recusa mais peças do que há na maleta, com a frase da loja', async () => {

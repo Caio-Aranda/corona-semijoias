@@ -1,5 +1,6 @@
 import {
   acharPecaDaMinhaMaleta,
+  buscarPecaDaMinhaMaleta,
   baixarFotoDaMinhaMaleta,
   cadastrarMeuCliente,
   conferirMinhaMaleta,
@@ -180,6 +181,14 @@ export function criarApiDoVendas(opcoes: OpcoesDaApi): ApiDoVendas {
             ...base,
             path: { id: pedido.id },
             query: { codigo: pedido.codigo },
+          }),
+        );
+      case 'maletas.buscarPeca':
+        return executar(() =>
+          buscarPecaDaMinhaMaleta({
+            ...base,
+            path: { id: pedido.id },
+            query: { texto: pedido.texto },
           }),
         );
       case 'maletas.conferir':

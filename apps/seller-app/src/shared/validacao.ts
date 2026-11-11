@@ -180,6 +180,8 @@ export function validarChamada(v: unknown): PedidoDeChamada | null {
       return ehUuid(v.id) && textoAte(v.codigo, 100)
         ? { operacao, id: v.id, codigo: v.codigo }
         : null;
+    case 'maletas.buscarPeca':
+      return ehUuid(v.id) && textoAte(v.texto, 100) ? { operacao, id: v.id, texto: v.texto } : null;
     case 'maletas.conferir': {
       const itens = validarContagens(v.itens);
       if (!ehUuid(v.id) || !ehUuid(v.conferenciaId) || !itens) return null;

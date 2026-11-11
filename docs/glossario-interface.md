@@ -57,7 +57,7 @@ Em 09/11/2026 o responsável resolveu as dúvidas que estavam abertas neste glos
 | pendência | `pendencias_acerto` | Peça que faltou ou valor que ficou em aberto no acerto. |
 | pedido de autorização | `autorizacoes_excecao` | O vendedor pede à dona para aceitar uma devolução fora do prazo. |
 | limite de consignação | `limite_consignacao`, `limite_consignacao_ilimitado` | Valor máximo, em reais e a preço de venda, das peças que o vendedor pode ter em mãos. É obrigatório: a dona preenche o valor ou marca **Sem limite**. Zero vale zero (não é "sem limite"). Sem uma das duas escolhas, o vendedor não recebe maleta. |
-| foto | `produtos_fotos` | Aparece junto com a peça sempre que ela é lida ou pesquisada (§20). |
+| foto | `produtos_fotos` | Uma foto só por peça, para reconhecer a peça. Aparece junto com a peça sempre que ela é lida ou pesquisada (§20). Na tela da dona, o botão é **Trocar foto** (a nova substitui a anterior); não existe "foto principal" nem ordem das fotos. |
 | estoque | `produtos.estoque_atual`, estoque central | Quantidade de cada produto guardada na loja (fora das maletas). Ver parte 12. |
 | entrada de compra | `compras`, `itens_compra` | Registro das peças que chegaram de um fornecedor. Na tela, "Receber compra". Ver parte 12. |
 | entradas e saídas | `movimentacoes_estoque` | Histórico de tudo o que aumentou ou diminuiu o estoque. A palavra "movimentação" nunca aparece na tela (parte 2). |
@@ -68,6 +68,8 @@ Em 09/11/2026 o responsável resolveu as dúvidas que estavam abertas neste glos
 | produtos parados | relatório de produtos parados | Produtos que não saem do estoque há muito tempo. |
 | sem foto | imagem padrão "sem foto" | Imagem com a marca, nunca um espaço quebrado. A falta de foto nunca trava a venda. |
 | cliente (do vendedor) | diretório de clientes da loja | O vendedor não tem "os clientes dele": o cliente é da loja e qualquer vendedor vende para ele. Vendas, fiado e pagamentos continuam só de quem vendeu (ADR-0011, item 13). |
+| Procurar pelo nome | busca na própria maleta (`/pecas/busca`) | Corona Vendas, nas telas Vender e Conferir maleta: "A etiqueta não lê? Procure pelo nome." Procura só entre as peças da maleta do vendedor (nome, referência ou parte do código); mostra miniatura, nome, código e "Na maleta: N"; escolher age como ler o código. |
+| COD Fábrica | código do tipo `FORNECEDOR` | O código que o fornecedor deu à peça. Aparece no painel da peça lida, junto com a categoria e "Na maleta: N" (na conferência, "Esperado: 3 · Contadas: 2"), quando existir. |
 | Acabou · Está em maleta | `estoque_atual` e saldo das maletas | Estoque da loja em zero **sem** peça em maleta: **Acabou** (destaque). Em zero **com** peças nas maletas dos vendedores: **0 na loja** e "**Está em maleta: 2 (Maria, João)**" (até três nomes; com mais, "e mais N"). Só no Corona Gestão. Na montagem da maleta: "Sem estoque na loja. Está na maleta de Maria." |
 | cotação | taxa PTAX de venda do Banco Central, tabela `cotacoes` (ADR-0006) | Quanto valem o Dólar e o Guarani em reais num dia, segundo o Banco Central. Sempre com a data: "Cotação do Banco Central de 06/11/2026". Ver parte 11. |
 | O que precisa da sua atenção | bloco da tela inicial da dona | Acertos pendentes, devoluções para autorizar, estoque baixo, maletas atrasadas, envios com problema (§19.3). |
@@ -555,10 +557,10 @@ Foto com tamanho de imagem enorme (mesmo pesando menos de 10 MB):
 > **Esta foto é grande demais em tamanho de imagem.**
 > Reduza a foto (até 25 milhões de pontos, por exemplo 5000 por 5000) e envie de novo.
 
-Peça que já tem 5 fotos:
+Peça que já tem foto (decisão de 11/11/2026: uma foto só por peça, a nova substitui a antiga; não há mais o aviso de "5 fotos"):
 
-> **Esta peça já tem 5 fotos.**
-> Exclua uma das fotos para poder enviar outra.
+> **Foto trocada.**
+> A foto nova substituiu a anterior desta peça.
 
 Foto que não existe mais, ou que pertence a outro produto: usa o "não achou" dos cadastros.
 

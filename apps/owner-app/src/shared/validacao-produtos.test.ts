@@ -177,7 +177,6 @@ describe('conferência dos dados de produtos', () => {
 
   it('as demais operações exigem id válido', () => {
     expect(conferirParametros('produtos.inativar', { id: 'x' })).toBeNull();
-    expect(conferirParametros('produtos.fotos.principal', { id: ID, fotoId: ID })).not.toBeNull();
     expect(conferirParametros('produtos.codigoProximo', {})).not.toBeNull();
     expect(conferirParametros('produtos.codigoProximo', { a: 1 })).toBeNull();
   });

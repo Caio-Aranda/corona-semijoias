@@ -269,7 +269,6 @@ export function conferirProduto(
       const arquivo = conferirFoto(p.arquivo);
       return arquivo ? { operacao, id: p.id, arquivo } : null;
     }
-    case 'produtos.fotos.principal':
     case 'produtos.fotos.excluir':
       return soCom('id', 'fotoId') && idValido(p.id) && idValido(p.fotoId)
         ? { operacao, id: p.id, fotoId: p.fotoId }

@@ -15,7 +15,6 @@ export const OPERACOES_DE_PRODUTOS = [
   'produtos.reativar',
   'produtos.fotos.listar',
   'produtos.fotos.enviar',
-  'produtos.fotos.principal',
   'produtos.fotos.excluir',
   'produtos.fotos.imagem',
   'produtos.importacao.previa',
@@ -33,7 +32,6 @@ export type TamanhoDeFoto = (typeof TAMANHOS_DE_FOTO)[number];
 /** Limites da foto (o servidor confere de novo, pelo conteúdo do arquivo). */
 export const TAMANHO_MAXIMO_DA_FOTO = 10 * 1024 * 1024;
 export const EXTENSOES_DE_FOTO = ['jpg', 'jpeg', 'png', 'webp'] as const;
-export const FOTOS_POR_PECA = 5;
 /** A importação manda no máximo 10 fotos por pedido (limite de partes do servidor). */
 export const FOTOS_POR_LOTE = 10;
 export const MAXIMO_DE_NOMES_NA_PREVIA = 5000;

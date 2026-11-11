@@ -54,16 +54,13 @@ public class FotosDosProdutosController {
         }
     }
 
-    public record RespostaDaFoto(UUID id, UUID produtoId, String hash, boolean principal, int ordem, int largura,
+    public record RespostaDaFoto(UUID id, UUID produtoId, String hash, int largura,
             int altura, int tamanhoBytes, int version, String miniaturaUrl, String mediaUrl, String grandeUrl) {
 
         static RespostaDaFoto de(Foto f) {
-            return new RespostaDaFoto(f.id(), f.produtoId(), f.hash(), f.principal(), f.ordem(), f.largura(), f.altura(),
+            return new RespostaDaFoto(f.id(), f.produtoId(), f.hash(), f.largura(), f.altura(),
                     f.tamanhoBytes(), f.version(), url(f.hash(), "miniatura"), url(f.hash(), "media"), url(f.hash(), "grande"));
         }
-    }
-
-    public record PedidoDeOrdem(List<UUID> ids) {
     }
 
     public record PedidoDePrevia(List<String> nomes) {
@@ -85,7 +82,7 @@ public class FotosDosProdutosController {
 
     // --- fotos de uma peça ---
 
-    @Operation(summary = "Listar as fotos da peça", description = "Na ordem da tela; a principal vem marcada. Até 5 fotos.")
+    @Operation(summary = "Listar as fotos da peça", description = "Uma foto só por peça: a lista tem no máximo uma foto.")
     @GetMapping("/{id}/fotos")
     public List<RespostaDaFoto> listar(@PathVariable UUID id) {
         return fotos.listar(id).stream().map(RespostaDaFoto::de).toList();
@@ -94,8 +91,8 @@ public class FotosDosProdutosController {
     @Operation(summary = "Enviar uma foto da peça",
             description = "Formulário com o campo 'arquivo'. Aceita JPG, PNG e WebP de até 10 MB; o tipo vale pelo "
                     + "conteúdo, não pelo nome. O servidor corrige a rotação, tira os dados escondidos (como o local) "
-                    + "e gera miniatura, tamanho médio e grande. A primeira foto vira a principal. Enviar de novo a "
-                    + "mesma foto não duplica (responde 200 com a que já existe). Uma peça tem no máximo 5 fotos.")
+                    + "e gera miniatura, tamanho médio e grande. A foto nova SUBSTITUI a que a peça "
+                    + "já tinha (responde 201). Enviar de novo a mesma foto não muda nada (responde 200).")
     @PostMapping(path = "/{id}/fotos", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<RespostaDaFoto> enviar(@PathVariable UUID id,
             @RequestPart(name = "arquivo", required = false) MultipartFile arquivo) throws IOException {
@@ -106,21 +103,8 @@ public class FotosDosProdutosController {
         return ResponseEntity.status(enviada.nova() ? HttpStatus.CREATED : HttpStatus.OK).body(RespostaDaFoto.de(enviada.foto()));
     }
 
-    @Operation(summary = "Escolher a foto principal")
-    @PostMapping("/{id}/fotos/{fotoId}/principal")
-    public List<RespostaDaFoto> principal(@PathVariable UUID id, @PathVariable UUID fotoId) {
-        return fotos.definirPrincipal(id, fotoId).stream().map(RespostaDaFoto::de).toList();
-    }
-
-    @Operation(summary = "Mudar a ordem das fotos",
-            description = "Mande os ids de todas as fotos da peça, uma vez cada, na ordem nova. A principal não muda.")
-    @PutMapping("/{id}/fotos/ordem")
-    public List<RespostaDaFoto> ordem(@PathVariable UUID id, @RequestBody PedidoDeOrdem pedido) {
-        return fotos.reordenar(id, pedido == null ? null : pedido.ids()).stream().map(RespostaDaFoto::de).toList();
-    }
-
     @Operation(summary = "Excluir uma foto",
-            description = "Exclusão lógica. Se era a principal, a próxima da ordem passa a ser a principal.")
+            description = "Exclusão lógica: a peça fica sem foto.")
     @DeleteMapping("/{id}/fotos/{fotoId}")
     public ResponseEntity<Void> excluir(@PathVariable UUID id, @PathVariable UUID fotoId) {
         fotos.excluir(id, fotoId);

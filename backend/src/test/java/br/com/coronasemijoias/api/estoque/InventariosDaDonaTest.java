@@ -704,7 +704,14 @@ class InventariosDaDonaTest extends TesteDeIntegracao {
         Set<String> tabelas = new HashSet<>();
         tudo.linhas().forEach(l -> tabelas.add(l.tabela()));
         assertThat(tabelas).doesNotContain("inventarios", "itens_inventario", "leituras_inventario", "movimentacoes_estoque");
-        assertThat(tudo.linhas().toString()).doesNotContain("esperado", "contado");
+        // A contagem não vaza pelas COLUNAS do pull. Só os nomes de coluna entram na conta: o banco dos testes é
+        // compartilhado e o texto livre de outros testes (nome, observação) pode ter "encontrado" (que contém "contado").
+        Set<String> colunas = new HashSet<>();
+        tudo.linhas().forEach(l -> colunas.addAll(l.colunas().keySet()));
+        assertThat(colunas).noneMatch(c -> c.toLowerCase().contains("esperad") || c.toLowerCase().contains("contad"));
+        // E a peça da contagem chega sem nada da contagem: o saldo é o do estoque (3), nunca o contado (2 somado).
+        assertThat(tudo.linhas()).filteredOn(l -> l.id().equals(a.id())).allSatisfy(l ->
+                assertThat(l.colunas().values().stream().map(String::valueOf).toList()).doesNotContain("esperado", "contado"));
     }
 
     @Test
