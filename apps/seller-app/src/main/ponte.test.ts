@@ -169,7 +169,7 @@ describe('ponte (processo principal)', () => {
       dados: { nome: 'Maria' },
     });
     expect(servico.chamarApi).toHaveBeenCalledTimes(1);
-    expect(servico.chamarApi).toHaveBeenCalledWith('eu');
+    expect(servico.chamarApi).toHaveBeenCalledWith({ operacao: 'eu' });
   });
 
   it('o serviço nunca devolve token à tela', async () => {

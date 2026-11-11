@@ -56,3 +56,23 @@ Uma seção por tarefa, no mesmo formato de [fase-3.md](fase-3.md). A tabela de 
 - 8 testes de integração (isolamento entre vendedores, 403 do perfil errado, conferência, aparelho único com liberação, clientes, relatórios).
 
 **Fora desta tarefa:** comissão e acerto (Fase 7), devoluções e trocas (Fase 6), "dados até" e sync (Fase 5). A consulta de produtos fora da maleta não existe (dúvida 6 do ADR-0011). Edição de cliente pelo vendedor ficou para depois (só cadastro e leitura).
+
+### Tarefa 4.4: Corona Vendas, conferência da maleta, venda, cliente e estorno
+
+**Em revisão.** Primeira tarefa de telas do vendedor (`apps/seller-app`).
+
+**O que foi feito**
+
+- **Ponte com operações fechadas** (`shared/operacoes.ts`, `shared/validacao.ts`): a tela só pede operações da lista (maleta, conferência, venda, estorno, clientes, cotação, foto, relatórios); cada pedido é conferido (UUID, datas, dinheiro com até duas casas, quantidades, tamanhos) e o que sobra é descartado. O processo principal (`main/api.ts`) faz a chamada com o token, que nunca chega à tela, e devolve a foto como endereço de dados. Nenhum pedido leva preço, total ou vendedor.
+- **Minha maleta**: peças com enviada, vendida, devolvida, saldo e preço (Real, Dólar e Guarani pela cotação do dia); botão **Conferir maleta** só enquanto a maleta está enviada.
+- **Conferir maleta**: leitura do código peça a peça (cada leitura conta uma), foto grande da peça lida, tabela esperado x contado, janela "Concluir conferência" dizendo o que falta ou sobra; reenvio após queda de internet usa o mesmo id.
+- **Vender**: ler o código, escolher ou cadastrar o cliente na hora, desconto por linha em reais, como o cliente pagou (dinheiro, Pix, cartão, cheque ou a prazo), total nas três moedas, confirmação "Concluir venda". As recusas do servidor (saldo, limite de desconto, aparelho) aparecem como vieram. A venda reenviada usa os mesmos ids (não duplica).
+- **Minhas vendas**: lista, detalhe e **Estornar venda** com motivo; reenvio com o mesmo id do estorno.
+- Tela inicial abre **Vender** e **Minha maleta**; **Meus clientes** e **Meus números** seguem "Em breve" até a 4.5.
+- Testes: validação da ponte, mapeamento de cada operação para a rota da API, e as telas (leitura, conferência, venda a vista e a prazo, desconto, estorno, reenvios, recusas, três moedas).
+
+**Decisões**
+
+- A conta de moedas (`renderer/moedas.ts`) é uma cópia da do Corona Gestão: o Vendas não importa código da dona (ADR-0003). Mover para um pacote neutro fica como melhoria (dívida registrada no PR).
+- A foto vem como `data:` (a CSP já permitia) e fica em cache de memória por tamanho.
+- Sem a tela de cotação ou de configuração de desconto: o limite é do servidor.

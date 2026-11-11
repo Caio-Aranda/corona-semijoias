@@ -1,6 +1,6 @@
 import type {
   EstadoDaSessao,
-  OperacaoDaApi,
+  PedidoDeChamada,
   ResultadoDeChamada,
   ResultadoDeEntrada,
 } from '../shared/ponte';
@@ -8,9 +8,10 @@ import type { DadosDoUsuario } from './api';
 import type { GuardaDeTokens } from './guarda-de-tokens';
 import type { Falha, Resultado } from './tipos';
 
-/** Chamadas de negócio que o processo principal faz em nome da tela. Hoje só existe "eu". */
+/** Chamadas de negócio que o processo principal faz em nome da tela. */
 export interface ChamadasDaApi {
   eu(tokenDeAcesso: string): Promise<Resultado<DadosDoUsuario>>;
+  chamar(tokenDeAcesso: string, pedido: PedidoDeChamada): Promise<Resultado<unknown>>;
 }
 
 /**
@@ -71,13 +72,12 @@ export class ServicoDeSessao {
     }
   }
 
-  async chamarApi(operacao: OperacaoDaApi): Promise<ResultadoDeChamada> {
-    switch (operacao) {
-      case 'eu': {
-        const r = await this.guarda.comToken((token) => this.api.eu(token));
-        return r.ok ? { ok: true, dados: r.dados } : this.falhaDaChamada(r.falha);
-      }
-    }
+  async chamarApi(pedido: PedidoDeChamada): Promise<ResultadoDeChamada> {
+    const r =
+      pedido.operacao === 'eu'
+        ? await this.guarda.comToken((token) => this.api.eu(token))
+        : await this.guarda.comToken((token) => this.api.chamar(token, pedido));
+    return r.ok ? { ok: true, dados: r.dados } : this.falhaDaChamada(r.falha);
   }
 
   private async usuario(): Promise<{ nome: string } | null> {

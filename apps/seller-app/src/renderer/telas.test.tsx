@@ -241,9 +241,9 @@ describe('tela inicial do vendedor', () => {
     const { ponte } = ponteFalsa({ estouLogado: vi.fn(() => Promise.resolve(dentro)) });
     const u = userEvent.setup();
     render(<App ponte={ponte} />);
-    await u.click(await screen.findByRole('button', { name: 'Minha maleta' }));
+    await u.click(await screen.findByRole('button', { name: 'Meus clientes' }));
     expect(screen.getByText('Em breve.')).toBeInTheDocument();
-    expect(screen.getByText(/Minha maleta ainda está sendo preparado/)).toBeInTheDocument();
+    expect(screen.getByText(/Meus clientes ainda está sendo preparado/)).toBeInTheDocument();
   });
 
   it('Sair chama a ponte e volta para Entrar', async () => {

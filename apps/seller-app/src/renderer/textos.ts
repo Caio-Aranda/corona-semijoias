@@ -1,7 +1,7 @@
 /**
- * Textos fixos que o servidor não consegue montar (por exemplo, quando nem chegamos a falar com ele).
- * Vêm do glossário da interface (docs/glossario-interface.md, partes 4 e 6).
- * Mensagens de erro da API nunca são escritas aqui: a tela mostra o que o servidor devolveu.
+ * Textos fixos que o servidor não consegue montar (por exemplo, quando nem chegamos a falar com ele) e os
+ * rótulos das telas. Vêm do glossário da interface (docs/glossario-interface.md). Mensagens de erro da
+ * API nunca são escritas aqui: a tela mostra o que o servidor devolveu.
  */
 export const TEXTOS = {
   /** Atualização automática (Fase 9): a versão nova já foi baixada e entra quando a pessoa fecha o programa. */
@@ -11,6 +11,7 @@ export const TEXTOS = {
   semInternet: {
     titulo: 'Sem internet.',
     texto: 'Para entrar no Corona Vendas é preciso internet. Conecte-se e tente de novo.',
+    curto: 'Sem internet. Conecte-se e tente de novo.',
   },
   algoDeuErrado:
     'Algo deu errado agora. Tente de novo. Se continuar, fale com o suporte do sistema.',
@@ -31,5 +32,149 @@ export const TEXTOS = {
     naoEstaBoa:
       'A senha nova ainda não está boa. Ela precisa ter pelo menos 8 caracteres, com letras e números.',
     naoSaoIguais: 'As duas senhas não são iguais. Digite a mesma senha nos dois campos.',
+  },
+
+  /** Navegação comum. */
+  voltar: 'Voltar',
+  carregando: 'Buscando...',
+  tentarDeNovo: 'Tentar de novo',
+
+  maleta: {
+    titulo: 'Minha maleta',
+    textoCarregando: 'Buscando a sua maleta...',
+    vazia: 'Você ainda não tem maleta com peças. Quando a dona enviar uma, ela aparece aqui.',
+    conferir: 'Conferir maleta',
+    situacao: { ENVIADA: 'Enviada', CONFERIDA: 'Conferida', EM_ACERTO: 'Em acerto' } as Record<
+      string,
+      string
+    >,
+    tipo: { NOVA: 'Maleta', REPOSICAO: 'Reposição' } as Record<string, string>,
+    pecas: 'peças com você',
+    colunas: {
+      peca: 'Peça',
+      codigo: 'Código',
+      enviada: 'Enviada',
+      vendida: 'Vendida',
+      devolvida: 'Devolvida',
+      saldo: 'Com você',
+      preco: 'Preço',
+    },
+    legenda: 'Peças da maleta',
+    semPecas: 'Nenhuma peça nesta maleta.',
+  },
+
+  conferencia: {
+    titulo: 'Conferir maleta',
+    ajuda: 'Leia o código de cada peça que você recebeu. Cada leitura conta uma peça.',
+    campoCodigo: 'Ler o código da peça',
+    lerAgora: 'Ler o código',
+    legenda: 'Peças contadas',
+    colunas: {
+      peca: 'Peça',
+      esperado: 'Na maleta',
+      contadas: 'Você contou',
+      diferenca: 'Diferença',
+    },
+    concluir: 'Concluir conferência',
+    janelaTitulo: 'Concluir a conferência?',
+    resumo: (contadas: number, esperadas: number) =>
+      `Você contou ${contadas} de ${esperadas} peças.`,
+    faltam: (n: number) => `Faltam ${n} peça(s) em relação à lista da maleta.`,
+    sobram: (n: number) => `Sobram ${n} peça(s) em relação à lista da maleta.`,
+    tudoCerto: 'As peças que você contou conferem com a lista da maleta.',
+    avisoSemVolta:
+      'Depois de concluir, a conferência não muda. A dona vê o resultado. Se contou errado, fale com ela.',
+    feita: 'Conferência concluída.',
+    feitaTudoCerto: 'Tudo certo: as peças conferem com a lista da maleta.',
+    feitaComDiferenca: (n: number) =>
+      `Há diferença em ${n} peça(s). A dona vai ver o resultado. Confira as peças abaixo.`,
+    lida: (nome: string, n: number) => `${nome}: ${n} contada(s).`,
+    outraEmBreve: 'Leia o código de uma peça por vez.',
+  },
+
+  venda: {
+    titulo: 'Vender',
+    textoCarregando: 'Preparando a venda...',
+    semMaleta:
+      'Você ainda não tem maleta para vender. Quando a dona enviar uma maleta, ela aparece aqui.',
+    maleta: 'Maleta',
+    lerCodigo: 'Ler o código da peça',
+    acabou: 'Esta peça acabou na sua maleta. Escolha outra peça ou fale com a dona.',
+    peca: 'Peça',
+    qtd: 'Qtd.',
+    preco: 'Preço',
+    desconto: 'Desconto (R$)',
+    descontoInvalido: 'Digite o desconto em reais, por exemplo 5,00.',
+    total: 'Total',
+    carrinhoVazio: 'Leia o código de uma peça para começar a venda.',
+    legendaCarrinho: 'Peças da venda',
+    mais: 'Mais uma',
+    menos: 'Tirar uma',
+    tirar: 'Tirar peça',
+    cliente: 'Cliente',
+    buscarCliente: 'Buscar cliente (nome, telefone ou CPF)',
+    nenhumCliente: 'Nenhum cliente encontrado. Cadastre o cliente novo.',
+    cadastrarCliente: 'Cadastrar cliente novo',
+    escolher: 'Escolher',
+    clienteEscolhido: 'Cliente da venda:',
+    trocarCliente: 'Trocar cliente',
+    pagamento: 'Como o cliente pagou?',
+    formas: {
+      DINHEIRO: 'Dinheiro',
+      PIX: 'Pix',
+      CARTAO: 'Cartão',
+      CHEQUE: 'Cheque',
+    } as Record<string, string>,
+    aPrazo: 'A prazo (fiado)',
+    valorPago: 'Valor pago agora (R$)',
+    valorPagoInvalido: 'Digite o valor pago em reais, por exemplo 50,00.',
+    pagoMaiorQueTotal: 'O valor pago passa do total da venda. Confira o valor.',
+    aReceber: 'Fica para receber',
+    faltaCliente: 'Escolha o cliente da venda.',
+    faltaPeca: 'Leia o código de pelo menos uma peça.',
+    concluir: 'Concluir venda',
+    janelaTitulo: 'Concluir a venda?',
+    janelaTexto: (cliente: string) =>
+      `A venda para ${cliente} será registrada e as peças saem da sua maleta. Se errar, você pode estornar a venda hoje.`,
+    registrada: 'Venda registrada.',
+    novaVenda: 'Nova venda',
+    verVendas: 'Ver minhas vendas',
+    totalDoServidor: 'Total da venda',
+    cotacaoSem: 'Sem cotação do Dólar e do Guarani por enquanto: os valores aparecem só em Real.',
+    cotacaoDe: (data: string) => `Cotação do Dólar e do Guarani de ${data}.`,
+  },
+
+  cliente: {
+    titulo: 'Cadastrar cliente',
+    nome: 'Nome',
+    telefone: 'Telefone',
+    whatsapp: 'WhatsApp',
+    cpf: 'CPF (opcional)',
+    nascimento: 'Data de nascimento (opcional)',
+    salvar: 'Salvar cliente',
+    faltaNome: 'Escreva o nome do cliente.',
+  },
+
+  vendas: {
+    titulo: 'Minhas vendas',
+    textoCarregando: 'Buscando as suas vendas...',
+    vazia: 'Você ainda não fez nenhuma venda.',
+    legenda: 'Minhas vendas',
+    colunas: { data: 'Data', cliente: 'Cliente', total: 'Total', situacao: 'Situação', acoes: '' },
+    situacao: { CONCLUIDA: 'Concluída', ESTORNADA: 'Estornada' } as Record<string, string>,
+    ver: 'Ver',
+    detalhe: 'Venda',
+    pago: 'Pago',
+    aReceber: 'A receber',
+    pagamentos: 'Pagamentos',
+    reembolso: 'Reembolso',
+    estornar: 'Estornar venda',
+    estornoTitulo: 'Estornar esta venda?',
+    estornoTexto:
+      'As peças voltam para a sua maleta e o dinheiro que o cliente pagou vira reembolso. Isso não pode ser desfeito.',
+    motivo: 'Motivo do estorno',
+    faltaMotivo: 'Diga o motivo do estorno.',
+    estornada: 'Venda estornada.',
+    motivoDoEstorno: 'Motivo',
   },
 } as const;

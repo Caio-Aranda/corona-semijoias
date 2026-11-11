@@ -2,12 +2,27 @@ import { useCallback, useEffect, useState } from 'react';
 import type { AvisoDeSessao, EstadoDaSessao, PonteDoCorona } from '../shared/ponte';
 import { FaixaDeAtualizacao } from './FaixaDeAtualizacao';
 import { TelaAppDesatualizado } from './telas/TelaAppDesatualizado';
+import { TelaConferirMaleta } from './telas/TelaConferirMaleta';
 import { TelaEntrar } from './telas/TelaEntrar';
-import { TelaInicial } from './telas/TelaInicial';
+import { TelaInicial, type Destino } from './telas/TelaInicial';
+import { TelaMinhaMaleta } from './telas/TelaMinhaMaleta';
+import { TelaMinhasVendas } from './telas/TelaMinhasVendas';
 import { TelaSemConexao } from './telas/TelaSemConexao';
 import { TelaTrocarSenha } from './telas/TelaTrocarSenha';
+import { TelaVender } from './telas/TelaVender';
+import type { Maleta } from '../shared/dados';
 
 type Tela = EstadoDaSessao | { estado: 'carregando' };
+
+/** Onde a pessoa está depois de entrar. */
+type Rota =
+  | { tela: 'inicio' }
+  | { tela: 'maleta' }
+  | { tela: 'conferir'; maleta: Maleta }
+  | { tela: 'vender' }
+  | { tela: 'vendas' };
+
+const PRONTOS: readonly Destino[] = ['vender', 'maleta'];
 
 export interface AppProps {
   ponte: PonteDoCorona;
@@ -17,6 +32,7 @@ export interface AppProps {
 export function App({ ponte }: AppProps) {
   const [tela, setTela] = useState<Tela>({ estado: 'carregando' });
   const [sessaoTerminou, setSessaoTerminou] = useState(false);
+  const [rota, setRota] = useState<Rota>({ tela: 'inicio' });
 
   const conferir = useCallback(async () => {
     try {
@@ -69,17 +85,53 @@ export function App({ ponte }: AppProps) {
         return <TelaSemConexao aoTentarDeNovo={() => void conferir()} />;
       case 'app-desatualizado':
         return <TelaAppDesatualizado mensagem={tela.mensagem} />;
-      case 'dentro':
-        return (
-          <TelaInicial
-            nome={tela.usuario?.nome ?? null}
-            aoSair={async () => {
-              await ponte.sair();
-              setSessaoTerminou(false);
-              await conferir();
-            }}
-          />
-        );
+      case 'dentro': {
+        const inicio = () => setRota({ tela: 'inicio' });
+        switch (rota.tela) {
+          case 'maleta':
+            return (
+              <TelaMinhaMaleta
+                ponte={ponte}
+                aoVoltar={inicio}
+                aoConferir={(maleta) => setRota({ tela: 'conferir', maleta })}
+              />
+            );
+          case 'conferir':
+            return (
+              <TelaConferirMaleta
+                ponte={ponte}
+                maleta={rota.maleta}
+                aoVoltar={() => setRota({ tela: 'maleta' })}
+              />
+            );
+          case 'vender':
+            return (
+              <TelaVender
+                ponte={ponte}
+                aoVoltar={inicio}
+                aoVerVendas={() => setRota({ tela: 'vendas' })}
+              />
+            );
+          case 'vendas':
+            return <TelaMinhasVendas ponte={ponte} aoVoltar={() => setRota({ tela: 'vender' })} />;
+          case 'inicio':
+            return (
+              <TelaInicial
+                nome={tela.usuario?.nome ?? null}
+                prontos={PRONTOS}
+                aoEscolher={(destino) =>
+                  setRota({ tela: destino === 'vender' ? 'vender' : 'maleta' })
+                }
+                aoSair={async () => {
+                  await ponte.sair();
+                  setSessaoTerminou(false);
+                  setRota({ tela: 'inicio' });
+                  await conferir();
+                }}
+              />
+            );
+        }
+      }
     }
   }
 }

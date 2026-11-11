@@ -58,3 +58,69 @@
   padding: 0.5rem 1rem;
   background: var(--cor-fundo-suave);
 }
+
+/* Telas de trabalho (maleta, conferência, venda, vendas). */
+.vendas-cartao--larga {
+  max-width: none;
+  margin: 0;
+}
+
+.vendas-subtitulo {
+  margin: 0;
+  font-size: var(--texto-subtitulo, 1.25rem);
+}
+
+.vendas-texto--pequeno {
+  font-size: var(--texto-pequeno, 0.875rem);
+}
+
+.vendas-leitor {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--espaco-4);
+}
+
+.vendas-leitor .cs-campo {
+  flex: 1;
+}
+
+.vendas-quantidade {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+}
+
+.vendas-desconto {
+  width: 6rem;
+  min-height: 2.5rem;
+}
+
+.vendas-total {
+  margin: 0;
+  font-size: var(--texto-titulo);
+}
+
+.vendas-lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+}
+
+.vendas-lista li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-4);
+}
+
+.vendas-pagamento {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3, 0.75rem);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-2);
+  padding: var(--espaco-4);
+}
