@@ -8,7 +8,7 @@ export type CadastroDeTeste = {
     nome: string;
 };
 
-export type Cliente = {
+export type ClientesDoVendedorCliente = {
     ativo?: boolean;
     cpf?: string;
     dataNascimento?: string;
@@ -23,14 +23,66 @@ export type Conferencia = {
     conferidaEm?: string;
     divergencias?: number;
     id?: string;
-    itens?: Array<Linha>;
+    itens?: Array<ConsultasDaConferenciaLinha>;
     remessaId?: string;
 };
 
-export type Cotacao = {
+export type ConsultasDaConferenciaLinha = {
+    contado?: number;
+    diferenca?: number;
+    esperado?: number;
+    produtoId?: string;
+    produtoNome?: string;
+};
+
+export type ConsultasDaMaletaDoVendedorLinha = {
+    devolvida?: number;
+    enviada?: number;
+    precoUnitario?: string;
+    produto?: ConsultasDaMaletaDoVendedorPeca;
+    saldo?: number;
+    valorEmAberto?: string;
+    vendida?: number;
+};
+
+export type ConsultasDaMaletaDoVendedorMaleta = {
+    dispositivoId?: string;
+    enviadaEm?: string;
+    id?: string;
+    itens?: Array<ConsultasDaMaletaDoVendedorLinha>;
+    numero?: string;
+    pecasEmAberto?: number;
+    semanaNumero?: number;
+    status?: string;
+    tipo?: string;
+    valorEmAberto?: string;
+};
+
+export type ConsultasDaMaletaDoVendedorPeca = {
+    codigo?: string;
+    fotoHash?: string;
+    id?: string;
+    nome?: string;
+};
+
+export type ConsultasDeVendasCotacao = {
     data?: string;
     dolar?: string;
     guarani?: string;
+};
+
+export type ConsultasDeVendasItem = {
+    desconto?: string;
+    precoUnitario?: string;
+    produto?: ConsultasDeVendasPeca;
+    quantidade?: number;
+    total?: string;
+};
+
+export type ConsultasDeVendasPeca = {
+    fotoHash?: string;
+    id?: string;
+    nome?: string;
 };
 
 export type CotacaoDoVendedor = {
@@ -64,35 +116,6 @@ export type Devedor = {
     vendidoEmGuarani?: string;
 };
 
-export type Item = {
-    desconto?: string;
-    precoUnitario?: string;
-    produto?: Peca;
-    quantidade?: number;
-    total?: string;
-};
-
-export type Linha = {
-    contado?: number;
-    diferenca?: number;
-    esperado?: number;
-    produtoId?: string;
-    produtoNome?: string;
-};
-
-export type Maleta = {
-    dispositivoId?: string;
-    enviadaEm?: string;
-    id?: string;
-    itens?: Array<Linha>;
-    numero?: string;
-    pecasEmAberto?: number;
-    semanaNumero?: number;
-    status?: string;
-    tipo?: string;
-    valorEmAberto?: string;
-};
-
 export type PagamentoLido = {
     em?: string;
     forma?: string;
@@ -101,27 +124,15 @@ export type PagamentoLido = {
     valor?: string;
 };
 
-export type Peca = {
-    fotoHash?: string;
-    id?: string;
-    nome?: string;
-};
-
 export type PedidoDaContagem = {
     contada?: number;
     produtoId?: string;
 };
 
-export type PedidoDaLinha = {
-    desconto?: string;
-    produtoId?: string;
-    quantidade?: number;
-};
-
 export type PedidoDaVenda = {
     clienteId?: string;
     id?: string;
-    itens?: Array<PedidoDaLinha>;
+    itens?: Array<VendasDoVendedorControllerPedidoDaLinha>;
     pagamentos?: Array<PedidoDoPagamento>;
     remessaId?: string;
     totalConferido?: string;
@@ -140,11 +151,6 @@ export type PedidoDeCliente = {
 export type PedidoDeConferencia = {
     id?: string;
     itens?: Array<PedidoDaContagem>;
-};
-
-export type PedidoDeEstorno = {
-    id?: string;
-    motivo?: string;
 };
 
 export type PedidoDeLogin = {
@@ -168,13 +174,25 @@ export type PedidoDoPagamento = {
     valor?: string;
 };
 
-export type Relatorio = {
-    linhas?: Array<Linha>;
+export type RelatorioAReceber = {
+    clientes?: Array<Devedor>;
     totais?: Totais;
 };
 
-export type RelatorioAReceber = {
-    clientes?: Array<Devedor>;
+export type RelatoriosDoVendedorLinha = {
+    desconto?: string;
+    descontoEmDolar?: string;
+    descontoEmGuarani?: string;
+    id?: string;
+    nome?: string;
+    quantidade?: number;
+    total?: string;
+    totalEmDolar?: string;
+    totalEmGuarani?: string;
+};
+
+export type RelatoriosDoVendedorRelatorio = {
+    linhas?: Array<RelatoriosDoVendedorLinha>;
     totais?: Totais;
 };
 
@@ -209,11 +227,11 @@ export type Venda = {
     aReceber?: string;
     clienteId?: string;
     clienteNome?: string;
-    cotacao?: Cotacao;
+    cotacao?: ConsultasDeVendasCotacao;
     desconto?: string;
     estornadaEm?: string;
     id?: string;
-    itens?: Array<Item>;
+    itens?: Array<ConsultasDeVendasItem>;
     motivoDoEstorno?: string;
     pagamentos?: Array<PagamentoLido>;
     pago?: string;
@@ -225,6 +243,17 @@ export type Venda = {
     totalGuarani?: string;
     vendedorId?: string;
     vendidaEm?: string;
+};
+
+export type VendasDoVendedorControllerPedidoDaLinha = {
+    desconto?: string;
+    produtoId?: string;
+    quantidade?: number;
+};
+
+export type VendasDoVendedorControllerPedidoDeEstorno = {
+    id?: string;
+    motivo?: string;
 };
 
 export type EuData = {
@@ -350,7 +379,7 @@ export type ListarMeusClientesResponses = {
     /**
      * OK
      */
-    200: Array<Cliente>;
+    200: Array<ClientesDoVendedorCliente>;
 };
 
 export type ListarMeusClientesResponse = ListarMeusClientesResponses[keyof ListarMeusClientesResponses];
@@ -366,7 +395,7 @@ export type CadastrarMeuClienteResponses = {
     /**
      * OK
      */
-    200: Cliente;
+    200: ClientesDoVendedorCliente;
 };
 
 export type CadastrarMeuClienteResponse = CadastrarMeuClienteResponses[keyof CadastrarMeuClienteResponses];
@@ -384,7 +413,7 @@ export type VerMeuClienteResponses = {
     /**
      * OK
      */
-    200: Cliente;
+    200: ClientesDoVendedorCliente;
 };
 
 export type VerMeuClienteResponse = VerMeuClienteResponses[keyof VerMeuClienteResponses];
@@ -438,7 +467,7 @@ export type ListarMinhasMaletasResponses = {
     /**
      * OK
      */
-    200: Array<Maleta>;
+    200: Array<ConsultasDaMaletaDoVendedorMaleta>;
 };
 
 export type ListarMinhasMaletasResponse = ListarMinhasMaletasResponses[keyof ListarMinhasMaletasResponses];
@@ -456,7 +485,7 @@ export type VerMinhaMaletaResponses = {
     /**
      * OK
      */
-    200: Maleta;
+    200: ConsultasDaMaletaDoVendedorMaleta;
 };
 
 export type VerMinhaMaletaResponse = VerMinhaMaletaResponses[keyof VerMinhaMaletaResponses];
@@ -512,7 +541,7 @@ export type AcharPecaDaMinhaMaletaResponses = {
     /**
      * OK
      */
-    200: Linha;
+    200: ConsultasDaMaletaDoVendedorLinha;
 };
 
 export type AcharPecaDaMinhaMaletaResponse = AcharPecaDaMinhaMaletaResponses[keyof AcharPecaDaMinhaMaletaResponses];
@@ -547,7 +576,7 @@ export type RelatorioDeMeusRecebimentosResponses = {
     /**
      * OK
      */
-    200: Relatorio;
+    200: RelatoriosDoVendedorRelatorio;
 };
 
 export type RelatorioDeMeusRecebimentosResponse = RelatorioDeMeusRecebimentosResponses[keyof RelatorioDeMeusRecebimentosResponses];
@@ -567,7 +596,7 @@ export type RelatorioDeMinhasVendasResponses = {
     /**
      * OK
      */
-    200: Relatorio;
+    200: RelatoriosDoVendedorRelatorio;
 };
 
 export type RelatorioDeMinhasVendasResponse = RelatorioDeMinhasVendasResponses[keyof RelatorioDeMinhasVendasResponses];
@@ -660,7 +689,7 @@ export type VerVendaDoVendedorResponses = {
 export type VerVendaDoVendedorResponse = VerVendaDoVendedorResponses[keyof VerVendaDoVendedorResponses];
 
 export type EstornarVendaDoVendedorData = {
-    body: PedidoDeEstorno;
+    body: VendasDoVendedorControllerPedidoDeEstorno;
     path: {
         id: string;
     };
