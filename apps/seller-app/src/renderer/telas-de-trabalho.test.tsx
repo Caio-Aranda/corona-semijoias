@@ -150,6 +150,36 @@ describe('Minha maleta', () => {
     expect(screen.queryByText(/custo/i)).not.toBeInTheDocument();
   });
 
+  it('mostra Dólar e Guarani pela cotação de hoje, e diz isso na tela', async () => {
+    const { ponte } = ponteDeTrabalho({
+      'cotacao.hoje': () => ({
+        ok: true,
+        dados: {
+          disponivel: true,
+          dataDeHoje: '2026-11-11',
+          dataDaCotacao: '2026-11-11',
+          dolar: '5.00000000',
+          guarani: '0.00070000',
+          deDiaAnterior: false,
+        },
+      }),
+    });
+    await abrir(ponte, 'Minha maleta');
+    expect(await screen.findByText('Anel de prata')).toBeInTheDocument();
+    expect(screen.getByText('Dólar e Guarani pela cotação de hoje.')).toBeInTheDocument();
+    expect(screen.getAllByText(/US\$ 10,00/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Gs\. 71\.429/).length).toBeGreaterThan(0);
+  });
+
+  it('sem cotação, mostra só Real e avisa', async () => {
+    const { ponte } = ponteDeTrabalho();
+    await abrir(ponte, 'Minha maleta');
+    expect(await screen.findByText('Anel de prata')).toBeInTheDocument();
+    expect(screen.queryByText('Dólar e Guarani pela cotação de hoje.')).not.toBeInTheDocument();
+    expect(screen.getByText(/Sem cotação do Dólar e do Guarani/)).toBeInTheDocument();
+    expect(screen.queryByText(/US\$/)).not.toBeInTheDocument();
+  });
+
   it('maleta já conferida não oferece conferir de novo', async () => {
     const { ponte } = ponteDeTrabalho({
       'maletas.listar': () => ({ ok: true, dados: [maleta('CONFERIDA')] }),

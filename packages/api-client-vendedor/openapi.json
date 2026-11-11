@@ -11,7 +11,7 @@
         "required" : [ "nome" ],
         "type" : "object"
       },
-      "Cliente" : {
+      "ClientesDoVendedorCliente" : {
         "properties" : {
           "ativo" : {
             "type" : "boolean"
@@ -58,7 +58,7 @@
           },
           "itens" : {
             "items" : {
-              "$ref" : "#/components/schemas/Linha"
+              "$ref" : "#/components/schemas/ConsultasDaConferenciaLinha"
             },
             "type" : "array"
           },
@@ -69,7 +69,131 @@
         },
         "type" : "object"
       },
-      "Cotacao" : {
+      "ConsultasDaConferenciaLinha" : {
+        "properties" : {
+          "contado" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "diferenca" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "esperado" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "produtoNome" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ConsultasDaMaletaDoVendedorLinha" : {
+        "properties" : {
+          "devolvida" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "enviada" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "precoUnitario" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "produto" : {
+            "$ref" : "#/components/schemas/ConsultasDaMaletaDoVendedorPeca"
+          },
+          "saldo" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "valorEmAberto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendida" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "ConsultasDaMaletaDoVendedorMaleta" : {
+        "properties" : {
+          "dispositivoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "enviadaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ConsultasDaMaletaDoVendedorLinha"
+            },
+            "type" : "array"
+          },
+          "numero" : {
+            "type" : "string"
+          },
+          "pecasEmAberto" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "semanaNumero" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "valorEmAberto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ConsultasDaMaletaDoVendedorPeca" : {
+        "properties" : {
+          "codigo" : {
+            "type" : "string"
+          },
+          "fotoHash" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ConsultasDeVendasCotacao" : {
         "properties" : {
           "data" : {
             "format" : "date",
@@ -85,6 +209,51 @@
             "example" : "123.45",
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ConsultasDeVendasItem" : {
+        "properties" : {
+          "desconto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "precoUnitario" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "produto" : {
+            "$ref" : "#/components/schemas/ConsultasDeVendasPeca"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "total" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ConsultasDeVendasPeca" : {
+        "properties" : {
+          "fotoHash" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nome" : {
             "type" : "string"
           }
         },
@@ -203,106 +372,6 @@
         },
         "type" : "object"
       },
-      "Item" : {
-        "properties" : {
-          "desconto" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          },
-          "precoUnitario" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          },
-          "produto" : {
-            "$ref" : "#/components/schemas/Peca"
-          },
-          "quantidade" : {
-            "format" : "int32",
-            "type" : "integer"
-          },
-          "total" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          }
-        },
-        "type" : "object"
-      },
-      "Linha" : {
-        "properties" : {
-          "contado" : {
-            "format" : "int32",
-            "type" : "integer"
-          },
-          "diferenca" : {
-            "format" : "int32",
-            "type" : "integer"
-          },
-          "esperado" : {
-            "format" : "int32",
-            "type" : "integer"
-          },
-          "produtoId" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "produtoNome" : {
-            "type" : "string"
-          }
-        },
-        "type" : "object"
-      },
-      "Maleta" : {
-        "properties" : {
-          "dispositivoId" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "enviadaEm" : {
-            "format" : "date-time",
-            "type" : "string"
-          },
-          "id" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "itens" : {
-            "items" : {
-              "$ref" : "#/components/schemas/Linha"
-            },
-            "type" : "array"
-          },
-          "numero" : {
-            "type" : "string"
-          },
-          "pecasEmAberto" : {
-            "format" : "int32",
-            "type" : "integer"
-          },
-          "semanaNumero" : {
-            "format" : "int32",
-            "type" : "integer"
-          },
-          "status" : {
-            "type" : "string"
-          },
-          "tipo" : {
-            "type" : "string"
-          },
-          "valorEmAberto" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          }
-        },
-        "type" : "object"
-      },
       "PagamentoLido" : {
         "properties" : {
           "em" : {
@@ -328,21 +397,6 @@
         },
         "type" : "object"
       },
-      "Peca" : {
-        "properties" : {
-          "fotoHash" : {
-            "type" : "string"
-          },
-          "id" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "nome" : {
-            "type" : "string"
-          }
-        },
-        "type" : "object"
-      },
       "PedidoDaContagem" : {
         "properties" : {
           "contada" : {
@@ -352,25 +406,6 @@
           "produtoId" : {
             "format" : "uuid",
             "type" : "string"
-          }
-        },
-        "type" : "object"
-      },
-      "PedidoDaLinha" : {
-        "properties" : {
-          "desconto" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          },
-          "produtoId" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "quantidade" : {
-            "format" : "int32",
-            "type" : "integer"
           }
         },
         "type" : "object"
@@ -387,7 +422,7 @@
           },
           "itens" : {
             "items" : {
-              "$ref" : "#/components/schemas/PedidoDaLinha"
+              "$ref" : "#/components/schemas/VendasDoVendedorControllerPedidoDaLinha"
             },
             "type" : "array"
           },
@@ -453,18 +488,6 @@
         },
         "type" : "object"
       },
-      "PedidoDeEstorno" : {
-        "properties" : {
-          "id" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "motivo" : {
-            "type" : "string"
-          }
-        },
-        "type" : "object"
-      },
       "PedidoDeLogin" : {
         "properties" : {
           "dispositivoId" : {
@@ -525,11 +548,11 @@
         },
         "type" : "object"
       },
-      "Relatorio" : {
+      "RelatorioAReceber" : {
         "properties" : {
-          "linhas" : {
+          "clientes" : {
             "items" : {
-              "$ref" : "#/components/schemas/Linha"
+              "$ref" : "#/components/schemas/Devedor"
             },
             "type" : "array"
           },
@@ -539,11 +562,62 @@
         },
         "type" : "object"
       },
-      "RelatorioAReceber" : {
+      "RelatoriosDoVendedorLinha" : {
         "properties" : {
-          "clientes" : {
+          "desconto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "descontoEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "descontoEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "id" : {
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "quantidade" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "total" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "totalEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "totalEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatoriosDoVendedorRelatorio" : {
+        "properties" : {
+          "linhas" : {
             "items" : {
-              "$ref" : "#/components/schemas/Devedor"
+              "$ref" : "#/components/schemas/RelatoriosDoVendedorLinha"
             },
             "type" : "array"
           },
@@ -653,7 +727,7 @@
             "type" : "string"
           },
           "cotacao" : {
-            "$ref" : "#/components/schemas/Cotacao"
+            "$ref" : "#/components/schemas/ConsultasDeVendasCotacao"
           },
           "desconto" : {
             "example" : "123.45",
@@ -671,7 +745,7 @@
           },
           "itens" : {
             "items" : {
-              "$ref" : "#/components/schemas/Item"
+              "$ref" : "#/components/schemas/ConsultasDeVendasItem"
             },
             "type" : "array"
           },
@@ -727,6 +801,37 @@
           },
           "vendidaEm" : {
             "format" : "date-time",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "VendasDoVendedorControllerPedidoDaLinha" : {
+        "properties" : {
+          "desconto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "VendasDoVendedorControllerPedidoDeEstorno" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "motivo" : {
             "type" : "string"
           }
         },
@@ -941,7 +1046,7 @@
               "*/*" : {
                 "schema" : {
                   "items" : {
-                    "$ref" : "#/components/schemas/Cliente"
+                    "$ref" : "#/components/schemas/ClientesDoVendedorCliente"
                   },
                   "type" : "array"
                 }
@@ -974,7 +1079,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Cliente"
+                  "$ref" : "#/components/schemas/ClientesDoVendedorCliente"
                 }
               }
             },
@@ -1005,7 +1110,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Cliente"
+                  "$ref" : "#/components/schemas/ClientesDoVendedorCliente"
                 }
               }
             },
@@ -1098,7 +1203,7 @@
               "*/*" : {
                 "schema" : {
                   "items" : {
-                    "$ref" : "#/components/schemas/Maleta"
+                    "$ref" : "#/components/schemas/ConsultasDaMaletaDoVendedorMaleta"
                   },
                   "type" : "array"
                 }
@@ -1131,7 +1236,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Maleta"
+                  "$ref" : "#/components/schemas/ConsultasDaMaletaDoVendedorMaleta"
                 }
               }
             },
@@ -1241,7 +1346,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Linha"
+                  "$ref" : "#/components/schemas/ConsultasDaMaletaDoVendedorLinha"
                 }
               }
             },
@@ -1304,7 +1409,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Relatorio"
+                  "$ref" : "#/components/schemas/RelatoriosDoVendedorRelatorio"
                 }
               }
             },
@@ -1351,7 +1456,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Relatorio"
+                  "$ref" : "#/components/schemas/RelatoriosDoVendedorRelatorio"
                 }
               }
             },
@@ -1554,7 +1659,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/PedidoDeEstorno"
+                "$ref" : "#/components/schemas/VendasDoVendedorControllerPedidoDeEstorno"
               }
             }
           },

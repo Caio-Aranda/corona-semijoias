@@ -325,6 +325,17 @@ class RotasDoVendedorTest extends TesteDeIntegracao {
         postar("/api/vendedor/clientes", dona(), pedido).andExpect(status().isForbidden());
     }
 
+    @Test
+    void reenviarClienteQueADonaExcluiuDa409ComMensagemSimples() throws Exception {
+        UsuarioDeTeste a = usuarios.criarVendedor();
+        UUID id = UUID.randomUUID();
+        Map<String, Object> pedido = mapa("id", id, "nome", "Cliente excluído " + id);
+        postar("/api/vendedor/clientes", como(a), pedido).andExpect(status().isCreated());
+        jdbc.update("UPDATE corona.clientes SET deleted_at = now() WHERE id = ?", id);
+        JsonNode erro = corpoDe(postar("/api/vendedor/clientes", como(a), pedido).andExpect(status().isConflict()));
+        assertThat(erro.get("detail").asString()).contains("já foi cadastrado");
+    }
+
     // --- cotação e foto ---
 
     @Test
