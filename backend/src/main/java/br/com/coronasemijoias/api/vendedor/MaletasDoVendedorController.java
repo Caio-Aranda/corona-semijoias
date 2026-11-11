@@ -3,17 +3,16 @@ package br.com.coronasemijoias.api.vendedor;
 import br.com.coronasemijoias.api.cadastros.Validacoes;
 import br.com.coronasemijoias.api.seguranca.ExigePerfil;
 import br.com.coronasemijoias.api.seguranca.UsuarioAutenticado;
+import br.com.coronasemijoias.api.vendedor.ConsultasDaConferencia.Conferencia;
 import br.com.coronasemijoias.api.vendedor.ConsultasDaMaletaDoVendedor.Linha;
 import br.com.coronasemijoias.api.vendedor.ConsultasDaMaletaDoVendedor.Maleta;
 import br.com.coronasemijoias.api.vendedor.ServicoDeConferencia.LinhaContada;
 import br.com.coronasemijoias.api.vendedor.ServicoDeConferencia.Resultado;
 import io.swagger.v3.oas.annotations.Operation;
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,21 +37,15 @@ public class MaletasDoVendedorController {
     public record PedidoDeConferencia(UUID id, List<PedidoDaContagem> itens) {
     }
 
-    public record LinhaDaConferencia(UUID produtoId, String produtoNome, int esperado, int contado, int diferenca) {
-    }
-
-    public record RespostaDaConferencia(UUID id, UUID remessaId, Instant conferidaEm, int divergencias,
-            List<LinhaDaConferencia> itens) {
-    }
-
     private final ConsultasDaMaletaDoVendedor consultas;
     private final ServicoDeConferencia conferencia;
-    private final JdbcTemplate jdbc;
+    private final ConsultasDaConferencia conferencias;
 
-    MaletasDoVendedorController(ConsultasDaMaletaDoVendedor consultas, ServicoDeConferencia conferencia, JdbcTemplate jdbc) {
+    MaletasDoVendedorController(ConsultasDaMaletaDoVendedor consultas, ServicoDeConferencia conferencia,
+            ConsultasDaConferencia conferencias) {
         this.consultas = consultas;
         this.conferencia = conferencia;
-        this.jdbc = jdbc;
+        this.conferencias = conferencias;
     }
 
     @Operation(operationId = "listarMinhasMaletas", summary = "Minhas maletas",
@@ -82,7 +75,7 @@ public class MaletasDoVendedorController {
                     + "compara com o saldo da maleta, grava a diferença e liga a maleta a este aparelho. Uma conferência por maleta: "
                     + "mesmo id e mesma contagem devolve 200; outra tentativa, 409.")
     @PostMapping("/{id}/conferencia")
-    public ResponseEntity<RespostaDaConferencia> conferir(@PathVariable UUID id, @RequestBody PedidoDeConferencia pedido,
+    public ResponseEntity<Conferencia> conferir(@PathVariable UUID id, @RequestBody PedidoDeConferencia pedido,
             @AuthenticationPrincipal UsuarioAutenticado quem) {
         if (pedido == null) {
             throw Validacoes.recusar("itens", "Informe as peças contadas.");
@@ -90,31 +83,12 @@ public class MaletasDoVendedorController {
         List<LinhaContada> linhas = pedido.itens() == null ? null : pedido.itens().stream()
                 .map(l -> l == null ? null : new LinhaContada(l.produtoId(), l.contada())).toList();
         Resultado r = conferencia.conferir(quem.vendedorId(), quem.id(), quem.dispositivoId(), id, pedido.id(), linhas);
-        return ResponseEntity.status(r.jaExistia() ? HttpStatus.OK : HttpStatus.CREATED).body(resposta(r.conferenciaId()));
+        return ResponseEntity.status(r.jaExistia() ? HttpStatus.OK : HttpStatus.CREATED).body(conferencias.pelaId(r.conferenciaId()));
     }
 
     @Operation(operationId = "verConferenciaDaMinhaMaleta", summary = "Ver a conferência da maleta")
     @GetMapping("/{id}/conferencia")
-    public RespostaDaConferencia verConferencia(@PathVariable UUID id, @AuthenticationPrincipal UsuarioAutenticado quem) {
-        List<UUID> ids = jdbc.query("SELECT id FROM corona.conferencias WHERE remessa_id = ? AND vendedor_id = ?",
-                (rs, n) -> rs.getObject(1, UUID.class), id, quem.vendedorId());
-        if (ids.isEmpty()) {
-            throw new br.com.coronasemijoias.api.comum.erros.ErroDaApi(HttpStatus.NOT_FOUND,
-                    br.com.coronasemijoias.api.comum.erros.CodigoErro.REMESSA_NAO_ENCONTRADA);
-        }
-        return resposta(ids.get(0));
-    }
-
-    private RespostaDaConferencia resposta(UUID conferenciaId) {
-        var cabeca = jdbc.queryForMap("SELECT remessa_id, divergencias, conferida_em FROM corona.conferencias WHERE id = ?",
-                conferenciaId);
-        List<LinhaDaConferencia> itens = jdbc.query("""
-                SELECT i.produto_id, p.nome, i.esperado, i.contado FROM corona.itens_conferencia i
-                  JOIN corona.produtos p ON p.id = i.produto_id WHERE i.conferencia_id = ? ORDER BY p.nome, p.id""",
-                (rs, n) -> new LinhaDaConferencia(rs.getObject(1, UUID.class), rs.getString(2), rs.getInt(3), rs.getInt(4),
-                        rs.getInt(4) - rs.getInt(3)), conferenciaId);
-        return new RespostaDaConferencia(conferenciaId, (UUID) cabeca.get("remessa_id"),
-                ((java.sql.Timestamp) cabeca.get("conferida_em")).toInstant(), ((Number) cabeca.get("divergencias")).intValue(),
-                itens);
+    public Conferencia verConferencia(@PathVariable UUID id, @AuthenticationPrincipal UsuarioAutenticado quem) {
+        return conferencias.daMaleta(id, quem.vendedorId());
     }
 }

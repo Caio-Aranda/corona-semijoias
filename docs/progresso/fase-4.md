@@ -94,3 +94,24 @@ Uma seção por tarefa, no mesmo formato de [fase-3.md](fase-3.md). A tabela de 
 - A consulta de produtos fora da maleta não existe nesta fase (dúvida 6 do ADR-0011): "consulta com foto" é a Minha maleta e a leitura do código na conferência e na venda.
 - Os totais mostram Dólar e Guarani calculados na tela a partir do total em Real do servidor (a mesma cotação e o mesmo arredondamento do servidor, ADR-0006); nada disso é gravado.
 - Sem o aviso "Dados até dd/mm às hh:mm" da §12: ele só vale no modo sem internet (Fase 5).
+
+### Tarefa 4.6: fechamento da Fase 4 (revisão pós-fase)
+
+**Em revisão.** Revisão do que a Fase 4 entregou, como a 2.9 e a 3.8.
+
+**Bugs achados e corrigidos**
+
+- **Conciliação "estoque + maletas" quebrava com a primeira venda** (a venda tira peça da maleta sem mexer no estoque central, e a conta só somava entradas e saídas do estoque). A conta agora subtrai as vendas líquidas de estorno (`ServicoDeEstoque.conciliar` e o relatório de conferência do estoque), como o ADR-0010, item 12, já previa. Teste novo com venda, venda e estorno.
+- **A ficha da maleta da dona sumia com Devolver, Repor e os movimentos quando a maleta virava Conferida** (só olhava o status Enviada). Agora Conferida mantém Devolver e Repor (Cancelar continua só para Enviada, como no servidor), o filtro da lista ganhou "Conferida" e os movimentos mostram "Vendida pelo vendedor" e "Venda desfeita".
+- **A dona não via o resultado da conferência** (os textos diziam que sim). Nova rota `GET /api/dona/remessas/{id}/conferencia` e a seção "Conferência do vendedor" na ficha.
+
+**O que foi conferido e está certo:** preço sempre do `preco_remessa`; saldo por movimentos, nunca por número; idempotência 201/200/409 em venda, estorno, conferência e cliente; 403 cruzado e isolamento entre vendedores (maleta, cliente, venda, foto, relatórios) com testes; contrato do vendedor sem custo (teste do grupo OpenAPI e `barreira:varrer`); falta de foto nunca trava a venda.
+
+**Pendências com a dona**
+
+- As seis dúvidas do ADR-0011 (desconto em valor ou %, parcela mínima, prazo do estorno, quem troca o aparelho, vender antes de conferir, consulta fora da maleta).
+- **Limite de desconto**: hoje 0% (sem desconto) e **não existe tela da dona** para mudar; só por banco. Precisa de uma tarefa pequena (tela de configurações do Gestão).
+
+**Pendências com o responsável:** leitor de código físico e app instalado ainda não testados com o Corona Vendas; ícone definitivo.
+
+**A Fase 5 pede:** SQLite criptografado, outbox e push/pull (as tabelas de venda, itens, pagamentos, conferência e cliente já estão no contrato de sync), indicador "Dados até...", bloqueio remoto, e a venda com o app sem internet (hoje a tela só tenta de novo). Também: parcelas e contas a receber completas na Fase 7 e devolução/troca na Fase 6.

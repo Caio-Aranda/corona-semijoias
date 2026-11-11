@@ -220,9 +220,9 @@ export const TEXTOS_DE_MALETAS = {
     totais: (pecas: number) => `Peças ainda com o vendedor: ${pecas}`,
     valorEmAberto: 'Valor ainda com o vendedor',
     movimentos: {
-      titulo: 'Devoluções e desfeitas',
+      titulo: 'Devoluções, vendas e desfeitas',
       legenda: 'Movimentos da maleta',
-      vazio: 'Nenhuma peça foi devolvida desta maleta.',
+      vazio: 'Nenhuma peça foi devolvida nem vendida desta maleta.',
       colunas: {
         quando: 'Quando',
         peca: 'Peça',
@@ -232,8 +232,24 @@ export const TEXTOS_DE_MALETAS = {
       },
       devolvida: 'Devolvida à dona',
       desfeita: 'Devolução desfeita',
+      vendida: 'Vendida pelo vendedor',
+      vendaDesfeita: 'Venda desfeita (estorno)',
       jaDesfeita: 'Já foi desfeita',
       outro: 'Movimento da maleta',
+    },
+    conferencia: {
+      titulo: 'Conferência do vendedor',
+      legenda: 'O que o vendedor contou',
+      feitaEm: (data: string) => `O vendedor conferiu a maleta em ${data}.`,
+      tudoCerto: 'Tudo certo: as peças que ele contou conferem com a lista da maleta.',
+      comDiferenca: (n: number) =>
+        `Há diferença em ${n} peça(s). Confira com o vendedor antes do acerto.`,
+      colunas: {
+        peca: 'Peça',
+        esperado: 'Na maleta',
+        contado: 'Ele contou',
+        diferenca: 'Diferença',
+      },
     },
     motivoDoCancelamento: (motivo: string) => `Motivo do cancelamento: ${motivo}`,
     canceladaAviso: 'Esta maleta foi cancelada. As peças voltaram para o estoque.',

@@ -143,9 +143,11 @@ App do vendedor online (§15): login, conferência, venda, clientes, consulta, r
 | 4.3 | backend: rotas do vendedor (própria maleta sem custo, conferência e dispositivo único, clientes dele, cotação, relatórios próprios), 403 cruzado nos dois sentidos | Em revisão · [detalhe](progresso/fase-4.md#tarefa-43-backend-das-rotas-do-vendedor-maleta-conferência-clientes-cotação-relatórios) |
 | 4.4 | seller-app (alto): base de telas, conferência por leitor com foto grande, venda, escolha e cadastro de cliente, estorno | Em revisão · [detalhe](progresso/fase-4.md#tarefa-44-corona-vendas-conferência-da-maleta-venda-cliente-e-estorno) |
 | 4.5 | seller-app: Minha maleta, Meus clientes, Meus números (relatórios próprios) e valores nas três moedas | Em revisão · [detalhe](progresso/fase-4.md#tarefa-45-corona-vendas-meus-clientes-e-meus-números) |
-| 4.6 | fechamento da Fase 4 (revisão pós-fase) | A fazer |
+| 4.6 | fechamento da Fase 4 (revisão pós-fase) | Em revisão · [detalhe](progresso/fase-4.md#tarefa-46-fechamento-da-fase-4-revisão-pós-fase) |
 
 **Fora desta fase:** SQLite criptografado, outbox e sync (Fase 5); devolução, troca e garantia (Fase 6); acerto, comissão e contas a receber completas (Fase 7).
+
+**Fase 4 concluída** (tarefas 4.1 a 4.6; a 4.6 foi a revisão de fechamento). Resumo: o vendedor entra no Corona Vendas e, com internet, vê a própria maleta (sem custo), confere as peças lendo o código, vende (preço congelado, desconto dentro do limite da dona, à vista ou a prazo), estorna a venda no mesmo dia, cadastra e busca clientes e vê os números dele (vendas, recebimentos e quanto os clientes devem) em Real, Dólar e Guarani. O servidor recalcula tudo, nunca recebe preço do app e liga cada maleta a um aparelho só. **Segue para a Fase 5:** sem internet (SQLite, outbox, sync). Pendências: [fase-4.md](progresso/fase-4.md#tarefa-46-fechamento-da-fase-4-revisão-pós-fase).
 
 ## Pendências abertas
 

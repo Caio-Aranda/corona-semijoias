@@ -19,6 +19,14 @@ export type Cliente = {
     whatsapp?: string;
 };
 
+export type Conferencia = {
+    conferidaEm?: string;
+    divergencias?: number;
+    id?: string;
+    itens?: Array<Linha>;
+    remessaId?: string;
+};
+
 export type Cotacao = {
     data?: string;
     dolar?: string;
@@ -59,14 +67,6 @@ export type Item = {
 };
 
 export type Linha = {
-    desconto?: string;
-    id?: string;
-    nome?: string;
-    quantidade?: number;
-    total?: string;
-};
-
-export type LinhaDaConferencia = {
     contado?: number;
     diferenca?: number;
     esperado?: number;
@@ -170,14 +170,6 @@ export type Relatorio = {
 export type RelatorioAReceber = {
     clientes?: Array<Devedor>;
     totais?: Totais;
-};
-
-export type RespostaDaConferencia = {
-    conferidaEm?: string;
-    divergencias?: number;
-    id?: string;
-    itens?: Array<LinhaDaConferencia>;
-    remessaId?: string;
 };
 
 export type RespostaDoLogin = {
@@ -476,7 +468,7 @@ export type VerConferenciaDaMinhaMaletaResponses = {
     /**
      * OK
      */
-    200: RespostaDaConferencia;
+    200: Conferencia;
 };
 
 export type VerConferenciaDaMinhaMaletaResponse = VerConferenciaDaMinhaMaletaResponses[keyof VerConferenciaDaMinhaMaletaResponses];
@@ -494,7 +486,7 @@ export type ConferirMinhaMaletaResponses = {
     /**
      * OK
      */
-    200: RespostaDaConferencia;
+    200: Conferencia;
 };
 
 export type ConferirMinhaMaletaResponse = ConferirMinhaMaletaResponses[keyof ConferirMinhaMaletaResponses];

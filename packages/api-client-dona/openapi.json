@@ -90,6 +90,33 @@
         },
         "type" : "object"
       },
+      "Conferencia" : {
+        "properties" : {
+          "conferidaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "divergencias" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Linha"
+            },
+            "type" : "array"
+          },
+          "remessaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "ConversaoPedido" : {
         "properties" : {
           "data" : {
@@ -381,33 +408,23 @@
       },
       "Linha" : {
         "properties" : {
-          "ativo" : {
-            "type" : "boolean"
+          "contado" : {
+            "format" : "int32",
+            "type" : "integer"
           },
-          "codigo" : {
-            "type" : "string"
+          "diferenca" : {
+            "format" : "int32",
+            "type" : "integer"
           },
-          "codigoId" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "descricao" : {
-            "type" : "string"
-          },
-          "fornecedor" : {
-            "type" : "string"
-          },
-          "motivo" : {
-            "type" : "string"
-          },
-          "produto" : {
-            "type" : "string"
+          "esperado" : {
+            "format" : "int32",
+            "type" : "integer"
           },
           "produtoId" : {
             "format" : "uuid",
             "type" : "string"
           },
-          "tipo" : {
+          "produtoNome" : {
             "type" : "string"
           }
         },
@@ -9854,6 +9871,38 @@
         } ],
         "summary" : "Cancelar a maleta",
         "tags" : [ "maleta-da-dona-controller" ]
+      }
+    },
+    "/api/dona/remessas/{id}/conferencia" : {
+      "get" : {
+        "description" : "O que o vendedor contou de cada peça, o que devia haver e a diferença. 404 enquanto o vendedor não conferiu.",
+        "operationId" : "verConferenciaDaMaleta",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Conferencia"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ver a conferência da maleta",
+        "tags" : [ "conferencia-da-maleta-da-dona-controller" ]
       }
     },
     "/api/dona/remessas/{id}/devolucoes" : {

@@ -224,12 +224,27 @@ class RotasDoVendedorTest extends TesteDeIntegracao {
         assertThat(corpoDe(ler("/api/vendedor/maletas/" + maleta + "/conferencia", quem).andExpect(status().isOk()))
                 .get("divergencias").asInt()).isEqualTo(2);
 
+        // A dona vê o resultado (e o vendedor não usa a rota da dona).
+        JsonNode daDona = corpoDe(ler(REMESSAS + "/" + maleta + "/conferencia", dona()).andExpect(status().isOk()));
+        assertThat(daDona.get("divergencias").asInt()).isEqualTo(2);
+        assertThat(daDona.get("itens").size()).isEqualTo(2);
+        ler(REMESSAS + "/" + maleta + "/conferencia", quem).andExpect(status().isForbidden());
+
         // A maleta conferida continua aparecendo e a dona ainda consegue receber a devolução dela.
         assertThat(corpoDe(ler("/api/vendedor/maletas", quem).andExpect(status().isOk())).get(0).get("status").asString())
                 .isEqualTo("CONFERIDA");
         postar(REMESSAS + "/" + maleta + "/devolucoes", dona(),
                 mapa("itens", List.of(mapa("id", UUID.randomUUID(), "produtoId", anel.id(), "quantidade", 1))))
                 .andExpect(status().isCreated());
+    }
+
+    @Test
+    void aDonaSoVeAConferenciaDepoisQueOVendedorConferiu() throws Exception {
+        UsuarioDeTeste a = usuarios.criarVendedor();
+        Peca anel = peca("30.00", 10);
+        UUID maleta = maleta(a, anel, 2);
+        ler(REMESSAS + "/" + maleta + "/conferencia", dona()).andExpect(status().isNotFound());
+        ler("/api/vendedor/maletas/" + maleta + "/conferencia", como(a)).andExpect(status().isNotFound());
     }
 
     @Test

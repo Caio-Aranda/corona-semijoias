@@ -269,6 +269,74 @@ describe('Ficha da maleta', () => {
   });
 });
 
+describe('Maleta já conferida pelo vendedor (Fase 4)', () => {
+  it('continua com Devolver e Repor, não oferece Cancelar e mostra as vendas nos movimentos', async () => {
+    const m = montar({
+      'maletas.ver': () => ({ ok: true, dados: maletaEnviada('CONFERIDA') }),
+      'maletas.conferencia': () => ({
+        ok: true,
+        dados: {
+          id: '88888888-8888-4888-8888-888888888888',
+          remessaId: ID_MALETA,
+          conferidaEm: '2026-11-11T14:00:00Z',
+          divergencias: 1,
+          itens: [
+            {
+              produtoId: ID_ANEL,
+              produtoNome: 'Anel Solitário',
+              esperado: 3,
+              contado: 2,
+              diferenca: -1,
+            },
+          ],
+        },
+      }),
+      'maletas.saldo': () => ({
+        ok: true,
+        dados: {
+          ...saldoDaMaleta(0, false),
+          status: 'CONFERIDA',
+          movimentos: [
+            {
+              id: ID_MOV,
+              tipo: 'VENDA',
+              produtoId: ID_ANEL,
+              produtoNome: 'Anel Solitário',
+              quantidade: -1,
+              desfeito: false,
+              em: '2026-11-11T10:00:00Z',
+            },
+            {
+              id: '99999999-9999-4999-8999-999999999999',
+              tipo: 'ESTORNO_VENDA',
+              produtoId: ID_ANEL,
+              produtoNome: 'Anel Solitário',
+              quantidade: 1,
+              estornaId: ID_MOV,
+              desfeito: false,
+              em: '2026-11-11T11:00:00Z',
+            },
+          ],
+        },
+      }),
+    });
+    const u = await abrirLista(m);
+    await u.click(
+      await screen.findByRole('button', { name: 'Abrir a maleta de Joana Vendedora, semana 12' }),
+    );
+    expect(await screen.findByRole('button', { name: 'Devolver peças à dona' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Repor esta maleta' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Cancelar maleta' })).toBeNull();
+    expect(screen.getByText('Vendida pelo vendedor')).toBeTruthy();
+    expect(screen.getByText('Venda desfeita (estorno)')).toBeTruthy();
+    expect(screen.getByText('Conferida', { selector: 'dd' })).toBeTruthy();
+    expect(screen.getByText('Conferência do vendedor')).toBeTruthy();
+    expect(screen.getByText(/Há diferença em 1 peça/)).toBeTruthy();
+    const tabela = screen.getByRole('table', { name: 'O que o vendedor contou' });
+    expect(within(tabela).getByText('-1')).toBeTruthy();
+  });
+});
+
 describe('Maleta com tudo devolvido', () => {
   it('continua enviada: a ficha avisa que não há peças com o vendedor', async () => {
     const m = montar({ 'maletas.saldo': () => ({ ok: true, dados: saldoDaMaleta(3, true) }) });

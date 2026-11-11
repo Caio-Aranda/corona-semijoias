@@ -10,6 +10,7 @@ import { BotaoImprimirNota } from './BotaoImprimirNota';
 import { Dinheiro } from './Dinheiro';
 import { PedirMotivo } from './PedirMotivo';
 import {
+  lerConferenciaDaMaleta,
   lerMaleta,
   lerSaldoDaMaleta,
   type Maleta,
@@ -40,13 +41,18 @@ export function GestaoDaMaleta({ ponte, id, aoVoltar, aoRepor, aoDevolver }: Ges
     if (!saldo.ok) return saldo;
     const maleta = lerMaleta(cabecalho.dados);
     const lido = lerSaldoDaMaleta(saldo.dados);
+    // A conferência só existe depois que o vendedor conferiu; falhar aqui não impede de abrir a ficha.
+    const conferiu =
+      maleta !== null && !['RASCUNHO', 'ENVIADA', 'CANCELADA'].includes(maleta.status);
+    const pedida = conferiu ? await chamar(ponte, 'maletas.conferencia', { id }) : null;
+    const conferencia = pedida?.ok ? lerConferenciaDaMaleta(pedida.dados) : null;
     if (!maleta || !lido) {
       return {
         ok: false as const,
         erro: { tipo: 'outro' as const, mensagem: T.naoAbriu, campos: {} },
       };
     }
-    return { ok: true as const, dados: { maleta, saldo: lido } };
+    return { ok: true as const, dados: { maleta, saldo: lido, conferencia } };
   }, `gestao-${id}-${versao}`);
   const [cancelando, setCancelando] = useState(false);
   const [desfazendo, setDesfazendo] = useState<MovimentoDaMaleta | null>(null);
@@ -64,7 +70,9 @@ export function GestaoDaMaleta({ ponte, id, aoVoltar, aoRepor, aoDevolver }: Ges
     );
   }
   if (!busca.dados) return <p role="status">{T.carregando}</p>;
-  const { maleta, saldo } = busca.dados;
+  const { maleta, saldo, conferencia } = busca.dados;
+  // Com o vendedor: enviada ou já conferida por ele (Fase 4). Só a enviada ainda pode ser cancelada.
+  const comOVendedor = maleta.status === 'ENVIADA' || maleta.status === 'CONFERIDA';
   const enviada = maleta.status === 'ENVIADA';
   const cancelada = maleta.status === 'CANCELADA';
   const E = T.enviada;
@@ -72,6 +80,8 @@ export function GestaoDaMaleta({ ponte, id, aoVoltar, aoRepor, aoDevolver }: Ges
     saldo.linhas.find((l) => l.produtoId === produtoId)?.nome ?? '';
 
   function oQueFoi(m: MovimentoDaMaleta): string {
+    if (m.tipo === 'ESTORNO_VENDA') return F.movimentos.vendaDesfeita;
+    if (m.tipo === 'VENDA') return F.movimentos.vendida;
     if (m.estornaId) return F.movimentos.desfeita;
     if (m.tipo === 'DEVOLUCAO_DONA') return F.movimentos.devolvida;
     return F.movimentos.outro;
@@ -88,7 +98,7 @@ export function GestaoDaMaleta({ ponte, id, aoVoltar, aoRepor, aoDevolver }: Ges
             : ''}
         </Aviso>
       ) : null}
-      {enviada && saldo.pecasEmAberto === 0 ? (
+      {comOVendedor && saldo.pecasEmAberto === 0 ? (
         <Aviso tipo="atencao">{F.semPecasComOVendedor}</Aviso>
       ) : null}
       <section className="gestao-grupo" aria-labelledby="titulo-gestao-maleta">
@@ -166,7 +176,7 @@ export function GestaoDaMaleta({ ponte, id, aoVoltar, aoRepor, aoDevolver }: Ges
           ]}
           linhas={saldo.movimentos.map((m) => {
             const peca = m.produtoNome || nomeDoProduto(m.produtoId);
-            const podeDesfazer = enviada && m.tipo === 'DEVOLUCAO_DONA' && !m.estornaId;
+            const podeDesfazer = comOVendedor && m.tipo === 'DEVOLUCAO_DONA' && !m.estornaId;
             return {
               quando: m.em ? dataNaTela(m.em.slice(0, 10)) : '',
               peca,
@@ -184,14 +194,48 @@ export function GestaoDaMaleta({ ponte, id, aoVoltar, aoRepor, aoDevolver }: Ges
             };
           })}
         />
+        {conferencia ? (
+          <>
+            <h3 className="gestao-subtitulo">{F.conferencia.titulo}</h3>
+            <Aviso tipo={conferencia.divergencias === 0 ? 'sucesso' : 'atencao'}>
+              {F.conferencia.feitaEm(dataNaTela(conferencia.conferidaEm.slice(0, 10)))}{' '}
+              {conferencia.divergencias === 0
+                ? F.conferencia.tudoCerto
+                : F.conferencia.comDiferenca(conferencia.divergencias)}
+            </Aviso>
+            <Tabela
+              legenda={F.conferencia.legenda}
+              colunas={[
+                { chave: 'peca', titulo: F.conferencia.colunas.peca },
+                {
+                  chave: 'esperado',
+                  titulo: F.conferencia.colunas.esperado,
+                  numerica: true,
+                },
+                { chave: 'contado', titulo: F.conferencia.colunas.contado, numerica: true },
+                {
+                  chave: 'diferenca',
+                  titulo: F.conferencia.colunas.diferenca,
+                  numerica: true,
+                },
+              ]}
+              linhas={conferencia.itens.map((l) => ({
+                peca: l.produtoNome,
+                esperado: l.esperado,
+                contado: l.contado,
+                diferenca: l.diferenca,
+              }))}
+            />
+          </>
+        ) : null}
         <div className="gestao-acoes-da-linha">
-          {enviada ? (
+          {comOVendedor ? (
             <>
               <Botao variante="primario" onClick={() => aoDevolver(maleta, saldo)}>
                 {F.devolver}
               </Botao>
               <Botao onClick={() => aoRepor(maleta)}>{F.repor}</Botao>
-              <Botao onClick={() => setCancelando(true)}>{F.cancelar}</Botao>
+              {enviada ? <Botao onClick={() => setCancelando(true)}>{F.cancelar}</Botao> : null}
             </>
           ) : null}
           {maleta.status !== 'RASCUNHO' && maleta.enviadaEm ? (

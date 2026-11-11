@@ -42,6 +42,33 @@
         },
         "type" : "object"
       },
+      "Conferencia" : {
+        "properties" : {
+          "conferidaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "divergencias" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Linha"
+            },
+            "type" : "array"
+          },
+          "remessaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "Cotacao" : {
         "properties" : {
           "data" : {
@@ -171,33 +198,6 @@
         "type" : "object"
       },
       "Linha" : {
-        "properties" : {
-          "desconto" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          },
-          "id" : {
-            "type" : "string"
-          },
-          "nome" : {
-            "type" : "string"
-          },
-          "quantidade" : {
-            "format" : "int64",
-            "type" : "integer"
-          },
-          "total" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          }
-        },
-        "type" : "object"
-      },
-      "LinhaDaConferencia" : {
         "properties" : {
           "contado" : {
             "format" : "int32",
@@ -513,33 +513,6 @@
           },
           "totais" : {
             "$ref" : "#/components/schemas/Totais"
-          }
-        },
-        "type" : "object"
-      },
-      "RespostaDaConferencia" : {
-        "properties" : {
-          "conferidaEm" : {
-            "format" : "date-time",
-            "type" : "string"
-          },
-          "divergencias" : {
-            "format" : "int32",
-            "type" : "integer"
-          },
-          "id" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "itens" : {
-            "items" : {
-              "$ref" : "#/components/schemas/LinhaDaConferencia"
-            },
-            "type" : "array"
-          },
-          "remessaId" : {
-            "format" : "uuid",
-            "type" : "string"
           }
         },
         "type" : "object"
@@ -1153,7 +1126,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/RespostaDaConferencia"
+                  "$ref" : "#/components/schemas/Conferencia"
                 }
               }
             },
@@ -1193,7 +1166,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/RespostaDaConferencia"
+                  "$ref" : "#/components/schemas/Conferencia"
                 }
               }
             },

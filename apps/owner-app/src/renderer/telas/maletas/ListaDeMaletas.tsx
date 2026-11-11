@@ -20,7 +20,7 @@ import {
 const T = TEXTOS_DE_MALETAS;
 const G = T.gerir;
 
-const SITUACOES_DO_FILTRO = ['RASCUNHO', 'ENVIADA', 'CANCELADA'] as const;
+const SITUACOES_DO_FILTRO = ['RASCUNHO', 'ENVIADA', 'CONFERIDA', 'CANCELADA'] as const;
 
 export interface ListaDeMaletasProps {
   ponte: PonteDoCorona;

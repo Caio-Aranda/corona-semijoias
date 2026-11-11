@@ -217,6 +217,39 @@ export function lerSaldoDaMaleta(bruto: unknown): SaldoDaMaleta | null {
   };
 }
 
+export interface LinhaDaConferencia {
+  produtoId: string;
+  produtoNome: string;
+  esperado: number;
+  contado: number;
+  diferenca: number;
+}
+
+/** O que o vendedor contou ao conferir a maleta (Fase 4): o que devia haver, o que ele contou e a diferença. */
+export interface ConferenciaDaMaleta {
+  conferidaEm: string;
+  divergencias: number;
+  itens: LinhaDaConferencia[];
+}
+
+export function lerConferenciaDaMaleta(bruto: unknown): ConferenciaDaMaleta | null {
+  const o = objeto(bruto);
+  if (typeof o.id !== 'string') return null;
+  const itens: LinhaDaConferencia[] = [];
+  for (const b of Array.isArray(o.itens) ? o.itens : []) {
+    const l = objeto(b);
+    if (typeof l.produtoId !== 'string') continue;
+    itens.push({
+      produtoId: l.produtoId,
+      produtoNome: texto(l.produtoNome),
+      esperado: inteiro(l.esperado),
+      contado: inteiro(l.contado),
+      diferenca: inteiro(l.diferenca),
+    });
+  }
+  return { conferidaEm: texto(o.conferidaEm), divergencias: inteiro(o.divergencias), itens };
+}
+
 export interface MaletaEmAberto {
   id: string;
   semanaNumero: number;

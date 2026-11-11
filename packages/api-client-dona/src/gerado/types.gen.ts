@@ -37,6 +37,14 @@ export type CodigoGerado = {
     codigo?: string;
 };
 
+export type Conferencia = {
+    conferidaEm?: string;
+    divergencias?: number;
+    id?: string;
+    itens?: Array<Linha>;
+    remessaId?: string;
+};
+
 export type ConversaoPedido = {
     data?: string;
     valorEmReais: string;
@@ -126,15 +134,11 @@ export type ItemDaNota = {
 };
 
 export type Linha = {
-    ativo?: boolean;
-    codigo?: string;
-    codigoId?: string;
-    descricao?: string;
-    fornecedor?: string;
-    motivo?: string;
-    produto?: string;
+    contado?: number;
+    diferenca?: number;
+    esperado?: number;
     produtoId?: string;
-    tipo?: string;
+    produtoNome?: string;
 };
 
 export type LinhaAbaixoDoMinimo = {
@@ -3491,6 +3495,24 @@ export type CancelarRemessaResponses = {
 };
 
 export type CancelarRemessaResponse = CancelarRemessaResponses[keyof CancelarRemessaResponses];
+
+export type VerConferenciaDaMaletaData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/remessas/{id}/conferencia';
+};
+
+export type VerConferenciaDaMaletaResponses = {
+    /**
+     * OK
+     */
+    200: Conferencia;
+};
+
+export type VerConferenciaDaMaletaResponse = VerConferenciaDaMaletaResponses[keyof VerConferenciaDaMaletaResponses];
 
 export type DevolverPecasDaMaletaData = {
     body: PedidoDeDevolucao;

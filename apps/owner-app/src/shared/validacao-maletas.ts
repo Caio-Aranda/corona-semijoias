@@ -46,6 +46,7 @@ export type ParametrosDeMaleta =
   | { operacao: 'maletas.excluir'; id: string; version: number }
   | { operacao: 'maletas.emAberto'; vendedorId: string }
   | { operacao: 'maletas.saldo'; id: string }
+  | { operacao: 'maletas.conferencia'; id: string }
   | {
       operacao: 'maletas.devolver';
       id: string;
@@ -88,6 +89,7 @@ export function conferirMaleta(
     }
     case 'maletas.ver':
     case 'maletas.saldo':
+    case 'maletas.conferencia':
     case 'maletas.nota':
     case 'maletas.enviar':
       return soCom('id') && idValido(p.id) ? { operacao, id: p.id } : null;
