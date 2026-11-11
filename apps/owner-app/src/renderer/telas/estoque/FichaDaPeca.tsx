@@ -1,3 +1,4 @@
+import { SaldoDaLoja } from '../../componentes/SaldoDaLoja';
 import { Aviso, Botao, Campo, EstadoDaLista, JanelaDeConfirmacao, Paginacao } from '@corona/ui';
 import { useRef, useState } from 'react';
 import type { PonteDoCorona } from '../../../shared/ponte';
@@ -90,7 +91,17 @@ export function FichaDaPeca({ ponte, pecaId, aoVoltar }: FichaDaPecaProps) {
                 </div>
                 <div>
                   <dt>{T.noEstoque}</dt>
-                  <dd>{TEXTOS_DE_ESTOQUE.comuns.pecas(dados.saldo)}</dd>
+                  <dd>
+                    {dados.saldo > 0 ? (
+                      TEXTOS_DE_ESTOQUE.comuns.pecas(dados.saldo)
+                    ) : (
+                      <SaldoDaLoja
+                        estoque={dados.saldo}
+                        emMaletas={dados.emMaletas}
+                        vendedores={dados.vendedoresEmMaletas}
+                      />
+                    )}
+                  </dd>
                 </div>
                 <div>
                   <dt>{T.minimo}</dt>

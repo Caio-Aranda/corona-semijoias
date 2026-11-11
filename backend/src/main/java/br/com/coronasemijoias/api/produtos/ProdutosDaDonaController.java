@@ -7,6 +7,7 @@ import br.com.coronasemijoias.api.produtos.CodigosDosProdutos.Codigo;
 import br.com.coronasemijoias.api.produtos.CodigosDosProdutos.Pedido;
 import br.com.coronasemijoias.api.produtos.ServicoDeProdutos.Dados;
 import br.com.coronasemijoias.api.produtos.ServicoDeProdutos.Detalhe;
+import br.com.coronasemijoias.api.remessas.PecasEmMaletas;
 import br.com.coronasemijoias.api.seguranca.ExigePerfil;
 import br.com.coronasemijoias.api.seguranca.UsuarioAutenticado;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,7 +17,9 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -89,14 +92,16 @@ public class ProdutosDaDonaController {
 
     public record Resposta(UUID id, int version, String nome, String referencia, UUID categoriaId, UUID fornecedorId,
             BigDecimal precoVenda, BigDecimal precoCusto, int estoqueMinimo, int estoqueAtual, boolean ativo,
-            List<RespostaDeCodigo> codigos, FotoPrincipal fotoPrincipal) {
+            List<RespostaDeCodigo> codigos, FotoPrincipal fotoPrincipal, int emMaletas,
+            List<PecasEmMaletas.DoVendedor> vendedoresEmMaletas) {
 
-        static Resposta de(Detalhe d) {
+        /** {@code emMaletas}: quantas unidades estão nas maletas dos vendedores, e com quem (só da dona; item 13). */
+        static Resposta de(Detalhe d, PecasEmMaletas.Situacao maletas) {
             Produto p = d.produto();
             return new Resposta(p.getId(), p.getVersion(), p.getNome(), p.getReferencia(), p.getCategoriaId(),
                     p.getFornecedorId(), p.getPrecoVenda(), d.precoCusto(), p.getEstoqueMinimo(), p.getEstoqueAtual(),
                     p.isAtivo(), d.codigos().stream().map(RespostaDeCodigo::de).toList(),
-                    FotoPrincipal.de(p.getFotoPrincipalHash()));
+                    FotoPrincipal.de(p.getFotoPrincipalHash()), maletas.total(), maletas.vendedores());
         }
     }
 
@@ -104,9 +109,15 @@ public class ProdutosDaDonaController {
     }
 
     private final ServicoDeProdutos servico;
+    private final PecasEmMaletas emMaletas;
 
-    public ProdutosDaDonaController(ServicoDeProdutos servico) {
+    public ProdutosDaDonaController(ServicoDeProdutos servico, PecasEmMaletas emMaletas) {
         this.servico = servico;
+        this.emMaletas = emMaletas;
+    }
+
+    private Resposta resposta(Detalhe d) {
+        return Resposta.de(d, emMaletas.de(d.produto().getId()));
     }
 
     @Operation(summary = "Listar produtos",
@@ -117,19 +128,23 @@ public class ProdutosDaDonaController {
             @RequestParam(required = false) UUID categoriaId, @RequestParam(required = false) UUID fornecedorId,
             @RequestParam(required = false) Boolean ativo, @RequestParam(required = false) Integer pagina,
             @RequestParam(required = false) Integer tamanho) {
-        return Pagina.de(servico.listar(busca, categoriaId, fornecedorId, ativo, pagina, tamanho), Resposta::de);
+        Page<Detalhe> pecas = servico.listar(busca, categoriaId, fornecedorId, ativo, pagina, tamanho);
+        // Uma consulta só para a página inteira: nunca uma por linha.
+        Map<UUID, PecasEmMaletas.Situacao> situacoes = emMaletas.de(
+                pecas.getContent().stream().map(d -> d.produto().getId()).toList());
+        return Pagina.de(pecas, d -> Resposta.de(d, situacoes.getOrDefault(d.produto().getId(), PecasEmMaletas.Situacao.NENHUMA)));
     }
 
     @Operation(summary = "Achar o produto pelo código",
             description = "Procura o código inteiro (sem espaços nas pontas, sem diferenciar maiúsculas). Sem produto, 404.")
     @GetMapping("/por-codigo")
     public Resposta porCodigo(@RequestParam String codigo) {
-        return Resposta.de(servico.porCodigo(codigo));
+        return resposta(servico.porCodigo(codigo));
     }
 
     @GetMapping("/{id}")
     public Resposta ver(@PathVariable UUID id) {
-        return Resposta.de(servico.ver(id));
+        return resposta(servico.ver(id));
     }
 
     @Operation(summary = "Gerar o próximo código da loja",
@@ -148,7 +163,7 @@ public class ProdutosDaDonaController {
             @AuthenticationPrincipal UsuarioAutenticado quem) {
         List<Pedido> codigos = pedido.codigos() == null ? null : pedido.codigos().stream().map(PedidoDeCodigo::paraServico).toList();
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(Resposta.de(servico.criar(pedido.id(), pedido.dados(), codigos, quem.id())));
+                .body(resposta(servico.criar(pedido.id(), pedido.dados(), codigos, quem.id())));
     }
 
     @Operation(summary = "Editar produto",
@@ -157,7 +172,7 @@ public class ProdutosDaDonaController {
     @PutMapping("/{id}")
     public Resposta editar(@PathVariable UUID id, @Valid @RequestBody PedidoDeProduto pedido,
             @AuthenticationPrincipal UsuarioAutenticado quem) {
-        return Resposta.de(servico.editar(id, pedido.version(), pedido.dados(), quem.id()));
+        return resposta(servico.editar(id, pedido.version(), pedido.dados(), quem.id()));
     }
 
     @Operation(summary = "Alterar os códigos do produto",
@@ -166,7 +181,7 @@ public class ProdutosDaDonaController {
     @PutMapping("/{id}/codigos")
     public Resposta alterarCodigos(@PathVariable UUID id, @Valid @RequestBody PedidoDosCodigos pedido) {
         List<Pedido> codigos = pedido.codigos() == null ? null : pedido.codigos().stream().map(PedidoDeCodigo::paraServico).toList();
-        return Resposta.de(servico.alterarCodigos(id, pedido.version(), codigos));
+        return resposta(servico.alterarCodigos(id, pedido.version(), codigos));
     }
 
     @Operation(summary = "Mudar só o estoque mínimo",
@@ -175,18 +190,18 @@ public class ProdutosDaDonaController {
     @PatchMapping("/{id}/estoque-minimo")
     public Resposta mudarEstoqueMinimo(@PathVariable UUID id, @Valid @RequestBody PedidoDoEstoqueMinimo pedido,
             @AuthenticationPrincipal UsuarioAutenticado quem) {
-        return Resposta.de(servico.alterarEstoqueMinimo(id, pedido.version(), pedido.estoqueMinimo(), quem.id()));
+        return resposta(servico.alterarEstoqueMinimo(id, pedido.version(), pedido.estoqueMinimo(), quem.id()));
     }
 
     @Operation(summary = "Inativar produto", description = "Sai das escolhas, mas o histórico fica. Pode ser reativado.")
     @PostMapping("/{id}/inativar")
     public Resposta inativar(@PathVariable UUID id) {
-        return Resposta.de(servico.definirAtivo(id, false));
+        return resposta(servico.definirAtivo(id, false));
     }
 
     @PostMapping("/{id}/reativar")
     public Resposta reativar(@PathVariable UUID id) {
-        return Resposta.de(servico.definirAtivo(id, true));
+        return resposta(servico.definirAtivo(id, true));
     }
 
     @Operation(summary = "Excluir produto", description = "Exclusão lógica: o produto some das listas e os códigos dele ficam livres.")

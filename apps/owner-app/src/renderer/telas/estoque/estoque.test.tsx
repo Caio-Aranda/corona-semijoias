@@ -245,6 +245,33 @@ describe('Estoque: lista de peças', () => {
     expect(within(brinco).getByText('Sem foto')).toBeInTheDocument();
   });
 
+  it('"Está acabando" separa "acabou de verdade" de "está nas maletas"', async () => {
+    const m = montar({
+      'estoque.acabando': () =>
+        pagina([
+          { produto: PECA, saldo: 0, minimo: 2, falta: 2, emMaletas: 0, vendedoresEmMaletas: [] },
+          {
+            produto: SEM_FOTO,
+            saldo: 0,
+            minimo: 1,
+            falta: 1,
+            emMaletas: 3,
+            vendedoresEmMaletas: [
+              { nome: 'Maria', quantidade: 2 },
+              { nome: 'João', quantidade: 1 },
+            ],
+          },
+        ]),
+    });
+    await ir(m, 'Está acabando', 'Está acabando');
+    const acabou = await screen.findByRole('row', { name: /Anel Solitário/ });
+    expect(within(acabou).getByText('Acabou')).toBeInTheDocument();
+    const emMaleta = screen.getByRole('row', { name: /Brinco de Argola/ });
+    expect(within(emMaleta).getByText('0 na loja')).toBeInTheDocument();
+    expect(within(emMaleta).getByText('Está em maleta: 3 (Maria, João)')).toBeInTheDocument();
+    expect(within(emMaleta).queryByText('Acabou')).toBeNull();
+  });
+
   it('"Só os que estão acabando" usa a lista do aviso; os filtros vão para a API', async () => {
     const m = montar();
     const u = await ir(m, 'Estoque', 'Estoque');
