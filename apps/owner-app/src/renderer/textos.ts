@@ -76,6 +76,10 @@ export const TEXTOS = {
     titulo: 'Seu aplicativo está desatualizado.',
     texto: 'Atualize para continuar usando.',
   },
+  /** Atualização automática (Fase 9): a versão nova já foi baixada e entra quando a pessoa fecha o programa. */
+  atualizacao: {
+    pronta: 'Há uma versão nova. Ela será instalada quando você fechar o programa.',
+  },
   senhaNova: {
     titulo: 'Crie sua senha nova.',
     texto:

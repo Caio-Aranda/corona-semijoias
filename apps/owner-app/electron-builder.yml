@@ -1,0 +1,50 @@
+# Instalador do Corona Gestão para Windows (ADR-0009, item 4). NSIS por usuário: a dona instala com dois
+# cliques, sem precisar de administrador. Sem assinatura digital (o Windows mostra "editor desconhecido"
+# só na primeira instalação; o roteiro de entrega explica). Gerar: npm run owner:empacotar (na raiz).
+appId: br.com.coronasemijoias.gestao
+productName: Corona Gestão
+copyright: Corona Semijoias
+asar: true
+# Usa o Electron que o npm já baixou: o empacotamento não baixa o Electron.
+electronDist: ../../node_modules/electron/dist
+electronVersion: 45.2.3
+npmRebuild: false
+nodeGypRebuild: false
+# No instalador "dois cliques" (por usuário) a pasta de instalação leva o nome do pacote; sem isto ficaria
+# "@coronaowner-app". O nome que a dona vê (atalho, programas instalados) continua "Corona Gestão".
+extraMetadata:
+  name: corona-gestao
+directories:
+  output: release
+  buildResources: build
+files:
+  - out/**
+  - package.json
+  - '!**/*.map'
+  # O código do processo principal e da tela já vem empacotado em out/ (electron-vite); node_modules não entra.
+  - '!node_modules/**'
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  # Logo provisório (docs/marca). Trocar por build/icon.png definitivo (pelo menos 256 x 256) quando houver.
+  icon: build/icon.png
+# Atualização automática (ADR-0009): só gera o latest.yml (com o SHA-512 do instalador) e o app-update.yml.
+# O endereço vem do npm run owner:empacotar (o mesmo servidor da API, pasta /atualizacoes/). Nunca publica
+# sozinho: quem envia para a VPS é o npm run owner:publicar.
+publish:
+  provider: generic
+  url: ${env.CORONA_URL_ATUALIZACOES}
+  channel: latest
+nsis:
+  oneClick: true
+  perMachine: false
+  allowToChangeInstallationDirectory: false
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Corona Gestão
+  runAfterFinish: true
+  uninstallDisplayName: Corona Gestão
+  # Desinstalar não apaga os dados da pessoa (a sessão guardada e o cache de fotos ficam).
+  deleteAppDataOnUninstall: false
+  artifactName: Corona-Gestao-Setup-${version}.${ext}

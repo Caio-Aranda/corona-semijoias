@@ -1,0 +1,10 @@
+[Unit]
+Description=Corona: backup diario as 03:30 UTC (00:30 em Brasilia)
+
+[Timer]
+OnCalendar=*-*-* 03:30:00 UTC
+Persistent=true
+RandomizedDelaySec=120
+
+[Install]
+WantedBy=timers.target

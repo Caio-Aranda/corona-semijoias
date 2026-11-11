@@ -171,7 +171,7 @@ Pagamento do cliente na venda (§7.2): **À vista** ou **A prazo** (parcelado).
 | Concluir | Termina um fluxo guiado depois da tela de conferência. |
 | Fechar | Fecha um aviso ou uma janela só de leitura. |
 | Tentar de novo | Repete uma ação que falhou, por exemplo por falta de internet. |
-| Atualizar agora | Instala a versão nova do aplicativo. Só existe quando houver atualização automática (Fase 9). Antes disso, o aviso de aplicativo desatualizado mostra só o texto. |
+| Atualizar agora | Instala a versão nova do aplicativo. **Não existe no Corona Gestão** (decisão da Fase 9 mínima): a atualização é automática e entra quando a pessoa fecha o programa. O aviso é a faixa "Há uma versão nova. Ela será instalada quando você fechar o programa." (sem botão). |
 | Entrar / Sair | Abre e encerra a sessão da pessoa. |
 | Mais opções | Mostra os campos raros (§19.2). |
 | Exportar | Gera PDF, Excel ou CSV em um clique (§19.10). |
@@ -363,7 +363,7 @@ Vendedor no app da dona:
 > **Seu aplicativo está desatualizado.**
 > Atualize para continuar usando.
 
-O botão **Atualizar agora** só aparece quando houver atualização automática (Fase 9). Antes disso, o aviso mostra só o texto.
+No Corona Gestão não há botão **Atualizar agora**: a versão nova é baixada em segundo plano e instalada quando a pessoa fecha o programa; enquanto isso, uma faixa avisa "Há uma versão nova. Ela será instalada quando você fechar o programa." (Fase 9 mínima).
 
 **Sessão expirada**
 

@@ -38,6 +38,7 @@ function ponteCom(respostas: Record<string, ResultadoDeChamada | (() => Resultad
       return Promise.resolve(valor);
     }),
     aoMudarASessao: () => () => undefined,
+    aoMudarAAtualizacao: () => () => undefined,
   };
   return ponte;
 }

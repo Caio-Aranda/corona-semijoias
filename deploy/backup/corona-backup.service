@@ -1,0 +1,8 @@
+[Unit]
+Description=Corona: backup diario do banco e dos arquivos
+After=docker.service
+
+[Service]
+Type=oneshot
+Environment=CORONA_DEPLOY=@RAIZ@
+ExecStart=@DIR@/fazer-backup.sh
