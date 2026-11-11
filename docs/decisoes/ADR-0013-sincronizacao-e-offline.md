@@ -1,6 +1,6 @@
 # ADR-0013: Sincronização e modo sem internet do Corona Vendas
 
-- **Status:** Proposto (o responsável aceita no PR). As dúvidas do [plano da Fase 5](../progresso/fase-5-plano.md#dúvidas) valem com os padrões seguros descritos lá
+- **Status:** Aceito (11/11/2026, pelo responsável, com as mudanças das linhas datadas no fim: formatos antigos por 90 dias, senha ao abrir o Corona Vendas, clientes da loja e retenção do `sync_log`). As dúvidas do [plano da Fase 5](../progresso/fase-5-plano.md#dúvidas) valem com os padrões seguros descritos lá
 - **Data:** 11/11/2026
 - **Tarefas que implementam:** 5.2 a 5.15 (Fase 5). Depende do ADR-0005 (SQLCipher), hoje Proposto
 
@@ -76,7 +76,7 @@ A lista sai do `RegistroDeTabelas` de hoje (`origin/main`, depois da tarefa 4.2)
 | `cotacoes` | servidor | todas (públicas, cerca de 250 por ano; ADR-0006) | imutável |
 | `categorias` | dona | todas (só `nome` e `ativo`) | servidor vence |
 | `semanas` | dona | todas | servidor vence |
-| `clientes` | dona e vendedor | `vendedor_responsavel_id = V` | campo a campo (item 8) |
+| `clientes` | dona e vendedor | **todos os clientes ativos, só as colunas do diretório** (nome, CPF, telefone e cidade; decisão de 11/11/2026, ver a linha datada no fim) | campo a campo (item 8) |
 | `produtos` | dona | produto que aparece em `itens_remessa` de uma remessa de V já enviada | servidor vence |
 | `produto_codigos` | dona | do produto acima | servidor vence |
 | `produtos_fotos` | dona | do produto acima (só hash, principal e ordem) | servidor vence |
@@ -138,7 +138,7 @@ A expansão lê a mesma fotografia do banco (a transação do pull) e nunca é c
 - **Vendas, itens, pagamentos, movimentos, conferências:** só inserção. Mesma chave com outro conteúdo é `CONFLITO` (item 2). Estorno é operação nova com chave própria (ADR-0011, item 9).
 - **Clientes, campo a campo.** `CLIENTE_ALTERADO` leva a `versaoBase` que o app tinha e, para cada campo alterado, o valor de antes e o de depois. O servidor aplica cada campo cujo valor atual ainda é o "antes"; se a dona mudou **o mesmo campo** nesse meio-tempo, vale a §10 ("última alteração vence") pela **ordem de chegada ao servidor** (nunca pelo relógio do aparelho), e o valor que foi substituído vai para a auditoria, para a dona poder ver e voltar (dúvida D1). O vendedor só altera os campos do cadastro que ele já preenche; `vendedor_responsavel_id`, `ativo` e situação são só da dona e são ignorados se vierem.
 - **Camada de pendentes no app:** enquanto houver alteração de cliente aguardando envio, o pull que traz uma versão nova desse cliente é aplicado e as alterações pendentes são **reaplicadas por cima** na cópia local, para o vendedor não ver a edição dele sumir.
-- **CPF repetido** (o banco não tem `UNIQUE` em CPF, V010): o cliente novo é **aceito**, marcado para a revisão da dona, e o vendedor **não recebe** nada sobre o outro cadastro (nem que ele existe; dúvida D2).
+- ~~**CPF repetido** (o banco não tem `UNIQUE` em CPF, V010): o cliente novo é aceito, marcado para a revisão da dona, e o vendedor não recebe nada sobre o outro cadastro.~~ **Mudou em 11/11/2026: CPF repetido é BARRADO** (online, 409 "Este cliente já está cadastrado" com o cliente existente; offline, o app confere no diretório local; dois cadastros do mesmo CPF feitos ao mesmo tempo sem internet chegam como `CONFLITO` para a revisão da dona, que junta os cadastros). Ver a linha datada no fim.
 - **Produtos, preços, códigos, maleta, estados:** servidor vence; o app só recebe. **Contas a receber, comissões, acertos:** gerados pelo servidor (Fase 7).
 
 ### 9. Fotos
@@ -169,7 +169,7 @@ A expansão lê a mesma fotografia do banco (a transação do pull) e nunca é c
 - O app guarda, a cada resposta válida do servidor, o par (hora do servidor, hora local) e, a cada minuto e a cada gravação, a **maior hora local já vista**.
 - Dias sem contato = hora local agora menos a hora local do último contato. Se o relógio local estiver **mais de 5 minutos antes** da maior hora já vista, ou antes do último contato, conta como **prazo esgotado** (ADR-0004, item 5). Relógio adiantado só faz o prazo acabar mais cedo, que é o lado seguro.
 - **Aviso** a partir de 3 dias antes do fim (dúvida D3). **Esgotado:** o app bloqueia tudo o que grava (venda, estorno, conferência, cliente), continua mostrando os dados e **continua enviando** ao conectar, com o texto do glossário ("Este computador ficou muitos dias sem internet..."). A outbox nunca é apagada por prazo.
-- O app abre sem internet com a sessão guardada (sem pedir senha; o banco local não guarda hash de senha, para não virar alvo de força bruta; dúvida R7). Se ao reconectar a sessão de 30 dias também tiver acabado, o vendedor entra de novo e o envio segue (ADR-0004, item 5).
+- ~~O app abre sem internet com a sessão guardada, sem pedir senha (dúvida R7).~~ **Mudou em 11/11/2026: o app pede a senha do vendedor ao abrir, também sem internet** (verificador lento local, 5 erros bloqueiam até conectar; ver a linha datada no fim). Se ao reconectar a sessão de 30 dias também tiver acabado, o vendedor entra de novo e o envio segue (ADR-0004, item 5).
 
 ### 13. Um aparelho por maleta e segundo aparelho
 
@@ -208,7 +208,7 @@ O que o spike da tarefa 18 achou e vale: `better-sqlite3-multiple-ciphers` 13.0.
 ### 17. Atualização do app com envios pendentes
 
 - Antes de instalar a atualização (Fase 9, ADR-0009), o motor para, espera o envio em andamento terminar (no máximo 30 s), tenta mais um envio se houver internet e fecha o banco limpo. A outbox atravessa a atualização no próprio banco.
-- **O servidor aceita cada `formato` de operação por pelo menos 180 dias** depois que um formato novo é publicado (dúvida R5). Mudança compatível não sobe o formato.
+- **O servidor aceita cada `formato` de operação por pelo menos 90 dias** (era 180; mudou em 11/11/2026) depois que um formato novo é publicado (dúvida R5). Mudança compatível não sobe o formato.
 - **Versão mínima (426) não pode prender vendas.** O push continua aceito de app abaixo da versão mínima quando o formato das operações ainda é aceito; pull e venda nova recebem 426. Depois de enviar, o app mostra "Seu aplicativo está desatualizado." (dúvida R4). Subir a versão mínima nunca tira o suporte a um formato que ainda pode estar numa outbox.
 
 ### 18. Indicador na tela
@@ -263,7 +263,7 @@ A devolução fora do prazo offline (§10) e o acerto com sobra e falta entram n
 
 - A expansão reenvia itens e produtos a cada mudança de estado da maleta (mais dados no pull).
 - Mais tabelas e telas: `sync_log`, `dispositivos`, `saidas_do_vendedor`, `envios_em_quarentena`, e telas da dona para aparelhos, envios com problema e quarentena.
-- O servidor carrega leitores de formatos antigos da outbox por 180 dias.
+- O servidor carrega leitores de formatos antigos da outbox por 90 dias (era 180; mudou em 11/11/2026).
 - A trava de envio por aparelho fica na memória: uma segunda instância da API pede ADR.
 - Perder a chave do banco local num computador sem internet perde as vendas não enviadas. Mitigado, não eliminado.
 - O caminho único pela outbox muda o comportamento das telas da Fase 4 (agora a venda aparece na hora como "aguardando envio" e depois confirma).
@@ -280,7 +280,7 @@ A devolução fora do prazo offline (§10) e o acerto com sobra e falta entram n
 - **Cliente "registro inteiro, último vence":** apagaria a mudança da dona num campo que o vendedor nem tocou. Descartada em favor de campo a campo.
 - **Confiar na hora do aparelho / usar só a hora de chegada:** a primeira aceita data impossível; a segunda põe a venda de sábado na semana seguinte quando o vendedor só conecta na segunda. Descartadas em favor da hora corrigida e limitada.
 - **Apagar os dados na hora do bloqueio:** perderia vendas reais de um vendedor desligado. Descartada em favor da quarentena antes.
-- **Cópia da chave pela senha do vendedor:** item 15. Descartada.
+- ~~**Cópia da chave pela senha do vendedor:** item 15. Descartada.~~ **Adotada em 11/11/2026** (ver a linha datada no fim).
 - **`configuracoes` sincronizável:** item 4. Descartada em favor do bloco `parametros`.
 
 ## Riscos e o que NÃO fazer
@@ -294,7 +294,7 @@ A devolução fora do prazo offline (§10) e o acerto com sobra e falta entram n
 - **Não** criar chave nova sobre um banco que não abriu.
 - **Não** rodar dois ciclos de sync ao mesmo tempo, nem deixar a tela tocar no banco.
 - **Não** subir a versão mínima de um jeito que recuse o formato de uma operação ainda guardada.
-- **Não** contar ao vendedor nada de um cadastro de outro vendedor (CPF repetido, cliente transferido).
+- ~~Não contar ao vendedor nada de um cadastro de outro vendedor (CPF repetido, cliente transferido).~~ Substituído em 11/11/2026: os clientes são da loja (ver a linha datada no fim).
 - **Não** travar a venda por falta de foto, nem a conferência por download.
 - **Não** acrescentar tabela sincronizável sem regra de filtro, expansão (se a pertença dela depender de outra linha) e saída (se a coluna "de quem é" puder mudar).
 - **Risco:** transação longa no servidor atrasa o pull de todos (ADR-0002); os limites por papel e o alerta do item 21 continuam valendo.
@@ -307,3 +307,9 @@ A devolução fora do prazo offline (§10) e o acerto com sobra e falta entram n
 ## Dúvidas
 
 Estão no [plano da Fase 5](../progresso/fase-5-plano.md#dúvidas), cada uma com o padrão seguro que vale enquanto não houver resposta. Nada aqui muda a especificação; se o responsável decidir algo contra a §10 ou a §11, a especificação muda primeiro, em tarefa própria.
+
+**Linhas datadas, 11/11/2026 (decisões do responsável, na aceitação deste ADR).**
+
+1. **Formatos antigos da outbox: 90 dias** (não 180). O servidor aceita um formato de operação por 90 dias depois de publicar o novo.
+2. **O Corona Vendas pede a senha do vendedor ao abrir, também sem internet** (nem todos os notebooks têm senha no Windows, então o cofre do Windows sozinho não protege). Sem internet a senha é conferida **localmente** com um verificador lento (**Argon2id**, ou scrypt, com parâmetros fortes; nunca hash rápido); **5 erros seguidos bloqueiam até conectar**. A chave do banco local é **embrulhada pela senha**, e fica uma **segunda proteção pelo DPAPI do Windows só para resgate**: quando a dona redefine a senha, o vendedor entra online com a senha nova e o app **re-embrulha a chave**. Isto **inverte** o item 15 ("segunda cópia da chave pela senha: não") e a dúvida R7 ("abrir sem pedir senha"); a regra "o banco local não guarda hash de senha" passa a valer só para hash rápido: o verificador lento fica no arquivo de dados. Senha do Windows: recomendada, não obrigatória. Mudança correspondente no ADR-0005.
+3. **Clientes são da LOJA, não do vendedor.** Qualquer vendedor pode vender a qualquer cliente. Todo vendedor recebe no pull um **diretório de clientes ativos com só nome, CPF, telefone e cidade** (lista explícita de colunas, nunca `SELECT *`). Continua **privado de cada vendedor**: as vendas, o fiado (contas a receber), os pagamentos e quem comprou com quem. Efeitos: no item 4, o filtro de `clientes` passa a "todos, colunas do diretório"; no item 5, a **saída por gatilho de `clientes` deixa de ser necessária** (ninguém "perde" um cliente; `vendedor_responsavel_id` fica como "quem cadastrou/atende mais", sem restringir a venda), e a regra de expansão não muda; no item 8, **CPF repetido é barrado** (online: 409 "Este cliente já está cadastrado" mostrando o cliente existente; offline: o app confere no diretório local; dois vendedores que cadastram o mesmo CPF ao mesmo tempo sem internet: o segundo chega como `CONFLITO` e vai para a revisão da dona, que junta os cadastros). O CPF passa a ser único entre clientes não excluídos (índice único parcial, migração da tarefa de código). A barreira do ADR-0003 continua: o vendedor nunca recebe dados de **outros vendedores**; o diretório de clientes é dado do cliente, da loja, e é a exceção declarada.
