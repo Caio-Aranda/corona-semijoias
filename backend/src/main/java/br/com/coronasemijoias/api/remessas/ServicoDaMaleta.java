@@ -5,6 +5,7 @@ import br.com.coronasemijoias.api.auditoria.ServicoDeAuditoria.Ator;
 import br.com.coronasemijoias.api.cadastros.Validacoes;
 import br.com.coronasemijoias.api.comum.erros.CodigoErro;
 import br.com.coronasemijoias.api.comum.erros.ErroDaApi;
+import br.com.coronasemijoias.api.comum.identificadores.OrdemDoBanco;
 import br.com.coronasemijoias.api.comum.identificadores.UuidV7;
 import br.com.coronasemijoias.api.estoque.ServicoDeEstoque;
 import br.com.coronasemijoias.api.estoque.ServicoDeEstoque.OrigemDoMovimento;
@@ -83,7 +84,7 @@ public class ServicoDaMaleta {
             }
             linhas.add(new LinhaDeDevolucao(id, l.produtoId(), l.quantidade()));
         }
-        linhas.sort(Comparator.comparing(LinhaDeDevolucao::produtoId));
+        linhas.sort(Comparator.comparing(LinhaDeDevolucao::produtoId, OrdemDoBanco.UUIDS));
 
         String status = trancar(remessaId);
         List<LinhaDeDevolucao> novas = new ArrayList<>();

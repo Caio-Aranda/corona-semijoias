@@ -105,6 +105,19 @@ class EstoqueDaDonaTest extends TesteDeIntegracao {
         return UUID.fromString(criado.get("id").asString());
     }
 
+    /** Produto com o id escolhido pelo teste (como o Corona Gestão faz, com UUID versão 4). */
+    private UUID produtoComId(UUID id) throws Exception {
+        String sufixo = UUID.randomUUID().toString().substring(0, 8);
+        UUID categoria = UUID.fromString(corpoDe(enviar("/api/dona/categorias", dona(), mapa("nome", "Cat " + sufixo))
+                .andExpect(status().isCreated())).get("id").asString());
+        Map<String, Object> codigo = mapa("codigo", "O-" + sufixo, "tipo", "LOJA", "principal", true);
+        JsonNode criado = corpoDe(enviar("/api/dona/produtos", dona(), mapa("id", id, "nome", "Anel " + sufixo,
+                "categoriaId", categoria, "precoVenda", "70.00", "precoCusto", "10.00", "estoqueMinimo", 1,
+                "codigos", List.of(codigo))).andExpect(status().isCreated()));
+        assertThat(criado.get("id").asString()).isEqualTo(id.toString());
+        return id;
+    }
+
     private int saldo(UUID produto) {
         return jdbc.queryForObject("SELECT estoque_atual FROM corona.produtos WHERE id = ?", Integer.class, produto);
     }
@@ -578,6 +591,79 @@ class EstoqueDaDonaTest extends TesteDeIntegracao {
         assertThat(saldo(a)).isEqualTo(1000 - esperado[0]);
         assertThat(saldo(b)).isEqualTo(1000 - esperado[1]);
         assertThat(saldo(c)).isEqualTo(1000 - esperado[2]);
+    }
+
+    /**
+     * ADR-0008, item 7: o serviço trava os produtos na MESMA ordem do banco ({@code ORDER BY id}, que compara o uuid byte a
+     * byte, sem sinal). O estorno da compra, o cancelamento da maleta e a contagem travam peça por peça nessa ordem; se o
+     * serviço usasse a ordem do Java ({@code UUID.compareTo}, com sinal), um id que começa com 8 a f trocaria de lugar e
+     * duas operações com as mesmas peças se esperariam em volta. Os ids do Corona Gestão são versão 4 (aleatórios).
+     */
+    @Test
+    void travaOsProdutosNaOrdemDoBancoMesmoQuandoOJavaOrdenaDiferente() throws Exception {
+        UUID primeiro = produtoComId(UUID.fromString("1" + UUID.randomUUID().toString().substring(1)));
+        UUID segundo = produtoComId(UUID.fromString("9" + UUID.randomUUID().toString().substring(1)));
+        // O caso que importa: o banco põe "primeiro" antes, o Java põe "segundo" antes.
+        assertThat(jdbc.queryForObject("SELECT CAST(? AS uuid) < CAST(? AS uuid)", Boolean.class, primeiro, segundo)).isTrue();
+        assertThat(segundo.compareTo(primeiro)).isNegative();
+        lancar(primeiro, "ENTRADA", 5);
+        lancar(segundo, "ENTRADA", 5);
+        UUID dona = donaId();
+
+        ExecutorService pool = Executors.newSingleThreadExecutor();
+        try (Connection outra = conectarComoAplicacao()) {
+            // Outra operação segura o último produto na ordem do banco.
+            travar(outra, segundo, false);
+            int pidDaOutra = pid(outra);
+            Future<List<ServicoDeEstoque.Resultado>> lote = pool.submit(() -> servico.registrar(
+                    List.of(pedido(segundo, TipoDeMovimento.SAIDA, 1), pedido(primeiro, TipoDeMovimento.SAIDA, 1)), dona));
+            esperarAlguemParadoNaTravaDe(pidDaOutra);
+            // Na ordem do banco, o serviço já travou o primeiro e está parado no segundo.
+            try (Connection sonda = conectarComoAplicacao()) {
+                assertThat(travar(sonda, primeiro, true))
+                        .as("o serviço deveria ter travado %s (primeiro na ordem do banco) antes de esperar %s", primeiro, segundo)
+                        .isFalse();
+                sonda.rollback();
+            }
+            outra.rollback();
+            lote.get(30, TimeUnit.SECONDS);
+        } finally {
+            pool.shutdownNow();
+        }
+        assertThat(saldo(primeiro)).isEqualTo(4);
+        assertThat(saldo(segundo)).isEqualTo(4);
+    }
+
+    /** Trava a linha do produto. Com {@code semEsperar}, devolve false se outra transação já a segura. */
+    private static boolean travar(Connection c, UUID produto, boolean semEsperar) throws Exception {
+        String sql = "SELECT id FROM corona.produtos WHERE id = ? FOR UPDATE" + (semEsperar ? " NOWAIT" : "");
+        try (PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setObject(1, produto);
+            ps.executeQuery().close();
+            return true;
+        } catch (java.sql.SQLException e) {
+            if ("55P03".equals(e.getSQLState())) { // lock_not_available
+                return false;
+            }
+            throw e;
+        }
+    }
+
+    private static int pid(Connection c) throws Exception {
+        try (PreparedStatement ps = c.prepareStatement("SELECT pg_backend_pid()"); var rs = ps.executeQuery()) {
+            rs.next();
+            return rs.getInt(1);
+        }
+    }
+
+    private void esperarAlguemParadoNaTravaDe(int pid) throws Exception {
+        long limite = System.nanoTime() + TimeUnit.SECONDS.toNanos(20);
+        while (!Boolean.TRUE.equals(jdbc.queryForObject("""
+                SELECT EXISTS (SELECT 1 FROM pg_locks l WHERE NOT l.granted AND ? = ANY (pg_blocking_pids(l.pid)))""",
+                Boolean.class, pid))) {
+            assertThat(System.nanoTime()).as("o serviço não chegou a esperar a trava").isLessThan(limite);
+            Thread.sleep(20);
+        }
     }
 
     @Test
