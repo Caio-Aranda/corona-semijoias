@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { TEXTOS } from '../textos';
 import { TEXTOS_DE_COMPRAS } from '../textos-compras';
 import { TEXTOS_DE_ESTOQUE } from '../textos-estoque';
+import { TEXTOS_DE_MALETAS } from '../textos-maletas';
 import { TEXTOS_RELATORIOS } from '../textos-relatorios';
 import { ORDEM_DOS_RELATORIOS, RELATORIOS } from './relatorios';
 import {
@@ -24,6 +25,7 @@ export const ROTAS = [
   'estoque/contagem',
   'estoque/receber-compra',
   'estoque/compras',
+  'maletas/montar',
   'pessoas/vendedores',
   'pessoas/clientes',
   'pessoas/usuarios',
@@ -72,6 +74,10 @@ export const MENU = [
       { chave: 'estoque/receber-compra', rotulo: TEXTOS_DE_COMPRAS.menu.receber },
       { chave: 'estoque/compras', rotulo: TEXTOS_DE_COMPRAS.menu.compras },
     ],
+  },
+  {
+    titulo: TEXTOS_DE_MALETAS.menu.grupo,
+    itens: [{ chave: 'maletas/montar', rotulo: TEXTOS_DE_MALETAS.menu.montar }],
   },
   {
     titulo: TEXTOS.menu.pessoas,
