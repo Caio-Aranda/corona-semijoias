@@ -265,13 +265,15 @@ public class ServicoDeEstoque {
 
     /**
      * Central + saldo das maletas (ENVIADA em diante, que é o que está com o vendedor) = tudo o que entrou e saiu do estoque
-     * fora da maleta. Os movimentos da maleta (REMESSA, DEVOLUCAO e os estornos deles) não entram no lado direito: eles só
-     * trocam peça de lugar entre o central e as maletas. Num único SELECT, para olhar um retrato só do banco.
+     * fora da maleta, menos o que foi vendido (venda líquida de estorno, Fase 4; ADR-0010, item 12). Os movimentos da maleta
+     * (REMESSA, DEVOLUCAO e os estornos deles) não entram no lado direito: eles só trocam peça de lugar entre o central e as
+     * maletas. A venda é a única saída definitiva da maleta. Num único SELECT, para olhar um retrato só do banco.
      */
     private List<DiferencaComMaletas> diferencasComMaletas() {
         return jdbc.query("""
                 SELECT p.id, p.nome, p.foto_principal_hash, p.estoque_atual,
-                       coalesce(maletas.saldo, 0) AS nas_maletas, coalesce(fora.soma, 0) AS esperado
+                       coalesce(maletas.saldo, 0) AS nas_maletas,
+                       coalesce(fora.soma, 0) + coalesce(vendidas.soma, 0) AS esperado
                   FROM corona.produtos p
                   LEFT JOIN (SELECT me.produto_id, sum(me.quantidade) AS soma
                                FROM corona.movimentacoes_estoque me
@@ -286,7 +288,11 @@ public class ServicoDeEstoque {
                                       ON m.remessa_id = i.remessa_id AND m.produto_id = i.produto_id
                               WHERE r.deleted_at IS NULL AND r.status IN ('ENVIADA', 'CONFERIDA', 'EM_ACERTO')
                               GROUP BY i.produto_id) maletas ON maletas.produto_id = p.id
-                 WHERE p.estoque_atual + coalesce(maletas.saldo, 0) <> coalesce(fora.soma, 0)
+                  LEFT JOIN (SELECT mv.produto_id, sum(mv.quantidade) AS soma
+                               FROM corona.movimentos_remessa mv
+                              WHERE mv.tipo IN ('VENDA', 'ESTORNO_VENDA')
+                              GROUP BY mv.produto_id) vendidas ON vendidas.produto_id = p.id
+                 WHERE p.estoque_atual + coalesce(maletas.saldo, 0) <> coalesce(fora.soma, 0) + coalesce(vendidas.soma, 0)
                  ORDER BY p.nome, p.id""",
                 (rs, i) -> new DiferencaComMaletas(rs.getObject("id", UUID.class), rs.getString("nome"),
                         rs.getString("foto_principal_hash"), rs.getInt("estoque_atual"), rs.getLong("nas_maletas"),
