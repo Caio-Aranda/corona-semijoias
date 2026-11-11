@@ -41,3 +41,12 @@ Desktop.ini
 
 # Arquivos enviados em desenvolvimento (documentos, fotos)
 dados/
+
+# Configuração do instalador do Corona Gestão (os valores reais ficam só no computador de quem gera o instalador)
+!.env.producao.example
+!.env.publicar.example
+
+# Resultados dos testes de ponta a ponta
+testes-e2e/resultados/
+playwright-report/
+test-results/

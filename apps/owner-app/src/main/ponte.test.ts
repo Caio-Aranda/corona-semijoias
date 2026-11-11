@@ -63,6 +63,39 @@ describe('ponte (preload)', () => {
   });
 });
 
+describe('atualização automática na ponte', () => {
+  it('o ouvinte recebe o estado de agora e as mudanças, só limpos, e para de ouvir ao cancelar', async () => {
+    await import('../preload/index');
+    invocar.mockResolvedValue({ estado: 'pronta', versao: '1.0.1', extra: 'não passa' });
+    const ponte = exposto['corona'] as {
+      aoMudarAAtualizacao: (f: (a: unknown) => void) => () => void;
+    };
+    const recebido = vi.fn();
+    const cancelar = ponte.aoMudarAAtualizacao(recebido);
+    await vi.waitFor(() =>
+      expect(recebido).toHaveBeenCalledWith({ estado: 'pronta', versao: '1.0.1' }),
+    );
+    expect(invocar).toHaveBeenCalledWith(CANAIS.atualizacaoEstado);
+    ouvintes.get(CANAIS.atualizacaoMudou)?.({ sender: 'x' }, { estado: 'nenhuma' });
+    expect(recebido).toHaveBeenLastCalledWith({ estado: 'nenhuma' });
+    cancelar();
+    expect(ouvintes.has(CANAIS.atualizacaoMudou)).toBe(false);
+  });
+
+  it('o processo principal só responde o estado da atualização para a janela do app', async () => {
+    const { registrarAtualizacao } = await import('./ipc');
+    const servico = { estado: () => ({ estado: 'nenhuma' }) };
+    registrarAtualizacao(servico as never, () => true);
+    const aceita = manipuladores.get(CANAIS.atualizacaoEstado)!;
+    await expect(aceita({} as IpcMainInvokeEvent)).resolves.toEqual({ estado: 'nenhuma' });
+    manipuladores.clear();
+    registrarAtualizacao(servico as never, () => false);
+    await expect(
+      manipuladores.get(CANAIS.atualizacaoEstado)!({} as IpcMainInvokeEvent),
+    ).rejects.toThrow('Chamada recusada.');
+  });
+});
+
 describe('ponte (processo principal)', () => {
   const evento = {} as IpcMainInvokeEvent;
 
@@ -81,7 +114,14 @@ describe('ponte (processo principal)', () => {
 
   it('registra exatamente os canais da ponte', async () => {
     await registrar();
-    const esperados = Object.values(CANAIS).filter((c) => c !== CANAIS.sessaoMudou);
+    // Os canais de aviso (sessão e atualização) são só do processo principal para a tela; o estado da
+    // atualização é registrado à parte (registrarAtualizacao) e tem teste próprio.
+    const doProcessoPrincipal: string[] = [
+      CANAIS.sessaoMudou,
+      CANAIS.atualizacaoMudou,
+      CANAIS.atualizacaoEstado,
+    ];
+    const esperados = Object.values(CANAIS).filter((c) => !doProcessoPrincipal.includes(c));
     expect([...manipuladores.keys()].sort()).toEqual([...esperados].sort());
   });
 

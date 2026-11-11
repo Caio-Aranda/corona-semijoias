@@ -31,8 +31,9 @@ const formatoCommonJs = {
 export default defineConfig({
   main: {
     build: {
-      // O cliente da API é código-fonte TypeScript do monorepo: entra no pacote em vez de ficar de fora.
-      externalizeDeps: { exclude: ['@corona/api-client-dona'] },
+      // O cliente da API é código-fonte TypeScript do monorepo e o electron-updater precisa ir junto (o pacote
+      // não leva node_modules): os dois entram no pacote em vez de ficar de fora.
+      externalizeDeps: { exclude: ['@corona/api-client-dona', 'electron-updater'] },
       rollupOptions: formatoCommonJs,
       sourcemap: false,
     },

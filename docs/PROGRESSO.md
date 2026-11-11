@@ -83,6 +83,27 @@ Estoque e compras (§15). Segue o mesmo formato da Fase 1. O modelo do estoque e
 
 **Fase 2 concluída** (tarefas 2.1 a 2.9; a 2.9 foi a revisão de fechamento). Resumo: o estoque tem um único serviço que muda a quantidade (movimentos imutáveis, desfazer lançamento, saldo nunca negativo, conferência automática); as compras entram com custo e histórico; há aviso de estoque mínimo e contagem do estoque por leitor; a dona tem as telas de estoque, entradas e saídas, compras e dez relatórios com exportação em PDF, Excel e CSV. **Segue para a Fase 3:** mercadoria em maletas por vendedor nos relatórios de estoque, uso dos tipos Maleta e Devolução da maleta e a conciliação "estoque + maletas". **Segue para a Fase 8:** curva ABC. Dúvidas abertas: [fase-2.md](progresso/fase-2.md#tarefa-28-corona-gestão-relatórios-de-estoque-e-de-compras-fecha-a-fase-2).
 
+## Fase 9 mínima
+
+### Plano da Fase 9 mínima
+
+Colocar o Corona Gestão no ar para a dona (prazo: sexta, 14/11/2026). É infraestrutura, empacotamento e atualização: não muda regra de negócio, migração publicada, cadastros nem estoque. As decisões estão no [ADR-0009](decisoes/ADR-0009-implantacao-certificado-atualizacao-e-backup.md).
+
+| Nº | Tarefa | Situação |
+| --- | --- | --- |
+| 9.1 | docs: plano da Fase 9 mínima e ADR-0009 (implantação, certificado fixado, atualização, backup, riscos) | Em revisão · [detalhe](progresso/fase-9.md#tarefa-91-plano-e-adr-só-documentos) |
+| 9.2 | deploy: Docker Compose de produção (API, PostgreSQL, proxy HTTPS), perfil `prod`, script de instalação do servidor, saúde e aviso de queda | Em revisão · [detalhe](progresso/fase-9.md#tarefa-92-implantação-da-api) |
+| 9.3 | backup e restauração: `pg_dump` diário, cópia semanal por `rclone`, restauração testada num banco limpo | Em revisão · [detalhe](progresso/fase-9.md#tarefa-93-backup-e-restauração) |
+| 9.4 | Corona Gestão: instalador `.exe` (NSIS), endereço e certificado fixado como configuração de build, `npm run owner:empacotar` | Em revisão · [detalhe](progresso/fase-9.md#tarefa-94-instalador-do-corona-gestão-e-certificado-fixado) |
+| 9.5 | Corona Gestão: atualização automática (publicação na VPS, checagem, hash, instalação ao fechar, aviso na tela) | Em revisão · [detalhe](progresso/fase-9.md#tarefa-95-atualização-automática) |
+| 9.6 | roteiro de entrega (`docs/entrega-corona-gestao.md`) | Em revisão · [detalhe](progresso/fase-9.md#tarefa-96-roteiro-de-entrega) |
+
+**Fora desta fase mínima:** domínio e Let's Encrypt, assinatura do instalador, backup diário fora da VPS, atualização do Corona Vendas (Fase 9 completa).
+
+**Depende do responsável:** contratar a VPS, entregar o IP e a chave SSH, autorizar o Google Drive no `rclone`, escolher o aviso de queda.
+
+**Estado (tarefas 9.1 a 9.6 escritas e testadas no computador de desenvolvimento).** A pilha de produção, o backup, a restauração, o instalador e a atualização automática foram provados com a pilha de produção rodando localmente (inclusive instalar a versão 1.0.0, publicar a 1.0.1 e ver o app se atualizar sozinho). **Falta, e só dá com a VPS:** rodar `instalar-servidor.sh`, `verificar-portas.sh` e os timers; o **teste de restauração na VPS com produtos reais** (obrigatório antes de dado real); o envio ao Google Drive; a publicação pela rede (`ssh`/`scp`); e a primeira instalação no computador da dona. Lista de conferência: [entrega-corona-gestao.md](entrega-corona-gestao.md#10-antes-de-a-dona-lançar-dado-real-lista-de-conferência).
+
 ## Fase 3
 
 ### Plano da Fase 3
@@ -103,6 +124,10 @@ Maleta (§15). Segue o mesmo formato da Fase 2. O modelo da maleta está no [ADR
 **Fora desta fase:** conferência pelo vendedor e um dispositivo por maleta (Fase 4); venda, perda e troca (Fases 4 e 6); acerto (Fase 7); conciliação completa com vendas (Fase 8).
 
 **Fase 3 concluída** (tarefas 3.1 a 3.8; a 3.8 foi a revisão de fechamento). Resumo: a dona monta a maleta com o leitor (rascunho não mexe no estoque), envia (baixa o estoque central de uma vez, preço congelado, limite e restrição conferidos no servidor), devolve peças, desfaz devolução, cancela e repõe; a conciliação "estoque da loja + maletas" fecha e aparece na tela Conferência do estoque; há cinco relatórios da maleta e a nota de remessa em PDF. **Segue para a Fase 4:** conferência pelo vendedor, um aparelho por maleta e a leitura da própria maleta pelo vendedor, sem custo. O encerramento da maleta é o acerto (Fase 7): maleta com tudo devolvido continua enviada.
+
+## Extra: testes de ponta a ponta
+
+Playwright com o Electron de verdade (`npm run e2e`, pasta `testes-e2e/`): login da dona com troca obrigatória de senha, cadastro de fornecedor, entrada de compra lendo o código (digitar + Enter) com conferência do estoque e exportação de relatório em CSV. Banco e API de teste isolados (porta 5499 e 8099, projeto `corona-e2e`, sem volume), limpos no fim; nunca o banco de desenvolvimento nem a pilha de produção. **Não está no CI de cada PR** (sobe Docker, API e Electron, vários minutos): o workflow `E2E` roda à mão e toda segunda. O workflow ainda não foi executado no GitHub (só localmente, 4 testes verdes). Nada do Corona Vendas antes da Fase 4.
 
 ## Fase 4
 
@@ -138,15 +163,15 @@ O que ainda está em aberto nas tarefas concluídas (o que já foi resolvido por
 - Vulnerabilidade sem nota de gravidade no OSV não reprova o CI. ([tarefa 7](progresso/fase-0.md#tarefa-7-ci-e-dependabot))
 - Rotas `/sync/push` e `/sync/pull`, `sync_log`, idempotência, cursor inválido e filtro por vendedor (Fase 5). ([tarefa 8](progresso/fase-0.md#tarefa-8-convenções-do-schema-e-sync_seq-seguro))
 - Chave estrangeira de `origem_dispositivo` para `dispositivos`; validação do id nos DTOs; alerta de atraso do pull. ([tarefa 8](progresso/fase-0.md#tarefa-8-convenções-do-schema-e-sync_seq-seguro))
-- Valor mínimo de parcela (Fase 4); backup de produção e envio para fora da VPS (Fase 9). ([tarefa 8](progresso/fase-0.md#tarefa-8-convenções-do-schema-e-sync_seq-seguro))
+- Valor mínimo de parcela (Fase 4); backup de produção e envio para fora da VPS (escritos na Fase 9 mínima, tarefa 9.3; o teste na VPS e o Google Drive dependem do responsável). ([tarefa 8](progresso/fase-0.md#tarefa-8-convenções-do-schema-e-sync_seq-seguro))
 - Telas e rota das cotações na Fase 1 (a dona, com o aviso); rota do vendedor na Fase 4; pull na Fase 5; `cotacao_id` no acerto na Fase 7; conversão com `BigInt` no TypeScript quando o primeiro front-end mostrar valores (mesmos exemplos do ADR-0006). ([tarefa 8.1](progresso/fase-0.md#tarefa-81-três-moedas-e-cotação-diária-só-documentos)) **Resolvida na tarefa 1.7 (rota) e 1.8 (tela).**
 - Dúvida do ADR-0006: incluir o aviso da cotação na lista da §19.3; pendência 13 da §17 (cartão), para o cliente. ([tarefa 8.1](progresso/fase-0.md#tarefa-81-três-moedas-e-cotação-diária-só-documentos))
 - Chave estrangeira de `usuarios.vendedor_id` para `vendedores` e `CHECK` "VENDEDOR tem vendedor_id" (Fase 1). ([tarefa 9](progresso/fase-0.md#tarefa-9-usuários-perfis-e-login-com-jwt)) **Resolvida na tarefa 1.3.**
 - Fase 1: auditoria "pelo servidor" da ação do comando; telas (senha mostrada uma vez, listar, editar e desativar usuários). ([tarefa 10](progresso/fase-0.md#tarefa-10-a-dona-cria-usuários-e-redefine-a-senha-temporária)) **Resolvida na tarefa 1.4 (auditoria) e 1.8 (telas).**
-- `npm run api:redefinir-senha` e `docker compose exec api ...` não rodados de ponta a ponta (contêiner só na Fase 9). ([tarefa 10](progresso/fase-0.md#tarefa-10-a-dona-cria-usuários-e-redefine-a-senha-temporária))
+- `npm run api:redefinir-senha` e `docker compose exec api ...` não rodados de ponta a ponta (o contêiner existe desde a tarefa 9.2, mas o comando ainda não foi rodado nele; fica para o teste na VPS). ([tarefa 10](progresso/fase-0.md#tarefa-10-a-dona-cria-usuários-e-redefine-a-senha-temporária))
 - Mais de uma instância da API pede um ADR (a trava por IP fica na memória). ([tarefa 11](progresso/fase-0.md#tarefa-11-sessão-longa-limite-de-tentativas-e-registro-de-acessos))
 - Fase 1: desativar usuário revoga as famílias. Fase 5: tabela `dispositivos`, segundo aparelho e prazo offline. ([tarefa 11](progresso/fase-0.md#tarefa-11-sessão-longa-limite-de-tentativas-e-registro-de-acessos)) **Resolvida na tarefa 1.4 (a parte da Fase 1).**
-- Corona Vendas: instalador, ícone e atualização automática (Fase 9); prazo offline guardado mas ainda não aplicado, login offline e bloqueio do segundo aparelho (Fase 5). ([tarefa 16](progresso/fase-0.md#tarefa-16-corona-vendas-com-login-online-e-barreira-contra-código-da-dona))
+- Corona Vendas: instalador, ícone e atualização automática (Fase 9 completa; o Corona Gestão já tem, tarefas 9.4 e 9.5; atenção: o Corona Vendas lê o endereço da API de `process.env`, que o build não preenche, ver tarefa 9.4); prazo offline guardado mas ainda não aplicado, login offline e bloqueio do segundo aparelho (Fase 5). ([tarefa 16](progresso/fase-0.md#tarefa-16-corona-vendas-com-login-online-e-barreira-contra-código-da-dona))
 - Corona Vendas: o login que entra, a troca de senha e a tela inicial só foram vistos nos testes, não com conta de vendedor real (fica para o teste de uso, com o vendedor de teste da tarefa 17). ([tarefa 16](progresso/fase-0.md#tarefa-16-corona-vendas-com-login-online-e-barreira-contra-código-da-dona))
 
 - Vendedor de demonstração sem cadastro de vendedor (`vendedor_id` vazio) até a Fase 1. ([tarefa 17](progresso/fase-0.md#tarefa-17-vs-code-setup-e-roteiro-do-teste-de-uso)) **Resolvida na tarefa 1.3.**

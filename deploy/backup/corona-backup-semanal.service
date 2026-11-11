@@ -1,0 +1,7 @@
+[Unit]
+Description=Corona: envio semanal do backup ao Google Drive
+After=docker.service network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=@DIR@/enviar-semanal.sh
