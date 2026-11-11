@@ -41,3 +41,75 @@ export function versaoDoApp(valor: string): string {
   }
   return valor;
 }
+
+const FORMATO_DA_IMPRESSAO = /^sha256\/[A-Za-z0-9+/]{43}=$/;
+
+/**
+ * Impressões digitais do certificado do servidor (variável MAIN_VITE_CORONA_API_PINS): "sha256/..." separadas
+ * por vírgula, a atual e, se houver, a reserva (ADR-0009, item 2). Vazio vale como nenhuma.
+ */
+export function impressoesDoServidor(valor: string | undefined): string[] {
+  const lista = (valor ?? '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+  if (lista.length > 3) {
+    throw new ErroDeConfiguracao(
+      'Há impressões digitais demais em MAIN_VITE_CORONA_API_PINS (no máximo 3).',
+    );
+  }
+  for (const item of lista) {
+    if (!FORMATO_DA_IMPRESSAO.test(item)) {
+      throw new ErroDeConfiguracao(
+        'Uma impressão digital em MAIN_VITE_CORONA_API_PINS não está no formato sha256/... (44 caracteres em Base64).',
+      );
+    }
+  }
+  return [...new Set(lista)];
+}
+
+/**
+ * Fora deste computador, o HTTPS só vale com o certificado fixado: sem impressão digital o aplicativo
+ * não abre conexão (nunca cai para "confiar em qualquer certificado").
+ */
+export function exigirImpressoesFora(endereco: string, impressoes: readonly string[]): void {
+  const { protocol, hostname } = new URL(endereco);
+  if (
+    protocol === 'https:' &&
+    !ENDERECOS_DESTE_COMPUTADOR.has(hostname) &&
+    impressoes.length === 0
+  ) {
+    throw new ErroDeConfiguracao(
+      'Falta a impressão digital do certificado do servidor (MAIN_VITE_CORONA_API_PINS). Gere o instalador de novo, conforme docs/entrega-corona-gestao.md.',
+    );
+  }
+}
+
+export interface ConfiguracaoDeProducao {
+  endereco: string;
+  impressoes: string[];
+}
+
+/**
+ * Confere a configuração do INSTALADOR da dona antes de compilar (npm run owner:empacotar): endereço do
+ * servidor (nunca este computador) e as impressões digitais do certificado.
+ */
+export function validarConfiguracaoDeProducao(env: {
+  MAIN_VITE_CORONA_API_URL?: string | undefined;
+  MAIN_VITE_CORONA_API_PINS?: string | undefined;
+}): ConfiguracaoDeProducao {
+  if (!(env.MAIN_VITE_CORONA_API_URL ?? '').trim()) {
+    throw new ErroDeConfiguracao(
+      'Falta o endereço do servidor (MAIN_VITE_CORONA_API_URL), com https:// e o IP da VPS.',
+    );
+  }
+  const endereco = enderecoDaApi(env.MAIN_VITE_CORONA_API_URL);
+  if (ENDERECOS_DESTE_COMPUTADOR.has(new URL(endereco).hostname)) {
+    throw new ErroDeConfiguracao(
+      'O instalador da dona não pode apontar para este computador. Preencha MAIN_VITE_CORONA_API_URL com o endereço do servidor (https://IP).',
+    );
+  }
+  const impressoes = impressoesDoServidor(env.MAIN_VITE_CORONA_API_PINS);
+  exigirImpressoesFora(endereco, impressoes);
+  return { endereco, impressoes };
+}

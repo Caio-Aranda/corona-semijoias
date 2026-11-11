@@ -22,6 +22,7 @@
     "setup:test": "node --test scripts/setup/",
     "owner:dev": "npm run dev -w @corona/owner-app",
     "owner:build": "npm run build -w @corona/owner-app",
+    "owner:empacotar": "node scripts/owner-empacotar.mjs",
     "seller:dev": "npm run dev -w @corona/seller-app",
     "seller:build": "npm run build -w @corona/seller-app",
     "seller:empacotar": "npm run empacotar -w @corona/seller-app",

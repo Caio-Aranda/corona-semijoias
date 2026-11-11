@@ -64,3 +64,33 @@ Subi a pilha inteira de produção no computador de desenvolvimento (build da im
 
 **Dúvidas:** criptografar a cópia do Drive com `rclone crypt` (recomendado, mas exige guardar a senha do `crypt` fora da VPS)?
 
+### Tarefa 9.4: instalador do Corona Gestão e certificado fixado
+
+**Em revisão.** Só empacotamento e configuração de conexão em `apps/owner-app`, mais um script na raiz. Telas, cadastros e estoque não mudaram; o Corona Vendas e a barreira não foram tocados.
+
+**O que foi feito**
+
+- `src/main/conexao-fixada.ts`: o app só confia no certificado do servidor pela **impressão digital da chave pública** (a atual e uma reserva). A exceção vale só para o endereço do servidor; todo outro endereço segue a verificação normal. A verificação nunca é desligada de forma geral. Testes (`conexao-fixada.test.ts`) cobrem chave certa, chave errada, reserva, outro endereço e lista vazia.
+- `configuracao.ts`: leitura e validação das impressões, e `validarConfiguracaoDeProducao` (recusa endereço local, `http` e impressão faltando). Sem impressão, o app não conecta fora deste computador.
+- `index.ts`: as chamadas à API passam a usar a rede do Chromium (`session.defaultSession.fetch`), que é a que consulta o verificador.
+- `electron-builder.yml` (NSIS por usuário, dois cliques, sem administrador, atalhos, "Corona Gestão", ícone provisório de `docs/marca`) e `npm run owner:empacotar` (`scripts/owner-empacotar.mjs`): lê `apps/owner-app/.env.producao` (ignorado pelo Git; `.env.producao.example` versionado), confere, compila, empacota e mostra o SHA-512.
+- `electron-builder` 26.18.0 (a versão do ADR-0001) como dependência de desenvolvimento do app da dona.
+
+**Defeito encontrado e corrigido:** o endereço da API era lido de `process.env`, que o build **não** preenche. O app empacotado ficaria sempre com `localhost:8080`. Agora vem de `import.meta.env`, embutido na compilação. (O Corona Vendas lê o endereço do mesmo jeito; fica avisado para a Fase 9 completa, não foi mexido.)
+
+**Como foi verificado (de verdade)**
+
+- No **Electron 45 real**, com um servidor HTTPS de certificado autoassinado: sem pin, **recusado** (`ERR_CERT_AUTHORITY_INVALID`); pin errado, **recusado**; pin certo (com a reserva ao lado), **conectou**; pin configurado para outro endereço, **recusado**. Cada cenário num processo novo.
+- Instalador gerado (122 MB). O pacote tem endereço e impressão embutidos e o app abre e fica rodando.
+- Instalação silenciosa e desinstalação no Windows deste computador: instala em `%LocalAppData%\Programs\corona-gestao`, cria o atalho "Corona Gestão" e o desinstalador remove tudo. Defeito achado: o instalador por usuário usava o nome do pacote npm como pasta (`@coronaowner-app`); corrigido (`extraMetadata.name`).
+- `lint`, `typecheck`, `format:check`, testes do app (todos) e `npm audit --audit-level=high` verdes.
+
+**O que não foi feito**
+
+- Instalação **pela dona, com o assistente na tela** e o aviso "editor desconhecido" do SmartScreen: só se vê no computador dela (o roteiro explica o passo).
+- Ícone definitivo: o logo provisório (`docs/marca`) está em uso.
+- Conexão real do app instalado com a VPS: depende da VPS.
+- Atualização automática: tarefa 9.5.
+
+**Dúvidas:** troca do logo provisório pelo definitivo.
+

@@ -4,7 +4,13 @@ import { dirname, join } from 'node:path';
 import { CANAIS, type AvisoDeSessao } from '../shared/ponte';
 import { criarApiDoGestao } from './api';
 import { CacheDeFotos } from './cache-de-fotos';
-import { enderecoDaApi, versaoDoApp } from './configuracao';
+import {
+  enderecoDaApi,
+  exigirImpressoesFora,
+  impressoesDoServidor,
+  versaoDoApp,
+} from './configuracao';
+import { instalarCertificadoFixado } from './conexao-fixada';
 import { GuardaDeTokens } from './guarda-de-tokens';
 import { registrarPonte } from './ipc';
 import { enderecoDoApp } from './seguranca';
@@ -108,10 +114,20 @@ function iniciar(): void {
     pasta: join(app.getPath('userData'), 'fotos'),
     limiteEmBytes: 200 * 1024 * 1024,
   });
+  // Servidor sem domínio: o HTTPS usa um certificado autoassinado e o app só confia na chave dele (ADR-0009).
+  // Sem impressão digital, fora deste computador, o app não conecta. A verificação nunca é desligada.
+  const enderecoDoServidor = enderecoDaApi(import.meta.env.MAIN_VITE_CORONA_API_URL);
+  const impressoes = impressoesDoServidor(import.meta.env.MAIN_VITE_CORONA_API_PINS);
+  exigirImpressoesFora(enderecoDoServidor, impressoes);
+  if (impressoes.length > 0) {
+    instalarCertificadoFixado(session.defaultSession, { endereco: enderecoDoServidor, impressoes });
+  }
   const api = criarApiDoGestao({
-    baseUrl: enderecoDaApi(process.env['MAIN_VITE_CORONA_API_URL']),
+    baseUrl: enderecoDoServidor,
     versaoDoApp: versaoDoApp(app.getVersion()),
     cacheDeFotos,
+    // Rede do Chromium: é ela que consulta o verificador de certificado acima.
+    fetch: (entrada, inicio) => session.defaultSession.fetch(entrada as string | Request, inicio),
   });
   // `servico` nasce depois da guarda, e a guarda avisa o serviço pelo `aoPerderASessao`.
   let servico: ServicoDeSessao | null = null;

@@ -32,7 +32,13 @@ O endereço da API fica em `MAIN_VITE_CORONA_API_URL` (padrão `http://localhost
 npm run owner:build
 ```
 
-Gera o pacote de código em `apps/owner-app/out/` (processo principal, ponte e tela), sem instalador. O instalador e a atualização automática ficam para a Fase 9.
+Gera o pacote de código em `apps/owner-app/out/` (processo principal, ponte e tela), sem instalador.
+
+```bash
+npm run owner:empacotar
+```
+
+Gera o **instalador do Windows** (`apps/owner-app/release/Corona-Gestao-Setup-<versão>.exe`, NSIS por usuário, sem assinatura). Antes, copie `apps/owner-app/.env.producao.example` para `.env.producao` e preencha o endereço do servidor (`https://IP`) e as impressões digitais do certificado (`MAIN_VITE_CORONA_API_PINS`, a atual e a reserva). O comando confere os dois **antes** de compilar e recusa endereço local ou impressão faltando. Esses valores são embutidos no pacote na compilação (`import.meta.env`) e **nunca ficam no código versionado**. O app só confia no certificado do servidor pela impressão digital da chave (`src/main/conexao-fixada.ts`, ADR-0009); para qualquer outro endereço vale a verificação normal. Ao terminar, mostra o SHA-512 do instalador. A atualização automática é a tarefa 9.5.
 
 ```bash
 npm test -w @corona/owner-app
