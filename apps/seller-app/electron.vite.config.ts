@@ -32,7 +32,9 @@ export default defineConfig({
   main: {
     build: {
       // O cliente da API é código-fonte TypeScript do monorepo: entra no pacote em vez de ficar de fora.
-      externalizeDeps: { exclude: ['@corona/api-client-vendedor'] },
+      externalizeDeps: {
+        exclude: ['@corona/api-client-vendedor', '@corona/conexao-segura', 'electron-updater'],
+      },
       rollupOptions: formatoCommonJs,
       sourcemap: false,
     },

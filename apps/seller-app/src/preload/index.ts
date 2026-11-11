@@ -1,5 +1,10 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import { CANAIS, type AvisoDeSessao, type PonteDoCorona } from '../shared/ponte';
+import {
+  CANAIS,
+  type AvisoDeAtualizacao,
+  type AvisoDeSessao,
+  type PonteDoCorona,
+} from '../shared/ponte';
 
 /**
  * A ponte: pequena e fixa. A tela só recebe resultados; nenhum token passa por aqui.
@@ -21,6 +26,27 @@ const ponte: PonteDoCorona = {
     ipcRenderer.on(CANAIS.sessaoMudou, escuta);
     return () => {
       ipcRenderer.removeListener(CANAIS.sessaoMudou, escuta);
+    };
+  },
+  aoMudarAAtualizacao: (ouvinte) => {
+    // Só entrega o aviso já limpo (estado e versão), nunca o objeto do evento do Electron.
+    const entregar = (aviso: AvisoDeAtualizacao): void => {
+      ouvinte(
+        aviso.estado === 'pronta'
+          ? { estado: 'pronta', versao: String(aviso.versao) }
+          : { estado: 'nenhuma' },
+      );
+    };
+    const escuta = (_evento: unknown, aviso: AvisoDeAtualizacao): void => {
+      entregar(aviso);
+    };
+    ipcRenderer.on(CANAIS.atualizacaoMudou, escuta);
+    // Quem abriu a tela depois de a versão baixar também precisa saber.
+    void (ipcRenderer.invoke(CANAIS.atualizacaoEstado) as Promise<AvisoDeAtualizacao>)
+      .then(entregar)
+      .catch(() => undefined);
+    return () => {
+      ipcRenderer.removeListener(CANAIS.atualizacaoMudou, escuta);
     };
   },
 };

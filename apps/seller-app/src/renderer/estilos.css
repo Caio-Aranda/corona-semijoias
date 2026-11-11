@@ -49,3 +49,12 @@
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: var(--espaco-4);
 }
+
+/* Aviso de versão nova (atualização automática): fica no alto, acima de qualquer tela. */
+.gestao-faixa-de-atualizacao {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  padding: 0.5rem 1rem;
+  background: var(--cor-fundo-suave);
+}
