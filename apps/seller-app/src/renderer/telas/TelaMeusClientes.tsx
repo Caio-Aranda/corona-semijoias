@@ -13,7 +13,7 @@ export interface TelaMeusClientesProps {
   aoVoltar: () => void;
 }
 
-/** Meus clientes: busca, cadastro e a ficha de cada um (o que ele deve e as compras feitas com este vendedor). */
+/** Clientes da loja: busca no diretório, cadastro e a ficha de cada um (o que ele deve e as compras feitas com este vendedor). */
 export function TelaMeusClientes({ ponte, aoVoltar }: TelaMeusClientesProps) {
   const T = TEXTOS.clientes;
   const [busca, setBusca] = useState('');
@@ -162,12 +162,14 @@ export function TelaMeusClientes({ ponte, aoVoltar }: TelaMeusClientesProps) {
             colunas={[
               { chave: 'nome', titulo: T.colunas.nome },
               { chave: 'telefone', titulo: T.colunas.telefone },
+              { chave: 'cidade', titulo: T.colunas.cidade },
               { chave: 'aReceber', titulo: T.colunas.aReceber, numerica: true },
               { chave: 'acoes', titulo: T.colunas.acoes },
             ]}
             linhas={clientes.map((c) => ({
               nome: c.nome,
               telefone: c.telefone ?? c.whatsapp ?? '',
+              cidade: c.cidade ?? '',
               aReceber: devedores[c.id] ? <AReceber devedor={devedores[c.id]} /> : '',
               acoes: (
                 <Botao

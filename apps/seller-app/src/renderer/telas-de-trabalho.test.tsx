@@ -53,6 +53,8 @@ const cliente: Cliente = {
   cpf: null,
   dataNascimento: null,
   telefone: null,
+  cidade: null,
+  meu: true,
   whatsapp: null,
   observacoes: null,
   ativo: true,

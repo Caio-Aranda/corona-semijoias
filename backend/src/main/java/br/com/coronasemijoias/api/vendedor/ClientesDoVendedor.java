@@ -2,6 +2,7 @@ package br.com.coronasemijoias.api.vendedor;
 
 import br.com.coronasemijoias.api.auditoria.ServicoDeAuditoria;
 import br.com.coronasemijoias.api.auditoria.ServicoDeAuditoria.Ator;
+import br.com.coronasemijoias.api.cadastros.CpfDeCliente;
 import br.com.coronasemijoias.api.cadastros.Validacoes;
 import br.com.coronasemijoias.api.comum.erros.CodigoErro;
 import br.com.coronasemijoias.api.comum.erros.ErroDaApi;
@@ -19,9 +20,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Clientes do vendedor (tarefa 4.3; ADR-0011, item 13): cadastro, busca e leitura dos clientes em que ele é o
- * responsável. O vendedor vem do token; cliente de outro vendedor nunca aparece (404). Cliente novo entra com o
- * vendedor como responsável. Idempotência pelo id do aplicativo: 201, 200 (mesmo conteúdo) ou 409.
+ * Clientes da loja vistos pelo vendedor (tarefa 4.3; ADR-0011, item 13, com a mudança de 11/11/2026): cadastro, busca e
+ * leitura de TODOS os clientes ativos, só com as colunas do diretório (nome, CPF, telefone e cidade). Os campos a mais
+ * (nascimento, WhatsApp e observações) só vêm dos clientes em que ele é o responsável (os que ele cadastrou). O vendedor
+ * vem do token. Cliente novo entra com ele como responsável; CPF repetido é 409 com o cliente existente.
+ * Idempotência pelo id do aplicativo: 201, 200 (mesmo conteúdo) ou 409.
  */
 @Service
 public class ClientesDoVendedor {
@@ -32,8 +35,12 @@ public class ClientesDoVendedor {
             String observacoes) {
     }
 
-    public record Cliente(UUID id, String nome, String cpf, LocalDate dataNascimento, String telefone, String whatsapp,
-            String observacoes, boolean ativo) {
+    /**
+     * {@code cidade} faz parte do diretório da loja. {@code meu} diz se ele é o responsável; só nesses vêm
+     * {@code dataNascimento}, {@code whatsapp} e {@code observacoes} (nos outros, vazios).
+     */
+    public record Cliente(UUID id, String nome, String cpf, String telefone, String cidade, boolean meu,
+            LocalDate dataNascimento, String whatsapp, String observacoes, boolean ativo) {
     }
 
     public record Resultado(Cliente cliente, boolean jaExistia) {
@@ -93,6 +100,7 @@ public class ClientesDoVendedor {
             }
             return new Resultado(ver(id, vendedorId), true);
         }
+        CpfDeCliente.exigirLivre(jdbc, cpf, id);
         if (aparelho != null) {
             origem.definirNaTransacaoAtual(aparelho);
         }
@@ -104,25 +112,37 @@ public class ClientesDoVendedor {
         return new Resultado(ver(id, vendedorId), false);
     }
 
-    /** Os clientes ativos do vendedor, por nome; {@code busca} procura no nome, telefone, WhatsApp e CPF. */
+    private static final String COLUNAS = """
+            SELECT id, nome, cpf, telefone, endereco_cidade, (vendedor_responsavel_id = ?) AS meu,
+                   CASE WHEN vendedor_responsavel_id = ? THEN data_nascimento END AS data_nascimento,
+                   CASE WHEN vendedor_responsavel_id = ? THEN whatsapp END AS whatsapp,
+                   CASE WHEN vendedor_responsavel_id = ? THEN observacoes END AS observacoes, ativo
+              FROM corona.clientes""";
+
+    /**
+     * Os clientes ativos da loja, por nome (os dele primeiro não: só por nome); {@code busca} procura no nome, telefone,
+     * CPF e, só nos clientes dele, no WhatsApp.
+     */
     public List<Cliente> listar(UUID vendedorId, String busca) {
         String texto = busca == null ? "" : busca.strip().toLowerCase(java.util.Locale.ROOT);
         String digitos = texto.replaceAll("\\D", "");
-        return jdbc.query("""
-                SELECT id, nome, cpf, data_nascimento, telefone, whatsapp, observacoes, ativo FROM corona.clientes
-                 WHERE vendedor_responsavel_id = ? AND deleted_at IS NULL AND ativo
+        return jdbc.query(COLUNAS + """
+
+                 WHERE deleted_at IS NULL AND ativo
                    AND (? = '' OR lower(nome) LIKE '%' || ? || '%'
                         OR (? <> '' AND (regexp_replace(coalesce(telefone, ''), '\\D', '', 'g') LIKE '%' || ? || '%'
-                                         OR regexp_replace(coalesce(whatsapp, ''), '\\D', '', 'g') LIKE '%' || ? || '%'
+                                         OR (vendedor_responsavel_id = ?
+                                             AND regexp_replace(coalesce(whatsapp, ''), '\\D', '', 'g') LIKE '%' || ? || '%')
                                          OR cpf LIKE ? || '%')))
-                 ORDER BY lower(nome), id LIMIT\s""" + LIMITE_DA_LISTA, (rs, n) -> de(rs), vendedorId, texto,
-                escapar(texto), digitos, digitos, digitos, digitos);
+                 ORDER BY lower(nome), id LIMIT\s""" + LIMITE_DA_LISTA, (rs, n) -> de(rs),
+                vendedorId, vendedorId, vendedorId, vendedorId, texto, escapar(texto), digitos, digitos, vendedorId, digitos,
+                digitos);
     }
 
+    /** Qualquer cliente ativo da loja (404 se não existe, está excluído ou inativo). */
     public Cliente ver(UUID id, UUID vendedorId) {
-        List<Cliente> achados = jdbc.query("""
-                SELECT id, nome, cpf, data_nascimento, telefone, whatsapp, observacoes, ativo FROM corona.clientes
-                 WHERE id = ? AND vendedor_responsavel_id = ? AND deleted_at IS NULL""", (rs, n) -> de(rs), id, vendedorId);
+        List<Cliente> achados = jdbc.query(COLUNAS + " WHERE id = ? AND deleted_at IS NULL", (rs, n) -> de(rs),
+                vendedorId, vendedorId, vendedorId, vendedorId, id);
         if (achados.isEmpty()) {
             throw new ErroDaApi(HttpStatus.NOT_FOUND, CodigoErro.CADASTRO_NAO_ENCONTRADO);
         }
@@ -132,7 +152,8 @@ public class ClientesDoVendedor {
     private static Cliente de(java.sql.ResultSet rs) throws java.sql.SQLException {
         java.sql.Date nascimento = rs.getDate("data_nascimento");
         return new Cliente(rs.getObject("id", UUID.class), rs.getString("nome"), rs.getString("cpf"),
-                nascimento == null ? null : nascimento.toLocalDate(), rs.getString("telefone"), rs.getString("whatsapp"),
+                rs.getString("telefone"), rs.getString("endereco_cidade"), rs.getBoolean("meu"),
+                nascimento == null ? null : nascimento.toLocalDate(), rs.getString("whatsapp"),
                 rs.getString("observacoes"), rs.getBoolean("ativo"));
     }
 

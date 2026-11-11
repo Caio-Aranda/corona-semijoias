@@ -48,12 +48,18 @@ export interface Conferencia {
   itens: LinhaDaConferencia[];
 }
 
+/**
+ * Cliente da LOJA, como o servidor mostra ao vendedor (11/11/2026): nome, CPF, telefone e cidade para todos;
+ * nascimento, WhatsApp e observações só dos clientes que ele cadastrou (`meu`).
+ */
 export interface Cliente {
   id: string;
   nome: string;
   cpf: string | null;
-  dataNascimento: string | null;
   telefone: string | null;
+  cidade: string | null;
+  meu: boolean;
+  dataNascimento: string | null;
   whatsapp: string | null;
   observacoes: string | null;
   ativo: boolean;

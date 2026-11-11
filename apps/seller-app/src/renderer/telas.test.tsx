@@ -230,7 +230,7 @@ describe('tela inicial do vendedor', () => {
   it('tem os quatro botões grandes e o botão Sair', async () => {
     const { ponte } = ponteFalsa({ estouLogado: vi.fn(() => Promise.resolve(dentro)) });
     render(<App ponte={ponte} />);
-    for (const nome of ['Vender', 'Minha maleta', 'Meus clientes', 'Meus números']) {
+    for (const nome of ['Vender', 'Minha maleta', 'Clientes', 'Meus números']) {
       expect(await screen.findByRole('button', { name: nome })).toBeInTheDocument();
     }
     expect(screen.getByRole('button', { name: 'Sair' })).toBeInTheDocument();
@@ -244,8 +244,8 @@ describe('tela inicial do vendedor', () => {
     });
     const u = userEvent.setup();
     render(<App ponte={ponte} />);
-    await u.click(await screen.findByRole('button', { name: 'Meus clientes' }));
-    expect(await screen.findByRole('heading', { name: 'Meus clientes' })).toBeInTheDocument();
+    await u.click(await screen.findByRole('button', { name: 'Clientes' }));
+    expect(await screen.findByRole('heading', { name: 'Clientes' })).toBeInTheDocument();
     expect(screen.queryByText('Em breve.')).not.toBeInTheDocument();
   });
 

@@ -12,7 +12,13 @@ import {
 } from './moedas';
 import { TEXTOS } from './textos';
 
-export type Resposta<T> = { ok: true; dados: T } | { ok: false; mensagem: string };
+export type Resposta<T> =
+  | { ok: true; dados: T }
+  | {
+      ok: false;
+      mensagem: string;
+      clienteExistente?: { id: string; nome: string; telefone?: string; cidade?: string };
+    };
 
 /** Pede algo ao processo principal e traduz a falha em texto para a pessoa (a mensagem da API vale primeiro). */
 export async function chamar<T>(
@@ -29,7 +35,11 @@ export async function chamar<T>(
         mensagem: `${TEXTOS.sessaoTerminou.titulo} ${TEXTOS.sessaoTerminou.texto}`,
       };
     }
-    return { ok: false, mensagem: r.mensagem ?? TEXTOS.algoDeuErrado };
+    return {
+      ok: false,
+      mensagem: r.mensagem ?? TEXTOS.algoDeuErrado,
+      ...(r.clienteExistente ? { clienteExistente: r.clienteExistente } : {}),
+    };
   } catch {
     return { ok: false, mensagem: TEXTOS.algoDeuErrado };
   }

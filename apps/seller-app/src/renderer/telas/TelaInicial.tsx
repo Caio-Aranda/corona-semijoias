@@ -6,7 +6,7 @@ export type Destino = 'vender' | 'maleta' | 'clientes' | 'numeros';
 const BOTOES: readonly { destino: Destino; nome: string }[] = [
   { destino: 'vender', nome: 'Vender' },
   { destino: 'maleta', nome: 'Minha maleta' },
-  { destino: 'clientes', nome: 'Meus clientes' },
+  { destino: 'clientes', nome: 'Clientes' },
   { destino: 'numeros', nome: 'Meus números' },
 ];
 

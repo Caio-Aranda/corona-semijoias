@@ -67,13 +67,16 @@ Em 09/11/2026 o responsável resolveu as dúvidas que estavam abertas neste glos
 | estoque mínimo | `produtos.estoque_minimo` | Quantidade abaixo da qual o sistema avisa que está acabando. |
 | produtos parados | relatório de produtos parados | Produtos que não saem do estoque há muito tempo. |
 | sem foto | imagem padrão "sem foto" | Imagem com a marca, nunca um espaço quebrado. A falta de foto nunca trava a venda. |
+| cliente (do vendedor) | diretório de clientes da loja | O vendedor não tem "os clientes dele": o cliente é da loja e qualquer vendedor vende para ele. Vendas, fiado e pagamentos continuam só de quem vendeu (ADR-0011, item 13). |
 | cotação | taxa PTAX de venda do Banco Central, tabela `cotacoes` (ADR-0006) | Quanto valem o Dólar e o Guarani em reais num dia, segundo o Banco Central. Sempre com a data: "Cotação do Banco Central de 06/11/2026". Ver parte 11. |
 | O que precisa da sua atenção | bloco da tela inicial da dona | Acertos pendentes, devoluções para autorizar, estoque baixo, maletas atrasadas, envios com problema (§19.3). |
 
 Botões da tela inicial (§19.3 e §19.7):
 
 - App da dona: **Montar maleta**, **Receber compra**, **Fazer acerto**, **Cadastrar produto**, **Relatórios**.
-- App do vendedor: **Vender**, **Minha maleta**, **Meus clientes**, **Meus números**.
+- App do vendedor: **Vender**, **Minha maleta**, **Clientes**, **Meus números**.
+
+- **Clientes (11/11/2026):** os clientes são **da loja**. O vendedor busca e vende para qualquer cliente; vê só nome, CPF, telefone e cidade dos que outro vendedor cadastrou (nascimento, WhatsApp e observações só dos que ele cadastrou). CPF repetido: "**Este cliente já está cadastrado: {nome}.**" com o botão **Usar este cliente**.
 
 ## 2. Proibido na tela
 
@@ -433,7 +436,7 @@ Bloco "O que precisa da sua atenção" quando não há nada a mostrar:
 
 **Tela inicial do vendedor (Corona Vendas)**
 
-Os quatro botões grandes são os da parte 1 (**Vender**, **Minha maleta**, **Meus clientes**, **Meus números**) e, no canto, **Sair**. Enquanto uma função não existe (Fase 0), o botão mostra o mesmo texto "Em breve." da tela inicial da dona, com o nome do botão no lugar de {Nome do botão}.
+Os quatro botões grandes são os da parte 1 (**Vender**, **Minha maleta**, **Clientes**, **Meus números**) e, no canto, **Sair**. Enquanto uma função não existe (Fase 0), o botão mostra o mesmo texto "Em breve." da tela inicial da dona, com o nome do botão no lugar de {Nome do botão}.
 
 Desde a Fase 4 os quatro botões funcionam (o "Em breve." só vale para função que ainda não existe).
 

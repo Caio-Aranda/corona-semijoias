@@ -10,9 +10,11 @@ export type CadastroDeTeste = {
 
 export type ClientesDoVendedorCliente = {
     ativo?: boolean;
+    cidade?: string;
     cpf?: string;
     dataNascimento?: string;
     id?: string;
+    meu?: boolean;
     nome?: string;
     observacoes?: string;
     telefone?: string;

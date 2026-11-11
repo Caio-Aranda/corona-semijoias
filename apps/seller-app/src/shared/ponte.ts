@@ -69,6 +69,8 @@ export type ResultadoDeChamada =
       ok: false;
       motivo: 'sessao-terminou' | 'sem-conexao' | 'app-desatualizado' | 'erro';
       mensagem?: string;
+      /** CPF repetido no cadastro de cliente: o cliente que já existe (diretório da loja). */
+      clienteExistente?: { id: string; nome: string; telefone?: string; cidade?: string };
     };
 
 /** Aviso do processo principal de que a pessoa precisa entrar de novo. */

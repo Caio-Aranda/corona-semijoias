@@ -11,8 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Clientes. O CPF é conferido aqui (o servidor valida) e guardado só com os dígitos, mas não é único:
- * CPF repetido é caso de revisão da dona na sincronização, não de recusa (ESPECIFICACAO §10).
+ * Clientes (da loja). O CPF é conferido aqui (o servidor valida), guardado só com os dígitos e é ÚNICO entre os clientes
+ * não excluídos: CPF repetido é recusado com 409 mostrando o cliente que já existe (11/11/2026; ESPECIFICACAO §9 e §10).
  */
 @Service
 public class ServicoDeClientes extends ServicoDeCadastroAtivavel<Cliente> {
@@ -42,7 +42,10 @@ public class ServicoDeClientes extends ServicoDeCadastroAtivavel<Cliente> {
     @Transactional
     public Cliente criar(UUID id, Dados d) {
         conferirVendedorResponsavel(d.vendedorResponsavelId());
-        return gravarNovo(new Cliente(Validacoes.idDoPedido(id), d.nome().strip(), Validacoes.cpfOpcional(d.cpf()),
+        String cpf = Validacoes.cpfOpcional(d.cpf());
+        UUID novoId = Validacoes.idDoPedido(id);
+        CpfDeCliente.exigirLivre(jdbc, cpf, novoId);
+        return gravarNovo(new Cliente(novoId, d.nome().strip(), cpf,
                 dataDeNascimento(d.dataNascimento()), Validacoes.limpar(d.telefone()), Validacoes.limpar(d.whatsapp()), Endereco.limpo(d.endereco()),
                 Validacoes.limpar(d.observacoes()), d.vendedorResponsavelId()));
     }
@@ -52,6 +55,7 @@ public class ServicoDeClientes extends ServicoDeCadastroAtivavel<Cliente> {
         String cpf = Validacoes.cpfOpcional(d.cpf());
         LocalDate nascimento = dataDeNascimento(d.dataNascimento());
         conferirVendedorResponsavel(d.vendedorResponsavelId());
+        CpfDeCliente.exigirLivre(jdbc, cpf, id);
         return editarComVersao(id, Validacoes.versaoDoPedido(versao), cliente -> cliente.alterar(
                 d.nome().strip(), cpf, nascimento, Validacoes.limpar(d.telefone()), Validacoes.limpar(d.whatsapp()),
                 Endereco.limpo(d.endereco()), Validacoes.limpar(d.observacoes()), d.vendedorResponsavelId()));

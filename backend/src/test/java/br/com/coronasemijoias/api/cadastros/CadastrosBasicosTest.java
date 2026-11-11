@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import br.com.coronasemijoias.api.testes.CpfsDeTeste;
 import br.com.coronasemijoias.api.testes.TesteDeIntegracao;
 import br.com.coronasemijoias.api.testes.UsuariosDeTeste;
 import java.time.LocalDate;
@@ -341,25 +342,39 @@ class CadastrosBasicosTest extends TesteDeIntegracao {
     // --- clientes ---
 
     @Test
-    void clienteGuardaCpfSoComDigitosEAceitaCpfRepetido() throws Exception {
+    void clienteGuardaCpfSoComDigitosECpfRepetidoEBarradoComOClienteExistente() throws Exception {
         String nome = unico("Maria Cliente");
+        String cpf = CpfsDeTeste.novo();
         UUID vendedor = usuarios.criarCadastroDeVendedor();
         JsonNode criado = criar("/api/dona/clientes", mapa(
-                "nome", nome, "cpf", "529.982.247-25", "telefone", "67 3333-0000", "whatsapp", "67 99999-0000",
+                "nome", nome, "cpf", CpfsDeTeste.comMascara(cpf), "telefone", "67 3333-0000", "whatsapp", "67 99999-0000",
                 "observacoes", "Paga em dia", "vendedorResponsavelId", vendedor.toString(),
                 "endereco", mapa("logradouro", "Rua das Flores", "numero", "10")));
-        assertThat(criado.get("cpf").asString()).isEqualTo("52998224725");
+        assertThat(criado.get("cpf").asString()).isEqualTo(cpf);
         assertThat(criado.get("vendedorResponsavelId").asString()).isEqualTo(vendedor.toString());
-        String nomeOutra = unico("Outra Maria");
-        // O CPF repetido não é recusado: vai para revisão da dona na sincronização (ESPECIFICACAO §10).
-        criar("/api/dona/clientes", mapa("nome", nomeOutra, "cpf", "52998224725"));
+        // CPF repetido é BARRADO (11/11/2026: clientes são da loja), com ou sem máscara, mostrando o cliente existente.
+        for (String repetido : new String[] {cpf, CpfsDeTeste.comMascara(cpf)}) {
+            enviar("POST", "/api/dona/clientes", dona(), mapa("nome", unico("Outra Maria"), "cpf", repetido))
+                    .andExpect(status().isConflict())
+                    .andExpect(jsonPath("$.codigo").value("CLIENTE_CPF_JA_CADASTRADO"))
+                    .andExpect(jsonPath("$.clienteExistente.id").value(criado.get("id").asString()))
+                    .andExpect(jsonPath("$.clienteExistente.nome").value(nome));
+        }
         // A busca acha pelo CPF (com ou sem máscara) e pelo nome.
-        enviar("GET", "/api/dona/clientes?busca=529.982.247&tamanho=100", dona(), null)
-                .andExpect(status().isOk());
+        enviar("GET", "/api/dona/clientes?busca=" + CpfsDeTeste.comMascara(cpf) + "&tamanho=100", dona(), null)
+                .andExpect(jsonPath("$.itens[?(@.nome=='" + nome + "')]").exists());
         enviar("GET", "/api/dona/clientes?busca=" + nome, dona(), null)
                 .andExpect(jsonPath("$.total").value(1));
-        enviar("GET", "/api/dona/clientes?busca=52998224725&tamanho=100", dona(), null)
-                .andExpect(jsonPath("$.itens[?(@.nome=='" + nomeOutra + "')]").exists());
+        // Editar para o CPF de outro também é barrado; salvar o próprio de novo não.
+        JsonNode outro = criar("/api/dona/clientes", mapa("nome", unico("Sem conflito"), "cpf", CpfsDeTeste.novo()));
+        enviar("PUT", "/api/dona/clientes/" + outro.get("id").asString(), dona(),
+                mapa("nome", outro.get("nome").asString(), "cpf", cpf, "version", outro.get("version").asInt()))
+                .andExpect(status().isConflict()).andExpect(jsonPath("$.codigo").value("CLIENTE_CPF_JA_CADASTRADO"));
+        enviar("PUT", "/api/dona/clientes/" + criado.get("id").asString(), dona(),
+                mapa("nome", nome, "cpf", cpf, "version", criado.get("version").asInt())).andExpect(status().isOk());
+        // Cliente excluído deixa o CPF livre.
+        enviar("DELETE", "/api/dona/clientes/" + criado.get("id").asString(), dona(), null).andExpect(status().isNoContent());
+        criar("/api/dona/clientes", mapa("nome", unico("Dona do CPF agora"), "cpf", cpf));
     }
 
     @Test
@@ -373,7 +388,7 @@ class CadastrosBasicosTest extends TesteDeIntegracao {
 
     @Test
     void clienteEditadoEExcluidoLogicamente() throws Exception {
-        String id = criar("/api/dona/clientes", mapa("nome", unico("Ana"), "cpf", "52998224725")).get("id").asString();
+        String id = criar("/api/dona/clientes", mapa("nome", unico("Ana"), "cpf", CpfsDeTeste.novo())).get("id").asString();
         enviar("PUT", "/api/dona/clientes/" + id, dona(), mapa("nome", unico("Ana Paula"), "version", 1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.cpf").doesNotExist())

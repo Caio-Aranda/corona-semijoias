@@ -91,6 +91,11 @@ public class ErroDaApi extends ErrorResponseException {
         return new ErroDaApi(HttpStatus.CONFLICT, tipo, corpo);
     }
 
+    /** Erro previsto com o corpo já montado (texto e propriedades extras próprios da situação). */
+    public static ErroDaApi comCorpo(HttpStatus status, CodigoErro codigo, ProblemDetail corpo) {
+        return new ErroDaApi(status, codigo, corpo);
+    }
+
     /** Erro com o texto montado pelo servidor (valores e nomes da própria situação), já em português simples. */
     public static ErroDaApi comDetalhe(HttpStatus status, CodigoErro codigo, String detalhe) {
         ProblemDetail corpo = Problemas.de(status, codigo);

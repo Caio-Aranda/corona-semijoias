@@ -324,21 +324,50 @@ class VendasDoVendedorTest extends TesteDeIntegracao {
     }
 
     @Test
-    void naoVendeParaClienteDeOutroVendedorNemComMaletaDeOutro() throws Exception {
+    void vendeParaClienteCadastradoPorOutroVendedorMasNaoComMaletaDeOutro() throws Exception {
         UsuarioDeTeste a = novoVendedor();
         UsuarioDeTeste b = novoVendedor();
         UUID anel = peca("30.00", 5);
         UUID maletaDeA = maleta(a, anel, 5);
-        UUID clienteDeA = cliente(a);
         UUID clienteDeB = cliente(b);
 
+        // O cliente é da loja (11/11/2026): A vende para o cliente que B cadastrou.
         postar(VENDAS, como(a), venda(UUID.randomUUID(), maletaDeA, clienteDeB, List.of(linha(anel, 1, null)), List.of()))
+                .andExpect(status().isCreated());
+        // Cliente que não existe continua recusado.
+        postar(VENDAS, como(a), venda(UUID.randomUUID(), maletaDeA, UUID.randomUUID(), List.of(linha(anel, 1, null)), List.of()))
                 .andExpect(status().isBadRequest());
         // B não vende da maleta de A: 404, sem dizer de quem é.
         postar(VENDAS, como(b), venda(UUID.randomUUID(), maletaDeA, clienteDeB, List.of(linha(anel, 1, null)), List.of()))
                 .andExpect(status().isNotFound());
-        assertThat(saldo(maletaDeA, anel)).isEqualTo(5);
-        assertThat(clienteDeA).isNotNull();
+        assertThat(saldo(maletaDeA, anel)).isEqualTo(4);
+    }
+
+    @Test
+    void vendedorNaoVeVendasNemFiadoDeOutroVendedorMesmoDoMesmoCliente() throws Exception {
+        UsuarioDeTeste a = novoVendedor();
+        UsuarioDeTeste b = novoVendedor();
+        UUID anel = peca("30.00", 10);
+        UUID maletaDeA = maleta(a, anel, 5);
+        UUID maletaDeB = maleta(b, anel, 5);
+        UUID cliente = cliente(a); // da loja: os dois vendem para ele
+        UUID vendaDeA = UUID.randomUUID();
+        UUID vendaDeB = UUID.randomUUID();
+        postar(VENDAS, como(a), venda(vendaDeA, maletaDeA, cliente, List.of(linha(anel, 1, null)), List.of(pagamento("10.00", "PIX"))))
+                .andExpect(status().isCreated());
+        postar(VENDAS, como(b), venda(vendaDeB, maletaDeB, cliente, List.of(linha(anel, 2, null)), List.of()))
+                .andExpect(status().isCreated());
+        // A só vê a venda dele (e B só a dele); a venda do outro é 404.
+        JsonNode deA = corpoDe(ler(VENDAS, como(a)).andExpect(status().isOk()));
+        assertThat(deA).hasSize(1);
+        assertThat(deA.get(0).get("id").asString()).isEqualTo(vendaDeA.toString());
+        ler(VENDAS + "/" + vendaDeB, como(a)).andExpect(status().isNotFound());
+        // O fiado (a receber) de A é só o dele: R$ 20,00 (30 - 10 pagos); o de B (60,00) não aparece para A.
+        JsonNode aReceber = corpoDe(ler("/api/vendedor/relatorios/a-receber", como(a)).andExpect(status().isOk()));
+        assertThat(dec(aReceber.get("totais").get("total"))).isEqualByComparingTo("20.00");
+        assertThat(aReceber.get("clientes")).hasSize(1);
+        JsonNode deBReceber = corpoDe(ler("/api/vendedor/relatorios/a-receber", como(b)).andExpect(status().isOk()));
+        assertThat(dec(deBReceber.get("totais").get("total"))).isEqualByComparingTo("60.00");
     }
 
     @Test

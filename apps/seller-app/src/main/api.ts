@@ -26,7 +26,7 @@ import {
   type RespostaDoLogin,
 } from '@corona/api-client-vendedor';
 import type { PedidoDeChamada } from '../shared/operacoes';
-import type { ApiDeAutenticacao, Credenciais, Falha, Resultado } from './tipos';
+import type { ApiDeAutenticacao, ClienteExistente, Credenciais, Falha, Resultado } from './tipos';
 
 export interface DadosDoUsuario {
   nome?: string;
@@ -51,6 +51,7 @@ interface OpcoesDaApi {
 interface CorpoDeErro {
   detail?: unknown;
   codigo?: unknown;
+  clienteExistente?: unknown;
 }
 
 const texto = (v: unknown): string | undefined => (typeof v === 'string' && v ? v : undefined);
@@ -64,6 +65,22 @@ function comoFalha(erro: unknown, resposta: Response | undefined): Falha {
   const codigo = texto(corpo.codigo);
   if (mensagem) falha.mensagem = mensagem;
   if (codigo) falha.codigo = codigo;
+  if (codigo === 'CLIENTE_CPF_JA_CADASTRADO') {
+    const e = corpo.clienteExistente;
+    if (typeof e === 'object' && e !== null) {
+      const o = e as Record<string, unknown>;
+      const id = texto(o.id);
+      const nome = texto(o.nome);
+      if (id && nome) {
+        const existente: ClienteExistente = { id, nome };
+        const telefone = texto(o.telefone);
+        const cidade = texto(o.cidade);
+        if (telefone) existente.telefone = telefone;
+        if (cidade) existente.cidade = cidade;
+        falha.clienteExistente = existente;
+      }
+    }
+  }
   return falha;
 }
 

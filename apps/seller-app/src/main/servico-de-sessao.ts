@@ -115,9 +115,12 @@ export class ServicoDeSessao {
         return { ok: false, motivo: 'sem-conexao' };
       case 'recusada':
         if (f.status === 401) return { ok: false, motivo: 'sessao-terminou' };
-        return f.mensagem
-          ? { ok: false, motivo: 'erro', mensagem: f.mensagem }
-          : { ok: false, motivo: 'erro' };
+        return {
+          ok: false,
+          motivo: 'erro',
+          ...(f.mensagem ? { mensagem: f.mensagem } : {}),
+          ...(f.clienteExistente ? { clienteExistente: f.clienteExistente } : {}),
+        };
       case 'resposta-invalida':
         return { ok: false, motivo: 'erro' };
     }

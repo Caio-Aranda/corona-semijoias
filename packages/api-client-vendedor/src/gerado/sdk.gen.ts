@@ -96,7 +96,7 @@ export const trocarSenha = <ThrowOnError extends boolean = false>(options: Optio
 /**
  * Meus clientes
  *
- * Só os clientes ativos em que o vendedor logado é o responsável (até 100, por nome). A busca procura no nome, telefone, WhatsApp e CPF.
+ * Os clientes ativos da LOJA (até 100, por nome), só com nome, CPF, telefone e cidade; nascimento, WhatsApp e observações vêm só dos que o vendedor logado cadastrou (meu = verdadeiro). A busca procura no nome, telefone, CPF e, nos clientes dele, no WhatsApp.
  */
 export const listarMeusClientes = <ThrowOnError extends boolean = false>(options?: Options<ListarMeusClientesData, ThrowOnError>): RequestResult<ListarMeusClientesResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ListarMeusClientesResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -107,7 +107,7 @@ export const listarMeusClientes = <ThrowOnError extends boolean = false>(options
 /**
  * Cadastrar um cliente
  *
- * O cliente novo entra com o vendedor logado como responsável. O CPF é opcional e conferido pelo servidor. Mesmo id e mesmos dados devolve 200; mesmo id com dados diferentes, 409.
+ * O cliente novo entra com o vendedor logado como responsável. O CPF é opcional, conferido pelo servidor e único: CPF já cadastrado devolve 409 CLIENTE_CPF_JA_CADASTRADO com o cliente existente em clienteExistente. Mesmo id e mesmos dados devolve 200; mesmo id com dados diferentes, 409.
  */
 export const cadastrarMeuCliente = <ThrowOnError extends boolean = false>(options: Options<CadastrarMeuClienteData, ThrowOnError>): RequestResult<CadastrarMeuClienteResponses, unknown, ThrowOnError> => (options.client ?? client).post<CadastrarMeuClienteResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -120,7 +120,7 @@ export const cadastrarMeuCliente = <ThrowOnError extends boolean = false>(option
 });
 
 /**
- * Ver um dos meus clientes
+ * Ver um cliente da loja
  */
 export const verMeuCliente = <ThrowOnError extends boolean = false>(options: Options<VerMeuClienteData, ThrowOnError>): RequestResult<VerMeuClienteResponses, unknown, ThrowOnError> => (options.client ?? client).get<VerMeuClienteResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
