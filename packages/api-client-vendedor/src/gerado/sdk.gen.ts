@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { EntrarData, EntrarResponses, EstornarVendaDoVendedorData, EstornarVendaDoVendedorResponses, EuData, EuResponses, ListarVendasDoVendedorData, ListarVendasDoVendedorResponses, RenovarData, RenovarResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SoVendedorData, SoVendedorResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarDoVendedorData, ValidarDoVendedorResponses, ValorDoVendedorData, ValorDoVendedorResponses, VenderNaMaletaData, VenderNaMaletaResponses, VerVendaDoVendedorData, VerVendaDoVendedorResponses } from './types.gen';
+import type { AcharPecaDaMinhaMaletaData, AcharPecaDaMinhaMaletaResponses, BaixarFotoDaMinhaMaletaData, BaixarFotoDaMinhaMaletaResponses, CadastrarMeuClienteData, CadastrarMeuClienteResponses, ConferirMinhaMaletaData, ConferirMinhaMaletaResponses, EntrarData, EntrarResponses, EstornarVendaDoVendedorData, EstornarVendaDoVendedorResponses, EuData, EuResponses, ListarMeusClientesData, ListarMeusClientesResponses, ListarMinhasMaletasData, ListarMinhasMaletasResponses, ListarVendasDoVendedorData, ListarVendasDoVendedorResponses, RelatorioDeMeusRecebimentosData, RelatorioDeMeusRecebimentosResponses, RelatorioDeMinhasVendasData, RelatorioDeMinhasVendasResponses, RelatorioDeValoresAReceberData, RelatorioDeValoresAReceberResponses, RenovarData, RenovarResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SoVendedorData, SoVendedorResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarDoVendedorData, ValidarDoVendedorResponses, ValorDoVendedorData, ValorDoVendedorResponses, VenderNaMaletaData, VenderNaMaletaResponses, VerConferenciaDaMinhaMaletaData, VerConferenciaDaMinhaMaletaResponses, VerCotacaoDeHojeData, VerCotacaoDeHojeResponses, VerMeuClienteData, VerMeuClienteResponses, VerMinhaMaletaData, VerMinhaMaletaResponses, VerVendaDoVendedorData, VerVendaDoVendedorResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -91,6 +91,151 @@ export const trocarSenha = <ThrowOnError extends boolean = false>(options: Optio
         'Content-Type': 'application/json',
         ...options.headers
     }
+});
+
+/**
+ * Meus clientes
+ *
+ * Só os clientes ativos em que o vendedor logado é o responsável (até 100, por nome). A busca procura no nome, telefone, WhatsApp e CPF.
+ */
+export const listarMeusClientes = <ThrowOnError extends boolean = false>(options?: Options<ListarMeusClientesData, ThrowOnError>): RequestResult<ListarMeusClientesResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ListarMeusClientesResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/clientes',
+    ...options
+});
+
+/**
+ * Cadastrar um cliente
+ *
+ * O cliente novo entra com o vendedor logado como responsável. O CPF é opcional e conferido pelo servidor. Mesmo id e mesmos dados devolve 200; mesmo id com dados diferentes, 409.
+ */
+export const cadastrarMeuCliente = <ThrowOnError extends boolean = false>(options: Options<CadastrarMeuClienteData, ThrowOnError>): RequestResult<CadastrarMeuClienteResponses, unknown, ThrowOnError> => (options.client ?? client).post<CadastrarMeuClienteResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/clientes',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Ver um dos meus clientes
+ */
+export const verMeuCliente = <ThrowOnError extends boolean = false>(options: Options<VerMeuClienteData, ThrowOnError>): RequestResult<VerMeuClienteResponses, unknown, ThrowOnError> => (options.client ?? client).get<VerMeuClienteResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/clientes/{id}',
+    ...options
+});
+
+/**
+ * Cotação do dia
+ *
+ * Reais por 1 Dólar e por 1 Guarani (taxa de venda) em vigor hoje, só para mostrar os valores nas três moedas. Sem nenhuma cotação ainda: disponivel = false (nunca é erro).
+ */
+export const verCotacaoDeHoje = <ThrowOnError extends boolean = false>(options?: Options<VerCotacaoDeHojeData, ThrowOnError>): RequestResult<VerCotacaoDeHojeResponses, unknown, ThrowOnError> => (options?.client ?? client).get<VerCotacaoDeHojeResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/cotacao',
+    ...options
+});
+
+/**
+ * Foto de uma peça da minha maleta
+ *
+ * tamanho = miniatura, media ou grande. Só fotos de peças que estão em maletas do vendedor logado; as outras dão 404. O endereço leva o hash do conteúdo, então a resposta pode ficar no cache.
+ */
+export const baixarFotoDaMinhaMaleta = <ThrowOnError extends boolean = false>(options: Options<BaixarFotoDaMinhaMaletaData, ThrowOnError>): RequestResult<BaixarFotoDaMinhaMaletaResponses, unknown, ThrowOnError> => (options.client ?? client).get<BaixarFotoDaMinhaMaletaResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/fotos/{hash}/{tamanho}',
+    ...options
+});
+
+/**
+ * Minhas maletas
+ *
+ * As maletas que estão com o vendedor logado (enviadas ou conferidas): peças, vendida, devolvida, saldo, preço de venda e foto.
+ */
+export const listarMinhasMaletas = <ThrowOnError extends boolean = false>(options?: Options<ListarMinhasMaletasData, ThrowOnError>): RequestResult<ListarMinhasMaletasResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ListarMinhasMaletasResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/maletas',
+    ...options
+});
+
+/**
+ * Ver uma das minhas maletas
+ */
+export const verMinhaMaleta = <ThrowOnError extends boolean = false>(options: Options<VerMinhaMaletaData, ThrowOnError>): RequestResult<VerMinhaMaletaResponses, unknown, ThrowOnError> => (options.client ?? client).get<VerMinhaMaletaResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/maletas/{id}',
+    ...options
+});
+
+/**
+ * Ver a conferência da maleta
+ */
+export const verConferenciaDaMinhaMaleta = <ThrowOnError extends boolean = false>(options: Options<VerConferenciaDaMinhaMaletaData, ThrowOnError>): RequestResult<VerConferenciaDaMinhaMaletaResponses, unknown, ThrowOnError> => (options.client ?? client).get<VerConferenciaDaMinhaMaletaResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/maletas/{id}/conferencia',
+    ...options
+});
+
+/**
+ * Conferir a maleta
+ *
+ * O vendedor manda quantas peças contou de cada produto (o que faltar na lista conta como zero). O servidor compara com o saldo da maleta, grava a diferença e liga a maleta a este aparelho. Uma conferência por maleta: mesmo id e mesma contagem devolve 200; outra tentativa, 409.
+ */
+export const conferirMinhaMaleta = <ThrowOnError extends boolean = false>(options: Options<ConferirMinhaMaletaData, ThrowOnError>): RequestResult<ConferirMinhaMaletaResponses, unknown, ThrowOnError> => (options.client ?? client).post<ConferirMinhaMaletaResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/maletas/{id}/conferencia',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Ler uma peça pelo código
+ *
+ * O leitor manda o código; só responde peça que está na maleta (404 com "Esta peça não consta na sua maleta" nas outras). Devolve a linha com a foto e o saldo.
+ */
+export const acharPecaDaMinhaMaleta = <ThrowOnError extends boolean = false>(options: Options<AcharPecaDaMinhaMaletaData, ThrowOnError>): RequestResult<AcharPecaDaMinhaMaletaResponses, unknown, ThrowOnError> => (options.client ?? client).get<AcharPecaDaMinhaMaletaResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/maletas/{id}/pecas',
+    ...options
+});
+
+/**
+ * Quanto meus clientes ainda devem
+ *
+ * Por cliente do vendedor: vendido (sem estornos), pago e a receber; só quem deve.
+ */
+export const relatorioDeValoresAReceber = <ThrowOnError extends boolean = false>(options?: Options<RelatorioDeValoresAReceberData, ThrowOnError>): RequestResult<RelatorioDeValoresAReceberResponses, unknown, ThrowOnError> => (options?.client ?? client).get<RelatorioDeValoresAReceberResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/relatorios/a-receber',
+    ...options
+});
+
+/**
+ * Meus recebimentos por forma de pagamento
+ *
+ * O que os clientes do vendedor pagaram no período, por forma, já descontados os reembolsos.
+ */
+export const relatorioDeMeusRecebimentos = <ThrowOnError extends boolean = false>(options?: Options<RelatorioDeMeusRecebimentosData, ThrowOnError>): RequestResult<RelatorioDeMeusRecebimentosResponses, unknown, ThrowOnError> => (options?.client ?? client).get<RelatorioDeMeusRecebimentosResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/relatorios/recebimentos',
+    ...options
+});
+
+/**
+ * Minhas vendas por cliente, peça ou dia
+ *
+ * Só as vendas do vendedor logado, sem as estornadas, no período (de e até, horário de Brasília; ambos opcionais). agrupar = cliente (padrão), peca ou dia. Totais também em Dólar e Guarani pela cotação de hoje.
+ */
+export const relatorioDeMinhasVendas = <ThrowOnError extends boolean = false>(options?: Options<RelatorioDeMinhasVendasData, ThrowOnError>): RequestResult<RelatorioDeMinhasVendasResponses, unknown, ThrowOnError> => (options?.client ?? client).get<RelatorioDeMinhasVendasResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/relatorios/vendas',
+    ...options
 });
 
 export const valorDoVendedor = <ThrowOnError extends boolean = false>(options?: Options<ValorDoVendedorData, ThrowOnError>): RequestResult<ValorDoVendedorResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ValorDoVendedorResponses, unknown, ThrowOnError>({

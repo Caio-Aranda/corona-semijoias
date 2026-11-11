@@ -1092,6 +1092,11 @@ export type RespostaDaLeitura = {
     resumo?: RespostaDoResumo;
 };
 
+export type RespostaDaLiberacao = {
+    remessaId?: string;
+    tinhaAparelho?: boolean;
+};
+
 export type RespostaDaLinha = {
     devolvida?: number;
     enviada?: number;
@@ -3581,6 +3586,24 @@ export type ColocarItemNaRemessaResponses = {
 };
 
 export type ColocarItemNaRemessaResponse = ColocarItemNaRemessaResponses[keyof ColocarItemNaRemessaResponses];
+
+export type LiberarAparelhoDaMaletaData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/remessas/{id}/liberar-aparelho';
+};
+
+export type LiberarAparelhoDaMaletaResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDaLiberacao;
+};
+
+export type LiberarAparelhoDaMaletaResponse = LiberarAparelhoDaMaletaResponses[keyof LiberarAparelhoDaMaletaResponses];
 
 export type VerMaletaDaRemessaData = {
     body?: never;

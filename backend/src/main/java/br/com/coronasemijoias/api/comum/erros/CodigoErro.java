@@ -376,7 +376,22 @@ public enum CodigoErro {
     /** A maleta está ligada a outro aparelho do mesmo vendedor (HTTP 409). */
     MALETA_EM_OUTRO_APARELHO(
             "Esta maleta já está em outro aparelho.",
-            "Esta maleta já está em outro aparelho. Peça à dona para liberar este aparelho.");
+            "Esta maleta já está em outro aparelho. Peça à dona para liberar este aparelho."),
+
+    /** O código lido não é de peça da maleta do vendedor (HTTP 404). */
+    PECA_NAO_ENCONTRADA(
+            "Não encontramos esta peça.",
+            "Esta peça não consta na sua maleta."),
+
+    /** A maleta já tem conferência (HTTP 409): a conferência é uma só por maleta. */
+    MALETA_JA_CONFERIDA(
+            "Esta maleta já foi conferida.",
+            "Esta maleta já foi conferida. Atualize a tela para ver o resultado."),
+
+    /** O mesmo identificador de cliente voltou com outros dados (HTTP 409). */
+    CLIENTE_JA_REGISTRADO_DIFERENTE(
+            "Este cliente já foi cadastrado com outros dados.",
+            "Este cliente já foi cadastrado com outros dados. Confira a lista de clientes antes de cadastrar de novo.");
 
     private final String titulo;
     private final String mensagem;

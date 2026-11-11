@@ -128,6 +128,11 @@ public class ServicoDeVendas {
             throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.MALETA_EM_OUTRO_APARELHO);
         }
         conferirCliente(pedido.clienteId(), vendedorId);
+        if (dono == null && aparelho != null) {
+            // A primeira venda liga a maleta a este aparelho (um aparelho por maleta; ADR-0011, item 11).
+            origem.definirNaTransacaoAtual(aparelho);
+            jdbc.update("UPDATE corona.remessas SET dispositivo_id = ? WHERE id = ?", aparelho, pedido.remessaId());
+        }
 
         // Preço, saldo e totais: tudo do servidor, em ordem estável de produto.
         List<Linha> ordenadas = new ArrayList<>(linhas);

@@ -40,3 +40,19 @@ Uma seção por tarefa, no mesmo formato de [fase-3.md](fase-3.md). A tabela de 
 - A conferência da maleta e a troca de aparelho ficam na 4.3; a venda já recusa maleta ligada a outro aparelho (`MALETA_EM_OUTRO_APARELHO`).
 - A tela de configuração do limite de desconto não existe (sem rota da dona): o valor 0 só muda no banco até a dona ter essa tela (pendência).
 - A conciliação "estoque + maletas" já enxerga as vendas porque o saldo vem dos movimentos; a conciliação completa com vendas é da Fase 8.
+
+### Tarefa 4.3: backend das rotas do vendedor (maleta, conferência, clientes, cotação, relatórios)
+
+**Em revisão.** Migração `V023__conferencia_da_maleta.sql`; pacote `vendedor` (`ConsultasDaMaletaDoVendedor`, `ServicoDeConferencia`, `ClientesDoVendedor`, `RelatoriosDoVendedor` e cinco controladores).
+
+**O que foi feito**
+
+- `GET /api/vendedor/maletas` e `/{id}`: só as maletas do vendedor do token, com vendida, devolvida, saldo, preço de venda e foto; nada de custo nem de estoque central. `GET /{id}/pecas?codigo=` lê a peça pelo leitor e só responde peça da maleta.
+- Conferência (`POST /{id}/conferencia`): o vendedor manda o que contou (peça ausente conta zero), o servidor compara com o saldo da maleta, grava a diferença (imutável, uma por maleta), liga a maleta ao aparelho e passa a `CONFERIDA`. 201, 200 no reenvio igual, 409 com dados diferentes ou segunda conferência.
+- Um aparelho por maleta: a conferência ou a primeira venda liga a maleta ao aparelho; outro aparelho recebe "Esta maleta já está em outro aparelho"; a dona libera em `POST /api/dona/remessas/{id}/liberar-aparelho` (auditado). A devolução à dona agora também vale para maleta `CONFERIDA`.
+- Clientes do vendedor: cadastro (201/200/409, CPF conferido, responsável = o vendedor do token), busca por nome, telefone, WhatsApp e CPF, leitura; cliente de outro vendedor é 404.
+- `GET /api/vendedor/cotacao` (Dólar e Guarani de hoje, só para mostrar) e `GET /api/vendedor/fotos/{hash}/{tamanho}` (só foto de peça da própria maleta).
+- Relatórios próprios (§12): vendas por cliente, peça ou dia, recebimentos por forma e valores a receber por cliente; vendas estornadas não contam; totais também em Dólar e Guarani.
+- 8 testes de integração (isolamento entre vendedores, 403 do perfil errado, conferência, aparelho único com liberação, clientes, relatórios).
+
+**Fora desta tarefa:** comissão e acerto (Fase 7), devoluções e trocas (Fase 6), "dados até" e sync (Fase 5). A consulta de produtos fora da maleta não existe (dúvida 6 do ADR-0011). Edição de cliente pelo vendedor ficou para depois (só cadastro e leitura).

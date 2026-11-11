@@ -105,7 +105,7 @@ public class ServicoDaMaleta {
         if (novas.isEmpty()) {
             return new Resultado(remessaId, true);
         }
-        if (!"ENVIADA".equals(status)) {
+        if (!"ENVIADA".equals(status) && !"CONFERIDA".equals(status)) {
             throw naoDevolve(status);
         }
 
@@ -208,7 +208,7 @@ public class ServicoDaMaleta {
                 Boolean.class, devolucaoId))) {
             throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.LANCAMENTO_JA_DESFEITO);
         }
-        if (!"ENVIADA".equals(status)) {
+        if (!"ENVIADA".equals(status) && !"CONFERIDA".equals(status)) {
             throw naoDevolve(status);
         }
 
@@ -274,7 +274,7 @@ public class ServicoDaMaleta {
         String situacao = switch (status) {
             case "RASCUNHO" -> "ainda está sendo montada";
             case "CANCELADA" -> "foi cancelada";
-            default -> "já foi conferida ou acertada";
+            default -> "já foi acertada";
         };
         return ErroDaApi.comDetalhe(HttpStatus.CONFLICT, CodigoErro.REMESSA_NAO_EDITAVEL,
                 "Só dá para devolver peças de uma maleta enviada, e esta maleta " + situacao + ".");

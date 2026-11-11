@@ -71,8 +71,11 @@ class VendasDoVendedorTest extends TesteDeIntegracao {
         return usuarios.comoDona();
     }
 
+    /** Um token por vendedor e por teste: o token leva o aparelho, e a maleta fica ligada ao primeiro que vende. */
+    private final Map<UUID, RequestPostProcessor> aparelhos = new java.util.concurrent.ConcurrentHashMap<>();
+
     private RequestPostProcessor como(UsuarioDeTeste vendedor) {
-        return UsuariosDeTeste.comToken(usuarios.token(vendedor));
+        return aparelhos.computeIfAbsent(vendedor.id(), id -> UsuariosDeTeste.comToken(usuarios.token(vendedor)));
     }
 
     private static Map<String, Object> mapa(Object... pares) {

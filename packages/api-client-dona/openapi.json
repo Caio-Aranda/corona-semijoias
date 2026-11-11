@@ -3547,6 +3547,18 @@
         },
         "type" : "object"
       },
+      "RespostaDaLiberacao" : {
+        "properties" : {
+          "remessaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "tinhaAparelho" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
       "RespostaDaLinha" : {
         "properties" : {
           "devolvida" : {
@@ -10062,6 +10074,38 @@
         } ],
         "summary" : "Colocar uma peça no rascunho",
         "tags" : [ "remessas-da-dona-controller" ]
+      }
+    },
+    "/api/dona/remessas/{id}/liberar-aparelho" : {
+      "post" : {
+        "description" : "Desliga a maleta do aparelho em que ela estava; o próximo aparelho do vendedor que vender ou conferir passa a ser o dela. Fica na auditoria. Maleta sem aparelho: 200, sem mudar nada.",
+        "operationId" : "liberarAparelhoDaMaleta",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDaLiberacao"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Liberar o aparelho da maleta",
+        "tags" : [ "aparelho-da-maleta-da-dona-controller" ]
       }
     },
     "/api/dona/remessas/{id}/maleta" : {
