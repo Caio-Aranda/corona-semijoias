@@ -384,6 +384,44 @@
         },
         "type" : "object"
       },
+      "DiferencasNaConferencia" : {
+        "properties" : {
+          "tabelas" : {
+            "items" : {
+              "type" : "string"
+            },
+            "maxItems" : 50,
+            "minItems" : 0,
+            "type" : "array"
+          }
+        },
+        "required" : [ "tabelas" ],
+        "type" : "object"
+      },
+      "LinhaRecebida" : {
+        "properties" : {
+          "campos" : {
+            "additionalProperties" : { },
+            "type" : "object"
+          },
+          "deletedAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "tabela" : {
+            "type" : "string"
+          },
+          "version" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "PagamentoLido" : {
         "properties" : {
           "em" : {
@@ -405,6 +443,22 @@
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ParametrosDoVendedor" : {
+        "properties" : {
+          "limiteDescontoPercentual" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "situacaoDoAparelho" : {
+            "type" : "string"
+          },
+          "tempoMaximoOfflineDias" : {
+            "format" : "int32",
+            "type" : "integer"
           }
         },
         "type" : "object"
@@ -639,6 +693,21 @@
         },
         "type" : "object"
       },
+      "RespostaDaConferencia" : {
+        "properties" : {
+          "horaServidor" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "tabelas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/TabelaConferida"
+            },
+            "type" : "array"
+          }
+        },
+        "type" : "object"
+      },
       "RespostaDoLogin" : {
         "properties" : {
           "expiraEm" : {
@@ -672,6 +741,45 @@
           "validadeEmSegundos" : {
             "format" : "int64",
             "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RespostaDoPull" : {
+        "properties" : {
+          "cursor" : {
+            "type" : "string"
+          },
+          "horaServidor" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "linhas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaRecebida"
+            },
+            "type" : "array"
+          },
+          "parametros" : {
+            "$ref" : "#/components/schemas/ParametrosDoVendedor"
+          },
+          "temMais" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "TabelaConferida" : {
+        "properties" : {
+          "quantidade" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "resumo" : {
+            "type" : "string"
+          },
+          "tabela" : {
+            "type" : "string"
           }
         },
         "type" : "object"
@@ -1522,6 +1630,101 @@
         } ],
         "summary" : "Minhas vendas por cliente, peça ou dia",
         "tags" : [ "apoio-do-vendedor-controller" ]
+      }
+    },
+    "/api/vendedor/sync/conferencia" : {
+      "get" : {
+        "description" : "Por tabela, quantas linhas são do vendedor (lápides incluídas) e o SHA-256 da lista ordenada \"id:version\" (uma por linha, com quebra de linha). O app compara com o que guardou depois de receber tudo; havendo diferença, recarrega a tabela e avisa em /conferencia/diferencas.",
+        "operationId" : "conferirDados",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDaConferencia"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Conferência por resumo dos dados do vendedor",
+        "tags" : [ "sync-do-vendedor-controller" ]
+      }
+    },
+    "/api/vendedor/sync/conferencia/diferencas" : {
+      "post" : {
+        "description" : "O computador achou diferença entre o que guardou e o resumo do servidor: é defeito do filtro (ADR-0013, item 6). Fica no log como alerta; o app recarrega as tabelas.",
+        "operationId" : "avisarDiferencaNaConferencia",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/DiferencasNaConferencia"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Avisar diferença na conferência por resumo",
+        "tags" : [ "sync-do-vendedor-controller" ]
+      }
+    },
+    "/api/vendedor/sync/pull" : {
+      "get" : {
+        "description" : "Devolve o que mudou desde o cursor, só do vendedor do token: maletas enviadas e itens, peças delas (com códigos e fotos), vendas, pagamentos, conferências, cotações, categorias, semanas e o diretório de clientes da loja. Cursor vazio é a carga inicial. Aplique cada linha só se a version for maior que a guardada. 409 CURSOR_INVALIDO: refaça a carga inicial sem tocar no que aguarda envio. Limite padrão 500 linhas, máximo 1000 (a expansão de uma maleta pode passar do limite).",
+        "operationId" : "receberDados",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "cursor",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "limite",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tabela",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDoPull"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Receber os dados do vendedor (pull)",
+        "tags" : [ "sync-do-vendedor-controller" ]
       }
     },
     "/api/vendedor/teste/dinheiro" : {

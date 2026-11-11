@@ -158,7 +158,8 @@ App do vendedor sem internet: SQLite criptografado, fila de envios e sincroniza�
 | Nº | Tarefa | Situação |
 | --- | --- | --- |
 | 5.1 | docs: plano da Fase 5 e ADR-0013 (sincronização e offline) | Mesclada (PR 74) · [plano](progresso/fase-5-plano.md) |
-| 5.3 | backend: computadores do vendedor (`dispositivos`, segundo computador, trocar e bloquear, ordem de apagar, vender só depois de conferir) | Em revisão · [detalhe](progresso/fase-5.md#tarefa-53-computadores-do-vendedor-backend) |
+| 5.3 | backend: computadores do vendedor (`dispositivos`, segundo computador, trocar e bloquear, ordem de apagar, vender só depois de conferir) | Mesclada (PR 96) · [detalhe](progresso/fase-5.md#tarefa-53-computadores-do-vendedor-backend) |
+| 5.4 | backend: pull do vendedor (regra por tabela, diretório de clientes, expansão, conferência por resumo, pertença garantida no banco) | Em revisão · [detalhe](progresso/fase-5.md#tarefa-54-pull-do-vendedor-backend) |
 
 As demais tarefas estão no [plano](progresso/fase-5-plano.md).
 

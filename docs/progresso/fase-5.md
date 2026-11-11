@@ -20,3 +20,24 @@ O plano está em [fase-5-plano.md](fase-5-plano.md); o desenho, no [ADR-0013](..
 **Decisões que tomei:** ver a linha datada da tarefa 5.3 no ADR-0013.
 
 **Ficou para depois:** telas da dona (5.10); preencher último pull/push e "aguardando" (5.4/5.5); a quarentena antes de apagar e o apagar no app (5.8); marcar o computador "reiniciado" quando o banco local fica ilegível (5.6/5.8).
+
+## Tarefa 5.4: pull do vendedor (backend)
+
+**O que entrou**
+
+- `GET /api/vendedor/sync/pull` (cursor, limite 500 por padrão e 1000 no máximo, `tabela` para recarregar uma só): linhas com tabela, id, `version`, lápide e as colunas da lista explícita; cursor; `temMais`; hora do servidor; bloco `parametros`. Cursor de época antiga: 409 `CURSOR_INVALIDO`. Só o computador em uso (5.3); guarda o último pull em `dispositivos`.
+- `GET /api/vendedor/sync/conferencia` (quantidade e SHA-256 de `id:version` por tabela) e `POST /api/vendedor/sync/conferencia/diferencas` (alerta de defeito no log).
+- `RegraDoVendedor` em cada `TabelaSincronizavel` (`RegistroDeTabelas`): cotações, categorias e semanas para todos; clientes da loja com o diretório para todos e o cadastro só para quem atende; maletas enviadas do vendedor (rascunho nunca); itens e movimentos das maletas dele; peças que já estiveram numa maleta enviada a ele, com códigos e fotos; vendas, itens, pagamentos e conferências dele. `FiltroPorVendedor` aplica a regra com o vendedor do token.
+- **Expansão** (ADR-0013, item 5, regra 1) no `ServicoDePull`, na mesma fotografia do banco: a maleta leva os itens; o item leva a peça, os códigos e as fotos. As expandidas passam também pelo filtro e não mexem no cursor.
+- Migração **V032**: gatilhos que impedem a pertença de mudar depois de entregue (o que dispensa a tabela de saídas) e índices do filtro.
+- Glossário: texto do `CURSOR_INVALIDO`. Clientes da API regerados.
+
+**Testes (escritos antes, PostgreSQL de verdade):**
+- `OraculoDeDoisVendedoresTest`: o oráculo de dois vendedores com semente impressa (300 operações por padrão; rodei 600): a dona cria peças, monta, envia e exclui maletas, muda preço, troca foto, cria e exclui código, cadastra e transfere cliente; A e B conferem e vendem; puxam em momentos aleatórios com lotes de 1 a 50. A cópia de cada um fica igual ao oráculo (id, versão, lápide), nada privado do outro, nenhum cadastro de cliente do outro, nenhuma coluna de custo. **Prova de que pega o furo:** com a expansão desligada, o oráculo falha (códigos da peça antiga faltando).
+- `PullDoVendedorTest`: peça antiga com código e foto chegando quando entra numa maleta nova; rascunho e rascunho excluído nunca chegam; troca de foto e código excluído; cliente transferido nos dois sentidos; vendas, conferências e maletas do outro nunca chegam; dinheiro como texto; erros da rota (cursor, limite, tabela de fora, dona, sem token, computador aguardando); recarga de uma tabela; conferência por resumo igual ao que o app guardou; gatilhos da V032. Toda resposta passa pela varredura dos marcadores proibidos (mais `custo`, `estoque_atual` e `fornecedor_id`).
+- `RegrasDoVendedorTest`: toda sincronizável com regra; toda coluna de pertença garantida no banco; expansões válidas; na dúvida, nada.
+- `EstresseDoPullComFiltroTest` (20 s em todo PR; 10 min no semanal, junto do estresse da Fase 0): 4 escritores mudando pertença (peças entrando em maletas de dois vendedores, fotos, códigos, preços, conferências, vendas) enquanto o vendedor puxa sem parar; no fim, a cópia igual ao oráculo (cerca de 6 mil operações em 20 s).
+
+**Decisões que tomei:** ver a linha datada da tarefa 5.4 no ADR-0013.
+
+**Ficou para depois:** o motor do app que aplica o pull (5.6); a métrica do defeito do filtro e da duração do pull (5.11).

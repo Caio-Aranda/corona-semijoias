@@ -120,12 +120,32 @@ export type Devedor = {
     vendidoEmGuarani?: string;
 };
 
+export type DiferencasNaConferencia = {
+    tabelas: Array<string>;
+};
+
+export type LinhaRecebida = {
+    campos?: {
+        [key: string]: unknown;
+    };
+    deletedAt?: string;
+    id?: string;
+    tabela?: string;
+    version?: number;
+};
+
 export type PagamentoLido = {
     em?: string;
     forma?: string;
     id?: string;
     tipo?: string;
     valor?: string;
+};
+
+export type ParametrosDoVendedor = {
+    limiteDescontoPercentual?: number;
+    situacaoDoAparelho?: string;
+    tempoMaximoOfflineDias?: number;
 };
 
 export type PedidoDaContagem = {
@@ -200,6 +220,11 @@ export type RelatoriosDoVendedorRelatorio = {
     totais?: Totais;
 };
 
+export type RespostaDaConferencia = {
+    horaServidor?: string;
+    tabelas?: Array<TabelaConferida>;
+};
+
 export type RespostaDoLogin = {
     expiraEm?: string;
     horaDoServidor?: string;
@@ -210,6 +235,20 @@ export type RespostaDoLogin = {
     tokenDeRenovacaoExpiraEm?: string;
     trocaDeSenhaObrigatoria?: boolean;
     validadeEmSegundos?: number;
+};
+
+export type RespostaDoPull = {
+    cursor?: string;
+    horaServidor?: string;
+    linhas?: Array<LinhaRecebida>;
+    parametros?: ParametrosDoVendedor;
+    temMais?: boolean;
+};
+
+export type TabelaConferida = {
+    quantidade?: number;
+    resumo?: string;
+    tabela?: string;
 };
 
 export type Tempo = {
@@ -624,6 +663,56 @@ export type RelatorioDeMinhasVendasResponses = {
 };
 
 export type RelatorioDeMinhasVendasResponse = RelatorioDeMinhasVendasResponses[keyof RelatorioDeMinhasVendasResponses];
+
+export type ConferirDadosData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/vendedor/sync/conferencia';
+};
+
+export type ConferirDadosResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDaConferencia;
+};
+
+export type ConferirDadosResponse = ConferirDadosResponses[keyof ConferirDadosResponses];
+
+export type AvisarDiferencaNaConferenciaData = {
+    body: DiferencasNaConferencia;
+    path?: never;
+    query?: never;
+    url: '/api/vendedor/sync/conferencia/diferencas';
+};
+
+export type AvisarDiferencaNaConferenciaResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
+export type ReceberDadosData = {
+    body?: never;
+    path?: never;
+    query?: {
+        cursor?: string;
+        limite?: number;
+        tabela?: string;
+    };
+    url: '/api/vendedor/sync/pull';
+};
+
+export type ReceberDadosResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDoPull;
+};
+
+export type ReceberDadosResponse = ReceberDadosResponses[keyof ReceberDadosResponses];
 
 export type ValorDoVendedorData = {
     body?: never;
