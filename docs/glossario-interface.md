@@ -455,6 +455,33 @@ Os textos moram em `apps/seller-app/src/renderer/textos.ts`. Termos: **Minha mal
 
 Na ficha da maleta, no Corona Gestão: **Conferência do vendedor** mostra "Na maleta", "Ele contou" e "Diferença" por peça; os movimentos aparecem como "Vendida pelo vendedor" e "Venda desfeita (estorno)".
 
+**Vender só depois de conferir (decisão de 11/11/2026; tarefa 5.3).** A maleta que ainda não foi conferida não vende:
+
+> **Confira a maleta antes de vender.**
+> Esta maleta ainda não foi conferida. Confira todas as peças da maleta antes de vender.
+
+**Computadores do vendedor (Fase 5, tarefa 5.3; ADR-0013, itens 13 e 14).** Na tela é sempre **computador** (nunca "aparelho", "dispositivo" ou "identificador"). Situações na tela: **Em uso** (ativo), **Aguardando liberação**, **Trocado** (substituído) e **Bloqueado**. Botões da dona, na ficha do vendedor: **Trocar computador** (libera o computador novo; o antigo só envia o que guardou) e **Bloquear computador** (perdido ou roubado; ação sem volta, com confirmação). Textos que o servidor devolve:
+
+> **Este computador ainda não foi liberado pela dona.**
+> Este computador ainda não foi liberado pela dona. Peça à dona para liberar este computador no Corona Gestão.
+
+> **Este computador foi trocado por outro.**
+> A dona trocou este computador por outro. Use o computador novo para vender.
+
+> **Este computador foi desligado da loja.**
+> Este computador foi desligado da loja pela dona. Fale com a dona.
+
+> **Este computador já é usado por outro vendedor.**
+> Este computador já é usado por outro vendedor. Cada vendedor usa o próprio computador. Fale com a dona.
+
+> **Este computador não pode ser liberado.**
+> Este computador foi bloqueado ou trocado e não pode voltar a vender. Peça ao vendedor para entrar no computador que ele vai usar e libere esse.
+
+> **Não encontramos este computador.**
+> Não encontramos este computador. Atualize a tela e tente de novo.
+
+Depois de apagar os dados (tarefa 5.8), o Corona Vendas mostra: "Este computador foi desligado da loja. Os dados foram apagados."
+
 **Cadastros da dona (fornecedores, categorias, praças, semanas, restrições, clientes; tarefa 1.2)**
 
 Cadastro que não existe mais (ou já foi excluído):

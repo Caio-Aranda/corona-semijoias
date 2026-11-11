@@ -41,7 +41,8 @@ public class ServicoDeSessoes {
     }
 
     /** O que a conferência por requisição precisa saber da família. */
-    public record SituacaoDaSessao(UUID usuarioId, TipoDeSessao tipo, UUID dispositivoId, boolean revogada) {
+    public record SituacaoDaSessao(UUID usuarioId, TipoDeSessao tipo, UUID dispositivoId, boolean revogada,
+            MotivoDaRevogacao motivo) {
     }
 
     /** Resultado da renovação. */
@@ -58,8 +59,17 @@ public class ServicoDeSessoes {
         }
     }
 
-    /** Renovação recusada. {@code revogou} diz se a família foi revogada agora (e por quê). */
-    public record Recusada(MotivoDaRevogacao revogou) implements Renovacao {
+    /**
+     * Renovação recusada. {@code revogou} diz se a família foi revogada agora (e por quê); {@code jaRevogadaPor}, o motivo
+     * gravado quando a família já estava revogada (o computador bloqueado recebe a ordem de apagar, tarefa 5.3), e
+     * {@code dispositivoId}, o computador da família (vazio quando o token nem existe).
+     */
+    public record Recusada(MotivoDaRevogacao revogou, MotivoDaRevogacao jaRevogadaPor, UUID dispositivoId, UUID usuarioId)
+            implements Renovacao {
+
+        public Recusada(MotivoDaRevogacao revogou) {
+            this(revogou, null, null, null);
+        }
     }
 
     private final JdbcTemplate jdbc;
@@ -111,10 +121,10 @@ public class ServicoDeSessoes {
         }
         UUID sid = familias.get(0);
         Familia familia = jdbc.queryForObject("""
-                SELECT usuario_id, dispositivo_id, revogada_em IS NOT NULL AS revogada
+                SELECT usuario_id, dispositivo_id, revogada_em IS NOT NULL AS revogada, motivo_da_revogacao
                   FROM corona.sessoes WHERE id = ? FOR UPDATE""",
                 (rs, i) -> new Familia(rs.getObject("usuario_id", UUID.class), rs.getObject("dispositivo_id", UUID.class),
-                        rs.getBoolean("revogada")),
+                        rs.getBoolean("revogada"), motivo(rs.getString("motivo_da_revogacao"))),
                 sid);
         // Lido só depois da trava: enxerga o que outra renovação da mesma família acabou de gravar.
         Token token = jdbc.queryForObject("""
@@ -123,11 +133,12 @@ public class ServicoDeSessoes {
                         instante(rs, "reapresentado_em")),
                 hash);
         if (familia.revogada()) {
-            return new Recusada(null);
+            return new Recusada(null, familia.motivo(), familia.dispositivoId(), familia.usuarioId());
         }
         Instant agora = agora();
         if (!Objects.equals(familia.dispositivoId(), dispositivoId)) {
-            return revogar(sid, MotivoDaRevogacao.OUTRO_APARELHO, agora);
+            revogar(sid, MotivoDaRevogacao.OUTRO_APARELHO, agora);
+            return new Recusada(MotivoDaRevogacao.OUTRO_APARELHO);
         }
         List<Sucessor> sucessores = jdbc.query("""
                 SELECT id, vence_em, usado_em FROM corona.tokens_de_renovacao WHERE anterior_id = ?""",
@@ -182,6 +193,15 @@ public class ServicoDeSessoes {
                 Timestamp.from(agora()), motivo.name(), usuarioId);
     }
 
+    /** A dona bloqueou o computador: revoga todas as famílias abertas dele (tarefa 5.3). Devolve quantas. */
+    @Transactional
+    public int revogarTodasDoAparelho(UUID dispositivoId, MotivoDaRevogacao motivo) {
+        return jdbc.update("""
+                UPDATE corona.sessoes SET revogada_em = ?, motivo_da_revogacao = ?
+                 WHERE dispositivo_id = ? AND revogada_em IS NULL""",
+                Timestamp.from(agora()), motivo.name(), dispositivoId);
+    }
+
     /** A família, para a conferência de cada requisição (ADR-0004, item 1). */
     @Transactional(readOnly = true)
     public Optional<SituacaoDaSessao> situacao(UUID sid) {
@@ -189,11 +209,11 @@ public class ServicoDeSessoes {
             return Optional.empty();
         }
         return jdbc.query("""
-                SELECT usuario_id, tipo, dispositivo_id, revogada_em IS NOT NULL AS revogada
+                SELECT usuario_id, tipo, dispositivo_id, revogada_em IS NOT NULL AS revogada, motivo_da_revogacao
                   FROM corona.sessoes WHERE id = ?""",
                 (rs, i) -> new SituacaoDaSessao(rs.getObject("usuario_id", UUID.class),
                         TipoDeSessao.valueOf(rs.getString("tipo")), rs.getObject("dispositivo_id", UUID.class),
-                        rs.getBoolean("revogada")),
+                        rs.getBoolean("revogada"), motivo(rs.getString("motivo_da_revogacao"))),
                 sid).stream().findFirst();
     }
 
@@ -225,7 +245,11 @@ public class ServicoDeSessoes {
         return valor == null ? null : valor.toInstant();
     }
 
-    private record Familia(UUID usuarioId, UUID dispositivoId, boolean revogada) {
+    private static MotivoDaRevogacao motivo(String texto) {
+        return texto == null ? null : MotivoDaRevogacao.valueOf(texto);
+    }
+
+    private record Familia(UUID usuarioId, UUID dispositivoId, boolean revogada, MotivoDaRevogacao motivo) {
     }
 
     private record Token(UUID id, Instant venceEm, Instant usadoEm, Instant reapresentadoEm) {

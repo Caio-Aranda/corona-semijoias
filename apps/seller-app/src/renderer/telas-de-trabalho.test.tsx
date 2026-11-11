@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Cliente, Conferencia, LinhaDaMaleta, Maleta, Venda } from '../shared/dados';
 import type {
   EstadoDaSessao,
@@ -100,6 +100,9 @@ const vendaGravada = (
   pagamentos: [],
 });
 
+/** A situação da maleta de mentira: enviada (para conferir); na venda, conferida (vender só depois de conferir). */
+let statusPadrao = 'ENVIADA';
+
 type Manipulador = (pedido: PedidoDeChamada) => ResultadoDeChamada | Promise<ResultadoDeChamada>;
 
 /** A ponte do app com a API de mentira: cada operação responde o que o teste combinou. */
@@ -108,7 +111,7 @@ function ponteDeTrabalho(
 ) {
   const chamadas: PedidoDeChamada[] = [];
   const padrao: Record<string, Manipulador> = {
-    'maletas.listar': () => ({ ok: true, dados: [maleta()] }),
+    'maletas.listar': () => ({ ok: true, dados: [maleta(statusPadrao)] }),
     'cotacao.hoje': () => ({
       ok: true,
       dados: {
@@ -339,6 +342,26 @@ async function lerEEscolherCliente(u: ReturnType<typeof userEvent.setup>) {
 }
 
 describe('Vender', () => {
+  beforeEach(() => {
+    statusPadrao = 'CONFERIDA';
+  });
+  afterEach(() => {
+    statusPadrao = 'ENVIADA';
+  });
+
+  it('maleta ainda não conferida não vende e diz para conferir antes', async () => {
+    const { ponte } = ponteDeTrabalho({
+      'maletas.listar': () => ({ ok: true, dados: [maleta('ENVIADA')] }),
+    });
+    await abrir(ponte, 'Vender');
+    expect(
+      await screen.findByText(
+        'Esta maleta ainda não foi conferida. Confira todas as peças da maleta antes de vender.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByLabelText('Ler o código da peça')).not.toBeInTheDocument();
+  });
+
   it('lê a peça, escolhe o cliente, paga e manda só peça, quantidade, desconto e pagamento', async () => {
     const { ponte, daOperacao } = ponteDeTrabalho({
       'maletas.peca': () => ({ ok: true, dados: LINHA_ANEL }),
@@ -569,6 +592,13 @@ describe('Vender', () => {
 });
 
 describe('Minhas vendas e estorno', () => {
+  beforeEach(() => {
+    statusPadrao = 'CONFERIDA';
+  });
+  afterEach(() => {
+    statusPadrao = 'ENVIADA';
+  });
+
   async function abrirVendas(ponte: PonteDoCorona) {
     const u = await abrir(ponte, 'Vender');
     await screen.findByLabelText('Ler o código da peça');

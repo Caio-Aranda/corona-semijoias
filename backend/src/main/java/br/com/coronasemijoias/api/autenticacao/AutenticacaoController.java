@@ -123,7 +123,8 @@ public class AutenticacaoController {
     public ResponseEntity<RespostaDoLogin> entrar(@Valid @RequestBody PedidoDeLogin pedido, HttpServletRequest requisicao) {
         return resposta(servicoDeLogin.entrar(new PedidoDeEntrada(
                 pedido.login(), pedido.senha(), pedido.dispositivoId(), ipDoCliente.de(requisicao),
-                FiltroDeTipoEVersao.tipoDe(requisicao).orElseThrow())));
+                FiltroDeTipoEVersao.tipoDe(requisicao).orElseThrow(),
+                requisicao.getHeader(FiltroDeTipoEVersao.CABECALHO_VERSAO))));
     }
 
     @Operation(summary = "Criar a senha nova (troca obrigatória)",
@@ -141,8 +142,9 @@ public class AutenticacaoController {
             description = "Troca o token de renovação por um novo (o anterior deixa de valer) e devolve um token de "
                     + "acesso novo. Mande o mesmo dispositivoId do login. Não precisa do token de acesso.")
     @PostMapping("/renovar")
-    public ResponseEntity<RespostaDoLogin> renovar(@Valid @RequestBody PedidoDeRenovacao pedido) {
-        return resposta(servicoDeRenovacao.renovar(pedido.tokenDeRenovacao(), pedido.dispositivoId()));
+    public ResponseEntity<RespostaDoLogin> renovar(@Valid @RequestBody PedidoDeRenovacao pedido, HttpServletRequest requisicao) {
+        return resposta(servicoDeRenovacao.renovar(pedido.tokenDeRenovacao(), pedido.dispositivoId(),
+                requisicao.getHeader(FiltroDeTipoEVersao.CABECALHO_VERSAO)));
     }
 
     @Operation(summary = "Sair", description = "Encerra a sessão do token (o de acesso e o de renovação).")

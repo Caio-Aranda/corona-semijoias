@@ -134,7 +134,7 @@ class RevogacaoNaTrocaDeCredencialTest extends TesteDeIntegracao {
                 .andExpect(status().isOk());
         mvc.perform(post("/api/auth/renovar").contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(Map.of("tokenDeRenovacao", trocou.get("tokenDeRenovacao").asString(),
-                                "dispositivoId", UsuariosDeTeste.APARELHO))))
+                                "dispositivoId", usuarios.aparelhoDe(vendedor)))))
                 .andExpect(status().isOk());
     }
 

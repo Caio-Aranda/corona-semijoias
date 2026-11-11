@@ -129,7 +129,11 @@ public class ServicoDeVendas {
 
         br.com.coronasemijoias.api.vendedor.VendedorAtivo.exigir(jdbc, vendedorId);
         String status = (String) remessa.get("status");
-        if (!"ENVIADA".equals(status) && !"CONFERIDA".equals(status)) {
+        if ("ENVIADA".equals(status)) {
+            // Vender só depois de conferir (decisão de 11/11/2026; ADR-0011, dúvida 5): a conferência liga a maleta ao computador.
+            throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.MALETA_NAO_CONFERIDA);
+        }
+        if (!"CONFERIDA".equals(status)) {
             throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.MALETA_NAO_ESTA_COM_VOCE);
         }
         UUID dono = (UUID) remessa.get("dispositivo_id");
@@ -138,7 +142,7 @@ public class ServicoDeVendas {
         }
         conferirCliente(pedido.clienteId(), vendedorId);
         if (dono == null && aparelho != null) {
-            // A primeira venda liga a maleta a este aparelho (um aparelho por maleta; ADR-0011, item 11).
+            // Maleta conferida sem computador (só a de antes da tarefa 5.3): a venda liga a maleta a este computador.
             origem.definirNaTransacaoAtual(aparelho);
             jdbc.update("UPDATE corona.remessas SET dispositivo_id = ? WHERE id = ?", aparelho, pedido.remessaId());
         }

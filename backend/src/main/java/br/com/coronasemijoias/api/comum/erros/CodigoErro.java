@@ -405,7 +405,44 @@ public enum CodigoErro {
     /** O mesmo identificador de cliente voltou com outros dados (HTTP 409). */
     CLIENTE_JA_REGISTRADO_DIFERENTE(
             "Este cliente já foi cadastrado com outros dados.",
-            "Este cliente já foi cadastrado com outros dados. Confira a lista de clientes antes de cadastrar de novo.");
+            "Este cliente já foi cadastrado com outros dados. Confira a lista de clientes antes de cadastrar de novo."),
+
+    /** A maleta ainda não foi conferida: vender só depois de conferir (HTTP 409; decisão de 11/11/2026). */
+    MALETA_NAO_CONFERIDA(
+            "Confira a maleta antes de vender.",
+            "Esta maleta ainda não foi conferida. Confira todas as peças da maleta antes de vender."),
+
+    // --- Computadores do vendedor (Fase 5, tarefa 5.3; ADR-0013, itens 13 e 14) ---
+
+    /** Segundo computador do vendedor, ainda sem a liberação da dona (HTTP 403). */
+    APARELHO_NAO_LIBERADO(
+            "Este computador ainda não foi liberado pela dona.",
+            "Este computador ainda não foi liberado pela dona. Peça à dona para liberar este computador no Corona Gestão."),
+
+    /** A dona trocou este computador por outro: ele só envia o que guardou (HTTP 403). */
+    APARELHO_SUBSTITUIDO(
+            "Este computador foi trocado por outro.",
+            "A dona trocou este computador por outro. Use o computador novo para vender."),
+
+    /** A dona bloqueou o computador (perdido ou roubado). Vai com a ordem de apagar os dados (HTTP 403). */
+    APARELHO_BLOQUEADO(
+            "Este computador foi desligado da loja.",
+            "Este computador foi desligado da loja pela dona. Fale com a dona."),
+
+    /** O identificador do computador já é de outra pessoa (HTTP 403). */
+    APARELHO_DE_OUTRA_PESSOA(
+            "Este computador já é usado por outro vendedor.",
+            "Este computador já é usado por outro vendedor. Cada vendedor usa o próprio computador. Fale com a dona."),
+
+    /** A dona tentou liberar um computador bloqueado ou já trocado (HTTP 409). */
+    APARELHO_NAO_PODE_SER_LIBERADO(
+            "Este computador não pode ser liberado.",
+            "Este computador foi bloqueado ou trocado e não pode voltar a vender. Peça ao vendedor para entrar no "
+                    + "computador que ele vai usar e libere esse."),
+
+    APARELHO_NAO_ENCONTRADO(
+            "Não encontramos este computador.",
+            "Não encontramos este computador. Atualize a tela e tente de novo.");
 
     private final String titulo;
     private final String mensagem;

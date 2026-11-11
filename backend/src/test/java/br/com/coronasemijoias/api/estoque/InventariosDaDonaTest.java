@@ -707,7 +707,10 @@ class InventariosDaDonaTest extends TesteDeIntegracao {
         // A contagem não vaza pelas COLUNAS do pull. Só os nomes de coluna entram na conta: o banco dos testes é
         // compartilhado e o texto livre de outros testes (nome, observação) pode ter "encontrado" (que contém "contado").
         Set<String> colunas = new HashSet<>();
-        tudo.linhas().forEach(l -> colunas.addAll(l.colunas().keySet()));
+        // A conferência da MALETA pelo vendedor (itens_conferencia, tarefa 4.3) tem "esperado" e "contado" de propósito: é
+        // dele. Ela só entra no pull compartilhado quando algum teste confere (desde a 5.3, todo teste de venda confere).
+        tudo.linhas().stream().filter(l -> !"itens_conferencia".equals(l.tabela()))
+                .forEach(l -> colunas.addAll(l.colunas().keySet()));
         assertThat(colunas).noneMatch(c -> c.toLowerCase().contains("esperad") || c.toLowerCase().contains("contad"));
         // E a peça da contagem chega sem nada da contagem: o saldo é o do estoque (3), nunca o contado (2 somado).
         assertThat(tudo.linhas()).filteredOn(l -> l.id().equals(a.id())).allSatisfy(l ->

@@ -91,6 +91,24 @@ public class ErroDaApi extends ErrorResponseException {
         return new ErroDaApi(HttpStatus.CONFLICT, tipo, corpo);
     }
 
+    /** Valor do campo {@code acao} que manda o Corona Vendas apagar os dados do computador (ADR-0013, item 14). */
+    public static final String APAGAR_DADOS = "APAGAR_DADOS";
+
+    /**
+     * 403 do computador bloqueado ou do vendedor desativado, com a ordem {@code acao: APAGAR_DADOS} (ADR-0013, item 14).
+     * Diferente da sessão terminada por reuso do token, que só pede para entrar de novo (401, sem ordem).
+     */
+    public static ErroDaApi comOrdemDeApagar(CodigoErro codigo) {
+        return new ErroDaApi(HttpStatus.FORBIDDEN, codigo, corpoComOrdemDeApagar(codigo));
+    }
+
+    /** O corpo do 403 com a ordem de apagar (também usado pelas respostas da segurança, antes do controlador). */
+    public static ProblemDetail corpoComOrdemDeApagar(CodigoErro codigo) {
+        ProblemDetail corpo = Problemas.de(HttpStatus.FORBIDDEN, codigo);
+        corpo.setProperty("acao", APAGAR_DADOS);
+        return corpo;
+    }
+
     /** Erro previsto com o corpo já montado (texto e propriedades extras próprios da situação). */
     public static ErroDaApi comCorpo(HttpStatus status, CodigoErro codigo, ProblemDetail corpo) {
         return new ErroDaApi(status, codigo, corpo);

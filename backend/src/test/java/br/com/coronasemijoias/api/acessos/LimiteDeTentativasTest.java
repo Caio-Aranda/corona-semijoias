@@ -135,7 +135,7 @@ class LimiteDeTentativasTest extends TesteDeIntegracao {
         assertThat(jdbc.queryForObject("""
                 SELECT count(*) FROM corona.tentativas_login
                  WHERE login = ? AND ip = ?::inet AND dispositivo_id = ? AND ocorrida_em IS NOT NULL""",
-                Long.class, vendedor.login(), ip, UsuariosDeTeste.APARELHO)).isEqualTo(9);
+                Long.class, vendedor.login(), ip, usuarios.aparelhoDe(vendedor))).isEqualTo(9);
     }
 
     @Test
@@ -251,7 +251,7 @@ class LimiteDeTentativasTest extends TesteDeIntegracao {
                     largada.await(10, TimeUnit.SECONDS);
                     try {
                         servicoDeLogin.entrar(new PedidoDeEntrada(vendedor.login(), "senha-errada-1",
-                                UsuariosDeTeste.APARELHO, ip, br.com.coronasemijoias.api.aplicativo.TipoDeApp.VENDAS));
+                                usuarios.aparelhoDe(vendedor), ip, br.com.coronasemijoias.api.aplicativo.TipoDeApp.VENDAS));
                         return 200;
                     } catch (ErroDaApi erro) {
                         return erro.getStatusCode().value();

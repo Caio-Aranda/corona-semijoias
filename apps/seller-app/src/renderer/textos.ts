@@ -125,6 +125,8 @@ export const TEXTOS = {
     textoCarregando: 'Preparando a venda...',
     semMaleta:
       'Você ainda não tem maleta para vender. Quando a dona enviar uma maleta, ela aparece aqui.',
+    conferirAntes:
+      'Esta maleta ainda não foi conferida. Confira todas as peças da maleta antes de vender.',
     maleta: 'Maleta',
     lerCodigo: 'Ler o código da peça',
     acabou: 'Esta peça acabou na sua maleta. Escolha outra peça ou fale com a dona.',

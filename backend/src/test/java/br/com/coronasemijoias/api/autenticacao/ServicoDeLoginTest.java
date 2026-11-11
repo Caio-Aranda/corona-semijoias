@@ -40,7 +40,8 @@ class ServicoDeLoginTest {
             new PropriedadesDasTentativas(0, null, null, 0, null, null, null),
             new PropriedadesDoApp(java.util.Map.of("gestao", "1.0.0", "vendas", "1.0.0"),
                     java.util.Map.of("gestao", java.util.List.of("ADMIN"), "vendas", java.util.List.of("VENDEDOR"))),
-            TransactionOperations.withoutTransaction(), Clock.systemUTC());
+            TransactionOperations.withoutTransaction(), Clock.systemUTC(),
+            mock(br.com.coronasemijoias.api.aparelhos.ServicoDeAparelhos.class));
 
     private void recusadoComoLoginInvalido(String login, String senha) {
         assertThatThrownBy(() -> servico.entrar(new PedidoDeEntrada(login, senha, null, "10.0.0.1", TipoDeApp.GESTAO)))
