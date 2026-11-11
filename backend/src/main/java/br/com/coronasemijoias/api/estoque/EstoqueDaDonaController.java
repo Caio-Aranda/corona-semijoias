@@ -15,6 +15,7 @@ import br.com.coronasemijoias.api.estoque.ServicoDeEstoque.Pedido;
 import br.com.coronasemijoias.api.estoque.ServicoDeEstoque.Resultado;
 import br.com.coronasemijoias.api.estoque.ServicoDeEstoque.TipoDeMovimento;
 import br.com.coronasemijoias.api.fotos.FotosDosProdutosController.FotoPrincipal;
+import br.com.coronasemijoias.api.remessas.PecasEmMaletas;
 import br.com.coronasemijoias.api.seguranca.ExigePerfil;
 import br.com.coronasemijoias.api.seguranca.UsuarioAutenticado;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,6 +25,7 @@ import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -99,14 +101,21 @@ public class EstoqueDaDonaController {
         }
     }
 
-    public record RespostaDoAbaixoDoMinimo(RespostaDoProduto produto, int saldo, int minimo, int falta) {
+    /**
+     * {@code emMaletas} e {@code vendedoresEmMaletas} separam "acabou de verdade" (saldo 0 e nenhuma em maleta) de "está
+     * nas maletas" (item 13, 11/11/2026; só da dona).
+     */
+    public record RespostaDoAbaixoDoMinimo(RespostaDoProduto produto, int saldo, int minimo, int falta, int emMaletas,
+            List<PecasEmMaletas.DoVendedor> vendedoresEmMaletas) {
 
-        static RespostaDoAbaixoDoMinimo de(ConsultasDeEstoque.AbaixoDoMinimo a) {
-            return new RespostaDoAbaixoDoMinimo(RespostaDoProduto.de(a.produto()), a.saldo(), a.minimo(), a.falta());
+        static RespostaDoAbaixoDoMinimo de(ConsultasDeEstoque.AbaixoDoMinimo a, PecasEmMaletas.Situacao maletas) {
+            return new RespostaDoAbaixoDoMinimo(RespostaDoProduto.de(a.produto()), a.saldo(), a.minimo(), a.falta(),
+                    maletas.total(), maletas.vendedores());
         }
     }
 
-    public record RespostaDaFicha(RespostaDoProduto produto, int saldo, Pagina<RespostaDaLinha> historico) {
+    public record RespostaDaFicha(RespostaDoProduto produto, int saldo, Pagina<RespostaDaLinha> historico, int emMaletas,
+            List<PecasEmMaletas.DoVendedor> vendedoresEmMaletas) {
     }
 
     public record RespostaDaDivergencia(RespostaDoProduto produto, int saldoGuardado, long somaDosMovimentos, long diferenca) {
@@ -122,10 +131,12 @@ public class EstoqueDaDonaController {
 
     private final ServicoDeEstoque servico;
     private final ConsultasDeEstoque consultas;
+    private final PecasEmMaletas emMaletas;
 
-    public EstoqueDaDonaController(ServicoDeEstoque servico, ConsultasDeEstoque consultas) {
+    public EstoqueDaDonaController(ServicoDeEstoque servico, ConsultasDeEstoque consultas, PecasEmMaletas emMaletas) {
         this.servico = servico;
         this.consultas = consultas;
+        this.emMaletas = emMaletas;
     }
 
     @Operation(summary = "Lançar entrada, saída ou perda",
@@ -193,15 +204,23 @@ public class EstoqueDaDonaController {
     public Pagina<RespostaDoAbaixoDoMinimo> abaixoDoMinimo(@RequestParam(required = false) UUID categoriaId,
             @RequestParam(required = false) UUID fornecedorId, @RequestParam(required = false) String busca,
             @RequestParam(required = false) Integer pagina, @RequestParam(required = false) Integer tamanho) {
-        return Pagina.de(consultas.abaixoDoMinimo(categoriaId, fornecedorId, busca, pagina, tamanho), RespostaDoAbaixoDoMinimo::de);
+        var lista = consultas.abaixoDoMinimo(categoriaId, fornecedorId, busca, pagina, tamanho);
+        // Uma consulta só para a página inteira: nunca uma por linha.
+        Map<UUID, PecasEmMaletas.Situacao> situacoes = emMaletas.de(
+                lista.getContent().stream().map(a -> a.produto().id()).toList());
+        return Pagina.de(lista, a -> RespostaDoAbaixoDoMinimo.de(a,
+                situacoes.getOrDefault(a.produto().id(), PecasEmMaletas.Situacao.NENHUMA)));
     }
 
-    @Operation(summary = "Ficha do produto no estoque", description = "Quantas peças há e o histórico do produto (mais novo primeiro).")
+    @Operation(summary = "Ficha do produto no estoque",
+            description = "Quantas peças há na loja, quantas estão nas maletas dos vendedores (e com quem) e o histórico do produto (mais novo primeiro).")
     @GetMapping("/produtos/{id}")
     public RespostaDaFicha ficha(@PathVariable UUID id, @RequestParam(required = false) Integer pagina,
             @RequestParam(required = false) Integer tamanho) {
         Ficha f = consultas.ficha(id, pagina, tamanho);
-        return new RespostaDaFicha(RespostaDoProduto.de(f.produto()), f.saldo(), Pagina.de(f.historico(), RespostaDaLinha::de));
+        PecasEmMaletas.Situacao maletas = emMaletas.de(f.produto().id());
+        return new RespostaDaFicha(RespostaDoProduto.de(f.produto()), f.saldo(), Pagina.de(f.historico(), RespostaDaLinha::de),
+                maletas.total(), maletas.vendedores());
     }
 
     @Operation(summary = "Conferir o estoque",

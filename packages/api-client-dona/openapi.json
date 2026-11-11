@@ -792,6 +792,18 @@
         },
         "type" : "object"
       },
+      "DoVendedor" : {
+        "properties" : {
+          "nome" : {
+            "type" : "string"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "DocumentoDoVendedorResposta" : {
         "properties" : {
           "descricao" : {
@@ -3558,6 +3570,10 @@
             },
             "type" : "array"
           },
+          "emMaletas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
           "estoqueAtual" : {
             "format" : "int32",
             "type" : "integer"
@@ -3594,6 +3610,12 @@
           },
           "referencia" : {
             "type" : "string"
+          },
+          "vendedoresEmMaletas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/DoVendedor"
+            },
+            "type" : "array"
           },
           "version" : {
             "format" : "int32",
@@ -4741,6 +4763,10 @@
       },
       "RespostaDaFicha" : {
         "properties" : {
+          "emMaletas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
           "historico" : {
             "$ref" : "#/components/schemas/PaginaEstoqueDaDonaControllerRespostaDaLinha"
           },
@@ -4750,6 +4776,12 @@
           "saldo" : {
             "format" : "int32",
             "type" : "integer"
+          },
+          "vendedoresEmMaletas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/DoVendedor"
+            },
+            "type" : "array"
           }
         },
         "type" : "object"
@@ -5069,6 +5101,10 @@
       },
       "RespostaDoAbaixoDoMinimo" : {
         "properties" : {
+          "emMaletas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
           "falta" : {
             "format" : "int32",
             "type" : "integer"
@@ -5083,6 +5119,12 @@
           "saldo" : {
             "format" : "int32",
             "type" : "integer"
+          },
+          "vendedoresEmMaletas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/DoVendedor"
+            },
+            "type" : "array"
           }
         },
         "type" : "object"
@@ -7098,7 +7140,7 @@
     },
     "/api/dona/estoque/produtos/{id}" : {
       "get" : {
-        "description" : "Quantas peças há e o histórico do produto (mais novo primeiro).",
+        "description" : "Quantas peças há na loja, quantas estão nas maletas dos vendedores (e com quem) e o histórico do produto (mais novo primeiro).",
         "operationId" : "ficha",
         "parameters" : [ {
           "in" : "path",
