@@ -38,6 +38,19 @@ import {
   receber as receberCompra,
   ver10 as verCompra,
   converter,
+  colocarItemNaRemessa,
+  criarRemessa,
+  enviarRemessa,
+  excluirRascunhoDeRemessa,
+  listarMaletasEmAbertoDoVendedor,
+  cancelarRemessa,
+  desfazerDevolucaoDaMaleta,
+  devolverPecasDaMaleta,
+  verMaletaDaRemessa,
+  listarRemessas,
+  tirarItemDaRemessa,
+  verRemessa,
+  notaDaRemessa,
   criar as criarVendedor,
   criarReferencia,
   editar as editarVendedor,
@@ -87,6 +100,11 @@ import {
   listar7,
   listar9,
   listar12,
+  relatorioDeMaletasEmAbertoEAtrasadas,
+  relatorioDeMercadoriaPorVendedor,
+  relatorioDeRemessasPorVendedorESemana,
+  relatorioDeReposicoes,
+  relatorioDeSaldoPorMaleta,
   abaixoDoMinimo as relatorioDeEstoqueMinimo,
   compras as relatorioDeCompras,
   conciliacao as relatorioDeConferencia,
@@ -136,6 +154,7 @@ import {
 import type { NomeDoCadastro } from '../shared/cadastros';
 import type { ParametrosConferidos, ParametrosDeVendedor } from '../shared/validacao-parametros';
 import type { ParametrosDeCompra } from '../shared/validacao-compras';
+import type { ParametrosDeMaleta } from '../shared/validacao-maletas';
 import type { ParametrosDeEstoque } from '../shared/validacao-estoque';
 import type { ParametrosDeProduto } from '../shared/validacao-produtos';
 import type { ParametrosDeRelatorio } from '../shared/validacao-relatorios';
@@ -462,6 +481,81 @@ async function executarCompra(
   }
 }
 
+/** Maletas: montar o rascunho, enviar e consultar (só ADMIN; o servidor recalcula preço, totais e limite). */
+async function executarMaleta(
+  client: ReturnType<typeof criarClienteDaApi>,
+  headers: { Authorization: string },
+  pedido: ParametrosDeMaleta,
+): Promise<Resultado<unknown>> {
+  const base = { client, headers };
+  switch (pedido.operacao) {
+    case 'maletas.criar':
+      return executar(() => criarRemessa({ ...base, body: pedido.corpo }), true);
+    case 'maletas.ver':
+      return executar(() => verRemessa({ ...base, path: { id: pedido.id } }));
+    case 'maletas.listar':
+      return executar(() => listarRemessas({ ...base, query: pedido.lista }));
+    case 'maletas.colocarPeca':
+      return executar(() =>
+        colocarItemNaRemessa({
+          ...base,
+          path: { id: pedido.id, produtoId: pedido.produtoId },
+          body: { quantidade: pedido.quantidade, version: pedido.version },
+        }),
+      );
+    case 'maletas.tirarPeca':
+      return executar(() =>
+        tirarItemDaRemessa({
+          ...base,
+          path: { id: pedido.id, produtoId: pedido.produtoId },
+          query: { version: pedido.version },
+        }),
+      );
+    case 'maletas.excluir':
+      return executar(() =>
+        excluirRascunhoDeRemessa({
+          ...base,
+          path: { id: pedido.id },
+          query: { version: pedido.version },
+        }),
+      );
+    case 'maletas.enviar':
+      return executar(() => enviarRemessa({ ...base, path: { id: pedido.id } }), true);
+    case 'maletas.emAberto':
+      return executar(() =>
+        listarMaletasEmAbertoDoVendedor({ ...base, query: { vendedorId: pedido.vendedorId } }),
+      );
+    case 'maletas.nota':
+      return executar(() => notaDaRemessa({ ...base, path: { id: pedido.id } }));
+    case 'maletas.saldo':
+      return executar(() => verMaletaDaRemessa({ ...base, path: { id: pedido.id } }));
+    case 'maletas.devolver':
+      return executar(
+        () =>
+          devolverPecasDaMaleta({
+            ...base,
+            path: { id: pedido.id },
+            body: { itens: pedido.itens },
+          }),
+        true,
+      );
+    case 'maletas.desfazerDevolucao':
+      return executar(
+        () =>
+          desfazerDevolucaoDaMaleta({
+            ...base,
+            path: { id: pedido.id, devolucaoId: pedido.devolucaoId },
+            body: { id: pedido.estornoId, motivo: pedido.motivo },
+          }),
+        true,
+      );
+    case 'maletas.cancelar':
+      return executar(() =>
+        cancelarRemessa({ ...base, path: { id: pedido.id }, body: { motivo: pedido.motivo } }),
+      );
+  }
+}
+
 /** Estoque e contagem (só ADMIN; o servidor recalcula saldo e ajustes, a tela só manda o que a pessoa fez). */
 async function executarEstoque(
   client: ReturnType<typeof criarClienteDaApi>,
@@ -542,6 +636,16 @@ async function executarRelatorio(
         }),
       );
     }
+    case 'maleta-remessas':
+      return executar(() => relatorioDeRemessasPorVendedorESemana({ ...base, query: q }));
+    case 'maleta-reposicoes':
+      return executar(() => relatorioDeReposicoes({ ...base, query: q }));
+    case 'maleta-saldo':
+      return executar(() => relatorioDeSaldoPorMaleta({ ...base, query: q }));
+    case 'maleta-mercadoria':
+      return executar(() => relatorioDeMercadoriaPorVendedor({ ...base, query: q }));
+    case 'maleta-em-aberto':
+      return executar(() => relatorioDeMaletasEmAbertoEAtrasadas({ ...base, query: q }));
     case 'vendedores':
       return executar(() => relatorioDeVendedores({ ...base, query: q }));
     case 'clientes':
@@ -765,6 +869,9 @@ export function criarApiDoGestao(opcoes: OpcoesDaApi): ApiDoGestao {
       }
       if (pedido.operacao.startsWith('estoque.') || pedido.operacao.startsWith('contagens.')) {
         return executarEstoque(client, headers, pedido as ParametrosDeEstoque);
+      }
+      if (pedido.operacao.startsWith('maletas.')) {
+        return executarMaleta(client, headers, pedido as ParametrosDeMaleta);
       }
       if (pedido.operacao.startsWith('compras.')) {
         return executarCompra(client, headers, pedido as ParametrosDeCompra);

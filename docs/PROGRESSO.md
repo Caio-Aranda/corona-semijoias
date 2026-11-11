@@ -113,20 +113,22 @@ Maleta (§15). Segue o mesmo formato da Fase 2. O modelo da maleta está no [ADR
 
 | Nº | Tarefa | Situação |
 | --- | --- | --- |
-| 3.1 | docs: plano da Fase 3 e ADR-0010 (maleta e remessa) | Em revisão · [detalhe](progresso/fase-3.md#tarefa-31-plano-da-fase-3-e-adr-da-maleta-só-documentos) |
-| 3.2 | backend: remessas e itens (migração V021 ou a próxima livre, remessa NOVA/REPOSICAO pelo serviço de estoque, limite e restrição no servidor, preço congelado, idempotência por UUID, rotas só ADMIN) | Em revisão |
-| 3.3 | backend: devolução da maleta à dona, cancelamento/estorno, conciliação "estoque central + maletas" | Em revisão · [detalhe](progresso/fase-3.md#tarefa-33-backend-devolução-da-maleta-cancelamento-e-conciliação) |
-| 3.4 | backend: nota de remessa em PDF e relatórios de maleta (remessas por vendedor e semana, saldo por maleta, mercadoria em maletas por vendedor, maletas em aberto/atrasadas, reposições) com exportação | Pendente |
-| 3.5 | owner-app: montagem por leitor (foto grande, bloqueios claros) | Pendente |
-| 3.6 | owner-app: lista e ficha da maleta, reposição, devolução, cancelamento | Pendente |
-| 3.7 | owner-app: telas dos relatórios de maleta e impressão da nota | Pendente |
-| 3.8 | fechamento da Fase 3 (revisão pós-fase) | Pendente |
+| 3.1 | docs: plano da Fase 3 e ADR-0010 (maleta e remessa) | Mesclada (PR 51) · [detalhe](progresso/fase-3.md#tarefa-31-plano-da-fase-3-e-adr-da-maleta-só-documentos) |
+| 3.2 | backend: remessas e itens (migração V021 ou a próxima livre, remessa NOVA/REPOSICAO pelo serviço de estoque, limite e restrição no servidor, preço congelado, idempotência por UUID, rotas só ADMIN) | Mesclada (PR 55) · [detalhe](progresso/fase-3.md#tarefa-32-backend-das-remessas-montar-enviar-limite-restrição-preço-congelado) |
+| 3.3 | backend: devolução da maleta à dona, cancelamento/estorno, conciliação "estoque central + maletas" | Mesclada (PR 58) · [detalhe](progresso/fase-3.md#tarefa-33-backend-devolução-da-maleta-cancelamento-e-conciliação) |
+| 3.4 | backend: nota de remessa em PDF e relatórios de maleta (remessas por vendedor e semana, saldo por maleta, mercadoria em maletas por vendedor, maletas em aberto/atrasadas, reposições) com exportação | Mesclada (PR 60) · [detalhe](progresso/fase-3.md#tarefa-34-backend-nota-de-remessa-e-relatórios-da-maleta) |
+| 3.5 | owner-app: montagem por leitor (foto grande, bloqueios claros) | Mesclada (PR 62) · [detalhe](progresso/fase-3.md#tarefa-35-corona-gestão-montar-a-maleta-por-leitor) |
+| 3.6 | owner-app: lista e ficha da maleta, reposição, devolução, cancelamento | Mesclada (PR 63) · [detalhe](progresso/fase-3.md#tarefa-36-corona-gestão-gerir-a-maleta) |
+| 3.7 | owner-app: telas dos relatórios de maleta e impressão da nota | Mesclada (PR 64) · [detalhe](progresso/fase-3.md#tarefa-37-corona-gestão-relatórios-da-maleta-e-nota-de-remessa) |
+| 3.8 | fechamento da Fase 3 (revisão pós-fase) | Em revisão (PR 65) · [detalhe](progresso/fase-3.md#tarefa-38-fechamento-da-fase-3) |
 
 **Fora desta fase:** conferência pelo vendedor e um dispositivo por maleta (Fase 4); venda, perda e troca (Fases 4 e 6); acerto (Fase 7); conciliação completa com vendas (Fase 8).
 
+**Fase 3 concluída** (tarefas 3.1 a 3.8; a 3.8 foi a revisão de fechamento). Resumo: a dona monta a maleta com o leitor (rascunho não mexe no estoque), envia (baixa o estoque central de uma vez, preço congelado, limite e restrição conferidos no servidor), devolve peças, desfaz devolução, cancela e repõe; a conciliação "estoque da loja + maletas" fecha e aparece na tela Conferência do estoque; há cinco relatórios da maleta e a nota de remessa em PDF. **Segue para a Fase 4:** conferência pelo vendedor, um aparelho por maleta e a leitura da própria maleta pelo vendedor, sem custo. O encerramento da maleta é o acerto (Fase 7): maleta com tudo devolvido continua enviada.
+
 ## Pendências abertas
 
-- Fase 3 (maleta), para a dona ou o responsável: limite conta preço de venda ou custo; reposição conta no limite; peça repetida na mesma maleta; foto na nota; dias para a maleta ser atrasada; vendedor sem limite. O ADR-0010 está Proposto. ([tarefa 3.1](progresso/fase-3.md#tarefa-31-plano-da-fase-3-e-adr-da-maleta-só-documentos))
+- Fase 3 (maleta), para a dona ou o responsável: limite a **preço de venda** (dúvida 1 do ADR-0010); **reposição** dentro do limite (dúvida 2); vendedor sem limite recebe maleta sem limite (dúvida 6; limite 0 = sem limite); peça repetida na mesma maleta (dúvida 3, hoje uma linha por peça); foto na nota (dúvida 4); prazo de atraso (hoje 7 dias, dúvida 5); formato do número da maleta (hoje S12-V7-1). Com o responsável: leitor de código físico e app instalado ainda não testados. **A Fase 4 herda:** conferência da maleta, dispositivo único por maleta e leitura da própria maleta pelo vendedor sem custo. O ADR-0010 está Aceito. ([tarefa 3.8](progresso/fase-3.md#tarefa-38-fechamento-da-fase-3))
 
 - Fase 2: a dona aceitar a saída recusada quando falta peça (ADR-0008); formato do código da loja no cadastro rápido (ADR-0007, item 5); foto nos arquivos exportados e ordenação por coluna dos relatórios de estoque; leitor de código real e pacote instalado ainda não testados. ([tarefas 2.1 a 2.9](progresso/fase-2.md#tarefa-29-fechamento-da-fase-2))
 

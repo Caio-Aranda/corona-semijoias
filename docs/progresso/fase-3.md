@@ -88,3 +88,135 @@ Uma seção por tarefa, no mesmo formato de [fase-2.md](fase-2.md). A tabela de 
 
 **Não feito:** PDF, relatórios, telas e vendas.
 
+
+### Tarefa 3.4: backend: dados da nota de remessa e relatórios da maleta
+
+**Em revisão.** Sem migração e sem escrita: só leitura, sobre os registros da 3.2 e da 3.3. Rotas só ADMIN; nenhuma tela nem PDF.
+
+**O que foi feito**
+
+- **Nota** (`GET /api/dona/remessas/{id}/nota`, `notaDaRemessa`): loja, número legível, vendedor, praça, semana, tipo, data do envio, peças (código, nome, quantidade, preço congelado, subtotal), totais e a cotação do dia do envio com o total em Dólar e em Guarani. Rascunho: 409 "A nota só fica pronta depois que a maleta for enviada. Envie a maleta e tente de novo."; cancelada vem com `cancelada = true` e o motivo (cancelada antes do envio, que nunca teve nota, cai na mesma recusa do rascunho). Sem custo em nenhum campo.
+- **Cinco relatórios** em `/api/dona/relatorios/maleta/` (mesmo motor, forma, filtros, paginação e `recorte` dos da 2.5): `remessas` (por vendedor e semana), `reposicoes`, `saldo` (peça a peça: enviada, devolvida, saldo, valor), `mercadoria-por-vendedor` (peças, valor, limite e quanto sobra) e `em-aberto` (em aberto e atrasadas). `operationId` explícito em todas as rotas.
+- **Três moedas:** cada linha traz Real, Dólar, Guarani e `dataDaCotacao`, pela cotação do dia do **envio** da maleta (maior data menor ou igual ao dia do envio em Brasília, ADR-0006). O rodapé soma as linhas já convertidas (`Total` ganhou `valorEmDolar` e `valorEmGuarani`, opcionais; os relatórios antigos não mudam).
+- **Exportação:** como na 2.5, o servidor entrega as páginas com os mesmos filtros e o Corona Gestão monta PDF, Excel e CSV (as colunas de Real/Dólar/Guarani e a data da cotação já vêm em cada linha).
+- Glossário: nomes de tela, filtros, totais e texto da nota (parte da tarefa 3.4).
+- Testes (14, `RelatoriosDeMaletaTest`): maleta enviada, com devolução, cancelada, reposição e dois vendedores; cotação do dia de cada envio (nunca a de hoje); rodapé igual à soma das linhas; rascunho e cancelada fora dos saldos; filtros; atraso; preço congelado depois de mudar o preço da peça; vendedor 403; nota de rascunho recusada.
+
+**Decisões que tomei**
+
+- **Atrasada** = mais de **7 dias** desde o envio (calendário de Brasília) e ainda com peça com o vendedor. O prazo é o parâmetro `diasDeAtraso` (0 a 365, padrão 7), não uma configuração gravada. Dúvida 5 do ADR-0010 continua aberta para a dona.
+- **Número legível da maleta** sem coluna nova: `S{semana}-V{código do vendedor}-{ordem do envio daquele vendedor naquela semana}` (ex.: S12-V7-1), calculado pela ordem de envio, que não muda depois de enviada. Uma coluna sequencial real exigiria migração e mexeria nas colunas sincronizáveis; fica para quando a dona disser se quer outro formato.
+- **Loja** na nota = "Corona Semijoias" (a marca; não há cadastro do nome da loja).
+- Relatórios mostram só maletas **enviadas** (ou adiante); rascunho nunca. "Registradas" (padrão) deixa de fora as canceladas, que ficam marcadas e **fora do total** com `situacao=TODAS`.
+- O saldo e o em aberto contam só maletas com o vendedor (`ENVIADA`, `CONFERIDA`, `EM_ACERTO`); o saldo é `qtd_enviada` + movimentos, como na 3.3.
+- A **sobra do limite** do relatório por vendedor conta tudo o que ele tem em aberto, mesmo quando os filtros mostram só parte. Limite 0 no cadastro = sem limite (sobra vazia), como na 3.2.
+- Maleta enviada antes da primeira cotação do sistema fica com Dólar e Guarani vazios (a nota traz `cotacao` vazia); o rodapé ignora essas linhas.
+- Praça = praça da maleta (a que foi gravada na montagem), não a atual do vendedor.
+- Peça e categoria nos filtros: nos relatórios por maleta, a maleta só entra se tiver a peça; no saldo e no em aberto, só as peças filtradas contam.
+
+**Dúvidas abertas:** as do ADR-0010 (a 5, prazo de atraso, com o padrão acima). Nova: a dona quer um número de maleta sequencial próprio (1, 2, 3...) em vez de S12-V7-1?
+
+**Não feito:** telas (3.6), geração do PDF da nota (app da dona, 3.5/3.6), conferência e vendas. O gerador de PDF à mão aguentar a nota (várias páginas, assinatura) é verificação da tarefa do app, não dos dados.
+
+### Tarefa 3.5: Corona Gestão: montar a maleta por leitor
+
+**Em revisão.** Só tela e ponte do app da dona; nenhuma mudança no servidor. Menu novo **Maletas → Montar maleta**.
+
+**O que foi feito**
+
+- **Nova maleta:** vendedor, semana (só as abertas), praça (padrão: a do vendedor) e tipo (**Maleta nova** ou **Reposição**). O id (UUID) nasce na tela e só muda depois de gravar. Vendedor com restrição que impede ou outro bloqueio: aparece a mensagem do servidor e a pessoa não segue.
+- **Montagem pelo leitor:** campo sempre em foco; cada leitura grava na hora no rascunho (soma 1; ler de novo soma mais 1). Painel da última peça com **foto grande**, nome, código, saldo no estoque, quantidade já na maleta e preço. Lista com foto pequena, quantidade editável (com **Atualizar**), preço e subtotal, e **Tirar**. Peça sem foto segue normal.
+- **Recusas na tela, sem chamar o servidor:** código que não existe (**Peça não encontrada**, nunca cadastra, ADR-0010 item 16), peça desativada, sem estoque e quantidade acima do estoque.
+- **Limite:** ao lado dos totais, **Limite do vendedor / Já está com ele / Esta maleta / Sobra** (Real, Dólar e Guarani pelos componentes de moeda; ADR-0006). Vendedor sem limite cadastrado: **Sem limite cadastrado**, sem sobra.
+- **Enviar maleta:** confirmação com vendedor, peças e valor. Recusas do servidor (limite, saldo de uma peça, restrição) aparecem com o texto dele, e a pessoa continua montando. Resposta 200 mostra **Esta maleta já estava enviada**. Depois do envio, ficha só para ler.
+- **Rascunhos:** lista (**Continuar montando**, **Excluir** com confirmação; exclusão lógica, estoque intacto).
+- **Ponte:** oito operações novas (`maletas.*`) com conferência de parâmetros no processo principal (UUIDs, quantidade inteira de 1 a 100.000, tipo e situação conhecidos; nenhum campo de preço aceito) e testes de rota.
+- **Testes:** 17 de tela (`maletas.test.tsx`), 4 de conferência e 1 de rotas da ponte. Lint, typecheck, format, testes do owner-app (560) e barreira do Corona Vendas passando.
+
+**Decisões que tomei**
+
+- **Uma única tela** (Montar maleta) com nova maleta e rascunhos juntos, sem rota separada para rascunhos.
+- **Cada leitura grava no servidor** (o rascunho já fica guardado) e as chamadas vão em fila, para a versão nunca ficar para trás; "outra pessoa mudou" mostra o botão **Atualizar**.
+- **Sem som:** o app ainda não tem padrão de som; a leitura aceita ou recusada aparece em aviso colorido com texto.
+- **Passou do limite não bloqueia o botão:** a tela só avisa e quanto passou; o servidor tem a palavra final e a mensagem dele aparece.
+- **Quantidade maior que o estoque** é recusada na leitura (usando o saldo da busca); ao digitar a quantidade na lista quem confere é o servidor.
+- **Imprimir nota:** botão escondido até a 3.7 (`NOTA_DA_MALETA_PRONTA` e `imprimirNotaDaMaleta` em `nucleo/nota-da-maleta.ts`; a 3.7 completa e liga). Nenhum PDF aqui.
+- Busca por nome (se o código não existe) vale como na compra: um achado entra, vários pedem escolha.
+
+**Dúvidas abertas:** as do ADR-0010. Nova: o botão **Imprimir nota** deve aparecer já na ficha da 3.5 ou só quando a 3.7 existir? (Está escondido.)
+
+**Não feito:** lista geral e ficha completa da maleta enviada, devolução, cancelamento, reposição guiada (3.6), PDF e relatórios (3.7), qualquer coisa do vendedor.
+
+### Tarefa 3.6: Corona Gestão: gerir a maleta
+
+**Em revisão.** Só tela e ponte do app da dona; nenhuma mudança no servidor. Menu novo **Maletas → Maletas** (a tela **Montar maleta** da 3.5 continua).
+
+**O que foi feito**
+
+- **Lista** com filtros (**Vendedor**, **Semana**, **Situação**: em montagem, enviada, cancelada) e colunas vendedor, semana, tipo, situação, peças, valor (3 moedas) e data do envio; **Abrir** leva à ficha, e maleta em montagem abre a montagem da 3.5. Visão **Por vendedor**: quanto tem em aberto, limite e quanto sobra (**Passou X** quando excede), com **Nova reposição**.
+- **Ficha da maleta enviada:** foto, enviada, devolvida, saldo e preço congelado de cada peça; movimentos em ordem (**Devolvida à dona**, **Devolução desfeita**); situação e, se cancelada, o motivo. **Imprimir nota** segue atrás do gancho da 3.5 (a 3.7 liga).
+- **Reposição** (**Repor esta maleta** na ficha ou **Nova reposição** por vendedor): cria rascunho tipo reposição do mesmo vendedor, semana e praça, sem copiar peças, mostrando o que ele já tem e o limite; abre a montagem da 3.5.
+- **Devolução à dona:** leitor com foto (cada leitura soma 1) ou quantidade digitada, nunca acima do saldo (a tela mostra o saldo; o servidor confere de novo). O id de cada linha nasce na tela; **Esta devolução já estava registrada** quando o servidor responde 200. **Desfazer devolução** pede o motivo e mostra a mensagem do servidor se as peças já saíram do estoque.
+- **Cancelar maleta** (rascunho ou enviada): motivo obrigatório e aviso "As peças voltam para o estoque"; se o servidor recusa por já ter movimento, mostra a mensagem dele e sugere devolver as peças.
+- **Ponte:** quatro operações novas (`maletas.saldo`, `devolver`, `desfazerDevolucao`, `cancelar`) com conferência de parâmetros e testes de rota.
+- **Testes:** 12 de tela (`gerir-maletas.test.tsx`), 2 de conferência e 1 de rotas. Lint, typecheck, format e testes do owner-app (573) passando.
+
+**Decisões que tomei**
+
+- Cada linha de devolução tem id próprio; mudar a quantidade de uma linha gera id novo (o servidor recusa o mesmo id com outro valor). O id do "desfazer" vale por movimento e motivo, e tentar de novo com o mesmo motivo reenvia o mesmo pedido.
+- A visão **Por vendedor** busca a rota de maletas em aberto de cada vendedor ativo (uma chamada por vendedor); basta para o tamanho da loja.
+- Cancelar rascunho fica na própria tela de montagem (botão **Cancelar maleta**); **Excluir** (3.5) continua na lista de rascunhos de Montar maleta.
+- Ações da ficha (devolver, repor, cancelar, desfazer) só aparecem em maleta **Enviada**; as fases seguintes (conferida, em acerto) ganham regras próprias.
+
+**Dúvidas abertas:** as do ADR-0010. Nenhuma rota faltou. Reforço: depois de devolver tudo a maleta deve "encerrar" sozinha? Hoje continua enviada (dúvida da 3.3).
+
+**Não feito:** PDF da nota e relatórios (3.7), conferência e venda (app do vendedor).
+
+### Tarefa 3.7: Corona Gestão: relatórios da maleta e nota de remessa
+
+**Em revisão.** Só tela e ponte do app da dona; nenhuma mudança no servidor. Menu novo **Relatórios da maleta** com os cinco relatórios da 3.4, e o botão **Imprimir nota** ligado.
+
+**O que foi feito**
+
+- **Cinco relatórios** (**Maletas por vendedor e semana**, **O que ainda está com o vendedor, peça a peça**, **Mercadoria com cada vendedor**, **Maletas em aberto e atrasadas**, **Reposições**) na mesma `TelaDeRelatorio` da 2.8: filtros (busca, semana, vendedor, praça, período, categoria, tipo, situação, **Prazo para atrasar (dias)** já em 7), rodapé com **Ver os registros**, exportação em PDF, Excel e CSV com os mesmos filtros. **Ver a maleta** em cada linha abre a ficha na tela Maletas. "Atrasada" é escrita na coluna Situação (não só cor); vendedor acima do limite ou com maleta atrasada também sai em palavras.
+- **Três moedas pela cotação do envio:** Dólar e Guarani de cada linha e do rodapé vêm prontos do servidor (cotação do dia do envio da maleta); a tela e os arquivos usam esses valores e a data da cotação de cada linha, sem recalcular com a cotação de hoje. Limite e sobra do limite saem só em Real.
+- **Nota de remessa (PDF):** ponte nova `maletas.nota` (rota da 3.4) e `gerarPdfDaNota` no gerador à mão da 2.8 (agora com `montarArquivoPdf` compartilhado): A4 em pé, Corona Semijoias, número, vendedor, praça, semana, tipo, data do envio, tabela (código, peça, quantidade, preço, subtotal) com nomes longos quebrados em linhas, totais, Real e Dólar/Guarani do dia do envio com o aviso "Cotação do Banco Central do dia do envio", marca **CANCELADA** (com o motivo) e linhas de assinatura da dona e do vendedor. Maleta grande vira várias páginas: cabeçalho curto e títulos da tabela repetidos; totais e assinatura só na última (se não couberem, ganham uma página). Sem foto.
+- **Onde aparece:** botão **Imprimir nota** na lista (maleta enviada ou cancelada depois de enviada), na ficha da 3.5 e na da 3.6; rascunho não tem botão. O arquivo sai pelo mesmo `entregarArquivo` da 2.8 (o Windows pergunta onde guardar); a tela não escolhe caminho.
+- **Testes:** 6 do gerador (páginas, texto, assinatura só na última, cancelada, sem cotação, leitura da rota), 5 de relatórios (menu, Atrasada, Dólar do envio, prazo, ficha, arquivo, limite), 3 do botão da nota e 1 de rota da ponte. Lint, typecheck, format e testes do owner-app (587) passando.
+
+**Decisões que tomei**
+
+- O gerador à mão aguentou a nota (várias páginas, quebra de linha, assinatura): sem troca de biblioteca, portanto sem ADR novo.
+- O total em Dólar/Guarani do rodapé é o do servidor (soma das linhas já convertidas); a soma local da 2.8 não roda nos relatórios de maleta.
+- O número da maleta no nome do arquivo (`nota-da-maleta-S12-V7-1.pdf`) é o do servidor, limpo de símbolos.
+- Maleta cancelada depois do envio imprime a nota com a marca CANCELADA; cancelada antes do envio não tem nota (o servidor recusa e a tela mostra a mensagem dele).
+- O filtro **Produto** do glossário não entrou; **Buscar** já acha por peça e código nos cinco relatórios.
+
+**Dúvidas abertas:** as do ADR-0010 (a 5, prazo de atraso: hoje 7 dias, editável na tela). Foto no PDF segue fora (miniatura é dúvida aberta). A dona quer um número de maleta sequencial próprio em vez de S12-V7-1 (dúvida da 3.4)?
+
+**Não feito:** foto na nota, filtro por produto específico, conferência e venda (app do vendedor).
+
+
+### Tarefa 3.8: fechamento da Fase 3
+
+**Em revisão.** Revisão pós-fase (como a 2.9): leitura do backend das remessas e da maleta, das consultas e das telas, procurando erro real de estoque e de dinheiro. Dois erros achados e corrigidos com teste; o resto foi conferido e registrado.
+
+**O que foi feito**
+
+- **Erro 1, peça excluída com a peça ainda com o vendedor** (teste primeiro, falhava com 204 no lugar de 409): excluir a peça pelo cadastro tirava o produto do estoque, e a devolução e o cancelamento da maleta passavam a responder "não encontrado" (o serviço de estoque trata produto excluído como inexistente), deixando as peças presas. Agora excluir uma peça que tem saldo numa maleta enviada é recusado (409, `PECA_ESTA_EM_MALETA`: "Esta peça ainda está com um vendedor numa maleta e não pode ser excluída. Receba a devolução das peças antes."). Depois de devolver, a exclusão passa.
+- **Erro 2, tela Conferência do estoque sem as maletas**: a rota `/estoque/conciliacao` já trazia `diferencasComMaletas`, mas a tela usa o relatório `/relatorios/estoque/conciliacao`, que só olhava o saldo contra os movimentos. O relatório agora também lista a peça quando "estoque da loja + peças nas maletas" não fecha com o que entrou e saiu fora da maleta, e traz `nasMaletas` e `diferencaComMaletas`; a tela ganhou as colunas **Com os vendedores (maletas)** e **Diferença contando as maletas**. Teste primeiro (provocando a diferença no banco). Clientes da API regerados.
+- **Maleta com tudo devolvido** (decisão abaixo): a ficha mostra o aviso **Sem peças com o vendedor** e a visão **Por vendedor** só conta como maleta a que ainda tem peça. Testes de tela.
+- **Conciliação de ponta a ponta:** o teste da 3.3 (`conciliacaoComMaletasFechaDepoisDeCompraRemessaDevolucaoCancelamentoEstornoEInventario`) já cobre compra, remessa, devolução, cancelamento, estorno e inventário e foi mantido; a 3.8 só acrescentou o relatório da tela.
+- Documentos: tabela da Fase 3 com os PRs, "Fase 3 concluída", pendências, ADR-0010 **Aceito**.
+
+**Conferido sem achar erro (já com teste ou lido no código):** envio duplo (200 sem baixar de novo, trava por vendedor), devolução repetida (200/409 pelo id), cancelamento x devolução simultâneos (trava a remessa antes dos produtos), desfazer devolução com o estoque central sem saldo (409 com texto simples), limite (exato passa, um centavo a mais não, devolução libera, cancelada e rascunho não contam, 0 = sem limite), peça inativada ou excluída antes do envio (envio recusado, rascunho continua legível e a peça pode ser tirada), preço congelado só no envio (o total do rascunho usa o preço de hoje e é recalculado no envio), relatórios (cotação do dia do envio, rascunho fora, cancelada marcada e fora do total), `operationId` explícito em todas as rotas de maleta e permissão (vendedor 403 e sem login 401 nas rotas de remessa, maleta, nota e relatórios; teste existente).
+
+**Decisões que tomei**
+
+- **Maleta com saldo zero continua ENVIADA:** quem encerra é o acerto (Fase 7). Responde a dúvida da 3.3 e da 3.6.
+- Peça com saldo numa maleta enviada não pode ser excluída (regra nova, no servidor); inativar continua permitido.
+- `diferencaComMaletas` = (o que entrou e saiu fora da maleta) menos (estoque da loja + peças nas maletas): positivo = faltam peças.
+
+**Dúvidas abertas:** as seis do ADR-0010 (preço de venda x custo no limite, reposição no limite, peça repetida na maleta, foto na nota, prazo de atraso de 7 dias, vendedor sem limite) e o formato do número da maleta (hoje S12-V7-1).
+
+**Não feito / fica para depois:** teste com leitor físico e app instalado (com o responsável); conferência, dispositivo único e leitura da própria maleta pelo vendedor (Fase 4); excluir peça que só está em rascunho não foi bloqueado de propósito (o envio já recusa e a pessoa tira a peça). Do que a revisão pediu para as telas (código desconhecido, leitor em foco, erro do servidor, 200 x 201, estado após cancelar e devolver), só li os testes existentes da 3.5 e da 3.6, que cobrem esses casos; não abri o app na mão.

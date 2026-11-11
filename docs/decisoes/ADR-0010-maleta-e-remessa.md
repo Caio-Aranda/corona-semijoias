@@ -1,6 +1,6 @@
 # ADR-0010: Maleta e remessa
 
-- **Status:** Proposto
+- **Status:** Aceito (fechamento da Fase 3, tarefa 3.8). As dúvidas 1 a 6 seguem abertas para a dona e valem com os padrões provisórios descritos abaixo
 - **Data:** 10/11/2026
 - **Tarefas que implementam:** 3.2 a 3.7 (Fase 3); estados seguintes nas Fases 4 e 7
 

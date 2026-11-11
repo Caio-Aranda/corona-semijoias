@@ -51,6 +51,14 @@ export type ConversaoResposta = {
     valorEmReais?: string;
 };
 
+export type CotacaoDaNota = {
+    data?: string;
+    dolar?: string;
+    guarani?: string;
+    totalEmDolar?: string;
+    totalEmGuarani?: string;
+};
+
 export type CotacaoDeHojeResposta = {
     cotacao?: CotacaoDoDia;
     dataDeHoje?: string;
@@ -102,6 +110,15 @@ export type Item = {
     id?: string;
     nome?: string;
     referencia?: string;
+};
+
+export type ItemDaNota = {
+    codigo?: string;
+    nome?: string;
+    precoRemessa?: string;
+    produtoId?: string;
+    quantidade?: number;
+    subtotal?: string;
 };
 
 export type Linha = {
@@ -185,7 +202,9 @@ export type LinhaDeCompra = {
 
 export type LinhaDeConciliacao = {
     diferenca?: number;
+    diferencaComMaletas?: number;
     fotoPrincipalHash?: string;
+    nasMaletas?: number;
     nome?: string;
     produtoId?: string;
     saldoGuardado?: number;
@@ -283,6 +302,25 @@ export type LinhaDeItemDeCompra = {
     total?: string;
 };
 
+export type LinhaDeMaletaEmAberto = {
+    atrasada?: boolean;
+    dataDaCotacao?: string;
+    diasDesdeOEnvio?: number;
+    enviadaEm?: string;
+    numero?: string;
+    pecasEmAberto?: number;
+    praca?: string;
+    remessaId?: string;
+    semana?: number;
+    status?: string;
+    tipo?: string;
+    valorEmDolar?: string;
+    valorEmGuarani?: string;
+    valorEmReais?: string;
+    vendedor?: string;
+    vendedorId?: string;
+};
+
 export type LinhaDeMovimento = {
     categoria?: string;
     codigo?: string;
@@ -349,16 +387,63 @@ export type LinhaDeProdutoParado = {
     valorACusto?: string;
 };
 
-export type LinhaDeVendedor = {
-    ativo?: boolean;
-    bloqueiaRemessa?: boolean;
-    codigo?: number;
-    comissaoPercentual?: string;
+export type LinhaDeRemessa = {
+    cancelada?: boolean;
+    dataDaCotacao?: string;
+    enviadaEm?: string;
     id?: string;
-    limiteConsignacao?: string;
-    nome?: string;
+    motivoDoCancelamento?: string;
+    numero?: string;
+    pecas?: number;
     praca?: string;
-    restricao?: string;
+    pracaId?: string;
+    semana?: number;
+    semanaId?: string;
+    status?: string;
+    tipo?: string;
+    valorEmDolar?: string;
+    valorEmGuarani?: string;
+    valorEmReais?: string;
+    vendedor?: string;
+    vendedorId?: string;
+};
+
+export type LinhaDeSaldo = {
+    codigo?: string;
+    dataDaCotacao?: string;
+    devolvida?: number;
+    enviada?: number;
+    enviadaEm?: string;
+    fotoPrincipalHash?: string;
+    nome?: string;
+    numero?: string;
+    praca?: string;
+    precoCongelado?: string;
+    produtoId?: string;
+    referencia?: string;
+    remessaId?: string;
+    saldo?: number;
+    semana?: number;
+    status?: string;
+    tipo?: string;
+    valorEmDolar?: string;
+    valorEmGuarani?: string;
+    valorEmReais?: string;
+    vendedor?: string;
+    vendedorId?: string;
+};
+
+export type LinhaDeVendedor = {
+    limite?: string;
+    maletasAtrasadas?: number;
+    maletasEmAberto?: number;
+    pecasEmAberto?: number;
+    sobraDoLimite?: string;
+    valorEmDolar?: string;
+    valorEmGuarani?: string;
+    valorEmReais?: string;
+    vendedor?: string;
+    vendedorId?: string;
 };
 
 export type LinhaSemCodigoDeBarras = {
@@ -370,6 +455,24 @@ export type LinhaSemCodigoDeBarras = {
     nome?: string;
     referencia?: string;
     temCodigoDoFornecedor?: boolean;
+};
+
+export type NotaDeRemessa = {
+    cancelada?: boolean;
+    cotacao?: CotacaoDaNota;
+    enviadaEm?: string;
+    itens?: Array<ItemDaNota>;
+    loja?: string;
+    motivoDoCancelamento?: string;
+    numero?: string;
+    praca?: string;
+    remessaId?: string;
+    semana?: Semana;
+    status?: string;
+    tipo?: string;
+    totalPecas?: number;
+    totalValor?: string;
+    vendedor?: Pessoa;
 };
 
 export type PaginaItem = {
@@ -627,6 +730,12 @@ export type PedidoParaFechar = {
     zerarNaoLidos?: boolean;
 };
 
+export type Pessoa = {
+    codigo?: number;
+    id?: string;
+    nome?: string;
+};
+
 export type Previa = {
     ambiguas?: Array<Ambigua>;
     associadas?: Array<Associada>;
@@ -769,6 +878,15 @@ export type RelatorioDeCadastroLinhaDeItemDeCompra = {
     total?: number;
 };
 
+export type RelatorioDeCadastroLinhaDeMaletaEmAberto = {
+    itens?: Array<LinhaDeMaletaEmAberto>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
 export type RelatorioDeCadastroLinhaDeMovimento = {
     itens?: Array<LinhaDeMovimento>;
     pagina?: number;
@@ -798,6 +916,24 @@ export type RelatorioDeCadastroLinhaDeProduto = {
 
 export type RelatorioDeCadastroLinhaDeProdutoParado = {
     itens?: Array<LinhaDeProdutoParado>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroLinhaDeRemessa = {
+    itens?: Array<LinhaDeRemessa>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroLinhaDeSaldo = {
+    itens?: Array<LinhaDeSaldo>;
     pagina?: number;
     recorte?: string;
     tamanho?: number;
@@ -1105,6 +1241,13 @@ export type SemProduto = {
     nome?: string;
 };
 
+export type Semana = {
+    fim?: string;
+    id?: string;
+    inicio?: string;
+    numero?: number;
+};
+
 export type Tempo = {
     instante?: string;
 };
@@ -1114,6 +1257,8 @@ export type Total = {
     pecas?: number;
     quantidade?: number;
     rotulo?: string;
+    valorEmDolar?: string;
+    valorEmGuarani?: string;
     valorEmReais?: string;
 };
 
@@ -3039,6 +3184,157 @@ export type PosicaoAtualResponses = {
 
 export type PosicaoAtualResponse = PosicaoAtualResponses[keyof PosicaoAtualResponses];
 
+export type RelatorioDeMaletasEmAbertoEAtrasadasData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        pracaId?: string;
+        semanaId?: string;
+        produtoId?: string;
+        categoriaId?: string;
+        tipo?: string;
+        situacao?: string;
+        diasDeAtraso?: number;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/maleta/em-aberto';
+};
+
+export type RelatorioDeMaletasEmAbertoEAtrasadasResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeMaletaEmAberto;
+};
+
+export type RelatorioDeMaletasEmAbertoEAtrasadasResponse = RelatorioDeMaletasEmAbertoEAtrasadasResponses[keyof RelatorioDeMaletasEmAbertoEAtrasadasResponses];
+
+export type RelatorioDeMercadoriaPorVendedorData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        pracaId?: string;
+        semanaId?: string;
+        produtoId?: string;
+        categoriaId?: string;
+        tipo?: string;
+        diasDeAtraso?: number;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/maleta/mercadoria-por-vendedor';
+};
+
+export type RelatorioDeMercadoriaPorVendedorResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeVendedor;
+};
+
+export type RelatorioDeMercadoriaPorVendedorResponse = RelatorioDeMercadoriaPorVendedorResponses[keyof RelatorioDeMercadoriaPorVendedorResponses];
+
+export type RelatorioDeRemessasPorVendedorESemanaData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        pracaId?: string;
+        semanaId?: string;
+        produtoId?: string;
+        categoriaId?: string;
+        tipo?: string;
+        situacao?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/maleta/remessas';
+};
+
+export type RelatorioDeRemessasPorVendedorESemanaResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeRemessa;
+};
+
+export type RelatorioDeRemessasPorVendedorESemanaResponse = RelatorioDeRemessasPorVendedorESemanaResponses[keyof RelatorioDeRemessasPorVendedorESemanaResponses];
+
+export type RelatorioDeReposicoesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        pracaId?: string;
+        semanaId?: string;
+        produtoId?: string;
+        categoriaId?: string;
+        situacao?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/maleta/reposicoes';
+};
+
+export type RelatorioDeReposicoesResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeRemessa;
+};
+
+export type RelatorioDeReposicoesResponse = RelatorioDeReposicoesResponses[keyof RelatorioDeReposicoesResponses];
+
+export type RelatorioDeSaldoPorMaletaData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        remessaId?: string;
+        vendedorId?: string;
+        pracaId?: string;
+        semanaId?: string;
+        produtoId?: string;
+        categoriaId?: string;
+        tipo?: string;
+        situacao?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/maleta/saldo';
+};
+
+export type RelatorioDeSaldoPorMaletaResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeSaldo;
+};
+
+export type RelatorioDeSaldoPorMaletaResponse = RelatorioDeSaldoPorMaletaResponses[keyof RelatorioDeSaldoPorMaletaResponses];
+
 export type ListarRemessasData = {
     body?: never;
     path?: never;
@@ -3263,6 +3559,24 @@ export type VerMaletaDaRemessaResponses = {
 };
 
 export type VerMaletaDaRemessaResponse = VerMaletaDaRemessaResponses[keyof VerMaletaDaRemessaResponses];
+
+export type NotaDaRemessaData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/remessas/{id}/nota';
+};
+
+export type NotaDaRemessaResponses = {
+    /**
+     * OK
+     */
+    200: NotaDeRemessa;
+};
+
+export type NotaDaRemessaResponse = NotaDaRemessaResponses[keyof NotaDaRemessaResponses];
 
 export type Listar4Data = {
     body?: never;

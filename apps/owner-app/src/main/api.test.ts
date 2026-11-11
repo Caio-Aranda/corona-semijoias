@@ -357,6 +357,62 @@ describe('API do Corona Gestão: rotas certas no cliente gerado', () => {
     ).toBe(`POST /api/dona/compras/${ID}/desfazer`);
   });
 
+  it('maletas: criar, colocar e tirar peça, enviar, excluir, ver, listar e em aberto', async () => {
+    const PROD = '1b4e28ba-2fa1-41d3-b9a5-2c3a9a8f6b22';
+    const casos: [Record<string, unknown>, string][] = [
+      [
+        {
+          operacao: 'maletas.criar',
+          corpo: { id: ID, vendedorId: ID, semanaId: ID, tipo: 'NOVA' },
+        },
+        'POST /api/dona/remessas',
+      ],
+      [{ operacao: 'maletas.ver', id: ID }, `GET /api/dona/remessas/${ID}`],
+      [
+        { operacao: 'maletas.listar', lista: { status: 'RASCUNHO', pagina: 0, tamanho: 50 } },
+        'GET /api/dona/remessas',
+      ],
+      [
+        { operacao: 'maletas.colocarPeca', id: ID, produtoId: PROD, quantidade: 2, version: 1 },
+        `PUT /api/dona/remessas/${ID}/itens/${PROD}`,
+      ],
+      [
+        { operacao: 'maletas.tirarPeca', id: ID, produtoId: PROD, version: 2 },
+        `DELETE /api/dona/remessas/${ID}/itens/${PROD}`,
+      ],
+      [{ operacao: 'maletas.excluir', id: ID, version: 2 }, `DELETE /api/dona/remessas/${ID}`],
+      [{ operacao: 'maletas.enviar', id: ID }, `POST /api/dona/remessas/${ID}/enviar`],
+      [{ operacao: 'maletas.emAberto', vendedorId: ID }, 'GET /api/dona/remessas/em-aberto'],
+      [{ operacao: 'maletas.saldo', id: ID }, `GET /api/dona/remessas/${ID}/maleta`],
+      [{ operacao: 'maletas.nota', id: ID }, `GET /api/dona/remessas/${ID}/nota`],
+      [
+        {
+          operacao: 'maletas.devolver',
+          id: ID,
+          itens: [{ id: ID, produtoId: PROD, quantidade: 1 }],
+        },
+        `POST /api/dona/remessas/${ID}/devolucoes`,
+      ],
+      [
+        {
+          operacao: 'maletas.desfazerDevolucao',
+          id: ID,
+          devolucaoId: ID,
+          estornoId: PROD,
+          motivo: 'Engano',
+        },
+        `POST /api/dona/remessas/${ID}/devolucoes/${ID}/estorno`,
+      ],
+      [
+        { operacao: 'maletas.cancelar', id: ID, motivo: 'Vendedor desistiu' },
+        `POST /api/dona/remessas/${ID}/cancelar`,
+      ],
+    ];
+    for (const [pedido, esperado] of casos) {
+      expect(await caminhoDe(pedido as never)).toBe(esperado);
+    }
+  });
+
   it('estoque mínimo vai por PATCH, só com versão e valor', async () => {
     expect(
       await caminhoDe({

@@ -18,12 +18,18 @@ public record RelatorioDeCadastro<L>(List<L> itens, long total, int pagina, int 
     /**
      * Um número do rodapé. {@code quantidade} são as linhas que o formam (o detalhamento mostra essas
      * linhas); {@code valorEmReais}, quando existe, é a soma de um valor dessas linhas, em Real; {@code pecas},
-     * quando existe, é a soma de peças (estoque e compras).
+     * quando existe, é a soma de peças (estoque e compras); {@code valorEmDolar} e {@code valorEmGuarani}, quando existem
+     * (relatórios da maleta), somam os valores já convertidos linha a linha pela cotação do dia de cada uma (§12).
      */
-    public record Total(String chave, String rotulo, long quantidade, BigDecimal valorEmReais, Long pecas) {
+    public record Total(String chave, String rotulo, long quantidade, BigDecimal valorEmReais, Long pecas,
+            BigDecimal valorEmDolar, BigDecimal valorEmGuarani) {
 
         public Total(String chave, String rotulo, long quantidade, BigDecimal valorEmReais) {
-            this(chave, rotulo, quantidade, valorEmReais, null);
+            this(chave, rotulo, quantidade, valorEmReais, null, null, null);
+        }
+
+        public Total(String chave, String rotulo, long quantidade, BigDecimal valorEmReais, Long pecas) {
+            this(chave, rotulo, quantidade, valorEmReais, pecas, null, null);
         }
     }
 }
