@@ -292,6 +292,11 @@ public enum CodigoErro {
             "Esta maleta já teve peças devolvidas ou vendidas.",
             "Esta maleta já teve peças devolvidas ou vendidas e não pode ser cancelada. Desfaça as devoluções antes, se foi engano."),
 
+    /** Excluir uma peça que ainda está com um vendedor numa maleta enviada (HTTP 409). */
+    PECA_ESTA_EM_MALETA(
+            "Esta peça está numa maleta.",
+            "Esta peça ainda está com um vendedor numa maleta e não pode ser excluída. Receba a devolução das peças antes."),
+
     /** Desfazer a devolução faria faltar peça no estoque da loja (HTTP 409). O servidor monta o texto. */
     DEVOLUCAO_NAO_PODE_SER_DESFEITA(
             "Não é possível desfazer esta devolução.",

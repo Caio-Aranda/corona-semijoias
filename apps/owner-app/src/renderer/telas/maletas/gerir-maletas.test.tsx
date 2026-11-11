@@ -268,6 +268,47 @@ describe('Ficha da maleta', () => {
   });
 });
 
+describe('Maleta com tudo devolvido', () => {
+  it('continua enviada: a ficha avisa que não há peças com o vendedor', async () => {
+    const m = montar({ 'maletas.saldo': () => ({ ok: true, dados: saldoDaMaleta(3, true) }) });
+    await abrirFicha(m);
+    expect(await screen.findByText('Sem peças com o vendedor')).toBeTruthy();
+    expect(screen.getByText('Enviada', { selector: 'dd' })).toBeTruthy();
+  });
+
+  it('a lista Por vendedor não conta a maleta de saldo zero', async () => {
+    const m = montar({
+      'maletas.emAberto': () => ({
+        ok: true,
+        dados: {
+          vendedorId: ID_VEND,
+          vendedorNome: 'Joana Vendedora',
+          limite: 500,
+          valorEmAberto: 0,
+          limiteRestante: 500,
+          maletas: [
+            {
+              id: ID_MALETA,
+              semanaNumero: 12,
+              tipo: 'NOVA',
+              status: 'ENVIADA',
+              pecasEmAberto: 0,
+              valorEmAberto: 0,
+            },
+          ],
+        },
+      }),
+    });
+    const u = await abrirLista(m);
+    await u.click(screen.getByRole('button', { name: 'Por vendedor' }));
+    const linha = (await screen.findByText('Joana Vendedora', { selector: 'td' })).closest('tr')!;
+    const celulas = within(linha)
+      .getAllByRole('cell')
+      .map((c) => c.textContent);
+    expect(celulas[1]).toBe('0');
+  });
+});
+
 describe('Devolução à dona', () => {
   async function ateALeitura(m: Montagem) {
     const u = await abrirFicha(m);

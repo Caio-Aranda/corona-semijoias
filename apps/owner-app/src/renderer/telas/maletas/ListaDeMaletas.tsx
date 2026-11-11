@@ -245,7 +245,8 @@ function PorVendedor({
           ]}
           linhas={busca.dados.map((v) => ({
             vendedor: v.vendedorNome,
-            maletas: v.maletas.length,
+            // Maleta com tudo devolvido (saldo zero) continua enviada, mas não conta aqui.
+            maletas: v.maletas.filter((m) => m.pecasEmAberto > 0).length,
             emAberto: <Dinheiro valor={v.valorEmAberto} />,
             limite: v.limite === null ? P.semLimite : <Dinheiro valor={v.limite} />,
             sobra:

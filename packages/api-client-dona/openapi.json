@@ -601,8 +601,16 @@
             "format" : "int64",
             "type" : "integer"
           },
+          "diferencaComMaletas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
           "fotoPrincipalHash" : {
             "type" : "string"
+          },
+          "nasMaletas" : {
+            "format" : "int64",
+            "type" : "integer"
           },
           "nome" : {
             "type" : "string"

@@ -70,7 +70,7 @@ public class ConsultasDeEstoqueECompras {
     }
 
     public record LinhaDeConciliacao(UUID produtoId, String nome, String fotoPrincipalHash, int saldoGuardado,
-            long somaDosMovimentos, long diferenca) {
+            long somaDosMovimentos, long diferenca, long nasMaletas, long diferencaComMaletas) {
     }
 
     public record LinhaDeCompra(UUID id, LocalDate dataCompra, String numero, UUID fornecedorId, String fornecedor,
@@ -372,18 +372,30 @@ public class ConsultasDeEstoqueECompras {
 
     @Transactional(readOnly = true)
     public RelatorioDeCadastro<LinhaDeConciliacao> conciliacao(Filtros f) {
-        Consulta c = new Consulta("c.produto_id, c.nome, c.foto_principal_hash, c.saldo, c.soma", """
+        Consulta c = new Consulta("c.produto_id, c.nome, c.foto_principal_hash, c.saldo, c.soma, c.nas_maletas, c.fora", """
                 (SELECT p.id AS produto_id, p.nome, p.foto_principal_hash, p.estoque_atual AS saldo,
-                        coalesce((SELECT sum(m.quantidade) FROM corona.movimentacoes_estoque m WHERE m.produto_id = p.id), 0) AS soma
+                        coalesce((SELECT sum(m.quantidade) FROM corona.movimentacoes_estoque m WHERE m.produto_id = p.id), 0) AS soma,
+                        coalesce((SELECT sum(i.qtd_enviada + coalesce(mm.soma, 0)) FROM corona.remessas r
+                                    JOIN corona.itens_remessa i ON i.remessa_id = r.id AND i.deleted_at IS NULL
+                                    LEFT JOIN (SELECT remessa_id, produto_id, sum(quantidade) AS soma
+                                                 FROM corona.movimentos_remessa GROUP BY remessa_id, produto_id) mm
+                                           ON mm.remessa_id = i.remessa_id AND mm.produto_id = i.produto_id
+                                   WHERE i.produto_id = p.id AND r.deleted_at IS NULL
+                                     AND r.status IN ('ENVIADA', 'CONFERIDA', 'EM_ACERTO')), 0) AS nas_maletas,
+                        coalesce((SELECT sum(me.quantidade) FROM corona.movimentacoes_estoque me
+                                    LEFT JOIN corona.movimentacoes_estoque original ON original.id = me.estorna_id
+                                   WHERE me.produto_id = p.id AND me.origem_tipo <> 'MALETA'
+                                     AND coalesce(original.origem_tipo, '') <> 'MALETA'), 0) AS fora
                    FROM corona.produtos p) c""", "lower(c.nome), c.produto_id", List.of(
                 contagem(TODOS, "Produtos com diferença", null)));
-        c.onde("c.saldo <> c.soma");
+        c.onde("(c.saldo <> c.soma OR c.saldo + c.nas_maletas <> c.fora)");
         c.busca(f.busca(), "c.nome");
         uuid(c, f.produtoId(), "produto", "c.produto_id = :produto");
         return motor.executar(c, f.recorte(), f.pagina(), f.tamanho(),
                 (rs, n) -> new LinhaDeConciliacao(rs.getObject("produto_id", UUID.class), rs.getString("nome"),
                         rs.getString("foto_principal_hash"), rs.getInt("saldo"), rs.getLong("soma"),
-                        rs.getLong("soma") - rs.getInt("saldo")));
+                        rs.getLong("soma") - rs.getInt("saldo"), rs.getLong("nas_maletas"),
+                        rs.getLong("fora") - rs.getInt("saldo") - rs.getLong("nas_maletas")));
     }
 
     // --- 7. compras (uma linha por compra) ---

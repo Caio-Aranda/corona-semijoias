@@ -196,3 +196,27 @@ Uma seção por tarefa, no mesmo formato de [fase-2.md](fase-2.md). A tabela de 
 
 **Não feito:** foto na nota, filtro por produto específico, conferência e venda (app do vendedor).
 
+
+### Tarefa 3.8: fechamento da Fase 3
+
+**Em revisão.** Revisão pós-fase (como a 2.9): leitura do backend das remessas e da maleta, das consultas e das telas, procurando erro real de estoque e de dinheiro. Dois erros achados e corrigidos com teste; o resto foi conferido e registrado.
+
+**O que foi feito**
+
+- **Erro 1, peça excluída com a peça ainda com o vendedor** (teste primeiro, falhava com 204 no lugar de 409): excluir a peça pelo cadastro tirava o produto do estoque, e a devolução e o cancelamento da maleta passavam a responder "não encontrado" (o serviço de estoque trata produto excluído como inexistente), deixando as peças presas. Agora excluir uma peça que tem saldo numa maleta enviada é recusado (409, `PECA_ESTA_EM_MALETA`: "Esta peça ainda está com um vendedor numa maleta e não pode ser excluída. Receba a devolução das peças antes."). Depois de devolver, a exclusão passa.
+- **Erro 2, tela Conferência do estoque sem as maletas**: a rota `/estoque/conciliacao` já trazia `diferencasComMaletas`, mas a tela usa o relatório `/relatorios/estoque/conciliacao`, que só olhava o saldo contra os movimentos. O relatório agora também lista a peça quando "estoque da loja + peças nas maletas" não fecha com o que entrou e saiu fora da maleta, e traz `nasMaletas` e `diferencaComMaletas`; a tela ganhou as colunas **Com os vendedores (maletas)** e **Diferença contando as maletas**. Teste primeiro (provocando a diferença no banco). Clientes da API regerados.
+- **Maleta com tudo devolvido** (decisão abaixo): a ficha mostra o aviso **Sem peças com o vendedor** e a visão **Por vendedor** só conta como maleta a que ainda tem peça. Testes de tela.
+- **Conciliação de ponta a ponta:** o teste da 3.3 (`conciliacaoComMaletasFechaDepoisDeCompraRemessaDevolucaoCancelamentoEstornoEInventario`) já cobre compra, remessa, devolução, cancelamento, estorno e inventário e foi mantido; a 3.8 só acrescentou o relatório da tela.
+- Documentos: tabela da Fase 3 com os PRs, "Fase 3 concluída", pendências, ADR-0010 **Aceito**.
+
+**Conferido sem achar erro (já com teste ou lido no código):** envio duplo (200 sem baixar de novo, trava por vendedor), devolução repetida (200/409 pelo id), cancelamento x devolução simultâneos (trava a remessa antes dos produtos), desfazer devolução com o estoque central sem saldo (409 com texto simples), limite (exato passa, um centavo a mais não, devolução libera, cancelada e rascunho não contam, 0 = sem limite), peça inativada ou excluída antes do envio (envio recusado, rascunho continua legível e a peça pode ser tirada), preço congelado só no envio (o total do rascunho usa o preço de hoje e é recalculado no envio), relatórios (cotação do dia do envio, rascunho fora, cancelada marcada e fora do total), `operationId` explícito em todas as rotas de maleta e permissão (vendedor 403 e sem login 401 nas rotas de remessa, maleta, nota e relatórios; teste existente).
+
+**Decisões que tomei**
+
+- **Maleta com saldo zero continua ENVIADA:** quem encerra é o acerto (Fase 7). Responde a dúvida da 3.3 e da 3.6.
+- Peça com saldo numa maleta enviada não pode ser excluída (regra nova, no servidor); inativar continua permitido.
+- `diferencaComMaletas` = (o que entrou e saiu fora da maleta) menos (estoque da loja + peças nas maletas): positivo = faltam peças.
+
+**Dúvidas abertas:** as seis do ADR-0010 (preço de venda x custo no limite, reposição no limite, peça repetida na maleta, foto na nota, prazo de atraso de 7 dias, vendedor sem limite) e o formato do número da maleta (hoje S12-V7-1).
+
+**Não feito / fica para depois:** teste com leitor físico e app instalado (com o responsável); conferência, dispositivo único e leitura da própria maleta pelo vendedor (Fase 4); excluir peça que só está em rascunho não foi bloqueado de propósito (o envio já recusa e a pessoa tira a peça). Do que a revisão pediu para as telas (código desconhecido, leitor em foco, erro do servidor, 200 x 201, estado após cancelar e devolver), só li os testes existentes da 3.5 e da 3.6, que cobrem esses casos; não abri o app na mão.
