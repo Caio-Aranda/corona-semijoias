@@ -33,16 +33,171 @@ export type CadastroDeTeste = {
     nome: string;
 };
 
+export type CategoriasDaDonaControllerPedido = {
+    id?: string;
+    nome: string;
+    version?: number;
+};
+
+export type CategoriasDaDonaControllerResposta = {
+    ativo?: boolean;
+    id?: string;
+    nome?: string;
+    version?: number;
+};
+
+export type ClientesDaDonaControllerPedido = {
+    cpf?: string;
+    dataNascimento?: string;
+    endereco?: Endereco;
+    id?: string;
+    nome: string;
+    observacoes?: string;
+    telefone?: string;
+    vendedorResponsavelId?: string;
+    version?: number;
+    whatsapp?: string;
+};
+
+export type ClientesDaDonaControllerResposta = {
+    ativo?: boolean;
+    cpf?: string;
+    dataNascimento?: string;
+    endereco?: Endereco;
+    id?: string;
+    nome?: string;
+    observacoes?: string;
+    telefone?: string;
+    vendedorResponsavelId?: string;
+    version?: number;
+    whatsapp?: string;
+};
+
 export type CodigoGerado = {
     codigo?: string;
+};
+
+export type CodigosEmConflitoLinha = {
+    ativo?: boolean;
+    codigo?: string;
+    codigoId?: string;
+    descricao?: string;
+    fornecedor?: string;
+    motivo?: string;
+    produto?: string;
+    produtoId?: string;
+    tipo?: string;
+};
+
+export type ComprasDaDonaControllerRespostaDaPeca = {
+    codigo?: string;
+    fotoPrincipal?: FotoPrincipal;
+    id?: string;
+    nome?: string;
+    referencia?: string;
+};
+
+export type ComprasDaDonaControllerRespostaDoItem = {
+    custoUnitario?: string;
+    id?: string;
+    produto?: ComprasDaDonaControllerRespostaDaPeca;
+    quantidade?: number;
+    total?: string;
+};
+
+export type ComprasDaDonaControllerRespostaDoResumo = {
+    dataCompra?: string;
+    fornecedorId?: string;
+    fornecedorNome?: string;
+    id?: string;
+    itens?: number;
+    numero?: string;
+    pecas?: number;
+    registradaEm?: string;
+    situacao?: string;
+    total?: string;
 };
 
 export type Conferencia = {
     conferidaEm?: string;
     divergencias?: number;
     id?: string;
-    itens?: Array<Linha>;
+    itens?: Array<ConsultasDaConferenciaLinha>;
     remessaId?: string;
+};
+
+export type ConjugeDoVendedorDados = {
+    cpf?: string;
+    dataNascimento?: string;
+    empresa?: string;
+    nome?: string;
+    profissao?: string;
+    renda?: string;
+    rg?: string;
+    telefone?: string;
+    version?: number;
+};
+
+export type ConsultasDaConferenciaLinha = {
+    contado?: number;
+    diferenca?: number;
+    esperado?: number;
+    produtoId?: string;
+    produtoNome?: string;
+};
+
+export type ConsultasDeCadastroLinhaDeVendedor = {
+    ativo?: boolean;
+    bloqueiaRemessa?: boolean;
+    codigo?: number;
+    comissaoPercentual?: string;
+    id?: string;
+    limiteConsignacao?: string;
+    nome?: string;
+    praca?: string;
+    restricao?: string;
+};
+
+export type ConsultasDeMaletaLinhaDeVendedor = {
+    limite?: string;
+    maletasAtrasadas?: number;
+    maletasEmAberto?: number;
+    pecasEmAberto?: number;
+    sobraDoLimite?: string;
+    valorEmDolar?: string;
+    valorEmGuarani?: string;
+    valorEmReais?: string;
+    vendedor?: string;
+    vendedorId?: string;
+};
+
+export type ConsultasDeVendasCotacao = {
+    data?: string;
+    dolar?: string;
+    guarani?: string;
+};
+
+export type ConsultasDeVendasItem = {
+    desconto?: string;
+    precoUnitario?: string;
+    produto?: ConsultasDeVendasPeca;
+    quantidade?: number;
+    total?: string;
+};
+
+export type ConsultasDeVendasPeca = {
+    fotoHash?: string;
+    id?: string;
+    nome?: string;
+};
+
+export type ContatoDoVendedorDados = {
+    contatoNome?: string;
+    contatoParentesco?: string;
+    contatoTelefone?: string;
+    nomeMae?: string;
+    nomePai?: string;
+    version?: number;
 };
 
 export type ConversaoPedido = {
@@ -57,12 +212,6 @@ export type ConversaoResposta = {
     guarani?: string;
     mensagem?: string;
     valorEmReais?: string;
-};
-
-export type Cotacao = {
-    data?: string;
-    dolar?: string;
-    guarani?: string;
 };
 
 export type CotacaoDaNota = {
@@ -91,22 +240,104 @@ export type CotacaoDoDia = {
     linha?: string;
 };
 
-export type Dados = {
-    dataAdmissao?: string;
-    empresa?: string;
-    endereco?: string;
-    funcao?: string;
-    renda?: string;
-    telefone?: string;
-    version?: number;
-};
-
 export type DadosDoUsuario = {
     id?: string;
     login?: string;
     nome?: string;
     perfil?: string;
     vendedorId?: string;
+};
+
+export type DocumentoDoVendedorResposta = {
+    descricao?: string;
+    enviadoEm?: string;
+    hashSha256?: string;
+    id?: string;
+    nomeOriginal?: string;
+    tamanhoBytes?: number;
+    tipoConteudo?: string;
+    version?: number;
+};
+
+export type Endereco = {
+    bairro?: string;
+    cep?: string;
+    cidade?: string;
+    complemento?: string;
+    logradouro?: string;
+    numero?: string;
+    uf?: string;
+};
+
+export type EnderecoDoVendedorDados = {
+    bairro?: string;
+    cep?: string;
+    cidade?: string;
+    complemento?: string;
+    localReferencia?: string;
+    logradouro?: string;
+    numero?: string;
+    residencia?: string;
+    uf?: string;
+    valorResidencia?: string;
+    version?: number;
+};
+
+export type EstoqueDaDonaControllerPedidoDeEstorno = {
+    id?: string;
+    motivo?: string;
+};
+
+export type EstoqueDaDonaControllerRespostaDaLinha = {
+    desfeitoPorId?: string;
+    estornaId?: string;
+    id?: string;
+    motivo?: string;
+    ocorridaEm?: string;
+    origem?: string;
+    origemId?: string;
+    produto?: RespostaDoProduto;
+    quantidade?: number;
+    saldoDepois?: number;
+    tipo?: string;
+    usuarioId?: string;
+    usuarioNome?: string;
+};
+
+export type EstoqueDaDonaControllerRespostaDoMovimento = {
+    estornaId?: string;
+    id?: string;
+    motivo?: string;
+    ocorridaEm?: string;
+    origem?: string;
+    origemId?: string;
+    produtoId?: string;
+    quantidade?: number;
+    saldoDepois?: number;
+    tipo?: string;
+    usuarioId?: string;
+};
+
+export type FornecedoresDaDonaControllerPedido = {
+    cnpj?: string;
+    contatoNome?: string;
+    email?: string;
+    endereco?: Endereco;
+    razaoSocial: string;
+    telefone?: string;
+    version?: number;
+};
+
+export type FornecedoresDaDonaControllerResposta = {
+    ativo?: boolean;
+    cnpj?: string;
+    contatoNome?: string;
+    email?: string;
+    endereco?: Endereco;
+    id?: string;
+    razaoSocial?: string;
+    telefone?: string;
+    version?: number;
 };
 
 export type FotoPrincipal = {
@@ -116,12 +347,43 @@ export type FotoPrincipal = {
     miniaturaUrl?: string;
 };
 
-export type Item = {
-    desconto?: string;
-    precoUnitario?: string;
-    produto?: Peca;
-    quantidade?: number;
-    total?: string;
+export type ImportacaoDeFotosRelatorio = {
+    gravadas?: number;
+    jaExistiam?: number;
+    naoGravadas?: number;
+    resultados?: Array<ResultadoDaFoto>;
+};
+
+export type InventariosDaDonaControllerRespostaDaLinha = {
+    escopo?: string;
+    escopoId?: string;
+    escopoNome?: string;
+    fechadoEm?: string;
+    id?: string;
+    iniciadoEm?: string;
+    lidos?: number;
+    situacao?: string;
+    totalDePecas?: number;
+};
+
+export type InventariosDaDonaControllerRespostaDoItem = {
+    ajustada?: boolean;
+    contado?: number;
+    diferenca?: number;
+    esperado?: number;
+    produto?: RespostaDoProduto;
+    saldoAtual?: number;
+};
+
+export type InventariosDaDonaControllerRespostaDoResumo = {
+    comDiferenca?: number;
+    faltam?: number;
+    lidos?: number;
+    naoLidos?: number;
+    pecasContadas?: number;
+    pecasEsperadas?: number;
+    sobram?: number;
+    totalDePecas?: number;
 };
 
 export type ItemDaNota = {
@@ -131,14 +393,6 @@ export type ItemDaNota = {
     produtoId?: string;
     quantidade?: number;
     subtotal?: string;
-};
-
-export type Linha = {
-    contado?: number;
-    diferenca?: number;
-    esperado?: number;
-    produtoId?: string;
-    produtoNome?: string;
 };
 
 export type LinhaAbaixoDoMinimo = {
@@ -441,19 +695,6 @@ export type LinhaDeSaldo = {
     vendedorId?: string;
 };
 
-export type LinhaDeVendedor = {
-    limite?: string;
-    maletasAtrasadas?: number;
-    maletasEmAberto?: number;
-    pecasEmAberto?: number;
-    sobraDoLimite?: string;
-    valorEmDolar?: string;
-    valorEmGuarani?: string;
-    valorEmReais?: string;
-    vendedor?: string;
-    vendedorId?: string;
-};
-
 export type LinhaSemCodigoDeBarras = {
     ativo?: boolean;
     categoria?: string;
@@ -463,6 +704,46 @@ export type LinhaSemCodigoDeBarras = {
     nome?: string;
     referencia?: string;
     temCodigoDoFornecedor?: boolean;
+};
+
+export type MaletaDaDonaControllerPedidoDaLinha = {
+    id?: string;
+    produtoId?: string;
+    quantidade?: number;
+};
+
+export type MaletaDaDonaControllerPedidoDeEstorno = {
+    id?: string;
+    motivo?: string;
+};
+
+export type MaletaDaDonaControllerRespostaDaLinha = {
+    devolvida?: number;
+    enviada?: number;
+    precoUnitario?: string;
+    produto?: RemessasDaDonaControllerRespostaDaPeca;
+    saldo?: number;
+    valorEmAberto?: string;
+};
+
+export type MaletaDaDonaControllerRespostaDoMovimento = {
+    desfeito?: boolean;
+    em?: string;
+    estornaId?: string;
+    id?: string;
+    produtoId?: string;
+    produtoNome?: string;
+    quantidade?: number;
+    tipo?: string;
+};
+
+export type MeiDoVendedorDados = {
+    atividade?: string;
+    cnpj?: string;
+    dataAbertura?: string;
+    nomeFantasia?: string;
+    razaoSocial?: string;
+    version?: number;
 };
 
 export type NotaDeRemessa = {
@@ -475,12 +756,24 @@ export type NotaDeRemessa = {
     numero?: string;
     praca?: string;
     remessaId?: string;
-    semana?: Semana;
+    semana?: NotaDeRemessaControllerSemana;
     status?: string;
     tipo?: string;
     totalPecas?: number;
     totalValor?: string;
     vendedor?: Pessoa;
+};
+
+export type NotaDeRemessaControllerSemana = {
+    fim?: string;
+    id?: string;
+    inicio?: string;
+    numero?: number;
+};
+
+export type ObservacaoDoVendedorDados = {
+    texto?: string;
+    version?: number;
 };
 
 export type PagamentoLido = {
@@ -491,22 +784,78 @@ export type PagamentoLido = {
     valor?: string;
 };
 
-export type PaginaItem = {
-    itens?: Array<Item>;
+export type PaginaCategoriasDaDonaControllerResposta = {
+    itens?: Array<CategoriasDaDonaControllerResposta>;
     pagina?: number;
     tamanho?: number;
     total?: number;
 };
 
-export type PaginaResposta = {
-    itens?: Array<Resposta>;
+export type PaginaClientesDaDonaControllerResposta = {
+    itens?: Array<ClientesDaDonaControllerResposta>;
     pagina?: number;
     tamanho?: number;
     total?: number;
 };
 
-export type PaginaRespostaDaLinha = {
-    itens?: Array<RespostaDaLinha>;
+export type PaginaComprasDaDonaControllerRespostaDoResumo = {
+    itens?: Array<ComprasDaDonaControllerRespostaDoResumo>;
+    pagina?: number;
+    tamanho?: number;
+    total?: number;
+};
+
+export type PaginaEstoqueDaDonaControllerRespostaDaLinha = {
+    itens?: Array<EstoqueDaDonaControllerRespostaDaLinha>;
+    pagina?: number;
+    tamanho?: number;
+    total?: number;
+};
+
+export type PaginaFornecedoresDaDonaControllerResposta = {
+    itens?: Array<FornecedoresDaDonaControllerResposta>;
+    pagina?: number;
+    tamanho?: number;
+    total?: number;
+};
+
+export type PaginaInventariosDaDonaControllerRespostaDaLinha = {
+    itens?: Array<InventariosDaDonaControllerRespostaDaLinha>;
+    pagina?: number;
+    tamanho?: number;
+    total?: number;
+};
+
+export type PaginaInventariosDaDonaControllerRespostaDoItem = {
+    itens?: Array<InventariosDaDonaControllerRespostaDoItem>;
+    pagina?: number;
+    tamanho?: number;
+    total?: number;
+};
+
+export type PaginaPracasDaDonaControllerResposta = {
+    itens?: Array<PracasDaDonaControllerResposta>;
+    pagina?: number;
+    tamanho?: number;
+    total?: number;
+};
+
+export type PaginaProdutosDaDonaControllerResposta = {
+    itens?: Array<ProdutosDaDonaControllerResposta>;
+    pagina?: number;
+    tamanho?: number;
+    total?: number;
+};
+
+export type PaginaRelatorioDeProdutosSemFotoItem = {
+    itens?: Array<RelatorioDeProdutosSemFotoItem>;
+    pagina?: number;
+    tamanho?: number;
+    total?: number;
+};
+
+export type PaginaRemessasDaDonaControllerRespostaDoResumo = {
+    itens?: Array<RemessasDaDonaControllerRespostaDoResumo>;
     pagina?: number;
     tamanho?: number;
     total?: number;
@@ -526,47 +875,32 @@ export type PaginaRespostaDoAbaixoDoMinimo = {
     total?: number;
 };
 
-export type PaginaRespostaDoItem = {
-    itens?: Array<RespostaDoItem>;
+export type PaginaRestricoesDaDonaControllerResposta = {
+    itens?: Array<RestricoesDaDonaControllerResposta>;
     pagina?: number;
     tamanho?: number;
     total?: number;
 };
 
-export type PaginaRespostaDoResumo = {
-    itens?: Array<RespostaDoResumo>;
+export type PaginaSemanasDaDonaControllerResposta = {
+    itens?: Array<SemanasDaDonaControllerResposta>;
     pagina?: number;
     tamanho?: number;
     total?: number;
 };
 
-export type Peca = {
-    fotoHash?: string;
-    id?: string;
-    nome?: string;
+export type PaginaUsuariosDaDonaControllerResposta = {
+    itens?: Array<UsuariosDaDonaControllerResposta>;
+    pagina?: number;
+    tamanho?: number;
+    total?: number;
 };
 
-export type Pedido = {
-    comissaoPercentual?: string;
-    cpfCnpj?: string;
-    dataNascimento?: string;
-    email?: string;
-    escolaridade?: string;
-    estrangeiro?: boolean;
-    facebook?: string;
-    limiteConsignacao?: string;
-    naturalidade?: string;
-    nome: string;
-    outrasMidias?: string;
-    pracaId?: string;
-    restricaoId?: string;
-    rgIe?: string;
-    rgUf?: string;
-    sexo?: string;
-    telefone1?: string;
-    telefone2?: string;
-    version?: number;
-    whatsapp?: string;
+export type PaginaVendedoresDaDonaControllerResposta = {
+    itens?: Array<VendedoresDaDonaControllerResposta>;
+    pagina?: number;
+    tamanho?: number;
+    total?: number;
 };
 
 export type PedidoComMotivo = {
@@ -580,12 +914,6 @@ export type PedidoDaCompra = {
     itens?: Array<PedidoDeItem>;
     numero?: string;
     observacoes?: string;
-};
-
-export type PedidoDaLinha = {
-    id?: string;
-    produtoId?: string;
-    quantidade?: number;
 };
 
 export type PedidoDeAjuste = {
@@ -613,7 +941,7 @@ export type PedidoDeContagem = {
 };
 
 export type PedidoDeDevolucao = {
-    itens?: Array<PedidoDaLinha>;
+    itens?: Array<MaletaDaDonaControllerPedidoDaLinha>;
 };
 
 export type PedidoDeEdicao = {
@@ -621,11 +949,6 @@ export type PedidoDeEdicao = {
     perfil: string;
     vendedorId?: string;
     version: number;
-};
-
-export type PedidoDeEstorno = {
-    id?: string;
-    motivo?: string;
 };
 
 export type PedidoDeItem = {
@@ -758,6 +1081,18 @@ export type Pessoa = {
     nome?: string;
 };
 
+export type PracasDaDonaControllerPedido = {
+    nome: string;
+    version?: number;
+};
+
+export type PracasDaDonaControllerResposta = {
+    ativo?: boolean;
+    id?: string;
+    nome?: string;
+    version?: number;
+};
+
 export type Previa = {
     ambiguas?: Array<Ambigua>;
     associadas?: Array<Associada>;
@@ -771,20 +1106,64 @@ export type ProdutoSemFoto = {
     nome?: string;
 };
 
+export type ProdutosDaDonaControllerResposta = {
+    ativo?: boolean;
+    categoriaId?: string;
+    codigos?: Array<RespostaDeCodigo>;
+    estoqueAtual?: number;
+    estoqueMinimo?: number;
+    fornecedorId?: string;
+    fotoPrincipal?: FotoPrincipal;
+    id?: string;
+    nome?: string;
+    precoCusto?: string;
+    precoVenda?: string;
+    referencia?: string;
+    version?: number;
+};
+
 export type ProdutosSemFoto = {
     itens?: Array<ProdutoSemFoto>;
     total?: number;
 };
 
-export type Relatorio = {
-    gravadas?: number;
-    jaExistiam?: number;
-    naoGravadas?: number;
-    resultados?: Array<ResultadoDaFoto>;
+export type ReferenciaDoVendedorPedido = {
+    nome: string;
+    observacao?: string;
+    parentesco?: string;
+    telefone?: string;
+    version?: number;
 };
 
-export type RelatorioDeCadastroLinha = {
-    itens?: Array<Linha>;
+export type ReferenciaDoVendedorResposta = {
+    id?: string;
+    nome?: string;
+    observacao?: string;
+    parentesco?: string;
+    telefone?: string;
+    version?: number;
+};
+
+export type RelatorioDeCadastroCodigosEmConflitoLinha = {
+    itens?: Array<CodigosEmConflitoLinha>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroConsultasDeCadastroLinhaDeVendedor = {
+    itens?: Array<ConsultasDeCadastroLinhaDeVendedor>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroConsultasDeMaletaLinhaDeVendedor = {
+    itens?: Array<ConsultasDeMaletaLinhaDeVendedor>;
     pagina?: number;
     recorte?: string;
     tamanho?: number;
@@ -963,15 +1342,6 @@ export type RelatorioDeCadastroLinhaDeSaldo = {
     total?: number;
 };
 
-export type RelatorioDeCadastroLinhaDeVendedor = {
-    itens?: Array<LinhaDeVendedor>;
-    pagina?: number;
-    recorte?: string;
-    tamanho?: number;
-    totais?: Array<Total>;
-    total?: number;
-};
-
 export type RelatorioDeCadastroLinhaSemCodigoDeBarras = {
     itens?: Array<LinhaSemCodigoDeBarras>;
     pagina?: number;
@@ -981,32 +1351,48 @@ export type RelatorioDeCadastroLinhaSemCodigoDeBarras = {
     total?: number;
 };
 
-export type Resposta = {
+export type RelatorioDeProdutosSemFotoItem = {
     ativo?: boolean;
-    cadastradoPor?: string;
-    codigo?: number;
-    comissaoPercentual?: string;
-    cpfCnpj?: string;
-    dataCadastro?: string;
-    dataNascimento?: string;
-    email?: string;
-    escolaridade?: string;
-    estrangeiro?: boolean;
-    facebook?: string;
+    categoriaId?: string;
+    codigoPrincipal?: string;
+    fornecedorId?: string;
     id?: string;
-    limiteConsignacao?: string;
-    naturalidade?: string;
     nome?: string;
-    outrasMidias?: string;
+    referencia?: string;
+};
+
+export type RemessasDaDonaControllerRespostaDaPeca = {
+    codigo?: string;
+    fotoPrincipal?: FotoPrincipal;
+    id?: string;
+    nome?: string;
+    referencia?: string;
+};
+
+export type RemessasDaDonaControllerRespostaDoItem = {
+    id?: string;
+    precoCongelado?: boolean;
+    precoUnitario?: string;
+    produto?: RemessasDaDonaControllerRespostaDaPeca;
+    quantidade?: number;
+    total?: string;
+};
+
+export type RemessasDaDonaControllerRespostaDoResumo = {
+    criadaEm?: string;
+    enviadaEm?: string;
+    id?: string;
     pracaId?: string;
-    restricaoId?: string;
-    rgIe?: string;
-    rgUf?: string;
-    sexo?: string;
-    telefone1?: string;
-    telefone2?: string;
+    pracaNome?: string;
+    semanaId?: string;
+    semanaNumero?: number;
+    status?: string;
+    tipo?: string;
+    totalPecas?: number;
+    totalValor?: string;
+    vendedorId?: string;
+    vendedorNome?: string;
     version?: number;
-    whatsapp?: string;
 };
 
 export type RespostaComSenhaTemporaria = {
@@ -1020,9 +1406,9 @@ export type RespostaComSenhaTemporaria = {
 };
 
 export type RespostaDaCompra = {
-    compra?: RespostaDoResumo;
+    compra?: ComprasDaDonaControllerRespostaDoResumo;
     desfeitaEm?: string;
-    itens?: Array<RespostaDoItem>;
+    itens?: Array<ComprasDaDonaControllerRespostaDoItem>;
     motivoDeDesfeita?: string;
     observacoes?: string;
     usuarioId?: string;
@@ -1050,7 +1436,7 @@ export type RespostaDaContagem = {
     motivoDoCancelamento?: string;
     naoAjustadas?: Array<RespostaDaNaoAjustada>;
     observacoes?: string;
-    resumo?: RespostaDoResumo;
+    resumo?: InventariosDaDonaControllerRespostaDoResumo;
     situacao?: string;
     zerouNaoLidos?: boolean;
 };
@@ -1071,7 +1457,7 @@ export type RespostaDaDivergencia = {
 };
 
 export type RespostaDaFicha = {
-    historico?: PaginaRespostaDaLinha;
+    historico?: PaginaEstoqueDaDonaControllerRespostaDaLinha;
     produto?: RespostaDoProduto;
     saldo?: number;
 };
@@ -1092,22 +1478,13 @@ export type RespostaDaFoto = {
 };
 
 export type RespostaDaLeitura = {
-    item?: RespostaDoItem;
-    resumo?: RespostaDoResumo;
+    item?: InventariosDaDonaControllerRespostaDoItem;
+    resumo?: InventariosDaDonaControllerRespostaDoResumo;
 };
 
 export type RespostaDaLiberacao = {
     remessaId?: string;
     tinhaAparelho?: boolean;
-};
-
-export type RespostaDaLinha = {
-    devolvida?: number;
-    enviada?: number;
-    precoUnitario?: string;
-    produto?: RespostaDaPeca;
-    saldo?: number;
-    valorEmAberto?: string;
 };
 
 export type RespostaDaLinhaDeCusto = {
@@ -1122,9 +1499,9 @@ export type RespostaDaLinhaDeCusto = {
 
 export type RespostaDaMaleta = {
     id?: string;
-    itens?: Array<RespostaDaLinha>;
+    itens?: Array<MaletaDaDonaControllerRespostaDaLinha>;
     motivoDoCancelamento?: string;
-    movimentos?: Array<RespostaDoMovimento>;
+    movimentos?: Array<MaletaDaDonaControllerRespostaDoMovimento>;
     pecasEmAberto?: number;
     status?: string;
     valorEmAberto?: string;
@@ -1152,20 +1529,12 @@ export type RespostaDaNaoAjustada = {
     produtoId?: string;
 };
 
-export type RespostaDaPeca = {
-    codigo?: string;
-    fotoPrincipal?: FotoPrincipal;
-    id?: string;
-    nome?: string;
-    referencia?: string;
-};
-
 export type RespostaDaRemessa = {
     avisos?: Array<string>;
     criadaEm?: string;
     enviadaEm?: string;
     id?: string;
-    itens?: Array<RespostaDoItem>;
+    itens?: Array<RemessasDaDonaControllerRespostaDoItem>;
     pracaId?: string;
     pracaNome?: string;
     semanaId?: string;
@@ -1177,6 +1546,15 @@ export type RespostaDaRemessa = {
     vendedorId?: string;
     vendedorNome?: string;
     version?: number;
+};
+
+export type RespostaDeCodigo = {
+    ativo?: boolean;
+    codigo?: string;
+    fornecedorId?: string;
+    id?: string;
+    principal?: boolean;
+    tipo?: string;
 };
 
 export type RespostaDoAbaixoDoMinimo = {
@@ -1198,16 +1576,7 @@ export type RespostaDoEmAberto = {
 export type RespostaDoHistoricoDeCusto = {
     custoAtual?: string;
     historico?: PaginaRespostaDaLinhaDeCusto;
-    produto?: RespostaDaPeca;
-};
-
-export type RespostaDoItem = {
-    id?: string;
-    precoCongelado?: boolean;
-    precoUnitario?: string;
-    produto?: RespostaDaPeca;
-    quantidade?: number;
-    total?: string;
+    produto?: ComprasDaDonaControllerRespostaDaPeca;
 };
 
 export type RespostaDoLogin = {
@@ -1222,17 +1591,6 @@ export type RespostaDoLogin = {
     validadeEmSegundos?: number;
 };
 
-export type RespostaDoMovimento = {
-    desfeito?: boolean;
-    em?: string;
-    estornaId?: string;
-    id?: string;
-    produtoId?: string;
-    produtoNome?: string;
-    quantidade?: number;
-    tipo?: string;
-};
-
 export type RespostaDoProduto = {
     ativo?: boolean;
     codigo?: string;
@@ -1243,15 +1601,20 @@ export type RespostaDoProduto = {
     referencia?: string;
 };
 
-export type RespostaDoResumo = {
-    comDiferenca?: number;
-    faltam?: number;
-    lidos?: number;
-    naoLidos?: number;
-    pecasContadas?: number;
-    pecasEsperadas?: number;
-    sobram?: number;
-    totalDePecas?: number;
+export type RestricoesDaDonaControllerPedido = {
+    bloqueiaRemessa?: boolean;
+    codigo: string;
+    descricao: string;
+    version?: number;
+};
+
+export type RestricoesDaDonaControllerResposta = {
+    ativo?: boolean;
+    bloqueiaRemessa?: boolean;
+    codigo?: string;
+    descricao?: string;
+    id?: string;
+    version?: number;
 };
 
 export type ResultadoDaFoto = {
@@ -1268,11 +1631,22 @@ export type SemProduto = {
     nome?: string;
 };
 
-export type Semana = {
+export type SemanasDaDonaControllerPedido = {
+    fim: string;
+    id?: string;
+    inicio: string;
+    numero: number;
+    situacao?: 'ABERTA' | 'FECHADA';
+    version?: number;
+};
+
+export type SemanasDaDonaControllerResposta = {
     fim?: string;
     id?: string;
     inicio?: string;
     numero?: number;
+    situacao?: 'ABERTA' | 'FECHADA';
+    version?: number;
 };
 
 export type Tempo = {
@@ -1289,6 +1663,28 @@ export type Total = {
     valorEmReais?: string;
 };
 
+export type TrabalhoDoVendedorDados = {
+    dataAdmissao?: string;
+    empresa?: string;
+    endereco?: string;
+    funcao?: string;
+    renda?: string;
+    telefone?: string;
+    version?: number;
+};
+
+export type UsuariosDaDonaControllerResposta = {
+    ativo?: boolean;
+    id?: string;
+    login?: string;
+    nome?: string;
+    perfil?: string;
+    senhaTemporariaVenceEm?: string;
+    trocaDeSenhaObrigatoria?: boolean;
+    vendedorId?: string;
+    version?: number;
+};
+
 export type ValorDeTeste = {
     valor?: string;
 };
@@ -1297,11 +1693,11 @@ export type Venda = {
     aReceber?: string;
     clienteId?: string;
     clienteNome?: string;
-    cotacao?: Cotacao;
+    cotacao?: ConsultasDeVendasCotacao;
     desconto?: string;
     estornadaEm?: string;
     id?: string;
-    itens?: Array<Item>;
+    itens?: Array<ConsultasDeVendasItem>;
     motivoDoEstorno?: string;
     pagamentos?: Array<PagamentoLido>;
     pago?: string;
@@ -1313,6 +1709,62 @@ export type Venda = {
     totalGuarani?: string;
     vendedorId?: string;
     vendidaEm?: string;
+};
+
+export type VendasDoVendedorControllerPedidoDeEstorno = {
+    id?: string;
+    motivo?: string;
+};
+
+export type VendedoresDaDonaControllerPedido = {
+    comissaoPercentual?: string;
+    cpfCnpj?: string;
+    dataNascimento?: string;
+    email?: string;
+    escolaridade?: string;
+    estrangeiro?: boolean;
+    facebook?: string;
+    limiteConsignacao?: string;
+    naturalidade?: string;
+    nome: string;
+    outrasMidias?: string;
+    pracaId?: string;
+    restricaoId?: string;
+    rgIe?: string;
+    rgUf?: string;
+    sexo?: string;
+    telefone1?: string;
+    telefone2?: string;
+    version?: number;
+    whatsapp?: string;
+};
+
+export type VendedoresDaDonaControllerResposta = {
+    ativo?: boolean;
+    cadastradoPor?: string;
+    codigo?: number;
+    comissaoPercentual?: string;
+    cpfCnpj?: string;
+    dataCadastro?: string;
+    dataNascimento?: string;
+    email?: string;
+    escolaridade?: string;
+    estrangeiro?: boolean;
+    facebook?: string;
+    id?: string;
+    limiteConsignacao?: string;
+    naturalidade?: string;
+    nome?: string;
+    outrasMidias?: string;
+    pracaId?: string;
+    restricaoId?: string;
+    rgIe?: string;
+    rgUf?: string;
+    sexo?: string;
+    telefone1?: string;
+    telefone2?: string;
+    version?: number;
+    whatsapp?: string;
 };
 
 export type EuData = {
@@ -1457,13 +1909,13 @@ export type Listar13Responses = {
     /**
      * OK
      */
-    200: PaginaResposta;
+    200: PaginaCategoriasDaDonaControllerResposta;
 };
 
 export type Listar13Response = Listar13Responses[keyof Listar13Responses];
 
 export type Criar8Data = {
-    body: Pedido;
+    body: CategoriasDaDonaControllerPedido;
     path?: never;
     query?: never;
     url: '/api/dona/categorias';
@@ -1473,7 +1925,7 @@ export type Criar8Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: CategoriasDaDonaControllerResposta;
 };
 
 export type Criar8Response = Criar8Responses[keyof Criar8Responses];
@@ -1507,13 +1959,13 @@ export type Ver8Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: CategoriasDaDonaControllerResposta;
 };
 
 export type Ver8Response = Ver8Responses[keyof Ver8Responses];
 
 export type Editar8Data = {
-    body: Pedido;
+    body: CategoriasDaDonaControllerPedido;
     path: {
         id: string;
     };
@@ -1525,7 +1977,7 @@ export type Editar8Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: CategoriasDaDonaControllerResposta;
 };
 
 export type Editar8Response = Editar8Responses[keyof Editar8Responses];
@@ -1543,7 +1995,7 @@ export type Inativar6Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: CategoriasDaDonaControllerResposta;
 };
 
 export type Inativar6Response = Inativar6Responses[keyof Inativar6Responses];
@@ -1561,7 +2013,7 @@ export type Reativar7Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: CategoriasDaDonaControllerResposta;
 };
 
 export type Reativar7Response = Reativar7Responses[keyof Reativar7Responses];
@@ -1582,13 +2034,13 @@ export type Listar12Responses = {
     /**
      * OK
      */
-    200: PaginaResposta;
+    200: PaginaClientesDaDonaControllerResposta;
 };
 
 export type Listar12Response = Listar12Responses[keyof Listar12Responses];
 
 export type Criar7Data = {
-    body: Pedido;
+    body: ClientesDaDonaControllerPedido;
     path?: never;
     query?: never;
     url: '/api/dona/clientes';
@@ -1598,7 +2050,7 @@ export type Criar7Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: ClientesDaDonaControllerResposta;
 };
 
 export type Criar7Response = Criar7Responses[keyof Criar7Responses];
@@ -1632,13 +2084,13 @@ export type Ver7Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: ClientesDaDonaControllerResposta;
 };
 
 export type Ver7Response = Ver7Responses[keyof Ver7Responses];
 
 export type Editar7Data = {
-    body: Pedido;
+    body: ClientesDaDonaControllerPedido;
     path: {
         id: string;
     };
@@ -1650,7 +2102,7 @@ export type Editar7Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: ClientesDaDonaControllerResposta;
 };
 
 export type Editar7Response = Editar7Responses[keyof Editar7Responses];
@@ -1668,7 +2120,7 @@ export type Inativar5Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: ClientesDaDonaControllerResposta;
 };
 
 export type Inativar5Response = Inativar5Responses[keyof Inativar5Responses];
@@ -1686,7 +2138,7 @@ export type Reativar6Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: ClientesDaDonaControllerResposta;
 };
 
 export type Reativar6Response = Reativar6Responses[keyof Reativar6Responses];
@@ -1710,7 +2162,7 @@ export type Listar11Responses = {
     /**
      * OK
      */
-    200: PaginaRespostaDoResumo;
+    200: PaginaComprasDaDonaControllerRespostaDoResumo;
 };
 
 export type Listar11Response = Listar11Responses[keyof Listar11Responses];
@@ -1853,7 +2305,7 @@ export type AjustarResponses = {
     /**
      * OK
      */
-    200: RespostaDoMovimento;
+    200: EstoqueDaDonaControllerRespostaDoMovimento;
 };
 
 export type AjustarResponse = AjustarResponses[keyof AjustarResponses];
@@ -1894,7 +2346,7 @@ export type Listar10Responses = {
     /**
      * OK
      */
-    200: PaginaRespostaDaLinha;
+    200: PaginaEstoqueDaDonaControllerRespostaDaLinha;
 };
 
 export type Listar10Response = Listar10Responses[keyof Listar10Responses];
@@ -1910,13 +2362,13 @@ export type LancarResponses = {
     /**
      * OK
      */
-    200: RespostaDoMovimento;
+    200: EstoqueDaDonaControllerRespostaDoMovimento;
 };
 
 export type LancarResponse = LancarResponses[keyof LancarResponses];
 
 export type DesfazerData = {
-    body: PedidoDeEstorno;
+    body: EstoqueDaDonaControllerPedidoDeEstorno;
     path: {
         id: string;
     };
@@ -1928,7 +2380,7 @@ export type DesfazerResponses = {
     /**
      * OK
      */
-    200: RespostaDoMovimento;
+    200: EstoqueDaDonaControllerRespostaDoMovimento;
 };
 
 export type DesfazerResponse = DesfazerResponses[keyof DesfazerResponses];
@@ -1970,13 +2422,13 @@ export type Listar9Responses = {
     /**
      * OK
      */
-    200: PaginaResposta;
+    200: PaginaFornecedoresDaDonaControllerResposta;
 };
 
 export type Listar9Response = Listar9Responses[keyof Listar9Responses];
 
 export type Criar6Data = {
-    body: Pedido;
+    body: FornecedoresDaDonaControllerPedido;
     path?: never;
     query?: never;
     url: '/api/dona/fornecedores';
@@ -1986,7 +2438,7 @@ export type Criar6Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: FornecedoresDaDonaControllerResposta;
 };
 
 export type Criar6Response = Criar6Responses[keyof Criar6Responses];
@@ -2020,13 +2472,13 @@ export type Ver6Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: FornecedoresDaDonaControllerResposta;
 };
 
 export type Ver6Response = Ver6Responses[keyof Ver6Responses];
 
 export type Editar6Data = {
-    body: Pedido;
+    body: FornecedoresDaDonaControllerPedido;
     path: {
         id: string;
     };
@@ -2038,7 +2490,7 @@ export type Editar6Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: FornecedoresDaDonaControllerResposta;
 };
 
 export type Editar6Response = Editar6Responses[keyof Editar6Responses];
@@ -2056,7 +2508,7 @@ export type Inativar4Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: FornecedoresDaDonaControllerResposta;
 };
 
 export type Inativar4Response = Inativar4Responses[keyof Inativar4Responses];
@@ -2074,7 +2526,7 @@ export type Reativar5Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: FornecedoresDaDonaControllerResposta;
 };
 
 export type Reativar5Response = Reativar5Responses[keyof Reativar5Responses];
@@ -2110,7 +2562,7 @@ export type Listar8Responses = {
     /**
      * OK
      */
-    200: PaginaRespostaDaLinha;
+    200: PaginaInventariosDaDonaControllerRespostaDaLinha;
 };
 
 export type Listar8Response = Listar8Responses[keyof Listar8Responses];
@@ -2221,7 +2673,7 @@ export type ItensResponses = {
     /**
      * OK
      */
-    200: PaginaRespostaDoItem;
+    200: PaginaInventariosDaDonaControllerRespostaDoItem;
 };
 
 export type ItensResponse = ItensResponses[keyof ItensResponses];
@@ -2260,13 +2712,13 @@ export type Listar7Responses = {
     /**
      * OK
      */
-    200: PaginaResposta;
+    200: PaginaPracasDaDonaControllerResposta;
 };
 
 export type Listar7Response = Listar7Responses[keyof Listar7Responses];
 
 export type Criar5Data = {
-    body: Pedido;
+    body: PracasDaDonaControllerPedido;
     path?: never;
     query?: never;
     url: '/api/dona/pracas';
@@ -2276,7 +2728,7 @@ export type Criar5Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: PracasDaDonaControllerResposta;
 };
 
 export type Criar5Response = Criar5Responses[keyof Criar5Responses];
@@ -2310,13 +2762,13 @@ export type Ver5Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: PracasDaDonaControllerResposta;
 };
 
 export type Ver5Response = Ver5Responses[keyof Ver5Responses];
 
 export type Editar5Data = {
-    body: Pedido;
+    body: PracasDaDonaControllerPedido;
     path: {
         id: string;
     };
@@ -2328,7 +2780,7 @@ export type Editar5Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: PracasDaDonaControllerResposta;
 };
 
 export type Editar5Response = Editar5Responses[keyof Editar5Responses];
@@ -2346,7 +2798,7 @@ export type Inativar3Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: PracasDaDonaControllerResposta;
 };
 
 export type Inativar3Response = Inativar3Responses[keyof Inativar3Responses];
@@ -2364,7 +2816,7 @@ export type Reativar4Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: PracasDaDonaControllerResposta;
 };
 
 export type Reativar4Response = Reativar4Responses[keyof Reativar4Responses];
@@ -2387,7 +2839,7 @@ export type Listar5Responses = {
     /**
      * OK
      */
-    200: PaginaResposta;
+    200: PaginaProdutosDaDonaControllerResposta;
 };
 
 export type Listar5Response = Listar5Responses[keyof Listar5Responses];
@@ -2403,7 +2855,7 @@ export type Criar4Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: ProdutosDaDonaControllerResposta;
 };
 
 export type Criar4Response = Criar4Responses[keyof Criar4Responses];
@@ -2439,7 +2891,7 @@ export type ConfirmarResponses = {
     /**
      * OK
      */
-    200: Relatorio;
+    200: ImportacaoDeFotosRelatorio;
 };
 
 export type ConfirmarResponse = ConfirmarResponses[keyof ConfirmarResponses];
@@ -2495,7 +2947,7 @@ export type PorCodigoResponses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: ProdutosDaDonaControllerResposta;
 };
 
 export type PorCodigoResponse = PorCodigoResponses[keyof PorCodigoResponses];
@@ -2518,7 +2970,7 @@ export type SemFotoResponses = {
     /**
      * OK
      */
-    200: PaginaItem;
+    200: PaginaRelatorioDeProdutosSemFotoItem;
 };
 
 export type SemFotoResponse = SemFotoResponses[keyof SemFotoResponses];
@@ -2552,7 +3004,7 @@ export type Ver4Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: ProdutosDaDonaControllerResposta;
 };
 
 export type Ver4Response = Ver4Responses[keyof Ver4Responses];
@@ -2570,7 +3022,7 @@ export type Editar4Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: ProdutosDaDonaControllerResposta;
 };
 
 export type Editar4Response = Editar4Responses[keyof Editar4Responses];
@@ -2588,7 +3040,7 @@ export type AlterarCodigosResponses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: ProdutosDaDonaControllerResposta;
 };
 
 export type AlterarCodigosResponse = AlterarCodigosResponses[keyof AlterarCodigosResponses];
@@ -2606,7 +3058,7 @@ export type MudarEstoqueMinimoResponses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: ProdutosDaDonaControllerResposta;
 };
 
 export type MudarEstoqueMinimoResponse = MudarEstoqueMinimoResponses[keyof MudarEstoqueMinimoResponses];
@@ -2716,7 +3168,7 @@ export type Inativar2Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: ProdutosDaDonaControllerResposta;
 };
 
 export type Inativar2Response = Inativar2Responses[keyof Inativar2Responses];
@@ -2734,7 +3186,7 @@ export type Reativar3Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: ProdutosDaDonaControllerResposta;
 };
 
 export type Reativar3Response = Reativar3Responses[keyof Reativar3Responses];
@@ -2832,7 +3284,7 @@ export type CodigosEmConflitoResponses = {
     /**
      * OK
      */
-    200: RelatorioDeCadastroLinha;
+    200: RelatorioDeCadastroCodigosEmConflitoLinha;
 };
 
 export type CodigosEmConflitoResponse = CodigosEmConflitoResponses[keyof CodigosEmConflitoResponses];
@@ -2965,7 +3417,7 @@ export type VendedoresResponses = {
     /**
      * OK
      */
-    200: RelatorioDeCadastroLinhaDeVendedor;
+    200: RelatorioDeCadastroConsultasDeCadastroLinhaDeVendedor;
 };
 
 export type VendedoresResponse = VendedoresResponses[keyof VendedoresResponses];
@@ -3289,7 +3741,7 @@ export type RelatorioDeMercadoriaPorVendedorResponses = {
     /**
      * OK
      */
-    200: RelatorioDeCadastroLinhaDeVendedor;
+    200: RelatorioDeCadastroConsultasDeMaletaLinhaDeVendedor;
 };
 
 export type RelatorioDeMercadoriaPorVendedorResponse = RelatorioDeMercadoriaPorVendedorResponses[keyof RelatorioDeMercadoriaPorVendedorResponses];
@@ -3401,7 +3853,7 @@ export type ListarRemessasResponses = {
     /**
      * OK
      */
-    200: PaginaRespostaDoResumo;
+    200: PaginaRemessasDaDonaControllerRespostaDoResumo;
 };
 
 export type ListarRemessasResponse = ListarRemessasResponses[keyof ListarRemessasResponses];
@@ -3533,7 +3985,7 @@ export type DevolverPecasDaMaletaResponses = {
 export type DevolverPecasDaMaletaResponse = DevolverPecasDaMaletaResponses[keyof DevolverPecasDaMaletaResponses];
 
 export type DesfazerDevolucaoDaMaletaData = {
-    body: PedidoDeEstorno;
+    body: MaletaDaDonaControllerPedidoDeEstorno;
     path: {
         id: string;
         devolucaoId: string;
@@ -3679,13 +4131,13 @@ export type Listar4Responses = {
     /**
      * OK
      */
-    200: PaginaResposta;
+    200: PaginaRestricoesDaDonaControllerResposta;
 };
 
 export type Listar4Response = Listar4Responses[keyof Listar4Responses];
 
 export type Criar3Data = {
-    body: Pedido;
+    body: RestricoesDaDonaControllerPedido;
     path?: never;
     query?: never;
     url: '/api/dona/restricoes';
@@ -3695,7 +4147,7 @@ export type Criar3Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: RestricoesDaDonaControllerResposta;
 };
 
 export type Criar3Response = Criar3Responses[keyof Criar3Responses];
@@ -3729,13 +4181,13 @@ export type Ver3Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: RestricoesDaDonaControllerResposta;
 };
 
 export type Ver3Response = Ver3Responses[keyof Ver3Responses];
 
 export type Editar3Data = {
-    body: Pedido;
+    body: RestricoesDaDonaControllerPedido;
     path: {
         id: string;
     };
@@ -3747,7 +4199,7 @@ export type Editar3Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: RestricoesDaDonaControllerResposta;
 };
 
 export type Editar3Response = Editar3Responses[keyof Editar3Responses];
@@ -3765,7 +4217,7 @@ export type Inativar1Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: RestricoesDaDonaControllerResposta;
 };
 
 export type Inativar1Response = Inativar1Responses[keyof Inativar1Responses];
@@ -3783,7 +4235,7 @@ export type Reativar2Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: RestricoesDaDonaControllerResposta;
 };
 
 export type Reativar2Response = Reativar2Responses[keyof Reativar2Responses];
@@ -3803,13 +4255,13 @@ export type Listar3Responses = {
     /**
      * OK
      */
-    200: PaginaResposta;
+    200: PaginaSemanasDaDonaControllerResposta;
 };
 
 export type Listar3Response = Listar3Responses[keyof Listar3Responses];
 
 export type Criar2Data = {
-    body: Pedido;
+    body: SemanasDaDonaControllerPedido;
     path?: never;
     query?: never;
     url: '/api/dona/semanas';
@@ -3819,7 +4271,7 @@ export type Criar2Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: SemanasDaDonaControllerResposta;
 };
 
 export type Criar2Response = Criar2Responses[keyof Criar2Responses];
@@ -3853,13 +4305,13 @@ export type Ver2Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: SemanasDaDonaControllerResposta;
 };
 
 export type Ver2Response = Ver2Responses[keyof Ver2Responses];
 
 export type Editar2Data = {
-    body: Pedido;
+    body: SemanasDaDonaControllerPedido;
     path: {
         id: string;
     };
@@ -3871,7 +4323,7 @@ export type Editar2Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: SemanasDaDonaControllerResposta;
 };
 
 export type Editar2Response = Editar2Responses[keyof Editar2Responses];
@@ -3971,7 +4423,7 @@ export type Listar2Responses = {
     /**
      * OK
      */
-    200: PaginaResposta;
+    200: PaginaUsuariosDaDonaControllerResposta;
 };
 
 export type Listar2Response = Listar2Responses[keyof Listar2Responses];
@@ -4005,7 +4457,7 @@ export type Ver1Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: UsuariosDaDonaControllerResposta;
 };
 
 export type Ver1Response = Ver1Responses[keyof Ver1Responses];
@@ -4023,7 +4475,7 @@ export type Editar1Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: UsuariosDaDonaControllerResposta;
 };
 
 export type Editar1Response = Editar1Responses[keyof Editar1Responses];
@@ -4041,7 +4493,7 @@ export type DesativarResponses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: UsuariosDaDonaControllerResposta;
 };
 
 export type DesativarResponse = DesativarResponses[keyof DesativarResponses];
@@ -4059,7 +4511,7 @@ export type Reativar1Responses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: UsuariosDaDonaControllerResposta;
 };
 
 export type Reativar1Response = Reativar1Responses[keyof Reativar1Responses];
@@ -4101,7 +4553,7 @@ export type VerVendaResponses = {
 export type VerVendaResponse = VerVendaResponses[keyof VerVendaResponses];
 
 export type EstornarVendaData = {
-    body: PedidoDeEstorno;
+    body: VendasDoVendedorControllerPedidoDeEstorno;
     path: {
         id: string;
     };
@@ -4134,13 +4586,13 @@ export type ListarResponses = {
     /**
      * OK
      */
-    200: PaginaResposta;
+    200: PaginaVendedoresDaDonaControllerResposta;
 };
 
 export type ListarResponse = ListarResponses[keyof ListarResponses];
 
 export type CriarData = {
-    body: Pedido;
+    body: VendedoresDaDonaControllerPedido;
     path?: never;
     query?: never;
     url: '/api/dona/vendedores';
@@ -4150,7 +4602,7 @@ export type CriarResponses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: VendedoresDaDonaControllerResposta;
 };
 
 export type CriarResponse = CriarResponses[keyof CriarResponses];
@@ -4184,13 +4636,13 @@ export type VerResponses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: VendedoresDaDonaControllerResposta;
 };
 
 export type VerResponse = VerResponses[keyof VerResponses];
 
 export type EditarData = {
-    body: Pedido;
+    body: VendedoresDaDonaControllerPedido;
     path: {
         id: string;
     };
@@ -4202,7 +4654,7 @@ export type EditarResponses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: VendedoresDaDonaControllerResposta;
 };
 
 export type EditarResponse = EditarResponses[keyof EditarResponses];
@@ -4220,13 +4672,13 @@ export type VerConjugeResponses = {
     /**
      * OK
      */
-    200: Dados;
+    200: ConjugeDoVendedorDados;
 };
 
 export type VerConjugeResponse = VerConjugeResponses[keyof VerConjugeResponses];
 
 export type GravarConjugeData = {
-    body: Dados;
+    body: ConjugeDoVendedorDados;
     path: {
         id: string;
     };
@@ -4238,7 +4690,7 @@ export type GravarConjugeResponses = {
     /**
      * OK
      */
-    200: Dados;
+    200: ConjugeDoVendedorDados;
 };
 
 export type GravarConjugeResponse = GravarConjugeResponses[keyof GravarConjugeResponses];
@@ -4256,13 +4708,13 @@ export type VerContatoResponses = {
     /**
      * OK
      */
-    200: Dados;
+    200: ContatoDoVendedorDados;
 };
 
 export type VerContatoResponse = VerContatoResponses[keyof VerContatoResponses];
 
 export type GravarContatoData = {
-    body: Dados;
+    body: ContatoDoVendedorDados;
     path: {
         id: string;
     };
@@ -4274,7 +4726,7 @@ export type GravarContatoResponses = {
     /**
      * OK
      */
-    200: Dados;
+    200: ContatoDoVendedorDados;
 };
 
 export type GravarContatoResponse = GravarContatoResponses[keyof GravarContatoResponses];
@@ -4292,7 +4744,7 @@ export type Listar1Responses = {
     /**
      * OK
      */
-    200: Array<Resposta>;
+    200: Array<DocumentoDoVendedorResposta>;
 };
 
 export type Listar1Response = Listar1Responses[keyof Listar1Responses];
@@ -4314,7 +4766,7 @@ export type EnviarResponses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: DocumentoDoVendedorResposta;
 };
 
 export type EnviarResponse = EnviarResponses[keyof EnviarResponses];
@@ -4368,13 +4820,13 @@ export type VerEnderecoResponses = {
     /**
      * OK
      */
-    200: Dados;
+    200: EnderecoDoVendedorDados;
 };
 
 export type VerEnderecoResponse = VerEnderecoResponses[keyof VerEnderecoResponses];
 
 export type GravarEnderecoData = {
-    body: Dados;
+    body: EnderecoDoVendedorDados;
     path: {
         id: string;
     };
@@ -4386,7 +4838,7 @@ export type GravarEnderecoResponses = {
     /**
      * OK
      */
-    200: Dados;
+    200: EnderecoDoVendedorDados;
 };
 
 export type GravarEnderecoResponse = GravarEnderecoResponses[keyof GravarEnderecoResponses];
@@ -4404,7 +4856,7 @@ export type InativarResponses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: VendedoresDaDonaControllerResposta;
 };
 
 export type InativarResponse = InativarResponses[keyof InativarResponses];
@@ -4422,13 +4874,13 @@ export type VerMeiResponses = {
     /**
      * OK
      */
-    200: Dados;
+    200: MeiDoVendedorDados;
 };
 
 export type VerMeiResponse = VerMeiResponses[keyof VerMeiResponses];
 
 export type GravarMeiData = {
-    body: Dados;
+    body: MeiDoVendedorDados;
     path: {
         id: string;
     };
@@ -4440,7 +4892,7 @@ export type GravarMeiResponses = {
     /**
      * OK
      */
-    200: Dados;
+    200: MeiDoVendedorDados;
 };
 
 export type GravarMeiResponse = GravarMeiResponses[keyof GravarMeiResponses];
@@ -4458,13 +4910,13 @@ export type VerObservacoesResponses = {
     /**
      * OK
      */
-    200: Dados;
+    200: ObservacaoDoVendedorDados;
 };
 
 export type VerObservacoesResponse = VerObservacoesResponses[keyof VerObservacoesResponses];
 
 export type GravarObservacoesData = {
-    body: Dados;
+    body: ObservacaoDoVendedorDados;
     path: {
         id: string;
     };
@@ -4476,7 +4928,7 @@ export type GravarObservacoesResponses = {
     /**
      * OK
      */
-    200: Dados;
+    200: ObservacaoDoVendedorDados;
 };
 
 export type GravarObservacoesResponse = GravarObservacoesResponses[keyof GravarObservacoesResponses];
@@ -4494,7 +4946,7 @@ export type ReativarResponses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: VendedoresDaDonaControllerResposta;
 };
 
 export type ReativarResponse = ReativarResponses[keyof ReativarResponses];
@@ -4512,13 +4964,13 @@ export type ListarReferenciasResponses = {
     /**
      * OK
      */
-    200: Array<Resposta>;
+    200: Array<ReferenciaDoVendedorResposta>;
 };
 
 export type ListarReferenciasResponse = ListarReferenciasResponses[keyof ListarReferenciasResponses];
 
 export type CriarReferenciaData = {
-    body: Pedido;
+    body: ReferenciaDoVendedorPedido;
     path: {
         id: string;
     };
@@ -4530,7 +4982,7 @@ export type CriarReferenciaResponses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: ReferenciaDoVendedorResposta;
 };
 
 export type CriarReferenciaResponse = CriarReferenciaResponses[keyof CriarReferenciaResponses];
@@ -4553,7 +5005,7 @@ export type ExcluirReferenciaResponses = {
 };
 
 export type EditarReferenciaData = {
-    body: Pedido;
+    body: ReferenciaDoVendedorPedido;
     path: {
         id: string;
         referenciaId: string;
@@ -4566,7 +5018,7 @@ export type EditarReferenciaResponses = {
     /**
      * OK
      */
-    200: Resposta;
+    200: ReferenciaDoVendedorResposta;
 };
 
 export type EditarReferenciaResponse = EditarReferenciaResponses[keyof EditarReferenciaResponses];
@@ -4584,13 +5036,13 @@ export type VerTrabalhoResponses = {
     /**
      * OK
      */
-    200: Dados;
+    200: TrabalhoDoVendedorDados;
 };
 
 export type VerTrabalhoResponse = VerTrabalhoResponses[keyof VerTrabalhoResponses];
 
 export type GravarTrabalhoData = {
-    body: Dados;
+    body: TrabalhoDoVendedorDados;
     path: {
         id: string;
     };
@@ -4602,7 +5054,7 @@ export type GravarTrabalhoResponses = {
     /**
      * OK
      */
-    200: Dados;
+    200: TrabalhoDoVendedorDados;
 };
 
 export type GravarTrabalhoResponse = GravarTrabalhoResponses[keyof GravarTrabalhoResponses];
