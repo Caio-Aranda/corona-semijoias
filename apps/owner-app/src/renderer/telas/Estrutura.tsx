@@ -1,5 +1,5 @@
 import { Botao, CabecalhoDeMarca, JanelaDeConfirmacao, MenuLateral } from '@corona/ui';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { PonteDoCorona } from '../../shared/ponte';
 import { RodapeDaCotacao } from '../nucleo/cotacao';
 import { temAlteracoesNaoSalvas } from '../nucleo/guarda-de-saida';
@@ -32,10 +32,14 @@ function Conteudo({
   rota,
   ponte,
   nome,
+  maletaParaAbrir,
+  aoAbrirMaleta,
 }: {
   rota: Rota;
   ponte: PonteDoCorona;
   nome: string | null;
+  maletaParaAbrir: string | null;
+  aoAbrirMaleta: (id: string) => void;
 }) {
   switch (rota) {
     case 'inicio':
@@ -69,7 +73,7 @@ function Conteudo({
         />
       );
     case 'maletas/lista':
-      return <TelaMaletas ponte={ponte} />;
+      return <TelaMaletas ponte={ponte} abrirId={maletaParaAbrir} />;
     case 'maletas/montar':
       return <TelaMontarMaleta ponte={ponte} />;
     case 'pessoas/vendedores':
@@ -95,7 +99,14 @@ function Conteudo({
           (NOMES_DOS_RELATORIOS as readonly string[]).includes(qual) &&
           !RELATORIOS[qual].soAbreDeUmaLinha
         ) {
-          return <TelaDeRelatorio ponte={ponte} relatorio={qual} usuario={nome} />;
+          return (
+            <TelaDeRelatorio
+              ponte={ponte}
+              relatorio={qual}
+              usuario={nome}
+              aoAbrirMaleta={aoAbrirMaleta}
+            />
+          );
         }
       }
       return <TelaEmBreve nome={rotuloDaRota(rota)} />;
@@ -107,6 +118,11 @@ export function Estrutura({ ponte, nome, aoSair }: EstruturaProps) {
   const [rota, irPara] = useRota();
   // Menu escolhido com alterações por salvar: pergunta antes de sair da tela.
   const [destino, setDestino] = useState<Rota | null>(null);
+  // Maleta pedida por um relatório: a tela Maletas abre a ficha dela; ao sair da tela, esquece.
+  const [maletaParaAbrir, setMaletaParaAbrir] = useState<string | null>(null);
+  useEffect(() => {
+    if (rota !== 'maletas/lista') setMaletaParaAbrir(null);
+  }, [rota]);
   return (
     <div className="gestao-pagina">
       <CabecalhoDeMarca
@@ -129,7 +145,17 @@ export function Estrutura({ ponte, nome, aoSair }: EstruturaProps) {
         />
         <main className="gestao-conteudo">
           {/* A chave faz a tela começar do zero ao trocar de item: senhas e formulários não vazam. */}
-          <Conteudo key={rota} rota={rota} ponte={ponte} nome={nome} />
+          <Conteudo
+            key={rota}
+            rota={rota}
+            ponte={ponte}
+            nome={nome}
+            maletaParaAbrir={maletaParaAbrir}
+            aoAbrirMaleta={(id) => {
+              setMaletaParaAbrir(id);
+              irPara('maletas/lista');
+            }}
+          />
           <RodapeDaCotacao />
         </main>
       </div>

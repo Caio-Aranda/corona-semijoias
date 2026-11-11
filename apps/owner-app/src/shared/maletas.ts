@@ -15,6 +15,7 @@ export const OPERACOES_DE_MALETAS = [
   'maletas.devolver',
   'maletas.desfazerDevolucao',
   'maletas.cancelar',
+  'maletas.nota',
 ] as const;
 export type OperacaoDeMaletas = (typeof OPERACOES_DE_MALETAS)[number];
 

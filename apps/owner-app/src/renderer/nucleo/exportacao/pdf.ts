@@ -13,7 +13,7 @@ const ALTURA_DA_LINHA = 11;
 const LARGURA_DO_CARACTERE = 0.55; // em corpos de fonte; cobre números e maiúsculas sem estourar a coluna
 
 /** Letras do texto em Windows-1252; o que não existe vira "?". Parênteses e barras são protegidos. */
-function paraPdf(texto: string): string {
+export function paraPdf(texto: string): string {
   let saida = '';
   for (const c of texto) {
     const codigo = c.codePointAt(0)!;
@@ -122,18 +122,23 @@ export function gerarPdf(grade: Grade): Uint8Array {
     return o.join('\n');
   });
 
+  return montarArquivoPdf(conteudos, LARGURA, ALTURA);
+}
+
+/** Monta o arquivo PDF a partir do conteúdo de cada página (Helvetica e Helvetica-Bold como F1 e F2). */
+export function montarArquivoPdf(conteudos: string[], largura: number, altura: number): Uint8Array {
   // Objetos: 1 catálogo, 2 páginas, 3 e 4 as fontes; depois, para cada página, a página e o conteúdo.
   const objetos: string[] = [];
-  const idsDasPaginas = paginas.map((_, i) => 5 + i * 2);
+  const idsDasPaginas = conteudos.map((_, i) => 5 + i * 2);
   objetos[1] = '<< /Type /Catalog /Pages 2 0 R >>';
-  objetos[2] = `<< /Type /Pages /Kids [${idsDasPaginas.map((id) => `${id} 0 R`).join(' ')}] /Count ${paginas.length} >>`;
+  objetos[2] = `<< /Type /Pages /Kids [${idsDasPaginas.map((id) => `${id} 0 R`).join(' ')}] /Count ${conteudos.length} >>`;
   objetos[3] = '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>';
   objetos[4] =
     '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>';
   conteudos.forEach((conteudo, i) => {
     const id = 5 + i * 2;
     objetos[id] =
-      `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${LARGURA} ${ALTURA}] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents ${id + 1} 0 R >>`;
+      `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${largura} ${altura}] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents ${id + 1} 0 R >>`;
     objetos[id + 1] = `<< /Length ${conteudo.length} >>\nstream\n${conteudo}\nendstream`;
   });
 

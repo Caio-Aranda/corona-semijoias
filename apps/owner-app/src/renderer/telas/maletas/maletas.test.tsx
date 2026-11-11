@@ -367,8 +367,8 @@ describe('Enviar a maleta', () => {
     expect(screen.queryByLabelText('Código da peça ou nome')).toBeNull();
     expect(screen.queryByLabelText('Quantidade de Anel Solitário')).toBeNull();
     expect(screen.getByText('Enviada em')).toBeTruthy();
-    // O botão da nota fica escondido até a tarefa 3.7 ligar a impressão.
-    expect(screen.queryByRole('button', { name: 'Imprimir nota' })).toBeNull();
+    // Maleta enviada já tem o botão da nota (tarefa 3.7).
+    expect(screen.getByRole('button', { name: 'Imprimir nota: Joana Vendedora' })).toBeTruthy();
   });
 
   it('maleta vazia não vai para a confirmação', async () => {

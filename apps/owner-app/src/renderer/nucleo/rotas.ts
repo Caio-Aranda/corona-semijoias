@@ -9,6 +9,7 @@ import {
   ORDEM_DOS_RELATORIOS_DE_COMPRAS,
   ORDEM_DOS_RELATORIOS_DE_ESTOQUE,
 } from './relatorios-estoque';
+import { ORDEM_DOS_RELATORIOS_DE_MALETA } from './relatorios-maleta';
 
 /** As telas do menu. A chave aparece na barra de endereço (#/pessoas/usuarios), nunca na tela. */
 export const ROTAS = [
@@ -49,6 +50,11 @@ export const ROTAS = [
   'relatorios/compras-por-compra',
   'relatorios/compras-por-fornecedor',
   'relatorios/compras-custos',
+  'relatorios/maleta-remessas',
+  'relatorios/maleta-saldo',
+  'relatorios/maleta-mercadoria',
+  'relatorios/maleta-em-aberto',
+  'relatorios/maleta-reposicoes',
 ] as const;
 export type Rota = (typeof ROTAS)[number];
 
@@ -108,6 +114,13 @@ export const MENU = [
   {
     titulo: TEXTOS_RELATORIOS.grupoDasCompras,
     itens: ORDEM_DOS_RELATORIOS_DE_COMPRAS.map((nome) => ({
+      chave: `relatorios/${nome}`,
+      rotulo: RELATORIOS[nome].titulo,
+    })),
+  },
+  {
+    titulo: TEXTOS_DE_MALETAS.relatorios.grupoDoMenu,
+    itens: ORDEM_DOS_RELATORIOS_DE_MALETA.map((nome) => ({
       chave: `relatorios/${nome}`,
       rotulo: RELATORIOS[nome].titulo,
     })),

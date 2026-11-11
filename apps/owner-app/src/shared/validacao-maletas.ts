@@ -24,7 +24,7 @@ export type ParametrosDeMaleta =
         tipo: TipoDeMaleta;
       };
     }
-  | { operacao: 'maletas.ver' | 'maletas.enviar'; id: string }
+  | { operacao: 'maletas.ver' | 'maletas.enviar' | 'maletas.nota'; id: string }
   | {
       operacao: 'maletas.listar';
       lista: {
@@ -88,6 +88,7 @@ export function conferirMaleta(
     }
     case 'maletas.ver':
     case 'maletas.saldo':
+    case 'maletas.nota':
     case 'maletas.enviar':
       return soCom('id') && idValido(p.id) ? { operacao, id: p.id } : null;
     case 'maletas.emAberto':

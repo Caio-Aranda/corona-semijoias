@@ -20,7 +20,13 @@ import {
 } from '../../nucleo/exportacao/grade';
 import { gerarPdf } from '../../nucleo/exportacao/pdf';
 import { gerarXlsx } from '../../nucleo/exportacao/xlsx';
-import { dataParaTela, formatarDolar, formatarGuarani, tresMoedas } from '../../nucleo/moedas';
+import {
+  centavosDeTexto,
+  dataParaTela,
+  formatarDolar,
+  formatarGuarani,
+  tresMoedas,
+} from '../../nucleo/moedas';
 import {
   RELATORIOS,
   lerRelatorio,
@@ -33,6 +39,9 @@ import {
   type TotalLido,
 } from '../../nucleo/relatorios';
 import { TEXTOS_RELATORIOS as T } from '../../textos-relatorios';
+import { TEXTOS_DE_MALETAS } from '../../textos-maletas';
+
+const MALETAS = TEXTOS_DE_MALETAS.relatorios;
 
 const TAMANHO = 20;
 const TAMANHO_DA_BUSCA_COMPLETA = 100;
@@ -48,6 +57,7 @@ interface Filtros {
   vendedorId: string;
   restricaoId: string;
   usuarioId: string;
+  semanaId: string;
   de: string;
   ate: string;
   mes: string;
@@ -64,6 +74,7 @@ const SEM_FILTROS: Filtros = {
   vendedorId: '',
   restricaoId: '',
   usuarioId: '',
+  semanaId: '',
   de: '',
   ate: '',
   mes: '',
@@ -103,6 +114,7 @@ function consultaDe(
   if (def.filtros.includes('praca') && f.pracaId) c.pracaId = f.pracaId;
   if (def.filtros.includes('vendedor') && f.vendedorId) c.vendedorId = f.vendedorId;
   if (def.filtros.includes('restricao') && f.restricaoId) c.restricaoId = f.restricaoId;
+  if (def.filtros.includes('semana') && f.semanaId) c.semanaId = f.semanaId;
   if (def.filtros.includes('periodo')) {
     if (f.de) c.de = f.de;
     if (f.ate) c.ate = f.ate;
@@ -115,11 +127,16 @@ function consultaDe(
     if (e.tipo === 'valor' && !VALOR_EM_REAIS.test(bruto)) continue;
     if (e.tipo === 'inteiro') {
       // Só número inteiro; o que está pela metade ou fora de 1 a 3650 ainda não vira filtro.
+      if (e.chave === 'diasDeAtraso') {
+        // Prazo da maleta: 0 a 365 dias (o servidor usa 7 quando vem vazio).
+        if (/^\d{1,3}$/.test(bruto) && Number(bruto) <= 365) c.diasDeAtraso = Number(bruto);
+        continue;
+      }
       if (!/^\d{1,4}$/.test(bruto) || Number(bruto) < 1 || Number(bruto) > 3650) continue;
       if (e.chave === 'dias') c.dias = Number(bruto);
       continue;
     }
-    c[e.chave as Exclude<typeof e.chave, 'dias'>] = bruto;
+    c[e.chave as Exclude<typeof e.chave, 'dias' | 'diasDeAtraso'>] = bruto;
   }
   return c;
 }
@@ -169,6 +186,9 @@ function filtrosEmPalavras(
   if (tem('restricao') && f.restricaoId) {
     x.push(`${T.filtros.restricao}: ${nomeDaOpcao(o.restricoes, f.restricaoId)}`);
   }
+  if (tem('semana') && f.semanaId) {
+    x.push(`${MALETAS.semana}: ${nomeDaOpcao(o.semanas, f.semanaId)}`);
+  }
   if (tem('periodo') && (f.de || f.ate)) {
     x.push(
       `Período: ${f.de ? dataParaTela(f.de) : 'o começo'} a ${f.ate ? dataParaTela(f.ate) : 'hoje'}`,
@@ -203,6 +223,7 @@ const OPCOES_VAZIAS: Opcoes = {
   pracas: [],
   restricoes: [],
   vendedores: [],
+  semanas: [],
 };
 
 /** Carrega as listas dos filtros (só as que o relatório usa). */
@@ -215,7 +236,7 @@ async function carregarOpcoes(
     ativo
       ? chamar(ponte, op, { pagina: 0, tamanho: 100, situacao: 'TODOS' })
       : Promise.resolve(null);
-  const [cat, forn, praca, restr, vend, usu] = await Promise.all([
+  const [cat, forn, praca, restr, vend, usu, sem] = await Promise.all([
     pedir('categorias.listar', tem('categoria') || def.nome === 'sem-foto'),
     pedir('fornecedores.listar', tem('fornecedor') || def.nome === 'sem-foto'),
     pedir('pracas.listar', tem('praca')),
@@ -224,8 +245,9 @@ async function carregarOpcoes(
     tem('usuario')
       ? chamar(ponte, 'usuarios.listar', { pagina: 0, tamanho: 100 })
       : Promise.resolve(null),
+    pedir('semanas.listar', tem('semana')),
   ]);
-  for (const r of [cat, forn, praca, restr, vend, usu]) {
+  for (const r of [cat, forn, praca, restr, vend, usu, sem]) {
     if (r && !r.ok) return r;
   }
   const dados = (r: Retorno<unknown> | null) => (r && r.ok ? r.dados : null);
@@ -240,6 +262,7 @@ async function carregarOpcoes(
         (i) => `${comoTexto(i.codigo)} - ${comoTexto(i.descricao)}`,
       ),
       vendedores: listaDe(dados(vend), (i) => comoTexto(i.nome)),
+      semanas: listaDe(dados(sem), (i) => `${MALETAS.semana} ${comoTexto(i.numero)}`),
       usuarios:
         usu && usu.ok
           ? lerPaginaDeUsuarios(usu.dados).itens.map((u) => ({ id: u.id, nome: u.nome }))
@@ -272,6 +295,25 @@ function valorNaTela(
     case 'sinal':
       return typeof valor === 'number' ? quantidadeComSinal(valor) : v;
     case 'dinheiro': {
+      if (coluna.soReal) {
+        const so = tresMoedas(v, null);
+        return so ? <ValorTresMoedas real={so.real} /> : '';
+      }
+      if (coluna.convertido) {
+        // Maletas: Dólar e Guarani da cotação do dia do envio, já calculados pelo servidor.
+        const so = tresMoedas(v, null);
+        const d = centavosDeTexto(comoTexto(linha[coluna.convertido.dolar]));
+        const g = centavosDeTexto(comoTexto(linha[coluna.convertido.guarani]));
+        return so ? (
+          <ValorTresMoedas
+            real={so.real}
+            {...(d !== null ? { dolar: formatarDolar(d) } : {})}
+            {...(g !== null ? { guarani: formatarGuarani(g / 100n) } : {})}
+          />
+        ) : (
+          ''
+        );
+      }
       const m = tresMoedas(v, cotacao.taxas);
       return m ? (
         <ValorTresMoedas
@@ -306,6 +348,8 @@ export interface TelaDeRelatorioProps {
   /** Relatório aberto a partir de uma linha: um filtro fixo e o caminho de volta. */
   fixo?: FiltroFixo;
   aoVoltar?: () => void;
+  /** Relatórios de maleta: abre a ficha da maleta da linha (na tela Maletas). */
+  aoAbrirMaleta?: (id: string) => void;
 }
 
 /**
@@ -318,6 +362,7 @@ export function TelaDeRelatorio({
   usuario,
   fixo,
   aoVoltar,
+  aoAbrirMaleta,
 }: TelaDeRelatorioProps) {
   const def = RELATORIOS[relatorio];
   const cotacao = useCotacao();
@@ -407,7 +452,9 @@ export function TelaDeRelatorio({
     return promessa;
   }
 
-  const temValor = Object.keys(def.totaisDeValor).length > 0;
+  // Nas maletas o servidor já manda os totais convertidos; não há soma local.
+  const jaConvertido = def.colunas.some((c) => c.convertido);
+  const temValor = Object.keys(def.totaisDeValor).length > 0 && !jaConvertido;
   const [linhasParaSomar, setLinhasParaSomar] = useState<{
     chave: string;
     linhas: Record<string, unknown>[];
@@ -444,13 +491,26 @@ export function TelaDeRelatorio({
         filtros: filtrosEmPalavras(def, filtros, listas, filtroFixo),
         geradoEm: dataEHoraParaTela(agora),
         geradoPor: usuario ?? 'Dona',
-        linhaDaCotacao: cotacao.taxas ? `${cotacao.linha} ${T.cotacao.deHoje}` : null,
+        linhaDaCotacao: jaConvertido
+          ? MALETAS.cotacaoDoEnvio
+          : cotacao.taxas
+            ? `${cotacao.linha} ${T.cotacao.deHoje}`
+            : null,
         dataDaCotacao: cotacao.data,
         cotacao: cotacao.taxas,
         colunas: def.colunas,
         linhas: r.dados,
         totais: totais.map((t) => ({ ...t })),
         totaisDeValor: def.totaisDeValor,
+        ...(jaConvertido
+          ? {
+              totaisConvertidos: Object.fromEntries(
+                totais
+                  .filter((t) => t.valorEmDolar !== null && t.valorEmGuarani !== null)
+                  .map((t) => [t.chave, { dolar: t.valorEmDolar!, guarani: t.valorEmGuarani! }]),
+              ),
+            }
+          : {}),
         ...(def.linhasDoTotal ? { linhasDoTotal: def.linhasDoTotal } : {}),
       };
       const grade = montarGrade(pedido);
@@ -517,7 +577,7 @@ export function TelaDeRelatorio({
     numerica: c.tipo === 'inteiro' || c.tipo === 'dinheiro' || c.tipo === 'percentual',
   }));
   const acoes = def.acoes ?? [];
-  if (acoes.length > 0)
+  if (acoes.length > 0 || def.fichaDaMaleta)
     colunasDaTabela.push({
       chave: '_abrir',
       titulo: T.estoqueECompras.acoes.coluna,
@@ -528,9 +588,18 @@ export function TelaDeRelatorio({
     const celulas: Record<string, ReactNode> = Object.fromEntries(
       def.colunas.map((c) => [c.chave, valorNaTela(c, linha[c.chave], cotacao, ponte, linha)]),
     );
-    if (acoes.length > 0) {
+    if (acoes.length > 0 || def.fichaDaMaleta) {
+      const idDaMaleta = def.fichaDaMaleta ? comoTexto(linha[def.fichaDaMaleta]) : '';
       celulas._abrir = (
         <span className="gestao-acoes-da-linha">
+          {idDaMaleta && aoAbrirMaleta ? (
+            <Botao
+              aria-label={`${MALETAS.verAMaleta}: ${comoTexto(linha.numero) || comoTexto(linha.vendedor)}`}
+              onClick={() => aoAbrirMaleta(idDaMaleta)}
+            >
+              {MALETAS.verAMaleta}
+            </Botao>
+          ) : null}
           {acoes
             .filter((a) => (a.quando ? a.quando(linha) : true))
             .map((a) => {
@@ -573,8 +642,20 @@ export function TelaDeRelatorio({
             def.linhasDoTotal?.[t.chave],
           )
         : null;
-    const dolar = soma ? formatarDolar(soma.dolarEmCentavos) : undefined;
-    const guarani = soma ? formatarGuarani(soma.guarani) : undefined;
+    const dServidor = t.valorEmDolar !== null ? centavosDeTexto(t.valorEmDolar) : null;
+    const gServidor = t.valorEmGuarani !== null ? centavosDeTexto(t.valorEmGuarani) : null;
+    const dolar =
+      dServidor !== null
+        ? formatarDolar(dServidor)
+        : soma
+          ? formatarDolar(soma.dolarEmCentavos)
+          : undefined;
+    const guarani =
+      gServidor !== null
+        ? formatarGuarani(gServidor / 100n)
+        : soma
+          ? formatarGuarani(soma.guarani)
+          : undefined;
     return (
       <>
         {t.pecas !== null ? `${T.totais.pecas(t.pecas)} · ` : null}
@@ -595,6 +676,7 @@ export function TelaDeRelatorio({
         usuario={usuario}
         fixo={aberto.fixo}
         aoVoltar={() => setAberto(null)}
+        {...(aoAbrirMaleta ? { aoAbrirMaleta } : {})}
       />
     );
   }
@@ -687,6 +769,15 @@ export function TelaDeRelatorio({
               'fornecedorId',
               listas.fornecedores,
               T.filtros.qualquerUm,
+            )
+          : null}
+        {def.filtros.includes('semana')
+          ? seletor(
+              'filtro-semana',
+              MALETAS.semana,
+              'semanaId',
+              listas.semanas,
+              MALETAS.qualquerSemana,
             )
           : null}
         {def.filtros.includes('praca')

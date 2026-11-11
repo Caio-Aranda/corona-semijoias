@@ -491,6 +491,7 @@ export function conferirParametros(
     case 'maletas.devolver':
     case 'maletas.desfazerDevolucao':
     case 'maletas.cancelar':
+    case 'maletas.nota':
       return conferirMaleta(operacao, p);
     case 'estoque.ficha':
     case 'estoque.lancar':
