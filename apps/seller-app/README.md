@@ -66,3 +66,7 @@ O pacote do vendedor não pode carregar nada da dona (o notebook pode ser perdid
 3. **`packages/shared` e `packages/ui`:** a mesma varredura roda sobre eles.
 
 Para acrescentar uma palavra proibida, é uma linha em `scripts/marcadores-proibidos.json`.
+
+## Instalador e atualização
+
+`npm run vendas:empacotar` gera o instalador do Windows e `npm run vendas:publicar` publica uma versão nova (canal `/atualizacoes/vendas/`). Copie `.env.producao.example` para `.env.producao` e preencha o endereço do servidor e as impressões digitais do certificado. Mesmo mecanismo do outro aplicativo, pelo pacote neutro `packages/conexao-segura`. Passo a passo e riscos: [docs/entrega-corona-vendas.md](../../docs/entrega-corona-vendas.md).

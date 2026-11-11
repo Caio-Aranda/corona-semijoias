@@ -44,5 +44,7 @@ test('só aceita o nome de instalador que o electron-builder gera', () => {
   assert.ok(nomeDoInstaladorValido('Corona-Gestao-Setup-1.0.1.exe'));
   assert.ok(!nomeDoInstaladorValido('../Corona-Gestao-Setup-1.0.1.exe'));
   assert.ok(!nomeDoInstaladorValido('qualquer.exe'));
+  assert.ok(nomeDoInstaladorValido('Corona-Vendas-Setup-1.0.1.exe', 'Corona-Vendas'));
+  assert.ok(!nomeDoInstaladorValido('Corona-Vendas-Setup-1.0.1.exe'));
   assert.ok(!nomeDoInstaladorValido('Corona-Gestao-Setup-1.0.1.exe; rm -rf /'));
 });

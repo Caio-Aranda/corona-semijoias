@@ -4,6 +4,10 @@
  * Mensagens de erro da API nunca são escritas aqui: a tela mostra o que o servidor devolveu.
  */
 export const TEXTOS = {
+  /** Atualização automática (Fase 9): a versão nova já foi baixada e entra quando a pessoa fecha o programa. */
+  atualizacao: {
+    pronta: 'Há uma versão nova. Ela será instalada quando você fechar o programa.',
+  },
   semInternet: {
     titulo: 'Sem internet.',
     texto: 'Para entrar no Corona Vendas é preciso internet. Conecte-se e tente de novo.',

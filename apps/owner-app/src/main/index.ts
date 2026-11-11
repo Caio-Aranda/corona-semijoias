@@ -11,10 +11,13 @@ import {
   impressoesDoServidor,
   versaoDoApp,
 } from './configuracao';
-import { instalarCertificadoFixado } from './conexao-fixada';
 import { GuardaDeTokens } from './guarda-de-tokens';
 import { registrarAtualizacao, registrarPonte } from './ipc';
-import { PARTICAO_DO_ATUALIZADOR, ServicoDeAtualizacao } from './atualizacao';
+import {
+  instalarCertificadoFixado,
+  PARTICAO_DO_ATUALIZADOR,
+  ServicoDeAtualizacao,
+} from '@corona/conexao-segura';
 import { enderecoDoApp } from './seguranca';
 import { ServicoDeSessao } from './servico-de-sessao';
 import type { ArquivoDoToken, Cofre, Relogio } from './tipos';
