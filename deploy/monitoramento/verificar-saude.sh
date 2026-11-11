@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Roda a cada 5 minutos (timer). Avisa se a API não responde (2 falhas seguidas, para não avisar à toa num
-# reinício) ou se o disco passa de 85%. Repete o aviso de queda só a cada 6 horas.
+# reinício) ou se o disco passa de 80% (aviso pelo ntfy, ver avisar.sh). Repete o aviso de queda só a cada 6 horas.
 set -uo pipefail
 DIR="$(cd "$(dirname "$0")" && pwd)"
 ESTADO="${ESTADO_DA_SAUDE:-/var/lib/corona-saude}"
@@ -33,11 +33,12 @@ else
 fi
 
 USO="$(df --output=pcent / | tail -1 | tr -dc '0-9')"
-if [[ "${USO:-0}" -ge 85 ]]; then
+LIMITE_DO_DISCO="${LIMITE_DO_DISCO:-80}"
+if [[ "${USO:-0}" -ge "$LIMITE_DO_DISCO" ]]; then
   AGORA=$(date +%s)
   ULTIMO=$(cat "$ESTADO/aviso-disco" 2>/dev/null || echo 0)
   if [[ $((AGORA - ULTIMO)) -ge 86400 ]]; then
-    "$DIR/avisar.sh" "Corona: disco do servidor em ${USO}%" "O disco está quase cheio. Apague backups antigos ou aumente o disco antes que a API pare."
+    "$DIR/avisar.sh" "Corona: disco do servidor em ${USO}%" "O disco passou de ${LIMITE_DO_DISCO}%. Veja o que ocupa espaço (docker system df, /var/backups/corona, /srv/corona/arquivos) antes que a API pare."
     echo "$AGORA" > "$ESTADO/aviso-disco"
   fi
 fi
