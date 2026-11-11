@@ -137,9 +137,9 @@ Cada uma tem um **padrão seguro**, que vale enquanto não houver resposta.
 | R2 | Aceita o **ADR-0013**? | Nada da Fase 5 começa sem ele |
 | R3 | Segunda cópia da chave do banco local protegida pela senha do vendedor? | **Não** (vira alvo de força bruta; o caso que salva é raro) |
 | R4 | Aceitar o envio de app abaixo da versão mínima, só para as vendas guardadas? | **Sim**, só o push e só formato ainda aceito; o resto recebe 426 |
-| R5 | Por quanto tempo o servidor aceita um formato antigo de operação? | 180 dias depois de publicar o novo |
+| R5 | Por quanto tempo o servidor aceita um formato antigo de operação? | **90 dias** depois de publicar o novo (decidido em 11/11/2026; era 180) |
 | R6 | O app grava sempre pela outbox, mesmo com internet? | **Sim** (um caminho só); as rotas da Fase 4 ficam para testes e para a dona |
-| R7 | Abrir o Corona Vendas sem internet sem pedir senha? | **Sim** (o computador já pede a senha do Windows; o banco não guarda hash de senha) |
+| R7 | Abrir o Corona Vendas sem internet sem pedir senha? | **Não (decidido em 11/11/2026): o app pede a senha do vendedor ao abrir, também sem internet**, com verificador lento local (Argon2id ou scrypt), 5 erros bloqueiam até conectar, chave do banco embrulhada pela senha e DPAPI só para resgate; ver ADR-0005 e ADR-0013 |
 | R8 | As rotas ficam em `/api/vendedor/sync/...` (a §10 diz `/sync/push` e `/sync/pull`)? | Sim, pelo ADR-0003; a §10 não precisa mudar (fala do nome curto) |
 | R9 | `configuracoes` continua só do servidor e os valores vão no bloco `parametros`? | Sim (o ADR-0002 citava "parte de `configuracoes`" como sincronizável) |
 | R10 | A trava de um envio por aparelho na memória (uma instância da API) é aceitável? | Sim, como a trava por IP da tarefa 11; duas instâncias pedem ADR |
@@ -161,3 +161,5 @@ Cada uma tem um **padrão seguro**, que vale enquanto não houver resposta.
 | D10 | A foto grande só aparece com internet, e a conferência da maleta não espera as fotos baixarem. Pode ser? | Sim |
 | D11 | O vendedor vê todas as vendas antigas dele mesmo sem internet? | Sim (ficam no computador dele) |
 | D12 | Venda cuja hora foi corrigida porque o relógio do computador estava errado: a senhora quer ver uma marca? | Sim, marca "hora ajustada" na venda |
+
+**Mudanças de 11/11/2026 que entram nas tarefas da Fase 5 (ADR-0013, linhas datadas):** (1) **clientes da loja**: o pull manda a todo vendedor o diretório de clientes ativos (nome, CPF, telefone e cidade), a tarefa 5.4 não faz a saída por gatilho de `clientes`, e na 5.5 o CPF repetido é barrado (409 online, conflito para a dona offline); (2) **senha ao abrir o Corona Vendas, também sem internet**, e chave do banco embrulhada pela senha (tarefa 5.2/5.3, banco local e sessão); (3) formatos antigos da outbox por **90 dias**.

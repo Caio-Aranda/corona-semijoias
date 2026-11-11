@@ -261,7 +261,7 @@ Risco: etiquetas muito pequenas ou de baixa qualidade podem exigir leitor 2D ou 
 - `vendedores` (código, nome, datas, sexo, estrangeiro, RG/IE, RG UF, CPF/CNPJ, naturalidade, escolaridade, telefones, WhatsApp, e-mail, redes sociais, **limite\_consignacao**, **restricao\_id**, **comissao\_percentual**, **praca\_id**, ativo, cadastrado\_por) e tabelas filhas: endereço, filiação/contato, trabalho, cônjuge, MEI, referências, documentos (arquivos), observações
 - `restricoes` (código, descrição, bloqueia\_remessa, **ativo**)
 - `pracas` (nome, **ativo**), `semanas` (número, início, fim, situação ABERTA/FECHADA; **sem `ativo`**: ABERTA/FECHADA já diz se a semana está em uso)
-- `clientes` (nome, CPF opcional, **data\_nascimento opcional, não futura**, telefone, WhatsApp, endereço, observações, vendedor\_responsavel\_id, **ativo**)
+- `clientes` (nome, CPF opcional, **data\_nascimento opcional, não futura**, telefone, WhatsApp, endereço, observações, vendedor\_responsavel\_id, **ativo**). **Clientes são da LOJA (decisão de 11/11/2026):** qualquer vendedor vende a qualquer cliente ativo e recebe só o **diretório** (nome, CPF, telefone e cidade); vendas, fiado e pagamentos continuam privados de cada vendedor; o **CPF é único** entre clientes não excluídos (repetido é barrado, ADR-0011 item 13 e ADR-0013); `vendedor_responsavel_id` é "quem cadastrou/atende mais", sem restringir a venda
 - `fornecedores` (razão social, CNPJ, contato, endereço, **ativo**)
 - `categorias` (nome, **ativo**)
 - `produtos` (nome, referência, categoria, fornecedor, preco\_venda, estoque\_minimo, estoque\_atual, foto, ativo)
@@ -328,6 +328,8 @@ O app é **offline-first**: lê e grava sempre no SQLite local, e um processo em
 
 **Pull:** `GET /sync/pull?since=cursor` devolve tudo que mudou desde o último `sync_seq`. O app aplica no banco local. O pull usa um **limite seguro**, que não perde registros de transações que confirmam fora de ordem (exemplo: o app puxa até o `sync_seq` 11 e o 10 só confirma depois). A estratégia exata fica no ADR-0002.
 
+**Clientes no pull:** todo vendedor recebe o diretório de clientes ativos da loja (só nome, CPF, telefone e cidade, colunas explícitas). **CPF repetido** é barrado: online, 409 "Este cliente já está cadastrado" mostrando o existente; offline, o app confere no diretório local, e dois cadastros do mesmo CPF feitos ao mesmo tempo sem internet chegam como conflito para a revisão da dona, que junta os cadastros. **Formatos antigos da `outbox`:** o servidor os aceita por 90 dias.
+
 **Gatilhos:** abrir o app, voltar a conexão, a cada X segundos se online e depois de cada gravação.
 
 **Indicador na tela:** Online, Offline e quantidade de pendentes de envio.
@@ -372,7 +374,7 @@ O app é **offline-first**: lê e grava sempre no SQLite local, e um processo em
 - Limite de tentativas de login: **bloqueio de 15 minutos depois de 5 erros seguidos**. Os dois números são configuráveis.
 - Muitos erros num mesmo login vindos de IPs diferentes **não bloqueiam** (para ninguém trancar a conta de outra pessoa): geram só um **alerta** à dona.
 - Banco central **nunca exposto** à internet, só a API (HTTPS).
-- Banco local **criptografado**, porque notebook de vendedor pode ser perdido ou roubado.
+- Banco local **criptografado**, porque notebook de vendedor pode ser perdido ou roubado. O **Corona Vendas pede a senha do vendedor ao abrir, também sem internet** (nem todo notebook tem senha no Windows): sem internet a senha é conferida localmente com um verificador lento (Argon2id ou scrypt, nunca hash rápido), **5 erros seguidos bloqueiam até conectar**, e a chave do banco é protegida pela senha (com uma segunda proteção pelo DPAPI do Windows só para resgate quando a dona redefine a senha). Senha do Windows: recomendada, não obrigatória (ADR-0005 e ADR-0013).
 - **Bloqueio remoto**: a dona desativa o usuário ou dispositivo e o app apaga os dados locais no próximo contato com o servidor.
 - **Auditoria** de preço, estoque, desconto, cancelamento, reembolso, autorização de exceção e liberação de restrição.
 - O **preço de custo** e dados de outros vendedores nunca saem do servidor para o app do vendedor.

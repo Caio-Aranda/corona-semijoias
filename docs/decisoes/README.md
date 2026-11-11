@@ -12,15 +12,15 @@ A especificação (`docs/ESPECIFICACAO.md`) manda. Um ADR detalha a especificaç
 | [0002](ADR-0002-convencoes-de-dados-e-sync-seq.md) | Convenções de dados e `sync_seq` seguro | Aceito | 5, 6, 8, 9, 11 |
 | [0003](ADR-0003-separacao-gestao-vendas.md) | Separação entre o Corona Gestão e o Corona Vendas | Aceito | 4, 6, 13, 14, 15, 16 |
 | [0004](ADR-0004-autenticacao-e-sessao.md) | Autenticação e sessão | Aceito | 9, 10, 11, 12, 15, 16 |
-| [0005](ADR-0005-sqlcipher-no-electron.md) | SQLCipher no Electron | Proposto | 18 (spike) |
+| [0005](ADR-0005-sqlcipher-no-electron.md) | SQLCipher no Electron | Aceito | 18 (spike) |
 | [0006](ADR-0006-moedas-e-cotacao.md) | Moedas e cotação | Aceito | 19 (e telas das Fases 1, 4, 5 e 7) |
 | [0007](ADR-0007-codigos-das-etiquetas.md) | Códigos das etiquetas | Proposto | 1.5, 1.11 (Fase 1) |
 | [0008](ADR-0008-estoque-e-movimentacoes.md) | Estoque e movimentações | Aceito | 2.2 a 2.5 (Fase 2); reutilizado na Fase 3 |
 | [0009](ADR-0009-implantacao-certificado-atualizacao-e-backup.md) | Implantação, certificado fixado, atualização e backup | Aceito | 9.2 a 9.6 (Fase 9 mínima) |
 | [0010](ADR-0010-maleta-e-remessa.md) | Maleta e remessa (o 0009 é da Fase 9) | Aceito | 3.2 a 3.7 (Fase 3) |
-| [0011](ADR-0011-venda-do-vendedor-online.md) | Venda do vendedor, online e preparada para sync | Proposto | 4.2 a 4.5 (Fase 4) |
+| [0011](ADR-0011-venda-do-vendedor-online.md) | Venda do vendedor, online e preparada para sync | Aceito | 4.2 a 4.5 (Fase 4) |
 | [0012](ADR-0012-acerto-e-financeiro.md) | Acerto semanal e financeiro | Proposto | 7.2 a 7.13 (Fase 7) |
-| [0013](ADR-0013-sincronizacao-e-offline.md) | Sincronização e modo sem internet do Corona Vendas | Proposto | 5.2 a 5.15 (Fase 5) |
+| [0013](ADR-0013-sincronizacao-e-offline.md) | Sincronização e modo sem internet do Corona Vendas | Aceito | 5.2 a 5.15 (Fase 5) |
 
 A numeração das tarefas é a do "Plano da Fase 0" em `docs/PROGRESSO.md`.
 

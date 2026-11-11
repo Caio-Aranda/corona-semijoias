@@ -1,6 +1,6 @@
 # ADR-0005: SQLCipher no Electron
 
-- **Status:** Proposto
+- **Status:** Aceito (11/11/2026, pelo responsável, com a mudança da linha datada no fim: a chave do banco local passa a ser protegida também pela senha do vendedor)
 - **Data:** 09/11/2026
 - **Tarefas que implementam:** 18 (spike); a integração no Corona Vendas é da Fase 5
 
@@ -50,7 +50,7 @@ Mitigações propostas (nenhuma implementada):
 
 - Ao detectar chave ausente ou ilegível, **mover o banco para `.ilegivel`** (não apagar), mostrar uma mensagem simples ("Não conseguimos abrir os dados deste computador. Conecte à internet para baixar tudo de novo. Se havia vendas ainda não enviadas, avise a dona.") e começar um banco novo. O servidor registra o aparelho como "reinicializado" para a dona saber.
 - Enviar a `outbox` **o mais cedo possível**: o gatilho "depois de cada gravação" (§10) já faz isso quando há internet; o indicador de pendentes avisa o vendedor para conectar antes de reinstalar ou trocar de computador.
-- Avaliar, na Fase 5, uma **segunda cópia da chave** protegida pela senha do vendedor (derivada com Argon2 ou scrypt), para o caso de o DPAPI falhar mas o vendedor lembrar a senha. É decisão de segurança a revisar com o responsável.
+- ~~Avaliar, na Fase 5, uma segunda cópia da chave protegida pela senha do vendedor.~~ **Decidido em 11/11/2026: sim, e mais que isso; veja a linha datada no fim deste ADR.**
 - **Cópia do arquivo antes de cada migração** do banco local, para uma migração com defeito não destruir dados.
 
 **Bloqueio remoto (§11).** Apagar os dados locais é apagar o arquivo do banco e o arquivo da chave: sem a chave, o banco já é ilegível. A Fase 5 deve apagar os dois.
@@ -86,3 +86,5 @@ Mitigações propostas (nenhuma implementada):
 
 - A dona aceita o risco de perder a `outbox` num computador reinstalado sem conexão? A mensagem ao vendedor e a cópia da chave pela senha do vendedor ficam para decidir na Fase 5.
 - Itens para a **Fase 5 (sync)**: (a) abrir o arquivo gerado com um SQLCipher padrão (por exemplo o `sqlcipher` de linha de comando) e registrar o resultado; (b) rodar o passo "Barreira do pacote" com o módulo integrado e medir o tempo do `npm ci` no Ubuntu; (c) mover `app/banco.cjs` para o processo principal do `apps/seller-app`, em TypeScript, com o caminho de dados do app; (d) testar queda de energia e disco cheio; (e) decidir a cópia antes da migração e o tratamento do arquivo `.ilegivel`; (f) acrescentar o teste do banco ao job `frontend` quando o código virar workspace.
+
+**Linha datada, 11/11/2026 (decisão do responsável): a chave do banco local é protegida pela senha do vendedor.** Nem todo notebook de vendedor tem senha do Windows, então o cofre do Windows (DPAPI) sozinho não protege nada. O Corona Vendas passa a **pedir a senha do vendedor ao abrir, também sem internet**. A chave de 256 bits do banco fica **embrulhada pela senha** (derivada com **Argon2id**, ou scrypt, com parâmetros fortes; nunca hash rápido) e guardada no arquivo de dados do app. Fica uma **segunda proteção pelo DPAPI do Windows só para resgate**: quando a dona redefine a senha, o vendedor entra online com a senha nova e o app **re-embrulha a chave** (abrindo-a pela cópia do DPAPI). Isto **inverte** o item 3 (chave só no `safeStorage`) e a mitigação "avaliar uma segunda cópia da chave", e o item 15 do ADR-0013. A senha do Windows é recomendada, não obrigatória. Chave perdida continua significando banco ilegível (a `outbox` ainda não enviada se perde); o resgate pelo DPAPI cobre só a senha esquecida ou redefinida.

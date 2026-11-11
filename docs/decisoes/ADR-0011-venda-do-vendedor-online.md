@@ -1,6 +1,6 @@
 # ADR-0011: Venda do vendedor (Fase 4, online, preparada para sync)
 
-- **Status:** Proposto (a Orquestradora 4.0 e o responsável aceitam no PR). As dúvidas 1 a 6 valem com os padrões provisórios descritos
+- **Status:** Aceito (11/11/2026, pelo responsável), já com as mudanças decididas no mesmo dia: clientes da loja (itens 12 e 13), vender antes de conferir BLOQUEADO (dúvida 5) e vendedor com cadastro inativo não vende (item 14). As dúvidas 1 a 6 valem com os padrões provisórios descritos
 - **Data:** 11/11/2026
 - **Tarefas que implementam:** 4.2 a 4.5 (Fase 4); o offline entra na Fase 5 sem mudar o contrato
 
@@ -21,13 +21,13 @@ A §7.2 define a venda, a §7.1 a conferência e o dispositivo único da maleta,
 9. **Idempotência por UUID do cliente.** `id` da venda e de cada pagamento vêm do app. Reenviar o mesmo `id` com o mesmo conteúdo devolve a venda já gravada (**200**, sem mexer de novo na maleta); a primeira gravação é **201**; o mesmo `id` com conteúdo diferente é **409**. O mesmo vale para o estorno (chave: o `id` do movimento de estorno).
 10. **Cotação no lançamento.** A venda guarda a cotação do dia (Dólar e Guarani) usada para **mostrar** os valores; tudo é gravado em Real (ADR-0006). Sem cotação, a venda segue em Real e a tela avisa.
 11. **Conferência da maleta e dispositivo único.** A maleta `ENVIADA` vira `CONFERIDA` quando o vendedor bipa as peças recebidas e confirma; a divergência (falta ou sobra) é registrada em `conferencias_remessa` (remessa, produto, esperado, contado) e a dona vê no app dela. O servidor guarda o `dispositivo_id` na primeira conferência **ou na primeira venda** (o que vier antes; a conferência usa o saldo da maleta naquele momento como "esperado"); outro aparelho do mesmo vendedor recebe "Esta maleta já está em outro aparelho" ao vender ou conferir. A dona libera o aparelho pela rota dela (dúvida 4). Vender sem conferir é permitido (padrão mais seguro para a loja: a venda não trava), e a tela lembra de conferir (dúvida 5).
-12. **O que o vendedor vê.** Maleta (peças, saldo, preço de venda, foto), produtos **da própria maleta** (a consulta de produtos fora da maleta fica de fora na Fase 4; padrão mais seguro para a barreira, dúvida 6), clientes dele, cotação do dia, vendas e valores dele. **Nunca**: preço de custo, `produtos_custos`, estoque central, fornecedores, outros vendedores, comissão dos outros. O contrato do vendedor tem tipos próprios e a varredura em três camadas (ADR-0003) passa a conferir os campos proibidos.
-13. **Clientes do vendedor.** Cadastro e busca dos clientes com `vendedor_responsavel` igual ao dele; cliente de outro vendedor não aparece (404). Cliente novo criado pelo vendedor entra com ele como responsável. Idempotência por UUID também no cadastro.
+12. **O que o vendedor vê.** Maleta (peças, saldo, preço de venda, foto), produtos **da própria maleta** (a consulta de produtos fora da maleta fica de fora na Fase 4; padrão mais seguro para a barreira, dúvida 6), **o diretório de clientes da loja (nome, CPF, telefone e cidade; item 13)**, cotação do dia, vendas e valores dele. **Nunca**: preço de custo, `produtos_custos`, estoque central, fornecedores, outros vendedores (nem as vendas, o fiado e os pagamentos dos clientes dos outros), comissão dos outros. O contrato do vendedor tem tipos próprios e a varredura em três camadas (ADR-0003) passa a conferir os campos proibidos.
+13. **Clientes da loja (11/11/2026, decisão do responsável; antes eram "clientes do vendedor").** O cliente é da **loja**: qualquer vendedor lista, busca e vende a qualquer cliente ativo, vendo só o **diretório** (nome, CPF, telefone e cidade; lista explícita de colunas). Continuam privados de cada vendedor as vendas, o fiado, os pagamentos e quem comprou com quem (os relatórios do vendedor trazem só as vendas DELE). **CPF repetido é barrado**: 409 "Este cliente já está cadastrado", mostrando o cliente existente para o vendedor escolher; o CPF é único entre clientes não excluídos. Cliente novo criado pelo vendedor entra com ele como `vendedor_responsavel_id`, que passa a significar "quem cadastrou/atende mais" e não restringe a venda. Idempotência por UUID também no cadastro.
 14. **Relatórios do vendedor (§12, só dele, sem custo).** Minha maleta, minhas vendas por período, cliente e produto, meus clientes e valores a receber, recebimentos por forma de pagamento. Comissão e acerto são da Fase 7; devoluções e trocas, da Fase 6. Online, sem o aviso "dados até" (vem na Fase 5).
 15. **Auditoria.** Venda acima de certo desconto, estorno e troca de dispositivo gravam auditoria (§11), sem dado sensível.
 16. **Telas.** Quatro botões grandes: **Vender**, **Minha maleta**, **Meus clientes**, **Meus números**. Leitor com foto grande da peça, falta de foto nunca trava. Textos só em `textos.ts`; termos do glossário; erro em português simples dizendo o que fazer.
 
-13. **Vendedor com cadastro inativo (11/11/2026, decisão provisória do responsável, auditoria D2).** O vendedor com o **cadastro inativo** não vende, mesmo com o usuário ativo: o servidor recusa venda e conferência de maleta (409 `VENDEDOR_DESATIVADO`, "Este vendedor está desativado. Fale com a dona.") e, como já fazia, o envio de maleta. Ao inativar o cadastro, o usuário ligado a ele também é desativado e as sessões, encerradas (mesmo comportamento de desativar usuário, tarefa 1.4), com auditoria. Reativar o cadastro não reativa o usuário. Vale até a dona responder a pergunta 25 de `docs/perguntas-para-a-dona.md`.
+14. **Vendedor com cadastro inativo (11/11/2026, decisão provisória do responsável, auditoria D2).** O vendedor com o **cadastro inativo** não vende, mesmo com o usuário ativo: o servidor recusa venda e conferência de maleta (409 `VENDEDOR_DESATIVADO`, "Este vendedor está desativado. Fale com a dona.") e, como já fazia, o envio de maleta. Ao inativar o cadastro, o usuário ligado a ele também é desativado e as sessões, encerradas (mesmo comportamento de desativar usuário, tarefa 1.4), com auditoria. Reativar o cadastro não reativa o usuário. Vale até a dona responder a pergunta 25 de `docs/perguntas-para-a-dona.md`.
 
 ## Dúvidas abertas (padrão provisório entre parênteses)
 
@@ -35,7 +35,7 @@ A §7.2 define a venda, a §7.1 a conferência e o dispositivo único da maleta,
 2. Valor mínimo de parcela. (sem regra.)
 3. Até quando o vendedor pode estornar? (fim do dia da venda.)
 4. Quem libera a troca de aparelho da maleta? (a dona.)
-5. Vender antes de conferir? (permitido, com lembrete.)
+5. Vender antes de conferir? **Decidido em 11/11/2026: BLOQUEADO.** O vendedor só vende depois de conferir a maleta inteira (a mudança no código é outra tarefa).
 6. Vendedor consulta produtos fora da maleta? (não nesta fase.)
 
 ## Consequências
