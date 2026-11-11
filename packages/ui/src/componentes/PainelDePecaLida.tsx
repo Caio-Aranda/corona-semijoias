@@ -9,6 +9,11 @@ export interface PainelDePecaLidaProps {
   fotoUrl?: string | null;
   /** Resultado da leitura: cor e texto juntos. */
   resultado?: { tipo: 'sucesso' | 'erro'; texto: string };
+  /**
+   * Linhas a mais sob o código (por exemplo, "Na maleta: 3", "COD Fábrica: X", "Categoria: Anéis"). Quem não tem o dado
+   * não manda a linha, e ela não aparece. Os rótulos vêm de quem usa o painel (cada aplicativo tem os seus textos).
+   */
+  detalhes?: readonly { rotulo: string; valor: ReactNode }[];
 }
 
 /** Peça lida pelo leitor de código: foto grande, nome, código e preço. */
@@ -18,6 +23,7 @@ export function PainelDePecaLida({
   preco,
   fotoUrl,
   resultado,
+  detalhes,
 }: PainelDePecaLidaProps) {
   const [fotoFalhou, setFotoFalhou] = useState(false);
   const mostrarFoto = Boolean(fotoUrl) && !fotoFalhou;
@@ -44,6 +50,11 @@ export function PainelDePecaLida({
         <h2 className="cs-peca__nome">{nome}</h2>
         <div className="cs-peca__codigo">Código {codigo}</div>
         <div>{preco}</div>
+        {(detalhes ?? []).map((d) => (
+          <div key={d.rotulo} className="cs-peca__detalhe">
+            {d.rotulo}: {d.valor}
+          </div>
+        ))}
         {resultado ? (
           <p className="cs-peca__situacao" role={resultado.tipo === 'erro' ? 'alert' : 'status'}>
             {resultado.texto}

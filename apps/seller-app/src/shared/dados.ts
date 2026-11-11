@@ -8,6 +8,10 @@ export interface PecaDaMaleta {
   nome: string;
   codigo: string | null;
   fotoHash: string | null;
+  /** Nome da categoria da peça. */
+  categoria: string | null;
+  /** COD Fábrica: o código do fornecedor, quando houver. Nunca custo nem estoque da loja. */
+  codigoFornecedor: string | null;
 }
 
 export interface LinhaDaMaleta {

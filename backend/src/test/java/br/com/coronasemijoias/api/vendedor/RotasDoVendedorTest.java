@@ -196,6 +196,69 @@ class RotasDoVendedorTest extends TesteDeIntegracao {
         ler("/api/vendedor/maletas/" + maleta + "/pecas?codigo=", quem).andExpect(status().isNotFound());
     }
 
+    @Test
+    void aPecaLidaTrazCodigoDoFornecedorECategoriaSemCustoNemEstoqueDaLoja() throws Exception {
+        UsuarioDeTeste a = usuarios.criarVendedor();
+        String sufixo = UUID.randomUUID().toString().substring(0, 8);
+        UUID categoria = UUID.fromString(corpoDe(postar("/api/dona/categorias", dona(), mapa("nome", "Aneis " + sufixo))
+                .andExpect(status().isCreated())).get("id").asString());
+        UUID id = UUID.fromString(corpoDe(postar("/api/dona/produtos", dona(), mapa("nome", "Anel Lua " + sufixo,
+                "categoriaId", categoria, "precoVenda", "55.00", "precoCusto", "21.00", "estoqueMinimo", 1,
+                "codigos", List.of(mapa("codigo", "L-" + sufixo, "tipo", "LOJA", "principal", true),
+                        mapa("codigo", "FAB-" + sufixo, "tipo", "FORNECEDOR", "principal", false))))
+                .andExpect(status().isCreated())).get("id").asString());
+        estoque.registrar(new Pedido(null, id, TipoDeMovimento.ENTRADA, 4, null, OrigemDoMovimento.MANUAL, null),
+                usuarios.dona().id());
+        UUID maleta = maleta(a, new Peca(id, "L-" + sufixo), 3);
+
+        JsonNode lida = corpoDe(ler("/api/vendedor/maletas/" + maleta + "/pecas?codigo=L-" + sufixo, como(a)).andExpect(status().isOk()));
+        assertThat(lida.get("produto").get("codigoFornecedor").asString()).isEqualTo("FAB-" + sufixo);
+        assertThat(lida.get("produto").get("categoria").asString()).isEqualTo("Aneis " + sufixo);
+        assertThat(lida.get("saldo").asInt()).isEqualTo(3);
+        // Lida pelo código do fornecedor também acha a mesma peça, e a maleta traz os mesmos dados.
+        assertThat(corpoDe(ler("/api/vendedor/maletas/" + maleta + "/pecas?codigo=FAB-" + sufixo, como(a))).get("produto").get("id").asString())
+                .isEqualTo(id.toString());
+        JsonNode daMaleta = corpoDe(ler("/api/vendedor/maletas/" + maleta, como(a)).andExpect(status().isOk()));
+        assertThat(daMaleta.get("itens").get(0).get("produto").get("categoria").asString()).isEqualTo("Aneis " + sufixo);
+        // Sem custo e sem estoque da loja nem de outras maletas.
+        String texto = lida.toString().toLowerCase();
+        assertThat(texto).doesNotContain("custo").doesNotContain("estoqueatual").doesNotContain("emmaletas").doesNotContain("21.00");
+    }
+
+    @Test
+    void buscaPeloNomeSoMostraPecasDaPropriaMaletaComSaldoEMiniatura() throws Exception {
+        UsuarioDeTeste a = usuarios.criarVendedor();
+        UsuarioDeTeste b = usuarios.criarVendedor();
+        Peca deA = peca("40.00", 5);
+        Peca deB = peca("40.00", 5);
+        Peca fora = peca("40.00", 5);
+        UUID maletaDeA = maleta(a, deA, 2);
+        UUID maletaDeB = maleta(b, deB, 2);
+        String nomeDeA = jdbc.queryForObject("SELECT nome FROM corona.produtos WHERE id = ?", String.class, deA.id());
+        String nomeDeB = jdbc.queryForObject("SELECT nome FROM corona.produtos WHERE id = ?", String.class, deB.id());
+        String base = "/api/vendedor/maletas/" + maletaDeA + "/pecas/busca?texto=";
+
+        // Pelo nome (parte dele, sem diferenciar maiúsculas), pelo código parcial e pela referência.
+        JsonNode porNome = corpoDe(ler(base + nomeDeA.substring(2, 9).toUpperCase(), como(a)).andExpect(status().isOk()));
+        assertThat(porNome).hasSize(1);
+        assertThat(porNome.get(0).get("produto").get("id").asString()).isEqualTo(deA.id().toString());
+        assertThat(porNome.get(0).get("saldo").asInt()).isEqualTo(2);
+        assertThat(porNome.get(0).get("produto").has("fotoHash")).isTrue();
+        assertThat(corpoDe(ler(base + deA.codigo().substring(0, 5), como(a)))).hasSize(1);
+        // A peça de outra maleta (do mesmo ou de outro vendedor) nunca aparece, nem pelo nome exato nem pelo código.
+        assertThat(corpoDe(ler(base + nomeDeB, como(a)))).isEmpty();
+        assertThat(corpoDe(ler(base + deB.codigo(), como(a)))).isEmpty();
+        assertThat(corpoDe(ler(base + jdbc.queryForObject("SELECT nome FROM corona.produtos WHERE id = ?", String.class, fora.id()), como(a)))).isEmpty();
+        // Maleta de outro vendedor: 404 sem dizer de quem é. Sem login de vendedor: recusado.
+        ler("/api/vendedor/maletas/" + maletaDeB + "/pecas/busca?texto=" + nomeDeB, como(a)).andExpect(status().isNotFound());
+        ler(base + nomeDeA, dona()).andExpect(status().isForbidden());
+        // Texto vazio não lista a maleta toda: lista vazia. Curinga digitado vale ao pé da letra.
+        assertThat(corpoDe(ler(base, como(a)))).isEmpty();
+        assertThat(corpoDe(ler(base + "%25", como(a)))).isEmpty();
+        // Sem custo nem estoque da loja.
+        assertThat(porNome.toString().toLowerCase()).doesNotContain("custo").doesNotContain("estoqueatual").doesNotContain("emmaletas");
+    }
+
     // --- conferência e aparelho único ---
 
     @Test

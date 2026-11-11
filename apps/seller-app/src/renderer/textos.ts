@@ -65,6 +65,32 @@ export const TEXTOS = {
     cotacaoSem: 'Sem cotação do Dólar e do Guarani por enquanto: os valores aparecem só em Real.',
   },
 
+  /** Linhas a mais no painel da peça lida (Vender e Conferir maleta). */
+  painelDaPeca: {
+    naMaleta: 'Na maleta',
+    codFabrica: 'COD Fábrica',
+    categoria: 'Categoria',
+    esperado: 'Esperado',
+    /** Vai depois de "Esperado: ", como "Esperado: 3 · Contadas: 2". */
+    esperadoEContadas: (esperado: number, contadas: number) =>
+      `${esperado} · Contadas: ${contadas}`,
+  },
+
+  /** "A etiqueta não lê? Procure pelo nome." (só entre as peças da própria maleta). */
+  buscaPorNome: {
+    abrir: 'Procurar pelo nome',
+    ajuda: 'A etiqueta não lê? Procure pelo nome.',
+    campo: 'Nome, referência ou parte do código',
+    buscando: 'Procurando...',
+    nenhuma: 'Nenhuma peça da sua maleta com esse nome. Confira o que você digitou.',
+    escolher: 'Escolher',
+    escolherDe: (nome: string) => `Escolher ${nome}`,
+    naMaleta: (n: number) => `Na maleta: ${n}`,
+    codigo: (c: string) => `Código ${c}`,
+    fechar: 'Fechar a busca',
+    legenda: 'Peças da sua maleta encontradas',
+  },
+
   conferencia: {
     titulo: 'Conferir maleta',
     ajuda: 'Leia o código de cada peça que você recebeu. Cada leitura conta uma peça.',

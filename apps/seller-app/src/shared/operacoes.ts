@@ -59,6 +59,8 @@ export type PedidoDeChamada =
   | { operacao: 'maletas.listar' }
   | { operacao: 'maletas.ver'; id: string }
   | { operacao: 'maletas.peca'; id: string; codigo: string }
+  /** "A etiqueta não lê? Procure pelo nome": só entre as peças da própria maleta. */
+  | { operacao: 'maletas.buscarPeca'; id: string; texto: string }
   | { operacao: 'maletas.conferir'; id: string; conferenciaId: string; itens: ContagemDaPeca[] }
   | { operacao: 'maletas.verConferencia'; id: string }
   | { operacao: 'vendas.vender'; venda: VendaParaEnviar }
@@ -87,6 +89,7 @@ export const OPERACOES_DA_API: readonly OperacaoDaApi[] = [
   'maletas.listar',
   'maletas.ver',
   'maletas.peca',
+  'maletas.buscarPeca',
   'maletas.conferir',
   'maletas.verConferencia',
   'vendas.vender',

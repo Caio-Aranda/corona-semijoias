@@ -70,6 +70,16 @@ public class MaletasDoVendedorController {
         return consultas.peca(id, quem.vendedorId(), codigo);
     }
 
+    @Operation(operationId = "buscarPecaDaMinhaMaleta", summary = "Procurar uma peça pelo nome",
+            description = "Para quando a etiqueta não lê: procura só entre as peças da maleta do vendedor, pelo nome, pela referência ou "
+                    + "por parte de um código (até 20, sem diferenciar maiúsculas). Devolve a mesma linha da leitura por código, com "
+                    + "foto e saldo. Texto vazio devolve lista vazia; peça de fora da maleta nunca aparece.")
+    @GetMapping("/{id}/pecas/busca")
+    public List<Linha> buscarPeca(@PathVariable UUID id, @RequestParam(required = false) String texto,
+            @AuthenticationPrincipal UsuarioAutenticado quem) {
+        return consultas.buscar(id, quem.vendedorId(), texto);
+    }
+
     @Operation(operationId = "conferirMinhaMaleta", summary = "Conferir a maleta",
             description = "O vendedor manda quantas peças contou de cada produto (o que faltar na lista conta como zero). O servidor "
                     + "compara com o saldo da maleta, grava a diferença e liga a maleta a este aparelho. Uma conferência por maleta: "

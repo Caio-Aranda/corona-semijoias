@@ -12,6 +12,7 @@ describe('o que a tela pode pedir ao processo principal', () => {
       { operacao: 'maletas.listar' },
       { operacao: 'maletas.ver', id: ID },
       { operacao: 'maletas.peca', id: ID, codigo: 'A-1' },
+      { operacao: 'maletas.buscarPeca', id: ID, texto: 'anel' },
       {
         operacao: 'maletas.conferir',
         id: ID,
@@ -80,6 +81,8 @@ describe('o que a tela pode pedir ao processo principal', () => {
       { operacao: 'maletas.ver', id: 'abc' },
       { operacao: 'maletas.ver' },
       { operacao: 'maletas.peca', id: ID, codigo: 'x'.repeat(101) },
+      { operacao: 'maletas.buscarPeca', id: ID, texto: 'x'.repeat(101) },
+      { operacao: 'maletas.buscarPeca', id: 'nao-uuid', texto: 'anel' },
       {
         operacao: 'maletas.conferir',
         id: ID,

@@ -4,6 +4,8 @@ import type { Conferencia, LinhaDaMaleta, Maleta } from '../../shared/dados';
 import type { PonteDoCorona } from '../../shared/ponte';
 import { chamar, Dinheiro, novoId, useCotacao, useFoto } from '../chamadas';
 import { TEXTOS } from '../textos';
+import { BuscaPorNome } from './BuscaPorNome';
+import { detalhesDaPeca } from './detalhes-da-peca';
 import { PaginaDoVendedor } from './PaginaDoVendedor';
 
 export interface TelaConferirMaletaProps {
@@ -53,7 +55,11 @@ export function TelaConferirMaleta({ ponte, maleta, aoVoltar }: TelaConferirMale
       setResultado({ tipo: 'erro', texto: r.mensagem });
       return;
     }
-    const linha = r.dados;
+    contar(r.dados);
+  }
+
+  /** Peça lida pelo código ou escolhida pelo nome: conta uma peça do mesmo jeito. */
+  function contar(linha: LinhaDaMaleta) {
     const agora = (contagem[linha.produto.id] ?? 0) + 1;
     setContagem({ ...contagem, [linha.produto.id]: agora });
     setUltima(linha);
@@ -136,11 +142,22 @@ export function TelaConferirMaleta({ ponte, maleta, aoVoltar }: TelaConferirMale
           codigo={ultima.produto.codigo ?? ''}
           preco={<Dinheiro reais={ultima.precoUnitario} cotacao={cotacao} />}
           fotoUrl={foto}
+          detalhes={[
+            {
+              rotulo: TEXTOS.painelDaPeca.esperado,
+              valor: TEXTOS.painelDaPeca.esperadoEContadas(
+                ultima.saldo,
+                contagem[ultima.produto.id] ?? 0,
+              ),
+            },
+            ...detalhesDaPeca(ultima.produto),
+          ]}
           {...(resultado ? { resultado } : {})}
         />
       ) : resultado ? (
         <Aviso tipo={resultado.tipo === 'erro' ? 'erro' : 'sucesso'}>{resultado.texto}</Aviso>
       ) : null}
+      <BuscaPorNome ponte={ponte} maletaId={maleta.id} aoEscolher={contar} />
       {ultima && resultado?.tipo === 'erro' ? <Aviso tipo="erro">{resultado.texto}</Aviso> : null}
       <Tabela
         legenda={T.legenda}

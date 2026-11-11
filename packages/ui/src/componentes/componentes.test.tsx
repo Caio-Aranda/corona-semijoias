@@ -124,6 +124,29 @@ describe('ValorTresMoedas', () => {
 describe('PainelDePecaLida', () => {
   const preco = <ValorTresMoedas real="R$ 59,90" />;
 
+  it('mostra as linhas a mais que quem usa mandou, e só elas', () => {
+    render(
+      <PainelDePecaLida
+        nome="Brinco de gota"
+        codigo="A123"
+        preco={preco}
+        detalhes={[
+          { rotulo: 'Na maleta', valor: 3 },
+          { rotulo: 'COD Fábrica', valor: 'FAB-9' },
+          { rotulo: 'Categoria', valor: 'Brincos' },
+        ]}
+      />,
+    );
+    expect(screen.getByText('Na maleta: 3')).toBeInTheDocument();
+    expect(screen.getByText('COD Fábrica: FAB-9')).toBeInTheDocument();
+    expect(screen.getByText('Categoria: Brincos')).toBeInTheDocument();
+  });
+
+  it('sem detalhes não mostra linha nenhuma a mais', () => {
+    render(<PainelDePecaLida nome="Brinco de gota" codigo="A123" preco={preco} />);
+    expect(screen.queryByText(/Na maleta|COD Fábrica|Categoria/)).toBeNull();
+  });
+
   it('mostra foto, nome, código e preço', () => {
     render(
       <PainelDePecaLida

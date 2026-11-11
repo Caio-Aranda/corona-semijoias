@@ -6,6 +6,8 @@ import type { PonteDoCorona } from '../../shared/ponte';
 import { chamar, Dinheiro, novoId, useCotacao, useFoto } from '../chamadas';
 import { centavosDeTexto, dataParaTela, formatarReais, lerReaisDigitados } from '../moedas';
 import { TEXTOS } from '../textos';
+import { detalhesDaPeca } from './detalhes-da-peca';
+import { BuscaPorNome } from './BuscaPorNome';
 import { FormularioDeCliente } from './FormularioDeCliente';
 import { PaginaDoVendedor } from './PaginaDoVendedor';
 
@@ -135,7 +137,11 @@ export function TelaVender({ ponte, aoVoltar, aoVerVendas }: TelaVenderProps) {
       setResultado({ tipo: 'erro', texto: r.mensagem });
       return;
     }
-    const linha = r.dados;
+    aceitar(r.dados);
+  }
+
+  /** A peça lida pelo código ou escolhida pelo nome entra na venda do mesmo jeito. */
+  function aceitar(linha: LinhaDaMaleta) {
     const jaNoCarrinho =
       carrinho.find((c) => c.linha.produto.id === linha.produto.id)?.quantidade ?? 0;
     setUltima(linha);
@@ -330,11 +336,13 @@ export function TelaVender({ ponte, aoVoltar, aoVerVendas }: TelaVenderProps) {
           codigo={ultima.produto.codigo ?? ''}
           preco={<Dinheiro reais={ultima.precoUnitario} cotacao={cotacao} />}
           fotoUrl={foto}
+          detalhes={detalhesDaPeca(ultima.produto, ultima.saldo)}
           {...(resultado ? { resultado } : {})}
         />
       ) : resultado ? (
         <Aviso tipo="erro">{resultado.texto}</Aviso>
       ) : null}
+      {maleta ? <BuscaPorNome ponte={ponte} maletaId={maleta.id} aoEscolher={aceitar} /> : null}
 
       <Tabela
         legenda={T.legendaCarrinho}
