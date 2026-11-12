@@ -85,6 +85,25 @@ describe('venda sem internet', () => {
     expect(gravacoes).toBe(1);
   });
 
+  it('duas linhas da mesma peça somam a quantidade antes de conferir o saldo', () => {
+    let erro: unknown;
+    try {
+      ops.vender({
+        ...venda(1),
+        itens: [
+          { produtoId: m.produtoA, quantidade: 2 },
+          { produtoId: m.produtoA, quantidade: 2 },
+        ],
+      });
+    } catch (e) {
+      erro = e;
+    }
+    expect(erro).toBeInstanceOf(ErroDaOperacao);
+    expect((erro as ErroDaOperacao).codigo).toBe('SEM_SALDO');
+    expect(outbox()).toHaveLength(0);
+    expect(saldoDaPeca(b.db, m.remessaId, m.produtoA)).toBe(3);
+  });
+
   it('sem saldo, peça fora da maleta ou pago acima do total: nada é gravado', () => {
     expect(() => ops.vender(venda(4))).toThrow(ErroDaOperacao);
     expect(() =>

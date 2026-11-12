@@ -107,6 +107,10 @@ export class OperacoesLocais {
 
       let subtotal = 0n;
       let desconto = 0n;
+      // A quantidade de cada peça na venda inteira: duas linhas da mesma peça não passam juntas do saldo.
+      const porPeca = new Map<string, number>();
+      for (const item of venda.itens)
+        porPeca.set(item.produtoId, (porPeca.get(item.produtoId) ?? 0) + item.quantidade);
       const linhas = venda.itens.map((item) => {
         const peca = db
           .prepare(
@@ -115,7 +119,7 @@ export class OperacoesLocais {
           )
           .get(venda.remessaId, item.produtoId) as { preco_remessa: string } | undefined;
         if (!peca) throw new ErroDaOperacao('PECA_FORA_DA_MALETA');
-        if (item.quantidade > saldoDaPeca(db, venda.remessaId, item.produtoId))
+        if ((porPeca.get(item.produtoId) ?? 0) > saldoDaPeca(db, venda.remessaId, item.produtoId))
           throw new ErroDaOperacao('SEM_SALDO');
         const preco = exigirCentavos(peca.preco_remessa);
         const valor = preco * BigInt(item.quantidade);
