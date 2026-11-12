@@ -1,6 +1,6 @@
 # Especificação completa: Sistema de Semijoias Consignadas
 
-Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.7, 10/11/2026.
+Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.9, 12/11/2026.
 
 ## 1. Objetivo e contexto
 
@@ -149,8 +149,8 @@ Três casos:
 
 Regras:
 
-- **Sempre ligada à venda original**, encontrada bipando a peça ou escolhendo a venda. Só aceita devolver até a quantidade vendida, pelo preço pago.
-- **Motivo obrigatório:** arrependimento, defeito, tamanho, outro. Foto opcional.
+- **Sempre ligada à venda original**, encontrada bipando a peça ou escolhendo a venda. Só aceita devolver até a quantidade vendida, pelo preço pago. O app manda as peças pelo **produto** (a venda tem uma linha por produto), com quantidade e estado; nunca pelo id da linha da venda, que sem internet ainda é provisório.
+- **Motivo obrigatório:** arrependimento, defeito, tamanho, outro. Com "outro", a observação é obrigatória; com "defeito", todas as peças devolvidas são `DEFEITO` (o prazo maior só vale para peça com defeito). Foto opcional.
 - **Estado da peça:** `BOA` volta ao saldo vendável da maleta original, **se ela ainda está aberta**; `BOA` de maleta já acertada e toda peça `DEFEITO` viram **peça para a loja**: não voltam ao saldo do vendedor e são esperadas à parte no próximo acerto (ADR-0014, item 7). Nenhuma maleta acertada recebe movimento novo.
 - **A venda original não muda** (continua concluída). O quanto já foi devolvido é a soma das devoluções ativas dela; o total devolvido por linha nunca passa do vendido. Venda com devolução ativa não pode mais ser estornada (só cancelar a devolução antes).
 - **Valor devolvido** = o preço pago, por unidade (total da linha ÷ quantidade, com a sobra de centavos nas últimas unidades). O app nunca manda valor: o servidor calcula.
@@ -734,3 +734,5 @@ Importação com nome de arquivo inválido, foto duplicada, arquivo corrompido, 
   - §7.3: a devolução é registro novo e a venda não muda; peça boa de maleta acertada e peça com defeito vão para a loja; prazos em dias de Brasília; devolução fora do prazo pelo servidor entra para revisão, nunca recusada; autorização vale 7 dias; troca é uma operação só, sem tabela de itens; crédito do cliente; cancelar devolução e troca.
   - §9: `devolucoes`, `itens_devolucao`, `trocas`, `creditos_cliente`, `usos_credito` e `autorizacoes_excecao` reescritas; `itens_troca` deixa de existir; `configuracoes` ganha o tipo dinheiro e as cinco chaves da garantia (migração V035), com os padrões seguros.
   - §10: o bloco de parâmetros do pull ganha `prazoArrependimentoDias` e `prazoDefeitoDias` (limites de reembolso ficam só no servidor).
+- **v1.9, 12/11/2026:** devolução do cliente (tarefa 6.3, dúvidas Q1 a Q3 do plano aprovadas).
+  - §7.3: as peças da devolução vão pelo produto (nunca pelo id da linha da venda); motivo "outro" exige observação; motivo "defeito" exige todas as peças com defeito.
