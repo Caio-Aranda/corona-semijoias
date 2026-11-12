@@ -201,6 +201,9 @@ export async function montarCoronaVendas(d: DependenciasDaMontagem): Promise<Cor
         if (!db) throw new Error('Banco local fechado.');
         return db;
       },
+      // A mesma hora do resto da montagem (a hora local de cada gravação conta para o prazo sem internet). No app é o
+      // relógio do computador, como antes; nos testes de duas pontas, o relógio do aparelho de teste (tarefa 5.12).
+      agora: () => new Date(relogio.agora()),
       aoGravar: () => motorDoApp.gravou(),
       // Prazo acabado (ou relógio mexido): nada novo grava; o que já existe continua sendo enviado (tarefa 5.8).
       podeGravar: () => {

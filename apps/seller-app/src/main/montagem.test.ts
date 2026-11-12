@@ -89,6 +89,15 @@ describe('montagem do Corona Vendas (tarefa 5.12)', () => {
     expect(index).not.toMatch(/new (MotorDeSincronizacao|GuardaDeTokens|ServicoDoBanco)\(/);
   });
 
+  it('toda hora da montagem vem do relógio recebido (nada de Date.now nem new Date() solto)', () => {
+    const texto = readFileSync(join(import.meta.dirname, 'montagem.ts'), 'utf8');
+    expect(texto).not.toMatch(/Date\.now\(|new Date\(\)/);
+    // As gravações locais (prazo sem internet) usam a mesma hora do motor e do contato com o servidor.
+    expect(texto).toMatch(
+      /new OperacoesLocais\(\{[\s\S]*?agora: \(\) => new Date\(relogio\.agora\(\)\)/,
+    );
+  });
+
   it('monta em Node: sem sessão guardada está "fora", e o motor não liga sem o banco aberto', async () => {
     const d = dependencias();
     const montado = await montarCoronaVendas(d);
