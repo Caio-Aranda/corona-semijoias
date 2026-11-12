@@ -101,6 +101,8 @@ class CotacoesDaDonaTest extends TesteDeIntegracao {
     private ResultActions avisos() throws Exception {
         // O aviso de estoque baixo (tarefa 2.4) também sai desta rota; produtos de outros testes não podem entrar aqui.
         jdbcDoAviso.update("UPDATE corona.produtos SET estoque_minimo = 0 WHERE estoque_minimo <> 0");
+        // Os avisos dos computadores (tarefa 5.11) também saem desta rota; computadores de outros testes não entram aqui.
+        jdbcDoAviso.update("UPDATE corona.usuarios SET ativo = false WHERE perfil = 'VENDEDOR' AND ativo");
         return mvc.perform(get("/api/dona/avisos").with(usuarios.comoDona()));
     }
 
