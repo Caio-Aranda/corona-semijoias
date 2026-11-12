@@ -51,6 +51,12 @@ export type CadastroDeTeste = {
     nome: string;
 };
 
+export type Campo = {
+    campo?: string;
+    valorAnterior?: string;
+    valorNovo?: string;
+};
+
 export type CategoriasDaDonaControllerPedido = {
     id?: string;
     nome: string;
@@ -318,6 +324,21 @@ export type EnvioComProblema = {
     tipo?: string;
     vendedorId?: string;
     vendedorNome?: string;
+};
+
+export type EnvioGuardado = {
+    criadoEmLocal?: string;
+    dados?: JsonNode;
+    dispositivoId?: string;
+    id?: string;
+    recebidoEm?: string;
+    tipo?: string;
+    vendedorId?: string;
+    vendedorNome?: string;
+};
+
+export type EnviosComProblemaDaDonaControllerPedidoDeDescarte = {
+    motivo?: string;
 };
 
 export type EstoqueDaDonaControllerPedidoDeEstorno = {
@@ -1011,10 +1032,6 @@ export type PedidoDeContagem = {
     produtoId?: string;
 };
 
-export type PedidoDeDescarte = {
-    motivo?: string;
-};
-
 export type PedidoDeDevolucao = {
     itens?: Array<MaletaDaDonaControllerPedidoDaLinha>;
 };
@@ -1198,6 +1215,10 @@ export type ProdutosDaDonaControllerResposta = {
 export type ProdutosSemFoto = {
     itens?: Array<ProdutoSemFoto>;
     total?: number;
+};
+
+export type QuarentenaDaDonaControllerPedidoDeDescarte = {
+    motivo?: string;
 };
 
 export type ReferenciaDoVendedorPedido = {
@@ -1697,6 +1718,13 @@ export type ResultadoDaFoto = {
     situacao?: 'GRAVADA' | 'JA_EXISTIA' | 'SEM_PRODUTO' | 'AMBIGUA' | 'RECUSADA';
 };
 
+export type ResultadoDaOperacao = {
+    codigo?: string;
+    mensagem?: string;
+    operacaoId?: string;
+    resultado?: 'ACEITO' | 'JA_RECEBIDO' | 'CONFLITO' | 'RECUSADO' | 'NAO_PROCESSADO';
+};
+
 export type SemProduto = {
     codigo?: string;
     mensagem?: string;
@@ -1759,6 +1787,15 @@ export type UsuariosDaDonaControllerResposta = {
 
 export type ValorDeTeste = {
     valor?: string;
+};
+
+export type ValorSubstituido = {
+    campos?: Array<Campo>;
+    clienteId?: string;
+    clienteNome?: string;
+    id?: string;
+    quando?: string;
+    quemMudou?: string;
 };
 
 export type Venda = {
@@ -2165,6 +2202,22 @@ export type Criar7Responses = {
 
 export type Criar7Response = Criar7Responses[keyof Criar7Responses];
 
+export type ListarValoresDeClienteSubstituidosData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/dona/clientes/valores-substituidos';
+};
+
+export type ListarValoresDeClienteSubstituidosResponses = {
+    /**
+     * OK
+     */
+    200: Array<ValorSubstituido>;
+};
+
+export type ListarValoresDeClienteSubstituidosResponse = ListarValoresDeClienteSubstituidosResponses[keyof ListarValoresDeClienteSubstituidosResponses];
+
 export type Excluir6Data = {
     body?: never;
     path: {
@@ -2399,7 +2452,7 @@ export type ListarEnviosComProblemaResponses = {
 export type ListarEnviosComProblemaResponse = ListarEnviosComProblemaResponses[keyof ListarEnviosComProblemaResponses];
 
 export type DescartarEnvioData = {
-    body: PedidoDeDescarte;
+    body: EnviosComProblemaDaDonaControllerPedidoDeDescarte;
     path: {
         id: string;
     };
@@ -3315,6 +3368,58 @@ export type Reativar3Responses = {
 };
 
 export type Reativar3Response = Reativar3Responses[keyof Reativar3Responses];
+
+export type ListarVendasDeComputadorBloqueadoData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/dona/quarentena';
+};
+
+export type ListarVendasDeComputadorBloqueadoResponses = {
+    /**
+     * OK
+     */
+    200: Array<EnvioGuardado>;
+};
+
+export type ListarVendasDeComputadorBloqueadoResponse = ListarVendasDeComputadorBloqueadoResponses[keyof ListarVendasDeComputadorBloqueadoResponses];
+
+export type AprovarVendaDeComputadorBloqueadoData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/quarentena/{id}/aprovar';
+};
+
+export type AprovarVendaDeComputadorBloqueadoResponses = {
+    /**
+     * OK
+     */
+    200: ResultadoDaOperacao;
+};
+
+export type AprovarVendaDeComputadorBloqueadoResponse = AprovarVendaDeComputadorBloqueadoResponses[keyof AprovarVendaDeComputadorBloqueadoResponses];
+
+export type DescartarVendaDeComputadorBloqueadoData = {
+    body: QuarentenaDaDonaControllerPedidoDeDescarte;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/quarentena/{id}/descartar';
+};
+
+export type DescartarVendaDeComputadorBloqueadoResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type DescartarVendaDeComputadorBloqueadoResponse = DescartarVendaDeComputadorBloqueadoResponses[keyof DescartarVendaDeComputadorBloqueadoResponses];
 
 export type AlteracoesDeProdutosData = {
     body?: never;

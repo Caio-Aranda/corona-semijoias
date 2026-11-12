@@ -167,6 +167,7 @@ App do vendedor sem internet: SQLite criptografado, fila de envios e sincroniza�
 | 5.8 | app e backend: prazo offline (10 dias, aviso aos 3), abrir sem internet pela senha, bloqueio das gravações, quarentena (V034) e apagar os dados | Em revisão (PR 105) · [detalhe](progresso/fase-5.md#tarefa-58-prazo-offline-abrir-sem-internet-bloqueio-quarentena-e-apagar) |
 | 5.9 | app: fotos sem internet (cache em disco, download separado do envio, `fotos.ver` pelo disco, "Baixando fotos: N de M") | Em revisão (PR 106) · [detalhe](progresso/fase-5.md#tarefa-59-fotos-sem-internet) |
 | 5.11 | backend: métricas e alertas do sync (idade da transação mais antiga, duração do pull e do push, defeito da conferência, computador parado, avisos da dona) | Mesclada (PR 101) · [detalhe](progresso/fase-5.md#tarefa-511-métricas-e-alertas-do-sync-backend) |
+| 5.10 | owner-app e backend: computadores do vendedor, envios com problema, CPF repetido, vendas de computador bloqueado, valores de cliente trocados e avisos | Em revisão (PR 107) · [detalhe](progresso/fase-5.md#tarefa-510-telas-da-dona) |
 
 As demais tarefas estão no [plano](progresso/fase-5-plano.md).
 

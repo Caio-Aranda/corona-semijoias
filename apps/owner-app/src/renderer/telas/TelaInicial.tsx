@@ -4,6 +4,7 @@ import type { PonteDoCorona } from '../../shared/ponte';
 import { chamar, useBusca } from '../nucleo/chamadas';
 import { TEXTOS } from '../textos';
 import { TEXTOS_DE_ESTOQUE } from '../textos-estoque';
+import { TEXTOS_DE_SINCRONIZACAO } from '../textos-sincronizacao';
 
 const BOTOES = [
   'Montar maleta',
@@ -27,14 +28,29 @@ export interface TelaInicialProps {
 interface AvisoDaDona {
   titulo: string;
   texto: string;
+  tipo: string;
 }
+
+/** Para onde o botão "Abrir" de cada aviso leva (tarefa 5.10). */
+const ROTA_DO_AVISO: Record<string, string> = {
+  ENVIOS_COM_PROBLEMA: 'computadores/envios',
+  VENDAS_DE_COMPUTADOR_BLOQUEADO: 'computadores/vendas',
+  COMPUTADOR_SEM_ENVIAR: 'computadores/lista',
+  COMPUTADOR_NOVO: 'computadores/lista',
+};
 
 function lerAvisos(bruto: unknown): AvisoDaDona[] {
   const lista = (bruto as { avisos?: unknown } | null)?.avisos;
   if (!Array.isArray(lista)) return [];
   return lista.flatMap((a: unknown) => {
-    const { titulo, texto } = (a ?? {}) as { titulo?: unknown; texto?: unknown };
-    return typeof titulo === 'string' && typeof texto === 'string' ? [{ titulo, texto }] : [];
+    const { titulo, texto, tipo } = (a ?? {}) as {
+      titulo?: unknown;
+      texto?: unknown;
+      tipo?: unknown;
+    };
+    return typeof titulo === 'string' && typeof texto === 'string'
+      ? [{ titulo, texto, tipo: typeof tipo === 'string' ? tipo : '' }]
+      : [];
   });
 }
 
@@ -79,6 +95,15 @@ export function TelaInicial({ ponte, nome }: TelaInicialProps) {
             {lista.map((a) => (
               <Aviso key={`${a.titulo}${a.texto}`} tipo="atencao" titulo={a.titulo}>
                 {a.texto}
+                {ROTA_DO_AVISO[a.tipo] ? (
+                  <Botao
+                    onClick={() => {
+                      window.location.hash = `/${ROTA_DO_AVISO[a.tipo]}`;
+                    }}
+                  >
+                    {TEXTOS_DE_SINCRONIZACAO.abrir}
+                  </Botao>
+                ) : null}
                 {/acabando/i.test(a.titulo) ? (
                   <Botao
                     onClick={() => {

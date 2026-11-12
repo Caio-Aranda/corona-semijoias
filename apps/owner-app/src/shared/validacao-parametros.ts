@@ -14,6 +14,7 @@ import { conferirMaleta, type ParametrosDeMaleta } from './validacao-maletas';
 import { conferirEstoque, type ParametrosDeEstoque } from './validacao-estoque';
 import { conferirProduto, type ParametrosDeProduto } from './validacao-produtos';
 import { conferirRelatorio, type ParametrosDeRelatorio } from './validacao-relatorios';
+import { conferirSincronizacao, type ParametrosDeSincronizacao } from './sincronizacao';
 import {
   ABAS_DO_VENDEDOR,
   CAMPOS_DA_REFERENCIA,
@@ -118,6 +119,7 @@ export type ParametrosConferidos =
   | ParametrosDeMaleta
   | ParametrosDeEstoque
   | ParametrosDeRelatorio
+  | ParametrosDeSincronizacao
   | { operacao: 'eu' | 'cotacao.hoje' | 'avisos.listar' | 'vendedores.escolha' }
   | { operacao: 'usuarios.listar'; lista: ParametrosDaLista }
   | { operacao: 'usuarios.criar'; novo: ParametrosDeUsuarioNovo }
@@ -508,6 +510,17 @@ export function conferirParametros(
     case 'contagens.fechar':
     case 'contagens.cancelar':
       return conferirEstoque(operacao, p);
+    case 'sincronizacao.aparelhos':
+    case 'sincronizacao.liberarAparelho':
+    case 'sincronizacao.bloquearAparelho':
+    case 'sincronizacao.envios':
+    case 'sincronizacao.tentarDeNovo':
+    case 'sincronizacao.descartarEnvio':
+    case 'sincronizacao.quarentena':
+    case 'sincronizacao.aprovarQuarentena':
+    case 'sincronizacao.descartarQuarentena':
+    case 'sincronizacao.valoresSubstituidos':
+      return conferirSincronizacao(operacao, p);
     case 'relatorios.cadastros':
       return conferirRelatorio(p);
     default:
