@@ -109,3 +109,26 @@ Plano aprovado: [plano-5-6-motor-de-sincronizacao.md](plano-5-6-motor-de-sincron
 **Decisões que tomei:** (1) as métricas ficam registradas no Micrometer, mas o `/actuator/metrics` **não** foi exposto (hoje só `health` está; expor é decisão de segurança da VPS) e a leitura de cada uma está no log e no painel de saúde; (2) o indicador de saúde não derruba o `/health`, para o monitor da VPS não reiniciar a API por causa de uma venda lenta; (3) a conexão da API só enxerga as próprias transações em `pg_stat_activity`, e as da migração e do administrador não contam (não escrevem durante o uso); (4) o aviso de "envios com problema" já existe na 5.5/5.10 e não foi repetido aqui.
 
 **Ficou para depois:** a tela da dona mostrar os dois tipos novos de aviso com o botão certo (5.10); expor as métricas se a VPS ganhar um coletor.
+
+## Tarefa 5.7: telas no banco local (Corona Vendas)
+
+**O que entrou**
+
+- `main/local/consultas-locais.ts`: atende, **do banco local e sem rede**, os mesmos pedidos que a API atendia (maletas, peça por código ou nome, conferência, vendas, estorno, clientes, cotação, relatórios), com a **mesma forma de resposta**, então as telas quase não mudaram. As gravações passam pelas `OperacoesLocais` da 5.6 (cópia provisória e operação na mesma transação, e o motor envia 2 s depois). `ServicoDeSessao.chamarApi` usa o banco quando ele está aberto; foto e "quem sou eu" continuam na internet (fotos sem internet: 5.9) e, se o banco não abriu, a chamada ainda segue pela internet como antes.
+- **Dólar e Guarani só na tela**: a venda mostra a cotação gravada nela ou, para venda feita sem internet, a mais nova até o dia dela (sempre com a data); relatórios somam cada lançamento pela cotação do seu dia, como o servidor (centavos inteiros em `BigInt`, arredondamento do servidor). Nenhuma coluna de Dólar ou Guarani existe no banco.
+- **Indicador de envio** (`IndicadorDeEnvio`) no alto de todas as telas de trabalho e na tela inicial, com os textos da parte 7 do glossário; **"Dados até dd/mm às hh:mm"** (mais "Cotação de dd/mm/aaaa." e o que aguarda envio) em Meus números, Minhas vendas, Clientes e Minha maleta.
+- **Envios não aceitos**: o aviso "N vendas não foram aceitas. A dona já foi avisada." com a lista (o que foi, quando, o motivo em palavras simples, que é o texto que o servidor devolveu) e o botão **Entendi**, que só marca `entendido_em` (nada é apagado). Operações novas na ponte: `envios.naoAceitos` e `envios.entendi`, validadas.
+- **Cotação com data** em Minha maleta e Vender: "Cotação do Dólar e do Guarani de hoje, dd/mm/aaaa." ou "Cotação de dd/mm/aaaa, a última que este computador recebeu. Conecte-se à internet para receber a mais nova."
+- **Editar cliente** (Meus clientes → ficha → "Editar cliente"): só nos clientes que o vendedor atende, campo a campo (`clientes.alterar` → `CLIENTE_ALTERADO` da 5.6, só o que mudou). Cliente de outro vendedor: "Só o vendedor que atende o cliente pode mudar o cadastro dele."
+- Glossário: textos acrescentados **antes** do código.
+
+**Testes (escritos com SQLCipher de verdade, nunca em memória):** `consultas-locais.test.ts` (maleta, peça por código e por nome, conferência, venda e estorno sem internet, saldo, relatórios, período em Brasília, recebimentos com reembolso, cotação de hoje, de dia anterior, futura e ausente, clientes, edição, recusa visível e "Entendi"); `indicador-de-envio.test.tsx` (cada estado do indicador, lista de recusas e "Entendi", "Dados até", edição de cliente e **palavras proibidas** lidas dos blocos do glossário); `servico-de-sessao.test.ts` (banco antes da internet, foto e "eu" na internet); `validacao-chamadas.test.ts`. `lint`, `typecheck`, `format:check` e a barreira (pacote empacotado) passam.
+
+**Decisões que tomei** (e as dúvidas, no relatório da tarefa)
+
+1. "Meu cliente" no computador = o servidor mandou `vendedor_responsavel_id` (só vai para quem atende) **ou** o cadastro foi feito aqui e ainda não foi confirmado. O cadastro completo (WhatsApp, nascimento, observações) só aparece para esses.
+2. Venda estornada = há um movimento `ESTORNO_VENDA` dela (do servidor ou provisório); a data e o motivo vêm do servidor ou da operação ainda aguardando envio.
+3. O número da maleta mostrado é `S{semana}-{ordem}`; o código do vendedor que o servidor usa (`S2-V03-1`) não está no banco local. Só o texto muda.
+4. O motivo de um envio não aceito é o texto que o servidor devolveu (`ultimo_erro`); sem ele: "Sem motivo informado. Fale com a dona."
+
+**Ficou para depois:** prazo offline, abrir sem internet e bloqueio (5.8); fotos sem internet (5.9); a tela de senha ao abrir sem internet.

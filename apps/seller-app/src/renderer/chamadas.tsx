@@ -7,6 +7,7 @@ import {
   formatarDolar,
   formatarGuarani,
   formatarReais,
+  dataParaTela,
   tresMoedas,
   type CotacaoParaTela,
 } from './moedas';
@@ -55,28 +56,44 @@ export function useCotacao(ponte: PonteDoCorona): {
   cotacao: CotacaoParaTela | null;
   data: string | null;
   carregada: boolean;
+  /** "Cotação do Dólar e do Guarani de hoje, 06/11/2026." ou a da última que o computador recebeu, sempre com a data. */
+  aviso: string | null;
+  /** "Cotação de 06/11/2026." (para a linha "Dados até..." dos relatórios). */
+  curta: string | null;
 } {
   const [estado, setEstado] = useState<{
     cotacao: CotacaoParaTela | null;
     data: string | null;
     carregada: boolean;
+    aviso: string | null;
+    curta: string | null;
   }>({
     cotacao: null,
     data: null,
     carregada: false,
+    aviso: null,
+    curta: null,
   });
   useEffect(() => {
     let ativo = true;
     void chamar<CotacaoDoDia>(ponte, { operacao: 'cotacao.hoje' }).then((r) => {
       if (!ativo) return;
       if (r.ok && r.dados.disponivel && r.dados.dolar && r.dados.guarani) {
+        const data = r.dados.dataDaCotacao;
+        const naTela = data ? dataParaTela(data) : null;
         setEstado({
           cotacao: { dolar: r.dados.dolar, guarani: r.dados.guarani },
-          data: r.dados.dataDaCotacao,
+          data,
           carregada: true,
+          aviso: naTela
+            ? r.dados.deDiaAnterior
+              ? TEXTOS.cotacao.ultima(naTela)
+              : TEXTOS.cotacao.deHoje(naTela)
+            : null,
+          curta: naTela ? TEXTOS.cotacao.doDia(naTela) : null,
         });
       } else {
-        setEstado({ cotacao: null, data: null, carregada: true });
+        setEstado({ cotacao: null, data: null, carregada: true, aviso: null, curta: null });
       }
     });
     return () => {

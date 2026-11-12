@@ -163,6 +163,7 @@ App do vendedor sem internet: SQLite criptografado, fila de envios e sincroniza�
 | 5.4 | backend: pull do vendedor (regra por tabela, diretório de clientes, expansão, conferência por resumo, pertença garantida no banco) | Mesclada (PR 98) · [detalhe](progresso/fase-5.md#tarefa-54-pull-do-vendedor-backend) |
 | 5.5 | backend: push do vendedor (`sync_log` com 90 dias, resultado por operação, hora corrigida, cliente campo a campo, envios com problema) | Mesclada (PR 99) · [detalhe](progresso/fase-5.md#tarefa-55-push-do-vendedor-backend) |
 | 5.6 | seller-app: motor de sincronização (aplicador do pull, camada de pendentes, operações locais com a outbox, ciclo envio → recebimento → conferência, agenda, estado na ponte) | Em revisão (PR 102) · [detalhe](progresso/fase-5.md#tarefa-56-motor-de-sincronização-corona-vendas) |
+| 5.7 | seller-app: telas no banco local (Vender, Minha maleta, Clientes e Meus números sem internet), indicador de envio, envios não aceitos com "Entendi", cotação com a data, edição de cliente | Em revisão (PR 104) · [detalhe](progresso/fase-5.md#tarefa-57-telas-no-banco-local-corona-vendas) |
 | 5.11 | backend: métricas e alertas do sync (idade da transação mais antiga, duração do pull e do push, defeito da conferência, computador parado, avisos da dona) | Mesclada (PR 101) · [detalhe](progresso/fase-5.md#tarefa-511-métricas-e-alertas-do-sync-backend) |
 
 As demais tarefas estão no [plano](progresso/fase-5-plano.md).

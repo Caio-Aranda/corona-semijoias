@@ -179,7 +179,9 @@ describe('Minha maleta', () => {
     });
     await abrir(ponte, 'Minha maleta');
     expect(await screen.findByText('Anel de prata')).toBeInTheDocument();
-    expect(screen.getByText('Dólar e Guarani pela cotação de hoje.')).toBeInTheDocument();
+    expect(
+      screen.getByText('Cotação do Dólar e do Guarani de hoje, 11/11/2026.'),
+    ).toBeInTheDocument();
     expect(screen.getAllByText(/US\$ 10,00/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Gs\. 71\.429/).length).toBeGreaterThan(0);
   });
@@ -188,7 +190,7 @@ describe('Minha maleta', () => {
     const { ponte } = ponteDeTrabalho();
     await abrir(ponte, 'Minha maleta');
     expect(await screen.findByText('Anel de prata')).toBeInTheDocument();
-    expect(screen.queryByText('Dólar e Guarani pela cotação de hoje.')).not.toBeInTheDocument();
+    expect(screen.queryByText(/Cotação do Dólar e do Guarani de hoje/)).not.toBeInTheDocument();
     expect(screen.getByText(/Sem cotação do Dólar e do Guarani/)).toBeInTheDocument();
     expect(screen.queryByText(/US\$/)).not.toBeInTheDocument();
   });

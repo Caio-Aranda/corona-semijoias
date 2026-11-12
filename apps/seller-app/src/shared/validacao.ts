@@ -1,6 +1,8 @@
 import type { DadosDeEntrada, DadosDeNovaSenha } from './ponte';
 import {
   AGRUPAMENTOS_DE_VENDAS,
+  CAMPOS_DO_CLIENTE_EDITAVEIS,
+  type CampoDoClienteEditavel,
   FORMAS_DE_PAGAMENTO,
   OPERACOES_DA_API,
   SITUACOES_DA_VENDA,
@@ -142,6 +144,22 @@ function validarCliente(v: unknown): ClienteParaCadastrar | null {
   return cliente;
 }
 
+function validarCamposDoCliente(
+  v: unknown,
+): Partial<Record<CampoDoClienteEditavel, string>> | null {
+  if (!ehObjeto(v)) return null;
+  const saida: Partial<Record<CampoDoClienteEditavel, string>> = {};
+  for (const [campo, valor] of Object.entries(v)) {
+    if (!(CAMPOS_DO_CLIENTE_EDITAVEIS as readonly string[]).includes(campo)) return null;
+    if (!ehTexto(valor)) return null;
+    if (campo === 'dataNascimento' ? valor !== '' && !ehData(valor) : valor.length > 2000)
+      return null;
+    if (campo === 'nome' && valor.trim() === '') return null;
+    saida[campo as CampoDoClienteEditavel] = valor;
+  }
+  return Object.keys(saida).length > 0 ? saida : null;
+}
+
 /** Período opcional: duas datas AAAA-MM-DD. */
 function periodo(o: Record<string, unknown>): { de?: string; ate?: string } | null {
   const de = opcional(o, 'de', ehData);
@@ -216,6 +234,14 @@ export function validarChamada(v: unknown): PedidoDeChamada | null {
       const cliente = validarCliente(v.cliente);
       return cliente ? { operacao, cliente } : null;
     }
+    case 'clientes.alterar': {
+      const campos = validarCamposDoCliente(v.campos);
+      return ehUuid(v.id) && campos ? { operacao, id: v.id, campos } : null;
+    }
+    case 'envios.naoAceitos':
+      return { operacao };
+    case 'envios.entendi':
+      return ehUuid(v.id) ? { operacao, id: v.id } : null;
     case 'fotos.ver': {
       if (!ehTexto(v.hash) || !HASH.test(v.hash)) return null;
       if (!(TAMANHOS_DE_FOTO as readonly unknown[]).includes(v.tamanho)) return null;

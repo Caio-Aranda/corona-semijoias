@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import type { Maleta } from '../../shared/dados';
 import type { PonteDoCorona } from '../../shared/ponte';
 import { chamar, Dinheiro, useCotacao } from '../chamadas';
+import { AvisoDosDados } from '../IndicadorDeEnvio';
 import { dataParaTela } from '../moedas';
 import { TEXTOS } from '../textos';
 import { PaginaDoVendedor } from './PaginaDoVendedor';
@@ -15,7 +16,7 @@ export interface TelaMinhaMaletaProps {
 
 /** Minha maleta: as maletas que estão com o vendedor, peça por peça, e o botão Conferir maleta. */
 export function TelaMinhaMaleta({ ponte, aoVoltar, aoConferir }: TelaMinhaMaletaProps) {
-  const { cotacao } = useCotacao(ponte);
+  const { cotacao, aviso: avisoDaCotacao } = useCotacao(ponte);
   const [maletas, setMaletas] = useState<Maleta[] | null>(null);
   const [erro, setErro] = useState<string | null>(null);
 
@@ -33,7 +34,7 @@ export function TelaMinhaMaleta({ ponte, aoVoltar, aoConferir }: TelaMinhaMaleta
 
   const T = TEXTOS.maleta;
   return (
-    <PaginaDoVendedor titulo={T.titulo} aoVoltar={aoVoltar}>
+    <PaginaDoVendedor ponte={ponte} titulo={T.titulo} aoVoltar={aoVoltar}>
       <EstadoDaLista
         carregando={maletas === null && erro === null}
         erro={erro}
@@ -41,8 +42,11 @@ export function TelaMinhaMaleta({ ponte, aoVoltar, aoConferir }: TelaMinhaMaleta
         aoTentarDeNovo={() => void carregar()}
         rotuloTentarDeNovo={TEXTOS.tentarDeNovo}
       >
+        {maletas !== null ? <AvisoDosDados ponte={ponte} /> : null}
         {maletas !== null && maletas.length > 0 ? (
-          <p className="vendas-texto">{cotacao ? T.cotacaoDeHoje : T.cotacaoSem}</p>
+          <p className="vendas-texto">
+            {cotacao && avisoDaCotacao ? avisoDaCotacao : T.cotacaoSem}
+          </p>
         ) : null}
         {maletas !== null && maletas.length === 0 ? (
           <p className="vendas-texto">{T.vazia}</p>

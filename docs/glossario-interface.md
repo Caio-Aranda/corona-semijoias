@@ -505,6 +505,8 @@ Quando uma operação não consegue ser enviada 5 vezes seguidas (o envio contin
 
 > Cotação de 05/11/2026, a última que este computador recebeu. Conecte-se à internet para receber a mais nova. (cotação do dia anterior; a de hoje: "Cotação do Dólar e do Guarani de hoje, 06/11/2026.")
 
+> Este computador ainda não está pronto para guardar as suas vendas. Conecte-se à internet e entre de novo. (o banco do computador não abriu)
+
 > **Editar cliente** · Salvar alterações · Cliente atualizado. · "Só o vendedor que atende o cliente pode mudar o cadastro dele." · Sem mudança: "Você não mudou nada neste cadastro."
 
 Ao abrir **sem internet**, o Corona Vendas pede a senha (decisão de 11/11/2026). Senha errada: o mesmo "Usuário ou senha incorretos. Confira o que você digitou e tente de novo." do login. Depois de 5 erros seguidos:

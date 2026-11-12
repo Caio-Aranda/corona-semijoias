@@ -34,6 +34,42 @@ export const TEXTOS = {
     naoSaoIguais: 'As duas senhas não são iguais. Digite a mesma senha nos dois campos.',
   },
 
+  /** A cotação mostrada com a data (ADR-0006): a de hoje ou a última que o computador recebeu. */
+  cotacao: {
+    deHoje: (data: string) => `Cotação do Dólar e do Guarani de hoje, ${data}.`,
+    ultima: (data: string) =>
+      `Cotação de ${data}, a última que este computador recebeu. Conecte-se à internet para receber a mais nova.`,
+    doDia: (data: string) => `Cotação de ${data}.`,
+  },
+
+  /** O indicador de envio (glossário, parte 7 e tarefa 5.7): palavras comuns, nunca "fila" nem "pendente". */
+  envio: {
+    area: 'Situação dos envios',
+    tudoEnviado: 'Com internet. Tudo enviado.',
+    enviando: 'Com internet. Enviando suas vendas…',
+    semInternet: 'Sem internet. Suas vendas estão salvas e serão enviadas quando você conectar.',
+    vendasAguardando: (n: number) =>
+      n === 1 ? '1 venda aguardando envio' : `${n} vendas aguardando envio`,
+    itensAguardando: (n: number) =>
+      n === 1 ? '1 item aguardando envio' : `${n} itens aguardando envio`,
+    naoConseguiu: 'Uma venda não conseguiu ser enviada. Avise a dona.',
+    naoAceitas: (n: number, soVendas: boolean) =>
+      soVendas
+        ? n === 1
+          ? '1 venda não foi aceita. A dona já foi avisada.'
+          : `${n} vendas não foram aceitas. A dona já foi avisada.`
+        : n === 1
+          ? '1 item não foi aceito. A dona já foi avisada.'
+          : `${n} itens não foram aceitos. A dona já foi avisada.`,
+    tituloDaLista: 'Envios que não foram aceitos',
+    feitoEm: (quando: string) => `Feito em ${quando}`,
+    motivo: 'Motivo',
+    entendi: 'Entendi',
+    entendiDe: (descricao: string) => `Entendi: ${descricao}`,
+    dadosAte: (quando: string) => `Dados até ${quando}.`,
+    semDados: 'Ainda não recebemos os dados da loja neste computador. Conecte-se à internet.',
+  },
+
   /** Navegação comum. */
   voltar: 'Voltar',
   carregando: 'Buscando...',
@@ -176,6 +212,10 @@ export const TEXTOS = {
 
   cliente: {
     titulo: 'Cadastrar cliente',
+    tituloDaEdicao: 'Editar cliente',
+    salvarEdicao: 'Salvar alterações',
+    semMudanca: 'Você não mudou nada neste cadastro.',
+    observacoes: 'Observações',
     nome: 'Nome',
     telefone: 'Telefone',
     whatsapp: 'WhatsApp',
@@ -211,6 +251,9 @@ export const TEXTOS = {
     vendasDoCliente: 'Vendas deste cliente',
     semVendas: 'Este cliente ainda não comprou com você.',
     salvo: 'Cliente cadastrado.',
+    editar: 'Editar cliente',
+    atualizado: 'Cliente atualizado.',
+    soQuemAtende: 'Só o vendedor que atende o cliente pode mudar o cadastro dele.',
   },
 
   numeros: {

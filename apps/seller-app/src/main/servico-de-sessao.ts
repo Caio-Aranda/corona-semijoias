@@ -5,6 +5,7 @@ import type {
   ResultadoDeEntrada,
 } from '../shared/ponte';
 import type { DadosDoUsuario } from './api';
+import { ehConsultaLocal } from './local/consultas-locais';
 import type { GuardaDeTokens } from './guarda-de-tokens';
 import type { Falha, Resultado } from './tipos';
 
@@ -17,6 +18,15 @@ export interface PreparoDoBancoLocal {
 export interface ControleDoMotor {
   ligar(): void;
   desligar(): void;
+}
+
+/**
+ * As telas leem e gravam no banco do computador (tarefa 5.7). Com o banco aberto, tudo que não é foto nem "quem sou eu"
+ * é atendido aqui, sem rede; sem banco (uma falha na abertura), a chamada ainda segue pela internet.
+ */
+export interface ConsultasDoBancoLocal {
+  readonly disponivel: boolean;
+  chamar(pedido: PedidoDeChamada): Resultado<unknown>;
 }
 
 /** Chamadas de negócio que o processo principal faz em nome da tela. */
@@ -40,6 +50,7 @@ export class ServicoDeSessao {
     private readonly prontidao: Promise<void> = Promise.resolve(),
     private readonly bancoLocal?: PreparoDoBancoLocal,
     private readonly motor?: ControleDoMotor,
+    private readonly consultas?: ConsultasDoBancoLocal,
   ) {}
 
   /** Chamado quando a guarda avisa que o aplicativo está desatualizado. */
@@ -106,6 +117,10 @@ export class ServicoDeSessao {
   }
 
   async chamarApi(pedido: PedidoDeChamada): Promise<ResultadoDeChamada> {
+    if (this.consultas?.disponivel && ehConsultaLocal(pedido)) {
+      const local = this.consultas.chamar(pedido);
+      return local.ok ? { ok: true, dados: local.dados } : this.falhaDaChamada(local.falha);
+    }
     const r =
       pedido.operacao === 'eu'
         ? await this.guarda.comToken((token) => this.api.eu(token))
