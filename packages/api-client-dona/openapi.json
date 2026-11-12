@@ -1302,6 +1302,35 @@
         },
         "type" : "object"
       },
+      "Garantia" : {
+        "properties" : {
+          "limiteReembolsoSemanal" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "percentualAlertaDevolucao" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "prazoArrependimentoDias" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "prazoDefeitoDias" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "valorAprovacaoReembolso" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "ImportacaoDeFotosRelatorio" : {
         "properties" : {
           "gravadas" : {
@@ -3349,6 +3378,42 @@
           }
         },
         "required" : [ "nome", "perfil", "version" ],
+        "type" : "object"
+      },
+      "PedidoDeGarantia" : {
+        "properties" : {
+          "limiteReembolsoSemanal" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "percentualAlertaDevolucao" : {
+            "format" : "int32",
+            "maximum" : 100,
+            "minimum" : 1,
+            "type" : "integer"
+          },
+          "prazoArrependimentoDias" : {
+            "format" : "int32",
+            "maximum" : 365,
+            "minimum" : 1,
+            "type" : "integer"
+          },
+          "prazoDefeitoDias" : {
+            "format" : "int32",
+            "maximum" : 365,
+            "minimum" : 1,
+            "type" : "integer"
+          },
+          "valorAprovacaoReembolso" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "required" : [ "percentualAlertaDevolucao", "prazoArrependimentoDias", "prazoDefeitoDias" ],
         "type" : "object"
       },
       "PedidoDeItem" : {
@@ -7181,6 +7246,60 @@
         } ],
         "summary" : "Desfazer uma compra",
         "tags" : [ "compras-da-dona-controller" ]
+      }
+    },
+    "/api/dona/configuracoes/garantia" : {
+      "get" : {
+        "description" : "Dias para desistir e para devolver por defeito, limite de reembolso por semana, valor a partir do qual a dona aprova antes e porcentagem que avisa sobre um vendedor. Dinheiro vazio = sem limite.",
+        "operationId" : "lerGarantia",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Garantia"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ver a garantia e os limites de devolução",
+        "tags" : [ "garantia-da-dona-controller" ]
+      },
+      "put" : {
+        "description" : "Grava os cinco valores. Cada valor que mudou fica na auditoria com o valor antigo. Fora da faixa, 400.",
+        "operationId" : "alterarGarantia",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeGarantia"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Garantia"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Mudar a garantia e os limites de devolução",
+        "tags" : [ "garantia-da-dona-controller" ]
       }
     },
     "/api/dona/cotacoes/converter" : {

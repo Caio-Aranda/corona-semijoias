@@ -559,6 +559,14 @@
             "format" : "int32",
             "type" : "integer"
           },
+          "prazoArrependimentoDias" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "prazoDefeitoDias" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
           "situacaoDoAparelho" : {
             "type" : "string"
           },

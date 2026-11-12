@@ -62,6 +62,8 @@ export class ServidorFalso {
     limiteDescontoPercentual: 20,
     tempoMaximoOfflineDias: 10,
     situacaoDoAparelho: 'ATIVO',
+    prazoArrependimentoDias: 7,
+    prazoDefeitoDias: 30,
   };
 
   /**

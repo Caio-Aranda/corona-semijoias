@@ -405,6 +405,14 @@ export type FotoPrincipal = {
     miniaturaUrl?: string;
 };
 
+export type Garantia = {
+    limiteReembolsoSemanal?: string;
+    percentualAlertaDevolucao?: number;
+    prazoArrependimentoDias?: number;
+    prazoDefeitoDias?: number;
+    valorAprovacaoReembolso?: string;
+};
+
 export type ImportacaoDeFotosRelatorio = {
     gravadas?: number;
     jaExistiam?: number;
@@ -1041,6 +1049,14 @@ export type PedidoDeEdicao = {
     perfil: string;
     vendedorId?: string;
     version: number;
+};
+
+export type PedidoDeGarantia = {
+    limiteReembolsoSemanal?: string;
+    percentualAlertaDevolucao: number;
+    prazoArrependimentoDias: number;
+    prazoDefeitoDias: number;
+    valorAprovacaoReembolso?: string;
 };
 
 export type PedidoDeItem = {
@@ -2402,6 +2418,38 @@ export type Desfazer1Responses = {
 };
 
 export type Desfazer1Response = Desfazer1Responses[keyof Desfazer1Responses];
+
+export type LerGarantiaData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/dona/configuracoes/garantia';
+};
+
+export type LerGarantiaResponses = {
+    /**
+     * OK
+     */
+    200: Garantia;
+};
+
+export type LerGarantiaResponse = LerGarantiaResponses[keyof LerGarantiaResponses];
+
+export type AlterarGarantiaData = {
+    body: PedidoDeGarantia;
+    path?: never;
+    query?: never;
+    url: '/api/dona/configuracoes/garantia';
+};
+
+export type AlterarGarantiaResponses = {
+    /**
+     * OK
+     */
+    200: Garantia;
+};
+
+export type AlterarGarantiaResponse = AlterarGarantiaResponses[keyof AlterarGarantiaResponses];
 
 export type ConverterData = {
     body: ConversaoPedido;

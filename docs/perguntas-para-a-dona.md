@@ -133,6 +133,51 @@ Si no responde, usamos: **no.** Con el registro desactivado no vende, no cuenta 
 
 ---
 
+## 7. Devoluciones, cambios y crédito (Fase 6)
+
+Estas preguntas se identifican con **D1 a D13** (así no chocan con la numeración de arriba). La **D1** completa la pregunta 9. Ya funciona con la opción de cada una; se puede cambiar después en la configuración de la garantía.
+
+**D1. ¿Cuántos días tiene el cliente para desistir de la pieza? ¿Y para devolver por defecto? ¿Cambia según el tipo de pieza?**
+Si no responde, usamos: **7 días para desistir, 30 para defecto, igual para todas las piezas.**
+
+**D2. "No me quedó" (talla) ¿cuenta como desistimiento?**
+Si no responde, usamos: **sí, con el mismo plazo del desistimiento.**
+
+**D3. ¿Hasta cuánto puede un vendedor devolver en dinero por semana? ¿Desde qué valor quiere aprobar usted antes?**
+Si no responde, usamos: **sin límite semanal y sin aprobación por valor** hasta que usted los defina; el aviso de muchas devoluciones (D9) sí funciona.
+
+**D4. En un cambio por una pieza más barata, ¿la diferencia queda como crédito del cliente o puede volver en dinero?**
+Si no responde, usamos: **queda como crédito.**
+
+**D5. ¿El crédito del cliente vence?**
+Si no responde, usamos: **no vence.**
+
+**D6. ¿El cliente puede usar el crédito con otro vendedor?**
+Si no responde, usamos: **solo con el vendedor que hizo el cambio; con otro, solo usted lo libera, con internet.**
+
+**D7. ¿El cliente puede devolver la pieza a otro vendedor (no al que se la vendió)?**
+Si no responde, usamos: **no: solo al que vendió, o a usted en la tienda.**
+
+**D8. Fuera del plazo, el vendedor pide autorización y el cliente espera la respuesta. ¿Puede ser? ¿Cuántos días vale la autorización?**
+Si no responde, usamos: **sí; vale 7 días.**
+
+**D9. ¿A partir de qué porcentaje de devolución quiere que le avisemos sobre un vendedor?**
+Si no responde, usamos: **20% de lo vendido en las últimas 4 semanas.**
+
+**D10. ¿Es necesaria ahora la foto de la pieza devuelta?**
+Si no responde, usamos: **queda para después; el motivo es obligatorio.**
+
+**D11. Cuando el sistema marque una devolución "para revisión" y usted no la acepte, ¿el valor se cobra al vendedor en el acerto?**
+Si no responde, usamos: **sí, como pendiente del vendedor en el próximo acerto.**
+
+**D12. Una pieza que se rompió en la maleta sin haberse vendido: ¿el vendedor la separa como "con defecto" en el programa o solo la entrega en el acerto?**
+Si no responde, usamos: **solo la entrega en el acerto** (usted aprueba el defecto allí).
+
+**D13. En la devolución de una venta a plazo, ¿lo devuelto primero descuenta lo que el cliente todavía debe y solo el resto vuelve en dinero?**
+Si no responde, usamos: **sí.**
+
+---
+
 Muchas gracias.
 
 <!--
