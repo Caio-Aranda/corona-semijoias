@@ -71,6 +71,11 @@ export class MotorDeSincronizacao {
     this.agenda.desligar();
   }
 
+  /** Avisa a tela se o estado mudou (por exemplo, depois do "Entendi"). */
+  atualizarEstado(): void {
+    this.avisar();
+  }
+
   /** Uma operação foi gravada no computador. */
   gravou(): void {
     this.agenda.gravou();

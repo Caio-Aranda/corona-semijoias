@@ -92,3 +92,90 @@ describe('motor de envio na sessão (tarefa 5.6)', () => {
     expect(outro.ligar).not.toHaveBeenCalled();
   });
 });
+
+describe('telas no banco local (tarefa 5.7)', () => {
+  const guardaComToken = {
+    comToken: vi.fn(() => Promise.resolve({ ok: true as const, dados: 'da-internet' })),
+  } as unknown as GuardaDeTokens;
+
+  it('com o banco aberto, venda, maleta e clientes são atendidos no computador, sem passar pela internet', async () => {
+    const consultas = {
+      disponivel: true,
+      chamar: vi.fn(() => ({ ok: true as const, dados: ['do-banco'] })),
+    };
+    const s = new ServicoDeSessao(
+      guardaComToken,
+      api,
+      Promise.resolve(),
+      undefined,
+      undefined,
+      consultas,
+    );
+    for (const operacao of ['maletas.listar', 'cotacao.hoje', 'relatorios.aReceber'] as const) {
+      expect(await s.chamarApi({ operacao })).toEqual({ ok: true, dados: ['do-banco'] });
+    }
+    expect(guardaComToken.comToken).not.toHaveBeenCalled();
+  });
+
+  it('foto e "quem sou eu" continuam na internet', async () => {
+    const consultas = { disponivel: true, chamar: vi.fn() };
+    const s = new ServicoDeSessao(
+      guardaComToken,
+      api,
+      Promise.resolve(),
+      undefined,
+      undefined,
+      consultas,
+    );
+    await s.chamarApi({ operacao: 'eu' });
+    await s.chamarApi({ operacao: 'fotos.ver', hash: 'a'.repeat(64), tamanho: 'miniatura' });
+    expect(consultas.chamar).not.toHaveBeenCalled();
+    expect(guardaComToken.comToken).toHaveBeenCalledTimes(2);
+  });
+
+  it('a recusa do banco chega à tela com a mensagem em português e o cliente que já existe', async () => {
+    const consultas = {
+      disponivel: true,
+      chamar: vi.fn(() => ({
+        ok: false as const,
+        falha: {
+          tipo: 'recusada' as const,
+          status: 409,
+          mensagem: 'Este cliente já está cadastrado: Ana.',
+          clienteExistente: { id: 'x', nome: 'Ana' },
+        },
+      })),
+    };
+    const s = new ServicoDeSessao(
+      guardaComToken,
+      api,
+      Promise.resolve(),
+      undefined,
+      undefined,
+      consultas,
+    );
+    expect(await s.chamarApi({ operacao: 'envios.naoAceitos' })).toEqual({
+      ok: false,
+      motivo: 'erro',
+      mensagem: 'Este cliente já está cadastrado: Ana.',
+      clienteExistente: { id: 'x', nome: 'Ana' },
+    });
+  });
+
+  it('sem banco aberto, a chamada segue pela internet', async () => {
+    const consultas = { disponivel: false, chamar: vi.fn() };
+    const s = new ServicoDeSessao(
+      guardaComToken,
+      api,
+      Promise.resolve(),
+      undefined,
+      undefined,
+      consultas,
+    );
+    expect(await s.chamarApi({ operacao: 'maletas.listar' })).toEqual({
+      ok: true,
+      dados: 'da-internet',
+    });
+    expect(consultas.chamar).not.toHaveBeenCalled();
+  });
+});

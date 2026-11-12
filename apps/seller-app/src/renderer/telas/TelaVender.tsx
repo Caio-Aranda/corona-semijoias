@@ -4,7 +4,7 @@ import type { Cliente, LinhaDaMaleta, Maleta, Venda } from '../../shared/dados';
 import { FORMAS_DE_PAGAMENTO, type FormaDePagamento } from '../../shared/operacoes';
 import type { PonteDoCorona } from '../../shared/ponte';
 import { chamar, Dinheiro, novoId, useCotacao, useFoto } from '../chamadas';
-import { centavosDeTexto, dataParaTela, formatarReais, lerReaisDigitados } from '../moedas';
+import { centavosDeTexto, formatarReais, lerReaisDigitados } from '../moedas';
 import { TEXTOS } from '../textos';
 import { detalhesDaPeca } from './detalhes-da-peca';
 import { BuscaPorNome } from './BuscaPorNome';
@@ -43,7 +43,7 @@ function descontoEmCentavos(digitado: string): bigint | null {
  */
 export function TelaVender({ ponte, aoVoltar, aoVerVendas }: TelaVenderProps) {
   const T = TEXTOS.venda;
-  const { cotacao, data: dataDaCotacao, carregada } = useCotacao(ponte);
+  const { cotacao, aviso: avisoDaCotacao, carregada } = useCotacao(ponte);
   const [maletas, setMaletas] = useState<Maleta[] | null>(null);
   // Vender só depois de conferir (decisão de 11/11/2026): a maleta ainda não conferida não aparece aqui.
   const [haParaConferir, setHaParaConferir] = useState(false);
@@ -244,14 +244,14 @@ export function TelaVender({ ponte, aoVoltar, aoVerVendas }: TelaVenderProps) {
 
   if (erroInicial) {
     return (
-      <PaginaDoVendedor titulo={T.titulo} aoVoltar={aoVoltar}>
+      <PaginaDoVendedor ponte={ponte} titulo={T.titulo} aoVoltar={aoVoltar}>
         <Aviso tipo="erro">{erroInicial}</Aviso>
       </PaginaDoVendedor>
     );
   }
   if (maletas === null) {
     return (
-      <PaginaDoVendedor titulo={T.titulo} aoVoltar={aoVoltar}>
+      <PaginaDoVendedor ponte={ponte} titulo={T.titulo} aoVoltar={aoVoltar}>
         <p className="vendas-texto" aria-busy="true">
           {T.textoCarregando}
         </p>
@@ -260,7 +260,7 @@ export function TelaVender({ ponte, aoVoltar, aoVerVendas }: TelaVenderProps) {
   }
   if (maletas.length === 0) {
     return (
-      <PaginaDoVendedor titulo={T.titulo} aoVoltar={aoVoltar}>
+      <PaginaDoVendedor ponte={ponte} titulo={T.titulo} aoVoltar={aoVoltar}>
         <Aviso tipo="informacao">{haParaConferir ? T.conferirAntes : T.semMaleta}</Aviso>
       </PaginaDoVendedor>
     );
@@ -268,7 +268,7 @@ export function TelaVender({ ponte, aoVoltar, aoVerVendas }: TelaVenderProps) {
 
   if (feita) {
     return (
-      <PaginaDoVendedor titulo={T.titulo} aoVoltar={aoVoltar}>
+      <PaginaDoVendedor ponte={ponte} titulo={T.titulo} aoVoltar={aoVoltar}>
         <Aviso tipo="sucesso" titulo={T.registrada}>
           {`${feita.clienteNome}.`}
         </Aviso>
@@ -291,11 +291,11 @@ export function TelaVender({ ponte, aoVoltar, aoVerVendas }: TelaVenderProps) {
   const aReceber = pagoCentavos === null ? null : total - pagoCentavos;
 
   return (
-    <PaginaDoVendedor titulo={T.titulo} aoVoltar={aoVoltar}>
+    <PaginaDoVendedor ponte={ponte} titulo={T.titulo} aoVoltar={aoVoltar}>
       {problema ? <Aviso tipo="erro">{problema}</Aviso> : null}
       {carregada ? (
         <p className="vendas-texto vendas-texto--pequeno">
-          {cotacao && dataDaCotacao ? T.cotacaoDe(dataParaTela(dataDaCotacao)) : T.cotacaoSem}
+          {cotacao && avisoDaCotacao ? avisoDaCotacao : T.cotacaoSem}
         </p>
       ) : null}
 

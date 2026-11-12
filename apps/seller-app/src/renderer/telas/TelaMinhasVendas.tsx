@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Venda } from '../../shared/dados';
 import type { PonteDoCorona } from '../../shared/ponte';
 import { chamar, cotacaoDaVenda, Dinheiro, novoId } from '../chamadas';
+import { AvisoDosDados } from '../IndicadorDeEnvio';
 import { dataParaTela } from '../moedas';
 import { TEXTOS } from '../textos';
 import { PaginaDoVendedor } from './PaginaDoVendedor';
@@ -72,6 +73,7 @@ export function TelaMinhasVendas({ ponte, aoVoltar }: TelaMinhasVendasProps) {
     const cotacao = cotacaoDaVenda(aberta);
     return (
       <PaginaDoVendedor
+        ponte={ponte}
         titulo={`${T.detalhe}: ${aberta.clienteNome}`}
         aoVoltar={() => setAberta(null)}
       >
@@ -153,7 +155,8 @@ export function TelaMinhasVendas({ ponte, aoVoltar }: TelaMinhasVendasProps) {
   }
 
   return (
-    <PaginaDoVendedor titulo={T.titulo} aoVoltar={aoVoltar}>
+    <PaginaDoVendedor ponte={ponte} titulo={T.titulo} aoVoltar={aoVoltar}>
+      <AvisoDosDados ponte={ponte} />
       <EstadoDaLista
         carregando={vendas === null && erro === null}
         erro={erro}

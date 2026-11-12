@@ -1,5 +1,7 @@
 import { Aviso, Botao, CabecalhoDeMarca } from '@corona/ui';
 import { useState } from 'react';
+import type { PonteDoCorona } from '../../shared/ponte';
+import { IndicadorDeEnvio } from '../IndicadorDeEnvio';
 
 export type Destino = 'vender' | 'maleta' | 'clientes' | 'numeros';
 
@@ -11,6 +13,8 @@ const BOTOES: readonly { destino: Destino; nome: string }[] = [
 ];
 
 export interface TelaInicialProps {
+  /** Para o indicador de envio; sem ela (testes de tela), o indicador não aparece. */
+  ponte?: PonteDoCorona;
   /** Nome da pessoa, quando já se sabe. */
   nome: string | null;
   aoSair: () => void | Promise<void>;
@@ -20,7 +24,7 @@ export interface TelaInicialProps {
 }
 
 /** Tela inicial do vendedor (§19.7): quatro botões grandes. O que ainda não existe mostra "Em breve". */
-export function TelaInicial({ nome, aoSair, aoEscolher, prontos = [] }: TelaInicialProps) {
+export function TelaInicial({ ponte, nome, aoSair, aoEscolher, prontos = [] }: TelaInicialProps) {
   const [emBreve, setEmBreve] = useState<string | null>(null);
 
   return (
@@ -36,6 +40,7 @@ export function TelaInicial({ nome, aoSair, aoEscolher, prontos = [] }: TelaInic
       />
       <main className="vendas-conteudo">
         <h1 className="vendas-titulo">{nome ? `Olá, ${nome}.` : 'Olá.'}</h1>
+        {ponte ? <IndicadorDeEnvio ponte={ponte} /> : null}
         {emBreve ? (
           <Aviso tipo="informacao" titulo="Em breve.">
             {`${emBreve} ainda está sendo preparado. Logo você poderá usar por aqui.`}

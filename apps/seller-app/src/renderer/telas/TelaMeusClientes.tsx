@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import type { Cliente, Devedor, RelatorioAReceber, Venda } from '../../shared/dados';
 import type { PonteDoCorona } from '../../shared/ponte';
 import { chamar, cotacaoDaVenda, Dinheiro, DinheiroConvertido } from '../chamadas';
+import { AvisoDosDados } from '../IndicadorDeEnvio';
 import { dataParaTela } from '../moedas';
 import { TEXTOS } from '../textos';
 import { FormularioDeCliente } from './FormularioDeCliente';
@@ -21,6 +22,7 @@ export function TelaMeusClientes({ ponte, aoVoltar }: TelaMeusClientesProps) {
   const [devedores, setDevedores] = useState<Record<string, Devedor>>({});
   const [erro, setErro] = useState<string | null>(null);
   const [cadastrando, setCadastrando] = useState(false);
+  const [editando, setEditando] = useState(false);
   const [aberto, setAberto] = useState<Cliente | null>(null);
   const [vendas, setVendas] = useState<Venda[] | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
@@ -66,7 +68,7 @@ export function TelaMeusClientes({ ponte, aoVoltar }: TelaMeusClientesProps) {
 
   if (cadastrando) {
     return (
-      <PaginaDoVendedor titulo={T.titulo} aoVoltar={() => setCadastrando(false)}>
+      <PaginaDoVendedor ponte={ponte} titulo={T.titulo} aoVoltar={() => setCadastrando(false)}>
         <FormularioDeCliente
           ponte={ponte}
           aoCancelar={() => setCadastrando(false)}
@@ -81,10 +83,36 @@ export function TelaMeusClientes({ ponte, aoVoltar }: TelaMeusClientesProps) {
     );
   }
 
+  if (aberto && editando) {
+    return (
+      <PaginaDoVendedor
+        ponte={ponte}
+        titulo={`${T.editar}: ${aberto.nome}`}
+        aoVoltar={() => setEditando(false)}
+      >
+        <FormularioDeCliente
+          ponte={ponte}
+          editar={aberto}
+          aoCancelar={() => setEditando(false)}
+          aoSalvar={(atualizado) => {
+            setEditando(false);
+            setAviso(T.atualizado);
+            setAberto(atualizado);
+            void carregar();
+          }}
+        />
+      </PaginaDoVendedor>
+    );
+  }
+
   if (aberto) {
     const deve = devedores[aberto.id];
     return (
-      <PaginaDoVendedor titulo={`${T.detalhe}: ${aberto.nome}`} aoVoltar={() => setAberto(null)}>
+      <PaginaDoVendedor
+        ponte={ponte}
+        titulo={`${T.detalhe}: ${aberto.nome}`}
+        aoVoltar={() => setAberto(null)}
+      >
         {aviso ? <Aviso tipo="sucesso">{aviso}</Aviso> : null}
         <ul className="vendas-lista vendas-lista--dados">
           {aberto.telefone ? (
@@ -112,6 +140,18 @@ export function TelaMeusClientes({ ponte, aoVoltar }: TelaMeusClientesProps) {
         <p className="vendas-total">
           {TEXTOS.vendas.aReceber}: <AReceber devedor={deve} />
         </p>
+        {aberto.meu ? (
+          <Botao
+            onClick={() => {
+              setAviso(null);
+              setEditando(true);
+            }}
+          >
+            {T.editar}
+          </Botao>
+        ) : (
+          <p className="vendas-texto vendas-texto--pequeno">{T.soQuemAtende}</p>
+        )}
         <h2 className="vendas-subtitulo">{T.vendasDoCliente}</h2>
         {vendas === null ? (
           <p className="vendas-texto" aria-busy="true">
@@ -138,7 +178,8 @@ export function TelaMeusClientes({ ponte, aoVoltar }: TelaMeusClientesProps) {
   }
 
   return (
-    <PaginaDoVendedor titulo={T.titulo} aoVoltar={aoVoltar}>
+    <PaginaDoVendedor ponte={ponte} titulo={T.titulo} aoVoltar={aoVoltar}>
+      <AvisoDosDados ponte={ponte} />
       <Campo
         rotulo={T.buscar}
         value={busca}

@@ -133,6 +133,7 @@ export function App({ ponte }: AppProps) {
           case 'inicio':
             return (
               <TelaInicial
+                ponte={ponte}
                 nome={tela.usuario?.nome ?? null}
                 prontos={PRONTOS}
                 aoEscolher={(destino) => setRota({ tela: destino })}

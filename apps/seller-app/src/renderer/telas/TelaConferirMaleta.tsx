@@ -84,7 +84,7 @@ export function TelaConferirMaleta({ ponte, maleta, aoVoltar }: TelaConferirMale
 
   if (feita) {
     return (
-      <PaginaDoVendedor titulo={T.titulo} aoVoltar={aoVoltar}>
+      <PaginaDoVendedor ponte={ponte} titulo={T.titulo} aoVoltar={aoVoltar}>
         <Aviso tipo={feita.divergencias === 0 ? 'sucesso' : 'atencao'} titulo={T.feita}>
           {feita.divergencias === 0 ? T.feitaTudoCerto : T.feitaComDiferenca(feita.divergencias)}
         </Aviso>
@@ -120,7 +120,7 @@ export function TelaConferirMaleta({ ponte, maleta, aoVoltar }: TelaConferirMale
   );
 
   return (
-    <PaginaDoVendedor titulo={T.titulo} aoVoltar={aoVoltar}>
+    <PaginaDoVendedor ponte={ponte} titulo={T.titulo} aoVoltar={aoVoltar}>
       <p className="vendas-texto">{T.ajuda}</p>
       {erro ? <Aviso tipo="erro">{erro}</Aviso> : null}
       <form className="vendas-leitor" onSubmit={(e) => void ler(e)}>

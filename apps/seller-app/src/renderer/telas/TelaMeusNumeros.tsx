@@ -3,7 +3,8 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import type { RelatorioAReceber, RelatorioDeVendas, TotaisDeRelatorio } from '../../shared/dados';
 import type { AgrupamentoDeVendas } from '../../shared/operacoes';
 import type { PonteDoCorona } from '../../shared/ponte';
-import { chamar, DinheiroConvertido } from '../chamadas';
+import { chamar, DinheiroConvertido, useCotacao } from '../chamadas';
+import { AvisoDosDados } from '../IndicadorDeEnvio';
 import { TEXTOS } from '../textos';
 import { PaginaDoVendedor } from './PaginaDoVendedor';
 
@@ -26,6 +27,7 @@ interface Numeros {
  */
 export function TelaMeusNumeros({ ponte, aoVoltar, aoVerVendas }: TelaMeusNumerosProps) {
   const T = TEXTOS.numeros;
+  const { curta: cotacaoCurta } = useCotacao(ponte);
   const [de, setDe] = useState('');
   const [ate, setAte] = useState('');
   const [agrupar, setAgrupar] = useState<AgrupamentoDeVendas>('cliente');
@@ -78,8 +80,9 @@ export function TelaMeusNumeros({ ponte, aoVoltar, aoVerVendas }: TelaMeusNumero
   }
 
   return (
-    <PaginaDoVendedor titulo={T.titulo} aoVoltar={aoVoltar}>
+    <PaginaDoVendedor ponte={ponte} titulo={T.titulo} aoVoltar={aoVoltar}>
       {erro ? <Aviso tipo="erro">{erro}</Aviso> : null}
+      <AvisoDosDados ponte={ponte} cotacao={cotacaoCurta} />
       <form className="vendas-leitor" onSubmit={aplicar}>
         <Campo rotulo={T.de} type="date" value={de} onChange={(e) => setDe(e.target.value)} />
         <Campo rotulo={T.ate} type="date" value={ate} onChange={(e) => setAte(e.target.value)} />

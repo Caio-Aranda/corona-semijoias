@@ -46,6 +46,17 @@ export interface ClienteParaCadastrar {
   observacoes?: string;
 }
 
+/** Os campos do cadastro que o vendedor muda nos clientes que ele atende (os mesmos do envio `CLIENTE_ALTERADO`). */
+export const CAMPOS_DO_CLIENTE_EDITAVEIS = [
+  'nome',
+  'cpf',
+  'telefone',
+  'whatsapp',
+  'observacoes',
+  'dataNascimento',
+] as const;
+export type CampoDoClienteEditavel = (typeof CAMPOS_DO_CLIENTE_EDITAVEIS)[number];
+
 export const AGRUPAMENTOS_DE_VENDAS = ['cliente', 'peca', 'dia'] as const;
 export type AgrupamentoDeVendas = (typeof AGRUPAMENTOS_DE_VENDAS)[number];
 
@@ -76,6 +87,15 @@ export type PedidoDeChamada =
   | { operacao: 'clientes.listar'; busca?: string }
   | { operacao: 'clientes.ver'; id: string }
   | { operacao: 'clientes.cadastrar'; cliente: ClienteParaCadastrar }
+  /** Muda o cadastro de um cliente que o vendedor atende. Texto vazio apaga o campo. */
+  | {
+      operacao: 'clientes.alterar';
+      id: string;
+      campos: Partial<Record<CampoDoClienteEditavel, string>>;
+    }
+  | { operacao: 'envios.naoAceitos' }
+  /** "Entendi": a pessoa leu o motivo de um envio que não foi aceito. */
+  | { operacao: 'envios.entendi'; id: string }
   | { operacao: 'cotacao.hoje' }
   | { operacao: 'fotos.ver'; hash: string; tamanho: TamanhoDeFoto }
   | { operacao: 'relatorios.vendas'; de?: string; ate?: string; agrupar?: AgrupamentoDeVendas }
@@ -99,6 +119,9 @@ export const OPERACOES_DA_API: readonly OperacaoDaApi[] = [
   'clientes.listar',
   'clientes.ver',
   'clientes.cadastrar',
+  'clientes.alterar',
+  'envios.naoAceitos',
+  'envios.entendi',
   'cotacao.hoje',
   'fotos.ver',
   'relatorios.vendas',

@@ -127,3 +127,40 @@ describe('o que a tela pode pedir ao processo principal', () => {
     expect(venda({ itens: [{ produtoId: OUTRO, quantidade: 1 }] })).not.toBeNull();
   });
 });
+
+describe('operações novas da tarefa 5.7', () => {
+  it('aceita a edição de cliente só com os campos conhecidos, em texto', () => {
+    expect(
+      validarChamada({
+        operacao: 'clientes.alterar',
+        id: ID,
+        campos: { telefone: '1', nome: 'Ana' },
+      }),
+    ).toEqual({ operacao: 'clientes.alterar', id: ID, campos: { telefone: '1', nome: 'Ana' } });
+    expect(validarChamada({ operacao: 'clientes.alterar', id: ID, campos: {} })).toBeNull();
+    expect(
+      validarChamada({ operacao: 'clientes.alterar', id: ID, campos: { responsavel: 'x' } }),
+    ).toBeNull();
+    expect(
+      validarChamada({ operacao: 'clientes.alterar', id: ID, campos: { nome: ' ' } }),
+    ).toBeNull();
+    expect(validarChamada({ operacao: 'clientes.alterar', id: ID, campos: { cpf: 5 } })).toBeNull();
+    expect(
+      validarChamada({ operacao: 'clientes.alterar', id: ID, campos: { dataNascimento: 'ontem' } }),
+    ).toBeNull();
+    expect(
+      validarChamada({ operacao: 'clientes.alterar', id: 'x', campos: { nome: 'A' } }),
+    ).toBeNull();
+  });
+
+  it('aceita a lista de envios não aceitos e o "Entendi" com id válido', () => {
+    expect(validarChamada({ operacao: 'envios.naoAceitos' })).toEqual({
+      operacao: 'envios.naoAceitos',
+    });
+    expect(validarChamada({ operacao: 'envios.entendi', id: ID })).toEqual({
+      operacao: 'envios.entendi',
+      id: ID,
+    });
+    expect(validarChamada({ operacao: 'envios.entendi', id: 'abc' })).toBeNull();
+  });
+});

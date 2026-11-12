@@ -168,3 +168,18 @@ export interface RelatorioAReceber {
   clientes: Devedor[];
   totais: TotaisDeRelatorio;
 }
+
+/**
+ * Um envio que o servidor não aceitou (uma venda que a peça já não estava na maleta, por exemplo). O motivo é o texto em
+ * palavras simples que o servidor devolveu; a descrição diz o que foi, sem código nem termo técnico.
+ */
+export interface EnvioNaoAceito {
+  id: string;
+  /** Se foi uma venda (para o aviso dizer "venda" ou "item"). */
+  ehVenda: boolean;
+  /** "Venda para Ana", "Estorno de venda", "Cliente novo: Ana"... */
+  descricao: string;
+  /** Hora em que a pessoa fez isto neste computador (ISO, UTC). */
+  feitoEm: string;
+  motivo: string;
+}

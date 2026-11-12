@@ -29,6 +29,10 @@ import {
 import type { PedidoDeChamada } from '../shared/operacoes';
 import type { ApiDeAutenticacao, ClienteExistente, Credenciais, Falha, Resultado } from './tipos';
 
+/** Quando o banco do computador não abriu: nada de venda, cliente ou lista de envios até entrar de novo. */
+export const MENSAGEM_SEM_BANCO =
+  'Este computador ainda não está pronto para guardar as suas vendas. Conecte-se à internet e entre de novo.';
+
 export interface DadosDoUsuario {
   nome?: string;
   perfil?: string;
@@ -232,6 +236,14 @@ export function criarApiDoVendas(opcoes: OpcoesDaApi): ApiDoVendas {
         return executar(() => verMeuCliente({ ...base, path: { id: pedido.id } }));
       case 'clientes.cadastrar':
         return executar(() => cadastrarMeuCliente({ ...base, body: pedido.cliente }));
+      case 'clientes.alterar':
+      case 'envios.naoAceitos':
+      case 'envios.entendi':
+        // Só existem no banco do computador. Sem ele, a pessoa precisa entrar de novo com internet.
+        return Promise.resolve({
+          ok: false,
+          falha: { tipo: 'recusada', status: 503, mensagem: MENSAGEM_SEM_BANCO },
+        });
       case 'cotacao.hoje':
         return executar(() => verCotacaoDeHoje(base));
       case 'fotos.ver':

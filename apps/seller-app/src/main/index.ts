@@ -28,7 +28,9 @@ import { GuardaDeTokens } from './guarda-de-tokens';
 import { registrarAtualizacao, registrarPonte, registrarSincronizacao } from './ipc';
 import { enderecoDoApp } from './seguranca';
 import { ServicoDeSessao } from './servico-de-sessao';
+import { ConsultasLocais } from './local/consultas-locais';
 import { MotorDeSincronizacao } from './sync/motor';
+import { OperacoesLocais } from './sync/operacoes-locais';
 import { criarTransporteDoSync } from './sync/transporte-do-sync';
 import type { ArquivoDoToken, Cofre, Relogio } from './tipos';
 
@@ -208,6 +210,20 @@ async function iniciar(): Promise<void> {
     registrar: (mensagem) => console.warn(`Envio: ${mensagem}`),
   });
   motor = motorDoApp;
+  // As telas leem e gravam neste banco (tarefa 5.7); cada gravação acorda o motor, que envia 2 s depois.
+  const consultas = new ConsultasLocais({
+    banco: () => bancoLocal.banco,
+    operacoes: new OperacoesLocais({
+      banco: () => {
+        const db = bancoLocal.banco;
+        if (!db) throw new Error('Banco local fechado.');
+        return db;
+      },
+      aoGravar: () => motorDoApp.gravou(),
+    }),
+    agora: () => new Date(relogio.agora()),
+    aoMudarOEstado: () => motorDoApp.atualizarEstado(),
+  });
   const pararDeVigiar = vigiarAInternet(() => motorDoApp.internetVoltou());
   app.on('will-quit', () => {
     pararDeVigiar();
@@ -215,7 +231,7 @@ async function iniciar(): Promise<void> {
     bancoLocal.fechar();
   });
   // A sessão guardada é retomada antes de a tela perguntar "estou logado?".
-  servico = new ServicoDeSessao(guarda, api, guarda.restaurar(), bancoLocal, motorDoApp);
+  servico = new ServicoDeSessao(guarda, api, guarda.restaurar(), bancoLocal, motorDoApp, consultas);
 
   registrarPonte(servico, (e) => {
     const quadro = e.senderFrame;
