@@ -124,6 +124,36 @@ export type DiferencasNaConferencia = {
     tabelas: Array<string>;
 };
 
+export type JsonNode = {
+    array?: boolean;
+    bigDecimal?: boolean;
+    bigInteger?: boolean;
+    binary?: boolean;
+    boolean?: boolean;
+    container?: boolean;
+    double?: boolean;
+    embeddedValue?: boolean;
+    empty?: boolean;
+    float?: boolean;
+    floatingPointNumber?: boolean;
+    int?: boolean;
+    integralNumber?: boolean;
+    long?: boolean;
+    missingNode?: boolean;
+    nodeType?: 'ARRAY' | 'BINARY' | 'BOOLEAN' | 'MISSING' | 'NULL' | 'NUMBER' | 'OBJECT' | 'POJO' | 'STRING';
+    null?: boolean;
+    number?: boolean;
+    object?: boolean;
+    pojo?: boolean;
+    short?: boolean;
+    string?: boolean;
+    /**
+     * @deprecated
+     */
+    textual?: boolean;
+    valueNode?: boolean;
+};
+
 export type LinhaRecebida = {
     campos?: {
         [key: string]: unknown;
@@ -132,6 +162,15 @@ export type LinhaRecebida = {
     id?: string;
     tabela?: string;
     version?: number;
+};
+
+export type OperacaoEnviada = {
+    criadoEmLocal?: string;
+    dados?: JsonNode;
+    formato?: number;
+    operacaoId?: string;
+    tipo?: string;
+    ultimoContatoServidor?: string;
 };
 
 export type PagamentoLido = {
@@ -175,6 +214,12 @@ export type PedidoDeCliente = {
 export type PedidoDeConferencia = {
     id?: string;
     itens?: Array<PedidoDaContagem>;
+};
+
+export type PedidoDeEnvio = {
+    aguardandoDepoisDeste?: number;
+    horaLocal?: string;
+    operacoes?: Array<OperacaoEnviada>;
 };
 
 export type PedidoDeLogin = {
@@ -225,6 +270,13 @@ export type RespostaDaConferencia = {
     tabelas?: Array<TabelaConferida>;
 };
 
+export type RespostaDoEnvio = {
+    apagarDados?: boolean;
+    horaServidor?: string;
+    parametros?: ParametrosDoVendedor;
+    resultados?: Array<ResultadoDaOperacao>;
+};
+
 export type RespostaDoLogin = {
     expiraEm?: string;
     horaDoServidor?: string;
@@ -243,6 +295,13 @@ export type RespostaDoPull = {
     linhas?: Array<LinhaRecebida>;
     parametros?: ParametrosDoVendedor;
     temMais?: boolean;
+};
+
+export type ResultadoDaOperacao = {
+    codigo?: string;
+    mensagem?: string;
+    operacaoId?: string;
+    resultado?: 'ACEITO' | 'JA_RECEBIDO' | 'CONFLITO' | 'RECUSADO' | 'NAO_PROCESSADO';
 };
 
 export type TabelaConferida = {
@@ -713,6 +772,22 @@ export type ReceberDadosResponses = {
 };
 
 export type ReceberDadosResponse = ReceberDadosResponses[keyof ReceberDadosResponses];
+
+export type EnviarOperacoesData = {
+    body: PedidoDeEnvio;
+    path?: never;
+    query?: never;
+    url: '/api/vendedor/sync/push';
+};
+
+export type EnviarOperacoesResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDoEnvio;
+};
+
+export type EnviarOperacoesResponse = EnviarOperacoesResponses[keyof EnviarOperacoesResponses];
 
 export type ValorDoVendedorData = {
     body?: never;

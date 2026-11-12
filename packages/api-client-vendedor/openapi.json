@@ -398,6 +398,85 @@
         "required" : [ "tabelas" ],
         "type" : "object"
       },
+      "JsonNode" : {
+        "properties" : {
+          "array" : {
+            "type" : "boolean"
+          },
+          "bigDecimal" : {
+            "type" : "boolean"
+          },
+          "bigInteger" : {
+            "type" : "boolean"
+          },
+          "binary" : {
+            "type" : "boolean"
+          },
+          "boolean" : {
+            "type" : "boolean"
+          },
+          "container" : {
+            "type" : "boolean"
+          },
+          "double" : {
+            "type" : "boolean"
+          },
+          "embeddedValue" : {
+            "type" : "boolean"
+          },
+          "empty" : {
+            "type" : "boolean"
+          },
+          "float" : {
+            "type" : "boolean"
+          },
+          "floatingPointNumber" : {
+            "type" : "boolean"
+          },
+          "int" : {
+            "type" : "boolean"
+          },
+          "integralNumber" : {
+            "type" : "boolean"
+          },
+          "long" : {
+            "type" : "boolean"
+          },
+          "missingNode" : {
+            "type" : "boolean"
+          },
+          "nodeType" : {
+            "enum" : [ "ARRAY", "BINARY", "BOOLEAN", "MISSING", "NULL", "NUMBER", "OBJECT", "POJO", "STRING" ],
+            "type" : "string"
+          },
+          "null" : {
+            "type" : "boolean"
+          },
+          "number" : {
+            "type" : "boolean"
+          },
+          "object" : {
+            "type" : "boolean"
+          },
+          "pojo" : {
+            "type" : "boolean"
+          },
+          "short" : {
+            "type" : "boolean"
+          },
+          "string" : {
+            "type" : "boolean"
+          },
+          "textual" : {
+            "deprecated" : true,
+            "type" : "boolean"
+          },
+          "valueNode" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
       "LinhaRecebida" : {
         "properties" : {
           "campos" : {
@@ -418,6 +497,33 @@
           "version" : {
             "format" : "int32",
             "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "OperacaoEnviada" : {
+        "properties" : {
+          "criadoEmLocal" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "dados" : {
+            "$ref" : "#/components/schemas/JsonNode"
+          },
+          "formato" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "operacaoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "ultimoContatoServidor" : {
+            "format" : "date-time",
+            "type" : "string"
           }
         },
         "type" : "object"
@@ -548,6 +654,25 @@
           "itens" : {
             "items" : {
               "$ref" : "#/components/schemas/PedidoDaContagem"
+            },
+            "type" : "array"
+          }
+        },
+        "type" : "object"
+      },
+      "PedidoDeEnvio" : {
+        "properties" : {
+          "aguardandoDepoisDeste" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "horaLocal" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "operacoes" : {
+            "items" : {
+              "$ref" : "#/components/schemas/OperacaoEnviada"
             },
             "type" : "array"
           }
@@ -708,6 +833,27 @@
         },
         "type" : "object"
       },
+      "RespostaDoEnvio" : {
+        "properties" : {
+          "apagarDados" : {
+            "type" : "boolean"
+          },
+          "horaServidor" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "parametros" : {
+            "$ref" : "#/components/schemas/ParametrosDoVendedor"
+          },
+          "resultados" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ResultadoDaOperacao"
+            },
+            "type" : "array"
+          }
+        },
+        "type" : "object"
+      },
       "RespostaDoLogin" : {
         "properties" : {
           "expiraEm" : {
@@ -765,6 +911,25 @@
           },
           "temMais" : {
             "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ResultadoDaOperacao" : {
+        "properties" : {
+          "codigo" : {
+            "type" : "string"
+          },
+          "mensagem" : {
+            "type" : "string"
+          },
+          "operacaoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "resultado" : {
+            "enum" : [ "ACEITO", "JA_RECEBIDO", "CONFLITO", "RECUSADO", "NAO_PROCESSADO" ],
+            "type" : "string"
           }
         },
         "type" : "object"
@@ -1724,6 +1889,39 @@
           "bearer" : [ ]
         } ],
         "summary" : "Receber os dados do vendedor (pull)",
+        "tags" : [ "sync-do-vendedor-controller" ]
+      }
+    },
+    "/api/vendedor/sync/push" : {
+      "post" : {
+        "description" : "Até 50 operações ou 512 KB, na ordem da fila do computador. Cada uma é processada numa transação própria e recebe ACEITO, JA_RECEBIDO (mesmo id e mesmo conteúdo), CONFLITO (mesmo id, outro conteúdo), RECUSADO (regra de negócio; a dona é avisada) ou NAO_PROCESSADO (passageiro: o lote parou ali). horaLocal é o relógio do computador no envio (corrige a hora das vendas); aguardandoDepoisDeste, quantas ainda ficam. 429 ENVIO_EM_ANDAMENTO: outro envio deste computador em andamento. 413 LOTE_GRANDE_DEMAIS: mande a metade. O computador trocado ainda envia o que guardou; terminando com nada aguardando, recebe apagarDados.",
+        "operationId" : "enviarOperacoes",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeEnvio"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDoEnvio"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Enviar as operações guardadas (push)",
         "tags" : [ "sync-do-vendedor-controller" ]
       }
     },

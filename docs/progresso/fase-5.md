@@ -41,3 +41,21 @@ O plano está em [fase-5-plano.md](fase-5-plano.md); o desenho, no [ADR-0013](..
 **Decisões que tomei:** ver a linha datada da tarefa 5.4 no ADR-0013.
 
 **Ficou para depois:** o motor do app que aplica o pull (5.6); a métrica do defeito do filtro e da duração do pull (5.11).
+
+## Tarefa 5.5: push do vendedor (backend)
+
+**O que entrou**
+
+- `POST /api/vendedor/sync/push`: até 50 operações ou 512 KB (413 `LOTE_GRANDE_DEMAIS`), um envio por vez por computador (429 `ENVIO_EM_ANDAMENTO`, com `Retry-After`), **uma transação por operação** com a linha do `sync_log`, resultado por operação (`ACEITO`, `JA_RECEBIDO`, `CONFLITO`, `RECUSADO`, `NAO_PROCESSADO`), parada do lote no erro passageiro e no limite de 20 s. O computador trocado ainda envia (e recebe `apagarDados` no fim).
+- `OperacoesDoVendedor`: formato 1 de `VENDA`, `ESTORNO_VENDA`, `CLIENTE_NOVO`, `CLIENTE_ALTERADO` e `CONFERENCIA`, a forma canônica do resumo e a aplicação pelos **mesmos serviços da Fase 4** (`ServicoDeVendas`, `ClientesDoVendedor`, `ServicoDeConferencia`).
+- **Hora corrigida e limitada** (ADR-0013, item 11): a venda e o estorno recebem a hora do computador corrigida pela diferença do relógio dele; correção acima de 5 minutos marca a venda (`hora_ajustada`); o dia da cotação e o "mesmo dia" do estorno saem dela.
+- **Cliente campo a campo** (`ClientesDoVendedor.alterar`): só quem atende; vale a última chegada, e o valor da dona substituído vai para a auditoria (`CLIENTE_VALOR_SUBSTITUIDO`). CPF repetido de cadastros feitos sem internet: `CONFLITO` para a dona.
+- **Envios com problema** (`/api/dona/envios-com-problema`): listar, **Tentar de novo** (mesma operação, mesmo id, mesma hora) e **Descartar** (com motivo), tudo auditado. A tela é da 5.10.
+- Migração **V033**: `sync_log` (JSON completo por 90 dias, depois só o resumo, por `UPDATE` na agenda diária) e `vendas.hora_ajustada`. `dispositivos` passa a guardar último push, "aguardando" e último envio completo.
+- Glossário com os textos novos; clientes da API regerados.
+
+**Testes (escritos antes, PostgreSQL de verdade):** `PushDoVendedorTest` (aceito, já recebido e conflito no reenvio; JSON equivalente em outra ordem; recusa guardada com o JSON e saldo que nunca fica negativo; a dona descarta e tenta de novo depois de corrigir a causa; dependência recusada; maleta cancelada e de outro vendedor; segundo computador, dona e lote grande; relógio 3 dias adiantado e 2 atrasado; hora impossível no limite; estorno no limite do dia em Brasília; dois envios do mesmo computador ao mesmo tempo sem duplicar; cliente campo a campo com o valor substituído; cliente de outro vendedor; CPF repetido em conflito; computador trocado enviando e recebendo a ordem de apagar; retenção de 90 dias) e `ServicoDeEnvioTest` (erro passageiro para o lote ali, sem quebrar a ordem).
+
+**Decisões que tomei:** ver a linha datada da tarefa 5.5 no ADR-0013.
+
+**Ficou para depois:** o motor do app que envia (5.6); a tela dos envios com problema e os avisos (5.10); push abaixo da versão mínima (5.13); métrica da duração do push (5.11).

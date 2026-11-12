@@ -13,6 +13,8 @@ import br.com.coronasemijoias.api.configuracoes.ChaveDeConfiguracao;
 import br.com.coronasemijoias.api.configuracoes.Configuracoes;
 import java.math.BigDecimal;
 import java.time.Clock;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -92,6 +94,17 @@ public class ServicoDeVendas {
 
     @Transactional
     public Resultado vender(UUID vendedorId, UUID usuarioId, UUID aparelho, PedidoDeVenda pedido) {
+        return vender(vendedorId, usuarioId, aparelho, pedido, null, false);
+    }
+
+    /**
+     * A venda que chega pelo envio do Corona Vendas (tarefa 5.5): {@code vendidaEm} é a hora já corrigida pelo servidor
+     * (ADR-0013, item 11) e decide o dia da cotação; {@code horaAjustada} marca a venda cuja hora foi corrigida em mais
+     * de 5 minutos. Nulo = agora (a rota online).
+     */
+    @Transactional
+    public Resultado vender(UUID vendedorId, UUID usuarioId, UUID aparelho, PedidoDeVenda pedido, Instant vendidaEm,
+            boolean horaAjustada) {
         if (pedido == null) {
             throw Validacoes.recusar("venda", "Informe a venda.");
         }
@@ -193,11 +206,13 @@ public class ServicoDeVendas {
         if (aparelho != null) {
             origem.definirNaTransacaoAtual(aparelho);
         }
-        UUID cotacao = cotacaoDoDia();
+        Instant quando = vendidaEm == null ? relogio.instant() : vendidaEm;
+        UUID cotacao = cotacaoDoDia(LocalDate.ofInstant(quando, BRASILIA));
         jdbc.update("""
-                INSERT INTO corona.vendas (id, vendedor_id, cliente_id, remessa_id, subtotal, desconto, total, cotacao_id)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)""", id, vendedorId, pedido.clienteId(), pedido.remessaId(), subtotal, desconto,
-                total, cotacao);
+                INSERT INTO corona.vendas (id, vendedor_id, cliente_id, remessa_id, subtotal, desconto, total, cotacao_id,
+                    vendida_em, hora_ajustada)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, coalesce(?, now()), ?)""", id, vendedorId, pedido.clienteId(), pedido.remessaId(),
+                subtotal, desconto, total, cotacao, vendidaEm == null ? null : Timestamp.from(vendidaEm), horaAjustada);
         for (Linha l : ordenadas) {
             Peca p = pecas.get(l.produtoId());
             jdbc.update("""
@@ -210,8 +225,9 @@ public class ServicoDeVendas {
         }
         for (Pagamento p : pagamentos) {
             jdbc.update("""
-                    INSERT INTO corona.pagamentos_cliente (id, venda_id, tipo, forma, valor) VALUES (?, ?, 'PAGAMENTO', ?, ?)""",
-                    p.id(), id, p.forma(), p.valor());
+                    INSERT INTO corona.pagamentos_cliente (id, venda_id, tipo, forma, valor, pago_em)
+                    VALUES (?, ?, 'PAGAMENTO', ?, ?, coalesce(?, now()))""",
+                    p.id(), id, p.forma(), p.valor(), vendidaEm == null ? null : Timestamp.from(vendidaEm));
         }
 
         Map<String, Object> depois = new LinkedHashMap<>();
@@ -237,6 +253,16 @@ public class ServicoDeVendas {
      */
     @Transactional
     public Resultado estornar(UUID vendaId, UUID vendedorId, UUID usuarioId, UUID aparelho, UUID idDoEstorno, String motivo) {
+        return estornar(vendaId, vendedorId, usuarioId, aparelho, idDoEstorno, motivo, null);
+    }
+
+    /**
+     * O estorno que chega pelo envio do Corona Vendas (tarefa 5.5): {@code momento} é a hora já corrigida pelo servidor
+     * e decide o "mesmo dia" (em Brasília) do vendedor. Nulo = agora (a rota online).
+     */
+    @Transactional
+    public Resultado estornar(UUID vendaId, UUID vendedorId, UUID usuarioId, UUID aparelho, UUID idDoEstorno, String motivo,
+            Instant momento) {
         UUID estornoId = Validacoes.idDoPedido(idDoEstorno);
         String limpo = Validacoes.limpar(motivo);
         if (limpo == null) {
@@ -276,7 +302,8 @@ public class ServicoDeVendas {
             }
             LocalDate diaDaVenda = jdbc.queryForObject(
                     "SELECT (vendida_em AT TIME ZONE 'America/Sao_Paulo')::date FROM corona.vendas WHERE id = ?", LocalDate.class, vendaId);
-            if (!diaDaVenda.equals(LocalDate.now(relogio.withZone(BRASILIA)))) {
+            Instant quando = momento == null ? relogio.instant() : momento;
+            if (!diaDaVenda.equals(LocalDate.ofInstant(quando, BRASILIA))) {
                 throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.ESTORNO_SO_DA_DONA);
             }
         }
@@ -303,8 +330,9 @@ public class ServicoDeVendas {
                     UuidV7.gerar(), vendaId, p.get("forma"), ((BigDecimal) p.get("valor")).negate());
         }
         jdbc.update("""
-                UPDATE corona.vendas SET status = 'ESTORNADA', estorno_id = ?, estornada_em = now(), estornada_por = ?,
-                       motivo_estorno = ? WHERE id = ?""", estornoId, usuarioId, limpo, vendaId);
+                UPDATE corona.vendas SET status = 'ESTORNADA', estorno_id = ?, estornada_em = coalesce(?, now()), estornada_por = ?,
+                       motivo_estorno = ? WHERE id = ?""", estornoId, momento == null ? null : Timestamp.from(momento), usuarioId,
+                limpo, vendaId);
         Map<String, Object> depois = new LinkedHashMap<>();
         depois.put("status", "ESTORNADA");
         depois.put("motivo", limpo);
@@ -412,9 +440,9 @@ public class ServicoDeVendas {
     }
 
     /** A cotação mais recente até hoje (horário de Brasília), ou nenhuma. */
-    private UUID cotacaoDoDia() {
+    private UUID cotacaoDoDia(LocalDate dia) {
         return jdbc.query("SELECT id FROM corona.cotacoes WHERE data_cotacao <= ? ORDER BY data_cotacao DESC LIMIT 1",
-                (rs, n) -> rs.getObject(1, UUID.class), LocalDate.now(relogio.withZone(BRASILIA))).stream().findFirst().orElse(null);
+                (rs, n) -> rs.getObject(1, UUID.class), dia).stream().findFirst().orElse(null);
     }
 
     /** O pedido repetido é a mesma venda? Compara dono, cliente, maleta, peças (com desconto) e pagamentos. */

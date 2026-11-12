@@ -10,6 +10,7 @@ import br.com.coronasemijoias.api.comum.persistencia.OrigemDoDispositivo;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -112,6 +113,130 @@ public class ClientesDoVendedor {
         return new Resultado(ver(id, vendedorId), false);
     }
 
+    /** Um campo alterado no computador: o valor que ele tinha ({@code antes}) e o novo ({@code depois}). */
+    public record Alteracao(String antes, String depois) {
+    }
+
+    /** Campos do cadastro que o vendedor altera (nome no app → coluna). Os outros (responsável, ativo) são da dona. */
+    private static final Map<String, String> CAMPOS_DO_VENDEDOR = Map.of(
+            "nome", "nome", "cpf", "cpf", "telefone", "telefone", "whatsapp", "whatsapp",
+            "observacoes", "observacoes", "dataNascimento", "data_nascimento");
+
+    /**
+     * Alteração do cadastro feita pelo vendedor, campo a campo (tarefa 5.5; ADR-0013, item 8). Só cliente que ele atende.
+     * Cada campo recebe o valor novo; se a dona mudou o mesmo campo nesse meio-tempo (o valor atual não é o "antes" do
+     * computador), vale a última chegada ao servidor e o valor substituído vai para a auditoria, para a dona ver e voltar
+     * (dúvida D1). Campos fora da lista do vendedor são ignorados.
+     */
+    @Transactional
+    public void alterar(UUID vendedorId, UUID usuarioId, UUID aparelho, UUID clienteId, Map<String, Alteracao> campos) {
+        if (clienteId == null || campos == null) {
+            throw Validacoes.recusar("cliente", "Informe o cliente e o que mudou.");
+        }
+        List<Map<String, Object>> achado = jdbc.queryForList("""
+                SELECT nome, cpf, data_nascimento, telefone, whatsapp, observacoes, vendedor_responsavel_id
+                  FROM corona.clientes WHERE id = ? AND deleted_at IS NULL FOR UPDATE""", clienteId);
+        if (achado.isEmpty()) {
+            throw new ErroDaApi(HttpStatus.NOT_FOUND, CodigoErro.CADASTRO_NAO_ENCONTRADO);
+        }
+        Map<String, Object> atual = achado.get(0);
+        if (!vendedorId.equals(atual.get("vendedor_responsavel_id"))) {
+            throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.CLIENTE_DE_OUTRO_VENDEDOR);
+        }
+        VendedorAtivo.exigir(jdbc, vendedorId);
+        Map<String, Object> novos = new LinkedHashMap<>();
+        Map<String, Object> antesNoBanco = new LinkedHashMap<>();
+        Map<String, Object> substituidos = new LinkedHashMap<>();
+        for (Map.Entry<String, Alteracao> e : campos.entrySet()) {
+            String coluna = CAMPOS_DO_VENDEDOR.get(e.getKey());
+            if (coluna == null || e.getValue() == null) {
+                continue;
+            }
+            Object novo = valorNovo(e.getKey(), e.getValue().depois(), clienteId);
+            Object noBanco = atual.get(coluna) instanceof java.sql.Date d ? d.toLocalDate() : atual.get(coluna);
+            String noBancoTexto = noBanco == null ? null : noBanco.toString();
+            if (!Objects.equals(noBancoTexto, Validacoes.limpar(e.getValue().antes()))) {
+                substituidos.put(coluna, noBancoTexto);
+            }
+            if (!Objects.equals(noBanco, novo)) {
+                novos.put(coluna, novo);
+                antesNoBanco.put(coluna, noBancoTexto);
+            }
+        }
+        if (novos.isEmpty()) {
+            return;
+        }
+        if (aparelho != null) {
+            origem.definirNaTransacaoAtual(aparelho);
+        }
+        StringBuilder sql = new StringBuilder("UPDATE corona.clientes SET ");
+        List<Object> valores = new java.util.ArrayList<>();
+        for (Map.Entry<String, Object> n : novos.entrySet()) {
+            if (!valores.isEmpty()) {
+                sql.append(", ");
+            }
+            sql.append(n.getKey()).append(" = ?");
+            valores.add(n.getValue());
+        }
+        sql.append(" WHERE id = ?");
+        valores.add(clienteId);
+        jdbc.update(sql.toString(), valores.toArray());
+        Map<String, Object> depois = new LinkedHashMap<>();
+        novos.forEach((k, v) -> depois.put(k, v == null ? null : v.toString()));
+        auditoria.registrar(Ator.usuario(usuarioId), "CLIENTE_ALTERADO_PELO_VENDEDOR", "clientes", clienteId, antesNoBanco, depois);
+        substituidos.keySet().retainAll(novos.keySet());
+        if (!substituidos.isEmpty()) {
+            Map<String, Object> novosDosSubstituidos = new LinkedHashMap<>();
+            substituidos.keySet().forEach(k -> novosDosSubstituidos.put(k, depois.get(k)));
+            auditoria.registrar(Ator.usuario(usuarioId), "CLIENTE_VALOR_SUBSTITUIDO", "clientes", clienteId, substituidos,
+                    novosDosSubstituidos);
+        }
+    }
+
+    /** O valor novo de um campo, com as mesmas conferências do cadastro. */
+    private Object valorNovo(String campo, String digitado, UUID clienteId) {
+        return switch (campo) {
+            case "nome" -> {
+                String nome = Validacoes.limpar(digitado);
+                if (nome == null) {
+                    throw Validacoes.recusar("nome", "Informe o nome do cliente.");
+                }
+                if (nome.length() > 200) {
+                    throw Validacoes.recusar("nome", "Use no máximo 200 caracteres.");
+                }
+                yield nome;
+            }
+            case "cpf" -> {
+                String cpf = Validacoes.cpfOpcional(digitado);
+                CpfDeCliente.exigirLivre(jdbc, cpf, clienteId);
+                yield cpf;
+            }
+            case "telefone", "whatsapp" -> curto(digitado, campo);
+            case "observacoes" -> {
+                String obs = Validacoes.limpar(digitado);
+                if (obs != null && obs.length() > 2000) {
+                    throw Validacoes.recusar("observacoes", "Use no máximo 2000 caracteres.");
+                }
+                yield obs;
+            }
+            default -> {
+                String texto = Validacoes.limpar(digitado);
+                if (texto == null) {
+                    yield null;
+                }
+                LocalDate nascimento;
+                try {
+                    nascimento = LocalDate.parse(texto);
+                } catch (java.time.format.DateTimeParseException e) {
+                    throw Validacoes.recusar("dataNascimento", "Confira a data de nascimento.");
+                }
+                if (nascimento.isAfter(relogio.instant().atZone(ZoneOffset.UTC).toLocalDate()) || nascimento.getYear() < 1900) {
+                    throw Validacoes.recusar("dataNascimento", "Confira a data de nascimento.");
+                }
+                yield nascimento;
+            }
+        };
+    }
     private static final String COLUNAS = """
             SELECT id, nome, cpf, telefone, endereco_cidade, (vendedor_responsavel_id = ?) AS meu,
                    CASE WHEN vendedor_responsavel_id = ? THEN data_nascimento END AS data_nascimento,

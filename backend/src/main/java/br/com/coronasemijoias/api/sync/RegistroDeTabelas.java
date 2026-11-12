@@ -163,7 +163,9 @@ public final class RegistroDeTabelas {
                         new TabelaDoServidor("vendedores_referencias", false),
                         new TabelaDoServidor("vendedores_documentos", false),
                         // Computadores do Corona Vendas (tarefa 5.3, ADR-0013 item 13): só do servidor, nunca vão ao app.
-                        new TabelaDoServidor("dispositivos", false)));
+                        new TabelaDoServidor("dispositivos", false),
+                        // Registro dos envios do Corona Vendas (tarefa 5.5, ADR-0013 item 2): só do servidor.
+                        new TabelaDoServidor("sync_log", false)));
     }
 
     /** Este registro somado a outro (usado pelos testes para acrescentar as tabelas de teste). */
