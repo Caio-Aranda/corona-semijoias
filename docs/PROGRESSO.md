@@ -172,6 +172,14 @@ App do vendedor sem internet: SQLite criptografado, fila de envios e sincroniza�
 
 As demais tarefas estão no [plano](progresso/fase-5-plano.md).
 
+## Fase 6 (só o plano)
+
+Devolução, troca e garantia. O modelo está no [ADR-0014](decisoes/ADR-0014-devolucao-troca-e-garantia.md) (Proposto); as tarefas e as dúvidas, no [plano da Fase 6](progresso/fase-6-plano.md).
+
+| Nº | Tarefa | Situação |
+| --- | --- | --- |
+| 6.1 | docs: plano da Fase 6 e ADR-0014 (devolução, troca e garantia) | Plano proposto, em revisão |
+
 ## Fase 7 (só o plano)
 
 Acerto semanal e financeiro. O modelo está no [ADR-0012](decisoes/ADR-0012-acerto-e-financeiro.md) (Proposto); as tarefas, no [plano da Fase 7](progresso/fase-7-plano.md).
