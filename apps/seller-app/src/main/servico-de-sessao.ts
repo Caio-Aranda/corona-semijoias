@@ -7,12 +7,28 @@ import type {
 import type { DadosDoUsuario } from './api';
 import { ehConsultaLocal } from './local/consultas-locais';
 import type { GuardaDeTokens } from './guarda-de-tokens';
+import { MENSAGENS_DA_SENHA } from './banco/servico-do-banco';
 import type { Falha, Resultado } from './tipos';
 
 /** O banco local (tarefa 5.2): preparado depois de cada entrada com internet, com a senha que o servidor conferiu. */
 export interface PreparoDoBancoLocal {
   prepararComInternet(senha: string): Promise<{ ok: boolean; codigo?: string }>;
+  /** Tarefa 5.8: há banco e chave neste computador? (decide se dá para entrar sem internet) */
+  readonly temDadosLocais?: boolean;
+  /** Tarefa 5.8: abre o banco só pela senha, sem internet (5 erros seguidos bloqueiam até conectar). */
+  abrirSemInternet?(senha: string): Promise<{ ok: boolean; codigo?: string; mensagem?: string }>;
+  fechar?(): void;
+  /** Tarefa 5.8: quem entrou, guardado no próprio banco, para conferir o usuário ao abrir sem internet. */
+  lembrar?(chave: 'vendedor_login' | 'vendedor_nome', valor: string): void;
+  lembrado?(chave: 'vendedor_login' | 'vendedor_nome'): string | null;
 }
+
+/** O apagar os dados do computador desligado (tarefa 5.8). */
+export interface ControleDoApagar {
+  receberOrdem(): Promise<void>;
+}
+
+export type EstadoDoDesligamento = 'NENHUM' | 'DESLIGANDO' | 'DESLIGADO';
 
 /** O motor de envio e recebimento (tarefa 5.6): liga com o banco aberto e a sessão válida, desliga ao sair. */
 export interface ControleDoMotor {
@@ -42,6 +58,9 @@ export interface ChamadasDaApi {
 export class ServicoDeSessao {
   private nome: string | null = null;
   private desatualizado: string | null = null;
+  /** Abriu sem internet, só com a senha (tarefa 5.8): vale como "dentro" até a sessão voltar sozinha. */
+  private modoLocal = false;
+  private desligamento: EstadoDoDesligamento = 'NENHUM';
 
   constructor(
     private readonly guarda: GuardaDeTokens,
@@ -51,7 +70,33 @@ export class ServicoDeSessao {
     private readonly bancoLocal?: PreparoDoBancoLocal,
     private readonly motor?: ControleDoMotor,
     private readonly consultas?: ConsultasDoBancoLocal,
+    private readonly apagador?: ControleDoApagar,
+    /** Avisa a tela que o computador está sendo desligado ou já foi (tarefa 5.8). */
+    private readonly aoMudarODesligamento?: (estado: EstadoDoDesligamento) => void,
   ) {}
+
+  /**
+   * O servidor mandou apagar os dados (computador bloqueado ou vendedor desativado; ADR-0013, item 14). Para o motor, manda
+   * as vendas que faltam para a quarentena, apaga tudo e avisa a tela. Repetir a ordem não faz nada de novo.
+   */
+  async ordemDeApagar(): Promise<void> {
+    if (!this.apagador || this.desligamento !== 'NENHUM') return;
+    this.desligamento = 'DESLIGANDO';
+    this.motor?.desligar();
+    this.aoMudarODesligamento?.('DESLIGANDO');
+    try {
+      await this.apagador.receberOrdem();
+    } catch (erro) {
+      console.warn('Apagar os dados não terminou:', erro instanceof Error ? erro.name : 'erro');
+      // A marca fica em disco: ao abrir o aplicativo de novo, continua de onde parou.
+      return;
+    }
+    this.guarda.esquecer();
+    this.nome = null;
+    this.modoLocal = false;
+    this.desligamento = 'DESLIGADO';
+    this.aoMudarODesligamento?.('DESLIGADO');
+  }
 
   /** Chamado quando a guarda avisa que o aplicativo está desatualizado. */
   marcarDesatualizado(mensagem: string): void {
@@ -61,8 +106,42 @@ export class ServicoDeSessao {
   async entrar(usuario: string, senha: string): Promise<ResultadoDeEntrada> {
     this.desatualizado = null;
     const r = await this.guarda.entrar(usuario, senha);
-    if (r.ok && r.dados === 'entrou') await this.prepararBancoLocal(senha);
+    if (r.ok && r.dados === 'entrou') {
+      await this.prepararBancoLocal(senha);
+      this.bancoLocal?.lembrar?.('vendedor_login', usuario.trim().toLowerCase());
+    }
+    if (!r.ok && r.falha.tipo === 'sem-conexao' && this.bancoLocal?.temDadosLocais) {
+      return this.entrarSemInternet(usuario, senha);
+    }
+    if (!r.ok && r.falha.tipo === 'recusada' && r.falha.acao === 'APAGAR_DADOS') {
+      void this.ordemDeApagar();
+    }
     return this.paraResultado(r);
+  }
+
+  /**
+   * Sem internet e com dados neste computador (tarefa 5.8; decisão de 11/11/2026): a senha é conferida aqui, com o
+   * verificador lento da chave do banco. Usuário ou senha errados dão o mesmo texto; 5 erros seguidos bloqueiam até
+   * entrar com internet.
+   */
+  private async entrarSemInternet(usuario: string, senha: string): Promise<ResultadoDeEntrada> {
+    const banco = this.bancoLocal;
+    if (!banco?.abrirSemInternet) return { tipo: 'sem-conexao' };
+    const aberto = await banco.abrirSemInternet(senha);
+    if (!aberto.ok) {
+      return aberto.mensagem
+        ? { tipo: 'recusado', mensagem: aberto.mensagem }
+        : { tipo: 'erro-inesperado' };
+    }
+    const guardado = banco.lembrado?.('vendedor_login');
+    if (guardado && guardado !== usuario.trim().toLowerCase()) {
+      banco.fechar?.();
+      return { tipo: 'recusado', mensagem: MENSAGENS_DA_SENHA.SENHA_ERRADA };
+    }
+    this.modoLocal = true;
+    this.nome = banco.lembrado?.('vendedor_nome') ?? null;
+    this.motor?.ligar();
+    return { tipo: 'entrou' };
   }
 
   async trocarSenha(senhaNova: string): Promise<ResultadoDeEntrada> {
@@ -90,6 +169,7 @@ export class ServicoDeSessao {
 
   async sair(): Promise<void> {
     this.motor?.desligar();
+    this.modoLocal = false;
     this.nome = null;
     this.desatualizado = null;
     await this.guarda.sair();
@@ -97,6 +177,12 @@ export class ServicoDeSessao {
 
   async estouLogado(): Promise<EstadoDaSessao> {
     await this.prontidao;
+    if (this.desligamento !== 'NENHUM') {
+      return { estado: this.desligamento === 'DESLIGADO' ? 'desligado' : 'desligando' };
+    }
+    if (this.modoLocal) {
+      return { estado: 'dentro', usuario: this.nome ? { nome: this.nome } : null };
+    }
     if (this.desatualizado) return { estado: 'app-desatualizado', mensagem: this.desatualizado };
     let situacao = this.guarda.situacao();
     if (situacao === 'pendente') {
@@ -110,7 +196,10 @@ export class ServicoDeSessao {
       case 'restrita':
         return { estado: 'trocar-senha' };
       case 'pendente':
-        return { estado: 'sem-conexao' };
+        // Há sessão guardada, mas sem internet: com dados neste computador, entra só com a senha (tarefa 5.8).
+        return this.bancoLocal?.temDadosLocais
+          ? { estado: 'entrar-sem-internet' }
+          : { estado: 'sem-conexao' };
       case 'dentro':
         return { estado: 'dentro', usuario: await this.usuario() };
     }
@@ -133,6 +222,7 @@ export class ServicoDeSessao {
     const r = await this.guarda.comToken((token) => this.api.eu(token));
     if (!r.ok || !r.dados.nome) return null;
     this.nome = r.dados.nome;
+    this.bancoLocal?.lembrar?.('vendedor_nome', this.nome);
     return { nome: this.nome };
   }
 

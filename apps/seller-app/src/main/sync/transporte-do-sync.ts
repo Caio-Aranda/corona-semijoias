@@ -26,6 +26,12 @@ export interface TransporteDoSync {
   enviar(token: string, corpo: string): Promise<Resultado<RespostaDoServidor>>;
   conferir(token: string): Promise<Resultado<RespostaDoServidor>>;
   avisarDiferencas(token: string, tabelas: string[]): Promise<Resultado<RespostaDoServidor>>;
+  /**
+   * A quarentena do computador desligado (tarefa 5.8): SEM token de acesso (a sessão já foi revogada); o token de
+   * renovação revogado e o identificador vão dentro do `corpo`, já montado. 401 aqui é a resposta (o servidor não
+   * aceita), e não "renove a sessão".
+   */
+  guardarEmQuarentena(corpo: string): Promise<Resultado<RespostaDoServidor>>;
 }
 
 export interface OpcoesDoTransporte {
@@ -114,6 +120,17 @@ export function criarTransporteDoSync(o: OpcoesDoTransporte): TransporteDoSync {
     },
     conferir(token) {
       return chamar('/api/vendedor/sync/conferencia', { headers: cabecalhos(token) });
+    },
+    async guardarEmQuarentena(corpo) {
+      const r = await chamar('/api/vendedor/sync/quarentena', {
+        method: 'POST',
+        headers: cabecalhos(undefined, true),
+        body: corpo,
+      });
+      // Sem token de acesso, o 401 não pede renovação: é a recusa do servidor.
+      if (!r.ok && r.falha.tipo === 'recusada')
+        return { ok: true, dados: { status: r.falha.status, corpo: null } };
+      return r;
     },
     avisarDiferencas(token, tabelas) {
       return chamar('/api/vendedor/sync/conferencia/diferencas', {

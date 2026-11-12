@@ -130,6 +130,20 @@ export class ChaveDoBanco {
     return pelaCofre;
   }
 
+  /**
+   * Só para apagar: abre a chave pelo cofre do Windows, sem senha. O computador foi desligado pela dona e vai ser
+   * apagado; precisamos ler o que ainda não foi enviado para a quarentena. `null` se o cofre não abre a chave.
+   */
+  async abrirSoPeloCofre(): Promise<Buffer | null> {
+    const guardado = this.ler();
+    if (!guardado) return null;
+    try {
+      return await this.abrirPeloCofre(guardado);
+    } catch {
+      return null;
+    }
+  }
+
   /** Erros seguidos de senha guardados (para a tela dizer quantas tentativas restam). */
   errosSeguidos(): number {
     return this.ler()?.errosSeguidos ?? 0;

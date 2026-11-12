@@ -1,5 +1,6 @@
 import type { BancoAberto } from '../banco/banco-local';
 import { type EstadoDaSincronizacao, limparEstadoDaSincronizacao } from '../../shared/ponte';
+import { PRAZO_EM_DIA, type PrazoOffline } from '../../shared/prazo';
 import type { Relogio } from '../tipos';
 import { Agenda } from './agenda';
 import {
@@ -22,6 +23,8 @@ export interface OpcoesDoMotor {
   /** Ponto de extensão da tarefa 5.8: o servidor mandou parar (apagar dados, app desatualizado, sessão). */
   aoReceberOrdem?: (ordem: OrdemDoServidor) => void;
   registrar?: (mensagem: string) => void;
+  /** O prazo sem internet do computador (tarefa 5.8); sem isto vale "em dia". */
+  prazo?: () => PrazoOffline;
 }
 
 /**
@@ -92,6 +95,7 @@ export class MotorDeSincronizacao {
     const base = {
       comInternet: this.ciclo.comInternet,
       enviando: this.ciclo.enviando,
+      prazo: this.o.prazo?.() ?? PRAZO_EM_DIA,
     };
     if (!db) return limparEstadoDaSincronizacao(base);
     const contagem = db

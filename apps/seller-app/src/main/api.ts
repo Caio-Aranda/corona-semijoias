@@ -56,6 +56,7 @@ interface OpcoesDaApi {
 interface CorpoDeErro {
   detail?: unknown;
   codigo?: unknown;
+  acao?: unknown;
   clienteExistente?: unknown;
 }
 
@@ -70,6 +71,7 @@ function comoFalha(erro: unknown, resposta: Response | undefined): Falha {
   const codigo = texto(corpo.codigo);
   if (mensagem) falha.mensagem = mensagem;
   if (codigo) falha.codigo = codigo;
+  if (texto(corpo.acao) === 'APAGAR_DADOS') falha.acao = 'APAGAR_DADOS';
   if (codigo === 'CLIENTE_CPF_JA_CADASTRADO') {
     const e = corpo.clienteExistente;
     if (typeof e === 'object' && e !== null) {

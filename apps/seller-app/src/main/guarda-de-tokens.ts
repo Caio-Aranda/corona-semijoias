@@ -35,6 +35,12 @@ export interface OpcoesDaGuarda {
   relogio: Relogio;
   /** Chamado quando a sessão termina sem a pessoa ter pedido (renovação recusada de vez, 401). */
   aoPerderASessao?: (aviso: AvisoDeSessaoPerdida) => void;
+  /**
+   * Chamado quando a renovação volta com a ordem de apagar os dados (computador bloqueado ou vendedor desativado; tarefa
+   * 5.8). O token de renovação (já revogado) e o arquivo ficam até a quarentena acabar: só ele prova ao servidor que
+   * este é o computador bloqueado.
+   */
+  aoReceberOrdemDeApagar?: () => void;
   /** Chamado a cada resposta válida de entrar, renovar ou trocar a senha (prazo offline, ADR-0004 item 5). */
   aoContatarOServidor?: (credenciais: Credenciais) => void | Promise<void>;
 }
@@ -142,6 +148,20 @@ export class GuardaDeTokens {
     return segunda;
   }
 
+  /**
+   * Entrega o token de renovação (já revogado) a UMA função, que o usa na quarentena e o esquece (tarefa 5.8). Nunca o
+   * devolve. `null` se não há token.
+   */
+  async comTokenDeRenovacao<T>(chamada: (token: string) => Promise<T>): Promise<T | null> {
+    if (!this.renovacao) return null;
+    return chamada(this.renovacao);
+  }
+
+  /** Depois de apagar os dados: nada fica na memória (o arquivo do token já foi removido pelo apagador). */
+  esquecer(): void {
+    this.limpar();
+  }
+
   /** Renova o token de acesso. Uma renovação por vez: quem chega durante uma espera pelo resultado dela. */
   renovar(): Promise<boolean> {
     this.renovando ??= this.executarRenovacao().finally(() => {
@@ -197,11 +217,19 @@ export class GuardaDeTokens {
       this.o.aoPerderASessao?.({ estado: 'app-desatualizado', mensagem: f.mensagem });
       return false;
     }
+    if (f.tipo === 'recusada' && f.status === 403 && f.acao === 'APAGAR_DADOS') {
+      // Computador desligado: o token fica para a quarentena e o apagar assume (tarefa 5.8).
+      this.o.aoReceberOrdemDeApagar?.();
+      return false;
+    }
     if (f.tipo === 'recusada' && [400, 401, 403, 404].includes(f.status)) {
       await this.perderASessao();
       return false;
     }
-    // Sem internet, servidor fora do ar ou excesso de tentativas: a sessão continua guardada.
+    // Sem internet, servidor fora do ar ou excesso de tentativas: a sessão continua guardada. Sem resposta nenhuma o
+    // servidor nem viu o token, então a tentativa não conta (abrir o app várias vezes sem internet não pode perder a
+    // sessão, tarefa 5.8).
+    if (f.tipo === 'sem-conexao') this.apresentacoes = Math.max(0, this.apresentacoes - 1);
     return false;
   }
 

@@ -119,7 +119,9 @@ describe('ControleDoPrazo (com o banco local)', () => {
     controle.batida();
     agora = depois(3600_000); // o relógio voltou
     controle.batida();
-    expect(b.db.prepare('SELECT valor FROM estado_sync WHERE chave = ?').get(CHAVES.maiorHoraLocal)).toEqual({
+    expect(
+      b.db.prepare('SELECT valor FROM estado_sync WHERE chave = ?').get(CHAVES.maiorHoraLocal),
+    ).toEqual({
       valor: depois(1 * DIA_MS).toISOString(),
     });
     expect(controle.situacao()).toMatchObject({ situacao: 'ESGOTADO', motivo: 'RELOGIO' });
@@ -141,7 +143,10 @@ describe('ControleDoPrazo (com o banco local)', () => {
   it('sobrevive ao reinício do aplicativo: tudo está no banco', () => {
     agora = depois(1 * DIA_MS);
     controle.batida();
-    const outro = new ControleDoPrazo({ banco: () => b.reabrir(), agora: () => depois(1 * DIA_MS - 3_600_000) });
+    const outro = new ControleDoPrazo({
+      banco: () => b.reabrir(),
+      agora: () => depois(1 * DIA_MS - 3_600_000),
+    });
     expect(outro.situacao()).toMatchObject({ situacao: 'ESGOTADO', motivo: 'RELOGIO' });
   });
 
@@ -180,7 +185,9 @@ describe('textos do prazo (glossário)', () => {
   });
 
   it('limparPrazo copia só os campos documentados', () => {
-    expect(limparPrazo({ situacao: 'ESGOTADO', motivo: 'RELOGIO', diasRestantes: 4, x: 1 })).toEqual({
+    expect(
+      limparPrazo({ situacao: 'ESGOTADO', motivo: 'RELOGIO', diasRestantes: 4, x: 1 }),
+    ).toEqual({
       situacao: 'ESGOTADO',
       diasRestantes: 4,
       motivo: 'RELOGIO',

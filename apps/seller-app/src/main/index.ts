@@ -29,8 +29,11 @@ import { registrarAtualizacao, registrarPonte, registrarSincronizacao } from './
 import { enderecoDoApp } from './seguranca';
 import { ServicoDeSessao } from './servico-de-sessao';
 import { ConsultasLocais } from './local/consultas-locais';
+import { ApagadorDeDados } from './offline/apagar-dados';
+import { ControleDoPrazo } from './offline/prazo-offline';
+import { CHAVES, gravarEstado, lerEstado, registrarContato } from './sync/estado-sync';
 import { MotorDeSincronizacao } from './sync/motor';
-import { OperacoesLocais } from './sync/operacoes-locais';
+import { ErroDaOperacao, OperacoesLocais } from './sync/operacoes-locais';
 import { criarTransporteDoSync } from './sync/transporte-do-sync';
 import type { ArquivoDoToken, Cofre, Relogio } from './tipos';
 
@@ -182,6 +185,8 @@ async function iniciar(): Promise<void> {
     arquivo: criarArquivoDoToken(),
     relogio,
     aoContatarOServidor: (credenciais) => contato.registrar(credenciais),
+    // Computador desligado pela dona (tarefa 5.8): quarentena das vendas que faltam e depois apagar os dados.
+    aoReceberOrdemDeApagar: () => void servico?.ordemDeApagar(),
     aoPerderASessao: (aviso) => {
       motor?.desligar();
       if (aviso.estado === 'app-desatualizado' && aviso.mensagem) {
@@ -192,21 +197,70 @@ async function iniciar(): Promise<void> {
   });
   // Banco local cifrado (tarefa 5.2; ADR-0005): só o processo principal o abre, com a chave embrulhada pela senha do
   // vendedor e o resgate pelo cofre do Windows. Por enquanto é preparado a cada entrada com internet.
-  const bancoLocal = new ServicoDoBanco({ pasta: join(app.getPath('userData'), 'dados'), cofre });
+  const bancoLocal = new ServicoDoBanco({
+    pasta: join(app.getPath('userData'), 'dados'),
+    cofre,
+    // Prazo sem internet (tarefa 5.8): a entrada com internet já é um contato com o servidor.
+    aoAbrirComInternet: async (db) => {
+      const ultimo = await contato.ler();
+      if (!ultimo) return;
+      registrarContato(db, ultimo.horaDoServidor, new Date(relogio.agora()));
+      if (!lerEstado(db, CHAVES.parametros)) {
+        gravarEstado(
+          db,
+          CHAVES.parametros,
+          JSON.stringify({ tempoMaximoOfflineDias: ultimo.tempoMaximoOfflineDias }),
+        );
+      }
+    },
+  });
+  // O prazo máximo sem internet (10 dias): hora local do último contato, maior hora vista e relógio mexido.
+  const prazo = new ControleDoPrazo({
+    banco: () => bancoLocal.banco,
+    agora: () => new Date(relogio.agora()),
+  });
+  const transporteDoSync = criarTransporteDoSync({
+    baseUrl: enderecoDoServidor,
+    versaoDoApp: versaoDoApp(app.getVersion()),
+    fetch: (entrada, inicio) => session.defaultSession.fetch(entrada as string | Request, inicio),
+  });
+  // Apagar os dados do computador desligado (tarefa 5.8; ADR-0013, item 14).
+  const pastaDeDados = app.getPath('userData');
+  const apagador = new ApagadorDeDados({
+    lugares: {
+      chave: join(pastaDeDados, 'dados', 'chave.json'),
+      banco: join(pastaDeDados, 'dados', 'banco.sqlite'),
+      pastaDeDados: join(pastaDeDados, 'dados'),
+      pastasDeFotos: [join(pastaDeDados, 'fotos')],
+      token: join(pastaDeDados, 'sessao', 'renovacao.bin'),
+      identificador: join(pastaDeDados, 'aparelho', 'identificador.txt'),
+      ultimoContato: join(pastaDeDados, 'aparelho', 'ultimo-contato.json'),
+      marca: join(pastaDeDados, 'aparelho', 'apagando.json'),
+      pastasDeApoio: [join(pastaDeDados, 'sessao'), join(pastaDeDados, 'aparelho')],
+    },
+    banco: () => bancoLocal.banco,
+    abrirBancoParaApagar: () => bancoLocal.abrirParaApagar(),
+    fecharBanco: () => bancoLocal.fechar(),
+    enviarParaQuarentena: (corpo) => transporteDoSync.guardarEmQuarentena(corpo),
+    credenciais: async () =>
+      guarda.comTokenDeRenovacao((token) => Promise.resolve({ token, dispositivoId })),
+    relogio,
+    registrar: (mensagem) => console.warn(mensagem),
+  });
   // Motor de envio e recebimento (tarefa 5.6): no processo principal, com o banco local e a mesma rede (certificado
   // fixado) e a mesma guarda de tokens das telas. Liga depois de entrar com o banco aberto; desliga ao sair, ao perder a
   // sessão e por ordem do servidor. Apagar os dados e o bloqueio são da tarefa 5.8 (aqui o motor só para).
   const motorDoApp = new MotorDeSincronizacao({
     banco: () => bancoLocal.banco,
-    transporte: criarTransporteDoSync({
-      baseUrl: enderecoDoServidor,
-      versaoDoApp: versaoDoApp(app.getVersion()),
-      fetch: (entrada, inicio) => session.defaultSession.fetch(entrada as string | Request, inicio),
-    }),
+    transporte: transporteDoSync,
     comToken: (chamada) => guarda.comToken(chamada),
     relogio,
     aoMudarEstado: avisarSincronizacao,
-    aoReceberOrdem: () => motor?.desligar(),
+    prazo: () => prazo.situacao(),
+    aoReceberOrdem: (ordem) => {
+      motor?.desligar();
+      if (ordem === 'apagar-dados') void servico?.ordemDeApagar();
+    },
     registrar: (mensagem) => console.warn(`Envio: ${mensagem}`),
   });
   motor = motorDoApp;
@@ -220,18 +274,49 @@ async function iniciar(): Promise<void> {
         return db;
       },
       aoGravar: () => motorDoApp.gravou(),
+      // Prazo acabado (ou relógio mexido): nada novo grava; o que já existe continua sendo enviado (tarefa 5.8).
+      podeGravar: () => {
+        const situacao = prazo.situacao();
+        if (situacao.situacao === 'ESGOTADO') {
+          throw new ErroDaOperacao(
+            situacao.motivo === 'RELOGIO' ? 'RELOGIO_ERRADO' : 'PRAZO_ESGOTADO',
+          );
+        }
+      },
     }),
     agora: () => new Date(relogio.agora()),
     aoMudarOEstado: () => motorDoApp.atualizarEstado(),
   });
   const pararDeVigiar = vigiarAInternet(() => motorDoApp.internetVoltou());
+  // A cada minuto: a maior hora do computador já vista sobe e o aviso do prazo se atualiza (tarefa 5.8).
+  const batida = setInterval(() => {
+    prazo.batida();
+    motorDoApp.atualizarEstado();
+  }, 60_000);
   app.on('will-quit', () => {
+    clearInterval(batida);
     pararDeVigiar();
     motorDoApp.desligar();
     bancoLocal.fechar();
   });
   // A sessão guardada é retomada antes de a tela perguntar "estou logado?".
-  servico = new ServicoDeSessao(guarda, api, guarda.restaurar(), bancoLocal, motorDoApp, consultas);
+  servico = new ServicoDeSessao(
+    guarda,
+    api,
+    guarda.restaurar(),
+    bancoLocal,
+    motorDoApp,
+    consultas,
+    apagador,
+    (estado) => {
+      if (estado === 'DESLIGANDO') avisarATela({ estado: 'desligando' });
+      else if (estado === 'DESLIGADO') avisarATela({ estado: 'desligado' });
+    },
+  );
+  // O aplicativo fechou no meio de um apagar: continua de onde parou, sem recomeçar a contagem (tarefa 5.8).
+  void apagador.emAndamento().then((emAndamento) => {
+    if (emAndamento) void servico?.ordemDeApagar();
+  });
 
   registrarPonte(servico, (e) => {
     const quadro = e.senderFrame;

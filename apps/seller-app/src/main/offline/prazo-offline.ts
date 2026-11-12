@@ -43,7 +43,8 @@ export function avaliarPrazo(e: EntradaDoPrazo): PrazoOffline {
   }
   const restanteMs = e.prazoDias * DIA_MS - (agora - contato);
   if (restanteMs <= 0) return esgotado('PRAZO');
-  if (restanteMs > AVISO_DIAS * DIA_MS) return { situacao: 'EM_DIA', diasRestantes: 0, motivo: null };
+  if (restanteMs > AVISO_DIAS * DIA_MS)
+    return { situacao: 'EM_DIA', diasRestantes: 0, motivo: null };
   return { situacao: 'AVISO', diasRestantes: Math.ceil(restanteMs / DIA_MS), motivo: null };
 }
 
@@ -86,8 +87,11 @@ function data(texto: string | null): Date | null {
 function prazoDoServidor(parametros: string | null): number {
   if (!parametros) return PRAZO_PADRAO_DIAS;
   try {
-    const dias = (JSON.parse(parametros) as { tempoMaximoOfflineDias?: unknown }).tempoMaximoOfflineDias;
-    return typeof dias === 'number' && Number.isInteger(dias) && dias > 0 ? dias : PRAZO_PADRAO_DIAS;
+    const dias = (JSON.parse(parametros) as { tempoMaximoOfflineDias?: unknown })
+      .tempoMaximoOfflineDias;
+    return typeof dias === 'number' && Number.isInteger(dias) && dias > 0
+      ? dias
+      : PRAZO_PADRAO_DIAS;
   } catch {
     return PRAZO_PADRAO_DIAS;
   }

@@ -19,7 +19,9 @@ import type { Relogio, Resultado } from '../tipos';
  */
 
 /** Esperas antes da 1ª, da 2ª e da 3ª tentativa de quarentena: uma queda de rede passageira não pode levar a apagar. */
-export const ESPERAS_DA_QUARENTENA_MS: readonly number[] = Object.freeze([30_000, 120_000, 600_000]);
+export const ESPERAS_DA_QUARENTENA_MS: readonly number[] = Object.freeze([
+  30_000, 120_000, 600_000,
+]);
 export const TENTATIVAS_DA_QUARENTENA = ESPERAS_DA_QUARENTENA_MS.length;
 
 export type FaseDoApagar = 'QUARENTENA' | 'APAGANDO';
@@ -128,7 +130,7 @@ export class ApagadorDeDados {
     }
     this.mudar('ENVIANDO');
     if (marca.fase === 'QUARENTENA') {
-      marca = await this.quarentena(marca);
+      await this.quarentena(marca);
     }
     await this.apagar();
     this.mudar('APAGADO');
@@ -146,7 +148,9 @@ export class ApagadorDeDados {
     }
     while (marca.tentativas < TENTATIVAS_DA_QUARENTENA) {
       await this.esperarAte(marca);
-      this.o.registrar?.(`Quarentena: tentativa ${marca.tentativas + 1} de ${TENTATIVAS_DA_QUARENTENA}.`);
+      this.o.registrar?.(
+        `Quarentena: tentativa ${marca.tentativas + 1} de ${TENTATIVAS_DA_QUARENTENA}.`,
+      );
       const resposta = await this.enviar(fila);
       if (resposta === 'DEFINITIVA') break;
       const feitas = marca.tentativas + 1;
@@ -185,7 +189,11 @@ export class ApagadorDeDados {
     let restantes = fila;
     let limite = MAXIMO_DE_OPERACOES;
     while (restantes.length > 0) {
-      const lote = montarLote(restantes.slice(0, limite), new Date(this.o.relogio.agora()), restantes.length);
+      const lote = montarLote(
+        restantes.slice(0, limite),
+        new Date(this.o.relogio.agora()),
+        restantes.length,
+      );
       if (!lote) break;
       const cabecalho = `"tokenDeRenovacao":${JSON.stringify(credenciais.token)},"dispositivoId":${JSON.stringify(credenciais.dispositivoId)},`;
       const r = await this.o.enviarParaQuarentena(`{${cabecalho}${lote.corpo.slice(1)}`);
@@ -245,14 +253,21 @@ export class ApagadorDeDados {
           versao: 1,
           fase: m.fase,
           tentativas: m.tentativas,
-          proximaTentativaEm: typeof m.proximaTentativaEm === 'string' ? m.proximaTentativaEm : null,
+          proximaTentativaEm:
+            typeof m.proximaTentativaEm === 'string' ? m.proximaTentativaEm : null,
           iniciadoEm: typeof m.iniciadoEm === 'string' ? m.iniciadoEm : new Date(0).toISOString(),
         };
       }
     } catch (erro) {
       if ((erro as NodeJS.ErrnoException).code !== 'ENOENT') {
         // Marca estragada: não dá para saber onde parou; apagar é o lado seguro (os dados já foram desligados).
-        return { versao: 1, fase: 'APAGANDO', tentativas: TENTATIVAS_DA_QUARENTENA, proximaTentativaEm: null, iniciadoEm: new Date(0).toISOString() };
+        return {
+          versao: 1,
+          fase: 'APAGANDO',
+          tentativas: TENTATIVAS_DA_QUARENTENA,
+          proximaTentativaEm: null,
+          iniciadoEm: new Date(0).toISOString(),
+        };
       }
     }
     return null;

@@ -70,6 +70,23 @@ export const TEXTOS = {
     semDados: 'Ainda não recebemos os dados da loja neste computador. Conecte-se à internet.',
   },
 
+  /** Abrir sem internet e computador desligado (glossário, parte 6, tarefa 5.8). */
+  semInternetNaEntrada: {
+    titulo: 'Entrar sem internet',
+    texto:
+      'Digite a senha do seu usuário para abrir o Corona Vendas sem internet. Suas vendas continuam salvas.',
+    botao: 'Entrar',
+  },
+  desligando: {
+    titulo: 'Estamos enviando as suas vendas.',
+    texto:
+      'A dona desligou este computador. Mantenha o computador ligado e conectado à internet enquanto enviamos as suas vendas. Depois, os dados serão apagados.',
+  },
+  desligado: {
+    titulo: 'Este computador foi desligado da loja.',
+    texto: 'Os dados deste computador foram apagados. Fale com a dona.',
+  },
+
   /** Navegação comum. */
   voltar: 'Voltar',
   carregando: 'Buscando...',

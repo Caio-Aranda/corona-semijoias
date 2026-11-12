@@ -70,7 +70,8 @@ function montar(opcoes: { esperas?: readonly number[] } = {}): ApagadorDeDados {
     enviarParaQuarentena: (corpo) => {
       enviados.push(corpo);
       const r = respostas.shift() ?? 'definitiva';
-      if (r === 'sem-resposta') return Promise.resolve({ ok: false, falha: { tipo: 'sem-conexao' } });
+      if (r === 'sem-resposta')
+        return Promise.resolve({ ok: false, falha: { tipo: 'sem-conexao' } });
       if (r === 'erro-do-servidor') return Promise.resolve(resposta(503));
       if (r === 'negada') return Promise.resolve(resposta(401));
       if (r === 'grande') return Promise.resolve(resposta(413));
@@ -97,9 +98,12 @@ function venda(id: string): void {
 
 /** Deixa as promessas e a entrada e saída reais do disco andarem. */
 async function ate(condicao: () => boolean): Promise<void> {
-  await vi.waitFor(() => {
-    if (!condicao()) throw new Error('ainda não');
-  }, { timeout: 5000, interval: 5 });
+  await vi.waitFor(
+    () => {
+      if (!condicao()) throw new Error('ainda não');
+    },
+    { timeout: 5000, interval: 5 },
+  );
 }
 
 beforeEach(() => {
@@ -243,7 +247,9 @@ describe('aparelho bloqueado COM vendas aguardando', () => {
     await relogio.andar(ESPERAS_DA_QUARENTENA_MS[0]!);
     await feito;
     expect(enviados).toHaveLength(3);
-    const tamanhos = enviados.map((e) => (JSON.parse(e) as { operacoes: unknown[] }).operacoes.length);
+    const tamanhos = enviados.map(
+      (e) => (JSON.parse(e) as { operacoes: unknown[] }).operacoes.length,
+    );
     expect(tamanhos).toEqual([2, 1, 1]);
   });
 
@@ -336,8 +342,12 @@ describe('apagar', () => {
     expect(posicao('/dados')).toBeGreaterThan(posicao('/dados/banco.sqlite-shm'));
     expect(posicao('/fotos')).toBeGreaterThan(posicao('/dados'));
     expect(posicao('/sessao/renovacao.bin')).toBeGreaterThan(posicao('/fotos'));
-    expect(posicao('/aparelho/identificador.txt')).toBeGreaterThan(posicao('/sessao/renovacao.bin'));
-    expect(posicao('/aparelho/apagando.json')).toBeGreaterThan(posicao('/aparelho/ultimo-contato.json'));
+    expect(posicao('/aparelho/identificador.txt')).toBeGreaterThan(
+      posicao('/sessao/renovacao.bin'),
+    );
+    expect(posicao('/aparelho/apagando.json')).toBeGreaterThan(
+      posicao('/aparelho/ultimo-contato.json'),
+    );
     expect(fechado).toBe(1); // o banco foi fechado antes de apagar o arquivo
     expect(readdirSync(raiz)).toEqual([]);
   });

@@ -55,6 +55,11 @@ export interface OpcoesDoServicoDoBanco {
   parametros?: ParametrosDaSenha;
   migracoes?: readonly MigracaoLocal[];
   agora?: () => Date;
+  /**
+   * Tarefa 5.8: chamado depois de cada entrada COM internet, com o banco já aberto. O app guarda aqui o contato com o
+   * servidor do login, para o prazo sem internet já valer desde o primeiro minuto.
+   */
+  aoAbrirComInternet?: (db: BancoAberto) => void | Promise<void>;
 }
 
 /**
@@ -85,6 +90,12 @@ export class ServicoDoBanco {
   }
 
   async prepararComInternet(senha: string): Promise<ResultadoDaAbertura> {
+    const r = await this.prepararInterno(senha);
+    if (r.ok && this.db) await this.o.aoAbrirComInternet?.(this.db);
+    return r;
+  }
+
+  private async prepararInterno(senha: string): Promise<ResultadoDaAbertura> {
     mkdirSync(this.o.pasta, { recursive: true });
     let reiniciado = false;
     let chave: Buffer;
@@ -146,6 +157,47 @@ export class ServicoDoBanco {
       r.chave.fill(0);
     }
     return { ok: true, reiniciado: false, poucoEspaco: this.poucoEspaco() };
+  }
+
+  /** Guarda (no banco aberto) quem entrou: o login e o nome, para abrir sem internet. Sem banco aberto, não faz nada. */
+  lembrar(chave: 'vendedor_login' | 'vendedor_nome', valor: string): void {
+    if (!this.db) return;
+    this.db
+      .prepare(
+        'INSERT INTO estado_sync (chave, valor) VALUES (?, ?) ON CONFLICT(chave) DO UPDATE SET valor = excluded.valor',
+      )
+      .run(chave, valor);
+  }
+
+  lembrado(chave: 'vendedor_login' | 'vendedor_nome'): string | null {
+    if (!this.db) return null;
+    const r = this.db.prepare('SELECT valor FROM estado_sync WHERE chave = ?').get(chave) as
+      { valor: string | null } | undefined;
+    return r?.valor ?? null;
+  }
+
+  /** Há banco e chave neste computador (depois de uma entrada com internet)? Decide se dá para entrar sem internet. */
+  get temDadosLocais(): boolean {
+    return this.chave.existe() && this.existeBanco();
+  }
+
+  /**
+   * Só para o apagar (tarefa 5.8): abre o banco pela chave do cofre do Windows, sem senha, para ler o que ainda não foi
+   * enviado. O computador já foi desligado pela dona e os dados serão apagados em seguida.
+   */
+  async abrirParaApagar(): Promise<BancoAberto | null> {
+    if (this.db) return this.db;
+    const chave = await this.chave.abrirSoPeloCofre();
+    if (!chave) return null;
+    try {
+      this.db = abrirBancoLocal(this.opcoesDoBanco(chave));
+    } catch (erro) {
+      if (erro instanceof ErroDoBanco) return null;
+      throw erro;
+    } finally {
+      chave.fill(0);
+    }
+    return this.db;
   }
 
   fechar(): void {
