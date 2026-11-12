@@ -96,6 +96,59 @@ describe('atualização automática na ponte', () => {
   });
 });
 
+describe('estado do envio na ponte (tarefa 5.6)', () => {
+  it('o ouvinte recebe só contadores, sim/não e datas, e para de ouvir ao cancelar', async () => {
+    await import('../preload/index');
+    invocar.mockResolvedValue({
+      comInternet: true,
+      enviando: false,
+      aguardando: 2,
+      vendasAguardando: 1,
+      recusadas: 0,
+      dadosAte: '2026-11-12T13:00:00.000Z',
+      naoConseguiuEnviar: false,
+      token: 'não passa',
+      caminho: 'C:/dados/banco.sqlite',
+    });
+    const ponte = exposto['corona'] as {
+      aoMudarASincronizacao: (f: (a: unknown) => void) => () => void;
+    };
+    const recebido = vi.fn();
+    const cancelar = ponte.aoMudarASincronizacao(recebido);
+    await vi.waitFor(() =>
+      expect(recebido).toHaveBeenCalledWith({
+        comInternet: true,
+        enviando: false,
+        aguardando: 2,
+        vendasAguardando: 1,
+        recusadas: 0,
+        dadosAte: '2026-11-12T13:00:00.000Z',
+        naoConseguiuEnviar: false,
+      }),
+    );
+    expect(invocar).toHaveBeenCalledWith(CANAIS.sincronizacaoEstado);
+    ouvintes.get(CANAIS.sincronizacaoMudou)?.(
+      { sender: 'x' },
+      { comInternet: false, aguardando: 3, clienteId: '0190-x' },
+    );
+    expect(JSON.stringify(recebido.mock.lastCall)).not.toMatch(/clienteId|0190/);
+    expect(recebido).toHaveBeenLastCalledWith(
+      expect.objectContaining({ comInternet: false, aguardando: 3 }),
+    );
+    cancelar();
+    expect(ouvintes.has(CANAIS.sincronizacaoMudou)).toBe(false);
+  });
+
+  it('o processo principal só responde o estado do envio para a janela do app', async () => {
+    const { registrarSincronizacao } = await import('./ipc');
+    const motor = { estado: () => ({ aguardando: 0 }) };
+    registrarSincronizacao(motor as never, () => false);
+    await expect(
+      manipuladores.get(CANAIS.sincronizacaoEstado)!({} as IpcMainInvokeEvent),
+    ).rejects.toThrow('Chamada recusada.');
+  });
+});
+
 describe('ponte (processo principal)', () => {
   const evento = {} as IpcMainInvokeEvent;
 
@@ -120,6 +173,8 @@ describe('ponte (processo principal)', () => {
       CANAIS.sessaoMudou,
       CANAIS.atualizacaoMudou,
       CANAIS.atualizacaoEstado,
+      CANAIS.sincronizacaoMudou,
+      CANAIS.sincronizacaoEstado,
     ];
     const esperados = Object.values(CANAIS).filter((c) => !doProcessoPrincipal.includes(c));
     expect([...manipuladores.keys()].sort()).toEqual([...esperados].sort());

@@ -140,6 +140,7 @@ function ponteDeTrabalho(
     }),
     aoMudarASessao: () => () => undefined,
     aoMudarAAtualizacao: () => () => undefined,
+    aoMudarASincronizacao: () => () => undefined,
   };
   return { ponte, chamadas, daOperacao: (op: string) => chamadas.filter((c) => c.operacao === op) };
 }

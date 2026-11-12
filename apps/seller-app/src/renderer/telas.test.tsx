@@ -27,6 +27,7 @@ function ponteFalsa(parcial: Partial<PonteDoCorona> = {}) {
       };
     },
     aoMudarAAtualizacao: () => () => undefined,
+    aoMudarASincronizacao: () => () => undefined,
     ...parcial,
   };
   return { ponte, avisar: (a: AvisoDeSessao) => ouvinte?.(a) };

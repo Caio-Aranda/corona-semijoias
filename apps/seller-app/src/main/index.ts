@@ -3,11 +3,16 @@ import {
   PARTICAO_DO_ATUALIZADOR,
   ServicoDeAtualizacao,
 } from '@corona/conexao-segura';
-import { app, BrowserWindow, safeStorage, session, type WebContents } from 'electron';
+import { app, BrowserWindow, net, safeStorage, session, type WebContents } from 'electron';
 import electronUpdater from 'electron-updater';
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
-import { CANAIS, type AvisoDeAtualizacao, type AvisoDeSessao } from '../shared/ponte';
+import {
+  CANAIS,
+  type AvisoDeAtualizacao,
+  type AvisoDeSessao,
+  type EstadoDaSincronizacao,
+} from '../shared/ponte';
 import { criarApiDoVendas } from './api';
 import { arquivoDeTexto } from './arquivo-de-texto';
 import { ServicoDoBanco } from './banco/servico-do-banco';
@@ -20,9 +25,11 @@ import {
   versaoDoApp,
 } from './configuracao';
 import { GuardaDeTokens } from './guarda-de-tokens';
-import { registrarAtualizacao, registrarPonte } from './ipc';
+import { registrarAtualizacao, registrarPonte, registrarSincronizacao } from './ipc';
 import { enderecoDoApp } from './seguranca';
 import { ServicoDeSessao } from './servico-de-sessao';
+import { MotorDeSincronizacao } from './sync/motor';
+import { criarTransporteDoSync } from './sync/transporte-do-sync';
 import type { ArquivoDoToken, Cofre, Relogio } from './tipos';
 
 const NOME_DO_APP = 'Corona Vendas';
@@ -69,6 +76,21 @@ const relogio: Relogio = {
 
 function avisarATela(aviso: AvisoDeSessao): void {
   if (janela && !janela.isDestroyed()) janela.webContents.send(CANAIS.sessaoMudou, aviso);
+}
+
+function avisarSincronizacao(estado: EstadoDaSincronizacao): void {
+  if (janela && !janela.isDestroyed()) janela.webContents.send(CANAIS.sincronizacaoMudou, estado);
+}
+
+/** `net.isOnline()` é só uma dica (ADR-0013, item 19): quando passa a dizer "sim", o motor confere pela rota de saúde. */
+function vigiarAInternet(aoVoltar: () => void): () => void {
+  let antes = net.isOnline();
+  const id = setInterval(() => {
+    const agora = net.isOnline();
+    if (agora && !antes) aoVoltar();
+    antes = agora;
+  }, 5_000);
+  return () => clearInterval(id);
 }
 
 function avisarAtualizacao(aviso: AvisoDeAtualizacao): void {
@@ -151,6 +173,7 @@ async function iniciar(): Promise<void> {
   });
   // `servico` nasce depois da guarda, e a guarda avisa o serviço pelo `aoPerderASessao`.
   let servico: ServicoDeSessao | null = null;
+  let motor: MotorDeSincronizacao | null = null;
   const guarda = new GuardaDeTokens({
     api,
     cofre,
@@ -158,6 +181,7 @@ async function iniciar(): Promise<void> {
     relogio,
     aoContatarOServidor: (credenciais) => contato.registrar(credenciais),
     aoPerderASessao: (aviso) => {
+      motor?.desligar();
       if (aviso.estado === 'app-desatualizado' && aviso.mensagem) {
         servico?.marcarDesatualizado(aviso.mensagem);
       }
@@ -167,11 +191,43 @@ async function iniciar(): Promise<void> {
   // Banco local cifrado (tarefa 5.2; ADR-0005): só o processo principal o abre, com a chave embrulhada pela senha do
   // vendedor e o resgate pelo cofre do Windows. Por enquanto é preparado a cada entrada com internet.
   const bancoLocal = new ServicoDoBanco({ pasta: join(app.getPath('userData'), 'dados'), cofre });
-  app.on('will-quit', () => bancoLocal.fechar());
+  // Motor de envio e recebimento (tarefa 5.6): no processo principal, com o banco local e a mesma rede (certificado
+  // fixado) e a mesma guarda de tokens das telas. Liga depois de entrar com o banco aberto; desliga ao sair, ao perder a
+  // sessão e por ordem do servidor. Apagar os dados e o bloqueio são da tarefa 5.8 (aqui o motor só para).
+  const motorDoApp = new MotorDeSincronizacao({
+    banco: () => bancoLocal.banco,
+    transporte: criarTransporteDoSync({
+      baseUrl: enderecoDoServidor,
+      versaoDoApp: versaoDoApp(app.getVersion()),
+      fetch: (entrada, inicio) => session.defaultSession.fetch(entrada as string | Request, inicio),
+    }),
+    comToken: (chamada) => guarda.comToken(chamada),
+    relogio,
+    aoMudarEstado: avisarSincronizacao,
+    aoReceberOrdem: () => motor?.desligar(),
+    registrar: (mensagem) => console.warn(`Envio: ${mensagem}`),
+  });
+  motor = motorDoApp;
+  const pararDeVigiar = vigiarAInternet(() => motorDoApp.internetVoltou());
+  app.on('will-quit', () => {
+    pararDeVigiar();
+    motorDoApp.desligar();
+    bancoLocal.fechar();
+  });
   // A sessão guardada é retomada antes de a tela perguntar "estou logado?".
-  servico = new ServicoDeSessao(guarda, api, guarda.restaurar(), bancoLocal);
+  servico = new ServicoDeSessao(guarda, api, guarda.restaurar(), bancoLocal, motorDoApp);
 
   registrarPonte(servico, (e) => {
+    const quadro = e.senderFrame;
+    return (
+      quadro !== null &&
+      janela !== null &&
+      e.sender === janela.webContents &&
+      enderecoDoApp(quadro.url, enderecoDeDesenvolvimento)
+    );
+  });
+
+  registrarSincronizacao(motorDoApp, (e) => {
     const quadro = e.senderFrame;
     return (
       quadro !== null &&

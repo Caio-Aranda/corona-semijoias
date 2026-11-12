@@ -137,6 +137,7 @@ function ponteDeConsulta(
     }),
     aoMudarASessao: () => () => undefined,
     aoMudarAAtualizacao: () => () => undefined,
+    aoMudarASincronizacao: () => () => undefined,
   };
   return { ponte, daOperacao: (op: string) => chamadas.filter((c) => c.operacao === op) };
 }
