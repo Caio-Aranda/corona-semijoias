@@ -118,7 +118,7 @@ class TodasAsRotasTest extends TesteDeIntegracao {
         // Fora do perfil dev a documentação não é pública. A renovação é pública: o token de acesso
         // pode já ter vencido, e quem prova a sessão é o token de renovação.
         assertThat(publicas.rotas()).extracting(r -> r.metodo().name() + " " + r.padrao())
-                .containsExactly("POST /api/auth/login", "POST /api/auth/renovar", "GET /actuator/health",
+                .containsExactly("POST /api/auth/login", "POST /api/auth/renovar", "POST /api/vendedor/sync/quarentena", "GET /actuator/health",
                         "GET /actuator/health/**");
     }
 }

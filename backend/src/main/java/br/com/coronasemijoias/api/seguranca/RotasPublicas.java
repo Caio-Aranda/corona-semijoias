@@ -40,6 +40,9 @@ public class RotasPublicas {
         List<RotaPublica> lista = new ArrayList<>(List.of(
                 new RotaPublica(HttpMethod.POST, "/api/auth/login"),
                 new RotaPublica(HttpMethod.POST, "/api/auth/renovar"),
+                // Tarefa 5.8: o computador bloqueado já não tem sessão; quem prova ser ele é o token de renovação revogado
+                // do corpo, conferido pelo ServicoDeQuarentena (401 igual para qualquer negativa).
+                new RotaPublica(HttpMethod.POST, "/api/vendedor/sync/quarentena"),
                 new RotaPublica(HttpMethod.GET, "/actuator/health"),
                 new RotaPublica(HttpMethod.GET, "/actuator/health/**")));
         if (ambiente.getProperty("springdoc.api-docs.enabled", Boolean.class, true)) {
