@@ -272,6 +272,31 @@ export type DadosDoUsuario = {
     vendedorId?: string;
 };
 
+export type Devolucao = {
+    canceladaEm?: string;
+    clienteId?: string;
+    clienteNome?: string;
+    cotacao?: ConsultasDeVendasCotacao;
+    dentroGarantia?: boolean;
+    destino?: string;
+    devolvidaEm?: string;
+    formaReembolso?: string;
+    horaAjustada?: boolean;
+    id?: string;
+    itens?: Array<ItemDaDevolucao>;
+    motivo?: string;
+    motivoCancelamento?: string;
+    observacao?: string;
+    remessaId?: string;
+    situacao?: string;
+    valorDevolvido?: string;
+    valorDevolvidoDolar?: string;
+    valorDevolvidoGuarani?: string;
+    valorReembolsado?: string;
+    vendaId?: string;
+    vendedorId?: string;
+};
+
 export type DoVendedor = {
     nome?: string;
     quantidade?: number;
@@ -450,6 +475,16 @@ export type InventariosDaDonaControllerRespostaDoResumo = {
     pecasEsperadas?: number;
     sobram?: number;
     totalDePecas?: number;
+};
+
+export type ItemDaDevolucao = {
+    destino?: string;
+    estado?: string;
+    id?: string;
+    itemVendaId?: string;
+    produto?: ConsultasDeVendasPeca;
+    quantidade?: number;
+    valor?: string;
 };
 
 export type ItemDaNota = {
@@ -1021,6 +1056,11 @@ export type PedidoDeAjuste = {
 };
 
 export type PedidoDeBloqueio = {
+    motivo?: string;
+};
+
+export type PedidoDeCancelamento = {
+    id?: string;
     motivo?: string;
 };
 
@@ -1820,6 +1860,7 @@ export type Venda = {
     clienteNome?: string;
     cotacao?: ConsultasDeVendasCotacao;
     desconto?: string;
+    devolvido?: string;
     estornadaEm?: string;
     id?: string;
     itens?: Array<ConsultasDeVendasItem>;
@@ -2482,6 +2523,24 @@ export type HojeResponses = {
 };
 
 export type HojeResponse = HojeResponses[keyof HojeResponses];
+
+export type CancelarDevolucaoData = {
+    body: PedidoDeCancelamento;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/devolucoes/{id}/cancelar';
+};
+
+export type CancelarDevolucaoResponses = {
+    /**
+     * OK
+     */
+    200: Devolucao;
+};
+
+export type CancelarDevolucaoResponse = CancelarDevolucaoResponses[keyof CancelarDevolucaoResponses];
 
 export type ListarEnviosComProblemaData = {
     body?: never;

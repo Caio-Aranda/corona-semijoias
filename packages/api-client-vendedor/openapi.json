@@ -384,6 +384,99 @@
         },
         "type" : "object"
       },
+      "Devolucao" : {
+        "properties" : {
+          "canceladaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "clienteId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "clienteNome" : {
+            "type" : "string"
+          },
+          "cotacao" : {
+            "$ref" : "#/components/schemas/ConsultasDeVendasCotacao"
+          },
+          "dentroGarantia" : {
+            "type" : "boolean"
+          },
+          "destino" : {
+            "type" : "string"
+          },
+          "devolvidaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "formaReembolso" : {
+            "type" : "string"
+          },
+          "horaAjustada" : {
+            "type" : "boolean"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ItemDaDevolucao"
+            },
+            "type" : "array"
+          },
+          "motivo" : {
+            "type" : "string"
+          },
+          "motivoCancelamento" : {
+            "type" : "string"
+          },
+          "observacao" : {
+            "type" : "string"
+          },
+          "remessaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "situacao" : {
+            "type" : "string"
+          },
+          "valorDevolvido" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorDevolvidoDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorDevolvidoGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorReembolsado" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "DiferencasNaConferencia" : {
         "properties" : {
           "tabelas" : {
@@ -396,6 +489,38 @@
           }
         },
         "required" : [ "tabelas" ],
+        "type" : "object"
+      },
+      "ItemDaDevolucao" : {
+        "properties" : {
+          "destino" : {
+            "type" : "string"
+          },
+          "estado" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "itemVendaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "produto" : {
+            "$ref" : "#/components/schemas/ConsultasDeVendasPeca"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
         "type" : "object"
       },
       "JsonNode" : {
@@ -473,6 +598,36 @@
           },
           "valueNode" : {
             "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "LinhaDaVendaComAPeca" : {
+        "properties" : {
+          "devolvidas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "itemVendaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "podemVoltar" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "produto" : {
+            "$ref" : "#/components/schemas/ConsultasDeVendasPeca"
+          },
+          "totalDaLinha" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendidas" : {
+            "format" : "int32",
+            "type" : "integer"
           }
         },
         "type" : "object"
@@ -577,6 +732,22 @@
         },
         "type" : "object"
       },
+      "PecaDevolvida" : {
+        "properties" : {
+          "estado" : {
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "PedidoDaContagem" : {
         "properties" : {
           "contada" : {
@@ -584,6 +755,40 @@
             "type" : "integer"
           },
           "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "PedidoDaDevolucao" : {
+        "properties" : {
+          "formaReembolso" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/PecaDevolvida"
+            },
+            "type" : "array"
+          },
+          "motivo" : {
+            "type" : "string"
+          },
+          "observacao" : {
+            "type" : "string"
+          },
+          "valorConferido" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendaId" : {
             "format" : "uuid",
             "type" : "string"
           }
@@ -620,6 +825,18 @@
             "example" : "123.45",
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "PedidoDeCancelamento" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "motivo" : {
             "type" : "string"
           }
         },
@@ -1093,6 +1310,12 @@
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           },
+          "devolvido" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
           "estornadaEm" : {
             "format" : "date-time",
             "type" : "string"
@@ -1160,6 +1383,63 @@
           "vendidaEm" : {
             "format" : "date-time",
             "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "VendaComAPeca" : {
+        "properties" : {
+          "aPrazo" : {
+            "type" : "boolean"
+          },
+          "clienteId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "clienteNome" : {
+            "type" : "string"
+          },
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDaVendaComAPeca"
+            },
+            "type" : "array"
+          },
+          "prazoArrependimentoAte" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "prazoDefeitoAte" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "total" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "vendidaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "VendasComAPeca" : {
+        "properties" : {
+          "peca" : {
+            "$ref" : "#/components/schemas/ConsultasDeVendasPeca"
+          },
+          "vendas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/VendaComAPeca"
+            },
+            "type" : "array"
           }
         },
         "type" : "object"
@@ -1503,6 +1783,200 @@
         } ],
         "summary" : "Cotação do dia",
         "tags" : [ "apoio-do-vendedor-controller" ]
+      }
+    },
+    "/api/vendedor/devolucoes" : {
+      "get" : {
+        "description" : "Só as devoluções do vendedor logado, da mais nova para a mais antiga. Filtros opcionais por dia (de e até, no horário de Brasília) e por venda.",
+        "operationId" : "listarDevolucoesDoVendedor",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendaId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/Devolucao"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Minhas devoluções",
+        "tags" : [ "devolucoes-do-vendedor-controller" ]
+      },
+      "post" : {
+        "description" : "Devolução de peças de uma venda à vista do vendedor, dentro da garantia. A venda não muda; o servidor calcula o valor (o preço pago), o reembolso na forma escolhida e para onde vai cada peça (boa de maleta aberta volta à maleta; com defeito ou de maleta acertada, peça para a loja). Fora do prazo, venda a prazo ou acima do vendido: 409. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409.",
+        "operationId" : "devolverDoCliente",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDaDevolucao"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Devolucao"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Registrar a devolução de um cliente",
+        "tags" : [ "devolucoes-do-vendedor-controller" ]
+      }
+    },
+    "/api/vendedor/devolucoes/vendas-com-a-peca" : {
+      "get" : {
+        "description" : "Pelo código lido (sem diferenciar maiúsculas, sem espaços nas pontas) ou pelo produto: as vendas concluídas do vendedor com a peça, da mais nova para a mais antiga (no máximo 20), com o que ainda pode voltar de cada peça, até que dia vale a garantia e se a venda é a prazo.",
+        "operationId" : "vendasComAPeca",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "codigo",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "produtoId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/VendasComAPeca"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Vendas com a peça lida",
+        "tags" : [ "devolucoes-do-vendedor-controller" ]
+      }
+    },
+    "/api/vendedor/devolucoes/{id}" : {
+      "get" : {
+        "operationId" : "verDevolucaoDoVendedor",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Devolucao"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ver uma das minhas devoluções",
+        "tags" : [ "devolucoes-do-vendedor-controller" ]
+      }
+    },
+    "/api/vendedor/devolucoes/{id}/cancelar" : {
+      "post" : {
+        "description" : "Desfaz a devolução com registros de sinal oposto: a peça sai de novo da maleta e o reembolso é estornado. Só no dia da devolução; depois, só a dona. Exige o id do cancelamento (do aplicativo) e o motivo. Mesmo id devolve 200.",
+        "operationId" : "cancelarDevolucaoDoVendedor",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeCancelamento"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Devolucao"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Cancelar a própria devolução (no mesmo dia)",
+        "tags" : [ "devolucoes-do-vendedor-controller" ]
       }
     },
     "/api/vendedor/fotos/{hash}/{tamanho}" : {

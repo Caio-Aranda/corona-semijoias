@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AcharPecaDaMinhaMaletaData, AcharPecaDaMinhaMaletaResponses, AvisarDiferencaNaConferenciaData, AvisarDiferencaNaConferenciaResponses, BaixarFotoDaMinhaMaletaData, BaixarFotoDaMinhaMaletaResponses, BuscarPecaDaMinhaMaletaData, BuscarPecaDaMinhaMaletaResponses, CadastrarMeuClienteData, CadastrarMeuClienteResponses, ConferirDadosData, ConferirDadosResponses, ConferirMinhaMaletaData, ConferirMinhaMaletaResponses, EntrarData, EntrarResponses, EnviarOperacoesData, EnviarOperacoesResponses, EstornarVendaDoVendedorData, EstornarVendaDoVendedorResponses, EuData, EuResponses, GuardarEmQuarentenaData, GuardarEmQuarentenaResponses, ListarMeusClientesData, ListarMeusClientesResponses, ListarMinhasMaletasData, ListarMinhasMaletasResponses, ListarVendasDoVendedorData, ListarVendasDoVendedorResponses, ReceberDadosData, ReceberDadosResponses, RelatorioDeMeusRecebimentosData, RelatorioDeMeusRecebimentosResponses, RelatorioDeMinhasVendasData, RelatorioDeMinhasVendasResponses, RelatorioDeValoresAReceberData, RelatorioDeValoresAReceberResponses, RenovarData, RenovarResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SoVendedorData, SoVendedorResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarDoVendedorData, ValidarDoVendedorResponses, ValorDoVendedorData, ValorDoVendedorResponses, VenderNaMaletaData, VenderNaMaletaResponses, VerConferenciaDaMinhaMaletaData, VerConferenciaDaMinhaMaletaResponses, VerCotacaoDeHojeData, VerCotacaoDeHojeResponses, VerMeuClienteData, VerMeuClienteResponses, VerMinhaMaletaData, VerMinhaMaletaResponses, VerVendaDoVendedorData, VerVendaDoVendedorResponses } from './types.gen';
+import type { AcharPecaDaMinhaMaletaData, AcharPecaDaMinhaMaletaResponses, AvisarDiferencaNaConferenciaData, AvisarDiferencaNaConferenciaResponses, BaixarFotoDaMinhaMaletaData, BaixarFotoDaMinhaMaletaResponses, BuscarPecaDaMinhaMaletaData, BuscarPecaDaMinhaMaletaResponses, CadastrarMeuClienteData, CadastrarMeuClienteResponses, CancelarDevolucaoDoVendedorData, CancelarDevolucaoDoVendedorResponses, ConferirDadosData, ConferirDadosResponses, ConferirMinhaMaletaData, ConferirMinhaMaletaResponses, DevolverDoClienteData, DevolverDoClienteResponses, EntrarData, EntrarResponses, EnviarOperacoesData, EnviarOperacoesResponses, EstornarVendaDoVendedorData, EstornarVendaDoVendedorResponses, EuData, EuResponses, GuardarEmQuarentenaData, GuardarEmQuarentenaResponses, ListarDevolucoesDoVendedorData, ListarDevolucoesDoVendedorResponses, ListarMeusClientesData, ListarMeusClientesResponses, ListarMinhasMaletasData, ListarMinhasMaletasResponses, ListarVendasDoVendedorData, ListarVendasDoVendedorResponses, ReceberDadosData, ReceberDadosResponses, RelatorioDeMeusRecebimentosData, RelatorioDeMeusRecebimentosResponses, RelatorioDeMinhasVendasData, RelatorioDeMinhasVendasResponses, RelatorioDeValoresAReceberData, RelatorioDeValoresAReceberResponses, RenovarData, RenovarResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SoVendedorData, SoVendedorResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarDoVendedorData, ValidarDoVendedorResponses, ValorDoVendedorData, ValorDoVendedorResponses, VendasComAPecaData, VendasComAPecaResponses, VenderNaMaletaData, VenderNaMaletaResponses, VerConferenciaDaMinhaMaletaData, VerConferenciaDaMinhaMaletaResponses, VerCotacaoDeHojeData, VerCotacaoDeHojeResponses, VerDevolucaoDoVendedorData, VerDevolucaoDoVendedorResponses, VerMeuClienteData, VerMeuClienteResponses, VerMinhaMaletaData, VerMinhaMaletaResponses, VerVendaDoVendedorData, VerVendaDoVendedorResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -137,6 +137,67 @@ export const verCotacaoDeHoje = <ThrowOnError extends boolean = false>(options?:
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/vendedor/cotacao',
     ...options
+});
+
+/**
+ * Minhas devoluções
+ *
+ * Só as devoluções do vendedor logado, da mais nova para a mais antiga. Filtros opcionais por dia (de e até, no horário de Brasília) e por venda.
+ */
+export const listarDevolucoesDoVendedor = <ThrowOnError extends boolean = false>(options?: Options<ListarDevolucoesDoVendedorData, ThrowOnError>): RequestResult<ListarDevolucoesDoVendedorResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ListarDevolucoesDoVendedorResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/devolucoes',
+    ...options
+});
+
+/**
+ * Registrar a devolução de um cliente
+ *
+ * Devolução de peças de uma venda à vista do vendedor, dentro da garantia. A venda não muda; o servidor calcula o valor (o preço pago), o reembolso na forma escolhida e para onde vai cada peça (boa de maleta aberta volta à maleta; com defeito ou de maleta acertada, peça para a loja). Fora do prazo, venda a prazo ou acima do vendido: 409. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409.
+ */
+export const devolverDoCliente = <ThrowOnError extends boolean = false>(options: Options<DevolverDoClienteData, ThrowOnError>): RequestResult<DevolverDoClienteResponses, unknown, ThrowOnError> => (options.client ?? client).post<DevolverDoClienteResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/devolucoes',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Vendas com a peça lida
+ *
+ * Pelo código lido (sem diferenciar maiúsculas, sem espaços nas pontas) ou pelo produto: as vendas concluídas do vendedor com a peça, da mais nova para a mais antiga (no máximo 20), com o que ainda pode voltar de cada peça, até que dia vale a garantia e se a venda é a prazo.
+ */
+export const vendasComAPeca = <ThrowOnError extends boolean = false>(options?: Options<VendasComAPecaData, ThrowOnError>): RequestResult<VendasComAPecaResponses, unknown, ThrowOnError> => (options?.client ?? client).get<VendasComAPecaResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/devolucoes/vendas-com-a-peca',
+    ...options
+});
+
+/**
+ * Ver uma das minhas devoluções
+ */
+export const verDevolucaoDoVendedor = <ThrowOnError extends boolean = false>(options: Options<VerDevolucaoDoVendedorData, ThrowOnError>): RequestResult<VerDevolucaoDoVendedorResponses, unknown, ThrowOnError> => (options.client ?? client).get<VerDevolucaoDoVendedorResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/devolucoes/{id}',
+    ...options
+});
+
+/**
+ * Cancelar a própria devolução (no mesmo dia)
+ *
+ * Desfaz a devolução com registros de sinal oposto: a peça sai de novo da maleta e o reembolso é estornado. Só no dia da devolução; depois, só a dona. Exige o id do cancelamento (do aplicativo) e o motivo. Mesmo id devolve 200.
+ */
+export const cancelarDevolucaoDoVendedor = <ThrowOnError extends boolean = false>(options: Options<CancelarDevolucaoDoVendedorData, ThrowOnError>): RequestResult<CancelarDevolucaoDoVendedorResponses, unknown, ThrowOnError> => (options.client ?? client).post<CancelarDevolucaoDoVendedorResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/devolucoes/{id}/cancelar',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**
