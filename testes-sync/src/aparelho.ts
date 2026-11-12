@@ -17,6 +17,8 @@ import type { PedidoDeChamada } from '../../apps/seller-app/src/shared/operacoes
 import { validarChamada } from '../../apps/seller-app/src/shared/validacao';
 import { URL_DA_API, VERSAO_DO_APP } from '../ambiente/ambiente';
 import { esperarAte } from './esperar';
+import type { Livro } from './livro';
+import { marcadoresNaResposta } from './marcadores';
 import {
   iniciarProxyDeRedeRuim,
   PLANO_BOM,
@@ -92,6 +94,11 @@ export class Aparelho {
   readonly avisos: AvisoDeSessao[] = [];
   readonly registro: string[] = [];
   ultimoEstado: EstadoDaSincronizacao | null = null;
+  /** Marcadores proibidos achados nas respostas do servidor (custo, rotas e nomes da dona). Tem de ficar vazio. */
+  marcadoresVistos: string[] = [];
+  /** O vendedor deste computador e o livro do cenário (preenchidos pelo cenário). */
+  vendedorId = '';
+  livro: Livro | null = null;
 
   private constructor(
     readonly nome: string,
@@ -104,13 +111,19 @@ export class Aparelho {
 
   static async ligar(o: OpcoesDoAparelho): Promise<Aparelho> {
     const pasta = o.pasta ?? mkdtempSync(join(tmpdir(), `corona-sync-${o.nome}-`));
+    const vistos: string[] = [];
     const proxy = await iniciarProxyDeRedeRuim({
       destino: URL_DA_API,
       semente: o.semente,
       plano: PLANO_BOM,
+      // Toda resposta do servidor que passou pela rede deste computador é varrida, não só o que o teste lembrou de olhar.
+      aoResponder: (r) => {
+        for (const achado of marcadoresNaResposta(r)) vistos.push(achado);
+      },
     });
     const relogio = new RelogioDoAparelho(o.aceleracao ?? 10);
     const aparelho = new Aparelho(o.nome, pasta, proxy, relogio, null as never, o);
+    aparelho.marcadoresVistos = vistos;
     aparelho.app = await aparelho.montar();
     return aparelho;
   }
@@ -213,9 +226,9 @@ export class Aparelho {
         this.app.motor.internetVoltou();
         const nosso = this.app.motor.envioEmAndamento();
         if (!nosso) return false;
-        await nosso;
+        const desfecho = await nosso;
         const e = this.app.motor.estado();
-        return e.comInternet === true && e.aguardando === 0 && !this.app.motor.envioEmAndamento();
+        return desfecho === 'ok' && e.comInternet === true && e.aguardando === 0;
       },
       {
         limiteMs,

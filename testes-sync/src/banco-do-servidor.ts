@@ -11,11 +11,11 @@ const compose = join(
 
 /**
  * Leitura do PostgreSQL das duas pontas, **só para conferir** (o oráculo e as contagens). Usa o `psql` de dentro do
- * contêiner, sem dependência nova. A consulta é envolvida num `json_agg`, então a resposta vem como JSON. Nunca grava:
+ * contêiner, sem dependência nova. A consulta é envolvida num `jsonb_agg` (uma linha só, sem quebras), então a resposta vem como JSON. Nunca grava:
  * a transação é somente leitura.
  */
 export function consultar<T = Record<string, unknown>>(sql: string): Promise<T[]> {
-  const envolvida = `BEGIN TRANSACTION READ ONLY; SELECT coalesce(json_agg(t), '[]'::json) FROM (${sql}) t; COMMIT;`;
+  const envolvida = `BEGIN TRANSACTION READ ONLY; SELECT coalesce(jsonb_agg(t), '[]'::jsonb) FROM (${sql}) t; COMMIT;`;
   return new Promise((ok, erro) => {
     const p = spawn(
       'docker',
@@ -56,7 +56,11 @@ export function consultar<T = Record<string, unknown>>(sql: string): Promise<T[]
         erro(new Error(`psql não devolveu JSON: ${linhas.join(' | ')}`));
         return;
       }
-      ok(JSON.parse(json) as T[]);
+      try {
+        ok(JSON.parse(json) as T[]);
+      } catch (e) {
+        erro(e instanceof Error ? e : new Error(String(e)));
+      }
     });
   });
 }

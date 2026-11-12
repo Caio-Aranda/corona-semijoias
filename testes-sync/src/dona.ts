@@ -227,18 +227,9 @@ export class Dona {
     );
   }
 
-  /** "Trocar a foto": a nova entra e a antiga sai. */
+  /** "Trocar a foto": uma foto só por peça, a nova substitui a anterior (a antiga vira lápide). Devolve o hash novo. */
   async trocarFoto(produtoId: string, semente: number): Promise<string> {
-    const antigas = await this.chamar<Array<{ id: string }>>(
-      'GET',
-      `/api/dona/produtos/${produtoId}/fotos`,
-    );
-    const nova = await this.foto(produtoId, semente);
-    for (const a of antigas) {
-      if (a.id !== nova.id)
-        await this.chamar('DELETE', `/api/dona/produtos/${produtoId}/fotos/${a.id}`);
-    }
-    return nova.hash;
+    return (await this.foto(produtoId, semente)).hash;
   }
 
   async produto(id: string): Promise<Record<string, unknown> & { version: number }> {
@@ -255,6 +246,30 @@ export class Dona {
       precoCusto: p['precoCusto'],
       precoVenda: preco,
       ...(p['referencia'] ? { referencia: p['referencia'] } : {}),
+      version: p.version,
+    });
+  }
+
+  /**
+   * Põe um código secundário na peça ou, se ela já tem um posto aqui, tira (o código sai com lápide). Mexe na tabela
+   * `produto_codigos` que vai para o computador do vendedor.
+   */
+  async alternarCodigoSecundario(produtoId: string): Promise<void> {
+    const p = await this.produto(produtoId);
+    const codigos = (p['codigos'] ?? []) as Array<{
+      id: string;
+      codigo: string;
+      tipo: string;
+      principal: boolean;
+      ativo?: boolean;
+      fornecedorId?: string;
+    }>;
+    const meu = codigos.find((c) => c.codigo.startsWith('X-'));
+    const lista = meu
+      ? codigos.filter((c) => c !== meu)
+      : [...codigos, { codigo: `X-${randomUUID().slice(0, 12)}`, tipo: 'LOJA', principal: false }];
+    await this.chamar('PUT', `/api/dona/produtos/${produtoId}/codigos`, {
+      codigos: lista,
       version: p.version,
     });
   }

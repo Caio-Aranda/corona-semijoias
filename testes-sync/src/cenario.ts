@@ -1,6 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { Aparelho, type OpcoesDoAparelho } from './aparelho';
+import { afirmarNoFim, type AfirmacaoFinal } from './afirmacoes';
 import { Dona, type VendedorDeTeste } from './dona';
+import { Livro, type TipoDeOperacao } from './livro';
 
 /** A semente da rodada: `CORONA_SYNC_SEMENTE` ou a hora. Impressa no início de cada arquivo. */
 export function sementeDaRodada(nomeDoArquivo: string): number {
@@ -23,6 +25,8 @@ export interface VendedorComAparelho extends VendedorDeTeste {
  */
 export class Cenario {
   readonly aparelhos: Aparelho[] = [];
+  readonly livro = new Livro();
+  private jaAfirmados = 0;
   private proximaSemente: number;
 
   private constructor(
@@ -42,6 +46,7 @@ export class Cenario {
   /** Um computador novo; cada um com o próprio proxy e a própria semente (semente da rodada + número do aparelho). */
   async aparelho(nome: string, o: Partial<OpcoesDoAparelho> = {}): Promise<Aparelho> {
     const a = await Aparelho.ligar({ nome, semente: this.proximaSemente++, ...o });
+    a.livro = this.livro;
     this.aparelhos.push(a);
     return a;
   }
@@ -50,6 +55,7 @@ export class Cenario {
   async vendedor(nome: string, o: Partial<OpcoesDoAparelho> = {}): Promise<VendedorComAparelho> {
     const v = await this.dona.vendedor(`${nome} ${randomUUID().slice(0, 6)}`);
     const aparelho = await this.aparelho(nome, o);
+    aparelho.vendedorId = v.vendedorId;
     await aparelho.primeiraEntrada(v.login, v.senhaTemporaria, SENHA_DO_VENDEDOR);
     return { ...v, aparelho };
   }
@@ -74,12 +80,43 @@ export class Cenario {
     return r;
   }
 
+  /** A afirmação final (oráculo, livro, marcadores e conciliação) para os computadores vivos. */
+  async afirmarNoFim(
+    vivos: Aparelho[],
+    o: Partial<Omit<AfirmacaoFinal, 'vivos'>> = {},
+  ): Promise<void> {
+    // A varredura e o relatório olham os computadores deste caso (os de casos anteriores já foram afirmados).
+    const doCaso = this.aparelhos.slice(this.jaAfirmados);
+    this.jaAfirmados = this.aparelhos.length;
+    await afirmarNoFim({
+      semente: this.semente,
+      dona: this.dona,
+      livro: this.livro,
+      todos: doCaso,
+      vivos,
+      ...o,
+    });
+  }
+
   async desligar(): Promise<void> {
     for (const a of this.aparelhos.splice(0)) await a.desligar().catch(() => undefined);
   }
 }
 
-/** Atalhos da "tela" do vendedor: conferir a maleta, cadastrar cliente, vender e estornar. */
+function lancar(a: Aparelho, tipo: TipoDeOperacao, operacaoId: string, vendaId?: string): void {
+  a.livro?.lancar({
+    operacaoId,
+    tipo,
+    aparelho: a.nome,
+    vendedorId: a.vendedorId,
+    ...(vendaId ? { vendaId } : {}),
+  });
+}
+
+/**
+ * Atalhos da "tela" do vendedor: conferir a maleta, cadastrar cliente, vender e estornar. Cada operação que o app
+ * aceitou vai para o livro do cenário.
+ */
 export const Tela = {
   async conferirTudo(a: Aparelho, maletaId: string): Promise<string> {
     const pecas = a.ler<{ produto_id: string; saldo: number }>(
@@ -97,6 +134,7 @@ export const Tela = {
       conferenciaId,
       itens: pecas.map((p) => ({ produtoId: p.produto_id, contada: p.saldo })),
     });
+    lancar(a, 'CONFERENCIA', conferenciaId);
     return conferenciaId;
   },
 
@@ -106,6 +144,7 @@ export const Tela = {
       operacao: 'clientes.cadastrar',
       cliente: { id, nome, ...(cpf ? { cpf } : {}), telefone: '(19) 99999-0000' },
     });
+    lancar(a, 'CLIENTE_NOVO', id);
     return id;
   },
 
@@ -140,6 +179,7 @@ export const Tela = {
         totalConferido: total,
       },
     });
+    lancar(a, 'VENDA', id);
     return id;
   },
 
@@ -151,6 +191,7 @@ export const Tela = {
       estornoId,
       motivo: 'Cliente desistiu',
     });
+    lancar(a, 'ESTORNO_VENDA', estornoId, vendaId);
     return estornoId;
   },
 };

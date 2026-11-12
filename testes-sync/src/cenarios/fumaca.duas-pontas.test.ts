@@ -34,5 +34,7 @@ describe('duas pontas: o caminho inteiro, com rede boa', () => {
       ),
     ).toBe(-1);
     expect(ana.aparelho.outbox().map((o) => o.situacao)).toEqual(['ENVIADO', 'ENVIADO', 'ENVIADO']);
+
+    await cenario.afirmarNoFim([ana.aparelho]);
   });
 });
