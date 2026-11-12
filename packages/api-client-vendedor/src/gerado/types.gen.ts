@@ -120,8 +120,43 @@ export type Devedor = {
     vendidoEmGuarani?: string;
 };
 
+export type Devolucao = {
+    canceladaEm?: string;
+    clienteId?: string;
+    clienteNome?: string;
+    cotacao?: ConsultasDeVendasCotacao;
+    dentroGarantia?: boolean;
+    destino?: string;
+    devolvidaEm?: string;
+    formaReembolso?: string;
+    horaAjustada?: boolean;
+    id?: string;
+    itens?: Array<ItemDaDevolucao>;
+    motivo?: string;
+    motivoCancelamento?: string;
+    observacao?: string;
+    remessaId?: string;
+    situacao?: string;
+    valorDevolvido?: string;
+    valorDevolvidoDolar?: string;
+    valorDevolvidoGuarani?: string;
+    valorReembolsado?: string;
+    vendaId?: string;
+    vendedorId?: string;
+};
+
 export type DiferencasNaConferencia = {
     tabelas: Array<string>;
+};
+
+export type ItemDaDevolucao = {
+    destino?: string;
+    estado?: string;
+    id?: string;
+    itemVendaId?: string;
+    produto?: ConsultasDeVendasPeca;
+    quantidade?: number;
+    valor?: string;
 };
 
 export type JsonNode = {
@@ -152,6 +187,15 @@ export type JsonNode = {
      */
     textual?: boolean;
     valueNode?: boolean;
+};
+
+export type LinhaDaVendaComAPeca = {
+    devolvidas?: number;
+    itemVendaId?: string;
+    podemVoltar?: number;
+    produto?: ConsultasDeVendasPeca;
+    totalDaLinha?: string;
+    vendidas?: number;
 };
 
 export type LinhaRecebida = {
@@ -189,9 +233,25 @@ export type ParametrosDoVendedor = {
     tempoMaximoOfflineDias?: number;
 };
 
+export type PecaDevolvida = {
+    estado?: string;
+    produtoId?: string;
+    quantidade?: number;
+};
+
 export type PedidoDaContagem = {
     contada?: number;
     produtoId?: string;
+};
+
+export type PedidoDaDevolucao = {
+    formaReembolso?: string;
+    id?: string;
+    itens?: Array<PecaDevolvida>;
+    motivo?: string;
+    observacao?: string;
+    valorConferido?: string;
+    vendaId?: string;
 };
 
 export type PedidoDaVenda = {
@@ -201,6 +261,11 @@ export type PedidoDaVenda = {
     pagamentos?: Array<PedidoDoPagamento>;
     remessaId?: string;
     totalConferido?: string;
+};
+
+export type PedidoDeCancelamento = {
+    id?: string;
+    motivo?: string;
 };
 
 export type PedidoDeCliente = {
@@ -355,6 +420,7 @@ export type Venda = {
     clienteNome?: string;
     cotacao?: ConsultasDeVendasCotacao;
     desconto?: string;
+    devolvido?: string;
     estornadaEm?: string;
     id?: string;
     itens?: Array<ConsultasDeVendasItem>;
@@ -369,6 +435,23 @@ export type Venda = {
     totalGuarani?: string;
     vendedorId?: string;
     vendidaEm?: string;
+};
+
+export type VendaComAPeca = {
+    aPrazo?: boolean;
+    clienteId?: string;
+    clienteNome?: string;
+    itens?: Array<LinhaDaVendaComAPeca>;
+    prazoArrependimentoAte?: string;
+    prazoDefeitoAte?: string;
+    total?: string;
+    vendaId?: string;
+    vendidaEm?: string;
+};
+
+export type VendasComAPeca = {
+    peca?: ConsultasDeVendasPeca;
+    vendas?: Array<VendaComAPeca>;
 };
 
 export type VendasDoVendedorControllerPedidoDaLinha = {
@@ -559,6 +642,97 @@ export type VerCotacaoDeHojeResponses = {
 };
 
 export type VerCotacaoDeHojeResponse = VerCotacaoDeHojeResponses[keyof VerCotacaoDeHojeResponses];
+
+export type ListarDevolucoesDoVendedorData = {
+    body?: never;
+    path?: never;
+    query?: {
+        de?: string;
+        ate?: string;
+        vendaId?: string;
+    };
+    url: '/api/vendedor/devolucoes';
+};
+
+export type ListarDevolucoesDoVendedorResponses = {
+    /**
+     * OK
+     */
+    200: Array<Devolucao>;
+};
+
+export type ListarDevolucoesDoVendedorResponse = ListarDevolucoesDoVendedorResponses[keyof ListarDevolucoesDoVendedorResponses];
+
+export type DevolverDoClienteData = {
+    body: PedidoDaDevolucao;
+    path?: never;
+    query?: never;
+    url: '/api/vendedor/devolucoes';
+};
+
+export type DevolverDoClienteResponses = {
+    /**
+     * OK
+     */
+    200: Devolucao;
+};
+
+export type DevolverDoClienteResponse = DevolverDoClienteResponses[keyof DevolverDoClienteResponses];
+
+export type VendasComAPecaData = {
+    body?: never;
+    path?: never;
+    query?: {
+        codigo?: string;
+        produtoId?: string;
+    };
+    url: '/api/vendedor/devolucoes/vendas-com-a-peca';
+};
+
+export type VendasComAPecaResponses = {
+    /**
+     * OK
+     */
+    200: VendasComAPeca;
+};
+
+export type VendasComAPecaResponse = VendasComAPecaResponses[keyof VendasComAPecaResponses];
+
+export type VerDevolucaoDoVendedorData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/vendedor/devolucoes/{id}';
+};
+
+export type VerDevolucaoDoVendedorResponses = {
+    /**
+     * OK
+     */
+    200: Devolucao;
+};
+
+export type VerDevolucaoDoVendedorResponse = VerDevolucaoDoVendedorResponses[keyof VerDevolucaoDoVendedorResponses];
+
+export type CancelarDevolucaoDoVendedorData = {
+    body: PedidoDeCancelamento;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/vendedor/devolucoes/{id}/cancelar';
+};
+
+export type CancelarDevolucaoDoVendedorResponses = {
+    /**
+     * OK
+     */
+    200: Devolucao;
+};
+
+export type CancelarDevolucaoDoVendedorResponse = CancelarDevolucaoDoVendedorResponses[keyof CancelarDevolucaoDoVendedorResponses];
 
 export type BaixarFotoDaMinhaMaletaData = {
     body?: never;

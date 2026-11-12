@@ -49,6 +49,7 @@ Em 09/11/2026 o responsável resolveu as dúvidas que estavam abertas neste glos
 | troca | `trocas` | O cliente devolve a peça A e leva a peça B. |
 | devolução | `devolucoes` | O cliente devolve uma peça. Também vale para o vendedor que devolve peças à dona no acerto. |
 | devolver o dinheiro | reembolso | O cliente recebe de volta o valor pago. |
+| peça para a loja | `itens_devolucao.destino_peca = LOJA` | Peça devolvida pelo cliente que não volta à maleta (com defeito, ou boa de maleta já acertada). O vendedor a entrega à dona no próximo acerto (ADR-0014, item 7). |
 | crédito do cliente | `creditos_cliente` | Valor que sobra de uma troca e que o cliente usa numa compra futura. |
 | conferência | `CONFERIDA`, conferência da maleta | O vendedor confere as peças recebidas contra a lista da maleta. |
 | cobrança | cobrança | Recebimento do cliente pelo vendedor e repasse do vendedor à dona. |
@@ -541,6 +542,52 @@ Sem internet e sem dados neste computador (primeira vez):
 
 > **Este computador foi desligado da loja.** (depois de apagar)
 > Os dados deste computador foram apagados. Fale com a dona.
+
+**Devolução do cliente (Fase 6, tarefa 6.3; ADR-0014, itens 1 a 7 e 11).** O cliente devolve peça de uma venda à vista; a venda não muda e o dinheiro volta na forma escolhida. O servidor calcula o valor; a tela nunca o decide. As telas são das tarefas 6.8 (Corona Vendas) e 6.9 (Corona Gestão); estes textos valem desde já para o que o servidor devolve.
+
+- Motivo (obrigatório): **Desistiu** (arrependimento), **Defeito**, **Não serviu** (tamanho) e **Outro**. Com **Outro**, o campo **Observação** é obrigatório. Com **Defeito**, todas as peças são marcadas **Com defeito**.
+- Estado da peça: **Boa** ou **Com defeito** (parte 3).
+- Para onde vai a peça: **Voltou para a maleta** (boa, de maleta ainda com o vendedor) ou **Peça para a loja** (com defeito, ou boa de maleta já acertada: não volta à maleta e o vendedor a entrega à dona no próximo acerto).
+- Situação da devolução: **Aceita**, **Para revisão da dona** (passou do prazo pelo relógio da loja, mas o computador achou que estava no prazo), **Mantida**, **Não aceita** e **Cancelada**.
+- Ler o código na devolução mostra **as vendas com esta peça** (as do próprio vendedor, da mais nova para a mais antiga), com o cliente, o dia, **Vendidas**, **Já devolvidas**, **Ainda podem voltar** e até que dia vale a garantia ("Desistência até 19/11", "Defeito até 12/12"). Venda a prazo aparece marcada e não pode ser escolhida ainda.
+- Botões: **Registrar devolução** (ação sem volta) e **Cancelar devolução** (o vendedor só no mesmo dia; depois, a dona).
+
+Textos que o servidor devolve:
+
+> **Esta quantidade passa do que o cliente comprou.**
+> Desta venda ainda podem voltar só {N} peça(s) de "{nome}". Confira a quantidade. (com {N} igual a zero: "Todas as peças de "{nome}" desta venda já foram devolvidas.")
+
+> **Passou do prazo da garantia.**
+> Passou do prazo da garantia. Peça autorização à dona.
+
+> **Esta venda tem parcelas.**
+> Esta venda tem parcelas; a devolução dela chega em breve.
+
+> **Esta venda já tem devolução.**
+> Esta venda já tem devolução. Cancele a devolução antes de estornar.
+
+> **Esta maleta está em acerto.**
+> O acerto desta maleta está acontecendo. Espere o acerto terminar e registre a devolução de novo.
+
+> **Esta devolução só pode ser cancelada pela dona.**
+> Só dá para cancelar a devolução no mesmo dia. Peça à dona para cancelar.
+
+> **Esta devolução já foi cancelada.**
+> Esta devolução já foi cancelada e não pode mudar.
+
+> **Esta devolução não pode ser cancelada.**
+> A dona já decidiu sobre esta devolução e ela não pode mais ser cancelada. (quando a maleta da peça já não está com o vendedor: "A maleta desta devolução já não está com o vendedor. Fale com a dona.")
+
+> **A peça desta devolução já foi vendida de novo.**
+> A peça desta devolução já foi vendida de novo e a devolução não pode ser cancelada. Fale com a dona.
+
+> **Esta devolução já foi registrada com outros dados.**
+> Esta devolução já foi registrada com outros dados. Confira as devoluções antes de lançar de novo.
+
+> **Não encontramos esta devolução.**
+> Não encontramos esta devolução. Atualize a tela e tente de novo.
+
+Avisos junto ao campo: "Escolha o motivo da devolução: desistência, defeito, não serviu ou outro.", "Conte o motivo da devolução no campo de observação." (motivo **Outro** sem observação), "Com o motivo defeito, marque as peças como com defeito.", "Diga se a peça voltou boa ou com defeito.", "Escolha como o dinheiro foi devolvido: dinheiro, Pix, cartão ou cheque.", "Esta peça não consta nesta venda.", "A mesma peça aparece mais de uma vez com o mesmo estado. Junte as quantidades numa linha só." e "Diga o motivo de cancelar a devolução.".
 
 **Vender só depois de conferir (decisão de 11/11/2026; tarefa 5.3).** A maleta que ainda não foi conferida não vende:
 

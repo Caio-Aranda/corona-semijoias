@@ -120,7 +120,19 @@ public final class RegistroDeTabelas {
                         new TabelaSincronizavel("itens_conferencia", List.of(
                                 "conferencia_id", "produto_id", "esperado", "contado"), true,
                                 RegraDoVendedor.doVendedor("EXISTS (SELECT 1 FROM corona.conferencias c"
-                                        + " WHERE c.id = t.conferencia_id AND c.vendedor_id = ?)"))
+                                        + " WHERE c.id = t.conferencia_id AND c.vendedor_id = ?)")),
+                        // Devolução do cliente (tarefa 6.3, ADR-0014): sincronizáveis, mas NADA vai ao vendedor ainda (dúvida Q4):
+                        // o Corona Vendas de hoje recusa o lote inteiro se chegar uma tabela que ele não conhece. A tarefa 6.7
+                        // troca o FALSE pelo filtro do vendedor, a expansão e o oráculo, e leva também as colunas novas de
+                        // pagamentos_cliente (devolucao_id, estorna_id) e movimentos_remessa (devolucao_id), que ficam fora até lá.
+                        new TabelaSincronizavel("devolucoes", List.of(
+                                "venda_id", "cliente_id", "vendedor_id", "remessa_id", "motivo", "observacao", "destino",
+                                "dentro_garantia", "situacao", "autorizacao_id", "valor_devolvido", "valor_reembolsado",
+                                "forma_reembolso", "cotacao_id", "devolvida_em", "hora_ajustada", "cancelada_em",
+                                "motivo_cancelamento"), false, RegraDoVendedor.doVendedor("FALSE")),
+                        new TabelaSincronizavel("itens_devolucao", List.of(
+                                "devolucao_id", "item_venda_id", "quantidade", "valor", "estado_peca", "destino_peca"), true,
+                                RegraDoVendedor.doVendedor("FALSE"))
                         // Tabela sincronizável nova: declare a regra do vendedor (filtro, expansão, diretório).
                 ),
                 List.of(

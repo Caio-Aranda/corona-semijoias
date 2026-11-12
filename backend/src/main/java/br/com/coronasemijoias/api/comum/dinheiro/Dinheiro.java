@@ -124,6 +124,18 @@ public final class Dinheiro {
         return List.copyOf(estornos);
     }
 
+    /**
+     * A parte {@code parte} de {@code todo} de um total, arredondada uma vez: {@code arredondar(total x parte / todo)}
+     * (pelo acumulado, como os estornos proporcionais). Com {@code parte = todo} é o próprio total.
+     */
+    public static BigDecimal parteProporcional(BigDecimal total, long parte, long todo) {
+        jaArredondado(total, "total");
+        if (todo < 1 || parte < 0 || parte > todo) {
+            throw new IllegalArgumentException("A parte precisa estar entre 0 e " + todo + ", veio " + parte + ".");
+        }
+        return total.multiply(BigDecimal.valueOf(parte)).divide(BigDecimal.valueOf(todo), ESCALA, ARREDONDAMENTO);
+    }
+
     /** Caso (a) do ADR-0002: a comissão de cada venda é arredondada, e a do acerto é a soma delas. */
     public static BigDecimal comissaoPorVenda(Collection<BigDecimal> liquidosDasVendas, BigDecimal porcentagem) {
         BigDecimal total = ZERO;

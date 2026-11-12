@@ -34,7 +34,7 @@ public class ConsultasDeVendas {
 
     public record Venda(UUID id, UUID vendedorId, UUID clienteId, String clienteNome, UUID remessaId, String status,
             BigDecimal subtotal, BigDecimal desconto, BigDecimal total, BigDecimal totalDolar, BigDecimal totalGuarani,
-            Cotacao cotacao, BigDecimal pago, BigDecimal aReceber, Instant vendidaEm, Instant estornadaEm,
+            Cotacao cotacao, BigDecimal pago, BigDecimal devolvido, BigDecimal aReceber, Instant vendidaEm, Instant estornadaEm,
             String motivoDoEstorno, List<Item> itens, List<PagamentoLido> pagamentos) {
     }
 
@@ -82,7 +82,9 @@ public class ConsultasDeVendas {
         List<Venda> cabecas = jdbc.query("""
                 SELECT v.id, v.vendedor_id, v.cliente_id, c.nome, v.remessa_id, v.status, v.subtotal, v.desconto, v.total,
                        v.vendida_em, v.estornada_em, v.motivo_estorno, ct.data_cotacao, ct.usd_venda, ct.pyg_venda,
-                       coalesce((SELECT sum(p.valor) FROM corona.pagamentos_cliente p WHERE p.venda_id = v.id), 0) AS liquido
+                       coalesce((SELECT sum(p.valor) FROM corona.pagamentos_cliente p WHERE p.venda_id = v.id), 0) AS liquido,
+                       coalesce((SELECT sum(d.valor_devolvido) FROM corona.devolucoes d
+                                  WHERE d.venda_id = v.id AND d.situacao <> 'CANCELADA' AND d.deleted_at IS NULL), 0) AS devolvido
                   FROM corona.vendas v JOIN corona.clientes c ON c.id = v.cliente_id
                   LEFT JOIN corona.cotacoes ct ON ct.id = v.cotacao_id
                  WHERE v.deleted_at IS NULL AND
@@ -94,12 +96,15 @@ public class ConsultasDeVendas {
                             : new Cotacao(rs.getObject("data_cotacao", LocalDate.class), usd, pyg);
                     String status = rs.getString("status");
                     BigDecimal pago = rs.getBigDecimal("liquido");
-                    BigDecimal aReceber = "ESTORNADA".equals(status) ? BigDecimal.ZERO.setScale(2) : total.subtract(pago);
+                    BigDecimal devolvido = rs.getBigDecimal("devolvido");
+                    // O devolvido (devoluções não canceladas, tarefa 6.3) sai do que o cliente deve: total - devolvido - pago.
+                    BigDecimal aReceber = "ESTORNADA".equals(status) ? BigDecimal.ZERO.setScale(2)
+                            : total.subtract(devolvido).subtract(pago);
                     return new Venda(rs.getObject("id", UUID.class), rs.getObject("vendedor_id", UUID.class),
                             rs.getObject("cliente_id", UUID.class), rs.getString("nome"), rs.getObject("remessa_id", UUID.class),
                             status, rs.getBigDecimal("subtotal"), rs.getBigDecimal("desconto"), total,
                             usd == null ? null : ConversaoDeMoeda.paraDolar(total, usd),
-                            pyg == null ? null : ConversaoDeMoeda.paraGuarani(total, pyg), cotacao, pago, aReceber,
+                            pyg == null ? null : ConversaoDeMoeda.paraGuarani(total, pyg), cotacao, pago, devolvido, aReceber,
                             rs.getTimestamp("vendida_em").toInstant(),
                             rs.getTimestamp("estornada_em") == null ? null : rs.getTimestamp("estornada_em").toInstant(),
                             rs.getString("motivo_estorno"), new ArrayList<>(), new ArrayList<>());

@@ -291,6 +291,13 @@ public class ServicoDeVendas {
                 "SELECT EXISTS (SELECT 1 FROM corona.vendas WHERE estorno_id = ?)", Boolean.class, estornoId))) {
             throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.VENDA_JA_REGISTRADA_DIFERENTE);
         }
+        // Venda com devolução não cancelada não é estornada (ADR-0014, item 1; dúvida R6). A venda já está travada, e a
+        // devolução trava a mesma maleta e a mesma venda antes de gravar: as duas nunca passam juntas. O banco é a segunda trava.
+        if (Boolean.TRUE.equals(jdbc.queryForObject(
+                "SELECT EXISTS (SELECT 1 FROM corona.devolucoes WHERE venda_id = ? AND situacao <> 'CANCELADA')",
+                Boolean.class, vendaId))) {
+            throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.VENDA_COM_DEVOLUCAO);
+        }
         String statusDaMaleta = (String) remessa.get("status");
         if (!"ENVIADA".equals(statusDaMaleta) && !"CONFERIDA".equals(statusDaMaleta)) {
             throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.MALETA_NAO_ESTA_COM_VOCE);

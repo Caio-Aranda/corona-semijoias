@@ -313,7 +313,8 @@ class PullDoVendedorTest extends TesteDeIntegracao {
                 .getResponse().getContentAsString(StandardCharsets.UTF_8);
         varrer(corpo);
         JsonNode r = json.readTree(corpo);
-        assertThat(r.get("tabelas").size()).isEqualTo(15);
+        // 17: as 15 de antes e devolucoes e itens_devolucao (tarefa 6.3), que ainda não entregam nada ao vendedor.
+        assertThat(r.get("tabelas").size()).isEqualTo(17);
         for (JsonNode t : r.get("tabelas")) {
             Map<String, JsonNode> guardadas = copia.tabelas.getOrDefault(t.get("tabela").asString(), Map.of());
             TreeMap<String, Integer> ordenadas = new TreeMap<>();
