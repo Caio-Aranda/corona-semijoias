@@ -74,3 +74,23 @@ export function aplicarCampos(
     db.prepare(`UPDATE clientes SET ${coluna} = ? WHERE id = ?`).run(valor ?? null, clienteId);
   }
 }
+
+/**
+ * Desfaz uma alteração recusada: cada campo que AINDA tem o valor novo volta para o de antes. Um campo que já mudou de
+ * novo (outra alteração, ou a cópia do servidor) fica como está. Repetir é inofensivo.
+ */
+export function aplicarCamposSeIguais(
+  db: BancoAberto,
+  clienteId: string,
+  campos: Record<string, Alteracao>,
+): void {
+  for (const [campo, alteracao] of Object.entries(campos)) {
+    const coluna = CAMPOS_DO_CLIENTE[campo];
+    if (!coluna || typeof alteracao !== 'object' || alteracao === null) continue;
+    db.prepare(`UPDATE clientes SET ${coluna} = ? WHERE id = ? AND ${coluna} IS ?`).run(
+      alteracao.antes ?? null,
+      clienteId,
+      alteracao.depois ?? null,
+    );
+  }
+}
