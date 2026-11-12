@@ -45,6 +45,8 @@ export function TelaVender({ ponte, aoVoltar, aoVerVendas }: TelaVenderProps) {
   const T = TEXTOS.venda;
   const { cotacao, data: dataDaCotacao, carregada } = useCotacao(ponte);
   const [maletas, setMaletas] = useState<Maleta[] | null>(null);
+  // Vender só depois de conferir (decisão de 11/11/2026): a maleta ainda não conferida não aparece aqui.
+  const [haParaConferir, setHaParaConferir] = useState(false);
   const [erroInicial, setErroInicial] = useState<string | null>(null);
   const [maletaId, setMaletaId] = useState<string>('');
   const [carrinho, setCarrinho] = useState<LinhaDoCarrinho[]>([]);
@@ -77,8 +79,10 @@ export function TelaVender({ ponte, aoVoltar, aoVerVendas }: TelaVenderProps) {
         setErroInicial(r.mensagem);
         return;
       }
-      setMaletas(r.dados);
-      const primeira = r.dados[0];
+      const conferidas = r.dados.filter((m) => m.status === 'CONFERIDA');
+      setHaParaConferir(r.dados.some((m) => m.status === 'ENVIADA'));
+      setMaletas(conferidas);
+      const primeira = conferidas[0];
       if (primeira) setMaletaId(primeira.id);
     });
     return () => {
@@ -257,7 +261,7 @@ export function TelaVender({ ponte, aoVoltar, aoVerVendas }: TelaVenderProps) {
   if (maletas.length === 0) {
     return (
       <PaginaDoVendedor titulo={T.titulo} aoVoltar={aoVoltar}>
-        <Aviso tipo="informacao">{T.semMaleta}</Aviso>
+        <Aviso tipo="informacao">{haParaConferir ? T.conferirAntes : T.semMaleta}</Aviso>
       </PaginaDoVendedor>
     );
   }

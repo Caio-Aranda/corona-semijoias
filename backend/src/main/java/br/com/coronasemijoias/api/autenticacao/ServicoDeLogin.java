@@ -6,6 +6,7 @@ import br.com.coronasemijoias.api.acessos.ControleDeTentativas.Tentativa;
 import br.com.coronasemijoias.api.acessos.PropriedadesDasTentativas;
 import br.com.coronasemijoias.api.acessos.ResultadoDaTentativa;
 import br.com.coronasemijoias.api.acessos.TravaPorIp;
+import br.com.coronasemijoias.api.aparelhos.ServicoDeAparelhos;
 import br.com.coronasemijoias.api.aplicativo.PropriedadesDoApp;
 import br.com.coronasemijoias.api.aplicativo.TipoDeApp;
 import br.com.coronasemijoias.api.comum.erros.CodigoErro;
@@ -47,7 +48,11 @@ import org.springframework.transaction.support.TransactionOperations;
 public class ServicoDeLogin {
 
     /** O que chega no login: o IP já é o real ({@code IpDoCliente}). */
-    public record PedidoDeEntrada(String login, String senha, UUID dispositivoId, String ip, TipoDeApp app) {
+    public record PedidoDeEntrada(String login, String senha, UUID dispositivoId, String ip, TipoDeApp app, String versaoDoApp) {
+
+        public PedidoDeEntrada(String login, String senha, UUID dispositivoId, String ip, TipoDeApp app) {
+            this(login, senha, dispositivoId, ip, app, null);
+        }
 
         @Override
         public String toString() {
@@ -73,11 +78,13 @@ public class ServicoDeLogin {
     private final PropriedadesDoApp propriedadesDoApp;
     private final TransactionOperations transacao;
     private final Clock relogio;
+    private final ServicoDeAparelhos aparelhos;
 
     public ServicoDeLogin(UsuarioRepositorio usuarios, ConferenciaDeSenha conferencia, EmissorDeToken emissor,
             ServicoDeSessoes sessoes, ControleDeTentativas tentativas, TravaPorIp travas,
             PropriedadesDasTentativas propriedades, PropriedadesDoApp propriedadesDoApp,
-            TransactionOperations transacao, Clock relogio) {
+            TransactionOperations transacao, Clock relogio, ServicoDeAparelhos aparelhos) {
+        this.aparelhos = aparelhos;
         this.usuarios = usuarios;
         this.conferencia = conferencia;
         this.emissor = emissor;
@@ -125,6 +132,10 @@ public class ServicoDeLogin {
         Usuario usuario = encontrado.orElseThrow();
         if (!usuario.isAtivo()) {
             registrar(normalizado, pedido, ResultadoDaTentativa.USUARIO_DESATIVADO);
+            // Do computador do próprio vendedor desativado: a ordem de apagar os dados (ADR-0013, item 14).
+            if (aparelhos.situacao(pedido.dispositivoId(), usuario.getId()).isPresent()) {
+                throw ErroDaApi.comOrdemDeApagar(CodigoErro.USUARIO_DESATIVADO);
+            }
             throw new ErroDaApi(HttpStatus.FORBIDDEN, CodigoErro.USUARIO_DESATIVADO);
         }
         // Só depois de a senha conferir (e o usuário estar ativo): não revela que o login existe.
@@ -141,6 +152,16 @@ public class ServicoDeLogin {
             registrar(normalizado, pedido, ResultadoDaTentativa.PEDIDO_INVALIDO);
             throw new ErroDaApi(HttpStatus.BAD_REQUEST, CodigoErro.PEDIDO_INVALIDO);
         }
+        // Computador (tarefa 5.3): o de outra pessoa não entra; o bloqueado recebe a ordem de apagar os dados.
+        Optional<CodigoErro> recusa = aparelhos.recusaNoLogin(usuario.getId(), pedido.dispositivoId());
+        if (recusa.isPresent()) {
+            if (recusa.get() == CodigoErro.APARELHO_BLOQUEADO) {
+                registrar(normalizado, pedido, ResultadoDaTentativa.APARELHO_BLOQUEADO);
+                throw ErroDaApi.comOrdemDeApagar(CodigoErro.APARELHO_BLOQUEADO);
+            }
+            registrar(normalizado, pedido, ResultadoDaTentativa.APARELHO_DE_OUTRA_PESSOA);
+            throw new ErroDaApi(HttpStatus.FORBIDDEN, recusa.get());
+        }
         return transacao.execute(estado -> sucesso(normalizado, pedido, usuario, hash));
     }
 
@@ -150,6 +171,10 @@ public class ServicoDeLogin {
             usuarios.save(usuario);
         }
         registrar(normalizado, pedido, ResultadoDaTentativa.SUCESSO);
+        if (pedido.dispositivoId() != null) {
+            // O primeiro computador do vendedor fica em uso; os seguintes esperam a dona (ADR-0013, item 13).
+            aparelhos.registrarNoLogin(usuario.getId(), pedido.dispositivoId(), pedido.versaoDoApp());
+        }
         if (usuario.isTrocaDeSenhaObrigatoria()) {
             // Senha temporária no prazo: só o token restrito, que abre a troca de senha e a saída.
             SessaoAberta sessao = sessoes.abrir(usuario.getId(), TipoDeSessao.TROCA_SENHA, pedido.dispositivoId());

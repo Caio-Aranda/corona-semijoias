@@ -159,6 +159,7 @@ App do vendedor sem internet: SQLite criptografado, fila de envios e sincroniza�
 | --- | --- | --- |
 | 5.1 | docs: plano da Fase 5 e ADR-0013 (sincronização e offline) | Mesclada (PR 74) · [plano](progresso/fase-5-plano.md) |
 | 5.2 | seller-app: banco local criptografado (SQLCipher, chave pela senha e resgate pelo cofre, migrações com cópia, esquema local 1) | Em revisão · [detalhe](progresso/fase-5.md#tarefa-52-banco-local-criptografado-corona-vendas) |
+| 5.3 | backend: computadores do vendedor (`dispositivos`, segundo computador, trocar e bloquear, ordem de apagar, vender só depois de conferir) | Mesclada (PR 96) · [detalhe](progresso/fase-5.md#tarefa-53-computadores-do-vendedor-backend) |
 
 As demais tarefas estão no [plano](progresso/fase-5-plano.md).
 

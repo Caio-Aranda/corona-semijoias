@@ -1,5 +1,7 @@
 package br.com.coronasemijoias.api.seguranca;
 
+import br.com.coronasemijoias.api.comum.erros.CodigoErro;
+import br.com.coronasemijoias.api.sessoes.MotivoDaRevogacao;
 import br.com.coronasemijoias.api.sessoes.ServicoDeSessoes;
 import br.com.coronasemijoias.api.sessoes.ServicoDeSessoes.SituacaoDaSessao;
 import br.com.coronasemijoias.api.sessoes.TipoDeSessao;
@@ -45,7 +47,12 @@ public class ConversorDoToken implements Converter<Jwt, AbstractAuthenticationTo
         UUID id = uuid(token.getSubject());
         Usuario usuario = Optional.ofNullable(id).flatMap(usuarios::findById)
                 .orElseThrow(() -> new BadCredentialsException("usuário do token não existe"));
+        UUID dispositivo = uuid(token.getClaimAsString(ConteudoDoToken.DISPOSITIVO_ID));
         if (!usuario.isAtivo()) {
+            // No Corona Vendas (token com computador), o vendedor desativado recebe a ordem de apagar (ADR-0013, item 14).
+            if (dispositivo != null) {
+                throw new ComputadorDesligado(CodigoErro.USUARIO_DESATIVADO);
+            }
             throw new DisabledException("usuário desativado");
         }
         if (!usuario.getPerfil().equals(token.getClaimAsString(ConteudoDoToken.PERFIL))
@@ -68,9 +75,15 @@ public class ConversorDoToken implements Converter<Jwt, AbstractAuthenticationTo
         // aparelho e do tipo que combina com o escopo. Revogar a família derruba o token na hora,
         // inclusive o emitido no mesmo segundo de uma redefinição.
         UUID sid = uuid(token.getClaimAsString(ConteudoDoToken.SID));
-        UUID dispositivo = uuid(token.getClaimAsString(ConteudoDoToken.DISPOSITIVO_ID));
         SituacaoDaSessao sessao = sessoes.situacao(sid)
                 .orElseThrow(() -> new BadCredentialsException("token sem sessão"));
+        if (sessao.revogada() && sessao.motivo() == MotivoDaRevogacao.APARELHO_BLOQUEADO
+                && sessao.dispositivoId() != null && sessao.dispositivoId().equals(dispositivo)
+                && sessao.usuarioId().equals(usuario.getId())) {
+            // Computador bloqueado: a ordem é apagar, não só entrar de novo. (O vendedor desativado já saiu acima; o
+            // reativado, com a família revogada pela desativação, só entra de novo.)
+            throw new ComputadorDesligado(CodigoErro.APARELHO_BLOQUEADO);
+        }
         TipoDeSessao tipoEsperado = restrito ? TipoDeSessao.TROCA_SENHA : TipoDeSessao.NORMAL;
         if (sessao.revogada() || !sessao.usuarioId().equals(usuario.getId()) || sessao.tipo() != tipoEsperado
                 || !Objects.equals(sessao.dispositivoId(), dispositivo)) {

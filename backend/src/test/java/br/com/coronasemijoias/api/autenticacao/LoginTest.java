@@ -107,9 +107,9 @@ class LoginTest extends TesteDeIntegracao {
                 .containsExactlyInAnyOrder("sub", "perfil", "vendedor_id", "sid", "dispositivo_id", "jti", "iat", "exp", "iss");
         assertThat(conteudo.get("perfil").asString()).isEqualTo("VENDEDOR");
         assertThat(conteudo.get("vendedor_id").asString()).isEqualTo(vendedor.vendedorId().toString());
-        assertThat(conteudo.get("dispositivo_id").asString()).isEqualTo(UsuariosDeTeste.APARELHO.toString());
+        assertThat(conteudo.get("dispositivo_id").asString()).isEqualTo(usuarios.aparelhoDe(vendedor).toString());
         assertThat(jdbc.queryForObject("SELECT dispositivo_id FROM corona.sessoes WHERE id = ?::uuid", UUID.class,
-                conteudo.get("sid").asString())).isEqualTo(UsuariosDeTeste.APARELHO);
+                conteudo.get("sid").asString())).isEqualTo(usuarios.aparelhoDe(vendedor));
     }
 
     @Test

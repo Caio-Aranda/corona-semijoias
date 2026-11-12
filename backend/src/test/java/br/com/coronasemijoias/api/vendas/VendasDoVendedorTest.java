@@ -140,8 +140,23 @@ class VendasDoVendedorTest extends TesteDeIntegracao {
         return id;
     }
 
-    /** Maleta já enviada ao vendedor com os itens (produto, quantidade). */
+    /**
+     * Maleta enviada ao vendedor com os itens (produto, quantidade) e já conferida por ele, com tudo certo: vender só
+     * depois de conferir (decisão de 11/11/2026, tarefa 5.3).
+     */
     private UUID maleta(UsuarioDeTeste vendedor, Object... pares) throws Exception {
+        UUID id = maletaSemConferir(vendedor, pares);
+        List<Map<String, Object>> contadas = new java.util.ArrayList<>();
+        for (int i = 0; i < pares.length; i += 2) {
+            contadas.add(mapa("produtoId", pares[i], "contada", pares[i + 1]));
+        }
+        postar("/api/vendedor/maletas/" + id + "/conferencia", como(vendedor), mapa("id", UUID.randomUUID(), "itens", contadas))
+                .andExpect(status().isCreated());
+        return id;
+    }
+
+    /** Maleta já enviada ao vendedor com os itens (produto, quantidade), ainda sem a conferência dele. */
+    private UUID maletaSemConferir(UsuarioDeTeste vendedor, Object... pares) throws Exception {
         JsonNode r = corpoDe(postar(REMESSAS, dona(), mapa("id", UUID.randomUUID(), "vendedorId", vendedor.vendedorId(),
                 "semanaId", semana(), "tipo", "NOVA")).andExpect(status().isCreated()));
         for (int i = 0; i < pares.length; i += 2) {
@@ -258,7 +273,7 @@ class VendasDoVendedorTest extends TesteDeIntegracao {
     void vendedorComCadastroInativoNaoVendeNemConfereMesmoComUsuarioAtivo() throws Exception {
         UsuarioDeTeste v = novoVendedor();
         UUID anel = peca("30.00", 10);
-        UUID maleta = maleta(v, anel, 10);
+        UUID maleta = maletaSemConferir(v, anel, 10);
         UUID cliente = cliente(v);
         // Só o cadastro fica inativo (o usuário continua ativo): o servidor recusa mesmo assim.
         jdbc.update("UPDATE corona.vendedores SET ativo = false WHERE id = ?", v.vendedorId());
@@ -270,8 +285,11 @@ class VendasDoVendedorTest extends TesteDeIntegracao {
         postar("/api/vendedor/maletas/" + maleta + "/conferencia", como(v),
                 mapa("id", UUID.randomUUID(), "itens", List.of(mapa("produtoId", anel, "contada", 10))))
                 .andExpect(status().isConflict());
-        // Reativado o cadastro, volta a vender.
+        // Reativado o cadastro, confere e volta a vender.
         jdbc.update("UPDATE corona.vendedores SET ativo = true WHERE id = ?", v.vendedorId());
+        postar("/api/vendedor/maletas/" + maleta + "/conferencia", como(v),
+                mapa("id", UUID.randomUUID(), "itens", List.of(mapa("produtoId", anel, "contada", 10))))
+                .andExpect(status().isCreated());
         postar(VENDAS, como(v), venda(id, maleta, cliente, List.of(linha(anel, 1, null)), List.of())).andExpect(status().isCreated());
         assertThat(saldo(maleta, anel)).isEqualTo(9);
     }
@@ -286,7 +304,8 @@ class VendasDoVendedorTest extends TesteDeIntegracao {
                 Integer.class, v.id())).isZero();
         assertThat(jdbc.queryForObject("SELECT count(*) FROM corona.auditoria WHERE registro_id = ? AND acao = 'USUARIO_DESATIVADO'",
                 Integer.class, v.id())).isEqualTo(1);
-        ler(VENDAS, como(v)).andExpect(status().isUnauthorized());
+        // No Corona Vendas, o vendedor desativado recebe a ordem de apagar os dados (tarefa 5.3).
+        ler(VENDAS, como(v)).andExpect(status().isForbidden());
     }
 
     @Test
@@ -380,7 +399,7 @@ class VendasDoVendedorTest extends TesteDeIntegracao {
         postar(VENDAS, como(v), venda(UUID.randomUUID(), UUID.fromString(rascunho.get("id").asString()), cliente,
                 List.of(linha(anel, 1, null)), List.of())).andExpect(status().isConflict());
 
-        UUID enviada = maleta(v, anel, 2);
+        UUID enviada = maletaSemConferir(v, anel, 2);
         postar(REMESSAS + "/" + enviada + "/cancelar", dona(), mapa("motivo", "teste")).andExpect(status().isOk());
         postar(VENDAS, como(v), venda(UUID.randomUUID(), enviada, cliente, List.of(linha(anel, 1, null)), List.of()))
                 .andExpect(status().isConflict());

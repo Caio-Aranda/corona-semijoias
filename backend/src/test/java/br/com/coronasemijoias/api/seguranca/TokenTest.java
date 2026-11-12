@@ -163,9 +163,11 @@ class TokenTest extends TesteDeIntegracao {
 
         usuarios.desativar(vendedor);
 
-        eu(token).andExpect(status().isUnauthorized())
+        // Corona Vendas: 403 com a ordem de apagar os dados do computador (tarefa 5.3; ADR-0013, item 14).
+        eu(token).andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.codigo").value("USUARIO_DESATIVADO"))
-                .andExpect(jsonPath("$.title").value("Seu acesso foi desativado."));
+                .andExpect(jsonPath("$.title").value("Seu acesso foi desativado."))
+                .andExpect(jsonPath("$.acao").value("APAGAR_DADOS"));
     }
 
     @Test

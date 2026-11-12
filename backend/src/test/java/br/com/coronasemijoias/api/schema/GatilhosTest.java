@@ -35,6 +35,14 @@ class GatilhosTest extends TesteDeIntegracao {
     @Autowired
     OrigemDoDispositivo origemDoDispositivo;
 
+    @Autowired
+    br.com.coronasemijoias.api.testes.UsuariosDeTeste usuarios;
+
+    /** A origem tem chave estrangeira para dispositivos (V031): o computador precisa estar cadastrado. */
+    private UUID aparelhoCadastrado() {
+        return usuarios.registrarAparelho(usuarios.criarVendedor(), UuidV7.gerar(), "ATIVO");
+    }
+
     @Test
     void insercaoIgnoraOsCamposDeControleEnviadosPeloCliente() throws SQLException {
         UUID id = UuidV7.gerar();
@@ -90,7 +98,7 @@ class GatilhosTest extends TesteDeIntegracao {
 
     @Test
     void origemDoDispositivoVemDaSessaoENaoDoCorpo() throws SQLException {
-        UUID aparelho = UuidV7.gerar();
+        UUID aparelho = aparelhoCadastrado();
         UUID primeiro = UuidV7.gerar();
         UUID segundo = UuidV7.gerar();
         try (Connection app = conectarComoAplicacao()) {
@@ -118,7 +126,7 @@ class GatilhosTest extends TesteDeIntegracao {
 
     @Test
     void origemDoDispositivoPeloJavaSoDentroDeTransacao() {
-        UUID aparelho = UuidV7.gerar();
+        UUID aparelho = aparelhoCadastrado();
         UUID id = UuidV7.gerar();
         transacao.executeWithoutResult(estado -> {
             origemDoDispositivo.definirNaTransacaoAtual(aparelho);

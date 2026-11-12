@@ -35,7 +35,7 @@ A §7.2 define a venda, a §7.1 a conferência e o dispositivo único da maleta,
 2. Valor mínimo de parcela. (sem regra.)
 3. Até quando o vendedor pode estornar? (fim do dia da venda.)
 4. Quem libera a troca de aparelho da maleta? (a dona.)
-5. Vender antes de conferir? **Decidido em 11/11/2026: BLOQUEADO.** O vendedor só vende depois de conferir a maleta inteira (a mudança no código é outra tarefa).
+5. Vender antes de conferir? **Decidido em 11/11/2026: BLOQUEADO.** O vendedor só vende depois de conferir a maleta inteira (código na tarefa 5.3: 409 `MALETA_NAO_CONFERIDA`; só a conferência liga a maleta ao computador).
 6. Vendedor consulta produtos fora da maleta? (não nesta fase.)
 
 ## Consequências

@@ -28,7 +28,7 @@ Também saíram da lista da dona:
 5. **Data de nascimento do cliente no app do vendedor:** **sim**, só dos clientes dele (dúvida da tarefa 1.14).
 6. **Garantia:** **1 ano** (§17, item 4). O prazo por arrependimento continua com a dona (pergunta 9).
 7. **Diferença de troca e reembolso** (§17, itens 5 e 7): a loja **não faz** essas transações pelo sistema, só **registra**. O sistema terá um **campo para digitar** o valor e como foi acertado; sem regra de crédito automático nem limite semanal de reembolso. Detalhar na Fase 6.
-8. **Vender antes de conferir a maleta** (dúvida 5 do ADR-0011): **bloqueado**. O vendedor só vende depois de conferir a maleta inteira; peça que faltar aparece logo, não no acerto. Hoje o padrão provisório libera com lembrete: a mudança no código é outra tarefa.
+8. **Vender antes de conferir a maleta** (dúvida 5 do ADR-0011): **bloqueado**. O vendedor só vende depois de conferir a maleta inteira; peça que faltar aparece logo, não no acerto. Feito na tarefa 5.3: venda de maleta não conferida é recusada (`MALETA_NAO_CONFERIDA`) e a tela Vender só mostra maletas conferidas.
 9. **Troca de aparelho da maleta** (dúvida 4 do ADR-0011): **só a dona** autoriza o aparelho novo, no Corona Gestão (já é o padrão provisório; fica confirmado).
 
 ## Pendências

@@ -52,12 +52,12 @@ class TipoEVersaoDoAppTest extends TesteDeIntegracao {
         return mvc.perform(pedido);
     }
 
-    private static Map<String, Object> corpo(String login, String senha, boolean comAparelho) {
+    private Map<String, Object> corpo(String login, String senha, boolean comAparelho) {
         Map<String, Object> corpo = new LinkedHashMap<>();
         corpo.put("login", login);
         corpo.put("senha", senha);
         if (comAparelho) {
-            corpo.put("dispositivoId", UsuariosDeTeste.APARELHO.toString());
+            corpo.put("dispositivoId", usuarios.aparelhoDe(login).toString());
         }
         return corpo;
     }

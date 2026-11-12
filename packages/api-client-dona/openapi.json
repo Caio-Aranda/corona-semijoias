@@ -18,6 +18,69 @@
         },
         "type" : "object"
       },
+      "AparelhoDoVendedor" : {
+        "properties" : {
+          "aguardandoEnvio" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "aguardandoInformadoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "bloqueadoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "liberadoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "motivoBloqueio" : {
+            "type" : "string"
+          },
+          "primeiroContatoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "situacao" : {
+            "enum" : [ "ATIVO", "AGUARDANDO_LIBERACAO", "SUBSTITUIDO", "BLOQUEADO" ],
+            "type" : "string"
+          },
+          "substituidoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "substituidoPor" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "ultimoContatoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "ultimoEnvioCompletoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "ultimoPullEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "ultimoPushEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "versaoApp" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "Associada" : {
         "properties" : {
           "codigo" : {
@@ -3015,6 +3078,16 @@
         "required" : [ "produtoId" ],
         "type" : "object"
       },
+      "PedidoDeBloqueio" : {
+        "properties" : {
+          "motivo" : {
+            "maxLength" : 500,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "PedidoDeCodigo" : {
         "properties" : {
           "ativo" : {
@@ -4826,18 +4899,6 @@
         },
         "type" : "object"
       },
-      "RespostaDaLiberacao" : {
-        "properties" : {
-          "remessaId" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "tinhaAparelho" : {
-            "type" : "boolean"
-          }
-        },
-        "type" : "object"
-      },
       "RespostaDaLinhaDeCusto" : {
         "properties" : {
           "compraId" : {
@@ -6008,6 +6069,79 @@
         } ],
         "summary" : "Criar a senha nova (troca obrigatória)",
         "tags" : [ "autenticacao-controller" ]
+      }
+    },
+    "/api/dona/aparelhos/{id}/bloquear" : {
+      "post" : {
+        "description" : "Sem volta. Encerra as sessões do computador; na próxima conexão ele recebe a ordem de apagar os dados da loja (as vendas guardadas vão antes para a revisão da dona). Bloquear de novo não muda nada.",
+        "operationId" : "bloquearAparelho",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeBloqueio"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AparelhoDoVendedor"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Bloquear computador (perdido ou roubado)",
+        "tags" : [ "aparelhos-da-dona-controller" ]
+      }
+    },
+    "/api/dona/aparelhos/{id}/liberar" : {
+      "post" : {
+        "description" : "Libera o computador que espera a dona. O computador em uso antes passa a trocado (ainda envia as vendas que guardou, mas não vende) e as maletas abertas dele passam para o novo. Computador bloqueado ou já trocado não volta (409). Liberar o que já está em uso não muda nada.",
+        "operationId" : "liberarAparelho",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AparelhoDoVendedor"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Trocar computador (liberar o novo)",
+        "tags" : [ "aparelhos-da-dona-controller" ]
       }
     },
     "/api/dona/avisos" : {
@@ -11562,38 +11696,6 @@
         "tags" : [ "remessas-da-dona-controller" ]
       }
     },
-    "/api/dona/remessas/{id}/liberar-aparelho" : {
-      "post" : {
-        "description" : "Desliga a maleta do aparelho em que ela estava; o próximo aparelho do vendedor que vender ou conferir passa a ser o dela. Fica na auditoria. Maleta sem aparelho: 200, sem mudar nada.",
-        "operationId" : "liberarAparelhoDaMaleta",
-        "parameters" : [ {
-          "in" : "path",
-          "name" : "id",
-          "required" : true,
-          "schema" : {
-            "format" : "uuid",
-            "type" : "string"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/RespostaDaLiberacao"
-                }
-              }
-            },
-            "description" : "OK"
-          }
-        },
-        "security" : [ {
-          "bearer" : [ ]
-        } ],
-        "summary" : "Liberar o aparelho da maleta",
-        "tags" : [ "aparelho-da-maleta-da-dona-controller" ]
-      }
-    },
     "/api/dona/remessas/{id}/maleta" : {
       "get" : {
         "description" : "Por peça: enviada, devolvida e saldo (enviada mais os movimentos), a preço congelado; valor em aberto, peças em aberto e os movimentos da maleta.",
@@ -13512,6 +13614,41 @@
         } ],
         "summary" : "Gravar a aba Trabalho",
         "tags" : [ "secoes-do-vendedor-controller" ]
+      }
+    },
+    "/api/dona/vendedores/{vendedorId}/aparelhos" : {
+      "get" : {
+        "description" : "Todos os computadores em que o vendedor já entrou, do mais novo para o mais antigo, com a situação, o último contato, a versão do app, quantas vendas o computador disse ter aguardando envio e o último envio completo.",
+        "operationId" : "listarAparelhosDoVendedor",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "vendedorId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/AparelhoDoVendedor"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Computadores do vendedor",
+        "tags" : [ "aparelhos-da-dona-controller" ]
       }
     }
   }

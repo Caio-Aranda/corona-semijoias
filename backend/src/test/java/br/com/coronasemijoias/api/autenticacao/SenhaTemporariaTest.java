@@ -119,7 +119,7 @@ class SenhaTemporariaTest extends TesteDeIntegracao {
                 .isEqualTo("TROCA_SENHA");
         assertThat(jdbc.queryForObject("SELECT count(*) FROM corona.tokens_de_renovacao WHERE sessao_id = ?::uuid",
                 Long.class, sid)).isZero();
-        assertThat(conteudo.get("dispositivo_id").asString()).isEqualTo(UsuariosDeTeste.APARELHO.toString());
+        assertThat(conteudo.get("dispositivo_id").asString()).isEqualTo(usuarios.aparelhoDe(criado.login()).toString());
         assertThat(conteudo.get("exp").asLong() - conteudo.get("iat").asLong()).isEqualTo(900);
         assertThat(resposta.get("tokenDeRenovacao").isNull()).isTrue();
         assertThat(resposta.get("tokenDeRenovacaoExpiraEm").isNull()).isTrue();
@@ -163,7 +163,7 @@ class SenhaTemporariaTest extends TesteDeIntegracao {
         assertThat(conteudoNormal.has("escopo")).isFalse();
         // A troca devolve a sessão longa, com o aparelho herdado do login.
         assertThat(resposta.get("tokenDeRenovacao").asString()).isNotBlank();
-        assertThat(conteudoNormal.get("dispositivo_id").asString()).isEqualTo(UsuariosDeTeste.APARELHO.toString());
+        assertThat(conteudoNormal.get("dispositivo_id").asString()).isEqualTo(usuarios.aparelhoDe(criado.login()).toString());
         // O token normal vale em toda rota.
         mvc.perform(get("/api/auth/eu").with(UsuariosDeTeste.comToken(normal)))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.login").value(criado.login()));

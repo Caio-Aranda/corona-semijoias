@@ -29,6 +29,7 @@ import org.springframework.security.oauth2.server.resource.web.BearerTokenResolv
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.security.web.SecurityFilterChain;
+import br.com.coronasemijoias.api.aparelhos.InterceptadorDoAparelho;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -42,6 +43,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  *   <li>Qualquer outra rota: exige token válido de usuário ativo.</li>
  *   <li>Token restrito da troca de senha: {@link FiltroDoTokenRestrito} barra tudo, menos a troca.</li>
  *   <li>Segunda camada: {@link InterceptadorDePerfil} exige a {@link ExigePerfil} da rota.</li>
+ *   <li>Rotas do vendedor: {@link InterceptadorDoAparelho} exige o computador em uso (tarefa 5.3).</li>
  * </ol>
  *
  * Sem sessão no servidor, sem cookie, sem CSRF (o token vai no cabeçalho {@code Authorization}).
@@ -51,14 +53,18 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class ConfiguracaoDeSeguranca implements WebMvcConfigurer {
 
     private final InterceptadorDePerfil interceptadorDePerfil;
+    private final InterceptadorDoAparelho interceptadorDoAparelho;
 
-    public ConfiguracaoDeSeguranca(InterceptadorDePerfil interceptadorDePerfil) {
+    public ConfiguracaoDeSeguranca(InterceptadorDePerfil interceptadorDePerfil, InterceptadorDoAparelho interceptadorDoAparelho) {
         this.interceptadorDePerfil = interceptadorDePerfil;
+        this.interceptadorDoAparelho = interceptadorDoAparelho;
     }
 
     @Override
     public void addInterceptors(InterceptorRegistry registro) {
         registro.addInterceptor(interceptadorDePerfil);
+        // Depois do perfil: as rotas do vendedor só para o computador em uso (tarefa 5.3).
+        registro.addInterceptor(interceptadorDoAparelho).addPathPatterns(InterceptadorDoAparelho.ROTAS);
     }
 
     @Bean
