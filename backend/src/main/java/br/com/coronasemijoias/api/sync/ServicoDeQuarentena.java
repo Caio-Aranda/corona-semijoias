@@ -50,7 +50,8 @@ public class ServicoDeQuarentena {
     /** Teto de envios guardados por computador, para a rota aberta não virar depósito. */
     static final int LIMITE_POR_COMPUTADOR = 5000;
 
-    public record Pedido(String tokenDeRenovacao, UUID dispositivoId, Instant horaLocal, List<OperacaoEnviada> operacoes) {
+    public record Pedido(String tokenDeRenovacao, UUID dispositivoId, Instant horaLocal, Integer aguardandoDepoisDeste,
+            List<OperacaoEnviada> operacoes) {
     }
 
     /** {@code resultado}: {@code GUARDADO}, {@code JA_GUARDADO} ou {@code RECUSADO}. */

@@ -517,6 +517,31 @@ Sem internet e sem dados neste computador (primeira vez):
 
 > Para entrar no Corona Vendas pela primeira vez é preciso internet. Conecte-se e tente de novo.
 
+**Abrir sem internet, prazo e computador desligado (Fase 5, tarefa 5.8; ADR-0013, itens 12 e 14).** Na tela é sempre **computador** e **internet**; nunca "offline", "sincronização", "fila", "pendente", "quarentena", "token" ou "sessão".
+
+> **Entrar sem internet** (título da tela de senha quando não há internet e este computador já tem as vendas e os dados guardados)
+> Digite a senha do seu usuário para abrir o Corona Vendas sem internet. Suas vendas continuam salvas.
+> Botão: **Entrar**.
+
+> **Conecte este computador à internet em breve.** (aviso no alto das telas, nos últimos 3 dias do prazo)
+> Faltam {N} dias para este computador precisar de internet. Suas vendas estão salvas e serão enviadas assim que você conectar. (com 1 dia: "Falta 1 dia para…"; no último dia: "Hoje este computador precisa de internet…")
+
+> **Este computador ficou muitos dias sem internet.** (prazo acabou; texto da parte 6)
+> Suas vendas estão salvas e serão enviadas assim que você conectar. Para fazer vendas novas, conecte-se à internet.
+
+> **A data deste computador parece errada.** (relógio voltado para trás ou mudado)
+> Confira a data e a hora do computador e conecte-se à internet para continuar vendendo. Suas vendas estão salvas e serão enviadas assim que você conectar.
+
+> Este computador ficou muitos dias sem internet. Conecte-se à internet para fazer vendas novas. (quando a pessoa tenta vender, estornar, conferir ou cadastrar com o prazo acabado)
+
+> A data deste computador parece errada. Confira a data e a hora do computador e conecte-se à internet para continuar. (a mesma tentativa, quando o motivo é o relógio)
+
+> **Estamos enviando as suas vendas.** (computador desligado pela dona, antes de apagar)
+> A dona desligou este computador. Mantenha o computador ligado e conectado à internet enquanto enviamos as suas vendas. Depois, os dados serão apagados.
+
+> **Este computador foi desligado da loja.** (depois de apagar)
+> Os dados deste computador foram apagados. Fale com a dona.
+
 **Vender só depois de conferir (decisão de 11/11/2026; tarefa 5.3).** A maleta que ainda não foi conferida não vende:
 
 > **Confira a maleta antes de vender.**

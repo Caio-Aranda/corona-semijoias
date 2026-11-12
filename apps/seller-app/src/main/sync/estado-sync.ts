@@ -44,7 +44,9 @@ export function registrarContato(db: BancoAberto, horaServidor: string, horaLoca
   if (Number.isNaN(Date.parse(horaServidor))) return;
   gravarEstado(db, CHAVES.horaServidor, horaServidor);
   gravarEstado(db, CHAVES.horaLocalDoContato, horaLocal.toISOString());
-  registrarHoraLocal(db, horaLocal);
+  // Uma resposta válida do servidor refaz o par (tarefa 5.8): a maior hora vista recomeça daqui, e é isso que libera um
+  // computador cujo relógio foi mexido. Dentro do período sem internet ela só sobe (`registrarHoraLocal`).
+  gravarEstado(db, CHAVES.maiorHoraLocal, horaLocal.toISOString());
 }
 
 export function registrarHoraLocal(db: BancoAberto, horaLocal: Date): void {
