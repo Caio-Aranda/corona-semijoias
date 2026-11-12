@@ -491,6 +491,22 @@ Quando uma operação não consegue ser enviada 5 vezes seguidas (o envio contin
 
 > Uma venda não conseguiu ser enviada. Avise a dona.
 
+**Telas do Corona Vendas no banco do computador (Fase 5, tarefa 5.7; ADR-0013, item 18).** Vender, Minha maleta, Clientes e Meus números funcionam sem internet. O indicador fica no alto de todas as telas de trabalho e usa os textos da parte 7 ("Com internet. Tudo enviado." etc.). Textos novos:
+
+> Dados até 09/11 às 14:30. (nos relatórios e na lista de clientes; antes do primeiro recebimento: "Ainda não recebemos os dados da loja neste computador. Conecte-se à internet.")
+
+> 1 venda não foi aceita. A dona já foi avisada. / 3 vendas não foram aceitas. A dona já foi avisada. (quando for outro tipo de registro: "1 item não foi aceito. A dona já foi avisada." / "3 itens não foram aceitos. A dona já foi avisada.")
+
+> **Envios que não foram aceitos** (título da lista, aberta pelo aviso). Cada linha diz o que foi ("Venda para {cliente}", "Estorno de venda", "Cliente novo: {nome}", "Mudança no cadastro de {nome}", "Conferência da maleta"), o dia e a hora em que foi feito neste computador e o motivo em palavras simples (o texto que o servidor devolveu). Botão **Entendi**: a linha sai da lista e nada mais é apagado.
+
+> Nenhum envio com problema. (lista vazia)
+
+> Sem motivo informado. Fale com a dona. (quando o servidor não explicou)
+
+> Cotação de 05/11/2026, a última que este computador recebeu. Conecte-se à internet para receber a mais nova. (cotação do dia anterior; a de hoje: "Cotação do Dólar e do Guarani de hoje, 06/11/2026.")
+
+> **Editar cliente** · Salvar alterações · Cliente atualizado. · "Só o vendedor que atende o cliente pode mudar o cadastro dele." · Sem mudança: "Você não mudou nada neste cadastro."
+
 Ao abrir **sem internet**, o Corona Vendas pede a senha (decisão de 11/11/2026). Senha errada: o mesmo "Usuário ou senha incorretos. Confira o que você digitou e tente de novo." do login. Depois de 5 erros seguidos:
 
 > A senha foi digitada errada muitas vezes. Conecte-se à internet e entre de novo para continuar.
