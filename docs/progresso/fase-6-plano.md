@@ -1,6 +1,6 @@
 # Plano da Fase 6: devolução, troca e garantia
 
-Pós-venda completo (§15): devolução do cliente dentro da garantia, troca com diferença, crédito do cliente, pedido de autorização à dona fora do prazo, reembolso, antifraude e relatórios (§7.3, §9, §12). O modelo está no [ADR-0014](../decisoes/ADR-0014-devolucao-troca-e-garantia.md) (Proposto). Este arquivo é só o plano (tarefa 6.1, nenhuma linha de código); o detalhe de cada tarefa feita vai para `fase-6.md`.
+Pós-venda completo (§15): devolução do cliente dentro da garantia, troca com diferença, crédito do cliente, pedido de autorização à dona fora do prazo, reembolso, antifraude e relatórios (§7.3, §9, §12). O modelo está no [ADR-0014](../decisoes/ADR-0014-devolucao-troca-e-garantia.md) (Aceito em 12/11/2026). Este arquivo é só o plano (tarefa 6.1, nenhuma linha de código); o detalhe de cada tarefa feita vai para `fase-6.md`.
 
 **Antes de começar o código:** ADR-0014 aceito (dúvida R1) e a Fase 5 com o push (5.5) e o motor do app (5.6) na `main`: o Corona Vendas grava sempre pela outbox (Fase 5, R6), então devolução e troca no app só existem depois do motor. O backend das tarefas 6.2 a 6.5 pode começar antes, com rotas online, como a Fase 4 fez. A especificação muda pouco: a §7.3 e a §9 ganham as decisões do ADR-0014 (sem `itens_troca`, `usos_credito` novo, peça para a loja), na tarefa 6.2.
 
@@ -120,6 +120,8 @@ Revisão da fase, teste de uso com a dona e um vendedor (devolução, troca e pe
 Cada uma tem um **padrão seguro**, que vale enquanto não houver resposta.
 
 ### Para o responsável
+
+**Respondidas em 12/11/2026:** o responsável aceitou o ADR-0014 (R1) e o padrão de R2 a R6 (todas "Sim").
 
 | Nº | Pergunta | Padrão seguro |
 | --- | --- | --- |

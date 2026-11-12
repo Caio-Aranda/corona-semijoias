@@ -174,11 +174,11 @@ As demais tarefas estão no [plano](progresso/fase-5-plano.md).
 
 ## Fase 6 (só o plano)
 
-Devolução, troca e garantia. O modelo está no [ADR-0014](decisoes/ADR-0014-devolucao-troca-e-garantia.md) (Proposto); as tarefas e as dúvidas, no [plano da Fase 6](progresso/fase-6-plano.md).
+Devolução, troca e garantia. O modelo está no [ADR-0014](decisoes/ADR-0014-devolucao-troca-e-garantia.md) (Aceito em 12/11/2026); as tarefas e as dúvidas, no [plano da Fase 6](progresso/fase-6-plano.md).
 
 | Nº | Tarefa | Situação |
 | --- | --- | --- |
-| 6.1 | docs: plano da Fase 6 e ADR-0014 (devolução, troca e garantia) | Plano proposto, em revisão |
+| 6.1 | docs: plano da Fase 6 e ADR-0014 (devolução, troca e garantia) | Mesclada (PR 100) · [plano](progresso/fase-6-plano.md); R1–R6 aceitas em 12/11/2026 |
 
 ## Fase 7 (só o plano)
 

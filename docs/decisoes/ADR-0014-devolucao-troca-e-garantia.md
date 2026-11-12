@@ -1,6 +1,6 @@
 # ADR-0014: Devolução, troca e garantia
 
-- **Status:** Proposto (a orquestradora e o responsável aceitam no PR). As dúvidas para a dona valem com os padrões seguros de [fase-6-plano.md](../progresso/fase-6-plano.md)
+- **Status:** Aceito em 12/11/2026 pelo responsável (dúvidas R1 a R6 do plano, todas com o padrão). As dúvidas para a dona valem com os padrões seguros de [fase-6-plano.md](../progresso/fase-6-plano.md)
 - **Data:** 11/11/2026
 - **Tarefas que implementam:** 6.2 a 6.12 (Fase 6)
 
