@@ -455,6 +455,26 @@ Os textos moram em `apps/seller-app/src/renderer/textos.ts`. Termos: **Minha mal
 
 Na ficha da maleta, no Corona Gestão: **Conferência do vendedor** mostra "Na maleta", "Ele contou" e "Diferença" por peça; os movimentos aparecem como "Vendida pelo vendedor" e "Venda desfeita (estorno)".
 
+**Banco local do Corona Vendas (Fase 5, tarefa 5.2; ADR-0005 e ADR-0013, itens 15 e 16).** Os dados ficam guardados no computador, protegidos pela senha do vendedor. Textos (o processo principal os devolve; a tela nunca mostra o erro técnico):
+
+> Não conseguimos abrir os dados deste computador. Conecte à internet para baixar tudo de novo. Se havia vendas ainda não enviadas, avise a dona. (dados ilegíveis)
+
+> Este Corona Vendas é mais antigo que os dados deste computador. Atualize o Corona Vendas para continuar. (dados de versão mais nova)
+
+> Não foi possível preparar os dados deste computador. Feche e abra o Corona Vendas de novo. Se continuar, avise a dona. (atualização dos dados falhou; nada se perdeu)
+
+> O computador está sem espaço. Libere espaço e tente de novo. (disco cheio: a venda não foi gravada pela metade)
+
+> O computador está com pouco espaço. Libere espaço para o Corona Vendas continuar guardando as vendas. (aviso ao abrir, com menos de 500 MB livres)
+
+Ao abrir **sem internet**, o Corona Vendas pede a senha (decisão de 11/11/2026). Senha errada: o mesmo "Usuário ou senha incorretos. Confira o que você digitou e tente de novo." do login. Depois de 5 erros seguidos:
+
+> A senha foi digitada errada muitas vezes. Conecte-se à internet e entre de novo para continuar.
+
+Sem internet e sem dados neste computador (primeira vez):
+
+> Para entrar no Corona Vendas pela primeira vez é preciso internet. Conecte-se e tente de novo.
+
 **Vender só depois de conferir (decisão de 11/11/2026; tarefa 5.3).** A maleta que ainda não foi conferida não vende:
 
 > **Confira a maleta antes de vender.**

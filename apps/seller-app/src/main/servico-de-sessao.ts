@@ -8,6 +8,11 @@ import type { DadosDoUsuario } from './api';
 import type { GuardaDeTokens } from './guarda-de-tokens';
 import type { Falha, Resultado } from './tipos';
 
+/** O banco local (tarefa 5.2): preparado depois de cada entrada com internet, com a senha que o servidor conferiu. */
+export interface PreparoDoBancoLocal {
+  prepararComInternet(senha: string): Promise<{ ok: boolean; codigo?: string }>;
+}
+
 /** Chamadas de negócio que o processo principal faz em nome da tela. */
 export interface ChamadasDaApi {
   eu(tokenDeAcesso: string): Promise<Resultado<DadosDoUsuario>>;
@@ -27,6 +32,7 @@ export class ServicoDeSessao {
     private readonly api: ChamadasDaApi,
     /** Termina quando a sessão guardada no disco já foi retomada (ou descartada). */
     private readonly prontidao: Promise<void> = Promise.resolve(),
+    private readonly bancoLocal?: PreparoDoBancoLocal,
   ) {}
 
   /** Chamado quando a guarda avisa que o aplicativo está desatualizado. */
@@ -37,12 +43,29 @@ export class ServicoDeSessao {
   async entrar(usuario: string, senha: string): Promise<ResultadoDeEntrada> {
     this.desatualizado = null;
     const r = await this.guarda.entrar(usuario, senha);
+    if (r.ok && r.dados === 'entrou') await this.prepararBancoLocal(senha);
     return this.paraResultado(r);
   }
 
   async trocarSenha(senhaNova: string): Promise<ResultadoDeEntrada> {
     const r = await this.guarda.trocarSenha(senhaNova);
+    if (r.ok && r.dados === 'entrou') await this.prepararBancoLocal(senhaNova);
     return this.paraResultado(r);
+  }
+
+  /**
+   * A senha acabou de ser conferida pelo servidor: cria ou abre o banco local com ela (e a embrulha de novo, se a dona
+   * a redefiniu). Uma falha aqui não derruba a entrada: as telas ainda usam a internet até a tarefa 5.7. A senha nunca
+   * é guardada nem registrada.
+   */
+  private async prepararBancoLocal(senha: string): Promise<void> {
+    if (!this.bancoLocal) return;
+    try {
+      const r = await this.bancoLocal.prepararComInternet(senha);
+      if (!r.ok) console.warn(`Banco local não abriu: ${r.codigo ?? 'sem código'}`);
+    } catch (erro) {
+      console.warn('Banco local não abriu:', erro instanceof Error ? erro.name : 'erro');
+    }
   }
 
   async sair(): Promise<void> {

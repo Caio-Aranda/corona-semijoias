@@ -2,6 +2,24 @@
 
 O plano está em [fase-5-plano.md](fase-5-plano.md); o desenho, no [ADR-0013](../decisoes/ADR-0013-sincronizacao-e-offline.md) e no [ADR-0005](../decisoes/ADR-0005-sqlcipher-no-electron.md).
 
+## Tarefa 5.2: banco local criptografado (Corona Vendas)
+
+**O que entrou**
+
+- `better-sqlite3-multiple-ciphers` **13.0.3 exata** em `dependencies` do `apps/seller-app` (fora do pacote do Vite pelo `externalizeDeps` padrão). No instalador vai só `lib/`, `package.json` e o binário `win32-x64` (desempacotado do `app.asar`); sem `deps/`, `src/` nem binários de outras plataformas.
+- `src/main/banco/` (processo principal, TypeScript): `banco-local.ts` (abre com SQLCipher 4, chave bruta de 256 bits, WAL, `synchronous=FULL`; migrações com hash e `user_version`; cópia antes de migrar, guardando as duas últimas, e volta para a cópia se a migração falhar; recusa de banco mais novo que o app; disco cheio traduzido; `.ilegivel`), `chave-do-banco.ts` (chave embrulhada pela senha com scrypt e AES-256-GCM, 5 erros seguidos bloqueiam até entrar com internet, resgate pelo cofre do Windows quando a dona redefine a senha), `migracoes.ts` (esquema local 1) e `servico-do-banco.ts` (com internet: cria ou abre, reembrulha, guarda à parte o que não abre; sem internet: só pela senha, a tarefa 5.8 usa).
+- **Esquema local 1:** cópias das 15 tabelas sincronizáveis do servidor (só as colunas da lista explícita, mais `version`, `deleted_at` e `origem_local`), `outbox` (ordem, `operacao_id` único, tipo, formato, JSON exato, hora local, último contato com o servidor, situação, tentativas, resultado, "Entendi") e `estado_sync`. Dinheiro em texto ("12.30"), nunca ponto flutuante. Nada de custo, estoque da loja ou fornecedor.
+- O banco é preparado a cada **entrada com internet** (a senha acabou de ser conferida pelo servidor) e na troca obrigatória de senha. Uma falha do banco não derruba a entrada (as telas ainda usam a internet até a 5.7). A senha nunca é guardada nem registrada.
+- Glossário: textos do banco local e da senha conferida sem internet.
+
+**Itens pendentes do spike (ADR-0005), provados:** SQLCipher padrão (Zetetic 4.6.1) abre o arquivo; barreira do pacote limpa com o módulo dentro; o módulo carrega no pacote empacotado com o Node do Electron 45; processo morto no meio do checkpoint do WAL não corrompe; disco cheio desfaz a transação inteira; testes no job `frontend` do CI. **Tempo do `npm ci` no Ubuntu:** medido pelo CI deste PR (ver o PR).
+
+**Testes (Vitest, SQLCipher de verdade, arquivos de verdade):** `banco-local.test.ts` (chave certa e errada, arquivo sem os dados em claro, parâmetros do SQLCipher 4, arquivo estragado, `.ilegivel`, esquema, dinheiro em texto, migração editada, cópia antes de migrar e só as duas últimas, migração que falha volta para a cópia, banco mais novo, disco cheio, processo morto, espaço livre), `chave-do-banco.test.ts` (senha certa, 5 erros, conta zerada, senha redefinida, chave perdida, padrão lento), `servico-do-banco.test.ts` (primeira entrada, sem internet, senha redefinida, chave perdida, banco estragado) e `servico-de-sessao.test.ts` (o banco preparado só com a senha conferida, sem derrubar a entrada).
+
+**Decisões que tomei:** scrypt (N = 2^17, r = 8, p = 1) em vez de Argon2id, porque o Argon2id no Node 24 ainda é experimental e o ADR permite os dois; o próprio GCM é o verificador lento (sem hash separado da senha); o arquivo da chave é `dados/chave.json` (o ADR dizia `chave.bin`, de antes da decisão da senha); a conta dos 5 erros fica no arquivo da chave e só a entrada com internet a zera; banco ilegível só é movido com internet (sem ela, não há como baixar de novo); o banco é preparado na entrada com internet, e a abertura sem internet pedindo a senha fica para a 5.8, que faz a tela.
+
+**Ficou para depois:** a tela de senha ao abrir sem internet e o prazo offline (5.8); avisar o servidor do computador "reiniciado" (5.6); mostrar o aviso de pouco espaço (5.7); queda de energia de verdade (sem como testar automaticamente).
+
 ## Tarefa 5.3: computadores do vendedor (backend)
 
 **O que entrou**
