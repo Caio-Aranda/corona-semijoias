@@ -16,7 +16,22 @@ public enum ChaveDeConfiguracao {
     TEMPO_BLOQUEIO_LOGIN_MINUTOS("tempo_bloqueio_login_minutos"),
 
     /** Desconto máximo de uma venda, em % do subtotal (padrão 0 até a dona definir; ADR-0011, item 5). */
-    LIMITE_DESCONTO_PERCENTUAL("limite_desconto_percentual");
+    LIMITE_DESCONTO_PERCENTUAL("limite_desconto_percentual"),
+
+    /** Dias para o cliente desistir da peça, também "não serviu" e "outro" (padrão 7; ADR-0014, item 4; dúvidas D1 e D2). */
+    PRAZO_ARREPENDIMENTO_DIAS("prazo_arrependimento_dias"),
+
+    /** Dias para devolver por defeito (padrão 30; ADR-0014, item 4; dúvida D1). */
+    PRAZO_DEFEITO_DIAS("prazo_defeito_dias"),
+
+    /** Reembolso máximo por vendedor na semana, em Real; vazio = sem limite (ADR-0014, item 10; dúvida D3). */
+    LIMITE_REEMBOLSO_SEMANAL("limite_reembolso_semanal"),
+
+    /** Valor de reembolso a partir do qual a dona aprova antes, em Real; vazio = sem valor (ADR-0014, item 10; dúvida D3). */
+    VALOR_APROVACAO_REEMBOLSO("valor_aprovacao_reembolso"),
+
+    /** Porcentagem de devolução (últimas 4 semanas) que avisa a dona sobre o vendedor (padrão 20; dúvida D9). */
+    PERCENTUAL_ALERTA_DEVOLUCAO("percentual_alerta_devolucao");
 
     private final String chave;
 

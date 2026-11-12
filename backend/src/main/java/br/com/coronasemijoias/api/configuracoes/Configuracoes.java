@@ -1,6 +1,8 @@
 package br.com.coronasemijoias.api.configuracoes;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
@@ -26,5 +28,16 @@ public class Configuracoes {
             throw new IllegalStateException("A configuração " + chave.chave() + " não existe na tabela configuracoes.");
         }
         return valores.get(0);
+    }
+
+    /** Valor em dinheiro (Real); vazio quando a chave existe e está sem valor ("sem limite"). */
+    public Optional<BigDecimal> dinheiroOuVazio(ChaveDeConfiguracao chave) {
+        List<BigDecimal> valores = jdbc.query(
+                "SELECT valor_dinheiro FROM corona.configuracoes WHERE chave = ? AND tipo = 'DINHEIRO'",
+                (rs, n) -> rs.getBigDecimal(1), chave.chave());
+        if (valores.isEmpty()) {
+            throw new IllegalStateException("A configuração " + chave.chave() + " não existe na tabela configuracoes.");
+        }
+        return Optional.ofNullable(valores.get(0));
     }
 }
