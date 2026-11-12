@@ -123,7 +123,7 @@ Arquivos: `backend/src/test/java/.../devolucoes/AutorizacaoDeDevolucaoTest.java`
 | Nº | Pergunta | Padrão |
 | --- | --- | --- |
 | P1 | Peças da autorização numa tabela filha `itens_autorizacao` (sincronizável, imutável, com chave para a linha da venda) ou numa coluna JSON? | **Tabela filha** (muda a §9) |
-| P2 | Motivos da revisão numa coluna de texto com códigos separados por vírgula e `CHECK`? | **Sim** (sem lista no PostgreSQL nem tabela nova no sync) |
+| P2 | Motivos da revisão numa coluna de texto com códigos separados por vírgula e `CHECK`? | ~~Sim~~ **Ajuste da orquestradora (aprovação no PR #126):** uma coluna booleana por motivo em `devolucoes`, com `CHECK` (em revisão exige ao menos um) |
 | P3 | Qual é a "semana de acerto" do limite semanal? | A **semana cadastrada** que contém o dia de Brasília da devolução; sem semana cadastrada, **segunda a domingo** de Brasília |
 | P4 | "Acima do limite" e "acima do valor de aprovação" são estritos? O limite conta o reembolso das devoluções não canceladas (incluindo em revisão e não aceitas)? | **Sim** e **sim** (no valor exato passa) |
 | P5 | Acima do limite semanal na rota online: revisão ou 409? | **Revisão** nos dois modos (não trava o balcão); o valor de aprovação, sim, é 409 na rota |
