@@ -6,7 +6,8 @@
   "description": "Sistema de semijoias consignadas: Corona Gestão, Corona Vendas e API.",
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "testes-sync"
   ],
   "engines": {
     "node": ">=26.13.0 <27",
