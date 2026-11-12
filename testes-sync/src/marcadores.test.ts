@@ -23,16 +23,22 @@ describe('varredura das respostas (marcadores proibidos)', () => {
     expect(marcadoresNaResposta(resposta('custo', 200, 'image/jpeg'))).toEqual([]);
   });
 
-  it('o achado conhecido vale só para aquele código de erro', () => {
-    const texto = 'Peça à dona para liberar este computador no Corona Gestão.';
+  it('o nome do app da dona não passa em nenhuma resposta, nem em erro', () => {
+    const texto = 'Avise a dona para liberar este computador no Corona Gestão.';
+    for (const codigo of ['APARELHO_NAO_LIBERADO', 'OUTRO']) {
+      expect(
+        marcadoresNaResposta(resposta(JSON.stringify({ codigo, mensagem: texto }), 403)),
+      ).toHaveLength(1);
+    }
+  });
+
+  it('a mensagem de computador não liberado não cita o app da dona', () => {
+    const texto =
+      'Este computador ainda não foi liberado pela dona. Avise a dona para liberar este computador.';
     expect(
       marcadoresNaResposta(
         resposta(JSON.stringify({ codigo: 'APARELHO_NAO_LIBERADO', mensagem: texto }), 403),
       ),
     ).toEqual([]);
-    expect(
-      marcadoresNaResposta(resposta(JSON.stringify({ codigo: 'OUTRO', mensagem: texto }), 403)),
-    ).toHaveLength(1);
-    expect(marcadoresNaResposta(resposta(JSON.stringify({ mensagem: texto })))).toHaveLength(1);
   });
 });

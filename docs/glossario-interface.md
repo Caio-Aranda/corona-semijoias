@@ -550,7 +550,7 @@ Sem internet e sem dados neste computador (primeira vez):
 **Computadores do vendedor (Fase 5, tarefa 5.3; ADR-0013, itens 13 e 14).** Na tela é sempre **computador** (nunca "aparelho", "dispositivo" ou "identificador"). Situações na tela: **Em uso** (ativo), **Aguardando liberação**, **Trocado** (substituído) e **Bloqueado**. Botões da dona, na ficha do vendedor: **Trocar computador** (libera o computador novo; o antigo só envia o que guardou) e **Bloquear computador** (perdido ou roubado; ação sem volta, com confirmação). Textos que o servidor devolve:
 
 > **Este computador ainda não foi liberado pela dona.**
-> Este computador ainda não foi liberado pela dona. Peça à dona para liberar este computador no Corona Gestão.
+> Este computador ainda não foi liberado pela dona. Avise a dona para liberar este computador.
 
 > **Este computador foi trocado por outro.**
 > A dona trocou este computador por outro. Use o computador novo para vender.

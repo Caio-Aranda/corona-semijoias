@@ -104,6 +104,7 @@ Si no responde, usamos: **usted escribe el precio de cada pieza (el sistema no l
 **19. ¿Qué es la etiqueta grande con "PV8990"?**
 La vimos debajo de la etiqueta de la tienda en una pieza. ¿Es del proveedor?
 Si no responde, usamos: **es del proveedor; el sistema acepta ese código también.**
+*Respuesta (12/11/2026): "PV8990" es el código del proveedor (tipo PROVEEDOR); el número debajo de las barras es el código interno de la tienda (tipo TIENDA). Se confirma el estándar; ver ADR-0007.*
 
 **20. Para las piezas nuevas, ¿cómo quiere el código de la tienda?**
 Hoy el sistema pone un número que sigue: 1217, 1218, 1219...
@@ -176,6 +177,17 @@ Si no responde, usamos: **solo la entrega en el acerto** (usted aprueba el defec
 **D13. En la devolución de una venta a plazo, ¿lo devuelto primero descuenta lo que el cliente todavía debe y solo el resto vuelve en dinero?**
 Si no responde, usamos: **sí.**
 
+## 7. Pantallas nuevas del Corona Gestión y del Corona Vendas (Fase 5)
+
+**26. En el Corona Gestión, para los computadores de los vendedores, ¿le sirven las pantallas como las hicimos?**
+Son cuatro: **Computadores** (en uso, esperando liberación, cambiado o bloqueado; con los botones Cambiar computador y Bloquear computador, siempre con una confirmación clara), **Envíos con problema** (Intentar de nuevo o Descartar), **Ventas de un computador bloqueado** (Aprobar o Descartar, una por una) y **Clientes cambiados por el vendedor** (cómo era y cómo quedó). Además, en "Lo que necesita su atención" aparece un aviso con botón **Abrir** para cada una.
+Dos cosas para mirar con usted: (a) los botones están en una pantalla propia "Computadores" y no en la ficha del vendedor; (b) cuando hay un cliente con CPF repetido, la lista muestra el cadastro nuevo pero todavía no el que ya existía ni un botón "juntar cadastros" (usted los junta a mano en la pantalla de clientes).
+Si no responde, usamos: **las pantallas como están.**
+
+**27. Si un vendedor cambia un dato de uno de sus clientes (por ejemplo, el teléfono), ¿está bien que solo lo pueda cambiar el vendedor que atiende a ese cliente, y que usted vea cómo era y cómo quedó?**
+En el Corona Vendas, el botón **Editar cliente** está en la ficha del cliente y cambia solo lo que el vendedor tocó (campo por campo). Si usted y el vendedor cambian el mismo dato mientras él está sin internet, vale el que llegó **último** al sistema, y el valor anterior queda guardado para que usted lo vea y lo vuelva a poner.
+Si no responde, usamos: **como está descrito.**
+
 ---
 
 Muchas gracias.
@@ -185,4 +197,5 @@ Notas para o time (não enviar à dona):
 - Fora desta lista por decisão ou resposta do responsável em 11/11/2026: ver docs/pendencias-do-responsavel.md (saída sem estoque, limite de consignação, vender só depois de conferir, troca de aparelho só pela dona, catálogo só da maleta, prazo do estorno, data de nascimento, garantia de 1 ano, troca e reembolso só registrados).
 - Os padrões de 6 e 8 vêm do ADR-0011; 1 a 5 do ADR-0010 e da fase 3; 16 a 20 do ADR-0007; 21 da tarefa 2.8; 24 da Fase 1; 25 da auditoria de 11/11/2026 (D2, padrão adotado pelo responsável até a dona responder; é a "pergunta 31" da orquestração: confirmar com ela).
 - Os padrões de 9 a 15 e 23 ainda não estão no código: são a proposta para quando a fase chegar (6 e 7). Confirmar com o responsável antes de implementar se a dona não responder.
+- 26 e 27 saem da tarefa 5.14 (fechamento da Fase 5): o desenho das telas da dona (5.10) e o da edição de cliente (5.7), que a dona ainda não aprovou. Seguem também sem resposta as dúvidas D1 a D12 do plano da Fase 5 (docs/progresso/fase-5-plano.md), cada uma com o padrão seguro em uso; vale levá-las à dona junto.
 -->

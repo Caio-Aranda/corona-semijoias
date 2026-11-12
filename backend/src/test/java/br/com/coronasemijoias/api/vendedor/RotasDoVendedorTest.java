@@ -2,14 +2,17 @@ package br.com.coronasemijoias.api.vendedor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import br.com.coronasemijoias.api.estoque.ServicoDeEstoque;
 import br.com.coronasemijoias.api.estoque.ServicoDeEstoque.OrigemDoMovimento;
 import br.com.coronasemijoias.api.estoque.ServicoDeEstoque.Pedido;
 import br.com.coronasemijoias.api.estoque.ServicoDeEstoque.TipoDeMovimento;
+import br.com.coronasemijoias.api.fotos.ImagensDeTeste;
 import br.com.coronasemijoias.api.testes.CpfsDeTeste;
 import br.com.coronasemijoias.api.testes.TesteDeIntegracao;
 import br.com.coronasemijoias.api.testes.UsuariosDeTeste;
@@ -24,7 +27,9 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -65,6 +70,10 @@ class RotasDoVendedorTest extends TesteDeIntegracao {
 
     private RequestPostProcessor como(UsuarioDeTeste vendedor) {
         return UsuariosDeTeste.comToken(usuarios.token(vendedor));
+    }
+
+    private static String sha256(byte[] conteudo) throws Exception {
+        return java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(conteudo));
     }
 
     private static Map<String, Object> mapa(Object... pares) {
@@ -442,6 +451,33 @@ class RotasDoVendedorTest extends TesteDeIntegracao {
         // Foto que não é de peça da maleta dele: 404.
         ler("/api/vendedor/fotos/" + "a".repeat(64) + "/miniatura", como(a)).andExpect(status().isNotFound());
         ler("/api/vendedor/fotos/" + "a".repeat(64) + "/miniatura", dona()).andExpect(status().isForbidden());
+    }
+
+    @Test
+    void fotoDaMinhaMaletaTrazOSha256DoConteudoBaixado() throws Exception {
+        UsuarioDeTeste a = usuarios.criarVendedor();
+        UsuarioDeTeste b = usuarios.criarVendedor();
+        Peca peca = peca("50.00", 5);
+        String hash = corpoDe(mvc.perform(multipart("/api/dona/produtos/" + peca.id() + "/fotos")
+                .file(new MockMultipartFile("arquivo", "foto.jpg", "image/jpeg", ImagensDeTeste.jpeg(900, 600, 91)))
+                .with(dona())).andExpect(status().isCreated())).get("hash").asString();
+        maleta(a, peca, 2);
+
+        for (String tamanho : List.of("miniatura", "media", "grande")) {
+            var resposta = ler("/api/vendedor/fotos/" + hash + "/" + tamanho, como(a)).andExpect(status().isOk())
+                    .andExpect(header().exists("X-Conteudo-Sha256")).andReturn().getResponse();
+            // O app confere este valor com os bytes que recebeu antes de guardar o arquivo (tarefa 5.9).
+            assertThat(resposta.getHeader("X-Conteudo-Sha256")).hasSize(64)
+                    .isEqualTo(sha256(resposta.getContentAsByteArray()));
+            assertThat(resposta.getHeader(HttpHeaders.ETAG)).contains(hash);
+            // Com o mesmo ETag não há o que baixar de novo, e então também não há o que conferir.
+            mvc.perform(get("/api/vendedor/fotos/" + hash + "/" + tamanho).with(como(a))
+                    .header(HttpHeaders.IF_NONE_MATCH, resposta.getHeader(HttpHeaders.ETAG)))
+                    .andExpect(status().isNotModified()).andExpect(header().doesNotExist("X-Conteudo-Sha256"));
+            // Outro vendedor, sem essa peça na maleta, não recebe nem o arquivo nem o valor.
+            ler("/api/vendedor/fotos/" + hash + "/" + tamanho, como(b)).andExpect(status().isNotFound())
+                    .andExpect(header().doesNotExist("X-Conteudo-Sha256"));
+        }
     }
 
     // --- relatórios ---

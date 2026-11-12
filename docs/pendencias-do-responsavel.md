@@ -1,7 +1,7 @@
 # Pendências do responsável
 
 O que só o responsável decide ou faz. As perguntas da dona estão em [perguntas-para-a-dona.md](perguntas-para-a-dona.md).
-Situação em 11/11/2026.
+Situação em 12/11/2026.
 
 ## Decisões tomadas em 11/11/2026 (registro)
 
@@ -48,6 +48,8 @@ Também saíram da lista da dona:
 | 11 | **Assinatura digital do instalador** (se um dia quiser) — e quem paga o certificado (§17, item 10) | Sem assinatura, o Windows mostra o aviso "editor desconhecido" ao instalar. Funciona, mas assusta a dona e os vendedores. | Nada trava; é melhoria da Fase 9 completa. |
 | 12 | **Domínio próprio** (se um dia quiser) — e quem paga (§17, item 10) | Com domínio entra o Let's Encrypt e acaba o risco de troca de IP (item 1). Hoje vale o certificado fixado no IP (ADR-0009). | Nada trava; é melhoria da Fase 9 completa. |
 | 13 | **Levar as perguntas à dona** ([perguntas-para-a-dona.md](perguntas-para-a-dona.md)) e trazer as respostas | As 🔴 travam a venda (6 e 7), a Fase 6 (9) e a Fase 7 (10 a 14). | Ver a lista. |
+| 14 | **Aplicar com a dona o teste com um vendedor real sem internet** ([roteiro-teste-vendedor-sem-internet.md](roteiro-teste-vendedor-sem-internet.md)) | É o critério de aceite da Fase 5 (§19): o vendedor vende, entende o indicador e vê tudo chegar na dona, sem perder venda. Precisa do instalador num computador de verdade e de um vendedor. | O fechamento "de uso" da Fase 5; cada problema vira uma entrada em [PROBLEMAS-DE-USO.md](PROBLEMAS-DE-USO.md). |
+| 15 | **Testar o instalador de verdade trocando de versão com vendas aguardando** ([roteiro-atualizacao-com-vendas-aguardando.md](roteiro-atualizacao-com-vendas-aguardando.md)) | Os testes automáticos da 5.13 provam a migração e o envio sem o instalador; falta ver o NSIS e a atualização automática de verdade num computador Windows. | Nada trava o código; entregar a versão nova a vendedores com vendas guardadas só depois deste teste. |
 
 ## O que não depende de ninguém agora
 

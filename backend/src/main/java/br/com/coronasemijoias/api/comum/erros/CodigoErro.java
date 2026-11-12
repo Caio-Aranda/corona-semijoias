@@ -422,7 +422,7 @@ public enum CodigoErro {
     /** Segundo computador do vendedor, ainda sem a liberação da dona (HTTP 403). */
     APARELHO_NAO_LIBERADO(
             "Este computador ainda não foi liberado pela dona.",
-            "Este computador ainda não foi liberado pela dona. Peça à dona para liberar este computador no Corona Gestão."),
+            "Este computador ainda não foi liberado pela dona. Avise a dona para liberar este computador."),
 
     /** A dona trocou este computador por outro: ele só envia o que guardou (HTTP 403). */
     APARELHO_SUBSTITUIDO(
