@@ -104,6 +104,7 @@ Si no responde, usamos: **usted escribe el precio de cada pieza (el sistema no l
 **19. ¿Qué es la etiqueta grande con "PV8990"?**
 La vimos debajo de la etiqueta de la tienda en una pieza. ¿Es del proveedor?
 Si no responde, usamos: **es del proveedor; el sistema acepta ese código también.**
+*Respuesta (12/11/2026): "PV8990" es el código del proveedor (tipo PROVEEDOR); el número debajo de las barras es el código interno de la tienda (tipo TIENDA). Se confirma el estándar; ver ADR-0007.*
 
 **20. Para las piezas nuevas, ¿cómo quiere el código de la tienda?**
 Hoy el sistema pone un número que sigue: 1217, 1218, 1219...
