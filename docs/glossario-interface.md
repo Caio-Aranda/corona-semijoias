@@ -467,6 +467,28 @@ Na ficha da maleta, no Corona Gestão: **Conferência do vendedor** mostra "Na m
 
 > O computador está com pouco espaço. Libere espaço para o Corona Vendas continuar guardando as vendas. (aviso ao abrir, com menos de 500 MB livres)
 
+**Operações feitas sem internet no Corona Vendas (Fase 5, tarefa 5.6; ADR-0013, itens 2, 7 e 19).** A venda, o estorno, o cliente e a conferência ficam guardados no computador e são enviados sozinhos. Textos quando a operação não pode ser guardada (o processo principal os devolve):
+
+> Esta peça não consta na sua maleta. (peça fora da maleta)
+
+> Não há mais peças desta na sua maleta. Confira a quantidade. (sem saldo)
+
+> O desconto é maior que o valor da peça.
+
+> O desconto passa do limite que a dona definiu. Diminua o desconto.
+
+> O valor pago passa do total da venda. Confira os pagamentos.
+
+> Esta venda já foi estornada.
+
+> Este cliente já está cadastrado: {nome}. (CPF repetido no diretório do computador, com o botão **Usar este cliente**)
+
+> Não encontramos esta venda neste computador. Atualize a tela e tente de novo. (o mesmo para cliente e maleta)
+
+Quando uma operação não consegue ser enviada 5 vezes seguidas (o envio continua tentando, sem pular):
+
+> Uma venda não conseguiu ser enviada. Avise a dona.
+
 Ao abrir **sem internet**, o Corona Vendas pede a senha (decisão de 11/11/2026). Senha errada: o mesmo "Usuário ou senha incorretos. Confira o que você digitou e tente de novo." do login. Depois de 5 erros seguidos:
 
 > A senha foi digitada errada muitas vezes. Conecte-se à internet e entre de novo para continuar.

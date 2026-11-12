@@ -78,6 +78,26 @@ O plano está em [fase-5-plano.md](fase-5-plano.md); o desenho, no [ADR-0013](..
 
 **Ficou para depois:** o motor do app que envia (5.6); a tela dos envios com problema e os avisos (5.10); push abaixo da versão mínima (5.13); métrica da duração do push (5.11).
 
+## Tarefa 5.6: motor de sincronização (Corona Vendas)
+
+Plano aprovado: [plano-5-6-motor-de-sincronizacao.md](plano-5-6-motor-de-sincronizacao.md).
+
+**O que entrou** (tudo no processo principal, `apps/seller-app/src/main/sync/`, com as dependências injetadas)
+
+- `aplicador-do-pull.ts`: cada lote numa transação só, junto com o cursor. `version` maior troca, igual ou menor é ignorada; lápide marca `deleted_at`; provisória com o mesmo id vira a do servidor; linha de outro id nunca toca numa provisória. Tabela ou coluna fora da lista (`colunas.ts`, a mesma do `RegistroDeTabelas`), número quebrado ou objeto recusam o lote inteiro.
+- `camada-de-pendentes.ts`: as alterações de cliente ainda aguardando envio são reaplicadas por cima da cópia depois de cada lote que tocou o cliente.
+- `operacoes-locais.ts` e `outbox.ts`: venda, estorno, cliente novo, cliente alterado e conferência gravam a cópia provisória e a operação na mesma transação, com o JSON exato do formato 1 da 5.5. Totais e saldo em centavos inteiros (`src/shared/dinheiro.ts`); CPF repetido conferido no diretório local; disco cheio desfaz tudo. Migração local **2** (`provisorias`): de qual operação é cada linha provisória.
+- `ciclo.ts`: um ciclo por vez. Saúde (`/actuator/health`, 5 s) → push (até 50 operações ou 512 KB, `dados` byte a byte, 413 pela metade, 429 com `Retry-After`, resultado por operação numa transação) → pull até `temMais = false` (409 `CURSOR_INVALIDO` recarrega só as cópias do servidor) → conferência por resumo uma vez por dia e depois da carga inicial (diferença passageira confere de novo; persistente avisa `/conferencia/diferencas` e recarrega só a tabela).
+- `agenda.ts`: abrir, internet voltar, a cada 60 s, 2 s depois de gravar (agrupando); falha com espera 2, 4, 8 s... até 5 min, ±25% sorteado.
+- `motor.ts` e a ponte: canal novo `aoMudarASincronizacao` com `{ comInternet, enviando, aguardando, vendasAguardando, recusadas, dadosAte, naoConseguiuEnviar }`, limpo no processo principal e no preload. O motor liga depois de entrar com o banco aberto e desliga ao sair, ao perder a sessão e por ordem do servidor (ponto de extensão da 5.8). A tela é da 5.7.
+- Glossário: textos das operações feitas sem internet e o aviso da operação que não consegue ser enviada.
+
+**Testes (escritos antes, Vitest, SQLCipher de verdade e servidor falso em `node:http`):** `aplicador-do-pull.test.ts` (fora de ordem, repetida, igual e menor, lápide, provisória do mesmo id, provisória de outro id intocada, lote recusado por tabela, coluna, custo, número quebrado; cursor junto; falha no meio; processo morto), `colunas.test.ts` (nenhuma coluna de custo, fornecedor ou estoque; lista igual ao esquema), `camada-de-pendentes.test.ts`, `operacoes-locais.test.ts` (mesma transação com falha injetada, JSON exato, ordem, disco cheio, saldo, estorno, CPF, desfazer idempotente, limpeza só das enviadas), `ciclo.test.ts` (cada resultado; RECUSADO desfaz na mesma transação e é idempotente; NAO_PROCESSADO não pula; resposta perdida dá JA_RECEBIDO sem duplicar; 413; 429; 50 e 512 KB; push antes do pull; sem internet; um ciclo por vez; sessão renovada uma vez; época; conferência), `agenda.test.ts`, `motor.test.ts` (só contadores e datas: varredura sem token, caminho, id ou dado de cliente), mais a ponte e a sessão.
+
+**Decisões que tomei:** ver a linha datada da tarefa 5.6 no ADR-0013.
+
+**Ficou para depois:** telas e "Entendi" (5.7); prazo offline, quarentena, apagar os dados e abrir sem internet ligando o motor (5.8); fotos (5.9); duas pontas reais e rede ruim (5.12); atualização com envios aguardando (5.13).
+
 ## Tarefa 5.11: métricas e alertas do sync (backend)
 
 **O que entrou:** `MetricasDoSync` (Micrometer, sem etiqueta alguma, então sem dado de vendedor): `corona.sync.xmin.idade.segundos` (idade da transação de escrita mais antiga em `pg_stat_activity`, só as com identificador, que são as que seguram o limite seguro), `corona.sync.pull.duracao`, `corona.sync.push.duracao`, `corona.sync.conferencia.defeitos` (conta as tabelas avisadas em `/conferencia/diferencas`) e `corona.sync.computadores.sem.enviar`. `AlertaDeAtrasoDoSync` confere a cada 15 s: passou de 30 s, ERRO no log (uma vez por episódio, e avisa quando volta ao normal); computador parado, AVISO no log uma vez por computador. `SaudeDoSync` (indicador `sync` do painel de saúde, sempre `UP`: atraso é alerta, não queda; números nos detalhes). `ComputadoresParados` e `FonteDeAvisosDosComputadores` levam à tela da dona "O computador de X está há N dias sem enviar" e "X entrou num computador novo" (textos no glossário).
