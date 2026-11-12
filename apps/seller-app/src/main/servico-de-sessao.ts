@@ -4,6 +4,8 @@ import type {
   ResultadoDeChamada,
   ResultadoDeEntrada,
 } from '../shared/ponte';
+import type { FotoPronta } from '../shared/dados';
+import type { TamanhoDeFoto } from '../shared/operacoes';
 import type { DadosDoUsuario } from './api';
 import { ehConsultaLocal } from './local/consultas-locais';
 import type { GuardaDeTokens } from './guarda-de-tokens';
@@ -73,6 +75,10 @@ export class ServicoDeSessao {
     private readonly apagador?: ControleDoApagar,
     /** Avisa a tela que o computador está sendo desligado ou já foi (tarefa 5.8). */
     private readonly aoMudarODesligamento?: (estado: EstadoDoDesligamento) => void,
+    /** As fotos do disco do computador (tarefa 5.9); sem isto a foto vem da internet, como antes. */
+    private readonly fotos?: {
+      ver(hash: string, tamanho: TamanhoDeFoto): Promise<Resultado<FotoPronta>>;
+    },
   ) {}
 
   /**
@@ -209,6 +215,10 @@ export class ServicoDeSessao {
     if (this.consultas?.disponivel && ehConsultaLocal(pedido)) {
       const local = this.consultas.chamar(pedido);
       return local.ok ? { ok: true, dados: local.dados } : this.falhaDaChamada(local.falha);
+    }
+    if (pedido.operacao === 'fotos.ver' && this.fotos && this.consultas?.disponivel) {
+      const foto = await this.fotos.ver(pedido.hash, pedido.tamanho);
+      return foto.ok ? { ok: true, dados: foto.dados } : this.falhaDaChamada(foto.falha);
     }
     const r =
       pedido.operacao === 'eu'

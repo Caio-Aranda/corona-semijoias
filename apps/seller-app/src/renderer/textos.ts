@@ -52,6 +52,7 @@ export const TEXTOS = {
       n === 1 ? '1 venda aguardando envio' : `${n} vendas aguardando envio`,
     itensAguardando: (n: number) =>
       n === 1 ? '1 item aguardando envio' : `${n} itens aguardando envio`,
+    baixandoFotos: (feitas: number, total: number) => `Baixando fotos: ${feitas} de ${total}`,
     naoConseguiu: 'Uma venda não conseguiu ser enviada. Avise a dona.',
     naoAceitas: (n: number, soVendas: boolean) =>
       soVendas

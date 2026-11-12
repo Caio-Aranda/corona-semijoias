@@ -133,6 +133,35 @@ describe('telas no banco local (tarefa 5.7)', () => {
     expect(guardaComToken.comToken).toHaveBeenCalledTimes(2);
   });
 
+  it('foto: com o banco aberto vem do disco do computador, sem internet; sem cópia, falha comum', async () => {
+    vi.mocked(guardaComToken.comToken).mockClear();
+    const consultas = { disponivel: true, chamar: vi.fn() };
+    const fotos = {
+      ver: vi
+        .fn()
+        .mockResolvedValueOnce({ ok: true, dados: { dataUrl: 'data:image/jpeg;base64,AA==' } })
+        .mockResolvedValueOnce({ ok: false, falha: { tipo: 'sem-conexao' } }),
+    };
+    const s = new ServicoDeSessao(
+      guardaComToken,
+      api,
+      Promise.resolve(),
+      undefined,
+      undefined,
+      consultas,
+      undefined,
+      undefined,
+      fotos,
+    );
+    const pedido = { operacao: 'fotos.ver', hash: 'a'.repeat(64), tamanho: 'media' } as const;
+    expect(await s.chamarApi(pedido)).toEqual({
+      ok: true,
+      dados: { dataUrl: 'data:image/jpeg;base64,AA==' },
+    });
+    expect(await s.chamarApi(pedido)).toEqual({ ok: false, motivo: 'sem-conexao' });
+    expect(guardaComToken.comToken).not.toHaveBeenCalled();
+  });
+
   it('a recusa do banco chega à tela com a mensagem em português e o cliente que já existe', async () => {
     const consultas = {
       disponivel: true,

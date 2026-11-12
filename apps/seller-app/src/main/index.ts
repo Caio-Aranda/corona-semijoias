@@ -16,6 +16,10 @@ import {
 import { criarApiDoVendas } from './api';
 import { arquivoDeTexto } from './arquivo-de-texto';
 import { ServicoDoBanco } from './banco/servico-do-banco';
+import { CacheDeFotos } from './fotos/cache-de-fotos';
+import { FilaDeFotos } from './fotos/fila-de-fotos';
+import { ServicoDeFotos } from './fotos/servico-de-fotos';
+import { criarTransporteDeFotos } from './fotos/transporte-de-fotos';
 import { RegistroDeContato } from './contato-com-servidor';
 import { identificadorDoAparelho } from './dispositivo';
 import {
@@ -226,6 +230,21 @@ async function iniciar(): Promise<void> {
   });
   // Apagar os dados do computador desligado (tarefa 5.8; ADR-0013, item 14).
   const pastaDeDados = app.getPath('userData');
+  // Fotos no disco (tarefa 5.9): a mesma pasta que o apagar dos dados remove.
+  const cacheDeFotos = new CacheDeFotos({ pasta: join(pastaDeDados, 'fotos') });
+  const transporteDeFotos = criarTransporteDeFotos({
+    baseUrl: enderecoDoServidor,
+    versaoDoApp: versaoDoApp(app.getVersion()),
+    fetch: (entrada, inicio) => session.defaultSession.fetch(entrada as string | Request, inicio),
+  });
+  const filaDeFotos = new FilaDeFotos({
+    banco: () => bancoLocal.banco,
+    transporte: transporteDeFotos,
+    comToken: (chamada) => guarda.comToken(chamada),
+    cache: cacheDeFotos,
+    aoMudar: () => motor?.atualizarEstado(),
+    registrar: (mensagem) => console.warn(mensagem),
+  });
   const apagador = new ApagadorDeDados({
     lugares: {
       chave: join(pastaDeDados, 'dados', 'chave.json'),
@@ -257,6 +276,9 @@ async function iniciar(): Promise<void> {
     relogio,
     aoMudarEstado: avisarSincronizacao,
     prazo: () => prazo.situacao(),
+    // Depois de cada ciclo com internet, baixa as fotos que faltam; o ciclo não espera (tarefa 5.9).
+    depoisDoCiclo: () => void filaDeFotos.rodar(),
+    fotos: () => filaDeFotos.progresso(),
     aoReceberOrdem: (ordem) => {
       motor?.desligar();
       if (ordem === 'apagar-dados') void servico?.ordemDeApagar();
@@ -312,6 +334,12 @@ async function iniciar(): Promise<void> {
       if (estado === 'DESLIGANDO') avisarATela({ estado: 'desligando' });
       else if (estado === 'DESLIGADO') avisarATela({ estado: 'desligado' });
     },
+    new ServicoDeFotos({
+      cache: cacheDeFotos,
+      transporte: transporteDeFotos,
+      comToken: (chamada) => guarda.comToken(chamada),
+      comInternet: () => motorDoApp.estado().comInternet === true,
+    }),
   );
   // O aplicativo fechou no meio de um apagar: continua de onde parou, sem recomeçar a contagem (tarefa 5.8).
   void apagador.emAndamento().then((emAndamento) => {

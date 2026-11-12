@@ -25,6 +25,8 @@ const ESTADO: EstadoDaSincronizacao = {
   dadosAte: '2026-11-09T17:30:00Z', // 14:30 em Brasília
   naoConseguiuEnviar: false,
   prazo: { situacao: 'EM_DIA', diasRestantes: 0, motivo: null },
+  fotosBaixadas: 0,
+  fotosTotal: 0,
 };
 
 type Manipulador = (pedido: PedidoDeChamada) => ResultadoDeChamada;
@@ -98,6 +100,17 @@ describe('o indicador de envio (glossário, parte 7)', () => {
     expect(
       screen.getByText('Uma venda não conseguiu ser enviada. Avise a dona.'),
     ).toBeInTheDocument();
+  });
+
+  it('fotos ainda baixando: "Baixando fotos: 45 de 120"; prontas, a frase some', () => {
+    const { ponte, estado } = criarPonte();
+    render(<IndicadorDeEnvio ponte={ponte} />);
+    estado({ fotosBaixadas: 45, fotosTotal: 120 });
+    expect(screen.getByTestId('baixando-fotos')).toHaveTextContent('Baixando fotos: 45 de 120');
+    estado({ fotosBaixadas: 120, fotosTotal: 120 });
+    expect(screen.queryByTestId('baixando-fotos')).not.toBeInTheDocument();
+    estado({ fotosBaixadas: 0, fotosTotal: 0 });
+    expect(screen.queryByText(/Baixando fotos/)).not.toBeInTheDocument();
   });
 
   it('antes de saber se há internet, não inventa nada', () => {

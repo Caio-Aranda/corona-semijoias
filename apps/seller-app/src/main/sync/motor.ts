@@ -25,6 +25,10 @@ export interface OpcoesDoMotor {
   registrar?: (mensagem: string) => void;
   /** O prazo sem internet do computador (tarefa 5.8); sem isto vale "em dia". */
   prazo?: () => PrazoOffline;
+  /** Roda depois de cada ciclo que falou com o servidor (tarefa 5.9: baixar as fotos). Não é esperado. */
+  depoisDoCiclo?: () => void;
+  /** Quantas fotos das maletas já estão no computador (tarefa 5.9). */
+  fotos?: () => { baixadas: number; total: number };
 }
 
 /**
@@ -52,7 +56,11 @@ export class MotorDeSincronizacao {
       ...(o.registrar ? { registrar: o.registrar } : {}),
     });
     this.agenda = new Agenda({
-      executar: () => this.ciclo.executar(),
+      executar: async () => {
+        const desfecho = await this.ciclo.executar();
+        if (desfecho !== 'parado' && this.ciclo.comInternet === true) o.depoisDoCiclo?.();
+        return desfecho;
+      },
       relogio: o.relogio,
       ...(o.sorteio ? { sorteio: o.sorteio } : {}),
       aoParar: () => this.avisar(),
@@ -96,6 +104,7 @@ export class MotorDeSincronizacao {
       comInternet: this.ciclo.comInternet,
       enviando: this.ciclo.enviando,
       prazo: this.o.prazo?.() ?? PRAZO_EM_DIA,
+      ...this.fotosParaATela(),
     };
     if (!db) return limparEstadoDaSincronizacao(base);
     const contagem = db
@@ -121,6 +130,11 @@ export class MotorDeSincronizacao {
       dadosAte: lerEstado(db, CHAVES.dadosAte),
       naoConseguiuEnviar: (contagem.presas ?? 0) > 0,
     });
+  }
+
+  private fotosParaATela(): { fotosBaixadas: number; fotosTotal: number } {
+    const f = this.o.fotos?.();
+    return { fotosBaixadas: f?.baixadas ?? 0, fotosTotal: f?.total ?? 0 };
   }
 
   private avisar(): void {
