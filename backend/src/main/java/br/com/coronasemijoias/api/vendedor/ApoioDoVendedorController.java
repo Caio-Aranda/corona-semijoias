@@ -89,7 +89,9 @@ public class ApoioDoVendedorController {
             return ResponseEntity.status(HttpStatus.NOT_MODIFIED).eTag(etag).cacheControl(cache)
                     .header("X-Content-Type-Options", "nosniff").build();
         }
+        // O app confere este SHA-256 do tamanho baixado antes de guardar o arquivo (tarefa 5.9).
         return ResponseEntity.ok().eTag(etag).cacheControl(cache).header("X-Content-Type-Options", "nosniff")
+                .header("X-Conteudo-Sha256", sha256(baixada.conteudo()))
                 .header("Content-Security-Policy", "default-src 'none'; sandbox").contentType(MediaType.IMAGE_JPEG)
                 .body(baixada.conteudo());
     }
@@ -123,6 +125,14 @@ public class ApoioDoVendedorController {
     private static void periodoValido(LocalDate de, LocalDate ate) {
         if (de != null && ate != null && de.isAfter(ate)) {
             throw Validacoes.recusar("de", "A data inicial não pode ser depois da final.");
+        }
+    }
+
+    private static String sha256(byte[] conteudo) {
+        try {
+            return java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(conteudo));
+        } catch (java.security.NoSuchAlgorithmException e) {
+            throw new IllegalStateException(e);
         }
     }
 }

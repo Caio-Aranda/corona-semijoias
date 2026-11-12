@@ -153,3 +153,22 @@ Plano aprovado no PR 105, com três ajustes da orquestradora (quarentena só at�
 **Limite conhecido:** um computador cuja sessão foi encerrada pela pessoa ("Sair") antes do bloqueio não tem token revogado por bloqueio e, portanto, não consegue usar a quarentena; ao receber a ordem no login, apaga direto. Vendas guardadas e não enviadas nesse caso se perdem (a pessoa que sai com vendas aguardando deveria esperar o envio).
 
 **Ficou para depois:** a tela da dona para aprovar ou descartar ("Vendas recebidas de um computador bloqueado") e o aviso (5.10); fotos sem internet (5.9); duas pontas, rede ruim e o apagar na 5.12; atualização com envios aguardando (5.13).
+
+## Tarefa 5.9: fotos sem internet
+
+**O que entrou (app do vendedor, `src/main/fotos/`)**
+
+- **`CacheDeFotos`:** `fotos/<hash>/<tamanho>.jpg` na mesma pasta que o apagar dos dados (5.8) remove. Grava em arquivo temporário (`.parcial`) e renomeia; confere o SHA-256 daquele tamanho antes de renomear (não bateu, nada fica no disco); só aceita hash de 64 letras/números hexadecimais (nada sai da pasta). O tamanho **grande** tem limite de 200 MB: passou, sai o menos usado (a leitura marca o uso).
+- **`FilaDeFotos`:** separada do envio e do recebimento. Roda depois de cada ciclo que falou com o servidor (`depoisDoCiclo` do motor; o ciclo não espera). Olha as maletas abertas (ENVIADA, CONFERIDA, EM_ACERTO) → itens → fotos não excluídas; baixa a **miniatura de tudo e depois a média**, 3 ao mesmo tempo, pela rota `/api/vendedor/fotos/{hash}/{tamanho}`. Foto estragada: até 3 tentativas no mesmo ciclo; 404: não insiste; sem rede: para e recomeça no próximo ciclo (o que já chegou fica; parciais são apagados). **Limpeza:** na mesma passada, tudo que nenhuma maleta aberta usa sai do disco (cobre foto trocada, maleta cancelada e, na Fase 7, acertada).
+- **`ServicoDeFotos` (`fotos.ver`):** com cópia no disco responde sem rede; sem cópia e **com** internet baixa e guarda (é assim que o grande chega, sob demanda); sem cópia e sem internet devolve falha na hora e a tela mostra "sem foto". Nunca trava venda nem conferência.
+- **Tela:** "Baixando fotos: 45 de 120" no indicador, enquanto faltam fotos (uma foto conta quando tem miniatura e média). Texto acrescentado ao glossário (parte 7) antes. O estado da ponte ganhou `fotosBaixadas` e `fotosTotal` (só números).
+- **Backend:** a rota do vendedor passou a mandar o cabeçalho `X-Conteudo-Sha256` (SHA-256 do tamanho que está sendo entregue). O ADR já previa o cabeçalho, mas a rota não o enviava. Sem o cabeçalho (servidor antigo) o app só exige arquivo não vazio.
+
+**Testes (escritos antes do código; SQLCipher de verdade):** `fotos/fotos.test.ts` (21): temporário e renomear, SHA-256 que não bate, parcial de queda, hash malicioso, limite do grande; ordem miniatura-antes-da-média e no máximo 3 ao mesmo tempo, só maletas abertas, **queda no meio e retomada** (as já baixadas não são pedidas de novo), arquivo parcial deixado por queda, **arquivo corrompido** (3 tentativas, nunca no disco, chega no ciclo seguinte), 404, **troca de foto sem internet**, limpeza ao cancelar a maleta (e foto dividida com outra maleta aberta fica), passadas simultâneas; `fotos.ver` do disco em menos de 100 ms, **venda sem foto**, grande sob demanda e grande estragado; mais o teste da sessão e o do indicador.
+
+**Medida (500 produtos x 5 fotos = 2.500 fotos, servidor de mentira com 1 ms por foto):** 109,7 MB em disco (miniatura de 6 KB + média de 40 KB por foto; as fotos reais podem diferir, ver dúvidas), 2,8 s para baixar tudo, leitura do disco: mediana 0,03 ms e pior 0,77 ms em 300 leituras (limite: 100 ms). O tempo real depende da internet: 110 MB em 10 Mb/s levam cerca de 90 s, em segundo plano.
+
+**Como rodei:** esta máquina (Windows) não compila o SQLCipher (falta o SDK do Windows), então os testes, o `lint`, o `typecheck`, o `format:check` e a barreira (pacote Linux real) rodaram num contêiner Docker `node:26`. Tudo passou (454 testes do seller-app).
+
+**Ficou para depois / limites:** peça fora de maleta aberta (por exemplo, numa venda antiga) só mostra foto se já houver cópia ou se houver internet na hora; o teste do cabeçalho `X-Conteudo-Sha256` no backend não foi escrito (precisa de uma maleta com foto real no `RotasDoVendedorTest`; o CI compila e roda os testes que já existem); os testes de duas pontas com rede ruim são da 5.12.
+

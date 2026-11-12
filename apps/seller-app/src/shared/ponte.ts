@@ -114,6 +114,10 @@ export interface EstadoDaSincronizacao {
   naoConseguiuEnviar: boolean;
   /** O prazo máximo sem internet (tarefa 5.8): aviso 3 dias antes, e esgotado bloqueia o que grava. */
   prazo: PrazoOffline;
+  /** Fotos das maletas abertas que já estão no computador (tarefa 5.9). */
+  fotosBaixadas: number;
+  /** Fotos das maletas abertas. "Baixando fotos: 45 de 120" enquanto baixadas < total. */
+  fotosTotal: number;
 }
 
 const DATA_ISO = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,9})?Z$/;
@@ -136,6 +140,8 @@ export function limparEstadoDaSincronizacao(v: unknown): EstadoDaSincronizacao {
     dadosAte: typeof dadosAte === 'string' && DATA_ISO.test(dadosAte) ? dadosAte : null,
     naoConseguiuEnviar: o['naoConseguiuEnviar'] === true,
     prazo: limparPrazo(o['prazo']),
+    fotosBaixadas: contador(o['fotosBaixadas']),
+    fotosTotal: contador(o['fotosTotal']),
   };
 }
 

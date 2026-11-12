@@ -16,6 +16,8 @@ const CAMPOS = [
   'comInternet',
   'dadosAte',
   'enviando',
+  'fotosBaixadas',
+  'fotosTotal',
   'naoConseguiuEnviar',
   'prazo',
   'recusadas',
@@ -71,6 +73,8 @@ describe('estado da ponte', () => {
       dadosAte: null,
       naoConseguiuEnviar: false,
       prazo: { situacao: 'EM_DIA', diasRestantes: 0, motivo: null },
+      fotosBaixadas: 0,
+      fotosTotal: 0,
     });
     motor.ligar();
     await cicloTerminado();
@@ -139,6 +143,8 @@ describe('estado da ponte', () => {
       dadosAte: null,
       naoConseguiuEnviar: true,
       prazo: { situacao: 'EM_DIA', diasRestantes: 0, motivo: null },
+      fotosBaixadas: 0,
+      fotosTotal: 0,
     });
   });
 

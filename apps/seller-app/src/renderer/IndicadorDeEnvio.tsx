@@ -37,6 +37,12 @@ export function textoDoQueAguarda(e: EstadoDaSincronizacao): string | null {
     : TEXTOS.envio.itensAguardando(e.aguardando);
 }
 
+/** "Baixando fotos: 45 de 120" enquanto faltam fotos das maletas; vazio quando todas já estão no computador. */
+export function textoDasFotos(e: EstadoDaSincronizacao): string | null {
+  if (e.fotosTotal === 0 || e.fotosBaixadas >= e.fotosTotal) return null;
+  return TEXTOS.envio.baixandoFotos(e.fotosBaixadas, e.fotosTotal);
+}
+
 /** A frase principal do indicador (glossário, parte 7). `null` enquanto ainda não se sabe nada. */
 export function textoDoIndicador(e: EstadoDaSincronizacao): string | null {
   const T = TEXTOS.envio;
@@ -78,6 +84,7 @@ export function IndicadorDeEnvio({ ponte }: { ponte: PonteDoCorona }) {
   if (!estado) return null;
   const principal = textoDoIndicador(estado);
   const aguarda = textoDoQueAguarda(estado);
+  const fotos = textoDasFotos(estado);
   const aviso = textoDoPrazo(estado.prazo);
   return (
     <section className="vendas-indicador" aria-label={T.area}>
@@ -87,6 +94,11 @@ export function IndicadorDeEnvio({ ponte }: { ponte: PonteDoCorona }) {
         </p>
       ) : null}
       {aguarda ? <p className="vendas-texto">{aguarda}</p> : null}
+      {fotos ? (
+        <p className="vendas-texto" data-testid="baixando-fotos">
+          {fotos}
+        </p>
+      ) : null}
       {aviso ? (
         <Aviso tipo="atencao" titulo={aviso.titulo}>
           {aviso.texto}

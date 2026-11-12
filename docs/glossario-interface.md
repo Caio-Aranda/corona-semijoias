@@ -795,6 +795,7 @@ Sempre em palavras comuns (§19.11). Nunca "fila", "sincronização" ou "pendent
 | Sem internet | Sem internet. Suas vendas estão salvas e serão enviadas quando você conectar. |
 | Só vendas esperando para ser enviadas | 1 venda aguardando envio / 3 vendas aguardando envio |
 | Também há outros registros esperando (clientes, devoluções etc.) | 1 item aguardando envio / 3 itens aguardando envio |
+| Fotos das peças da maleta ainda sendo baixadas (a venda e a conferência seguem normalmente) | Baixando fotos: 45 de 120 |
 | Problema num envio | Mostrar em "envios com problema", na tela inicial da dona (§19.3) |
 
 **Aviso nos relatórios do app do vendedor** (§12): "Dados até dd/mm às hh:mm. N itens aguardando envio" (ou "N vendas aguardando envio", quando só houver vendas).
