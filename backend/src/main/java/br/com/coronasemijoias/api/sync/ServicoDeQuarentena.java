@@ -170,6 +170,22 @@ public class ServicoDeQuarentena {
         return new ErroDaApi(HttpStatus.UNAUTHORIZED, CodigoErro.SESSAO_TERMINADA);
     }
 
+    /** Uma venda (ou outro envio) de computador bloqueado, esperando a dona. */
+    public record EnvioGuardado(UUID id, String tipo, UUID vendedorId, String vendedorNome, UUID dispositivoId,
+            Instant recebidoEm, Instant criadoEmLocal, JsonNode dados) {
+    }
+
+    /** Os que esperam a decisão da dona, do mais antigo para o mais novo. */
+    public List<EnvioGuardado> listar() {
+        return jdbc.query("""
+                SELECT q.id, q.tipo, q.vendedor_id, v.nome, q.dispositivo_id, q.recebido_em, q.criado_em_local, q.dados::text
+                  FROM corona.envios_em_quarentena q JOIN corona.vendedores v ON v.id = q.vendedor_id
+                 WHERE q.situacao = 'GUARDADO' ORDER BY q.recebido_em, q.id""",
+                (rs, i) -> new EnvioGuardado(rs.getObject(1, UUID.class), rs.getString(2), rs.getObject(3, UUID.class),
+                        rs.getString(4), rs.getObject(5, UUID.class), instante(rs.getTimestamp(6)),
+                        instante(rs.getTimestamp(7)), json.readTree(rs.getString(8))));
+    }
+
     /**
      * A dona aprova: a operação passa pelo mesmo serviço do envio (as mesmas regras, o mesmo {@code sync_log}) e a linha
      * da quarentena guarda o que aconteceu. Uma recusa do serviço não desfaz a decisão: ela aparece nos envios com
