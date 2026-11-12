@@ -77,3 +77,15 @@ O plano está em [fase-5-plano.md](fase-5-plano.md); o desenho, no [ADR-0013](..
 **Decisões que tomei:** ver a linha datada da tarefa 5.5 no ADR-0013.
 
 **Ficou para depois:** o motor do app que envia (5.6); a tela dos envios com problema e os avisos (5.10); push abaixo da versão mínima (5.13); métrica da duração do push (5.11).
+
+## Tarefa 5.11: métricas e alertas do sync (backend)
+
+**O que entrou:** `MetricasDoSync` (Micrometer, sem etiqueta alguma, então sem dado de vendedor): `corona.sync.xmin.idade.segundos` (idade da transação de escrita mais antiga em `pg_stat_activity`, só as com identificador, que são as que seguram o limite seguro), `corona.sync.pull.duracao`, `corona.sync.push.duracao`, `corona.sync.conferencia.defeitos` (conta as tabelas avisadas em `/conferencia/diferencas`) e `corona.sync.computadores.sem.enviar`. `AlertaDeAtrasoDoSync` confere a cada 15 s: passou de 30 s, ERRO no log (uma vez por episódio, e avisa quando volta ao normal); computador parado, AVISO no log uma vez por computador. `SaudeDoSync` (indicador `sync` do painel de saúde, sempre `UP`: atraso é alerta, não queda; números nos detalhes). `ComputadoresParados` e `FonteDeAvisosDosComputadores` levam à tela da dona "O computador de X está há N dias sem enviar" e "X entrou num computador novo" (textos no glossário).
+
+**Quando um computador está parado:** `ATIVO`, de vendedor ativo, e (sem falar com o servidor há 3 dias ou mais) ou (disse ter operações aguardando e o último envio dele tem 3 dias ou mais). Prazo em `corona.sync.aviso-sem-enviar-dias` (dúvida D4).
+
+**Testes (escritos antes, PostgreSQL de verdade):** `MetricasDoSyncTest` (transação aberta faz a métrica subir e o alerta sair, uma vez só, e some quando ela fecha; computador parado, em dia, trocado, bloqueado e de vendedor desligado; envio aguardando com contato recente; computador novo; pull, push e defeito viram métrica; nenhuma etiqueta).
+
+**Decisões que tomei:** (1) as métricas ficam registradas no Micrometer, mas o `/actuator/metrics` **não** foi exposto (hoje só `health` está; expor é decisão de segurança da VPS) e a leitura de cada uma está no log e no painel de saúde; (2) o indicador de saúde não derruba o `/health`, para o monitor da VPS não reiniciar a API por causa de uma venda lenta; (3) a conexão da API só enxerga as próprias transações em `pg_stat_activity`, e as da migração e do administrador não contam (não escrevem durante o uso); (4) o aviso de "envios com problema" já existe na 5.5/5.10 e não foi repetido aqui.
+
+**Ficou para depois:** a tela da dona mostrar os dois tipos novos de aviso com o botão certo (5.10); expor as métricas se a VPS ganhar um coletor.
