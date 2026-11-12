@@ -127,6 +127,7 @@ describe('estado do envio na ponte (tarefa 5.6)', () => {
         prazo: { situacao: 'EM_DIA', diasRestantes: 0, motivo: null },
         fotosBaixadas: 0,
         fotosTotal: 0,
+        appDesatualizado: false,
       }),
     );
     expect(invocar).toHaveBeenCalledWith(CANAIS.sincronizacaoEstado);

@@ -1,0 +1,83 @@
+package br.com.coronasemijoias.api.sync;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import org.junit.jupiter.api.Test;
+
+/**
+ * Por quanto tempo o servidor aceita cada formato de operação (tarefa 5.13; ADR-0013, item 17): o formato mais novo de
+ * um tipo vale sempre; o anterior vale por 90 dias depois de publicado o novo, e nem um instante a mais. Escrito antes
+ * do código.
+ */
+class FormatosDeOperacaoTest {
+
+    private static final Instant PUBLICOU_O_1 = Instant.parse("2026-11-01T00:00:00Z");
+    private static final Instant PUBLICOU_O_2 = Instant.parse("2027-02-01T12:00:00Z");
+
+    private static FormatosDeOperacao em(Instant agora) {
+        FormatosDeOperacao f = new FormatosDeOperacao(Clock.fixed(agora, ZoneOffset.UTC), Duration.ofDays(90));
+        f.publicar("VENDA", 2, PUBLICOU_O_2);
+        return f;
+    }
+
+    @Test
+    void producaoTemSoOFormato1DeCadaTipoEElesValemSempre() {
+        FormatosDeOperacao f = new FormatosDeOperacao(Clock.fixed(Instant.parse("2040-01-01T00:00:00Z"), ZoneOffset.UTC),
+                Duration.ofDays(90));
+        for (String tipo : new String[] {"VENDA", "ESTORNO_VENDA", "CLIENTE_NOVO", "CLIENTE_ALTERADO", "CONFERENCIA"}) {
+            assertThat(f.conhecido(tipo, 1)).as(tipo).isTrue();
+            assertThat(f.aceitoAgora(tipo, 1)).as(tipo).isTrue();
+            assertThat(f.conhecido(tipo, 2)).as(tipo).isFalse();
+        }
+        assertThat(f.conhecido("DESCONHECIDO", 1)).isFalse();
+        assertThat(f.conhecido(null, 1)).isFalse();
+        assertThat(f.conhecido("VENDA", 0)).isFalse();
+    }
+
+    @Test
+    void formato1ContinuaAceitoDepoisDeExistirO2AteOs90Dias() {
+        assertThat(em(PUBLICOU_O_2).aceitoAgora("VENDA", 1)).isTrue();
+        assertThat(em(PUBLICOU_O_2.plus(Duration.ofDays(89))).aceitoAgora("VENDA", 1)).isTrue();
+        assertThat(em(PUBLICOU_O_2.plus(Duration.ofDays(90)).minusMillis(1)).aceitoAgora("VENDA", 1)).isTrue();
+        // O formato novo vale, e os outros tipos (ainda no 1) não são afetados.
+        assertThat(em(PUBLICOU_O_2.plus(Duration.ofDays(400))).aceitoAgora("VENDA", 2)).isTrue();
+        assertThat(em(PUBLICOU_O_2.plus(Duration.ofDays(400))).aceitoAgora("ESTORNO_VENDA", 1)).isTrue();
+    }
+
+    @Test
+    void noDia90ExatoOFormato1VenceMasContinuaConhecido() {
+        FormatosDeOperacao f = em(PUBLICOU_O_2.plus(Duration.ofDays(90)));
+        assertThat(f.aceitoAgora("VENDA", 1)).isFalse();
+        // Conhecido: o servidor ainda sabe ler (para responder JA_RECEBIDO a quem reenvia o que já entrou).
+        assertThat(f.conhecido("VENDA", 1)).isTrue();
+        assertThat(f.aceitoAte("VENDA", 1)).contains(PUBLICOU_O_2.plus(Duration.ofDays(90)));
+        assertThat(f.aceitoAte("VENDA", 2)).isEmpty();
+    }
+
+    @Test
+    void antesDePublicarONovoOAntigoNaoComecaAVencer() {
+        // Formato novo anunciado com data futura: o prazo do antigo conta só a partir dela.
+        assertThat(em(PUBLICOU_O_1).aceitoAgora("VENDA", 1)).isTrue();
+    }
+
+    @Test
+    void prazoVemDaConfiguracao() {
+        FormatosDeOperacao f = new FormatosDeOperacao(
+                Clock.fixed(PUBLICOU_O_2.plus(Duration.ofDays(100)), ZoneOffset.UTC), Duration.ofDays(180));
+        f.publicar("VENDA", 2, PUBLICOU_O_2);
+        assertThat(f.aceitoAgora("VENDA", 1)).isTrue();
+    }
+
+    @Test
+    void reiniciarVoltaAoCatalogoDeProducao() {
+        FormatosDeOperacao f = em(PUBLICOU_O_2.plus(Duration.ofDays(200)));
+        assertThat(f.aceitoAgora("VENDA", 1)).isFalse();
+        f.reiniciar();
+        assertThat(f.aceitoAgora("VENDA", 1)).isTrue();
+        assertThat(f.conhecido("VENDA", 2)).isFalse();
+    }
+}

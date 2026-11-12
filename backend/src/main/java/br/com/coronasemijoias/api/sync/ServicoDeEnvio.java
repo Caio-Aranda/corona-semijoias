@@ -183,6 +183,11 @@ public class ServicoDeEnvio {
         if (anterior.isPresent()) {
             return jaVisto(anterior.get(), ctx, lida.resumo(), op);
         }
+        if (operacoes.vencido(lida.tipo(), lida.formato())) {
+            // Formato antigo além dos 90 dias (ADR-0013, item 17): não aplica, mas guarda com o JSON para a dona ver.
+            return registrarFalha(op, ctx, lida.resumo(), lida, Resultado.RECUSADO, CodigoErro.FORMATO_NAO_ACEITO.name(),
+                    CodigoErro.FORMATO_NAO_ACEITO.mensagem());
+        }
         try {
             Aplicada aplicada = transacao.execute(status -> {
                 Aplicada a = operacoes.aplicar(lida, ctx);

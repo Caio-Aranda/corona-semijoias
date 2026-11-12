@@ -277,9 +277,11 @@ export type RespostaDaQuarentena = {
 
 export type RespostaDoEnvio = {
     apagarDados?: boolean;
+    appDesatualizado?: boolean;
     horaServidor?: string;
     parametros?: ParametrosDoVendedor;
     resultados?: Array<ResultadoDaOperacao>;
+    versaoMinima?: string;
 };
 
 export type RespostaDoLogin = {

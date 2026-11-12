@@ -6,6 +6,7 @@ import { Agenda } from './agenda';
 import {
   CicloDeSincronizacao,
   type ComToken,
+  type DesfechoDoCiclo,
   type OrdemDoServidor,
   TENTATIVAS_PARA_AVISAR,
 } from './ciclo';
@@ -97,12 +98,34 @@ export class MotorDeSincronizacao {
     this.agenda.internetVoltou();
   }
 
+  /** O ciclo em andamento, para o preparo da atualização esperar (tarefa 5.13); `null` se nenhum. */
+  envioEmAndamento(): Promise<DesfechoDoCiclo> | null {
+    return this.ciclo.emCurso;
+  }
+
+  /** Quantas operações aguardam envio (0 sem banco aberto). */
+  aguardandoEnvio(): number {
+    const db = this.o.banco();
+    if (!db) return 0;
+    return (
+      db.prepare("SELECT count(*) AS n FROM outbox WHERE situacao = 'AGUARDANDO'").get() as {
+        n: number;
+      }
+    ).n;
+  }
+
+  /** Só o envio, sem receber: o "mais um envio" antes de instalar a atualização (tarefa 5.13). */
+  enviarAntesDeFechar(): Promise<DesfechoDoCiclo> {
+    return this.ciclo.enviarSo();
+  }
+
   /** O estado para a tela: só contadores, sim/não e datas. */
   estado(): EstadoDaSincronizacao {
     const db = this.o.banco();
     const base = {
       comInternet: this.ciclo.comInternet,
       enviando: this.ciclo.enviando,
+      appDesatualizado: this.ciclo.desatualizado,
       prazo: this.o.prazo?.() ?? PRAZO_EM_DIA,
       ...this.fotosParaATela(),
     };

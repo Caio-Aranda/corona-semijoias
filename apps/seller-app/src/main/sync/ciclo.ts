@@ -71,8 +71,56 @@ export class CicloDeSincronizacao {
   private rodando: Promise<DesfechoDoCiclo> | null = null;
   private _comInternet: boolean | null = null;
   private _enviando = false;
+  private _desatualizado = false;
 
   constructor(private readonly o: OpcoesDoCiclo) {}
+
+  /**
+   * O último envio voltou com `appDesatualizado` (tarefa 5.13): este app está abaixo da versão mínima. O envio continua;
+   * o recebimento e a conferência não são pedidos (dariam 426 e parariam o motor, prendendo as vendas novas).
+   */
+  get desatualizado(): boolean {
+    return this._desatualizado;
+  }
+
+  /** O ciclo em andamento (para o preparo da atualização esperar), ou `null`. */
+  get emCurso(): Promise<DesfechoDoCiclo> | null {
+    return this.rodando;
+  }
+
+  /**
+   * Só o envio, sem receber nem conferir (tarefa 5.13): o "mais um envio" antes de instalar a atualização. Se um ciclo
+   * já roda, devolve o mesmo resultado (um por vez).
+   */
+  enviarSo(): Promise<DesfechoDoCiclo> {
+    this.rodando ??= this.rodarSoEnvio().finally(() => {
+      this.rodando = null;
+    });
+    return this.rodando;
+  }
+
+  private async rodarSoEnvio(): Promise<DesfechoDoCiclo> {
+    const db = this.o.banco();
+    if (!db) return 'falha';
+    const comInternet = await this.o.transporte.saude();
+    this.mudar(() => {
+      this._comInternet = comInternet;
+    });
+    if (!comInternet) return 'sem-internet';
+    try {
+      this.mudar(() => {
+        this._enviando = true;
+      });
+      return await this.enviarTudo(db);
+    } catch (erro) {
+      this.registrar(`envio interrompido: ${erro instanceof Error ? erro.name : 'erro'}`);
+      return 'falha';
+    } finally {
+      this.mudar(() => {
+        this._enviando = false;
+      });
+    }
+  }
 
   get comInternet(): boolean | null {
     return this._comInternet;
@@ -109,7 +157,11 @@ export class CicloDeSincronizacao {
       });
       const envio = await this.enviarTudo(db);
       if (envio === 'parado') return 'parado';
+      // Abaixo da versão mínima: só envia (o pull daria 426). Os dados novos chegam depois de atualizar.
+      if (this._desatualizado) return envio;
       const recebimento = await this.receberTudo(db);
+      // O recebimento respondeu 426 (app abaixo da versão mínima, nada a enviar): segue só enviando.
+      if (this._desatualizado) return envio;
       if (recebimento !== 'ok') return recebimento;
       const conferencia = await this.conferirSeForAHora(db);
       if (conferencia !== 'ok') return conferencia;
@@ -137,6 +189,7 @@ export class CicloDeSincronizacao {
       const { status, corpo } = r.dados;
       if (status === 200) {
         const parou = this.aplicarResultados(db, lote.operacoes, corpo);
+        this._desatualizado = ehObjeto(corpo) && corpo['appDesatualizado'] === true;
         this.o.aoMudar?.();
         if (ehObjeto(corpo) && corpo['apagarDados'] === true) return this.ordem('apagar-dados');
         if (parou) return 'falha';
@@ -232,7 +285,7 @@ export class CicloDeSincronizacao {
       const r = await this.o.comToken((t) =>
         this.o.transporte.receber(t, { cursor, limite: this.limiteDoPull() }),
       );
-      if (!r.ok) return this.falhaDaChamada(r.falha);
+      if (!r.ok) return this.falhaDaChamada(r.falha, 'recebimento');
       const { status, corpo } = r.dados;
       if (status === 409 && codigoDe(corpo) === 'CURSOR_INVALIDO' && !recarregou) {
         recarregou = true;
@@ -285,7 +338,7 @@ export class CicloDeSincronizacao {
       const r = await this.o.comToken((t) =>
         this.o.transporte.receber(t, { cursor: atual, limite: this.limiteDoPull(), tabela }),
       );
-      if (!r.ok) return this.falhaDaChamada(r.falha);
+      if (!r.ok) return this.falhaDaChamada(r.falha, 'recebimento');
       if (r.dados.status !== 200) return this.falhaDoStatus(r.dados);
       const p = lerPagina(r.dados.corpo);
       if (!p) return 'falha';
@@ -356,7 +409,16 @@ export class CicloDeSincronizacao {
 
   // --- auxiliares ---
 
-  private falhaDaChamada(f: { tipo: string; status?: number }): Etapa {
+  private falhaDaChamada(
+    f: { tipo: string; status?: number },
+    etapa: 'envio' | 'recebimento' = 'envio',
+  ): Etapa {
+    if (f.tipo === 'app-desatualizado' && etapa === 'recebimento') {
+      // Versão mínima não prende vendas (tarefa 5.13): o motor não para; os próximos ciclos só enviam.
+      this._desatualizado = true;
+      this.o.aoMudar?.();
+      return 'falha';
+    }
     if (f.tipo === 'app-desatualizado') return this.ordem('app-desatualizado');
     if (f.tipo === 'recusada' && f.status === 401) return this.ordem('sessao-terminou');
     if (f.tipo === 'sem-conexao') {

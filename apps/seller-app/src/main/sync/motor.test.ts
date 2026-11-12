@@ -13,6 +13,7 @@ import { ServidorFalso } from './testes/servidor-falso';
  */
 const CAMPOS = [
   'aguardando',
+  'appDesatualizado',
   'comInternet',
   'dadosAte',
   'enviando',
@@ -75,6 +76,7 @@ describe('estado da ponte', () => {
       prazo: { situacao: 'EM_DIA', diasRestantes: 0, motivo: null },
       fotosBaixadas: 0,
       fotosTotal: 0,
+      appDesatualizado: false,
     });
     motor.ligar();
     await cicloTerminado();
@@ -131,6 +133,7 @@ describe('estado da ponte', () => {
       recusadas: 1,
       dadosAte: 'C:\\Users\\vendedor\\dados\\banco.sqlite',
       naoConseguiuEnviar: true,
+      appDesatualizado: 'sim',
       token: TOKEN,
       clienteId: idDeTeste(),
     };
@@ -145,6 +148,7 @@ describe('estado da ponte', () => {
       prazo: { situacao: 'EM_DIA', diasRestantes: 0, motivo: null },
       fotosBaixadas: 0,
       fotosTotal: 0,
+      appDesatualizado: false,
     });
   });
 

@@ -54,6 +54,9 @@ export const TEXTOS = {
       n === 1 ? '1 item aguardando envio' : `${n} itens aguardando envio`,
     baixandoFotos: (feitas: number, total: number) => `Baixando fotos: ${feitas} de ${total}`,
     naoConseguiu: 'Uma venda não conseguiu ser enviada. Avise a dona.',
+    desatualizadoTitulo: 'Seu aplicativo está desatualizado.',
+    desatualizado:
+      'As vendas guardadas continuam sendo enviadas. Para receber dados novos, deixe o computador com internet, feche o Corona Vendas e abra de novo. Se o aviso continuar, avise a dona.',
     naoAceitas: (n: number, soVendas: boolean) =>
       soVendas
         ? n === 1

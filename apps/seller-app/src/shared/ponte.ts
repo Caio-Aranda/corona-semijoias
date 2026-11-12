@@ -118,6 +118,11 @@ export interface EstadoDaSincronizacao {
   fotosBaixadas: number;
   /** Fotos das maletas abertas. "Baixando fotos: 45 de 120" enquanto baixadas < total. */
   fotosTotal: number;
+  /**
+   * O servidor aceitou o envio, mas este Corona Vendas está abaixo da versão mínima (tarefa 5.13): as vendas continuam
+   * indo, os dados novos só depois de atualizar. "Seu aplicativo está desatualizado."
+   */
+  appDesatualizado: boolean;
 }
 
 const DATA_ISO = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,9})?Z$/;
@@ -142,6 +147,7 @@ export function limparEstadoDaSincronizacao(v: unknown): EstadoDaSincronizacao {
     prazo: limparPrazo(o['prazo']),
     fotosBaixadas: contador(o['fotosBaixadas']),
     fotosTotal: contador(o['fotosTotal']),
+    appDesatualizado: o['appDesatualizado'] === true,
   };
 }
 

@@ -853,6 +853,9 @@
           "apagarDados" : {
             "type" : "boolean"
           },
+          "appDesatualizado" : {
+            "type" : "boolean"
+          },
           "horaServidor" : {
             "format" : "date-time",
             "type" : "string"
@@ -865,6 +868,9 @@
               "$ref" : "#/components/schemas/ResultadoDaOperacao"
             },
             "type" : "array"
+          },
+          "versaoMinima" : {
+            "type" : "string"
           }
         },
         "type" : "object"
@@ -1953,7 +1959,7 @@
     },
     "/api/vendedor/sync/push" : {
       "post" : {
-        "description" : "Até 50 operações ou 512 KB, na ordem da fila do computador. Cada uma é processada numa transação própria e recebe ACEITO, JA_RECEBIDO (mesmo id e mesmo conteúdo), CONFLITO (mesmo id, outro conteúdo), RECUSADO (regra de negócio; a dona é avisada) ou NAO_PROCESSADO (passageiro: o lote parou ali). horaLocal é o relógio do computador no envio (corrige a hora das vendas); aguardandoDepoisDeste, quantas ainda ficam. 429 ENVIO_EM_ANDAMENTO: outro envio deste computador em andamento. 413 LOTE_GRANDE_DEMAIS: mande a metade. O computador trocado ainda envia o que guardou; terminando com nada aguardando, recebe apagarDados.",
+        "description" : "Até 50 operações ou 512 KB, na ordem da fila do computador. Cada uma é processada numa transação própria e recebe ACEITO, JA_RECEBIDO (mesmo id e mesmo conteúdo), CONFLITO (mesmo id, outro conteúdo), RECUSADO (regra de negócio; a dona é avisada) ou NAO_PROCESSADO (passageiro: o lote parou ali). horaLocal é o relógio do computador no envio (corrige a hora das vendas); aguardandoDepoisDeste, quantas ainda ficam. 429 ENVIO_EM_ANDAMENTO: outro envio deste computador em andamento. 413 LOTE_GRANDE_DEMAIS: mande a metade. O computador trocado ainda envia o que guardou; terminando com nada aguardando, recebe apagarDados. Aceito também do Corona Vendas abaixo da versão mínima (só para não perder o que guardou): a resposta traz appDesatualizado e versaoMinima. Formato de operação vencido (90 dias depois de publicado o seguinte): RECUSADO com FORMATO_NAO_ACEITO.",
         "operationId" : "enviarOperacoes",
         "requestBody" : {
           "content" : {

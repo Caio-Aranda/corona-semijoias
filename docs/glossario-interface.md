@@ -807,6 +807,8 @@ Sempre em palavras comuns (§19.11). Nunca "fila", "sincronização" ou "pendent
 | Também há outros registros esperando (clientes, devoluções etc.) | 1 item aguardando envio / 3 itens aguardando envio |
 | Fotos das peças da maleta ainda sendo baixadas (a venda e a conferência seguem normalmente) | Baixando fotos: 45 de 120 |
 | Problema num envio | Mostrar em "envios com problema", na tela inicial da dona (§19.3) |
+| Corona Vendas abaixo da versão mínima, depois de enviar o que guardou (tarefa 5.13): as vendas continuam sendo enviadas, mas dados novos só chegam depois de atualizar | **Seu aplicativo está desatualizado.** As vendas guardadas continuam sendo enviadas. Para receber dados novos, deixe o computador com internet, feche o Corona Vendas e abra de novo. Se o aviso continuar, avise a dona. |
+| Envio feito numa versão antiga do Corona Vendas que o servidor já não aceita (motivo de um envio não aceito, tarefa 5.13) | Este envio foi feito numa versão antiga do aplicativo e não pôde ser aceito. A dona já foi avisada. |
 
 **Aviso nos relatórios do app do vendedor** (§12): "Dados até dd/mm às hh:mm. N itens aguardando envio" (ou "N vendas aguardando envio", quando só houver vendas).
 

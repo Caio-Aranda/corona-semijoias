@@ -221,6 +221,11 @@ public enum CodigoErro {
             "Este lançamento já desfez outro e não pode ser desfeito. Se precisar, faça um novo lançamento."),
 
     /** O mesmo identificador voltou com outros dados (HTTP 409). */
+    /** Operação gravada por uma versão antiga do Corona Vendas, num formato que o servidor já não aceita (tarefa 5.13). */
+    FORMATO_NAO_ACEITO(
+            "Este envio foi feito numa versão antiga do aplicativo.",
+            "Este envio foi feito numa versão antiga do aplicativo e não pôde ser aceito. A dona já foi avisada."),
+
     LANCAMENTO_JA_REGISTRADO_DIFERENTE(
             "Este lançamento já foi registrado com outros dados.",
             "Este lançamento já foi registrado com outros dados. Atualize a tela, confira o histórico e lance de novo se precisar."),

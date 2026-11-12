@@ -21,3 +21,4 @@
 *.otf binary
 *.eot binary
 *.jar binary
+*.sqlite binary
