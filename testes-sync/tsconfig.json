@@ -1,5 +1,14 @@
 {
   "extends": "../tsconfig.base.json",
-  "compilerOptions": { "types": ["node", "vitest/globals"] },
-  "include": ["src", "vitest.config.ts"]
+  "compilerOptions": {
+    // O motor do Corona Vendas é importado direto da pasta do app (a montagem de verdade): mesmos tipos de lá.
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": ["node", "vitest/globals"],
+    "paths": {
+      "better-sqlite3-multiple-ciphers": [
+        "../node_modules/better-sqlite3-multiple-ciphers/index.d.ts"
+      ]
+    }
+  },
+  "include": ["src", "ambiente", "vitest.config.ts", "vitest.duas-pontas.config.ts"]
 }

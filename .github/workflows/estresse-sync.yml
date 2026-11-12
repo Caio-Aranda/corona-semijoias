@@ -3,6 +3,8 @@ name: Estresse do sync
 # ADR-0002, item 5: versão longa (cerca de 10 minutos) do EstresseDoPullTest. A versão curta
 # (20 s) roda em todo Pull Request, dentro do job "backend" do ci.yml. Semanal, e não diário,
 # para poupar os minutos do GitHub Actions.
+# ADR-0013, item 20 (tarefa 5.12): job "duas-pontas", o estresse longo do motor do Corona Vendas contra a API de verdade
+# com rede ruim (a versão curta, 1 min, roda no job "sync-duas-pontas" do ci.yml nos PRs que mexem no sync).
 on:
   workflow_dispatch:
     inputs:
@@ -47,3 +49,34 @@ jobs:
           DURACAO: ${{ inputs.duracao || 'PT10M' }}
           SEMENTE: ${{ inputs.semente || github.run_id }}
         run: ./mvnw -B test -Dtest=EstresseDoPullTest,EstresseDoPullComFiltroTest -Dcorona.estresse.duracao="$DURACAO" -Dcorona.estresse.semente="$SEMENTE"
+
+  duas-pontas:
+    name: duas-pontas
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        with:
+          distribution: temurin
+          java-version: '21.0.13+9'
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+      - run: npm ci
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+      # Só o estresse (os cenários já rodam nos PRs). A semente sai no log ("Duas pontas (estresse ...): semente=...").
+      - name: Estresse longo das duas pontas
+        env:
+          CORONA_SYNC_DURACAO: ${{ inputs.duracao || 'PT10M' }}
+          CORONA_SYNC_SEMENTE: ${{ inputs.semente || github.run_id }}
+        run: npm run estresse -w @corona/testes-sync
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: failure()
+        with:
+          name: resultados-duas-pontas-estresse
+          path: testes-sync/resultados

@@ -13,8 +13,9 @@ O orçamento de minutos do GitHub Actions é pequeno até o fim do projeto. O CI
 
 | Job | Roda no PR quando muda... |
 | --- | --- |
-| `frontend` (lint, typecheck, formatação, testes dos apps e pacotes, build, barreira) | `apps/`, `packages/`, `scripts/`, `testes-e2e/`, `package*.json`, configuração da raiz ou o workflow |
+| `frontend` (lint, typecheck, formatação, testes dos apps e pacotes, build, barreira) | `apps/`, `packages/`, `scripts/`, `testes-e2e/`, `testes-sync/`, `package*.json`, configuração da raiz ou o workflow |
 | `backend` (`./mvnw verify`, com PostgreSQL de verdade) | `backend/`, `infra/`, o `openapi.json` dos clientes, `docs/glossario-interface.md` (o `GlossarioDasMensagensTest` lê esse arquivo) ou o workflow |
+| `sync-duas-pontas` (duas pontas e estresse curto, tarefa 5.12; ver abaixo) | só o que o sync usa de fato (lista abaixo) |
 | `migracoes` | `backend/src/main/resources/db/migration/` |
 | `dependencias` (`npm audit` e OSV) | `package*.json`, `backend/pom.xml` ou o workflow |
 | `docs` (só a formatação) | só documentos (`docs/`, `*.md`), sem nada do front |
@@ -23,6 +24,32 @@ O orçamento de minutos do GitHub Actions é pequeno até o fim do projeto. O CI
 Um PR só de `docs/` roda só `docs`; só de `apps/` ou `packages/` não sobe o backend com Testcontainers; só de `backend/` não roda o front.
 
 Fora de qualquer job: `deploy/` (scripts de shell e compose da VPS) não é coberto pelo CI; só se confere à mão (`bash -n`, `docker compose config`).
+
+## Duas pontas: `sync-duas-pontas` (tarefa 5.12)
+
+O motor do Corona Vendas em Node (SQLCipher de verdade, a mesma montagem do app) contra a API de verdade (o jar) e um PostgreSQL descartável, com o proxy de rede ruim: os cenários do ADR-0013, item 20, e o **estresse curto de 1 minuto**. Entra no job `ci` (obrigatório) e roda no PR só quando muda o que o sync usa de fato:
+
+- `testes-sync/`;
+- `apps/seller-app/src/main/` e `src/shared/`, e o `apps/seller-app/package.json` (o módulo do SQLCipher);
+- `packages/api-client-vendedor/` e `packages/conexao-segura/` (os únicos pacotes que o processo principal do Corona Vendas importa);
+- `package-lock.json` (uma dependência nova pode quebrar o módulo nativo), `infra/` (o init do PostgreSQL) e o workflow;
+- no backend: `pom.xml`, `application.properties`, as migrações (`backend/src/main/resources/db/migration/`) e os pacotes `sync`, `vendas`, `remessas`, `vendedor` (maleta, conferência, clientes e fotos do vendedor), `cadastros` (clientes, categorias e semanas da loja), `autenticacao`, `sessoes`, `aparelhos`, `aplicativo` (versão mínima), `estoque`, `produtos` e `fotos`.
+
+**Risco aceito** (orçamento do Actions até 01/12): uma mudança fora dessa lista que afete o sync (por exemplo em `comum/` (erros, persistência), `seguranca/`, `acessos/`, `usuarios/` ou `vendedores/`) não roda as duas pontas no PR; o `backend` (com o próprio estresse do pull e os testes do sync) continua rodando, e as duas pontas pegam na rodada completa de segunda-feira (o CI agendado roda todos os jobs).
+
+**Custo:** cerca de 8 a 10 minutos por run (npm ci, jar, PostgreSQL e API, cenários e 1 min de estresse). O tempo real da primeira rodada está no relatório da tarefa 5.12 em `docs/progresso/fase-5.md`.
+
+**Estresse longo** (10 min): job `duas-pontas` do workflow **Estresse do sync**, toda segunda 06:00 UTC e sob demanda (com `duracao` e `semente`), junto do `EstresseDoPullTest`. Cerca de 15 minutos por semana.
+
+**Rodar no computador** (precisa do Docker aberto; portas 5498 e 8098 livres):
+
+```bash
+npm run test:duas-pontas -w @corona/testes-sync   # cenários e estresse curto
+CORONA_SYNC_DURACAO=PT10M npm run estresse -w @corona/testes-sync   # estresse longo
+CORONA_SYNC_SEMENTE=123 npm run test:duas-pontas -w @corona/testes-sync   # repetir uma falha (a semente sai no log)
+```
+
+`CORONA_SYNC_JAR=<caminho do jar>` (absoluto ou relativo à pasta `testes-sync`) pula a compilação da API; use um jar do código atual. Detalhes no `testes-sync/README.md`.
 
 ## O job da regra de merge: `ci`
 

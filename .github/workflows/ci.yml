@@ -32,6 +32,7 @@ jobs:
       migracoes: ${{ steps.arquivos.outputs.migracoes }}
       dependencias: ${{ steps.arquivos.outputs.dependencias }}
       docs: ${{ steps.arquivos.outputs.docs }}
+      sync: ${{ steps.arquivos.outputs.sync }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -41,7 +42,7 @@ jobs:
           BASE: ${{ github.event.pull_request.base.sha }}
         run: |
           if [ "${{ github.event_name }}" != "pull_request" ]; then
-            for k in frontend backend dependencias docs; do echo "$k=true" >> "$GITHUB_OUTPUT"; done
+            for k in frontend backend dependencias docs sync; do echo "$k=true" >> "$GITHUB_OUTPUT"; done
             echo "migracoes=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -50,12 +51,15 @@ jobs:
           tem() { echo "$mudou" | grep -Eq "$1" && echo true || echo false; }
           {
             # O front confere apps, packages, scripts e a configuração da raiz (e o próprio workflow).
-            echo "frontend=$(tem '^(apps/|packages/|scripts/|testes-e2e/|package(-lock)?\.json$|eslint\.config\.mjs$|tsconfig\.base\.json$|\.nvmrc$|\.prettier|\.github/)')"
+            echo "frontend=$(tem '^(apps/|packages/|scripts/|testes-e2e/|testes-sync/|package(-lock)?\.json$|eslint\.config\.mjs$|tsconfig\.base\.json$|\.nvmrc$|\.prettier|\.github/)')"
             # O backend roda com PostgreSQL de verdade; também quando o contrato OpenAPI versionado muda e quando muda o
             # glossário (o GlossarioDasMensagensTest lê docs/glossario-interface.md).
             echo "backend=$(tem '^(backend/|infra/|packages/api-client-[a-z]+/openapi\.json$|docs/glossario-interface\.md$|\.github/)')"
             echo "migracoes=$(tem '^backend/src/main/resources/db/migration/')"
             echo "dependencias=$(tem '(^|/)package(-lock)?\.json$|^backend/pom\.xml$|^\.github/')"
+            # Duas pontas (tarefa 5.12): só quando muda o que o sync usa de fato. Os pacotes do backend e o risco aceito
+            # (um serviço de fora desta lista mudar sem rodar as duas pontas) estão em docs/ci.md.
+            echo "sync=$(tem '^(testes-sync/|apps/seller-app/src/(main|shared)/|apps/seller-app/package\.json$|packages/(api-client-vendedor|conexao-segura)/|package-lock\.json$|infra/|\.github/|backend/pom\.xml$|backend/src/main/resources/(application\.properties$|db/migration/)|backend/src/main/java/br/com/coronasemijoias/api/(sync|vendas|remessas|vendedor|cadastros|autenticacao|sessoes|aparelhos|aplicativo|estoque|produtos|fotos)/)')"
             # Só documentos: roda apenas a conferência de formatação (job "docs").
             echo "docs=$(tem '^docs/|\.md$')"
           } >> "$GITHUB_OUTPUT"
@@ -119,6 +123,42 @@ jobs:
       # Os testes usam o Docker do runner (Testcontainers com PostgreSQL de verdade, ADR-0002).
       - run: ./mvnw -B verify
         working-directory: backend
+
+  # Duas pontas (tarefa 5.12; ADR-0013, item 20): o motor do Corona Vendas em Node (SQLCipher de verdade) contra a API de
+  # verdade (jar) e um PostgreSQL descartável, com o proxy de rede ruim, os cenários e o estresse curto (1 min).
+  # A semente é o número do run: o log mostra "Duas pontas (...): semente=..." para repetir.
+  sync-duas-pontas:
+    name: sync-duas-pontas
+    needs: mudancas
+    if: needs.mudancas.outputs.sync == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        with:
+          distribution: temurin
+          java-version: '21.0.13+9'
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+      # O motor roda em Node: o Electron não é baixado.
+      - run: npm ci
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+      - name: Duas pontas (cenários e estresse curto)
+        env:
+          CORONA_SYNC_SEMENTE: ${{ github.run_id }}
+          CORONA_SYNC_DURACAO: PT1M
+        run: npm run test:duas-pontas -w @corona/testes-sync
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: failure()
+        with:
+          name: resultados-duas-pontas
+          path: testes-sync/resultados
 
   migracoes:
     name: migracoes
@@ -187,7 +227,7 @@ jobs:
     name: ci
     # !cancelled(): um run cancelado (push novo) não pode terminar verde; o run novo reporta no lugar dele.
     if: ${{ !cancelled() && github.event.pull_request.draft != true }}
-    needs: [mudancas, frontend, backend, migracoes, dependencias, docs]
+    needs: [mudancas, frontend, backend, sync-duas-pontas, migracoes, dependencias, docs]
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:

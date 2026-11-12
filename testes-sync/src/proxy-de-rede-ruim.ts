@@ -16,7 +16,20 @@ import { criarSorteio } from './sorteio';
  * Tudo é decidido por um sorteio com semente (ou por um roteiro fixo): o teste que falhar roda de novo com a mesma
  * semente e acontece a mesma coisa. Cada pedido sorteia sempre os mesmos números, para a sequência não "desencaixar".
  */
-export type FalhaDaRede = 'QUEDA_ANTES' | 'CORTE_DEPOIS_DE_GRAVAR' | 'ERRO_502';
+export type FalhaDaRede =
+  | 'QUEDA_ANTES'
+  | 'CORTE_DEPOIS_DE_GRAVAR'
+  | 'ERRO_502'
+  /** O servidor respondeu, metade da resposta chega e a conexão cai (queda no meio do download de uma foto). */
+  | 'CORTE_NO_MEIO_DA_RESPOSTA';
+
+/** Um roteiro só para os pedidos de um caminho: "o 1º push corta depois de gravar", sem contar saúde, pull e fotos. */
+export interface RoteiroPorCaminho {
+  /** Começo do caminho (sem a busca, `?...`) ou expressão regular. */
+  caminho: string | RegExp;
+  /** Falhas na ordem dos pedidos deste caminho (`undefined` = passa sem falha). Depois do fim, vale o resto do plano. */
+  roteiro: ReadonlyArray<FalhaDaRede | undefined>;
+}
 
 export interface PlanoDeRede {
   /** Falhas possíveis e o peso de cada uma. Vazio: nenhuma falha sorteada. */
@@ -29,6 +42,29 @@ export interface PlanoDeRede {
   atrasoMs?: { minimo: number; maximo: number };
   /** Banda: o pedido e a resposta demoram `bytes / bytesPorSegundo`. */
   bytesPorSegundo?: number;
+  /** Roteiros por caminho; valem antes do `roteiro` geral e do sorteio. Cada plano novo começa a contagem do zero. */
+  porCaminho?: ReadonlyArray<RoteiroPorCaminho>;
+  /**
+   * Cabeçalhos trocados no caminho até a API. Serve para imitar "a dona subiu a versão mínima com o app aberto" sem uma
+   * segunda API: o pedido chega à API com uma versão abaixo da mínima (tarefa 5.13).
+   */
+  cabecalhos?: Readonly<Record<string, string>>;
+}
+
+/** Rede boa: nada falha. */
+export const PLANO_BOM: PlanoDeRede = Object.freeze({ sorteio: [] });
+/** Sem internet: toda conexão cai antes de chegar ao servidor (nem a saúde responde). */
+export const PLANO_SEM_INTERNET: PlanoDeRede = Object.freeze({
+  sorteio: [{ falha: 'QUEDA_ANTES' as const, peso: 1 }],
+});
+
+/** O que o servidor respondeu, para a varredura de marcadores proibidos. */
+export interface RespostaVista {
+  metodo: string;
+  caminho: string;
+  status: number;
+  tipo: string | undefined;
+  corpo: Buffer;
 }
 
 export interface OpcoesDoProxy {
@@ -38,6 +74,8 @@ export interface OpcoesDoProxy {
   plano: PlanoDeRede;
   /** Porta local; omitida, o sistema escolhe uma livre. */
   porta?: number;
+  /** Recebe toda resposta que o servidor deu (mesmo as que a rede cortou depois). */
+  aoResponder?: (r: RespostaVista) => void;
 }
 
 export interface RegistroDoPedido {
@@ -71,12 +109,27 @@ function lerCorpo(req: IncomingMessage): Promise<Buffer> {
   });
 }
 
+function casa(regra: RoteiroPorCaminho, caminho: string): boolean {
+  const semBusca = caminho.split('?')[0] ?? caminho;
+  return typeof regra.caminho === 'string'
+    ? semBusca.startsWith(regra.caminho)
+    : regra.caminho.test(semBusca);
+}
+
 function escolher(
   plano: PlanoDeRede,
+  contagens: Map<RoteiroPorCaminho, number>,
+  caminho: string,
   numero: number,
   a: number,
   b: number,
 ): FalhaDaRede | undefined {
+  for (const regra of plano.porCaminho ?? []) {
+    if (!casa(regra, caminho)) continue;
+    const n = contagens.get(regra) ?? 0;
+    contagens.set(regra, n + 1);
+    if (n < regra.roteiro.length) return regra.roteiro[n];
+  }
   if (plano.roteiro && numero < plano.roteiro.length) return plano.roteiro[numero];
   const total = plano.sorteio.reduce((s, x) => s + x.peso, 0);
   if (total <= 0 || a >= (plano.chanceDeFalha ?? 1)) return undefined;
@@ -94,6 +147,7 @@ export async function iniciarProxyDeRedeRuim(o: OpcoesDoProxy): Promise<ProxyDeR
   const historico: RegistroDoPedido[] = [];
   let plano = o.plano;
   let contador = 0;
+  let contagens = new Map<RoteiroPorCaminho, number>();
 
   const tratar = async (req: IncomingMessage, res: ServerResponse): Promise<void> => {
     const numero = contador++;
@@ -102,7 +156,7 @@ export async function iniciarProxyDeRedeRuim(o: OpcoesDoProxy): Promise<ProxyDeR
     const b = sorteio();
     const c = sorteio();
     const atual = plano;
-    const falha = escolher(atual, numero, a, b);
+    const falha = escolher(atual, contagens, req.url ?? '/', numero, a, b);
     const registro: RegistroDoPedido = {
       numero,
       metodo: req.method ?? 'GET',
@@ -135,7 +189,12 @@ export async function iniciarProxyDeRedeRuim(o: OpcoesDoProxy): Promise<ProxyDeR
       cabecalhos: Record<string, string | string[] | undefined>;
       corpo: Buffer;
     }>((ok, erro) => {
-      const cabecalhos = { ...req.headers, host: alvo.host, connection: 'close' };
+      const cabecalhos = {
+        ...req.headers,
+        ...(atual.cabecalhos ?? {}),
+        host: alvo.host,
+        connection: 'close',
+      };
       const saida = request(
         {
           host: alvo.hostname,
@@ -169,6 +228,14 @@ export async function iniciarProxyDeRedeRuim(o: OpcoesDoProxy): Promise<ProxyDeR
     }
     registro.servidorRespondeu = true;
     registro.statusDoServidor = resposta.status;
+    const tipo = resposta.cabecalhos['content-type'];
+    o.aoResponder?.({
+      metodo: registro.metodo,
+      caminho: registro.caminho,
+      status: resposta.status,
+      tipo: Array.isArray(tipo) ? tipo[0] : tipo,
+      corpo: resposta.corpo,
+    });
 
     if (falha === 'CORTE_DEPOIS_DE_GRAVAR') {
       req.socket.destroy();
@@ -182,6 +249,13 @@ export async function iniciarProxyDeRedeRuim(o: OpcoesDoProxy): Promise<ProxyDeR
       ...limpos,
       'content-length': String(resposta.corpo.length),
     } as Record<string, string>);
+    if (falha === 'CORTE_NO_MEIO_DA_RESPOSTA') {
+      // Metade chega; o resto nunca. O app vê a conexão cair no meio da leitura.
+      res.write(resposta.corpo.subarray(0, Math.floor(resposta.corpo.length / 2)), () =>
+        setTimeout(() => req.socket.destroy(), 20),
+      );
+      return;
+    }
     res.end(resposta.corpo);
   };
 
@@ -196,6 +270,7 @@ export async function iniciarProxyDeRedeRuim(o: OpcoesDoProxy): Promise<ProxyDeR
     historico: () => historico,
     trocarPlano: (novo) => {
       plano = novo;
+      contagens = new Map();
     },
     close: () =>
       new Promise<void>((ok) => {
