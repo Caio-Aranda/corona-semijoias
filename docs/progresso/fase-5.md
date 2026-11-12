@@ -226,3 +226,50 @@ Plano aprovado pela orquestradora (PR 112), com quatro ajustes: extrair a montag
 
 **Ficou para depois / limites:** devolução fora do prazo offline e acerto com sobra e falta (Fases 6 e 7, no mesmo `testes-sync/`); o instalador NSIS de verdade trocando de versão (5.14); a ordem exata entre os computadores no estresse não se repete pela semente (só o estado final é afirmado); os comandos novos entram no `CLAUDE.md` pela orquestradora.
 
+
+## Tarefa 5.14: fechamento da Fase 5
+
+### Revisão da fase (5.1 a 5.13)
+
+| Tarefa | Relatório | PR | Pendências que ficaram |
+| --- | --- | --- | --- |
+| 5.1 | [fase-5-plano.md](fase-5-plano.md) e ADR-0013 | 74 | nenhuma |
+| 5.2 | seção "Tarefa 5.2" | 97 | tela de senha, prazo e o aviso de pouco espaço: feitos nas 5.7 e 5.8, **menos a tela do aviso de pouco espaço (pendência A)**; queda de energia de verdade (pendência B) |
+| 5.3 | seção "Tarefa 5.3" | 96 | telas da dona (5.10), último pull e envio (5.4 e 5.5) e apagar no app (5.8): feitos; marcar o computador "reiniciado" ao perder o banco local (pendência C) |
+| 5.4 | seção "Tarefa 5.4" | 98 | motor do app (5.6) e métricas (5.11): feitos |
+| 5.5 | seção "Tarefa 5.5" | 99 | motor (5.6), tela dos envios com problema (5.10), formato vencido (5.13) e métrica (5.11): feitos |
+| 5.6 | seção "Tarefa 5.6" | 102 | telas (5.7), prazo e quarentena (5.8), fotos (5.9), duas pontas (5.12), atualização (5.13): feitos |
+| 5.7 | seção "Tarefa 5.7" | 104 | prazo, abrir sem internet e bloqueio (5.8) e fotos (5.9): feitos |
+| 5.8 | seção "Tarefa 5.8" | 105 | tela da dona (5.10), duas pontas e apagar (5.12), atualização (5.13): feitos |
+| 5.9 | seção "Tarefa 5.9" | 106 | teste do `X-Conteudo-Sha256`: **feito na 5.14**; peça fora de maleta aberta só com foto em cópia ou com internet: limite aceito (D10) |
+| 5.10 | seção "Tarefa 5.10" | 107 | desenho não aprovado pela dona e "juntar cadastros" de CPF repetido: **perguntas 26 e 27 para a dona** (pendência D) |
+| 5.11 | seção "Tarefa 5.11" | 101 | tela da dona com os avisos (5.10): feita; expor as métricas se a VPS ganhar um coletor (responsável, depende da VPS) |
+| 5.12 | seção "Tarefa 5.12" | 112 | devolução fora do prazo offline (Fase 6) e acerto com sobra e falta (Fase 7); NSIS (roteiro); comandos no `CLAUDE.md` e a mensagem do 403: **feitos na 5.14** |
+| 5.13 | seção "Tarefa 5.13" | 108 | instalador NSIS trocando de versão: **roteiro manual** ([roteiro-atualizacao-com-vendas-aguardando.md](../roteiro-atualizacao-com-vendas-aguardando.md)), pendência 15 do responsável |
+
+### O que a 5.14 fez
+
+- **Achados da 5.12 (decididos pela orquestradora).** O 403 `APARELHO_NAO_LIBERADO` não cita mais o nome do app da dona: "Este computador ainda não foi liberado pela dona. Avise a dona para liberar este computador." (glossário, `CodigoErro` e teste da varredura de `testes-sync`; a exceção `ACHADOS_CONHECIDOS` saiu e a varredura vale para tudo). Venda no computador antigo depois da troca: fica a regra "o que aconteceu no balcão não se recusa" (aceita pela cadeia de trocas, conferindo o saldo), registrada no ADR-0013, item 13. `CLAUDE.md` ganhou a linha `npm run test:duas-pontas -w @corona/testes-sync`.
+- **Teste do `X-Conteudo-Sha256`** no `RotasDoVendedorTest` (`fotoDaMinhaMaletaTrazOSha256DoConteudoBaixado`): peça com foto numa maleta enviada; os três tamanhos trazem o SHA-256 dos bytes recebidos; com `If-None-Match` a resposta é 304 sem o cabeçalho; outro vendedor recebe 404.
+- **Pergunta 19** respondida em `perguntas-para-a-dona.md` (12/11/2026): "PV8990" é o código do fornecedor (FORNECEDOR) e o número embaixo das barras é o código interno da loja (LOJA); padrão confirmado.
+- **Roteiros** para o responsável: [teste com um vendedor real sem internet](../roteiro-teste-vendedor-sem-internet.md) (§19) e [instalador trocando de versão com vendas aguardando](../roteiro-atualizacao-com-vendas-aguardando.md). Nenhum dos dois foi aplicado por nós.
+- **Perguntas novas para a dona:** 26 (telas da dona da 5.10) e 27 (edição de cliente da 5.7), com o padrão seguro de cada uma.
+
+### Estresse longo
+
+RESULTADO_DO_ESTRESSE
+
+### Pendências da Fase 5 e dono de cada uma
+
+| Letra | Pendência | Dono |
+| --- | --- | --- |
+| A | Mostrar o aviso "O computador está com pouco espaço. Libere espaço para o Corona Vendas continuar guardando as vendas." (o aplicativo já calcula `poucoEspaco` ao abrir o banco; falta o indicador mostrá-lo; texto já está no glossário) | Fase 6 (tarefa pequena do Corona Vendas, a abrir pela orquestradora) |
+| B | Queda de energia de verdade (desligar o computador no meio de uma venda) e ver o banco abrir | Responsável, junto do teste com o vendedor real |
+| C | Avisar o servidor de que o computador "reiniciou" quando o banco local ficou ilegível e foi refeito (o app já sabe; o servidor ainda não recebe a informação nem a mostra à dona) | Fase 6 (tarefa do Corona Vendas e da API, a abrir pela orquestradora) |
+| D | Dona aprovar o desenho das telas da 5.10 e da edição de cliente da 5.7 (perguntas 26 e 27); "juntar cadastros" de CPF repetido, se ela quiser | Dona (via responsável) |
+| E | Aplicar o teste com um vendedor real sem internet | Responsável (pendência 14) |
+| F | Instalador NSIS trocando de versão com vendas aguardando | Responsável (pendência 15) |
+| G | Expor as métricas do sync se a VPS ganhar um coletor | Responsável (depende da VPS, pendência 1) |
+| H | Devolução fora do prazo offline e acerto com sobra e falta nos testes de duas pontas | Fases 6 e 7 |
+| I | Dúvidas D1 a D12 da dona e R-itens do plano que ainda não têm resposta (padrão seguro em uso) | Dona e responsável |
+| J | Texto "aparelho" na mensagem `MALETA_EM_OUTRO_APARELHO` (`CodigoErro`: "Esta maleta já está em outro aparelho. Peça à dona para liberar este aparelho."); o glossário manda "computador" | Fase 6 (ajuste de texto junto da tarefa A ou C) |
