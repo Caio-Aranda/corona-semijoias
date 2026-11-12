@@ -48,5 +48,6 @@ dados/
 
 # Resultados dos testes de ponta a ponta
 testes-e2e/resultados/
+testes-sync/resultados/
 playwright-report/
 test-results/
