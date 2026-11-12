@@ -270,6 +270,11 @@ export type RespostaDaConferencia = {
     tabelas?: Array<TabelaConferida>;
 };
 
+export type RespostaDaQuarentena = {
+    horaServidor?: string;
+    resultados?: Array<ResultadoGuardado>;
+};
+
 export type RespostaDoEnvio = {
     apagarDados?: boolean;
     horaServidor?: string;
@@ -302,6 +307,21 @@ export type ResultadoDaOperacao = {
     mensagem?: string;
     operacaoId?: string;
     resultado?: 'ACEITO' | 'JA_RECEBIDO' | 'CONFLITO' | 'RECUSADO' | 'NAO_PROCESSADO';
+};
+
+export type ResultadoGuardado = {
+    codigo?: string;
+    mensagem?: string;
+    operacaoId?: string;
+    resultado?: string;
+};
+
+export type ServicoDeQuarentenaPedido = {
+    aguardandoDepoisDeste?: number;
+    dispositivoId?: string;
+    horaLocal?: string;
+    operacoes?: Array<OperacaoEnviada>;
+    tokenDeRenovacao?: string;
 };
 
 export type TabelaConferida = {
@@ -788,6 +808,22 @@ export type EnviarOperacoesResponses = {
 };
 
 export type EnviarOperacoesResponse = EnviarOperacoesResponses[keyof EnviarOperacoesResponses];
+
+export type GuardarEmQuarentenaData = {
+    body?: ServicoDeQuarentenaPedido;
+    path?: never;
+    query?: never;
+    url: '/api/vendedor/sync/quarentena';
+};
+
+export type GuardarEmQuarentenaResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDaQuarentena;
+};
+
+export type GuardarEmQuarentenaResponse = GuardarEmQuarentenaResponses[keyof GuardarEmQuarentenaResponses];
 
 export type ValorDoVendedorData = {
     body?: never;

@@ -293,7 +293,8 @@ describe('guarda de tokens: renovação', () => {
   });
 
   it('nunca apresenta o mesmo token pela terceira vez (revogaria a sessão inteira)', async () => {
-    const renovar = vi.fn(() => Promise.resolve(falhou({ tipo: 'sem-conexao' })));
+    // O servidor viu a apresentação (respondeu 503): conta. Sem resposta nenhuma (sem internet), não conta (tarefa 5.8).
+    const renovar = vi.fn(() => Promise.resolve(falhou({ tipo: 'recusada', status: 503 })));
     const { guarda, aoPerder } = montar({ api: { renovar } });
     await guarda.entrar('maria', 'senha');
     await guarda.renovar();

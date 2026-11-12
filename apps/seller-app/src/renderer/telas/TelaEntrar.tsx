@@ -8,11 +8,18 @@ export interface TelaEntrarProps {
   ponte: PonteDoCorona;
   /** A sessão acabou sozinha: a tela explica antes de pedir a senha de novo. */
   sessaoTerminou?: boolean;
+  /** Sem internet e com dados neste computador: entra só com a senha (tarefa 5.8). */
+  semInternet?: boolean;
   /** Chamado quando é preciso ver o novo estado (entrou, senha temporária, aplicativo desatualizado). */
   aoMudar: () => void;
 }
 
-export function TelaEntrar({ ponte, sessaoTerminou = false, aoMudar }: TelaEntrarProps) {
+export function TelaEntrar({
+  ponte,
+  sessaoTerminou = false,
+  semInternet = false,
+  aoMudar,
+}: TelaEntrarProps) {
   const [usuario, setUsuario] = useState('');
   const [senha, setSenha] = useState('');
   const [enviando, setEnviando] = useState(false);
@@ -43,7 +50,10 @@ export function TelaEntrar({ ponte, sessaoTerminou = false, aoMudar }: TelaEntra
       <CabecalhoDeMarca nomeDoApp="Corona Vendas" />
       <main className="vendas-conteudo">
         <form className="vendas-cartao" onSubmit={(e) => void entrar(e)} noValidate>
-          <h1 className="vendas-titulo">Entrar</h1>
+          <h1 className="vendas-titulo">
+            {semInternet ? TEXTOS.semInternetNaEntrada.titulo : 'Entrar'}
+          </h1>
+          {semInternet ? <p className="vendas-texto">{TEXTOS.semInternetNaEntrada.texto}</p> : null}
           {sessaoTerminou ? (
             <Aviso tipo="atencao" titulo={TEXTOS.sessaoTerminou.titulo}>
               {TEXTOS.sessaoTerminou.texto}

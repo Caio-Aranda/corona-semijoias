@@ -124,6 +124,7 @@ describe('estado do envio na ponte (tarefa 5.6)', () => {
         recusadas: 0,
         dadosAte: '2026-11-12T13:00:00.000Z',
         naoConseguiuEnviar: false,
+        prazo: { situacao: 'EM_DIA', diasRestantes: 0, motivo: null },
       }),
     );
     expect(invocar).toHaveBeenCalledWith(CANAIS.sincronizacaoEstado);

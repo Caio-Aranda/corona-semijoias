@@ -24,6 +24,7 @@ const ESTADO: EstadoDaSincronizacao = {
   recusadas: 0,
   dadosAte: '2026-11-09T17:30:00Z', // 14:30 em Brasília
   naoConseguiuEnviar: false,
+  prazo: { situacao: 'EM_DIA', diasRestantes: 0, motivo: null },
 };
 
 type Manipulador = (pedido: PedidoDeChamada) => ResultadoDeChamada;

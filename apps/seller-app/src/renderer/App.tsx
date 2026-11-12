@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import type { AvisoDeSessao, EstadoDaSessao, PonteDoCorona } from '../shared/ponte';
 import { FaixaDeAtualizacao } from './FaixaDeAtualizacao';
 import { TelaAppDesatualizado } from './telas/TelaAppDesatualizado';
+import { TelaDesligado } from './telas/TelaDesligado';
 import { TelaConferirMaleta } from './telas/TelaConferirMaleta';
 import { TelaEntrar } from './telas/TelaEntrar';
 import { TelaInicial, type Destino } from './telas/TelaInicial';
@@ -56,6 +57,10 @@ export function App({ ponte }: AppProps) {
         setTela({ estado: 'app-desatualizado', mensagem: aviso.mensagem ?? '' });
         return;
       }
+      if (aviso.estado === 'desligando' || aviso.estado === 'desligado') {
+        setTela({ estado: aviso.estado });
+        return;
+      }
       setSessaoTerminou(true);
       setTela({ estado: 'fora' });
     });
@@ -83,6 +88,12 @@ export function App({ ponte }: AppProps) {
             }}
           />
         );
+      case 'entrar-sem-internet':
+        return <TelaEntrar ponte={ponte} semInternet aoMudar={() => void conferir()} />;
+      case 'desligando':
+        return <TelaDesligado apagado={false} />;
+      case 'desligado':
+        return <TelaDesligado apagado />;
       case 'trocar-senha':
         return <TelaTrocarSenha ponte={ponte} aoMudar={() => void conferir()} />;
       case 'sem-conexao':

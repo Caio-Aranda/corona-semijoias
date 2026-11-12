@@ -4,6 +4,7 @@
  */
 
 import type { PedidoDeChamada } from './operacoes';
+import { limparPrazo, type PrazoOffline } from './prazo';
 
 export { OPERACOES_DA_API } from './operacoes';
 export type { OperacaoDaApi, PedidoDeChamada } from './operacoes';
@@ -64,6 +65,12 @@ export type EstadoDaSessao =
   | { estado: 'trocar-senha' }
   | { estado: 'sem-conexao' }
   | { estado: 'dentro'; usuario: UsuarioLogado | null }
+  /** Há sessão guardada e dados neste computador, mas sem internet: entra só com a senha (tarefa 5.8). */
+  | { estado: 'entrar-sem-internet' }
+  /** A dona desligou este computador: as vendas estão indo para a dona antes de apagar os dados (tarefa 5.8). */
+  | { estado: 'desligando' }
+  /** Os dados deste computador foram apagados (tarefa 5.8). */
+  | { estado: 'desligado' }
   | { estado: 'app-desatualizado'; mensagem: string };
 
 export type ResultadoDeChamada =
@@ -78,7 +85,7 @@ export type ResultadoDeChamada =
 
 /** Aviso do processo principal de que a pessoa precisa entrar de novo. */
 export interface AvisoDeSessao {
-  estado: 'fora' | 'app-desatualizado';
+  estado: 'fora' | 'app-desatualizado' | 'desligando' | 'desligado';
   mensagem?: string;
 }
 
@@ -105,6 +112,8 @@ export interface EstadoDaSincronizacao {
   dadosAte: string | null;
   /** Uma operação falhou 5 vezes seguidas: "Uma venda não conseguiu ser enviada. Avise a dona." */
   naoConseguiuEnviar: boolean;
+  /** O prazo máximo sem internet (tarefa 5.8): aviso 3 dias antes, e esgotado bloqueia o que grava. */
+  prazo: PrazoOffline;
 }
 
 const DATA_ISO = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,9})?Z$/;
@@ -126,6 +135,7 @@ export function limparEstadoDaSincronizacao(v: unknown): EstadoDaSincronizacao {
     recusadas: contador(o['recusadas']),
     dadosAte: typeof dadosAte === 'string' && DATA_ISO.test(dadosAte) ? dadosAte : null,
     naoConseguiuEnviar: o['naoConseguiuEnviar'] === true,
+    prazo: limparPrazo(o['prazo']),
   };
 }
 

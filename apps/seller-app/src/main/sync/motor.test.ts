@@ -17,6 +17,7 @@ const CAMPOS = [
   'dadosAte',
   'enviando',
   'naoConseguiuEnviar',
+  'prazo',
   'recusadas',
   'vendasAguardando',
 ];
@@ -69,6 +70,7 @@ describe('estado da ponte', () => {
       recusadas: 0,
       dadosAte: null,
       naoConseguiuEnviar: false,
+      prazo: { situacao: 'EM_DIA', diasRestantes: 0, motivo: null },
     });
     motor.ligar();
     await cicloTerminado();
@@ -136,6 +138,7 @@ describe('estado da ponte', () => {
       recusadas: 1,
       dadosAte: null,
       naoConseguiuEnviar: true,
+      prazo: { situacao: 'EM_DIA', diasRestantes: 0, motivo: null },
     });
   });
 

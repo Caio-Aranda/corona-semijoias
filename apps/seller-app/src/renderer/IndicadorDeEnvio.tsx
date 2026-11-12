@@ -2,6 +2,7 @@ import { Aviso, Botao } from '@corona/ui';
 import { useCallback, useEffect, useState } from 'react';
 import type { EnvioNaoAceito } from '../shared/dados';
 import type { EstadoDaSincronizacao, PonteDoCorona } from '../shared/ponte';
+import { textoDoPrazo } from '../shared/prazo';
 import { chamar } from './chamadas';
 import { TEXTOS } from './textos';
 
@@ -77,6 +78,7 @@ export function IndicadorDeEnvio({ ponte }: { ponte: PonteDoCorona }) {
   if (!estado) return null;
   const principal = textoDoIndicador(estado);
   const aguarda = textoDoQueAguarda(estado);
+  const aviso = textoDoPrazo(estado.prazo);
   return (
     <section className="vendas-indicador" aria-label={T.area}>
       {principal ? (
@@ -85,6 +87,11 @@ export function IndicadorDeEnvio({ ponte }: { ponte: PonteDoCorona }) {
         </p>
       ) : null}
       {aguarda ? <p className="vendas-texto">{aguarda}</p> : null}
+      {aviso ? (
+        <Aviso tipo="atencao" titulo={aviso.titulo}>
+          {aviso.texto}
+        </Aviso>
+      ) : null}
       {estado.naoConseguiuEnviar ? <Aviso tipo="atencao">{T.naoConseguiu}</Aviso> : null}
       {lista.length > 0 ? (
         <Aviso

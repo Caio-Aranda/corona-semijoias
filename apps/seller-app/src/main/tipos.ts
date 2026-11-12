@@ -12,6 +12,8 @@ export type Falha =
       tipo: 'recusada';
       status: number;
       codigo?: string;
+      /** A ordem que o servidor manda junto (`APAGAR_DADOS`: computador desligado pela dona; tarefa 5.8). */
+      acao?: string;
       mensagem?: string;
       clienteExistente?: ClienteExistente;
     }

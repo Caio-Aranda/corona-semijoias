@@ -176,6 +176,29 @@ public class ServicoDeSessoes {
                 sucessor.venceEm());
     }
 
+    /** A família já revogada a que um token de renovação pertence (tarefa 5.8, quarentena). */
+    public record FamiliaRevogada(UUID usuarioId, UUID dispositivoId, MotivoDaRevogacao motivo, Instant revogadaEm) {
+    }
+
+    /**
+     * Só leitura: a família do token de renovação (de qualquer geração) quando ela já foi revogada. Vazio se o token não
+     * existe ou a família ainda vale. Não renova, não revoga e não olha a validade do token.
+     */
+    @Transactional(readOnly = true)
+    public Optional<FamiliaRevogada> familiaRevogadaPeloToken(String valor) {
+        if (valor == null || valor.isBlank()) {
+            return Optional.empty();
+        }
+        return jdbc.query("""
+                SELECT s.usuario_id, s.dispositivo_id, s.motivo_da_revogacao, s.revogada_em
+                  FROM corona.tokens_de_renovacao t JOIN corona.sessoes s ON s.id = t.sessao_id
+                 WHERE t.hash = ? AND s.revogada_em IS NOT NULL""",
+                (rs, i) -> new FamiliaRevogada(rs.getObject("usuario_id", UUID.class),
+                        rs.getObject("dispositivo_id", UUID.class), motivo(rs.getString("motivo_da_revogacao")),
+                        instante(rs, "revogada_em")),
+                SegredoDeRenovacao.hash(valor)).stream().findFirst();
+    }
+
     /** A pessoa saiu: revoga a família do token. */
     @Transactional
     public void sair(UUID sid) {
