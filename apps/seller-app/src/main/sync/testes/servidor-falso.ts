@@ -79,6 +79,8 @@ export class ServidorFalso {
   ) => { quantidade: number; resumo: string } = resumoDe;
   /** Atraso em ms antes de responder (todas as rotas de dados). */
   atraso = 0;
+  /** Quantos pulls de UMA tabela (`?tabela=`) caem sem resposta (queda depois de o app apagar a tabela). */
+  cairNoPullDaTabela = 0;
 
   private servidor: Server | null = null;
 
@@ -156,6 +158,11 @@ export class ServidorFalso {
     }
     switch (url.pathname) {
       case '/api/vendedor/sync/pull':
+        if (url.searchParams.get('tabela') && this.cairNoPullDaTabela > 0) {
+          this.cairNoPullDaTabela -= 1;
+          req.socket.destroy();
+          return;
+        }
         return responder(res, this.roteirosDoPull.shift() ?? this.pull(url.searchParams));
       case '/api/vendedor/sync/push': {
         const roteiro = this.roteirosDoPush.shift();

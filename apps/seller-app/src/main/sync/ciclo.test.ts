@@ -447,4 +447,24 @@ describe('época e conferência', () => {
     expect(contar(b.db, 'SELECT 1 FROM produtos WHERE id = ?', sobrando)).toBe(0);
     expect(contar(b.db, 'SELECT 1 FROM produtos WHERE id = ?', p)).toBe(1);
   });
+
+  it('queda depois de apagar a tabela e antes de recebê-la: a próxima rodada confere e recarrega', async () => {
+    const p = idDeTeste(2);
+    s.mudar({ tabela: 'produtos', id: p, deletedAt: null, campos: { nome: 'p' } });
+    await criarCiclo().executar();
+    b.db
+      .prepare("INSERT INTO produtos (id, version, nome) VALUES (?, 1, 'sobrando')")
+      .run(idDeTeste(2));
+    // Conferência do dia (não é depois de carga): o aviso de conferir de novo começa vazio.
+    gravarEstado(b.db, CHAVES.conferidoEm, null);
+    expect(lerEstado(b.db, CHAVES.conferirDepoisDaCarga)).toBeNull();
+    s.cairNoPullDaTabela = 1;
+    expect(await criarCiclo().executar()).toBe('falha');
+    // A tabela foi apagada, e na MESMA transação ficou marcado que é preciso conferir de novo.
+    expect(contar(b.db, 'SELECT 1 FROM produtos')).toBe(0);
+    expect(lerEstado(b.db, CHAVES.conferirDepoisDaCarga)).toBe('1');
+    expect(await criarCiclo().executar()).toBe('ok');
+    expect(contar(b.db, 'SELECT 1 FROM produtos WHERE id = ?', p)).toBe(1);
+    expect(lerEstado(b.db, CHAVES.conferirDepoisDaCarga)).toBeNull();
+  });
 });

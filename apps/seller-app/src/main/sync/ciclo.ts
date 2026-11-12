@@ -272,7 +272,12 @@ export class CicloDeSincronizacao {
 
   /** Recarga de UMA tabela (`?tabela=`, cursor próprio): as cópias do servidor dela saem e vêm de novo. */
   private async recarregarTabela(db: BancoAberto, tabela: TabelaSincronizavel): Promise<Etapa> {
-    gravar(db, () => db.prepare(`DELETE FROM ${tabela} WHERE origem_local = 'SERVIDOR'`).run());
+    // O aviso de conferir de novo entra na MESMA transação do apagar: se o app cair antes de a tabela voltar, a
+    // próxima rodada confere e recarrega.
+    gravar(db, () => {
+      db.prepare(`DELETE FROM ${tabela} WHERE origem_local = 'SERVIDOR'`).run();
+      gravarEstado(db, CHAVES.conferirDepoisDaCarga, '1');
+    });
     let cursor: string | null = null;
     for (let pagina = 0; pagina < MAXIMO_DE_PAGINAS; pagina++) {
       const atual: string | null = cursor;
