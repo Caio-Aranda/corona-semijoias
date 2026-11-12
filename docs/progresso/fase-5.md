@@ -38,3 +38,42 @@ O plano está em [fase-5-plano.md](fase-5-plano.md); o desenho, no [ADR-0013](..
 **Decisões que tomei:** ver a linha datada da tarefa 5.3 no ADR-0013.
 
 **Ficou para depois:** telas da dona (5.10); preencher último pull/push e "aguardando" (5.4/5.5); a quarentena antes de apagar e o apagar no app (5.8); marcar o computador "reiniciado" quando o banco local fica ilegível (5.6/5.8).
+
+## Tarefa 5.4: pull do vendedor (backend)
+
+**O que entrou**
+
+- `GET /api/vendedor/sync/pull` (cursor, limite 500 por padrão e 1000 no máximo, `tabela` para recarregar uma só): linhas com tabela, id, `version`, lápide e as colunas da lista explícita; cursor; `temMais`; hora do servidor; bloco `parametros`. Cursor de época antiga: 409 `CURSOR_INVALIDO`. Só o computador em uso (5.3); guarda o último pull em `dispositivos`.
+- `GET /api/vendedor/sync/conferencia` (quantidade e SHA-256 de `id:version` por tabela) e `POST /api/vendedor/sync/conferencia/diferencas` (alerta de defeito no log).
+- `RegraDoVendedor` em cada `TabelaSincronizavel` (`RegistroDeTabelas`): cotações, categorias e semanas para todos; clientes da loja com o diretório para todos e o cadastro só para quem atende; maletas enviadas do vendedor (rascunho nunca); itens e movimentos das maletas dele; peças que já estiveram numa maleta enviada a ele, com códigos e fotos; vendas, itens, pagamentos e conferências dele. `FiltroPorVendedor` aplica a regra com o vendedor do token.
+- **Expansão** (ADR-0013, item 5, regra 1) no `ServicoDePull`, na mesma fotografia do banco: a maleta leva os itens; o item leva a peça, os códigos e as fotos. As expandidas passam também pelo filtro e não mexem no cursor.
+- Migração **V032**: gatilhos que impedem a pertença de mudar depois de entregue (o que dispensa a tabela de saídas) e índices do filtro.
+- Glossário: texto do `CURSOR_INVALIDO`. Clientes da API regerados.
+
+**Testes (escritos antes, PostgreSQL de verdade):**
+- `OraculoDeDoisVendedoresTest`: o oráculo de dois vendedores com semente impressa (300 operações por padrão; rodei 600): a dona cria peças, monta, envia e exclui maletas, muda preço, troca foto, cria e exclui código, cadastra e transfere cliente; A e B conferem e vendem; puxam em momentos aleatórios com lotes de 1 a 50. A cópia de cada um fica igual ao oráculo (id, versão, lápide), nada privado do outro, nenhum cadastro de cliente do outro, nenhuma coluna de custo. **Prova de que pega o furo:** com a expansão desligada, o oráculo falha (códigos da peça antiga faltando).
+- `PullDoVendedorTest`: peça antiga com código e foto chegando quando entra numa maleta nova; rascunho e rascunho excluído nunca chegam; troca de foto e código excluído; cliente transferido nos dois sentidos; vendas, conferências e maletas do outro nunca chegam; dinheiro como texto; erros da rota (cursor, limite, tabela de fora, dona, sem token, computador aguardando); recarga de uma tabela; conferência por resumo igual ao que o app guardou; gatilhos da V032. Toda resposta passa pela varredura dos marcadores proibidos (mais `custo`, `estoque_atual` e `fornecedor_id`).
+- `RegrasDoVendedorTest`: toda sincronizável com regra; toda coluna de pertença garantida no banco; expansões válidas; na dúvida, nada.
+- `EstresseDoPullComFiltroTest` (20 s em todo PR; 10 min no semanal, junto do estresse da Fase 0): 4 escritores mudando pertença (peças entrando em maletas de dois vendedores, fotos, códigos, preços, conferências, vendas) enquanto o vendedor puxa sem parar; no fim, a cópia igual ao oráculo (cerca de 6 mil operações em 20 s).
+
+**Decisões que tomei:** ver a linha datada da tarefa 5.4 no ADR-0013.
+
+**Ficou para depois:** o motor do app que aplica o pull (5.6); a métrica do defeito do filtro e da duração do pull (5.11).
+
+## Tarefa 5.5: push do vendedor (backend)
+
+**O que entrou**
+
+- `POST /api/vendedor/sync/push`: até 50 operações ou 512 KB (413 `LOTE_GRANDE_DEMAIS`), um envio por vez por computador (429 `ENVIO_EM_ANDAMENTO`, com `Retry-After`), **uma transação por operação** com a linha do `sync_log`, resultado por operação (`ACEITO`, `JA_RECEBIDO`, `CONFLITO`, `RECUSADO`, `NAO_PROCESSADO`), parada do lote no erro passageiro e no limite de 20 s. O computador trocado ainda envia (e recebe `apagarDados` no fim).
+- `OperacoesDoVendedor`: formato 1 de `VENDA`, `ESTORNO_VENDA`, `CLIENTE_NOVO`, `CLIENTE_ALTERADO` e `CONFERENCIA`, a forma canônica do resumo e a aplicação pelos **mesmos serviços da Fase 4** (`ServicoDeVendas`, `ClientesDoVendedor`, `ServicoDeConferencia`).
+- **Hora corrigida e limitada** (ADR-0013, item 11): a venda e o estorno recebem a hora do computador corrigida pela diferença do relógio dele; correção acima de 5 minutos marca a venda (`hora_ajustada`); o dia da cotação e o "mesmo dia" do estorno saem dela.
+- **Cliente campo a campo** (`ClientesDoVendedor.alterar`): só quem atende; vale a última chegada, e o valor da dona substituído vai para a auditoria (`CLIENTE_VALOR_SUBSTITUIDO`). CPF repetido de cadastros feitos sem internet: `CONFLITO` para a dona.
+- **Envios com problema** (`/api/dona/envios-com-problema`): listar, **Tentar de novo** (mesma operação, mesmo id, mesma hora) e **Descartar** (com motivo), tudo auditado. A tela é da 5.10.
+- Migração **V033**: `sync_log` (JSON completo por 90 dias, depois só o resumo, por `UPDATE` na agenda diária) e `vendas.hora_ajustada`. `dispositivos` passa a guardar último push, "aguardando" e último envio completo.
+- Glossário com os textos novos; clientes da API regerados.
+
+**Testes (escritos antes, PostgreSQL de verdade):** `PushDoVendedorTest` (aceito, já recebido e conflito no reenvio; JSON equivalente em outra ordem; recusa guardada com o JSON e saldo que nunca fica negativo; a dona descarta e tenta de novo depois de corrigir a causa; dependência recusada; maleta cancelada e de outro vendedor; segundo computador, dona e lote grande; relógio 3 dias adiantado e 2 atrasado; hora impossível no limite; estorno no limite do dia em Brasília; dois envios do mesmo computador ao mesmo tempo sem duplicar; cliente campo a campo com o valor substituído; cliente de outro vendedor; CPF repetido em conflito; computador trocado enviando e recebendo a ordem de apagar; retenção de 90 dias) e `ServicoDeEnvioTest` (erro passageiro para o lote ali, sem quebrar a ordem).
+
+**Decisões que tomei:** ver a linha datada da tarefa 5.5 no ADR-0013.
+
+**Ficou para depois:** o motor do app que envia (5.6); a tela dos envios com problema e os avisos (5.10); push abaixo da versão mínima (5.13); métrica da duração do push (5.11).

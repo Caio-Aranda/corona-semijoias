@@ -502,6 +502,26 @@ Sem internet e sem dados neste computador (primeira vez):
 
 Depois de apagar os dados (tarefa 5.8), o Corona Vendas mostra: "Este computador foi desligado da loja. Os dados foram apagados."
 
+**Enviar as vendas guardadas (Fase 5, tarefa 5.5; ADR-0013, item 2).** Textos que o servidor devolve (o vendedor vê o de cada venda não aceita, com o botão **Entendi**; a dona vê em **Envios com problema**, com **Tentar de novo** e **Descartar**):
+
+> **Suas vendas já estão sendo enviadas.**
+> Suas vendas já estão sendo enviadas. Aguarde um instante.
+
+> **Muitas vendas de uma vez.**
+> Muitas vendas de uma vez. O Corona Vendas vai enviar em partes menores.
+
+> **Esta venda depende de outro registro que não foi aceito.**
+> Esta venda depende de outro registro que não foi aceito. A dona já foi avisada.
+
+> **Este cliente é atendido por outro vendedor.**
+> Este cliente é atendido por outro vendedor. Só quem atende o cliente muda o cadastro dele. Fale com a dona.
+
+Na tela da dona: "Não encontramos este envio. Atualize a tela e tente de novo." · "Este envio já foi resolvido. Atualize a tela para ver como ficou." · "Este envio é antigo demais para ser repetido. Os detalhes completos ficam guardados por 90 dias. Descarte-o." Ao descartar, o motivo é obrigatório: "Diga o motivo de descartar este envio."
+**Receber os dados (Fase 5, tarefa 5.4).** Quando o ponto de onde o computador recebe os dados não vale mais (a loja restaurou uma cópia de segurança), o servidor responde:
+
+> **Os dados deste computador vão ser baixados de novo.**
+> Os dados deste computador vão ser baixados de novo. Suas vendas guardadas continuam salvas.
+
 **Cadastros da dona (fornecedores, categorias, praças, semanas, restrições, clientes; tarefa 1.2)**
 
 Cadastro que não existe mais (ou já foi excluído):

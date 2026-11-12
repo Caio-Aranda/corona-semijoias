@@ -1000,6 +1000,49 @@
         },
         "type" : "object"
       },
+      "EnvioComProblema" : {
+        "properties" : {
+          "codigo" : {
+            "type" : "string"
+          },
+          "dados" : {
+            "$ref" : "#/components/schemas/JsonNode"
+          },
+          "dispositivoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "horaDeclarada" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "mensagem" : {
+            "type" : "string"
+          },
+          "recebidoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "resultado" : {
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "vendedorNome" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "EstoqueDaDonaControllerPedidoDeEstorno" : {
         "properties" : {
           "id" : {
@@ -1353,6 +1396,85 @@
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "JsonNode" : {
+        "properties" : {
+          "array" : {
+            "type" : "boolean"
+          },
+          "bigDecimal" : {
+            "type" : "boolean"
+          },
+          "bigInteger" : {
+            "type" : "boolean"
+          },
+          "binary" : {
+            "type" : "boolean"
+          },
+          "boolean" : {
+            "type" : "boolean"
+          },
+          "container" : {
+            "type" : "boolean"
+          },
+          "double" : {
+            "type" : "boolean"
+          },
+          "embeddedValue" : {
+            "type" : "boolean"
+          },
+          "empty" : {
+            "type" : "boolean"
+          },
+          "float" : {
+            "type" : "boolean"
+          },
+          "floatingPointNumber" : {
+            "type" : "boolean"
+          },
+          "int" : {
+            "type" : "boolean"
+          },
+          "integralNumber" : {
+            "type" : "boolean"
+          },
+          "long" : {
+            "type" : "boolean"
+          },
+          "missingNode" : {
+            "type" : "boolean"
+          },
+          "nodeType" : {
+            "enum" : [ "ARRAY", "BINARY", "BOOLEAN", "MISSING", "NULL", "NUMBER", "OBJECT", "POJO", "STRING" ],
+            "type" : "string"
+          },
+          "null" : {
+            "type" : "boolean"
+          },
+          "number" : {
+            "type" : "boolean"
+          },
+          "object" : {
+            "type" : "boolean"
+          },
+          "pojo" : {
+            "type" : "boolean"
+          },
+          "short" : {
+            "type" : "boolean"
+          },
+          "string" : {
+            "type" : "boolean"
+          },
+          "textual" : {
+            "deprecated" : true,
+            "type" : "boolean"
+          },
+          "valueNode" : {
+            "type" : "boolean"
           }
         },
         "type" : "object"
@@ -3132,6 +3254,16 @@
           },
           "produtoId" : {
             "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "PedidoDeDescarte" : {
+        "properties" : {
+          "motivo" : {
+            "maxLength" : 500,
+            "minLength" : 0,
             "type" : "string"
           }
         },
@@ -6973,6 +7105,106 @@
         } ],
         "summary" : "Cotação do dia",
         "tags" : [ "cotacoes-da-dona-controller" ]
+      }
+    },
+    "/api/dona/envios-com-problema" : {
+      "get" : {
+        "description" : "Vendas, estornos, clientes e conferências que vieram do Corona Vendas e não foram aceitos (recusados ou em conflito), ainda sem decisão. Com o motivo, o vendedor, o computador e o conteúdo guardado (por 90 dias).",
+        "operationId" : "listarEnviosComProblema",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/EnvioComProblema"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Envios com problema",
+        "tags" : [ "envios-com-problema-da-dona-controller" ]
+      }
+    },
+    "/api/dona/envios-com-problema/{id}/descartar" : {
+      "post" : {
+        "description" : "A operação não entra. O motivo é obrigatório e fica na auditoria. Nada é apagado.",
+        "operationId" : "descartarEnvio",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeDescarte"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EnvioComProblema"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Descartar",
+        "tags" : [ "envios-com-problema-da-dona-controller" ]
+      }
+    },
+    "/api/dona/envios-com-problema/{id}/tentar-de-novo" : {
+      "post" : {
+        "description" : "Passa a operação guardada outra vez pelo mesmo serviço, com o mesmo id e a mesma hora. Use depois de corrigir a causa (por exemplo, devolver o cliente ao vendedor). Recusada de novo: o erro volta e o envio continua na lista.",
+        "operationId" : "tentarEnvioDeNovo",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EnvioComProblema"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Tentar de novo",
+        "tags" : [ "envios-com-problema-da-dona-controller" ]
       }
     },
     "/api/dona/estoque/abaixo-do-minimo" : {

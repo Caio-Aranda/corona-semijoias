@@ -306,6 +306,20 @@ export type EnderecoDoVendedorDados = {
     version?: number;
 };
 
+export type EnvioComProblema = {
+    codigo?: string;
+    dados?: JsonNode;
+    dispositivoId?: string;
+    horaDeclarada?: string;
+    id?: string;
+    mensagem?: string;
+    recebidoEm?: string;
+    resultado?: string;
+    tipo?: string;
+    vendedorId?: string;
+    vendedorNome?: string;
+};
+
 export type EstoqueDaDonaControllerPedidoDeEstorno = {
     id?: string;
     motivo?: string;
@@ -416,6 +430,36 @@ export type ItemDaNota = {
     produtoId?: string;
     quantidade?: number;
     subtotal?: string;
+};
+
+export type JsonNode = {
+    array?: boolean;
+    bigDecimal?: boolean;
+    bigInteger?: boolean;
+    binary?: boolean;
+    boolean?: boolean;
+    container?: boolean;
+    double?: boolean;
+    embeddedValue?: boolean;
+    empty?: boolean;
+    float?: boolean;
+    floatingPointNumber?: boolean;
+    int?: boolean;
+    integralNumber?: boolean;
+    long?: boolean;
+    missingNode?: boolean;
+    nodeType?: 'ARRAY' | 'BINARY' | 'BOOLEAN' | 'MISSING' | 'NULL' | 'NUMBER' | 'OBJECT' | 'POJO' | 'STRING';
+    null?: boolean;
+    number?: boolean;
+    object?: boolean;
+    pojo?: boolean;
+    short?: boolean;
+    string?: boolean;
+    /**
+     * @deprecated
+     */
+    textual?: boolean;
+    valueNode?: boolean;
 };
 
 export type LinhaAbaixoDoMinimo = {
@@ -965,6 +1009,10 @@ export type PedidoDeContagem = {
     contado?: number;
     id?: string;
     produtoId?: string;
+};
+
+export type PedidoDeDescarte = {
+    motivo?: string;
 };
 
 export type PedidoDeDevolucao = {
@@ -2333,6 +2381,58 @@ export type HojeResponses = {
 };
 
 export type HojeResponse = HojeResponses[keyof HojeResponses];
+
+export type ListarEnviosComProblemaData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/dona/envios-com-problema';
+};
+
+export type ListarEnviosComProblemaResponses = {
+    /**
+     * OK
+     */
+    200: Array<EnvioComProblema>;
+};
+
+export type ListarEnviosComProblemaResponse = ListarEnviosComProblemaResponses[keyof ListarEnviosComProblemaResponses];
+
+export type DescartarEnvioData = {
+    body: PedidoDeDescarte;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/envios-com-problema/{id}/descartar';
+};
+
+export type DescartarEnvioResponses = {
+    /**
+     * OK
+     */
+    200: EnvioComProblema;
+};
+
+export type DescartarEnvioResponse = DescartarEnvioResponses[keyof DescartarEnvioResponses];
+
+export type TentarEnvioDeNovoData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/envios-com-problema/{id}/tentar-de-novo';
+};
+
+export type TentarEnvioDeNovoResponses = {
+    /**
+     * OK
+     */
+    200: EnvioComProblema;
+};
+
+export type TentarEnvioDeNovoResponse = TentarEnvioDeNovoResponses[keyof TentarEnvioDeNovoResponses];
 
 export type AbaixoDoMinimo1Data = {
     body?: never;

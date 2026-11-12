@@ -120,12 +120,71 @@ export type Devedor = {
     vendidoEmGuarani?: string;
 };
 
+export type DiferencasNaConferencia = {
+    tabelas: Array<string>;
+};
+
+export type JsonNode = {
+    array?: boolean;
+    bigDecimal?: boolean;
+    bigInteger?: boolean;
+    binary?: boolean;
+    boolean?: boolean;
+    container?: boolean;
+    double?: boolean;
+    embeddedValue?: boolean;
+    empty?: boolean;
+    float?: boolean;
+    floatingPointNumber?: boolean;
+    int?: boolean;
+    integralNumber?: boolean;
+    long?: boolean;
+    missingNode?: boolean;
+    nodeType?: 'ARRAY' | 'BINARY' | 'BOOLEAN' | 'MISSING' | 'NULL' | 'NUMBER' | 'OBJECT' | 'POJO' | 'STRING';
+    null?: boolean;
+    number?: boolean;
+    object?: boolean;
+    pojo?: boolean;
+    short?: boolean;
+    string?: boolean;
+    /**
+     * @deprecated
+     */
+    textual?: boolean;
+    valueNode?: boolean;
+};
+
+export type LinhaRecebida = {
+    campos?: {
+        [key: string]: unknown;
+    };
+    deletedAt?: string;
+    id?: string;
+    tabela?: string;
+    version?: number;
+};
+
+export type OperacaoEnviada = {
+    criadoEmLocal?: string;
+    dados?: JsonNode;
+    formato?: number;
+    operacaoId?: string;
+    tipo?: string;
+    ultimoContatoServidor?: string;
+};
+
 export type PagamentoLido = {
     em?: string;
     forma?: string;
     id?: string;
     tipo?: string;
     valor?: string;
+};
+
+export type ParametrosDoVendedor = {
+    limiteDescontoPercentual?: number;
+    situacaoDoAparelho?: string;
+    tempoMaximoOfflineDias?: number;
 };
 
 export type PedidoDaContagem = {
@@ -155,6 +214,12 @@ export type PedidoDeCliente = {
 export type PedidoDeConferencia = {
     id?: string;
     itens?: Array<PedidoDaContagem>;
+};
+
+export type PedidoDeEnvio = {
+    aguardandoDepoisDeste?: number;
+    horaLocal?: string;
+    operacoes?: Array<OperacaoEnviada>;
 };
 
 export type PedidoDeLogin = {
@@ -200,6 +265,18 @@ export type RelatoriosDoVendedorRelatorio = {
     totais?: Totais;
 };
 
+export type RespostaDaConferencia = {
+    horaServidor?: string;
+    tabelas?: Array<TabelaConferida>;
+};
+
+export type RespostaDoEnvio = {
+    apagarDados?: boolean;
+    horaServidor?: string;
+    parametros?: ParametrosDoVendedor;
+    resultados?: Array<ResultadoDaOperacao>;
+};
+
 export type RespostaDoLogin = {
     expiraEm?: string;
     horaDoServidor?: string;
@@ -210,6 +287,27 @@ export type RespostaDoLogin = {
     tokenDeRenovacaoExpiraEm?: string;
     trocaDeSenhaObrigatoria?: boolean;
     validadeEmSegundos?: number;
+};
+
+export type RespostaDoPull = {
+    cursor?: string;
+    horaServidor?: string;
+    linhas?: Array<LinhaRecebida>;
+    parametros?: ParametrosDoVendedor;
+    temMais?: boolean;
+};
+
+export type ResultadoDaOperacao = {
+    codigo?: string;
+    mensagem?: string;
+    operacaoId?: string;
+    resultado?: 'ACEITO' | 'JA_RECEBIDO' | 'CONFLITO' | 'RECUSADO' | 'NAO_PROCESSADO';
+};
+
+export type TabelaConferida = {
+    quantidade?: number;
+    resumo?: string;
+    tabela?: string;
 };
 
 export type Tempo = {
@@ -624,6 +722,72 @@ export type RelatorioDeMinhasVendasResponses = {
 };
 
 export type RelatorioDeMinhasVendasResponse = RelatorioDeMinhasVendasResponses[keyof RelatorioDeMinhasVendasResponses];
+
+export type ConferirDadosData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/vendedor/sync/conferencia';
+};
+
+export type ConferirDadosResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDaConferencia;
+};
+
+export type ConferirDadosResponse = ConferirDadosResponses[keyof ConferirDadosResponses];
+
+export type AvisarDiferencaNaConferenciaData = {
+    body: DiferencasNaConferencia;
+    path?: never;
+    query?: never;
+    url: '/api/vendedor/sync/conferencia/diferencas';
+};
+
+export type AvisarDiferencaNaConferenciaResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
+export type ReceberDadosData = {
+    body?: never;
+    path?: never;
+    query?: {
+        cursor?: string;
+        limite?: number;
+        tabela?: string;
+    };
+    url: '/api/vendedor/sync/pull';
+};
+
+export type ReceberDadosResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDoPull;
+};
+
+export type ReceberDadosResponse = ReceberDadosResponses[keyof ReceberDadosResponses];
+
+export type EnviarOperacoesData = {
+    body: PedidoDeEnvio;
+    path?: never;
+    query?: never;
+    url: '/api/vendedor/sync/push';
+};
+
+export type EnviarOperacoesResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDoEnvio;
+};
+
+export type EnviarOperacoesResponse = EnviarOperacoesResponses[keyof EnviarOperacoesResponses];
 
 export type ValorDoVendedorData = {
     body?: never;

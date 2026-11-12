@@ -384,6 +384,150 @@
         },
         "type" : "object"
       },
+      "DiferencasNaConferencia" : {
+        "properties" : {
+          "tabelas" : {
+            "items" : {
+              "type" : "string"
+            },
+            "maxItems" : 50,
+            "minItems" : 0,
+            "type" : "array"
+          }
+        },
+        "required" : [ "tabelas" ],
+        "type" : "object"
+      },
+      "JsonNode" : {
+        "properties" : {
+          "array" : {
+            "type" : "boolean"
+          },
+          "bigDecimal" : {
+            "type" : "boolean"
+          },
+          "bigInteger" : {
+            "type" : "boolean"
+          },
+          "binary" : {
+            "type" : "boolean"
+          },
+          "boolean" : {
+            "type" : "boolean"
+          },
+          "container" : {
+            "type" : "boolean"
+          },
+          "double" : {
+            "type" : "boolean"
+          },
+          "embeddedValue" : {
+            "type" : "boolean"
+          },
+          "empty" : {
+            "type" : "boolean"
+          },
+          "float" : {
+            "type" : "boolean"
+          },
+          "floatingPointNumber" : {
+            "type" : "boolean"
+          },
+          "int" : {
+            "type" : "boolean"
+          },
+          "integralNumber" : {
+            "type" : "boolean"
+          },
+          "long" : {
+            "type" : "boolean"
+          },
+          "missingNode" : {
+            "type" : "boolean"
+          },
+          "nodeType" : {
+            "enum" : [ "ARRAY", "BINARY", "BOOLEAN", "MISSING", "NULL", "NUMBER", "OBJECT", "POJO", "STRING" ],
+            "type" : "string"
+          },
+          "null" : {
+            "type" : "boolean"
+          },
+          "number" : {
+            "type" : "boolean"
+          },
+          "object" : {
+            "type" : "boolean"
+          },
+          "pojo" : {
+            "type" : "boolean"
+          },
+          "short" : {
+            "type" : "boolean"
+          },
+          "string" : {
+            "type" : "boolean"
+          },
+          "textual" : {
+            "deprecated" : true,
+            "type" : "boolean"
+          },
+          "valueNode" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "LinhaRecebida" : {
+        "properties" : {
+          "campos" : {
+            "additionalProperties" : { },
+            "type" : "object"
+          },
+          "deletedAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "tabela" : {
+            "type" : "string"
+          },
+          "version" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "OperacaoEnviada" : {
+        "properties" : {
+          "criadoEmLocal" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "dados" : {
+            "$ref" : "#/components/schemas/JsonNode"
+          },
+          "formato" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "operacaoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "ultimoContatoServidor" : {
+            "format" : "date-time",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "PagamentoLido" : {
         "properties" : {
           "em" : {
@@ -405,6 +549,22 @@
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ParametrosDoVendedor" : {
+        "properties" : {
+          "limiteDescontoPercentual" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "situacaoDoAparelho" : {
+            "type" : "string"
+          },
+          "tempoMaximoOfflineDias" : {
+            "format" : "int32",
+            "type" : "integer"
           }
         },
         "type" : "object"
@@ -494,6 +654,25 @@
           "itens" : {
             "items" : {
               "$ref" : "#/components/schemas/PedidoDaContagem"
+            },
+            "type" : "array"
+          }
+        },
+        "type" : "object"
+      },
+      "PedidoDeEnvio" : {
+        "properties" : {
+          "aguardandoDepoisDeste" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "horaLocal" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "operacoes" : {
+            "items" : {
+              "$ref" : "#/components/schemas/OperacaoEnviada"
             },
             "type" : "array"
           }
@@ -639,6 +818,42 @@
         },
         "type" : "object"
       },
+      "RespostaDaConferencia" : {
+        "properties" : {
+          "horaServidor" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "tabelas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/TabelaConferida"
+            },
+            "type" : "array"
+          }
+        },
+        "type" : "object"
+      },
+      "RespostaDoEnvio" : {
+        "properties" : {
+          "apagarDados" : {
+            "type" : "boolean"
+          },
+          "horaServidor" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "parametros" : {
+            "$ref" : "#/components/schemas/ParametrosDoVendedor"
+          },
+          "resultados" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ResultadoDaOperacao"
+            },
+            "type" : "array"
+          }
+        },
+        "type" : "object"
+      },
       "RespostaDoLogin" : {
         "properties" : {
           "expiraEm" : {
@@ -672,6 +887,64 @@
           "validadeEmSegundos" : {
             "format" : "int64",
             "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RespostaDoPull" : {
+        "properties" : {
+          "cursor" : {
+            "type" : "string"
+          },
+          "horaServidor" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "linhas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaRecebida"
+            },
+            "type" : "array"
+          },
+          "parametros" : {
+            "$ref" : "#/components/schemas/ParametrosDoVendedor"
+          },
+          "temMais" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ResultadoDaOperacao" : {
+        "properties" : {
+          "codigo" : {
+            "type" : "string"
+          },
+          "mensagem" : {
+            "type" : "string"
+          },
+          "operacaoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "resultado" : {
+            "enum" : [ "ACEITO", "JA_RECEBIDO", "CONFLITO", "RECUSADO", "NAO_PROCESSADO" ],
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "TabelaConferida" : {
+        "properties" : {
+          "quantidade" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "resumo" : {
+            "type" : "string"
+          },
+          "tabela" : {
+            "type" : "string"
           }
         },
         "type" : "object"
@@ -1522,6 +1795,134 @@
         } ],
         "summary" : "Minhas vendas por cliente, peça ou dia",
         "tags" : [ "apoio-do-vendedor-controller" ]
+      }
+    },
+    "/api/vendedor/sync/conferencia" : {
+      "get" : {
+        "description" : "Por tabela, quantas linhas são do vendedor (lápides incluídas) e o SHA-256 da lista ordenada \"id:version\" (uma por linha, com quebra de linha). O app compara com o que guardou depois de receber tudo; havendo diferença, recarrega a tabela e avisa em /conferencia/diferencas.",
+        "operationId" : "conferirDados",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDaConferencia"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Conferência por resumo dos dados do vendedor",
+        "tags" : [ "sync-do-vendedor-controller" ]
+      }
+    },
+    "/api/vendedor/sync/conferencia/diferencas" : {
+      "post" : {
+        "description" : "O computador achou diferença entre o que guardou e o resumo do servidor: é defeito do filtro (ADR-0013, item 6). Fica no log como alerta; o app recarrega as tabelas.",
+        "operationId" : "avisarDiferencaNaConferencia",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/DiferencasNaConferencia"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Avisar diferença na conferência por resumo",
+        "tags" : [ "sync-do-vendedor-controller" ]
+      }
+    },
+    "/api/vendedor/sync/pull" : {
+      "get" : {
+        "description" : "Devolve o que mudou desde o cursor, só do vendedor do token: maletas enviadas e itens, peças delas (com códigos e fotos), vendas, pagamentos, conferências, cotações, categorias, semanas e o diretório de clientes da loja. Cursor vazio é a carga inicial. Aplique cada linha só se a version for maior que a guardada. 409 CURSOR_INVALIDO: refaça a carga inicial sem tocar no que aguarda envio. Limite padrão 500 linhas, máximo 1000 (a expansão de uma maleta pode passar do limite).",
+        "operationId" : "receberDados",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "cursor",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "limite",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tabela",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDoPull"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Receber os dados do vendedor (pull)",
+        "tags" : [ "sync-do-vendedor-controller" ]
+      }
+    },
+    "/api/vendedor/sync/push" : {
+      "post" : {
+        "description" : "Até 50 operações ou 512 KB, na ordem da fila do computador. Cada uma é processada numa transação própria e recebe ACEITO, JA_RECEBIDO (mesmo id e mesmo conteúdo), CONFLITO (mesmo id, outro conteúdo), RECUSADO (regra de negócio; a dona é avisada) ou NAO_PROCESSADO (passageiro: o lote parou ali). horaLocal é o relógio do computador no envio (corrige a hora das vendas); aguardandoDepoisDeste, quantas ainda ficam. 429 ENVIO_EM_ANDAMENTO: outro envio deste computador em andamento. 413 LOTE_GRANDE_DEMAIS: mande a metade. O computador trocado ainda envia o que guardou; terminando com nada aguardando, recebe apagarDados.",
+        "operationId" : "enviarOperacoes",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeEnvio"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDoEnvio"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Enviar as operações guardadas (push)",
+        "tags" : [ "sync-do-vendedor-controller" ]
       }
     },
     "/api/vendedor/teste/dinheiro" : {
