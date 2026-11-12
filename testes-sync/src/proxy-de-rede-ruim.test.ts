@@ -3,6 +3,8 @@ import type { AddressInfo } from 'node:net';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
   iniciarProxyDeRedeRuim,
+  PLANO_BOM,
+  PLANO_SEM_INTERNET,
   type FalhaDaRede,
   type ProxyDeRedeRuim,
 } from './proxy-de-rede-ruim';
@@ -48,14 +50,14 @@ async function proxy(
   return p;
 }
 
-function chamar(p: ProxyDeRedeRuim, corpo = '{"a":1}'): Promise<Resposta> {
+function chamar(p: ProxyDeRedeRuim, corpo = '{"a":1}', caminho = '/x'): Promise<Resposta> {
   return new Promise((ok, erro) => {
     const r = request(
       {
         host: '127.0.0.1',
         port: p.porta,
         method: 'POST',
-        path: '/x',
+        path: caminho,
         agent: false,
         headers: { 'content-type': 'application/json' },
       },
@@ -170,5 +172,79 @@ describe('proxy de rede ruim', () => {
     expect((await chamar(p)).status).toBe(200);
     expect(s.gravou()).toBe(3);
     expect(p.semente).toBe(99);
+  });
+
+  it('roteiro por caminho: conta só os pedidos daquele caminho, e o plano novo recomeça a conta', async () => {
+    const s = await servidorFalso();
+    const p = await proxy(s.porta, {
+      sorteio: [],
+      porCaminho: [{ caminho: '/api/push', roteiro: [undefined, 'CORTE_DEPOIS_DE_GRAVAR'] }],
+    });
+    expect((await chamar(p, '{}', '/api/saude')).status).toBe(200);
+    expect((await chamar(p, '{}', '/api/push?x=1')).status).toBe(200);
+    expect((await chamar(p, '{}', '/api/pull')).status).toBe(200);
+    await expect(chamar(p, '{}', '/api/push')).rejects.toBeDefined();
+    expect((await chamar(p, '{}', '/api/push')).status).toBe(200);
+    expect(s.gravou()).toBe(5);
+    p.trocarPlano({
+      sorteio: [],
+      porCaminho: [{ caminho: /^\/api\/pu/, roteiro: ['ERRO_502'] }],
+    });
+    expect((await chamar(p, '{}', '/api/pull')).status).toBe(502);
+    expect((await chamar(p, '{}', '/api/push')).status).toBe(200);
+  });
+
+  it('corte no meio da resposta: o servidor respondeu, só metade chegou', async () => {
+    const s = await servidorFalso();
+    const p = await proxy(s.porta, { sorteio: [], roteiro: ['CORTE_NO_MEIO_DA_RESPOSTA'] });
+    await expect(chamar(p)).rejects.toBeDefined();
+    expect(s.gravou()).toBe(1);
+    expect(p.historico()[0]).toMatchObject({
+      servidorRespondeu: true,
+      falha: 'CORTE_NO_MEIO_DA_RESPOSTA',
+    });
+    expect((await chamar(p)).status).toBe(200);
+  });
+
+  it('sem internet e rede boa como planos prontos', async () => {
+    const s = await servidorFalso();
+    const p = await proxy(s.porta, PLANO_SEM_INTERNET);
+    await expect(chamar(p)).rejects.toBeDefined();
+    p.trocarPlano(PLANO_BOM);
+    expect((await chamar(p)).status).toBe(200);
+    expect(s.gravou()).toBe(1);
+  });
+
+  it('o observador vê toda resposta do servidor, inclusive a que a rede cortou', async () => {
+    const s = await servidorFalso();
+    const vistas: string[] = [];
+    const p = await iniciarProxyDeRedeRuim({
+      destino: `http://127.0.0.1:${s.porta}`,
+      semente: 3,
+      plano: { sorteio: [], roteiro: [undefined, 'CORTE_DEPOIS_DE_GRAVAR', 'QUEDA_ANTES'] },
+      aoResponder: (r) => vistas.push(`${r.status} ${r.corpo.toString('utf8')}`),
+    });
+    abertos.push(p);
+    await chamar(p);
+    await chamar(p).catch(() => undefined);
+    await chamar(p).catch(() => undefined);
+    expect(vistas).toEqual(['200 {"n":1}', '200 {"n":2}']);
+  });
+
+  it('troca cabeçalhos no caminho até o servidor', async () => {
+    let versao: string | undefined;
+    const servidor: Server = createServer((req, res) => {
+      versao = req.headers['x-app-versao'] as string | undefined;
+      req.resume();
+      req.on('end', () => res.end('{}'));
+    });
+    await new Promise<void>((ok) => servidor.listen(0, '127.0.0.1', ok));
+    abertos.push({ close: () => new Promise<void>((ok) => servidor.close(() => ok())) });
+    const p = await proxy((servidor.address() as AddressInfo).port, {
+      sorteio: [],
+      cabecalhos: { 'x-app-versao': '0.9.0' },
+    });
+    await chamar(p);
+    expect(versao).toBe('0.9.0');
   });
 });
