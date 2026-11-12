@@ -2,6 +2,8 @@ package br.com.coronasemijoias.api.sync;
 
 import br.com.coronasemijoias.api.aparelhos.ServicoDeAparelhos;
 import br.com.coronasemijoias.api.aparelhos.SituacaoDoAparelho;
+import br.com.coronasemijoias.api.aplicativo.FiltroDeTipoEVersao;
+import br.com.coronasemijoias.api.aplicativo.VersaoDoApp;
 import br.com.coronasemijoias.api.cadastros.Mensagens;
 import br.com.coronasemijoias.api.comum.erros.CodigoErro;
 import br.com.coronasemijoias.api.comum.erros.ErroDaApi;
@@ -76,9 +78,13 @@ public class SyncDoVendedorController {
             @NotNull(message = Mensagens.OBRIGATORIO) @Size(max = 50, message = Mensagens.LIMITE_LONGO) List<String> tabelas) {
     }
 
-    /** A resposta do envio: o resultado de cada operação, na ordem, mais a hora e os parâmetros (como no pull). */
+    /**
+     * A resposta do envio: o resultado de cada operação, na ordem, mais a hora e os parâmetros (como no pull).
+     * {@code appDesatualizado}: o app está abaixo da versão mínima ({@code versaoMinima}); o envio valeu, mas ele precisa
+     * se atualizar para receber dados e vender pela internet (tarefa 5.13).
+     */
     public record RespostaDoEnvio(List<ServicoDeEnvio.ResultadoDaOperacao> resultados, Instant horaServidor,
-            ParametrosDoVendedor parametros, boolean apagarDados) {
+            ParametrosDoVendedor parametros, boolean apagarDados, boolean appDesatualizado, String versaoMinima) {
     }
 
     private final ServicoDePull pull;
@@ -139,7 +145,9 @@ public class SyncDoVendedorController {
                     + "horaLocal é o relógio do computador no envio (corrige a hora das vendas); aguardandoDepoisDeste, "
                     + "quantas ainda ficam. 429 ENVIO_EM_ANDAMENTO: outro envio deste computador em andamento. 413 "
                     + "LOTE_GRANDE_DEMAIS: mande a metade. O computador trocado ainda envia o que guardou; terminando com "
-                    + "nada aguardando, recebe apagarDados.")
+                    + "nada aguardando, recebe apagarDados. Aceito também do Corona Vendas abaixo da versão mínima (só para "
+                    + "não perder o que guardou): a resposta traz appDesatualizado e versaoMinima. Formato de operação "
+                    + "vencido (90 dias depois de publicado o seguinte): RECUSADO com FORMATO_NAO_ACEITO.")
     @PostMapping("/push")
     @br.com.coronasemijoias.api.aparelhos.AceitaComputadorTrocado
     public RespostaDoEnvio enviar(@AuthenticationPrincipal UsuarioAutenticado quem,
@@ -151,8 +159,9 @@ public class SyncDoVendedorController {
             throw new ErroDaApi(HttpStatus.BAD_REQUEST, CodigoErro.PEDIDO_INVALIDO);
         }
         ServicoDeEnvio.Envio feito = metricas.medirPush(() -> envio.enviar(quem, pedido));
+        java.util.Optional<VersaoDoApp> minima = FiltroDeTipoEVersao.abaixoDaMinima(requisicao);
         return new RespostaDoEnvio(feito.resultados(), relogio.instant().truncatedTo(ChronoUnit.MILLIS), parametros(quem),
-                feito.apagarDados());
+                feito.apagarDados(), minima.isPresent(), minima.map(VersaoDoApp::toString).orElse(null));
     }
 
     @Operation(operationId = "conferirDados", summary = "Conferência por resumo dos dados do vendedor",

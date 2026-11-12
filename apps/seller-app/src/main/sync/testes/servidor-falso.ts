@@ -64,6 +64,11 @@ export class ServidorFalso {
     situacaoDoAparelho: 'ATIVO',
   };
 
+  /**
+   * Versão mínima do Corona Vendas (tarefa 5.13): app abaixo dela ainda envia (o push responde com
+   * `appDesatualizado`), mas o pull e a conferência recebem 426, como no servidor real.
+   */
+  versaoMinima: string | null = null;
   /** Roteiros que passam na frente do modelo (o primeiro da fila é usado e sai). */
   readonly roteirosDoPush: (Roteiro | 'cair-depois-de-gravar')[] = [];
   readonly roteirosDoPull: Roteiro[] = [];
@@ -158,6 +163,7 @@ export class ServidorFalso {
     }
     switch (url.pathname) {
       case '/api/vendedor/sync/pull':
+        if (this.abaixoDaMinima(req)) return responder(res, DESATUALIZADO);
         if (url.searchParams.get('tabela') && this.cairNoPullDaTabela > 0) {
           this.cairNoPullDaTabela -= 1;
           req.socket.destroy();
@@ -171,15 +177,29 @@ export class ServidorFalso {
           req.socket.destroy();
           return;
         }
-        return responder(res, roteiro ?? this.push(corpo));
+        const r = roteiro ?? this.push(corpo);
+        if (this.abaixoDaMinima(req) && r.status === 200 && r.corpo && typeof r.corpo === 'object')
+          r.corpo = { ...r.corpo, appDesatualizado: true, versaoMinima: this.versaoMinima };
+        return responder(res, r);
       }
       case '/api/vendedor/sync/conferencia':
+        if (this.abaixoDaMinima(req)) return responder(res, DESATUALIZADO);
         return responder(res, this.roteirosDaConferencia.shift() ?? this.conferencia());
       case '/api/vendedor/sync/conferencia/diferencas':
         return responder(res, { status: 204 });
       default:
         return responder(res, { status: 404 });
     }
+  }
+
+  private abaixoDaMinima(req: IncomingMessage): boolean {
+    if (!this.versaoMinima) return false;
+    const versao = String(req.headers['x-app-versao'] ?? '0.0.0');
+    const n = (v: string) => v.split('.').map(Number);
+    const [a, b] = [n(versao), n(this.versaoMinima)];
+    for (let i = 0; i < 3; i += 1)
+      if ((a[i] ?? 0) !== (b[i] ?? 0)) return (a[i] ?? 0) < (b[i] ?? 0);
+    return false;
   }
 
   private pull(q: URLSearchParams): Roteiro {
@@ -279,6 +299,15 @@ export class ServidorFalso {
     return { status: 200, corpo: { tabelas, horaServidor: this.horaServidor } };
   }
 }
+
+const DESATUALIZADO: Roteiro = {
+  status: 426,
+  corpo: {
+    codigo: 'APP_DESATUALIZADO',
+    title: 'Seu aplicativo está desatualizado.',
+    detail: 'Seu aplicativo está desatualizado. Atualize para continuar usando.',
+  },
+};
 
 const TABELAS = [
   'cotacoes',

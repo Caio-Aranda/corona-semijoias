@@ -27,6 +27,7 @@ const ESTADO: EstadoDaSincronizacao = {
   prazo: { situacao: 'EM_DIA', diasRestantes: 0, motivo: null },
   fotosBaixadas: 0,
   fotosTotal: 0,
+  appDesatualizado: false,
 };
 
 type Manipulador = (pedido: PedidoDeChamada) => ResultadoDeChamada;
@@ -91,6 +92,15 @@ describe('o indicador de envio (glossário, parte 7)', () => {
     expect(screen.getByText('4 itens aguardando envio')).toBeInTheDocument();
     estado({ comInternet: false, aguardando: 1, vendasAguardando: 0 });
     expect(screen.getByText('1 item aguardando envio')).toBeInTheDocument();
+  });
+
+  it('app abaixo da versão mínima: avisa que está desatualizado e que as vendas continuam indo', () => {
+    const { ponte, estado } = criarPonte();
+    render(<IndicadorDeEnvio ponte={ponte} />);
+    expect(screen.queryByText('Seu aplicativo está desatualizado.')).not.toBeInTheDocument();
+    estado({ appDesatualizado: true });
+    expect(screen.getByText('Seu aplicativo está desatualizado.')).toBeInTheDocument();
+    expect(screen.getByText(/As vendas guardadas continuam sendo enviadas\./)).toBeInTheDocument();
   });
 
   it('um envio que falhou 5 vezes: "Uma venda não conseguiu ser enviada. Avise a dona."', () => {

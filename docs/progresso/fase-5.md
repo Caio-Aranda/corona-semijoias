@@ -188,3 +188,20 @@ Plano aprovado no PR 105, com três ajustes da orquestradora (quarentena só at�
 - CPF repetido: a lista mostra o nome e o CPF do cadastro novo; **não mostra o cadastro que já existia** nem tem "juntar cadastros" (o glossário manda a dona juntar à mão pela tela de clientes e descartar o envio). Uma tela de juntar fica para uma tarefa própria.
 - O aviso de envios com problema não tem teste de integração próprio (conta as mesmas linhas que `EnviosComProblema.listar`, já testado); o de vendas de computador bloqueado tem.
 
+
+## Tarefa 5.13: atualização com envios aguardando e migração entre versões
+
+Plano aprovado pela orquestradora (PR 108), com três ajustes: renovação da sessão e quarentena abaixo da versão mínima, e exemplos fora do pacote.
+
+**O que entrou**
+
+- **Backend.** `FormatosDeOperacao`: catálogo dos formatos (o 1 de cada tipo, publicado em 11/11/2026) e até quando cada um vale (90 dias depois do seguinte, `corona.sync.formato-antigo-dias`). `OperacoesDoVendedor` lê pelo catálogo; o `ServicoDeEnvio` recusa o vencido com `FORMATO_NAO_ACEITO` (texto no glossário), guardando no `sync_log`, e responde `JA_RECEBIDO` a quem reenvia o que já entrou. `FiltroDeTipoEVersao` deixa o Corona Vendas abaixo da mínima passar em `POST /api/vendedor/sync/push`, `/api/auth/renovar` e `/api/vendedor/sync/quarentena`; a resposta do push traz `appDesatualizado` e `versaoMinima`. Clientes da API regerados. Sem migração Flyway.
+- **App.** `exemplos-do-banco/banco-v1.sqlite` e `banco-v2.sqlite` (operações aguardando de todos os tipos, uma enviada e uma recusada), o gerador (`gerar-exemplos.test.ts`, só com `CORONA_GERAR_EXEMPLOS=1`, nunca sobrescreve) e `exemplos-por-versao.test.ts`. `PreparoDaAtualizacao` e `prepararAntesDeInstalar` (no `before-quit`, só com versão nova baixada): para o motor, espera o envio (30 s), tenta mais um (30 s) e fecha o banco. O ciclo ganhou `enviarSo` e passa a só enviar quando o servidor diz que o app está desatualizado; o estado da ponte ganhou `appDesatualizado` e o indicador mostra "Seu aplicativo está desatualizado." (glossário antes do código).
+
+**Testes (escritos antes do código; PostgreSQL e SQLCipher de verdade):** `FormatosDeOperacaoTest` (formato 1 depois do 2 até 90 dias, dia 90 exato, prazo configurável) e `AtualizacaoComEnviosAguardandoTest` (app abaixo da mínima envia e ouve `appDesatualizado`, sem duplicar; pull, venda pela internet, conferência, "quem sou eu" e caminhos parecidos com 426; versão ilegível e Corona Gestão abaixo da mínima com 426; **token vencido abaixo da mínima renova e envia**, entrar com senha continua 426; **computador bloqueado com app velho guarda na quarentena**; formato vencido recusado e guardado, o que já entrou continua `JA_RECEBIDO`). No app: `exemplos-por-versao.test.ts` (todo exemplo existe e está na sua versão; o app atual migra sem tocar na outbox, guarda a cópia de antes e envia tudo na ordem, uma vez só, mesmo com a primeira resposta perdida) e `preparo-da-atualizacao.test.ts` (sem nada, com internet, sem internet, espera o envio em andamento, **atualização no meio de um envio que passa de 30 s**, processo morto no meio, pedido duas vezes, erro no meio, motor parado não religa, app abaixo da mínima enviando sem pedir dados, o 426 do recebimento não para o motor, gancho do `before-quit`), mais o indicador e a ponte.
+
+**Pacote:** os exemplos e o gerador ficam fora do pacote do Corona Vendas (o `electron-builder.yml` só leva `out/**`): conferido na lista do `app.asar` e na barreira.
+
+**Decisões que tomei:** ver a linha datada da tarefa 5.13 no ADR-0013.
+
+**Ficou para depois / limites:** o app abaixo da mínima continua vendendo sem internet e enviando, mas não recebe maletas nem dados novos; o prazo sem internet de 10 dias (5.8) é o que acaba por segurar um app que nunca se atualiza. O preparo só roda quando a versão nova já foi baixada (fechar normal não espera envio). A retenção do `sync_log` (90 dias com o JSON completo) vale também para as recusas por formato vencido. Teste com o instalador de verdade (NSIS) trocando de versão com vendas aguardando: fica para a 5.14/5.12.

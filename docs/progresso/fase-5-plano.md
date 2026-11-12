@@ -117,7 +117,7 @@ ADR-0013 (Proposto) e este plano. Nenhum código, nem `PROGRESSO.md` nem o índi
 ### 5.13: atualização e migração entre versões (modo de plano)
 
 - Bancos de exemplo de cada versão publicada do schema local, com operações aguardando, versionados no repositório; teste que migra e envia.
-- Servidor aceita cada formato por 180 dias; push aceito abaixo da versão mínima quando o formato ainda vale; pull e venda nova recebem 426.
+- Servidor aceita cada formato por 90 dias (dúvida R5; era 180); push, renovação da sessão e quarentena aceitos abaixo da versão mínima quando o formato ainda vale; pull e venda nova recebem 426.
 - Antes de instalar a atualização: parar o motor, esperar o envio, tentar mais um, fechar o banco.
 - **Testes:** formato 1 depois de existir o 2; app abaixo da mínima com vendas aguardando; atualização no meio de um envio.
 

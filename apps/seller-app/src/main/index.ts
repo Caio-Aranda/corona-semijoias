@@ -37,6 +37,7 @@ import { ApagadorDeDados } from './offline/apagar-dados';
 import { ControleDoPrazo } from './offline/prazo-offline';
 import { CHAVES, gravarEstado, lerEstado, registrarContato } from './sync/estado-sync';
 import { MotorDeSincronizacao } from './sync/motor';
+import { PreparoDaAtualizacao, prepararAntesDeInstalar } from './sync/preparo-da-atualizacao';
 import { ErroDaOperacao, OperacoesLocais } from './sync/operacoes-locais';
 import { criarTransporteDoSync } from './sync/transporte-do-sync';
 import type { ArquivoDoToken, Cofre, Relogio } from './tipos';
@@ -385,6 +386,18 @@ async function iniciar(): Promise<void> {
     );
   });
   if (app.isPackaged) atualizacao.iniciar();
+  // Antes de instalar a versão nova (tarefa 5.13): para o motor, espera o envio (30 s), tenta mais um e fecha o banco.
+  // As vendas aguardando atravessam a atualização no próprio banco.
+  prepararAntesDeInstalar(
+    app,
+    new PreparoDaAtualizacao({
+      motor: motorDoApp,
+      fecharBanco: () => bancoLocal.fechar(),
+      relogio,
+      registrar: (mensagem) => console.warn(mensagem),
+    }),
+    () => atualizacao.estado().estado === 'pronta',
+  );
 
   criarJanela();
 }

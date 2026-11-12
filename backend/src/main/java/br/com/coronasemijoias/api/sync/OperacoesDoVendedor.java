@@ -20,7 +20,6 @@ import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -34,19 +33,12 @@ import tools.jackson.databind.json.JsonMapper;
  * ordenadas: dois JSON equivalentes dão o mesmo resumo) e a aplicação, sempre pelos MESMOS serviços da Fase 4. Nenhuma
  * regra de negócio mora aqui.
  *
- * <p>Formatos aceitos: {@link #FORMATOS}. Um formato antigo continua aceito por 90 dias depois de publicado o novo
- * (ADR-0013, item 17; linha de 11/11/2026).
+ * <p>Formatos: {@link FormatosDeOperacao}. Um formato antigo continua aceito por 90 dias depois de publicado o novo
+ * (ADR-0013, item 17; linha de 11/11/2026); depois disso ele ainda é lido (para o resumo e o {@code JA_RECEBIDO}), mas
+ * {@link #vencido} diz que não pode mais ser aplicado (tarefa 5.13).
  */
 @Service
 public class OperacoesDoVendedor {
-
-    /** Tipo → formatos que o servidor lê hoje. */
-    public static final Map<String, Set<Integer>> FORMATOS = Map.of(
-            "VENDA", Set.of(1),
-            "ESTORNO_VENDA", Set.of(1),
-            "CLIENTE_NOVO", Set.of(1),
-            "CLIENTE_ALTERADO", Set.of(1),
-            "CONFERENCIA", Set.of(1));
 
     /** Correção de hora acima disto marca a venda como "hora ajustada" (ADR-0013, item 11; dúvida D12). */
     static final Duration AJUSTE_QUE_MARCA = Duration.ofMinutes(5);
@@ -104,9 +96,11 @@ public class OperacoesDoVendedor {
     private final ServicoDeVendas vendas;
     private final ClientesDoVendedor clientes;
     private final ServicoDeConferencia conferencias;
+    private final FormatosDeOperacao formatos;
 
     public OperacoesDoVendedor(JsonMapper json, JdbcTemplate jdbc, ServicoDeVendas vendas, ClientesDoVendedor clientes,
-            ServicoDeConferencia conferencias) {
+            ServicoDeConferencia conferencias, FormatosDeOperacao formatos) {
+        this.formatos = formatos;
         this.json = json;
         this.jdbc = jdbc;
         this.vendas = vendas;
@@ -114,9 +108,17 @@ public class OperacoesDoVendedor {
         this.conferencias = conferencias;
     }
 
+    /**
+     * O formato é conhecido, mas o prazo dele acabou (90 dias depois de publicado o seguinte): o push recusa com
+     * {@code FORMATO_NAO_ACEITO} em vez de aplicar. Quem já entrou continua {@code JA_RECEBIDO}.
+     */
+    public boolean vencido(String tipo, int formato) {
+        return formatos.conhecido(tipo, formato) && !formatos.aceitoAgora(tipo, formato);
+    }
+
     /** Lê a operação e calcula o resumo canônico. O {@code operacaoId} é o id do registro criado (exceto na alteração). */
     public Lida ler(UUID operacaoId, String tipo, int formato, JsonNode dados) {
-        if (tipo == null || !FORMATOS.containsKey(tipo) || !FORMATOS.get(tipo).contains(formato)) {
+        if (!formatos.conhecido(tipo, formato)) {
             throw new OperacaoIlegivel("tipo ou formato desconhecido: " + tipo + "/" + formato);
         }
         if (dados == null || !dados.isObject()) {

@@ -168,6 +168,7 @@ App do vendedor sem internet: SQLite criptografado, fila de envios e sincroniza�
 | 5.9 | app: fotos sem internet (cache em disco, download separado do envio, `fotos.ver` pelo disco, "Baixando fotos: N de M") | Em revisão (PR 106) · [detalhe](progresso/fase-5.md#tarefa-59-fotos-sem-internet) |
 | 5.11 | backend: métricas e alertas do sync (idade da transação mais antiga, duração do pull e do push, defeito da conferência, computador parado, avisos da dona) | Mesclada (PR 101) · [detalhe](progresso/fase-5.md#tarefa-511-métricas-e-alertas-do-sync-backend) |
 | 5.10 | owner-app e backend: computadores do vendedor, envios com problema, CPF repetido, vendas de computador bloqueado, valores de cliente trocados e avisos | Em revisão (PR 107) · [detalhe](progresso/fase-5.md#tarefa-510-telas-da-dona) |
+| 5.13 | app e backend: atualização com envios aguardando (formato antigo por 90 dias, envio e renovação abaixo da versão mínima, preparo antes de instalar, bancos de exemplo de cada versão) | Em revisão (PR 108) · [detalhe](progresso/fase-5.md#tarefa-513-atualização-com-envios-aguardando-e-migração-entre-versões) |
 
 As demais tarefas estão no [plano](progresso/fase-5-plano.md).
 

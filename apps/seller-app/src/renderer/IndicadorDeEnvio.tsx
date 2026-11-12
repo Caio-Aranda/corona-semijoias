@@ -104,6 +104,11 @@ export function IndicadorDeEnvio({ ponte }: { ponte: PonteDoCorona }) {
           {aviso.texto}
         </Aviso>
       ) : null}
+      {estado.appDesatualizado ? (
+        <Aviso tipo="atencao" titulo={T.desatualizadoTitulo}>
+          {T.desatualizado}
+        </Aviso>
+      ) : null}
       {estado.naoConseguiuEnviar ? <Aviso tipo="atencao">{T.naoConseguiu}</Aviso> : null}
       {lista.length > 0 ? (
         <Aviso
