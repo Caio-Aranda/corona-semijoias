@@ -1,0 +1,15 @@
+{
+  "name": "@corona/testes-sync",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Testes do sync com duas pontas (o motor do app contra a API real) e o proxy de rede ruim (tarefa 5.12, ADR-0013 item 20).",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.6",
+    "vitest": "5.1.0"
+  }
+}
