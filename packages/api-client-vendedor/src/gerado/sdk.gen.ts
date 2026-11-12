@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AcharPecaDaMinhaMaletaData, AcharPecaDaMinhaMaletaResponses, AvisarDiferencaNaConferenciaData, AvisarDiferencaNaConferenciaResponses, BaixarFotoDaMinhaMaletaData, BaixarFotoDaMinhaMaletaResponses, BuscarPecaDaMinhaMaletaData, BuscarPecaDaMinhaMaletaResponses, CadastrarMeuClienteData, CadastrarMeuClienteResponses, ConferirDadosData, ConferirDadosResponses, ConferirMinhaMaletaData, ConferirMinhaMaletaResponses, EntrarData, EntrarResponses, EnviarOperacoesData, EnviarOperacoesResponses, EstornarVendaDoVendedorData, EstornarVendaDoVendedorResponses, EuData, EuResponses, ListarMeusClientesData, ListarMeusClientesResponses, ListarMinhasMaletasData, ListarMinhasMaletasResponses, ListarVendasDoVendedorData, ListarVendasDoVendedorResponses, ReceberDadosData, ReceberDadosResponses, RelatorioDeMeusRecebimentosData, RelatorioDeMeusRecebimentosResponses, RelatorioDeMinhasVendasData, RelatorioDeMinhasVendasResponses, RelatorioDeValoresAReceberData, RelatorioDeValoresAReceberResponses, RenovarData, RenovarResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SoVendedorData, SoVendedorResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarDoVendedorData, ValidarDoVendedorResponses, ValorDoVendedorData, ValorDoVendedorResponses, VenderNaMaletaData, VenderNaMaletaResponses, VerConferenciaDaMinhaMaletaData, VerConferenciaDaMinhaMaletaResponses, VerCotacaoDeHojeData, VerCotacaoDeHojeResponses, VerMeuClienteData, VerMeuClienteResponses, VerMinhaMaletaData, VerMinhaMaletaResponses, VerVendaDoVendedorData, VerVendaDoVendedorResponses } from './types.gen';
+import type { AcharPecaDaMinhaMaletaData, AcharPecaDaMinhaMaletaResponses, AvisarDiferencaNaConferenciaData, AvisarDiferencaNaConferenciaResponses, BaixarFotoDaMinhaMaletaData, BaixarFotoDaMinhaMaletaResponses, BuscarPecaDaMinhaMaletaData, BuscarPecaDaMinhaMaletaResponses, CadastrarMeuClienteData, CadastrarMeuClienteResponses, ConferirDadosData, ConferirDadosResponses, ConferirMinhaMaletaData, ConferirMinhaMaletaResponses, EntrarData, EntrarResponses, EnviarOperacoesData, EnviarOperacoesResponses, EstornarVendaDoVendedorData, EstornarVendaDoVendedorResponses, EuData, EuResponses, GuardarEmQuarentenaData, GuardarEmQuarentenaResponses, ListarMeusClientesData, ListarMeusClientesResponses, ListarMinhasMaletasData, ListarMinhasMaletasResponses, ListarVendasDoVendedorData, ListarVendasDoVendedorResponses, ReceberDadosData, ReceberDadosResponses, RelatorioDeMeusRecebimentosData, RelatorioDeMeusRecebimentosResponses, RelatorioDeMinhasVendasData, RelatorioDeMinhasVendasResponses, RelatorioDeValoresAReceberData, RelatorioDeValoresAReceberResponses, RenovarData, RenovarResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SoVendedorData, SoVendedorResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarDoVendedorData, ValidarDoVendedorResponses, ValorDoVendedorData, ValorDoVendedorResponses, VenderNaMaletaData, VenderNaMaletaResponses, VerConferenciaDaMinhaMaletaData, VerConferenciaDaMinhaMaletaResponses, VerCotacaoDeHojeData, VerCotacaoDeHojeResponses, VerMeuClienteData, VerMeuClienteResponses, VerMinhaMaletaData, VerMinhaMaletaResponses, VerVendaDoVendedorData, VerVendaDoVendedorResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -298,6 +298,20 @@ export const enviarOperacoes = <ThrowOnError extends boolean = false>(options: O
     headers: {
         'Content-Type': 'application/json',
         ...options.headers
+    }
+});
+
+/**
+ * Guardar o que o computador bloqueado ainda não tinha enviado
+ *
+ * Sem token de acesso. Mande o token de renovação (revogado por bloqueio do computador ou por desativação do vendedor, há no máximo 30 dias), o dispositivoId e até 50 operações (512 KB). O servidor guarda SEM aplicar: GUARDADO, JA_GUARDADO ou RECUSADO por item. Qualquer outro caso responde 401 SESSAO_TERMINADA, sem dizer o motivo. Resposta definitiva: o app pode apagar os dados.
+ */
+export const guardarEmQuarentena = <ThrowOnError extends boolean = false>(options?: Options<GuardarEmQuarentenaData, ThrowOnError>): RequestResult<GuardarEmQuarentenaResponses, unknown, ThrowOnError> => (options?.client ?? client).post<GuardarEmQuarentenaResponses, unknown, ThrowOnError>({
+    url: '/api/vendedor/sync/quarentena',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options?.headers
     }
 });
 

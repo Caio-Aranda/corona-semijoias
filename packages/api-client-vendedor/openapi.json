@@ -833,6 +833,21 @@
         },
         "type" : "object"
       },
+      "RespostaDaQuarentena" : {
+        "properties" : {
+          "horaServidor" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "resultados" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ResultadoGuardado"
+            },
+            "type" : "array"
+          }
+        },
+        "type" : "object"
+      },
       "RespostaDoEnvio" : {
         "properties" : {
           "apagarDados" : {
@@ -929,6 +944,50 @@
           },
           "resultado" : {
             "enum" : [ "ACEITO", "JA_RECEBIDO", "CONFLITO", "RECUSADO", "NAO_PROCESSADO" ],
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ResultadoGuardado" : {
+        "properties" : {
+          "codigo" : {
+            "type" : "string"
+          },
+          "mensagem" : {
+            "type" : "string"
+          },
+          "operacaoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "resultado" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ServicoDeQuarentenaPedido" : {
+        "properties" : {
+          "aguardandoDepoisDeste" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "dispositivoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "horaLocal" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "operacoes" : {
+            "items" : {
+              "$ref" : "#/components/schemas/OperacaoEnviada"
+            },
+            "type" : "array"
+          },
+          "tokenDeRenovacao" : {
             "type" : "string"
           }
         },
@@ -1923,6 +1982,36 @@
         } ],
         "summary" : "Enviar as operações guardadas (push)",
         "tags" : [ "sync-do-vendedor-controller" ]
+      }
+    },
+    "/api/vendedor/sync/quarentena" : {
+      "post" : {
+        "description" : "Sem token de acesso. Mande o token de renovação (revogado por bloqueio do computador ou por desativação do vendedor, há no máximo 30 dias), o dispositivoId e até 50 operações (512 KB). O servidor guarda SEM aplicar: GUARDADO, JA_GUARDADO ou RECUSADO por item. Qualquer outro caso responde 401 SESSAO_TERMINADA, sem dizer o motivo. Resposta definitiva: o app pode apagar os dados.",
+        "operationId" : "guardarEmQuarentena",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ServicoDeQuarentenaPedido"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDaQuarentena"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ ],
+        "summary" : "Guardar o que o computador bloqueado ainda não tinha enviado",
+        "tags" : [ "quarentena-controller" ]
       }
     },
     "/api/vendedor/teste/dinheiro" : {
