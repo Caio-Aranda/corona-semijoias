@@ -18,6 +18,7 @@ export type CodigoDaOperacao =
   | 'DESCONTO_MAIOR_QUE_A_PECA'
   | 'DESCONTO_ACIMA_DO_LIMITE'
   | 'PAGO_PASSA_DO_TOTAL'
+  | 'PAGAMENTO_SEM_VALOR'
   | 'VENDA_NAO_ENCONTRADA'
   | 'VENDA_JA_ESTORNADA'
   | 'CLIENTE_JA_CADASTRADO'
@@ -31,6 +32,7 @@ export const MENSAGENS_DAS_OPERACOES: Readonly<Record<CodigoDaOperacao, string>>
   DESCONTO_MAIOR_QUE_A_PECA: 'O desconto é maior que o valor da peça.',
   DESCONTO_ACIMA_DO_LIMITE: 'O desconto passa do limite que a dona definiu. Diminua o desconto.',
   PAGO_PASSA_DO_TOTAL: 'O valor pago passa do total da venda. Confira os pagamentos.',
+  PAGAMENTO_SEM_VALOR: 'O valor do pagamento precisa ser maior que zero.',
   VENDA_NAO_ENCONTRADA:
     'Não encontramos esta venda neste computador. Atualize a tela e tente de novo.',
   VENDA_JA_ESTORNADA: 'Esta venda já foi estornada.',
@@ -134,7 +136,11 @@ export class OperacoesLocais {
         throw new ErroDaOperacao('DESCONTO_ACIMA_DO_LIMITE');
       const total = subtotal - desconto;
       let pago = 0n;
-      for (const p of venda.pagamentos) pago += exigirCentavos(p.valor);
+      for (const p of venda.pagamentos) {
+        const valor = exigirCentavos(p.valor);
+        if (valor <= 0n) throw new ErroDaOperacao('PAGAMENTO_SEM_VALOR');
+        pago += valor;
+      }
       if (pago > total) throw new ErroDaOperacao('PAGO_PASSA_DO_TOTAL');
 
       const vendidaEm = agora.toISOString();

@@ -479,6 +479,8 @@ Na ficha da maleta, no Corona Gestão: **Conferência do vendedor** mostra "Na m
 
 > O valor pago passa do total da venda. Confira os pagamentos.
 
+> O valor do pagamento precisa ser maior que zero. (pagamento com valor zero ou negativo)
+
 > Esta venda já foi estornada.
 
 > Este cliente já está cadastrado: {nome}. (CPF repetido no diretório do computador, com o botão **Usar este cliente**)

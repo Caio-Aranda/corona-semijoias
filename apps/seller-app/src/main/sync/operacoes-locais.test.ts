@@ -104,6 +104,24 @@ describe('venda sem internet', () => {
     expect(saldoDaPeca(b.db, m.remessaId, m.produtoA)).toBe(3);
   });
 
+  it('pagamento com valor zero ou negativo é recusado no computador', () => {
+    for (const valor of ['0.00', '0', '-5.00']) {
+      let erro: unknown;
+      try {
+        ops.vender(venda(1, { pago: valor }));
+      } catch (e) {
+        erro = e;
+      }
+      expect(erro).toBeInstanceOf(ErroDaOperacao);
+      expect((erro as ErroDaOperacao).codigo).toBe('PAGAMENTO_SEM_VALOR');
+      expect((erro as ErroDaOperacao).message).toBe(
+        'O valor do pagamento precisa ser maior que zero.',
+      );
+    }
+    expect(outbox()).toHaveLength(0);
+    expect(contar(b.db, 'SELECT 1 FROM vendas')).toBe(0);
+  });
+
   it('sem saldo, peça fora da maleta ou pago acima do total: nada é gravado', () => {
     expect(() => ops.vender(venda(4))).toThrow(ErroDaOperacao);
     expect(() =>
