@@ -16,9 +16,12 @@ public class AgendaDaLimpezaTecnica {
     private static final Logger LOG = LoggerFactory.getLogger(AgendaDaLimpezaTecnica.class);
 
     private final LimpezaDeDadosTecnicos limpeza;
+    private final br.com.coronasemijoias.api.sync.EsvaziamentoDoRegistroDeEnvios registroDeEnvios;
 
-    public AgendaDaLimpezaTecnica(LimpezaDeDadosTecnicos limpeza) {
+    public AgendaDaLimpezaTecnica(LimpezaDeDadosTecnicos limpeza,
+            br.com.coronasemijoias.api.sync.EsvaziamentoDoRegistroDeEnvios registroDeEnvios) {
         this.limpeza = limpeza;
+        this.registroDeEnvios = registroDeEnvios;
     }
 
     @Scheduled(cron = "0 45 3 * * *", zone = "UTC")
@@ -27,6 +30,12 @@ public class AgendaDaLimpezaTecnica {
             limpeza.limpar();
         } catch (RuntimeException e) {
             LOG.error("Limpeza técnica: falhou; tenta de novo amanhã.", e);
+        }
+        try {
+            // O JSON completo dos envios do Corona Vendas fica 90 dias; depois, só o resumo (tarefa 5.5).
+            registroDeEnvios.esvaziar();
+        } catch (RuntimeException e) {
+            LOG.error("Registro dos envios: o esvaziamento falhou; tenta de novo amanhã.", e);
         }
     }
 }

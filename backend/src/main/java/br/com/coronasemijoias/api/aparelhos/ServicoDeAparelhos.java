@@ -120,6 +120,24 @@ public class ServicoDeAparelhos {
         }
     }
 
+    /**
+     * O computador enviou (push, tarefa 5.5): guarda a hora, quantas operações ele disse que ainda aguardam e, se o envio
+     * terminou com tudo resolvido e nada aguardando, o "último envio completo" (o acerto da Fase 7 exige).
+     */
+    @Transactional
+    public void registrarPush(UUID dispositivoId, Integer aguardando, boolean completo) {
+        if (dispositivoId == null) {
+            return;
+        }
+        Timestamp agora = Timestamp.from(agora());
+        jdbc.update("""
+                UPDATE corona.dispositivos SET ultimo_push_em = ?, ultimo_contato_em = ?,
+                       aguardando_envio = coalesce(?, aguardando_envio),
+                       aguardando_informado_em = CASE WHEN ?::integer IS NULL THEN aguardando_informado_em ELSE ? END,
+                       ultimo_envio_completo_em = CASE WHEN ?::boolean THEN ? ELSE ultimo_envio_completo_em END
+                 WHERE id = ?""", agora, agora, aguardando == null ? null : Math.max(0, aguardando),
+                aguardando, agora, completo, agora, dispositivoId);
+    }
     /** O computador recebeu dados (pull, tarefa 5.4): guarda a hora, para a dona ver o último contato. */
     @Transactional
     public void registrarPull(UUID dispositivoId) {

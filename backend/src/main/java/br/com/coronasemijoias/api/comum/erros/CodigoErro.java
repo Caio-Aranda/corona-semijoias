@@ -449,7 +449,43 @@ public enum CodigoErro {
     /** O ponto de onde o computador recebe os dados não vale mais (backup restaurado): ele baixa tudo de novo (HTTP 409). */
     CURSOR_INVALIDO(
             "Os dados deste computador vão ser baixados de novo.",
-            "Os dados deste computador vão ser baixados de novo. Suas vendas guardadas continuam salvas.");
+            "Os dados deste computador vão ser baixados de novo. Suas vendas guardadas continuam salvas."),
+
+    // --- Enviar as vendas guardadas (Fase 5, tarefa 5.5; ADR-0013, item 2) ---
+
+    /** Outro envio deste computador ainda está em andamento (HTTP 429, com Retry-After). O app tenta de novo sozinho. */
+    ENVIO_EM_ANDAMENTO(
+            "Suas vendas já estão sendo enviadas.",
+            "Suas vendas já estão sendo enviadas. Aguarde um instante."),
+
+    /** O lote passou de 50 operações ou de 512 KB (HTTP 413). O app manda a metade. */
+    LOTE_GRANDE_DEMAIS(
+            "Muitas vendas de uma vez.",
+            "Muitas vendas de uma vez. O Corona Vendas vai enviar em partes menores."),
+
+    /** A operação usa um registro cujo envio foi recusado (o cliente da venda, a venda do estorno). */
+    DEPENDE_DE_ENVIO_RECUSADO(
+            "Esta venda depende de outro registro que não foi aceito.",
+            "Esta venda depende de outro registro que não foi aceito. A dona já foi avisada."),
+
+    /** O vendedor alterou um cliente que não atende (HTTP 409). */
+    CLIENTE_DE_OUTRO_VENDEDOR(
+            "Este cliente é atendido por outro vendedor.",
+            "Este cliente é atendido por outro vendedor. Só quem atende o cliente muda o cadastro dele. Fale com a dona."),
+
+    ENVIO_NAO_ENCONTRADO(
+            "Não encontramos este envio.",
+            "Não encontramos este envio. Atualize a tela e tente de novo."),
+
+    /** A dona já tentou de novo ou descartou este envio (HTTP 409). */
+    ENVIO_JA_RESOLVIDO(
+            "Este envio já foi resolvido.",
+            "Este envio já foi resolvido. Atualize a tela para ver como ficou."),
+
+    /** Envio de mais de 90 dias: os dados completos já saíram do servidor e ele não pode ser repetido (HTTP 409). */
+    ENVIO_SEM_DADOS(
+            "Este envio é antigo demais para ser repetido.",
+            "Este envio é antigo demais para ser repetido. Os detalhes completos ficam guardados por 90 dias. Descarte-o.");
 
     private final String titulo;
     private final String mensagem;

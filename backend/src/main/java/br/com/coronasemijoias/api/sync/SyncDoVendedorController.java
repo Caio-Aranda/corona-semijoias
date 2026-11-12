@@ -76,15 +76,22 @@ public class SyncDoVendedorController {
             @NotNull(message = Mensagens.OBRIGATORIO) @Size(max = 50, message = Mensagens.LIMITE_LONGO) List<String> tabelas) {
     }
 
+    /** A resposta do envio: o resultado de cada operação, na ordem, mais a hora e os parâmetros (como no pull). */
+    public record RespostaDoEnvio(List<ServicoDeEnvio.ResultadoDaOperacao> resultados, Instant horaServidor,
+            ParametrosDoVendedor parametros, boolean apagarDados) {
+    }
+
     private final ServicoDePull pull;
+    private final ServicoDeEnvio envio;
     private final RegistroDeTabelas registro;
     private final ServicoDeAparelhos aparelhos;
     private final Configuracoes configuracoes;
     private final Clock relogio;
 
-    SyncDoVendedorController(ServicoDePull pull, RegistroDeTabelas registro, ServicoDeAparelhos aparelhos,
+    SyncDoVendedorController(ServicoDePull pull, ServicoDeEnvio envio, RegistroDeTabelas registro, ServicoDeAparelhos aparelhos,
             Configuracoes configuracoes, Clock relogio) {
         this.pull = pull;
+        this.envio = envio;
         this.registro = registro;
         this.aparelhos = aparelhos;
         this.configuracoes = configuracoes;
@@ -121,6 +128,29 @@ public class SyncDoVendedorController {
             linhas.add(new LinhaRecebida(l.tabela(), l.id(), l.versao(), l.excluidaEm(), campos(l)));
         }
         return new RespostaDoPull(linhas, lote.proximoCursor(), lote.haMais(), agora, parametros(quem));
+    }
+
+    @Operation(operationId = "enviarOperacoes", summary = "Enviar as operações guardadas (push)",
+            description = "Até 50 operações ou 512 KB, na ordem da fila do computador. Cada uma é processada numa transação "
+                    + "própria e recebe ACEITO, JA_RECEBIDO (mesmo id e mesmo conteúdo), CONFLITO (mesmo id, outro conteúdo), "
+                    + "RECUSADO (regra de negócio; a dona é avisada) ou NAO_PROCESSADO (passageiro: o lote parou ali). "
+                    + "horaLocal é o relógio do computador no envio (corrige a hora das vendas); aguardandoDepoisDeste, "
+                    + "quantas ainda ficam. 429 ENVIO_EM_ANDAMENTO: outro envio deste computador em andamento. 413 "
+                    + "LOTE_GRANDE_DEMAIS: mande a metade. O computador trocado ainda envia o que guardou; terminando com "
+                    + "nada aguardando, recebe apagarDados.")
+    @PostMapping("/push")
+    @br.com.coronasemijoias.api.aparelhos.AceitaComputadorTrocado
+    public RespostaDoEnvio enviar(@AuthenticationPrincipal UsuarioAutenticado quem,
+            @RequestBody ServicoDeEnvio.PedidoDeEnvio pedido, jakarta.servlet.http.HttpServletRequest requisicao) {
+        if (requisicao.getContentLengthLong() > ServicoDeEnvio.MAXIMO_DE_BYTES) {
+            throw new ErroDaApi(HttpStatus.CONTENT_TOO_LARGE, CodigoErro.LOTE_GRANDE_DEMAIS);
+        }
+        if (pedido == null) {
+            throw new ErroDaApi(HttpStatus.BAD_REQUEST, CodigoErro.PEDIDO_INVALIDO);
+        }
+        ServicoDeEnvio.Envio feito = envio.enviar(quem, pedido);
+        return new RespostaDoEnvio(feito.resultados(), relogio.instant().truncatedTo(ChronoUnit.MILLIS), parametros(quem),
+                feito.apagarDados());
     }
 
     @Operation(operationId = "conferirDados", summary = "Conferência por resumo dos dados do vendedor",
