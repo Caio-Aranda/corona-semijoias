@@ -257,7 +257,12 @@ Plano aprovado pela orquestradora (PR 112), com quatro ajustes: extrair a montag
 
 ### Estresse longo
 
-RESULTADO_DO_ESTRESSE
+Os dois estresses longos (10 minutos cada) rodaram em 12/11/2026 e passaram.
+
+- **Duas pontas** (`npm run estresse -w @corona/testes-sync`; vendedores reais com SQLCipher contra a API e o PostgreSQL de teste): **verde**, semente 51400, 601 s, 5 vendedores e a dona mexendo, rede ruim. Movimento: 1559 vendas, 1296 estornos, 1063 clientes, 46 conferências, 76 fotos trocadas, 41 maletas novas, 92 códigos mexidos, 96 preços mudados, 450 quedas de internet e 1 troca de computador. No fim, a cópia de cada vendedor igual ao oráculo (nada duplicado, nada perdido) e a conciliação fechando.
+- **Pull com filtro** (`EstresseDoPullTest`, `-Dcorona.estresse.duracao=PT10M`): **verde**, semente 20261109, 8 escritores, 615,8 s. 45.943 operações; 3221 transações confirmadas, 598 desfeitas, 4 abortadas por conflito, 2507 savepoints desfeitos, 90 transações longas (5 s); 25.720 lotes lidos, 34.218 linhas recebidas e 17.449 registros conferidos contra o oráculo, sem diferença.
+
+Nenhuma falha, nenhum achado novo.
 
 ### Pendências da Fase 5 e dono de cada uma
 
