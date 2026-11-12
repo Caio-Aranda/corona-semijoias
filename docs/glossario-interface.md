@@ -497,6 +497,17 @@ Depois de apagar os dados (tarefa 5.8), o Corona Vendas mostra: "Este computador
 > Este cliente é atendido por outro vendedor. Só quem atende o cliente muda o cadastro dele. Fale com a dona.
 
 Na tela da dona: "Não encontramos este envio. Atualize a tela e tente de novo." · "Este envio já foi resolvido. Atualize a tela para ver como ficou." · "Este envio é antigo demais para ser repetido. Os detalhes completos ficam guardados por 90 dias. Descarte-o." Ao descartar, o motivo é obrigatório: "Diga o motivo de descartar este envio."
+
+**Avisos dos computadores em "O que precisa da sua atenção" (Fase 5, tarefa 5.11; ADR-0013, item 21; dúvida D4: 3 dias).**
+
+> **O computador de Maria está há 3 dias sem enviar.**
+> Peça a Maria para conectar o Corona Vendas à internet. As vendas feitas sem internet só chegam quando o computador conectar.
+
+> **Maria entrou num computador novo.**
+> Para Maria vender nesse computador, abra a ficha do vendedor e use Trocar computador. Se não foi ela, use Bloquear computador.
+
+(Com 1 dia: "há 1 dia". Vários computadores: um aviso por computador.)
+
 **Receber os dados (Fase 5, tarefa 5.4).** Quando o ponto de onde o computador recebe os dados não vale mais (a loja restaurou uma cópia de segurança), o servidor responde:
 
 > **Os dados deste computador vão ser baixados de novo.**
