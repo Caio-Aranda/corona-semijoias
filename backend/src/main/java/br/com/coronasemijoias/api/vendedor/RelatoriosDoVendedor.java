@@ -109,13 +109,20 @@ public class RelatoriosDoVendedor {
         return relatorio(lancamentos);
     }
 
-    /** Valores a receber dos clientes do vendedor: vendas (não estornadas) menos o pago, só quem deve. */
+    /**
+     * Valores a receber dos clientes do vendedor: vendas (não estornadas) menos o devolvido (devoluções não canceladas,
+     * tarefa 6.3) menos o pago, só quem deve.
+     */
     public RelatorioAReceber aReceber(UUID vendedorId) {
         Map<UUID, String> nomes = new LinkedHashMap<>();
         Map<UUID, Soma> vendido = new LinkedHashMap<>();
         Map<UUID, Soma> pago = new LinkedHashMap<>();
         jdbc.query("""
-                SELECT c.id, c.nome, v.total, ct.usd_venda, ct.pyg_venda
+                SELECT c.id, c.nome,
+                       v.total - coalesce((SELECT sum(d.valor_devolvido) FROM corona.devolucoes d
+                                            WHERE d.venda_id = v.id AND d.situacao <> 'CANCELADA' AND d.deleted_at IS NULL), 0)
+                           AS total,
+                       ct.usd_venda, ct.pyg_venda
                   FROM corona.vendas v JOIN corona.clientes c ON c.id = v.cliente_id
                   LEFT JOIN corona.cotacoes ct ON ct.id = v.cotacao_id
                  WHERE v.vendedor_id = ? AND v.status = 'CONCLUIDA' AND v.deleted_at IS NULL
