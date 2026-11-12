@@ -143,25 +143,29 @@ Três casos:
 
 | Caso | O que acontece | Efeito na maleta |
 | --- | --- | --- |
-| Devolução do cliente | Devolve peça (total ou parcial da venda) | Peça boa volta ao saldo; venda estornada |
-| Troca | Devolve A e leva B | A entra, B sai, com acerto da diferença |
+| Devolução do cliente | Devolve peça (total ou parcial da venda) | Peça boa de maleta ainda aberta volta ao saldo; a venda **não muda** (a devolução é um registro novo) |
+| Troca | Devolve A e leva B (devolução + venda nova, ligadas) | A entra, B sai, com acerto da diferença |
 | Devolução à dona | Vendedor devolve peças não vendidas ou com defeito | Sai do saldo e volta ao estoque central no acerto |
 
 Regras:
 
 - **Sempre ligada à venda original**, encontrada bipando a peça ou escolhendo a venda. Só aceita devolver até a quantidade vendida, pelo preço pago.
 - **Motivo obrigatório:** arrependimento, defeito, tamanho, outro. Foto opcional.
-- **Estado da peça:** `BOA` volta ao saldo vendável; `DEFEITO` fica separada e segue para a dona no acerto, sem voltar a ser vendida.
-- **Garantia:** o cliente pode **receber o dinheiro de volta (reembolso) ou trocar**, desde que **dentro do prazo**. Dois prazos configuráveis pela dona: `prazo_arrependimento_dias` e `prazo_defeito_dias`, contados da data da venda.
-- **Fora do prazo:** o app bloqueia e oferece só o pedido de **autorização da dona**, que fica pendente e é resolvido online. O vendedor não conclui sozinho.
-- A validação ocorre no app (offline) e de novo no servidor. Se a hora do aparelho divergir, **o servidor decide**.
-- **Diferença na troca:** B vale mais, o cliente paga a diferença (à vista ou a prazo); B vale menos, a diferença vira **crédito** do cliente (usado em compra futura) ou é devolvida, conforme a regra da loja.
+- **Estado da peça:** `BOA` volta ao saldo vendável da maleta original, **se ela ainda está aberta**; `BOA` de maleta já acertada e toda peça `DEFEITO` viram **peça para a loja**: não voltam ao saldo do vendedor e são esperadas à parte no próximo acerto (ADR-0014, item 7). Nenhuma maleta acertada recebe movimento novo.
+- **A venda original não muda** (continua concluída). O quanto já foi devolvido é a soma das devoluções ativas dela; o total devolvido por linha nunca passa do vendido. Venda com devolução ativa não pode mais ser estornada (só cancelar a devolução antes).
+- **Valor devolvido** = o preço pago, por unidade (total da linha ÷ quantidade, com a sobra de centavos nas últimas unidades). O app nunca manda valor: o servidor calcula.
+- **Garantia:** o cliente pode **receber o dinheiro de volta (reembolso) ou trocar**, desde que **dentro do prazo**. Dois prazos configuráveis pela dona, contados em **dias do calendário de Brasília** a partir do dia da venda: `prazo_arrependimento_dias` (padrão 7; vale para arrependimento, tamanho e outro) e `prazo_defeito_dias` (padrão 30; vale para defeito). Ambos chegam ao app no bloco de parâmetros do pull.
+- **Fora do prazo:** o app bloqueia e oferece só o pedido de **autorização da dona**, que é resolvido online. O vendedor não conclui sozinho. A autorização aprovada vale **7 dias** e só serve para uma devolução.
+- A validação ocorre no app (offline) e de novo no servidor. Se a hora do aparelho divergir, **o servidor decide**; mas o que já aconteceu no balcão **nunca é recusado em silêncio**: a devolução que o app achou dentro do prazo e o servidor acha fora entra **para revisão da dona** (ela mantém, ou não aceita e o valor vira pendência do vendedor no próximo acerto). Recusa só para o impossível (venda de outro vendedor, quantidade acima da vendida).
+- **Diferença na troca:** B vale mais, o cliente paga a diferença (à vista ou a prazo); B vale menos, a diferença vira **crédito** do cliente (usado em compra futura; padrão até a dona responder, dúvida D4). A troca é **uma operação só** (tudo ou nada) e não tem tabela de itens própria: as linhas ficam na devolução e na venda nova.
+- **Crédito do cliente:** é usado como forma de pagamento `CREDITO` numa venda nova; não vence; **sem internet só o vendedor que o gerou pode usá-lo**; a dona usa e transfere online. Crédito já usado impede cancelar a troca que o gerou.
+- **Corrigir:** devolução ou troca errada se corrige com "Cancelar devolução" ou "Cancelar troca" (registro novo de sinal oposto, nunca edição): o vendedor até o fim do dia, depois só a dona.
 - **Tratamento financeiro do reembolso:**
   - venda já paga: o vendedor devolve o dinheiro e registra; no acerto o valor é **abatido** do repasse;
   - venda a prazo sem pagamento: cancelam-se as parcelas, sem dinheiro a devolver;
   - venda a prazo parcialmente paga: devolve só o já pago e cancela as parcelas restantes;
   - comissão estornada proporcionalmente pelo servidor.
-- **Antifraude:** limite de reembolso semanal por vendedor, aprovação da dona acima de certo valor, alerta quando a taxa de devolução de um vendedor passa de um percentual configurável. Reembolso inconsistente (sem venda, fora do prazo, maior que o pago) vira **pendência para revisão da dona**, nunca é aceito em silêncio.
+- **Antifraude:** limite de reembolso semanal por vendedor (`limite_reembolso_semanal`, vazio = sem limite), aprovação da dona acima de certo valor (`valor_aprovacao_reembolso`, vazio = sem valor), alerta quando a taxa de devolução de um vendedor (valor devolvido ÷ vendido nas últimas 4 semanas) passa de um percentual configurável (`percentual_alerta_devolucao`, padrão 20). Reembolso inconsistente (sem venda, fora do prazo, maior que o pago) vira **pendência para revisão da dona**, nunca é aceito em silêncio.
 - Nada se edita: pagamento original nunca é apagado; o reembolso é um registro negativo.
 
 ### 7.4 Acerto semanal (online)
@@ -290,12 +294,13 @@ Risco: etiquetas muito pequenas ou de baixa qualidade podem exigir leitor 2D ou 
 
 ### Devolução e troca
 
-- `devolucoes` (venda, cliente, vendedor, remessa, motivo, data, status, `destino: REEMBOLSO | TROCA`, dentro\_garantia, autorizada\_por, valor\_reembolsado)
-- `itens_devolucao` (devolução, produto, quantidade, valor\_unitario, `estado_peca: BOA | DEFEITO`)
-- `trocas` (venda\_origem, cliente, vendedor, remessa, diferenca\_valor, data)
-- `itens_troca` (troca, produto, quantidade, valor\_unitario, `sentido: ENTRADA | SAIDA`)
-- `creditos_cliente` (cliente, origem, valor, valor\_utilizado, status ABERTO/UTILIZADO)
-- `autorizacoes_excecao` (devolução fora do prazo: solicitada, aprovada ou negada pela dona)
+Modelo no ADR-0014 (tabelas criadas nas tarefas 6.3 a 6.5; todas imutáveis, correção por registro de sinal oposto):
+
+- `devolucoes` (venda, cliente, vendedor, remessa, motivo, observação, `destino: REEMBOLSO | TROCA`, dentro\_garantia, `situacao: ACEITA | EM_REVISAO | MANTIDA | NAO_ACEITA | CANCELADA`, autorizacao\_id, valor\_devolvido, valor\_reembolsado, hora e hora ajustada)
+- `itens_devolucao` (devolução, item da venda, quantidade, valor, `estado_peca: BOA | DEFEITO`, `destino_peca: MALETA | LOJA`)
+- `trocas` (venda de origem, devolução, venda nova, cliente, vendedor, diferença). **Não existe `itens_troca`**: as linhas estão na devolução e na venda nova (`vendas.troca_id`); na maleta, os tipos `TROCA_ENTRADA` e `TROCA_SAIDA` separam a troca da devolução.
+- `creditos_cliente` (cliente, vendedor que gerou, origem `TROCA | DEVOLUCAO`, valor, valor\_utilizado, situação ABERTO/UTILIZADO) e `usos_credito` (crédito, venda, valor)
+- `autorizacoes_excecao` (venda, itens e quantidades, motivo, `tipo: FORA_DO_PRAZO | ACIMA_DO_VALOR`, `situacao: PEDIDA | APROVADA | NEGADA | USADA | VENCIDA`, quem decidiu, quando, validade de 7 dias)
 
 ### Acerto e financeiro
 
@@ -309,7 +314,7 @@ Risco: etiquetas muito pequenas ou de baixa qualidade podem exigir leitor 2D ou 
 
 ### Controle
 
-- `configuracoes` (prazo\_arrependimento\_dias, prazo\_defeito\_dias, limite\_desconto, limite\_reembolso\_semanal, aprovação acima de valor, percentual de alerta de devolução, tempo máximo offline (padrão 10 dias, configurável), tentativas de login antes do bloqueio (padrão 5), tempo de bloqueio (padrão 15 minutos))
+- `configuracoes` (uma linha por chave, valor numa coluna do tipo certo: `valor_inteiro` ou `valor_dinheiro`; só do servidor: prazo\_arrependimento\_dias (padrão 7), prazo\_defeito\_dias (padrão 30), limite\_desconto, limite\_reembolso\_semanal (Real; vazio = sem limite), valor\_aprovacao\_reembolso (Real; vazio = sem valor), percentual\_alerta\_devolucao (padrão 20), tempo máximo offline (padrão 10 dias, configurável), tentativas de login antes do bloqueio (padrão 5), tempo de bloqueio (padrão 15 minutos))
 - `auditoria` (usuário, ação, tabela, registro, antes/depois, data)
 - `cotacoes` (data da cotação; compra, venda e as duas paridades do Dólar e do Guarani; hora da busca; endereço de origem). Uma linha por dia útil. **Nasce só no servidor**, é **imutável** e chega ao app do vendedor só para leitura (ADR-0006)
 - `dispositivos` (vendedor, identificação, ativo, bloqueado, último contato)
@@ -725,3 +730,7 @@ Importação com nome de arquivo inválido, foto duplicada, arquivo corrompido, 
   - §9: todo cadastro tem `ativo` e pode ser recuperado (fornecedores, categorias, praças, restrições e clientes passam a ter; semanas não, pois têm ABERTA/FECHADA). Inativar não exclui, preserva os vínculos e some só das escolhas e buscas. `clientes` ganha `data_nascimento` opcional (não futura).
   - §10: `clientes` e `categorias` levam `ativo` ao vendedor; `clientes` leva também a data de nascimento, porque o vendedor é quem cadastra o cliente (só dos clientes dele, filtro da Fase 5). Padrão seguro adotado na tarefa.
   - §12: filtro de situação em clientes e fornecedores; aniversariantes passa a incluir clientes.
+- **v1.8, 12/11/2026:** garantia e devolução (ADR-0014, tarefa 6.2).
+  - §7.3: a devolução é registro novo e a venda não muda; peça boa de maleta acertada e peça com defeito vão para a loja; prazos em dias de Brasília; devolução fora do prazo pelo servidor entra para revisão, nunca recusada; autorização vale 7 dias; troca é uma operação só, sem tabela de itens; crédito do cliente; cancelar devolução e troca.
+  - §9: `devolucoes`, `itens_devolucao`, `trocas`, `creditos_cliente`, `usos_credito` e `autorizacoes_excecao` reescritas; `itens_troca` deixa de existir; `configuracoes` ganha o tipo dinheiro e as cinco chaves da garantia (migração V035), com os padrões seguros.
+  - §10: o bloco de parâmetros do pull ganha `prazoArrependimentoDias` e `prazoDefeitoDias` (limites de reembolso ficam só no servidor).

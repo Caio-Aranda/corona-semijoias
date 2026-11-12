@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/** A tabela {@code configuracoes} (especificação §9): só as três chaves desta fase, com os padrões. */
+/** A tabela {@code configuracoes} (especificação §9): as chaves da loja (a garantia está em GarantiaTest), com os padrões. */
 class ConfiguracoesTest extends TesteDeIntegracao {
 
     @Autowired
@@ -23,8 +23,9 @@ class ConfiguracoesTest extends TesteDeIntegracao {
     @Test
     void asChavesComOsPadroes() {
         assertThat(jdbc.queryForList("SELECT chave FROM corona.configuracoes ORDER BY chave", String.class))
-                .containsExactly("limite_desconto_percentual", "tempo_bloqueio_login_minutos", "tempo_maximo_offline_dias",
-                        "tentativas_login_antes_do_bloqueio");
+                .containsExactly("limite_desconto_percentual", "limite_reembolso_semanal", "percentual_alerta_devolucao",
+                        "prazo_arrependimento_dias", "prazo_defeito_dias", "tempo_bloqueio_login_minutos",
+                        "tempo_maximo_offline_dias", "tentativas_login_antes_do_bloqueio", "valor_aprovacao_reembolso");
         assertThat(configuracoes.inteiro(ChaveDeConfiguracao.LIMITE_DESCONTO_PERCENTUAL)).isZero();
         assertThat(configuracoes.inteiro(ChaveDeConfiguracao.TEMPO_MAXIMO_OFFLINE_DIAS)).isEqualTo(10);
         assertThat(configuracoes.inteiro(ChaveDeConfiguracao.TENTATIVAS_LOGIN_ANTES_DO_BLOQUEIO)).isEqualTo(5);

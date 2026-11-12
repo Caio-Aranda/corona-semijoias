@@ -174,13 +174,14 @@ App do vendedor sem internet: SQLite criptografado, fila de envios e sincroniza�
 
 **Fase 5 concluída** (tarefas 5.1 a 5.14; a 5.14 foi o fechamento). Resumo: o vendedor vende, estorna, confere a maleta e cadastra cliente **sem internet**, no Corona Vendas, com os dados num banco criptografado no computador dele, protegido pela senha dele (o programa pede a senha ao abrir, também sem internet). Tudo é enviado sozinho quando a internet volta, uma vez só e na ordem; o servidor recalcula tudo e o que não aceitar vai para "Envios com problema" da dona. O computador sem internet por mais de 10 dias para de gravar (aviso aos 3 dias); a dona troca ou bloqueia o computador, e o computador bloqueado guarda as vendas em quarentena até ela aprovar. As fotos da maleta ficam no computador. A atualização do programa espera o envio e o servidor aceita o formato antigo por 90 dias. Testes de duas pontas (o motor real contra a API real, com rede ruim) e estresse longo verde. **Pendências** (com dono, no [relatório](progresso/fase-5.md#pendências-da-fase-5-e-dono-de-cada-uma)): o aviso de pouco espaço na tela e o "computador reiniciou" no servidor (Fase 6); o teste com um vendedor real sem internet ([roteiro](roteiro-teste-vendedor-sem-internet.md)) e o instalador trocando de versão ([roteiro](roteiro-atualizacao-com-vendas-aguardando.md)), do responsável; o desenho das telas da dona e da edição de cliente, para a dona (perguntas 26 e 27 de [perguntas-para-a-dona.md](perguntas-para-a-dona.md)). As demais tarefas estão no [plano](progresso/fase-5-plano.md).
 
-## Fase 6 (só o plano)
+## Fase 6 (em andamento)
 
 Devolução, troca e garantia. O modelo está no [ADR-0014](decisoes/ADR-0014-devolucao-troca-e-garantia.md) (Aceito em 12/11/2026); as tarefas e as dúvidas, no [plano da Fase 6](progresso/fase-6-plano.md).
 
 | Nº | Tarefa | Situação |
 | --- | --- | --- |
 | 6.1 | docs: plano da Fase 6 e ADR-0014 (devolução, troca e garantia) | Mesclada (PR 100) · [plano](progresso/fase-6-plano.md); R1–R6 aceitas em 12/11/2026 |
+| 6.2 | backend: garantia e parâmetros (V035, rotas da dona, `parametros` do pull, especificação) | PR 124 · [detalhe](progresso/fase-6.md) |
 
 ## Fase 7 (só o plano)
 

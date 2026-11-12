@@ -183,6 +183,8 @@ export type PagamentoLido = {
 
 export type ParametrosDoVendedor = {
     limiteDescontoPercentual?: number;
+    prazoArrependimentoDias?: number;
+    prazoDefeitoDias?: number;
     situacaoDoAparelho?: string;
     tempoMaximoOfflineDias?: number;
 };
