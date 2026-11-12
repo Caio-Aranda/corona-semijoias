@@ -244,7 +244,8 @@ export class CicloDeSincronizacao {
       if (!pagina200) return 'falha';
       dadosAte ??= pagina200.horaServidor;
       try {
-        aplicarLote(db, pagina200.linhas, { cursor: pagina200.cursor ?? cursor ?? '' });
+        // Cursor nulo do servidor: o anterior fica (`cursor: null` não mexe), nunca texto vazio.
+        aplicarLote(db, pagina200.linhas, { cursor: pagina200.cursor || null });
       } catch (erro) {
         if (erro instanceof LoteRecusado) {
           this.registrar(erro.message);

@@ -467,4 +467,22 @@ describe('época e conferência', () => {
     expect(contar(b.db, 'SELECT 1 FROM produtos WHERE id = ?', p)).toBe(1);
     expect(lerEstado(b.db, CHAVES.conferirDepoisDaCarga)).toBeNull();
   });
+
+  it('cursor nulo do servidor: mantém o cursor anterior e nunca grava texto vazio', async () => {
+    const vazio = { linhas: [], cursor: null, temMais: false, horaServidor: s.horaServidor };
+    s.roteirosDoPull.push({ status: 200, corpo: vazio });
+    await criarCiclo().executar();
+    expect(lerEstado(b.db, CHAVES.cursor)).toBeNull();
+    expect(
+      b.db.prepare("SELECT count(*) AS n FROM estado_sync WHERE chave = 'cursor'").get(),
+    ).toEqual({ n: 0 });
+
+    s.mudar({ tabela: 'categorias', id: idDeTeste(6), deletedAt: null, campos: { nome: 'a' } });
+    await criarCiclo().executar();
+    const anterior = lerEstado(b.db, CHAVES.cursor);
+    expect(anterior).toMatch(/^1:/);
+    s.roteirosDoPull.push({ status: 200, corpo: vazio });
+    await criarCiclo().executar();
+    expect(lerEstado(b.db, CHAVES.cursor)).toBe(anterior);
+  });
 });
