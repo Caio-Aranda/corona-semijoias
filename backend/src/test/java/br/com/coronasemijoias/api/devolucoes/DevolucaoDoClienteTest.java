@@ -156,8 +156,8 @@ class DevolucaoDoClienteTest extends TesteDeIntegracao {
 
     private UUID semana() throws Exception {
         int n = SEQUENCIA.getAndIncrement();
-        LocalDate inicio = LocalDate.of(2500, 1, 1).plusDays(10L * n);
-        return UUID.fromString(corpoDe(postar("/api/dona/semanas", dona(), mapa("numero", 90_000 + n,
+        LocalDate inicio = LocalDate.of(2900, 1, 1).plusDays(10L * n);
+        return UUID.fromString(corpoDe(postar("/api/dona/semanas", dona(), mapa("numero", 60_000 + n,
                 "inicio", inicio.toString(), "fim", inicio.plusDays(6).toString())).andExpect(status().isCreated()))
                 .get("id").asString());
     }
@@ -613,7 +613,8 @@ class DevolucaoDoClienteTest extends TesteDeIntegracao {
     void pecaBoaDeMaletaAcertadaEPecaComDefeitoViramPecaParaALojaSemMovimento() throws Exception {
         UsuarioDeTeste v = usuarios.criarVendedor();
         UUID anel = peca("50.00", 10);
-        UUID maleta = maleta(v, anel, 5);
+        // A maleta vende tudo: acertada sem sobra, ela não deixa diferença na conciliação do banco que os testes dividem.
+        UUID maleta = maleta(v, anel, 3);
         UUID cliente = cliente(v);
         UUID venda = vender(v, maleta, cliente, List.of(linha(anel, 3)), List.of(pagamento("150.00", "PIX")));
 
@@ -621,7 +622,7 @@ class DevolucaoDoClienteTest extends TesteDeIntegracao {
         JsonNode defeito = devolver(v, venda, "DEFEITO", "PIX", List.of(devolvida(anel, 1, "DEFEITO")));
         assertThat(defeito.get("itens").get(0).get("destino").asString()).isEqualTo("LOJA");
         assertThat(defeito.get("itens").get(0).get("estado").asString()).isEqualTo("DEFEITO");
-        assertThat(saldo(maleta, anel)).isEqualTo(2);
+        assertThat(saldo(maleta, anel)).isZero();
 
         // A maleta foi acertada: a peça boa também vai para a loja, sem movimento e sem mudar saldo nenhum.
         jdbc.update("UPDATE corona.remessas SET status = 'ACERTADA' WHERE id = ?", maleta);
@@ -629,7 +630,8 @@ class DevolucaoDoClienteTest extends TesteDeIntegracao {
         JsonNode boa = devolver(v, venda, "ARREPENDIMENTO", "PIX", List.of(devolvida(anel, 1, "BOA")));
         assertThat(boa.get("itens").get(0).get("destino").asString()).isEqualTo("LOJA");
         assertThat(contar("SELECT count(*) FROM corona.movimentos_remessa WHERE remessa_id = ?", maleta)).isEqualTo(movimentos);
-        assertThat(saldo(maleta, anel)).isEqualTo(2);
+        assertThat(saldo(maleta, anel)).isZero();
+        assertThat(estoque.conciliar().diferencasComMaletas()).noneMatch(x -> x.produtoId().equals(anel));
         assertThat(dec(boa.get("valorReembolsado"))).isEqualByComparingTo("50.00");
     }
 
@@ -907,6 +909,10 @@ class DevolucaoDoClienteTest extends TesteDeIntegracao {
         assertThat(saldo(maleta, anel)).isEqualTo(3);
         assertThat(estoque.conciliar().divergencias()).noneMatch(x -> x.produtoId().equals(anel));
         assertThat(estoque.conciliar().diferencasComMaletas()).noneMatch(x -> x.produtoId().equals(anel));
+        // O relatório de conciliação da dona faz a mesma conta.
+        JsonNode relatorio = corpoDe(ler("/api/dona/relatorios/estoque/conciliacao?produtoId=" + anel, dona())
+                .andExpect(status().isOk()));
+        assertThat(relatorio.get("total").asLong()).isZero();
     }
 
     // --- 14. imutabilidade ---
