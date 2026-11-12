@@ -145,6 +145,20 @@
         "required" : [ "nome" ],
         "type" : "object"
       },
+      "Campo" : {
+        "properties" : {
+          "campo" : {
+            "type" : "string"
+          },
+          "valorAnterior" : {
+            "type" : "string"
+          },
+          "valorNovo" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "CategoriasDaDonaControllerPedido" : {
         "properties" : {
           "id" : {
@@ -1038,6 +1052,50 @@
             "type" : "string"
           },
           "vendedorNome" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "EnvioGuardado" : {
+        "properties" : {
+          "criadoEmLocal" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "dados" : {
+            "$ref" : "#/components/schemas/JsonNode"
+          },
+          "dispositivoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "recebidoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "vendedorNome" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "EnviosComProblemaDaDonaControllerPedidoDeDescarte" : {
+        "properties" : {
+          "motivo" : {
+            "maxLength" : 500,
+            "minLength" : 0,
             "type" : "string"
           }
         },
@@ -3259,16 +3317,6 @@
         },
         "type" : "object"
       },
-      "PedidoDeDescarte" : {
-        "properties" : {
-          "motivo" : {
-            "maxLength" : 500,
-            "minLength" : 0,
-            "type" : "string"
-          }
-        },
-        "type" : "object"
-      },
       "PedidoDeDevolucao" : {
         "properties" : {
           "itens" : {
@@ -3828,6 +3876,16 @@
           "total" : {
             "format" : "int64",
             "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "QuarentenaDaDonaControllerPedidoDeDescarte" : {
+        "properties" : {
+          "motivo" : {
+            "maxLength" : 500,
+            "minLength" : 0,
+            "type" : "string"
           }
         },
         "type" : "object"
@@ -5497,6 +5555,25 @@
         },
         "type" : "object"
       },
+      "ResultadoDaOperacao" : {
+        "properties" : {
+          "codigo" : {
+            "type" : "string"
+          },
+          "mensagem" : {
+            "type" : "string"
+          },
+          "operacaoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "resultado" : {
+            "enum" : [ "ACEITO", "JA_RECEBIDO", "CONFLITO", "RECUSADO", "NAO_PROCESSADO" ],
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "SemProduto" : {
         "properties" : {
           "codigo" : {
@@ -5699,6 +5776,35 @@
             "example" : "123.45",
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ValorSubstituido" : {
+        "properties" : {
+          "campos" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Campo"
+            },
+            "type" : "array"
+          },
+          "clienteId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "clienteNome" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "quando" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "quemMudou" : {
             "type" : "string"
           }
         },
@@ -6644,6 +6750,32 @@
         "tags" : [ "clientes-da-dona-controller" ]
       }
     },
+    "/api/dona/clientes/valores-substituidos" : {
+      "get" : {
+        "description" : "Os 200 mais recentes: o campo, o valor que estava e o que passou a valer, e quem mudou.",
+        "operationId" : "listarValoresDeClienteSubstituidos",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/ValorSubstituido"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Valores de cliente substituídos",
+        "tags" : [ "valores-substituidos-da-dona-controller" ]
+      }
+    },
     "/api/dona/clientes/{id}" : {
       "delete" : {
         "description" : "Exclusão lógica: o cliente some das listas, mas o histórico fica.",
@@ -7150,7 +7282,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/PedidoDeDescarte"
+                "$ref" : "#/components/schemas/EnviosComProblemaDaDonaControllerPedidoDeDescarte"
               }
             }
           },
@@ -9130,6 +9262,99 @@
           "bearer" : [ ]
         } ],
         "tags" : [ "produtos-da-dona-controller" ]
+      }
+    },
+    "/api/dona/quarentena" : {
+      "get" : {
+        "description" : "O que o computador bloqueado ainda não tinha enviado e ficou guardado, sem valer, esperando a dona.",
+        "operationId" : "listarVendasDeComputadorBloqueado",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/EnvioGuardado"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Vendas de computador bloqueado",
+        "tags" : [ "quarentena-da-dona-controller" ]
+      }
+    },
+    "/api/dona/quarentena/{id}/aprovar" : {
+      "post" : {
+        "description" : "Passa o envio guardado pelo mesmo serviço do envio normal. Se for recusado, ele vai para os envios com problema, onde a dona resolve.",
+        "operationId" : "aprovarVendaDeComputadorBloqueado",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ResultadoDaOperacao"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Aprovar",
+        "tags" : [ "quarentena-da-dona-controller" ]
+      }
+    },
+    "/api/dona/quarentena/{id}/descartar" : {
+      "post" : {
+        "description" : "O envio guardado não entra. O motivo é obrigatório e fica na auditoria. Nada é apagado.",
+        "operationId" : "descartarVendaDeComputadorBloqueado",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/QuarentenaDaDonaControllerPedidoDeDescarte"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Descartar",
+        "tags" : [ "quarentena-da-dona-controller" ]
       }
     },
     "/api/dona/relatorios/cadastros/alteracoes-de-produtos" : {

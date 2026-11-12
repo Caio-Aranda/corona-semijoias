@@ -13,6 +13,10 @@ import { TelaReceberCompra } from './compras/TelaReceberCompra';
 import { ListaDeLancamentos } from './estoque/ListaDeLancamentos';
 import { ListaDoEstoque } from './estoque/ListaDoEstoque';
 import { TelaContagem } from './estoque/TelaContagem';
+import { TelaClientesAlterados } from './sincronizacao/TelaClientesAlterados';
+import { TelaComputadores } from './sincronizacao/TelaComputadores';
+import { TelaEnviosComProblema } from './sincronizacao/TelaEnviosComProblema';
+import { TelaVendasBloqueadas } from './sincronizacao/TelaVendasBloqueadas';
 import { TelaMaletas } from './maletas/TelaMaletas';
 import { TelaMontarMaleta } from './maletas/TelaMontarMaleta';
 import { TelaProdutos } from './produtos/TelaProdutos';
@@ -78,6 +82,14 @@ function Conteudo({
       return <TelaMontarMaleta ponte={ponte} />;
     case 'pessoas/vendedores':
       return <TelaVendedores ponte={ponte} />;
+    case 'computadores/lista':
+      return <TelaComputadores ponte={ponte} />;
+    case 'computadores/envios':
+      return <TelaEnviosComProblema ponte={ponte} />;
+    case 'computadores/vendas':
+      return <TelaVendasBloqueadas ponte={ponte} />;
+    case 'computadores/clientes':
+      return <TelaClientesAlterados ponte={ponte} />;
     case 'pessoas/usuarios':
       return <TelaUsuarios ponte={ponte} />;
     case 'cadastros/fornecedores':

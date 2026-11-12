@@ -9,6 +9,7 @@ import { OPERACOES_DE_ESTOQUE } from './estoque';
 import { OPERACOES_DE_MALETAS } from './maletas';
 import { OPERACOES_DE_PRODUTOS } from './produtos';
 import { OPERACOES_DE_RELATORIOS } from './relatorios';
+import { OPERACOES_DE_SINCRONIZACAO } from './sincronizacao';
 import { OPERACOES_DE_VENDEDORES } from './vendedores';
 
 /** Operações de consulta que o processo principal aceita fazer em nome da tela. */
@@ -31,6 +32,7 @@ export const OPERACOES_DA_API = [
   ...OPERACOES_DE_ESTOQUE,
   ...OPERACOES_DE_MALETAS,
   ...OPERACOES_DE_RELATORIOS,
+  ...OPERACOES_DE_SINCRONIZACAO,
 ] as const;
 export type OperacaoDaApi = (typeof OPERACOES_DA_API)[number];
 

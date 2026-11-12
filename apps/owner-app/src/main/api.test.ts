@@ -408,6 +408,40 @@ describe('API do Corona Gestão: rotas certas no cliente gerado', () => {
         { operacao: 'maletas.cancelar', id: ID, motivo: 'Vendedor desistiu' },
         `POST /api/dona/remessas/${ID}/cancelar`,
       ],
+      [
+        { operacao: 'sincronizacao.aparelhos', vendedorId: ID },
+        `GET /api/dona/vendedores/${ID}/aparelhos`,
+      ],
+      [
+        { operacao: 'sincronizacao.liberarAparelho', id: ID },
+        `POST /api/dona/aparelhos/${ID}/liberar`,
+      ],
+      [
+        { operacao: 'sincronizacao.bloquearAparelho', id: ID },
+        `POST /api/dona/aparelhos/${ID}/bloquear`,
+      ],
+      [{ operacao: 'sincronizacao.envios' }, 'GET /api/dona/envios-com-problema'],
+      [
+        { operacao: 'sincronizacao.tentarDeNovo', id: ID },
+        `POST /api/dona/envios-com-problema/${ID}/tentar-de-novo`,
+      ],
+      [
+        { operacao: 'sincronizacao.descartarEnvio', id: ID, motivo: 'Duplicado' },
+        `POST /api/dona/envios-com-problema/${ID}/descartar`,
+      ],
+      [{ operacao: 'sincronizacao.quarentena' }, 'GET /api/dona/quarentena'],
+      [
+        { operacao: 'sincronizacao.aprovarQuarentena', id: ID },
+        `POST /api/dona/quarentena/${ID}/aprovar`,
+      ],
+      [
+        { operacao: 'sincronizacao.descartarQuarentena', id: ID, motivo: 'Duvidosa' },
+        `POST /api/dona/quarentena/${ID}/descartar`,
+      ],
+      [
+        { operacao: 'sincronizacao.valoresSubstituidos' },
+        'GET /api/dona/clientes/valores-substituidos',
+      ],
     ];
     for (const [pedido, esperado] of casos) {
       expect(await caminhoDe(pedido as never)).toBe(esperado);

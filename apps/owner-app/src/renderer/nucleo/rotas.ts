@@ -4,6 +4,7 @@ import { TEXTOS_DE_COMPRAS } from '../textos-compras';
 import { TEXTOS_DE_ESTOQUE } from '../textos-estoque';
 import { TEXTOS_DE_MALETAS } from '../textos-maletas';
 import { TEXTOS_RELATORIOS } from '../textos-relatorios';
+import { TEXTOS_DE_SINCRONIZACAO } from '../textos-sincronizacao';
 import { ORDEM_DOS_RELATORIOS, RELATORIOS } from './relatorios';
 import {
   ORDEM_DOS_RELATORIOS_DE_COMPRAS,
@@ -31,6 +32,10 @@ export const ROTAS = [
   'pessoas/vendedores',
   'pessoas/clientes',
   'pessoas/usuarios',
+  'computadores/lista',
+  'computadores/envios',
+  'computadores/vendas',
+  'computadores/clientes',
   'relatorios/vendedores',
   'relatorios/clientes',
   'relatorios/fornecedores',
@@ -95,6 +100,15 @@ export const MENU = [
       { chave: 'pessoas/vendedores', rotulo: TEXTOS.menu.vendedores },
       { chave: 'pessoas/clientes', rotulo: TEXTOS.menu.clientes },
       { chave: 'pessoas/usuarios', rotulo: TEXTOS.menu.usuarios },
+    ],
+  },
+  {
+    titulo: TEXTOS_DE_SINCRONIZACAO.menu.grupo,
+    itens: [
+      { chave: 'computadores/lista', rotulo: TEXTOS_DE_SINCRONIZACAO.menu.computadores },
+      { chave: 'computadores/envios', rotulo: TEXTOS_DE_SINCRONIZACAO.menu.envios },
+      { chave: 'computadores/vendas', rotulo: TEXTOS_DE_SINCRONIZACAO.menu.vendas },
+      { chave: 'computadores/clientes', rotulo: TEXTOS_DE_SINCRONIZACAO.menu.clientes },
     ],
   },
   {

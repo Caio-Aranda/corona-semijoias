@@ -1,4 +1,14 @@
 import {
+  aprovarVendaDeComputadorBloqueado,
+  bloquearAparelho,
+  descartarEnvio,
+  descartarVendaDeComputadorBloqueado,
+  liberarAparelho,
+  listarAparelhosDoVendedor,
+  listarEnviosComProblema,
+  listarValoresDeClienteSubstituidos,
+  listarVendasDeComputadorBloqueado,
+  tentarEnvioDeNovo,
   alterarCodigos,
   confirmar as confirmarFotos,
   registrar as registrarImportacao,
@@ -155,6 +165,7 @@ import type { NomeDoCadastro } from '../shared/cadastros';
 import type { ParametrosConferidos, ParametrosDeVendedor } from '../shared/validacao-parametros';
 import type { ParametrosDeCompra } from '../shared/validacao-compras';
 import type { ParametrosDeMaleta } from '../shared/validacao-maletas';
+import type { ParametrosDeSincronizacao } from '../shared/sincronizacao';
 import type { ParametrosDeEstoque } from '../shared/validacao-estoque';
 import type { ParametrosDeProduto } from '../shared/validacao-produtos';
 import type { ParametrosDeRelatorio } from '../shared/validacao-relatorios';
@@ -478,6 +489,55 @@ async function executarCompra(
           body: { id: pedido.pedidoId, motivo: pedido.motivo },
         }),
       );
+  }
+}
+
+/** Computadores do vendedor, envios com problema e vendas de computador bloqueado (só ADMIN; o servidor confere). */
+async function executarSincronizacao(
+  client: ReturnType<typeof criarClienteDaApi>,
+  headers: { Authorization: string },
+  pedido: ParametrosDeSincronizacao,
+): Promise<Resultado<unknown>> {
+  const base = { client, headers };
+  switch (pedido.operacao) {
+    case 'sincronizacao.aparelhos':
+      return executar(() =>
+        listarAparelhosDoVendedor({ ...base, path: { vendedorId: pedido.vendedorId } }),
+      );
+    case 'sincronizacao.liberarAparelho':
+      return executar(() => liberarAparelho({ ...base, path: { id: pedido.id } }));
+    case 'sincronizacao.bloquearAparelho':
+      return executar(() =>
+        bloquearAparelho({
+          ...base,
+          path: { id: pedido.id },
+          body: pedido.motivo ? { motivo: pedido.motivo } : {},
+        }),
+      );
+    case 'sincronizacao.envios':
+      return executar(() => listarEnviosComProblema(base));
+    case 'sincronizacao.tentarDeNovo':
+      return executar(() => tentarEnvioDeNovo({ ...base, path: { id: pedido.id } }));
+    case 'sincronizacao.descartarEnvio':
+      return executar(() =>
+        descartarEnvio({ ...base, path: { id: pedido.id }, body: { motivo: pedido.motivo } }),
+      );
+    case 'sincronizacao.quarentena':
+      return executar(() => listarVendasDeComputadorBloqueado(base));
+    case 'sincronizacao.aprovarQuarentena':
+      return executar(() =>
+        aprovarVendaDeComputadorBloqueado({ ...base, path: { id: pedido.id } }),
+      );
+    case 'sincronizacao.descartarQuarentena':
+      return executar(() =>
+        descartarVendaDeComputadorBloqueado({
+          ...base,
+          path: { id: pedido.id },
+          body: { motivo: pedido.motivo },
+        }),
+      );
+    case 'sincronizacao.valoresSubstituidos':
+      return executar(() => listarValoresDeClienteSubstituidos(base));
   }
 }
 
@@ -870,6 +930,9 @@ export function criarApiDoGestao(opcoes: OpcoesDaApi): ApiDoGestao {
       }
       if (pedido.operacao.startsWith('maletas.')) {
         return executarMaleta(client, headers, pedido as ParametrosDeMaleta);
+      }
+      if (pedido.operacao.startsWith('sincronizacao.')) {
+        return executarSincronizacao(client, headers, pedido as ParametrosDeSincronizacao);
       }
       if (pedido.operacao.startsWith('compras.')) {
         return executarCompra(client, headers, pedido as ParametrosDeCompra);

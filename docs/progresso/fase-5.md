@@ -172,3 +172,19 @@ Plano aprovado no PR 105, com três ajustes da orquestradora (quarentena só at�
 
 **Ficou para depois / limites:** peça fora de maleta aberta (por exemplo, numa venda antiga) só mostra foto se já houver cópia ou se houver internet na hora; o teste do cabeçalho `X-Conteudo-Sha256` no backend não foi escrito (precisa de uma maleta com foto real no `RotasDoVendedorTest`; o CI compila e roda os testes que já existem); os testes de duas pontas com rede ruim são da 5.12.
 
+## Tarefa 5.10: telas da dona
+
+**O que entrou**
+
+- **Backend (só perfil dona, `@ExigePerfil("ADMIN")`):** `GET /api/dona/quarentena`, `POST /api/dona/quarentena/{id}/aprovar` (passa pelo `ServicoDeQuarentena.aprovar`, mesmas regras do envio; se o serviço recusar, o envio vai para "Envios com problema") e `POST .../descartar` (motivo obrigatório, auditoria `QUARENTENA_DESCARTADA`); `GET /api/dona/clientes/valores-substituidos` (os 200 mais recentes da auditoria `CLIENTE_VALOR_SUBSTITUIDO`, campo a campo). Os avisos `ENVIOS_COM_PROBLEMA` e `VENDAS_DE_COMPUTADOR_BLOQUEADO` vêm de `FonteDeAvisosDosEnvios` (calculados na hora). Já existiam, da 5.3 e 5.5: computadores do vendedor (listar, liberar, bloquear) e envios com problema (listar, tentar de novo, descartar).
+- **owner-app:** grupo de menu "Computadores dos vendedores" com quatro telas: **Computadores** (situação, último contato, vendas ainda por enviar, último envio completo; Trocar computador e Bloquear computador com confirmação clara), **Envios com problema** (Tentar de novo, Descartar com motivo; os de CPF repetido numa lista à parte), **Vendas de computador bloqueado** (Aprovar, Descartar com motivo) e **Clientes alterados pelo vendedor** (era / passou a ser). Na tela inicial, cada aviso novo tem o botão **Abrir**. Operações novas na ponte (`sincronizacao.*`), conferidas no processo principal. Cliente da API regerado (`api:clientes`).
+- **Glossário:** parte 12 ganhou "Telas da dona para o Corona Vendas" (antes do código). O Corona Gestão não pode citar "Corona Vendas" (varredura do ADR-0003), então a tela diz "computador do vendedor".
+
+**Testes (escritos antes do código no backend):** `QuarentenaDaDonaTest` (listar, aprovar, aprovar duas vezes, descartar sem e com motivo, valores trocados, aviso, e o **vendedor recebe 403 em todas as rotas novas e nas de envios e computadores**); no app: `validacao-sincronizacao.test.ts`, caminhos em `api.test.ts` e `sincronizacao.test.tsx` (telas, confirmações, motivo obrigatório, aviso que abre a tela, sem palavra técnica).
+
+**Não feito / dúvidas**
+
+- **O desenho não foi aprovado pela dona.** Segui os padrões das telas existentes. O glossário previa os botões na ficha do vendedor; fiz uma tela própria "Computadores" com escolha do vendedor (menos mudança na ficha). Se a dona preferir na ficha, é mover o componente.
+- CPF repetido: a lista mostra o nome e o CPF do cadastro novo; **não mostra o cadastro que já existia** nem tem "juntar cadastros" (o glossário manda a dona juntar à mão pela tela de clientes e descartar o envio). Uma tela de juntar fica para uma tarefa própria.
+- O aviso de envios com problema não tem teste de integração próprio (conta as mesmas linhas que `EnviosComProblema.listar`, já testado); o de vendas de computador bloqueado tem.
+
