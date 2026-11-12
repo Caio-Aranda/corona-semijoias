@@ -87,9 +87,11 @@ public class SyncDoVendedorController {
     private final ServicoDeAparelhos aparelhos;
     private final Configuracoes configuracoes;
     private final Clock relogio;
+    private final MetricasDoSync metricas;
 
     SyncDoVendedorController(ServicoDePull pull, ServicoDeEnvio envio, RegistroDeTabelas registro, ServicoDeAparelhos aparelhos,
-            Configuracoes configuracoes, Clock relogio) {
+            Configuracoes configuracoes, Clock relogio, MetricasDoSync metricas) {
+        this.metricas = metricas;
         this.pull = pull;
         this.envio = envio;
         this.registro = registro;
@@ -118,7 +120,7 @@ public class SyncDoVendedorController {
         Instant agora = relogio.instant().truncatedTo(ChronoUnit.MILLIS);
         LoteDoPull lote;
         try {
-            lote = pull.puxar(cursor, tamanho, new FiltroPorVendedor(quem.vendedorId()), tabela);
+            lote = metricas.medirPull(() -> pull.puxar(cursor, tamanho, new FiltroPorVendedor(quem.vendedorId()), tabela));
         } catch (CursorInvalidoException e) {
             throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.CURSOR_INVALIDO);
         }
@@ -148,7 +150,7 @@ public class SyncDoVendedorController {
         if (pedido == null) {
             throw new ErroDaApi(HttpStatus.BAD_REQUEST, CodigoErro.PEDIDO_INVALIDO);
         }
-        ServicoDeEnvio.Envio feito = envio.enviar(quem, pedido);
+        ServicoDeEnvio.Envio feito = metricas.medirPush(() -> envio.enviar(quem, pedido));
         return new RespostaDoEnvio(feito.resultados(), relogio.instant().truncatedTo(ChronoUnit.MILLIS), parametros(quem),
                 feito.apagarDados());
     }
@@ -177,6 +179,7 @@ public class SyncDoVendedorController {
             @Valid @RequestBody DiferencasNaConferencia pedido) {
         List<String> conhecidas = pedido.tabelas().stream()
                 .filter(t -> t != null && registro.sincronizavel(t).isPresent()).distinct().toList();
+        metricas.registrarDefeito(conhecidas.size());
         LOG.error("DEFEITO DO FILTRO DO PULL: o computador {} do vendedor {} achou diferença na conferência por resumo em {}",
                 quem.dispositivoId(), quem.vendedorId(), conhecidas);
         return ResponseEntity.noContent().build();

@@ -161,6 +161,7 @@ App do vendedor sem internet: SQLite criptografado, fila de envios e sincroniza�
 | 5.3 | backend: computadores do vendedor (`dispositivos`, segundo computador, trocar e bloquear, ordem de apagar, vender só depois de conferir) | Mesclada (PR 96) · [detalhe](progresso/fase-5.md#tarefa-53-computadores-do-vendedor-backend) |
 | 5.4 | backend: pull do vendedor (regra por tabela, diretório de clientes, expansão, conferência por resumo, pertença garantida no banco) | Em revisão · [detalhe](progresso/fase-5.md#tarefa-54-pull-do-vendedor-backend) |
 | 5.5 | backend: push do vendedor (`sync_log` com 90 dias, resultado por operação, hora corrigida, cliente campo a campo, envios com problema) | Em revisão · [detalhe](progresso/fase-5.md#tarefa-55-push-do-vendedor-backend) |
+| 5.11 | backend: métricas e alertas do sync (idade da transação mais antiga, duração do pull e do push, defeito da conferência, computador parado, avisos da dona) | Em revisão (PR 101) · [detalhe](progresso/fase-5.md#tarefa-511-métricas-e-alertas-do-sync-backend) |
 
 As demais tarefas estão no [plano](progresso/fase-5-plano.md).
 

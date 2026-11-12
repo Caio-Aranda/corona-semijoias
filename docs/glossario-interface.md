@@ -504,7 +504,7 @@ Na tela da dona: "Não encontramos este envio. Atualize a tela e tente de novo."
 > Peça a Maria para conectar o Corona Vendas à internet. As vendas feitas sem internet só chegam quando o computador conectar.
 
 > **Maria entrou num computador novo.**
-> Para Maria vender nesse computador, abra a ficha do vendedor e use Trocar computador. Se não foi ela, use Bloquear computador.
+> Para Maria vender nesse computador, abra a ficha do vendedor e use Trocar computador. Se não foi Maria, use Bloquear computador.
 
 (Com 1 dia: "há 1 dia". Vários computadores: um aviso por computador.)
 
