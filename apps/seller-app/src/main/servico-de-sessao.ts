@@ -13,6 +13,12 @@ export interface PreparoDoBancoLocal {
   prepararComInternet(senha: string): Promise<{ ok: boolean; codigo?: string }>;
 }
 
+/** O motor de envio e recebimento (tarefa 5.6): liga com o banco aberto e a sessão válida, desliga ao sair. */
+export interface ControleDoMotor {
+  ligar(): void;
+  desligar(): void;
+}
+
 /** Chamadas de negócio que o processo principal faz em nome da tela. */
 export interface ChamadasDaApi {
   eu(tokenDeAcesso: string): Promise<Resultado<DadosDoUsuario>>;
@@ -33,6 +39,7 @@ export class ServicoDeSessao {
     /** Termina quando a sessão guardada no disco já foi retomada (ou descartada). */
     private readonly prontidao: Promise<void> = Promise.resolve(),
     private readonly bancoLocal?: PreparoDoBancoLocal,
+    private readonly motor?: ControleDoMotor,
   ) {}
 
   /** Chamado quando a guarda avisa que o aplicativo está desatualizado. */
@@ -63,12 +70,15 @@ export class ServicoDeSessao {
     try {
       const r = await this.bancoLocal.prepararComInternet(senha);
       if (!r.ok) console.warn(`Banco local não abriu: ${r.codigo ?? 'sem código'}`);
+      // Banco aberto e sessão válida (acabou de entrar): o motor começa a enviar e receber.
+      else this.motor?.ligar();
     } catch (erro) {
       console.warn('Banco local não abriu:', erro instanceof Error ? erro.name : 'erro');
     }
   }
 
   async sair(): Promise<void> {
+    this.motor?.desligar();
     this.nome = null;
     this.desatualizado = null;
     await this.guarda.sair();

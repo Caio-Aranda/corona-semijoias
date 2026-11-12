@@ -141,11 +141,32 @@ CREATE TABLE estado_sync (
 );
 `;
 
+/**
+ * Versão 2 (tarefa 5.6): de qual operação da outbox é cada linha provisória. Uma venda feita sem internet grava a
+ * venda, os itens, os movimentos da maleta e os pagamentos; os itens e os movimentos ganham outro id no servidor. Com
+ * esta tabela o motor sabe o que desfazer quando a operação é recusada (o saldo volta) e o que tirar quando a cópia do
+ * servidor chega, sem nunca depender do id da linha do servidor.
+ */
+const V2 = `
+CREATE TABLE provisorias (
+  tabela TEXT NOT NULL,
+  linha_id TEXT NOT NULL,
+  operacao_id TEXT NOT NULL,
+  PRIMARY KEY (tabela, linha_id)
+);
+CREATE INDEX provisorias_da_operacao ON provisorias (operacao_id);
+`;
+
 export const MIGRACOES: readonly MigracaoLocal[] = Object.freeze([
   {
     versao: 1,
     descricao: 'cópias das tabelas sincronizáveis, outbox e estado do envio',
     sql: V1,
+  },
+  {
+    versao: 2,
+    descricao: 'operação de origem de cada linha provisória',
+    sql: V2,
   },
 ]);
 

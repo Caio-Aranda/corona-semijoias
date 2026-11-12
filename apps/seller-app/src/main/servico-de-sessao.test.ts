@@ -19,6 +19,7 @@ function guarda(resultado: 'entrou' | 'trocar-senha' | 'recusada'): GuardaDeToke
   return {
     entrar: vi.fn(() => Promise.resolve(r)),
     trocarSenha: vi.fn(() => Promise.resolve(r)),
+    sair: vi.fn(() => Promise.resolve()),
   } as unknown as GuardaDeTokens;
 }
 
@@ -62,5 +63,32 @@ describe('banco local na entrada', () => {
     });
     expect(JSON.stringify(aviso.mock.calls)).not.toContain('Senha-1');
     aviso.mockRestore();
+  });
+});
+
+describe('motor de envio na sessão (tarefa 5.6)', () => {
+  it('liga só com o banco aberto depois de entrar e desliga ao sair', async () => {
+    const motor = { ligar: vi.fn(), desligar: vi.fn() };
+    const aberto = { prepararComInternet: vi.fn(() => Promise.resolve({ ok: true })) };
+    const s = new ServicoDeSessao(guarda('entrou'), api, Promise.resolve(), aberto, motor);
+    await s.entrar('ana', 'Senha-1');
+    expect(motor.ligar).toHaveBeenCalledTimes(1);
+    await s.sair();
+    expect(motor.desligar).toHaveBeenCalledTimes(1);
+
+    const fechado = {
+      prepararComInternet: vi.fn(() => Promise.resolve({ ok: false, codigo: 'DISCO_CHEIO' })),
+    };
+    const outro = { ligar: vi.fn(), desligar: vi.fn() };
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    await new ServicoDeSessao(guarda('entrou'), api, Promise.resolve(), fechado, outro).entrar(
+      'ana',
+      'Senha-1',
+    );
+    await new ServicoDeSessao(guarda('recusada'), api, Promise.resolve(), aberto, outro).entrar(
+      'ana',
+      'errada',
+    );
+    expect(outro.ligar).not.toHaveBeenCalled();
   });
 });

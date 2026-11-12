@@ -3,6 +3,7 @@ import {
   CANAIS,
   type AvisoDeAtualizacao,
   type AvisoDeSessao,
+  limparEstadoDaSincronizacao,
   type PonteDoCorona,
 } from '../shared/ponte';
 
@@ -47,6 +48,22 @@ const ponte: PonteDoCorona = {
       .catch(() => undefined);
     return () => {
       ipcRenderer.removeListener(CANAIS.atualizacaoMudou, escuta);
+    };
+  },
+  aoMudarASincronizacao: (ouvinte) => {
+    // Só contadores, sim/não e datas chegam à tela; o resto do que vier é descartado.
+    const entregar = (estado: unknown): void => {
+      ouvinte(limparEstadoDaSincronizacao(estado));
+    };
+    const escuta = (_evento: unknown, estado: unknown): void => {
+      entregar(estado);
+    };
+    ipcRenderer.on(CANAIS.sincronizacaoMudou, escuta);
+    void (ipcRenderer.invoke(CANAIS.sincronizacaoEstado) as Promise<unknown>)
+      .then(entregar)
+      .catch(() => undefined);
+    return () => {
+      ipcRenderer.removeListener(CANAIS.sincronizacaoMudou, escuta);
     };
   },
 };
