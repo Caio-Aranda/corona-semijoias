@@ -59,7 +59,7 @@ jobs:
             echo "dependencias=$(tem '(^|/)package(-lock)?\.json$|^backend/pom\.xml$|^\.github/')"
             # Duas pontas (tarefa 5.12): só quando muda o que o sync usa de fato. Os pacotes do backend e o risco aceito
             # (um serviço de fora desta lista mudar sem rodar as duas pontas) estão em docs/ci.md.
-            echo "sync=$(tem '^(testes-sync/|apps/seller-app/src/(main|shared)/|apps/seller-app/package\.json$|packages/(api-client-vendedor|conexao-segura)/|package-lock\.json$|infra/|\.github/|backend/pom\.xml$|backend/src/main/resources/(application\.properties$|db/migration/)|backend/src/main/java/br/com/coronasemijoias/api/(sync|vendas|remessas|vendedor|cadastros|autenticacao|sessoes|aparelhos|aplicativo|estoque|produtos|fotos)/)')"
+            echo "sync=$(tem '^(testes-sync/|apps/seller-app/src/(main|shared)/|apps/seller-app/package\.json$|packages/(api-client-vendedor|conexao-segura)/|package-lock\.json$|infra/|\.github/|backend/pom\.xml$|backend/src/main/resources/(application\.properties$|db/migration/)|backend/src/main/java/br/com/coronasemijoias/api/(sync|vendas|devolucoes|remessas|vendedor|cadastros|autenticacao|sessoes|aparelhos|aplicativo|estoque|produtos|fotos)/)')"
             # Só documentos: roda apenas a conferência de formatação (job "docs").
             echo "docs=$(tem '^docs/|\.md$')"
           } >> "$GITHUB_OUTPUT"
