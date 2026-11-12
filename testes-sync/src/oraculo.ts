@@ -36,7 +36,9 @@ export const TABELAS_PRIVADAS = [
 export type Medidas = Record<string, Map<string, { versao: number; excluida: boolean }>>;
 
 function vazio(): Medidas {
-  return Object.fromEntries(TABELAS.map((t) => [t, new Map()])) as Medidas;
+  const m: Medidas = {};
+  for (const t of TABELAS) m[t] = new Map();
+  return m;
 }
 
 const sqlDoOraculo = (v: string) => `
