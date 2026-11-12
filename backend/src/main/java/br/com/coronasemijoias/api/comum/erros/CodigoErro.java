@@ -417,6 +417,61 @@ public enum CodigoErro {
             "Confira a maleta antes de vender.",
             "Esta maleta ainda não foi conferida. Confira todas as peças da maleta antes de vender."),
 
+    // --- Devolução do cliente (Fase 6, tarefa 6.3; ADR-0014; glossário, parte 6) ---
+
+    DEVOLUCAO_NAO_ENCONTRADA(
+            "Não encontramos esta devolução.",
+            "Não encontramos esta devolução. Atualize a tela e tente de novo."),
+
+    /** O mesmo identificador voltou com outros dados (HTTP 409). */
+    DEVOLUCAO_JA_REGISTRADA_DIFERENTE(
+            "Esta devolução já foi registrada com outros dados.",
+            "Esta devolução já foi registrada com outros dados. Confira as devoluções antes de lançar de novo."),
+
+    /** Mais peças do que ainda podem voltar daquela linha da venda (HTTP 409). O servidor monta o texto com a peça. */
+    DEVOLUCAO_ACIMA_DO_VENDIDO(
+            "Esta quantidade passa do que o cliente comprou.",
+            "Esta quantidade passa do que o cliente comprou nesta venda. Confira a quantidade."),
+
+    /** Fora do prazo da garantia, na rota online (HTTP 409; ADR-0014, itens 4 e 6). */
+    GARANTIA_VENCIDA(
+            "Passou do prazo da garantia.",
+            "Passou do prazo da garantia. Peça autorização à dona."),
+
+    /** Devolução de venda a prazo: só com as parcelas (tarefa 6.6; dúvida R5). HTTP 409. */
+    VENDA_A_PRAZO_SEM_DEVOLUCAO(
+            "Esta venda tem parcelas.",
+            "Esta venda tem parcelas; a devolução dela chega em breve."),
+
+    /** Estorno de venda com devolução não cancelada (HTTP 409; ADR-0014, item 1; dúvida R6). */
+    VENDA_COM_DEVOLUCAO(
+            "Esta venda já tem devolução.",
+            "Esta venda já tem devolução. Cancele a devolução antes de estornar."),
+
+    /** A maleta da venda está em acerto (HTTP 409; ADR-0014, item 12). */
+    MALETA_EM_ACERTO(
+            "Esta maleta está em acerto.",
+            "O acerto desta maleta está acontecendo. Espere o acerto terminar e registre a devolução de novo."),
+
+    /** O vendedor só cancela a devolução no dia dela (HTTP 409; ADR-0014, item 11). */
+    CANCELAR_DEVOLUCAO_SO_DA_DONA(
+            "Esta devolução só pode ser cancelada pela dona.",
+            "Só dá para cancelar a devolução no mesmo dia. Peça à dona para cancelar."),
+
+    DEVOLUCAO_JA_CANCELADA(
+            "Esta devolução já foi cancelada.",
+            "Esta devolução já foi cancelada e não pode mudar."),
+
+    /** A dona já decidiu (mantida ou não aceita), ou a maleta da peça já não está com o vendedor (HTTP 409). */
+    DEVOLUCAO_NAO_PODE_SER_CANCELADA(
+            "Esta devolução não pode ser cancelada.",
+            "A dona já decidiu sobre esta devolução e ela não pode mais ser cancelada."),
+
+    /** A peça que voltou à maleta já foi vendida de novo: cancelar deixaria o saldo negativo (HTTP 409). */
+    PECA_DA_DEVOLUCAO_JA_VENDIDA(
+            "A peça desta devolução já foi vendida de novo.",
+            "A peça desta devolução já foi vendida de novo e a devolução não pode ser cancelada. Fale com a dona."),
+
     // --- Computadores do vendedor (Fase 5, tarefa 5.3; ADR-0013, itens 13 e 14) ---
 
     /** Segundo computador do vendedor, ainda sem a liberação da dona (HTTP 403). */

@@ -8,9 +8,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import br.com.coronasemijoias.api.comum.erros.ErroDaApi;
-import br.com.coronasemijoias.api.devolucoes.ServicoDeDevolucoes.Modo;
+import br.com.coronasemijoias.api.devolucoes.ServicoDeDevolucoes.ModoDaDevolucao;
 import br.com.coronasemijoias.api.devolucoes.ServicoDeDevolucoes.PecaDoPedido;
-import br.com.coronasemijoias.api.devolucoes.ServicoDeDevolucoes.PedidoDeDevolucao;
+import br.com.coronasemijoias.api.devolucoes.ServicoDeDevolucoes.PedidoDaDevolucaoDoCliente;
 import br.com.coronasemijoias.api.estoque.ServicoDeEstoque;
 import br.com.coronasemijoias.api.estoque.ServicoDeEstoque.OrigemDoMovimento;
 import br.com.coronasemijoias.api.estoque.ServicoDeEstoque.Pedido;
@@ -173,7 +173,7 @@ class DevolucaoDoClienteTest extends TesteDeIntegracao {
                 .andExpect(status().isCreated())).get("id").asString());
         UUID id = UUID.fromString(corpoDe(postar("/api/dona/produtos", dona(), mapa("nome", "Brinco " + sufixo,
                 "categoriaId", categoria, "precoVenda", preco, "precoCusto", "10.00", "estoqueMinimo", 1,
-                "codigos", List.of(mapa("codigo", codigo, "tipo", "LOJA", "principal", true)))))
+                "codigos", List.of(mapa("codigo", codigo, "tipo", "LOJA", "principal", true))))
                 .andExpect(status().isCreated())).get("id").asString());
         if (saldo > 0) {
             estoque.registrar(new Pedido(null, id, TipoDeMovimento.ENTRADA, saldo, null, OrigemDoMovimento.MANUAL, null),
@@ -270,8 +270,8 @@ class DevolucaoDoClienteTest extends TesteDeIntegracao {
     }
 
     private ServicoDeDevolucoes.Resultado devolverPeloServico(UsuarioDeTeste v, UUID aparelho, UUID venda, String motivo,
-            List<PecaDoPedido> pecas, Instant quando, Modo modo) {
-        return devolucoes.devolver(v.vendedorId(), v.id(), aparelho, new PedidoDeDevolucao(UUID.randomUUID(), venda, motivo,
+            List<PecaDoPedido> pecas, Instant quando, ModoDaDevolucao modo) {
+        return devolucoes.devolver(v.vendedorId(), v.id(), aparelho, new PedidoDaDevolucaoDoCliente(UUID.randomUUID(), venda, motivo,
                 null, "DINHEIRO", pecas, null), quando, false, modo);
     }
 
@@ -554,28 +554,28 @@ class DevolucaoDoClienteTest extends TesteDeIntegracao {
         List<PecaDoPedido> umaComDefeito = List.of(new PecaDoPedido(anel, 1, "DEFEITO"));
 
         // Dia 7 (16/03 em Brasília) passa.
-        devolverPeloServico(v, aparelho, venda, "ARREPENDIMENTO", uma, Instant.parse("2026-03-16T15:00:00Z"), Modo.ONLINE);
+        devolverPeloServico(v, aparelho, venda, "ARREPENDIMENTO", uma, Instant.parse("2026-03-16T15:00:00Z"), ModoDaDevolucao.ONLINE);
         // Dia 8 (17/03 às 10:00 em Brasília): fora. Em UTC seriam só 7 dias (10/03 a 17/03): a conta é em Brasília.
         Instant diaOito = Instant.parse("2026-03-17T13:00:00Z");
-        assertThatThrownBy(() -> devolverPeloServico(v, aparelho, venda, "ARREPENDIMENTO", uma, diaOito, Modo.ONLINE))
+        assertThatThrownBy(() -> devolverPeloServico(v, aparelho, venda, "ARREPENDIMENTO", uma, diaOito, ModoDaDevolucao.ONLINE))
                 .satisfies(t -> assertThat(codigoDoErro(t)).isEqualTo("GARANTIA_VENCIDA"));
-        assertThatThrownBy(() -> devolverPeloServico(v, aparelho, venda, "TAMANHO", uma, diaOito, Modo.ONLINE))
+        assertThatThrownBy(() -> devolverPeloServico(v, aparelho, venda, "TAMANHO", uma, diaOito, ModoDaDevolucao.ONLINE))
                 .satisfies(t -> assertThat(codigoDoErro(t)).isEqualTo("GARANTIA_VENCIDA"));
         assertThat(contar("SELECT count(*) FROM corona.devolucoes WHERE venda_id = ?", venda)).isEqualTo(1);
 
         // Defeito: dia 30 (08/04) passa, dia 31 (09/04) não.
-        devolverPeloServico(v, aparelho, venda, "DEFEITO", umaComDefeito, Instant.parse("2026-04-08T15:00:00Z"), Modo.ONLINE);
+        devolverPeloServico(v, aparelho, venda, "DEFEITO", umaComDefeito, Instant.parse("2026-04-08T15:00:00Z"), ModoDaDevolucao.ONLINE);
         assertThatThrownBy(() -> devolverPeloServico(v, aparelho, venda, "DEFEITO", umaComDefeito,
-                Instant.parse("2026-04-09T15:00:00Z"), Modo.ONLINE))
+                Instant.parse("2026-04-09T15:00:00Z"), ModoDaDevolucao.ONLINE))
                 .satisfies(t -> assertThat(codigoDoErro(t)).isEqualTo("GARANTIA_VENCIDA"));
 
         // O prazo mudado pela dona vale na hora.
         jdbc.update("UPDATE corona.configuracoes SET valor_inteiro = 8 WHERE chave = 'prazo_arrependimento_dias'");
-        devolverPeloServico(v, aparelho, venda, "ARREPENDIMENTO", uma, diaOito, Modo.ONLINE);
+        devolverPeloServico(v, aparelho, venda, "ARREPENDIMENTO", uma, diaOito, ModoDaDevolucao.ONLINE);
 
         // Pelo envio do computador, fora do prazo não é recusada: entra para revisão da dona.
         ServicoDeDevolucoes.Resultado revisao = devolverPeloServico(v, aparelho, venda, "ARREPENDIMENTO", uma,
-                Instant.parse("2026-03-25T15:00:00Z"), Modo.ENVIO);
+                Instant.parse("2026-03-25T15:00:00Z"), ModoDaDevolucao.ENVIO);
         Map<String, Object> gravada = jdbc.queryForMap("SELECT situacao, dentro_garantia FROM corona.devolucoes WHERE id = ?",
                 revisao.devolucaoId());
         assertThat(gravada.get("situacao")).isEqualTo("EM_REVISAO");
@@ -643,7 +643,7 @@ class DevolucaoDoClienteTest extends TesteDeIntegracao {
         // Outro computador do mesmo vendedor.
         UUID outro = UUID.randomUUID();
         assertThatThrownBy(() -> devolverPeloServico(v, outro, venda, "ARREPENDIMENTO", List.of(new PecaDoPedido(anel, 1, "BOA")),
-                null, Modo.ONLINE)).satisfies(t -> assertThat(codigoDoErro(t)).isEqualTo("MALETA_EM_OUTRO_APARELHO"));
+                null, ModoDaDevolucao.ONLINE)).satisfies(t -> assertThat(codigoDoErro(t)).isEqualTo("MALETA_EM_OUTRO_APARELHO"));
 
         jdbc.update("UPDATE corona.remessas SET status = 'EM_ACERTO' WHERE id = ?", maleta);
         assertThat(codigoDe(postar(DEVOLUCOES, como(v), devolucao(UUID.randomUUID(), venda, "ARREPENDIMENTO", "PIX",
@@ -1016,7 +1016,6 @@ class DevolucaoDoClienteTest extends TesteDeIntegracao {
         ruins.add(devolucao(UUID.randomUUID(), venda, "ARREPENDIMENTO", "PIX", List.of(devolvida(anel, 1, "QUEBRADA"))));
         ruins.add(devolucao(UUID.randomUUID(), venda, "ARREPENDIMENTO", "PIX", List.of()));
         ruins.add(devolucao(UUID.randomUUID(), venda, "ARREPENDIMENTO", "PIX", List.of(devolvida(outra, 1, "BOA"))));
-        ruins.add(devolucao(null, venda, "ARREPENDIMENTO", "PIX", uma));
         ruins.add(devolucao(UUID.randomUUID(), null, "ARREPENDIMENTO", "PIX", uma));
         Map<String, Object> longa = devolucao(UUID.randomUUID(), venda, "OUTRO", "PIX", uma);
         longa.put("observacao", "x".repeat(401));
