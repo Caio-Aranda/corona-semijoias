@@ -231,6 +231,24 @@ describe('proxy de rede ruim', () => {
     expect(vistas).toEqual(['200 {"n":1}', '200 {"n":2}']);
   });
 
+  it('o histórico traz a hora de cada pedido, em ordem (para ler a falha depois, issue #130)', async () => {
+    const s = await servidorFalso();
+    const p = await proxy(s.porta, { sorteio: [], roteiro: [undefined, 'ERRO_502', undefined] });
+    const antes = new Date().toISOString();
+    for (let i = 0; i < 3; i += 1) {
+      await chamar(p);
+      await new Promise((ok) => setTimeout(ok, 5));
+    }
+    const depois = new Date().toISOString();
+    const horas = p.historico().map((h) => String((h as { em?: unknown }).em));
+    expect(horas).toHaveLength(3);
+    for (const em of horas) {
+      expect(em).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+      expect(em >= antes && em <= depois).toBe(true);
+    }
+    expect([...horas].sort()).toEqual(horas);
+  });
+
   it('troca cabeçalhos no caminho até o servidor', async () => {
     let versao: string | undefined;
     const servidor: Server = createServer((req, res) => {

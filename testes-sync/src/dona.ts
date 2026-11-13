@@ -31,8 +31,16 @@ export interface AparelhoNaDona {
   aguardandoEnvio?: number;
 }
 
+/**
+ * O número da primeira semana deste arquivo de teste: um por segundo de relógio, para dois arquivos da mesma rodada não
+ * começarem no mesmo número.
+ */
+export function semanaInicial(agoraMs: number): number {
+  return Math.floor(agoraMs / 1000) % 150_000;
+}
+
 let semanaSeguinte = 0;
-const SEMANA_INICIAL = Math.floor(Date.now() / 1000) % 150_000;
+const SEMANA_INICIAL = semanaInicial(Date.now());
 
 /** Um PNG pequeno e válido, de uma cor só, diferente para cada `semente` (a foto muda, o hash muda). */
 export function pngDeTeste(semente: number, lado = 24): Buffer {
