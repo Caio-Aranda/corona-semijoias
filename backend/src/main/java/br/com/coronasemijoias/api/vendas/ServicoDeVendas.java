@@ -219,7 +219,7 @@ public class ServicoDeVendas {
         for (UUID pagamentoId : idsDosPagamentos) {
             if (Boolean.TRUE.equals(jdbc.queryForObject("""
                     SELECT EXISTS (SELECT 1 FROM corona.pagamentos_cliente WHERE id = ?)
-                        OR EXISTS (SELECT 1 FROM corona.creditos_sem_saldo WHERE id = ?)""", Boolean.class, pagamentoId,
+                        OR EXISTS (SELECT 1 FROM corona.creditos_sem_saldo WHERE pagamento_id = ?)""", Boolean.class, pagamentoId,
                     pagamentoId))) {
                 throw new ErroDaApi(HttpStatus.CONFLICT, troca != null ? CodigoErro.TROCA_JA_REGISTRADA_DIFERENTE
                         : CodigoErro.VENDA_JA_REGISTRADA_DIFERENTE);
@@ -676,8 +676,9 @@ public class ServicoDeVendas {
         // O pagamento em crédito limitado pelo envio (tarefa 6.7): o pedido está em creditos_sem_saldo, e o gravado (se
         // houver) tem o valor que o crédito ainda tinha.
         Map<UUID, Map<String, Object>> semSaldo = new LinkedHashMap<>();
-        jdbc.queryForList("SELECT id, credito_id, valor_pedido, valor_usado FROM corona.creditos_sem_saldo WHERE venda_id = ?", id)
-                .forEach(f -> semSaldo.put((UUID) f.get("id"), f));
+        jdbc.queryForList("""
+                SELECT pagamento_id, credito_id, valor_pedido, valor_usado FROM corona.creditos_sem_saldo WHERE venda_id = ?""", id)
+                .forEach(f -> semSaldo.put((UUID) f.get("pagamento_id"), f));
         Map<UUID, Pagamento> pagos = new LinkedHashMap<>();
         for (Pagamento p : pagamentos) {
             Map<String, Object> f = semSaldo.remove(p.id());

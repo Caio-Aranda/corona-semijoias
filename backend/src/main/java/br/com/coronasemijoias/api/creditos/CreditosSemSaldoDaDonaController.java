@@ -37,7 +37,7 @@ public class CreditosSemSaldoDaDonaController {
     private static final Set<String> SITUACOES = Set.of("EM_REVISAO", "MANTIDA", "NAO_ACEITA");
 
     /** {@code valorPedido}: o que o computador pediu em crédito; {@code valorUsado}: o que o crédito ainda tinha. */
-    public record CreditoSemSaldo(UUID id, UUID vendaId, UUID creditoId, UUID vendedorId, UUID clienteId,
+    public record CreditoSemSaldo(UUID id, UUID vendaId, UUID pagamentoId, UUID creditoId, UUID vendedorId, UUID clienteId,
             BigDecimal valorPedido, BigDecimal valorUsado, String situacao, Instant registradaEm, Instant revisadaEm,
             String observacaoRevisao) {
     }
@@ -95,15 +95,15 @@ public class CreditosSemSaldoDaDonaController {
 
     private List<CreditoSemSaldo> consultar(String onde, Object arg) {
         return jdbc.query("""
-                SELECT cs.id, cs.venda_id, cs.credito_id, v.vendedor_id, v.cliente_id, cs.valor_pedido, cs.valor_usado, cs.situacao,
-                       cs.registrada_em, cs.revisada_em, cs.observacao_revisao
+                SELECT cs.id, cs.venda_id, cs.pagamento_id, cs.credito_id, v.vendedor_id, v.cliente_id, cs.valor_pedido,
+                       cs.valor_usado, cs.situacao, cs.registrada_em, cs.revisada_em, cs.observacao_revisao
                   FROM corona.creditos_sem_saldo cs JOIN corona.vendas v ON v.id = cs.venda_id
                  WHERE cs.deleted_at IS NULL AND %s
                  ORDER BY cs.registrada_em DESC, cs.id LIMIT 500""".formatted(onde),
                 (rs, n) -> new CreditoSemSaldo(rs.getObject(1, UUID.class), rs.getObject(2, UUID.class),
                         rs.getObject(3, UUID.class), rs.getObject(4, UUID.class), rs.getObject(5, UUID.class),
-                        rs.getBigDecimal(6), rs.getBigDecimal(7), rs.getString(8), instante(rs.getTimestamp(9)),
-                        instante(rs.getTimestamp(10)), rs.getString(11)), arg);
+                        rs.getObject(6, UUID.class), rs.getBigDecimal(7), rs.getBigDecimal(8), rs.getString(9),
+                        instante(rs.getTimestamp(10)), instante(rs.getTimestamp(11)), rs.getString(12)), arg);
     }
 
     private static Instant instante(Timestamp t) {

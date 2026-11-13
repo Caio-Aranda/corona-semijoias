@@ -120,20 +120,23 @@ public class ServicoDeCreditos {
 
     /**
      * Guarda, para a dona revisar, o pagamento em crédito que o envio pediu acima do saldo (a venda e o pagamento do que o
-     * crédito ainda tinha já estão gravados). O id é o do pagamento que o computador mandou. Nunca mexe em dinheiro.
+     * crédito ainda tinha já estão gravados). Nunca mexe em dinheiro. A linha tem id próprio; o pagamento que o
+     * computador mandou fica em {@code pagamento_id}.
      */
     public void registrarSemSaldo(UUID pagamentoId, UUID vendaId, UUID creditoId, BigDecimal pedido, BigDecimal usado,
             Instant quando, UUID usuarioId) {
+        UUID id = UuidV7.gerar();
         jdbc.update("""
-                INSERT INTO corona.creditos_sem_saldo (id, venda_id, credito_id, valor_pedido, valor_usado, registrada_em)
-                VALUES (?, ?, ?, ?, ?, ?)""", pagamentoId, vendaId, creditoId, pedido, usado, Timestamp.from(quando));
+                INSERT INTO corona.creditos_sem_saldo (id, pagamento_id, venda_id, credito_id, valor_pedido, valor_usado,
+                    registrada_em)
+                VALUES (?, ?, ?, ?, ?, ?, ?)""", id, pagamentoId, vendaId, creditoId, pedido, usado, Timestamp.from(quando));
         Map<String, Object> depois = new LinkedHashMap<>();
         depois.put("venda_id", vendaId.toString());
         depois.put("credito_id", creditoId.toString());
         depois.put("valor_pedido", pedido.toPlainString());
         depois.put("valor_usado", usado.toPlainString());
-        auditoria.registrar(Ator.usuario(usuarioId), "CREDITO_SEM_SALDO_NA_VENDA", "creditos_sem_saldo", pagamentoId, null,
-                depois);
+        depois.put("pagamento_id", pagamentoId.toString());
+        auditoria.registrar(Ator.usuario(usuarioId), "CREDITO_SEM_SALDO_NA_VENDA", "creditos_sem_saldo", id, null, depois);
     }
 
     // --- revisão da dona (tarefa 6.7) ---

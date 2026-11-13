@@ -218,7 +218,7 @@ final class CenarioDeSync {
         }
         ServicoDeVendas.PedidoDeVenda pedido = new ServicoDeVendas.PedidoDeVenda(id, maleta, cliente,
                 List.of(new ServicoDeVendas.LinhaDoPedido(produto, 1, null)),
-                List.of(new ServicoDeVendas.PagamentoDoPedido(id, valor, "CREDITO", credito)), null);
+                List.of(new ServicoDeVendas.PagamentoDoPedido(UUID.randomUUID(), valor, "CREDITO", credito)), null);
         return tentar(() -> (peloEnvio
                 ? vendas.venderPeloEnvio(vendedor.vendedorId(), vendedor.id(), usuarios.aparelhoDe(vendedor), pedido, null, false)
                 : vendas.vender(vendedor.vendedorId(), vendedor.id(), usuarios.aparelhoDe(vendedor), pedido)).vendaId());

@@ -99,7 +99,7 @@ class PullDaFase6Test extends ApoioDoEnvioDaFase6 {
         vender(v, m, cliente, List.of(linha(c, 1)), List.of(pagamento("20.00", "PIX"), pagamentoComCredito("10.00", credito)));
         UUID semSaldo = UUID.randomUUID();
         assertThat(resultado(enviar(v, List.of(vendaPeloEnvio(semSaldo, m, cliente, List.of(linha(c, 1)),
-                List.of(mapa("id", semSaldo, "valor", "30.00", "forma", "CREDITO", "creditoId", credito)), relogio.instant()))), 0))
+                List.of(mapa("id", UUID.randomUUID(), "valor", "30.00", "forma", "CREDITO", "creditoId", credito)), relogio.instant()))), 0))
                 .isEqualTo("ACEITO");
         return v;
     }

@@ -15,8 +15,10 @@
 -- creditos_sem_saldo: a venda paga pelo envio com crédito acima do saldo (sincronizável; só a revisão muda).
 -- ---------------------------------------------------------------------------------------------
 CREATE TABLE corona.creditos_sem_saldo (
-    -- O id do pagamento em crédito que o computador mandou (o pagamento gravado, quando houver, tem este id).
+    -- Do servidor. O pagamento em crédito que o computador mandou fica em pagamento_id (o pagamento gravado, quando o
+    -- crédito ainda pagou alguma coisa, tem este id); um id próprio evita o mesmo UUID em duas tabelas sincronizáveis.
     id uuid PRIMARY KEY,
+    pagamento_id uuid NOT NULL CONSTRAINT creditos_sem_saldo_pagamento_unico UNIQUE,
     venda_id uuid NOT NULL REFERENCES corona.vendas (id),
     credito_id uuid NOT NULL REFERENCES corona.creditos_cliente (id),
     -- O que o computador pediu em crédito e o que o crédito ainda tinha (o que ficou pago).
@@ -46,7 +48,7 @@ CREATE INDEX creditos_sem_saldo_por_credito ON corona.creditos_sem_saldo (credit
 CREATE INDEX creditos_sem_saldo_para_revisar ON corona.creditos_sem_saldo (registrada_em) WHERE situacao = 'EM_REVISAO';
 
 -- A linha nasce em revisão, com a venda e o crédito do mesmo vendedor e do mesmo cliente; com valor usado, existe o
--- pagamento CREDITO com o mesmo id, deste crédito, desta venda e com esse valor; sem valor usado, não existe pagamento
+-- pagamento CREDITO pagamento_id, deste crédito, desta venda e com esse valor; sem valor usado, não existe pagamento
 -- com esse id (o crédito não pagou nada).
 CREATE FUNCTION corona.conferir_credito_sem_saldo() RETURNS trigger
     LANGUAGE plpgsql
@@ -65,15 +67,16 @@ BEGIN
         RAISE EXCEPTION 'A venda % e o crédito % precisam ser do mesmo vendedor e do mesmo cliente.', NEW.venda_id, NEW.credito_id
             USING ERRCODE = 'restrict_violation';
     END IF;
-    SELECT venda_id, tipo, forma, valor, credito_id INTO p FROM corona.pagamentos_cliente WHERE id = NEW.id;
+    SELECT venda_id, tipo, forma, valor, credito_id INTO p FROM corona.pagamentos_cliente WHERE id = NEW.pagamento_id;
     IF NEW.valor_usado > 0 THEN
         IF p.venda_id IS DISTINCT FROM NEW.venda_id OR p.tipo IS DISTINCT FROM 'PAGAMENTO' OR p.forma IS DISTINCT FROM 'CREDITO'
                 OR p.credito_id IS DISTINCT FROM NEW.credito_id OR p.valor IS DISTINCT FROM NEW.valor_usado THEN
-            RAISE EXCEPTION 'O pagamento % precisa ser o pagamento em crédito de R$ % desta venda e deste crédito.', NEW.id,
+            RAISE EXCEPTION 'O pagamento % precisa ser o pagamento em crédito de R$ % desta venda e deste crédito.', NEW.pagamento_id,
                 NEW.valor_usado USING ERRCODE = 'restrict_violation';
         END IF;
     ELSIF FOUND THEN
-        RAISE EXCEPTION 'O crédito não pagou nada: não pode existir o pagamento %.', NEW.id USING ERRCODE = 'restrict_violation';
+        RAISE EXCEPTION 'O crédito não pagou nada: não pode existir o pagamento %.', NEW.pagamento_id
+            USING ERRCODE = 'restrict_violation';
     END IF;
     RETURN NEW;
 END;
@@ -88,7 +91,7 @@ CREATE FUNCTION corona.proteger_credito_sem_saldo() RETURNS trigger
 AS $$
 BEGIN
     IF NEW.venda_id IS DISTINCT FROM OLD.venda_id OR NEW.credito_id IS DISTINCT FROM OLD.credito_id
-            OR NEW.valor_pedido IS DISTINCT FROM OLD.valor_pedido OR NEW.valor_usado IS DISTINCT FROM OLD.valor_usado
+            OR NEW.pagamento_id IS DISTINCT FROM OLD.pagamento_id OR NEW.valor_pedido IS DISTINCT FROM OLD.valor_pedido OR NEW.valor_usado IS DISTINCT FROM OLD.valor_usado
             OR NEW.registrada_em IS DISTINCT FROM OLD.registrada_em OR NEW.deleted_at IS DISTINCT FROM OLD.deleted_at THEN
         RAISE EXCEPTION 'A venda com crédito sem saldo % não pode ser alterada.', OLD.id USING ERRCODE = 'restrict_violation';
     END IF;

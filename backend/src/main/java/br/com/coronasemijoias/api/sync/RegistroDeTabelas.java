@@ -166,7 +166,7 @@ public final class RegistroDeTabelas {
                                         + " WHERE c.id = t.credito_id AND c.vendedor_id = ?)")),
                         // Venda paga pelo envio com crédito acima do saldo, para a dona revisar (tarefa 6.7, V039): pela venda.
                         new TabelaSincronizavel("creditos_sem_saldo", List.of(
-                                "venda_id", "credito_id", "valor_pedido", "valor_usado", "situacao", "registrada_em",
+                                "venda_id", "pagamento_id", "credito_id", "valor_pedido", "valor_usado", "situacao", "registrada_em",
                                 "revisada_em", "observacao_revisao"), false, RegraDoVendedor.doVendedor(DA_VENDA))
                         // Tabela sincronizável nova: declare a regra do vendedor (filtro, expansão, diretório).
                 ),

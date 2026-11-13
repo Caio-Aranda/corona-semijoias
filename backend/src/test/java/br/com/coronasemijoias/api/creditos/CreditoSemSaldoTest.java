@@ -42,15 +42,28 @@ class CreditoSemSaldoTest extends ApoioDoEnvioDaFase6 {
         return new Cenario(v, cliente, credito, maleta, p40, p25);
     }
 
-    private Map<String, Object> vendaComCredito(Cenario c, UUID id, UUID peca, String valor) {
-        return vendaPeloEnvio(id, c.maleta(), c.cliente(), List.of(linha(peca, 1)),
-                List.of(mapa("id", id, "valor", valor, "forma", "CREDITO", "creditoId", c.credito())), relogio.instant());
+    /** O id do pagamento em crédito da venda (outro UUID, como o app gera). */
+    private final Map<UUID, UUID> pagamentos = new java.util.HashMap<>();
+
+    private UUID pagamentoDa(UUID venda) {
+        return pagamentos.computeIfAbsent(venda, v -> UUID.randomUUID());
     }
 
-    private Map<String, Object> semSaldo(UUID pagamento) {
+    private Map<String, Object> vendaComCredito(Cenario c, UUID id, UUID peca, String valor) {
+        return vendaPeloEnvio(id, c.maleta(), c.cliente(), List.of(linha(peca, 1)),
+                List.of(mapa("id", pagamentoDa(id), "valor", valor, "forma", "CREDITO", "creditoId", c.credito())),
+                relogio.instant());
+    }
+
+    /** A linha de revisão da venda (no máximo uma por venda nestes testes). */
+    private Map<String, Object> semSaldo(UUID venda) {
         return jdbc.queryForMap("""
-                SELECT venda_id, credito_id, valor_pedido, valor_usado, situacao, revisada_em, observacao_revisao
-                  FROM corona.creditos_sem_saldo WHERE id = ?""", pagamento);
+                SELECT id, pagamento_id, venda_id, credito_id, valor_pedido, valor_usado, situacao, revisada_em, observacao_revisao
+                  FROM corona.creditos_sem_saldo WHERE venda_id = ?""", venda);
+    }
+
+    private UUID revisao(UUID venda) {
+        return (UUID) semSaldo(venda).get("id");
     }
 
     /** C1: o usado do crédito é a soma dos usos e nunca passa do valor. */
@@ -92,6 +105,8 @@ class CreditoSemSaldoTest extends ApoioDoEnvioDaFase6 {
         assertThat(aReceber(v2)).isEqualByComparingTo("40.00");
         Map<String, Object> f = semSaldo(v2);
         assertThat(f.get("venda_id")).isEqualTo(v2);
+        assertThat(f.get("pagamento_id")).isEqualTo(pagamentoDa(v2));
+        assertThat(f.get("id")).isNotEqualTo(pagamentoDa(v2));
         assertThat(f.get("credito_id")).isEqualTo(c.credito());
         assertThat((BigDecimal) f.get("valor_pedido")).isEqualByComparingTo("40.00");
         assertThat((BigDecimal) f.get("valor_usado")).isEqualByComparingTo("0.00");
@@ -99,7 +114,7 @@ class CreditoSemSaldoTest extends ApoioDoEnvioDaFase6 {
         assertThat(credito(c.credito()).get("situacao")).isEqualTo("UTILIZADO");
         assertThat(somaDosUsos(c.credito())).isEqualByComparingTo("100.00");
         creditoFecha(c.credito());
-        assertThat(contar("SELECT count(*) FROM corona.auditoria WHERE acao = 'CREDITO_SEM_SALDO_NA_VENDA' AND registro_id = ?", v2))
+        assertThat(contar("SELECT count(*) FROM corona.auditoria WHERE acao = 'CREDITO_SEM_SALDO_NA_VENDA' AND registro_id = ?", revisao(v2)))
                 .isOne();
         assertThat(titulosDoTipo(avisos(), FonteDeAvisosDosCreditos.TIPO_SEM_SALDO)).isNotEmpty();
 
@@ -111,7 +126,7 @@ class CreditoSemSaldoTest extends ApoioDoEnvioDaFase6 {
         assertThat(vendas.venderPeloEnvio(c.v().vendedorId(), c.v().id(), usuarios.aparelhoDe(c.v()),
                 new br.com.coronasemijoias.api.vendas.ServicoDeVendas.PedidoDeVenda(v2, c.maleta(), c.cliente(),
                         List.of(new br.com.coronasemijoias.api.vendas.ServicoDeVendas.LinhaDoPedido(c.p40(), 1, null)),
-                        List.of(new br.com.coronasemijoias.api.vendas.ServicoDeVendas.PagamentoDoPedido(v2, new BigDecimal("40.00"),
+                        List.of(new br.com.coronasemijoias.api.vendas.ServicoDeVendas.PagamentoDoPedido(pagamentoDa(v2), new BigDecimal("40.00"),
                                 "CREDITO", c.credito())), null), null, false).jaExistia()).isTrue();
         assertThat(resultado(de2, 0)).isEqualTo("JA_RECEBIDO");
         assertThat(resultado(de2, 1)).isEqualTo("JA_RECEBIDO");
@@ -133,7 +148,7 @@ class CreditoSemSaldoTest extends ApoioDoEnvioDaFase6 {
         UUID venda = UUID.randomUUID();
         JsonNode r = enviar(c.v(), List.of(vendaComCredito(c, venda, c.p40(), "40.00")));
         assertThat(resultado(r, 0)).isEqualTo("ACEITO");
-        assertThat(valor("SELECT valor FROM corona.pagamentos_cliente WHERE id = ?", venda)).isEqualByComparingTo("25.00");
+        assertThat(valor("SELECT valor FROM corona.pagamentos_cliente WHERE id = ?", pagamentoDa(venda))).isEqualByComparingTo("25.00");
         assertThat(aReceber(venda)).isEqualByComparingTo("15.00");
         Map<String, Object> f = semSaldo(venda);
         assertThat((BigDecimal) f.get("valor_pedido")).isEqualByComparingTo("40.00");
@@ -172,7 +187,7 @@ class CreditoSemSaldoTest extends ApoioDoEnvioDaFase6 {
         assertThat(credito(credito).get("situacao")).isEqualTo("CANCELADO");
         UUID vendaB = UUID.randomUUID();
         assertThat(resultado(enviar(v, List.of(vendaPeloEnvio(vendaB, m, cliente, List.of(linha(b, 1)),
-                List.of(mapa("id", vendaB, "valor", "40.00", "forma", "CREDITO", "creditoId", credito)), relogio.instant()))), 0))
+                List.of(mapa("id", pagamentoDa(vendaB), "valor", "40.00", "forma", "CREDITO", "creditoId", credito)), relogio.instant()))), 0))
                 .isEqualTo("ACEITO");
         assertThat(aReceber(vendaB)).isEqualByComparingTo("60.00");
         assertThat((BigDecimal) semSaldo(vendaB).get("valor_usado")).isEqualByComparingTo("0.00");
@@ -245,28 +260,30 @@ class CreditoSemSaldoTest extends ApoioDoEnvioDaFase6 {
 
         JsonNode lista = corpoDe(ler(SEM_SALDO, dona()).andExpect(status().isOk()));
         assertThat(lista.toString()).contains(v2.toString(), v3.toString()).doesNotContain("custo");
+        UUID r2 = revisao(v2);
+        UUID r3 = revisao(v3);
 
         // Só a dona: vendedor 403, sem token 401.
-        postar(SEM_SALDO + "/" + v2 + "/manter", como(c.v()), mapa()).andExpect(status().isForbidden());
-        mvc.perform(post(SEM_SALDO + "/" + v2 + "/manter").contentType(MediaType.APPLICATION_JSON).content("{}"))
+        postar(SEM_SALDO + "/" + r2 + "/manter", como(c.v()), mapa()).andExpect(status().isForbidden());
+        mvc.perform(post(SEM_SALDO + "/" + r2 + "/manter").contentType(MediaType.APPLICATION_JSON).content("{}"))
                 .andExpect(status().isUnauthorized());
         ler(SEM_SALDO, como(c.v())).andExpect(status().isForbidden());
 
         Map<String, Integer> contagens = contagens();
         BigDecimal pagosV2 = somaDosPagamentos(v2);
-        JsonNode mantida = corpoDe(postar(SEM_SALDO + "/" + v2 + "/manter", dona(), mapa()).andExpect(status().isOk()));
+        JsonNode mantida = corpoDe(postar(SEM_SALDO + "/" + r2 + "/manter", dona(), mapa()).andExpect(status().isOk()));
         assertThat(mantida.get("situacao").asString()).isEqualTo("MANTIDA");
-        postar(SEM_SALDO + "/" + v2 + "/manter", dona(), mapa()).andExpect(status().isOk());
-        assertThat(codigoDe(postar(SEM_SALDO + "/" + v2 + "/nao-aceitar", dona(), mapa("observacao", "não"))
+        postar(SEM_SALDO + "/" + r2 + "/manter", dona(), mapa()).andExpect(status().isOk());
+        assertThat(codigoDe(postar(SEM_SALDO + "/" + r2 + "/nao-aceitar", dona(), mapa("observacao", "não"))
                 .andExpect(status().isConflict()))).isEqualTo("CREDITO_SEM_SALDO_NAO_ESTA_PARA_REVISAO");
 
         // Não aceitar pede a observação.
-        postar(SEM_SALDO + "/" + v3 + "/nao-aceitar", dona(), mapa()).andExpect(status().isBadRequest());
-        JsonNode naoAceita = corpoDe(postar(SEM_SALDO + "/" + v3 + "/nao-aceitar", dona(),
+        postar(SEM_SALDO + "/" + r3 + "/nao-aceitar", dona(), mapa()).andExpect(status().isBadRequest());
+        JsonNode naoAceita = corpoDe(postar(SEM_SALDO + "/" + r3 + "/nao-aceitar", dona(),
                 mapa("observacao", "Vendeu sabendo que o crédito tinha acabado")).andExpect(status().isOk()));
         assertThat(naoAceita.get("situacao").asString()).isEqualTo("NAO_ACEITA");
         assertThat(naoAceita.get("observacaoRevisao").asString()).isEqualTo("Vendeu sabendo que o crédito tinha acabado");
-        postar(SEM_SALDO + "/" + v3 + "/nao-aceitar", dona(), mapa("observacao", "de novo")).andExpect(status().isOk());
+        postar(SEM_SALDO + "/" + r3 + "/nao-aceitar", dona(), mapa("observacao", "de novo")).andExpect(status().isOk());
         postar(SEM_SALDO + "/" + UUID.randomUUID() + "/manter", dona(), mapa()).andExpect(status().isNotFound());
 
         // Nenhuma decisão mexe em dinheiro.
@@ -289,6 +306,7 @@ class CreditoSemSaldoTest extends ApoioDoEnvioDaFase6 {
         UUID venda = UUID.randomUUID();
         enviar(c.v(), List.of(vendaComCredito(c, UUID.randomUUID(), c.p40(), "40.00"), vendaComCredito(c, venda, c.p25(), "25.00")));
         assertThat(semSaldo(venda).get("situacao")).isEqualTo("EM_REVISAO");
+        UUID linha = revisao(venda);
 
         try (Connection con = conectarComoMigracao(); Statement s = con.createStatement()) {
             for (String sql : List.of(
@@ -296,26 +314,27 @@ class CreditoSemSaldoTest extends ApoioDoEnvioDaFase6 {
                     "UPDATE corona.creditos_sem_saldo SET valor_usado = 1.00 WHERE id = '%s'",
                     "UPDATE corona.creditos_sem_saldo SET venda_id = gen_random_uuid() WHERE id = '%s'",
                     "UPDATE corona.creditos_sem_saldo SET deleted_at = now() WHERE id = '%s'",
+                    "UPDATE corona.creditos_sem_saldo SET pagamento_id = gen_random_uuid() WHERE id = '%s'",
                     "DELETE FROM corona.creditos_sem_saldo WHERE id = '%s'",
                     "UPDATE corona.creditos_sem_saldo SET situacao = 'MANTIDA' WHERE id = '%s'")) {
-                assertThatThrownBy(() -> s.execute(sql.formatted(venda))).as(sql).isInstanceOf(java.sql.SQLException.class);
+                assertThatThrownBy(() -> s.execute(sql.formatted(linha))).as(sql).isInstanceOf(java.sql.SQLException.class);
                 con.rollback();
             }
         }
         // Mantida não volta nem passa para "não aceita".
-        postar(SEM_SALDO + "/" + venda + "/manter", dona(), mapa()).andExpect(status().isOk());
+        postar(SEM_SALDO + "/" + linha + "/manter", dona(), mapa()).andExpect(status().isOk());
         assertThatThrownBy(() -> jdbc.update("UPDATE corona.creditos_sem_saldo SET situacao = 'EM_REVISAO', revisada_em = NULL,"
-                + " revisada_por = NULL WHERE id = ?", venda)).isInstanceOf(Exception.class);
+                + " revisada_por = NULL WHERE id = ?", linha)).isInstanceOf(Exception.class);
         assertThatThrownBy(() -> jdbc.update("UPDATE corona.creditos_sem_saldo SET situacao = 'NAO_ACEITA', observacao_revisao = 'x'"
-                + " WHERE id = ?", venda)).isInstanceOf(Exception.class);
+                + " WHERE id = ?", linha)).isInstanceOf(Exception.class);
 
         // Linha nova errada: usado >= pedido, pagamento que não confere, venda ou crédito de outro vendedor/cliente.
         UUID outraVenda = vender(c.v(), c.maleta(), c.cliente(), List.of(linha(c.p25(), 1)), List.of(pagamento("25.00", "PIX")));
         UUID pix = jdbc.queryForObject("SELECT id FROM corona.pagamentos_cliente WHERE venda_id = ?", UUID.class, outraVenda);
         UsuarioDeTeste outro = usuarios.criarVendedor();
         UUID creditoDoOutro = creditoDeSobra(outro, cliente(outro), "100.00", "60.00");
-        String inserir = "INSERT INTO corona.creditos_sem_saldo (id, venda_id, credito_id, valor_pedido, valor_usado, registrada_em)"
-                + " VALUES (?, ?, ?, ?, ?, now())";
+        String inserir = "INSERT INTO corona.creditos_sem_saldo (pagamento_id, id, venda_id, credito_id, valor_pedido, valor_usado,"
+                + " registrada_em) VALUES (?, gen_random_uuid(), ?, ?, ?, ?, now())";
         assertThatThrownBy(() -> jdbc.update(inserir, UUID.randomUUID(), outraVenda, c.credito(), new BigDecimal("10.00"),
                 new BigDecimal("10.00"))).isInstanceOf(Exception.class);
         assertThatThrownBy(() -> jdbc.update(inserir, pix, outraVenda, c.credito(), new BigDecimal("30.00"),
