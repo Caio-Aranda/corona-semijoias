@@ -18,6 +18,11 @@ export const CHAVES = Object.freeze({
   conferidoEm: 'conferido_em',
   /** "1" depois de uma carga inicial: a conferência roda no fim do próximo recebimento completo. */
   conferirDepoisDaCarga: 'conferir_depois_da_carga',
+  /**
+   * Tabelas (JSON, lista) que ainda vêm de novo pela recarga dirigida (migração local 3, tarefa 6.7): sem apagar nada
+   * antes, a versão igual também é substituída. Cada tabela sai da lista na transação da última página dela.
+   */
+  recargaDirigida: 'recarga_dirigida',
 } as const);
 
 export function lerEstado(db: BancoAberto, chave: string): string | null {
