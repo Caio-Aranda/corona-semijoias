@@ -363,3 +363,71 @@ Feito (PR 142; ESPECIFICACAO v1.13):
 - Glossário: "Transferência". O acerto (repasse do vendedor à dona) não mudou.
 
 Não fiz: comissão com meta e telas em espanhol (fora desta tarefa). A mensagem do servidor `FORMA_DO_REEMBOLSO` ainda lista as quatro formas, porque a API as aceita.
+
+## Tarefa 6.12: fechamento da Fase 6
+
+Só documentos (PR 143): nenhum código, nenhuma migração. Agente `implementador` (Sonnet, esforço médio).
+
+### O que a Fase 6 entregou
+
+Devolução do cliente (à vista), autorização da dona, revisão e antifraude, crédito do cliente e troca, sync das tabelas novas, telas no Corona Vendas e no Corona Gestão, sete relatórios e cinco conferências, e os testes de duas pontas (casos 14 a 20). Migrações V035 a V040. ADR-0014 Aceito em 12/11/2026.
+
+| Tarefa | PR |
+| --- | --- |
+| 6.2 garantia e parâmetros | 124 |
+| 6.3 devolução do cliente | 125 |
+| 6.4 autorização, revisão e antifraude | 126 |
+| 6.5 crédito e troca | 129 |
+| 6.7 sync | ver `PROGRESSO.md` |
+| 6.8 Corona Vendas | ver `PROGRESSO.md` |
+| 6.9 Corona Gestão | ver `PROGRESSO.md` |
+| 6.10 relatórios e conferências | 135 |
+| 6.11 duas pontas | 136 |
+| 6.13 respostas da dona de 13/11 | 142 |
+| Correções #127 e #130 | 128 e o PR da #130 |
+
+### Respostas da dona de 13/11 (ESPECIFICACAO v1.13, tarefa 6.13)
+
+- **Prazos de garantia de 45 dias**, para desistência e para defeito (antes: 7 e 30). Migração V040; só muda se o valor ainda estava no padrão antigo, e a dona continua podendo mudar pela tela "Garantia e limites".
+- **Pagamento sem cartão nas telas do cliente:** vender, devolução e troca no Corona Vendas e registrar devolução no Corona Gestão oferecem só **Dinheiro** e **Transferência** (gravada como `PIX`). A API, o banco, a validação do envio e os relatórios seguem aceitando e mostrando Cartão e Cheque (dados antigos e operações já na fila). O acerto (repasse do vendedor à dona) não mudou.
+- Glossário: "Transferência".
+- Fora do que foi pedido: comissão com meta e telas em espanhol.
+
+### Revisão da fase
+
+- Regras inegociáveis conferidas pelas tarefas e pelos testes: dinheiro em NUMERIC, devolução e troca imutáveis (correção por cancelamento), servidor recalcula valores e prazo, vendedor sem custo nem dados de outros vendedores (oráculo de dois vendedores, barreira verde), prazo pela hora corrigida (ADR-0013).
+- Conferências da fase (6.10) e conferência em SQL própria nos testes de duas pontas (6.11) passam: devolvido por linha até o vendido; créditos (utilizado igual à soma dos usos); reembolso até o pago; saldo da maleta.
+- Respostas R1 a R6 (todas "Sim", 12/11/2026) e padrão seguro de D1 a D13 valem; D1 foi respondida em 13/11 (45 dias).
+
+### Pendências
+
+**Fase 7 (não feitas aqui):**
+- **6.6, venda a prazo:** depende da tarefa 7.3 (contas a receber). Até lá, devolução de venda com parcelas responde 409 "Esta venda tem parcelas; a devolução dela chega em breve".
+- **`DEVOLUCAO` em `acerto_eventos`** e a **pendência do vendedor** por devolução não aceita (`pendencias_acerto`): dependem da 7.5, que não está na `main`. Até lá a pendência fica registrada na revisão e entra no primeiro acerto. O tipo `TROCA` não é necessário (ADR-0014, item 8).
+
+**Para depois, sem dono ainda:**
+- Devolução e troca no estresse de cinco vendedores (E4 da 6.11): o plano da 6.12 não pede; os casos 14 a 20 e as conferências cobrem os caminhos. Entra se a Fase 7 mexer no mesmo dinheiro.
+- Foto da peça devolvida (D10), conferência diária automática com alerta (Fase 9), virada às 23h59/00h00 nos testes de duas pontas.
+- Teste instável `consultas-da-fase-6.test.ts` ("a receber ... tipo próprio"): ordem de lançamentos do mesmo instante. Já existia.
+
+**Do responsável:**
+- Fazer o teste de uso com a dona e um vendedor (roteiro abaixo) e anotar o que travar.
+- Dona validar o desenho das telas (perguntas 28 e 29) e responder o que ainda estiver no padrão seguro (D3, D4 a D9, D11 a D13).
+- Publicar a versão nova do servidor e do Corona Vendas respeitando a nota de deploy da 6.7 (versão mínima).
+
+### Roteiro do teste de uso (dona e um vendedor)
+
+Antes: vendedor com maleta aberta, uma venda feita há alguns dias para um cliente, e o Corona Vendas já sincronizado. A dona com o Corona Gestão aberto.
+
+1. **Devolução com internet.** O vendedor abre "Devolução", lê a peça (ou escolhe a venda), marca a quantidade e o motivo, vê o valor a devolver e toca em **Registrar devolução**. Conferir: a peça voltou à maleta e o valor devolvido bate com o que o cliente pagou.
+2. **Devolução sem internet.** Desligar a internet do computador do vendedor e repetir com outra peça. Conferir que aparece "Guardado, será enviado quando houver internet". Ligar a internet e esperar. Conferir que a dona vê a devolução.
+3. **Peça com defeito.** Devolver uma peça com o motivo "Defeito". Conferir que ela não volta ao saldo da maleta.
+4. **Fora do prazo.** Escolher uma venda com mais de 45 dias. Conferir o aviso "Passou do prazo da garantia. Peça autorização à dona." O vendedor toca em **Pedir autorização**. A dona vê em "Devoluções para autorizar" e toca em **Aprovar reembolso**. O vendedor vê a resposta e registra a devolução.
+5. **Negar.** Repetir o pedido e a dona nega, com motivo. Conferir que o vendedor vê a negativa em português simples.
+6. **Troca.** O vendedor toca em **Registrar troca**: peça que volta, peça que sai, e a diferença (cliente paga em Dinheiro ou Transferência, ou sobra como crédito). Conferir que só aparecem Dinheiro e Transferência.
+7. **Crédito do cliente.** Usar o crédito numa venda nova. Conferir o saldo antes e depois. Tentar usar mais do que o saldo: deve avisar, sem travar.
+8. **Cancelar.** Cancelar uma devolução e uma troca (sem crédito usado). Conferir que tudo volta como era. Tentar cancelar uma troca com crédito já usado: deve explicar que não dá.
+9. **Revisão e avisos.** A dona abre "O que precisa da sua atenção": "Devoluções para revisar" e, se houver, "Muitas devoluções de um vendedor". Marcar uma como **Manter** e outra como **Não aceitar**.
+10. **Relatórios.** A dona abre os relatórios de devolução e troca e confere os números com o que foi feito; o vendedor vê "Meus números" só dele.
+
+Anotar para cada passo: funcionou, travou ou deixou dúvida (e o que a tela dizia).
