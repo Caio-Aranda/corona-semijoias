@@ -447,14 +447,21 @@ class PushDaFase6Test extends ApoioDoEnvioDaFase6 {
 
     @Test
     void maletaEmAcertoRecusaEDepoisDoAcertoTentarDeNovoMandaAPecaParaALoja() throws Exception {
-        Cenario c = cenario();
-        jdbc.update("UPDATE corona.remessas SET status = 'EM_ACERTO' WHERE id = ?", c.maleta());
+        // A maleta da venda vende tudo: o acerto feito à mão no fim (UPDATE, a Fase 7 ainda não existe) não deixa peça nela
+        // sem movimento, e a conciliação do banco que os testes dividem continua vazia. A peça B vem de outra maleta, aberta.
+        UsuarioDeTeste v = usuarios.criarVendedor();
+        UUID cliente = cliente(v);
+        UUID a = peca("50.00", 10);
+        UUID pecaB = peca("30.00", 10);
+        UUID daVenda = maleta(v, a, 2);
+        UUID vendaA = vender(v, daVenda, cliente, List.of(linha(a, 2)), List.of(pagamento("100.00", "DINHEIRO")));
+        UUID aberta = maleta(v, pecaB, 1);
+        jdbc.update("UPDATE corona.remessas SET status = 'EM_ACERTO' WHERE id = ?", daVenda);
         Map<String, Integer> antes = contagens();
         UUID dev = UUID.randomUUID();
-        Map<String, Object> troca = pedidoDeTroca(c.vendaA(), "ARREPENDIMENTO", umaBoa(c.a()), c.maleta(), List.of(linha(c.c(), 1)),
-                List.of());
-        JsonNode r = enviar(c.v(), List.of(devolucaoPeloEnvio(dev, c.vendaA(), "ARREPENDIMENTO", "PIX", umaBoa(c.a()), null,
-                relogio.instant()), trocaPeloEnvio(troca, relogio.instant())));
+        Map<String, Object> troca = pedidoDeTroca(vendaA, "ARREPENDIMENTO", umaBoa(a), aberta, List.of(linha(pecaB, 1)), List.of());
+        JsonNode r = enviar(v, List.of(devolucaoPeloEnvio(dev, vendaA, "ARREPENDIMENTO", "PIX", umaBoa(a), null, relogio.instant()),
+                trocaPeloEnvio(troca, relogio.instant())));
         for (int i = 0; i < 2; i++) {
             assertThat(resultado(r, i)).isEqualTo("RECUSADO");
             assertThat(codigo(r, i)).isEqualTo("MALETA_EM_ACERTO");
@@ -473,7 +480,8 @@ class PushDaFase6Test extends ApoioDoEnvioDaFase6 {
         assertThat(codigo(enviar(d.v(), List.of(trocaPeloEnvio(trocaB, relogio.instant()))), 0)).isEqualTo("MALETA_EM_ACERTO");
 
         // Depois do acerto, a dona tenta de novo: entra, e a peça boa vai para a loja (nenhum movimento na maleta acertada).
-        jdbc.update("UPDATE corona.remessas SET status = 'ACERTADA' WHERE id = ?", c.maleta());
+        assertThat(saldo(daVenda, a)).isZero();
+        jdbc.update("UPDATE corona.remessas SET status = 'ACERTADA' WHERE id = ?", daVenda);
         mvc.perform(post("/api/dona/envios-com-problema/" + dev + "/tentar-de-novo").with(dona())).andExpect(status().isOk());
         Map<String, Object> f = fotoDaDevolucao(dev);
         assertThat(f.get("movimentos")).asInstanceOf(org.assertj.core.api.InstanceOfAssertFactories.LIST).isEmpty();
