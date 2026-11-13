@@ -164,7 +164,38 @@ export type PedidoDeChamada =
   | { operacao: 'fotos.ver'; hash: string; tamanho: TamanhoDeFoto }
   | { operacao: 'relatorios.vendas'; de?: string; ate?: string; agrupar?: AgrupamentoDeVendas }
   | { operacao: 'relatorios.recebimentos'; de?: string; ate?: string }
-  | { operacao: 'relatorios.aReceber' };
+  | { operacao: 'relatorios.aReceber' }
+  // --- devolução, troca e crédito (tarefa 6.8): só no banco do computador ---
+  /** "Vendas com esta peça": as vendas do vendedor com a peça lida. */
+  | { operacao: 'devolucoes.vendasComAPeca'; codigo: string }
+  /** Prévia da devolução (só leitura): peças, valor, prazo e autorização. */
+  | {
+      operacao: 'devolucoes.previa';
+      vendaId: string;
+      motivo?: MotivoDeDevolucao;
+      observacao?: string;
+      itens: PecaQueVolta[];
+    }
+  | { operacao: 'devolucoes.registrar'; devolucao: DevolucaoParaEnviar }
+  | { operacao: 'devolucoes.cancelar'; id: string; cancelamentoId: string; motivo: string }
+  /** "Minhas devoluções e trocas" (as duas juntas, com o período de Minhas vendas). */
+  | { operacao: 'devolucoes.listar'; de?: string; ate?: string }
+  | { operacao: 'autorizacoes.pedir'; pedido: PedidoDeAutorizacaoParaEnviar }
+  | { operacao: 'autorizacoes.listar' }
+  | {
+      operacao: 'trocas.previa';
+      devolucao: {
+        vendaId: string;
+        motivo?: MotivoDeDevolucao;
+        observacao?: string;
+        itens: PecaQueVolta[];
+      };
+      remessaId?: string;
+      itens: LinhaDaVendaParaEnviar[];
+    }
+  | { operacao: 'trocas.registrar'; troca: TrocaParaEnviar }
+  | { operacao: 'trocas.cancelar'; id: string; cancelamentoId: string; motivo: string }
+  | { operacao: 'creditos.doCliente'; clienteId: string };
 
 export type OperacaoDaApi = PedidoDeChamada['operacao'];
 
@@ -191,4 +222,15 @@ export const OPERACOES_DA_API: readonly OperacaoDaApi[] = [
   'relatorios.vendas',
   'relatorios.recebimentos',
   'relatorios.aReceber',
+  'devolucoes.vendasComAPeca',
+  'devolucoes.previa',
+  'devolucoes.registrar',
+  'devolucoes.cancelar',
+  'devolucoes.listar',
+  'autorizacoes.pedir',
+  'autorizacoes.listar',
+  'trocas.previa',
+  'trocas.registrar',
+  'trocas.cancelar',
+  'creditos.doCliente',
 ];

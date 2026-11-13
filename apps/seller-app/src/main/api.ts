@@ -241,6 +241,18 @@ export function criarApiDoVendas(opcoes: OpcoesDaApi): ApiDoVendas {
       case 'clientes.alterar':
       case 'envios.naoAceitos':
       case 'envios.entendi':
+      // Devolução, troca e crédito (tarefa 6.8): sempre pela outbox, nunca direto pela rede.
+      case 'devolucoes.vendasComAPeca':
+      case 'devolucoes.previa':
+      case 'devolucoes.registrar':
+      case 'devolucoes.cancelar':
+      case 'devolucoes.listar':
+      case 'autorizacoes.pedir':
+      case 'autorizacoes.listar':
+      case 'trocas.previa':
+      case 'trocas.registrar':
+      case 'trocas.cancelar':
+      case 'creditos.doCliente':
         // Só existem no banco do computador. Sem ele, a pessoa precisa entrar de novo com internet.
         return Promise.resolve({
           ok: false,

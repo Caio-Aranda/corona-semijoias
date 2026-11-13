@@ -307,6 +307,54 @@ export class ConsultasLocais {
         this.o.aoMudarOEstado?.();
         return ok(null);
       }
+      // --- devolução, troca e crédito (tarefa 6.8) ---
+      case 'devolucoes.vendasComAPeca':
+        return ok(this.fase6.vendasComAPeca(pedido.codigo));
+      case 'devolucoes.previa':
+        return ok(
+          this.fase6.previaDaDevolucao({
+            vendaId: pedido.vendaId,
+            ...(pedido.motivo ? { motivo: pedido.motivo } : {}),
+            ...(pedido.observacao !== undefined ? { observacao: pedido.observacao } : {}),
+            itens: pedido.itens,
+          }),
+        );
+      case 'devolucoes.registrar':
+        return ok(this.o.operacoes.devolver(pedido.devolucao));
+      case 'devolucoes.cancelar':
+        return ok(
+          this.o.operacoes.cancelarDevolucao({
+            id: pedido.cancelamentoId,
+            devolucaoId: pedido.id,
+            motivo: pedido.motivo,
+          }),
+        );
+      case 'devolucoes.listar':
+        return ok(this.fase6.listar(pedido));
+      case 'autorizacoes.pedir':
+        return ok(this.o.operacoes.pedirAutorizacao(pedido.pedido));
+      case 'autorizacoes.listar':
+        return ok(this.fase6.autorizacoes());
+      case 'trocas.previa':
+        return ok(
+          this.fase6.previaDaTroca({
+            devolucao: pedido.devolucao,
+            ...(pedido.remessaId ? { remessaId: pedido.remessaId } : {}),
+            itens: pedido.itens,
+          }),
+        );
+      case 'trocas.registrar':
+        return ok(this.o.operacoes.trocar(pedido.troca));
+      case 'trocas.cancelar':
+        return ok(
+          this.o.operacoes.cancelarTroca({
+            id: pedido.cancelamentoId,
+            trocaId: pedido.id,
+            motivo: pedido.motivo,
+          }),
+        );
+      case 'creditos.doCliente':
+        return ok(this.fase6.creditosDoCliente(pedido.clienteId));
       case 'eu':
       case 'fotos.ver':
         return nao('Esta consulta não é feita no computador.');
