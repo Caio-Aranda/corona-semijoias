@@ -269,7 +269,8 @@ public class ServicoDeEstoque {
      * fora da maleta, menos o que foi vendido (venda líquida de estorno, Fase 4; ADR-0010, item 12). Os movimentos da maleta
      * (REMESSA, DEVOLUCAO e os estornos deles) não entram no lado direito: eles só trocam peça de lugar entre o central e as
      * maletas. A venda é a única saída definitiva da maleta; a devolução do cliente que volta à maleta (DEVOLUCAO_CLIENTE,
-     * tarefa 6.3, e o estorno dela) desfaz parte da venda. A "peça para a loja" continua contada como vendida até o acerto
+     * tarefa 6.3, e o estorno dela) desfaz parte da venda; na troca (tarefa 6.5), TROCA_SAIDA conta como venda e
+     * TROCA_ENTRADA como devolução (e os estornos delas). A "peça para a loja" continua contada como vendida até o acerto
      * recebê-la (Fase 7; dúvida Q5). Num único SELECT, para olhar um retrato só do banco.
      */
     private List<DiferencaComMaletas> diferencasComMaletas() {
@@ -293,7 +294,7 @@ public class ServicoDeEstoque {
                               GROUP BY i.produto_id) maletas ON maletas.produto_id = p.id
                   LEFT JOIN (SELECT mv.produto_id, sum(mv.quantidade) AS soma
                                FROM corona.movimentos_remessa mv
-                              WHERE mv.tipo IN ('VENDA', 'ESTORNO_VENDA', 'DEVOLUCAO_CLIENTE')
+                              WHERE mv.tipo IN ('VENDA', 'ESTORNO_VENDA', 'DEVOLUCAO_CLIENTE', 'TROCA_SAIDA', 'TROCA_ENTRADA')
                               GROUP BY mv.produto_id) vendidas ON vendidas.produto_id = p.id
                  WHERE p.estoque_atual + coalesce(maletas.saldo, 0) <> coalesce(fora.soma, 0) + coalesce(vendidas.soma, 0)
                  ORDER BY p.nome, p.id""",

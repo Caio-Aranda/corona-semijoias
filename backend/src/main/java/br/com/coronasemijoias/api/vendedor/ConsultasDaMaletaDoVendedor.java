@@ -121,7 +121,7 @@ public class ConsultasDaMaletaDoVendedor {
                                AS codigo_fornecedor,
                            (SELECT g.nome FROM corona.categorias g WHERE g.id = p.categoria_id) AS categoria,
                            coalesce((SELECT -sum(x.quantidade) FROM corona.movimentos_remessa x WHERE x.remessa_id = i.remessa_id
-                               AND x.produto_id = i.produto_id AND x.tipo IN ('VENDA', 'ESTORNO_VENDA', 'DEVOLUCAO_CLIENTE')), 0) AS vendida,
+                               AND x.produto_id = i.produto_id AND x.tipo IN ('VENDA', 'ESTORNO_VENDA', 'DEVOLUCAO_CLIENTE', 'TROCA_SAIDA', 'TROCA_ENTRADA')), 0) AS vendida,
                            coalesce((SELECT -sum(x.quantidade) FROM corona.movimentos_remessa x WHERE x.remessa_id = i.remessa_id
                                AND x.produto_id = i.produto_id AND x.tipo = 'DEVOLUCAO_DONA'), 0) AS devolvida,
                            i.qtd_enviada + coalesce((SELECT sum(x.quantidade) FROM corona.movimentos_remessa x
