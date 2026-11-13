@@ -176,7 +176,7 @@ abstract class ApoioDasDevolucoes extends TesteDeIntegracao {
     UUID semana() throws Exception {
         int n = SEQUENCIA.getAndIncrement();
         LocalDate inicio = LocalDate.of(3100, 1, 1).plusDays(10L * n);
-        return semana(110_000 + n, inicio, inicio.plusDays(6));
+        return semana(40_000 + n, inicio, inicio.plusDays(6));
     }
 
     UUID semana(int numero, LocalDate inicio, LocalDate fim) throws Exception {

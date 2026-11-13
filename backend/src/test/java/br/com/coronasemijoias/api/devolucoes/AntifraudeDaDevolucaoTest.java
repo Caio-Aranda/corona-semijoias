@@ -173,8 +173,8 @@ class AntifraudeDaDevolucaoTest extends ApoioDasDevolucoes {
         UUID cliente = cliente(v);
         limiteSemanal("100.00");
         // Semanas de quarta a terça: 04/02 a 10/02 e 11/02 a 17/02/2026.
-        semana(120_001, LocalDate.of(2026, 2, 4), LocalDate.of(2026, 2, 10));
-        semana(120_002, LocalDate.of(2026, 2, 11), LocalDate.of(2026, 2, 17));
+        semana(49_001, LocalDate.of(2026, 2, 4), LocalDate.of(2026, 2, 10));
+        semana(49_002, LocalDate.of(2026, 2, 11), LocalDate.of(2026, 2, 17));
         UUID a = venderEm(v, maleta, cliente, sessenta, 1, "60.00", brasilia("2026-02-09T10:00:00"));
         UUID b = venderEm(v, maleta, cliente, sessenta, 1, "60.00", brasilia("2026-02-09T10:00:00"));
         // Terça 10/02 e quarta 11/02: de segunda a domingo seria a mesma semana; pelas semanas cadastradas, não.

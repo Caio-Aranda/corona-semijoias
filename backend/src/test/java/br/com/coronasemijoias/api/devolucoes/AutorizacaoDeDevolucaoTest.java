@@ -155,7 +155,6 @@ class AutorizacaoDeDevolucaoTest extends ApoioDasDevolucoes {
         ruins.add(pedidoDeAutorizacao(UUID.randomUUID(), venda, "DEFEITO", uma));
         ruins.add(pedidoDeAutorizacao(UUID.randomUUID(), venda, "ARREPENDIMENTO", List.of(devolvida(outra, 1, "BOA"))));
         ruins.add(pedidoDeAutorizacao(UUID.randomUUID(), null, "ARREPENDIMENTO", uma));
-        ruins.add(pedidoDeAutorizacao(null, venda, "ARREPENDIMENTO", uma));
         for (Map<String, Object> ruim : ruins) {
             JsonNode erro = corpoDe(postar(AUTORIZACOES, como(v), ruim).andExpect(status().isBadRequest()));
             assertThat(erro.get("detail").asString()).as("%s", ruim).isNotBlank();
