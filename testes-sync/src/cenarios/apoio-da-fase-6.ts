@@ -1,4 +1,5 @@
-import { consultar, texto } from '../banco-do-servidor';
+import type { Aparelho } from '../aparelho';
+import { consultar, contar, texto } from '../banco-do-servidor';
 import { Cenario, Tela, type VendedorComAparelho } from '../cenario';
 import { envelhecerVenda } from '../maquina-do-tempo';
 
@@ -67,3 +68,23 @@ export async function umaLinha<T extends Record<string, unknown>>(sql: string): 
 }
 
 export { texto };
+
+/** O saldo da peça na maleta no servidor: o que foi enviado mais os movimentos (venda e troca saem, devolução entra). */
+export async function saldoNoServidor(maletaId: string, produtoId: string): Promise<number> {
+  return contar(`
+    SELECT i.qtd_enviada + coalesce((SELECT sum(m.quantidade) FROM corona.movimentos_remessa m
+             WHERE m.remessa_id = i.remessa_id AND m.produto_id = i.produto_id), 0)
+      FROM corona.itens_remessa i
+     WHERE i.remessa_id = ${texto(maletaId)} AND i.produto_id = ${texto(produtoId)} AND i.deleted_at IS NULL`);
+}
+
+/** O mesmo saldo, lido do banco do computador. */
+export function saldoLocal(a: Aparelho, maletaId: string, produtoId: string): number {
+  return a.ler<{ saldo: number }>(
+    `SELECT i.qtd_enviada + coalesce((SELECT sum(m.quantidade) FROM movimentos_remessa m
+             WHERE m.remessa_id = i.remessa_id AND m.produto_id = i.produto_id AND m.deleted_at IS NULL), 0) AS saldo
+       FROM itens_remessa i WHERE i.remessa_id = ? AND i.produto_id = ? AND i.deleted_at IS NULL`,
+    maletaId,
+    produtoId,
+  )[0]!.saldo;
+}
