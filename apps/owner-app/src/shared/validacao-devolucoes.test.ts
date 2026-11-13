@@ -165,7 +165,8 @@ describe('conferência dos dados de devoluções, trocas, créditos e garantia',
       for (const ruim of ruins) {
         expect(conferirParametros('garantia.alterar', ruim)).toBeNull();
       }
-      const { prazoDefeitoDias: _tirado, ...faltando } = ok;
+      const faltando: Record<string, unknown> = { ...ok };
+      delete faltando.prazoDefeitoDias;
       expect(conferirParametros('garantia.alterar', faltando)).toBeNull();
     });
   });

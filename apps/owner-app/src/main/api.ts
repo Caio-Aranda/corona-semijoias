@@ -642,18 +642,15 @@ async function executarDevolucoes(
     case 'garantia.ler':
       return executar(() => lerGarantia(base));
     case 'garantia.alterar': {
-      const {
-        operacao: _operacao,
-        limiteReembolsoSemanal,
-        valorAprovacaoReembolso,
-        ...dias
-      } = pedido;
+      const { limiteReembolsoSemanal, valorAprovacaoReembolso } = pedido;
       return executar(() =>
         alterarGarantia({
           ...base,
           // O dinheiro vai em texto ("500.00"), nunca como número fracionário; vazio = sem limite.
           body: {
-            ...dias,
+            prazoArrependimentoDias: pedido.prazoArrependimentoDias,
+            prazoDefeitoDias: pedido.prazoDefeitoDias,
+            percentualAlertaDevolucao: pedido.percentualAlertaDevolucao,
             ...(limiteReembolsoSemanal === null ? {} : { limiteReembolsoSemanal }),
             ...(valorAprovacaoReembolso === null ? {} : { valorAprovacaoReembolso }),
           },

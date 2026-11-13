@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { TEXTOS } from '../textos';
 import { TEXTOS_DE_COMPRAS } from '../textos-compras';
+import { TEXTOS_DE_DEVOLUCOES } from '../textos-devolucoes';
 import { TEXTOS_DE_ESTOQUE } from '../textos-estoque';
 import { TEXTOS_DE_MALETAS } from '../textos-maletas';
 import { TEXTOS_RELATORIOS } from '../textos-relatorios';
@@ -36,6 +37,12 @@ export const ROTAS = [
   'computadores/envios',
   'computadores/vendas',
   'computadores/clientes',
+  'devolucoes/autorizar',
+  'devolucoes/revisar',
+  'devolucoes/lista',
+  'devolucoes/trocas',
+  'devolucoes/creditos',
+  'devolucoes/garantia',
   'relatorios/vendedores',
   'relatorios/clientes',
   'relatorios/fornecedores',
@@ -109,6 +116,17 @@ export const MENU = [
       { chave: 'computadores/envios', rotulo: TEXTOS_DE_SINCRONIZACAO.menu.envios },
       { chave: 'computadores/vendas', rotulo: TEXTOS_DE_SINCRONIZACAO.menu.vendas },
       { chave: 'computadores/clientes', rotulo: TEXTOS_DE_SINCRONIZACAO.menu.clientes },
+    ],
+  },
+  {
+    titulo: TEXTOS_DE_DEVOLUCOES.menu.grupo,
+    itens: [
+      { chave: 'devolucoes/autorizar', rotulo: TEXTOS_DE_DEVOLUCOES.menu.autorizar },
+      { chave: 'devolucoes/revisar', rotulo: TEXTOS_DE_DEVOLUCOES.menu.revisar },
+      { chave: 'devolucoes/lista', rotulo: TEXTOS_DE_DEVOLUCOES.menu.devolucoes },
+      { chave: 'devolucoes/trocas', rotulo: TEXTOS_DE_DEVOLUCOES.menu.trocas },
+      { chave: 'devolucoes/creditos', rotulo: TEXTOS_DE_DEVOLUCOES.menu.creditos },
+      { chave: 'devolucoes/garantia', rotulo: TEXTOS_DE_DEVOLUCOES.menu.garantia },
     ],
   },
   {
