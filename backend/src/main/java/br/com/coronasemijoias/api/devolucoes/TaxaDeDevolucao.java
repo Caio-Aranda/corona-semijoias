@@ -3,7 +3,6 @@ package br.com.coronasemijoias.api.devolucoes;
 import br.com.coronasemijoias.api.configuracoes.ChaveDeConfiguracao;
 import br.com.coronasemijoias.api.configuracoes.Configuracoes;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -38,6 +37,16 @@ public class TaxaDeDevolucao {
         this.relogio = relogio;
     }
 
+    /**
+     * A porcentagem inteira para a tela, arredondada (meio para cima): (devolvido × 200 + vendido) ÷ (vendido × 2), parte
+     * inteira. Só para mostrar; a decisão de avisar usa a conta exata.
+     */
+    static int porcentagemNaTela(BigDecimal devolvido, BigDecimal vendido) {
+        BigDecimal dois = BigDecimal.valueOf(2);
+        return devolvido.multiply(BigDecimal.valueOf(200)).add(vendido).divideToIntegralValue(vendido.multiply(dois))
+                .intValueExact();
+    }
+
     /** Os vendedores ativos acima do percentual da dona (lido a cada chamada), em ordem de nome. */
     public List<VendedorAcima> acimaDoPercentual() {
         int percentual = configuracoes.inteiro(ChaveDeConfiguracao.PERCENTUAL_ALERTA_DEVOLUCAO);
@@ -61,8 +70,7 @@ public class TaxaDeDevolucao {
                  ORDER BY lower(t.nome), t.id""", (rs, n) -> {
                     BigDecimal devolvido = rs.getBigDecimal("devolvido");
                     BigDecimal vendido = rs.getBigDecimal("vendido");
-                    Integer naTela = vendido.signum() == 0 ? null
-                            : devolvido.multiply(cem).divide(vendido, 0, RoundingMode.HALF_UP).intValueExact();
+                    Integer naTela = vendido.signum() == 0 ? null : porcentagemNaTela(devolvido, vendido);
                     return new VendedorAcima(rs.getObject("id", UUID.class), rs.getString("nome"), devolvido, vendido, naTela);
                 }, de, ate, de, ate).stream()
                 .filter(v -> v.vendido().signum() == 0 || v.devolvido().multiply(cem).compareTo(limite.multiply(v.vendido())) > 0)
