@@ -353,3 +353,13 @@ Tarefa crítica (plano: [plano-6-11-duas-pontas-da-fase-6.md](plano-6-11-duas-po
 - Devolução e troca no estresse de cinco vendedores (E4: a 6.12 decide), venda a prazo, acerto, limite da semana e valor de aprovação (o computador não sabe o valor; o backend já prova), a virada às 23h59 e 00h00.
 
 **Como rodar:** `npm run test:duas-pontas -w @corona/testes-sync` (Docker aberto) ou só um arquivo: `npx vitest run -c vitest.duas-pontas.config.ts src/cenarios/troca-e-credito` dentro de `testes-sync/`. Teste sem API: `npm test -w @corona/testes-sync` (inclui a máquina do tempo).
+
+## Tarefa 6.13: respostas da dona de 13/11
+
+Feito (PR 142; ESPECIFICACAO v1.13):
+
+- Migração `V040__prazos_de_45_dias.sql`: `prazo_arrependimento_dias` 7 para 45 e `prazo_defeito_dias` 30 para 45, cada um só se ainda estiver no valor antigo (a dona pode ter mudado pela tela). Teste `MigracaoDosPrazosDe45DiasTest`; `GarantiaTest` agora parte de 45.
+- Telas do cliente com só **Dinheiro** e **Transferência** (grava `PIX`): vender, devolução e troca no Corona Vendas; registrar devolução no Corona Gestão. A API, o banco, a validação do envio e os relatórios continuam aceitando e mostrando Cartão e Cheque (dados antigos e operações já na fila).
+- Glossário: "Transferência". O acerto (repasse do vendedor à dona) não mudou.
+
+Não fiz: comissão com meta e telas em espanhol (fora desta tarefa). A mensagem do servidor `FORMA_DO_REEMBOLSO` ainda lista as quatro formas, porque a API as aceita.
