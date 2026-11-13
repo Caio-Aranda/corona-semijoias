@@ -83,7 +83,7 @@ public class ConferenciasDeDevolucaoETroca {
                     + x.esperado() + ")."));
         }
         long conferidos = contar("SELECT count(*) FROM corona.devolucoes WHERE deleted_at IS NULL") + c1.produtosConferidos();
-        return new Conferencia("maleta", "Saldo da maleta com devolução e troca",
+        return new Conferencia("maleta", "Maleta com devoluções e trocas",
                 "As peças que voltam à maleta pela devolução ou pela troca batem com o que a maleta recebeu, e o estoque "
                         + "da loja mais as maletas fecha.", conferidos, d);
     }
@@ -105,7 +105,7 @@ public class ConferenciasDeDevolucaoETroca {
         long conferidos = contar("""
                 SELECT count(DISTINCT i.item_venda_id) FROM corona.itens_devolucao i
                   JOIN corona.devolucoes dv ON dv.id = i.devolucao_id AND dv.situacao <> 'CANCELADA'""");
-        return new Conferencia("devolvido-por-peca", "Devolvido por peça, nunca mais que o vendido",
+        return new Conferencia("devolvido-por-peca", "Devolvido por peça da venda",
                 "Em cada peça vendida, o que voltou (em peças e em dinheiro) não passa do que foi vendido.", conferidos, d);
     }
 
@@ -125,7 +125,7 @@ public class ConferenciasDeDevolucaoETroca {
                 "Do crédito de " + reais(rs.getBigDecimal("valor")) + ", o saldo guardado diz "
                         + reais(rs.getBigDecimal("valor_utilizado")) + " usados, mas os usos somam "
                         + reais(rs.getBigDecimal("usos")) + "."));
-        return new Conferencia("creditos", "Créditos menos usos é o que está em aberto",
+        return new Conferencia("creditos", "Créditos e usos",
                 "Em cada crédito, o usado é a soma dos usos e nunca passa do valor; o que sobra é o crédito em aberto.",
                 contar("SELECT count(*) FROM corona.creditos_cliente WHERE deleted_at IS NULL"), d);
     }
@@ -149,7 +149,7 @@ public class ConferenciasDeDevolucaoETroca {
         long conferidos = contar("""
                 SELECT count(DISTINCT venda_id) FROM corona.pagamentos_cliente
                  WHERE deleted_at IS NULL AND tipo IN ('REEMBOLSO', 'ESTORNO_REEMBOLSO') AND forma <> 'CREDITO'""");
-        return new Conferencia("dinheiro-devolvido", "Dinheiro devolvido, nunca mais que o pago",
+        return new Conferencia("dinheiro-devolvido", "Dinheiro devolvido",
                 "Em cada venda, o dinheiro que voltou ao cliente não passa do que ele pagou (salvo devolução que a dona já "
                         + "foi avisada para revisar).", conferidos, d);
     }
@@ -173,7 +173,7 @@ public class ConferenciasDeDevolucaoETroca {
         long conferidos = contar("""
                 SELECT count(DISTINCT v.id) FROM corona.vendas v JOIN corona.pagamentos_cliente p ON p.venda_id = v.id
                  WHERE v.deleted_at IS NULL AND v.status = 'CONCLUIDA' AND p.deleted_at IS NULL""");
-        return new Conferencia("contas-da-venda", "Contas da venda com devolução",
+        return new Conferencia("contas-da-venda", "Contas da venda",
                 "Em cada venda, o que foi recebido, menos o que voltou ao cliente, fica entre zero e o total da venda menos o que foi devolvido.",
                 conferidos, d);
     }

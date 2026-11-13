@@ -7,6 +7,7 @@ import type { NomeDoRelatorio, NomeDoRelatorioDeCadastro } from '../../shared/re
 import { TEXTOS_RELATORIOS } from '../textos-relatorios';
 import type { ColunaDoRelatorio } from './exportacao/grade';
 import { RELATORIOS_DE_ESTOQUE, prepararLinhaDeEstoque } from './relatorios-estoque';
+import { RELATORIOS_DE_DEVOLUCAO, prepararLinhaDeDevolucao } from './relatorios-devolucao';
 import { RELATORIOS_DE_MALETA, prepararLinhaDeMaleta } from './relatorios-maleta';
 
 export type FiltroDoRelatorio =
@@ -39,7 +40,9 @@ export type ChaveDeExtra =
   | 'origem'
   | 'dias'
   | 'diasDeAtraso'
-  | 'divergencia';
+  | 'divergencia'
+  | 'motivo'
+  | 'forma';
 
 export type ExtraDoRelatorio =
   | {
@@ -97,7 +100,9 @@ export interface DefinicaoDeRelatorio {
   /** Abrir uma linha (compra → peças; contagem → diferenças; peça → histórico de custo). */
   acoes?: AcaoDaLinha[];
   /** Grupo do menu: o dos relatórios de cadastro, de estoque ou de compras. */
-  grupo?: 'estoque' | 'compras' | 'maletas';
+  grupo?: 'estoque' | 'compras' | 'maletas' | 'devolucoes';
+  /** Devolução e troca: a frase do rodapé dos arquivos sobre a cotação de cada lançamento. */
+  notaDaCotacao?: string;
   /** Maletas: o campo da linha com o código da maleta; a linha ganha o botão "Ver a maleta". */
   fichaDaMaleta?: string;
   /** Fora do menu: só abre a partir de outra linha. */
@@ -109,6 +114,7 @@ const T = TEXTOS_RELATORIOS;
 export const RELATORIOS: Record<NomeDoRelatorio, DefinicaoDeRelatorio> = {
   ...RELATORIOS_DE_ESTOQUE,
   ...RELATORIOS_DE_MALETA,
+  ...RELATORIOS_DE_DEVOLUCAO,
   vendedores: {
     nome: 'vendedores',
     titulo: 'Vendedores: limite e situação',
@@ -524,6 +530,7 @@ export function prepararLinha(
     case 'aniversariantes':
       return { ...linha, tipoNaTela: T.tiposDeAniversariante[String(linha.tipo)] ?? '' };
     default:
+      if (nome.startsWith('devolucao-')) return prepararLinhaDeDevolucao(nome, linha);
       return nome.startsWith('maleta-')
         ? prepararLinhaDeMaleta(nome, linha)
         : prepararLinhaDeEstoque(nome, linha);
