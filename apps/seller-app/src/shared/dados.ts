@@ -274,6 +274,8 @@ export interface DevolucaoOuTroca {
   situacao: SituacaoNaLista;
   /** No mesmo dia e ainda não cancelada (depois, só a dona). */
   podeCancelar: boolean;
+  /** A cotação do dia do lançamento (Dólar e Guarani só para mostrar, ADR-0006). */
+  cotacao?: CotacaoDaVenda | null;
 }
 
 export type SituacaoDoPedido =

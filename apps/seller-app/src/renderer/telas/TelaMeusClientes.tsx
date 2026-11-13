@@ -1,11 +1,18 @@
 import { Aviso, Botao, Campo, EstadoDaLista, Tabela } from '@corona/ui';
 import { useCallback, useEffect, useState } from 'react';
-import type { Cliente, Devedor, RelatorioAReceber, Venda } from '../../shared/dados';
+import type {
+  Cliente,
+  CreditosDoCliente,
+  Devedor,
+  RelatorioAReceber,
+  Venda,
+} from '../../shared/dados';
 import type { PonteDoCorona } from '../../shared/ponte';
 import { chamar, cotacaoDaVenda, Dinheiro, DinheiroConvertido } from '../chamadas';
 import { AvisoDosDados } from '../IndicadorDeEnvio';
 import { dataParaTela } from '../moedas';
 import { TEXTOS } from '../textos';
+import { reais } from './devolucao/apoio';
 import { FormularioDeCliente } from './FormularioDeCliente';
 import { PaginaDoVendedor } from './PaginaDoVendedor';
 
@@ -25,6 +32,7 @@ export function TelaMeusClientes({ ponte, aoVoltar }: TelaMeusClientesProps) {
   const [editando, setEditando] = useState(false);
   const [aberto, setAberto] = useState<Cliente | null>(null);
   const [vendas, setVendas] = useState<Venda[] | null>(null);
+  const [credito, setCredito] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
 
   const carregar = useCallback(async () => {
@@ -60,6 +68,15 @@ export function TelaMeusClientes({ ponte, aoVoltar }: TelaMeusClientesProps) {
     setVendas(null);
     void chamar<Venda[]>(ponte, { operacao: 'vendas.listar', clienteId: aberto.id }).then((r) => {
       if (ativo && r.ok) setVendas(r.dados);
+    });
+    // O crédito do cliente com este vendedor (tarefa 6.8): só os em aberto.
+    setCredito(null);
+    void chamar<CreditosDoCliente>(ponte, {
+      operacao: 'creditos.doCliente',
+      clienteId: aberto.id,
+    }).then((r) => {
+      if (ativo && r.ok && typeof r.dados?.total === 'string' && r.dados.total !== '0.00')
+        setCredito(r.dados.total);
     });
     return () => {
       ativo = false;
@@ -140,6 +157,7 @@ export function TelaMeusClientes({ ponte, aoVoltar }: TelaMeusClientesProps) {
         <p className="vendas-total">
           {TEXTOS.vendas.aReceber}: <AReceber devedor={deve} />
         </p>
+        {credito ? <p className="vendas-texto">{T.creditoEmAberto(reais(credito))}</p> : null}
         {aberto.meu ? (
           <Botao
             onClick={() => {

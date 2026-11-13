@@ -11,10 +11,21 @@ import { PaginaDoVendedor } from './PaginaDoVendedor';
 export interface TelaMinhasVendasProps {
   ponte: PonteDoCorona;
   aoVoltar: () => void;
+  /** Devolver ou Trocar a partir da ficha da venda (tarefa 6.8). */
+  aoDevolver?: (vendaId: string, modo: 'devolver' | 'trocar') => void;
+}
+
+/** O nome do lançamento na venda: pagamento, reembolso, devolução ou devolução cancelada (tarefa 6.8). */
+function nomeDoPagamento(p: Venda['pagamentos'][number]): string {
+  const T = TEXTOS.vendas;
+  const forma = TEXTOS.venda.formas[p.forma] ?? p.forma;
+  if (p.tipo === 'ESTORNO_REEMBOLSO') return T.devolucaoCancelada + ': ' + forma;
+  if (p.tipo === 'REEMBOLSO') return (p.daDevolucao ? T.devolucao : T.reembolso) + ': ' + forma;
+  return forma;
 }
 
 /** Minhas vendas: a lista, o detalhe de cada venda e o estorno (a venda nunca é editada nem apagada). */
-export function TelaMinhasVendas({ ponte, aoVoltar }: TelaMinhasVendasProps) {
+export function TelaMinhasVendas({ ponte, aoVoltar, aoDevolver }: TelaMinhasVendasProps) {
   const T = TEXTOS.vendas;
   const [vendas, setVendas] = useState<Venda[] | null>(null);
   const [erro, setErro] = useState<string | null>(null);
@@ -104,9 +115,16 @@ export function TelaMinhasVendas({ ponte, aoVoltar }: TelaMinhasVendasProps) {
         </p>
         <p className="vendas-texto">
           {T.pago}: <Dinheiro reais={aberta.pago} cotacao={cotacao} />
+          {aberta.devolvido && aberta.devolvido !== '0.00' ? (
+            <>
+              {' · '}
+              {T.devolvido}: <Dinheiro reais={aberta.devolvido} cotacao={cotacao} />
+            </>
+          ) : null}
           {' · '}
           {T.aReceber}: <Dinheiro reais={aberta.aReceber} cotacao={cotacao} />
         </p>
+        {aberta.creditoSemSaldo ? <Aviso tipo="atencao">{T.creditoSemSaldo}</Aviso> : null}
         {aberta.pagamentos.length > 0 ? (
           <Tabela
             legenda={T.pagamentos}
@@ -115,7 +133,7 @@ export function TelaMinhasVendas({ ponte, aoVoltar }: TelaMinhasVendasProps) {
               { chave: 'valor', titulo: TEXTOS.venda.total, numerica: true },
             ]}
             linhas={aberta.pagamentos.map((p) => ({
-              forma: `${p.tipo === 'REEMBOLSO' ? `${T.reembolso}: ` : ''}${TEXTOS.venda.formas[p.forma] ?? p.forma}`,
+              forma: nomeDoPagamento(p),
               valor: <Dinheiro reais={p.valor} cotacao={cotacao} />,
             }))}
           />
@@ -124,6 +142,12 @@ export function TelaMinhasVendas({ ponte, aoVoltar }: TelaMinhasVendasProps) {
           <p className="vendas-texto">
             {T.motivoDoEstorno}: {aberta.motivoDoEstorno}
           </p>
+        ) : null}
+        {aberta.status === 'CONCLUIDA' && aoDevolver ? (
+          <span className="vendas-quantidade">
+            <Botao onClick={() => aoDevolver(aberta.id, 'devolver')}>{T.devolver}</Botao>
+            <Botao onClick={() => aoDevolver(aberta.id, 'trocar')}>{T.trocar}</Botao>
+          </span>
         ) : null}
         {aberta.status === 'CONCLUIDA' ? (
           <Botao variante="perigoso" grande onClick={() => setEstornando(true)}>

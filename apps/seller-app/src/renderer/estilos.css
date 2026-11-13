@@ -163,3 +163,16 @@
   flex-direction: column;
   gap: var(--espaco-2);
 }
+
+/* Rodapé das telas de devolução e troca (tarefa 6.8): Cancelar à esquerda, a ação nomeada à direita (§19.12). */
+.vendas-rodape {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.vendas-linha {
+  display: block;
+}

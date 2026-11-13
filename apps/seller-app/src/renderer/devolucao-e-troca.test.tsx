@@ -341,9 +341,9 @@ describe('Devolução e troca: ler a peça e escolher a venda', () => {
     expect(screen.getByText('Leia o código da peça que o cliente trouxe.')).toBeInTheDocument();
     await lerPeca(u);
     const tabela = screen.getByRole('table', { name: 'Vendas com esta peça' });
-    expect(
-      within(tabela).getByText('Desistência até 19/11 · Defeito até 12/12'),
-    ).toBeInTheDocument();
+    expect(within(tabela).getAllByText('Desistência até 19/11 · Defeito até 12/12')).toHaveLength(
+      2,
+    );
     expect(
       within(tabela).getByRole('button', { name: /^Devolver: Maria Souza/ }),
     ).toBeInTheDocument();
