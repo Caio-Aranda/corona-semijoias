@@ -245,6 +245,8 @@ public class ConsultasDeDevolucaoETroca {
                 emTresMoedas("vendido", "Vendido", "x.vendas > 0", null, "x.vendido", "x.vendido_dolar", "x.vendido_guarani"),
                 emTresMoedas("devolvido", "Devolvido", "x.devolucoes > 0", null, "x.devolvido", "x.devolvido_dolar",
                         "x.devolvido_guarani"),
+                emTresMoedas("com-devolucao", "Vendedores com devolução", "x.devolucoes > 0", null, "x.devolvido",
+                        "x.devolvido_dolar", "x.devolvido_guarani"),
                 emTresMoedas("acima", "Vendedores acima do limite", acima, null, "x.devolvido", "x.devolvido_dolar",
                         "x.devolvido_guarani"));
         String lancamentos = """

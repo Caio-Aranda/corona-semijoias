@@ -10,6 +10,8 @@ import br.com.coronasemijoias.api.seguranca.ExigePerfil;
 import br.com.coronasemijoias.api.seguranca.UsuarioAutenticado;
 import br.com.coronasemijoias.api.vendedor.RelatoriosDoVendedor.Relatorio;
 import br.com.coronasemijoias.api.vendedor.RelatoriosDoVendedor.RelatorioAReceber;
+import br.com.coronasemijoias.api.vendedor.RelatoriosDoVendedor.RelatorioDeCreditos;
+import br.com.coronasemijoias.api.vendedor.RelatoriosDoVendedor.RelatorioDeDevolucoes;
 import io.swagger.v3.oas.annotations.Operation;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -107,12 +109,31 @@ public class ApoioDoVendedorController {
     }
 
     @Operation(operationId = "relatorioDeMeusRecebimentos", summary = "Meus recebimentos por forma de pagamento",
-            description = "O que os clientes do vendedor pagaram no período, por forma, já descontados os reembolsos.")
+            description = "O que os clientes do vendedor pagaram no período, por forma, já descontados os reembolsos. O crédito do "
+                    + "cliente não é dinheiro recebido e não entra.")
     @GetMapping("/relatorios/recebimentos")
     public Relatorio recebimentos(@RequestParam(required = false) LocalDate de, @RequestParam(required = false) LocalDate ate,
             @AuthenticationPrincipal UsuarioAutenticado quem) {
         periodoValido(de, ate);
         return relatorios.recebimentos(quem.vendedorId(), de, ate);
+    }
+
+    @Operation(operationId = "relatorioDeMinhasDevolucoesETrocas", summary = "Minhas devoluções e trocas",
+            description = "Só as do vendedor logado, sem as canceladas, por motivo e no período (de e até, horário de "
+                    + "Brasília; ambos opcionais). Traz quanto voltou em dinheiro e quanto ficou em crédito, também em Dólar "
+                    + "e Guarani pela cotação do dia de cada uma. Nunca mostra custo.")
+    @GetMapping("/relatorios/devolucoes")
+    public RelatorioDeDevolucoes devolucoes(@RequestParam(required = false) LocalDate de,
+            @RequestParam(required = false) LocalDate ate, @AuthenticationPrincipal UsuarioAutenticado quem) {
+        periodoValido(de, ate);
+        return relatorios.devolucoes(quem.vendedorId(), de, ate);
+    }
+
+    @Operation(operationId = "relatorioDeCreditosDosMeusClientes", summary = "Crédito dos meus clientes",
+            description = "Por cliente do vendedor logado: crédito gerado, usado e ainda em aberto, sem os cancelados.")
+    @GetMapping("/relatorios/creditos")
+    public RelatorioDeCreditos creditos(@AuthenticationPrincipal UsuarioAutenticado quem) {
+        return relatorios.creditos(quem.vendedorId());
     }
 
     @Operation(operationId = "relatorioDeValoresAReceber", summary = "Quanto meus clientes ainda devem",

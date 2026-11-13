@@ -95,18 +95,120 @@ public class RelatoriosDoVendedor {
         return relatorio(lancamentos);
     }
 
-    /** O que o vendedor recebeu no período, por forma de pagamento (pagamentos menos reembolsos). */
+    /**
+     * O que o vendedor recebeu no período, por forma de pagamento (pagamentos menos reembolsos). O crédito do cliente
+     * (forma CREDITO) não é dinheiro recebido e fica de fora (tarefa 6.10).
+     */
     public Relatorio recebimentos(UUID vendedorId, LocalDate de, LocalDate ate) {
         List<Lancamento> lancamentos = jdbc.query("""
                 SELECT p.forma AS chave, p.forma AS nome, CASE WHEN p.tipo = 'PAGAMENTO' THEN 1 ELSE 0 END AS quantidade,
                        p.valor AS valor, 0.00::numeric(14, 2) AS desconto, ct.usd_venda, ct.pyg_venda
                   FROM corona.pagamentos_cliente p JOIN corona.vendas v ON v.id = p.venda_id
                 """ + COTACAO_DO_PAGAMENTO + """
-                 WHERE v.vendedor_id = ? AND v.deleted_at IS NULL
+                 WHERE v.vendedor_id = ? AND v.deleted_at IS NULL AND p.forma <> 'CREDITO'
                    AND (?::date IS NULL OR (p.pago_em AT TIME ZONE 'America/Sao_Paulo')::date >= ?::date)
                    AND (?::date IS NULL OR (p.pago_em AT TIME ZONE 'America/Sao_Paulo')::date <= ?::date)
                  ORDER BY p.forma, p.pago_em, p.id""", (rs, n) -> lancamento(rs), vendedorId, de, de, ate, ate);
         return relatorio(lancamentos);
+    }
+
+    /** Uma linha de "Devoluções e trocas": por motivo, o que voltou (devoluções e trocas juntas), cada uma pela sua cotação. */
+    public record LinhaDeDevolucao(String motivo, long devolucoes, BigDecimal valor, BigDecimal valorEmDolar,
+            BigDecimal valorEmGuarani) {
+    }
+
+    public record TotaisDeDevolucao(long devolucoes, long trocas, BigDecimal valorDevolvido, BigDecimal valorDevolvidoEmDolar,
+            BigDecimal valorDevolvidoEmGuarani, BigDecimal emDinheiro, BigDecimal emDinheiroEmDolar,
+            BigDecimal emDinheiroEmGuarani, BigDecimal emCredito, BigDecimal emCreditoEmDolar, BigDecimal emCreditoEmGuarani) {
+    }
+
+    public record RelatorioDeDevolucoes(List<LinhaDeDevolucao> linhas, TotaisDeDevolucao totais) {
+    }
+
+    /** Um cliente com crédito: o gerado, o usado e o que ainda está em aberto (cada crédito pela cotação do dia em que nasceu). */
+    public record ClienteComCredito(UUID clienteId, String clienteNome, BigDecimal gerado, BigDecimal geradoEmDolar,
+            BigDecimal geradoEmGuarani, BigDecimal usado, BigDecimal usadoEmDolar, BigDecimal usadoEmGuarani,
+            BigDecimal emAberto, BigDecimal emAbertoEmDolar, BigDecimal emAbertoEmGuarani) {
+    }
+
+    public record TotaisDeCredito(BigDecimal gerado, BigDecimal geradoEmDolar, BigDecimal geradoEmGuarani, BigDecimal usado,
+            BigDecimal usadoEmDolar, BigDecimal usadoEmGuarani, BigDecimal emAberto, BigDecimal emAbertoEmDolar,
+            BigDecimal emAbertoEmGuarani) {
+    }
+
+    public record RelatorioDeCreditos(List<ClienteComCredito> clientes, TotaisDeCredito totais) {
+    }
+
+    /**
+     * Minhas devoluções e trocas (tarefa 6.10): só as do vendedor, sem as canceladas, por motivo, no período (dias de
+     * Brasília). A troca conta como uma devolução que voltou em crédito; o dinheiro é só o que voltou ao cliente.
+     */
+    public RelatorioDeDevolucoes devolucoes(UUID vendedorId, LocalDate de, LocalDate ate) {
+        Map<String, Long> quantidades = new LinkedHashMap<>();
+        Map<String, Soma> valores = new LinkedHashMap<>();
+        Soma devolvido = new Soma();
+        Soma dinheiro = new Soma();
+        Soma credito = new Soma();
+        long[] contas = new long[2];
+        jdbc.query("""
+                SELECT d.motivo, d.destino, d.valor_devolvido, d.valor_reembolsado, d.valor_em_credito, ct.usd_venda, ct.pyg_venda
+                  FROM corona.devolucoes d LEFT JOIN corona.cotacoes ct ON ct.id = d.cotacao_id
+                 WHERE d.vendedor_id = ? AND d.deleted_at IS NULL AND d.situacao <> 'CANCELADA'
+                   AND (?::date IS NULL OR (d.devolvida_em AT TIME ZONE 'America/Sao_Paulo')::date >= ?::date)
+                   AND (?::date IS NULL OR (d.devolvida_em AT TIME ZONE 'America/Sao_Paulo')::date <= ?::date)
+                 ORDER BY d.devolvida_em, d.id""", rs -> {
+                    String motivo = rs.getString("motivo");
+                    BigDecimal usd = rs.getBigDecimal("usd_venda");
+                    BigDecimal pyg = rs.getBigDecimal("pyg_venda");
+                    quantidades.merge(motivo, 1L, Long::sum);
+                    valores.computeIfAbsent(motivo, k -> new Soma()).somar(rs.getBigDecimal("valor_devolvido"), usd, pyg);
+                    devolvido.somar(rs.getBigDecimal("valor_devolvido"), usd, pyg);
+                    dinheiro.somar(rs.getBigDecimal("valor_reembolsado"), usd, pyg);
+                    credito.somar(rs.getBigDecimal("valor_em_credito"), usd, pyg);
+                    contas["TROCA".equals(rs.getString("destino")) ? 1 : 0]++;
+                }, vendedorId, de, de, ate, ate);
+        List<LinhaDeDevolucao> linhas = new ArrayList<>();
+        for (Map.Entry<String, Soma> e : valores.entrySet()) {
+            Soma v = e.getValue();
+            linhas.add(new LinhaDeDevolucao(e.getKey(), quantidades.get(e.getKey()), v.reais(), v.dolar(), v.guarani()));
+        }
+        return new RelatorioDeDevolucoes(linhas, new TotaisDeDevolucao(contas[0], contas[1], devolvido.reais(), devolvido.dolar(),
+                devolvido.guarani(), dinheiro.reais(), dinheiro.dolar(), dinheiro.guarani(), credito.reais(), credito.dolar(),
+                credito.guarani()));
+    }
+
+    /** O crédito dos clientes do vendedor (os que ele pode usar): gerado, usado e em aberto, sem os cancelados. */
+    public RelatorioDeCreditos creditos(UUID vendedorId) {
+        Map<UUID, String> nomes = new LinkedHashMap<>();
+        Map<UUID, Soma[]> somas = new LinkedHashMap<>();
+        Soma[] total = {new Soma(), new Soma(), new Soma()};
+        jdbc.query("""
+                SELECT cr.cliente_id, c.nome, cr.valor, cr.valor_utilizado, ct.usd_venda, ct.pyg_venda
+                  FROM corona.creditos_cliente cr JOIN corona.clientes c ON c.id = cr.cliente_id
+                  LEFT JOIN corona.cotacoes ct ON ct.id = cr.cotacao_id
+                 WHERE cr.vendedor_id = ? AND cr.deleted_at IS NULL AND cr.situacao <> 'CANCELADO'
+                 ORDER BY lower(c.nome), c.id, cr.gerado_em, cr.id""", rs -> {
+                    UUID cliente = rs.getObject("cliente_id", UUID.class);
+                    nomes.putIfAbsent(cliente, rs.getString("nome"));
+                    BigDecimal valor = rs.getBigDecimal("valor");
+                    BigDecimal usado = rs.getBigDecimal("valor_utilizado");
+                    BigDecimal usd = rs.getBigDecimal("usd_venda");
+                    BigDecimal pyg = rs.getBigDecimal("pyg_venda");
+                    Soma[] linha = somas.computeIfAbsent(cliente, k -> new Soma[] {new Soma(), new Soma(), new Soma()});
+                    for (Soma[] alvo : new Soma[][] {linha, total}) {
+                        alvo[0].somar(valor, usd, pyg);
+                        alvo[1].somar(usado, usd, pyg);
+                        alvo[2].somar(valor.subtract(usado), usd, pyg);
+                    }
+                }, vendedorId);
+        List<ClienteComCredito> clientes = new ArrayList<>();
+        for (Map.Entry<UUID, String> n : nomes.entrySet()) {
+            Soma[] s = somas.get(n.getKey());
+            clientes.add(new ClienteComCredito(n.getKey(), n.getValue(), s[0].reais(), s[0].dolar(), s[0].guarani(), s[1].reais(),
+                    s[1].dolar(), s[1].guarani(), s[2].reais(), s[2].dolar(), s[2].guarani()));
+        }
+        return new RelatorioDeCreditos(clientes, new TotaisDeCredito(total[0].reais(), total[0].dolar(), total[0].guarani(),
+                total[1].reais(), total[1].dolar(), total[1].guarani(), total[2].reais(), total[2].dolar(), total[2].guarani()));
     }
 
     /**

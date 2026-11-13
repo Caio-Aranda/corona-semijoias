@@ -220,7 +220,7 @@ class RelatoriosDeDevolucaoTest extends ApoioDasTrocas {
         confere(total(r, "canceladas"), 0, "0.00", "0.00", "0");
 
         JsonNode d1 = linhaDe(r, "id", dev1);
-        assertThat(d1.get("vendedor").asString()).isEqualTo(v1.nome());
+        assertThat(d1.get("vendedor").asString()).isEqualTo("Vendedor de " + v1.login());
         assertThat(d1.get("motivo").asString()).isEqualTo("ARREPENDIMENTO");
         assertThat(d1.get("tipo").asString()).isEqualTo("DEVOLUCAO");
         assertThat(d1.get("situacao").asString()).isEqualTo("ACEITA");
@@ -603,8 +603,8 @@ class RelatoriosDeDevolucaoTest extends ApoioDasTrocas {
         UUID movimento = UUID.randomUUID();
         // Dev2 é de peça com defeito: a peça vai para a loja e nunca entra na maleta.
         corromper(List.of("movimentos_remessa"), """
-                INSERT INTO corona.movimentos_remessa (id, remessa_id, produto_id, tipo, quantidade, venda_id, devolucao_id)
-                VALUES ('%s', '%s', '%s', 'DEVOLUCAO_CLIENTE', 1, '%s', '%s')""".formatted(movimento, maletaV1, p2, venda2, dev2),
+                INSERT INTO corona.movimentos_remessa (id, remessa_id, produto_id, tipo, quantidade, venda_id, devolucao_id, sync_seq, sync_xid)
+                VALUES ('%s', '%s', '%s', 'DEVOLUCAO_CLIENTE', 1, '%s', '%s', nextval('corona.sync_seq_global'), pg_current_xact_id())""".formatted(movimento, maletaV1, p2, venda2, dev2),
                 "DELETE FROM corona.movimentos_remessa WHERE id = '%s'".formatted(movimento), () -> {
                     JsonNode c = conferencia("maleta");
                     assertThat(c.get("divergencias")).hasSize(1);
@@ -644,8 +644,8 @@ class RelatoriosDeDevolucaoTest extends ApoioDasTrocas {
         UUID extra = UUID.randomUUID();
         // Um reembolso solto de 500 na venda 3 (paga com 100): sai mais do que entrou, e nenhuma devolução em revisão explica.
         corromper(List.of("pagamentos_cliente"), """
-                INSERT INTO corona.pagamentos_cliente (id, venda_id, tipo, forma, valor, pago_em)
-                VALUES ('%s', '%s', 'REEMBOLSO', 'DINHEIRO', -500.00, now())""".formatted(extra, venda3),
+                INSERT INTO corona.pagamentos_cliente (id, venda_id, tipo, forma, valor, pago_em, sync_seq, sync_xid)
+                VALUES ('%s', '%s', 'REEMBOLSO', 'DINHEIRO', -500.00, now(), nextval('corona.sync_seq_global'), pg_current_xact_id())""".formatted(extra, venda3),
                 "DELETE FROM corona.pagamentos_cliente WHERE id = '%s'".formatted(extra), () -> {
                     JsonNode c = conferencia("dinheiro-devolvido");
                     assertThat(c.get("divergencias")).hasSize(1);
@@ -662,8 +662,8 @@ class RelatoriosDeDevolucaoTest extends ApoioDasTrocas {
     void pagamentoAMaisNaVendaQuebraSoAsContasDaVenda() throws Exception {
         UUID extra = UUID.randomUUID();
         corromper(List.of("pagamentos_cliente"), """
-                INSERT INTO corona.pagamentos_cliente (id, venda_id, tipo, forma, valor, pago_em)
-                VALUES ('%s', '%s', 'PAGAMENTO', 'PIX', 10.00, now())""".formatted(extra, venda2),
+                INSERT INTO corona.pagamentos_cliente (id, venda_id, tipo, forma, valor, pago_em, sync_seq, sync_xid)
+                VALUES ('%s', '%s', 'PAGAMENTO', 'PIX', 10.00, now(), nextval('corona.sync_seq_global'), pg_current_xact_id())""".formatted(extra, venda2),
                 "DELETE FROM corona.pagamentos_cliente WHERE id = '%s'".formatted(extra), () -> {
                     JsonNode c = conferencia("contas-da-venda");
                     assertThat(c.get("divergencias")).hasSize(1);
