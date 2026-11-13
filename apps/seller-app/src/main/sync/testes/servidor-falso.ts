@@ -88,6 +88,17 @@ export class ServidorFalso {
   atraso = 0;
   /** Quantos pulls de UMA tabela (`?tabela=`) caem sem resposta (queda depois de o app apagar a tabela). */
   cairNoPullDaTabela = 0;
+  /**
+   * Computador trocado pela dona (ADR-0013, item 13): como o `ServicoDeEnvio`, o push responde `apagarDados` quando o
+   * lote foi todo resolvido e o app avisou `aguardandoDepoisDeste = 0`.
+   */
+  computadorTrocado = false;
+  /**
+   * Chamado com o número do push (1, 2, ...) enquanto ele está "na rede" (o corpo já foi montado pelo app e a resposta
+   * ainda não voltou): o vendedor continua trabalhando no computador nesse meio-tempo (issue #127).
+   */
+  durantePush: ((numero: number) => void) | null = null;
+  private pushes = 0;
 
   private servidor: Server | null = null;
 
@@ -173,6 +184,8 @@ export class ServidorFalso {
         }
         return responder(res, this.roteirosDoPull.shift() ?? this.pull(url.searchParams));
       case '/api/vendedor/sync/push': {
+        this.pushes += 1;
+        this.durantePush?.(this.pushes);
         const roteiro = this.roteirosDoPush.shift();
         if (roteiro === 'cair-depois-de-gravar') {
           this.push(corpo);
@@ -241,7 +254,10 @@ export class ServidorFalso {
   private push(texto: string): Roteiro {
     if (Buffer.byteLength(texto, 'utf8') > 512 * 1024)
       return { status: 413, corpo: { codigo: 'LOTE_GRANDE_DEMAIS' } };
-    const pedido = JSON.parse(texto) as { operacoes: OperacaoRecebida[] };
+    const pedido = JSON.parse(texto) as {
+      aguardandoDepoisDeste?: number | null;
+      operacoes: OperacaoRecebida[];
+    };
     if (pedido.operacoes.length > 50)
       return { status: 413, corpo: { codigo: 'LOTE_GRANDE_DEMAIS' } };
     let parou = false;
@@ -276,13 +292,18 @@ export class ServidorFalso {
       for (const l of this.linhasDaOperacao(op)) this.mudar(l);
       return { operacaoId: op.operacaoId, resultado: 'ACEITO' };
     });
+    // Igual ao `ServicoDeEnvio.enviarNaVez`: o servidor só sabe o `aguardandoDepoisDeste` que o app mandou.
+    const aguardando = pedido.aguardandoDepoisDeste;
+    const completo =
+      resultados.every((r) => r.resultado !== 'NAO_PROCESSADO') &&
+      (aguardando === null || aguardando === undefined || aguardando === 0);
     return {
       status: 200,
       corpo: {
         resultados,
         horaServidor: this.horaServidor,
         parametros: this.parametros,
-        apagarDados: false,
+        apagarDados: this.computadorTrocado && completo,
       },
     };
   }

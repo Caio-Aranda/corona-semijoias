@@ -2,7 +2,12 @@ import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { montarCoronaVendas, type DependenciasDaMontagem } from './montagem';
+import {
+  type CoronaVendasMontado,
+  montarCoronaVendas,
+  type DependenciasDaMontagem,
+} from './montagem';
+import { registrarContato } from './sync/estado-sync';
 import type { Cofre } from './tipos';
 
 /** Todas as importações relativas, a partir de um arquivo, seguindo a árvore (só arquivos do próprio app). */
@@ -123,6 +128,62 @@ describe('montagem do Corona Vendas (tarefa 5.12)', () => {
     expect(d.pedidos.every((u) => u.startsWith('http://127.0.0.1:9/'))).toBe(true);
     montado.fechar();
   });
+
+  it('com a ordem de apagar (desligando), nenhuma gravação nova entra no computador (issue #127)', async () => {
+    // As esperas do apagar nunca vencem: o computador fica em "desligando" durante o teste todo.
+    const d = dependencias({
+      relogio: { agora: () => Date.now(), agendar: () => () => {} },
+    });
+    const montado = await montarCoronaVendas(d);
+    try {
+      await gravacoesDepoisDaOrdem(montado);
+    } finally {
+      montado.fechar();
+    }
+  });
+
+  async function gravacoesDepoisDaOrdem(montado: CoronaVendasMontado): Promise<void> {
+    // O banco cifrado de verdade (SQLCipher), aberto como na entrada com internet, com o contato com o servidor de agora.
+    expect((await montado.bancoLocal.prepararComInternet('Senha12345vendas')).ok).toBe(true);
+    const db = montado.bancoLocal.banco!;
+    registrarContato(db, new Date().toISOString(), new Date());
+    const naFila = () => (db.prepare('SELECT count(*) AS n FROM outbox').get() as { n: number }).n;
+
+    const antes = await montado.servico.chamarApi({
+      operacao: 'clientes.cadastrar',
+      cliente: { id: '0b5c8a8e-0000-4000-8000-000000000001', nome: 'Antes da Ordem' },
+    });
+    expect(antes.ok).toBe(true);
+    expect(naFila()).toBe(1);
+
+    // A ordem de apagar (troca ou bloqueio): a partir daqui, nada novo grava.
+    void montado.servico.ordemDeApagar();
+    const recusa = {
+      ok: false,
+      motivo: 'erro',
+      mensagem: 'Este computador não pode mais registrar vendas. Fale com a dona.',
+    };
+    expect(
+      await montado.servico.chamarApi({
+        operacao: 'clientes.cadastrar',
+        cliente: { id: '0b5c8a8e-0000-4000-8000-000000000002', nome: 'Depois da Ordem' },
+      }),
+    ).toEqual(recusa);
+    expect(
+      await montado.servico.chamarApi({
+        operacao: 'vendas.vender',
+        venda: {
+          id: '0b5c8a8e-0000-4000-8000-000000000003',
+          remessaId: '0b5c8a8e-0000-4000-8000-000000000004',
+          clienteId: '0b5c8a8e-0000-4000-8000-000000000001',
+          itens: [{ produtoId: '0b5c8a8e-0000-4000-8000-000000000005', quantidade: 1 }],
+          pagamentos: [],
+        },
+      }),
+    ).toEqual(recusa);
+    expect(naFila()).toBe(1);
+    expect(await montado.servico.estouLogado()).toEqual({ estado: 'desligando' });
+  }
 
   it('o mesmo identificador do aparelho ao montar de novo na mesma pasta', async () => {
     const d = dependencias();
