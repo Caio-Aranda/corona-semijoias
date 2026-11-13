@@ -26,7 +26,8 @@ export type CodigoDaOperacao =
   | 'CLIENTE_NAO_ENCONTRADO'
   | 'MALETA_NAO_ENCONTRADA'
   | 'PRAZO_ESGOTADO'
-  | 'RELOGIO_ERRADO';
+  | 'RELOGIO_ERRADO'
+  | 'COMPUTADOR_DESLIGADO';
 
 /** Textos do glossário (parte "Motor de envio do Corona Vendas", tarefa 5.6). */
 export const MENSAGENS_DAS_OPERACOES: Readonly<Record<CodigoDaOperacao, string>> = Object.freeze({
@@ -47,6 +48,8 @@ export const MENSAGENS_DAS_OPERACOES: Readonly<Record<CodigoDaOperacao, string>>
   // Prazo sem internet (tarefa 5.8): os mesmos textos do glossário que a tela do prazo usa.
   PRAZO_ESGOTADO: textoDeGravacaoBloqueada('PRAZO'),
   RELOGIO_ERRADO: textoDeGravacaoBloqueada('RELOGIO'),
+  // Computador trocado ou bloqueado pela dona, enquanto envia e antes de apagar (issue #127): o texto do glossário.
+  COMPUTADOR_DESLIGADO: 'Este computador não pode mais registrar vendas. Fale com a dona.',
 });
 
 export interface ClienteJaCadastrado {
@@ -75,7 +78,10 @@ export interface OpcoesDasOperacoes {
   agora?: () => Date;
   /** Avisado depois de cada gravação (o motor envia 2 s depois, agrupando gravações seguidas). */
   aoGravar?: () => void;
-  /** Lança `ErroDaOperacao` (`PRAZO_ESGOTADO` ou `RELOGIO_ERRADO`) quando o computador não pode gravar (tarefa 5.8). */
+  /**
+   * Lança `ErroDaOperacao` quando o computador não pode gravar: `PRAZO_ESGOTADO` ou `RELOGIO_ERRADO` (tarefa 5.8), e
+   * `COMPUTADOR_DESLIGADO` depois da ordem de apagar (issue #127). Roda no mesmo trecho síncrono da gravação.
+   */
   podeGravar?: () => void;
 }
 

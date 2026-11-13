@@ -49,6 +49,11 @@ export interface PlanoDeRede {
    * segunda API: o pedido chega à API com uma versão abaixo da mínima (tarefa 5.13).
    */
   cabecalhos?: Readonly<Record<string, string>>;
+  /**
+   * Chamado com o pedido já lido e antes de repassá-lo à API: o pedido fica "na rede" até a promessa terminar. Serve para
+   * o vendedor continuar trabalhando no computador enquanto um envio está a caminho (issue #127).
+   */
+  antesDeRepassar?: (pedido: { caminho: string; corpo: Buffer }) => Promise<void> | void;
 }
 
 /** Rede boa: nada falha. */
@@ -183,6 +188,7 @@ export async function iniciarProxyDeRedeRuim(o: OpcoesDoProxy): Promise<ProxyDeR
       res.end('Bad Gateway (simulado)');
       return;
     }
+    await atual.antesDeRepassar?.({ caminho: registro.caminho, corpo });
 
     const resposta = await new Promise<{
       status: number;

@@ -104,6 +104,15 @@ export class ServicoDeSessao {
     this.aoMudarODesligamento?.('DESLIGADO');
   }
 
+  /**
+   * O computador recebeu a ordem de apagar (troca ou bloqueio) e está enviando ou já apagou (issue #127). A partir do
+   * `DESLIGANDO`, que `ordemDeApagar` marca antes do primeiro `await`, nenhuma gravação nova entra: o que o apagar leu é
+   * tudo o que existe.
+   */
+  get desligado(): boolean {
+    return this.desligamento !== 'NENHUM';
+  }
+
   /** Chamado quando a guarda avisa que o aplicativo está desatualizado. */
   marcarDesatualizado(mensagem: string): void {
     this.desatualizado = mensagem;

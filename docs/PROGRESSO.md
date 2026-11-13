@@ -184,6 +184,7 @@ Devolução, troca e garantia. O modelo está no [ADR-0014](decisoes/ADR-0014-de
 | 6.2 | backend: garantia e parâmetros (V035, rotas da dona, `parametros` do pull, especificação) | PR 124 · [detalhe](progresso/fase-6.md) |
 | 6.3 | backend: devolução do cliente à vista (V036, peça boa e com defeito, reembolso, cancelar devolução, estorno recusado) | PR 125 · [detalhe](progresso/fase-6.md#tarefa-63-devolução-do-cliente-à-vista) |
 | 6.4 | backend: autorização da dona, revisão da devolução e antifraude (V037, limite da semana, valor de aprovação, Manter e Não aceitar, taxa de devolução e avisos) | PR 126 · [detalhe](progresso/fase-6.md#tarefa-64-autorização-revisão-e-antifraude) |
+| #127 | fix(sync): troca de computador não perde envio (o antigo só apaga com a fila zerada; desligando, nada grava) | PR 128 · [detalhe](progresso/fase-6.md#correção-troca-de-computador) |
 
 ## Fase 7 (só o plano)
 

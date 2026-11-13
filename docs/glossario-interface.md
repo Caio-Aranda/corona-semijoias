@@ -543,6 +543,8 @@ Sem internet e sem dados neste computador (primeira vez):
 > **Este computador foi desligado da loja.** (depois de apagar)
 > Os dados deste computador foram apagados. Fale com a dona.
 
+> Este computador não pode mais registrar vendas. Fale com a dona. (quando a pessoa tenta vender, estornar, conferir ou cadastrar depois que a dona trocou ou bloqueou este computador, enquanto as vendas são enviadas e antes de os dados serem apagados; correção da troca de computador, issue #127, 13/11/2026)
+
 **Devolução do cliente (Fase 6, tarefa 6.3; ADR-0014, itens 1 a 7 e 11).** O cliente devolve peça de uma venda à vista; a venda não muda e o dinheiro volta na forma escolhida. O servidor calcula o valor; a tela nunca o decide. As telas são das tarefas 6.8 (Corona Vendas) e 6.9 (Corona Gestão); estes textos valem desde já para o que o servidor devolve.
 
 - Motivo (obrigatório): **Desistiu** (arrependimento), **Defeito**, **Não serviu** (tamanho) e **Outro**. Com **Outro**, o campo **Observação** é obrigatório. Com **Defeito**, todas as peças são marcadas **Com defeito**.

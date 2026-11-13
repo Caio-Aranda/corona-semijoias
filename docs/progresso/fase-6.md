@@ -67,3 +67,28 @@ Tarefa crítica: plano em [plano-6-4-autorizacao-e-antifraude.md](plano-6-4-auto
 - **7.5 (acerto):** a pendência do vendedor é a devolução `NAO_ACEITA` (`pendenciaDoVendedor` na consulta) ainda não cobrada; a 7.5 cria `pendencias_acerto` e passa a ler essas devoluções.
 
 **Não fiz (fica para as próximas tarefas):** crédito do cliente e o motivo de revisão do crédito (6.5, por migração nova); venda a prazo (6.6); outbox, push e filtro do pull (6.7); telas (6.8 e 6.9); devolução registrada pela dona (6.9); relatórios de autorizações e de taxa (6.10); `pendencias_acerto` e a cobrança no acerto (7.5); cancelar pedido de autorização pelo vendedor.
+
+## Correção: troca de computador
+
+Correção crítica (issue #127, PR #128): o estresse das duas pontas com a semente `43338020207` perdia uma venda e um cliente do vendedor que **troca de computador**. Plano e diagnóstico no PR, aprovados pela orquestradora.
+
+**O que acontecia (em linguagem simples).** O computador antigo manda as vendas em lotes e, em cada lote, avisa quantas ainda faltam. No último lote ele avisa "não falta nada". Enquanto esse lote estava a caminho, o vendedor (que não sabia da troca) cadastrou um cliente e vendeu no computador antigo. O servidor, que só sabia do "não falta nada", respondeu "pode apagar". O computador obedeceu na hora, sem olhar que tinha duas coisas novas guardadas, e apagou tudo. As duas iam para a quarentena, mas a quarentena é só do computador bloqueado e recusou o computador trocado; o apagar seguiu, e elas sumiram sem registro. Havia ainda uma segunda brecha: depois da ordem de apagar, as telas continuavam gravando até o banco fechar, e o que entrasse nesse tempo também se perdia.
+
+**O defeito era do Corona Vendas**, não do servidor (que respondeu certo com o que recebeu) nem do teste (as duas operações tinham sido aceitas pelo app).
+
+**O que mudou (só o Corona Vendas; a API e a quarentena não mudaram)**
+
+- `sync/ciclo.ts`: com `apagarDados`, o app só obedece se a fila do computador está zerada naquele instante, logo depois de aplicar a resposta. Se ainda há algo aguardando, ignora a ordem daquela resposta, registra "ordem de apagar adiada: N aguardando" e manda o resto; a ordem volta no último lote. A conferência e a passagem para "desligando" rodam no mesmo trecho síncrono, sem `await` no meio.
+- `montagem.ts`, `servico-de-sessao.ts` e `sync/operacoes-locais.ts`: a partir do "desligando" (troca ou bloqueio), nenhuma gravação nova entra; a tela recebe "Este computador não pode mais registrar vendas. Fale com a dona." (glossário, parte 6).
+- ADR-0013: linhas datadas no item 13 ("só apaga com a fila local zerada; desligando, nada grava") e no item 14 (o bloqueio também recusa gravação durante o "desligando").
+
+**Testes (escritos antes da correção, SQLCipher de verdade; nas duas pontas, PostgreSQL e API de verdade)**
+
+- `ciclo.test.ts`: o servidor falso ganhou o modo "computador trocado" (responde `apagarDados` como o `ServicoDeEnvio`) e um gancho para gravar enquanto o envio está na rede. Novo: "operação gravada durante o envio vai no lote seguinte, e só apaga com a fila zerada" (vermelho antes: um envio só e a ordem obedecida com 2 aguardando). O teste antigo do `apagarDados` passou a responder `ACEITO` (com a fila zerada para); o irmão sem resposta para a operação não apaga.
+- `montagem.test.ts`: com a ordem de apagar, cadastrar cliente e vender são recusados com o texto do glossário e a fila não cresce (vermelho antes: o cliente gravava).
+- Duas pontas, `varios-aparelhos` cenário **6b**: o proxy ganhou `antesDeRepassar` e segura o 1º envio do computador antigo (com "nada mais aguardando"); nesse meio-tempo a tela cadastra um cliente e vende. No fim, as duas vendas e o cliente estão no servidor, nada foi à quarentena, o antigo apagou tudo e a afirmação final passa **sem `perdaAceita`**. Sem a correção, falha (a venda não chega ao servidor).
+- Estresse curto (PT1M): a semente `43338020207` rodou **6 vezes** depois da correção (5 antes e 1 depois de mesclar a 6.4), todas verdes (antes, falhava 1 em 4), e mais 5 sementes seguidas, `43338020208` a `43338020212`, todas verdes (cada rodada com uma troca de computador, cerca de 2 minutos).
+
+**Riscos que ficam:** computador trocado com uma operação que nunca se resolve (presa em `NAO_PROCESSADO`) nunca apaga; é o lado seguro, e a dona continua vendo "o computador antigo avisou N vendas aguardando envio". O vendedor que tenta vender no computador antigo depois da ordem recebe a recusa em vez de uma venda que sumiria.
+
+**Não fiz:** nada na API nem na quarentena (aceitar computador trocado na quarentena seria um segundo caminho de envio, contra o item 14); nenhuma migração.

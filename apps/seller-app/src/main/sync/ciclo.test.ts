@@ -293,14 +293,92 @@ describe('envio (push)', () => {
     expect(s.pedidosPara(PUSH)).toHaveLength(2);
   });
 
-  it('apagarDados na resposta para o motor pelo ponto de extensão', async () => {
-    ops.cadastrarCliente({ id: idDeTeste(7), nome: 'Bia' });
+  it('apagarDados na resposta, com a fila zerada, para o motor pelo ponto de extensão', async () => {
+    const id = idDeTeste(7);
+    ops.cadastrarCliente({ id, nome: 'Bia' });
+    s.roteirosDoPush.push({
+      status: 200,
+      corpo: {
+        resultados: [{ operacaoId: id, resultado: 'ACEITO' }],
+        horaServidor: s.horaServidor,
+        apagarDados: true,
+      },
+    });
+    expect(await criarCiclo().executar()).toBe('parado');
+    expect(ordens).toEqual(['apagar-dados']);
+    expect(situacao(id).situacao).toBe('ENVIADO');
+  });
+
+  it('apagarDados com operação ainda aguardando (sem resposta): não apaga, a operação fica guardada', async () => {
+    const id = idDeTeste(7);
+    ops.cadastrarCliente({ id, nome: 'Bia' });
     s.roteirosDoPush.push({
       status: 200,
       corpo: { resultados: [], horaServidor: s.horaServidor, apagarDados: true },
     });
+    expect(await criarCiclo().executar()).toBe('falha');
+    expect(ordens).toEqual([]);
+    expect(situacao(id).situacao).toBe('AGUARDANDO');
+  });
+
+  it('computador trocado: operação gravada durante o envio vai no lote seguinte, e só apaga com a fila zerada (issue #127)', async () => {
+    const antes = idDeTeste(7);
+    const durante = idDeTeste(7);
+    const vendaDurante = idDeTeste(7);
+    const m = { remessaId: idDeTeste(1), produtoA: idDeTeste(2) };
+    s.mudar({
+      tabela: 'remessas',
+      id: m.remessaId,
+      deletedAt: null,
+      campos: { status: 'ENVIADA' },
+    });
+    s.mudar({
+      tabela: 'itens_remessa',
+      id: idDeTeste(4),
+      deletedAt: null,
+      campos: {
+        remessa_id: m.remessaId,
+        produto_id: m.produtoA,
+        qtd_enviada: 3,
+        preco_remessa: '33.33',
+      },
+    });
+    // A maleta já está no computador (recebida antes da troca); depois a dona troca o computador.
+    expect(await criarCiclo().executar()).toBe('ok');
+    s.computadorTrocado = true;
+    ops.cadastrarCliente({ id: antes, nome: 'Bia' });
+    const enviosAntes = s.pedidosPara(PUSH).length;
+    // O vendedor não sabe da troca: enquanto o 1º envio está na rede, cadastra um cliente e vende.
+    s.durantePush = (n) => {
+      if (n !== enviosAntes + 1) return;
+      ops.cadastrarCliente({ id: durante, nome: 'Caio' });
+      ops.vender({
+        id: vendaDurante,
+        remessaId: m.remessaId,
+        clienteId: durante,
+        itens: [{ produtoId: m.produtoA, quantidade: 1 }],
+        pagamentos: [],
+      });
+    };
+
     expect(await criarCiclo().executar()).toBe('parado');
+
+    const pushes = s.pedidosPara(PUSH).slice(enviosAntes);
+    // O 1º lote saiu dizendo "nada mais aguardando" e voltou com a ordem de apagar...
+    expect(operacoesDoPush(enviosAntes).map((o) => o.operacaoId)).toEqual([antes]);
+    expect(JSON.parse(pushes[0]!.corpo)).toMatchObject({ aguardandoDepoisDeste: 0 });
+    // ...mas o computador tinha gravado mais 2: mandou o resto antes de obedecer.
+    expect(pushes).toHaveLength(2);
+    expect(operacoesDoPush(enviosAntes + 1).map((o) => o.operacaoId)).toEqual([
+      durante,
+      vendaDurante,
+    ]);
+    expect(JSON.parse(pushes[1]!.corpo)).toMatchObject({ aguardandoDepoisDeste: 0 });
     expect(ordens).toEqual(['apagar-dados']);
+    expect(contar(b.db, "SELECT 1 FROM outbox WHERE situacao = 'AGUARDANDO'")).toBe(0);
+    expect(s.operacoes.has(antes)).toBe(true);
+    expect(s.operacoes.has(durante)).toBe(true);
+    expect(s.operacoes.has(vendaDurante)).toBe(true);
   });
 });
 
