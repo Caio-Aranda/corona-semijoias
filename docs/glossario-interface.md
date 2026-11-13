@@ -50,7 +50,7 @@ Em 09/11/2026 o responsável resolveu as dúvidas que estavam abertas neste glos
 | devolução | `devolucoes` | O cliente devolve uma peça. Também vale para o vendedor que devolve peças à dona no acerto. |
 | devolver o dinheiro | reembolso | O cliente recebe de volta o valor pago. |
 | peça para a loja | `itens_devolucao.destino_peca = LOJA` | Peça devolvida pelo cliente que não volta à maleta (com defeito, ou boa de maleta já acertada). O vendedor a entrega à dona no próximo acerto (ADR-0014, item 7). |
-| crédito do cliente | `creditos_cliente` | Valor que sobra de uma troca e que o cliente usa numa compra futura. |
+| crédito do cliente | `creditos_cliente` | Valor que sobra de uma troca (ou que volta da devolução de uma compra paga com crédito) e que o cliente usa numa compra futura, com o mesmo vendedor. |
 | conferência | `CONFERIDA`, conferência da maleta | O vendedor confere as peças recebidas contra a lista da maleta. |
 | cobrança | cobrança | Recebimento do cliente pelo vendedor e repasse do vendedor à dona. |
 | repasse | repasse no acerto | Dinheiro que o vendedor entrega à dona no acerto. |
@@ -161,6 +161,12 @@ A tela mostra o texto da coluna "Na tela". A coluna "Equivalente técnico" é s�
 | Forma de pagamento | Pix | Pix | §7.4. Escrever "Pix", nunca "PIX". |
 | Forma de pagamento | cheque | Cheque | §7.4. Mostra também a situação do cheque, acima. |
 | Forma de pagamento | boleto | Boleto | §7.4. |
+| Forma de pagamento | crédito do cliente | Crédito do cliente | §7.3 (tarefa 6.5). Na lista curta de formas pode aparecer só **Crédito**. Nunca "CREDITO". |
+| Crédito do cliente | `ABERTO` | Em aberto | Ainda tem saldo para usar. |
+| Crédito do cliente | `UTILIZADO` | Usado | O saldo já foi todo usado (ou transferido pela dona para outro vendedor). |
+| Crédito do cliente | `CANCELADO` | Cancelado | A troca ou a devolução que o gerou foi cancelada. |
+| Troca | `ATIVA` | Feita | A troca vale. |
+| Troca | `CANCELADA` | Cancelada | Desfeita pelo "Cancelar troca". Continua registrada. |
 | Forma de pagamento | entrada | Entrada (a confirmar, não usar na tela) | §7.4. O significado ainda não foi confirmado (parte 9). Não aparece em nenhuma tela até a resposta. |
 
 Pagamento do cliente na venda (§7.2): **À vista** ou **A prazo** (parcelado).
@@ -648,6 +654,60 @@ Textos que o servidor devolve:
 > A dona já decidiu sobre esta devolução e a decisão não muda.
 
 Avisos junto ao campo: "Diga o motivo de negar o pedido." e "Diga por que a devolução não foi aceita.".
+
+**Troca e crédito do cliente (Fase 6, tarefa 6.5; ADR-0014, itens 8, 9 e 11).** Na troca o cliente devolve peças de uma venda (A) e leva outras (B), numa operação só. O valor de A vira **crédito do cliente**, que paga B na mesma hora. Se B vale mais, aparece a **diferença a pagar** (à vista, a prazo ou com outro crédito do cliente). Se B vale menos, a sobra **fica de crédito** para uma compra futura do mesmo cliente. O servidor calcula os valores; a tela só mostra a prévia. As telas são das tarefas 6.8 e 6.9; estes textos valem desde já.
+
+- Na tela: "Diferença a pagar: R$ 50,00" (B mais cara), "Fica de crédito: R$ 40,00" (B mais barata) e "Sem diferença" (iguais).
+- Situação da troca: **Feita** e **Cancelada**. Situação do crédito: **Em aberto**, **Usado** e **Cancelado** (parte 3).
+- De onde veio o crédito: **Troca**, **Devolução** (venda paga com crédito que foi devolvida: o crédito volta primeiro, o resto em dinheiro) e **Transferido pela dona**.
+- Botões: **Registrar troca** (ação sem volta), **Cancelar troca** (o vendedor só no mesmo dia; depois, a dona), **Usar crédito** (na venda, escolhe o crédito do cliente como forma de pagamento) e **Transferir crédito** (só a dona: passa o saldo inteiro para outro vendedor).
+- O crédito só é usado pelo vendedor dono dele e só na venda do mesmo cliente. O estorno de uma venda paga com crédito devolve o crédito.
+
+Textos que o servidor devolve:
+
+> **Não encontramos esta troca.**
+> Não encontramos esta troca. Atualize a tela e tente de novo.
+
+> **Esta troca já foi registrada com outros dados.**
+> Esta troca já foi registrada com outros dados. Confira as trocas antes de lançar de novo.
+
+> **Esta troca já foi cancelada.**
+> Esta troca já foi cancelada e não pode mudar.
+
+> **Esta troca não pode ser cancelada.**
+> A dona já decidiu sobre esta troca e ela não pode mais ser cancelada. (quando uma das maletas já não está com o vendedor: "Uma das maletas desta troca já não está com o vendedor. Fale com a dona."; quando a peça que voltou já foi vendida de novo: "A peça que voltou nesta troca já foi vendida de novo e a troca não pode ser cancelada. Fale com a dona.")
+
+> **Esta troca só pode ser cancelada pela dona.**
+> Só dá para cancelar a troca no mesmo dia. Peça à dona para cancelar.
+
+> **O crédito desta troca já foi usado.**
+> O crédito que sobrou desta troca já foi usado em outra compra e a troca não pode ser cancelada. Fale com a dona.
+
+> **Esta venda é de uma troca.**
+> Esta venda faz parte de uma troca. Use Cancelar troca.
+
+> **Esta devolução é de uma troca.**
+> Esta devolução faz parte de uma troca. Use Cancelar troca.
+
+> **Não encontramos este crédito.**
+> Não encontramos este crédito do cliente. Atualize a tela e tente de novo.
+
+> **Este crédito é de outro cliente.**
+> Este crédito é de outro cliente. Use só o crédito do cliente desta venda.
+
+> **Este crédito não tem mais saldo.**
+> Este crédito já foi todo usado ou foi cancelado. Escolha outra forma de pagamento.
+
+> **O valor passa do saldo do crédito.**
+> O valor passa do que sobra neste crédito. Diminua o valor e pague o resto de outra forma.
+
+> **O crédito desta devolução já foi usado.**
+> O crédito desta devolução já foi usado em outra compra e a devolução não pode ser cancelada. Fale com a dona.
+
+> **Esta transferência já foi feita com outros dados.**
+> Esta transferência de crédito já foi feita com outros dados. Confira os créditos antes de transferir de novo.
+
+Avisos junto ao campo: "Escolha o crédito do cliente usado no pagamento." (forma crédito sem o crédito), "O crédito só vale com a forma de pagamento crédito do cliente." (crédito com outra forma), "O mesmo crédito aparece mais de uma vez. Use o crédito uma vez só.", "Escolha como o cliente pagou: dinheiro, Pix, cartão, cheque ou crédito do cliente.", "Informe as peças que o cliente devolveu.", "Informe as peças que o cliente levou.", "A peça nova vale menos que a devolvida: não há diferença a pagar. A sobra fica de crédito.", "O crédito da troca não é escolhido na venda: ele entra sozinho.", "Escolha o vendedor que vai receber o crédito.", "O crédito já é deste vendedor. Escolha outro vendedor." e "Este vendedor está desligado. Escolha um vendedor ativo.".
 
 **Vender só depois de conferir (decisão de 11/11/2026; tarefa 5.3).** A maleta que ainda não foi conferida não vende:
 
