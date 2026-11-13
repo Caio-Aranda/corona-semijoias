@@ -125,3 +125,15 @@ Tarefa crítica: plano em [plano-6-5-credito-e-troca.md](plano-6-5-credito-e-tro
 - **Fase 7 (acerto):** a troca aparece como uma devolução (−A) e uma venda (+B) nas consultas que a 7.5 vai ler; nenhum evento de troca à parte; o crédito não reduz o que o vendedor deve (ADR-0012).
 
 **Não fiz (fica para as próximas tarefas):** outbox, push e filtro do pull das tabelas novas (6.7); telas (6.8 e 6.9); troca com B a prazo em parcelas e devolução de venda a prazo (6.6); sobra da troca devolvida em dinheiro (só se a dona responder D4); relatórios de trocas e créditos (6.10); comissão e acerto (Fase 7).
+
+## Tarefa 6.9: Corona Gestão, devoluções e créditos
+
+Em andamento (plano abaixo; o relatório final substitui esta seção ao terminar).
+
+**Plano**
+
+1. Backend mínimo para a dona registrar devolução (ADR-0014, item 13): `POST /api/dona/devolucoes` (a peça vai sempre à loja) e `GET /api/dona/devolucoes/vendas-com-a-peca`. Testes primeiro.
+2. Glossário antes das telas (grupo de menu "Devoluções e créditos", botões, textos).
+3. Ponte do Corona Gestão: operações `devolucoes.*`, `trocas.*`, `creditos.*` e `garantia.*`, conferidas no processo principal, com testes.
+4. Telas: Devoluções para autorizar (Aprovar reembolso, Negar), Devoluções para revisar (Manter, Não aceitar), Devoluções (registrar pela dona, Cancelar devolução), Trocas (Cancelar troca), Créditos dos clientes (Transferir crédito), Garantia e limites; avisos da tela inicial com o botão Abrir.
+5. Documentos: `docs/PROGRESSO.md`, `docs/perguntas-para-a-dona.md` (o desenho não foi aprovado) e este relatório.
