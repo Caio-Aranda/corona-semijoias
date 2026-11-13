@@ -168,12 +168,23 @@ export type ComprasDaDonaControllerRespostaDoResumo = {
     total?: string;
 };
 
-export type Conferencia = {
-    conferidaEm?: string;
-    divergencias?: number;
-    id?: string;
-    itens?: Array<ConsultasDaConferenciaLinha>;
-    remessaId?: string;
+export type ConferenciasDeDevolucaoETrocaConferencia = {
+    chave?: string;
+    conferidos?: number;
+    divergencias?: Array<ConferenciasDeDevolucaoETrocaDivergencia>;
+    explicacao?: string;
+    titulo?: string;
+};
+
+export type ConferenciasDeDevolucaoETrocaDivergencia = {
+    descricao?: string;
+    referencia?: string;
+};
+
+export type ConferenciasDeDevolucaoETrocaResultado = {
+    conferencias?: Array<ConferenciasDeDevolucaoETrocaConferencia>;
+    geradaEm?: string;
+    tudoCerto?: boolean;
 };
 
 export type ConjugeDoVendedorDados = {
@@ -186,6 +197,14 @@ export type ConjugeDoVendedorDados = {
     rg?: string;
     telefone?: string;
     version?: number;
+};
+
+export type ConsultasDaConferenciaConferencia = {
+    conferidaEm?: string;
+    divergencias?: number;
+    id?: string;
+    itens?: Array<ConsultasDaConferenciaLinha>;
+    remessaId?: string;
 };
 
 export type ConsultasDaConferenciaLinha = {
@@ -206,6 +225,34 @@ export type ConsultasDeCadastroLinhaDeVendedor = {
     nome?: string;
     praca?: string;
     restricao?: string;
+};
+
+export type ConsultasDeDevolucaoETrocaLinhaDeDevolucao = {
+    cancelada?: boolean;
+    cliente?: string;
+    clienteId?: string;
+    dataDaCotacao?: string;
+    dentroDaGarantia?: boolean;
+    devolvidaEm?: string;
+    formaReembolso?: string;
+    id?: string;
+    motivo?: string;
+    pecas?: number;
+    pecasComDefeito?: number;
+    situacao?: string;
+    tipo?: string;
+    valorDevolvido?: string;
+    valorDevolvidoEmDolar?: string;
+    valorDevolvidoEmGuarani?: string;
+    valorEmCredito?: string;
+    valorEmCreditoEmDolar?: string;
+    valorEmCreditoEmGuarani?: string;
+    valorReembolsado?: string;
+    valorReembolsadoEmDolar?: string;
+    valorReembolsadoEmGuarani?: string;
+    vendaId?: string;
+    vendedor?: string;
+    vendedorId?: string;
 };
 
 export type ConsultasDeMaletaLinhaDeVendedor = {
@@ -655,6 +702,26 @@ export type LinhaDeAniversariante = {
     whatsapp?: string;
 };
 
+export type LinhaDeAutorizacao = {
+    cliente?: string;
+    clienteId?: string;
+    dataDaCotacao?: string;
+    decididaEm?: string;
+    id?: string;
+    motivo?: string;
+    pecas?: number;
+    pedidaEm?: string;
+    situacao?: string;
+    tipo?: string;
+    validaAte?: string;
+    valorPedido?: string;
+    valorPedidoEmDolar?: string;
+    valorPedidoEmGuarani?: string;
+    vendaId?: string;
+    vendedor?: string;
+    vendedorId?: string;
+};
+
 export type LinhaDeCliente = {
     ativo?: boolean;
     cadastradoEm?: string;
@@ -694,6 +761,27 @@ export type LinhaDeConciliacao = {
     produtoId?: string;
     saldoGuardado?: number;
     somaDosMovimentos?: number;
+};
+
+export type LinhaDeCredito = {
+    cliente?: string;
+    clienteId?: string;
+    dataDaCotacao?: string;
+    geradoEm?: string;
+    id?: string;
+    origem?: string;
+    saldo?: string;
+    saldoEmDolar?: string;
+    saldoEmGuarani?: string;
+    situacao?: string;
+    utilizado?: string;
+    utilizadoEmDolar?: string;
+    utilizadoEmGuarani?: string;
+    valor?: string;
+    valorEmDolar?: string;
+    valorEmGuarani?: string;
+    vendedor?: string;
+    vendedorId?: string;
 };
 
 export type LinhaDeFornecedor = {
@@ -828,6 +916,21 @@ export type LinhaDeMovimento = {
     usuarioId?: string;
 };
 
+export type LinhaDePecaComDefeito = {
+    codigo?: string;
+    devolucoes?: number;
+    fotoPrincipalHash?: string;
+    nome?: string;
+    pecas?: number;
+    produtoId?: string;
+    referencia?: string;
+    ultimaVez?: string;
+    valor?: string;
+    valorEmDolar?: string;
+    valorEmGuarani?: string;
+    vendedores?: number;
+};
+
 export type LinhaDePosicao = {
     ativo?: boolean;
     categoria?: string;
@@ -870,6 +973,24 @@ export type LinhaDeProdutoParado = {
     saldo?: number;
     ultimaSaidaEm?: string;
     valorACusto?: string;
+};
+
+export type LinhaDeReembolso = {
+    cliente?: string;
+    clienteId?: string;
+    dataDaCotacao?: string;
+    devolucaoId?: string;
+    forma?: string;
+    id?: string;
+    motivo?: string;
+    pagoEm?: string;
+    tipo?: string;
+    valor?: string;
+    valorEmDolar?: string;
+    valorEmGuarani?: string;
+    vendaId?: string;
+    vendedor?: string;
+    vendedorId?: string;
 };
 
 export type LinhaDeRemessa = {
@@ -916,6 +1037,51 @@ export type LinhaDeSaldo = {
     valorEmReais?: string;
     vendedor?: string;
     vendedorId?: string;
+};
+
+export type LinhaDeTroca = {
+    cliente?: string;
+    clienteId?: string;
+    dataDaCotacao?: string;
+    devolucaoId?: string;
+    diferenca?: string;
+    diferencaEmDolar?: string;
+    diferencaEmGuarani?: string;
+    id?: string;
+    pecasQueSairam?: number;
+    pecasQueVoltaram?: number;
+    situacao?: string;
+    totalDaVendaNova?: string;
+    totalDaVendaNovaEmDolar?: string;
+    totalDaVendaNovaEmGuarani?: string;
+    trocadaEm?: string;
+    valorDevolvido?: string;
+    valorDevolvidoEmDolar?: string;
+    valorDevolvidoEmGuarani?: string;
+    vendaNovaId?: string;
+    vendaOrigemId?: string;
+    vendedor?: string;
+    vendedorId?: string;
+};
+
+export type LinhaPorVendedor = {
+    acimaDoLimite?: boolean;
+    devolucoes?: number;
+    devolvido?: string;
+    devolvidoEmDolar?: string;
+    devolvidoEmGuarani?: string;
+    porDefeito?: number;
+    porDesistencia?: number;
+    porOutro?: number;
+    porTamanho?: number;
+    porcentagemDevolvida?: string;
+    trocas?: number;
+    vendas?: number;
+    vendedor?: string;
+    vendedorId?: string;
+    vendido?: string;
+    vendidoEmDolar?: string;
+    vendidoEmGuarani?: string;
 };
 
 export type LinhaSemCodigoDeBarras = {
@@ -1443,6 +1609,15 @@ export type RelatorioDeCadastroConsultasDeCadastroLinhaDeVendedor = {
     total?: number;
 };
 
+export type RelatorioDeCadastroConsultasDeDevolucaoETrocaLinhaDeDevolucao = {
+    itens?: Array<ConsultasDeDevolucaoETrocaLinhaDeDevolucao>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
 export type RelatorioDeCadastroConsultasDeMaletaLinhaDeVendedor = {
     itens?: Array<ConsultasDeMaletaLinhaDeVendedor>;
     pagina?: number;
@@ -1479,6 +1654,15 @@ export type RelatorioDeCadastroLinhaDeAniversariante = {
     total?: number;
 };
 
+export type RelatorioDeCadastroLinhaDeAutorizacao = {
+    itens?: Array<LinhaDeAutorizacao>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
 export type RelatorioDeCadastroLinhaDeCliente = {
     itens?: Array<LinhaDeCliente>;
     pagina?: number;
@@ -1499,6 +1683,15 @@ export type RelatorioDeCadastroLinhaDeCompra = {
 
 export type RelatorioDeCadastroLinhaDeConciliacao = {
     itens?: Array<LinhaDeConciliacao>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroLinhaDeCredito = {
+    itens?: Array<LinhaDeCredito>;
     pagina?: number;
     recorte?: string;
     tamanho?: number;
@@ -1578,6 +1771,15 @@ export type RelatorioDeCadastroLinhaDeMovimento = {
     total?: number;
 };
 
+export type RelatorioDeCadastroLinhaDePecaComDefeito = {
+    itens?: Array<LinhaDePecaComDefeito>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
 export type RelatorioDeCadastroLinhaDePosicao = {
     itens?: Array<LinhaDePosicao>;
     pagina?: number;
@@ -1605,6 +1807,15 @@ export type RelatorioDeCadastroLinhaDeProdutoParado = {
     total?: number;
 };
 
+export type RelatorioDeCadastroLinhaDeReembolso = {
+    itens?: Array<LinhaDeReembolso>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
 export type RelatorioDeCadastroLinhaDeRemessa = {
     itens?: Array<LinhaDeRemessa>;
     pagina?: number;
@@ -1616,6 +1827,24 @@ export type RelatorioDeCadastroLinhaDeRemessa = {
 
 export type RelatorioDeCadastroLinhaDeSaldo = {
     itens?: Array<LinhaDeSaldo>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroLinhaDeTroca = {
+    itens?: Array<LinhaDeTroca>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroLinhaPorVendedor = {
+    itens?: Array<LinhaPorVendedor>;
     pagina?: number;
     recorte?: string;
     tamanho?: number;
@@ -4339,6 +4568,232 @@ export type PorFornecedorResponses = {
 
 export type PorFornecedorResponse = PorFornecedorResponses[keyof PorFornecedorResponses];
 
+export type RelatorioDePedidosDeAutorizacaoData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        produtoId?: string;
+        categoriaId?: string;
+        motivo?: string;
+        situacao?: string;
+        tipo?: string;
+        forma?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/devolucoes/autorizacoes';
+};
+
+export type RelatorioDePedidosDeAutorizacaoResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeAutorizacao;
+};
+
+export type RelatorioDePedidosDeAutorizacaoResponse = RelatorioDePedidosDeAutorizacaoResponses[keyof RelatorioDePedidosDeAutorizacaoResponses];
+
+export type ConferirDevolucoesETrocasData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/dona/relatorios/devolucoes/conferencia';
+};
+
+export type ConferirDevolucoesETrocasResponses = {
+    /**
+     * OK
+     */
+    200: ConferenciasDeDevolucaoETrocaResultado;
+};
+
+export type ConferirDevolucoesETrocasResponse = ConferirDevolucoesETrocasResponses[keyof ConferirDevolucoesETrocasResponses];
+
+export type RelatorioDeCreditosDosClientesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        produtoId?: string;
+        categoriaId?: string;
+        motivo?: string;
+        situacao?: string;
+        tipo?: string;
+        forma?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/devolucoes/creditos';
+};
+
+export type RelatorioDeCreditosDosClientesResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeCredito;
+};
+
+export type RelatorioDeCreditosDosClientesResponse = RelatorioDeCreditosDosClientesResponses[keyof RelatorioDeCreditosDosClientesResponses];
+
+export type RelatorioDeDevolucoesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        produtoId?: string;
+        categoriaId?: string;
+        motivo?: string;
+        situacao?: string;
+        tipo?: string;
+        forma?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/devolucoes/devolucoes';
+};
+
+export type RelatorioDeDevolucoesResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroConsultasDeDevolucaoETrocaLinhaDeDevolucao;
+};
+
+export type RelatorioDeDevolucoesResponse = RelatorioDeDevolucoesResponses[keyof RelatorioDeDevolucoesResponses];
+
+export type RelatorioDePecasComDefeitoData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        produtoId?: string;
+        categoriaId?: string;
+        motivo?: string;
+        situacao?: string;
+        tipo?: string;
+        forma?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/devolucoes/pecas-com-defeito';
+};
+
+export type RelatorioDePecasComDefeitoResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDePecaComDefeito;
+};
+
+export type RelatorioDePecasComDefeitoResponse = RelatorioDePecasComDefeitoResponses[keyof RelatorioDePecasComDefeitoResponses];
+
+export type RelatorioDeTaxaDeDevolucaoPorVendedorData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        produtoId?: string;
+        categoriaId?: string;
+        motivo?: string;
+        situacao?: string;
+        tipo?: string;
+        forma?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/devolucoes/por-vendedor';
+};
+
+export type RelatorioDeTaxaDeDevolucaoPorVendedorResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaPorVendedor;
+};
+
+export type RelatorioDeTaxaDeDevolucaoPorVendedorResponse = RelatorioDeTaxaDeDevolucaoPorVendedorResponses[keyof RelatorioDeTaxaDeDevolucaoPorVendedorResponses];
+
+export type RelatorioDeDinheiroDevolvidoData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        produtoId?: string;
+        categoriaId?: string;
+        motivo?: string;
+        situacao?: string;
+        tipo?: string;
+        forma?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/devolucoes/reembolsos';
+};
+
+export type RelatorioDeDinheiroDevolvidoResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeReembolso;
+};
+
+export type RelatorioDeDinheiroDevolvidoResponse = RelatorioDeDinheiroDevolvidoResponses[keyof RelatorioDeDinheiroDevolvidoResponses];
+
+export type RelatorioDeTrocasData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        produtoId?: string;
+        categoriaId?: string;
+        motivo?: string;
+        situacao?: string;
+        tipo?: string;
+        forma?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/devolucoes/trocas';
+};
+
+export type RelatorioDeTrocasResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeTroca;
+};
+
+export type RelatorioDeTrocasResponse = RelatorioDeTrocasResponses[keyof RelatorioDeTrocasResponses];
+
 export type AbaixoDoMinimoData = {
     body?: never;
     path?: never;
@@ -4772,7 +5227,7 @@ export type VerConferenciaDaMaletaResponses = {
     /**
      * OK
      */
-    200: Conferencia;
+    200: ConsultasDaConferenciaConferencia;
 };
 
 export type VerConferenciaDaMaletaResponse = VerConferenciaDaMaletaResponses[keyof VerConferenciaDaMaletaResponses];
