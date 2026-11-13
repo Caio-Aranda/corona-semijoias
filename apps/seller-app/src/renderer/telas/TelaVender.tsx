@@ -1,7 +1,11 @@
 import { Aviso, Botao, Campo, JanelaDeConfirmacao, PainelDePecaLida, Tabela } from '@corona/ui';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import type { Cliente, LinhaDaMaleta, Maleta, Venda } from '../../shared/dados';
-import { FORMAS_DE_PAGAMENTO, type FormaDePagamento } from '../../shared/operacoes';
+import type { Cliente, CreditosDoCliente, LinhaDaMaleta, Maleta, Venda } from '../../shared/dados';
+import {
+  FORMAS_DE_PAGAMENTO,
+  type FormaDePagamento,
+  type PagamentoParaEnviar,
+} from '../../shared/operacoes';
 import type { PonteDoCorona } from '../../shared/ponte';
 import { chamar, Dinheiro, novoId, useCotacao, useFoto } from '../chamadas';
 import { centavosDeTexto, formatarReais, lerReaisDigitados } from '../moedas';
@@ -66,6 +70,11 @@ export function TelaVender({ ponte, aoVoltar, aoVerVendas }: TelaVenderProps) {
   const [confirmando, setConfirmando] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [feita, setFeita] = useState<Venda | null>(null);
+  // Crédito do cliente (tarefa 6.8): só os créditos em aberto dele com este vendedor.
+  const [creditos, setCreditos] = useState<CreditosDoCliente | null>(null);
+  const [usandoCredito, setUsandoCredito] = useState(false);
+  const [valorCredito, setValorCredito] = useState('');
+  const idsDoCredito = useRef(new Map<string, string>());
   // Reenviar a mesma venda (queda de internet) usa os mesmos ids: o servidor não vende duas vezes.
   const idDaVenda = useRef(novoId());
   const idDoPagamento = useRef(novoId());
@@ -107,6 +116,24 @@ export function TelaVender({ ponte, aoVoltar, aoVerVendas }: TelaVenderProps) {
     };
   }, [ponte, busca]);
 
+  // O crédito do cliente escolhido (só no computador; nunca o de outro vendedor).
+  useEffect(() => {
+    setCreditos(null);
+    setUsandoCredito(false);
+    setValorCredito('');
+    if (!cliente) return;
+    let ativo = true;
+    void chamar<CreditosDoCliente>(ponte, {
+      operacao: 'creditos.doCliente',
+      clienteId: cliente.id,
+    }).then((r) => {
+      if (ativo && r.ok && Array.isArray(r.dados?.creditos)) setCreditos(r.dados);
+    });
+    return () => {
+      ativo = false;
+    };
+  }, [ponte, cliente]);
+
   const maleta = maletas?.find((m) => m.id === maletaId) ?? null;
 
   const subtotal = carrinho.reduce(
@@ -117,9 +144,16 @@ export function TelaVender({ ponte, aoVoltar, aoVerVendas }: TelaVenderProps) {
   const descontoInvalido = descontos.some((d) => d === null);
   const desconto = descontos.reduce<bigint>((s, d) => s + (d ?? 0n), 0n);
   const total = subtotal - desconto;
+  const saldoDoCredito = creditos ? (centavosDeTexto(creditos.total) ?? 0n) : 0n;
+  let creditoCentavos: bigint | null = 0n;
+  if (usandoCredito) {
+    const digitado = lerReaisDigitados(valorCredito);
+    creditoCentavos = digitado === null ? null : centavosDeTexto(digitado);
+  }
+  const resto = total - (creditoCentavos ?? 0n);
   let pagoCentavos: bigint | null;
   if (forma === 'PRAZO') pagoCentavos = 0n;
-  else if (valorPago.trim() === '') pagoCentavos = total < 0n ? 0n : total;
+  else if (valorPago.trim() === '') pagoCentavos = resto < 0n ? 0n : resto;
   else {
     const digitado = lerReaisDigitados(valorPago);
     pagoCentavos = digitado === null ? null : centavosDeTexto(digitado);
@@ -182,8 +216,11 @@ export function TelaVender({ ponte, aoVoltar, aoVerVendas }: TelaVenderProps) {
     if (carrinho.length === 0) return T.faltaPeca;
     if (!cliente) return T.faltaCliente;
     if (descontoInvalido) return T.descontoInvalido;
+    if (creditoCentavos === null || (usandoCredito && creditoCentavos <= 0n))
+      return T.creditoInvalido;
+    if (creditoCentavos > saldoDoCredito) return T.creditoAcimaDoSaldo;
     if (pagoCentavos === null) return T.valorPagoInvalido;
-    if (pagoCentavos > total) return T.pagoMaiorQueTotal;
+    if (pagoCentavos + creditoCentavos > total) return T.pagoMaiorQueTotal;
     return null;
   }
 
@@ -194,12 +231,26 @@ export function TelaVender({ ponte, aoVoltar, aoVerVendas }: TelaVenderProps) {
   }
 
   async function concluir() {
-    if (!maleta || !cliente || pagoCentavos === null) return;
+    if (!maleta || !cliente || pagoCentavos === null || creditoCentavos === null) return;
     setEnviando(true);
-    const pagamentos =
-      forma !== 'PRAZO' && pagoCentavos > 0n
-        ? [{ id: idDoPagamento.current, valor: textoDeCentavos(pagoCentavos), forma }]
-        : [];
+    // O valor do crédito sai dos créditos do cliente na ordem (cada um até o saldo dele); o resto na forma de sempre.
+    const pagamentos: PagamentoParaEnviar[] = [];
+    let falta = creditoCentavos;
+    for (const c of creditos?.creditos ?? []) {
+      if (falta <= 0n) break;
+      const saldo = centavosDeTexto(c.saldo) ?? 0n;
+      const usado = saldo < falta ? saldo : falta;
+      if (usado <= 0n) continue;
+      let id = idsDoCredito.current.get(c.id);
+      if (!id) {
+        id = novoId();
+        idsDoCredito.current.set(c.id, id);
+      }
+      pagamentos.push({ id, valor: textoDeCentavos(usado), forma: 'CREDITO', creditoId: c.id });
+      falta -= usado;
+    }
+    if (forma !== 'PRAZO' && pagoCentavos > 0n)
+      pagamentos.push({ id: idDoPagamento.current, valor: textoDeCentavos(pagoCentavos), forma });
     const r = await chamar<Venda>(ponte, {
       operacao: 'vendas.vender',
       venda: {
@@ -228,6 +279,7 @@ export function TelaVender({ ponte, aoVoltar, aoVerVendas }: TelaVenderProps) {
   function novaVenda() {
     idDaVenda.current = novoId();
     idDoPagamento.current = novoId();
+    idsDoCredito.current = new Map();
     setFeita(null);
     setCarrinho([]);
     setUltima(null);
@@ -288,7 +340,7 @@ export function TelaVender({ ponte, aoVoltar, aoVerVendas }: TelaVenderProps) {
     );
   }
 
-  const aReceber = pagoCentavos === null ? null : total - pagoCentavos;
+  const aReceber = pagoCentavos === null ? null : resto - pagoCentavos;
 
   return (
     <PaginaDoVendedor ponte={ponte} titulo={T.titulo} aoVoltar={aoVoltar}>
@@ -453,6 +505,32 @@ export function TelaVender({ ponte, aoVoltar, aoVerVendas }: TelaVenderProps) {
         )}
       </section>
 
+      {cliente && saldoDoCredito > 0n ? (
+        <section className="vendas-cartao vendas-cartao--larga" aria-label={T.usarCredito}>
+          <p className="vendas-texto">{T.creditoEmAberto(formatarReais(saldoDoCredito))}</p>
+          {usandoCredito ? (
+            <Campo
+              rotulo={T.valorDoCredito}
+              value={valorCredito}
+              onChange={(e) => setValorCredito(e.target.value)}
+              inputMode="decimal"
+              autoComplete="off"
+            />
+          ) : (
+            <Botao
+              onClick={() => {
+                // O menor entre o crédito e o total; a pessoa pode diminuir, nunca passar do crédito (dúvida V9).
+                const sugestao = saldoDoCredito < total ? saldoDoCredito : total < 0n ? 0n : total;
+                setValorCredito(formatarReais(sugestao).replace('R$ ', ''));
+                setUsandoCredito(true);
+              }}
+            >
+              {T.usarCredito}
+            </Botao>
+          )}
+        </section>
+      ) : null}
+
       <fieldset className="vendas-pagamento">
         <legend>{T.pagamento}</legend>
         {FORMAS_DE_PAGAMENTO.map((f) => (
@@ -474,7 +552,7 @@ export function TelaVender({ ponte, aoVoltar, aoVerVendas }: TelaVenderProps) {
           <Campo
             rotulo={T.valorPago}
             value={valorPago}
-            placeholder={formatarReais(total < 0n ? 0n : total).replace('R$ ', '')}
+            placeholder={formatarReais(resto < 0n ? 0n : resto).replace('R$ ', '')}
             onChange={(e) => setValorPago(e.target.value)}
             inputMode="decimal"
             autoComplete="off"

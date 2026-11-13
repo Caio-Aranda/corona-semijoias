@@ -3,9 +3,18 @@ import { aplicarCamposSeIguais, lerAlteracao } from './camada-de-pendentes';
 import { ehTabelaSincronizavel } from './colunas';
 import { CHAVES, lerEstado } from './estado-sync';
 
-/** Os tipos de operação do formato 1 (tarefa 5.5). */
+/** Os tipos de operação do formato 1 (tarefa 5.5) e os da Fase 6 (tarefa 6.7, gravados pelo computador desde a 6.8). */
 export type TipoDeOperacao =
-  'VENDA' | 'ESTORNO_VENDA' | 'CLIENTE_NOVO' | 'CLIENTE_ALTERADO' | 'CONFERENCIA';
+  | 'VENDA'
+  | 'ESTORNO_VENDA'
+  | 'CLIENTE_NOVO'
+  | 'CLIENTE_ALTERADO'
+  | 'CONFERENCIA'
+  | 'DEVOLUCAO'
+  | 'PEDIDO_AUTORIZACAO'
+  | 'TROCA'
+  | 'CANCELAR_DEVOLUCAO'
+  | 'CANCELAR_TROCA';
 
 export type SituacaoNaOutbox = 'AGUARDANDO' | 'ENVIADO' | 'RECUSADO' | 'CONFLITO';
 

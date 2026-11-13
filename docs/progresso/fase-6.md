@@ -217,6 +217,52 @@ Tarefa crítica de sincronização: plano em [plano-6-7-sync-da-fase-6.md](plano
 
 **Resultado local (13/11/2026):** `npm run api:test` com 1064 testes verdes; Corona Vendas com 495 testes verdes; `testes-sync` sem API (18) verde; `typecheck`, `lint` e `format:check` limpos; `seller:empacotar` e `barreira:varrer` limpos (nenhum dos 6 marcadores). As duas pontas e o estresse curto (60 s) **nesta branch sozinha** param todos antes do sync, em `Dona.semana` (a API recusa o número da semana acima de 100000): é o defeito do teste que o PR #133 (issue #130) corrige, sem relação com esta tarefa. Com a correção do #133 juntada só no computador (branch temporária, nem enviada nem mantida), os 17 passaram, inclusive o estresse (semente 1407582607), com o banco local v3. Por isso o job `sync-duas-pontas` deste PR falha no CI até o #133 entrar na `main`.
 
+## Tarefa 6.8: Corona Vendas, devolução, troca e crédito
+
+Tarefa crítica (Opus, esforço alto). Plano aprovado no PR #134 ([plano](plano-6-8-devolucao-no-corona-vendas.md); V1 a V13 com o padrão de cada um). O desenho das telas **não foi aprovado pela dona**: segue os padrões das telas da Fase 5 e foi como a **pergunta 29** para `docs/perguntas-para-a-dona.md`.
+
+**O que entrou**
+
+- **Documentos antes do código:** o bloco "Devolução, troca e crédito no Corona Vendas" no glossário (parte 6), o quinto botão **Devolução e troca** na lista do glossário e na §19.7 da especificação (linha datada de 13/11/2026) e a pergunta 29.
+- **Prévia de valor e prazo** (`src/shared/valor-da-devolucao.ts` e `garantia.ts`): a mesma regra do `ValorDaDevolucao` e do `RegrasDaDevolucao` do servidor, em centavos `bigint` e dias de Brasília; sem os prazos guardados, 7 e 30 (V2).
+- **Cinco operações pela outbox** (`sync/operacoes-da-fase-6.ts`, chamadas por `OperacoesLocais`): `DEVOLUCAO`, `PEDIDO_AUTORIZACAO`, `TROCA`, `CANCELAR_DEVOLUCAO` e `CANCELAR_TROCA`, cada uma com as linhas provisórias como o servidor grava e a linha da outbox na mesma transação, no JSON do formato 1 da 6.7, montado uma vez. **O JSON nunca leva valor calculado no computador** (`valorConferido` e `totalConferido` nulos; reforço 2 da aprovação). As conferências são as do servidor, com os textos dele (`sync/mensagens-da-fase-6.ts`). "Cancelada aqui" e "usada aqui" vêm da outbox; nenhum `UPDATE` em cópia do servidor, e o `RECUSADO`/`CONFLITO` desfaz tudo pelas provisórias de sempre.
+- **Venda com crédito e estorno:** o pagamento `CREDITO` leva o `creditoId` só nele (a `VENDA` sem crédito continua com os mesmos bytes) e grava o uso provisório; o crédito confere cliente, vendedor, situação e saldo do computador. O estorno local recusa venda com devolução e venda de troca, e o estorno de venda paga com crédito devolve o saldo (o uso é estornado).
+- **"Ainda podem voltar" pelo produto** (`pecasDaVenda`): a cópia do servidor (`itens_devolucao` das devoluções ativas) e, para a devolução ou troca ainda sem cópia do servidor, as peças do JSON na outbox; nada conta em dobro quando a venda ou a devolução chegam. **Nenhuma migração local nova** (V12).
+- **Consultas** (`local/consultas-da-fase-6.ts`): vendas com a peça, prévias da devolução e da troca, Minhas devoluções e trocas (as duas juntas, com a cotação do dia de cada lançamento), pedidos de autorização com os avisos das respostas e o crédito do cliente; sempre só do vendedor.
+- **Números locais como o servidor:** "vendida" com `TROCA_SAIDA` e descontando `DEVOLUCAO_CLIENTE`/`TROCA_ENTRADA`; "a receber" = total − devolvido − pago na venda e no relatório; `ESTORNO_REEMBOLSO` como tipo próprio; a venda nova de uma troca cancelada aqui aparece estornada; a venda com crédito sem saldo em revisão; as descrições novas dos envios não aceitos.
+- **Ponte** (`shared/operacoes.ts`, `shared/validacao.ts`, `api.ts`): onze operações, todas "só no banco do computador"; a validação recusa qualquer campo de valor vindo da tela.
+- **Telas** (`renderer/telas/devolucao/`): o quinto botão e os avisos na tela inicial; Devolução e troca (ler a peça, vendas com a peça, Devolver e Trocar); Devolução (prévia, bloqueio fora do prazo, Pedir autorização à dona, "vale até"); Troca (peças que voltam e que o cliente leva, a diferença, o pagamento à vista ou a prazo); Minhas devoluções e trocas (Aguardando envio, Para revisão da dona, Cancelar no mesmo dia, pedidos); Usar crédito em Vender; o crédito na ficha do cliente; Devolver e Trocar, Devolução, Devolução cancelada e Crédito do cliente na ficha da venda.
+
+**Testes (escritos antes do código, SQLCipher de verdade)**
+
+- `shared/valor-da-devolucao.test.ts` e `garantia.test.ts` (12): os casos do servidor, 500 sequências aleatórias e o prazo no limite pelo relógio (23:59 e 00:00 de Brasília, venda às 23:30, defeito no 30º e no 31º dia).
+- `sync/operacoes-da-fase-6.test.ts` (37): cada caminho sem internet, o JSON byte a byte e sem nenhum valor do app, tudo ou nada com falha injetada, as autorizações que não servem, o pedido, a troca nos três casos da diferença, o crédito usado até zerar e as recusas dele, os cancelamentos, o estorno com devolução, troca e crédito, as recusas com o texto do servidor e o "ainda podem voltar" quando a venda chega do servidor.
+- `sync/ciclo-da-fase-6.test.ts` (3, servidor falso): as cinco operações na ordem da fila com os bytes guardados, `RECUSADO` e `CONFLITO` desfazendo saldo, crédito e "a receber", a cópia para revisão da dona e o crédito sem saldo.
+- `local/consultas-da-fase-6.test.ts` (12): números locais e a conciliação da maleta depois de cada caminho, as consultas das telas e nada de custo nem de outro vendedor.
+- `shared/validacao-da-fase-6.test.ts` e `api-operacoes.test.ts` (ponte), `renderer/devolucao-e-troca.test.tsx` (16 telas, inclusive as palavras proibidas).
+
+**Decisões que tomei** (também no PR #134)
+
+1. **Nenhum valor na outbox** (reforço 2): `valorConferido` e `totalConferido` vão nulos (o servidor aceita nulo; só não gera o alerta de divergência). O plano previa mandar a prévia para o alerta.
+2. **Uma lista só** para Minhas devoluções e trocas (`devolucoes.listar` traz devoluções e trocas) e `autorizacoes.listar` traz os pedidos e os avisos; não fiz `devolucoes.ver` nem `trocas.ver` (a lista mostra tudo).
+3. **Filtro `sync` do `ci.yml` sem mudança:** `apps/seller-app/src/(main|shared)/` já cobre tudo o que esta tarefa mexe; mexer no `ci.yml` faria rodar `backend` e `dependencias` sem necessidade. `docs/ci.md` também fica como está.
+4. Na tela, **um estado por peça** (Boa ou Com defeito); as operações aceitam a mesma peça nos dois estados, a tela ainda não.
+5. Fora do prazo na **troca**, a tela mostra o bloqueio; o pedido de autorização é feito pela tela da devolução.
+6. `operacoes-locais.ts` ficou com cerca de 520 linhas (o plano dizia ~450): só os delegados e as mudanças da venda e do estorno; a regra nova está em `operacoes-da-fase-6.ts`.
+
+**O que a 6.10, a 6.11 e a 6.12 herdam**
+
+- **6.10 (relatórios):** os relatórios de vendas e de recebimentos do computador continuam somando como o servidor somava antes (o crédito não está separado); `consultas-locais.ts` é arquivo em comum: quem mesclar depois faz `git merge origin/main`, mantém os dois lados nos números locais e roda os testes das duas telas.
+- **6.11 (duas pontas):** os cenários de devolução, troca e crédito com o motor de verdade (o formato e a ordem estão fixados pelos testes 3, 6, 7 e 12 desta tarefa; a prova contra o servidor real é dela).
+- **6.12:** a pergunta 29 e o desenho das telas com a dona.
+
+**Não fiz (fica para as próximas tarefas)**
+
+- Devolução de venda a prazo (6.6; até lá o bloqueio "Esta venda tem parcelas..."), foto da peça devolvida (D10), relatórios de devoluções, trocas e créditos (6.10), cenários de duas pontas (6.11), acerto e pendência do vendedor (7.5), pagar a diferença da troca com outro crédito (V8), usar o crédito de devolução sem internet (decisão 7), pedir autorização por valor (o computador não sabe o valor de aprovação).
+- Teste no computador com a dona; o desenho precisa da aprovação dela (pergunta 29).
+
+**Resultado local (13/11/2026):** Corona Vendas com 594 testes verdes (1 pulado, o de antes); `testes-sync` sem API (24) verde; `typecheck`, `lint` e `format:check` limpos; `seller:empacotar` e `barreira:varrer` limpos (nenhum dos 6 marcadores). Nada no backend; o job `backend` do CI roda porque o glossário mudou (`GlossarioDasMensagensTest`). As duas pontas e o estresse ficam para o CI (o plano não pede rodar no computador).
+
 ## Tarefa 6.9: Corona Gestão, devoluções e créditos
 
 Tarefa não crítica (Sonnet, esforço alto). Plano no PR #132. O desenho das telas **não foi aprovado pela dona**: segue os padrões das telas da Fase 5 e a pergunta 28 foi para `docs/perguntas-para-a-dona.md`.

@@ -2,13 +2,18 @@ import { textoDeGravacaoBloqueada } from '../../shared/prazo';
 import { type BancoAberto, gravar } from '../banco/banco-local';
 import { exigirCentavos, textoDeCentavos } from '../../shared/dinheiro';
 import type {
+  CancelamentoParaEnviar,
   ClienteParaCadastrar,
   ContagemDaPeca,
-  FormaDePagamento,
+  DevolucaoParaEnviar,
+  PedidoDeAutorizacaoParaEnviar,
+  TrocaParaEnviar,
   VendaParaEnviar,
 } from '../../shared/operacoes';
 import { type Alteracao, CAMPOS_DO_CLIENTE } from './camada-de-pendentes';
 import { CHAVES, lerEstado, registrarHoraLocal } from './estado-sync';
+import { type CodigoDaFase6, MENSAGENS_DA_FASE_6 } from './mensagens-da-fase-6';
+import * as fase6 from './operacoes-da-fase-6';
 import { enfileirar, marcarProvisoria, type TipoDeOperacao } from './outbox';
 import { uuidV7 } from './uuid';
 
@@ -27,7 +32,8 @@ export type CodigoDaOperacao =
   | 'MALETA_NAO_ENCONTRADA'
   | 'PRAZO_ESGOTADO'
   | 'RELOGIO_ERRADO'
-  | 'COMPUTADOR_DESLIGADO';
+  | 'COMPUTADOR_DESLIGADO'
+  | CodigoDaFase6;
 
 /** Textos do glossário (parte "Motor de envio do Corona Vendas", tarefa 5.6). */
 export const MENSAGENS_DAS_OPERACOES: Readonly<Record<CodigoDaOperacao, string>> = Object.freeze({
@@ -50,6 +56,8 @@ export const MENSAGENS_DAS_OPERACOES: Readonly<Record<CodigoDaOperacao, string>>
   RELOGIO_ERRADO: textoDeGravacaoBloqueada('RELOGIO'),
   // Computador trocado ou bloqueado pela dona, enquanto envia e antes de apagar (issue #127): o texto do glossário.
   COMPUTADOR_DESLIGADO: 'Este computador não pode mais registrar vendas. Fale com a dona.',
+  // Devolução, troca e crédito (tarefa 6.8): os textos do servidor.
+  ...MENSAGENS_DA_FASE_6,
 });
 
 export interface ClienteJaCadastrado {
@@ -63,11 +71,14 @@ export class ErroDaOperacao extends Error {
   constructor(
     readonly codigo: CodigoDaOperacao,
     readonly clienteExistente?: ClienteJaCadastrado,
+    /** O texto com o detalhe (quantas peças, o saldo do crédito), quando o servidor também o dá. */
+    detalhe?: string,
   ) {
     super(
-      codigo === 'CLIENTE_JA_CADASTRADO' && clienteExistente
-        ? `Este cliente já está cadastrado: ${clienteExistente.nome}.`
-        : MENSAGENS_DAS_OPERACOES[codigo],
+      detalhe ??
+        (codigo === 'CLIENTE_JA_CADASTRADO' && clienteExistente
+          ? `Este cliente já está cadastrado: ${clienteExistente.nome}.`
+          : MENSAGENS_DAS_OPERACOES[codigo]),
     );
     this.name = 'ErroDaOperacao';
   }
@@ -158,6 +169,8 @@ export class OperacoesLocais {
         pago += valor;
       }
       if (pago > total) throw new ErroDaOperacao('PAGO_PASSA_DO_TOTAL');
+      // Crédito do cliente (tarefa 6.8): do mesmo cliente, em aberto, com saldo, uma vez só na venda.
+      fase6.conferirPagamentosEmCredito(db, venda.clienteId, venda.pagamentos);
 
       const vendidaEm = agora.toISOString();
       const dados = JSON.stringify({
@@ -169,10 +182,12 @@ export class OperacoesLocais {
           quantidade: l.item.quantidade,
           desconto: textoDeCentavos(l.desconto),
         })),
+        // O `creditoId` só no pagamento em crédito: a venda sem crédito continua com os mesmos bytes (tarefa 6.8).
         pagamentos: venda.pagamentos.map((p) => ({
           id: p.id,
           valor: textoDeCentavos(exigirCentavos(p.valor)),
           forma: p.forma,
+          ...(p.forma === 'CREDITO' ? { creditoId: p.creditoId } : {}),
         })),
         totalConferido: textoDeCentavos(total),
         vendidaEm,
@@ -210,7 +225,17 @@ export class OperacoesLocais {
           forma: p.forma,
           valor: textoDeCentavos(exigirCentavos(p.valor)),
           pago_em: vendidaEm,
+          ...(p.forma === 'CREDITO' ? { credito_id: p.creditoId ?? null } : {}),
         });
+        if (p.forma === 'CREDITO' && p.creditoId)
+          inserir(db, 'usos_credito', uuidV7(agora), venda.id, {
+            credito_id: p.creditoId,
+            tipo: 'USO',
+            venda_id: venda.id,
+            pagamento_id: p.id,
+            valor: textoDeCentavos(exigirCentavos(p.valor)),
+            usado_em: vendidaEm,
+          });
       }
       enfileirar(db, { operacaoId: venda.id, tipo: 'VENDA', dados, agora });
       return { operacaoId: venda.id, total: textoDeCentavos(total) };
@@ -221,9 +246,14 @@ export class OperacoesLocais {
   estornar(estorno: { id: string; vendaId: string; motivo: string }): { operacaoId: string } {
     return this.executar((db, agora) => {
       const venda = db
-        .prepare('SELECT status, remessa_id FROM vendas WHERE id = ? AND deleted_at IS NULL')
-        .get(estorno.vendaId) as { status: string; remessa_id: string } | undefined;
+        .prepare(
+          'SELECT status, remessa_id, troca_id FROM vendas WHERE id = ? AND deleted_at IS NULL',
+        )
+        .get(estorno.vendaId) as
+        { status: string; remessa_id: string; troca_id: string | null } | undefined;
       if (!venda) throw new ErroDaOperacao('VENDA_NAO_ENCONTRADA');
+      // A venda nova de uma troca só se desfaz pelo "Cancelar troca" (tarefa 6.8, como o servidor).
+      if (venda.troca_id) throw new ErroDaOperacao('VENDA_DE_TROCA');
       const jaPedido = db
         .prepare(
           `SELECT 1 FROM outbox WHERE tipo = 'ESTORNO_VENDA' AND situacao IN ('AGUARDANDO', 'ENVIADO')
@@ -231,6 +261,8 @@ export class OperacoesLocais {
         )
         .get(estorno.vendaId);
       if (venda.status !== 'CONCLUIDA' || jaPedido) throw new ErroDaOperacao('VENDA_JA_ESTORNADA');
+      if (fase6.temDevolucaoAtiva(db, estorno.vendaId))
+        throw new ErroDaOperacao('VENDA_COM_DEVOLUCAO');
 
       const estornadoEm = agora.toISOString();
       const dados = JSON.stringify({
@@ -257,18 +289,28 @@ export class OperacoesLocais {
       }
       const pagos = db
         .prepare(
-          `SELECT forma, valor FROM pagamentos_cliente
+          `SELECT id, forma, valor, credito_id FROM pagamentos_cliente
             WHERE venda_id = ? AND tipo = 'PAGAMENTO' AND deleted_at IS NULL ORDER BY pago_em, id`,
         )
-        .all(estorno.vendaId) as { forma: FormaDePagamento; valor: string }[];
+        .all(estorno.vendaId) as {
+        id: string;
+        forma: string;
+        valor: string;
+        credito_id: string | null;
+      }[];
       for (const p of pagos) {
-        inserir(db, 'pagamentos_cliente', uuidV7(agora), estorno.id, {
+        const reembolso = uuidV7(agora);
+        inserir(db, 'pagamentos_cliente', reembolso, estorno.id, {
           venda_id: estorno.vendaId,
           tipo: 'REEMBOLSO',
           forma: p.forma,
           valor: textoDeCentavos(-exigirCentavos(p.valor)),
           pago_em: estornadoEm,
+          ...(p.credito_id ? { credito_id: p.credito_id } : {}),
         });
+        // O pago em crédito volta para o crédito (o uso é estornado), como no servidor.
+        if (p.credito_id)
+          fase6.estornarUsoDoCredito(db, agora, estorno.id, p.id, reembolso, estornadoEm);
       }
       enfileirar(db, { operacaoId: estorno.id, tipo: 'ESTORNO_VENDA', dados, agora });
       return { operacaoId: estorno.id };
@@ -339,6 +381,31 @@ export class OperacoesLocais {
     });
   }
 
+  // --- devolução, troca e crédito (tarefa 6.8): as regras moram em `operacoes-da-fase-6.ts` ---
+
+  /** Devolução do cliente sem internet: a devolução, as peças, o movimento da maleta e o reembolso, provisórios. */
+  devolver(d: DevolucaoParaEnviar): { operacaoId: string } {
+    return this.executar((db, agora) => fase6.registrarDevolucao(db, agora, d));
+  }
+
+  /** Pedido de autorização à dona (devolução fora do prazo). */
+  pedirAutorizacao(p: PedidoDeAutorizacaoParaEnviar): { operacaoId: string } {
+    return this.executar((db, agora) => fase6.registrarPedido(db, agora, p));
+  }
+
+  /** Troca: a devolução de A, o crédito, a venda nova B e a troca, numa transação só. */
+  trocar(t: TrocaParaEnviar): { operacaoId: string } {
+    return this.executar((db, agora) => fase6.registrarTroca(db, agora, t));
+  }
+
+  cancelarDevolucao(c: CancelamentoParaEnviar & { devolucaoId: string }): { operacaoId: string } {
+    return this.executar((db, agora) => fase6.cancelarDevolucao(db, agora, c));
+  }
+
+  cancelarTroca(c: CancelamentoParaEnviar & { trocaId: string }): { operacaoId: string } {
+    return this.executar((db, agora) => fase6.cancelarTroca(db, agora, c));
+  }
+
   /** Conferência da maleta sem internet. O esperado de cada peça é o saldo que o computador conhece (prévia). */
   conferir(c: { id: string; remessaId: string; itens: ContagemDaPeca[] }): { operacaoId: string } {
     return this.executar((db, agora) => {
@@ -391,7 +458,7 @@ export function saldoDaPeca(db: BancoAberto, remessaId: string, produtoId: strin
   return r.saldo;
 }
 
-function limiteDeDesconto(db: BancoAberto): number | null {
+export function limiteDeDesconto(db: BancoAberto): number | null {
   const texto = lerEstado(db, CHAVES.parametros);
   if (!texto) return null;
   try {
@@ -432,7 +499,8 @@ function conferirCpfLivre(db: BancoAberto, cpf: string, proprioId: string): void
   });
 }
 
-function inserir(
+/** Grava uma linha PROVISÓRIA da operação (e a marca para desfazer ou limpar depois). */
+export function inserir(
   db: BancoAberto,
   tabela: string,
   id: string,
