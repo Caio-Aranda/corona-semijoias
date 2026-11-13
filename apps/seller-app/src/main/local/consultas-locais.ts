@@ -646,7 +646,7 @@ export class ConsultasLocais {
       db
         .prepare(
           `SELECT id, tipo, forma, valor, pago_em, devolucao_id FROM pagamentos_cliente
-            WHERE venda_id = ? AND deleted_at IS NULL ORDER BY pago_em, id`,
+            WHERE venda_id = ? AND deleted_at IS NULL ORDER BY pago_em, rowid`,
         )
         .all(l.id) as {
         id: string;
