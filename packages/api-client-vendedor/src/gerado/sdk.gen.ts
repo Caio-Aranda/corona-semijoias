@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AcharPecaDaMinhaMaletaData, AcharPecaDaMinhaMaletaResponses, AvisarDiferencaNaConferenciaData, AvisarDiferencaNaConferenciaResponses, BaixarFotoDaMinhaMaletaData, BaixarFotoDaMinhaMaletaResponses, BuscarPecaDaMinhaMaletaData, BuscarPecaDaMinhaMaletaResponses, CadastrarMeuClienteData, CadastrarMeuClienteResponses, CancelarDevolucaoDoVendedorData, CancelarDevolucaoDoVendedorResponses, ConferirDadosData, ConferirDadosResponses, ConferirMinhaMaletaData, ConferirMinhaMaletaResponses, DevolverDoClienteData, DevolverDoClienteResponses, EntrarData, EntrarResponses, EnviarOperacoesData, EnviarOperacoesResponses, EstornarVendaDoVendedorData, EstornarVendaDoVendedorResponses, EuData, EuResponses, GuardarEmQuarentenaData, GuardarEmQuarentenaResponses, ListarAutorizacoesDoVendedorData, ListarAutorizacoesDoVendedorResponses, ListarDevolucoesDoVendedorData, ListarDevolucoesDoVendedorResponses, ListarMeusClientesData, ListarMeusClientesResponses, ListarMinhasMaletasData, ListarMinhasMaletasResponses, ListarVendasDoVendedorData, ListarVendasDoVendedorResponses, PedirAutorizacaoData, PedirAutorizacaoResponses, ReceberDadosData, ReceberDadosResponses, RelatorioDeMeusRecebimentosData, RelatorioDeMeusRecebimentosResponses, RelatorioDeMinhasVendasData, RelatorioDeMinhasVendasResponses, RelatorioDeValoresAReceberData, RelatorioDeValoresAReceberResponses, RenovarData, RenovarResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SoVendedorData, SoVendedorResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarDoVendedorData, ValidarDoVendedorResponses, ValorDoVendedorData, ValorDoVendedorResponses, VendasComAPecaData, VendasComAPecaResponses, VenderNaMaletaData, VenderNaMaletaResponses, VerAutorizacaoDoVendedorData, VerAutorizacaoDoVendedorResponses, VerConferenciaDaMinhaMaletaData, VerConferenciaDaMinhaMaletaResponses, VerCotacaoDeHojeData, VerCotacaoDeHojeResponses, VerDevolucaoDoVendedorData, VerDevolucaoDoVendedorResponses, VerMeuClienteData, VerMeuClienteResponses, VerMinhaMaletaData, VerMinhaMaletaResponses, VerVendaDoVendedorData, VerVendaDoVendedorResponses } from './types.gen';
+import type { AcharPecaDaMinhaMaletaData, AcharPecaDaMinhaMaletaResponses, AvisarDiferencaNaConferenciaData, AvisarDiferencaNaConferenciaResponses, BaixarFotoDaMinhaMaletaData, BaixarFotoDaMinhaMaletaResponses, BuscarPecaDaMinhaMaletaData, BuscarPecaDaMinhaMaletaResponses, CadastrarMeuClienteData, CadastrarMeuClienteResponses, CancelarDevolucaoDoVendedorData, CancelarDevolucaoDoVendedorResponses, CancelarTrocaDoVendedorData, CancelarTrocaDoVendedorResponses, ConferirDadosData, ConferirDadosResponses, ConferirMinhaMaletaData, ConferirMinhaMaletaResponses, DevolverDoClienteData, DevolverDoClienteResponses, EntrarData, EntrarResponses, EnviarOperacoesData, EnviarOperacoesResponses, EstornarVendaDoVendedorData, EstornarVendaDoVendedorResponses, EuData, EuResponses, GuardarEmQuarentenaData, GuardarEmQuarentenaResponses, ListarAutorizacoesDoVendedorData, ListarAutorizacoesDoVendedorResponses, ListarCreditosDoVendedorData, ListarCreditosDoVendedorResponses, ListarDevolucoesDoVendedorData, ListarDevolucoesDoVendedorResponses, ListarMeusClientesData, ListarMeusClientesResponses, ListarMinhasMaletasData, ListarMinhasMaletasResponses, ListarTrocasDoVendedorData, ListarTrocasDoVendedorResponses, ListarVendasDoVendedorData, ListarVendasDoVendedorResponses, PedirAutorizacaoData, PedirAutorizacaoResponses, ReceberDadosData, ReceberDadosResponses, RegistrarTrocaData, RegistrarTrocaResponses, RelatorioDeMeusRecebimentosData, RelatorioDeMeusRecebimentosResponses, RelatorioDeMinhasVendasData, RelatorioDeMinhasVendasResponses, RelatorioDeValoresAReceberData, RelatorioDeValoresAReceberResponses, RenovarData, RenovarResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SoVendedorData, SoVendedorResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarDoVendedorData, ValidarDoVendedorResponses, ValorDoVendedorData, ValorDoVendedorResponses, VendasComAPecaData, VendasComAPecaResponses, VenderNaMaletaData, VenderNaMaletaResponses, VerAutorizacaoDoVendedorData, VerAutorizacaoDoVendedorResponses, VerConferenciaDaMinhaMaletaData, VerConferenciaDaMinhaMaletaResponses, VerCotacaoDeHojeData, VerCotacaoDeHojeResponses, VerCreditoDoVendedorData, VerCreditoDoVendedorResponses, VerDevolucaoDoVendedorData, VerDevolucaoDoVendedorResponses, VerMeuClienteData, VerMeuClienteResponses, VerMinhaMaletaData, VerMinhaMaletaResponses, VerTrocaDoVendedorData, VerTrocaDoVendedorResponses, VerVendaDoVendedorData, VerVendaDoVendedorResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -171,6 +171,26 @@ export const verMeuCliente = <ThrowOnError extends boolean = false>(options: Opt
 export const verCotacaoDeHoje = <ThrowOnError extends boolean = false>(options?: Options<VerCotacaoDeHojeData, ThrowOnError>): RequestResult<VerCotacaoDeHojeResponses, unknown, ThrowOnError> => (options?.client ?? client).get<VerCotacaoDeHojeResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/vendedor/cotacao',
+    ...options
+});
+
+/**
+ * Créditos dos meus clientes
+ *
+ * Só os créditos do vendedor logado, do mais novo para o mais antigo, com saldo, origem e usos. Filtros opcionais por cliente e situação (ABERTO, UTILIZADO ou CANCELADO).
+ */
+export const listarCreditosDoVendedor = <ThrowOnError extends boolean = false>(options?: Options<ListarCreditosDoVendedorData, ThrowOnError>): RequestResult<ListarCreditosDoVendedorResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ListarCreditosDoVendedorResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/creditos',
+    ...options
+});
+
+/**
+ * Ver um crédito de cliente
+ */
+export const verCreditoDoVendedor = <ThrowOnError extends boolean = false>(options: Options<VerCreditoDoVendedorData, ThrowOnError>): RequestResult<VerCreditoDoVendedorResponses, unknown, ThrowOnError> => (options.client ?? client).get<VerCreditoDoVendedorResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/creditos/{id}',
     ...options
 });
 
@@ -428,6 +448,56 @@ export const validarDoVendedor = <ThrowOnError extends boolean = false>(options:
 });
 
 /**
+ * Minhas trocas
+ *
+ * Só as trocas do vendedor logado, da mais nova para a mais antiga. Filtros opcionais por dia (de e até, no horário de Brasília) e situação (ATIVA ou CANCELADA).
+ */
+export const listarTrocasDoVendedor = <ThrowOnError extends boolean = false>(options?: Options<ListarTrocasDoVendedorData, ThrowOnError>): RequestResult<ListarTrocasDoVendedorResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ListarTrocasDoVendedorResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/trocas',
+    ...options
+});
+
+/**
+ * Registrar uma troca
+ *
+ * O cliente devolve peças de uma venda (A) e leva outras (B), numa operação só: a devolução de A e a venda nova de B. O valor de A vira crédito do cliente, que paga B na hora; o resto de B vem nos pagamentos (à vista, a prazo ou com outro crédito do cliente), ou, se B vale menos, a sobra fica de crédito. O servidor calcula tudo: o app nunca manda valor de A, diferença nem crédito. Prazo e autorização como na devolução; fora do limite da semana e do valor de aprovação. Qualquer recusa desfaz tudo. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409.
+ */
+export const registrarTroca = <ThrowOnError extends boolean = false>(options: Options<RegistrarTrocaData, ThrowOnError>): RequestResult<RegistrarTrocaResponses, unknown, ThrowOnError> => (options.client ?? client).post<RegistrarTrocaResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/trocas',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Ver uma das minhas trocas
+ */
+export const verTrocaDoVendedor = <ThrowOnError extends boolean = false>(options: Options<VerTrocaDoVendedorData, ThrowOnError>): RequestResult<VerTrocaDoVendedorResponses, unknown, ThrowOnError> => (options.client ?? client).get<VerTrocaDoVendedorResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/trocas/{id}',
+    ...options
+});
+
+/**
+ * Cancelar a própria troca (no mesmo dia)
+ *
+ * Desfaz a troca com registros de sinal oposto: B volta à maleta, A sai de novo, o crédito é cancelado e o que foi pago da diferença volta. Só no dia da troca; depois, só a dona. Recusado se o crédito que sobrou já foi usado ou se a peça A já foi vendida de novo. Mesmo id devolve 200.
+ */
+export const cancelarTrocaDoVendedor = <ThrowOnError extends boolean = false>(options: Options<CancelarTrocaDoVendedorData, ThrowOnError>): RequestResult<CancelarTrocaDoVendedorResponses, unknown, ThrowOnError> => (options.client ?? client).post<CancelarTrocaDoVendedorResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/trocas/{id}/cancelar',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * Minhas vendas
  *
  * Só as vendas do vendedor logado, da mais nova para a mais antiga. Filtros opcionais por dia (de e até, no horário de Brasília), cliente e situação (CONCLUIDA ou ESTORNADA).
@@ -441,7 +511,7 @@ export const listarVendasDoVendedor = <ThrowOnError extends boolean = false>(opt
 /**
  * Registrar uma venda da maleta
  *
- * Baixa as peças da maleta do vendedor pelo preço congelado da remessa. O servidor recalcula subtotal, desconto e total; o desconto respeita o limite da dona. Pagamentos opcionais (venda a prazo grava só o que foi pago na hora). Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409.
+ * Baixa as peças da maleta do vendedor pelo preço congelado da remessa. O servidor recalcula subtotal, desconto e total; o desconto respeita o limite da dona. Pagamentos opcionais (venda a prazo grava só o que foi pago na hora). A forma CREDITO usa um crédito do cliente da venda (creditoId), do próprio vendedor, até o saldo. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409.
  */
 export const venderNaMaleta = <ThrowOnError extends boolean = false>(options: Options<VenderNaMaletaData, ThrowOnError>): RequestResult<VenderNaMaletaResponses, unknown, ThrowOnError> => (options.client ?? client).post<VenderNaMaletaResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],

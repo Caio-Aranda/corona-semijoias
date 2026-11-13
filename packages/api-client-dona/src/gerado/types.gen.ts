@@ -290,6 +290,27 @@ export type CotacaoDoDia = {
     linha?: string;
 };
 
+export type CreditoDoCliente = {
+    canceladoEm?: string;
+    clienteId?: string;
+    clienteNome?: string;
+    cotacao?: ConsultasDeVendasCotacao;
+    creditoOrigemId?: string;
+    devolucaoId?: string;
+    geradoEm?: string;
+    id?: string;
+    origem?: string;
+    saldo?: string;
+    saldoDolar?: string;
+    saldoGuarani?: string;
+    situacao?: string;
+    trocaId?: string;
+    usos?: Array<UsoDoCredito>;
+    valor?: string;
+    valorUtilizado?: string;
+    vendedorId?: string;
+};
+
 export type DadosDoUsuario = {
     id?: string;
     login?: string;
@@ -323,6 +344,7 @@ export type Devolucao = {
     valorDevolvido?: string;
     valorDevolvidoDolar?: string;
     valorDevolvidoGuarani?: string;
+    valorEmCredito?: string;
     valorReembolsado?: string;
     vendaId?: string;
     vendedorId?: string;
@@ -946,6 +968,7 @@ export type ObservacaoDoVendedorDados = {
 };
 
 export type PagamentoLido = {
+    creditoId?: string;
     em?: string;
     forma?: string;
     id?: string;
@@ -1072,6 +1095,14 @@ export type PaginaVendedoresDaDonaControllerResposta = {
     total?: number;
 };
 
+export type PecaDaTroca = {
+    destino?: string;
+    estado?: string;
+    produto?: ConsultasDeVendasPeca;
+    quantidade?: number;
+    valor?: string;
+};
+
 export type PedidoComMotivo = {
     motivo?: string;
 };
@@ -1098,6 +1129,11 @@ export type PedidoDeBloqueio = {
 };
 
 export type PedidoDeCancelamento = {
+    id?: string;
+    motivo?: string;
+};
+
+export type PedidoDeCancelamentoDaTroca = {
     id?: string;
     motivo?: string;
 };
@@ -1209,6 +1245,11 @@ export type PedidoDeRevisao = {
 
 export type PedidoDeSituacao = {
     version?: number;
+};
+
+export type PedidoDeTransferencia = {
+    id?: string;
+    vendedorId?: string;
 };
 
 export type PedidoDeTrocaDeSenha = {
@@ -1875,6 +1916,40 @@ export type TrabalhoDoVendedorDados = {
     version?: number;
 };
 
+export type TrocaLida = {
+    canceladaEm?: string;
+    clienteId?: string;
+    clienteNome?: string;
+    cotacao?: ConsultasDeVendasCotacao;
+    creditoEmAberto?: string;
+    creditoId?: string;
+    devolucaoId?: string;
+    diferenca?: string;
+    diferencaDolar?: string;
+    diferencaGuarani?: string;
+    horaAjustada?: boolean;
+    id?: string;
+    motivoCancelamento?: string;
+    sairam?: Array<PecaDaTroca>;
+    situacao?: string;
+    totalDaVendaNova?: string;
+    trocadaEm?: string;
+    valorDevolvido?: string;
+    vendaNovaId?: string;
+    vendaOrigemId?: string;
+    vendedorId?: string;
+    voltaram?: Array<PecaDaTroca>;
+};
+
+export type UsoDoCredito = {
+    creditoDestinoId?: string;
+    em?: string;
+    id?: string;
+    tipo?: string;
+    valor?: string;
+    vendaId?: string;
+};
+
 export type UsuariosDaDonaControllerResposta = {
     ativo?: boolean;
     id?: string;
@@ -1919,6 +1994,7 @@ export type Venda = {
     total?: string;
     totalDolar?: string;
     totalGuarani?: string;
+    trocaId?: string;
     vendedorId?: string;
     vendidaEm?: string;
 };
@@ -2642,6 +2718,62 @@ export type HojeResponses = {
 };
 
 export type HojeResponse = HojeResponses[keyof HojeResponses];
+
+export type ListarCreditosData = {
+    body?: never;
+    path?: never;
+    query?: {
+        clienteId?: string;
+        vendedorId?: string;
+        situacao?: string;
+    };
+    url: '/api/dona/creditos';
+};
+
+export type ListarCreditosResponses = {
+    /**
+     * OK
+     */
+    200: Array<CreditoDoCliente>;
+};
+
+export type ListarCreditosResponse = ListarCreditosResponses[keyof ListarCreditosResponses];
+
+export type VerCreditoData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/creditos/{id}';
+};
+
+export type VerCreditoResponses = {
+    /**
+     * OK
+     */
+    200: CreditoDoCliente;
+};
+
+export type VerCreditoResponse = VerCreditoResponses[keyof VerCreditoResponses];
+
+export type TransferirCreditoData = {
+    body: PedidoDeTransferencia;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/creditos/{id}/transferir';
+};
+
+export type TransferirCreditoResponses = {
+    /**
+     * OK
+     */
+    200: CreditoDoCliente;
+};
+
+export type TransferirCreditoResponse = TransferirCreditoResponses[keyof TransferirCreditoResponses];
 
 export type ListarDevolucoesData = {
     body?: never;
@@ -4916,6 +5048,63 @@ export type ValidarResponses = {
 };
 
 export type ValidarResponse = ValidarResponses[keyof ValidarResponses];
+
+export type ListarTrocasData = {
+    body?: never;
+    path?: never;
+    query?: {
+        vendedorId?: string;
+        de?: string;
+        ate?: string;
+        situacao?: string;
+    };
+    url: '/api/dona/trocas';
+};
+
+export type ListarTrocasResponses = {
+    /**
+     * OK
+     */
+    200: Array<TrocaLida>;
+};
+
+export type ListarTrocasResponse = ListarTrocasResponses[keyof ListarTrocasResponses];
+
+export type VerTrocaData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/trocas/{id}';
+};
+
+export type VerTrocaResponses = {
+    /**
+     * OK
+     */
+    200: TrocaLida;
+};
+
+export type VerTrocaResponse = VerTrocaResponses[keyof VerTrocaResponses];
+
+export type CancelarTrocaData = {
+    body: PedidoDeCancelamentoDaTroca;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/trocas/{id}/cancelar';
+};
+
+export type CancelarTrocaResponses = {
+    /**
+     * OK
+     */
+    200: TrocaLida;
+};
+
+export type CancelarTrocaResponse = CancelarTrocaResponses[keyof CancelarTrocaResponses];
 
 export type Listar2Data = {
     body?: never;

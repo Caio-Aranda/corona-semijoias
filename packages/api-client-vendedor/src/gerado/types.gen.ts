@@ -124,6 +124,27 @@ export type CotacaoDoVendedor = {
     guarani?: string;
 };
 
+export type CreditoDoCliente = {
+    canceladoEm?: string;
+    clienteId?: string;
+    clienteNome?: string;
+    cotacao?: ConsultasDeVendasCotacao;
+    creditoOrigemId?: string;
+    devolucaoId?: string;
+    geradoEm?: string;
+    id?: string;
+    origem?: string;
+    saldo?: string;
+    saldoDolar?: string;
+    saldoGuarani?: string;
+    situacao?: string;
+    trocaId?: string;
+    usos?: Array<UsoDoCredito>;
+    valor?: string;
+    valorUtilizado?: string;
+    vendedorId?: string;
+};
+
 export type DadosDoUsuario = {
     id?: string;
     login?: string;
@@ -171,9 +192,19 @@ export type Devolucao = {
     valorDevolvido?: string;
     valorDevolvidoDolar?: string;
     valorDevolvidoGuarani?: string;
+    valorEmCredito?: string;
     valorReembolsado?: string;
     vendaId?: string;
     vendedorId?: string;
+};
+
+export type DevolucaoDaTrocaPedida = {
+    autorizacaoId?: string;
+    id?: string;
+    itens?: Array<PecaQueVoltou>;
+    motivo?: string;
+    observacao?: string;
+    vendaId?: string;
 };
 
 export type DiferencasNaConferencia = {
@@ -255,7 +286,15 @@ export type OperacaoEnviada = {
     ultimoContatoServidor?: string;
 };
 
+export type PagamentoDaDiferenca = {
+    creditoId?: string;
+    forma?: string;
+    id?: string;
+    valor?: string;
+};
+
 export type PagamentoLido = {
+    creditoId?: string;
     em?: string;
     forma?: string;
     id?: string;
@@ -271,7 +310,27 @@ export type ParametrosDoVendedor = {
     tempoMaximoOfflineDias?: number;
 };
 
+export type PecaDaTroca = {
+    destino?: string;
+    estado?: string;
+    produto?: ConsultasDeVendasPeca;
+    quantidade?: number;
+    valor?: string;
+};
+
 export type PecaDevolvida = {
+    estado?: string;
+    produtoId?: string;
+    quantidade?: number;
+};
+
+export type PecaQueSaiu = {
+    desconto?: string;
+    produtoId?: string;
+    quantidade?: number;
+};
+
+export type PecaQueVoltou = {
     estado?: string;
     produtoId?: string;
     quantidade?: number;
@@ -301,6 +360,14 @@ export type PedidoDaDevolucao = {
     vendaId?: string;
 };
 
+export type PedidoDaTroca = {
+    creditoId?: string;
+    devolucao?: DevolucaoDaTrocaPedida;
+    id?: string;
+    pagamentoDoCreditoId?: string;
+    venda?: VendaDaTrocaPedida;
+};
+
 export type PedidoDaVenda = {
     clienteId?: string;
     id?: string;
@@ -311,6 +378,11 @@ export type PedidoDaVenda = {
 };
 
 export type PedidoDeCancelamento = {
+    id?: string;
+    motivo?: string;
+};
+
+export type PedidoDeCancelamentoDaTroca = {
     id?: string;
     motivo?: string;
 };
@@ -352,6 +424,7 @@ export type PedidoDeTrocaDeSenha = {
 };
 
 export type PedidoDoPagamento = {
+    creditoId?: string;
     forma?: string;
     id?: string;
     valor?: string;
@@ -457,6 +530,40 @@ export type Totais = {
     totalEmGuarani?: string;
 };
 
+export type TrocaLida = {
+    canceladaEm?: string;
+    clienteId?: string;
+    clienteNome?: string;
+    cotacao?: ConsultasDeVendasCotacao;
+    creditoEmAberto?: string;
+    creditoId?: string;
+    devolucaoId?: string;
+    diferenca?: string;
+    diferencaDolar?: string;
+    diferencaGuarani?: string;
+    horaAjustada?: boolean;
+    id?: string;
+    motivoCancelamento?: string;
+    sairam?: Array<PecaDaTroca>;
+    situacao?: string;
+    totalDaVendaNova?: string;
+    trocadaEm?: string;
+    valorDevolvido?: string;
+    vendaNovaId?: string;
+    vendaOrigemId?: string;
+    vendedorId?: string;
+    voltaram?: Array<PecaDaTroca>;
+};
+
+export type UsoDoCredito = {
+    creditoDestinoId?: string;
+    em?: string;
+    id?: string;
+    tipo?: string;
+    valor?: string;
+    vendaId?: string;
+};
+
 export type ValorDeTeste = {
     valor?: string;
 };
@@ -480,6 +587,7 @@ export type Venda = {
     total?: string;
     totalDolar?: string;
     totalGuarani?: string;
+    trocaId?: string;
     vendedorId?: string;
     vendidaEm?: string;
 };
@@ -494,6 +602,14 @@ export type VendaComAPeca = {
     total?: string;
     vendaId?: string;
     vendidaEm?: string;
+};
+
+export type VendaDaTrocaPedida = {
+    id?: string;
+    itens?: Array<PecaQueSaiu>;
+    pagamentos?: Array<PagamentoDaDiferenca>;
+    remessaId?: string;
+    totalConferido?: string;
 };
 
 export type VendasComAPeca = {
@@ -741,6 +857,43 @@ export type VerCotacaoDeHojeResponses = {
 };
 
 export type VerCotacaoDeHojeResponse = VerCotacaoDeHojeResponses[keyof VerCotacaoDeHojeResponses];
+
+export type ListarCreditosDoVendedorData = {
+    body?: never;
+    path?: never;
+    query?: {
+        clienteId?: string;
+        situacao?: string;
+    };
+    url: '/api/vendedor/creditos';
+};
+
+export type ListarCreditosDoVendedorResponses = {
+    /**
+     * OK
+     */
+    200: Array<CreditoDoCliente>;
+};
+
+export type ListarCreditosDoVendedorResponse = ListarCreditosDoVendedorResponses[keyof ListarCreditosDoVendedorResponses];
+
+export type VerCreditoDoVendedorData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/vendedor/creditos/{id}';
+};
+
+export type VerCreditoDoVendedorResponses = {
+    /**
+     * OK
+     */
+    200: CreditoDoCliente;
+};
+
+export type VerCreditoDoVendedorResponse = VerCreditoDoVendedorResponses[keyof VerCreditoDoVendedorResponses];
 
 export type ListarDevolucoesDoVendedorData = {
     body?: never;
@@ -1133,6 +1286,78 @@ export type ValidarDoVendedorResponses = {
 };
 
 export type ValidarDoVendedorResponse = ValidarDoVendedorResponses[keyof ValidarDoVendedorResponses];
+
+export type ListarTrocasDoVendedorData = {
+    body?: never;
+    path?: never;
+    query?: {
+        de?: string;
+        ate?: string;
+        situacao?: string;
+    };
+    url: '/api/vendedor/trocas';
+};
+
+export type ListarTrocasDoVendedorResponses = {
+    /**
+     * OK
+     */
+    200: Array<TrocaLida>;
+};
+
+export type ListarTrocasDoVendedorResponse = ListarTrocasDoVendedorResponses[keyof ListarTrocasDoVendedorResponses];
+
+export type RegistrarTrocaData = {
+    body: PedidoDaTroca;
+    path?: never;
+    query?: never;
+    url: '/api/vendedor/trocas';
+};
+
+export type RegistrarTrocaResponses = {
+    /**
+     * OK
+     */
+    200: TrocaLida;
+};
+
+export type RegistrarTrocaResponse = RegistrarTrocaResponses[keyof RegistrarTrocaResponses];
+
+export type VerTrocaDoVendedorData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/vendedor/trocas/{id}';
+};
+
+export type VerTrocaDoVendedorResponses = {
+    /**
+     * OK
+     */
+    200: TrocaLida;
+};
+
+export type VerTrocaDoVendedorResponse = VerTrocaDoVendedorResponses[keyof VerTrocaDoVendedorResponses];
+
+export type CancelarTrocaDoVendedorData = {
+    body: PedidoDeCancelamentoDaTroca;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/vendedor/trocas/{id}/cancelar';
+};
+
+export type CancelarTrocaDoVendedorResponses = {
+    /**
+     * OK
+     */
+    200: TrocaLida;
+};
+
+export type CancelarTrocaDoVendedorResponse = CancelarTrocaDoVendedorResponses[keyof CancelarTrocaDoVendedorResponses];
 
 export type ListarVendasDoVendedorData = {
     body?: never;

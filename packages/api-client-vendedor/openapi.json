@@ -392,6 +392,91 @@
         },
         "type" : "object"
       },
+      "CreditoDoCliente" : {
+        "properties" : {
+          "canceladoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "clienteId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "clienteNome" : {
+            "type" : "string"
+          },
+          "cotacao" : {
+            "$ref" : "#/components/schemas/ConsultasDeVendasCotacao"
+          },
+          "creditoOrigemId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "devolucaoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "geradoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "origem" : {
+            "type" : "string"
+          },
+          "saldo" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "saldoDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "saldoGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "situacao" : {
+            "type" : "string"
+          },
+          "trocaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "usos" : {
+            "items" : {
+              "$ref" : "#/components/schemas/UsoDoCredito"
+            },
+            "type" : "array"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorUtilizado" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "DadosDoUsuario" : {
         "properties" : {
           "id" : {
@@ -579,6 +664,12 @@
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           },
+          "valorEmCredito" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
           "valorReembolsado" : {
             "example" : "123.45",
             "format" : "decimal",
@@ -590,6 +681,35 @@
             "type" : "string"
           },
           "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "DevolucaoDaTrocaPedida" : {
+        "properties" : {
+          "autorizacaoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/PecaQueVoltou"
+            },
+            "type" : "array"
+          },
+          "motivo" : {
+            "type" : "string"
+          },
+          "observacao" : {
+            "type" : "string"
+          },
+          "vendaId" : {
             "format" : "uuid",
             "type" : "string"
           }
@@ -822,8 +942,34 @@
         },
         "type" : "object"
       },
+      "PagamentoDaDiferenca" : {
+        "properties" : {
+          "creditoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "forma" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "PagamentoLido" : {
         "properties" : {
+          "creditoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
           "em" : {
             "format" : "date-time",
             "type" : "string"
@@ -871,7 +1017,66 @@
         },
         "type" : "object"
       },
+      "PecaDaTroca" : {
+        "properties" : {
+          "destino" : {
+            "type" : "string"
+          },
+          "estado" : {
+            "type" : "string"
+          },
+          "produto" : {
+            "$ref" : "#/components/schemas/ConsultasDeVendasPeca"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "PecaDevolvida" : {
+        "properties" : {
+          "estado" : {
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PecaQueSaiu" : {
+        "properties" : {
+          "desconto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PecaQueVoltou" : {
         "properties" : {
           "estado" : {
             "type" : "string"
@@ -963,6 +1168,29 @@
         },
         "type" : "object"
       },
+      "PedidoDaTroca" : {
+        "properties" : {
+          "creditoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "devolucao" : {
+            "$ref" : "#/components/schemas/DevolucaoDaTrocaPedida"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "pagamentoDoCreditoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "venda" : {
+            "$ref" : "#/components/schemas/VendaDaTrocaPedida"
+          }
+        },
+        "type" : "object"
+      },
       "PedidoDaVenda" : {
         "properties" : {
           "clienteId" : {
@@ -999,6 +1227,18 @@
         "type" : "object"
       },
       "PedidoDeCancelamento" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "motivo" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "PedidoDeCancelamentoDaTroca" : {
         "properties" : {
           "id" : {
             "format" : "uuid",
@@ -1116,6 +1356,10 @@
       },
       "PedidoDoPagamento" : {
         "properties" : {
+          "creditoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
           "forma" : {
             "type" : "string"
           },
@@ -1443,6 +1687,140 @@
         },
         "type" : "object"
       },
+      "TrocaLida" : {
+        "properties" : {
+          "canceladaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "clienteId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "clienteNome" : {
+            "type" : "string"
+          },
+          "cotacao" : {
+            "$ref" : "#/components/schemas/ConsultasDeVendasCotacao"
+          },
+          "creditoEmAberto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "creditoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "devolucaoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "diferenca" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "diferencaDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "diferencaGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "horaAjustada" : {
+            "type" : "boolean"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "motivoCancelamento" : {
+            "type" : "string"
+          },
+          "sairam" : {
+            "items" : {
+              "$ref" : "#/components/schemas/PecaDaTroca"
+            },
+            "type" : "array"
+          },
+          "situacao" : {
+            "type" : "string"
+          },
+          "totalDaVendaNova" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "trocadaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "valorDevolvido" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendaNovaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "vendaOrigemId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "voltaram" : {
+            "items" : {
+              "$ref" : "#/components/schemas/PecaDaTroca"
+            },
+            "type" : "array"
+          }
+        },
+        "type" : "object"
+      },
+      "UsoDoCredito" : {
+        "properties" : {
+          "creditoDestinoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "em" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "ValorDeTeste" : {
         "properties" : {
           "valor" : {
@@ -1544,6 +1922,10 @@
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           },
+          "trocaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
           "vendedorId" : {
             "format" : "uuid",
             "type" : "string"
@@ -1593,6 +1975,37 @@
           },
           "vendidaEm" : {
             "format" : "date-time",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "VendaDaTrocaPedida" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/PecaQueSaiu"
+            },
+            "type" : "array"
+          },
+          "pagamentos" : {
+            "items" : {
+              "$ref" : "#/components/schemas/PagamentoDaDiferenca"
+            },
+            "type" : "array"
+          },
+          "remessaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "totalConferido" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           }
         },
@@ -2048,6 +2461,79 @@
         } ],
         "summary" : "Cotação do dia",
         "tags" : [ "apoio-do-vendedor-controller" ]
+      }
+    },
+    "/api/vendedor/creditos" : {
+      "get" : {
+        "description" : "Só os créditos do vendedor logado, do mais novo para o mais antigo, com saldo, origem e usos. Filtros opcionais por cliente e situação (ABERTO, UTILIZADO ou CANCELADO).",
+        "operationId" : "listarCreditosDoVendedor",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "clienteId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/CreditoDoCliente"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Créditos dos meus clientes",
+        "tags" : [ "creditos-do-vendedor-controller" ]
+      }
+    },
+    "/api/vendedor/creditos/{id}" : {
+      "get" : {
+        "operationId" : "verCreditoDoVendedor",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CreditoDoCliente"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ver um crédito de cliente",
+        "tags" : [ "creditos-do-vendedor-controller" ]
       }
     },
     "/api/vendedor/devolucoes" : {
@@ -2819,6 +3305,160 @@
         "tags" : [ "rotas-de-teste" ]
       }
     },
+    "/api/vendedor/trocas" : {
+      "get" : {
+        "description" : "Só as trocas do vendedor logado, da mais nova para a mais antiga. Filtros opcionais por dia (de e até, no horário de Brasília) e situação (ATIVA ou CANCELADA).",
+        "operationId" : "listarTrocasDoVendedor",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/TrocaLida"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Minhas trocas",
+        "tags" : [ "trocas-do-vendedor-controller" ]
+      },
+      "post" : {
+        "description" : "O cliente devolve peças de uma venda (A) e leva outras (B), numa operação só: a devolução de A e a venda nova de B. O valor de A vira crédito do cliente, que paga B na hora; o resto de B vem nos pagamentos (à vista, a prazo ou com outro crédito do cliente), ou, se B vale menos, a sobra fica de crédito. O servidor calcula tudo: o app nunca manda valor de A, diferença nem crédito. Prazo e autorização como na devolução; fora do limite da semana e do valor de aprovação. Qualquer recusa desfaz tudo. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409.",
+        "operationId" : "registrarTroca",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDaTroca"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TrocaLida"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Registrar uma troca",
+        "tags" : [ "trocas-do-vendedor-controller" ]
+      }
+    },
+    "/api/vendedor/trocas/{id}" : {
+      "get" : {
+        "operationId" : "verTrocaDoVendedor",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TrocaLida"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ver uma das minhas trocas",
+        "tags" : [ "trocas-do-vendedor-controller" ]
+      }
+    },
+    "/api/vendedor/trocas/{id}/cancelar" : {
+      "post" : {
+        "description" : "Desfaz a troca com registros de sinal oposto: B volta à maleta, A sai de novo, o crédito é cancelado e o que foi pago da diferença volta. Só no dia da troca; depois, só a dona. Recusado se o crédito que sobrou já foi usado ou se a peça A já foi vendida de novo. Mesmo id devolve 200.",
+        "operationId" : "cancelarTrocaDoVendedor",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeCancelamentoDaTroca"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TrocaLida"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Cancelar a própria troca (no mesmo dia)",
+        "tags" : [ "trocas-do-vendedor-controller" ]
+      }
+    },
     "/api/vendedor/vendas" : {
       "get" : {
         "description" : "Só as vendas do vendedor logado, da mais nova para a mais antiga. Filtros opcionais por dia (de e até, no horário de Brasília), cliente e situação (CONCLUIDA ou ESTORNADA).",
@@ -2877,7 +3517,7 @@
         "tags" : [ "vendas-do-vendedor-controller" ]
       },
       "post" : {
-        "description" : "Baixa as peças da maleta do vendedor pelo preço congelado da remessa. O servidor recalcula subtotal, desconto e total; o desconto respeita o limite da dona. Pagamentos opcionais (venda a prazo grava só o que foi pago na hora). Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409.",
+        "description" : "Baixa as peças da maleta do vendedor pelo preço congelado da remessa. O servidor recalcula subtotal, desconto e total; o desconto respeita o limite da dona. Pagamentos opcionais (venda a prazo grava só o que foi pago na hora). A forma CREDITO usa um crédito do cliente da venda (creditoId), do próprio vendedor, até o saldo. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409.",
         "operationId" : "venderNaMaleta",
         "requestBody" : {
           "content" : {
