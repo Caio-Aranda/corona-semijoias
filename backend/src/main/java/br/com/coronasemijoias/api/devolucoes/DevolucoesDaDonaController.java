@@ -2,11 +2,16 @@ package br.com.coronasemijoias.api.devolucoes;
 
 import br.com.coronasemijoias.api.cadastros.Validacoes;
 import br.com.coronasemijoias.api.devolucoes.ConsultasDeDevolucoes.Devolucao;
+import br.com.coronasemijoias.api.devolucoes.ConsultasDeDevolucoes.VendasComAPeca;
+import br.com.coronasemijoias.api.devolucoes.DevolucoesDoVendedorController.PecaDevolvida;
 import br.com.coronasemijoias.api.devolucoes.DevolucoesDoVendedorController.PedidoDeCancelamento;
+import br.com.coronasemijoias.api.devolucoes.ServicoDeDevolucoes.PecaDoPedido;
+import br.com.coronasemijoias.api.devolucoes.ServicoDeDevolucoes.PedidoDaDevolucaoDoCliente;
 import br.com.coronasemijoias.api.devolucoes.ServicoDeDevolucoes.Resultado;
 import br.com.coronasemijoias.api.seguranca.ExigePerfil;
 import br.com.coronasemijoias.api.seguranca.UsuarioAutenticado;
 import io.swagger.v3.oas.annotations.Operation;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -22,8 +27,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * As devoluções na mão da dona: cancelar qualquer uma, sem limite de prazo (tarefa 6.3; ADR-0014, item 11), e revisar as
- * que estão para revisão, com Manter ou Não aceitar (tarefa 6.4; ADR-0014, item 5). Só ADMIN. As telas chegam com a
- * tarefa 6.9.
+ * que estão para revisão, com Manter ou Não aceitar (tarefa 6.4; ADR-0014, item 5). A dona também registra a devolução
+ * pelo Corona Gestão (tarefa 6.9; ADR-0014, item 13). Só ADMIN.
  */
 @RestController
 @RequestMapping("/api/dona/devolucoes")
@@ -39,6 +44,43 @@ public class DevolucoesDaDonaController {
     DevolucoesDaDonaController(ServicoDeDevolucoes servico, ConsultasDeDevolucoes consultas) {
         this.servico = servico;
         this.consultas = consultas;
+    }
+
+    /** {@code autorizacaoId} não existe aqui: a dona decide por si (tarefa 6.9). */
+    public record PedidoDaDevolucaoDaDona(UUID id, UUID vendaId, String motivo, String observacao, String formaReembolso,
+            List<PecaDevolvida> itens, BigDecimal valorConferido) {
+    }
+
+    @Operation(operationId = "devolverPelaDona", summary = "Registrar a devolução de um cliente pela dona",
+            description = "A dona registra a devolução de uma venda à vista de qualquer vendedor, dentro da garantia. A peça vai "
+                    + "sempre para a loja (nada entra na maleta do vendedor) e o dinheiro volta na forma escolhida. O limite da "
+                    + "semana e o valor de aprovação não valem para a dona. Fora do prazo, venda a prazo, maleta em acerto ou "
+                    + "acima do vendido: 409. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409.")
+    @PostMapping
+    public ResponseEntity<Devolucao> registrar(@RequestBody PedidoDaDevolucaoDaDona pedido,
+            @AuthenticationPrincipal UsuarioAutenticado quem) {
+        if (pedido == null) {
+            throw Validacoes.recusar("devolucao", "Informe a devolução.");
+        }
+        PedidoDaDevolucaoDoCliente p = new PedidoDaDevolucaoDoCliente(pedido.id(), pedido.vendaId(), pedido.motivo(),
+                pedido.observacao(), pedido.formaReembolso(), pedido.itens() == null ? null : pedido.itens().stream()
+                        .map(i -> i == null ? null : new PecaDoPedido(i.produtoId(), i.quantidade(), i.estado())).toList(),
+                pedido.valorConferido());
+        Resultado r = servico.devolverPelaDona(quem.id(), p);
+        return ResponseEntity.status(r.jaExistia() ? HttpStatus.OK : HttpStatus.CREATED).body(consultas.ver(r.devolucaoId(), null));
+    }
+
+    @Operation(operationId = "vendasComAPecaDaDona", summary = "Vendas com a peça lida (todos os vendedores)",
+            description = "Pelo código lido ou pelo produto: as vendas concluídas de todos os vendedores com a peça, da mais nova "
+                    + "para a mais antiga (no máximo 20), com o que ainda pode voltar de cada peça e até que dia vale a "
+                    + "garantia. Venda a prazo vem marcada.")
+    @GetMapping("/vendas-com-a-peca")
+    public VendasComAPeca vendasComAPeca(@RequestParam(required = false) String codigo,
+            @RequestParam(required = false) UUID produtoId) {
+        if (produtoId == null && Validacoes.limpar(codigo) == null) {
+            throw Validacoes.recusar("codigo", "Leia o código da peça ou escolha a peça.");
+        }
+        return consultas.vendasComAPeca(null, codigo, produtoId);
     }
 
     @Operation(operationId = "listarDevolucoes", summary = "Devoluções",
