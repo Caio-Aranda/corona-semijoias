@@ -573,12 +573,13 @@ class AntifraudeDaDevolucaoTest extends ApoioDasDevolucoes {
     // --- 17. registro de tabelas e pull ---
 
     @Test
-    void asTabelasNovasEstaoNoRegistroMasNadaDelasVaiAoVendedorAinda() throws Exception {
+    void asTabelasNovasVaoAoVendedorDesdeATarefa67() throws Exception {
         RegistroDeTabelas registro = RegistroDeTabelas.daAplicacao();
         for (String nome : List.of("autorizacoes_excecao", "itens_autorizacao")) {
             TabelaSincronizavel t = registro.sincronizavel(nome).orElseThrow();
             assertThat(t.regra().declarada()).as(nome).isTrue();
-            assertThat(t.regra().condicao()).as(nome).isEqualTo("FALSE");
+            // Desde a tarefa 6.7, o vendedor recebe as dele (filtro do vendedor; PullDaFase6Test).
+            assertThat(t.regra().condicao()).as(nome).isNotEqualTo("FALSE");
         }
         assertThat(registro.sincronizavel("itens_autorizacao").orElseThrow().imutavel()).isTrue();
         assertThat(registro.sincronizavel("autorizacoes_excecao").orElseThrow().colunas())
@@ -587,7 +588,7 @@ class AntifraudeDaDevolucaoTest extends ApoioDasDevolucoes {
                 .contains("revisao_fora_do_prazo", "revisao_acima_do_limite_semanal", "revisao_acima_do_valor_de_aprovacao",
                         "revisao_autorizacao_invalida", "revisao_reembolso_maior_que_pago", "revisada_em", "observacao_revisao")
                 .doesNotContain("revisada_por");
-        assertThat(registro.sincronizavel("devolucoes").orElseThrow().regra().condicao()).isEqualTo("FALSE");
+        assertThat(registro.sincronizavel("devolucoes").orElseThrow().regra().condicao()).isNotEqualTo("FALSE");
 
         UsuarioDeTeste v = usuarios.criarVendedor();
         UUID anel = peca("30.00", 10);
@@ -605,7 +606,9 @@ class AntifraudeDaDevolucaoTest extends ApoioDasDevolucoes {
                 break;
             }
         }
-        assertThat(recebidas).noneMatch(l -> l.tabela().equals("autorizacoes_excecao") || l.tabela().equals("itens_autorizacao"));
+        assertThat(recebidas).filteredOn(l -> l.tabela().equals("autorizacoes_excecao")).isNotEmpty()
+                .allSatisfy(l -> assertThat(l.colunas()).doesNotContainKeys("pedida_por", "decidida_por"));
+        assertThat(recebidas).filteredOn(l -> l.tabela().equals("itens_autorizacao")).isNotEmpty();
         assertThat(recebidas).filteredOn(l -> l.tabela().equals("vendas")).isNotEmpty();
     }
 }

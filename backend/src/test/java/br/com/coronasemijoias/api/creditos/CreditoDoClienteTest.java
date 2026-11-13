@@ -464,17 +464,21 @@ class CreditoDoClienteTest extends ApoioDasTrocas {
     // --- 22. registro de tabelas, pull e envio ---
 
     @Test
-    void asTabelasNovasEstaoNoRegistroMasNadaDelasVaiAoVendedorAinda() throws Exception {
+    void asTabelasNovasVaoAoVendedorDesdeATarefa67() throws Exception {
         RegistroDeTabelas registro = RegistroDeTabelas.daAplicacao();
         for (String nome : List.of("trocas", "creditos_cliente", "usos_credito")) {
             TabelaSincronizavel t = registro.sincronizavel(nome).orElseThrow();
             assertThat(t.regra().declarada()).as(nome).isTrue();
-            assertThat(t.regra().condicao()).as(nome).isEqualTo("FALSE");
+            // Desde a tarefa 6.7, o vendedor recebe as dele (filtro do vendedor; PullDaFase6Test).
+            assertThat(t.regra().condicao()).as(nome).isNotEqualTo("FALSE");
         }
         assertThat(registro.sincronizavel("usos_credito").orElseThrow().imutavel()).isTrue();
-        assertThat(registro.sincronizavel("pagamentos_cliente").orElseThrow().colunas()).doesNotContain("credito_id");
-        assertThat(registro.sincronizavel("vendas").orElseThrow().colunas()).doesNotContain("troca_id");
-        assertThat(registro.sincronizavel("devolucoes").orElseThrow().colunas()).doesNotContain("valor_em_credito");
+        assertThat(registro.sincronizavel("pagamentos_cliente").orElseThrow().colunas()).contains("credito_id");
+        assertThat(registro.sincronizavel("vendas").orElseThrow().colunas()).contains("troca_id");
+        assertThat(registro.sincronizavel("devolucoes").orElseThrow().colunas()).contains("valor_em_credito");
+        // Nada que aponte para o crédito de outro vendedor (dúvida S4 da 6.7).
+        assertThat(registro.sincronizavel("creditos_cliente").orElseThrow().colunas()).doesNotContain("credito_origem_id");
+        assertThat(registro.sincronizavel("usos_credito").orElseThrow().colunas()).doesNotContain("credito_destino_id");
 
         UsuarioDeTeste v = usuarios.criarVendedor();
         UUID cliente = cliente(v);
@@ -489,13 +493,15 @@ class CreditoDoClienteTest extends ApoioDasTrocas {
                 break;
             }
         }
-        assertThat(recebidas).noneMatch(l -> List.of("trocas", "creditos_cliente", "usos_credito").contains(l.tabela()));
+        assertThat(recebidas).filteredOn(l -> l.tabela().equals("creditos_cliente")).extracting(LinhaDoPull::id).contains(credito);
+        assertThat(recebidas).filteredOn(l -> l.tabela().equals("trocas")).isNotEmpty();
+        assertThat(recebidas).filteredOn(l -> l.tabela().equals("usos_credito")).isNotEmpty();
         assertThat(recebidas).filteredOn(l -> l.tabela().equals("pagamentos_cliente")).isNotEmpty()
-                .allSatisfy(l -> assertThat(l.colunas()).doesNotContainKeys("credito_id"));
+                .allSatisfy(l -> assertThat(l.colunas()).containsKeys("credito_id"));
         assertThat(recebidas).filteredOn(l -> l.tabela().equals("vendas")).isNotEmpty()
-                .allSatisfy(l -> assertThat(l.colunas()).doesNotContainKeys("troca_id"));
+                .allSatisfy(l -> assertThat(l.colunas()).containsKeys("troca_id"));
 
-        // A venda com crédito pelo envio (formato 1, que não leva o crédito) é recusada e o crédito não muda.
+        // A venda com crédito pelo envio (formato 1 ampliado, tarefa 6.7) entra e usa o crédito.
         UUID p = peca("10.00", 5);
         UUID m = maleta(v, p, 2);
         UUID id = UUID.randomUUID();
@@ -505,8 +511,8 @@ class CreditoDoClienteTest extends ApoioDasTrocas {
                         "pagamentos", List.of(pagamento), "vendidaEm", Instant.now().toString()));
         JsonNode r = corpoDe(postar(PUSH, UsuariosDeTeste.comToken(usuarios.token(v)), mapa("horaLocal", Instant.now().toString(),
                 "aguardandoDepoisDeste", 0, "operacoes", List.of(op))).andExpect(status().isOk()));
-        assertThat(r.get("resultados").get(0).get("resultado").asString()).isEqualTo("RECUSADO");
-        assertThat(contar("SELECT count(*) FROM corona.vendas WHERE id = ?", id)).isZero();
-        assertThat((BigDecimal) credito(credito).get("valor_utilizado")).isEqualByComparingTo("60.00");
+        assertThat(r.get("resultados").get(0).get("resultado").asString()).isEqualTo("ACEITO");
+        assertThat(contar("SELECT count(*) FROM corona.vendas WHERE id = ?", id)).isOne();
+        assertThat((BigDecimal) credito(credito).get("valor_utilizado")).isEqualByComparingTo("70.00");
     }
 }

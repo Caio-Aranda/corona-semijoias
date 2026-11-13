@@ -39,6 +39,22 @@ class FormatosDeOperacaoTest {
     }
 
     @Test
+    void osCincoTiposDaFase6TemOFormato1EAVendaNaoGanhaFormato() {
+        FormatosDeOperacao f = new FormatosDeOperacao(Clock.fixed(Instant.parse("2040-01-01T00:00:00Z"), ZoneOffset.UTC),
+                Duration.ofDays(90));
+        for (String tipo : new String[] {"DEVOLUCAO", "PEDIDO_AUTORIZACAO", "TROCA", "CANCELAR_DEVOLUCAO", "CANCELAR_TROCA"}) {
+            assertThat(f.conhecido(tipo, 1)).as(tipo).isTrue();
+            assertThat(f.aceitoAgora(tipo, 1)).as(tipo).isTrue();
+            assertThat(f.aceitoAte(tipo, 1)).as(tipo).isEmpty();
+            assertThat(f.conhecido(tipo, 2)).as(tipo).isFalse();
+        }
+        // A venda com crédito é o formato 1 ampliado (dúvida S3): nenhum formato 2, nada começa a vencer.
+        assertThat(f.conhecido("VENDA", 2)).isFalse();
+        assertThat(f.aceitoAte("VENDA", 1)).isEmpty();
+        assertThat(FormatosDeOperacao.FORMATO_1_DA_FASE_6).isEqualTo(Instant.parse("2026-11-13T00:00:00Z"));
+    }
+
+    @Test
     void formato1ContinuaAceitoDepoisDeExistirO2AteOs90Dias() {
         assertThat(em(PUBLICOU_O_2).aceitoAgora("VENDA", 1)).isTrue();
         assertThat(em(PUBLICOU_O_2.plus(Duration.ofDays(89))).aceitoAgora("VENDA", 1)).isTrue();

@@ -2,7 +2,11 @@ package br.com.coronasemijoias.api.sync;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import br.com.coronasemijoias.api.creditos.ServicoDeCreditos;
+import br.com.coronasemijoias.api.devolucoes.ServicoDeAutorizacoes;
+import br.com.coronasemijoias.api.devolucoes.ServicoDeDevolucoes;
 import br.com.coronasemijoias.api.estoque.ServicoDeEstoque;
+import br.com.coronasemijoias.api.trocas.ServicoDeTrocas;
 import br.com.coronasemijoias.api.remessas.ServicoDeRemessas;
 import br.com.coronasemijoias.api.sync.CenarioDeSync.CopiaLocal;
 import br.com.coronasemijoias.api.testes.TesteDeIntegracao;
@@ -35,7 +39,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * Estresse do pull COM o filtro do vendedor (ADR-0013, item 5, prova 4; tarefa 5.4): escritores em paralelo fazem
  * mudanças de pertença de verdade (peças novas entrando em maletas enviadas, maletas de dois vendedores, troca de foto,
  * código excluído, preço, conferência e venda) enquanto o vendedor puxa sem parar, com lotes aleatórios. No fim, com
- * tudo parado, a cópia do vendedor é igual ao oráculo.
+ * tudo parado, a cópia do vendedor é igual ao oráculo. Desde a tarefa 6.7, um escritor a mais faz vendas pagas,
+ * devoluções e trocas (as tabelas da Fase 6 no mesmo oráculo).
  *
  * <p>Duração: {@code -Dcorona.estresse.duracao} (padrão PT20S, como o estresse da Fase 0; o semanal usa PT10M).
  */
@@ -65,12 +70,25 @@ class EstresseDoPullComFiltroTest extends TesteDeIntegracao {
     @Autowired
     ServicoDePull pull;
 
+    @Autowired
+    ServicoDeDevolucoes devolucoes;
+
+    @Autowired
+    ServicoDeAutorizacoes autorizacoes;
+
+    @Autowired
+    ServicoDeTrocas trocas;
+
+    @Autowired
+    ServicoDeCreditos creditos;
+
     @Test
     void aCopiaDoVendedorFicaIgualAoOraculoComEscritasEmParalelo() throws Exception {
         Duration duracao = Duration.parse(System.getProperty("corona.estresse.duracao", "PT20S"));
         long semente = Long.getLong("corona.estresse.semente", System.nanoTime());
         LOG.info("Estresse do pull com filtro: semente {}, {}, {} escritores", semente, duracao, ESCRITORES);
-        CenarioDeSync c = new CenarioDeSync(jdbc, usuarios, estoque, remessas, conferencias, vendas);
+        CenarioDeSync c = new CenarioDeSync(jdbc, usuarios, estoque, remessas, conferencias, vendas)
+                .fase6(devolucoes, autorizacoes, trocas, creditos);
         UsuarioDeTeste v = usuarios.criarVendedor();
         UsuarioDeTeste w = usuarios.criarVendedor();
         usuarios.token(v);
@@ -85,7 +103,7 @@ class EstresseDoPullComFiltroTest extends TesteDeIntegracao {
         AtomicBoolean parar = new AtomicBoolean();
         AtomicInteger operacoes = new AtomicInteger();
         AtomicInteger recusadas = new AtomicInteger();
-        ExecutorService executor = Executors.newFixedThreadPool(ESCRITORES + 1);
+        ExecutorService executor = Executors.newFixedThreadPool(ESCRITORES + 2);
         List<Future<?>> escritores = new ArrayList<>();
         for (int e = 0; e < ESCRITORES; e++) {
             Random r = new Random(semente + e);
@@ -127,6 +145,31 @@ class EstresseDoPullComFiltroTest extends TesteDeIntegracao {
                 return null;
             }));
         }
+        // O escritor da Fase 6 (tarefa 6.7): maleta própria conferida, venda paga, devolução e troca.
+        Random r6 = new Random(semente - 1);
+        escritores.add(executor.submit(() -> {
+            while (Instant.now().isBefore(fim)) {
+                UsuarioDeTeste quem = r6.nextBoolean() ? v : w;
+                try {
+                    UUID a = pecasIniciais.get(r6.nextInt(pecasIniciais.size()));
+                    UUID b = pecasIniciais.get(r6.nextInt(pecasIniciais.size()));
+                    UUID m = c.maleta(quem, a.equals(b) ? Map.of(a, 3) : Map.of(a, 2, b, 2));
+                    c.conferir(quem, m);
+                    java.util.Optional<UUID> venda = c.venderPago(quem, m, cliente, a);
+                    if (venda.isPresent()) {
+                        if (r6.nextBoolean()) {
+                            c.devolver(quem, venda.get(), a, r6.nextBoolean() ? "BOA" : "DEFEITO");
+                        } else {
+                            c.trocar(quem, venda.get(), a, m, b);
+                        }
+                    }
+                    operacoes.incrementAndGet();
+                } catch (RuntimeException ex) {
+                    recusadas.incrementAndGet();
+                }
+            }
+            return null;
+        }));
         CopiaLocal copia = new CopiaLocal();
         Random r = new Random(semente);
         Future<?> leitor = executor.submit(() -> {
