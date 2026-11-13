@@ -163,6 +163,8 @@ export class CicloDeSincronizacao {
       // O recebimento respondeu 426 (app abaixo da versão mínima, nada a enviar): segue só enviando.
       if (this._desatualizado) return envio;
       if (recebimento !== 'ok') return recebimento;
+      const dirigida = await this.recargaDirigida(db);
+      if (dirigida !== 'ok') return dirigida;
       const conferencia = await this.conferirSeForAHora(db);
       if (conferencia !== 'ok') return conferencia;
       return envio;
@@ -362,6 +364,57 @@ export class CicloDeSincronizacao {
     return 'falha';
   }
 
+  // --- recarga dirigida (migração local 3, tarefa 6.7) ---
+
+  /**
+   * Depois da migração local 3, só em banco que já tinha cursor: as tabelas da marca vêm de novo pelo `?tabela=`, uma por
+   * vez, substituindo também a versão igual e SEM apagar nada antes (a maleta nunca mostra saldo errado no meio, nem sem
+   * internet). A tabela sai da marca na transação da última página dela; uma queda no meio recomeça aquela tabela no
+   * próximo ciclo, o que é inofensivo pela regra da versão.
+   */
+  private async recargaDirigida(db: BancoAberto): Promise<Etapa> {
+    for (;;) {
+      const pendentes = tabelasDaRecargaDirigida(db);
+      const tabela = pendentes[0];
+      if (tabela === undefined) return 'ok';
+      let cursor: string | null = null;
+      let terminou = false;
+      for (let pagina = 0; pagina < MAXIMO_DE_PAGINAS && !terminou; pagina++) {
+        const atual: string | null = cursor;
+        const r = await this.o.comToken((t) =>
+          this.o.transporte.receber(t, { cursor: atual, limite: this.limiteDoPull(), tabela }),
+        );
+        if (!r.ok) return this.falhaDaChamada(r.falha, 'recebimento');
+        if (r.dados.status !== 200) return this.falhaDoStatus(r.dados);
+        const p = lerPagina(r.dados.corpo);
+        if (!p) return 'falha';
+        try {
+          aplicarLote(db, p.linhas, {
+            cursor: null,
+            substituirIgual: true,
+            naMesmaTransacao: p.temMais
+              ? undefined
+              : () =>
+                  gravarTabelasDaRecargaDirigida(
+                    db,
+                    tabelasDaRecargaDirigida(db).filter((t) => t !== tabela),
+                  ),
+          });
+        } catch (erro) {
+          if (erro instanceof LoteRecusado) {
+            this.registrar(erro.message);
+            return 'falha';
+          }
+          throw erro;
+        }
+        terminou = !p.temMais;
+        cursor = p.cursor;
+      }
+      if (!terminou) return 'falha';
+      this.o.aoMudar?.();
+    }
+  }
+
   // --- conferência por resumo ---
 
   private async conferirSeForAHora(db: BancoAberto): Promise<Etapa> {
@@ -535,6 +588,27 @@ function contarTentativa(db: BancoAberto, op: LinhaDaOutbox | undefined, codigo:
     `UPDATE outbox SET tentativas = tentativas + 1, ultimo_erro = ?
       WHERE operacao_id = ? AND situacao = 'AGUARDANDO'`,
   ).run(codigo, op.operacao_id);
+}
+
+/** As tabelas que ainda faltam na recarga dirigida (vazio = nada a fazer); nome que o app não conhece é ignorado. */
+export function tabelasDaRecargaDirigida(db: BancoAberto): TabelaSincronizavel[] {
+  const valor = lerEstado(db, CHAVES.recargaDirigida);
+  if (valor === null) return [];
+  try {
+    const lista: unknown = JSON.parse(valor);
+    return Array.isArray(lista)
+      ? lista.filter((t): t is TabelaSincronizavel => ehTabelaSincronizavel(t))
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+function gravarTabelasDaRecargaDirigida(
+  db: BancoAberto,
+  tabelas: readonly TabelaSincronizavel[],
+): void {
+  gravarEstado(db, CHAVES.recargaDirigida, tabelas.length === 0 ? null : JSON.stringify(tabelas));
 }
 
 /**

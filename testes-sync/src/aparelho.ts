@@ -225,10 +225,9 @@ export class Aparelho {
         if (antes) await antes;
         this.app.motor.internetVoltou();
         const nosso = this.app.motor.envioEmAndamento();
-        if (!nosso) { const ag = (this.app.motor as unknown as { agenda: Record<string, unknown> }).agenda; console.log('DEPURAR sem ciclo', ag['rodando'], ag['ligada'], ag['falhas'], ag['pedidoDuranteOCiclo']); return false; }
+        if (!nosso) return false;
         const desfecho = await nosso;
         const e = this.app.motor.estado();
-        console.log('DEPURAR', new Date().toISOString(), this.nome, desfecho, JSON.stringify(e).slice(0, 120), this.registro.slice(-3).join(' | '));
         return desfecho === 'ok' && e.comInternet === true && e.aguardando === 0;
       },
       {
