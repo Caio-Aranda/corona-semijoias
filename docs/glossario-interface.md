@@ -756,6 +756,29 @@ Aviso junto ao campo: "Diga por que a venda com crédito não foi aceita.".
 - **Na venda** (Minhas vendas): o pagamento em crédito tem a forma **Crédito do cliente**; o dinheiro que voltou aparece como **Devolução** e o que voltou de uma devolução cancelada como **Devolução cancelada**; o "a receber" já desconta o devolvido.
 - Envios não aceitos, a descrição: "Devolução de {cliente}", "Troca de {cliente}", "Pedido de autorização: venda de {cliente}", "Cancelamento de devolução" e "Cancelamento de troca".
 
+**Relatórios de devolução e troca (Fase 6, tarefa 6.10; §12 e §13).** Menu do Corona Gestão: grupo **Relatórios de devoluções** (depois de "Relatórios da maleta"). Os nomes de tela abaixo são os únicos usados; a §12 só descreve.
+
+| Relatório (§12) | Nome na tela |
+| --- | --- |
+| Devoluções por vendedor e motivo | **Devoluções por vendedor e motivo** (uma linha por devolução) |
+| Taxa de devolução | **Quanto cada vendedor devolveu do que vendeu** |
+| Peças com defeito | **Peças que voltaram com defeito** |
+| Trocas | **Trocas feitas** |
+| Créditos em aberto e utilizados | **Créditos dos clientes: em aberto e usados** |
+| Reembolsos | **Dinheiro devolvido aos clientes** |
+| Autorizações de exceção | **Pedidos de autorização** |
+| Conciliações de devolução e troca | **Conferência das devoluções e trocas** (deve ficar vazio: "Tudo certo: as devoluções, as trocas e os créditos batem com a maleta e com o dinheiro.") |
+
+- Filtros: **De**, **Até** (sobre o dia, em Brasília, em que a devolução, a troca, o crédito, o dinheiro ou o pedido aconteceu), **Vendedor**, **Motivo da devolução** (**Desistência**, **Defeito**, **Não serviu**, **Outro**), **Situação**, **Buscar**, **Limpar filtros**. Situação das devoluções: **Feitas** (já vem escolhida; não mostra as canceladas), **Para revisão**, **Mantidas**, **Não aceitas**, **Canceladas**, **Todas (canceladas marcadas)**. Das trocas: **Feitas** (já vem), **Canceladas**, **Todas**. Dos créditos: **Em aberto e usados** (já vem), **Só em aberto**, **Só usados**, **Cancelados**, **Todos**. Dos pedidos de autorização: **Todos**, **Esperando você**, **Aprovados**, **Usados**, **Negados**, **Vencidos**.
+- Devolução cancelada aparece como **Cancelada** e fica **fora do total** ("Devoluções feitas (valem no total)" e "Devoluções canceladas (fora do total)"); igual nas trocas e nos créditos.
+- Totais do rodapé: "Devoluções feitas", "Por desistência", "Por defeito", "Por não ter servido", "Por outro motivo", "Voltou em dinheiro", "Voltou em crédito", "Para revisão", "Não aceitas", "Trocas feitas", "Diferença a pagar", "Ficou de crédito", "Créditos gerados", "Créditos já usados", "Créditos em aberto", "Pedidos feitos", "Esperando você", "Aprovados", "Usados", "Negados", "Vencidos", "Vendedores acima do limite". Em **Créditos dos clientes: em aberto e usados** vale a conta: gerados menos usados é igual a em aberto.
+- **Quanto cada vendedor devolveu do que vendeu:** colunas **Vendas**, **Vendido**, **Devoluções**, **Trocas**, **Devolvido**, **Por desistência**, **Por defeito**, **Por não ter servido**, **Por outro motivo** e **Porcentagem devolvida**; o vendedor que passou do limite que você definiu em Garantia e limites aparece com **Acima do limite**. A troca conta como uma devolução e uma venda.
+- **Peças que voltaram com defeito:** uma linha por peça, com a foto ("Sem foto" quando não há): **Peça**, **Código**, **Quantas voltaram**, **Devoluções**, **Vendedores**, **Valor** e **Última vez**.
+- **Dinheiro devolvido aos clientes:** só o dinheiro (**Dinheiro**, **Pix**, **Cartão**, **Cheque**); o crédito não entra. A devolução cancelada aparece como **Devolução cancelada**, com o valor negativo, para o total fechar.
+- **Conferência das devoluções e trocas:** cinco conferências, cada uma com "Conferidos: N" e a lista do que não bate (vazia quando tudo certo): **Maleta com devoluções e trocas** (cada peça que voltou à maleta ou saiu na troca está registrada uma vez), **Devolvido por peça da venda** (nunca mais do que foi vendido), **Créditos e usos** (créditos gerados menos usos é igual ao que está em aberto), **Dinheiro devolvido** (nunca mais do que o cliente pagou) e **Contas da venda** (o que o cliente pagou, mais o que ainda deve, é igual ao total menos o devolvido). Em Real; Dólar e Guarani nunca entram na conferência.
+- Dólar e Guarani seguem a cotação do dia **de cada lançamento** (da devolução, da troca, de quando o crédito nasceu, do dinheiro devolvido, do pedido). O total em Dólar e em Guarani é a soma das linhas já convertidas. Sem cotação naquele dia: "Sem cotação".
+- **Corona Vendas, em Meus números** (só os dados do próprio vendedor, sem custo; segue o aviso de dados da parte 7): **Recebimentos por forma de pagamento** passa a mostrar só dinheiro, Pix, cartão e cheque ("O crédito do cliente não entra aqui. Veja Crédito dos meus clientes."); a seção **Devoluções e trocas no período** (colunas **Motivo**, **Devoluções**, **Valor devolvido**; totais **Devoluções**, **Trocas**, **Valor devolvido**, **Voltou em dinheiro**, **Voltou em crédito**; vazio: "Nenhuma devolução ou troca neste período."); e a seção **Crédito dos meus clientes** (colunas **Cliente**, **Crédito gerado**, **Já usado**, **Em aberto**; total **Crédito em aberto**; vazio: "Nenhum cliente seu tem crédito agora.").
+
 Recusas do computador: os mesmos textos do servidor (partes "Devolução do cliente", "Autorização, revisão e antifraude" e "Troca e crédito do cliente", acima), com "Informe pelo menos uma peça devolvida." e "Informe as peças que o cliente levou." quando faltam peças. O computador não sabe do limite da semana nem do valor que a dona aprova antes: a devolução acima deles chega à dona **Para revisão da dona**.
 
 **Vender só depois de conferir (decisão de 11/11/2026; tarefa 5.3).** A maleta que ainda não foi conferida não vende:
