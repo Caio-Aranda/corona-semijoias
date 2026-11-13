@@ -534,6 +534,80 @@ public enum CodigoErro {
             "Esta devolução já foi revisada.",
             "A dona já decidiu sobre esta devolução e a decisão não muda."),
 
+    // --- Troca e crédito do cliente (Fase 6, tarefa 6.5; ADR-0014, itens 8, 9 e 11; glossário, parte 6) ---
+
+    TROCA_NAO_ENCONTRADA(
+            "Não encontramos esta troca.",
+            "Não encontramos esta troca. Atualize a tela e tente de novo."),
+
+    /** O mesmo identificador voltou com outros dados, ou um id da troca já é de outro registro (HTTP 409). */
+    TROCA_JA_REGISTRADA_DIFERENTE(
+            "Esta troca já foi registrada com outros dados.",
+            "Esta troca já foi registrada com outros dados. Confira as trocas antes de lançar de novo."),
+
+    /** Os valores gravados não fecharam na conferência do fim da transação (HTTP 409; nunca 500). */
+    TROCA_NAO_CONFERE(
+            "Os valores desta troca não fecharam.",
+            "Os valores desta troca não fecharam e nada foi gravado. Tente de novo; se continuar, fale com a dona."),
+
+    TROCA_JA_CANCELADA(
+            "Esta troca já foi cancelada.",
+            "Esta troca já foi cancelada e não pode mudar."),
+
+    /** A dona já decidiu a devolução da troca, uma maleta não está mais com o vendedor ou a peça já saiu (HTTP 409). */
+    TROCA_NAO_PODE_SER_CANCELADA(
+            "Esta troca não pode ser cancelada.",
+            "A dona já decidiu sobre esta troca e ela não pode mais ser cancelada."),
+
+    /** O vendedor só cancela a troca no dia dela (HTTP 409; ADR-0014, item 11). */
+    CANCELAR_TROCA_SO_DA_DONA(
+            "Esta troca só pode ser cancelada pela dona.",
+            "Só dá para cancelar a troca no mesmo dia. Peça à dona para cancelar."),
+
+    /** A sobra do crédito da troca já foi usada em outra venda (HTTP 409; ADR-0014, item 11). */
+    CREDITO_DA_TROCA_JA_USADO(
+            "O crédito desta troca já foi usado.",
+            "O crédito que sobrou desta troca já foi usado em outra compra e a troca não pode ser cancelada. Fale com a dona."),
+
+    /** Estorno da venda nova de uma troca: só pelo "Cancelar troca" (HTTP 409; dúvida T8). */
+    VENDA_DE_TROCA(
+            "Esta venda é de uma troca.",
+            "Esta venda faz parte de uma troca. Use Cancelar troca."),
+
+    /** Cancelar a devolução de uma troca: só pelo "Cancelar troca" (HTTP 409; dúvida T8). */
+    DEVOLUCAO_DE_TROCA(
+            "Esta devolução é de uma troca.",
+            "Esta devolução faz parte de uma troca. Use Cancelar troca."),
+
+    /** Crédito inexistente ou de outro vendedor (HTTP 404, sem dizer que existe). */
+    CREDITO_NAO_ENCONTRADO(
+            "Não encontramos este crédito.",
+            "Não encontramos este crédito do cliente. Atualize a tela e tente de novo."),
+
+    CREDITO_DE_OUTRO_CLIENTE(
+            "Este crédito é de outro cliente.",
+            "Este crédito é de outro cliente. Use só o crédito do cliente desta venda."),
+
+    /** Crédito já todo usado (ou transferido) ou cancelado (HTTP 409). */
+    CREDITO_SEM_SALDO(
+            "Este crédito não tem mais saldo.",
+            "Este crédito já foi todo usado ou foi cancelado. Escolha outra forma de pagamento."),
+
+    /** O valor pago em crédito passa do saldo ("acima" é estrito: no valor exato passa; HTTP 409). */
+    CREDITO_ACIMA_DO_SALDO(
+            "O valor passa do saldo do crédito.",
+            "O valor passa do que sobra neste crédito. Diminua o valor e pague o resto de outra forma."),
+
+    /** Cancelar a devolução cujo crédito já foi usado (HTTP 409). */
+    CREDITO_JA_USADO(
+            "O crédito desta devolução já foi usado.",
+            "O crédito desta devolução já foi usado em outra compra e a devolução não pode ser cancelada. Fale com a dona."),
+
+    /** O mesmo identificador de transferência voltou com outros dados (HTTP 409). */
+    CREDITO_JA_TRANSFERIDO_DIFERENTE(
+            "Esta transferência já foi feita com outros dados.",
+            "Esta transferência de crédito já foi feita com outros dados. Confira os créditos antes de transferir de novo."),
+
     // --- Computadores do vendedor (Fase 5, tarefa 5.3; ADR-0013, itens 13 e 14) ---
 
     /** Segundo computador do vendedor, ainda sem a liberação da dona (HTTP 403). */

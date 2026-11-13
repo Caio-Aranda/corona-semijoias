@@ -414,9 +414,9 @@ class CreditoDoClienteTest extends ApoioDasTrocas {
 
         // Uso gravado direto acima do saldo (40,00 em aberto): o gatilho recusa, mesmo com o pagamento em crédito certo.
         SQLException acima = gravarUsoDireto(v, credito, venda, "50.00");
-        assertThat(acima).isNotNull();
+        assertThat((Throwable) acima).isNotNull();
         assertThat(acima.getMessage()).contains("saldo");
-        assertThat(gravarUsoDireto(v, credito, venda, "40.00")).as("no valor exato passa").isNull();
+        assertThat((Throwable) gravarUsoDireto(v, credito, venda, "40.00")).as("no valor exato passa").isNull();
 
         // Cancelado não volta a ficar em aberto.
         UUID outro = creditoDeSobra(v, cliente, "100.00", "100.00");

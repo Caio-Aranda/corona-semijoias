@@ -346,7 +346,7 @@ class TrocaTest extends ApoioDasTrocas {
         UUID vendaA = venderEm(v, maleta, cliente, a, 1, "40.00", diasAtras(10));
         UUID autorizacao = UUID.randomUUID();
         postar("/api/vendedor/autorizacoes", como(v), mapa("id", autorizacao, "vendaId", vendaA, "motivo", "ARREPENDIMENTO",
-                "itens", List.of(mapa("produtoId", a, "quantidade", 1)))).andExpect(status().isCreated());
+                "itens", List.of(devolvida(a, 1, "BOA")))).andExpect(status().isCreated());
         postar("/api/dona/autorizacoes/" + autorizacao + "/aprovar", dona(), null).andExpect(status().isOk());
 
         Map<String, Object> pedido = pedidoDeTroca(vendaA, "ARREPENDIMENTO", List.of(devolvida(a, 1, "BOA")), maleta,

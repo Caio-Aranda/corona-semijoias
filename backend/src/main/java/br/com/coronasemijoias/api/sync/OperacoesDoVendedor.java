@@ -169,7 +169,11 @@ public class OperacoesDoVendedor {
                 Instant corrigida = corrigir(d.vendidaEm(), ctx, inferior);
                 boolean ajustada = d.vendidaEm() != null
                         && Duration.between(d.vendidaEm(), corrigida).abs().compareTo(AJUSTE_QUE_MARCA) > 0;
-                PedidoDeVenda pedido = new PedidoDeVenda(d.id(), d.remessaId(), d.clienteId(), d.itens(), d.pagamentos(),
+                // O formato 1 não leva o crédito do cliente (tarefa 6.5): a venda em crédito pelo envio é recusada pela regra
+                // do serviço até o formato novo da tarefa 6.7.
+                List<PagamentoDoPedido> pagamentos = d.pagamentos() == null ? null : d.pagamentos().stream()
+                        .map(p -> p == null ? null : new PagamentoDoPedido(p.id(), p.valor(), p.forma())).toList();
+                PedidoDeVenda pedido = new PedidoDeVenda(d.id(), d.remessaId(), d.clienteId(), d.itens(), pagamentos,
                         d.totalConferido());
                 boolean ja = vendas.vender(ctx.vendedorId(), ctx.usuarioId(), aparelhoDaMaleta(d.remessaId(), ctx), pedido,
                         corrigida, ajustada).jaExistia();

@@ -37,7 +37,8 @@ public class VendasDoVendedorController {
     public record PedidoDaLinha(UUID produtoId, Integer quantidade, BigDecimal desconto) {
     }
 
-    public record PedidoDoPagamento(UUID id, BigDecimal valor, String forma) {
+    /** {@code creditoId}: o crédito do cliente, obrigatório na forma {@code CREDITO} (tarefa 6.5). */
+    public record PedidoDoPagamento(UUID id, BigDecimal valor, String forma, UUID creditoId) {
     }
 
     public record PedidoDaVenda(UUID id, UUID remessaId, UUID clienteId, List<PedidoDaLinha> itens,
@@ -58,7 +59,8 @@ public class VendasDoVendedorController {
     @Operation(operationId = "venderNaMaleta", summary = "Registrar uma venda da maleta",
             description = "Baixa as peças da maleta do vendedor pelo preço congelado da remessa. O servidor recalcula subtotal, "
                     + "desconto e total; o desconto respeita o limite da dona. Pagamentos opcionais (venda a prazo grava só o "
-                    + "que foi pago na hora). Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409.")
+                    + "que foi pago na hora). A forma CREDITO usa um crédito do cliente da venda (creditoId), do próprio "
+                    + "vendedor, até o saldo. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409.")
     @PostMapping
     public ResponseEntity<Venda> vender(@RequestBody PedidoDaVenda pedido, @AuthenticationPrincipal UsuarioAutenticado quem) {
         if (pedido == null) {
@@ -68,7 +70,7 @@ public class VendasDoVendedorController {
                 pedido.itens() == null ? null : pedido.itens().stream()
                         .map(l -> l == null ? null : new LinhaDoPedido(l.produtoId(), l.quantidade(), l.desconto())).toList(),
                 pedido.pagamentos() == null ? null : pedido.pagamentos().stream()
-                        .map(g -> g == null ? null : new PagamentoDoPedido(g.id(), g.valor(), g.forma())).toList(),
+                        .map(g -> g == null ? null : new PagamentoDoPedido(g.id(), g.valor(), g.forma(), g.creditoId())).toList(),
                 pedido.totalConferido());
         Resultado r = servico.vender(quem.vendedorId(), quem.id(), quem.dispositivoId(), p);
         return ResponseEntity.status(r.jaExistia() ? HttpStatus.OK : HttpStatus.CREATED)

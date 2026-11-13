@@ -11,6 +11,7 @@ import br.com.coronasemijoias.api.comum.identificadores.UuidV7;
 import br.com.coronasemijoias.api.comum.persistencia.OrigemDoDispositivo;
 import br.com.coronasemijoias.api.configuracoes.ChaveDeConfiguracao;
 import br.com.coronasemijoias.api.configuracoes.Configuracoes;
+import br.com.coronasemijoias.api.creditos.ServicoDeCreditos;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.sql.Timestamp;
@@ -39,6 +40,9 @@ import org.springframework.transaction.annotation.Transactional;
  *       maleta (nunca um número guardado) e não passa de zero.</li>
  *   <li>Venda, itens, pagamentos e movimentos são imutáveis. Corrigir é estornar a venda inteira.</li>
  *   <li>Idempotência pelo id do aplicativo: mesmo id e mesmo conteúdo é "já gravado" (200); conteúdo diferente, 409.</li>
+ *   <li>Crédito do cliente (tarefa 6.5): a forma {@code CREDITO} leva o crédito; ele é travado depois da maleta, em ordem
+ *       de id, e conferido por {@link ServicoDeCreditos} (do vendedor, do cliente da venda, com saldo). O estorno devolve
+ *       o crédito. A venda nova de uma troca ({@code troca_id}) só se desfaz pelo "Cancelar troca".</li>
  * </ul>
  */
 @Service
@@ -49,12 +53,30 @@ public class ServicoDeVendas {
     private static final int LIMITE_DE_PAGAMENTOS = 10;
     private static final int LIMITE_DA_QUANTIDADE = 100_000;
     private static final int LIMITE_DO_MOTIVO = 400;
-    private static final Set<String> FORMAS = Set.of("DINHEIRO", "PIX", "CARTAO", "CHEQUE");
+    private static final Set<String> FORMAS = Set.of("DINHEIRO", "PIX", "CARTAO", "CHEQUE", "CREDITO");
+    private static final String CREDITO = "CREDITO";
 
     public record LinhaDoPedido(UUID produtoId, Integer quantidade, BigDecimal desconto) {
     }
 
-    public record PagamentoDoPedido(UUID id, BigDecimal valor, String forma) {
+    /** {@code creditoId}: o crédito do cliente usado, obrigatório na forma {@code CREDITO} e proibido nas outras (tarefa 6.5). */
+    public record PagamentoDoPedido(UUID id, BigDecimal valor, String forma, UUID creditoId) {
+
+        /** Sem crédito (as formas da Fase 4 e o formato 1 do envio). */
+        public PagamentoDoPedido(UUID id, BigDecimal valor, String forma) {
+            this(id, valor, forma, null);
+        }
+    }
+
+    /**
+     * O crédito da troca que paga a venda nova (tarefa 6.5): o servidor calcula o pagamento {@code CREDITO} de
+     * {@code min(disponivel, total)} com o id {@code pagamentoId} do aplicativo. {@code disponivel} é o valor devolvido de A.
+     */
+    public record CreditoDaTroca(UUID trocaId, UUID creditoId, UUID pagamentoId, BigDecimal disponivel) {
+    }
+
+    /** A venda nova da troca gravada: o total e quanto do crédito da troca ela usou. */
+    public record VendaDaTrocaGravada(UUID vendaId, BigDecimal total, BigDecimal creditoUsado) {
     }
 
     /** {@code totalConferido} é o total que a tela mostrou: só serve para avisar divergência (nunca vale). */
@@ -71,14 +93,16 @@ public class ServicoDeVendas {
     private final Configuracoes configuracoes;
     private final OrigemDoDispositivo origem;
     private final Clock relogio;
+    private final ServicoDeCreditos creditos;
 
     ServicoDeVendas(JdbcTemplate jdbc, ServicoDeAuditoria auditoria, Configuracoes configuracoes,
-            OrigemDoDispositivo origem, Clock relogio) {
+            OrigemDoDispositivo origem, Clock relogio, ServicoDeCreditos creditos) {
         this.jdbc = jdbc;
         this.auditoria = auditoria;
         this.configuracoes = configuracoes;
         this.origem = origem;
         this.relogio = relogio;
+        this.creditos = creditos;
     }
 
     // --- venda ---
@@ -86,7 +110,7 @@ public class ServicoDeVendas {
     private record Linha(UUID produtoId, int quantidade, BigDecimal desconto) {
     }
 
-    private record Pagamento(UUID id, BigDecimal valor, String forma) {
+    private record Pagamento(UUID id, BigDecimal valor, String forma, UUID creditoId) {
     }
 
     private record Peca(String nome, int saldo, BigDecimal preco) {
@@ -105,6 +129,27 @@ public class ServicoDeVendas {
     @Transactional
     public Resultado vender(UUID vendedorId, UUID usuarioId, UUID aparelho, PedidoDeVenda pedido, Instant vendidaEm,
             boolean horaAjustada) {
+        return gravar(vendedorId, usuarioId, aparelho, pedido, vendidaEm, horaAjustada, null).resultado();
+    }
+
+    /**
+     * A venda nova da troca (tarefa 6.5), na transação da troca: grava {@code troca_id}, tira as peças da maleta como
+     * {@code TROCA_SAIDA} e paga com o crédito da troca o menor entre o valor devolvido e o total; o resto vem nos
+     * pagamentos do pedido (à vista, a prazo ou com outro crédito do cliente). Com B mais barata (ou igual), pagamento do
+     * resto é recusado. {@code vendidaEm} é a hora da troca.
+     */
+    @Transactional
+    public VendaDaTrocaGravada venderNaTroca(UUID vendedorId, UUID usuarioId, UUID aparelho, PedidoDeVenda pedido,
+            Instant vendidaEm, boolean horaAjustada, CreditoDaTroca troca) {
+        Gravada g = gravar(vendedorId, usuarioId, aparelho, pedido, vendidaEm, horaAjustada, troca);
+        return new VendaDaTrocaGravada(g.resultado().vendaId(), g.total(), g.creditoDaTroca());
+    }
+
+    private record Gravada(Resultado resultado, BigDecimal total, BigDecimal creditoDaTroca) {
+    }
+
+    private Gravada gravar(UUID vendedorId, UUID usuarioId, UUID aparelho, PedidoDeVenda pedido, Instant vendidaEm,
+            boolean horaAjustada, CreditoDaTroca troca) {
         if (pedido == null) {
             throw Validacoes.recusar("venda", "Informe a venda.");
         }
@@ -117,6 +162,13 @@ public class ServicoDeVendas {
         }
         List<Linha> linhas = conferirLinhas(pedido.itens());
         List<Pagamento> pagamentos = conferirPagamentos(pedido.pagamentos());
+        if (troca != null) {
+            for (Pagamento p : pagamentos) {
+                if (troca.creditoId().equals(p.creditoId()) || p.id().equals(troca.pagamentoId())) {
+                    throw Validacoes.recusar("pagamentos", "O crédito da troca não é escolhido na venda: ele entra sozinho.");
+                }
+            }
+        }
         if (pedido.totalConferido() != null && pedido.totalConferido().signum() < 0) {
             throw Validacoes.recusar("totalConferido", "O total conferido não pode ser negativo.");
         }
@@ -125,18 +177,26 @@ public class ServicoDeVendas {
         Map<String, Object> remessa = trancarMaleta(pedido.remessaId(), vendedorId);
 
         List<Map<String, Object>> existente = jdbc.queryForList(
-                "SELECT vendedor_id, cliente_id, remessa_id FROM corona.vendas WHERE id = ?", id);
+                "SELECT vendedor_id, cliente_id, remessa_id, troca_id FROM corona.vendas WHERE id = ?", id);
         if (!existente.isEmpty()) {
-            if (!mesmaVenda(id, vendedorId, pedido, linhas, pagamentos, existente.get(0))) {
-                throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.VENDA_JA_REGISTRADA_DIFERENTE);
+            // A troca confere os próprios ids antes: a venda nova nunca chega aqui já gravada.
+            if (troca != null || existente.get(0).get("troca_id") != null
+                    || !mesmaVenda(id, vendedorId, pedido, linhas, pagamentos, existente.get(0))) {
+                throw new ErroDaApi(HttpStatus.CONFLICT, troca != null ? CodigoErro.TROCA_JA_REGISTRADA_DIFERENTE
+                        : CodigoErro.VENDA_JA_REGISTRADA_DIFERENTE);
             }
-            return new Resultado(id, true);
+            return new Gravada(new Resultado(id, true), null, null);
         }
         // O id do pagamento também vem do aplicativo: já usado em outra venda é o mesmo caso do 409, não erro de banco.
-        for (Pagamento p : pagamentos) {
+        List<UUID> idsDosPagamentos = new ArrayList<>(pagamentos.stream().map(Pagamento::id).toList());
+        if (troca != null) {
+            idsDosPagamentos.add(troca.pagamentoId());
+        }
+        for (UUID pagamentoId : idsDosPagamentos) {
             if (Boolean.TRUE.equals(jdbc.queryForObject(
-                    "SELECT EXISTS (SELECT 1 FROM corona.pagamentos_cliente WHERE id = ?)", Boolean.class, p.id()))) {
-                throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.VENDA_JA_REGISTRADA_DIFERENTE);
+                    "SELECT EXISTS (SELECT 1 FROM corona.pagamentos_cliente WHERE id = ?)", Boolean.class, pagamentoId))) {
+                throw new ErroDaApi(HttpStatus.CONFLICT, troca != null ? CodigoErro.TROCA_JA_REGISTRADA_DIFERENTE
+                        : CodigoErro.VENDA_JA_REGISTRADA_DIFERENTE);
             }
         }
 
@@ -194,6 +254,18 @@ public class ServicoDeVendas {
                             + maximo.toPlainString().replace('.', ',') + "). Diminua o desconto.");
         }
         BigDecimal total = subtotal.subtract(desconto);
+        BigDecimal creditoDaTroca = BigDecimal.ZERO.setScale(Dinheiro.ESCALA);
+        if (troca != null) {
+            // O crédito da troca paga o menor entre o valor devolvido de A e o total de B (um caminho só, dúvida T1).
+            creditoDaTroca = troca.disponivel().min(total);
+            if (troca.disponivel().compareTo(total) >= 0 && !pagamentos.isEmpty()) {
+                throw Validacoes.recusar("pagamentos",
+                        "A peça nova vale menos que a devolvida: não há diferença a pagar. A sobra fica de crédito.");
+            }
+            if (creditoDaTroca.signum() > 0) {
+                pagamentos.add(0, new Pagamento(troca.pagamentoId(), creditoDaTroca, CREDITO, troca.creditoId()));
+            }
+        }
         BigDecimal pago = BigDecimal.ZERO.setScale(Dinheiro.ESCALA);
         for (Pagamento p : pagamentos) {
             pago = pago.add(p.valor());
@@ -201,6 +273,12 @@ public class ServicoDeVendas {
         if (pago.compareTo(total) > 0) {
             throw Validacoes.recusar("pagamentos", "O valor pago passa do total da venda (R$ "
                     + total.toPlainString().replace('.', ',') + "). Confira os pagamentos.");
+        }
+        // Os créditos usados: travados e conferidos em ordem de id, depois da maleta (ver ServicoDeCreditos).
+        List<Pagamento> emCredito = new ArrayList<>(pagamentos.stream().filter(p -> p.creditoId() != null).toList());
+        emCredito.sort(Comparator.comparing(Pagamento::creditoId, OrdemDoBanco.UUIDS));
+        for (Pagamento p : emCredito) {
+            creditos.conferirUso(p.creditoId(), vendedorId, pedido.clienteId(), p.valor());
         }
 
         if (aparelho != null) {
@@ -210,9 +288,12 @@ public class ServicoDeVendas {
         UUID cotacao = cotacaoDoDia(LocalDate.ofInstant(quando, BRASILIA));
         jdbc.update("""
                 INSERT INTO corona.vendas (id, vendedor_id, cliente_id, remessa_id, subtotal, desconto, total, cotacao_id,
-                    vendida_em, hora_ajustada)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, coalesce(?, now()), ?)""", id, vendedorId, pedido.clienteId(), pedido.remessaId(),
-                subtotal, desconto, total, cotacao, vendidaEm == null ? null : Timestamp.from(vendidaEm), horaAjustada);
+                    vendida_em, hora_ajustada, troca_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, coalesce(?, now()), ?, ?)""", id, vendedorId, pedido.clienteId(),
+                pedido.remessaId(), subtotal, desconto, total, cotacao, vendidaEm == null ? null : Timestamp.from(vendidaEm),
+                horaAjustada, troca == null ? null : troca.trocaId());
+        // Na troca, a peça B sai da maleta como TROCA_SAIDA (ADR-0014, item 8): mesmo sinal e mesmo saldo da venda.
+        String tipoDoMovimento = troca == null ? "VENDA" : "TROCA_SAIDA";
         for (Linha l : ordenadas) {
             Peca p = pecas.get(l.produtoId());
             jdbc.update("""
@@ -220,14 +301,18 @@ public class ServicoDeVendas {
                     VALUES (?, ?, ?, ?, ?, ?)""", UuidV7.gerar(), id, l.produtoId(), l.quantidade(), p.preco(), l.desconto());
             jdbc.update("""
                     INSERT INTO corona.movimentos_remessa (id, remessa_id, produto_id, tipo, quantidade, venda_id, dispositivo_id)
-                    VALUES (?, ?, ?, 'VENDA', ?, ?, ?)""", UuidV7.gerar(), pedido.remessaId(), l.produtoId(), -l.quantidade(), id,
-                    aparelho);
+                    VALUES (?, ?, ?, ?, ?, ?, ?)""", UuidV7.gerar(), pedido.remessaId(), l.produtoId(), tipoDoMovimento,
+                    -l.quantidade(), id, aparelho);
         }
         for (Pagamento p : pagamentos) {
             jdbc.update("""
-                    INSERT INTO corona.pagamentos_cliente (id, venda_id, tipo, forma, valor, pago_em)
-                    VALUES (?, ?, 'PAGAMENTO', ?, ?, coalesce(?, now()))""",
-                    p.id(), id, p.forma(), p.valor(), vendidaEm == null ? null : Timestamp.from(vendidaEm));
+                    INSERT INTO corona.pagamentos_cliente (id, venda_id, tipo, forma, valor, pago_em, credito_id)
+                    VALUES (?, ?, 'PAGAMENTO', ?, ?, coalesce(?, now()), ?)""",
+                    p.id(), id, p.forma(), p.valor(), vendidaEm == null ? null : Timestamp.from(vendidaEm), p.creditoId());
+        }
+        Instant horaDoUso = vendidaEm == null ? relogio.instant() : vendidaEm;
+        for (Pagamento p : emCredito) {
+            creditos.registrarUso(p.creditoId(), id, p.id(), p.valor(), horaDoUso);
         }
 
         Map<String, Object> depois = new LinkedHashMap<>();
@@ -237,12 +322,19 @@ public class ServicoDeVendas {
         depois.put("desconto", desconto.toPlainString());
         depois.put("total", total.toPlainString());
         depois.put("pago", pago.toPlainString());
+        if (!emCredito.isEmpty()) {
+            depois.put("pago_em_credito", emCredito.stream().map(Pagamento::valor).reduce(BigDecimal.ZERO, BigDecimal::add)
+                    .toPlainString());
+        }
+        if (troca != null) {
+            depois.put("troca_id", troca.trocaId().toString());
+        }
         if (pedido.totalConferido() != null && pedido.totalConferido().compareTo(total) != 0) {
             // Divergência é alerta, não rejeição: vale o total do servidor (ADR-0011, item 4).
             depois.put("alerta_total_do_app", pedido.totalConferido().toPlainString());
         }
         auditoria.registrar(Ator.usuario(usuarioId), "VENDA_REGISTRADA", "vendas", id, null, depois);
-        return new Resultado(id, false);
+        return new Gravada(new Resultado(id, false), total, creditoDaTroca);
     }
 
     // --- estorno ---
@@ -263,6 +355,21 @@ public class ServicoDeVendas {
     @Transactional
     public Resultado estornar(UUID vendaId, UUID vendedorId, UUID usuarioId, UUID aparelho, UUID idDoEstorno, String motivo,
             Instant momento) {
+        return estornar(vendaId, vendedorId, usuarioId, aparelho, idDoEstorno, motivo, momento, false);
+    }
+
+    /**
+     * O estorno da venda nova pelo "Cancelar troca" (tarefa 6.5), na transação dele: a troca já está cancelada. As regras
+     * do estorno valem iguais (o vendedor só no dia da venda, que é o dia da troca).
+     */
+    @Transactional
+    public Resultado estornarNaTroca(UUID vendaId, UUID vendedorId, UUID usuarioId, UUID aparelho, UUID idDoEstorno,
+            String motivo, Instant momento) {
+        return estornar(vendaId, vendedorId, usuarioId, aparelho, idDoEstorno, motivo, momento, true);
+    }
+
+    private Resultado estornar(UUID vendaId, UUID vendedorId, UUID usuarioId, UUID aparelho, UUID idDoEstorno, String motivo,
+            Instant momento, boolean pelaTroca) {
         UUID estornoId = Validacoes.idDoPedido(idDoEstorno);
         String limpo = Validacoes.limpar(motivo);
         if (limpo == null) {
@@ -280,7 +387,11 @@ public class ServicoDeVendas {
         Map<String, Object> remessa = trancarMaleta(remessaId, (UUID) achada.get(0).get("vendedor_id"));
 
         Map<String, Object> venda = jdbc.queryForMap(
-                "SELECT status, estorno_id FROM corona.vendas WHERE id = ? FOR UPDATE", vendaId);
+                "SELECT status, estorno_id, troca_id FROM corona.vendas WHERE id = ? FOR UPDATE", vendaId);
+        if (venda.get("troca_id") != null && !pelaTroca) {
+            // A venda nova de uma troca só se desfaz pelo "Cancelar troca" (dúvida T8); o banco é a segunda trava.
+            throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.VENDA_DE_TROCA);
+        }
         if ("ESTORNADA".equals(venda.get("status"))) {
             if (estornoId.equals(venda.get("estorno_id"))) {
                 return new Resultado(vendaId, true);
@@ -318,23 +429,41 @@ public class ServicoDeVendas {
         if (aparelho != null) {
             origem.definirNaTransacaoAtual(aparelho);
         }
+        // A venda volta à maleta: VENDA com ESTORNO_VENDA (como sempre) e TROCA_SAIDA com o estorno do mesmo tipo.
         List<Map<String, Object>> baixas = jdbc.queryForList("""
-                SELECT id, produto_id, quantidade FROM corona.movimentos_remessa
-                 WHERE venda_id = ? AND tipo = 'VENDA' AND estorna_id IS NULL ORDER BY produto_id, id""", vendaId);
+                SELECT id, produto_id, quantidade, tipo FROM corona.movimentos_remessa
+                 WHERE venda_id = ? AND tipo IN ('VENDA', 'TROCA_SAIDA') AND estorna_id IS NULL ORDER BY produto_id, id""", vendaId);
         for (Map<String, Object> b : baixas) {
             jdbc.update("""
                     INSERT INTO corona.movimentos_remessa (id, remessa_id, produto_id, tipo, quantidade, venda_id, dispositivo_id, estorna_id)
-                    VALUES (?, ?, ?, 'ESTORNO_VENDA', ?, ?, ?, ?)""", UuidV7.gerar(), remessaId, b.get("produto_id"),
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)""", UuidV7.gerar(), remessaId, b.get("produto_id"),
+                    "VENDA".equals(b.get("tipo")) ? "ESTORNO_VENDA" : "TROCA_SAIDA",
                     -((Number) b.get("quantidade")).intValue(), vendaId, aparelho, b.get("id"));
         }
-        // O que o cliente pagou volta como reembolso (registro negativo, uma linha por pagamento, mesma forma).
-        List<Map<String, Object>> pagos = jdbc.queryForList("""
-                SELECT forma, valor FROM corona.pagamentos_cliente WHERE venda_id = ? AND tipo = 'PAGAMENTO' ORDER BY pago_em, id""",
-                vendaId);
+        // O que o cliente pagou volta como reembolso (registro negativo, uma linha por pagamento, mesma forma). O pago em
+        // crédito volta como reembolso em crédito e o uso é estornado: o crédito volta a ficar em aberto (dúvida T8). Os
+        // créditos são travados por último, em ordem de id.
+        List<Map<String, Object>> pagos = new ArrayList<>(jdbc.queryForList("""
+                SELECT id, forma, valor, credito_id FROM corona.pagamentos_cliente
+                 WHERE venda_id = ? AND tipo = 'PAGAMENTO' ORDER BY pago_em, id""", vendaId));
+        List<Map<String, Object>> emCredito = new ArrayList<>(pagos.stream().filter(p -> p.get("credito_id") != null).toList());
+        emCredito.sort(Comparator.comparing(p -> (UUID) p.get("credito_id"), OrdemDoBanco.UUIDS));
+        Instant horaDoEstorno = momento == null ? relogio.instant() : momento;
         for (Map<String, Object> p : pagos) {
+            if (p.get("credito_id") != null) {
+                continue;
+            }
             jdbc.update("""
                     INSERT INTO corona.pagamentos_cliente (id, venda_id, tipo, forma, valor) VALUES (?, ?, 'REEMBOLSO', ?, ?)""",
                     UuidV7.gerar(), vendaId, p.get("forma"), ((BigDecimal) p.get("valor")).negate());
+        }
+        for (Map<String, Object> p : emCredito) {
+            UUID reembolso = UuidV7.gerar();
+            jdbc.update("""
+                    INSERT INTO corona.pagamentos_cliente (id, venda_id, tipo, forma, valor, credito_id)
+                    VALUES (?, ?, 'REEMBOLSO', ?, ?, ?)""", reembolso, vendaId, p.get("forma"),
+                    ((BigDecimal) p.get("valor")).negate(), p.get("credito_id"));
+            creditos.estornarUso((UUID) p.get("id"), reembolso, horaDoEstorno);
         }
         jdbc.update("""
                 UPDATE corona.vendas SET status = 'ESTORNADA', estorno_id = ?, estornada_em = coalesce(?, now()), estornada_por = ?,
@@ -389,18 +518,28 @@ public class ServicoDeVendas {
             throw Validacoes.recusar("pagamentos", "Informe no máximo " + LIMITE_DE_PAGAMENTOS + " pagamentos.");
         }
         Set<UUID> ids = new HashSet<>();
+        Set<UUID> creditosUsados = new HashSet<>();
         for (PagamentoDoPedido p : pedidos) {
             if (p == null || p.valor() == null || p.valor().signum() <= 0) {
                 throw Validacoes.recusar("pagamentos", "Informe o valor pago, maior que zero.");
             }
             if (p.forma() == null || !FORMAS.contains(p.forma())) {
-                throw Validacoes.recusar("forma", "Escolha como o cliente pagou: dinheiro, Pix, cartão ou cheque.");
+                throw Validacoes.recusar("forma", "Escolha como o cliente pagou: dinheiro, Pix, cartão, cheque ou crédito do cliente.");
+            }
+            if (CREDITO.equals(p.forma()) && p.creditoId() == null) {
+                throw Validacoes.recusar("creditoId", "Escolha o crédito do cliente usado no pagamento.");
+            }
+            if (!CREDITO.equals(p.forma()) && p.creditoId() != null) {
+                throw Validacoes.recusar("creditoId", "O crédito só vale com a forma de pagamento crédito do cliente.");
+            }
+            if (p.creditoId() != null && !creditosUsados.add(p.creditoId())) {
+                throw Validacoes.recusar("pagamentos", "O mesmo crédito aparece mais de uma vez. Use o crédito uma vez só.");
             }
             UUID id = Validacoes.idDoPedido(p.id());
             if (!ids.add(id)) {
                 throw Validacoes.recusar("pagamentos", "O mesmo pagamento aparece mais de uma vez.");
             }
-            pagamentos.add(new Pagamento(id, dinheiro(p.valor(), "valor"), p.forma()));
+            pagamentos.add(new Pagamento(id, dinheiro(p.valor(), "valor"), p.forma(), p.creditoId()));
         }
         return pagamentos;
     }
@@ -476,13 +615,14 @@ public class ServicoDeVendas {
         Map<UUID, Pagamento> pagos = new LinkedHashMap<>();
         pagamentos.forEach(p -> pagos.put(p.id(), p));
         List<Map<String, Object>> gravados = jdbc.queryForList(
-                "SELECT id, forma, valor FROM corona.pagamentos_cliente WHERE venda_id = ? AND tipo = 'PAGAMENTO'", id);
+                "SELECT id, forma, valor, credito_id FROM corona.pagamentos_cliente WHERE venda_id = ? AND tipo = 'PAGAMENTO'", id);
         if (gravados.size() != pagos.size()) {
             return false;
         }
         for (Map<String, Object> g : gravados) {
             Pagamento p = pagos.get(g.get("id"));
-            if (p == null || !p.forma().equals(g.get("forma")) || p.valor().compareTo((BigDecimal) g.get("valor")) != 0) {
+            if (p == null || !p.forma().equals(g.get("forma")) || p.valor().compareTo((BigDecimal) g.get("valor")) != 0
+                    || !java.util.Objects.equals(p.creditoId(), g.get("credito_id"))) {
                 return false;
             }
         }
