@@ -93,6 +93,57 @@ Correção crítica (issue #127, PR #128): o estresse das duas pontas com a seme
 
 **Não fiz:** nada na API nem na quarentena (aceitar computador trocado na quarentena seria um segundo caminho de envio, contra o item 14); nenhuma migração.
 
+## Correção: pull perde cliente
+
+Correção crítica (issue #130, PR #133): no CI do PR #129, o estresse das duas pontas falhou dizendo que um cliente que estava no servidor faltava em dois computadores (`V0` e `V1`, "falta no computador (servidor: versão 1)"). A mesma semente passava em outras rodadas. Diagnóstico e plano no PR, aprovados pela orquestradora.
+
+**O que acontecia (em linguagem simples).** Nada se perdia: o defeito era **do teste**, na conferência do fim. Para conferir, o teste ligava a internet de um computador de cada vez, na ordem, esperava ele enviar e receber, e passava para o próximo. Se um computador do fim da fila ainda tinha um cliente guardado (estava sem internet ou esperando depois de um erro da rede), ele só enviava na vez dele, e os que vieram antes já tinham recebido pela última vez. O teste então cobrava deles um cliente que o servidor ainda não tinha quando eles receberam. Passava só quando a volta automática do programa caía por acaso no meio. É exatamente o que a issue mostra: o cliente foi criado pelo `V2` e faltou só em `V0` e `V1`, os dois primeiros da fila. No computador de verdade, o cliente chegaria no ciclo seguinte.
+
+**Evidência.** O registro do CI (o último envio do `V2` com erro 502 dois segundos antes da conferência), a reprodução sempre vermelha (hoje o caso 5b) e o cursor de quem ficou sem o cliente **antes** da linha dele no servidor (o recebimento seguinte entrega; se o cursor tivesse passado por cima, nunca entregaria). O servidor (`ServicoDePull`, limite seguro do `sync_seq`) e o diretório de clientes estão certos; o `EstresseDoPullTest` confirma o lado do servidor.
+
+**Dois achados a mais, também do teste.**
+
+1. **A semana da dona passava do limite da API durante 1/3 do tempo.** O número da semana de teste era `segundos % 150000`, mas a API aceita até 100000. Nessas horas (a de 13/11/2026 ia de ~06:06 a ~20:00 UTC), toda maleta das duas pontas recebia 400 e o `sync-duas-pontas` falhava em **qualquer** PR. Agora começa entre 1 e 90000 (`1 + segundos % 90000`) e as seguintes voltam ao começo se passarem de 100000.
+2. **`Aparelho.sincronizar` girava em falso.** Logo depois de um ciclo, a agenda do motor ainda está "rodando" por um instante; o pedido do teste nesse meio-tempo só marcava "pedido durante o ciclo", e o teste esperava, volta após volta, o ciclo que a própria agenda disparava (na reprodução, 52 s e 682 recebimentos numa vez só). Agora o teste cede a vez antes de pedir.
+
+**O que mudou (só `testes-sync/`; o Corona Vendas e a API não mudaram)**
+
+- `afirmacoes.ts` (`afirmarNoFim`): liga a internet de **todos** os computadores vivos de uma vez e dá voltas (cada um envia e recebe até zerar) até uma volta inteira em que o retrato do servidor não mudou (md5 de `tabela:id:versão` das 15 tabelas que vão ao vendedor), no máximo 5; se não parar, é falha com a contagem de linhas de cada volta. O log diz quantas voltas foram. Na falha, o relatório traz, para cada linha que faltou, o `sync_xid`/`sync_seq` dela, o envio no `sync_log` e o cursor e o último recebimento de cada computador. O oráculo não ficou mais frouxo: uma linha que o cursor pulou continua faltando, porque mais voltas só entregam o que está depois do cursor.
+- `aparelho.ts` (`sincronizar`): `setImmediate` antes do `internetVoltou()`.
+- `proxy-de-rede-ruim.ts`: a hora de cada pedido no histórico e no relatório.
+- `dona.ts`: `semanaInicial` e `numeroDaSemana` dentro dos limites da API.
+- `README.md` do `testes-sync`: a afirmação em voltas, o limite da semana e os casos 5b e 6b.
+
+**Testes (escritos antes da correção; SQLCipher, PostgreSQL e API de verdade)**
+
+- Duas pontas, `varios-aparelhos` caso **5b**: a Ana (relógio sem aceleração, para a volta automática dela não cair no meio) e a Bia; a Bia cadastra um cliente sem internet e a conferência do fim pega as duas, a Ana primeiro. Antes da correção: vermelho com a mesma mensagem da issue (`Ana: clientes:… falta no computador (servidor: versão 1)`, semente 1404852074), e a vez da Ana levou 109 s. Depois: verde em 5,8 s.
+- `dona.test.ts` (sem API): a primeira semana cabe no limite em todo segundo de 200000 segundos seguidos (a conta se repete a cada 90000), com folga de 10000; a hora da issue dá uma semana válida; as seguintes cabem para qualquer contador; e os limites usados são os do `SemanasDaDonaController` (lidos do código da API). Antes da correção: vermelho.
+- `proxy-de-rede-ruim.test.ts`: o histórico traz a hora de cada pedido, em ordem. Antes: vermelho.
+- Os 5 arquivos de duas pontas (17 testes, com o estresse curto, semente 1405156511) verdes às 07:20 UTC de 13/11, dentro da janela em que a semana antiga derrubava toda maleta.
+
+**Estresse curto (PT1M), 10 rodadas seguidas, uma de cada vez (jar da API sem mudança), todas verdes**, cada uma com uma troca de computador e cerca de 340 vendas, 110 clientes, 140 estornos e 45 quedas de internet:
+
+| Rodada | Semente | Voltas da conferência do fim | Linhas nas 15 tabelas |
+| --- | --- | --- | --- |
+| 1 | 1405366384 | 1 | 1874 |
+| 2 | 1405462216 | 1 | 1741 |
+| 3 | 1405558951 | 1 | 1769 |
+| 4 | 1405654906 | 1 | 1689 |
+| 5 | 1405749256 | 1 | 1821 |
+| 6 | 1405843925 | 1 | 1639 |
+| 7 | 1405937922 | 1 | 1760 |
+| 8 | 1406032559 | 1 | 1785 |
+| 9 | 1406126210 | 1 | 1769 |
+| 10 | 1406220141 | 1 | 1825 |
+
+Mais a semente do CI que falhou na issue (`43360365851`, o número da rodada do CI): verde, 1 volta. Todas precisaram de 1 volta só. O plano esperava ver às vezes 2. Com a internet de todos ligada de uma vez, o que estava guardado sai logo, antes do primeiro retrato, e a primeira volta já acha o servidor parado. A volta extra fica como garantia para quando um envio chega depois disso (o caso que o 5b reproduz e a passada única deixava passar).
+
+**`EstresseDoPullTest` (servidor, PostgreSQL de verdade), verde:** `PT20S` (202 transações confirmadas, 11553 linhas recebidas, 1063 registros conferidos), junto com o `EstresseDoPullComFiltroTest`, e uma rodada `PT2M` (3842 transações confirmadas, 105 transações longas, 39633 linhas recebidas, 20732 registros conferidos), semente 20261109.
+
+**Riscos que ficam:** se um dia algum processo agendado da API gravar sem parar nas 15 tabelas durante o teste, a conferência do fim falha depois de 5 voltas (com a explicação); hoje nenhum grava nelas no ambiente de teste. A conferência ficou mais rápida (sem o giro em falso).
+
+**Não fiz:** nada no `ServicoDePull`, no motor nem no aplicador do Corona Vendas (nada lá estava errado); nenhuma migração; o limite de 100000 da API ficou como está.
+
 ## Tarefa 6.5: crédito do cliente e troca
 
 Tarefa crítica: plano em [plano-6-5-credito-e-troca.md](plano-6-5-credito-e-troca.md), aprovado no PR #129 (dúvidas T1 a T14 pelo padrão de cada uma). Começada por uma conta e terminada por outra (o limite de uso parou a primeira no passo 7); a fase CÓDIGO seguiu a "Ordem dos commits" do plano, um commit por passo.

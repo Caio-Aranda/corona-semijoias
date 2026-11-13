@@ -115,6 +115,26 @@ describe('duas pontas: vários computadores', () => {
     }
   });
 
+  it('5b. cliente cadastrado sem internet por quem sincroniza por último chega a quem sincronizou antes (issue #130)', async () => {
+    // A Ana tem o relógio sem aceleração: a volta automática dela (60 s) não cai por acaso entre o envio da Bia e a
+    // comparação, que era o que fazia a falha da issue aparecer só "às vezes".
+    const ana = await cenario.vendedor('Ana', { aceleracao: 1 });
+    const bia = await cenario.vendedor('Bia');
+    await Promise.all([ana.aparelho.sincronizar(), bia.aparelho.sincronizar()]);
+
+    // A Bia cadastra um cliente sem internet; ele fica aguardando no computador dela.
+    bia.aparelho.semInternet();
+    const clienteDaBia = await Tela.cliente(bia.aparelho, 'Cliente da Bia');
+    expect(bia.aparelho.estado().aguardando).toBe(1);
+
+    // A Ana vem antes da Bia na lista: a afirmação final tem de entregar a ela o cliente que a Bia só envia depois.
+    await cenario.afirmarNoFim([ana.aparelho, bia.aparelho]);
+    expect(
+      await contar(`SELECT count(*) FROM corona.clientes WHERE id = ${texto(clienteDaBia)}`),
+    ).toBe(1);
+    expect(ana.aparelho.ler('SELECT id FROM clientes WHERE id = ?', clienteDaBia)).toHaveLength(1);
+  });
+
   it('6. segundo computador e troca: o novo espera a dona, o antigo ainda envia o que guardou e depois apaga tudo', async () => {
     const [peca] = await cenario.pecas(1);
     const gabi = await cenario.vendedor('Gabi');

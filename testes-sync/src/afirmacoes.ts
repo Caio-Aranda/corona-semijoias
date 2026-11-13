@@ -41,7 +41,7 @@ export function relatorio(semente: number, aparelhos: readonly Aparelho[]): stri
         .slice(-25)
         .map(
           (p) =>
-            `  #${p.numero} ${p.metodo} ${p.caminho.split('?')[0]} ${p.falha ?? 'ok'} servidor=${p.servidorRespondeu ? p.statusDoServidor : '-'}`,
+            `  #${p.numero} ${p.em} ${p.metodo} ${p.caminho.split('?')[0]} ${p.falha ?? 'ok'} servidor=${p.servidorRespondeu ? p.statusDoServidor : '-'}`,
         ),
       `--- ${a.nome}: registro do app (o final):`,
       ...a.registro.slice(-15).map((l) => `  ${l}`),
@@ -94,14 +94,111 @@ async function destinos(vendedores: string[]): Promise<{
   return { porId, existentes: new Set(existentes.map((e) => e.id)), vendasPorVendedor };
 }
 
+/** Quantas voltas a afirmação final dá, no máximo, esperando o servidor parar de mudar. */
+export const MAXIMO_DE_VOLTAS = 5;
+
+/** Retrato do servidor nas 15 tabelas que o Corona Vendas copia (toda mudança, inclusive a lápide, sobe a versão). */
+interface Retrato {
+  linhas: number;
+  resumo: string;
+}
+
+async function retratoDoServidor(): Promise<Retrato> {
+  const uniao = TABELAS.map(
+    (t) => `SELECT '${t}' AS tabela, id::text AS id, version FROM corona.${t}`,
+  ).join('\n  UNION ALL ');
+  const [r] = await consultar<{ linhas: number; resumo: string }>(
+    `SELECT count(*)::int AS linhas,
+            md5(coalesce(string_agg(tabela || ':' || id || ':' || version, ',' ORDER BY tabela, id), '')) AS resumo
+       FROM (${uniao}) linhas_do_pull`,
+  );
+  return { linhas: r?.linhas ?? 0, resumo: r?.resumo ?? '' };
+}
+
+/**
+ * Rede boa para todos os computadores vivos de uma vez e voltas (cada um envia e recebe até zerar) até uma volta inteira
+ * em que o servidor não mudou: aí todo computador recebeu depois do último envio de qualquer outro (issue #130). Uma
+ * passada só deixava sem receber quem vinha antes na lista de alguém que ainda tinha o que enviar. Uma perda de verdade
+ * no recebimento (cursor que passou por cima de uma linha) continua aparecendo: mais voltas só entregam o que está depois
+ * do cursor de cada um.
+ */
+async function enviarEReceberAteOServidorParar(
+  vivos: readonly Aparelho[],
+): Promise<{ voltas: number; parou: boolean; retratos: Retrato[] }> {
+  if (vivos.length === 0) return { voltas: 0, parou: true, retratos: [] };
+  for (const a of vivos) a.comInternet();
+  let antes = await retratoDoServidor();
+  const retratos = [antes];
+  for (let volta = 1; volta <= MAXIMO_DE_VOLTAS; volta++) {
+    for (const a of vivos) await a.sincronizar(120_000);
+    const depois = await retratoDoServidor();
+    retratos.push(depois);
+    if (depois.resumo === antes.resumo) return { voltas: volta, parou: true, retratos };
+    antes = depois;
+  }
+  return { voltas: MAXIMO_DE_VOLTAS, parou: false, retratos };
+}
+
+/** Uma linha do oráculo que não chegou certa a um computador. */
+interface Falta {
+  aparelho: Aparelho;
+  tabela: string;
+  id: string;
+}
+
+/**
+ * Para cada linha que faltou (as 10 primeiras): onde ela está no registro do servidor (`sync_xid`, `sync_seq`), o envio
+ * que a criou (`sync_log`), e o cursor e o último recebimento de cada computador. Com isso dá para ver se o cursor passou
+ * por cima da linha (perda no recebimento) ou se o computador só não recebeu de novo depois de ela entrar.
+ */
+async function detalharFaltas(
+  faltas: readonly Falta[],
+  vivos: readonly Aparelho[],
+): Promise<string[]> {
+  if (faltas.length === 0) return [];
+  const linhas = ['--- Linhas que faltaram (registro do servidor e cursores):'];
+  const vistas = new Set<string>();
+  for (const f of faltas) {
+    const chave = `${f.tabela}:${f.id}`;
+    if (vistas.has(chave)) continue;
+    vistas.add(chave);
+    if (vistas.size > 10) break;
+    const [noServidor] = await consultar<Record<string, unknown>>(
+      `SELECT version, sync_xid::text AS sync_xid, sync_seq, created_at, updated_at, deleted_at
+         FROM corona.${f.tabela} WHERE id = ${texto(f.id)}`,
+    );
+    const [envio] = await consultar<Record<string, unknown>>(
+      `SELECT tipo, resultado, codigo, recebido_em, vendedor_id::text AS vendedor_id
+         FROM corona.sync_log WHERE id = ${texto(f.id)}`,
+    );
+    const quem = faltas.filter((x) => `${x.tabela}:${x.id}` === chave).map((x) => x.aparelho.nome);
+    linhas.push(
+      `  ${chave} (falta em ${quem.join(', ')}): servidor ${JSON.stringify(noServidor ?? null)}; envio ${envio ? JSON.stringify(envio) : 'nenhum no sync_log (não veio de um envio com este id)'}`,
+    );
+  }
+  for (const a of vivos) {
+    const cursor = a.bancoAberto
+      ? (a.ler<{ valor: string }>("SELECT valor FROM estado_sync WHERE chave = 'cursor'")[0]
+          ?.valor ?? 'nenhum')
+      : 'banco fechado';
+    const ultimoPull = [...a.proxy.historico()]
+      .reverse()
+      .find((p) => p.caminho.startsWith('/api/vendedor/sync/pull') && p.statusDoServidor === 200);
+    linhas.push(
+      `  ${a.nome}: cursor ${cursor}; último recebimento que o servidor respondeu com 200 às ${ultimoPull?.em ?? 'nunca'}`,
+    );
+  }
+  return linhas;
+}
+
 /** O que tem de existir no servidor quando a operação entrou (o cliente alterado não cria nada). */
 function criaAlgo(l: Lancamento): boolean {
   return l.tipo !== 'CLIENTE_ALTERADO';
 }
 
 /**
- * A afirmação final, a mesma para todo cenário e para o estresse (plano, item 3). Rede boa, todo computador vivo envia e
- * recebe até zerar, e então:
+ * A afirmação final, a mesma para todo cenário e para o estresse (plano, item 3). Rede boa para todos os computadores
+ * vivos, e voltas (cada um envia e recebe até zerar) até uma volta inteira sem mudança no servidor (no máximo 5), e então:
  * 1. a cópia local de cada um é igual ao oráculo (toda linha, versão e lápide) e não sobra provisória;
  * 2. nada privado de outro vendedor está na cópia;
  * 3. nenhum marcador proibido passou pela rede, e as colunas locais são só as da lista do pull;
@@ -111,16 +208,30 @@ function criaAlgo(l: Lancamento): boolean {
  */
 export async function afirmarNoFim(o: AfirmacaoFinal): Promise<void> {
   const problemas: string[] = [];
-  for (const a of o.vivos) {
-    a.comInternet();
-    await a.sincronizar(120_000);
-  }
+  const { voltas, parou, retratos } = await enviarEReceberAteOServidorParar(o.vivos);
+  const linhasPorVolta = retratos.map((r) => r.linhas).join(' → ');
+  if (o.vivos.length > 0)
+    console.log(
+      `Afirmação final: ${voltas} ${voltas === 1 ? 'volta' : 'voltas'} até o servidor parar (linhas nas 15 tabelas: ${linhasPorVolta}).`,
+    );
+  if (!parou)
+    problemas.push(
+      `o servidor não parou de mudar em ${MAXIMO_DE_VOLTAS} voltas (linhas nas 15 tabelas: ${linhasPorVolta})`,
+    );
 
   // 1 e 2: a cópia de cada computador vivo.
+  const faltas: Falta[] = [];
   for (const a of o.vivos) {
     const esperado = await oraculo(a.vendedorId);
     const { medidas, provisorias } = copiaLocal(a);
     for (const d of diferencas(esperado, medidas)) problemas.push(`${a.nome}: ${d}`);
+    for (const t of TABELAS) {
+      for (const [id, x] of esperado[t]!) {
+        const y = medidas[t]!.get(id);
+        if (!y || y.versao !== x.versao || y.excluida !== x.excluida)
+          faltas.push({ aparelho: a, tabela: t, id });
+      }
+    }
     for (const p of provisorias) problemas.push(`${a.nome}: provisória sobrando: ${p}`);
     const deOutros = await idsDeOutrosVendedores(a.vendedorId);
     for (const t of TABELAS) {
@@ -219,8 +330,19 @@ export async function afirmarNoFim(o: AfirmacaoFinal): Promise<void> {
   }
 
   if (problemas.length > 0) {
+    const detalhe = await detalharFaltas(faltas, o.vivos).catch((erro: unknown) => [
+      `--- Não consegui detalhar as linhas que faltaram: ${erro instanceof Error ? erro.message : String(erro)}`,
+    ]);
     throw new Error(
-      `A afirmação final falhou (${problemas.length}):\n${problemas.slice(0, 60).join('\n')}\n\n${relatorio(o.semente, o.todos)}`,
+      [
+        `A afirmação final falhou (${problemas.length}):`,
+        ...problemas.slice(0, 60),
+        '',
+        `Afirmação final: ${voltas} voltas (linhas nas 15 tabelas: ${linhasPorVolta}).`,
+        ...detalhe,
+        '',
+        relatorio(o.semente, o.todos),
+      ].join('\n'),
     );
   }
 }

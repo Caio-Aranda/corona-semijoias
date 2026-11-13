@@ -223,6 +223,11 @@ export class Aparelho {
       async () => {
         const antes = this.app.motor.envioEmAndamento();
         if (antes) await antes;
+        // Cede a vez antes de pedir o ciclo: quando o ciclo acaba, a agenda do motor ainda está "rodando" até o `.then`
+        // dela rodar. Pedir nesse meio-tempo só marcava "pedido durante o ciclo" e a volta seguinte esperava o ciclo que a
+        // própria agenda disparava, de novo e de novo (giro em falso, issue #130). Depois de ceder, a agenda já terminou:
+        // o pedido abre um ciclo novo, ou o ciclo que ela acabou de abrir (já depois deste pedido) vale como o nosso.
+        await new Promise<void>((ok) => setImmediate(ok));
         this.app.motor.internetVoltou();
         const nosso = this.app.motor.envioEmAndamento();
         if (!nosso) return false;
