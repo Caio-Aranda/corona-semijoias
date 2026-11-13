@@ -1963,6 +1963,36 @@
         },
         "type" : "object"
       },
+      "LinhaDaVendaComAPeca" : {
+        "properties" : {
+          "devolvidas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "itemVendaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "podemVoltar" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "produto" : {
+            "$ref" : "#/components/schemas/ConsultasDeVendasPeca"
+          },
+          "totalDaLinha" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendidas" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "LinhaDeAlteracao" : {
         "properties" : {
           "acao" : {
@@ -3606,6 +3636,22 @@
         },
         "type" : "object"
       },
+      "PecaDevolvida" : {
+        "properties" : {
+          "estado" : {
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "PedidoComMotivo" : {
         "properties" : {
           "motivo" : {
@@ -3638,6 +3684,40 @@
             "type" : "string"
           },
           "observacoes" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "PedidoDaDevolucaoDaDona" : {
+        "properties" : {
+          "formaReembolso" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/PecaDevolvida"
+            },
+            "type" : "array"
+          },
+          "motivo" : {
+            "type" : "string"
+          },
+          "observacao" : {
+            "type" : "string"
+          },
+          "valorConferido" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendaId" : {
+            "format" : "uuid",
             "type" : "string"
           }
         },
@@ -6550,6 +6630,63 @@
         },
         "type" : "object"
       },
+      "VendaComAPeca" : {
+        "properties" : {
+          "aPrazo" : {
+            "type" : "boolean"
+          },
+          "clienteId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "clienteNome" : {
+            "type" : "string"
+          },
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDaVendaComAPeca"
+            },
+            "type" : "array"
+          },
+          "prazoArrependimentoAte" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "prazoDefeitoAte" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "total" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "vendidaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "VendasComAPeca" : {
+        "properties" : {
+          "peca" : {
+            "$ref" : "#/components/schemas/ConsultasDeVendasPeca"
+          },
+          "vendas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/VendaComAPeca"
+            },
+            "type" : "array"
+          }
+        },
+        "type" : "object"
+      },
       "VendasDoVendedorControllerPedidoDeEstorno" : {
         "properties" : {
           "id" : {
@@ -8246,6 +8383,76 @@
           "bearer" : [ ]
         } ],
         "summary" : "Devoluções",
+        "tags" : [ "devolucoes-da-dona-controller" ]
+      },
+      "post" : {
+        "description" : "A dona registra a devolução de uma venda à vista de qualquer vendedor, dentro da garantia. A peça vai sempre para a loja (nada entra na maleta do vendedor) e o dinheiro volta na forma escolhida. O limite da semana e o valor de aprovação não valem para a dona. Fora do prazo, venda a prazo, maleta em acerto ou acima do vendido: 409. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409.",
+        "operationId" : "devolverPelaDona",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDaDevolucaoDaDona"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Devolucao"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Registrar a devolução de um cliente pela dona",
+        "tags" : [ "devolucoes-da-dona-controller" ]
+      }
+    },
+    "/api/dona/devolucoes/vendas-com-a-peca" : {
+      "get" : {
+        "description" : "Pelo código lido ou pelo produto: as vendas concluídas de todos os vendedores com a peça, da mais nova para a mais antiga (no máximo 20), com o que ainda pode voltar de cada peça e até que dia vale a garantia. Venda a prazo vem marcada.",
+        "operationId" : "vendasComAPecaDaDona",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "codigo",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "produtoId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/VendasComAPeca"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Vendas com a peça lida (todos os vendedores)",
         "tags" : [ "devolucoes-da-dona-controller" ]
       }
     },
