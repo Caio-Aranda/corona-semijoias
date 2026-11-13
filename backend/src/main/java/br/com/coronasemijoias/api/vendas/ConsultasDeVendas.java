@@ -29,13 +29,14 @@ public class ConsultasDeVendas {
     public record Item(Peca produto, int quantidade, BigDecimal precoUnitario, BigDecimal desconto, BigDecimal total) {
     }
 
-    public record PagamentoLido(UUID id, String tipo, String forma, BigDecimal valor, Instant em) {
+    /** {@code creditoId}: o crédito do cliente da forma {@code CREDITO} (tarefa 6.5). */
+    public record PagamentoLido(UUID id, String tipo, String forma, BigDecimal valor, Instant em, UUID creditoId) {
     }
 
     public record Venda(UUID id, UUID vendedorId, UUID clienteId, String clienteNome, UUID remessaId, String status,
             BigDecimal subtotal, BigDecimal desconto, BigDecimal total, BigDecimal totalDolar, BigDecimal totalGuarani,
             Cotacao cotacao, BigDecimal pago, BigDecimal devolvido, BigDecimal aReceber, Instant vendidaEm, Instant estornadaEm,
-            String motivoDoEstorno, List<Item> itens, List<PagamentoLido> pagamentos) {
+            String motivoDoEstorno, UUID trocaId, List<Item> itens, List<PagamentoLido> pagamentos) {
     }
 
     private final JdbcTemplate jdbc;
@@ -81,7 +82,7 @@ public class ConsultasDeVendas {
     private List<Venda> consultar(String onde, Object[] args) {
         List<Venda> cabecas = jdbc.query("""
                 SELECT v.id, v.vendedor_id, v.cliente_id, c.nome, v.remessa_id, v.status, v.subtotal, v.desconto, v.total,
-                       v.vendida_em, v.estornada_em, v.motivo_estorno, ct.data_cotacao, ct.usd_venda, ct.pyg_venda,
+                       v.vendida_em, v.estornada_em, v.motivo_estorno, v.troca_id, ct.data_cotacao, ct.usd_venda, ct.pyg_venda,
                        coalesce((SELECT sum(p.valor) FROM corona.pagamentos_cliente p WHERE p.venda_id = v.id), 0) AS liquido,
                        coalesce((SELECT sum(d.valor_devolvido) FROM corona.devolucoes d
                                   WHERE d.venda_id = v.id AND d.situacao <> 'CANCELADA' AND d.deleted_at IS NULL), 0) AS devolvido
@@ -107,7 +108,7 @@ public class ConsultasDeVendas {
                             pyg == null ? null : ConversaoDeMoeda.paraGuarani(total, pyg), cotacao, pago, devolvido, aReceber,
                             rs.getTimestamp("vendida_em").toInstant(),
                             rs.getTimestamp("estornada_em") == null ? null : rs.getTimestamp("estornada_em").toInstant(),
-                            rs.getString("motivo_estorno"), new ArrayList<>(), new ArrayList<>());
+                            rs.getString("motivo_estorno"), rs.getObject("troca_id", UUID.class), new ArrayList<>(), new ArrayList<>());
                 }, args);
         for (Venda v : cabecas) {
             v.itens().addAll(jdbc.query("""
@@ -122,9 +123,10 @@ public class ConsultasDeVendas {
                                 preco.multiply(BigDecimal.valueOf(q)).subtract(desconto));
                     }, v.id()));
             v.pagamentos().addAll(jdbc.query("""
-                    SELECT id, tipo, forma, valor, pago_em FROM corona.pagamentos_cliente WHERE venda_id = ?
+                    SELECT id, tipo, forma, valor, pago_em, credito_id FROM corona.pagamentos_cliente WHERE venda_id = ?
                      ORDER BY pago_em, id""", (rs, n) -> new PagamentoLido(rs.getObject("id", UUID.class), rs.getString("tipo"),
-                            rs.getString("forma"), rs.getBigDecimal("valor"), rs.getTimestamp("pago_em").toInstant()), v.id()));
+                            rs.getString("forma"), rs.getBigDecimal("valor"), rs.getTimestamp("pago_em").toInstant(),
+                            rs.getObject("credito_id", UUID.class)), v.id()));
         }
         return cabecas;
     }

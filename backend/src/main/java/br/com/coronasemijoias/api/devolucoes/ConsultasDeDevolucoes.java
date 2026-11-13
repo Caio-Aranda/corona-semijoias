@@ -40,13 +40,15 @@ public class ConsultasDeDevolucoes {
 
     /**
      * {@code motivosRevisao}: por que a devolução está (ou esteve) para revisão, na ordem fixa de
-     * {@link MotivoDaRevisao}; vazio na aceita. {@code pendenciaDoVendedor}: o valor que o vendedor deve quando a dona
+     * {@link MotivoDaRevisao}; vazio na aceita. {@code valorReembolsado} é só o dinheiro; {@code valorEmCredito}, o que voltou
+     * como crédito do cliente (tarefa 6.5). {@code pendenciaDoVendedor}: o valor que o vendedor deve quando a dona
      * não aceitou (tarefa 6.4; o acerto passa a cobrar na tarefa 7.5); vazio nas outras situações.
      */
     public record Devolucao(UUID id, UUID vendaId, UUID vendedorId, UUID clienteId, String clienteNome, UUID remessaId,
             String motivo, String observacao, String destino, boolean dentroGarantia, String situacao,
             BigDecimal valorDevolvido, BigDecimal valorDevolvidoDolar, BigDecimal valorDevolvidoGuarani,
-            BigDecimal valorReembolsado, String formaReembolso, Cotacao cotacao, Instant devolvidaEm, boolean horaAjustada,
+            BigDecimal valorReembolsado, BigDecimal valorEmCredito, String formaReembolso, Cotacao cotacao, Instant devolvidaEm,
+            boolean horaAjustada,
             Instant canceladaEm, String motivoCancelamento, UUID autorizacaoId, List<String> motivosRevisao,
             Instant revisadaEm, String observacaoRevisao, BigDecimal pendenciaDoVendedor, List<ItemDaDevolucao> itens) {
     }
@@ -188,7 +190,7 @@ public class ConsultasDeDevolucoes {
     private List<Devolucao> consultarOrdenado(String ondeEOrdem, Object[] args) {
         List<Devolucao> cabecas = jdbc.query("""
                 SELECT d.id, d.venda_id, d.vendedor_id, d.cliente_id, c.nome, d.remessa_id, d.motivo, d.observacao, d.destino,
-                       d.dentro_garantia, d.situacao, d.valor_devolvido, d.valor_reembolsado, d.forma_reembolso,
+                       d.dentro_garantia, d.situacao, d.valor_devolvido, d.valor_reembolsado, d.valor_em_credito, d.forma_reembolso,
                        d.devolvida_em, d.hora_ajustada, d.cancelada_em, d.motivo_cancelamento, d.autorizacao_id,
                        d.revisao_fora_do_prazo, d.revisao_acima_do_limite_semanal, d.revisao_acima_do_valor_de_aprovacao,
                        d.revisao_autorizacao_invalida, d.revisao_reembolso_maior_que_pago, d.revisada_em, d.observacao_revisao,
@@ -214,7 +216,7 @@ public class ConsultasDeDevolucoes {
                             rs.getString("destino"), rs.getBoolean("dentro_garantia"), situacao, devolvido,
                             usd == null ? null : ConversaoDeMoeda.paraDolar(devolvido, usd),
                             pyg == null ? null : ConversaoDeMoeda.paraGuarani(devolvido, pyg),
-                            rs.getBigDecimal("valor_reembolsado"), rs.getString("forma_reembolso"), cotacao,
+                            rs.getBigDecimal("valor_reembolsado"), rs.getBigDecimal("valor_em_credito"), rs.getString("forma_reembolso"), cotacao,
                             rs.getTimestamp("devolvida_em").toInstant(), rs.getBoolean("hora_ajustada"),
                             rs.getTimestamp("cancelada_em") == null ? null : rs.getTimestamp("cancelada_em").toInstant(),
                             rs.getString("motivo_cancelamento"), rs.getObject("autorizacao_id", UUID.class), List.copyOf(motivos),

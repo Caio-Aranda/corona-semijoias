@@ -1,6 +1,6 @@
 # Especificação completa: Sistema de Semijoias Consignadas
 
-Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.10, 12/11/2026.
+Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.11, 13/11/2026.
 
 ## 1. Objetivo e contexto
 
@@ -158,7 +158,11 @@ Regras:
 - **Fora do prazo:** o app bloqueia e oferece só o pedido de **autorização da dona**, que é resolvido online. O vendedor não conclui sozinho. A autorização aprovada vale **7 dias** e só serve para uma devolução.
 - A validação ocorre no app (offline) e de novo no servidor. Se a hora do aparelho divergir, **o servidor decide**; mas o que já aconteceu no balcão **nunca é recusado em silêncio**: a devolução que o app achou dentro do prazo e o servidor acha fora entra **para revisão da dona** (ela mantém, ou não aceita e o valor vira pendência do vendedor no próximo acerto). Recusa só para o impossível (venda de outro vendedor, quantidade acima da vendida).
 - **Diferença na troca:** B vale mais, o cliente paga a diferença (à vista ou a prazo); B vale menos, a diferença vira **crédito** do cliente (usado em compra futura; padrão até a dona responder, dúvida D4). A troca é **uma operação só** (tudo ou nada) e não tem tabela de itens própria: as linhas ficam na devolução e na venda nova.
-- **Crédito do cliente:** é usado como forma de pagamento `CREDITO` numa venda nova; não vence; **sem internet só o vendedor que o gerou pode usá-lo**; a dona usa e transfere online. Crédito já usado impede cancelar a troca que o gerou.
+- **O dinheiro da troca passa pelo crédito** (um caminho só): na venda de A, o valor devolvido vira um `REEMBOLSO` na forma `CREDITO` (nenhum dinheiro sai) e nasce um crédito do cliente com esse valor; na venda de B, o crédito entra como `PAGAMENTO` na forma `CREDITO`, no valor do menor entre A e B; o resto de B o cliente paga (à vista, a prazo ou com outro crédito dele) e, se B for mais barata, a sobra fica como crédito em aberto. A troca devolve peças de **uma** venda só; B sai de uma maleta conferida do vendedor (pode ser outra que não a de A).
+- A troca passa pelo prazo da garantia e pela autorização da dona como a devolução, mas fica **fora do limite de reembolso da semana e do valor de aprovação**: nenhum dinheiro sai. A taxa de devolução continua contando a troca como devolução de A e venda de B.
+- **Crédito do cliente:** é usado como forma de pagamento `CREDITO` numa venda nova, **do mesmo cliente**; não vence; quem usa é **só o vendedor dono do crédito** (o que o gerou, ou o vendedor para quem a dona o transferiu), com ou sem internet. Acima do saldo é recusado. A dona **transfere** online o saldo inteiro para outro vendedor (nasce um crédito novo para ele; o original fica usado). Crédito já usado impede cancelar a troca que o gerou.
+- **Venda paga com crédito:** o estorno dela devolve o crédito (o uso é estornado e o crédito volta a ficar em aberto). Na devolução dela, o que foi pago em crédito volta **primeiro** como crédito novo do cliente (origem `DEVOLUCAO`) e só o resto volta em dinheiro, na forma escolhida. O limite da semana e o valor de aprovação olham só o dinheiro.
+- A venda nova e a devolução de uma troca só se desfazem pelo **"Cancelar troca"** (o estorno da venda e o "Cancelar devolução" recusam). "Cancelar troca" é recusado se a sobra do crédito já foi usada em outra venda, se a peça A já foi vendida de novo ou se uma das maletas não está mais com o vendedor.
 - **Corrigir:** devolução ou troca errada se corrige com "Cancelar devolução" ou "Cancelar troca" (registro novo de sinal oposto, nunca edição): o vendedor até o fim do dia, depois só a dona.
 - **Tratamento financeiro do reembolso:**
   - venda já paga: o vendedor devolve o dinheiro e registra; no acerto o valor é **abatido** do repasse;
@@ -295,19 +299,20 @@ Risco: etiquetas muito pequenas ou de baixa qualidade podem exigir leitor 2D ou 
 
 - `vendas` (cliente, vendedor, remessa, data, status, total, desconto, chave de idempotência)
 - `itens_venda` (venda, produto, quantidade, preço unitário)
-- `pagamentos_cliente` (venda, valor, forma, data, `tipo: PAGAMENTO | REEMBOLSO`; reembolso é registro negativo)
+- `pagamentos_cliente` (venda, valor, `forma: DINHEIRO | PIX | CARTAO | CHEQUE | CREDITO`, data, `tipo: PAGAMENTO | REEMBOLSO | ESTORNO_REEMBOLSO`; reembolso é registro negativo; `credito_id` obrigatório se e só se a forma é `CREDITO`; `devolucao_id` e `estorna_id` no reembolso da devolução e no estorno dele)
+- `vendas.troca_id`: a troca da qual a venda é a peça nova (B); conferida pelo banco no fim da transação
 
 ### Devolução e troca
 
 Modelo no ADR-0014 (tabelas criadas nas tarefas 6.3 a 6.5; todas imutáveis, correção por registro de sinal oposto):
 
-- `devolucoes` (venda, cliente, vendedor, remessa, motivo, observação, `destino: REEMBOLSO | TROCA`, dentro\_garantia, `situacao: ACEITA | EM_REVISAO | MANTIDA | NAO_ACEITA | CANCELADA`, autorizacao\_id, valor\_devolvido, valor\_reembolsado, hora e hora ajustada)
+- `devolucoes` (venda, cliente, vendedor, remessa, motivo, observação, `destino: REEMBOLSO | TROCA`, dentro\_garantia, `situacao: ACEITA | EM_REVISAO | MANTIDA | NAO_ACEITA | CANCELADA`, autorizacao\_id, valor\_devolvido, valor\_reembolsado (só o dinheiro), valor\_em\_credito (o que voltou como crédito do cliente; na troca, o valor devolvido inteiro), hora e hora ajustada)
 - `itens_devolucao` (devolução, item da venda, quantidade, valor, `estado_peca: BOA | DEFEITO`, `destino_peca: MALETA | LOJA`)
-- `trocas` (venda de origem, devolução, venda nova, cliente, vendedor, diferença). **Não existe `itens_troca`**: as linhas estão na devolução e na venda nova (`vendas.troca_id`); na maleta, os tipos `TROCA_ENTRADA` e `TROCA_SAIDA` separam a troca da devolução.
-- `creditos_cliente` (cliente, vendedor que gerou, origem `TROCA | DEVOLUCAO`, valor, valor\_utilizado, situação ABERTO/UTILIZADO) e `usos_credito` (crédito, venda, valor)
+- `trocas` (venda de origem, devolução, venda nova, cliente, vendedor, diferença com sinal = total de B − valor devolvido de A, cotação do dia, `situacao: ATIVA | CANCELADA` e os dados do cancelamento). **Não existe `itens_troca`**: as linhas estão na devolução e na venda nova (`vendas.troca_id`); na maleta, os tipos `TROCA_ENTRADA` e `TROCA_SAIDA` separam a troca da devolução. O banco confere no fim da transação que a devolução é `TROCA` da venda de origem, que a venda nova aponta para a troca e que a diferença bate.
+- `creditos_cliente` (cliente, vendedor dono do crédito, `origem: TROCA | DEVOLUCAO | TRANSFERENCIA`, troca, devolução ou crédito de origem, valor, valor\_utilizado, `situacao: ABERTO | UTILIZADO | CANCELADO`, cotação do dia; `valor_utilizado` é sempre a soma dos usos) e `usos_credito` (imutável: crédito, `tipo: USO | ESTORNO | TRANSFERENCIA`, venda e pagamento no uso e no estorno, crédito de destino na transferência, valor; o estorno é negativo e aponta para o uso que desfaz)
 - `autorizacoes_excecao` (venda, vendedor, cliente, motivo, observação, `tipo: FORA_DO_PRAZO | ACIMA_DO_VALOR`, `situacao: PEDIDA | APROVADA | NEGADA | USADA | VENCIDA`, valor pedido calculado pelo servidor, cotação do dia, quem pediu e quando, quem decidiu, quando, motivo da negação e `valida_ate`, o último dia de Brasília em que vale)
 - `itens_autorizacao` (autorização, item da venda, quantidade; imutável)
-- Em `devolucoes`, a revisão: uma coluna booleana por motivo (`revisao_fora_do_prazo`, `revisao_acima_do_limite_semanal`, `revisao_acima_do_valor_de_aprovacao`, `revisao_autorizacao_invalida`, `revisao_reembolso_maior_que_pago`; a do crédito chega com a tarefa 6.5), `revisada_em`, `revisada_por` e `observacao_revisao`. Em revisão, mantida ou não aceita exige ao menos um motivo; aceita, nenhum. Uma devolução por autorização.
+- Em `devolucoes`, a revisão: uma coluna booleana por motivo (`revisao_fora_do_prazo`, `revisao_acima_do_limite_semanal`, `revisao_acima_do_valor_de_aprovacao`, `revisao_autorizacao_invalida`, `revisao_reembolso_maior_que_pago`; a do crédito usado acima do saldo pelo envio chega com a tarefa 6.7; até lá, acima do saldo é recusado), `revisada_em`, `revisada_por` e `observacao_revisao`. Em revisão, mantida ou não aceita exige ao menos um motivo; aceita, nenhum. Uma devolução por autorização.
 
 ### Acerto e financeiro
 
@@ -746,3 +751,6 @@ Importação com nome de arquivo inválido, foto duplicada, arquivo corrompido, 
 - **v1.10, 12/11/2026:** autorização, revisão e antifraude (tarefa 6.4, dúvidas P1 e P3 a P13 do plano aprovadas; P2 com ajuste da orquestradora).
   - §7.3: limite semanal pela semana cadastrada (ou segunda a domingo de Brasília), estrito e em revisão nos dois caminhos; valor de aprovação estrito, recusado online e em revisão pelo envio; autorização dispensa prazo e valor, vale até o dia da aprovação + 7 (Brasília), uma devolução por autorização; manter e não aceitar sem mexer em valores; taxa de devolução em 28 dias de Brasília, calculada na hora.
   - §9: `autorizacoes_excecao` detalhada; `itens_autorizacao` nova; `devolucoes` ganha uma coluna booleana por motivo de revisão e os dados da revisão da dona.
+- **v1.11, 13/11/2026:** crédito do cliente e troca (tarefa 6.5, dúvidas T1 a T14 do plano aprovadas no PR #129).
+  - §7.3: o dinheiro da troca passa pelo crédito (reembolso `CREDITO` na venda de A, pagamento `CREDITO` na venda de B); troca fora do limite da semana e do valor de aprovação, com prazo e autorização; uma venda de origem por troca; crédito só do vendedor dono e do mesmo cliente, recusado acima do saldo; transferência pela dona; estorno de venda paga com crédito devolve o crédito; devolução de venda paga com crédito devolve primeiro o crédito; venda e devolução de troca só pelo "Cancelar troca", com as recusas dele.
+  - §9: `trocas` com a situação e o cancelamento; `vendas.troca_id`; `creditos_cliente` com a origem `TRANSFERENCIA` e a situação `CANCELADO`; `usos_credito` com o tipo; `pagamentos_cliente` com a forma `CREDITO` e `credito_id`; `devolucoes.valor_em_credito`.

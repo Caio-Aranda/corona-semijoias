@@ -33,7 +33,7 @@ O motor do Corona Vendas em Node (SQLCipher de verdade, a mesma montagem do app)
 - `apps/seller-app/src/main/` e `src/shared/`, e o `apps/seller-app/package.json` (o módulo do SQLCipher);
 - `packages/api-client-vendedor/` e `packages/conexao-segura/` (os únicos pacotes que o processo principal do Corona Vendas importa);
 - `package-lock.json` (uma dependência nova pode quebrar o módulo nativo), `infra/` (o init do PostgreSQL) e o workflow;
-- no backend: `pom.xml`, `application.properties`, as migrações (`backend/src/main/resources/db/migration/`) e os pacotes `sync`, `vendas`, `devolucoes` (devolução do cliente, tarefa 6.3), `remessas`, `vendedor` (maleta, conferência, clientes e fotos do vendedor), `cadastros` (clientes, categorias e semanas da loja), `autenticacao`, `sessoes`, `aparelhos`, `aplicativo` (versão mínima), `estoque`, `produtos` e `fotos`.
+- no backend: `pom.xml`, `application.properties`, as migrações (`backend/src/main/resources/db/migration/`) e os pacotes `sync`, `vendas`, `devolucoes` (devolução do cliente, tarefa 6.3), `trocas` e `creditos` (troca e crédito do cliente, tarefa 6.5), `remessas`, `vendedor` (maleta, conferência, clientes e fotos do vendedor), `cadastros` (clientes, categorias e semanas da loja), `autenticacao`, `sessoes`, `aparelhos`, `aplicativo` (versão mínima), `estoque`, `produtos` e `fotos`.
 
 **Risco aceito** (orçamento do Actions até 01/12): uma mudança fora dessa lista que afete o sync (por exemplo em `comum/` (erros, persistência), `seguranca/`, `acessos/`, `usuarios/` ou `vendedores/`) não roda as duas pontas no PR; o `backend` (com o próprio estresse do pull e os testes do sync) continua rodando, e as duas pontas pegam na rodada completa de segunda-feira (o CI agendado roda todos os jobs).
 

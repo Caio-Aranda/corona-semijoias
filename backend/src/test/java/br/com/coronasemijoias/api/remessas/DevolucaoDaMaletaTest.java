@@ -601,21 +601,27 @@ class DevolucaoDaMaletaTest extends TesteDeIntegracao {
         UUID r = enviada(vendedor("1000.00"), p, 5);
         try (Connection c = conectarComoAplicacao()) {
             for (String[] t : new String[][] {{"VENDA", "1"}, {"DEVOLUCAO_DONA", "1"}, {"PERDA", "1"}, {"AVARIA", "1"},
-                    {"TROCA_SAIDA", "1"}, {"ESTORNO_VENDA", "-1"}, {"TROCA_ENTRADA", "-1"}}) {
+                    {"TROCA_SAIDA", "1"}, {"ESTORNO_VENDA", "-1"}}) {
                 assertThatThrownBy(() -> movimentoCru(c, r, p, t[0], Integer.parseInt(t[1]), null))
                         .as(t[0] + " " + t[1]).hasMessageContaining("movimentos_remessa_sinal_pelo_tipo");
                 c.rollback();
             }
             for (String[] t : new String[][] {{"DEVOLUCAO_DONA", "-1"}, {"PERDA", "-1"}, {"AVARIA", "-1"}, {"VENDA", "-1"},
-                    {"TROCA_SAIDA", "-1"}, {"TROCA_ENTRADA", "1"}, {"ESTORNO_VENDA", "1"},
-                    {"AJUSTE", "1"}, {"AJUSTE", "-1"}}) {
+                    {"ESTORNO_VENDA", "1"}, {"AJUSTE", "1"}, {"AJUSTE", "-1"}}) {
                 movimentoCru(c, r, p, t[0], Integer.parseInt(t[1]), null);
                 c.rollback();
             }
             // DEVOLUCAO_CLIENTE só existe ligada a uma devolução do cliente (V036; o sinal dela é conferido em
-            // DevolucaoDoClienteTest): solta, é recusada pelo banco.
+            // DevolucaoDoClienteTest): solta, é recusada pelo banco. TROCA_ENTRADA também (V038), e TROCA_SAIDA só com a
+            // venda nova da troca (o sinal das duas é conferido em TrocaTest).
             assertThatThrownBy(() -> movimentoCru(c, r, p, "DEVOLUCAO_CLIENTE", 1, null))
                     .hasMessageContaining("movimentos_remessa_devolucao_do_tipo");
+            c.rollback();
+            assertThatThrownBy(() -> movimentoCru(c, r, p, "TROCA_ENTRADA", 1, null))
+                    .hasMessageContaining("movimentos_remessa_devolucao_do_tipo");
+            c.rollback();
+            assertThatThrownBy(() -> movimentoCru(c, r, p, "TROCA_SAIDA", -1, null))
+                    .hasMessageContaining("movimentos_remessa_troca_saida_da_venda");
             c.rollback();
             // Estorno: sinal oposto ao do movimento estornado (a devolução desfeita volta positiva).
             UUID saida = UUID.randomUUID();
