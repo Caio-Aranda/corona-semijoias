@@ -728,6 +728,15 @@ class TrocaTest extends ApoioDasTrocas {
         assertThatThrownBy(() -> jdbc.update("UPDATE corona.trocas SET situacao = 'CANCELADA' WHERE id = ?", troca))
                 .isInstanceOf(Exception.class);
         assertThat(jdbc.queryForObject("SELECT status FROM corona.vendas WHERE id = ?", String.class, vendaB)).isEqualTo("CONCLUIDA");
+        // O sinal dos movimentos da troca (V025): TROCA_ENTRADA volta à maleta (positivo) e TROCA_SAIDA sai (negativo).
+        assertThatThrownBy(() -> jdbc.update("""
+                INSERT INTO corona.movimentos_remessa (id, remessa_id, produto_id, tipo, quantidade, venda_id, devolucao_id)
+                VALUES (?, ?, ?, 'TROCA_ENTRADA', -1, ?, ?)""", UUID.randomUUID(), c.maleta(), c.a(), c.vendaA(), devolucao))
+                .hasMessageContaining("movimentos_remessa_sinal_pelo_tipo");
+        assertThatThrownBy(() -> jdbc.update("""
+                INSERT INTO corona.movimentos_remessa (id, remessa_id, produto_id, tipo, quantidade, venda_id)
+                VALUES (?, ?, ?, 'TROCA_SAIDA', 1, ?)""", UUID.randomUUID(), c.maleta(), c.b(), vendaB))
+                .hasMessageContaining("movimentos_remessa_sinal_pelo_tipo");
 
         postar(TROCAS + "/" + troca + "/cancelar", como(c.v()), mapa("id", UUID.randomUUID(), "motivo", "x"))
                 .andExpect(status().isCreated());

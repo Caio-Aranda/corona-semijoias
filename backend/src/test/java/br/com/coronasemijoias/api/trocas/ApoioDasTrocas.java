@@ -197,7 +197,7 @@ public abstract class ApoioDasTrocas extends TesteDeIntegracao {
     protected UUID semana() throws Exception {
         int n = SEQUENCIA.getAndIncrement();
         LocalDate inicio = LocalDate.of(3300, 1, 1).plusDays(10L * n);
-        return UUID.fromString(corpoDe(postar("/api/dona/semanas", dona(), mapa("numero", 70_000 + n,
+        return UUID.fromString(corpoDe(postar("/api/dona/semanas", dona(), mapa("numero", 30_000 + n,
                 "inicio", inicio.toString(), "fim", inicio.plusDays(6).toString())).andExpect(status().isCreated()))
                 .get("id").asString());
     }
