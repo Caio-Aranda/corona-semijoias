@@ -528,7 +528,7 @@ Nota fiscal eletrônica (a nota de remessa é só interna), loja virtual, aplica
 11. Existe alguma planilha atual do cliente para usar na validação dos relatórios e na migração de cadastros?
 12. **Entrada:** o que significa na tela de referência? Valor pago pela vendedora ao levar a maleta, abatido no acerto, ou entrada de venda parcelada? É obrigatória? Como se calcula e o que acontece no acerto? Precisa de resposta antes da Fase 3. **13/11/2026:** a dona não sabe ("creo que es entrada de dinero"); segue o padrão.
 13. ~~Cartão~~ **Respondido em 13/11/2026:** não. O cliente paga **em dinheiro ou por transferência**. Nas telas de venda e de reembolso só aparecem Dinheiro e Transferência (gravada como `PIX`); `CARTAO` e `CHEQUE` continuam aceitos no banco para não quebrar dados antigos.
-14. **Língua das telas (13/11/2026):** a dona quer as telas **em espanhol**. É a última tarefa do projeto, com autorização do responsável. Falta: se o app do vendedor também.
+14. **Língua das telas (13/11/2026):** a dona quer as telas **em espanhol**. É a última tarefa do projeto, com autorização do responsável. **Decisão do responsável (13/11/2026):** os dois apps ficam em espanhol; mais adiante, o app do vendedor terá espanhol e português (escolha da língua), e o da dona só espanhol.
 
 ## 18. Identidade visual: Corona Semijoias
 
@@ -764,4 +764,4 @@ Importação com nome de arquivo inválido, foto duplicada, arquivo corrompido, 
   - §10: tipos novos da outbox, formato 1: `DEVOLUCAO`, `PEDIDO_AUTORIZACAO`, `TROCA`, `CANCELAR_DEVOLUCAO` e `CANCELAR_TROCA`; a `VENDA` continua no formato 1, com o `creditoId` opcional em cada pagamento. O vendedor recebe as devoluções, os pedidos de autorização, as trocas e os créditos dele (sem as colunas que apontam para crédito de outro vendedor) e as vendas com crédito para revisar.
 - **v1.13, 13/11/2026:** respostas da dona por WhatsApp (perguntas de garantia, pagamento, comissão, semana e língua).
   - §7.3 e §9: prazos de arrependimento e de defeito com padrão 45 dias.
-  - §6 (premissa 8) e §17: comissão sobre o valor com desconto e com meta (30% ou 40%, 700.000 Gs), para a Fase 7; cliente paga em dinheiro ou transferência (sem cartão); semana de segunda a domingo com 3 a 4 dias para o acerto; telas em espanhol como última tarefa.
+  - §6 (premissa 8) e §17: comissão sobre o valor com desconto e com meta (30% ou 40%, 700.000 Gs), para a Fase 7; cliente paga em dinheiro ou transferência (sem cartão); semana de segunda a domingo com 3 a 4 dias para o acerto; telas em espanhol como última tarefa (os dois apps; mais adiante, o do vendedor também em português).
