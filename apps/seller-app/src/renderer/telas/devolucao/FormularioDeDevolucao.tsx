@@ -2,7 +2,7 @@ import { Aviso, Botao, Campo, JanelaDeConfirmacao } from '@corona/ui';
 import { useEffect, useRef, useState } from 'react';
 import type { PreviaDaDevolucao } from '../../../shared/dados';
 import {
-  FORMAS_DE_PAGAMENTO,
+  FORMAS_DE_PAGAMENTO_NA_TELA,
   MOTIVOS_DE_DEVOLUCAO,
   type FormaDePagamento,
   type MotivoDeDevolucao,
@@ -186,7 +186,7 @@ export function FormularioDeDevolucao({
 
       <fieldset className="vendas-pagamento">
         <legend>{T.comoDevolveu}</legend>
-        {FORMAS_DE_PAGAMENTO.map((f) => (
+        {FORMAS_DE_PAGAMENTO_NA_TELA.map((f) => (
           <label key={f}>
             <input
               type="radio"

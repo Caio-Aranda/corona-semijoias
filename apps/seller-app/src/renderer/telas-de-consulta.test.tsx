@@ -361,7 +361,7 @@ describe('Meus números', () => {
     expect(within(vendas).queryAllByText(/US\$ 40,00/)).toHaveLength(0);
 
     const receb = screen.getByRole('table', { name: 'Recebimentos por forma de pagamento' });
-    expect(within(receb).getByText('Pix')).toBeInTheDocument();
+    expect(within(receb).getByText('Transferência')).toBeInTheDocument();
     expect(within(receb).getByText('Dinheiro')).toBeInTheDocument();
     expect(screen.getByText(/Total recebido/)).toHaveTextContent('R$ 160,00');
 

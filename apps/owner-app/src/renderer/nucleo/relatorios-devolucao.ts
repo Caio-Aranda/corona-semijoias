@@ -309,7 +309,7 @@ export const RELATORIOS_DE_DEVOLUCAO: Record<NomeDoRelatorioDeDevolucao, Definic
     grupo: 'devolucoes',
     titulo: 'Dinheiro devolvido aos clientes',
     explicacao:
-      'Só o dinheiro que voltou ao cliente (dinheiro, Pix, cartão ou cheque); o crédito não entra. A devolução cancelada aparece com o valor negativo, para o total fechar.',
+      'Só o dinheiro que voltou ao cliente (dinheiro, transferência, cartão ou cheque); o crédito não entra. A devolução cancelada aparece com o valor negativo, para o total fechar.',
     filtros: [...FILTROS],
     extras: [
       MOTIVO,
@@ -320,7 +320,7 @@ export const RELATORIOS_DE_DEVOLUCAO: Record<NomeDoRelatorioDeDevolucao, Definic
         qualquer: 'Todas',
         opcoes: [
           { valor: 'DINHEIRO', rotulo: 'Dinheiro' },
-          { valor: 'PIX', rotulo: 'Pix' },
+          { valor: 'PIX', rotulo: 'Transferência' },
           { valor: 'CARTAO', rotulo: 'Cartão' },
           { valor: 'CHEQUE', rotulo: 'Cheque' },
         ],
@@ -348,7 +348,7 @@ export const RELATORIOS_DE_DEVOLUCAO: Record<NomeDoRelatorioDeDevolucao, Definic
     rotulosDosTotais: {
       geral: 'Dinheiro devolvido (já sem o que foi desfeito)',
       dinheiro: 'Em dinheiro',
-      pix: 'Em Pix',
+      pix: 'Em Transferência',
       cartao: 'No cartão',
       cheque: 'Em cheque',
       desfeitos: 'Devoluções canceladas (o dinheiro voltou para a venda)',

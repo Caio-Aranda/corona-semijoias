@@ -2,7 +2,7 @@ import { Aviso, Botao, Campo, JanelaDeConfirmacao, PainelDePecaLida, Tabela } fr
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import type { Cliente, CreditosDoCliente, LinhaDaMaleta, Maleta, Venda } from '../../shared/dados';
 import {
-  FORMAS_DE_PAGAMENTO,
+  FORMAS_DE_PAGAMENTO_NA_TELA,
   type FormaDePagamento,
   type PagamentoParaEnviar,
 } from '../../shared/operacoes';
@@ -533,7 +533,7 @@ export function TelaVender({ ponte, aoVoltar, aoVerVendas }: TelaVenderProps) {
 
       <fieldset className="vendas-pagamento">
         <legend>{T.pagamento}</legend>
-        {FORMAS_DE_PAGAMENTO.map((f) => (
+        {FORMAS_DE_PAGAMENTO_NA_TELA.map((f) => (
           <label key={f}>
             <input type="radio" name="forma" checked={forma === f} onChange={() => setForma(f)} />{' '}
             {T.formas[f]}

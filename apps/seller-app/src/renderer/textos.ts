@@ -208,7 +208,7 @@ export const TEXTOS = {
     pagamento: 'Como o cliente pagou?',
     formas: {
       DINHEIRO: 'Dinheiro',
-      PIX: 'Pix',
+      PIX: 'Transferência',
       CARTAO: 'Cartão',
       CHEQUE: 'Cheque',
       // O pagamento com o crédito do cliente (tarefa 6.8).

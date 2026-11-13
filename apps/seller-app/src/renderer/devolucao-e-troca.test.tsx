@@ -416,7 +416,10 @@ describe('Devolução', () => {
     expect(screen.getByText('Sem foto')).toBeInTheDocument();
     await u.type(screen.getByLabelText('Quantas voltam: Anel de prata'), '1');
     await u.selectOptions(screen.getByLabelText('Motivo da devolução'), 'Não serviu');
-    await u.click(screen.getByLabelText('Cartão'));
+    // Na tela só Dinheiro e Transferência (tarefa 6.13); Cartão e Cheque saem das opções.
+    expect(screen.queryByLabelText('Cartão')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Cheque')).not.toBeInTheDocument();
+    await u.click(screen.getByLabelText('Transferência'));
     expect(await screen.findByText(/Valor da devolução:/)).toBeInTheDocument();
     expect(
       screen.getByText('O valor é uma prévia. A loja confere quando os dados forem enviados.'),
@@ -432,7 +435,7 @@ describe('Devolução', () => {
       devolucao: {
         vendaId: VENDA,
         motivo: 'TAMANHO',
-        formaReembolso: 'CARTAO',
+        formaReembolso: 'PIX',
         itens: [{ produtoId: ANEL, quantidade: 1, estado: 'BOA' }],
       },
     });
@@ -707,8 +710,8 @@ describe('Vender com crédito, a venda e o cliente', () => {
     await u.click(await screen.findByRole('button', { name: 'Ver minhas vendas' }));
     await u.click(await screen.findByRole('button', { name: 'Ver: Maria Souza' }));
     expect(await screen.findByText('Crédito do cliente')).toBeInTheDocument();
-    expect(screen.getAllByText('Devolução: Pix')).toHaveLength(2);
-    expect(screen.getByText('Devolução cancelada: Pix')).toBeInTheDocument();
+    expect(screen.getAllByText('Devolução: Transferência')).toHaveLength(2);
+    expect(screen.getByText('Devolução cancelada: Transferência')).toBeInTheDocument();
     expect(screen.getByText(/Devolvido:/)).toBeInTheDocument();
     expect(
       screen.getByText('O crédito do cliente já tinha acabado. A dona vai olhar esta venda.'),

@@ -19,6 +19,16 @@ export interface LinhaDaVendaParaEnviar {
 export const FORMAS_DE_PAGAMENTO = ['DINHEIRO', 'PIX', 'CARTAO', 'CHEQUE'] as const;
 export type FormaDePagamento = (typeof FORMAS_DE_PAGAMENTO)[number];
 
+/**
+ * As formas que a tela oferece para o cliente pagar ou receber (respostas da dona de 13/11, tarefa 6.13): só
+ * Dinheiro e Transferência (gravada como PIX). A API e o banco continuam aceitando as quatro de {@link FORMAS_DE_PAGAMENTO}
+ * (dados antigos e operações que já estão na fila de envio não podem ser recusados).
+ */
+export const FORMAS_DE_PAGAMENTO_NA_TELA = [
+  'DINHEIRO',
+  'PIX',
+] as const satisfies readonly FormaDePagamento[];
+
 /** Na venda, o pagamento também pode ser com o crédito do cliente (tarefa 6.8; "Usar crédito"). */
 export const FORMAS_DE_PAGAMENTO_DA_VENDA = [...FORMAS_DE_PAGAMENTO, 'CREDITO'] as const;
 export type FormaDePagamentoDaVenda = (typeof FORMAS_DE_PAGAMENTO_DA_VENDA)[number];

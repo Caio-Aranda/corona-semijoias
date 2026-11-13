@@ -2,7 +2,7 @@ import { Aviso, Botao, Campo, JanelaDeConfirmacao, Tabela } from '@corona/ui';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import type { LinhaDaMaleta, PreviaDaDevolucao, PreviaDaTroca } from '../../../shared/dados';
 import {
-  FORMAS_DE_PAGAMENTO,
+  FORMAS_DE_PAGAMENTO_NA_TELA,
   MOTIVOS_DE_DEVOLUCAO,
   type FormaDePagamento,
   type LinhaDaVendaParaEnviar,
@@ -353,7 +353,7 @@ export function FormularioDeTroca({
       {diferenca > 0n ? (
         <fieldset className="vendas-pagamento">
           <legend>{T.comoPagouADiferenca}</legend>
-          {FORMAS_DE_PAGAMENTO.map((f) => (
+          {FORMAS_DE_PAGAMENTO_NA_TELA.map((f) => (
             <label key={f}>
               <input
                 type="radio"

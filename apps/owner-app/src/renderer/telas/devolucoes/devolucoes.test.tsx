@@ -454,6 +454,14 @@ describe('Devoluções (tarefa 6.9)', () => {
       expect(await screen.findByText('Escolha quantas peças voltam.')).toBeInTheDocument();
       expect(ultima(m, 'devolucoes.registrar')).toBeUndefined();
 
+      // Só Dinheiro e Transferência (tarefa 6.13): Cartão e Cheque saem da tela.
+      expect(
+        within(screen.getByLabelText('Como o dinheiro foi devolvido'))
+          .getAllByRole('option')
+          .map((o) => o.textContent),
+      ).toContain('Transferência');
+      expect(screen.queryByRole('option', { name: 'Cartão' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('option', { name: 'Cheque' })).not.toBeInTheDocument();
       await u.type(screen.getByLabelText('Quantas voltam: Anel Lua'), '3');
       await u.selectOptions(screen.getByLabelText('Motivo da devolução'), 'OUTRO');
       await u.selectOptions(screen.getByLabelText('Como o dinheiro foi devolvido'), 'PIX');

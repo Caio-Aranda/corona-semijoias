@@ -15,7 +15,8 @@ const T = TEXTOS_DE_DEVOLUCOES;
 const R = T.registrar;
 
 const MOTIVOS = ['ARREPENDIMENTO', 'DEFEITO', 'TAMANHO', 'OUTRO'] as const;
-const FORMAS = ['DINHEIRO', 'PIX', 'CARTAO', 'CHEQUE'] as const;
+/** Só o que a tela oferece (tarefa 6.13); a API e o banco aceitam também CARTAO e CHEQUE. */
+const FORMAS = ['DINHEIRO', 'PIX'] as const;
 const ESTADOS = ['BOA', 'DEFEITO'] as const;
 
 const opcoesDe = (nomes: Record<string, string>, chaves: readonly string[]) =>
