@@ -85,6 +85,8 @@ export interface OpcoesDoProxy {
 
 export interface RegistroDoPedido {
   numero: number;
+  /** Hora em que o pedido chegou ao proxy (ISO, UTC): para ler a ordem entre os computadores depois de uma falha. */
+  em: string;
   metodo: string;
   caminho: string;
   falha?: FalhaDaRede;
@@ -164,6 +166,7 @@ export async function iniciarProxyDeRedeRuim(o: OpcoesDoProxy): Promise<ProxyDeR
     const falha = escolher(atual, contagens, req.url ?? '/', numero, a, b);
     const registro: RegistroDoPedido = {
       numero,
+      em: new Date().toISOString(),
       metodo: req.method ?? 'GET',
       caminho: req.url ?? '/',
       servidorRespondeu: false,
