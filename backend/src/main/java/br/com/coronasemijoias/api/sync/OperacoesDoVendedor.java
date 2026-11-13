@@ -1,5 +1,19 @@
 package br.com.coronasemijoias.api.sync;
 
+import br.com.coronasemijoias.api.devolucoes.ServicoDeAutorizacoes;
+import br.com.coronasemijoias.api.devolucoes.ServicoDeAutorizacoes.PedidoDeAutorizacao;
+import br.com.coronasemijoias.api.devolucoes.ServicoDeDevolucoes;
+import br.com.coronasemijoias.api.devolucoes.ServicoDeDevolucoes.ModoDaDevolucao;
+import br.com.coronasemijoias.api.devolucoes.ServicoDeDevolucoes.PedidoDaDevolucaoDoCliente;
+import br.com.coronasemijoias.api.sync.OperacoesDaFase6.DadosDaDevolucao;
+import br.com.coronasemijoias.api.sync.OperacoesDaFase6.DadosDaTroca;
+import br.com.coronasemijoias.api.sync.OperacoesDaFase6.DadosDoCancelamentoDaDevolucao;
+import br.com.coronasemijoias.api.sync.OperacoesDaFase6.DadosDoCancelamentoDaTroca;
+import br.com.coronasemijoias.api.sync.OperacoesDaFase6.DadosDoPedidoDeAutorizacao;
+import br.com.coronasemijoias.api.trocas.ServicoDeTrocas;
+import br.com.coronasemijoias.api.trocas.ServicoDeTrocas.DevolucaoDaTroca;
+import br.com.coronasemijoias.api.trocas.ServicoDeTrocas.PedidoDeTroca;
+import br.com.coronasemijoias.api.trocas.ServicoDeTrocas.VendaDaTroca;
 import br.com.coronasemijoias.api.vendas.ServicoDeVendas;
 import br.com.coronasemijoias.api.vendas.ServicoDeVendas.LinhaDoPedido;
 import br.com.coronasemijoias.api.vendas.ServicoDeVendas.PagamentoDoPedido;
@@ -97,10 +111,17 @@ public class OperacoesDoVendedor {
     private final ClientesDoVendedor clientes;
     private final ServicoDeConferencia conferencias;
     private final FormatosDeOperacao formatos;
+    private final ServicoDeDevolucoes devolucoes;
+    private final ServicoDeAutorizacoes autorizacoes;
+    private final ServicoDeTrocas trocas;
 
     public OperacoesDoVendedor(JsonMapper json, JdbcTemplate jdbc, ServicoDeVendas vendas, ClientesDoVendedor clientes,
-            ServicoDeConferencia conferencias, FormatosDeOperacao formatos) {
+            ServicoDeConferencia conferencias, FormatosDeOperacao formatos, ServicoDeDevolucoes devolucoes,
+            ServicoDeAutorizacoes autorizacoes, ServicoDeTrocas trocas) {
         this.formatos = formatos;
+        this.devolucoes = devolucoes;
+        this.autorizacoes = autorizacoes;
+        this.trocas = trocas;
         this.json = json;
         this.jdbc = jdbc;
         this.vendas = vendas;
@@ -125,6 +146,13 @@ public class OperacoesDoVendedor {
             throw new OperacaoIlegivel("sem dados");
         }
         try {
+            if (OperacoesDaFase6.TIPOS.contains(tipo)) {
+                // Fase 6 (tarefa 6.7): o conteúdo e a forma canônica em OperacoesDaFase6.
+                Object d = json.treeToValue(dados, OperacoesDaFase6.classe(tipo));
+                exigirMesmoId(operacaoId, OperacoesDaFase6.idDoRegistro(d));
+                return new Lida(tipo, formato, d, resumo(OperacoesDaFase6.canonico(d), tipo, formato),
+                        OperacoesDaFase6.horaDeclarada(d));
+            }
             return switch (tipo) {
                 case "VENDA" -> {
                     DadosDaVenda d = json.treeToValue(dados, DadosDaVenda.class);
@@ -169,14 +197,12 @@ public class OperacoesDoVendedor {
                 Instant corrigida = corrigir(d.vendidaEm(), ctx, inferior);
                 boolean ajustada = d.vendidaEm() != null
                         && Duration.between(d.vendidaEm(), corrigida).abs().compareTo(AJUSTE_QUE_MARCA) > 0;
-                // O formato 1 não leva o crédito do cliente (tarefa 6.5): a venda em crédito pelo envio é recusada pela regra
-                // do serviço até o formato novo da tarefa 6.7.
-                List<PagamentoDoPedido> pagamentos = d.pagamentos() == null ? null : d.pagamentos().stream()
-                        .map(p -> p == null ? null : new PagamentoDoPedido(p.id(), p.valor(), p.forma())).toList();
-                PedidoDeVenda pedido = new PedidoDeVenda(d.id(), d.remessaId(), d.clienteId(), d.itens(), pagamentos,
+                // O formato 1 ampliado (tarefa 6.7, dúvida S3) leva o crédito do cliente opcional em cada pagamento; pelo
+                // envio, o crédito acima do saldo vira revisão da dona, nunca recusa.
+                PedidoDeVenda pedido = new PedidoDeVenda(d.id(), d.remessaId(), d.clienteId(), d.itens(), d.pagamentos(),
                         d.totalConferido());
-                boolean ja = vendas.vender(ctx.vendedorId(), ctx.usuarioId(), aparelhoDaMaleta(d.remessaId(), ctx), pedido,
-                        corrigida, ajustada).jaExistia();
+                boolean ja = vendas.venderPeloEnvio(ctx.vendedorId(), ctx.usuarioId(), aparelhoDaMaleta(d.remessaId(), ctx),
+                        pedido, corrigida, ajustada).jaExistia();
                 yield new Aplicada(ja, corrigida);
             }
             case DadosDoEstorno d -> {
@@ -198,6 +224,52 @@ public class OperacoesDoVendedor {
             }
             case DadosDaConferencia d -> new Aplicada(conferencias.conferir(ctx.vendedorId(), ctx.usuarioId(),
                     aparelhoDaMaleta(d.remessaId(), ctx), d.remessaId(), d.id(), d.itens()).jaExistia(), null);
+            // --- Fase 6 (tarefa 6.7): o mesmo serviço da rota online, no modo do envio ---
+            case DadosDaDevolucao d -> {
+                Instant corrigida = corrigir(d.devolvidaEm(), ctx, maior(ctx.ultimoContatoServidor(), vendidaEm(d.vendaId())));
+                boolean ja = devolucoes.devolver(ctx.vendedorId(), ctx.usuarioId(),
+                        aparelhoDaMaleta(remessaDaVenda(d.vendaId()), ctx), new PedidoDaDevolucaoDoCliente(d.id(), d.vendaId(),
+                                d.motivo(), d.observacao(), d.formaReembolso(), d.itens(), d.valorConferido(), d.autorizacaoId()),
+                        corrigida, ajustada(d.devolvidaEm(), corrigida), ModoDaDevolucao.ENVIO).jaExistia();
+                yield new Aplicada(ja, corrigida);
+            }
+            case DadosDoPedidoDeAutorizacao d -> {
+                Instant corrigida = corrigir(d.pedidaEm(), ctx, maior(ctx.ultimoContatoServidor(), vendidaEm(d.vendaId())));
+                boolean ja = autorizacoes.pedir(ctx.vendedorId(), ctx.usuarioId(),
+                        aparelhoDaMaleta(remessaDaVenda(d.vendaId()), ctx),
+                        new PedidoDeAutorizacao(d.id(), d.vendaId(), d.motivo(), d.observacao(), d.itens()), corrigida,
+                        ajustada(d.pedidaEm(), corrigida), ModoDaDevolucao.ENVIO).jaExistia();
+                yield new Aplicada(ja, corrigida);
+            }
+            case DadosDaTroca d -> {
+                UUID vendaA = d.devolucao() == null ? null : d.devolucao().vendaId();
+                UUID maletaB = d.venda() == null ? null : d.venda().remessaId();
+                Instant inferior = maior(ctx.ultimoContatoServidor(), maior(vendidaEm(vendaA), enviadaEm(maletaB)));
+                Instant corrigida = corrigir(d.trocadaEm(), ctx, inferior);
+                // O computador conferido é o da maleta de B (dúvida S11); a de A o serviço confere com o mesmo.
+                boolean ja = trocas.trocar(ctx.vendedorId(), ctx.usuarioId(), aparelhoDaMaleta(maletaB, ctx), paraOServico(d),
+                        corrigida, ajustada(d.trocadaEm(), corrigida), ModoDaDevolucao.ENVIO).jaExistia();
+                yield new Aplicada(ja, corrigida);
+            }
+            case DadosDoCancelamentoDaDevolucao d -> {
+                Instant corrigida = corrigir(d.canceladaEm(), ctx, maior(ctx.ultimoContatoServidor(),
+                        instante("SELECT devolvida_em FROM corona.devolucoes WHERE id = ?", d.devolucaoId())));
+                UUID maleta = d.devolucaoId() == null ? null : primeiro(jdbc.queryForList(
+                        "SELECT remessa_id FROM corona.devolucoes WHERE id = ?", UUID.class, d.devolucaoId()));
+                boolean ja = devolucoes.cancelar(d.devolucaoId(), ctx.vendedorId(), ctx.usuarioId(), aparelhoDaMaleta(maleta, ctx),
+                        d.id(), d.motivo(), corrigida).jaExistia();
+                yield new Aplicada(ja, corrigida);
+            }
+            case DadosDoCancelamentoDaTroca d -> {
+                Instant corrigida = corrigir(d.canceladaEm(), ctx, maior(ctx.ultimoContatoServidor(),
+                        instante("SELECT trocada_em FROM corona.trocas WHERE id = ?", d.trocaId())));
+                UUID maletaB = d.trocaId() == null ? null : primeiro(jdbc.queryForList("""
+                        SELECT v.remessa_id FROM corona.trocas t JOIN corona.vendas v ON v.id = t.venda_nova_id WHERE t.id = ?""",
+                        UUID.class, d.trocaId()));
+                boolean ja = trocas.cancelar(d.trocaId(), ctx.vendedorId(), ctx.usuarioId(), aparelhoDaMaleta(maletaB, ctx), d.id(),
+                        d.motivo(), corrigida).jaExistia();
+                yield new Aplicada(ja, corrigida);
+            }
             default -> throw new IllegalStateException("tipo sem aplicação");
         };
     }
@@ -209,15 +281,29 @@ public class OperacoesDoVendedor {
             case DadosDaVenda d -> {
                 ids.add(d.clienteId());
                 ids.add(d.remessaId());
+                OperacoesDaFase6.creditos(d.pagamentos(), ids);
             }
             case DadosDoEstorno d -> ids.add(d.vendaId());
             case DadosDaAlteracaoDeCliente d -> ids.add(d.clienteId());
             case DadosDaConferencia d -> ids.add(d.remessaId());
-            default -> {
-            }
+            default -> ids.addAll(OperacoesDaFase6.dependencias(op.dados()));
         }
         ids.removeIf(java.util.Objects::isNull);
         return ids;
+    }
+
+    /** A troca do envio no pedido do serviço (o mesmo da rota online). */
+    private static PedidoDeTroca paraOServico(DadosDaTroca d) {
+        OperacoesDaFase6.DevolucaoDaTrocaEnviada a = d.devolucao();
+        OperacoesDaFase6.VendaDaTrocaEnviada b = d.venda();
+        return new PedidoDeTroca(d.id(), d.creditoId(), d.pagamentoDoCreditoId(),
+                a == null ? null : new DevolucaoDaTroca(a.id(), a.vendaId(), a.motivo(), a.observacao(), a.itens(), a.autorizacaoId()),
+                b == null ? null : new VendaDaTroca(b.id(), b.remessaId(), b.itens(), b.pagamentos(), b.totalConferido()));
+    }
+
+    /** Hora corrigida em mais de 5 minutos marca a hora ajustada (ADR-0013, item 11). */
+    private static boolean ajustada(Instant declarada, Instant corrigida) {
+        return declarada != null && Duration.between(declarada, corrigida).abs().compareTo(AJUSTE_QUE_MARCA) > 0;
     }
 
     // --- hora corrigida (ADR-0013, item 11) ---
@@ -321,7 +407,12 @@ public class OperacoesDoVendedor {
         pagos.removeIf(java.util.Objects::isNull);
         pagos.sort(Comparator.comparing(p -> String.valueOf(p.id())));
         for (PagamentoDoPedido p : pagos) {
-            s.append(p.id()).append(':').append(dinheiro(p.valor())).append(':').append(p.forma()).append(';');
+            s.append(p.id()).append(':').append(dinheiro(p.valor())).append(':').append(p.forma());
+            if (p.creditoId() != null) {
+                // Formato 1 ampliado (tarefa 6.7): sem crédito, o resumo é o mesmo de sempre.
+                s.append(':').append(p.creditoId());
+            }
+            s.append(';');
         }
         s.append("]|");
         new OperacoesDoVendedor.Canon().campo(s, "totalConferido", dinheiro(d.totalConferido())).campo(s, "vendidaEm", d.vendidaEm());
