@@ -329,3 +329,27 @@ Tarefa não crítica (Sonnet, esforço alto). PR #135. Só leitura e conferênci
 - Desenho das telas validado pela dona (segue as perguntas 28 e 29).
 
 **Observação.** `consultas-da-fase-6.test.ts` ("a receber ... tipo próprio", tarefa 6.8) falha de vez em quando: a ordem dos lançamentos de mesmo instante não é fixa. Já era assim antes desta tarefa; não mexi.
+
+## Tarefa 6.11: duas pontas da Fase 6
+
+Tarefa crítica (plano: [plano-6-11-duas-pontas-da-fase-6.md](plano-6-11-duas-pontas-da-fase-6.md), aprovado; código com o agente `implementador`, Sonnet, esforço médio). PR #136. Só `testes-sync/` e documentos: nada no backend, nada no Corona Vendas, nenhuma migração. Nenhum cenário achou defeito.
+
+**O que entrou**
+
+- **Máquina do tempo** (`src/maquina-do-tempo.ts`, com teste sem API): envelhece `vendas.vendida_em` no banco descartável (transação que desliga só o gatilho de conteúdo da venda); espera a virada de Brasília se faltar menos de 10 minutos (E1 e E2).
+- **Casos 14 a 16** (`devolucao-fora-do-prazo`): fora do prazo sem internet com relógio certo (prévia, bloqueio com o texto do glossário, pedidos, a dona aprova e nega, devolução com a autorização `ACEITA`, autorização `USADA`, reembolso igual ao pago, segunda devolução recusada); relógio 1 dia atrasado no limite (envio `ENVIADO`, devolução `EM_REVISAO` com hora ajustada, a dona não aceita e a peça e o dinheiro ficam; defeito vai para a loja sem movimento na maleta e a dona mantém); relógio 1 dia adiantado no limite (o app bloqueia, o pedido "desnecessário" é gravado `PEDIDA`, a dona aprova, devolução `ACEITA`).
+- **Casos 17 a 20** (`troca-e-credito`): troca com a peça nova vendida no mesmo lote (saldo zero exato, quarta operação recusada); crédito gerado e usado sem internet (conta da venda 30,00 em crédito e 20,00 em dinheiro, nenhum crédito sem saldo, nada para outro vendedor); **18b** a dona devolve pela loja antes da troca chegar (troca `RECUSADO`, venda com o crédito `DEPENDE_DE_ENVIO_RECUSADO`, o app desfaz e mostra em "envios não aceitos", a dona os vê nos envios com problema); cancelar a troca enviada (movimentos de sinal oposto, crédito cancelado, venda nova estornada) e recusa com o crédito usado; **19b** a dona transfere o crédito antes do cancelamento chegar (cancelamento `RECUSADO`, o outro vendedor recebe o crédito novo); rede ruim no meio do envio da troca (corte depois de gravar, 502, corte no recebimento: exatamente um de cada).
+- **Atalhos** `Tela` (`devolver`, `pedirAutorizacao`, `trocar`, `venderComCredito`, `cancelarDevolucao`, `cancelarTroca` e as versões `tentar...` que não exigem sucesso) e da dona (garantia, aprovar, negar, manter, não aceitar, devolver pela loja, transferir crédito, conferências da 6.10); livro com os cinco tipos novos.
+- **Afirmação final mais rígida** (vale também para os 17 casos de antes e o estresse): "existe no servidor" olha devoluções, trocas, cancelamentos e autorizações; a venda nova da troca aceita conta como venda do livro e a da recusada não pode existir; **conferência da Fase 6 em SQL próprio** (devolvido por linha até o vendido; créditos: utilizado igual à soma dos usos, nunca negativo nem acima do valor; recebido líquido entre zero e o total menos o devolvido) mais **as conferências da 6.10** pela rota da dona, que têm de vir sem divergência (E5).
+
+**Decisões que tomei**
+
+- O relógio **atrasado** nasce com o computador (opção `deslocamentoMs` ao ligar o aparelho). Depois de um contato, relógio que volta é "relógio mexido" e bloqueia a gravação (regra de projeto do ADR-0013, item 12): o plano supunha mudar o relógio no meio do caso, o que o app barra com o texto de data errada. O caso é o mesmo da vida real (computador com o relógio errado desde antes do primeiro contato).
+- O crédito de uma troca vale o preço da peça **devolvida** (80,00), e a venda nova da troca já consome o que a peça nova custa (50,00): o saldo de 30,00 é o crédito menos esse uso. Por isso, no caso 17 o crédito é `ABERTO` com valor 80,00 e utilizado 50,00, e no caso 18 há dois usos (50,00 na troca e 30,00 na venda), contra "um uso de 30,00" escrito no plano.
+- Casos 18b e 19b entraram (E3). Devolução e troca no estresse ficam fora (E4).
+
+**Não fiz**
+
+- Devolução e troca no estresse de cinco vendedores (E4: a 6.12 decide), venda a prazo, acerto, limite da semana e valor de aprovação (o computador não sabe o valor; o backend já prova), a virada às 23h59 e 00h00.
+
+**Como rodar:** `npm run test:duas-pontas -w @corona/testes-sync` (Docker aberto) ou só um arquivo: `npx vitest run -c vitest.duas-pontas.config.ts src/cenarios/troca-e-credito` dentro de `testes-sync/`. Teste sem API: `npm test -w @corona/testes-sync` (inclui a máquina do tempo).

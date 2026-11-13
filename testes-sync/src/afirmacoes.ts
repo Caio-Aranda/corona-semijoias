@@ -67,7 +67,12 @@ async function destinos(vendedores: string[]): Promise<{
       SELECT id::text FROM corona.vendas WHERE vendedor_id IN (${lista})
       UNION ALL SELECT estorno_id::text FROM corona.vendas WHERE vendedor_id IN (${lista}) AND estorno_id IS NOT NULL
       UNION ALL SELECT id::text FROM corona.conferencias WHERE vendedor_id IN (${lista})
-      UNION ALL SELECT id::text FROM corona.clientes`),
+      UNION ALL SELECT id::text FROM corona.clientes
+      UNION ALL SELECT id::text FROM corona.devolucoes WHERE vendedor_id IN (${lista})
+      UNION ALL SELECT cancelamento_id::text FROM corona.devolucoes WHERE vendedor_id IN (${lista}) AND cancelamento_id IS NOT NULL
+      UNION ALL SELECT id::text FROM corona.trocas WHERE vendedor_id IN (${lista})
+      UNION ALL SELECT cancelamento_id::text FROM corona.trocas WHERE vendedor_id IN (${lista}) AND cancelamento_id IS NOT NULL
+      UNION ALL SELECT id::text FROM corona.autorizacoes_excecao WHERE vendedor_id IN (${lista})`),
     consultar<{ vendedor_id: string; id: string }>(
       `SELECT vendedor_id::text, id::text FROM corona.vendas WHERE vendedor_id IN (${lista})`,
     ),
@@ -94,10 +99,58 @@ async function destinos(vendedores: string[]): Promise<{
   return { porId, existentes: new Set(existentes.map((e) => e.id)), vendasPorVendedor };
 }
 
+/**
+ * As contas da Fase 6 conferidas direto no banco, sem passar por nenhum código da API: o devolvido de cada linha não passa
+ * do vendido; nenhum crédito tem saldo negativo e o utilizado é a soma dos usos; o dinheiro que voltou ao cliente não passa
+ * do que ele pagou e o recebido líquido fica entre zero e o total menos o devolvido.
+ */
+export async function conferirAFase6(): Promise<string[]> {
+  const achados: string[] = [];
+  const devolvidoDemais = await consultar<{ id: string; vendido: number; devolvido: number }>(`
+    SELECT iv.id::text, iv.quantidade AS vendido, sum(i.quantidade)::int AS devolvido
+      FROM corona.itens_devolucao i
+      JOIN corona.devolucoes d ON d.id = i.devolucao_id AND d.situacao <> 'CANCELADA'
+      JOIN corona.itens_venda iv ON iv.id = i.item_venda_id
+     GROUP BY iv.id, iv.quantidade HAVING sum(i.quantidade) > iv.quantidade`);
+  for (const l of devolvidoDemais)
+    achados.push(`linha ${l.id} vendeu ${l.vendido} e devolveu ${l.devolvido}`);
+  const creditos = await consultar<{ id: string; valor: string; usado: string; soma: string }>(`
+    SELECT c.id::text, c.valor::text, c.valor_utilizado::text AS usado, coalesce(sum(u.valor), 0)::text AS soma
+      FROM corona.creditos_cliente c LEFT JOIN corona.usos_credito u ON u.credito_id = c.id
+     GROUP BY c.id, c.valor, c.valor_utilizado
+    HAVING c.valor_utilizado <> coalesce(sum(u.valor), 0) OR coalesce(sum(u.valor), 0) < 0
+        OR coalesce(sum(u.valor), 0) > c.valor`);
+  for (const c of creditos)
+    achados.push(
+      `crédito ${c.id}: valor ${c.valor}, utilizado ${c.usado}, soma dos usos ${c.soma}`,
+    );
+  const vendas = await consultar<{
+    id: string;
+    liquido: string;
+    total: string;
+    devolvido: string;
+  }>(`
+    SELECT v.id::text, sum(p.valor)::text AS liquido, v.total::text,
+           coalesce((SELECT sum(d.valor_devolvido) FROM corona.devolucoes d
+                      WHERE d.venda_id = v.id AND d.situacao <> 'CANCELADA'), 0)::text AS devolvido
+      FROM corona.vendas v JOIN corona.pagamentos_cliente p ON p.venda_id = v.id AND p.deleted_at IS NULL
+     WHERE v.deleted_at IS NULL
+     GROUP BY v.id, v.total
+    HAVING sum(p.valor) < 0
+        OR sum(p.valor) > v.total - coalesce((SELECT sum(d.valor_devolvido) FROM corona.devolucoes d
+                      WHERE d.venda_id = v.id AND d.situacao <> 'CANCELADA'), 0)
+           + 0.00`);
+  for (const v of vendas)
+    achados.push(
+      `venda ${v.id}: recebido líquido ${v.liquido}, total ${v.total}, devolvido ${v.devolvido}`,
+    );
+  return achados;
+}
+
 /** Quantas voltas a afirmação final dá, no máximo, esperando o servidor parar de mudar. */
 export const MAXIMO_DE_VOLTAS = 5;
 
-/** Retrato do servidor nas 15 tabelas que o Corona Vendas copia (toda mudança, inclusive a lápide, sobe a versão). */
+/** Retrato do servidor nas tabelas que o Corona Vendas copia (toda mudança, inclusive a lápide, sobe a versão). */
 interface Retrato {
   linhas: number;
   resumo: string;
@@ -212,11 +265,11 @@ export async function afirmarNoFim(o: AfirmacaoFinal): Promise<void> {
   const linhasPorVolta = retratos.map((r) => r.linhas).join(' → ');
   if (o.vivos.length > 0)
     console.log(
-      `Afirmação final: ${voltas} ${voltas === 1 ? 'volta' : 'voltas'} até o servidor parar (linhas nas 15 tabelas: ${linhasPorVolta}).`,
+      `Afirmação final: ${voltas} ${voltas === 1 ? 'volta' : 'voltas'} até o servidor parar (linhas nas ${TABELAS.length} tabelas: ${linhasPorVolta}).`,
     );
   if (!parou)
     problemas.push(
-      `o servidor não parou de mudar em ${MAXIMO_DE_VOLTAS} voltas (linhas nas 15 tabelas: ${linhasPorVolta})`,
+      `o servidor não parou de mudar em ${MAXIMO_DE_VOLTAS} voltas (linhas nas ${TABELAS.length} tabelas: ${linhasPorVolta})`,
     );
 
   // 1 e 2: a cópia de cada computador vivo.
@@ -276,7 +329,9 @@ export async function afirmarNoFim(o: AfirmacaoFinal): Promise<void> {
         if (!d.resolvido && !comProblema.has(l.operacaoId))
           problemas.push(`${rotulo} ${d.resultado} e não aparece nos envios com problema da dona`);
         if (
-          (l.tipo === 'VENDA' || l.tipo === 'ESTORNO_VENDA') &&
+          l.tipo !== 'CLIENTE_NOVO' &&
+          l.tipo !== 'CLIENTE_ALTERADO' &&
+          l.tipo !== 'CONFERENCIA' &&
           existe &&
           d.resultado !== 'CONFLITO'
         )
@@ -291,6 +346,18 @@ export async function afirmarNoFim(o: AfirmacaoFinal): Promise<void> {
         const s = vendasDoLivro.get(l.vendedorId) ?? new Set<string>();
         s.add(l.operacaoId);
         vendasDoLivro.set(l.vendedorId, s);
+      }
+      // A venda nova de uma troca aceita é venda do livro; a de uma troca recusada não pode existir (tarefa 6.11).
+      if (l.tipo === 'TROCA' && l.vendaNovaId) {
+        const vendaNovaExiste = existentes.has(l.vendaNovaId);
+        if (d.onde === 'aceito' && existe) {
+          if (!vendaNovaExiste)
+            problemas.push(`${rotulo} foi aceita e a venda nova dela não existe no servidor`);
+          const s = vendasDoLivro.get(l.vendedorId) ?? new Set<string>();
+          s.add(l.vendaNovaId);
+          vendasDoLivro.set(l.vendedorId, s);
+        } else if (d.onde === 'problema' && d.resultado !== 'CONFLITO' && vendaNovaExiste)
+          problemas.push(`${rotulo} foi ${d.resultado} e a venda nova dela existe no servidor`);
       }
     }
     for (const v of vendedores) {
@@ -329,6 +396,17 @@ export async function afirmarNoFim(o: AfirmacaoFinal): Promise<void> {
       );
   }
 
+  // 6: a conferência da Fase 6, em SQL próprio (à parte do código da API, como o oráculo) e a da tarefa 6.10.
+  if (!o.semConciliacao) {
+    for (const p of await conferirAFase6()) problemas.push(`conferência da Fase 6: ${p}`);
+    const c610 = await o.dona.conferenciaDeDevolucaoETroca();
+    for (const c of c610.conferencias)
+      if (c.divergencias.length > 0)
+        problemas.push(
+          `conferência de devolução e troca (6.10) "${c.chave}": ${JSON.stringify(c.divergencias).slice(0, 600)}`,
+        );
+  }
+
   if (problemas.length > 0) {
     const detalhe = await detalharFaltas(faltas, o.vivos).catch((erro: unknown) => [
       `--- Não consegui detalhar as linhas que faltaram: ${erro instanceof Error ? erro.message : String(erro)}`,
@@ -338,7 +416,7 @@ export async function afirmarNoFim(o: AfirmacaoFinal): Promise<void> {
         `A afirmação final falhou (${problemas.length}):`,
         ...problemas.slice(0, 60),
         '',
-        `Afirmação final: ${voltas} voltas (linhas nas 15 tabelas: ${linhasPorVolta}).`,
+        `Afirmação final: ${voltas} voltas (linhas nas ${TABELAS.length} tabelas: ${linhasPorVolta}).`,
         ...detalhe,
         '',
         relatorio(o.semente, o.todos),

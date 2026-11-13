@@ -94,6 +94,20 @@ export function pngDeTeste(semente: number, lado = 24): Buffer {
   ]);
 }
 
+export interface AutorizacaoNaDona {
+  id: string;
+  situacao: string;
+  tipo: string;
+  validaAte?: string | null;
+  [campo: string]: unknown;
+}
+
+export interface DevolucaoNaDona {
+  id: string;
+  situacao: string;
+  [campo: string]: unknown;
+}
+
 export class Dona {
   private constructor(private readonly token: string) {}
 
@@ -363,6 +377,87 @@ export class Dona {
     }>
   > {
     return this.chamar('GET', '/api/dona/envios-com-problema');
+  }
+
+  // --- Fase 6: garantia, autorizações, devoluções, trocas e créditos (as rotas que o Corona Gestão usa) ---
+
+  /** Os prazos da garantia que a dona definiu (os casos nunca escrevem 7 e 30 no teste). */
+  async garantia(): Promise<{ prazoArrependimentoDias: number; prazoDefeitoDias: number }> {
+    return this.chamar('GET', '/api/dona/configuracoes/garantia');
+  }
+
+  /** Pedidos de autorização de um vendedor, na situação pedida (padrão da API: esperando a dona). */
+  async autorizacoes(vendedorId: string, situacao = 'PEDIDA'): Promise<AutorizacaoNaDona[]> {
+    return this.chamar(
+      'GET',
+      `/api/dona/autorizacoes?vendedorId=${vendedorId}&situacao=${situacao}`,
+    );
+  }
+
+  async autorizacao(id: string): Promise<AutorizacaoNaDona> {
+    return this.chamar('GET', `/api/dona/autorizacoes/${id}`);
+  }
+
+  async aprovarAutorizacao(id: string): Promise<AutorizacaoNaDona> {
+    return this.chamar('POST', `/api/dona/autorizacoes/${id}/aprovar`);
+  }
+
+  async negarAutorizacao(id: string, motivo = 'Fora do prazo (teste)'): Promise<AutorizacaoNaDona> {
+    return this.chamar('POST', `/api/dona/autorizacoes/${id}/negar`, { motivo });
+  }
+
+  async devolucao(id: string): Promise<DevolucaoNaDona> {
+    return this.chamar('GET', `/api/dona/devolucoes/${id}`);
+  }
+
+  async manterDevolucao(id: string, observacao = 'Pode ficar (teste)'): Promise<DevolucaoNaDona> {
+    return this.chamar('POST', `/api/dona/devolucoes/${id}/manter`, { observacao });
+  }
+
+  async naoAceitarDevolucao(
+    id: string,
+    observacao = 'Fora do prazo de verdade (teste)',
+  ): Promise<DevolucaoNaDona> {
+    return this.chamar('POST', `/api/dona/devolucoes/${id}/nao-aceitar`, { observacao });
+  }
+
+  /** A dona registra a devolução pela loja (a peça vai para a loja, nada entra na maleta do vendedor). */
+  async devolverPelaLoja(o: {
+    vendaId: string;
+    itens: Array<{ produtoId: string; quantidade: number; estado: 'BOA' | 'DEFEITO' }>;
+    motivo?: string;
+    formaReembolso?: string;
+  }): Promise<DevolucaoNaDona> {
+    return this.chamar('POST', '/api/dona/devolucoes', {
+      id: randomUUID(),
+      vendaId: o.vendaId,
+      motivo: o.motivo ?? 'ARREPENDIMENTO',
+      formaReembolso: o.formaReembolso ?? 'DINHEIRO',
+      itens: o.itens,
+    });
+  }
+
+  async troca(id: string): Promise<Record<string, unknown>> {
+    return this.chamar('GET', `/api/dona/trocas/${id}`);
+  }
+
+  /** Transfere o saldo do crédito para outro vendedor; devolve o crédito novo. */
+  async transferirCredito(
+    creditoId: string,
+    vendedorId: string,
+  ): Promise<{ id: string; vendedorId: string }> {
+    return this.chamar('POST', `/api/dona/creditos/${creditoId}/transferir`, {
+      id: randomUUID(),
+      vendedorId,
+    });
+  }
+
+  /** As conferências da tarefa 6.10 (só leitura): `tudoCerto` e, em cada uma, as divergências. */
+  async conferenciaDeDevolucaoETroca(): Promise<{
+    tudoCerto: boolean;
+    conferencias: Array<{ chave: string; divergencias: unknown[] }>;
+  }> {
+    return this.chamar('GET', '/api/dona/relatorios/devolucoes/conferencia');
   }
 
   async conciliacao(): Promise<{

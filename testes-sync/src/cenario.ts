@@ -3,6 +3,12 @@ import { Aparelho, type OpcoesDoAparelho } from './aparelho';
 import { afirmarNoFim, type AfirmacaoFinal } from './afirmacoes';
 import { Dona, type VendedorDeTeste } from './dona';
 import { Livro, type TipoDeOperacao } from './livro';
+import type { ResultadoDeChamada } from '../../apps/seller-app/src/shared/ponte';
+import type {
+  MotivoDeDevolucao,
+  PagamentoParaEnviar,
+  PecaQueVolta,
+} from '../../apps/seller-app/src/shared/operacoes';
 
 /** A semente da rodada: `CORONA_SYNC_SEMENTE` ou a hora. Impressa no início de cada arquivo. */
 export function sementeDaRodada(nomeDoArquivo: string): number {
@@ -103,14 +109,92 @@ export class Cenario {
   }
 }
 
-function lancar(a: Aparelho, tipo: TipoDeOperacao, operacaoId: string, vendaId?: string): void {
+function lancar(
+  a: Aparelho,
+  tipo: TipoDeOperacao,
+  operacaoId: string,
+  vendaId?: string,
+  vendaNovaId?: string,
+): void {
   a.livro?.lancar({
     operacaoId,
     tipo,
     aparelho: a.nome,
     vendedorId: a.vendedorId,
     ...(vendaId ? { vendaId } : {}),
+    ...(vendaNovaId ? { vendaNovaId } : {}),
   });
+}
+
+/** O que o teste conta de uma peça que volta: o estado é o da peça (padrão: boa). */
+export interface PecaQueVoltaDoTeste {
+  produtoId: string;
+  quantidade: number;
+  estado?: 'BOA' | 'DEFEITO';
+}
+
+const voltas = (itens: readonly PecaQueVoltaDoTeste[]): PecaQueVolta[] =>
+  itens.map((i) => ({
+    produtoId: i.produtoId,
+    quantidade: i.quantidade,
+    estado: i.estado ?? 'BOA',
+  }));
+
+/** Uma operação da Fase 6: a tela pediu, e só o que o app aceitou vai para o livro. O resultado volta sem exigir sucesso. */
+export interface Tentativa {
+  id: string;
+  resultado: ResultadoDeChamada;
+}
+
+/** O texto da recusa do app (para o teste conferir o texto do glossário). */
+export function mensagemDaRecusa(r: ResultadoDeChamada): string {
+  if (r.ok) throw new Error('Esperava uma recusa e o app aceitou.');
+  return r.mensagem ?? '';
+}
+
+function exigir(a: Aparelho, o: string, t: Tentativa): string {
+  if (!t.resultado.ok)
+    throw new Error(
+      `${a.nome}: ${o} não deu certo: ${t.resultado.motivo} (${t.resultado.mensagem ?? ''})`,
+    );
+  return t.id;
+}
+
+/** Centavos inteiros de um texto "80.00" (o teste nunca usa ponto flutuante para dinheiro). */
+function centavos(v: string): bigint {
+  const [r, c = ''] = v.split('.');
+  return BigInt(r!) * 100n + BigInt(c.padEnd(2, '0').slice(0, 2));
+}
+function reais(c: bigint): string {
+  return `${c / 100n}.${String(c % 100n).padStart(2, '0')}`;
+}
+
+export interface OpcoesDeDevolucao {
+  vendaId: string;
+  itens: readonly PecaQueVoltaDoTeste[];
+  motivo?: MotivoDeDevolucao;
+  observacao?: string;
+  forma?: 'DINHEIRO' | 'PIX' | 'CARTAO' | 'CHEQUE';
+}
+
+export interface OpcoesDeTroca {
+  vendaId: string;
+  devolve: readonly PecaQueVoltaDoTeste[];
+  maletaId: string;
+  leva: ReadonlyArray<{ produtoId: string; quantidade: number }>;
+  motivo?: MotivoDeDevolucao;
+  /** O que o cliente pagou da diferença (só quando a peça nova é mais cara). */
+  pagou?: ReadonlyArray<{ valor: string; forma: 'DINHEIRO' | 'PIX' | 'CARTAO' | 'CHEQUE' }>;
+}
+
+export interface OpcoesDeVendaComCredito {
+  maletaId: string;
+  clienteId: string;
+  produtoId: string;
+  quantidade?: number;
+  creditoId: string;
+  /** Quanto do crédito usar; se faltar, o saldo que o computador mostra, até o total da venda. */
+  valorDoCredito?: string;
 }
 
 /**
@@ -193,5 +277,197 @@ export const Tela = {
     });
     lancar(a, 'ESTORNO_VENDA', estornoId, vendaId);
     return estornoId;
+  },
+
+  // --- Fase 6 (tarefa 6.11): os mesmos pedidos da ponte; nenhum valor é calculado aqui, só ids, peças e estados ---
+
+  /** Tenta registrar a devolução (a recusa do app volta no resultado). */
+  async tentarDevolver(a: Aparelho, o: OpcoesDeDevolucao): Promise<Tentativa> {
+    const id = randomUUID();
+    const resultado = await a.chamar({
+      operacao: 'devolucoes.registrar',
+      devolucao: {
+        id,
+        vendaId: o.vendaId,
+        motivo: o.motivo ?? 'ARREPENDIMENTO',
+        ...(o.observacao ? { observacao: o.observacao } : {}),
+        formaReembolso: o.forma ?? 'DINHEIRO',
+        itens: voltas(o.itens),
+      },
+    });
+    if (resultado.ok) lancar(a, 'DEVOLUCAO', id, o.vendaId);
+    return { id, resultado };
+  },
+
+  async devolver(a: Aparelho, o: OpcoesDeDevolucao): Promise<string> {
+    return exigir(a, 'devolucoes.registrar', await Tela.tentarDevolver(a, o));
+  },
+
+  async pedirAutorizacao(
+    a: Aparelho,
+    o: {
+      vendaId: string;
+      itens: readonly PecaQueVoltaDoTeste[];
+      motivo?: MotivoDeDevolucao;
+      observacao?: string;
+    },
+  ): Promise<string> {
+    const id = randomUUID();
+    const resultado = await a.chamar({
+      operacao: 'autorizacoes.pedir',
+      pedido: {
+        id,
+        vendaId: o.vendaId,
+        motivo: o.motivo ?? 'ARREPENDIMENTO',
+        ...(o.observacao ? { observacao: o.observacao } : {}),
+        itens: voltas(o.itens),
+      },
+    });
+    exigir(a, 'autorizacoes.pedir', { id, resultado });
+    lancar(a, 'PEDIDO_AUTORIZACAO', id, o.vendaId);
+    return id;
+  },
+
+  /** Troca: devolve `devolve` da venda e leva `leva` da maleta. Os ids novos (troca, devolução, venda, crédito) são do teste. */
+  async tentarTrocar(
+    a: Aparelho,
+    o: OpcoesDeTroca,
+  ): Promise<Tentativa & { devolucaoId: string; vendaNovaId: string; creditoId: string }> {
+    const id = randomUUID();
+    const devolucaoId = randomUUID();
+    const vendaNovaId = randomUUID();
+    const creditoId = randomUUID();
+    const pagamentos: PagamentoParaEnviar[] = (o.pagou ?? []).map((p) => ({
+      id: randomUUID(),
+      valor: p.valor,
+      forma: p.forma,
+    }));
+    const resultado = await a.chamar({
+      operacao: 'trocas.registrar',
+      troca: {
+        id,
+        creditoId,
+        pagamentoDoCreditoId: randomUUID(),
+        devolucao: {
+          id: devolucaoId,
+          vendaId: o.vendaId,
+          motivo: o.motivo ?? 'TAMANHO',
+          itens: voltas(o.devolve),
+        },
+        venda: {
+          id: vendaNovaId,
+          remessaId: o.maletaId,
+          itens: o.leva.map((i) => ({ produtoId: i.produtoId, quantidade: i.quantidade })),
+          pagamentos,
+        },
+      },
+    });
+    if (resultado.ok) lancar(a, 'TROCA', id, o.vendaId, vendaNovaId);
+    return { id, resultado, devolucaoId, vendaNovaId, creditoId };
+  },
+
+  async trocar(
+    a: Aparelho,
+    o: OpcoesDeTroca,
+  ): Promise<{ id: string; devolucaoId: string; vendaNovaId: string; creditoId: string }> {
+    const t = await Tela.tentarTrocar(a, o);
+    exigir(a, 'trocas.registrar', t);
+    return {
+      id: t.id,
+      devolucaoId: t.devolucaoId,
+      vendaNovaId: t.vendaNovaId,
+      creditoId: t.creditoId,
+    };
+  },
+
+  /** Venda de `quantidade` da peça paga em parte com o crédito do cliente (o resto em dinheiro). */
+  async tentarVenderComCredito(a: Aparelho, o: OpcoesDeVendaComCredito): Promise<Tentativa> {
+    const id = randomUUID();
+    const quantidade = o.quantidade ?? 1;
+    const [peca] = a.ler<{ preco_remessa: string }>(
+      'SELECT preco_remessa FROM itens_remessa WHERE remessa_id = ? AND produto_id = ? AND deleted_at IS NULL',
+      o.maletaId,
+      o.produtoId,
+    );
+    if (!peca) throw new Error(`${a.nome}: a peça ${o.produtoId} não está na maleta.`);
+    const total = centavos(peca.preco_remessa) * BigInt(quantidade);
+    let credito: bigint;
+    if (o.valorDoCredito) credito = centavos(o.valorDoCredito);
+    else {
+      const c = await a.pedir<{ creditos: Array<{ id: string; saldo: string }> }>({
+        operacao: 'creditos.doCliente',
+        clienteId: o.clienteId,
+      });
+      const meu = c.creditos.find((x) => x.id === o.creditoId);
+      const saldo = meu ? centavos(meu.saldo) : 0n;
+      credito = saldo < total ? saldo : total;
+    }
+    const dinheiro = total - credito;
+    const resultado = await a.chamar({
+      operacao: 'vendas.vender',
+      venda: {
+        id,
+        remessaId: o.maletaId,
+        clienteId: o.clienteId,
+        itens: [{ produtoId: o.produtoId, quantidade }],
+        pagamentos: [
+          { id: randomUUID(), valor: reais(credito), forma: 'CREDITO', creditoId: o.creditoId },
+          ...(dinheiro > 0n
+            ? [{ id: randomUUID(), valor: reais(dinheiro), forma: 'DINHEIRO' as const }]
+            : []),
+        ],
+        totalConferido: reais(total),
+      },
+    });
+    if (resultado.ok) lancar(a, 'VENDA', id);
+    return { id, resultado };
+  },
+
+  async venderComCredito(a: Aparelho, o: OpcoesDeVendaComCredito): Promise<string> {
+    return exigir(a, 'vendas.vender (crédito)', await Tela.tentarVenderComCredito(a, o));
+  },
+
+  async tentarCancelarDevolucao(
+    a: Aparelho,
+    devolucaoId: string,
+    motivo = 'Cliente voltou atrás (teste)',
+  ): Promise<Tentativa> {
+    const id = randomUUID();
+    const resultado = await a.chamar({
+      operacao: 'devolucoes.cancelar',
+      id: devolucaoId,
+      cancelamentoId: id,
+      motivo,
+    });
+    if (resultado.ok) lancar(a, 'CANCELAR_DEVOLUCAO', id, devolucaoId);
+    return { id, resultado };
+  },
+
+  async cancelarDevolucao(a: Aparelho, devolucaoId: string, motivo?: string): Promise<string> {
+    return exigir(
+      a,
+      'devolucoes.cancelar',
+      await Tela.tentarCancelarDevolucao(a, devolucaoId, motivo),
+    );
+  },
+
+  async tentarCancelarTroca(
+    a: Aparelho,
+    trocaId: string,
+    motivo = 'Cliente voltou atrás (teste)',
+  ): Promise<Tentativa> {
+    const id = randomUUID();
+    const resultado = await a.chamar({
+      operacao: 'trocas.cancelar',
+      id: trocaId,
+      cancelamentoId: id,
+      motivo,
+    });
+    if (resultado.ok) lancar(a, 'CANCELAR_TROCA', id, trocaId);
+    return { id, resultado };
+  },
+
+  async cancelarTroca(a: Aparelho, trocaId: string, motivo?: string): Promise<string> {
+    return exigir(a, 'trocas.cancelar', await Tela.tentarCancelarTroca(a, trocaId, motivo));
   },
 };
