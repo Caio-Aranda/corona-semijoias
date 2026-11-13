@@ -394,7 +394,11 @@ export class CicloDeSincronizacao {
             substituirIgual: true,
             naMesmaTransacao: p.temMais
               ? undefined
-              : () => gravarTabelasDaRecargaDirigida(db, tabelasDaRecargaDirigida(db).filter((t) => t !== tabela)),
+              : () =>
+                  gravarTabelasDaRecargaDirigida(
+                    db,
+                    tabelasDaRecargaDirigida(db).filter((t) => t !== tabela),
+                  ),
           });
         } catch (erro) {
           if (erro instanceof LoteRecusado) {
@@ -592,13 +596,18 @@ export function tabelasDaRecargaDirigida(db: BancoAberto): TabelaSincronizavel[]
   if (valor === null) return [];
   try {
     const lista: unknown = JSON.parse(valor);
-    return Array.isArray(lista) ? lista.filter((t): t is TabelaSincronizavel => ehTabelaSincronizavel(t)) : [];
+    return Array.isArray(lista)
+      ? lista.filter((t): t is TabelaSincronizavel => ehTabelaSincronizavel(t))
+      : [];
   } catch {
     return [];
   }
 }
 
-function gravarTabelasDaRecargaDirigida(db: BancoAberto, tabelas: readonly TabelaSincronizavel[]): void {
+function gravarTabelasDaRecargaDirigida(
+  db: BancoAberto,
+  tabelas: readonly TabelaSincronizavel[],
+): void {
   gravarEstado(db, CHAVES.recargaDirigida, tabelas.length === 0 ? null : JSON.stringify(tabelas));
 }
 

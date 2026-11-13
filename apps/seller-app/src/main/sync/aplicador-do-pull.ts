@@ -143,7 +143,9 @@ function aplicarLinhas(
       .prepare(`SELECT version, origem_local FROM ${l.tabela} WHERE id = ?`)
       .get(l.id) as { version: number; origem_local: string } | undefined;
     const provisoria = local?.origem_local === 'PROVISORIO';
-    const antiga = substituirIgual ? l.version < (local?.version ?? 0) : l.version <= (local?.version ?? 0);
+    const antiga = substituirIgual
+      ? l.version < (local?.version ?? 0)
+      : l.version <= (local?.version ?? 0);
     if (local && !provisoria && antiga) {
       ignoradas += 1;
       return;

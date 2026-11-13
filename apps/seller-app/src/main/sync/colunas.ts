@@ -181,7 +181,15 @@ export const COLUNAS_DO_PULL: Readonly<Record<TabelaSincronizavel, readonly stri
       'hora_ajustada',
       'cancelado_em',
     ],
-    usos_credito: ['credito_id', 'tipo', 'venda_id', 'pagamento_id', 'valor', 'estorna_id', 'usado_em'],
+    usos_credito: [
+      'credito_id',
+      'tipo',
+      'venda_id',
+      'pagamento_id',
+      'valor',
+      'estorna_id',
+      'usado_em',
+    ],
     creditos_sem_saldo: [
       'venda_id',
       'pagamento_id',
