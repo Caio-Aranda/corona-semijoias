@@ -81,6 +81,12 @@ export interface OpcoesDoAparelho {
   /** Versão que o app informa (padrão a do ambiente). */
   versaoDoApp?: string;
   aceleracao?: number;
+  /**
+   * O relógio do computador já nasce adiantado (+) ou atrasado (−) por este tanto, desde antes do primeiro contato. Um
+   * relógio que anda para trás depois de um contato é "relógio mexido" e bloqueia a gravação (ADR-0013, item 12): o relógio
+   * errado "de nascença" é o caso da Fase 6 (ADR-0014, item 5).
+   */
+  deslocamentoMs?: number;
   /** Pasta de dados que já existe (abrir o mesmo computador de novo); omitida, uma pasta nova. */
   pasta?: string;
 }
@@ -122,6 +128,7 @@ export class Aparelho {
       },
     });
     const relogio = new RelogioDoAparelho(o.aceleracao ?? 10);
+    relogio.deslocamentoMs = o.deslocamentoMs ?? 0;
     const aparelho = new Aparelho(o.nome, pasta, proxy, relogio, null as never, o);
     aparelho.marcadoresVistos = vistos;
     aparelho.app = await aparelho.montar();

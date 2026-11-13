@@ -52,8 +52,7 @@ export function sqlDeEnvelhecerVenda(vendaId: string, novaData: Date): string {
   return [
     'BEGIN;',
     'ALTER TABLE corona.vendas DISABLE TRIGGER vendas_conteudo_imutavel;',
-    `UPDATE corona.vendas SET vendida_em = '${novaData.toISOString()}' WHERE id = '${vendaId}';`,
-    "DO $$ BEGIN IF NOT FOUND THEN RAISE EXCEPTION 'venda não encontrada'; END IF; END $$;",
+    `DO $$ BEGIN UPDATE corona.vendas SET vendida_em = '${novaData.toISOString()}' WHERE id = '${vendaId}'; IF NOT FOUND THEN RAISE EXCEPTION 'venda não encontrada'; END IF; END $$;`,
     'ALTER TABLE corona.vendas ENABLE TRIGGER vendas_conteudo_imutavel;',
     'COMMIT;',
   ].join('\n');
