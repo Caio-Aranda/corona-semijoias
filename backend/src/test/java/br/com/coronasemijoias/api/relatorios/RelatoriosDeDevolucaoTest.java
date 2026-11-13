@@ -21,6 +21,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -30,11 +31,11 @@ import tools.jackson.databind.JsonNode;
 
 /**
  * Relatórios de devolução e troca da dona e do vendedor, e as conferências do §13 (tarefa 6.10; ADR-0014, itens 9 a 12;
- * §12 e §13). Massa conhecida, com o resultado calculado à mão, em março e abril de 1991 (antes de qualquer cotação
- * dos outros testes, que usam datas de 1990 ou de hoje); as cotações de 1991 são as do teste:
+ * §12 e §13). Massa conhecida, com o resultado calculado à mão, em março e abril de 2290 (antes de qualquer cotação
+ * dos outros testes, que usam datas de 1990 ou de hoje); as cotações de 2290 são as do teste:
  *
  * <pre>
- * 04/03/1991: US$ 5,00 e Gs. 0,001 real (R$ 1 = Gs. 1.000)    05/03/1991 em diante: US$ 4,00 e Gs. 0,002 real (R$ 1 = Gs. 500)
+ * 04/03/2290: US$ 5,00 e Gs. 0,001 real (R$ 1 = Gs. 1.000)    05/03/2290 em diante: US$ 4,00 e Gs. 0,002 real (R$ 1 = Gs. 500)
  *
  * Vendedor V1 (peças P1 100, P2 80, P3 130, P4 50), vendas em 04/03 ao meio-dia:
  *   venda 1 (cliente A): 3 x P1 = 300, dinheiro     venda 2 (cliente A): 2 x P2 = 160, Pix     venda 3 (cliente B): 1 x P1 = 100, Pix
@@ -54,16 +55,16 @@ import tools.jackson.databind.JsonNode;
 class RelatoriosDeDevolucaoTest extends ApoioDasTrocas {
 
     private static final String REL = "/api/dona/relatorios/devolucoes/";
-    private static final String PERIODO_DE_MARCO = "de=1991-03-01&ate=1991-03-31";
+    private static final String PERIODO_DE_MARCO = "de=2290-03-01&ate=2290-03-31";
 
-    private static final Instant D4 = brasilia("1991-03-04T12:00:00");
-    private static final Instant D5_MANHA = brasilia("1991-03-05T10:00:00");
-    private static final Instant D5_11H = brasilia("1991-03-05T11:00:00");
-    private static final Instant D5_14H = brasilia("1991-03-05T14:00:00");
-    private static final Instant D5_16H = brasilia("1991-03-05T16:00:00");
-    private static final Instant D5_17H = brasilia("1991-03-05T17:00:00");
-    private static final Instant D5_18H = brasilia("1991-03-05T18:00:00");
-    private static final Instant D20_ABRIL = brasilia("1991-04-20T12:00:00");
+    private static final Instant D4 = brasilia("2290-03-04T12:00:00");
+    private static final Instant D5_MANHA = brasilia("2290-03-05T10:00:00");
+    private static final Instant D5_11H = brasilia("2290-03-05T11:00:00");
+    private static final Instant D5_14H = brasilia("2290-03-05T14:00:00");
+    private static final Instant D5_16H = brasilia("2290-03-05T16:00:00");
+    private static final Instant D5_17H = brasilia("2290-03-05T17:00:00");
+    private static final Instant D5_18H = brasilia("2290-03-05T18:00:00");
+    private static final Instant D20_ABRIL = brasilia("2290-04-20T12:00:00");
 
     @Autowired
     private ServicoDeAutorizacoes autorizacoes;
@@ -93,8 +94,8 @@ class RelatoriosDeDevolucaoTest extends ApoioDasTrocas {
 
     @BeforeAll
     void massaConhecida() throws Exception {
-        cotacao("1991-03-04", "5.00000000", "0.00100000");
-        cotacao("1991-03-05", "4.00000000", "0.00200000");
+        cotacao("2290-03-04", "5.00000000", "0.00100000");
+        cotacao("2290-03-05", "4.00000000", "0.00200000");
 
         v1 = usuarios.criarVendedor();
         clienteA = cliente(v1);
@@ -134,6 +135,33 @@ class RelatoriosDeDevolucaoTest extends ApoioDasTrocas {
         pedidoEsperando = pedirAutorizacao(v2, venda4, p5);
         pedidoAprovado = pedirAutorizacao(v2, venda5, p5);
         autorizacoes.aprovar(pedidoAprovado, usuarios.dona().id());
+    }
+
+    /**
+     * A tabela de cotações é imutável e os testes de cotações esperam o banco sem cotação que não seja delas. Como esta massa
+     * é gravada de verdade (as conferências usam outra conexão), no fim as duas cotações saem: os lançamentos da massa
+     * deixam de apontar para elas (só o atalho para mostrar Dólar e Guarani) e as linhas são apagadas, pelo dono das tabelas.
+     */
+    @AfterAll
+    void tirarAsCotacoesDaMassa() throws SQLException {
+        List<String> tabelas = List.of("vendas", "devolucoes", "autorizacoes_excecao", "trocas", "creditos_cliente", "cotacoes");
+        String minhas = "(SELECT id FROM corona.cotacoes WHERE data_cotacao IN ('2290-03-04', '2290-03-05'))";
+        try (Connection con = conectarComoMigracao(); Statement s = con.createStatement()) {
+            for (String t : tabelas) {
+                s.execute("ALTER TABLE corona." + t + " DISABLE TRIGGER USER");
+            }
+            try {
+                for (String t : tabelas.subList(0, tabelas.size() - 1)) {
+                    s.execute("UPDATE corona." + t + " SET cotacao_id = NULL WHERE cotacao_id IN " + minhas);
+                }
+                s.execute("DELETE FROM corona.cotacoes WHERE data_cotacao IN ('2290-03-04', '2290-03-05')");
+            } finally {
+                for (String t : tabelas) {
+                    s.execute("ALTER TABLE corona." + t + " ENABLE TRIGGER USER");
+                }
+            }
+            con.commit();
+        }
     }
 
     // --- apoio ---
@@ -229,7 +257,7 @@ class RelatoriosDeDevolucaoTest extends ApoioDasTrocas {
         assertThat(dec(d1.get("valorDevolvidoEmGuarani"))).isEqualByComparingTo("50000");
         assertThat(dec(d1.get("valorReembolsado"))).isEqualByComparingTo("100.00");
         assertThat(dec(d1.get("valorEmCredito"))).isEqualByComparingTo("0.00");
-        assertThat(d1.get("dataDaCotacao").asString()).isEqualTo("1991-03-05");
+        assertThat(d1.get("dataDaCotacao").asString()).isEqualTo("2290-03-05");
         JsonNode d2 = linhaDe(r, "id", dev2);
         assertThat(d2.get("pecasComDefeito").asInt()).isEqualTo(1);
         assertThat(d2.get("formaReembolso").asString()).isEqualTo("PIX");
@@ -258,8 +286,8 @@ class RelatoriosDeDevolucaoTest extends ApoioDasTrocas {
         assertThat(relatorio("devolucoes", v1, PERIODO_DE_MARCO + "&motivo=DEFEITO").get("itens")).hasSize(1);
         assertThat(relatorio("devolucoes", v1, PERIODO_DE_MARCO + "&situacao=EM_REVISAO").get("itens")).isEmpty();
         // Período: o dia 05/03 em Brasília inclui tudo; o dia 04/03 não tem devolução.
-        assertThat(relatorio("devolucoes", v1, "de=1991-03-05&ate=1991-03-05").get("itens")).hasSize(4);
-        assertThat(relatorio("devolucoes", v1, "de=1991-03-04&ate=1991-03-04").get("itens")).isEmpty();
+        assertThat(relatorio("devolucoes", v1, "de=2290-03-05&ate=2290-03-05").get("itens")).hasSize(4);
+        assertThat(relatorio("devolucoes", v1, "de=2290-03-04&ate=2290-03-04").get("itens")).isEmpty();
         // Outro vendedor não aparece.
         assertThat(relatorio("devolucoes", v2, PERIODO_DE_MARCO).get("itens")).isEmpty();
     }
@@ -272,18 +300,18 @@ class RelatoriosDeDevolucaoTest extends ApoioDasTrocas {
         UUID peca = peca("90.00", 5);
         UUID maleta = maleta(v, peca, 3);
         UUID venda = vendaEm(v, maleta, cliente, peca, 2, "180.00", "DINHEIRO", D4);
-        devolver(v, venda, "ARREPENDIMENTO", peca, "BOA", "DINHEIRO", brasilia("1991-03-05T23:30:00"));
-        assertThat(relatorio("devolucoes", v, "de=1991-03-05&ate=1991-03-05").get("itens")).hasSize(1);
-        assertThat(relatorio("devolucoes", v, "de=1991-03-06&ate=1991-03-06").get("itens")).isEmpty();
+        devolver(v, venda, "ARREPENDIMENTO", peca, "BOA", "DINHEIRO", brasilia("2290-03-05T23:30:00"));
+        assertThat(relatorio("devolucoes", v, "de=2290-03-05&ate=2290-03-05").get("itens")).hasSize(1);
+        assertThat(relatorio("devolucoes", v, "de=2290-03-06&ate=2290-03-06").get("itens")).isEmpty();
 
         // Só devolução no dia, nenhuma venda: a porcentagem fica vazia e o vendedor aparece acima do limite.
-        JsonNode soDevolucao = linhaDe(relatorio("por-vendedor", v, "de=1991-03-05&ate=1991-03-05"), "vendedorId", v.vendedorId());
+        JsonNode soDevolucao = linhaDe(relatorio("por-vendedor", v, "de=2290-03-05&ate=2290-03-05"), "vendedorId", v.vendedorId());
         assertThat(soDevolucao.get("vendas").asLong()).isZero();
         assertThat(dec(soDevolucao.get("devolvido"))).isEqualByComparingTo("90.00");
         assertThat(soDevolucao.get("porcentagemDevolvida").isNull()).isTrue();
         assertThat(soDevolucao.get("acimaDoLimite").asBoolean()).isTrue();
 
-        ler(REL + "devolucoes?de=1991-03-10&ate=1991-03-01", dona()).andExpect(status().isBadRequest());
+        ler(REL + "devolucoes?de=2290-03-10&ate=2290-03-01", dona()).andExpect(status().isBadRequest());
         ler(REL + "devolucoes?motivo=QUALQUER", dona()).andExpect(status().isBadRequest());
         ler(REL + "devolucoes?situacao=QUALQUER", dona()).andExpect(status().isBadRequest());
         ler(REL + "devolucoes?vendedorId=nao-e-uuid", dona()).andExpect(status().isBadRequest());
@@ -345,10 +373,10 @@ class RelatoriosDeDevolucaoTest extends ApoioDasTrocas {
             jdbc.update("UPDATE corona.configuracoes SET valor_inteiro = 20 WHERE chave = 'percentual_alerta_devolucao'");
         }
         // Dia 05/03: só as duas vendas das trocas (130 e 50); sem nenhum lançamento depois, o vendedor nem aparece.
-        JsonNode dia5 = linhaDe(relatorio("por-vendedor", v1, "de=1991-03-05&ate=1991-03-05"), "vendedorId", v1.vendedorId());
+        JsonNode dia5 = linhaDe(relatorio("por-vendedor", v1, "de=2290-03-05&ate=2290-03-05"), "vendedorId", v1.vendedorId());
         assertThat(dia5.get("vendas").asLong()).isEqualTo(2);
         assertThat(dec(dia5.get("vendido"))).isEqualByComparingTo("180.00");
-        assertThat(relatorio("por-vendedor", v1, "de=1991-03-06&ate=1991-03-31").get("itens")).isEmpty();
+        assertThat(relatorio("por-vendedor", v1, "de=2290-03-06&ate=2290-03-31").get("itens")).isEmpty();
     }
 
     // --- 3. peças com defeito ---
@@ -460,14 +488,14 @@ class RelatoriosDeDevolucaoTest extends ApoioDasTrocas {
 
     @Test
     void pedidosDeAutorizacaoPorSituacaoComOValorPelaCotacaoDoDiaDoPedido() throws Exception {
-        String abril = "de=1991-04-01&ate=1991-04-30";
+        String abril = "de=2290-04-01&ate=2290-04-30";
         JsonNode r = relatorio("autorizacoes", v2, abril);
         assertThat(r.get("itens")).hasSize(2);
         JsonNode esperando = linhaDe(r, "id", pedidoEsperando);
         assertThat(esperando.get("situacao").asString()).isEqualTo("PEDIDA");
         assertThat(esperando.get("tipo").asString()).isEqualTo("FORA_DO_PRAZO");
         assertThat(dec(esperando.get("valorPedido"))).isEqualByComparingTo("70.00");
-        // O último dia com cotação até 20/04/1991 é 05/03/1991: US$ 4,00 e Gs. 0,002.
+        // O último dia com cotação até 20/04/2290 é 05/03/2290: US$ 4,00 e Gs. 0,002.
         assertThat(dec(esperando.get("valorPedidoEmDolar"))).isEqualByComparingTo("17.50");
         assertThat(dec(esperando.get("valorPedidoEmGuarani"))).isEqualByComparingTo("35000");
         assertThat(linhaDe(r, "id", pedidoAprovado).get("situacao").asString()).isEqualTo("APROVADA");
@@ -477,7 +505,7 @@ class RelatoriosDeDevolucaoTest extends ApoioDasTrocas {
         confere(total(r, "usados"), 0, "0.00", "0.00", "0");
         confere(total(r, "negados"), 0, "0.00", "0.00", "0");
         assertThat(relatorio("autorizacoes", v2, abril + "&situacao=PEDIDA").get("itens")).hasSize(1);
-        assertThat(relatorio("autorizacoes", v2, "de=1991-03-01&ate=1991-03-31").get("itens")).isEmpty();
+        assertThat(relatorio("autorizacoes", v2, "de=2290-03-01&ate=2290-03-31").get("itens")).isEmpty();
         assertThat(relatorio("autorizacoes", v1, abril).get("itens")).isEmpty();
     }
 
