@@ -31,6 +31,24 @@ criptografado e o bloqueio do segundo aparelho são da Fase 5; o instalador só 
    contato com a internet. Por isso `APP_VERSAO_MINIMA_VENDAS` só sobe depois de a maioria já estar na versão nova.
 5. Versão com defeito: publique outra, maior, com a correção (a antiga não volta).
 
+### Nota de deploy da tarefa 6.7 (tabelas da Fase 6 no pull)
+
+A API com a 6.7 manda ao vendedor as tabelas da Fase 6 (devoluções, autorizações, trocas, créditos e a venda com crédito
+para a dona revisar). O Corona Vendas sem a **migração local 3** não conhece essas tabelas e recusaria o lote inteiro do
+recebimento (o pull pararia). Por isso, **nesta ordem**:
+
+1. **Primeiro o Corona Vendas:** aumente `version` em `apps/seller-app/package.json` (por exemplo, para `1.1.0`) e
+   publique (`npm run vendas:publicar`). Essa versão leva a migração local 3 e a recarga dirigida.
+2. **Depois a API:** suba a API com a 6.7 e, no `.env` do servidor, `APP_VERSAO_MINIMA_VENDAS` igual à versão publicada
+   no passo 1 (por exemplo, `1.1.0`).
+3. O computador ainda na versão antiga **continua enviando** o que guardou (o envio passa abaixo da mínima, tarefa 5.13)
+   e recebe 426 no recebimento, com "Seu aplicativo está desatualizado.", até atualizar. Nada se perde.
+4. Ao abrir a versão nova, o banco local migra para a versão 3; se ele já tinha recebido dados, as tabelas novas e as
+   vendas, pagamentos e movimentos da maleta vêm de novo pela **recarga dirigida**, sem apagar nada antes.
+
+Se a API subir antes do app, o computador com o app velho recebe o lote com tabela desconhecida e para de receber (o
+envio continua); publique o app e suba a versão mínima o quanto antes.
+
 ## Riscos da primeira instalação no computador do vendedor
 
 | Risco | O que fazer |
