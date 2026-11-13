@@ -36,6 +36,32 @@ export type Associada = {
     produtoNome?: string;
 };
 
+export type Autorizacao = {
+    clienteId?: string;
+    clienteNome?: string;
+    cotacao?: ConsultasDeVendasCotacao;
+    decididaEm?: string;
+    diasDesdeAVenda?: number;
+    horaAjustada?: boolean;
+    id?: string;
+    itens?: Array<ItemDaAutorizacao>;
+    motivo?: string;
+    motivoDecisao?: string;
+    observacao?: string;
+    pedidaEm?: string;
+    prazoDaGarantiaAte?: string;
+    situacao?: string;
+    tipo?: string;
+    validaAte?: string;
+    valorPedido?: string;
+    valorPedidoDolar?: string;
+    valorPedidoGuarani?: string;
+    vendaId?: string;
+    vendedorId?: string;
+    vendedorNome?: string;
+    vendidaEm?: string;
+};
+
 export type AvisoDaDona = {
     dias?: Array<string>;
     texto?: string;
@@ -273,6 +299,7 @@ export type DadosDoUsuario = {
 };
 
 export type Devolucao = {
+    autorizacaoId?: string;
     canceladaEm?: string;
     clienteId?: string;
     clienteNome?: string;
@@ -286,8 +313,12 @@ export type Devolucao = {
     itens?: Array<ItemDaDevolucao>;
     motivo?: string;
     motivoCancelamento?: string;
+    motivosRevisao?: Array<string>;
     observacao?: string;
+    observacaoRevisao?: string;
+    pendenciaDoVendedor?: string;
     remessaId?: string;
+    revisadaEm?: string;
     situacao?: string;
     valorDevolvido?: string;
     valorDevolvidoDolar?: string;
@@ -475,6 +506,13 @@ export type InventariosDaDonaControllerRespostaDoResumo = {
     pecasEsperadas?: number;
     sobram?: number;
     totalDePecas?: number;
+};
+
+export type ItemDaAutorizacao = {
+    id?: string;
+    itemVendaId?: string;
+    produto?: ConsultasDeVendasPeca;
+    quantidade?: number;
 };
 
 export type ItemDaDevolucao = {
@@ -1139,6 +1177,10 @@ export type PedidoDeMovimento = {
     tipo: string;
 };
 
+export type PedidoDeNegacao = {
+    motivo?: string;
+};
+
 export type PedidoDePrevia = {
     nomes?: Array<string>;
 };
@@ -1159,6 +1201,10 @@ export type PedidoDeProduto = {
 export type PedidoDeRenovacao = {
     dispositivoId?: string;
     tokenDeRenovacao: string;
+};
+
+export type PedidoDeRevisao = {
+    observacao?: string;
 };
 
 export type PedidoDeSituacao = {
@@ -2081,6 +2127,79 @@ export type LiberarAparelhoResponses = {
 
 export type LiberarAparelhoResponse = LiberarAparelhoResponses[keyof LiberarAparelhoResponses];
 
+export type ListarAutorizacoesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        situacao?: string;
+        vendedorId?: string;
+    };
+    url: '/api/dona/autorizacoes';
+};
+
+export type ListarAutorizacoesResponses = {
+    /**
+     * OK
+     */
+    200: Array<Autorizacao>;
+};
+
+export type ListarAutorizacoesResponse = ListarAutorizacoesResponses[keyof ListarAutorizacoesResponses];
+
+export type VerAutorizacaoData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/autorizacoes/{id}';
+};
+
+export type VerAutorizacaoResponses = {
+    /**
+     * OK
+     */
+    200: Autorizacao;
+};
+
+export type VerAutorizacaoResponse = VerAutorizacaoResponses[keyof VerAutorizacaoResponses];
+
+export type AprovarAutorizacaoData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/autorizacoes/{id}/aprovar';
+};
+
+export type AprovarAutorizacaoResponses = {
+    /**
+     * OK
+     */
+    200: Autorizacao;
+};
+
+export type AprovarAutorizacaoResponse = AprovarAutorizacaoResponses[keyof AprovarAutorizacaoResponses];
+
+export type NegarAutorizacaoData = {
+    body?: PedidoDeNegacao;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/autorizacoes/{id}/negar';
+};
+
+export type NegarAutorizacaoResponses = {
+    /**
+     * OK
+     */
+    200: Autorizacao;
+};
+
+export type NegarAutorizacaoResponse = NegarAutorizacaoResponses[keyof NegarAutorizacaoResponses];
+
 export type Listar14Data = {
     body?: never;
     path?: never;
@@ -2524,6 +2643,43 @@ export type HojeResponses = {
 
 export type HojeResponse = HojeResponses[keyof HojeResponses];
 
+export type ListarDevolucoesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        situacao?: string;
+        vendedorId?: string;
+    };
+    url: '/api/dona/devolucoes';
+};
+
+export type ListarDevolucoesResponses = {
+    /**
+     * OK
+     */
+    200: Array<Devolucao>;
+};
+
+export type ListarDevolucoesResponse = ListarDevolucoesResponses[keyof ListarDevolucoesResponses];
+
+export type VerDevolucaoData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/devolucoes/{id}';
+};
+
+export type VerDevolucaoResponses = {
+    /**
+     * OK
+     */
+    200: Devolucao;
+};
+
+export type VerDevolucaoResponse = VerDevolucaoResponses[keyof VerDevolucaoResponses];
+
 export type CancelarDevolucaoData = {
     body: PedidoDeCancelamento;
     path: {
@@ -2541,6 +2697,42 @@ export type CancelarDevolucaoResponses = {
 };
 
 export type CancelarDevolucaoResponse = CancelarDevolucaoResponses[keyof CancelarDevolucaoResponses];
+
+export type ManterDevolucaoData = {
+    body?: PedidoDeRevisao;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/devolucoes/{id}/manter';
+};
+
+export type ManterDevolucaoResponses = {
+    /**
+     * OK
+     */
+    200: Devolucao;
+};
+
+export type ManterDevolucaoResponse = ManterDevolucaoResponses[keyof ManterDevolucaoResponses];
+
+export type NaoAceitarDevolucaoData = {
+    body?: PedidoDeRevisao;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/devolucoes/{id}/nao-aceitar';
+};
+
+export type NaoAceitarDevolucaoResponses = {
+    /**
+     * OK
+     */
+    200: Devolucao;
+};
+
+export type NaoAceitarDevolucaoResponse = NaoAceitarDevolucaoResponses[keyof NaoAceitarDevolucaoResponses];
 
 export type ListarEnviosComProblemaData = {
     body?: never;

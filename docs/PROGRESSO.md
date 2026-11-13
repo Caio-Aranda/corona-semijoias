@@ -183,6 +183,7 @@ Devolução, troca e garantia. O modelo está no [ADR-0014](decisoes/ADR-0014-de
 | 6.1 | docs: plano da Fase 6 e ADR-0014 (devolução, troca e garantia) | Mesclada (PR 100) · [plano](progresso/fase-6-plano.md); R1–R6 aceitas em 12/11/2026 |
 | 6.2 | backend: garantia e parâmetros (V035, rotas da dona, `parametros` do pull, especificação) | PR 124 · [detalhe](progresso/fase-6.md) |
 | 6.3 | backend: devolução do cliente à vista (V036, peça boa e com defeito, reembolso, cancelar devolução, estorno recusado) | PR 125 · [detalhe](progresso/fase-6.md#tarefa-63-devolução-do-cliente-à-vista) |
+| 6.4 | backend: autorização da dona, revisão da devolução e antifraude (V037, limite da semana, valor de aprovação, Manter e Não aceitar, taxa de devolução e avisos) | PR 126 · [detalhe](progresso/fase-6.md#tarefa-64-autorização-revisão-e-antifraude) |
 
 ## Fase 7 (só o plano)
 

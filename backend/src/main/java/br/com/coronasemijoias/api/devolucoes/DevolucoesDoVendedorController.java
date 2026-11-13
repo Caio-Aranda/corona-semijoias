@@ -39,8 +39,9 @@ public class DevolucoesDoVendedorController {
     public record PecaDevolvida(UUID produtoId, Integer quantidade, String estado) {
     }
 
+    /** {@code autorizacaoId}: o pedido de autorização aprovado pela dona, quando a devolução precisa dele (tarefa 6.4). */
     public record PedidoDaDevolucao(UUID id, UUID vendaId, String motivo, String observacao, String formaReembolso,
-            List<PecaDevolvida> itens, BigDecimal valorConferido) {
+            List<PecaDevolvida> itens, BigDecimal valorConferido, UUID autorizacaoId) {
     }
 
     public record PedidoDeCancelamento(UUID id, String motivo) {
@@ -57,8 +58,10 @@ public class DevolucoesDoVendedorController {
     @Operation(operationId = "devolverDoCliente", summary = "Registrar a devolução de um cliente",
             description = "Devolução de peças de uma venda à vista do vendedor, dentro da garantia. A venda não muda; o servidor "
                     + "calcula o valor (o preço pago), o reembolso na forma escolhida e para onde vai cada peça (boa de maleta "
-                    + "aberta volta à maleta; com defeito ou de maleta acertada, peça para a loja). Fora do prazo, venda a prazo "
-                    + "ou acima do vendido: 409. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409.")
+                    + "aberta volta à maleta; com defeito ou de maleta acertada, peça para a loja). Fora do prazo ou acima do "
+                    + "valor que a dona aprova antes, só com a autorização aprovada (autorizacaoId); sem ela, 409. Venda a prazo "
+                    + "ou acima do vendido: 409. Acima do limite da semana: aceita para revisão da dona. Mesmo id e mesmo "
+                    + "conteúdo devolve 200; mesmo id com dados diferentes, 409.")
     @PostMapping
     public ResponseEntity<Devolucao> devolver(@RequestBody PedidoDaDevolucao pedido,
             @AuthenticationPrincipal UsuarioAutenticado quem) {
@@ -68,7 +71,7 @@ public class DevolucoesDoVendedorController {
         PedidoDaDevolucaoDoCliente p = new PedidoDaDevolucaoDoCliente(pedido.id(), pedido.vendaId(), pedido.motivo(), pedido.observacao(),
                 pedido.formaReembolso(), pedido.itens() == null ? null : pedido.itens().stream()
                         .map(i -> i == null ? null : new PecaDoPedido(i.produtoId(), i.quantidade(), i.estado())).toList(),
-                pedido.valorConferido());
+                pedido.valorConferido(), pedido.autorizacaoId());
         Resultado r = servico.devolver(quem.vendedorId(), quem.id(), quem.dispositivoId(), p, null, false, ModoDaDevolucao.ONLINE);
         return ResponseEntity.status(r.jaExistia() ? HttpStatus.OK : HttpStatus.CREATED)
                 .body(consultas.ver(r.devolucaoId(), quem.vendedorId()));

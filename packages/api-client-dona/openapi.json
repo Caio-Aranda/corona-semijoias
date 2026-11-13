@@ -103,6 +103,102 @@
         },
         "type" : "object"
       },
+      "Autorizacao" : {
+        "properties" : {
+          "clienteId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "clienteNome" : {
+            "type" : "string"
+          },
+          "cotacao" : {
+            "$ref" : "#/components/schemas/ConsultasDeVendasCotacao"
+          },
+          "decididaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "diasDesdeAVenda" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "horaAjustada" : {
+            "type" : "boolean"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ItemDaAutorizacao"
+            },
+            "type" : "array"
+          },
+          "motivo" : {
+            "type" : "string"
+          },
+          "motivoDecisao" : {
+            "type" : "string"
+          },
+          "observacao" : {
+            "type" : "string"
+          },
+          "pedidaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "prazoDaGarantiaAte" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "situacao" : {
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "validaAte" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "valorPedido" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorPedidoDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorPedidoGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "vendedorNome" : {
+            "type" : "string"
+          },
+          "vendidaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "AvisoDaDona" : {
         "properties" : {
           "dias" : {
@@ -871,6 +967,10 @@
       },
       "Devolucao" : {
         "properties" : {
+          "autorizacaoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
           "canceladaEm" : {
             "format" : "date-time",
             "type" : "string"
@@ -917,11 +1017,30 @@
           "motivoCancelamento" : {
             "type" : "string"
           },
+          "motivosRevisao" : {
+            "items" : {
+              "type" : "string"
+            },
+            "type" : "array"
+          },
           "observacao" : {
+            "type" : "string"
+          },
+          "observacaoRevisao" : {
+            "type" : "string"
+          },
+          "pendenciaDoVendedor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           },
           "remessaId" : {
             "format" : "uuid",
+            "type" : "string"
+          },
+          "revisadaEm" : {
+            "format" : "date-time",
             "type" : "string"
           },
           "situacao" : {
@@ -1543,6 +1662,26 @@
             "type" : "integer"
           },
           "totalDePecas" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "ItemDaAutorizacao" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "itemVendaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "produto" : {
+            "$ref" : "#/components/schemas/ConsultasDeVendasPeca"
+          },
+          "quantidade" : {
             "format" : "int32",
             "type" : "integer"
           }
@@ -3670,6 +3809,14 @@
         "required" : [ "produtoId", "quantidade", "tipo" ],
         "type" : "object"
       },
+      "PedidoDeNegacao" : {
+        "properties" : {
+          "motivo" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "PedidoDePrevia" : {
         "properties" : {
           "nomes" : {
@@ -3748,6 +3895,14 @@
           }
         },
         "required" : [ "tokenDeRenovacao" ],
+        "type" : "object"
+      },
+      "PedidoDeRevisao" : {
+        "properties" : {
+          "observacao" : {
+            "type" : "string"
+          }
+        },
         "type" : "object"
       },
       "PedidoDeSituacao" : {
@@ -6590,6 +6745,152 @@
         "tags" : [ "aparelhos-da-dona-controller" ]
       }
     },
+    "/api/dona/autorizacoes" : {
+      "get" : {
+        "description" : "Do mais novo para o mais antigo (no máximo 500). Filtro pela situação (padrão: esperando a dona) e pelo vendedor.",
+        "operationId" : "listarAutorizacoes",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/Autorizacao"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Pedidos de autorização de devolução",
+        "tags" : [ "autorizacoes-da-dona-controller" ]
+      }
+    },
+    "/api/dona/autorizacoes/{id}" : {
+      "get" : {
+        "operationId" : "verAutorizacao",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Autorizacao"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ver um pedido de autorização",
+        "tags" : [ "autorizacoes-da-dona-controller" ]
+      }
+    },
+    "/api/dona/autorizacoes/{id}/aprovar" : {
+      "post" : {
+        "description" : "A autorização vale até o 7º dia depois de hoje (dias de Brasília) e serve para uma devolução só. Aprovar de novo devolve o mesmo; depois de negar, 409.",
+        "operationId" : "aprovarAutorizacao",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Autorizacao"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Aprovar um pedido de autorização",
+        "tags" : [ "autorizacoes-da-dona-controller" ]
+      }
+    },
+    "/api/dona/autorizacoes/{id}/negar" : {
+      "post" : {
+        "description" : "Motivo obrigatório. Negar de novo devolve o mesmo; depois de aprovar, 409.",
+        "operationId" : "negarAutorizacao",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeNegacao"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Autorizacao"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Negar um pedido de autorização",
+        "tags" : [ "autorizacoes-da-dona-controller" ]
+      }
+    },
     "/api/dona/avisos" : {
       "get" : {
         "description" : "Os avisos que valem agora, calculados na hora (nada é gravado): cada um some sozinho quando o problema some. Lista vazia quando não há nada. Hoje: a cotação do Dólar e do Guarani que não chegou.",
@@ -7501,6 +7802,79 @@
         "tags" : [ "cotacoes-da-dona-controller" ]
       }
     },
+    "/api/dona/devolucoes" : {
+      "get" : {
+        "description" : "Da mais nova para a mais antiga (no máximo 500). Filtro pela situação (padrão: para revisão) e pelo vendedor. Cada devolução traz os motivos da revisão, quando há.",
+        "operationId" : "listarDevolucoes",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/Devolucao"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Devoluções",
+        "tags" : [ "devolucoes-da-dona-controller" ]
+      }
+    },
+    "/api/dona/devolucoes/{id}" : {
+      "get" : {
+        "operationId" : "verDevolucao",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Devolucao"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ver uma devolução",
+        "tags" : [ "devolucoes-da-dona-controller" ]
+      }
+    },
     "/api/dona/devolucoes/{id}/cancelar" : {
       "post" : {
         "description" : "Desfaz a devolução com registros de sinal oposto, a qualquer hora: a peça sai de novo da maleta e o reembolso é estornado. Motivo obrigatório; mesmo id de cancelamento devolve 200.",
@@ -7540,6 +7914,88 @@
           "bearer" : [ ]
         } ],
         "summary" : "Cancelar uma devolução",
+        "tags" : [ "devolucoes-da-dona-controller" ]
+      }
+    },
+    "/api/dona/devolucoes/{id}/manter" : {
+      "post" : {
+        "description" : "A devolução vale como está. Nada muda na maleta nem no dinheiro. Observação opcional. Manter de novo devolve o mesmo; depois de não aceitar, 409.",
+        "operationId" : "manterDevolucao",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeRevisao"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Devolucao"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Manter uma devolução para revisão",
+        "tags" : [ "devolucoes-da-dona-controller" ]
+      }
+    },
+    "/api/dona/devolucoes/{id}/nao-aceitar" : {
+      "post" : {
+        "description" : "Nada muda na maleta nem no dinheiro já devolvido: o valor devolvido fica como pendência do vendedor, cobrada no acerto. Observação obrigatória. Não aceitar de novo devolve o mesmo; depois de manter, 409.",
+        "operationId" : "naoAceitarDevolucao",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeRevisao"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Devolucao"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Não aceitar uma devolução para revisão",
         "tags" : [ "devolucoes-da-dona-controller" ]
       }
     },

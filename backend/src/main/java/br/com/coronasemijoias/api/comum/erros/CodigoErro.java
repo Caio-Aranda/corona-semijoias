@@ -472,6 +472,68 @@ public enum CodigoErro {
             "A peça desta devolução já foi vendida de novo.",
             "A peça desta devolução já foi vendida de novo e a devolução não pode ser cancelada. Fale com a dona."),
 
+    // --- Autorização, revisão e antifraude (Fase 6, tarefa 6.4; ADR-0014, itens 5, 6, 10 e 12; glossário, parte 6) ---
+
+    /** Pedido inexistente ou de outro vendedor (HTTP 404, sem dizer que existe). */
+    AUTORIZACAO_NAO_ENCONTRADA(
+            "Não encontramos este pedido de autorização.",
+            "Não encontramos este pedido de autorização. Atualize a tela e tente de novo."),
+
+    /** O mesmo identificador do pedido voltou com outros dados (HTTP 409). */
+    AUTORIZACAO_JA_REGISTRADA_DIFERENTE(
+            "Este pedido de autorização já foi feito com outros dados.",
+            "Este pedido de autorização já foi feito com outros dados. Confira os pedidos antes de pedir de novo."),
+
+    /** No prazo e sem passar do valor que a dona aprova antes: registre a devolução direto (HTTP 409). */
+    AUTORIZACAO_DESNECESSARIA(
+            "Esta devolução não precisa de autorização.",
+            "Esta devolução está no prazo. Registre a devolução direto."),
+
+    /** Já há um pedido esperando a dona ou aprovado e ainda válido para a venda (HTTP 409; dúvida P10). */
+    AUTORIZACAO_JA_PEDIDA(
+            "Já há um pedido de autorização para esta venda.",
+            "Já há um pedido de autorização para esta venda. Espere a resposta da dona ou use a autorização aprovada."),
+
+    /** A dona já decidiu o pedido de outro jeito (HTTP 409). */
+    AUTORIZACAO_JA_DECIDIDA(
+            "A dona já decidiu este pedido.",
+            "A dona já decidiu este pedido de autorização e a decisão não muda."),
+
+    /** A devolução veio com um pedido esperando a dona ou negado (HTTP 409). */
+    AUTORIZACAO_NAO_APROVADA(
+            "A dona ainda não aprovou esta devolução.",
+            "Este pedido de autorização ainda não foi aprovado ou foi negado. Espere a resposta da dona."),
+
+    /** A autorização já serviu para uma devolução (HTTP 409; dúvida P11). */
+    AUTORIZACAO_JA_USADA(
+            "Esta autorização já foi usada.",
+            "Esta autorização já foi usada numa devolução. Peça outra autorização à dona."),
+
+    /** Passou o último dia (Brasília) da autorização (HTTP 409; dúvida P7). */
+    AUTORIZACAO_VENCIDA(
+            "Esta autorização venceu.",
+            "A autorização vale 7 dias e já venceu. Peça outra autorização à dona."),
+
+    /** Outra venda, outro motivo ou peças além das autorizadas (HTTP 409; dúvida P6). */
+    AUTORIZACAO_NAO_CONFERE(
+            "Esta devolução não é a que a dona autorizou.",
+            "Use a mesma venda, o mesmo motivo e no máximo as peças que a dona autorizou."),
+
+    /** Reembolso acima do valor que a dona aprova antes, sem autorização, na rota online (HTTP 409). */
+    DEVOLUCAO_PRECISA_DE_AUTORIZACAO(
+            "Esta devolução precisa da autorização da dona.",
+            "Esta devolução passa do valor que a dona aprova antes. Peça autorização à dona."),
+
+    /** Manter ou Não aceitar uma devolução que não está para revisão (HTTP 409). */
+    DEVOLUCAO_NAO_ESTA_EM_REVISAO(
+            "Esta devolução não está para revisão.",
+            "Só a devolução para revisão da dona pode ser mantida ou não aceita."),
+
+    /** A dona já revisou a devolução de outro jeito (HTTP 409). */
+    DEVOLUCAO_JA_REVISADA(
+            "Esta devolução já foi revisada.",
+            "A dona já decidiu sobre esta devolução e a decisão não muda."),
+
     // --- Computadores do vendedor (Fase 5, tarefa 5.3; ADR-0013, itens 13 e 14) ---
 
     /** Segundo computador do vendedor, ainda sem a liberação da dona (HTTP 403). */

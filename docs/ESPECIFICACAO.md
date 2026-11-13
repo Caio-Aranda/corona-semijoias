@@ -1,6 +1,6 @@
 # Especificação completa: Sistema de Semijoias Consignadas
 
-Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.9, 12/11/2026.
+Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.10, 12/11/2026.
 
 ## 1. Objetivo e contexto
 
@@ -166,6 +166,11 @@ Regras:
   - venda a prazo parcialmente paga: devolve só o já pago e cancela as parcelas restantes;
   - comissão estornada proporcionalmente pelo servidor.
 - **Antifraude:** limite de reembolso semanal por vendedor (`limite_reembolso_semanal`, vazio = sem limite), aprovação da dona acima de certo valor (`valor_aprovacao_reembolso`, vazio = sem valor), alerta quando a taxa de devolução de um vendedor (valor devolvido ÷ vendido nas últimas 4 semanas) passa de um percentual configurável (`percentual_alerta_devolucao`, padrão 20). Reembolso inconsistente (sem venda, fora do prazo, maior que o pago) vira **pendência para revisão da dona**, nunca é aceito em silêncio.
+  - **Limite semanal:** soma do reembolso das devoluções não canceladas do vendedor (inclusive as em revisão e as não aceitas) na **semana cadastrada** que contém o dia (Brasília) da devolução; sem semana cadastrada, de **segunda a domingo** de Brasília. Passar do limite (estritamente; no valor exato passa) põe a devolução **para revisão** nos dois caminhos (online e envio), sem travar o balcão, mesmo com autorização.
+  - **Valor de aprovação:** reembolso de uma devolução acima de `valor_aprovacao_reembolso` (estritamente) sem autorização: online, recusa pedindo autorização à dona; pelo envio do computador, revisão.
+  - **Autorização da dona** (`autorizacoes_excecao`): o vendedor pede online, com a venda, o motivo e as peças; o servidor decide o tipo (fora do prazo ou acima do valor) e calcula o valor pedido. Um pedido aberto por venda. Aprovada, vale até o dia da aprovação + 7, em dias de Brasília, inclusive; uma agenda diária marca as vencidas, mas a regra do uso olha sempre a data. A autorização aprovada (de qualquer tipo) dispensa o prazo **e** o valor de aprovação daquela devolução, que precisa ser da mesma venda, do mesmo motivo e com no máximo as peças autorizadas (menos pode). Serve para **uma** devolução, para sempre (cancelar a devolução não a devolve para uso).
+  - **Revisão da dona:** a devolução em revisão guarda os motivos (um ou mais: fora do prazo, acima do limite semanal, acima do valor sem autorização, autorização que não vale, reembolso maior que o pago). A dona **mantém** ou **não aceita**; nenhuma das duas mexe em movimento, pagamento ou valor. "Não aceita" é a pendência do vendedor até o acerto passar a cobrá-la.
+  - **Taxa de devolução:** calculada na hora, por vendedor ativo, nos últimos **28 dias de Brasília** até hoje: devolvido (devoluções não canceladas, pelo dia delas) ÷ vendido (vendas concluídas, pelo dia delas). Avisa quando passa estritamente do percentual, ou quando há devolução sem venda.
 - Nada se edita: pagamento original nunca é apagado; o reembolso é um registro negativo.
 
 ### 7.4 Acerto semanal (online)
@@ -300,7 +305,9 @@ Modelo no ADR-0014 (tabelas criadas nas tarefas 6.3 a 6.5; todas imutáveis, cor
 - `itens_devolucao` (devolução, item da venda, quantidade, valor, `estado_peca: BOA | DEFEITO`, `destino_peca: MALETA | LOJA`)
 - `trocas` (venda de origem, devolução, venda nova, cliente, vendedor, diferença). **Não existe `itens_troca`**: as linhas estão na devolução e na venda nova (`vendas.troca_id`); na maleta, os tipos `TROCA_ENTRADA` e `TROCA_SAIDA` separam a troca da devolução.
 - `creditos_cliente` (cliente, vendedor que gerou, origem `TROCA | DEVOLUCAO`, valor, valor\_utilizado, situação ABERTO/UTILIZADO) e `usos_credito` (crédito, venda, valor)
-- `autorizacoes_excecao` (venda, itens e quantidades, motivo, `tipo: FORA_DO_PRAZO | ACIMA_DO_VALOR`, `situacao: PEDIDA | APROVADA | NEGADA | USADA | VENCIDA`, quem decidiu, quando, validade de 7 dias)
+- `autorizacoes_excecao` (venda, vendedor, cliente, motivo, observação, `tipo: FORA_DO_PRAZO | ACIMA_DO_VALOR`, `situacao: PEDIDA | APROVADA | NEGADA | USADA | VENCIDA`, valor pedido calculado pelo servidor, cotação do dia, quem pediu e quando, quem decidiu, quando, motivo da negação e `valida_ate`, o último dia de Brasília em que vale)
+- `itens_autorizacao` (autorização, item da venda, quantidade; imutável)
+- Em `devolucoes`, a revisão: uma coluna booleana por motivo (`revisao_fora_do_prazo`, `revisao_acima_do_limite_semanal`, `revisao_acima_do_valor_de_aprovacao`, `revisao_autorizacao_invalida`, `revisao_reembolso_maior_que_pago`; a do crédito chega com a tarefa 6.5), `revisada_em`, `revisada_por` e `observacao_revisao`. Em revisão, mantida ou não aceita exige ao menos um motivo; aceita, nenhum. Uma devolução por autorização.
 
 ### Acerto e financeiro
 
@@ -736,3 +743,6 @@ Importação com nome de arquivo inválido, foto duplicada, arquivo corrompido, 
   - §10: o bloco de parâmetros do pull ganha `prazoArrependimentoDias` e `prazoDefeitoDias` (limites de reembolso ficam só no servidor).
 - **v1.9, 12/11/2026:** devolução do cliente (tarefa 6.3, dúvidas Q1 a Q3 do plano aprovadas).
   - §7.3: as peças da devolução vão pelo produto (nunca pelo id da linha da venda); motivo "outro" exige observação; motivo "defeito" exige todas as peças com defeito.
+- **v1.10, 12/11/2026:** autorização, revisão e antifraude (tarefa 6.4, dúvidas P1 e P3 a P13 do plano aprovadas; P2 com ajuste da orquestradora).
+  - §7.3: limite semanal pela semana cadastrada (ou segunda a domingo de Brasília), estrito e em revisão nos dois caminhos; valor de aprovação estrito, recusado online e em revisão pelo envio; autorização dispensa prazo e valor, vale até o dia da aprovação + 7 (Brasília), uma devolução por autorização; manter e não aceitar sem mexer em valores; taxa de devolução em 28 dias de Brasília, calculada na hora.
+  - §9: `autorizacoes_excecao` detalhada; `itens_autorizacao` nova; `devolucoes` ganha uma coluna booleana por motivo de revisão e os dados da revisão da dona.

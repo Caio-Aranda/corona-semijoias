@@ -105,6 +105,8 @@ public abstract class TesteDeIntegracao {
         registro.add("corona.sync.alerta-agendado", () -> "false");
         registro.add("corona.fotos.limpeza-agendada", () -> "false");
         registro.add("corona.limpeza-tecnica.agendada", () -> "false");
+        // As autorizações vencidas são marcadas pelo teste (ServicoDeAutorizacoes.marcarVencidas), nunca pela agenda.
+        registro.add("corona.devolucoes.agenda-das-autorizacoes", () -> "false");
         // Os arquivos enviados nos testes vão para uma pasta temporária, nunca para o projeto.
         registro.add("corona.arquivos.pasta", () -> PASTA_DE_ARQUIVOS.toString());
         registrarSeguranca(registro);
