@@ -623,6 +623,15 @@ export type LinhaAbaixoDoMinimo = {
     saldo?: number;
 };
 
+export type LinhaDaVendaComAPeca = {
+    devolvidas?: number;
+    itemVendaId?: string;
+    podemVoltar?: number;
+    produto?: ConsultasDeVendasPeca;
+    totalDaLinha?: string;
+    vendidas?: number;
+};
+
 export type LinhaDeAlteracao = {
     acao?: string;
     descricao?: string;
@@ -1126,6 +1135,12 @@ export type PecaDaTroca = {
     valor?: string;
 };
 
+export type PecaDevolvida = {
+    estado?: string;
+    produtoId?: string;
+    quantidade?: number;
+};
+
 export type PedidoComMotivo = {
     motivo?: string;
 };
@@ -1137,6 +1152,16 @@ export type PedidoDaCompra = {
     itens?: Array<PedidoDeItem>;
     numero?: string;
     observacoes?: string;
+};
+
+export type PedidoDaDevolucaoDaDona = {
+    formaReembolso?: string;
+    id?: string;
+    itens?: Array<PecaDevolvida>;
+    motivo?: string;
+    observacao?: string;
+    valorConferido?: string;
+    vendaId?: string;
 };
 
 export type PedidoDeAjuste = {
@@ -2018,6 +2043,23 @@ export type Venda = {
     vendidaEm?: string;
 };
 
+export type VendaComAPeca = {
+    aPrazo?: boolean;
+    clienteId?: string;
+    clienteNome?: string;
+    itens?: Array<LinhaDaVendaComAPeca>;
+    prazoArrependimentoAte?: string;
+    prazoDefeitoAte?: string;
+    total?: string;
+    vendaId?: string;
+    vendidaEm?: string;
+};
+
+export type VendasComAPeca = {
+    peca?: ConsultasDeVendasPeca;
+    vendas?: Array<VendaComAPeca>;
+};
+
 export type VendasDoVendedorControllerPedidoDeEstorno = {
     id?: string;
     motivo?: string;
@@ -2866,6 +2908,41 @@ export type ListarDevolucoesResponses = {
 };
 
 export type ListarDevolucoesResponse = ListarDevolucoesResponses[keyof ListarDevolucoesResponses];
+
+export type DevolverPelaDonaData = {
+    body: PedidoDaDevolucaoDaDona;
+    path?: never;
+    query?: never;
+    url: '/api/dona/devolucoes';
+};
+
+export type DevolverPelaDonaResponses = {
+    /**
+     * OK
+     */
+    200: Devolucao;
+};
+
+export type DevolverPelaDonaResponse = DevolverPelaDonaResponses[keyof DevolverPelaDonaResponses];
+
+export type VendasComAPecaDaDonaData = {
+    body?: never;
+    path?: never;
+    query?: {
+        codigo?: string;
+        produtoId?: string;
+    };
+    url: '/api/dona/devolucoes/vendas-com-a-peca';
+};
+
+export type VendasComAPecaDaDonaResponses = {
+    /**
+     * OK
+     */
+    200: VendasComAPeca;
+};
+
+export type VendasComAPecaDaDonaResponse = VendasComAPecaDaDonaResponses[keyof VendasComAPecaDaDonaResponses];
 
 export type VerDevolucaoData = {
     body?: never;

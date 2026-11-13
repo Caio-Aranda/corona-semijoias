@@ -37,6 +37,9 @@ const ROTA_DO_AVISO: Record<string, string> = {
   VENDAS_DE_COMPUTADOR_BLOQUEADO: 'computadores/vendas',
   COMPUTADOR_SEM_ENVIAR: 'computadores/lista',
   COMPUTADOR_NOVO: 'computadores/lista',
+  DEVOLUCOES_PARA_AUTORIZAR: 'devolucoes/autorizar',
+  DEVOLUCOES_PARA_REVISAR: 'devolucoes/revisar',
+  MUITAS_DEVOLUCOES: 'devolucoes/lista',
 };
 
 function lerAvisos(bruto: unknown): AvisoDaDona[] {

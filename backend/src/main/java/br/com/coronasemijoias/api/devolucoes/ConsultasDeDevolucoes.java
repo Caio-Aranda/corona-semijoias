@@ -132,6 +132,7 @@ public class ConsultasDeDevolucoes {
     /**
      * As vendas concluídas do vendedor com a peça (§8: o leitor localiza a venda original), da mais nova para a mais
      * antiga, no máximo 20. Pelo código lido (sem diferenciar maiúsculas, sem espaços nas pontas) ou pelo produto.
+     * {@code vendedorId} nulo é a dona: as vendas de todos os vendedores.
      */
     public VendasComAPeca vendasComAPeca(UUID vendedorId, String codigo, UUID produtoId) {
         Optional<UUID> produto = produtoId != null ? Optional.of(produtoId) : codigos.produtoDoCodigo(codigo);
@@ -151,7 +152,7 @@ public class ConsultasDeDevolucoes {
                        coalesce((SELECT sum(p.valor) FROM corona.pagamentos_cliente p
                                   WHERE p.venda_id = v.id AND p.tipo = 'PAGAMENTO'), 0) AS pago
                   FROM corona.vendas v JOIN corona.clientes c ON c.id = v.cliente_id
-                 WHERE v.vendedor_id = ? AND v.status = 'CONCLUIDA' AND v.deleted_at IS NULL
+                 WHERE (?::uuid IS NULL OR v.vendedor_id = ?) AND v.status = 'CONCLUIDA' AND v.deleted_at IS NULL
                    AND EXISTS (SELECT 1 FROM corona.itens_venda i WHERE i.venda_id = v.id AND i.produto_id = ?)
                  ORDER BY v.vendida_em DESC, v.id DESC
                  LIMIT ?""", (rs, n) -> {
@@ -161,7 +162,7 @@ public class ConsultasDeDevolucoes {
                     return new VendaComAPeca(rs.getObject("id", UUID.class), rs.getObject("cliente_id", UUID.class),
                             rs.getString("nome"), vendidaEm, total, rs.getBigDecimal("pago").compareTo(total) < 0,
                             dia.plusDays(prazoArrependimento), dia.plusDays(prazoDefeito), new ArrayList<>());
-                }, vendedorId, peca.id(), LIMITE_DE_VENDAS);
+                }, vendedorId, vendedorId, peca.id(), LIMITE_DE_VENDAS);
         for (VendaComAPeca v : vendas) {
             v.itens().addAll(jdbc.query("""
                     SELECT i.id, i.produto_id, p.nome, p.foto_principal_hash, i.quantidade,

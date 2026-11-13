@@ -448,6 +448,120 @@ describe('API do Corona Gestão: rotas certas no cliente gerado', () => {
     }
   });
 
+  it('devoluções, trocas, créditos e garantia: cada operação chama a rota dela', async () => {
+    const OUTRO = '1b4e28ba-2fa1-41d3-b9a5-2c3a9a8f6b22';
+    const casos: [Record<string, unknown>, string][] = [
+      [{ operacao: 'devolucoes.autorizacoes' }, 'GET /api/dona/autorizacoes'],
+      [
+        { operacao: 'devolucoes.aprovarAutorizacao', id: ID },
+        `POST /api/dona/autorizacoes/${ID}/aprovar`,
+      ],
+      [
+        { operacao: 'devolucoes.negarAutorizacao', id: ID, motivo: 'Já usou a peça' },
+        `POST /api/dona/autorizacoes/${ID}/negar`,
+      ],
+      [{ operacao: 'devolucoes.listar' }, 'GET /api/dona/devolucoes'],
+      [{ operacao: 'devolucoes.manter', id: ID }, `POST /api/dona/devolucoes/${ID}/manter`],
+      [
+        { operacao: 'devolucoes.naoAceitar', id: ID, motivo: 'Peça usada' },
+        `POST /api/dona/devolucoes/${ID}/nao-aceitar`,
+      ],
+      [
+        { operacao: 'devolucoes.cancelar', id: ID, cancelamentoId: OUTRO, motivo: 'Engano' },
+        `POST /api/dona/devolucoes/${ID}/cancelar`,
+      ],
+      [
+        { operacao: 'devolucoes.vendasComAPeca', codigo: 'AB-1' },
+        'GET /api/dona/devolucoes/vendas-com-a-peca',
+      ],
+      [
+        {
+          operacao: 'devolucoes.registrar',
+          corpo: {
+            id: ID,
+            vendaId: OUTRO,
+            motivo: 'DEFEITO',
+            formaReembolso: 'PIX',
+            itens: [{ produtoId: ID, quantidade: 1, estado: 'DEFEITO' }],
+          },
+        },
+        'POST /api/dona/devolucoes',
+      ],
+      [{ operacao: 'trocas.listar' }, 'GET /api/dona/trocas'],
+      [
+        { operacao: 'trocas.cancelar', id: ID, cancelamentoId: OUTRO, motivo: 'Engano' },
+        `POST /api/dona/trocas/${ID}/cancelar`,
+      ],
+      [{ operacao: 'creditos.listar' }, 'GET /api/dona/creditos'],
+      [
+        { operacao: 'creditos.transferir', id: ID, novoId: OUTRO, vendedorId: ID },
+        `POST /api/dona/creditos/${ID}/transferir`,
+      ],
+      [{ operacao: 'garantia.ler' }, 'GET /api/dona/configuracoes/garantia'],
+      [
+        {
+          operacao: 'garantia.alterar',
+          prazoArrependimentoDias: 7,
+          prazoDefeitoDias: 30,
+          limiteReembolsoSemanal: null,
+          valorAprovacaoReembolso: '500.00',
+          percentualAlertaDevolucao: 20,
+        },
+        'PUT /api/dona/configuracoes/garantia',
+      ],
+    ];
+    for (const [pedido, esperado] of casos) {
+      expect(await caminhoDe(pedido as never)).toBe(esperado);
+    }
+  });
+
+  it('as listas de devolução levam o filtro e o corpo vai como a tela mandou', async () => {
+    const OUTRO = '1b4e28ba-2fa1-41d3-b9a5-2c3a9a8f6b22';
+    const vistos: { url: string; corpo: string }[] = [];
+    const fetchFalso = async (p: Request | string | URL): Promise<Response> => {
+      const r = p as Request;
+      vistos.push({
+        url: `${r.method} ${new URL(r.url).pathname}${new URL(r.url).search}`,
+        corpo: await r.text(),
+      });
+      return new Response('{}', { status: 200, headers: { 'Content-Type': 'application/json' } });
+    };
+    const api = criarApiDoGestao({ ...base, fetch: fetchFalso });
+    await api.executar('tk', {
+      operacao: 'devolucoes.listar',
+      situacao: 'MANTIDA',
+      vendedorId: ID,
+    });
+    await api.executar('tk', {
+      operacao: 'creditos.listar',
+      situacao: 'UTILIZADO',
+      clienteId: OUTRO,
+    });
+    await api.executar('tk', {
+      operacao: 'creditos.transferir',
+      id: ID,
+      novoId: OUTRO,
+      vendedorId: ID,
+    });
+    await api.executar('tk', {
+      operacao: 'garantia.alterar',
+      prazoArrependimentoDias: 7,
+      prazoDefeitoDias: 30,
+      limiteReembolsoSemanal: null,
+      valorAprovacaoReembolso: '500.00',
+      percentualAlertaDevolucao: 20,
+    });
+    expect(vistos[0]?.url).toBe(`GET /api/dona/devolucoes?situacao=MANTIDA&vendedorId=${ID}`);
+    expect(vistos[1]?.url).toBe(`GET /api/dona/creditos?situacao=UTILIZADO&clienteId=${OUTRO}`);
+    expect(JSON.parse(vistos[2]?.corpo ?? '{}')).toEqual({ id: OUTRO, vendedorId: ID });
+    expect(JSON.parse(vistos[3]?.corpo ?? '{}')).toEqual({
+      prazoArrependimentoDias: 7,
+      prazoDefeitoDias: 30,
+      valorAprovacaoReembolso: '500.00',
+      percentualAlertaDevolucao: 20,
+    });
+  });
+
   it('estoque mínimo vai por PATCH, só com versão e valor', async () => {
     expect(
       await caminhoDe({

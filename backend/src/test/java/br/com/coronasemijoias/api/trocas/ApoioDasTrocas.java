@@ -107,6 +107,17 @@ public abstract class ApoioDasTrocas extends TesteDeIntegracao {
         jdbc.update("UPDATE corona.configuracoes SET valor_dinheiro = NULL WHERE chave = 'valor_aprovacao_reembolso'");
     }
 
+    /**
+     * Depois de cada caso a conciliação do banco inteiro tem de vir vazia: os testes dividem o mesmo banco, e uma sobra
+     * deixada aqui aparece no relatório de conciliação (RelatoriosDeEstoqueEComprasTest) quando a ordem das classes muda.
+     */
+    @AfterEach
+    void conciliacaoContinuaVazia() {
+        var c = estoque.conciliar();
+        assertThat(c.divergencias()).isEmpty();
+        assertThat(c.diferencasComMaletas()).isEmpty();
+    }
+
     // --- configurações ---
 
     protected void limiteSemanal(String valor) {

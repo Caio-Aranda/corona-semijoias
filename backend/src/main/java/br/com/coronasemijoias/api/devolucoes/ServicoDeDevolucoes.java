@@ -166,7 +166,29 @@ public class ServicoDeDevolucoes {
     @Transactional
     public Resultado devolver(UUID vendedorId, UUID usuarioId, UUID aparelho, PedidoDaDevolucaoDoCliente pedido, Instant momento,
             boolean horaAjustada, ModoDaDevolucao modo) {
-        return registrar(vendedorId, usuarioId, aparelho, pedido, momento, horaAjustada, modo, null).resultado();
+        return registrar(vendedorId, usuarioId, aparelho, pedido, momento, horaAjustada, modo, null, false).resultado();
+    }
+
+    /**
+     * A dona registra a devolução de uma venda de qualquer vendedor pelo Corona Gestão (tarefa 6.9; ADR-0014, item 13).
+     * A peça vai sempre para a loja (nada entra na maleta do vendedor); o prazo da garantia e a maleta em acerto valem
+     * como no vendedor; o limite da semana e o valor de aprovação não valem para a dona; a venda de um vendedor
+     * desativado também pode ser devolvida. O vendedor da devolução é o da venda; nenhum computador entra na conta.
+     */
+    @Transactional
+    public Resultado devolverPelaDona(UUID usuarioId, PedidoDaDevolucaoDoCliente pedido) {
+        if (pedido == null) {
+            throw Validacoes.recusar("devolucao", "Informe a devolução.");
+        }
+        if (pedido.vendaId() == null) {
+            throw Validacoes.recusar("vendaId", "Escolha a venda da devolução.");
+        }
+        List<UUID> donos = jdbc.queryForList("SELECT vendedor_id FROM corona.vendas WHERE id = ? AND deleted_at IS NULL", UUID.class,
+                pedido.vendaId());
+        if (donos.isEmpty()) {
+            throw new ErroDaApi(HttpStatus.NOT_FOUND, CodigoErro.VENDA_NAO_ENCONTRADA);
+        }
+        return registrar(donos.get(0), usuarioId, null, pedido, null, false, ModoDaDevolucao.ONLINE, null, true).resultado();
     }
 
     /**
@@ -181,12 +203,12 @@ public class ServicoDeDevolucoes {
             PedidoDaDevolucaoDoCliente pedido, Instant momento, boolean horaAjustada, ModoDaDevolucao modo, UUID trocaId,
             UUID creditoId) {
         Gravada g = registrar(vendedorId, usuarioId, aparelho, pedido, momento, horaAjustada, modo,
-                new DaTroca(trocaId, creditoId));
+                new DaTroca(trocaId, creditoId), false);
         return new DevolucaoDaTrocaGravada(g.resultado().devolucaoId(), g.valorDevolvido(), g.clienteId());
     }
 
     private Gravada registrar(UUID vendedorId, UUID usuarioId, UUID aparelho, PedidoDaDevolucaoDoCliente pedido, Instant momento,
-            boolean horaAjustada, ModoDaDevolucao modo, DaTroca troca) {
+            boolean horaAjustada, ModoDaDevolucao modo, DaTroca troca, boolean pelaDona) {
         if (pedido == null) {
             throw Validacoes.recusar("devolucao", "Informe a devolução.");
         }
@@ -234,7 +256,9 @@ public class ServicoDeDevolucoes {
             return new Gravada(new Resultado(id, true), null, (UUID) venda.get("cliente_id"));
         }
 
-        VendedorAtivo.exigir(jdbc, vendedorId);
+        if (!pelaDona) {
+            VendedorAtivo.exigir(jdbc, vendedorId);
+        }
         if ("ESTORNADA".equals(venda.get("status"))) {
             throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.VENDA_JA_ESTORNADA);
         }
@@ -259,7 +283,8 @@ public class ServicoDeDevolucoes {
         if ("EM_ACERTO".equals(statusDaMaleta)) {
             throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.MALETA_EM_ACERTO);
         }
-        boolean maletaComOVendedor = MALETA_COM_O_VENDEDOR.contains(statusDaMaleta);
+        // A peça volta à maleta só quando ela está com o vendedor e foi ele quem devolveu; a dona recebe a peça na loja.
+        boolean maletaComOVendedor = MALETA_COM_O_VENDEDOR.contains(statusDaMaleta) && !pelaDona;
         if (maletaComOVendedor) {
             UUID dono = (UUID) remessa.get("dispositivo_id");
             if (dono != null && !dono.equals(aparelho)) {
@@ -313,7 +338,7 @@ public class ServicoDeDevolucoes {
         }
         // O limite da semana e o valor de aprovação olham só o dinheiro; a troca fica fora dos dois (nenhum dinheiro sai,
         // dúvida T2). Para a venda sem crédito, o dinheiro é o valor devolvido inteiro (igual à tarefa 6.4).
-        if (troca == null) {
+        if (troca == null && !pelaDona) {
             // Valor que a dona aprova antes (vazio = nunca; "acima" é estrito: no valor exato passa).
             Optional<BigDecimal> valorDeAprovacao = configuracoes.dinheiroOuVazio(ChaveDeConfiguracao.VALOR_APROVACAO_REEMBOLSO);
             if (!autorizada && valorDeAprovacao.isPresent() && valorEmDinheiro.compareTo(valorDeAprovacao.get()) > 0) {
@@ -410,6 +435,9 @@ public class ServicoDeDevolucoes {
             depois.put("credito_id", creditoGerado.toString());
         }
         depois.put("forma_reembolso", forma);
+        if (pelaDona) {
+            depois.put("registrada_pela_dona", true);
+        }
         if (!motivos.isEmpty()) {
             depois.put("motivos_revisao", motivos.stream().map(Enum::name).toList());
         }

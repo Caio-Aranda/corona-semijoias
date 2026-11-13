@@ -188,6 +188,13 @@ Si no responde, usamos: **las pantallas como están.**
 En el Corona Vendas, el botón **Editar cliente** está en la ficha del cliente y cambia solo lo que el vendedor tocó (campo por campo). Si usted y el vendedor cambian el mismo dato mientras él está sin internet, vale el que llegó **último** al sistema, y el valor anterior queda guardado para que usted lo vea y lo vuelva a poner.
 Si no responde, usamos: **como está descrito.**
 
+## 8. Pantallas de devoluciones y crédito del Corona Gestión (Fase 6)
+
+**28. En el Corona Gestión, ¿le sirven las pantallas de devoluciones y créditos como las hicimos?**
+Son seis, en el grupo **Devoluciones y créditos**: **Devoluciones para autorizar** (botones Aprobar reembolso y Negar), **Devoluciones para revisar** (Mantener o No aceptar), **Devoluciones** (la lista, con el botón Registrar devolución y Cancelar devolución), **Cambios** (Cancelar cambio), **Créditos de los clientes** (Transferir crédito a otro vendedor) y **Garantía y límites** (los días para desistir y para el defecto, el límite de devolución en dinero por semana, el valor desde el cual usted aprueba antes y el porcentaje del aviso de "muchas devoluciones"). Los avisos de la pantalla inicial tienen el botón **Abrir**.
+Tres cosas para mirar con usted: (a) cuando **usted** registra una devolución, la pieza va a la tienda y **no vuelve a la maleta del vendedor** (entra en el próximo acerto); (b) por ahora **usted no hace un cambio ni usa un crédito** en el programa (el cambio y el uso del crédito los hace el vendedor, porque la venta siempre sale de una maleta); usted sí puede transferir un crédito a otro vendedor; (c) si la devolución pasó del plazo, usted no la registra directo: el vendedor pide la autorización y usted la aprueba. Las pantallas todavía no las aprobó usted.
+Si no responde, usamos: **las pantallas como están.**
+
 ---
 
 Muchas gracias.
@@ -197,5 +204,6 @@ Notas para o time (não enviar à dona):
 - Fora desta lista por decisão ou resposta do responsável em 11/11/2026: ver docs/pendencias-do-responsavel.md (saída sem estoque, limite de consignação, vender só depois de conferir, troca de aparelho só pela dona, catálogo só da maleta, prazo do estorno, data de nascimento, garantia de 1 ano, troca e reembolso só registrados).
 - Os padrões de 6 e 8 vêm do ADR-0011; 1 a 5 do ADR-0010 e da fase 3; 16 a 20 do ADR-0007; 21 da tarefa 2.8; 24 da Fase 1; 25 da auditoria de 11/11/2026 (D2, padrão adotado pelo responsável até a dona responder; é a "pergunta 31" da orquestração: confirmar com ela).
 - Os padrões de 9 a 15 e 23 ainda não estão no código: são a proposta para quando a fase chegar (6 e 7). Confirmar com o responsável antes de implementar se a dona não responder.
+- 28 sai da tarefa 6.9 (telas de devoluções e créditos da dona): o desenho não foi aprovado pela dona; o padrão é "as telas como estão".
 - 26 e 27 saem da tarefa 5.14 (fechamento da Fase 5): o desenho das telas da dona (5.10) e o da edição de cliente (5.7), que a dona ainda não aprovou. Seguem também sem resposta as dúvidas D1 a D12 do plano da Fase 5 (docs/progresso/fase-5-plano.md), cada uma com o padrão seguro em uso; vale levá-las à dona junto.
 -->

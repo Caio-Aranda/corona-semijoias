@@ -17,6 +17,11 @@ import { TelaClientesAlterados } from './sincronizacao/TelaClientesAlterados';
 import { TelaComputadores } from './sincronizacao/TelaComputadores';
 import { TelaEnviosComProblema } from './sincronizacao/TelaEnviosComProblema';
 import { TelaVendasBloqueadas } from './sincronizacao/TelaVendasBloqueadas';
+import { TelaDevolucoes } from './devolucoes/TelaDevolucoes';
+import { TelaCreditos } from './devolucoes/TelaCreditos';
+import { TelaGarantia } from './devolucoes/TelaGarantia';
+import { TelaPedidosDeAutorizacao } from './devolucoes/TelaPedidosDeAutorizacao';
+import { TelaTrocas } from './devolucoes/TelaTrocas';
 import { TelaMaletas } from './maletas/TelaMaletas';
 import { TelaMontarMaleta } from './maletas/TelaMontarMaleta';
 import { TelaProdutos } from './produtos/TelaProdutos';
@@ -90,6 +95,18 @@ function Conteudo({
       return <TelaVendasBloqueadas ponte={ponte} />;
     case 'computadores/clientes':
       return <TelaClientesAlterados ponte={ponte} />;
+    case 'devolucoes/autorizar':
+      return <TelaPedidosDeAutorizacao ponte={ponte} />;
+    case 'devolucoes/revisar':
+      return <TelaDevolucoes ponte={ponte} modo="revisar" />;
+    case 'devolucoes/lista':
+      return <TelaDevolucoes ponte={ponte} modo="todas" />;
+    case 'devolucoes/trocas':
+      return <TelaTrocas ponte={ponte} />;
+    case 'devolucoes/creditos':
+      return <TelaCreditos ponte={ponte} />;
+    case 'devolucoes/garantia':
+      return <TelaGarantia ponte={ponte} />;
     case 'pessoas/usuarios':
       return <TelaUsuarios ponte={ponte} />;
     case 'cadastros/fornecedores':
