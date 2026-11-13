@@ -2,7 +2,7 @@
 
 import { type Client, type ClientMeta, formDataBodySerializer, type Options as Options2, type RequestResult, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { AbaixoDoMinimo1Data, AbaixoDoMinimo1Responses, AbaixoDoMinimoData, AbaixoDoMinimoResponses, AjustarData, AjustarResponses, AlteracoesDeProdutosData, AlteracoesDeProdutosResponses, AlterarCodigosData, AlterarCodigosResponses, AlterarGarantiaData, AlterarGarantiaResponses, AniversariantesData, AniversariantesResponses, AprovarVendaDeComputadorBloqueadoData, AprovarVendaDeComputadorBloqueadoResponses, BaixarData, BaixarResponses, BloquearAparelhoData, BloquearAparelhoResponses, CancelarData, CancelarDevolucaoData, CancelarDevolucaoResponses, CancelarRemessaData, CancelarRemessaResponses, CancelarResponses, ClientesData, ClientesResponses, CodigosEmConflitoData, CodigosEmConflitoResponses, ColocarItemNaRemessaData, ColocarItemNaRemessaResponses, ComecarData, ComecarResponses, ComprasData, ComprasResponses, ConciliacaoData, ConciliacaoResponses, ConciliarData, ConciliarResponses, ConfirmarData, ConfirmarResponses, ConverterData, ConverterResponses, CorrigirData, CorrigirResponses, Criar1Data, Criar1Responses, Criar2Data, Criar2Responses, Criar3Data, Criar3Responses, Criar4Data, Criar4Responses, Criar5Data, Criar5Responses, Criar6Data, Criar6Responses, Criar7Data, Criar7Responses, Criar8Data, Criar8Responses, CriarData, CriarReferenciaData, CriarReferenciaResponses, CriarRemessaData, CriarRemessaResponses, CriarResponses, CustosData, CustosResponses, DesativarData, DesativarResponses, DescartarEnvioData, DescartarEnvioResponses, DescartarVendaDeComputadorBloqueadoData, DescartarVendaDeComputadorBloqueadoResponses, Desfazer1Data, Desfazer1Responses, DesfazerData, DesfazerDevolucaoDaMaletaData, DesfazerDevolucaoDaMaletaResponses, DesfazerResponses, DevolverPecasDaMaletaData, DevolverPecasDaMaletaResponses, EcoData, EcoResponses, Editar1Data, Editar1Responses, Editar2Data, Editar2Responses, Editar3Data, Editar3Responses, Editar4Data, Editar4Responses, Editar5Data, Editar5Responses, Editar6Data, Editar6Responses, Editar7Data, Editar7Responses, Editar8Data, Editar8Responses, EditarData, EditarReferenciaData, EditarReferenciaResponses, EditarResponses, EntrarData, EntrarResponses, Enviar1Data, Enviar1Responses, EnviarData, EnviarRemessaData, EnviarRemessaResponses, EnviarResponses, EstornarVendaData, EstornarVendaResponses, EuData, EuResponses, Excluir1Data, Excluir1Responses, Excluir2Data, Excluir2Responses, Excluir3Data, Excluir3Responses, Excluir4Data, Excluir4Responses, Excluir5Data, Excluir5Responses, Excluir6Data, Excluir6Responses, Excluir7Data, Excluir7Responses, Excluir8Data, Excluir8Responses, Excluir9Data, Excluir9Responses, ExcluirData, ExcluirRascunhoDeRemessaData, ExcluirRascunhoDeRemessaResponses, ExcluirReferenciaData, ExcluirReferenciaResponses, ExcluirResponses, FalhaData, FalhaResponses, FecharData, FecharResponses, FichaData, FichaResponses, FornecedoresData, FornecedoresResponses, GravarConjugeData, GravarConjugeResponses, GravarContatoData, GravarContatoResponses, GravarEnderecoData, GravarEnderecoResponses, GravarMeiData, GravarMeiResponses, GravarObservacoesData, GravarObservacoesResponses, GravarTrabalhoData, GravarTrabalhoResponses, HistoricoDeCustoData, HistoricoDeCustoResponses, HojeData, HojeResponses, ImagemData, ImagemResponses, Inativar1Data, Inativar1Responses, Inativar2Data, Inativar2Responses, Inativar3Data, Inativar3Responses, Inativar4Data, Inativar4Responses, Inativar5Data, Inativar5Responses, Inativar6Data, Inativar6Responses, InativarData, InativarResponses, InventariosData, InventariosResponses, ItensDaCompraData, ItensDaCompraResponses, ItensData, ItensResponses, LancarData, LancarResponses, LerData, LerGarantiaData, LerGarantiaResponses, LerResponses, LiberarAparelhoData, LiberarAparelhoResponses, Listar10Data, Listar10Responses, Listar11Data, Listar11Responses, Listar12Data, Listar12Responses, Listar13Data, Listar13Responses, Listar14Data, Listar14Responses, Listar1Data, Listar1Responses, Listar2Data, Listar2Responses, Listar3Data, Listar3Responses, Listar4Data, Listar4Responses, Listar5Data, Listar5Responses, Listar6Data, Listar6Responses, Listar7Data, Listar7Responses, Listar8Data, Listar8Responses, Listar9Data, Listar9Responses, ListarAparelhosDoVendedorData, ListarAparelhosDoVendedorResponses, ListarData, ListarEnviosComProblemaData, ListarEnviosComProblemaResponses, ListarMaletasEmAbertoDoVendedorData, ListarMaletasEmAbertoDoVendedorResponses, ListarReferenciasData, ListarReferenciasResponses, ListarRemessasData, ListarRemessasResponses, ListarResponses, ListarValoresDeClienteSubstituidosData, ListarValoresDeClienteSubstituidosResponses, ListarVendasDeComputadorBloqueadoData, ListarVendasDeComputadorBloqueadoResponses, MovimentacoesData, MovimentacoesResponses, MudarEstoqueMinimoData, MudarEstoqueMinimoResponses, NotaDaRemessaData, NotaDaRemessaResponses, ParadosData, ParadosResponses, PorCodigoData, PorCodigoResponses, PorFornecedorData, PorFornecedorResponses, PosicaoAtualData, PosicaoAtualResponses, PreviaData, PreviaResponses, ProdutosData, ProdutosResponses, ProximoCodigoData, ProximoCodigoResponses, Reativar1Data, Reativar1Responses, Reativar2Data, Reativar2Responses, Reativar3Data, Reativar3Responses, Reativar4Data, Reativar4Responses, Reativar5Data, Reativar5Responses, Reativar6Data, Reativar6Responses, Reativar7Data, Reativar7Responses, ReativarData, ReativarResponses, ReceberData, ReceberResponses, RedefinirSenhaData, RedefinirSenhaResponses, RegistrarData, RegistrarResponses, RelatorioDeMaletasEmAbertoEAtrasadasData, RelatorioDeMaletasEmAbertoEAtrasadasResponses, RelatorioDeMercadoriaPorVendedorData, RelatorioDeMercadoriaPorVendedorResponses, RelatorioDeRemessasPorVendedorESemanaData, RelatorioDeRemessasPorVendedorESemanaResponses, RelatorioDeReposicoesData, RelatorioDeReposicoesResponses, RelatorioDeSaldoPorMaletaData, RelatorioDeSaldoPorMaletaResponses, RenovarData, RenovarResponses, ResultadoDasImportacoesData, ResultadoDasImportacoesResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SemCodigoDeBarrasData, SemCodigoDeBarrasResponses, SemFotoData, SemFotoResponses, SoVendedorData, SoVendedorResponses, TempoData, TempoResponses, TentarEnvioDeNovoData, TentarEnvioDeNovoResponses, TirarItemDaRemessaData, TirarItemDaRemessaResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarData, ValidarResponses, ValorDaDonaData, ValorDaDonaResponses, VendedoresData, VendedoresResponses, Ver10Data, Ver10Responses, Ver1Data, Ver1Responses, Ver2Data, Ver2Responses, Ver3Data, Ver3Responses, Ver4Data, Ver4Responses, Ver5Data, Ver5Responses, Ver6Data, Ver6Responses, Ver7Data, Ver7Responses, Ver8Data, Ver8Responses, Ver9Data, Ver9Responses, VerConferenciaDaMaletaData, VerConferenciaDaMaletaResponses, VerConjugeData, VerConjugeResponses, VerContatoData, VerContatoResponses, VerData, VerEnderecoData, VerEnderecoResponses, VerMaletaDaRemessaData, VerMaletaDaRemessaResponses, VerMeiData, VerMeiResponses, VerObservacoesData, VerObservacoesResponses, VerRemessaData, VerRemessaResponses, VerResponses, VerTrabalhoData, VerTrabalhoResponses, VerVendaData, VerVendaResponses } from './types.gen';
+import type { AbaixoDoMinimo1Data, AbaixoDoMinimo1Responses, AbaixoDoMinimoData, AbaixoDoMinimoResponses, AjustarData, AjustarResponses, AlteracoesDeProdutosData, AlteracoesDeProdutosResponses, AlterarCodigosData, AlterarCodigosResponses, AlterarGarantiaData, AlterarGarantiaResponses, AniversariantesData, AniversariantesResponses, AprovarAutorizacaoData, AprovarAutorizacaoResponses, AprovarVendaDeComputadorBloqueadoData, AprovarVendaDeComputadorBloqueadoResponses, BaixarData, BaixarResponses, BloquearAparelhoData, BloquearAparelhoResponses, CancelarData, CancelarDevolucaoData, CancelarDevolucaoResponses, CancelarRemessaData, CancelarRemessaResponses, CancelarResponses, ClientesData, ClientesResponses, CodigosEmConflitoData, CodigosEmConflitoResponses, ColocarItemNaRemessaData, ColocarItemNaRemessaResponses, ComecarData, ComecarResponses, ComprasData, ComprasResponses, ConciliacaoData, ConciliacaoResponses, ConciliarData, ConciliarResponses, ConfirmarData, ConfirmarResponses, ConverterData, ConverterResponses, CorrigirData, CorrigirResponses, Criar1Data, Criar1Responses, Criar2Data, Criar2Responses, Criar3Data, Criar3Responses, Criar4Data, Criar4Responses, Criar5Data, Criar5Responses, Criar6Data, Criar6Responses, Criar7Data, Criar7Responses, Criar8Data, Criar8Responses, CriarData, CriarReferenciaData, CriarReferenciaResponses, CriarRemessaData, CriarRemessaResponses, CriarResponses, CustosData, CustosResponses, DesativarData, DesativarResponses, DescartarEnvioData, DescartarEnvioResponses, DescartarVendaDeComputadorBloqueadoData, DescartarVendaDeComputadorBloqueadoResponses, Desfazer1Data, Desfazer1Responses, DesfazerData, DesfazerDevolucaoDaMaletaData, DesfazerDevolucaoDaMaletaResponses, DesfazerResponses, DevolverPecasDaMaletaData, DevolverPecasDaMaletaResponses, EcoData, EcoResponses, Editar1Data, Editar1Responses, Editar2Data, Editar2Responses, Editar3Data, Editar3Responses, Editar4Data, Editar4Responses, Editar5Data, Editar5Responses, Editar6Data, Editar6Responses, Editar7Data, Editar7Responses, Editar8Data, Editar8Responses, EditarData, EditarReferenciaData, EditarReferenciaResponses, EditarResponses, EntrarData, EntrarResponses, Enviar1Data, Enviar1Responses, EnviarData, EnviarRemessaData, EnviarRemessaResponses, EnviarResponses, EstornarVendaData, EstornarVendaResponses, EuData, EuResponses, Excluir1Data, Excluir1Responses, Excluir2Data, Excluir2Responses, Excluir3Data, Excluir3Responses, Excluir4Data, Excluir4Responses, Excluir5Data, Excluir5Responses, Excluir6Data, Excluir6Responses, Excluir7Data, Excluir7Responses, Excluir8Data, Excluir8Responses, Excluir9Data, Excluir9Responses, ExcluirData, ExcluirRascunhoDeRemessaData, ExcluirRascunhoDeRemessaResponses, ExcluirReferenciaData, ExcluirReferenciaResponses, ExcluirResponses, FalhaData, FalhaResponses, FecharData, FecharResponses, FichaData, FichaResponses, FornecedoresData, FornecedoresResponses, GravarConjugeData, GravarConjugeResponses, GravarContatoData, GravarContatoResponses, GravarEnderecoData, GravarEnderecoResponses, GravarMeiData, GravarMeiResponses, GravarObservacoesData, GravarObservacoesResponses, GravarTrabalhoData, GravarTrabalhoResponses, HistoricoDeCustoData, HistoricoDeCustoResponses, HojeData, HojeResponses, ImagemData, ImagemResponses, Inativar1Data, Inativar1Responses, Inativar2Data, Inativar2Responses, Inativar3Data, Inativar3Responses, Inativar4Data, Inativar4Responses, Inativar5Data, Inativar5Responses, Inativar6Data, Inativar6Responses, InativarData, InativarResponses, InventariosData, InventariosResponses, ItensDaCompraData, ItensDaCompraResponses, ItensData, ItensResponses, LancarData, LancarResponses, LerData, LerGarantiaData, LerGarantiaResponses, LerResponses, LiberarAparelhoData, LiberarAparelhoResponses, Listar10Data, Listar10Responses, Listar11Data, Listar11Responses, Listar12Data, Listar12Responses, Listar13Data, Listar13Responses, Listar14Data, Listar14Responses, Listar1Data, Listar1Responses, Listar2Data, Listar2Responses, Listar3Data, Listar3Responses, Listar4Data, Listar4Responses, Listar5Data, Listar5Responses, Listar6Data, Listar6Responses, Listar7Data, Listar7Responses, Listar8Data, Listar8Responses, Listar9Data, Listar9Responses, ListarAparelhosDoVendedorData, ListarAparelhosDoVendedorResponses, ListarAutorizacoesData, ListarAutorizacoesResponses, ListarData, ListarDevolucoesData, ListarDevolucoesResponses, ListarEnviosComProblemaData, ListarEnviosComProblemaResponses, ListarMaletasEmAbertoDoVendedorData, ListarMaletasEmAbertoDoVendedorResponses, ListarReferenciasData, ListarReferenciasResponses, ListarRemessasData, ListarRemessasResponses, ListarResponses, ListarValoresDeClienteSubstituidosData, ListarValoresDeClienteSubstituidosResponses, ListarVendasDeComputadorBloqueadoData, ListarVendasDeComputadorBloqueadoResponses, ManterDevolucaoData, ManterDevolucaoResponses, MovimentacoesData, MovimentacoesResponses, MudarEstoqueMinimoData, MudarEstoqueMinimoResponses, NaoAceitarDevolucaoData, NaoAceitarDevolucaoResponses, NegarAutorizacaoData, NegarAutorizacaoResponses, NotaDaRemessaData, NotaDaRemessaResponses, ParadosData, ParadosResponses, PorCodigoData, PorCodigoResponses, PorFornecedorData, PorFornecedorResponses, PosicaoAtualData, PosicaoAtualResponses, PreviaData, PreviaResponses, ProdutosData, ProdutosResponses, ProximoCodigoData, ProximoCodigoResponses, Reativar1Data, Reativar1Responses, Reativar2Data, Reativar2Responses, Reativar3Data, Reativar3Responses, Reativar4Data, Reativar4Responses, Reativar5Data, Reativar5Responses, Reativar6Data, Reativar6Responses, Reativar7Data, Reativar7Responses, ReativarData, ReativarResponses, ReceberData, ReceberResponses, RedefinirSenhaData, RedefinirSenhaResponses, RegistrarData, RegistrarResponses, RelatorioDeMaletasEmAbertoEAtrasadasData, RelatorioDeMaletasEmAbertoEAtrasadasResponses, RelatorioDeMercadoriaPorVendedorData, RelatorioDeMercadoriaPorVendedorResponses, RelatorioDeRemessasPorVendedorESemanaData, RelatorioDeRemessasPorVendedorESemanaResponses, RelatorioDeReposicoesData, RelatorioDeReposicoesResponses, RelatorioDeSaldoPorMaletaData, RelatorioDeSaldoPorMaletaResponses, RenovarData, RenovarResponses, ResultadoDasImportacoesData, ResultadoDasImportacoesResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SemCodigoDeBarrasData, SemCodigoDeBarrasResponses, SemFotoData, SemFotoResponses, SoVendedorData, SoVendedorResponses, TempoData, TempoResponses, TentarEnvioDeNovoData, TentarEnvioDeNovoResponses, TirarItemDaRemessaData, TirarItemDaRemessaResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarData, ValidarResponses, ValorDaDonaData, ValorDaDonaResponses, VendedoresData, VendedoresResponses, Ver10Data, Ver10Responses, Ver1Data, Ver1Responses, Ver2Data, Ver2Responses, Ver3Data, Ver3Responses, Ver4Data, Ver4Responses, Ver5Data, Ver5Responses, Ver6Data, Ver6Responses, Ver7Data, Ver7Responses, Ver8Data, Ver8Responses, Ver9Data, Ver9Responses, VerAutorizacaoData, VerAutorizacaoResponses, VerConferenciaDaMaletaData, VerConferenciaDaMaletaResponses, VerConjugeData, VerConjugeResponses, VerContatoData, VerContatoResponses, VerData, VerDevolucaoData, VerDevolucaoResponses, VerEnderecoData, VerEnderecoResponses, VerMaletaDaRemessaData, VerMaletaDaRemessaResponses, VerMeiData, VerMeiResponses, VerObservacoesData, VerObservacoesResponses, VerRemessaData, VerRemessaResponses, VerResponses, VerTrabalhoData, VerTrabalhoResponses, VerVendaData, VerVendaResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -117,6 +117,52 @@ export const liberarAparelho = <ThrowOnError extends boolean = false>(options: O
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/aparelhos/{id}/liberar',
     ...options
+});
+
+/**
+ * Pedidos de autorização de devolução
+ *
+ * Do mais novo para o mais antigo (no máximo 500). Filtro pela situação (padrão: esperando a dona) e pelo vendedor.
+ */
+export const listarAutorizacoes = <ThrowOnError extends boolean = false>(options?: Options<ListarAutorizacoesData, ThrowOnError>): RequestResult<ListarAutorizacoesResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ListarAutorizacoesResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/autorizacoes',
+    ...options
+});
+
+/**
+ * Ver um pedido de autorização
+ */
+export const verAutorizacao = <ThrowOnError extends boolean = false>(options: Options<VerAutorizacaoData, ThrowOnError>): RequestResult<VerAutorizacaoResponses, unknown, ThrowOnError> => (options.client ?? client).get<VerAutorizacaoResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/autorizacoes/{id}',
+    ...options
+});
+
+/**
+ * Aprovar um pedido de autorização
+ *
+ * A autorização vale até o 7º dia depois de hoje (dias de Brasília) e serve para uma devolução só. Aprovar de novo devolve o mesmo; depois de negar, 409.
+ */
+export const aprovarAutorizacao = <ThrowOnError extends boolean = false>(options: Options<AprovarAutorizacaoData, ThrowOnError>): RequestResult<AprovarAutorizacaoResponses, unknown, ThrowOnError> => (options.client ?? client).post<AprovarAutorizacaoResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/autorizacoes/{id}/aprovar',
+    ...options
+});
+
+/**
+ * Negar um pedido de autorização
+ *
+ * Motivo obrigatório. Negar de novo devolve o mesmo; depois de aprovar, 409.
+ */
+export const negarAutorizacao = <ThrowOnError extends boolean = false>(options: Options<NegarAutorizacaoData, ThrowOnError>): RequestResult<NegarAutorizacaoResponses, unknown, ThrowOnError> => (options.client ?? client).post<NegarAutorizacaoResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/autorizacoes/{id}/negar',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**
@@ -433,6 +479,26 @@ export const hoje = <ThrowOnError extends boolean = false>(options?: Options<Hoj
 });
 
 /**
+ * Devoluções
+ *
+ * Da mais nova para a mais antiga (no máximo 500). Filtro pela situação (padrão: para revisão) e pelo vendedor. Cada devolução traz os motivos da revisão, quando há.
+ */
+export const listarDevolucoes = <ThrowOnError extends boolean = false>(options?: Options<ListarDevolucoesData, ThrowOnError>): RequestResult<ListarDevolucoesResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ListarDevolucoesResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/devolucoes',
+    ...options
+});
+
+/**
+ * Ver uma devolução
+ */
+export const verDevolucao = <ThrowOnError extends boolean = false>(options: Options<VerDevolucaoData, ThrowOnError>): RequestResult<VerDevolucaoResponses, unknown, ThrowOnError> => (options.client ?? client).get<VerDevolucaoResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/devolucoes/{id}',
+    ...options
+});
+
+/**
  * Cancelar uma devolução
  *
  * Desfaz a devolução com registros de sinal oposto, a qualquer hora: a peça sai de novo da maleta e o reembolso é estornado. Motivo obrigatório; mesmo id de cancelamento devolve 200.
@@ -440,6 +506,36 @@ export const hoje = <ThrowOnError extends boolean = false>(options?: Options<Hoj
 export const cancelarDevolucao = <ThrowOnError extends boolean = false>(options: Options<CancelarDevolucaoData, ThrowOnError>): RequestResult<CancelarDevolucaoResponses, unknown, ThrowOnError> => (options.client ?? client).post<CancelarDevolucaoResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/devolucoes/{id}/cancelar',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Manter uma devolução para revisão
+ *
+ * A devolução vale como está. Nada muda na maleta nem no dinheiro. Observação opcional. Manter de novo devolve o mesmo; depois de não aceitar, 409.
+ */
+export const manterDevolucao = <ThrowOnError extends boolean = false>(options: Options<ManterDevolucaoData, ThrowOnError>): RequestResult<ManterDevolucaoResponses, unknown, ThrowOnError> => (options.client ?? client).post<ManterDevolucaoResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/devolucoes/{id}/manter',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Não aceitar uma devolução para revisão
+ *
+ * Nada muda na maleta nem no dinheiro já devolvido: o valor devolvido fica como pendência do vendedor, cobrada no acerto. Observação obrigatória. Não aceitar de novo devolve o mesmo; depois de manter, 409.
+ */
+export const naoAceitarDevolucao = <ThrowOnError extends boolean = false>(options: Options<NaoAceitarDevolucaoData, ThrowOnError>): RequestResult<NaoAceitarDevolucaoResponses, unknown, ThrowOnError> => (options.client ?? client).post<NaoAceitarDevolucaoResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/devolucoes/{id}/nao-aceitar',
     ...options,
     headers: {
         'Content-Type': 'application/json',

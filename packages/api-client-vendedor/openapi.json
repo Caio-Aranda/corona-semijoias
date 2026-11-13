@@ -1,6 +1,102 @@
 {
   "components" : {
     "schemas" : {
+      "Autorizacao" : {
+        "properties" : {
+          "clienteId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "clienteNome" : {
+            "type" : "string"
+          },
+          "cotacao" : {
+            "$ref" : "#/components/schemas/ConsultasDeVendasCotacao"
+          },
+          "decididaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "diasDesdeAVenda" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "horaAjustada" : {
+            "type" : "boolean"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ItemDaAutorizacao"
+            },
+            "type" : "array"
+          },
+          "motivo" : {
+            "type" : "string"
+          },
+          "motivoDecisao" : {
+            "type" : "string"
+          },
+          "observacao" : {
+            "type" : "string"
+          },
+          "pedidaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "prazoDaGarantiaAte" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "situacao" : {
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "validaAte" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "valorPedido" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorPedidoDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorPedidoGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "vendedorNome" : {
+            "type" : "string"
+          },
+          "vendidaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "CadastroDeTeste" : {
         "properties" : {
           "nome" : {
@@ -386,6 +482,10 @@
       },
       "Devolucao" : {
         "properties" : {
+          "autorizacaoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
           "canceladaEm" : {
             "format" : "date-time",
             "type" : "string"
@@ -432,11 +532,30 @@
           "motivoCancelamento" : {
             "type" : "string"
           },
+          "motivosRevisao" : {
+            "items" : {
+              "type" : "string"
+            },
+            "type" : "array"
+          },
           "observacao" : {
+            "type" : "string"
+          },
+          "observacaoRevisao" : {
+            "type" : "string"
+          },
+          "pendenciaDoVendedor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           },
           "remessaId" : {
             "format" : "uuid",
+            "type" : "string"
+          },
+          "revisadaEm" : {
+            "format" : "date-time",
             "type" : "string"
           },
           "situacao" : {
@@ -489,6 +608,26 @@
           }
         },
         "required" : [ "tabelas" ],
+        "type" : "object"
+      },
+      "ItemDaAutorizacao" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "itemVendaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "produto" : {
+            "$ref" : "#/components/schemas/ConsultasDeVendasPeca"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
         "type" : "object"
       },
       "ItemDaDevolucao" : {
@@ -748,6 +887,31 @@
         },
         "type" : "object"
       },
+      "PedidoDaAutorizacao" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/PecaDevolvida"
+            },
+            "type" : "array"
+          },
+          "motivo" : {
+            "type" : "string"
+          },
+          "observacao" : {
+            "type" : "string"
+          },
+          "vendaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "PedidoDaContagem" : {
         "properties" : {
           "contada" : {
@@ -763,6 +927,10 @@
       },
       "PedidoDaDevolucao" : {
         "properties" : {
+          "autorizacaoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
           "formaReembolso" : {
             "type" : "string"
           },
@@ -1666,6 +1834,103 @@
         "tags" : [ "autenticacao-controller" ]
       }
     },
+    "/api/vendedor/autorizacoes" : {
+      "get" : {
+        "description" : "Só os pedidos do vendedor logado, do mais novo para o mais antigo. Filtro opcional por venda.",
+        "operationId" : "listarAutorizacoesDoVendedor",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "vendaId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/Autorizacao"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Meus pedidos de autorização",
+        "tags" : [ "autorizacoes-do-vendedor-controller" ]
+      },
+      "post" : {
+        "description" : "Para a devolução fora do prazo da garantia ou acima do valor que a dona aprova antes. O servidor decide o tipo e calcula o valor pedido (o preço pago). No prazo e sem passar do valor: 409 (registre a devolução direto). Um pedido aberto por venda. Mesmo id e mesmo conteúdo devolve 200; com dados diferentes, 409.",
+        "operationId" : "pedirAutorizacao",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDaAutorizacao"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Autorizacao"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Pedir autorização à dona para uma devolução",
+        "tags" : [ "autorizacoes-do-vendedor-controller" ]
+      }
+    },
+    "/api/vendedor/autorizacoes/{id}" : {
+      "get" : {
+        "operationId" : "verAutorizacaoDoVendedor",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Autorizacao"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ver um dos meus pedidos de autorização",
+        "tags" : [ "autorizacoes-do-vendedor-controller" ]
+      }
+    },
     "/api/vendedor/clientes" : {
       "get" : {
         "description" : "Os clientes ativos da LOJA (até 100, por nome), só com nome, CPF, telefone e cidade; nascimento, WhatsApp e observações vêm só dos que o vendedor logado cadastrou (meu = verdadeiro). A busca procura no nome, telefone, CPF e, nos clientes dele, no WhatsApp.",
@@ -1836,7 +2101,7 @@
         "tags" : [ "devolucoes-do-vendedor-controller" ]
       },
       "post" : {
-        "description" : "Devolução de peças de uma venda à vista do vendedor, dentro da garantia. A venda não muda; o servidor calcula o valor (o preço pago), o reembolso na forma escolhida e para onde vai cada peça (boa de maleta aberta volta à maleta; com defeito ou de maleta acertada, peça para a loja). Fora do prazo, venda a prazo ou acima do vendido: 409. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409.",
+        "description" : "Devolução de peças de uma venda à vista do vendedor, dentro da garantia. A venda não muda; o servidor calcula o valor (o preço pago), o reembolso na forma escolhida e para onde vai cada peça (boa de maleta aberta volta à maleta; com defeito ou de maleta acertada, peça para a loja). Fora do prazo ou acima do valor que a dona aprova antes, só com a autorização aprovada (autorizacaoId); sem ela, 409. Venda a prazo ou acima do vendido: 409. Acima do limite da semana: aceita para revisão da dona. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409.",
         "operationId" : "devolverDoCliente",
         "requestBody" : {
           "content" : {
