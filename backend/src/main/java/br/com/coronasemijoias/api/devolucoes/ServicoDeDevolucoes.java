@@ -3,28 +3,29 @@ package br.com.coronasemijoias.api.devolucoes;
 import br.com.coronasemijoias.api.auditoria.ServicoDeAuditoria;
 import br.com.coronasemijoias.api.auditoria.ServicoDeAuditoria.Ator;
 import br.com.coronasemijoias.api.cadastros.Validacoes;
-import br.com.coronasemijoias.api.comum.dinheiro.Dinheiro;
 import br.com.coronasemijoias.api.comum.erros.CodigoErro;
 import br.com.coronasemijoias.api.comum.erros.ErroDaApi;
-import br.com.coronasemijoias.api.comum.identificadores.OrdemDoBanco;
 import br.com.coronasemijoias.api.comum.identificadores.UuidV7;
 import br.com.coronasemijoias.api.comum.persistencia.OrigemDoDispositivo;
 import br.com.coronasemijoias.api.configuracoes.ChaveDeConfiguracao;
 import br.com.coronasemijoias.api.configuracoes.Configuracoes;
+import br.com.coronasemijoias.api.devolucoes.RegrasDaDevolucao.Peca;
+import br.com.coronasemijoias.api.devolucoes.RegrasDaDevolucao.PecaCalculada;
 import br.com.coronasemijoias.api.vendedor.VendedorAtivo;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Clock;
+import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -33,28 +34,33 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Devolução do cliente de venda à vista e "Cancelar devolução" (tarefa 6.3; ADR-0014, itens 1 a 7 e 11). Regras:
+ * Devolução do cliente de venda à vista, "Cancelar devolução" (tarefa 6.3; ADR-0014, itens 1 a 7 e 11) e a revisão e o
+ * antifraude (tarefa 6.4; ADR-0014, itens 5, 6, 10 e 12). Regras:
  * <ul>
- *   <li>A venda não muda. O app manda a venda, as peças (pelo produto), quantidade, estado, motivo e a forma do
- *       reembolso; o servidor calcula o prazo, o valor (preço pago, {@link ValorDaDevolucao}) e o destino da peça.</li>
- *   <li>Travas na mesma ordem do estorno da venda (ADR-0008): a maleta da venda e depois a venda. Devolução e estorno da
- *       mesma venda nunca se travam em ordem oposta; o banco é a segunda trava (V036).</li>
+ *   <li>A venda não muda. O app manda a venda, as peças (pelo produto), quantidade, estado, motivo, a forma do reembolso
+ *       e, se houver, a autorização da dona; o servidor calcula o prazo, o valor (preço pago, {@link ValorDaDevolucao}),
+ *       o destino da peça e se a devolução vai para revisão.</li>
+ *   <li><strong>Ordem das travas</strong> (aprovada no PR #126): primeiro a trava do vendedor
+ *       ({@code pg_advisory_xact_lock} de {@code corona.devolucoes.vendedor:<id>}), depois a maleta da venda, a venda e,
+ *       por último, a autorização. A trava do vendedor faz duas devoluções do mesmo vendedor (em vendas diferentes)
+ *       somarem o limite da semana uma depois da outra. Só a devolução pega essa trava: o estorno da venda, o cancelar e
+ *       a revisão da dona pegam só maleta e venda, na mesma ordem, então a ordem nunca se inverte.</li>
  *   <li>Peça boa de maleta ainda com o vendedor volta ao saldo (movimento {@code DEVOLUCAO_CLIENTE}); peça boa de maleta
  *       acertada e toda peça com defeito são "peça para a loja", sem movimento.</li>
- *   <li>Fora do prazo: na rota online, 409; pelo envio do computador ({@link ModoDaDevolucao#ENVIO}), aceita para revisão da dona
- *       (dúvida R2): o que já aconteceu no balcão nunca é recusado em silêncio.</li>
+ *   <li>Autorização aprovada e válida (mesma venda, mesmo motivo, no máximo as peças pedidas) dispensa o prazo e o valor
+ *       de aprovação, fica ligada à devolução e passa a usada. Inválida: na rota online, 409; pelo envio, revisão (e não
+ *       é consumida). De outro vendedor ou inexistente: 404 nos dois.</li>
+ *   <li>Fora do prazo ou acima do valor de aprovação sem autorização: na rota online, 409; pelo envio do computador
+ *       ({@link ModoDaDevolucao#ENVIO}), revisão. Acima do limite da semana ou reembolso maior que o pago: revisão nos
+ *       dois (o balcão não trava). Em revisão, o movimento e o reembolso são gravados igual: o dinheiro já saiu.</li>
  *   <li>Idempotência pelo id do aplicativo: mesmo id e mesmo conteúdo, 200; conteúdo diferente, 409.</li>
  * </ul>
  */
 @Service
 public class ServicoDeDevolucoes {
 
-    private static final ZoneId BRASILIA = ZoneId.of("America/Sao_Paulo");
-    private static final int LIMITE_DE_LINHAS = 200;
-    private static final int LIMITE_DA_QUANTIDADE = 100_000;
-    private static final int LIMITE_DO_TEXTO = 400;
-    private static final Set<String> MOTIVOS = Set.of("ARREPENDIMENTO", "DEFEITO", "TAMANHO", "OUTRO");
-    private static final Set<String> ESTADOS = Set.of("BOA", "DEFEITO");
+    private static final ZoneId BRASILIA = RegrasDaDevolucao.BRASILIA;
+    private static final int LIMITE_DO_TEXTO = RegrasDaDevolucao.LIMITE_DO_TEXTO;
     private static final Set<String> FORMAS = Set.of("DINHEIRO", "PIX", "CARTAO", "CHEQUE");
     private static final Set<String> MALETA_COM_O_VENDEDOR = Set.of("ENVIADA", "CONFERIDA");
 
@@ -64,25 +70,44 @@ public class ServicoDeDevolucoes {
         ENVIO
     }
 
+    /** Por que a devolução está para revisão, na ordem fixa em que a API mostra. */
+    public enum MotivoDaRevisao {
+        FORA_DO_PRAZO("revisao_fora_do_prazo"),
+        ACIMA_DO_LIMITE_SEMANAL("revisao_acima_do_limite_semanal"),
+        ACIMA_DO_VALOR_SEM_AUTORIZACAO("revisao_acima_do_valor_de_aprovacao"),
+        AUTORIZACAO_INVALIDA("revisao_autorizacao_invalida"),
+        REEMBOLSO_MAIOR_QUE_O_PAGO("revisao_reembolso_maior_que_pago");
+
+        private final String coluna;
+
+        MotivoDaRevisao(String coluna) {
+            this.coluna = coluna;
+        }
+
+        public String coluna() {
+            return coluna;
+        }
+    }
+
     public record PecaDoPedido(UUID produtoId, Integer quantidade, String estado) {
     }
 
-    /** {@code valorConferido} é o valor que a tela mostrou: só serve para avisar divergência (nunca vale). */
+    /**
+     * {@code valorConferido} é o valor que a tela mostrou: só serve para avisar divergência (nunca vale).
+     * {@code autorizacaoId} é o pedido de autorização aprovado pela dona, quando há.
+     */
     public record PedidoDaDevolucaoDoCliente(UUID id, UUID vendaId, String motivo, String observacao, String formaReembolso,
-            List<PecaDoPedido> itens, BigDecimal valorConferido) {
+            List<PecaDoPedido> itens, BigDecimal valorConferido, UUID autorizacaoId) {
+
+        /** Sem autorização (a devolução da tarefa 6.3). */
+        public PedidoDaDevolucaoDoCliente(UUID id, UUID vendaId, String motivo, String observacao, String formaReembolso,
+                List<PecaDoPedido> itens, BigDecimal valorConferido) {
+            this(id, vendaId, motivo, observacao, formaReembolso, itens, valorConferido, null);
+        }
     }
 
-    /** {@code jaExistia}: a devolução (ou o cancelamento) já estava gravada (200); senão, algo novo foi gravado (201). */
+    /** {@code jaExistia}: a devolução (ou o cancelamento, ou a revisão) já estava gravada (200); senão, algo novo (201). */
     public record Resultado(UUID devolucaoId, boolean jaExistia) {
-    }
-
-    private record Peca(UUID produtoId, int quantidade, String estado) {
-    }
-
-    private record LinhaDaVenda(UUID id, UUID produtoId, String nome, int quantidade, BigDecimal total) {
-    }
-
-    private record ItemNovo(LinhaDaVenda linha, int quantidade, String estado, String destino, BigDecimal valor) {
     }
 
     private final JdbcTemplate jdbc;
@@ -116,22 +141,13 @@ public class ServicoDeDevolucoes {
         if (pedido.vendaId() == null) {
             throw Validacoes.recusar("vendaId", "Escolha a venda da devolução.");
         }
-        String motivo = pedido.motivo();
-        if (motivo == null || !MOTIVOS.contains(motivo)) {
-            throw Validacoes.recusar("motivo", "Escolha o motivo da devolução: desistência, defeito, não serviu ou outro.");
-        }
-        String observacao = Validacoes.limpar(pedido.observacao());
-        if (observacao != null && observacao.length() > LIMITE_DO_TEXTO) {
-            throw Validacoes.recusar("observacao", "Use no máximo " + LIMITE_DO_TEXTO + " caracteres.");
-        }
-        if ("OUTRO".equals(motivo) && observacao == null) {
-            throw Validacoes.recusar("observacao", "Conte o motivo da devolução no campo de observação.");
-        }
+        String motivo = RegrasDaDevolucao.conferirMotivo(pedido.motivo());
+        String observacao = RegrasDaDevolucao.conferirObservacao(pedido.observacao(), motivo);
         String forma = pedido.formaReembolso();
         if (forma == null || !FORMAS.contains(forma)) {
             throw Validacoes.recusar("formaReembolso", "Escolha como o dinheiro foi devolvido: dinheiro, Pix, cartão ou cheque.");
         }
-        List<Peca> pecas = conferirPecas(pedido.itens(), motivo);
+        List<Peca> pecas = RegrasDaDevolucao.conferirPecas(pedido.itens(), motivo);
         if (pedido.valorConferido() != null && pedido.valorConferido().signum() < 0) {
             throw Validacoes.recusar("valorConferido", "O valor conferido não pode ser negativo.");
         }
@@ -143,16 +159,20 @@ public class ServicoDeDevolucoes {
             throw new ErroDaApi(HttpStatus.NOT_FOUND, CodigoErro.VENDA_NAO_ENCONTRADA);
         }
         UUID remessaId = (UUID) achada.get(0).get("remessa_id");
-        // Travas: a maleta e depois a venda (a mesma ordem do estorno).
+        // Travas: o vendedor, a maleta, a venda e (mais abaixo) a autorização. Ver a ordem no comentário da classe.
+        jdbc.query("SELECT pg_advisory_xact_lock(hashtextextended(?, 0))", rs -> {
+        }, "corona.devolucoes.vendedor:" + vendedorId);
         Map<String, Object> remessa = jdbc.queryForMap(
                 "SELECT status, dispositivo_id FROM corona.remessas WHERE id = ? FOR UPDATE", remessaId);
         Map<String, Object> venda = jdbc.queryForMap(
                 "SELECT status, cliente_id, total, vendida_em FROM corona.vendas WHERE id = ? FOR UPDATE", pedido.vendaId());
 
-        List<Map<String, Object>> existente = jdbc.queryForList(
-                "SELECT venda_id, vendedor_id, motivo, observacao, forma_reembolso FROM corona.devolucoes WHERE id = ?", id);
+        List<Map<String, Object>> existente = jdbc.queryForList("""
+                SELECT venda_id, vendedor_id, motivo, observacao, forma_reembolso, autorizacao_id, revisao_autorizacao_invalida
+                  FROM corona.devolucoes WHERE id = ?""", id);
         if (!existente.isEmpty()) {
-            if (!mesmaDevolucao(id, vendedorId, pedido.vendaId(), motivo, observacao, forma, pecas, existente.get(0))) {
+            if (!mesmaDevolucao(id, vendedorId, pedido.vendaId(), motivo, observacao, forma, pecas, pedido.autorizacaoId(),
+                    existente.get(0))) {
                 throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.DEVOLUCAO_JA_REGISTRADA_DIFERENTE);
             }
             return new Resultado(id, true);
@@ -163,9 +183,12 @@ public class ServicoDeDevolucoes {
             throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.VENDA_JA_ESTORNADA);
         }
         BigDecimal total = (BigDecimal) venda.get("total");
-        BigDecimal pago = jdbc.queryForObject("""
-                SELECT coalesce(sum(valor), 0) FROM corona.pagamentos_cliente WHERE venda_id = ? AND tipo = 'PAGAMENTO'""",
-                BigDecimal.class, pedido.vendaId());
+        Map<String, Object> dinheiro = jdbc.queryForMap("""
+                SELECT coalesce(sum(valor) FILTER (WHERE tipo = 'PAGAMENTO'), 0) AS pago,
+                       coalesce(-sum(valor) FILTER (WHERE tipo IN ('REEMBOLSO', 'ESTORNO_REEMBOLSO')), 0) AS reembolsado
+                  FROM corona.pagamentos_cliente WHERE venda_id = ?""", pedido.vendaId());
+        BigDecimal pago = (BigDecimal) dinheiro.get("pago");
+        BigDecimal jaReembolsado = (BigDecimal) dinheiro.get("reembolsado");
         if (pago.compareTo(total) < 0) {
             // Venda a prazo: a devolução dela depende das parcelas (tarefa 6.6; dúvida R5).
             throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.VENDA_A_PRAZO_SEM_DEVOLUCAO);
@@ -182,82 +205,92 @@ public class ServicoDeDevolucoes {
             }
         }
 
-        // As peças contra as linhas da venda (uma linha por produto) e contra o que ainda pode voltar.
-        Map<UUID, LinhaDaVenda> linhas = new LinkedHashMap<>();
-        jdbc.query("""
-                SELECT i.id, i.produto_id, p.nome, i.quantidade, i.preco_unitario * i.quantidade - i.desconto AS total
-                  FROM corona.itens_venda i JOIN corona.produtos p ON p.id = i.produto_id
-                 WHERE i.venda_id = ?""", rs -> {
-                    UUID produto = rs.getObject("produto_id", UUID.class);
-                    linhas.put(produto, new LinhaDaVenda(rs.getObject("id", UUID.class), produto, rs.getString("nome"),
-                            rs.getInt("quantidade"), rs.getBigDecimal("total")));
-                }, pedido.vendaId());
-        for (Peca p : pecas) {
-            if (!linhas.containsKey(p.produtoId())) {
-                throw Validacoes.recusar("produtoId", "Esta peça não consta nesta venda.");
+        Instant quando = momento == null ? relogio.instant() : momento;
+        LocalDate dia = RegrasDaDevolucao.dia(quando);
+
+        // A autorização (se veio): a última trava. Inexistente ou de outro vendedor: 404 nos dois modos (ADR-0014, item 5).
+        UUID autorizacaoUsada = null;
+        boolean autorizacaoInvalida = false;
+        if (pedido.autorizacaoId() != null) {
+            List<Map<String, Object>> autorizacao = jdbc.queryForList("""
+                    SELECT venda_id, vendedor_id, motivo, situacao, valida_ate FROM corona.autorizacoes_excecao
+                     WHERE id = ? AND deleted_at IS NULL FOR UPDATE""", pedido.autorizacaoId());
+            if (autorizacao.isEmpty() || !vendedorId.equals(autorizacao.get(0).get("vendedor_id"))) {
+                throw new ErroDaApi(HttpStatus.NOT_FOUND, CodigoErro.AUTORIZACAO_NAO_ENCONTRADA);
+            }
+            CodigoErro problema = problemaDaAutorizacao(pedido.autorizacaoId(), autorizacao.get(0), pedido.vendaId(), motivo,
+                    pecas, dia);
+            if (problema == null) {
+                autorizacaoUsada = pedido.autorizacaoId();
+            } else if (modo != ModoDaDevolucao.ENVIO) {
+                throw new ErroDaApi(HttpStatus.CONFLICT, problema);
+            } else {
+                autorizacaoInvalida = true;
             }
         }
-        List<ItemNovo> itens = new ArrayList<>();
-        BigDecimal valorDevolvido = BigDecimal.ZERO.setScale(Dinheiro.ESCALA);
-        for (Map.Entry<UUID, List<Peca>> doProduto : porProduto(pecas).entrySet()) {
-            LinhaDaVenda linha = linhas.get(doProduto.getKey());
-            Map<String, Object> ja = jdbc.queryForMap("""
-                    SELECT coalesce(sum(i.quantidade), 0) AS quantidade, coalesce(sum(i.valor), 0) AS valor
-                      FROM corona.itens_devolucao i JOIN corona.devolucoes d ON d.id = i.devolucao_id
-                     WHERE i.item_venda_id = ? AND d.situacao <> 'CANCELADA'""", linha.id());
-            int jaDevolvidas = ((Number) ja.get("quantidade")).intValue();
-            BigDecimal valorJa = Dinheiro.somar(List.of((BigDecimal) ja.get("valor")));
-            int pedidas = doProduto.getValue().stream().mapToInt(Peca::quantidade).sum();
-            int podem = linha.quantidade() - jaDevolvidas;
-            if (pedidas > podem) {
-                throw ErroDaApi.comDetalhe(HttpStatus.CONFLICT, CodigoErro.DEVOLUCAO_ACIMA_DO_VENDIDO, podem <= 0
-                        ? "Todas as peças de \"" + linha.nome() + "\" desta venda já foram devolvidas."
-                        : "Desta venda ainda podem voltar só " + podem + " peça(s) de \"" + linha.nome()
-                                + "\". Confira a quantidade.");
-            }
-            for (Peca p : doProduto.getValue()) {
-                BigDecimal valor = ValorDaDevolucao.calcular(linha.total(), linha.quantidade(), jaDevolvidas, valorJa,
-                        p.quantidade());
-                String destino = "BOA".equals(p.estado()) && maletaComOVendedor ? "MALETA" : "LOJA";
-                itens.add(new ItemNovo(linha, p.quantidade(), p.estado(), destino, valor));
-                jaDevolvidas += p.quantidade();
-                valorJa = valorJa.add(valor);
-                valorDevolvido = valorDevolvido.add(valor);
-            }
-        }
+        boolean autorizada = autorizacaoUsada != null;
+
+        List<PecaCalculada> calculadas = RegrasDaDevolucao.calcular(jdbc, pedido.vendaId(), pecas);
+        BigDecimal valorDevolvido = RegrasDaDevolucao.somar(calculadas);
 
         // Prazo da garantia em dias do calendário de Brasília, pelo motivo (ADR-0014, item 4). Lido a cada devolução.
-        Instant quando = momento == null ? relogio.instant() : momento;
-        int prazo = configuracoes.inteiro("DEFEITO".equals(motivo) ? ChaveDeConfiguracao.PRAZO_DEFEITO_DIAS
-                : ChaveDeConfiguracao.PRAZO_ARREPENDIMENTO_DIAS);
         Instant vendidaEm = ((Timestamp) venda.get("vendida_em")).toInstant();
-        long dias = ChronoUnit.DAYS.between(LocalDate.ofInstant(vendidaEm, BRASILIA), LocalDate.ofInstant(quando, BRASILIA));
-        boolean dentroDaGarantia = dias <= prazo;
-        String situacao = "ACEITA";
-        if (!dentroDaGarantia) {
+        boolean dentroDaGarantia = RegrasDaDevolucao.diasDesdeAVenda(vendidaEm, quando)
+                <= RegrasDaDevolucao.prazo(configuracoes, motivo);
+        List<MotivoDaRevisao> motivos = new ArrayList<>();
+        if (!dentroDaGarantia && !autorizada) {
             if (modo != ModoDaDevolucao.ENVIO) {
                 throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.GARANTIA_VENCIDA);
             }
-            situacao = "EM_REVISAO";
+            motivos.add(MotivoDaRevisao.FORA_DO_PRAZO);
         }
+        // Valor que a dona aprova antes (vazio = nunca; "acima" é estrito: no valor exato passa).
+        Optional<BigDecimal> valorDeAprovacao = configuracoes.dinheiroOuVazio(ChaveDeConfiguracao.VALOR_APROVACAO_REEMBOLSO);
+        if (!autorizada && valorDeAprovacao.isPresent() && valorDevolvido.compareTo(valorDeAprovacao.get()) > 0) {
+            if (modo != ModoDaDevolucao.ENVIO) {
+                throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.DEVOLUCAO_PRECISA_DE_AUTORIZACAO);
+            }
+            motivos.add(MotivoDaRevisao.ACIMA_DO_VALOR_SEM_AUTORIZACAO);
+        }
+        // Limite da semana (vazio = nunca): revisão nos dois modos, mesmo com autorização (dúvidas P3 a P6).
+        Optional<BigDecimal> limite = configuracoes.dinheiroOuVazio(ChaveDeConfiguracao.LIMITE_REEMBOLSO_SEMANAL);
+        if (limite.isPresent() && reembolsadoNaSemana(vendedorId, dia).add(valorDevolvido).compareTo(limite.get()) > 0) {
+            motivos.add(MotivoDaRevisao.ACIMA_DO_LIMITE_SEMANAL);
+        }
+        if (autorizacaoInvalida) {
+            motivos.add(MotivoDaRevisao.AUTORIZACAO_INVALIDA);
+        }
+        // Defesa: com as travas acima só acontece com dado torto (reembolso avulso gravado por fora).
+        if (jaReembolsado.add(valorDevolvido).compareTo(pago) > 0) {
+            motivos.add(MotivoDaRevisao.REEMBOLSO_MAIOR_QUE_O_PAGO);
+        }
+        motivos.sort(null);
+        String situacao = motivos.isEmpty() ? "ACEITA" : "EM_REVISAO";
 
         if (aparelho != null) {
             origem.definirNaTransacaoAtual(aparelho);
         }
-        UUID cotacao = cotacaoDoDia(LocalDate.ofInstant(quando, BRASILIA));
+        UUID cotacao = RegrasDaDevolucao.cotacaoDoDia(jdbc, dia);
         jdbc.update("""
                 INSERT INTO corona.devolucoes (id, venda_id, cliente_id, vendedor_id, remessa_id, motivo, observacao, destino,
-                    dentro_garantia, situacao, valor_devolvido, valor_reembolsado, forma_reembolso, cotacao_id, devolvida_em,
-                    hora_ajustada, registrada_por)
-                VALUES (?, ?, ?, ?, ?, ?, ?, 'REEMBOLSO', ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    dentro_garantia, situacao, autorizacao_id, valor_devolvido, valor_reembolsado, forma_reembolso, cotacao_id,
+                    devolvida_em, hora_ajustada, registrada_por, revisao_fora_do_prazo, revisao_acima_do_limite_semanal,
+                    revisao_acima_do_valor_de_aprovacao, revisao_autorizacao_invalida, revisao_reembolso_maior_que_pago)
+                VALUES (?, ?, ?, ?, ?, ?, ?, 'REEMBOLSO', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 id, pedido.vendaId(), venda.get("cliente_id"), vendedorId, remessaId, motivo, observacao, dentroDaGarantia,
-                situacao, valorDevolvido, valorDevolvido, forma, cotacao, Timestamp.from(quando), horaAjustada, usuarioId);
-        for (ItemNovo item : itens) {
+                situacao, autorizacaoUsada, valorDevolvido, valorDevolvido, forma, cotacao, Timestamp.from(quando), horaAjustada,
+                usuarioId, motivos.contains(MotivoDaRevisao.FORA_DO_PRAZO),
+                motivos.contains(MotivoDaRevisao.ACIMA_DO_LIMITE_SEMANAL),
+                motivos.contains(MotivoDaRevisao.ACIMA_DO_VALOR_SEM_AUTORIZACAO),
+                motivos.contains(MotivoDaRevisao.AUTORIZACAO_INVALIDA),
+                motivos.contains(MotivoDaRevisao.REEMBOLSO_MAIOR_QUE_O_PAGO));
+        for (PecaCalculada item : calculadas) {
+            String destino = "BOA".equals(item.estado()) && maletaComOVendedor ? "MALETA" : "LOJA";
             jdbc.update("""
                     INSERT INTO corona.itens_devolucao (id, devolucao_id, item_venda_id, quantidade, valor, estado_peca, destino_peca)
                     VALUES (?, ?, ?, ?, ?, ?, ?)""", UuidV7.gerar(), id, item.linha().id(), item.quantidade(), item.valor(),
-                    item.estado(), item.destino());
-            if ("MALETA".equals(item.destino())) {
+                    item.estado(), destino);
+            if ("MALETA".equals(destino)) {
                 jdbc.update("""
                         INSERT INTO corona.movimentos_remessa (id, remessa_id, produto_id, tipo, quantidade, venda_id, dispositivo_id,
                             devolucao_id)
@@ -272,6 +305,10 @@ public class ServicoDeDevolucoes {
                     VALUES (?, ?, 'REEMBOLSO', ?, ?, ?, ?)""", UuidV7.gerar(), pedido.vendaId(), forma, valorDevolvido.negate(),
                     Timestamp.from(quando), id);
         }
+        if (autorizada) {
+            // A devolução já está gravada com a autorização: o banco confere isso antes de aceitar a usada.
+            jdbc.update("UPDATE corona.autorizacoes_excecao SET situacao = 'USADA' WHERE id = ?", autorizacaoUsada);
+        }
 
         Map<String, Object> depois = new LinkedHashMap<>();
         depois.put("venda_id", pedido.vendaId().toString());
@@ -280,6 +317,16 @@ public class ServicoDeDevolucoes {
         depois.put("dentro_garantia", dentroDaGarantia);
         depois.put("valor_devolvido", valorDevolvido.toPlainString());
         depois.put("forma_reembolso", forma);
+        if (!motivos.isEmpty()) {
+            depois.put("motivos_revisao", motivos.stream().map(Enum::name).toList());
+        }
+        if (autorizada) {
+            depois.put("autorizacao_id", autorizacaoUsada.toString());
+        }
+        if (autorizacaoInvalida) {
+            // A autorização que o computador mandou e não valeu (não foi consumida).
+            depois.put("autorizacao_invalida_id", pedido.autorizacaoId().toString());
+        }
         if (pedido.valorConferido() != null && pedido.valorConferido().compareTo(valorDevolvido) != 0) {
             // Divergência é alerta, não rejeição: vale o valor do servidor.
             depois.put("alerta_valor_do_app", pedido.valorConferido().toPlainString());
@@ -402,66 +449,141 @@ public class ServicoDeDevolucoes {
         return new Resultado(devolucaoId, false);
     }
 
+    // --- revisão da dona ---
+
+    /**
+     * "Manter" a devolução para revisão (tarefa 6.4; ADR-0014, item 5): ela vale como está. Nada muda além da situação e
+     * dos dados da revisão. Repetir devolve 200; a outra decisão já tomada, 409. Observação opcional.
+     */
+    @Transactional
+    public Resultado manter(UUID devolucaoId, UUID usuarioId, String observacao) {
+        return revisar(devolucaoId, usuarioId, observacao, "MANTIDA");
+    }
+
+    /**
+     * "Não aceitar" a devolução para revisão: nenhum movimento, pagamento ou valor muda (o dinheiro já saiu e a peça já
+     * voltou); o valor devolvido fica como pendência do vendedor, que o acerto (tarefa 7.5) passa a cobrar. Observação
+     * obrigatória.
+     */
+    @Transactional
+    public Resultado naoAceitar(UUID devolucaoId, UUID usuarioId, String observacao) {
+        if (Validacoes.limpar(observacao) == null) {
+            throw Validacoes.recusar("observacao", "Diga por que a devolução não foi aceita.");
+        }
+        return revisar(devolucaoId, usuarioId, observacao, "NAO_ACEITA");
+    }
+
+    private Resultado revisar(UUID devolucaoId, UUID usuarioId, String observacao, String decisao) {
+        String limpa = Validacoes.limpar(observacao);
+        if (limpa != null && limpa.length() > LIMITE_DO_TEXTO) {
+            throw Validacoes.recusar("observacao", "Use no máximo " + LIMITE_DO_TEXTO + " caracteres.");
+        }
+        List<Map<String, Object>> achada = jdbc.queryForList(
+                "SELECT venda_id, remessa_id FROM corona.devolucoes WHERE id = ? AND deleted_at IS NULL", devolucaoId);
+        if (achada.isEmpty()) {
+            throw new ErroDaApi(HttpStatus.NOT_FOUND, CodigoErro.DEVOLUCAO_NAO_ENCONTRADA);
+        }
+        // Travas na ordem do cancelar: a maleta, a venda e a devolução.
+        jdbc.queryForList("SELECT id FROM corona.remessas WHERE id = ? FOR UPDATE", achada.get(0).get("remessa_id"));
+        jdbc.queryForList("SELECT id FROM corona.vendas WHERE id = ? FOR UPDATE", achada.get(0).get("venda_id"));
+        String situacao = jdbc.queryForObject("SELECT situacao FROM corona.devolucoes WHERE id = ? FOR UPDATE", String.class,
+                devolucaoId);
+        if (decisao.equals(situacao)) {
+            return new Resultado(devolucaoId, true);
+        }
+        if ("MANTIDA".equals(situacao) || "NAO_ACEITA".equals(situacao)) {
+            throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.DEVOLUCAO_JA_REVISADA);
+        }
+        if (!"EM_REVISAO".equals(situacao)) {
+            throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.DEVOLUCAO_NAO_ESTA_EM_REVISAO);
+        }
+        jdbc.update("""
+                UPDATE corona.devolucoes SET situacao = ?, revisada_em = ?, revisada_por = ?, observacao_revisao = ?
+                 WHERE id = ?""", decisao, Timestamp.from(relogio.instant()), usuarioId, limpa, devolucaoId);
+        Map<String, Object> depois = new LinkedHashMap<>();
+        depois.put("situacao", decisao);
+        if (limpa != null) {
+            depois.put("observacao", limpa);
+        }
+        auditoria.registrar(Ator.usuario(usuarioId), "MANTIDA".equals(decisao) ? "DEVOLUCAO_MANTIDA" : "DEVOLUCAO_NAO_ACEITA",
+                "devolucoes", devolucaoId, Map.of("situacao", situacao), depois);
+        return new Resultado(devolucaoId, false);
+    }
+
     // --- internos ---
 
-    private static List<Peca> conferirPecas(List<PecaDoPedido> pedidas, String motivo) {
-        if (pedidas == null || pedidas.isEmpty()) {
-            throw Validacoes.recusar("itens", "Informe pelo menos uma peça devolvida.");
+    /**
+     * O que impede a autorização de valer nesta devolução (dúvidas P6 e P7), ou nulo se vale: precisa estar aprovada, no
+     * prazo dela (o último dia de Brasília; a regra olha a data, nunca depende da agenda das vencidas) e ser da mesma
+     * venda, do mesmo motivo e com no máximo as peças pedidas (menos pode).
+     */
+    private CodigoErro problemaDaAutorizacao(UUID autorizacaoId, Map<String, Object> autorizacao, UUID vendaId, String motivo,
+            List<Peca> pecas, LocalDate dia) {
+        String situacao = (String) autorizacao.get("situacao");
+        if ("PEDIDA".equals(situacao) || "NEGADA".equals(situacao)) {
+            return CodigoErro.AUTORIZACAO_NAO_APROVADA;
         }
-        if (pedidas.size() > LIMITE_DE_LINHAS) {
-            throw Validacoes.recusar("itens", "Devolva no máximo " + LIMITE_DE_LINHAS + " peças diferentes por vez.");
+        if ("USADA".equals(situacao)) {
+            return CodigoErro.AUTORIZACAO_JA_USADA;
         }
-        List<Peca> pecas = new ArrayList<>();
-        Set<String> vistas = new HashSet<>();
-        for (PecaDoPedido p : pedidas) {
-            if (p == null || p.produtoId() == null) {
-                throw Validacoes.recusar("produtoId", "Escolha a peça devolvida.");
-            }
-            if (p.quantidade() == null || p.quantidade() <= 0) {
-                throw Validacoes.recusar("quantidade", "Informe uma quantidade maior que zero.");
-            }
-            if (p.quantidade() > LIMITE_DA_QUANTIDADE) {
-                throw Validacoes.recusar("quantidade", "A quantidade é grande demais. Confira o número.");
-            }
-            if (p.estado() == null || !ESTADOS.contains(p.estado())) {
-                throw Validacoes.recusar("estado", "Diga se a peça voltou boa ou com defeito.");
-            }
-            if ("DEFEITO".equals(motivo) && !"DEFEITO".equals(p.estado())) {
-                // O prazo maior do defeito só vale para peça com defeito (dúvida Q3).
-                throw Validacoes.recusar("estado", "Com o motivo defeito, marque as peças como com defeito.");
-            }
-            if (!vistas.add(p.produtoId() + "/" + p.estado())) {
-                throw Validacoes.recusar("itens",
-                        "A mesma peça aparece mais de uma vez com o mesmo estado. Junte as quantidades numa linha só.");
-            }
-            pecas.add(new Peca(p.produtoId(), p.quantidade(), p.estado()));
+        Object validaAte = autorizacao.get("valida_ate");
+        LocalDate ate = validaAte instanceof java.sql.Date d ? d.toLocalDate() : (LocalDate) validaAte;
+        if ("VENCIDA".equals(situacao) || ate == null || ate.isBefore(dia)) {
+            return CodigoErro.AUTORIZACAO_VENCIDA;
         }
-        return pecas;
+        if (!vendaId.equals(autorizacao.get("venda_id")) || !motivo.equals(autorizacao.get("motivo"))) {
+            return CodigoErro.AUTORIZACAO_NAO_CONFERE;
+        }
+        Map<UUID, Integer> autorizadas = new LinkedHashMap<>();
+        jdbc.query("""
+                SELECT iv.produto_id, a.quantidade FROM corona.itens_autorizacao a
+                  JOIN corona.itens_venda iv ON iv.id = a.item_venda_id
+                 WHERE a.autorizacao_id = ?""", rs -> {
+                    autorizadas.put(rs.getObject(1, UUID.class), rs.getInt(2));
+                }, autorizacaoId);
+        for (Map.Entry<UUID, Integer> pedida : RegrasDaDevolucao.quantidadePorProduto(pecas).entrySet()) {
+            Integer podem = autorizadas.get(pedida.getKey());
+            if (podem == null || pedida.getValue() > podem) {
+                return CodigoErro.AUTORIZACAO_NAO_CONFERE;
+            }
+        }
+        return null;
     }
 
-    /** As peças agrupadas por produto, em ordem estável (produto na ordem do banco; boa antes de com defeito). */
-    private static Map<UUID, List<Peca>> porProduto(List<Peca> pecas) {
-        List<Peca> ordenadas = new ArrayList<>(pecas);
-        ordenadas.sort(Comparator.comparing(Peca::produtoId, OrdemDoBanco.UUIDS).thenComparing(Peca::estado));
-        Map<UUID, List<Peca>> grupos = new LinkedHashMap<>();
-        for (Peca p : ordenadas) {
-            grupos.computeIfAbsent(p.produtoId(), k -> new ArrayList<>()).add(p);
-        }
-        return grupos;
+    /**
+     * O reembolso das devoluções não canceladas do vendedor (também as em revisão e as não aceitas; dúvida P4) na semana
+     * do dia: a semana cadastrada que contém o dia; sem semana cadastrada, de segunda a domingo de Brasília (dúvida P3).
+     */
+    private BigDecimal reembolsadoNaSemana(UUID vendedorId, LocalDate dia) {
+        List<LocalDate[]> cadastrada = jdbc.query(
+                "SELECT inicio, fim FROM corona.semanas WHERE inicio <= ? AND fim >= ? AND deleted_at IS NULL LIMIT 1",
+                (rs, n) -> new LocalDate[] {rs.getObject(1, LocalDate.class), rs.getObject(2, LocalDate.class)}, dia, dia);
+        LocalDate inicio = cadastrada.isEmpty() ? dia.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+                : cadastrada.get(0)[0];
+        LocalDate fim = cadastrada.isEmpty() ? inicio.plusDays(6) : cadastrada.get(0)[1];
+        return jdbc.queryForObject("""
+                SELECT coalesce(sum(valor_reembolsado), 0) FROM corona.devolucoes
+                 WHERE vendedor_id = ? AND situacao <> 'CANCELADA' AND deleted_at IS NULL
+                   AND devolvida_em >= ? AND devolvida_em < ?""", BigDecimal.class, vendedorId,
+                Timestamp.from(inicio.atStartOfDay(BRASILIA).toInstant()),
+                Timestamp.from(fim.plusDays(1).atStartOfDay(BRASILIA).toInstant()));
     }
 
-    /** A cotação mais recente até o dia (horário de Brasília), ou nenhuma. */
-    private UUID cotacaoDoDia(LocalDate dia) {
-        return jdbc.query("SELECT id FROM corona.cotacoes WHERE data_cotacao <= ? ORDER BY data_cotacao DESC LIMIT 1",
-                (rs, n) -> rs.getObject(1, UUID.class), dia).stream().findFirst().orElse(null);
-    }
-
-    /** O pedido repetido é a mesma devolução? Compara dono, venda, motivo, observação, forma, peças, quantidades e estados. */
+    /**
+     * O pedido repetido é a mesma devolução? Compara dono, venda, motivo, observação, forma, peças, quantidades, estados e
+     * a autorização. A autorização que não valeu no envio não fica gravada: o reenvio precisa trazer uma autorização.
+     */
     private boolean mesmaDevolucao(UUID id, UUID vendedorId, UUID vendaId, String motivo, String observacao, String forma,
-            List<Peca> pecas, Map<String, Object> gravada) {
+            List<Peca> pecas, UUID autorizacaoId, Map<String, Object> gravada) {
         if (!vendedorId.equals(gravada.get("vendedor_id")) || !vendaId.equals(gravada.get("venda_id"))
                 || !motivo.equals(gravada.get("motivo")) || !forma.equals(gravada.get("forma_reembolso"))
-                || !java.util.Objects.equals(observacao, gravada.get("observacao"))) {
+                || !Objects.equals(observacao, gravada.get("observacao"))) {
+            return false;
+        }
+        UUID autorizacaoGravada = (UUID) gravada.get("autorizacao_id");
+        boolean autorizacaoQueNaoValeu = Boolean.TRUE.equals(gravada.get("revisao_autorizacao_invalida"));
+        if (autorizacaoGravada != null ? !autorizacaoGravada.equals(autorizacaoId)
+                : autorizacaoQueNaoValeu != (autorizacaoId != null)) {
             return false;
         }
         Map<String, Integer> pedidas = new LinkedHashMap<>();

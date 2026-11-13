@@ -550,7 +550,7 @@ Sem internet e sem dados neste computador (primeira vez):
 - Motivo (obrigatório): **Desistiu** (arrependimento), **Defeito**, **Não serviu** (tamanho) e **Outro**. Com **Outro**, o campo **Observação** é obrigatório. Com **Defeito**, todas as peças são marcadas **Com defeito**.
 - Estado da peça: **Boa** ou **Com defeito** (parte 3).
 - Para onde vai a peça: **Voltou para a maleta** (boa, de maleta ainda com o vendedor) ou **Peça para a loja** (com defeito, ou boa de maleta já acertada: não volta à maleta e o vendedor a entrega à dona no próximo acerto).
-- Situação da devolução: **Aceita**, **Para revisão da dona** (passou do prazo pelo relógio da loja, mas o computador achou que estava no prazo), **Mantida**, **Não aceita** e **Cancelada**.
+- Situação da devolução: **Aceita**, **Para revisão da dona** (o servidor achou algo que a dona precisa olhar; os motivos estão na parte "Autorização, revisão e antifraude" logo abaixo), **Mantida**, **Não aceita** e **Cancelada**.
 - Ler o código na devolução mostra **as vendas com esta peça** (as do próprio vendedor, da mais nova para a mais antiga), com o cliente, o dia, **Vendidas**, **Já devolvidas**, **Ainda podem voltar** e até que dia vale a garantia ("Desistência até 19/11", "Defeito até 12/12"). Venda a prazo aparece marcada e não pode ser escolhida ainda.
 - Botões: **Registrar devolução** (ação sem volta) e **Cancelar devolução** (o vendedor só no mesmo dia; depois, a dona).
 
@@ -590,6 +590,64 @@ Textos que o servidor devolve:
 > Não encontramos esta devolução. Atualize a tela e tente de novo.
 
 Avisos junto ao campo: "Escolha o motivo da devolução: desistência, defeito, não serviu ou outro.", "Conte o motivo da devolução no campo de observação." (motivo **Outro** sem observação), "Com o motivo defeito, marque as peças como com defeito.", "Diga se a peça voltou boa ou com defeito.", "Escolha como o dinheiro foi devolvido: dinheiro, Pix, cartão ou cheque.", "Esta peça não consta nesta venda.", "A mesma peça aparece mais de uma vez com o mesmo estado. Junte as quantidades numa linha só." e "Diga o motivo de cancelar a devolução.".
+
+**Autorização, revisão e antifraude (Fase 6, tarefa 6.4; ADR-0014, itens 5, 6, 10 e 12).** Fora do prazo, ou acima do valor que a dona aprova antes, o vendedor pede autorização à dona; a dona aprova ou nega. Devolução que o servidor acha estranha entra **Para revisão da dona**, e a dona escolhe **Manter** ou **Não aceitar**. Nenhuma das duas decisões mexe na maleta nem no dinheiro já devolvido. As telas são das tarefas 6.8 e 6.9; estes textos valem desde já.
+
+- Situação do pedido de autorização: **Esperando a dona**, **Aprovado (vale até dd/mm)**, **Negado**, **Usado** e **Vencido**. A autorização aprovada vale até o 7º dia depois da aprovação (dias de Brasília) e serve para uma devolução só, da mesma venda, com o mesmo motivo e no máximo as peças pedidas.
+- Botões: **Pedir autorização à dona** (vendedor), **Aprovar** e **Negar** (dona; negar pede o motivo), **Manter** e **Não aceitar** (dona, na devolução para revisão; não aceitar pede a observação).
+- Por que a devolução está para revisão (pode haver mais de um): **passou do prazo**, **passou do limite da semana**, **passou do valor que a dona aprova antes**, **autorização que não vale** e **devolveu mais do que o cliente pagou**.
+- **Não aceita**: o valor devolvido fica como pendência do vendedor, cobrada no acerto.
+
+Avisos de "O que precisa da sua atenção":
+
+> **Há 1 pedido de autorização de devolução esperando você.** (plural: "Há {N} pedidos de autorização de devolução esperando você.")
+> Abra Devoluções para autorizar e escolha Aprovar ou Negar.
+
+> **Há 1 devolução para revisar.** (plural: "Há {N} devoluções para revisar.")
+> Abra Devoluções para revisar e escolha Manter ou Não aceitar.
+
+> **Muitas devoluções de {vendedor}.** (um aviso por vendedor)
+> Nas últimas 4 semanas, {vendedor} devolveu {P}% do que vendeu. Confira as devoluções dele. (só a porcentagem, sem valor; com devolução e nenhuma venda nas 4 semanas: "Nas últimas 4 semanas, {vendedor} teve devoluções e nenhuma venda. Confira as devoluções dele.")
+
+Textos que o servidor devolve:
+
+> **Não encontramos este pedido de autorização.**
+> Não encontramos este pedido de autorização. Atualize a tela e tente de novo.
+
+> **Este pedido de autorização já foi feito com outros dados.**
+> Este pedido de autorização já foi feito com outros dados. Confira os pedidos antes de pedir de novo.
+
+> **Esta devolução não precisa de autorização.**
+> Esta devolução está no prazo. Registre a devolução direto.
+
+> **Já há um pedido de autorização para esta venda.**
+> Já há um pedido de autorização para esta venda. Espere a resposta da dona ou use a autorização aprovada.
+
+> **A dona já decidiu este pedido.**
+> A dona já decidiu este pedido de autorização e a decisão não muda.
+
+> **A dona ainda não aprovou esta devolução.**
+> Este pedido de autorização ainda não foi aprovado ou foi negado. Espere a resposta da dona.
+
+> **Esta autorização já foi usada.**
+> Esta autorização já foi usada numa devolução. Peça outra autorização à dona.
+
+> **Esta autorização venceu.**
+> A autorização vale 7 dias e já venceu. Peça outra autorização à dona.
+
+> **Esta devolução não é a que a dona autorizou.**
+> Use a mesma venda, o mesmo motivo e no máximo as peças que a dona autorizou.
+
+> **Esta devolução precisa da autorização da dona.**
+> Esta devolução passa do valor que a dona aprova antes. Peça autorização à dona.
+
+> **Esta devolução não está para revisão.**
+> Só a devolução para revisão da dona pode ser mantida ou não aceita.
+
+> **Esta devolução já foi revisada.**
+> A dona já decidiu sobre esta devolução e a decisão não muda.
+
+Avisos junto ao campo: "Diga o motivo de negar o pedido." e "Diga por que a devolução não foi aceita.".
 
 **Vender só depois de conferir (decisão de 11/11/2026; tarefa 5.3).** A maleta que ainda não foi conferida não vende:
 

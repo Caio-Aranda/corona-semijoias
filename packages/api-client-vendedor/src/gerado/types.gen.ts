@@ -4,6 +4,32 @@ export type ClientOptions = {
     baseUrl: `${string}://${string}` | (string & {});
 };
 
+export type Autorizacao = {
+    clienteId?: string;
+    clienteNome?: string;
+    cotacao?: ConsultasDeVendasCotacao;
+    decididaEm?: string;
+    diasDesdeAVenda?: number;
+    horaAjustada?: boolean;
+    id?: string;
+    itens?: Array<ItemDaAutorizacao>;
+    motivo?: string;
+    motivoDecisao?: string;
+    observacao?: string;
+    pedidaEm?: string;
+    prazoDaGarantiaAte?: string;
+    situacao?: string;
+    tipo?: string;
+    validaAte?: string;
+    valorPedido?: string;
+    valorPedidoDolar?: string;
+    valorPedidoGuarani?: string;
+    vendaId?: string;
+    vendedorId?: string;
+    vendedorNome?: string;
+    vendidaEm?: string;
+};
+
 export type CadastroDeTeste = {
     nome: string;
 };
@@ -121,6 +147,7 @@ export type Devedor = {
 };
 
 export type Devolucao = {
+    autorizacaoId?: string;
     canceladaEm?: string;
     clienteId?: string;
     clienteNome?: string;
@@ -134,8 +161,12 @@ export type Devolucao = {
     itens?: Array<ItemDaDevolucao>;
     motivo?: string;
     motivoCancelamento?: string;
+    motivosRevisao?: Array<string>;
     observacao?: string;
+    observacaoRevisao?: string;
+    pendenciaDoVendedor?: string;
     remessaId?: string;
+    revisadaEm?: string;
     situacao?: string;
     valorDevolvido?: string;
     valorDevolvidoDolar?: string;
@@ -147,6 +178,13 @@ export type Devolucao = {
 
 export type DiferencasNaConferencia = {
     tabelas: Array<string>;
+};
+
+export type ItemDaAutorizacao = {
+    id?: string;
+    itemVendaId?: string;
+    produto?: ConsultasDeVendasPeca;
+    quantidade?: number;
 };
 
 export type ItemDaDevolucao = {
@@ -239,12 +277,21 @@ export type PecaDevolvida = {
     quantidade?: number;
 };
 
+export type PedidoDaAutorizacao = {
+    id?: string;
+    itens?: Array<PecaDevolvida>;
+    motivo?: string;
+    observacao?: string;
+    vendaId?: string;
+};
+
 export type PedidoDaContagem = {
     contada?: number;
     produtoId?: string;
 };
 
 export type PedidoDaDevolucao = {
+    autorizacaoId?: string;
     formaReembolso?: string;
     id?: string;
     itens?: Array<PecaDevolvida>;
@@ -574,6 +621,58 @@ export type TrocarSenhaResponses = {
 };
 
 export type TrocarSenhaResponse = TrocarSenhaResponses[keyof TrocarSenhaResponses];
+
+export type ListarAutorizacoesDoVendedorData = {
+    body?: never;
+    path?: never;
+    query?: {
+        vendaId?: string;
+    };
+    url: '/api/vendedor/autorizacoes';
+};
+
+export type ListarAutorizacoesDoVendedorResponses = {
+    /**
+     * OK
+     */
+    200: Array<Autorizacao>;
+};
+
+export type ListarAutorizacoesDoVendedorResponse = ListarAutorizacoesDoVendedorResponses[keyof ListarAutorizacoesDoVendedorResponses];
+
+export type PedirAutorizacaoData = {
+    body: PedidoDaAutorizacao;
+    path?: never;
+    query?: never;
+    url: '/api/vendedor/autorizacoes';
+};
+
+export type PedirAutorizacaoResponses = {
+    /**
+     * OK
+     */
+    200: Autorizacao;
+};
+
+export type PedirAutorizacaoResponse = PedirAutorizacaoResponses[keyof PedirAutorizacaoResponses];
+
+export type VerAutorizacaoDoVendedorData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/vendedor/autorizacoes/{id}';
+};
+
+export type VerAutorizacaoDoVendedorResponses = {
+    /**
+     * OK
+     */
+    200: Autorizacao;
+};
+
+export type VerAutorizacaoDoVendedorResponse = VerAutorizacaoDoVendedorResponses[keyof VerAutorizacaoDoVendedorResponses];
 
 export type ListarMeusClientesData = {
     body?: never;

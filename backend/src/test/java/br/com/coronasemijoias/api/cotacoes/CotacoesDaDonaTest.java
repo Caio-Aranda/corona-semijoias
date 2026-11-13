@@ -1,5 +1,7 @@
 package br.com.coronasemijoias.api.cotacoes;
 
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -243,12 +245,15 @@ class CotacoesDaDonaTest extends TesteDeIntegracao {
     }
 
     // --- avisos ---
+    // A rota junta os avisos de todas as fontes (estoque, computadores, devoluções...). Os dados de outras classes de
+    // teste podem gerar avisos que não são de cotação; por isso as conferências olham só os avisos de cotação.
+    private static final String DA_COTACAO = "$.avisos[?(@.tipo =~ /COTACAO_.*/)]";
 
     @Test
     void semAvisoQuandoTudoEstaEmDia() throws Exception {
         agora(SEXTA_TARDE);
         gravarUteisAte(SEXTA);
-        avisos().andExpect(status().isOk()).andExpect(jsonPath("$.avisos.length()").value(0));
+        avisos().andExpect(status().isOk()).andExpect(jsonPath(DA_COTACAO, hasSize(0)));
     }
 
     @Test
@@ -257,53 +262,54 @@ class CotacoesDaDonaTest extends TesteDeIntegracao {
         // Sexta, 21:30 UTC: passou da última tentativa e a de hoje não chegou.
         agora("2026-11-06T21:30:00Z");
         avisos().andExpect(status().isOk())
-                .andExpect(jsonPath("$.avisos.length()").value(1))
-                .andExpect(jsonPath("$.avisos[0].tipo").value("COTACAO_NAO_CHEGOU"))
-                .andExpect(jsonPath("$.avisos[0].titulo").value("A cotação de hoje ainda não chegou."))
-                .andExpect(jsonPath("$.avisos[0].texto").value(
-                        "Os valores em Dólar e Guarani estão usando a cotação de 05/11/2026. " + COMPLEMENTO))
-                .andExpect(jsonPath("$.avisos[0].dias[0]").value("2026-11-06"));
+                .andExpect(jsonPath(DA_COTACAO, hasSize(1)))
+                .andExpect(jsonPath(DA_COTACAO + ".tipo", contains("COTACAO_NAO_CHEGOU")))
+                .andExpect(jsonPath(DA_COTACAO + ".titulo", contains("A cotação de hoje ainda não chegou.")))
+                .andExpect(jsonPath(DA_COTACAO + ".texto", contains(
+                        "Os valores em Dólar e Guarani estão usando a cotação de 05/11/2026. " + COMPLEMENTO)))
+                .andExpect(jsonPath(DA_COTACAO + ".dias[0]", contains("2026-11-06")));
 
         gravar(SEXTA);
-        avisos().andExpect(jsonPath("$.avisos.length()").value(0));
+        avisos().andExpect(jsonPath(DA_COTACAO, hasSize(0)));
     }
 
     @Test
     void diaAnteriorSemCotacaoGeraAvisoComAData() throws Exception {
         gravarUteisAte(LocalDate.of(2026, 11, 5));
         agora(SEGUNDA_MANHA); // sexta ficou sem cotação
-        avisos().andExpect(jsonPath("$.avisos.length()").value(1))
-                .andExpect(jsonPath("$.avisos[0].titulo").value("A cotação de 06/11/2026 não chegou."))
-                .andExpect(jsonPath("$.avisos[0].texto").value(
+        avisos().andExpect(jsonPath(DA_COTACAO, hasSize(1)))
+                .andExpect(jsonPath(DA_COTACAO + ".titulo", contains("A cotação de 06/11/2026 não chegou.")))
+                .andExpect(jsonPath(DA_COTACAO + ".texto", contains(
                         "Os valores em Dólar e Guarani desse dia estão usando a cotação de 05/11/2026. "
-                                + COMPLEMENTO));
+                                + COMPLEMENTO)));
     }
 
     @Test
     void fimDeSemanaNaoGeraAviso() throws Exception {
         gravarUteisAte(SEXTA);
         agora("2026-11-08T15:00:00Z"); // domingo
-        avisos().andExpect(jsonPath("$.avisos.length()").value(0));
+        avisos().andExpect(jsonPath(DA_COTACAO, hasSize(0)));
     }
 
     @Test
     void variosDiasSemCotacaoViramUmAvisoSoComTodosOsDias() throws Exception {
         gravarUteisAte(LocalDate.of(2026, 11, 4));
         agora(SEGUNDA_MANHA); // quinta 05 e sexta 06 sem cotação
-        avisos().andExpect(jsonPath("$.avisos.length()").value(1))
-                .andExpect(jsonPath("$.avisos[0].dias.length()").value(2))
-                .andExpect(jsonPath("$.avisos[0].titulo").value("As cotações de 05/11/2026 e 06/11/2026 não chegaram."))
-                .andExpect(jsonPath("$.avisos[0].texto").value(
+        avisos().andExpect(jsonPath(DA_COTACAO, hasSize(1)))
+                .andExpect(jsonPath(DA_COTACAO + ".dias", contains(hasSize(2))))
+                .andExpect(jsonPath(DA_COTACAO + ".titulo",
+                        contains("As cotações de 05/11/2026 e 06/11/2026 não chegaram.")))
+                .andExpect(jsonPath(DA_COTACAO + ".texto", contains(
                         "Os valores em Dólar e Guarani desses dias estão usando a cotação de 04/11/2026. "
-                                + COMPLEMENTO));
+                                + COMPLEMENTO)));
     }
 
     @Test
     void semNenhumaCotacaoOAvisoNaoCitaCotacaoEmUso() throws Exception {
         agora(SEGUNDA_MANHA);
-        avisos().andExpect(jsonPath("$.avisos.length()").value(1))
-                .andExpect(jsonPath("$.avisos[0].tipo").value("COTACAO_NAO_CHEGOU"))
-                .andExpect(jsonPath("$.avisos[0].texto").value(
-                        "Os valores aparecem só em reais por enquanto. " + COMPLEMENTO));
+        avisos().andExpect(jsonPath(DA_COTACAO, hasSize(1)))
+                .andExpect(jsonPath(DA_COTACAO + ".tipo", contains("COTACAO_NAO_CHEGOU")))
+                .andExpect(jsonPath(DA_COTACAO + ".texto", contains(
+                        "Os valores aparecem só em reais por enquanto. " + COMPLEMENTO)));
     }
 }

@@ -129,10 +129,21 @@ public final class RegistroDeTabelas {
                                 "venda_id", "cliente_id", "vendedor_id", "remessa_id", "motivo", "observacao", "destino",
                                 "dentro_garantia", "situacao", "autorizacao_id", "valor_devolvido", "valor_reembolsado",
                                 "forma_reembolso", "cotacao_id", "devolvida_em", "hora_ajustada", "cancelada_em",
-                                "motivo_cancelamento"), false, RegraDoVendedor.doVendedor("FALSE")),
+                                "motivo_cancelamento", "revisao_fora_do_prazo", "revisao_acima_do_limite_semanal",
+                                "revisao_acima_do_valor_de_aprovacao", "revisao_autorizacao_invalida",
+                                "revisao_reembolso_maior_que_pago", "revisada_em", "observacao_revisao"), false,
+                                RegraDoVendedor.doVendedor("FALSE")),
                         new TabelaSincronizavel("itens_devolucao", List.of(
                                 "devolucao_id", "item_venda_id", "quantidade", "valor", "estado_peca", "destino_peca"), true,
-                                RegraDoVendedor.doVendedor("FALSE"))
+                                RegraDoVendedor.doVendedor("FALSE")),
+                        // Autorização da dona (tarefa 6.4, ADR-0014, item 6): como as devoluções, nada vai ao vendedor até a
+                        // tarefa 6.7 (que liga o filtro do vendedor e o tipo PEDIDO_AUTORIZACAO no envio).
+                        new TabelaSincronizavel("autorizacoes_excecao", List.of(
+                                "venda_id", "vendedor_id", "cliente_id", "motivo", "observacao", "tipo", "situacao", "valor_pedido",
+                                "cotacao_id", "pedida_em", "hora_ajustada", "decidida_em", "motivo_decisao", "valida_ate"), false,
+                                RegraDoVendedor.doVendedor("FALSE")),
+                        new TabelaSincronizavel("itens_autorizacao", List.of(
+                                "autorizacao_id", "item_venda_id", "quantidade"), true, RegraDoVendedor.doVendedor("FALSE"))
                         // Tabela sincronizável nova: declare a regra do vendedor (filtro, expansão, diretório).
                 ),
                 List.of(

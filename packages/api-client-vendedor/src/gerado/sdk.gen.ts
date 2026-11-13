@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AcharPecaDaMinhaMaletaData, AcharPecaDaMinhaMaletaResponses, AvisarDiferencaNaConferenciaData, AvisarDiferencaNaConferenciaResponses, BaixarFotoDaMinhaMaletaData, BaixarFotoDaMinhaMaletaResponses, BuscarPecaDaMinhaMaletaData, BuscarPecaDaMinhaMaletaResponses, CadastrarMeuClienteData, CadastrarMeuClienteResponses, CancelarDevolucaoDoVendedorData, CancelarDevolucaoDoVendedorResponses, ConferirDadosData, ConferirDadosResponses, ConferirMinhaMaletaData, ConferirMinhaMaletaResponses, DevolverDoClienteData, DevolverDoClienteResponses, EntrarData, EntrarResponses, EnviarOperacoesData, EnviarOperacoesResponses, EstornarVendaDoVendedorData, EstornarVendaDoVendedorResponses, EuData, EuResponses, GuardarEmQuarentenaData, GuardarEmQuarentenaResponses, ListarDevolucoesDoVendedorData, ListarDevolucoesDoVendedorResponses, ListarMeusClientesData, ListarMeusClientesResponses, ListarMinhasMaletasData, ListarMinhasMaletasResponses, ListarVendasDoVendedorData, ListarVendasDoVendedorResponses, ReceberDadosData, ReceberDadosResponses, RelatorioDeMeusRecebimentosData, RelatorioDeMeusRecebimentosResponses, RelatorioDeMinhasVendasData, RelatorioDeMinhasVendasResponses, RelatorioDeValoresAReceberData, RelatorioDeValoresAReceberResponses, RenovarData, RenovarResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SoVendedorData, SoVendedorResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarDoVendedorData, ValidarDoVendedorResponses, ValorDoVendedorData, ValorDoVendedorResponses, VendasComAPecaData, VendasComAPecaResponses, VenderNaMaletaData, VenderNaMaletaResponses, VerConferenciaDaMinhaMaletaData, VerConferenciaDaMinhaMaletaResponses, VerCotacaoDeHojeData, VerCotacaoDeHojeResponses, VerDevolucaoDoVendedorData, VerDevolucaoDoVendedorResponses, VerMeuClienteData, VerMeuClienteResponses, VerMinhaMaletaData, VerMinhaMaletaResponses, VerVendaDoVendedorData, VerVendaDoVendedorResponses } from './types.gen';
+import type { AcharPecaDaMinhaMaletaData, AcharPecaDaMinhaMaletaResponses, AvisarDiferencaNaConferenciaData, AvisarDiferencaNaConferenciaResponses, BaixarFotoDaMinhaMaletaData, BaixarFotoDaMinhaMaletaResponses, BuscarPecaDaMinhaMaletaData, BuscarPecaDaMinhaMaletaResponses, CadastrarMeuClienteData, CadastrarMeuClienteResponses, CancelarDevolucaoDoVendedorData, CancelarDevolucaoDoVendedorResponses, ConferirDadosData, ConferirDadosResponses, ConferirMinhaMaletaData, ConferirMinhaMaletaResponses, DevolverDoClienteData, DevolverDoClienteResponses, EntrarData, EntrarResponses, EnviarOperacoesData, EnviarOperacoesResponses, EstornarVendaDoVendedorData, EstornarVendaDoVendedorResponses, EuData, EuResponses, GuardarEmQuarentenaData, GuardarEmQuarentenaResponses, ListarAutorizacoesDoVendedorData, ListarAutorizacoesDoVendedorResponses, ListarDevolucoesDoVendedorData, ListarDevolucoesDoVendedorResponses, ListarMeusClientesData, ListarMeusClientesResponses, ListarMinhasMaletasData, ListarMinhasMaletasResponses, ListarVendasDoVendedorData, ListarVendasDoVendedorResponses, PedirAutorizacaoData, PedirAutorizacaoResponses, ReceberDadosData, ReceberDadosResponses, RelatorioDeMeusRecebimentosData, RelatorioDeMeusRecebimentosResponses, RelatorioDeMinhasVendasData, RelatorioDeMinhasVendasResponses, RelatorioDeValoresAReceberData, RelatorioDeValoresAReceberResponses, RenovarData, RenovarResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SoVendedorData, SoVendedorResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarDoVendedorData, ValidarDoVendedorResponses, ValorDoVendedorData, ValorDoVendedorResponses, VendasComAPecaData, VendasComAPecaResponses, VenderNaMaletaData, VenderNaMaletaResponses, VerAutorizacaoDoVendedorData, VerAutorizacaoDoVendedorResponses, VerConferenciaDaMinhaMaletaData, VerConferenciaDaMinhaMaletaResponses, VerCotacaoDeHojeData, VerCotacaoDeHojeResponses, VerDevolucaoDoVendedorData, VerDevolucaoDoVendedorResponses, VerMeuClienteData, VerMeuClienteResponses, VerMinhaMaletaData, VerMinhaMaletaResponses, VerVendaDoVendedorData, VerVendaDoVendedorResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -94,6 +94,41 @@ export const trocarSenha = <ThrowOnError extends boolean = false>(options: Optio
 });
 
 /**
+ * Meus pedidos de autorização
+ *
+ * Só os pedidos do vendedor logado, do mais novo para o mais antigo. Filtro opcional por venda.
+ */
+export const listarAutorizacoesDoVendedor = <ThrowOnError extends boolean = false>(options?: Options<ListarAutorizacoesDoVendedorData, ThrowOnError>): RequestResult<ListarAutorizacoesDoVendedorResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ListarAutorizacoesDoVendedorResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/autorizacoes',
+    ...options
+});
+
+/**
+ * Pedir autorização à dona para uma devolução
+ *
+ * Para a devolução fora do prazo da garantia ou acima do valor que a dona aprova antes. O servidor decide o tipo e calcula o valor pedido (o preço pago). No prazo e sem passar do valor: 409 (registre a devolução direto). Um pedido aberto por venda. Mesmo id e mesmo conteúdo devolve 200; com dados diferentes, 409.
+ */
+export const pedirAutorizacao = <ThrowOnError extends boolean = false>(options: Options<PedirAutorizacaoData, ThrowOnError>): RequestResult<PedirAutorizacaoResponses, unknown, ThrowOnError> => (options.client ?? client).post<PedirAutorizacaoResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/autorizacoes',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Ver um dos meus pedidos de autorização
+ */
+export const verAutorizacaoDoVendedor = <ThrowOnError extends boolean = false>(options: Options<VerAutorizacaoDoVendedorData, ThrowOnError>): RequestResult<VerAutorizacaoDoVendedorResponses, unknown, ThrowOnError> => (options.client ?? client).get<VerAutorizacaoDoVendedorResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/autorizacoes/{id}',
+    ...options
+});
+
+/**
  * Meus clientes
  *
  * Os clientes ativos da LOJA (até 100, por nome), só com nome, CPF, telefone e cidade; nascimento, WhatsApp e observações vêm só dos que o vendedor logado cadastrou (meu = verdadeiro). A busca procura no nome, telefone, CPF e, nos clientes dele, no WhatsApp.
@@ -153,7 +188,7 @@ export const listarDevolucoesDoVendedor = <ThrowOnError extends boolean = false>
 /**
  * Registrar a devolução de um cliente
  *
- * Devolução de peças de uma venda à vista do vendedor, dentro da garantia. A venda não muda; o servidor calcula o valor (o preço pago), o reembolso na forma escolhida e para onde vai cada peça (boa de maleta aberta volta à maleta; com defeito ou de maleta acertada, peça para a loja). Fora do prazo, venda a prazo ou acima do vendido: 409. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409.
+ * Devolução de peças de uma venda à vista do vendedor, dentro da garantia. A venda não muda; o servidor calcula o valor (o preço pago), o reembolso na forma escolhida e para onde vai cada peça (boa de maleta aberta volta à maleta; com defeito ou de maleta acertada, peça para a loja). Fora do prazo ou acima do valor que a dona aprova antes, só com a autorização aprovada (autorizacaoId); sem ela, 409. Venda a prazo ou acima do vendido: 409. Acima do limite da semana: aceita para revisão da dona. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409.
  */
 export const devolverDoCliente = <ThrowOnError extends boolean = false>(options: Options<DevolverDoClienteData, ThrowOnError>): RequestResult<DevolverDoClienteResponses, unknown, ThrowOnError> => (options.client ?? client).post<DevolverDoClienteResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
