@@ -608,6 +608,18 @@ public enum CodigoErro {
             "Esta transferência já foi feita com outros dados.",
             "Esta transferência de crédito já foi feita com outros dados. Confira os créditos antes de transferir de novo."),
 
+    // --- Crédito sem saldo pelo envio (tarefa 6.7; ADR-0014, item 9, linha de 13/11/2026) ---
+
+    /** A venda com crédito para revisar não existe (HTTP 404). */
+    CREDITO_SEM_SALDO_NAO_ENCONTRADO(
+            "Não encontramos esta venda com crédito para revisar.",
+            "Não encontramos esta venda com crédito para revisar. Atualize a tela e tente de novo."),
+
+    /** A dona já decidiu a venda com crédito sem saldo (HTTP 409). */
+    CREDITO_SEM_SALDO_NAO_ESTA_PARA_REVISAO(
+            "Esta venda com crédito não está para revisão.",
+            "A dona já decidiu sobre esta venda com crédito e a decisão não muda."),
+
     // --- Computadores do vendedor (Fase 5, tarefa 5.3; ADR-0013, itens 13 e 14) ---
 
     /** Segundo computador do vendedor, ainda sem a liberação da dona (HTTP 403). */

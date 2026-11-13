@@ -129,7 +129,20 @@ public class ServicoDeVendas {
     @Transactional
     public Resultado vender(UUID vendedorId, UUID usuarioId, UUID aparelho, PedidoDeVenda pedido, Instant vendidaEm,
             boolean horaAjustada) {
-        return gravar(vendedorId, usuarioId, aparelho, pedido, vendidaEm, horaAjustada, null).resultado();
+        return gravar(vendedorId, usuarioId, aparelho, pedido, vendidaEm, horaAjustada, null, false).resultado();
+    }
+
+    /**
+     * A venda que chega pelo envio do computador (tarefa 6.7; ADR-0014, item 9, linha de 13/11/2026): como
+     * {@link #vender(UUID, UUID, UUID, PedidoDeVenda, Instant, boolean)}, mas o crédito do cliente acima do saldo não
+     * recusa: o pagamento em crédito fica limitado ao saldo que havia (nenhuma linha quando era zero), o resto fica a
+     * receber e a dona revisa ({@code creditos_sem_saldo}). Crédito inexistente, de outro vendedor ou de outro cliente
+     * continua recusado.
+     */
+    @Transactional
+    public Resultado venderPeloEnvio(UUID vendedorId, UUID usuarioId, UUID aparelho, PedidoDeVenda pedido, Instant vendidaEm,
+            boolean horaAjustada) {
+        return gravar(vendedorId, usuarioId, aparelho, pedido, vendidaEm, horaAjustada, null, true).resultado();
     }
 
     /**
@@ -141,15 +154,26 @@ public class ServicoDeVendas {
     @Transactional
     public VendaDaTrocaGravada venderNaTroca(UUID vendedorId, UUID usuarioId, UUID aparelho, PedidoDeVenda pedido,
             Instant vendidaEm, boolean horaAjustada, CreditoDaTroca troca) {
-        Gravada g = gravar(vendedorId, usuarioId, aparelho, pedido, vendidaEm, horaAjustada, troca);
+        return venderNaTroca(vendedorId, usuarioId, aparelho, pedido, vendidaEm, horaAjustada, troca, false);
+    }
+
+    /** {@code peloEnvio}: a troca que chegou pelo envio do computador (o crédito do resto acima do saldo vira revisão). */
+    @Transactional
+    public VendaDaTrocaGravada venderNaTroca(UUID vendedorId, UUID usuarioId, UUID aparelho, PedidoDeVenda pedido,
+            Instant vendidaEm, boolean horaAjustada, CreditoDaTroca troca, boolean peloEnvio) {
+        Gravada g = gravar(vendedorId, usuarioId, aparelho, pedido, vendidaEm, horaAjustada, troca, peloEnvio);
         return new VendaDaTrocaGravada(g.resultado().vendaId(), g.total(), g.creditoDaTroca());
     }
 
     private record Gravada(Resultado resultado, BigDecimal total, BigDecimal creditoDaTroca) {
     }
 
+    /** Um pagamento em crédito que o envio pediu acima do saldo: o pedido e o que o crédito ainda tinha. */
+    private record SemSaldo(UUID pagamentoId, UUID creditoId, BigDecimal pedido, BigDecimal usado) {
+    }
+
     private Gravada gravar(UUID vendedorId, UUID usuarioId, UUID aparelho, PedidoDeVenda pedido, Instant vendidaEm,
-            boolean horaAjustada, CreditoDaTroca troca) {
+            boolean horaAjustada, CreditoDaTroca troca, boolean peloEnvio) {
         if (pedido == null) {
             throw Validacoes.recusar("venda", "Informe a venda.");
         }
@@ -193,8 +217,10 @@ public class ServicoDeVendas {
             idsDosPagamentos.add(troca.pagamentoId());
         }
         for (UUID pagamentoId : idsDosPagamentos) {
-            if (Boolean.TRUE.equals(jdbc.queryForObject(
-                    "SELECT EXISTS (SELECT 1 FROM corona.pagamentos_cliente WHERE id = ?)", Boolean.class, pagamentoId))) {
+            if (Boolean.TRUE.equals(jdbc.queryForObject("""
+                    SELECT EXISTS (SELECT 1 FROM corona.pagamentos_cliente WHERE id = ?)
+                        OR EXISTS (SELECT 1 FROM corona.creditos_sem_saldo WHERE id = ?)""", Boolean.class, pagamentoId,
+                    pagamentoId))) {
                 throw new ErroDaApi(HttpStatus.CONFLICT, troca != null ? CodigoErro.TROCA_JA_REGISTRADA_DIFERENTE
                         : CodigoErro.VENDA_JA_REGISTRADA_DIFERENTE);
             }
@@ -202,6 +228,10 @@ public class ServicoDeVendas {
 
         br.com.coronasemijoias.api.vendedor.VendedorAtivo.exigir(jdbc, vendedorId);
         String status = (String) remessa.get("status");
+        if ("EM_ACERTO".equals(status)) {
+            // A maleta está no acerto (ADR-0012): nada novo entra nela, nem a peça nova de uma troca (tarefa 6.7).
+            throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.MALETA_EM_ACERTO);
+        }
         if ("ENVIADA".equals(status)) {
             // Vender só depois de conferir (decisão de 11/11/2026; ADR-0011, dúvida 5): a conferência liga a maleta ao computador.
             throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.MALETA_NAO_CONFERIDA);
@@ -277,8 +307,32 @@ public class ServicoDeVendas {
         // Os créditos usados: travados e conferidos em ordem de id, depois da maleta (ver ServicoDeCreditos).
         List<Pagamento> emCredito = new ArrayList<>(pagamentos.stream().filter(p -> p.creditoId() != null).toList());
         emCredito.sort(Comparator.comparing(Pagamento::creditoId, OrdemDoBanco.UUIDS));
-        for (Pagamento p : emCredito) {
-            creditos.conferirUso(p.creditoId(), vendedorId, pedido.clienteId(), p.valor());
+        List<SemSaldo> semSaldo = new ArrayList<>();
+        if (!peloEnvio) {
+            for (Pagamento p : emCredito) {
+                creditos.conferirUso(p.creditoId(), vendedorId, pedido.clienteId(), p.valor());
+            }
+        } else {
+            // Pelo envio, o crédito acima do saldo não recusa (o que aconteceu no balcão): paga só o saldo que havia.
+            List<Pagamento> limitados = new ArrayList<>();
+            for (Pagamento p : emCredito) {
+                BigDecimal usado = creditos.usarAteOSaldo(p.creditoId(), vendedorId, pedido.clienteId(), p.valor());
+                if (usado.compareTo(p.valor()) < 0) {
+                    semSaldo.add(new SemSaldo(p.id(), p.creditoId(), p.valor(), usado));
+                    int onde = pagamentos.indexOf(p);
+                    if (usado.signum() > 0) {
+                        Pagamento menor = new Pagamento(p.id(), usado, p.forma(), p.creditoId());
+                        pagamentos.set(onde, menor);
+                        limitados.add(menor);
+                    } else {
+                        pagamentos.remove(onde);
+                    }
+                    pago = pago.subtract(p.valor()).add(usado);
+                } else {
+                    limitados.add(p);
+                }
+            }
+            emCredito = limitados;
         }
 
         if (aparelho != null) {
@@ -314,6 +368,9 @@ public class ServicoDeVendas {
         for (Pagamento p : emCredito) {
             creditos.registrarUso(p.creditoId(), id, p.id(), p.valor(), horaDoUso);
         }
+        for (SemSaldo f : semSaldo) {
+            creditos.registrarSemSaldo(f.pagamentoId(), id, f.creditoId(), f.pedido(), f.usado(), horaDoUso, usuarioId);
+        }
 
         Map<String, Object> depois = new LinkedHashMap<>();
         depois.put("remessa_id", pedido.remessaId().toString());
@@ -322,6 +379,10 @@ public class ServicoDeVendas {
         depois.put("desconto", desconto.toPlainString());
         depois.put("total", total.toPlainString());
         depois.put("pago", pago.toPlainString());
+        if (!semSaldo.isEmpty()) {
+            depois.put("credito_sem_saldo", semSaldo.stream().map(f -> f.pedido().subtract(f.usado()))
+                    .reduce(BigDecimal.ZERO, BigDecimal::add).toPlainString());
+        }
         if (!emCredito.isEmpty()) {
             depois.put("pago_em_credito", emCredito.stream().map(Pagamento::valor).reduce(BigDecimal.ZERO, BigDecimal::add)
                     .toPlainString());
@@ -612,8 +673,30 @@ public class ServicoDeVendas {
                 return false;
             }
         }
+        // O pagamento em crédito limitado pelo envio (tarefa 6.7): o pedido está em creditos_sem_saldo, e o gravado (se
+        // houver) tem o valor que o crédito ainda tinha.
+        Map<UUID, Map<String, Object>> semSaldo = new LinkedHashMap<>();
+        jdbc.queryForList("SELECT id, credito_id, valor_pedido, valor_usado FROM corona.creditos_sem_saldo WHERE venda_id = ?", id)
+                .forEach(f -> semSaldo.put((UUID) f.get("id"), f));
         Map<UUID, Pagamento> pagos = new LinkedHashMap<>();
-        pagamentos.forEach(p -> pagos.put(p.id(), p));
+        for (Pagamento p : pagamentos) {
+            Map<String, Object> f = semSaldo.remove(p.id());
+            if (f == null) {
+                pagos.put(p.id(), p);
+                continue;
+            }
+            if (!java.util.Objects.equals(p.creditoId(), f.get("credito_id"))
+                    || p.valor().compareTo((BigDecimal) f.get("valor_pedido")) != 0) {
+                return false;
+            }
+            BigDecimal usado = (BigDecimal) f.get("valor_usado");
+            if (usado.signum() > 0) {
+                pagos.put(p.id(), new Pagamento(p.id(), usado, p.forma(), p.creditoId()));
+            }
+        }
+        if (!semSaldo.isEmpty()) {
+            return false;
+        }
         List<Map<String, Object>> gravados = jdbc.queryForList(
                 "SELECT id, forma, valor, credito_id FROM corona.pagamentos_cliente WHERE venda_id = ? AND tipo = 'PAGAMENTO'", id);
         if (gravados.size() != pagos.size()) {
