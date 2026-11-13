@@ -33,6 +33,14 @@ export const NOMES_DOS_RELATORIOS = [
   'maleta-saldo',
   'maleta-mercadoria',
   'maleta-em-aberto',
+  // Devolução e troca (tarefa 6.10): os sete relatórios da dona (a conferência tem tela própria).
+  'devolucao-por-motivo',
+  'devolucao-por-vendedor',
+  'devolucao-defeitos',
+  'devolucao-trocas',
+  'devolucao-creditos',
+  'devolucao-reembolsos',
+  'devolucao-autorizacoes',
 ] as const;
 export type NomeDoRelatorio = (typeof NOMES_DOS_RELATORIOS)[number];
 export type NomeDoRelatorioDeEstoqueOuCompras = Extract<
@@ -40,9 +48,10 @@ export type NomeDoRelatorioDeEstoqueOuCompras = Extract<
   `estoque-${string}` | `compras-${string}`
 >;
 export type NomeDoRelatorioDeMaleta = Extract<NomeDoRelatorio, `maleta-${string}`>;
+export type NomeDoRelatorioDeDevolucao = Extract<NomeDoRelatorio, `devolucao-${string}`>;
 export type NomeDoRelatorioDeCadastro = Exclude<
   NomeDoRelatorio,
-  NomeDoRelatorioDeEstoqueOuCompras | NomeDoRelatorioDeMaleta
+  NomeDoRelatorioDeEstoqueOuCompras | NomeDoRelatorioDeMaleta | NomeDoRelatorioDeDevolucao
 >;
 
 export const SITUACOES_DO_RELATORIO = [
@@ -63,6 +72,20 @@ export const SITUACOES_DO_RELATORIO = [
   'ZERADAS',
   'ATRASADAS',
   'NO_PRAZO',
+  // Devolução e troca (tarefa 6.10)
+  'ACEITA',
+  'EM_REVISAO',
+  'MANTIDA',
+  'NAO_ACEITA',
+  'REGISTRADOS',
+  'ABERTOS',
+  'UTILIZADOS',
+  'CANCELADOS',
+  'PEDIDA',
+  'APROVADA',
+  'USADA',
+  'NEGADA',
+  'VENCIDA',
 ] as const;
 export type SituacaoDoRelatorio = (typeof SITUACOES_DO_RELATORIO)[number];
 
@@ -119,6 +142,9 @@ export interface ConsultaDeRelatorio {
   semanaId?: string;
   remessaId?: string;
   diasDeAtraso?: number;
+  /** Devolução e troca (tarefa 6.10): motivo da devolução e forma do dinheiro devolvido. */
+  motivo?: string;
+  forma?: string;
   /** A chave de um total do rodapé: mostra só as linhas que formam esse total. */
   recorte?: string;
   pagina: number;

@@ -255,6 +255,42 @@ function criarPonte(manipuladores: Partial<Record<PedidoDeChamada['operacao'], M
     'relatorios.vendas': () => ({ ok: true, dados: { linhas: [], totais: TOTAIS } }),
     'relatorios.recebimentos': () => ({ ok: true, dados: { linhas: [], totais: TOTAIS } }),
     'relatorios.aReceber': () => ({ ok: true, dados: { clientes: [], totais: TOTAIS } }),
+    'relatorios.devolucoes': () => ({
+      ok: true,
+      dados: {
+        linhas: [],
+        totais: {
+          devolucoes: 0,
+          trocas: 0,
+          valorDevolvido: '0.00',
+          valorDevolvidoEmDolar: null,
+          valorDevolvidoEmGuarani: null,
+          emDinheiro: '0.00',
+          emDinheiroEmDolar: null,
+          emDinheiroEmGuarani: null,
+          emCredito: '0.00',
+          emCreditoEmDolar: null,
+          emCreditoEmGuarani: null,
+        },
+      },
+    }),
+    'relatorios.creditos': () => ({
+      ok: true,
+      dados: {
+        clientes: [],
+        totais: {
+          gerado: '0.00',
+          geradoEmDolar: null,
+          geradoEmGuarani: null,
+          usado: '0.00',
+          usadoEmDolar: null,
+          usadoEmGuarani: null,
+          emAberto: '0.00',
+          emAbertoEmDolar: null,
+          emAbertoEmGuarani: null,
+        },
+      },
+    }),
     'fotos.ver': () => ({ ok: true, dados: { dataUrl: 'data:image/jpeg;base64,AAAA' } }),
   };
   const ponte: PonteDoCorona = {

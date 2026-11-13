@@ -15,6 +15,11 @@ const VALOR = /^\d{1,12}(\.\d{1,2})?$/;
 const SIM_NAO = ['SIM', 'NAO'];
 /** "tipo" é do resultado das importações ou do tipo do lançamento no estoque. */
 const TIPOS_DA_MALETA = ['NOVA', 'REPOSICAO'];
+/** Devolução e troca (tarefa 6.10): o tipo de cada relatório. */
+const TIPOS_DAS_DEVOLUCOES = ['DEVOLUCAO', 'TROCA'];
+const TIPOS_DOS_CREDITOS = ['TROCA', 'DEVOLUCAO', 'TRANSFERENCIA'];
+const TIPOS_DAS_AUTORIZACOES = ['FORA_DO_PRAZO', 'ACIMA_DO_VALOR'];
+const TODOS_OS_TIPOS_DE_DEVOLUCAO = [...TIPOS_DOS_CREDITOS, ...TIPOS_DAS_AUTORIZACOES];
 const TIPOS_DO_LANCAMENTO = ['ENTRADA', 'SAIDA', 'AJUSTE', 'REMESSA', 'DEVOLUCAO', 'AVARIA'];
 const ESCOLHAS: [
   (
@@ -28,6 +33,8 @@ const ESCOLHAS: [
     | 'quem'
     | 'origem'
     | 'divergencia'
+    | 'motivo'
+    | 'forma'
   ),
   string[],
 ][] = [
@@ -36,11 +43,22 @@ const ESCOLHAS: [
   ['comVendedor', SIM_NAO],
   ['estoque', ['ZERADO', 'ABAIXO_DO_MINIMO', 'COM_ESTOQUE']],
   ['foto', ['COM', 'SEM']],
-  ['tipo', ['PLANILHA', 'FOTOS', ...TIPOS_DO_LANCAMENTO, ...TIPOS_DA_MALETA]],
+  [
+    'tipo',
+    [
+      'PLANILHA',
+      'FOTOS',
+      ...TIPOS_DO_LANCAMENTO,
+      ...TIPOS_DA_MALETA,
+      ...TODOS_OS_TIPOS_DE_DEVOLUCAO,
+    ],
+  ],
   ['resultado', ['CRIADO', 'ATUALIZADO', 'JA_EXISTIA', 'RECUSADO']],
   ['quem', ['TODOS', 'VENDEDORES', 'CLIENTES']],
   ['origem', ['MANUAL', 'AJUSTE_MANUAL', 'COMPRA', 'INVENTARIO', 'MALETA', 'ESTORNO']],
   ['divergencia', SIM_NAO],
+  ['motivo', ['ARREPENDIMENTO', 'DEFEITO', 'TAMANHO', 'OUTRO']],
+  ['forma', ['DINHEIRO', 'PIX', 'CARTAO', 'CHEQUE']],
 ];
 
 export interface ParametrosDeRelatorio {
@@ -84,6 +102,8 @@ const CAMPOS = [
   'semanaId',
   'remessaId',
   'diasDeAtraso',
+  'motivo',
+  'forma',
   'pagina',
   'tamanho',
 ];
@@ -170,7 +190,13 @@ export function conferirRelatorio(p: Record<string, unknown>): ParametrosDeRelat
       ? ['PLANILHA', 'FOTOS']
       : eDeMaleta
         ? TIPOS_DA_MALETA
-        : TIPOS_DO_LANCAMENTO;
+        : p.relatorio === 'devolucao-por-motivo'
+          ? TIPOS_DAS_DEVOLUCOES
+          : p.relatorio === 'devolucao-creditos'
+            ? TIPOS_DOS_CREDITOS
+            : p.relatorio === 'devolucao-autorizacoes'
+              ? TIPOS_DAS_AUTORIZACOES
+              : TIPOS_DO_LANCAMENTO;
     if (!ehTexto(p.tipo) || !aceitos.includes(p.tipo)) return null;
   }
   if (p.recorte !== undefined && p.recorte !== '') {

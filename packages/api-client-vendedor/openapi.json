@@ -107,6 +107,72 @@
         "required" : [ "nome" ],
         "type" : "object"
       },
+      "ClienteComCredito" : {
+        "properties" : {
+          "clienteId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "clienteNome" : {
+            "type" : "string"
+          },
+          "emAberto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "emAbertoEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "emAbertoEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "gerado" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "geradoEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "geradoEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "usado" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "usadoEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "usadoEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "ClientesDoVendedorCliente" : {
         "properties" : {
           "ativo" : {
@@ -144,7 +210,7 @@
         },
         "type" : "object"
       },
-      "Conferencia" : {
+      "ConsultasDaConferenciaConferencia" : {
         "properties" : {
           "conferidaEm" : {
             "format" : "date-time",
@@ -1390,6 +1456,34 @@
         },
         "type" : "object"
       },
+      "RelatorioDeCreditos" : {
+        "properties" : {
+          "clientes" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ClienteComCredito"
+            },
+            "type" : "array"
+          },
+          "totais" : {
+            "$ref" : "#/components/schemas/TotaisDeCredito"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatorioDeDevolucoes" : {
+        "properties" : {
+          "linhas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/RelatoriosDoVendedorLinhaDeDevolucao"
+            },
+            "type" : "array"
+          },
+          "totais" : {
+            "$ref" : "#/components/schemas/TotaisDeDevolucao"
+          }
+        },
+        "type" : "object"
+      },
       "RelatoriosDoVendedorLinha" : {
         "properties" : {
           "desconto" : {
@@ -1433,6 +1527,36 @@
             "type" : "string"
           },
           "totalEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatoriosDoVendedorLinhaDeDevolucao" : {
+        "properties" : {
+          "devolucoes" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "motivo" : {
+            "type" : "string"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorEmGuarani" : {
             "example" : "123.45",
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
@@ -1679,6 +1803,132 @@
             "type" : "string"
           },
           "totalEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "TotaisDeCredito" : {
+        "properties" : {
+          "emAberto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "emAbertoEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "emAbertoEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "gerado" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "geradoEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "geradoEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "usado" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "usadoEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "usadoEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "TotaisDeDevolucao" : {
+        "properties" : {
+          "devolucoes" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "emCredito" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "emCreditoEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "emCreditoEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "emDinheiro" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "emDinheiroEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "emDinheiroEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "trocas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "valorDevolvido" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorDevolvidoEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorDevolvidoEmGuarani" : {
             "example" : "123.45",
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
@@ -2850,7 +3100,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Conferencia"
+                  "$ref" : "#/components/schemas/ConsultasDaConferenciaConferencia"
                 }
               }
             },
@@ -2890,7 +3140,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Conferencia"
+                  "$ref" : "#/components/schemas/ConsultasDaConferenciaConferencia"
                 }
               }
             },
@@ -3008,9 +3258,72 @@
         "tags" : [ "apoio-do-vendedor-controller" ]
       }
     },
+    "/api/vendedor/relatorios/creditos" : {
+      "get" : {
+        "description" : "Por cliente do vendedor logado: crédito gerado, usado e ainda em aberto, sem os cancelados.",
+        "operationId" : "relatorioDeCreditosDosMeusClientes",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCreditos"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Crédito dos meus clientes",
+        "tags" : [ "apoio-do-vendedor-controller" ]
+      }
+    },
+    "/api/vendedor/relatorios/devolucoes" : {
+      "get" : {
+        "description" : "Só as do vendedor logado, sem as canceladas, por motivo e no período (de e até, horário de Brasília; ambos opcionais). Traz quanto voltou em dinheiro e quanto ficou em crédito, também em Dólar e Guarani pela cotação do dia de cada uma.",
+        "operationId" : "relatorioDeMinhasDevolucoesETrocas",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeDevolucoes"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Minhas devoluções e trocas",
+        "tags" : [ "apoio-do-vendedor-controller" ]
+      }
+    },
     "/api/vendedor/relatorios/recebimentos" : {
       "get" : {
-        "description" : "O que os clientes do vendedor pagaram no período, por forma, já descontados os reembolsos.",
+        "description" : "O que os clientes do vendedor pagaram no período, por forma, já descontados os reembolsos. O crédito do cliente não é dinheiro recebido e não entra.",
         "operationId" : "relatorioDeMeusRecebimentos",
         "parameters" : [ {
           "in" : "query",

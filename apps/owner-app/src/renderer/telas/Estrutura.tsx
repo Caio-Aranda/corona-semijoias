@@ -22,6 +22,7 @@ import { TelaCreditos } from './devolucoes/TelaCreditos';
 import { TelaGarantia } from './devolucoes/TelaGarantia';
 import { TelaPedidosDeAutorizacao } from './devolucoes/TelaPedidosDeAutorizacao';
 import { TelaTrocas } from './devolucoes/TelaTrocas';
+import { TelaConferencia } from './devolucoes/TelaConferencia';
 import { TelaMaletas } from './maletas/TelaMaletas';
 import { TelaMontarMaleta } from './maletas/TelaMontarMaleta';
 import { TelaProdutos } from './produtos/TelaProdutos';
@@ -107,6 +108,8 @@ function Conteudo({
       return <TelaCreditos ponte={ponte} />;
     case 'devolucoes/garantia':
       return <TelaGarantia ponte={ponte} />;
+    case 'relatorios/devolucao-conferencia':
+      return <TelaConferencia ponte={ponte} />;
     case 'pessoas/usuarios':
       return <TelaUsuarios ponte={ponte} />;
     case 'cadastros/fornecedores':

@@ -532,6 +532,7 @@ export function conferirParametros(
     case 'devolucoes.cancelar':
     case 'devolucoes.vendasComAPeca':
     case 'devolucoes.registrar':
+    case 'devolucoes.conferencia':
     case 'trocas.listar':
     case 'trocas.cancelar':
     case 'creditos.listar':

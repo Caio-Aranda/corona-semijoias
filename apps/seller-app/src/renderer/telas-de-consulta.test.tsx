@@ -99,6 +99,82 @@ const aReceber: RelatorioAReceber = {
   totais: totais('40.00'),
 };
 
+const devolucoesDoPeriodo = {
+  linhas: [
+    {
+      motivo: 'ARREPENDIMENTO',
+      devolucoes: 2,
+      valor: '200.00',
+      valorEmDolar: '50.00',
+      valorEmGuarani: '100000',
+    },
+    {
+      motivo: 'DEFEITO',
+      devolucoes: 1,
+      valor: '80.00',
+      valorEmDolar: '20.00',
+      valorEmGuarani: '40000',
+    },
+  ],
+  totais: {
+    devolucoes: 2,
+    trocas: 1,
+    valorDevolvido: '280.00',
+    valorDevolvidoEmDolar: '70.00',
+    valorDevolvidoEmGuarani: '140000',
+    emDinheiro: '180.00',
+    emDinheiroEmDolar: '45.00',
+    emDinheiroEmGuarani: '90000',
+    emCredito: '100.00',
+    emCreditoEmDolar: '25.00',
+    emCreditoEmGuarani: '50000',
+  },
+};
+const creditosDosClientes = {
+  clientes: [
+    {
+      clienteId: MARIA,
+      clienteNome: 'Maria Souza',
+      gerado: '80.00',
+      geradoEmDolar: '20.00',
+      geradoEmGuarani: '40000',
+      usado: '50.00',
+      usadoEmDolar: '12.50',
+      usadoEmGuarani: '25000',
+      emAberto: '30.00',
+      emAbertoEmDolar: '7.50',
+      emAbertoEmGuarani: '15000',
+    },
+  ],
+  totais: {
+    gerado: '80.00',
+    geradoEmDolar: '20.00',
+    geradoEmGuarani: '40000',
+    usado: '50.00',
+    usadoEmDolar: '12.50',
+    usadoEmGuarani: '25000',
+    emAberto: '30.00',
+    emAbertoEmDolar: '7.50',
+    emAbertoEmGuarani: '15000',
+  },
+};
+const semDevolucoes = {
+  linhas: [],
+  totais: {
+    devolucoes: 0,
+    trocas: 0,
+    valorDevolvido: '0.00',
+    valorDevolvidoEmDolar: '0.00',
+    valorDevolvidoEmGuarani: '0',
+    emDinheiro: '0.00',
+    emDinheiroEmDolar: '0.00',
+    emDinheiroEmGuarani: '0',
+    emCredito: '0.00',
+    emCreditoEmDolar: '0.00',
+    emCreditoEmGuarani: '0',
+  },
+};
+
 type Manipulador = (pedido: PedidoDeChamada) => ResultadoDeChamada;
 
 function ponteDeConsulta(
@@ -111,6 +187,8 @@ function ponteDeConsulta(
     'relatorios.vendas': () => ({ ok: true, dados: vendasPorCliente }),
     'relatorios.recebimentos': () => ({ ok: true, dados: recebimentos }),
     'relatorios.aReceber': () => ({ ok: true, dados: aReceber }),
+    'relatorios.devolucoes': () => ({ ok: true, dados: devolucoesDoPeriodo }),
+    'relatorios.creditos': () => ({ ok: true, dados: creditosDosClientes }),
     'cotacao.hoje': () => ({
       ok: true,
       dados: {
@@ -297,6 +375,28 @@ describe('Meus números', () => {
     expect(screen.getByText(/estornadas não entram/)).toBeInTheDocument();
   });
 
+  it('mostra as devoluções e trocas e o crédito dos clientes, sem o crédito nos recebimentos', async () => {
+    const { ponte } = ponteDeConsulta();
+    await abrir(ponte, 'Meus números');
+    const devolucoes = await screen.findByRole('table', { name: 'Devoluções e trocas no período' });
+    expect(within(devolucoes).getByText('Desistência')).toBeInTheDocument();
+    expect(within(devolucoes).getByText('Defeito')).toBeInTheDocument();
+    expect(within(devolucoes).getAllByText(/US\$ 50,00/).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Voltou em dinheiro/)).toHaveTextContent('R$ 180,00');
+    expect(screen.getByText(/Voltou em crédito/)).toHaveTextContent('R$ 100,00');
+    expect(screen.getByText(/^Devoluções: 2/)).toHaveTextContent('Trocas: 1');
+
+    const creditos = screen.getByRole('table', { name: 'Crédito dos meus clientes' });
+    expect(within(creditos).getByText('Maria Souza')).toBeInTheDocument();
+    expect(within(creditos).getAllByText(/US\$ 7,50/).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Crédito em aberto/)).toHaveTextContent('R$ 30,00');
+    expect(
+      screen.getByText('O crédito do cliente não entra aqui. Veja Crédito dos meus clientes.'),
+    ).toBeInTheDocument();
+    // Nenhum custo, nenhum termo técnico.
+    expect(devolucoes.textContent + creditos.textContent).not.toMatch(/custo|REEMBOLSO|ESTORNO/i);
+  });
+
   it('muda o período e o agrupamento e pede de novo ao servidor', async () => {
     const { ponte, daOperacao } = ponteDeConsulta();
     const u = await abrir(ponte, 'Meus números');
@@ -310,6 +410,10 @@ describe('Meus números', () => {
       expect(ultima).toMatchObject({ de: '2026-11-01', ate: '2026-11-30', agrupar: 'peca' });
     });
     expect(daOperacao('relatorios.recebimentos').at(-1)).toMatchObject({
+      de: '2026-11-01',
+      ate: '2026-11-30',
+    });
+    expect(daOperacao('relatorios.devolucoes').at(-1)).toMatchObject({
       de: '2026-11-01',
       ate: '2026-11-30',
     });
@@ -335,12 +439,19 @@ describe('Meus números', () => {
       'relatorios.vendas': () => ({ ok: true, dados: vazio }),
       'relatorios.recebimentos': () => ({ ok: true, dados: vazio }),
       'relatorios.aReceber': () => ({ ok: true, dados: { clientes: [], totais: totais('0.00') } }),
+      'relatorios.devolucoes': () => ({ ok: true, dados: semDevolucoes }),
+      'relatorios.creditos': () => ({
+        ok: true,
+        dados: { clientes: [], totais: { ...creditosDosClientes.totais, emAberto: '0.00' } },
+      }),
       'cotacao.hoje': () => ({ ok: false, motivo: 'sem-conexao' }),
     });
     await abrir(ponte, 'Meus números');
     expect(await screen.findByText('Nenhuma venda neste período.')).toBeInTheDocument();
     expect(screen.getByText('Nenhum recebimento neste período.')).toBeInTheDocument();
     expect(screen.getByText('Nenhum cliente deve nada agora.')).toBeInTheDocument();
+    expect(screen.getByText('Nenhuma devolução ou troca neste período.')).toBeInTheDocument();
+    expect(screen.getByText('Nenhum cliente seu tem crédito agora.')).toBeInTheDocument();
     expect(screen.getByText(/Total vendido/)).toHaveTextContent('R$ 0,00');
     expect(screen.getByText(/Total vendido/)).not.toHaveTextContent('US$');
   });

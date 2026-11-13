@@ -15,6 +15,8 @@ import {
   relatorioDeMeusRecebimentos,
   relatorioDeMinhasVendas,
   relatorioDeValoresAReceber,
+  relatorioDeMinhasDevolucoesETrocas,
+  relatorioDeCreditosDosMeusClientes,
   renovar,
   sair,
   trocarSenha,
@@ -273,6 +275,12 @@ export function criarApiDoVendas(opcoes: OpcoesDaApi): ApiDoVendas {
         return executar(() => relatorioDeMeusRecebimentos({ ...base, query: periodo(pedido) }));
       case 'relatorios.aReceber':
         return executar(() => relatorioDeValoresAReceber(base));
+      case 'relatorios.devolucoes':
+        return executar(() =>
+          relatorioDeMinhasDevolucoesETrocas({ ...base, query: periodo(pedido) }),
+        );
+      case 'relatorios.creditos':
+        return executar(() => relatorioDeCreditosDosMeusClientes(base));
     }
   };
 

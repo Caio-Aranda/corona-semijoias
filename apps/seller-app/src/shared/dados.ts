@@ -161,6 +161,66 @@ export interface RelatorioDeVendas {
   totais: TotaisDeRelatorio;
 }
 
+/** Minhas devoluções e trocas (tarefa 6.10): por motivo, devoluções e trocas juntas; cada uma pela cotação do seu dia. */
+export interface LinhaDeDevolucaoDoRelatorio {
+  motivo: string;
+  devolucoes: number;
+  valor: string;
+  valorEmDolar: string | null;
+  valorEmGuarani: string | null;
+}
+
+export interface TotaisDeDevolucaoDoRelatorio {
+  devolucoes: number;
+  trocas: number;
+  valorDevolvido: string;
+  valorDevolvidoEmDolar: string | null;
+  valorDevolvidoEmGuarani: string | null;
+  emDinheiro: string;
+  emDinheiroEmDolar: string | null;
+  emDinheiroEmGuarani: string | null;
+  emCredito: string;
+  emCreditoEmDolar: string | null;
+  emCreditoEmGuarani: string | null;
+}
+
+export interface RelatorioDeDevolucoes {
+  linhas: LinhaDeDevolucaoDoRelatorio[];
+  totais: TotaisDeDevolucaoDoRelatorio;
+}
+
+/** Crédito dos meus clientes (tarefa 6.10): gerado, usado e em aberto por cliente (só o que o vendedor pode usar). */
+export interface ClienteComCredito {
+  clienteId: string;
+  clienteNome: string;
+  gerado: string;
+  geradoEmDolar: string | null;
+  geradoEmGuarani: string | null;
+  usado: string;
+  usadoEmDolar: string | null;
+  usadoEmGuarani: string | null;
+  emAberto: string;
+  emAbertoEmDolar: string | null;
+  emAbertoEmGuarani: string | null;
+}
+
+export interface TotaisDeCreditoDoRelatorio {
+  gerado: string;
+  geradoEmDolar: string | null;
+  geradoEmGuarani: string | null;
+  usado: string;
+  usadoEmDolar: string | null;
+  usadoEmGuarani: string | null;
+  emAberto: string;
+  emAbertoEmDolar: string | null;
+  emAbertoEmGuarani: string | null;
+}
+
+export interface RelatorioDeCreditos {
+  clientes: ClienteComCredito[];
+  totais: TotaisDeCreditoDoRelatorio;
+}
+
 export interface Devedor {
   clienteId: string;
   clienteNome: string;

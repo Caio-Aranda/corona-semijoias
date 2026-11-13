@@ -326,6 +326,7 @@ export function validarChamada(v: unknown): PedidoDeChamada | null {
     case 'maletas.listar':
     case 'cotacao.hoje':
     case 'relatorios.aReceber':
+    case 'relatorios.creditos':
       return { operacao };
     case 'maletas.ver':
     case 'maletas.verConferencia':
@@ -391,7 +392,8 @@ export function validarChamada(v: unknown): PedidoDeChamada | null {
       if (!p || !agrupar.ok) return null;
       return { operacao, ...p, ...(agrupar.valor ? { agrupar: agrupar.valor } : {}) };
     }
-    case 'relatorios.recebimentos': {
+    case 'relatorios.recebimentos':
+    case 'relatorios.devolucoes': {
       const p = periodo(v);
       return p ? { operacao, ...p } : null;
     }
