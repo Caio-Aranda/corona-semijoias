@@ -709,6 +709,27 @@ Textos que o servidor devolve:
 
 Avisos junto ao campo: "Escolha o crédito do cliente usado no pagamento." (forma crédito sem o crédito), "O crédito só vale com a forma de pagamento crédito do cliente." (crédito com outra forma), "O mesmo crédito aparece mais de uma vez. Use o crédito uma vez só.", "Escolha como o cliente pagou: dinheiro, Pix, cartão, cheque ou crédito do cliente.", "Informe as peças que o cliente devolveu.", "Informe as peças que o cliente levou.", "A peça nova vale menos que a devolvida: não há diferença a pagar. A sobra fica de crédito.", "O crédito da troca não é escolhido na venda: ele entra sozinho.", "Escolha o vendedor que vai receber o crédito.", "O crédito já é deste vendedor. Escolha outro vendedor." e "Este vendedor está desligado. Escolha um vendedor ativo.".
 
+**Devolução, troca e crédito pelo envio do computador (Fase 6, tarefa 6.7; ADR-0014, itens 5, 9 e 14).** O que o vendedor fez sem internet chega pelo envio e o servidor confere de novo. O que aconteceu no balcão **nunca é recusado por prazo ou por saldo**: vai para a dona olhar. As telas do vendedor são da tarefa 6.8 e a da dona é da 6.9; estes textos valem desde já.
+
+- Devolução ou troca que o servidor achou fora do prazo, acima do limite da semana ou acima do valor que a dona aprova antes (vendedor): "A dona vai olhar esta devolução."
+- Venda paga com crédito do cliente que, quando chegou, já tinha acabado (vendedor): "O crédito do cliente já tinha acabado. A dona vai olhar esta venda." O crédito paga só o que sobrava nele; o resto fica **a receber do cliente** na venda.
+- Botões da dona na venda com crédito que já tinha acabado: **Manter** (o cliente continua devendo o resto) e **Não aceitar** (pede a observação; o valor fica como pendência do vendedor, cobrada no acerto). Nenhum dos dois mexe na venda nem no dinheiro.
+
+Aviso de "O que precisa da sua atenção":
+
+> **Há 1 venda paga com crédito que já tinha acabado.** (plural: "Há {N} vendas pagas com crédito que já tinha acabado.")
+> Abra Créditos dos clientes para revisar e escolha Manter ou Não aceitar.
+
+Textos que o servidor devolve:
+
+> **Não encontramos esta venda com crédito para revisar.**
+> Não encontramos esta venda com crédito para revisar. Atualize a tela e tente de novo.
+
+> **Esta venda com crédito não está para revisão.**
+> A dona já decidiu sobre esta venda com crédito e a decisão não muda.
+
+Aviso junto ao campo: "Diga por que a venda com crédito não foi aceita.".
+
 **Vender só depois de conferir (decisão de 11/11/2026; tarefa 5.3).** A maleta que ainda não foi conferida não vende:
 
 > **Confira a maleta antes de vender.**
