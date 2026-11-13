@@ -238,10 +238,10 @@ export function criarApiDoVendas(opcoes: OpcoesDaApi): ApiDoVendas {
         return executar(() => verMeuCliente({ ...base, path: { id: pedido.id } }));
       case 'clientes.cadastrar':
         return executar(() => cadastrarMeuCliente({ ...base, body: pedido.cliente }));
+      // Também devolução, troca e crédito (tarefa 6.8): sempre pela outbox, nunca direto pela rede.
       case 'clientes.alterar':
       case 'envios.naoAceitos':
       case 'envios.entendi':
-      // Devolução, troca e crédito (tarefa 6.8): sempre pela outbox, nunca direto pela rede.
       case 'devolucoes.vendasComAPeca':
       case 'devolucoes.previa':
       case 'devolucoes.registrar':

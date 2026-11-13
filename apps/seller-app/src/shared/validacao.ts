@@ -181,8 +181,8 @@ function validarOQueVolta(
   return {
     ...(opcoes.comId ? { id: o.id as string } : {}),
     vendaId: o.vendaId,
-    ...(o.motivo !== undefined ? { motivo: o.motivo as MotivoDeDevolucao } : {}),
-    ...(o.observacao !== undefined ? { observacao: o.observacao as string } : {}),
+    ...(o.motivo !== undefined ? { motivo: o.motivo } : {}),
+    ...(o.observacao !== undefined ? { observacao: o.observacao } : {}),
     itens,
   };
 }
