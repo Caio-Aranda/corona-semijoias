@@ -143,7 +143,22 @@ public final class RegistroDeTabelas {
                                 "cotacao_id", "pedida_em", "hora_ajustada", "decidida_em", "motivo_decisao", "valida_ate"), false,
                                 RegraDoVendedor.doVendedor("FALSE")),
                         new TabelaSincronizavel("itens_autorizacao", List.of(
-                                "autorizacao_id", "item_venda_id", "quantidade"), true, RegraDoVendedor.doVendedor("FALSE"))
+                                "autorizacao_id", "item_venda_id", "quantidade"), true, RegraDoVendedor.doVendedor("FALSE")),
+                        // Troca e crédito do cliente (tarefa 6.5, ADR-0014, itens 8 e 9): como as devoluções, nada vai ao
+                        // vendedor até a tarefa 6.7 (filtro do vendedor, os tipos TROCA e CANCELAR_TROCA e o formato da venda
+                        // com crédito). As colunas novas de tabelas antigas (vendas.troca_id, pagamentos_cliente.credito_id,
+                        // devolucoes.valor_em_credito) ficam fora até lá: o Corona Vendas recusa o lote com coluna desconhecida.
+                        new TabelaSincronizavel("trocas", List.of(
+                                "venda_origem_id", "devolucao_id", "venda_nova_id", "cliente_id", "vendedor_id", "diferenca",
+                                "cotacao_id", "trocada_em", "hora_ajustada", "situacao", "cancelada_em", "motivo_cancelamento"),
+                                false, RegraDoVendedor.doVendedor("FALSE")),
+                        new TabelaSincronizavel("creditos_cliente", List.of(
+                                "cliente_id", "vendedor_id", "origem", "troca_id", "devolucao_id", "credito_origem_id", "valor",
+                                "valor_utilizado", "situacao", "cotacao_id", "gerado_em", "hora_ajustada", "cancelado_em"),
+                                false, RegraDoVendedor.doVendedor("FALSE")),
+                        new TabelaSincronizavel("usos_credito", List.of(
+                                "credito_id", "tipo", "venda_id", "pagamento_id", "credito_destino_id", "valor", "estorna_id",
+                                "usado_em"), true, RegraDoVendedor.doVendedor("FALSE"))
                         // Tabela sincronizável nova: declare a regra do vendedor (filtro, expansão, diretório).
                 ),
                 List.of(
