@@ -1,4 +1,21 @@
 import {
+  alterarGarantia,
+  aprovarAutorizacao,
+  cancelarDevolucao,
+  cancelarTroca,
+  devolverPelaDona,
+  lerGarantia,
+  listarAutorizacoes,
+  listarCreditos,
+  listarDevolucoes,
+  listarTrocas,
+  manterDevolucao,
+  naoAceitarDevolucao,
+  negarAutorizacao,
+  transferirCredito,
+  vendasComAPecaDaDona,
+} from '@corona/api-client-dona';
+import {
   aprovarVendaDeComputadorBloqueado,
   bloquearAparelho,
   descartarEnvio,
@@ -165,6 +182,7 @@ import type { NomeDoCadastro } from '../shared/cadastros';
 import type { ParametrosConferidos, ParametrosDeVendedor } from '../shared/validacao-parametros';
 import type { ParametrosDeCompra } from '../shared/validacao-compras';
 import type { ParametrosDeMaleta } from '../shared/validacao-maletas';
+import type { ParametrosDeDevolucoes } from '../shared/devolucoes';
 import type { ParametrosDeSincronizacao } from '../shared/sincronizacao';
 import type { ParametrosDeEstoque } from '../shared/validacao-estoque';
 import type { ParametrosDeProduto } from '../shared/validacao-produtos';
@@ -538,6 +556,110 @@ async function executarSincronizacao(
       );
     case 'sincronizacao.valoresSubstituidos':
       return executar(() => listarValoresDeClienteSubstituidos(base));
+  }
+}
+
+/** Devoluções, trocas, créditos dos clientes e garantia (só ADMIN; o servidor recalcula valor, prazo e saldo). */
+async function executarDevolucoes(
+  client: ReturnType<typeof criarClienteDaApi>,
+  headers: { Authorization: string },
+  pedido: ParametrosDeDevolucoes,
+): Promise<Resultado<unknown>> {
+  const base = { client, headers };
+  const filtros = (p: { situacao?: string; vendedorId?: string }) => ({
+    ...(p.situacao ? { situacao: p.situacao } : {}),
+    ...(p.vendedorId ? { vendedorId: p.vendedorId } : {}),
+  });
+  switch (pedido.operacao) {
+    case 'devolucoes.autorizacoes':
+      return executar(() => listarAutorizacoes({ ...base, query: filtros(pedido) }));
+    case 'devolucoes.aprovarAutorizacao':
+      return executar(() => aprovarAutorizacao({ ...base, path: { id: pedido.id } }));
+    case 'devolucoes.negarAutorizacao':
+      return executar(() =>
+        negarAutorizacao({ ...base, path: { id: pedido.id }, body: { motivo: pedido.motivo } }),
+      );
+    case 'devolucoes.listar':
+      return executar(() => listarDevolucoes({ ...base, query: filtros(pedido) }));
+    case 'devolucoes.manter':
+      return executar(() =>
+        manterDevolucao({
+          ...base,
+          path: { id: pedido.id },
+          body: pedido.observacao ? { observacao: pedido.observacao } : {},
+        }),
+      );
+    case 'devolucoes.naoAceitar':
+      return executar(() =>
+        naoAceitarDevolucao({
+          ...base,
+          path: { id: pedido.id },
+          body: { observacao: pedido.motivo },
+        }),
+      );
+    case 'devolucoes.cancelar':
+      return executar(() =>
+        cancelarDevolucao({
+          ...base,
+          path: { id: pedido.id },
+          body: { id: pedido.cancelamentoId, motivo: pedido.motivo },
+        }),
+      );
+    case 'devolucoes.vendasComAPeca':
+      return executar(() => vendasComAPecaDaDona({ ...base, query: { codigo: pedido.codigo } }));
+    case 'devolucoes.registrar':
+      return executar(() => devolverPelaDona({ ...base, body: pedido.corpo }), true);
+    case 'trocas.listar':
+      return executar(() => listarTrocas({ ...base, query: filtros(pedido) }));
+    case 'trocas.cancelar':
+      return executar(() =>
+        cancelarTroca({
+          ...base,
+          path: { id: pedido.id },
+          body: { id: pedido.cancelamentoId, motivo: pedido.motivo },
+        }),
+      );
+    case 'creditos.listar':
+      return executar(() =>
+        listarCreditos({
+          ...base,
+          query: {
+            ...filtros(pedido),
+            ...(pedido.clienteId ? { clienteId: pedido.clienteId } : {}),
+          },
+        }),
+      );
+    case 'creditos.transferir':
+      return executar(
+        () =>
+          transferirCredito({
+            ...base,
+            path: { id: pedido.id },
+            body: { id: pedido.novoId, vendedorId: pedido.vendedorId },
+          }),
+        true,
+      );
+    case 'garantia.ler':
+      return executar(() => lerGarantia(base));
+    case 'garantia.alterar': {
+      const {
+        operacao: _operacao,
+        limiteReembolsoSemanal,
+        valorAprovacaoReembolso,
+        ...dias
+      } = pedido;
+      return executar(() =>
+        alterarGarantia({
+          ...base,
+          // O dinheiro vai em texto ("500.00"), nunca como número fracionário; vazio = sem limite.
+          body: {
+            ...dias,
+            ...(limiteReembolsoSemanal === null ? {} : { limiteReembolsoSemanal }),
+            ...(valorAprovacaoReembolso === null ? {} : { valorAprovacaoReembolso }),
+          },
+        }),
+      );
+    }
   }
 }
 
@@ -933,6 +1055,14 @@ export function criarApiDoGestao(opcoes: OpcoesDaApi): ApiDoGestao {
       }
       if (pedido.operacao.startsWith('sincronizacao.')) {
         return executarSincronizacao(client, headers, pedido as ParametrosDeSincronizacao);
+      }
+      if (
+        pedido.operacao.startsWith('devolucoes.') ||
+        pedido.operacao.startsWith('trocas.') ||
+        pedido.operacao.startsWith('creditos.') ||
+        pedido.operacao.startsWith('garantia.')
+      ) {
+        return executarDevolucoes(client, headers, pedido as ParametrosDeDevolucoes);
       }
       if (pedido.operacao.startsWith('compras.')) {
         return executarCompra(client, headers, pedido as ParametrosDeCompra);
