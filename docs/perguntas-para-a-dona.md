@@ -195,6 +195,13 @@ Son seis, en el grupo **Devoluciones y créditos**: **Devoluciones para autoriza
 Tres cosas para mirar con usted: (a) cuando **usted** registra una devolución, la pieza va a la tienda y **no vuelve a la maleta del vendedor** (entra en el próximo acerto); (b) por ahora **usted no hace un cambio ni usa un crédito** en el programa (el cambio y el uso del crédito los hace el vendedor, porque la venta siempre sale de una maleta); usted sí puede transferir un crédito a otro vendedor; (c) si la devolución pasó del plazo, usted no la registra directo: el vendedor pide la autorización y usted la aprueba. Las pantallas todavía no las aprobó usted.
 Si no responde, usamos: **las pantallas como están.**
 
+## 9. Pantallas de devoluciones y cambios del Corona Vendas (Fase 6)
+
+**29. En el Corona Vendas, ¿le sirven las pantallas de devolución y cambio como las hicimos?**
+En la pantalla inicial hay un **quinto botón, Devolución y cambio**. El vendedor lee el código de la pieza que trajo el cliente y aparecen **las ventas con esta pieza** (solo las de él), con los botones **Devolver** y **Cambiar**. Si pasó el plazo de la garantía, el botón de registrar desaparece y aparece **Pedir autorización a la dueña**; cuando usted aprueba, el vendedor ve el aviso en la pantalla inicial y tiene 7 días para registrar la devolución. En la venta, si el cliente tiene crédito, aparece "Crédito del cliente: R$ 40,00" con el botón **Usar crédito**.
+Cuatro cosas para mirar con usted: (a) el valor que el vendedor ve es una **vista previa**: el valor que vale lo calcula el sistema cuando llegan los datos, y si algo no cuadra (plazo, límite de la semana, valor que usted aprueba antes) la devolución le llega a usted **para revisar**; (b) el crédito **solo lo usa el mismo vendedor** con el mismo cliente; (c) el crédito que vuelve de una devolución de venta pagada con crédito aparece **después de enviar los datos**; (d) el vendedor solo cancela una devolución o un cambio **el mismo día**; después, usted. Las pantallas todavía no las aprobó usted.
+Si no responde, usamos: **las pantallas como están.**
+
 ---
 
 Muchas gracias.
@@ -204,6 +211,7 @@ Notas para o time (não enviar à dona):
 - Fora desta lista por decisão ou resposta do responsável em 11/11/2026: ver docs/pendencias-do-responsavel.md (saída sem estoque, limite de consignação, vender só depois de conferir, troca de aparelho só pela dona, catálogo só da maleta, prazo do estorno, data de nascimento, garantia de 1 ano, troca e reembolso só registrados).
 - Os padrões de 6 e 8 vêm do ADR-0011; 1 a 5 do ADR-0010 e da fase 3; 16 a 20 do ADR-0007; 21 da tarefa 2.8; 24 da Fase 1; 25 da auditoria de 11/11/2026 (D2, padrão adotado pelo responsável até a dona responder; é a "pergunta 31" da orquestração: confirmar com ela).
 - Os padrões de 9 a 15 e 23 ainda não estão no código: são a proposta para quando a fase chegar (6 e 7). Confirmar com o responsável antes de implementar se a dona não responder.
+- 29 sai da tarefa 6.8 (telas de devolução, troca e crédito do vendedor): o desenho não foi aprovado pela dona; o padrão é "as telas como estão".
 - 28 sai da tarefa 6.9 (telas de devoluções e créditos da dona): o desenho não foi aprovado pela dona; o padrão é "as telas como estão".
 - 26 e 27 saem da tarefa 5.14 (fechamento da Fase 5): o desenho das telas da dona (5.10) e o da edição de cliente (5.7), que a dona ainda não aprovou. Seguem também sem resposta as dúvidas D1 a D12 do plano da Fase 5 (docs/progresso/fase-5-plano.md), cada uma com o padrão seguro em uso; vale levá-las à dona junto.
 -->

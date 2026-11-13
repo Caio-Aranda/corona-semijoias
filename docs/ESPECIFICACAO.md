@@ -595,6 +595,8 @@ A dona não é da área de tecnologia. **Se ela não consegue usar sozinha, o si
 
 Tela inicial com quatro botões grandes: **Vender**, **Minha maleta**, **Meus clientes**, **Meus números** (vendas, comissão, acerto). A venda é o fluxo mais enxuto do sistema: bipar, escolher o cliente, forma de pagamento, concluir.
 
+13/11/2026 (tarefa 6.8; ADR-0014): a tela inicial passa a ter cinco botões grandes; o quinto é **Devolução e troca** (ler a peça que o cliente trouxe, devolver ou trocar, e a lista das devoluções e trocas). O desenho vai à dona na pergunta 29.
+
 ### Como garantir que ficou fácil
 
 - **Telas aprovadas antes de programar:** para cada fase, mostrar à dona o desenho (protótipo ou captura) das telas principais e ajustar antes de implementar.
