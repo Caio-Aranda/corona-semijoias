@@ -55,8 +55,8 @@ class GarantiaTest extends TesteDeIntegracao {
     /** Os testes dividem o banco: cada um devolve a garantia aos padrões. */
     @AfterEach
     void voltarAosPadroes() {
-        jdbc.update("UPDATE corona.configuracoes SET valor_inteiro = 7 WHERE chave = 'prazo_arrependimento_dias'");
-        jdbc.update("UPDATE corona.configuracoes SET valor_inteiro = 30 WHERE chave = 'prazo_defeito_dias'");
+        jdbc.update("UPDATE corona.configuracoes SET valor_inteiro = 45 WHERE chave = 'prazo_arrependimento_dias'");
+        jdbc.update("UPDATE corona.configuracoes SET valor_inteiro = 45 WHERE chave = 'prazo_defeito_dias'");
         jdbc.update("UPDATE corona.configuracoes SET valor_inteiro = 20 WHERE chave = 'percentual_alerta_devolucao'");
         jdbc.update("UPDATE corona.configuracoes SET valor_dinheiro = NULL WHERE tipo = 'DINHEIRO'");
     }
@@ -92,15 +92,15 @@ class GarantiaTest extends TesteDeIntegracao {
 
     @Test
     void osPadroesSegurosAteADonaResponder() throws Exception {
-        assertThat(configuracoes.inteiro(ChaveDeConfiguracao.PRAZO_ARREPENDIMENTO_DIAS)).isEqualTo(7);
-        assertThat(configuracoes.inteiro(ChaveDeConfiguracao.PRAZO_DEFEITO_DIAS)).isEqualTo(30);
+        assertThat(configuracoes.inteiro(ChaveDeConfiguracao.PRAZO_ARREPENDIMENTO_DIAS)).isEqualTo(45);
+        assertThat(configuracoes.inteiro(ChaveDeConfiguracao.PRAZO_DEFEITO_DIAS)).isEqualTo(45);
         assertThat(configuracoes.inteiro(ChaveDeConfiguracao.PERCENTUAL_ALERTA_DEVOLUCAO)).isEqualTo(20);
         assertThat(configuracoes.dinheiroOuVazio(ChaveDeConfiguracao.LIMITE_REEMBOLSO_SEMANAL)).isEmpty();
         assertThat(configuracoes.dinheiroOuVazio(ChaveDeConfiguracao.VALOR_APROVACAO_REEMBOLSO)).isEmpty();
 
         mvc.perform(get(ROTA).with(usuarios.comoDona())).andExpect(status().isOk())
-                .andExpect(jsonPath("$.prazoArrependimentoDias").value(7))
-                .andExpect(jsonPath("$.prazoDefeitoDias").value(30))
+                .andExpect(jsonPath("$.prazoArrependimentoDias").value(45))
+                .andExpect(jsonPath("$.prazoDefeitoDias").value(45))
                 .andExpect(jsonPath("$.percentualAlertaDevolucao").value(20))
                 .andExpect(jsonPath("$.limiteReembolsoSemanal").doesNotExist())
                 .andExpect(jsonPath("$.valorAprovacaoReembolso").doesNotExist());
@@ -136,7 +136,7 @@ class GarantiaTest extends TesteDeIntegracao {
         for (Map<String, Object> corpo : recusados) {
             alterar(dona, corpo).andExpect(status().isBadRequest());
         }
-        assertThat(configuracoes.inteiro(ChaveDeConfiguracao.PRAZO_ARREPENDIMENTO_DIAS)).isEqualTo(7);
+        assertThat(configuracoes.inteiro(ChaveDeConfiguracao.PRAZO_ARREPENDIMENTO_DIAS)).isEqualTo(45);
         assertThat(auditadas()).isEqualTo(auditadasAntes);
 
         // O banco é a segunda trava: a aplicação, mesmo pulando a API, não passa da faixa.
@@ -160,7 +160,7 @@ class GarantiaTest extends TesteDeIntegracao {
     void mudancaAuditadaComOValorAntigoESoDoQueMudou() throws Exception {
         UsuarioDeTeste dona = usuarios.criarDona();
         RequestPostProcessor quem = como(usuarios, dona);
-        alterar(quem, pedido(10, 30, "200.00", null, 20)).andExpect(status().isOk());
+        alterar(quem, pedido(10, 45, "200.00", null, 20)).andExpect(status().isOk());
 
         List<Map<String, Object>> registros = jdbc.queryForList(
                 "SELECT antes::text AS antes, depois::text AS depois, ator_usuario_id, tabela FROM corona.auditoria "
@@ -172,7 +172,7 @@ class GarantiaTest extends TesteDeIntegracao {
         });
         Map<String, Object> deArrependimento = registros.stream()
                 .filter(r -> r.get("depois").toString().contains("prazo_arrependimento_dias")).findFirst().orElseThrow();
-        assertThat(json.readTree(deArrependimento.get("antes").toString()).get("valor").asInt()).isEqualTo(7);
+        assertThat(json.readTree(deArrependimento.get("antes").toString()).get("valor").asInt()).isEqualTo(45);
         assertThat(json.readTree(deArrependimento.get("depois").toString()).get("valor").asInt()).isEqualTo(10);
         Map<String, Object> deLimite = registros.stream()
                 .filter(r -> r.get("depois").toString().contains("limite_reembolso_semanal")).findFirst().orElseThrow();
@@ -180,7 +180,7 @@ class GarantiaTest extends TesteDeIntegracao {
         assertThat(json.readTree(deLimite.get("depois").toString()).get("valor").asString()).isEqualTo("200.00");
 
         // Repetir o mesmo pedido não muda nada e não gera registro novo.
-        alterar(quem, pedido(10, 30, "200.00", null, 20)).andExpect(status().isOk());
+        alterar(quem, pedido(10, 45, "200.00", null, 20)).andExpect(status().isOk());
         assertThat(jdbc.queryForObject(
                 "SELECT count(*) FROM corona.auditoria WHERE acao = 'GARANTIA_ALTERADA' AND ator_usuario_id = ?",
                 Integer.class, dona.id())).isEqualTo(2);
@@ -192,7 +192,7 @@ class GarantiaTest extends TesteDeIntegracao {
         mvc.perform(get(ROTA).with(vendedor)).andExpect(status().isForbidden());
         alterar(vendedor, pedido(1, 1, null, null, 1)).andExpect(status().isForbidden());
         mvc.perform(get(ROTA)).andExpect(status().isUnauthorized());
-        assertThat(configuracoes.inteiro(ChaveDeConfiguracao.PRAZO_ARREPENDIMENTO_DIAS)).isEqualTo(7);
+        assertThat(configuracoes.inteiro(ChaveDeConfiguracao.PRAZO_ARREPENDIMENTO_DIAS)).isEqualTo(45);
     }
 
     @Test

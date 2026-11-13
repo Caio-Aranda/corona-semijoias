@@ -28,7 +28,7 @@ export const TEXTOS_DE_DEVOLUCOES = {
   estados: { BOA: 'Boa', DEFEITO: 'Com defeito' } as Record<string, string>,
   formas: {
     DINHEIRO: 'Dinheiro',
-    PIX: 'Pix',
+    PIX: 'Transferência',
     CARTAO: 'Cartão',
     CHEQUE: 'Cheque',
   } as Record<string, string>,

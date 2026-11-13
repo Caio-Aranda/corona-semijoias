@@ -41,7 +41,7 @@ export const TEXTOS_DE_RELATORIOS_DE_DEVOLUCAO = {
   } as Record<string, string>,
   formas: {
     DINHEIRO: 'Dinheiro',
-    PIX: 'Pix',
+    PIX: 'Transferência',
     CARTAO: 'Cartão',
     CHEQUE: 'Cheque',
   } as Record<string, string>,

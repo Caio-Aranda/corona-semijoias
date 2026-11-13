@@ -376,7 +376,7 @@ describe('Vender', () => {
     await screen.findByText(/Anel de prata: 2/);
     await u.type(screen.getByLabelText('Desconto (R$): Anel de prata'), '10,00');
     expect(screen.getByText(/Total:/, { selector: 'p' })).toHaveTextContent('R$ 90,00');
-    await u.click(screen.getByLabelText('Pix'));
+    await u.click(screen.getByLabelText('Transferência'));
     await u.click(screen.getByRole('button', { name: 'Concluir venda' }));
     const confirmar = await screen.findAllByRole('button', { name: 'Concluir venda' });
     await u.click(confirmar[confirmar.length - 1]!);
