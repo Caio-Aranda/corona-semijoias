@@ -89,7 +89,7 @@ export const SQL_VENDA_ESTORNADA_AQUI = (v: string): string => `EXISTS (SELECT 1
 const existe = (db: BancoAberto, sql: string, ...p: unknown[]): boolean =>
   (db.prepare(`SELECT EXISTS (${sql}) AS e`).get(...p) as { e: number }).e === 1;
 
-function devolucaoAtiva(db: BancoAberto, devolucaoId: string): boolean {
+export function devolucaoAtiva(db: BancoAberto, devolucaoId: string): boolean {
   return existe(
     db,
     `SELECT 1 FROM devolucoes d WHERE d.id = ? AND ${SQL_DEVOLUCAO_ATIVA('d')}`,
@@ -97,7 +97,7 @@ function devolucaoAtiva(db: BancoAberto, devolucaoId: string): boolean {
   );
 }
 
-function trocaCanceladaAqui(db: BancoAberto, trocaId: string): boolean {
+export function trocaCanceladaAqui(db: BancoAberto, trocaId: string): boolean {
   return existe(
     db,
     `SELECT 1 FROM trocas t WHERE t.id = ? AND ${SQL_TROCA_CANCELADA_AQUI('t')}`,
@@ -465,7 +465,7 @@ function conferirPecas(itens: readonly PecaQueVolta[], motivo: MotivoDeDevolucao
 }
 
 /** Autorizações usadas aqui: uma devolução ou troca aguardando (ou enviada) já leva o id. */
-function autorizacaoUsadaAqui(db: BancoAberto, autorizacaoId: string): boolean {
+export function autorizacaoUsadaAqui(db: BancoAberto, autorizacaoId: string): boolean {
   return existe(
     db,
     `SELECT 1 FROM outbox WHERE situacao IN ${OUTBOX_EM_ANDAMENTO} AND (
@@ -519,11 +519,13 @@ export function preverDevolucao(
   },
   naTroca: boolean,
   conferirAntesDaVenda?: () => void,
+  /** A tela pede a prévia antes de escolher as peças (prazo, autorização). */
+  permitirSemPecas = false,
 ): PreviaInterna {
   const motivo = conferirMotivo(pedido.motivo);
   const observacao = conferirTexto(pedido.observacao, motivo);
   conferirAntesDaVenda?.();
-  conferirPecas(pedido.itens, motivo);
+  if (!(permitirSemPecas && pedido.itens.length === 0)) conferirPecas(pedido.itens, motivo);
   const venda = acharVenda(db, pedido.vendaId);
   if (vendaEstornada(db, venda)) throw new ErroDaOperacao('VENDA_JA_ESTORNADA');
   const pago = somaDe(

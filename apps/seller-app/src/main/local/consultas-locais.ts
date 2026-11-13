@@ -8,12 +8,15 @@ import type {
   LinhaDaConferencia,
   LinhaDaMaleta,
   Maleta,
+  PagamentoDaVenda,
   PecaDaMaleta,
   RelatorioAReceber,
   RelatorioDeVendas,
   Venda,
 } from '../../shared/dados';
 import type { PedidoDeChamada } from '../../shared/operacoes';
+import { diaEmBrasilia } from '../../shared/garantia';
+import { SQL_DEVOLUCAO_ATIVA, SQL_VENDA_ESTORNADA_AQUI } from '../sync/operacoes-da-fase-6';
 import { marcarEntendido } from '../sync/outbox';
 import {
   ErroDaOperacao,
@@ -21,6 +24,8 @@ import {
   MENSAGENS_DAS_OPERACOES,
 } from '../sync/operacoes-locais';
 import type { Falha, Resultado } from '../tipos';
+import { ConsultasDaFase6 } from './consultas-da-fase-6';
+import { pecaDoProduto } from './peca-do-produto';
 
 /**
  * As telas do Corona Vendas leem DAQUI, do banco local (tarefa 5.7; ADR-0013): a mesma resposta que a API dava, montada
@@ -38,16 +43,8 @@ export interface OpcoesDasConsultas {
 
 const naoEncontrado = (mensagem: string): Falha => ({ tipo: 'recusada', status: 404, mensagem });
 
-/** Dia civil (AAAA-MM-DD) em Brasília de um instante ISO. */
-export function diaEmBrasilia(iso: string | Date): string {
-  const d = typeof iso === 'string' ? new Date(iso) : iso;
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'America/Sao_Paulo',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(d);
-}
+/** Dia civil (AAAA-MM-DD) em Brasília de um instante ISO (o mesmo da garantia, tarefa 6.8). */
+export { diaEmBrasilia };
 
 /** Divide `n` por `d` (> 0) arredondando para longe do zero no meio exato (como o servidor, HALF_UP). */
 function dividir(n: bigint, d: bigint): bigint {
@@ -142,6 +139,7 @@ interface LinhaDaVenda {
   estornada_em: string | null;
   motivo_estorno: string | null;
   estornada_aqui: number;
+  troca_id: string | null;
 }
 
 /** Pedidos que as telas fazem ao banco local. `fotos.ver` e `eu` continuam na rede (fotos sem internet: tarefa 5.9). */
@@ -150,7 +148,12 @@ export function ehConsultaLocal(pedido: PedidoDeChamada): boolean {
 }
 
 export class ConsultasLocais {
-  constructor(private readonly o: OpcoesDasConsultas) {}
+  /** As consultas da devolução, troca e crédito (tarefa 6.8). */
+  readonly fase6: ConsultasDaFase6;
+
+  constructor(private readonly o: OpcoesDasConsultas) {
+    this.fase6 = new ConsultasDaFase6({ banco: o.banco, ...(o.agora ? { agora: o.agora } : {}) });
+  }
 
   /** O banco local está aberto (a pessoa entrou com internet ao menos uma vez neste computador). */
   get disponivel(): boolean {
@@ -333,29 +336,7 @@ export class ConsultasLocais {
   }
 
   private peca(produtoId: string): PecaDaMaleta {
-    const db = this.db();
-    const p = db
-      .prepare(
-        `SELECT p.nome, p.foto_principal_hash, g.nome AS categoria
-           FROM produtos p LEFT JOIN categorias g ON g.id = p.categoria_id WHERE p.id = ?`,
-      )
-      .get(produtoId) as
-      { nome: string; foto_principal_hash: string | null; categoria: string | null } | undefined;
-    const codigos = db
-      .prepare(
-        `SELECT codigo, tipo FROM produto_codigos
-          WHERE produto_id = ? AND deleted_at IS NULL AND ativo IS NOT 0
-          ORDER BY principal DESC, codigo`,
-      )
-      .all(produtoId) as { codigo: string; tipo: string | null }[];
-    return {
-      id: produtoId,
-      nome: p?.nome ?? 'Peça',
-      codigo: codigos[0]?.codigo ?? null,
-      fotoHash: p?.foto_principal_hash ?? null,
-      categoria: p?.categoria ?? null,
-      codigoFornecedor: codigos.find((c) => c.tipo === 'FORNECEDOR')?.codigo ?? null,
-    };
+    return pecaDoProduto(this.db(), produtoId);
   }
 
   private maletas(situacoes: string[], id?: string): Maleta[] {
@@ -417,7 +398,9 @@ export class ConsultasLocais {
       nome: string | null;
     }[];
     const soma = db.prepare(
-      `SELECT coalesce(sum(CASE WHEN tipo IN ('VENDA', 'ESTORNO_VENDA') THEN -quantidade END), 0) AS vendida,
+      // "Vendida" como o servidor (tarefa 6.3): a troca sai e a peça que o cliente devolveu à maleta volta.
+      `SELECT coalesce(sum(CASE WHEN tipo IN ('VENDA', 'ESTORNO_VENDA', 'TROCA_SAIDA', 'DEVOLUCAO_CLIENTE',
+                                             'TROCA_ENTRADA') THEN -quantidade END), 0) AS vendida,
               coalesce(sum(CASE WHEN tipo = 'DEVOLUCAO_DONA' THEN -quantidade END), 0) AS devolvida,
               coalesce(sum(quantidade), 0) AS movido
          FROM movimentos_remessa
@@ -530,9 +513,10 @@ export class ConsultasLocais {
 
   private static readonly SELECT_VENDA = `
     SELECT v.id, v.cliente_id, c.nome AS cliente_nome, v.remessa_id, v.status, v.subtotal, v.desconto, v.total,
-           v.cotacao_id, v.vendida_em, v.estornada_em, v.motivo_estorno,
-           EXISTS (SELECT 1 FROM movimentos_remessa m
-                    WHERE m.venda_id = v.id AND m.tipo = 'ESTORNO_VENDA' AND m.deleted_at IS NULL) AS estornada_aqui
+           v.cotacao_id, v.vendida_em, v.estornada_em, v.motivo_estorno, v.troca_id,
+           (EXISTS (SELECT 1 FROM movimentos_remessa m
+                     WHERE m.venda_id = v.id AND m.tipo = 'ESTORNO_VENDA' AND m.deleted_at IS NULL)
+            OR ${SQL_VENDA_ESTORNADA_AQUI('v')}) AS estornada_aqui
       FROM vendas v LEFT JOIN clientes c ON c.id = v.cliente_id`;
 
   private venda(id: string): Venda | null {
@@ -601,7 +585,7 @@ export class ConsultasLocais {
     const pagamentos = (
       db
         .prepare(
-          `SELECT id, tipo, forma, valor, pago_em FROM pagamentos_cliente
+          `SELECT id, tipo, forma, valor, pago_em, devolucao_id FROM pagamentos_cliente
             WHERE venda_id = ? AND deleted_at IS NULL ORDER BY pago_em, id`,
         )
         .all(l.id) as {
@@ -610,15 +594,27 @@ export class ConsultasLocais {
         forma: string | null;
         valor: string;
         pago_em: string | null;
+        devolucao_id: string | null;
       }[]
     ).map((p) => ({
       id: p.id,
-      tipo: p.tipo === 'REEMBOLSO' ? ('REEMBOLSO' as const) : ('PAGAMENTO' as const),
+      tipo: tipoDoPagamento(p.tipo),
       forma: p.forma ?? '',
       valor: p.valor,
       em: p.pago_em ?? '',
+      daDevolucao: p.devolucao_id !== null,
     }));
     const pago = pagamentos.reduce((t, p) => t + (centavosDe(p.valor) ?? 0n), 0n);
+    const devolvido = this.devolvidoDaVenda(l.id);
+    const creditoSemSaldo =
+      (
+        db
+          .prepare(
+            `SELECT EXISTS (SELECT 1 FROM creditos_sem_saldo
+                              WHERE venda_id = ? AND situacao = 'EM_REVISAO' AND deleted_at IS NULL) AS e`,
+          )
+          .get(l.id) as { e: number }
+      ).e === 1;
     const estorno = this.estornoDaVenda(l);
     return {
       id: l.id,
@@ -633,13 +629,28 @@ export class ConsultasLocais {
       totalGuarani: taxas ? paraGuarani(total, taxas.pyg).toString() : null,
       cotacao: taxas ? { data: taxas.data, dolar: taxas.dolar, guarani: taxas.guarani } : null,
       pago: textoDeCentavos(pago),
-      aReceber: status === 'ESTORNADA' ? '0.00' : textoDeCentavos(total - pago),
+      devolvido: textoDeCentavos(devolvido),
+      // O devolvido sai do que o cliente deve (tarefa 6.8, como o servidor): total − devolvido − pago.
+      aReceber: status === 'ESTORNADA' ? '0.00' : textoDeCentavos(total - devolvido - pago),
       vendidaEm: l.vendida_em,
+      trocaId: l.troca_id,
+      creditoSemSaldo,
       estornadaEm: status === 'ESTORNADA' ? estorno.em : null,
       motivoDoEstorno: status === 'ESTORNADA' ? estorno.motivo : null,
       itens,
       pagamentos,
     };
+  }
+
+  /** Soma das devoluções não canceladas da venda (nem no servidor nem aqui). */
+  private devolvidoDaVenda(vendaId: string): bigint {
+    return (
+      this.db()
+        .prepare(
+          `SELECT valor_devolvido FROM devolucoes d WHERE d.venda_id = ? AND ${SQL_DEVOLUCAO_ATIVA('d')}`,
+        )
+        .all(vendaId) as { valor_devolvido: string | null }[]
+    ).reduce((t, d) => t + (centavosDe(d.valor_devolvido ?? '0') ?? 0n), 0n);
   }
 
   /** Quando e por quê: da venda vinda do servidor, ou do estorno feito aqui e ainda aguardando envio. */
@@ -833,18 +844,19 @@ export class ConsultasLocais {
     const nomes = new Map<string, string>();
     const vendido = new Map<string, Soma>();
     const pago = new Map<string, Soma>();
+    const concluidas = new Set<string>();
     for (const v of this.lancamentosDeVendas(undefined, undefined)) {
+      concluidas.add(v.id);
       const c = v.cliente_id ?? '';
       nomes.set(c, nomes.get(c) ?? v.cliente_nome ?? '');
       let s = vendido.get(c);
       if (!s) vendido.set(c, (s = new Soma()));
-      s.somar(centavosDe(v.total ?? '0') ?? 0n, v.taxas);
+      // O vendido já sem o devolvido (tarefa 6.8, como o servidor).
+      s.somar((centavosDe(v.total ?? '0') ?? 0n) - this.devolvidoDaVenda(v.id), v.taxas);
     }
     const pagamentos = this.db()
       .prepare(
-        `SELECT v.cliente_id, p.valor, p.pago_em, v.id AS venda_id, v.status,
-                EXISTS (SELECT 1 FROM movimentos_remessa m
-                         WHERE m.venda_id = v.id AND m.tipo = 'ESTORNO_VENDA' AND m.deleted_at IS NULL) AS estornada
+        `SELECT v.cliente_id, p.valor, p.pago_em, v.id AS venda_id
            FROM pagamentos_cliente p JOIN vendas v ON v.id = p.venda_id
           WHERE p.deleted_at IS NULL AND v.deleted_at IS NULL ORDER BY p.pago_em, p.id`,
       )
@@ -852,11 +864,10 @@ export class ConsultasLocais {
       cliente_id: string | null;
       valor: string;
       pago_em: string | null;
-      status: string | null;
-      estornada: number;
+      venda_id: string;
     }[];
     for (const p of pagamentos) {
-      if (p.status === 'ESTORNADA' || p.estornada === 1) continue;
+      if (!concluidas.has(p.venda_id)) continue;
       const c = p.cliente_id ?? '';
       let s = pago.get(c);
       if (!s) pago.set(c, (s = new Soma()));
@@ -920,12 +931,36 @@ export class ConsultasLocais {
       } catch {
         /* a descrição fica genérica */
       }
+      const clienteDaVenda = (vendaId: unknown): string => {
+        if (typeof vendaId !== 'string') return '';
+        const r = db.prepare('SELECT cliente_id FROM vendas WHERE id = ?').get(vendaId) as
+          { cliente_id: string | null } | undefined;
+        return nomeDoCliente(r?.cliente_id);
+      };
       const descricao = ((): string => {
         switch (l.tipo) {
           case 'VENDA': {
             const nome = nomeDoCliente(d['clienteId']);
             return nome ? `Venda para ${nome}` : 'Venda';
           }
+          // Tarefa 6.8 (glossário, parte 6).
+          case 'DEVOLUCAO': {
+            const nome = clienteDaVenda(d['vendaId']);
+            return nome ? `Devolução de ${nome}` : 'Devolução';
+          }
+          case 'TROCA': {
+            const a = d['devolucao'] as Record<string, unknown> | undefined;
+            const nome = clienteDaVenda(a?.['vendaId']);
+            return nome ? `Troca de ${nome}` : 'Troca';
+          }
+          case 'PEDIDO_AUTORIZACAO': {
+            const nome = clienteDaVenda(d['vendaId']);
+            return nome ? `Pedido de autorização: venda de ${nome}` : 'Pedido de autorização';
+          }
+          case 'CANCELAR_DEVOLUCAO':
+            return 'Cancelamento de devolução';
+          case 'CANCELAR_TROCA':
+            return 'Cancelamento de troca';
           case 'ESTORNO_VENDA':
             return 'Estorno de venda';
           case 'CLIENTE_NOVO':
@@ -991,3 +1026,8 @@ const nao = (mensagem: string): Resultado<unknown> => ({
   ok: false,
   falha: naoEncontrado(mensagem),
 });
+
+/** O tipo do lançamento na venda: o desfazer do reembolso (devolução cancelada) é um tipo próprio (tarefa 6.8). */
+function tipoDoPagamento(tipo: string | null): PagamentoDaVenda['tipo'] {
+  return tipo === 'REEMBOLSO' || tipo === 'ESTORNO_REEMBOLSO' ? tipo : 'PAGAMENTO';
+}
