@@ -295,3 +295,37 @@ Tarefa não crítica (Sonnet, esforço alto). Plano no PR #132. O desenho das te
 - Foto da peça devolvida (dúvida D10, "fica para depois").
 - Relatórios de devoluções, trocas e créditos, com exportação (6.10).
 - Teste no computador com a dona; o desenho precisa da aprovação dela (pergunta 28).
+
+## Tarefa 6.10: relatórios de devolução e troca e conferências
+
+Tarefa não crítica (Sonnet, esforço alto). PR #135. Só leitura e conferências: nenhuma regra de dinheiro nova, nenhuma migração, nenhuma tabela.
+
+**O que entrou**
+
+- **Backend, relatórios da dona** (`/api/dona/relatorios/devolucoes/...`, só ADMIN, no `MotorDeRelatorio`): `devolucoes` (por vendedor e motivo, uma linha por devolução), `por-vendedor` (taxa de devolução, com "Acima do limite" pela mesma conta do aviso da tela inicial), `pecas-com-defeito`, `trocas`, `creditos` (em aberto e usados), `reembolsos` (só o dinheiro; a devolução cancelada entra negativa) e `autorizacoes`. Linhas, rodapé e detalhamento (`recorte`) saem das mesmas condições; Dólar e Guarani pela cotação do dia de cada lançamento, o total é a soma das linhas já convertidas; cancelado fica marcado e fora do total. Filtros: vendedor, motivo, situação, tipo, forma, período (dias de Brasília), busca.
+- **Conferência** (`.../conferencia`, `ConferenciasDeDevolucaoETroca`): cinco conferências, cada uma com quantos itens olhou e a lista do que não bate: `maleta` (movimento de cada devolução e troca, mais a conciliação C1 do ADR-0012 com devolução), `devolvido-por-peca`, `creditos` (créditos menos usos = em aberto), `dinheiro-devolvido` (reembolso ≤ pago, salvo devolução em revisão ou mantida) e `contas-da-venda`. As cinco rodam depois de cada caso de `ApoioDasTrocas` (testes de troca, crédito e devolução).
+- **Vendedor:** `GET /api/vendedor/relatorios/devolucoes` (por motivo, com o que voltou em dinheiro e em crédito) e `/creditos` (por cliente: gerado, usado, em aberto), só dele e sem custo; `recebimentos` passa a deixar de fora a forma Crédito.
+- **Corona Gestão:** grupo de menu **Relatórios de devoluções** com os sete relatórios nas definições já existentes (filtros, colunas, exportação PDF, Excel e CSV com as três moedas pela mesma tela e a frase da cotação de cada relatório) e a tela **Conferência das devoluções e trocas** ("Tudo certo: ..." ou a lista do que não bate). Operação nova `devolucoes.conferencia` na ponte; filtros novos `motivo` e `forma`.
+- **Corona Vendas, Meus números:** seções **Devoluções e trocas no período** e **Crédito dos meus clientes**, lidas do banco do computador (mesma regra do servidor, inclusive o que foi feito aqui e ainda não foi enviado), e recebimentos sem o crédito. Operações `relatorios.devolucoes` e `relatorios.creditos` (no servidor, só como reserva).
+- Clientes da API regerados; glossário escrito antes (parte "Relatórios de devolução e troca"); especificação (§12 e §13) atualizada.
+
+**Testes (escritos antes do código)**
+
+- Backend, PostgreSQL de verdade, `RelatoriosDeDevolucaoTest` (19): massa conhecida com tudo calculado à mão (devoluções por motivo, cancelada fora do total, período em dias de Brasília e 400 para pedidos mal feitos, taxa com limite configurado, peças com defeito, trocas, créditos, dinheiro devolvido com cancelamento negativo, pedidos por situação, vendedor só com o que é dele e sem custo, recebimentos sem crédito, permissões 401 e 403); conferências vazias na massa e **uma por uma apanhando o dado torto** (gravado por fora das regras e sempre desfeito).
+- Corona Gestão: `relatorios-devolucao.test.tsx` (menu, "Cancelada" em palavras, três moedas do dia da devolução e não a de hoje, filtro de motivo, arquivo CSV, "Acima do limite", conferência com "Tudo certo" e com divergência). Corona Vendas: consultas locais (motivo, período, cancelada fora, crédito gerado = usado + em aberto, recebimentos sem crédito) e a tela.
+- Rodadas locais: `lint`, `typecheck`, `format:check`, testes do Gestão e do Vendas, `npm run api:test` e `npm run barreira:varrer` (limpa).
+
+**Decisões que tomei**
+
+- "Contas da venda": o recebido líquido (pagamentos menos reembolsos, inclusive o reembolso em crédito da troca) fica entre zero e o total menos o devolvido. Limite superior apenas: apanha pagamento a mais sem acusar a venda a prazo ainda não paga.
+- "Dinheiro devolvido" não acusa a venda que tem devolução **em revisão** ou **mantida** (a dona já foi avisada; ADR-0014, item 5).
+- A conferência da maleta inclui a conciliação C1 já existente (`ServicoDeEstoque.conciliar`), em vez de uma sexta conferência.
+- Meus números do vendedor lê do banco do computador e não da rede; as rotas do servidor existem para o mesmo formato e como reserva.
+
+**Não fiz**
+
+- O "Cancelar" e as demais ações nas telas de relatório (continuam nas telas da 6.9).
+- Conferência diária automática com alerta na tela inicial (a rota é de leitura sob demanda; o alerta diário fica para a Fase 9).
+- Desenho das telas validado pela dona (segue as perguntas 28 e 29).
+
+**Observação.** `consultas-da-fase-6.test.ts` ("a receber ... tipo próprio", tarefa 6.8) falha de vez em quando: a ordem dos lançamentos de mesmo instante não é fixa. Já era assim antes desta tarefa; não mexi.
