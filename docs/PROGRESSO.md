@@ -186,6 +186,7 @@ Devolução, troca e garantia. O modelo está no [ADR-0014](decisoes/ADR-0014-de
 | 6.4 | backend: autorização da dona, revisão da devolução e antifraude (V037, limite da semana, valor de aprovação, Manter e Não aceitar, taxa de devolução e avisos) | PR 126 · [detalhe](progresso/fase-6.md#tarefa-64-autorização-revisão-e-antifraude) |
 | #127 | fix(sync): troca de computador não perde envio (o antigo só apaga com a fila zerada; desligando, nada grava) | PR 128 · [detalhe](progresso/fase-6.md#correção-troca-de-computador) |
 | 6.5 | backend: crédito do cliente e troca (V038, troca tudo ou nada e Cancelar troca, crédito em aberto, uso na venda, transferência pela dona, devolução de venda paga com crédito) | PR 129 · [detalhe](progresso/fase-6.md#tarefa-65-crédito-do-cliente-e-troca) |
+| 6.9 | owner-app: devoluções e créditos no Corona Gestão (Devoluções para autorizar e para revisar, Devoluções com registrar e cancelar, Trocas, Créditos dos clientes, Garantia e limites; a dona registra a devolução, a peça vai à loja) | PR 132 (rascunho) · [detalhe](progresso/fase-6.md#tarefa-69-corona-gestão-devoluções-e-créditos) · desenho não aprovado pela dona (pergunta 28) |
 
 ## Fase 7 (só o plano)
 

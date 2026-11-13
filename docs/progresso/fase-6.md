@@ -128,12 +128,32 @@ Tarefa crítica: plano em [plano-6-5-credito-e-troca.md](plano-6-5-credito-e-tro
 
 ## Tarefa 6.9: Corona Gestão, devoluções e créditos
 
-Em andamento (plano abaixo; o relatório final substitui esta seção ao terminar).
+Tarefa não crítica (Sonnet, esforço alto). Plano no PR #132. O desenho das telas **não foi aprovado pela dona**: segue os padrões das telas da Fase 5 e a pergunta 28 foi para `docs/perguntas-para-a-dona.md`.
 
-**Plano**
+**O que entrou**
 
-1. Backend mínimo para a dona registrar devolução (ADR-0014, item 13): `POST /api/dona/devolucoes` (a peça vai sempre à loja) e `GET /api/dona/devolucoes/vendas-com-a-peca`. Testes primeiro.
-2. Glossário antes das telas (grupo de menu "Devoluções e créditos", botões, textos).
-3. Ponte do Corona Gestão: operações `devolucoes.*`, `trocas.*`, `creditos.*` e `garantia.*`, conferidas no processo principal, com testes.
-4. Telas: Devoluções para autorizar (Aprovar reembolso, Negar), Devoluções para revisar (Manter, Não aceitar), Devoluções (registrar pela dona, Cancelar devolução), Trocas (Cancelar troca), Créditos dos clientes (Transferir crédito), Garantia e limites; avisos da tela inicial com o botão Abrir.
-5. Documentos: `docs/PROGRESSO.md`, `docs/perguntas-para-a-dona.md` (o desenho não foi aprovado) e este relatório.
+- **Backend mínimo para a dona registrar a devolução** (ADR-0014, item 13): `POST /api/dona/devolucoes` (201 na primeira gravação, 200 no reenvio igual, 409 com o mesmo id e dados diferentes) e `GET /api/dona/devolucoes/vendas-com-a-peca` (as vendas de **todos** os vendedores com a peça lida). `ServicoDeDevolucoes.devolverPelaDona` usa o mesmo caminho da devolução do vendedor, com quatro diferenças: o vendedor da devolução é o da venda; a peça vai **sempre para a loja** (`destino_peca = LOJA`, nada entra na maleta do vendedor nem confere computador); o limite da semana e o valor de aprovação não valem para a dona; a venda de vendedor desativado também pode ser devolvida. Prazo da garantia, maleta em acerto, venda a prazo, acima do vendido e a imutabilidade valem iguais. A auditoria `DEVOLUCAO_REGISTRADA` leva `registrada_pela_dona`. Nenhuma migração, nenhuma tabela nova. Cliente da API da dona regerado (o do vendedor não mudou).
+- **Ponte do Corona Gestão** (`shared/devolucoes.ts`): 15 operações (`devolucoes.*`, `trocas.*`, `creditos.*`, `garantia.*`) conferidas no processo principal (ids, situações, motivo obrigatório até 400 letras, pedido de devolução com os campos exatos e **nenhum valor em dinheiro**, garantia em faixa, dinheiro em texto) e ligadas às rotas já existentes da 6.2, 6.4 e 6.5.
+- **Telas** (`renderer/telas/devolucoes/`, grupo de menu **Devoluções e créditos**): **Devoluções para autorizar** (filtro de situação, **Aprovar reembolso** com confirmação e **Negar** com motivo; mostra "Vale até"), **Devoluções para revisar** (os motivos da revisão com palavras da loja, **Manter** e **Não aceitar** com motivo), **Devoluções** (filtros de situação e vendedor, o que voltou em dinheiro e em crédito, **Registrar devolução** pela dona em duas etapas e **Cancelar devolução** com motivo), **Trocas** (diferença "a pagar" ou "fica de crédito", **Cancelar troca** com motivo), **Créditos dos clientes** (valor, já usado, saldo, **Transferir crédito**, sem oferecer o vendedor de agora) e **Garantia e limites** (os cinco valores; "Sem limite" e "Não aprovar antes" como caixas; dinheiro em texto). Os três avisos da tela inicial ganharam o botão **Abrir**. Dólar e Guarani vêm do servidor, pela cotação do dia de cada lançamento (ADR-0006), com a frase da parte 11 do glossário embaixo de cada lista. Cancelar devolução, cancelar troca e transferir crédito levam um id novo por janela aberta (reenvio igual não duplica).
+- **Glossário** (parte 6, "Devoluções e créditos no Corona Gestão") escrito antes das telas; o botão do pedido de autorização passou a **Aprovar reembolso** (o plano pedia; o glossário da 6.4 dizia "Aprovar").
+
+**Testes (escritos antes do código)**
+
+- Backend, PostgreSQL de verdade: `DevolucaoPelaDonaTest` (12: peça boa e com defeito para a loja sem mexer na maleta; reembolso gravado, quem registrou e auditoria; reenvio 200 e 409; fora do prazo 409; limite da semana e valor de aprovação não valem para a dona; maleta em acerto; acima do vendido e venda inexistente; vendedor desativado; a dona cancela o que registrou; busca da dona acha vendas de dois vendedores; 403 do vendedor e 401; nada de custo na resposta). Rodaram de novo, verdes, `DevolucaoDoClienteTest`, `AutorizacaoDeDevolucaoTest`, `AntifraudeDaDevolucaoTest`, `TrocaTest` e `CreditoDoClienteTest`.
+- Corona Gestão: `validacao-devolucoes.test.ts` (conferência dos dados, inclusive recusar campo de valor), `api.test.ts` (caminho de cada operação e o corpo/filtros enviados) e `devolucoes.test.tsx` (32: menu, avisos com Abrir, cada tela e cada ação com confirmação e motivo obrigatório, recusa do servidor dentro da janela, registrar sem peças/motivo/forma e com "Outro" sem observação, defeito marca a peça, fora do prazo com a frase da dona, "Todas" sem situação, Garantia com faixa e "sem limite", Dólar e Guarani do servidor, nenhuma palavra técnica nas seis telas).
+
+**Decisões que tomei** (as mesmas do corpo do PR #132)
+
+- A dona registra a devolução **dentro do prazo** (ADR-0014, item 13); fora dele continua 409. A tela troca o texto do servidor ("Peça autorização à dona") por "Passou do prazo da garantia desta venda. O vendedor pode pedir a autorização no computador dele, e você aprova em Devoluções para autorizar."
+- A devolução da dona **conta no limite da semana do vendedor** da venda quando o vendedor devolve depois (conservador: pode gerar mais revisão, nunca menos); ela mesma não é barrada pelo limite.
+- **Fica de fora: troca pela dona e usar crédito pela dona.** Os dois precisam de uma venda feita pela dona, que não existe (a venda sempre sai de uma maleta de vendedor, ADR-0011). A dona vê, cancela e **transfere** (já existia, 6.5); quem troca e quem usa o crédito é o vendedor. Vai na pergunta 28.
+- Nome do vendedor nas listas: as listas da API trazem só o id; a tela usa a lista de vendedores ativos (`vendedores.escolha`) e, para um vendedor já desligado, escreve "Vendedor desligado". Não mudei os contratos do Corona Vendas só para isso.
+- Um menu e uma tela de cada coisa (seis itens), em vez de abas, para seguir o padrão da Fase 5.
+
+**Não fiz (fica para as próximas tarefas)**
+
+- Troca pela dona e uso do crédito pela dona (acima).
+- Devolução de venda a prazo (6.6): continua 409 também para a dona.
+- Foto da peça devolvida (dúvida D10, "fica para depois").
+- Relatórios de devoluções, trocas e créditos, com exportação (6.10).
+- Teste no computador com a dona; o desenho precisa da aprovação dela (pergunta 28).
