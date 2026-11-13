@@ -528,13 +528,15 @@ Nota fiscal eletrônica (a nota de remessa é só interna), loja virtual, aplica
 11. Existe alguma planilha atual do cliente para usar na validação dos relatórios e na migração de cadastros?
 12. **Entrada:** o que significa na tela de referência? Valor pago pela vendedora ao levar a maleta, abatido no acerto, ou entrada de venda parcelada? É obrigatória? Como se calcula e o que acontece no acerto? Precisa de resposta antes da Fase 3. **13/11/2026:** a dona não sabe ("creo que es entrada de dinero"); segue o padrão.
 13. ~~Cartão~~ **Respondido em 13/11/2026:** não. O cliente paga **em dinheiro ou por transferência**. Nas telas de venda e de reembolso só aparecem Dinheiro e Transferência (gravada como `PIX`); `CARTAO` e `CHEQUE` continuam aceitos no banco para não quebrar dados antigos.
-14. **Língua das telas (13/11/2026):** a dona quer as telas **em espanhol**. É a última tarefa do projeto, com autorização do responsável. Falta: se o app do vendedor também.
+14. **Língua das telas (13/11/2026):** a dona quer as telas **em espanhol**. É a última tarefa do projeto, com autorização do responsável. **Decisão do responsável (13/11/2026):** os dois apps ficam em espanhol; mais adiante, o app do vendedor terá espanhol e português (escolha da língua), e o da dona só espanhol.
 
 ## 18. Identidade visual: Corona Semijoias
 
 A loja se chama **Corona Semijoias**. O nome aparece nos dois apps, no instalador, na nota de remessa e em todos os relatórios.
 
 **Atenção ao logotipo:** a imagem enviada pelo cliente traz a palavra escrita **SEMJOIAS**, mas o correto é **SEMIJOIAS**. Esse arquivo **não deve ser usado em produção**. Antes de entrar no projeto, o logotipo precisa ser corrigido (pelo designer ou regerado) e entregue nos formatos abaixo. Enquanto isso, usar o texto "Corona Semijoias" como substituto provisório.
+
+**13/11/2026:** chegou a versão com a grafia correta (**SEMIJOIAS**): `docs/marca/logo-correto-semijoias-print.jpg`. É um print em JPG (~1180 px, fundo bege, sem transparência): serve como referência de desenho e de cores e pode ser usado provisoriamente, mas ainda falta o arquivo original (SVG ou PNG grande transparente) e o símbolo isolado para os ícones. O arquivo antigo (`logo-PROVISORIO-erro-semjoias.png`) não deve mais ser usado.
 
 **Descrição da marca:** perfil feminino de rosto sereno, com tiara de pedras e brinco de gota, desenhado em linhas douradas finas, dentro de um círculo fino. A palavra CORONA em letras serifadas elegantes e de alto contraste, com a palavra semijoias espaçada abaixo, separada por um filete com uma estrela de quatro pontas. Fundo bege champanhe suave com brilho dourado.
 
@@ -764,4 +766,5 @@ Importação com nome de arquivo inválido, foto duplicada, arquivo corrompido, 
   - §10: tipos novos da outbox, formato 1: `DEVOLUCAO`, `PEDIDO_AUTORIZACAO`, `TROCA`, `CANCELAR_DEVOLUCAO` e `CANCELAR_TROCA`; a `VENDA` continua no formato 1, com o `creditoId` opcional em cada pagamento. O vendedor recebe as devoluções, os pedidos de autorização, as trocas e os créditos dele (sem as colunas que apontam para crédito de outro vendedor) e as vendas com crédito para revisar.
 - **v1.13, 13/11/2026:** respostas da dona por WhatsApp (perguntas de garantia, pagamento, comissão, semana e língua).
   - §7.3 e §9: prazos de arrependimento e de defeito com padrão 45 dias.
-  - §6 (premissa 8) e §17: comissão sobre o valor com desconto e com meta (30% ou 40%, 700.000 Gs), para a Fase 7; cliente paga em dinheiro ou transferência (sem cartão); semana de segunda a domingo com 3 a 4 dias para o acerto; telas em espanhol como última tarefa.
+  - §6 (premissa 8) e §17: comissão sobre o valor com desconto e com meta (30% ou 40%, 700.000 Gs), para a Fase 7; cliente paga em dinheiro ou transferência (sem cartão); semana de segunda a domingo com 3 a 4 dias para o acerto; telas em espanhol como última tarefa (os dois apps; mais adiante, o do vendedor também em português).
+  - §18: logotipo com a grafia correta guardado em `docs/marca/` (print, falta o arquivo original).
