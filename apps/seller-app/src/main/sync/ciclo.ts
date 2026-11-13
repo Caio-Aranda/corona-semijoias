@@ -191,7 +191,15 @@ export class CicloDeSincronizacao {
         const parou = this.aplicarResultados(db, lote.operacoes, corpo);
         this._desatualizado = ehObjeto(corpo) && corpo['appDesatualizado'] === true;
         this.o.aoMudar?.();
-        if (ehObjeto(corpo) && corpo['apagarDados'] === true) return this.ordem('apagar-dados');
+        if (ehObjeto(corpo) && corpo['apagarDados'] === true) {
+          // Computador trocado (ADR-0013, item 13; issue #127): o servidor só sabe o `aguardandoDepoisDeste` de quando o
+          // lote foi montado. O vendedor pode ter gravado mais durante o envio: só obedece com a fila zerada AGORA.
+          // A conferência e a ordem (que põe o computador em "desligando" e para as gravações) rodam no mesmo trecho
+          // síncrono, sem `await` no meio: nenhuma gravação da tela entra entre as duas.
+          const aguardando = contarAguardando(db);
+          if (aguardando === 0) return this.ordem('apagar-dados');
+          this.registrar(`ordem de apagar adiada: ${aguardando} aguardando`);
+        }
         if (parou) return 'falha';
         continue;
       }

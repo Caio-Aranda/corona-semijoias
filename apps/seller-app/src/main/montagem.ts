@@ -207,6 +207,9 @@ export async function montarCoronaVendas(d: DependenciasDaMontagem): Promise<Cor
       aoGravar: () => motorDoApp.gravou(),
       // Prazo acabado (ou relógio mexido): nada novo grava; o que já existe continua sendo enviado (tarefa 5.8).
       podeGravar: () => {
+        // Ordem de apagar (troca ou bloqueio; issue #127): a partir do "desligando", nada novo grava. Senão a gravação
+        // ficaria fora do que o apagar leu e sumiria sem ir ao servidor nem à quarentena.
+        if (servico?.desligado) throw new ErroDaOperacao('COMPUTADOR_DESLIGADO');
         const situacao = prazo.situacao();
         if (situacao.situacao === 'ESGOTADO') {
           throw new ErroDaOperacao(
