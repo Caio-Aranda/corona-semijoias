@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { PedidoDeChamada } from '../shared/operacoes';
-import { criarApiDoVendas } from './api';
+import { criarApiDoVendas, MENSAGEM_SEM_BANCO } from './api';
 
 const ID = '3f2b8c1e-5d4a-4b7e-9c1d-2a6f8e0b4c11';
 const OUTRO = '0190a1b2-c3d4-7e5f-8a9b-0c1d2e3f4a5b';
@@ -135,5 +135,63 @@ describe('cada operação da tela vira a chamada certa à API do vendedor', () =
       ok: false,
       falha: { tipo: 'recusada', status: 409, codigo: 'VENDA_SEM_SALDO', mensagem },
     });
+  });
+});
+
+describe('devolução, troca e crédito só existem no banco do computador (tarefa 6.8)', () => {
+  const pecas = [{ produtoId: OUTRO, quantidade: 1, estado: 'BOA' as const }];
+  const casos: PedidoDeChamada[] = [
+    { operacao: 'devolucoes.vendasComAPeca', codigo: 'A-1' },
+    { operacao: 'devolucoes.previa', vendaId: ID, itens: pecas },
+    {
+      operacao: 'devolucoes.registrar',
+      devolucao: {
+        id: ID,
+        vendaId: OUTRO,
+        motivo: 'ARREPENDIMENTO',
+        formaReembolso: 'PIX',
+        itens: pecas,
+      },
+    },
+    { operacao: 'devolucoes.cancelar', id: ID, cancelamentoId: OUTRO, motivo: 'Errei' },
+    { operacao: 'devolucoes.listar' },
+    {
+      operacao: 'autorizacoes.pedir',
+      pedido: { id: ID, vendaId: OUTRO, motivo: 'ARREPENDIMENTO', itens: pecas },
+    },
+    { operacao: 'autorizacoes.listar' },
+    {
+      operacao: 'trocas.previa',
+      devolucao: { vendaId: OUTRO, itens: pecas },
+      itens: [{ produtoId: ID, quantidade: 1 }],
+    },
+    {
+      operacao: 'trocas.registrar',
+      troca: {
+        id: ID,
+        creditoId: OUTRO,
+        pagamentoDoCreditoId: ID,
+        devolucao: { id: OUTRO, vendaId: ID, motivo: 'TAMANHO', itens: pecas },
+        venda: {
+          id: ID,
+          remessaId: OUTRO,
+          itens: [{ produtoId: ID, quantidade: 1 }],
+          pagamentos: [],
+        },
+      },
+    },
+    { operacao: 'trocas.cancelar', id: ID, cancelamentoId: OUTRO, motivo: 'Desistiu' },
+    { operacao: 'creditos.doCliente', clienteId: ID },
+  ];
+
+  it.each(casos.map((c) => [c.operacao, c] as const))('%s', async (_nome, pedido) => {
+    const { pedidos, fetch } = falso({});
+    const api = criarApiDoVendas({ ...base, fetch });
+    const r = await api.chamar('token-de-acesso', pedido);
+    expect(r).toEqual({
+      ok: false,
+      falha: { tipo: 'recusada', status: 503, mensagem: MENSAGEM_SEM_BANCO },
+    });
+    expect(pedidos).toHaveLength(0);
   });
 });
