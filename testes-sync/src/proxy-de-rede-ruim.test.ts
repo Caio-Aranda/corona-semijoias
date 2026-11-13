@@ -240,7 +240,7 @@ describe('proxy de rede ruim', () => {
       await new Promise((ok) => setTimeout(ok, 5));
     }
     const depois = new Date().toISOString();
-    const horas = p.historico().map((h) => String((h as { em?: unknown }).em));
+    const horas = p.historico().map((h) => h.em);
     expect(horas).toHaveLength(3);
     for (const em of horas) {
       expect(em).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);

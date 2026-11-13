@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { semanaInicial } from './dona';
+import { NUMERO_DA_SEMANA, numeroDaSemana, semanaInicial } from './dona';
 
 /**
  * O número da semana que a dona dos testes cria tem de caber no que a API aceita (issue #130): `semanaInicial` dependia
@@ -52,5 +52,31 @@ describe('número da semana da dona dos testes', () => {
     const n = semanaInicial(Date.UTC(2026, 10, 13, 6, 7, 0));
     expect(n).toBeGreaterThanOrEqual(minimo);
     expect(n).toBeLessThanOrEqual(maximo);
+  });
+
+  it('os limites usados pela dona dos testes são os da API', () => {
+    expect(NUMERO_DA_SEMANA).toEqual(limitesDaApi());
+  });
+
+  it('a primeira semana deixa folga de 10000 semanas até o limite, para o contador do arquivo', () => {
+    const { maximo } = limitesDaApi();
+    let maior = 0;
+    for (let s = 0; s < 200_000; s++) maior = Math.max(maior, semanaInicial(s * 1000));
+    expect(maior).toBeLessThanOrEqual(maximo - 10_000);
+  });
+
+  it('as semanas seguintes também cabem no limite, por maior que fique o contador', () => {
+    const { minimo, maximo } = limitesDaApi();
+    const fora: string[] = [];
+    for (const inicial of [minimo, 2, 45_000, 89_999, 90_000]) {
+      for (let contador = 0; contador < 250_000; contador += 7) {
+        const n = numeroDaSemana(inicial, contador);
+        if (!Number.isInteger(n) || n < minimo || n > maximo)
+          fora.push(`${inicial}+${contador}=${n}`);
+      }
+      // Sem pular números: logo depois do início, uma semana por vez.
+      expect(numeroDaSemana(inicial, 1)).toBe(inicial + 1);
+    }
+    expect(fora.slice(0, 5)).toEqual([]);
   });
 });

@@ -31,12 +31,27 @@ export interface AparelhoNaDona {
   aguardandoEnvio?: number;
 }
 
+/** Os limites do número da semana na API (`SemanasDaDonaController`: `@Min(1)` e `@Max(100000)`). */
+export const NUMERO_DA_SEMANA = Object.freeze({ minimo: 1, maximo: 100_000 });
+/** Folga para o contador de um arquivo (uma semana por maleta, mais os pulos depois de colidir). */
+const FOLGA_DO_CONTADOR = 10_000;
+
 /**
  * O número da primeira semana deste arquivo de teste: um por segundo de relógio, para dois arquivos da mesma rodada não
- * começarem no mesmo número.
+ * começarem no mesmo número. Fica entre 1 e 90000 em qualquer hora: o resto antigo (`% 150000`) passava do limite da API
+ * durante 1/3 do tempo, e toda maleta das duas pontas recebia 400 (issue #130).
  */
 export function semanaInicial(agoraMs: number): number {
-  return Math.floor(agoraMs / 1000) % 150_000;
+  return (
+    NUMERO_DA_SEMANA.minimo +
+    (Math.floor(agoraMs / 1000) % (NUMERO_DA_SEMANA.maximo - FOLGA_DO_CONTADOR))
+  );
+}
+
+/** O número da semana `contador` deste arquivo; se passar do limite da API, volta ao começo (a colisão pula adiante). */
+export function numeroDaSemana(inicial: number, contador: number): number {
+  const { minimo, maximo } = NUMERO_DA_SEMANA;
+  return minimo + ((inicial - minimo + contador) % (maximo - minimo + 1));
 }
 
 let semanaSeguinte = 0;
@@ -151,7 +166,7 @@ export class Dona {
   async semana(): Promise<string> {
     for (let tentativa = 0; ; tentativa++) {
       const id = randomUUID();
-      const n = SEMANA_INICIAL + semanaSeguinte++;
+      const n = numeroDaSemana(SEMANA_INICIAL, semanaSeguinte++);
       const inicio = new Date(Date.UTC(2600, 0, 4) + n * 7 * 86_400_000);
       const fim = new Date(inicio.getTime() + 6 * 86_400_000);
       try {
