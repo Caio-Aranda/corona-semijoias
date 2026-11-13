@@ -245,7 +245,8 @@ class TrocaTest extends ApoioDasTrocas {
         UUID cliente = cliente(v);
         UUID a = peca("50.00", 10);
         UUID b = peca("70.00", 10);
-        UUID antiga = maleta(v, a, 3);
+        // A maleta vende tudo: acertada sem sobra, ela não deixa diferença na conciliação do banco que os testes dividem.
+        UUID antiga = maleta(v, a, 1);
         UUID vendaA = vender(v, antiga, cliente, List.of(linha(a, 1)), List.of(pagamento("50.00", "PIX")));
         jdbc.update("UPDATE corona.remessas SET status = 'ACERTADA' WHERE id = ?", antiga);
         UUID nova = maleta(v, b, 3);

@@ -8,6 +8,7 @@ import br.com.coronasemijoias.api.testes.UsuariosDeTeste.UsuarioDeTeste;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
 
@@ -18,6 +19,18 @@ import tools.jackson.databind.JsonNode;
  * código; cada teste cria os próprios vendedor, cliente, semana, peças e maleta.
  */
 class DevolucaoPelaDonaTest extends ApoioDasDevolucoes {
+
+    /**
+     * Depois de cada caso a conciliação do banco inteiro (estoque guardado x movimentos, e estoque da loja + maletas x o
+     * que entrou e saiu) tem de vir vazia: a devolução pela dona não pode deixar produto divergente (CLAUDE.md, "Pronto =
+     * conciliação passando"; o relatório de conciliação de RelatoriosDeEstoqueEComprasTest olha o banco todo).
+     */
+    @AfterEach
+    void conciliacaoContinuaVazia() {
+        var c = estoque.conciliar();
+        assertThat(c.divergencias()).isEmpty();
+        assertThat(c.diferencasComMaletas()).isEmpty();
+    }
 
     private int saldo(UUID maleta, UUID produto) {
         return jdbc.queryForObject("""
