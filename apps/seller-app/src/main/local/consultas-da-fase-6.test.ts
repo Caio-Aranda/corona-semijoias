@@ -476,3 +476,61 @@ describe('nada de custo nem de outro vendedor nas respostas novas (teste 15)', (
     expect(consultas.fase6.listar({})).toHaveLength(1);
   });
 });
+
+describe('Meus números com devolução, troca e crédito (tarefa 6.10)', () => {
+  it('devoluções e trocas por motivo no período; a cancelada fica de fora; sem custo', () => {
+    const v1 = vender([{ produtoId: m.produtoA, quantidade: 3 }]);
+    devolver(v1.vendaId, pecas([m.produtoA, 1]));
+    const t = trocar(v1.vendaId, pecas([m.produtoA, 1]), produtoC);
+    const d2 = idDeTeste(8);
+    ops.devolver({
+      id: d2,
+      vendaId: v1.vendaId,
+      motivo: 'DEFEITO',
+      formaReembolso: 'PIX',
+      itens: pecas([m.produtoA, 1, 'DEFEITO']),
+    });
+    ops.cancelarDevolucao({ id: idDeTeste(8), devolucaoId: d2, motivo: 'Errei' });
+
+    const r = pedir<{
+      linhas: { motivo: string; devolucoes: number; valor: string }[];
+      totais: { devolucoes: number; trocas: number; valorDevolvido: string };
+    }>({ operacao: 'relatorios.devolucoes' });
+    expect(r.linhas.map((l) => l.motivo).sort()).toEqual(['ARREPENDIMENTO', 'TAMANHO']);
+    expect(r.totais).toMatchObject({ devolucoes: 1, trocas: 1 });
+    expect(r.linhas.reduce((t2, l) => t2 + l.devolucoes, 0)).toBe(2);
+    expect(JSON.stringify(r)).not.toMatch(/custo/i);
+    expect(t.id).toBeTruthy();
+
+    // Período que não tem nada: vazio.
+    const vazio = pedir<{ linhas: unknown[]; totais: { devolucoes: number } }>({
+      operacao: 'relatorios.devolucoes',
+      de: '2030-01-01',
+      ate: '2030-01-31',
+    });
+    expect(vazio.linhas).toEqual([]);
+    expect(vazio.totais.devolucoes).toBe(0);
+  });
+
+  it('crédito dos meus clientes: gerado, usado e em aberto; recebimentos não contam o crédito', () => {
+    const v1 = vender([{ produtoId: m.produtoA, quantidade: 2 }]);
+    trocar(v1.vendaId, pecas([m.produtoA, 1]), produtoC);
+    const c = pedir<{
+      clientes: { clienteId: string; gerado: string; usado: string; emAberto: string }[];
+      totais: { gerado: string; usado: string; emAberto: string };
+    }>({ operacao: 'relatorios.creditos' });
+    expect(c.clientes).toHaveLength(1);
+    const [cliente] = c.clientes;
+    expect(cliente?.clienteId).toBe(m.clienteId);
+    // gerado = usado + em aberto, com o que ele fez aqui ainda não enviado.
+    const g = Number(cliente?.gerado);
+    expect(g).toBeGreaterThan(0);
+    expect((Number(cliente?.usado) + Number(cliente?.emAberto)).toFixed(2)).toBe(g.toFixed(2));
+    expect(c.totais.gerado).toBe(cliente?.gerado);
+
+    const recebimentos = pedir<{ linhas: { nome: string }[] }>({
+      operacao: 'relatorios.recebimentos',
+    });
+    expect(recebimentos.linhas.map((l) => l.nome)).not.toContain('CREDITO');
+  });
+});
