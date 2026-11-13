@@ -11,12 +11,20 @@ import type {
   PagamentoDaVenda,
   PecaDaMaleta,
   RelatorioAReceber,
+  RelatorioDeCreditos,
+  RelatorioDeDevolucoes,
   RelatorioDeVendas,
   Venda,
 } from '../../shared/dados';
 import type { PedidoDeChamada } from '../../shared/operacoes';
 import { diaEmBrasilia } from '../../shared/garantia';
-import { SQL_DEVOLUCAO_ATIVA, SQL_VENDA_ESTORNADA_AQUI } from '../sync/operacoes-da-fase-6';
+import {
+  creditoValido,
+  ehDoVendedor,
+  saldoDoCredito,
+  SQL_DEVOLUCAO_ATIVA,
+  SQL_VENDA_ESTORNADA_AQUI,
+} from '../sync/operacoes-da-fase-6';
 import { marcarEntendido } from '../sync/outbox';
 import {
   ErroDaOperacao,
@@ -300,6 +308,10 @@ export class ConsultasLocais {
         return ok(this.relatorioDeRecebimentos(pedido.de, pedido.ate));
       case 'relatorios.aReceber':
         return ok(this.relatorioAReceber());
+      case 'relatorios.devolucoes':
+        return ok(this.relatorioDeDevolucoes(pedido.de, pedido.ate));
+      case 'relatorios.creditos':
+        return ok(this.relatorioDeCreditos());
       case 'envios.naoAceitos':
         return ok(this.enviosNaoAceitos());
       case 'envios.entendi': {
@@ -634,7 +646,7 @@ export class ConsultasLocais {
       db
         .prepare(
           `SELECT id, tipo, forma, valor, pago_em, devolucao_id FROM pagamentos_cliente
-            WHERE venda_id = ? AND deleted_at IS NULL ORDER BY pago_em, id`,
+            WHERE venda_id = ? AND deleted_at IS NULL ORDER BY pago_em, rowid`,
         )
         .all(l.id) as {
         id: string;
@@ -859,7 +871,8 @@ export class ConsultasLocais {
       .prepare(
         `SELECT p.forma, p.tipo, p.valor, p.pago_em FROM pagamentos_cliente p
            JOIN vendas v ON v.id = p.venda_id
-          WHERE p.deleted_at IS NULL AND v.deleted_at IS NULL ORDER BY p.forma, p.pago_em, p.id`,
+          WHERE p.deleted_at IS NULL AND v.deleted_at IS NULL AND coalesce(p.forma, '') <> 'CREDITO'
+          ORDER BY p.forma, p.pago_em, p.id`,
       )
       .all() as {
       forma: string | null;
@@ -886,6 +899,152 @@ export class ConsultasLocais {
       l.desconto.somar(0n, taxas);
     }
     return montarRelatorio(chaves, false);
+  }
+
+  /**
+   * Minhas devoluções e trocas (tarefa 6.10): as não canceladas (nem aqui) deste vendedor, por motivo, no período (dias
+   * de Brasília). Cada uma pela cotação do seu dia (a gravada nela ou a do dia). Mesma regra do servidor.
+   */
+  private relatorioDeDevolucoes(de?: string, ate?: string): RelatorioDeDevolucoes {
+    const db = this.db();
+    const linhas = db
+      .prepare(
+        `SELECT d.motivo, d.destino, d.vendedor_id, d.valor_devolvido, d.valor_reembolsado, d.valor_em_credito,
+                d.cotacao_id, d.devolvida_em
+           FROM devolucoes d WHERE ${SQL_DEVOLUCAO_ATIVA('d')} ORDER BY d.devolvida_em, d.id`,
+      )
+      .all() as {
+      motivo: string | null;
+      destino: string | null;
+      vendedor_id: string | null;
+      valor_devolvido: string | null;
+      valor_reembolsado: string | null;
+      valor_em_credito: string | null;
+      cotacao_id: string | null;
+      devolvida_em: string;
+    }[];
+    const porMotivo = new Map<string, { quantidade: number; valor: Soma }>();
+    const devolvido = new Soma();
+    const dinheiro = new Soma();
+    const credito = new Soma();
+    let devolucoes = 0;
+    let trocas = 0;
+    for (const d of linhas) {
+      if (!ehDoVendedor(db, d.vendedor_id)) continue;
+      const dia = diaEmBrasilia(d.devolvida_em);
+      if ((de && dia < de) || (ate && dia > ate)) continue;
+      const taxas = this.cotacaoDaVenda({ cotacao_id: d.cotacao_id, vendida_em: d.devolvida_em });
+      const valor = centavosDe(d.valor_devolvido ?? '0') ?? 0n;
+      const motivo = d.motivo ?? 'OUTRO';
+      let l = porMotivo.get(motivo);
+      if (!l) porMotivo.set(motivo, (l = { quantidade: 0, valor: new Soma() }));
+      l.quantidade += 1;
+      l.valor.somar(valor, taxas);
+      devolvido.somar(valor, taxas);
+      dinheiro.somar(centavosDe(d.valor_reembolsado ?? '0') ?? 0n, taxas);
+      credito.somar(centavosDe(d.valor_em_credito ?? '0') ?? 0n, taxas);
+      if (d.destino === 'TROCA') trocas += 1;
+      else devolucoes += 1;
+    }
+    return {
+      linhas: [...porMotivo.entries()].map(([motivo, l]) => ({
+        motivo,
+        devolucoes: l.quantidade,
+        valor: l.valor.textoReais,
+        valorEmDolar: l.valor.textoDolar,
+        valorEmGuarani: l.valor.textoGuarani,
+      })),
+      totais: {
+        devolucoes,
+        trocas,
+        valorDevolvido: devolvido.textoReais,
+        valorDevolvidoEmDolar: devolvido.textoDolar,
+        valorDevolvidoEmGuarani: devolvido.textoGuarani,
+        emDinheiro: dinheiro.textoReais,
+        emDinheiroEmDolar: dinheiro.textoDolar,
+        emDinheiroEmGuarani: dinheiro.textoGuarani,
+        emCredito: credito.textoReais,
+        emCreditoEmDolar: credito.textoDolar,
+        emCreditoEmGuarani: credito.textoGuarani,
+      },
+    };
+  }
+
+  /**
+   * Crédito dos meus clientes (tarefa 6.10): os créditos deste vendedor que ainda valem (sem os cancelados, nem aqui),
+   * por cliente: gerado, usado e em aberto, cada um pela cotação do dia em que nasceu. O usado conta também o uso feito
+   * aqui e ainda não enviado.
+   */
+  private relatorioDeCreditos(): RelatorioDeCreditos {
+    const db = this.db();
+    const creditos = db
+      .prepare(
+        `SELECT cr.id, cr.cliente_id, cr.vendedor_id, cr.troca_id, cr.devolucao_id, cr.valor, cr.situacao,
+                cr.cotacao_id, cr.gerado_em, c.nome AS cliente_nome
+           FROM creditos_cliente cr LEFT JOIN clientes c ON c.id = cr.cliente_id
+          WHERE cr.deleted_at IS NULL ORDER BY lower(c.nome), cr.cliente_id, cr.gerado_em, cr.id`,
+      )
+      .all() as {
+      id: string;
+      cliente_id: string;
+      vendedor_id: string | null;
+      troca_id: string | null;
+      devolucao_id: string | null;
+      valor: string;
+      situacao: string | null;
+      cotacao_id: string | null;
+      gerado_em: string | null;
+      cliente_nome: string | null;
+    }[];
+    const nomes = new Map<string, string>();
+    const somas = new Map<string, { gerado: Soma; usado: Soma; emAberto: Soma }>();
+    const total = { gerado: new Soma(), usado: new Soma(), emAberto: new Soma() };
+    for (const c of creditos) {
+      if (!ehDoVendedor(db, c.vendedor_id) || !creditoValido(db, c)) continue;
+      const geradoEm = c.gerado_em ?? this.agora().toISOString();
+      const taxas = this.cotacaoDaVenda({ cotacao_id: c.cotacao_id, vendida_em: geradoEm });
+      const valor = centavosDe(c.valor) ?? 0n;
+      const saldo = saldoDoCredito(db, c.id);
+      nomes.set(c.cliente_id, nomes.get(c.cliente_id) ?? c.cliente_nome ?? '');
+      let linha = somas.get(c.cliente_id);
+      if (!linha)
+        somas.set(
+          c.cliente_id,
+          (linha = { gerado: new Soma(), usado: new Soma(), emAberto: new Soma() }),
+        );
+      for (const alvo of [linha, total]) {
+        alvo.gerado.somar(valor, taxas);
+        alvo.usado.somar(valor - saldo, taxas);
+        alvo.emAberto.somar(saldo, taxas);
+      }
+    }
+    const clientes = [...somas.entries()].map(([id, s]) => ({
+      clienteId: id,
+      clienteNome: nomes.get(id) ?? '',
+      gerado: s.gerado.textoReais,
+      geradoEmDolar: s.gerado.textoDolar,
+      geradoEmGuarani: s.gerado.textoGuarani,
+      usado: s.usado.textoReais,
+      usadoEmDolar: s.usado.textoDolar,
+      usadoEmGuarani: s.usado.textoGuarani,
+      emAberto: s.emAberto.textoReais,
+      emAbertoEmDolar: s.emAberto.textoDolar,
+      emAbertoEmGuarani: s.emAberto.textoGuarani,
+    }));
+    return {
+      clientes,
+      totais: {
+        gerado: total.gerado.textoReais,
+        geradoEmDolar: total.gerado.textoDolar,
+        geradoEmGuarani: total.gerado.textoGuarani,
+        usado: total.usado.textoReais,
+        usadoEmDolar: total.usado.textoDolar,
+        usadoEmGuarani: total.usado.textoGuarani,
+        emAberto: total.emAberto.textoReais,
+        emAbertoEmDolar: total.emAberto.textoDolar,
+        emAbertoEmGuarani: total.emAberto.textoGuarani,
+      },
+    };
   }
 
   private relatorioAReceber(): RelatorioAReceber {

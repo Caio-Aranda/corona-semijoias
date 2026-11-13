@@ -14,6 +14,7 @@ export const OPERACOES_DE_DEVOLUCOES = [
   'devolucoes.cancelar',
   'devolucoes.vendasComAPeca',
   'devolucoes.registrar',
+  'devolucoes.conferencia',
   'trocas.listar',
   'trocas.cancelar',
   'creditos.listar',
@@ -91,7 +92,7 @@ export type ParametrosDeDevolucoes =
   | { operacao: 'devolucoes.vendasComAPeca'; codigo: string }
   | { operacao: 'devolucoes.registrar'; corpo: CorpoDaDevolucao }
   | { operacao: 'creditos.transferir'; id: string; novoId: string; vendedorId: string }
-  | { operacao: 'garantia.ler' }
+  | { operacao: 'garantia.ler' | 'devolucoes.conferencia' }
   | ({ operacao: 'garantia.alterar' } & CorpoDaGarantia);
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -250,6 +251,7 @@ export function conferirDevolucoes(
         ? { operacao, id: p.id, novoId: p.novoId, vendedorId: p.vendedorId }
         : null;
     case 'garantia.ler':
+    case 'devolucoes.conferencia':
       return chaves.length === 0 ? { operacao } : null;
     case 'garantia.alterar': {
       if (

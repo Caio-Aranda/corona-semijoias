@@ -1,6 +1,12 @@
 import { Aviso, Botao, Campo, Tabela } from '@corona/ui';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import type { RelatorioAReceber, RelatorioDeVendas, TotaisDeRelatorio } from '../../shared/dados';
+import type {
+  RelatorioAReceber,
+  RelatorioDeCreditos,
+  RelatorioDeDevolucoes,
+  RelatorioDeVendas,
+  TotaisDeRelatorio,
+} from '../../shared/dados';
 import type { AgrupamentoDeVendas } from '../../shared/operacoes';
 import type { PonteDoCorona } from '../../shared/ponte';
 import { chamar, DinheiroConvertido, useCotacao } from '../chamadas';
@@ -18,6 +24,8 @@ interface Numeros {
   vendas: RelatorioDeVendas;
   recebimentos: RelatorioDeVendas;
   aReceber: RelatorioAReceber;
+  devolucoes: RelatorioDeDevolucoes;
+  creditos: RelatorioDeCreditos;
 }
 
 /**
@@ -43,7 +51,7 @@ export function TelaMeusNumeros({ ponte, aoVoltar, aoVerVendas }: TelaMeusNumero
         ...(periodo.de ? { de: periodo.de } : {}),
         ...(periodo.ate ? { ate: periodo.ate } : {}),
       };
-      const [vendas, recebimentos, aReceber] = await Promise.all([
+      const [vendas, recebimentos, aReceber, devolucoes, creditos] = await Promise.all([
         chamar<RelatorioDeVendas>(ponte, {
           operacao: 'relatorios.vendas',
           agrupar: como,
@@ -51,15 +59,21 @@ export function TelaMeusNumeros({ ponte, aoVoltar, aoVerVendas }: TelaMeusNumero
         }),
         chamar<RelatorioDeVendas>(ponte, { operacao: 'relatorios.recebimentos', ...filtro }),
         chamar<RelatorioAReceber>(ponte, { operacao: 'relatorios.aReceber' }),
+        chamar<RelatorioDeDevolucoes>(ponte, { operacao: 'relatorios.devolucoes', ...filtro }),
+        chamar<RelatorioDeCreditos>(ponte, { operacao: 'relatorios.creditos' }),
       ]);
       if (!vendas.ok) return setErro(vendas.mensagem);
       if (!recebimentos.ok) return setErro(recebimentos.mensagem);
       if (!aReceber.ok) return setErro(aReceber.mensagem);
+      if (!devolucoes.ok) return setErro(devolucoes.mensagem);
+      if (!creditos.ok) return setErro(creditos.mensagem);
       setAgrupadoPor(como);
       setNumeros({
         vendas: vendas.dados,
         recebimentos: recebimentos.dados,
         aReceber: aReceber.dados,
+        devolucoes: devolucoes.dados,
+        creditos: creditos.dados,
       });
     },
     [ponte],
@@ -176,6 +190,106 @@ export function TelaMeusNumeros({ ponte, aoVoltar, aoVerVendas }: TelaMeusNumero
             />
             <p className="vendas-total">
               {T.totalRecebido}: <Totais totais={numeros.recebimentos.totais} />
+            </p>
+            <p className="vendas-texto vendas-texto--pequeno">{T.recebimentosSemCredito}</p>
+          </section>
+
+          <section aria-label={T.devolucoesTitulo}>
+            <h2 className="vendas-subtitulo">{T.devolucoesTitulo}</h2>
+            <Tabela
+              legenda={T.devolucoesTitulo}
+              textoVazio={T.semDevolucoes}
+              colunas={[
+                { chave: 'motivo', titulo: T.devolucoesColunas.motivo },
+                { chave: 'devolucoes', titulo: T.devolucoesColunas.devolucoes, numerica: true },
+                { chave: 'valor', titulo: T.devolucoesColunas.valor, numerica: true },
+              ]}
+              linhas={numeros.devolucoes.linhas.map((l) => ({
+                motivo: T.motivos[l.motivo] ?? l.motivo,
+                devolucoes: l.devolucoes,
+                valor: (
+                  <DinheiroConvertido
+                    reais={l.valor}
+                    dolar={l.valorEmDolar}
+                    guarani={l.valorEmGuarani}
+                  />
+                ),
+              }))}
+            />
+            <p className="vendas-total">
+              {T.devolucoesTotais.devolucoes}: {numeros.devolucoes.totais.devolucoes}
+              {' · '}
+              {T.devolucoesTotais.trocas}: {numeros.devolucoes.totais.trocas}
+            </p>
+            <p className="vendas-total">
+              {T.devolucoesTotais.valorDevolvido}:{' '}
+              <DinheiroConvertido
+                reais={numeros.devolucoes.totais.valorDevolvido}
+                dolar={numeros.devolucoes.totais.valorDevolvidoEmDolar}
+                guarani={numeros.devolucoes.totais.valorDevolvidoEmGuarani}
+              />
+            </p>
+            <p className="vendas-total">
+              {T.devolucoesTotais.emDinheiro}:{' '}
+              <DinheiroConvertido
+                reais={numeros.devolucoes.totais.emDinheiro}
+                dolar={numeros.devolucoes.totais.emDinheiroEmDolar}
+                guarani={numeros.devolucoes.totais.emDinheiroEmGuarani}
+              />
+            </p>
+            <p className="vendas-total">
+              {T.devolucoesTotais.emCredito}:{' '}
+              <DinheiroConvertido
+                reais={numeros.devolucoes.totais.emCredito}
+                dolar={numeros.devolucoes.totais.emCreditoEmDolar}
+                guarani={numeros.devolucoes.totais.emCreditoEmGuarani}
+              />
+            </p>
+          </section>
+
+          <section aria-label={T.creditosTitulo}>
+            <h2 className="vendas-subtitulo">{T.creditosTitulo}</h2>
+            <Tabela
+              legenda={T.creditosTitulo}
+              textoVazio={T.semCreditos}
+              colunas={[
+                { chave: 'cliente', titulo: T.creditosColunas.cliente },
+                { chave: 'gerado', titulo: T.creditosColunas.gerado, numerica: true },
+                { chave: 'usado', titulo: T.creditosColunas.usado, numerica: true },
+                { chave: 'emAberto', titulo: T.creditosColunas.emAberto, numerica: true },
+              ]}
+              linhas={numeros.creditos.clientes.map((c) => ({
+                cliente: c.clienteNome,
+                gerado: (
+                  <DinheiroConvertido
+                    reais={c.gerado}
+                    dolar={c.geradoEmDolar}
+                    guarani={c.geradoEmGuarani}
+                  />
+                ),
+                usado: (
+                  <DinheiroConvertido
+                    reais={c.usado}
+                    dolar={c.usadoEmDolar}
+                    guarani={c.usadoEmGuarani}
+                  />
+                ),
+                emAberto: (
+                  <DinheiroConvertido
+                    reais={c.emAberto}
+                    dolar={c.emAbertoEmDolar}
+                    guarani={c.emAbertoEmGuarani}
+                  />
+                ),
+              }))}
+            />
+            <p className="vendas-total">
+              {T.totalCreditoEmAberto}:{' '}
+              <DinheiroConvertido
+                reais={numeros.creditos.totais.emAberto}
+                dolar={numeros.creditos.totais.emAbertoEmDolar}
+                guarani={numeros.creditos.totais.emAbertoEmGuarani}
+              />
             </p>
           </section>
 

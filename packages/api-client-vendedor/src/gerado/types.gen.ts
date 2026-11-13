@@ -34,6 +34,20 @@ export type CadastroDeTeste = {
     nome: string;
 };
 
+export type ClienteComCredito = {
+    clienteId?: string;
+    clienteNome?: string;
+    emAberto?: string;
+    emAbertoEmDolar?: string;
+    emAbertoEmGuarani?: string;
+    gerado?: string;
+    geradoEmDolar?: string;
+    geradoEmGuarani?: string;
+    usado?: string;
+    usadoEmDolar?: string;
+    usadoEmGuarani?: string;
+};
+
 export type ClientesDoVendedorCliente = {
     ativo?: boolean;
     cidade?: string;
@@ -47,7 +61,7 @@ export type ClientesDoVendedorCliente = {
     whatsapp?: string;
 };
 
-export type Conferencia = {
+export type ConsultasDaConferenciaConferencia = {
     conferidaEm?: string;
     divergencias?: number;
     id?: string;
@@ -435,6 +449,16 @@ export type RelatorioAReceber = {
     totais?: Totais;
 };
 
+export type RelatorioDeCreditos = {
+    clientes?: Array<ClienteComCredito>;
+    totais?: TotaisDeCredito;
+};
+
+export type RelatorioDeDevolucoes = {
+    linhas?: Array<RelatoriosDoVendedorLinhaDeDevolucao>;
+    totais?: TotaisDeDevolucao;
+};
+
 export type RelatoriosDoVendedorLinha = {
     desconto?: string;
     descontoEmDolar?: string;
@@ -445,6 +469,14 @@ export type RelatoriosDoVendedorLinha = {
     total?: string;
     totalEmDolar?: string;
     totalEmGuarani?: string;
+};
+
+export type RelatoriosDoVendedorLinhaDeDevolucao = {
+    devolucoes?: number;
+    motivo?: string;
+    valor?: string;
+    valorEmDolar?: string;
+    valorEmGuarani?: string;
 };
 
 export type RelatoriosDoVendedorRelatorio = {
@@ -528,6 +560,32 @@ export type Totais = {
     total?: string;
     totalEmDolar?: string;
     totalEmGuarani?: string;
+};
+
+export type TotaisDeCredito = {
+    emAberto?: string;
+    emAbertoEmDolar?: string;
+    emAbertoEmGuarani?: string;
+    gerado?: string;
+    geradoEmDolar?: string;
+    geradoEmGuarani?: string;
+    usado?: string;
+    usadoEmDolar?: string;
+    usadoEmGuarani?: string;
+};
+
+export type TotaisDeDevolucao = {
+    devolucoes?: number;
+    emCredito?: string;
+    emCreditoEmDolar?: string;
+    emCreditoEmGuarani?: string;
+    emDinheiro?: string;
+    emDinheiroEmDolar?: string;
+    emDinheiroEmGuarani?: string;
+    trocas?: number;
+    valorDevolvido?: string;
+    valorDevolvidoEmDolar?: string;
+    valorDevolvidoEmGuarani?: string;
 };
 
 export type TrocaLida = {
@@ -1055,7 +1113,7 @@ export type VerConferenciaDaMinhaMaletaResponses = {
     /**
      * OK
      */
-    200: Conferencia;
+    200: ConsultasDaConferenciaConferencia;
 };
 
 export type VerConferenciaDaMinhaMaletaResponse = VerConferenciaDaMinhaMaletaResponses[keyof VerConferenciaDaMinhaMaletaResponses];
@@ -1073,7 +1131,7 @@ export type ConferirMinhaMaletaResponses = {
     /**
      * OK
      */
-    200: Conferencia;
+    200: ConsultasDaConferenciaConferencia;
 };
 
 export type ConferirMinhaMaletaResponse = ConferirMinhaMaletaResponses[keyof ConferirMinhaMaletaResponses];
@@ -1133,6 +1191,41 @@ export type RelatorioDeValoresAReceberResponses = {
 };
 
 export type RelatorioDeValoresAReceberResponse = RelatorioDeValoresAReceberResponses[keyof RelatorioDeValoresAReceberResponses];
+
+export type RelatorioDeCreditosDosMeusClientesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/vendedor/relatorios/creditos';
+};
+
+export type RelatorioDeCreditosDosMeusClientesResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCreditos;
+};
+
+export type RelatorioDeCreditosDosMeusClientesResponse = RelatorioDeCreditosDosMeusClientesResponses[keyof RelatorioDeCreditosDosMeusClientesResponses];
+
+export type RelatorioDeMinhasDevolucoesETrocasData = {
+    body?: never;
+    path?: never;
+    query?: {
+        de?: string;
+        ate?: string;
+    };
+    url: '/api/vendedor/relatorios/devolucoes';
+};
+
+export type RelatorioDeMinhasDevolucoesETrocasResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeDevolucoes;
+};
+
+export type RelatorioDeMinhasDevolucoesETrocasResponse = RelatorioDeMinhasDevolucoesETrocasResponses[keyof RelatorioDeMinhasDevolucoesETrocasResponses];
 
 export type RelatorioDeMeusRecebimentosData = {
     body?: never;

@@ -165,6 +165,10 @@ export type PedidoDeChamada =
   | { operacao: 'relatorios.vendas'; de?: string; ate?: string; agrupar?: AgrupamentoDeVendas }
   | { operacao: 'relatorios.recebimentos'; de?: string; ate?: string }
   | { operacao: 'relatorios.aReceber' }
+  /** Devoluções e trocas no período, por motivo (tarefa 6.10; só no banco do computador). */
+  | { operacao: 'relatorios.devolucoes'; de?: string; ate?: string }
+  /** Crédito dos meus clientes (tarefa 6.10; só no banco do computador). */
+  | { operacao: 'relatorios.creditos' }
   // --- devolução, troca e crédito (tarefa 6.8): só no banco do computador ---
   /** "Vendas com esta peça": as vendas do vendedor com a peça lida. */
   | { operacao: 'devolucoes.vendasComAPeca'; codigo: string }
@@ -222,6 +226,8 @@ export const OPERACOES_DA_API: readonly OperacaoDaApi[] = [
   'relatorios.vendas',
   'relatorios.recebimentos',
   'relatorios.aReceber',
+  'relatorios.devolucoes',
+  'relatorios.creditos',
   'devolucoes.vendasComAPeca',
   'devolucoes.previa',
   'devolucoes.registrar',

@@ -128,6 +128,14 @@ import {
   listar9,
   listar12,
   relatorioDeMaletasEmAbertoEAtrasadas,
+  relatorioDeDevolucoes,
+  relatorioDeTaxaDeDevolucaoPorVendedor,
+  relatorioDePecasComDefeito,
+  relatorioDeTrocas,
+  relatorioDeCreditosDosClientes,
+  relatorioDeDinheiroDevolvido,
+  relatorioDePedidosDeAutorizacao,
+  conferirDevolucoesETrocas,
   relatorioDeMercadoriaPorVendedor,
   relatorioDeRemessasPorVendedorESemana,
   relatorioDeReposicoes,
@@ -609,6 +617,8 @@ async function executarDevolucoes(
       return executar(() => vendasComAPecaDaDona({ ...base, query: { codigo: pedido.codigo } }));
     case 'devolucoes.registrar':
       return executar(() => devolverPelaDona({ ...base, body: pedido.corpo }), true);
+    case 'devolucoes.conferencia':
+      return executar(() => conferirDevolucoesETrocas({ ...base }));
     case 'trocas.listar':
       return executar(() => listarTrocas({ ...base, query: filtros(pedido) }));
     case 'trocas.cancelar':
@@ -827,6 +837,20 @@ async function executarRelatorio(
       return executar(() => relatorioDeMercadoriaPorVendedor({ ...base, query: q }));
     case 'maleta-em-aberto':
       return executar(() => relatorioDeMaletasEmAbertoEAtrasadas({ ...base, query: q }));
+    case 'devolucao-por-motivo':
+      return executar(() => relatorioDeDevolucoes({ ...base, query: q }));
+    case 'devolucao-por-vendedor':
+      return executar(() => relatorioDeTaxaDeDevolucaoPorVendedor({ ...base, query: q }));
+    case 'devolucao-defeitos':
+      return executar(() => relatorioDePecasComDefeito({ ...base, query: q }));
+    case 'devolucao-trocas':
+      return executar(() => relatorioDeTrocas({ ...base, query: q }));
+    case 'devolucao-creditos':
+      return executar(() => relatorioDeCreditosDosClientes({ ...base, query: q }));
+    case 'devolucao-reembolsos':
+      return executar(() => relatorioDeDinheiroDevolvido({ ...base, query: q }));
+    case 'devolucao-autorizacoes':
+      return executar(() => relatorioDePedidosDeAutorizacao({ ...base, query: q }));
     case 'vendedores':
       return executar(() => relatorioDeVendedores({ ...base, query: q }));
     case 'clientes':

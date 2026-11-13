@@ -14,6 +14,7 @@ import br.com.coronasemijoias.api.estoque.ServicoDeEstoque;
 import br.com.coronasemijoias.api.estoque.ServicoDeEstoque.OrigemDoMovimento;
 import br.com.coronasemijoias.api.estoque.ServicoDeEstoque.Pedido;
 import br.com.coronasemijoias.api.estoque.ServicoDeEstoque.TipoDeMovimento;
+import br.com.coronasemijoias.api.relatorios.ConferenciasDeDevolucaoETroca;
 import br.com.coronasemijoias.api.testes.RelogioDeTeste;
 import br.com.coronasemijoias.api.testes.TesteDeIntegracao;
 import br.com.coronasemijoias.api.testes.UsuariosDeTeste;
@@ -86,6 +87,9 @@ public abstract class ApoioDasTrocas extends TesteDeIntegracao {
     protected ServicoDeEstoque estoque;
 
     @Autowired
+    private ConferenciasDeDevolucaoETroca conferencias;
+
+    @Autowired
     protected ServicoDeVendas vendas;
 
     @Autowired
@@ -116,6 +120,9 @@ public abstract class ApoioDasTrocas extends TesteDeIntegracao {
         var c = estoque.conciliar();
         assertThat(c.divergencias()).isEmpty();
         assertThat(c.diferencasComMaletas()).isEmpty();
+        // As conferências da tarefa 6.10 (maleta, devolvido por peça, créditos, dinheiro devolvido, contas da venda).
+        var todas = conferencias.conferir();
+        assertThat(todas.conferencias()).allSatisfy(x -> assertThat(x.divergencias()).as(x.chave()).isEmpty());
     }
 
     // --- configurações ---

@@ -492,7 +492,7 @@ export function TelaDeRelatorio({
         geradoEm: dataEHoraParaTela(agora),
         geradoPor: usuario ?? 'Dona',
         linhaDaCotacao: jaConvertido
-          ? MALETAS.cotacaoDoEnvio
+          ? (def.notaDaCotacao ?? MALETAS.cotacaoDoEnvio)
           : cotacao.taxas
             ? `${cotacao.linha} ${T.cotacao.deHoje}`
             : null,

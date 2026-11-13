@@ -424,7 +424,7 @@ Os nomes de relatório desta seção são descrição interna. O nome de tela de
 | Compras | Por fornecedor e período, histórico de custo por produto |
 | Maletas | Remessas por vendedor e semana, **nota de remessa (PDF)**, saldo atual por maleta, maletas em aberto e atrasadas, reposições |
 | Vendas | Por vendedor, praça, cliente, produto, categoria e período; ranking; ticket médio; vendas canceladas |
-| Devolução e troca | Por vendedor e motivo, taxa de devolução, peças com defeito, créditos em aberto e utilizados, reembolsos, autorizações de exceção |
+| Devolução e troca | Por vendedor e motivo, taxa de devolução, peças com defeito, trocas, créditos em aberto e utilizados, reembolsos (dinheiro devolvido), autorizações de exceção, e a **conferência** das devoluções e trocas (§13). Só a dona (ADMIN); linhas, rodapé e detalhamento saem das mesmas condições; Dólar e Guarani pela cotação do dia de **cada lançamento** (da devolução, da troca, de quando o crédito nasceu, do dinheiro devolvido, do pedido), o total é a soma das linhas já convertidas; a devolução, a troca e o crédito cancelados aparecem marcados e ficam fora do total (tarefa 6.10) |
 | Acerto | Por vendedor e semana, faltas e pendências, descontos concedidos, esperado x contado |
 | Financeiro | Contas a receber e a pagar, fluxo de caixa, inadimplência, cheques (a compensar, devolvidos), recebimentos por forma de pagamento, DRE simplificado, lucro por produto e por vendedor |
 | Comissões | Por vendedor e semana, pagas e a pagar |
@@ -433,7 +433,7 @@ Os nomes de relatório desta seção são descrição interna. O nome de tela de
 
 ### App do vendedor (só dados dele, sem custo)
 
-Minha maleta (saldo e peças); minhas vendas por período, cliente e produto; meus clientes e valores a receber deles; minhas devoluções e trocas; meu acerto da semana e minha comissão; recebimentos por forma de pagamento.
+Minha maleta (saldo e peças); minhas vendas por período, cliente e produto; meus clientes e valores a receber deles; minhas devoluções e trocas (por motivo, com o que voltou em dinheiro e em crédito) e o crédito dos meus clientes (gerado, usado e em aberto); meu acerto da semana e minha comissão; recebimentos por forma de pagamento (o crédito do cliente não é dinheiro recebido e fica de fora). Tudo só dele, sem custo (tarefa 6.10).
 
 Como o app é offline, o relatório sai do banco local com o aviso: **Dados até dd/mm às hh:mm. N itens aguardando envio** (ou **N vendas aguardando envio**, quando só houver vendas). O Dólar e o Guarani usam as cotações recebidas do servidor, e a data da última cotação aparece junto desse aviso.
 
@@ -446,7 +446,8 @@ Como o app é offline, o relatório sai do banco local com o aviso: **Dados até
    - saldo da maleta = enviado − vendido − devolvido − perdido ± trocas;
    - soma das vendas = contas a receber geradas;
    - total recebido = lançamentos de caixa;
-   - total do acerto = vendas − descontos − reembolsos − comissão.
+   - total do acerto = vendas − descontos − reembolsos − comissão;
+   - **devolução e troca** (tarefa 6.10; rota `GET /api/dona/relatorios/devolucoes/conferencia`, só leitura, num retrato só do banco, deve vir sempre vazia): (1) o movimento da maleta de cada devolução e troca bate com as peças que deviam voltar a ela (e o estorno dele, se cancelada) e a conta do estoque da loja mais as maletas fecha com devolução, troca e os estornos; (2) por linha vendida, o devolvido (peças e valor) nunca passa do vendido; (3) por crédito, o usado é a soma dos usos e nunca passa do valor (créditos − usos = em aberto); (4) por venda, o dinheiro devolvido não passa do pago, salvo devolução que a dona já foi avisada para revisar; (5) por venda concluída, o recebido líquido (pagamentos menos reembolsos, inclusive em crédito) fica entre zero e o total menos o devolvido.
 
    As conciliações são feitas **em Real**, com os valores gravados. Dólar e Guarani **nunca entram em conferência**, porque são só conversão para a tela (§7.5).
 4. **Testes automatizados** para cada relatório, com massa de dados conhecida e resultado calculado à mão, rodando no CI a cada Pull Request (backend com PostgreSQL via Testcontainers).

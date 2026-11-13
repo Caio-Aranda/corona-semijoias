@@ -11,7 +11,9 @@ import {
   ORDEM_DOS_RELATORIOS_DE_COMPRAS,
   ORDEM_DOS_RELATORIOS_DE_ESTOQUE,
 } from './relatorios-estoque';
+import { ORDEM_DOS_RELATORIOS_DE_DEVOLUCAO } from './relatorios-devolucao';
 import { ORDEM_DOS_RELATORIOS_DE_MALETA } from './relatorios-maleta';
+import { TEXTOS_DE_RELATORIOS_DE_DEVOLUCAO } from '../textos-relatorios-devolucao';
 
 /** As telas do menu. A chave aparece na barra de endereço (#/pessoas/usuarios), nunca na tela. */
 export const ROTAS = [
@@ -67,6 +69,14 @@ export const ROTAS = [
   'relatorios/maleta-mercadoria',
   'relatorios/maleta-em-aberto',
   'relatorios/maleta-reposicoes',
+  'relatorios/devolucao-por-motivo',
+  'relatorios/devolucao-por-vendedor',
+  'relatorios/devolucao-defeitos',
+  'relatorios/devolucao-trocas',
+  'relatorios/devolucao-creditos',
+  'relatorios/devolucao-reembolsos',
+  'relatorios/devolucao-autorizacoes',
+  'relatorios/devolucao-conferencia',
 ] as const;
 export type Rota = (typeof ROTAS)[number];
 
@@ -156,6 +166,19 @@ export const MENU = [
       chave: `relatorios/${nome}`,
       rotulo: RELATORIOS[nome].titulo,
     })),
+  },
+  {
+    titulo: TEXTOS_DE_RELATORIOS_DE_DEVOLUCAO.grupoDoMenu,
+    itens: [
+      ...ORDEM_DOS_RELATORIOS_DE_DEVOLUCAO.map((nome) => ({
+        chave: `relatorios/${nome}`,
+        rotulo: RELATORIOS[nome].titulo,
+      })),
+      {
+        chave: 'relatorios/devolucao-conferencia',
+        rotulo: TEXTOS_DE_RELATORIOS_DE_DEVOLUCAO.conferencia.menu,
+      },
+    ],
   },
 ];
 

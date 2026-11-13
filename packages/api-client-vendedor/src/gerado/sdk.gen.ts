@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AcharPecaDaMinhaMaletaData, AcharPecaDaMinhaMaletaResponses, AvisarDiferencaNaConferenciaData, AvisarDiferencaNaConferenciaResponses, BaixarFotoDaMinhaMaletaData, BaixarFotoDaMinhaMaletaResponses, BuscarPecaDaMinhaMaletaData, BuscarPecaDaMinhaMaletaResponses, CadastrarMeuClienteData, CadastrarMeuClienteResponses, CancelarDevolucaoDoVendedorData, CancelarDevolucaoDoVendedorResponses, CancelarTrocaDoVendedorData, CancelarTrocaDoVendedorResponses, ConferirDadosData, ConferirDadosResponses, ConferirMinhaMaletaData, ConferirMinhaMaletaResponses, DevolverDoClienteData, DevolverDoClienteResponses, EntrarData, EntrarResponses, EnviarOperacoesData, EnviarOperacoesResponses, EstornarVendaDoVendedorData, EstornarVendaDoVendedorResponses, EuData, EuResponses, GuardarEmQuarentenaData, GuardarEmQuarentenaResponses, ListarAutorizacoesDoVendedorData, ListarAutorizacoesDoVendedorResponses, ListarCreditosDoVendedorData, ListarCreditosDoVendedorResponses, ListarDevolucoesDoVendedorData, ListarDevolucoesDoVendedorResponses, ListarMeusClientesData, ListarMeusClientesResponses, ListarMinhasMaletasData, ListarMinhasMaletasResponses, ListarTrocasDoVendedorData, ListarTrocasDoVendedorResponses, ListarVendasDoVendedorData, ListarVendasDoVendedorResponses, PedirAutorizacaoData, PedirAutorizacaoResponses, ReceberDadosData, ReceberDadosResponses, RegistrarTrocaData, RegistrarTrocaResponses, RelatorioDeMeusRecebimentosData, RelatorioDeMeusRecebimentosResponses, RelatorioDeMinhasVendasData, RelatorioDeMinhasVendasResponses, RelatorioDeValoresAReceberData, RelatorioDeValoresAReceberResponses, RenovarData, RenovarResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SoVendedorData, SoVendedorResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarDoVendedorData, ValidarDoVendedorResponses, ValorDoVendedorData, ValorDoVendedorResponses, VendasComAPecaData, VendasComAPecaResponses, VenderNaMaletaData, VenderNaMaletaResponses, VerAutorizacaoDoVendedorData, VerAutorizacaoDoVendedorResponses, VerConferenciaDaMinhaMaletaData, VerConferenciaDaMinhaMaletaResponses, VerCotacaoDeHojeData, VerCotacaoDeHojeResponses, VerCreditoDoVendedorData, VerCreditoDoVendedorResponses, VerDevolucaoDoVendedorData, VerDevolucaoDoVendedorResponses, VerMeuClienteData, VerMeuClienteResponses, VerMinhaMaletaData, VerMinhaMaletaResponses, VerTrocaDoVendedorData, VerTrocaDoVendedorResponses, VerVendaDoVendedorData, VerVendaDoVendedorResponses } from './types.gen';
+import type { AcharPecaDaMinhaMaletaData, AcharPecaDaMinhaMaletaResponses, AvisarDiferencaNaConferenciaData, AvisarDiferencaNaConferenciaResponses, BaixarFotoDaMinhaMaletaData, BaixarFotoDaMinhaMaletaResponses, BuscarPecaDaMinhaMaletaData, BuscarPecaDaMinhaMaletaResponses, CadastrarMeuClienteData, CadastrarMeuClienteResponses, CancelarDevolucaoDoVendedorData, CancelarDevolucaoDoVendedorResponses, CancelarTrocaDoVendedorData, CancelarTrocaDoVendedorResponses, ConferirDadosData, ConferirDadosResponses, ConferirMinhaMaletaData, ConferirMinhaMaletaResponses, DevolverDoClienteData, DevolverDoClienteResponses, EntrarData, EntrarResponses, EnviarOperacoesData, EnviarOperacoesResponses, EstornarVendaDoVendedorData, EstornarVendaDoVendedorResponses, EuData, EuResponses, GuardarEmQuarentenaData, GuardarEmQuarentenaResponses, ListarAutorizacoesDoVendedorData, ListarAutorizacoesDoVendedorResponses, ListarCreditosDoVendedorData, ListarCreditosDoVendedorResponses, ListarDevolucoesDoVendedorData, ListarDevolucoesDoVendedorResponses, ListarMeusClientesData, ListarMeusClientesResponses, ListarMinhasMaletasData, ListarMinhasMaletasResponses, ListarTrocasDoVendedorData, ListarTrocasDoVendedorResponses, ListarVendasDoVendedorData, ListarVendasDoVendedorResponses, PedirAutorizacaoData, PedirAutorizacaoResponses, ReceberDadosData, ReceberDadosResponses, RegistrarTrocaData, RegistrarTrocaResponses, RelatorioDeCreditosDosMeusClientesData, RelatorioDeCreditosDosMeusClientesResponses, RelatorioDeMeusRecebimentosData, RelatorioDeMeusRecebimentosResponses, RelatorioDeMinhasDevolucoesETrocasData, RelatorioDeMinhasDevolucoesETrocasResponses, RelatorioDeMinhasVendasData, RelatorioDeMinhasVendasResponses, RelatorioDeValoresAReceberData, RelatorioDeValoresAReceberResponses, RenovarData, RenovarResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SoVendedorData, SoVendedorResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarDoVendedorData, ValidarDoVendedorResponses, ValorDoVendedorData, ValorDoVendedorResponses, VendasComAPecaData, VendasComAPecaResponses, VenderNaMaletaData, VenderNaMaletaResponses, VerAutorizacaoDoVendedorData, VerAutorizacaoDoVendedorResponses, VerConferenciaDaMinhaMaletaData, VerConferenciaDaMinhaMaletaResponses, VerCotacaoDeHojeData, VerCotacaoDeHojeResponses, VerCreditoDoVendedorData, VerCreditoDoVendedorResponses, VerDevolucaoDoVendedorData, VerDevolucaoDoVendedorResponses, VerMeuClienteData, VerMeuClienteResponses, VerMinhaMaletaData, VerMinhaMaletaResponses, VerTrocaDoVendedorData, VerTrocaDoVendedorResponses, VerVendaDoVendedorData, VerVendaDoVendedorResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -344,9 +344,31 @@ export const relatorioDeValoresAReceber = <ThrowOnError extends boolean = false>
 });
 
 /**
+ * Crédito dos meus clientes
+ *
+ * Por cliente do vendedor logado: crédito gerado, usado e ainda em aberto, sem os cancelados.
+ */
+export const relatorioDeCreditosDosMeusClientes = <ThrowOnError extends boolean = false>(options?: Options<RelatorioDeCreditosDosMeusClientesData, ThrowOnError>): RequestResult<RelatorioDeCreditosDosMeusClientesResponses, unknown, ThrowOnError> => (options?.client ?? client).get<RelatorioDeCreditosDosMeusClientesResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/relatorios/creditos',
+    ...options
+});
+
+/**
+ * Minhas devoluções e trocas
+ *
+ * Só as do vendedor logado, sem as canceladas, por motivo e no período (de e até, horário de Brasília; ambos opcionais). Traz quanto voltou em dinheiro e quanto ficou em crédito, também em Dólar e Guarani pela cotação do dia de cada uma.
+ */
+export const relatorioDeMinhasDevolucoesETrocas = <ThrowOnError extends boolean = false>(options?: Options<RelatorioDeMinhasDevolucoesETrocasData, ThrowOnError>): RequestResult<RelatorioDeMinhasDevolucoesETrocasResponses, unknown, ThrowOnError> => (options?.client ?? client).get<RelatorioDeMinhasDevolucoesETrocasResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/relatorios/devolucoes',
+    ...options
+});
+
+/**
  * Meus recebimentos por forma de pagamento
  *
- * O que os clientes do vendedor pagaram no período, por forma, já descontados os reembolsos.
+ * O que os clientes do vendedor pagaram no período, por forma, já descontados os reembolsos. O crédito do cliente não é dinheiro recebido e não entra.
  */
 export const relatorioDeMeusRecebimentos = <ThrowOnError extends boolean = false>(options?: Options<RelatorioDeMeusRecebimentosData, ThrowOnError>): RequestResult<RelatorioDeMeusRecebimentosResponses, unknown, ThrowOnError> => (options?.client ?? client).get<RelatorioDeMeusRecebimentosResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
