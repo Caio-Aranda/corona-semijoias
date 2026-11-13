@@ -29,12 +29,20 @@ public class FormatosDeOperacao {
     /** Dia em que o formato 1 de todos os tipos foi publicado (tarefa 5.5). */
     static final Instant FORMATO_1 = Instant.parse("2026-11-11T00:00:00Z");
 
+    /** Dia em que o formato 1 dos tipos da Fase 6 foi publicado (tarefa 6.7). A VENDA com crédito não ganha formato. */
+    static final Instant FORMATO_1_DA_FASE_6 = Instant.parse("2026-11-13T00:00:00Z");
+
     private static final Map<String, Map<Integer, Instant>> PRODUCAO = Map.of(
             "VENDA", Map.of(1, FORMATO_1),
             "ESTORNO_VENDA", Map.of(1, FORMATO_1),
             "CLIENTE_NOVO", Map.of(1, FORMATO_1),
             "CLIENTE_ALTERADO", Map.of(1, FORMATO_1),
-            "CONFERENCIA", Map.of(1, FORMATO_1));
+            "CONFERENCIA", Map.of(1, FORMATO_1),
+            "DEVOLUCAO", Map.of(1, FORMATO_1_DA_FASE_6),
+            "PEDIDO_AUTORIZACAO", Map.of(1, FORMATO_1_DA_FASE_6),
+            "TROCA", Map.of(1, FORMATO_1_DA_FASE_6),
+            "CANCELAR_DEVOLUCAO", Map.of(1, FORMATO_1_DA_FASE_6),
+            "CANCELAR_TROCA", Map.of(1, FORMATO_1_DA_FASE_6));
 
     private final Clock relogio;
     private final Duration prazo;

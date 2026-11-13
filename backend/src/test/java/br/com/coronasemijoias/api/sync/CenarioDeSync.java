@@ -1,6 +1,17 @@
 package br.com.coronasemijoias.api.sync;
 
+import br.com.coronasemijoias.api.comum.erros.ErroDaApi;
+import br.com.coronasemijoias.api.creditos.ServicoDeCreditos;
+import br.com.coronasemijoias.api.devolucoes.ServicoDeAutorizacoes;
+import br.com.coronasemijoias.api.devolucoes.ServicoDeDevolucoes;
+import br.com.coronasemijoias.api.devolucoes.ServicoDeDevolucoes.ModoDaDevolucao;
+import br.com.coronasemijoias.api.devolucoes.ServicoDeDevolucoes.PecaDoPedido;
+import br.com.coronasemijoias.api.devolucoes.ServicoDeDevolucoes.PedidoDaDevolucaoDoCliente;
 import br.com.coronasemijoias.api.estoque.ServicoDeEstoque;
+import br.com.coronasemijoias.api.trocas.ServicoDeTrocas;
+import br.com.coronasemijoias.api.trocas.ServicoDeTrocas.DevolucaoDaTroca;
+import br.com.coronasemijoias.api.trocas.ServicoDeTrocas.PedidoDeTroca;
+import br.com.coronasemijoias.api.trocas.ServicoDeTrocas.VendaDaTroca;
 import br.com.coronasemijoias.api.estoque.ServicoDeEstoque.OrigemDoMovimento;
 import br.com.coronasemijoias.api.estoque.ServicoDeEstoque.Pedido;
 import br.com.coronasemijoias.api.estoque.ServicoDeEstoque.TipoDeMovimento;
@@ -42,6 +53,11 @@ final class CenarioDeSync {
     final ServicoDeConferencia conferencia;
     final ServicoDeVendas vendas;
     final UUID categoria;
+    // Fase 6 (tarefa 6.7): só para o oráculo de dois vendedores e o estresse; ver fase6(...).
+    ServicoDeDevolucoes devolucoes;
+    ServicoDeAutorizacoes autorizacoes;
+    ServicoDeTrocas trocas;
+    ServicoDeCreditos creditos;
 
     CenarioDeSync(JdbcTemplate jdbc, UsuariosDeTeste usuarios, ServicoDeEstoque estoque, ServicoDeRemessas remessas,
             ServicoDeConferencia conferencia, ServicoDeVendas vendas) {
@@ -53,6 +69,16 @@ final class CenarioDeSync {
         this.vendas = vendas;
         this.categoria = UUID.randomUUID();
         jdbc.update("INSERT INTO corona.categorias (id, nome) VALUES (?, ?)", categoria, "Categoria " + categoria);
+    }
+
+    /** Liga as operações da Fase 6 (devolução, autorização, troca e crédito) neste cenário. */
+    CenarioDeSync fase6(ServicoDeDevolucoes devolucoes, ServicoDeAutorizacoes autorizacoes, ServicoDeTrocas trocas,
+            ServicoDeCreditos creditos) {
+        this.devolucoes = devolucoes;
+        this.autorizacoes = autorizacoes;
+        this.trocas = trocas;
+        this.creditos = creditos;
+        return this;
     }
 
     UUID dona() {
@@ -160,6 +186,105 @@ final class CenarioDeSync {
                         List.of(new ServicoDeVendas.LinhaDoPedido(produto, 1, null)), List.of(), null));
     }
 
+    // --- Fase 6 (tarefa 6.7): cada operação pelo serviço real; o que a regra recusa volta vazio (o cenário é aleatório) ---
+
+    /** Preço congelado da peça na maleta. */
+    private BigDecimal preco(UUID maleta, UUID produto) {
+        return jdbc.queryForObject("SELECT preco_remessa FROM corona.itens_remessa WHERE remessa_id = ? AND produto_id = ?",
+                BigDecimal.class, maleta, produto);
+    }
+
+    /** Vende uma peça à vista e paga (a devolução e a troca só valem para venda paga). */
+    java.util.Optional<UUID> venderPago(UsuarioDeTeste vendedor, UUID maleta, UUID cliente, UUID produto) {
+        UUID id = UUID.randomUUID();
+        return tentar(() -> vendas.vender(vendedor.vendedorId(), vendedor.id(), usuarios.aparelhoDe(vendedor),
+                new ServicoDeVendas.PedidoDeVenda(id, maleta, cliente, List.of(new ServicoDeVendas.LinhaDoPedido(produto, 1, null)),
+                        List.of(new ServicoDeVendas.PagamentoDoPedido(UUID.randomUUID(), preco(maleta, produto), "DINHEIRO")), null))
+                .vendaId());
+    }
+
+    /** Vende uma peça pagando com o crédito; {@code peloEnvio} e pedindo o preço inteiro, acima do saldo vira revisão. */
+    java.util.Optional<UUID> venderComCredito(UsuarioDeTeste vendedor, UUID maleta, UUID cliente, UUID produto, UUID credito,
+            boolean peloEnvio) {
+        UUID id = UUID.randomUUID();
+        BigDecimal valor = preco(maleta, produto);
+        if (!peloEnvio) {
+            BigDecimal saldo = jdbc.queryForObject("SELECT valor - valor_utilizado FROM corona.creditos_cliente WHERE id = ?",
+                    BigDecimal.class, credito);
+            valor = valor.min(saldo);
+            if (valor.signum() <= 0) {
+                return java.util.Optional.empty();
+            }
+        }
+        ServicoDeVendas.PedidoDeVenda pedido = new ServicoDeVendas.PedidoDeVenda(id, maleta, cliente,
+                List.of(new ServicoDeVendas.LinhaDoPedido(produto, 1, null)),
+                List.of(new ServicoDeVendas.PagamentoDoPedido(UUID.randomUUID(), valor, "CREDITO", credito)), null);
+        return tentar(() -> (peloEnvio
+                ? vendas.venderPeloEnvio(vendedor.vendedorId(), vendedor.id(), usuarios.aparelhoDe(vendedor), pedido, null, false)
+                : vendas.vender(vendedor.vendedorId(), vendedor.id(), usuarios.aparelhoDe(vendedor), pedido)).vendaId());
+    }
+
+    java.util.Optional<UUID> devolver(UsuarioDeTeste vendedor, UUID venda, UUID produto, String estado) {
+        UUID id = UUID.randomUUID();
+        return tentar(() -> devolucoes.devolver(vendedor.vendedorId(), vendedor.id(), usuarios.aparelhoDe(vendedor),
+                new PedidoDaDevolucaoDoCliente(id, venda, "DEFEITO".equals(estado) ? "DEFEITO" : "ARREPENDIMENTO", null, "PIX",
+                        List.of(new PecaDoPedido(produto, 1, estado)), null), null, false, ModoDaDevolucao.ONLINE).devolucaoId());
+    }
+
+    /** O pedido pelo envio (o desnecessário é gravado como fora do prazo, dúvida P13). */
+    java.util.Optional<UUID> pedir(UsuarioDeTeste vendedor, UUID venda, UUID produto) {
+        UUID id = UUID.randomUUID();
+        return tentar(() -> autorizacoes.pedir(vendedor.vendedorId(), vendedor.id(), usuarios.aparelhoDe(vendedor),
+                new ServicoDeAutorizacoes.PedidoDeAutorizacao(id, venda, "ARREPENDIMENTO", null,
+                        List.of(new PecaDoPedido(produto, 1, "BOA"))), null, false, ModoDaDevolucao.ENVIO).autorizacaoId());
+    }
+
+    void decidir(UUID autorizacao, boolean aprovar) {
+        tentar(() -> aprovar ? autorizacoes.aprovar(autorizacao, dona()) : autorizacoes.negar(autorizacao, dona(), "Não"));
+    }
+
+    /** Troca a peça A da venda pela B da maleta (conferida); devolve o id do crédito da troca. */
+    java.util.Optional<UUID> trocar(UsuarioDeTeste vendedor, UUID venda, UUID produtoA, UUID maletaB, UUID produtoB) {
+        UUID credito = UUID.randomUUID();
+        UUID vendaA = venda;
+        return tentar(() -> {
+            trocas.trocar(vendedor.vendedorId(), vendedor.id(), usuarios.aparelhoDe(vendedor), new PedidoDeTroca(UUID.randomUUID(),
+                    credito, UUID.randomUUID(), new DevolucaoDaTroca(UUID.randomUUID(), vendaA, "ARREPENDIMENTO", null,
+                            List.of(new PecaDoPedido(produtoA, 1, "BOA")), null),
+                    new VendaDaTroca(UUID.randomUUID(), maletaB, List.of(new ServicoDeVendas.LinhaDoPedido(produtoB, 1, null)),
+                            List.of(), null)), null, false, ModoDaDevolucao.ONLINE);
+            return credito;
+        });
+    }
+
+    void transferirCredito(UUID credito, UUID outroVendedor) {
+        tentar(() -> creditos.transferir(credito, outroVendedor, UUID.randomUUID(), dona()));
+    }
+
+    void cancelarDevolucao(UUID devolucao) {
+        tentar(() -> devolucoes.cancelar(devolucao, null, dona(), null, UUID.randomUUID(), "Errada", null));
+    }
+
+    void cancelarTroca(UUID troca) {
+        tentar(() -> trocas.cancelar(troca, null, dona(), null, UUID.randomUUID(), "Errada", null));
+    }
+
+    void revisarSemSaldo(UUID semSaldo, boolean manter) {
+        tentar(() -> manter ? creditos.manter(semSaldo, dona(), null) : creditos.naoAceitar(semSaldo, dona(), "Não"));
+    }
+
+    void revisarDevolucao(UUID devolucao, boolean manter) {
+        tentar(() -> manter ? devolucoes.manter(devolucao, dona(), null) : devolucoes.naoAceitar(devolucao, dona(), "Não"));
+    }
+
+    private static <T> java.util.Optional<T> tentar(java.util.function.Supplier<T> o) {
+        try {
+            return java.util.Optional.ofNullable(o.get());
+        } catch (ErroDaApi | org.springframework.dao.DataIntegrityViolationException recusada) {
+            return java.util.Optional.empty();
+        }
+    }
+
     UUID cliente(UUID vendedorResponsavel) {
         UUID id = UUID.randomUUID();
         jdbc.update("""
@@ -244,7 +369,8 @@ final class CenarioDeSync {
         Map<String, List<Map<String, Object>>> tudo = new HashMap<>();
         for (String t : List.of("cotacoes", "categorias", "semanas", "clientes", "produtos", "produto_codigos",
                 "produtos_fotos", "remessas", "itens_remessa", "movimentos_remessa", "vendas", "itens_venda",
-                "pagamentos_cliente", "conferencias", "itens_conferencia")) {
+                "pagamentos_cliente", "conferencias", "itens_conferencia", "devolucoes", "itens_devolucao",
+                "autorizacoes_excecao", "itens_autorizacao", "trocas", "creditos_cliente", "usos_credito", "creditos_sem_saldo")) {
             tudo.put(t, jdbc.queryForList("SELECT * FROM corona." + t));
         }
         Map<String, Map<UUID, Linha>> r = new HashMap<>();
@@ -272,6 +398,20 @@ final class CenarioDeSync {
         r.put("conferencias", linhas(tudo.get("conferencias"), l -> minhasConferencias.contains(l.get("id"))));
         r.put("itens_conferencia", linhas(tudo.get("itens_conferencia"),
                 l -> minhasConferencias.contains(l.get("conferencia_id"))));
+        // Fase 6 (tarefa 6.7; ADR-0014, item 14): as do próprio vendedor; os itens e usos pela linha mãe; o crédito sem saldo
+        // pela venda.
+        Set<Object> minhasDevolucoes = ids(tudo.get("devolucoes"), l -> v.equals(l.get("vendedor_id")));
+        r.put("devolucoes", linhas(tudo.get("devolucoes"), l -> minhasDevolucoes.contains(l.get("id"))));
+        r.put("itens_devolucao", linhas(tudo.get("itens_devolucao"), l -> minhasDevolucoes.contains(l.get("devolucao_id"))));
+        Set<Object> minhasAutorizacoes = ids(tudo.get("autorizacoes_excecao"), l -> v.equals(l.get("vendedor_id")));
+        r.put("autorizacoes_excecao", linhas(tudo.get("autorizacoes_excecao"), l -> minhasAutorizacoes.contains(l.get("id"))));
+        r.put("itens_autorizacao", linhas(tudo.get("itens_autorizacao"),
+                l -> minhasAutorizacoes.contains(l.get("autorizacao_id"))));
+        r.put("trocas", linhas(tudo.get("trocas"), l -> v.equals(l.get("vendedor_id"))));
+        Set<Object> meusCreditos = ids(tudo.get("creditos_cliente"), l -> v.equals(l.get("vendedor_id")));
+        r.put("creditos_cliente", linhas(tudo.get("creditos_cliente"), l -> meusCreditos.contains(l.get("id"))));
+        r.put("usos_credito", linhas(tudo.get("usos_credito"), l -> meusCreditos.contains(l.get("credito_id"))));
+        r.put("creditos_sem_saldo", linhas(tudo.get("creditos_sem_saldo"), l -> minhasVendas.contains(l.get("venda_id"))));
         r.values().removeIf(Map::isEmpty);
         return r;
     }

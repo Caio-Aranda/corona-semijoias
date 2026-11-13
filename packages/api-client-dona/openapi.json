@@ -1028,6 +1028,69 @@
         },
         "type" : "object"
       },
+      "CreditoSemSaldo" : {
+        "properties" : {
+          "clienteId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "creditoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "observacaoRevisao" : {
+            "type" : "string"
+          },
+          "pagamentoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "registradaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "revisadaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "situacao" : {
+            "type" : "string"
+          },
+          "valorPedido" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorUsado" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "CreditosSemSaldoDaDonaControllerPedidoDeRevisao" : {
+        "properties" : {
+          "observacao" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "DadosDoUsuario" : {
         "properties" : {
           "id" : {
@@ -1167,6 +1230,14 @@
           },
           "vendedorId" : {
             "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "DevolucoesDaDonaControllerPedidoDeRevisao" : {
+        "properties" : {
+          "observacao" : {
             "type" : "string"
           }
         },
@@ -4106,14 +4177,6 @@
           }
         },
         "required" : [ "tokenDeRenovacao" ],
-        "type" : "object"
-      },
-      "PedidoDeRevisao" : {
-        "properties" : {
-          "observacao" : {
-            "type" : "string"
-          }
-        },
         "type" : "object"
       },
       "PedidoDeSituacao" : {
@@ -8271,6 +8334,122 @@
         "tags" : [ "creditos-da-dona-controller" ]
       }
     },
+    "/api/dona/creditos-sem-saldo" : {
+      "get" : {
+        "description" : "As vendas que chegaram do computador do vendedor pagas com crédito do cliente acima do saldo, da mais nova para a mais antiga (no máximo 500), pela situação (padrão: EM_REVISAO, para revisar). A venda entrou; o crédito pagou só o que tinha e o resto ficou a receber do cliente.",
+        "operationId" : "listarCreditosSemSaldo",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/CreditoSemSaldo"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Vendas pagas com crédito que já tinha acabado",
+        "tags" : [ "creditos-sem-saldo-da-dona-controller" ]
+      }
+    },
+    "/api/dona/creditos-sem-saldo/{id}/manter" : {
+      "post" : {
+        "description" : "O cliente continua devendo o resto. Nada muda além da revisão. Repetir devolve 200; já não aceita, 409.",
+        "operationId" : "manterCreditoSemSaldo",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreditosSemSaldoDaDonaControllerPedidoDeRevisao"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CreditoSemSaldo"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Manter a venda com crédito que já tinha acabado",
+        "tags" : [ "creditos-sem-saldo-da-dona-controller" ]
+      }
+    },
+    "/api/dona/creditos-sem-saldo/{id}/nao-aceitar" : {
+      "post" : {
+        "description" : "O valor que o crédito não pagou fica como pendência do vendedor, cobrada no acerto. Nenhum pagamento ou valor muda. Observação obrigatória. Repetir devolve 200; já mantida, 409.",
+        "operationId" : "naoAceitarCreditoSemSaldo",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreditosSemSaldoDaDonaControllerPedidoDeRevisao"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CreditoSemSaldo"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Não aceitar a venda com crédito que já tinha acabado",
+        "tags" : [ "creditos-sem-saldo-da-dona-controller" ]
+      }
+    },
     "/api/dona/creditos/{id}" : {
       "get" : {
         "operationId" : "verCredito",
@@ -8546,7 +8725,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/PedidoDeRevisao"
+                "$ref" : "#/components/schemas/DevolucoesDaDonaControllerPedidoDeRevisao"
               }
             }
           }
@@ -8587,7 +8766,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/PedidoDeRevisao"
+                "$ref" : "#/components/schemas/DevolucoesDaDonaControllerPedidoDeRevisao"
               }
             }
           }

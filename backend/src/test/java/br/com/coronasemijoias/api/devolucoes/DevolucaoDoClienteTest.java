@@ -1044,16 +1044,17 @@ class DevolucaoDoClienteTest extends TesteDeIntegracao {
     // --- 17. registro de tabelas ---
 
     @Test
-    void asTabelasNovasEstaoNoRegistroMasNadaDelasVaiAoVendedorAinda() throws Exception {
+    void asTabelasNovasVaoAoVendedorDesdeATarefa67() throws Exception {
         RegistroDeTabelas registro = RegistroDeTabelas.daAplicacao();
         for (String nome : List.of("devolucoes", "itens_devolucao")) {
             TabelaSincronizavel t = registro.sincronizavel(nome).orElseThrow();
             assertThat(t.regra().declarada()).as(nome).isTrue();
-            assertThat(t.regra().condicao()).as(nome).isEqualTo("FALSE");
+            // Desde a tarefa 6.7, o vendedor recebe as dele (filtro do vendedor; PullDaFase6Test).
+            assertThat(t.regra().condicao()).as(nome).isNotEqualTo("FALSE");
         }
         assertThat(registro.sincronizavel("itens_devolucao").orElseThrow().imutavel()).isTrue();
-        assertThat(registro.sincronizavel("pagamentos_cliente").orElseThrow().colunas()).doesNotContain("devolucao_id", "estorna_id");
-        assertThat(registro.sincronizavel("movimentos_remessa").orElseThrow().colunas()).doesNotContain("devolucao_id");
+        assertThat(registro.sincronizavel("pagamentos_cliente").orElseThrow().colunas()).contains("devolucao_id", "estorna_id");
+        assertThat(registro.sincronizavel("movimentos_remessa").orElseThrow().colunas()).contains("devolucao_id");
 
         UsuarioDeTeste v = usuarios.criarVendedor();
         UUID anel = peca("50.00", 10);
@@ -1071,10 +1072,12 @@ class DevolucaoDoClienteTest extends TesteDeIntegracao {
                 break;
             }
         }
-        assertThat(recebidas).noneMatch(l -> l.tabela().equals("devolucoes") || l.tabela().equals("itens_devolucao"));
+        assertThat(recebidas).filteredOn(l -> l.tabela().equals("devolucoes")).isNotEmpty()
+                .allSatisfy(l -> assertThat(l.colunas()).doesNotContainKeys("registrada_por", "revisada_por", "cancelada_por"));
+        assertThat(recebidas).filteredOn(l -> l.tabela().equals("itens_devolucao")).isNotEmpty();
         assertThat(recebidas).filteredOn(l -> l.tabela().equals("pagamentos_cliente")).isNotEmpty()
-                .allSatisfy(l -> assertThat(l.colunas()).doesNotContainKeys("devolucao_id", "estorna_id"));
+                .allSatisfy(l -> assertThat(l.colunas()).containsKeys("devolucao_id", "estorna_id"));
         assertThat(recebidas).filteredOn(l -> l.tabela().equals("movimentos_remessa")).isNotEmpty()
-                .allSatisfy(l -> assertThat(l.colunas()).doesNotContainKeys("devolucao_id"));
+                .allSatisfy(l -> assertThat(l.colunas()).containsKeys("devolucao_id"));
     }
 }

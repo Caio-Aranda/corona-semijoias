@@ -179,7 +179,7 @@ public class ServicoDeTrocas {
         VendaDaTrocaGravada b = vendas.venderNaTroca(vendedorId, usuarioId, aparelho,
                 new PedidoDeVenda(vendaNovaId, venda.remessaId(), a.clienteId(), venda.itens(), venda.pagamentos(),
                         venda.totalConferido()), quando, horaAjustada,
-                new CreditoDaTroca(id, creditoId, pagamentoDoCredito, a.valorDevolvido()));
+                new CreditoDaTroca(id, creditoId, pagamentoDoCredito, a.valorDevolvido()), modo == ModoDaDevolucao.ENVIO);
 
         BigDecimal diferenca = b.total().subtract(a.valorDevolvido());
         if (aparelho != null) {

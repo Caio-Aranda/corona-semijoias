@@ -157,6 +157,99 @@ CREATE TABLE provisorias (
 CREATE INDEX provisorias_da_operacao ON provisorias (operacao_id);
 `;
 
+/**
+ * As tabelas que a recarga dirigida da versão 3 traz de novo (tarefa 6.7, dúvida S6): as oito novas da Fase 6 e as três
+ * que ganharam coluna (as cópias antigas delas não têm o valor novo).
+ */
+export const TABELAS_DA_RECARGA_DIRIGIDA_V3 = Object.freeze([
+  'devolucoes',
+  'itens_devolucao',
+  'autorizacoes_excecao',
+  'itens_autorizacao',
+  'trocas',
+  'creditos_cliente',
+  'usos_credito',
+  'creditos_sem_saldo',
+  'vendas',
+  'pagamentos_cliente',
+  'movimentos_remessa',
+] as const);
+
+/**
+ * Versão 3 (tarefa 6.7; ADR-0014, item 14): as cópias das tabelas da Fase 6 (devolução, autorização, troca, crédito do
+ * cliente e a venda com crédito para a dona revisar), com as colunas da lista do servidor, e as colunas novas de
+ * `vendas`, `pagamentos_cliente` e `movimentos_remessa`. Dinheiro em texto, datas em texto ISO. Banco que já tinha
+ * cursor (já recebeu dados) ganha a marca da recarga dirigida: as onze tabelas vêm de novo, sem apagar nada antes. Banco
+ * novo faz a carga inicial e não precisa.
+ */
+const V3 = `
+CREATE TABLE devolucoes (${CONTROLE},
+  venda_id TEXT NOT NULL, cliente_id TEXT, vendedor_id TEXT, remessa_id TEXT, motivo TEXT, observacao TEXT, destino TEXT,
+  dentro_garantia INTEGER, situacao TEXT, autorizacao_id TEXT, valor_devolvido TEXT, valor_reembolsado TEXT,
+  valor_em_credito TEXT, forma_reembolso TEXT, cotacao_id TEXT, devolvida_em TEXT, hora_ajustada INTEGER,
+  cancelamento_id TEXT, cancelada_em TEXT, motivo_cancelamento TEXT, revisao_fora_do_prazo INTEGER,
+  revisao_acima_do_limite_semanal INTEGER, revisao_acima_do_valor_de_aprovacao INTEGER, revisao_autorizacao_invalida INTEGER,
+  revisao_reembolso_maior_que_pago INTEGER, revisada_em TEXT, observacao_revisao TEXT
+);
+CREATE INDEX devolucoes_da_venda ON devolucoes (venda_id);
+CREATE INDEX devolucoes_do_cliente ON devolucoes (cliente_id);
+
+CREATE TABLE itens_devolucao (${CONTROLE},
+  devolucao_id TEXT NOT NULL, item_venda_id TEXT, quantidade INTEGER NOT NULL, valor TEXT, estado_peca TEXT, destino_peca TEXT
+);
+CREATE INDEX itens_devolucao_da_devolucao ON itens_devolucao (devolucao_id);
+
+CREATE TABLE autorizacoes_excecao (${CONTROLE},
+  venda_id TEXT NOT NULL, vendedor_id TEXT, cliente_id TEXT, motivo TEXT, observacao TEXT, tipo TEXT, situacao TEXT,
+  valor_pedido TEXT, cotacao_id TEXT, pedida_em TEXT, hora_ajustada INTEGER, decidida_em TEXT, motivo_decisao TEXT,
+  valida_ate TEXT
+);
+CREATE INDEX autorizacoes_da_venda ON autorizacoes_excecao (venda_id);
+
+CREATE TABLE itens_autorizacao (${CONTROLE},
+  autorizacao_id TEXT NOT NULL, item_venda_id TEXT, quantidade INTEGER NOT NULL
+);
+CREATE INDEX itens_autorizacao_da_autorizacao ON itens_autorizacao (autorizacao_id);
+
+CREATE TABLE trocas (${CONTROLE},
+  venda_origem_id TEXT NOT NULL, devolucao_id TEXT, venda_nova_id TEXT, cliente_id TEXT, vendedor_id TEXT, diferenca TEXT,
+  cotacao_id TEXT, trocada_em TEXT, hora_ajustada INTEGER, situacao TEXT, cancelamento_id TEXT, cancelada_em TEXT,
+  motivo_cancelamento TEXT
+);
+CREATE INDEX trocas_da_venda_de_origem ON trocas (venda_origem_id);
+CREATE INDEX trocas_do_cliente ON trocas (cliente_id);
+
+CREATE TABLE creditos_cliente (${CONTROLE},
+  cliente_id TEXT NOT NULL, vendedor_id TEXT, origem TEXT, troca_id TEXT, devolucao_id TEXT, valor TEXT NOT NULL,
+  valor_utilizado TEXT, situacao TEXT, cotacao_id TEXT, gerado_em TEXT, hora_ajustada INTEGER, cancelado_em TEXT
+);
+CREATE INDEX creditos_cliente_do_cliente ON creditos_cliente (cliente_id);
+
+CREATE TABLE usos_credito (${CONTROLE},
+  credito_id TEXT NOT NULL, tipo TEXT, venda_id TEXT, pagamento_id TEXT, valor TEXT NOT NULL, estorna_id TEXT, usado_em TEXT
+);
+CREATE INDEX usos_credito_do_credito ON usos_credito (credito_id);
+CREATE INDEX usos_credito_da_venda ON usos_credito (venda_id);
+
+CREATE TABLE creditos_sem_saldo (${CONTROLE},
+  venda_id TEXT NOT NULL, pagamento_id TEXT, credito_id TEXT, valor_pedido TEXT, valor_usado TEXT, situacao TEXT, registrada_em TEXT,
+  revisada_em TEXT, observacao_revisao TEXT
+);
+CREATE INDEX creditos_sem_saldo_da_venda ON creditos_sem_saldo (venda_id);
+CREATE INDEX creditos_sem_saldo_do_credito ON creditos_sem_saldo (credito_id);
+
+ALTER TABLE vendas ADD COLUMN troca_id TEXT;
+ALTER TABLE pagamentos_cliente ADD COLUMN devolucao_id TEXT;
+ALTER TABLE pagamentos_cliente ADD COLUMN estorna_id TEXT;
+ALTER TABLE pagamentos_cliente ADD COLUMN credito_id TEXT;
+ALTER TABLE movimentos_remessa ADD COLUMN devolucao_id TEXT;
+CREATE INDEX pagamentos_cliente_do_credito ON pagamentos_cliente (credito_id);
+
+INSERT INTO estado_sync (chave, valor)
+  SELECT 'recarga_dirigida', '${JSON.stringify(TABELAS_DA_RECARGA_DIRIGIDA_V3)}'
+   WHERE EXISTS (SELECT 1 FROM estado_sync WHERE chave = 'cursor' AND valor IS NOT NULL);
+`;
+
 export const MIGRACOES: readonly MigracaoLocal[] = Object.freeze([
   {
     versao: 1,
@@ -167,6 +260,11 @@ export const MIGRACOES: readonly MigracaoLocal[] = Object.freeze([
     versao: 2,
     descricao: 'operação de origem de cada linha provisória',
     sql: V2,
+  },
+  {
+    versao: 3,
+    descricao: 'tabelas da Fase 6, colunas novas e a recarga dirigida',
+    sql: V3,
   },
 ]);
 
@@ -190,4 +288,13 @@ export const TABELAS_SINCRONIZAVEIS = Object.freeze([
   'pagamentos_cliente',
   'conferencias',
   'itens_conferencia',
+  // Fase 6 (tarefa 6.7, migração local 3).
+  'devolucoes',
+  'itens_devolucao',
+  'autorizacoes_excecao',
+  'itens_autorizacao',
+  'trocas',
+  'creditos_cliente',
+  'usos_credito',
+  'creditos_sem_saldo',
 ] as const);

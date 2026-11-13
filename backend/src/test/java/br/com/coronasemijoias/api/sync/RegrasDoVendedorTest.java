@@ -19,7 +19,13 @@ import org.springframework.jdbc.core.JdbcTemplate;
 class RegrasDoVendedorTest extends TesteDeIntegracao {
 
     private static final Set<String> COLUNAS_DE_PERTENCA = Set.of("vendedor_id", "vendedor_responsavel_id", "remessa_id",
-            "venda_id", "conferencia_id", "produto_id");
+            "venda_id", "conferencia_id", "produto_id", "devolucao_id", "autorizacao_id", "credito_id");
+
+    @Test
+    void nenhumaSincronizavelDaAplicacaoFicaSemEntregarNada() {
+        // Desde a tarefa 6.7, nenhuma tabela da aplicação fica com a regra "FALSE" (ADR-0014, item 14).
+        assertThat(registro.sincronizaveis()).noneMatch(t -> "FALSE".equals(t.regra().condicao()));
+    }
 
     @Autowired
     JdbcTemplate jdbc;

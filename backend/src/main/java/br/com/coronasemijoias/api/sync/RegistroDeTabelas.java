@@ -49,6 +49,10 @@ public final class RegistroDeTabelas {
     /** A linha é de uma venda do vendedor. */
     private static final String DA_VENDA = "EXISTS (SELECT 1 FROM corona.vendas v WHERE v.id = t.venda_id AND v.vendedor_id = ?)";
 
+    /** A linha é de uma devolução do vendedor. */
+    private static final String DA_DEVOLUCAO = "EXISTS (SELECT 1 FROM corona.devolucoes d"
+            + " WHERE d.id = t.devolucao_id AND d.vendedor_id = ?)";
+
     /** As tabelas da aplicação, cada sincronizável com a regra do vendedor (tarefa 5.4). */
     public static RegistroDeTabelas daAplicacao() {
         return new RegistroDeTabelas(
@@ -102,17 +106,18 @@ public final class RegistroDeTabelas {
                                         new Expansao("produtos_fotos", "produto_id", "produto_id"))),
                         new TabelaSincronizavel("movimentos_remessa", List.of(
                                 "remessa_id", "produto_id", "tipo", "quantidade", "venda_id", "dispositivo_id",
-                                "estorna_id"), true, RegraDoVendedor.doVendedor(DA_MALETA.formatted("t.remessa_id"))),
+                                "estorna_id", "devolucao_id"), true, RegraDoVendedor.doVendedor(DA_MALETA.formatted("t.remessa_id"))),
                         // Vendas (tarefa 4.2, ADR-0011): só as do próprio vendedor (privadas, mesmo do cliente da loja). Sem custo.
                         new TabelaSincronizavel("vendas", List.of(
                                 "vendedor_id", "cliente_id", "remessa_id", "status", "subtotal", "desconto", "total",
-                                "cotacao_id", "vendida_em", "estorno_id", "estornada_em", "motivo_estorno"), false,
+                                "cotacao_id", "vendida_em", "estorno_id", "estornada_em", "motivo_estorno", "troca_id"), false,
                                 RegraDoVendedor.doVendedor("t.vendedor_id = ?")),
                         new TabelaSincronizavel("itens_venda", List.of(
                                 "venda_id", "produto_id", "quantidade", "preco_unitario", "desconto"), true,
                                 RegraDoVendedor.doVendedor(DA_VENDA)),
                         new TabelaSincronizavel("pagamentos_cliente", List.of(
-                                "venda_id", "tipo", "forma", "valor", "pago_em"), true, RegraDoVendedor.doVendedor(DA_VENDA)),
+                                "venda_id", "tipo", "forma", "valor", "pago_em", "devolucao_id", "estorna_id", "credito_id"), true,
+                                RegraDoVendedor.doVendedor(DA_VENDA)),
                         // Conferência da maleta (tarefa 4.3): do próprio vendedor.
                         new TabelaSincronizavel("conferencias", List.of(
                                 "remessa_id", "vendedor_id", "dispositivo_id", "divergencias", "conferida_em"), true,
@@ -121,44 +126,48 @@ public final class RegistroDeTabelas {
                                 "conferencia_id", "produto_id", "esperado", "contado"), true,
                                 RegraDoVendedor.doVendedor("EXISTS (SELECT 1 FROM corona.conferencias c"
                                         + " WHERE c.id = t.conferencia_id AND c.vendedor_id = ?)")),
-                        // Devolução do cliente (tarefa 6.3, ADR-0014): sincronizáveis, mas NADA vai ao vendedor ainda (dúvida Q4):
-                        // o Corona Vendas de hoje recusa o lote inteiro se chegar uma tabela que ele não conhece. A tarefa 6.7
-                        // troca o FALSE pelo filtro do vendedor, a expansão e o oráculo, e leva também as colunas novas de
-                        // pagamentos_cliente (devolucao_id, estorna_id) e movimentos_remessa (devolucao_id), que ficam fora até lá.
+                        // Fase 6 (tarefa 6.7; ADR-0014, item 14): devolução, autorização, troca e crédito do próprio vendedor. A
+                        // pertença vem de uma coluna que nunca muda e já existe quando a linha nasce (nenhuma expansão nova): o
+                        // vendedor_id copiado da venda, ou a linha mãe gravada na mesma transação. A devolução que a dona registrar
+                        // de uma venda do vendedor também vai a ele. Nunca vão os "*_por" (quem registrou, revisou ou decidiu).
                         new TabelaSincronizavel("devolucoes", List.of(
                                 "venda_id", "cliente_id", "vendedor_id", "remessa_id", "motivo", "observacao", "destino",
                                 "dentro_garantia", "situacao", "autorizacao_id", "valor_devolvido", "valor_reembolsado",
-                                "forma_reembolso", "cotacao_id", "devolvida_em", "hora_ajustada", "cancelada_em",
-                                "motivo_cancelamento", "revisao_fora_do_prazo", "revisao_acima_do_limite_semanal",
-                                "revisao_acima_do_valor_de_aprovacao", "revisao_autorizacao_invalida",
-                                "revisao_reembolso_maior_que_pago", "revisada_em", "observacao_revisao"), false,
-                                RegraDoVendedor.doVendedor("FALSE")),
+                                "valor_em_credito", "forma_reembolso", "cotacao_id", "devolvida_em", "hora_ajustada",
+                                "cancelamento_id", "cancelada_em", "motivo_cancelamento", "revisao_fora_do_prazo",
+                                "revisao_acima_do_limite_semanal", "revisao_acima_do_valor_de_aprovacao",
+                                "revisao_autorizacao_invalida", "revisao_reembolso_maior_que_pago", "revisada_em",
+                                "observacao_revisao"), false, RegraDoVendedor.doVendedor("t.vendedor_id = ?")),
                         new TabelaSincronizavel("itens_devolucao", List.of(
                                 "devolucao_id", "item_venda_id", "quantidade", "valor", "estado_peca", "destino_peca"), true,
-                                RegraDoVendedor.doVendedor("FALSE")),
-                        // Autorização da dona (tarefa 6.4, ADR-0014, item 6): como as devoluções, nada vai ao vendedor até a
-                        // tarefa 6.7 (que liga o filtro do vendedor e o tipo PEDIDO_AUTORIZACAO no envio).
+                                RegraDoVendedor.doVendedor(DA_DEVOLUCAO)),
                         new TabelaSincronizavel("autorizacoes_excecao", List.of(
                                 "venda_id", "vendedor_id", "cliente_id", "motivo", "observacao", "tipo", "situacao", "valor_pedido",
                                 "cotacao_id", "pedida_em", "hora_ajustada", "decidida_em", "motivo_decisao", "valida_ate"), false,
-                                RegraDoVendedor.doVendedor("FALSE")),
+                                RegraDoVendedor.doVendedor("t.vendedor_id = ?")),
                         new TabelaSincronizavel("itens_autorizacao", List.of(
-                                "autorizacao_id", "item_venda_id", "quantidade"), true, RegraDoVendedor.doVendedor("FALSE")),
-                        // Troca e crédito do cliente (tarefa 6.5, ADR-0014, itens 8 e 9): como as devoluções, nada vai ao
-                        // vendedor até a tarefa 6.7 (filtro do vendedor, os tipos TROCA e CANCELAR_TROCA e o formato da venda
-                        // com crédito). As colunas novas de tabelas antigas (vendas.troca_id, pagamentos_cliente.credito_id,
-                        // devolucoes.valor_em_credito) ficam fora até lá: o Corona Vendas recusa o lote com coluna desconhecida.
+                                "autorizacao_id", "item_venda_id", "quantidade"), true,
+                                RegraDoVendedor.doVendedor("EXISTS (SELECT 1 FROM corona.autorizacoes_excecao a"
+                                        + " WHERE a.id = t.autorizacao_id AND a.vendedor_id = ?)")),
                         new TabelaSincronizavel("trocas", List.of(
                                 "venda_origem_id", "devolucao_id", "venda_nova_id", "cliente_id", "vendedor_id", "diferenca",
-                                "cotacao_id", "trocada_em", "hora_ajustada", "situacao", "cancelada_em", "motivo_cancelamento"),
-                                false, RegraDoVendedor.doVendedor("FALSE")),
+                                "cotacao_id", "trocada_em", "hora_ajustada", "situacao", "cancelamento_id", "cancelada_em",
+                                "motivo_cancelamento"), false, RegraDoVendedor.doVendedor("t.vendedor_id = ?")),
+                        // Só quem pode usar o crédito o recebe. Sem credito_origem_id: no crédito transferido, ele aponta para o
+                        // crédito do vendedor antigo (dúvida S4).
                         new TabelaSincronizavel("creditos_cliente", List.of(
-                                "cliente_id", "vendedor_id", "origem", "troca_id", "devolucao_id", "credito_origem_id", "valor",
-                                "valor_utilizado", "situacao", "cotacao_id", "gerado_em", "hora_ajustada", "cancelado_em"),
-                                false, RegraDoVendedor.doVendedor("FALSE")),
+                                "cliente_id", "vendedor_id", "origem", "troca_id", "devolucao_id", "valor", "valor_utilizado",
+                                "situacao", "cotacao_id", "gerado_em", "hora_ajustada", "cancelado_em"), false,
+                                RegraDoVendedor.doVendedor("t.vendedor_id = ?")),
+                        // Sem credito_destino_id: no uso de transferência, ele aponta para o crédito do vendedor novo (dúvida S4).
                         new TabelaSincronizavel("usos_credito", List.of(
-                                "credito_id", "tipo", "venda_id", "pagamento_id", "credito_destino_id", "valor", "estorna_id",
-                                "usado_em"), true, RegraDoVendedor.doVendedor("FALSE"))
+                                "credito_id", "tipo", "venda_id", "pagamento_id", "valor", "estorna_id", "usado_em"), true,
+                                RegraDoVendedor.doVendedor("EXISTS (SELECT 1 FROM corona.creditos_cliente c"
+                                        + " WHERE c.id = t.credito_id AND c.vendedor_id = ?)")),
+                        // Venda paga pelo envio com crédito acima do saldo, para a dona revisar (tarefa 6.7, V039): pela venda.
+                        new TabelaSincronizavel("creditos_sem_saldo", List.of(
+                                "venda_id", "pagamento_id", "credito_id", "valor_pedido", "valor_usado", "situacao", "registrada_em",
+                                "revisada_em", "observacao_revisao"), false, RegraDoVendedor.doVendedor(DA_VENDA))
                         // Tabela sincronizável nova: declare a regra do vendedor (filtro, expansão, diretório).
                 ),
                 List.of(

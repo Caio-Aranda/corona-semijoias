@@ -38,6 +38,13 @@ export interface OpcoesDaAplicacao {
    * `?tabela=`, que tem cursor próprio).
    */
   cursor: string | null;
+  /**
+   * Recarga dirigida (tarefa 6.7, dúvida S6): a cópia do servidor com a MESMA `version` também é substituída (as cópias
+   * antigas não têm as colunas novas). Só a recarga dirigida usa; o pull normal continua "igual é ignorada".
+   */
+  substituirIgual?: boolean;
+  /** Roda dentro da MESMA transação do lote, depois das linhas (a recarga dirigida tira a tabela da marca aqui). */
+  naMesmaTransacao?: () => void;
   /** Só para os testes: chamado depois de cada linha gravada (para injetar uma falha no meio do lote). */
   depoisDeCadaLinha?: (indice: number) => void;
 }
@@ -114,9 +121,10 @@ export function aplicarLote(
 ): ResultadoDaAplicacao {
   const linhas = conferirLinhas(linhasBrutas);
   return gravar(db, () => {
-    const r = aplicarLinhas(db, linhas, opcoes.depoisDeCadaLinha);
+    const r = aplicarLinhas(db, linhas, opcoes.substituirIgual === true, opcoes.depoisDeCadaLinha);
     reaplicarPendentes(db, r.clientesTocados);
     if (opcoes.cursor !== null) gravarEstado(db, CHAVES.cursor, opcoes.cursor);
+    opcoes.naMesmaTransacao?.();
     return r;
   });
 }
@@ -124,6 +132,7 @@ export function aplicarLote(
 function aplicarLinhas(
   db: BancoAberto,
   linhas: readonly LinhaRecebida[],
+  substituirIgual: boolean,
   depoisDeCadaLinha?: (indice: number) => void,
 ): ResultadoDaAplicacao {
   let gravadas = 0;
@@ -134,7 +143,10 @@ function aplicarLinhas(
       .prepare(`SELECT version, origem_local FROM ${l.tabela} WHERE id = ?`)
       .get(l.id) as { version: number; origem_local: string } | undefined;
     const provisoria = local?.origem_local === 'PROVISORIO';
-    if (local && !provisoria && l.version <= local.version) {
+    const antiga = substituirIgual
+      ? l.version < (local?.version ?? 0)
+      : l.version <= (local?.version ?? 0);
+    if (local && !provisoria && antiga) {
       ignoradas += 1;
       return;
     }

@@ -311,6 +311,25 @@ export type CreditoDoCliente = {
     vendedorId?: string;
 };
 
+export type CreditoSemSaldo = {
+    clienteId?: string;
+    creditoId?: string;
+    id?: string;
+    observacaoRevisao?: string;
+    pagamentoId?: string;
+    registradaEm?: string;
+    revisadaEm?: string;
+    situacao?: string;
+    valorPedido?: string;
+    valorUsado?: string;
+    vendaId?: string;
+    vendedorId?: string;
+};
+
+export type CreditosSemSaldoDaDonaControllerPedidoDeRevisao = {
+    observacao?: string;
+};
+
 export type DadosDoUsuario = {
     id?: string;
     login?: string;
@@ -348,6 +367,10 @@ export type Devolucao = {
     valorReembolsado?: string;
     vendaId?: string;
     vendedorId?: string;
+};
+
+export type DevolucoesDaDonaControllerPedidoDeRevisao = {
+    observacao?: string;
 };
 
 export type DoVendedor = {
@@ -1262,10 +1285,6 @@ export type PedidoDeProduto = {
 export type PedidoDeRenovacao = {
     dispositivoId?: string;
     tokenDeRenovacao: string;
-};
-
-export type PedidoDeRevisao = {
-    observacao?: string;
 };
 
 export type PedidoDeSituacao = {
@@ -2781,6 +2800,60 @@ export type ListarCreditosResponses = {
 
 export type ListarCreditosResponse = ListarCreditosResponses[keyof ListarCreditosResponses];
 
+export type ListarCreditosSemSaldoData = {
+    body?: never;
+    path?: never;
+    query?: {
+        situacao?: string;
+    };
+    url: '/api/dona/creditos-sem-saldo';
+};
+
+export type ListarCreditosSemSaldoResponses = {
+    /**
+     * OK
+     */
+    200: Array<CreditoSemSaldo>;
+};
+
+export type ListarCreditosSemSaldoResponse = ListarCreditosSemSaldoResponses[keyof ListarCreditosSemSaldoResponses];
+
+export type ManterCreditoSemSaldoData = {
+    body?: CreditosSemSaldoDaDonaControllerPedidoDeRevisao;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/creditos-sem-saldo/{id}/manter';
+};
+
+export type ManterCreditoSemSaldoResponses = {
+    /**
+     * OK
+     */
+    200: CreditoSemSaldo;
+};
+
+export type ManterCreditoSemSaldoResponse = ManterCreditoSemSaldoResponses[keyof ManterCreditoSemSaldoResponses];
+
+export type NaoAceitarCreditoSemSaldoData = {
+    body?: CreditosSemSaldoDaDonaControllerPedidoDeRevisao;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/creditos-sem-saldo/{id}/nao-aceitar';
+};
+
+export type NaoAceitarCreditoSemSaldoResponses = {
+    /**
+     * OK
+     */
+    200: CreditoSemSaldo;
+};
+
+export type NaoAceitarCreditoSemSaldoResponse = NaoAceitarCreditoSemSaldoResponses[keyof NaoAceitarCreditoSemSaldoResponses];
+
 export type VerCreditoData = {
     body?: never;
     path: {
@@ -2908,7 +2981,7 @@ export type CancelarDevolucaoResponses = {
 export type CancelarDevolucaoResponse = CancelarDevolucaoResponses[keyof CancelarDevolucaoResponses];
 
 export type ManterDevolucaoData = {
-    body?: PedidoDeRevisao;
+    body?: DevolucoesDaDonaControllerPedidoDeRevisao;
     path: {
         id: string;
     };
@@ -2926,7 +2999,7 @@ export type ManterDevolucaoResponses = {
 export type ManterDevolucaoResponse = ManterDevolucaoResponses[keyof ManterDevolucaoResponses];
 
 export type NaoAceitarDevolucaoData = {
-    body?: PedidoDeRevisao;
+    body?: DevolucoesDaDonaControllerPedidoDeRevisao;
     path: {
         id: string;
     };

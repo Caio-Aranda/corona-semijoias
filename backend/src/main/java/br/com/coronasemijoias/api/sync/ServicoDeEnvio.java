@@ -68,7 +68,8 @@ public class ServicoDeEnvio {
     /** Os 409 que significam "mesma chave com outro conteúdo" (ou CPF já cadastrado): vão para a revisão da dona. */
     private static final Set<CodigoErro> DE_CONFLITO = Set.of(CodigoErro.VENDA_JA_REGISTRADA_DIFERENTE,
             CodigoErro.CLIENTE_JA_REGISTRADO_DIFERENTE, CodigoErro.LANCAMENTO_JA_REGISTRADO_DIFERENTE,
-            CodigoErro.CLIENTE_CPF_JA_CADASTRADO);
+            CodigoErro.CLIENTE_CPF_JA_CADASTRADO, CodigoErro.DEVOLUCAO_JA_REGISTRADA_DIFERENTE,
+            CodigoErro.AUTORIZACAO_JA_REGISTRADA_DIFERENTE, CodigoErro.TROCA_JA_REGISTRADA_DIFERENTE);
 
     public enum Resultado { ACEITO, JA_RECEBIDO, CONFLITO, RECUSADO, NAO_PROCESSADO }
 
@@ -208,7 +209,7 @@ public class ServicoDeEnvio {
             Resultado resultado = DE_CONFLITO.contains(e.codigo()) ? Resultado.CONFLITO : Resultado.RECUSADO;
             String codigo = e.codigo().name();
             String mensagem = e.getBody().getDetail();
-            if (resultado == Resultado.RECUSADO && dependeDeRecusado(lida)) {
+            if (resultado == Resultado.RECUSADO && dependeDeRecusado(lida, ctx.vendedorId())) {
                 codigo = CodigoErro.DEPENDE_DE_ENVIO_RECUSADO.name();
                 mensagem = CodigoErro.DEPENDE_DE_ENVIO_RECUSADO.mensagem();
             }
@@ -253,12 +254,19 @@ public class ServicoDeEnvio {
         return new ResultadoDaOperacao(op.operacaoId(), resultado, codigo, mensagem);
     }
 
-    /** A operação usa um registro cujo envio foi recusado (ou ficou em conflito) e ainda não foi resolvido. */
-    private boolean dependeDeRecusado(Lida lida) {
+    /**
+     * A operação usa um registro cujo envio foi recusado (ou ficou em conflito) e ainda não foi resolvido. O crédito de
+     * uma troca nasce com o id do app, mas a operação que o cria tem o id da troca: procura também a {@code TROCA} do
+     * mesmo vendedor cujo {@code creditoId} é aquele (tarefa 6.7, dúvida S9; só enquanto o JSON está no sync_log).
+     */
+    private boolean dependeDeRecusado(Lida lida, UUID vendedorId) {
         for (UUID id : operacoes.dependencias(lida)) {
             Boolean recusado = jdbc.queryForObject("""
-                    SELECT EXISTS (SELECT 1 FROM corona.sync_log WHERE id = ? AND resultado IN ('RECUSADO', 'CONFLITO')
-                                   AND (resolucao IS NULL OR resolucao = 'DESCARTADO'))""", Boolean.class, id);
+                    SELECT EXISTS (SELECT 1 FROM corona.sync_log
+                                    WHERE (id = ? OR (tipo = 'TROCA' AND vendedor_id = ? AND dados ->> 'creditoId' = ?))
+                                      AND resultado IN ('RECUSADO', 'CONFLITO')
+                                      AND (resolucao IS NULL OR resolucao = 'DESCARTADO'))""", Boolean.class, id, vendedorId,
+                    id.toString());
             if (Boolean.TRUE.equals(recusado)) {
                 return true;
             }

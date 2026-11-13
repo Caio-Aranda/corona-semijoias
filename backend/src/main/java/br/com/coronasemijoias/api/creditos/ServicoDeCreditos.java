@@ -95,6 +95,103 @@ public class ServicoDeCreditos {
         }
     }
 
+    /**
+     * O uso pelo envio do computador (tarefa 6.7; ADR-0014, item 9, linha de 13/11/2026): trava o crédito e devolve quanto
+     * dele pode pagar, sem recusar por saldo. Inexistente ou de outro vendedor, 404; de outro cliente, 409 (o impossível
+     * continua recusado). Cancelado ou já usado, zero; acima do saldo, o saldo; senão, o pedido.
+     */
+    public BigDecimal usarAteOSaldo(UUID creditoId, UUID vendedorId, UUID clienteId, BigDecimal valor) {
+        List<Map<String, Object>> achado = jdbc.queryForList("""
+                SELECT vendedor_id, cliente_id, valor, valor_utilizado, situacao FROM corona.creditos_cliente
+                 WHERE id = ? AND deleted_at IS NULL FOR UPDATE""", creditoId);
+        if (achado.isEmpty() || !vendedorId.equals(achado.get(0).get("vendedor_id"))) {
+            throw new ErroDaApi(HttpStatus.NOT_FOUND, CodigoErro.CREDITO_NAO_ENCONTRADO);
+        }
+        Map<String, Object> c = achado.get(0);
+        if (!clienteId.equals(c.get("cliente_id"))) {
+            throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.CREDITO_DE_OUTRO_CLIENTE);
+        }
+        if (!"ABERTO".equals(c.get("situacao"))) {
+            return BigDecimal.ZERO.setScale(valor.scale());
+        }
+        BigDecimal saldo = ((BigDecimal) c.get("valor")).subtract((BigDecimal) c.get("valor_utilizado"));
+        return valor.min(saldo.max(BigDecimal.ZERO)).setScale(valor.scale());
+    }
+
+    /**
+     * Guarda, para a dona revisar, o pagamento em crédito que o envio pediu acima do saldo (a venda e o pagamento do que o
+     * crédito ainda tinha já estão gravados). Nunca mexe em dinheiro. A linha tem id próprio; o pagamento que o
+     * computador mandou fica em {@code pagamento_id}.
+     */
+    public void registrarSemSaldo(UUID pagamentoId, UUID vendaId, UUID creditoId, BigDecimal pedido, BigDecimal usado,
+            Instant quando, UUID usuarioId) {
+        UUID id = UuidV7.gerar();
+        jdbc.update("""
+                INSERT INTO corona.creditos_sem_saldo (id, pagamento_id, venda_id, credito_id, valor_pedido, valor_usado,
+                    registrada_em)
+                VALUES (?, ?, ?, ?, ?, ?, ?)""", id, pagamentoId, vendaId, creditoId, pedido, usado, Timestamp.from(quando));
+        Map<String, Object> depois = new LinkedHashMap<>();
+        depois.put("venda_id", vendaId.toString());
+        depois.put("credito_id", creditoId.toString());
+        depois.put("valor_pedido", pedido.toPlainString());
+        depois.put("valor_usado", usado.toPlainString());
+        depois.put("pagamento_id", pagamentoId.toString());
+        auditoria.registrar(Ator.usuario(usuarioId), "CREDITO_SEM_SALDO_NA_VENDA", "creditos_sem_saldo", id, null, depois);
+    }
+
+    // --- revisão da dona (tarefa 6.7) ---
+
+    /** "Manter": o cliente continua devendo o resto. Nada muda além da revisão. Repetir, 200; já decidida de outro jeito, 409. */
+    @Transactional
+    public Resultado manter(UUID id, UUID usuarioId, String observacao) {
+        return revisar(id, usuarioId, observacao, "MANTIDA");
+    }
+
+    /**
+     * "Não aceitar": o valor que o crédito não pagou fica como pendência do vendedor, que o acerto (tarefa 7.5) passa a
+     * cobrar. Nenhum pagamento, valor ou movimento muda. Observação obrigatória.
+     */
+    @Transactional
+    public Resultado naoAceitar(UUID id, UUID usuarioId, String observacao) {
+        if (Validacoes.limpar(observacao) == null) {
+            throw Validacoes.recusar("observacao", "Diga por que a venda com crédito não foi aceita.");
+        }
+        return revisar(id, usuarioId, observacao, "NAO_ACEITA");
+    }
+
+    private Resultado revisar(UUID id, UUID usuarioId, String observacao, String decisao) {
+        String limpa = Validacoes.limpar(observacao);
+        if (limpa != null && limpa.length() > 400) {
+            throw Validacoes.recusar("observacao", "Use no máximo 400 caracteres.");
+        }
+        List<UUID> venda = jdbc.query("SELECT venda_id FROM corona.creditos_sem_saldo WHERE id = ? AND deleted_at IS NULL",
+                (rs, n) -> rs.getObject(1, UUID.class), id);
+        if (venda.isEmpty()) {
+            throw new ErroDaApi(HttpStatus.NOT_FOUND, CodigoErro.CREDITO_SEM_SALDO_NAO_ENCONTRADO);
+        }
+        // Travas: a venda e depois a linha.
+        jdbc.queryForList("SELECT id FROM corona.vendas WHERE id = ? FOR UPDATE", venda.get(0));
+        String situacao = jdbc.queryForObject("SELECT situacao FROM corona.creditos_sem_saldo WHERE id = ? FOR UPDATE",
+                String.class, id);
+        if (decisao.equals(situacao)) {
+            return new Resultado(id, true);
+        }
+        if (!"EM_REVISAO".equals(situacao)) {
+            throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.CREDITO_SEM_SALDO_NAO_ESTA_PARA_REVISAO);
+        }
+        jdbc.update("""
+                UPDATE corona.creditos_sem_saldo SET situacao = ?, revisada_em = ?, revisada_por = ?, observacao_revisao = ?
+                 WHERE id = ?""", decisao, Timestamp.from(relogio.instant()), usuarioId, limpa, id);
+        Map<String, Object> depois = new LinkedHashMap<>();
+        depois.put("situacao", decisao);
+        if (limpa != null) {
+            depois.put("observacao", limpa);
+        }
+        auditoria.registrar(Ator.usuario(usuarioId), "MANTIDA".equals(decisao) ? "CREDITO_SEM_SALDO_MANTIDO"
+                : "CREDITO_SEM_SALDO_NAO_ACEITO", "creditos_sem_saldo", id, Map.of("situacao", situacao), depois);
+        return new Resultado(id, false);
+    }
+
     /** Grava o uso do pagamento em crédito já gravado e atualiza o crédito. Quem chama já conferiu e travou o crédito. */
     public void registrarUso(UUID creditoId, UUID vendaId, UUID pagamentoId, BigDecimal valor, Instant quando) {
         jdbc.update("""
