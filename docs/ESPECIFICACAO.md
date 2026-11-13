@@ -105,7 +105,7 @@ O app **nunca acessa o banco direto**, apenas a API. Segurança (ninguém tem a 
 5. O vendedor **só vende o que está na própria maleta**, nunca do estoque geral. Isso elimina quase todo conflito de estoque.
 6. O vendedor precisa estar **online** para receber a maleta e para fazer o acerto.
 7. O código de barras identifica o **modelo do produto**, e o controle é por quantidade, não por peça individual.
-8. Comissão é percentual por vendedor, calculado sobre o vendido no acerto.
+8. Comissão é percentual por vendedor, calculado sobre o vendido no acerto (valor da venda, já com o desconto). **Resposta da dona (13/11/2026): comissão por meta**, a mesma para todos: vendas a partir de 700.000 Gs → 40%; abaixo → 30%. Detalhes ainda pendentes (§17, item 6); entra na Fase 7.
 9. Acerto **semanal**.
 10. A **nota de remessa não tem validade fiscal**: é um documento interno em PDF.
 11. A loja imprime as próprias etiquetas de joia (código curto da loja, não EAN-13); cada peça tem também o código do fornecedor. EAN-13 é opcional (padrão seguro, a confirmar com a dona; ADR-0007).
@@ -154,7 +154,7 @@ Regras:
 - **Estado da peça:** `BOA` volta ao saldo vendável da maleta original, **se ela ainda está aberta**; `BOA` de maleta já acertada e toda peça `DEFEITO` viram **peça para a loja**: não voltam ao saldo do vendedor e são esperadas à parte no próximo acerto (ADR-0014, item 7). Nenhuma maleta acertada recebe movimento novo.
 - **A venda original não muda** (continua concluída). O quanto já foi devolvido é a soma das devoluções ativas dela; o total devolvido por linha nunca passa do vendido. Venda com devolução ativa não pode mais ser estornada (só cancelar a devolução antes).
 - **Valor devolvido** = o preço pago, por unidade (total da linha ÷ quantidade, com a sobra de centavos nas últimas unidades). O app nunca manda valor: o servidor calcula.
-- **Garantia:** o cliente pode **receber o dinheiro de volta (reembolso) ou trocar**, desde que **dentro do prazo**. Dois prazos configuráveis pela dona, contados em **dias do calendário de Brasília** a partir do dia da venda: `prazo_arrependimento_dias` (padrão 7; vale para arrependimento, tamanho e outro) e `prazo_defeito_dias` (padrão 30; vale para defeito). Ambos chegam ao app no bloco de parâmetros do pull.
+- **Garantia:** o cliente pode **receber o dinheiro de volta (reembolso) ou trocar**, desde que **dentro do prazo**. Dois prazos configuráveis pela dona, contados em **dias do calendário de Brasília** a partir do dia da venda: `prazo_arrependimento_dias` (padrão 45, resposta da dona em 13/11/2026, que pensa em 2 meses mais adiante; vale para arrependimento, tamanho e outro) e `prazo_defeito_dias` (padrão 45, igual ao de arrependimento até a dona responder; vale para defeito). Ambos chegam ao app no bloco de parâmetros do pull.
 - **Fora do prazo:** o app bloqueia e oferece só o pedido de **autorização da dona**, que é resolvido online. O vendedor não conclui sozinho. A autorização aprovada vale **7 dias** e só serve para uma devolução.
 - A validação ocorre no app (offline) e de novo no servidor. Se a hora do aparelho divergir, **o servidor decide**; mas o que já aconteceu no balcão **nunca é recusado em silêncio**: a devolução que o app achou dentro do prazo e o servidor acha fora entra **para revisão da dona** (ela mantém, ou não aceita e o valor vira pendência do vendedor no próximo acerto). Recusa só para o impossível (venda de outro vendedor, quantidade acima da vendida).
 - **Diferença na troca:** B vale mais, o cliente paga a diferença (à vista ou a prazo); B vale menos, a diferença vira **crédito** do cliente (usado em compra futura; padrão até a dona responder, dúvida D4). A troca é **uma operação só** (tudo ou nada) e não tem tabela de itens própria: as linhas ficam na devolução e na venda nova.
@@ -327,7 +327,7 @@ Modelo no ADR-0014 (tabelas criadas nas tarefas 6.3 a 6.5; todas imutáveis, cor
 
 ### Controle
 
-- `configuracoes` (uma linha por chave, valor numa coluna do tipo certo: `valor_inteiro` ou `valor_dinheiro`; só do servidor: prazo\_arrependimento\_dias (padrão 7), prazo\_defeito\_dias (padrão 30), limite\_desconto, limite\_reembolso\_semanal (Real; vazio = sem limite), valor\_aprovacao\_reembolso (Real; vazio = sem valor), percentual\_alerta\_devolucao (padrão 20), tempo máximo offline (padrão 10 dias, configurável), tentativas de login antes do bloqueio (padrão 5), tempo de bloqueio (padrão 15 minutos))
+- `configuracoes` (uma linha por chave, valor numa coluna do tipo certo: `valor_inteiro` ou `valor_dinheiro`; só do servidor: prazo\_arrependimento\_dias (padrão 45), prazo\_defeito\_dias (padrão 45), limite\_desconto, limite\_reembolso\_semanal (Real; vazio = sem limite), valor\_aprovacao\_reembolso (Real; vazio = sem valor), percentual\_alerta\_devolucao (padrão 20), tempo máximo offline (padrão 10 dias, configurável), tentativas de login antes do bloqueio (padrão 5), tempo de bloqueio (padrão 15 minutos))
 - `auditoria` (usuário, ação, tabela, registro, antes/depois, data)
 - `cotacoes` (data da cotação; compra, venda e as duas paridades do Dólar e do Guarani; hora da busca; endereço de origem). Uma linha por dia útil. **Nasce só no servidor**, é **imutável** e chega ao app do vendedor só para leitura (ADR-0006)
 - `dispositivos` (vendedor, identificação, ativo, bloqueado, último contato)
@@ -518,16 +518,17 @@ Nota fiscal eletrônica (a nota de remessa é só interna), loja virtual, aplica
 1. DX = valor consignado, DV = devolvido, VD = vendido (confirmar o significado na referência).
 2. **Modelo do leitor** de código de barras (não comprar antes de testar com etiquetas reais), com ou sem fio.
 3. Como são as etiquetas? A loja imprime as próprias (código da loja) e o fornecedor manda código alfanumérico, ou algum fornecedor usa **EAN-13**? Obter fotos ou amostras de 3 a 4 etiquetas. O leitor funciona no Bloco de Notas? Qual impressora de etiquetas? O preço de venda é o custo vezes 7? (ADR-0007)
-4. Prazos de garantia (arrependimento e defeito) e se variam por categoria.
+4. ~~Prazos de garantia~~ **Respondido em 13/11/2026:** 45 dias para arrependimento (mais adiante, talvez 2 meses). Falta: o prazo para peça com defeito (usamos 45).
 5. Limite de desconto, limite de reembolso semanal e valor que exige aprovação da dona.
-6. Percentual de comissão (único ou por vendedor, por categoria?) e base de cálculo exata.
+6. ~~Percentual de comissão~~ **Respondido em 13/11/2026:** sobre o valor da venda (com desconto), igual para todos, com meta: a partir de 700.000 Gs → 40%; abaixo → 30%. Falta: se a meta é por semana ou por acerto, e se os 40% valem sobre tudo ou só sobre o que passa da meta. Decisão nossa pendente: a meta está em Guarani e tudo é gravado em Real (ADR-0006).
 7. Quando a diferença de uma troca vira crédito: pode ser devolvida em dinheiro?
-8. Dia de início e fim da semana de acerto e como numerar as semanas.
+8. ~~Semana de acerto~~ **Respondido em 13/11/2026:** começa na segunda (segunda a domingo) e há 3 a 4 dias depois para fazer o acerto.
 9. Quantos vendedores e quantos produtos aproximadamente (dimensionar a VPS).
 10. Quem paga VPS, domínio e certificado de assinatura de código.
 11. Existe alguma planilha atual do cliente para usar na validação dos relatórios e na migração de cadastros?
-12. **Entrada:** o que significa na tela de referência? Valor pago pela vendedora ao levar a maleta, abatido no acerto, ou entrada de venda parcelada? É obrigatória? Como se calcula e o que acontece no acerto? Precisa de resposta antes da Fase 3.
-13. **Cartão:** o cliente final paga com cartão (na maquininha do próprio vendedor)? Se sim, entra como forma de pagamento registrada, sem integração.
+12. **Entrada:** o que significa na tela de referência? Valor pago pela vendedora ao levar a maleta, abatido no acerto, ou entrada de venda parcelada? É obrigatória? Como se calcula e o que acontece no acerto? Precisa de resposta antes da Fase 3. **13/11/2026:** a dona não sabe ("creo que es entrada de dinero"); segue o padrão.
+13. ~~Cartão~~ **Respondido em 13/11/2026:** não. O cliente paga **em dinheiro ou por transferência**. Nas telas de venda e de reembolso só aparecem Dinheiro e Transferência (gravada como `PIX`); `CARTAO` e `CHEQUE` continuam aceitos no banco para não quebrar dados antigos.
+14. **Língua das telas (13/11/2026):** a dona quer as telas **em espanhol**. É a última tarefa do projeto, com autorização do responsável. Falta: se o app do vendedor também.
 
 ## 18. Identidade visual: Corona Semijoias
 
@@ -761,3 +762,6 @@ Importação com nome de arquivo inválido, foto duplicada, arquivo corrompido, 
   - §7.3: crédito acima do saldo pelo envio vira revisão da dona (a venda entra, o crédito paga só o saldo, o resto fica a receber), não recusa; online continua recusado.
   - §9: `creditos_sem_saldo` nova (migração V039).
   - §10: tipos novos da outbox, formato 1: `DEVOLUCAO`, `PEDIDO_AUTORIZACAO`, `TROCA`, `CANCELAR_DEVOLUCAO` e `CANCELAR_TROCA`; a `VENDA` continua no formato 1, com o `creditoId` opcional em cada pagamento. O vendedor recebe as devoluções, os pedidos de autorização, as trocas e os créditos dele (sem as colunas que apontam para crédito de outro vendedor) e as vendas com crédito para revisar.
+- **v1.13, 13/11/2026:** respostas da dona por WhatsApp (perguntas de garantia, pagamento, comissão, semana e língua).
+  - §7.3 e §9: prazos de arrependimento e de defeito com padrão 45 dias.
+  - §6 (premissa 8) e §17: comissão sobre o valor com desconto e com meta (30% ou 40%, 700.000 Gs), para a Fase 7; cliente paga em dinheiro ou transferência (sem cartão); semana de segunda a domingo com 3 a 4 dias para o acerto; telas em espanhol como última tarefa.
