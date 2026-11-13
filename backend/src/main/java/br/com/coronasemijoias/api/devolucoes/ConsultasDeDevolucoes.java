@@ -1,10 +1,12 @@
 package br.com.coronasemijoias.api.devolucoes;
 
+import br.com.coronasemijoias.api.cadastros.Validacoes;
 import br.com.coronasemijoias.api.comum.dinheiro.ConversaoDeMoeda;
 import br.com.coronasemijoias.api.comum.erros.CodigoErro;
 import br.com.coronasemijoias.api.comum.erros.ErroDaApi;
 import br.com.coronasemijoias.api.configuracoes.ChaveDeConfiguracao;
 import br.com.coronasemijoias.api.configuracoes.Configuracoes;
+import br.com.coronasemijoias.api.devolucoes.ServicoDeDevolucoes.MotivoDaRevisao;
 import br.com.coronasemijoias.api.produtos.CodigosDosProdutos;
 import br.com.coronasemijoias.api.vendas.ConsultasDeVendas.Cotacao;
 import br.com.coronasemijoias.api.vendas.ConsultasDeVendas.Peca;
@@ -15,6 +17,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -29,16 +32,23 @@ public class ConsultasDeDevolucoes {
 
     private static final ZoneId BRASILIA = ZoneId.of("America/Sao_Paulo");
     private static final int LIMITE_DE_VENDAS = 20;
+    private static final Set<String> SITUACOES = Set.of("ACEITA", "EM_REVISAO", "MANTIDA", "NAO_ACEITA", "CANCELADA");
 
     public record ItemDaDevolucao(UUID id, UUID itemVendaId, Peca produto, int quantidade, BigDecimal valor, String estado,
             String destino) {
     }
 
+    /**
+     * {@code motivosRevisao}: por que a devolução está (ou esteve) para revisão, na ordem fixa de
+     * {@link MotivoDaRevisao}; vazio na aceita. {@code pendenciaDoVendedor}: o valor que o vendedor deve quando a dona
+     * não aceitou (tarefa 6.4; o acerto passa a cobrar na tarefa 7.5); vazio nas outras situações.
+     */
     public record Devolucao(UUID id, UUID vendaId, UUID vendedorId, UUID clienteId, String clienteNome, UUID remessaId,
             String motivo, String observacao, String destino, boolean dentroGarantia, String situacao,
             BigDecimal valorDevolvido, BigDecimal valorDevolvidoDolar, BigDecimal valorDevolvidoGuarani,
             BigDecimal valorReembolsado, String formaReembolso, Cotacao cotacao, Instant devolvidaEm, boolean horaAjustada,
-            Instant canceladaEm, String motivoCancelamento, List<ItemDaDevolucao> itens) {
+            Instant canceladaEm, String motivoCancelamento, UUID autorizacaoId, List<String> motivosRevisao,
+            Instant revisadaEm, String observacaoRevisao, BigDecimal pendenciaDoVendedor, List<ItemDaDevolucao> itens) {
     }
 
     /** Uma linha da venda achada pela peça lida: vendidas, já devolvidas (não canceladas) e as que ainda podem voltar. */
@@ -99,6 +109,25 @@ public class ConsultasDeDevolucoes {
     }
 
     /**
+     * A lista da dona (tarefa 6.4): pela situação (padrão: para revisão) e, se vier, pelo vendedor; da mais nova para a
+     * mais antiga, no máximo 500.
+     */
+    public List<Devolucao> listarDaDona(String situacao, UUID vendedorId) {
+        String filtro = situacao == null ? "EM_REVISAO" : situacao;
+        if (!SITUACOES.contains(filtro)) {
+            throw Validacoes.recusar("situacao", "Escolha a situação: aceita, para revisão, mantida, não aceita ou cancelada.");
+        }
+        StringBuilder onde = new StringBuilder("d.situacao = ?");
+        List<Object> args = new ArrayList<>();
+        args.add(filtro);
+        if (vendedorId != null) {
+            onde.append(" AND d.vendedor_id = ?");
+            args.add(vendedorId);
+        }
+        return consultarOrdenado(onde.toString() + " ORDER BY d.devolvida_em DESC, d.id DESC LIMIT 500", args.toArray());
+    }
+
+    /**
      * As vendas concluídas do vendedor com a peça (§8: o leitor localiza a venda original), da mais nova para a mais
      * antiga, no máximo 20. Pelo código lido (sem diferenciar maiúsculas, sem espaços nas pontas) ou pelo produto.
      */
@@ -153,29 +182,45 @@ public class ConsultasDeDevolucoes {
     }
 
     private List<Devolucao> consultar(String onde, Object[] args) {
+        return consultarOrdenado(onde + " ORDER BY d.devolvida_em DESC, d.id DESC", args);
+    }
+
+    private List<Devolucao> consultarOrdenado(String ondeEOrdem, Object[] args) {
         List<Devolucao> cabecas = jdbc.query("""
                 SELECT d.id, d.venda_id, d.vendedor_id, d.cliente_id, c.nome, d.remessa_id, d.motivo, d.observacao, d.destino,
                        d.dentro_garantia, d.situacao, d.valor_devolvido, d.valor_reembolsado, d.forma_reembolso,
-                       d.devolvida_em, d.hora_ajustada, d.cancelada_em, d.motivo_cancelamento,
+                       d.devolvida_em, d.hora_ajustada, d.cancelada_em, d.motivo_cancelamento, d.autorizacao_id,
+                       d.revisao_fora_do_prazo, d.revisao_acima_do_limite_semanal, d.revisao_acima_do_valor_de_aprovacao,
+                       d.revisao_autorizacao_invalida, d.revisao_reembolso_maior_que_pago, d.revisada_em, d.observacao_revisao,
                        ct.data_cotacao, ct.usd_venda, ct.pyg_venda
                   FROM corona.devolucoes d JOIN corona.clientes c ON c.id = d.cliente_id
                   LEFT JOIN corona.cotacoes ct ON ct.id = d.cotacao_id
                  WHERE d.deleted_at IS NULL AND
-                       """ + onde + " ORDER BY d.devolvida_em DESC, d.id DESC", (rs, n) -> {
+                       """ + ondeEOrdem, (rs, n) -> {
                     BigDecimal devolvido = rs.getBigDecimal("valor_devolvido");
                     BigDecimal usd = rs.getBigDecimal("usd_venda");
                     BigDecimal pyg = rs.getBigDecimal("pyg_venda");
                     Cotacao cotacao = usd == null ? null : new Cotacao(rs.getObject("data_cotacao", LocalDate.class), usd, pyg);
+                    List<String> motivos = new ArrayList<>();
+                    for (MotivoDaRevisao m : MotivoDaRevisao.values()) {
+                        if (rs.getBoolean(m.coluna())) {
+                            motivos.add(m.name());
+                        }
+                    }
+                    String situacao = rs.getString("situacao");
                     return new Devolucao(rs.getObject("id", UUID.class), rs.getObject("venda_id", UUID.class),
                             rs.getObject("vendedor_id", UUID.class), rs.getObject("cliente_id", UUID.class), rs.getString("nome"),
                             rs.getObject("remessa_id", UUID.class), rs.getString("motivo"), rs.getString("observacao"),
-                            rs.getString("destino"), rs.getBoolean("dentro_garantia"), rs.getString("situacao"), devolvido,
+                            rs.getString("destino"), rs.getBoolean("dentro_garantia"), situacao, devolvido,
                             usd == null ? null : ConversaoDeMoeda.paraDolar(devolvido, usd),
                             pyg == null ? null : ConversaoDeMoeda.paraGuarani(devolvido, pyg),
                             rs.getBigDecimal("valor_reembolsado"), rs.getString("forma_reembolso"), cotacao,
                             rs.getTimestamp("devolvida_em").toInstant(), rs.getBoolean("hora_ajustada"),
                             rs.getTimestamp("cancelada_em") == null ? null : rs.getTimestamp("cancelada_em").toInstant(),
-                            rs.getString("motivo_cancelamento"), new ArrayList<>());
+                            rs.getString("motivo_cancelamento"), rs.getObject("autorizacao_id", UUID.class), List.copyOf(motivos),
+                            rs.getTimestamp("revisada_em") == null ? null : rs.getTimestamp("revisada_em").toInstant(),
+                            rs.getString("observacao_revisao"), "NAO_ACEITA".equals(situacao) ? devolvido : null,
+                            new ArrayList<>());
                 }, args);
         for (Devolucao d : cabecas) {
             d.itens().addAll(jdbc.query("""
