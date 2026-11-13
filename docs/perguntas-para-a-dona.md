@@ -208,6 +208,7 @@ Muchas gracias.
 
 <!--
 Notas para o time (não enviar à dona):
+- **Respostas de 13/11/2026 (WhatsApp, resumo de 10 perguntas):** arrependimento 45 dias (talvez 2 meses depois); cliente paga em dinheiro ou transferência, sem cartão; comissão sobre o valor da venda, com meta (a partir de 700.000 Gs → 40%, abaixo → 30%); semana começa na segunda, com 3 a 4 dias para o acerto; "Entrada": não sabe ("creo que es entrada de dinero"); telas em espanhol. Sem resposta: diferença da troca (ela respondeu "tendría que pagar, una vez que se quita la etiqueta ya es como vendido"), limite de reembolso por semana e desconto. Registrado na ESPECIFICACAO v1.13. As demais perguntas desta lista ficam com o padrão; as últimas dúvidas foram mandadas no mesmo dia.
 - Fora desta lista por decisão ou resposta do responsável em 11/11/2026: ver docs/pendencias-do-responsavel.md (saída sem estoque, limite de consignação, vender só depois de conferir, troca de aparelho só pela dona, catálogo só da maleta, prazo do estorno, data de nascimento, garantia de 1 ano, troca e reembolso só registrados).
 - Os padrões de 6 e 8 vêm do ADR-0011; 1 a 5 do ADR-0010 e da fase 3; 16 a 20 do ADR-0007; 21 da tarefa 2.8; 24 da Fase 1; 25 da auditoria de 11/11/2026 (D2, padrão adotado pelo responsável até a dona responder; é a "pergunta 31" da orquestração: confirmar com ela).
 - Os padrões de 9 a 15 e 23 ainda não estão no código: são a proposta para quando a fase chegar (6 e 7). Confirmar com o responsável antes de implementar se a dona não responder.
