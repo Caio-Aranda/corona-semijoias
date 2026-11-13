@@ -3283,7 +3283,7 @@
     },
     "/api/vendedor/relatorios/devolucoes" : {
       "get" : {
-        "description" : "Só as do vendedor logado, sem as canceladas, por motivo e no período (de e até, horário de Brasília; ambos opcionais). Traz quanto voltou em dinheiro e quanto ficou em crédito, também em Dólar e Guarani pela cotação do dia de cada uma. Nunca mostra custo.",
+        "description" : "Só as do vendedor logado, sem as canceladas, por motivo e no período (de e até, horário de Brasília; ambos opcionais). Traz quanto voltou em dinheiro e quanto ficou em crédito, também em Dólar e Guarani pela cotação do dia de cada uma.",
         "operationId" : "relatorioDeMinhasDevolucoesETrocas",
         "parameters" : [ {
           "in" : "query",

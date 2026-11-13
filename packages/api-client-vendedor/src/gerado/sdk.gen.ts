@@ -357,7 +357,7 @@ export const relatorioDeCreditosDosMeusClientes = <ThrowOnError extends boolean 
 /**
  * Minhas devoluções e trocas
  *
- * Só as do vendedor logado, sem as canceladas, por motivo e no período (de e até, horário de Brasília; ambos opcionais). Traz quanto voltou em dinheiro e quanto ficou em crédito, também em Dólar e Guarani pela cotação do dia de cada uma. Nunca mostra custo.
+ * Só as do vendedor logado, sem as canceladas, por motivo e no período (de e até, horário de Brasília; ambos opcionais). Traz quanto voltou em dinheiro e quanto ficou em crédito, também em Dólar e Guarani pela cotação do dia de cada uma.
  */
 export const relatorioDeMinhasDevolucoesETrocas = <ThrowOnError extends boolean = false>(options?: Options<RelatorioDeMinhasDevolucoesETrocasData, ThrowOnError>): RequestResult<RelatorioDeMinhasDevolucoesETrocasResponses, unknown, ThrowOnError> => (options?.client ?? client).get<RelatorioDeMinhasDevolucoesETrocasResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],

@@ -121,7 +121,7 @@ public class ApoioDoVendedorController {
     @Operation(operationId = "relatorioDeMinhasDevolucoesETrocas", summary = "Minhas devoluções e trocas",
             description = "Só as do vendedor logado, sem as canceladas, por motivo e no período (de e até, horário de "
                     + "Brasília; ambos opcionais). Traz quanto voltou em dinheiro e quanto ficou em crédito, também em Dólar "
-                    + "e Guarani pela cotação do dia de cada uma. Nunca mostra custo.")
+                    + "e Guarani pela cotação do dia de cada uma.")
     @GetMapping("/relatorios/devolucoes")
     public RelatorioDeDevolucoes devolucoes(@RequestParam(required = false) LocalDate de,
             @RequestParam(required = false) LocalDate ate, @AuthenticationPrincipal UsuarioAutenticado quem) {

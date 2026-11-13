@@ -165,6 +165,9 @@ public class ConferenciasDeDevolucaoETroca {
                                FROM corona.devolucoes WHERE situacao <> 'CANCELADA' AND deleted_at IS NULL
                               GROUP BY venda_id) dv ON dv.venda_id = v.id
                  WHERE v.deleted_at IS NULL AND v.status = 'CONCLUIDA'
+                   AND NOT EXISTS (SELECT 1 FROM corona.creditos_sem_saldo cs WHERE cs.venda_id = v.id)
+                   AND NOT EXISTS (SELECT 1 FROM corona.devolucoes rv WHERE rv.venda_id = v.id
+                                    AND rv.situacao IN ('EM_REVISAO', 'MANTIDA'))
                  GROUP BY v.id, v.total, dv.devolvido
                 HAVING sum(p.valor) > v.total - coalesce(dv.devolvido, 0) OR sum(p.valor) < 0
                  ORDER BY v.id""", (rs, n) -> new Divergencia("Venda " + rs.getObject("id"), "A venda é de "
