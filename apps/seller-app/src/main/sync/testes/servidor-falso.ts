@@ -88,6 +88,8 @@ export class ServidorFalso {
   atraso = 0;
   /** Quantos pulls de UMA tabela (`?tabela=`) caem sem resposta (queda depois de o app apagar a tabela). */
   cairNoPullDaTabela = 0;
+  /** O pull desta tabela (`?tabela=`) cai sem resposta, as vezes pedidas (as outras tabelas respondem). */
+  cairNaTabela: { tabela: string; vezes: number } | null = null;
   /**
    * Computador trocado pela dona (ADR-0013, item 13): como o `ServicoDeEnvio`, o push responde `apagarDados` quando o
    * lote foi todo resolvido e o app avisou `aguardandoDepoisDeste = 0`.
@@ -177,6 +179,15 @@ export class ServidorFalso {
     switch (url.pathname) {
       case '/api/vendedor/sync/pull':
         if (this.abaixoDaMinima(req)) return responder(res, DESATUALIZADO);
+        if (
+          this.cairNaTabela &&
+          this.cairNaTabela.vezes > 0 &&
+          url.searchParams.get('tabela') === this.cairNaTabela.tabela
+        ) {
+          this.cairNaTabela.vezes -= 1;
+          req.socket.destroy();
+          return;
+        }
         if (url.searchParams.get('tabela') && this.cairNoPullDaTabela > 0) {
           this.cairNoPullDaTabela -= 1;
           req.socket.destroy();
@@ -348,6 +359,15 @@ const TABELAS = [
   'pagamentos_cliente',
   'conferencias',
   'itens_conferencia',
+  // Fase 6 (tarefa 6.7): as 23 da conferência do servidor.
+  'devolucoes',
+  'itens_devolucao',
+  'autorizacoes_excecao',
+  'itens_autorizacao',
+  'trocas',
+  'creditos_cliente',
+  'usos_credito',
+  'creditos_sem_saldo',
 ];
 
 export function resumoDe(
