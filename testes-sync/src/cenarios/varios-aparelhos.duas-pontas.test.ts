@@ -183,6 +183,60 @@ describe('duas pontas: vários computadores', () => {
     await cenario.afirmarNoFim([b2]);
   });
 
+  it('6b. troca com o último envio na rede: o que o antigo grava nesse meio-tempo chega ao servidor antes de apagar (issue #127)', async () => {
+    const [peca] = await cenario.pecas(1);
+    const nina = await cenario.vendedor('Nina');
+    const b1 = nina.aparelho;
+    const maletaId = await cenario.dona.maleta(nina.vendedorId, { [peca!.id]: 3 });
+    await b1.sincronizar();
+    await Tela.conferirTudo(b1, maletaId);
+    const clienteId = await Tela.cliente(b1, 'Cliente da Nina');
+    await b1.sincronizar();
+
+    // O antigo vende sem internet; a dona troca o computador.
+    b1.semInternet();
+    const vendaAntes = await Tela.vender(b1, { maletaId, clienteId, produtoId: peca!.id });
+    const b2 = await cenario.aparelho('Nina-2');
+    b2.vendedorId = nina.vendedorId;
+    expect(await b2.entrar(nina.login, SENHA_DO_VENDEDOR)).toEqual({ tipo: 'entrou' });
+    await cenario.dona.liberar(await aparelhoNaDona(nina.vendedorId, 'AGUARDANDO_LIBERACAO'));
+    await b2.sincronizar();
+
+    // A internet volta no antigo. O 1º envio (a venda de antes, "nada mais aguardando") fica na rede, e nesse meio-tempo
+    // o vendedor, que não sabe da troca, cadastra um cliente e vende. A resposta desse envio traz a ordem de apagar.
+    const segurado: { aguardandoDepoisDeste?: number; cliente?: string; venda?: string } = {};
+    let segurou = false;
+    b1.comInternet({
+      sorteio: [],
+      antesDeRepassar: async ({ caminho, corpo }) => {
+        if (segurou || !caminho.startsWith('/api/vendedor/sync/push')) return;
+        segurou = true;
+        segurado.aguardandoDepoisDeste = (
+          JSON.parse(corpo.toString('utf8')) as { aguardandoDepoisDeste: number }
+        ).aguardandoDepoisDeste;
+        segurado.cliente = await Tela.cliente(b1, 'Cliente Novo da Nina');
+        segurado.venda = await Tela.vender(b1, { maletaId, clienteId, produtoId: peca!.id });
+      },
+    });
+    await esperarDesligado(b1);
+
+    expect(segurado.aguardandoDepoisDeste).toBe(0);
+    // As três chegaram ao servidor (a venda do antigo depois da troca é aceita pela cadeia de trocas), e só então apagou.
+    for (const venda of [vendaAntes, segurado.venda!]) {
+      expect(await contar(`SELECT count(*) FROM corona.vendas WHERE id = ${texto(venda)}`)).toBe(1);
+    }
+    expect(
+      await contar(`SELECT count(*) FROM corona.clientes WHERE id = ${texto(segurado.cliente!)}`),
+    ).toBe(1);
+    expect(
+      b1.proxy.historico().some((p) => p.caminho.startsWith('/api/vendedor/sync/quarentena')),
+    ).toBe(false);
+    expect(b1.arquivos()).toEqual([]);
+
+    // Sem perda aceita: o livro inteiro do caso confere.
+    await cenario.afirmarNoFim([b2]);
+  });
+
   it('7. computador bloqueado com vendas aguardando: quarentena (com corte), apaga, e a dona aprova uma e descarta outra', async () => {
     const [peca] = await cenario.pecas(1);
     const helo = await cenario.vendedor('Helo', { aceleracao: 100 });
