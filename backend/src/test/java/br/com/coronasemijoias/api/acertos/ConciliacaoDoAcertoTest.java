@@ -73,7 +73,7 @@ class ConciliacaoDoAcertoTest extends ApoioDoFechamento {
         return unico(s, """
                 SELECT count(*) FROM corona.acertos a WHERE a.vendedor_id IN (""" + vendedores() + """
                 ) AND a.status = 'ACERTADO' AND (a.vendido_bruto - a.descontos - a.devolvido - a.comissao + a.faltas_cobradas <> a.liquido
-                   OR a.liquido <> a.recebido_no_acerto + a.ficou_devendo
+                   OR a.liquido - a.credito_usado <> a.recebido_no_acerto - a.pago_ao_vendedor + a.ficou_devendo
                    OR a.vendido_liquido <> (SELECT coalesce(sum(e.valor), 0) FROM corona.acerto_eventos e WHERE e.acerto_id = a.id))""");
     }
 

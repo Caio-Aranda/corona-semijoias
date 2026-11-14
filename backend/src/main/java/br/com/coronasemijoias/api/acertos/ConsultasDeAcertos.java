@@ -63,6 +63,16 @@ public class ConsultasDeAcertos {
             UUID cobradaNoAcertoId) {
     }
 
+    /** Um recebimento que pagou o acerto ou uma conta antiga no fechamento (sem quem registrou e sem o motivo do estorno). */
+    public record RecebimentoDoAcerto(UUID id, String forma, BigDecimal valor, String aplicadoEm, Instant recebidoEm, UUID estornaId,
+            boolean estornado) {
+    }
+
+    /** Uma conta a receber do vendedor que o fechamento gerou (o que ficou devendo, o boleto e as parcelas). */
+    public record ContaDoAcerto(UUID id, int numero, int totalDeParcelas, LocalDate vencimento, BigDecimal valor, BigDecimal valorPago,
+            String status, String formaPrevista) {
+    }
+
     /**
      * O que o fechamento gravou (acerto ACERTADO), tudo em Real; a cotação só para mostrar Dólar e Guarani. A soma da meta em
      * Guarani é a única conversão gravada. Não traz quem fechou nem o resumo das decisões.
@@ -70,8 +80,9 @@ public class ConsultasDeAcertos {
     public record Fechamento(Instant fechadoEm, UUID cotacaoId, LocalDate cotacaoData, BigDecimal usdVenda, BigDecimal pygVenda,
             int metaGuarani, BigDecimal percentualComissao, long vendidoParaMetaGuarani, BigDecimal vendidoBruto, BigDecimal descontos,
             BigDecimal devolvido, BigDecimal vendidoLiquido, BigDecimal comissao, BigDecimal faltasCobradas, BigDecimal liquido,
-            BigDecimal recebidoNoAcerto, BigDecimal ficouDevendo, List<ItemFechado> itens, List<EventoFechado> eventos,
-            List<ComissaoFechada> comissoes, List<PendenciaFechada> pendencias) {
+            BigDecimal recebidoNoAcerto, BigDecimal ficouDevendo, BigDecimal pagoAoVendedor, BigDecimal creditoUsado,
+            List<ItemFechado> itens, List<EventoFechado> eventos, List<ComissaoFechada> comissoes, List<PendenciaFechada> pendencias,
+            List<RecebimentoDoAcerto> recebimentos, List<ContaDoAcerto> contas) {
     }
 
     /** A linha da lista de acertos da dona. */
@@ -197,7 +208,7 @@ public class ConsultasDeAcertos {
         return jdbc.query("""
                 SELECT a.fechado_em, a.cotacao_id, c.data_cotacao, c.usd_venda, c.pyg_venda, a.meta_guarani, a.percentual_comissao,
                        a.vendido_para_meta_guarani, a.vendido_bruto, a.descontos, a.devolvido, a.vendido_liquido, a.comissao,
-                       a.faltas_cobradas, a.liquido, a.recebido_no_acerto, a.ficou_devendo
+                       a.faltas_cobradas, a.liquido, a.recebido_no_acerto, a.ficou_devendo, a.pago_ao_vendedor, a.credito_usado
                   FROM corona.acertos a JOIN corona.cotacoes c ON c.id = a.cotacao_id WHERE a.id = ? AND a.status = 'ACERTADO'""", rs -> {
                     if (!rs.next()) {
                         return null;
@@ -205,8 +216,9 @@ public class ConsultasDeAcertos {
                     return new Fechamento(instante(rs.getTimestamp(1)), rs.getObject(2, UUID.class), rs.getObject(3, LocalDate.class),
                             rs.getBigDecimal(4), rs.getBigDecimal(5), rs.getInt(6), rs.getBigDecimal(7), rs.getLong(8), rs.getBigDecimal(9),
                             rs.getBigDecimal(10), rs.getBigDecimal(11), rs.getBigDecimal(12), rs.getBigDecimal(13), rs.getBigDecimal(14),
-                            rs.getBigDecimal(15), rs.getBigDecimal(16), rs.getBigDecimal(17), itensFechados(acerto), eventosFechados(acerto),
-                            comissoesFechadas(acerto), pendenciasFechadas(acerto));
+                            rs.getBigDecimal(15), rs.getBigDecimal(16), rs.getBigDecimal(17), rs.getBigDecimal(18), rs.getBigDecimal(19),
+                            itensFechados(acerto), eventosFechados(acerto), comissoesFechadas(acerto), pendenciasFechadas(acerto),
+                            recebimentosDoAcerto(acerto), contasDoAcerto(acerto));
                 }, acerto);
     }
 
@@ -246,6 +258,25 @@ public class ConsultasDeAcertos {
                                 rs.getString("nome"), rs.getString("codigo"), rs.getString("foto_principal_hash")),
                         (Integer) rs.getObject("quantidade"), rs.getBigDecimal("valor"), rs.getString("status"),
                         rs.getObject("cobrada_no_acerto_id", UUID.class)), acerto, acerto);
+    }
+
+    private List<RecebimentoDoAcerto> recebimentosDoAcerto(UUID acerto) {
+        return jdbc.query("""
+                SELECT r.id, r.forma, r.valor, r.aplicado_em, r.recebido_em, r.estorna_id,
+                       EXISTS (SELECT 1 FROM corona.recebimentos_vendedor e WHERE e.estorna_id = r.id) AS estornado
+                  FROM corona.recebimentos_vendedor r WHERE r.acerto_id = ? AND r.deleted_at IS NULL ORDER BY r.recebido_em, r.id""",
+                (rs, n) -> new RecebimentoDoAcerto(rs.getObject("id", UUID.class), rs.getString("forma"), rs.getBigDecimal("valor"),
+                        rs.getString("aplicado_em"), instante(rs.getTimestamp("recebido_em")), rs.getObject("estorna_id", UUID.class),
+                        rs.getBoolean("estornado")), acerto);
+    }
+
+    private List<ContaDoAcerto> contasDoAcerto(UUID acerto) {
+        return jdbc.query("""
+                SELECT id, parcela, total_parcelas, vencimento, valor, valor_pago, status, forma_prevista FROM corona.contas_receber
+                 WHERE devedor_tipo = 'VENDEDOR' AND origem_tipo = 'ACERTO' AND origem_id = ? AND deleted_at IS NULL ORDER BY parcela""",
+                (rs, n) -> new ContaDoAcerto(rs.getObject("id", UUID.class), rs.getInt("parcela"), rs.getInt("total_parcelas"),
+                        rs.getObject("vencimento", LocalDate.class), rs.getBigDecimal("valor"), rs.getBigDecimal("valor_pago"),
+                        rs.getString("status"), rs.getString("forma_prevista")), acerto);
     }
 
     // --- pedaços ---

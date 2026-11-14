@@ -231,6 +231,21 @@
         },
         "type" : "object"
       },
+      "BoletoDoAcerto" : {
+        "properties" : {
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vencimento" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "CadastroDeTeste" : {
         "properties" : {
           "nome" : {
@@ -1185,6 +1200,98 @@
         },
         "type" : "object"
       },
+      "ConsultasDoCaixaLancamento" : {
+        "properties" : {
+          "categoria" : {
+            "type" : "string"
+          },
+          "dataLancamento" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "descricao" : {
+            "type" : "string"
+          },
+          "estornaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "forma" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "lancadoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "origemId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "origemTipo" : {
+            "type" : "string"
+          },
+          "saldoDepois" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendedorNome" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ContaAntigaPaga" : {
+        "properties" : {
+          "contaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "forma" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ContaBaixada" : {
+        "properties" : {
+          "contaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "ContaDaDona" : {
         "properties" : {
           "clienteId" : {
@@ -1200,13 +1307,22 @@
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           },
+          "formaPrevista" : {
+            "type" : "string"
+          },
           "id" : {
             "format" : "uuid",
+            "type" : "string"
+          },
+          "nivel" : {
             "type" : "string"
           },
           "numero" : {
             "format" : "int32",
             "type" : "integer"
+          },
+          "origem" : {
+            "type" : "string"
           },
           "status" : {
             "type" : "string"
@@ -1249,6 +1365,45 @@
             "type" : "string"
           },
           "vendedorNome" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ContaDoAcerto" : {
+        "properties" : {
+          "formaPrevista" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "numero" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "totalDeParcelas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorPago" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vencimento" : {
+            "format" : "date",
             "type" : "string"
           }
         },
@@ -2132,6 +2287,49 @@
         },
         "type" : "object"
       },
+      "Extrato" : {
+        "properties" : {
+          "ate" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "de" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "entradas" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "lancamentos" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ConsultasDoCaixaLancamento"
+            },
+            "type" : "array"
+          },
+          "saidas" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "saldoAnterior" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "saldoFinal" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "Fechamento" : {
         "properties" : {
           "comissao" : {
@@ -2146,12 +2344,24 @@
             },
             "type" : "array"
           },
+          "contas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ContaDoAcerto"
+            },
+            "type" : "array"
+          },
           "cotacaoData" : {
             "format" : "date",
             "type" : "string"
           },
           "cotacaoId" : {
             "format" : "uuid",
+            "type" : "string"
+          },
+          "creditoUsado" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           },
           "descontos" : {
@@ -2204,6 +2414,12 @@
             "format" : "int32",
             "type" : "integer"
           },
+          "pagoAoVendedor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
           "pendencias" : {
             "items" : {
               "$ref" : "#/components/schemas/PendenciaFechada"
@@ -2227,6 +2443,12 @@
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
+          },
+          "recebimentos" : {
+            "items" : {
+              "$ref" : "#/components/schemas/RecebimentoDoAcerto"
+            },
+            "type" : "array"
           },
           "usdVenda" : {
             "example" : "123.45",
@@ -4596,6 +4818,35 @@
         },
         "type" : "object"
       },
+      "PagamentoDoAcerto" : {
+        "properties" : {
+          "aFavorDoVendedor" : {
+            "type" : "string"
+          },
+          "boleto" : {
+            "$ref" : "#/components/schemas/BoletoDoAcerto"
+          },
+          "contasAntigas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ContaAntigaPaga"
+            },
+            "type" : "array"
+          },
+          "formaDoPagamento" : {
+            "type" : "string"
+          },
+          "recebimentos" : {
+            "items" : {
+              "$ref" : "#/components/schemas/RecebimentoNoAcerto"
+            },
+            "type" : "array"
+          },
+          "restante" : {
+            "$ref" : "#/components/schemas/RestanteDoAcerto"
+          }
+        },
+        "type" : "object"
+      },
       "PagamentoLido" : {
         "properties" : {
           "creditoId" : {
@@ -5391,6 +5642,9 @@
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           },
+          "pagamento" : {
+            "$ref" : "#/components/schemas/PagamentoDoAcerto"
+          },
           "pendenciasAntigas" : {
             "items" : {
               "$ref" : "#/components/schemas/DecisaoDePendenciaAntiga"
@@ -6063,6 +6317,111 @@
           "motivo" : {
             "maxLength" : 500,
             "minLength" : 0,
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "RecebimentoDaDona" : {
+        "properties" : {
+          "acertoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "aplicadoEm" : {
+            "type" : "string"
+          },
+          "contas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ContaBaixada"
+            },
+            "type" : "array"
+          },
+          "estornaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "estornado" : {
+            "type" : "boolean"
+          },
+          "forma" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "momento" : {
+            "type" : "string"
+          },
+          "motivo" : {
+            "type" : "string"
+          },
+          "recebidoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "vendedorNome" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "RecebimentoDoAcerto" : {
+        "properties" : {
+          "aplicadoEm" : {
+            "type" : "string"
+          },
+          "estornaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "estornado" : {
+            "type" : "boolean"
+          },
+          "forma" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "recebidoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "RecebimentoNoAcerto" : {
+        "properties" : {
+          "forma" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           }
         },
@@ -7887,6 +8246,19 @@
         },
         "type" : "object"
       },
+      "RestanteDoAcerto" : {
+        "properties" : {
+          "parcelas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "primeiroVencimento" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "RestricoesDaDonaControllerPedido" : {
         "properties" : {
           "bloqueiaRemessa" : {
@@ -8084,6 +8456,48 @@
           "quantidade" : {
             "format" : "int32",
             "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "ServicoDeRecebimentosDoVendedorPedidoDeEstorno" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "motivo" : {
+            "type" : "string"
+          },
+          "vencimento" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ServicoDeRecebimentosDoVendedorPedidoDeRecebimento" : {
+        "properties" : {
+          "contaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "forma" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
           }
         },
         "type" : "object"
@@ -9039,7 +9453,7 @@
     },
     "/api/dona/acertos/{id}/fechamento/previa" : {
       "post" : {
-        "description" : "O mesmo cálculo do fechamento com as decisões enviadas (faltas, defeitos, cobranças e pendências antigas). Nada é gravado.",
+        "description" : "O mesmo cálculo do fechamento com as decisões enviadas (faltas, defeitos, cobranças e pendências antigas) e com o pagamento (recebimentos em dinheiro e Transferência, boleto, o que ficou devendo em parcelas, contas antigas pagas e, a favor do vendedor, crédito ou pagar na hora). Mostra o crédito disponível, o que há a pagar, o que ficou devendo e as contas abertas do vendedor. Nada é gravado.",
         "operationId" : "previaDoFechamentoComDecisoes",
         "parameters" : [ {
           "in" : "path",
@@ -9082,7 +9496,7 @@
     },
     "/api/dona/acertos/{id}/fechar" : {
       "post" : {
-        "description" : "Só a dona. Uma transação só: esperado x contado, faltas, defeitos, eventos, comissão por meta, totais e cotação; as maletas ficam acertadas. Sobra ou devolução em revisão impede (409). As decisões e o líquido mostrado têm de bater com o cálculo de agora (409 com a prévia nova). Mesmo id e mesmas decisões devolve 200.",
+        "description" : "Só a dona. Uma transação só: esperado x contado, faltas, defeitos, eventos, comissão por meta, totais e cotação; as maletas ficam acertadas. Sobra ou devolução em revisão impede (409). As decisões e o líquido mostrado têm de bater com o cálculo de agora (409 com a prévia nova). O pagamento entra na mesma transação: cada recebimento gera a entrada de caixa, o boleto e o que ficou devendo viram contas a receber do vendedor, e o acerto a favor do vendedor vira crédito ou saída de caixa. Mesmo id e mesmas decisões devolve 200.",
         "operationId" : "fecharAcerto",
         "parameters" : [ {
           "in" : "path",
@@ -9404,6 +9818,46 @@
         } ],
         "summary" : "O que precisa da sua atenção",
         "tags" : [ "avisos-da-dona-controller" ]
+      }
+    },
+    "/api/dona/caixa/lancamentos" : {
+      "get" : {
+        "description" : "Os lançamentos do caixa (o que entrou dos recebimentos dos vendedores e o que saiu em pagamentos aos vendedores), do mais antigo para o mais novo, com o saldo depois de cada um. Período opcional (de e até, dias de Brasília, inclusive): o saldo anterior é a soma de tudo antes do primeiro dia. Só valores em Real.",
+        "operationId" : "verExtratoDoCaixa",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Extrato"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Extrato do caixa",
+        "tags" : [ "caixa-da-dona-controller" ]
       }
     },
     "/api/dona/categorias" : {
@@ -10294,7 +10748,7 @@
     },
     "/api/dona/contas-receber" : {
       "get" : {
-        "description" : "Todas as parcelas das vendas a prazo, da que vence primeiro para a que vence depois, com o vendedor de cada venda. Filtros opcionais: vendedor, cliente e situação (ABERTA, PARCIAL, PAGA, CANCELADA, EM_ABERTO ou VENCIDA, calculada pela data de hoje em Brasília). Só valores em Real.",
+        "description" : "As parcelas dos dois níveis, da que vence primeiro para a que vence depois: o que os clientes devem (nível CLIENTE, das vendas a prazo) e o que os vendedores devem à loja (nível VENDEDOR, do acerto). Filtros opcionais: nível, vendedor, cliente (só do nível CLIENTE) e situação (ABERTA, PARCIAL, PAGA, CANCELADA, EM_ABERTO ou VENCIDA, calculada pela data de hoje em Brasília). Só valores em Real.",
         "operationId" : "listarContasAReceber",
         "parameters" : [ {
           "in" : "query",
@@ -10319,6 +10773,13 @@
           "schema" : {
             "type" : "string"
           }
+        }, {
+          "in" : "query",
+          "name" : "nivel",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
         } ],
         "responses" : {
           "200" : {
@@ -10338,7 +10799,7 @@
         "security" : [ {
           "bearer" : [ ]
         } ],
-        "summary" : "Contas a receber dos clientes",
+        "summary" : "Contas a receber",
         "tags" : [ "contas-a-receber-da-dona-controller" ]
       }
     },
@@ -13146,6 +13607,130 @@
         } ],
         "summary" : "Estornar um recebimento do cliente",
         "tags" : [ "contas-a-receber-da-dona-controller" ]
+      }
+    },
+    "/api/dona/recebimentos-vendedor" : {
+      "get" : {
+        "description" : "O que os vendedores pagaram à loja, do mais novo para o mais antigo, com as contas que cada um baixou. Filtros opcionais: vendedor e período (de e até, dias de Brasília). Só valores em Real.",
+        "operationId" : "listarRecebimentosDoVendedor",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/RecebimentoDaDona"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Recebimentos dos vendedores",
+        "tags" : [ "recebimentos-do-vendedor-da-dona-controller" ]
+      },
+      "post" : {
+        "description" : "O vendedor paga à loja, fora do acerto, em dinheiro, Transferência (PIX) ou boleto pago. Com a conta indicada, baixa só essa conta; sem conta, o servidor distribui pelas contas em aberto, da que vence primeiro para a que vence depois. Não aceita mais do que o vendedor deve. O boleto pago é o valor inteiro da conta do boleto. Entra no caixa na mesma hora. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409.",
+        "operationId" : "receberDoVendedor",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ServicoDeRecebimentosDoVendedorPedidoDeRecebimento"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RecebimentoDaDona"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Registrar um recebimento do vendedor",
+        "tags" : [ "recebimentos-do-vendedor-da-dona-controller" ]
+      }
+    },
+    "/api/dona/recebimentos-vendedor/{recebimentoId}/estorno" : {
+      "post" : {
+        "description" : "Desfaz o recebimento, sem limite de dia, com motivo. O dinheiro sai do caixa e as contas que ele baixou voltam a ficar em aberto; se ele pagou um acerto já fechado, o valor vira uma conta nova do vendedor (vencimento hoje ou a data informada). Mesmo id de estorno devolve 200.",
+        "operationId" : "estornarRecebimentoDoVendedorPelaDona",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "recebimentoId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ServicoDeRecebimentosDoVendedorPedidoDeEstorno"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RecebimentoDaDona"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Estornar um recebimento do vendedor",
+        "tags" : [ "recebimentos-do-vendedor-da-dona-controller" ]
       }
     },
     "/api/dona/relatorios/cadastros/alteracoes-de-produtos" : {

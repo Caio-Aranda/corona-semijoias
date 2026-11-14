@@ -53,7 +53,8 @@ public final class CotacoesDaMassa {
             }
             List<String> todas = new ArrayList<>(tabelas);
             for (String t : List.of("corona.cotacoes", "corona.pendencias_acerto", "corona.comissoes", "corona.acerto_eventos",
-                    "corona.itens_acerto", "corona.leituras_acerto", "corona.remessas")) {
+                    "corona.itens_acerto", "corona.leituras_acerto", "corona.remessas", "corona.recebimentos_vendedor",
+                    "corona.lancamentos_caixa", "corona.baixas_receber", "corona.contas_receber")) {
                 if (!todas.contains(t)) {
                     todas.add(t);
                 }
@@ -62,6 +63,23 @@ public final class CotacoesDaMassa {
                 s.execute("ALTER TABLE " + t + " DISABLE TRIGGER USER");
             }
             try {
+                // O dinheiro do vendedor (tarefa 7.6): recebimentos, baixas, contas e lançamentos dos acertos fechados dos testes.
+                // Os ids saem antes (sem tabela temporária: o dono das tabelas não pode criar).
+                List<String> recebimentos = ids(s, "SELECT id FROM corona.recebimentos_vendedor WHERE acerto_id IN " + meusAcertos
+                        + " OR id IN (SELECT b.recebimento_vendedor_id FROM corona.baixas_receber b JOIN corona.contas_receber c"
+                        + " ON c.id = b.conta_id WHERE c.origem_tipo = 'ACERTO' AND c.origem_id IN " + meusAcertos + ")");
+                if (!recebimentos.isEmpty()) {
+                    recebimentos.addAll(ids(s, "SELECT id FROM corona.recebimentos_vendedor WHERE estorna_id IN " + lista(recebimentos)));
+                }
+                String meusRecebimentos = lista(recebimentos);
+                List<String> contas = ids(s, "SELECT id FROM corona.contas_receber WHERE devedor_tipo = 'VENDEDOR' AND (origem_id IN "
+                        + meusAcertos + " OR origem_id IN " + meusRecebimentos + ")");
+                String minhasContas = lista(contas);
+                s.execute("DELETE FROM corona.lancamentos_caixa WHERE origem_id IN " + meusRecebimentos + " OR origem_id IN " + meusAcertos);
+                s.execute("DELETE FROM corona.baixas_receber WHERE conta_id IN " + minhasContas
+                        + " OR recebimento_vendedor_id IN " + meusRecebimentos);
+                s.execute("DELETE FROM corona.contas_receber WHERE id IN " + minhasContas);
+                s.execute("DELETE FROM corona.recebimentos_vendedor WHERE id IN " + meusRecebimentos);
                 s.execute("DELETE FROM corona.pendencias_acerto WHERE acerto_id IN " + meusAcertos
                         + " OR cobrada_no_acerto_id IN " + meusAcertos);
                 for (String t : List.of("comissoes", "acerto_eventos", "itens_acerto", "leituras_acerto")) {
@@ -82,5 +100,23 @@ public final class CotacoesDaMassa {
             }
             comoMigracao.commit();
         }
+    }
+
+    private static List<String> ids(Statement s, String consulta) throws SQLException {
+        List<String> r = new ArrayList<>();
+        try (var rs = s.executeQuery(consulta)) {
+            while (rs.next()) {
+                r.add(rs.getString(1));
+            }
+        }
+        return r;
+    }
+
+    /** Uma lista de uuids para IN (...); vazia vira uma lista que nunca bate. */
+    private static String lista(List<String> ids) {
+        if (ids.isEmpty()) {
+            return "('00000000-0000-0000-0000-000000000000'::uuid)";
+        }
+        return ids.stream().map(i -> "'" + i + "'::uuid").collect(java.util.stream.Collectors.joining(", ", "(", ")"));
     }
 }

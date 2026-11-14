@@ -371,7 +371,7 @@ final class CenarioDeSync {
                 "produtos_fotos", "remessas", "itens_remessa", "movimentos_remessa", "vendas", "itens_venda",
                 "pagamentos_cliente", "conferencias", "itens_conferencia", "devolucoes", "itens_devolucao",
                 "autorizacoes_excecao", "itens_autorizacao", "trocas", "creditos_cliente", "usos_credito", "creditos_sem_saldo",
-                "contas_receber", "baixas_receber")) {
+                "contas_receber", "baixas_receber", "recebimentos_vendedor")) {
             tudo.put(t, jdbc.queryForList("SELECT * FROM corona." + t));
         }
         Map<String, Map<UUID, Linha>> r = new HashMap<>();
@@ -413,8 +413,11 @@ final class CenarioDeSync {
         r.put("creditos_cliente", linhas(tudo.get("creditos_cliente"), l -> meusCreditos.contains(l.get("id"))));
         r.put("usos_credito", linhas(tudo.get("usos_credito"), l -> meusCreditos.contains(l.get("credito_id"))));
         r.put("creditos_sem_saldo", linhas(tudo.get("creditos_sem_saldo"), l -> minhasVendas.contains(l.get("venda_id"))));
-        // Fase 7 (tarefa 7.3): as parcelas pela venda do vendedor e as baixas pela parcela.
-        Set<Object> minhasContas = ids(tudo.get("contas_receber"), l -> minhasVendas.contains(l.get("venda_id")));
+        // Fase 7 (tarefas 7.3 e 7.6): as parcelas pela venda do vendedor ou do próprio vendedor (nível 2), as baixas pela parcela
+        // e os recebimentos do vendedor.
+        Set<Object> minhasContas = ids(tudo.get("contas_receber"),
+                l -> minhasVendas.contains(l.get("venda_id")) || v.equals(l.get("vendedor_id")));
+        r.put("recebimentos_vendedor", linhas(tudo.get("recebimentos_vendedor"), l -> v.equals(l.get("vendedor_id"))));
         r.put("contas_receber", linhas(tudo.get("contas_receber"), l -> minhasContas.contains(l.get("id"))));
         r.put("baixas_receber", linhas(tudo.get("baixas_receber"), l -> minhasContas.contains(l.get("conta_id"))));
         r.values().removeIf(Map::isEmpty);

@@ -423,6 +423,74 @@ INSERT INTO estado_sync (chave, valor)
   ON CONFLICT (chave) DO UPDATE SET valor = excluded.valor;
 `;
 
+/**
+ * As tabelas que a recarga dirigida da versão 8 traz de novo (tarefa 7.6): as contas (que ganharam o nível 2 e a forma
+ * prevista), as baixas (que ganharam o recebimento do vendedor), a nova `recebimentos_vendedor` e o acerto (que ganhou o
+ * pago ao vendedor e o crédito usado). O computador que já tinha cursor não receberia o que o servidor gravou antes da migração.
+ */
+export const TABELAS_DA_RECARGA_DIRIGIDA_V8 = Object.freeze([
+  'contas_receber',
+  'baixas_receber',
+  'recebimentos_vendedor',
+  'acertos',
+] as const);
+
+/**
+ * Versão 8 (tarefa 7.6; ADR-0012, itens 7, 8, 9 e 11): o dinheiro que o vendedor deve e paga à loja. `contas_receber` aceita
+ * a conta do nível 2 (sem venda) e ganha `forma_prevista`: como o SQLite não troca "NOT NULL" no lugar, a cópia local é refeita
+ * com as mesmas linhas (nada se perde). `baixas_receber` ganha `recebimento_vendedor_id`, `acertos` ganha `pago_ao_vendedor`,
+ * `credito_usado` e `credito_do_acerto_id`, e nasce `recebimentos_vendedor` (só do vendedor dono; nunca quem registrou, o motivo
+ * do estorno nem o resumo do pedido). O caixa e as categorias dele não existem aqui: nunca vão ao aplicativo. Dinheiro em
+ * texto, datas em texto ISO. Banco que já tinha cursor ganha a marca da recarga dirigida (somada à que ainda não terminou,
+ * sem repetir e na ordem). Banco novo faz a carga inicial e não precisa.
+ */
+const V8 = `
+ALTER TABLE contas_receber RENAME TO contas_receber_antiga;
+CREATE TABLE contas_receber (${CONTROLE},
+  devedor_tipo TEXT, cliente_id TEXT, vendedor_id TEXT, origem_tipo TEXT, origem_id TEXT, venda_id TEXT,
+  parcela INTEGER, total_parcelas INTEGER, vencimento TEXT, valor TEXT NOT NULL, valor_pago TEXT, valor_cancelado TEXT,
+  status TEXT, forma_prevista TEXT
+);
+INSERT INTO contas_receber (id, version, created_at, updated_at, deleted_at, origem_local, devedor_tipo, cliente_id,
+    vendedor_id, origem_tipo, origem_id, venda_id, parcela, total_parcelas, vencimento, valor, valor_pago, valor_cancelado,
+    status)
+  SELECT id, version, created_at, updated_at, deleted_at, origem_local, devedor_tipo, cliente_id,
+    vendedor_id, origem_tipo, origem_id, venda_id, parcela, total_parcelas, vencimento, valor, valor_pago, valor_cancelado,
+    status
+  FROM contas_receber_antiga;
+DROP TABLE contas_receber_antiga;
+CREATE INDEX contas_receber_da_venda ON contas_receber (venda_id);
+CREATE INDEX contas_receber_do_cliente ON contas_receber (cliente_id);
+CREATE INDEX contas_receber_do_vendedor ON contas_receber (vendedor_id);
+
+ALTER TABLE baixas_receber ADD COLUMN recebimento_vendedor_id TEXT;
+
+ALTER TABLE acertos ADD COLUMN pago_ao_vendedor TEXT;
+ALTER TABLE acertos ADD COLUMN credito_usado TEXT;
+ALTER TABLE acertos ADD COLUMN credito_do_acerto_id TEXT;
+
+CREATE TABLE recebimentos_vendedor (${CONTROLE},
+  vendedor_id TEXT, momento TEXT, acerto_id TEXT, aplicado_em TEXT, forma TEXT, valor TEXT NOT NULL, recebido_em TEXT,
+  estorna_id TEXT
+);
+CREATE INDEX recebimentos_vendedor_do_vendedor ON recebimentos_vendedor (vendedor_id);
+CREATE INDEX recebimentos_vendedor_do_acerto ON recebimentos_vendedor (acerto_id);
+
+INSERT INTO estado_sync (chave, valor)
+  SELECT 'recarga_dirigida', lista FROM (
+    SELECT json_group_array(t) AS lista FROM (
+      SELECT t FROM (
+        SELECT key AS k, value AS t FROM json_each(
+          coalesce((SELECT valor FROM estado_sync WHERE chave = 'recarga_dirigida'), '[]'))
+        UNION ALL
+        SELECT 1000 + key AS k, value AS t FROM json_each('${JSON.stringify(TABELAS_DA_RECARGA_DIRIGIDA_V8)}')
+      ) GROUP BY t ORDER BY min(k)
+    )
+  )
+   WHERE EXISTS (SELECT 1 FROM estado_sync WHERE chave = 'cursor' AND valor IS NOT NULL)
+  ON CONFLICT (chave) DO UPDATE SET valor = excluded.valor;
+`;
+
 export const MIGRACOES: readonly MigracaoLocal[] = Object.freeze([
   {
     versao: 1,
@@ -460,6 +528,12 @@ export const MIGRACOES: readonly MigracaoLocal[] = Object.freeze([
     descricao:
       'fechamento do acerto (totais, comissão, itens, eventos e pendências) e a recarga dirigida',
     sql: V7,
+  },
+  {
+    versao: 8,
+    descricao:
+      'dinheiro do vendedor (recebimentos, contas do nível 2, pago e crédito do acerto) e a recarga dirigida',
+    sql: V8,
   },
 ]);
 
@@ -503,4 +577,6 @@ export const TABELAS_SINCRONIZAVEIS = Object.freeze([
   'acerto_eventos',
   'comissoes',
   'pendencias_acerto',
+  // Fase 7 (tarefa 7.6, migração local 8).
+  'recebimentos_vendedor',
 ] as const);

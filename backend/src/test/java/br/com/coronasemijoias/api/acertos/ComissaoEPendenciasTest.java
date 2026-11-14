@@ -170,7 +170,8 @@ class ComissaoEPendenciasTest extends ApoioDoFechamento {
         bipar(acerto, peca, 1, "BOA");
         UUID id = UUID.randomUUID();
         var pedido = mapa("id", id, "faltas", List.of(), "defeitos", List.of(), "cobrancas", List.of(),
-                "pendenciasAntigas", List.of(mapa("pendenciaId", falta, "decisao", "COBRAR_NO_ACERTO")), "liquidoMostrado", "50.00");
+                "pendenciasAntigas", List.of(mapa("pendenciaId", falta, "decisao", "COBRAR_NO_ACERTO")), "liquidoMostrado", "50.00",
+                "pagamento", mapa("restante", mapa("parcelas", 1, "primeiroVencimento", java.time.LocalDate.now().plusDays(30).toString())));
         fechar(acerto, pedido).andExpect(status().isCreated());
         assertThat(jdbc.queryForObject("SELECT status FROM corona.pendencias_acerto WHERE id = ?", String.class, falta)).isEqualTo("COBRADA");
         assertThat(jdbc.queryForObject("SELECT cobrada_no_acerto_id FROM corona.pendencias_acerto WHERE id = ?", UUID.class, falta))

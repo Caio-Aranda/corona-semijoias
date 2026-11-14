@@ -89,6 +89,8 @@ Só plano: nenhuma linha de código nesta tarefa (7.1). O modelo está no [ADR-0
 - Recebimentos no fechamento nas três formas do repasse: `DINHEIRO`, `PIX` (na tela, "Transferência") e `BOLETO` (o boleto vira conta a receber até a dona registrar que foi pago); conta do nível 2 com o que faltou; pagamento de conta antiga no acerto; estorno de recebimento.
 - Acerto a favor do vendedor: crédito no próximo acerto ou saída de caixa.
 
+**Como ficou (tarefa 7.6, 14/11/2026).** Feita no PR 167 (V045): recebimentos do vendedor (no fechamento e avulsos), contas do nível 2, estorno de recebimento, caixa automático (só o `ServicoDeCaixa` grava), leitura dos dois níveis e do caixa, pull e Corona Vendas (migração local 8); nas telas a forma `PIX` é "Transferência (PIX)" no repasse do vendedor. Detalhe em [fase-7.md](fase-7.md#tarefa-76-recebimentos-do-vendedor-contas-do-nível-2-e-caixa-automático). Lançamento manual, categorias com rota e aviso de caixa negativo ficam na 7.7.
+
 ### 7.7: contas a pagar, caixa manual e semana
 
 - Tabelas `contas_pagar`, `baixas_pagar`; gerar parcelas de uma compra; pagar (saída de caixa) em dinheiro, por transferência ou boleto; compra estornada cancela as abertas.

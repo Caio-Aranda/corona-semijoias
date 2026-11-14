@@ -88,6 +88,10 @@ abstract class ApoioDoFechamento extends ApoioDoAcerto {
         BigDecimal f = new BigDecimal(faltas);
         BigDecimal liquidoVendido = b.subtract(d).subtract(dev);
         BigDecimal liquido = liquidoVendido.subtract(c).add(f);
+        // O que o vendedor ficou devendo vira conta a receber do nível 2 (V045); o gatilho do banco confere no COMMIT.
+        if (liquido.signum() > 0) {
+            contaDoAcertoNoBanco(acerto, liquido, 1, 1, java.time.LocalDate.now().plusDays(30), null);
+        }
         jdbc.update("""
                 UPDATE corona.acertos SET status = 'ACERTADO', fechamento_id = ?, conteudo_do_fechamento = 'teste',
                        fechado_em = now(), fechado_por = ?, cotacao_id = ?, meta_guarani = 700000, percentual_comissao = 30,
@@ -95,6 +99,28 @@ abstract class ApoioDoFechamento extends ApoioDoAcerto {
                        comissao = ?, faltas_cobradas = ?, liquido = ?, recebido_no_acerto = 0, ficou_devendo = ?
                  WHERE id = ?""", UUID.randomUUID(), usuarios.dona().id(), cotacaoDoExemplo, b, d, dev, liquidoVendido, c, f,
                 liquido, liquido, acerto);
+    }
+
+    /** Fecha o acerto por SQL com a venda do teste (líquido 35,00) e o dinheiro dado; as contas e os recebimentos o chamador cria antes. */
+    void fecharComDinheiro(UUID acerto, String recebido, String pagoAoVendedor, String ficou, String creditoUsado, UUID creditoDe) {
+        jdbc.update("""
+                UPDATE corona.acertos SET status = 'ACERTADO', fechamento_id = ?, conteudo_do_fechamento = 'teste', fechado_em = now(),
+                       fechado_por = ?, cotacao_id = ?, meta_guarani = 700000, percentual_comissao = 30, vendido_para_meta_guarani = 0,
+                       vendido_bruto = 50, descontos = 0, devolvido = 0, vendido_liquido = 50, comissao = 15, faltas_cobradas = 0,
+                       liquido = 35, recebido_no_acerto = ?::numeric, pago_ao_vendedor = ?::numeric, ficou_devendo = ?::numeric,
+                       credito_usado = ?::numeric, credito_do_acerto_id = ? WHERE id = ?""", UUID.randomUUID(), usuarios.dona().id(),
+                cotacaoDoExemplo, recebido, pagoAoVendedor, ficou, creditoUsado, creditoDe, acerto);
+    }
+
+    /** Uma conta a receber do vendedor (nível 2), nascida no fechamento do acerto em andamento. */
+    UUID contaDoAcertoNoBanco(UUID acerto, BigDecimal valor, int parcela, int total, java.time.LocalDate vencimento, String formaPrevista) {
+        UUID id = UUID.randomUUID();
+        UUID vendedorId = jdbc.queryForObject("SELECT vendedor_id FROM corona.acertos WHERE id = ?", UUID.class, acerto);
+        jdbc.update("""
+                INSERT INTO corona.contas_receber (id, devedor_tipo, vendedor_id, origem_tipo, origem_id, parcela, total_parcelas,
+                    vencimento, valor, forma_prevista) VALUES (?, 'VENDEDOR', ?, 'ACERTO', ?, ?, ?, ?, ?, ?)""", id, vendedorId, acerto,
+                parcela, total, vencimento, valor, formaPrevista);
+        return id;
     }
 
     // --- pela API ---
@@ -116,8 +142,14 @@ abstract class ApoioDoFechamento extends ApoioDoAcerto {
     /** O corpo do fechar: faltas, defeitos, cobranças e pendências antigas (listas vazias quando não há) e o líquido mostrado. */
     static java.util.Map<String, Object> pedidoDeFechamento(UUID id, java.util.List<?> faltas, java.util.List<?> defeitos,
             String liquidoMostrado) {
-        return mapa("id", id, "faltas", faltas, "defeitos", defeitos, "cobrancas", java.util.List.of(),
+        java.util.Map<String, Object> pedido = mapa("id", id, "faltas", faltas, "defeitos", defeitos, "cobrancas", java.util.List.of(),
                 "pendenciasAntigas", java.util.List.of(), "liquidoMostrado", liquidoMostrado);
+        // Líquido positivo: o vendedor ficou devendo tudo, em uma parcela daqui a 30 dias (o que a tela escolhe por padrão).
+        if (new BigDecimal(liquidoMostrado).signum() > 0) {
+            pedido.put("pagamento", mapa("restante", mapa("parcelas", 1, "primeiroVencimento",
+                    java.time.LocalDate.now(java.time.ZoneId.of("America/Sao_Paulo")).plusDays(30).toString())));
+        }
+        return pedido;
     }
 
     org.springframework.test.web.servlet.ResultActions fechar(UUID acerto, java.util.Map<String, Object> pedido) throws Exception {

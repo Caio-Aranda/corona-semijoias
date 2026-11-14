@@ -497,13 +497,22 @@
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           },
+          "formaPrevista" : {
+            "type" : "string"
+          },
           "id" : {
             "format" : "uuid",
+            "type" : "string"
+          },
+          "nivel" : {
             "type" : "string"
           },
           "numero" : {
             "format" : "int32",
             "type" : "integer"
+          },
+          "origem" : {
+            "type" : "string"
           },
           "status" : {
             "type" : "string"
@@ -716,6 +725,63 @@
           },
           "vendidaEm" : {
             "format" : "date-time",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ContaDoAcerto" : {
+        "properties" : {
+          "formaPrevista" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "numero" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "totalDeParcelas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorPago" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vencimento" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ContasAReceberDoVendedorControllerPedidoDeRecebimento" : {
+        "properties" : {
+          "forma" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           }
         },
@@ -1126,12 +1192,24 @@
             },
             "type" : "array"
           },
+          "contas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ContaDoAcerto"
+            },
+            "type" : "array"
+          },
           "cotacaoData" : {
             "format" : "date",
             "type" : "string"
           },
           "cotacaoId" : {
             "format" : "uuid",
+            "type" : "string"
+          },
+          "creditoUsado" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           },
           "descontos" : {
@@ -1184,6 +1262,12 @@
             "format" : "int32",
             "type" : "integer"
           },
+          "pagoAoVendedor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
           "pendencias" : {
             "items" : {
               "$ref" : "#/components/schemas/PendenciaFechada"
@@ -1207,6 +1291,12 @@
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
+          },
+          "recebimentos" : {
+            "items" : {
+              "$ref" : "#/components/schemas/RecebimentoDoAcerto"
+            },
+            "type" : "array"
           },
           "usdVenda" : {
             "example" : "123.45",
@@ -2021,24 +2111,6 @@
         "required" : [ "login", "senha" ],
         "type" : "object"
       },
-      "PedidoDeRecebimento" : {
-        "properties" : {
-          "forma" : {
-            "type" : "string"
-          },
-          "id" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "valor" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          }
-        },
-        "type" : "object"
-      },
       "PedidoDeRenovacao" : {
         "properties" : {
           "dispositivoId" : {
@@ -2119,6 +2191,77 @@
             "type" : "string"
           },
           "tipo" : {
+            "type" : "string"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "RecebimentoDoAcerto" : {
+        "properties" : {
+          "aplicadoEm" : {
+            "type" : "string"
+          },
+          "estornaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "estornado" : {
+            "type" : "boolean"
+          },
+          "forma" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "recebidoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "RecebimentoDoVendedor" : {
+        "properties" : {
+          "acertoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "aplicadoEm" : {
+            "type" : "string"
+          },
+          "estornaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "estornado" : {
+            "type" : "boolean"
+          },
+          "forma" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "momento" : {
+            "type" : "string"
+          },
+          "recebidoEm" : {
+            "format" : "date-time",
             "type" : "string"
           },
           "valor" : {
@@ -3532,7 +3675,7 @@
     },
     "/api/vendedor/contas-receber" : {
       "get" : {
-        "description" : "As parcelas das vendas a prazo do vendedor logado, da que vence primeiro para a que vence depois. Filtros opcionais: situação (ABERTA, PARCIAL, PAGA, CANCELADA, EM_ABERTO ou VENCIDA, calculada pela data de hoje em Brasília), cliente e venda. Só valores em Real.",
+        "description" : "As parcelas do vendedor logado nos dois níveis, da que vence primeiro para a que vence depois: o que os clientes devem a ele (nível CLIENTE, das vendas a prazo) e o que ele deve à loja (nível VENDEDOR, do acerto). Filtros opcionais: nível, situação (ABERTA, PARCIAL, PAGA, CANCELADA, EM_ABERTO ou VENCIDA, calculada pela data de hoje em Brasília), cliente e venda (só do nível CLIENTE). Só valores em Real.",
         "operationId" : "listarMinhasContasAReceber",
         "parameters" : [ {
           "in" : "query",
@@ -3555,6 +3698,13 @@
           "required" : false,
           "schema" : {
             "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "nivel",
+          "required" : false,
+          "schema" : {
             "type" : "string"
           }
         } ],
@@ -4123,6 +4273,32 @@
         } ],
         "summary" : "Procurar uma peça pelo nome",
         "tags" : [ "maletas-do-vendedor-controller" ]
+      }
+    },
+    "/api/vendedor/recebimentos" : {
+      "get" : {
+        "description" : "Os recebimentos do vendedor logado (dinheiro, Transferência (PIX) e boleto pago), do mais novo para o mais antigo, e os estornos deles. Só valores em Real.",
+        "operationId" : "listarMeusRecebimentos",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/RecebimentoDoVendedor"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "O que paguei à loja",
+        "tags" : [ "recebimentos-do-vendedor-do-vendedor-controller" ]
       }
     },
     "/api/vendedor/recebimentos-de-cliente/{pagamentoId}/estorno" : {
@@ -4883,7 +5059,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/PedidoDeRecebimento"
+                "$ref" : "#/components/schemas/ContasAReceberDoVendedorControllerPedidoDeRecebimento"
               }
             }
           },

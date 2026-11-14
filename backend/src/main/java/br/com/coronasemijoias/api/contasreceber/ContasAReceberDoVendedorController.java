@@ -51,13 +51,15 @@ public class ContasAReceberDoVendedorController {
     }
 
     @Operation(operationId = "listarMinhasContasAReceber", summary = "Minhas contas a receber",
-            description = "As parcelas das vendas a prazo do vendedor logado, da que vence primeiro para a que vence depois. "
-                    + "Filtros opcionais: situação (ABERTA, PARCIAL, PAGA, CANCELADA, EM_ABERTO ou VENCIDA, calculada pela "
-                    + "data de hoje em Brasília), cliente e venda. Só valores em Real.")
+            description = "As parcelas do vendedor logado nos dois níveis, da que vence primeiro para a que vence depois: o que os "
+                    + "clientes devem a ele (nível CLIENTE, das vendas a prazo) e o que ele deve à loja (nível VENDEDOR, do acerto). "
+                    + "Filtros opcionais: nível, situação (ABERTA, PARCIAL, PAGA, CANCELADA, EM_ABERTO ou VENCIDA, calculada pela "
+                    + "data de hoje em Brasília), cliente e venda (só do nível CLIENTE). Só valores em Real.")
     @GetMapping("/contas-receber")
     public List<Conta> listar(@RequestParam(required = false) String situacao, @RequestParam(required = false) UUID clienteId,
-            @RequestParam(required = false) UUID vendaId, @AuthenticationPrincipal UsuarioAutenticado quem) {
-        return consultas.doVendedor(quem.vendedorId(), situacao, clienteId, vendaId);
+            @RequestParam(required = false) UUID vendaId, @RequestParam(required = false) String nivel,
+            @AuthenticationPrincipal UsuarioAutenticado quem) {
+        return consultas.doVendedor(quem.vendedorId(), situacao, clienteId, vendaId, nivel);
     }
 
     @Operation(operationId = "receberDoCliente", summary = "Registrar um recebimento do cliente",

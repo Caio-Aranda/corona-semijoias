@@ -38,14 +38,15 @@ public class ContasAReceberDaDonaController {
         this.consultas = consultas;
     }
 
-    @Operation(operationId = "listarContasAReceber", summary = "Contas a receber dos clientes",
-            description = "Todas as parcelas das vendas a prazo, da que vence primeiro para a que vence depois, com o vendedor "
-                    + "de cada venda. Filtros opcionais: vendedor, cliente e situação (ABERTA, PARCIAL, PAGA, CANCELADA, "
+    @Operation(operationId = "listarContasAReceber", summary = "Contas a receber",
+            description = "As parcelas dos dois níveis, da que vence primeiro para a que vence depois: o que os clientes devem "
+                    + "(nível CLIENTE, das vendas a prazo) e o que os vendedores devem à loja (nível VENDEDOR, do acerto). Filtros "
+                    + "opcionais: nível, vendedor, cliente (só do nível CLIENTE) e situação (ABERTA, PARCIAL, PAGA, CANCELADA, "
                     + "EM_ABERTO ou VENCIDA, calculada pela data de hoje em Brasília). Só valores em Real.")
     @GetMapping("/contas-receber")
     public List<ContaDaDona> listar(@RequestParam(required = false) UUID vendedorId, @RequestParam(required = false) UUID clienteId,
-            @RequestParam(required = false) String situacao) {
-        return consultas.daDona(vendedorId, situacao, clienteId);
+            @RequestParam(required = false) String situacao, @RequestParam(required = false) String nivel) {
+        return consultas.daDona(vendedorId, situacao, clienteId, nivel);
     }
 
     @Operation(operationId = "estornarRecebimentoDeCliente", summary = "Estornar um recebimento do cliente",

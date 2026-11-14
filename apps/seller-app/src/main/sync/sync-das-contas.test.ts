@@ -93,7 +93,7 @@ describe('migração local 4', () => {
       db.close();
     });
     expect(Number(db.pragma('user_version', { simple: true }))).toBe(VERSAO_DO_BANCO);
-    expect(VERSAO_DO_BANCO).toBe(7);
+    expect(VERSAO_DO_BANCO).toBe(8);
     expect(contagem(db)).toEqual(contagemAntes);
     expect(db.prepare('SELECT * FROM outbox ORDER BY ordem').all()).toEqual(outboxAntes);
     for (const t of ['contas_receber', 'baixas_receber'] as const) {
@@ -120,6 +120,7 @@ describe('migração local 4', () => {
       ...TABELAS_DA_RECARGA_DIRIGIDA_V4,
       ...TABELAS_DA_RECARGA_DIRIGIDA_V6,
       ...V7_NOVAS,
+      'recebimentos_vendedor',
     ]);
   });
 
@@ -169,6 +170,7 @@ describe('migração local 4', () => {
       ...TABELAS_DA_RECARGA_DIRIGIDA_V4,
       ...TABELAS_DA_RECARGA_DIRIGIDA_V6,
       ...V7_NOVAS,
+      'recebimentos_vendedor',
     ]);
   });
 
@@ -199,13 +201,14 @@ describe('migração local 4', () => {
       'acertos',
       'leituras_acerto',
       ...V7_NOVAS,
+      'recebimentos_vendedor',
     ]);
   });
 });
 
 describe('colunas das contas a receber', () => {
   it('as duas tabelas novas estão na lista, com as colunas do servidor e sem custo nem quem registrou', () => {
-    expect(TABELAS_SINCRONIZAVEIS).toHaveLength(31);
+    expect(TABELAS_SINCRONIZAVEIS).toHaveLength(32);
     expect(TABELAS_SINCRONIZAVEIS).toEqual(
       expect.arrayContaining(['contas_receber', 'baixas_receber']),
     );
@@ -330,6 +333,7 @@ describe('recarga dirigida depois da migração local 4', () => {
       ...TABELAS_DA_RECARGA_DIRIGIDA_V4,
       ...TABELAS_DA_RECARGA_DIRIGIDA_V6,
       ...V7_NOVAS,
+      'recebimentos_vendedor',
     ]);
 
     // O que já estava no banco (mesma versão no servidor): a cópia do pagamento não tem a coluna nova.
@@ -432,6 +436,7 @@ describe('recarga dirigida depois da migração local 4', () => {
       'pagamentos_cliente',
       ...TABELAS_DA_RECARGA_DIRIGIDA_V6,
       ...V7_NOVAS,
+      'recebimentos_vendedor',
     ]);
     expect(contar(db, 'SELECT 1 FROM contas_receber WHERE id = ?', conta)).toBe(1);
     expect(contar(db, 'SELECT 1 FROM vendas WHERE id = ?', vendaAntiga)).toBe(1);
