@@ -99,6 +99,7 @@ export interface Devolucao {
   valorDevolvido: ValorDoLancamento;
   valorReembolsado: string | null;
   valorEmCredito: string | null;
+  valorAbatido: string | null;
   devolvidaEm: string | null;
   motivosRevisao: string[];
   itens: PecaLida[];
@@ -120,6 +121,7 @@ export function lerDevolucoes(bruto: unknown): Devolucao[] {
         valorDevolvido: valor(o.valorDevolvido, o.valorDevolvidoDolar, o.valorDevolvidoGuarani),
         valorReembolsado: dinheiroEmTexto(o.valorReembolsado),
         valorEmCredito: dinheiroEmTexto(o.valorEmCredito),
+        valorAbatido: dinheiroEmTexto(o.valorAbatido),
         devolvidaEm: textoOuNulo(o.devolvidaEm),
         motivosRevisao: lista(o.motivosRevisao).filter((m): m is string => typeof m === 'string'),
         itens: pecas(o.itens),

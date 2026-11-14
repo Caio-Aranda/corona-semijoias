@@ -149,6 +149,7 @@ export const TEXTOS_DE_DEVOLUCOES = {
       situacao: 'Situação',
       acoes: 'O que fazer',
     },
+    abatido: (v: string) => `Abatido do que o cliente deve: ${v}`,
     emDinheiro: (v: string) => `Em dinheiro: ${v}`,
     emCredito: (v: string) => `Em crédito: ${v}`,
     registrar: 'Registrar devolução',
@@ -182,7 +183,7 @@ export const TEXTOS_DE_DEVOLUCOES = {
     },
     garantia: (desistencia: string, defeito: string) =>
       `Desistência até ${desistencia}, defeito até ${defeito}`,
-    aPrazo: 'Esta venda é a prazo. A devolução dela chega em breve.',
+    aPrazo: 'Esta venda é a prazo: a devolução primeiro abate o que o cliente ainda deve.',
     escolher: 'Escolher esta venda',
     escolherDe: (cliente: string) => `Escolher a venda de ${cliente}`,
     outraVenda: 'Escolher outra venda',
