@@ -94,15 +94,11 @@ class RecebimentoDoClienteTest extends ApoioDasContas {
     @Test
     void maletaEmAcertoOuAcertadaNaoBloqueiaORecebimento() throws Exception {
         APrazo c = vendaDeCemEmTres();
-        try {
-            AcertosDeTeste.emAcerto(jdbc, c.maleta());
-            receberOk(c, "10.00");
-            AcertosDeTeste.acertada(jdbc, c.maleta());
-            receberOk(c, "10.00");
-        } finally {
-            // O banco é dividido entre os testes: as conferências de estoque dos outros olham as maletas.
-            jdbc.update("UPDATE corona.remessas SET status = 'CONFERIDA' WHERE id = ?", c.maleta());
-        }
+        // A maleta acertada fica acertada (desde a V044 ela não volta): sem sobra, a conciliação que os testes dividem não muda.
+        AcertosDeTeste.emAcerto(jdbc, c.maleta());
+        receberOk(c, "10.00");
+        AcertosDeTeste.acertada(jdbc, c.maleta());
+        receberOk(c, "10.00");
         assertThat(pagos(c.venda())).containsExactly("20.00", "0.00", "0.00");
     }
 

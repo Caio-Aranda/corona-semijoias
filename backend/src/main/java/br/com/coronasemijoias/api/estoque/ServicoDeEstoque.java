@@ -50,7 +50,9 @@ public class ServicoDeEstoque {
     }
 
     public enum OrigemDoMovimento {
-        MANUAL, AJUSTE_MANUAL, COMPRA, INVENTARIO, MALETA, ESTORNO
+        MANUAL, AJUSTE_MANUAL, COMPRA, INVENTARIO, MALETA, ESTORNO,
+        /** Peça que chega pelo acerto: "para a loja", encontrada e a avaria do defeito aprovado (tarefa 7.5; ADR-0012). */
+        ACERTO
     }
 
     /**
@@ -271,7 +273,8 @@ public class ServicoDeEstoque {
      * maletas. A venda é a única saída definitiva da maleta; a devolução do cliente que volta à maleta (DEVOLUCAO_CLIENTE,
      * tarefa 6.3, e o estorno dela) desfaz parte da venda; na troca (tarefa 6.5), TROCA_SAIDA conta como venda e
      * TROCA_ENTRADA como devolução (e os estornos delas). A "peça para a loja" continua contada como vendida até o acerto
-     * recebê-la (Fase 7; dúvida Q5). Num único SELECT, para olhar um retrato só do banco.
+     * recebê-la (Fase 7; dúvida Q5): no fechamento ela entra no central com origem ACERTO, que conta do lado direito. A falta do
+     * acerto (PERDA na maleta) e a avaria do defeito aprovado (origem ACERTO) saem do sistema como uma venda (tarefa 7.5). Num único SELECT, para olhar um retrato só do banco.
      */
     private List<DiferencaComMaletas> diferencasComMaletas() {
         return jdbc.query("""
@@ -294,7 +297,7 @@ public class ServicoDeEstoque {
                               GROUP BY i.produto_id) maletas ON maletas.produto_id = p.id
                   LEFT JOIN (SELECT mv.produto_id, sum(mv.quantidade) AS soma
                                FROM corona.movimentos_remessa mv
-                              WHERE mv.tipo IN ('VENDA', 'ESTORNO_VENDA', 'DEVOLUCAO_CLIENTE', 'TROCA_SAIDA', 'TROCA_ENTRADA')
+                              WHERE mv.tipo IN ('VENDA', 'ESTORNO_VENDA', 'DEVOLUCAO_CLIENTE', 'TROCA_SAIDA', 'TROCA_ENTRADA', 'PERDA')
                               GROUP BY mv.produto_id) vendidas ON vendidas.produto_id = p.id
                  WHERE p.estoque_atual + coalesce(maletas.saldo, 0) <> coalesce(fora.soma, 0) + coalesce(vendidas.soma, 0)
                  ORDER BY p.nome, p.id""",
