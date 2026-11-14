@@ -137,7 +137,7 @@ Issue #148, PR 165 (tarefa crítica: plano aprovado no PR, com cinco ajustes da 
 
 **Testes** (PostgreSQL do Testcontainers e SQLCipher de verdade): banco (19), iniciar (13), leituras (8), desistir (5), leitura (4), permissões com 403 cruzado, 401 e 404 (4), travas (10), regra de corte (4), concorrência com threads, cinco rodadas cada e tempo limite de 10 s (9: venda, devolução, troca e envio de remessa contra o início; dois iniciar; leitura contra desistir; leituras negativas; estorno da dona contra leitura), arquitetura (2) e pull (4); Corona Vendas: 8 testes novos.
 
-**Resultado final:** **verificação local incompleta (a máquina ficou sem memória).** Passaram: os testes novos e os afetados do backend rodados por classe (acertos, concorrência, pull, travas, vendas, devolução, troca, contas, aparelhos, glossário, OpenAPI), o Corona Vendas inteiro (48 arquivos, 626 testes), `npm run lint`, `typecheck` e `format:check`. **Não rodados:** `npm run api:test` completo (o sistema encerrou a execução por falta de memória), `npm run test:duas-pontas`, testes do Corona Gestão, `seller:empacotar` com `barreira:varrer`. Rodar antes de mesclar.
+**Resultado final:** `npm run api:test` passa (1331 testes, nenhuma falha); Corona Vendas 626 testes; Corona Gestão 665 testes; `npm run lint`, `typecheck` e `format:check` passam; `npm run seller:empacotar` e `npm run barreira:varrer` limpos. `npm run test:duas-pontas` roda no CI do PR (job `sync-duas-pontas`).
 
 **Não fiz**
 
