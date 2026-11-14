@@ -195,7 +195,7 @@ Devolução, troca e garantia. O modelo está no [ADR-0014](decisoes/ADR-0014-de
 | 6.12 | docs: fechamento da Fase 6 (revisão, respostas da dona de 13/11, pendências da Fase 7 e do responsável, roteiro do teste de uso; ADR-0014 já Aceito) | PR 143 · [detalhe](progresso/fase-6.md#tarefa-612-fechamento-da-fase-6) |
 | #130 | fix(testes-sync): pull "perde" cliente era defeito do teste (conferência do fim em voltas até o servidor parar; semana da dona dentro do limite da API; `sincronizar` sem giro em falso) | PR 133 · [detalhe](progresso/fase-6.md#correção-pull-perde-cliente) |
 
-## Fase 7 (plano e decisões; nenhum código ainda)
+## Fase 7 (em andamento)
 
 Acerto semanal e financeiro. O modelo está no [ADR-0012](decisoes/ADR-0012-acerto-e-financeiro.md), **aceito pelo responsável em 13/11/2026** com quatro mudanças (não existe entrada, não existe cheque, repasse em dinheiro, transferência ou boleto, comissão por meta de 700.000 Gs com 30% ou 40%); as tarefas, no [plano da Fase 7](progresso/fase-7-plano.md); o detalhe de cada tarefa, em [fase-7.md](progresso/fase-7.md).
 
@@ -203,6 +203,7 @@ Acerto semanal e financeiro. O modelo está no [ADR-0012](decisoes/ADR-0012-acer
 | --- | --- | --- |
 | 7.1 | docs: plano da Fase 7 e ADR-0012 (acerto e financeiro) | Mesclada (PR 73) · [plano](progresso/fase-7-plano.md) |
 | 7.1b | docs: decisões do responsável de 13/11 no ADR-0012 (Aceito), no plano da Fase 7 e na especificação v1.14 (sem entrada, sem cheque, repasse em dinheiro, transferência ou boleto, comissão por meta, dúvidas da dona respondidas, última migração V040) | PR 159 · [detalhe](progresso/fase-7.md#tarefa-71b-decisões-do-responsável-de-1311) |
+| 7.2 | feat: limite de consignação, conferência contra o plano (a V026 e o cadastro já vinham do PR 86) mais o que faltava: testes do preço congelado, da reposição e do "Sem limite", coluna do limite na lista de vendedores, especificação v1.15 e dúvidas 1, 2 e 6 do ADR-0010 resolvidas | PR 160 · [detalhe](progresso/fase-7.md#tarefa-72-limite-de-consignação) |
 
 ## Auditoria geral (check-up) de 11/11/2026
 
@@ -214,7 +215,7 @@ Um PR por item, a partir do relatório da auditoria: **PR 80** (M7, testes isola
 
 ## Pendências abertas
 
-- Fase 3 (maleta), para a dona ou o responsável: limite a **preço de venda** (dúvida 1 do ADR-0010); **reposição** dentro do limite (dúvida 2); (dúvida 6 respondida em 11/11/2026: limite obrigatório, com "Sem limite" explícito; zero vale zero; PR 86); peça repetida na mesma maleta (dúvida 3, hoje uma linha por peça); foto na nota (dúvida 4); prazo de atraso (hoje 7 dias, dúvida 5); formato do número da maleta (hoje S12-V7-1). Com o responsável: leitor de código físico e app instalado ainda não testados. **A Fase 4 herda:** conferência da maleta, dispositivo único por maleta e leitura da própria maleta pelo vendedor sem custo. O ADR-0010 está Aceito. ([tarefa 3.8](progresso/fase-3.md#tarefa-38-fechamento-da-fase-3))
+- Fase 3 (maleta), para a dona ou o responsável: (dúvidas 1, 2 e 6 do ADR-0010 resolvidas pelo responsável em 11/11/2026: limite a preço de venda congelado, reposição dentro do limite, limite obrigatório com "Sem limite" explícito e zero valendo zero; PR 86 e tarefa 7.2); peça repetida na mesma maleta (dúvida 3, hoje uma linha por peça); foto na nota (dúvida 4); prazo de atraso (hoje 7 dias, dúvida 5); formato do número da maleta (hoje S12-V7-1). Com o responsável: leitor de código físico e app instalado ainda não testados. **A Fase 4 herda:** conferência da maleta, dispositivo único por maleta e leitura da própria maleta pelo vendedor sem custo. O ADR-0010 está Aceito. ([tarefa 3.8](progresso/fase-3.md#tarefa-38-fechamento-da-fase-3))
 
 - Fase 2: a dona aceitar a saída recusada quando falta peça (ADR-0008); formato do código da loja no cadastro rápido (ADR-0007, item 5); foto nos arquivos exportados e ordenação por coluna dos relatórios de estoque; leitor de código real e pacote instalado ainda não testados. ([tarefas 2.1 a 2.9](progresso/fase-2.md#tarefa-29-fechamento-da-fase-2))
 
