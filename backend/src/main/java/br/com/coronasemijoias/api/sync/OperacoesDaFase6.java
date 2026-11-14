@@ -1,5 +1,6 @@
 package br.com.coronasemijoias.api.sync;
 
+import br.com.coronasemijoias.api.contasreceber.ServicoDeContasAReceber;
 import br.com.coronasemijoias.api.devolucoes.ServicoDeDevolucoes.PecaDoPedido;
 import br.com.coronasemijoias.api.vendas.ServicoDeVendas.LinhaDoPedido;
 import br.com.coronasemijoias.api.vendas.ServicoDeVendas.PagamentoDoPedido;
@@ -42,8 +43,9 @@ final class OperacoesDaFase6 {
             UUID autorizacaoId) {
     }
 
+    /** {@code parcelamento} é opcional (tarefa 7.3): sem ele, o resumo é o mesmo de antes. */
     public record VendaDaTrocaEnviada(UUID id, UUID remessaId, List<LinhaDoPedido> itens, List<PagamentoDoPedido> pagamentos,
-            BigDecimal totalConferido) {
+            BigDecimal totalConferido, ServicoDeContasAReceber.Parcelamento parcelamento) {
     }
 
     /** O pedido da rota {@code POST /api/vendedor/trocas} mais a hora da troca. */
@@ -174,6 +176,9 @@ final class OperacoesDaFase6 {
                     linhas(s, b.itens());
                     pagamentos(s, b.pagamentos());
                     campo(s, "totalConferido", dinheiro(b.totalConferido()));
+                    if (b.parcelamento() != null) {
+                        parcelamento(s, b.parcelamento());
+                    }
                 }
                 s.append("}|");
                 campo(s, "trocadaEm", d.trocadaEm());
@@ -193,6 +198,11 @@ final class OperacoesDaFase6 {
             default -> throw new IllegalStateException("tipo da Fase 6 desconhecido");
         }
         return s.toString();
+    }
+
+    /** O parcelamento só entra na forma canônica quando vem (o formato 1 ampliado da tarefa 7.3). */
+    static void parcelamento(StringBuilder s, ServicoDeContasAReceber.Parcelamento p) {
+        s.append("parcelamento=").append(p.quantidade()).append(':').append(p.primeiroVencimento()).append('|');
     }
 
     private static void campo(StringBuilder s, String nome, Object valor) {
