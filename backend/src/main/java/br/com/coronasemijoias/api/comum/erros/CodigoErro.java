@@ -892,6 +892,11 @@ public enum CodigoErro {
             "Este lançamento já foi estornado.",
             "Este lançamento já foi estornado e não pode mudar."),
 
+    /** O lançamento já é um estorno e não se estorna de novo (HTTP 409). */
+    LANCAMENTO_DO_CAIXA_E_ESTORNO(
+            "Este lançamento já é um estorno.",
+            "Este lançamento já é um estorno e não pode ser estornado de novo. Faça um lançamento novo."),
+
     /** Lançamento que veio de um pagamento ou recebimento não se estorna pelo caixa manual (HTTP 409). */
     LANCAMENTO_AUTOMATICO(
             "Este lançamento veio de um pagamento.",
