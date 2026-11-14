@@ -104,6 +104,8 @@ Issue #146, PR 162 (tarefa crítica: plano aprovado no PR, ajustes da orquestrad
 
 **Testes** (PostgreSQL do Testcontainers e SQLCipher de verdade): banco (18), parcelas (12), recebimento (12), estorno do recebimento e leitores (13), estorno da venda a prazo (8), leitura (7), permissões (4), concorrência com threads e tempo limite de 10 s (7), arquitetura (4), conciliação C1 e C5 (4), envio (11) e pull (4), mais dois testes de troca; Corona Vendas: 8 testes novos e 4 da Fase 6 ajustados para o banco na versão 4 e as 25 tabelas.
 
+**Resultado final:** `npm run api:test` passa (1208 testes, nenhuma falha); Corona Vendas 607 testes; `npm run lint`, `typecheck` e `format:check` passam; `npm run seller:empacotar` e `npm run barreira:varrer` limpos; `npm run test:duas-pontas` passa (26 testes em 7 arquivos).
+
 **Não fiz**
 
 - Telas e gravar parcelamento e recebimento na outbox do Corona Vendas (7.10 e 7.11); a rota e a tela de diferenças das conciliações (7.8); devolução de venda com parcelas em aberto (7.3b); o nível 2 (7.5 e 7.6) e a comissão.
