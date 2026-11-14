@@ -1,5 +1,6 @@
 package br.com.coronasemijoias.api.devolucoes;
 
+import br.com.coronasemijoias.api.testes.AcertosDeTeste;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -150,7 +151,7 @@ class DevolucaoPelaDonaTest extends ApoioDasDevolucoes {
         UUID anel = peca("50.00", 10);
         UUID maleta = maleta(v, anel, 5);
         UUID venda = vender(v, maleta, cliente(v), List.of(linha(anel, 1)), List.of(pagamento("50.00", "PIX")));
-        jdbc.update("UPDATE corona.remessas SET status = 'EM_ACERTO' WHERE id = ?", maleta);
+        AcertosDeTeste.emAcerto(jdbc, maleta);
 
         assertThat(codigoDe(postar(DEVOLUCOES_DA_DONA, dona(),
                 devolucao(UUID.randomUUID(), venda, "ARREPENDIMENTO", "PIX", List.of(devolvida(anel, 1, "BOA"))))

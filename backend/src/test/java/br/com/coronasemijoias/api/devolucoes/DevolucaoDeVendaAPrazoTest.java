@@ -1,5 +1,6 @@
 package br.com.coronasemijoias.api.devolucoes;
 
+import br.com.coronasemijoias.api.testes.AcertosDeTeste;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -215,10 +216,10 @@ class DevolucaoDeVendaAPrazoTest extends ApoioDaVendaAPrazo {
     @Test
     void maletaEmAcertoRecusaESemMexerNasParcelas() throws Exception {
         APrazo c = vendaAPrazo(null, 3);
-        jdbc.update("UPDATE corona.remessas SET status = 'EM_ACERTO' WHERE id = ?", c.maleta());
+        AcertosDeTeste.emAcerto(jdbc, c.maleta());
         devolverAPrazo(c, 1, "DINHEIRO").andExpect(status().isConflict()).andExpect(jsonPath("$.codigo").value("MALETA_EM_ACERTO"));
         igual(emAberto(c.venda()), "100.00");
-        jdbc.update("UPDATE corona.remessas SET status = 'CONFERIDA' WHERE id = ?", c.maleta());
+        AcertosDeTeste.sairDoAcerto(jdbc, c.maleta());
     }
 
     @Test

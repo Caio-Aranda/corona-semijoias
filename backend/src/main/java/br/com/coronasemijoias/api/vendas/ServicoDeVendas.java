@@ -244,8 +244,14 @@ public class ServicoDeVendas {
         br.com.coronasemijoias.api.vendedor.VendedorAtivo.exigir(jdbc, vendedorId);
         String status = (String) remessa.get("status");
         if ("EM_ACERTO".equals(status)) {
-            // A maleta está no acerto (ADR-0012): nada novo entra nela, nem a peça nova de uma troca (tarefa 6.7).
-            throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.MALETA_EM_ACERTO);
+            // A maleta está no acerto (ADR-0012): nada novo entra nela, nem a peça nova de uma troca (tarefa 6.7). A única
+            // exceção (item 4) é a venda feita sem internet ANTES do início, que chega pelo envio do computador da maleta.
+            boolean daExcecao = peloEnvio && troca == null && foiAntesDoInicio(remessa, vendidaEm, aparelho);
+            if (!daExcecao) {
+                throw ErroDaApi.comDetalhe(HttpStatus.CONFLICT, CodigoErro.MALETA_EM_ACERTO,
+                        "Esta maleta está em acerto. Espere a dona terminar o acerto para vender.");
+            }
+            status = "CONFERIDA";
         }
         if ("ENVIADA".equals(status)) {
             // Vender só depois de conferir (decisão de 11/11/2026; ADR-0011, dúvida 5): a conferência liga a maleta ao computador.
@@ -494,7 +500,16 @@ public class ServicoDeVendas {
             throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.VENDA_COM_DEVOLUCAO);
         }
         String statusDaMaleta = (String) remessa.get("status");
-        if (!"ENVIADA".equals(statusDaMaleta) && !"CONFERIDA".equals(statusDaMaleta)) {
+        if ("EM_ACERTO".equals(statusDaMaleta)) {
+            // A dona estorna na maleta em acerto (é como ela resolve a sobra antes do fechamento, ADR-0012, item 3). O vendedor
+            // só pelo envio do que fez antes do início, do computador da maleta (item 4); a troca e a rota online, nunca.
+            boolean daDona = vendedorId == null;
+            boolean daExcecao = vendedorId != null && !pelaTroca && momento != null && foiAntesDoInicio(remessa, momento, aparelho);
+            if (!daDona && !daExcecao) {
+                throw ErroDaApi.comDetalhe(HttpStatus.CONFLICT, CodigoErro.MALETA_EM_ACERTO,
+                        "Esta maleta está em acerto. Espere a dona terminar o acerto para estornar.");
+            }
+        } else if (!"ENVIADA".equals(statusDaMaleta) && !"CONFERIDA".equals(statusDaMaleta)) {
             throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.MALETA_NAO_ESTA_COM_VOCE);
         }
         if (vendedorId != null) {
@@ -646,12 +661,24 @@ public class ServicoDeVendas {
     /** Trava a linha da maleta e confere que é do vendedor (404 se não for, sem dizer de quem é). */
     private Map<String, Object> trancarMaleta(UUID remessaId, UUID vendedorId) {
         List<Map<String, Object>> r = jdbc.queryForList("""
-                SELECT status, dispositivo_id FROM corona.remessas
-                 WHERE id = ? AND vendedor_id = ? AND deleted_at IS NULL FOR UPDATE""", remessaId, vendedorId);
+                SELECT r.status, r.dispositivo_id, a.iniciado_em FROM corona.remessas r
+                  LEFT JOIN corona.acertos a ON a.id = r.acerto_id
+                 WHERE r.id = ? AND r.vendedor_id = ? AND r.deleted_at IS NULL FOR UPDATE OF r""", remessaId, vendedorId);
         if (r.isEmpty()) {
             throw new ErroDaApi(HttpStatus.NOT_FOUND, CodigoErro.REMESSA_NAO_ENCONTRADA);
         }
         return r.get(0);
+    }
+
+    /**
+     * A regra de corte do acerto (ADR-0012, item 4): a hora corrigida pelo servidor é anterior ao início do acerto e o envio vem
+     * do computador da maleta. O banco é a segunda trava (a venda só entra com hora anterior ao início).
+     */
+    private static boolean foiAntesDoInicio(Map<String, Object> remessa, Instant hora, UUID aparelho) {
+        Object inicio = remessa.get("iniciado_em");
+        UUID dono = (UUID) remessa.get("dispositivo_id");
+        return hora != null && inicio != null && dono != null && dono.equals(aparelho)
+                && hora.isBefore(((Timestamp) inicio).toInstant());
     }
 
     /** O cliente é da loja: qualquer cliente ativo serve (11/11/2026); o vendedor não entra na conta. */
