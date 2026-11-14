@@ -408,10 +408,202 @@ public class ServicoDeContasAReceber {
         return desfeito;
     }
 
+    // --- nível 2: o vendedor deve à loja (tarefa 7.6; ADR-0012, itens 7, 8 e 9) ---
+
+    /** Uma conta do vendedor gerada no fechamento. {@code formaPrevista} é BOLETO na conta do boleto; nas outras, vazio. */
+    public record ParcelaDoVendedor(UUID id, int numero, int total, LocalDate vencimento, BigDecimal valor, String formaPrevista) {
+    }
+
+    /** O que uma baixa tirou de cada conta. */
+    public record BaixaFeita(UUID contaId, BigDecimal valor) {
+    }
+
+    /**
+     * Gera as contas do vendedor no fechamento: a conta do boleto (parcela 1, {@code forma_prevista} BOLETO, no vencimento do
+     * boleto) e as parcelas do restante, mensais a partir da data escolhida (o valor de cada uma sai de
+     * {@link Dinheiro#dividirEmParcelas}). Sempre dentro da transação do fechamento, com o acerto em andamento.
+     */
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.MANDATORY)
+    public List<ParcelaDoVendedor> gerarContasDoAcerto(UUID vendedorId, UUID acertoId, BigDecimal boleto, LocalDate vencimentoDoBoleto,
+            BigDecimal restante, Parcelamento parcelamento) {
+        LocalDate hoje = LocalDate.ofInstant(relogio.instant(), BRASILIA);
+        boolean temBoleto = boleto != null && boleto.signum() > 0;
+        boolean temRestante = restante != null && restante.signum() > 0;
+        if (boleto != null && boleto.signum() < 0) {
+            throw Validacoes.recusar("boleto", "O valor do boleto não pode ser negativo.");
+        }
+        if (!temRestante && parcelamento != null) {
+            throw Validacoes.recusar("restante", "Não há valor para parcelar.");
+        }
+        int quantidade = 0;
+        if (temRestante) {
+            if (parcelamento == null || parcelamento.primeiroVencimento() == null || parcelamento.quantidade() == null) {
+                throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.DATA_DO_RESTANTE_OBRIGATORIA);
+            }
+            quantidade = parcelamento.quantidade();
+            if (quantidade < 1 || quantidade + (temBoleto ? 1 : 0) > MAXIMO_DE_PARCELAS) {
+                throw Validacoes.recusar("restante", "O número de parcelas vai de 1 a " + (MAXIMO_DE_PARCELAS - (temBoleto ? 1 : 0)) + ".");
+            }
+            conferirVencimento(parcelamento.primeiroVencimento(), hoje, "restante");
+        }
+        if (temBoleto) {
+            if (vencimentoDoBoleto == null) {
+                throw Validacoes.recusar("boleto", "Informe o vencimento do boleto.");
+            }
+            conferirVencimento(vencimentoDoBoleto, hoje, "boleto");
+        }
+        List<BigDecimal> valores = List.of();
+        if (temRestante) {
+            try {
+                valores = Dinheiro.dividirEmParcelas(restante, quantidade);
+            } catch (IllegalArgumentException e) {
+                throw Validacoes.recusar("restante", "O valor que ficou devendo (R$ " + restante.toPlainString().replace('.', ',')
+                        + ") é pequeno demais para " + quantidade + " parcelas. Use menos parcelas.");
+            }
+        }
+        int total = (temBoleto ? 1 : 0) + quantidade;
+        List<ParcelaDoVendedor> geradas = new ArrayList<>();
+        int numero = 1;
+        if (temBoleto) {
+            geradas.add(inserirContaDoVendedor(vendedorId, "ACERTO", acertoId, numero++, total, vencimentoDoBoleto, boleto, "BOLETO"));
+        }
+        for (int k = 0; k < quantidade; k++) {
+            // Sempre a partir da primeira data: 31/01, 28/02, 31/03.
+            geradas.add(inserirContaDoVendedor(vendedorId, "ACERTO", acertoId, numero++, total,
+                    parcelamento.primeiroVencimento().plusMonths(k), valores.get(k), null));
+        }
+        return geradas;
+    }
+
+    /** O estorno de um recebimento que pagou o acerto (que já terminou e não muda) vira uma conta nova do vendedor. */
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.MANDATORY)
+    public ParcelaDoVendedor gerarContaDoEstornoDeRecebimento(UUID vendedorId, UUID estornoDoRecebimentoId, BigDecimal valor,
+            LocalDate vencimento) {
+        LocalDate hoje = LocalDate.ofInstant(relogio.instant(), BRASILIA);
+        conferirVencimento(vencimento, hoje, "vencimento");
+        return inserirContaDoVendedor(vendedorId, "ESTORNO_RECEBIMENTO", estornoDoRecebimentoId, 1, 1, vencimento, valor, null);
+    }
+
+    private static void conferirVencimento(LocalDate vencimento, LocalDate hoje, String campo) {
+        if (vencimento.isBefore(hoje)) {
+            throw Validacoes.recusar(campo, "A data de pagamento não pode ser antes de hoje.");
+        }
+        if (vencimento.isAfter(hoje.plusMonths(MAXIMO_DE_MESES_ATE_O_PRIMEIRO_VENCIMENTO))) {
+            throw Validacoes.recusar(campo, "A data de pagamento está longe demais. Escolha uma data até um ano a partir de hoje.");
+        }
+    }
+
+    private ParcelaDoVendedor inserirContaDoVendedor(UUID vendedorId, String origemTipo, UUID origemId, int numero, int total,
+            LocalDate vencimento, BigDecimal valor, String formaPrevista) {
+        UUID id = UuidV7.gerar();
+        jdbc.update("""
+                INSERT INTO corona.contas_receber (id, devedor_tipo, vendedor_id, origem_tipo, origem_id, parcela, total_parcelas,
+                    vencimento, valor, forma_prevista) VALUES (?, 'VENDEDOR', ?, ?, ?, ?, ?, ?, ?, ?)""", id, vendedorId, origemTipo,
+                origemId, numero, total, vencimento, valor, formaPrevista);
+        return new ParcelaDoVendedor(id, numero, total, vencimento, valor, formaPrevista);
+    }
+
+    /**
+     * Baixa contas do vendedor com um recebimento já gravado (a baixa o referencia). Com {@code contaId}, só essa conta (do
+     * vendedor, senão 404; o valor não passa do que falta nela; o boleto pago é o saldo inteiro da conta do boleto). Sem
+     * {@code contaId}, distribui pelas contas em aberto, da que vence primeiro para a que vence depois (empate pela parcela e
+     * pelo id); o boleto não se distribui. Trava as contas por id, por último na ordem de travas (ADR-0012, item 13).
+     */
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.MANDATORY)
+    public List<BaixaFeita> baixarPeloRecebimento(UUID vendedorId, UUID recebimentoId, String forma, BigDecimal valor, UUID contaId,
+            Instant momento) {
+        Instant hora = momento == null ? relogio.instant() : momento;
+        boolean boleto = "BOLETO".equals(forma);
+        List<Conta> alvo;
+        if (contaId != null) {
+            alvo = jdbc.query("""
+                    SELECT id, parcela, vencimento, valor, valor_pago, valor_cancelado, forma_prevista FROM corona.contas_receber
+                     WHERE id = ? AND devedor_tipo = 'VENDEDOR' AND vendedor_id = ? AND deleted_at IS NULL FOR UPDATE""", this::lerConta,
+                    contaId, vendedorId);
+            if (alvo.isEmpty()) {
+                throw new ErroDaApi(HttpStatus.NOT_FOUND, CodigoErro.CONTA_DO_VENDEDOR_NAO_ENCONTRADA);
+            }
+        } else {
+            if (boleto) {
+                throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.BOLETO_PAGO_PRECISA_SER_INTEIRO);
+            }
+            alvo = jdbc.query("""
+                    SELECT id, parcela, vencimento, valor, valor_pago, valor_cancelado, forma_prevista FROM corona.contas_receber
+                     WHERE devedor_tipo = 'VENDEDOR' AND vendedor_id = ? AND deleted_at IS NULL AND status IN ('ABERTA', 'PARCIAL')
+                     ORDER BY id FOR UPDATE""", this::lerConta, vendedorId);
+        }
+        List<Conta> abertas = alvo.stream().filter(c -> c.emAberto().signum() > 0)
+                .sorted(Comparator.comparing(Conta::vencimento).thenComparing(Conta::parcela).thenComparing(Conta::id)).toList();
+        BigDecimal emAberto = abertas.stream().map(Conta::emAberto).reduce(BigDecimal.ZERO, BigDecimal::add);
+        if (emAberto.signum() == 0) {
+            throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.VENDEDOR_SEM_CONTA_EM_ABERTO);
+        }
+        if (valor.compareTo(emAberto) > 0) {
+            throw ErroDaApi.comDetalhe(HttpStatus.CONFLICT, CodigoErro.RECEBIMENTO_DO_VENDEDOR_ACIMA_DO_EM_ABERTO,
+                    "O valor passa do que o vendedor deve (R$ " + emAberto.toPlainString().replace('.', ',') + "). Confira o valor.");
+        }
+        if (boleto) {
+            Conta c = abertas.get(0);
+            if (!"BOLETO".equals(c.formaPrevista()) || valor.compareTo(c.emAberto()) != 0) {
+                throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.BOLETO_PAGO_PRECISA_SER_INTEIRO);
+            }
+        }
+        List<BaixaFeita> feitas = new ArrayList<>();
+        BigDecimal resta = valor;
+        for (Conta c : abertas) {
+            if (resta.signum() == 0) {
+                break;
+            }
+            BigDecimal parte = resta.min(c.emAberto());
+            jdbc.update("""
+                    INSERT INTO corona.baixas_receber (id, conta_id, tipo, valor, baixada_em, recebimento_vendedor_id)
+                    VALUES (?, ?, 'PAGAMENTO', ?, ?, ?)""", UuidV7.gerar(), c.id(), parte, Timestamp.from(hora), recebimentoId);
+            atualizarAtalhos(c, c.pago().add(parte), c.cancelado());
+            feitas.add(new BaixaFeita(c.id(), parte));
+            resta = resta.subtract(parte);
+        }
+        return feitas;
+    }
+
+    /**
+     * Desfaz as baixas de um recebimento do vendedor: uma baixa negativa (estorno) para cada baixa do original, ligada ao
+     * estorno do recebimento (já gravado). As contas voltam a ter o que tinham. Trava as contas por id.
+     */
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.MANDATORY)
+    public List<BaixaFeita> estornarBaixasDoRecebimento(UUID recebimentoOriginalId, UUID estornoDoRecebimentoId, Instant momento) {
+        Instant hora = momento == null ? relogio.instant() : momento;
+        List<Map<String, Object>> baixas = jdbc.queryForList("""
+                SELECT id, conta_id, valor FROM corona.baixas_receber
+                 WHERE recebimento_vendedor_id = ? AND tipo = 'PAGAMENTO' AND estorna_id IS NULL ORDER BY conta_id, id""",
+                recebimentoOriginalId);
+        List<BaixaFeita> desfeitas = new ArrayList<>();
+        if (baixas.isEmpty()) {
+            return desfeitas;
+        }
+        List<UUID> ids = baixas.stream().map(b -> (UUID) b.get("conta_id")).distinct().sorted().toList();
+        Map<UUID, Conta> contas = new LinkedHashMap<>();
+        jdbc.query("SELECT id, parcela, vencimento, valor, valor_pago, valor_cancelado, forma_prevista FROM corona.contas_receber WHERE id IN ("
+                + String.join(", ", java.util.Collections.nCopies(ids.size(), "?")) + ") ORDER BY id FOR UPDATE", this::lerConta,
+                ids.toArray()).forEach(c -> contas.put(c.id(), c));
+        for (Map<String, Object> b : baixas) {
+            UUID contaId = (UUID) b.get("conta_id");
+            BigDecimal parte = (BigDecimal) b.get("valor");
+            jdbc.update("""
+                    INSERT INTO corona.baixas_receber (id, conta_id, tipo, valor, baixada_em, recebimento_vendedor_id, estorna_id)
+                    VALUES (?, ?, 'PAGAMENTO', ?, ?, ?, ?)""", UuidV7.gerar(), contaId, parte.negate(), Timestamp.from(hora),
+                    estornoDoRecebimentoId, b.get("id"));
+            Conta atual = contas.get(contaId);
+            contas.put(contaId, atualizarAtalhos(atual, atual.pago().subtract(parte), atual.cancelado()));
+            desfeitas.add(new BaixaFeita(contaId, parte.negate()));
+        }
+        return desfeitas;
+    }
+
     // --- internos ---
 
     /** Uma parcela travada, com o que já foi pago e cancelado. */
-    private record Conta(UUID id, int parcela, LocalDate vencimento, BigDecimal valor, BigDecimal pago, BigDecimal cancelado) {
+    private record Conta(UUID id, int parcela, LocalDate vencimento, BigDecimal valor, BigDecimal pago, BigDecimal cancelado,
+            String formaPrevista) {
 
         BigDecimal emAberto() {
             return valor.subtract(pago).subtract(cancelado);
@@ -431,10 +623,13 @@ public class ServicoDeContasAReceber {
     /** As parcelas da venda, travadas em ordem de id (a ordem única de travas; ADR-0012, item 13). */
     private List<Conta> trancarContas(UUID vendaId) {
         return jdbc.query("""
-                SELECT id, parcela, vencimento, valor, valor_pago, valor_cancelado FROM corona.contas_receber
-                 WHERE venda_id = ? ORDER BY id FOR UPDATE""", (rs, n) -> new Conta(rs.getObject("id", UUID.class),
-                rs.getInt("parcela"), rs.getObject("vencimento", LocalDate.class), rs.getBigDecimal("valor"),
-                rs.getBigDecimal("valor_pago"), rs.getBigDecimal("valor_cancelado")), vendaId);
+                SELECT id, parcela, vencimento, valor, valor_pago, valor_cancelado, forma_prevista FROM corona.contas_receber
+                 WHERE venda_id = ? ORDER BY id FOR UPDATE""", this::lerConta, vendaId);
+    }
+
+    private Conta lerConta(java.sql.ResultSet rs, int n) throws java.sql.SQLException {
+        return new Conta(rs.getObject("id", UUID.class), rs.getInt("parcela"), rs.getObject("vencimento", LocalDate.class),
+                rs.getBigDecimal("valor"), rs.getBigDecimal("valor_pago"), rs.getBigDecimal("valor_cancelado"), rs.getString("forma_prevista"));
     }
 
     /**
@@ -454,6 +649,6 @@ public class ServicoDeContasAReceber {
         }
         jdbc.update("UPDATE corona.contas_receber SET valor_pago = ?, valor_cancelado = ?, status = ? WHERE id = ?", pago, cancelado,
                 status, c.id());
-        return new Conta(c.id(), c.parcela(), c.vencimento(), c.valor(), pago, cancelado);
+        return new Conta(c.id(), c.parcela(), c.vencimento(), c.valor(), pago, cancelado, c.formaPrevista());
     }
 }

@@ -101,6 +101,17 @@ abstract class ApoioDoFechamento extends ApoioDoAcerto {
                 liquido, liquido, acerto);
     }
 
+    /** Fecha o acerto por SQL com a venda do teste (líquido 35,00) e o dinheiro dado; as contas e os recebimentos o chamador cria antes. */
+    void fecharComDinheiro(UUID acerto, String recebido, String pagoAoVendedor, String ficou, String creditoUsado, UUID creditoDe) {
+        jdbc.update("""
+                UPDATE corona.acertos SET status = 'ACERTADO', fechamento_id = ?, conteudo_do_fechamento = 'teste', fechado_em = now(),
+                       fechado_por = ?, cotacao_id = ?, meta_guarani = 700000, percentual_comissao = 30, vendido_para_meta_guarani = 0,
+                       vendido_bruto = 50, descontos = 0, devolvido = 0, vendido_liquido = 50, comissao = 15, faltas_cobradas = 0,
+                       liquido = 35, recebido_no_acerto = ?::numeric, pago_ao_vendedor = ?::numeric, ficou_devendo = ?::numeric,
+                       credito_usado = ?::numeric, credito_do_acerto_id = ? WHERE id = ?""", UUID.randomUUID(), usuarios.dona().id(),
+                cotacaoDoExemplo, recebido, pagoAoVendedor, ficou, creditoUsado, creditoDe, acerto);
+    }
+
     /** Uma conta a receber do vendedor (nível 2), nascida no fechamento do acerto em andamento. */
     UUID contaDoAcertoNoBanco(UUID acerto, BigDecimal valor, int parcela, int total, java.time.LocalDate vencimento, String formaPrevista) {
         UUID id = UUID.randomUUID();

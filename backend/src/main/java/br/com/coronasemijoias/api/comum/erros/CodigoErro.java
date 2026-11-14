@@ -468,6 +468,41 @@ public enum CodigoErro {
             "Este recebimento já foi estornado.",
             "Este recebimento já foi estornado e não pode mudar."),
 
+    /** Conta a receber do vendedor inexistente ou de outro vendedor (HTTP 404; tarefa 7.6). */
+    CONTA_DO_VENDEDOR_NAO_ENCONTRADA(
+            "Não encontramos esta conta a receber.",
+            "Não encontramos esta conta a receber. Atualize a tela e tente de novo."),
+
+    /** O vendedor não tem conta em aberto para receber (HTTP 409; tarefa 7.6). */
+    VENDEDOR_SEM_CONTA_EM_ABERTO(
+            "Este vendedor não tem conta em aberto.",
+            "Este vendedor não tem conta em aberto. Não há o que receber."),
+
+    /** Recebimento do vendedor acima do que ele deve em aberto (HTTP 409; tarefa 7.6). O servidor monta o texto com o valor. */
+    RECEBIMENTO_DO_VENDEDOR_ACIMA_DO_EM_ABERTO(
+            "O valor passa do que o vendedor deve.",
+            "O valor passa do que o vendedor deve. Confira o valor."),
+
+    /** Boleto pago que não é da conta do boleto ou não é do valor inteiro dela (HTTP 409; tarefa 7.6). */
+    BOLETO_PAGO_PRECISA_SER_INTEIRO(
+            "O boleto pago precisa ser do valor inteiro da conta.",
+            "O boleto pago precisa ser do valor inteiro da conta do boleto. Escolha a conta do boleto e o valor todo."),
+
+    /** O pagamento do acerto passa do que o vendedor deve nele (HTTP 409; tarefa 7.6). */
+    PAGAMENTO_DO_ACERTO_PASSA_DO_DEVIDO(
+            "O valor recebido passa do que o vendedor deve neste acerto.",
+            "O valor recebido passa do que o vendedor deve neste acerto. Confira os valores."),
+
+    /** O que ficou devendo não tem data de pagamento escolhida (HTTP 409; tarefa 7.6). */
+    DATA_DO_RESTANTE_OBRIGATORIA(
+            "Escolha a data de pagamento do que ficou devendo.",
+            "Escolha a data de pagamento do que ficou devendo e em quantas parcelas."),
+
+    /** O acerto a favor do vendedor só se paga na hora pelo valor inteiro, ou fica de crédito (HTTP 409; tarefa 7.6). */
+    PAGAMENTO_AO_VENDEDOR_INVALIDO(
+            "O pagamento ao vendedor não confere com o acerto.",
+            "O pagamento ao vendedor não confere com o acerto. Pague o valor inteiro ou deixe de crédito para o próximo acerto."),
+
     /** O vendedor só estorna o recebimento no dia dele (HTTP 409; tarefa 7.3). */
     ESTORNO_DE_RECEBIMENTO_SO_DA_DONA(
             "Este recebimento só pode ser estornado pela dona.",
