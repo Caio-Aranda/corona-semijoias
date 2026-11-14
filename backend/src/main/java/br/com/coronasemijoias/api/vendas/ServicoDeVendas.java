@@ -365,7 +365,7 @@ public class ServicoDeVendas {
                 INSERT INTO corona.vendas (id, vendedor_id, cliente_id, remessa_id, subtotal, desconto, total, cotacao_id,
                     vendida_em, hora_ajustada, troca_id)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, coalesce(?, now()), ?, ?)""", id, vendedorId, pedido.clienteId(),
-                pedido.remessaId(), subtotal, desconto, total, cotacao, vendidaEm == null ? null : Timestamp.from(vendidaEm),
+                pedido.remessaId(), subtotal, desconto, total, cotacao, Timestamp.from(quando),
                 horaAjustada, troca == null ? null : troca.trocaId());
         // Na troca, a peça B sai da maleta como TROCA_SAIDA (ADR-0014, item 8): mesmo sinal e mesmo saldo da venda.
         String tipoDoMovimento = troca == null ? "VENDA" : "TROCA_SAIDA";
