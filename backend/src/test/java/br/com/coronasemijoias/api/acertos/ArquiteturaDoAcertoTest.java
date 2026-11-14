@@ -28,6 +28,17 @@ class ArquiteturaDoAcertoTest {
             "(UPDATE\\s+(corona\\.)?(acertos|leituras_acerto)\\b|INSERT\\s+INTO\\s+(corona\\.)?(acertos|leituras_acerto)\\b)",
             Pattern.CASE_INSENSITIVE);
 
+    /** O fechamento (tarefa 7.5): só o ServicoDeFechamento escreve nos itens, nos eventos e nas comissões do acerto. */
+    private static final Pattern ESCREVE_NO_FECHAMENTO = Pattern.compile(
+            "(UPDATE\\s+(corona\\.)?(itens_acerto|acerto_eventos|comissoes)\\b|INSERT\\s+INTO\\s+(corona\\.)?(itens_acerto|acerto_eventos|comissoes)\\b)",
+            Pattern.CASE_INSENSITIVE);
+    private static final Pattern ESCREVE_NA_PENDENCIA = Pattern.compile(
+            "(UPDATE\\s+(corona\\.)?pendencias_acerto\\b|INSERT\\s+INTO\\s+(corona\\.)?pendencias_acerto\\b)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern FECHA_O_ACERTO = Pattern.compile("UPDATE\\s+(corona\\.)?acertos\\b[^;]*?\\bstatus\\s*=\\s*'ACERTADO'",
+            Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+    private static final Pattern ACERTA_A_MALETA = Pattern.compile("UPDATE\\s+(corona\\.)?remessas\\b[^;]*?\\bstatus\\s*=\\s*'ACERTADA'",
+            Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+
     private static Path achar(String relativo) {
         for (String prefixo : List.of("", "backend/", "../")) {
             Path caminho = Path.of(prefixo + relativo);
@@ -38,11 +49,12 @@ class ArquiteturaDoAcertoTest {
         throw new IllegalStateException("Não achei " + relativo);
     }
 
-    private List<String> culpados(Pattern padrao) throws IOException {
+    private List<String> culpados(Pattern padrao, String... permitidos) throws IOException {
+        List<String> liberados = List.of(permitidos);
         List<String> culpados = new ArrayList<>();
         try (Stream<Path> arquivos = Files.walk(RAIZ_JAVA)) {
             for (Path arquivo : arquivos.filter(a -> a.toString().endsWith(".java")).toList()) {
-                if (arquivo.getFileName().toString().equals("ServicoDeAcertos.java")) {
+                if (liberados.contains(arquivo.getFileName().toString())) {
                     continue;
                 }
                 String fonte = Files.readString(arquivo, StandardCharsets.UTF_8).replaceAll("\"\\s*\\+\\s*\"", "");
@@ -56,11 +68,30 @@ class ArquiteturaDoAcertoTest {
 
     @Test
     void soOServicoDeAcertosLigaEDesligaAMaleta() throws IOException {
-        assertThat(culpados(LIGA_A_MALETA)).as("Código que liga ou desliga maleta do acerto fora do ServicoDeAcertos").isEmpty();
+        assertThat(culpados(LIGA_A_MALETA, "ServicoDeAcertos.java")).as("Código que liga ou desliga maleta do acerto fora do ServicoDeAcertos").isEmpty();
     }
 
     @Test
     void soOServicoDeAcertosEscreveNasTabelasDoAcerto() throws IOException {
-        assertThat(culpados(ESCREVE_NO_ACERTO)).as("Código que escreve em acertos ou leituras_acerto fora do ServicoDeAcertos").isEmpty();
+        assertThat(culpados(ESCREVE_NO_ACERTO, "ServicoDeAcertos.java", "ServicoDeFechamento.java"))
+                .as("Código que escreve em acertos ou leituras_acerto fora do ServicoDeAcertos (e do fechamento, que só passa o acerto a ACERTADO)").isEmpty();
+    }
+
+    @Test
+    void soOServicoDeFechamentoEscreveNosItensEventosEComissoes() throws IOException {
+        assertThat(culpados(ESCREVE_NO_FECHAMENTO, "ServicoDeFechamento.java"))
+                .as("Código que escreve em itens_acerto, acerto_eventos ou comissoes fora do ServicoDeFechamento").isEmpty();
+    }
+
+    @Test
+    void soOFechamentoEAResolucaoEscrevemNasPendencias() throws IOException {
+        assertThat(culpados(ESCREVE_NA_PENDENCIA, "ServicoDeFechamento.java", "ServicoDePendencias.java"))
+                .as("Código que escreve em pendencias_acerto fora do ServicoDeFechamento e do ServicoDePendencias").isEmpty();
+    }
+
+    @Test
+    void soOFechamentoPassaOAcertoParaAcertadoEAMaletaParaAcertada() throws IOException {
+        assertThat(culpados(FECHA_O_ACERTO, "ServicoDeFechamento.java")).as("Quem passa o acerto a ACERTADO").isEmpty();
+        assertThat(culpados(ACERTA_A_MALETA, "ServicoDeFechamento.java")).as("Quem passa a maleta a ACERTADA").isEmpty();
     }
 }
