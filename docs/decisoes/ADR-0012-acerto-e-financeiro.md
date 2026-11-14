@@ -169,6 +169,8 @@ Notas:
 - **Atalhos.** `valor_pago`, `valor_cancelado` e `status` (`ABERTA`, `PARCIAL`, `PAGA`, `CANCELADA`; **`VENCIDA` é calculado** pela data de hoje em Brasília, nunca gravado) só mudam pelo serviço, na mesma transação da baixa, com a linha travada. Teste de arquitetura e a conciliação C5 conferem.
 - **Sem multa e sem juros** (§7.5 não manda; dúvida 10).
 
+**Como ficou (tarefa 7.3, 14/11/2026).** Nível 1 pronto: tabelas `contas_receber` e `baixas_receber` (V041), parcelas de 1 a 24, mensais, sem valor mínimo; sem parcelamento informado, uma parcela um mês depois da venda. Recebimento posterior só em `DINHEIRO` e `PIX`, registrado pelo vendedor, com `pagamentos_cliente.posterior`; o estorno dele é `ESTORNO_PAGAMENTO` (vendedor no mesmo dia, dona sempre). O estorno da venda cancela só o que está em aberto (parcela paga continua paga; o dinheiro volta pelo reembolso). A devolução de venda a prazo com parcelas em aberto continua recusada (`VENDA_A_PRAZO_SEM_DEVOLUCAO`) e vira a tarefa 7.3b. Ordem de travas: estorno da venda remessa, venda, créditos, parcelas; recebimento venda, parcelas.
+
 ### 8. Totais do acerto (todos em Real, só somas de valores já arredondados)
 
 ```
@@ -347,3 +349,4 @@ As dúvidas para a dona, cada uma com o padrão seguro adotado, estão em [fase-
 
 - **11/11/2026:** proposto (tarefa 7.1, PR 73).
 - **13/11/2026:** aceito pelo responsável com quatro mudanças (tarefa 7.1b): não existe entrada (itens 8 e 9, C2, exemplo); não existe cheque (item 10, tabelas `cheques` e `eventos_cheque`, `CHEQUE_COMPENSADO`, conta a receber de cheque devolvido, C6); formas do repasse `DINHEIRO`, `PIX` ("Transferência") e `BOLETO`, e as mesmas no pagamento a fornecedor; comissão por meta de 700.000 Gs com 30% ou 40% sobre o total, no lugar do percentual por vendedor (item 5, exemplo do item 18 refeito). A última migração passou a ser a V040.
+- **14/11/2026:** item 7 implementado no nível 1 (tarefa 7.3).

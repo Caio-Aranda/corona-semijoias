@@ -141,6 +141,7 @@ O app **nunca acessa o banco direto**, apenas a API. Segurança (ninguém tem a 
 - **Venda finalizada é imutável.** Erro vira cancelamento ou estorno, um novo registro.
 - O cliente pode pagar **na hora** ou ser **fiado/parcelado**. No fiado, o vendedor controla as contas a receber dos próprios clientes.
 - Pagamentos do cliente são **eventos** (data, valor, forma). Recebimento posterior é um registro novo.
+- **Venda a prazo (tarefa 7.3).** O que falta pagar (total menos o pago na hora) vira de 1 a 24 parcelas mensais, sem valor mínimo, sem multa e sem juros; o servidor calcula os valores (as primeiras iguais, a última fecha o centavo) e o vencimento de cada uma a partir do primeiro vencimento. Sem parcelamento informado, vira uma parcela com vencimento um mês depois da venda. O recebimento posterior (dinheiro ou transferência) é um registro novo, distribuído pelo servidor nas parcelas abertas da venda por ordem de vencimento, e não passa do que falta. O vendedor estorna o recebimento no mesmo dia; depois, só a dona. O estorno da venda cancela o que está em aberto.
 
 ### 7.3 Devolução e troca (app do vendedor, offline)
 
@@ -329,7 +330,8 @@ Modelo no ADR-0014 (tabelas criadas nas tarefas 6.3 a 6.5; todas imutáveis, cor
 
 - `acertos` (vendedor, semana, remessa, esperado, contado, faltas, descontos, comissão, percentual da comissão decidido pela meta, vendido em Guarani usado na meta, líquido, status, cotação usada; sem coluna de entrada)
 - `pendencias_acerto` (acerto, produto, quantidade, valor, status, resolvida\_por)
-- `contas_receber` (venda ou acerto, devedor cliente/vendedor, parcela, vencimento, valor, status, data\_pagamento)
+- `contas_receber` (origem venda ou acerto, devedor cliente/vendedor, parcela, vencimento, valor, atalhos `valor_pago` e `valor_cancelado`, status `ABERTA | PARCIAL | PAGA | CANCELADA`; "vencida" é calculada, nunca gravada; só o serviço mexe nos atalhos, e o banco confere com a soma das baixas)
+- `baixas_receber` (conta, `tipo: PAGAMENTO | CANCELAMENTO`, valor, `pagamento_cliente_id`, `motivo_cancelamento`, `estorna_id`; imutável, estorno é registro negativo). O recebimento posterior é um `pagamentos_cliente` com `posterior = true` e o estorno dele é `tipo = ESTORNO_PAGAMENTO` (F9 do ADR-0012)
 - `contas_pagar` (fornecedor, compra, vencimento, valor, status)
 - `lancamentos_caixa` (tipo, valor, categoria, origem, data)
 - `comissoes` (vendedor, venda, acerto, base, percentual gravado na linha, valor, status de pagamento)
@@ -356,7 +358,7 @@ O app é **offline-first**: lê e grava sempre no SQLite local, e um processo em
 
 **Pull:** `GET /sync/pull?since=cursor` devolve tudo que mudou desde o último `sync_seq`. O app aplica no banco local. O pull usa um **limite seguro**, que não perde registros de transações que confirmam fora de ordem (exemplo: o app puxa até o `sync_seq` 11 e o 10 só confirma depois). A estratégia exata fica no ADR-0002.
 
-**Clientes no pull:** todo vendedor recebe o diretório de clientes ativos da loja (só nome, CPF, telefone e cidade, colunas explícitas). **CPF repetido** é barrado: online, 409 "Este cliente já está cadastrado" mostrando o existente; offline, o app confere no diretório local, e dois cadastros do mesmo CPF feitos ao mesmo tempo sem internet chegam como conflito para a revisão da dona, que junta os cadastros. **Formatos antigos da `outbox`:** o servidor os aceita por 90 dias. **Tipos da outbox:** `VENDA` (formato 1, com o `creditoId` opcional em cada pagamento), `ESTORNO_VENDA`, `CLIENTE_NOVO`, `CLIENTE_ALTERADO`, `CONFERENCIA` e, da Fase 6 (tarefa 6.7), `DEVOLUCAO`, `PEDIDO_AUTORIZACAO`, `TROCA`, `CANCELAR_DEVOLUCAO` e `CANCELAR_TROCA`; cada um passa pelo mesmo serviço da rota online, com a hora corrigida, e o que o servidor acha fora do prazo, acima do limite ou acima do saldo do crédito vai para revisão da dona, nunca recusado.
+**Clientes no pull:** todo vendedor recebe o diretório de clientes ativos da loja (só nome, CPF, telefone e cidade, colunas explícitas). **CPF repetido** é barrado: online, 409 "Este cliente já está cadastrado" mostrando o existente; offline, o app confere no diretório local, e dois cadastros do mesmo CPF feitos ao mesmo tempo sem internet chegam como conflito para a revisão da dona, que junta os cadastros. **Formatos antigos da `outbox`:** o servidor os aceita por 90 dias. **Tipos da outbox:** `VENDA` (formato 1, com o `creditoId` opcional em cada pagamento), `ESTORNO_VENDA`, `CLIENTE_NOVO`, `CLIENTE_ALTERADO`, `CONFERENCIA` e, da Fase 6 (tarefa 6.7), `DEVOLUCAO`, `PEDIDO_AUTORIZACAO`, `TROCA`, `CANCELAR_DEVOLUCAO` e `CANCELAR_TROCA`; da Fase 7 (tarefa 7.3), `VENDA` e `TROCA` ganham o `parcelamento` opcional e entram `RECEBIMENTO_CLIENTE` e `ESTORNO_RECEBIMENTO_CLIENTE`; `contas_receber` e `baixas_receber` chegam no pull só ao vendedor dono; cada um passa pelo mesmo serviço da rota online, com a hora corrigida, e o que o servidor acha fora do prazo, acima do limite ou acima do saldo do crédito vai para revisão da dona, nunca recusado.
 
 **Gatilhos:** abrir o app, voltar a conexão, a cada X segundos se online e depois de cada gravação.
 
@@ -789,3 +791,7 @@ Importação com nome de arquivo inválido, foto duplicada, arquivo corrompido, 
   - §7.1: o limite é obrigatório, com a opção "Sem limite" (zero vale zero); conta o preço de venda congelado (`preco_remessa`) do que o vendedor tem em mãos mais a maleta que está saindo; a reposição entra; limite não definido não recebe maleta; a lista de vendedores mostra a situação do limite.
   - §9: `vendedores` ganha `limite_consignacao_ilimitado` e a regra das duas colunas.
   - §17 (item 15): as três perguntas do limite ficam registradas como decididas.
+- **v1.16, 14/11/2026:** contas a receber do cliente (tarefa 7.3, ADR-0012 itens 2 e 7).
+  - §7.2: venda a prazo em parcelas mensais, recebimento posterior distribuído por vencimento e estorno do recebimento.
+  - §9: `contas_receber` com atalhos, `baixas_receber`, `pagamentos_cliente.posterior` e o tipo `ESTORNO_PAGAMENTO`.
+  - §10: `parcelamento` opcional na `VENDA` e na `TROCA`; tipos novos da outbox; tabelas novas no pull.
