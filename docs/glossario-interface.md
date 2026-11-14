@@ -57,7 +57,7 @@ Em 09/11/2026 o responsável resolveu as dúvidas que estavam abertas neste glos
 | comissão | `comissoes` | Parte da venda que fica com o vendedor. |
 | pendência | `pendencias_acerto` | Peça que faltou ou valor que ficou em aberto no acerto. |
 | pedido de autorização | `autorizacoes_excecao` | O vendedor pede à dona para aceitar uma devolução fora do prazo. |
-| limite de consignação | `limite_consignacao`, `limite_consignacao_ilimitado` | Valor máximo, em reais e a preço de venda, das peças que o vendedor pode ter em mãos. É obrigatório: a dona preenche o valor ou marca **Sem limite**. Zero vale zero (não é "sem limite"). Sem uma das duas escolhas, o vendedor não recebe maleta. |
+| limite de consignação | `limite_consignacao`, `limite_consignacao_ilimitado` | Valor máximo, em reais e a preço de venda, das peças que o vendedor pode ter em mãos. É obrigatório: a dona preenche o valor ou marca **Sem limite**. Zero vale zero (não é "sem limite"). Sem uma das duas escolhas, o vendedor não recebe maleta. Na lista de vendedores, a coluna **Limite de consignação** mostra o valor em reais, **Sem limite** ou **Limite não definido**. |
 | foto | `produtos_fotos` | Uma foto só por peça, para reconhecer a peça. Aparece junto com a peça sempre que ela é lida ou pesquisada (§20). Na tela da dona, o botão é **Trocar foto** (a nova substitui a anterior); não existe "foto principal" nem ordem das fotos. |
 | estoque | `produtos.estoque_atual`, estoque central | Quantidade de cada produto guardada na loja (fora das maletas). Ver parte 12. |
 | entrada de compra | `compras`, `itens_compra` | Registro das peças que chegaram de um fornecedor. Na tela, "Receber compra". Ver parte 12. |

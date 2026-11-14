@@ -4,7 +4,7 @@ import type { PonteDoCorona } from '../../../shared/ponte';
 import { AvisoDeErro } from '../../componentes/AvisoDeErro';
 import { chamar, useBusca } from '../../nucleo/chamadas';
 import { TEXTOS } from '../../textos';
-import { lerLista, lerPaginaDeVendedores, texto, telefoneDaLista } from './dados';
+import { lerLista, lerPaginaDeVendedores, limiteDaLista, texto, telefoneDaLista } from './dados';
 import { FichaDoVendedor } from './FichaDoVendedor';
 
 const T = TEXTOS.vendedores;
@@ -18,7 +18,7 @@ export interface TelaVendedoresProps {
   ponte: PonteDoCorona;
 }
 
-/** Pessoas → Vendedores: lista com busca, praça e situação, e a ficha com abas. */
+/** Pessoas → Vendedores: lista com busca, praça e situação (mostra o limite de cada um), e a ficha com abas. */
 export function TelaVendedores({ ponte }: TelaVendedoresProps) {
   const [modo, setModo] = useState<Modo>({ tela: 'lista' });
   const [busca, setBusca] = useState('');
@@ -78,6 +78,7 @@ export function TelaVendedores({ ponte }: TelaVendedoresProps) {
     nome: v.nome,
     telefone: telefoneDaLista(v),
     praca: nomeDaPraca(v.pracaId),
+    limite: limiteDaLista(v),
     situacao: v.ativo ? T.situacao.ativo : T.situacao.desativado,
     acoes: <Botao onClick={() => setModo({ tela: 'ficha', id: v.id })}>{T.abrir}</Botao>,
   }));
@@ -173,6 +174,7 @@ export function TelaVendedores({ ponte }: TelaVendedoresProps) {
             { chave: 'nome', titulo: T.colunas.nome },
             { chave: 'telefone', titulo: T.colunas.telefone },
             { chave: 'praca', titulo: T.colunas.praca },
+            { chave: 'limite', titulo: T.colunas.limite },
             { chave: 'situacao', titulo: T.colunas.situacao },
             { chave: 'acoes', titulo: T.colunas.acoes },
           ]}

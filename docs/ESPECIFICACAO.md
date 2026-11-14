@@ -1,6 +1,6 @@
 # Especificação completa: Sistema de Semijoias Consignadas
 
-Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.14, 13/11/2026.
+Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.15, 13/11/2026.
 
 ## 1. Objetivo e contexto
 
@@ -121,7 +121,12 @@ O app **nunca acessa o banco direto**, apenas a API. Segurança (ninguém tem a 
 - Ciclo de estados: `RASCUNHO → ENVIADA → CONFERIDA → EM_ACERTO → ACERTADA` (mais `CANCELADA`).
 - A dona monta a maleta **online**, bipando os produtos. O estoque central é baixado ao enviar.
 - **Preço congelado** no envio (`preco_remessa`). O vendedor vende por esse preço, mesmo que a dona mude o preço depois.
-- **Bloqueios:** valor total da maleta não pode passar o **limite de consignação** do vendedor (campo obrigatório do cadastro: um valor em reais ou "Sem limite"; sem uma das duas escolhas o vendedor não recebe maleta; ADR-0010, item 7); vendedor com **restrição** ou inativo não recebe maleta; produto sem saldo central não entra.
+- **Bloqueios:** o valor que o vendedor tem em mãos não pode passar o **limite de consignação** dele; vendedor com **restrição** ou inativo não recebe maleta; produto sem saldo central não entra.
+- **Limite de consignação** (decisões do responsável de 11/11/2026; ADR-0010, item 7):
+  - é **campo obrigatório** do cadastro do vendedor: a dona preenche um valor em reais ou marca **"Sem limite"**, nunca os dois. **Zero vale zero** (o vendedor não leva peça nenhuma); não quer dizer "sem limite". "Sem limite" nunca bloqueia.
+  - a conta é pelo **preço de venda congelado** (`preco_remessa`), nunca pelo custo nem pelo preço de hoje: soma, nas maletas enviadas e ainda não acertadas, de `saldo atual × preco_remessa`, **mais** o valor da maleta que está sendo enviada. No limite exato passa; um centavo acima é recusado, dizendo o limite, o que já está com o vendedor e quanto falta.
+  - a **reposição entra na mesma conta**: conta tudo o que o vendedor tem em mãos.
+  - vendedor com o **limite não definido** (nenhuma das duas escolhas; só os cadastros antigos, que estavam com zero) **não recebe maleta**, nem rascunho, até a dona definir. A lista de vendedores mostra, para cada um, o valor, "Sem limite" ou "Limite não definido".
 - O vendedor sincroniza, **confere** bipando as peças recebidas e registra divergências.
 - **Saldo por eventos**, nunca por número digitado: `saldo = enviada − vendas − devoluções à dona − perdas − avarias + estornos de venda + devoluções de clientes boas + entradas de troca − saídas de troca`.
 - **Reposição** é uma maleta complementar criada online. Se faltar peça no meio do caminho, a dona cria nova remessa.
@@ -276,7 +281,7 @@ Risco: etiquetas muito pequenas ou de baixa qualidade podem exigir leitor 2D ou 
 ### Cadastros
 
 - `usuarios` (login, senha\_hash, perfil, ativo, vendedor\_id opcional)
-- `vendedores` (código, nome, datas, sexo, estrangeiro, RG/IE, RG UF, CPF/CNPJ, naturalidade, escolaridade, telefones, WhatsApp, e-mail, redes sociais, **limite\_consignacao**, **restricao\_id**, **comissao\_percentual** (deixou de ser usado no cálculo desde 13/11/2026: a comissão é por meta, §7.4; a coluna fica), **praca\_id**, ativo, cadastrado\_por) e tabelas filhas: endereço, filiação/contato, trabalho, cônjuge, MEI, referências, documentos (arquivos), observações
+- `vendedores` (código, nome, datas, sexo, estrangeiro, RG/IE, RG UF, CPF/CNPJ, naturalidade, escolaridade, telefones, WhatsApp, e-mail, redes sociais, **limite\_consignacao** (Real, a preço de venda congelado; zero vale zero) e **limite\_consignacao\_ilimitado** (a opção "Sem limite"; o banco recusa os dois juntos; os dois vazios = limite não definido, só em cadastro antigo, que não recebe maleta; V026), **restricao\_id**, **comissao\_percentual** (deixou de ser usado no cálculo desde 13/11/2026: a comissão é por meta, §7.4; a coluna fica), **praca\_id**, ativo, cadastrado\_por) e tabelas filhas: endereço, filiação/contato, trabalho, cônjuge, MEI, referências, documentos (arquivos), observações
 - `restricoes` (código, descrição, bloqueia\_remessa, **ativo**)
 - `pracas` (nome, **ativo**), `semanas` (número, início, fim, situação ABERTA/FECHADA; **sem `ativo`**: ABERTA/FECHADA já diz se a semana está em uso)
 - `clientes` (nome, CPF opcional, **data\_nascimento opcional, não futura**, telefone, WhatsApp, endereço, observações, vendedor\_responsavel\_id, **ativo**). **Clientes são da LOJA (decisão de 11/11/2026):** qualquer vendedor vende a qualquer cliente ativo e recebe só o **diretório** (nome, CPF, telefone e cidade); vendas, fiado e pagamentos continuam privados de cada vendedor; o **CPF é único** entre clientes não excluídos (repetido é barrado, ADR-0011 item 13 e ADR-0013); `vendedor_responsavel_id` é "quem cadastrou/atende mais", sem restringir a venda
@@ -535,6 +540,7 @@ Nota fiscal eletrônica (a nota de remessa é só interna), loja virtual, aplica
 12. ~~Entrada~~ O que significa na tela de referência? Valor pago pela vendedora ao levar a maleta, abatido no acerto, ou entrada de venda parcelada? É obrigatória? Como se calcula e o que acontece no acerto? Precisa de resposta antes da Fase 3. **13/11/2026:** a dona não sabe ("creo que es entrada de dinero"). **Decidido pelo responsável em 13/11/2026 (ADR-0012 aceito): no sistema novo não existe entrada.** Se um dia existir, entra como tarefa nova.
 13. ~~Cartão~~ **Respondido em 13/11/2026:** não. O cliente paga **em dinheiro ou por transferência**. Nas telas de venda e de reembolso só aparecem Dinheiro e Transferência (gravada como `PIX`); `CARTAO` e `CHEQUE` continuam aceitos no banco para não quebrar dados antigos. **No acerto (ADR-0012 aceito em 13/11/2026):** o vendedor repassa em dinheiro, transferência ou boleto; não existe cheque nem cartão.
 14. **Língua das telas (13/11/2026):** a dona quer as telas **em espanhol**. É a última tarefa do projeto, com autorização do responsável. **Decisão do responsável (13/11/2026):** os dois apps ficam em espanhol; mais adiante, o app do vendedor terá espanhol e português (escolha da língua), e o da dona só espanhol.
+15. ~~Limite de consignação: conta o preço de venda ou o custo? A reposição entra? Vendedor sem limite cadastrado recebe maleta?~~ **Decidido pelo responsável em 11/11/2026** (dúvidas 1, 2 e 6 do ADR-0010): conta o **preço de venda congelado**; a **reposição entra**; o limite é **obrigatório**, com a opção **"Sem limite"**, e zero vale zero (§7.1). Não é mais pendência.
 
 ## 18. Identidade visual: Corona Semijoias
 
@@ -779,3 +785,7 @@ Importação com nome de arquivo inválido, foto duplicada, arquivo corrompido, 
   - §7.4, §7.5, §9, §12, §15 e §17 (item 13): **não existe cheque** (sai a tabela `cheques` e o relatório de cheques); o repasse do vendedor à loja aceita `DINHEIRO`, `PIX` (na tela, "Transferência") e `BOLETO`, e o pagamento a fornecedor, dinheiro, transferência e boleto; `CHEQUE` e `CARTAO` do pagamento do cliente continuam aceitos no banco, sem tela nova.
   - §6 (premissa 8), §7.4, §9, §12 e §17 (item 6): **comissão por meta** no lugar do percentual por vendedor (700.000 Gs na semana → 40%, abaixo → 30%, sobre o total; cada venda convertida pela cotação gravada nela; meta e percentuais em `configuracoes`; `comissao_percentual` do vendedor fica sem uso no cálculo; prévia do vendedor com quanto falta para a meta).
   - Cabeçalho corrigido para a versão atual.
+- **v1.15, 13/11/2026:** limite de consignação com as decisões do responsável de 11/11/2026 (tarefa 7.2; o código veio no PR 86, migração V026).
+  - §7.1: o limite é obrigatório, com a opção "Sem limite" (zero vale zero); conta o preço de venda congelado (`preco_remessa`) do que o vendedor tem em mãos mais a maleta que está saindo; a reposição entra; limite não definido não recebe maleta; a lista de vendedores mostra a situação do limite.
+  - §9: `vendedores` ganha `limite_consignacao_ilimitado` e a regra das duas colunas.
+  - §17 (item 15): as três perguntas do limite ficam registradas como decididas.

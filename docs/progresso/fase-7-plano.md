@@ -58,6 +58,7 @@ Só plano: nenhuma linha de código nesta tarefa (7.1). O modelo está no [ADR-0
 - Cadastro do vendedor: campo obrigatório com a opção "Sem limite"; a conta do envio da maleta continua a do ADR-0010 item 7 (preço congelado, reposição entra).
 - Atualizar a especificação (§7.1, §9, §17) e marcar resolvidas as dúvidas 1, 2 e 6 do ADR-0010.
 - Testes: vendedor sem valor e sem "Sem limite" é recusado; envio acima do limite com reposição é recusado; "Sem limite" nunca bloqueia; 403 cruzado.
+- **Como ficou (tarefa 7.2, conferência de 13/11/2026):** a migração já existia, do PR 86 (`V026__limite_de_consignacao_obrigatorio.sql`), com outro desenho, que vale: a coluna chama `limite_consignacao_ilimitado` (na API, `semLimite`); o `CHECK vendedores_limite_ou_sem_limite` recusa os dois juntos; e quem estava com limite 0 ficou com o **limite não definido** (não recebe maleta até a dona escolher), em vez de virar "Sem limite". Nenhuma migração nova. Detalhe em [fase-7.md](fase-7.md#tarefa-72-limite-de-consignação).
 
 ### 7.3: contas a receber do cliente
 
