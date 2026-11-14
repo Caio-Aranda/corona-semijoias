@@ -157,7 +157,7 @@ public class ServicoDeAcertos {
         }
 
         UUID semanaId = escolherASemana(pedido.semanaId(), abertas);
-        Boolean aberta = jdbc.query("SELECT situacao = 'ABERTA' FROM corona.semanas WHERE id = ? AND deleted_at IS NULL",
+        Boolean aberta = jdbc.query("SELECT situacao = 'ABERTA' FROM corona.semanas WHERE id = ? AND deleted_at IS NULL FOR SHARE",
                 rs -> rs.next() ? rs.getBoolean(1) : null, semanaId);
         if (aberta == null) {
             throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.SEMANA_NAO_ENCONTRADA);

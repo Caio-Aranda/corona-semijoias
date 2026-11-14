@@ -872,6 +872,11 @@ public enum CodigoErro {
             "O valor passa do que falta pagar.",
             "O valor passa do que falta pagar desta conta."),
 
+    /** O mesmo id de fechamento de semana com outra semana (HTTP 409). */
+    FECHAMENTO_DA_SEMANA_JA_REGISTRADO_DIFERENTE(
+            "Este fechamento já foi registrado com outros dados.",
+            "Este fechamento já foi registrado para outra semana. Confira a lista de semanas."),
+
     /** A data cai numa semana já fechada (HTTP 409). */
     DATA_EM_SEMANA_FECHADA(
             "Essa semana já foi fechada.",

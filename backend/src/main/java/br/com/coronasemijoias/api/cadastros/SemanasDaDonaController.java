@@ -1,6 +1,7 @@
 package br.com.coronasemijoias.api.cadastros;
 
 import br.com.coronasemijoias.api.seguranca.ExigePerfil;
+import br.com.coronasemijoias.api.seguranca.UsuarioAutenticado;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -10,6 +11,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,6 +40,10 @@ public class SemanasDaDonaController {
             @NotNull(message = Mensagens.OBRIGATORIO) LocalDate fim,
             SituacaoDaSemana situacao,
             Integer version) {
+    }
+
+    /** O comando de fechar: o {@code id} vem do aplicativo (idempotência). */
+    public record PedidoParaFechar(UUID id) {
     }
 
     public record Resposta(UUID id, int version, int numero, LocalDate inicio, LocalDate fim, SituacaoDaSemana situacao) {
@@ -78,6 +84,17 @@ public class SemanasDaDonaController {
     public Resposta editar(@PathVariable UUID id, @Valid @RequestBody Pedido pedido) {
         return Resposta.de(servico.editar(id, pedido.version(), pedido.numero(), pedido.inicio(), pedido.fim(),
                 pedido.situacao()));
+    }
+
+    @Operation(operationId = "fecharSemana", summary = "Fechar semana",
+            description = "Fecha a semana, uma vez só: ela não aceita mais acerto, maleta nem lançamento de caixa com data nela e nunca "
+                    + "reabre. Só semana que já terminou (o último dia é antes de hoje) e sem acerto em andamento. Mesmo id e mesma "
+                    + "semana devolve 200; o mesmo id para outra semana, 409.")
+    @PostMapping("/{id}/fechar")
+    public ResponseEntity<Resposta> fechar(@PathVariable UUID id, @RequestBody PedidoParaFechar pedido,
+            @AuthenticationPrincipal UsuarioAutenticado quem) {
+        ServicoDeSemanas.ResultadoDoFechamento r = servico.fechar(quem.id(), id, pedido == null ? null : pedido.id());
+        return ResponseEntity.status(r.jaExistia() ? HttpStatus.OK : HttpStatus.CREATED).body(Resposta.de(servico.obter(id)));
     }
 
     @Operation(summary = "Excluir semana", description = "Exclusão lógica: o número e as datas ficam livres.")

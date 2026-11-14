@@ -115,6 +115,7 @@ public class ServicoDeRemessas {
             }
         }
         UUID pracaDoVendedor = conferirVendedor(pedido.vendedorId()).praca();
+        exigirSemanaAberta(pedido.semanaId());
         jdbc.update("""
                 INSERT INTO corona.remessas (id, vendedor_id, semana_id, praca_id, tipo, criada_por)
                 VALUES (?, ?, ?, ?, ?, ?)""", id, pedido.vendedorId(), pedido.semanaId(), praca != null ? praca : pracaDoVendedor,
@@ -206,7 +207,7 @@ public class ServicoDeRemessas {
         // vendedor esperam um pelo outro.
         ServicoDeAcertos.trancarVendedor(jdbc, vendedorId);
         List<Map<String, Object>> linhas = jdbc.queryForList(
-                "SELECT status FROM corona.remessas WHERE id = ? AND deleted_at IS NULL FOR UPDATE", remessaId);
+                "SELECT status, semana_id FROM corona.remessas WHERE id = ? AND deleted_at IS NULL FOR UPDATE", remessaId);
         if (linhas.isEmpty()) {
             throw new ErroDaApi(HttpStatus.NOT_FOUND, CodigoErro.REMESSA_NAO_ENCONTRADA);
         }
@@ -267,6 +268,8 @@ public class ServicoDeRemessas {
             jdbc.update("UPDATE corona.itens_remessa SET preco_remessa = ? WHERE remessa_id = ? AND produto_id = ? AND deleted_at IS NULL",
                     p.preco(), remessaId, p.id());
         }
+        // Última trava: a semana, lida com FOR SHARE (o fechar semana trava com FOR UPDATE): maleta não sai em semana fechada.
+        exigirSemanaAberta((UUID) linhas.get(0).get("semana_id"));
         jdbc.update("""
                 UPDATE corona.remessas SET status = 'ENVIADA', total_pecas = ?, total_valor = ?, enviada_em = ?, enviada_por = ?
                  WHERE id = ?""", totalPecas, total, Timestamp.from(relogio.instant()), usuarioId, remessaId);
@@ -280,6 +283,15 @@ public class ServicoDeRemessas {
     }
 
     // --- internos ---
+
+    /** Maleta nova ou enviada só em semana aberta (tarefa 7.7): lê a semana com FOR SHARE, como última trava. */
+    private void exigirSemanaAberta(UUID semanaId) {
+        List<String> situacao = jdbc.queryForList("SELECT situacao FROM corona.semanas WHERE id = ? AND deleted_at IS NULL FOR SHARE", String.class,
+                semanaId);
+        if (!situacao.isEmpty() && "FECHADA".equals(situacao.get(0))) {
+            throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.SEMANA_FECHADA);
+        }
+    }
 
     /** {@code limite} vazio só quando o vendedor está "sem limite" (sem limite definido nem chega aqui). */
     private record VendedorDaMaleta(BigDecimal limite, UUID praca) {
