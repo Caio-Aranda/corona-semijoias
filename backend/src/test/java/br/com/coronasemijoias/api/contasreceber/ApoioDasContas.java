@@ -87,7 +87,9 @@ abstract class ApoioDasContas extends TesteDeIntegracao {
      * da parcela = soma das baixas). Só olha vendas que têm parcelas.
      */
     List<String> diferencasDaConciliacao() {
-        UUID[] ids = vendasDoTeste.toArray(UUID[]::new);
+        // Só UUIDs gerados aqui entram no texto da consulta (nunca texto digitado).
+        String ids = vendasDoTeste.isEmpty() ? "NULL::uuid"
+                : String.join(",", vendasDoTeste.stream().map(u -> "'" + u + "'::uuid").toList());
         List<String> achadas = new ArrayList<>(jdbc.queryForList("""
                 SELECT 'C1 ' || v.id || ' falta ' || (v.total - coalesce(p.liquido, 0)) || ' aberto ' || a.aberto
                   FROM corona.vendas v
@@ -95,18 +97,18 @@ abstract class ApoioDasContas extends TesteDeIntegracao {
                           FROM corona.contas_receber GROUP BY venda_id) a ON a.venda_id = v.id
                   LEFT JOIN (SELECT venda_id, sum(valor) AS liquido FROM corona.pagamentos_cliente
                               WHERE tipo IN ('PAGAMENTO', 'ESTORNO_PAGAMENTO', 'REEMBOLSO') GROUP BY venda_id) p ON p.venda_id = v.id
-                 WHERE v.id = ANY (?) AND v.status = 'CONCLUIDA' AND v.total - coalesce(p.liquido, 0) <> a.aberto""", String.class, ids));
+                 WHERE v.id IN (%s) AND v.status = 'CONCLUIDA' AND v.total - coalesce(p.liquido, 0) <> a.aberto""".formatted(ids), String.class));
         achadas.addAll(jdbc.queryForList("""
                 SELECT 'C1 estornada ' || v.id FROM corona.vendas v
                   JOIN corona.contas_receber c ON c.venda_id = v.id
-                 WHERE v.id = ANY (?) AND v.status = 'ESTORNADA' GROUP BY v.id
-                HAVING sum(c.valor - c.valor_pago - c.valor_cancelado) <> 0""", String.class, ids));
+                 WHERE v.id IN (%s) AND v.status = 'ESTORNADA' GROUP BY v.id
+                HAVING sum(c.valor - c.valor_pago - c.valor_cancelado) <> 0""".formatted(ids), String.class));
         achadas.addAll(jdbc.queryForList("""
                 SELECT 'C5 ' || c.id FROM corona.contas_receber c
-                 WHERE c.venda_id = ANY (?) AND (c.valor_pago <> coalesce((SELECT sum(valor) FROM corona.baixas_receber b
+                 WHERE c.venda_id IN (%s) AND (c.valor_pago <> coalesce((SELECT sum(valor) FROM corona.baixas_receber b
                                                   WHERE b.conta_id = c.id AND b.tipo = 'PAGAMENTO'), 0)
                     OR c.valor_cancelado <> coalesce((SELECT sum(valor) FROM corona.baixas_receber b
-                                                       WHERE b.conta_id = c.id AND b.tipo = 'CANCELAMENTO'), 0))""", String.class, ids));
+                                                       WHERE b.conta_id = c.id AND b.tipo = 'CANCELAMENTO'), 0))""".formatted(ids), String.class));
         return achadas;
     }
 

@@ -324,6 +324,11 @@ export type ParametrosDoVendedor = {
     tempoMaximoOfflineDias?: number;
 };
 
+export type ParcelamentoPedido = {
+    primeiroVencimento?: string;
+    quantidade?: number;
+};
+
 export type PecaDaTroca = {
     destino?: string;
     estado?: string;
@@ -387,6 +392,7 @@ export type PedidoDaVenda = {
     id?: string;
     itens?: Array<VendasDoVendedorControllerPedidoDaLinha>;
     pagamentos?: Array<PedidoDoPagamento>;
+    parcelamento?: PedidoDoParcelamento;
     remessaId?: string;
     totalConferido?: string;
 };
@@ -442,6 +448,11 @@ export type PedidoDoPagamento = {
     forma?: string;
     id?: string;
     valor?: string;
+};
+
+export type PedidoDoParcelamento = {
+    primeiroVencimento?: string;
+    quantidade?: number;
 };
 
 export type RelatorioAReceber = {
@@ -666,6 +677,7 @@ export type VendaDaTrocaPedida = {
     id?: string;
     itens?: Array<PecaQueSaiu>;
     pagamentos?: Array<PagamentoDaDiferenca>;
+    parcelamento?: ParcelamentoPedido;
     remessaId?: string;
     totalConferido?: string;
 };

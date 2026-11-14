@@ -1083,6 +1083,19 @@
         },
         "type" : "object"
       },
+      "ParcelamentoPedido" : {
+        "properties" : {
+          "primeiroVencimento" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "PecaDaTroca" : {
         "properties" : {
           "destino" : {
@@ -1279,6 +1292,9 @@
             },
             "type" : "array"
           },
+          "parcelamento" : {
+            "$ref" : "#/components/schemas/PedidoDoParcelamento"
+          },
           "remessaId" : {
             "format" : "uuid",
             "type" : "string"
@@ -1438,6 +1454,19 @@
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "PedidoDoParcelamento" : {
+        "properties" : {
+          "primeiroVencimento" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
           }
         },
         "type" : "object"
@@ -2247,6 +2276,9 @@
               "$ref" : "#/components/schemas/PagamentoDaDiferenca"
             },
             "type" : "array"
+          },
+          "parcelamento" : {
+            "$ref" : "#/components/schemas/ParcelamentoPedido"
           },
           "remessaId" : {
             "format" : "uuid",

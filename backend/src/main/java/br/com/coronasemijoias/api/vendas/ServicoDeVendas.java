@@ -11,6 +11,9 @@ import br.com.coronasemijoias.api.comum.identificadores.UuidV7;
 import br.com.coronasemijoias.api.comum.persistencia.OrigemDoDispositivo;
 import br.com.coronasemijoias.api.configuracoes.ChaveDeConfiguracao;
 import br.com.coronasemijoias.api.configuracoes.Configuracoes;
+import br.com.coronasemijoias.api.contasreceber.ServicoDeContasAReceber;
+import br.com.coronasemijoias.api.contasreceber.ServicoDeContasAReceber.Parcela;
+import br.com.coronasemijoias.api.contasreceber.ServicoDeContasAReceber.Parcelamento;
 import br.com.coronasemijoias.api.creditos.ServicoDeCreditos;
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -79,9 +82,19 @@ public class ServicoDeVendas {
     public record VendaDaTrocaGravada(UUID vendaId, BigDecimal total, BigDecimal creditoUsado) {
     }
 
-    /** {@code totalConferido} é o total que a tela mostrou: só serve para avisar divergência (nunca vale). */
+    /**
+     * {@code totalConferido} é o total que a tela mostrou: só serve para avisar divergência (nunca vale).
+     * {@code parcelamento} é opcional (tarefa 7.3): quantas parcelas e o primeiro vencimento do que falta pagar; o servidor
+     * calcula os valores. Sem ele, o que falta vira uma parcela um mês depois da venda.
+     */
     public record PedidoDeVenda(UUID id, UUID remessaId, UUID clienteId, List<LinhaDoPedido> itens,
-            List<PagamentoDoPedido> pagamentos, BigDecimal totalConferido) {
+            List<PagamentoDoPedido> pagamentos, BigDecimal totalConferido, Parcelamento parcelamento) {
+
+        /** Sem parcelamento (as vendas da Fase 4 e o formato 1 do envio). */
+        public PedidoDeVenda(UUID id, UUID remessaId, UUID clienteId, List<LinhaDoPedido> itens,
+                List<PagamentoDoPedido> pagamentos, BigDecimal totalConferido) {
+            this(id, remessaId, clienteId, itens, pagamentos, totalConferido, null);
+        }
     }
 
     /** {@code jaExistia}: a venda (ou o estorno) já estava gravada (200); senão, algo novo foi gravado (201). */
@@ -94,15 +107,17 @@ public class ServicoDeVendas {
     private final OrigemDoDispositivo origem;
     private final Clock relogio;
     private final ServicoDeCreditos creditos;
+    private final ServicoDeContasAReceber contas;
 
     ServicoDeVendas(JdbcTemplate jdbc, ServicoDeAuditoria auditoria, Configuracoes configuracoes,
-            OrigemDoDispositivo origem, Clock relogio, ServicoDeCreditos creditos) {
+            OrigemDoDispositivo origem, Clock relogio, ServicoDeCreditos creditos, ServicoDeContasAReceber contas) {
         this.jdbc = jdbc;
         this.auditoria = auditoria;
         this.configuracoes = configuracoes;
         this.origem = origem;
         this.relogio = relogio;
         this.creditos = creditos;
+        this.contas = contas;
     }
 
     // --- venda ---
@@ -372,6 +387,10 @@ public class ServicoDeVendas {
             creditos.registrarSemSaldo(f.pagamentoId(), id, f.creditoId(), f.pedido(), f.usado(), horaDoUso, usuarioId);
         }
 
+        // As parcelas do que falta pagar (tarefa 7.3), na mesma transação da venda.
+        List<Parcela> parcelas = contas.gerarParcelas(id, pedido.clienteId(), total.subtract(pago), pedido.parcelamento(),
+                LocalDate.ofInstant(quando, BRASILIA), vendidaEm == null);
+
         Map<String, Object> depois = new LinkedHashMap<>();
         depois.put("remessa_id", pedido.remessaId().toString());
         depois.put("cliente_id", pedido.clienteId().toString());
@@ -386,6 +405,10 @@ public class ServicoDeVendas {
         if (!emCredito.isEmpty()) {
             depois.put("pago_em_credito", emCredito.stream().map(Pagamento::valor).reduce(BigDecimal.ZERO, BigDecimal::add)
                     .toPlainString());
+        }
+        if (!parcelas.isEmpty()) {
+            depois.put("parcelas", parcelas.stream().map(q -> q.numero() + "/" + q.total() + " " + q.vencimento() + " R$ "
+                    + q.valor().toPlainString()).toList());
         }
         if (troca != null) {
             depois.put("troca_id", troca.trocaId().toString());
@@ -652,6 +675,20 @@ public class ServicoDeVendas {
                 (rs, n) -> rs.getObject(1, UUID.class), dia).stream().findFirst().orElse(null);
     }
 
+    /** O parcelamento do pedido bate com as parcelas gravadas (sem parcelamento no pedido, vale o que foi gravado). */
+    private boolean mesmoParcelamento(UUID vendaId, Parcelamento pedido) {
+        if (pedido == null) {
+            return true;
+        }
+        List<Map<String, Object>> gravadas = jdbc.queryForList(
+                "SELECT vencimento FROM corona.contas_receber WHERE venda_id = ? ORDER BY parcela", vendaId);
+        if (pedido.quantidade() == null || gravadas.size() != pedido.quantidade()) {
+            return false;
+        }
+        return pedido.primeiroVencimento() == null
+                || pedido.primeiroVencimento().equals(((java.sql.Date) gravadas.get(0).get("vencimento")).toLocalDate());
+    }
+
     /** O pedido repetido é a mesma venda? Compara dono, cliente, maleta, peças (com desconto) e pagamentos. */
     private boolean mesmaVenda(UUID id, UUID vendedorId, PedidoDeVenda pedido, List<Linha> linhas, List<Pagamento> pagamentos,
             Map<String, Object> gravada) {
@@ -672,6 +709,9 @@ public class ServicoDeVendas {
                     || l.desconto().compareTo((BigDecimal) i.get("desconto")) != 0) {
                 return false;
             }
+        }
+        if (!mesmoParcelamento(id, pedido.parcelamento())) {
+            return false;
         }
         // O pagamento em crédito limitado pelo envio (tarefa 6.7): o pedido está em creditos_sem_saldo, e o gravado (se
         // houver) tem o valor que o crédito ainda tinha.
@@ -698,8 +738,9 @@ public class ServicoDeVendas {
         if (!semSaldo.isEmpty()) {
             return false;
         }
+        // Os recebimentos posteriores (tarefa 7.3) não fazem parte do pedido da venda: o reenvio depois deles é o mesmo.
         List<Map<String, Object>> gravados = jdbc.queryForList(
-                "SELECT id, forma, valor, credito_id FROM corona.pagamentos_cliente WHERE venda_id = ? AND tipo = 'PAGAMENTO'", id);
+                "SELECT id, forma, valor, credito_id FROM corona.pagamentos_cliente WHERE venda_id = ? AND tipo = 'PAGAMENTO' AND NOT posterior", id);
         if (gravados.size() != pagos.size()) {
             return false;
         }

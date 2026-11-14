@@ -3,6 +3,7 @@ package br.com.coronasemijoias.api.trocas;
 import br.com.coronasemijoias.api.auditoria.ServicoDeAuditoria;
 import br.com.coronasemijoias.api.auditoria.ServicoDeAuditoria.Ator;
 import br.com.coronasemijoias.api.cadastros.Validacoes;
+import br.com.coronasemijoias.api.contasreceber.ServicoDeContasAReceber;
 import br.com.coronasemijoias.api.comum.erros.CodigoErro;
 import br.com.coronasemijoias.api.comum.erros.ErroDaApi;
 import br.com.coronasemijoias.api.comum.identificadores.OrdemDoBanco;
@@ -73,7 +74,13 @@ public class ServicoDeTrocas {
 
     /** A venda nova B: a maleta, as peças com desconto e os pagamentos do resto (o crédito da troca entra sozinho). */
     public record VendaDaTroca(UUID id, UUID remessaId, List<LinhaDoPedido> itens, List<PagamentoDoPedido> pagamentos,
-            BigDecimal totalConferido) {
+            BigDecimal totalConferido, ServicoDeContasAReceber.Parcelamento parcelamento) {
+
+        /** Sem parcelamento (o resto que faltar vira uma parcela um mês depois; tarefa 7.3). */
+        public VendaDaTroca(UUID id, UUID remessaId, List<LinhaDoPedido> itens, List<PagamentoDoPedido> pagamentos,
+                BigDecimal totalConferido) {
+            this(id, remessaId, itens, pagamentos, totalConferido, null);
+        }
     }
 
     public record PedidoDeTroca(UUID id, UUID creditoId, UUID pagamentoDoCreditoId, DevolucaoDaTroca devolucao,
@@ -178,7 +185,7 @@ public class ServicoDeTrocas {
                         devolucao.itens(), null, devolucao.autorizacaoId()), quando, horaAjustada, modo, id, creditoId);
         VendaDaTrocaGravada b = vendas.venderNaTroca(vendedorId, usuarioId, aparelho,
                 new PedidoDeVenda(vendaNovaId, venda.remessaId(), a.clienteId(), venda.itens(), venda.pagamentos(),
-                        venda.totalConferido()), quando, horaAjustada,
+                        venda.totalConferido(), venda.parcelamento()), quando, horaAjustada,
                 new CreditoDaTroca(id, creditoId, pagamentoDoCredito, a.valorDevolvido()), modo == ModoDaDevolucao.ENVIO);
 
         BigDecimal diferenca = b.total().subtract(a.valorDevolvido());
@@ -444,7 +451,7 @@ public class ServicoDeTrocas {
         }
         Map<UUID, String> pagos = new LinkedHashMap<>();
         List<UUID> doCredito = new ArrayList<>();
-        jdbc.query("SELECT id, forma, valor, credito_id FROM corona.pagamentos_cliente WHERE venda_id = ? AND tipo = 'PAGAMENTO'",
+        jdbc.query("SELECT id, forma, valor, credito_id FROM corona.pagamentos_cliente WHERE venda_id = ? AND tipo = 'PAGAMENTO' AND NOT posterior",
                 rs -> {
                     UUID pagamento = rs.getObject(1, UUID.class);
                     UUID credito = rs.getObject(4, UUID.class);
