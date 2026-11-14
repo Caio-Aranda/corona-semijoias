@@ -155,7 +155,8 @@ A tela mostra o texto da coluna "Na tela". A coluna "Equivalente técnico" é s�
 | Estado da peça | `BOA` | Boa | Volta a ser vendida. |
 | Estado da peça | `DEFEITO` | Com defeito | Fica separada e vai para a dona no acerto. Nunca volta a ser vendida. |
 | Forma de pagamento | dinheiro | Dinheiro | §7.4. |
-| Forma de pagamento | Pix | Transferência | §7.4. Gravado como `PIX`; na tela, sempre **Transferência**, também no acerto (repasse do vendedor à loja) e no pagamento a fornecedor (ADR-0012, aceito em 13/11/2026). Nunca "PIX" na tela. |
+| Forma de pagamento do repasse do vendedor | Pix | Transferência (PIX) | Tarefa 7.6: nas telas do recebimento do vendedor à loja (acerto e recebimento avulso) a forma aparece como **Transferência (PIX)** ao lado de **Dinheiro** e **Boleto**; gravada como `PIX`. |
+| Forma de pagamento | Pix | Transferência | §7.4. Gravado como `PIX`; na tela, sempre **Transferência**, também no acerto (repasse do vendedor à loja) e no pagamento a fornecedor (ADR-0012, aceito em 13/11/2026). Nas telas do repasse do vendedor, **Transferência (PIX)** (linha acima); nas demais, só **Transferência**. |
 | Forma de pagamento do cliente (venda, troca, devolução) | Transferência | Transferência | O cliente paga ou recebe por transferência; gravado como PIX. Nessas telas só **Dinheiro** e **Transferência** (a dona respondeu em 13/11/2026; v1.13). Cartão e Cheque saem das telas, mas pagamentos já gravados continuam aparecendo como "Cartão" e "Cheque". |
 | Forma de pagamento | cheque | Cheque (só em pagamento antigo) | No sistema novo **não existe cheque** (ADR-0012, aceito em 13/11/2026): não há tela, situação nem controle de cheque. A palavra só aparece em pagamento de cliente já gravado. |
 | Forma de pagamento | boleto | Boleto | §7.4. |
@@ -1295,3 +1296,15 @@ As telas chegam nas tarefas 7.10 e 7.11; estas são as mensagens que a API já d
 - **Meta da comissão:** "Meta da semana" em Guaranis; **Comissão abaixo da meta** e **Comissão na meta** são as duas porcentagens.
 - **Quanto falta para a meta:** a prévia do vendedor, em Guarani e em Real.
 - Erros: "Há devolução esperando a sua decisão. Mantenha ou não aceite antes de fechar o acerto." · "Chegou coisa nova neste acerto. Confira de novo antes de fechar." · "Busque a cotação do dia antes de fechar o acerto."
+
+## Dinheiro do vendedor e caixa (tarefa 7.6)
+
+Os textos das telas são das tarefas 7.9, 7.10 e 7.11; estes são os termos que elas devem usar.
+
+- **Quanto o vendedor deve neste acerto** (o líquido menos o crédito); **Crédito do vendedor** ("A loja deve R$ X a este vendedor. O valor será abatido no próximo acerto."); **O que ficou devendo**; **Pago neste acerto**.
+- Formas: **Dinheiro**, **Transferência (PIX)** e **Boleto**. Nunca "Cheque", "Cartão" nem "Entrada" no repasse do vendedor.
+- **Boleto**: "O boleto vira uma conta a receber. Quando for pago, registre o recebimento." Aviso de erro: "O boleto pago precisa ser do valor inteiro da conta do boleto."
+- **Contas que o vendedor deve** (conta a receber do vendedor): **Vencimento**, **Valor**, **Já pago**, **Em aberto**; parcela "2 de 3".
+- **Registrar recebimento** (a dona, fora do acerto); **Estornar recebimento** (com motivo); mensagens: "Escolha a data de pagamento do que ficou devendo.", "O valor recebido passa do que o vendedor deve neste acerto.", "Este vendedor não tem conta em aberto.", "Este recebimento já foi estornado."
+- **Pagar ao vendedor agora** / **Deixar de crédito para o próximo acerto** (acerto a favor do vendedor).
+- **Caixa** (só a dona): **Entradas**, **Saídas**, **Saldo**; categorias "Repasse do vendedor" e "Pagamento ao vendedor".

@@ -90,6 +90,14 @@ A API com a 7.5 manda ao vendedor quatro tabelas novas (`itens_acerto`, `acerto_
 2. **Depois a API:** suba a API com a 7.5 e, no `.env` do servidor, `APP_VERSAO_MINIMA_VENDAS` igual à versão publicada. A migração V044 do banco roda junto.
 3. O computador na versão antiga continua enviando o que guardou. Nada se perde. As telas do fechamento e da prévia da comissão são das tarefas 7.9 e 7.11.
 
+### Nota de deploy da tarefa 7.6 (dinheiro do vendedor no pull)
+
+A API com a 7.6 manda ao vendedor a tabela nova `recebimentos_vendedor`, as contas a receber que ele deve à loja (sem venda), as baixas pelo recebimento e colunas novas de `contas_receber` e `acertos`. O Corona Vendas sem a **migração local 8** não as conhece e recusaria o lote inteiro (o pull pararia). **Nesta ordem**, como na 7.4 e na 7.5 (**app primeiro, depois a API**):
+
+1. **Primeiro o Corona Vendas:** aumente `version` em `apps/seller-app/package.json` (por exemplo, `1.6.0`) e publique (`npm run vendas:publicar`). A migração local 8 refaz a cópia local das contas (com as mesmas linhas, agora aceitando conta sem venda), cria as colunas e a tabela nova e a **recarga dirigida** traz tudo de novo, sem apagar nada.
+2. **Depois a API:** suba a API com a 7.6 e, no `.env` do servidor, `APP_VERSAO_MINIMA_VENDAS` igual à versão publicada. A migração V045 do banco roda junto.
+3. O computador na versão antiga continua enviando o que guardou. Nada se perde. O vendedor não registra nem estorna recebimento (tudo é da dona): não há tipo novo na fila de envio. As telas são das tarefas 7.9, 7.10 e 7.11. O caixa nunca vai ao computador do vendedor.
+
 ## Riscos da primeira instalação no computador do vendedor
 
 | Risco | O que fazer |

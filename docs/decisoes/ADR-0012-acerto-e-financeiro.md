@@ -204,12 +204,16 @@ a_pagar_no_acerto = recebido_no_acerto + ficou_devendo         (CHECK)
 
 **Como ficou (tarefa 7.5, 14/11/2026).** Os totais estão em `acertos` com os `CHECK` do item 8; `devolvido`, `comissao`, `liquido` e `ficou_devendo` aceitam qualquer sinal. O exemplo do item 18 virou teste (`FechamentoDoAcertoTest`).
 
+**Como ficou (tarefa 7.6, 14/11/2026).** A conta C2 passou a ser `liquido - credito_usado = recebido_no_acerto - pago_ao_vendedor + ficou_devendo` (a forma antiga é o caso com zeros), com `pago_ao_vendedor`, `credito_usado` e `credito_do_acerto_id` (único: cada crédito é usado uma vez só) em `acertos` (V045). `ficou_devendo` positivo vira contas a receber do nível 2; negativo é o crédito do vendedor, abatido inteiro no próximo fechamento. O exemplo do item 18 com R$ 60,00 em dinheiro e R$ 50,00 em Transferência (PIX) virou teste (`FechamentoComPagamentoTest`): recebido 110,00, ficou devendo 17,83, caixa +60,00 e +50,00.
+
 ### 9. Recebimentos do vendedor
 
 - **Não existe entrada** (aceite de 13/11/2026). O vendedor não adianta dinheiro ao levar a maleta: não há recebimento com momento `ENTRADA`, nem abatimento no fechamento. Se um dia existir, entra como tarefa nova, com migração nova.
 - **Formas do repasse do vendedor à loja:** `DINHEIRO`, `PIX` (na tela, **"Transferência"**) e `BOLETO`. Não há cheque nem cartão (dúvidas 11 e 14, respondidas). Nenhuma é executada pelo sistema (§7.5).
 - **Boleto** não é dinheiro na mão: no fechamento, o valor em boleto vira conta a receber do vendedor com o vencimento do boleto; quando a dona registra que foi pago, nasce o `recebimento_vendedor` `BOLETO` e o lançamento de caixa (dúvida 12).
 - Estorno de recebimento (registrado errado) é um registro negativo com `estorna_id`, só da dona, com motivo; num acerto fechado, o estorno não muda o acerto: gera conta a receber do vendedor.
+
+**Como ficou (tarefa 7.6, 14/11/2026).** `recebimentos_vendedor` (V045; sincronizável, imutável) tem `momento` (`ACERTO` ou `AVULSO`) e `aplicado_em` (`ACERTO`, que paga o acerto e entra em `recebido_no_acerto`, ou `CONTAS`, que baixa contas do nível 2 e não entra nos totais). `CHEQUE`, `CARTAO` e, no fechamento, `BOLETO` são recusados no banco e na API. O boleto vira a conta com `contas_receber.forma_prevista = 'BOLETO'` e só se paga inteiro, por recebimento avulso `BOLETO` na conta dele. Recebimento avulso sem conta indicada distribui pelas contas em aberto, da que vence primeiro. O estorno de recebimento aplicado nas contas desfaz as baixas (baixas negativas); o do que pagou o acerto vira conta `ESTORNO_RECEBIMENTO` (vencimento hoje ou a data informada). O gatilho adiado no `COMMIT` confere que cada recebimento tem exatamente um lançamento de caixa do mesmo valor e que as baixas somam o valor do recebimento. Só a dona registra e estorna.
 
 ### 10. Cheques (retirado no aceite de 13/11/2026)
 
@@ -220,6 +224,8 @@ a_pagar_no_acerto = recebido_no_acerto + ficou_devendo         (CHECK)
 - Um caixa só; os relatórios separam por forma (dúvida 13). Saldo = Σ entradas − Σ saídas, pela soma dos lançamentos (sem atalho gravado; poucos lançamentos por dia).
 - **Lançamentos automáticos**, na mesma transação do fato, com origem única: recebimento do vendedor em dinheiro, transferência (`PIX`) ou boleto pago (entrada de caixa); pagamento a fornecedor (saída); acerto pago a favor do vendedor (saída).
 - **Lançamentos manuais** (despesas e receitas avulsas) com categoria, descrição e data, só da dona. Correção é estorno (`estorna_id`, sinal oposto, único).
+**Como ficou (tarefa 7.6, 14/11/2026).** `lancamentos_caixa` e `categorias_caixa` nascem na V045, só do servidor; só o `ServicoDeCaixa` grava (teste de arquitetura), sempre dentro da transação do recebimento ou do acerto. Lançamento é imutável, com sinal (entrada positiva, saída negativa) e o estorno tem sinal oposto e `estorna_id` único. As duas categorias do sistema ("Repasse do vendedor" e "Pagamento ao vendedor") já nascem na migração. O extrato (`GET /api/dona/caixa/lancamentos`, só leitura, com saldo depois de cada lançamento) já existe; o lançamento manual, as categorias com rota e o aviso de caixa negativo são da 7.7.
+
 - Caixa negativo **não é bloqueado** (o dinheiro já saiu de verdade), mas gera aviso em "O que precisa da sua atenção" (dúvida 13). Esta regra é de dinheiro; a de peças (decisão 4) continua recusando sempre.
 
 ### 12. Contas a pagar
@@ -367,3 +373,4 @@ As dúvidas para a dona, cada uma com o padrão seguro adotado, estão em [fase-
 - **13/11/2026:** aceito pelo responsável com quatro mudanças (tarefa 7.1b): não existe entrada (itens 8 e 9, C2, exemplo); não existe cheque (item 10, tabelas `cheques` e `eventos_cheque`, `CHEQUE_COMPENSADO`, conta a receber de cheque devolvido, C6); formas do repasse `DINHEIRO`, `PIX` ("Transferência") e `BOLETO`, e as mesmas no pagamento a fornecedor; comissão por meta de 700.000 Gs com 30% ou 40% sobre o total, no lugar do percentual por vendedor (item 5, exemplo do item 18 refeito). A última migração passou a ser a V040.
 - **14/11/2026:** item 7 implementado no nível 1 (tarefa 7.3).
 - **14/11/2026:** itens 2, 3, 4, 13, 14, 15 e 16 implementados na parte 1 do acerto, sem dinheiro (tarefa 7.4; V043).
+- **14/11/2026:** itens 1, 2, 3.6, 7, 8, 9, 11, 13, 14, 15 e 16 implementados no dinheiro do acerto, nos recebimentos do vendedor e no caixa automático (tarefa 7.6; V045).
