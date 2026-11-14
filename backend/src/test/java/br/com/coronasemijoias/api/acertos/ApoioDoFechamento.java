@@ -88,6 +88,10 @@ abstract class ApoioDoFechamento extends ApoioDoAcerto {
         BigDecimal f = new BigDecimal(faltas);
         BigDecimal liquidoVendido = b.subtract(d).subtract(dev);
         BigDecimal liquido = liquidoVendido.subtract(c).add(f);
+        // O que o vendedor ficou devendo vira conta a receber do nível 2 (V045); o gatilho do banco confere no COMMIT.
+        if (liquido.signum() > 0) {
+            contaDoAcertoNoBanco(acerto, liquido, 1, 1, java.time.LocalDate.now().plusDays(30), null);
+        }
         jdbc.update("""
                 UPDATE corona.acertos SET status = 'ACERTADO', fechamento_id = ?, conteudo_do_fechamento = 'teste',
                        fechado_em = now(), fechado_por = ?, cotacao_id = ?, meta_guarani = 700000, percentual_comissao = 30,
@@ -95,6 +99,17 @@ abstract class ApoioDoFechamento extends ApoioDoAcerto {
                        comissao = ?, faltas_cobradas = ?, liquido = ?, recebido_no_acerto = 0, ficou_devendo = ?
                  WHERE id = ?""", UUID.randomUUID(), usuarios.dona().id(), cotacaoDoExemplo, b, d, dev, liquidoVendido, c, f,
                 liquido, liquido, acerto);
+    }
+
+    /** Uma conta a receber do vendedor (nível 2), nascida no fechamento do acerto em andamento. */
+    UUID contaDoAcertoNoBanco(UUID acerto, BigDecimal valor, int parcela, int total, java.time.LocalDate vencimento, String formaPrevista) {
+        UUID id = UUID.randomUUID();
+        UUID vendedorId = jdbc.queryForObject("SELECT vendedor_id FROM corona.acertos WHERE id = ?", UUID.class, acerto);
+        jdbc.update("""
+                INSERT INTO corona.contas_receber (id, devedor_tipo, vendedor_id, origem_tipo, origem_id, parcela, total_parcelas,
+                    vencimento, valor, forma_prevista) VALUES (?, 'VENDEDOR', ?, 'ACERTO', ?, ?, ?, ?, ?, ?)""", id, vendedorId, acerto,
+                parcela, total, vencimento, valor, formaPrevista);
+        return id;
     }
 
     // --- pela API ---

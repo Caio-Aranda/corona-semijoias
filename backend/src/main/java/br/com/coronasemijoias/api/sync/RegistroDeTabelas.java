@@ -168,17 +168,24 @@ public final class RegistroDeTabelas {
                         new TabelaSincronizavel("creditos_sem_saldo", List.of(
                                 "venda_id", "pagamento_id", "credito_id", "valor_pedido", "valor_usado", "situacao", "registrada_em",
                                 "revisada_em", "observacao_revisao"), false, RegraDoVendedor.doVendedor(DA_VENDA)),
-                        // Contas a receber do cliente (tarefa 7.3, V041): as parcelas e as baixas da venda do vendedor. O nível 2
-                        // (vendedor deve à loja) amplia a regra na 7.6, por migração nova.
+                        // Contas a receber (tarefa 7.3, V041; nível 2 na 7.6, V045): as parcelas do cliente (pela venda do vendedor) e as
+                        // contas que o próprio vendedor deve à loja (vendedor_id), com as baixas dos dois níveis.
                         new TabelaSincronizavel("contas_receber", List.of(
                                 "devedor_tipo", "cliente_id", "vendedor_id", "origem_tipo", "origem_id", "venda_id", "parcela",
-                                "total_parcelas", "vencimento", "valor", "valor_pago", "valor_cancelado", "status"), false,
-                                RegraDoVendedor.doVendedor(DA_VENDA)),
+                                "total_parcelas", "vencimento", "valor", "valor_pago", "valor_cancelado", "status", "forma_prevista"), false,
+                                RegraDoVendedor.doVendedor("t.vendedor_id = ? OR EXISTS (SELECT 1 FROM corona.vendas v"
+                                        + " WHERE v.id = t.venda_id AND v.vendedor_id = ?)")),
                         new TabelaSincronizavel("baixas_receber", List.of(
-                                "conta_id", "tipo", "valor", "baixada_em", "pagamento_cliente_id", "motivo_cancelamento", "devolucao_id",
-                                "estorna_id"), true,
+                                "conta_id", "tipo", "valor", "baixada_em", "pagamento_cliente_id", "recebimento_vendedor_id",
+                                "motivo_cancelamento", "devolucao_id", "estorna_id"), true,
                                 RegraDoVendedor.doVendedor("EXISTS (SELECT 1 FROM corona.contas_receber c"
-                                        + " JOIN corona.vendas v ON v.id = c.venda_id WHERE c.id = t.conta_id AND v.vendedor_id = ?)")),
+                                        + " LEFT JOIN corona.vendas v ON v.id = c.venda_id"
+                                        + " WHERE c.id = t.conta_id AND (c.vendedor_id = ? OR v.vendedor_id = ?))")),
+                        // O que o vendedor pagou à dona (tarefa 7.6, V045): só o dele. Nunca vão quem registrou, o motivo do estorno nem
+                        // o resumo do pedido. O caixa e as categorias são só do servidor (nunca vão ao vendedor).
+                        new TabelaSincronizavel("recebimentos_vendedor", List.of(
+                                "vendedor_id", "momento", "acerto_id", "aplicado_em", "forma", "valor", "recebido_em", "estorna_id"), true,
+                                RegraDoVendedor.doVendedor("t.vendedor_id = ?")),
                         // Acerto, parte 1 (tarefa 7.4, V043): o acerto do vendedor e a contagem dele. Nunca vão os "*_por" (quem
                         // iniciou, desistiu ou leu) nem remessas.acerto_id (as maletas dele chegam com status EM_ACERTO).
                         // Acerto, parte 2 (tarefa 7.5, V044): o fechamento e os totais chegam; nunca fechamento_id nem o resumo das
@@ -187,7 +194,8 @@ public final class RegistroDeTabelas {
                                 "vendedor_id", "semana_id", "status", "pedido_pelo_vendedor", "iniciado_em", "desistido_em",
                                 "motivo_desistencia", "fechado_em", "cotacao_id", "meta_guarani", "percentual_comissao",
                                 "vendido_para_meta_guarani", "vendido_bruto", "descontos", "devolvido", "vendido_liquido", "comissao",
-                                "faltas_cobradas", "liquido", "recebido_no_acerto", "ficou_devendo"), false,
+                                "faltas_cobradas", "liquido", "recebido_no_acerto", "ficou_devendo", "pago_ao_vendedor", "credito_usado",
+                                "credito_do_acerto_id"), false,
                                 RegraDoVendedor.doVendedor("t.vendedor_id = ?")),
                         new TabelaSincronizavel("leituras_acerto", List.of(
                                 "acerto_id", "produto_id", "quantidade", "estado_peca", "lida_em", "pelo_vendedor", "dispositivo_id"), true,
@@ -256,7 +264,10 @@ public final class RegistroDeTabelas {
                         // Registro dos envios do Corona Vendas (tarefa 5.5, ADR-0013 item 2): só do servidor.
                         new TabelaDoServidor("sync_log", false),
                         // Envios de um computador bloqueado, guardados sem aplicar (tarefa 5.8, ADR-0013 item 14): só do servidor.
-                        new TabelaDoServidor("envios_em_quarentena", false)));
+                        new TabelaDoServidor("envios_em_quarentena", false),
+                        // Caixa automático (tarefa 7.6, V045): nunca vai ao aplicativo do vendedor.
+                        new TabelaDoServidor("categorias_caixa", false),
+                        new TabelaDoServidor("lancamentos_caixa", true)));
     }
 
     /** Este registro somado a outro (usado pelos testes para acrescentar as tabelas de teste). */
