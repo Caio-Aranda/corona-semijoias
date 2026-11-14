@@ -229,7 +229,7 @@ Issue #151, PR 168 (tarefa crítica: plano aprovado no PR, as decisões 1 a 11 c
 
 **Testes** (PostgreSQL do Testcontainers): banco (17), gerar contas (7), pagar e estornar (8), compra desfeita (4), categorias (7), caixa manual (7), fechar semana (7), concorrência com threads reais e tempo limite de 10 s (4), permissões (1, todas as rotas), arquitetura (6), pull do vendedor sem as tabelas novas; Corona Gestão, formulário de semana sem "Fechada". Os testes antigos que fechavam semana por SQL ou pelo formulário ganharam o auxiliar `SemanasDeTeste.fecharNoBanco` (a regra mudou: só se fecha com o registro).
 
-RESULTADO_FINAL_AQUI
+**Resultado final:** `npm run api:test` passa (1563 testes, nenhuma falha); Corona Vendas 637 testes (1 ignorado, como antes); Corona Gestão 666 testes em 46 arquivos; `npm run test:duas-pontas -w @corona/testes-sync` passa (26 testes em 7 arquivos); `npm run lint`, `npm run typecheck` e `npm run format:check` limpos; `npm run seller:empacotar` e `npm run barreira:varrer` com varredura limpa; o diff de `packages/api-client-vendedor` ficou vazio.
 
 **Não fiz**
 
