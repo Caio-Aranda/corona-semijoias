@@ -96,4 +96,40 @@ abstract class ApoioDoFechamento extends ApoioDoAcerto {
                  WHERE id = ?""", UUID.randomUUID(), usuarios.dona().id(), cotacaoDoExemplo, b, d, dev, liquidoVendido, c, f,
                 liquido, liquido, acerto);
     }
+
+    // --- pela API ---
+
+    /** Uma leitura da contagem pela dona. */
+    void bipar(UUID acerto, UUID peca, int quantidade, String estado) throws Exception {
+        postar(ACERTOS_DA_DONA + "/" + acerto + "/leituras", dona(), mapa("id", UUID.randomUUID(), "produtoId", peca,
+                "quantidade", quantidade, "estadoPeca", estado)).andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isCreated());
+    }
+
+    static java.util.Map<String, Object> decisaoDeFalta(UUID produto, String decisao, String motivo) {
+        return mapa("produtoId", produto, "decisao", decisao, "motivo", motivo);
+    }
+
+    static java.util.Map<String, Object> defeitoAprovado(UUID produto, int aprovadas) {
+        return mapa("produtoId", produto, "aprovadas", aprovadas);
+    }
+
+    /** O corpo do fechar: faltas, defeitos, cobranças e pendências antigas (listas vazias quando não há) e o líquido mostrado. */
+    static java.util.Map<String, Object> pedidoDeFechamento(UUID id, java.util.List<?> faltas, java.util.List<?> defeitos,
+            String liquidoMostrado) {
+        return mapa("id", id, "faltas", faltas, "defeitos", defeitos, "cobrancas", java.util.List.of(),
+                "pendenciasAntigas", java.util.List.of(), "liquidoMostrado", liquidoMostrado);
+    }
+
+    org.springframework.test.web.servlet.ResultActions fechar(UUID acerto, java.util.Map<String, Object> pedido) throws Exception {
+        return postar(ACERTOS_DA_DONA + "/" + acerto + "/fechar", dona(), pedido);
+    }
+
+    tools.jackson.databind.JsonNode previa(UUID acerto) throws Exception {
+        return corpoDe(ler(ACERTOS_DA_DONA + "/" + acerto + "/fechamento", dona())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk()));
+    }
+
+    int estoqueAtual(UUID peca) {
+        return contar("SELECT estoque_atual FROM corona.produtos WHERE id = ?", peca);
+    }
 }
