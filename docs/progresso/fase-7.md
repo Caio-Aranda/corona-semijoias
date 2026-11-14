@@ -79,3 +79,32 @@ Issue #145, PR 160. **Boa parte já estava na `main`:** o PR 86 (11/11/2026) cri
 - **Relatório "Vendedores: limite e situação":** continua mostrando o limite vazio tanto para "Sem limite" quanto para "Limite não definido". Distinguir os dois pede um campo novo na resposta do relatório (OpenAPI e cliente gerado); fica como sugestão de tarefa.
 - A descrição da rota "Cadastrar vendedor" no OpenAPI ainda diz "Limite e comissão começam em zero" (texto de antes da V026); mudar regera o cliente, ficou de fora.
 - Nenhuma migração, nenhuma mudança no Corona Vendas, nenhuma regra nova.
+
+## Tarefa 7.3: contas a receber do cliente
+
+Issue #146, PR 162 (tarefa crítica: plano aprovado no PR, ajustes da orquestradora atendidos). Nível 1 do ADR-0012 (itens 2 e 7): a venda a prazo ganha parcelas; o cliente paga depois; o servidor distribui, confere e concilia. **Telas e gravar parcelamento e recebimento na outbox do Corona Vendas ficam para a 7.10 e a 7.11.** A comissão e o acerto não foram tocados (7.4 a 7.6).
+
+**O que entrou**
+
+- **Migração `V041__contas_a_receber_do_cliente.sql`:** `contas_receber` (parcela, vencimento, valor e os atalhos `valor_pago`, `valor_cancelado`, `status`; `VENCIDA` nunca é gravada), `baixas_receber` (imutável; `PAGAMENTO` com o estorno negativo, `CANCELAMENTO` do estorno da venda) e `pagamentos_cliente.posterior` mais o tipo `ESTORNO_PAGAMENTO`. O **banco** garante: parcela nasce em aberto, de venda concluída e do cliente dela; conteúdo imutável; atalhos só mudam para a soma das baixas; baixa cabe na parcela e no recebimento; estorno do mesmo valor e uma vez só; recebimento posterior só em dinheiro ou Pix. A venda a prazo já gravada ganha uma parcela no dia da venda (Brasília).
+- **`ServicoDeContasAReceber`** (único que faz `UPDATE` em `contas_receber`; `ArquiteturaDasContasTest`): `gerarParcelas` (1 a 24, mensais a partir da primeira, `Dinheiro.dividirEmParcelas`; sem parcelamento, uma parcela um mês depois), `receber`, `estornarRecebimento` e `cancelarEmAberto`. Ordem de travas: estorno da venda remessa, venda, créditos, parcelas por id; recebimento e estorno do recebimento venda, parcelas. O recebimento não olha a maleta.
+- **Rotas:** `POST /api/vendedor/vendas/{id}/recebimentos`, `POST /api/vendedor/recebimentos-de-cliente/{id}/estorno` (vendedor só no mesmo dia), `POST /api/dona/recebimentos-de-cliente/{id}/estorno`, `GET /api/vendedor/contas-receber`, `GET /api/dona/contas-receber`; a ficha da venda traz as parcelas e marca os pagamentos posteriores. `parcelamento` opcional na venda e na venda nova da troca. Cliente da API regenerado.
+- **Leitores de pagamento corrigidos** (o recebimento estornado voltaria a dever): devolução, autorização, lista de vendas com a peça (`aPrazo`), conferência de dinheiro devolvido e de contas da venda; um teste por leitor. O relatório de recebimentos já somava tudo. O estorno da venda reembolsa só os pagamentos não estornados. `grep "'PAGAMENTO'"` conferido no fim.
+- **Sync:** `VENDA` e `TROCA` formato 1 ampliados com `parcelamento` opcional (o resumo antigo não muda; teste com resumo fixo), tipos novos `RECEBIMENTO_CLIENTE/1` e `ESTORNO_RECEBIMENTO_CLIENTE/1`, `contas_receber` e `baixas_receber` no pull (pela venda do vendedor), `posterior` no pull de `pagamentos_cliente`.
+- **Corona Vendas (só o motor e o banco local):** migração local 4, colunas, recarga dirigida das três tabelas (somada à da 3 quando ela ainda não terminou), `banco-v4.sqlite`.
+- **Documentos:** especificação v1.16 (§7.2, §9, §10, §22), ADR-0012 (item 7, "Como ficou"), glossário (parte 13), nota de deploy em `entrega-corona-vendas.md`.
+
+**Decisões que tomei (padrão seguro; todas no plano aprovado)**
+
+- Devolução e troca de venda a prazo com parcelas em aberto continuam recusadas (`VENDA_A_PRAZO_SEM_DEVOLUCAO`); a 7.3b (issue nova, criada pela orquestradora) trata disso. Venda a prazo já quitada continua podendo ser devolvida.
+- Recebimento posterior só em `DINHEIRO` e `PIX`, registrado pelo vendedor; a dona lê e estorna sem limite de dia.
+- Estorno da venda cancela só o que está em aberto: parcela paga continua paga e o dinheiro volta pelo reembolso.
+- **Achado da concorrência:** estorno de recebimento numa venda com devolução não cancelada seria um segundo reembolso do mesmo dinheiro; passou a ser recusado com `VENDA_COM_DEVOLUCAO` (a devolução e o estorno do recebimento nunca passam juntos).
+- O `RECUSADO` do envio (recebimento acima do que falta, venda estornada) já aparece para a dona em "Envios com problema"; nenhuma tabela de revisão nova.
+
+**Testes** (PostgreSQL do Testcontainers e SQLCipher de verdade): banco (18), parcelas (12), recebimento (12), estorno do recebimento e leitores (13), estorno da venda a prazo (8), leitura (7), permissões (4), concorrência com threads e tempo limite de 10 s (7), arquitetura (4), conciliação C1 e C5 (4), envio (11) e pull (4), mais dois testes de troca; Corona Vendas: 8 testes novos e 4 da Fase 6 ajustados para o banco na versão 4 e as 25 tabelas.
+
+**Não fiz**
+
+- Telas e gravar parcelamento e recebimento na outbox do Corona Vendas (7.10 e 7.11); a rota e a tela de diferenças das conciliações (7.8); devolução de venda com parcelas em aberto (7.3b); o nível 2 (7.5 e 7.6) e a comissão.
+- `AutorizacaoDeDevolucaoTest.nenhumaRespostaDasRotasDaAutorizacaoTemCustoNemFornecedor` e `TrocaTest.prazoContaEmDiasDeBrasiliaComoNaDevolucao` já falham quando rodados sozinhos na `main` (dependem do que as outras classes deixam na configuração de prazos); passam na suíte inteira. Não foi mexido.

@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import tools.jackson.databind.JsonNode;
 
 /**
  * O pull das contas a receber (tarefa 7.3): as duas tabelas novas chegam só ao vendedor dono, com as colunas exatas da
@@ -135,10 +136,23 @@ class PullDasContasTest extends ApoioDoEnvioDaFase6 {
     @Test
     void asRespostasDoPullNaoTemCustoNemMarcadoresProibidos() throws Exception {
         Vendedor a = vendedorComContas(false);
-        String corpo = mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                        .get("/api/vendedor/sync/pull?limite=500").with(como(a.v())).header("X-App-Tipo", "vendas")
-                        .header("X-App-Versao", VERSAO_MINIMA_VENDAS)).andExpect(status().isOk()).andReturn().getResponse()
-                .getContentAsString(java.nio.charset.StandardCharsets.UTF_8).toLowerCase();
-        assertThat(corpo).contains("contas_receber").doesNotContain("custo").doesNotContain("fornecedor");
+        // O banco é dividido entre os testes: lê página por página (limite pequeno) até acabar.
+        StringBuilder tudo = new StringBuilder();
+        String cursor = null;
+        for (int i = 0; i < 300; i++) {
+            String corpo = mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                            .get("/api/vendedor/sync/pull?limite=500" + (cursor == null ? "" : "&cursor=" + cursor))
+                            .with(como(a.v())).header("X-App-Tipo", "vendas").header("X-App-Versao", VERSAO_MINIMA_VENDAS))
+                    .andExpect(status().isOk()).andReturn().getResponse()
+                    .getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+            tudo.append(corpo.toLowerCase());
+            JsonNode r = json.readTree(corpo);
+            cursor = r.get("cursor").asString();
+            if (!r.get("temMais").asBoolean()) {
+                break;
+            }
+        }
+        assertThat(tudo.toString()).contains("contas_receber").contains("baixas_receber").doesNotContain("custo")
+                .doesNotContain("fornecedor");
     }
 }
