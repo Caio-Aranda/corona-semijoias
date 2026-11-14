@@ -195,13 +195,14 @@ Devolução, troca e garantia. O modelo está no [ADR-0014](decisoes/ADR-0014-de
 | 6.12 | docs: fechamento da Fase 6 (revisão, respostas da dona de 13/11, pendências da Fase 7 e do responsável, roteiro do teste de uso; ADR-0014 já Aceito) | PR 143 · [detalhe](progresso/fase-6.md#tarefa-612-fechamento-da-fase-6) |
 | #130 | fix(testes-sync): pull "perde" cliente era defeito do teste (conferência do fim em voltas até o servidor parar; semana da dona dentro do limite da API; `sincronizar` sem giro em falso) | PR 133 · [detalhe](progresso/fase-6.md#correção-pull-perde-cliente) |
 
-## Fase 7 (só o plano)
+## Fase 7 (plano e decisões; nenhum código ainda)
 
-Acerto semanal e financeiro. O modelo está no [ADR-0012](decisoes/ADR-0012-acerto-e-financeiro.md) (Proposto); as tarefas, no [plano da Fase 7](progresso/fase-7-plano.md).
+Acerto semanal e financeiro. O modelo está no [ADR-0012](decisoes/ADR-0012-acerto-e-financeiro.md), **aceito pelo responsável em 13/11/2026** com quatro mudanças (não existe entrada, não existe cheque, repasse em dinheiro, transferência ou boleto, comissão por meta de 700.000 Gs com 30% ou 40%); as tarefas, no [plano da Fase 7](progresso/fase-7-plano.md); o detalhe de cada tarefa, em [fase-7.md](progresso/fase-7.md).
 
 | Nº | Tarefa | Situação |
 | --- | --- | --- |
 | 7.1 | docs: plano da Fase 7 e ADR-0012 (acerto e financeiro) | Mesclada (PR 73) · [plano](progresso/fase-7-plano.md) |
+| 7.1b | docs: decisões do responsável de 13/11 no ADR-0012 (Aceito), no plano da Fase 7 e na especificação v1.14 (sem entrada, sem cheque, repasse em dinheiro, transferência ou boleto, comissão por meta, dúvidas da dona respondidas, última migração V040) | PR 159 · [detalhe](progresso/fase-7.md#tarefa-71b-decisões-do-responsável-de-1311) |
 
 ## Auditoria geral (check-up) de 11/11/2026
 

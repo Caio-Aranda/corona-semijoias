@@ -11,7 +11,7 @@ A §7.3 define três casos (devolução do cliente, troca, devolução à dona),
 - venda (ADR-0011 e V022): venda imutável, só o estorno **da venda inteira** muda o status (`CONCLUIDA → ESTORNADA`); desconto por linha em Real; reembolso é `pagamentos_cliente` `REEMBOLSO` negativo; o servidor recalcula tudo;
 - maleta (ADR-0010) e estoque (ADR-0008): saldo por movimentos, nunca negativo, travas em ordem estável por `id`;
 - sync (ADR-0013): o Corona Vendas grava sempre na outbox; o push chama os mesmos serviços das rotas; hora do aparelho corrigida e limitada pelo servidor (item 11); `configuracoes` só do servidor, com a garantia no bloco `parametros`; as tabelas da Fase 6 entram filtradas pelo vendedor do token;
-- acerto (ADR-0012, Proposto): o acerto liga **eventos** (`acerto_eventos`), conta a **devolução** (nunca o reembolso em dinheiro à parte), peças `DEFEITO` são esperadas à parte, semana fechada nunca reabre (o efeito vai para o próximo acerto), crédito usado é forma de pagamento e não reduz o que o vendedor deve.
+- acerto (ADR-0012, Aceito em 13/11/2026): o acerto liga **eventos** (`acerto_eventos`), conta a **devolução** (nunca o reembolso em dinheiro à parte), peças `DEFEITO` são esperadas à parte, semana fechada nunca reabre (o efeito vai para o próximo acerto), crédito usado é forma de pagamento e não reduz o que o vendedor deve.
 
 Ficam abertos pontos que mexem em tabela (e migração publicada não se edita): o que acontece com a venda numa devolução parcial, para onde volta a peça boa de uma maleta já acertada, como a troca se liga à venda nova, de quem é o crédito sem internet, e o que o servidor faz quando o app achou que estava no prazo e ele acha que não.
 

@@ -10,7 +10,7 @@ Como usar:
 
 ## Decisões tomadas
 
-Em 09/11/2026 o responsável resolveu as dúvidas que estavam abertas neste glossário. Só falta a da "Entrada" (parte 10).
+Em 09/11/2026 o responsável resolveu as dúvidas que estavam abertas neste glossário. A da "Entrada" (parte 10) foi resolvida em 13/11/2026: no sistema novo **não existe entrada nem cheque**, e no acerto o vendedor paga em **Dinheiro**, **Transferência** ou **Boleto** (ADR-0012, aceito em 13/11/2026).
 
 - Na tela, sempre "vendedor".
 - Cancelar venda segue a §19.5: "Cancelar venda", com a explicação de que é um novo lançamento. A palavra "anular" não é usada.
@@ -154,13 +154,10 @@ A tela mostra o texto da coluna "Na tela". A coluna "Equivalente técnico" é s�
 | Semana | `FECHADA` | Fechada | Não aceita mais alteração (§7.4). |
 | Estado da peça | `BOA` | Boa | Volta a ser vendida. |
 | Estado da peça | `DEFEITO` | Com defeito | Fica separada e vai para a dona no acerto. Nunca volta a ser vendida. |
-| Cheque | `A_COMPENSAR` | A compensar | O banco ainda não confirmou o valor. |
-| Cheque | `COMPENSADO` | Compensado | O valor entrou. |
-| Cheque | `DEVOLVIDO` | Devolvido | O banco devolveu o cheque. |
 | Forma de pagamento | dinheiro | Dinheiro | §7.4. |
-| Forma de pagamento | Pix | Pix | §7.4. Escrever "Pix", nunca "PIX". No acerto (repasse do vendedor à dona) continua "Pix". |
+| Forma de pagamento | Pix | Transferência | §7.4. Gravado como `PIX`; na tela, sempre **Transferência**, também no acerto (repasse do vendedor à loja) e no pagamento a fornecedor (ADR-0012, aceito em 13/11/2026). Nunca "PIX" na tela. |
 | Forma de pagamento do cliente (venda, troca, devolução) | Transferência | Transferência | O cliente paga ou recebe por transferência; gravado como PIX. Nessas telas só **Dinheiro** e **Transferência** (a dona respondeu em 13/11/2026; v1.13). Cartão e Cheque saem das telas, mas pagamentos já gravados continuam aparecendo como "Cartão" e "Cheque". |
-| Forma de pagamento | cheque | Cheque | §7.4. Mostra também a situação do cheque, acima. |
+| Forma de pagamento | cheque | Cheque (só em pagamento antigo) | No sistema novo **não existe cheque** (ADR-0012, aceito em 13/11/2026): não há tela, situação nem controle de cheque. A palavra só aparece em pagamento de cliente já gravado. |
 | Forma de pagamento | boleto | Boleto | §7.4. |
 | Forma de pagamento | crédito do cliente | Crédito do cliente | §7.3 (tarefa 6.5). Na lista curta de formas pode aparecer só **Crédito**. Nunca "CREDITO". |
 | Crédito do cliente | `ABERTO` | Em aberto | Ainda tem saldo para usar. |
@@ -168,7 +165,7 @@ A tela mostra o texto da coluna "Na tela". A coluna "Equivalente técnico" é s�
 | Crédito do cliente | `CANCELADO` | Cancelado | A troca ou a devolução que o gerou foi cancelada. |
 | Troca | `ATIVA` | Feita | A troca vale. |
 | Troca | `CANCELADA` | Cancelada | Desfeita pelo "Cancelar troca". Continua registrada. |
-| Forma de pagamento | entrada | Entrada (a confirmar, não usar na tela) | §7.4. O significado ainda não foi confirmado (parte 9). Não aparece em nenhuma tela até a resposta. |
+| Forma de pagamento | entrada | (não usar) | No sistema novo **não existe entrada** (ADR-0012, aceito em 13/11/2026). Não aparece em nenhuma tela. |
 
 Pagamento do cliente na venda (§7.2): **À vista** ou **A prazo** (parcelado).
 
@@ -1093,13 +1090,13 @@ Termos que dependem de resposta do cliente. **Não usar nas telas** até a respo
 | Numeração da semana | Como numerar as semanas e quais são o primeiro e o último dia. A confirmar. | §17.8 |
 | Diferença da troca | Se o crédito do cliente pode ser devolvido em dinheiro. A confirmar. | §17.7 |
 | Cartão | Não é forma de pagamento hoje. Falta perguntar ao cliente se o cliente final paga com cartão na maquininha do vendedor; se pagar, o cartão entra só como forma registrada, sem integração. A confirmar. | §17.13 |
-| Entrada | Forma de pagamento da §7.4 cujo significado não foi confirmado. Hipótese 1: valor pago pelo vendedor ao levar a maleta, abatido no acerto. Hipótese 2: entrada de uma venda parcelada. A confirmar. | §17.12 |
+| Entrada | **Resolvida em 13/11/2026:** no sistema novo não existe entrada (ADR-0012 aceito). A palavra não aparece em nenhuma tela. | §17.12 |
 
 ## 10. Dúvidas para a dona
 
-Só uma dúvida segue em aberto. As outras foram resolvidas em 09/11/2026 (ver "Decisões tomadas", no topo).
+Nenhuma dúvida segue em aberto. As outras foram resolvidas em 09/11/2026 (ver "Decisões tomadas", no topo).
 
-1. **"Entrada".** O que significa "Entrada" na tela de referência: o valor pago pelo vendedor ao levar a maleta, abatido no acerto, ou a entrada de uma venda parcelada? Ela é obrigatória? Como se calcula e o que acontece no acerto? Até a resposta, a palavra não aparece em nenhuma tela (§17.12). A resposta é necessária antes da Fase 3.
+1. ~~**"Entrada".**~~ **Resolvida em 13/11/2026 pelo responsável (ADR-0012 aceito):** no sistema novo não existe entrada, e a palavra não aparece em nenhuma tela (§17.12). Se um dia existir, entra como tarefa nova.
 
 ## 11. Três moedas na tela
 
