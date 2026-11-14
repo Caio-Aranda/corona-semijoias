@@ -255,6 +255,13 @@ public class ServicoDeContasAReceber {
         if ("ESTORNADA".equals(venda.get("status"))) {
             throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.VENDA_JA_ESTORNADA);
         }
+        // Venda com devolução não cancelada não volta a dever: o dinheiro já voltou ao cliente pela devolução. A devolução
+        // trava a maleta e a venda antes de gravar; esta rota já travou a venda: as duas nunca passam juntas.
+        if (Boolean.TRUE.equals(jdbc.queryForObject(
+                "SELECT EXISTS (SELECT 1 FROM corona.devolucoes WHERE venda_id = ? AND situacao <> 'CANCELADA')", Boolean.class,
+                vendaId))) {
+            throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.VENDA_COM_DEVOLUCAO);
+        }
         Instant hora = momento == null ? relogio.instant() : momento;
         if (vendedorId != null) {
             LocalDate diaDoRecebimento = LocalDate.ofInstant(((Timestamp) original.get("pago_em")).toInstant(), BRASILIA);
