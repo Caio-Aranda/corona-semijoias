@@ -51,3 +51,6 @@ testes-e2e/resultados/
 testes-sync/resultados/
 playwright-report/
 test-results/
+
+# grafo do graphify (cada clone monta o seu)
+graphify-out/
