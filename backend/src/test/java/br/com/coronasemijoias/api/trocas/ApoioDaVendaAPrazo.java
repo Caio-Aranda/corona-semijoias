@@ -74,8 +74,8 @@ public abstract class ApoioDaVendaAPrazo extends ApoioDasTrocas {
         achadas.addAll(jdbc.queryForList("""
                 SELECT 'abatido ' || d.id FROM corona.devolucoes d
                  WHERE d.venda_id IN (%s)
-                   AND d.valor_abatido <> CASE WHEN d.situacao = 'CANCELADA' THEN 0 ELSE
-                       coalesce((SELECT sum(b.valor) FROM corona.baixas_receber b WHERE b.devolucao_id = d.id), 0) END""".formatted(ids),
+                   AND (CASE WHEN d.situacao = 'CANCELADA' THEN 0 ELSE d.valor_abatido END)
+                       <> coalesce((SELECT sum(b.valor) FROM corona.baixas_receber b WHERE b.devolucao_id = d.id), 0)""".formatted(ids),
                 String.class));
         achadas.addAll(jdbc.queryForList("""
                 SELECT 'divisao ' || d.id FROM corona.devolucoes d
