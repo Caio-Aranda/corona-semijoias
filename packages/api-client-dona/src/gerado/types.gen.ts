@@ -215,6 +215,34 @@ export type ConsultasDaConferenciaLinha = {
     produtoNome?: string;
 };
 
+export type ConsultasDeAcertosMaleta = {
+    id?: string;
+    numero?: string;
+    status?: string;
+    statusAntes?: string;
+    tipo?: string;
+};
+
+export type ConsultasDeAcertosProduto = {
+    codigo?: string;
+    fotoHash?: string;
+    id?: string;
+    nome?: string;
+};
+
+export type ConsultasDeAcertosResumo = {
+    desistidoEm?: string;
+    id?: string;
+    iniciadoEm?: string;
+    maletas?: number;
+    pedidoPeloVendedor?: boolean;
+    semanaId?: string;
+    semanaNumero?: number;
+    status?: string;
+    vendedorId?: string;
+    vendedorNome?: string;
+};
+
 export type ConsultasDeCadastroLinhaDeVendedor = {
     ativo?: boolean;
     bloqueiaRemessa?: boolean;
@@ -304,6 +332,12 @@ export type ContaDaDona = {
     vendaId?: string;
     vendedorId?: string;
     vendedorNome?: string;
+};
+
+export type Contagem = {
+    estadoPeca?: string;
+    produto?: ConsultasDeAcertosProduto;
+    quantidade?: number;
 };
 
 export type ContatoDoVendedorDados = {
@@ -543,6 +577,24 @@ export type EstoqueDaDonaControllerRespostaDoMovimento = {
     usuarioId?: string;
 };
 
+export type FichaDaDona = {
+    contagem?: Array<Contagem>;
+    desistidoEm?: string;
+    enviosAguardando?: number;
+    id?: string;
+    iniciadoEm?: string;
+    leituras?: Array<LeituraDaDona>;
+    maletas?: Array<ConsultasDeAcertosMaleta>;
+    motivoDesistencia?: string;
+    pedidoPeloVendedor?: boolean;
+    semanaId?: string;
+    semanaNumero?: number;
+    status?: string;
+    vendasQueChegaramDepoisDoInicio?: number;
+    vendedorId?: string;
+    vendedorNome?: string;
+};
+
 export type FornecedoresDaDonaControllerPedido = {
     cnpj?: string;
     contatoNome?: string;
@@ -585,6 +637,13 @@ export type ImportacaoDeFotosRelatorio = {
     jaExistiam?: number;
     naoGravadas?: number;
     resultados?: Array<ResultadoDaFoto>;
+};
+
+export type InventariosDaDonaControllerPedidoDeLeitura = {
+    codigo?: string;
+    id?: string;
+    produtoId?: string;
+    quantidade?: number;
 };
 
 export type InventariosDaDonaControllerRespostaDaLinha = {
@@ -673,6 +732,17 @@ export type JsonNode = {
      */
     textual?: boolean;
     valueNode?: boolean;
+};
+
+export type LeituraDaDona = {
+    dispositivoId?: string;
+    estadoPeca?: string;
+    id?: string;
+    lidaEm?: string;
+    lidaPorNome?: string;
+    peloVendedor?: boolean;
+    produtoId?: string;
+    quantidade?: number;
 };
 
 export type LinhaAbaixoDoMinimo = {
@@ -1401,6 +1471,11 @@ export type PedidoDeContagem = {
     produtoId?: string;
 };
 
+export type PedidoDeDesistencia = {
+    id?: string;
+    motivo?: string;
+};
+
 export type PedidoDeDevolucao = {
     itens?: Array<MaletaDaDonaControllerPedidoDaLinha>;
 };
@@ -1425,16 +1500,15 @@ export type PedidoDeGarantia = {
     valorAprovacaoReembolso?: string;
 };
 
+export type PedidoDeInicio = {
+    id?: string;
+    semanaId?: string;
+    vendedorId?: string;
+};
+
 export type PedidoDeItem = {
     codigo?: string;
     custoUnitario?: string;
-    produtoId?: string;
-    quantidade?: number;
-};
-
-export type PedidoDeLeitura = {
-    codigo?: string;
-    id?: string;
     produtoId?: string;
     quantidade?: number;
 };
@@ -2203,6 +2277,13 @@ export type SemanasDaDonaControllerResposta = {
     version?: number;
 };
 
+export type ServicoDeAcertosPedidoDeLeitura = {
+    estadoPeca?: string;
+    id?: string;
+    produtoId?: string;
+    quantidade?: number;
+};
+
 export type Tempo = {
     instante?: string;
 };
@@ -2496,6 +2577,96 @@ export type TrocarSenhaResponses = {
 };
 
 export type TrocarSenhaResponse = TrocarSenhaResponses[keyof TrocarSenhaResponses];
+
+export type ListarAcertosData = {
+    body?: never;
+    path?: never;
+    query?: {
+        vendedorId?: string;
+        semanaId?: string;
+        situacao?: string;
+    };
+    url: '/api/dona/acertos';
+};
+
+export type ListarAcertosResponses = {
+    /**
+     * OK
+     */
+    200: Array<ConsultasDeAcertosResumo>;
+};
+
+export type ListarAcertosResponse = ListarAcertosResponses[keyof ListarAcertosResponses];
+
+export type IniciarAcertoData = {
+    body: PedidoDeInicio;
+    path?: never;
+    query?: never;
+    url: '/api/dona/acertos';
+};
+
+export type IniciarAcertoResponses = {
+    /**
+     * OK
+     */
+    200: FichaDaDona;
+};
+
+export type IniciarAcertoResponse = IniciarAcertoResponses[keyof IniciarAcertoResponses];
+
+export type VerAcertoData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/acertos/{id}';
+};
+
+export type VerAcertoResponses = {
+    /**
+     * OK
+     */
+    200: FichaDaDona;
+};
+
+export type VerAcertoResponse = VerAcertoResponses[keyof VerAcertoResponses];
+
+export type DesistirDoAcertoData = {
+    body: PedidoDeDesistencia;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/acertos/{id}/desistir';
+};
+
+export type DesistirDoAcertoResponses = {
+    /**
+     * OK
+     */
+    200: FichaDaDona;
+};
+
+export type DesistirDoAcertoResponse = DesistirDoAcertoResponses[keyof DesistirDoAcertoResponses];
+
+export type RegistrarLeituraDoAcertoData = {
+    body: ServicoDeAcertosPedidoDeLeitura;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/acertos/{id}/leituras';
+};
+
+export type RegistrarLeituraDoAcertoResponses = {
+    /**
+     * OK
+     */
+    200: FichaDaDona;
+};
+
+export type RegistrarLeituraDoAcertoResponse = RegistrarLeituraDoAcertoResponses[keyof RegistrarLeituraDoAcertoResponses];
 
 export type BloquearAparelhoData = {
     body?: PedidoDeBloqueio;
@@ -3764,7 +3935,7 @@ export type ItensResponses = {
 export type ItensResponse = ItensResponses[keyof ItensResponses];
 
 export type LerData = {
-    body: PedidoDeLeitura;
+    body: InventariosDaDonaControllerPedidoDeLeitura;
     path: {
         id: string;
     };
