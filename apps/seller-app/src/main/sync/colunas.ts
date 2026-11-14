@@ -218,6 +218,8 @@ export const COLUNAS_DO_PULL: Readonly<Record<TabelaSincronizavel, readonly stri
       'valor_pago',
       'valor_cancelado',
       'status',
+      // Fase 7 (tarefa 7.6): a conta do boleto do acerto.
+      'forma_prevista',
     ],
     baixas_receber: [
       'conta_id',
@@ -225,6 +227,7 @@ export const COLUNAS_DO_PULL: Readonly<Record<TabelaSincronizavel, readonly stri
       'valor',
       'baixada_em',
       'pagamento_cliente_id',
+      'recebimento_vendedor_id',
       'motivo_cancelamento',
       'devolucao_id',
       'estorna_id',
@@ -253,6 +256,10 @@ export const COLUNAS_DO_PULL: Readonly<Record<TabelaSincronizavel, readonly stri
       'liquido',
       'recebido_no_acerto',
       'ficou_devendo',
+      // Fase 7 (tarefa 7.6): o pago ao vendedor e o crédito usado.
+      'pago_ao_vendedor',
+      'credito_usado',
+      'credito_do_acerto_id',
     ],
     leituras_acerto: [
       'acerto_id',
@@ -300,6 +307,17 @@ export const COLUNAS_DO_PULL: Readonly<Record<TabelaSincronizavel, readonly stri
       'status',
       'cobrada_no_acerto_id',
       'resolvida_em',
+    ],
+    // Fase 7 (tarefa 7.6). O que o vendedor pagou à loja; só o dele. Nunca quem registrou, o motivo do estorno nem o resumo do pedido.
+    recebimentos_vendedor: [
+      'vendedor_id',
+      'momento',
+      'acerto_id',
+      'aplicado_em',
+      'forma',
+      'valor',
+      'recebido_em',
+      'estorna_id',
     ],
   });
 
