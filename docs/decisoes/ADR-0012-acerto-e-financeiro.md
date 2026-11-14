@@ -130,12 +130,16 @@ Notas:
 7. **Depois de `ACERTADO`, nada muda** no acerto, nos itens, nos eventos ligados nem nas comissões dele. Correção é registro novo no próximo acerto ou no nível 2.
 8. **Semana** (de segunda a domingo, um acerto por vendedor por semana; resposta da dona em 13/11/2026): a dona fecha a semana (`semanas.situacao = FECHADA`) quando quiser, depois dos acertos; acerto em `EM_ACERTO` impede fechar a semana. Semana fechada não aceita acerto novo, remessa nova nem lançamento financeiro com data dentro dela: o lançamento leva a data de hoje ("Essa semana já foi fechada. Lance com a data de hoje"). Nada reabre semana.
 
+**Como ficou (tarefa 7.4, 14/11/2026).** Iniciar, contar e desistir estão prontos (V043; o acerto não tem dinheiro). O iniciar liga todas as maletas `ENVIADA`/`CONFERIDA` do vendedor, guardando o status de antes em `remessas.status_antes_do_acerto`; o desistir volta a ele. Um acerto `EM_ACERTO` por vendedor e um por semana fora `DESISTIDO` (índices únicos parciais). A semana é a informada, a mais recente das maletas ligadas ou a de hoje. O vendedor pede o próprio acerto com os pré-requisitos do item 1 (`aguardando_envio` é o **último número informado** pelo computador: a garantia de fila vazia é do aplicativo, 7.11); só a dona desiste, com motivo e o UUID do comando. A leitura é uma por pedido, online; aceita peça das maletas do acerto ou de devolução "para a loja" do vendedor; a contagem pode passar do que a maleta tem (a sobra aparece no fechamento, 7.5). Nada de esperado × contado nesta tarefa. Gatilhos que a 7.5 recria: `proteger_acerto` (para `ACERTADO`) e `conferir_acerto_da_remessa` (para `ACERTADA`, mantendo o `acerto_id`); o `CHECK` `acertos_desistencia_completa` também.
+
 ### 4. Regra de corte (vendas e eventos que chegam atrasados)
 
 - Evento **novo** numa maleta `EM_ACERTO` (venda, devolução, troca) é recusado: 409, "Esta maleta está em acerto".
 - **Exceção da Fase 5:** venda feita **sem internet** com `vendida_em` **anterior** ao início do acerto e vinda do aparelho da maleta é aceita enquanto o acerto está `EM_ACERTO`; como o esperado é calculado no fechamento, a contagem já bate. A tela da dona avisa "Chegou venda nova: confira a contagem".
 - Depois do fechamento, venda atrasada **nunca entra calada**: vira pendência "venda depois do acerto" para a dona (conflito da Fase 5) e, se aceita, entra no **próximo** acerto, normalmente ligada à falta que ela explica (a pendência de falta passa a `ENCONTRADA`).
 - Devolução, troca ou estorno de venda de semana fechada (Fase 6) entra no próximo acerto do vendedor (item 3, passo 6.7) e a peça boa entra na maleta aberta dele (regra a confirmar na Fase 6).
+
+**Como ficou (tarefa 7.4, 14/11/2026).** A exceção da Fase 5 vale para a **venda e para o estorno de venda** vindos do envio, do computador da maleta (`remessas.dispositivo_id`), com a hora corrigida pelo servidor **anterior** a `acertos.iniciado_em`; o banco é a segunda trava (a venda só entra com `vendida_em` anterior ao início). A venda online grava `vendida_em` com o relógio da aplicação (o mesmo do início), para a regra nunca depender do relógio do banco. Devolução, troca, devolução à dona e cancelamento continuam recusados na maleta em acerto (`MALETA_EM_ACERTO`). **A dona pode estornar** venda de maleta em acerto (a peça volta à maleta e entra no esperado do fechamento); o vendedor, só pela exceção. A ficha da dona mostra `vendasQueChegaramDepoisDoInicio` (vendas que o servidor recebeu depois do início). Remessa nova: o rascunho é livre, o envio é recusado (`VENDEDOR_EM_ACERTO`).
 
 ### 5. Comissão
 
@@ -224,6 +228,8 @@ a_pagar_no_acerto = recebido_no_acerto + ficou_devendo         (CHECK)
 - Baixa de conta trava a conta.
 - O índice único de `acerto_eventos` é a segunda trava: um evento nunca entra em dois acertos, mesmo com erro de programação.
 - Testes com operações paralelas (lista no plano).
+
+**Como ficou (tarefa 7.4, 14/11/2026).** A trava do vendedor é `SELECT … FROM vendedores … FOR NO KEY UPDATE`, **não** `FOR UPDATE`: inserir venda, movimento ou conferência pega `FOR KEY SHARE` na linha do vendedor (chave estrangeira), e `FOR UPDATE` esperaria por ela; com a venda já segurando a maleta, isso fecharia uma espera em volta (venda: maleta, depois a chave do vendedor; iniciar: vendedor, depois a maleta). `FOR NO KEY UPDATE` não conflita com `FOR KEY SHARE` e serializa iniciar, desistir e enviar remessa (e, na 7.5, fechar) do mesmo vendedor. Iniciar: vendedor, depois as maletas abertas por `id`, depois o acerto; desistir: vendedor, acerto, maletas por `id`; leitura: só o acerto (`FOR UPDATE`, que também espera uma desistência em andamento); enviar remessa: a trava `limite-do-vendedor` que já existia, depois o vendedor, depois a remessa. A venda já travava a maleta antes de ler o status; a devolução e a troca seguem com a trava por `pg_advisory_xact_lock` do vendedor delas (outra trava, sem volta com a nova). Teste paralelo com tempo limite de 10 s para venda, devolução, troca e envio de remessa contra o início do acerto.
 
 ### 14. Idempotência
 
@@ -352,3 +358,4 @@ As dúvidas para a dona, cada uma com o padrão seguro adotado, estão em [fase-
 - **11/11/2026:** proposto (tarefa 7.1, PR 73).
 - **13/11/2026:** aceito pelo responsável com quatro mudanças (tarefa 7.1b): não existe entrada (itens 8 e 9, C2, exemplo); não existe cheque (item 10, tabelas `cheques` e `eventos_cheque`, `CHEQUE_COMPENSADO`, conta a receber de cheque devolvido, C6); formas do repasse `DINHEIRO`, `PIX` ("Transferência") e `BOLETO`, e as mesmas no pagamento a fornecedor; comissão por meta de 700.000 Gs com 30% ou 40% sobre o total, no lugar do percentual por vendedor (item 5, exemplo do item 18 refeito). A última migração passou a ser a V040.
 - **14/11/2026:** item 7 implementado no nível 1 (tarefa 7.3).
+- **14/11/2026:** itens 2, 3, 4, 13, 14, 15 e 16 implementados na parte 1 do acerto, sem dinheiro (tarefa 7.4; V043).
