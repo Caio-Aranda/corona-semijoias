@@ -1,6 +1,7 @@
 package br.com.coronasemijoias.api.compras;
 
 import br.com.coronasemijoias.api.auditoria.ServicoDeAuditoria;
+import br.com.coronasemijoias.api.contaspagar.ServicoDeContasAPagar;
 import br.com.coronasemijoias.api.auditoria.ServicoDeAuditoria.Ator;
 import br.com.coronasemijoias.api.cadastros.Validacoes;
 import br.com.coronasemijoias.api.comum.dinheiro.Dinheiro;
@@ -70,9 +71,11 @@ public class ServicoDeCompras {
     private final CustosDosProdutos custos;
     private final ServicoDeAuditoria auditoria;
     private final Clock relogio;
+    private final ServicoDeContasAPagar contasAPagar;
 
     ServicoDeCompras(JdbcTemplate jdbc, ServicoDeEstoque estoque, CodigosDosProdutos codigos, CustosDosProdutos custos,
-            ServicoDeAuditoria auditoria, Clock relogio) {
+            ServicoDeAuditoria auditoria, Clock relogio, ServicoDeContasAPagar contasAPagar) {
+        this.contasAPagar = contasAPagar;
         this.jdbc = jdbc;
         this.estoque = estoque;
         this.codigos = codigos;
@@ -316,6 +319,8 @@ public class ServicoDeCompras {
                 UPDATE corona.compras SET situacao = 'ESTORNADA', estorno_id = ?, estorno_motivo = ?, estornada_em = ?,
                        estornada_por = ? WHERE id = ?""", idDoPedido, motivoLimpo, Timestamp.from(relogio.instant()), usuarioId,
                 compraId);
+        // A última trava da ordem do ADR-0012 (item 13): as contas da compra, depois do estoque. O que está em aberto é cancelado.
+        contasAPagar.cancelarAbertasDaCompra(compraId, motivoLimpo, usuarioId);
         auditoria.registrar(Ator.usuario(usuarioId), "COMPRA_ESTORNADA", "compras", compraId,
                 Map.of("situacao", "REGISTRADA"), Map.of("situacao", "ESTORNADA", "motivo", motivoLimpo));
         return new Resultado(compraId, false);
