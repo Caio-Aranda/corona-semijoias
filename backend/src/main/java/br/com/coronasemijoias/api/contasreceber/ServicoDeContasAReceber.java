@@ -295,6 +295,32 @@ public class ServicoDeContasAReceber {
         return new Resultado(estornoId, vendaId, false);
     }
 
+    // --- estorno da venda ---
+
+    /**
+     * Cancela o que está em aberto de cada parcela da venda, da última para a primeira, por baixa {@code CANCELAMENTO}
+     * (motivo {@code ESTORNO_VENDA}); o que já foi pago continua pago (o dinheiro volta pelo reembolso da venda). Chamado
+     * pelo estorno da venda, que já travou a remessa e a venda (ordem de travas: remessa, venda, créditos, parcelas).
+     * Devolve o valor cancelado.
+     */
+    @Transactional
+    public BigDecimal cancelarEmAberto(UUID vendaId, Instant momento) {
+        Instant hora = momento == null ? relogio.instant() : momento;
+        BigDecimal cancelado = BigDecimal.ZERO.setScale(Dinheiro.ESCALA);
+        for (Conta c : trancarContas(vendaId).stream().sorted(Comparator.comparing(Conta::parcela).reversed()).toList()) {
+            BigDecimal aberto = c.emAberto();
+            if (aberto.signum() <= 0) {
+                continue;
+            }
+            jdbc.update("""
+                    INSERT INTO corona.baixas_receber (id, conta_id, tipo, valor, baixada_em, motivo_cancelamento)
+                    VALUES (?, ?, 'CANCELAMENTO', ?, ?, 'ESTORNO_VENDA')""", UuidV7.gerar(), c.id(), aberto, Timestamp.from(hora));
+            atualizarAtalhos(c, c.pago(), c.cancelado().add(aberto));
+            cancelado = cancelado.add(aberto);
+        }
+        return cancelado;
+    }
+
     // --- internos ---
 
     /** Uma parcela travada, com o que já foi pago e cancelado. */
