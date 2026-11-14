@@ -235,3 +235,8 @@ Issue #151, PR 168 (tarefa crítica: plano aprovado no PR, as decisões 1 a 11 c
 
 - As telas de contas a pagar, caixa e o botão Fechar semana (7.10); as conciliações com rota (7.8); os relatórios (7.12).
 - Refazer o parcelamento de uma compra (hoje só desfazendo a compra), cheque, cartão, entrada, multa e juros (fora do escopo).
+
+## Tarefa 7.8: conciliações da Fase 7
+
+Issue #152 (tarefa crítica). Plano publicado no PR, esperando aprovação da orquestradora; nenhum código ainda.
+
