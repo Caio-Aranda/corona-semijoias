@@ -101,10 +101,12 @@ export const TEXTOS = {
     textoCarregando: 'Buscando a sua maleta...',
     vazia: 'Você ainda não tem maleta com peças. Quando a dona enviar uma, ela aparece aqui.',
     conferir: 'Conferir maleta',
-    situacao: { ENVIADA: 'Enviada', CONFERIDA: 'Conferida', EM_ACERTO: 'Em acerto' } as Record<
-      string,
-      string
-    >,
+    situacao: {
+      ENVIADA: 'Enviada',
+      CONFERIDA: 'Conferida',
+      EM_ACERTO: 'Em acerto',
+      ACERTADA: 'Acertada',
+    } as Record<string, string>,
     tipo: { NOVA: 'Maleta', REPOSICAO: 'Reposição' } as Record<string, string>,
     pecas: 'peças com você',
     colunas: {

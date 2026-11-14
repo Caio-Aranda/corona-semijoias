@@ -139,6 +139,14 @@ export type CodigosEmConflitoLinha = {
     tipo?: string;
 };
 
+export type ComissaoFechada = {
+    base?: string;
+    percentual?: string;
+    tipo?: string;
+    valor?: string;
+    vendaId?: string;
+};
+
 export type ComprasDaDonaControllerRespostaDaPeca = {
     codigo?: string;
     fotoPrincipal?: FotoPrincipal;
@@ -213,6 +221,12 @@ export type ConsultasDaConferenciaLinha = {
     esperado?: number;
     produtoId?: string;
     produtoNome?: string;
+};
+
+export type ConsultasDeAcertosContagem = {
+    estadoPeca?: string;
+    produto?: ConsultasDeAcertosProduto;
+    quantidade?: number;
 };
 
 export type ConsultasDeAcertosMaleta = {
@@ -316,6 +330,31 @@ export type ConsultasDeVendasPeca = {
     nome?: string;
 };
 
+export type ConsultasDeVendasVenda = {
+    aReceber?: string;
+    clienteId?: string;
+    clienteNome?: string;
+    cotacao?: ConsultasDeVendasCotacao;
+    desconto?: string;
+    devolvido?: string;
+    estornadaEm?: string;
+    id?: string;
+    itens?: Array<ConsultasDeVendasItem>;
+    motivoDoEstorno?: string;
+    pagamentos?: Array<PagamentoLido>;
+    pago?: string;
+    parcelas?: Array<ParcelaDaVenda>;
+    remessaId?: string;
+    status?: string;
+    subtotal?: string;
+    total?: string;
+    totalDolar?: string;
+    totalGuarani?: string;
+    trocaId?: string;
+    vendedorId?: string;
+    vendidaEm?: string;
+};
+
 export type ContaDaDona = {
     clienteId?: string;
     clienteNome?: string;
@@ -332,12 +371,6 @@ export type ContaDaDona = {
     vendaId?: string;
     vendedorId?: string;
     vendedorNome?: string;
-};
-
-export type Contagem = {
-    estadoPeca?: string;
-    produto?: ConsultasDeAcertosProduto;
-    quantidade?: number;
 };
 
 export type ContatoDoVendedorDados = {
@@ -437,6 +470,28 @@ export type DadosDoUsuario = {
     vendedorId?: string;
 };
 
+export type DecisaoDeCobranca = {
+    decisao?: string;
+    motivo?: string;
+    origemId?: string;
+};
+
+export type DecisaoDeDefeito = {
+    aprovadas?: number;
+    produtoId?: string;
+};
+
+export type DecisaoDeFalta = {
+    decisao?: string;
+    motivo?: string;
+    produtoId?: string;
+};
+
+export type DecisaoDePendenciaAntiga = {
+    decisao?: string;
+    pendenciaId?: string;
+};
+
 export type Devolucao = {
     autorizacaoId?: string;
     canceladaEm?: string;
@@ -471,11 +526,6 @@ export type Devolucao = {
 
 export type DevolucoesDaDonaControllerPedidoDeRevisao = {
     observacao?: string;
-};
-
-export type DoVendedor = {
-    nome?: string;
-    quantidade?: number;
 };
 
 export type DocumentoDoVendedorResposta = {
@@ -577,10 +627,42 @@ export type EstoqueDaDonaControllerRespostaDoMovimento = {
     usuarioId?: string;
 };
 
+export type EventoFechado = {
+    origemId?: string;
+    tipo?: string;
+    valor?: string;
+    vendaId?: string;
+};
+
+export type Fechamento = {
+    comissao?: string;
+    comissoes?: Array<ComissaoFechada>;
+    cotacaoData?: string;
+    cotacaoId?: string;
+    descontos?: string;
+    devolvido?: string;
+    eventos?: Array<EventoFechado>;
+    faltasCobradas?: string;
+    fechadoEm?: string;
+    ficouDevendo?: string;
+    itens?: Array<ItemFechado>;
+    liquido?: string;
+    metaGuarani?: number;
+    pendencias?: Array<PendenciaFechada>;
+    percentualComissao?: string;
+    pygVenda?: string;
+    recebidoNoAcerto?: string;
+    usdVenda?: string;
+    vendidoBruto?: string;
+    vendidoLiquido?: string;
+    vendidoParaMetaGuarani?: number;
+};
+
 export type FichaDaDona = {
-    contagem?: Array<Contagem>;
+    contagem?: Array<ConsultasDeAcertosContagem>;
     desistidoEm?: string;
     enviosAguardando?: number;
+    fechamento?: Fechamento;
     id?: string;
     iniciadoEm?: string;
     leituras?: Array<LeituraDaDona>;
@@ -630,6 +712,13 @@ export type Garantia = {
     prazoArrependimentoDias?: number;
     prazoDefeitoDias?: number;
     valorAprovacaoReembolso?: string;
+};
+
+export type ImportacaoDeFotosPrevia = {
+    ambiguas?: Array<Ambigua>;
+    associadas?: Array<Associada>;
+    produtosSemFoto?: ProdutosSemFoto;
+    semProduto?: Array<SemProduto>;
 };
 
 export type ImportacaoDeFotosRelatorio = {
@@ -702,6 +791,17 @@ export type ItemDaNota = {
     produtoId?: string;
     quantidade?: number;
     subtotal?: string;
+};
+
+export type ItemFechado = {
+    contadoBoa?: number;
+    contadoDefeito?: number;
+    defeitoAprovado?: number;
+    esperado?: number;
+    falta?: number;
+    precoRemessa?: string;
+    produto?: ConsultasDeAcertosProduto;
+    remessaId?: string;
 };
 
 export type JsonNode = {
@@ -1410,6 +1510,11 @@ export type PecaDevolvida = {
     quantidade?: number;
 };
 
+export type PecasEmMaletasDoVendedor = {
+    nome?: string;
+    quantidade?: number;
+};
+
 export type PedidoComMotivo = {
     motivo?: string;
 };
@@ -1492,6 +1597,15 @@ export type PedidoDeEstornoDeRecebimento = {
     motivo?: string;
 };
 
+export type PedidoDeFechamento = {
+    cobrancas?: Array<DecisaoDeCobranca>;
+    defeitos?: Array<DecisaoDeDefeito>;
+    faltas?: Array<DecisaoDeFalta>;
+    id?: string;
+    liquidoMostrado?: string;
+    pendenciasAntigas?: Array<DecisaoDePendenciaAntiga>;
+};
+
 export type PedidoDeGarantia = {
     limiteReembolsoSemanal?: string;
     percentualAlertaDevolucao: number;
@@ -1565,6 +1679,12 @@ export type PedidoDeRenovacao = {
     tokenDeRenovacao: string;
 };
 
+export type PedidoDeResolucao = {
+    acao?: string;
+    id?: string;
+    motivo?: string;
+};
+
 export type PedidoDeSituacao = {
     version?: number;
 };
@@ -1628,6 +1748,32 @@ export type PedidoParaFechar = {
     zerarNaoLidos?: boolean;
 };
 
+export type Pendencia = {
+    acertoId?: string;
+    cobradaNoAcertoId?: string;
+    id?: string;
+    motivo?: string;
+    produtoId?: string;
+    produtoNome?: string;
+    quantidade?: number;
+    resolvidaEm?: string;
+    status?: string;
+    tipo?: string;
+    valor?: string;
+    vendedorId?: string;
+    vendedorNome?: string;
+};
+
+export type PendenciaFechada = {
+    cobradaNoAcertoId?: string;
+    id?: string;
+    produto?: ConsultasDeAcertosProduto;
+    quantidade?: number;
+    status?: string;
+    tipo?: string;
+    valor?: string;
+};
+
 export type Pessoa = {
     codigo?: number;
     id?: string;
@@ -1644,13 +1790,6 @@ export type PracasDaDonaControllerResposta = {
     id?: string;
     nome?: string;
     version?: number;
-};
-
-export type Previa = {
-    ambiguas?: Array<Ambigua>;
-    associadas?: Array<Associada>;
-    produtosSemFoto?: ProdutosSemFoto;
-    semProduto?: Array<SemProduto>;
 };
 
 export type ProdutoSemFoto = {
@@ -1673,7 +1812,7 @@ export type ProdutosDaDonaControllerResposta = {
     precoCusto?: string;
     precoVenda?: string;
     referencia?: string;
-    vendedoresEmMaletas?: Array<DoVendedor>;
+    vendedoresEmMaletas?: Array<PecasEmMaletasDoVendedor>;
     version?: number;
 };
 
@@ -2083,7 +2222,7 @@ export type RespostaDaFicha = {
     historico?: PaginaEstoqueDaDonaControllerRespostaDaLinha;
     produto?: RespostaDoProduto;
     saldo?: number;
-    vendedoresEmMaletas?: Array<DoVendedor>;
+    vendedoresEmMaletas?: Array<PecasEmMaletasDoVendedor>;
 };
 
 export type RespostaDaFoto = {
@@ -2180,7 +2319,7 @@ export type RespostaDoAbaixoDoMinimo = {
     minimo?: number;
     produto?: RespostaDoProduto;
     saldo?: number;
-    vendedoresEmMaletas?: Array<DoVendedor>;
+    vendedoresEmMaletas?: Array<PecasEmMaletasDoVendedor>;
 };
 
 export type RespostaDoEmAberto = {
@@ -2277,6 +2416,12 @@ export type SemanasDaDonaControllerResposta = {
     version?: number;
 };
 
+export type ServicoDaComissaoComissao = {
+    metaGuarani?: number;
+    percentualAbaixoDaMeta?: number;
+    percentualNaMeta?: number;
+};
+
 export type ServicoDeAcertosPedidoDeLeitura = {
     estadoPeca?: string;
     id?: string;
@@ -2365,31 +2510,6 @@ export type ValorSubstituido = {
     id?: string;
     quando?: string;
     quemMudou?: string;
-};
-
-export type Venda = {
-    aReceber?: string;
-    clienteId?: string;
-    clienteNome?: string;
-    cotacao?: ConsultasDeVendasCotacao;
-    desconto?: string;
-    devolvido?: string;
-    estornadaEm?: string;
-    id?: string;
-    itens?: Array<ConsultasDeVendasItem>;
-    motivoDoEstorno?: string;
-    pagamentos?: Array<PagamentoLido>;
-    pago?: string;
-    parcelas?: Array<ParcelaDaVenda>;
-    remessaId?: string;
-    status?: string;
-    subtotal?: string;
-    total?: string;
-    totalDolar?: string;
-    totalGuarani?: string;
-    trocaId?: string;
-    vendedorId?: string;
-    vendidaEm?: string;
 };
 
 export type VendaComAPeca = {
@@ -2649,6 +2769,64 @@ export type DesistirDoAcertoResponses = {
 };
 
 export type DesistirDoAcertoResponse = DesistirDoAcertoResponses[keyof DesistirDoAcertoResponses];
+
+export type PreviaDoFechamentoData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/acertos/{id}/fechamento';
+};
+
+export type PreviaDoFechamentoResponses = {
+    /**
+     * OK
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type PreviaDoFechamentoResponse = PreviaDoFechamentoResponses[keyof PreviaDoFechamentoResponses];
+
+export type PreviaDoFechamentoComDecisoesData = {
+    body: PedidoDeFechamento;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/acertos/{id}/fechamento/previa';
+};
+
+export type PreviaDoFechamentoComDecisoesResponses = {
+    /**
+     * OK
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type PreviaDoFechamentoComDecisoesResponse = PreviaDoFechamentoComDecisoesResponses[keyof PreviaDoFechamentoComDecisoesResponses];
+
+export type FecharAcertoData = {
+    body: PedidoDeFechamento;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/acertos/{id}/fechar';
+};
+
+export type FecharAcertoResponses = {
+    /**
+     * OK
+     */
+    200: FichaDaDona;
+};
+
+export type FecharAcertoResponse = FecharAcertoResponses[keyof FecharAcertoResponses];
 
 export type RegistrarLeituraDoAcertoData = {
     body: ServicoDeAcertosPedidoDeLeitura;
@@ -3155,6 +3333,38 @@ export type Desfazer1Responses = {
 };
 
 export type Desfazer1Response = Desfazer1Responses[keyof Desfazer1Responses];
+
+export type LerComissaoData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/dona/configuracoes/comissao';
+};
+
+export type LerComissaoResponses = {
+    /**
+     * OK
+     */
+    200: ServicoDaComissaoComissao;
+};
+
+export type LerComissaoResponse = LerComissaoResponses[keyof LerComissaoResponses];
+
+export type AlterarComissaoData = {
+    body: ServicoDaComissaoComissao;
+    path?: never;
+    query?: never;
+    url: '/api/dona/configuracoes/comissao';
+};
+
+export type AlterarComissaoResponses = {
+    /**
+     * OK
+     */
+    200: ServicoDaComissaoComissao;
+};
+
+export type AlterarComissaoResponse = AlterarComissaoResponses[keyof AlterarComissaoResponses];
 
 export type LerGarantiaData = {
     body?: never;
@@ -3952,6 +4162,43 @@ export type LerResponses = {
 
 export type LerResponse = LerResponses[keyof LerResponses];
 
+export type ListarPendenciasDoAcertoData = {
+    body?: never;
+    path?: never;
+    query?: {
+        vendedorId?: string;
+        status?: string;
+    };
+    url: '/api/dona/pendencias-acerto';
+};
+
+export type ListarPendenciasDoAcertoResponses = {
+    /**
+     * OK
+     */
+    200: Array<Pendencia>;
+};
+
+export type ListarPendenciasDoAcertoResponse = ListarPendenciasDoAcertoResponses[keyof ListarPendenciasDoAcertoResponses];
+
+export type ResolverPendenciaDoAcertoData = {
+    body: PedidoDeResolucao;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/pendencias-acerto/{id}/resolver';
+};
+
+export type ResolverPendenciaDoAcertoResponses = {
+    /**
+     * OK
+     */
+    200: Pendencia;
+};
+
+export type ResolverPendenciaDoAcertoResponse = ResolverPendenciaDoAcertoResponses[keyof ResolverPendenciaDoAcertoResponses];
+
 export type Listar7Data = {
     body?: never;
     path?: never;
@@ -4163,7 +4410,7 @@ export type PreviaResponses = {
     /**
      * OK
      */
-    200: Previa;
+    200: ImportacaoDeFotosPrevia;
 };
 
 export type PreviaResponse = PreviaResponses[keyof PreviaResponses];
@@ -4475,7 +4722,7 @@ export type EstornarRecebimentoDeClienteResponses = {
     /**
      * OK
      */
-    200: Venda;
+    200: ConsultasDeVendasVenda;
 };
 
 export type EstornarRecebimentoDeClienteResponse = EstornarRecebimentoDeClienteResponses[keyof EstornarRecebimentoDeClienteResponses];
@@ -6101,7 +6348,7 @@ export type VerVendaResponses = {
     /**
      * OK
      */
-    200: Venda;
+    200: ConsultasDeVendasVenda;
 };
 
 export type VerVendaResponse = VerVendaResponses[keyof VerVendaResponses];
@@ -6119,7 +6366,7 @@ export type EstornarVendaResponses = {
     /**
      * OK
      */
-    200: Venda;
+    200: ConsultasDeVendasVenda;
 };
 
 export type EstornarVendaResponse = EstornarVendaResponses[keyof EstornarVendaResponses];

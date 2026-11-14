@@ -61,6 +61,14 @@ export type ClientesDoVendedorCliente = {
     whatsapp?: string;
 };
 
+export type ComissaoFechada = {
+    base?: string;
+    percentual?: string;
+    tipo?: string;
+    valor?: string;
+    vendaId?: string;
+};
+
 export type ConsultasDaConferenciaConferencia = {
     conferidaEm?: string;
     divergencias?: number;
@@ -107,6 +115,12 @@ export type ConsultasDaMaletaDoVendedorPeca = {
     fotoHash?: string;
     id?: string;
     nome?: string;
+};
+
+export type ConsultasDeAcertosContagem = {
+    estadoPeca?: string;
+    produto?: ConsultasDeAcertosProduto;
+    quantidade?: number;
 };
 
 export type ConsultasDeAcertosLeitura = {
@@ -170,10 +184,29 @@ export type ConsultasDeVendasPeca = {
     nome?: string;
 };
 
-export type Contagem = {
-    estadoPeca?: string;
-    produto?: ConsultasDeAcertosProduto;
-    quantidade?: number;
+export type ConsultasDeVendasVenda = {
+    aReceber?: string;
+    clienteId?: string;
+    clienteNome?: string;
+    cotacao?: ConsultasDeVendasCotacao;
+    desconto?: string;
+    devolvido?: string;
+    estornadaEm?: string;
+    id?: string;
+    itens?: Array<ConsultasDeVendasItem>;
+    motivoDoEstorno?: string;
+    pagamentos?: Array<PagamentoLido>;
+    pago?: string;
+    parcelas?: Array<ParcelaDaVenda>;
+    remessaId?: string;
+    status?: string;
+    subtotal?: string;
+    total?: string;
+    totalDolar?: string;
+    totalGuarani?: string;
+    trocaId?: string;
+    vendedorId?: string;
+    vendidaEm?: string;
 };
 
 export type CotacaoDoVendedor = {
@@ -273,9 +306,41 @@ export type DiferencasNaConferencia = {
     tabelas: Array<string>;
 };
 
+export type EventoFechado = {
+    origemId?: string;
+    tipo?: string;
+    valor?: string;
+    vendaId?: string;
+};
+
+export type Fechamento = {
+    comissao?: string;
+    comissoes?: Array<ComissaoFechada>;
+    cotacaoData?: string;
+    cotacaoId?: string;
+    descontos?: string;
+    devolvido?: string;
+    eventos?: Array<EventoFechado>;
+    faltasCobradas?: string;
+    fechadoEm?: string;
+    ficouDevendo?: string;
+    itens?: Array<ItemFechado>;
+    liquido?: string;
+    metaGuarani?: number;
+    pendencias?: Array<PendenciaFechada>;
+    percentualComissao?: string;
+    pygVenda?: string;
+    recebidoNoAcerto?: string;
+    usdVenda?: string;
+    vendidoBruto?: string;
+    vendidoLiquido?: string;
+    vendidoParaMetaGuarani?: number;
+};
+
 export type FichaDoVendedor = {
-    contagem?: Array<Contagem>;
+    contagem?: Array<ConsultasDeAcertosContagem>;
     desistidoEm?: string;
+    fechamento?: Fechamento;
     id?: string;
     iniciadoEm?: string;
     leituras?: Array<ConsultasDeAcertosLeitura>;
@@ -303,6 +368,17 @@ export type ItemDaDevolucao = {
     produto?: ConsultasDeVendasPeca;
     quantidade?: number;
     valor?: string;
+};
+
+export type ItemFechado = {
+    contadoBoa?: number;
+    contadoDefeito?: number;
+    defeitoAprovado?: number;
+    esperado?: number;
+    falta?: number;
+    precoRemessa?: string;
+    produto?: ConsultasDeAcertosProduto;
+    remessaId?: string;
 };
 
 export type JsonNode = {
@@ -547,6 +623,16 @@ export type PedidoDoParcelamento = {
     quantidade?: number;
 };
 
+export type PendenciaFechada = {
+    cobradaNoAcertoId?: string;
+    id?: string;
+    produto?: ConsultasDeAcertosProduto;
+    quantidade?: number;
+    status?: string;
+    tipo?: string;
+    valor?: string;
+};
+
 export type RelatorioAReceber = {
     clientes?: Array<Devedor>;
     totais?: Totais;
@@ -651,6 +737,16 @@ export type ResumoDoVendedor = {
     status?: string;
 };
 
+export type ServicoDaComissaoPrevia = {
+    comissaoPrevista?: string;
+    cotacaoData?: string;
+    faltaParaMetaGuarani?: number;
+    faltaParaMetaReais?: string;
+    metaGuarani?: number;
+    percentualQueValeriaHoje?: string;
+    vendidoParaMetaGuarani?: number;
+};
+
 export type ServicoDeAcertosPedidoDeLeitura = {
     estadoPeca?: string;
     id?: string;
@@ -745,31 +841,6 @@ export type UsoDoCredito = {
 
 export type ValorDeTeste = {
     valor?: string;
-};
-
-export type Venda = {
-    aReceber?: string;
-    clienteId?: string;
-    clienteNome?: string;
-    cotacao?: ConsultasDeVendasCotacao;
-    desconto?: string;
-    devolvido?: string;
-    estornadaEm?: string;
-    id?: string;
-    itens?: Array<ConsultasDeVendasItem>;
-    motivoDoEstorno?: string;
-    pagamentos?: Array<PagamentoLido>;
-    pago?: string;
-    parcelas?: Array<ParcelaDaVenda>;
-    remessaId?: string;
-    status?: string;
-    subtotal?: string;
-    total?: string;
-    totalDolar?: string;
-    totalGuarani?: string;
-    trocaId?: string;
-    vendedorId?: string;
-    vendidaEm?: string;
 };
 
 export type VendaComAPeca = {
@@ -1092,6 +1163,22 @@ export type VerMeuClienteResponses = {
 
 export type VerMeuClienteResponse = VerMeuClienteResponses[keyof VerMeuClienteResponses];
 
+export type PreviaDaMinhaComissaoData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/vendedor/comissao/previa';
+};
+
+export type PreviaDaMinhaComissaoResponses = {
+    /**
+     * OK
+     */
+    200: ServicoDaComissaoPrevia;
+};
+
+export type PreviaDaMinhaComissaoResponse = PreviaDaMinhaComissaoResponses[keyof PreviaDaMinhaComissaoResponses];
+
 export type ListarMinhasContasAReceberData = {
     body?: never;
     path?: never;
@@ -1401,7 +1488,7 @@ export type EstornarRecebimentoDoVendedorResponses = {
     /**
      * OK
      */
-    200: Venda;
+    200: ConsultasDeVendasVenda;
 };
 
 export type EstornarRecebimentoDoVendedorResponse = EstornarRecebimentoDoVendedorResponses[keyof EstornarRecebimentoDoVendedorResponses];
@@ -1698,7 +1785,7 @@ export type ListarVendasDoVendedorResponses = {
     /**
      * OK
      */
-    200: Array<Venda>;
+    200: Array<ConsultasDeVendasVenda>;
 };
 
 export type ListarVendasDoVendedorResponse = ListarVendasDoVendedorResponses[keyof ListarVendasDoVendedorResponses];
@@ -1714,7 +1801,7 @@ export type VenderNaMaletaResponses = {
     /**
      * OK
      */
-    200: Venda;
+    200: ConsultasDeVendasVenda;
 };
 
 export type VenderNaMaletaResponse = VenderNaMaletaResponses[keyof VenderNaMaletaResponses];
@@ -1732,7 +1819,7 @@ export type VerVendaDoVendedorResponses = {
     /**
      * OK
      */
-    200: Venda;
+    200: ConsultasDeVendasVenda;
 };
 
 export type VerVendaDoVendedorResponse = VerVendaDoVendedorResponses[keyof VerVendaDoVendedorResponses];
@@ -1750,7 +1837,7 @@ export type EstornarVendaDoVendedorResponses = {
     /**
      * OK
      */
-    200: Venda;
+    200: ConsultasDeVendasVenda;
 };
 
 export type EstornarVendaDoVendedorResponse = EstornarVendaDoVendedorResponses[keyof EstornarVendaDoVendedorResponses];
@@ -1768,7 +1855,7 @@ export type ReceberDoClienteResponses = {
     /**
      * OK
      */
-    200: Venda;
+    200: ConsultasDeVendasVenda;
 };
 
 export type ReceberDoClienteResponse = ReceberDoClienteResponses[keyof ReceberDoClienteResponses];

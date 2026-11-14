@@ -4,7 +4,9 @@ import br.com.coronasemijoias.api.cadastros.Validacoes;
 import br.com.coronasemijoias.api.comum.erros.CodigoErro;
 import br.com.coronasemijoias.api.comum.erros.ErroDaApi;
 import br.com.coronasemijoias.api.remessas.SqlDaMaleta;
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -46,6 +48,32 @@ public class ConsultasDeAcertos {
             UUID dispositivoId, String lidaPorNome) {
     }
 
+    /** Uma peça do fechamento: esperado x contado de uma maleta (sem maleta = peças para a loja). O preço é o de venda, nunca o custo. */
+    public record ItemFechado(Produto produto, UUID remessaId, BigDecimal precoRemessa, int esperado, int contadoBoa, int contadoDefeito,
+            int falta, int defeitoAprovado) {
+    }
+
+    public record EventoFechado(String tipo, UUID origemId, UUID vendaId, BigDecimal valor) {
+    }
+
+    public record ComissaoFechada(UUID vendaId, String tipo, BigDecimal base, BigDecimal percentual, BigDecimal valor) {
+    }
+
+    public record PendenciaFechada(UUID id, String tipo, Produto produto, Integer quantidade, BigDecimal valor, String status,
+            UUID cobradaNoAcertoId) {
+    }
+
+    /**
+     * O que o fechamento gravou (acerto ACERTADO), tudo em Real; a cotação só para mostrar Dólar e Guarani. A soma da meta em
+     * Guarani é a única conversão gravada. Não traz quem fechou nem o resumo das decisões.
+     */
+    public record Fechamento(Instant fechadoEm, UUID cotacaoId, LocalDate cotacaoData, BigDecimal usdVenda, BigDecimal pygVenda,
+            int metaGuarani, BigDecimal percentualComissao, long vendidoParaMetaGuarani, BigDecimal vendidoBruto, BigDecimal descontos,
+            BigDecimal devolvido, BigDecimal vendidoLiquido, BigDecimal comissao, BigDecimal faltasCobradas, BigDecimal liquido,
+            BigDecimal recebidoNoAcerto, BigDecimal ficouDevendo, List<ItemFechado> itens, List<EventoFechado> eventos,
+            List<ComissaoFechada> comissoes, List<PendenciaFechada> pendencias) {
+    }
+
     /** A linha da lista de acertos da dona. */
     public record Resumo(UUID id, UUID vendedorId, String vendedorNome, UUID semanaId, int semanaNumero, String status,
             boolean pedidoPeloVendedor, Instant iniciadoEm, Instant desistidoEm, int maletas) {
@@ -59,7 +87,7 @@ public class ConsultasDeAcertos {
     /** O acerto como o vendedor vê. */
     public record FichaDoVendedor(UUID id, UUID vendedorId, UUID semanaId, int semanaNumero, String status,
             boolean pedidoPeloVendedor, Instant iniciadoEm, Instant desistidoEm, String motivoDesistencia, List<Maleta> maletas,
-            List<Contagem> contagem, List<Leitura> leituras) {
+            List<Contagem> contagem, List<Leitura> leituras, Fechamento fechamento) {
     }
 
     /**
@@ -69,7 +97,8 @@ public class ConsultasDeAcertos {
      */
     public record FichaDaDona(UUID id, UUID vendedorId, String vendedorNome, UUID semanaId, int semanaNumero, String status,
             boolean pedidoPeloVendedor, Instant iniciadoEm, Instant desistidoEm, String motivoDesistencia, List<Maleta> maletas,
-            List<Contagem> contagem, List<LeituraDaDona> leituras, int vendasQueChegaramDepoisDoInicio, Integer enviosAguardando) {
+            List<Contagem> contagem, List<LeituraDaDona> leituras, int vendasQueChegaramDepoisDoInicio, Integer enviosAguardando,
+            Fechamento fechamento) {
     }
 
     private final JdbcTemplate jdbc;
@@ -126,7 +155,7 @@ public class ConsultasDeAcertos {
                             rs.getInt("semana"), rs.getString("status"), rs.getBoolean("pedido_pelo_vendedor"),
                             instante(rs.getTimestamp("iniciado_em")), instante(rs.getTimestamp("desistido_em")),
                             rs.getString("motivo_desistencia"), maletas(id), contagem(id), leiturasDaDona(id),
-                            vendasDepoisDoInicio(id), enviosAguardando(vendedor));
+                            vendasDepoisDoInicio(id), enviosAguardando(vendedor), fechamento(id));
                 }, id);
     }
 
@@ -157,8 +186,66 @@ public class ConsultasDeAcertos {
                     return new FichaDoVendedor(id, vendedorId, rs.getObject("semana_id", UUID.class), rs.getInt("semana"),
                             rs.getString("status"), rs.getBoolean("pedido_pelo_vendedor"), instante(rs.getTimestamp("iniciado_em")),
                             instante(rs.getTimestamp("desistido_em")), rs.getString("motivo_desistencia"), maletas(id),
-                            contagem(id), leiturasDoVendedor(id));
+                            contagem(id), leiturasDoVendedor(id), fechamento(id));
                 }, id, vendedorId);
+    }
+
+    // --- o fechamento ---
+
+    /** O fechamento gravado, ou nulo se o acerto não está ACERTADO. */
+    public Fechamento fechamento(UUID acerto) {
+        return jdbc.query("""
+                SELECT a.fechado_em, a.cotacao_id, c.data_cotacao, c.usd_venda, c.pyg_venda, a.meta_guarani, a.percentual_comissao,
+                       a.vendido_para_meta_guarani, a.vendido_bruto, a.descontos, a.devolvido, a.vendido_liquido, a.comissao,
+                       a.faltas_cobradas, a.liquido, a.recebido_no_acerto, a.ficou_devendo
+                  FROM corona.acertos a JOIN corona.cotacoes c ON c.id = a.cotacao_id WHERE a.id = ? AND a.status = 'ACERTADO'""", rs -> {
+                    if (!rs.next()) {
+                        return null;
+                    }
+                    return new Fechamento(instante(rs.getTimestamp(1)), rs.getObject(2, UUID.class), rs.getObject(3, LocalDate.class),
+                            rs.getBigDecimal(4), rs.getBigDecimal(5), rs.getInt(6), rs.getBigDecimal(7), rs.getLong(8), rs.getBigDecimal(9),
+                            rs.getBigDecimal(10), rs.getBigDecimal(11), rs.getBigDecimal(12), rs.getBigDecimal(13), rs.getBigDecimal(14),
+                            rs.getBigDecimal(15), rs.getBigDecimal(16), rs.getBigDecimal(17), itensFechados(acerto), eventosFechados(acerto),
+                            comissoesFechadas(acerto), pendenciasFechadas(acerto));
+                }, acerto);
+    }
+
+    private static final String PRODUTO = """
+            p.id AS produto_id, p.nome, p.foto_principal_hash,
+            (SELECT c.codigo FROM corona.produto_codigos c WHERE c.produto_id = p.id AND c.ativo AND c.deleted_at IS NULL
+              ORDER BY c.principal DESC, c.codigo LIMIT 1) AS codigo""";
+
+    private List<ItemFechado> itensFechados(UUID acerto) {
+        return jdbc.query("SELECT i.remessa_id, i.preco_remessa, i.esperado, i.contado_boa, i.contado_defeito, i.falta, i.defeito_aprovado, "
+                + PRODUTO + " FROM corona.itens_acerto i JOIN corona.produtos p ON p.id = i.produto_id WHERE i.acerto_id = ? "
+                + "ORDER BY p.nome, i.produto_id, i.remessa_id NULLS FIRST",
+                (rs, n) -> new ItemFechado(new Produto(rs.getObject("produto_id", UUID.class), rs.getString("nome"), rs.getString("codigo"),
+                        rs.getString("foto_principal_hash")), rs.getObject("remessa_id", UUID.class), rs.getBigDecimal("preco_remessa"),
+                        rs.getInt("esperado"), rs.getInt("contado_boa"), rs.getInt("contado_defeito"), rs.getInt("falta"),
+                        rs.getInt("defeito_aprovado")), acerto);
+    }
+
+    private List<EventoFechado> eventosFechados(UUID acerto) {
+        return jdbc.query("SELECT origem_tipo, origem_id, venda_id, valor FROM corona.acerto_eventos WHERE acerto_id = ? ORDER BY sync_seq",
+                (rs, n) -> new EventoFechado(rs.getString(1), rs.getObject(2, UUID.class), rs.getObject(3, UUID.class), rs.getBigDecimal(4)),
+                acerto);
+    }
+
+    private List<ComissaoFechada> comissoesFechadas(UUID acerto) {
+        return jdbc.query("SELECT venda_id, tipo, base, percentual, valor FROM corona.comissoes WHERE acerto_id = ? ORDER BY sync_seq",
+                (rs, n) -> new ComissaoFechada(rs.getObject(1, UUID.class), rs.getString(2), rs.getBigDecimal(3), rs.getBigDecimal(4),
+                        rs.getBigDecimal(5)), acerto);
+    }
+
+    private List<PendenciaFechada> pendenciasFechadas(UUID acerto) {
+        return jdbc.query("SELECT x.id, x.tipo, x.quantidade, x.valor, x.status, x.cobrada_no_acerto_id, " + PRODUTO
+                + " FROM corona.pendencias_acerto x LEFT JOIN corona.produtos p ON p.id = x.produto_id "
+                + "WHERE x.acerto_id = ? OR x.cobrada_no_acerto_id = ? ORDER BY x.created_at, x.id",
+                (rs, n) -> new PendenciaFechada(rs.getObject("id", UUID.class), rs.getString("tipo"),
+                        rs.getObject("produto_id", UUID.class) == null ? null : new Produto(rs.getObject("produto_id", UUID.class),
+                                rs.getString("nome"), rs.getString("codigo"), rs.getString("foto_principal_hash")),
+                        (Integer) rs.getObject("quantidade"), rs.getBigDecimal("valor"), rs.getString("status"),
+                        rs.getObject("cobrada_no_acerto_id", UUID.class)), acerto, acerto);
     }
 
     // --- pedaços ---

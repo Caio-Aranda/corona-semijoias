@@ -4,6 +4,7 @@ import {
   MIGRACOES,
   TABELAS_DA_RECARGA_DIRIGIDA_V4,
   TABELAS_DA_RECARGA_DIRIGIDA_V6,
+  TABELAS_DA_RECARGA_DIRIGIDA_V7,
   TABELAS_SINCRONIZAVEIS,
   VERSAO_DO_BANCO,
 } from '../banco/migracoes';
@@ -22,6 +23,8 @@ import { ServidorFalso } from './testes/servidor-falso';
  * verdade, arquivo de verdade, servidor falso de verdade. Só o motor e o banco: pedir o acerto e bipar são online (§7.4) e
  * as telas são da 7.11.
  */
+
+const V7_NOVAS = TABELAS_DA_RECARGA_DIRIGIDA_V7.filter((t) => t !== 'acertos');
 
 const limpar: (() => void | Promise<void>)[] = [];
 afterEach(async () => {
@@ -76,7 +79,7 @@ describe('migração local 6', () => {
       db.close();
     });
     expect(Number(db.pragma('user_version', { simple: true }))).toBe(VERSAO_DO_BANCO);
-    expect(VERSAO_DO_BANCO).toBe(6);
+    expect(VERSAO_DO_BANCO).toBe(7);
     expect(contagem(db)).toEqual(contagemAntes);
     expect(db.prepare('SELECT * FROM outbox ORDER BY ordem').all()).toEqual(outboxAntes);
     for (const t of ['acertos', 'leituras_acerto'] as const) {
@@ -126,7 +129,7 @@ describe('migração local 6', () => {
     limpar.push(() => {
       m5.close();
     });
-    expect(tabelasDaRecargaDirigida(m5)).toEqual([...TABELAS_DA_RECARGA_DIRIGIDA_V6]);
+    expect(tabelasDaRecargaDirigida(m5)).toEqual([...TABELAS_DA_RECARGA_DIRIGIDA_V6, ...V7_NOVAS]);
 
     // Banco na versão 5 com cursor e uma marca antiga ainda de pé: as antigas primeiro, sem repetir.
     const d = criarBancoDeTeste();
@@ -147,13 +150,18 @@ describe('migração local 6', () => {
     limpar.push(() => {
       m5b.close();
     });
-    expect(tabelasDaRecargaDirigida(m5b)).toEqual(['contas_receber', 'acertos', 'leituras_acerto']);
+    expect(tabelasDaRecargaDirigida(m5b)).toEqual([
+      'contas_receber',
+      'acertos',
+      'leituras_acerto',
+      ...V7_NOVAS,
+    ]);
   });
 });
 
 describe('colunas do acerto no pull', () => {
   it('as duas tabelas novas estão na lista, com as colunas do servidor e sem custo nem quem fez', () => {
-    expect(TABELAS_SINCRONIZAVEIS).toHaveLength(27);
+    expect(TABELAS_SINCRONIZAVEIS).toHaveLength(31);
     expect(TABELAS_SINCRONIZAVEIS).toEqual(expect.arrayContaining(['acertos', 'leituras_acerto']));
     expect(COLUNAS_DO_PULL.acertos).toEqual([
       'vendedor_id',
@@ -163,6 +171,21 @@ describe('colunas do acerto no pull', () => {
       'iniciado_em',
       'desistido_em',
       'motivo_desistencia',
+      // Tarefa 7.5: o fechamento (nunca fechamento_id, o resumo das decisões nem quem fechou).
+      'fechado_em',
+      'cotacao_id',
+      'meta_guarani',
+      'percentual_comissao',
+      'vendido_para_meta_guarani',
+      'vendido_bruto',
+      'descontos',
+      'devolvido',
+      'vendido_liquido',
+      'comissao',
+      'faltas_cobradas',
+      'liquido',
+      'recebido_no_acerto',
+      'ficou_devendo',
     ]);
     expect(COLUNAS_DO_PULL.leituras_acerto).toEqual([
       'acerto_id',
@@ -273,7 +296,7 @@ describe('recarga dirigida depois da migração local 6', () => {
       db.close();
     });
     const { s, url } = await servidor();
-    expect(tabelasDaRecargaDirigida(db)).toEqual([...TABELAS_DA_RECARGA_DIRIGIDA_V6]);
+    expect(tabelasDaRecargaDirigida(db)).toEqual([...TABELAS_DA_RECARGA_DIRIGIDA_V6, ...V7_NOVAS]);
     const remessasAntes = contar(db, "SELECT 1 FROM remessas WHERE origem_local = 'SERVIDOR'");
 
     const acerto = idDeTeste(7);
@@ -322,7 +345,7 @@ describe('recarga dirigida depois da migração local 6', () => {
     // Primeiro ciclo: a 2ª tabela da marca cai. A 1ª já saiu da marca; nada foi apagado.
     s.cairNaTabela = { tabela: 'leituras_acerto', vezes: 1 };
     expect(await ciclo(db, url).executar()).toBe('falha');
-    expect(tabelasDaRecargaDirigida(db)).toEqual(['leituras_acerto']);
+    expect(tabelasDaRecargaDirigida(db)).toEqual(['leituras_acerto', ...V7_NOVAS]);
     expect(contar(db, 'SELECT 1 FROM acertos WHERE id = ?', acerto)).toBe(1);
     expect(contar(db, "SELECT 1 FROM remessas WHERE origem_local = 'SERVIDOR'")).toBe(
       remessasAntes,
@@ -364,5 +387,57 @@ describe('recarga dirigida depois da migração local 6', () => {
       s.pedidosPara('/api/vendedor/sync/pull').filter((p) => p.query.get('tabela')),
     ).toHaveLength(0);
     expect(TABELAS_DA_RECARGA_DIRIGIDA_V4).toHaveLength(3);
+  });
+});
+
+// --- tarefa 7.5: migração local 7 (o fechamento do acerto) ---
+
+describe('migração local 7 (fechamento do acerto)', () => {
+  const NOVAS_DO_FECHAMENTO = [
+    'itens_acerto',
+    'acerto_eventos',
+    'comissoes',
+    'pendencias_acerto',
+  ] as const;
+
+  it('banco v6 migra para a 7 sem perder nada, com as colunas novas do acerto e as quatro tabelas', () => {
+    const c = copiarExemplo(6);
+    limpar.push(c.apagar);
+    const antes = abrirBancoLocal({
+      caminho: c.caminho,
+      chave: CHAVE_DOS_EXEMPLOS,
+      migracoes: MIGRACOES.filter((m) => m.versao <= 6),
+    });
+    const outboxAntes = antes.prepare('SELECT * FROM outbox ORDER BY ordem').all();
+    const acertosAntes = contar(antes, 'SELECT 1 FROM acertos');
+    antes.close();
+
+    const db = abrirBancoLocal({ caminho: c.caminho, chave: CHAVE_DOS_EXEMPLOS });
+    limpar.push(() => {
+      db.close();
+    });
+    expect(Number(db.pragma('user_version', { simple: true }))).toBe(7);
+    expect(db.prepare('SELECT * FROM outbox ORDER BY ordem').all()).toEqual(outboxAntes);
+    expect(contar(db, 'SELECT 1 FROM acertos')).toBe(acertosAntes);
+    expect(colunasDe(db, 'acertos')).toEqual(
+      expect.arrayContaining(['origem_local', ...COLUNAS_DO_PULL.acertos]),
+    );
+    for (const t of NOVAS_DO_FECHAMENTO) {
+      expect(colunasDe(db, t), t).toEqual(
+        expect.arrayContaining(['origem_local', ...COLUNAS_DO_PULL[t]]),
+      );
+      expect(contar(db, `SELECT 1 FROM ${t}`)).toBe(0);
+      expect(TABELAS_SINCRONIZAVEIS).toContain(t);
+    }
+    // Já tinha cursor: a marca nasce com as cinco tabelas (o acerto ganhou colunas e as quatro são novas).
+    expect(tabelasDaRecargaDirigida(db)).toEqual(['acertos', ...NOVAS_DO_FECHAMENTO]);
+  });
+
+  it('nenhuma coluna de custo nem de quem fechou, decidiu ou resolveu', () => {
+    for (const t of ['acertos', ...NOVAS_DO_FECHAMENTO] as const) {
+      for (const coluna of COLUNAS_DO_PULL[t]) {
+        expect(coluna, `${t}.${coluna}`).not.toMatch(/custo|fornecedor|_por$|fechamento_id|conteudo/);
+      }
+    }
   });
 });

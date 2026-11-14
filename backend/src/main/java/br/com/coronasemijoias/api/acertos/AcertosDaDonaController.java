@@ -104,11 +104,12 @@ public class AcertosDaDonaController {
     @Operation(operationId = "previaDoFechamento", summary = "Prévia do fechamento do acerto",
             description = "Nada é gravado: esperado x contado por peça e maleta, sobras, faltas com valor, defeitos, eventos que vão entrar, "
                     + "devoluções em revisão (impedem), o que não foi aceito, pendências antigas, a comissão por venda, a soma da meta em "
-                    + "Guarani, o percentual, os totais e a cotação. Assume cobrar as faltas no acerto e não aprovar defeito; para outras "
+                    + "Guarani, o percentual, os totais e a cotação. Com o acerto já fechado, devolve o que foi gravado. Assume cobrar as faltas no acerto e não aprovar defeito; para outras "
                     + "decisões, use a prévia com decisões.")
     @GetMapping("/{id}/fechamento")
-    public Map<String, Object> previa(@PathVariable UUID id) {
-        return fechamento.previa(id, null);
+    public Object previa(@PathVariable UUID id) {
+        ConsultasDeAcertos.Fechamento gravado = consultas.fechamento(id);
+        return gravado != null ? gravado : fechamento.previa(id, null);
     }
 
     @Operation(operationId = "previaDoFechamentoComDecisoes", summary = "Prévia do fechamento com as decisões da dona",

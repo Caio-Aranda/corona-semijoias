@@ -378,4 +378,26 @@ class FechamentoDoAcertoTest extends ApoioDoFechamento {
         mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post(ACERTOS_DA_DONA + "/" + c.acerto() + "/fechar")
                 .contentType(org.springframework.http.MediaType.APPLICATION_JSON).content("{}")).andExpect(status().isUnauthorized());
     }
+
+    @Test
+    void aFichaDoAcertoFechadoMostraOFechamentoAoVendedorDonoSemCustoNemQuemFechouE404ParaOutro() throws Exception {
+        Cenario c = cenarioSimples(4, 1, "50.00");
+        bipar(c.acerto(), c.peca(), 2, "BOA");
+        fechar(c.acerto(), pedidoDeFechamento(UUID.randomUUID(), List.of(decisaoDeFalta(c.peca(), "COBRAR_NO_ACERTO", null)), List.of(), "85.00"))
+                .andExpect(status().isCreated());
+        JsonNode ficha = corpoDe(ler("/api/vendedor/acertos/" + c.acerto(), como(vendedor)).andExpect(status().isOk()));
+        JsonNode f = ficha.get("fechamento");
+        assertThat(f.get("liquido").asString()).isEqualTo("85.00");
+        assertThat(f.get("percentualComissao").asString()).isEqualTo("30.00");
+        assertThat(f.get("itens").size()).isEqualTo(1);
+        assertThat(f.get("eventos").size()).isEqualTo(1);
+        assertThat(f.get("comissoes").size()).isEqualTo(1);
+        assertThat(f.get("pendencias").size()).isEqualTo(1);
+        String texto = ficha.toString().toLowerCase();
+        assertThat(texto).doesNotContain("custo").doesNotContain("fechadopor").doesNotContain("conteudo");
+        // A dona vê a mesma coisa pela prévia do fechado.
+        assertThat(previa(c.acerto()).get("liquido").asString()).isEqualTo("85.00");
+        UsuarioDeTeste outro = usuarios.criarVendedor();
+        ler("/api/vendedor/acertos/" + c.acerto(), como(outro)).andExpect(status().isNotFound());
+    }
 }

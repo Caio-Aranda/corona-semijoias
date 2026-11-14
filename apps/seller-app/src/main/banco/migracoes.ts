@@ -351,6 +351,78 @@ INSERT INTO estado_sync (chave, valor)
   ON CONFLICT (chave) DO UPDATE SET valor = excluded.valor;
 `;
 
+/**
+ * As tabelas que a recarga dirigida da versão 7 traz de novo (tarefa 7.5): as quatro novas do fechamento e o acerto, que ganhou
+ * colunas (o computador que já tinha cursor não receberia o que o servidor gravou antes da migração).
+ */
+export const TABELAS_DA_RECARGA_DIRIGIDA_V7 = Object.freeze([
+  'acertos',
+  'itens_acerto',
+  'acerto_eventos',
+  'comissoes',
+  'pendencias_acerto',
+] as const);
+
+/**
+ * Versão 7 (tarefa 7.5; ADR-0012, itens 3.6, 5, 6 e 8): o fechamento do acerto. Colunas novas em `acertos` (os totais, a meta, o
+ * percentual e a soma em Guarani; nunca quem fechou nem o resumo das decisões) e as cópias de `itens_acerto`, `acerto_eventos`,
+ * `comissoes` e `pendencias_acerto` (só do vendedor dono). Dinheiro em texto, como o servidor manda; datas em texto ISO. Banco que
+ * já tinha cursor ganha a marca da recarga dirigida (somada à que ainda não terminou, sem repetir e na ordem).
+ */
+const V7 = `
+ALTER TABLE acertos ADD COLUMN fechado_em TEXT;
+ALTER TABLE acertos ADD COLUMN cotacao_id TEXT;
+ALTER TABLE acertos ADD COLUMN meta_guarani INTEGER;
+ALTER TABLE acertos ADD COLUMN percentual_comissao TEXT;
+ALTER TABLE acertos ADD COLUMN vendido_para_meta_guarani INTEGER;
+ALTER TABLE acertos ADD COLUMN vendido_bruto TEXT;
+ALTER TABLE acertos ADD COLUMN descontos TEXT;
+ALTER TABLE acertos ADD COLUMN devolvido TEXT;
+ALTER TABLE acertos ADD COLUMN vendido_liquido TEXT;
+ALTER TABLE acertos ADD COLUMN comissao TEXT;
+ALTER TABLE acertos ADD COLUMN faltas_cobradas TEXT;
+ALTER TABLE acertos ADD COLUMN liquido TEXT;
+ALTER TABLE acertos ADD COLUMN recebido_no_acerto TEXT;
+ALTER TABLE acertos ADD COLUMN ficou_devendo TEXT;
+
+CREATE TABLE itens_acerto (${CONTROLE},
+  acerto_id TEXT NOT NULL, produto_id TEXT, remessa_id TEXT, preco_remessa TEXT, esperado INTEGER, contado_boa INTEGER,
+  contado_defeito INTEGER, falta INTEGER, defeito_aprovado INTEGER
+);
+CREATE INDEX itens_acerto_do_acerto ON itens_acerto (acerto_id);
+
+CREATE TABLE acerto_eventos (${CONTROLE},
+  acerto_id TEXT NOT NULL, vendedor_id TEXT, origem_tipo TEXT, origem_id TEXT, venda_id TEXT, valor TEXT
+);
+CREATE INDEX acerto_eventos_do_acerto ON acerto_eventos (acerto_id);
+
+CREATE TABLE comissoes (${CONTROLE},
+  vendedor_id TEXT, acerto_id TEXT NOT NULL, venda_id TEXT, evento_id TEXT, tipo TEXT, base TEXT, percentual TEXT, valor TEXT,
+  estorna_id TEXT
+);
+CREATE INDEX comissoes_do_acerto ON comissoes (acerto_id);
+
+CREATE TABLE pendencias_acerto (${CONTROLE},
+  acerto_id TEXT NOT NULL, vendedor_id TEXT, tipo TEXT, produto_id TEXT, remessa_id TEXT, quantidade INTEGER, valor TEXT,
+  origem_tipo TEXT, origem_id TEXT, status TEXT, cobrada_no_acerto_id TEXT, resolvida_em TEXT
+);
+CREATE INDEX pendencias_acerto_do_acerto ON pendencias_acerto (acerto_id);
+
+INSERT INTO estado_sync (chave, valor)
+  SELECT 'recarga_dirigida', lista FROM (
+    SELECT json_group_array(t) AS lista FROM (
+      SELECT t FROM (
+        SELECT key AS k, value AS t FROM json_each(
+          coalesce((SELECT valor FROM estado_sync WHERE chave = 'recarga_dirigida'), '[]'))
+        UNION ALL
+        SELECT 1000 + key AS k, value AS t FROM json_each('${JSON.stringify(TABELAS_DA_RECARGA_DIRIGIDA_V7)}')
+      ) GROUP BY t ORDER BY min(k)
+    )
+  )
+   WHERE EXISTS (SELECT 1 FROM estado_sync WHERE chave = 'cursor' AND valor IS NOT NULL)
+  ON CONFLICT (chave) DO UPDATE SET valor = excluded.valor;
+`;
+
 export const MIGRACOES: readonly MigracaoLocal[] = Object.freeze([
   {
     versao: 1,
@@ -382,6 +454,11 @@ export const MIGRACOES: readonly MigracaoLocal[] = Object.freeze([
     versao: 6,
     descricao: 'acerto e a contagem dele (iniciar, contar e desistir) e a recarga dirigida',
     sql: V6,
+  },
+  {
+    versao: 7,
+    descricao: 'fechamento do acerto (totais, comissão, itens, eventos e pendências) e a recarga dirigida',
+    sql: V7,
   },
 ]);
 
@@ -420,4 +497,9 @@ export const TABELAS_SINCRONIZAVEIS = Object.freeze([
   // Fase 7 (tarefa 7.4, migração local 6).
   'acertos',
   'leituras_acerto',
+  // Fase 7 (tarefa 7.5, migração local 7).
+  'itens_acerto',
+  'acerto_eventos',
+  'comissoes',
+  'pendencias_acerto',
 ] as const);
