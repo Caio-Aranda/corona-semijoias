@@ -1,6 +1,6 @@
 # Especificação completa: Sistema de Semijoias Consignadas
 
-Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.12, 13/11/2026.
+Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.14, 13/11/2026.
 
 ## 1. Objetivo e contexto
 
@@ -32,7 +32,7 @@ O cliente enviou fotos de um sistema existente (parece Delphi, marca MCB) como r
 **Gerenciamento Semanal:** barra de botões no topo (Novo Pedido, Cobrança, Reposição, Troca, Vendedoras, Estoque), filtros (Semana nº, Promotor, Praça, Situação) e duas abas.
 
 - Aba **Pedidos**, com grade: Nota nº, Vendedora, Dt Cobrança, Valor DX, Valor DV, Valor VD, Comis %, Comissão, Valor Líq, Situação.
-- Aba **Totais**, em blocos: Consignado/Novos Pedidos (novas notas, total qtd, total, entrada), Consignado/Reposições (notas repostas, qtd, total), Consignado/Cobrança (notas cobradas, remarcadas, qtd e total de devolvidos e vendidos), Consignado/Acerto (descontos, total comissão, total líquido, pendência paga, pendências, desconto de entrada), Vendas (vendas, qtd, total, descontos, líquido), Vendas/Trocas (trocas em aberto, utilizadas, total de trocas), Total (total de notas, estoque, total de vendas, descontos, líquido) e Total/Acerto (dinheiro, cheque, entrada, Pix, boleto, total recebido).
+- Aba **Totais**, em blocos: Consignado/Novos Pedidos (novas notas, total qtd, total, entrada), Consignado/Reposições (notas repostas, qtd, total), Consignado/Cobrança (notas cobradas, remarcadas, qtd e total de devolvidos e vendidos), Consignado/Acerto (descontos, total comissão, total líquido, pendência paga, pendências, desconto de entrada), Vendas (vendas, qtd, total, descontos, líquido), Vendas/Trocas (trocas em aberto, utilizadas, total de trocas), Total (total de notas, estoque, total de vendas, descontos, líquido) e Total/Acerto (dinheiro, cheque, entrada, Pix, boleto, total recebido). **No sistema novo não há entrada nem cheque** (ADR-0012, aceito em 13/11/2026): "entrada", "desconto de entrada" e "cheque" ficam aqui só como registro da tela de referência e não viram campo, total nem forma de pagamento.
 
 **Cadastro de Vendedora (vira Vendedor):** barra de ações (salvar, etc.), abas Cadastro e Consulta. Campos: cadastrado por, promotor atual, praça atual, código, nome, data de cadastro, data de nascimento, sexo, estrangeiro, RG/IE/Doc, RG UF, CPF/CNPJ, naturalidade, escolaridade, telefone 1 e 2, WhatsApp, e-mail, Facebook, outras mídias sociais, **limite de consignação**, **restrição** (código e descrição), ativo. Sub-abas: Endereço (logradouro, número, complemento, bairro, CEP, cidade, local de referência, residência, valor), Filiação/Contato, Observação, Trabalho, Cônjuge, MEI, Referências, Documentos.
 
@@ -105,7 +105,7 @@ O app **nunca acessa o banco direto**, apenas a API. Segurança (ninguém tem a 
 5. O vendedor **só vende o que está na própria maleta**, nunca do estoque geral. Isso elimina quase todo conflito de estoque.
 6. O vendedor precisa estar **online** para receber a maleta e para fazer o acerto.
 7. O código de barras identifica o **modelo do produto**, e o controle é por quantidade, não por peça individual.
-8. Comissão é percentual por vendedor, calculado sobre o vendido no acerto (valor da venda, já com o desconto). **Resposta da dona (13/11/2026): comissão por meta**, a mesma para todos: vendas a partir de 700.000 Gs → 40%; abaixo → 30%. Detalhes ainda pendentes (§17, item 6); entra na Fase 7.
+8. **Comissão por meta** (resposta da dona em 13/11/2026; substitui o percentual por vendedor): calculada no acerto, sobre o valor de cada venda já com o desconto. Se o vendido da semana, somado em Guarani, chega a **700.000 Gs**, o percentual do acerto é **40%**; abaixo, **30%**, sempre **sobre o total**. A meta e os dois percentuais são os mesmos para todos os vendedores e a dona pode mudar. O `comissao_percentual` do cadastro do vendedor deixa de ser usado no cálculo. Regras completas na §7.4 e no ADR-0012 (item 5); entra na Fase 7.
 9. Acerto **semanal**.
 10. A **nota de remessa não tem validade fiscal**: é um documento interno em PDF.
 11. A loja imprime as próprias etiquetas de joia (código curto da loja, não EAN-13); cada peça tem também o código do fornecedor. EAN-13 é opcional (padrão seguro, a confirmar com a dona; ADR-0007).
@@ -182,8 +182,13 @@ Regras:
 1. O vendedor sincroniza as vendas, devoluções, trocas e pagamentos.
 2. Bipa as peças que sobraram.
 3. O servidor compara **esperado x contado**. Peça faltante vira **pendência financeira** para a dona resolver.
-4. Calcula descontos, comissão, valor líquido, reembolsos abatidos e pendências.
-5. Aceita pagamento do repasse em **dinheiro, Pix, cheque (com status), boleto e entrada**.
+4. Calcula descontos, comissão, valor líquido, reembolsos abatidos e pendências. A **comissão é por meta** (resposta da dona em 13/11/2026; ADR-0012, item 5):
+   - no fechamento, o servidor soma o **vendido líquido** das vendas ligadas ao acerto, **convertendo cada venda para Guarani pela cotação gravada na própria venda** (ADR-0006), cada uma arredondada sozinha;
+   - soma **≥ 700.000 Gs → 40%**; abaixo → **30%**. O percentual vale **sobre o total**, não só sobre o que passa da meta, e é **por semana** (um acerto por semana);
+   - a meta e os dois percentuais ficam em `configuracoes` (a dona pode mudar) e são iguais para todos os vendedores; o `comissao_percentual` do cadastro do vendedor **deixa de ser usado** no cálculo (a coluna continua no banco);
+   - com o percentual decidido, a comissão continua **por venda**, arredondada uma vez por venda, e o percentual fica gravado na linha. Estorno de venda de acerto já fechado usa o percentual **da linha original**;
+   - o app do vendedor mostra a prévia: quanto falta para a meta, em Guarani e em Real.
+5. Aceita pagamento do repasse do vendedor à loja em **dinheiro, transferência (gravada como `PIX`) e boleto**. **No sistema novo não existe entrada nem cheque** (ADR-0012, aceito em 13/11/2026); o acerto também não aceita cartão.
 6. Peças com defeito são aprovadas pela dona no acerto; as boas voltam ao estoque central.
 7. Estados: `EM_ACERTO → ACERTADA`. Semana fechada **não aceita mais alteração**.
 
@@ -191,12 +196,12 @@ Regras:
 
 - **Contas a receber** em dois níveis: (1) cliente final paga ao vendedor; (2) vendedor repassa à dona no acerto.
 - **Contas a pagar** a fornecedores, ligadas às compras.
-- **Lançamentos de caixa**, **comissões** (por vendedor e semana, pagas e a pagar), **cheques** (a compensar, compensado, devolvido), **reembolsos**.
+- **Lançamentos de caixa**, **comissões** (por vendedor e semana, pagas e a pagar), **reembolsos**. **Não existe controle de cheques** no sistema novo (ADR-0012, aceito em 13/11/2026).
 - O **servidor recalcula** totais, parcelas e comissão e nunca confia no que o app mandou. Preço, desconto e saldo são validados; divergência vira alerta, não rejeição silenciosa.
 - Valores em `NUMERIC(14,2)`, **nunca float**, com regra única de arredondamento: **HALF_UP com escala 2**.
 - Datas em UTC, exibidas em horário de Brasília.
 - **O preço de custo nunca chega ao PC do vendedor.**
-- O financeiro é completo, mas o sistema **não executa pagamentos**. As formas de pagamento (dinheiro, Pix, cheque, boleto e entrada) são só **registradas**: nenhuma é executada pelo sistema, e não há integração com banco, Pix ou maquininha.
+- O financeiro é completo, mas o sistema **não executa pagamentos**. As formas de pagamento são só **registradas**: nenhuma é executada pelo sistema, e não há integração com banco, Pix ou maquininha. O repasse do vendedor à loja aceita `DINHEIRO`, `PIX` (na tela, "Transferência") e `BOLETO`; o pagamento a fornecedor, dinheiro, transferência e boleto. **Não existe entrada nem cheque** no sistema novo; os valores `CHEQUE` e `CARTAO` que já existem no banco para o pagamento do cliente continuam aceitos (tarefa 6.13), mas não aparecem em tela nova.
 - **Três moedas.** A moeda padrão é o **Real**: todo valor é **gravado em Real** (`NUMERIC(14,2)`, regras do ADR-0002). Todo valor mostrado na tela, no app da dona e no do vendedor (acertos, relatórios, telas de valores, preço da peça), aparece **também em Dólar e em Guarani** (o Guarani sem centavos). A conversão é **só para mostrar** e nunca é gravada como valor de lançamento.
 - **Cotação diária.** Vale a cotação oficial do Banco Central, que o servidor busca online uma vez por dia útil e guarda dia a dia, como histórico: **nunca se apaga nem se corrige por cima**. Cada lançamento é convertido pela cotação do **dia em que aconteceu**, nunca pela de hoje.
   - Fim de semana e feriado sem cotação publicada **não são falha**: vale a do último dia útil.
@@ -271,7 +276,7 @@ Risco: etiquetas muito pequenas ou de baixa qualidade podem exigir leitor 2D ou 
 ### Cadastros
 
 - `usuarios` (login, senha\_hash, perfil, ativo, vendedor\_id opcional)
-- `vendedores` (código, nome, datas, sexo, estrangeiro, RG/IE, RG UF, CPF/CNPJ, naturalidade, escolaridade, telefones, WhatsApp, e-mail, redes sociais, **limite\_consignacao**, **restricao\_id**, **comissao\_percentual**, **praca\_id**, ativo, cadastrado\_por) e tabelas filhas: endereço, filiação/contato, trabalho, cônjuge, MEI, referências, documentos (arquivos), observações
+- `vendedores` (código, nome, datas, sexo, estrangeiro, RG/IE, RG UF, CPF/CNPJ, naturalidade, escolaridade, telefones, WhatsApp, e-mail, redes sociais, **limite\_consignacao**, **restricao\_id**, **comissao\_percentual** (deixou de ser usado no cálculo desde 13/11/2026: a comissão é por meta, §7.4; a coluna fica), **praca\_id**, ativo, cadastrado\_por) e tabelas filhas: endereço, filiação/contato, trabalho, cônjuge, MEI, referências, documentos (arquivos), observações
 - `restricoes` (código, descrição, bloqueia\_remessa, **ativo**)
 - `pracas` (nome, **ativo**), `semanas` (número, início, fim, situação ABERTA/FECHADA; **sem `ativo`**: ABERTA/FECHADA já diz se a semana está em uso)
 - `clientes` (nome, CPF opcional, **data\_nascimento opcional, não futura**, telefone, WhatsApp, endereço, observações, vendedor\_responsavel\_id, **ativo**). **Clientes são da LOJA (decisão de 11/11/2026):** qualquer vendedor vende a qualquer cliente ativo e recebe só o **diretório** (nome, CPF, telefone e cidade); vendas, fiado e pagamentos continuam privados de cada vendedor; o **CPF é único** entre clientes não excluídos (repetido é barrado, ADR-0011 item 13 e ADR-0013); `vendedor_responsavel_id` é "quem cadastrou/atende mais", sem restringir a venda
@@ -317,17 +322,17 @@ Modelo no ADR-0014 (tabelas criadas nas tarefas 6.3 a 6.5; todas imutáveis, cor
 
 ### Acerto e financeiro
 
-- `acertos` (vendedor, semana, remessa, esperado, contado, faltas, descontos, comissão, líquido, status, cotação usada)
+- `acertos` (vendedor, semana, remessa, esperado, contado, faltas, descontos, comissão, percentual da comissão decidido pela meta, vendido em Guarani usado na meta, líquido, status, cotação usada; sem coluna de entrada)
 - `pendencias_acerto` (acerto, produto, quantidade, valor, status, resolvida\_por)
 - `contas_receber` (venda ou acerto, devedor cliente/vendedor, parcela, vencimento, valor, status, data\_pagamento)
 - `contas_pagar` (fornecedor, compra, vencimento, valor, status)
 - `lancamentos_caixa` (tipo, valor, categoria, origem, data)
-- `comissoes` (vendedor, venda, acerto, valor, status de pagamento)
-- `cheques` (número, banco, valor, vencimento, status A\_COMPENSAR/COMPENSADO/DEVOLVIDO)
+- `comissoes` (vendedor, venda, acerto, base, percentual gravado na linha, valor, status de pagamento)
+- **Não existe a tabela `cheques`** (prevista até a v1.13; retirada no aceite do ADR-0012 em 13/11/2026). O modelo completo da Fase 7 está no ADR-0012, item 2.
 
 ### Controle
 
-- `configuracoes` (uma linha por chave, valor numa coluna do tipo certo: `valor_inteiro` ou `valor_dinheiro`; só do servidor: prazo\_arrependimento\_dias (padrão 45), prazo\_defeito\_dias (padrão 45), limite\_desconto, limite\_reembolso\_semanal (Real; vazio = sem limite), valor\_aprovacao\_reembolso (Real; vazio = sem valor), percentual\_alerta\_devolucao (padrão 20), tempo máximo offline (padrão 10 dias, configurável), tentativas de login antes do bloqueio (padrão 5), tempo de bloqueio (padrão 15 minutos))
+- `configuracoes` (uma linha por chave, valor numa coluna do tipo certo: `valor_inteiro` ou `valor_dinheiro`; só do servidor: prazo\_arrependimento\_dias (padrão 45), prazo\_defeito\_dias (padrão 45), limite\_desconto, limite\_reembolso\_semanal (Real; vazio = sem limite), valor\_aprovacao\_reembolso (Real; vazio = sem valor), percentual\_alerta\_devolucao (padrão 20), tempo máximo offline (padrão 10 dias, configurável), tentativas de login antes do bloqueio (padrão 5), tempo de bloqueio (padrão 15 minutos); na Fase 7: meta da comissão em Guarani (padrão 700.000), percentual da comissão abaixo da meta (padrão 30) e a partir da meta (padrão 40), iguais para todos os vendedores)
 - `auditoria` (usuário, ação, tabela, registro, antes/depois, data)
 - `cotacoes` (data da cotação; compra, venda e as duas paridades do Dólar e do Guarani; hora da busca; endereço de origem). Uma linha por dia útil. **Nasce só no servidor**, é **imutável** e chega ao app do vendedor só para leitura (ADR-0006)
 - `dispositivos` (vendedor, identificação, ativo, bloqueado, último contato)
@@ -426,14 +431,14 @@ Os nomes de relatório desta seção são descrição interna. O nome de tela de
 | Vendas | Por vendedor, praça, cliente, produto, categoria e período; ranking; ticket médio; vendas canceladas |
 | Devolução e troca | Por vendedor e motivo, taxa de devolução, peças com defeito, trocas, créditos em aberto e utilizados, reembolsos (dinheiro devolvido), autorizações de exceção, e a **conferência** das devoluções e trocas (§13). Só a dona (ADMIN); linhas, rodapé e detalhamento saem das mesmas condições; Dólar e Guarani pela cotação do dia de **cada lançamento** (da devolução, da troca, de quando o crédito nasceu, do dinheiro devolvido, do pedido), o total é a soma das linhas já convertidas; a devolução, a troca e o crédito cancelados aparecem marcados e ficam fora do total (tarefa 6.10) |
 | Acerto | Por vendedor e semana, faltas e pendências, descontos concedidos, esperado x contado |
-| Financeiro | Contas a receber e a pagar, fluxo de caixa, inadimplência, cheques (a compensar, devolvidos), recebimentos por forma de pagamento, DRE simplificado, lucro por produto e por vendedor |
-| Comissões | Por vendedor e semana, pagas e a pagar |
+| Financeiro | Contas a receber e a pagar, fluxo de caixa, inadimplência, recebimentos por forma de pagamento (não há relatório de cheques: no sistema novo não existe cheque), DRE simplificado, lucro por produto e por vendedor |
+| Comissões | Por vendedor e semana, pagas e a pagar, com o vendido em Guarani e o percentual que a meta decidiu (30% ou 40%) |
 | Controle | Auditoria, sincronizações e dispositivos, acessos |
 | Painel semanal | Totais por semana no estilo da tela de referência (blocos Consignado, Reposições, Cobrança, Acerto, Vendas, Trocas, Total e Total/Acerto) |
 
 ### App do vendedor (só dados dele, sem custo)
 
-Minha maleta (saldo e peças); minhas vendas por período, cliente e produto; meus clientes e valores a receber deles; minhas devoluções e trocas (por motivo, com o que voltou em dinheiro e em crédito) e o crédito dos meus clientes (gerado, usado e em aberto); meu acerto da semana e minha comissão; recebimentos por forma de pagamento (o crédito do cliente não é dinheiro recebido e fica de fora). Tudo só dele, sem custo (tarefa 6.10).
+Minha maleta (saldo e peças); minhas vendas por período, cliente e produto; meus clientes e valores a receber deles; minhas devoluções e trocas (por motivo, com o que voltou em dinheiro e em crédito) e o crédito dos meus clientes (gerado, usado e em aberto); meu acerto da semana e minha comissão (com quanto falta para a meta, em Guarani e em Real); recebimentos por forma de pagamento (o crédito do cliente não é dinheiro recebido e fica de fora). Tudo só dele, sem custo (tarefa 6.10).
 
 Como o app é offline, o relatório sai do banco local com o aviso: **Dados até dd/mm às hh:mm. N itens aguardando envio** (ou **N vendas aguardando envio**, quando só houver vendas). O Dólar e o Guarani usam as cotações recebidas do servidor, e a data da última cotação aparece junto desse aviso.
 
@@ -504,7 +509,7 @@ Os apps compartilham `packages/` (componentes, clientes da API gerados do OpenAP
 | **4. App do vendedor online** | Login, conferência, venda, clientes, consulta, relatórios próprios, valores nas três moedas | Vendedor vende com internet |
 | **5. Offline e sync** | SQLite criptografado, outbox, push e pull (inclusive as cotações), indicador, bloqueio remoto, testes de sync | Vendedor vende sem internet |
 | **6. Devolução e troca** | Garantia, reembolso, crédito, autorização da dona, relatórios | Pós-venda completo |
-| **7. Acerto e financeiro** | Acerto semanal, comissões, contas a receber e a pagar, caixa, cheques, relatórios financeiros | Fechamento semanal |
+| **7. Acerto e financeiro** | Acerto semanal, comissões, contas a receber e a pagar, caixa, relatórios financeiros | Fechamento semanal |
 | **8. Painel, relatórios avançados e conciliações** | Gerenciamento semanal (referência), curva ABC, DRE, conciliações automáticas, auditoria | Visão gerencial e confiança nos números |
 | **9. Entrega** | Instaladores, auto-update, assinatura, deploy na VPS, HTTPS, backup e teste de restauração, **homologação do leitor com etiquetas reais**, validação com dados reais, treinamento | Sistema em produção |
 
@@ -521,14 +526,14 @@ Nota fiscal eletrônica (a nota de remessa é só interna), loja virtual, aplica
 3. Como são as etiquetas? A loja imprime as próprias (código da loja) e o fornecedor manda código alfanumérico, ou algum fornecedor usa **EAN-13**? Obter fotos ou amostras de 3 a 4 etiquetas. O leitor funciona no Bloco de Notas? Qual impressora de etiquetas? O preço de venda é o custo vezes 7? (ADR-0007)
 4. ~~Prazos de garantia~~ **Respondido em 13/11/2026:** 45 dias para arrependimento (mais adiante, talvez 2 meses). Falta: o prazo para peça com defeito (usamos 45).
 5. Limite de desconto, limite de reembolso semanal e valor que exige aprovação da dona.
-6. ~~Percentual de comissão~~ **Respondido em 13/11/2026:** sobre o valor da venda (com desconto), igual para todos, com meta: a partir de 700.000 Gs → 40%; abaixo → 30%. Falta: se a meta é por semana ou por acerto, e se os 40% valem sobre tudo ou só sobre o que passa da meta. Decisão nossa pendente: a meta está em Guarani e tudo é gravado em Real (ADR-0006).
+6. ~~Percentual de comissão~~ **Respondido em 13/11/2026:** sobre o valor da venda (com desconto), igual para todos, com meta: a partir de 700.000 Gs → 40%; abaixo → 30%. **Decidido pelo responsável em 13/11/2026 (ADR-0012 aceito):** a meta é por semana (um acerto por semana), os 40% valem sobre o total, e cada venda é convertida para Guarani pela cotação gravada nela (§7.4).
 7. Quando a diferença de uma troca vira crédito: pode ser devolvida em dinheiro?
 8. ~~Semana de acerto~~ **Respondido em 13/11/2026:** começa na segunda (segunda a domingo) e há 3 a 4 dias depois para fazer o acerto.
 9. Quantos vendedores e quantos produtos aproximadamente (dimensionar a VPS).
 10. Quem paga VPS, domínio e certificado de assinatura de código.
 11. Existe alguma planilha atual do cliente para usar na validação dos relatórios e na migração de cadastros?
-12. **Entrada:** o que significa na tela de referência? Valor pago pela vendedora ao levar a maleta, abatido no acerto, ou entrada de venda parcelada? É obrigatória? Como se calcula e o que acontece no acerto? Precisa de resposta antes da Fase 3. **13/11/2026:** a dona não sabe ("creo que es entrada de dinero"); segue o padrão.
-13. ~~Cartão~~ **Respondido em 13/11/2026:** não. O cliente paga **em dinheiro ou por transferência**. Nas telas de venda e de reembolso só aparecem Dinheiro e Transferência (gravada como `PIX`); `CARTAO` e `CHEQUE` continuam aceitos no banco para não quebrar dados antigos.
+12. ~~Entrada~~ O que significa na tela de referência? Valor pago pela vendedora ao levar a maleta, abatido no acerto, ou entrada de venda parcelada? É obrigatória? Como se calcula e o que acontece no acerto? Precisa de resposta antes da Fase 3. **13/11/2026:** a dona não sabe ("creo que es entrada de dinero"). **Decidido pelo responsável em 13/11/2026 (ADR-0012 aceito): no sistema novo não existe entrada.** Se um dia existir, entra como tarefa nova.
+13. ~~Cartão~~ **Respondido em 13/11/2026:** não. O cliente paga **em dinheiro ou por transferência**. Nas telas de venda e de reembolso só aparecem Dinheiro e Transferência (gravada como `PIX`); `CARTAO` e `CHEQUE` continuam aceitos no banco para não quebrar dados antigos. **No acerto (ADR-0012 aceito em 13/11/2026):** o vendedor repassa em dinheiro, transferência ou boleto; não existe cheque nem cartão.
 14. **Língua das telas (13/11/2026):** a dona quer as telas **em espanhol**. É a última tarefa do projeto, com autorização do responsável. **Decisão do responsável (13/11/2026):** os dois apps ficam em espanhol; mais adiante, o app do vendedor terá espanhol e português (escolha da língua), e o da dona só espanhol.
 
 ## 18. Identidade visual: Corona Semijoias
@@ -769,3 +774,8 @@ Importação com nome de arquivo inválido, foto duplicada, arquivo corrompido, 
   - §7.3 e §9: prazos de arrependimento e de defeito com padrão 45 dias.
   - §6 (premissa 8) e §17: comissão sobre o valor com desconto e com meta (30% ou 40%, 700.000 Gs), para a Fase 7; cliente paga em dinheiro ou transferência (sem cartão); semana de segunda a domingo com 3 a 4 dias para o acerto; telas em espanhol como última tarefa (os dois apps; mais adiante, o do vendedor também em português).
   - §18: logotipo com a grafia correta guardado em `docs/marca/` (print, falta o arquivo original).
+- **v1.14, 13/11/2026:** ADR-0012 aceito pelo responsável com quatro mudanças (tarefa 7.1b), antes de qualquer código da Fase 7.
+  - §2, §7.4, §7.5 e §17 (item 12): no sistema novo **não existe entrada**.
+  - §7.4, §7.5, §9, §12, §15 e §17 (item 13): **não existe cheque** (sai a tabela `cheques` e o relatório de cheques); o repasse do vendedor à loja aceita `DINHEIRO`, `PIX` (na tela, "Transferência") e `BOLETO`, e o pagamento a fornecedor, dinheiro, transferência e boleto; `CHEQUE` e `CARTAO` do pagamento do cliente continuam aceitos no banco, sem tela nova.
+  - §6 (premissa 8), §7.4, §9, §12 e §17 (item 6): **comissão por meta** no lugar do percentual por vendedor (700.000 Gs na semana → 40%, abaixo → 30%, sobre o total; cada venda convertida pela cotação gravada nela; meta e percentuais em `configuracoes`; `comissao_percentual` do vendedor fica sem uso no cálculo; prévia do vendedor com quanto falta para a meta).
+  - Cabeçalho corrigido para a versão atual.
