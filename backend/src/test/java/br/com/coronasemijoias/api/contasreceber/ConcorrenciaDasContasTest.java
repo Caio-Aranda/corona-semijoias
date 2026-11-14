@@ -145,12 +145,11 @@ class ConcorrenciaDasContasTest extends ApoioDasContas {
                             "itens", List.of(mapa("produtoId", c.peca(), "quantidade", 1, "estado", "BOA"))))));
             Resposta estorno = r.get(0);
             Resposta devolucao = r.get(1);
-            assertThat(estorno.status() == 201 && devolucao.status() == 201).as("as duas passaram na rodada %d", rodada).isFalse();
-            assertThat(estorno.status() == 201 || devolucao.status() == 201).isTrue();
-            if (devolucao.status() == 201) {
+            // A devolução abate (tarefa 6.6) e nunca é recusada: se o estorno entrou primeiro, a venda voltou a dever e a
+            // devolução abate a dívida; se a devolução entrou primeiro, o estorno do recebimento é recusado.
+            assertThat(devolucao.status()).as("devolução na rodada %d", rodada).isEqualTo(201);
+            if (estorno.status() != 201) {
                 assertThat(estorno.codigo()).isEqualTo("VENDA_COM_DEVOLUCAO");
-            } else {
-                assertThat(devolucao.codigo()).isEqualTo("VENDA_A_PRAZO_SEM_DEVOLUCAO");
             }
             // O dinheiro nunca volta duas vezes: o líquido da venda nunca fica negativo.
             assertThat(jdbc.queryForObject("""

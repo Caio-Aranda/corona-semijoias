@@ -296,13 +296,7 @@ class TrocaTest extends ApoioDasTrocas {
                 .andExpect(status().isConflict()))).isEqualTo("GARANTIA_VENCIDA");
         assertThat(contagens()).isEqualTo(antes);
 
-        // Venda A a prazo.
-        UUID aPrazo = vender(c.v(), c.maleta(), c.cliente(), List.of(linha(c.a(), 1)), List.of(pagamento("30.00", "DINHEIRO")));
-        antes = contagens();
-        assertThat(codigoDe(postar(TROCAS, como(c.v()), pedidoDeTroca(aPrazo, "ARREPENDIMENTO",
-                List.of(devolvida(c.a(), 1, "BOA")), c.maleta(), List.of(linha(c.b(), 1)), List.of()))
-                .andExpect(status().isConflict()))).isEqualTo("VENDA_A_PRAZO_SEM_DEVOLUCAO");
-        assertThat(contagens()).isEqualTo(antes);
+        // A venda A a prazo agora pode ser trocada (tarefa 6.6): TrocaDeVendaAPrazoTest.
 
         // Maleta de A em acerto.
         UUID outra = maleta(c.v(), c.b(), 3);

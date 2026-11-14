@@ -813,17 +813,17 @@ class DevolucaoDoClienteTest extends TesteDeIntegracao {
     // --- 10. venda a prazo ---
 
     @Test
-    void vendaAPrazoDa409ComAvisoEPagaEmPartesContaComoAVista() throws Exception {
+    void vendaAPrazoAbateAsParcelasEPagaEmPartesContaComoAVista() throws Exception {
         UsuarioDeTeste v = usuarios.criarVendedor();
         UUID anel = peca("50.00", 10);
         UUID maleta = maleta(v, anel, 5);
         UUID cliente = cliente(v);
         UUID aPrazo = vender(v, maleta, cliente, List.of(linha(anel, 2)), List.of(pagamento("40.00", "DINHEIRO")));
-        JsonNode erro = corpoDe(postar(DEVOLUCOES, como(v), devolucao(UUID.randomUUID(), aPrazo, "ARREPENDIMENTO", "PIX",
-                List.of(devolvida(anel, 1, "BOA")))).andExpect(status().isConflict()));
-        assertThat(erro.get("codigo").asString()).isEqualTo("VENDA_A_PRAZO_SEM_DEVOLUCAO");
-        assertThat(erro.get("detail").asString()).isEqualTo("Esta venda tem parcelas; a devolução dela chega em breve.");
-        assertThat(contar("SELECT count(*) FROM corona.devolucoes WHERE venda_id = ?", aPrazo)).isZero();
+        // 100,00 com 40,00 pagos: a devolução de 50,00 abate o que falta e não devolve dinheiro (tarefa 6.6).
+        JsonNode abatida = devolver(v, aPrazo, "ARREPENDIMENTO", "PIX", List.of(devolvida(anel, 1, "BOA")));
+        assertThat(jdbc.queryForObject("SELECT valor_abatido FROM corona.devolucoes WHERE id = ?", BigDecimal.class,
+                UUID.fromString(abatida.get("id").asString()))).isEqualByComparingTo("50.00");
+        assertThat(contar("SELECT count(*) FROM corona.pagamentos_cliente WHERE venda_id = ? AND tipo = 'REEMBOLSO'", aPrazo)).isZero();
 
         UUID emPartes = vender(v, maleta, cliente, List.of(linha(anel, 2)),
                 List.of(pagamento("60.00", "DINHEIRO"), pagamento("40.00", "CARTAO")));

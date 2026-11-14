@@ -94,15 +94,18 @@ abstract class ApoioDasContas extends TesteDeIntegracao {
         String ids = vendasDoTeste.isEmpty() ? "NULL::uuid"
                 : String.join(",", vendasDoTeste.stream().map(u -> "'" + u + "'::uuid").toList());
         List<String> achadas = new ArrayList<>(jdbc.queryForList("""
-                SELECT 'C1 ' || v.id || ' falta ' || (v.total - coalesce(p.liquido, 0)) || ' aberto ' || a.aberto
+                SELECT 'C1 ' || v.id || ' falta ' || (v.total - coalesce(d.devolvido, 0) - coalesce(p.liquido, 0))
+                       || ' aberto ' || a.aberto
                   FROM corona.vendas v
                   JOIN (SELECT venda_id, sum(valor - valor_pago - valor_cancelado) AS aberto
                           FROM corona.contas_receber GROUP BY venda_id) a ON a.venda_id = v.id
                   LEFT JOIN (SELECT venda_id, sum(valor) AS liquido FROM corona.pagamentos_cliente
-                              WHERE tipo IN ('PAGAMENTO', 'ESTORNO_PAGAMENTO', 'REEMBOLSO') GROUP BY venda_id) p ON p.venda_id = v.id
+                              WHERE tipo IN ('PAGAMENTO', 'ESTORNO_PAGAMENTO', 'REEMBOLSO', 'ESTORNO_REEMBOLSO')
+                              GROUP BY venda_id) p ON p.venda_id = v.id
+                  LEFT JOIN (SELECT venda_id, sum(valor_devolvido) AS devolvido FROM corona.devolucoes
+                              WHERE situacao <> 'CANCELADA' GROUP BY venda_id) d ON d.venda_id = v.id
                  WHERE v.id IN (%s) AND v.status = 'CONCLUIDA'
-                   AND NOT EXISTS (SELECT 1 FROM corona.devolucoes d WHERE d.venda_id = v.id AND d.situacao <> 'CANCELADA')
-                   AND v.total - coalesce(p.liquido, 0) <> a.aberto""".formatted(ids), String.class));
+                   AND v.total - coalesce(d.devolvido, 0) - coalesce(p.liquido, 0) <> a.aberto""".formatted(ids), String.class));
         achadas.addAll(jdbc.queryForList("""
                 SELECT 'C1 estornada ' || v.id FROM corona.vendas v
                   JOIN corona.contas_receber c ON c.venda_id = v.id
