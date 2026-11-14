@@ -82,6 +82,14 @@ A API com a 7.4 manda ao vendedor as tabelas `acertos` e `leituras_acerto`. O Co
 3. O computador na versão antiga continua enviando o que guardou e recebe 426 no recebimento até atualizar. Nada se perde. Pedir o acerto e bipar são online: as telas são da tarefa 7.11 (nada novo na outbox).
 4. Enquanto um vendedor está em acerto, a dona não envia maleta nova para ele ("Termine o acerto antes"); o rascunho continua livre.
 
+### Nota de deploy da tarefa 7.5 (fechamento do acerto no pull)
+
+A API com a 7.5 manda ao vendedor quatro tabelas novas (`itens_acerto`, `acerto_eventos`, `comissoes`, `pendencias_acerto`) e colunas novas de `acertos`. O Corona Vendas sem a **migração local 7** não as conhece e recusaria o lote inteiro (o pull pararia). **Nesta ordem**, como na 7.4 (**app primeiro, depois a API**):
+
+1. **Primeiro o Corona Vendas:** aumente `version` em `apps/seller-app/package.json` (por exemplo, `1.5.0`) e publique (`npm run vendas:publicar`). A migração local 7 cria as colunas e as quatro tabelas e a **recarga dirigida** as traz de novo, sem apagar nada.
+2. **Depois a API:** suba a API com a 7.5 e, no `.env` do servidor, `APP_VERSAO_MINIMA_VENDAS` igual à versão publicada. A migração V044 do banco roda junto.
+3. O computador na versão antiga continua enviando o que guardou. Nada se perde. As telas do fechamento e da prévia da comissão são das tarefas 7.9 e 7.11.
+
 ## Riscos da primeira instalação no computador do vendedor
 
 | Risco | O que fazer |

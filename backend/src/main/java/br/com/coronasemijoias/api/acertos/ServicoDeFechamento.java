@@ -379,6 +379,14 @@ public class ServicoDeFechamento {
 
     private void gravar(UUID usuarioId, UUID acertoId, UUID comando, String resumo, Montagem m, Decisoes d, Calculo c) {
         Timestamp agora = Timestamp.from(relogio.instant());
+        // Os produtos primeiro, por id (a ordem do ADR-0012, item 13): as chaves estrangeiras dos itens e das pendências pegam
+        // FOR KEY SHARE neles, e o estoque pega FOR UPDATE depois; sem travar antes, dois fechamentos em ordens cruzadas se esperariam.
+        List<UUID> produtos = new ArrayList<>(new TreeSet<>(m.esperadoEContado().itens().stream()
+                .map(EsperadoEContado.Item::produtoId).toList()));
+        if (!produtos.isEmpty()) {
+            jdbc.queryForList("SELECT id FROM corona.produtos WHERE id IN (" + MontagemDoFechamento.marcadores(produtos.size())
+                    + ") ORDER BY id FOR UPDATE", UUID.class, produtos.toArray());
+        }
         for (Evento e : m.eventos()) {
             jdbc.update("""
                     INSERT INTO corona.acerto_eventos (id, acerto_id, vendedor_id, origem_tipo, origem_id, venda_id, valor)

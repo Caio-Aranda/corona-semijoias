@@ -203,6 +203,8 @@ Regras:
 - **Contagem:** cada bipe é uma leitura (id do cliente, idempotente, imutável); desfazer é leitura negativa; vale a soma por peça e estado (`BOA` ou `DEFEITO`), nunca negativa. A peça tem de ser de uma maleta do acerto ou de uma devolução "para a loja" do vendedor; peça de fora é recusada sem dizer de onde é. Dona e vendedor contam na mesma contagem e a tela da dona mostra quem leu, quando e de qual computador. Não há esperado × contado nesta tarefa (7.5).
 - **Desistir** (só a dona, com motivo): cada maleta volta ao status de antes (`ENVIADA` continua `ENVIADA`, `CONFERIDA` continua `CONFERIDA`), o acerto vira `DESISTIDO` e nada de dinheiro, venda ou movimento é gravado; as leituras ficam como histórico.
 
+**Como ficou o fechamento (tarefa 7.5, 14/11/2026).** Só a dona fecha (`POST /api/dona/acertos/{id}/fechar`), numa transação só, com a prévia (`GET .../fechamento`, nada é gravado) usando o mesmo cálculo. Esperado x contado por peça: o saldo das maletas do acerto mais as peças "para a loja" das devoluções ainda sem acerto; sobra impede (409, sem rota de `AJUSTE`); a falta cai na maleta mais antiga, vale o preço da maleta e vira pendência `FALTA` (cobrar no acerto, cobrar depois ou a loja assume, com motivo) e `PERDA` na maleta; peça boa e com defeito voltam ao estoque central (defeito aprovado: devolução mais avaria; recusado: volta como boa). Todo evento do vendedor ainda sem acerto entra nele (`acerto_eventos`). Devolução ou crédito sem saldo em revisão impedem o fechamento. A comissão é por meta: a soma em Guarani de cada venda (total depois do desconto, pela cotação da venda, cada uma arredondada) decide 30% ou 40% sobre todas as vendas do acerto; o estorno de comissão usa o percentual da linha original. Totais do item 8 gravados (`recebido_no_acerto` = 0 e `ficou_devendo` = líquido até a 7.6), com a cotação mais recente do fechamento. Depois de `ACERTADO` nada muda. A meta e os dois percentuais ficam em `configuracoes` (`GET/PUT /api/dona/configuracoes/comissao`, com auditoria); o vendedor vê a prévia da comissão dele (`GET /api/vendedor/comissao/previa`).
+
 ### 7.5 Financeiro
 
 - **Contas a receber** em dois níveis: (1) cliente final paga ao vendedor; (2) vendedor repassa à dona no acerto.
@@ -806,6 +808,12 @@ Importação com nome de arquivo inválido, foto duplicada, arquivo corrompido, 
   - §7.3: a devolução abate primeiro o que o cliente deve, depois crédito, depois dinheiro; cancelar desfaz o abatimento; a troca de A a prazo.
   - §9: `devolucoes.valor_abatido`, `baixas_receber.devolucao_id` e o motivo `DEVOLUCAO`; `PARCIAL` também para parcela abatida.
   - §10: `devolucoes.valor_abatido` e `baixas_receber.devolucao_id` entram no pull; o que o app manda não muda.
+- **v1.19, 14/11/2026:** acerto, parte 2: fechamento, comissão por meta e pendências (tarefa 7.5, ADR-0012 itens 3.6, 5, 6, 8, 13, 14, 15 e 16).
+  - §7.4: como ficou o fechamento (uma transação só: esperado x contado, sobra impede, falta vira pendência e perda, peça boa e com defeito voltam à loja, eventos ligados ao acerto, comissão por meta, totais e cotação gravados, maletas acertadas), a meta e os percentuais em `configuracoes`, o estorno de comissão pelo percentual da linha original, as pendências e a prévia da comissão do vendedor.
+  - §9: `acertos` (colunas do fechamento), `acerto_eventos`, `itens_acerto`, `comissoes`, `pendencias_acerto`, as três chaves da comissão em `configuracoes` e a origem `ACERTO` no estoque central.
+  - §10: as quatro tabelas novas e as colunas do fechamento entram no pull (só do vendedor dono); fechar, resolver pendência e configurar a comissão são online, da dona.
+  - §11: a prévia do vendedor (`GET /api/vendedor/comissao/previa`) e as rotas do fechamento e das pendências.
+  - §22: o que não está na 7.5 (recebimentos, caixa e contas do nível 2, da 7.6; telas, da 7.9, 7.10 e 7.11).
 - **v1.18, 14/11/2026:** acerto, parte 1: iniciar, travas, contagem e desistir (tarefa 7.4, ADR-0012 itens 2, 3, 4, 13, 14, 15 e 16).
   - §7.4: como ficou o início do acerto (todas as maletas abertas), as travas, a exceção da venda e do estorno feitos sem internet antes do início, a contagem por leituras e o desistir.
   - §9: `acertos` (só início e desistência), `leituras_acerto`, `remessas.acerto_id` e `remessas.status_antes_do_acerto`.

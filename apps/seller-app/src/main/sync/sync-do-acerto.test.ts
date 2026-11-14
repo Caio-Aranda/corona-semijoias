@@ -436,7 +436,9 @@ describe('migração local 7 (fechamento do acerto)', () => {
   it('nenhuma coluna de custo nem de quem fechou, decidiu ou resolveu', () => {
     for (const t of ['acertos', ...NOVAS_DO_FECHAMENTO] as const) {
       for (const coluna of COLUNAS_DO_PULL[t]) {
-        expect(coluna, `${t}.${coluna}`).not.toMatch(/custo|fornecedor|_por$|fechamento_id|conteudo/);
+        expect(coluna, `${t}.${coluna}`).not.toMatch(
+          /custo|fornecedor|_por$|fechamento_id|conteudo/,
+        );
       }
     }
   });

@@ -457,7 +457,8 @@ export const MIGRACOES: readonly MigracaoLocal[] = Object.freeze([
   },
   {
     versao: 7,
-    descricao: 'fechamento do acerto (totais, comissão, itens, eventos e pendências) e a recarga dirigida',
+    descricao:
+      'fechamento do acerto (totais, comissão, itens, eventos e pendências) e a recarga dirigida',
     sql: V7,
   },
 ]);
