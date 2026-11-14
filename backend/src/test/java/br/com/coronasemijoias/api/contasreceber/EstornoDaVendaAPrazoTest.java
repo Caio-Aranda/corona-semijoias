@@ -55,7 +55,7 @@ class EstornoDaVendaAPrazoTest extends ApoioDasContas {
         assertThat(situacoes(c.venda())).containsExactly("CANCELADA", "CANCELADA", "CANCELADA");
         List<Integer> ordem = jdbc.queryForList("""
                 SELECT c.parcela FROM corona.baixas_receber b JOIN corona.contas_receber c ON c.id = b.conta_id
-                 WHERE c.venda_id = ? AND b.tipo = 'CANCELAMENTO' AND b.motivo_cancelamento = 'ESTORNO_VENDA' ORDER BY b.id""",
+                 WHERE c.venda_id = ? AND b.tipo = 'CANCELAMENTO' AND b.motivo_cancelamento = 'ESTORNO_VENDA' ORDER BY b.ctid""",
                 Integer.class, c.venda());
         assertThat(ordem).containsExactly(3, 2, 1);
         assertThat(contar("SELECT count(*) FROM corona.pagamentos_cliente WHERE venda_id = ? AND tipo = 'REEMBOLSO'", c.venda()))
