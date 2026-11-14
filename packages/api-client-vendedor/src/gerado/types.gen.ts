@@ -109,6 +109,22 @@ export type ConsultasDaMaletaDoVendedorPeca = {
     nome?: string;
 };
 
+export type ConsultasDeContasAReceberConta = {
+    clienteId?: string;
+    clienteNome?: string;
+    emAberto?: string;
+    id?: string;
+    numero?: number;
+    status?: string;
+    totalDeParcelas?: number;
+    valor?: string;
+    valorCancelado?: string;
+    valorPago?: string;
+    vencida?: boolean;
+    vencimento?: string;
+    vendaId?: string;
+};
+
 export type ConsultasDeVendasCotacao = {
     data?: string;
     dolar?: string;
@@ -312,6 +328,7 @@ export type PagamentoLido = {
     em?: string;
     forma?: string;
     id?: string;
+    posterior?: boolean;
     tipo?: string;
     valor?: string;
 };
@@ -322,6 +339,19 @@ export type ParametrosDoVendedor = {
     prazoDefeitoDias?: number;
     situacaoDoAparelho?: string;
     tempoMaximoOfflineDias?: number;
+};
+
+export type ParcelaDaVenda = {
+    emAberto?: string;
+    id?: string;
+    numero?: number;
+    status?: string;
+    totalDeParcelas?: number;
+    valor?: string;
+    valorCancelado?: string;
+    valorPago?: string;
+    vencida?: boolean;
+    vencimento?: string;
 };
 
 export type ParcelamentoPedido = {
@@ -661,6 +691,7 @@ export type Venda = {
     motivoDoEstorno?: string;
     pagamentos?: Array<PagamentoLido>;
     pago?: string;
+    parcelas?: Array<ParcelaDaVenda>;
     remessaId?: string;
     status?: string;
     subtotal?: string;
@@ -922,6 +953,26 @@ export type VerMeuClienteResponses = {
 };
 
 export type VerMeuClienteResponse = VerMeuClienteResponses[keyof VerMeuClienteResponses];
+
+export type ListarMinhasContasAReceberData = {
+    body?: never;
+    path?: never;
+    query?: {
+        situacao?: string;
+        clienteId?: string;
+        vendaId?: string;
+    };
+    url: '/api/vendedor/contas-receber';
+};
+
+export type ListarMinhasContasAReceberResponses = {
+    /**
+     * OK
+     */
+    200: Array<ConsultasDeContasAReceberConta>;
+};
+
+export type ListarMinhasContasAReceberResponse = ListarMinhasContasAReceberResponses[keyof ListarMinhasContasAReceberResponses];
 
 export type VerCotacaoDeHojeData = {
     body?: never;

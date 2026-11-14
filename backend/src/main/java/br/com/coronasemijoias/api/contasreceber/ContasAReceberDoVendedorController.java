@@ -3,20 +3,24 @@ package br.com.coronasemijoias.api.contasreceber;
 import br.com.coronasemijoias.api.cadastros.Validacoes;
 import br.com.coronasemijoias.api.contasreceber.ServicoDeContasAReceber.Recebimento;
 import br.com.coronasemijoias.api.contasreceber.ServicoDeContasAReceber.Resultado;
+import br.com.coronasemijoias.api.contasreceber.ConsultasDeContasAReceber.Conta;
 import br.com.coronasemijoias.api.seguranca.ExigePerfil;
 import br.com.coronasemijoias.api.seguranca.UsuarioAutenticado;
 import br.com.coronasemijoias.api.vendas.ConsultasDeVendas;
 import br.com.coronasemijoias.api.vendas.ConsultasDeVendas.Venda;
 import io.swagger.v3.oas.annotations.Operation;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -37,10 +41,23 @@ public class ContasAReceberDoVendedorController {
 
     private final ServicoDeContasAReceber servico;
     private final ConsultasDeVendas vendas;
+    private final ConsultasDeContasAReceber consultas;
 
-    ContasAReceberDoVendedorController(ServicoDeContasAReceber servico, ConsultasDeVendas vendas) {
+    ContasAReceberDoVendedorController(ServicoDeContasAReceber servico, ConsultasDeVendas vendas,
+            ConsultasDeContasAReceber consultas) {
         this.servico = servico;
         this.vendas = vendas;
+        this.consultas = consultas;
+    }
+
+    @Operation(operationId = "listarMinhasContasAReceber", summary = "Minhas contas a receber",
+            description = "As parcelas das vendas a prazo do vendedor logado, da que vence primeiro para a que vence depois. "
+                    + "Filtros opcionais: situação (ABERTA, PARCIAL, PAGA, CANCELADA, EM_ABERTO ou VENCIDA, calculada pela "
+                    + "data de hoje em Brasília), cliente e venda. Só valores em Real.")
+    @GetMapping("/contas-receber")
+    public List<Conta> listar(@RequestParam(required = false) String situacao, @RequestParam(required = false) UUID clienteId,
+            @RequestParam(required = false) UUID vendaId, @AuthenticationPrincipal UsuarioAutenticado quem) {
+        return consultas.doVendedor(quem.vendedorId(), situacao, clienteId, vendaId);
     }
 
     @Operation(operationId = "receberDoCliente", summary = "Registrar um recebimento do cliente",

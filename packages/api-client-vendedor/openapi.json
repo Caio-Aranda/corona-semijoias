@@ -367,6 +367,68 @@
         },
         "type" : "object"
       },
+      "ConsultasDeContasAReceberConta" : {
+        "properties" : {
+          "clienteId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "clienteNome" : {
+            "type" : "string"
+          },
+          "emAberto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "numero" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "totalDeParcelas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorCancelado" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorPago" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vencida" : {
+            "type" : "boolean"
+          },
+          "vencimento" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "vendaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "ConsultasDeVendasCotacao" : {
         "properties" : {
           "data" : {
@@ -1047,6 +1109,9 @@
             "format" : "uuid",
             "type" : "string"
           },
+          "posterior" : {
+            "type" : "boolean"
+          },
           "tipo" : {
             "type" : "string"
           },
@@ -1079,6 +1144,57 @@
           "tempoMaximoOfflineDias" : {
             "format" : "int32",
             "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "ParcelaDaVenda" : {
+        "properties" : {
+          "emAberto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "numero" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "totalDeParcelas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorCancelado" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorPago" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vencida" : {
+            "type" : "boolean"
+          },
+          "vencimento" : {
+            "format" : "date",
+            "type" : "string"
           }
         },
         "type" : "object"
@@ -2200,6 +2316,12 @@
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           },
+          "parcelas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ParcelaDaVenda"
+            },
+            "type" : "array"
+          },
           "remessaId" : {
             "format" : "uuid",
             "type" : "string"
@@ -2750,6 +2872,56 @@
         } ],
         "summary" : "Ver um cliente da loja",
         "tags" : [ "clientes-do-vendedor-controller" ]
+      }
+    },
+    "/api/vendedor/contas-receber" : {
+      "get" : {
+        "description" : "As parcelas das vendas a prazo do vendedor logado, da que vence primeiro para a que vence depois. Filtros opcionais: situação (ABERTA, PARCIAL, PAGA, CANCELADA, EM_ABERTO ou VENCIDA, calculada pela data de hoje em Brasília), cliente e venda. Só valores em Real.",
+        "operationId" : "listarMinhasContasAReceber",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "clienteId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendaId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/ConsultasDeContasAReceberConta"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Minhas contas a receber",
+        "tags" : [ "contas-a-receber-do-vendedor-controller" ]
       }
     },
     "/api/vendedor/cotacao" : {
