@@ -142,8 +142,14 @@ abstract class ApoioDoFechamento extends ApoioDoAcerto {
     /** O corpo do fechar: faltas, defeitos, cobranças e pendências antigas (listas vazias quando não há) e o líquido mostrado. */
     static java.util.Map<String, Object> pedidoDeFechamento(UUID id, java.util.List<?> faltas, java.util.List<?> defeitos,
             String liquidoMostrado) {
-        return mapa("id", id, "faltas", faltas, "defeitos", defeitos, "cobrancas", java.util.List.of(),
+        java.util.Map<String, Object> pedido = mapa("id", id, "faltas", faltas, "defeitos", defeitos, "cobrancas", java.util.List.of(),
                 "pendenciasAntigas", java.util.List.of(), "liquidoMostrado", liquidoMostrado);
+        // Líquido positivo: o vendedor ficou devendo tudo, em uma parcela daqui a 30 dias (o que a tela escolhe por padrão).
+        if (new BigDecimal(liquidoMostrado).signum() > 0) {
+            pedido.put("pagamento", mapa("restante", mapa("parcelas", 1, "primeiroVencimento",
+                    java.time.LocalDate.now(java.time.ZoneId.of("America/Sao_Paulo")).plusDays(30).toString())));
+        }
+        return pedido;
     }
 
     org.springframework.test.web.servlet.ResultActions fechar(UUID acerto, java.util.Map<String, Object> pedido) throws Exception {

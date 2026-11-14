@@ -113,7 +113,10 @@ public class AcertosDaDonaController {
     }
 
     @Operation(operationId = "previaDoFechamentoComDecisoes", summary = "Prévia do fechamento com as decisões da dona",
-            description = "O mesmo cálculo do fechamento com as decisões enviadas (faltas, defeitos, cobranças e pendências antigas). Nada é gravado.")
+            description = "O mesmo cálculo do fechamento com as decisões enviadas (faltas, defeitos, cobranças e pendências antigas) e com o "
+                    + "pagamento (recebimentos em dinheiro e Transferência, boleto, o que ficou devendo em parcelas, contas antigas pagas e, "
+                    + "a favor do vendedor, crédito ou pagar na hora). Mostra o crédito disponível, o que há a pagar, o que ficou devendo e as contas "
+                    + "abertas do vendedor. Nada é gravado.")
     @PostMapping("/{id}/fechamento/previa")
     public Map<String, Object> previaComDecisoes(@PathVariable UUID id, @RequestBody PedidoDeFechamento pedido) {
         return fechamento.previa(id, pedido);
@@ -122,7 +125,9 @@ public class AcertosDaDonaController {
     @Operation(operationId = "fecharAcerto", summary = "Fechar o acerto",
             description = "Só a dona. Uma transação só: esperado x contado, faltas, defeitos, eventos, comissão por meta, totais e cotação; "
                     + "as maletas ficam acertadas. Sobra ou devolução em revisão impede (409). As decisões e o líquido mostrado têm de "
-                    + "bater com o cálculo de agora (409 com a prévia nova). Mesmo id e mesmas decisões devolve 200.")
+                    + "bater com o cálculo de agora (409 com a prévia nova). O pagamento entra na mesma transação: cada recebimento gera a entrada de "
+                    + "caixa, o boleto e o que ficou devendo viram contas a receber do vendedor, e o acerto a favor do vendedor vira crédito ou "
+                    + "saída de caixa. Mesmo id e mesmas decisões devolve 200.")
     @PostMapping("/{id}/fechar")
     public ResponseEntity<FichaDaDona> fechar(@PathVariable UUID id, @RequestBody PedidoDeFechamento pedido,
             @AuthenticationPrincipal UsuarioAutenticado quem) {

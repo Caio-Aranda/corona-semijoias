@@ -217,7 +217,7 @@ public class ServicoDeRecebimentosDoVendedor {
         }
     }
 
-    static String formaDoRepasse(String forma, boolean aceitaBoleto) {
+    public static String formaDoRepasse(String forma, boolean aceitaBoleto) {
         if (forma == null || !FORMAS_DO_REPASSE.contains(forma) || (!aceitaBoleto && "BOLETO".equals(forma))) {
             throw Validacoes.recusar("forma", aceitaBoleto
                     ? "Escolha como o vendedor pagou: dinheiro, Transferência (PIX) ou boleto."
@@ -226,7 +226,7 @@ public class ServicoDeRecebimentosDoVendedor {
         return forma;
     }
 
-    static BigDecimal valorEmReais(BigDecimal valor) {
+    public static BigDecimal valorEmReais(BigDecimal valor) {
         if (valor == null || valor.signum() <= 0) {
             throw Validacoes.recusar("valor", "Informe o valor recebido, maior que zero.");
         }
