@@ -312,7 +312,10 @@ ALTER TABLE baixas_receber ADD COLUMN devolucao_id TEXT;
  * As tabelas que a recarga dirigida da versão 6 traz de novo (tarefa 7.4): as duas novas do acerto. O computador que já tinha
  * cursor não receberia o que o servidor gravou antes da migração.
  */
-export const TABELAS_DA_RECARGA_DIRIGIDA_V6 = Object.freeze(['acertos', 'leituras_acerto'] as const);
+export const TABELAS_DA_RECARGA_DIRIGIDA_V6 = Object.freeze([
+  'acertos',
+  'leituras_acerto',
+] as const);
 
 /**
  * Versão 6 (tarefa 7.4; ADR-0012, itens 2, 3 e 15): as cópias do acerto e da contagem dele, com as colunas da lista do

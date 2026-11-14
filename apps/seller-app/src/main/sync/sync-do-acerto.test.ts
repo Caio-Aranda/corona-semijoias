@@ -324,14 +324,18 @@ describe('recarga dirigida depois da migração local 6', () => {
     expect(await ciclo(db, url).executar()).toBe('falha');
     expect(tabelasDaRecargaDirigida(db)).toEqual(['leituras_acerto']);
     expect(contar(db, 'SELECT 1 FROM acertos WHERE id = ?', acerto)).toBe(1);
-    expect(contar(db, "SELECT 1 FROM remessas WHERE origem_local = 'SERVIDOR'")).toBe(remessasAntes);
+    expect(contar(db, "SELECT 1 FROM remessas WHERE origem_local = 'SERVIDOR'")).toBe(
+      remessasAntes,
+    );
 
     // Segundo ciclo: retoma, termina e a marca some.
     expect(await ciclo(db, url).executar()).toBe('ok');
     expect(lerEstado(db, CHAVES.recargaDirigida)).toBeNull();
     expect(contar(db, 'SELECT 1 FROM leituras_acerto WHERE id = ?', leitura)).toBe(1);
     expect(contar(db, 'SELECT 1 FROM acertos WHERE id = ?', acerto)).toBe(1);
-    expect(contar(db, "SELECT 1 FROM remessas WHERE origem_local = 'SERVIDOR'")).toBe(remessasAntes);
+    expect(contar(db, "SELECT 1 FROM remessas WHERE origem_local = 'SERVIDOR'")).toBe(
+      remessasAntes,
+    );
     expect(s.pedidosPara('/api/vendedor/sync/conferencia/diferencas')).toHaveLength(0);
 
     // Um ciclo a mais não recarrega nada.
