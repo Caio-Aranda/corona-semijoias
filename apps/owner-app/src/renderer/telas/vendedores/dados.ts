@@ -1,6 +1,6 @@
 /** Formatos que a API de vendedores devolve, lidos com cuidado, e as conversões entre tela e API. */
 import type { CampoDaApi } from '../../../shared/cadastros';
-import { lerReaisDigitados } from '../../nucleo/moedas';
+import { centavosDeTexto, formatarReais, lerReaisDigitados } from '../../nucleo/moedas';
 import { TEXTOS } from '../../textos';
 
 const T = TEXTOS.vendedores;
@@ -193,6 +193,17 @@ export function montarCorpo(
 }
 
 /** Telefone para a lista: o primeiro que houver. */
+/**
+ * O limite de consignação na lista: o valor em reais, "Sem limite" (escolha da dona) ou "Limite não
+ * definido" (cadastro antigo: não recebe maleta até a dona escolher). Zero vale zero, nunca "Sem limite".
+ */
+export function limiteDaLista(v: Vendedor): string {
+  if (v.semLimite === true) return T.limiteDaLista.semLimite;
+  const centavos =
+    typeof v.limiteConsignacao === 'string' ? centavosDeTexto(v.limiteConsignacao) : null;
+  return centavos === null ? T.limiteDaLista.naoDefinido : formatarReais(centavos);
+}
+
 export function telefoneDaLista(v: Vendedor): string {
   return texto(v, 'telefone1') || texto(v, 'whatsapp') || texto(v, 'telefone2');
 }

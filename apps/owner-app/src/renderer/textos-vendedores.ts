@@ -20,9 +20,12 @@ export const TEXTOS_DE_VENDEDORES = {
     nome: 'Nome',
     telefone: 'Telefone',
     praca: 'Praça',
+    limite: 'Limite de consignação',
     situacao: 'Situação',
     acoes: 'O que fazer',
   },
+  /** O que a coluna do limite mostra quando não há valor em reais. */
+  limiteDaLista: { semLimite: 'Sem limite', naoDefinido: 'Limite não definido' },
   situacao: { ativo: 'Ativo', desativado: 'Desativado' },
   legenda: 'Lista de vendedores',
   abrir: 'Abrir cadastro',

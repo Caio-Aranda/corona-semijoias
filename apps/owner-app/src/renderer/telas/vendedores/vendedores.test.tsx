@@ -110,6 +110,27 @@ describe('Vendedores: lista', () => {
     expect(within(linha).getByText('Ativo')).toBeInTheDocument();
   });
 
+  it('mostra o limite de cada vendedor: o valor, "Sem limite" ou "Limite não definido"', async () => {
+    const m = montar({
+      'vendedores.listar': () =>
+        pagina([
+          JOANA,
+          { ...JOANA, id: ID_REF, nome: 'Ana Livre', limiteConsignacao: null, semLimite: true },
+          { ...JOANA, id: ID_DOC, nome: 'Bia Antiga', limiteConsignacao: null, semLimite: false },
+          { ...JOANA, id: ID_PRACA, nome: 'Carla Zero', limiteConsignacao: '0.00', semLimite: false },
+        ]),
+    });
+    await abrirLista(m);
+    expect(screen.getByRole('columnheader', { name: 'Limite de consignação' })).toBeInTheDocument();
+    const celula = (nome: RegExp, texto: string) =>
+      within(screen.getByRole('row', { name: nome })).getByText(texto);
+    expect(celula(/Joana Souza/, 'R$ 1.500,00')).toBeInTheDocument();
+    expect(celula(/Ana Livre/, 'Sem limite')).toBeInTheDocument();
+    expect(celula(/Bia Antiga/, 'Limite não definido')).toBeInTheDocument();
+    // Zero vale zero: nunca aparece como "Sem limite".
+    expect(celula(/Carla Zero/, 'R$ 0,00')).toBeInTheDocument();
+  });
+
   it('a situação vai à API e a praça separa a lista na tela', async () => {
     const m = montar({
       'vendedores.listar': () =>
