@@ -267,7 +267,11 @@ public final class RegistroDeTabelas {
                         new TabelaDoServidor("envios_em_quarentena", false),
                         // Caixa automático (tarefa 7.6, V045): nunca vai ao aplicativo do vendedor.
                         new TabelaDoServidor("categorias_caixa", false),
-                        new TabelaDoServidor("lancamentos_caixa", true)));
+                        new TabelaDoServidor("lancamentos_caixa", true),
+                        // Contas a pagar, caixa manual e fechar semana (tarefa 7.7, V046): nunca vão ao aplicativo do vendedor.
+                        new TabelaDoServidor("contas_pagar", false),
+                        new TabelaDoServidor("baixas_pagar", true),
+                        new TabelaDoServidor("fechamentos_semana", true)));
     }
 
     /** Este registro somado a outro (usado pelos testes para acrescentar as tabelas de teste). */

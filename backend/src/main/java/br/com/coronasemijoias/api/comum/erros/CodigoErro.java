@@ -830,6 +830,113 @@ public enum CodigoErro {
             "Não encontramos este computador.",
             "Não encontramos este computador. Atualize a tela e tente de novo."),
 
+    // --- Contas a pagar, caixa manual e fechar semana (Fase 7, tarefa 7.7; ADR-0012, itens 11, 12 e 17) ---
+
+    /** As contas desta compra já foram geradas (HTTP 409): gerar de novo só desfazendo a compra. */
+    CONTAS_A_PAGAR_JA_GERADAS(
+            "As contas desta compra já foram geradas.",
+            "As contas desta compra já foram geradas. Para refazer as parcelas, desfaça a compra e lance de novo."),
+
+    /** A compra não tem valor a pagar (HTTP 409). */
+    COMPRA_SEM_VALOR_A_PAGAR(
+            "Esta compra não tem valor a pagar.",
+            "Esta compra não tem valor a pagar, então não há contas para gerar."),
+
+    /** Conta a pagar inexistente (HTTP 404). */
+    CONTA_A_PAGAR_NAO_ENCONTRADA(
+            "Não encontramos esta conta a pagar.",
+            "Não encontramos esta conta a pagar. Atualize a tela e tente de novo."),
+
+    /** A conta foi cancelada porque a compra foi desfeita (HTTP 409). */
+    CONTA_A_PAGAR_CANCELADA(
+            "Esta conta foi cancelada.",
+            "Esta conta foi cancelada porque a compra foi desfeita. Não há o que pagar."),
+
+    /** Pagamento a fornecedor inexistente (HTTP 404). */
+    PAGAMENTO_A_FORNECEDOR_NAO_ENCONTRADO(
+            "Não encontramos este pagamento.",
+            "Não encontramos este pagamento. Atualize a tela e tente de novo."),
+
+    /** O mesmo id de pagamento (ou de estorno) com outros dados (HTTP 409). */
+    PAGAMENTO_A_FORNECEDOR_JA_REGISTRADO_DIFERENTE(
+            "Este pagamento já foi registrado com outros dados.",
+            "Este pagamento já foi registrado com outros dados. Confira a conta antes de lançar de novo."),
+
+    /** O pagamento já foi estornado (HTTP 409). */
+    PAGAMENTO_A_FORNECEDOR_JA_ESTORNADO(
+            "Este pagamento já foi estornado.",
+            "Este pagamento já foi estornado e não pode mudar."),
+
+    /** O valor passa do que falta pagar (HTTP 422; o texto traz o saldo). */
+    PAGAMENTO_ACIMA_DO_SALDO(
+            "O valor passa do que falta pagar.",
+            "O valor passa do que falta pagar desta conta."),
+
+    /** O mesmo id de fechamento de semana com outra semana (HTTP 409). */
+    FECHAMENTO_DA_SEMANA_JA_REGISTRADO_DIFERENTE(
+            "Este fechamento já foi registrado com outros dados.",
+            "Este fechamento já foi registrado para outra semana. Confira a lista de semanas."),
+
+    /** A data cai numa semana já fechada (HTTP 409). */
+    DATA_EM_SEMANA_FECHADA(
+            "Essa semana já foi fechada.",
+            "Essa semana já foi fechada. Lance com a data de hoje."),
+
+    /** Lançamento do caixa inexistente (HTTP 404). */
+    LANCAMENTO_DO_CAIXA_NAO_ENCONTRADO(
+            "Não encontramos este lançamento.",
+            "Não encontramos este lançamento. Atualize a tela e tente de novo."),
+
+    /** O mesmo id de lançamento (ou de estorno) com outros dados (HTTP 409). */
+    LANCAMENTO_DO_CAIXA_JA_REGISTRADO_DIFERENTE(
+            "Este lançamento já foi registrado com outros dados.",
+            "Este lançamento já foi registrado com outros dados. Confira o caixa antes de lançar de novo."),
+
+    /** O lançamento já foi estornado (HTTP 409). */
+    LANCAMENTO_JA_ESTORNADO(
+            "Este lançamento já foi estornado.",
+            "Este lançamento já foi estornado e não pode mudar."),
+
+    /** O lançamento já é um estorno e não se estorna de novo (HTTP 409). */
+    LANCAMENTO_DO_CAIXA_E_ESTORNO(
+            "Este lançamento já é um estorno.",
+            "Este lançamento já é um estorno e não pode ser estornado de novo. Faça um lançamento novo."),
+
+    /** Lançamento que veio de um pagamento ou recebimento não se estorna pelo caixa manual (HTTP 409). */
+    LANCAMENTO_AUTOMATICO(
+            "Este lançamento veio de um pagamento.",
+            "Este lançamento veio de um pagamento. Desfaça o pagamento para ele sair do caixa."),
+
+    /** Categoria do caixa inexistente (HTTP 404). */
+    CATEGORIA_DO_CAIXA_NAO_ENCONTRADA(
+            "Não encontramos esta categoria.",
+            "Não encontramos esta categoria. Atualize a tela e tente de novo."),
+
+    /** O mesmo id de categoria com outros dados, ou nome que já existe (HTTP 409). */
+    CATEGORIA_DO_CAIXA_JA_EXISTE(
+            "Já existe uma categoria com este nome.",
+            "Já existe uma categoria com este nome. Use outro nome."),
+
+    /** Categoria do sistema não muda (HTTP 409). */
+    CATEGORIA_DO_CAIXA_DO_SISTEMA(
+            "Esta categoria é do sistema.",
+            "Esta categoria é do sistema e não pode ser alterada."),
+
+    /** Semana fechada não muda nem se exclui (HTTP 409). */
+    SEMANA_FECHADA_NAO_MUDA(
+            "Esta semana já foi fechada.",
+            "Esta semana já foi fechada e não muda mais."),
+
+    /** A semana ainda não terminou (HTTP 409). */
+    SEMANA_NAO_TERMINOU(
+            "Esta semana ainda não terminou.",
+            "Esta semana ainda não terminou. Feche a semana depois do último dia dela."),
+
+    /** Há acerto em andamento na semana (HTTP 409). */
+    SEMANA_COM_ACERTO_EM_ANDAMENTO(
+            "Há acerto em andamento nesta semana.",
+            "Há acerto em andamento nesta semana. Termine ou desista do acerto antes de fechar a semana."),
+
     // --- Receber os dados (Fase 5, tarefa 5.4; ADR-0013, item 3) ---
 
     /** O ponto de onde o computador recebe os dados não vale mais (backup restaurado): ele baixa tudo de novo (HTTP 409). */

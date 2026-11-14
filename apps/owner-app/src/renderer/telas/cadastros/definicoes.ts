@@ -198,16 +198,6 @@ export const DEFINICOES: Record<NomeDoCadastro, Definicao> = {
       { nome: 'numero', rotulo: T.semanas.campos.numero, tipo: 'numero', obrigatorio: true },
       { nome: 'inicio', rotulo: T.semanas.campos.inicio, tipo: 'data', obrigatorio: true },
       { nome: 'fim', rotulo: T.semanas.campos.fim, tipo: 'data', obrigatorio: true },
-      {
-        nome: 'situacao',
-        rotulo: T.semanas.campos.situacao,
-        tipo: 'selecao',
-        padrao: 'ABERTA',
-        opcoes: [
-          { valor: 'ABERTA', rotulo: 'Aberta' },
-          { valor: 'FECHADA', rotulo: 'Fechada' },
-        ],
-      },
     ],
   },
   restricoes: {

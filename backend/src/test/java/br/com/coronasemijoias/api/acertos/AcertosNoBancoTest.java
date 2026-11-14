@@ -64,7 +64,7 @@ class AcertosNoBancoTest extends ApoioDoAcerto {
 
     @Test
     void semanaFechadaRecusa() {
-        jdbc.update("UPDATE corona.semanas SET situacao = 'FECHADA' WHERE id = ?", semana);
+        br.com.coronasemijoias.api.testes.SemanasDeTeste.fecharNoBanco(jdbc, semana, usuarios.dona().id());
         assertThatThrownBy(() -> acertoNoBanco(vendedor, semana)).isInstanceOf(DataAccessException.class);
     }
 

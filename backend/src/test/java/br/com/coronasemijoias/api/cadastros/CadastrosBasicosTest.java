@@ -317,15 +317,15 @@ class CadastrosBasicosTest extends TesteDeIntegracao {
     }
 
     @Test
-    void semanaPodeSerFechadaEExcluidaLiberandoAsDatas() throws Exception {
+    void semanaPodeSerExcluidaLiberandoAsDatasEOFormularioNaoFecha() throws Exception {
         int n = NUMERO_DA_SEMANA.getAndAdd(10);
         LocalDate inicio = inicioDe(n);
         String id = criar("/api/dona/semanas", semana(n, inicio, inicio.plusDays(6))).get("id").asString();
         Map<String, Object> edicao = semana(n, inicio, inicio.plusDays(6));
         edicao.put("situacao", "FECHADA");
         edicao.put("version", 1);
-        enviar("PUT", "/api/dona/semanas/" + id, dona(), edicao)
-                .andExpect(status().isOk()).andExpect(jsonPath("$.situacao").value("FECHADA"));
+        // A semana só fecha pela rota "Fechar semana" (tarefa 7.7): o formulário recusa FECHADA.
+        enviar("PUT", "/api/dona/semanas/" + id, dona(), edicao).andExpect(status().isBadRequest());
         enviar("DELETE", "/api/dona/semanas/" + id, dona(), null).andExpect(status().isNoContent());
         criar("/api/dona/semanas", semana(n, inicio, inicio.plusDays(6)));
     }

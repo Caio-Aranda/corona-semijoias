@@ -108,10 +108,13 @@ class PullDoDinheiroDoVendedorTest extends ApoioDoFechamento {
     void oCaixaEAsCategoriasNuncaVaoAoAplicativo() throws Exception {
         Cenario a = cenario();
         Map<String, Map<UUID, LinhaDoPull>> copia = puxarTudo(a.v());
-        assertThat(copia).doesNotContainKeys("lancamentos_caixa", "categorias_caixa");
+        assertThat(copia).doesNotContainKeys("lancamentos_caixa", "categorias_caixa", "contas_pagar", "baixas_pagar", "fechamentos_semana");
         assertThat(registro.sincronizavel("lancamentos_caixa")).isEmpty();
         assertThat(registro.sincronizavel("categorias_caixa")).isEmpty();
-        assertThat(registro.sincronizaveis().stream().map(t -> t.nome())).doesNotContain("lancamentos_caixa", "categorias_caixa");
+        for (String tabela : java.util.List.of("contas_pagar", "baixas_pagar", "fechamentos_semana")) {
+            assertThat(registro.sincronizavel(tabela)).as(tabela).isEmpty();
+        }
+        assertThat(registro.sincronizaveis().stream().map(t -> t.nome())).doesNotContain("lancamentos_caixa", "categorias_caixa", "contas_pagar", "baixas_pagar", "fechamentos_semana");
         assertThat(copia.toString().toLowerCase()).doesNotContain("repasse do vendedor").doesNotContain("custo");
     }
 

@@ -128,7 +128,7 @@ class IniciarAcertoTest extends ApoioDoAcerto {
     void semanaFechadaOuInexistenteEUmaSemanaJaAcertadaRecusam() throws Exception {
         UUID semana = semana();
         maletaConferida(vendedor, semana, peca, 5);
-        jdbc.update("UPDATE corona.semanas SET situacao = 'FECHADA' WHERE id = ?", semana);
+        br.com.coronasemijoias.api.testes.SemanasDeTeste.fecharNoBanco(jdbc, semana, usuarios.dona().id());
         postar(ACERTOS_DA_DONA, dona(), mapa("id", UUID.randomUUID(), "vendedorId", vendedor.vendedorId(), "semanaId", semana))
                 .andExpect(status().isConflict()).andExpect(jsonPath("$.codigo").value("SEMANA_FECHADA"));
         postar(ACERTOS_DA_DONA, dona(), mapa("id", UUID.randomUUID(), "vendedorId", vendedor.vendedorId(),

@@ -204,3 +204,34 @@ Issue #150, PR 167 (tarefa crítica: plano aprovado no PR, com um ajuste da orqu
 - Lançamento manual de caixa, categorias com rota, aviso de caixa negativo e fechar semana (7.7); consulta formal e rota das conciliações (7.8); telas (7.9, 7.10 e 7.11); relatórios (7.12).
 - O teste de dois fechamentos disputando o mesmo crédito: com um acerto em andamento por vendedor (índice único), os dois fechamentos seriam do mesmo acerto (já coberto) e o crédito só tem disputa possível pelo `UNIQUE`, provado no banco.
 - Multa, juros e cartão (fora do escopo do plano).
+
+## Tarefa 7.7: contas a pagar, caixa manual e fechar semana
+
+Issue #151, PR 168 (tarefa crítica: plano aprovado no PR, as decisões 1 a 11 confirmadas pela orquestradora, sem ajustes). O que falta do financeiro do ADR-0012 no servidor (itens 2, 3.8, 11, 12, 13, 14, 15, 16 e 17; condições C4, C5 e C10): as contas a pagar das compras, o pagamento a fornecedor, o caixa manual com categorias, o aviso de caixa negativo e fechar a semana. Tudo é backend, mais uma mudança pequena no Corona Gestão; o Corona Vendas não foi tocado.
+
+**O que entrou**
+
+- **Migração `V046__contas_a_pagar_caixa_manual_e_semana.sql`:** `contas_pagar` (só do servidor; conteúdo imutável, atalhos `valor_pago`, `valor_cancelado` e `status` conferidos com a soma das baixas, soma das parcelas = total da compra conferida no `COMMIT`), `baixas_pagar` (imutável; `PAGAMENTO` em `DINHEIRO | PIX | BOLETO`, o estorno como baixa negativa, `CANCELAMENTO` da compra desfeita; cada pagamento tem exatamente um lançamento de caixa, conferido no `COMMIT`), `fechamentos_semana` (imutável), a categoria do sistema "Pagamento a fornecedor", as origens `MANUAL` e `PAGAMENTO_FORNECEDOR` em `lancamentos_caixa` (com `motivo` e `conteudo`), o gatilho que recusa lançamento com data em semana fechada, `proteger_semana` (a semana só fecha com o registro e nunca muda nem reabre), a segunda trava da semana em `proteger_acerto()` e na maleta (`FOR SHARE`) e `categorias_caixa` com tipo imutável e categoria do sistema intocável. Nenhuma migração publicada foi editada.
+- **`ServicoDeContasAPagar`** (único que grava em `contas_pagar` e `baixas_pagar`): gerar (1 a 24 parcelas mensais, `Dinheiro.dividirEmParcelas`, uma geração por compra), pagar (parcial ou inteiro, nunca acima do saldo, só dinheiro, Transferência (PIX) e boleto, data opcional e nunca no futuro), estornar o pagamento (motivo, um só por pagamento) e cancelar o que está em aberto da compra desfeita (chamado pelo `ServicoDeCompras.desfazer`, na mesma transação).
+- **`ServicoDeCaixa`** ganha `lancarManual`, `estornarManual`, `lancarPagamentoAFornecedor` e `estornarPagamentoAFornecedor` e continua o único escritor de `lancamentos_caixa`; **`ServicoDeLancamentosManuais`** (validação, idempotência e auditoria), **`ServicoDeCategoriasDoCaixa`**, **`FonteDeAvisosDoCaixa`** (aviso "O caixa está negativo" enquanto o saldo for menor que zero; o caixa nunca bloqueia) e o extrato com fornecedor e motivo.
+- **`ServicoDeSemanas.fechar`:** só a dona, só semana que já terminou e sem acerto em andamento; o formulário de semana não aceita mais "Fechada"; semana fechada não se edita nem se exclui; iniciar acerto, rascunho e envio de maleta e lançamento de caixa leem a semana com `FOR SHARE` como última trava.
+- **Rotas** (todas `/api/dona/...`, só ADMIN): `POST/GET /compras/{id}/contas-a-pagar`, `GET /contas-a-pagar` (fornecedor, situação com "Vencida" calculada, vencimento de/até), `GET /contas-a-pagar/{id}`, `POST /contas-a-pagar/{id}/pagamentos`, `POST /contas-a-pagar/pagamentos/{baixaId}/estorno`, `GET/POST/PUT /caixa/categorias` (mais `inativar` e `reativar`), `POST /caixa/lancamentos` e `/{id}/estorno`, `GET /caixa/saldo`, `POST /semanas/{id}/fechar`. Todo comando tem UUID do aplicativo: 201, 200 no reenvio igual, 409 com o mesmo id e conteúdo diferente.
+- **Clientes da API:** `npm run api:clientes` regerou só o cliente da dona; o diff do `packages/api-client-vendedor` ficou **vazio** (a barreira do vendedor).
+- **Corona Gestão:** a opção "Fechada" saiu do formulário de semana (a situação continua na lista); o botão **Fechar semana** e as telas são da 7.10.
+- **Documentos:** especificação v1.21 (§7.4, §7.5, §9), ADR-0012 ("Como ficou" nos itens 3.8, 11 e 12), glossário (mensagens novas) e nota de deploy em `entrega-corona-vendas.md` (sem migração local nova; a ordem não importa para o Corona Vendas).
+
+**Decisões que tomei (as do plano aprovado, 1 a 11; o que mais chama atenção)**
+
+- Estornar o pagamento de uma compra **já desfeita** cancela, na hora, o que voltou a ficar em aberto (assim a parcela termina `CANCELADA` e o `CHECK` da situação continua valendo).
+- O formulário de semana com "Fechada" recebe 400 com o campo `situacao` (padrão das validações da API), não 422.
+- Uma semana que já estava `FECHADA` antes da V046 continua fechada e imutável, mas não tem linha em `fechamentos_semana` (não há produção ainda).
+- O estorno de estorno de lançamento manual tem código próprio (`LANCAMENTO_DO_CAIXA_E_ESTORNO`, 409).
+
+**Testes** (PostgreSQL do Testcontainers): banco (17), gerar contas (7), pagar e estornar (8), compra desfeita (4), categorias (7), caixa manual (7), fechar semana (7), concorrência com threads reais e tempo limite de 10 s (4), permissões (1, todas as rotas), arquitetura (6), pull do vendedor sem as tabelas novas; Corona Gestão, formulário de semana sem "Fechada". Os testes antigos que fechavam semana por SQL ou pelo formulário ganharam o auxiliar `SemanasDeTeste.fecharNoBanco` (a regra mudou: só se fecha com o registro).
+
+**Resultado final:** `npm run api:test` passa (1563 testes, nenhuma falha); Corona Vendas 637 testes (1 ignorado, como antes); Corona Gestão 666 testes em 46 arquivos; `npm run test:duas-pontas -w @corona/testes-sync` passa (26 testes em 7 arquivos); `npm run lint`, `npm run typecheck` e `npm run format:check` limpos; `npm run seller:empacotar` e `npm run barreira:varrer` com varredura limpa; o diff de `packages/api-client-vendedor` ficou vazio.
+
+**Não fiz**
+
+- As telas de contas a pagar, caixa e o botão Fechar semana (7.10); as conciliações com rota (7.8); os relatórios (7.12).
+- Refazer o parcelamento de uma compra (hoje só desfazendo a compra), cheque, cartão, entrada, multa e juros (fora do escopo).

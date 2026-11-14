@@ -231,6 +231,42 @@
         },
         "type" : "object"
       },
+      "Baixa" : {
+        "properties" : {
+          "dataPagamento" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "estornaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "forma" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "motivo" : {
+            "type" : "string"
+          },
+          "registradaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "BoletoDoAcerto" : {
         "properties" : {
           "valor" : {
@@ -304,6 +340,27 @@
           "version" : {
             "format" : "int32",
             "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "CategoriasDoCaixaDaDonaControllerCategoria" : {
+        "properties" : {
+          "ativa" : {
+            "type" : "boolean"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "sistema" : {
+            "type" : "boolean"
+          },
+          "tipo" : {
+            "type" : "string"
           }
         },
         "type" : "object"
@@ -854,6 +911,74 @@
         },
         "type" : "object"
       },
+      "ConsultasDeContasAPagarConta" : {
+        "properties" : {
+          "baixas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Baixa"
+            },
+            "type" : "array"
+          },
+          "compraId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "fornecedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "fornecedorNome" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "numeroDaCompra" : {
+            "type" : "string"
+          },
+          "parcela" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "saldo" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "situacao" : {
+            "type" : "string"
+          },
+          "totalParcelas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorCancelado" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorPago" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vencimento" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "ConsultasDeDevolucaoETrocaLinhaDeDevolucao" : {
         "properties" : {
           "cancelada" : {
@@ -1219,12 +1344,18 @@
           "forma" : {
             "type" : "string"
           },
+          "fornecedorNome" : {
+            "type" : "string"
+          },
           "id" : {
             "format" : "uuid",
             "type" : "string"
           },
           "lancadoEm" : {
             "format" : "date-time",
+            "type" : "string"
+          },
+          "motivo" : {
             "type" : "string"
           },
           "origemId" : {
@@ -1250,6 +1381,20 @@
             "type" : "string"
           },
           "vendedorNome" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ConsultasDoCaixaSaldo" : {
+        "properties" : {
+          "negativo" : {
+            "type" : "boolean"
+          },
+          "saldo" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           }
         },
@@ -2728,6 +2873,14 @@
           "quantidade" : {
             "format" : "int32",
             "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "InventariosDaDonaControllerPedidoParaFechar" : {
+        "properties" : {
+          "zerarNaoLidos" : {
+            "type" : "boolean"
           }
         },
         "type" : "object"
@@ -4948,6 +5101,29 @@
         },
         "type" : "object"
       },
+      "PaginaConsultasDeContasAPagarConta" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ConsultasDeContasAPagarConta"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "PaginaEstoqueDaDonaControllerRespostaDaLinha" : {
         "properties" : {
           "itens" : {
@@ -5505,6 +5681,21 @@
         },
         "type" : "object"
       },
+      "PedidoDeCategoria" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "PedidoDeCodigo" : {
         "properties" : {
           "ativo" : {
@@ -5729,6 +5920,38 @@
         },
         "type" : "object"
       },
+      "PedidoDeLancamento" : {
+        "properties" : {
+          "categoriaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "data" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "descricao" : {
+            "type" : "string"
+          },
+          "forma" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "PedidoDeLinha" : {
         "properties" : {
           "motivo" : {
@@ -5807,6 +6030,36 @@
       "PedidoDeNegacao" : {
         "properties" : {
           "motivo" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "PedidoDeNome" : {
+        "properties" : {
+          "nome" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "PedidoDePagamento" : {
+        "properties" : {
+          "data" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "forma" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           }
         },
@@ -6069,10 +6322,19 @@
         },
         "type" : "object"
       },
-      "PedidoParaFechar" : {
+      "PedidoParaGerar" : {
         "properties" : {
-          "zerarNaoLidos" : {
-            "type" : "boolean"
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "parcelas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "primeiroVencimento" : {
+            "format" : "date",
+            "type" : "string"
           }
         },
         "type" : "object"
@@ -8394,6 +8656,15 @@
         "required" : [ "fim", "inicio", "numero" ],
         "type" : "object"
       },
+      "SemanasDaDonaControllerPedidoParaFechar" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "SemanasDaDonaControllerResposta" : {
         "properties" : {
           "fim" : {
@@ -8456,6 +8727,30 @@
           "quantidade" : {
             "format" : "int32",
             "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "ServicoDeContasAPagarPedidoDeEstorno" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "motivo" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ServicoDeLancamentosManuaisPedidoDeEstorno" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "motivo" : {
+            "type" : "string"
           }
         },
         "type" : "object"
@@ -9820,9 +10115,172 @@
         "tags" : [ "avisos-da-dona-controller" ]
       }
     },
+    "/api/dona/caixa/categorias" : {
+      "get" : {
+        "description" : "Todas as categorias, as do sistema primeiro e depois por nome, com a situação (ativa ou inativa).",
+        "operationId" : "listarCategoriasDoCaixa",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/CategoriasDoCaixaDaDonaControllerCategoria"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Categorias do caixa",
+        "tags" : [ "categorias-do-caixa-da-dona-controller" ]
+      },
+      "post" : {
+        "description" : "Nome único (sem diferenciar maiúsculas) e tipo ENTRADA ou SAIDA, que não muda depois. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409.",
+        "operationId" : "criarCategoriaDoCaixa",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeCategoria"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CategoriasDoCaixaDaDonaControllerCategoria"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Criar uma categoria do caixa",
+        "tags" : [ "categorias-do-caixa-da-dona-controller" ]
+      }
+    },
+    "/api/dona/caixa/categorias/{id}" : {
+      "put" : {
+        "description" : "Só o nome muda. Categoria do sistema não muda.",
+        "operationId" : "renomearCategoriaDoCaixa",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeNome"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CategoriasDoCaixaDaDonaControllerCategoria"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Renomear uma categoria do caixa",
+        "tags" : [ "categorias-do-caixa-da-dona-controller" ]
+      }
+    },
+    "/api/dona/caixa/categorias/{id}/inativar" : {
+      "post" : {
+        "description" : "A categoria inativa não recebe lançamento novo; os antigos continuam. Categoria do sistema não muda.",
+        "operationId" : "inativarCategoriaDoCaixa",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CategoriasDoCaixaDaDonaControllerCategoria"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Inativar uma categoria do caixa",
+        "tags" : [ "categorias-do-caixa-da-dona-controller" ]
+      }
+    },
+    "/api/dona/caixa/categorias/{id}/reativar" : {
+      "post" : {
+        "description" : "A categoria volta a receber lançamentos.",
+        "operationId" : "reativarCategoriaDoCaixa",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CategoriasDoCaixaDaDonaControllerCategoria"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Reativar uma categoria do caixa",
+        "tags" : [ "categorias-do-caixa-da-dona-controller" ]
+      }
+    },
     "/api/dona/caixa/lancamentos" : {
       "get" : {
-        "description" : "Os lançamentos do caixa (o que entrou dos recebimentos dos vendedores e o que saiu em pagamentos aos vendedores), do mais antigo para o mais novo, com o saldo depois de cada um. Período opcional (de e até, dias de Brasília, inclusive): o saldo anterior é a soma de tudo antes do primeiro dia. Só valores em Real.",
+        "description" : "Os lançamentos do caixa (recebimentos dos vendedores, pagamentos aos vendedores e a fornecedores e os lançamentos manuais), do mais antigo para o mais novo, com o saldo depois de cada um. Período opcional (de e até, dias de Brasília, inclusive): o saldo anterior é a soma de tudo antes do primeiro dia. Só valores em Real.",
         "operationId" : "verExtratoDoCaixa",
         "parameters" : [ {
           "in" : "query",
@@ -9857,6 +10315,102 @@
           "bearer" : [ ]
         } ],
         "summary" : "Extrato do caixa",
+        "tags" : [ "caixa-da-dona-controller" ]
+      },
+      "post" : {
+        "description" : "Entrada ou saída avulsa, com categoria do mesmo tipo, forma (dinheiro, Transferência (PIX) ou boleto), data (nunca no futuro nem numa semana já fechada) e descrição. O valor vai sempre positivo, em Real: o sinal é do servidor. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409.",
+        "operationId" : "lancarNoCaixa",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeLancamento"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConsultasDoCaixaLancamento"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Fazer um lançamento manual no caixa",
+        "tags" : [ "caixa-da-dona-controller" ]
+      }
+    },
+    "/api/dona/caixa/lancamentos/{id}/estorno" : {
+      "post" : {
+        "description" : "Desfaz o lançamento manual com motivo, na data de hoje. Lançamento que veio de um pagamento ou recebimento não se estorna aqui (desfaça o pagamento). Mesmo id de estorno devolve 200; outro id para o mesmo lançamento, 409.",
+        "operationId" : "estornarLancamentoDoCaixa",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ServicoDeLancamentosManuaisPedidoDeEstorno"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConsultasDoCaixaLancamento"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Estornar um lançamento manual",
+        "tags" : [ "caixa-da-dona-controller" ]
+      }
+    },
+    "/api/dona/caixa/saldo" : {
+      "get" : {
+        "description" : "A soma de todos os lançamentos, em Real, e se está negativo. Saldo negativo só avisa: nada é bloqueado.",
+        "operationId" : "verSaldoDoCaixa",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConsultasDoCaixaSaldo"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Saldo do caixa",
         "tags" : [ "caixa-da-dona-controller" ]
       }
     },
@@ -10564,6 +11118,84 @@
         "tags" : [ "compras-da-dona-controller" ]
       }
     },
+    "/api/dona/compras/{compraId}/contas-a-pagar" : {
+      "get" : {
+        "description" : "As parcelas da compra, em ordem. Vazio quando as contas ainda não foram geradas.",
+        "operationId" : "listarContasAPagarDaCompra",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "compraId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/ConsultasDeContasAPagarConta"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Contas a pagar de uma compra",
+        "tags" : [ "contas-a-pagar-da-dona-controller" ]
+      },
+      "post" : {
+        "description" : "Divide o total da compra em parcelas (1 a 24), vencendo de mês em mês a partir do vencimento informado. As parcelas somam exatamente o total da compra. Só uma vez por compra: mesmo id e mesmo pedido devolve 200; outro pedido, 409.",
+        "operationId" : "gerarContasAPagarDaCompra",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "compraId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoParaGerar"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/ConsultasDeContasAPagarConta"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Gerar as contas a pagar de uma compra",
+        "tags" : [ "contas-a-pagar-da-dona-controller" ]
+      }
+    },
     "/api/dona/compras/{id}" : {
       "get" : {
         "description" : "Com os itens, as fotos das peças, os custos e o total.",
@@ -10744,6 +11376,193 @@
         } ],
         "summary" : "Mudar a garantia e os limites de devolução",
         "tags" : [ "garantia-da-dona-controller" ]
+      }
+    },
+    "/api/dona/contas-a-pagar" : {
+      "get" : {
+        "description" : "As parcelas a pagar, pelo vencimento. Filtros: fornecedor, situação (ABERTA, PARCIAL, PAGA, CANCELADA ou VENCIDA, calculada pela data de hoje) e vencimento de/até. A página começa em 0 (até 100 por página).",
+        "operationId" : "listarContasAPagar",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "fornecedorId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vencimentoDe",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vencimentoAte",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaginaConsultasDeContasAPagarConta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Contas a pagar",
+        "tags" : [ "contas-a-pagar-da-dona-controller" ]
+      }
+    },
+    "/api/dona/contas-a-pagar/pagamentos/{baixaId}/estorno" : {
+      "post" : {
+        "description" : "Desfaz o pagamento, sem limite de dia, com motivo. O dinheiro volta ao caixa (com a data de hoje) e a conta volta a ter saldo. Mesmo id de estorno devolve 200; outro id para o mesmo pagamento, 409.",
+        "operationId" : "estornarPagamentoAFornecedor",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "baixaId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ServicoDeContasAPagarPedidoDeEstorno"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConsultasDeContasAPagarConta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Estornar um pagamento a fornecedor",
+        "tags" : [ "contas-a-pagar-da-dona-controller" ]
+      }
+    },
+    "/api/dona/contas-a-pagar/{id}" : {
+      "get" : {
+        "description" : "A parcela com as baixas (pagamentos, estornos e cancelamento).",
+        "operationId" : "verContaAPagar",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConsultasDeContasAPagarConta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ver uma conta a pagar",
+        "tags" : [ "contas-a-pagar-da-dona-controller" ]
+      }
+    },
+    "/api/dona/contas-a-pagar/{id}/pagamentos" : {
+      "post" : {
+        "description" : "Paga a parcela (inteira ou parte) em dinheiro, Transferência (PIX) ou boleto. Não aceita mais do que falta pagar. A data é opcional (padrão hoje; nunca no futuro nem numa semana já fechada). Sai do caixa na mesma hora. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409.",
+        "operationId" : "pagarContaAPagar",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDePagamento"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConsultasDeContasAPagarConta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Registrar um pagamento a fornecedor",
+        "tags" : [ "contas-a-pagar-da-dona-controller" ]
       }
     },
     "/api/dona/contas-receber" : {
@@ -12296,7 +13115,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/PedidoParaFechar"
+                "$ref" : "#/components/schemas/InventariosDaDonaControllerPedidoParaFechar"
               }
             }
           }
@@ -17877,6 +18696,48 @@
           "bearer" : [ ]
         } ],
         "summary" : "Editar semana",
+        "tags" : [ "semanas-da-dona-controller" ]
+      }
+    },
+    "/api/dona/semanas/{id}/fechar" : {
+      "post" : {
+        "description" : "Fecha a semana, uma vez só: ela não aceita mais acerto, maleta nem lançamento de caixa com data nela e nunca reabre. Só semana que já terminou (o último dia é antes de hoje) e sem acerto em andamento. Mesmo id e mesma semana devolve 200; o mesmo id para outra semana, 409.",
+        "operationId" : "fecharSemana",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SemanasDaDonaControllerPedidoParaFechar"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SemanasDaDonaControllerResposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Fechar semana",
         "tags" : [ "semanas-da-dona-controller" ]
       }
     },
