@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import br.com.coronasemijoias.api.testes.AcertosDeTeste;
 import br.com.coronasemijoias.api.testes.UsuariosDeTeste;
 import br.com.coronasemijoias.api.testes.UsuariosDeTeste.UsuarioDeTeste;
 import java.math.BigDecimal;
@@ -456,7 +457,7 @@ class PushDaFase6Test extends ApoioDoEnvioDaFase6 {
         UUID daVenda = maleta(v, a, 2);
         UUID vendaA = vender(v, daVenda, cliente, List.of(linha(a, 2)), List.of(pagamento("100.00", "DINHEIRO")));
         UUID aberta = maleta(v, pecaB, 1);
-        jdbc.update("UPDATE corona.remessas SET status = 'EM_ACERTO' WHERE id = ?", daVenda);
+        AcertosDeTeste.emAcerto(jdbc, daVenda);
         Map<String, Integer> antes = contagens();
         UUID dev = UUID.randomUUID();
         Map<String, Object> troca = pedidoDeTroca(vendaA, "ARREPENDIMENTO", umaBoa(a), aberta, List.of(linha(pecaB, 1)), List.of());
@@ -474,14 +475,14 @@ class PushDaFase6Test extends ApoioDoEnvioDaFase6 {
         // B de outra maleta em acerto, com A de maleta aberta: também recusada.
         Cenario d = cenario();
         UUID outraB = maleta(d.v(), d.c(), 1);
-        jdbc.update("UPDATE corona.remessas SET status = 'EM_ACERTO' WHERE id = ?", outraB);
+        AcertosDeTeste.emAcerto(jdbc, outraB);
         Map<String, Object> trocaB = pedidoDeTroca(d.vendaA(), "ARREPENDIMENTO", umaBoa(d.a()), outraB, List.of(linha(d.c(), 1)),
                 List.of());
         assertThat(codigo(enviar(d.v(), List.of(trocaPeloEnvio(trocaB, relogio.instant()))), 0)).isEqualTo("MALETA_EM_ACERTO");
 
         // Depois do acerto, a dona tenta de novo: entra, e a peça boa vai para a loja (nenhum movimento na maleta acertada).
         assertThat(saldo(daVenda, a)).isZero();
-        jdbc.update("UPDATE corona.remessas SET status = 'ACERTADA' WHERE id = ?", daVenda);
+        AcertosDeTeste.acertada(jdbc, daVenda);
         mvc.perform(post("/api/dona/envios-com-problema/" + dev + "/tentar-de-novo").with(dona())).andExpect(status().isOk());
         Map<String, Object> f = fotoDaDevolucao(dev);
         assertThat(f.get("movimentos")).asInstanceOf(org.assertj.core.api.InstanceOfAssertFactories.LIST).isEmpty();

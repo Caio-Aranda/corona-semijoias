@@ -73,6 +73,9 @@ public class ServicoDeConferencia {
                     : CodigoErro.MALETA_JA_CONFERIDA);
         }
         VendedorAtivo.exigir(jdbc, vendedorId);
+        if ("EM_ACERTO".equals(status)) {
+            throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.MALETA_EM_ACERTO);
+        }
         if (!"ENVIADA".equals(status)) {
             throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.MALETA_NAO_ESTA_COM_VOCE);
         }

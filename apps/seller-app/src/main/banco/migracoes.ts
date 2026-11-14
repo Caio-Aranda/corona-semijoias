@@ -308,6 +308,49 @@ ALTER TABLE devolucoes ADD COLUMN valor_abatido TEXT;
 ALTER TABLE baixas_receber ADD COLUMN devolucao_id TEXT;
 `;
 
+/**
+ * As tabelas que a recarga dirigida da versão 6 traz de novo (tarefa 7.4): as duas novas do acerto. O computador que já tinha
+ * cursor não receberia o que o servidor gravou antes da migração.
+ */
+export const TABELAS_DA_RECARGA_DIRIGIDA_V6 = Object.freeze([
+  'acertos',
+  'leituras_acerto',
+] as const);
+
+/**
+ * Versão 6 (tarefa 7.4; ADR-0012, itens 2, 3 e 15): as cópias do acerto e da contagem dele, com as colunas da lista do
+ * servidor (nunca quem iniciou, desistiu ou leu; a ligação maleta -> acerto não vem). Booleano em 0/1, datas em texto ISO. Banco
+ * que já tinha cursor ganha a marca da recarga dirigida (somada à que ainda não terminou, sem repetir e na ordem: as antigas
+ * primeiro). Banco novo faz a carga inicial e não precisa.
+ */
+const V6 = `
+CREATE TABLE acertos (${CONTROLE},
+  vendedor_id TEXT, semana_id TEXT, status TEXT, pedido_pelo_vendedor INTEGER, iniciado_em TEXT, desistido_em TEXT,
+  motivo_desistencia TEXT
+);
+CREATE INDEX acertos_do_vendedor ON acertos (vendedor_id);
+
+CREATE TABLE leituras_acerto (${CONTROLE},
+  acerto_id TEXT NOT NULL, produto_id TEXT, quantidade INTEGER, estado_peca TEXT, lida_em TEXT, pelo_vendedor INTEGER,
+  dispositivo_id TEXT
+);
+CREATE INDEX leituras_acerto_do_acerto ON leituras_acerto (acerto_id);
+
+INSERT INTO estado_sync (chave, valor)
+  SELECT 'recarga_dirigida', lista FROM (
+    SELECT json_group_array(t) AS lista FROM (
+      SELECT t FROM (
+        SELECT key AS k, value AS t FROM json_each(
+          coalesce((SELECT valor FROM estado_sync WHERE chave = 'recarga_dirigida'), '[]'))
+        UNION ALL
+        SELECT 1000 + key AS k, value AS t FROM json_each('${JSON.stringify(TABELAS_DA_RECARGA_DIRIGIDA_V6)}')
+      ) GROUP BY t ORDER BY min(k)
+    )
+  )
+   WHERE EXISTS (SELECT 1 FROM estado_sync WHERE chave = 'cursor' AND valor IS NOT NULL)
+  ON CONFLICT (chave) DO UPDATE SET valor = excluded.valor;
+`;
+
 export const MIGRACOES: readonly MigracaoLocal[] = Object.freeze([
   {
     versao: 1,
@@ -334,6 +377,11 @@ export const MIGRACOES: readonly MigracaoLocal[] = Object.freeze([
     versao: 5,
     descricao: 'valor abatido da devolução e a devolução da baixa de parcela (venda a prazo)',
     sql: V5,
+  },
+  {
+    versao: 6,
+    descricao: 'acerto e a contagem dele (iniciar, contar e desistir) e a recarga dirigida',
+    sql: V6,
   },
 ]);
 
@@ -369,4 +417,7 @@ export const TABELAS_SINCRONIZAVEIS = Object.freeze([
   // Fase 7 (tarefa 7.3, migração local 4).
   'contas_receber',
   'baixas_receber',
+  // Fase 7 (tarefa 7.4, migração local 6).
+  'acertos',
+  'leituras_acerto',
 ] as const);

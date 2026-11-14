@@ -4,6 +4,7 @@ import br.com.coronasemijoias.api.auditoria.ServicoDeAuditoria;
 import br.com.coronasemijoias.api.auditoria.ServicoDeAuditoria.Ator;
 import br.com.coronasemijoias.api.cadastros.Validacoes;
 import br.com.coronasemijoias.api.comum.dinheiro.Dinheiro;
+import br.com.coronasemijoias.api.acertos.ServicoDeAcertos;
 import br.com.coronasemijoias.api.comum.erros.CodigoErro;
 import br.com.coronasemijoias.api.comum.erros.ErroDaApi;
 import br.com.coronasemijoias.api.comum.identificadores.UuidV7;
@@ -201,6 +202,9 @@ public class ServicoDeRemessas {
         UUID vendedorId = vendedores.get(0);
         // Os envios do mesmo vendedor esperam um pelo outro: o limite é conferido com o envio anterior já gravado.
         travar("limite-do-vendedor:" + vendedorId);
+        // Depois a trava do vendedor (ordem do ADR-0012, item 13: vendedor, acerto, remessas): iniciar, desistir e enviar do mesmo
+        // vendedor esperam um pelo outro.
+        ServicoDeAcertos.trancarVendedor(jdbc, vendedorId);
         List<Map<String, Object>> linhas = jdbc.queryForList(
                 "SELECT status FROM corona.remessas WHERE id = ? AND deleted_at IS NULL FOR UPDATE", remessaId);
         if (linhas.isEmpty()) {
@@ -212,6 +216,11 @@ public class ServicoDeRemessas {
         }
         if (!"RASCUNHO".equals(status)) {
             throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.REMESSA_NAO_EDITAVEL);
+        }
+        // Maleta nova não sai enquanto o vendedor está em acerto: o esperado do fechamento já foi contado (o rascunho é livre).
+        if (Boolean.TRUE.equals(jdbc.queryForObject(
+                "SELECT EXISTS (SELECT 1 FROM corona.acertos WHERE vendedor_id = ? AND status = 'EM_ACERTO')", Boolean.class, vendedorId))) {
+            throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.VENDEDOR_EM_ACERTO);
         }
 
         VendedorDaMaleta vendedor = conferirVendedor(vendedorId);

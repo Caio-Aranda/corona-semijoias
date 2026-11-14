@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import br.com.coronasemijoias.api.devolucoes.ServicoDeDevolucoes.ModoDaDevolucao;
 import br.com.coronasemijoias.api.devolucoes.ServicoDeDevolucoes.PecaDoPedido;
 import br.com.coronasemijoias.api.devolucoes.ValorDaDevolucao;
+import br.com.coronasemijoias.api.testes.AcertosDeTeste;
 import br.com.coronasemijoias.api.testes.UsuariosDeTeste;
 import br.com.coronasemijoias.api.testes.UsuariosDeTeste.UsuarioDeTeste;
 import br.com.coronasemijoias.api.vendas.ServicoDeVendas.LinhaDoPedido;
@@ -248,7 +249,7 @@ class TrocaTest extends ApoioDasTrocas {
         // A maleta vende tudo: acertada sem sobra, ela não deixa diferença na conciliação do banco que os testes dividem.
         UUID antiga = maleta(v, a, 1);
         UUID vendaA = vender(v, antiga, cliente, List.of(linha(a, 1)), List.of(pagamento("50.00", "PIX")));
-        jdbc.update("UPDATE corona.remessas SET status = 'ACERTADA' WHERE id = ?", antiga);
+        AcertosDeTeste.acertada(jdbc, antiga);
         UUID nova = maleta(v, b, 3);
 
         JsonNode t = trocar(v, vendaA, a, nova, b, List.of(pagamento("20.00", "PIX")));
@@ -300,7 +301,7 @@ class TrocaTest extends ApoioDasTrocas {
 
         // Maleta de A em acerto.
         UUID outra = maleta(c.v(), c.b(), 3);
-        jdbc.update("UPDATE corona.remessas SET status = 'EM_ACERTO' WHERE id = ?", c.maleta());
+        AcertosDeTeste.emAcerto(jdbc, c.maleta());
         antes = contagens();
         assertThat(codigoDe(postar(TROCAS, como(c.v()), pedidoDeTroca(c.vendaA(), "ARREPENDIMENTO",
                 List.of(devolvida(c.a(), 1, "BOA")), outra, List.of(linha(c.b(), 1)), List.of()))

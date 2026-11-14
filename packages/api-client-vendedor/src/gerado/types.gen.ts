@@ -109,6 +109,31 @@ export type ConsultasDaMaletaDoVendedorPeca = {
     nome?: string;
 };
 
+export type ConsultasDeAcertosLeitura = {
+    dispositivoId?: string;
+    estadoPeca?: string;
+    id?: string;
+    lidaEm?: string;
+    peloVendedor?: boolean;
+    produtoId?: string;
+    quantidade?: number;
+};
+
+export type ConsultasDeAcertosMaleta = {
+    id?: string;
+    numero?: string;
+    status?: string;
+    statusAntes?: string;
+    tipo?: string;
+};
+
+export type ConsultasDeAcertosProduto = {
+    codigo?: string;
+    fotoHash?: string;
+    id?: string;
+    nome?: string;
+};
+
 export type ConsultasDeContasAReceberConta = {
     clienteId?: string;
     clienteNome?: string;
@@ -143,6 +168,12 @@ export type ConsultasDeVendasPeca = {
     fotoHash?: string;
     id?: string;
     nome?: string;
+};
+
+export type Contagem = {
+    estadoPeca?: string;
+    produto?: ConsultasDeAcertosProduto;
+    quantidade?: number;
 };
 
 export type CotacaoDoVendedor = {
@@ -240,6 +271,21 @@ export type DevolucaoDaTrocaPedida = {
 
 export type DiferencasNaConferencia = {
     tabelas: Array<string>;
+};
+
+export type FichaDoVendedor = {
+    contagem?: Array<Contagem>;
+    desistidoEm?: string;
+    id?: string;
+    iniciadoEm?: string;
+    leituras?: Array<ConsultasDeAcertosLeitura>;
+    maletas?: Array<ConsultasDeAcertosMaleta>;
+    motivoDesistencia?: string;
+    pedidoPeloVendedor?: boolean;
+    semanaId?: string;
+    semanaNumero?: number;
+    status?: string;
+    vendedorId?: string;
 };
 
 export type ItemDaAutorizacao = {
@@ -428,6 +474,10 @@ export type PedidoDaVenda = {
     totalConferido?: string;
 };
 
+export type PedidoDeAcerto = {
+    id?: string;
+};
+
 export type PedidoDeCancelamento = {
     id?: string;
     motivo?: string;
@@ -588,6 +638,24 @@ export type ResultadoGuardado = {
     mensagem?: string;
     operacaoId?: string;
     resultado?: string;
+};
+
+export type ResumoDoVendedor = {
+    desistidoEm?: string;
+    id?: string;
+    iniciadoEm?: string;
+    maletas?: number;
+    pedidoPeloVendedor?: boolean;
+    semanaId?: string;
+    semanaNumero?: number;
+    status?: string;
+};
+
+export type ServicoDeAcertosPedidoDeLeitura = {
+    estadoPeca?: string;
+    id?: string;
+    produtoId?: string;
+    quantidade?: number;
 };
 
 export type ServicoDeQuarentenaPedido = {
@@ -851,6 +919,74 @@ export type TrocarSenhaResponses = {
 };
 
 export type TrocarSenhaResponse = TrocarSenhaResponses[keyof TrocarSenhaResponses];
+
+export type ListarMeusAcertosData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/vendedor/acertos';
+};
+
+export type ListarMeusAcertosResponses = {
+    /**
+     * OK
+     */
+    200: Array<ResumoDoVendedor>;
+};
+
+export type ListarMeusAcertosResponse = ListarMeusAcertosResponses[keyof ListarMeusAcertosResponses];
+
+export type PedirMeuAcertoData = {
+    body: PedidoDeAcerto;
+    path?: never;
+    query?: never;
+    url: '/api/vendedor/acertos';
+};
+
+export type PedirMeuAcertoResponses = {
+    /**
+     * OK
+     */
+    200: FichaDoVendedor;
+};
+
+export type PedirMeuAcertoResponse = PedirMeuAcertoResponses[keyof PedirMeuAcertoResponses];
+
+export type VerMeuAcertoData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/vendedor/acertos/{id}';
+};
+
+export type VerMeuAcertoResponses = {
+    /**
+     * OK
+     */
+    200: FichaDoVendedor;
+};
+
+export type VerMeuAcertoResponse = VerMeuAcertoResponses[keyof VerMeuAcertoResponses];
+
+export type RegistrarMinhaLeituraDoAcertoData = {
+    body: ServicoDeAcertosPedidoDeLeitura;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/vendedor/acertos/{id}/leituras';
+};
+
+export type RegistrarMinhaLeituraDoAcertoResponses = {
+    /**
+     * OK
+     */
+    200: FichaDoVendedor;
+};
+
+export type RegistrarMinhaLeituraDoAcertoResponse = RegistrarMinhaLeituraDoAcertoResponses[keyof RegistrarMinhaLeituraDoAcertoResponses];
 
 export type ListarAutorizacoesDoVendedorData = {
     body?: never;

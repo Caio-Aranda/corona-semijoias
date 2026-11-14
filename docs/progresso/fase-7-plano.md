@@ -71,6 +71,7 @@ Só plano: nenhuma linha de código nesta tarefa (7.1). O modelo está no [ADR-0
 - Tabelas `acertos`, `leituras_acerto`, coluna `remessas.acerto_id`; transições `EM_ACERTO`/`DESISTIDO`.
 - Iniciar (vendedor ou dona), bloquear venda/remessa nova na maleta em acerto, contagem por leituras idempotentes, desistir.
 - Conferir que o `ServicoDeVendas` trava a remessa antes de ler o status; acrescentar a trava se faltar.
+- **Feito na 7.4 (PR 165, V043):** a trava já existia (conferido e provado por teste paralelo); as tabelas `acertos` e `leituras_acerto`, `remessas.acerto_id` e `remessas.status_antes_do_acerto`; iniciar (dona ou vendedor), travas (venda, estorno, devolução, troca, devolução à dona, cancelamento, conferência, envio de remessa), exceção da venda e do estorno feitos sem internet antes do início, contagem idempotente, desistir (só a dona), leitura da dona e do vendedor, `acertos` e `leituras_acerto` no pull e migração local 6 do Corona Vendas. Sem dinheiro: o esperado × contado vem com o fechamento (7.5).
 
 ### 7.5: acerto, parte 2 (fechamento)
 

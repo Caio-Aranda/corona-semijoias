@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AcharPecaDaMinhaMaletaData, AcharPecaDaMinhaMaletaResponses, AvisarDiferencaNaConferenciaData, AvisarDiferencaNaConferenciaResponses, BaixarFotoDaMinhaMaletaData, BaixarFotoDaMinhaMaletaResponses, BuscarPecaDaMinhaMaletaData, BuscarPecaDaMinhaMaletaResponses, CadastrarMeuClienteData, CadastrarMeuClienteResponses, CancelarDevolucaoDoVendedorData, CancelarDevolucaoDoVendedorResponses, CancelarTrocaDoVendedorData, CancelarTrocaDoVendedorResponses, ConferirDadosData, ConferirDadosResponses, ConferirMinhaMaletaData, ConferirMinhaMaletaResponses, DevolverDoClienteData, DevolverDoClienteResponses, EntrarData, EntrarResponses, EnviarOperacoesData, EnviarOperacoesResponses, EstornarRecebimentoDoVendedorData, EstornarRecebimentoDoVendedorResponses, EstornarVendaDoVendedorData, EstornarVendaDoVendedorResponses, EuData, EuResponses, GuardarEmQuarentenaData, GuardarEmQuarentenaResponses, ListarAutorizacoesDoVendedorData, ListarAutorizacoesDoVendedorResponses, ListarCreditosDoVendedorData, ListarCreditosDoVendedorResponses, ListarDevolucoesDoVendedorData, ListarDevolucoesDoVendedorResponses, ListarMeusClientesData, ListarMeusClientesResponses, ListarMinhasContasAReceberData, ListarMinhasContasAReceberResponses, ListarMinhasMaletasData, ListarMinhasMaletasResponses, ListarTrocasDoVendedorData, ListarTrocasDoVendedorResponses, ListarVendasDoVendedorData, ListarVendasDoVendedorResponses, PedirAutorizacaoData, PedirAutorizacaoResponses, ReceberDadosData, ReceberDadosResponses, ReceberDoClienteData, ReceberDoClienteResponses, RegistrarTrocaData, RegistrarTrocaResponses, RelatorioDeCreditosDosMeusClientesData, RelatorioDeCreditosDosMeusClientesResponses, RelatorioDeMeusRecebimentosData, RelatorioDeMeusRecebimentosResponses, RelatorioDeMinhasDevolucoesETrocasData, RelatorioDeMinhasDevolucoesETrocasResponses, RelatorioDeMinhasVendasData, RelatorioDeMinhasVendasResponses, RelatorioDeValoresAReceberData, RelatorioDeValoresAReceberResponses, RenovarData, RenovarResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SoVendedorData, SoVendedorResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarDoVendedorData, ValidarDoVendedorResponses, ValorDoVendedorData, ValorDoVendedorResponses, VendasComAPecaData, VendasComAPecaResponses, VenderNaMaletaData, VenderNaMaletaResponses, VerAutorizacaoDoVendedorData, VerAutorizacaoDoVendedorResponses, VerConferenciaDaMinhaMaletaData, VerConferenciaDaMinhaMaletaResponses, VerCotacaoDeHojeData, VerCotacaoDeHojeResponses, VerCreditoDoVendedorData, VerCreditoDoVendedorResponses, VerDevolucaoDoVendedorData, VerDevolucaoDoVendedorResponses, VerMeuClienteData, VerMeuClienteResponses, VerMinhaMaletaData, VerMinhaMaletaResponses, VerTrocaDoVendedorData, VerTrocaDoVendedorResponses, VerVendaDoVendedorData, VerVendaDoVendedorResponses } from './types.gen';
+import type { AcharPecaDaMinhaMaletaData, AcharPecaDaMinhaMaletaResponses, AvisarDiferencaNaConferenciaData, AvisarDiferencaNaConferenciaResponses, BaixarFotoDaMinhaMaletaData, BaixarFotoDaMinhaMaletaResponses, BuscarPecaDaMinhaMaletaData, BuscarPecaDaMinhaMaletaResponses, CadastrarMeuClienteData, CadastrarMeuClienteResponses, CancelarDevolucaoDoVendedorData, CancelarDevolucaoDoVendedorResponses, CancelarTrocaDoVendedorData, CancelarTrocaDoVendedorResponses, ConferirDadosData, ConferirDadosResponses, ConferirMinhaMaletaData, ConferirMinhaMaletaResponses, DevolverDoClienteData, DevolverDoClienteResponses, EntrarData, EntrarResponses, EnviarOperacoesData, EnviarOperacoesResponses, EstornarRecebimentoDoVendedorData, EstornarRecebimentoDoVendedorResponses, EstornarVendaDoVendedorData, EstornarVendaDoVendedorResponses, EuData, EuResponses, GuardarEmQuarentenaData, GuardarEmQuarentenaResponses, ListarAutorizacoesDoVendedorData, ListarAutorizacoesDoVendedorResponses, ListarCreditosDoVendedorData, ListarCreditosDoVendedorResponses, ListarDevolucoesDoVendedorData, ListarDevolucoesDoVendedorResponses, ListarMeusAcertosData, ListarMeusAcertosResponses, ListarMeusClientesData, ListarMeusClientesResponses, ListarMinhasContasAReceberData, ListarMinhasContasAReceberResponses, ListarMinhasMaletasData, ListarMinhasMaletasResponses, ListarTrocasDoVendedorData, ListarTrocasDoVendedorResponses, ListarVendasDoVendedorData, ListarVendasDoVendedorResponses, PedirAutorizacaoData, PedirAutorizacaoResponses, PedirMeuAcertoData, PedirMeuAcertoResponses, ReceberDadosData, ReceberDadosResponses, ReceberDoClienteData, ReceberDoClienteResponses, RegistrarMinhaLeituraDoAcertoData, RegistrarMinhaLeituraDoAcertoResponses, RegistrarTrocaData, RegistrarTrocaResponses, RelatorioDeCreditosDosMeusClientesData, RelatorioDeCreditosDosMeusClientesResponses, RelatorioDeMeusRecebimentosData, RelatorioDeMeusRecebimentosResponses, RelatorioDeMinhasDevolucoesETrocasData, RelatorioDeMinhasDevolucoesETrocasResponses, RelatorioDeMinhasVendasData, RelatorioDeMinhasVendasResponses, RelatorioDeValoresAReceberData, RelatorioDeValoresAReceberResponses, RenovarData, RenovarResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SoVendedorData, SoVendedorResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarDoVendedorData, ValidarDoVendedorResponses, ValorDoVendedorData, ValorDoVendedorResponses, VendasComAPecaData, VendasComAPecaResponses, VenderNaMaletaData, VenderNaMaletaResponses, VerAutorizacaoDoVendedorData, VerAutorizacaoDoVendedorResponses, VerConferenciaDaMinhaMaletaData, VerConferenciaDaMinhaMaletaResponses, VerCotacaoDeHojeData, VerCotacaoDeHojeResponses, VerCreditoDoVendedorData, VerCreditoDoVendedorResponses, VerDevolucaoDoVendedorData, VerDevolucaoDoVendedorResponses, VerMeuAcertoData, VerMeuAcertoResponses, VerMeuClienteData, VerMeuClienteResponses, VerMinhaMaletaData, VerMinhaMaletaResponses, VerTrocaDoVendedorData, VerTrocaDoVendedorResponses, VerVendaDoVendedorData, VerVendaDoVendedorResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -86,6 +86,58 @@ export const soVendedor = <ThrowOnError extends boolean = false>(options?: Optio
 export const trocarSenha = <ThrowOnError extends boolean = false>(options: Options<TrocarSenhaData, ThrowOnError>): RequestResult<TrocarSenhaResponses, unknown, ThrowOnError> => (options.client ?? client).post<TrocarSenhaResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/auth/trocar-senha',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Meus acertos
+ *
+ * Do mais novo para o mais antigo. Só os do vendedor logado.
+ */
+export const listarMeusAcertos = <ThrowOnError extends boolean = false>(options?: Options<ListarMeusAcertosData, ThrowOnError>): RequestResult<ListarMeusAcertosResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ListarMeusAcertosResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/acertos',
+    ...options
+});
+
+/**
+ * Pedir o meu acerto
+ *
+ * O vendedor pede o próprio acerto: todas as maletas dele passam a "em acerto". Precisa de ao menos uma maleta com ele, do computador sem vendas para enviar e de nenhuma maleta conferida em outro computador. Mesmo id devolve 200.
+ */
+export const pedirMeuAcerto = <ThrowOnError extends boolean = false>(options: Options<PedirMeuAcertoData, ThrowOnError>): RequestResult<PedirMeuAcertoResponses, unknown, ThrowOnError> => (options.client ?? client).post<PedirMeuAcertoResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/acertos',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Ver o meu acerto
+ *
+ * As maletas, a contagem somada por peça e estado e as leituras. 404 para o acerto de outro vendedor.
+ */
+export const verMeuAcerto = <ThrowOnError extends boolean = false>(options: Options<VerMeuAcertoData, ThrowOnError>): RequestResult<VerMeuAcertoResponses, unknown, ThrowOnError> => (options.client ?? client).get<VerMeuAcertoResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/acertos/{id}',
+    ...options
+});
+
+/**
+ * Registrar uma leitura da contagem
+ *
+ * O vendedor bipa uma peça (ou desfaz) no próprio acerto em andamento. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409.
+ */
+export const registrarMinhaLeituraDoAcerto = <ThrowOnError extends boolean = false>(options: Options<RegistrarMinhaLeituraDoAcertoData, ThrowOnError>): RequestResult<RegistrarMinhaLeituraDoAcertoResponses, unknown, ThrowOnError> => (options.client ?? client).post<RegistrarMinhaLeituraDoAcertoResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/acertos/{id}/leituras',
     ...options,
     headers: {
         'Content-Type': 'application/json',

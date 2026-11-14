@@ -73,6 +73,15 @@ A API com a 6.6 manda `devolucoes.valor_abatido` e `baixas_receber.devolucao_id`
 2. **Depois a API:** suba a API com a 6.6 e, no `.env` do servidor, `APP_VERSAO_MINIMA_VENDAS` igual à versão publicada.
 3. O computador na versão antiga continua enviando o que guardou; a devolução de venda a prazo feita nele recebe o bloqueio antigo até atualizar. Nada se perde.
 
+### Nota de deploy da tarefa 7.4 (acerto no pull)
+
+A API com a 7.4 manda ao vendedor as tabelas `acertos` e `leituras_acerto`. O Corona Vendas sem a **migração local 6** não conhece essas tabelas e recusaria o lote inteiro (o pull pararia). **Nesta ordem**, como na 6.7, na 7.3 e na 6.6 (**app primeiro, depois a API**):
+
+1. **Primeiro o Corona Vendas:** aumente `version` em `apps/seller-app/package.json` (por exemplo, `1.4.0`) e publique (`npm run vendas:publicar`). A migração local 6 cria as duas tabelas e a **recarga dirigida** as traz de novo para o computador que já tinha dados, sem apagar nada.
+2. **Depois a API:** suba a API com a 7.4 e, no `.env` do servidor, `APP_VERSAO_MINIMA_VENDAS` igual à versão publicada. A migração V043 do banco roda junto.
+3. O computador na versão antiga continua enviando o que guardou e recebe 426 no recebimento até atualizar. Nada se perde. Pedir o acerto e bipar são online: as telas são da tarefa 7.11 (nada novo na outbox).
+4. Enquanto um vendedor está em acerto, a dona não envia maleta nova para ele ("Termine o acerto antes"); o rascunho continua livre.
+
 ## Riscos da primeira instalação no computador do vendedor
 
 | Risco | O que fazer |

@@ -1,5 +1,6 @@
 package br.com.coronasemijoias.api.sync;
 
+import br.com.coronasemijoias.api.testes.AcertosDeTeste;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -249,11 +250,11 @@ class PushDasContasTest extends ApoioDoEnvioDaFase6 {
         UUID venda = UUID.randomUUID();
         enviar(c.v(), List.of(vendaAPrazoPeloEnvio(c, venda, null)));
         try {
-            jdbc.update("UPDATE corona.remessas SET status = 'EM_ACERTO' WHERE id = ?", c.maleta());
+            AcertosDeTeste.emAcerto(jdbc, c.maleta());
             assertThat(resultado(enviar(c.v(), List.of(recebimentoPeloEnvio(UUID.randomUUID(), venda, "10.00", "PIX",
                     relogio.instant().minusSeconds(20)))), 0)).isEqualTo("ACEITO");
         } finally {
-            jdbc.update("UPDATE corona.remessas SET status = 'CONFERIDA' WHERE id = ?", c.maleta());
+            AcertosDeTeste.sairDoAcerto(jdbc, c.maleta());
         }
     }
 

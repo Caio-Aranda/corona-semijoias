@@ -112,3 +112,34 @@ Issue #146, PR 162 (tarefa crítica: plano aprovado no PR, ajustes da orquestrad
 - `AutorizacaoDeDevolucaoTest.nenhumaRespostaDasRotasDaAutorizacaoTemCustoNemFornecedor` e `TrocaTest.prazoContaEmDiasDeBrasiliaComoNaDevolucao` já falham quando rodados sozinhos na `main` (dependem do que as outras classes deixam na configuração de prazos); passam na suíte inteira. Não foi mexido.
 
 **Atualização (tarefa 6.6, PR 164):** a 7.3b foi feita pela 6.6: a devolução e a troca de venda a prazo abatem as parcelas (V042). `VENDA_A_PRAZO_SEM_DEVOLUCAO` já não é devolvido. Detalhe em [fase-6.md](fase-6.md#tarefa-66-devolução-e-troca-de-venda-a-prazo).
+
+## Tarefa 7.4: acerto, parte 1 (iniciar, travas, contagem e desistir)
+
+Issue #148, PR 165 (tarefa crítica: plano aprovado no PR, com cinco ajustes da orquestradora, todos atendidos). Parte 1 do ADR-0012 (itens 2, 3, 4, 13, 14, 15 e 16). **Nenhum dinheiro é gravado:** totais, comissão, pendências, recebimento e cotação nascem no fechamento (7.5). **Telas** (Corona Gestão e Corona Vendas) são da 7.9 e da 7.11.
+
+**O que entrou**
+
+- **Migração `V043__acerto_iniciar_e_contar.sql`:** `acertos` (sincronizável; só o status muda, de `EM_ACERTO` para `DESISTIDO`; `ACERTADO` chega na 7.5), `leituras_acerto` (sincronizável e imutável; soma por peça e estado nunca negativa), `remessas.acerto_id` e `remessas.status_antes_do_acerto`. O **banco** garante: um acerto `EM_ACERTO` por vendedor e um por semana fora `DESISTIDO` (índices únicos parciais); acerto nasce em andamento, com a semana aberta; conteúdo imutável; desistência completa (id, hora, quem e motivo); leitura só em acerto em andamento (`FOR SHARE`); maleta só entra no acerto vinda de enviada ou conferida, num acerto em andamento do mesmo vendedor, e só sai voltando ao status de antes; venda só entra em maleta em acerto com `vendida_em` anterior ao início (segunda trava da regra de corte). A função de pertença da V041 foi recriada inteira com os ramos novos.
+- **`ServicoDeAcertos`** (único que liga e desliga `remessas.acerto_id` e escreve em `acertos` e `leituras_acerto`; `ArquiteturaDoAcertoTest`): `iniciar`, `desistir`, `registrarLeitura` e `trancarVendedor` (`FOR NO KEY UPDATE`, que não conflita com o `FOR KEY SHARE` da chave estrangeira e por isso não fecha espera em volta com a venda). Ordem: vendedor, acerto, maletas por `id`.
+- **Rotas:** `POST/GET /api/dona/acertos`, `GET /api/dona/acertos/{id}`, `POST /api/dona/acertos/{id}/leituras`, `POST /api/dona/acertos/{id}/desistir`; `POST/GET /api/vendedor/acertos`, `GET /api/vendedor/acertos/{id}`, `POST /api/vendedor/acertos/{id}/leituras`. Comandos com UUID do cliente (201, 200 no reenvio igual, 409 com outro conteúdo). A ficha da dona traz maletas, contagem (com nome, código e foto), leituras (quem, quando, computador), `vendasQueChegaramDepoisDoInicio` e `enviosAguardando`; a do vendedor, sem esses dois e sem custo. Clientes da API regenerados.
+- **Travas nas outras operações:** venda online e estorno pelo vendedor (`MALETA_EM_ACERTO`, antes `MALETA_NAO_ESTA_COM_VOCE` no estorno), devolução, troca, devolução à dona, cancelamento e conferência recusados; a **dona pode estornar** venda de maleta em acerto; envio de remessa recusado com `VENDEDOR_EM_ACERTO` (o rascunho é livre; o envio pega a trava do vendedor); a troca de computador leva a maleta em acerto; a lista de maletas do vendedor mostra a maleta em acerto. **Regra de corte:** a venda e o estorno vindos do envio, do computador da maleta, com a hora corrigida anterior ao início, entram (a venda online passou a gravar `vendida_em` com o relógio da aplicação, o mesmo do início).
+- **Sync:** `acertos` e `leituras_acerto` no pull só do vendedor dono, sem os `*_por` e sem a ligação maleta-acerto.
+- **Corona Vendas (só o motor e o banco local):** migração local 6, colunas, recarga dirigida das duas tabelas (somada à marca antiga que ainda não terminou), `banco-v6.sqlite`.
+- **Documentos:** especificação v1.18 (§7.4, §9, §10, §22), ADR-0012 ("Como ficou" nos itens 3, 4 e 13), plano da Fase 7 e nota de deploy em `entrega-corona-vendas.md` (app antes da API).
+
+**Decisões que tomei (padrão seguro; todas no plano aprovado)**
+
+- Só a dona desiste (o vendedor pede, bipa e lê). A semana do acerto é a informada, a mais recente das maletas ou a de hoje. O status de antes da maleta fica gravado (o desistir volta exatamente a ele). Sem esperado × contado nesta tarefa, para não haver duas contas que possam divergir.
+- `aguardando_envio` é o **último número informado**: o servidor recusa o que sabe; a garantia de fila vazia é do aplicativo (7.11).
+- Pedir o acerto com o id de outro vendedor devolve 409 (id usado), nunca o conteúdo.
+- Os testes antigos que forçavam `EM_ACERTO` por SQL passaram a usar `AcertosDeTeste` (o banco não deixa mais mudar o status sem ligar a um acerto); as contagens de tabelas e a versão do banco local dos testes antigos foram atualizadas (25 para 27 tabelas; versão 5 para 6).
+- A leitura aceita peça de devolução "para a loja" do vendedor por consulta; o teste automático cobre a peça das maletas (com os dois estados) e a de fora; a peça só de devolução ficou coberta pelo desenho da consulta, sem teste próprio (montar essa devolução sem estar numa maleta do acerto exigia dados demais).
+
+**Testes** (PostgreSQL do Testcontainers e SQLCipher de verdade): banco (19), iniciar (13), leituras (8), desistir (5), leitura (4), permissões com 403 cruzado, 401 e 404 (4), travas (10), regra de corte (4), concorrência com threads, cinco rodadas cada e tempo limite de 10 s (9: venda, devolução, troca e envio de remessa contra o início; dois iniciar; leitura contra desistir; leituras negativas; estorno da dona contra leitura), arquitetura (2) e pull (4); Corona Vendas: 8 testes novos.
+
+**Resultado final:** `npm run api:test` passa (1331 testes, nenhuma falha); Corona Vendas 626 testes; Corona Gestão 665 testes; `npm run lint`, `typecheck` e `format:check` passam; `npm run seller:empacotar` e `npm run barreira:varrer` limpos. `npm run test:duas-pontas` roda no CI do PR (job `sync-duas-pontas`).
+
+**Não fiz**
+
+- Fechamento, esperado × contado, comissão, pendências, recebimentos, caixa e `cotacao_id` do acerto (7.5 e 7.6); telas no Corona Gestão e no Corona Vendas (7.9 e 7.11); tipo novo na outbox; `remessas.acerto_id` e `status_antes_do_acerto` no pull; rota de `AJUSTE` na maleta (a 7.5 decide com a sobra).
+- A maleta de um acerto desistido deixa de aparecer na ficha dele (a ligação é desligada); o histórico das maletas fica na auditoria (`ACERTO_INICIADO` e `ACERTO_DESISTIDO`).

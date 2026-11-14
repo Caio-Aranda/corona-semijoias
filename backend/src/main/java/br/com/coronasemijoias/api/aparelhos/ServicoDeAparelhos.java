@@ -196,11 +196,11 @@ public class ServicoDeAparelhos {
         jdbc.update("UPDATE corona.dispositivos SET situacao = 'ATIVO', liberado_em = ? WHERE id = ?",
                 Timestamp.from(agora), dispositivoId);
         // As maletas com o vendedor que estavam ligadas a outro computador desta pessoa passam para o novo. As que ainda
-        // não foram conferidas (sem computador) ficam livres: o novo computador as confere. Fase 7: incluir EM_ACERTO.
+        // não foram conferidas (sem computador) ficam livres: o novo computador as confere. A maleta em acerto também passa (tarefa 7.4).
         UUID vendedorId = (UUID) alvo.get("vendedor_id");
         int maletas = vendedorId == null ? 0 : jdbc.update("""
                 UPDATE corona.remessas SET dispositivo_id = ?
-                 WHERE vendedor_id = ? AND deleted_at IS NULL AND status IN ('ENVIADA', 'CONFERIDA')
+                 WHERE vendedor_id = ? AND deleted_at IS NULL AND status IN ('ENVIADA', 'CONFERIDA', 'EM_ACERTO')
                    AND dispositivo_id IS NOT NULL AND dispositivo_id <> ?
                    AND dispositivo_id IN (SELECT id FROM corona.dispositivos WHERE usuario_id = ?)""",
                 dispositivoId, vendedorId, dispositivoId, usuarioId);

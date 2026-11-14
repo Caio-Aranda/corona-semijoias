@@ -21,6 +21,7 @@ import br.com.coronasemijoias.api.sync.LoteDoPull;
 import br.com.coronasemijoias.api.sync.RegistroDeTabelas;
 import br.com.coronasemijoias.api.sync.ServicoDePull;
 import br.com.coronasemijoias.api.sync.TabelaSincronizavel;
+import br.com.coronasemijoias.api.testes.AcertosDeTeste;
 import br.com.coronasemijoias.api.testes.TesteDeIntegracao;
 import br.com.coronasemijoias.api.testes.UsuariosDeTeste;
 import br.com.coronasemijoias.api.testes.UsuariosDeTeste.UsuarioDeTeste;
@@ -625,7 +626,7 @@ class DevolucaoDoClienteTest extends TesteDeIntegracao {
         assertThat(saldo(maleta, anel)).isZero();
 
         // A maleta foi acertada: a peça boa também vai para a loja, sem movimento e sem mudar saldo nenhum.
-        jdbc.update("UPDATE corona.remessas SET status = 'ACERTADA' WHERE id = ?", maleta);
+        AcertosDeTeste.acertada(jdbc, maleta);
         int movimentos = contar("SELECT count(*) FROM corona.movimentos_remessa WHERE remessa_id = ?", maleta);
         JsonNode boa = devolver(v, venda, "ARREPENDIMENTO", "PIX", List.of(devolvida(anel, 1, "BOA")));
         assertThat(boa.get("itens").get(0).get("destino").asString()).isEqualTo("LOJA");
@@ -647,7 +648,7 @@ class DevolucaoDoClienteTest extends TesteDeIntegracao {
         assertThatThrownBy(() -> devolverPeloServico(v, outro, venda, "ARREPENDIMENTO", List.of(new PecaDoPedido(anel, 1, "BOA")),
                 null, ModoDaDevolucao.ONLINE)).satisfies(t -> assertThat(codigoDoErro(t)).isEqualTo("MALETA_EM_OUTRO_APARELHO"));
 
-        jdbc.update("UPDATE corona.remessas SET status = 'EM_ACERTO' WHERE id = ?", maleta);
+        AcertosDeTeste.emAcerto(jdbc, maleta);
         assertThat(codigoDe(postar(DEVOLUCOES, como(v), devolucao(UUID.randomUUID(), venda, "ARREPENDIMENTO", "PIX",
                 List.of(devolvida(anel, 1, "BOA")))).andExpect(status().isConflict()))).isEqualTo("MALETA_EM_ACERTO");
         assertThat(contar("SELECT count(*) FROM corona.devolucoes WHERE venda_id = ?", venda)).isZero();

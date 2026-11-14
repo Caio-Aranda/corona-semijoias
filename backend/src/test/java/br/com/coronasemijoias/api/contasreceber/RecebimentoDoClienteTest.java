@@ -1,5 +1,6 @@
 package br.com.coronasemijoias.api.contasreceber;
 
+import br.com.coronasemijoias.api.testes.AcertosDeTeste;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -94,9 +95,9 @@ class RecebimentoDoClienteTest extends ApoioDasContas {
     void maletaEmAcertoOuAcertadaNaoBloqueiaORecebimento() throws Exception {
         APrazo c = vendaDeCemEmTres();
         try {
-            jdbc.update("UPDATE corona.remessas SET status = 'EM_ACERTO' WHERE id = ?", c.maleta());
+            AcertosDeTeste.emAcerto(jdbc, c.maleta());
             receberOk(c, "10.00");
-            jdbc.update("UPDATE corona.remessas SET status = 'ACERTADA' WHERE id = ?", c.maleta());
+            AcertosDeTeste.acertada(jdbc, c.maleta());
             receberOk(c, "10.00");
         } finally {
             // O banco é dividido entre os testes: as conferências de estoque dos outros olham as maletas.

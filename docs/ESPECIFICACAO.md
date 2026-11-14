@@ -1,6 +1,6 @@
 # Especificação completa: Sistema de Semijoias Consignadas
 
-Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.15, 13/11/2026.
+Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.18, 14/11/2026.
 
 ## 1. Objetivo e contexto
 
@@ -197,6 +197,12 @@ Regras:
 6. Peças com defeito são aprovadas pela dona no acerto; as boas voltam ao estoque central.
 7. Estados: `EM_ACERTO → ACERTADA`. Semana fechada **não aceita mais alteração**.
 
+**Como ficou na tarefa 7.4 (acerto, parte 1: iniciar, travas, contagem e desistir; ADR-0012, itens 2, 3, 4, 13, 14, 15 e 16).** Sem dinheiro: totais, comissão, pendências e cotação nascem no fechamento (7.5).
+- **Iniciar** (a dona, para qualquer vendedor, ou o vendedor, para si, online): liga **todas** as maletas `ENVIADA` ou `CONFERIDA` do vendedor (nova e reposição) ao acerto, que passam a `EM_ACERTO` guardando o status de antes. Um acerto em andamento por vendedor e um por semana (um acerto desistido libera a semana). A semana é a informada pela dona; senão a mais recente das maletas ligadas; sem maleta, a semana de hoje (Brasília). O vendedor só pede com ao menos uma maleta com ele, sem envios aguardando no computador (o último número que o computador informou) e sem maleta conferida em outro computador; a dona inicia sempre e a ficha mostra o aviso de envios aguardando.
+- **Com a maleta em acerto:** nenhuma venda nova, estorno pelo vendedor, devolução, troca, devolução à dona, cancelamento nem conferência, e nenhuma remessa nova enviada ao vendedor ("Termine o acerto antes"; o rascunho continua livre). **A dona pode estornar** venda de maleta em acerto (é como resolve a sobra antes do fechamento). **Exceção da Fase 5:** a venda, e o estorno de venda, feitos sem internet **antes** do início do acerto e enviados pelo computador da maleta entram; a ficha da dona conta quantas chegaram depois do início ("Chegou venda nova: confira a contagem").
+- **Contagem:** cada bipe é uma leitura (id do cliente, idempotente, imutável); desfazer é leitura negativa; vale a soma por peça e estado (`BOA` ou `DEFEITO`), nunca negativa. A peça tem de ser de uma maleta do acerto ou de uma devolução "para a loja" do vendedor; peça de fora é recusada sem dizer de onde é. Dona e vendedor contam na mesma contagem e a tela da dona mostra quem leu, quando e de qual computador. Não há esperado × contado nesta tarefa (7.5).
+- **Desistir** (só a dona, com motivo): cada maleta volta ao status de antes (`ENVIADA` continua `ENVIADA`, `CONFERIDA` continua `CONFERIDA`), o acerto vira `DESISTIDO` e nada de dinheiro, venda ou movimento é gravado; as leituras ficam como histórico.
+
 ### 7.5 Financeiro
 
 - **Contas a receber** em dois níveis: (1) cliente final paga ao vendedor; (2) vendedor repassa à dona no acerto.
@@ -327,7 +333,9 @@ Modelo no ADR-0014 (tabelas criadas nas tarefas 6.3 a 6.5; todas imutáveis, cor
 
 ### Acerto e financeiro
 
-- `acertos` (vendedor, semana, remessa, esperado, contado, faltas, descontos, comissão, percentual da comissão decidido pela meta, vendido em Guarani usado na meta, líquido, status, cotação usada; sem coluna de entrada)
+- `acertos` (vendedor, semana, remessa, esperado, contado, faltas, descontos, comissão, percentual da comissão decidido pela meta, vendido em Guarani usado na meta, líquido, status, cotação usada; sem coluna de entrada). **Na tarefa 7.4 (V043) existem só as colunas do início e da desistência:** vendedor, semana, `status` (`EM_ACERTO`, `ACERTADO` ou `DESISTIDO`), `pedido_pelo_vendedor`, `iniciado_em` e `iniciado_por`, o computador que pediu, e `desistencia_id`, `desistido_em`, `desistido_por` e `motivo_desistencia`; sincronizável, só o status muda. As colunas de dinheiro entram na 7.5.
+- `leituras_acerto` (tarefa 7.4; sincronizável e imutável: acerto, peça, quantidade com sinal, `estado_peca` `BOA | DEFEITO`, `lida_em`, `lida_por`, `pelo_vendedor`, computador; o banco confere que o acerto está em andamento e que a soma por peça e estado nunca fica negativa)
+- `remessas.acerto_id` e `remessas.status_antes_do_acerto` (tarefa 7.4): a ligação da maleta ao acerto e o status de antes, para o "desistir" voltar exatamente a ele; só o serviço liga e desliga, e o banco recusa qualquer outro caminho. Não vão ao aplicativo do vendedor (a maleta dele chega com `status = EM_ACERTO`).
 - `pendencias_acerto` (acerto, produto, quantidade, valor, status, resolvida\_por)
 - `contas_receber` (origem venda ou acerto, devedor cliente/vendedor, parcela, vencimento, valor, atalhos `valor_pago` e `valor_cancelado`, status `ABERTA | PARCIAL | PAGA | CANCELADA`, em que `PARCIAL` é parte paga, parte abatida por devolução, ou as duas; "vencida" é calculada, nunca gravada; só o serviço mexe nos atalhos, e o banco confere com a soma das baixas)
 - `baixas_receber` (conta, `tipo: PAGAMENTO | CANCELAMENTO`, valor, `pagamento_cliente_id`, `motivo_cancelamento: ESTORNO_VENDA | DEVOLUCAO`, `devolucao_id` (no cancelamento por devolução), `estorna_id`; imutável, estorno é registro negativo). O recebimento posterior é um `pagamentos_cliente` com `posterior = true` e o estorno dele é `tipo = ESTORNO_PAGAMENTO` (F9 do ADR-0012)
@@ -357,7 +365,7 @@ O app é **offline-first**: lê e grava sempre no SQLite local, e um processo em
 
 **Pull:** `GET /sync/pull?since=cursor` devolve tudo que mudou desde o último `sync_seq`. O app aplica no banco local. O pull usa um **limite seguro**, que não perde registros de transações que confirmam fora de ordem (exemplo: o app puxa até o `sync_seq` 11 e o 10 só confirma depois). A estratégia exata fica no ADR-0002.
 
-**Clientes no pull:** todo vendedor recebe o diretório de clientes ativos da loja (só nome, CPF, telefone e cidade, colunas explícitas). **CPF repetido** é barrado: online, 409 "Este cliente já está cadastrado" mostrando o existente; offline, o app confere no diretório local, e dois cadastros do mesmo CPF feitos ao mesmo tempo sem internet chegam como conflito para a revisão da dona, que junta os cadastros. **Formatos antigos da `outbox`:** o servidor os aceita por 90 dias. **Tipos da outbox:** `VENDA` (formato 1, com o `creditoId` opcional em cada pagamento), `ESTORNO_VENDA`, `CLIENTE_NOVO`, `CLIENTE_ALTERADO`, `CONFERENCIA` e, da Fase 6 (tarefa 6.7), `DEVOLUCAO`, `PEDIDO_AUTORIZACAO`, `TROCA`, `CANCELAR_DEVOLUCAO` e `CANCELAR_TROCA`; da Fase 7 (tarefa 7.3), `VENDA` e `TROCA` ganham o `parcelamento` opcional e entram `RECEBIMENTO_CLIENTE` e `ESTORNO_RECEBIMENTO_CLIENTE`; `contas_receber` e `baixas_receber` chegam no pull só ao vendedor dono; cada um passa pelo mesmo serviço da rota online, com a hora corrigida, e o que o servidor acha fora do prazo, acima do limite ou acima do saldo do crédito vai para revisão da dona, nunca recusado.
+**Clientes no pull:** todo vendedor recebe o diretório de clientes ativos da loja (só nome, CPF, telefone e cidade, colunas explícitas). **CPF repetido** é barrado: online, 409 "Este cliente já está cadastrado" mostrando o existente; offline, o app confere no diretório local, e dois cadastros do mesmo CPF feitos ao mesmo tempo sem internet chegam como conflito para a revisão da dona, que junta os cadastros. **Formatos antigos da `outbox`:** o servidor os aceita por 90 dias. **Tipos da outbox:** `VENDA` (formato 1, com o `creditoId` opcional em cada pagamento), `ESTORNO_VENDA`, `CLIENTE_NOVO`, `CLIENTE_ALTERADO`, `CONFERENCIA` e, da Fase 6 (tarefa 6.7), `DEVOLUCAO`, `PEDIDO_AUTORIZACAO`, `TROCA`, `CANCELAR_DEVOLUCAO` e `CANCELAR_TROCA`; da Fase 7 (tarefa 7.3), `VENDA` e `TROCA` ganham o `parcelamento` opcional e entram `RECEBIMENTO_CLIENTE` e `ESTORNO_RECEBIMENTO_CLIENTE`; `contas_receber` e `baixas_receber` chegam no pull só ao vendedor dono; da Fase 7 (tarefa 7.4), `acertos` e `leituras_acerto` também chegam só ao vendedor dono (sem os "\*\_por"); pedir o acerto e bipar são **online**, sem tipo novo na outbox; cada um passa pelo mesmo serviço da rota online, com a hora corrigida, e o que o servidor acha fora do prazo, acima do limite ou acima do saldo do crédito vai para revisão da dona, nunca recusado.
 
 **Gatilhos:** abrir o app, voltar a conexão, a cada X segundos se online e depois de cada gravação.
 
@@ -798,3 +806,7 @@ Importação com nome de arquivo inválido, foto duplicada, arquivo corrompido, 
   - §7.3: a devolução abate primeiro o que o cliente deve, depois crédito, depois dinheiro; cancelar desfaz o abatimento; a troca de A a prazo.
   - §9: `devolucoes.valor_abatido`, `baixas_receber.devolucao_id` e o motivo `DEVOLUCAO`; `PARCIAL` também para parcela abatida.
   - §10: `devolucoes.valor_abatido` e `baixas_receber.devolucao_id` entram no pull; o que o app manda não muda.
+- **v1.18, 14/11/2026:** acerto, parte 1: iniciar, travas, contagem e desistir (tarefa 7.4, ADR-0012 itens 2, 3, 4, 13, 14, 15 e 16).
+  - §7.4: como ficou o início do acerto (todas as maletas abertas), as travas, a exceção da venda e do estorno feitos sem internet antes do início, a contagem por leituras e o desistir.
+  - §9: `acertos` (só início e desistência), `leituras_acerto`, `remessas.acerto_id` e `remessas.status_antes_do_acerto`.
+  - §10: `acertos` e `leituras_acerto` entram no pull; pedir o acerto e bipar são online.

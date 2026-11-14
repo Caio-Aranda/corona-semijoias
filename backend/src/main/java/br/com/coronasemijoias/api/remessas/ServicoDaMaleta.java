@@ -162,6 +162,9 @@ public class ServicoDaMaleta {
             for (UUID baixa : baixas) {
                 estoque.estornar(UuidV7.gerar(), baixa, "Maleta cancelada: " + limpo, usuarioId);
             }
+        } else if ("EM_ACERTO".equals(status)) {
+            throw ErroDaApi.comDetalhe(HttpStatus.CONFLICT, CodigoErro.MALETA_EM_ACERTO,
+                    "Esta maleta está em acerto e não pode ser cancelada. Termine ou desfaça o acerto antes.");
         } else if (!"RASCUNHO".equals(status)) {
             throw ErroDaApi.comDetalhe(HttpStatus.CONFLICT, CodigoErro.REMESSA_NAO_EDITAVEL,
                     "Esta maleta já foi conferida ou acertada e não pode ser cancelada.");
@@ -272,6 +275,10 @@ public class ServicoDaMaleta {
     }
 
     private static ErroDaApi naoDevolve(String status) {
+        if ("EM_ACERTO".equals(status)) {
+            return ErroDaApi.comDetalhe(HttpStatus.CONFLICT, CodigoErro.MALETA_EM_ACERTO,
+                    "Esta maleta está em acerto. Termine o acerto antes de devolver peças.");
+        }
         String situacao = switch (status) {
             case "RASCUNHO" -> "ainda está sendo montada";
             case "CANCELADA" -> "foi cancelada";

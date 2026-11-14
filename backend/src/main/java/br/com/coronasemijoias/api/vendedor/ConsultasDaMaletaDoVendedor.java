@@ -40,9 +40,9 @@ public class ConsultasDaMaletaDoVendedor {
         this.jdbc = jdbc;
     }
 
-    /** As maletas que estão com o vendedor (enviada ou conferida), da mais nova para a mais antiga. */
+    /** As maletas que estão com o vendedor (enviada, conferida ou em acerto), da mais nova para a mais antiga. */
     public List<Maleta> listar(UUID vendedorId) {
-        return consultar("r.vendedor_id = ? AND r.status IN ('ENVIADA', 'CONFERIDA')", vendedorId);
+        return consultar("r.vendedor_id = ? AND r.status IN ('ENVIADA', 'CONFERIDA', 'EM_ACERTO')", vendedorId);
     }
 
     /** Uma maleta do vendedor; 404 se não existe ou é de outro (sem dizer de quem). */

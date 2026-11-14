@@ -35,12 +35,14 @@ const NOVAS = [
 
 /**
  * A marca da recarga de um banco da versão 2 que já tinha cursor, migrado pelo app atual: as onze da migração 3 e, depois,
- * as duas tabelas novas da migração 4 (a `pagamentos_cliente` já estava na marca).
+ * as duas tabelas novas da migração 4 (a `pagamentos_cliente` já estava na marca) e as duas da migração 6.
  */
 const MARCA_DO_BANCO_V2_COM_CURSOR = [
   ...TABELAS_DA_RECARGA_DIRIGIDA_V3,
   'contas_receber',
   'baixas_receber',
+  'acertos',
+  'leituras_acerto',
 ] as const;
 
 const limpar: (() => void | Promise<void>)[] = [];
@@ -195,7 +197,7 @@ describe('migração local 3', () => {
       db.close();
     });
     expect(Number(db.pragma('user_version', { simple: true }))).toBe(VERSAO_DO_BANCO);
-    expect(VERSAO_DO_BANCO).toBe(5);
+    expect(VERSAO_DO_BANCO).toBe(6);
     expect(contagem(db)).toEqual(contagemAntes);
     expect(db.prepare('SELECT * FROM outbox ORDER BY ordem').all()).toEqual(outboxAntes);
     for (const t of NOVAS) expect(colunasDe(db, t), t).toContain('origem_local');
@@ -232,16 +234,16 @@ describe('migração local 3', () => {
     expect(lerEstado(migrado, CHAVES.recargaDirigida)).toBeNull();
     expect(Number(migrado.pragma('user_version', { simple: true }))).toBe(VERSAO_DO_BANCO);
 
-    // O exemplo da versão 1 tinha cursor: marca (as onze da 3 e as duas da 4).
-    expect(tabelasDaRecargaDirigida(abrirExemploMigrado(1).db)).toHaveLength(13);
+    // O exemplo da versão 1 tinha cursor: marca (as onze da 3, as duas da 4 e as duas da 6).
+    expect(tabelasDaRecargaDirigida(abrirExemploMigrado(1).db)).toHaveLength(15);
   });
 });
 
 // --- 21. colunas ---
 
 describe('colunas das tabelas da Fase 6', () => {
-  it('as 25 tabelas, nenhuma coluna de quem registrou nem que aponte para o crédito do outro vendedor', () => {
-    expect(TABELAS_SINCRONIZAVEIS).toHaveLength(25);
+  it('as 27 tabelas, nenhuma coluna de quem registrou nem que aponte para o crédito do outro vendedor', () => {
+    expect(TABELAS_SINCRONIZAVEIS).toHaveLength(27);
     for (const t of NOVAS) expect(COLUNAS_DO_PULL[t], t).toBeDefined();
     for (const [t, colunas] of Object.entries(COLUNAS_DO_PULL)) {
       for (const c of colunas) {

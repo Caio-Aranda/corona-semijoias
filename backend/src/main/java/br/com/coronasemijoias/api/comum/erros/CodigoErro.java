@@ -483,10 +483,73 @@ public enum CodigoErro {
             "Esta venda já tem devolução.",
             "Esta venda já tem devolução. Cancele a devolução antes de estornar."),
 
-    /** A maleta da venda está em acerto (HTTP 409; ADR-0014, item 12). */
+    /**
+     * A maleta está em acerto (HTTP 409; ADR-0014, item 12; ADR-0012, item 4). Quem chama pode trocar o texto por
+     * {@code comDetalhe} (venda, estorno, devolução, troca).
+     */
     MALETA_EM_ACERTO(
             "Esta maleta está em acerto.",
-            "O acerto desta maleta está acontecendo. Espere o acerto terminar e registre a devolução de novo."),
+            "Esta maleta está em acerto. Espere a dona terminar o acerto."),
+
+    /** Acerto que não existe ou é de outro vendedor (HTTP 404; ADR-0012, item 16). */
+    ACERTO_NAO_ENCONTRADO(
+            "Não encontramos este acerto.",
+            "Não encontramos este acerto. Atualize a lista e tente de novo."),
+
+    /** O mesmo identificador de acerto voltou com outros dados (HTTP 409; ADR-0012, item 14). */
+    ACERTO_JA_REGISTRADO_DIFERENTE(
+            "Este acerto já foi registrado com outros dados.",
+            "Este acerto já foi registrado com outros dados. Confira a lista de acertos."),
+
+    /** O vendedor já tem um acerto em andamento (HTTP 409; ADR-0012, item 2). O corpo traz {@code acertoId}. */
+    ACERTO_EM_ANDAMENTO(
+            "Este vendedor já tem um acerto em andamento.",
+            "Este vendedor já tem um acerto em andamento. Termine esse acerto antes de começar outro."),
+
+    /** O acerto não está mais em andamento (terminou ou foi desistido; HTTP 409). */
+    ACERTO_NAO_ESTA_EM_ANDAMENTO(
+            "Este acerto não está em andamento.",
+            "Este acerto já terminou ou foi desfeito. Abra a lista de acertos para ver como ficou."),
+
+    /** Já existe um acerto desse vendedor nessa semana (HTTP 409; ADR-0012, item 2). */
+    ACERTO_DA_SEMANA_JA_EXISTE(
+            "Já existe um acerto desta semana.",
+            "Este vendedor já tem acerto nesta semana. Escolha outra semana."),
+
+    /** A semana do acerto já está fechada (HTTP 409). */
+    SEMANA_FECHADA(
+            "Esta semana já está fechada.",
+            "Esta semana já está fechada. Escolha uma semana aberta."),
+
+    /** Não achamos a semana do acerto (HTTP 409). */
+    SEMANA_NAO_ENCONTRADA(
+            "Não encontramos a semana do acerto.",
+            "Cadastre a semana antes de iniciar o acerto."),
+
+    /** O vendedor não tem maleta com ele para acertar (HTTP 409). */
+    SEM_MALETA_PARA_ACERTO(
+            "Você não tem maleta para acertar.",
+            "Você não tem maleta para acertar agora. Fale com a dona."),
+
+    /** O computador ainda tem operações para enviar (HTTP 409; ADR-0012, item 3). */
+    ENVIOS_AGUARDANDO(
+            "Ainda há vendas para enviar.",
+            "Ainda há vendas neste computador esperando para ser enviadas. Conecte à internet, espere o envio terminar e tente de novo."),
+
+    /** Maleta nova não é enviada enquanto o vendedor está em acerto (HTTP 409; ADR-0012, item 4). */
+    VENDEDOR_EM_ACERTO(
+            "Este vendedor está em acerto.",
+            "Este vendedor está em acerto. Termine o acerto antes de enviar uma maleta."),
+
+    /** Desfazer mais do que foi contado (HTTP 409; ADR-0012, item 15). */
+    LEITURA_DEIXA_CONTAGEM_NEGATIVA(
+            "Não dá para tirar mais do que foi contado.",
+            "Não dá para tirar mais peças do que foram contadas. Confira a contagem."),
+
+    /** O mesmo identificador de desistência voltou com outros dados, ou o acerto já foi desfeito de outro jeito (HTTP 409). */
+    DESISTENCIA_JA_REGISTRADA_DIFERENTE(
+            "Este acerto já foi desfeito de outro jeito.",
+            "Este acerto já foi desfeito por outro pedido. Atualize a lista de acertos."),
 
     /** O vendedor só cancela a devolução no dia dela (HTTP 409; ADR-0014, item 11). */
     CANCELAR_DEVOLUCAO_SO_DA_DONA(

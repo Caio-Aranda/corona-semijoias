@@ -367,6 +367,76 @@
         },
         "type" : "object"
       },
+      "ConsultasDeAcertosLeitura" : {
+        "properties" : {
+          "dispositivoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "estadoPeca" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "lidaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "peloVendedor" : {
+            "type" : "boolean"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "ConsultasDeAcertosMaleta" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "numero" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "statusAntes" : {
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ConsultasDeAcertosProduto" : {
+        "properties" : {
+          "codigo" : {
+            "type" : "string"
+          },
+          "fotoHash" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "ConsultasDeContasAReceberConta" : {
         "properties" : {
           "clienteId" : {
@@ -491,6 +561,21 @@
           },
           "nome" : {
             "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "Contagem" : {
+        "properties" : {
+          "estadoPeca" : {
+            "type" : "string"
+          },
+          "produto" : {
+            "$ref" : "#/components/schemas/ConsultasDeAcertosProduto"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
           }
         },
         "type" : "object"
@@ -862,6 +947,62 @@
           }
         },
         "required" : [ "tabelas" ],
+        "type" : "object"
+      },
+      "FichaDoVendedor" : {
+        "properties" : {
+          "contagem" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Contagem"
+            },
+            "type" : "array"
+          },
+          "desistidoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "iniciadoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "leituras" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ConsultasDeAcertosLeitura"
+            },
+            "type" : "array"
+          },
+          "maletas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ConsultasDeAcertosMaleta"
+            },
+            "type" : "array"
+          },
+          "motivoDesistencia" : {
+            "type" : "string"
+          },
+          "pedidoPeloVendedor" : {
+            "type" : "boolean"
+          },
+          "semanaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "semanaNumero" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
         "type" : "object"
       },
       "ItemDaAutorizacao" : {
@@ -1430,6 +1571,15 @@
         },
         "type" : "object"
       },
+      "PedidoDeAcerto" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "PedidoDeCancelamento" : {
         "properties" : {
           "id" : {
@@ -1911,6 +2061,61 @@
           },
           "resultado" : {
             "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ResumoDoVendedor" : {
+        "properties" : {
+          "desistidoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "iniciadoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "maletas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "pedidoPeloVendedor" : {
+            "type" : "boolean"
+          },
+          "semanaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "semanaNumero" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "status" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ServicoDeAcertosPedidoDeLeitura" : {
+        "properties" : {
+          "estadoPeca" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
           }
         },
         "type" : "object"
@@ -2691,6 +2896,137 @@
         } ],
         "summary" : "Criar a senha nova (troca obrigatória)",
         "tags" : [ "autenticacao-controller" ]
+      }
+    },
+    "/api/vendedor/acertos" : {
+      "get" : {
+        "description" : "Do mais novo para o mais antigo. Só os do vendedor logado.",
+        "operationId" : "listarMeusAcertos",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/ResumoDoVendedor"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Meus acertos",
+        "tags" : [ "acertos-do-vendedor-controller" ]
+      },
+      "post" : {
+        "description" : "O vendedor pede o próprio acerto: todas as maletas dele passam a \"em acerto\". Precisa de ao menos uma maleta com ele, do computador sem vendas para enviar e de nenhuma maleta conferida em outro computador. Mesmo id devolve 200.",
+        "operationId" : "pedirMeuAcerto",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeAcerto"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/FichaDoVendedor"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Pedir o meu acerto",
+        "tags" : [ "acertos-do-vendedor-controller" ]
+      }
+    },
+    "/api/vendedor/acertos/{id}" : {
+      "get" : {
+        "description" : "As maletas, a contagem somada por peça e estado e as leituras. 404 para o acerto de outro vendedor.",
+        "operationId" : "verMeuAcerto",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/FichaDoVendedor"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ver o meu acerto",
+        "tags" : [ "acertos-do-vendedor-controller" ]
+      }
+    },
+    "/api/vendedor/acertos/{id}/leituras" : {
+      "post" : {
+        "description" : "O vendedor bipa uma peça (ou desfaz) no próprio acerto em andamento. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409.",
+        "operationId" : "registrarMinhaLeituraDoAcerto",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ServicoDeAcertosPedidoDeLeitura"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/FichaDoVendedor"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Registrar uma leitura da contagem",
+        "tags" : [ "acertos-do-vendedor-controller" ]
       }
     },
     "/api/vendedor/autorizacoes" : {
