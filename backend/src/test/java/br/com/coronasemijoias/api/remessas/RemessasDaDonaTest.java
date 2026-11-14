@@ -445,11 +445,67 @@ class RemessasDaDonaTest extends TesteDeIntegracao {
         enviarRemessa(repo).andExpect(status().isConflict());
     }
 
+    /** Rascunho de reposição pronto com uma peça. */
+    private JsonNode reposicao(UUID vendedor, UUID produto, int quantidade) throws Exception {
+        JsonNode repo = corpoDe(enviarPost(BASE, mapa("id", UUID.randomUUID(), "vendedorId", vendedor, "semanaId", semana(),
+                "tipo", "REPOSICAO")).andExpect(status().isCreated()));
+        return comItem(repo, produto, quantidade);
+    }
+
+    @Test
+    void reposicaoQueCabeNoLimitePassaEAQuePassaDoLimiteERecusadaSemBaixarOEstoque() throws Exception {
+        UUID p = peca("100.00", 20);
+        UUID v = vendedor("400.00", null);
+        enviarRemessa(montada(v, p, 3)).andExpect(status().isCreated());
+        // Em aberto 300; a reposição de 100 fecha o limite de 400 exato e passa.
+        enviarRemessa(reposicao(v, p, 1)).andExpect(status().isCreated());
+        assertThat(saldo(p)).isEqualTo(16);
+        // Em aberto 400 (a maleta nova mais a reposição): outra reposição de 100 passa do limite em 100.
+        JsonNode acima = reposicao(v, p, 1);
+        String texto = textoDe(enviarRemessa(acima).andExpect(status().isConflict())
+                .andExpect(jsonPath("$.codigo").value("LIMITE_DE_CONSIGNACAO_EXCEDIDO")));
+        assertThat(texto).contains("400,00").contains("100,00");
+        assertThat(saldo(p)).isEqualTo(16);
+        assertThat(jdbc.queryForObject("SELECT status FROM corona.remessas WHERE id = ?", String.class,
+                UUID.fromString(acima.get("id").asString()))).isEqualTo("RASCUNHO");
+    }
+
+    @Test
+    void limiteContaOPrecoCongeladoDaMaletaENaoOPrecoDeHojeNemOCusto() throws Exception {
+        UUID p = peca("100.00", 20); // custo 10,00: pelo custo, o em aberto abaixo seria 30,00
+        UUID v = vendedor("500.00", null);
+        enviarRemessa(montada(v, p, 3)).andExpect(status().isCreated());
+        // O preço sobe depois do envio: pelo preço de hoje o em aberto seria 3.000,00 e nada mais caberia.
+        jdbc.update("UPDATE corona.produtos SET preco_venda = 1000.00 WHERE id = ?", p);
+        UUID q = peca("200.00", 5);
+        enviarRemessa(montada(v, q, 1)).andExpect(status().isCreated()); // 300 (congelado) + 200 = 500, exato
+        // O preço cai: pelo preço de hoje (ou pelo custo) sobraria limite; pelo congelado, um centavo já passa.
+        jdbc.update("UPDATE corona.produtos SET preco_venda = 1.00 WHERE id = ?", p);
+        UUID r = peca("0.01", 5);
+        enviarRemessa(montada(v, r, 1)).andExpect(status().isConflict())
+                .andExpect(jsonPath("$.codigo").value("LIMITE_DE_CONSIGNACAO_EXCEDIDO"));
+        assertThat(saldo(r)).isEqualTo(5);
+    }
+
     @Test
     void semLimiteMarcadoDePropositoNaoBloqueia() throws Exception {
         UUID p = peca("1000.00", 20);
         UUID v = vendedor(null, null); // o helper marca "Sem limite"
         enviarRemessa(montada(v, p, 15)).andExpect(status().isCreated());
+    }
+
+    @Test
+    void semLimiteNuncaBloqueiaNemComVariasMaletasEReposicao() throws Exception {
+        UUID p = peca("1000.00", 60);
+        UUID v = vendedor(null, null); // o helper marca "Sem limite"
+        enviarRemessa(montada(v, p, 15)).andExpect(status().isCreated());
+        enviarRemessa(montada(v, p, 15)).andExpect(status().isCreated());
+        enviarRemessa(reposicao(v, p, 15)).andExpect(status().isCreated());
+        assertThat(saldo(p)).isEqualTo(15);
+        JsonNode emAberto = corpoDe(ler(BASE + "/em-aberto?vendedorId=" + v).andExpect(status().isOk()));
+        assertThat(emAberto.get("semLimite").asBoolean()).isTrue();
+        assertThat(emAberto.get("limite").isNull()).isTrue();
+        assertThat(dec(emAberto.get("valorEmAberto"))).isEqualByComparingTo("45000.00");
     }
 
     @Test
