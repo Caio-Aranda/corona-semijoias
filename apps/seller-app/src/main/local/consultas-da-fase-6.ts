@@ -116,19 +116,8 @@ export class ConsultasDaFase6 {
         if (!ehDoVendedor(db, v.vendedor_id) || vendaEstornada(db, v)) continue;
         const linha = pecasDaVenda(db, v.id).get(produto);
         if (!linha) continue;
-        const pago = (
-          db
-            .prepare(
-              "SELECT valor FROM pagamentos_cliente WHERE venda_id = ? AND tipo = 'PAGAMENTO' AND deleted_at IS NULL",
-            )
-            .all(v.id) as { valor: string }[]
-        ).reduce((t, p) => t + dinheiro(p.valor), 0n);
-        const bloqueio =
-          pago < dinheiro(v.total)
-            ? MENSAGENS_DAS_OPERACOES.VENDA_A_PRAZO
-            : v.maleta === 'EM_ACERTO'
-              ? MENSAGENS_DAS_OPERACOES.MALETA_EM_ACERTO
-              : null;
+        // A venda a prazo também se devolve (tarefa 6.6): a devolução abate o que o cliente ainda deve.
+        const bloqueio = v.maleta === 'EM_ACERTO' ? MENSAGENS_DAS_OPERACOES.MALETA_EM_ACERTO : null;
         saida.push({
           vendaId: v.id,
           vendidaEm: v.vendida_em,
@@ -225,6 +214,7 @@ export class ConsultasDaFase6 {
         podemVoltar: l.podemVoltar,
       })),
       valor: texto(previa?.valor ?? 0n),
+      abatido: texto(previa?.abatido ?? 0n),
       emDinheiro: texto(previa?.emDinheiro ?? 0n),
       emCredito: texto(previa?.emCredito ?? 0n),
       destinos: (previa?.calculadas ?? []).map((c) => ({
@@ -258,6 +248,8 @@ export class ConsultasDaFase6 {
     const agora = this.agora();
     let problema: string | null = null;
     let valorA = 0n;
+    let creditoDeA = 0n;
+    let abatidoDeA = 0n;
     try {
       const a = preverDevolucao(
         db,
@@ -273,6 +265,8 @@ export class ConsultasDaFase6 {
         true,
       );
       valorA = a.valor;
+      creditoDeA = a.emCredito;
+      abatidoDeA = a.abatido;
       if (!a.dentroDoPrazo && !a.autorizacao)
         problema = MENSAGENS_DAS_OPERACOES[a.problemaDaAutorizacao ?? 'FORA_DO_PRAZO'];
     } catch (e) {
@@ -300,7 +294,8 @@ export class ConsultasDaFase6 {
       remessaId,
       valorQueVolta: texto(valorA),
       valorNovo: texto(valorB),
-      diferenca: texto(valorB - valorA),
+      abatido: texto(abatidoDeA),
+      diferenca: texto(valorB - creditoDeA),
       problema,
     };
   }
@@ -325,7 +320,7 @@ export class ConsultasDaFase6 {
     const devolucoes = db
       .prepare(
         `SELECT d.id, d.venda_id, d.vendedor_id, d.situacao, d.origem_local, d.devolvida_em, d.valor_devolvido,
-                d.valor_reembolsado, d.valor_em_credito, coalesce(c.nome, cv.nome) AS cliente
+                d.valor_reembolsado, d.valor_em_credito, d.valor_abatido, coalesce(c.nome, cv.nome) AS cliente
            FROM devolucoes d
            LEFT JOIN clientes c ON c.id = d.cliente_id
            LEFT JOIN vendas v ON v.id = d.venda_id
@@ -342,6 +337,7 @@ export class ConsultasDaFase6 {
       valor_devolvido: string | null;
       valor_reembolsado: string | null;
       valor_em_credito: string | null;
+      valor_abatido: string | null;
       cliente: string | null;
     }[];
     for (const d of devolucoes) {
@@ -359,6 +355,7 @@ export class ConsultasDaFase6 {
         clienteNome: d.cliente ?? '',
         pecas: this.pecasDaDevolucao(d.id),
         valor: texto(dinheiro(d.valor_devolvido)),
+        abatido: texto(dinheiro(d.valor_abatido)),
         emDinheiro: texto(dinheiro(d.valor_reembolsado)),
         emCredito: texto(dinheiro(d.valor_em_credito)),
         diferenca: null,
@@ -371,7 +368,7 @@ export class ConsultasDaFase6 {
     const trocas = db
       .prepare(
         `SELECT t.id, t.venda_origem_id, t.devolucao_id, t.vendedor_id, t.situacao, t.origem_local, t.trocada_em,
-                t.diferenca, d.situacao AS situacao_da_devolucao, d.valor_devolvido, d.valor_em_credito,
+                t.diferenca, d.situacao AS situacao_da_devolucao, d.valor_devolvido, d.valor_em_credito, d.valor_abatido,
                 coalesce(c.nome, cv.nome) AS cliente
            FROM trocas t
            LEFT JOIN devolucoes d ON d.id = t.devolucao_id
@@ -392,6 +389,7 @@ export class ConsultasDaFase6 {
       situacao_da_devolucao: string | null;
       valor_devolvido: string | null;
       valor_em_credito: string | null;
+      valor_abatido: string | null;
       cliente: string | null;
     }[];
     for (const t of trocas) {
@@ -416,6 +414,7 @@ export class ConsultasDaFase6 {
         clienteNome: t.cliente ?? '',
         pecas: t.devolucao_id ? this.pecasDaDevolucao(t.devolucao_id) : 0,
         valor: texto(dinheiro(t.valor_devolvido)),
+        abatido: texto(dinheiro(t.valor_abatido)),
         emDinheiro: '0.00',
         emCredito: texto(dinheiro(t.valor_em_credito)),
         diferenca: texto(dinheiro(t.diferenca)),

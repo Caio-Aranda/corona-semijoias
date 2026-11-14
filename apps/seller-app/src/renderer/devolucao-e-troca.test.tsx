@@ -64,6 +64,7 @@ const previa = (extra: Partial<PreviaDaDevolucao> = {}): PreviaDaDevolucao => ({
   remessaId: MALETA,
   pecas: [{ produto: peca(ANEL, 'Anel de prata'), vendidas: 2, jaDevolvidas: 0, podemVoltar: 2 }],
   valor: '50.00',
+  abatido: '0.00',
   emDinheiro: '50.00',
   emCredito: '0.00',
   destinos: [{ produtoId: ANEL, estado: 'BOA', destino: 'MALETA' }],
@@ -203,6 +204,7 @@ const lista = (
   clienteNome: 'Maria Souza',
   pecas: 1,
   valor: '50.00',
+  abatido: '0.00',
   emDinheiro: '50.00',
   emCredito: '0.00',
   diferenca: null,
@@ -236,6 +238,7 @@ function criarPonte(manipuladores: Partial<Record<PedidoDeChamada['operacao'], M
         remessaId: MALETA,
         valorQueVolta: '50.00',
         valorNovo: '80.00',
+        abatido: '0.00',
         diferenca: '30.00',
         problema: null,
       } satisfies PreviaDaTroca,
@@ -359,7 +362,7 @@ describe('tela inicial', () => {
 });
 
 describe('Devolução e troca: ler a peça e escolher a venda', () => {
-  it('mostra as vendas com a peça, a foto, a garantia e os botões; a venda com parcelas não tem botões', async () => {
+  it('mostra as vendas com a peça, a foto, a garantia e os botões; a venda de maleta em acerto não tem botões', async () => {
     const { ponte } = criarPonte({
       'devolucoes.vendasComAPeca': () => ({
         ok: true,
@@ -368,7 +371,8 @@ describe('Devolução e troca: ler a peça e escolher a venda', () => {
           vendaComAPeca({
             vendaId: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
             clienteNome: 'João',
-            bloqueio: 'Esta venda tem parcelas; a devolução dela chega em breve.',
+            bloqueio:
+              'O acerto desta maleta está acontecendo. Espere o acerto terminar e registre a devolução de novo.',
           }),
         ],
       }),
@@ -388,7 +392,9 @@ describe('Devolução e troca: ler a peça e escolher a venda', () => {
     ).toBeInTheDocument();
     expect(within(tabela).queryByRole('button', { name: /João/ })).not.toBeInTheDocument();
     expect(
-      within(tabela).getByText('Esta venda tem parcelas; a devolução dela chega em breve.'),
+      within(tabela).getByText(
+        'O acerto desta maleta está acontecendo. Espere o acerto terminar e registre a devolução de novo.',
+      ),
     ).toBeInTheDocument();
     expect(await screen.findByAltText('Foto de Anel de prata')).toBeInTheDocument();
   });
@@ -440,6 +446,31 @@ describe('Devolução', () => {
       },
     });
     expect(JSON.stringify(pedido)).not.toMatch(/valor|total|diferenca/i);
+  });
+
+  it('a linha "Abatido do que o cliente deve" só aparece quando a devolução abate parcelas (venda a prazo)', async () => {
+    const { ponte } = criarPonte({
+      'devolucoes.previa': () => ({
+        ok: true,
+        dados: previa({ valor: '50.00', abatido: '50.00', emDinheiro: '0.00' }),
+      }),
+    });
+    const u = await abrirDevolucao(ponte);
+    await lerPeca(u);
+    await u.click(screen.getByRole('button', { name: /^Devolver: Maria Souza/ }));
+    await u.type(await screen.findByLabelText('Quantas voltam: Anel de prata'), '1');
+    expect(await screen.findByText(/Abatido do que o cliente deve:/)).toBeInTheDocument();
+    expect(screen.getByText(/Volta em dinheiro:/)).toBeInTheDocument();
+  });
+
+  it('sem abatimento (venda à vista) a linha não aparece', async () => {
+    const { ponte } = criarPonte();
+    const u = await abrirDevolucao(ponte);
+    await lerPeca(u);
+    await u.click(screen.getByRole('button', { name: /^Devolver: Maria Souza/ }));
+    await u.type(await screen.findByLabelText('Quantas voltam: Anel de prata'), '1');
+    expect(await screen.findByText(/Valor da devolução:/)).toBeInTheDocument();
+    expect(screen.queryByText(/Abatido do que o cliente deve/)).not.toBeInTheDocument();
   });
 
   it('sem peça marcada, avisa e não registra', async () => {

@@ -195,7 +195,7 @@ describe('migração local 3', () => {
       db.close();
     });
     expect(Number(db.pragma('user_version', { simple: true }))).toBe(VERSAO_DO_BANCO);
-    expect(VERSAO_DO_BANCO).toBe(4);
+    expect(VERSAO_DO_BANCO).toBe(5);
     expect(contagem(db)).toEqual(contagemAntes);
     expect(db.prepare('SELECT * FROM outbox ORDER BY ordem').all()).toEqual(outboxAntes);
     for (const t of NOVAS) expect(colunasDe(db, t), t).toContain('origem_local');

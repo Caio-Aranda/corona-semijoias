@@ -142,6 +142,7 @@ export function FormularioDeDevolucao({
 
   const podeRegistrar = previa.dentroDoPrazo || previa.autorizacao !== null;
   const temCredito = previa.emCredito !== '0.00';
+  const temAbatido = previa.abatido !== '0.00';
   return (
     <PaginaDoVendedor ponte={ponte} titulo={titulo} aoVoltar={aoVoltar}>
       {problema ? <Aviso tipo="erro">{problema}</Aviso> : null}
@@ -203,6 +204,11 @@ export function FormularioDeDevolucao({
         <p className="vendas-total">
           {T.valor}: <Dinheiro reais={previa.valor} cotacao={cotacao} />
         </p>
+        {temAbatido ? (
+          <p className="vendas-texto">
+            {T.abatido}: <Dinheiro reais={previa.abatido} cotacao={cotacao} />
+          </p>
+        ) : null}
         <p className="vendas-texto">
           {T.emDinheiro}: <Dinheiro reais={previa.emDinheiro} cotacao={cotacao} />
         </p>

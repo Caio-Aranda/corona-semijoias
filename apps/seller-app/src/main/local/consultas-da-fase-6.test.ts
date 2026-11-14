@@ -238,7 +238,8 @@ describe('consultas da devolução e troca', () => {
       bloqueio: null,
     });
     expect(lista[1]?.peca).toMatchObject({ nome: 'Anel', fotoHash: 'a'.repeat(64) });
-    expect(lista[0]?.bloqueio).toBe('Esta venda tem parcelas; a devolução dela chega em breve.');
+    // A venda a prazo também se devolve (tarefa 6.6): nada a bloqueia.
+    expect(lista[0]?.bloqueio).toBeNull();
     expect(consultas.fase6.vendasComAPeca('nao-existe')).toEqual([]);
   });
 
@@ -313,6 +314,7 @@ describe('consultas da devolução e troca', () => {
       remessaId: m.remessaId,
       valorQueVolta: '33.33',
       valorNovo: '50.00',
+      abatido: '0.00',
       diferenca: '16.67',
       problema: null,
     });

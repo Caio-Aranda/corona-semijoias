@@ -429,6 +429,7 @@ export const TEXTOS = {
       string
     >,
     valor: 'Valor da devolução',
+    abatido: 'Abatido do que o cliente deve',
     emDinheiro: 'Volta em dinheiro',
     emCredito: 'Volta como crédito do cliente',
     creditoDepois: 'O crédito aparece depois do envio.',
@@ -490,6 +491,7 @@ export const TEXTOS = {
       acoes: '',
     },
     tipos: { DEVOLUCAO: 'Devolução', TROCA: 'Troca' } as Record<string, string>,
+    abatidoLinha: (valor: string) => `Abatido do que o cliente deve: ${valor}`,
     emDinheiroLinha: (valor: string) => `Em dinheiro: ${valor}`,
     emCreditoLinha: (valor: string) => `Em crédito: ${valor}`,
     situacoes: {

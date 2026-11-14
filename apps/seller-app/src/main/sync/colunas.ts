@@ -113,6 +113,7 @@ export const COLUNAS_DO_PULL: Readonly<Record<TabelaSincronizavel, readonly stri
       'valor_devolvido',
       'valor_reembolsado',
       'valor_em_credito',
+      'valor_abatido',
       'forma_reembolso',
       'cotacao_id',
       'devolvida_em',
@@ -225,6 +226,7 @@ export const COLUNAS_DO_PULL: Readonly<Record<TabelaSincronizavel, readonly stri
       'baixada_em',
       'pagamento_cliente_id',
       'motivo_cancelamento',
+      'devolucao_id',
       'estorna_id',
     ],
   });

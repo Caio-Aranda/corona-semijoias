@@ -89,7 +89,7 @@ describe('migração local 4', () => {
       db.close();
     });
     expect(Number(db.pragma('user_version', { simple: true }))).toBe(VERSAO_DO_BANCO);
-    expect(VERSAO_DO_BANCO).toBe(4);
+    expect(VERSAO_DO_BANCO).toBe(5);
     expect(contagem(db)).toEqual(contagemAntes);
     expect(db.prepare('SELECT * FROM outbox ORDER BY ordem').all()).toEqual(outboxAntes);
     for (const t of ['contas_receber', 'baixas_receber'] as const) {
@@ -120,7 +120,7 @@ describe('migração local 4', () => {
     const novo = criarBancoDeTeste();
     limpar.push(() => novo.fechar());
     expect(lerEstado(novo.db, CHAVES.recargaDirigida)).toBeNull();
-    expect(Number(novo.db.pragma('user_version', { simple: true }))).toBe(4);
+    expect(Number(novo.db.pragma('user_version', { simple: true }))).toBe(VERSAO_DO_BANCO);
 
     // Banco na versão 3 sem cursor (nunca recebeu nada): também sem marca, e sem linha vazia no estado.
     const b = criarBancoDeTeste();
@@ -139,7 +139,7 @@ describe('migração local 4', () => {
     });
     expect(lerEstado(migrado, CHAVES.recargaDirigida)).toBeNull();
     expect(contar(migrado, "SELECT 1 FROM estado_sync WHERE chave = 'recarga_dirigida'")).toBe(0);
-    expect(Number(migrado.pragma('user_version', { simple: true }))).toBe(4);
+    expect(Number(migrado.pragma('user_version', { simple: true }))).toBe(VERSAO_DO_BANCO);
 
     // O mesmo banco da 3, agora com cursor antes da 4: marca com as três.
     const c = criarBancoDeTeste();

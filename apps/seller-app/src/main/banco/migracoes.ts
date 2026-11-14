@@ -298,6 +298,16 @@ INSERT INTO estado_sync (chave, valor)
   ON CONFLICT (chave) DO UPDATE SET valor = excluded.valor;
 `;
 
+/**
+ * Versão 5 (tarefa 6.6; ADR-0014, item 10): a devolução de venda a prazo abate as parcelas. Duas colunas novas, sem
+ * recarga dirigida: toda linha antiga vale vazio (a venda a prazo nunca foi devolvida antes, então "nada abatido" é o
+ * valor certo e a cópia local já está correta).
+ */
+const V5 = `
+ALTER TABLE devolucoes ADD COLUMN valor_abatido TEXT;
+ALTER TABLE baixas_receber ADD COLUMN devolucao_id TEXT;
+`;
+
 export const MIGRACOES: readonly MigracaoLocal[] = Object.freeze([
   {
     versao: 1,
@@ -319,6 +329,11 @@ export const MIGRACOES: readonly MigracaoLocal[] = Object.freeze([
     descricao:
       'contas a receber do cliente (parcelas e baixas), pagamento posterior e a recarga dirigida',
     sql: V4,
+  },
+  {
+    versao: 5,
+    descricao: 'valor abatido da devolução e a devolução da baixa de parcela (venda a prazo)',
+    sql: V5,
   },
 ]);
 

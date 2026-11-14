@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { exigirCentavos, textoDeCentavos } from '../../shared/dinheiro';
 import type { DevolucaoParaEnviar, PecaQueVolta, TrocaParaEnviar } from '../../shared/operacoes';
 import { aplicarLote } from './aplicador-do-pull';
-import { pecasDaVenda, saldoDoCredito } from './operacoes-da-fase-6';
+import { pecasDaVenda, preverDevolucao, saldoDoCredito } from './operacoes-da-fase-6';
 import { ErroDaOperacao, OperacoesLocais, saldoDaPeca } from './operacoes-locais';
 import { limparProvisoriasEnviadas } from './outbox';
 import { type BancoDeTeste, contar, criarBancoDeTeste, idDeTeste } from './testes/banco-de-teste';
@@ -1014,14 +1014,7 @@ describe('recusas no computador com o texto do servidor (teste 10)', () => {
     expect(retrato()).toEqual(antes);
   });
 
-  it('venda a prazo, estornada, maleta em acerto e venda de outro vendedor recusam', () => {
-    const aPrazo = vender(
-      [{ produtoId: m.produtoA, quantidade: 1 }],
-      [{ valor: '10.00', forma: 'PIX' }],
-    );
-    expect(
-      erroDe(() => ops.devolver(devolucao(aPrazo.vendaId, pecas([m.produtoA, 1])))).message,
-    ).toBe('Esta venda tem parcelas; a devolução dela chega em breve.');
+  it('estornada, maleta em acerto e venda de outro vendedor recusam (a venda a prazo já não recusa)', () => {
     const estornada = vender([{ produtoId: m.produtoA, quantidade: 1 }]);
     ops.estornar({ id: idDeTeste(8), vendaId: estornada.vendaId, motivo: 'x' });
     expect(
@@ -1195,6 +1188,131 @@ describe('"ainda podem voltar" não muda quando a venda chega do servidor (teste
     expect(pecasDaVenda(b.db, vendaId).get(m.produtoA)).toMatchObject({
       jaDevolvidas: 1,
       podemVoltar: 1,
+    });
+  });
+});
+
+describe('devolução e troca de venda a prazo (tarefa 6.6)', () => {
+  const dividido = (id: string) =>
+    linha(
+      'SELECT valor_devolvido, valor_abatido, valor_reembolsado, valor_em_credito FROM devolucoes WHERE id = ?',
+      id,
+    );
+
+  it('sem pagamento: abate todo o valor e nenhum dinheiro volta', () => {
+    const { vendaId } = vender([{ produtoId: m.produtoA, quantidade: 1 }], []);
+    const d = devolucao(vendaId, pecas([m.produtoA, 1]));
+    ops.devolver(d);
+    expect(dividido(d.id)).toEqual({
+      valor_devolvido: '33.33',
+      valor_abatido: '33.33',
+      valor_reembolsado: '0.00',
+      valor_em_credito: '0.00',
+    });
+    expect(contar(b.db, "SELECT 1 FROM pagamentos_cliente WHERE tipo = 'REEMBOLSO'")).toBe(0);
+    // O abatimento não vai no JSON: só o servidor calcula (reforço 2 da aprovação).
+    expect(dadosDa(d.id)).not.toContain('abatido');
+  });
+
+  it('paga em parte (10,00): abate o que falta (23,33) e devolve só o que foi pago', () => {
+    const { vendaId } = vender(
+      [{ produtoId: m.produtoA, quantidade: 1 }],
+      [{ valor: '10.00', forma: 'PIX' }],
+    );
+    const d = devolucao(vendaId, pecas([m.produtoA, 1]));
+    ops.devolver(d);
+    expect(dividido(d.id)).toEqual({
+      valor_devolvido: '33.33',
+      valor_abatido: '23.33',
+      valor_reembolsado: '10.00',
+      valor_em_credito: '0.00',
+    });
+  });
+
+  it('duas peças a prazo: a devolução de uma abate só o valor dela', () => {
+    const { vendaId } = vender([{ produtoId: m.produtoA, quantidade: 2 }], []);
+    // Duas peças a prazo (66,66): a devolução de uma abate 33,33 e nada mais.
+    const d = devolucao(vendaId, pecas([m.produtoA, 1]));
+    ops.devolver(d);
+    expect(dividido(d.id)).toMatchObject({ valor_abatido: '33.33', valor_em_credito: '0.00' });
+  });
+
+  it('cancelar a devolução devolve a dívida: a prévia abate de novo', () => {
+    const { vendaId } = vender([{ produtoId: m.produtoA, quantidade: 1 }], []);
+    const d = devolucao(vendaId, pecas([m.produtoA, 1]));
+    ops.devolver(d);
+    // Com a devolução ativa, já não há o que abater.
+    expect(
+      preverDevolucao(
+        b.db,
+        new Date('2026-11-12T13:00:00.000Z'),
+        { vendaId, motivo: 'ARREPENDIMENTO', itens: [] },
+        false,
+        undefined,
+        true,
+      ).abatido,
+    ).toBe(0n);
+    ops.cancelarDevolucao({ id: idDeTeste(8), devolucaoId: d.id, motivo: 'engano' });
+    const previa = preverDevolucao(
+      b.db,
+      new Date('2026-11-12T13:00:00.000Z'),
+      { vendaId, motivo: 'ARREPENDIMENTO', itens: pecas([m.produtoA, 1]) },
+      false,
+    );
+    expect(previa).toMatchObject({ abatido: 3333n, emDinheiro: 0n, emCredito: 0n });
+  });
+
+  describe('troca com A a prazo', () => {
+    let produtoC: string;
+    beforeEach(() => {
+      mudarMaleta(b.db, m.remessaId, 'CONFERIDA');
+      produtoC = idDeTeste(2);
+      plantarPeca(b.db, m.remessaId, produtoC, 5, '50.00');
+    });
+    const trocar = (
+      vendaId: string,
+      pagamentos: { valor: string; forma: 'PIX' }[] = [],
+    ): TrocaParaEnviar => {
+      const t: TrocaParaEnviar = {
+        id: idDeTeste(8),
+        creditoId: idDeTeste(8),
+        pagamentoDoCreditoId: idDeTeste(8),
+        devolucao: { id: idDeTeste(8), vendaId, motivo: 'ARREPENDIMENTO', itens: pecas([m.produtoA, 1]) },
+        venda: {
+          id: idDeTeste(5),
+          remessaId: m.remessaId,
+          itens: [{ produtoId: produtoC, quantidade: 1 }],
+          pagamentos: pagamentos.map((p) => ({ ...p, id: idDeTeste(6) })),
+        },
+      };
+      ops.trocar(t);
+      return t;
+    };
+
+    it('A sem nada pago: abate, não gera crédito e o cliente paga todo o B', () => {
+      const { vendaId } = vender([{ produtoId: m.produtoA, quantidade: 1 }], []);
+      const t = trocar(vendaId, [{ valor: '50.00', forma: 'PIX' }]);
+      expect(dividido(t.devolucao.id)).toMatchObject({
+        valor_abatido: '33.33',
+        valor_em_credito: '0.00',
+        valor_reembolsado: '0.00',
+      });
+      expect(contar(b.db, 'SELECT 1 FROM creditos_cliente')).toBe(0);
+      expect(contar(b.db, "SELECT 1 FROM usos_credito WHERE tipo = 'USO'")).toBe(0);
+      expect(somaDosPagamentos(t.venda.id)).toBe('50.00');
+    });
+
+    it('A paga em parte (10,00): o crédito é só o que passou do que faltava', () => {
+      const { vendaId } = vender(
+        [{ produtoId: m.produtoA, quantidade: 1 }],
+        [{ valor: '10.00', forma: 'PIX' }],
+      );
+      const t = trocar(vendaId, [{ valor: '40.00', forma: 'PIX' }]);
+      expect(dividido(t.devolucao.id)).toMatchObject({
+        valor_abatido: '23.33',
+        valor_em_credito: '10.00',
+      });
+      expect(somaDosPagamentos(t.venda.id)).toBe('50.00');
     });
   });
 });
