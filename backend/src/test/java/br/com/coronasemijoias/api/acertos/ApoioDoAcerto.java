@@ -123,7 +123,7 @@ abstract class ApoioDoAcerto extends TesteDeIntegracao {
     UUID semana() throws Exception {
         int n = SEQUENCIA.getAndIncrement();
         LocalDate inicio = LocalDate.of(3800, 1, 1).plusDays(10L * n);
-        return UUID.fromString(corpoDe(postar("/api/dona/semanas", dona(), mapa("numero", 110_000 + n,
+        return UUID.fromString(corpoDe(postar("/api/dona/semanas", dona(), mapa("numero", 97_000 + n,
                 "inicio", inicio.toString(), "fim", inicio.plusDays(6).toString())).andExpect(status().isCreated())).get("id").asString());
     }
 

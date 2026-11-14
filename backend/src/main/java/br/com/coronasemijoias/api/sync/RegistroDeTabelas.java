@@ -178,7 +178,16 @@ public final class RegistroDeTabelas {
                                 "conta_id", "tipo", "valor", "baixada_em", "pagamento_cliente_id", "motivo_cancelamento", "devolucao_id",
                                 "estorna_id"), true,
                                 RegraDoVendedor.doVendedor("EXISTS (SELECT 1 FROM corona.contas_receber c"
-                                        + " JOIN corona.vendas v ON v.id = c.venda_id WHERE c.id = t.conta_id AND v.vendedor_id = ?)"))
+                                        + " JOIN corona.vendas v ON v.id = c.venda_id WHERE c.id = t.conta_id AND v.vendedor_id = ?)")),
+                        // Acerto, parte 1 (tarefa 7.4, V043): o acerto do vendedor e a contagem dele. Nunca vão os "*_por" (quem
+                        // iniciou, desistiu ou leu) nem remessas.acerto_id (as maletas dele chegam com status EM_ACERTO).
+                        new TabelaSincronizavel("acertos", List.of(
+                                "vendedor_id", "semana_id", "status", "pedido_pelo_vendedor", "iniciado_em", "desistido_em",
+                                "motivo_desistencia"), false, RegraDoVendedor.doVendedor("t.vendedor_id = ?")),
+                        new TabelaSincronizavel("leituras_acerto", List.of(
+                                "acerto_id", "produto_id", "quantidade", "estado_peca", "lida_em", "pelo_vendedor", "dispositivo_id"), true,
+                                RegraDoVendedor.doVendedor("EXISTS (SELECT 1 FROM corona.acertos a"
+                                        + " WHERE a.id = t.acerto_id AND a.vendedor_id = ?)"))
                         // Tabela sincronizável nova: declare a regra do vendedor (filtro, expansão, diretório).
                 ),
                 List.of(
