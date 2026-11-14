@@ -7,10 +7,12 @@ import br.com.coronasemijoias.api.acertos.ServicoDeAcertos.PedidoDeInicio;
 import br.com.coronasemijoias.api.acertos.ServicoDeAcertos.PedidoDeLeitura;
 import br.com.coronasemijoias.api.acertos.ServicoDeAcertos.Quem;
 import br.com.coronasemijoias.api.acertos.ServicoDeAcertos.Resultado;
+import br.com.coronasemijoias.api.acertos.ServicoDeFechamento.PedidoDeFechamento;
 import br.com.coronasemijoias.api.seguranca.ExigePerfil;
 import br.com.coronasemijoias.api.seguranca.UsuarioAutenticado;
 import io.swagger.v3.oas.annotations.Operation;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,8 +36,10 @@ public class AcertosDaDonaController {
 
     private final ServicoDeAcertos servico;
     private final ConsultasDeAcertos consultas;
+    private final ServicoDeFechamento fechamento;
 
-    AcertosDaDonaController(ServicoDeAcertos servico, ConsultasDeAcertos consultas) {
+    AcertosDaDonaController(ServicoDeAcertos servico, ConsultasDeAcertos consultas, ServicoDeFechamento fechamento) {
+        this.fechamento = fechamento;
         this.servico = servico;
         this.consultas = consultas;
     }
@@ -95,5 +99,33 @@ public class AcertosDaDonaController {
 
     private ResponseEntity<FichaDaDona> ficha(Resultado r, UUID acerto) {
         return ResponseEntity.status(r.jaExistia() ? HttpStatus.OK : HttpStatus.CREATED).body(consultas.fichaDaDona(acerto));
+    }
+
+    @Operation(operationId = "previaDoFechamento", summary = "Prévia do fechamento do acerto",
+            description = "Nada é gravado: esperado x contado por peça e maleta, sobras, faltas com valor, defeitos, eventos que vão entrar, "
+                    + "devoluções em revisão (impedem), o que não foi aceito, pendências antigas, a comissão por venda, a soma da meta em "
+                    + "Guarani, o percentual, os totais e a cotação. Assume cobrar as faltas no acerto e não aprovar defeito; para outras "
+                    + "decisões, use a prévia com decisões.")
+    @GetMapping("/{id}/fechamento")
+    public Map<String, Object> previa(@PathVariable UUID id) {
+        return fechamento.previa(id, null);
+    }
+
+    @Operation(operationId = "previaDoFechamentoComDecisoes", summary = "Prévia do fechamento com as decisões da dona",
+            description = "O mesmo cálculo do fechamento com as decisões enviadas (faltas, defeitos, cobranças e pendências antigas). Nada é gravado.")
+    @PostMapping("/{id}/fechamento/previa")
+    public Map<String, Object> previaComDecisoes(@PathVariable UUID id, @RequestBody PedidoDeFechamento pedido) {
+        return fechamento.previa(id, pedido);
+    }
+
+    @Operation(operationId = "fecharAcerto", summary = "Fechar o acerto",
+            description = "Só a dona. Uma transação só: esperado x contado, faltas, defeitos, eventos, comissão por meta, totais e cotação; "
+                    + "as maletas ficam acertadas. Sobra ou devolução em revisão impede (409). As decisões e o líquido mostrado têm de "
+                    + "bater com o cálculo de agora (409 com a prévia nova). Mesmo id e mesmas decisões devolve 200.")
+    @PostMapping("/{id}/fechar")
+    public ResponseEntity<FichaDaDona> fechar(@PathVariable UUID id, @RequestBody PedidoDeFechamento pedido,
+            @AuthenticationPrincipal UsuarioAutenticado quem) {
+        ServicoDeFechamento.Resultado r = fechamento.fechar(quem.id(), id, pedido);
+        return ResponseEntity.status(r.jaExistia() ? HttpStatus.OK : HttpStatus.CREATED).body(consultas.fichaDaDona(id));
     }
 }

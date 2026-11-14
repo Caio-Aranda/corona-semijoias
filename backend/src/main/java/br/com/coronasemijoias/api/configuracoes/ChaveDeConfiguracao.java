@@ -31,7 +31,16 @@ public enum ChaveDeConfiguracao {
     VALOR_APROVACAO_REEMBOLSO("valor_aprovacao_reembolso"),
 
     /** Porcentagem de devolução (últimas 4 semanas) que avisa a dona sobre o vendedor (padrão 20; dúvida D9). */
-    PERCENTUAL_ALERTA_DEVOLUCAO("percentual_alerta_devolucao");
+    PERCENTUAL_ALERTA_DEVOLUCAO("percentual_alerta_devolucao"),
+
+    /** Meta da semana para a comissão, em Guarani (padrão 700.000; ADR-0012, item 5). */
+    COMISSAO_META_GUARANI("comissao_meta_guarani"),
+
+    /** Percentual da comissão quando a soma fica abaixo da meta (padrão 30). */
+    COMISSAO_PERCENTUAL_ABAIXO_DA_META("comissao_percentual_abaixo_da_meta"),
+
+    /** Percentual da comissão quando a soma chega à meta (padrão 40). */
+    COMISSAO_PERCENTUAL_NA_META("comissao_percentual_na_meta");
 
     private final String chave;
 
