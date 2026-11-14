@@ -110,3 +110,5 @@ Issue #146, PR 162 (tarefa crítica: plano aprovado no PR, ajustes da orquestrad
 
 - Telas e gravar parcelamento e recebimento na outbox do Corona Vendas (7.10 e 7.11); a rota e a tela de diferenças das conciliações (7.8); devolução de venda com parcelas em aberto (7.3b); o nível 2 (7.5 e 7.6) e a comissão.
 - `AutorizacaoDeDevolucaoTest.nenhumaRespostaDasRotasDaAutorizacaoTemCustoNemFornecedor` e `TrocaTest.prazoContaEmDiasDeBrasiliaComoNaDevolucao` já falham quando rodados sozinhos na `main` (dependem do que as outras classes deixam na configuração de prazos); passam na suíte inteira. Não foi mexido.
+
+**Atualização (tarefa 6.6, PR 164):** a 7.3b foi feita pela 6.6: a devolução e a troca de venda a prazo abatem as parcelas (V042). `VENDA_A_PRAZO_SEM_DEVOLUCAO` já não é devolvido. Detalhe em [fase-6.md](fase-6.md#tarefa-66-devolução-e-troca-de-venda-a-prazo).

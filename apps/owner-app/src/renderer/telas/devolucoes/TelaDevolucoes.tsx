@@ -170,6 +170,9 @@ export function TelaDevolucoes({
             .join('; '),
           voltou: (
             <>
+              {d.valorAbatido && Number(d.valorAbatido) > 0 ? (
+                <div>{L.abatido(reais(d.valorAbatido))}</div>
+              ) : null}
               {d.valorReembolsado && Number(d.valorReembolsado) > 0 ? (
                 <div>{L.emDinheiro(reais(d.valorReembolsado))}</div>
               ) : null}

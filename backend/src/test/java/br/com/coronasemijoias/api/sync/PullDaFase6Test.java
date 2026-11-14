@@ -204,7 +204,8 @@ class PullDaFase6Test extends ApoioDoEnvioDaFase6 {
         }
         UUID semSaldo = doVendedor("creditos_sem_saldo", v).iterator().next();
         assertThatThrownBy(() -> jdbc.update("UPDATE corona.creditos_sem_saldo SET venda_id = (SELECT id FROM corona.vendas"
-                + " WHERE vendedor_id = ? LIMIT 1) WHERE id = ?", v.vendedorId(), semSaldo)).isInstanceOf(Exception.class);
+                + " WHERE vendedor_id = ? AND id <> (SELECT venda_id FROM corona.creditos_sem_saldo WHERE id = ?) LIMIT 1) WHERE id = ?",
+                v.vendedorId(), semSaldo, semSaldo)).isInstanceOf(Exception.class);
         for (String t : List.of("itens_devolucao", "itens_autorizacao", "usos_credito")) {
             UUID linha = doVendedor(t, v).iterator().next();
             assertThatThrownBy(() -> jdbc.update("UPDATE corona." + t + " SET updated_at = now() WHERE id = ?", linha))

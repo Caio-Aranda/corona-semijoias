@@ -579,7 +579,7 @@ export const listarDevolucoes = <ThrowOnError extends boolean = false>(options?:
 /**
  * Registrar a devolução de um cliente pela dona
  *
- * A dona registra a devolução de uma venda à vista de qualquer vendedor, dentro da garantia. A peça vai sempre para a loja (nada entra na maleta do vendedor) e o dinheiro volta na forma escolhida. O limite da semana e o valor de aprovação não valem para a dona. Fora do prazo, venda a prazo, maleta em acerto ou acima do vendido: 409. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409.
+ * A dona registra a devolução de uma venda de qualquer vendedor, dentro da garantia. Na venda a prazo, a devolução primeiro abate o que o cliente ainda deve (valorAbatido) e só o que passar disso volta ao cliente. A peça vai sempre para a loja (nada entra na maleta do vendedor) e o dinheiro volta na forma escolhida. O limite da semana e o valor de aprovação não valem para a dona. Fora do prazo, maleta em acerto ou acima do vendido: 409. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409.
  */
 export const devolverPelaDona = <ThrowOnError extends boolean = false>(options: Options<DevolverPelaDonaData, ThrowOnError>): RequestResult<DevolverPelaDonaResponses, unknown, ThrowOnError> => (options.client ?? client).post<DevolverPelaDonaResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -594,7 +594,7 @@ export const devolverPelaDona = <ThrowOnError extends boolean = false>(options: 
 /**
  * Vendas com a peça lida (todos os vendedores)
  *
- * Pelo código lido ou pelo produto: as vendas concluídas de todos os vendedores com a peça, da mais nova para a mais antiga (no máximo 20), com o que ainda pode voltar de cada peça e até que dia vale a garantia. Venda a prazo vem marcada.
+ * Pelo código lido ou pelo produto: as vendas concluídas de todos os vendedores com a peça, da mais nova para a mais antiga (no máximo 20), com o que ainda pode voltar de cada peça e até que dia vale a garantia. Venda a prazo vem marcada (aPrazo) e traz o que o cliente ainda deve (emAberto).
  */
 export const vendasComAPecaDaDona = <ThrowOnError extends boolean = false>(options?: Options<VendasComAPecaDaDonaData, ThrowOnError>): RequestResult<VendasComAPecaDaDonaResponses, unknown, ThrowOnError> => (options?.client ?? client).get<VendasComAPecaDaDonaResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],

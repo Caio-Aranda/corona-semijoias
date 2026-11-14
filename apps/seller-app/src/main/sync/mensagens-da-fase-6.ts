@@ -52,6 +52,7 @@ export type CodigoDaFase6 =
   | 'PAGO_SEM_DIFERENCA';
 
 export const MENSAGENS_DA_FASE_6: Readonly<Record<CodigoDaFase6, string>> = Object.freeze({
+  // Só para resposta de servidor antigo: desde a tarefa 6.6 a venda a prazo também se devolve (abate as parcelas).
   VENDA_A_PRAZO: 'Esta venda tem parcelas; a devolução dela chega em breve.',
   MALETA_EM_ACERTO:
     'O acerto desta maleta está acontecendo. Espere o acerto terminar e registre a devolução de novo.',

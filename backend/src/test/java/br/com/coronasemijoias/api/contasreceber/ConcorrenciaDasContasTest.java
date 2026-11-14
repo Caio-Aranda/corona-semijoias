@@ -145,12 +145,11 @@ class ConcorrenciaDasContasTest extends ApoioDasContas {
                             "itens", List.of(mapa("produtoId", c.peca(), "quantidade", 1, "estado", "BOA"))))));
             Resposta estorno = r.get(0);
             Resposta devolucao = r.get(1);
-            assertThat(estorno.status() == 201 && devolucao.status() == 201).as("as duas passaram na rodada %d", rodada).isFalse();
-            assertThat(estorno.status() == 201 || devolucao.status() == 201).isTrue();
-            if (devolucao.status() == 201) {
+            // A devolução abate (tarefa 6.6) e nunca é recusada: se o estorno entrou primeiro, a venda voltou a dever e a
+            // devolução abate a dívida; se a devolução entrou primeiro, o estorno do recebimento é recusado.
+            assertThat(devolucao.status()).as("devolução na rodada %d", rodada).isEqualTo(201);
+            if (estorno.status() != 201) {
                 assertThat(estorno.codigo()).isEqualTo("VENDA_COM_DEVOLUCAO");
-            } else {
-                assertThat(devolucao.codigo()).isEqualTo("VENDA_A_PRAZO_SEM_DEVOLUCAO");
             }
             // O dinheiro nunca volta duas vezes: o líquido da venda nunca fica negativo.
             assertThat(jdbc.queryForObject("""
@@ -218,5 +217,80 @@ class ConcorrenciaDasContasTest extends ApoioDasContas {
                 c.venda())).isGreaterThanOrEqualTo(10);
         // O 11º já não tem o que receber.
         receber(c, UUID.randomUUID(), "0.01", "PIX").andExpect(status().isConflict());
+    }
+
+    // --- a devolução de venda a prazo (tarefa 6.6) ---
+
+    private Callable<Resposta> devolverEm(APrazo c, UUID id, int quantidade) {
+        return () -> chamar("/api/vendedor/devolucoes", como(c.vendedor()), mapa("id", id, "vendaId", c.venda(),
+                "motivo", "ARREPENDIMENTO", "formaReembolso", "PIX",
+                "itens", List.of(mapa("produtoId", c.peca(), "quantidade", quantidade, "estado", "BOA"))));
+    }
+
+    /** Uma venda a prazo de duas peças de 50,00 (100,00 em duas parcelas, nada pago). */
+    private APrazo vendaDeDuasPecas() throws Exception {
+        var vendedor = usuarios.criarVendedor();
+        UUID cliente = cliente(vendedor);
+        UUID peca = peca("50.00", 5);
+        UUID maleta = maleta(vendedor, peca, 5);
+        UUID venda = vender(vendedor, maleta, cliente, List.of(linha(peca, 2)), List.of(),
+                mapa("quantidade", 2, "primeiroVencimento", hoje().plusDays(1).toString()));
+        return new APrazo(vendedor, cliente, peca, maleta, venda);
+    }
+
+    @Test
+    void devolucaoERecebimentoDoEmAbertoInteiroNuncaDeixamDeveroNegativoNemDeadlock() throws Exception {
+        for (int rodada = 0; rodada < 4; rodada++) {
+            APrazo c = vendaAPrazo("100.00", null, 2);
+            List<Resposta> r = emParalelo(List.of(devolverEm(c, UUID.randomUUID(), 1), receberEm(c, UUID.randomUUID(), "100.00")));
+            // A devolução nunca é recusada: ou abate o que o cliente deve, ou (se o recebimento entrou antes) devolve dinheiro.
+            assertThat(r.get(0).status()).as("devolução na rodada %d", rodada).isEqualTo(201);
+            assertThat(r.get(1).status()).isIn(201, 409);
+            assertThat(jdbc.queryForObject("""
+                    SELECT coalesce(sum(valor - valor_pago - valor_cancelado), 0) FROM corona.contas_receber WHERE venda_id = ?""",
+                    BigDecimal.class, c.venda()).signum()).isGreaterThanOrEqualTo(0);
+        }
+    }
+
+    @Test
+    void duasDevolucoesDaMesmaVendaAPrazoAoMesmoTempoNuncaAbatemMaisDoQueOClienteDevia() throws Exception {
+        for (int rodada = 0; rodada < 4; rodada++) {
+            APrazo c = vendaDeDuasPecas();
+            List<Resposta> r = emParalelo(List.of(devolverEm(c, UUID.randomUUID(), 1), devolverEm(c, UUID.randomUUID(), 1)));
+            assertThat(r).extracting(Resposta::status).containsExactly(201, 201);
+            BigDecimal abatido = jdbc.queryForObject("SELECT sum(valor_abatido) FROM corona.devolucoes WHERE venda_id = ?",
+                    BigDecimal.class, c.venda());
+            assertThat(abatido).isEqualByComparingTo("100.00");
+            assertThat(situacoes(c.venda())).containsExactly("CANCELADA", "CANCELADA");
+        }
+    }
+
+    @Test
+    void devolucaoEEstornoDaVendaNuncaPassamAsDuas() throws Exception {
+        for (int rodada = 0; rodada < 4; rodada++) {
+            APrazo c = vendaDeDuasPecas();
+            List<Resposta> r = emParalelo(List.of(devolverEm(c, UUID.randomUUID(), 1),
+                    () -> chamar(VENDAS + "/" + c.venda() + "/estorno", como(c.vendedor()),
+                            mapa("id", UUID.randomUUID(), "motivo", "Engano"))));
+            assertThat(r.get(0).status() == 201 && r.get(1).status() == 201).as("as duas passaram na rodada %d", rodada).isFalse();
+            assertThat(r.get(0).status() == 201 || r.get(1).status() == 201).isTrue();
+        }
+    }
+
+    @Test
+    void cancelarADevolucaoEReceberAoMesmoTempoAsDuasPassamEAContaFecha() throws Exception {
+        for (int rodada = 0; rodada < 4; rodada++) {
+            APrazo c = vendaDeDuasPecas();
+            UUID devolucao = UUID.randomUUID();
+            assertThat(devolverEm(c, devolucao, 1).call().status()).isEqualTo(201);
+            List<Resposta> r = emParalelo(List.of(
+                    () -> chamar("/api/vendedor/devolucoes/" + devolucao + "/cancelar", como(c.vendedor()),
+                            mapa("id", UUID.randomUUID(), "motivo", "Engano")),
+                    receberEm(c, UUID.randomUUID(), "50.00")));
+            assertThat(r).extracting(Resposta::status).containsExactly(201, 201);
+            assertThat(jdbc.queryForObject("""
+                    SELECT coalesce(sum(valor - valor_pago - valor_cancelado), 0) FROM corona.contas_receber WHERE venda_id = ?""",
+                    BigDecimal.class, c.venda())).isEqualByComparingTo("50.00");
+        }
     }
 }

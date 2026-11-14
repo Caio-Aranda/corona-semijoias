@@ -424,6 +424,8 @@ export interface PreviaInterna {
   maletaComOVendedor: boolean;
   calculadas: PecaCalculada[];
   valor: bigint;
+  /** O que a devolução abate do que o cliente ainda deve nas parcelas (venda a prazo; zero na venda à vista). */
+  abatido: bigint;
   emCredito: bigint;
   emDinheiro: bigint;
   dentroDoPrazo: boolean;
@@ -508,6 +510,29 @@ function problemaDaAutorizacao(
  * Confere o pedido e calcula a prévia da devolução, sem gravar nada (também a tela usa). Recusa o que o servidor
  * recusaria; o prazo e a autorização ficam na resposta para quem chama decidir.
  */
+/**
+ * O que o cliente ainda deve da venda, pela conta da C1 (total menos o devolvido menos o pago líquido, inclusive em
+ * crédito): vale também para a venda a prazo que o computador ainda não enviou (sem parcela local) e não precisa de baixa
+ * provisória. Nunca negativo.
+ */
+function emAbertoDaVenda(db: BancoAberto, venda: VendaAchada): bigint {
+  const devolvido = somaDe(
+    db,
+    `SELECT d.valor_devolvido AS valor FROM devolucoes d
+      WHERE d.venda_id = ? AND d.deleted_at IS NULL AND ${SQL_DEVOLUCAO_ATIVA('d')}`,
+    venda.id,
+  );
+  const liquido = somaDe(
+    db,
+    `SELECT valor FROM pagamentos_cliente
+      WHERE venda_id = ? AND tipo IN ('PAGAMENTO', 'ESTORNO_PAGAMENTO', 'REEMBOLSO', 'ESTORNO_REEMBOLSO')
+        AND deleted_at IS NULL`,
+    venda.id,
+  );
+  const aberto = exigirCentavos(venda.total ?? '0') - devolvido - liquido;
+  return aberto > 0n ? aberto : 0n;
+}
+
 export function preverDevolucao(
   db: BancoAberto,
   agora: Date,
@@ -528,12 +553,6 @@ export function preverDevolucao(
   if (!(permitirSemPecas && pedido.itens.length === 0)) conferirPecas(pedido.itens, motivo);
   const venda = acharVenda(db, pedido.vendaId);
   if (vendaEstornada(db, venda)) throw new ErroDaOperacao('VENDA_JA_ESTORNADA');
-  const pago = somaDe(
-    db,
-    "SELECT valor FROM pagamentos_cliente WHERE venda_id = ? AND tipo = 'PAGAMENTO' AND deleted_at IS NULL",
-    venda.id,
-  );
-  if (pago < exigirCentavos(venda.total ?? '0')) recusar('VENDA_A_PRAZO');
   if (venda.maleta === 'EM_ACERTO') recusar('MALETA_EM_ACERTO');
   const maletaComOVendedor = MALETA_COM_O_VENDEDOR.has(venda.maleta ?? '');
 
@@ -567,16 +586,20 @@ export function preverDevolucao(
     }
   }
   const valor = calculadas.reduce((t, c) => t + c.valor, 0n);
-  // O crédito líquido da venda volta primeiro, o resto em dinheiro (na troca, tudo em crédito).
+  // A mesma divisão do servidor (ADR-0014, item 10): primeiro abate o que o cliente ainda deve; do resto, o crédito
+  // líquido da venda volta primeiro como crédito (na troca, o resto todo) e só o que sobrar em dinheiro.
+  const emAberto = emAbertoDaVenda(db, venda);
+  const abatido = valor < emAberto ? valor : emAberto;
+  const resto = valor - abatido;
   const creditoLiquido = somaDe(
     db,
     "SELECT valor FROM pagamentos_cliente WHERE venda_id = ? AND forma = 'CREDITO' AND deleted_at IS NULL",
     venda.id,
   );
   const emCredito = naTroca
-    ? valor
-    : valor < creditoLiquido
-      ? valor
+    ? resto
+    : resto < creditoLiquido
+      ? resto
       : creditoLiquido > 0n
         ? creditoLiquido
         : 0n;
@@ -614,8 +637,9 @@ export function preverDevolucao(
     maletaComOVendedor,
     calculadas,
     valor,
+    abatido,
     emCredito,
-    emDinheiro: valor - emCredito,
+    emDinheiro: resto - emCredito,
     dentroDoPrazo: dentro,
     autorizacao,
     problemaDaAutorizacao: autorizacao ? null : problema,
@@ -660,6 +684,7 @@ function gravarDevolucao(
     valor_devolvido: textoDeCentavos(p.valor),
     valor_reembolsado: textoDeCentavos(p.emDinheiro),
     valor_em_credito: textoDeCentavos(p.emCredito),
+    valor_abatido: textoDeCentavos(p.abatido),
     forma_reembolso: x.forma,
     devolvida_em: x.quando,
   });
@@ -838,7 +863,10 @@ export function registrarTroca(
     throw new ErroDaOperacao('DESCONTO_ACIMA_DO_LIMITE');
   const total = subtotal - desconto;
   const valorA = p.valor;
-  const creditoUsado = valorA < total ? valorA : total;
+  // O crédito da troca é só o que passou do que A ainda devia (A a prazo abate as parcelas primeiro); A sem nada pago
+  // não gera crédito.
+  const creditoDeA = p.emCredito;
+  const creditoUsado = creditoDeA < total ? creditoDeA : total;
   let pago = creditoUsado;
   for (const pg of b.pagamentos) {
     if (pg.forma === 'CREDITO' || pg.creditoId) recusar('CREDITO_EM_OUTRA_FORMA');
@@ -846,7 +874,7 @@ export function registrarTroca(
     if (v <= 0n) throw new ErroDaOperacao('PAGAMENTO_SEM_VALOR');
     pago += v;
   }
-  if (valorA >= total && b.pagamentos.length > 0) recusar('PAGO_SEM_DIFERENCA');
+  if (creditoDeA >= total && b.pagamentos.length > 0) recusar('PAGO_SEM_DIFERENCA');
   if (pago > total) throw new ErroDaOperacao('PAGO_PASSA_DO_TOTAL');
 
   const quando = agora.toISOString();
@@ -889,16 +917,16 @@ export function registrarTroca(
     troca: { trocaId: t.id, creditoId: t.creditoId },
   });
   const vendedor = p.venda.vendedor_id ?? p.venda.vendedor_da_maleta ?? remessa.vendedor_id;
-  if (valorA > 0n)
+  if (creditoDeA > 0n)
     inserir(db, 'creditos_cliente', t.creditoId, t.id, {
       cliente_id: p.venda.cliente_id,
       vendedor_id: vendedor,
       origem: 'TROCA',
       troca_id: t.id,
       devolucao_id: a.id,
-      valor: textoDeCentavos(valorA),
+      valor: textoDeCentavos(creditoDeA),
       valor_utilizado: textoDeCentavos(creditoUsado),
-      situacao: creditoUsado === valorA ? 'UTILIZADO' : 'ABERTO',
+      situacao: creditoUsado === creditoDeA ? 'UTILIZADO' : 'ABERTO',
       gerado_em: quando,
     });
   inserir(db, 'vendas', b.id, t.id, {

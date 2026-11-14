@@ -425,6 +425,7 @@ export type Devolucao = {
     remessaId?: string;
     revisadaEm?: string;
     situacao?: string;
+    valorAbatido?: string;
     valorDevolvido?: string;
     valorDevolvidoDolar?: string;
     valorDevolvidoGuarani?: string;
@@ -2314,6 +2315,7 @@ export type VendaComAPeca = {
     aPrazo?: boolean;
     clienteId?: string;
     clienteNome?: string;
+    emAberto?: string;
     itens?: Array<LinhaDaVendaComAPeca>;
     prazoArrependimentoAte?: string;
     prazoDefeitoAte?: string;

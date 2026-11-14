@@ -328,6 +328,86 @@ public class ServicoDeContasAReceber {
         return cancelado;
     }
 
+    // --- devolução (tarefa 6.6) ---
+
+    /**
+     * O que o cliente ainda deve nas parcelas da venda (valor menos pago menos cancelado). Leitura: quem chama já travou
+     * a venda, e todo escritor de parcelas trava a venda antes, então o número é estável até o fim da transação.
+     */
+    public BigDecimal emAberto(UUID vendaId) {
+        return jdbc.queryForObject("""
+                SELECT coalesce(sum(valor - valor_pago - valor_cancelado), 0) FROM corona.contas_receber WHERE venda_id = ?""",
+                BigDecimal.class, vendaId).setScale(Dinheiro.ESCALA);
+    }
+
+    /**
+     * A devolução abate o que o cliente devia: baixa {@code CANCELAMENTO} (motivo {@code DEVOLUCAO}) nas parcelas em
+     * aberto, da última para a primeira, até {@code valor} (que nunca passa do em aberto). A devolução já está gravada
+     * (a baixa a referencia). Ordem de travas: venda (quem chama), créditos, parcelas por id, por último. Devolve o valor
+     * abatido de fato.
+     */
+    @Transactional
+    public BigDecimal abaterNaDevolucao(UUID vendaId, UUID devolucaoId, BigDecimal valor, Instant momento) {
+        BigDecimal resta = valor;
+        BigDecimal abatido = BigDecimal.ZERO.setScale(Dinheiro.ESCALA);
+        if (resta.signum() <= 0) {
+            return abatido;
+        }
+        Instant hora = momento == null ? relogio.instant() : momento;
+        for (Conta c : trancarContas(vendaId).stream().sorted(Comparator.comparing(Conta::parcela).reversed()).toList()) {
+            if (resta.signum() == 0) {
+                break;
+            }
+            BigDecimal parte = resta.min(c.emAberto());
+            if (parte.signum() <= 0) {
+                continue;
+            }
+            jdbc.update("""
+                    INSERT INTO corona.baixas_receber (id, conta_id, tipo, valor, baixada_em, motivo_cancelamento, devolucao_id)
+                    VALUES (?, ?, 'CANCELAMENTO', ?, ?, 'DEVOLUCAO', ?)""", UuidV7.gerar(), c.id(), parte, Timestamp.from(hora),
+                    devolucaoId);
+            atualizarAtalhos(c, c.pago(), c.cancelado().add(parte));
+            resta = resta.subtract(parte);
+            abatido = abatido.add(parte);
+        }
+        return abatido;
+    }
+
+    /**
+     * "Cancelar devolução": desfaz o abatimento com uma baixa negativa (estorno) para cada cancelamento ainda ativo da
+     * devolução; as parcelas voltam a ter o que tinham (aberta ou parcial). Nunca UPDATE de baixa. Chamado pelo cancelar,
+     * que já travou maleta, venda, devolução e crédito (as parcelas ficam por último). Devolve o valor desfeito.
+     */
+    @Transactional
+    public BigDecimal desfazerAbatimento(UUID devolucaoId, Instant momento) {
+        BigDecimal desfeito = BigDecimal.ZERO.setScale(Dinheiro.ESCALA);
+        List<Map<String, Object>> ativas = jdbc.queryForList("""
+                SELECT b.id, b.conta_id, b.valor FROM corona.baixas_receber b
+                 WHERE b.devolucao_id = ? AND b.tipo = 'CANCELAMENTO' AND b.estorna_id IS NULL
+                   AND NOT EXISTS (SELECT 1 FROM corona.baixas_receber e WHERE e.estorna_id = b.id)
+                 ORDER BY b.id""", devolucaoId);
+        if (ativas.isEmpty()) {
+            return desfeito;
+        }
+        UUID vendaId = jdbc.queryForObject("SELECT venda_id FROM corona.devolucoes WHERE id = ?", UUID.class, devolucaoId);
+        Instant hora = momento == null ? relogio.instant() : momento;
+        Map<UUID, Conta> contas = new LinkedHashMap<>();
+        trancarContas(vendaId).forEach(c -> contas.put(c.id(), c));
+        for (Map<String, Object> b : ativas) {
+            UUID contaId = (UUID) b.get("conta_id");
+            BigDecimal parte = (BigDecimal) b.get("valor");
+            jdbc.update("""
+                    INSERT INTO corona.baixas_receber (id, conta_id, tipo, valor, baixada_em, motivo_cancelamento, devolucao_id,
+                        estorna_id)
+                    VALUES (?, ?, 'CANCELAMENTO', ?, ?, 'DEVOLUCAO', ?, ?)""", UuidV7.gerar(), contaId, parte.negate(),
+                    Timestamp.from(hora), devolucaoId, b.get("id"));
+            Conta atual = contas.get(contaId);
+            contas.put(contaId, atualizarAtalhos(atual, atual.pago(), atual.cancelado().subtract(parte)));
+            desfeito = desfeito.add(parte);
+        }
+        return desfeito;
+    }
+
     // --- internos ---
 
     /** Uma parcela travada, com o que já foi pago e cancelado. */

@@ -110,13 +110,6 @@ public class ServicoDeAutorizacoes {
         if ("ESTORNADA".equals(venda.get("status"))) {
             throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.VENDA_JA_ESTORNADA);
         }
-        BigDecimal pago = jdbc.queryForObject("""
-                SELECT coalesce(sum(valor), 0) FROM corona.pagamentos_cliente WHERE venda_id = ?
-                   AND tipo IN ('PAGAMENTO', 'ESTORNO_PAGAMENTO')""",
-                BigDecimal.class, pedido.vendaId());
-        if (pago.compareTo((BigDecimal) venda.get("total")) < 0) {
-            throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.VENDA_A_PRAZO_SEM_DEVOLUCAO);
-        }
         Instant quando = momento == null ? relogio.instant() : momento;
         LocalDate dia = RegrasDaDevolucao.dia(quando);
         if (Boolean.TRUE.equals(jdbc.queryForObject("""

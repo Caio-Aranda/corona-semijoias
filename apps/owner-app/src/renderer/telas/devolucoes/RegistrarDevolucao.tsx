@@ -191,12 +191,14 @@ export function RegistrarDevolucao({
                 v.prazoArrependimentoAte ? dataParaTela(v.prazoArrependimentoAte) : '',
                 v.prazoDefeitoAte ? dataParaTela(v.prazoDefeitoAte) : '',
               ),
-              acoes: v.aPrazo ? (
-                R.aPrazo
-              ) : (
-                <Botao aria-label={R.escolherDe(v.clienteNome)} onClick={() => escolher(v)}>
-                  {R.escolher}
-                </Botao>
+              // A venda a prazo também pode ser escolhida (tarefa 6.6): o aviso só informa.
+              acoes: (
+                <>
+                  <Botao aria-label={R.escolherDe(v.clienteNome)} onClick={() => escolher(v)}>
+                    {R.escolher}
+                  </Botao>
+                  {v.aPrazo ? <div>{R.aPrazo}</div> : null}
+                </>
               ),
             }))}
           />

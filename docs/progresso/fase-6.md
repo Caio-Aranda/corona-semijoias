@@ -431,3 +431,19 @@ Antes: vendedor com maleta aberta, uma venda feita há alguns dias para um clien
 10. **Relatórios.** A dona abre os relatórios de devolução e troca e confere os números com o que foi feito; o vendedor vê "Meus números" só dele.
 
 Anotar para cada passo: funcionou, travou ou deixou dúvida (e o que a tela dizia).
+
+## Tarefa 6.6: devolução e troca de venda a prazo
+
+PR 164 (issue 147). Fechou a 7.3b. Plano e ajustes no PR.
+
+**O que fiz**
+- A devolução de venda a prazo **abate primeiro o que o cliente ainda deve** (baixa `CANCELAMENTO`/`DEVOLUCAO`, da última parcela para a primeira), depois volta o que foi pago em crédito e só então o dinheiro. `valor_abatido + valor_em_credito + valor_reembolsado = valor_devolvido` (CHECK de igualdade). "Cancelar devolução" desfaz o abatimento por estorno das baixas. Parcela abatida em parte fica `PARCIAL`.
+- Troca com A a prazo: abate as parcelas de A e só o resto vira crédito para B; A sem nada pago não gera crédito; B pode ser a prazo.
+- Migração V042 (valor abatido, `baixas_receber.devolucao_id`, motivo `DEVOLUCAO`, gatilhos recriados). `ServicoDeContasAReceber`: `emAberto`, `abaterNaDevolucao`, `desfazerAbatimento`. Parcelas são a última trava.
+- API: `valorAbatido` e `emAberto`; pull com `valor_abatido` e `devolucao_id`; `VENDA_A_PRAZO_SEM_DEVOLUCAO` fica só para app antigo.
+- Corona Vendas: migração local 5 (sem recarga dirigida), `banco-v5.sqlite`, prévia com o abatido, linha "Abatido do que o cliente deve". Corona Gestão: a venda a prazo pode ser escolhida; lista mostra o abatido.
+- Testes: `DevolucaoDeVendaAPrazoTest`, `TrocaDeVendaAPrazoTest`, `DevolucaoDeVendaAPrazoNoBancoTest`, `EnvioEPullDaDevolucaoAPrazoTest`, concorrência ampliada, C1 ampliada (venda com devolução), testes do app e da dona.
+
+**Não fiz:** o teste de conciliação "baixa de devolução sem atalho" (32, parte) em `ConciliacaoDasContasTest`; a C1 ampliada cobre a mesma regra em todos os testes novos.
+
+**Para a 7.4 e 7.5:** na venda a prazo, `valor_reembolsado` já não é "o devolvido"; use `valor_devolvido`. O pedido de autorização vale pelo valor devolvido inteiro, e a devolução olha só o dinheiro (divergência antiga, a dona decide se quer igualar). Em `ConcorrenciaDasContasTest`, devolução × estorno do recebimento agora aceita as duas devoluções (o estorno que entra antes volta a dívida e a devolução abate).

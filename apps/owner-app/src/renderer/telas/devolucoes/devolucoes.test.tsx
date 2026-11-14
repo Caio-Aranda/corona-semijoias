@@ -85,6 +85,7 @@ function montar(extras: Record<string, Manipulador> = {}, avisos: unknown[] = []
                 valorDevolvido: '80.00',
                 valorReembolsado: '80.00',
                 valorEmCredito: '0.00',
+                valorAbatido: '20.00',
                 devolvidaEm: '2026-11-11T12:00:00Z',
                 motivosRevisao: ['FORA_DO_PRAZO', 'ACIMA_DO_LIMITE_SEMANAL'],
                 itens: [{ produto: { nome: 'Anel Lua' }, quantidade: 1 }],
@@ -102,6 +103,7 @@ function montar(extras: Record<string, Manipulador> = {}, avisos: unknown[] = []
                 valorDevolvidoGuarani: '111732',
                 valorReembolsado: '50.00',
                 valorEmCredito: '30.00',
+                valorAbatido: '20.00',
                 devolvidaEm: '2026-11-11T12:00:00Z',
                 motivosRevisao: [],
                 itens: [{ produto: { nome: 'Anel Lua' }, quantidade: 1 }],
@@ -386,6 +388,7 @@ describe('Devoluções (tarefa 6.9)', () => {
     const u = await abrir(m, 'Devoluções', 'Devoluções');
     expect(await screen.findByText('Em dinheiro: R$ 50,00')).toBeInTheDocument();
     expect(screen.getByText('Em crédito: R$ 30,00')).toBeInTheDocument();
+    expect(screen.getByText('Abatido do que o cliente deve: R$ 20,00')).toBeInTheDocument();
     expect(screen.getByText('Defeito')).toBeInTheDocument();
     expect(screen.getByText('Aceita')).toBeInTheDocument();
     expect(screen.getByText(/US\$ 14,55 · Gs\. 111\.732/)).toBeInTheDocument();
@@ -428,7 +431,7 @@ describe('Devoluções (tarefa 6.9)', () => {
       return u;
     }
 
-    it('acha as vendas pelo código, marca a venda a prazo e não deixa escolhê-la', async () => {
+    it('acha as vendas pelo código, marca a venda a prazo e deixa escolhê-la', async () => {
       const m = montar();
       await ateAEscolhaDaVenda(m);
       expect(ultima(m, 'devolucoes.vendasComAPeca')).toEqual({ codigo: 'AB-1' });
@@ -436,9 +439,11 @@ describe('Devoluções (tarefa 6.9)', () => {
         screen.getByText('Desistência até 17/11/2026, defeito até 10/12/2026'),
       ).toBeInTheDocument();
       expect(
-        screen.getByText('Esta venda é a prazo. A devolução dela chega em breve.'),
+        screen.getByText(
+          'Esta venda é a prazo: a devolução primeiro abate o que o cliente ainda deve.',
+        ),
       ).toBeInTheDocument();
-      expect(screen.getAllByRole('button', { name: /Escolher a venda de/ })).toHaveLength(1);
+      expect(screen.getAllByRole('button', { name: /Escolher a venda de/ })).toHaveLength(2);
     });
 
     it('não registra sem peças, motivo e forma, e pede observação no motivo Outro', async () => {

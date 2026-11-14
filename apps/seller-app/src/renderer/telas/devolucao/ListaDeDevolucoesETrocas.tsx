@@ -94,6 +94,7 @@ export function ListaDeDevolucoesETrocas({ ponte, aoVoltar }: ListaDeDevolucoesE
 
   const comoVoltou = (l: DevolucaoOuTroca) => {
     const partes: string[] = [];
+    if ((centavosDeTexto(l.abatido) ?? 0n) !== 0n) partes.push(T.abatidoLinha(reais(l.abatido)));
     if ((centavosDeTexto(l.emDinheiro) ?? 0n) !== 0n)
       partes.push(T.emDinheiroLinha(reais(l.emDinheiro)));
     if ((centavosDeTexto(l.emCredito) ?? 0n) !== 0n)

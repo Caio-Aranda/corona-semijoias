@@ -52,9 +52,9 @@ public class DevolucoesDaDonaController {
     }
 
     @Operation(operationId = "devolverPelaDona", summary = "Registrar a devolução de um cliente pela dona",
-            description = "A dona registra a devolução de uma venda à vista de qualquer vendedor, dentro da garantia. A peça vai "
+            description = "A dona registra a devolução de uma venda de qualquer vendedor, dentro da garantia. Na venda a prazo, a devolução primeiro abate o que o cliente ainda deve (valorAbatido) e só o que passar disso volta ao cliente. A peça vai "
                     + "sempre para a loja (nada entra na maleta do vendedor) e o dinheiro volta na forma escolhida. O limite da "
-                    + "semana e o valor de aprovação não valem para a dona. Fora do prazo, venda a prazo, maleta em acerto ou "
+                    + "semana e o valor de aprovação não valem para a dona. Fora do prazo, maleta em acerto ou "
                     + "acima do vendido: 409. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409.")
     @PostMapping
     public ResponseEntity<Devolucao> registrar(@RequestBody PedidoDaDevolucaoDaDona pedido,
@@ -73,7 +73,7 @@ public class DevolucoesDaDonaController {
     @Operation(operationId = "vendasComAPecaDaDona", summary = "Vendas com a peça lida (todos os vendedores)",
             description = "Pelo código lido ou pelo produto: as vendas concluídas de todos os vendedores com a peça, da mais nova "
                     + "para a mais antiga (no máximo 20), com o que ainda pode voltar de cada peça e até que dia vale a "
-                    + "garantia. Venda a prazo vem marcada.")
+                    + "garantia. Venda a prazo vem marcada (aPrazo) e traz o que o cliente ainda deve (emAberto).")
     @GetMapping("/vendas-com-a-peca")
     public VendasComAPeca vendasComAPeca(@RequestParam(required = false) String codigo,
             @RequestParam(required = false) UUID produtoId) {

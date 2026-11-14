@@ -166,22 +166,27 @@ class EstornoDoRecebimentoTest extends ApoioDasContas {
     }
 
     @Test
-    void leitorDaDevolucaoRecusaVendaQueVoltouADever() throws Exception {
+    void leitorDaDevolucaoAceitaVendaQueVoltouADeverEAbateAsParcelas() throws Exception {
         APrazo c = vendaQueVoltouADever();
         postar("/api/vendedor/devolucoes", como(c.vendedor()), mapa("id", UUID.randomUUID(), "vendaId", c.venda(),
                 "motivo", "ARREPENDIMENTO", "formaReembolso", "PIX",
                 "itens", List.of(mapa("produtoId", c.peca(), "quantidade", 1, "estado", "BOA"))))
-                .andExpect(status().isConflict()).andExpect(jsonPath("$.codigo").value("VENDA_A_PRAZO_SEM_DEVOLUCAO"));
-        assertThat(contar("SELECT count(*) FROM corona.devolucoes WHERE venda_id = ?", c.venda())).isZero();
+                .andExpect(status().isCreated());
+        assertThat(contar("SELECT count(*) FROM corona.devolucoes WHERE venda_id = ?", c.venda())).isEqualTo(1);
+        // A devolução abateu o que o cliente voltou a dever (todo o valor da peça), sem dinheiro.
+        assertThat(jdbc.queryForObject("SELECT valor_abatido FROM corona.devolucoes WHERE venda_id = ?", BigDecimal.class, c.venda()))
+                .isEqualByComparingTo("100.00");
     }
 
     @Test
-    void leitorDaAutorizacaoRecusaVendaQueVoltouADever() throws Exception {
+    void leitorDaAutorizacaoAceitaOPedidoDeVendaQueVoltouADever() throws Exception {
         APrazo c = vendaQueVoltouADever();
         postar("/api/vendedor/autorizacoes", como(c.vendedor()), mapa("id", UUID.randomUUID(), "vendaId", c.venda(),
                 "motivo", "ARREPENDIMENTO",
                 "itens", List.of(mapa("produtoId", c.peca(), "quantidade", 1, "estado", "BOA"))))
-                .andExpect(status().isConflict()).andExpect(jsonPath("$.codigo").value("VENDA_A_PRAZO_SEM_DEVOLUCAO"));
+                // Dentro do prazo e sem valor de aprovação: a venda a prazo já não é recusada por ser a prazo (tarefa 6.6);
+                // quem responde é a regra de sempre, a autorização é desnecessária.
+                .andExpect(status().isConflict()).andExpect(jsonPath("$.codigo").value("AUTORIZACAO_DESNECESSARIA"));
     }
 
     @Test

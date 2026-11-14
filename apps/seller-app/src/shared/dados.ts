@@ -289,6 +289,8 @@ export interface PreviaDaDevolucao {
   remessaId: string;
   pecas: PecaParaDevolver[];
   valor: string;
+  /** O que abate do que o cliente ainda deve nas parcelas (venda a prazo; "0.00" na venda à vista). */
+  abatido: string;
   emDinheiro: string;
   emCredito: string;
   destinos: { produtoId: string; estado: 'BOA' | 'DEFEITO'; destino: 'MALETA' | 'LOJA' }[];
@@ -310,7 +312,12 @@ export interface PreviaDaTroca {
   remessaId: string | null;
   valorQueVolta: string;
   valorNovo: string;
-  /** Peças novas − peças que voltam: positivo = a pagar, negativo = fica de crédito. */
+  /** O que A abate do que o cliente ainda deve (A a prazo); "0.00" quando A estava paga. */
+  abatido: string;
+  /**
+   * Peças novas − o crédito que A gera (o valor de A menos o que abateu das parcelas): positivo = a pagar, negativo =
+   * fica de crédito. Com A paga, é peças novas − peças que voltam.
+   */
   diferenca: string;
   problema: string | null;
 }
@@ -327,6 +334,8 @@ export interface DevolucaoOuTroca {
   clienteNome: string;
   pecas: number;
   valor: string;
+  /** O que abateu do que o cliente devia nas parcelas (venda a prazo; "0.00" nas outras). */
+  abatido: string;
   emDinheiro: string;
   emCredito: string;
   /** Só na troca: peças novas − peças que voltaram. */

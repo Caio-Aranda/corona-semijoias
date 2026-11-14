@@ -343,6 +343,11 @@ export function FormularioDeTroca({
         <p className="vendas-texto">
           {T.valorQueVolta}: <Dinheiro reais={previa.valorQueVolta} cotacao={cotacao} />
         </p>
+        {previa.abatido !== '0.00' ? (
+          <p className="vendas-texto">
+            {T.abatido}: <Dinheiro reais={previa.abatido} cotacao={cotacao} />
+          </p>
+        ) : null}
         <p className="vendas-texto">
           {T.valorNovo}: <Dinheiro reais={previa.valorNovo} cotacao={cotacao} />
         </p>

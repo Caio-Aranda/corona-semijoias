@@ -41,13 +41,15 @@ public class ConsultasDeDevolucoes {
     /**
      * {@code motivosRevisao}: por que a devolução está (ou esteve) para revisão, na ordem fixa de
      * {@link MotivoDaRevisao}; vazio na aceita. {@code valorReembolsado} é só o dinheiro; {@code valorEmCredito}, o que voltou
-     * como crédito do cliente (tarefa 6.5). {@code pendenciaDoVendedor}: o valor que o vendedor deve quando a dona
+     * como crédito do cliente (tarefa 6.5); {@code valorAbatido}, o que abateu das parcelas em aberto da venda a prazo (tarefa
+     * 6.6; dinheiro + crédito + abatido = valor devolvido). {@code pendenciaDoVendedor}: o valor que o vendedor deve quando a dona
      * não aceitou (tarefa 6.4; o acerto passa a cobrar na tarefa 7.5); vazio nas outras situações.
      */
     public record Devolucao(UUID id, UUID vendaId, UUID vendedorId, UUID clienteId, String clienteNome, UUID remessaId,
             String motivo, String observacao, String destino, boolean dentroGarantia, String situacao,
             BigDecimal valorDevolvido, BigDecimal valorDevolvidoDolar, BigDecimal valorDevolvidoGuarani,
-            BigDecimal valorReembolsado, BigDecimal valorEmCredito, String formaReembolso, Cotacao cotacao, Instant devolvidaEm,
+            BigDecimal valorReembolsado, BigDecimal valorEmCredito, BigDecimal valorAbatido, String formaReembolso, Cotacao cotacao,
+            Instant devolvidaEm,
             boolean horaAjustada,
             Instant canceladaEm, String motivoCancelamento, UUID autorizacaoId, List<String> motivosRevisao,
             Instant revisadaEm, String observacaoRevisao, BigDecimal pendenciaDoVendedor, List<ItemDaDevolucao> itens) {
@@ -59,11 +61,12 @@ public class ConsultasDeDevolucoes {
     }
 
     /**
-     * Uma venda do vendedor com a peça lida. {@code aPrazo}: ainda não pode ser devolvida (tarefa 6.6). Os prazos são o
+     * Uma venda do vendedor com a peça lida. {@code aPrazo}: foi vendida a prazo (só informativo desde a tarefa 6.6: a venda
+     * a prazo também pode ser devolvida); {@code emAberto}: o que o cliente ainda deve nas parcelas dela. Os prazos são o
      * último dia (em Brasília) em que vale a garantia por desistência (também "não serviu" e "outro") e por defeito.
      */
     public record VendaComAPeca(UUID vendaId, UUID clienteId, String clienteNome, Instant vendidaEm, BigDecimal total,
-            boolean aPrazo, LocalDate prazoArrependimentoAte, LocalDate prazoDefeitoAte, List<LinhaDaVendaComAPeca> itens) {
+            boolean aPrazo, BigDecimal emAberto, LocalDate prazoArrependimentoAte, LocalDate prazoDefeitoAte, List<LinhaDaVendaComAPeca> itens) {
     }
 
     /** {@code peca} é a peça do código lido (vazia se o código não é de nenhuma peça). */
@@ -150,7 +153,9 @@ public class ConsultasDeDevolucoes {
         List<VendaComAPeca> vendas = jdbc.query("""
                 SELECT v.id, v.cliente_id, c.nome, v.vendida_em, v.total,
                        coalesce((SELECT sum(p.valor) FROM corona.pagamentos_cliente p
-                                  WHERE p.venda_id = v.id AND p.tipo IN ('PAGAMENTO', 'ESTORNO_PAGAMENTO')), 0) AS pago
+                                  WHERE p.venda_id = v.id AND p.tipo IN ('PAGAMENTO', 'ESTORNO_PAGAMENTO')), 0) AS pago,
+                       coalesce((SELECT sum(r.valor - r.valor_pago - r.valor_cancelado) FROM corona.contas_receber r
+                                  WHERE r.venda_id = v.id), 0) AS em_aberto
                   FROM corona.vendas v JOIN corona.clientes c ON c.id = v.cliente_id
                  WHERE (?::uuid IS NULL OR v.vendedor_id = ?) AND v.status = 'CONCLUIDA' AND v.deleted_at IS NULL
                    AND EXISTS (SELECT 1 FROM corona.itens_venda i WHERE i.venda_id = v.id AND i.produto_id = ?)
@@ -161,6 +166,7 @@ public class ConsultasDeDevolucoes {
                     BigDecimal total = rs.getBigDecimal("total");
                     return new VendaComAPeca(rs.getObject("id", UUID.class), rs.getObject("cliente_id", UUID.class),
                             rs.getString("nome"), vendidaEm, total, rs.getBigDecimal("pago").compareTo(total) < 0,
+                            rs.getBigDecimal("em_aberto"),
                             dia.plusDays(prazoArrependimento), dia.plusDays(prazoDefeito), new ArrayList<>());
                 }, vendedorId, vendedorId, peca.id(), LIMITE_DE_VENDAS);
         for (VendaComAPeca v : vendas) {
@@ -191,8 +197,8 @@ public class ConsultasDeDevolucoes {
     private List<Devolucao> consultarOrdenado(String ondeEOrdem, Object[] args) {
         List<Devolucao> cabecas = jdbc.query("""
                 SELECT d.id, d.venda_id, d.vendedor_id, d.cliente_id, c.nome, d.remessa_id, d.motivo, d.observacao, d.destino,
-                       d.dentro_garantia, d.situacao, d.valor_devolvido, d.valor_reembolsado, d.valor_em_credito, d.forma_reembolso,
-                       d.devolvida_em, d.hora_ajustada, d.cancelada_em, d.motivo_cancelamento, d.autorizacao_id,
+                       d.dentro_garantia, d.situacao, d.valor_devolvido, d.valor_reembolsado, d.valor_em_credito, d.valor_abatido,
+                       d.forma_reembolso, d.devolvida_em, d.hora_ajustada, d.cancelada_em, d.motivo_cancelamento, d.autorizacao_id,
                        d.revisao_fora_do_prazo, d.revisao_acima_do_limite_semanal, d.revisao_acima_do_valor_de_aprovacao,
                        d.revisao_autorizacao_invalida, d.revisao_reembolso_maior_que_pago, d.revisada_em, d.observacao_revisao,
                        ct.data_cotacao, ct.usd_venda, ct.pyg_venda
@@ -217,7 +223,7 @@ public class ConsultasDeDevolucoes {
                             rs.getString("destino"), rs.getBoolean("dentro_garantia"), situacao, devolvido,
                             usd == null ? null : ConversaoDeMoeda.paraDolar(devolvido, usd),
                             pyg == null ? null : ConversaoDeMoeda.paraGuarani(devolvido, pyg),
-                            rs.getBigDecimal("valor_reembolsado"), rs.getBigDecimal("valor_em_credito"), rs.getString("forma_reembolso"), cotacao,
+                            rs.getBigDecimal("valor_reembolsado"), rs.getBigDecimal("valor_em_credito"), rs.getBigDecimal("valor_abatido"), rs.getString("forma_reembolso"), cotacao,
                             rs.getTimestamp("devolvida_em").toInstant(), rs.getBoolean("hora_ajustada"),
                             rs.getTimestamp("cancelada_em") == null ? null : rs.getTimestamp("cancelada_em").toInstant(),
                             rs.getString("motivo_cancelamento"), rs.getObject("autorizacao_id", UUID.class), List.copyOf(motivos),
