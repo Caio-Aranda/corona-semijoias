@@ -43,6 +43,10 @@ const MARCA_DO_BANCO_V2_COM_CURSOR = [
   'baixas_receber',
   'acertos',
   'leituras_acerto',
+  'itens_acerto',
+  'acerto_eventos',
+  'comissoes',
+  'pendencias_acerto',
 ] as const;
 
 const limpar: (() => void | Promise<void>)[] = [];
@@ -197,7 +201,7 @@ describe('migração local 3', () => {
       db.close();
     });
     expect(Number(db.pragma('user_version', { simple: true }))).toBe(VERSAO_DO_BANCO);
-    expect(VERSAO_DO_BANCO).toBe(6);
+    expect(VERSAO_DO_BANCO).toBe(7);
     expect(contagem(db)).toEqual(contagemAntes);
     expect(db.prepare('SELECT * FROM outbox ORDER BY ordem').all()).toEqual(outboxAntes);
     for (const t of NOVAS) expect(colunasDe(db, t), t).toContain('origem_local');
@@ -235,7 +239,7 @@ describe('migração local 3', () => {
     expect(Number(migrado.pragma('user_version', { simple: true }))).toBe(VERSAO_DO_BANCO);
 
     // O exemplo da versão 1 tinha cursor: marca (as onze da 3, as duas da 4 e as duas da 6).
-    expect(tabelasDaRecargaDirigida(abrirExemploMigrado(1).db)).toHaveLength(15);
+    expect(tabelasDaRecargaDirigida(abrirExemploMigrado(1).db)).toHaveLength(19);
   });
 });
 
@@ -243,7 +247,7 @@ describe('migração local 3', () => {
 
 describe('colunas das tabelas da Fase 6', () => {
   it('as 27 tabelas, nenhuma coluna de quem registrou nem que aponte para o crédito do outro vendedor', () => {
-    expect(TABELAS_SINCRONIZAVEIS).toHaveLength(27);
+    expect(TABELAS_SINCRONIZAVEIS).toHaveLength(31);
     for (const t of NOVAS) expect(COLUNAS_DO_PULL[t], t).toBeDefined();
     for (const [t, colunas] of Object.entries(COLUNAS_DO_PULL)) {
       for (const c of colunas) {

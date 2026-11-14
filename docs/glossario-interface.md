@@ -1284,3 +1284,14 @@ As telas chegam nas tarefas 7.10 e 7.11; estas são as mensagens que a API já d
 - **Linha da prévia e da lista:** "Abatido do que o cliente deve: R$ W" (só aparece quando há abatimento). Na troca, "O cliente paga: R$ X" é o valor das peças novas menos o crédito.
 - **Corona Gestão, aviso da venda a prazo:** "Esta venda é a prazo: a devolução primeiro abate o que o cliente ainda deve."
 - **Parcela** `PARCIAL` quer dizer paga ou abatida em parte; o que falta é sempre o valor menos o pago menos o abatido.
+
+## 15. Fechamento do acerto (tarefa 7.5)
+
+- **Fechar o acerto:** o botão da dona; confere o que o vendedor devolveu contra o que devia ter, calcula a comissão e deixa as maletas acertadas.
+- **Sobrou peça:** "Contaram mais peças do que o esperado. Confira as vendas e a contagem antes de fechar o acerto."
+- **Faltou peça:** a dona escolhe **Cobrar neste acerto**, **Cobrar depois** ou **A loja assume** (pede o motivo).
+- **Pendência:** peça que faltou, defeito ou valor que a dona não aceitou. Estados: **Aberta**, **Cobrada**, **A loja assumiu**, **Encontrada**, **Aprovada**, **Recusada**.
+- **Ficou devendo:** o que o vendedor ainda deve depois do acerto (negativo: a loja deve ao vendedor).
+- **Meta da comissão:** "Meta da semana" em Guaranis; **Comissão abaixo da meta** e **Comissão na meta** são as duas porcentagens.
+- **Quanto falta para a meta:** a prévia do vendedor, em Guarani e em Real.
+- Erros: "Há devolução esperando a sua decisão. Mantenha ou não aceite antes de fechar o acerto." · "Chegou coisa nova neste acerto. Confira de novo antes de fechar." · "Busque a cotação do dia antes de fechar o acerto."

@@ -427,6 +427,36 @@
         },
         "type" : "object"
       },
+      "ComissaoFechada" : {
+        "properties" : {
+          "base" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "percentual" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "ComprasDaDonaControllerRespostaDaPeca" : {
         "properties" : {
           "codigo" : {
@@ -669,6 +699,21 @@
           },
           "produtoNome" : {
             "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ConsultasDeAcertosContagem" : {
+        "properties" : {
+          "estadoPeca" : {
+            "type" : "string"
+          },
+          "produto" : {
+            "$ref" : "#/components/schemas/ConsultasDeAcertosProduto"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
           }
         },
         "type" : "object"
@@ -1029,6 +1074,117 @@
         },
         "type" : "object"
       },
+      "ConsultasDeVendasVenda" : {
+        "properties" : {
+          "aReceber" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "clienteId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "clienteNome" : {
+            "type" : "string"
+          },
+          "cotacao" : {
+            "$ref" : "#/components/schemas/ConsultasDeVendasCotacao"
+          },
+          "desconto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "devolvido" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "estornadaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ConsultasDeVendasItem"
+            },
+            "type" : "array"
+          },
+          "motivoDoEstorno" : {
+            "type" : "string"
+          },
+          "pagamentos" : {
+            "items" : {
+              "$ref" : "#/components/schemas/PagamentoLido"
+            },
+            "type" : "array"
+          },
+          "pago" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "parcelas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ParcelaDaVenda"
+            },
+            "type" : "array"
+          },
+          "remessaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "subtotal" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "total" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "totalDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "totalGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "trocaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "vendidaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "ContaDaDona" : {
         "properties" : {
           "clienteId" : {
@@ -1094,21 +1250,6 @@
           },
           "vendedorNome" : {
             "type" : "string"
-          }
-        },
-        "type" : "object"
-      },
-      "Contagem" : {
-        "properties" : {
-          "estadoPeca" : {
-            "type" : "string"
-          },
-          "produto" : {
-            "$ref" : "#/components/schemas/ConsultasDeAcertosProduto"
-          },
-          "quantidade" : {
-            "format" : "int32",
-            "type" : "integer"
           }
         },
         "type" : "object"
@@ -1446,6 +1587,61 @@
         },
         "type" : "object"
       },
+      "DecisaoDeCobranca" : {
+        "properties" : {
+          "decisao" : {
+            "type" : "string"
+          },
+          "motivo" : {
+            "type" : "string"
+          },
+          "origemId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "DecisaoDeDefeito" : {
+        "properties" : {
+          "aprovadas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "DecisaoDeFalta" : {
+        "properties" : {
+          "decisao" : {
+            "type" : "string"
+          },
+          "motivo" : {
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "DecisaoDePendenciaAntiga" : {
+        "properties" : {
+          "decisao" : {
+            "type" : "string"
+          },
+          "pendenciaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "Devolucao" : {
         "properties" : {
           "autorizacaoId" : {
@@ -1578,18 +1774,6 @@
         "properties" : {
           "observacao" : {
             "type" : "string"
-          }
-        },
-        "type" : "object"
-      },
-      "DoVendedor" : {
-        "properties" : {
-          "nome" : {
-            "type" : "string"
-          },
-          "quantidade" : {
-            "format" : "int32",
-            "type" : "integer"
           }
         },
         "type" : "object"
@@ -1926,11 +2110,154 @@
         },
         "type" : "object"
       },
+      "EventoFechado" : {
+        "properties" : {
+          "origemId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "Fechamento" : {
+        "properties" : {
+          "comissao" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "comissoes" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ComissaoFechada"
+            },
+            "type" : "array"
+          },
+          "cotacaoData" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "cotacaoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "descontos" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "devolvido" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "eventos" : {
+            "items" : {
+              "$ref" : "#/components/schemas/EventoFechado"
+            },
+            "type" : "array"
+          },
+          "faltasCobradas" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "fechadoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "ficouDevendo" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ItemFechado"
+            },
+            "type" : "array"
+          },
+          "liquido" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "metaGuarani" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "pendencias" : {
+            "items" : {
+              "$ref" : "#/components/schemas/PendenciaFechada"
+            },
+            "type" : "array"
+          },
+          "percentualComissao" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "pygVenda" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "recebidoNoAcerto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "usdVenda" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendidoBruto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendidoLiquido" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendidoParaMetaGuarani" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "FichaDaDona" : {
         "properties" : {
           "contagem" : {
             "items" : {
-              "$ref" : "#/components/schemas/Contagem"
+              "$ref" : "#/components/schemas/ConsultasDeAcertosContagem"
             },
             "type" : "array"
           },
@@ -1941,6 +2268,9 @@
           "enviosAguardando" : {
             "format" : "int32",
             "type" : "integer"
+          },
+          "fechamento" : {
+            "$ref" : "#/components/schemas/Fechamento"
           },
           "id" : {
             "format" : "uuid",
@@ -2107,6 +2437,32 @@
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ImportacaoDeFotosPrevia" : {
+        "properties" : {
+          "ambiguas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Ambigua"
+            },
+            "type" : "array"
+          },
+          "associadas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Associada"
+            },
+            "type" : "array"
+          },
+          "produtosSemFoto" : {
+            "$ref" : "#/components/schemas/ProdutosSemFoto"
+          },
+          "semProduto" : {
+            "items" : {
+              "$ref" : "#/components/schemas/SemProduto"
+            },
+            "type" : "array"
           }
         },
         "type" : "object"
@@ -2334,6 +2690,44 @@
             "example" : "123.45",
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ItemFechado" : {
+        "properties" : {
+          "contadoBoa" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "contadoDefeito" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "defeitoAprovado" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "esperado" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "falta" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "precoRemessa" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "produto" : {
+            "$ref" : "#/components/schemas/ConsultasDeAcertosProduto"
+          },
+          "remessaId" : {
+            "format" : "uuid",
             "type" : "string"
           }
         },
@@ -4716,6 +5110,18 @@
         },
         "type" : "object"
       },
+      "PecasEmMaletasDoVendedor" : {
+        "properties" : {
+          "nome" : {
+            "type" : "string"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "PedidoComMotivo" : {
         "properties" : {
           "motivo" : {
@@ -4951,6 +5357,45 @@
           },
           "motivo" : {
             "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "PedidoDeFechamento" : {
+        "properties" : {
+          "cobrancas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/DecisaoDeCobranca"
+            },
+            "type" : "array"
+          },
+          "defeitos" : {
+            "items" : {
+              "$ref" : "#/components/schemas/DecisaoDeDefeito"
+            },
+            "type" : "array"
+          },
+          "faltas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/DecisaoDeFalta"
+            },
+            "type" : "array"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "liquidoMostrado" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "pendenciasAntigas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/DecisaoDePendenciaAntiga"
+            },
+            "type" : "array"
           }
         },
         "type" : "object"
@@ -5193,6 +5638,21 @@
         "required" : [ "tokenDeRenovacao" ],
         "type" : "object"
       },
+      "PedidoDeResolucao" : {
+        "properties" : {
+          "acao" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "motivo" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "PedidoDeSituacao" : {
         "properties" : {
           "version" : {
@@ -5363,6 +5823,92 @@
         },
         "type" : "object"
       },
+      "Pendencia" : {
+        "properties" : {
+          "acertoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "cobradaNoAcertoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "motivo" : {
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "produtoNome" : {
+            "type" : "string"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "resolvidaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "vendedorNome" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "PendenciaFechada" : {
+        "properties" : {
+          "cobradaNoAcertoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "produto" : {
+            "$ref" : "#/components/schemas/ConsultasDeAcertosProduto"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "Pessoa" : {
         "properties" : {
           "codigo" : {
@@ -5409,32 +5955,6 @@
           "version" : {
             "format" : "int32",
             "type" : "integer"
-          }
-        },
-        "type" : "object"
-      },
-      "Previa" : {
-        "properties" : {
-          "ambiguas" : {
-            "items" : {
-              "$ref" : "#/components/schemas/Ambigua"
-            },
-            "type" : "array"
-          },
-          "associadas" : {
-            "items" : {
-              "$ref" : "#/components/schemas/Associada"
-            },
-            "type" : "array"
-          },
-          "produtosSemFoto" : {
-            "$ref" : "#/components/schemas/ProdutosSemFoto"
-          },
-          "semProduto" : {
-            "items" : {
-              "$ref" : "#/components/schemas/SemProduto"
-            },
-            "type" : "array"
           }
         },
         "type" : "object"
@@ -5512,7 +6032,7 @@
           },
           "vendedoresEmMaletas" : {
             "items" : {
-              "$ref" : "#/components/schemas/DoVendedor"
+              "$ref" : "#/components/schemas/PecasEmMaletasDoVendedor"
             },
             "type" : "array"
           },
@@ -6912,7 +7432,7 @@
           },
           "vendedoresEmMaletas" : {
             "items" : {
-              "$ref" : "#/components/schemas/DoVendedor"
+              "$ref" : "#/components/schemas/PecasEmMaletasDoVendedor"
             },
             "type" : "array"
           }
@@ -7236,7 +7756,7 @@
           },
           "vendedoresEmMaletas" : {
             "items" : {
-              "$ref" : "#/components/schemas/DoVendedor"
+              "$ref" : "#/components/schemas/PecasEmMaletasDoVendedor"
             },
             "type" : "array"
           }
@@ -7525,6 +8045,23 @@
             "type" : "string"
           },
           "version" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "ServicoDaComissaoComissao" : {
+        "properties" : {
+          "metaGuarani" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "percentualAbaixoDaMeta" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "percentualNaMeta" : {
             "format" : "int32",
             "type" : "integer"
           }
@@ -7841,117 +8378,6 @@
             "type" : "string"
           },
           "quemMudou" : {
-            "type" : "string"
-          }
-        },
-        "type" : "object"
-      },
-      "Venda" : {
-        "properties" : {
-          "aReceber" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          },
-          "clienteId" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "clienteNome" : {
-            "type" : "string"
-          },
-          "cotacao" : {
-            "$ref" : "#/components/schemas/ConsultasDeVendasCotacao"
-          },
-          "desconto" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          },
-          "devolvido" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          },
-          "estornadaEm" : {
-            "format" : "date-time",
-            "type" : "string"
-          },
-          "id" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "itens" : {
-            "items" : {
-              "$ref" : "#/components/schemas/ConsultasDeVendasItem"
-            },
-            "type" : "array"
-          },
-          "motivoDoEstorno" : {
-            "type" : "string"
-          },
-          "pagamentos" : {
-            "items" : {
-              "$ref" : "#/components/schemas/PagamentoLido"
-            },
-            "type" : "array"
-          },
-          "pago" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          },
-          "parcelas" : {
-            "items" : {
-              "$ref" : "#/components/schemas/ParcelaDaVenda"
-            },
-            "type" : "array"
-          },
-          "remessaId" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "status" : {
-            "type" : "string"
-          },
-          "subtotal" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          },
-          "total" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          },
-          "totalDolar" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          },
-          "totalGuarani" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          },
-          "trocaId" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "vendedorId" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "vendidaEm" : {
-            "format" : "date-time",
             "type" : "string"
           }
         },
@@ -8576,6 +9002,123 @@
           "bearer" : [ ]
         } ],
         "summary" : "Desistir do acerto",
+        "tags" : [ "acertos-da-dona-controller" ]
+      }
+    },
+    "/api/dona/acertos/{id}/fechamento" : {
+      "get" : {
+        "description" : "Nada é gravado: esperado x contado por peça e maleta, sobras, faltas com valor, defeitos, eventos que vão entrar, devoluções em revisão (impedem), o que não foi aceito, pendências antigas, a comissão por venda, a soma da meta em Guarani, o percentual, os totais e a cotação. Com o acerto já fechado, devolve o que foi gravado. Assume cobrar as faltas no acerto e não aprovar defeito; para outras decisões, use a prévia com decisões.",
+        "operationId" : "previaDoFechamento",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Prévia do fechamento do acerto",
+        "tags" : [ "acertos-da-dona-controller" ]
+      }
+    },
+    "/api/dona/acertos/{id}/fechamento/previa" : {
+      "post" : {
+        "description" : "O mesmo cálculo do fechamento com as decisões enviadas (faltas, defeitos, cobranças e pendências antigas). Nada é gravado.",
+        "operationId" : "previaDoFechamentoComDecisoes",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeFechamento"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "additionalProperties" : { },
+                  "type" : "object"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Prévia do fechamento com as decisões da dona",
+        "tags" : [ "acertos-da-dona-controller" ]
+      }
+    },
+    "/api/dona/acertos/{id}/fechar" : {
+      "post" : {
+        "description" : "Só a dona. Uma transação só: esperado x contado, faltas, defeitos, eventos, comissão por meta, totais e cotação; as maletas ficam acertadas. Sobra ou devolução em revisão impede (409). As decisões e o líquido mostrado têm de bater com o cálculo de agora (409 com a prévia nova). Mesmo id e mesmas decisões devolve 200.",
+        "operationId" : "fecharAcerto",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeFechamento"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/FichaDaDona"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Fechar o acerto",
         "tags" : [ "acertos-da-dona-controller" ]
       }
     },
@@ -9639,6 +10182,60 @@
         } ],
         "summary" : "Desfazer uma compra",
         "tags" : [ "compras-da-dona-controller" ]
+      }
+    },
+    "/api/dona/configuracoes/comissao" : {
+      "get" : {
+        "description" : "Meta da semana em Guarani e os dois percentuais (abaixo da meta e na meta), iguais para todos os vendedores.",
+        "operationId" : "lerComissao",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ServicoDaComissaoComissao"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ver a meta e os percentuais da comissão",
+        "tags" : [ "da-dona" ]
+      },
+      "put" : {
+        "description" : "Grava os três valores. Vale para o próximo fechamento e nunca muda acerto fechado. Cada valor que mudou fica na auditoria com o valor antigo. Fora da faixa, ou abaixo da meta maior que na meta, 400.",
+        "operationId" : "alterarComissao",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ServicoDaComissaoComissao"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ServicoDaComissaoComissao"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Mudar a meta e os percentuais da comissão",
+        "tags" : [ "da-dona" ]
       }
     },
     "/api/dona/configuracoes/garantia" : {
@@ -11366,6 +11963,90 @@
         "tags" : [ "inventarios-da-dona-controller" ]
       }
     },
+    "/api/dona/pendencias-acerto" : {
+      "get" : {
+        "description" : "Falta, defeito e o que a dona não aceitou, da mais nova para a mais antiga (no máximo 500). Filtros: vendedor e situação.",
+        "operationId" : "listarPendenciasDoAcerto",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "status",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/Pendencia"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Pendências do acerto",
+        "tags" : [ "pendencias-da-dona-controller" ]
+      }
+    },
+    "/api/dona/pendencias-acerto/{id}/resolver" : {
+      "post" : {
+        "description" : "LOJA_ASSUME (a loja assume a perda) ou ENCONTRADA (só falta: a peça volta ao estoque). Motivo obrigatório. Mesmo id e mesmo conteúdo devolve 200; já resolvida por outro pedido, 409.",
+        "operationId" : "resolverPendenciaDoAcerto",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeResolucao"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Pendencia"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Resolver uma pendência aberta",
+        "tags" : [ "pendencias-da-dona-controller" ]
+      }
+    },
     "/api/dona/pracas" : {
       "get" : {
         "description" : "Busca pelo nome. A página começa em 0 (até 100 por página).",
@@ -11819,7 +12500,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Previa"
+                  "$ref" : "#/components/schemas/ImportacaoDeFotosPrevia"
                 }
               }
             },
@@ -12453,7 +13134,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Venda"
+                  "$ref" : "#/components/schemas/ConsultasDeVendasVenda"
                 }
               }
             },
@@ -17136,7 +17817,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Venda"
+                  "$ref" : "#/components/schemas/ConsultasDeVendasVenda"
                 }
               }
             },
@@ -17178,7 +17859,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Venda"
+                  "$ref" : "#/components/schemas/ConsultasDeVendasVenda"
                 }
               }
             },

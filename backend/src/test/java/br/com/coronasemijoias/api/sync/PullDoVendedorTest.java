@@ -313,10 +313,10 @@ class PullDoVendedorTest extends TesteDeIntegracao {
                 .getResponse().getContentAsString(StandardCharsets.UTF_8);
         varrer(corpo);
         JsonNode r = json.readTree(corpo);
-        // 27: as 15 de antes, devolucoes e itens_devolucao (tarefa 6.3), autorizacoes_excecao e itens_autorizacao
+        // 31: as 15 de antes, devolucoes e itens_devolucao (tarefa 6.3), autorizacoes_excecao e itens_autorizacao
         // (tarefa 6.4), trocas, creditos_cliente e usos_credito (tarefa 6.5), creditos_sem_saldo (tarefa 6.7) e
-        // contas_receber e baixas_receber (tarefa 7.3) e acertos e leituras_acerto (tarefa 7.4).
-        assertThat(r.get("tabelas").size()).isEqualTo(27);
+        // contas_receber e baixas_receber (tarefa 7.3) e acertos e leituras_acerto (tarefa 7.4) e itens_acerto, acerto_eventos, comissoes e pendencias_acerto (tarefa 7.5).
+        assertThat(r.get("tabelas").size()).isEqualTo(31);
         for (JsonNode t : r.get("tabelas")) {
             Map<String, JsonNode> guardadas = copia.tabelas.getOrDefault(t.get("tabela").asString(), Map.of());
             TreeMap<String, Integer> ordenadas = new TreeMap<>();

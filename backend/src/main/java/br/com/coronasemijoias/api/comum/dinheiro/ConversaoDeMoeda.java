@@ -37,6 +37,24 @@ public final class ConversaoDeMoeda {
         return converter(reais, pygVenda, ESCALA_GUARANI);
     }
 
+    /**
+     * R$ = Gs. x taxa de venda do Guarani, com 2 casas (HALF_UP): o caminho inverso, só para mostrar "quanto falta, em Real"
+     * na prévia da comissão (tarefa 7.5). O Guarani é inteiro (sem centavos). Nunca é gravado.
+     */
+    public static BigDecimal guaraniParaReais(BigDecimal guarani, BigDecimal pygVenda) {
+        Objects.requireNonNull(guarani, "guarani");
+        Objects.requireNonNull(pygVenda, "pygVenda");
+        if (guarani.stripTrailingZeros().scale() > ESCALA_GUARANI) {
+            throw new IllegalArgumentException("O valor em Guarani " + guarani.toPlainString()
+                    + " precisa ser inteiro (Guarani não tem centavos).");
+        }
+        if (pygVenda.signum() <= 0) {
+            throw new IllegalArgumentException("A taxa de câmbio precisa ser maior que zero, veio "
+                    + pygVenda.toPlainString() + ".");
+        }
+        return guarani.multiply(pygVenda).setScale(Dinheiro.ESCALA, ARREDONDAMENTO);
+    }
+
     private static BigDecimal converter(BigDecimal reais, BigDecimal taxa, int escala) {
         Objects.requireNonNull(reais, "reais");
         Objects.requireNonNull(taxa, "taxa");

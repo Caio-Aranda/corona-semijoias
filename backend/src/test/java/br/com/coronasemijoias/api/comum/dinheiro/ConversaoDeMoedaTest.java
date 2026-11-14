@@ -146,4 +146,30 @@ class ConversaoDeMoedaTest {
         assertThatThrownBy(() -> ConversaoDeMoeda.paraDolar(null, USD_06_11)).isInstanceOf(NullPointerException.class);
         assertThatThrownBy(() -> ConversaoDeMoeda.paraGuarani(d("1.00"), null)).isInstanceOf(NullPointerException.class);
     }
+
+    // --- o caminho inverso, só para a prévia da comissão (tarefa 7.5): quanto falta, em Real ---
+
+    @Test
+    void guaraniParaReaisMultiplicaPelaTaxaEArredondaEmDuasCasas() {
+        // O exemplo do ADR-0012 (item 18): faltam 557.411 Gs; 1 Gs = R$ 0,00090000.
+        assertThat(ConversaoDeMoeda.guaraniParaReais(d("557411"), d("0.00090000"))).isEqualTo(d("501.67"));
+        // 1.117 Gs em 6 de novembro: 0,999715 vira 1,00.
+        assertThat(ConversaoDeMoeda.guaraniParaReais(d("1117"), PYG_06_11)).isEqualTo(d("1.00"));
+        assertThat(ConversaoDeMoeda.guaraniParaReais(d("0"), PYG_06_11)).isEqualTo(d("0.00"));
+    }
+
+    @Test
+    void guaraniParaReaisArredondaMeiaParaCima() {
+        // 5 Gs x 0,001 = 0,005, que vira 0,01.
+        assertThat(ConversaoDeMoeda.guaraniParaReais(d("5"), d("0.00100000"))).isEqualTo(d("0.01"));
+        assertThat(ConversaoDeMoeda.guaraniParaReais(d("4"), d("0.00100000"))).isEqualTo(d("0.00"));
+    }
+
+    @Test
+    void guaraniParaReaisRecusaTaxaInvalidaGuaraniComCentavosENulos() {
+        assertThatThrownBy(() -> ConversaoDeMoeda.guaraniParaReais(d("100"), BigDecimal.ZERO)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> ConversaoDeMoeda.guaraniParaReais(d("100.5"), d("0.0009"))).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> ConversaoDeMoeda.guaraniParaReais(null, d("0.0009"))).isInstanceOf(NullPointerException.class);
+        assertThatThrownBy(() -> ConversaoDeMoeda.guaraniParaReais(d("100"), null)).isInstanceOf(NullPointerException.class);
+    }
 }

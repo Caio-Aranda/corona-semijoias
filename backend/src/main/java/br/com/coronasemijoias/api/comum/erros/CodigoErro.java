@@ -551,6 +551,51 @@ public enum CodigoErro {
             "Este acerto já foi desfeito de outro jeito.",
             "Este acerto já foi desfeito por outro pedido. Atualize a lista de acertos."),
 
+    /** Sobrou peça na contagem do acerto (HTTP 409; ADR-0012, item 3.6). O corpo traz a lista em {@code sobras}. */
+    SOBRA_NO_ACERTO(
+            "Sobrou peça na contagem.",
+            "Contaram mais peças do que o esperado. Confira as vendas e a contagem antes de fechar o acerto."),
+
+    /** O mesmo fechamento voltou com outras decisões (HTTP 409). */
+    FECHAMENTO_JA_REGISTRADO_DIFERENTE(
+            "Este acerto já foi fechado com outras decisões.",
+            "Este acerto já foi fechado com outras decisões. Abra a lista de acertos para ver como ficou."),
+
+    /** O acerto já foi fechado por outro pedido (HTTP 409). */
+    ACERTO_JA_FECHADO(
+            "Este acerto já foi fechado.",
+            "Este acerto já foi fechado. Abra a lista de acertos para ver como ficou."),
+
+    /** Devolução ou crédito esperando a decisão da dona (HTTP 409). */
+    REVISAO_PENDENTE_NO_ACERTO(
+            "Há devolução esperando a sua decisão.",
+            "Há devolução esperando a sua decisão. Mantenha ou não aceite antes de fechar o acerto."),
+
+    /** As decisões ou o líquido não batem com o cálculo de agora (HTTP 409). O corpo traz a prévia nova. */
+    FECHAMENTO_DESATUALIZADO(
+            "O acerto mudou.",
+            "Chegou coisa nova neste acerto. Confira de novo antes de fechar."),
+
+    /** Não há cotação nenhuma para o acerto (HTTP 409). */
+    SEM_COTACAO_PARA_O_ACERTO(
+            "Falta a cotação do dia.",
+            "Busque a cotação do dia antes de fechar o acerto."),
+
+    /** Pendência que não existe (HTTP 404). */
+    PENDENCIA_NAO_ENCONTRADA(
+            "Não encontramos esta pendência.",
+            "Não encontramos esta pendência. Atualize a lista e tente de novo."),
+
+    /** A pendência já foi decidida (HTTP 409). */
+    PENDENCIA_JA_RESOLVIDA(
+            "Esta pendência já foi resolvida.",
+            "Esta pendência já foi resolvida. Atualize a lista."),
+
+    /** O mesmo comando de resolver voltou com outros dados (HTTP 409). */
+    PENDENCIA_RESOLUCAO_DIFERENTE(
+            "Esta pendência já foi resolvida de outro jeito.",
+            "Esta pendência já foi resolvida de outro jeito. Atualize a lista."),
+
     /** O vendedor só cancela a devolução no dia dela (HTTP 409; ADR-0014, item 11). */
     CANCELAR_DEVOLUCAO_SO_DA_DONA(
             "Esta devolução só pode ser cancelada pela dona.",

@@ -81,6 +81,8 @@ Só plano: nenhuma linha de código nesta tarefa (7.1). O modelo está no [ADR-0
 - Prévia para o vendedor: vendido da semana, percentual que valeria hoje e quanto falta para a meta, em Guarani e em Real (a tela é da 7.11).
 - Nesta tarefa o fechamento grava os totais e o "ficou devendo" sem recebimentos (a 7.6 acrescenta o pagamento); o exemplo do ADR-0012 item 18 vira teste na 7.6, com a parte de comissão e totais já aqui.
 
+**Como ficou (tarefa 7.5, 14/11/2026).** Feita no PR 166 (V044): fechamento atômico com prévia, comissão por meta, pendências e prévia da comissão do vendedor; detalhe em [fase-7.md](fase-7.md). Os recebimentos, o caixa e as contas do nível 2 ficam para a 7.6.
+
 ### 7.6: recebimentos e caixa automático
 
 - Tabelas `recebimentos_vendedor`, `lancamentos_caixa`, `categorias_caixa`. **Não há entrada nem cheque** (aceite de 13/11/2026): nenhuma tabela, coluna ou tela para eles.

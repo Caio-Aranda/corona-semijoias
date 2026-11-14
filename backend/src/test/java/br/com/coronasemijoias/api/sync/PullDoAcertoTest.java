@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import br.com.coronasemijoias.api.testes.CotacoesDaMassa;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -115,5 +117,40 @@ class PullDoAcertoTest extends ApoioDoEnvioDaFase6 {
                 .map(e -> e.getValue().values().toString().toLowerCase()).reduce("", String::concat);
         assertThat(texto).doesNotContain("custo").doesNotContain("iniciado_por").doesNotContain("lida_por")
                 .doesNotContain("desistido_por");
+    }
+
+    @AfterAll
+    static void tirarAsCotacoesEOsAcertosDaMassa() throws java.sql.SQLException {
+        try (var con = conectarComoMigracao()) {
+            CotacoesDaMassa.tirar(con);
+        }
+    }
+
+    @Test
+    void oFechamentoChegaSoAoDonoSemOsCamposDaDonaENuncaDeOutroVendedor() throws Exception {
+        CotacoesDaMassa.doExemplo(jdbc);
+        Cenario a = cenario();
+        Cenario b = cenario();
+        postar("/api/dona/acertos/" + a.acerto() + "/leituras", dona(), mapa("id", UUID.randomUUID(), "produtoId", a.peca(),
+                "quantidade", 3, "estadoPeca", "BOA")).andExpect(status().isCreated());
+        postar("/api/dona/acertos/" + a.acerto() + "/fechar", dona(), mapa("id", UUID.randomUUID(), "faltas", List.of(),
+                "defeitos", List.of(), "cobrancas", List.of(), "pendenciasAntigas", List.of(), "liquidoMostrado", "0.00"))
+                .andExpect(status().isCreated());
+        Map<String, Map<UUID, LinhaDoPull>> copiaA = puxarTudo(a.v());
+        Map<String, Map<UUID, LinhaDoPull>> copiaB = puxarTudo(b.v());
+        LinhaDoPull acerto = copiaA.get("acertos").get(a.acerto());
+        assertThat(acerto.colunas()).containsEntry("status", "ACERTADO").containsKeys("liquido", "comissao", "vendido_bruto",
+                "percentual_comissao", "meta_guarani", "vendido_para_meta_guarani", "cotacao_id", "fechado_em");
+        assertThat(acerto.colunas().keySet()).doesNotContain("fechamento_id", "conteudo_do_fechamento", "fechado_por");
+        assertThat(copiaA.get("itens_acerto").values()).hasSize(1);
+        assertThat(copiaA.get("itens_acerto").values().iterator().next().colunas()).containsEntry("esperado", 5).containsEntry("contado_boa", 5);
+        assertThat(copiaB.getOrDefault("itens_acerto", Map.of())).isEmpty();
+        assertThat(copiaB.getOrDefault("acerto_eventos", Map.of())).isEmpty();
+        assertThat(copiaB.getOrDefault("comissoes", Map.of())).isEmpty();
+        assertThat(copiaB.getOrDefault("pendencias_acerto", Map.of())).isEmpty();
+        assertThat(copiaB.get("acertos").get(b.acerto()).colunas()).containsEntry("status", "EM_ACERTO");
+        String texto = copiaA.entrySet().stream().filter(e -> e.getKey().contains("acerto") || e.getKey().equals("comissoes"))
+                .map(e -> e.getValue().values().toString().toLowerCase()).reduce("", String::concat);
+        assertThat(texto).doesNotContain("custo").doesNotContain("fechado_por").doesNotContain("conteudo_do_fechamento");
     }
 }

@@ -181,13 +181,35 @@ public final class RegistroDeTabelas {
                                         + " JOIN corona.vendas v ON v.id = c.venda_id WHERE c.id = t.conta_id AND v.vendedor_id = ?)")),
                         // Acerto, parte 1 (tarefa 7.4, V043): o acerto do vendedor e a contagem dele. Nunca vão os "*_por" (quem
                         // iniciou, desistiu ou leu) nem remessas.acerto_id (as maletas dele chegam com status EM_ACERTO).
+                        // Acerto, parte 2 (tarefa 7.5, V044): o fechamento e os totais chegam; nunca fechamento_id nem o resumo das
+                        // decisões (conteudo_do_fechamento) nem fechado_por.
                         new TabelaSincronizavel("acertos", List.of(
                                 "vendedor_id", "semana_id", "status", "pedido_pelo_vendedor", "iniciado_em", "desistido_em",
-                                "motivo_desistencia"), false, RegraDoVendedor.doVendedor("t.vendedor_id = ?")),
+                                "motivo_desistencia", "fechado_em", "cotacao_id", "meta_guarani", "percentual_comissao",
+                                "vendido_para_meta_guarani", "vendido_bruto", "descontos", "devolvido", "vendido_liquido", "comissao",
+                                "faltas_cobradas", "liquido", "recebido_no_acerto", "ficou_devendo"), false,
+                                RegraDoVendedor.doVendedor("t.vendedor_id = ?")),
                         new TabelaSincronizavel("leituras_acerto", List.of(
                                 "acerto_id", "produto_id", "quantidade", "estado_peca", "lida_em", "pelo_vendedor", "dispositivo_id"), true,
                                 RegraDoVendedor.doVendedor("EXISTS (SELECT 1 FROM corona.acertos a"
-                                        + " WHERE a.id = t.acerto_id AND a.vendedor_id = ?)"))
+                                        + " WHERE a.id = t.acerto_id AND a.vendedor_id = ?)")),
+                        // O que o fechamento grava (tarefa 7.5): esperado x contado, eventos, comissões e pendências. Só do vendedor
+                        // dono. O preco_remessa é preço de venda; nunca vai custo. Sem "*_por" nem o motivo da loja.
+                        new TabelaSincronizavel("itens_acerto", List.of(
+                                "acerto_id", "produto_id", "remessa_id", "preco_remessa", "esperado", "contado_boa", "contado_defeito",
+                                "falta", "defeito_aprovado"), true,
+                                RegraDoVendedor.doVendedor("EXISTS (SELECT 1 FROM corona.acertos a"
+                                        + " WHERE a.id = t.acerto_id AND a.vendedor_id = ?)")),
+                        new TabelaSincronizavel("acerto_eventos", List.of(
+                                "acerto_id", "vendedor_id", "origem_tipo", "origem_id", "venda_id", "valor"), true,
+                                RegraDoVendedor.doVendedor("t.vendedor_id = ?")),
+                        new TabelaSincronizavel("comissoes", List.of(
+                                "vendedor_id", "acerto_id", "venda_id", "evento_id", "tipo", "base", "percentual", "valor", "estorna_id"),
+                                true, RegraDoVendedor.doVendedor("t.vendedor_id = ?")),
+                        new TabelaSincronizavel("pendencias_acerto", List.of(
+                                "acerto_id", "vendedor_id", "tipo", "produto_id", "remessa_id", "quantidade", "valor", "origem_tipo",
+                                "origem_id", "status", "cobrada_no_acerto_id", "resolvida_em"), false,
+                                RegraDoVendedor.doVendedor("t.vendedor_id = ?"))
                         // Tabela sincronizável nova: declare a regra do vendedor (filtro, expansão, diretório).
                 ),
                 List.of(

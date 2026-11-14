@@ -132,6 +132,8 @@ Notas:
 
 **Como ficou (tarefa 7.4, 14/11/2026).** Iniciar, contar e desistir estão prontos (V043; o acerto não tem dinheiro). O iniciar liga todas as maletas `ENVIADA`/`CONFERIDA` do vendedor, guardando o status de antes em `remessas.status_antes_do_acerto`; o desistir volta a ele. Um acerto `EM_ACERTO` por vendedor e um por semana fora `DESISTIDO` (índices únicos parciais). A semana é a informada, a mais recente das maletas ligadas ou a de hoje. O vendedor pede o próprio acerto com os pré-requisitos do item 1 (`aguardando_envio` é o **último número informado** pelo computador: a garantia de fila vazia é do aplicativo, 7.11); só a dona desiste, com motivo e o UUID do comando. A leitura é uma por pedido, online; aceita peça das maletas do acerto ou de devolução "para a loja" do vendedor; a contagem pode passar do que a maleta tem (a sobra aparece no fechamento, 7.5). Nada de esperado × contado nesta tarefa. Gatilhos que a 7.5 recria: `proteger_acerto` (para `ACERTADO`) e `conferir_acerto_da_remessa` (para `ACERTADA`, mantendo o `acerto_id`); o `CHECK` `acertos_desistencia_completa` também.
 
+**Como ficou (tarefa 7.5, 14/11/2026).** O fechamento está pronto (V044), sem os recebimentos (7.6): `recebido_no_acerto` = 0 e `ficou_devendo` = líquido. A ordem das travas é vendedor, a trava consultiva da devolução e da troca do vendedor, acerto, maletas por `id`, pendências abertas por `id` e produtos por `id` (uma chamada só ao `ServicoDeEstoque`). Sobra impede e se resolve estornando a venda errada ou pelo ajuste manual do estoque (não há rota de `AJUSTE` na maleta). Devolução ou crédito sem saldo em revisão impedem o fechamento. A prévia e o fechamento usam o mesmo cálculo; o fechar leva o líquido que a dona viu e, se o cálculo de agora é outro, 409 com a prévia nova. O `CHECK` do acerto e o gatilho adiado no `COMMIT` conferem os totais contra eventos, comissões e pendências. A maleta só vai a `ACERTADA` com saldo zero e não recebe movimento depois.
+
 ### 4. Regra de corte (vendas e eventos que chegam atrasados)
 
 - Evento **novo** numa maleta `EM_ACERTO` (venda, devolução, troca) é recusado: 409, "Esta maleta está em acerto".
@@ -157,12 +159,16 @@ Notas:
 - **Sempre o servidor calcula.** O app nunca manda comissão, base, percentual nem a soma da meta; se mandar, é ignorado. O app do vendedor mostra a **prévia** que o servidor devolve: o vendido da semana, o percentual que valeria hoje e **quanto falta para a meta, em Guarani e em Real**.
 - **Paga e a pagar:** a comissão é paga **por abatimento** no fechamento (o vendedor fica com ela; §7.4.4 "valor líquido"): toda comissão gravada pertence a um acerto `ACERTADO` e conta como **paga** na data do fechamento. **A pagar** é a prévia sobre os eventos ainda sem acerto, calculada na hora com a meta e os percentuais atuais e nunca gravada (dúvida 3). Na prévia, o que falta para a meta é calculado em Guarani e mostrado também em Real pela cotação mais recente (só para mostrar).
 
+**Como ficou (tarefa 7.5, 14/11/2026).** Meta (inteiro, Guarani) e percentuais (inteiros de 0 a 100) em `configuracoes`, com `abaixo <= na meta` no banco e na API. O acerto guarda a meta usada, a soma em Guarani (a única conversão gravada) e o percentual decidido. `comissoes.estorna_id` aponta para a linha `COMISSAO` e não é único (uma venda pode ter várias devoluções; o único é por evento). O estorno do "não aceita" da devolução não devolve a comissão estornada.
+
 ### 6. Pendências
 
 - `FALTA`: valor = quantidade × `preco_remessa` da maleta de onde a peça saiu (com mais de uma maleta, a mais antiga primeiro, ordem estável). Status: `ABERTA` → `COBRADA` (no acerto ou, depois, gerando conta a receber do vendedor), `ASSUMIDA_PELA_LOJA` ou `ENCONTRADA` (a peça voltou: `DEVOLUCAO` no estoque central com origem na pendência; se já tinha sido cobrada, a conta a receber é cancelada por baixa `CANCELAMENTO` ou, se já paga, vira crédito no próximo acerto).
 - `DEFEITO`: `APROVADA` ou `RECUSADA` (item 3, passo 6.6), decidida no fechamento.
 - `SOBRA`: nunca fica aberta; impede o fechamento (item 3, passo 6.3).
 - Resolver pendência é só da dona, exige motivo e vai para a auditoria.
+
+**Como ficou (tarefa 7.5, 14/11/2026).** `pendencias_acerto` nasce decidida no fechamento (cobrada, aberta, assumida pela loja, aprovada ou recusada); depois só `ABERTA` vira `COBRADA` (num fechamento posterior), `ASSUMIDA_PELA_LOJA` ou `ENCONTRADA` (só falta, com a peça voltando ao estoque central, origem `ACERTO`), sempre com motivo e auditoria. O "não aceita" da devolução e do crédito sem saldo vira pendência do valor inteiro, com as mesmas três decisões da falta. `faltas_cobradas` soma toda pendência cobrada no acerto.
 
 ### 7. Contas a receber, parcelas e baixas
 
@@ -195,6 +201,8 @@ a_pagar_no_acerto = recebido_no_acerto + ficou_devendo         (CHECK)
 - **Não existe entrada** (aceite de 13/11/2026): nada é abatido do líquido. `a_pagar_no_acerto` não é coluna; é o próprio `liquido`.
 - Não existe "desconto do acerto" livre: correção é estorno ou pendência (dúvida 18).
 - Tela e PDF do acerto mostram Dólar e Guarani pela cotação gravada (ADR-0006 item 11), cada valor arredondado sozinho.
+
+**Como ficou (tarefa 7.5, 14/11/2026).** Os totais estão em `acertos` com os `CHECK` do item 8; `devolvido`, `comissao`, `liquido` e `ficou_devendo` aceitam qualquer sinal. O exemplo do item 18 virou teste (`FechamentoDoAcertoTest`).
 
 ### 9. Recebimentos do vendedor
 
