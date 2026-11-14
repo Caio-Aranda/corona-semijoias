@@ -19,7 +19,7 @@ A especificação (`docs/ESPECIFICACAO.md`) manda. Um ADR detalha a especificaç
 | [0009](ADR-0009-implantacao-certificado-atualizacao-e-backup.md) | Implantação, certificado fixado, atualização e backup | Aceito | 9.2 a 9.6 (Fase 9 mínima) |
 | [0010](ADR-0010-maleta-e-remessa.md) | Maleta e remessa (o 0009 é da Fase 9) | Aceito | 3.2 a 3.7 (Fase 3) |
 | [0011](ADR-0011-venda-do-vendedor-online.md) | Venda do vendedor, online e preparada para sync | Aceito | 4.2 a 4.5 (Fase 4) |
-| [0012](ADR-0012-acerto-e-financeiro.md) | Acerto semanal e financeiro | Proposto | 7.2 a 7.13 (Fase 7) |
+| [0012](ADR-0012-acerto-e-financeiro.md) | Acerto semanal e financeiro | Aceito (13/11/2026, com mudanças: sem entrada, sem cheque, comissão por meta) | 7.1b, 7.2 a 7.13 (Fase 7) |
 | [0013](ADR-0013-sincronizacao-e-offline.md) | Sincronização e modo sem internet do Corona Vendas | Aceito | 5.2 a 5.15 (Fase 5) |
 
 A numeração das tarefas é a do "Plano da Fase 0" em `docs/PROGRESSO.md`.
