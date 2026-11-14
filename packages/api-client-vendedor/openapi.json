@@ -1394,6 +1394,18 @@
         },
         "type" : "object"
       },
+      "PedidoDeEstornoDeRecebimento" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "motivo" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "PedidoDeLogin" : {
         "properties" : {
           "dispositivoId" : {
@@ -1410,6 +1422,24 @@
           }
         },
         "required" : [ "login", "senha" ],
+        "type" : "object"
+      },
+      "PedidoDeRecebimento" : {
+        "properties" : {
+          "forma" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
         "type" : "object"
       },
       "PedidoDeRenovacao" : {
@@ -3267,6 +3297,48 @@
         "tags" : [ "maletas-do-vendedor-controller" ]
       }
     },
+    "/api/vendedor/recebimentos-de-cliente/{pagamentoId}/estorno" : {
+      "post" : {
+        "description" : "Desfaz um recebimento feito depois da venda: as parcelas voltam a ficar em aberto. Só no dia do recebimento; depois, só a dona. O pagamento feito na hora da venda se corrige estornando a venda. Exige o id do estorno (do aplicativo) e o motivo. Mesmo id devolve 200.",
+        "operationId" : "estornarRecebimentoDoVendedor",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "pagamentoId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeEstornoDeRecebimento"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Venda"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Estornar um recebimento do cliente (no mesmo dia)",
+        "tags" : [ "contas-a-receber-do-vendedor-controller" ]
+      }
+    },
     "/api/vendedor/relatorios/a-receber" : {
       "get" : {
         "description" : "Por cliente do vendedor: vendido (sem estornos), pago e a receber; só quem deve.",
@@ -3964,6 +4036,48 @@
         } ],
         "summary" : "Estornar a própria venda (no mesmo dia)",
         "tags" : [ "vendas-do-vendedor-controller" ]
+      }
+    },
+    "/api/vendedor/vendas/{vendaId}/recebimentos" : {
+      "post" : {
+        "description" : "O cliente paga, depois da venda, parte ou o que falta de uma venda a prazo (só dinheiro ou transferência). O servidor distribui o valor pelas parcelas, da que vence primeiro para a que vence depois, e não aceita mais do que falta pagar. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409.",
+        "operationId" : "receberDoCliente",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "vendaId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeRecebimento"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Venda"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Registrar um recebimento do cliente",
+        "tags" : [ "contas-a-receber-do-vendedor-controller" ]
       }
     }
   }

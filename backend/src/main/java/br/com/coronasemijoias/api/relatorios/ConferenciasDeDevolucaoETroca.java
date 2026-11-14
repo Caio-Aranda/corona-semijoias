@@ -134,13 +134,13 @@ public class ConferenciasDeDevolucaoETroca {
 
     private Conferencia dinheiroDevolvido() {
         List<Divergencia> d = jdbc.query("""
-                SELECT p.venda_id, coalesce(sum(p.valor) FILTER (WHERE p.tipo = 'PAGAMENTO'), 0) AS pago,
+                SELECT p.venda_id, coalesce(sum(p.valor) FILTER (WHERE p.tipo IN ('PAGAMENTO', 'ESTORNO_PAGAMENTO')), 0) AS pago,
                        -coalesce(sum(p.valor) FILTER (WHERE p.tipo IN ('REEMBOLSO', 'ESTORNO_REEMBOLSO')), 0) AS devolvido
                   FROM corona.pagamentos_cliente p
                  WHERE p.deleted_at IS NULL AND p.forma <> 'CREDITO'
                  GROUP BY p.venda_id
                 HAVING -coalesce(sum(p.valor) FILTER (WHERE p.tipo IN ('REEMBOLSO', 'ESTORNO_REEMBOLSO')), 0)
-                       > coalesce(sum(p.valor) FILTER (WHERE p.tipo = 'PAGAMENTO'), 0)
+                       > coalesce(sum(p.valor) FILTER (WHERE p.tipo IN ('PAGAMENTO', 'ESTORNO_PAGAMENTO')), 0)
                    AND NOT EXISTS (SELECT 1 FROM corona.devolucoes dv WHERE dv.venda_id = p.venda_id
                                     AND dv.situacao IN ('EM_REVISAO', 'MANTIDA'))
                  ORDER BY p.venda_id""", (rs, n) -> new Divergencia("Venda " + rs.getObject("venda_id"),

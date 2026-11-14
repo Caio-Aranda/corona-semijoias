@@ -150,7 +150,7 @@ public class ConsultasDeDevolucoes {
         List<VendaComAPeca> vendas = jdbc.query("""
                 SELECT v.id, v.cliente_id, c.nome, v.vendida_em, v.total,
                        coalesce((SELECT sum(p.valor) FROM corona.pagamentos_cliente p
-                                  WHERE p.venda_id = v.id AND p.tipo = 'PAGAMENTO'), 0) AS pago
+                                  WHERE p.venda_id = v.id AND p.tipo IN ('PAGAMENTO', 'ESTORNO_PAGAMENTO')), 0) AS pago
                   FROM corona.vendas v JOIN corona.clientes c ON c.id = v.cliente_id
                  WHERE (?::uuid IS NULL OR v.vendedor_id = ?) AND v.status = 'CONCLUIDA' AND v.deleted_at IS NULL
                    AND EXISTS (SELECT 1 FROM corona.itens_venda i WHERE i.venda_id = v.id AND i.produto_id = ?)

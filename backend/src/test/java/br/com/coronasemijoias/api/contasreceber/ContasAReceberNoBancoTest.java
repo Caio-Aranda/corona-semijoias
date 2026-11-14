@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.flywaydb.core.Flyway;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataAccessException;
@@ -37,6 +38,18 @@ class ContasAReceberNoBancoTest extends ApoioDasContas {
         UUID maleta = maleta(vendedor, peca, 5);
         // À vista, sem parcela nenhuma: as linhas de contas_receber deste teste são todas de SQL direto.
         venda = vender(vendedor, maleta, cliente, List.of(linha(peca, 1)), List.of(pagamento("100.00", "DINHEIRO")));
+    }
+
+    /**
+     * Estes testes gravam de propósito pagamentos e baixas que não fecham com a venda. Como o banco é dividido entre os
+     * testes (e as conferências olham todas as vendas concluídas), a venda sai de cena por SQL direto: estornada, sem o
+     * serviço (que mexeria nas parcelas de mentira).
+     */
+    @AfterEach
+    void tirarAVendaDeCena() {
+        jdbc.update("""
+                UPDATE corona.vendas SET status = 'ESTORNADA', estorno_id = ?, estornada_em = now(), motivo_estorno = 'teste do banco'
+                 WHERE id = ? AND status = 'CONCLUIDA'""", UUID.randomUUID(), venda);
     }
 
     // --- ajudantes de SQL ---

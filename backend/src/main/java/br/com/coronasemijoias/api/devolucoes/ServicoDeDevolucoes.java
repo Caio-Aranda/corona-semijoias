@@ -265,8 +265,8 @@ public class ServicoDeDevolucoes {
         BigDecimal total = (BigDecimal) venda.get("total");
         // O dinheiro e o crédito da venda, separados (tarefa 6.5): o crédito usado não é dinheiro.
         Map<String, Object> dinheiro = jdbc.queryForMap("""
-                SELECT coalesce(sum(valor) FILTER (WHERE tipo = 'PAGAMENTO'), 0) AS pago,
-                       coalesce(sum(valor) FILTER (WHERE tipo = 'PAGAMENTO' AND forma <> 'CREDITO'), 0) AS pago_em_dinheiro,
+                SELECT coalesce(sum(valor) FILTER (WHERE tipo IN ('PAGAMENTO', 'ESTORNO_PAGAMENTO')), 0) AS pago,
+                       coalesce(sum(valor) FILTER (WHERE tipo IN ('PAGAMENTO', 'ESTORNO_PAGAMENTO') AND forma <> 'CREDITO'), 0) AS pago_em_dinheiro,
                        coalesce(-sum(valor) FILTER (WHERE tipo IN ('REEMBOLSO', 'ESTORNO_REEMBOLSO') AND forma <> 'CREDITO'), 0)
                            AS reembolsado_em_dinheiro,
                        coalesce(sum(valor) FILTER (WHERE forma = 'CREDITO'), 0) AS credito_liquido

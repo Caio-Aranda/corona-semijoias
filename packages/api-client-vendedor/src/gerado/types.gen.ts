@@ -428,10 +428,21 @@ export type PedidoDeEnvio = {
     operacoes?: Array<OperacaoEnviada>;
 };
 
+export type PedidoDeEstornoDeRecebimento = {
+    id?: string;
+    motivo?: string;
+};
+
 export type PedidoDeLogin = {
     dispositivoId?: string;
     login: string;
     senha: string;
+};
+
+export type PedidoDeRecebimento = {
+    forma?: string;
+    id?: string;
+    valor?: string;
 };
 
 export type PedidoDeRenovacao = {
@@ -1188,6 +1199,24 @@ export type BuscarPecaDaMinhaMaletaResponses = {
 
 export type BuscarPecaDaMinhaMaletaResponse = BuscarPecaDaMinhaMaletaResponses[keyof BuscarPecaDaMinhaMaletaResponses];
 
+export type EstornarRecebimentoDoVendedorData = {
+    body: PedidoDeEstornoDeRecebimento;
+    path: {
+        pagamentoId: string;
+    };
+    query?: never;
+    url: '/api/vendedor/recebimentos-de-cliente/{pagamentoId}/estorno';
+};
+
+export type EstornarRecebimentoDoVendedorResponses = {
+    /**
+     * OK
+     */
+    200: Venda;
+};
+
+export type EstornarRecebimentoDoVendedorResponse = EstornarRecebimentoDoVendedorResponses[keyof EstornarRecebimentoDoVendedorResponses];
+
 export type RelatorioDeValoresAReceberData = {
     body?: never;
     path?: never;
@@ -1536,3 +1565,21 @@ export type EstornarVendaDoVendedorResponses = {
 };
 
 export type EstornarVendaDoVendedorResponse = EstornarVendaDoVendedorResponses[keyof EstornarVendaDoVendedorResponses];
+
+export type ReceberDoClienteData = {
+    body: PedidoDeRecebimento;
+    path: {
+        vendaId: string;
+    };
+    query?: never;
+    url: '/api/vendedor/vendas/{vendaId}/recebimentos';
+};
+
+export type ReceberDoClienteResponses = {
+    /**
+     * OK
+     */
+    200: Venda;
+};
+
+export type ReceberDoClienteResponse = ReceberDoClienteResponses[keyof ReceberDoClienteResponses];

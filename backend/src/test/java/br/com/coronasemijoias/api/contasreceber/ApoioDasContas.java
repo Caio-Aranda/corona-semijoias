@@ -77,6 +77,9 @@ abstract class ApoioDasContas extends TesteDeIntegracao {
     void conciliarEVoltarAosPadroes() {
         relogio.reiniciar();
         jdbc.update("UPDATE corona.configuracoes SET valor_inteiro = 0 WHERE chave = 'limite_desconto_percentual'");
+        // Os testes dividem o banco: uma sobra aqui aparece na conciliação de estoque dos outros (ver ApoioDasTrocas).
+        var estoqueConciliado = estoque.conciliar();
+        assertThat(estoqueConciliado.diferencasComMaletas()).as("estoque com as maletas").isEmpty();
         if (conciliar) {
             assertThat(diferencasDaConciliacao()).as("conciliação C1 e C5 do nível 1").isEmpty();
         }
@@ -97,7 +100,9 @@ abstract class ApoioDasContas extends TesteDeIntegracao {
                           FROM corona.contas_receber GROUP BY venda_id) a ON a.venda_id = v.id
                   LEFT JOIN (SELECT venda_id, sum(valor) AS liquido FROM corona.pagamentos_cliente
                               WHERE tipo IN ('PAGAMENTO', 'ESTORNO_PAGAMENTO', 'REEMBOLSO') GROUP BY venda_id) p ON p.venda_id = v.id
-                 WHERE v.id IN (%s) AND v.status = 'CONCLUIDA' AND v.total - coalesce(p.liquido, 0) <> a.aberto""".formatted(ids), String.class));
+                 WHERE v.id IN (%s) AND v.status = 'CONCLUIDA'
+                   AND NOT EXISTS (SELECT 1 FROM corona.devolucoes d WHERE d.venda_id = v.id AND d.situacao <> 'CANCELADA')
+                   AND v.total - coalesce(p.liquido, 0) <> a.aberto""".formatted(ids), String.class));
         achadas.addAll(jdbc.queryForList("""
                 SELECT 'C1 estornada ' || v.id FROM corona.vendas v
                   JOIN corona.contas_receber c ON c.venda_id = v.id
@@ -167,8 +172,8 @@ abstract class ApoioDasContas extends TesteDeIntegracao {
 
     UUID semana() throws Exception {
         int n = SEQUENCIA.getAndIncrement();
-        LocalDate inicio = LocalDate.of(3300, 1, 1).plusDays(10L * n);
-        return UUID.fromString(corpoDe(postar("/api/dona/semanas", dona(), mapa("numero", 60_000 + n,
+        LocalDate inicio = LocalDate.of(3600, 1, 1).plusDays(10L * n);
+        return UUID.fromString(corpoDe(postar("/api/dona/semanas", dona(), mapa("numero", 96_000 + n,
                 "inicio", inicio.toString(), "fim", inicio.plusDays(6).toString())).andExpect(status().isCreated())).get("id").asString());
     }
 
@@ -243,5 +248,70 @@ abstract class ApoioDasContas extends TesteDeIntegracao {
 
     static Instant brasilia(String dataHora) {
         return java.time.LocalDateTime.parse(dataHora).atZone(BRASILIA).toInstant();
+    }
+
+    // --- venda a prazo e recebimento (tarefa 7.3) ---
+
+    /** Uma venda a prazo pronta: o vendedor, o cliente, a peça, a maleta e a venda (100,00 em 3 parcelas, sem nada pago). */
+    record APrazo(UsuarioDeTeste vendedor, UUID cliente, UUID peca, UUID maleta, UUID venda) {
+    }
+
+    LocalDate hoje() {
+        return LocalDate.ofInstant(relogio.instant(), BRASILIA);
+    }
+
+    APrazo vendaAPrazo(String preco, String pagoNaHora, int parcelas) throws Exception {
+        UsuarioDeTeste vendedor = usuarios.criarVendedor();
+        UUID cliente = cliente(vendedor);
+        UUID peca = peca(preco, 5);
+        UUID maleta = maleta(vendedor, peca, 5);
+        UUID venda = vender(vendedor, maleta, cliente, List.of(linha(peca, 1)),
+                pagoNaHora == null ? List.of() : List.of(pagamento(pagoNaHora, "DINHEIRO")),
+                parcelas == 0 ? null : mapa("quantidade", parcelas, "primeiroVencimento", hoje().plusDays(1).toString()));
+        return new APrazo(vendedor, cliente, peca, maleta, venda);
+    }
+
+    /** 100,00 em 3 parcelas (33,33, 33,33 e 33,34), nada pago na hora. */
+    APrazo vendaDeCemEmTres() throws Exception {
+        return vendaAPrazo("100.00", null, 3);
+    }
+
+    static final String RECEBIMENTOS = "/api/vendedor/vendas/%s/recebimentos";
+    static final String ESTORNO_DO_VENDEDOR = "/api/vendedor/recebimentos-de-cliente/%s/estorno";
+    static final String ESTORNO_DA_DONA = "/api/dona/recebimentos-de-cliente/%s/estorno";
+
+    org.springframework.test.web.servlet.ResultActions receber(APrazo c, UUID id, String valor, String forma) throws Exception {
+        return postar(RECEBIMENTOS.formatted(c.venda()), como(c.vendedor()), mapa("id", id, "valor", valor, "forma", forma));
+    }
+
+    UUID receberOk(APrazo c, String valor) throws Exception {
+        UUID id = UUID.randomUUID();
+        receber(c, id, valor, "PIX").andExpect(status().isCreated());
+        return id;
+    }
+
+    org.springframework.test.web.servlet.ResultActions estornarRecebimento(APrazo c, UUID pagamento, UUID idDoEstorno, String motivo)
+            throws Exception {
+        return postar(ESTORNO_DO_VENDEDOR.formatted(pagamento), como(c.vendedor()), mapa("id", idDoEstorno, "motivo", motivo));
+    }
+
+    List<Map<String, Object>> parcelas(UUID venda) {
+        return jdbc.queryForList("""
+                SELECT id, parcela, total_parcelas, vencimento::text AS vencimento, valor, status, valor_pago, valor_cancelado,
+                       cliente_id
+                  FROM corona.contas_receber WHERE venda_id = ? ORDER BY parcela""", venda);
+    }
+
+    List<String> situacoes(UUID venda) {
+        return parcelas(venda).stream().map(p -> (String) p.get("status")).toList();
+    }
+
+    List<String> pagos(UUID venda) {
+        return parcelas(venda).stream().map(p -> ((BigDecimal) p.get("valor_pago")).toPlainString()).toList();
+    }
+
+    int baixas(UUID venda) {
+        return contar("SELECT count(*) FROM corona.baixas_receber b JOIN corona.contas_receber c ON c.id = b.conta_id WHERE c.venda_id = ?",
+                venda);
     }
 }

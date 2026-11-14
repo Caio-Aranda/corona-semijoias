@@ -1379,6 +1379,11 @@ export type PedidoDeEdicao = {
     version: number;
 };
 
+export type PedidoDeEstornoDeRecebimento = {
+    id?: string;
+    motivo?: string;
+};
+
 export type PedidoDeGarantia = {
     limiteReembolsoSemanal?: string;
     percentualAlertaDevolucao: number;
@@ -4230,6 +4235,24 @@ export type DescartarVendaDeComputadorBloqueadoResponses = {
 };
 
 export type DescartarVendaDeComputadorBloqueadoResponse = DescartarVendaDeComputadorBloqueadoResponses[keyof DescartarVendaDeComputadorBloqueadoResponses];
+
+export type EstornarRecebimentoDeClienteData = {
+    body: PedidoDeEstornoDeRecebimento;
+    path: {
+        pagamentoId: string;
+    };
+    query?: never;
+    url: '/api/dona/recebimentos-de-cliente/{pagamentoId}/estorno';
+};
+
+export type EstornarRecebimentoDeClienteResponses = {
+    /**
+     * OK
+     */
+    200: Venda;
+};
+
+export type EstornarRecebimentoDeClienteResponse = EstornarRecebimentoDeClienteResponses[keyof EstornarRecebimentoDeClienteResponses];
 
 export type AlteracoesDeProdutosData = {
     body?: never;

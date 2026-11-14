@@ -4585,6 +4585,18 @@
         "required" : [ "nome", "perfil", "version" ],
         "type" : "object"
       },
+      "PedidoDeEstornoDeRecebimento" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "motivo" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "PedidoDeGarantia" : {
         "properties" : {
           "limiteReembolsoSemanal" : {
@@ -11777,6 +11789,48 @@
         } ],
         "summary" : "Descartar",
         "tags" : [ "quarentena-da-dona-controller" ]
+      }
+    },
+    "/api/dona/recebimentos-de-cliente/{pagamentoId}/estorno" : {
+      "post" : {
+        "description" : "Desfaz um recebimento feito depois da venda, sem limite de dia: as parcelas voltam a ficar em aberto. Motivo obrigatório; mesmo id de estorno devolve 200.",
+        "operationId" : "estornarRecebimentoDeCliente",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "pagamentoId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeEstornoDeRecebimento"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Venda"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Estornar um recebimento do cliente",
+        "tags" : [ "contas-a-receber-da-dona-controller" ]
       }
     },
     "/api/dona/relatorios/cadastros/alteracoes-de-produtos" : {

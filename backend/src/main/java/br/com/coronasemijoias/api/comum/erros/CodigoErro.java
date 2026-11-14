@@ -443,6 +443,41 @@ public enum CodigoErro {
             "Esta venda tem parcelas.",
             "Esta venda tem parcelas; a devolução dela chega em breve."),
 
+    /** Recebimento acima do que falta pagar na venda (HTTP 409; tarefa 7.3). O servidor monta o texto com o valor. */
+    RECEBIMENTO_ACIMA_DO_EM_ABERTO(
+            "O valor passa do que falta pagar.",
+            "O valor passa do que falta pagar nesta venda. Confira o valor."),
+
+    /** Recebimento de venda que não tem nada a receber (HTTP 409; tarefa 7.3). */
+    VENDA_SEM_VALOR_EM_ABERTO(
+            "Esta venda não tem nada a receber.",
+            "Esta venda não tem nada a receber."),
+
+    /** O mesmo id de recebimento com outros dados, ou já usado em outro pagamento (HTTP 409; tarefa 7.3). */
+    RECEBIMENTO_JA_REGISTRADO_DIFERENTE(
+            "Este recebimento já foi registrado com outros dados.",
+            "Este recebimento já foi registrado com outros dados. Confira os recebimentos antes de lançar de novo."),
+
+    /** Recebimento inexistente ou de outro vendedor (HTTP 404; tarefa 7.3). */
+    RECEBIMENTO_NAO_ENCONTRADO(
+            "Não encontramos este recebimento.",
+            "Não encontramos este recebimento. Atualize a tela e tente de novo."),
+
+    /** Recebimento que já foi estornado (HTTP 409; tarefa 7.3). */
+    RECEBIMENTO_JA_ESTORNADO(
+            "Este recebimento já foi estornado.",
+            "Este recebimento já foi estornado e não pode mudar."),
+
+    /** O vendedor só estorna o recebimento no dia dele (HTTP 409; tarefa 7.3). */
+    ESTORNO_DE_RECEBIMENTO_SO_DA_DONA(
+            "Este recebimento só pode ser estornado pela dona.",
+            "Só dá para estornar o recebimento no mesmo dia. Peça à dona para estornar."),
+
+    /** O pagamento feito na hora da venda se corrige estornando a venda (HTTP 409; tarefa 7.3). */
+    PAGAMENTO_NA_VENDA_SO_PELO_ESTORNO_DA_VENDA(
+            "Este pagamento foi feito na hora da venda.",
+            "Este pagamento foi feito na hora da venda. Para corrigir, estorne a venda."),
+
     /** Estorno de venda com devolução não cancelada (HTTP 409; ADR-0014, item 1; dúvida R6). */
     VENDA_COM_DEVOLUCAO(
             "Esta venda já tem devolução.",

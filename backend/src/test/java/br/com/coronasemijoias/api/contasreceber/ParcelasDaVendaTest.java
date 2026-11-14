@@ -28,10 +28,6 @@ class ParcelasDaVendaTest extends ApoioDasContas {
         cliente = cliente(vendedor);
     }
 
-    private LocalDate hoje() {
-        return LocalDate.ofInstant(relogio.instant(), BRASILIA);
-    }
-
     private static Map<String, Object> parcelamento(int quantidade, LocalDate primeiro) {
         return mapa("quantidade", quantidade, "primeiroVencimento", primeiro == null ? null : primeiro.toString());
     }
@@ -49,12 +45,6 @@ class ParcelasDaVendaTest extends ApoioDasContas {
         }
         vendasDoTeste.add(id);
         return postar(VENDAS, como(vendedor), corpo);
-    }
-
-    private List<Map<String, Object>> parcelas(UUID venda) {
-        return jdbc.queryForList("""
-                SELECT parcela, total_parcelas, vencimento::text AS vencimento, valor, status, valor_pago, cliente_id
-                  FROM corona.contas_receber WHERE venda_id = ? ORDER BY parcela""", venda);
     }
 
     private static List<String> valores(List<Map<String, Object>> parcelas) {

@@ -1,13 +1,27 @@
 package br.com.coronasemijoias.api.contasreceber;
 
+import br.com.coronasemijoias.api.auditoria.ServicoDeAuditoria;
+import br.com.coronasemijoias.api.auditoria.ServicoDeAuditoria.Ator;
 import br.com.coronasemijoias.api.cadastros.Validacoes;
 import br.com.coronasemijoias.api.comum.dinheiro.Dinheiro;
+import br.com.coronasemijoias.api.comum.erros.CodigoErro;
+import br.com.coronasemijoias.api.comum.erros.ErroDaApi;
 import br.com.coronasemijoias.api.comum.identificadores.UuidV7;
+import br.com.coronasemijoias.api.comum.persistencia.OrigemDoDispositivo;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,10 +46,28 @@ public class ServicoDeContasAReceber {
     public record Parcela(UUID id, int numero, int total, LocalDate vencimento, BigDecimal valor) {
     }
 
-    private final JdbcTemplate jdbc;
+    /** O recebimento do cliente depois da venda: o id vem do aplicativo (idempotência); valor e forma, do vendedor. */
+    public record Recebimento(UUID id, BigDecimal valor, String forma) {
+    }
 
-    ServicoDeContasAReceber(JdbcTemplate jdbc) {
+    /** {@code jaExistia}: o recebimento (ou o estorno) já estava gravado (200); senão, algo novo foi gravado (201). */
+    public record Resultado(UUID id, UUID vendaId, boolean jaExistia) {
+    }
+
+    private static final ZoneId BRASILIA = ZoneId.of("America/Sao_Paulo");
+    private static final Set<String> FORMAS_DO_RECEBIMENTO = Set.of("DINHEIRO", "PIX");
+    private static final int LIMITE_DO_MOTIVO = 400;
+
+    private final JdbcTemplate jdbc;
+    private final ServicoDeAuditoria auditoria;
+    private final OrigemDoDispositivo origem;
+    private final Clock relogio;
+
+    ServicoDeContasAReceber(JdbcTemplate jdbc, ServicoDeAuditoria auditoria, OrigemDoDispositivo origem, Clock relogio) {
         this.jdbc = jdbc;
+        this.auditoria = auditoria;
+        this.origem = origem;
+        this.relogio = relogio;
     }
 
     /**
@@ -91,5 +123,224 @@ public class ServicoDeContasAReceber {
             parcelas.add(new Parcela(id, k, quantidade, vencimento, valores.get(k - 1)));
         }
         return parcelas;
+    }
+
+    // --- recebimento posterior ---
+
+    /**
+     * Registra o recebimento do cliente depois da venda e o distribui pelas parcelas abertas, da que vence primeiro para
+     * a que vence depois (empate pela parcela). Trava a venda e depois as parcelas (por id): nunca a maleta, porque a
+     * parcela vive meses depois do acerto. {@code vendedorId} é quem recebe (a venda tem de ser dele); {@code quando}
+     * nulo é agora.
+     */
+    @Transactional
+    public Resultado receber(UUID vendaId, UUID vendedorId, UUID usuarioId, UUID aparelho, Recebimento pedido, Instant quando) {
+        if (pedido == null) {
+            throw Validacoes.recusar("recebimento", "Informe o recebimento.");
+        }
+        UUID id = Validacoes.idDoPedido(pedido.id());
+        if (pedido.valor() == null || pedido.valor().signum() <= 0) {
+            throw Validacoes.recusar("valor", "Informe o valor recebido, maior que zero.");
+        }
+        if (pedido.valor().stripTrailingZeros().scale() > Dinheiro.ESCALA
+                || pedido.valor().compareTo(new BigDecimal("999999999999.99")) > 0) {
+            throw Validacoes.recusar("valor", "Use um valor em reais com no máximo duas casas depois da vírgula.");
+        }
+        BigDecimal valor = pedido.valor().setScale(Dinheiro.ESCALA);
+        if (pedido.forma() == null || !FORMAS_DO_RECEBIMENTO.contains(pedido.forma())) {
+            throw Validacoes.recusar("forma", "O recebimento é só em dinheiro ou transferência.");
+        }
+        Map<String, Object> venda = trancarVenda(vendaId, vendedorId);
+
+        // Idempotência: o mesmo id, a mesma venda, o mesmo valor e a mesma forma é o mesmo recebimento.
+        List<Map<String, Object>> existente = jdbc.queryForList(
+                "SELECT venda_id, tipo, forma, valor, posterior FROM corona.pagamentos_cliente WHERE id = ?", id);
+        if (!existente.isEmpty()) {
+            Map<String, Object> e = existente.get(0);
+            if (vendaId.equals(e.get("venda_id")) && "PAGAMENTO".equals(e.get("tipo")) && Boolean.TRUE.equals(e.get("posterior"))
+                    && pedido.forma().equals(e.get("forma")) && valor.compareTo((BigDecimal) e.get("valor")) == 0) {
+                return new Resultado(id, vendaId, true);
+            }
+            throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.RECEBIMENTO_JA_REGISTRADO_DIFERENTE);
+        }
+        if ("ESTORNADA".equals(venda.get("status"))) {
+            throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.VENDA_JA_ESTORNADA);
+        }
+        br.com.coronasemijoias.api.vendedor.VendedorAtivo.exigir(jdbc, (UUID) venda.get("vendedor_id"));
+
+        List<Conta> abertas = trancarContas(vendaId).stream().filter(c -> c.emAberto().signum() > 0).toList();
+        BigDecimal emAberto = abertas.stream().map(Conta::emAberto).reduce(BigDecimal.ZERO, BigDecimal::add);
+        if (emAberto.signum() == 0) {
+            throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.VENDA_SEM_VALOR_EM_ABERTO);
+        }
+        if (valor.compareTo(emAberto) > 0) {
+            throw ErroDaApi.comDetalhe(HttpStatus.CONFLICT, CodigoErro.RECEBIMENTO_ACIMA_DO_EM_ABERTO,
+                    "O valor passa do que falta pagar nesta venda (R$ " + emAberto.toPlainString().replace('.', ',')
+                            + "). Confira o valor.");
+        }
+
+        if (aparelho != null) {
+            origem.definirNaTransacaoAtual(aparelho);
+        }
+        Instant hora = quando == null ? relogio.instant() : quando;
+        jdbc.update("""
+                INSERT INTO corona.pagamentos_cliente (id, venda_id, tipo, forma, valor, pago_em, posterior)
+                VALUES (?, ?, 'PAGAMENTO', ?, ?, ?, true)""", id, vendaId, pedido.forma(), valor, Timestamp.from(hora));
+        List<String> distribuicao = new ArrayList<>();
+        BigDecimal resta = valor;
+        for (Conta c : abertas.stream().sorted(Comparator.comparing(Conta::vencimento).thenComparing(Conta::parcela)).toList()) {
+            if (resta.signum() == 0) {
+                break;
+            }
+            BigDecimal parte = resta.min(c.emAberto());
+            jdbc.update("""
+                    INSERT INTO corona.baixas_receber (id, conta_id, tipo, valor, baixada_em, pagamento_cliente_id)
+                    VALUES (?, ?, 'PAGAMENTO', ?, ?, ?)""", UuidV7.gerar(), c.id(), parte, Timestamp.from(hora), id);
+            atualizarAtalhos(c, c.pago().add(parte), c.cancelado());
+            distribuicao.add(c.parcela() + ": R$ " + parte.toPlainString());
+            resta = resta.subtract(parte);
+        }
+        Map<String, Object> depois = new LinkedHashMap<>();
+        depois.put("venda_id", vendaId.toString());
+        depois.put("valor", valor.toPlainString());
+        depois.put("forma", pedido.forma());
+        depois.put("parcelas", distribuicao);
+        auditoria.registrar(Ator.usuario(usuarioId), "RECEBIMENTO_CLIENTE_REGISTRADO", "pagamentos_cliente", id, null, depois);
+        return new Resultado(id, vendaId, false);
+    }
+
+    /**
+     * Desfaz um recebimento posterior: um {@code ESTORNO_PAGAMENTO} negativo e uma baixa negativa para cada baixa do
+     * original; os atalhos voltam. O pagamento da hora da venda não passa por aqui (corrige-se estornando a venda).
+     * {@code vendedorId} nulo é a dona (sem limite de dia); o vendedor só estorna o que recebeu no mesmo dia (Brasília).
+     */
+    @Transactional
+    public Resultado estornarRecebimento(UUID pagamentoId, UUID vendedorId, UUID usuarioId, UUID aparelho, UUID idDoEstorno,
+            String motivo, Instant momento) {
+        UUID estornoId = Validacoes.idDoPedido(idDoEstorno);
+        String limpo = Validacoes.limpar(motivo);
+        if (limpo == null) {
+            throw Validacoes.recusar("motivo", "Diga o motivo de estornar o recebimento.");
+        }
+        if (limpo.length() > LIMITE_DO_MOTIVO) {
+            throw Validacoes.recusar("motivo", "Use no máximo " + LIMITE_DO_MOTIVO + " caracteres.");
+        }
+        List<Map<String, Object>> achado = jdbc.queryForList("""
+                SELECT p.venda_id, p.tipo, p.posterior, p.forma, p.valor, p.pago_em, v.vendedor_id
+                  FROM corona.pagamentos_cliente p JOIN corona.vendas v ON v.id = p.venda_id
+                 WHERE p.id = ? AND p.deleted_at IS NULL""", pagamentoId);
+        if (achado.isEmpty() || !"PAGAMENTO".equals(achado.get(0).get("tipo"))
+                || (vendedorId != null && !vendedorId.equals(achado.get(0).get("vendedor_id")))) {
+            throw new ErroDaApi(HttpStatus.NOT_FOUND, CodigoErro.RECEBIMENTO_NAO_ENCONTRADO);
+        }
+        Map<String, Object> original = achado.get(0);
+        if (!Boolean.TRUE.equals(original.get("posterior"))) {
+            throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.PAGAMENTO_NA_VENDA_SO_PELO_ESTORNO_DA_VENDA);
+        }
+        UUID vendaId = (UUID) original.get("venda_id");
+        Map<String, Object> venda = trancarVenda(vendaId, null);
+
+        List<Map<String, Object>> jaEstornado = jdbc.queryForList(
+                "SELECT id FROM corona.pagamentos_cliente WHERE estorna_id = ?", pagamentoId);
+        if (!jaEstornado.isEmpty()) {
+            if (estornoId.equals(jaEstornado.get(0).get("id"))) {
+                return new Resultado(estornoId, vendaId, true);
+            }
+            throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.RECEBIMENTO_JA_ESTORNADO);
+        }
+        if (Boolean.TRUE.equals(jdbc.queryForObject("SELECT EXISTS (SELECT 1 FROM corona.pagamentos_cliente WHERE id = ?)",
+                Boolean.class, estornoId))) {
+            throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.RECEBIMENTO_JA_REGISTRADO_DIFERENTE);
+        }
+        if ("ESTORNADA".equals(venda.get("status"))) {
+            throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.VENDA_JA_ESTORNADA);
+        }
+        Instant hora = momento == null ? relogio.instant() : momento;
+        if (vendedorId != null) {
+            LocalDate diaDoRecebimento = LocalDate.ofInstant(((Timestamp) original.get("pago_em")).toInstant(), BRASILIA);
+            if (!diaDoRecebimento.equals(LocalDate.ofInstant(hora, BRASILIA))) {
+                throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.ESTORNO_DE_RECEBIMENTO_SO_DA_DONA);
+            }
+        }
+
+        Map<UUID, Conta> contas = new LinkedHashMap<>();
+        trancarContas(vendaId).forEach(c -> contas.put(c.id(), c));
+        List<Map<String, Object>> baixas = jdbc.queryForList("""
+                SELECT id, conta_id, valor FROM corona.baixas_receber
+                 WHERE pagamento_cliente_id = ? AND tipo = 'PAGAMENTO' AND estorna_id IS NULL ORDER BY conta_id, id""", pagamentoId);
+        if (aparelho != null) {
+            origem.definirNaTransacaoAtual(aparelho);
+        }
+        BigDecimal valor = (BigDecimal) original.get("valor");
+        jdbc.update("""
+                INSERT INTO corona.pagamentos_cliente (id, venda_id, tipo, forma, valor, pago_em, posterior, estorna_id)
+                VALUES (?, ?, 'ESTORNO_PAGAMENTO', ?, ?, ?, true, ?)""", estornoId, vendaId, original.get("forma"), valor.negate(),
+                Timestamp.from(hora), pagamentoId);
+        for (Map<String, Object> b : baixas) {
+            UUID contaId = (UUID) b.get("conta_id");
+            BigDecimal parte = (BigDecimal) b.get("valor");
+            jdbc.update("""
+                    INSERT INTO corona.baixas_receber (id, conta_id, tipo, valor, baixada_em, pagamento_cliente_id, estorna_id)
+                    VALUES (?, ?, 'PAGAMENTO', ?, ?, ?, ?)""", UuidV7.gerar(), contaId, parte.negate(), Timestamp.from(hora),
+                    estornoId, b.get("id"));
+            Conta atual = contas.get(contaId);
+            contas.put(contaId, atualizarAtalhos(atual, atual.pago().subtract(parte), atual.cancelado()));
+        }
+        Map<String, Object> depois = new LinkedHashMap<>();
+        depois.put("venda_id", vendaId.toString());
+        depois.put("recebimento_id", pagamentoId.toString());
+        depois.put("valor", valor.negate().toPlainString());
+        depois.put("motivo", limpo);
+        auditoria.registrar(Ator.usuario(usuarioId), "RECEBIMENTO_CLIENTE_ESTORNADO", "pagamentos_cliente", estornoId, null, depois);
+        return new Resultado(estornoId, vendaId, false);
+    }
+
+    // --- internos ---
+
+    /** Uma parcela travada, com o que já foi pago e cancelado. */
+    private record Conta(UUID id, int parcela, LocalDate vencimento, BigDecimal valor, BigDecimal pago, BigDecimal cancelado) {
+
+        BigDecimal emAberto() {
+            return valor.subtract(pago).subtract(cancelado);
+        }
+    }
+
+    /** Trava a venda (404 se não existe ou não é do vendedor; {@code vendedorId} nulo é a dona) e devolve a situação dela. */
+    private Map<String, Object> trancarVenda(UUID vendaId, UUID vendedorId) {
+        List<Map<String, Object>> v = jdbc.queryForList(
+                "SELECT vendedor_id, status FROM corona.vendas WHERE id = ? AND deleted_at IS NULL FOR UPDATE", vendaId);
+        if (v.isEmpty() || (vendedorId != null && !vendedorId.equals(v.get(0).get("vendedor_id")))) {
+            throw new ErroDaApi(HttpStatus.NOT_FOUND, CodigoErro.VENDA_NAO_ENCONTRADA);
+        }
+        return v.get(0);
+    }
+
+    /** As parcelas da venda, travadas em ordem de id (a ordem única de travas; ADR-0012, item 13). */
+    private List<Conta> trancarContas(UUID vendaId) {
+        return jdbc.query("""
+                SELECT id, parcela, vencimento, valor, valor_pago, valor_cancelado FROM corona.contas_receber
+                 WHERE venda_id = ? ORDER BY id FOR UPDATE""", (rs, n) -> new Conta(rs.getObject("id", UUID.class),
+                rs.getInt("parcela"), rs.getObject("vencimento", LocalDate.class), rs.getBigDecimal("valor"),
+                rs.getBigDecimal("valor_pago"), rs.getBigDecimal("valor_cancelado")), vendaId);
+    }
+
+    /**
+     * O único UPDATE de {@code contas_receber}: os atalhos e o status, depois que a baixa já foi gravada. O gatilho do
+     * banco confere que batem com a soma das baixas.
+     */
+    private Conta atualizarAtalhos(Conta c, BigDecimal pago, BigDecimal cancelado) {
+        String status;
+        if (cancelado.signum() > 0 && pago.add(cancelado).compareTo(c.valor()) == 0) {
+            status = "CANCELADA";
+        } else if (pago.signum() == 0 && cancelado.signum() == 0) {
+            status = "ABERTA";
+        } else if (pago.compareTo(c.valor()) == 0) {
+            status = "PAGA";
+        } else {
+            status = "PARCIAL";
+        }
+        jdbc.update("UPDATE corona.contas_receber SET valor_pago = ?, valor_cancelado = ?, status = ? WHERE id = ?", pago, cancelado,
+                status, c.id());
+        return new Conta(c.id(), c.parcela(), c.vencimento(), c.valor(), pago, cancelado);
     }
 }
