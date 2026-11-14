@@ -229,6 +229,25 @@ export const COLUNAS_DO_PULL: Readonly<Record<TabelaSincronizavel, readonly stri
       'devolucao_id',
       'estorna_id',
     ],
+    // Fase 7 (tarefa 7.4). As colunas do servidor; nunca quem iniciou, desistiu ou leu. O vendedor só recebe o acerto dele.
+    acertos: [
+      'vendedor_id',
+      'semana_id',
+      'status',
+      'pedido_pelo_vendedor',
+      'iniciado_em',
+      'desistido_em',
+      'motivo_desistencia',
+    ],
+    leituras_acerto: [
+      'acerto_id',
+      'produto_id',
+      'quantidade',
+      'estado_peca',
+      'lida_em',
+      'pelo_vendedor',
+      'dispositivo_id',
+    ],
   });
 
 /** Datas de controle que o servidor manda junto dos campos de negócio. */
