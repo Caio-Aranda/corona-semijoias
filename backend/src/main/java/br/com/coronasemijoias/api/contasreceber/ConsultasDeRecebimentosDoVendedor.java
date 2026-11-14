@@ -107,7 +107,7 @@ public class ConsultasDeRecebimentosDoVendedor {
                 SELECT r.id, r.momento, r.acerto_id, r.aplicado_em, r.forma, r.valor, r.recebido_em, r.estorna_id,
                        EXISTS (SELECT 1 FROM corona.recebimentos_vendedor e WHERE e.estorna_id = r.id) AS estornado
                   FROM corona.recebimentos_vendedor r WHERE r.vendedor_id = ? AND r.deleted_at IS NULL
-                 ORDER BY r.recebido_em DESC, r.id LIMIT """ + LIMITE, (rs, n) -> new RecebimentoDoVendedor(rs.getObject("id", UUID.class),
+                 ORDER BY r.recebido_em DESC, r.id""" + " LIMIT " + LIMITE, (rs, n) -> new RecebimentoDoVendedor(rs.getObject("id", UUID.class),
                 rs.getString("momento"), rs.getObject("acerto_id", UUID.class), rs.getString("aplicado_em"), rs.getString("forma"),
                 rs.getBigDecimal("valor"), rs.getTimestamp("recebido_em").toInstant(), rs.getObject("estorna_id", UUID.class),
                 rs.getBoolean("estornado")), vendedorId);

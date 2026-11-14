@@ -152,8 +152,11 @@ export type ConsultasDeContasAReceberConta = {
     clienteId?: string;
     clienteNome?: string;
     emAberto?: string;
+    formaPrevista?: string;
     id?: string;
+    nivel?: string;
     numero?: number;
+    origem?: string;
     status?: string;
     totalDeParcelas?: number;
     valor?: string;
@@ -207,6 +210,23 @@ export type ConsultasDeVendasVenda = {
     trocaId?: string;
     vendedorId?: string;
     vendidaEm?: string;
+};
+
+export type ContaDoAcerto = {
+    formaPrevista?: string;
+    id?: string;
+    numero?: number;
+    status?: string;
+    totalDeParcelas?: number;
+    valor?: string;
+    valorPago?: string;
+    vencimento?: string;
+};
+
+export type ContasAReceberDoVendedorControllerPedidoDeRecebimento = {
+    forma?: string;
+    id?: string;
+    valor?: string;
 };
 
 export type CotacaoDoVendedor = {
@@ -316,8 +336,10 @@ export type EventoFechado = {
 export type Fechamento = {
     comissao?: string;
     comissoes?: Array<ComissaoFechada>;
+    contas?: Array<ContaDoAcerto>;
     cotacaoData?: string;
     cotacaoId?: string;
+    creditoUsado?: string;
     descontos?: string;
     devolvido?: string;
     eventos?: Array<EventoFechado>;
@@ -327,10 +349,12 @@ export type Fechamento = {
     itens?: Array<ItemFechado>;
     liquido?: string;
     metaGuarani?: number;
+    pagoAoVendedor?: string;
     pendencias?: Array<PendenciaFechada>;
     percentualComissao?: string;
     pygVenda?: string;
     recebidoNoAcerto?: string;
+    recebimentos?: Array<RecebimentoDoAcerto>;
     usdVenda?: string;
     vendidoBruto?: string;
     vendidoLiquido?: string;
@@ -596,12 +620,6 @@ export type PedidoDeLogin = {
     senha: string;
 };
 
-export type PedidoDeRecebimento = {
-    forma?: string;
-    id?: string;
-    valor?: string;
-};
-
 export type PedidoDeRenovacao = {
     dispositivoId?: string;
     tokenDeRenovacao: string;
@@ -630,6 +648,28 @@ export type PendenciaFechada = {
     quantidade?: number;
     status?: string;
     tipo?: string;
+    valor?: string;
+};
+
+export type RecebimentoDoAcerto = {
+    aplicadoEm?: string;
+    estornaId?: string;
+    estornado?: boolean;
+    forma?: string;
+    id?: string;
+    recebidoEm?: string;
+    valor?: string;
+};
+
+export type RecebimentoDoVendedor = {
+    acertoId?: string;
+    aplicadoEm?: string;
+    estornaId?: string;
+    estornado?: boolean;
+    forma?: string;
+    id?: string;
+    momento?: string;
+    recebidoEm?: string;
     valor?: string;
 };
 
@@ -1186,6 +1226,7 @@ export type ListarMinhasContasAReceberData = {
         situacao?: string;
         clienteId?: string;
         vendaId?: string;
+        nivel?: string;
     };
     url: '/api/vendedor/contas-receber';
 };
@@ -1474,6 +1515,22 @@ export type BuscarPecaDaMinhaMaletaResponses = {
 };
 
 export type BuscarPecaDaMinhaMaletaResponse = BuscarPecaDaMinhaMaletaResponses[keyof BuscarPecaDaMinhaMaletaResponses];
+
+export type ListarMeusRecebimentosData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/vendedor/recebimentos';
+};
+
+export type ListarMeusRecebimentosResponses = {
+    /**
+     * OK
+     */
+    200: Array<RecebimentoDoVendedor>;
+};
+
+export type ListarMeusRecebimentosResponse = ListarMeusRecebimentosResponses[keyof ListarMeusRecebimentosResponses];
 
 export type EstornarRecebimentoDoVendedorData = {
     body: PedidoDeEstornoDeRecebimento;
@@ -1843,7 +1900,7 @@ export type EstornarVendaDoVendedorResponses = {
 export type EstornarVendaDoVendedorResponse = EstornarVendaDoVendedorResponses[keyof EstornarVendaDoVendedorResponses];
 
 export type ReceberDoClienteData = {
-    body: PedidoDeRecebimento;
+    body: ContasAReceberDoVendedorControllerPedidoDeRecebimento;
     path: {
         vendaId: string;
     };
