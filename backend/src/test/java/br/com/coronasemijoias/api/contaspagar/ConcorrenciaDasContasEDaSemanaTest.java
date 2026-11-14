@@ -31,7 +31,7 @@ class ConcorrenciaDasContasEDaSemanaTest extends ApoioDasContasAPagar {
     private UUID semanaDoPassado() throws Exception {
         int n = SEQUENCIA.getAndIncrement();
         LocalDate inicio = LocalDate.of(1980, 1, 1).plusDays(10L * n);
-        return UUID.fromString(corpoDe(postar("/api/dona/semanas", mapa("numero", 95_000 + n, "inicio", inicio.toString(), "fim", inicio.plusDays(6).toString()))
+        return UUID.fromString(corpoDe(postar("/api/dona/semanas", mapa("numero", 93_000 + n, "inicio", inicio.toString(), "fim", inicio.plusDays(6).toString()))
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isCreated())).get("id").asString());
     }
 

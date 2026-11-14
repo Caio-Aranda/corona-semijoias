@@ -73,6 +73,17 @@ export type AvisosResposta = {
     avisos?: Array<AvisoDaDona>;
 };
 
+export type Baixa = {
+    dataPagamento?: string;
+    estornaId?: string;
+    forma?: string;
+    id?: string;
+    motivo?: string;
+    registradaEm?: string;
+    tipo?: string;
+    valor?: string;
+};
+
 export type BoletoDoAcerto = {
     valor?: string;
     vencimento?: string;
@@ -99,6 +110,14 @@ export type CategoriasDaDonaControllerResposta = {
     id?: string;
     nome?: string;
     version?: number;
+};
+
+export type CategoriasDoCaixaDaDonaControllerCategoria = {
+    ativa?: boolean;
+    id?: string;
+    nome?: string;
+    sistema?: boolean;
+    tipo?: string;
 };
 
 export type ClientesDaDonaControllerPedido = {
@@ -274,6 +293,23 @@ export type ConsultasDeCadastroLinhaDeVendedor = {
     restricao?: string;
 };
 
+export type ConsultasDeContasAPagarConta = {
+    baixas?: Array<Baixa>;
+    compraId?: string;
+    fornecedorId?: string;
+    fornecedorNome?: string;
+    id?: string;
+    numeroDaCompra?: string;
+    parcela?: number;
+    saldo?: string;
+    situacao?: string;
+    totalParcelas?: number;
+    valor?: string;
+    valorCancelado?: string;
+    valorPago?: string;
+    vencimento?: string;
+};
+
 export type ConsultasDeDevolucaoETrocaLinhaDeDevolucao = {
     cancelada?: boolean;
     cliente?: string;
@@ -366,14 +402,21 @@ export type ConsultasDoCaixaLancamento = {
     descricao?: string;
     estornaId?: string;
     forma?: string;
+    fornecedorNome?: string;
     id?: string;
     lancadoEm?: string;
+    motivo?: string;
     origemId?: string;
     origemTipo?: string;
     saldoDepois?: string;
     tipo?: string;
     valor?: string;
     vendedorNome?: string;
+};
+
+export type ConsultasDoCaixaSaldo = {
+    negativo?: boolean;
+    saldo?: string;
 };
 
 export type ContaAntigaPaga = {
@@ -794,6 +837,10 @@ export type InventariosDaDonaControllerPedidoDeLeitura = {
     id?: string;
     produtoId?: string;
     quantidade?: number;
+};
+
+export type InventariosDaDonaControllerPedidoParaFechar = {
+    zerarNaoLidos?: boolean;
 };
 
 export type InventariosDaDonaControllerRespostaDaLinha = {
@@ -1455,6 +1502,13 @@ export type PaginaComprasDaDonaControllerRespostaDoResumo = {
     total?: number;
 };
 
+export type PaginaConsultasDeContasAPagarConta = {
+    itens?: Array<ConsultasDeContasAPagarConta>;
+    pagina?: number;
+    tamanho?: number;
+    total?: number;
+};
+
 export type PaginaEstoqueDaDonaControllerRespostaDaLinha = {
     itens?: Array<EstoqueDaDonaControllerRespostaDaLinha>;
     pagina?: number;
@@ -1630,6 +1684,12 @@ export type PedidoDeCancelamentoDaTroca = {
     motivo?: string;
 };
 
+export type PedidoDeCategoria = {
+    id?: string;
+    nome?: string;
+    tipo?: string;
+};
+
 export type PedidoDeCodigo = {
     ativo?: boolean;
     codigo: string;
@@ -1698,6 +1758,16 @@ export type PedidoDeItem = {
     quantidade?: number;
 };
 
+export type PedidoDeLancamento = {
+    categoriaId?: string;
+    data?: string;
+    descricao?: string;
+    forma?: string;
+    id?: string;
+    tipo?: string;
+    valor?: string;
+};
+
 export type PedidoDeLinha = {
     motivo?: string;
     referencia?: string;
@@ -1726,6 +1796,17 @@ export type PedidoDeMovimento = {
 
 export type PedidoDeNegacao = {
     motivo?: string;
+};
+
+export type PedidoDeNome = {
+    nome?: string;
+};
+
+export type PedidoDePagamento = {
+    data?: string;
+    forma?: string;
+    id?: string;
+    valor?: string;
 };
 
 export type PedidoDePrevia = {
@@ -1815,8 +1896,10 @@ export type PedidoParaDesfazer = {
     motivo?: string;
 };
 
-export type PedidoParaFechar = {
-    zerarNaoLidos?: boolean;
+export type PedidoParaGerar = {
+    id?: string;
+    parcelas?: number;
+    primeiroVencimento?: string;
 };
 
 export type Pendencia = {
@@ -2515,6 +2598,10 @@ export type SemanasDaDonaControllerPedido = {
     version?: number;
 };
 
+export type SemanasDaDonaControllerPedidoParaFechar = {
+    id?: string;
+};
+
 export type SemanasDaDonaControllerResposta = {
     fim?: string;
     id?: string;
@@ -2535,6 +2622,16 @@ export type ServicoDeAcertosPedidoDeLeitura = {
     id?: string;
     produtoId?: string;
     quantidade?: number;
+};
+
+export type ServicoDeContasAPagarPedidoDeEstorno = {
+    id?: string;
+    motivo?: string;
+};
+
+export type ServicoDeLancamentosManuaisPedidoDeEstorno = {
+    id?: string;
+    motivo?: string;
 };
 
 export type ServicoDeRecebimentosDoVendedorPedidoDeEstorno = {
@@ -3093,6 +3190,92 @@ export type Listar14Responses = {
 
 export type Listar14Response = Listar14Responses[keyof Listar14Responses];
 
+export type ListarCategoriasDoCaixaData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/dona/caixa/categorias';
+};
+
+export type ListarCategoriasDoCaixaResponses = {
+    /**
+     * OK
+     */
+    200: Array<CategoriasDoCaixaDaDonaControllerCategoria>;
+};
+
+export type ListarCategoriasDoCaixaResponse = ListarCategoriasDoCaixaResponses[keyof ListarCategoriasDoCaixaResponses];
+
+export type CriarCategoriaDoCaixaData = {
+    body: PedidoDeCategoria;
+    path?: never;
+    query?: never;
+    url: '/api/dona/caixa/categorias';
+};
+
+export type CriarCategoriaDoCaixaResponses = {
+    /**
+     * OK
+     */
+    200: CategoriasDoCaixaDaDonaControllerCategoria;
+};
+
+export type CriarCategoriaDoCaixaResponse = CriarCategoriaDoCaixaResponses[keyof CriarCategoriaDoCaixaResponses];
+
+export type RenomearCategoriaDoCaixaData = {
+    body: PedidoDeNome;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/caixa/categorias/{id}';
+};
+
+export type RenomearCategoriaDoCaixaResponses = {
+    /**
+     * OK
+     */
+    200: CategoriasDoCaixaDaDonaControllerCategoria;
+};
+
+export type RenomearCategoriaDoCaixaResponse = RenomearCategoriaDoCaixaResponses[keyof RenomearCategoriaDoCaixaResponses];
+
+export type InativarCategoriaDoCaixaData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/caixa/categorias/{id}/inativar';
+};
+
+export type InativarCategoriaDoCaixaResponses = {
+    /**
+     * OK
+     */
+    200: CategoriasDoCaixaDaDonaControllerCategoria;
+};
+
+export type InativarCategoriaDoCaixaResponse = InativarCategoriaDoCaixaResponses[keyof InativarCategoriaDoCaixaResponses];
+
+export type ReativarCategoriaDoCaixaData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/caixa/categorias/{id}/reativar';
+};
+
+export type ReativarCategoriaDoCaixaResponses = {
+    /**
+     * OK
+     */
+    200: CategoriasDoCaixaDaDonaControllerCategoria;
+};
+
+export type ReativarCategoriaDoCaixaResponse = ReativarCategoriaDoCaixaResponses[keyof ReativarCategoriaDoCaixaResponses];
+
 export type VerExtratoDoCaixaData = {
     body?: never;
     path?: never;
@@ -3111,6 +3294,56 @@ export type VerExtratoDoCaixaResponses = {
 };
 
 export type VerExtratoDoCaixaResponse = VerExtratoDoCaixaResponses[keyof VerExtratoDoCaixaResponses];
+
+export type LancarNoCaixaData = {
+    body: PedidoDeLancamento;
+    path?: never;
+    query?: never;
+    url: '/api/dona/caixa/lancamentos';
+};
+
+export type LancarNoCaixaResponses = {
+    /**
+     * OK
+     */
+    200: ConsultasDoCaixaLancamento;
+};
+
+export type LancarNoCaixaResponse = LancarNoCaixaResponses[keyof LancarNoCaixaResponses];
+
+export type EstornarLancamentoDoCaixaData = {
+    body: ServicoDeLancamentosManuaisPedidoDeEstorno;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/caixa/lancamentos/{id}/estorno';
+};
+
+export type EstornarLancamentoDoCaixaResponses = {
+    /**
+     * OK
+     */
+    200: ConsultasDoCaixaLancamento;
+};
+
+export type EstornarLancamentoDoCaixaResponse = EstornarLancamentoDoCaixaResponses[keyof EstornarLancamentoDoCaixaResponses];
+
+export type VerSaldoDoCaixaData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/dona/caixa/saldo';
+};
+
+export type VerSaldoDoCaixaResponses = {
+    /**
+     * OK
+     */
+    200: ConsultasDoCaixaSaldo;
+};
+
+export type VerSaldoDoCaixaResponse = VerSaldoDoCaixaResponses[keyof VerSaldoDoCaixaResponses];
 
 export type Listar13Data = {
     body?: never;
@@ -3439,6 +3672,42 @@ export type CustosResponses = {
 
 export type CustosResponse = CustosResponses[keyof CustosResponses];
 
+export type ListarContasAPagarDaCompraData = {
+    body?: never;
+    path: {
+        compraId: string;
+    };
+    query?: never;
+    url: '/api/dona/compras/{compraId}/contas-a-pagar';
+};
+
+export type ListarContasAPagarDaCompraResponses = {
+    /**
+     * OK
+     */
+    200: Array<ConsultasDeContasAPagarConta>;
+};
+
+export type ListarContasAPagarDaCompraResponse = ListarContasAPagarDaCompraResponses[keyof ListarContasAPagarDaCompraResponses];
+
+export type GerarContasAPagarDaCompraData = {
+    body: PedidoParaGerar;
+    path: {
+        compraId: string;
+    };
+    query?: never;
+    url: '/api/dona/compras/{compraId}/contas-a-pagar';
+};
+
+export type GerarContasAPagarDaCompraResponses = {
+    /**
+     * OK
+     */
+    200: Array<ConsultasDeContasAPagarConta>;
+};
+
+export type GerarContasAPagarDaCompraResponse = GerarContasAPagarDaCompraResponses[keyof GerarContasAPagarDaCompraResponses];
+
 export type Ver10Data = {
     body?: never;
     path: {
@@ -3538,6 +3807,83 @@ export type AlterarGarantiaResponses = {
 };
 
 export type AlterarGarantiaResponse = AlterarGarantiaResponses[keyof AlterarGarantiaResponses];
+
+export type ListarContasAPagarData = {
+    body?: never;
+    path?: never;
+    query?: {
+        fornecedorId?: string;
+        situacao?: string;
+        vencimentoDe?: string;
+        vencimentoAte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/contas-a-pagar';
+};
+
+export type ListarContasAPagarResponses = {
+    /**
+     * OK
+     */
+    200: PaginaConsultasDeContasAPagarConta;
+};
+
+export type ListarContasAPagarResponse = ListarContasAPagarResponses[keyof ListarContasAPagarResponses];
+
+export type EstornarPagamentoAFornecedorData = {
+    body: ServicoDeContasAPagarPedidoDeEstorno;
+    path: {
+        baixaId: string;
+    };
+    query?: never;
+    url: '/api/dona/contas-a-pagar/pagamentos/{baixaId}/estorno';
+};
+
+export type EstornarPagamentoAFornecedorResponses = {
+    /**
+     * OK
+     */
+    200: ConsultasDeContasAPagarConta;
+};
+
+export type EstornarPagamentoAFornecedorResponse = EstornarPagamentoAFornecedorResponses[keyof EstornarPagamentoAFornecedorResponses];
+
+export type VerContaAPagarData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/contas-a-pagar/{id}';
+};
+
+export type VerContaAPagarResponses = {
+    /**
+     * OK
+     */
+    200: ConsultasDeContasAPagarConta;
+};
+
+export type VerContaAPagarResponse = VerContaAPagarResponses[keyof VerContaAPagarResponses];
+
+export type PagarContaAPagarData = {
+    body: PedidoDePagamento;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/contas-a-pagar/{id}/pagamentos';
+};
+
+export type PagarContaAPagarResponses = {
+    /**
+     * OK
+     */
+    200: ConsultasDeContasAPagarConta;
+};
+
+export type PagarContaAPagarResponse = PagarContaAPagarResponses[keyof PagarContaAPagarResponses];
 
 export type ListarContasAReceberData = {
     body?: never;
@@ -4246,7 +4592,7 @@ export type CorrigirResponses = {
 export type CorrigirResponse = CorrigirResponses[keyof CorrigirResponses];
 
 export type FecharData = {
-    body?: PedidoParaFechar;
+    body?: InventariosDaDonaControllerPedidoParaFechar;
     path: {
         id: string;
     };
@@ -6267,6 +6613,24 @@ export type Editar2Responses = {
 };
 
 export type Editar2Response = Editar2Responses[keyof Editar2Responses];
+
+export type FecharSemanaData = {
+    body: SemanasDaDonaControllerPedidoParaFechar;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/semanas/{id}/fechar';
+};
+
+export type FecharSemanaResponses = {
+    /**
+     * OK
+     */
+    200: SemanasDaDonaControllerResposta;
+};
+
+export type FecharSemanaResponse = FecharSemanaResponses[keyof FecharSemanaResponses];
 
 export type ValorDaDonaData = {
     body?: never;

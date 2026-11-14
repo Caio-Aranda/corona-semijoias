@@ -144,6 +144,15 @@ describe('Cadastros: criar e editar', () => {
     expect(pedido?.parametros?.id).toMatch(/^[0-9a-f-]{36}$/);
   });
 
+  it('o formulário de semana não deixa escolher a situação: a semana só fecha por Fechar semana', async () => {
+    const m = montar({ 'semanas.listar': () => pagina([]) });
+    const u = await abrir(m, 'Semanas', 'Ainda não há nenhuma semana.');
+    await u.click(screen.getByRole('button', { name: 'Nova semana' }));
+    expect(screen.getByLabelText('Número da semana')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Situação')).toBeNull();
+    expect(screen.queryByRole('option', { name: 'Fechada' })).toBeNull();
+  });
+
   it('campo obrigatório vazio mostra o aviso no campo e não chama a API', async () => {
     const m = montar({ 'pracas.listar': () => pagina([]) });
     const u = await abrir(m, 'Praças', 'Ainda não há nenhuma praça.');
@@ -200,7 +209,7 @@ describe('Cadastros: criar e editar', () => {
     });
   });
 
-  it('semana: número, datas e situação vão para a API', async () => {
+  it('semana: número e datas vão para a API (a situação nasce Aberta no servidor)', async () => {
     const m = montar({
       'semanas.listar': () => pagina([]),
       'semanas.criar': () => ({ ok: true, dados: {} }),
@@ -216,8 +225,10 @@ describe('Cadastros: criar e editar', () => {
       numero: 12,
       inicio: '2026-11-09',
       fim: '2026-11-15',
-      situacao: 'ABERTA',
     });
+    expect(m.chamadas.find((c) => c.operacao === 'semanas.criar')?.parametros).not.toHaveProperty(
+      'situacao',
+    );
   });
 
   it('editar manda a versão lida; 409 mostra o aviso com Atualizar', async () => {

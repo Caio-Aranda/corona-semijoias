@@ -98,6 +98,14 @@ A API com a 7.6 manda ao vendedor a tabela nova `recebimentos_vendedor`, as cont
 2. **Depois a API:** suba a API com a 7.6 e, no `.env` do servidor, `APP_VERSAO_MINIMA_VENDAS` igual à versão publicada. A migração V045 do banco roda junto.
 3. O computador na versão antiga continua enviando o que guardou. Nada se perde. O vendedor não registra nem estorna recebimento (tudo é da dona): não há tipo novo na fila de envio. As telas são das tarefas 7.9, 7.10 e 7.11. O caixa nunca vai ao computador do vendedor.
 
+### Nota de deploy da tarefa 7.7 (contas a pagar, caixa manual e fechar semana)
+
+A API com a 7.7 **não manda tabela nova nem coluna nova ao Corona Vendas**: `contas_pagar`, `baixas_pagar`, `fechamentos_semana`, `lancamentos_caixa` e `categorias_caixa` são só do servidor. A única diferença para o computador do vendedor é que a semana fechada chega no pull com `situacao = FECHADA` (a tabela `semanas` já era sincronizada). **Não há migração local nova** e a ordem do deploy não importa para o Corona Vendas.
+
+1. **Corona Gestão:** a opção "Fechada" saiu do formulário de semana (o botão **Fechar semana** e as telas de contas a pagar e caixa são da tarefa 7.10). Publique o Corona Gestão junto com a API (`npm run owner:publicar`); um Corona Gestão antigo que ainda mandasse "Fechada" no formulário receberia 400 ("Para fechar a semana, use Fechar semana").
+2. **API:** suba a API com a 7.7; a migração V046 do banco roda junto (nova categoria do sistema "Pagamento a fornecedor" e as tabelas novas; nada de dado antigo muda).
+3. Semana que já estava fechada antes da V046 continua fechada, mas não tem linha em `fechamentos_semana`; ela segue imutável (o gatilho olha a situação), só não pode ser "fechada de novo". Não há produção ainda, então nenhuma semana é afetada.
+
 ## Riscos da primeira instalação no computador do vendedor
 
 | Risco | O que fazer |

@@ -36,7 +36,7 @@ class FecharSemanaTest extends ApoioDasContasAPagar {
     private UUID semana(boolean noPassado) throws Exception {
         int n = SEQUENCIA.getAndIncrement();
         LocalDate inicio = noPassado ? LocalDate.of(1990, 1, 1).plusDays(10L * n) : LocalDate.of(4500, 1, 1).plusDays(10L * n);
-        return UUID.fromString(corpoDe(postar(SEMANAS, mapa("numero", 96_000 + n, "inicio", inicio.toString(), "fim", inicio.plusDays(6).toString()))
+        return UUID.fromString(corpoDe(postar(SEMANAS, mapa("numero", 94_000 + n, "inicio", inicio.toString(), "fim", inicio.plusDays(6).toString()))
                 .andExpect(status().isCreated())).get("id").asString());
     }
 
@@ -137,7 +137,7 @@ class FecharSemanaTest extends ApoioDasContasAPagar {
                 mapa("numero", atual.get("numero").asInt(), "inicio", atual.get("inicio").asString(), "fim", atual.get("fim").asString(),
                         "situacao", "FECHADA", "version", atual.get("version").asInt())))).andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.campos[0].campo").value("situacao"));
-        postar(SEMANAS, mapa("numero", 96_999, "inicio", "1985-01-01", "fim", "1985-01-07", "situacao", "FECHADA")).andExpect(status().isBadRequest());
+        postar(SEMANAS, mapa("numero", 94_999, "inicio", "1985-01-01", "fim", "1985-01-07", "situacao", "FECHADA")).andExpect(status().isBadRequest());
         assertThat(jdbc.queryForObject("SELECT situacao FROM corona.semanas WHERE id = ?", String.class, semana)).isEqualTo("ABERTA");
     }
 
