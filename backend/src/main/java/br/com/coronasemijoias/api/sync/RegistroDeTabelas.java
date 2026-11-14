@@ -116,7 +116,7 @@ public final class RegistroDeTabelas {
                                 "venda_id", "produto_id", "quantidade", "preco_unitario", "desconto"), true,
                                 RegraDoVendedor.doVendedor(DA_VENDA)),
                         new TabelaSincronizavel("pagamentos_cliente", List.of(
-                                "venda_id", "tipo", "forma", "valor", "pago_em", "devolucao_id", "estorna_id", "credito_id"), true,
+                                "venda_id", "tipo", "forma", "valor", "pago_em", "devolucao_id", "estorna_id", "credito_id", "posterior"), true,
                                 RegraDoVendedor.doVendedor(DA_VENDA)),
                         // Conferência da maleta (tarefa 4.3): do próprio vendedor.
                         new TabelaSincronizavel("conferencias", List.of(
@@ -167,7 +167,18 @@ public final class RegistroDeTabelas {
                         // Venda paga pelo envio com crédito acima do saldo, para a dona revisar (tarefa 6.7, V039): pela venda.
                         new TabelaSincronizavel("creditos_sem_saldo", List.of(
                                 "venda_id", "pagamento_id", "credito_id", "valor_pedido", "valor_usado", "situacao", "registrada_em",
-                                "revisada_em", "observacao_revisao"), false, RegraDoVendedor.doVendedor(DA_VENDA))
+                                "revisada_em", "observacao_revisao"), false, RegraDoVendedor.doVendedor(DA_VENDA)),
+                        // Contas a receber do cliente (tarefa 7.3, V041): as parcelas e as baixas da venda do vendedor. O nível 2
+                        // (vendedor deve à loja) amplia a regra na 7.6, por migração nova.
+                        new TabelaSincronizavel("contas_receber", List.of(
+                                "devedor_tipo", "cliente_id", "vendedor_id", "origem_tipo", "origem_id", "venda_id", "parcela",
+                                "total_parcelas", "vencimento", "valor", "valor_pago", "valor_cancelado", "status"), false,
+                                RegraDoVendedor.doVendedor(DA_VENDA)),
+                        new TabelaSincronizavel("baixas_receber", List.of(
+                                "conta_id", "tipo", "valor", "baixada_em", "pagamento_cliente_id", "motivo_cancelamento",
+                                "estorna_id"), true,
+                                RegraDoVendedor.doVendedor("EXISTS (SELECT 1 FROM corona.contas_receber c"
+                                        + " JOIN corona.vendas v ON v.id = c.venda_id WHERE c.id = t.conta_id AND v.vendedor_id = ?)"))
                         // Tabela sincronizável nova: declare a regra do vendedor (filtro, expansão, diretório).
                 ),
                 List.of(

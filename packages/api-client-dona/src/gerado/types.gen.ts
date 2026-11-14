@@ -288,6 +288,24 @@ export type ConsultasDeVendasPeca = {
     nome?: string;
 };
 
+export type ContaDaDona = {
+    clienteId?: string;
+    clienteNome?: string;
+    emAberto?: string;
+    id?: string;
+    numero?: number;
+    status?: string;
+    totalDeParcelas?: number;
+    valor?: string;
+    valorCancelado?: string;
+    valorPago?: string;
+    vencida?: boolean;
+    vencimento?: string;
+    vendaId?: string;
+    vendedorId?: string;
+    vendedorNome?: string;
+};
+
 export type ContatoDoVendedorDados = {
     contatoNome?: string;
     contatoParentesco?: string;
@@ -1170,6 +1188,7 @@ export type PagamentoLido = {
     em?: string;
     forma?: string;
     id?: string;
+    posterior?: boolean;
     tipo?: string;
     valor?: string;
 };
@@ -1293,6 +1312,19 @@ export type PaginaVendedoresDaDonaControllerResposta = {
     total?: number;
 };
 
+export type ParcelaDaVenda = {
+    emAberto?: string;
+    id?: string;
+    numero?: number;
+    status?: string;
+    totalDeParcelas?: number;
+    valor?: string;
+    valorCancelado?: string;
+    valorPago?: string;
+    vencida?: boolean;
+    vencimento?: string;
+};
+
 export type PecaDaTroca = {
     destino?: string;
     estado?: string;
@@ -1377,6 +1409,11 @@ export type PedidoDeEdicao = {
     perfil: string;
     vendedorId?: string;
     version: number;
+};
+
+export type PedidoDeEstornoDeRecebimento = {
+    id?: string;
+    motivo?: string;
 };
 
 export type PedidoDeGarantia = {
@@ -2261,6 +2298,7 @@ export type Venda = {
     motivoDoEstorno?: string;
     pagamentos?: Array<PagamentoLido>;
     pago?: string;
+    parcelas?: Array<ParcelaDaVenda>;
     remessaId?: string;
     status?: string;
     subtotal?: string;
@@ -2976,6 +3014,26 @@ export type AlterarGarantiaResponses = {
 };
 
 export type AlterarGarantiaResponse = AlterarGarantiaResponses[keyof AlterarGarantiaResponses];
+
+export type ListarContasAReceberData = {
+    body?: never;
+    path?: never;
+    query?: {
+        vendedorId?: string;
+        clienteId?: string;
+        situacao?: string;
+    };
+    url: '/api/dona/contas-receber';
+};
+
+export type ListarContasAReceberResponses = {
+    /**
+     * OK
+     */
+    200: Array<ContaDaDona>;
+};
+
+export type ListarContasAReceberResponse = ListarContasAReceberResponses[keyof ListarContasAReceberResponses];
 
 export type ConverterData = {
     body: ConversaoPedido;
@@ -4230,6 +4288,24 @@ export type DescartarVendaDeComputadorBloqueadoResponses = {
 };
 
 export type DescartarVendaDeComputadorBloqueadoResponse = DescartarVendaDeComputadorBloqueadoResponses[keyof DescartarVendaDeComputadorBloqueadoResponses];
+
+export type EstornarRecebimentoDeClienteData = {
+    body: PedidoDeEstornoDeRecebimento;
+    path: {
+        pagamentoId: string;
+    };
+    query?: never;
+    url: '/api/dona/recebimentos-de-cliente/{pagamentoId}/estorno';
+};
+
+export type EstornarRecebimentoDeClienteResponses = {
+    /**
+     * OK
+     */
+    200: Venda;
+};
+
+export type EstornarRecebimentoDeClienteResponse = EstornarRecebimentoDeClienteResponses[keyof EstornarRecebimentoDeClienteResponses];
 
 export type AlteracoesDeProdutosData = {
     body?: never;

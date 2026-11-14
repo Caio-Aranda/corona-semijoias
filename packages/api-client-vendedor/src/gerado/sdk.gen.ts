@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AcharPecaDaMinhaMaletaData, AcharPecaDaMinhaMaletaResponses, AvisarDiferencaNaConferenciaData, AvisarDiferencaNaConferenciaResponses, BaixarFotoDaMinhaMaletaData, BaixarFotoDaMinhaMaletaResponses, BuscarPecaDaMinhaMaletaData, BuscarPecaDaMinhaMaletaResponses, CadastrarMeuClienteData, CadastrarMeuClienteResponses, CancelarDevolucaoDoVendedorData, CancelarDevolucaoDoVendedorResponses, CancelarTrocaDoVendedorData, CancelarTrocaDoVendedorResponses, ConferirDadosData, ConferirDadosResponses, ConferirMinhaMaletaData, ConferirMinhaMaletaResponses, DevolverDoClienteData, DevolverDoClienteResponses, EntrarData, EntrarResponses, EnviarOperacoesData, EnviarOperacoesResponses, EstornarVendaDoVendedorData, EstornarVendaDoVendedorResponses, EuData, EuResponses, GuardarEmQuarentenaData, GuardarEmQuarentenaResponses, ListarAutorizacoesDoVendedorData, ListarAutorizacoesDoVendedorResponses, ListarCreditosDoVendedorData, ListarCreditosDoVendedorResponses, ListarDevolucoesDoVendedorData, ListarDevolucoesDoVendedorResponses, ListarMeusClientesData, ListarMeusClientesResponses, ListarMinhasMaletasData, ListarMinhasMaletasResponses, ListarTrocasDoVendedorData, ListarTrocasDoVendedorResponses, ListarVendasDoVendedorData, ListarVendasDoVendedorResponses, PedirAutorizacaoData, PedirAutorizacaoResponses, ReceberDadosData, ReceberDadosResponses, RegistrarTrocaData, RegistrarTrocaResponses, RelatorioDeCreditosDosMeusClientesData, RelatorioDeCreditosDosMeusClientesResponses, RelatorioDeMeusRecebimentosData, RelatorioDeMeusRecebimentosResponses, RelatorioDeMinhasDevolucoesETrocasData, RelatorioDeMinhasDevolucoesETrocasResponses, RelatorioDeMinhasVendasData, RelatorioDeMinhasVendasResponses, RelatorioDeValoresAReceberData, RelatorioDeValoresAReceberResponses, RenovarData, RenovarResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SoVendedorData, SoVendedorResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarDoVendedorData, ValidarDoVendedorResponses, ValorDoVendedorData, ValorDoVendedorResponses, VendasComAPecaData, VendasComAPecaResponses, VenderNaMaletaData, VenderNaMaletaResponses, VerAutorizacaoDoVendedorData, VerAutorizacaoDoVendedorResponses, VerConferenciaDaMinhaMaletaData, VerConferenciaDaMinhaMaletaResponses, VerCotacaoDeHojeData, VerCotacaoDeHojeResponses, VerCreditoDoVendedorData, VerCreditoDoVendedorResponses, VerDevolucaoDoVendedorData, VerDevolucaoDoVendedorResponses, VerMeuClienteData, VerMeuClienteResponses, VerMinhaMaletaData, VerMinhaMaletaResponses, VerTrocaDoVendedorData, VerTrocaDoVendedorResponses, VerVendaDoVendedorData, VerVendaDoVendedorResponses } from './types.gen';
+import type { AcharPecaDaMinhaMaletaData, AcharPecaDaMinhaMaletaResponses, AvisarDiferencaNaConferenciaData, AvisarDiferencaNaConferenciaResponses, BaixarFotoDaMinhaMaletaData, BaixarFotoDaMinhaMaletaResponses, BuscarPecaDaMinhaMaletaData, BuscarPecaDaMinhaMaletaResponses, CadastrarMeuClienteData, CadastrarMeuClienteResponses, CancelarDevolucaoDoVendedorData, CancelarDevolucaoDoVendedorResponses, CancelarTrocaDoVendedorData, CancelarTrocaDoVendedorResponses, ConferirDadosData, ConferirDadosResponses, ConferirMinhaMaletaData, ConferirMinhaMaletaResponses, DevolverDoClienteData, DevolverDoClienteResponses, EntrarData, EntrarResponses, EnviarOperacoesData, EnviarOperacoesResponses, EstornarRecebimentoDoVendedorData, EstornarRecebimentoDoVendedorResponses, EstornarVendaDoVendedorData, EstornarVendaDoVendedorResponses, EuData, EuResponses, GuardarEmQuarentenaData, GuardarEmQuarentenaResponses, ListarAutorizacoesDoVendedorData, ListarAutorizacoesDoVendedorResponses, ListarCreditosDoVendedorData, ListarCreditosDoVendedorResponses, ListarDevolucoesDoVendedorData, ListarDevolucoesDoVendedorResponses, ListarMeusClientesData, ListarMeusClientesResponses, ListarMinhasContasAReceberData, ListarMinhasContasAReceberResponses, ListarMinhasMaletasData, ListarMinhasMaletasResponses, ListarTrocasDoVendedorData, ListarTrocasDoVendedorResponses, ListarVendasDoVendedorData, ListarVendasDoVendedorResponses, PedirAutorizacaoData, PedirAutorizacaoResponses, ReceberDadosData, ReceberDadosResponses, ReceberDoClienteData, ReceberDoClienteResponses, RegistrarTrocaData, RegistrarTrocaResponses, RelatorioDeCreditosDosMeusClientesData, RelatorioDeCreditosDosMeusClientesResponses, RelatorioDeMeusRecebimentosData, RelatorioDeMeusRecebimentosResponses, RelatorioDeMinhasDevolucoesETrocasData, RelatorioDeMinhasDevolucoesETrocasResponses, RelatorioDeMinhasVendasData, RelatorioDeMinhasVendasResponses, RelatorioDeValoresAReceberData, RelatorioDeValoresAReceberResponses, RenovarData, RenovarResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SoVendedorData, SoVendedorResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarDoVendedorData, ValidarDoVendedorResponses, ValorDoVendedorData, ValorDoVendedorResponses, VendasComAPecaData, VendasComAPecaResponses, VenderNaMaletaData, VenderNaMaletaResponses, VerAutorizacaoDoVendedorData, VerAutorizacaoDoVendedorResponses, VerConferenciaDaMinhaMaletaData, VerConferenciaDaMinhaMaletaResponses, VerCotacaoDeHojeData, VerCotacaoDeHojeResponses, VerCreditoDoVendedorData, VerCreditoDoVendedorResponses, VerDevolucaoDoVendedorData, VerDevolucaoDoVendedorResponses, VerMeuClienteData, VerMeuClienteResponses, VerMinhaMaletaData, VerMinhaMaletaResponses, VerTrocaDoVendedorData, VerTrocaDoVendedorResponses, VerVendaDoVendedorData, VerVendaDoVendedorResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -160,6 +160,17 @@ export const cadastrarMeuCliente = <ThrowOnError extends boolean = false>(option
 export const verMeuCliente = <ThrowOnError extends boolean = false>(options: Options<VerMeuClienteData, ThrowOnError>): RequestResult<VerMeuClienteResponses, unknown, ThrowOnError> => (options.client ?? client).get<VerMeuClienteResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/vendedor/clientes/{id}',
+    ...options
+});
+
+/**
+ * Minhas contas a receber
+ *
+ * As parcelas das vendas a prazo do vendedor logado, da que vence primeiro para a que vence depois. Filtros opcionais: situação (ABERTA, PARCIAL, PAGA, CANCELADA, EM_ABERTO ou VENCIDA, calculada pela data de hoje em Brasília), cliente e venda. Só valores em Real.
+ */
+export const listarMinhasContasAReceber = <ThrowOnError extends boolean = false>(options?: Options<ListarMinhasContasAReceberData, ThrowOnError>): RequestResult<ListarMinhasContasAReceberResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ListarMinhasContasAReceberResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/contas-receber',
     ...options
 });
 
@@ -330,6 +341,21 @@ export const buscarPecaDaMinhaMaleta = <ThrowOnError extends boolean = false>(op
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/vendedor/maletas/{id}/pecas/busca',
     ...options
+});
+
+/**
+ * Estornar um recebimento do cliente (no mesmo dia)
+ *
+ * Desfaz um recebimento feito depois da venda: as parcelas voltam a ficar em aberto. Só no dia do recebimento; depois, só a dona. O pagamento feito na hora da venda se corrige estornando a venda. Exige o id do estorno (do aplicativo) e o motivo. Mesmo id devolve 200.
+ */
+export const estornarRecebimentoDoVendedor = <ThrowOnError extends boolean = false>(options: Options<EstornarRecebimentoDoVendedorData, ThrowOnError>): RequestResult<EstornarRecebimentoDoVendedorResponses, unknown, ThrowOnError> => (options.client ?? client).post<EstornarRecebimentoDoVendedorResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/recebimentos-de-cliente/{pagamentoId}/estorno',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**
@@ -562,6 +588,21 @@ export const verVendaDoVendedor = <ThrowOnError extends boolean = false>(options
 export const estornarVendaDoVendedor = <ThrowOnError extends boolean = false>(options: Options<EstornarVendaDoVendedorData, ThrowOnError>): RequestResult<EstornarVendaDoVendedorResponses, unknown, ThrowOnError> => (options.client ?? client).post<EstornarVendaDoVendedorResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/vendedor/vendas/{id}/estorno',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Registrar um recebimento do cliente
+ *
+ * O cliente paga, depois da venda, parte ou o que falta de uma venda a prazo (só dinheiro ou transferência). O servidor distribui o valor pelas parcelas, da que vence primeiro para a que vence depois, e não aceita mais do que falta pagar. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409.
+ */
+export const receberDoCliente = <ThrowOnError extends boolean = false>(options: Options<ReceberDoClienteData, ThrowOnError>): RequestResult<ReceberDoClienteResponses, unknown, ThrowOnError> => (options.client ?? client).post<ReceberDoClienteResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/vendas/{vendaId}/recebimentos',
     ...options,
     headers: {
         'Content-Type': 'application/json',

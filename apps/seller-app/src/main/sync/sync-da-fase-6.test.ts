@@ -33,6 +33,16 @@ const NOVAS = [
   'creditos_sem_saldo',
 ] as const;
 
+/**
+ * A marca da recarga de um banco da versão 2 que já tinha cursor, migrado pelo app atual: as onze da migração 3 e, depois,
+ * as duas tabelas novas da migração 4 (a `pagamentos_cliente` já estava na marca).
+ */
+const MARCA_DO_BANCO_V2_COM_CURSOR = [
+  ...TABELAS_DA_RECARGA_DIRIGIDA_V3,
+  'contas_receber',
+  'baixas_receber',
+] as const;
+
 const limpar: (() => void | Promise<void>)[] = [];
 afterEach(async () => {
   for (const f of limpar.splice(0).reverse()) await f();
@@ -184,8 +194,8 @@ describe('migração local 3', () => {
     limpar.push(() => {
       db.close();
     });
-    expect(Number(db.pragma('user_version', { simple: true }))).toBe(3);
-    expect(VERSAO_DO_BANCO).toBe(3);
+    expect(Number(db.pragma('user_version', { simple: true }))).toBe(VERSAO_DO_BANCO);
+    expect(VERSAO_DO_BANCO).toBe(4);
     expect(contagem(db)).toEqual(contagemAntes);
     expect(db.prepare('SELECT * FROM outbox ORDER BY ordem').all()).toEqual(outboxAntes);
     for (const t of NOVAS) expect(colunasDe(db, t), t).toContain('origem_local');
@@ -194,8 +204,8 @@ describe('migração local 3', () => {
       expect.arrayContaining(['devolucao_id', 'estorna_id', 'credito_id']),
     );
     expect(colunasDe(db, 'movimentos_remessa')).toContain('devolucao_id');
-    // Já tinha cursor: a marca da recarga dirigida nasce com as onze tabelas.
-    expect(tabelasDaRecargaDirigida(db)).toEqual([...TABELAS_DA_RECARGA_DIRIGIDA_V3]);
+    // Já tinha cursor: a marca da recarga dirigida nasce com as onze tabelas da 3 e as duas da 4.
+    expect(tabelasDaRecargaDirigida(db)).toEqual([...MARCA_DO_BANCO_V2_COM_CURSOR]);
   });
 
   it('a marca da recarga só nasce em banco que já tinha cursor', () => {
@@ -220,18 +230,18 @@ describe('migração local 3', () => {
       migrado.close();
     });
     expect(lerEstado(migrado, CHAVES.recargaDirigida)).toBeNull();
-    expect(Number(migrado.pragma('user_version', { simple: true }))).toBe(3);
+    expect(Number(migrado.pragma('user_version', { simple: true }))).toBe(VERSAO_DO_BANCO);
 
-    // O exemplo da versão 1 tinha cursor: marca.
-    expect(tabelasDaRecargaDirigida(abrirExemploMigrado(1).db)).toHaveLength(11);
+    // O exemplo da versão 1 tinha cursor: marca (as onze da 3 e as duas da 4).
+    expect(tabelasDaRecargaDirigida(abrirExemploMigrado(1).db)).toHaveLength(13);
   });
 });
 
 // --- 21. colunas ---
 
 describe('colunas das tabelas da Fase 6', () => {
-  it('as 23 tabelas, nenhuma coluna de quem registrou nem que aponte para o crédito do outro vendedor', () => {
-    expect(TABELAS_SINCRONIZAVEIS).toHaveLength(23);
+  it('as 25 tabelas, nenhuma coluna de quem registrou nem que aponte para o crédito do outro vendedor', () => {
+    expect(TABELAS_SINCRONIZAVEIS).toHaveLength(25);
     for (const t of NOVAS) expect(COLUNAS_DO_PULL[t], t).toBeDefined();
     for (const [t, colunas] of Object.entries(COLUNAS_DO_PULL)) {
       for (const c of colunas) {
@@ -460,7 +470,7 @@ describe('recarga dirigida depois da migração local 3', () => {
     // Primeiro ciclo: a 2ª tabela cai. A 1ª já saiu da marca; nada foi apagado.
     s.cairNaTabela = { tabela: 'itens_devolucao', vezes: 1 };
     expect(await ciclo(db, url).executar()).toBe('falha');
-    expect(tabelasDaRecargaDirigida(db)).toEqual(TABELAS_DA_RECARGA_DIRIGIDA_V3.slice(1));
+    expect(tabelasDaRecargaDirigida(db)).toEqual(MARCA_DO_BANCO_V2_COM_CURSOR.slice(1));
     expect(contar(db, 'SELECT 1 FROM devolucoes WHERE id = ?', ids['devolucoes'])).toBe(1);
     expect(servidorAntes('remessas')).toBe(remessasAntes);
     expect(servidorAntes('itens_remessa')).toBe(itensAntes);

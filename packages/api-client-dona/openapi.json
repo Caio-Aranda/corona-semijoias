@@ -948,6 +948,75 @@
         },
         "type" : "object"
       },
+      "ContaDaDona" : {
+        "properties" : {
+          "clienteId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "clienteNome" : {
+            "type" : "string"
+          },
+          "emAberto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "numero" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "totalDeParcelas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorCancelado" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorPago" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vencida" : {
+            "type" : "boolean"
+          },
+          "vencimento" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "vendaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "vendedorNome" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "ContatoDoVendedorDados" : {
         "properties" : {
           "contatoNome" : {
@@ -3927,6 +3996,9 @@
             "format" : "uuid",
             "type" : "string"
           },
+          "posterior" : {
+            "type" : "boolean"
+          },
           "tipo" : {
             "type" : "string"
           },
@@ -4330,6 +4402,57 @@
         },
         "type" : "object"
       },
+      "ParcelaDaVenda" : {
+        "properties" : {
+          "emAberto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "numero" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "totalDeParcelas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorCancelado" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorPago" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vencida" : {
+            "type" : "boolean"
+          },
+          "vencimento" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "PecaDaTroca" : {
         "properties" : {
           "destino" : {
@@ -4583,6 +4706,18 @@
           }
         },
         "required" : [ "nome", "perfil", "version" ],
+        "type" : "object"
+      },
+      "PedidoDeEstornoDeRecebimento" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "motivo" : {
+            "type" : "string"
+          }
+        },
         "type" : "object"
       },
       "PedidoDeGarantia" : {
@@ -7518,6 +7653,12 @@
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           },
+          "parcelas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ParcelaDaVenda"
+            },
+            "type" : "array"
+          },
           "remessaId" : {
             "format" : "uuid",
             "type" : "string"
@@ -9097,6 +9238,56 @@
         } ],
         "summary" : "Mudar a garantia e os limites de devolução",
         "tags" : [ "garantia-da-dona-controller" ]
+      }
+    },
+    "/api/dona/contas-receber" : {
+      "get" : {
+        "description" : "Todas as parcelas das vendas a prazo, da que vence primeiro para a que vence depois, com o vendedor de cada venda. Filtros opcionais: vendedor, cliente e situação (ABERTA, PARCIAL, PAGA, CANCELADA, EM_ABERTO ou VENCIDA, calculada pela data de hoje em Brasília). Só valores em Real.",
+        "operationId" : "listarContasAReceber",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "clienteId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/ContaDaDona"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Contas a receber dos clientes",
+        "tags" : [ "contas-a-receber-da-dona-controller" ]
       }
     },
     "/api/dona/cotacoes/converter" : {
@@ -11777,6 +11968,48 @@
         } ],
         "summary" : "Descartar",
         "tags" : [ "quarentena-da-dona-controller" ]
+      }
+    },
+    "/api/dona/recebimentos-de-cliente/{pagamentoId}/estorno" : {
+      "post" : {
+        "description" : "Desfaz um recebimento feito depois da venda, sem limite de dia: as parcelas voltam a ficar em aberto. Motivo obrigatório; mesmo id de estorno devolve 200.",
+        "operationId" : "estornarRecebimentoDeCliente",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "pagamentoId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeEstornoDeRecebimento"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Venda"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Estornar um recebimento do cliente",
+        "tags" : [ "contas-a-receber-da-dona-controller" ]
       }
     },
     "/api/dona/relatorios/cadastros/alteracoes-de-produtos" : {

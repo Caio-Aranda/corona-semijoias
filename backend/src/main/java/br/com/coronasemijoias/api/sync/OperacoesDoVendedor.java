@@ -1,5 +1,8 @@
 package br.com.coronasemijoias.api.sync;
 
+import br.com.coronasemijoias.api.contasreceber.ServicoDeContasAReceber;
+import br.com.coronasemijoias.api.contasreceber.ServicoDeContasAReceber.Parcelamento;
+import br.com.coronasemijoias.api.contasreceber.ServicoDeContasAReceber.Recebimento;
 import br.com.coronasemijoias.api.devolucoes.ServicoDeAutorizacoes;
 import br.com.coronasemijoias.api.devolucoes.ServicoDeAutorizacoes.PedidoDeAutorizacao;
 import br.com.coronasemijoias.api.devolucoes.ServicoDeDevolucoes;
@@ -67,8 +70,17 @@ public class OperacoesDoVendedor {
 
     // --- formato 1 de cada tipo ---
 
+    /** {@code parcelamento} é opcional (tarefa 7.3): sem ele, o resumo é o mesmo de antes. */
     public record DadosDaVenda(UUID id, UUID remessaId, UUID clienteId, List<LinhaDoPedido> itens,
-            List<PagamentoDoPedido> pagamentos, BigDecimal totalConferido, Instant vendidaEm) {
+            List<PagamentoDoPedido> pagamentos, BigDecimal totalConferido, Instant vendidaEm, Parcelamento parcelamento) {
+    }
+
+    /** O recebimento do cliente depois da venda (tarefa 7.3): {@code id} é o do pagamento. */
+    public record DadosDoRecebimento(UUID id, UUID vendaId, BigDecimal valor, String forma, Instant recebidoEm) {
+    }
+
+    /** O estorno do recebimento (tarefa 7.3): {@code id} é o do estorno; {@code recebimentoId}, o do recebimento. */
+    public record DadosDoEstornoDoRecebimento(UUID id, UUID recebimentoId, String motivo, Instant estornadoEm) {
     }
 
     public record DadosDoEstorno(UUID id, UUID vendaId, String motivo, Instant estornadoEm) {
@@ -114,10 +126,12 @@ public class OperacoesDoVendedor {
     private final ServicoDeDevolucoes devolucoes;
     private final ServicoDeAutorizacoes autorizacoes;
     private final ServicoDeTrocas trocas;
+    private final ServicoDeContasAReceber contas;
 
     public OperacoesDoVendedor(JsonMapper json, JdbcTemplate jdbc, ServicoDeVendas vendas, ClientesDoVendedor clientes,
             ServicoDeConferencia conferencias, FormatosDeOperacao formatos, ServicoDeDevolucoes devolucoes,
-            ServicoDeAutorizacoes autorizacoes, ServicoDeTrocas trocas) {
+            ServicoDeAutorizacoes autorizacoes, ServicoDeTrocas trocas, ServicoDeContasAReceber contas) {
+        this.contas = contas;
         this.formatos = formatos;
         this.devolucoes = devolucoes;
         this.autorizacoes = autorizacoes;
@@ -158,6 +172,16 @@ public class OperacoesDoVendedor {
                     DadosDaVenda d = json.treeToValue(dados, DadosDaVenda.class);
                     exigirMesmoId(operacaoId, d.id());
                     yield new Lida(tipo, formato, d, resumo(canonico(d), tipo, formato), d.vendidaEm());
+                }
+                case "RECEBIMENTO_CLIENTE" -> {
+                    DadosDoRecebimento d = json.treeToValue(dados, DadosDoRecebimento.class);
+                    exigirMesmoId(operacaoId, d.id());
+                    yield new Lida(tipo, formato, d, resumo(canonico(d), tipo, formato), d.recebidoEm());
+                }
+                case "ESTORNO_RECEBIMENTO_CLIENTE" -> {
+                    DadosDoEstornoDoRecebimento d = json.treeToValue(dados, DadosDoEstornoDoRecebimento.class);
+                    exigirMesmoId(operacaoId, d.id());
+                    yield new Lida(tipo, formato, d, resumo(canonico(d), tipo, formato), d.estornadoEm());
                 }
                 case "ESTORNO_VENDA" -> {
                     DadosDoEstorno d = json.treeToValue(dados, DadosDoEstorno.class);
@@ -200,7 +224,7 @@ public class OperacoesDoVendedor {
                 // O formato 1 ampliado (tarefa 6.7, dúvida S3) leva o crédito do cliente opcional em cada pagamento; pelo
                 // envio, o crédito acima do saldo vira revisão da dona, nunca recusa.
                 PedidoDeVenda pedido = new PedidoDeVenda(d.id(), d.remessaId(), d.clienteId(), d.itens(), d.pagamentos(),
-                        d.totalConferido());
+                        d.totalConferido(), d.parcelamento());
                 boolean ja = vendas.venderPeloEnvio(ctx.vendedorId(), ctx.usuarioId(), aparelhoDaMaleta(d.remessaId(), ctx),
                         pedido, corrigida, ajustada).jaExistia();
                 yield new Aplicada(ja, corrigida);
@@ -210,6 +234,20 @@ public class OperacoesDoVendedor {
                 Instant corrigida = corrigir(d.estornadoEm(), ctx, inferior);
                 boolean ja = vendas.estornar(d.vendaId(), ctx.vendedorId(), ctx.usuarioId(),
                         aparelhoDaMaleta(remessaDaVenda(d.vendaId()), ctx), d.id(), d.motivo(), corrigida).jaExistia();
+                yield new Aplicada(ja, corrigida);
+            }
+            case DadosDoRecebimento d -> {
+                // A parcela vive meses depois do acerto: o recebimento não olha a maleta (tarefa 7.3).
+                Instant corrigida = corrigir(d.recebidoEm(), ctx, maior(ctx.ultimoContatoServidor(), vendidaEm(d.vendaId())));
+                boolean ja = contas.receber(d.vendaId(), ctx.vendedorId(), ctx.usuarioId(), ctx.aparelho(),
+                        new Recebimento(d.id(), d.valor(), d.forma()), corrigida).jaExistia();
+                yield new Aplicada(ja, corrigida);
+            }
+            case DadosDoEstornoDoRecebimento d -> {
+                Instant corrigida = corrigir(d.estornadoEm(), ctx, maior(ctx.ultimoContatoServidor(),
+                        instante("SELECT pago_em FROM corona.pagamentos_cliente WHERE id = ?", d.recebimentoId())));
+                boolean ja = contas.estornarRecebimento(d.recebimentoId(), ctx.vendedorId(), ctx.usuarioId(), ctx.aparelho(), d.id(),
+                        d.motivo(), corrigida).jaExistia();
                 yield new Aplicada(ja, corrigida);
             }
             case DadosDoClienteNovo d -> new Aplicada(clientes.criar(ctx.vendedorId(), ctx.usuarioId(), ctx.aparelho(),
@@ -284,6 +322,8 @@ public class OperacoesDoVendedor {
                 OperacoesDaFase6.creditos(d.pagamentos(), ids);
             }
             case DadosDoEstorno d -> ids.add(d.vendaId());
+            case DadosDoRecebimento d -> ids.add(d.vendaId());
+            case DadosDoEstornoDoRecebimento d -> ids.add(d.recebimentoId());
             case DadosDaAlteracaoDeCliente d -> ids.add(d.clienteId());
             case DadosDaConferencia d -> ids.add(d.remessaId());
             default -> ids.addAll(OperacoesDaFase6.dependencias(op.dados()));
@@ -298,7 +338,8 @@ public class OperacoesDoVendedor {
         OperacoesDaFase6.VendaDaTrocaEnviada b = d.venda();
         return new PedidoDeTroca(d.id(), d.creditoId(), d.pagamentoDoCreditoId(),
                 a == null ? null : new DevolucaoDaTroca(a.id(), a.vendaId(), a.motivo(), a.observacao(), a.itens(), a.autorizacaoId()),
-                b == null ? null : new VendaDaTroca(b.id(), b.remessaId(), b.itens(), b.pagamentos(), b.totalConferido()));
+                b == null ? null : new VendaDaTroca(b.id(), b.remessaId(), b.itens(), b.pagamentos(), b.totalConferido(),
+                        b.parcelamento()));
     }
 
     /** Hora corrigida em mais de 5 minutos marca a hora ajustada (ADR-0013, item 11). */
@@ -416,6 +457,24 @@ public class OperacoesDoVendedor {
         }
         s.append("]|");
         new OperacoesDoVendedor.Canon().campo(s, "totalConferido", dinheiro(d.totalConferido())).campo(s, "vendidaEm", d.vendidaEm());
+        if (d.parcelamento() != null) {
+            // Formato 1 ampliado (tarefa 7.3): sem parcelamento, o resumo é o mesmo de sempre.
+            OperacoesDaFase6.parcelamento(s, d.parcelamento());
+        }
+        return s.toString();
+    }
+
+    private static String canonico(DadosDoRecebimento d) {
+        StringBuilder s = new StringBuilder();
+        campo(s, "id", d.id()).campo(s, "vendaId", d.vendaId()).campo(s, "valor", dinheiro(d.valor())).campo(s, "forma", d.forma())
+                .campo(s, "recebidoEm", d.recebidoEm());
+        return s.toString();
+    }
+
+    private static String canonico(DadosDoEstornoDoRecebimento d) {
+        StringBuilder s = new StringBuilder();
+        campo(s, "id", d.id()).campo(s, "recebimentoId", d.recebimentoId()).campo(s, "motivo", d.motivo())
+                .campo(s, "estornadoEm", d.estornadoEm());
         return s.toString();
     }
 

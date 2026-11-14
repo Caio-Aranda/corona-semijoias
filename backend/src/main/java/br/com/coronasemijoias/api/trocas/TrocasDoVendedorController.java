@@ -1,6 +1,7 @@
 package br.com.coronasemijoias.api.trocas;
 
 import br.com.coronasemijoias.api.cadastros.Validacoes;
+import br.com.coronasemijoias.api.contasreceber.ServicoDeContasAReceber;
 import br.com.coronasemijoias.api.devolucoes.ServicoDeDevolucoes.ModoDaDevolucao;
 import br.com.coronasemijoias.api.devolucoes.ServicoDeDevolucoes.PecaDoPedido;
 import br.com.coronasemijoias.api.seguranca.ExigePerfil;
@@ -38,6 +39,10 @@ import org.springframework.web.bind.annotation.RestController;
 @ExigePerfil("VENDEDOR")
 public class TrocasDoVendedorController {
 
+    /** Quantas parcelas e quando vence a primeira (as outras são mensais); os valores são do servidor (tarefa 7.3). */
+    public record ParcelamentoPedido(Integer quantidade, java.time.LocalDate primeiroVencimento) {
+    }
+
     public record PecaQueVoltou(UUID produtoId, Integer quantidade, String estado) {
     }
 
@@ -52,7 +57,7 @@ public class TrocasDoVendedorController {
     }
 
     public record VendaDaTrocaPedida(UUID id, UUID remessaId, List<PecaQueSaiu> itens, List<PagamentoDaDiferenca> pagamentos,
-            BigDecimal totalConferido) {
+            BigDecimal totalConferido, ParcelamentoPedido parcelamento) {
     }
 
     /** Os ids vêm do aplicativo: a troca, o crédito, o pagamento em crédito, a devolução e a venda nova. Nunca valores. */
@@ -130,7 +135,8 @@ public class TrocasDoVendedorController {
                         .map(l -> l == null ? null : new LinhaDoPedido(l.produtoId(), l.quantidade(), l.desconto())).toList(),
                 v.pagamentos() == null ? null : v.pagamentos().stream()
                         .map(g -> g == null ? null : new PagamentoDoPedido(g.id(), g.valor(), g.forma(), g.creditoId())).toList(),
-                v.totalConferido());
+                v.totalConferido(), v.parcelamento() == null ? null : new ServicoDeContasAReceber.Parcelamento(
+                        v.parcelamento().quantidade(), v.parcelamento().primeiroVencimento()));
         return new PedidoDeTroca(pedido.id(), pedido.creditoId(), pedido.pagamentoDoCreditoId(), devolucao, venda);
     }
 }

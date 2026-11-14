@@ -70,6 +70,8 @@ export const TEXTOS_DE_SINCRONIZACAO = {
       CLIENTE_NOVO: 'Cliente novo',
       CLIENTE_ALTERADO: 'Mudança no cadastro de cliente',
       CONFERENCIA: 'Conferência da maleta',
+      RECEBIMENTO_CLIENTE: 'Recebimento de cliente',
+      ESTORNO_RECEBIMENTO_CLIENTE: 'Estorno de recebimento de cliente',
     } as Record<string, string>,
     tentar: 'Tentar de novo',
     tentando: 'Tentando...',

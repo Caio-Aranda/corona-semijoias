@@ -109,6 +109,22 @@ export type ConsultasDaMaletaDoVendedorPeca = {
     nome?: string;
 };
 
+export type ConsultasDeContasAReceberConta = {
+    clienteId?: string;
+    clienteNome?: string;
+    emAberto?: string;
+    id?: string;
+    numero?: number;
+    status?: string;
+    totalDeParcelas?: number;
+    valor?: string;
+    valorCancelado?: string;
+    valorPago?: string;
+    vencida?: boolean;
+    vencimento?: string;
+    vendaId?: string;
+};
+
 export type ConsultasDeVendasCotacao = {
     data?: string;
     dolar?: string;
@@ -312,6 +328,7 @@ export type PagamentoLido = {
     em?: string;
     forma?: string;
     id?: string;
+    posterior?: boolean;
     tipo?: string;
     valor?: string;
 };
@@ -322,6 +339,24 @@ export type ParametrosDoVendedor = {
     prazoDefeitoDias?: number;
     situacaoDoAparelho?: string;
     tempoMaximoOfflineDias?: number;
+};
+
+export type ParcelaDaVenda = {
+    emAberto?: string;
+    id?: string;
+    numero?: number;
+    status?: string;
+    totalDeParcelas?: number;
+    valor?: string;
+    valorCancelado?: string;
+    valorPago?: string;
+    vencida?: boolean;
+    vencimento?: string;
+};
+
+export type ParcelamentoPedido = {
+    primeiroVencimento?: string;
+    quantidade?: number;
 };
 
 export type PecaDaTroca = {
@@ -387,6 +422,7 @@ export type PedidoDaVenda = {
     id?: string;
     itens?: Array<VendasDoVendedorControllerPedidoDaLinha>;
     pagamentos?: Array<PedidoDoPagamento>;
+    parcelamento?: PedidoDoParcelamento;
     remessaId?: string;
     totalConferido?: string;
 };
@@ -422,10 +458,21 @@ export type PedidoDeEnvio = {
     operacoes?: Array<OperacaoEnviada>;
 };
 
+export type PedidoDeEstornoDeRecebimento = {
+    id?: string;
+    motivo?: string;
+};
+
 export type PedidoDeLogin = {
     dispositivoId?: string;
     login: string;
     senha: string;
+};
+
+export type PedidoDeRecebimento = {
+    forma?: string;
+    id?: string;
+    valor?: string;
 };
 
 export type PedidoDeRenovacao = {
@@ -442,6 +489,11 @@ export type PedidoDoPagamento = {
     forma?: string;
     id?: string;
     valor?: string;
+};
+
+export type PedidoDoParcelamento = {
+    primeiroVencimento?: string;
+    quantidade?: number;
 };
 
 export type RelatorioAReceber = {
@@ -639,6 +691,7 @@ export type Venda = {
     motivoDoEstorno?: string;
     pagamentos?: Array<PagamentoLido>;
     pago?: string;
+    parcelas?: Array<ParcelaDaVenda>;
     remessaId?: string;
     status?: string;
     subtotal?: string;
@@ -666,6 +719,7 @@ export type VendaDaTrocaPedida = {
     id?: string;
     itens?: Array<PecaQueSaiu>;
     pagamentos?: Array<PagamentoDaDiferenca>;
+    parcelamento?: ParcelamentoPedido;
     remessaId?: string;
     totalConferido?: string;
 };
@@ -899,6 +953,26 @@ export type VerMeuClienteResponses = {
 };
 
 export type VerMeuClienteResponse = VerMeuClienteResponses[keyof VerMeuClienteResponses];
+
+export type ListarMinhasContasAReceberData = {
+    body?: never;
+    path?: never;
+    query?: {
+        situacao?: string;
+        clienteId?: string;
+        vendaId?: string;
+    };
+    url: '/api/vendedor/contas-receber';
+};
+
+export type ListarMinhasContasAReceberResponses = {
+    /**
+     * OK
+     */
+    200: Array<ConsultasDeContasAReceberConta>;
+};
+
+export type ListarMinhasContasAReceberResponse = ListarMinhasContasAReceberResponses[keyof ListarMinhasContasAReceberResponses];
 
 export type VerCotacaoDeHojeData = {
     body?: never;
@@ -1175,6 +1249,24 @@ export type BuscarPecaDaMinhaMaletaResponses = {
 };
 
 export type BuscarPecaDaMinhaMaletaResponse = BuscarPecaDaMinhaMaletaResponses[keyof BuscarPecaDaMinhaMaletaResponses];
+
+export type EstornarRecebimentoDoVendedorData = {
+    body: PedidoDeEstornoDeRecebimento;
+    path: {
+        pagamentoId: string;
+    };
+    query?: never;
+    url: '/api/vendedor/recebimentos-de-cliente/{pagamentoId}/estorno';
+};
+
+export type EstornarRecebimentoDoVendedorResponses = {
+    /**
+     * OK
+     */
+    200: Venda;
+};
+
+export type EstornarRecebimentoDoVendedorResponse = EstornarRecebimentoDoVendedorResponses[keyof EstornarRecebimentoDoVendedorResponses];
 
 export type RelatorioDeValoresAReceberData = {
     body?: never;
@@ -1524,3 +1616,21 @@ export type EstornarVendaDoVendedorResponses = {
 };
 
 export type EstornarVendaDoVendedorResponse = EstornarVendaDoVendedorResponses[keyof EstornarVendaDoVendedorResponses];
+
+export type ReceberDoClienteData = {
+    body: PedidoDeRecebimento;
+    path: {
+        vendaId: string;
+    };
+    query?: never;
+    url: '/api/vendedor/vendas/{vendaId}/recebimentos';
+};
+
+export type ReceberDoClienteResponses = {
+    /**
+     * OK
+     */
+    200: Venda;
+};
+
+export type ReceberDoClienteResponse = ReceberDoClienteResponses[keyof ReceberDoClienteResponses];

@@ -1273,3 +1273,11 @@ Menu: grupo **Maletas**, item **Montar maleta**. Os textos desta tela são os ú
 - Lista: **Quantidade**, **Atualizar**, **Tirar**; totais **Peças na maleta** e **Valor da maleta**.
 - Limite: **Limite do vendedor**, **Já está com ele**, **Esta maleta**, **Sobra**; "Sem limite" marcado: **Sem limite**; ainda não definido: **Limite não definido** e "Defina o limite deste vendedor antes de montar a maleta". Frase da montagem: "Limite R$ X — em mãos R$ Y — pode levar mais R$ Z".
 - Envio: botão **Enviar maleta**, confirmação "Enviar esta maleta?" (vendedor, peças e valor), depois **Maleta enviada**; reenvio: **Esta maleta já estava enviada**. O botão **Imprimir nota** só aparece quando a tarefa 3.7 ligar a impressão.
+
+## 13. Contas a receber do cliente (tarefa 7.3, mensagens da API)
+
+As telas chegam nas tarefas 7.10 e 7.11; estas são as mensagens que a API já devolve.
+
+- **Parcelas:** "Esta venda já está paga. Não há parcelas." · "O valor a prazo (R$ 0,18) é pequeno demais para 12 parcelas. Use menos parcelas." · "O número de parcelas vai de 1 a 24." · "O primeiro vencimento não pode ser antes do dia da venda."
+- **Receber:** "O valor passa do que falta pagar nesta venda (R$ 40,00). Confira o valor." · "Esta venda não tem nada a receber." · "Este recebimento já foi registrado com outros dados." · "Recebimento não encontrado." · "Este recebimento já foi estornado." · "O recebimento é só em dinheiro ou transferência."
+- **Estornar:** "Depois do dia do recebimento, só a dona pode estornar." · "O pagamento feito na hora da venda se corrige cancelando a venda."

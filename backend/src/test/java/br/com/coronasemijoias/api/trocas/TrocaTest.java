@@ -866,4 +866,28 @@ class TrocaTest extends ApoioDasTrocas {
         }
         assertThat(contagens()).isEqualTo(antes);
     }
+
+    // --- 7.3: o resto a prazo da venda nova vira parcelas ---
+
+    @Test
+    void bMaisCaraComRestoAPrazoGeraParcelasSobreOQueFalta() throws Exception {
+        Cenario c = cenario("100.00", "150.00");
+        Map<String, Object> pedido = pedidoDeTroca(c.vendaA(), "ARREPENDIMENTO", List.of(devolvida(c.a(), 1, "BOA")), c.maleta(),
+                List.of(linha(c.b(), 1)), List.of(pagamento("20.00", "DINHEIRO")));
+        vendaDo(pedido).put("parcelamento", mapa("quantidade", 3,
+                "primeiroVencimento", java.time.LocalDate.now().plusDays(3).toString()));
+        UUID vendaB = vendaNova(id(trocar(c.v(), pedido)));
+        // Total 150,00, crédito da troca 100,00 e 20,00 na hora: faltam 30,00 em três de 10,00.
+        List<BigDecimal> parcelas = jdbc.queryForList(
+                "SELECT valor FROM corona.contas_receber WHERE venda_id = ? ORDER BY parcela", BigDecimal.class, vendaB);
+        assertThat(parcelas).hasSize(3);
+        assertThat(parcelas).allSatisfy(p -> assertThat(p).isEqualByComparingTo("10.00"));
+    }
+
+    @Test
+    void trocaSemRestoAPrazoNaoGeraParcela() throws Exception {
+        Cenario c = cenario("100.00", "150.00");
+        UUID vendaB = vendaNova(id(trocar(c.v(), c.vendaA(), c.a(), c.maleta(), c.b(), List.of(pagamento("50.00", "DINHEIRO")))));
+        assertThat(contar("SELECT count(*) FROM corona.contas_receber WHERE venda_id = ?", vendaB)).isZero();
+    }
 }

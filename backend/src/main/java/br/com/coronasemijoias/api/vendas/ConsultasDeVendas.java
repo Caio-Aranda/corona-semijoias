@@ -30,19 +30,28 @@ public class ConsultasDeVendas {
     }
 
     /** {@code creditoId}: o crédito do cliente da forma {@code CREDITO} (tarefa 6.5). */
-    public record PagamentoLido(UUID id, String tipo, String forma, BigDecimal valor, Instant em, UUID creditoId) {
+    public record PagamentoLido(UUID id, String tipo, String forma, BigDecimal valor, Instant em, UUID creditoId,
+            boolean posterior) {
+    }
+
+    /** Uma parcela da venda a prazo (tarefa 7.3). "Vencida" é calculada pela data de hoje em Brasília. */
+    public record ParcelaDaVenda(UUID id, int numero, int totalDeParcelas, LocalDate vencimento, BigDecimal valor,
+            BigDecimal valorPago, BigDecimal valorCancelado, BigDecimal emAberto, String status, boolean vencida) {
     }
 
     public record Venda(UUID id, UUID vendedorId, UUID clienteId, String clienteNome, UUID remessaId, String status,
             BigDecimal subtotal, BigDecimal desconto, BigDecimal total, BigDecimal totalDolar, BigDecimal totalGuarani,
             Cotacao cotacao, BigDecimal pago, BigDecimal devolvido, BigDecimal aReceber, Instant vendidaEm, Instant estornadaEm,
-            String motivoDoEstorno, UUID trocaId, List<Item> itens, List<PagamentoLido> pagamentos) {
+            String motivoDoEstorno, UUID trocaId, List<Item> itens, List<PagamentoLido> pagamentos,
+            List<ParcelaDaVenda> parcelas) {
     }
 
     private final JdbcTemplate jdbc;
+    private final java.time.Clock relogio;
 
-    ConsultasDeVendas(JdbcTemplate jdbc) {
+    ConsultasDeVendas(JdbcTemplate jdbc, java.time.Clock relogio) {
         this.jdbc = jdbc;
+        this.relogio = relogio;
     }
 
     /** {@code vendedorId} nulo é a dona (vê qualquer venda); o vendedor só vê as dele (404 nas outras). */
@@ -108,8 +117,10 @@ public class ConsultasDeVendas {
                             pyg == null ? null : ConversaoDeMoeda.paraGuarani(total, pyg), cotacao, pago, devolvido, aReceber,
                             rs.getTimestamp("vendida_em").toInstant(),
                             rs.getTimestamp("estornada_em") == null ? null : rs.getTimestamp("estornada_em").toInstant(),
-                            rs.getString("motivo_estorno"), rs.getObject("troca_id", UUID.class), new ArrayList<>(), new ArrayList<>());
+                            rs.getString("motivo_estorno"), rs.getObject("troca_id", UUID.class), new ArrayList<>(), new ArrayList<>(),
+                            new ArrayList<>());
                 }, args);
+        LocalDate hoje = LocalDate.ofInstant(relogio.instant(), java.time.ZoneId.of("America/Sao_Paulo"));
         for (Venda v : cabecas) {
             v.itens().addAll(jdbc.query("""
                     SELECT i.produto_id, p.nome, p.foto_principal_hash, i.quantidade, i.preco_unitario, i.desconto
@@ -123,10 +134,19 @@ public class ConsultasDeVendas {
                                 preco.multiply(BigDecimal.valueOf(q)).subtract(desconto));
                     }, v.id()));
             v.pagamentos().addAll(jdbc.query("""
-                    SELECT id, tipo, forma, valor, pago_em, credito_id FROM corona.pagamentos_cliente WHERE venda_id = ?
+                    SELECT id, tipo, forma, valor, pago_em, credito_id, posterior FROM corona.pagamentos_cliente WHERE venda_id = ?
                      ORDER BY pago_em, id""", (rs, n) -> new PagamentoLido(rs.getObject("id", UUID.class), rs.getString("tipo"),
                             rs.getString("forma"), rs.getBigDecimal("valor"), rs.getTimestamp("pago_em").toInstant(),
-                            rs.getObject("credito_id", UUID.class)), v.id()));
+                            rs.getObject("credito_id", UUID.class), rs.getBoolean("posterior")), v.id()));
+            v.parcelas().addAll(jdbc.query("""
+                    SELECT id, parcela, total_parcelas, vencimento, valor, valor_pago, valor_cancelado,
+                           valor - valor_pago - valor_cancelado AS em_aberto, status,
+                           (status IN ('ABERTA', 'PARCIAL') AND vencimento < ?::date) AS vencida
+                      FROM corona.contas_receber WHERE venda_id = ? AND deleted_at IS NULL ORDER BY parcela""",
+                    (rs, n) -> new ParcelaDaVenda(rs.getObject("id", UUID.class), rs.getInt("parcela"), rs.getInt("total_parcelas"),
+                            rs.getObject("vencimento", LocalDate.class), rs.getBigDecimal("valor"), rs.getBigDecimal("valor_pago"),
+                            rs.getBigDecimal("valor_cancelado"), rs.getBigDecimal("em_aberto"), rs.getString("status"),
+                            rs.getBoolean("vencida")), hoje, v.id()));
         }
         return cabecas;
     }

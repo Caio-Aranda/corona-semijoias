@@ -250,6 +250,54 @@ INSERT INTO estado_sync (chave, valor)
    WHERE EXISTS (SELECT 1 FROM estado_sync WHERE chave = 'cursor' AND valor IS NOT NULL);
 `;
 
+/**
+ * As tabelas que a recarga dirigida da versão 4 traz de novo (tarefa 7.3): as duas novas das contas a receber e a que
+ * ganhou coluna (`pagamentos_cliente.posterior`; a cópia antiga não tem o valor).
+ */
+export const TABELAS_DA_RECARGA_DIRIGIDA_V4 = Object.freeze([
+  'contas_receber',
+  'baixas_receber',
+  'pagamentos_cliente',
+] as const);
+
+/**
+ * Versão 4 (tarefa 7.3; ADR-0012, item 7): as cópias das contas a receber do cliente (parcelas e baixas), com as colunas
+ * da lista do servidor, e a coluna nova `posterior` de `pagamentos_cliente`. Dinheiro em texto, datas em texto ISO. Banco
+ * que já tinha cursor ganha a marca da recarga dirigida (somada à da versão 3, se ela ainda não terminou, sem repetir e
+ * na ordem: as antigas primeiro). Banco novo faz a carga inicial e não precisa.
+ */
+const V4 = `
+CREATE TABLE contas_receber (${CONTROLE},
+  devedor_tipo TEXT, cliente_id TEXT, vendedor_id TEXT, origem_tipo TEXT, origem_id TEXT, venda_id TEXT NOT NULL,
+  parcela INTEGER, total_parcelas INTEGER, vencimento TEXT, valor TEXT NOT NULL, valor_pago TEXT, valor_cancelado TEXT,
+  status TEXT
+);
+CREATE INDEX contas_receber_da_venda ON contas_receber (venda_id);
+CREATE INDEX contas_receber_do_cliente ON contas_receber (cliente_id);
+
+CREATE TABLE baixas_receber (${CONTROLE},
+  conta_id TEXT NOT NULL, tipo TEXT, valor TEXT NOT NULL, baixada_em TEXT, pagamento_cliente_id TEXT,
+  motivo_cancelamento TEXT, estorna_id TEXT
+);
+CREATE INDEX baixas_receber_da_conta ON baixas_receber (conta_id);
+
+ALTER TABLE pagamentos_cliente ADD COLUMN posterior INTEGER;
+
+INSERT INTO estado_sync (chave, valor)
+  SELECT 'recarga_dirigida', lista FROM (
+    SELECT json_group_array(t) AS lista FROM (
+      SELECT t FROM (
+        SELECT key AS k, value AS t FROM json_each(
+          coalesce((SELECT valor FROM estado_sync WHERE chave = 'recarga_dirigida'), '[]'))
+        UNION ALL
+        SELECT 1000 + key AS k, value AS t FROM json_each('${JSON.stringify(TABELAS_DA_RECARGA_DIRIGIDA_V4)}')
+      ) GROUP BY t ORDER BY min(k)
+    )
+  )
+   WHERE EXISTS (SELECT 1 FROM estado_sync WHERE chave = 'cursor' AND valor IS NOT NULL)
+  ON CONFLICT (chave) DO UPDATE SET valor = excluded.valor;
+`;
+
 export const MIGRACOES: readonly MigracaoLocal[] = Object.freeze([
   {
     versao: 1,
@@ -265,6 +313,12 @@ export const MIGRACOES: readonly MigracaoLocal[] = Object.freeze([
     versao: 3,
     descricao: 'tabelas da Fase 6, colunas novas e a recarga dirigida',
     sql: V3,
+  },
+  {
+    versao: 4,
+    descricao:
+      'contas a receber do cliente (parcelas e baixas), pagamento posterior e a recarga dirigida',
+    sql: V4,
   },
 ]);
 
@@ -297,4 +351,7 @@ export const TABELAS_SINCRONIZAVEIS = Object.freeze([
   'creditos_cliente',
   'usos_credito',
   'creditos_sem_saldo',
+  // Fase 7 (tarefa 7.3, migração local 4).
+  'contas_receber',
+  'baixas_receber',
 ] as const);

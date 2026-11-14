@@ -32,17 +32,22 @@ public class FormatosDeOperacao {
     /** Dia em que o formato 1 dos tipos da Fase 6 foi publicado (tarefa 6.7). A VENDA com crédito não ganha formato. */
     static final Instant FORMATO_1_DA_FASE_6 = Instant.parse("2026-11-13T00:00:00Z");
 
-    private static final Map<String, Map<Integer, Instant>> PRODUCAO = Map.of(
-            "VENDA", Map.of(1, FORMATO_1),
-            "ESTORNO_VENDA", Map.of(1, FORMATO_1),
-            "CLIENTE_NOVO", Map.of(1, FORMATO_1),
-            "CLIENTE_ALTERADO", Map.of(1, FORMATO_1),
-            "CONFERENCIA", Map.of(1, FORMATO_1),
-            "DEVOLUCAO", Map.of(1, FORMATO_1_DA_FASE_6),
-            "PEDIDO_AUTORIZACAO", Map.of(1, FORMATO_1_DA_FASE_6),
-            "TROCA", Map.of(1, FORMATO_1_DA_FASE_6),
-            "CANCELAR_DEVOLUCAO", Map.of(1, FORMATO_1_DA_FASE_6),
-            "CANCELAR_TROCA", Map.of(1, FORMATO_1_DA_FASE_6));
+    /** Dia em que o formato 1 dos tipos da Fase 7 (recebimento do cliente) foi publicado (tarefa 7.3). */
+    static final Instant FORMATO_1_DA_FASE_7 = Instant.parse("2026-11-14T00:00:00Z");
+
+    private static final Map<String, Map<Integer, Instant>> PRODUCAO = Map.ofEntries(
+            Map.entry("VENDA", Map.of(1, FORMATO_1)),
+            Map.entry("ESTORNO_VENDA", Map.of(1, FORMATO_1)),
+            Map.entry("CLIENTE_NOVO", Map.of(1, FORMATO_1)),
+            Map.entry("CLIENTE_ALTERADO", Map.of(1, FORMATO_1)),
+            Map.entry("CONFERENCIA", Map.of(1, FORMATO_1)),
+            Map.entry("DEVOLUCAO", Map.of(1, FORMATO_1_DA_FASE_6)),
+            Map.entry("PEDIDO_AUTORIZACAO", Map.of(1, FORMATO_1_DA_FASE_6)),
+            Map.entry("TROCA", Map.of(1, FORMATO_1_DA_FASE_6)),
+            Map.entry("CANCELAR_DEVOLUCAO", Map.of(1, FORMATO_1_DA_FASE_6)),
+            Map.entry("CANCELAR_TROCA", Map.of(1, FORMATO_1_DA_FASE_6)),
+            Map.entry("RECEBIMENTO_CLIENTE", Map.of(1, FORMATO_1_DA_FASE_7)),
+            Map.entry("ESTORNO_RECEBIMENTO_CLIENTE", Map.of(1, FORMATO_1_DA_FASE_7)));
 
     private final Clock relogio;
     private final Duration prazo;

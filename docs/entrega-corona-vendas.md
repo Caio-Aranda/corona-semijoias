@@ -49,6 +49,22 @@ recebimento (o pull pararia). Por isso, **nesta ordem**:
 Se a API subir antes do app, o computador com o app velho recebe o lote com tabela desconhecida e para de receber (o
 envio continua); publique o app e suba a versão mínima o quanto antes.
 
+### Nota de deploy da tarefa 7.3 (contas a receber do cliente no pull)
+
+A API com a 7.3 manda ao vendedor as tabelas `contas_receber` e `baixas_receber` e a coluna `posterior` dos pagamentos.
+O Corona Vendas sem a **migração local 4** não conhece essas tabelas e recusaria o lote inteiro do recebimento (o pull
+pararia). Por isso, **nesta ordem** (a mesma da nota da 6.7):
+
+1. **Primeiro o Corona Vendas:** aumente `version` em `apps/seller-app/package.json` (por exemplo, para `1.2.0`) e
+   publique (`npm run vendas:publicar`). Essa versão leva a migração local 4 e a recarga dirigida (as duas tabelas novas e
+   os pagamentos).
+2. **Depois a API:** suba a API com a 7.3 e, no `.env` do servidor, `APP_VERSAO_MINIMA_VENDAS` igual à versão publicada.
+3. O computador ainda na versão antiga **continua enviando** o que guardou e recebe 426 no recebimento até atualizar. Nada
+   se perde. As operações novas (`RECEBIMENTO_CLIENTE`, `ESTORNO_RECEBIMENTO_CLIENTE` e o `parcelamento` da venda) só
+   passam a ser gravadas pelo app na tarefa 7.11.
+4. Ao abrir a versão nova, o banco local migra para a versão 4; se ele já tinha recebido dados, as duas tabelas novas e os
+   pagamentos vêm de novo pela **recarga dirigida**, sem apagar nada antes.
+
 ## Riscos da primeira instalação no computador do vendedor
 
 | Risco | O que fazer |

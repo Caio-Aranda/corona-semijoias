@@ -4,6 +4,7 @@ import br.com.coronasemijoias.api.cadastros.Validacoes;
 import br.com.coronasemijoias.api.seguranca.ExigePerfil;
 import br.com.coronasemijoias.api.seguranca.UsuarioAutenticado;
 import br.com.coronasemijoias.api.vendas.ConsultasDeVendas.Venda;
+import br.com.coronasemijoias.api.contasreceber.ServicoDeContasAReceber;
 import br.com.coronasemijoias.api.vendas.ServicoDeVendas.LinhaDoPedido;
 import br.com.coronasemijoias.api.vendas.ServicoDeVendas.PagamentoDoPedido;
 import br.com.coronasemijoias.api.vendas.ServicoDeVendas.PedidoDeVenda;
@@ -41,8 +42,12 @@ public class VendasDoVendedorController {
     public record PedidoDoPagamento(UUID id, BigDecimal valor, String forma, UUID creditoId) {
     }
 
+    /** Quantas parcelas e quando vence a primeira (as outras são mensais); os valores são do servidor (tarefa 7.3). */
+    public record PedidoDoParcelamento(Integer quantidade, LocalDate primeiroVencimento) {
+    }
+
     public record PedidoDaVenda(UUID id, UUID remessaId, UUID clienteId, List<PedidoDaLinha> itens,
-            List<PedidoDoPagamento> pagamentos, BigDecimal totalConferido) {
+            List<PedidoDoPagamento> pagamentos, BigDecimal totalConferido, PedidoDoParcelamento parcelamento) {
     }
 
     public record PedidoDeEstorno(UUID id, String motivo) {
@@ -71,7 +76,8 @@ public class VendasDoVendedorController {
                         .map(l -> l == null ? null : new LinhaDoPedido(l.produtoId(), l.quantidade(), l.desconto())).toList(),
                 pedido.pagamentos() == null ? null : pedido.pagamentos().stream()
                         .map(g -> g == null ? null : new PagamentoDoPedido(g.id(), g.valor(), g.forma(), g.creditoId())).toList(),
-                pedido.totalConferido());
+                pedido.totalConferido(), pedido.parcelamento() == null ? null : new ServicoDeContasAReceber.Parcelamento(
+                        pedido.parcelamento().quantidade(), pedido.parcelamento().primeiroVencimento()));
         Resultado r = servico.vender(quem.vendedorId(), quem.id(), quem.dispositivoId(), p);
         return ResponseEntity.status(r.jaExistia() ? HttpStatus.OK : HttpStatus.CREATED)
                 .body(consultas.ver(r.vendaId(), quem.vendedorId()));
