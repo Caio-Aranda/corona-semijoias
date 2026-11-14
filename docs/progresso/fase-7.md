@@ -172,3 +172,35 @@ Issue #149, PR 166 (tarefa crítica: plano aprovado no PR, com um ajuste da orqu
 
 - Recebimentos, caixa, contas do nível 2 e crédito do vendedor no acerto a favor dele (7.6); telas (7.9, 7.10, 7.11); consulta formal e rota das conciliações (7.8); relatórios (7.12); tipo novo na outbox.
 - Teste de integração do 409 `SEM_COTACAO_PARA_O_ACERTO` (a tabela de cotações é imutável e compartilhada entre os testes) e de `REVISAO_PENDENTE_NO_ACERTO` (montar uma devolução em revisão exigiria muita massa); as duas regras estão no código e cobertas por leitura do código e pelo gatilho do banco.
+
+
+## Tarefa 7.6: recebimentos do vendedor, contas do nível 2 e caixa automático
+
+Issue #150, PR 167 (tarefa crítica: plano aprovado no PR, com um ajuste da orquestradora, atendido: nos textos de tela, "Transferência (PIX)" para a forma PIX; as 12 decisões de padrão seguro, D1 a D12, confirmadas). O dinheiro do acerto do ADR-0012 (itens 1, 2, 3.6, 7, 8, 9, 11, 13, 14, 15 e 16): o pagamento do acerto, o que ficou devendo, o acerto a favor do vendedor, o recebimento avulso e o estorno, as contas do nível 2 e o caixa automático. Sem entrada e sem cheque.
+
+**O que entrou**
+
+- **Migração `V045__recebimentos_e_caixa.sql`:** `recebimentos_vendedor` (sincronizável, imutável; `momento` `ACERTO | AVULSO`, `aplicado_em` `ACERTO | CONTAS`; `CHEQUE`, `CARTAO` e, no fechamento, `BOLETO` recusados pelo `CHECK`), `lancamentos_caixa` e `categorias_caixa` (só do servidor; duas categorias do sistema), `contas_receber` com o devedor `VENDEDOR` (origens `ACERTO` e `ESTORNO_RECEBIMENTO`, sem venda) e `forma_prevista` (`BOLETO`), `baixas_receber.recebimento_vendedor_id`, e `acertos.pago_ao_vendedor`, `credito_usado` e `credito_do_acerto_id` (único). Funções e `CHECK` antigos recriados inteiros (nenhuma migração publicada editada): `conferir_conta_a_receber`, `proteger_conta_a_receber`, `conferir_baixa_receber`, `proteger_acerto` e `conferir_acerto_fechado`. O gatilho adiado do recebimento confere um lançamento de caixa de mesmo valor e as baixas inteiras; o do acerto confere recebido, contas, pago ao vendedor e crédito (usado uma vez só, e nenhum crédito anterior sem uso).
+- **`ServicoDeCaixa`** (único que grava em `lancamentos_caixa`, sempre dentro da transação de quem gerou o dinheiro), **`ServicoDeRecebimentosDoVendedor`** (único que grava em `recebimentos_vendedor`: avulso, estorno e o recebimento do fechamento) e o nível 2 do **`ServicoDeContasAReceber`** (gerar as contas do acerto, baixar pelo recebimento, estornar baixas). Teste de arquitetura: um escritor por tabela.
+- **Fechamento com `pagamento`** (`ServicoDeFechamento`): recebimentos em dinheiro e Transferência (PIX), boleto como conta, o restante em 1 a 24 parcelas mensais, contas antigas pagas junto (fora dos totais), acerto a favor do vendedor (crédito, abatido inteiro no próximo acerto, ou pagar na hora, com saída de caixa). A prévia mostra o crédito disponível, o que há a pagar, o que ficaria devendo, as parcelas e as contas abertas do vendedor. Fechar sem `pagamento` com líquido positivo é 409 "Escolha a data de pagamento do que ficou devendo".
+- **Rotas:** `POST/GET /api/dona/recebimentos-vendedor`, `POST .../{id}/estorno`, `GET /api/dona/caixa/lancamentos` (extrato com saldo depois de cada lançamento), `GET /api/dona/contas-receber?nivel=` e `GET /api/vendedor/contas-receber?nivel=` (os dois níveis), `GET /api/vendedor/recebimentos`; a ficha do acerto mostra recebimentos, crédito usado, pago ao vendedor e as contas geradas. Clientes da API regenerados.
+- **Pull e Corona Vendas:** `recebimentos_vendedor`, as contas dos dois níveis (regra `vendedor_id` ou venda do vendedor), as baixas e as colunas novas do acerto, só do vendedor dono e sem quem registrou, motivo nem resumo; `lancamentos_caixa` e `categorias_caixa` nunca vão (teste). Migração local 8 (refaz a cópia das contas com as mesmas linhas, aceitando conta sem venda; cria a tabela e as colunas), recarga dirigida somada à marca antiga e `banco-v8.sqlite`.
+- **Documentos:** especificação v1.20, ADR-0012 ("Como ficou" nos itens 8, 9 e 11), glossário (Transferência (PIX) e os termos do dinheiro do vendedor) e nota de deploy (app antes da API).
+
+**Decisões que tomei (todas as do plano aprovado, D1 a D12; o que mais chama atenção)**
+
+- O crédito do vendedor é o `ficou_devendo` negativo do acerto, abatido inteiro e sozinho no próximo fechamento (`credito_usado`, `credito_do_acerto_id`); só existe um acerto em andamento por vendedor, então o crédito não tem disputa entre dois fechamentos e o único de `credito_do_acerto_id` fica como segunda trava.
+- `pago_ao_vendedor` e `credito_usado` nascem `NOT NULL DEFAULT 0` (e zero fora de `ACERTADO`), e não nulos até o fechamento como o plano dizia: assim os testes do banco que fecham o acerto por SQL e as linhas antigas continuam válidos, e o `CHECK` da C2 não precisa de `COALESCE`.
+- O estorno de recebimento copia `momento`, `acerto_id`, `aplicado_em` e `forma` do original (o gatilho confere); o do que pagou o acerto vira conta `ESTORNO_RECEBIMENTO`. O lançamento de caixa do estorno mantém o `tipo` do original e tem o sinal oposto.
+- A prévia do vendedor das contas (`nivel`) devolve os dois níveis por padrão; `GET /api/dona/contas-receber` também (antes só o nível 1), com `nivel` para filtrar.
+- A conta do boleto (`forma_prevista = BOLETO`) só aceita baixa de um recebimento `BOLETO` pelo saldo inteiro; as outras formas pagam a conta do boleto como qualquer outra.
+
+**Testes** (PostgreSQL do Testcontainers e SQLCipher de verdade): banco (18), contas do nível 2 (7), recebimento avulso e estorno (9), fechamento com pagamento (13, com o exemplo do item 18), concorrência com threads reais, cinco rodadas e tempo limite de 10 s (4), leitura e permissões (7), pull (3), conciliações C2, C4 e C5 que acusam o dado estragado (6), arquitetura (4); Corona Vendas, migração local 8 e colunas (6, mais as listas das marcas das migrações antigas).
+
+**Resultado final:** `npm run api:test` passa (1495 testes, nenhuma falha); Corona Vendas 637 testes; Corona Gestão 665 testes em 46 arquivos; `npm run test:duas-pontas -w @corona/testes-sync` passa (26 testes em 7 arquivos); `npm run lint`, `npm run typecheck` e `npm run format:check` limpos; `npm run seller:empacotar` e `npm run barreira:varrer` com varredura limpa.
+
+**Não fiz**
+
+- Lançamento manual de caixa, categorias com rota, aviso de caixa negativo e fechar semana (7.7); consulta formal e rota das conciliações (7.8); telas (7.9, 7.10 e 7.11); relatórios (7.12).
+- O teste de dois fechamentos disputando o mesmo crédito: com um acerto em andamento por vendedor (índice único), os dois fechamentos seriam do mesmo acerto (já coberto) e o crédito só tem disputa possível pelo `UNIQUE`, provado no banco.
+- Multa, juros e cartão (fora do escopo do plano).
