@@ -38,3 +38,44 @@ Só documentos, sem código (issue #144, PR 159). O responsável aceitou o ADR-0
 - Os termos novos do glossário (acerto, pendência, ficou devendo, meta da comissão) entram nas tarefas das telas (7.9 a 7.12).
 - `docs/perguntas-para-a-dona.md` e os outros ADRs não foram mexidos.
 - Nenhuma migração, chave de configuração ou tela: tudo isso é das tarefas 7.5, 7.6, 7.10 e 7.11.
+
+## Tarefa 7.2: limite de consignação
+
+Issue #145, PR 160. **Boa parte já estava na `main`:** o PR 86 (11/11/2026) criou a migração `V026__limite_de_consignacao_obrigatorio.sql` e mudou o cadastro do vendedor, a montagem da maleta e as mensagens. Esta tarefa conferiu a seção 7.2 do plano item por item e fechou só o que faltava. **Nenhuma migração nova.**
+
+**Conferência (o que o plano pede × o que prova)**
+
+| Item do plano | Já existia (PR 86 e Fase 3) | Entrou nesta tarefa |
+| --- | --- | --- |
+| Migração do "Sem limite" | `V026`: coluna `limite_consignacao_ilimitado` (na API, `semLimite`) e `CHECK vendedores_limite_ou_sem_limite` (recusa os dois juntos). Testes: `VendedoresDaDonaTest.obancoRecusaSemLimiteJuntoComUmValorDeLimite`, `MigracaoDosVendedoresTest` (limite 0 de antes virou limite não definido) | Nada (ver "Decisões que tomei") |
+| A dona vê na lista quem está "Sem limite" | Só na ficha, na montagem da maleta e na lista de maletas | Coluna **Limite de consignação** na lista de vendedores: valor em reais, **Sem limite** ou **Limite não definido**. Teste: `vendedores.test.tsx`, "mostra o limite de cada vendedor" |
+| Cadastro: campo obrigatório com "Sem limite" | API: `VendedoresDaDonaTest.limiteDeConsignacaoEObrigatorioOuSemLimiteMarcadoDePropositoNuncaOsDoisENuncaZeroComoSemLimite` (criar e editar). Tela: `vendedores.test.tsx`, "o limite é obrigatório" e "Sem limite desabilita o valor" | Nada |
+| Conta do envio pelo preço congelado | `RemessasDaDonaTest.limiteExcedidoRecusaComLimiteEmAbertoEQuantoFalta`, `noLimiteExatoPassaEUmCentavoAMaisNao`, `dossEnviosSimultaneosDoMesmoVendedorNaoFuramOLimite` (nenhum mudava o preço depois do envio) | `RemessasDaDonaTest.limiteContaOPrecoCongeladoDaMaletaENaoOPrecoDeHojeNemOCusto` |
+| Envio acima do limite com reposição é recusado | `RemessasDaDonaTest.reposicaoEntraNaMesmaConta` (só o 409) | `RemessasDaDonaTest.reposicaoQueCabeNoLimitePassaEAQuePassaDoLimiteERecusadaSemBaixarOEstoque` (código do erro, valores na mensagem, estoque intacto, a maleta continua em montagem) |
+| "Sem limite" nunca bloqueia | `RemessasDaDonaTest.semLimiteMarcadoDePropositoNaoBloqueia`, `DevolucaoDaMaletaTest.maletasEmAbertoDeVendedorSemLimiteEExigeVendedor` | `RemessasDaDonaTest.semLimiteNuncaBloqueiaNemComVariasMaletasEReposicao` |
+| Sem valor e sem "Sem limite" é recusado | API (acima) e envio: `RemessasDaDonaTest.vendedorSemLimiteDefinidoNaoRecebeMaletaNemRascunho`; zero vale zero: `limiteZeroValeZeroENaoSignificaSemLimite` | Nada |
+| 403 cruzado | Vendedor nas rotas da dona: `VendedoresDaDonaTest.vendedorRecebe403EmTodasAsRotas`, `RemessasDaDonaTest.vendedorRecebe403ESemLoginRecebe401`, `DevolucaoDaMaletaTest.vendedorRecebe403ESemLoginRecebe401NasRotasNovas` (inclui `em-aberto`). Dona nas rotas do vendedor: `RotasDoVendedorTest.vendedorVeASuaMaletaSemCustoEOutroVendedorNao` | Nada |
+| Especificação §7.1, §9 e §17 | §7.1 já dizia "campo obrigatório ... ou Sem limite" | **v1.15:** §7.1 (obrigatório, zero vale zero, preço congelado, reposição entra, limite não definido não recebe maleta), §9 (`limite_consignacao_ilimitado`), §17 (item 15) e §22 |
+| ADR-0010: dúvidas 1, 2 e 6 | Item 7 corrigido em 11/11, mas "provisório"; só a 6 dita como respondida | Status, item 7 e as dúvidas 1, 2 e 6 marcadas como resolvidas (decisões do responsável de 11/11/2026) |
+
+**O que entrou**
+
+- **Backend (só testes):** três testes novos e um ajudante (`reposicao`) em `RemessasDaDonaTest`. Nenhuma linha de código de produção mudou: os três passaram de primeira, a regra já estava certa.
+- **Corona Gestão:** `limiteDaLista` em `telas/vendedores/dados.ts`, a coluna em `TelaVendedores.tsx` e os textos em `textos-vendedores.ts`. A lista já recebia `limiteConsignacao` e `semLimite` da API; nada mudou no contrato.
+- **Documentos:** especificação v1.15, ADR-0010, glossário (termo "limite de consignação"), plano da Fase 7 (nota "Como ficou" na seção 7.2) e `PROGRESSO.md`.
+
+**Testes:** `npm run api:test` passa (1102 testes, nenhuma falha). Corona Gestão: 665 testes em 46 arquivos. `npm run lint`, `npm run typecheck` e `npm run format:check` passam. O Corona Vendas não foi tocado (a barreira não precisou rodar).
+
+**Decisões que tomei**
+
+- **Vale o desenho da V026, não o do plano.** O plano pedia `sem_limite` com `CHECK (sem_limite OR limite_consignacao IS NOT NULL)` e os vendedores antigos virando "Sem limite". A V026, publicada antes, fez diferente: a coluna chama `limite_consignacao_ilimitado`, o `CHECK` recusa os dois juntos, e quem estava com limite 0 ficou com o **limite não definido**, que não recebe maleta até a dona escolher. Mantive: migração publicada não se edita, e trocar "não definido" por "Sem limite" numa migração nova liberaria maleta ilimitada para cadastro antigo sem a dona ter escolhido (o contrário do padrão seguro e do item 7 do ADR-0010). Por isso **o banco não recusa** a linha com os dois vazios: ela é o estado dos cadastros antigos. A API recusa criar ou editar assim, e o envio e o rascunho são recusados. O plano ganhou a nota "Como ficou".
+- **Lista de vendedores só em Real.** A coluna mostra o valor em reais; Dólar e Guarani continuam na ficha (`CampoDeDinheiro`), para a lista não ficar larga.
+- **"Limite não definido" na lista:** o mesmo termo que a lista de maletas e a reposição já usam.
+- **§17, item 15:** a seção não tinha item do limite; registrei as três perguntas já como decididas, para o plano ("atualizar a §17") ficar atendido sem reabrir pendência.
+- **O teste antigo `reposicaoEntraNaMesmaConta` ficou**, ao lado do novo, mais completo.
+
+**Não fiz**
+
+- **Relatório "Vendedores: limite e situação":** continua mostrando o limite vazio tanto para "Sem limite" quanto para "Limite não definido". Distinguir os dois pede um campo novo na resposta do relatório (OpenAPI e cliente gerado); fica como sugestão de tarefa.
+- A descrição da rota "Cadastrar vendedor" no OpenAPI ainda diz "Limite e comissão começam em zero" (texto de antes da V026); mudar regera o cliente, ficou de fora.
+- Nenhuma migração, nenhuma mudança no Corona Vendas, nenhuma regra nova.
