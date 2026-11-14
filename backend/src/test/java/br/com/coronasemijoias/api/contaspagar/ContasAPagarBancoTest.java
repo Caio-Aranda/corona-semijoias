@@ -85,7 +85,7 @@ class ContasAPagarBancoTest extends TesteDeIntegracao {
     private void baixa(UUID id, UUID conta, String tipo, String valor, String forma, UUID estorna) {
         jdbc.update("""
                 INSERT INTO corona.baixas_pagar (id, conta_id, tipo, valor, forma, data_pagamento, motivo, estorna_id, conteudo, registrada_por)
-                VALUES (?, ?, ?, ?::numeric, ?, current_date, ?, ?, 'teste', ?)""", id, conta, tipo, valor, forma,
+                VALUES (?, ?, ?, ?::numeric, ?, CASE WHEN ? = 'PAGAMENTO' THEN current_date END, ?, ?, 'teste', ?)""", id, conta, tipo, valor, forma, tipo,
                 estorna == null && "PAGAMENTO".equals(tipo) ? null : "teste", estorna, dona);
     }
 
