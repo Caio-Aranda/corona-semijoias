@@ -117,7 +117,13 @@ describe('Vendedores: lista', () => {
           JOANA,
           { ...JOANA, id: ID_REF, nome: 'Ana Livre', limiteConsignacao: null, semLimite: true },
           { ...JOANA, id: ID_DOC, nome: 'Bia Antiga', limiteConsignacao: null, semLimite: false },
-          { ...JOANA, id: ID_PRACA, nome: 'Carla Zero', limiteConsignacao: '0.00', semLimite: false },
+          {
+            ...JOANA,
+            id: ID_PRACA,
+            nome: 'Carla Zero',
+            limiteConsignacao: '0.00',
+            semLimite: false,
+          },
         ]),
     });
     await abrirLista(m);
