@@ -31,9 +31,10 @@ Só documentos, sem código (issue #144, PR 159). O responsável aceitou o ADR-0
 - **§15 da especificação** (linha da Fase 7) também perdeu "cheques", embora a issue não cite a seção, para não ficar contraditória. A §13 não mudou: não cita entrada nem cheque (as fórmulas corretas estão no ADR-0012, item 17).
 - **Cabeçalho da especificação** dizia versão 1.12 com o histórico já na v1.13; passou a 1.14.
 - **Prazo de 3 a 4 dias para o acerto** (dúvida 20): só informativo, sem bloqueio; quem fecha a semana continua no padrão seguro.
+- **Glossário e ADR-0014** (fora da lista da issue, acertados na revisão para não ficarem contra a decisão): no `docs/glossario-interface.md` saíram as situações de cheque, a forma `PIX` aparece como **Transferência** também no acerto e no pagamento a fornecedor, "cheque" só vale para pagamento antigo e "entrada" não existe (a dúvida da parte 10 foi fechada); o ADR-0014 cita o ADR-0012 como Aceito.
 
 **Não fiz (fica para as próximas tarefas)**
 
-- `docs/glossario-interface.md` não está na lista da issue e não foi mexido. Ele ainda tem as situações de cheque, as formas "cheque" e "entrada" e a frase "No acerto (repasse do vendedor à dona) continua Pix", que agora contraria a decisão ("Transferência"). O plano (7.9 a 7.12) manda acertar na tarefa da tela.
+- Os termos novos do glossário (acerto, pendência, ficou devendo, meta da comissão) entram nas tarefas das telas (7.9 a 7.12).
 - `docs/perguntas-para-a-dona.md` e os outros ADRs não foram mexidos.
 - Nenhuma migração, chave de configuração ou tela: tudo isso é das tarefas 7.5, 7.6, 7.10 e 7.11.

@@ -98,7 +98,7 @@ Só plano: nenhuma linha de código nesta tarefa (7.1). O modelo está no [ADR-0
 
 ### 7.9 a 7.12: telas e relatórios
 
-- Textos só em `textos.ts`, termos do glossário (acrescentar os novos: acerto, pendência, ficou devendo, meta da comissão; no repasse do vendedor, a forma `PIX` aparece como "Transferência"; tirar do glossário, na tarefa da tela, as linhas de cheque e de entrada como forma de pagamento, que não aparecem em tela nenhuma; `CHEQUE` e `CARTAO` do pagamento do cliente continuam aceitos no banco, sem tela nova), erros em português simples dizendo o que fazer.
+- Textos só em `textos.ts`, termos do glossário (acrescentar os novos: acerto, pendência, ficou devendo, meta da comissão; no repasse do vendedor, a forma `PIX` aparece como "Transferência"; o glossário já diz, desde a 7.1b, que cheque e entrada não existem e não aparecem em tela nenhuma; `CHEQUE` e `CARTAO` do pagamento do cliente continuam aceitos no banco, sem tela nova), erros em português simples dizendo o que fazer.
 - Tela do acerto mostra a data da cotação gravada (ADR-0006 item 11) e explica que vale o valor em reais.
 - 7.10: tela da dona para a meta e os dois percentuais da comissão; o campo de comissão do cadastro do vendedor deixa de valer (sai da tela ou fica só para consulta). 7.11: "Minha comissão" mostra a prévia com quanto falta para a meta, em Guarani e em Real.
 - Relatórios com filtros, totais no rodapé, detalhamento até o registro e exportação PDF, Excel e CSV (§12). DRE e lucro ficam para a Fase 8.
