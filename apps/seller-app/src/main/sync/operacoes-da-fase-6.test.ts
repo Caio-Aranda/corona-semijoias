@@ -1277,7 +1277,12 @@ describe('devolução e troca de venda a prazo (tarefa 6.6)', () => {
         id: idDeTeste(8),
         creditoId: idDeTeste(8),
         pagamentoDoCreditoId: idDeTeste(8),
-        devolucao: { id: idDeTeste(8), vendaId, motivo: 'ARREPENDIMENTO', itens: pecas([m.produtoA, 1]) },
+        devolucao: {
+          id: idDeTeste(8),
+          vendaId,
+          motivo: 'ARREPENDIMENTO',
+          itens: pecas([m.produtoA, 1]),
+        },
         venda: {
           id: idDeTeste(5),
           remessaId: m.remessaId,

@@ -439,7 +439,9 @@ describe('Devoluções (tarefa 6.9)', () => {
         screen.getByText('Desistência até 17/11/2026, defeito até 10/12/2026'),
       ).toBeInTheDocument();
       expect(
-        screen.getByText('Esta venda é a prazo: a devolução primeiro abate o que o cliente ainda deve.'),
+        screen.getByText(
+          'Esta venda é a prazo: a devolução primeiro abate o que o cliente ainda deve.',
+        ),
       ).toBeInTheDocument();
       expect(screen.getAllByRole('button', { name: /Escolher a venda de/ })).toHaveLength(2);
     });

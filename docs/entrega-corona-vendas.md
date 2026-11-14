@@ -65,6 +65,14 @@ pararia). Por isso, **nesta ordem** (a mesma da nota da 6.7):
 4. Ao abrir a versão nova, o banco local migra para a versão 4; se ele já tinha recebido dados, as duas tabelas novas e os
    pagamentos vêm de novo pela **recarga dirigida**, sem apagar nada antes.
 
+### Nota de deploy da tarefa 6.6 (devolução de venda a prazo)
+
+A API com a 6.6 manda `devolucoes.valor_abatido` e `baixas_receber.devolucao_id` no pull. O Corona Vendas sem a **migração local 5** recusaria o lote (o pull pararia). **Nesta ordem**, como na 6.7 e na 7.3:
+
+1. **Primeiro o Corona Vendas:** aumente `version` em `apps/seller-app/package.json` (por exemplo, `1.3.0`) e publique (`npm run vendas:publicar`). A migração local 5 só cria as duas colunas; não há recarga dirigida.
+2. **Depois a API:** suba a API com a 6.6 e, no `.env` do servidor, `APP_VERSAO_MINIMA_VENDAS` igual à versão publicada.
+3. O computador na versão antiga continua enviando o que guardou; a devolução de venda a prazo feita nele recebe o bloqueio antigo até atualizar. Nada se perde.
+
 ## Riscos da primeira instalação no computador do vendedor
 
 | Risco | O que fazer |
