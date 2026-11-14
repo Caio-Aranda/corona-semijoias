@@ -186,7 +186,7 @@ public class ServicoDeTrocas {
         VendaDaTrocaGravada b = vendas.venderNaTroca(vendedorId, usuarioId, aparelho,
                 new PedidoDeVenda(vendaNovaId, venda.remessaId(), a.clienteId(), venda.itens(), venda.pagamentos(),
                         venda.totalConferido(), venda.parcelamento()), quando, horaAjustada,
-                new CreditoDaTroca(id, creditoId, pagamentoDoCredito, a.valorDevolvido()), modo == ModoDaDevolucao.ENVIO);
+                new CreditoDaTroca(id, creditoId, pagamentoDoCredito, a.valorEmCredito()), modo == ModoDaDevolucao.ENVIO);
 
         BigDecimal diferenca = b.total().subtract(a.valorDevolvido());
         if (aparelho != null) {
@@ -207,7 +207,8 @@ public class ServicoDeTrocas {
         depois.put("valor_devolvido", a.valorDevolvido().toPlainString());
         depois.put("total_da_venda_nova", b.total().toPlainString());
         depois.put("diferenca", diferenca.toPlainString());
-        depois.put("credito_em_aberto", a.valorDevolvido().subtract(b.creditoUsado()).toPlainString());
+        depois.put("valor_abatido", a.valorDevolvido().subtract(a.valorEmCredito()).toPlainString());
+        depois.put("credito_em_aberto", a.valorEmCredito().subtract(b.creditoUsado()).toPlainString());
         auditoria.registrar(Ator.usuario(usuarioId), "TROCA_REGISTRADA", "trocas", id, null, depois);
         return new Resultado(id, false);
     }

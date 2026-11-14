@@ -184,7 +184,9 @@ class EstornoDoRecebimentoTest extends ApoioDasContas {
         postar("/api/vendedor/autorizacoes", como(c.vendedor()), mapa("id", UUID.randomUUID(), "vendaId", c.venda(),
                 "motivo", "ARREPENDIMENTO",
                 "itens", List.of(mapa("produtoId", c.peca(), "quantidade", 1, "estado", "BOA"))))
-                .andExpect(status().isCreated());
+                // Dentro do prazo e sem valor de aprovação: a venda a prazo já não é recusada por ser a prazo (tarefa 6.6);
+                // quem responde é a regra de sempre, a autorização é desnecessária.
+                .andExpect(status().isConflict()).andExpect(jsonPath("$.codigo").value("AUTORIZACAO_DESNECESSARIA"));
     }
 
     @Test

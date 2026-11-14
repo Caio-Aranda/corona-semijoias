@@ -9,6 +9,7 @@ import br.com.coronasemijoias.api.comum.identificadores.UuidV7;
 import br.com.coronasemijoias.api.comum.persistencia.OrigemDoDispositivo;
 import br.com.coronasemijoias.api.configuracoes.ChaveDeConfiguracao;
 import br.com.coronasemijoias.api.configuracoes.Configuracoes;
+import br.com.coronasemijoias.api.contasreceber.ServicoDeContasAReceber;
 import br.com.coronasemijoias.api.creditos.ServicoDeCreditos;
 import br.com.coronasemijoias.api.devolucoes.RegrasDaDevolucao.Peca;
 import br.com.coronasemijoias.api.devolucoes.RegrasDaDevolucao.PecaCalculada;
@@ -52,6 +53,10 @@ import org.springframework.transaction.annotation.Transactional;
  *       que voltou como crédito do cliente. Na venda paga (em parte) com crédito, o crédito volta primeiro (dúvida T9). O
  *       limite da semana, o valor de aprovação e o "reembolso maior que o pago" olham só o dinheiro. A devolução de uma
  *       troca ({@code destino = TROCA}) só se desfaz pelo "Cancelar troca".</li>
+ *   <li>Venda a prazo (tarefa 6.6; ADR-0014, item 10): a devolução primeiro <strong>abate</strong> o que o cliente ainda deve
+ *       (baixa de cancelamento nas parcelas em aberto, da última para a primeira), depois volta o que foi pago em crédito
+ *       e só então o dinheiro. {@code valor_abatido + valor_em_credito + valor_reembolsado = valor_devolvido}. As parcelas
+ *       são a última trava (depois dos créditos); o "Cancelar devolução" desfaz o abatimento por estorno das baixas.</li>
  *   <li>Peça boa de maleta ainda com o vendedor volta ao saldo (movimento {@code DEVOLUCAO_CLIENTE}); peça boa de maleta
  *       acertada e toda peça com defeito são "peça para a loja", sem movimento.</li>
  *   <li>Autorização aprovada e válida (mesma venda, mesmo motivo, no máximo as peças pedidas) dispensa o prazo e o valor
@@ -117,15 +122,18 @@ public class ServicoDeDevolucoes {
     public record Resultado(UUID devolucaoId, boolean jaExistia) {
     }
 
-    /** A devolução de A gravada pela troca: o valor devolvido (o que vira crédito) e o cliente da venda A. */
-    public record DevolucaoDaTrocaGravada(UUID devolucaoId, BigDecimal valorDevolvido, UUID clienteId) {
+    /**
+     * A devolução de A gravada pela troca: o valor devolvido, o que vira crédito para pagar B (o que passou do que A
+     * ainda devia; zero se A não tinha nada pago) e o cliente da venda A.
+     */
+    public record DevolucaoDaTrocaGravada(UUID devolucaoId, BigDecimal valorDevolvido, BigDecimal valorEmCredito, UUID clienteId) {
     }
 
     /** A troca da devolução: o id da troca e o do crédito que ela gera (os dois do aplicativo). */
     private record DaTroca(UUID trocaId, UUID creditoId) {
     }
 
-    private record Gravada(Resultado resultado, BigDecimal valorDevolvido, UUID clienteId) {
+    private record Gravada(Resultado resultado, BigDecimal valorDevolvido, BigDecimal valorEmCredito, UUID clienteId) {
     }
 
     /** A chave da trava do vendedor (a mesma na devolução e na troca). */
@@ -137,15 +145,17 @@ public class ServicoDeDevolucoes {
     private final OrigemDoDispositivo origem;
     private final Clock relogio;
     private final ServicoDeCreditos creditos;
+    private final ServicoDeContasAReceber contas;
 
     ServicoDeDevolucoes(JdbcTemplate jdbc, ServicoDeAuditoria auditoria, Configuracoes configuracoes,
-            OrigemDoDispositivo origem, Clock relogio, ServicoDeCreditos creditos) {
+            OrigemDoDispositivo origem, Clock relogio, ServicoDeCreditos creditos, ServicoDeContasAReceber contas) {
         this.jdbc = jdbc;
         this.auditoria = auditoria;
         this.configuracoes = configuracoes;
         this.origem = origem;
         this.relogio = relogio;
         this.creditos = creditos;
+        this.contas = contas;
     }
 
     /**
@@ -204,7 +214,7 @@ public class ServicoDeDevolucoes {
             UUID creditoId) {
         Gravada g = registrar(vendedorId, usuarioId, aparelho, pedido, momento, horaAjustada, modo,
                 new DaTroca(trocaId, creditoId), false);
-        return new DevolucaoDaTrocaGravada(g.resultado().devolucaoId(), g.valorDevolvido(), g.clienteId());
+        return new DevolucaoDaTrocaGravada(g.resultado().devolucaoId(), g.valorDevolvido(), g.valorEmCredito(), g.clienteId());
     }
 
     private Gravada registrar(UUID vendedorId, UUID usuarioId, UUID aparelho, PedidoDaDevolucaoDoCliente pedido, Instant momento,
@@ -253,7 +263,7 @@ public class ServicoDeDevolucoes {
                 throw new ErroDaApi(HttpStatus.CONFLICT, troca != null ? CodigoErro.TROCA_JA_REGISTRADA_DIFERENTE
                         : CodigoErro.DEVOLUCAO_JA_REGISTRADA_DIFERENTE);
             }
-            return new Gravada(new Resultado(id, true), null, (UUID) venda.get("cliente_id"));
+            return new Gravada(new Resultado(id, true), null, null, (UUID) venda.get("cliente_id"));
         }
 
         if (!pelaDona) {
@@ -275,10 +285,6 @@ public class ServicoDeDevolucoes {
         BigDecimal pagoEmDinheiro = (BigDecimal) dinheiro.get("pago_em_dinheiro");
         BigDecimal jaReembolsado = (BigDecimal) dinheiro.get("reembolsado_em_dinheiro");
         BigDecimal creditoLiquido = (BigDecimal) dinheiro.get("credito_liquido");
-        if (pago.compareTo(total) < 0) {
-            // Venda a prazo: a devolução dela depende das parcelas (tarefa 6.6; dúvida R5).
-            throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.VENDA_A_PRAZO_SEM_DEVOLUCAO);
-        }
         String statusDaMaleta = (String) remessa.get("status");
         if ("EM_ACERTO".equals(statusDaMaleta)) {
             throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.MALETA_EM_ACERTO);
@@ -319,11 +325,15 @@ public class ServicoDeDevolucoes {
 
         List<PecaCalculada> calculadas = RegrasDaDevolucao.calcular(jdbc, pedido.vendaId(), pecas);
         BigDecimal valorDevolvido = RegrasDaDevolucao.somar(calculadas);
-        // O que volta em crédito e o que volta em dinheiro (dúvidas T1 e T9): na troca, tudo em crédito; na venda paga
-        // (em parte) com crédito, o crédito líquido dela volta primeiro, e só o resto em dinheiro.
-        BigDecimal valorEmCredito = troca != null ? valorDevolvido
-                : valorDevolvido.min(creditoLiquido.max(BigDecimal.ZERO.setScale(valorDevolvido.scale())));
-        BigDecimal valorEmDinheiro = valorDevolvido.subtract(valorEmCredito);
+        // A divisão do valor devolvido (tarefa 6.6; ADR-0014, item 10): primeiro abate o que o cliente ainda deve nas
+        // parcelas (a venda já está travada, então o em aberto é estável); do resto, o crédito líquido da venda volta
+        // primeiro como crédito (dúvidas T1 e T9; na troca, o resto todo é o crédito que paga B) e só o que sobrar em
+        // dinheiro. Só somas e mínimos de valores com duas casas: nenhum arredondamento novo.
+        BigDecimal zero = BigDecimal.ZERO.setScale(valorDevolvido.scale());
+        BigDecimal valorAbatido = valorDevolvido.min(contas.emAberto(pedido.vendaId()).max(zero));
+        BigDecimal resto = valorDevolvido.subtract(valorAbatido);
+        BigDecimal valorEmCredito = troca != null ? resto : resto.min(creditoLiquido.max(zero));
+        BigDecimal valorEmDinheiro = resto.subtract(valorEmCredito);
 
         // Prazo da garantia em dias do calendário de Brasília, pelo motivo (ADR-0014, item 4). Lido a cada devolução.
         Instant vendidaEm = ((Timestamp) venda.get("vendida_em")).toInstant();
@@ -371,12 +381,13 @@ public class ServicoDeDevolucoes {
         jdbc.update("""
                 INSERT INTO corona.devolucoes (id, venda_id, cliente_id, vendedor_id, remessa_id, motivo, observacao, destino,
                     dentro_garantia, situacao, autorizacao_id, valor_devolvido, valor_reembolsado, valor_em_credito,
-                    forma_reembolso, cotacao_id, devolvida_em, hora_ajustada, registrada_por, revisao_fora_do_prazo,
+                    valor_abatido, forma_reembolso, cotacao_id, devolvida_em, hora_ajustada, registrada_por, revisao_fora_do_prazo,
                     revisao_acima_do_limite_semanal, revisao_acima_do_valor_de_aprovacao, revisao_autorizacao_invalida,
                     revisao_reembolso_maior_que_pago)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 id, pedido.vendaId(), clienteId, vendedorId, remessaId, motivo, observacao, troca == null ? "REEMBOLSO" : "TROCA",
-                dentroDaGarantia, situacao, autorizacaoUsada, valorDevolvido, valorEmDinheiro, valorEmCredito, forma, cotacao,
+                dentroDaGarantia, situacao, autorizacaoUsada, valorDevolvido, valorEmDinheiro, valorEmCredito, valorAbatido, forma,
+                cotacao,
                 Timestamp.from(quando), horaAjustada, usuarioId, motivos.contains(MotivoDaRevisao.FORA_DO_PRAZO),
                 motivos.contains(MotivoDaRevisao.ACIMA_DO_LIMITE_SEMANAL),
                 motivos.contains(MotivoDaRevisao.ACIMA_DO_VALOR_SEM_AUTORIZACAO),
@@ -421,6 +432,8 @@ public class ServicoDeDevolucoes {
             // A devolução já está gravada com a autorização: o banco confere isso antes de aceitar a usada.
             jdbc.update("UPDATE corona.autorizacoes_excecao SET situacao = 'USADA' WHERE id = ?", autorizacaoUsada);
         }
+        // O abatimento das parcelas: a última trava (as parcelas vêm depois dos créditos).
+        contas.abaterNaDevolucao(pedido.vendaId(), id, valorAbatido, quando);
 
         Map<String, Object> depois = new LinkedHashMap<>();
         depois.put("venda_id", pedido.vendaId().toString());
@@ -431,6 +444,7 @@ public class ServicoDeDevolucoes {
         depois.put("valor_devolvido", valorDevolvido.toPlainString());
         depois.put("valor_reembolsado", valorEmDinheiro.toPlainString());
         depois.put("valor_em_credito", valorEmCredito.toPlainString());
+        depois.put("valor_abatido", valorAbatido.toPlainString());
         if (creditoGerado != null) {
             depois.put("credito_id", creditoGerado.toString());
         }
@@ -453,7 +467,7 @@ public class ServicoDeDevolucoes {
             depois.put("alerta_valor_do_app", pedido.valorConferido().toPlainString());
         }
         auditoria.registrar(Ator.usuario(usuarioId), "DEVOLUCAO_REGISTRADA", "devolucoes", id, null, depois);
-        return new Gravada(new Resultado(id, false), valorDevolvido, clienteId);
+        return new Gravada(new Resultado(id, false), valorDevolvido, valorEmCredito, clienteId);
     }
 
     // --- cancelar ---
@@ -593,6 +607,8 @@ public class ServicoDeDevolucoes {
         if (credito != null) {
             creditos.cancelar(credito, usuarioId, momento);
         }
+        // O que a devolução abateu das parcelas volta a ser devido (estorno das baixas); as parcelas são a última trava.
+        contas.desfazerAbatimento(devolucaoId, momento);
         Map<String, Object> depois = new LinkedHashMap<>();
         depois.put("situacao", "CANCELADA");
         depois.put("motivo", limpo);

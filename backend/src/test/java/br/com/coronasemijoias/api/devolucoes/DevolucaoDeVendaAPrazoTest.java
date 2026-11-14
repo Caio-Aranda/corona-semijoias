@@ -105,7 +105,8 @@ class DevolucaoDeVendaAPrazoTest extends ApoioDaVendaAPrazo {
         receber(c, UUID.randomUUID(), "66.68").andExpect(status().isConflict())
                 .andExpect(jsonPath("$.codigo").value("RECEBIMENTO_ACIMA_DO_EM_ABERTO"));
         receber(c, UUID.randomUUID(), "66.67").andExpect(status().isCreated());
-        assertThat(situacoes(c.venda())).containsExactly("PAGA", "PAGA", "PARCIAL");
+        // A parcela 3 (33,34) tinha 33,33 abatidos: o 0,01 recebido a fecha.
+        assertThat(situacoes(c.venda())).containsExactly("PAGA", "PAGA", "CANCELADA");
         igual(emAberto(c.venda()), "0.00");
     }
 
@@ -261,5 +262,12 @@ class DevolucaoDeVendaAPrazoTest extends ApoioDaVendaAPrazo {
         JsonNode d = devolverAPrazoOk(c, 1);
         assertThat(new BigDecimal(corpoDe(ler(DEVOLUCOES + "/" + d.get("id").asString(), como(c.v())).andExpect(status().isOk()))
                 .get("valorAbatido").asString())).isEqualByComparingTo("33.33");
+    }
+
+    @Test
+    void oCodigoAntigoFicaNoCatalogoParaAppAntigoMasADevolucaoDeVendaAPrazoNaoOUsaMais() throws Exception {
+        assertThat(br.com.coronasemijoias.api.comum.erros.CodigoErro.valueOf("VENDA_A_PRAZO_SEM_DEVOLUCAO")).isNotNull();
+        APrazo c = vendaAPrazo("40.00", 2);
+        devolverAPrazo(c, 1, "DINHEIRO").andExpect(status().isCreated());
     }
 }

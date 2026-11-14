@@ -139,9 +139,9 @@ class AutorizacaoDeDevolucaoTest extends ApoioDasDevolucoes {
                 List.of(devolvida(anel, 3, "BOA")))).andExpect(status().isConflict()))).isEqualTo("DEVOLUCAO_ACIMA_DO_VENDIDO");
 
         UUID aPrazo = vender(v, maleta, cliente, List.of(linha(anel, 1)), List.of());
-        // A venda a prazo também pode pedir autorização (tarefa 6.6).
-        postar(AUTORIZACOES, como(v), pedidoDeAutorizacao(UUID.randomUUID(), aPrazo, "ARREPENDIMENTO",
-                List.of(devolvida(anel, 1, "BOA")))).andExpect(status().isCreated());
+        // A venda a prazo já não é recusada por ser a prazo (tarefa 6.6): dentro do prazo, quem responde é a regra de sempre.
+        assertThat(codigoDe(postar(AUTORIZACOES, como(v), pedidoDeAutorizacao(UUID.randomUUID(), aPrazo, "ARREPENDIMENTO",
+                List.of(devolvida(anel, 1, "BOA")))).andExpect(status().isConflict()))).isEqualTo("AUTORIZACAO_DESNECESSARIA");
         UUID estornada = vender(v, maleta, cliente, List.of(linha(anel, 1)), List.of(pagamento("50.00", "PIX")));
         postar(VENDAS + "/" + estornada + "/estorno", como(v), mapa("id", UUID.randomUUID(), "motivo", "engano"))
                 .andExpect(status().isCreated());

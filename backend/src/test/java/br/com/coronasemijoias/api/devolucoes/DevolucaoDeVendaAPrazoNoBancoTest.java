@@ -9,7 +9,9 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import org.junit.jupiter.api.AfterEach;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataAccessException;
@@ -20,13 +22,15 @@ import org.springframework.dao.DataAccessException;
  */
 class DevolucaoDeVendaAPrazoNoBancoTest extends ApoioDaVendaAPrazo {
 
+    @Autowired
+    PlatformTransactionManager transacoes;
+
     private APrazo c;
     private UUID devolucao;
     private UUID baixaDaDevolucao;
 
     @BeforeEach
     void umaDevolucaoDeUmaPeca() throws Exception {
-        conciliar = false;
         c = vendaAPrazo(null, 3);
         devolucao = UUID.fromString(devolverAPrazoOk(c, 1).get("id").asString());
         baixaDaDevolucao = jdbc.queryForObject("""
@@ -34,12 +38,12 @@ class DevolucaoDeVendaAPrazoNoBancoTest extends ApoioDaVendaAPrazo {
                  WHERE c.venda_id = ? AND b.devolucao_id = ?""", UUID.class, c.venda(), devolucao);
     }
 
-    /** Estes testes gravam baixas que não fecham com a venda: ela sai de cena por SQL direto, como nas contas. */
-    @AfterEach
-    void tirarAVendaDeCena() {
-        jdbc.update("""
-                UPDATE corona.vendas SET status = 'ESTORNADA', estorno_id = ?, estornada_em = now(), motivo_estorno = 'teste do banco'
-                 WHERE id = ? AND status = 'CONCLUIDA'""", UUID.randomUUID(), c.venda());
+    /** Roda a gravação numa transação que sempre volta atrás: o que não fecha com a venda nunca fica no banco. */
+    private void semConfirmar(Runnable gravacoes) {
+        new TransactionTemplate(transacoes).executeWithoutResult(s -> {
+            gravacoes.run();
+            s.setRollbackOnly();
+        });
     }
 
     private UUID conta(int parcela) {
@@ -75,19 +79,24 @@ class DevolucaoDeVendaAPrazoNoBancoTest extends ApoioDaVendaAPrazo {
     void estornoDoCancelamentoPrecisaDesfazerOOriginalDaMesmaContaPeloMesmoValor() {
         recusa(() -> baixa(conta(3), "-10.00", devolucao, baixaDaDevolucao));
         recusa(() -> baixa(conta(1), "-33.33", devolucao, baixaDaDevolucao));
-        baixa(conta(3), "-33.33", devolucao, baixaDaDevolucao);
-        // O estorno duplicado e o cancelado negativo depois do estorno.
-        recusa(() -> baixa(conta(3), "-33.33", devolucao, baixaDaDevolucao));
-        assertThat(contar("SELECT count(*) FROM corona.baixas_receber WHERE estorna_id = ?", baixaDaDevolucao)).isEqualTo(1);
+        // O estorno certo entra; o segundo, do mesmo cancelamento, não (índice único de estorna_id).
+        semConfirmar(() -> baixa(conta(3), "-33.33", devolucao, baixaDaDevolucao));
+        recusa(() -> semConfirmar(() -> {
+            baixa(conta(3), "-33.33", devolucao, baixaDaDevolucao);
+            baixa(conta(3), "-33.33", devolucao, baixaDaDevolucao);
+        }));
+        assertThat(contar("SELECT count(*) FROM corona.baixas_receber WHERE estorna_id = ?", baixaDaDevolucao)).isZero();
     }
 
     @Test
     void cancelamentoDeEstornoDaVendaNaoTemEstornoPorDevolucao() {
-        UUID estornoDaVenda = UuidV7.gerar();
-        jdbc.update("""
-                INSERT INTO corona.baixas_receber (id, conta_id, tipo, valor, baixada_em, motivo_cancelamento)
-                VALUES (?, ?, 'CANCELAMENTO', 5.00, now(), 'ESTORNO_VENDA')""", estornoDaVenda, conta(1));
-        recusa(() -> baixa(conta(1), "-5.00", devolucao, estornoDaVenda));
+        recusa(() -> semConfirmar(() -> {
+            UUID estornoDaVenda = UuidV7.gerar();
+            jdbc.update("""
+                    INSERT INTO corona.baixas_receber (id, conta_id, tipo, valor, baixada_em, motivo_cancelamento)
+                    VALUES (?, ?, 'CANCELAMENTO', 5.00, now(), 'ESTORNO_VENDA')""", estornoDaVenda, conta(1));
+            baixa(conta(1), "-5.00", devolucao, estornoDaVenda);
+        }));
     }
 
     @Test

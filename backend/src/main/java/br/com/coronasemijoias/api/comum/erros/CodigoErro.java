@@ -438,7 +438,7 @@ public enum CodigoErro {
             "Passou do prazo da garantia.",
             "Passou do prazo da garantia. Peça autorização à dona."),
 
-    /** Devolução de venda a prazo: só com as parcelas (tarefa 6.6; dúvida R5). HTTP 409. */
+    /** Não é mais devolvido desde a tarefa 6.6 (a devolução abate as parcelas); fica só porque o Corona Vendas antigo conhece o código. HTTP 409. */
     VENDA_A_PRAZO_SEM_DEVOLUCAO(
             "Esta venda tem parcelas.",
             "Esta venda tem parcelas; a devolução dela chega em breve."),

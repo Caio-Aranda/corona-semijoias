@@ -133,7 +133,7 @@ public final class RegistroDeTabelas {
                         new TabelaSincronizavel("devolucoes", List.of(
                                 "venda_id", "cliente_id", "vendedor_id", "remessa_id", "motivo", "observacao", "destino",
                                 "dentro_garantia", "situacao", "autorizacao_id", "valor_devolvido", "valor_reembolsado",
-                                "valor_em_credito", "forma_reembolso", "cotacao_id", "devolvida_em", "hora_ajustada",
+                                "valor_em_credito", "valor_abatido", "forma_reembolso", "cotacao_id", "devolvida_em", "hora_ajustada",
                                 "cancelamento_id", "cancelada_em", "motivo_cancelamento", "revisao_fora_do_prazo",
                                 "revisao_acima_do_limite_semanal", "revisao_acima_do_valor_de_aprovacao",
                                 "revisao_autorizacao_invalida", "revisao_reembolso_maior_que_pago", "revisada_em",
@@ -175,7 +175,7 @@ public final class RegistroDeTabelas {
                                 "total_parcelas", "vencimento", "valor", "valor_pago", "valor_cancelado", "status"), false,
                                 RegraDoVendedor.doVendedor(DA_VENDA)),
                         new TabelaSincronizavel("baixas_receber", List.of(
-                                "conta_id", "tipo", "valor", "baixada_em", "pagamento_cliente_id", "motivo_cancelamento",
+                                "conta_id", "tipo", "valor", "baixada_em", "pagamento_cliente_id", "motivo_cancelamento", "devolucao_id",
                                 "estorna_id"), true,
                                 RegraDoVendedor.doVendedor("EXISTS (SELECT 1 FROM corona.contas_receber c"
                                         + " JOIN corona.vendas v ON v.id = c.venda_id WHERE c.id = t.conta_id AND v.vendedor_id = ?)"))

@@ -56,11 +56,11 @@ public class DevolucoesDoVendedorController {
     }
 
     @Operation(operationId = "devolverDoCliente", summary = "Registrar a devolução de um cliente",
-            description = "Devolução de peças de uma venda à vista do vendedor, dentro da garantia. A venda não muda; o servidor "
+            description = "Devolução de peças de uma venda do vendedor, dentro da garantia. Na venda a prazo, o servidor primeiro abate o que o cliente ainda deve (cancela as parcelas em aberto, da última para a primeira; valorAbatido) e só o que passar disso volta como crédito e em dinheiro. A venda não muda; o servidor "
                     + "calcula o valor (o preço pago), o reembolso na forma escolhida e para onde vai cada peça (boa de maleta "
                     + "aberta volta à maleta; com defeito ou de maleta acertada, peça para a loja). Fora do prazo ou acima do "
-                    + "valor que a dona aprova antes, só com a autorização aprovada (autorizacaoId); sem ela, 409. Venda a prazo "
-                    + "ou acima do vendido: 409. Acima do limite da semana: aceita para revisão da dona. Mesmo id e mesmo "
+                    + "valor que a dona aprova antes, só com a autorização aprovada (autorizacaoId); sem ela, 409. Acima "
+                    + "do vendido: 409. Acima do limite da semana: aceita para revisão da dona. Mesmo id e mesmo "
                     + "conteúdo devolve 200; mesmo id com dados diferentes, 409.")
     @PostMapping
     public ResponseEntity<Devolucao> devolver(@RequestBody PedidoDaDevolucao pedido,
@@ -89,7 +89,7 @@ public class DevolucoesDoVendedorController {
     @Operation(operationId = "vendasComAPeca", summary = "Vendas com a peça lida",
             description = "Pelo código lido (sem diferenciar maiúsculas, sem espaços nas pontas) ou pelo produto: as vendas "
                     + "concluídas do vendedor com a peça, da mais nova para a mais antiga (no máximo 20), com o que ainda pode "
-                    + "voltar de cada peça, até que dia vale a garantia e se a venda é a prazo.")
+                    + "voltar de cada peça, até que dia vale a garantia, se a venda é a prazo (só informativo) e o que o cliente ainda deve nas parcelas (emAberto).")
     @GetMapping("/vendas-com-a-peca")
     public VendasComAPeca vendasComAPeca(@RequestParam(required = false) String codigo,
             @RequestParam(required = false) UUID produtoId, @AuthenticationPrincipal UsuarioAutenticado quem) {

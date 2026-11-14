@@ -219,7 +219,7 @@ export const listarDevolucoesDoVendedor = <ThrowOnError extends boolean = false>
 /**
  * Registrar a devolução de um cliente
  *
- * Devolução de peças de uma venda à vista do vendedor, dentro da garantia. A venda não muda; o servidor calcula o valor (o preço pago), o reembolso na forma escolhida e para onde vai cada peça (boa de maleta aberta volta à maleta; com defeito ou de maleta acertada, peça para a loja). Fora do prazo ou acima do valor que a dona aprova antes, só com a autorização aprovada (autorizacaoId); sem ela, 409. Venda a prazo ou acima do vendido: 409. Acima do limite da semana: aceita para revisão da dona. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409.
+ * Devolução de peças de uma venda do vendedor, dentro da garantia. Na venda a prazo, o servidor primeiro abate o que o cliente ainda deve (cancela as parcelas em aberto, da última para a primeira; valorAbatido) e só o que passar disso volta como crédito e em dinheiro. A venda não muda; o servidor calcula o valor (o preço pago), o reembolso na forma escolhida e para onde vai cada peça (boa de maleta aberta volta à maleta; com defeito ou de maleta acertada, peça para a loja). Fora do prazo ou acima do valor que a dona aprova antes, só com a autorização aprovada (autorizacaoId); sem ela, 409. Acima do vendido: 409. Acima do limite da semana: aceita para revisão da dona. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409.
  */
 export const devolverDoCliente = <ThrowOnError extends boolean = false>(options: Options<DevolverDoClienteData, ThrowOnError>): RequestResult<DevolverDoClienteResponses, unknown, ThrowOnError> => (options.client ?? client).post<DevolverDoClienteResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -234,7 +234,7 @@ export const devolverDoCliente = <ThrowOnError extends boolean = false>(options:
 /**
  * Vendas com a peça lida
  *
- * Pelo código lido (sem diferenciar maiúsculas, sem espaços nas pontas) ou pelo produto: as vendas concluídas do vendedor com a peça, da mais nova para a mais antiga (no máximo 20), com o que ainda pode voltar de cada peça, até que dia vale a garantia e se a venda é a prazo.
+ * Pelo código lido (sem diferenciar maiúsculas, sem espaços nas pontas) ou pelo produto: as vendas concluídas do vendedor com a peça, da mais nova para a mais antiga (no máximo 20), com o que ainda pode voltar de cada peça, até que dia vale a garantia, se a venda é a prazo (só informativo) e o que o cliente ainda deve nas parcelas (emAberto).
  */
 export const vendasComAPeca = <ThrowOnError extends boolean = false>(options?: Options<VendasComAPecaData, ThrowOnError>): RequestResult<VendasComAPecaResponses, unknown, ThrowOnError> => (options?.client ?? client).get<VendasComAPecaResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
