@@ -160,8 +160,8 @@ class CicloDaFase7Test extends ApoioDasConciliacoes {
         fechar(acertoB, pedidoDeFechamento(List.of(), List.of(), "440.99")).andExpect(status().isCreated());
 
         // 9. Fechar uma semana que já terminou: depois dela, lançar no caixa com data nela é recusado.
-        LocalDate inicio = LocalDate.of(1991, 1, 1);
-        UUID semanaVelha = UUID.fromString(corpoDe(postarDona("/api/dona/semanas", mapa("numero", 97_001, "inicio", inicio.toString(),
+        LocalDate inicio = LocalDate.of(1950, 1, 2);
+        UUID semanaVelha = UUID.fromString(corpoDe(postarDona("/api/dona/semanas", mapa("numero", 99_713, "inicio", inicio.toString(),
                 "fim", inicio.plusDays(6).toString())).andExpect(status().isCreated())).get("id").asString());
         postarDona("/api/dona/semanas/" + semanaVelha + "/fechar", mapa("id", UUID.randomUUID())).andExpect(status().isCreated());
         postarDona(CAIXA + "/lancamentos", mapa("id", UUID.randomUUID(), "tipo", "SAIDA", "valor", "5.00", "forma", "DINHEIRO",
