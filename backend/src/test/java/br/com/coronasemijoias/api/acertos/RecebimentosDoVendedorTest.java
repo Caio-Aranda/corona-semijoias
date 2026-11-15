@@ -103,10 +103,12 @@ class RecebimentosDoVendedorTest extends ApoioDoFechamento {
         receber(UUID.randomUUID(), "BOLETO", "10.00", c.get(0)).andExpect(status().isConflict());
         receber(UUID.randomUUID(), "BOLETO", "15.00", c.get(1)).andExpect(status().isConflict());
         receber(UUID.randomUUID(), "BOLETO", "20.00", null).andExpect(status().isConflict());
-        receber(UUID.randomUUID(), "BOLETO", "20.00", c.get(0)).andExpect(status().isCreated());
+        UUID recebimento = UUID.randomUUID();
+        receber(recebimento, "BOLETO", "20.00", c.get(0)).andExpect(status().isCreated());
         assertThat(situacao(c.get(0))).isEqualTo("PAGA:20.00");
         assertThat(caixa()).isEqualByComparingTo("20.00");
-        assertThat(jdbc.queryForObject("SELECT forma FROM corona.lancamentos_caixa ORDER BY lancado_em DESC LIMIT 1", String.class))
+        // O lançamento deste recebimento (e não "o último do banco": outras classes também lançam no caixa).
+        assertThat(jdbc.queryForObject("SELECT forma FROM corona.lancamentos_caixa WHERE origem_id = ?", String.class, recebimento))
                 .isEqualTo("BOLETO");
     }
 
