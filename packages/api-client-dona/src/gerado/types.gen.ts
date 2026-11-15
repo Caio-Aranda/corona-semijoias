@@ -1001,25 +1001,37 @@ export type LinhaDaVendaComAPeca = {
 
 export type LinhaDeAcerto = {
     comissao?: string;
+    comissaoEmDolar?: string;
+    comissaoEmGuarani?: string;
     dataDaCotacao?: string;
     descontos?: string;
+    descontosEmDolar?: string;
+    descontosEmGuarani?: string;
     devolvido?: string;
+    devolvidoEmDolar?: string;
+    devolvidoEmGuarani?: string;
     faltasCobradas?: string;
+    faltasCobradasEmDolar?: string;
+    faltasCobradasEmGuarani?: string;
     fechadoEm?: string;
     ficouDevendo?: string;
+    ficouDevendoEmDolar?: string;
+    ficouDevendoEmGuarani?: string;
     id?: string;
     liquido?: string;
     liquidoEmDolar?: string;
     liquidoEmGuarani?: string;
-    pagoAoVendedor?: string;
     percentual?: string;
     recebidoNoAcerto?: string;
+    recebidoNoAcertoEmDolar?: string;
+    recebidoNoAcertoEmGuarani?: string;
     semana?: number;
     semanaId?: string;
     vendedor?: string;
     vendedorId?: string;
     vendidoBruto?: string;
-    vendidoLiquido?: string;
+    vendidoBrutoEmDolar?: string;
+    vendidoBrutoEmGuarani?: string;
 };
 
 export type LinhaDeAlteracao = {
@@ -1140,12 +1152,18 @@ export type LinhaDeConciliacao = {
 };
 
 export type LinhaDeConta = {
+    canceladoEmDolar?: string;
+    canceladoEmGuarani?: string;
     canceladoEmReais?: string;
     dataDaCotacao?: string;
     devedorTipo?: string;
     diasDeAtraso?: number;
+    emAbertoEmDolar?: string;
+    emAbertoEmGuarani?: string;
     emAbertoEmReais?: string;
     id?: string;
+    pagoEmDolar?: string;
+    pagoEmGuarani?: string;
     pagoEmReais?: string;
     parcela?: number;
     parte?: string;
