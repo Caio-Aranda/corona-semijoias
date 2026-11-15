@@ -119,8 +119,8 @@ class VendasDoVendedorTest extends TesteDeIntegracao {
 
     private UUID semana() throws Exception {
         int n = SEQUENCIA.getAndIncrement();
-        LocalDate inicio = LocalDate.of(2400, 1, 1).plusDays(10L * n);
-        return UUID.fromString(corpoDe(postar("/api/dona/semanas", dona(), mapa("numero", 80_000 + n,
+        LocalDate inicio = LocalDate.of(2700, 1, 1).plusDays(10L * n);
+        return UUID.fromString(corpoDe(postar("/api/dona/semanas", dona(), mapa("numero", 91_000 + n,
                 "inicio", inicio.toString(), "fim", inicio.plusDays(6).toString())).andExpect(status().isCreated()))
                 .get("id").asString());
     }

@@ -13,6 +13,7 @@ import br.com.coronasemijoias.api.estoque.ServicoDeEstoque.OrigemDoMovimento;
 import br.com.coronasemijoias.api.estoque.ServicoDeEstoque.Pedido;
 import br.com.coronasemijoias.api.estoque.ServicoDeEstoque.TipoDeMovimento;
 import br.com.coronasemijoias.api.fotos.ImagensDeTeste;
+import br.com.coronasemijoias.api.testes.CotacoesDaMassa;
 import br.com.coronasemijoias.api.testes.CpfsDeTeste;
 import br.com.coronasemijoias.api.testes.TesteDeIntegracao;
 import br.com.coronasemijoias.api.testes.UsuariosDeTeste;
@@ -21,10 +22,13 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -43,6 +47,14 @@ import tools.jackson.databind.json.JsonMapper;
  * 403 do perfil errado.
  */
 class RotasDoVendedorTest extends TesteDeIntegracao {
+
+    /** As cotações de 1990 deste teste são gravadas de verdade (a tabela é imutável): saem no fim, para não vazar. */
+    @AfterAll
+    static void tirarAsCotacoesDe1990() throws SQLException {
+        try (Connection con = conectarComoMigracao()) {
+            CotacoesDaMassa.tirarDias(con, List.of("1990-01-05", "1990-01-06"));
+        }
+    }
 
     private static final String REMESSAS = "/api/dona/remessas";
     private static final AtomicInteger SEQUENCIA = new AtomicInteger(1);
