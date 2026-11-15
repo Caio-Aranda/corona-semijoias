@@ -360,6 +360,85 @@ describe('API do Corona Gestão: rotas certas no cliente gerado', () => {
     ).toBe(`POST /api/dona/compras/${ID}/desfazer`);
   });
 
+  it('acertos, pendências e comissão: cada operação chama a rota certa', async () => {
+    const PROD = '1b4e28ba-2fa1-41d3-b9a5-2c3a9a8f6b22';
+    const pedido = { id: PEDIDO, faltas: [], defeitos: [], cobrancas: [], pendenciasAntigas: [] };
+    const casos: [Record<string, unknown>, string][] = [
+      [{ operacao: 'acertos.listar', situacao: 'EM_ACERTO' }, 'GET /api/dona/acertos'],
+      [{ operacao: 'acertos.iniciar', id: ID, vendedorId: PROD }, 'POST /api/dona/acertos'],
+      [{ operacao: 'acertos.ver', id: ID }, `GET /api/dona/acertos/${ID}`],
+      [
+        {
+          operacao: 'acertos.ler',
+          id: ID,
+          leituraId: PEDIDO,
+          produtoId: PROD,
+          estadoPeca: 'BOA',
+          quantidade: -1,
+        },
+        `POST /api/dona/acertos/${ID}/leituras`,
+      ],
+      [
+        { operacao: 'acertos.desistir', id: ID, comandoId: PEDIDO, motivo: 'Desistiu' },
+        `POST /api/dona/acertos/${ID}/desistir`,
+      ],
+      [{ operacao: 'acertos.previa', id: ID }, `GET /api/dona/acertos/${ID}/fechamento`],
+      [
+        { operacao: 'acertos.previaComDecisoes', id: ID, pedido },
+        `POST /api/dona/acertos/${ID}/fechamento/previa`,
+      ],
+      [
+        { operacao: 'acertos.fechar', id: ID, pedido: { ...pedido, liquidoMostrado: '10.00' } },
+        `POST /api/dona/acertos/${ID}/fechar`,
+      ],
+      [{ operacao: 'pendencias.listar', status: 'ABERTA' }, 'GET /api/dona/pendencias-acerto'],
+      [
+        {
+          operacao: 'pendencias.resolver',
+          id: ID,
+          comandoId: PEDIDO,
+          acao: 'ENCONTRADA',
+          motivo: 'Apareceu',
+        },
+        `POST /api/dona/pendencias-acerto/${ID}/resolver`,
+      ],
+      [{ operacao: 'comissao.ler' }, 'GET /api/dona/configuracoes/comissao'],
+      [
+        {
+          operacao: 'comissao.alterar',
+          metaGuarani: 700000,
+          percentualAbaixoDaMeta: 30,
+          percentualNaMeta: 40,
+        },
+        'PUT /api/dona/configuracoes/comissao',
+      ],
+    ];
+    for (const [pedidoDaTela, esperado] of casos) {
+      expect(await caminhoDe(pedidoDaTela as never)).toBe(esperado);
+    }
+  });
+
+  it('acertos: o corpo do fechar leva o id do fechamento e o líquido mostrado, e nada calculado', async () => {
+    const corpos: unknown[] = [];
+    const fetchFalso = async (p: Request | string | URL): Promise<Response> => {
+      const r = p as Request;
+      corpos.push(await r.clone().json());
+      return new Response('{}', { status: 200, headers: { 'Content-Type': 'application/json' } });
+    };
+    const api = criarApiDoGestao({ ...base, fetch: fetchFalso });
+    await api.executar('tk', {
+      operacao: 'acertos.fechar',
+      id: ID,
+      pedido: {
+        id: PEDIDO,
+        faltas: [{ produtoId: ID, decisao: 'COBRAR_NO_ACERTO' }],
+        liquidoMostrado: '88.00',
+      },
+    } as never);
+    expect(corpos[0]).toMatchObject({ id: PEDIDO, liquidoMostrado: '88.00' });
+    expect(Object.keys(corpos[0] as object).sort()).toEqual(['faltas', 'id', 'liquidoMostrado']);
+  });
+
   it('maletas: criar, colocar e tirar peça, enviar, excluir, ver, listar e em aberto', async () => {
     const PROD = '1b4e28ba-2fa1-41d3-b9a5-2c3a9a8f6b22';
     const casos: [Record<string, unknown>, string][] = [
