@@ -224,6 +224,7 @@ Painel, relatórios avançados e conciliações. As decisões novas estão no [A
 | Nº | Tarefa | Situação |
 | --- | --- | --- |
 | 8.1 | docs: plano da Fase 8 (tarefas 8.2 a 8.13: arrumação dos testes, conciliações C11 e C12, conferência diária com aviso e histórico, relatórios de vendas e curva ABC, DRE e lucro, painel semanal, controle, pedir o acerto e bipar sobras no Corona Vendas só com internet, prévia tipada, Playwright da dona, fechamento) e ADR-0015 Proposto (custo da peça vendida, DRE, curva ABC, painel, conferência diária). Sem código, sem mudança de regra | PR 175 · [plano](progresso/fase-8-plano.md) |
+| 8.2 | test: arrumação dos testes: cada classe passa sozinha e na suíte em qualquer ordem (semanas, cotações de 1990, administradoras e prazos de garantia deixados por outras classes). Só código de teste | PR 188 · [detalhe](progresso/fase-8.md#tarefa-82-arrumação-dos-testes) |
 | 8.10 | feat: Corona Vendas, o vendedor pede o acerto e conta as sobras (só com internet; botão Pedir acerto com confirmação e tela Contar as sobras com leitor, Boa ou Com defeito e desfazer; rotas do vendedor da 7.4, sem rota nova, sem migração, sem outbox; só a dona fecha e desiste; caso 23 de duas pontas) | PR 189 · [detalhe](progresso/fase-8.md#tarefa-810-corona-vendas-pedir-o-acerto-e-contar-as-sobras) |
 
 ## Auditoria geral (check-up) de 11/11/2026
