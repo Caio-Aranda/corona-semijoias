@@ -8,6 +8,7 @@ import { OPERACOES_DE_CADASTRO } from './cadastros';
 import { OPERACOES_DE_COMPRAS } from './compras';
 import { OPERACOES_DE_DEVOLUCOES } from './devolucoes';
 import { OPERACOES_DE_ESTOQUE } from './estoque';
+import { OPERACOES_DE_FINANCEIRO } from './financeiro';
 import { OPERACOES_DE_MALETAS } from './maletas';
 import { OPERACOES_DE_PRODUTOS } from './produtos';
 import { OPERACOES_DE_RELATORIOS } from './relatorios';
@@ -35,6 +36,7 @@ export const OPERACOES_DA_API = [
   ...OPERACOES_DE_ESTOQUE,
   ...OPERACOES_DE_MALETAS,
   ...OPERACOES_DE_ACERTOS,
+  ...OPERACOES_DE_FINANCEIRO,
   ...OPERACOES_DE_RELATORIOS,
   ...OPERACOES_DE_SINCRONIZACAO,
   ...OPERACOES_DE_DEVOLUCOES,

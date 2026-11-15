@@ -128,6 +128,23 @@ import {
   listar9,
   listar12,
   alterarComissao,
+  criarCategoriaDoCaixa,
+  estornarLancamentoDoCaixa,
+  estornarPagamentoAFornecedor,
+  estornarRecebimentoDoVendedorPelaDona,
+  fecharSemana,
+  inativarCategoriaDoCaixa,
+  lancarNoCaixa,
+  listarCategoriasDoCaixa,
+  listarContasAPagar,
+  listarContasAReceber,
+  listarRecebimentosDoVendedor,
+  pagarContaAPagar,
+  reativarCategoriaDoCaixa,
+  receberDoVendedor,
+  renomearCategoriaDoCaixa,
+  verExtratoDoCaixa,
+  verSaldoDoCaixa,
   desistirDoAcerto,
   fecharAcerto,
   iniciarAcerto,
@@ -203,6 +220,7 @@ import type { NomeDoCadastro } from '../shared/cadastros';
 import type { ParametrosConferidos, ParametrosDeVendedor } from '../shared/validacao-parametros';
 import type { ParametrosDeCompra } from '../shared/validacao-compras';
 import type { ParametrosDeAcerto } from '../shared/validacao-acertos';
+import type { ParametrosDeFinanceiro } from '../shared/validacao-financeiro';
 import type { ParametrosDeMaleta } from '../shared/validacao-maletas';
 import type { ParametrosDeDevolucoes } from '../shared/devolucoes';
 import type { ParametrosDeSincronizacao } from '../shared/sincronizacao';
@@ -810,6 +828,78 @@ async function executarAcerto(
   }
 }
 
+/** Caixa, contas a pagar e a receber, recebimento do vendedor e fechar semana (só ADMIN). O servidor calcula tudo. */
+async function executarFinanceiro(
+  client: ReturnType<typeof criarClienteDaApi>,
+  headers: { Authorization: string },
+  pedido: ParametrosDeFinanceiro,
+): Promise<Resultado<unknown>> {
+  const base = { client, headers };
+  switch (pedido.operacao) {
+    case 'caixa.extrato':
+      return executar(() => verExtratoDoCaixa({ ...base, query: pedido.consulta }));
+    case 'caixa.saldo':
+      return executar(() => verSaldoDoCaixa(base));
+    case 'caixa.lancar':
+      return executar(() => lancarNoCaixa({ ...base, body: pedido.corpo }), true);
+    case 'caixa.estornar':
+      return executar(
+        () => estornarLancamentoDoCaixa({ ...base, path: { id: pedido.id }, body: pedido.corpo }),
+        true,
+      );
+    case 'caixa.categorias':
+      return executar(() => listarCategoriasDoCaixa(base));
+    case 'caixa.criarCategoria':
+      return executar(() => criarCategoriaDoCaixa({ ...base, body: pedido.corpo }), true);
+    case 'caixa.renomearCategoria':
+      return executar(() =>
+        renomearCategoriaDoCaixa({ ...base, path: { id: pedido.id }, body: pedido.corpo }),
+      );
+    case 'caixa.inativarCategoria':
+      return executar(() => inativarCategoriaDoCaixa({ ...base, path: { id: pedido.id } }));
+    case 'caixa.reativarCategoria':
+      return executar(() => reativarCategoriaDoCaixa({ ...base, path: { id: pedido.id } }));
+    case 'contasAPagar.listar':
+      return executar(() => listarContasAPagar({ ...base, query: pedido.lista }));
+    case 'contasAPagar.pagar':
+      return executar(
+        () => pagarContaAPagar({ ...base, path: { id: pedido.id }, body: pedido.corpo }),
+        true,
+      );
+    case 'contasAPagar.estornar':
+      return executar(
+        () =>
+          estornarPagamentoAFornecedor({
+            ...base,
+            path: { baixaId: pedido.id },
+            body: pedido.corpo,
+          }),
+        true,
+      );
+    case 'contasAReceber.listar':
+      return executar(() => listarContasAReceber({ ...base, query: pedido.lista }));
+    case 'recebimentos.listar':
+      return executar(() => listarRecebimentosDoVendedor({ ...base, query: pedido.lista }));
+    case 'recebimentos.receber':
+      return executar(() => receberDoVendedor({ ...base, body: pedido.corpo }), true);
+    case 'recebimentos.estornar':
+      return executar(
+        () =>
+          estornarRecebimentoDoVendedorPelaDona({
+            ...base,
+            path: { recebimentoId: pedido.id },
+            body: pedido.corpo,
+          }),
+        true,
+      );
+    case 'semanas.fechar':
+      return executar(
+        () => fecharSemana({ ...base, path: { id: pedido.id }, body: pedido.corpo }),
+        true,
+      );
+  }
+}
+
 /** Estoque e contagem (só ADMIN; o servidor recalcula saldo e ajustes, a tela só manda o que a pessoa fez). */
 async function executarEstoque(
   client: ReturnType<typeof criarClienteDaApi>,
@@ -1143,6 +1233,15 @@ export function criarApiDoGestao(opcoes: OpcoesDaApi): ApiDoGestao {
         pedido.operacao.startsWith('comissao.')
       ) {
         return executarAcerto(client, headers, pedido as ParametrosDeAcerto);
+      }
+      if (
+        pedido.operacao.startsWith('caixa.') ||
+        pedido.operacao.startsWith('contasAPagar.') ||
+        pedido.operacao.startsWith('contasAReceber.') ||
+        pedido.operacao.startsWith('recebimentos.') ||
+        pedido.operacao === 'semanas.fechar'
+      ) {
+        return executarFinanceiro(client, headers, pedido as ParametrosDeFinanceiro);
       }
       if (pedido.operacao.startsWith('sincronizacao.')) {
         return executarSincronizacao(client, headers, pedido as ParametrosDeSincronizacao);
