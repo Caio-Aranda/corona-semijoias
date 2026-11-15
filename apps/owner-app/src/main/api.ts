@@ -168,6 +168,15 @@ import {
   conferirDevolucoesETrocas,
   conferirODinheiroDaFase7,
   relatorioDeMercadoriaPorVendedor,
+  relatorioDeAcertos,
+  relatorioDeComissoes,
+  relatorioDeContasAPagar,
+  relatorioDeContasAReceber,
+  relatorioDeEsperadoEContado,
+  relatorioDeFluxoDeCaixa,
+  relatorioDeInadimplencia,
+  relatorioDePendenciasDoAcerto,
+  relatorioDeRecebimentosPorForma,
   relatorioDeRemessasPorVendedorESemana,
   relatorioDeReposicoes,
   relatorioDeSaldoPorMaleta,
@@ -1007,6 +1016,24 @@ async function executarRelatorio(
       return executar(() => relatorioDeDinheiroDevolvido({ ...base, query: q }));
     case 'devolucao-autorizacoes':
       return executar(() => relatorioDePedidosDeAutorizacao({ ...base, query: q }));
+    case 'financeiro-acertos':
+      return executar(() => relatorioDeAcertos({ ...base, query: q }));
+    case 'financeiro-pendencias':
+      return executar(() => relatorioDePendenciasDoAcerto({ ...base, query: q }));
+    case 'financeiro-esperado-contado':
+      return executar(() => relatorioDeEsperadoEContado({ ...base, query: q }));
+    case 'financeiro-comissoes':
+      return executar(() => relatorioDeComissoes({ ...base, query: q }));
+    case 'financeiro-a-receber':
+      return executar(() => relatorioDeContasAReceber({ ...base, query: q }));
+    case 'financeiro-a-pagar':
+      return executar(() => relatorioDeContasAPagar({ ...base, query: q }));
+    case 'financeiro-inadimplencia':
+      return executar(() => relatorioDeInadimplencia({ ...base, query: q }));
+    case 'financeiro-caixa':
+      return executar(() => relatorioDeFluxoDeCaixa({ ...base, query: q }));
+    case 'financeiro-recebimentos':
+      return executar(() => relatorioDeRecebimentosPorForma({ ...base, query: q }));
     case 'vendedores':
       return executar(() => relatorioDeVendedores({ ...base, query: q }));
     case 'clientes':

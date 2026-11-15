@@ -1364,3 +1364,21 @@ Só o vendedor, no Corona Vendas, e só o que é dele. Valores em Real, com Dól
 - **Minha comissão desta semana (prévia):** "Prévia: é só uma estimativa. O valor final é o do fechamento do acerto." **Vendido na semana**, **Meta da semana**, **Comissão que valeria hoje**, **Comissão prevista** e **Falta para a meta** em Guarani e em Real; com a meta batida: "Você já bateu a meta da semana." Sem internet: "A prévia da comissão precisa de internet. Conecte-se para ver quanto falta para a meta." Botão **Atualizar prévia**.
 - **Meus acertos:** **Semana N**, situação (**Em acerto**, **Acertado**, **Desistido**), **Pedido por você**, **Fechado em** e o botão **Ver acerto**. Em andamento: "Este acerto está acontecendo. Os valores aparecem depois que a dona fechar o acerto." Desistido: "A dona desistiu deste acerto. Nada de dinheiro foi gravado nele."
 - **Ficha do acerto fechado:** "Valores em Dólar e Guarani pela cotação de DD/MM/AAAA. Vale o valor em reais." (sem cotação: "Sem cotação: os valores aparecem só em reais."); **Resumo do acerto** (**Vendido**, **Descontos**, **Devolvido pelos clientes**, **Vendido sem descontos e devoluções**, **Sua comissão**, "Comissão de 40.00% sobre as vendas", **Meta da semana**, **Peças que faltaram (cobradas neste acerto)**, **Quanto você devia neste acerto**, **Pago neste acerto**, **O que ficou devendo**); **Peças do acerto**, **Comissão de cada venda**, **Pendências** e **O que você pagou neste acerto**. Acerto a favor do vendedor: "A loja deve R$ 35,00 a você. O valor será abatido no próximo acerto."
+
+## Relatórios financeiros (Fase 7, tarefa 7.12; §12)
+
+Menu do Corona Gestão: grupo **Relatórios financeiros** (depois de "Relatórios de devoluções"). Os nomes de tela abaixo são os únicos usados; a §12 só descreve. Cheque, cartão e entrada não existem e não aparecem. Dólar e Guarani seguem a cotação do Banco Central do dia de **cada lançamento** (do fechamento, no que nasce do acerto); tudo é gravado em Real.
+
+| Tela | O que mostra |
+| --- | --- |
+| **Acertos por vendedor e semana** | Um acerto fechado por linha: Vendido, Descontos, Devolvido, Comissão, Faltas cobradas, Valor do acerto, Recebido no acerto, Ficou devendo |
+| **Faltas e pendências** | Peça que faltou, Peça com defeito, Devolução não aceita, Crédito sem saldo; situação: Em aberto, Cobrada do vendedor, A loja assumiu, Peça encontrada, Defeito aprovado ou recusado |
+| **Esperado e contado** | Por peça de cada maleta do acerto: Esperadas, Contadas boas, Contadas com defeito, Faltaram, Valor do que faltou |
+| **Comissões por vendedor e semana** | Vendido para a meta (Gs), Meta da comissão (Gs), Percentual (30% ou 40%), Comissão; situação "Paga no acerto" (a comissão é paga abatendo no acerto) |
+| **Parcelas a receber** | Parcelas dos clientes e dos vendedores: Valor, Já pago, Cancelado, Falta; filtro **Quem deve** |
+| **Parcelas a pagar** | Parcelas das compras aos fornecedores |
+| **Quem está devendo** | Só parcelas vencidas e não pagas, com Dias de atraso e o rodapé por faixa (até 30, 31 a 60, mais de 60 dias) |
+| **Fluxo do caixa** | Entradas, Saídas e Saldo do período; estorno marcado |
+| **Recebimentos por forma de pagamento** | Dinheiro, Transferência e Boleto repassados pelos vendedores; momento: No acerto ou Depois do acerto |
+
+Os nomes "Parcelas a receber" e "Parcelas a pagar" evitam repetir "Contas a receber" e "Contas a pagar", que são as telas de trabalho do Financeiro. DRE e lucro por produto e por vendedor ficam para a Fase 8.

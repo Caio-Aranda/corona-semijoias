@@ -41,6 +41,16 @@ export const NOMES_DOS_RELATORIOS = [
   'devolucao-creditos',
   'devolucao-reembolsos',
   'devolucao-autorizacoes',
+  // Financeiro (tarefa 7.12): os nove relatórios financeiros da dona.
+  'financeiro-acertos',
+  'financeiro-pendencias',
+  'financeiro-esperado-contado',
+  'financeiro-comissoes',
+  'financeiro-a-receber',
+  'financeiro-a-pagar',
+  'financeiro-inadimplencia',
+  'financeiro-caixa',
+  'financeiro-recebimentos',
 ] as const;
 export type NomeDoRelatorio = (typeof NOMES_DOS_RELATORIOS)[number];
 export type NomeDoRelatorioDeEstoqueOuCompras = Extract<
@@ -49,9 +59,13 @@ export type NomeDoRelatorioDeEstoqueOuCompras = Extract<
 >;
 export type NomeDoRelatorioDeMaleta = Extract<NomeDoRelatorio, `maleta-${string}`>;
 export type NomeDoRelatorioDeDevolucao = Extract<NomeDoRelatorio, `devolucao-${string}`>;
+export type NomeDoRelatorioFinanceiro = Extract<NomeDoRelatorio, `financeiro-${string}`>;
 export type NomeDoRelatorioDeCadastro = Exclude<
   NomeDoRelatorio,
-  NomeDoRelatorioDeEstoqueOuCompras | NomeDoRelatorioDeMaleta | NomeDoRelatorioDeDevolucao
+  | NomeDoRelatorioDeEstoqueOuCompras
+  | NomeDoRelatorioDeMaleta
+  | NomeDoRelatorioDeDevolucao
+  | NomeDoRelatorioFinanceiro
 >;
 
 export const SITUACOES_DO_RELATORIO = [
@@ -86,6 +100,15 @@ export const SITUACOES_DO_RELATORIO = [
   'USADA',
   'NEGADA',
   'VENCIDA',
+  // Financeiro (tarefa 7.12)
+  'ABERTA',
+  'PARCIAL',
+  'PAGA',
+  'CANCELADA',
+  'COBRADA',
+  'ASSUMIDA_PELA_LOJA',
+  'ENCONTRADA',
+  'RECUSADA',
 ] as const;
 export type SituacaoDoRelatorio = (typeof SITUACOES_DO_RELATORIO)[number];
 
@@ -145,6 +168,9 @@ export interface ConsultaDeRelatorio {
   /** Devolução e troca (tarefa 6.10): motivo da devolução e forma do dinheiro devolvido. */
   motivo?: string;
   forma?: string;
+  /** Financeiro (tarefa 7.12): quem deve (CLIENTE ou VENDEDOR) e quando foi o recebimento (ACERTO ou AVULSO). */
+  devedor?: string;
+  momento?: string;
   /** A chave de um total do rodapé: mostra só as linhas que formam esse total. */
   recorte?: string;
   pagina: number;

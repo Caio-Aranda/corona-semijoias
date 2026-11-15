@@ -9,6 +9,7 @@ import type { ColunaDoRelatorio } from './exportacao/grade';
 import { RELATORIOS_DE_ESTOQUE, prepararLinhaDeEstoque } from './relatorios-estoque';
 import { RELATORIOS_DE_DEVOLUCAO, prepararLinhaDeDevolucao } from './relatorios-devolucao';
 import { RELATORIOS_DE_MALETA, prepararLinhaDeMaleta } from './relatorios-maleta';
+import { RELATORIOS_FINANCEIROS, prepararLinhaFinanceira } from './relatorios-financeiros';
 
 export type FiltroDoRelatorio =
   | 'busca'
@@ -42,7 +43,9 @@ export type ChaveDeExtra =
   | 'diasDeAtraso'
   | 'divergencia'
   | 'motivo'
-  | 'forma';
+  | 'forma'
+  | 'devedor'
+  | 'momento';
 
 export type ExtraDoRelatorio =
   | {
@@ -100,7 +103,7 @@ export interface DefinicaoDeRelatorio {
   /** Abrir uma linha (compra → peças; contagem → diferenças; peça → histórico de custo). */
   acoes?: AcaoDaLinha[];
   /** Grupo do menu: o dos relatórios de cadastro, de estoque ou de compras. */
-  grupo?: 'estoque' | 'compras' | 'maletas' | 'devolucoes';
+  grupo?: 'estoque' | 'compras' | 'maletas' | 'devolucoes' | 'financeiro';
   /** Devolução e troca: a frase do rodapé dos arquivos sobre a cotação de cada lançamento. */
   notaDaCotacao?: string;
   /** Maletas: o campo da linha com o código da maleta; a linha ganha o botão "Ver a maleta". */
@@ -115,6 +118,7 @@ export const RELATORIOS: Record<NomeDoRelatorio, DefinicaoDeRelatorio> = {
   ...RELATORIOS_DE_ESTOQUE,
   ...RELATORIOS_DE_MALETA,
   ...RELATORIOS_DE_DEVOLUCAO,
+  ...RELATORIOS_FINANCEIROS,
   vendedores: {
     nome: 'vendedores',
     titulo: 'Vendedores: limite e situação',
@@ -530,6 +534,7 @@ export function prepararLinha(
       return { ...linha, tipoNaTela: T.tiposDeAniversariante[String(linha.tipo)] ?? '' };
     default:
       if (nome.startsWith('devolucao-')) return prepararLinhaDeDevolucao(nome, linha);
+      if (nome.startsWith('financeiro-')) return prepararLinhaFinanceira(nome, linha);
       return nome.startsWith('maleta-')
         ? prepararLinhaDeMaleta(nome, linha)
         : prepararLinhaDeEstoque(nome, linha);

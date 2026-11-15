@@ -999,6 +999,41 @@ export type LinhaDaVendaComAPeca = {
     vendidas?: number;
 };
 
+export type LinhaDeAcerto = {
+    comissao?: string;
+    comissaoEmDolar?: string;
+    comissaoEmGuarani?: string;
+    dataDaCotacao?: string;
+    descontos?: string;
+    descontosEmDolar?: string;
+    descontosEmGuarani?: string;
+    devolvido?: string;
+    devolvidoEmDolar?: string;
+    devolvidoEmGuarani?: string;
+    faltasCobradas?: string;
+    faltasCobradasEmDolar?: string;
+    faltasCobradasEmGuarani?: string;
+    fechadoEm?: string;
+    ficouDevendo?: string;
+    ficouDevendoEmDolar?: string;
+    ficouDevendoEmGuarani?: string;
+    id?: string;
+    liquido?: string;
+    liquidoEmDolar?: string;
+    liquidoEmGuarani?: string;
+    percentual?: string;
+    recebidoNoAcerto?: string;
+    recebidoNoAcertoEmDolar?: string;
+    recebidoNoAcertoEmGuarani?: string;
+    semana?: number;
+    semanaId?: string;
+    vendedor?: string;
+    vendedorId?: string;
+    vendidoBruto?: string;
+    vendidoBrutoEmDolar?: string;
+    vendidoBrutoEmGuarani?: string;
+};
+
 export type LinhaDeAlteracao = {
     acao?: string;
     descricao?: string;
@@ -1042,6 +1077,21 @@ export type LinhaDeAutorizacao = {
     vendedorId?: string;
 };
 
+export type LinhaDeCaixa = {
+    categoria?: string;
+    data?: string;
+    dataDaCotacao?: string;
+    descricao?: string;
+    estorno?: boolean;
+    forma?: string;
+    id?: string;
+    origem?: string;
+    tipo?: string;
+    valorEmDolar?: string;
+    valorEmGuarani?: string;
+    valorEmReais?: string;
+};
+
 export type LinhaDeCliente = {
     ativo?: boolean;
     cadastradoEm?: string;
@@ -1054,6 +1104,24 @@ export type LinhaDeCliente = {
     uf?: string;
     vendedor?: string;
     whatsapp?: string;
+};
+
+export type LinhaDeComissao = {
+    base?: string;
+    comissaoEmDolar?: string;
+    comissaoEmGuarani?: string;
+    comissaoEmReais?: string;
+    dataDaCotacao?: string;
+    fechadoEm?: string;
+    id?: string;
+    metaEmGuarani?: number;
+    percentual?: string;
+    semana?: number;
+    semanaId?: string;
+    situacao?: string;
+    vendedor?: string;
+    vendedorId?: string;
+    vendidoEmGuarani?: number;
 };
 
 export type LinhaDeCompra = {
@@ -1083,6 +1151,32 @@ export type LinhaDeConciliacao = {
     somaDosMovimentos?: number;
 };
 
+export type LinhaDeConta = {
+    canceladoEmDolar?: string;
+    canceladoEmGuarani?: string;
+    canceladoEmReais?: string;
+    dataDaCotacao?: string;
+    devedorTipo?: string;
+    diasDeAtraso?: number;
+    emAbertoEmDolar?: string;
+    emAbertoEmGuarani?: string;
+    emAbertoEmReais?: string;
+    id?: string;
+    pagoEmDolar?: string;
+    pagoEmGuarani?: string;
+    pagoEmReais?: string;
+    parcela?: number;
+    parte?: string;
+    situacao?: string;
+    totalParcelas?: number;
+    valorEmDolar?: string;
+    valorEmGuarani?: string;
+    valorEmReais?: string;
+    vencimento?: string;
+    vendedor?: string;
+    vendedorId?: string;
+};
+
 export type LinhaDeCredito = {
     cliente?: string;
     clienteId?: string;
@@ -1100,6 +1194,26 @@ export type LinhaDeCredito = {
     valor?: string;
     valorEmDolar?: string;
     valorEmGuarani?: string;
+    vendedor?: string;
+    vendedorId?: string;
+};
+
+export type LinhaDeEsperadoEContado = {
+    acertoId?: string;
+    contadoBoa?: number;
+    contadoDefeito?: number;
+    dataDaCotacao?: string;
+    defeitoAprovado?: number;
+    esperado?: number;
+    falta?: number;
+    id?: string;
+    produto?: string;
+    produtoId?: string;
+    referencia?: string;
+    semana?: number;
+    valorDaFaltaEmDolar?: string;
+    valorDaFaltaEmGuarani?: string;
+    valorDaFaltaEmReais?: string;
     vendedor?: string;
     vendedorId?: string;
 };
@@ -1251,6 +1365,22 @@ export type LinhaDePecaComDefeito = {
     vendedores?: number;
 };
 
+export type LinhaDePendencia = {
+    acertoId?: string;
+    dataDaCotacao?: string;
+    id?: string;
+    produto?: string;
+    quantidade?: number;
+    semana?: number;
+    situacao?: string;
+    tipo?: string;
+    valorEmDolar?: string;
+    valorEmGuarani?: string;
+    valorEmReais?: string;
+    vendedor?: string;
+    vendedorId?: string;
+};
+
 export type LinhaDePosicao = {
     ativo?: boolean;
     categoria?: string;
@@ -1293,6 +1423,22 @@ export type LinhaDeProdutoParado = {
     saldo?: number;
     ultimaSaidaEm?: string;
     valorACusto?: string;
+};
+
+export type LinhaDeRecebimento = {
+    aplicadoEm?: string;
+    dataDaCotacao?: string;
+    estorno?: boolean;
+    forma?: string;
+    id?: string;
+    momento?: string;
+    motivo?: string;
+    recebidoEm?: string;
+    valorEmDolar?: string;
+    valorEmGuarani?: string;
+    valorEmReais?: string;
+    vendedor?: string;
+    vendedorId?: string;
 };
 
 export type LinhaDeReembolso = {
@@ -2096,6 +2242,15 @@ export type RelatorioDeCadastroLinhaAbaixoDoMinimo = {
     total?: number;
 };
 
+export type RelatorioDeCadastroLinhaDeAcerto = {
+    itens?: Array<LinhaDeAcerto>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
 export type RelatorioDeCadastroLinhaDeAlteracao = {
     itens?: Array<LinhaDeAlteracao>;
     pagina?: number;
@@ -2123,8 +2278,26 @@ export type RelatorioDeCadastroLinhaDeAutorizacao = {
     total?: number;
 };
 
+export type RelatorioDeCadastroLinhaDeCaixa = {
+    itens?: Array<LinhaDeCaixa>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
 export type RelatorioDeCadastroLinhaDeCliente = {
     itens?: Array<LinhaDeCliente>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroLinhaDeComissao = {
+    itens?: Array<LinhaDeComissao>;
     pagina?: number;
     recorte?: string;
     tamanho?: number;
@@ -2150,8 +2323,26 @@ export type RelatorioDeCadastroLinhaDeConciliacao = {
     total?: number;
 };
 
+export type RelatorioDeCadastroLinhaDeConta = {
+    itens?: Array<LinhaDeConta>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
 export type RelatorioDeCadastroLinhaDeCredito = {
     itens?: Array<LinhaDeCredito>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroLinhaDeEsperadoEContado = {
+    itens?: Array<LinhaDeEsperadoEContado>;
     pagina?: number;
     recorte?: string;
     tamanho?: number;
@@ -2240,6 +2431,15 @@ export type RelatorioDeCadastroLinhaDePecaComDefeito = {
     total?: number;
 };
 
+export type RelatorioDeCadastroLinhaDePendencia = {
+    itens?: Array<LinhaDePendencia>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
 export type RelatorioDeCadastroLinhaDePosicao = {
     itens?: Array<LinhaDePosicao>;
     pagina?: number;
@@ -2260,6 +2460,15 @@ export type RelatorioDeCadastroLinhaDeProduto = {
 
 export type RelatorioDeCadastroLinhaDeProdutoParado = {
     itens?: Array<LinhaDeProdutoParado>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroLinhaDeRecebimento = {
+    itens?: Array<LinhaDeRecebimento>;
     pagina?: number;
     recorte?: string;
     tamanho?: number;
@@ -6029,6 +6238,242 @@ export type PosicaoAtualResponses = {
 };
 
 export type PosicaoAtualResponse = PosicaoAtualResponses[keyof PosicaoAtualResponses];
+
+export type RelatorioDeAcertosData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        semanaId?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/financeiro/acertos';
+};
+
+export type RelatorioDeAcertosResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeAcerto;
+};
+
+export type RelatorioDeAcertosResponse = RelatorioDeAcertosResponses[keyof RelatorioDeAcertosResponses];
+
+export type RelatorioDeComissoesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        semanaId?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/financeiro/comissoes';
+};
+
+export type RelatorioDeComissoesResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeComissao;
+};
+
+export type RelatorioDeComissoesResponse = RelatorioDeComissoesResponses[keyof RelatorioDeComissoesResponses];
+
+export type RelatorioDeContasAPagarData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        fornecedorId?: string;
+        compraId?: string;
+        situacao?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/financeiro/contas-a-pagar';
+};
+
+export type RelatorioDeContasAPagarResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeConta;
+};
+
+export type RelatorioDeContasAPagarResponse = RelatorioDeContasAPagarResponses[keyof RelatorioDeContasAPagarResponses];
+
+export type RelatorioDeContasAReceberData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        clienteId?: string;
+        devedor?: string;
+        situacao?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/financeiro/contas-a-receber';
+};
+
+export type RelatorioDeContasAReceberResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeConta;
+};
+
+export type RelatorioDeContasAReceberResponse = RelatorioDeContasAReceberResponses[keyof RelatorioDeContasAReceberResponses];
+
+export type RelatorioDeEsperadoEContadoData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        semanaId?: string;
+        produtoId?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/financeiro/esperado-contado';
+};
+
+export type RelatorioDeEsperadoEContadoResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeEsperadoEContado;
+};
+
+export type RelatorioDeEsperadoEContadoResponse = RelatorioDeEsperadoEContadoResponses[keyof RelatorioDeEsperadoEContadoResponses];
+
+export type RelatorioDeFluxoDeCaixaData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        tipo?: string;
+        forma?: string;
+        origem?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/financeiro/fluxo-de-caixa';
+};
+
+export type RelatorioDeFluxoDeCaixaResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeCaixa;
+};
+
+export type RelatorioDeFluxoDeCaixaResponse = RelatorioDeFluxoDeCaixaResponses[keyof RelatorioDeFluxoDeCaixaResponses];
+
+export type RelatorioDeInadimplenciaData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        clienteId?: string;
+        devedor?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/financeiro/inadimplencia';
+};
+
+export type RelatorioDeInadimplenciaResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeConta;
+};
+
+export type RelatorioDeInadimplenciaResponse = RelatorioDeInadimplenciaResponses[keyof RelatorioDeInadimplenciaResponses];
+
+export type RelatorioDePendenciasDoAcertoData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        semanaId?: string;
+        produtoId?: string;
+        tipo?: string;
+        situacao?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/financeiro/pendencias';
+};
+
+export type RelatorioDePendenciasDoAcertoResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDePendencia;
+};
+
+export type RelatorioDePendenciasDoAcertoResponse = RelatorioDePendenciasDoAcertoResponses[keyof RelatorioDePendenciasDoAcertoResponses];
+
+export type RelatorioDeRecebimentosPorFormaData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        forma?: string;
+        momento?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/financeiro/recebimentos-por-forma';
+};
+
+export type RelatorioDeRecebimentosPorFormaResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeRecebimento;
+};
+
+export type RelatorioDeRecebimentosPorFormaResponse = RelatorioDeRecebimentosPorFormaResponses[keyof RelatorioDeRecebimentosPorFormaResponses];
 
 export type RelatorioDeMaletasEmAbertoEAtrasadasData = {
     body?: never;

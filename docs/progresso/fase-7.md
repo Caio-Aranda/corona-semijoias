@@ -361,3 +361,27 @@ Issue #155, PR 172 (tarefa não crítica). **Só Corona Vendas e testes**: nenhu
 
 - Pedir o acerto e bipar as sobras no Corona Vendas (acima); estornar recebimento de outro dia (é só da dona); relatórios financeiros (7.12).
 - Nota de deploy: [entrega-corona-vendas.md](../entrega-corona-vendas.md#nota-de-deploy-da-tarefa-711-parcelas-e-recebíveis-no-corona-vendas).
+
+## Tarefa 7.12: relatórios financeiros
+
+**Feito (PR 173).** Backend: `ConsultasFinanceiras` e `RelatoriosFinanceirosController` em `/api/dona/relatorios/financeiro/` (só ADMIN, só leitura, mesmo motor dos relatórios de cadastro, estoque, maleta e devolução: linhas, rodapé e detalhamento saem das mesmas condições; soma em `NUMERIC` no banco, nunca float):
+
+| Rota | Relatório (tela) | Cotação de Dólar e Guarani |
+| --- | --- | --- |
+| `/acertos` | Acertos por vendedor e semana | gravada no fechamento (`acertos.cotacao_id`) |
+| `/pendencias` | Faltas e pendências | a do acerto |
+| `/esperado-contado` | Esperado e contado | a do acerto |
+| `/comissoes` | Comissões por vendedor e semana | a do acerto |
+| `/contas-a-receber` | Parcelas a receber (cliente e vendedor; Vencida é calculada pela data de hoje em Brasília) | dia em que a parcela nasceu |
+| `/contas-a-pagar` | Parcelas a pagar | dia em que a parcela nasceu |
+| `/inadimplencia` | Quem está devendo (só vencidas, faixas de atraso no rodapé) | dia em que a parcela nasceu |
+| `/fluxo-de-caixa` | Fluxo do caixa (entradas, saídas, saldo; estorno marcado) | dia do lançamento |
+| `/recebimentos-por-forma` | Recebimentos por forma de pagamento (dinheiro, transferência, boleto) | dia do recebimento |
+
+Gestão: nove telas no grupo **Relatórios financeiros** (definições em `nucleo/relatorios-financeiros.ts`, textos em `textos-relatorios-financeiros.ts`, glossário atualizado), com filtros, rodapé, detalhamento e PDF, Excel e CSV pelo mesmo caminho dos demais; as colunas de dinheiro levam Real, Dólar e Guarani de cada linha. Cliente da dona regenerado; `apps/seller-app` e `api-client-vendedor` sem nenhuma mudança (o vendedor nunca recebe estes relatórios).
+
+**Testes.** `RelatoriosFinanceirosTest` (13) sobre a massa da Fase 7, com os números calculados à mão nos comentários: acima da meta (vendido 150, devolvido 50, comissão 40, faltas 50, valor do acerto 110), abaixo da meta (comissão 15, valor 35), falta cobrada e falta que a loja assume, esperado 5 e contado 3 boas e 1 com defeito, recebimentos do vendedor X (dinheiro 10, transferência 8, boleto 10, total 28 = entradas do caixa), caixa do Y (saída de 35), parcelas a pagar (340, pago 160, cancelado 30, falta 150), parcelas a receber (pago 70, cancelado 100), inadimplência avançando o relógio, 401 sem login e 403 para o vendedor nas nove rotas, filtro inválido com erro em português, e as nove conciliações da massa continuam zeradas. Na Gestão: `relatorios-financeiros.test.tsx` (menu, três moedas da linha e do rodapé, filtro que vai ao servidor, arquivo CSV, validação da ponte).
+
+**Não fiz / desvios.** DRE, lucro por produto e por vendedor (Fase 8, como no plano). Comissão "a pagar": a comissão é paga por abatimento no fechamento (ADR-0012), então todo acerto fechado conta como "Paga no acerto"; a prévia do que ainda não foi fechado é calculada só no Corona Vendas, por vendedor. "Descontos concedidos" é uma coluna e um total do relatório de acertos (não há relatório separado). As duas telas de parcelas se chamam "Parcelas a receber" e "Parcelas a pagar" para não repetir as telas de trabalho do Financeiro. Sem migração.
+
+**Resultado final.** `npm run api:test` completo: 1611 testes, 0 falhas. Gestão: 832 testes, `lint`, `typecheck`, `format:check` e `owner:build` limpos. Um teste antigo era instável (`ContasDoVendedorTest`, ordem das baixas desfeitas, que seguia o UUID): a consulta do estorno passou a ordenar por vencimento e parcela, e o teste ficou como estava. Sem mudança no sync nem no Corona Vendas (`test:duas-pontas` e `barreira:varrer` não se aplicam).
