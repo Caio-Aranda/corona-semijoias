@@ -116,3 +116,105 @@ export async function abrir(m: Montagem, item = 'Acertos') {
   await u.click(within(nav).getByRole('button', { name: item }));
   return u;
 }
+
+/** Um item da lista de acertos como o servidor devolve. */
+export const resumoDeAcerto = (extra: Record<string, unknown> = {}) => ({
+  id: ID_ACERTO,
+  status: 'EM_ACERTO',
+  vendedorId: ID_VENDEDOR,
+  vendedorNome: 'Ana Vendedora',
+  semanaNumero: 45,
+  maletas: 1,
+  iniciadoEm: '2026-11-10T12:00:00Z',
+  ...extra,
+});
+
+export const ID_VENDA = '5f6e28ba-2fa1-41d3-b9a5-2c3a9a8f6b66';
+export const ID_DEVOLUCAO = '6a7e28ba-2fa1-41d3-b9a5-2c3a9a8f6b77';
+export const ID_PENDENCIA = '7b8e28ba-2fa1-41d3-b9a5-2c3a9a8f6b88';
+
+/**
+ * A prévia do fechamento como o servidor devolve. Os números são de propósito incoerentes entre si (o líquido não é
+ * vendido menos comissão): a tela tem de mostrar o que veio, nunca calcular.
+ */
+export function previaDoServidor(extra: Record<string, unknown> = {}) {
+  const anel = produtoDaFicha(ID_ANEL, 'Anel Solitário', '0012', HASH);
+  const brinco = produtoDaFicha(ID_BRINCO, 'Brinco de Argola', 'B-7');
+  return {
+    acertoId: ID_ACERTO,
+    itens: [
+      {
+        produto: anel,
+        remessaId: ID_MALETA,
+        esperado: 5,
+        contadoBoa: 3,
+        contadoDefeito: 1,
+        falta: 1,
+        valorDaFalta: '70.00',
+      },
+      {
+        produto: brinco,
+        remessaId: ID_MALETA,
+        esperado: 2,
+        contadoBoa: 0,
+        contadoDefeito: 2,
+        falta: 0,
+        valorDaFalta: '0.00',
+      },
+    ],
+    sobras: [],
+    faltas: [
+      { produto: anel, remessaId: ID_MALETA, quantidade: 1, valor: '70.00', status: 'COBRADA' },
+    ],
+    defeitos: [{ produto: brinco, contadoDefeito: 2 }],
+    eventos: [{ tipo: 'VENDA', origemId: ID_VENDA, vendaId: ID_VENDA, valor: '100.00' }],
+    revisoesPendentes: [],
+    naoAceitas: [],
+    pendenciasAntigas: [],
+    comissoes: [
+      {
+        vendaId: ID_VENDA,
+        eventoId: ID_VENDA,
+        tipo: 'COMISSAO',
+        base: '100.00',
+        percentual: '40.00',
+        valor: '40.00',
+      },
+    ],
+    metaGuarani: 700000,
+    vendidoParaMetaGuarani: 750000,
+    percentualComissao: '40.00',
+    vendidoBruto: '1000.00',
+    descontos: '10.00',
+    devolvido: '20.00',
+    vendidoLiquido: '970.00',
+    comissao: '388.00',
+    faltasCobradas: '70.00',
+    liquido: '777.77',
+    creditoDisponivel: '0.00',
+    creditoUsado: '0.00',
+    aPagarNoAcerto: '555.55',
+    recebidoNoAcerto: '0.00',
+    boleto: '0.00',
+    ficouDevendo: '0.00',
+    pagoAoVendedor: '0.00',
+    restanteSemData: false,
+    parcelasDoRestante: [],
+    contasAbertasDoVendedor: [],
+    cotacaoId: ID_VENDA,
+    cotacaoData: '2026-11-12',
+    podeFechar: true,
+    ...extra,
+  };
+}
+
+/** Abre o acerto da lista e a tela de conferir (a prévia). */
+export async function abrirPrevia(
+  m: Montagem,
+  { rotuloDoBotao = 'Conferir o acerto' }: { rotuloDoBotao?: string } = {},
+) {
+  const u = await abrir(m);
+  await u.click(await screen.findByRole('button', { name: /Abrir acerto de Ana Vendedora/ }));
+  await u.click(await screen.findByRole('button', { name: rotuloDoBotao }));
+  return u;
+}

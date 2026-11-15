@@ -121,6 +121,124 @@ export const TEXTOS_DE_ACERTOS = {
     conferir: 'Conferir o acerto',
     desistir: 'Desistir do acerto',
   },
+  previa: {
+    titulo: 'Conferência do acerto',
+    ajuda:
+      'Veja o que voltou, decida o que fazer com cada diferença e confira o dinheiro. Os números são do sistema: quando você decide, eles mudam na hora.',
+    voltar: 'Voltar para a contagem',
+    calculando: 'Calculando...',
+    naoLeu: 'Não deu para ler o acerto. Tente de novo.',
+    tentarDeNovo: 'Tentar de novo',
+    motivoPendente: 'Escreva o motivo para o sistema refazer os números.',
+    pecas: {
+      titulo: 'Peças',
+      legenda: 'Peças do acerto',
+      colunas: {
+        peca: 'Peça',
+        saiu: 'Saiu na maleta',
+        boa: 'Voltou boa',
+        defeito: 'Voltou com defeito',
+        faltou: 'Faltou',
+        valorFalta: 'Valor da falta',
+      },
+      vazia: 'Nenhuma peça neste acerto.',
+    },
+    sobra: {
+      titulo: 'Sobrou peça: confira as vendas ou registre o ajuste.',
+      ajuda:
+        'Contaram mais peças do que saíram na maleta. Corrija a venda errada na maleta ou faça o ajuste do estoque. Só dá para fechar o acerto depois disso.',
+      linha: (nome: string, esperado: number, contado: number) =>
+        `${nome}: eram ${esperado}, foram contadas ${contado}.`,
+    },
+    revisao: {
+      titulo: 'Tem devolução esperando sua revisão. Revise antes de fechar o acerto.',
+      botao: 'Revisar devoluções',
+    },
+    faltas: {
+      titulo: 'O que fazer com o que faltou',
+      ajuda:
+        'Cada peça que não voltou pode ser cobrada agora, cobrada depois ou assumida pela loja.',
+      decisao: (nome: string) => `O que fazer com a falta de ${nome}`,
+      motivo: (nome: string) => `Motivo de a loja assumir: ${nome}`,
+      motivoAviso: 'Diga o motivo de a loja assumir.',
+      linha: (quantidade: number, valor: string, situacao: string) =>
+        `Faltou ${quantidade === 1 ? '1 peça' : `${quantidade} peças`} (${valor}). ${situacao}`,
+      situacoes: {
+        COBRADA: 'Vai ser cobrada agora.',
+        ABERTA: 'Fica para depois.',
+        ASSUMIDA_PELA_LOJA: 'A loja assume.',
+      } as Record<string, string>,
+      semFalta: 'Com os defeitos aprovados, esta peça não tem mais falta.',
+    },
+    opcoesDeCobranca: {
+      COBRAR_NO_ACERTO: 'Cobrar agora',
+      COBRAR_DEPOIS: 'Cobrar depois',
+      LOJA_ASSUME: 'A loja assume',
+    } as Record<string, string>,
+    defeitos: {
+      titulo: 'Peças com defeito',
+      ajuda: 'Diga quantas peças você aprova como defeito. As outras voltam como peça boa.',
+      contadas: (n: number) => `Contadas com defeito: ${n}`,
+      aprovar: (nome: string) => `Aprovar como defeito: ${nome}`,
+      aviso: (max: number) => `Use um número de 0 até ${max}.`,
+    },
+    naoAceitas: {
+      titulo: 'O que não foi aceito',
+      ajuda:
+        'Devoluções e créditos que você não aceitou. Escolha se o vendedor paga agora, depois ou se a loja assume.',
+      decisao: (tipo: string, valor: string) =>
+        tipo === 'CREDITO_SEM_SALDO_NAO_ACEITO'
+          ? `O que fazer com o crédito sem saldo não aceito de ${valor}`
+          : `O que fazer com a devolução não aceita de ${valor}`,
+      motivo: (valor: string) => `Motivo de a loja assumir: ${valor}`,
+    },
+    antigas: {
+      titulo: 'Pendências de acertos anteriores',
+      ajuda: 'Peças que já faltaram antes. Você pode cobrar agora ou deixar para outro acerto.',
+      decisao: (nome: string) => `O que fazer com a pendência antiga de ${nome}`,
+      opcoes: { COBRAR_NO_ACERTO: 'Cobrar agora', MANTER: 'Deixar para depois' } as Record<
+        string,
+        string
+      >,
+      linha: (nome: string, quantidade: number, valor: string) =>
+        `${nome}: ${quantidade === 1 ? '1 peça' : `${quantidade} peças`} (${valor})`,
+      umaPeca: 'Uma peça',
+    },
+    comissao: {
+      titulo: 'Comissão e meta',
+      vendidoNaSemana: (vendido: string, meta: string) =>
+        `Vendido na semana: ${vendido} de ${meta} (meta)`,
+      bateu: (percentual: string) => `Bateu a meta: comissão de ${percentual}.`,
+      naoBateu: (percentual: string) => `Ainda não bateu a meta: comissão de ${percentual}.`,
+      legenda: 'Comissão por venda',
+      colunas: {
+        venda: 'Venda',
+        base: 'Valor',
+        percentual: 'Comissão',
+        valor: 'Comissão em reais',
+      },
+      venda: (n: number) => `Venda ${n}`,
+      devolucao: (n: number) => `Devolução (venda ${n})`,
+      vazia: 'Nenhuma venda neste acerto.',
+    },
+    totais: {
+      titulo: 'Totais do acerto',
+      vendido: 'Vendido',
+      descontos: 'Descontos',
+      devolvido: 'Devolvido',
+      vendidoLiquido: 'Vendido depois dos descontos',
+      comissao: 'Comissão do vendedor',
+      faltasCobradas: 'Faltas cobradas',
+      liquido: 'Valor do acerto',
+      creditoUsado: 'Crédito do vendedor usado',
+      aPagar: 'A pagar agora',
+    },
+    cotacao: {
+      frase: (data: string) =>
+        `Valores em Dólar e Guarani pela cotação de ${data}. Vale o valor em reais.`,
+      sem: 'Sem cotação: os valores aparecem só em reais.',
+    },
+  },
   desistir: {
     titulo: 'Desistir do acerto',
     texto:

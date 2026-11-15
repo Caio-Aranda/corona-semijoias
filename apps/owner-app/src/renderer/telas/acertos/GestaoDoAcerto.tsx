@@ -7,6 +7,7 @@ import { TEXTOS_DE_ACERTOS } from '../../textos-acertos';
 import { dataEHora } from '../sincronizacao/dados';
 import { ContagemDoAcerto } from './ContagemDoAcerto';
 import { DesistirDoAcerto } from './DesistirDoAcerto';
+import { PreviaDoAcerto } from './PreviaDoAcerto';
 import { lerFicha, type FichaDoAcerto } from './dados';
 
 const T = TEXTOS_DE_ACERTOS;
@@ -24,6 +25,7 @@ export function GestaoDoAcerto({ ponte, id, inicial, aoVoltar }: GestaoDoAcertoP
   const busca = useBusca(() => chamar(ponte, 'acertos.ver', { id }), `acerto-${id}`);
   const [ficha, setFicha] = useState<FichaDoAcerto | null>(inicial ?? null);
   const [desistindo, setDesistindo] = useState(false);
+  const [conferindo, setConferindo] = useState(false);
 
   useEffect(() => {
     const lida = busca.dados ? lerFicha(busca.dados) : null;
@@ -53,7 +55,10 @@ export function GestaoDoAcerto({ ponte, id, inicial, aoVoltar }: GestaoDoAcertoP
               {T.ficha.maletas}: {ficha.maletas.map((m) => T.ficha.maleta(m.numero)).join(', ')}
             </p>
           ) : null}
-          {ficha.status === 'EM_ACERTO' ? (
+          {ficha.status === 'EM_ACERTO' && conferindo ? (
+            <PreviaDoAcerto ponte={ponte} acerto={ficha} aoVoltar={() => setConferindo(false)} />
+          ) : null}
+          {ficha.status === 'EM_ACERTO' && !conferindo ? (
             <>
               <ContagemDoAcerto
                 ponte={ponte}
@@ -62,6 +67,9 @@ export function GestaoDoAcerto({ ponte, id, inicial, aoVoltar }: GestaoDoAcertoP
                 aoPerder={busca.recarregar}
               />
               <div className="gestao-acoes-da-linha">
+                <Botao variante="primario" onClick={() => setConferindo(true)}>
+                  {T.contagem.conferir}
+                </Botao>
                 <Botao onClick={() => setDesistindo(true)}>{T.contagem.desistir}</Botao>
               </div>
             </>
