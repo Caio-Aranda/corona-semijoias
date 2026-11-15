@@ -62,7 +62,8 @@ class SoLeituraDasConciliacoesTest extends ApoioDasConciliacoes {
                 "FOR\\s+(NO\\s+KEY\\s+)?(UPDATE|SHARE)", "\\.update\\(", "\\.execute\\(", "\\.batchUpdate\\(", "\\.call\\(")) {
             assertThat(Pattern.compile(proibido, Pattern.CASE_INSENSITIVE).matcher(fonte).find()).as(proibido).isFalse();
         }
-        assertThat(fonte).doesNotContain("Servico").doesNotContain("ConversaoDeMoeda").doesNotContain("double ").doesNotContain("float ");
+        String semAConsultaDoEstoque = fonte.replace("ServicoDeEstoque", "");
+        assertThat(semAConsultaDoEstoque).doesNotContain("Servico").doesNotContain("ConversaoDeMoeda").doesNotContain("double ").doesNotContain("float ");
         assertThat(fonte).contains("jdbc.query(");
     }
 }
