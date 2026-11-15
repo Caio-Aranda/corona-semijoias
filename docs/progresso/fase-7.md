@@ -385,3 +385,64 @@ Gestão: nove telas no grupo **Relatórios financeiros** (definições em `nucle
 **Não fiz / desvios.** DRE, lucro por produto e por vendedor (Fase 8, como no plano). Comissão "a pagar": a comissão é paga por abatimento no fechamento (ADR-0012), então todo acerto fechado conta como "Paga no acerto"; a prévia do que ainda não foi fechado é calculada só no Corona Vendas, por vendedor. "Descontos concedidos" é uma coluna e um total do relatório de acertos (não há relatório separado). As duas telas de parcelas se chamam "Parcelas a receber" e "Parcelas a pagar" para não repetir as telas de trabalho do Financeiro. Sem migração.
 
 **Resultado final.** `npm run api:test` completo: 1611 testes, 0 falhas. Gestão: 832 testes, `lint`, `typecheck`, `format:check` e `owner:build` limpos. Um teste antigo era instável (`ContasDoVendedorTest`, ordem das baixas desfeitas, que seguia o UUID): a consulta do estorno passou a ordenar por vencimento e parcela, e o teste ficou como estava. Sem mudança no sync nem no Corona Vendas (`test:duas-pontas` e `barreira:varrer` não se aplicam).
+
+## Tarefa 7.13: fechamento da Fase 7
+
+Issue #157, PR 174 (tarefa não crítica). **Só testes e documentos:** nenhuma regra de negócio mudou, nenhuma migração, nenhuma linha de código de produção.
+
+**O que entrou**
+
+- **Teste de ponta a ponta do ciclo** (`backend/src/test/java/br/com/coronasemijoias/api/conciliacoes/CicloDaFase7Test.java`), pelas rotas HTTP, numa história só, com os números feitos à mão (cotação de R$ 0,0009 por guarani: a meta de 700.000 Gs é R$ 630,00):
+  - o vendedor A vende 2 peças de R$ 315,00 à vista e 1 a prazo (R$ 15,00 na hora, 3 parcelas de 100,00) e recebe a primeira parcela (`PAGA`, `ABERTA`, `ABERTA`);
+  - a devolução da venda a prazo abate as duas parcelas que faltam (200,00) e volta o que foi pago (115,00): `valor_devolvido` 315,00, `valor_abatido` 200,00, `valor_reembolsado` 115,00;
+  - a dona inicia o acerto e conta 4 peças boas (3 da maleta e a devolvida, que aparece como "para a loja"); a prévia fecha sem sobra nem falta: vendido líquido 630,00 = **exatamente 700.000 Gs, meta batida, 40%**, comissão 252,00, líquido 378,00;
+  - um fechamento com o `liquidoMostrado` errado é recusado (409) e nada muda; o certo fecha (201) e o reenvio igual devolve 200;
+  - o acerto grava recebido 300,00 (200,00 em dinheiro e 100,00 por Transferência) e ficou devendo 78,00 em duas contas de 39,00; a maleta fica `ACERTADA`; o vendedor lê a ficha dele sem custo;
+  - o caixa recebeu os 300,00 sozinho; um pagamento de 100,00 a fornecedor e um lançamento manual de 20,00 deixam o saldo em +180,00 sobre o de antes;
+  - o vendedor B vende R$ 629,99 (um pouco abaixo da meta): **30%**, comissão 189,00, líquido 440,99;
+  - fecha uma semana que já terminou e prova que o caixa recusa lançamento com data nela (`DATA_EM_SEMANA_FECHADA`);
+  - as nove conciliações (C1 a C10, sem a C6) rodam sobre tudo o que o ciclo criou e não acusam diferença.
+- **Roteiro do teste de uso** em linguagem da loja: [roteiro-teste-fase-7.md](../roteiro-teste-fase-7.md) (vendedor, acerto da dona, financeiro e relatórios, na forma do roteiro da Fase 6).
+- **Especificação v1.23:** a §15 passa a mostrar a Fase 7 como entregue no código, e a §22 ganha o histórico (sem mudar regra).
+- **Documentos:** este fechamento e o `PROGRESSO.md`.
+
+**Por que não há cenário Playwright (`npm run e2e`)**
+
+O `testes-e2e` abre só o **Corona Gestão** (a dona), e o próprio README diz "Corona Vendas: só depois da Fase 4" (hoje nenhum cenário abre o Corona Vendas). O ciclo da Fase 7 começa na venda e no recebimento do vendedor e depende da API; o motor do Corona Vendas contra a API real já tem os testes de duas pontas (cenários 21 e 22 da 7.11). Por isso o ciclo foi coberto por um teste de integração do backend, que percorre as mesmas rotas que as duas telas usam, com PostgreSQL de verdade e os valores calculados à mão. As telas já têm os testes de componentes das tarefas 7.9 a 7.12. Um cenário Playwright da dona fazendo o acerto fica como sugestão (abaixo). Como nenhum cenário novo foi criado, `npm run e2e` não foi rodado.
+
+**Achados:** nenhum defeito. O teste passou de primeira, com os números feitos à mão.
+
+## Resumo final da Fase 7
+
+A semana fecha de ponta a ponta, só com o que a dona decidiu (sem entrada, sem cheque, comissão por meta de 700.000 Gs com 30% ou 40%):
+
+- **Venda a prazo:** o vendedor escolhe quantas parcelas e o primeiro vencimento; o servidor divide (de 1 a 24, mensais), distribui o recebimento posterior pelo vencimento, abate as parcelas na devolução e na troca e cancela o que está em aberto no estorno da venda.
+- **Acerto:** a dona inicia (a maleta trava; a venda do envio só entra se for anterior ao início), conta com o leitor (boa ou com defeito), confere a prévia (sobra e devolução em revisão impedem fechar; falta: cobrar agora, depois ou a loja assume), escolhe o pagamento e fecha, numa transação só, com idempotência por UUID e conferência do valor mostrado. O servidor recalcula tudo e grava itens, eventos, comissões (com o percentual na linha), pendências, movimentos de estoque e a cotação do acerto. Desistir não grava dinheiro.
+- **Dinheiro do vendedor:** recebimentos em dinheiro e Transferência (PIX), boleto como conta, o que ficou devendo em parcelas, contas antigas pagas junto, acerto a favor dele como crédito ou pagamento na hora, recebimento avulso e estorno.
+- **Caixa e contas:** caixa automático, caixa manual com categorias e estorno, aviso de caixa negativo (nunca bloqueia), contas a pagar das compras (parcial, inteiro, estorno, compra desfeita) e fechar semana (só a dona, só depois do fim, sem acerto em andamento, nunca reabre).
+- **Conferência:** nove conciliações de produção (C1 a C10, sem a C6), só leitura, com rota e tela, cada uma com um teste que estraga o dado de propósito.
+- **Telas:** Corona Gestão com Acerto, Financeiro, Conferência do dinheiro e nove relatórios financeiros (Real, Dólar e Guarani; PDF, Excel e CSV); Corona Vendas com parcelas, A receber e Meu acerto e minha comissão (prévia com quanto falta para a meta).
+- **Segurança:** o vendedor nunca recebe custo, caixa, contas a pagar nem dados de outro vendedor (barreira, 403 cruzado e testes de pull).
+
+**Números** (resultado final de cada tarefa): `api:test` chegou a 1611 testes na 7.12; Corona Gestão, 832; Corona Vendas, 637 (6.6 e 7.6); duas pontas, 26 testes na 7.6, mais os cenários 21 e 22 da 7.11.
+
+## O que ficou para a Fase 8 (e sugestões)
+
+- **Fase 8 (plano):** rodada diária das conciliações com aviso em "O que precisa da sua atenção" e guardar o resultado de cada rodada; DRE, lucro por produto e por vendedor, curva ABC; comissão "a pagar" prevista no relatório (hoje a prévia só existe por vendedor, no Corona Vendas).
+- **Corona Vendas:** o vendedor **pedir o acerto** e **bipar as sobras** pelo aplicativo (as rotas do vendedor existem desde a 7.4; falta a tela e, se for para funcionar sem internet, o tipo na outbox).
+- **Telas do financeiro que a 7.10 deixou:** botão para **gerar as contas a pagar** de uma compra (a rota existe), **estornar recebimento de cliente** pela dona (a lista de contas não traz o id do pagamento), editar ou cancelar parcela e a cotação do dia de cada lançamento no extrato do caixa (a API não devolve).
+- **Conferência do acerto na Gestão:** "quanto falta para a meta" (a prévia da dona não devolve `faltaParaMetaGuarani`; a do vendedor devolve) e **tipar a prévia no OpenAPI** (hoje é um mapa sem tipo).
+- **Pequenos:** o relatório "Vendedores: limite e situação" distinguir "Sem limite" de "Limite não definido" (campo novo no relatório); o texto da rota "Cadastrar vendedor" no OpenAPI ainda diz "Limite e comissão começam em zero"; testes de integração do 409 `SEM_COTACAO_PARA_O_ACERTO` e `REVISAO_PENDENTE_NO_ACERTO` (hoje cobertos pelo código e pelo gatilho do banco); refazer o parcelamento de uma compra (hoje só desfazendo a compra); multa, juros e cartão (fora do escopo).
+- **Um cenário Playwright da dona** abrindo o Corona Gestão e fazendo o acerto (começar, contar, fechar) sobre uma massa criada pela API: viável, não foi pedido nem feito.
+- **Testes instáveis quando rodados sozinhos (7.3):** `AutorizacaoDeDevolucaoTest.nenhumaRespostaDasRotasDaAutorizacaoTemCustoNemFornecedor` e `TrocaTest.prazoContaEmDiasDeBrasiliaComoNaDevolucao` falham isolados e passam na suíte inteira (dependem do que as outras classes deixam em `configuracoes`); sugestão de tarefa de arrumação.
+
+## Dúvidas em aberto
+
+**Para a dona** (cada uma segue o padrão seguro do [plano](fase-7-plano.md#dúvidas-para-a-dona) até a resposta): 1 (fiado: perde o vendedor), 3 (comissão tirada no acerto), 5 (falta cobrada pelo preço da maleta), 6 (tudo o que sobra volta para a loja), 8 (o vendedor pode ficar devendo, em parcelas), 9 (dívida não entra no limite, com aviso), 10 (sem multa nem juros), 12 (boleto fora do sistema), 13 (caixa único, pode ficar negativo), 15 (compra em parcelas), 16 (acerto a favor desconta no próximo, ou paga na hora), 17 (parcelas mensais, sem mínimo), 18 (sem desconto livre no acerto), 19 (defeito aprovado vira avaria, não é cobrado) e a parte da 20 sobre quem fecha a semana.
+
+**Do responsável:** aplicar o [roteiro do teste de uso](../roteiro-teste-fase-7.md) com a dona e um vendedor e registrar o que travar em `PROBLEMAS-DE-USO.md`; publicar a versão nova respeitando as notas de deploy de `entrega-corona-vendas.md` (o aplicativo antes da API, por causa das migrações locais 4 a 8); validar com a dona o desenho das telas novas.
+
+## Diferenças entre a especificação e o que foi feito (sem mudar regra)
+
+- **§7.4, passos 1 e 2** dizem que o vendedor sincroniza e **bipa as peças que sobraram**. Hoje quem conta é a **dona**, no Corona Gestão (decisão da 7.4: "só a dona desiste; o vendedor pede, bipa e lê", pela rota). A rota do vendedor para bipar existe e é testada; **a tela dele e o botão de pedir o acerto não existem** (a 7.11 não os incluiu). Efeito para o uso: a dona começa o acerto e conta sozinha. Não mudei a regra nem o texto da §7.4; fica registrado aqui e na §22 (v1.23) para o responsável decidir (fazer a tela do vendedor na Fase 8 ou ajustar o texto).
+- **§9 e §15 (cadastro do vendedor):** `vendedores.comissao_percentual` continua no banco sem uso, e o campo "Comissão (%)" saiu da tela do vendedor (7.10). A linha da Fase 1 na §15 ainda cita "comissão" no cadastro: é texto histórico da fase, não foi reescrito.

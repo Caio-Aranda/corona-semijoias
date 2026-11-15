@@ -50,6 +50,7 @@ Também saíram da lista da dona:
 | 13 | **Levar as perguntas à dona** ([perguntas-para-a-dona.md](perguntas-para-a-dona.md)) e trazer as respostas | As 🔴 travam a venda (6 e 7), a Fase 6 (9) e a Fase 7 (10 a 14). | Ver a lista. |
 | 14 | **Aplicar com a dona o teste com um vendedor real sem internet** ([roteiro-teste-vendedor-sem-internet.md](roteiro-teste-vendedor-sem-internet.md)) | É o critério de aceite da Fase 5 (§19): o vendedor vende, entende o indicador e vê tudo chegar na dona, sem perder venda. Precisa do instalador num computador de verdade e de um vendedor. | O fechamento "de uso" da Fase 5; cada problema vira uma entrada em [PROBLEMAS-DE-USO.md](PROBLEMAS-DE-USO.md). |
 | 15 | **Testar o instalador de verdade trocando de versão com vendas aguardando** ([roteiro-atualizacao-com-vendas-aguardando.md](roteiro-atualizacao-com-vendas-aguardando.md)) | Os testes automáticos da 5.13 provam a migração e o envio sem o instalador; falta ver o NSIS e a atualização automática de verdade num computador Windows. | Nada trava o código; entregar a versão nova a vendedores com vendas guardadas só depois deste teste. |
+| 16 | **Aplicar com a dona e um vendedor o teste de uso da Fase 7** ([roteiro-teste-fase-7.md](roteiro-teste-fase-7.md)) | É o que falta para a Fase 7 ser dada como aceita (§19): vender com parcelas, receber, fazer e fechar o acerto com a comissão por meta, o caixa, as contas e os relatórios. | Anotar o que travar em [PROBLEMAS-DE-USO.md](PROBLEMAS-DE-USO.md). |
 
 ## O que não depende de ninguém agora
 
