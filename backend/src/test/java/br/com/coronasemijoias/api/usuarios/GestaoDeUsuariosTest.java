@@ -247,6 +247,7 @@ class GestaoDeUsuariosTest extends TesteDeIntegracao {
     @Test
     void oSistemaNuncaFicaSemAdministradoraAtiva() {
         // Pedido de quem não está entre as ativas (só o servico, sem rota): o alvo é a única ativa.
+        List<UUID> ativasAntes = administradorasAtivas();
         jdbc.update("UPDATE corona.usuarios SET ativo = false WHERE perfil = 'ADMIN'");
         try {
             UsuarioDeTeste unica = outraDona();
@@ -259,7 +260,18 @@ class GestaoDeUsuariosTest extends TesteDeIntegracao {
             assertThat(jdbc.queryForObject("SELECT count(*) FROM corona.usuarios WHERE perfil = 'ADMIN' AND ativo", Integer.class))
                     .isEqualTo(1);
         } finally {
-            jdbc.update("UPDATE corona.usuarios SET ativo = true WHERE id = ?", usuarios.dona().id());
+            reativar(ativasAntes);
+        }
+    }
+
+    /** As administradoras ativas agora (inclusive a do primeiro acesso), para devolver ao fim do teste. */
+    private List<UUID> administradorasAtivas() {
+        return jdbc.queryForList("SELECT id FROM corona.usuarios WHERE perfil = 'ADMIN' AND ativo", UUID.class);
+    }
+
+    private void reativar(List<UUID> ids) {
+        for (UUID id : ids) {
+            jdbc.update("UPDATE corona.usuarios SET ativo = true WHERE id = ?", id);
         }
     }
 
@@ -349,6 +361,7 @@ class GestaoDeUsuariosTest extends TesteDeIntegracao {
 
     @Test
     void duasDonasQueSeDesativamAoMesmoTempoNuncaDeixamOSistemaSemAdministradora() throws Exception {
+        List<UUID> ativasAntes = administradorasAtivas();
         for (int rodada = 0; rodada < 6; rodada++) {
             // só estas duas ficam ativas
             jdbc.update("UPDATE corona.usuarios SET ativo = false WHERE perfil = 'ADMIN'");
@@ -380,8 +393,8 @@ class GestaoDeUsuariosTest extends TesteDeIntegracao {
             assertThat(jdbc.queryForObject("SELECT count(*) FROM corona.usuarios WHERE perfil = 'ADMIN' AND ativo", Integer.class))
                     .isEqualTo(1);
         }
-        // restaura uma dona ativa para os demais testes do contexto
-        jdbc.update("UPDATE corona.usuarios SET ativo = true WHERE id = ?", usuarios.dona().id());
+        // devolve as administradoras de antes (inclusive a do primeiro acesso) para os demais testes do contexto
+        reativar(ativasAntes);
     }
 
     // ---- auditoria das rotas já existentes --------------------------------------------------------------

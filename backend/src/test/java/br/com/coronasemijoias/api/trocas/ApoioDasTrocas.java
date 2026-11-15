@@ -101,6 +101,8 @@ public abstract class ApoioDasTrocas extends TesteDeIntegracao {
     @Autowired
     protected RelogioDeTeste relogio;
 
+    /** Monta o que o teste precisa antes (outra classe pode ter deixado outro prazo) e devolve depois. */
+    @org.junit.jupiter.api.BeforeEach
     @AfterEach
     void voltarAosPadroes() {
         relogio.reiniciar();
