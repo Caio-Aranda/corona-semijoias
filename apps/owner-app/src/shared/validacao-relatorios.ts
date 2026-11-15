@@ -19,6 +19,13 @@ const TIPOS_DA_MALETA = ['NOVA', 'REPOSICAO'];
 const TIPOS_DAS_DEVOLUCOES = ['DEVOLUCAO', 'TROCA'];
 const TIPOS_DOS_CREDITOS = ['TROCA', 'DEVOLUCAO', 'TRANSFERENCIA'];
 const TIPOS_DAS_AUTORIZACOES = ['FORA_DO_PRAZO', 'ACIMA_DO_VALOR'];
+/** Financeiro (tarefa 7.12): o tipo da pendência do acerto. */
+const TIPOS_DA_PENDENCIA = [
+  'FALTA',
+  'DEFEITO',
+  'DEVOLUCAO_NAO_ACEITA',
+  'CREDITO_SEM_SALDO_NAO_ACEITO',
+];
 const TODOS_OS_TIPOS_DE_DEVOLUCAO = [...TIPOS_DOS_CREDITOS, ...TIPOS_DAS_AUTORIZACOES];
 const TIPOS_DO_LANCAMENTO = ['ENTRADA', 'SAIDA', 'AJUSTE', 'REMESSA', 'DEVOLUCAO', 'AVARIA'];
 const ESCOLHAS: [
@@ -35,6 +42,8 @@ const ESCOLHAS: [
     | 'divergencia'
     | 'motivo'
     | 'forma'
+    | 'devedor'
+    | 'momento'
   ),
   string[],
 ][] = [
@@ -51,14 +60,30 @@ const ESCOLHAS: [
       ...TIPOS_DO_LANCAMENTO,
       ...TIPOS_DA_MALETA,
       ...TODOS_OS_TIPOS_DE_DEVOLUCAO,
+      ...TIPOS_DA_PENDENCIA,
     ],
   ],
   ['resultado', ['CRIADO', 'ATUALIZADO', 'JA_EXISTIA', 'RECUSADO']],
   ['quem', ['TODOS', 'VENDEDORES', 'CLIENTES']],
-  ['origem', ['MANUAL', 'AJUSTE_MANUAL', 'COMPRA', 'INVENTARIO', 'MALETA', 'ESTORNO']],
+  [
+    'origem',
+    [
+      'MANUAL',
+      'AJUSTE_MANUAL',
+      'COMPRA',
+      'INVENTARIO',
+      'MALETA',
+      'ESTORNO',
+      'RECEBIMENTO_VENDEDOR',
+      'ACERTO_A_FAVOR_DO_VENDEDOR',
+      'PAGAMENTO_FORNECEDOR',
+    ],
+  ],
   ['divergencia', SIM_NAO],
   ['motivo', ['ARREPENDIMENTO', 'DEFEITO', 'TAMANHO', 'OUTRO']],
-  ['forma', ['DINHEIRO', 'PIX', 'CARTAO', 'CHEQUE']],
+  ['forma', ['DINHEIRO', 'PIX', 'CARTAO', 'CHEQUE', 'BOLETO']],
+  ['devedor', ['CLIENTE', 'VENDEDOR']],
+  ['momento', ['ACERTO', 'AVULSO']],
 ];
 
 export interface ParametrosDeRelatorio {
@@ -104,6 +129,8 @@ const CAMPOS = [
   'diasDeAtraso',
   'motivo',
   'forma',
+  'devedor',
+  'momento',
   'pagina',
   'tamanho',
 ];
@@ -190,13 +217,17 @@ export function conferirRelatorio(p: Record<string, unknown>): ParametrosDeRelat
       ? ['PLANILHA', 'FOTOS']
       : eDeMaleta
         ? TIPOS_DA_MALETA
-        : p.relatorio === 'devolucao-por-motivo'
-          ? TIPOS_DAS_DEVOLUCOES
-          : p.relatorio === 'devolucao-creditos'
-            ? TIPOS_DOS_CREDITOS
-            : p.relatorio === 'devolucao-autorizacoes'
-              ? TIPOS_DAS_AUTORIZACOES
-              : TIPOS_DO_LANCAMENTO;
+        : p.relatorio === 'financeiro-pendencias'
+          ? TIPOS_DA_PENDENCIA
+          : p.relatorio === 'financeiro-caixa'
+            ? ['ENTRADA', 'SAIDA']
+            : p.relatorio === 'devolucao-por-motivo'
+              ? TIPOS_DAS_DEVOLUCOES
+              : p.relatorio === 'devolucao-creditos'
+                ? TIPOS_DOS_CREDITOS
+                : p.relatorio === 'devolucao-autorizacoes'
+                  ? TIPOS_DAS_AUTORIZACOES
+                  : TIPOS_DO_LANCAMENTO;
     if (!ehTexto(p.tipo) || !aceitos.includes(p.tipo)) return null;
   }
   if (p.recorte !== undefined && p.recorte !== '') {

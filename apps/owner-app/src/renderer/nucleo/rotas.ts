@@ -16,6 +16,8 @@ import {
 } from './relatorios-estoque';
 import { ORDEM_DOS_RELATORIOS_DE_DEVOLUCAO } from './relatorios-devolucao';
 import { ORDEM_DOS_RELATORIOS_DE_MALETA } from './relatorios-maleta';
+import { ORDEM_DOS_RELATORIOS_FINANCEIROS } from './relatorios-financeiros';
+import { TEXTOS_DE_RELATORIOS_FINANCEIROS } from '../textos-relatorios-financeiros';
 import { TEXTOS_DE_RELATORIOS_DE_DEVOLUCAO } from '../textos-relatorios-devolucao';
 
 /** As telas do menu. A chave aparece na barra de endereço (#/pessoas/usuarios), nunca na tela. */
@@ -80,6 +82,15 @@ export const ROTAS = [
   'relatorios/devolucao-reembolsos',
   'relatorios/devolucao-autorizacoes',
   'relatorios/devolucao-conferencia',
+  'relatorios/financeiro-acertos',
+  'relatorios/financeiro-pendencias',
+  'relatorios/financeiro-esperado-contado',
+  'relatorios/financeiro-comissoes',
+  'relatorios/financeiro-a-receber',
+  'relatorios/financeiro-a-pagar',
+  'relatorios/financeiro-inadimplencia',
+  'relatorios/financeiro-caixa',
+  'relatorios/financeiro-recebimentos',
   'acertos/lista',
   'acertos/pendencias',
   'acertos/comissao',
@@ -209,6 +220,13 @@ export const MENU = [
         rotulo: TEXTOS_DE_RELATORIOS_DE_DEVOLUCAO.conferencia.menu,
       },
     ],
+  },
+  {
+    titulo: TEXTOS_DE_RELATORIOS_FINANCEIROS.grupoDoMenu,
+    itens: ORDEM_DOS_RELATORIOS_FINANCEIROS.map((nome) => ({
+      chave: `relatorios/${nome}`,
+      rotulo: RELATORIOS[nome].titulo,
+    })),
   },
   {
     titulo: TEXTOS_DE_CONCILIACOES.grupoDoMenu,
