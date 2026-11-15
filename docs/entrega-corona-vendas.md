@@ -106,6 +106,14 @@ A API com a 7.7 **não manda tabela nova nem coluna nova ao Corona Vendas**: `co
 2. **API:** suba a API com a 7.7; a migração V046 do banco roda junto (nova categoria do sistema "Pagamento a fornecedor" e as tabelas novas; nada de dado antigo muda).
 3. Semana que já estava fechada antes da V046 continua fechada, mas não tem linha em `fechamentos_semana`; ela segue imutável (o gatilho olha a situação), só não pode ser "fechada de novo". Não há produção ainda, então nenhuma semana é afetada.
 
+### Nota de deploy da tarefa 7.11 (parcelas e recebíveis no Corona Vendas)
+
+O Corona Vendas da 7.11 **não tem migração local nova** (o banco local continua na versão 8) e a **API não mudou**: ela já aceita `parcelamento` na venda e na troca e os tipos `RECEBIMENTO_CLIENTE` e `ESTORNO_RECEBIMENTO_CLIENTE` desde a 7.3. A ordem do deploy não importa.
+
+1. Aumente `version` em `apps/seller-app/package.json` (por exemplo, `1.7.0`) e publique (`npm run vendas:publicar`). Só o computador que atualizar passa a gravar parcelas, recebimentos e estornos de recebimento na fila de envio; a API não precisa de versão mínima nova por isso.
+2. O computador na versão antiga continua vendendo e enviando como antes (venda sem parcelas vira uma parcela um mês depois, como o servidor já fazia). Nada se perde.
+3. As três operações novas usam o mesmo caminho de envio, a mesma idempotência pelo `operacao_id` e o desfazer de sempre quando o servidor recusa (o recebimento ou o estorno provisório some e o aviso aparece em "Envios que não foram aceitos").
+
 ## Riscos da primeira instalação no computador do vendedor
 
 | Risco | O que fazer |

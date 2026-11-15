@@ -334,3 +334,30 @@ Issue #154, PR 171 (tarefa não crítica). **Só telas do Corona Gestão** (e a 
 - **Gerar contas a pagar** de uma compra (a rota existe, mas a tela de compras é outra tarefa), **estornar recebimento de cliente** (a lista de contas não traz o id do pagamento do cliente) e **editar ou cancelar** parcela.
 - Telas do vendedor (7.11) e relatórios financeiros (7.12).
 - Cotação do dia de cada lançamento do caixa no extrato (a API não devolve; sugestão: devolver a cotação do lançamento).
+
+## Tarefa 7.11: Corona Vendas, acerto, parcelas e recebíveis
+
+Issue #155, PR 172 (tarefa não crítica). **Só Corona Vendas e testes**: nenhuma rota, migração nem arquivo do backend; o servidor já tinha tudo desde a 7.3, 7.5 e 7.6. Nada de `packages/shared`, `packages/ui` nem `packages/api-client-vendedor`.
+
+**O que entrou**
+
+- **Ponte** (`shared/operacoes.ts`, `shared/validacao.ts`): `parcelamento` opcional na venda e na troca (só `quantidade` de 1 a 24 e `primeiroVencimento`; qualquer outro campo, como valor de parcela ou entrada, é recusado), `recebimentos.receber` (só Dinheiro e PIX), `recebimentos.estornar`, `recebiveis.ver`, `acertos.listar`, `acertos.ver` e `comissao.previa`.
+- **Motor local** (`main/sync/operacoes-da-fase-7.ts`, `operacoes-locais.ts`, `outbox.ts`): `VENDA` e `TROCA` levam o `parcelamento` no JSON exato (as vendas sem parcelamento continuam com os mesmos bytes); `RECEBIMENTO_CLIENTE` e `ESTORNO_RECEBIMENTO_CLIENTE` gravam o pagamento provisório (`posterior`, e o `ESTORNO_PAGAMENTO` negativo ligado ao recebimento) e a operação na mesma transação. O computador recusa só o que o servidor também recusaria, com os mesmos textos: sem saldo a prazo, vencimento antes de hoje ou depois de um ano, recebimento acima do que falta, venda já paga ou estornada, estorno de outro dia (só a dona), de pagamento da hora da venda, repetido ou de venda com devolução. **Nunca calcula parcela, baixa de parcela nem comissão**: as parcelas, as baixas e as contas só chegam do servidor pelo pull.
+- **Consultas locais** (`main/local/consultas-do-acerto.ts`): recebíveis (vendas a prazo com as parcelas do servidor, o que já foi recebido e o que ainda pode ser estornado, e as contas que o vendedor deve à loja) e o acerto fechado (resumo, peças, comissão de cada venda, pendências, o que pagou, contas), lidos das cópias do computador, só do vendedor dono. `comissao.previa` é a única que vai à rede (a API calcula; sem internet a tela explica).
+- **Telas** (`renderer/telas`): `EscolhaDeParcelas` (em Vender e em Trocar, só aparece quando sobra valor a prazo), `TelaAReceber` e `TelaMeuAcerto`, abertas por dois botões em **Meus números**; os cinco botões da tela inicial não mudam (§19.7). Textos só em `textos.ts`; glossário, parte 18.
+- **Duas pontas** (`testes-sync`): o oráculo ganhou as nove tabelas da Fase 7 (`contas_receber`, `baixas_receber`, `recebimentos_vendedor`, `acertos`, `leituras_acerto`, `itens_acerto`, `acerto_eventos`, `comissoes`, `pendencias_acerto`) e há dois cenários novos: 21 (venda a prazo em 3 parcelas, dois recebimentos e um estorno sem internet; o servidor divide 33,33 + 33,33 + 33,34 e distribui os 50,00; o computador recebe as parcelas) e 22 (corte depois de gravar e 502 no envio do recebimento: um só no servidor).
+
+**Decisões e o que mais chama atenção**
+
+- A tela **não calcula dinheiro**: o "Falta receber" de uma venda que ainda não chegou à loja é a prévia do computador e leva o aviso "Estimativa"; o valor de cada parcela, a comissão, o líquido e a meta são os que o servidor gravou. A comparação com zero (meta batida, líquido negativo) só olha o sinal do que o servidor mandou.
+- **Pedir o acerto e bipar as sobras não entraram**: o prompt desta tarefa não os incluiu e as rotas são online (nada novo na outbox); a dona começa o acerto pela tela da 7.9.
+- Os botões ficam em Meus números (e não na tela inicial) para não mudar a especificação (§19.7).
+- O vencimento padrão (um mês depois de hoje, em Brasília) e a regra de "até um ano" são as do servidor; o computador também recusa o vencimento antes de hoje (o servidor só recusa no envio online).
+- Devolução e troca de venda a prazo já abatiam as parcelas desde a 6.6 e a 6.8 (linha "Abatido do que o cliente deve"): conferido e mantido; a troca passou a aceitar parcelas na diferença.
+
+**Testes** (Corona Vendas, SQLCipher de verdade no motor e nas consultas): `validacao-da-fase-7.test.ts`, `operacoes-da-fase-7.test.ts` (21), `consultas-do-acerto.test.ts` (15), `parcelas-e-acerto.test.tsx` (31, inclui as palavras proibidas do glossário e a ausência de custo, caixa e cheque), um teste a mais em `devolucao-e-troca.test.tsx` (troca com parcelas) e os dois cenários das duas pontas.
+
+**Não fiz**
+
+- Pedir o acerto e bipar as sobras no Corona Vendas (acima); estornar recebimento de outro dia (é só da dona); relatórios financeiros (7.12).
+- Nota de deploy: [entrega-corona-vendas.md](../entrega-corona-vendas.md#nota-de-deploy-da-tarefa-711-parcelas-e-recebíveis-no-corona-vendas).

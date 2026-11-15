@@ -109,6 +109,8 @@ Só plano: nenhuma linha de código nesta tarefa (7.1). O modelo está no [ADR-0
 - 7.10: tela da dona para a meta e os dois percentuais da comissão; o campo de comissão do cadastro do vendedor deixa de valer (sai da tela ou fica só para consulta). 7.11: "Minha comissão" mostra a prévia com quanto falta para a meta, em Guarani e em Real.
 - Relatórios com filtros, totais no rodapé, detalhamento até o registro e exportação PDF, Excel e CSV (§12). DRE e lucro ficam para a Fase 8.
 
+**Como ficou (tarefa 7.11, 15/11/2026).** Feita no PR 172, só Corona Vendas: parcelas na venda e na troca, receber do cliente e estornar no mesmo dia pela outbox, "A receber" (com o que o vendedor deve à loja) e "Meu acerto e minha comissão" (prévia com quanto falta para a meta e ficha do acerto fechado), em Meus números. Pedir o acerto e bipar as sobras pelo vendedor ficaram de fora (rotas online, sem outbox). Detalhe em [fase-7.md](fase-7.md#tarefa-711-corona-vendas-acerto-parcelas-e-recebíveis).
+
 ## Testes obrigatórios
 
 **Dinheiro e arredondamento**
