@@ -573,8 +573,9 @@ public class ServicoDeContasAReceber {
     public List<BaixaFeita> estornarBaixasDoRecebimento(UUID recebimentoOriginalId, UUID estornoDoRecebimentoId, Instant momento) {
         Instant hora = momento == null ? relogio.instant() : momento;
         List<Map<String, Object>> baixas = jdbc.queryForList("""
-                SELECT id, conta_id, valor FROM corona.baixas_receber
-                 WHERE recebimento_vendedor_id = ? AND tipo = 'PAGAMENTO' AND estorna_id IS NULL ORDER BY conta_id, id""",
+                SELECT b.id, b.conta_id, b.valor FROM corona.baixas_receber b JOIN corona.contas_receber c ON c.id = b.conta_id
+                 WHERE b.recebimento_vendedor_id = ? AND b.tipo = 'PAGAMENTO' AND b.estorna_id IS NULL
+                 ORDER BY c.vencimento, c.parcela, b.conta_id, b.id""",
                 recebimentoOriginalId);
         List<BaixaFeita> desfeitas = new ArrayList<>();
         if (baixas.isEmpty()) {
