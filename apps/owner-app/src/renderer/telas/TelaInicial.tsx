@@ -17,6 +17,7 @@ const BOTOES = [
 /** Botões que já levam a uma tela; os outros dizem "em breve" até a tarefa deles. */
 const ROTA_DO_BOTAO: Partial<Record<(typeof BOTOES)[number], string>> = {
   'Receber compra': 'estoque/receber-compra',
+  'Fazer acerto': 'acertos/lista',
 };
 
 export interface TelaInicialProps {

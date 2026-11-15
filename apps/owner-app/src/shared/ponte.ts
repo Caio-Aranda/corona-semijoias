@@ -3,6 +3,7 @@
  * conhece do processo principal. Nada aqui carrega token: a tela só recebe o resultado.
  */
 
+import { OPERACOES_DE_ACERTOS } from './acertos';
 import { OPERACOES_DE_CADASTRO } from './cadastros';
 import { OPERACOES_DE_COMPRAS } from './compras';
 import { OPERACOES_DE_DEVOLUCOES } from './devolucoes';
@@ -33,6 +34,7 @@ export const OPERACOES_DA_API = [
   ...OPERACOES_DE_COMPRAS,
   ...OPERACOES_DE_ESTOQUE,
   ...OPERACOES_DE_MALETAS,
+  ...OPERACOES_DE_ACERTOS,
   ...OPERACOES_DE_RELATORIOS,
   ...OPERACOES_DE_SINCRONIZACAO,
   ...OPERACOES_DE_DEVOLUCOES,

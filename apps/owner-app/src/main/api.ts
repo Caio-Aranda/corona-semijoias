@@ -127,7 +127,19 @@ import {
   listar7,
   listar9,
   listar12,
+  alterarComissao,
+  desistirDoAcerto,
+  fecharAcerto,
+  iniciarAcerto,
+  lerComissao,
+  listarAcertos,
+  listarPendenciasDoAcerto,
+  previaDoFechamento,
+  previaDoFechamentoComDecisoes,
+  registrarLeituraDoAcerto,
   relatorioDeMaletasEmAbertoEAtrasadas,
+  resolverPendenciaDoAcerto,
+  verAcerto,
   relatorioDeDevolucoes,
   relatorioDeTaxaDeDevolucaoPorVendedor,
   relatorioDePecasComDefeito,
@@ -190,6 +202,7 @@ import {
 import type { NomeDoCadastro } from '../shared/cadastros';
 import type { ParametrosConferidos, ParametrosDeVendedor } from '../shared/validacao-parametros';
 import type { ParametrosDeCompra } from '../shared/validacao-compras';
+import type { ParametrosDeAcerto } from '../shared/validacao-acertos';
 import type { ParametrosDeMaleta } from '../shared/validacao-maletas';
 import type { ParametrosDeDevolucoes } from '../shared/devolucoes';
 import type { ParametrosDeSincronizacao } from '../shared/sincronizacao';
@@ -748,6 +761,55 @@ async function executarMaleta(
   }
 }
 
+/** Acertos, pendências e a comissão (só ADMIN). O servidor calcula tudo; aqui só se repassa o que a tela decidiu. */
+async function executarAcerto(
+  client: ReturnType<typeof criarClienteDaApi>,
+  headers: { Authorization: string },
+  pedido: ParametrosDeAcerto,
+): Promise<Resultado<unknown>> {
+  const base = { client, headers };
+  switch (pedido.operacao) {
+    case 'acertos.listar':
+      return executar(() => listarAcertos({ ...base, query: pedido.lista }));
+    case 'acertos.iniciar':
+      return executar(() => iniciarAcerto({ ...base, body: pedido.corpo }), true);
+    case 'acertos.ver':
+      return executar(() => verAcerto({ ...base, path: { id: pedido.id } }));
+    case 'acertos.ler':
+      return executar(
+        () => registrarLeituraDoAcerto({ ...base, path: { id: pedido.id }, body: pedido.corpo }),
+        true,
+      );
+    case 'acertos.desistir':
+      return executar(
+        () => desistirDoAcerto({ ...base, path: { id: pedido.id }, body: pedido.corpo }),
+        true,
+      );
+    case 'acertos.previa':
+      return executar(() => previaDoFechamento({ ...base, path: { id: pedido.id } }));
+    case 'acertos.previaComDecisoes':
+      return executar(() =>
+        previaDoFechamentoComDecisoes({ ...base, path: { id: pedido.id }, body: pedido.pedido }),
+      );
+    case 'acertos.fechar':
+      return executar(
+        () => fecharAcerto({ ...base, path: { id: pedido.id }, body: pedido.pedido }),
+        true,
+      );
+    case 'pendencias.listar':
+      return executar(() => listarPendenciasDoAcerto({ ...base, query: pedido.lista }));
+    case 'pendencias.resolver':
+      return executar(
+        () => resolverPendenciaDoAcerto({ ...base, path: { id: pedido.id }, body: pedido.corpo }),
+        true,
+      );
+    case 'comissao.ler':
+      return executar(() => lerComissao(base));
+    case 'comissao.alterar':
+      return executar(() => alterarComissao({ ...base, body: pedido.corpo }));
+  }
+}
+
 /** Estoque e contagem (só ADMIN; o servidor recalcula saldo e ajustes, a tela só manda o que a pessoa fez). */
 async function executarEstoque(
   client: ReturnType<typeof criarClienteDaApi>,
@@ -1074,6 +1136,13 @@ export function criarApiDoGestao(opcoes: OpcoesDaApi): ApiDoGestao {
       }
       if (pedido.operacao.startsWith('maletas.')) {
         return executarMaleta(client, headers, pedido as ParametrosDeMaleta);
+      }
+      if (
+        pedido.operacao.startsWith('acertos.') ||
+        pedido.operacao.startsWith('pendencias.') ||
+        pedido.operacao.startsWith('comissao.')
+      ) {
+        return executarAcerto(client, headers, pedido as ParametrosDeAcerto);
       }
       if (pedido.operacao.startsWith('sincronizacao.')) {
         return executarSincronizacao(client, headers, pedido as ParametrosDeSincronizacao);

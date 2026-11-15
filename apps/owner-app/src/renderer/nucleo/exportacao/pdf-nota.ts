@@ -56,7 +56,7 @@ function reais(valor: string): string {
 }
 
 /** Quebra o texto em linhas que cabem na largura (por palavras; palavra enorme é cortada). */
-function quebrar(texto: string, largura: number, tamanho: number): string[] {
+export function quebrar(texto: string, largura: number, tamanho: number): string[] {
   const maximo = Math.max(4, Math.floor(largura / (tamanho * LARGURA_DO_CARACTERE)));
   const linhas: string[] = [];
   let atual = '';

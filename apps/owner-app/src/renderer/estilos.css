@@ -442,3 +442,26 @@
   color: var(--cor-texto);
   font-size: 0.9em;
 }
+
+/* Acerto: totais em lista (rótulo e valor lado a lado) e números esmaecidos enquanto o sistema recalcula. */
+dl.gestao-totais {
+  margin: 0;
+}
+
+.gestao-totais__linha {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--cor-borda, #ddd);
+  color: var(--cor-texto);
+}
+
+.gestao-totais__linha dt,
+.gestao-totais__linha dd {
+  margin: 0;
+}
+
+.gestao-calculando {
+  opacity: 0.6;
+}

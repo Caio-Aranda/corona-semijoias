@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { TEXTOS } from '../textos';
+import { TEXTOS_DE_ACERTOS } from '../textos-acertos';
 import { TEXTOS_DE_COMPRAS } from '../textos-compras';
 import { TEXTOS_DE_CONCILIACOES } from '../textos-conciliacoes';
 import { TEXTOS_DE_DEVOLUCOES } from '../textos-devolucoes';
@@ -78,6 +79,9 @@ export const ROTAS = [
   'relatorios/devolucao-reembolsos',
   'relatorios/devolucao-autorizacoes',
   'relatorios/devolucao-conferencia',
+  'acertos/lista',
+  'acertos/pendencias',
+  'acertos/comissao',
   'conciliacoes/dinheiro',
 ] as const;
 export type Rota = (typeof ROTAS)[number];
@@ -104,6 +108,14 @@ export const MENU = [
       { chave: 'estoque/contagem', rotulo: TEXTOS_DE_ESTOQUE.menu.contagem },
       { chave: 'estoque/receber-compra', rotulo: TEXTOS_DE_COMPRAS.menu.receber },
       { chave: 'estoque/compras', rotulo: TEXTOS_DE_COMPRAS.menu.compras },
+    ],
+  },
+  {
+    titulo: TEXTOS_DE_ACERTOS.menu.grupo,
+    itens: [
+      { chave: 'acertos/lista', rotulo: TEXTOS_DE_ACERTOS.menu.acertos },
+      { chave: 'acertos/pendencias', rotulo: TEXTOS_DE_ACERTOS.menu.pendencias },
+      { chave: 'acertos/comissao', rotulo: TEXTOS_DE_ACERTOS.menu.comissao },
     ],
   },
   {
