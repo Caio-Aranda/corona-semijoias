@@ -3366,6 +3366,116 @@
         },
         "type" : "object"
       },
+      "LinhaDeAcerto" : {
+        "properties" : {
+          "comissao" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "dataDaCotacao" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "descontos" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "devolvido" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "faltasCobradas" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "fechadoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "ficouDevendo" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "liquido" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "liquidoEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "liquidoEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "pagoAoVendedor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "percentual" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "recebidoNoAcerto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "semana" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "semanaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "vendedor" : {
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "vendidoBruto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendidoLiquido" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "LinhaDeAlteracao" : {
         "properties" : {
           "acao" : {
@@ -3508,6 +3618,59 @@
         },
         "type" : "object"
       },
+      "LinhaDeCaixa" : {
+        "properties" : {
+          "categoria" : {
+            "type" : "string"
+          },
+          "data" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "dataDaCotacao" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "descricao" : {
+            "type" : "string"
+          },
+          "estorno" : {
+            "type" : "boolean"
+          },
+          "forma" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "origem" : {
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "valorEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorEmReais" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "LinhaDeCliente" : {
         "properties" : {
           "ativo" : {
@@ -3545,6 +3708,79 @@
           },
           "whatsapp" : {
             "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "LinhaDeComissao" : {
+        "properties" : {
+          "base" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "comissaoEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "comissaoEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "comissaoEmReais" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "dataDaCotacao" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "fechadoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "metaEmGuarani" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "percentual" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "semana" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "semanaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "situacao" : {
+            "type" : "string"
+          },
+          "vendedor" : {
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "vendidoEmGuarani" : {
+            "format" : "int64",
+            "type" : "integer"
           }
         },
         "type" : "object"
@@ -3637,6 +3873,87 @@
         },
         "type" : "object"
       },
+      "LinhaDeConta" : {
+        "properties" : {
+          "canceladoEmReais" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "dataDaCotacao" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "devedorTipo" : {
+            "type" : "string"
+          },
+          "diasDeAtraso" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "emAbertoEmReais" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "pagoEmReais" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "parcela" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "parte" : {
+            "type" : "string"
+          },
+          "situacao" : {
+            "type" : "string"
+          },
+          "totalParcelas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "valorEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorEmReais" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vencimento" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "vendedor" : {
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "LinhaDeCredito" : {
         "properties" : {
           "cliente" : {
@@ -3713,6 +4030,82 @@
             "type" : "string"
           },
           "valorEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendedor" : {
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "LinhaDeEsperadoEContado" : {
+        "properties" : {
+          "acertoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "contadoBoa" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "contadoDefeito" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "dataDaCotacao" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "defeitoAprovado" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "esperado" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "falta" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "produto" : {
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "referencia" : {
+            "type" : "string"
+          },
+          "semana" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "valorDaFaltaEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorDaFaltaEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorDaFaltaEmReais" : {
             "example" : "123.45",
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
@@ -4220,6 +4613,65 @@
         },
         "type" : "object"
       },
+      "LinhaDePendencia" : {
+        "properties" : {
+          "acertoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "dataDaCotacao" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "produto" : {
+            "type" : "string"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "semana" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "situacao" : {
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "valorEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorEmReais" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendedor" : {
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "LinhaDePosicao" : {
         "properties" : {
           "ativo" : {
@@ -4360,6 +4812,63 @@
             "example" : "123.45",
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "LinhaDeRecebimento" : {
+        "properties" : {
+          "aplicadoEm" : {
+            "type" : "string"
+          },
+          "dataDaCotacao" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "estorno" : {
+            "type" : "boolean"
+          },
+          "forma" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "momento" : {
+            "type" : "string"
+          },
+          "motivo" : {
+            "type" : "string"
+          },
+          "recebidoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "valorEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorEmReais" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendedor" : {
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
             "type" : "string"
           }
         },
@@ -6977,6 +7486,38 @@
         },
         "type" : "object"
       },
+      "RelatorioDeCadastroLinhaDeAcerto" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDeAcerto"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "RelatorioDeCadastroLinhaDeAlteracao" : {
         "properties" : {
           "itens" : {
@@ -7073,11 +7614,75 @@
         },
         "type" : "object"
       },
+      "RelatorioDeCadastroLinhaDeCaixa" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDeCaixa"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "RelatorioDeCadastroLinhaDeCliente" : {
         "properties" : {
           "itens" : {
             "items" : {
               "$ref" : "#/components/schemas/LinhaDeCliente"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatorioDeCadastroLinhaDeComissao" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDeComissao"
             },
             "type" : "array"
           },
@@ -7169,11 +7774,75 @@
         },
         "type" : "object"
       },
+      "RelatorioDeCadastroLinhaDeConta" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDeConta"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "RelatorioDeCadastroLinhaDeCredito" : {
         "properties" : {
           "itens" : {
             "items" : {
               "$ref" : "#/components/schemas/LinhaDeCredito"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatorioDeCadastroLinhaDeEsperadoEContado" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDeEsperadoEContado"
             },
             "type" : "array"
           },
@@ -7489,6 +8158,38 @@
         },
         "type" : "object"
       },
+      "RelatorioDeCadastroLinhaDePendencia" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDePendencia"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "RelatorioDeCadastroLinhaDePosicao" : {
         "properties" : {
           "itens" : {
@@ -7558,6 +8259,38 @@
           "itens" : {
             "items" : {
               "$ref" : "#/components/schemas/LinhaDeProdutoParado"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatorioDeCadastroLinhaDeRecebimento" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDeRecebimento"
             },
             "type" : "array"
           },
@@ -17219,6 +17952,839 @@
         } ],
         "summary" : "Posição atual do estoque (com valor a custo)",
         "tags" : [ "relatorios-de-estoque-e-compras-controller" ]
+      }
+    },
+    "/api/dona/relatorios/financeiro/acertos" : {
+      "get" : {
+        "description" : "Um acerto fechado por linha: vendido, descontos, devolvido, comissão, faltas cobradas, valor do acerto, recebido e o que ficou devendo. Filtros: vendedorId, semanaId, busca, de e ate (do fechamento). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Cada valor vem em Real, Dólar e Guarani pela cotação do dia do lançamento (dataDaCotacao).",
+        "operationId" : "relatorioDeAcertos",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "semanaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeAcerto"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Acerto por vendedor e semana",
+        "tags" : [ "relatorios-financeiros-controller" ]
+      }
+    },
+    "/api/dona/relatorios/financeiro/comissoes" : {
+      "get" : {
+        "description" : "A comissão de cada acerto fechado (paga por abatimento no acerto), com o vendido em Guarani, a meta e o percentual que ela decidiu. Filtros: vendedorId, semanaId, busca, de e ate. Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Cada valor vem em Real, Dólar e Guarani pela cotação do dia do lançamento (dataDaCotacao).",
+        "operationId" : "relatorioDeComissoes",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "semanaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeComissao"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Comissões por vendedor e semana",
+        "tags" : [ "relatorios-financeiros-controller" ]
+      }
+    },
+    "/api/dona/relatorios/financeiro/contas-a-pagar" : {
+      "get" : {
+        "description" : "Uma parcela por linha, de cada compra: valor, pago, cancelado e o que falta. Filtros: fornecedorId, compraId, situacao, busca, de e ate (do vencimento). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Cada valor vem em Real, Dólar e Guarani pela cotação do dia do lançamento (dataDaCotacao).",
+        "operationId" : "relatorioDeContasAPagar",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "fornecedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "compraId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeConta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Contas a pagar",
+        "tags" : [ "relatorios-financeiros-controller" ]
+      }
+    },
+    "/api/dona/relatorios/financeiro/contas-a-receber" : {
+      "get" : {
+        "description" : "Uma parcela por linha, do cliente (deve ao vendedor) e do vendedor (deve à loja): valor, recebido, cancelado e o que falta. situacao: ABERTA, PARCIAL, PAGA, CANCELADA ou VENCIDA (calculada pela data de hoje em Brasília). Filtros: vendedorId, clienteId, devedor (CLIENTE ou VENDEDOR), situacao, busca, de e ate (do vencimento). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Cada valor vem em Real, Dólar e Guarani pela cotação do dia do lançamento (dataDaCotacao).",
+        "operationId" : "relatorioDeContasAReceber",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "clienteId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "devedor",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeConta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Contas a receber",
+        "tags" : [ "relatorios-financeiros-controller" ]
+      }
+    },
+    "/api/dona/relatorios/financeiro/esperado-contado" : {
+      "get" : {
+        "description" : "Uma peça de cada maleta de um acerto fechado: o que era esperado, o que foi contado (boa e com defeito) e o que faltou, com o valor da falta. Filtros: vendedorId, semanaId, produtoId, busca, de e ate. Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Cada valor vem em Real, Dólar e Guarani pela cotação do dia do lançamento (dataDaCotacao).",
+        "operationId" : "relatorioDeEsperadoEContado",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "semanaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "produtoId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeEsperadoEContado"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Esperado x contado",
+        "tags" : [ "relatorios-financeiros-controller" ]
+      }
+    },
+    "/api/dona/relatorios/financeiro/fluxo-de-caixa" : {
+      "get" : {
+        "description" : "Os lançamentos do caixa (entradas positivas, saídas negativas; o estorno vem marcado). Filtros: vendedorId (os que vieram dele), tipo, forma, origem, busca, de e ate (do dia do lançamento). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Cada valor vem em Real, Dólar e Guarani pela cotação do dia do lançamento (dataDaCotacao).",
+        "operationId" : "relatorioDeFluxoDeCaixa",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tipo",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "forma",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "origem",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeCaixa"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Fluxo de caixa",
+        "tags" : [ "relatorios-financeiros-controller" ]
+      }
+    },
+    "/api/dona/relatorios/financeiro/inadimplencia" : {
+      "get" : {
+        "description" : "Só parcelas vencidas e ainda em aberto, do cliente e do vendedor, com os dias de atraso e o rodapé por faixa de atraso. Filtros: vendedorId, clienteId, devedor, busca, de e ate (do vencimento). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Cada valor vem em Real, Dólar e Guarani pela cotação do dia do lançamento (dataDaCotacao).",
+        "operationId" : "relatorioDeInadimplencia",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "clienteId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "devedor",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeConta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Quem está devendo (inadimplência)",
+        "tags" : [ "relatorios-financeiros-controller" ]
+      }
+    },
+    "/api/dona/relatorios/financeiro/pendencias" : {
+      "get" : {
+        "description" : "Uma pendência por linha (falta, defeito, devolução ou crédito não aceitos), com a situação. Filtros: vendedorId, semanaId, produtoId, tipo, situacao, busca, de e ate. Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Cada valor vem em Real, Dólar e Guarani pela cotação do dia do lançamento (dataDaCotacao).",
+        "operationId" : "relatorioDePendenciasDoAcerto",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "semanaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "produtoId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tipo",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDePendencia"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Faltas e pendências",
+        "tags" : [ "relatorios-financeiros-controller" ]
+      }
+    },
+    "/api/dona/relatorios/financeiro/recebimentos-por-forma" : {
+      "get" : {
+        "description" : "O que os vendedores repassaram à loja: dinheiro, transferência e boleto (o estorno vem marcado, negativo). Filtros: vendedorId, forma, momento (ACERTO ou AVULSO), busca, de e ate. Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Cada valor vem em Real, Dólar e Guarani pela cotação do dia do lançamento (dataDaCotacao).",
+        "operationId" : "relatorioDeRecebimentosPorForma",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "forma",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "momento",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeRecebimento"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Recebimentos por forma de pagamento",
+        "tags" : [ "relatorios-financeiros-controller" ]
       }
     },
     "/api/dona/relatorios/maleta/em-aberto" : {
