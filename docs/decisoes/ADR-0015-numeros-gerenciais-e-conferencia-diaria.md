@@ -1,0 +1,74 @@
+# ADR-0015: Números gerenciais (painel, curva ABC, DRE, lucro) e conferência diária
+
+- **Status:** Proposto (tarefa 8.1, 15/11/2026). Aguarda o responsável. Até a decisão, as tarefas da Fase 8 seguem os padrões seguros abaixo, que **não mudam nenhuma regra de negócio** já aceita.
+- **Data:** 15/11/2026
+- **Tarefas que implementam:** 8.3 a 8.8 (Fase 8; plano em [fase-8-plano.md](../progresso/fase-8-plano.md))
+
+## Contexto
+
+A Fase 8 (§15) entrega o gerenciamento semanal da tela de referência (§2), a curva ABC (§12, Estoque), o DRE simplificado e o lucro por produto e por vendedor (§12, Financeiro), as conciliações automáticas diárias com alerta (§13, item 3) e os relatórios de controle (§12, Controle). Já estão decididos:
+
+- dinheiro em `NUMERIC(14,2)`, tudo em Real, arredondamento só em `Dinheiro` e conversão só em `ConversaoDeMoeda` (ADR-0006); Dólar e Guarani nunca entram em conferência (§13);
+- relatório lê consulta validada no servidor, com uma fórmula só (§13, item 2), e o motor de relatórios das Fases 1 a 7 (`MotorDeRelatorio`, filtros, rodapé, detalhamento, PDF, Excel e CSV);
+- o acerto grava seus totais, comissões com o percentual na linha e a cotação (ADR-0012); acerto `ACERTADO` e semana `FECHADA` nunca mudam;
+- o custo é só do servidor e só da dona (`produtos.preco_custo`, `itens_compra.custo_unitario`, `historico_custo`, imutável); **a venda não grava custo** (`itens_venda`, V022, é sincronizável e vai ao Corona Vendas);
+- os avisos da dona são calculados na hora (`FonteDeAvisos`), nunca gravados; as nove conciliações (`ConciliacoesDaFase7`), a conferência do estoque (ADR-0008, item 9) e a conferência da devolução e troca (tarefa 6.10) são só leitura e não guardam resultado.
+
+Ficam abertos cinco pontos que mudam tabela, fórmula ou número mostrado à dona, e por isso precisam ser escritos antes do código.
+
+## Decisão (proposta)
+
+1. **Custo da peça vendida (para o DRE, o lucro e a curva ABC por lucro).** O custo de cada linha vendida é o **último custo do `historico_custo` daquele produto com data até a data da venda** (em Brasília); sem histórico até essa data, o `preco_custo` do cadastro hoje, e a linha sai marcada "custo do cadastro" no relatório. Custo da linha = custo unitário × quantidade (produto de `NUMERIC(14,2)` por inteiro: exato, sem arredondamento). É **calculado na leitura**, nunca gravado: nada muda no caminho da venda, do push nem do pull, e o vendedor continua sem receber custo. Como o histórico é imutável, o número de uma semana fechada não muda depois, **exceto** nas linhas marcadas "custo do cadastro" (que seguem o cadastro); o relatório diz isso no cabeçalho.
+2. **DRE simplificado (só a dona, em Real, por período, regime de competência).** Linhas, cada uma com detalhamento até o registro:
+   - **Vendas** (total depois do desconto das vendas `CONCLUIDA`, pela data da venda; venda estornada fora);
+   - (−) **Devoluções** (valor devolvido das devoluções ativas, pela data da devolução);
+   - = **Receita líquida**;
+   - (−) **Custo das peças vendidas** (item 1, das vendas menos o das peças devolvidas, que voltam ao estoque);
+   - = **Lucro bruto**;
+   - (−) **Comissões** (linhas de comissão e seus estornos, pela data do fechamento do acerto);
+   - (−) **Perdas**: faltas do acerto e avarias, **pelo custo** (item 1, na data do movimento), e diferenças de inventário para menos;
+   - (+) **Faltas cobradas do vendedor** (pendência `FALTA` decidida como cobrar, pelo valor cobrado);
+   - (+/−) **Outras entradas e despesas da loja**: lançamentos **manuais** do caixa, por categoria, pela data do lançamento (o caixa automático do acerto e o pagamento a fornecedor **não** entram: são recebimento de venda já contada e compra de estoque);
+   - = **Resultado**.
+   Reembolso em dinheiro, crédito do cliente e parcelas não entram (são forma de pagamento, não resultado). Totais por soma no banco em `NUMERIC`; Dólar e Guarani só na tela, pela cotação do dia de cada lançamento (§12).
+3. **Lucro por produto e por vendedor.** Receita líquida − custo das peças vendidas (item 1), por produto e por vendedor; por vendedor também **− comissão**. Mesma consulta do DRE (uma fórmula só); a soma das linhas é igual às linhas correspondentes do DRE no mesmo período (teste obrigatório).
+4. **Curva ABC.** Por produto, pelo **vendido líquido** no período (vendas menos devoluções, em Real), ordenado do maior para o menor; classe **A** até 80% do acumulado, **B** até 95%, **C** o resto (a peça que cruza a fronteira fica na classe de cima). Empate pelo código da peça. Sem venda no período: fora da curva (o relatório "Produtos parados" já mostra). Percentuais com `Dinheiro` (HALF_UP).
+5. **Painel semanal (gerenciamento da tela de referência).** Só leitura, só a dona, por semana. Uma linha por **vendedor na semana** (o acerto dele, ou as maletas em aberto se ainda não houve acerto), com as maletas listadas em "Nota". Definições (resolvem a "premissa a confirmar" da §2, sem mudar regra):
+   - **Enviado (DX):** soma, pelo preço congelado, do que foi enviado nas maletas da linha (nova e reposições);
+   - **Devolvido (DV):** o que voltou à loja no acerto (peças boas e com defeito), pelo preço da maleta;
+   - **Vendido (VD):** vendido líquido (o do acerto quando `ACERTADO`; antes, o das vendas ativas até agora);
+   - **Comissão %**, **Comissão** e **Valor líquido:** os gravados no acerto `ACERTADO`; antes do acerto, a **prévia** pelo mesmo cálculo do fechamento (ADR-0012, item 5), marcada "prévia" — é a "comissão a pagar prevista" que faltava na Fase 7;
+   - **Situação:** a da maleta (ou do acerto).
+   A aba **Totais** reproduz os blocos da referência **sem entrada, sem cheque e sem "remarcadas"** (não existem no sistema novo): Novas maletas, Reposições, Acerto (devolvidos, vendidos, comissão, líquido, pendências pagas e em aberto), Vendas (quantidade, total, descontos, líquido), Trocas (trocas e créditos em aberto e usados), Total e Total recebido no acerto (Dinheiro, Transferência, Boleto). Cada bloco sai das consultas já validadas (acerto, comissão, recebimentos, créditos); nenhum total novo é gravado. Identidade conferida por teste: para cada maleta acertada, enviado = vendido + devolvido + falta, em peças.
+6. **Conferência diária (rodada das conciliações com aviso).** Uma vez por dia (03:00 de Brasília, depois da limpeza técnica) e quando a dona pede ("Conferir agora", comando com UUID), o servidor roda **todas** as conferências de produção (estoque da ADR-0008, devolução e troca da 6.10, C1 a C10 sem a C6, e as novas da 8.8) num retrato só (`REPEATABLE READ`, só leitura) e **guarda o resultado** em duas tabelas só do servidor, imutáveis (só `INSERT`): `rodadas_conferencia` (quando, quem pediu ou "automática", situação `SEM_DIFERENCA`, `COM_DIFERENCA` ou `FALHOU`, duração) e `diferencas_conferencia` (rodada, chave, tipo e id do registro, esperado e encontrado em texto). Uma rodada por vez (`pg_try_advisory_xact_lock`; a segunda pedida enquanto uma roda recebe o resultado da que está rodando). O aviso em "O que precisa da sua atenção" é calculado na hora a partir da **última rodada** (uma nova `FonteDeAvisos`): com diferença, "A conferência de hoje achou N diferenças"; falhou ou não rodou nas últimas 26 horas, "A conferência de hoje não rodou". Nada é corrigido sozinho (correção continua sendo estorno). Retenção: guardar tudo (volume pequeno: uma linha por dia mais as diferenças, que são zero em condições normais).
+
+## Consequências
+
+### Boas
+
+- Nenhuma mudança no caminho da venda, do sync, do acerto nem do caixa; nada novo vai ao Corona Vendas.
+- Uma fórmula só para DRE, lucro e curva ABC; os números conferem entre si por teste.
+- A dona fica sabendo de diferença no dia seguinte, sem abrir a tela de conferência.
+
+### Ruins ou custos
+
+- Custo pela data da venda depende do histórico de compras; a mudança manual do custo no cadastro (sem compra) só aparece nas linhas "custo do cadastro" e muda o passado delas.
+- A rodada diária roda dentro da API (uma instância só, como as cotações e a limpeza); mais de uma instância continua pedindo ADR (pendência da tarefa 11).
+- Duas tabelas novas (migração V047 ou a próxima livre).
+
+## Alternativas consideradas
+
+- **Gravar o custo na venda** (coluna em `itens_venda`): descartada porque `itens_venda` é sincronizável e o vendedor nunca recebe custo. Uma tabela só do servidor `custos_da_venda`, gravada pelo `ServicoDeVendas` na mesma transação, congelaria o custo, mas mexe no caminho da venda e do push (crítico) e precisaria preencher as vendas antigas pela regra do item 1 de qualquer jeito. Fica como opção se o responsável preferir o custo congelado.
+- **Custo médio ponderado:** mais correto na contabilidade, mas exige reconstruir o estoque valorado desde a primeira compra; desproporcional para um DRE "simplificado".
+- **Custo do cadastro hoje para tudo:** simples, mas muda o DRE de semanas fechadas a cada compra nova.
+- **Conferência sem guardar resultado** (só aviso calculado na hora rodando as consultas): cada abertura da tela inicial rodaria todas as conferências; descartada por custo e porque a Fase 7 já pediu o histórico das rodadas.
+- **Corrigir sozinho a diferença achada:** proibido (imutável, correção é estorno).
+
+## Seções da especificação relacionadas
+
+§2 (tela de referência), §7.4, §7.5, §12, §13, §15 (Fase 8).
+
+## Dúvidas
+
+- **Para o responsável:** R1 (item 1: custo pela data da venda, calculado na leitura, ou tabela só do servidor com o custo congelado); R2 (item 6: horário da rodada e as 26 horas do aviso). Os demais itens seguem como escritos se não houver objeção.
+- **Para a dona:** nenhuma pergunta nova. Os números do painel e do DRE são conferidos com as planilhas dela numa semana real (§13, item 7) no teste de uso; diferença achada vira tarefa.
