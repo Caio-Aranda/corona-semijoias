@@ -212,6 +212,7 @@ export const TEXTOS_DE_FINANCEIRO = {
     ajuda:
       'O que os clientes devem aos vendedores e o que os vendedores devem à loja. Aqui você só consulta; para registrar o que o vendedor pagou, use Recebimentos do vendedor.',
     legenda: 'Contas a receber',
+    naoLeu: 'Não deu para ler as contas a receber. Tente de novo.',
     vazia: 'Nenhuma conta a receber com estes filtros.',
     filtros: {
       vendedor: 'Vendedor',
@@ -259,6 +260,7 @@ export const TEXTOS_DE_FINANCEIRO = {
     ajuda:
       'O que o vendedor pagou à loja fora do acerto. O dinheiro entra no caixa e baixa as contas dele, da mais antiga para a mais nova.',
     legenda: 'Recebimentos do vendedor',
+    naoLeu: 'Não deu para ler os recebimentos. Tente de novo.',
     vazia: 'Nenhum recebimento com estes filtros.',
     registrar: 'Registrar recebimento',
     filtros: {

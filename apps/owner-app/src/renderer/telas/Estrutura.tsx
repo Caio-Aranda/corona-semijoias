@@ -27,6 +27,8 @@ import { TelaPedidosDeAutorizacao } from './devolucoes/TelaPedidosDeAutorizacao'
 import { TelaTrocas } from './devolucoes/TelaTrocas';
 import { TelaCaixa } from './financeiro/TelaCaixa';
 import { TelaContasAPagar } from './financeiro/TelaContasAPagar';
+import { TelaContasAReceber } from './financeiro/TelaContasAReceber';
+import { TelaRecebimentos } from './financeiro/TelaRecebimentos';
 import { TelaCategoriasDoCaixa } from './financeiro/TelaCategoriasDoCaixa';
 import { TelaConferenciaDoDinheiro } from './conciliacoes/TelaConferenciaDoDinheiro';
 import { TelaConferencia } from './devolucoes/TelaConferencia';
@@ -105,6 +107,10 @@ function Conteudo({
       return <TelaCategoriasDoCaixa ponte={ponte} />;
     case 'financeiro/contas-a-pagar':
       return <TelaContasAPagar ponte={ponte} />;
+    case 'financeiro/contas-a-receber':
+      return <TelaContasAReceber ponte={ponte} />;
+    case 'financeiro/recebimentos':
+      return <TelaRecebimentos ponte={ponte} />;
     case 'pessoas/vendedores':
       return <TelaVendedores ponte={ponte} />;
     case 'computadores/lista':
