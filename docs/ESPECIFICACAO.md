@@ -1,6 +1,6 @@
 # Especificação completa: Sistema de Semijoias Consignadas
 
-Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.22, 14/11/2026.
+Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.23, 15/11/2026.
 
 ## 1. Objetivo e contexto
 
@@ -542,7 +542,7 @@ Os apps compartilham `packages/` (componentes, clientes da API gerados do OpenAP
 | **4. App do vendedor online** | Login, conferência, venda, clientes, consulta, relatórios próprios, valores nas três moedas | Vendedor vende com internet |
 | **5. Offline e sync** | SQLite criptografado, outbox, push e pull (inclusive as cotações), indicador, bloqueio remoto, testes de sync | Vendedor vende sem internet |
 | **6. Devolução e troca** | Garantia, reembolso, crédito, autorização da dona, relatórios | Pós-venda completo |
-| **7. Acerto e financeiro** | Acerto semanal, comissões, contas a receber e a pagar, caixa, relatórios financeiros | Fechamento semanal |
+| **7. Acerto e financeiro** | Acerto semanal, comissões, contas a receber e a pagar, caixa, relatórios financeiros. **Entregue (código concluído em 15/11/2026, tarefas 7.2 a 7.13):** limite de consignação; parcelas da venda a prazo e recebimento posterior; acerto com contagem, fechamento atômico, comissão por meta (700.000 Gs, 30% ou 40%) e pendências; recebimentos do vendedor (dinheiro, Transferência e boleto) e caixa automático; contas a pagar, caixa manual com categorias e fechar semana; nove conciliações; telas da dona (Acerto e Financeiro) e do vendedor (A receber, Meu acerto e minha comissão); nove relatórios financeiros. Sem entrada e sem cheque. **Falta o teste de uso** ([roteiro](roteiro-teste-fase-7.md)) | Fechamento semanal |
 | **8. Painel, relatórios avançados e conciliações** | Gerenciamento semanal (referência), curva ABC, DRE, conciliações automáticas, auditoria | Visão gerencial e confiança nos números |
 | **9. Entrega** | Instaladores, auto-update, assinatura, deploy na VPS, HTTPS, backup e teste de restauração, **homologação do leitor com etiquetas reais**, validação com dados reais, treinamento | Sistema em produção |
 
@@ -825,6 +825,10 @@ Importação com nome de arquivo inválido, foto duplicada, arquivo corrompido, 
   - §7.3: a devolução abate primeiro o que o cliente deve, depois crédito, depois dinheiro; cancelar desfaz o abatimento; a troca de A a prazo.
   - §9: `devolucoes.valor_abatido`, `baixas_receber.devolucao_id` e o motivo `DEVOLUCAO`; `PARCIAL` também para parcela abatida.
   - §10: `devolucoes.valor_abatido` e `baixas_receber.devolucao_id` entram no pull; o que o app manda não muda.
+- **v1.23, 15/11/2026:** fechamento da Fase 7 (tarefa 7.13); nenhuma regra de negócio mudou.
+  - §15: a Fase 7 passa a constar como entregue no código (tarefas 7.2 a 7.12), com o que ela inclui e o que falta (o teste de uso, com o [roteiro](roteiro-teste-fase-7.md)).
+  - §7.4 a §7.5, §9, §10, §12 e §13: já descritos nas versões 1.14 a 1.22; o ciclo inteiro (venda a prazo, recebimento, devolução, acerto, pagamento, comissão por meta, caixa, contas a pagar, semana fechada e conciliações) passou a ter um teste de ponta a ponta (`CicloDaFase7Test`).
+  - Diferenças entre o texto e o comportamento (registradas em `docs/progresso/fase-7.md`, sem mudar regra): o passo 2 da §7.4 ("o vendedor bipa as sobras") hoje é feito pela dona no Corona Gestão (a rota do vendedor existe, a tela do Corona Vendas não); o vendedor também não pede o acerto pelo aplicativo.
 - **v1.22, 14/11/2026:** as nove conciliações da Fase 7 com rota e tela (tarefa 7.8, ADR-0012 item 17).
   - §13: a conferência do dinheiro (C1 a C10, sem a C6), a rota `GET /api/dona/conciliacoes` e o que cada uma confere; só leitura, num retrato só, uma fórmula só.
 - **v1.21, 14/11/2026:** contas a pagar das compras, caixa manual com categorias, aviso de caixa negativo e fechar semana (tarefa 7.7, ADR-0012 itens 2, 3.8, 11, 12, 13, 14, 15, 16 e 17).
