@@ -312,6 +312,77 @@ export const TEXTOS_DE_ACERTOS = {
         'A semana deste acerto já está fechada, por isso o acerto não pode ser fechado. Fale com o suporte.',
     } as Record<string, string>,
   },
+  fechada: {
+    titulo: 'Fechamento do acerto',
+    fechadoEm: (quando: string) => `Fechado em ${quando}.`,
+    pecas: {
+      defeitoAprovado: 'Defeito aprovado',
+    },
+    pendencias: {
+      legenda: 'Pendências deste acerto',
+      vazia: 'Nenhuma pendência neste acerto.',
+      colunas: {
+        peca: 'Peça',
+        tipo: 'O que é',
+        quantidade: 'Quantidade',
+        valor: 'Valor',
+        situacao: 'Situação',
+      },
+      tipos: {
+        FALTA: 'Peça que faltou',
+        DEFEITO: 'Peça com defeito',
+        DEVOLUCAO_NAO_ACEITA: 'Devolução não aceita',
+        CREDITO_SEM_SALDO_NAO_ACEITO: 'Crédito sem saldo não aceito',
+      } as Record<string, string>,
+      situacoes: {
+        ABERTA: 'Em aberto',
+        COBRADA: 'Cobrada',
+        ASSUMIDA_PELA_LOJA: 'A loja assumiu',
+        ENCONTRADA: 'Peça encontrada',
+        APROVADA: 'Defeito aprovado',
+        RECUSADA: 'Defeito recusado',
+      } as Record<string, string>,
+      semPeca: 'Valor sem peça',
+    },
+    totais: {
+      recebido: 'Recebido no acerto',
+      ficouDevendo: 'Ficou devendo',
+      pagoAoVendedor: 'Pago ao vendedor',
+    },
+    recebimentos: {
+      legenda: 'O que o vendedor pagou',
+      vazia: 'O vendedor não pagou nada neste acerto.',
+      colunas: { forma: 'Forma', valor: 'Valor', quando: 'Quando', situacao: 'Situação' },
+      formas: { DINHEIRO: 'Dinheiro', PIX: 'Transferência (PIX)', BOLETO: 'Boleto' } as Record<
+        string,
+        string
+      >,
+      desfeito: 'Desfeito',
+    },
+    contas: {
+      legenda: 'Contas que o acerto gerou',
+      vazia: 'Este acerto não gerou contas a receber.',
+      colunas: {
+        parcela: 'Parcela',
+        valor: 'Valor',
+        vence: 'Vence em',
+        forma: 'Forma prevista',
+        situacao: 'Situação',
+      },
+      parcela: (numero: number, total: number) => `${numero} de ${total}`,
+      situacoes: {
+        ABERTA: 'Em aberto',
+        PARCIAL: 'Paga em parte',
+        PAGA: 'Paga',
+        CANCELADA: 'Cancelada',
+      } as Record<string, string>,
+    },
+    imprimir: 'Imprimir acerto',
+    gerando: 'Preparando o acerto...',
+    pronta: (nome: string) => `O acerto ${nome} foi preparado. Escolha onde guardar.`,
+    erroDoPdf: 'Não foi possível preparar o acerto agora. Tente de novo.',
+    naoLeu: 'Não deu para ler o fechamento deste acerto. Tente de novo.',
+  },
   desistir: {
     titulo: 'Desistir do acerto',
     texto:

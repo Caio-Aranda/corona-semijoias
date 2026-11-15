@@ -7,6 +7,7 @@ import { TEXTOS_DE_ACERTOS } from '../../textos-acertos';
 import { dataEHora } from '../sincronizacao/dados';
 import { ContagemDoAcerto } from './ContagemDoAcerto';
 import { DesistirDoAcerto } from './DesistirDoAcerto';
+import { FichaDoAcertoFechado } from './FichaDoAcertoFechado';
 import { PreviaDoAcerto } from './PreviaDoAcerto';
 import { lerFicha, type FichaDoAcerto } from './dados';
 
@@ -83,7 +84,10 @@ export function GestaoDoAcerto({ ponte, id, inicial, aoVoltar }: GestaoDoAcertoP
             </>
           ) : null}
           {ficha.status === 'ACERTADO' ? (
-            <Aviso tipo="sucesso">{TEXTOS_DE_ACERTOS.fechar.fechado}</Aviso>
+            <>
+              <Aviso tipo="sucesso">{TEXTOS_DE_ACERTOS.fechar.fechado}</Aviso>
+              <FichaDoAcertoFechado ponte={ponte} ficha={ficha} aoTentarDeNovo={busca.recarregar} />
+            </>
           ) : null}
           {ficha.status === 'DESISTIDO' ? (
             <Aviso tipo="informacao">
