@@ -46,7 +46,6 @@ export const CAMPOS_DO_VENDEDOR: readonly CampoDaApi[] = [
   { nome: 'limiteConsignacao', tipo: 'dinheiro' },
   { nome: 'semLimite', tipo: 'booleano' },
   { nome: 'restricaoId', tipo: 'uuid' },
-  { nome: 'comissaoPercentual', tipo: 'percentual' },
   { nome: 'pracaId', tipo: 'uuid' },
 ];
 

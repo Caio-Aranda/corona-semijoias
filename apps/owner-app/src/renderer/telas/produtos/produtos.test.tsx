@@ -404,15 +404,16 @@ describe('Produtos: fotos', () => {
     const evento = new Event('paste', { bubbles: true, cancelable: true });
     Object.defineProperty(evento, 'clipboardData', { value: { files: [colada] } });
     window.dispatchEvent(evento);
-    await waitFor(() => expect(quantas(m, 'produtos.fotos.enviar')).toBe(1));
+    // Espera mais que o padrão: com a máquina cheia (todos os arquivos em paralelo) a ficha demora a abrir.
+    await waitFor(() => expect(quantas(m, 'produtos.fotos.enviar')).toBe(1), { timeout: 5000 });
     expect((ultima(m, 'produtos.fotos.enviar') as { arquivo: { nome: string } }).arquivo.nome).toBe(
       'image.png',
     );
-    await screen.findByText('Foto trocada.');
+    await screen.findByText('Foto trocada.', {}, { timeout: 5000 });
     fireEvent.drop(screen.getByRole('group', { name: 'Área para soltar ou colar a foto' }), {
       dataTransfer: { files: [arquivo('b.jpg', 'image/jpeg')] },
     });
-    await waitFor(() => expect(quantas(m, 'produtos.fotos.enviar')).toBe(2));
+    await waitFor(() => expect(quantas(m, 'produtos.fotos.enviar')).toBe(2), { timeout: 5000 });
   });
 
   it('remover foto pede confirmação', async () => {

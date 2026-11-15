@@ -173,7 +173,7 @@ describe('Vendedores: lista', () => {
 });
 
 describe('Vendedores: ficha, aba Cadastro', () => {
-  it('vendedor novo: só o Cadastro está liberado; salvar manda limite e comissão em reais e libera as abas', async () => {
+  it('vendedor novo: só o Cadastro está liberado; salvar manda o limite em reais (sem comissão) e libera as abas', async () => {
     const m = montar({
       'vendedores.criar': (p) => ({
         ok: true,
@@ -191,7 +191,6 @@ describe('Vendedores: ficha, aba Cadastro', () => {
 
     await u.type(screen.getByLabelText('Nome do vendedor'), 'Joana Souza');
     await u.type(screen.getByLabelText('Limite de consignação'), '1.500,00');
-    await u.type(screen.getByLabelText('Comissão (%)'), '12,5');
     await u.click(screen.getByRole('button', { name: 'Salvar' }));
 
     expect(
@@ -204,7 +203,6 @@ describe('Vendedores: ficha, aba Cadastro', () => {
       estrangeiro: false,
       limiteConsignacao: '1500.00',
       semLimite: false,
-      comissaoPercentual: '12.50',
     });
     expect(screen.getByRole('tab', { name: 'Endereço' })).toBeEnabled();
   });
@@ -270,15 +268,11 @@ describe('Vendedores: ficha, aba Cadastro', () => {
     expect(await screen.findByText(/US\$/)).toBeInTheDocument();
   });
 
-  it('comissão fora de 0 a 100 e valor inválido erram no campo, sem chamar a API', async () => {
+  it('a comissão não é mais do vendedor: o cadastro não tem o campo e a tela Comissão e meta cuida dela', async () => {
     const m = montar();
-    const u = await abrirFicha(m);
-    const comissao = screen.getByLabelText('Comissão (%)');
-    await u.clear(comissao);
-    await u.type(comissao, '150');
-    await u.click(screen.getByRole('button', { name: 'Salvar' }));
-    expect(await screen.findByText('A comissão deve ficar entre 0 e 100.')).toBeInTheDocument();
-    expect(m.chamadas.some((c) => c.operacao === 'vendedores.editar')).toBe(false);
+    await abrirFicha(m);
+    expect(screen.queryByLabelText('Comissão (%)')).toBeNull();
+    expect(screen.queryByLabelText(/omissão/)).toBeNull();
   });
 
   it('edita mandando a versão lida; erro de campo do servidor aparece no campo', async () => {

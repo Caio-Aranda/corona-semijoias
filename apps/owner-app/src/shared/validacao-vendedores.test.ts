@@ -40,14 +40,13 @@ describe('conferência dos dados dos vendedores', () => {
     }
   });
 
-  it('criar: limite e comissão como texto decimal, campo desconhecido recusa tudo', () => {
+  it('criar: limite como texto decimal (a comissão não é mais do vendedor), campo desconhecido recusa tudo', () => {
     expect(
       conferirParametros('vendedores.criar', {
         nome: 'Joana',
         sexo: 'FEMININO',
         estrangeiro: false,
         limiteConsignacao: '1500.00',
-        comissaoPercentual: '12.50',
         pracaId: ID,
         restricaoId: OUTRO,
         dataNascimento: '1990-05-17',
@@ -59,7 +58,6 @@ describe('conferência dos dados dos vendedores', () => {
         sexo: 'FEMININO',
         estrangeiro: false,
         limiteConsignacao: '1500.00',
-        comissaoPercentual: '12.50',
         pracaId: ID,
         restricaoId: OUTRO,
         dataNascimento: '1990-05-17',
@@ -71,8 +69,7 @@ describe('conferência dos dados dos vendedores', () => {
       { nome: 'J', limiteConsignacao: '-1.00' },
       { nome: 'J', limiteConsignacao: 1500 },
       { nome: 'J', limiteConsignacao: '1.234' },
-      { nome: 'J', comissaoPercentual: '100.01' },
-      { nome: 'J', comissaoPercentual: '-5' },
+      { nome: 'J', comissaoPercentual: '12.50' },
       { nome: 'J', sexo: 'XYZ' },
       { nome: 'J', pracaId: 'nao-e-id' },
       { nome: 'J', dataNascimento: '17/05/1990' },
@@ -83,7 +80,7 @@ describe('conferência dos dados dos vendedores', () => {
     }
     expect(
       conferirParametros('vendedores.criar', { nome: 'J', comissaoPercentual: '100' }),
-    ).not.toBeNull();
+    ).toBeNull();
   });
 
   it('editar exige o id e a versão lida', () => {

@@ -11,6 +11,7 @@ import {
 import type { OperacaoDaApi } from './ponte';
 import { conferirCompra, type ParametrosDeCompra } from './validacao-compras';
 import { conferirAcerto, type ParametrosDeAcerto } from './validacao-acertos';
+import { conferirFinanceiro, type ParametrosDeFinanceiro } from './validacao-financeiro';
 import { conferirMaleta, type ParametrosDeMaleta } from './validacao-maletas';
 import { conferirEstoque, type ParametrosDeEstoque } from './validacao-estoque';
 import { conferirProduto, type ParametrosDeProduto } from './validacao-produtos';
@@ -38,7 +39,6 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const DECIMAL = /^-?\d{1,14}(\.\d{1,2})?$/;
 const DATA = /^\d{4}-\d{2}-\d{2}$/;
 const DINHEIRO = /^\d{1,12}(\.\d{1,2})?$/;
-const PERCENTUAL = /^\d{1,3}(\.\d{1,2})?$/;
 const PERFIS = ['ADMIN', 'VENDEDOR'];
 /** Tamanho máximo dos textos; o servidor confere de novo o que é regra de negócio. */
 const MAX_TEXTO = 200;
@@ -120,6 +120,7 @@ export type ParametrosConferidos =
   | ParametrosDeCompra
   | ParametrosDeMaleta
   | ParametrosDeAcerto
+  | ParametrosDeFinanceiro
   | ParametrosDeEstoque
   | ParametrosDeRelatorio
   | ParametrosDeSincronizacao
@@ -162,8 +163,6 @@ function valorDoCampo(campo: CampoDaApi, v: unknown): unknown {
       return v === 'ABERTA' || v === 'FECHADA' ? v : undefined;
     case 'dinheiro':
       return ehTexto(v) && DINHEIRO.test(v) ? v : undefined;
-    case 'percentual':
-      return ehTexto(v) && PERCENTUAL.test(v) && Number(v) <= 100 ? v : undefined;
     case 'sexo':
       return v === 'FEMININO' || v === 'MASCULINO' || v === 'OUTRO' ? v : undefined;
   }
@@ -516,6 +515,25 @@ export function conferirParametros(
     case 'comissao.ler':
     case 'comissao.alterar':
       return conferirAcerto(operacao, p);
+    case 'caixa.extrato':
+    case 'caixa.saldo':
+    case 'caixa.lancar':
+    case 'caixa.estornar':
+    case 'caixa.categorias':
+    case 'caixa.criarCategoria':
+    case 'caixa.renomearCategoria':
+    case 'caixa.inativarCategoria':
+    case 'caixa.reativarCategoria':
+    case 'contasAPagar.listar':
+    case 'contasAPagar.ver':
+    case 'contasAPagar.pagar':
+    case 'contasAPagar.estornar':
+    case 'contasAReceber.listar':
+    case 'recebimentos.listar':
+    case 'recebimentos.receber':
+    case 'recebimentos.estornar':
+    case 'semanas.fechar':
+      return conferirFinanceiro(operacao, p);
     case 'estoque.ficha':
     case 'estoque.lancar':
     case 'estoque.ajustar':

@@ -73,7 +73,7 @@ export interface CampoDaFicha {
   nome: string;
   /** Rótulo próprio da aba (quando o nome do campo da API se repete em outra aba). */
   rotulo?: string;
-  tipo: 'texto' | 'data' | 'area' | 'selecao' | 'sim-nao' | 'dinheiro' | 'percentual';
+  tipo: 'texto' | 'data' | 'area' | 'selecao' | 'sim-nao' | 'dinheiro';
   obrigatorio?: boolean;
   max?: number;
   ajuda?: string;
@@ -99,8 +99,6 @@ export function daApi(campos: readonly CampoDaApi[]): CampoDaFicha[] {
         return { ...base, tipo: 'data' };
       case 'dinheiro':
         return { ...base, tipo: 'dinheiro' };
-      case 'percentual':
-        return { ...base, tipo: 'percentual' };
       case 'booleano':
         return { ...base, tipo: 'sim-nao' };
       case 'sexo':
@@ -130,7 +128,6 @@ export function valoresIniciais(
         saida[c.nome] = v === true ? 'sim' : 'nao';
         break;
       case 'dinheiro':
-      case 'percentual':
         saida[c.nome] = reaisParaTela(v);
         break;
       default:
@@ -138,18 +135,6 @@ export function valoresIniciais(
     }
   }
   return saida;
-}
-
-const PERCENTUAL_DIGITADO = /^(\d{1,3})(?:,(\d{1,2}))?$/;
-
-/** "12,5" → "12.50"; fora de 0 a 100 ou fora do formato → `null`. */
-export function percentualDigitado(digitado: string): string | null {
-  const m = PERCENTUAL_DIGITADO.exec(digitado.trim().replace('.', ','));
-  if (!m) return null;
-  const inteiro = Number(m[1]);
-  const centesimos = (m[2] ?? '').padEnd(2, '0') || '00';
-  if (inteiro > 100 || (inteiro === 100 && centesimos !== '00')) return null;
-  return `${inteiro}.${centesimos}`;
 }
 
 /**
@@ -181,10 +166,6 @@ export function montarCorpo(
       const reais = lerReaisDigitados(v);
       if (reais === null) erros[c.nome] = TEXTOS.dinheiro.invalido;
       else corpo[c.nome] = reais;
-    } else if (c.tipo === 'percentual') {
-      const p = percentualDigitado(v);
-      if (p === null) erros[c.nome] = T.comissaoInvalida;
-      else corpo[c.nome] = p;
     } else {
       corpo[c.nome] = v;
     }

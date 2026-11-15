@@ -439,6 +439,90 @@ describe('API do Corona Gestão: rotas certas no cliente gerado', () => {
     expect(Object.keys(corpos[0] as object).sort()).toEqual(['faltas', 'id', 'liquidoMostrado']);
   });
 
+  it('financeiro: cada operação chama a rota da dona e manda só o que a tela decidiu', async () => {
+    const BAIXA = '5f6e28ba-2fa1-41d3-b9a5-2c3a9a8f6b66';
+    const casos: [Record<string, unknown>, string][] = [
+      [{ operacao: 'caixa.extrato', de: '2026-11-01' }, 'GET /api/dona/caixa/lancamentos'],
+      [{ operacao: 'caixa.saldo' }, 'GET /api/dona/caixa/saldo'],
+      [
+        {
+          operacao: 'caixa.lancar',
+          corpo: {
+            id: ID,
+            tipo: 'SAIDA',
+            forma: 'PIX',
+            categoriaId: ID,
+            data: '2026-11-10',
+            descricao: 'Luz',
+            valor: '10.00',
+          },
+        },
+        'POST /api/dona/caixa/lancamentos',
+      ],
+      [
+        { operacao: 'caixa.estornar', id: ID, corpo: { id: PEDIDO, motivo: 'Errei' } },
+        `POST /api/dona/caixa/lancamentos/${ID}/estorno`,
+      ],
+      [{ operacao: 'caixa.categorias' }, 'GET /api/dona/caixa/categorias'],
+      [
+        { operacao: 'caixa.criarCategoria', corpo: { id: ID, nome: 'Luz', tipo: 'SAIDA' } },
+        'POST /api/dona/caixa/categorias',
+      ],
+      [
+        { operacao: 'caixa.renomearCategoria', id: ID, corpo: { nome: 'Água' } },
+        `PUT /api/dona/caixa/categorias/${ID}`,
+      ],
+      [
+        { operacao: 'caixa.inativarCategoria', id: ID },
+        `POST /api/dona/caixa/categorias/${ID}/inativar`,
+      ],
+      [
+        { operacao: 'caixa.reativarCategoria', id: ID },
+        `POST /api/dona/caixa/categorias/${ID}/reativar`,
+      ],
+      [
+        { operacao: 'contasAPagar.listar', lista: { situacao: 'ABERTA' } },
+        'GET /api/dona/contas-a-pagar',
+      ],
+      [{ operacao: 'contasAPagar.ver', id: ID }, `GET /api/dona/contas-a-pagar/${ID}`],
+      [
+        {
+          operacao: 'contasAPagar.pagar',
+          id: ID,
+          corpo: { id: PEDIDO, forma: 'PIX', valor: '5.00' },
+        },
+        `POST /api/dona/contas-a-pagar/${ID}/pagamentos`,
+      ],
+      [
+        { operacao: 'contasAPagar.estornar', id: BAIXA, corpo: { id: PEDIDO, motivo: 'Errei' } },
+        `POST /api/dona/contas-a-pagar/pagamentos/${BAIXA}/estorno`,
+      ],
+      [
+        { operacao: 'contasAReceber.listar', lista: { nivel: 'VENDEDOR' } },
+        'GET /api/dona/contas-receber',
+      ],
+      [{ operacao: 'recebimentos.listar', lista: {} }, 'GET /api/dona/recebimentos-vendedor'],
+      [
+        {
+          operacao: 'recebimentos.receber',
+          corpo: { id: ID, vendedorId: ID, forma: 'DINHEIRO', valor: '5.00' },
+        },
+        'POST /api/dona/recebimentos-vendedor',
+      ],
+      [
+        { operacao: 'recebimentos.estornar', id: ID, corpo: { id: PEDIDO, motivo: 'Errei' } },
+        `POST /api/dona/recebimentos-vendedor/${ID}/estorno`,
+      ],
+      [
+        { operacao: 'semanas.fechar', id: ID, corpo: { id: PEDIDO } },
+        `POST /api/dona/semanas/${ID}/fechar`,
+      ],
+    ];
+    for (const [pedidoDaTela, esperado] of casos) {
+      expect(await caminhoDe(pedidoDaTela as never)).toBe(esperado);
+    }
+  });
+
   it('maletas: criar, colocar e tirar peça, enviar, excluir, ver, listar e em aberto', async () => {
     const PROD = '1b4e28ba-2fa1-41d3-b9a5-2c3a9a8f6b22';
     const casos: [Record<string, unknown>, string][] = [

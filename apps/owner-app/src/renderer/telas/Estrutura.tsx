@@ -25,6 +25,11 @@ import { TelaCreditos } from './devolucoes/TelaCreditos';
 import { TelaGarantia } from './devolucoes/TelaGarantia';
 import { TelaPedidosDeAutorizacao } from './devolucoes/TelaPedidosDeAutorizacao';
 import { TelaTrocas } from './devolucoes/TelaTrocas';
+import { TelaCaixa } from './financeiro/TelaCaixa';
+import { TelaContasAPagar } from './financeiro/TelaContasAPagar';
+import { TelaContasAReceber } from './financeiro/TelaContasAReceber';
+import { TelaRecebimentos } from './financeiro/TelaRecebimentos';
+import { TelaCategoriasDoCaixa } from './financeiro/TelaCategoriasDoCaixa';
 import { TelaConferenciaDoDinheiro } from './conciliacoes/TelaConferenciaDoDinheiro';
 import { TelaConferencia } from './devolucoes/TelaConferencia';
 import { TelaMaletas } from './maletas/TelaMaletas';
@@ -96,6 +101,16 @@ function Conteudo({
       return <TelaPendencias ponte={ponte} />;
     case 'acertos/comissao':
       return <TelaComissao ponte={ponte} />;
+    case 'financeiro/caixa':
+      return <TelaCaixa ponte={ponte} />;
+    case 'financeiro/categorias':
+      return <TelaCategoriasDoCaixa ponte={ponte} />;
+    case 'financeiro/contas-a-pagar':
+      return <TelaContasAPagar ponte={ponte} />;
+    case 'financeiro/contas-a-receber':
+      return <TelaContasAReceber ponte={ponte} />;
+    case 'financeiro/recebimentos':
+      return <TelaRecebimentos ponte={ponte} />;
     case 'pessoas/vendedores':
       return <TelaVendedores ponte={ponte} />;
     case 'computadores/lista':
