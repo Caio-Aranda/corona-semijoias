@@ -102,6 +102,42 @@ public final class CotacoesDaMassa {
         }
     }
 
+    /**
+     * Tira as cotações dos dias dados (para quem grava datas antigas, fora do intervalo de {@link #tirar}): o que apontava
+     * para elas passa a apontar para nada (só o atalho de Dólar e Guarani) e as linhas saem. Pelo dono das tabelas, com os
+     * gatilhos de usuário desligados só nessa conexão. Não serve para acerto fechado: ele guarda a cotação (use {@link #tirar}).
+     */
+    public static void tirarDias(Connection comoMigracao, List<String> dias) throws SQLException {
+        String doisDias = dias.stream().map(d -> "'" + d + "'").collect(java.util.stream.Collectors.joining(", ", "(", ")"));
+        String minhas = "(SELECT id FROM corona.cotacoes WHERE data_cotacao IN " + doisDias + ")";
+        try (Statement s = comoMigracao.createStatement()) {
+            List<String> tabelas = new ArrayList<>();
+            try (var rs = s.executeQuery("""
+                    SELECT DISTINCT c.conrelid::regclass::text FROM pg_constraint c
+                     WHERE c.contype = 'f' AND c.confrelid = 'corona.cotacoes'::regclass""")) {
+                while (rs.next()) {
+                    tabelas.add(rs.getString(1));
+                }
+            }
+            List<String> todas = new ArrayList<>(tabelas);
+            todas.add("corona.cotacoes");
+            for (String t : todas) {
+                s.execute("ALTER TABLE " + t + " DISABLE TRIGGER USER");
+            }
+            try {
+                for (String t : tabelas) {
+                    s.execute("UPDATE " + t + " SET cotacao_id = NULL WHERE cotacao_id IN " + minhas);
+                }
+                s.execute("DELETE FROM corona.cotacoes WHERE data_cotacao IN " + doisDias);
+            } finally {
+                for (String t : todas) {
+                    s.execute("ALTER TABLE " + t + " ENABLE TRIGGER USER");
+                }
+            }
+            comoMigracao.commit();
+        }
+    }
+
     private static List<String> ids(Statement s, String consulta) throws SQLException {
         List<String> r = new ArrayList<>();
         try (var rs = s.executeQuery(consulta)) {
