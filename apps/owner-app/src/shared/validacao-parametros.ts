@@ -528,6 +528,7 @@ export function conferirParametros(
     case 'caixa.inativarCategoria':
     case 'caixa.reativarCategoria':
     case 'contasAPagar.listar':
+    case 'contasAPagar.ver':
     case 'contasAPagar.pagar':
     case 'contasAPagar.estornar':
     case 'contasAReceber.listar':

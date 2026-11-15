@@ -484,6 +484,7 @@ describe('API do Corona Gestão: rotas certas no cliente gerado', () => {
         { operacao: 'contasAPagar.listar', lista: { situacao: 'ABERTA' } },
         'GET /api/dona/contas-a-pagar',
       ],
+      [{ operacao: 'contasAPagar.ver', id: ID }, `GET /api/dona/contas-a-pagar/${ID}`],
       [
         {
           operacao: 'contasAPagar.pagar',

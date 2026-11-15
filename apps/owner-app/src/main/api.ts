@@ -143,6 +143,7 @@ import {
   reativarCategoriaDoCaixa,
   receberDoVendedor,
   renomearCategoriaDoCaixa,
+  verContaAPagar,
   verExtratoDoCaixa,
   verSaldoDoCaixa,
   desistirDoAcerto,
@@ -861,6 +862,8 @@ async function executarFinanceiro(
       return executar(() => reativarCategoriaDoCaixa({ ...base, path: { id: pedido.id } }));
     case 'contasAPagar.listar':
       return executar(() => listarContasAPagar({ ...base, query: pedido.lista }));
+    case 'contasAPagar.ver':
+      return executar(() => verContaAPagar({ ...base, path: { id: pedido.id } }));
     case 'contasAPagar.pagar':
       return executar(
         () => pagarContaAPagar({ ...base, path: { id: pedido.id }, body: pedido.corpo }),

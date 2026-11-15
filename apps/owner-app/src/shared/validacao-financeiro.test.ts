@@ -125,6 +125,11 @@ describe('conferência dos dados do financeiro', () => {
       }),
     ).not.toBeNull();
     expect(conferirParametros('contasAPagar.listar', { situacao: 'ATRASADA' })).toBeNull();
+    expect(conferirParametros('contasAPagar.ver', { id: ID })).toEqual({
+      operacao: 'contasAPagar.ver',
+      id: ID,
+    });
+    expect(conferirParametros('contasAPagar.ver', { id: 'x' })).toBeNull();
     expect(conferirParametros('contasAPagar.listar', { tamanho: 1000 })).toBeNull();
   });
 

@@ -21,6 +21,7 @@ export const TEXTOS_DE_FINANCEIRO = {
   ate: 'Até',
   limparFiltros: 'Limpar filtros',
   valoresEmReais: 'Valores em Dólar e Guarani pela cotação do dia. Vale o valor em reais.',
+  naoLeu: 'Não deu para ler a tela. Tente de novo.',
   erros: {
     // Códigos da API que merecem uma frase com o que fazer (os outros mostram a mensagem do servidor).
     DATA_EM_SEMANA_FECHADA: 'Essa semana já foi fechada. Use a data de hoje.',
@@ -130,12 +131,15 @@ export const TEXTOS_DE_FINANCEIRO = {
     titulo: 'Contas a pagar',
     ajuda: 'As parcelas das compras que a loja ainda deve aos fornecedores.',
     legenda: 'Contas a pagar',
+    naoLeu: 'Não deu para ler as contas a pagar. Tente de novo.',
     vazia: 'Nenhuma conta a pagar com estes filtros.',
     filtros: {
       fornecedor: 'Fornecedor',
       todosFornecedores: 'Todos os fornecedores',
       situacao: 'Situação',
       todasSituacoes: 'Todas as situações',
+      vencimentoDe: 'Vence de',
+      vencimentoAte: 'Vence até',
     },
     situacoes: {
       ABERTA: 'Aberta',

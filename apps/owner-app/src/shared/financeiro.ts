@@ -14,6 +14,7 @@ export const OPERACOES_DE_FINANCEIRO = [
   'caixa.inativarCategoria',
   'caixa.reativarCategoria',
   'contasAPagar.listar',
+  'contasAPagar.ver',
   'contasAPagar.pagar',
   'contasAPagar.estornar',
   'contasAReceber.listar',

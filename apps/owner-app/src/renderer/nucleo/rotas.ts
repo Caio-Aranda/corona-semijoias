@@ -85,6 +85,7 @@ export const ROTAS = [
   'acertos/comissao',
   'financeiro/caixa',
   'financeiro/categorias',
+  'financeiro/contas-a-pagar',
   'conciliacoes/dinheiro',
 ] as const;
 export type Rota = (typeof ROTAS)[number];
@@ -126,6 +127,7 @@ export const MENU = [
     itens: [
       { chave: 'financeiro/caixa', rotulo: TEXTOS_DE_FINANCEIRO.menu.caixa },
       { chave: 'financeiro/categorias', rotulo: TEXTOS_DE_FINANCEIRO.menu.categorias },
+      { chave: 'financeiro/contas-a-pagar', rotulo: TEXTOS_DE_FINANCEIRO.menu.contasAPagar },
     ],
   },
   {

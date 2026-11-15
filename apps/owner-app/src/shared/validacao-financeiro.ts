@@ -50,6 +50,7 @@ export type ParametrosDeFinanceiro =
   | { operacao: 'caixa.renomearCategoria'; id: string; corpo: { nome: string } }
   | { operacao: 'caixa.inativarCategoria' | 'caixa.reativarCategoria'; id: string }
   | { operacao: 'contasAPagar.listar'; lista: Record<string, string | number> }
+  | { operacao: 'contasAPagar.ver'; id: string }
   | {
       operacao: 'contasAPagar.pagar';
       id: string;
@@ -149,6 +150,7 @@ export function conferirFinanceiro(
         : null;
     case 'caixa.inativarCategoria':
     case 'caixa.reativarCategoria':
+    case 'contasAPagar.ver':
       return soCom(p, 'id') && idValido(p.id) ? { operacao, id: p.id } : null;
     case 'contasAPagar.listar': {
       const { pagina, tamanho, ...resto } = p;

@@ -26,6 +26,7 @@ import { TelaGarantia } from './devolucoes/TelaGarantia';
 import { TelaPedidosDeAutorizacao } from './devolucoes/TelaPedidosDeAutorizacao';
 import { TelaTrocas } from './devolucoes/TelaTrocas';
 import { TelaCaixa } from './financeiro/TelaCaixa';
+import { TelaContasAPagar } from './financeiro/TelaContasAPagar';
 import { TelaCategoriasDoCaixa } from './financeiro/TelaCategoriasDoCaixa';
 import { TelaConferenciaDoDinheiro } from './conciliacoes/TelaConferenciaDoDinheiro';
 import { TelaConferencia } from './devolucoes/TelaConferencia';
@@ -102,6 +103,8 @@ function Conteudo({
       return <TelaCaixa ponte={ponte} />;
     case 'financeiro/categorias':
       return <TelaCategoriasDoCaixa ponte={ponte} />;
+    case 'financeiro/contas-a-pagar':
+      return <TelaContasAPagar ponte={ponte} />;
     case 'pessoas/vendedores':
       return <TelaVendedores ponte={ponte} />;
     case 'computadores/lista':
