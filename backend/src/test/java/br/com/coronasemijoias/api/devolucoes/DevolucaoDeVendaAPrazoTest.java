@@ -37,7 +37,7 @@ class DevolucaoDeVendaAPrazoTest extends ApoioDaVendaAPrazo {
                 .isZero();
         List<Integer> ordem = jdbc.queryForList("""
                 SELECT c.parcela FROM corona.baixas_receber b JOIN corona.contas_receber c ON c.id = b.conta_id
-                 WHERE c.venda_id = ? AND b.tipo = 'CANCELAMENTO' AND b.motivo_cancelamento = 'DEVOLUCAO' ORDER BY b.id""",
+                 WHERE c.venda_id = ? AND b.tipo = 'CANCELAMENTO' AND b.motivo_cancelamento = 'DEVOLUCAO' ORDER BY b.ctid""",
                 Integer.class, c.venda());
         assertThat(ordem).containsExactly(3, 2, 1);
         igual(emAberto(c.venda()), "0.00");
