@@ -12,6 +12,7 @@ import {
   listarMeusClientes,
   listarMinhasMaletas,
   listarVendasDoVendedor,
+  previaDaMinhaComissao,
   relatorioDeMeusRecebimentos,
   relatorioDeMinhasVendas,
   relatorioDeValoresAReceber,
@@ -255,11 +256,18 @@ export function criarApiDoVendas(opcoes: OpcoesDaApi): ApiDoVendas {
       case 'trocas.registrar':
       case 'trocas.cancelar':
       case 'creditos.doCliente':
+      case 'recebimentos.receber':
+      case 'recebimentos.estornar':
+      case 'recebiveis.ver':
+      case 'acertos.listar':
+      case 'acertos.ver':
         // Só existem no banco do computador. Sem ele, a pessoa precisa entrar de novo com internet.
         return Promise.resolve({
           ok: false,
           falha: { tipo: 'recusada', status: 503, mensagem: MENSAGEM_SEM_BANCO },
         });
+      case 'comissao.previa':
+        return executar(() => previaDaMinhaComissao(base));
       case 'cotacao.hoje':
         return executar(() => verCotacaoDeHoje(base));
       case 'fotos.ver':

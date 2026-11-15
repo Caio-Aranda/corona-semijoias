@@ -33,6 +33,7 @@ import {
 } from '../sync/operacoes-locais';
 import type { Falha, Resultado } from '../tipos';
 import { ConsultasDaFase6 } from './consultas-da-fase-6';
+import { ConsultasDoAcerto } from './consultas-do-acerto';
 import { pecaDoProduto } from './peca-do-produto';
 
 /**
@@ -48,6 +49,9 @@ export interface OpcoesDasConsultas {
   /** Avisado quando algo que a tela mostra no indicador mudou sem gravar uma operação (o "Entendi"). */
   aoMudarOEstado?: () => void;
 }
+
+const MENSAGENS_ACERTO_NAO_ENCONTRADO =
+  'Não encontramos este acerto neste computador. Atualize a tela e tente de novo.';
 
 const naoEncontrado = (mensagem: string): Falha => ({ tipo: 'recusada', status: 404, mensagem });
 
@@ -152,15 +156,28 @@ interface LinhaDaVenda {
 
 /** Pedidos que as telas fazem ao banco local. `fotos.ver` e `eu` continuam na rede (fotos sem internet: tarefa 5.9). */
 export function ehConsultaLocal(pedido: PedidoDeChamada): boolean {
-  return pedido.operacao !== 'eu' && pedido.operacao !== 'fotos.ver';
+  // A prévia da comissão é calculada pelo servidor (precisa de internet): nunca é local.
+  return (
+    pedido.operacao !== 'eu' &&
+    pedido.operacao !== 'fotos.ver' &&
+    pedido.operacao !== 'comissao.previa'
+  );
 }
 
 export class ConsultasLocais {
   /** As consultas da devolução, troca e crédito (tarefa 6.8). */
   readonly fase6: ConsultasDaFase6;
 
+  /** Acerto fechado, parcelas e recebíveis (tarefa 7.11). */
+  readonly acerto: ConsultasDoAcerto;
+
   constructor(private readonly o: OpcoesDasConsultas) {
     this.fase6 = new ConsultasDaFase6({ banco: o.banco, ...(o.agora ? { agora: o.agora } : {}) });
+    this.acerto = new ConsultasDoAcerto({
+      banco: () => this.db(),
+      agora: () => this.agora(),
+      venda: (id) => this.venda(id),
+    });
   }
 
   /** O banco local está aberto (a pessoa entrou com internet ao menos uma vez neste computador). */
@@ -367,8 +384,33 @@ export class ConsultasLocais {
         );
       case 'creditos.doCliente':
         return ok(this.fase6.creditosDoCliente(pedido.clienteId));
+      // --- acerto, parcelas e recebíveis (tarefa 7.11) ---
+      case 'recebimentos.receber': {
+        this.o.operacoes.receberDoCliente(pedido.recebimento);
+        return ok(this.venda(pedido.recebimento.vendaId));
+      }
+      case 'recebimentos.estornar': {
+        this.o.operacoes.estornarRecebimento({
+          id: pedido.estornoId,
+          recebimentoId: pedido.id,
+          motivo: pedido.motivo,
+        });
+        const dono = this.db()
+          .prepare('SELECT venda_id FROM pagamentos_cliente WHERE id = ?')
+          .get(pedido.id) as { venda_id: string } | undefined;
+        return ok(dono ? this.venda(dono.venda_id) : null);
+      }
+      case 'recebiveis.ver':
+        return ok(this.acerto.recebiveis());
+      case 'acertos.listar':
+        return ok(this.acerto.listarAcertos());
+      case 'acertos.ver': {
+        const ficha = this.acerto.verAcerto(pedido.id);
+        return ficha ? ok(ficha) : nao(MENSAGENS_ACERTO_NAO_ENCONTRADO);
+      }
       case 'eu':
       case 'fotos.ver':
+      case 'comissao.previa':
         return nao('Esta consulta não é feita no computador.');
     }
   }
@@ -645,7 +687,7 @@ export class ConsultasLocais {
     const pagamentos = (
       db
         .prepare(
-          `SELECT id, tipo, forma, valor, pago_em, devolucao_id FROM pagamentos_cliente
+          `SELECT id, tipo, forma, valor, pago_em, devolucao_id, posterior FROM pagamentos_cliente
             WHERE venda_id = ? AND deleted_at IS NULL ORDER BY pago_em, rowid`,
         )
         .all(l.id) as {
@@ -655,6 +697,7 @@ export class ConsultasLocais {
         valor: string;
         pago_em: string | null;
         devolucao_id: string | null;
+        posterior: number | null;
       }[]
     ).map((p) => ({
       id: p.id,
@@ -663,6 +706,7 @@ export class ConsultasLocais {
       valor: p.valor,
       em: p.pago_em ?? '',
       daDevolucao: p.devolucao_id !== null,
+      posterior: p.posterior === 1,
     }));
     const pago = pagamentos.reduce((t, p) => t + (centavosDe(p.valor) ?? 0n), 0n);
     const devolvido = this.devolvidoDaVenda(l.id);
@@ -1164,6 +1208,12 @@ export class ConsultasLocais {
             const nome = clienteDaVenda(d['vendaId']);
             return nome ? `Pedido de autorização: venda de ${nome}` : 'Pedido de autorização';
           }
+          case 'RECEBIMENTO_CLIENTE': {
+            const nome = clienteDaVenda(d['vendaId']);
+            return nome ? `Recebimento de ${nome}` : 'Recebimento de cliente';
+          }
+          case 'ESTORNO_RECEBIMENTO_CLIENTE':
+            return 'Estorno de recebimento';
           case 'CANCELAR_DEVOLUCAO':
             return 'Cancelamento de devolução';
           case 'CANCELAR_TROCA':
@@ -1236,5 +1286,7 @@ const nao = (mensagem: string): Resultado<unknown> => ({
 
 /** O tipo do lançamento na venda: o desfazer do reembolso (devolução cancelada) é um tipo próprio (tarefa 6.8). */
 function tipoDoPagamento(tipo: string | null): PagamentoDaVenda['tipo'] {
-  return tipo === 'REEMBOLSO' || tipo === 'ESTORNO_REEMBOLSO' ? tipo : 'PAGAMENTO';
+  return tipo === 'REEMBOLSO' || tipo === 'ESTORNO_REEMBOLSO' || tipo === 'ESTORNO_PAGAMENTO'
+    ? tipo
+    : 'PAGAMENTO';
 }

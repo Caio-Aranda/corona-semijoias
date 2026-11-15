@@ -24,6 +24,7 @@ import { valorDaDevolucao } from '../../shared/valor-da-devolucao';
 import { CHAVES, lerEstado } from './estado-sync';
 import type { CodigoDaFase6 } from './mensagens-da-fase-6';
 import { ErroDaOperacao, inserir, limiteDeDesconto, saldoDaPeca } from './operacoes-locais';
+import { conferirParcelamento } from './operacoes-da-fase-7';
 import { enfileirar } from './outbox';
 import { uuidV7 } from './uuid';
 
@@ -381,7 +382,7 @@ interface VendaAchada {
   vendedor_da_maleta: string | null;
 }
 
-function acharVenda(db: BancoAberto, vendaId: string): VendaAchada {
+export function acharVenda(db: BancoAberto, vendaId: string): VendaAchada {
   const v = db
     .prepare(
       `SELECT v.id, v.status, v.remessa_id, v.cliente_id, v.total, v.vendida_em, v.vendedor_id, v.troca_id,
@@ -515,7 +516,7 @@ function problemaDaAutorizacao(
  * crédito): vale também para a venda a prazo que o computador ainda não enviou (sem parcela local) e não precisa de baixa
  * provisória. Nunca negativo.
  */
-function emAbertoDaVenda(db: BancoAberto, venda: VendaAchada): bigint {
+export function emAbertoDaVenda(db: BancoAberto, venda: VendaAchada): bigint {
   const devolvido = somaDe(
     db,
     `SELECT d.valor_devolvido AS valor FROM devolucoes d
@@ -876,6 +877,8 @@ export function registrarTroca(
   }
   if (creditoDeA >= total && b.pagamentos.length > 0) recusar('PAGO_SEM_DIFERENCA');
   if (pago > total) throw new ErroDaOperacao('PAGO_PASSA_DO_TOTAL');
+  // Parcelas (tarefa 7.11): só quando sobra a prazo; o computador não divide nada.
+  const parcelamento = conferirParcelamento(b.parcelamento, total - pago, agora);
 
   const quando = agora.toISOString();
   const dados = JSON.stringify({
@@ -905,6 +908,7 @@ export function registrarTroca(
       })),
       // Só o servidor calcula o total (reforço 2 da aprovação).
       totalConferido: null,
+      ...(parcelamento ? { parcelamento } : {}),
     },
     trocadaEm: quando,
   });
