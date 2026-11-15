@@ -368,7 +368,7 @@ class RotasDoVendedorTest extends TesteDeIntegracao {
         assertThat(corpoDe(ler("/api/vendedor/clientes?busca=maria da silva", quemA)).size()).isEqualTo(1);
         assertThat(corpoDe(ler("/api/vendedor/clientes?busca=98888", quemA)).size()).isEqualTo(1);
         assertThat(corpoDe(ler("/api/vendedor/clientes?busca=" + cpf.substring(0, 8), quemA)).size()).isEqualTo(1);
-        assertThat(corpoDe(ler("/api/vendedor/clientes?busca=maria%25silva", quemA)).size()).isZero(); // curinga digitado vale ao pé da letra: se fosse curinga, acharia "Maria da Silva"
+        assertThat(corpoDe(ler("/api/vendedor/clientes?busca=maria_da silva", quemA)).size()).isZero(); // curinga digitado vale ao pé da letra: se "_" fosse curinga, acharia "Maria da Silva". Sem dígito no texto: a busca por telefone usa só os dígitos e "%25" virava "25", que acha qualquer telefone com 25 de outra classe
         ler("/api/vendedor/clientes", dona()).andExpect(status().isForbidden());
         postar("/api/vendedor/clientes", dona(), pedido).andExpect(status().isForbidden());
 

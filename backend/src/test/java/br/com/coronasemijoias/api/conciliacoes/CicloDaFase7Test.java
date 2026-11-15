@@ -49,7 +49,9 @@ class CicloDaFase7Test extends ApoioDasConciliacoes {
 
     @Test
     void ocicloCompletoDaFase7FechaComOsNumerosCertosEAsConciliacoesZeradas() throws Exception {
-        CotacoesDaMassa.doExemplo(jdbc);
+        // Cotação do exemplo (R$ 0,0009 por guarani) no dia mais recente de todos: o acerto usa a mais recente, e outras classes
+        // deixam cotações próprias de 2291 em diante (a de 2291-06-01 pode ser delas, com outra taxa). Esta sai no fim da classe.
+        CotacoesDaMassa.gravar(jdbc, "2299-12-31", "5.00000000", "0.00090000");
         configurarComissao(700_000, 30, 40);
         BigDecimal caixaAntes = saldoDoCaixa();
 
