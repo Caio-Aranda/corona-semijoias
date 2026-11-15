@@ -25,6 +25,7 @@ export const OPERACOES_DA_API = [
   'cotacao.hoje',
   'cotacao.converter',
   'avisos.listar',
+  'conciliacoes.conferir',
   'vendedores.escolha',
   ...OPERACOES_DE_CADASTRO,
   ...OPERACOES_DE_VENDEDORES,

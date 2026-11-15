@@ -122,7 +122,10 @@ export type ParametrosConferidos =
   | ParametrosDeRelatorio
   | ParametrosDeSincronizacao
   | ParametrosDeDevolucoes
-  | { operacao: 'eu' | 'cotacao.hoje' | 'avisos.listar' | 'vendedores.escolha' }
+  | {
+      operacao:
+        'eu' | 'cotacao.hoje' | 'avisos.listar' | 'conciliacoes.conferir' | 'vendedores.escolha';
+    }
   | { operacao: 'usuarios.listar'; lista: ParametrosDaLista }
   | { operacao: 'usuarios.criar'; novo: ParametrosDeUsuarioNovo }
   | { operacao: 'usuarios.editar'; editado: ParametrosDeUsuarioEditado }
@@ -385,6 +388,7 @@ export function conferirParametros(
     case 'eu':
     case 'cotacao.hoje':
     case 'avisos.listar':
+    case 'conciliacoes.conferir':
     case 'vendedores.escolha':
       return { operacao };
     case 'usuarios.listar': {
