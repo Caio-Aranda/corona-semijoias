@@ -1,7 +1,7 @@
 import type { Aparelho, LinhaLocal } from './aparelho';
 import { consultar, texto } from './banco-do-servidor';
 
-/** As 23 tabelas que o Corona Vendas copia (a mesma lista do `RegistroDeTabelas` do servidor, ADR-0013, item 4). */
+/** As 32 tabelas que o Corona Vendas copia (a mesma lista do `RegistroDeTabelas` do servidor, ADR-0013, item 4). */
 export const TABELAS = [
   'cotacoes',
   'categorias',
@@ -27,6 +27,16 @@ export const TABELAS = [
   'creditos_cliente',
   'usos_credito',
   'creditos_sem_saldo',
+  // Fase 7 (tarefas 7.3 a 7.6): contas a receber, acerto e o que o vendedor pagou à loja.
+  'contas_receber',
+  'baixas_receber',
+  'recebimentos_vendedor',
+  'acertos',
+  'leituras_acerto',
+  'itens_acerto',
+  'acerto_eventos',
+  'comissoes',
+  'pendencias_acerto',
 ] as const;
 
 /** Tabelas que são só de um vendedor: nada delas pode aparecer no computador de outro. */
@@ -47,6 +57,16 @@ export const TABELAS_PRIVADAS = [
   'creditos_cliente',
   'usos_credito',
   'creditos_sem_saldo',
+  // Fase 7 (tarefas 7.3 a 7.6): contas a receber, acerto e o que o vendedor pagou à loja.
+  'contas_receber',
+  'baixas_receber',
+  'recebimentos_vendedor',
+  'acertos',
+  'leituras_acerto',
+  'itens_acerto',
+  'acerto_eventos',
+  'comissoes',
+  'pendencias_acerto',
 ] as const;
 
 /** Versão e lápide de cada linha, por tabela: o que o oráculo compara. */
@@ -66,7 +86,10 @@ const sqlDoOraculo = (v: string) => `
        minhas_conferencias AS (SELECT id FROM corona.conferencias WHERE vendedor_id = ${v}),
        minhas_devolucoes AS (SELECT id FROM corona.devolucoes WHERE vendedor_id = ${v}),
        minhas_autorizacoes AS (SELECT id FROM corona.autorizacoes_excecao WHERE vendedor_id = ${v}),
-       meus_creditos AS (SELECT id FROM corona.creditos_cliente WHERE vendedor_id = ${v})
+       meus_creditos AS (SELECT id FROM corona.creditos_cliente WHERE vendedor_id = ${v}),
+       minhas_contas AS (SELECT c.id FROM corona.contas_receber c LEFT JOIN corona.vendas ve ON ve.id = c.venda_id
+                          WHERE c.vendedor_id = ${v} OR ve.vendedor_id = ${v}),
+       meus_acertos AS (SELECT id FROM corona.acertos WHERE vendedor_id = ${v})
   SELECT 'cotacoes' AS tabela, id::text, version, deleted_at IS NOT NULL AS excluida FROM corona.cotacoes
   UNION ALL SELECT 'categorias', id::text, version, deleted_at IS NOT NULL FROM corona.categorias
   UNION ALL SELECT 'semanas', id::text, version, deleted_at IS NOT NULL FROM corona.semanas
@@ -107,7 +130,25 @@ const sqlDoOraculo = (v: string) => `
   UNION ALL SELECT 'usos_credito', id::text, version, deleted_at IS NOT NULL FROM corona.usos_credito
              WHERE credito_id IN (SELECT id FROM meus_creditos)
   UNION ALL SELECT 'creditos_sem_saldo', id::text, version, deleted_at IS NOT NULL FROM corona.creditos_sem_saldo
-             WHERE venda_id IN (SELECT id FROM minhas_vendas)`;
+             WHERE venda_id IN (SELECT id FROM minhas_vendas)
+  UNION ALL SELECT 'contas_receber', id::text, version, deleted_at IS NOT NULL FROM corona.contas_receber
+             WHERE id IN (SELECT id FROM minhas_contas)
+  UNION ALL SELECT 'baixas_receber', id::text, version, deleted_at IS NOT NULL FROM corona.baixas_receber
+             WHERE conta_id IN (SELECT id FROM minhas_contas)
+  UNION ALL SELECT 'recebimentos_vendedor', id::text, version, deleted_at IS NOT NULL FROM corona.recebimentos_vendedor
+             WHERE vendedor_id = ${v}
+  UNION ALL SELECT 'acertos', id::text, version, deleted_at IS NOT NULL FROM corona.acertos
+             WHERE id IN (SELECT id FROM meus_acertos)
+  UNION ALL SELECT 'leituras_acerto', id::text, version, deleted_at IS NOT NULL FROM corona.leituras_acerto
+             WHERE acerto_id IN (SELECT id FROM meus_acertos)
+  UNION ALL SELECT 'itens_acerto', id::text, version, deleted_at IS NOT NULL FROM corona.itens_acerto
+             WHERE acerto_id IN (SELECT id FROM meus_acertos)
+  UNION ALL SELECT 'acerto_eventos', id::text, version, deleted_at IS NOT NULL FROM corona.acerto_eventos
+             WHERE vendedor_id = ${v}
+  UNION ALL SELECT 'comissoes', id::text, version, deleted_at IS NOT NULL FROM corona.comissoes
+             WHERE vendedor_id = ${v}
+  UNION ALL SELECT 'pendencias_acerto', id::text, version, deleted_at IS NOT NULL FROM corona.pendencias_acerto
+             WHERE vendedor_id = ${v}`;
 
 /**
  * O oráculo: o que é do vendedor V, calculado à parte, lendo as tabelas do servidor e aplicando as regras do ADR-0013
@@ -135,7 +176,10 @@ export async function idsDeOutrosVendedores(vendedorId: string): Promise<Set<str
          conferencias AS (SELECT id FROM corona.conferencias WHERE vendedor_id <> ${v}),
          devolucoes AS (SELECT id FROM corona.devolucoes WHERE vendedor_id <> ${v}),
          autorizacoes AS (SELECT id FROM corona.autorizacoes_excecao WHERE vendedor_id <> ${v}),
-         creditos AS (SELECT id FROM corona.creditos_cliente WHERE vendedor_id <> ${v})
+         creditos AS (SELECT id FROM corona.creditos_cliente WHERE vendedor_id <> ${v}),
+         contas AS (SELECT c.id FROM corona.contas_receber c LEFT JOIN corona.vendas ve ON ve.id = c.venda_id
+                     WHERE c.vendedor_id <> ${v} OR ve.vendedor_id <> ${v}),
+         acertos AS (SELECT id FROM corona.acertos WHERE vendedor_id <> ${v})
     SELECT id::text FROM maletas
     UNION ALL SELECT id::text FROM corona.itens_remessa WHERE remessa_id IN (SELECT id FROM maletas)
     UNION ALL SELECT id::text FROM corona.movimentos_remessa WHERE remessa_id IN (SELECT id FROM maletas)
@@ -151,7 +195,16 @@ export async function idsDeOutrosVendedores(vendedorId: string): Promise<Set<str
     UNION ALL SELECT id::text FROM corona.trocas WHERE vendedor_id <> ${v}
     UNION ALL SELECT id::text FROM creditos
     UNION ALL SELECT id::text FROM corona.usos_credito WHERE credito_id IN (SELECT id FROM creditos)
-    UNION ALL SELECT id::text FROM corona.creditos_sem_saldo WHERE venda_id IN (SELECT id FROM vendas)`);
+    UNION ALL SELECT id::text FROM corona.creditos_sem_saldo WHERE venda_id IN (SELECT id FROM vendas)
+    UNION ALL SELECT id::text FROM contas
+    UNION ALL SELECT id::text FROM corona.baixas_receber WHERE conta_id IN (SELECT id FROM contas)
+    UNION ALL SELECT id::text FROM corona.recebimentos_vendedor WHERE vendedor_id <> ${v}
+    UNION ALL SELECT id::text FROM acertos
+    UNION ALL SELECT id::text FROM corona.leituras_acerto WHERE acerto_id IN (SELECT id FROM acertos)
+    UNION ALL SELECT id::text FROM corona.itens_acerto WHERE acerto_id IN (SELECT id FROM acertos)
+    UNION ALL SELECT id::text FROM corona.acerto_eventos WHERE vendedor_id <> ${v}
+    UNION ALL SELECT id::text FROM corona.comissoes WHERE vendedor_id <> ${v}
+    UNION ALL SELECT id::text FROM corona.pendencias_acerto WHERE vendedor_id <> ${v}`);
   return new Set(linhas.map((l) => l.id));
 }
 

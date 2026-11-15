@@ -12,6 +12,7 @@ import { centavosDeTexto, formatarReais, lerReaisDigitados } from '../moedas';
 import { TEXTOS } from '../textos';
 import { detalhesDaPeca } from './detalhes-da-peca';
 import { BuscaPorNome } from './BuscaPorNome';
+import { EscolhaDeParcelas, conferirParcelas, parcelasIniciais } from './EscolhaDeParcelas';
 import { FormularioDeCliente } from './FormularioDeCliente';
 import { PaginaDoVendedor } from './PaginaDoVendedor';
 
@@ -66,6 +67,8 @@ export function TelaVender({ ponte, aoVoltar, aoVerVendas }: TelaVenderProps) {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [forma, setForma] = useState<Forma>('DINHEIRO');
   const [valorPago, setValorPago] = useState('');
+  // Só quando sobra valor a prazo (tarefa 7.11): em quantas parcelas e quando vence a primeira.
+  const [parcelas, setParcelas] = useState(parcelasIniciais);
   const [problema, setProblema] = useState<string | null>(null);
   const [confirmando, setConfirmando] = useState(false);
   const [enviando, setEnviando] = useState(false);
@@ -221,6 +224,10 @@ export function TelaVender({ ponte, aoVoltar, aoVerVendas }: TelaVenderProps) {
     if (creditoCentavos > saldoDoCredito) return T.creditoAcimaDoSaldo;
     if (pagoCentavos === null) return T.valorPagoInvalido;
     if (pagoCentavos + creditoCentavos > total) return T.pagoMaiorQueTotal;
+    if (total - pagoCentavos - creditoCentavos > 0n) {
+      const p = conferirParcelas(parcelas);
+      if (!p.ok) return p.texto;
+    }
     return null;
   }
 
@@ -251,6 +258,9 @@ export function TelaVender({ ponte, aoVoltar, aoVerVendas }: TelaVenderProps) {
     }
     if (forma !== 'PRAZO' && pagoCentavos > 0n)
       pagamentos.push({ id: idDoPagamento.current, valor: textoDeCentavos(pagoCentavos), forma });
+    // Parcelas só quando sobra a prazo; o servidor divide (a tela nunca calcula parcela).
+    const sobraAPrazo = total - pagoCentavos - creditoCentavos > 0n;
+    const escolha = sobraAPrazo ? conferirParcelas(parcelas) : null;
     const r = await chamar<Venda>(ponte, {
       operacao: 'vendas.vender',
       venda: {
@@ -264,6 +274,7 @@ export function TelaVender({ ponte, aoVoltar, aoVerVendas }: TelaVenderProps) {
         })),
         pagamentos,
         totalConferido: textoDeCentavos(total),
+        ...(escolha?.ok ? { parcelamento: escolha.parcelamento } : {}),
       },
     });
     setEnviando(false);
@@ -286,6 +297,7 @@ export function TelaVender({ ponte, aoVoltar, aoVerVendas }: TelaVenderProps) {
     setResultado(undefined);
     setProblema(null);
     setValorPago('');
+    setParcelas(parcelasIniciais());
     setForma('DINHEIRO');
     setCliente(null);
     // A maleta mudou (saldo): busca de novo.
@@ -564,6 +576,10 @@ export function TelaVender({ ponte, aoVoltar, aoVerVendas }: TelaVenderProps) {
           </p>
         ) : null}
       </fieldset>
+
+      {aReceber !== null && aReceber > 0n ? (
+        <EscolhaDeParcelas valor={parcelas} aoMudar={setParcelas} />
+      ) : null}
 
       <Botao variante="primario" grande onClick={pedirConfirmacao}>
         {T.concluir}

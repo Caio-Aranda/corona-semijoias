@@ -18,6 +18,9 @@ export interface TelaMeusNumerosProps {
   ponte: PonteDoCorona;
   aoVoltar: () => void;
   aoVerVendas: () => void;
+  /** "Meu acerto e minha comissão" e "A receber dos clientes" (tarefa 7.11). */
+  aoVerAcerto?: () => void;
+  aoVerAReceber?: () => void;
 }
 
 interface Numeros {
@@ -33,7 +36,13 @@ interface Numeros {
  * ainda devem. Só dados dele, sem custo; vendas estornadas não contam. Os valores aparecem em Real, Dólar e Guarani,
  * cada venda e cada pagamento pela cotação do seu dia, já somados pelo servidor (ADR-0006, item 10; o banco guarda Real).
  */
-export function TelaMeusNumeros({ ponte, aoVoltar, aoVerVendas }: TelaMeusNumerosProps) {
+export function TelaMeusNumeros({
+  ponte,
+  aoVoltar,
+  aoVerVendas,
+  aoVerAcerto,
+  aoVerAReceber,
+}: TelaMeusNumerosProps) {
   const T = TEXTOS.numeros;
   const { curta: cotacaoCurta } = useCotacao(ponte);
   const [de, setDe] = useState('');
@@ -97,6 +106,20 @@ export function TelaMeusNumeros({ ponte, aoVoltar, aoVerVendas }: TelaMeusNumero
     <PaginaDoVendedor ponte={ponte} titulo={T.titulo} aoVoltar={aoVoltar}>
       {erro ? <Aviso tipo="erro">{erro}</Aviso> : null}
       <AvisoDosDados ponte={ponte} cotacao={cotacaoCurta} />
+      {aoVerAcerto || aoVerAReceber ? (
+        <div className="vendas-botoes">
+          {aoVerAcerto ? (
+            <Botao variante="primario" onClick={aoVerAcerto}>
+              {TEXTOS.acerto.botaoNosNumeros}
+            </Botao>
+          ) : null}
+          {aoVerAReceber ? (
+            <Botao variante="primario" onClick={aoVerAReceber}>
+              {TEXTOS.aReceber.botaoNosNumeros}
+            </Botao>
+          ) : null}
+        </div>
+      ) : null}
       <form className="vendas-leitor" onSubmit={aplicar}>
         <Campo rotulo={T.de} type="date" value={de} onChange={(e) => setDe(e.target.value)} />
         <Campo rotulo={T.ate} type="date" value={ate} onChange={(e) => setAte(e.target.value)} />

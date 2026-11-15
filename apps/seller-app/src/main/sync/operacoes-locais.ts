@@ -7,6 +7,7 @@ import type {
   ContagemDaPeca,
   DevolucaoParaEnviar,
   PedidoDeAutorizacaoParaEnviar,
+  RecebimentoParaEnviar,
   TrocaParaEnviar,
   VendaParaEnviar,
 } from '../../shared/operacoes';
@@ -14,6 +15,8 @@ import { type Alteracao, CAMPOS_DO_CLIENTE } from './camada-de-pendentes';
 import { CHAVES, lerEstado, registrarHoraLocal } from './estado-sync';
 import { type CodigoDaFase6, MENSAGENS_DA_FASE_6 } from './mensagens-da-fase-6';
 import * as fase6 from './operacoes-da-fase-6';
+import * as fase7 from './operacoes-da-fase-7';
+import { type CodigoDaFase7, MENSAGENS_DA_FASE_7 } from './mensagens-da-fase-7';
 import { enfileirar, marcarProvisoria, type TipoDeOperacao } from './outbox';
 import { uuidV7 } from './uuid';
 
@@ -33,7 +36,8 @@ export type CodigoDaOperacao =
   | 'PRAZO_ESGOTADO'
   | 'RELOGIO_ERRADO'
   | 'COMPUTADOR_DESLIGADO'
-  | CodigoDaFase6;
+  | CodigoDaFase6
+  | CodigoDaFase7;
 
 /** Textos do glossário (parte "Motor de envio do Corona Vendas", tarefa 5.6). */
 export const MENSAGENS_DAS_OPERACOES: Readonly<Record<CodigoDaOperacao, string>> = Object.freeze({
@@ -58,6 +62,8 @@ export const MENSAGENS_DAS_OPERACOES: Readonly<Record<CodigoDaOperacao, string>>
   COMPUTADOR_DESLIGADO: 'Este computador não pode mais registrar vendas. Fale com a dona.',
   // Devolução, troca e crédito (tarefa 6.8): os textos do servidor.
   ...MENSAGENS_DA_FASE_6,
+  // Parcelas e recebimento do cliente (tarefa 7.11).
+  ...MENSAGENS_DA_FASE_7,
 });
 
 export interface ClienteJaCadastrado {
@@ -172,6 +178,9 @@ export class OperacoesLocais {
       // Crédito do cliente (tarefa 6.8): do mesmo cliente, em aberto, com saldo, uma vez só na venda.
       fase6.conferirPagamentosEmCredito(db, venda.clienteId, venda.pagamentos);
 
+      // Parcelas (tarefa 7.11): só quando sobra a prazo; o computador não divide nada.
+      const parcelamento = fase7.conferirParcelamento(venda.parcelamento, total - pago, agora);
+
       const vendidaEm = agora.toISOString();
       const dados = JSON.stringify({
         id: venda.id,
@@ -191,6 +200,7 @@ export class OperacoesLocais {
         })),
         totalConferido: textoDeCentavos(total),
         vendidaEm,
+        ...(parcelamento ? { parcelamento } : {}),
       });
 
       inserir(db, 'vendas', venda.id, venda.id, {
@@ -315,6 +325,18 @@ export class OperacoesLocais {
       enfileirar(db, { operacaoId: estorno.id, tipo: 'ESTORNO_VENDA', dados, agora });
       return { operacaoId: estorno.id };
     });
+  }
+
+  /** O cliente paga, depois da venda, parte ou o que falta (tarefa 7.11): pagamento provisório e a operação. */
+  receberDoCliente(r: RecebimentoParaEnviar): { operacaoId: string } {
+    return this.executar((db, agora) => fase7.registrarRecebimento(db, agora, r));
+  }
+
+  /** Desfaz, no mesmo dia, um recebimento do cliente (tarefa 7.11). */
+  estornarRecebimento(e: { id: string; recebimentoId: string; motivo: string }): {
+    operacaoId: string;
+  } {
+    return this.executar((db, agora) => fase7.estornarRecebimento(db, agora, e));
   }
 
   /** Cliente novo sem internet. CPF repetido é conferido no diretório da loja guardado no computador. */

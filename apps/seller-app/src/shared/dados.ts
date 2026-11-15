@@ -80,13 +80,15 @@ export interface ItemDaVenda {
 export interface PagamentoDaVenda {
   id: string;
   /** `ESTORNO_REEMBOLSO`: o que voltou para a venda quando uma devolução foi cancelada (tarefa 6.8). */
-  tipo: 'PAGAMENTO' | 'REEMBOLSO' | 'ESTORNO_REEMBOLSO';
+  tipo: 'PAGAMENTO' | 'REEMBOLSO' | 'ESTORNO_REEMBOLSO' | 'ESTORNO_PAGAMENTO';
   /** `CREDITO` é o crédito do cliente (na tela, "Crédito do cliente"). */
   forma: string;
   valor: string;
   em: string;
   /** O reembolso (ou o desfazer dele) veio de uma devolução (na tela, "Devolução"). */
   daDevolucao?: boolean;
+  /** Recebido depois da venda (tarefa 7.11): só estes se estornam, e só no mesmo dia. */
+  posterior?: boolean;
 }
 
 export interface CotacaoDaVenda {
@@ -376,4 +378,163 @@ export interface AutorizacoesDoVendedor {
 export interface CreditosDoCliente {
   total: string;
   creditos: { id: string; saldo: string }[];
+}
+
+// --- acerto, parcelas e recebíveis no Corona Vendas (tarefa 7.11). Tudo em Real; o que vale é o que o servidor devolve. ---
+
+export type SituacaoDaParcela = 'ABERTA' | 'PARCIAL' | 'PAGA' | 'CANCELADA';
+
+/** Uma parcela que o servidor gerou (nunca calculada no computador). */
+export interface ParcelaAReceber {
+  id: string;
+  numero: number;
+  total: number;
+  /** AAAA-MM-DD. */
+  vencimento: string;
+  valor: string;
+  valorPago: string;
+  valorCancelado: string;
+  situacao: SituacaoDaParcela;
+  /** Aberta ou em parte, com o vencimento antes de hoje (Brasília). */
+  vencida: boolean;
+}
+
+/** Um recebimento do cliente depois da venda, e se ainda dá para estornar (mesmo dia). */
+export interface RecebimentoDoCliente {
+  id: string;
+  valor: string;
+  forma: string;
+  em: string;
+  estornado: boolean;
+  podeEstornar: boolean;
+  /** Ainda não chegou à loja (aguardando envio). */
+  aguardandoEnvio: boolean;
+}
+
+/** Uma venda a prazo (ou com recebimento de hoje) do vendedor, com as parcelas que o servidor gerou. */
+export interface VendaAPrazo {
+  vendaId: string;
+  vendidaEm: string;
+  clienteId: string;
+  clienteNome: string;
+  total: string;
+  pago: string;
+  /** Quanto falta o cliente pagar (prévia: o que vale é o servidor). */
+  aReceber: string;
+  parcelas: ParcelaAReceber[];
+  recebimentos: RecebimentoDoCliente[];
+  /** A venda ainda não chegou à loja: as parcelas só aparecem depois. */
+  aguardandoEnvio: boolean;
+}
+
+/** Uma conta que o vendedor deve à loja (nível 2, gerada no fechamento do acerto). */
+export interface ContaDaLoja {
+  id: string;
+  numero: number;
+  total: number;
+  vencimento: string | null;
+  valor: string;
+  valorPago: string;
+  valorCancelado: string;
+  situacao: SituacaoDaParcela;
+  vencida: boolean;
+  /** `DINHEIRO`, `PIX` ou `BOLETO`: só o boleto aparece como conta no fechamento, lido do servidor. */
+  formaPrevista: string | null;
+  acertoId: string | null;
+}
+
+export interface RecebiveisDoVendedor {
+  /** O que os clientes devem ao vendedor, da venda mais antiga para a mais nova. */
+  dosClientes: VendaAPrazo[];
+  /** O que o vendedor deve à loja, da que vence primeiro para a que vence depois. */
+  daLoja: ContaDaLoja[];
+}
+
+export type SituacaoDoAcerto = 'EM_ACERTO' | 'ACERTADO' | 'DESISTIDO';
+
+export interface ResumoDoAcerto {
+  id: string;
+  semanaNumero: number;
+  situacao: SituacaoDoAcerto;
+  pedidoPeloVendedor: boolean;
+  iniciadoEm: string | null;
+  fechadoEm: string | null;
+}
+
+export interface ItemDoFechamento {
+  produto: PecaDaMaleta;
+  esperado: number;
+  contadoBoa: number;
+  contadoDefeito: number;
+  falta: number;
+  defeitoAprovado: number;
+}
+
+export interface ComissaoDoFechamento {
+  vendaId: string | null;
+  clienteNome: string;
+  tipo: 'COMISSAO' | 'ESTORNO';
+  base: string;
+  percentual: string;
+  valor: string;
+}
+
+export interface PendenciaDoFechamento {
+  id: string;
+  /** `FALTA`, `DEFEITO`, `DEVOLUCAO_NAO_ACEITA` ou `CREDITO_SEM_SALDO_NAO_ACEITO`. */
+  tipo: string;
+  produto: PecaDaMaleta | null;
+  quantidade: number | null;
+  valor: string;
+  status: string;
+}
+
+export interface RecebimentoDoFechamento {
+  id: string;
+  forma: string;
+  valor: string;
+  /** `ACERTO` (pagou o acerto) ou `CONTAS` (pagou conta antiga). */
+  aplicadoEm: string;
+  em: string | null;
+  estornado: boolean;
+}
+
+/** O que o fechamento gravou (acerto acertado). A cotação é a gravada no fechamento: Dólar e Guarani só para mostrar. */
+export interface FechamentoDoAcerto {
+  fechadoEm: string | null;
+  cotacao: CotacaoDaVenda | null;
+  metaGuarani: number | null;
+  percentualComissao: string | null;
+  vendidoParaMetaGuarani: number | null;
+  vendidoBruto: string;
+  descontos: string;
+  devolvido: string;
+  vendidoLiquido: string;
+  comissao: string;
+  faltasCobradas: string;
+  liquido: string;
+  recebidoNoAcerto: string;
+  ficouDevendo: string;
+  pagoAoVendedor: string | null;
+  creditoUsado: string | null;
+  itens: ItemDoFechamento[];
+  comissoes: ComissaoDoFechamento[];
+  pendencias: PendenciaDoFechamento[];
+  recebimentos: RecebimentoDoFechamento[];
+  contas: ContaDaLoja[];
+}
+
+export interface FichaDoAcerto extends ResumoDoAcerto {
+  fechamento: FechamentoDoAcerto | null;
+}
+
+/** A prévia da comissão da semana: o que o servidor calcula (precisa de internet). Nada é gravado. */
+export interface PreviaDaComissao {
+  vendidoParaMetaGuarani: number;
+  metaGuarani: number;
+  percentualQueValeriaHoje: string;
+  faltaParaMetaGuarani: number;
+  faltaParaMetaReais: string;
+  comissaoPrevista: string;
+  cotacaoData: string | null;
 }

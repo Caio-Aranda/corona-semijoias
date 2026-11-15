@@ -6,6 +6,8 @@ import {
   ESTADOS_DA_PECA,
   FORMAS_DE_PAGAMENTO,
   FORMAS_DE_PAGAMENTO_DA_VENDA,
+  FORMAS_DE_RECEBIMENTO,
+  MAXIMO_DE_PARCELAS,
   MOTIVOS_DE_DEVOLUCAO,
   OPERACOES_DA_API,
   SITUACOES_DA_VENDA,
@@ -17,7 +19,10 @@ import {
   type FormaDePagamento,
   type FormaDePagamentoDaVenda,
   type MotivoDeDevolucao,
+  type FormaDeRecebimento,
   type LinhaDaVendaParaEnviar,
+  type ParcelamentoParaEnviar,
+  type RecebimentoParaEnviar,
   type PagamentoParaEnviar,
   type PecaQueVolta,
   type PedidoDeAutorizacaoParaEnviar,
@@ -126,6 +131,30 @@ function validarPagamentos(v: unknown, comCredito = true): PagamentoParaEnviar[]
   return saida;
 }
 
+/** Só estas chaves: quantidade e primeiro vencimento. Valor de parcela, entrada ou qualquer outra coisa é recusada. */
+function validarParcelamento(v: unknown): ParcelamentoParaEnviar | null {
+  if (!ehObjeto(v)) return null;
+  const chaves = Object.keys(v);
+  if (
+    chaves.length !== 2 ||
+    !chaves.includes('quantidade') ||
+    !chaves.includes('primeiroVencimento')
+  )
+    return null;
+  const q = v.quantidade;
+  if (typeof q !== 'number' || !Number.isInteger(q) || q < 1 || q > MAXIMO_DE_PARCELAS) return null;
+  if (!ehData(v.primeiroVencimento)) return null;
+  return { quantidade: q, primeiroVencimento: v.primeiroVencimento };
+}
+
+function validarRecebimento(v: unknown): RecebimentoParaEnviar | null {
+  if (!ehObjeto(v) || Object.keys(v).length !== 4) return null;
+  if (!ehUuid(v.id) || !ehUuid(v.vendaId) || !ehDinheiro(v.valor)) return null;
+  if (!(FORMAS_DE_RECEBIMENTO as readonly unknown[]).includes(v.forma)) return null;
+  if (Number(v.valor) <= 0) return null;
+  return { id: v.id, vendaId: v.vendaId, valor: v.valor, forma: v.forma as FormaDeRecebimento };
+}
+
 // --- devolução, troca e crédito (tarefa 6.8) ---
 
 const LIMITE_DO_TEXTO = 400;
@@ -225,6 +254,9 @@ function validarTroca(v: unknown): TrocaParaEnviar | null {
   const itens = validarLinhas(b.itens);
   const pagamentos = validarPagamentos(b.pagamentos, false);
   if (!itens || !pagamentos) return null;
+  const parcelamento =
+    b.parcelamento === undefined ? undefined : validarParcelamento(b.parcelamento);
+  if (parcelamento === null) return null;
   return {
     id: v.id,
     creditoId: v.creditoId,
@@ -236,7 +268,13 @@ function validarTroca(v: unknown): TrocaParaEnviar | null {
       ...(a.observacao !== undefined ? { observacao: a.observacao } : {}),
       itens: a.itens,
     },
-    venda: { id: b.id, remessaId: b.remessaId, itens, pagamentos },
+    venda: {
+      id: b.id,
+      remessaId: b.remessaId,
+      itens,
+      pagamentos,
+      ...(parcelamento ? { parcelamento } : {}),
+    },
   };
 }
 
@@ -255,6 +293,11 @@ function validarVenda(v: unknown): VendaParaEnviar | null {
   if (v.totalConferido !== undefined) {
     if (!ehDinheiro(v.totalConferido)) return null;
     venda.totalConferido = v.totalConferido;
+  }
+  if (v.parcelamento !== undefined) {
+    const parcelamento = validarParcelamento(v.parcelamento);
+    if (!parcelamento) return null;
+    venda.parcelamento = parcelamento;
   }
   return venda;
 }
@@ -446,6 +489,21 @@ export function validarChamada(v: unknown): PedidoDeChamada | null {
     }
     case 'creditos.doCliente':
       return ehUuid(v.clienteId) ? { operacao, clienteId: v.clienteId } : null;
+    // --- acerto, parcelas e recebíveis (tarefa 7.11) ---
+    case 'recebimentos.receber': {
+      const recebimento = validarRecebimento(v.recebimento);
+      return recebimento ? { operacao, recebimento } : null;
+    }
+    case 'recebimentos.estornar':
+      return ehUuid(v.id) && ehUuid(v.estornoId) && ehMotivoDoCancelamento(v.motivo)
+        ? { operacao, id: v.id, estornoId: v.estornoId, motivo: v.motivo }
+        : null;
+    case 'recebiveis.ver':
+    case 'acertos.listar':
+    case 'comissao.previa':
+      return { operacao };
+    case 'acertos.ver':
+      return ehUuid(v.id) ? { operacao, id: v.id } : null;
     default:
       return null;
   }

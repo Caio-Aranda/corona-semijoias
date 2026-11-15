@@ -33,6 +33,32 @@ export const FORMAS_DE_PAGAMENTO_NA_TELA = [
 export const FORMAS_DE_PAGAMENTO_DA_VENDA = [...FORMAS_DE_PAGAMENTO, 'CREDITO'] as const;
 export type FormaDePagamentoDaVenda = (typeof FORMAS_DE_PAGAMENTO_DA_VENDA)[number];
 
+/**
+ * Venda a prazo (tarefa 7.11; ADR-0012, item 7): só em quantas parcelas e quando vence a primeira. O app NUNCA calcula
+ * o valor da parcela, a comissão nem o total: o servidor divide o que ficou em aberto. Sem entrada e sem cheque.
+ */
+export interface ParcelamentoParaEnviar {
+  /** De 1 a 24. */
+  quantidade: number;
+  /** AAAA-MM-DD (dia em Brasília), até um ano depois da venda. */
+  primeiroVencimento: string;
+}
+
+export const MAXIMO_DE_PARCELAS = 24;
+
+/** Receber do cliente depois da venda: só Dinheiro e Transferência (gravada como PIX). */
+export const FORMAS_DE_RECEBIMENTO = ['DINHEIRO', 'PIX'] as const;
+export type FormaDeRecebimento = (typeof FORMAS_DE_RECEBIMENTO)[number];
+
+export interface RecebimentoParaEnviar {
+  /** O id do recebimento (do computador). */
+  id: string;
+  vendaId: string;
+  /** Valor em reais, texto com ponto ("50.00"): o que o cliente entregou. O servidor distribui pelas parcelas. */
+  valor: string;
+  forma: FormaDeRecebimento;
+}
+
 export interface PagamentoParaEnviar {
   id: string;
   /** Valor em reais, texto com ponto ("50.00"). */
@@ -91,6 +117,8 @@ export interface TrocaParaEnviar {
     itens: LinhaDaVendaParaEnviar[];
     /** O que o cliente pagou da diferença (nunca crédito: dúvida V8). */
     pagamentos: PagamentoParaEnviar[];
+    /** O que sobrar da diferença pode ser a prazo (tarefa 7.11). */
+    parcelamento?: ParcelamentoParaEnviar;
   };
 }
 
@@ -108,6 +136,8 @@ export interface VendaParaEnviar {
   pagamentos: PagamentoParaEnviar[];
   /** O total que a tela mostrou, só para o servidor avisar se houver diferença. */
   totalConferido?: string;
+  /** Só quando sobra valor a prazo (tarefa 7.11). */
+  parcelamento?: ParcelamentoParaEnviar;
 }
 
 export interface ClienteParaCadastrar {
@@ -209,7 +239,18 @@ export type PedidoDeChamada =
     }
   | { operacao: 'trocas.registrar'; troca: TrocaParaEnviar }
   | { operacao: 'trocas.cancelar'; id: string; cancelamentoId: string; motivo: string }
-  | { operacao: 'creditos.doCliente'; clienteId: string };
+  | { operacao: 'creditos.doCliente'; clienteId: string }
+  // --- acerto, parcelas e recebíveis (tarefa 7.11): lidos do banco do computador, exceto a prévia da comissão ---
+  /** O cliente paga parte ou o que falta de uma venda a prazo (só no computador; o servidor distribui pelas parcelas). */
+  | { operacao: 'recebimentos.receber'; recebimento: RecebimentoParaEnviar }
+  /** Estorno de um recebimento feito no mesmo dia (`id` é o do recebimento; `estornoId`, o do estorno, do computador). */
+  | { operacao: 'recebimentos.estornar'; id: string; estornoId: string; motivo: string }
+  /** O que os clientes devem ao vendedor (parcelas) e o que ele deve à loja (nível 2): só o dele. */
+  | { operacao: 'recebiveis.ver' }
+  | { operacao: 'acertos.listar' }
+  | { operacao: 'acertos.ver'; id: string }
+  /** Prévia da comissão da semana: pede ao servidor (precisa de internet); nada é gravado. */
+  | { operacao: 'comissao.previa' };
 
 export type OperacaoDaApi = PedidoDeChamada['operacao'];
 
@@ -249,4 +290,10 @@ export const OPERACOES_DA_API: readonly OperacaoDaApi[] = [
   'trocas.registrar',
   'trocas.cancelar',
   'creditos.doCliente',
+  'recebimentos.receber',
+  'recebimentos.estornar',
+  'recebiveis.ver',
+  'acertos.listar',
+  'acertos.ver',
+  'comissao.previa',
 ];

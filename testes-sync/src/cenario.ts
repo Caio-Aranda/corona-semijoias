@@ -279,6 +279,65 @@ export const Tela = {
     return estornoId;
   },
 
+  // --- Fase 7 (tarefa 7.11): venda a prazo, recebimento do cliente e estorno. Só ids, quantidade de parcelas e vencimento ---
+
+  /** Venda a prazo: o `pagoAgora` (opcional) é o que o cliente deu na hora; o resto vira as parcelas que o servidor divide. */
+  async venderAPrazo(
+    a: Aparelho,
+    o: {
+      maletaId: string;
+      clienteId: string;
+      produtoId: string;
+      parcelas: number;
+      primeiroVencimento: string;
+      pagoAgora?: string;
+    },
+  ): Promise<string> {
+    const id = randomUUID();
+    await a.pedir({
+      operacao: 'vendas.vender',
+      venda: {
+        id,
+        remessaId: o.maletaId,
+        clienteId: o.clienteId,
+        itens: [{ produtoId: o.produtoId, quantidade: 1 }],
+        pagamentos: o.pagoAgora
+          ? [{ id: randomUUID(), valor: o.pagoAgora, forma: 'DINHEIRO' }]
+          : [],
+        parcelamento: { quantidade: o.parcelas, primeiroVencimento: o.primeiroVencimento },
+      },
+    });
+    lancar(a, 'VENDA', id);
+    return id;
+  },
+
+  /** O cliente paga depois da venda (Dinheiro ou Transferência, gravada como PIX). */
+  async receber(
+    a: Aparelho,
+    o: { vendaId: string; valor: string; forma?: 'DINHEIRO' | 'PIX' },
+  ): Promise<string> {
+    const id = randomUUID();
+    await a.pedir({
+      operacao: 'recebimentos.receber',
+      recebimento: { id, vendaId: o.vendaId, valor: o.valor, forma: o.forma ?? 'DINHEIRO' },
+    });
+    lancar(a, 'RECEBIMENTO_CLIENTE', id, o.vendaId);
+    return id;
+  },
+
+  /** Estorna, no mesmo dia, um recebimento do cliente. */
+  async estornarRecebimento(a: Aparelho, recebimentoId: string, vendaId: string): Promise<string> {
+    const estornoId = randomUUID();
+    await a.pedir({
+      operacao: 'recebimentos.estornar',
+      id: recebimentoId,
+      estornoId,
+      motivo: 'Valor errado (teste)',
+    });
+    lancar(a, 'ESTORNO_RECEBIMENTO_CLIENTE', estornoId, vendaId);
+    return estornoId;
+  },
+
   // --- Fase 6 (tarefa 6.11): os mesmos pedidos da ponte; nenhum valor é calculado aqui, só ids, peças e estados ---
 
   /** Tenta registrar a devolução (a recusa do app volta no resultado). */

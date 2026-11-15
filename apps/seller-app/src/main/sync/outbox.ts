@@ -14,7 +14,9 @@ export type TipoDeOperacao =
   | 'PEDIDO_AUTORIZACAO'
   | 'TROCA'
   | 'CANCELAR_DEVOLUCAO'
-  | 'CANCELAR_TROCA';
+  | 'CANCELAR_TROCA'
+  | 'RECEBIMENTO_CLIENTE'
+  | 'ESTORNO_RECEBIMENTO_CLIENTE';
 
 export type SituacaoNaOutbox = 'AGUARDANDO' | 'ENVIADO' | 'RECUSADO' | 'CONFLITO';
 

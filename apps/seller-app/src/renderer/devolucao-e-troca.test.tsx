@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -566,6 +566,48 @@ describe('Troca', () => {
     expect(pedido?.troca.venda.itens).toEqual([{ produtoId: COLAR, quantidade: 1 }]);
     expect(pedido?.troca.venda.pagamentos).toMatchObject([{ valor: '30.00', forma: 'DINHEIRO' }]);
     expect(Object.keys(pedido?.troca.devolucao ?? {})).not.toContain('valor');
+  });
+
+  it('a diferença a prazo pede as parcelas e manda só quantidade e vencimento (tarefa 7.11); paga na hora, não pede', async () => {
+    const { ponte, daOperacao } = criarPonte();
+    const u = await abrirDevolucao(ponte);
+    await lerPeca(u);
+    await u.click(screen.getByRole('button', { name: /^Trocar: Maria Souza/ }));
+    await u.type(await screen.findByLabelText('Quantas voltam: Anel de prata'), '1');
+    await u.type(screen.getByLabelText('Ler o código da peça nova'), 'C-1');
+    await u.click(screen.getByRole('button', { name: 'Ler o código' }));
+    await screen.findByText(/Diferença a pagar: R\$ 30,00/);
+    // Pagando tudo agora, não há parcelas.
+    expect(screen.queryByLabelText('Em quantas parcelas? (1 a 24)')).not.toBeInTheDocument();
+    await u.click(screen.getByLabelText('A prazo (fiado)'));
+    fireEvent.change(screen.getByLabelText('Em quantas parcelas? (1 a 24)'), {
+      target: { value: '3' },
+    });
+    fireEvent.change(screen.getByLabelText('Primeiro vencimento'), {
+      target: { value: '2999-01-01' },
+    });
+    await u.click(screen.getByRole('button', { name: 'Registrar troca' }));
+    expect(await screen.findByText(/está longe demais/)).toBeInTheDocument();
+    expect(daOperacao('trocas.registrar')).toHaveLength(0);
+    const hoje = new Date();
+    const mesQueVem = new Date(Date.UTC(hoje.getUTCFullYear(), hoje.getUTCMonth() + 1, 28));
+    fireEvent.change(screen.getByLabelText('Primeiro vencimento'), {
+      target: { value: mesQueVem.toISOString().slice(0, 10) },
+    });
+    await u.click(screen.getByRole('button', { name: 'Registrar troca' }));
+    await u.click(
+      within(await screen.findByRole('dialog')).getByRole('button', { name: 'Registrar troca' }),
+    );
+    await screen.findByText(/Troca registrada/);
+    const [pedido] = daOperacao('trocas.registrar') as Extract<
+      PedidoDeChamada,
+      { operacao: 'trocas.registrar' }
+    >[];
+    expect(pedido?.troca.venda.parcelamento).toEqual({
+      quantidade: 3,
+      primeiroVencimento: mesQueVem.toISOString().slice(0, 10),
+    });
+    expect(pedido?.troca.venda.pagamentos).toEqual([]);
   });
 
   it.each([
