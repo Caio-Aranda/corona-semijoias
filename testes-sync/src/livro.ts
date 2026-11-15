@@ -14,7 +14,10 @@ export type TipoDeOperacao =
   | 'PEDIDO_AUTORIZACAO'
   | 'TROCA'
   | 'CANCELAR_DEVOLUCAO'
-  | 'CANCELAR_TROCA';
+  | 'CANCELAR_TROCA'
+  // Fase 7 (tarefa 7.11): o id do lançamento é o do pagamento (recebimento) ou o do estorno.
+  | 'RECEBIMENTO_CLIENTE'
+  | 'ESTORNO_RECEBIMENTO_CLIENTE';
 
 export interface Lancamento {
   operacaoId: string;

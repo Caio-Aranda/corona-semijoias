@@ -72,7 +72,9 @@ async function destinos(vendedores: string[]): Promise<{
       UNION ALL SELECT cancelamento_id::text FROM corona.devolucoes WHERE vendedor_id IN (${lista}) AND cancelamento_id IS NOT NULL
       UNION ALL SELECT id::text FROM corona.trocas WHERE vendedor_id IN (${lista})
       UNION ALL SELECT cancelamento_id::text FROM corona.trocas WHERE vendedor_id IN (${lista}) AND cancelamento_id IS NOT NULL
-      UNION ALL SELECT id::text FROM corona.autorizacoes_excecao WHERE vendedor_id IN (${lista})`),
+      UNION ALL SELECT id::text FROM corona.autorizacoes_excecao WHERE vendedor_id IN (${lista})
+      UNION ALL SELECT p.id::text FROM corona.pagamentos_cliente p JOIN corona.vendas v ON v.id = p.venda_id
+                 WHERE v.vendedor_id IN (${lista}) AND p.posterior`),
     consultar<{ vendedor_id: string; id: string }>(
       `SELECT vendedor_id::text, id::text FROM corona.vendas WHERE vendedor_id IN (${lista})`,
     ),
