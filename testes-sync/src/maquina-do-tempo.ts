@@ -11,8 +11,8 @@ import { esperarAte } from './esperar';
  * Os outros gatilhos continuam ligados, então a versão e o `sync_seq` sobem e a data nova chega ao computador pelo
  * recebimento, como na vida real.
  *
- * É o único ponto do `testes-sync` que grava no banco do servidor, e só a data da venda. Nunca toca o banco de
- * desenvolvimento nem o código da API.
+ * É o ponto do `testes-sync` que grava no banco do servidor, e só a data da venda (a outra gravação é a cotação do dia em
+ * `cotacao-de-teste.ts`, que a API só busca na internet). Nunca toca o banco de desenvolvimento nem o código da API.
  */
 
 const DIA_MS = 86_400_000;
@@ -58,7 +58,7 @@ export function sqlDeEnvelhecerVenda(vendaId: string, novaData: Date): string {
   ].join('\n');
 }
 
-function rodarSql(sql: string): Promise<void> {
+export function rodarSql(sql: string): Promise<void> {
   return new Promise((ok, erro) => {
     const p = spawn(
       'docker',

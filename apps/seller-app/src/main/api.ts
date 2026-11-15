@@ -10,6 +10,9 @@ import {
   estornarVendaDoVendedor,
   eu,
   listarMeusClientes,
+  pedirMeuAcerto,
+  registrarMinhaLeituraDoAcerto,
+  verMeuAcerto,
   listarMinhasMaletas,
   listarVendasDoVendedor,
   previaDaMinhaComissao,
@@ -268,6 +271,19 @@ export function criarApiDoVendas(opcoes: OpcoesDaApi): ApiDoVendas {
         });
       case 'comissao.previa':
         return executar(() => previaDaMinhaComissao(base));
+      // Pedir o acerto e contar as sobras (tarefa 8.10): só com internet, direto na API, sem guardar nem enfileirar.
+      case 'acertos.pedir':
+        return executar(() => pedirMeuAcerto({ ...base, body: { id: pedido.id } }));
+      case 'acertos.agora':
+        return executar(() => verMeuAcerto({ ...base, path: { id: pedido.id } }));
+      case 'acertos.ler':
+        return executar(() =>
+          registrarMinhaLeituraDoAcerto({
+            ...base,
+            path: { id: pedido.id },
+            body: pedido.leitura,
+          }),
+        );
       case 'cotacao.hoje':
         return executar(() => verCotacaoDeHoje(base));
       case 'fotos.ver':

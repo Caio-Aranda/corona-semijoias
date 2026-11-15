@@ -160,7 +160,11 @@ export function ehConsultaLocal(pedido: PedidoDeChamada): boolean {
   return (
     pedido.operacao !== 'eu' &&
     pedido.operacao !== 'fotos.ver' &&
-    pedido.operacao !== 'comissao.previa'
+    pedido.operacao !== 'comissao.previa' &&
+    // Pedir o acerto e contar as sobras (tarefa 8.10): só com internet, direto na API.
+    pedido.operacao !== 'acertos.pedir' &&
+    pedido.operacao !== 'acertos.agora' &&
+    pedido.operacao !== 'acertos.ler'
   );
 }
 
@@ -411,6 +415,9 @@ export class ConsultasLocais {
       case 'eu':
       case 'fotos.ver':
       case 'comissao.previa':
+      case 'acertos.pedir':
+      case 'acertos.agora':
+      case 'acertos.ler':
         return nao('Esta consulta não é feita no computador.');
     }
   }
