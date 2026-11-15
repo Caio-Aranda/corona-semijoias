@@ -27,6 +27,13 @@ import tools.jackson.databind.JsonNode;
  */
 class CicloDaFase7Test extends ApoioDasConciliacoes {
 
+    /** Outras classes mexem no relógio de teste e nem todas o devolvem: este ciclo precisa do relógio de verdade. */
+    @org.junit.jupiter.api.BeforeEach
+    @org.junit.jupiter.api.AfterEach
+    void relogioDeVerdade() {
+        relogio.reiniciar();
+    }
+
     private BigDecimal saldoDoCaixa() throws Exception {
         return new BigDecimal(corpoDe(ler(CAIXA + "/saldo", dona()).andExpect(status().isOk())).get("saldo").asString());
     }
