@@ -3,10 +3,9 @@ package br.com.coronasemijoias.api.acertos;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import br.com.coronasemijoias.api.testes.ConciliacoesNosTestes;
 import br.com.coronasemijoias.api.testes.UsuariosDeTeste.UsuarioDeTeste;
 import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -14,14 +13,15 @@ import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * As conciliações do dinheiro do vendedor zeradas com a massa do teste (tarefa 7.6; ADR-0012, item 17): C2 (acerto: líquido menos
  * crédito = recebido menos pago mais ficou devendo, e cada parte confere com os recebimentos, as contas e o caixa), C4 (cada
  * recebimento e cada pagamento ao vendedor com exatamente um lançamento de caixa e o saldo do caixa igual à soma dos
  * lançamentos) e C5 nas contas do nível 2 (os atalhos são a soma das baixas). Cada uma ACUSA a diferença quando o teste estraga um
- * dado de propósito (pelo dono das tabelas, com os gatilhos desligados e a transação desfeita). A consulta formal e a rota das
- * conciliações são da 7.8.
+ * dado de propósito (pelo dono das tabelas, com os gatilhos desligados e a transação desfeita). Desde a 7.8 todas rodam pela consulta
+ * de produção (ConciliacoesDaFase7), a mesma da rota.
  */
 class ConciliacaoDoDinheiroDoVendedorTest extends ApoioDoFechamento {
 
@@ -96,105 +96,41 @@ class ConciliacaoDoDinheiroDoVendedorTest extends ApoioDoFechamento {
         fechar(a1, pedido).andExpect(status().isCreated());
     }
 
-    private String vendedores() {
-        return "'" + x.vendedorId() + "', '" + y.vendedorId() + "'";
+    private java.util.Set<UUID> referencias() {
+        return ConciliacoesNosTestes.referenciasDosVendedores(jdbc, List.of(x.vendedorId(), y.vendedorId()));
     }
 
-    private static int unico(Statement s, String sql) throws SQLException {
-        try (ResultSet rs = s.executeQuery(sql)) {
-            rs.next();
-            return rs.getInt(1);
-        }
-    }
-
-    // --- as conciliações, como SQL que conta o que está errado ---
-
-    private int c2(Statement s) throws SQLException {
-        return unico(s, """
-                SELECT count(*) FROM corona.acertos a WHERE a.vendedor_id IN (""" + vendedores() + """
-                ) AND a.status = 'ACERTADO' AND (
-                       a.liquido - a.credito_usado <> a.recebido_no_acerto - a.pago_ao_vendedor + a.ficou_devendo
-                    OR a.recebido_no_acerto <> (SELECT coalesce(sum(r.valor), 0) FROM corona.recebimentos_vendedor r
-                                                 WHERE r.acerto_id = a.id AND r.aplicado_em = 'ACERTO' AND r.estorna_id IS NULL)
-                    OR greatest(a.ficou_devendo, 0) <> (SELECT coalesce(sum(c.valor), 0) FROM corona.contas_receber c
-                                                         WHERE c.devedor_tipo = 'VENDEDOR' AND c.origem_tipo = 'ACERTO' AND c.origem_id = a.id)
-                    OR a.pago_ao_vendedor <> (SELECT coalesce(-sum(l.valor), 0) FROM corona.lancamentos_caixa l
-                                               WHERE l.origem_tipo = 'ACERTO_A_FAVOR_DO_VENDEDOR' AND l.origem_id = a.id))""");
-    }
-
-    private int c4(Statement s) throws SQLException {
-        // Cada recebimento (original ou estorno) tem exatamente um lançamento do mesmo valor; todo lançamento automático tem origem.
-        int semLancamento = unico(s, """
-                SELECT count(*) FROM corona.recebimentos_vendedor r WHERE r.vendedor_id IN (""" + vendedores() + """
-                ) AND (SELECT count(*) FROM corona.lancamentos_caixa l WHERE l.origem_tipo = 'RECEBIMENTO_VENDEDOR' AND l.origem_id = r.id
-                          AND l.valor = r.valor) <> 1""");
-        int pagamentosSemSaida = unico(s, """
-                SELECT count(*) FROM corona.acertos a WHERE a.vendedor_id IN (""" + vendedores() + """
-                ) AND a.pago_ao_vendedor > 0 AND (SELECT count(*) FROM corona.lancamentos_caixa l
-                        WHERE l.origem_tipo = 'ACERTO_A_FAVOR_DO_VENDEDOR' AND l.origem_id = a.id AND l.valor = -a.pago_ao_vendedor) <> 1""");
-        int semOrigem = unico(s, """
-                SELECT count(*) FROM corona.lancamentos_caixa l WHERE (l.origem_tipo = 'RECEBIMENTO_VENDEDOR'
-                       AND NOT EXISTS (SELECT 1 FROM corona.recebimentos_vendedor r WHERE r.id = l.origem_id))
-                    OR (l.origem_tipo = 'ACERTO_A_FAVOR_DO_VENDEDOR' AND NOT EXISTS (SELECT 1 FROM corona.acertos a WHERE a.id = l.origem_id))""");
-        // O saldo do caixa destes vendedores é a soma dos recebimentos menos o pago a eles.
-        int saldo = unico(s, """
-                SELECT CASE WHEN (SELECT coalesce(sum(l.valor), 0) FROM corona.lancamentos_caixa l
-                                   WHERE l.origem_id IN (SELECT id FROM corona.recebimentos_vendedor WHERE vendedor_id IN (""" + vendedores() + """
-                ))
-                       OR l.origem_id IN (SELECT id FROM corona.acertos WHERE vendedor_id IN (""" + vendedores() + """
-                )))
-                  = (SELECT coalesce(sum(valor), 0) FROM corona.recebimentos_vendedor WHERE vendedor_id IN (""" + vendedores() + """
-                )) - (SELECT coalesce(sum(pago_ao_vendedor), 0) FROM corona.acertos WHERE vendedor_id IN (""" + vendedores() + """
-                )) THEN 0 ELSE 1 END""");
-        return semLancamento + pagamentosSemSaida + semOrigem + saldo;
-    }
-
-    private int c5(Statement s) throws SQLException {
-        return unico(s, """
-                SELECT count(*) FROM corona.contas_receber c WHERE c.devedor_tipo = 'VENDEDOR' AND c.vendedor_id IN (""" + vendedores() + """
-                ) AND (c.valor_pago <> coalesce((SELECT sum(b.valor) FROM corona.baixas_receber b WHERE b.conta_id = c.id AND b.tipo = 'PAGAMENTO'), 0)
-                    OR c.valor_cancelado <> coalesce((SELECT sum(b.valor) FROM corona.baixas_receber b WHERE b.conta_id = c.id AND b.tipo = 'CANCELAMENTO'), 0)
-                    OR c.valor_pago + c.valor_cancelado > c.valor
-                    OR (c.status = 'PAGA') <> (c.valor_pago = c.valor))""");
+    private int c(JdbcTemplate comoJdbc, String chave) {
+        return ConciliacoesNosTestes.contar(comoJdbc, chave, referencias());
     }
 
     // --- a massa está zerada ---
 
     @Test
     void asConciliacoesDoDinheiroVemZeradasComAMassa() throws Exception {
-        try (Connection con = conectarComoAplicacao(); Statement s = con.createStatement()) {
-            assertThat(contar("SELECT count(*) FROM corona.acertos WHERE vendedor_id IN (?, ?) AND status = 'ACERTADO'", x.vendedorId(), y.vendedorId()))
-                    .isEqualTo(4);
-            assertThat(contar("SELECT count(*) FROM corona.recebimentos_vendedor WHERE vendedor_id = ?", x.vendedorId())).isEqualTo(8);
-            assertThat(c2(s)).as("C2").isZero();
-            assertThat(c4(s)).as("C4").isZero();
-            assertThat(c5(s)).as("C5").isZero();
+        assertThat(contar("SELECT count(*) FROM corona.acertos WHERE vendedor_id IN (?, ?) AND status = 'ACERTADO'", x.vendedorId(), y.vendedorId()))
+                .isEqualTo(4);
+        assertThat(contar("SELECT count(*) FROM corona.recebimentos_vendedor WHERE vendedor_id = ?", x.vendedorId())).isEqualTo(8);
+        for (String chave : List.of("C2", "C4", "C5")) {
+            assertThat(c(jdbc, chave)).as(chave).isZero();
         }
     }
 
-    // --- e cada uma acusa a diferença quando o dado é estragado ---
+    // --- e cada uma acusa a diferença quando o dado é estragado (a consulta é a de produção, a mesma da rota) ---
 
-    private void estragar(List<String> tabelas, List<String> comandos, java.util.function.Consumer<Statement> conferencia) throws Exception {
+    private void estragar(List<String> tabelas, List<String> comandos, java.util.function.Consumer<JdbcTemplate> conferencia) throws Exception {
         try (Connection con = conectarComoMigracao(); Statement s = con.createStatement()) {
             for (String t : tabelas) {
                 s.execute("ALTER TABLE corona." + t + " DISABLE TRIGGER USER");
             }
             try {
-                for (String c : comandos) {
-                    s.execute(c);
+                for (String comando : comandos) {
+                    s.execute(comando);
                 }
-                conferencia.accept(s);
+                conferencia.accept(ConciliacoesNosTestes.naConexao(con));
             } finally {
                 con.rollback();
             }
-        }
-    }
-
-    private static <T> T semExcecao(java.util.concurrent.Callable<T> c) {
-        try {
-            return c.call();
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
         }
     }
 
@@ -203,7 +139,7 @@ class ConciliacaoDoDinheiroDoVendedorTest extends ApoioDoFechamento {
         estragar(List.of("recebimentos_vendedor"), List.of("""
                 UPDATE corona.recebimentos_vendedor SET valor = valor + 1 WHERE id = (SELECT id FROM corona.recebimentos_vendedor
                  WHERE vendedor_id = '""" + x.vendedorId() + "' AND aplicado_em = 'ACERTO' AND estorna_id IS NULL ORDER BY id LIMIT 1)"),
-                s -> assertThat(semExcecao(() -> c2(s))).isPositive());
+                j -> assertThat(c(j, "C2")).isPositive());
     }
 
     @Test
@@ -213,11 +149,11 @@ class ConciliacaoDoDinheiroDoVendedorTest extends ApoioDoFechamento {
                 + "' AND origem_tipo = 'ACERTO' AND forma_prevista IS NULL ORDER BY id LIMIT 1)", """
                 DELETE FROM corona.contas_receber WHERE id = (SELECT id FROM corona.contas_receber WHERE vendedor_id = '""" + x.vendedorId()
                 + "' AND origem_tipo = 'ACERTO' AND forma_prevista IS NULL ORDER BY id LIMIT 1)"),
-                s -> assertThat(semExcecao(() -> c2(s))).isPositive());
+                j -> assertThat(c(j, "C2")).isPositive());
         estragar(List.of("lancamentos_caixa"), List.of("""
                 DELETE FROM corona.lancamentos_caixa WHERE origem_tipo = 'ACERTO_A_FAVOR_DO_VENDEDOR'
                    AND origem_id IN (SELECT id FROM corona.acertos WHERE vendedor_id = '""" + y.vendedorId() + "')"),
-                s -> assertThat(semExcecao(() -> c2(s))).isPositive());
+                j -> assertThat(c(j, "C2")).isPositive());
     }
 
     @Test
@@ -225,11 +161,11 @@ class ConciliacaoDoDinheiroDoVendedorTest extends ApoioDoFechamento {
         estragar(List.of("lancamentos_caixa"), List.of("""
                 DELETE FROM corona.lancamentos_caixa WHERE id = (SELECT l.id FROM corona.lancamentos_caixa l JOIN corona.recebimentos_vendedor r
                  ON r.id = l.origem_id WHERE r.vendedor_id = '""" + x.vendedorId() + "' ORDER BY l.id LIMIT 1)"),
-                s -> assertThat(semExcecao(() -> c4(s))).isPositive());
+                j -> assertThat(c(j, "C4")).isPositive());
         estragar(List.of("lancamentos_caixa"), List.of("""
                 UPDATE corona.lancamentos_caixa SET valor = valor * 2 WHERE id = (SELECT l.id FROM corona.lancamentos_caixa l JOIN
                  corona.recebimentos_vendedor r ON r.id = l.origem_id WHERE r.vendedor_id = '""" + x.vendedorId() + "' AND l.valor > 0 ORDER BY l.id LIMIT 1)"),
-                s -> assertThat(semExcecao(() -> c4(s))).isPositive());
+                j -> assertThat(c(j, "C4")).isPositive());
     }
 
     @Test
@@ -237,7 +173,7 @@ class ConciliacaoDoDinheiroDoVendedorTest extends ApoioDoFechamento {
         estragar(List.of("lancamentos_caixa", "recebimentos_vendedor"), List.of("""
                 UPDATE corona.lancamentos_caixa SET origem_id = '00000000-0000-7000-8000-000000000001' WHERE id = (SELECT l.id
                   FROM corona.lancamentos_caixa l JOIN corona.recebimentos_vendedor r ON r.id = l.origem_id WHERE r.vendedor_id = '"""
-                + x.vendedorId() + "' ORDER BY l.id LIMIT 1)"), s -> assertThat(semExcecao(() -> c4(s))).isPositive());
+                + x.vendedorId() + "' ORDER BY l.id LIMIT 1)"), j -> assertThat(c(j, "C4")).isPositive());
     }
 
     @Test
@@ -245,11 +181,11 @@ class ConciliacaoDoDinheiroDoVendedorTest extends ApoioDoFechamento {
         estragar(List.of("contas_receber"), List.of("""
                 UPDATE corona.contas_receber SET valor_pago = valor_pago + 1 WHERE id = (SELECT id FROM corona.contas_receber
                  WHERE vendedor_id = '""" + x.vendedorId() + "' AND forma_prevista IS NULL AND origem_tipo = 'ACERTO' ORDER BY id LIMIT 1)"),
-                s -> assertThat(semExcecao(() -> c5(s))).isPositive());
+                j -> assertThat(c(j, "C5")).isPositive());
         estragar(List.of("baixas_receber"), List.of("""
                 DELETE FROM corona.baixas_receber WHERE id = (SELECT b.id FROM corona.baixas_receber b JOIN corona.contas_receber c ON c.id = b.conta_id
                  WHERE c.vendedor_id = '""" + x.vendedorId() + "' AND b.valor > 0 "
                 + "AND NOT EXISTS (SELECT 1 FROM corona.baixas_receber e WHERE e.estorna_id = b.id) ORDER BY b.id LIMIT 1)"),
-                s -> assertThat(semExcecao(() -> c5(s))).isPositive());
+                j -> assertThat(c(j, "C5")).isPositive());
     }
 }

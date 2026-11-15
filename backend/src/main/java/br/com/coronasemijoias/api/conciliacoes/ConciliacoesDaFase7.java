@@ -254,8 +254,10 @@ public class ConciliacoesDaFase7 {
                         + de + " WHERE c.valor_pago + c.valor_cancelado > c.valor ORDER BY c.id", Unidade.REAIS),
                 achar("SELECT '" + tipo + "', c.id, 'A situação desta conta não combina com o que foi pago e cancelado.', c.valor, "
                         + "c.valor_pago + c.valor_cancelado FROM " + de + " " + """
-                         WHERE (CASE WHEN c.valor_cancelado > 0 THEN 'CANCELADA' WHEN c.valor_pago = c.valor THEN 'PAGA'
-                                     WHEN c.valor_pago > 0 THEN 'PARCIAL' ELSE 'ABERTA' END) <> c.status
+                         WHERE c.valor_pago + c.valor_cancelado <= c.valor
+                           AND (CASE WHEN c.valor_pago + c.valor_cancelado = c.valor THEN
+                                          (CASE WHEN c.valor_cancelado > 0 THEN 'CANCELADA' ELSE 'PAGA' END)
+                                     WHEN c.valor_pago + c.valor_cancelado > 0 THEN 'PARCIAL' ELSE 'ABERTA' END) <> c.status
                          ORDER BY c.id""", Unidade.REAIS));
     }
 

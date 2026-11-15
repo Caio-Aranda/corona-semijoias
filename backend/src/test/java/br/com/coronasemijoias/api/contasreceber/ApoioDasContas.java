@@ -85,39 +85,9 @@ abstract class ApoioDasContas extends TesteDeIntegracao {
         }
     }
 
-    /**
-     * C1 (por venda: total menos o pago líquido = soma do em aberto das parcelas; venda estornada: zero) e C5 (atalhos
-     * da parcela = soma das baixas). Só olha vendas que têm parcelas.
-     */
+    /** C1 e C5 pela consulta de produção (tarefa 7.8), só das vendas deste teste. */
     List<String> diferencasDaConciliacao() {
-        // Só UUIDs gerados aqui entram no texto da consulta (nunca texto digitado).
-        String ids = vendasDoTeste.isEmpty() ? "NULL::uuid"
-                : String.join(",", vendasDoTeste.stream().map(u -> "'" + u + "'::uuid").toList());
-        List<String> achadas = new ArrayList<>(jdbc.queryForList("""
-                SELECT 'C1 ' || v.id || ' falta ' || (v.total - coalesce(d.devolvido, 0) - coalesce(p.liquido, 0))
-                       || ' aberto ' || a.aberto
-                  FROM corona.vendas v
-                  JOIN (SELECT venda_id, sum(valor - valor_pago - valor_cancelado) AS aberto
-                          FROM corona.contas_receber GROUP BY venda_id) a ON a.venda_id = v.id
-                  LEFT JOIN (SELECT venda_id, sum(valor) AS liquido FROM corona.pagamentos_cliente
-                              WHERE tipo IN ('PAGAMENTO', 'ESTORNO_PAGAMENTO', 'REEMBOLSO', 'ESTORNO_REEMBOLSO')
-                              GROUP BY venda_id) p ON p.venda_id = v.id
-                  LEFT JOIN (SELECT venda_id, sum(valor_devolvido) AS devolvido FROM corona.devolucoes
-                              WHERE situacao <> 'CANCELADA' GROUP BY venda_id) d ON d.venda_id = v.id
-                 WHERE v.id IN (%s) AND v.status = 'CONCLUIDA'
-                   AND v.total - coalesce(d.devolvido, 0) - coalesce(p.liquido, 0) <> a.aberto""".formatted(ids), String.class));
-        achadas.addAll(jdbc.queryForList("""
-                SELECT 'C1 estornada ' || v.id FROM corona.vendas v
-                  JOIN corona.contas_receber c ON c.venda_id = v.id
-                 WHERE v.id IN (%s) AND v.status = 'ESTORNADA' GROUP BY v.id
-                HAVING sum(c.valor - c.valor_pago - c.valor_cancelado) <> 0""".formatted(ids), String.class));
-        achadas.addAll(jdbc.queryForList("""
-                SELECT 'C5 ' || c.id FROM corona.contas_receber c
-                 WHERE c.venda_id IN (%s) AND (c.valor_pago <> coalesce((SELECT sum(valor) FROM corona.baixas_receber b
-                                                  WHERE b.conta_id = c.id AND b.tipo = 'PAGAMENTO'), 0)
-                    OR c.valor_cancelado <> coalesce((SELECT sum(valor) FROM corona.baixas_receber b
-                                                       WHERE b.conta_id = c.id AND b.tipo = 'CANCELAMENTO'), 0))""".formatted(ids), String.class));
-        return achadas;
+        return br.com.coronasemijoias.api.testes.ConciliacoesNosTestes.c1eC5(jdbc, vendasDoTeste);
     }
 
     // --- requisições ---
