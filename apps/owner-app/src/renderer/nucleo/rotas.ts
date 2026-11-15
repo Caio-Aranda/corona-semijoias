@@ -5,6 +5,7 @@ import { TEXTOS_DE_COMPRAS } from '../textos-compras';
 import { TEXTOS_DE_CONCILIACOES } from '../textos-conciliacoes';
 import { TEXTOS_DE_DEVOLUCOES } from '../textos-devolucoes';
 import { TEXTOS_DE_ESTOQUE } from '../textos-estoque';
+import { TEXTOS_DE_FINANCEIRO } from '../textos-financeiro';
 import { TEXTOS_DE_MALETAS } from '../textos-maletas';
 import { TEXTOS_RELATORIOS } from '../textos-relatorios';
 import { TEXTOS_DE_SINCRONIZACAO } from '../textos-sincronizacao';
@@ -82,6 +83,8 @@ export const ROTAS = [
   'acertos/lista',
   'acertos/pendencias',
   'acertos/comissao',
+  'financeiro/caixa',
+  'financeiro/categorias',
   'conciliacoes/dinheiro',
 ] as const;
 export type Rota = (typeof ROTAS)[number];
@@ -116,6 +119,13 @@ export const MENU = [
       { chave: 'acertos/lista', rotulo: TEXTOS_DE_ACERTOS.menu.acertos },
       { chave: 'acertos/pendencias', rotulo: TEXTOS_DE_ACERTOS.menu.pendencias },
       { chave: 'acertos/comissao', rotulo: TEXTOS_DE_ACERTOS.menu.comissao },
+    ],
+  },
+  {
+    titulo: TEXTOS_DE_FINANCEIRO.menu.grupo,
+    itens: [
+      { chave: 'financeiro/caixa', rotulo: TEXTOS_DE_FINANCEIRO.menu.caixa },
+      { chave: 'financeiro/categorias', rotulo: TEXTOS_DE_FINANCEIRO.menu.categorias },
     ],
   },
   {
