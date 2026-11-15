@@ -49,9 +49,12 @@ class CicloDaFase7Test extends ApoioDasConciliacoes {
 
     @Test
     void ocicloCompletoDaFase7FechaComOsNumerosCertosEAsConciliacoesZeradas() throws Exception {
-        // Cotação do exemplo (R$ 0,0009 por guarani) no dia mais recente de todos: o acerto usa a mais recente, e outras classes
-        // deixam cotações próprias de 2291 em diante (a de 2291-06-01 pode ser delas, com outra taxa). Esta sai no fim da classe.
-        CotacoesDaMassa.gravar(jdbc, "2299-12-31", "5.00000000", "0.00090000");
+        // O servidor converte cada venda pela cotação do DIA dela (a mais recente até o dia; sem nenhuma, a mais antiga do banco),
+        // e outras classes deixam cotações próprias (de 1990, 2285, 2290...) com outra taxa. Para o ciclo não depender delas, o
+        // relógio de teste vai para dezembro de 2299 e a cotação do exemplo (R$ 0,0009 por guarani) é a de "hoje" nesse relógio:
+        // nenhuma outra é posterior. Ela sai no fim da classe (CotacoesDaMassa.tirar, de 2291 em diante).
+        relogio.avancar(java.time.Duration.ofDays(java.time.temporal.ChronoUnit.DAYS.between(LocalDate.now(), LocalDate.of(2299, 12, 1))));
+        CotacoesDaMassa.gravar(jdbc, hoje().toString(), "5.00000000", "0.00090000");
         configurarComissao(700_000, 30, 40);
         BigDecimal caixaAntes = saldoDoCaixa();
 
