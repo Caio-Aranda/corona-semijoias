@@ -300,3 +300,37 @@ Issue #153, PR 170 (plano aprovado no PR, decisões 1 a 8 confirmadas pela orque
 - As telas de caixa, contas a pagar e a receber e recebimento avulso (7.10), a tirada do campo "Comissão (%)" do cadastro do vendedor (7.10), as telas do vendedor (7.11) e os relatórios financeiros (7.12), nem Excel e CSV do acerto.
 - "Quanto falta para a meta" na conferência (a API da dona não devolve; ver acima). Sugestão: a prévia pode devolver `faltaParaMetaGuarani`, como a do vendedor já faz.
 - Tipar a prévia no OpenAPI (hoje é um mapa sem tipo; fica a sugestão).
+
+## Tarefa 7.10: telas do financeiro
+
+Issue #154, PR 171 (tarefa não crítica). **Só telas do Corona Gestão** (e a ponte): as rotas são das tarefas 7.6 a 7.8 e o cliente da API da dona já estava regenerado. Nada de backend, migração, Corona Vendas, `packages/shared`, `packages/ui` nem `packages/api-client-vendedor` (diff vazio).
+
+**O que entrou**
+
+- **Ponte** (`shared/financeiro.ts`, `shared/validacao-financeiro.ts`, `main/api.ts`): `caixa.extrato/saldo/lancar/estornar`, `caixa.categorias/criarCategoria/renomearCategoria/inativarCategoria/reativarCategoria`, `contasAPagar.listar/ver/pagar/estornar`, `contasAReceber.listar`, `recebimentos.listar/receber/estornar` e `semanas.fechar`, cada uma na rota que já existia. A ponte só repassa chaves conhecidas, só aceita Dinheiro, Transferência (PIX) e Boleto (cheque, cartão e entrada não existem), valor em texto com ponto maior que zero, datas AAAA-MM-DD, motivo obrigatório e um UUID por comando.
+- **Menu Financeiro:** Caixa, Categorias do caixa, Contas a pagar, Contas a receber e Recebimentos do vendedor.
+- **Caixa:** saldo (com o aviso de caixa negativo), resumo e extrato do período (De e Até), **Lançar no caixa** (Entrou ou Saiu, categoria da loja ativa e do mesmo tipo, forma, data, descrição, valor) e **Estornar lançamento** (só o que foi lançado à mão, com motivo).
+- **Categorias do caixa:** Nova categoria (tipo fixo depois de criada), Renomear, Inativar e Reativar; as categorias do sistema não têm ações.
+- **Contas a pagar:** lista com filtros (fornecedor, situação, vencimento) e página; **Registrar pagamento** (forma, valor, data opcional); **Ver pagamentos** da parcela com **Estornar pagamento** (só o pagamento que ainda vale, com motivo).
+- **Contas a receber:** consulta dos dois lados (do cliente ao vendedor e do vendedor à loja), com filtros de vendedor, situação e de quem é a conta.
+- **Recebimentos do vendedor:** lista (Desfeito e Estorno marcados), **Registrar recebimento** avulso (vendedor, conta a baixar opcional, forma, valor) e **Estornar recebimento** (com motivo e, para o que pagou um acerto, o novo vencimento opcional).
+- **Fechar semana:** botão **Fechar semana** na linha de cada semana aberta de Cadastros, Semanas, com pergunta clara e sem volta; a recusa do servidor aparece com o que fazer.
+- **Comissão fora do cadastro do vendedor:** o campo "Comissão (%)" saiu do formulário do vendedor, da ponte e da coluna do relatório de vendedores; a comissão agora é só a da tela Comissão e meta (7.9).
+- **Documentos:** glossário (parte 17).
+
+**Decisões e o que mais chama atenção**
+
+- A tela **nunca calcula dinheiro**: só formata o que a API mandou. Dólar e Guarani só aparecem nas listas de contas e de recebimentos e no saldo, **pela cotação do dia** (com a frase de rodapé); no extrato do caixa o valor de cada lançamento aparece **só em Real**, porque a API não devolve a cotação do dia de cada lançamento e a tela não inventa uma.
+- Todo comando leva um UUID gerado quando a janela ou o formulário abre e **reaproveitado** em toda nova tentativa (sem internet, o mesmo botão manda o mesmo id); depois de feito, o próximo comando nasce com id novo.
+- "Caixa negativo": o aviso usa o `negativo` e o saldo que a API manda (a tela só tira o sinal para escrever "negativo em R$ X").
+- O teste da conferência do dinheiro passou a procurar os títulos só dentro da área principal da tela (o menu agora também tem um item "Caixa"). O teste de colar foto de `produtos.test.tsx`, que passava de 1 s com a máquina cheia, ganhou espera de 5 s só nele (nenhuma verificação foi trocada).
+
+**Testes** (Corona Gestão, 827 no total): `validacao-financeiro.test.ts`, `api.test.ts` (rota de cada operação do financeiro), `caixa.test.tsx` (caixa e categorias), `contas-a-pagar.test.tsx`, `recebimentos.test.tsx` (contas a receber e recebimentos), `fechar-semana.test.tsx`, `textos-financeiro.test.ts` (sem termo técnico, formas, PIX só como "Transferência (PIX)") e os testes do cadastro do vendedor trocados (sem o campo de comissão).
+
+**Resultado final:** `npm run lint`, `npm run typecheck` e `npm run format:check` limpos; `npm run owner:build` passa; testes do Corona Gestão: 827 passam em 62 arquivos. `npm run api:test` e `barreira:varrer` não foram necessários (nenhum arquivo do backend nem do Corona Vendas mudou).
+
+**Não fiz**
+
+- **Gerar contas a pagar** de uma compra (a rota existe, mas a tela de compras é outra tarefa), **estornar recebimento de cliente** (a lista de contas não traz o id do pagamento do cliente) e **editar ou cancelar** parcela.
+- Telas do vendedor (7.11) e relatórios financeiros (7.12).
+- Cotação do dia de cada lançamento do caixa no extrato (a API não devolve; sugestão: devolver a cotação do lançamento).

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import type {
@@ -62,7 +62,10 @@ describe('Conferência do dinheiro', () => {
     await abrir(m);
     expect(await screen.findByText(/Tudo certo: o dinheiro/)).toBeInTheDocument();
     for (const chave of NOVE) {
-      expect(screen.getByText(TEXTOS_DE_CONCILIACOES.titulos[chave]!)).toBeInTheDocument();
+      // Só na tela (o menu lateral também tem um item chamado Caixa).
+      expect(
+        within(screen.getByRole('main')).getByText(TEXTOS_DE_CONCILIACOES.titulos[chave]!),
+      ).toBeInTheDocument();
     }
     expect(screen.getAllByText('Conferidos: 12').length).toBeGreaterThan(0);
     expect(screen.getAllByText(TEXTOS_DE_CONCILIACOES.semDiferenca)).toHaveLength(9);
