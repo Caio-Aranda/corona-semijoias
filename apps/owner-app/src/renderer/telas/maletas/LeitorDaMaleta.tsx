@@ -19,13 +19,22 @@ export interface LeitorDaMaletaProps {
   /** Código que não existe: a tela mostra "Peça não encontrada" (não cadastra, ADR-0010 item 16). */
   aoNaoAchar: (codigo: string) => void;
   desativado?: boolean;
+  /** Outros textos para o mesmo leitor (ex.: a contagem do acerto). */
+  rotulos?: { titulo: string; ajuda: string; adicionar: string };
 }
 
 /**
  * Campo do leitor da maleta. O leitor de código age como teclado e termina com Enter; digitar o
  * código ou o nome e apertar Enter funciona igual. O foco volta ao campo depois de cada leitura.
  */
-export function LeitorDaMaleta({ ponte, aoAchar, aoNaoAchar, desativado }: LeitorDaMaletaProps) {
+export function LeitorDaMaleta({
+  ponte,
+  aoAchar,
+  aoNaoAchar,
+  desativado,
+  rotulos,
+}: LeitorDaMaletaProps) {
+  const R = rotulos ?? T;
   const [texto, setTexto] = useState('');
   const [procurando, setProcurando] = useState(false);
   const [opcoes, setOpcoes] = useState<Produto[] | null>(null);
@@ -84,13 +93,13 @@ export function LeitorDaMaleta({ ponte, aoAchar, aoNaoAchar, desativado }: Leito
   return (
     <section className="gestao-grupo" aria-labelledby="titulo-leitor-maleta">
       <h2 id="titulo-leitor-maleta" className="gestao-subtitulo">
-        {T.titulo}
+        {R.titulo}
       </h2>
       <form className="gestao-filtros" onSubmit={(e) => void ler(e)}>
         <Campo
           id={ID_DO_CAMPO_DO_LEITOR_DA_MALETA}
           rotulo={T.campo}
-          ajuda={T.ajuda}
+          ajuda={R.ajuda}
           value={texto}
           autoComplete="off"
           spellCheck={false}
@@ -99,7 +108,7 @@ export function LeitorDaMaleta({ ponte, aoAchar, aoNaoAchar, desativado }: Leito
           onChange={(e) => setTexto(e.target.value)}
         />
         <Botao type="submit" variante="primario" disabled={procurando || desativado}>
-          {T.adicionar}
+          {R.adicionar}
         </Botao>
       </form>
       {procurando ? <p role="status">{T.procurando}</p> : null}

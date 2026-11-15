@@ -256,7 +256,7 @@ describe('tela inicial da dona', () => {
     const { ponte } = ponteFalsa({ estouLogado: vi.fn(() => Promise.resolve(dentro)) });
     const u = userEvent.setup();
     render(<App ponte={ponte} />);
-    await u.click(await screen.findByRole('button', { name: 'Fazer acerto' }));
+    await u.click(await screen.findByRole('button', { name: 'Cadastrar produto' }));
     expect(screen.getByText('Em breve.')).toBeInTheDocument();
   });
 
