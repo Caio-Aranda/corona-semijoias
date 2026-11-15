@@ -14,6 +14,7 @@ import { chamar, Dinheiro, novoId, useCotacao } from '../../chamadas';
 import { centavosDeTexto, lerReaisDigitados } from '../../moedas';
 import { TEXTOS } from '../../textos';
 import { BuscaPorNome } from '../BuscaPorNome';
+import { EscolhaDeParcelas, conferirParcelas, parcelasIniciais } from '../EscolhaDeParcelas';
 import { PaginaDoVendedor } from '../PaginaDoVendedor';
 import { type Marcacao, PecasQueVoltam, pecasMarcadas, reais, textoDeCentavos } from './apoio';
 
@@ -59,6 +60,8 @@ export function FormularioDeTroca({
   const [lido, setLido] = useState<string | null>(null);
   const [forma, setForma] = useState<Forma>('DINHEIRO');
   const [valorPago, setValorPago] = useState('');
+  // Só quando sobra da diferença a prazo (tarefa 7.11).
+  const [parcelas, setParcelas] = useState(parcelasIniciais);
   const [previaA, setPreviaA] = useState<PreviaDaDevolucao | null>(null);
   const [previa, setPrevia] = useState<PreviaDaTroca | null>(null);
   const [erro, setErro] = useState<string | null>(null);
@@ -119,6 +122,9 @@ export function FormularioDeTroca({
   if (diferenca > 0n && forma !== 'PRAZO')
     pago = valorPago.trim() === '' ? diferenca : centavosDoDigitado(valorPago);
 
+  // O que fica a prazo da diferença: só então se escolhem as parcelas (a tela não calcula parcela).
+  const sobraAPrazo = diferenca > 0n && pago !== null && pago < diferenca;
+
   function aceitar(linha: LinhaDaMaleta) {
     setLido(linha.produto.nome);
     setNovas((atual) =>
@@ -158,6 +164,10 @@ export function FormularioDeTroca({
     else if (descontos.some((d) => d === null)) falta = TEXTOS.venda.descontoInvalido;
     else if (pago === null) falta = TEXTOS.venda.valorPagoInvalido;
     else if (diferenca > 0n && pago > diferenca) falta = TEXTOS.venda.pagoMaiorQueTotal;
+    else if (sobraAPrazo) {
+      const p = conferirParcelas(parcelas);
+      if (!p.ok) falta = p.texto;
+    }
     setProblema(falta);
     if (!falta) setConfirmando(true);
   }
@@ -169,6 +179,7 @@ export function FormularioDeTroca({
       diferenca > 0n && forma !== 'PRAZO' && pago > 0n
         ? [{ id: ids.current.pagamento, valor: textoDeCentavos(pago), forma }]
         : [];
+    const escolha = sobraAPrazo ? conferirParcelas(parcelas) : null;
     const r = await chamar(ponte, {
       operacao: 'trocas.registrar',
       troca: {
@@ -182,7 +193,13 @@ export function FormularioDeTroca({
           ...(observacao.trim() ? { observacao: observacao.trim() } : {}),
           itens: voltam,
         },
-        venda: { id: ids.current.venda, remessaId: previa.remessaId, itens: levam, pagamentos },
+        venda: {
+          id: ids.current.venda,
+          remessaId: previa.remessaId,
+          itens: levam,
+          pagamentos,
+          ...(escolha?.ok ? { parcelamento: escolha.parcelamento } : {}),
+        },
       },
     });
     setEnviando(false);
@@ -390,6 +407,8 @@ export function FormularioDeTroca({
           ) : null}
         </fieldset>
       ) : null}
+
+      {sobraAPrazo ? <EscolhaDeParcelas valor={parcelas} aoMudar={setParcelas} /> : null}
 
       <div className="vendas-rodape">
         <Botao onClick={aoVoltar}>{T.cancelar}</Botao>

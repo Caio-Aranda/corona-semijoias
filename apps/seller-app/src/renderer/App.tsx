@@ -7,6 +7,8 @@ import { TelaConferirMaleta } from './telas/TelaConferirMaleta';
 import { type InicioDaDevolucao, TelaDevolucaoETroca } from './telas/devolucao/TelaDevolucaoETroca';
 import { TelaEntrar } from './telas/TelaEntrar';
 import { TelaInicial, type Destino } from './telas/TelaInicial';
+import { TelaAReceber } from './telas/TelaAReceber';
+import { TelaMeuAcerto } from './telas/TelaMeuAcerto';
 import { TelaMeusClientes } from './telas/TelaMeusClientes';
 import { TelaMeusNumeros } from './telas/TelaMeusNumeros';
 import { TelaMinhaMaleta } from './telas/TelaMinhaMaleta';
@@ -27,6 +29,8 @@ type Rota =
   | { tela: 'vendas'; voltarPara: 'vender' | 'numeros' }
   | { tela: 'clientes' }
   | { tela: 'numeros' }
+  | { tela: 'acerto' }
+  | { tela: 'areceber' }
   | { tela: 'devolucao'; inicio: InicioDaDevolucao; voltarPara: 'inicio' | 'vendas' };
 
 const PRONTOS: readonly Destino[] = ['vender', 'maleta', 'clientes', 'numeros', 'devolucao'];
@@ -161,8 +165,14 @@ export function App({ ponte }: AppProps) {
                 ponte={ponte}
                 aoVoltar={inicio}
                 aoVerVendas={() => setRota({ tela: 'vendas', voltarPara: 'numeros' })}
+                aoVerAcerto={() => setRota({ tela: 'acerto' })}
+                aoVerAReceber={() => setRota({ tela: 'areceber' })}
               />
             );
+          case 'acerto':
+            return <TelaMeuAcerto ponte={ponte} aoVoltar={() => setRota({ tela: 'numeros' })} />;
+          case 'areceber':
+            return <TelaAReceber ponte={ponte} aoVoltar={() => setRota({ tela: 'numeros' })} />;
           case 'inicio':
             return (
               <TelaInicial

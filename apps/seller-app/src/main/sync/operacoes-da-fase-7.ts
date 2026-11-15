@@ -1,3 +1,4 @@
+import { MESES_ATE_O_PRIMEIRO_VENCIMENTO, maisMeses } from '../../shared/datas-das-parcelas';
 import { diaEmBrasilia } from '../../shared/garantia';
 import { exigirCentavos, textoDeCentavos } from '../../shared/dinheiro';
 import type { ParcelamentoParaEnviar, RecebimentoParaEnviar } from '../../shared/operacoes';
@@ -25,17 +26,6 @@ const recusar = (codigo: CodigoDaFase7, detalhe?: string): never => {
 };
 
 const LIMITE_DO_MOTIVO = 400;
-const MESES_ATE_O_PRIMEIRO_VENCIMENTO = 12;
-
-/** Soma meses a uma data AAAA-MM-DD sem passar do fim do mês (31/01 + 1 mês = 28/02). */
-function maisMeses(dia: string, meses: number): string {
-  const [a = 0, m = 1, d = 1] = dia.split('-').map(Number);
-  const total = a * 12 + (m - 1) + meses;
-  const ano = Math.floor(total / 12);
-  const mes = (total % 12) + 1;
-  const ultimo = new Date(Date.UTC(ano, mes, 0)).getUTCDate();
-  return `${ano}-${String(mes).padStart(2, '0')}-${String(Math.min(d, ultimo)).padStart(2, '0')}`;
-}
 
 /**
  * O parcelamento pedido para uma venda (ou para a venda nova de uma troca): só se sobra valor a prazo, com o primeiro
