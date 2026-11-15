@@ -13,8 +13,16 @@ import {
   TotaisDaPrevia,
 } from './BlocosDaPrevia';
 import { DecisoesDaPrevia } from './DecisoesDaPrevia';
+import { FecharAcerto } from './FecharAcerto';
+import { PagamentoDoAcerto } from './PagamentoDoAcerto';
 import { ProvedorDaCotacaoDoAcerto } from './Valor';
 import { erroDoAcerto, type FichaDoAcerto } from './dados';
+import {
+  pagamentoIncompleto,
+  pagamentoInicial,
+  pagamentoParaPedido,
+  type PagamentoEmEdicao,
+} from './pagamento';
 import {
   decisoesCompletas,
   decisoesIniciais,
@@ -30,13 +38,28 @@ export interface PreviaDoAcertoProps {
   ponte: PonteDoCorona;
   acerto: FichaDoAcerto;
   aoVoltar: () => void;
+  /** O acerto foi fechado (ou já estava): a tela mostra a ficha dele. */
+  aoFechado: (ficha: FichaDoAcerto, jaEstavaFechado: boolean) => void;
+}
+
+/** As decisões e o pagamento como o sistema os recebe; sem pagamento algum, a chave nem vai. */
+function pedidoDe(
+  decisoes: Decisoes,
+  pagamento: PagamentoEmEdicao,
+  previa: PreviaDoFechamento | null,
+): Record<string, unknown> {
+  const pagamentoPronto = pagamentoParaPedido(pagamento, previa);
+  return {
+    ...pedidoDeDecisoes(decisoes),
+    ...(Object.keys(pagamentoPronto).length > 0 ? { pagamento: pagamentoPronto } : {}),
+  };
 }
 
 /**
- * Conferência do acerto: o esperado contra o contado, as decisões da dona e os números. Os números são sempre os da última
- * prévia que o sistema devolveu; a tela não soma, não multiplica e não arredonda nada.
+ * Conferência do acerto: o esperado contra o contado, as decisões da dona, o pagamento e os números. Os números são sempre os
+ * da última prévia que o sistema devolveu; a tela não soma, não multiplica e não arredonda nada.
  */
-export function PreviaDoAcerto({ ponte, acerto, aoVoltar }: PreviaDoAcertoProps) {
+export function PreviaDoAcerto({ ponte, acerto, aoVoltar, aoFechado }: PreviaDoAcertoProps) {
   const busca = useBusca(
     () => chamar(ponte, 'acertos.previa', { id: acerto.id }),
     `previa-${acerto.id}`,
@@ -44,12 +67,16 @@ export function PreviaDoAcerto({ ponte, acerto, aoVoltar }: PreviaDoAcertoProps)
   const hoje = useCotacao();
   const [previa, setPrevia] = useState<PreviaDoFechamento | null>(null);
   const [decisoes, setDecisoes] = useState<Decisoes | null>(null);
+  const [pagamento, setPagamento] = useState<PagamentoEmEdicao>(pagamentoInicial);
   const [calculando, setCalculando] = useState(false);
   const [erro, setErro] = useState<ErroDaTela | null>(null);
   const [naoLeu, setNaoLeu] = useState(false);
+  const [confirmando, setConfirmando] = useState(false);
   // Só a resposta da última decisão vale: as mais antigas são descartadas.
   const ultimaChamada = useRef(0);
   const espera = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  // O id do fechamento vale enquanto nada mudar: tentar de novo depois de uma falha de rede nunca fecha duas vezes.
+  const idDoFechamento = useRef(crypto.randomUUID());
   useEffect(() => () => clearTimeout(espera.current), []);
 
   useEffect(() => {
@@ -74,18 +101,13 @@ export function PreviaDoAcerto({ ponte, acerto, aoVoltar }: PreviaDoAcertoProps)
     return mapa;
   }, [previa, decisoes]);
 
-  async function recalcular(novas: Decisoes) {
+  async function pedirPrevia(d: Decisoes, p: PagamentoEmEdicao) {
     const chamada = ++ultimaChamada.current;
-    if (!decisoesCompletas(novas)) {
-      // Falta o motivo de "A loja assume": o sistema ainda não recebe; os números mostrados ficam como estão.
-      setCalculando(false);
-      return;
-    }
     setCalculando(true);
     setErro(null);
     const r = await chamar(ponte, 'acertos.previaComDecisoes', {
       id: acerto.id,
-      pedido: pedidoDeDecisoes(novas),
+      pedido: pedidoDe(d, p, previa),
     });
     if (chamada !== ultimaChamada.current) return;
     setCalculando(false);
@@ -103,21 +125,46 @@ export function PreviaDoAcerto({ ponte, acerto, aoVoltar }: PreviaDoAcertoProps)
   }
 
   /** Escolha na lista refaz a prévia na hora; texto digitado espera a pessoa parar de digitar. */
-  function mudar(novas: Decisoes, digitando = false) {
-    setDecisoes(novas);
+  function mudar(d: Decisoes, p: PagamentoEmEdicao, digitando: boolean) {
+    setDecisoes(d);
+    setPagamento(p);
+    idDoFechamento.current = crypto.randomUUID();
     clearTimeout(espera.current);
-    if (digitando && decisoesCompletas(novas)) {
-      ultimaChamada.current += 1;
-      setCalculando(true);
-      espera.current = setTimeout(() => void recalcular(novas), 400);
+    ultimaChamada.current += 1;
+    if (!decisoesCompletas(d) || pagamentoIncompleto(p)) {
+      // Falta um motivo, um vencimento ou o valor está estranho: o sistema ainda não recebe; Fechar fica desligado.
+      setCalculando(false);
       return;
     }
-    void recalcular(novas);
+    if (digitando) {
+      setCalculando(true);
+      espera.current = setTimeout(() => void pedirPrevia(d, p), 400);
+      return;
+    }
+    void pedirPrevia(d, p);
+  }
+
+  /** Os números mudaram ou apareceu algo que impede: lê a prévia de novo, com as decisões de novo, e outro id. */
+  function conferirDeNovo(motivo: ErroDaTela) {
+    setConfirmando(false);
+    setErro(motivo);
+    idDoFechamento.current = crypto.randomUUID();
+    setDecisoes(null);
+    busca.recarregar();
   }
 
   const cotacaoDaPrevia =
     previa && hoje.taxas && hoje.data === previa.cotacaoData ? hoje.taxas : null;
-  const aguardandoMotivo = decisoes !== null && !decisoesCompletas(decisoes);
+  const aguardando =
+    decisoes !== null && (!decisoesCompletas(decisoes) || pagamentoIncompleto(pagamento));
+  const podeFechar =
+    previa !== null &&
+    decisoes !== null &&
+    !calculando &&
+    !aguardando &&
+    !naoLeu &&
+    previa.podeFechar &&
+    !previa.restanteSemData;
 
   return (
     <section className="gestao-grupo" aria-labelledby="titulo-previa-do-acerto">
@@ -138,14 +185,17 @@ export function PreviaDoAcerto({ ponte, acerto, aoVoltar }: PreviaDoAcertoProps)
         </div>
       ) : null}
       {erro ? (
-        <AvisoDeErro erro={erro} aoTentarDeNovo={() => decisoes && void recalcular(decisoes)} />
+        <AvisoDeErro
+          erro={erro}
+          aoTentarDeNovo={() => decisoes && void pedirPrevia(decisoes, pagamento)}
+        />
       ) : null}
       {calculando ? (
         <p role="status" className="gestao-texto">
           {T.calculando}
         </p>
       ) : null}
-      {aguardandoMotivo ? <Aviso tipo="atencao">{T.motivoPendente}</Aviso> : null}
+      {aguardando ? <Aviso tipo="atencao">{T.motivoPendente}</Aviso> : null}
       {previa && decisoes && !naoLeu ? (
         <ProvedorDaCotacaoDoAcerto cotacao={cotacaoDaPrevia}>
           <ImpedimentosDaPrevia previa={previa} nomeDaPeca={(id) => nomes.get(id) ?? ''} />
@@ -154,14 +204,41 @@ export function PreviaDoAcerto({ ponte, acerto, aoVoltar }: PreviaDoAcertoProps)
             ponte={ponte}
             previa={previa}
             decisoes={decisoes}
-            aoMudar={mudar}
+            aoMudar={(novas, digitando = false) => mudar(novas, pagamento, digitando)}
             nomeDaPeca={(id) => nomes.get(id) ?? ''}
           />
           <ComissaoDaPrevia previa={previa} />
           <TotaisDaPrevia previa={previa} calculando={calculando} />
+          <PagamentoDoAcerto
+            previa={previa}
+            pagamento={pagamento}
+            aoMudar={(novo, digitando = false) => mudar(decisoes, novo, digitando)}
+          />
           <p className="gestao-texto">
             {cotacaoDaPrevia ? T.cotacao.frase(dataParaTela(previa.cotacaoData)) : T.cotacao.sem}
           </p>
+          <div className="gestao-acoes-da-linha">
+            <Botao
+              variante="primario"
+              grande
+              disabled={!podeFechar}
+              onClick={() => setConfirmando(true)}
+            >
+              {TEXTOS_DE_ACERTOS.fechar.botao}
+            </Botao>
+          </div>
+          {confirmando ? (
+            <FecharAcerto
+              ponte={ponte}
+              acerto={acerto}
+              previa={previa}
+              idDoFechamento={idDoFechamento.current}
+              pedido={pedidoDe(decisoes, pagamento, previa)}
+              aoFechar={aoFechado}
+              aoPrecisarConferir={conferirDeNovo}
+              aoVoltar={() => setConfirmando(false)}
+            />
+          ) : null}
         </ProvedorDaCotacaoDoAcerto>
       ) : null}
     </section>

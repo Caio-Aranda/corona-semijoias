@@ -56,7 +56,15 @@ export function GestaoDoAcerto({ ponte, id, inicial, aoVoltar }: GestaoDoAcertoP
             </p>
           ) : null}
           {ficha.status === 'EM_ACERTO' && conferindo ? (
-            <PreviaDoAcerto ponte={ponte} acerto={ficha} aoVoltar={() => setConferindo(false)} />
+            <PreviaDoAcerto
+              ponte={ponte}
+              acerto={ficha}
+              aoVoltar={() => setConferindo(false)}
+              aoFechado={(fechada) => {
+                setFicha(fechada);
+                setConferindo(false);
+              }}
+            />
           ) : null}
           {ficha.status === 'EM_ACERTO' && !conferindo ? (
             <>
@@ -73,6 +81,9 @@ export function GestaoDoAcerto({ ponte, id, inicial, aoVoltar }: GestaoDoAcertoP
                 <Botao onClick={() => setDesistindo(true)}>{T.contagem.desistir}</Botao>
               </div>
             </>
+          ) : null}
+          {ficha.status === 'ACERTADO' ? (
+            <Aviso tipo="sucesso">{TEXTOS_DE_ACERTOS.fechar.fechado}</Aviso>
           ) : null}
           {ficha.status === 'DESISTIDO' ? (
             <Aviso tipo="informacao">

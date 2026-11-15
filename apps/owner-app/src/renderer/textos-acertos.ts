@@ -239,6 +239,79 @@ export const TEXTOS_DE_ACERTOS = {
       sem: 'Sem cotação: os valores aparecem só em reais.',
     },
   },
+  pagamento: {
+    titulo: 'Pagamento do acerto',
+    ajuda:
+      'Diga quanto o vendedor pagou agora. O que sobrar vira conta a receber do vendedor, em parcelas. Os números mudam conforme você digita.',
+    pagouAgora: 'Quanto o vendedor pagou agora',
+    dinheiro: 'Dinheiro',
+    transferencia: 'Transferência (PIX)',
+    ajudaDoValor: '',
+    boleto: {
+      titulo: 'Boleto',
+      valor: 'Boleto: valor',
+      vencimento: 'Boleto: vencimento',
+      ajuda:
+        'O boleto vira uma conta do vendedor. Só entra no caixa quando você registrar que ele foi pago.',
+      semVencimento: 'Escolha o vencimento do boleto.',
+    },
+    devendo: {
+      titulo: 'O que ficou devendo',
+      ajuda: 'O que o vendedor não pagou agora vira conta a receber, em parcelas.',
+      parcelas: 'Em quantas parcelas',
+      umaParcela: '1 parcela',
+      parcelasDe: (n: number) => `${n} parcelas`,
+      primeira: 'Data da primeira parcela',
+      semData: 'Escolha a data de pagamento do que ficou devendo.',
+      parcela: (numero: number, valor: string, data: string) =>
+        `Parcela ${numero}: ${valor}, vence em ${data}`,
+    },
+    antigas: {
+      titulo: 'Contas antigas do vendedor',
+      ajuda:
+        'Se o vendedor quiser, pague parcelas de acertos anteriores junto. Isto não entra no valor deste acerto.',
+      conta: (numero: number, total: number, vencimento: string, emAberto: string) =>
+        `Parcela ${numero} de ${total}, vence em ${vencimento}: falta pagar ${emAberto}`,
+      pagar: (numero: number, total: number) => `Pagar agora a parcela ${numero} de ${total}`,
+      como: (numero: number) => `Como pagou a parcela ${numero}`,
+    },
+    aFavor: {
+      titulo: 'Acerto a favor do vendedor',
+      deve: (valor: string) => `A loja deve ${valor} ao vendedor.`,
+      credito: 'Guardar como crédito para o próximo acerto',
+      pagarAgora: 'Pagar agora',
+      como: 'Como a loja paga',
+    },
+    resumo: {
+      recebido: 'Recebido agora',
+      boleto: 'Boleto',
+      ficouDevendo: 'Ficou devendo',
+      creditoDisponivel: 'Crédito do vendedor disponível',
+      pagoAoVendedor: 'Pago ao vendedor agora',
+    },
+  },
+  fechar: {
+    botao: 'Fechar acerto',
+    titulo: 'Fechar acerto',
+    texto: (vendedor: string) =>
+      `Fechar o acerto de ${vendedor}? Depois de fechado, o acerto não muda mais.`,
+    voltar: 'Voltar e conferir',
+    fechando: 'Fechando...',
+    fechado: 'Acerto fechado.',
+    semConexao: 'Sem internet. O acerto não foi fechado. Tente de novo.',
+    desatualizado: 'Os números mudaram desde que você abriu. Confira o acerto de novo.',
+    erros: {
+      FECHAMENTO_DESATUALIZADO:
+        'Os números mudaram desde que você abriu. Confira o acerto de novo.',
+      PAGAMENTO_DO_ACERTO_PASSA_DO_DEVIDO:
+        'O valor pago passa do que o vendedor deve. Confira os valores.',
+      DATA_DO_RESTANTE_OBRIGATORIA: 'Escolha a data de pagamento do que ficou devendo.',
+      SEMANA_FECHADA:
+        'A semana deste acerto já está fechada, por isso o acerto não pode ser fechado. Fale com o suporte.',
+      DATA_EM_SEMANA_FECHADA:
+        'A semana deste acerto já está fechada, por isso o acerto não pode ser fechado. Fale com o suporte.',
+    } as Record<string, string>,
+  },
   desistir: {
     titulo: 'Desistir do acerto',
     texto:
