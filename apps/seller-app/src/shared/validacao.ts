@@ -29,6 +29,7 @@ import {
   type PedidoDeChamada,
   type TrocaParaEnviar,
   type VendaParaEnviar,
+  type LeituraDoAcertoParaEnviar,
 } from './operacoes';
 
 /** Tamanhos máximos aceitos na ponte. O servidor tem a palavra final sobre a senha (72 bytes). */
@@ -77,6 +78,20 @@ function opcional<T>(
   const v = o[campo];
   if (v === undefined) return { ok: true };
   return confere(v) ? { ok: true, valor: v } : { ok: false };
+}
+
+const temSoAs = (o: Record<string, unknown>, chaves: string[]): boolean =>
+  Object.keys(o).length === chaves.length && chaves.every((c) => c in o);
+
+/** Uma leitura da contagem do acerto (tarefa 8.10): 1 para bipar, negativa para desfazer; nada mais passa. */
+function validarLeituraDoAcerto(v: unknown): LeituraDoAcertoParaEnviar | null {
+  if (!ehObjeto(v) || !temSoAs(v, ['id', 'produtoId', 'quantidade', 'estadoPeca'])) return null;
+  const q = v.quantidade;
+  if (!ehUuid(v.id) || !ehUuid(v.produtoId)) return null;
+  if (typeof q !== 'number' || !Number.isInteger(q) || q === 0 || Math.abs(q) > 100_000)
+    return null;
+  if (v.estadoPeca !== 'BOA' && v.estadoPeca !== 'DEFEITO') return null;
+  return { id: v.id, produtoId: v.produtoId, quantidade: q, estadoPeca: v.estadoPeca };
 }
 
 function validarContagens(v: unknown): ContagemDaPeca[] | null {
@@ -504,6 +519,15 @@ export function validarChamada(v: unknown): PedidoDeChamada | null {
       return { operacao };
     case 'acertos.ver':
       return ehUuid(v.id) ? { operacao, id: v.id } : null;
+    // --- pedir o acerto e contar as sobras (tarefa 8.10; só com internet) ---
+    case 'acertos.pedir':
+    case 'acertos.agora':
+      return temSoAs(v, ['operacao', 'id']) && ehUuid(v.id) ? { operacao, id: v.id } : null;
+    case 'acertos.ler': {
+      if (!temSoAs(v, ['operacao', 'id', 'leitura']) || !ehUuid(v.id)) return null;
+      const leitura = validarLeituraDoAcerto(v.leitura);
+      return leitura ? { operacao, id: v.id, leitura } : null;
+    }
     default:
       return null;
   }
