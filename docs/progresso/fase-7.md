@@ -268,3 +268,35 @@ Issue #152, PR 169 (tarefa crítica: plano aprovado no PR, decisões 1 a 8 confi
 - A rodada diária com aviso em "O que precisa da sua atenção" (Fase 8), o cheque (a C6 continua vaga), a entrada, o botão de corrigir (não existe de propósito) e os relatórios (7.12).
 - Guardar o resultado de cada rodada (Fase 8): por isso não há migração.
 
+## Tarefa 7.9: telas do acerto
+
+Issue #153, PR 170 (plano aprovado no PR, decisões 1 a 8 confirmadas pela orquestradora, com o ajuste "no PDF do acerto, mostre o percentual e a soma em Guarani que decidiram a meta, como na ficha"). **Só telas do Corona Gestão** (e a ponte): as rotas são da 7.4 a 7.8 e os clientes da API da dona já estavam regenerados. Nada de backend, migração, Corona Vendas, `packages/shared`, `packages/ui` nem `packages/api-client-vendedor` (diff vazio).
+
+**O que entrou**
+
+- **Ponte** (`shared/acertos.ts`, `shared/validacao-acertos.ts`, `main/api.ts`): `acertos.listar/iniciar/ver/ler/desistir/previa/previaComDecisoes/fechar`, `pendencias.listar/resolver` e `comissao.ler/alterar`, cada uma na rota que já existia. A ponte só repassa chaves conhecidas (total, comissão e percentual no pedido são recusados), só aceita Dinheiro e Transferência (PIX) como forma de pagamento (cheque, cartão e entrada não existem), parcelas de 1 a 24, datas AAAA-MM-DD, valores em texto com ponto, motivo obrigatório e um UUID por comando.
+- **Menu** "Acerto" com **Acertos**, **Pendências** e **Comissão e meta**; o botão **Fazer acerto** da tela inicial deixou de ser "em breve" (o teste do "Em breve" passou a usar **Cadastrar produto**).
+- **Acertos:** lista com filtro de vendedor e situação (Em acerto, Acertado, Desistido); **Começar acerto** (id e semana opcional; aviso quando o vendedor não tem maleta com ele); **Contagem** com o leitor da maleta (Peça boa ou Com defeito, quantidade, **Desfazer leitura**, avisos de venda nova e de envios aguardando, últimas leituras com quem leu e de qual computador); **Desistir do acerto** com motivo.
+- **Conferência do acerto** (prévia): peças com foto, sobra e revisão que impedem fechar (com o que fazer), faltas (Cobrar agora, Cobrar depois, A loja assume com motivo), defeitos a aprovar, o que não foi aceito, pendências antigas, comissão por venda, meta com a soma em Guarani e o percentual, totais e a frase da cotação. Os números são sempre os da última prévia do servidor; enquanto a nova não chega aparece "Calculando..." e **Fechar acerto** fica desligado; só vale a resposta da última chamada.
+- **Pagamento:** Dinheiro, Transferência (PIX), Boleto (valor e vencimento), o que ficou devendo (parcelas e data da primeira), contas antigas do vendedor pagas junto e o acerto a favor do vendedor (crédito ou pagar agora). Cada recebimento leva um UUID próprio.
+- **Fechar acerto:** pergunta com o resumo; manda o id do fechamento, as decisões, o pagamento e o `liquidoMostrado` (o líquido da última prévia, só para o servidor conferir). O id vale até uma decisão ou um valor mudar. 201 ou 200 mostram a ficha; sem internet diz "O acerto não foi fechado" e reenvia o mesmo id; 409 "números mudaram" (e sobra ou revisão que apareceu) volta à prévia nova com outro id; erros de pagamento, data e semana fechada com o que fazer.
+- **Ficha do acerto fechado** (só leitura): peças, pendências com a decisão, comissão com o percentual gravado e a soma da meta, totais, recebimentos (o desfeito marcado), contas geradas, Dólar e Guarani **pela cotação gravada no acerto** (nunca a do dia); **Imprimir acerto** gera o PDF (A4 em pé, mesmo gerador à mão da nota) com os mesmos textos e valores, inclusive o percentual e a soma em Guarani da meta.
+- **Pendências:** só "Em aberto" tem **Resolver** (A loja assume ou A peça apareceu, esta só para falta), com motivo e UUID do comando. **Comissão e meta:** grava a meta em Guarani e os dois percentuais, recusando antes de mandar o que o servidor também recusa.
+- **Documentos:** glossário (parte 16).
+
+**Decisões do plano (as 8 confirmadas) e o que mais chama atenção**
+
+- A tela **nunca calcula dinheiro**: não soma, não multiplica, não arredonda, não converte para decidir nada. As únicas contas na tela são formatar, comparar duas coisas que a API mandou (soma da meta contra a meta, para dizer "Bateu a meta", igual à regra do servidor) e olhar o sinal de um valor (para mostrar "A loja deve ... ao vendedor"). Por isso a tela **não mostra "quanto faltou para a meta"**: a prévia do acerto não devolve esse número e a tela não o subtrai (a rota do vendedor devolve, e a 7.11 mostra).
+- A prévia é um mapa sem tipo no OpenAPI: o leitor em `previa.ts` confere a forma; campo que falta ou valor que não é dinheiro vira "Não deu para ler o acerto. Tente de novo.", nunca número inventado.
+- As decisões nascem da prévia sem decisões e cobrem exatamente o que o servidor exige ao fechar (toda peça com falta, todo defeito contado, todo valor não aceito); falta de motivo em "A loja assume" não vai ao servidor e desliga **Fechar acerto**. Texto digitado espera 0,4 s antes de pedir a prévia nova.
+- A cotação da prévia (que só traz a data) usa a cotação do dia quando a data é a mesma; senão só Real, com o aviso "Sem cotação".
+
+**Testes** (Corona Gestão, 769 no total): `validacao-acertos.test.ts` (10), `api.test.ts` (rota de cada operação e corpo do fechar), `acertos.test.tsx` (19: menu, lista, começar, contagem, desistir), `previa.test.tsx` (16), `fechamento.test.tsx` (21: quando dá para fechar, pagamento, idempotência, 409 e erros), `ficha.test.tsx` (9), `pdf-acerto.test.ts` (3), `pendencias.test.tsx` (8), `comissao.test.tsx` (6), `textos-acertos.test.ts` (2: sem termo técnico nem palavra do bloco proibido, "PIX" só como "Transferência (PIX)").
+
+**Resultado final:** `npm run lint`, `npm run typecheck` e `npm run format:check` limpos; `npm run owner:build` passa; testes do Corona Gestão: 769 passam em 56 arquivos (o teste de colar foto de `produtos.test.tsx` é lento e às vezes passa de 1 s quando a máquina está cheia, sem relação com esta tarefa; passa sozinho e com `--maxWorkers=4`). `npm run api:test` e `barreira:varrer` não foram necessários (nenhum arquivo do backend nem do Corona Vendas mudou).
+
+**Não fiz**
+
+- As telas de caixa, contas a pagar e a receber e recebimento avulso (7.10), a tirada do campo "Comissão (%)" do cadastro do vendedor (7.10), as telas do vendedor (7.11) e os relatórios financeiros (7.12), nem Excel e CSV do acerto.
+- "Quanto falta para a meta" na conferência (a API da dona não devolve; ver acima). Sugestão: a prévia pode devolver `faltaParaMetaGuarani`, como a do vendedor já faz.
+- Tipar a prévia no OpenAPI (hoje é um mapa sem tipo; fica a sugestão).
