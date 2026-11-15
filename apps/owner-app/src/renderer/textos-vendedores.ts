@@ -69,8 +69,6 @@ export const TEXTOS_DE_VENDEDORES = {
   semPraca: 'Nenhuma praça',
   semRestricao: 'Nenhuma restrição',
   opcaoAntiga: 'Opção já escolhida antes',
-  comissaoInvalida: 'A comissão deve ficar entre 0 e 100.',
-  comissaoAjuda: 'De 0 a 100. Por exemplo: 12,5.',
   limiteAjuda:
     'O valor máximo, em reais, das peças que o vendedor pode ter em mãos (pelo preço de venda). Preencha o valor ou marque "Sem limite".',
   limiteObrigatorio: 'Informe o limite em reais ou marque "Sem limite".',
@@ -94,7 +92,6 @@ export const TEXTOS_DE_VENDEDORES = {
     limiteConsignacao: 'Limite de consignação',
     semLimite: 'Sem limite',
     restricaoId: 'Restrição',
-    comissaoPercentual: 'Comissão (%)',
     logradouro: 'Rua',
     numero: 'Número',
     complemento: 'Complemento',

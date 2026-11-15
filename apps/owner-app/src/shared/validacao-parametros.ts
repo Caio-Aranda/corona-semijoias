@@ -39,7 +39,6 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const DECIMAL = /^-?\d{1,14}(\.\d{1,2})?$/;
 const DATA = /^\d{4}-\d{2}-\d{2}$/;
 const DINHEIRO = /^\d{1,12}(\.\d{1,2})?$/;
-const PERCENTUAL = /^\d{1,3}(\.\d{1,2})?$/;
 const PERFIS = ['ADMIN', 'VENDEDOR'];
 /** Tamanho máximo dos textos; o servidor confere de novo o que é regra de negócio. */
 const MAX_TEXTO = 200;
@@ -164,8 +163,6 @@ function valorDoCampo(campo: CampoDaApi, v: unknown): unknown {
       return v === 'ABERTA' || v === 'FECHADA' ? v : undefined;
     case 'dinheiro':
       return ehTexto(v) && DINHEIRO.test(v) ? v : undefined;
-    case 'percentual':
-      return ehTexto(v) && PERCENTUAL.test(v) && Number(v) <= 100 ? v : undefined;
     case 'sexo':
       return v === 'FEMININO' || v === 'MASCULINO' || v === 'OUTRO' ? v : undefined;
   }

@@ -143,7 +143,6 @@ export const RELATORIOS: Record<NomeDoRelatorio, DefinicaoDeRelatorio> = {
       { chave: 'restricao', titulo: 'Restrição', tipo: 'texto' },
       { chave: 'bloqueiaRemessa', titulo: 'Impede montar maleta', tipo: 'simNao' },
       { chave: 'limiteConsignacao', titulo: 'Limite de consignação', tipo: 'dinheiro' },
-      { chave: 'comissaoPercentual', titulo: 'Comissão (%)', tipo: 'percentual' },
       { chave: 'ativo', titulo: 'Situação', tipo: 'simNao' },
     ],
     totaisDeValor: { limite: 'limiteConsignacao' },

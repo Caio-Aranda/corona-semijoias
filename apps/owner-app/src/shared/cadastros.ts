@@ -50,8 +50,6 @@ export type TipoDeCampoDaApi =
   | 'situacao'
   /** Dinheiro em reais como texto com ponto ("1500.00"), nunca negativo. */
   | 'dinheiro'
-  /** Porcentagem de 0 a 100 como texto com ponto ("12.50"). */
-  | 'percentual'
   | 'sexo';
 
 export interface CampoDaApi {

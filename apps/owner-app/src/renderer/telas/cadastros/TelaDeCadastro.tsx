@@ -13,10 +13,16 @@ import type { PonteDoCorona } from '../../../shared/ponte';
 import { AvisoDeErro } from '../../componentes/AvisoDeErro';
 import { chamar, useBusca, type ErroDaTela } from '../../nucleo/chamadas';
 import { TEXTOS } from '../../textos';
+import { TEXTOS_DE_FINANCEIRO } from '../../textos-financeiro';
+import { FecharSemana } from '../financeiro/FecharSemana';
 import { DEFINICOES, lerPagina, type Registro } from './definicoes';
 import { FormularioDeCadastro } from './FormularioDeCadastro';
 
 const TAMANHO = 20;
+const TF = TEXTOS_DE_FINANCEIRO.semana;
+
+const numeroDaSemana = (r: Registro): string =>
+  typeof r.numero === 'number' ? String(r.numero) : '';
 
 type SituacaoDaLista = 'ATIVOS' | 'INATIVOS' | 'TODOS';
 
@@ -40,6 +46,7 @@ export function TelaDeCadastro({ ponte, cadastro }: TelaDeCadastroProps) {
   const [pagina, setPagina] = useState(0);
   const [excluindo, setExcluindo] = useState<Registro | null>(null);
   const [inativando, setInativando] = useState<Registro | null>(null);
+  const [fechando, setFechando] = useState<Registro | null>(null);
   const [situacao, setSituacao] = useState<SituacaoDaLista>('ATIVOS');
   const temAtivo = TEM_ATIVO[cadastro];
   const S = TEXTOS.cadastros.situacao;
@@ -137,6 +144,17 @@ export function TelaDeCadastro({ ponte, cadastro }: TelaDeCadastroProps) {
     acoes: (
       <span className="gestao-acoes-da-linha">
         <Botao onClick={() => setModo({ tela: 'formulario', registro: r })}>{T.editar}</Botao>
+        {cadastro === 'semanas' && r.situacao === 'ABERTA' ? (
+          <Botao
+            aria-label={TF.fecharDe(numeroDaSemana(r))}
+            onClick={() => {
+              setFeito(null);
+              setFechando(r);
+            }}
+          >
+            {TF.fechar}
+          </Botao>
+        ) : null}
         {temAtivo && r.ativo === false ? (
           <Botao
             onClick={() => {
@@ -270,6 +288,21 @@ export function TelaDeCadastro({ ponte, cadastro }: TelaDeCadastroProps) {
           />
         ) : null}
       </EstadoDaLista>
+
+      {fechando ? (
+        <FecharSemana
+          key={fechando.id}
+          ponte={ponte}
+          semanaId={fechando.id}
+          numero={numeroDaSemana(fechando)}
+          aoCancelar={() => setFechando(null)}
+          aoFeito={(jaEstavaFechada) => {
+            setFechando(null);
+            setFeito(jaEstavaFechada ? TF.dialogo.jaFechada : TF.dialogo.feito);
+            lista.recarregar();
+          }}
+        />
+      ) : null}
 
       {inativando ? (
         <JanelaDeConfirmacao

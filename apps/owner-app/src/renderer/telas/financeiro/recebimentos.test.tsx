@@ -189,12 +189,8 @@ describe('Recebimentos do vendedor', () => {
     await u.click(screen.getByRole('button', { name: 'Registrar recebimento' }));
     await waitFor(() => expect(chamadasDe(m, 'recebimentos.receber')).toHaveLength(1));
     const p = ultima(m, 'recebimentos.receber');
-    expect(p).toEqual({
-      id: expect.any(String),
-      vendedorId: ID_VENDEDOR,
-      forma: 'PIX',
-      valor: '1250.50',
-    });
+    expect(p).toMatchObject({ vendedorId: ID_VENDEDOR, forma: 'PIX', valor: '1250.50' });
+    expect(Object.keys(p ?? {}).sort()).toEqual(['forma', 'id', 'valor', 'vendedorId']);
     expect(ehUuid(p?.id)).toBe(true);
     expect(await screen.findByText('Recebimento registrado.')).toBeInTheDocument();
   });

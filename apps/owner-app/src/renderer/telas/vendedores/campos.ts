@@ -23,7 +23,6 @@ const AJUSTES: Record<string, Partial<CampoDaFicha>> = {
     mensagemObrigatorio: T.limiteObrigatorio,
     desabilitaSe: 'semLimite',
   },
-  comissaoPercentual: { ajuda: T.comissaoAjuda },
 };
 
 function comAjustes(campos: readonly CampoDaFicha[]): CampoDaFicha[] {
@@ -51,7 +50,6 @@ const ORDEM_DO_CADASTRO = [
   'limiteConsignacao',
   'semLimite',
   'restricaoId',
-  'comissaoPercentual',
 ];
 
 export const CAMPOS_DO_CADASTRO: CampoDaFicha[] = comAjustes(daApi(CAMPOS_DO_VENDEDOR)).sort(

@@ -25,6 +25,10 @@ export const TEXTOS_DE_FINANCEIRO = {
   erros: {
     // Códigos da API que merecem uma frase com o que fazer (os outros mostram a mensagem do servidor).
     DATA_EM_SEMANA_FECHADA: 'Essa semana já foi fechada. Use a data de hoje.',
+    SEMANA_NAO_TERMINOU:
+      'Esta semana ainda não terminou. Feche a semana depois do último dia dela.',
+    SEMANA_COM_ACERTO_EM_ANDAMENTO:
+      'Há acerto em andamento nesta semana. Termine ou desista do acerto antes de fechar a semana.',
   } as Record<string, string>,
 
   caixa: {
@@ -334,11 +338,5 @@ export const TEXTOS_DE_FINANCEIRO = {
       feito: 'Semana fechada.',
       jaFechada: 'Esta semana já estava fechada.',
     },
-    erros: {
-      SEMANA_NAO_TERMINOU:
-        'Esta semana ainda não terminou. Feche a semana depois do último dia dela.',
-      SEMANA_COM_ACERTO_EM_ANDAMENTO:
-        'Há acerto em andamento nesta semana. Termine ou desista do acerto antes de fechar a semana.',
-    } as Record<string, string>,
   },
 } as const;
