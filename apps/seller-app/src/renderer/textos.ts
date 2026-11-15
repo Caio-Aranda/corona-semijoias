@@ -699,5 +699,36 @@ export const TEXTOS = {
     pagouConta: 'Pagou uma conta antiga',
     estornadoNoAcerto: 'Estornado',
     contasTitulo: 'Contas que ficaram deste acerto',
+    // --- pedir o acerto e contar as sobras (tarefa 8.10; só com internet) ---
+    pedirTitulo: 'Pedir o acerto',
+    pedirAjuda:
+      'Quando você pede o acerto, as suas maletas ficam em acerto e você não vende mais até a dona fechar. É preciso internet.',
+    pedir: 'Pedir acerto',
+    pedirJanelaTitulo: 'Pedir o acerto?',
+    pedirJanelaTexto:
+      'As suas maletas passam a ficar em acerto e você não poderá vender até a dona fechar o acerto. Quem fecha é a dona.',
+    pedirConfirmar: 'Sim, pedir o acerto',
+    pedirSemInternet: 'Para pedir o acerto é preciso internet. Conecte-se e tente de novo.',
+    acertoEmAndamentoTitulo: 'Seu acerto está em andamento',
+    contar: 'Contar as sobras',
+    contarTitulo: 'Contar as sobras',
+    contarAjuda:
+      'Leia o código de cada peça que sobrou na maleta. Escolha se a peça está boa ou com defeito antes de ler. A dona fecha o acerto.',
+    contarSemInternet:
+      'Para contar as sobras é preciso internet. Conecte-se e leia o código de novo.',
+    campoCodigo: 'Ler o código da peça',
+    lerAgora: 'Ler o código',
+    estadoDaPeca: 'Estado da peça',
+    estados: { BOA: 'Boa', DEFEITO: 'Com defeito' } as Record<string, string>,
+    lida: (nome: string, n: number) => `${nome}: ${n} contada(s).`,
+    desfeita: (nome: string) => `Uma leitura de ${nome} foi desfeita.`,
+    contagemLegenda: 'Peças contadas',
+    contagemColunas: { peca: 'Peça', estado: 'Estado', contadas: 'Contadas', acao: 'Se errou' },
+    desfazer: 'Desfazer uma',
+    desfazerDe: (nome: string) => `Desfazer uma leitura de ${nome}`,
+    nenhumaLida: 'Você ainda não leu nenhuma peça.',
+    pecaDeFora: 'Esta peça não consta nas suas maletas em acerto.',
+    encerrado: 'Este acerto não está mais em andamento. A dona cuida do resto.',
+    contagemDaSemana: (n: number) => `Contagem do acerto da semana ${n}`,
   },
 } as const;

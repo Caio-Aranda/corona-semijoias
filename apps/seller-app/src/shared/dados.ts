@@ -528,6 +528,20 @@ export interface FichaDoAcerto extends ResumoDoAcerto {
   fechamento: FechamentoDoAcerto | null;
 }
 
+/** O acerto como o servidor o vê agora (tarefa 8.10; só com internet): as maletas e a contagem por peça e estado. */
+export interface FichaDoAcertoAgora {
+  id: string;
+  semanaNumero: number;
+  status: SituacaoDoAcerto;
+  pedidoPeloVendedor: boolean;
+  maletas: { id: string; numero: string; tipo: string; status: string }[];
+  contagem: {
+    produto: { id: string; nome: string; codigo: string | null; fotoHash: string | null };
+    estadoPeca: 'BOA' | 'DEFEITO';
+    quantidade: number;
+  }[];
+}
+
 /** A prévia da comissão da semana: o que o servidor calcula (precisa de internet). Nada é gravado. */
 export interface PreviaDaComissao {
   vendidoParaMetaGuarani: number;
