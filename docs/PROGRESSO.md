@@ -217,6 +217,14 @@ Acerto semanal e financeiro. O modelo está no [ADR-0012](decisoes/ADR-0012-acer
 | 7.13 | docs: fechamento da Fase 7: teste de ponta a ponta do ciclo (venda a prazo, recebimento, devolução, acerto com meta de 700.000 Gs, pagamento, caixa, conta a pagar, semana fechada e as nove conciliações, `CicloDaFase7Test`), roteiro do teste de uso da dona e do vendedor, especificação v1.23, resumo final, o que fica para a Fase 8, dúvidas em aberto e diferenças entre a especificação e o feito (o vendedor ainda não pede o acerto nem bipa sobras pelo Corona Vendas). Sem mudança de regra, sem migração | PR 174 · [detalhe](progresso/fase-7.md#tarefa-713-fechamento-da-fase-7) · [roteiro](roteiro-teste-fase-7.md) |
 | 6.6 | feat: devolução e troca de venda a prazo (abate as parcelas, depois crédito e dinheiro; cancelar desfaz; troca com A a prazo; Corona Vendas migração local 5 e Corona Gestão); migração V042, especificação v1.17 | PR 164 · [detalhe](progresso/fase-6.md#tarefa-66-devolução-e-troca-de-venda-a-prazo) |
 
+## Fase 8 (plano em aprovação)
+
+Painel, relatórios avançados e conciliações. As decisões novas estão no [ADR-0015](decisoes/ADR-0015-numeros-gerenciais-e-conferencia-diaria.md) (**Proposto**; até o responsável decidir, valem os padrões seguros dele); as tarefas, no [plano da Fase 8](progresso/fase-8-plano.md). Nenhuma pergunta nova para a dona.
+
+| Nº | Tarefa | Situação |
+| --- | --- | --- |
+| 8.1 | docs: plano da Fase 8 (tarefas 8.2 a 8.13: arrumação dos testes, conciliações C11 e C12, conferência diária com aviso e histórico, relatórios de vendas e curva ABC, DRE e lucro, painel semanal, controle, pedir o acerto e bipar sobras no Corona Vendas só com internet, prévia tipada, Playwright da dona, fechamento) e ADR-0015 Proposto (custo da peça vendida, DRE, curva ABC, painel, conferência diária). Sem código, sem mudança de regra | PR 175 · [plano](progresso/fase-8-plano.md) |
+
 ## Auditoria geral (check-up) de 11/11/2026
 
 Revisão do que foi feito nas Fases 0 a 4 e na Fase 9 mínima, antes da Fase 5: [relatório](auditoria/2026-11-11-checkup.md) (PR 75). Três achados altos, cada um com PR próprio e teste que falha antes: ordem das travas do estoque (PR 76), segunda trava do saldo da maleta no banco (PR 77) e Dólar e Guarani pela cotação do dia de cada lançamento no Corona Vendas (PR 78). Médios e baixos ficam no relatório como tarefas.
