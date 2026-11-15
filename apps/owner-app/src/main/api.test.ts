@@ -329,6 +329,9 @@ describe('API do Corona Gestão: rotas certas no cliente gerado', () => {
       );
     }
     expect(await caminhoDe({ operacao: 'avisos.listar' })).toBe('GET /api/dona/avisos');
+    expect(await caminhoDe({ operacao: 'conciliacoes.conferir' })).toBe(
+      'GET /api/dona/conciliacoes',
+    );
     expect(await caminhoDe({ operacao: 'usuarios.listar', lista } as never)).toBe(
       'GET /api/dona/usuarios',
     );

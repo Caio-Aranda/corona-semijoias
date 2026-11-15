@@ -267,17 +267,10 @@ public class ServicoDeEstoque {
     }
 
     /**
-     * Central + saldo das maletas (ENVIADA em diante, que é o que está com o vendedor) = tudo o que entrou e saiu do estoque
-     * fora da maleta, menos o que foi vendido (venda líquida de estorno, Fase 4; ADR-0010, item 12). Os movimentos da maleta
-     * (REMESSA, DEVOLUCAO e os estornos deles) não entram no lado direito: eles só trocam peça de lugar entre o central e as
-     * maletas. A venda é a única saída definitiva da maleta; a devolução do cliente que volta à maleta (DEVOLUCAO_CLIENTE,
-     * tarefa 6.3, e o estorno dela) desfaz parte da venda; na troca (tarefa 6.5), TROCA_SAIDA conta como venda e
-     * TROCA_ENTRADA como devolução (e os estornos delas). A "peça para a loja" continua contada como vendida até o acerto
-     * recebê-la (Fase 7; dúvida Q5): no fechamento ela entra no central com origem ACERTO, que conta do lado direito. A falta do
-     * acerto (PERDA na maleta) e a avaria do defeito aprovado (origem ACERTO) saem do sistema como uma venda (tarefa 7.5). Num único SELECT, para olhar um retrato só do banco.
+     * A consulta única de "estoque da loja + maletas" (a mesma da conciliação C7 da Fase 7: uma fórmula só). Colunas: id, nome,
+     * foto_principal_hash, estoque_atual, nas_maletas e esperado.
      */
-    private List<DiferencaComMaletas> diferencasComMaletas() {
-        return jdbc.query("""
+    public static final String SQL_DIFERENCAS_COM_MALETAS = """
                 SELECT p.id, p.nome, p.foto_principal_hash, p.estoque_atual,
                        coalesce(maletas.saldo, 0) AS nas_maletas,
                        coalesce(fora.soma, 0) + coalesce(vendidas.soma, 0) AS esperado
@@ -300,7 +293,20 @@ public class ServicoDeEstoque {
                               WHERE mv.tipo IN ('VENDA', 'ESTORNO_VENDA', 'DEVOLUCAO_CLIENTE', 'TROCA_SAIDA', 'TROCA_ENTRADA', 'PERDA')
                               GROUP BY mv.produto_id) vendidas ON vendidas.produto_id = p.id
                  WHERE p.estoque_atual + coalesce(maletas.saldo, 0) <> coalesce(fora.soma, 0) + coalesce(vendidas.soma, 0)
-                 ORDER BY p.nome, p.id""",
+                 ORDER BY p.nome, p.id""";
+
+    /**
+     * Central + saldo das maletas (ENVIADA em diante, que é o que está com o vendedor) = tudo o que entrou e saiu do estoque
+     * fora da maleta, menos o que foi vendido (venda líquida de estorno, Fase 4; ADR-0010, item 12). Os movimentos da maleta
+     * (REMESSA, DEVOLUCAO e os estornos deles) não entram no lado direito: eles só trocam peça de lugar entre o central e as
+     * maletas. A venda é a única saída definitiva da maleta; a devolução do cliente que volta à maleta (DEVOLUCAO_CLIENTE,
+     * tarefa 6.3, e o estorno dela) desfaz parte da venda; na troca (tarefa 6.5), TROCA_SAIDA conta como venda e
+     * TROCA_ENTRADA como devolução (e os estornos delas). A "peça para a loja" continua contada como vendida até o acerto
+     * recebê-la (Fase 7; dúvida Q5): no fechamento ela entra no central com origem ACERTO, que conta do lado direito. A falta do
+     * acerto (PERDA na maleta) e a avaria do defeito aprovado (origem ACERTO) saem do sistema como uma venda (tarefa 7.5). Num único SELECT, para olhar um retrato só do banco.
+     */
+    private List<DiferencaComMaletas> diferencasComMaletas() {
+        return jdbc.query(SQL_DIFERENCAS_COM_MALETAS,
                 (rs, i) -> new DiferencaComMaletas(rs.getObject("id", UUID.class), rs.getString("nome"),
                         rs.getString("foto_principal_hash"), rs.getInt("estoque_atual"), rs.getLong("nas_maletas"),
                         rs.getLong("esperado")));

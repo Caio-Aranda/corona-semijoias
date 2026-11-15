@@ -200,6 +200,20 @@ export type ComprasDaDonaControllerRespostaDoResumo = {
     total?: string;
 };
 
+export type ConciliacoesDaFase7Conferencia = {
+    chave?: string;
+    conferidos?: number;
+    divergencias?: Array<Diferenca>;
+    explicacao?: string;
+    titulo?: string;
+};
+
+export type ConciliacoesDaFase7Resultado = {
+    conferencias?: Array<ConciliacoesDaFase7Conferencia>;
+    geradaEm?: string;
+    tudoCerto?: boolean;
+};
+
 export type ConferenciasDeDevolucaoETrocaConferencia = {
     chave?: string;
     conferidos?: number;
@@ -616,6 +630,15 @@ export type Devolucao = {
 
 export type DevolucoesDaDonaControllerPedidoDeRevisao = {
     observacao?: string;
+};
+
+export type Diferenca = {
+    descricao?: string;
+    encontrado?: string;
+    esperado?: string;
+    referencia?: string;
+    tipo?: string;
+    unidade?: 'REAIS' | 'PECAS' | 'REGISTROS' | 'PERCENTUAL';
 };
 
 export type DocumentoDoVendedorResposta = {
@@ -3743,6 +3766,24 @@ export type Desfazer1Responses = {
 };
 
 export type Desfazer1Response = Desfazer1Responses[keyof Desfazer1Responses];
+
+export type ConferirODinheiroDaFase7Data = {
+    body?: never;
+    path?: never;
+    query?: {
+        chave?: string;
+    };
+    url: '/api/dona/conciliacoes';
+};
+
+export type ConferirODinheiroDaFase7Responses = {
+    /**
+     * OK
+     */
+    200: ConciliacoesDaFase7Resultado;
+};
+
+export type ConferirODinheiroDaFase7Response = ConferirODinheiroDaFase7Responses[keyof ConferirODinheiroDaFase7Responses];
 
 export type LerComissaoData = {
     body?: never;

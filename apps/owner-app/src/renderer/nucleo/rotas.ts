@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { TEXTOS } from '../textos';
 import { TEXTOS_DE_COMPRAS } from '../textos-compras';
+import { TEXTOS_DE_CONCILIACOES } from '../textos-conciliacoes';
 import { TEXTOS_DE_DEVOLUCOES } from '../textos-devolucoes';
 import { TEXTOS_DE_ESTOQUE } from '../textos-estoque';
 import { TEXTOS_DE_MALETAS } from '../textos-maletas';
@@ -77,6 +78,7 @@ export const ROTAS = [
   'relatorios/devolucao-reembolsos',
   'relatorios/devolucao-autorizacoes',
   'relatorios/devolucao-conferencia',
+  'conciliacoes/dinheiro',
 ] as const;
 export type Rota = (typeof ROTAS)[number];
 
@@ -179,6 +181,10 @@ export const MENU = [
         rotulo: TEXTOS_DE_RELATORIOS_DE_DEVOLUCAO.conferencia.menu,
       },
     ],
+  },
+  {
+    titulo: TEXTOS_DE_CONCILIACOES.grupoDoMenu,
+    itens: [{ chave: 'conciliacoes/dinheiro', rotulo: TEXTOS_DE_CONCILIACOES.menu }],
   },
 ];
 

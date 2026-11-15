@@ -235,3 +235,36 @@ Issue #151, PR 168 (tarefa crítica: plano aprovado no PR, as decisões 1 a 11 c
 
 - As telas de contas a pagar, caixa e o botão Fechar semana (7.10); as conciliações com rota (7.8); os relatórios (7.12).
 - Refazer o parcelamento de uma compra (hoje só desfazendo a compra), cheque, cartão, entrada, multa e juros (fora do escopo).
+
+## Tarefa 7.8: conciliações da Fase 7
+
+Issue #152, PR 169 (tarefa crítica: plano aprovado no PR, decisões 1 a 8 confirmadas pela orquestradora, com o ajuste "em cada conciliação, um teste que estraga o dado e prova que a diferença aparece"). As nove conciliações do ADR-0012, item 17 (C1 a C10, sem a C6, que fica vaga), viram código de produção, com rota da dona e tela no Corona Gestão. Só leitura; o Corona Vendas não foi tocado.
+
+**O que entrou**
+
+- **`ConciliacoesDaFase7`** (pacote `api/conciliacoes`): uma consulta SQL por conciliação, todas num retrato só do banco (`@Transactional(readOnly = true, isolation = REPEATABLE_READ)`), em Real com os valores gravados. Cada conferência devolve quantos registros olhou e as diferenças (tipo e id do registro, descrição em português simples, esperado, encontrado e unidade: reais, peças, registros ou porcentagem). A única conta de dinheiro em Java é a da C3, só por `Dinheiro.aplicarPorcentagem`. Nunca corrige nada.
+- **Rota** `GET /api/dona/conciliacoes` (só ADMIN; `?chave=C4` devolve uma; chave desconhecida, inclusive a C6, dá 400 com o campo `chave`). Não há rota de conciliação para o vendedor.
+- **Tela** "Conferência do dinheiro" no Corona Gestão (grupo "Conferência" do menu): as nove, cada uma com "Conferidos: N" e "Tudo certo" ou a lista do que não bate com "Devia ser ...; está ...", em Real e peças em número; sem botão de corrigir; texto fixo "O que aparece aqui é erro do sistema, não da loja. Não corrija nada à mão: avise o suporte.".
+- **`ServicoDeEstoque.SQL_DIFERENCAS_COM_MALETAS`:** a consulta de "estoque da loja + maletas" virou constante pública (sem mudar o comportamento), e a C7 usa a mesma.
+- **Testes antigos:** `ConciliacaoDasContasTest`, `ConciliacaoDoAcertoTest`, `ConciliacaoDoDinheiroDoVendedorTest` e os apoios de contas e de trocas deixaram de copiar SQL e chamam a consulta de produção (`ConciliacoesNosTestes`).
+- **Clientes da API:** `npm run api:clientes` regerou só o cliente da dona; o diff de `packages/api-client-vendedor` ficou **vazio**. Sem migração.
+- **Documentos:** especificação v1.22 (§13), ADR-0012 ("Como ficou" no item 17), glossário.
+
+**Decisões que tomei (as do plano aprovado; o que mais chama atenção)**
+
+- A C1 vale para toda venda concluída, não só a prazo; a linha "no total" não existe (se cada venda bate, a soma bate, e o total não teria referência para filtrar).
+- A C4 confere cada lançamento do caixa (recebimento, pagamento a fornecedor, pagamento ao vendedor, origem existente e sinal). O saldo do caixa é sempre a soma dos lançamentos, sem atalho gravado, então "saldo = soma" vale por construção e não virou linha.
+- A C5 aceita `PARCIAL` também para a parcela abatida por devolução (V042): o teste das devoluções de venda a prazo achou isso na primeira rodada.
+- A C9 cobra o estorno de venda e a devolução só quando aconteceram antes do último acerto fechado do vendedor (depois dele, o evento entra no acerto seguinte, e não é erro). A devolução usa `updated_at`, para a devolução que saiu de "em revisão" depois do acerto não acusar.
+- A C7 conta "guardado = soma dos lançamentos" mais a consulta de estoque com maletas; a peça com defeito separada já está coberta pela avaria do acerto (origem `ACERTO`), sem regra nova.
+- O estrago nos testes roda a mesma classe sobre a conexão do dono das tabelas (gatilhos de usuário desligados, transação desfeita), então nada estragado chega a ser gravado.
+
+**Testes** (PostgreSQL do Testcontainers): `ConciliacoesDaFase7Test` (28: a massa completa zerada pela rota e uma a uma, e **um teste que estraga o dado de propósito em cada conciliação**: C1 pagamento sem baixa e venda desfeita com parcela; C2 falta a mais, recebimento com outro valor, conta do restante apagada; C3 comissão apagada, percentual e valor da linha trocados; C4 lançamento apagado, em dobro, sem origem, pagamento a fornecedor sem saída, saída com valor positivo e pagamento ao vendedor sem saída; C5 valor pago sem baixa nas contas a receber e a pagar e situação "paga" com saldo; C7 estoque a mais, movimento apagado e peça a mais na maleta; C8 perda apagada; C9 evento de venda, de estorno e de devolução apagados e o mesmo evento em dois acertos; C10 parcela com um centavo a mais), `SoLeituraDasConciliacoesTest` (3: nenhuma tabela muda, métodos só de leitura com retrato único, a classe não tem texto que escreve), `PermissoesDasConciliacoesTest` (4); Corona Gestão: tela com tudo certo, com diferenças, sem conexão, com erro da API, conferir de novo, ponte e validação.
+
+**Resultado final:** `npm run api:test` passa (1598 testes, nenhuma falha; na primeira rodada um teste de renovação de token falhou por janela de tempo, passou sozinho e na rodada seguinte, e não tem relação com a tarefa); Corona Gestão 673 testes em 47 arquivos; Corona Vendas 637 testes (1 ignorado, como antes), sem mudança de código nele (por isso o `barreira:varrer` não foi necessário e o diff de `packages/api-client-vendedor` ficou vazio); `npm run test:duas-pontas -w @corona/testes-sync` passa (26 testes em 7 arquivos); `npm run lint`, `npm run typecheck` e `npm run format:check` limpos.
+
+**Não fiz**
+
+- A rodada diária com aviso em "O que precisa da sua atenção" (Fase 8), o cheque (a C6 continua vaga), a entrada, o botão de corrigir (não existe de propósito) e os relatórios (7.12).
+- Guardar o resultado de cada rodada (Fase 8): por isso não há migração.
+

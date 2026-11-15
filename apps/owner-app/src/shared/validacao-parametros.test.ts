@@ -96,6 +96,10 @@ describe('conferência dos dados de cada operação', () => {
   it('consultas sem dados aceitam só objeto (ou nada)', () => {
     expect(conferirParametros('avisos.listar', undefined)).toEqual({ operacao: 'avisos.listar' });
     expect(conferirParametros('cotacao.hoje', {})).toEqual({ operacao: 'cotacao.hoje' });
+    expect(conferirParametros('conciliacoes.conferir', undefined)).toEqual({
+      operacao: 'conciliacoes.conferir',
+    });
+    expect(conferirParametros('conciliacoes.conferir', 'texto')).toBeNull();
     expect(conferirParametros('vendedores.escolha', 'texto')).toBeNull();
     expect(conferirParametros('vendedores.escolha', [])).toBeNull();
   });

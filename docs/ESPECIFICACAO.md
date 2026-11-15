@@ -1,6 +1,6 @@
 # Especificação completa: Sistema de Semijoias Consignadas
 
-Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.21, 14/11/2026.
+Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.22, 14/11/2026.
 
 ## 1. Objetivo e contexto
 
@@ -485,6 +485,8 @@ Como o app é offline, o relatório sai do banco local com o aviso: **Dados até
    - total do acerto = vendas − descontos − reembolsos − comissão;
    - **devolução e troca** (tarefa 6.10; rota `GET /api/dona/relatorios/devolucoes/conferencia`, só leitura, num retrato só do banco, deve vir sempre vazia): (1) o movimento da maleta de cada devolução e troca bate com as peças que deviam voltar a ela (e o estorno dele, se cancelada) e a conta do estoque da loja mais as maletas fecha com devolução, troca e os estornos; (2) por linha vendida, o devolvido (peças e valor) nunca passa do vendido; (3) por crédito, o usado é a soma dos usos e nunca passa do valor (créditos − usos = em aberto); (4) por venda, o dinheiro devolvido não passa do pago, salvo devolução que a dona já foi avisada para revisar; (5) por venda concluída, o recebido líquido (pagamentos menos reembolsos, inclusive em crédito) fica entre zero e o total menos o devolvido.
 
+   - **conferência do dinheiro da Fase 7** (tarefa 7.8; rota `GET /api/dona/conciliacoes`, só ADMIN, só leitura, num retrato só do banco e com uma fórmula só; `?chave=C4` devolve uma; chave desconhecida, inclusive a C6 que está vaga, dá 400): são **nove**, C1 a C10 sem a C6. **C1** vendas: total menos devolvido é igual ao pago líquido (inclusive em crédito) mais o em aberto das parcelas, e venda desfeita não tem parcela em aberto; **C2** acerto: o líquido fecha com vendido, descontos, devolvido, comissão e faltas, o vendido é a soma dos eventos, e recebido, devendo e pago ao vendedor conferem com recebimentos, contas e caixa; **C3** comissão: a soma por vendedor é a dos acertos, cada linha é `Dinheiro.aplicarPorcentagem(base, percentual)` com o percentual do acerto, e estorno nunca passa da comissão; **C4** caixa: cada recebimento do vendedor, cada pagamento a fornecedor e cada pagamento ao vendedor tem exatamente um lançamento do mesmo valor, nenhum lançamento automático sem origem, e o sinal combina com entrada ou saída; **C5** contas (cliente, vendedor e fornecedor): pago e cancelado são a soma das baixas, nunca passam do valor, e a situação combina; **C7** estoque: o guardado é a soma dos lançamentos e a loja mais as maletas abertas fecha; **C8** maleta acertada com saldo zero e falta com a perda da mesma quantidade; **C9** cada venda, estorno e devolução em um acerto só e nenhuma de maleta acertada de fora; **C10** soma das parcelas da compra igual ao total. Cada diferença traz o tipo e o id do registro, o esperado e o encontrado. No Corona Gestão: **Conferência do dinheiro**. A rodada diária com aviso é da Fase 8.
+
    As conciliações são feitas **em Real**, com os valores gravados. Dólar e Guarani **nunca entram em conferência**, porque são só conversão para a tela (§7.5).
 4. **Testes automatizados** para cada relatório, com massa de dados conhecida e resultado calculado à mão, rodando no CI a cada Pull Request (backend com PostgreSQL via Testcontainers).
 5. `NUMERIC(14,2)`, sem float, com arredondamento HALF_UP e escala 2 (regra única, §7.5). A cotação não é dinheiro: fica em `NUMERIC(18,8)`, só nas colunas de cotação (ADR-0006).
@@ -823,6 +825,8 @@ Importação com nome de arquivo inválido, foto duplicada, arquivo corrompido, 
   - §7.3: a devolução abate primeiro o que o cliente deve, depois crédito, depois dinheiro; cancelar desfaz o abatimento; a troca de A a prazo.
   - §9: `devolucoes.valor_abatido`, `baixas_receber.devolucao_id` e o motivo `DEVOLUCAO`; `PARCIAL` também para parcela abatida.
   - §10: `devolucoes.valor_abatido` e `baixas_receber.devolucao_id` entram no pull; o que o app manda não muda.
+- **v1.22, 14/11/2026:** as nove conciliações da Fase 7 com rota e tela (tarefa 7.8, ADR-0012 item 17).
+  - §13: a conferência do dinheiro (C1 a C10, sem a C6), a rota `GET /api/dona/conciliacoes` e o que cada uma confere; só leitura, num retrato só, uma fórmula só.
 - **v1.21, 14/11/2026:** contas a pagar das compras, caixa manual com categorias, aviso de caixa negativo e fechar semana (tarefa 7.7, ADR-0012 itens 2, 3.8, 11, 12, 13, 14, 15, 16 e 17).
   - §7.4: a semana fechada (só pela rota, só depois do fim, sem acerto em andamento, nunca reabre, recusa acerto, maleta, lançamento e pagamento com data nela).
   - §7.5: contas a pagar (gerar, pagar, estornar, compra desfeita) e o caixa manual com categorias e o aviso de saldo negativo.

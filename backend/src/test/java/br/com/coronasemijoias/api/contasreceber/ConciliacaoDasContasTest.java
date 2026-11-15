@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 /**
  * As conciliações do nível 1 (tarefa 7.3): C1 (por venda, total menos o pago líquido é o que falta nas parcelas; venda
  * estornada, zero) e C5 (os atalhos da parcela são a soma das baixas). Aqui elas rodam sobre dados certos (vazias) e sobre
- * um dado estragado de propósito (acusam a diferença). A rota e a tela de diferenças são da 7.8.
+ * um dado estragado de propósito (acusam a diferença). Desde a 7.8 elas rodam pela consulta de produção (ConciliacoesDaFase7), sem SQL copiado.
  */
 class ConciliacaoDasContasTest extends ApoioDasContas {
 
@@ -54,7 +54,7 @@ class ConciliacaoDasContasTest extends ApoioDasContas {
                 INSERT INTO corona.baixas_receber (id, conta_id, tipo, valor, baixada_em, pagamento_cliente_id)
                 VALUES (?, ?, 'PAGAMENTO', 20.00, now(), ?)""", UuidV7.gerar(), conta, pagamento);
         List<String> diferencas = diferencasDaConciliacao();
-        assertThat(diferencas).anyMatch(d -> d.startsWith("C5 ")).anyMatch(d -> d.startsWith("C1 "));
+        assertThat(diferencas).anyMatch(d -> d.startsWith("C5 CONTA_A_RECEBER ")).anyMatch(d -> d.startsWith("C1 VENDA " + estragada.venda()));
     }
 
     @Test
@@ -63,7 +63,7 @@ class ConciliacaoDasContasTest extends ApoioDasContas {
         jdbc.update("""
                 INSERT INTO corona.pagamentos_cliente (id, venda_id, tipo, forma, valor, pago_em, posterior)
                 VALUES (?, ?, 'PAGAMENTO', 'PIX', 20.00, now(), true)""", UUID.randomUUID(), estragada.venda());
-        assertThat(diferencasDaConciliacao()).anyMatch(d -> d.startsWith("C1 ") && d.contains(estragada.venda().toString()));
+        assertThat(diferencasDaConciliacao()).anyMatch(d -> d.startsWith("C1 VENDA " + estragada.venda()));
     }
 
     @Test
@@ -73,6 +73,6 @@ class ConciliacaoDasContasTest extends ApoioDasContas {
         jdbc.update("""
                 UPDATE corona.vendas SET status = 'ESTORNADA', estorno_id = ?, estornada_em = now(), motivo_estorno = 'teste'
                  WHERE id = ?""", UUID.randomUUID(), estragada.venda());
-        assertThat(diferencasDaConciliacao()).anyMatch(d -> d.startsWith("C1 estornada ") && d.contains(estragada.venda().toString()));
+        assertThat(diferencasDaConciliacao()).anyMatch(d -> d.startsWith("C1 VENDA " + estragada.venda()) && d.contains("foi desfeita"));
     }
 }

@@ -136,6 +136,7 @@ import {
   relatorioDeDinheiroDevolvido,
   relatorioDePedidosDeAutorizacao,
   conferirDevolucoesETrocas,
+  conferirODinheiroDaFase7,
   relatorioDeMercadoriaPorVendedor,
   relatorioDeRemessasPorVendedorESemana,
   relatorioDeReposicoes,
@@ -1123,6 +1124,8 @@ export function criarApiDoGestao(opcoes: OpcoesDaApi): ApiDoGestao {
           );
         case 'avisos.listar':
           return executar(() => listar14({ client, headers }));
+        case 'conciliacoes.conferir':
+          return executar(() => conferirODinheiroDaFase7({ client, headers }));
         case 'vendedores.escolha':
           return executar(() =>
             listar({ client, headers, query: { situacao: 'ATIVOS', pagina: 0, tamanho: 100 } }),
