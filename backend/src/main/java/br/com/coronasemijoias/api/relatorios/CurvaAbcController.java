@@ -31,7 +31,7 @@ public class CurvaAbcController {
                     + "empate pelo código. Classe A até 80% do acumulado, B até 95%, C o resto; a peça que cruza a fronteira fica "
                     + "na classe de cima. Peça sem venda no período fica fora. Datas de Brasília (de e ate inclusive, sobre a data "
                     + "da venda). Filtros: busca, vendedorId, pracaId, clienteId, produtoId, categoriaId, de e ate. recorte = a "
-                    + "chave de um total do rodapé (liquido, A, B ou C). Cada valor vem em Real, Dólar e Guarani pela cotação do "
+                    + "chave de um total do rodapé (liquido, classe-a, classe-b ou classe-c). Cada valor vem em Real, Dólar e Guarani pela cotação do "
                     + "dia da venda. A página começa em 0 (até 100 por página).")
     @GetMapping("/curva-abc")
     public RelatorioDeCadastro<LinhaDaCurva> curva(

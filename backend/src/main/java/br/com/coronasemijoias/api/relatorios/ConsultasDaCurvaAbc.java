@@ -75,7 +75,7 @@ public class ConsultasDaCurvaAbc {
     }
 
     private static DefinicaoDeTotal faixa(String classe, String rotulo) {
-        return emTresMoedas(classe, rotulo, "x.classe = '" + classe + "'", "x.pecas", "x.liquido", "x.liquido_dolar",
+        return emTresMoedas("classe-" + classe.toLowerCase(), rotulo, "x.classe = '" + classe + "'", "x.pecas", "x.liquido", "x.liquido_dolar",
                 "x.liquido_guarani");
     }
 }

@@ -2049,7 +2049,7 @@ export const conciliacao = <ThrowOnError extends boolean = false>(options?: Opti
 /**
  * Curva ABC das peças
  *
- * Por peça, pelo vendido líquido do período (venda menos devolução e troca), da maior para a menor; empate pelo código. Classe A até 80% do acumulado, B até 95%, C o resto; a peça que cruza a fronteira fica na classe de cima. Peça sem venda no período fica fora. Datas de Brasília (de e ate inclusive, sobre a data da venda). Filtros: busca, vendedorId, pracaId, clienteId, produtoId, categoriaId, de e ate. recorte = a chave de um total do rodapé (liquido, A, B ou C). Cada valor vem em Real, Dólar e Guarani pela cotação do dia da venda. A página começa em 0 (até 100 por página).
+ * Por peça, pelo vendido líquido do período (venda menos devolução e troca), da maior para a menor; empate pelo código. Classe A até 80% do acumulado, B até 95%, C o resto; a peça que cruza a fronteira fica na classe de cima. Peça sem venda no período fica fora. Datas de Brasília (de e ate inclusive, sobre a data da venda). Filtros: busca, vendedorId, pracaId, clienteId, produtoId, categoriaId, de e ate. recorte = a chave de um total do rodapé (liquido, classe-a, classe-b ou classe-c). Cada valor vem em Real, Dólar e Guarani pela cotação do dia da venda. A página começa em 0 (até 100 por página).
  */
 export const relatorioDeCurvaAbc = <ThrowOnError extends boolean = false>(options?: Options<RelatorioDeCurvaAbcData, ThrowOnError>): RequestResult<RelatorioDeCurvaAbcResponses, unknown, ThrowOnError> => (options?.client ?? client).get<RelatorioDeCurvaAbcResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],

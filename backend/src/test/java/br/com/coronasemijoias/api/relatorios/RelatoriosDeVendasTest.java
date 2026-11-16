@@ -500,11 +500,11 @@ class RelatoriosDeVendasTest extends ApoioDasTrocas {
         }
         // Rodapé: a classe A (P1 e P2) US$ 80 + 32 = 112, Gs 560000; B (P4) US$ 12,50 + 9 = 21,50, Gs 70000; C (P5) US$ 4, Gs 20000.
         confere(total(r, "liquido"), 4, "675.00", "137.50", "650000");
-        confere(total(r, "A"), 2, "560.00", "112.00", "560000");
-        confere(total(r, "B"), 1, "95.00", "21.50", "70000");
-        confere(total(r, "C"), 1, "20.00", "4.00", "20000");
+        confere(total(r, "classe-a"), 2, "560.00", "112.00", "560000");
+        confere(total(r, "classe-b"), 1, "95.00", "21.50", "70000");
+        confere(total(r, "classe-c"), 1, "20.00", "4.00", "20000");
         // O detalhamento da classe A.
-        JsonNode soA = curva(MES + "&recorte=A");
+        JsonNode soA = curva(MES + "&recorte=classe-a");
         assertThat(soA.get("itens").findValues("produtoId").stream().map(JsonNode::asString).toList())
                 .containsExactly(p1.toString(), p2.toString());
     }

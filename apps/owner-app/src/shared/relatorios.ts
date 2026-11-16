@@ -51,6 +51,19 @@ export const NOMES_DOS_RELATORIOS = [
   'financeiro-inadimplencia',
   'financeiro-caixa',
   'financeiro-recebimentos',
+  // Vendas e curva ABC (tarefa 8.5): os onze relatórios de vendas da dona e a curva ABC (que fica no grupo Estoque).
+  'vendas-lista',
+  'vendas-canceladas',
+  'vendas-por-vendedor',
+  'vendas-por-praca',
+  'vendas-por-cliente',
+  'vendas-por-produto',
+  'vendas-por-categoria',
+  'vendas-por-periodo',
+  'vendas-ranking-vendedores',
+  'vendas-ranking-pecas',
+  'vendas-ticket-medio',
+  'vendas-curva-abc',
 ] as const;
 export type NomeDoRelatorio = (typeof NOMES_DOS_RELATORIOS)[number];
 export type NomeDoRelatorioDeEstoqueOuCompras = Extract<
@@ -60,12 +73,14 @@ export type NomeDoRelatorioDeEstoqueOuCompras = Extract<
 export type NomeDoRelatorioDeMaleta = Extract<NomeDoRelatorio, `maleta-${string}`>;
 export type NomeDoRelatorioDeDevolucao = Extract<NomeDoRelatorio, `devolucao-${string}`>;
 export type NomeDoRelatorioFinanceiro = Extract<NomeDoRelatorio, `financeiro-${string}`>;
+export type NomeDoRelatorioDeVendas = Extract<NomeDoRelatorio, `vendas-${string}`>;
 export type NomeDoRelatorioDeCadastro = Exclude<
   NomeDoRelatorio,
   | NomeDoRelatorioDeEstoqueOuCompras
   | NomeDoRelatorioDeMaleta
   | NomeDoRelatorioDeDevolucao
   | NomeDoRelatorioFinanceiro
+  | NomeDoRelatorioDeVendas
 >;
 
 export const SITUACOES_DO_RELATORIO = [

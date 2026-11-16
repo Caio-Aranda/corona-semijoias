@@ -85,3 +85,29 @@ Issue #178, PR 195. Plano aprovado no 1º comentário do PR, ajustes no 2º. Mig
 - **Testes antigos.** Nenhum teste existente esperava a lista de avisos vazia por inteiro (todos filtram por tipo). Os testes novos que gravam rodada deixam uma rodada limpa no fim (`RodadasDeTeste`), para o aviso novo não aparecer nos outros.
 
 **Como conferir:** `npm run api:test`, `npx vitest run --root apps/owner-app`, `npm run lint`, `npm run typecheck`, `npm run format:check`.
+
+## Tarefa 8.5: relatórios de vendas e curva ABC
+
+Issue #179, PR 196. Só leitura: nenhuma migração, nenhuma regra nova, nada vai ao Corona Vendas.
+
+**O que entrou**
+
+- **Uma consulta só do vendido líquido** (`VendidoLiquido`): uma linha por peça de cada venda, com vendido (preço x quantidade - desconto da linha), devolvido (devoluções e trocas não canceladas, pelo preço que o cliente pagou) e líquido. Os relatórios de vendas e a curva ABC só agrupam essa consulta; o DRE (8.6) e o painel (8.7) vão usar a mesma. Soma no banco, em `NUMERIC`.
+- **Onze relatórios de vendas** em `/api/dona/relatorios/vendas/...` (só ADMIN): `vendas` (uma linha por venda; padrão só as feitas, `situacao=CANCELADAS` ou `TODAS`), `canceladas` (com quem cancelou, quando e o motivo), `por-vendedor`, `por-praca`, `por-cliente`, `por-produto`, `por-categoria`, `por-periodo` (por dia de Brasília), `ranking-de-vendedores`, `ranking-de-pecas` e `ticket-medio`. Filtros: busca, vendedor, praça, cliente, produto, categoria, período. Rodapé e detalhamento (`recorte`) no motor dos demais relatórios.
+- **Curva ABC** em `/api/dona/relatorios/estoque/curva-abc`: por produto, pelo vendido líquido do período; A até 80%, B até 95%, C o resto; a peça que cruza a fronteira fica na classe de cima (a classe sai do acumulado antes da peça, em números exatos, nunca do percentual arredondado); empate pelo código; peça sem venda líquida fica fora. Mostra a foto (a falta de foto não trava).
+- **`Dinheiro`** ganhou `dividir` (ticket médio: R$ 100,00 em 3 vendas = 33,33) e `percentualDe` (HALF_UP, duas casas); o arredondamento continua só lá.
+- **Corona Gestão.** Grupo de menu **Relatórios de vendas** (onze telas) e **Curva ABC dos produtos** no grupo Estoque, no padrão da 7.12 (filtros, totais no rodapé, PDF, Excel e CSV, três moedas). Cliente da dona regerado; `api-client-vendedor` sem diferença.
+
+**Definições adotadas (padrões seguros do plano, sem mudar regra)**
+
+- O período e o dia de uma linha são os da **data da venda** (dia de Brasília). A devolução ou a troca de uma venda abate a venda de onde ela saiu, qualquer que seja a data da devolução.
+- Dólar e Guarani: cotação do dia da **venda**, por linha de peça (o devolvido e o líquido da linha usam a mesma cotação da venda); o total em Dólar ou Guarani é a soma das linhas já convertidas. Venda sem cotação fica sem Dólar e sem Guarani. Nos relatórios agrupados não há uma data de cotação única por linha (a linha reúne várias vendas); a data aparece na linha de cada venda (`vendas`, `canceladas`) e, no relatório por dia, é o próprio dia.
+- Venda estornada fica fora de todo total e aparece marcada (`Cancelada`). Nos agrupados nunca entra. O rodapé "canceladas" só tem valor quando a lista pede canceladas ou todas (como nas devoluções).
+- Ticket médio = vendido líquido ÷ número de vendas do grupo (venda com tudo devolvido continua contando como venda); em produto e categoria, "vendas" são as vendas que têm aquela peça ou categoria.
+- Peça sem custo em nenhuma resposta: um teste confere que as respostas não têm "custo" nem "lucro".
+
+**Testes** (`RelatoriosDeVendasTest`, massa de março de 2292 com a conta à mão no comentário: vendido 950, devolvido 275, líquido 675, com desconto de linha, troca, devolução cancelada e venda estornada): por vendedor, praça, cliente, categoria, produto e dia com Real, Dólar e Guarani; rankings e valor médio; filtros; venda estornada fora e marcada; detalhamento; curva ABC com as três faixas e com filtro; **a curva e todos os relatórios de vendas batem no vendido líquido** (por produto e no total, e contra uma soma direta no banco); 401 e 403 em todas as rotas; pedidos mal feitos; paginação. Mais `DinheiroTest` (ticket médio e percentual) e `relatorios-vendas.test.tsx` na Gestão.
+
+**Não fiz.** Custo e lucro (8.6). Filtro por cliente e por produto na tela da Gestão (a busca já acha os dois pelo nome; a API aceita os dois). Data de cotação única nas linhas agrupadas.
+
+**Como conferir:** `npm run api:test`, `npx vitest run --root apps/owner-app`, `npm run lint`, `npm run typecheck`, `npm run format:check`.

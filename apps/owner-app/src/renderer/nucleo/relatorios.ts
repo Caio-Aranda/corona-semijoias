@@ -10,6 +10,7 @@ import { RELATORIOS_DE_ESTOQUE, prepararLinhaDeEstoque } from './relatorios-esto
 import { RELATORIOS_DE_DEVOLUCAO, prepararLinhaDeDevolucao } from './relatorios-devolucao';
 import { RELATORIOS_DE_MALETA, prepararLinhaDeMaleta } from './relatorios-maleta';
 import { RELATORIOS_FINANCEIROS, prepararLinhaFinanceira } from './relatorios-financeiros';
+import { RELATORIOS_DE_VENDAS, prepararLinhaDeVendas } from './relatorios-vendas';
 
 export type FiltroDoRelatorio =
   | 'busca'
@@ -103,7 +104,7 @@ export interface DefinicaoDeRelatorio {
   /** Abrir uma linha (compra → peças; contagem → diferenças; peça → histórico de custo). */
   acoes?: AcaoDaLinha[];
   /** Grupo do menu: o dos relatórios de cadastro, de estoque ou de compras. */
-  grupo?: 'estoque' | 'compras' | 'maletas' | 'devolucoes' | 'financeiro';
+  grupo?: 'estoque' | 'compras' | 'maletas' | 'devolucoes' | 'financeiro' | 'vendas';
   /** Devolução e troca: a frase do rodapé dos arquivos sobre a cotação de cada lançamento. */
   notaDaCotacao?: string;
   /** Maletas: o campo da linha com o código da maleta; a linha ganha o botão "Ver a maleta". */
@@ -119,6 +120,7 @@ export const RELATORIOS: Record<NomeDoRelatorio, DefinicaoDeRelatorio> = {
   ...RELATORIOS_DE_MALETA,
   ...RELATORIOS_DE_DEVOLUCAO,
   ...RELATORIOS_FINANCEIROS,
+  ...RELATORIOS_DE_VENDAS,
   vendedores: {
     nome: 'vendedores',
     titulo: 'Vendedores: limite e situação',
@@ -535,6 +537,7 @@ export function prepararLinha(
     default:
       if (nome.startsWith('devolucao-')) return prepararLinhaDeDevolucao(nome, linha);
       if (nome.startsWith('financeiro-')) return prepararLinhaFinanceira(nome, linha);
+      if (nome.startsWith('vendas-')) return prepararLinhaDeVendas(nome, linha);
       return nome.startsWith('maleta-')
         ? prepararLinhaDeMaleta(nome, linha)
         : prepararLinhaDeEstoque(nome, linha);

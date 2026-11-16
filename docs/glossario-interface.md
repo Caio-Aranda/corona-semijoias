@@ -1388,3 +1388,18 @@ Menu do Corona Gestão: grupo **Relatórios financeiros** (depois de "Relatório
 | **Recebimentos por forma de pagamento** | Dinheiro, Transferência e Boleto repassados pelos vendedores; momento: No acerto ou Depois do acerto |
 
 Os nomes "Parcelas a receber" e "Parcelas a pagar" evitam repetir "Contas a receber" e "Contas a pagar", que são as telas de trabalho do Financeiro. DRE e lucro por produto e por vendedor ficam para a Fase 8.
+
+## Relatórios de vendas e curva ABC (Fase 8, tarefa 8.5; §12)
+
+Menu do Corona Gestão: grupo **Relatórios de vendas** (depois de "Relatórios de devoluções") e, no grupo de estoque, **Curva ABC dos produtos**. Dólar e Guarani seguem a cotação do Banco Central do dia de **cada venda**; tudo é gravado em Real. Nenhum custo aparece.
+
+| Tela | O que mostra |
+| --- | --- |
+| **Vendas feitas** | Uma venda por linha: Vendida em, Vendedor, Praça, Cliente, Peças, Vendido, Devolvido, Vendido líquido; filtro de situação: só as feitas, só as canceladas, feitas e canceladas |
+| **Vendas por vendedor**, **por praça**, **por cliente**, **por produto**, **por categoria**, **por dia** | Vendas, Peças, Vendido, Devolvido, Vendido líquido e Valor médio por venda de cada grupo |
+| **Ranking de vendedores**, **Ranking de produtos** | O mesmo, do que mais vendeu para o que menos vendeu, com a Posição (e a foto, no ranking de produtos) |
+| **Valor médio por venda** | Os vendedores do maior para o menor valor médio por venda (o "ticket médio" da especificação não aparece na tela) |
+| **Vendas canceladas** | Cancelada em, Cancelada por e Motivo; ficam fora de todos os totais |
+| **Curva ABC dos produtos** | Posição, foto, Código, Produto, Categoria, Peças, Vendido líquido, Parte do total, Soma até aqui e **Classe** A, B ou C |
+
+Termos: **Vendido líquido** = o que foi vendido menos o que o cliente devolveu ou trocou. **Classe A**: os produtos que somam até 80% do vendido líquido; **B**: até 95%; **C**: o resto. Produto sem venda no período não aparece na curva. "Sem praça" aparece para o vendedor sem praça cadastrada.
