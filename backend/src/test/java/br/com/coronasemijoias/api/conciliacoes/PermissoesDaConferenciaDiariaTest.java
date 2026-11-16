@@ -6,8 +6,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import br.com.coronasemijoias.api.testes.RodadasDeTeste;
 import br.com.coronasemijoias.api.testes.UsuariosDeTeste.UsuarioDeTeste;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -17,6 +19,12 @@ import tools.jackson.databind.JsonNode;
 class PermissoesDaConferenciaDiariaTest extends ApoioDasConciliacoes {
 
     private static final String ROTA = "/api/dona/conferencias";
+
+    @AfterEach
+    void deixarUmaRodadaLimpa() throws InterruptedException {
+        Thread.sleep(5);
+        RodadasDeTeste.limpa(jdbc, java.time.Instant.now());
+    }
 
     @Test
     void aDonaConfereAgoraVeOHistoricoEODetalhe() throws Exception {

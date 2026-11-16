@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import br.com.coronasemijoias.api.comum.erros.CodigoErro;
 import br.com.coronasemijoias.api.comum.erros.ErroDaApi;
 import br.com.coronasemijoias.api.conciliacoes.ServicoDaConferenciaDiaria.Origem;
+import br.com.coronasemijoias.api.testes.RodadasDeTeste;
 import br.com.coronasemijoias.api.testes.TesteDeIntegracao;
 import java.lang.reflect.Method;
 import java.time.Instant;
@@ -32,6 +33,12 @@ class AgendaDaConferenciaDiariaTest extends TesteDeIntegracao {
 
     @Autowired
     org.springframework.jdbc.core.JdbcTemplate jdbc;
+
+    @org.junit.jupiter.api.AfterEach
+    void deixarUmaRodadaLimpa() throws InterruptedException {
+        Thread.sleep(5);
+        RodadasDeTeste.limpa(jdbc, Instant.now());
+    }
 
     private static Method metodo() throws Exception {
         Method m = AgendaDaConferenciaDiaria.class.getDeclaredMethod("conferir");

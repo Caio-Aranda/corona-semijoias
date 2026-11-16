@@ -11,6 +11,7 @@ import br.com.coronasemijoias.api.conciliacoes.ServicoDaConferenciaDiaria.Origem
 import br.com.coronasemijoias.api.conciliacoes.ServicoDaConferenciaDiaria.Resultado;
 import br.com.coronasemijoias.api.estoque.ServicoDeEstoque;
 import br.com.coronasemijoias.api.relatorios.ConferenciasDeDevolucaoETroca;
+import br.com.coronasemijoias.api.testes.RodadasDeTeste;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -75,8 +76,11 @@ class ConferenciaDiariaTest extends MassaDoEstoqueCompleto {
     ServicoDaConferenciaDiaria servico;
 
     @AfterEach
-    void tirarAConferenciaDeTeste() {
+    void tirarAConferenciaDeTeste() throws InterruptedException {
         extra = null;
+        // A última rodada tem de ficar limpa para os outros testes (o aviso da tela inicial olha só a última).
+        Thread.sleep(5);
+        RodadasDeTeste.limpa(jdbc, java.time.Instant.now());
     }
 
     // --- apoio ---
