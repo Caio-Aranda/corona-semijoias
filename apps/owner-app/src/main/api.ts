@@ -137,12 +137,14 @@ import {
   lancarNoCaixa,
   listarCategoriasDoCaixa,
   listarContasAPagar,
+  listarConferencias,
   listarContasAReceber,
   listarRecebimentosDoVendedor,
   pagarContaAPagar,
   reativarCategoriaDoCaixa,
   receberDoVendedor,
   renomearCategoriaDoCaixa,
+  verConferencia,
   verContaAPagar,
   verExtratoDoCaixa,
   verSaldoDoCaixa,
@@ -166,6 +168,7 @@ import {
   relatorioDeDinheiroDevolvido,
   relatorioDePedidosDeAutorizacao,
   conferirDevolucoesETrocas,
+  conferirAgora,
   conferirODinheiroDaFase7,
   relatorioDeMercadoriaPorVendedor,
   relatorioDeAcertos,
@@ -1324,6 +1327,12 @@ export function criarApiDoGestao(opcoes: OpcoesDaApi): ApiDoGestao {
           return executar(() => listar14({ client, headers }));
         case 'conciliacoes.conferir':
           return executar(() => conferirODinheiroDaFase7({ client, headers }));
+        case 'conferencias.listar':
+          return executar(() => listarConferencias({ client, headers }));
+        case 'conferencias.ver':
+          return executar(() => verConferencia({ client, headers, path: { id: pedido.id } }));
+        case 'conferencias.conferirAgora':
+          return executar(() => conferirAgora({ client, headers, body: { id: pedido.id } }), true);
         case 'vendedores.escolha':
           return executar(() =>
             listar({ client, headers, query: { situacao: 'ATIVOS', pagina: 0, tamanho: 100 } }),

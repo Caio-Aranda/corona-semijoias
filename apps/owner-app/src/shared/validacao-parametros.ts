@@ -127,8 +127,14 @@ export type ParametrosConferidos =
   | ParametrosDeDevolucoes
   | {
       operacao:
-        'eu' | 'cotacao.hoje' | 'avisos.listar' | 'conciliacoes.conferir' | 'vendedores.escolha';
+        | 'eu'
+        | 'cotacao.hoje'
+        | 'avisos.listar'
+        | 'conciliacoes.conferir'
+        | 'conferencias.listar'
+        | 'vendedores.escolha';
     }
+  | { operacao: 'conferencias.ver' | 'conferencias.conferirAgora'; id: string }
   | { operacao: 'usuarios.listar'; lista: ParametrosDaLista }
   | { operacao: 'usuarios.criar'; novo: ParametrosDeUsuarioNovo }
   | { operacao: 'usuarios.editar'; editado: ParametrosDeUsuarioEditado }
@@ -390,8 +396,12 @@ export function conferirParametros(
     case 'cotacao.hoje':
     case 'avisos.listar':
     case 'conciliacoes.conferir':
+    case 'conferencias.listar':
     case 'vendedores.escolha':
       return { operacao };
+    case 'conferencias.ver':
+    case 'conferencias.conferirAgora':
+      return ehTexto(p.id) && UUID.test(p.id) ? { operacao, id: p.id } : null;
     case 'usuarios.listar': {
       const busca = textoOpcional(p.busca);
       const perfil = textoOpcional(p.perfil);

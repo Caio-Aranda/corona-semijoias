@@ -100,6 +100,7 @@ export const ROTAS = [
   'financeiro/contas-a-receber',
   'financeiro/recebimentos',
   'conciliacoes/dinheiro',
+  'conciliacoes/conferencia-diaria',
 ] as const;
 export type Rota = (typeof ROTAS)[number];
 
@@ -230,7 +231,13 @@ export const MENU = [
   },
   {
     titulo: TEXTOS_DE_CONCILIACOES.grupoDoMenu,
-    itens: [{ chave: 'conciliacoes/dinheiro', rotulo: TEXTOS_DE_CONCILIACOES.menu }],
+    itens: [
+      { chave: 'conciliacoes/dinheiro', rotulo: TEXTOS_DE_CONCILIACOES.menu },
+      {
+        chave: 'conciliacoes/conferencia-diaria',
+        rotulo: TEXTOS_DE_CONCILIACOES.diaria.menu,
+      },
+    ],
   },
 ];
 
