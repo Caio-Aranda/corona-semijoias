@@ -35,6 +35,8 @@ Em 09/11/2026 o responsável resolveu as dúvidas que estavam abertas neste glos
 | maleta | remessa (`remessas`) | Conjunto de peças entregue ao vendedor, com quantidade e preço fixados. A palavra "remessa" só aparece no PDF "Nota de remessa" (§19.1). |
 | reposição | remessa do tipo `REPOSICAO` | Maleta complementar, sempre criada pela dona. |
 | acerto | `acertos` | Encontro semanal em que o vendedor devolve o que sobrou, repassa o dinheiro e recebe a comissão. |
+| pedir acerto | `POST /api/vendedor/acertos` | Botão do vendedor no Corona Vendas (tarefa 8.10): as maletas dele passam a ficar em acerto. Só com internet; só a dona fecha ou desiste. |
+| contar as sobras | `leituras_acerto` | O vendedor lê o código das peças que sobraram, como **Boa** ou **Com defeito**, e pode desfazer uma leitura (tarefa 8.10). Na tela, "ler o código", nunca "bipar". |
 | semana | `semanas` | Período de controle: maleta, cobrança e acerto são semanais. Como numerar as semanas: a confirmar (parte 9). |
 | peça | produto / item de maleta, venda ou troca | Usar na maleta, na venda, na troca, na devolução e na leitura do código. |
 | produto | `produtos` | Usar no cadastro, na consulta e nos relatórios (por exemplo, o botão "Cadastrar produto"). |

@@ -249,6 +249,13 @@ export type PedidoDeChamada =
   | { operacao: 'recebiveis.ver' }
   | { operacao: 'acertos.listar' }
   | { operacao: 'acertos.ver'; id: string }
+  // --- pedir o acerto e contar as sobras (tarefa 8.10): só com internet, direto na API; nada é guardado nem enfileirado ---
+  /** O vendedor pede o próprio acerto (`id` é gerado na tela e reaproveitado na nova tentativa). */
+  | { operacao: 'acertos.pedir'; id: string }
+  /** O acerto como o servidor o vê agora (maletas, contagem por peça e estado, leituras). */
+  | { operacao: 'acertos.agora'; id: string }
+  /** Uma leitura da contagem: `quantidade` 1 para bipar, negativa para desfazer; `id` é da leitura, gerado na tela. */
+  | { operacao: 'acertos.ler'; id: string; leitura: LeituraDoAcertoParaEnviar }
   /** Prévia da comissão da semana: pede ao servidor (precisa de internet); nada é gravado. */
   | { operacao: 'comissao.previa' };
 
@@ -296,4 +303,14 @@ export const OPERACOES_DA_API: readonly OperacaoDaApi[] = [
   'acertos.listar',
   'acertos.ver',
   'comissao.previa',
+  'acertos.pedir',
+  'acertos.agora',
+  'acertos.ler',
 ];
+
+export interface LeituraDoAcertoParaEnviar {
+  id: string;
+  produtoId: string;
+  quantidade: number;
+  estadoPeca: 'BOA' | 'DEFEITO';
+}

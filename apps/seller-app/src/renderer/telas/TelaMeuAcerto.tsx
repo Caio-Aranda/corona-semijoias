@@ -1,16 +1,18 @@
-import { Aviso, Botao, Tabela } from '@corona/ui';
-import { useEffect, useState } from 'react';
+import { Aviso, Botao, JanelaDeConfirmacao, Tabela } from '@corona/ui';
+import { useEffect, useRef, useState } from 'react';
 import type {
   FichaDoAcerto,
+  FichaDoAcertoAgora,
   FechamentoDoAcerto,
   PreviaDaComissao,
   ResumoDoAcerto,
 } from '../../shared/dados';
 import type { PonteDoCorona } from '../../shared/ponte';
-import { chamar, Dinheiro } from '../chamadas';
+import { chamar, Dinheiro, novoId } from '../chamadas';
 import { centavosDeTexto, dataParaTela, formatarGuarani, formatarReais } from '../moedas';
 import { TEXTOS } from '../textos';
 import { PaginaDoVendedor } from './PaginaDoVendedor';
+import { TelaContarSobras } from './TelaContarSobras';
 
 export interface TelaMeuAcertoProps {
   ponte: PonteDoCorona;
@@ -31,6 +33,13 @@ export function TelaMeuAcerto({ ponte, aoVoltar }: TelaMeuAcertoProps) {
   const [acertos, setAcertos] = useState<ResumoDoAcerto[] | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [ficha, setFicha] = useState<FichaDoAcerto | null>(null);
+  // Pedir o acerto e contar as sobras (tarefa 8.10): só com internet, direto no servidor.
+  const [contando, setContando] = useState<string | null>(null);
+  const [recemPedido, setRecemPedido] = useState<string | null>(null);
+  const [confirmandoPedido, setConfirmandoPedido] = useState(false);
+  const [pedindo, setPedindo] = useState(false);
+  // O mesmo pedido reenviado (queda de internet) tem o mesmo id: o servidor não abre dois acertos.
+  const idDoPedido = useRef(novoId());
 
   function buscarPrevia() {
     setPrevia(null);
@@ -60,6 +69,39 @@ export function TelaMeuAcerto({ ponte, aoVoltar }: TelaMeuAcertoProps) {
       setFicha(r.dados);
     } else setErro(r.mensagem);
   }
+
+  async function pedirAcerto() {
+    setPedindo(true);
+    setErro(null);
+    const r = await chamar<FichaDoAcertoAgora>(ponte, {
+      operacao: 'acertos.pedir',
+      id: idDoPedido.current,
+    });
+    setPedindo(false);
+    setConfirmandoPedido(false);
+    if (!r.ok) {
+      setErro(r.mensagem === TEXTOS.semInternet.curto ? T.pedirSemInternet : r.mensagem);
+      return;
+    }
+    idDoPedido.current = novoId();
+    setRecemPedido(r.dados.id);
+    setContando(r.dados.id);
+  }
+
+  if (contando) {
+    return (
+      <TelaContarSobras
+        ponte={ponte}
+        acertoId={contando}
+        aoVoltar={() => {
+          setContando(null);
+          buscarPrevia();
+        }}
+      />
+    );
+  }
+
+  const acertoEmAndamento = acertos?.find((a) => a.situacao === 'EM_ACERTO')?.id ?? recemPedido;
 
   if (ficha) {
     return (
@@ -91,6 +133,36 @@ export function TelaMeuAcerto({ ponte, aoVoltar }: TelaMeuAcertoProps) {
         )}
         <Botao onClick={buscarPrevia}>{T.atualizar}</Botao>
       </section>
+
+      <section className="vendas-cartao vendas-cartao--larga" aria-label={T.pedirTitulo}>
+        <h2 className="vendas-subtitulo">{T.pedirTitulo}</h2>
+        {acertoEmAndamento ? (
+          <>
+            <Aviso tipo="informacao">{T.acertoEmAndamentoTitulo}</Aviso>
+            <Botao variante="primario" onClick={() => setContando(acertoEmAndamento)}>
+              {T.contar}
+            </Botao>
+          </>
+        ) : acertos === null ? null : (
+          <>
+            <p className="vendas-texto">{T.pedirAjuda}</p>
+            <Botao variante="primario" onClick={() => setConfirmandoPedido(true)}>
+              {T.pedir}
+            </Botao>
+          </>
+        )}
+      </section>
+      {confirmandoPedido ? (
+        <JanelaDeConfirmacao
+          titulo={T.pedirJanelaTitulo}
+          rotuloConfirmar={T.pedirConfirmar}
+          ocupado={pedindo}
+          aoConfirmar={() => void pedirAcerto()}
+          aoCancelar={() => setConfirmandoPedido(false)}
+        >
+          <p>{T.pedirJanelaTexto}</p>
+        </JanelaDeConfirmacao>
+      ) : null}
 
       <section aria-label={T.acertosTitulo}>
         <h2 className="vendas-subtitulo">{T.acertosTitulo}</h2>
