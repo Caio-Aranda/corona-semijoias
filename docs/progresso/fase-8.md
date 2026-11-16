@@ -46,3 +46,20 @@ PR 189 (issue #184). Implementador (Sonnet, esforço médio). Só no Corona Vend
 - `docs/progresso/fase-8.md` e a linha da 8.10 em `docs/PROGRESSO.md` podem conflitar com os da 8.2 (branch paralela): é só juntar as duas entradas.
 
 **Como conferir:** `npx vitest run --root apps/seller-app`, `npm run test:duas-pontas -w @corona/testes-sync -- src/cenarios/pedir-acerto-e-contar.duas-pontas.test.ts`, `npm run seller:empacotar` e `npm run barreira:varrer -- apps/seller-app/release/win-unpacked/resources/app.asar packages/shared packages/ui packages/conexao-segura`.
+
+## Tarefa 8.3: conciliações C11 e C12
+
+Issue #177, PR 190. Plano aprovado no 1º comentário do PR. Só leitura, sem migração, sem rota nova, nada no Corona Vendas.
+
+**O que mudou.**
+
+- `ConciliacoesDaFase7` ganhou `c11()` e `c12()` (as onze, no mesmo `conferir()` e no mesmo retrato `REPEATABLE_READ`). A C11 confere cada peça: loja mais saldo das maletas abertas contra comprado (compras registradas) mais lançamentos da dona, menos vendido, mais devolvido à maleta, mais recebido na loja pelo acerto, mais peça achada, menos falta e defeito aprovado, cada parcela do documento de origem. A C12 confere cada maleta enviada, por peça: saldo pelos movimentos contra enviado (baixa do estoque), vendido, devolvido pelo cliente, devolvido à dona e falta; mais as regras "nenhuma peça negativa" e "maleta cancelada sem peça".
+- Uma fórmula só: `ServicoDeEstoque.SQL_SALDO_NAS_MALETAS_ABERTAS` (loja + maletas) serve à C7 e à C11 (o texto da consulta da C7 ficou o mesmo); `saldoDaMaleta` serve à C8 e à C12.
+- Corona Gestão: só os títulos e as explicações da C11 e da C12 (a tela já desenha o que a API manda por `chave`); teste de tela com a C12. Cliente da dona regerado (só a descrição); `api-client-vendedor` sem diferença.
+- Documentos: especificação v1.24 (§13), ADR-0012 item 17, ADR-0008 item 9 e glossário.
+
+**Testes** (`ConciliacoesDoEstoqueCompletoTest`, massa `MassaDoEstoqueCompleto` por cima da massa da 7.8, conta à mão no comentário da massa): as onze dão "Tudo certo" antes e depois do acerto; estragos provam cada regra: compra de 10 cujo movimento guarda 9 (a C11 acusa e a C7 não), venda alterada, peça a mais na loja, envio maior que a baixa, movimento de troca apagado, `AJUSTE` de maleta, saldo negativo, movimento em maleta cancelada, falta alterada no acerto (C11 e C12). As permissões (401 e 403 do vendedor), a contagem de onze conferências e a prova de que a rota não grava (`SoLeituraDasConciliacoesTest`, com mais seis tabelas) foram atualizadas.
+
+**O que a execução mostrou (diferença do plano, sem mudar regra).** No plano, a devolução D1 voltava à maleta. A devolução registrada **pela dona** manda a peça para a loja (linha "peças para a loja" do acerto), então o saldo de M1 A é 3 e não 4; a conta à mão foi refeita no comentário da massa. Isso também exercita o termo "recebido na loja" da C11. Outra diferença: apagar um lançamento da dona junto com o atalho da peça nenhuma conferência vê (o lançamento da dona é o próprio documento de origem); por isso o estrago da compra altera a quantidade do movimento, não o apaga.
+
+**Não fiz.** A rodada diária e o aviso (8.4). Nenhum botão de corrigir. Nenhum valor em Real (só peças).

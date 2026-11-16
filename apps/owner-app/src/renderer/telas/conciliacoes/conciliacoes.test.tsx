@@ -17,7 +17,8 @@ type Manipulador = (p: PedidoDeChamada) => ResultadoDeChamada | Promise<Resultad
 
 const ID_VENDA = '8f14e45f-ceea-4672-a1b9-3a1a0f7c4d11';
 const ID_PRODUTO = '2c4e28ba-2fa1-41d3-b9a5-2c3a9a8f6b33';
-const NOVE = ['C1', 'C2', 'C3', 'C4', 'C5', 'C7', 'C8', 'C9', 'C10'];
+const ONZE = ['C1', 'C2', 'C3', 'C4', 'C5', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12'];
+const ID_MALETA = '5d2a7c19-9b0e-4c61-8e57-1f6b3a4d9c22';
 
 function montar(conferir: Manipulador) {
   const chamadas: PedidoDeChamada[] = [];
@@ -52,23 +53,23 @@ const certas = () => ({
   dados: {
     geradaEm: '2026-11-13T12:00:00Z',
     tudoCerto: true,
-    conferencias: NOVE.map((chave) => ({ chave, conferidos: 12, divergencias: [] })),
+    conferencias: ONZE.map((chave) => ({ chave, conferidos: 12, divergencias: [] })),
   },
 });
 
 describe('Conferência do dinheiro', () => {
-  it('chama a rota nova e mostra "Tudo certo" nas nove conferências, com quantos registros olhou', async () => {
+  it('chama a rota nova e mostra "Tudo certo" nas onze conferências, com quantos registros olhou', async () => {
     const m = montar(certas);
     await abrir(m);
     expect(await screen.findByText(/Tudo certo: o dinheiro/)).toBeInTheDocument();
-    for (const chave of NOVE) {
+    for (const chave of ONZE) {
       // Só na tela (o menu lateral também tem um item chamado Caixa).
       expect(
         within(screen.getByRole('main')).getByText(TEXTOS_DE_CONCILIACOES.titulos[chave]!),
       ).toBeInTheDocument();
     }
     expect(screen.getAllByText('Conferidos: 12').length).toBeGreaterThan(0);
-    expect(screen.getAllByText(TEXTOS_DE_CONCILIACOES.semDiferenca)).toHaveLength(9);
+    expect(screen.getAllByText(TEXTOS_DE_CONCILIACOES.semDiferenca)).toHaveLength(11);
     expect(m.chamadas.some((c) => c.operacao === 'conciliacoes.conferir')).toBe(true);
     expect(screen.getByText(/não da loja/)).toBeInTheDocument();
     // Nada de botão que corrige: só o de conferir de novo.
@@ -97,6 +98,21 @@ describe('Conferência do dinheiro', () => {
             ],
           },
           {
+            chave: 'C12',
+            conferidos: 4,
+            divergencias: [
+              {
+                tipo: 'MALETA',
+                referencia: ID_MALETA,
+                descricao:
+                  'A peça "Brinco Gota" nesta maleta não bate com o que foi enviado, vendido, devolvido e perdido.',
+                esperado: '0',
+                encontrado: '1',
+                unidade: 'PECAS',
+              },
+            ],
+          },
+          {
             chave: 'C7',
             conferidos: 3,
             divergencias: [
@@ -118,6 +134,9 @@ describe('Conferência do dinheiro', () => {
     expect(screen.getByText(/O que falta receber desta venda não bate/)).toBeInTheDocument();
     expect(screen.getByText(/Devia ser R\$\s*100,00; está R\$\s*80,00\./)).toBeInTheDocument();
     expect(screen.getByText(/Devia ser 7 peças; está 8 peças\./)).toBeInTheDocument();
+    expect(screen.getByText(/Devia ser 0 peças; está 1 peça\./)).toBeInTheDocument();
+    expect(screen.getByText(/A peça "Brinco Gota" nesta maleta/)).toBeInTheDocument();
+    expect(screen.getByText('Maleta 5d2a7c19')).toBeInTheDocument();
     expect(screen.getByText('Venda 8f14e45f')).toBeInTheDocument();
     expect(screen.getByText('Peça 2c4e28ba')).toBeInTheDocument();
     expect(screen.queryByText(/Tudo certo: o dinheiro/)).not.toBeInTheDocument();

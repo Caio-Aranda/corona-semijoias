@@ -30,6 +30,8 @@ export const TEXTOS_DE_CONCILIACOES = {
     C8: 'Maletas acertadas e faltas',
     C9: 'Acertos: cada venda, estorno e devolução entra uma vez',
     C10: 'Compras e parcelas a pagar',
+    C11: 'Estoque completo, peça por peça',
+    C12: 'Cada maleta enviada, peça por peça',
   } as Record<string, string>,
   explicacoes: {
     C1: 'Para cada venda: o valor, menos o que foi devolvido, é igual ao que o cliente já pagou mais o que ainda falta nas parcelas. Venda desfeita não tem parcela em aberto.',
@@ -41,6 +43,8 @@ export const TEXTOS_DE_CONCILIACOES = {
     C8: 'Toda maleta acertada fica com saldo zero, e cada falta registrada no acerto tem a perda da mesma quantidade na maleta.',
     C9: 'Nenhuma venda, estorno de venda ou devolução entra em mais de um acerto, e nenhuma de maleta já acertada fica de fora de todos os acertos.',
     C10: 'Para cada compra com contas a pagar, a soma das parcelas (mesmo as canceladas) é o total da compra.',
+    C11: 'Para cada peça: o que está na loja mais o que está nas maletas é o que foi comprado e lançado, menos o que foi vendido, o que faltou ou estragou no acerto, mais o que o cliente devolveu à maleta e o que chegou à loja pelo acerto.',
+    C12: 'Em toda maleta enviada, para cada peça: o que há na maleta é o que foi enviado, menos o que foi vendido, devolvido à dona e perdido, mais o que o cliente devolveu. Nenhuma peça fica negativa e a maleta cancelada não guarda peça.',
   } as Record<string, string>,
   referencias: {
     VENDA: 'Venda',

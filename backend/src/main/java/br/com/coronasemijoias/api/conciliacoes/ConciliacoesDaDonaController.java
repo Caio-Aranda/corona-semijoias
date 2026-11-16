@@ -26,7 +26,7 @@ public class ConciliacoesDaDonaController {
     @Operation(operationId = "conferirODinheiroDaFase7", summary = "Conferências do dinheiro (vendas, acertos, comissão, caixa, contas, estoque)",
             description = "Confere o banco inteiro num retrato só: C1 vendas e o que falta receber, C2 acerto do vendedor, C3 comissão, "
                     + "C4 caixa, C5 contas a receber e a pagar, C7 estoque e maletas, C8 maletas acertadas e faltas, C9 cada venda, estorno "
-                    + "e devolução em um acerto só, C10 compras e parcelas (a C6 está vaga). Cada conferência traz quantos registros olhou "
+                    + "e devolução em um acerto só, C10 compras e parcelas, C11 estoque completo peça por peça (loja mais maletas contra compras, vendas, devoluções e acertos) e C12 saldo de cada maleta enviada (a C6 está vaga). Cada conferência traz quantos registros olhou "
                     + "e as diferenças (o que não bate, com o esperado e o encontrado); tudoCerto = nenhuma diferença. Com chave (por "
                     + "exemplo C4) devolve só aquela conferência; chave desconhecida dá 400. Só leitura: nada é corrigido.")
     @GetMapping
