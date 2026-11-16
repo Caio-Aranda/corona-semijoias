@@ -305,8 +305,8 @@ class RelatoriosDeVendasTest extends ApoioDasTrocas {
         // Cliente C: venda 4 (peças 3; vendido 290; devolvido 45; líquido 245; ticket 245).
         JsonNode clientes = relatorio("por-cliente", MES);
         assertThat(clientes.get("itens")).hasSize(3);
-        linhaAgrupada(linhaDe(clientes, "chave", clienteA), 2, 5, v("480.00", "92.00", "480000"), v("100.00", "20.00", "100000"),
-                v("380.00", "72.00", "380000"), "190.00");
+        linhaAgrupada(linhaDe(clientes, "chave", clienteA), 2, 5, v("480.00", "96.00", "480000"), v("100.00", "20.00", "100000"),
+                v("380.00", "76.00", "380000"), "190.00");
         linhaAgrupada(linhaDe(clientes, "chave", clienteB), 2, 1, v("180.00", "45.00", "90000"), v("130.00", "32.50", "65000"),
                 v("50.00", "12.50", "25000"), "25.00");
         linhaAgrupada(linhaDe(clientes, "chave", clienteC), 1, 3, v("290.00", "58.00", "290000"), v("45.00", "9.00", "45000"),
@@ -320,7 +320,7 @@ class RelatoriosDeVendasTest extends ApoioDasTrocas {
         JsonNode x = linhaDe(categorias, "chave", categoriaX);
         assertThat(x.get("vendas").asLong()).isEqualTo(3);
         assertThat(x.get("pecas").asLong()).isEqualTo(6);
-        moedas(x, "vendido", "660.00", "136.00", "660000");
+        moedas(x, "vendido", "660.00", "132.00", "660000");
         moedas(x, "devolvido", "100.00", "20.00", "100000");
         moedas(x, "liquido", "560.00", "112.00", "560000");
         JsonNode y = linhaDe(categorias, "chave", categoriaY);
@@ -421,7 +421,8 @@ class RelatoriosDeVendasTest extends ApoioDasTrocas {
         confere(total(r, "liquido"), 5, "675.00", "137.50", "650000");
         confere(total(r, "vendido"), 5, "950.00", "199.00", "860000");
         confere(total(r, "devolvido"), 3, "275.00", "61.50", "210000");
-        confere(total(r, "canceladas"), 1, "100.00", "25.00", "50000");
+        // O padrão só mostra as vendas feitas: a cancelada não está nem na lista nem no rodapé (como nas devoluções).
+        confere(total(r, "canceladas"), 0, "0.00", "0.00", "0");
 
         JsonNode quatro = linhaDe(r, "vendaId", venda4);
         assertThat(quatro.get("pecas").asLong()).isEqualTo(3);
@@ -441,6 +442,7 @@ class RelatoriosDeVendasTest extends ApoioDasTrocas {
         JsonNode todas = relatorio("vendas", MES + "&situacao=TODAS");
         assertThat(todas.get("itens")).hasSize(6);
         confere(total(todas, "liquido"), 5, "675.00", "137.50", "650000");
+        confere(total(todas, "canceladas"), 1, "100.00", "25.00", "50000");
         JsonNode cinco = linhaDe(todas, "vendaId", venda5);
         assertThat(cinco.get("cancelada").asBoolean()).isTrue();
         assertThat(cinco.get("situacao").asString()).isEqualTo("ESTORNADA");
