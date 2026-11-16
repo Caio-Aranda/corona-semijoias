@@ -42,6 +42,13 @@ Ficam abertos cinco pontos que mudam tabela, fórmula ou número mostrado à don
    A aba **Totais** reproduz os blocos da referência **sem entrada, sem cheque e sem "remarcadas"** (não existem no sistema novo): Novas maletas, Reposições, Acerto (devolvidos, vendidos, comissão, líquido, pendências pagas e em aberto), Vendas (quantidade, total, descontos, líquido), Trocas (trocas e créditos em aberto e usados), Total e Total recebido no acerto (Dinheiro, Transferência, Boleto). Cada bloco sai das consultas já validadas (acerto, comissão, recebimentos, créditos); nenhum total novo é gravado. Identidade conferida por teste: para cada maleta acertada, enviado = vendido + devolvido + falta, em peças.
 6. **Conferência diária (rodada das conciliações com aviso).** Uma vez por dia (03:00 de Brasília, depois da limpeza técnica) e quando a dona pede ("Conferir agora", comando com UUID), o servidor roda **todas** as conferências de produção (estoque da ADR-0008, devolução e troca da 6.10, C1 a C10 sem a C6, e as novas da 8.8) num retrato só (`REPEATABLE READ`, só leitura) e **guarda o resultado** em duas tabelas só do servidor, imutáveis (só `INSERT`): `rodadas_conferencia` (quando, quem pediu ou "automática", situação `SEM_DIFERENCA`, `COM_DIFERENCA` ou `FALHOU`, duração) e `diferencas_conferencia` (rodada, chave, tipo e id do registro, esperado e encontrado em texto). Uma rodada por vez (`pg_try_advisory_xact_lock`; a segunda pedida enquanto uma roda recebe o resultado da que está rodando). O aviso em "O que precisa da sua atenção" é calculado na hora a partir da **última rodada** (uma nova `FonteDeAvisos`): com diferença, "A conferência de hoje achou N diferenças"; falhou ou não rodou nas últimas 26 horas, "A conferência de hoje não rodou". Nada é corrigido sozinho (correção continua sendo estorno). Retenção: guardar tudo (volume pequeno: uma linha por dia mais as diferenças, que são zero em condições normais).
 
+   **Como ficou (tarefa 8.4, V047).** Foi feito como descrito, com estes acertos e **uma divergência**:
+   - **Divergência (409).** A segunda rodada pedida enquanto outra roda **não** recebe o resultado da que está rodando: recebe **409** ("Uma conferência já está rodando. Espere um pouco e atualize a tela.") e nada é gravado por ela. Esperar a outra exigiria segurar a requisição e produziria outro retrato; o 409 é o padrão do resto da API (201, 200, 409) e a tela mostra o resultado ao atualizar. A agenda, ao dar de cara com uma rodada em andamento, só registra no log e tenta de novo no dia seguinte.
+   - **Chaves.** Treze conferências, cada uma com a sua chave (`ESTOQUE`, `DEVOLUCAO_E_TROCA`, `C1` a `C5` e `C7` a `C12`), para o erro de uma não derrubar as outras. A falha guarda **só a chave** (o erro técnico vai para o log, nunca para a tela). Cada uma chama a classe de produção que já existia; nenhuma fórmula mudou.
+   - **Ponto de salvamento.** Cada conferência roda dentro de um `SAVEPOINT`; se der erro, a rodada volta ao ponto e segue. Os três métodos de leitura que a rodada chama ganharam `noRollbackFor`, senão um erro marcaria a transação de fora como "só desfazer" e a rodada inteira se perderia.
+   - **Tabelas.** `rodadas_conferencia` (origem `AUTOMATICA` ou `PEDIDA`, quem pediu, início e fim, situação, chaves conferidas e com falha, total) e `diferencas_conferencia` (chave, item, tipo, referência em texto, descrição, esperado e encontrado em texto exato, unidade, ordem). Imutáveis pelas convenções do servidor (o banco recusa `UPDATE`, `DELETE` e `TRUNCATE`); fora do sync. Só o `ServicoDaConferenciaDiaria` escreve nelas (teste de arquitetura).
+   - **Aviso.** `CONFERENCIA_COM_DIFERENCA` e `CONFERENCIA_NAO_RODOU`; "nenhuma rodada ainda" também avisa, até a primeira rodada (a dona pode tocar em **Conferir agora**). 03:00 de Brasília e 26 horas são o padrão R2.
+
 ## Consequências
 
 ### Boas
@@ -54,7 +61,7 @@ Ficam abertos cinco pontos que mudam tabela, fórmula ou número mostrado à don
 
 - Custo pela data da venda depende do histórico de compras; a mudança manual do custo no cadastro (sem compra) só aparece nas linhas "custo do cadastro" e muda o passado delas.
 - A rodada diária roda dentro da API (uma instância só, como as cotações e a limpeza); mais de uma instância continua pedindo ADR (pendência da tarefa 11).
-- Duas tabelas novas (migração V047 ou a próxima livre).
+- Duas tabelas novas (migração V047, feita na tarefa 8.4).
 
 ## Alternativas consideradas
 
