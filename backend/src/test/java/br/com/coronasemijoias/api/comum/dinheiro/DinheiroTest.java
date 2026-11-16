@@ -401,4 +401,33 @@ class DinheiroTest {
             assertThat(Dinheiro.comissaoSobreTotal(ds("100.00", "-20.00"), d("7.50"))).isEqualTo(d("6.00"));
         }
     }
+
+    @Nested
+    class TicketMedioEPercentual {
+
+        @Test
+        void cemReaisEmTresVendasDaTrintaETresETrintaETres() {
+            assertThat(Dinheiro.dividir(d("100.00"), 3)).isEqualTo(d("33.33"));
+            assertThat(Dinheiro.dividir(d("200.00"), 3)).isEqualTo(d("66.67"));
+            assertThat(Dinheiro.dividir(d("0.00"), 4)).isEqualTo(d("0.00"));
+        }
+
+        @Test
+        void dividirPorZeroVendasEErroDeProgramacao() {
+            assertThatThrownBy(() -> Dinheiro.dividir(d("10.00"), 0)).isInstanceOf(IllegalArgumentException.class);
+        }
+
+        @Test
+        void percentualComDuasCasasEMeioParaCima() {
+            assertThat(Dinheiro.percentualDe(d("400.00"), d("675.00"))).isEqualTo(d("59.26"));
+            assertThat(Dinheiro.percentualDe(d("160.00"), d("675.00"))).isEqualTo(d("23.70"));
+            assertThat(Dinheiro.percentualDe(d("1.00"), d("8.00"))).isEqualTo(d("12.50"));
+            assertThat(Dinheiro.percentualDe(d("675.00"), d("675.00"))).isEqualTo(d("100.00"));
+        }
+
+        @Test
+        void percentualDeUmTodoZeradoEErroDeProgramacao() {
+            assertThatThrownBy(() -> Dinheiro.percentualDe(d("1.00"), d("0.00"))).isInstanceOf(IllegalArgumentException.class);
+        }
+    }
 }
