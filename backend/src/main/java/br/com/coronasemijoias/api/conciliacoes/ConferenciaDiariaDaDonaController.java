@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ConferenciaDiariaDaDonaController {
 
     /** O corpo de "Conferir agora": só o id do comando, gerado pelo aplicativo. */
-    public record PedidoDeConferencia(UUID id) {
+    public record PedidoDeConferenciaDiaria(UUID id) {
     }
 
     private final ServicoDaConferenciaDiaria servico;
@@ -47,7 +47,7 @@ public class ConferenciaDiariaDaDonaController {
                     + "resultado. Nada é corrigido. Devolve a rodada com as diferenças: 201 na primeira vez, 200 se o mesmo id já "
                     + "foi gravado, 409 se outra conferência está rodando. Sem id, 400.")
     @PostMapping
-    public ResponseEntity<RodadaComDiferencas> conferirAgora(@RequestBody PedidoDeConferencia pedido,
+    public ResponseEntity<RodadaComDiferencas> conferirAgora(@RequestBody PedidoDeConferenciaDiaria pedido,
             @AuthenticationPrincipal UsuarioAutenticado quem) {
         if (pedido == null || pedido.id() == null) {
             throw Validacoes.recusar("id", "Atualize o aplicativo e tente de novo: faltou o número do pedido de conferência.");

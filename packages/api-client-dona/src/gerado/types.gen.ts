@@ -203,9 +203,18 @@ export type ComprasDaDonaControllerRespostaDoResumo = {
 export type ConciliacoesDaFase7Conferencia = {
     chave?: string;
     conferidos?: number;
-    divergencias?: Array<Diferenca>;
+    divergencias?: Array<ConciliacoesDaFase7Diferenca>;
     explicacao?: string;
     titulo?: string;
+};
+
+export type ConciliacoesDaFase7Diferenca = {
+    descricao?: string;
+    encontrado?: string;
+    esperado?: string;
+    referencia?: string;
+    tipo?: string;
+    unidade?: 'REAIS' | 'PECAS' | 'REGISTROS' | 'PERCENTUAL';
 };
 
 export type ConciliacoesDaFase7Resultado = {
@@ -251,6 +260,23 @@ export type ConsultasDaConferenciaConferencia = {
     id?: string;
     itens?: Array<ConsultasDaConferenciaLinha>;
     remessaId?: string;
+};
+
+export type ConsultasDaConferenciaDiariaDiferenca = {
+    descricao?: string;
+    encontrado?: string;
+    esperado?: string;
+    item?: string;
+    referencia?: string;
+    tipo?: string;
+    unidade?: string;
+};
+
+export type ConsultasDaConferenciaDiariaPagina = {
+    itens?: Array<Rodada>;
+    pagina?: number;
+    tamanho?: number;
+    total?: number;
 };
 
 export type ConsultasDaConferenciaLinha = {
@@ -632,15 +658,6 @@ export type DevolucoesDaDonaControllerPedidoDeRevisao = {
     observacao?: string;
 };
 
-export type Diferenca = {
-    descricao?: string;
-    encontrado?: string;
-    esperado?: string;
-    referencia?: string;
-    tipo?: string;
-    unidade?: 'REAIS' | 'PECAS' | 'REGISTROS' | 'PERCENTUAL';
-};
-
 export type DocumentoDoVendedorResposta = {
     descricao?: string;
     enviadoEm?: string;
@@ -839,6 +856,11 @@ export type Garantia = {
     prazoArrependimentoDias?: number;
     prazoDefeitoDias?: number;
     valorAprovacaoReembolso?: string;
+};
+
+export type Grupo = {
+    chave?: string;
+    diferencas?: Array<ConsultasDaConferenciaDiariaDiferenca>;
 };
 
 export type ImportacaoDeFotosPrevia = {
@@ -1868,6 +1890,10 @@ export type PedidoDeCodigo = {
     tipo: string;
 };
 
+export type PedidoDeConferenciaDiaria = {
+    id?: string;
+};
+
 export type PedidoDeContagem = {
     codigo?: string;
     contado?: number;
@@ -2813,6 +2839,23 @@ export type ResultadoDaOperacao = {
     mensagem?: string;
     operacaoId?: string;
     resultado?: 'ACEITO' | 'JA_RECEBIDO' | 'CONFLITO' | 'RECUSADO' | 'NAO_PROCESSADO';
+};
+
+export type Rodada = {
+    chavesComFalha?: Array<string>;
+    chavesConferidas?: Array<string>;
+    id?: string;
+    iniciadaEm?: string;
+    origem?: string;
+    pedidaPor?: string;
+    situacao?: string;
+    terminadaEm?: string;
+    totalDiferencas?: number;
+};
+
+export type RodadaComDiferencas = {
+    grupos?: Array<Grupo>;
+    rodada?: Rodada;
 };
 
 export type SemProduto = {
@@ -3993,6 +4036,59 @@ export type ConferirODinheiroDaFase7Responses = {
 };
 
 export type ConferirODinheiroDaFase7Response = ConferirODinheiroDaFase7Responses[keyof ConferirODinheiroDaFase7Responses];
+
+export type ListarConferenciasData = {
+    body?: never;
+    path?: never;
+    query?: {
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/conferencias';
+};
+
+export type ListarConferenciasResponses = {
+    /**
+     * OK
+     */
+    200: ConsultasDaConferenciaDiariaPagina;
+};
+
+export type ListarConferenciasResponse = ListarConferenciasResponses[keyof ListarConferenciasResponses];
+
+export type ConferirAgoraData = {
+    body: PedidoDeConferenciaDiaria;
+    path?: never;
+    query?: never;
+    url: '/api/dona/conferencias';
+};
+
+export type ConferirAgoraResponses = {
+    /**
+     * OK
+     */
+    200: RodadaComDiferencas;
+};
+
+export type ConferirAgoraResponse = ConferirAgoraResponses[keyof ConferirAgoraResponses];
+
+export type VerConferenciaData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/conferencias/{id}';
+};
+
+export type VerConferenciaResponses = {
+    /**
+     * OK
+     */
+    200: RodadaComDiferencas;
+};
+
+export type VerConferenciaResponse = VerConferenciaResponses[keyof VerConferenciaResponses];
 
 export type LerComissaoData = {
     body?: never;

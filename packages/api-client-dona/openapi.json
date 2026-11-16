@@ -633,7 +633,7 @@
           },
           "divergencias" : {
             "items" : {
-              "$ref" : "#/components/schemas/Diferenca"
+              "$ref" : "#/components/schemas/ConciliacoesDaFase7Diferenca"
             },
             "type" : "array"
           },
@@ -641,6 +641,37 @@
             "type" : "string"
           },
           "titulo" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ConciliacoesDaFase7Diferenca" : {
+        "properties" : {
+          "descricao" : {
+            "type" : "string"
+          },
+          "encontrado" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "esperado" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "referencia" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "unidade" : {
+            "enum" : [ "REAIS", "PECAS", "REGISTROS", "PERCENTUAL" ],
             "type" : "string"
           }
         },
@@ -789,6 +820,55 @@
           "remessaId" : {
             "format" : "uuid",
             "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ConsultasDaConferenciaDiariaDiferenca" : {
+        "properties" : {
+          "descricao" : {
+            "type" : "string"
+          },
+          "encontrado" : {
+            "type" : "string"
+          },
+          "esperado" : {
+            "type" : "string"
+          },
+          "item" : {
+            "type" : "string"
+          },
+          "referencia" : {
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "unidade" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ConsultasDaConferenciaDiariaPagina" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Rodada"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
           }
         },
         "type" : "object"
@@ -2120,37 +2200,6 @@
         },
         "type" : "object"
       },
-      "Diferenca" : {
-        "properties" : {
-          "descricao" : {
-            "type" : "string"
-          },
-          "encontrado" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          },
-          "esperado" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          },
-          "referencia" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "tipo" : {
-            "type" : "string"
-          },
-          "unidade" : {
-            "enum" : [ "REAIS", "PECAS", "REGISTROS", "PERCENTUAL" ],
-            "type" : "string"
-          }
-        },
-        "type" : "object"
-      },
       "DocumentoDoVendedorResposta" : {
         "properties" : {
           "descricao" : {
@@ -2877,6 +2926,20 @@
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "Grupo" : {
+        "properties" : {
+          "chave" : {
+            "type" : "string"
+          },
+          "diferencas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ConsultasDaConferenciaDiariaDiferenca"
+            },
+            "type" : "array"
           }
         },
         "type" : "object"
@@ -6415,6 +6478,15 @@
         "required" : [ "codigo", "tipo" ],
         "type" : "object"
       },
+      "PedidoDeConferenciaDiaria" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "PedidoDeContagem" : {
         "properties" : {
           "codigo" : {
@@ -9524,6 +9596,62 @@
         },
         "type" : "object"
       },
+      "Rodada" : {
+        "properties" : {
+          "chavesComFalha" : {
+            "items" : {
+              "type" : "string"
+            },
+            "type" : "array"
+          },
+          "chavesConferidas" : {
+            "items" : {
+              "type" : "string"
+            },
+            "type" : "array"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "iniciadaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "origem" : {
+            "type" : "string"
+          },
+          "pedidaPor" : {
+            "type" : "string"
+          },
+          "situacao" : {
+            "type" : "string"
+          },
+          "terminadaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "totalDiferencas" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RodadaComDiferencas" : {
+        "properties" : {
+          "grupos" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Grupo"
+            },
+            "type" : "array"
+          },
+          "rodada" : {
+            "$ref" : "#/components/schemas/Rodada"
+          }
+        },
+        "type" : "object"
+      },
       "SemProduto" : {
         "properties" : {
           "codigo" : {
@@ -12213,6 +12341,109 @@
         } ],
         "summary" : "Conferências do dinheiro (vendas, acertos, comissão, caixa, contas, estoque)",
         "tags" : [ "conciliacoes-da-dona-controller" ]
+      }
+    },
+    "/api/dona/conferencias" : {
+      "get" : {
+        "description" : "As rodadas da conferência, da mais nova para a mais velha: quando, se foi automática ou pedida (e por quem), a situação, quantas diferenças e as conferências que deram erro. pagina começa em zero; tamanho vai de 1 a 100 (padrão 30).",
+        "operationId" : "listarConferencias",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConsultasDaConferenciaDiariaPagina"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Histórico das conferências",
+        "tags" : [ "conferencia-diaria-da-dona-controller" ]
+      },
+      "post" : {
+        "description" : "Roda todas as conferências (estoque, devolução e troca, C1 a C5 e C7 a C12) num retrato só do banco e guarda o resultado. Nada é corrigido. Devolve a rodada com as diferenças: 201 na primeira vez, 200 se o mesmo id já foi gravado, 409 se outra conferência está rodando. Sem id, 400.",
+        "operationId" : "conferirAgora",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeConferenciaDiaria"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RodadaComDiferencas"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Conferir agora",
+        "tags" : [ "conferencia-diaria-da-dona-controller" ]
+      }
+    },
+    "/api/dona/conferencias/{id}" : {
+      "get" : {
+        "description" : "A rodada com as diferenças agrupadas por conferência, na ordem em que foram guardadas. Valores só em Real (a conferência não usa Dólar nem Guarani). 404 se a rodada não existe.",
+        "operationId" : "verConferencia",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RodadaComDiferencas"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ver uma conferência",
+        "tags" : [ "conferencia-diaria-da-dona-controller" ]
       }
     },
     "/api/dona/configuracoes/comissao" : {
