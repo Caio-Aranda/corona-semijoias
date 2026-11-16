@@ -267,6 +267,20 @@ public class ServicoDeEstoque {
     }
 
     /**
+     * O saldo, por peça, nas maletas abertas (ENVIADA, CONFERIDA e EM_ACERTO): o que foi enviado mais os movimentos da maleta.
+     * Colunas: produto_id e saldo. A C7 e a C11 das conciliações usam este mesmo pedaço (uma fórmula só); vai entre parênteses.
+     */
+    public static final String SQL_SALDO_NAS_MALETAS_ABERTAS = """
+            SELECT i.produto_id, sum(i.qtd_enviada + coalesce(m.soma, 0)) AS saldo
+                               FROM corona.remessas r
+                               JOIN corona.itens_remessa i ON i.remessa_id = r.id AND i.deleted_at IS NULL
+                               LEFT JOIN (SELECT remessa_id, produto_id, sum(quantidade) AS soma
+                                            FROM corona.movimentos_remessa GROUP BY remessa_id, produto_id) m
+                                      ON m.remessa_id = i.remessa_id AND m.produto_id = i.produto_id
+                              WHERE r.deleted_at IS NULL AND r.status IN ('ENVIADA', 'CONFERIDA', 'EM_ACERTO')
+                              GROUP BY i.produto_id""";
+
+    /**
      * A consulta única de "estoque da loja + maletas" (a mesma da conciliação C7 da Fase 7: uma fórmula só). Colunas: id, nome,
      * foto_principal_hash, estoque_atual, nas_maletas e esperado.
      */
@@ -280,14 +294,8 @@ public class ServicoDeEstoque {
                                LEFT JOIN corona.movimentacoes_estoque original ON original.id = me.estorna_id
                               WHERE me.origem_tipo <> 'MALETA' AND coalesce(original.origem_tipo, '') <> 'MALETA'
                               GROUP BY me.produto_id) fora ON fora.produto_id = p.id
-                  LEFT JOIN (SELECT i.produto_id, sum(i.qtd_enviada + coalesce(m.soma, 0)) AS saldo
-                               FROM corona.remessas r
-                               JOIN corona.itens_remessa i ON i.remessa_id = r.id AND i.deleted_at IS NULL
-                               LEFT JOIN (SELECT remessa_id, produto_id, sum(quantidade) AS soma
-                                            FROM corona.movimentos_remessa GROUP BY remessa_id, produto_id) m
-                                      ON m.remessa_id = i.remessa_id AND m.produto_id = i.produto_id
-                              WHERE r.deleted_at IS NULL AND r.status IN ('ENVIADA', 'CONFERIDA', 'EM_ACERTO')
-                              GROUP BY i.produto_id) maletas ON maletas.produto_id = p.id
+                  LEFT JOIN (""" + SQL_SALDO_NAS_MALETAS_ABERTAS + """
+                ) maletas ON maletas.produto_id = p.id
                   LEFT JOIN (SELECT mv.produto_id, sum(mv.quantidade) AS soma
                                FROM corona.movimentos_remessa mv
                               WHERE mv.tipo IN ('VENDA', 'ESTORNO_VENDA', 'DEVOLUCAO_CLIENTE', 'TROCA_SAIDA', 'TROCA_ENTRADA', 'PERDA')
