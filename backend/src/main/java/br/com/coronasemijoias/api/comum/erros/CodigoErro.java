@@ -937,6 +937,18 @@ public enum CodigoErro {
             "Há acerto em andamento nesta semana.",
             "Há acerto em andamento nesta semana. Termine ou desista do acerto antes de fechar a semana."),
 
+    // --- Conferência diária (Fase 8, tarefa 8.4; ADR-0015, item 6) ---
+
+    /** Já há uma rodada da conferência rodando (HTTP 409): só uma de cada vez. */
+    CONFERENCIA_EM_ANDAMENTO(
+            "Uma conferência já está rodando.",
+            "Uma conferência já está rodando. Espere um pouco e atualize a tela."),
+
+    /** Nenhuma rodada da conferência com este número (HTTP 404). */
+    CONFERENCIA_NAO_ENCONTRADA(
+            "Não encontramos esta conferência.",
+            "Não encontramos esta conferência. Volte à lista e abra uma das que aparecem."),
+
     // --- Receber os dados (Fase 5, tarefa 5.4; ADR-0013, item 3) ---
 
     /** O ponto de onde o computador recebe os dados não vale mais (backup restaurado): ele baixa tudo de novo (HTTP 409). */

@@ -251,7 +251,7 @@ public class ServicoDeEstoque {
     // --- conciliação ---
 
     /** Para cada produto, soma dos movimentos = saldo guardado. A lista de divergências deve vir vazia. */
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true, noRollbackFor = RuntimeException.class)
     public Conciliacao conciliar() {
         List<Divergencia> divergencias = jdbc.query("""
                 SELECT p.id, p.nome, p.foto_principal_hash, p.estoque_atual, coalesce(sum(m.quantidade), 0) AS soma
