@@ -45,7 +45,7 @@ public class ConferenciasDeDevolucaoETroca {
         this.estoque = estoque;
     }
 
-    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ, noRollbackFor = RuntimeException.class)
     public Resultado conferir() {
         List<Conferencia> todas = List.of(maleta(), devolvidoPorPeca(), creditos(), dinheiroDevolvido(), contasDaVenda());
         boolean certo = todas.stream().allMatch(c -> c.divergencias().isEmpty());

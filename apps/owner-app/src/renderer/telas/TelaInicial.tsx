@@ -41,6 +41,8 @@ const ROTA_DO_AVISO: Record<string, string> = {
   DEVOLUCOES_PARA_AUTORIZAR: 'devolucoes/autorizar',
   DEVOLUCOES_PARA_REVISAR: 'devolucoes/revisar',
   MUITAS_DEVOLUCOES: 'devolucoes/lista',
+  CONFERENCIA_COM_DIFERENCA: 'conciliacoes/conferencia-diaria',
+  CONFERENCIA_NAO_RODOU: 'conciliacoes/conferencia-diaria',
 };
 
 function lerAvisos(bruto: unknown): AvisoDaDona[] {

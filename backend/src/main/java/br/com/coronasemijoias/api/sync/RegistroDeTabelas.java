@@ -271,7 +271,10 @@ public final class RegistroDeTabelas {
                         // Contas a pagar, caixa manual e fechar semana (tarefa 7.7, V046): nunca vão ao aplicativo do vendedor.
                         new TabelaDoServidor("contas_pagar", false),
                         new TabelaDoServidor("baixas_pagar", true),
-                        new TabelaDoServidor("fechamentos_semana", true)));
+                        new TabelaDoServidor("fechamentos_semana", true),
+                        // Rodadas da conferência diária (tarefa 8.4, V047): só do servidor, imutáveis, nunca vão ao aplicativo.
+                        new TabelaDoServidor("rodadas_conferencia", true),
+                        new TabelaDoServidor("diferencas_conferencia", true)));
     }
 
     /** Este registro somado a outro (usado pelos testes para acrescentar as tabelas de teste). */

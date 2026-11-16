@@ -30,6 +30,7 @@ import { TelaContasAPagar } from './financeiro/TelaContasAPagar';
 import { TelaContasAReceber } from './financeiro/TelaContasAReceber';
 import { TelaRecebimentos } from './financeiro/TelaRecebimentos';
 import { TelaCategoriasDoCaixa } from './financeiro/TelaCategoriasDoCaixa';
+import { TelaConferenciaDiaria } from './conciliacoes/TelaConferenciaDiaria';
 import { TelaConferenciaDoDinheiro } from './conciliacoes/TelaConferenciaDoDinheiro';
 import { TelaConferencia } from './devolucoes/TelaConferencia';
 import { TelaMaletas } from './maletas/TelaMaletas';
@@ -137,6 +138,8 @@ function Conteudo({
       return <TelaConferencia ponte={ponte} />;
     case 'conciliacoes/dinheiro':
       return <TelaConferenciaDoDinheiro ponte={ponte} />;
+    case 'conciliacoes/conferencia-diaria':
+      return <TelaConferenciaDiaria ponte={ponte} />;
     case 'pessoas/usuarios':
       return <TelaUsuarios ponte={ponte} />;
     case 'cadastros/fornecedores':

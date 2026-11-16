@@ -66,4 +66,37 @@ export const TEXTOS_DE_CONCILIACOES = {
   outraReferencia: 'Registro',
   pecas: (n: string) => `${n} ${n === '1' ? 'peça' : 'peças'}`,
   registros: (n: string) => `${n} ${n === '1' ? 'registro' : 'registros'}`,
+  /** A conferência de hoje (tarefa 8.4): o sistema confere sozinho de madrugada e a dona pode pedir na hora. */
+  diaria: {
+    menu: 'Conferência de hoje',
+    titulo: 'Conferência de hoje',
+    ajuda:
+      'Todo dia, de madrugada, o sistema confere sozinho o dinheiro, as contas, o estoque e as devoluções. Aqui você vê o resultado e pode conferir de novo quando quiser.',
+    aviso:
+      'Nada é corrigido sozinho. Se aparecer diferença, avise o suporte e não mexa nas vendas, nos acertos nem no caixa até resolver.',
+    conferirAgora: 'Conferir agora',
+    conferindo: 'Conferindo...',
+    ultima: 'Última conferência',
+    anteriores: 'Conferências anteriores',
+    nenhuma: 'Ainda não houve nenhuma conferência. Toque em Conferir agora.',
+    quando: (q: string) => `Em ${q}`,
+    automatica: 'Feita sozinha pelo sistema',
+    pedidaPor: (nome: string) => (nome ? `Pedida por ${nome}` : 'Pedida por você'),
+    tudoCerto: 'Tudo certo',
+    achouDiferencas: (n: number) => `Achou ${n} ${n === 1 ? 'diferença' : 'diferenças'}`,
+    naoTerminou: (partes: string) => `Não terminou: ${partes}`,
+    naoTerminouAjuda:
+      'Uma parte da conferência não terminou. Toque em Conferir agora; se continuar, avise o suporte.',
+    ver: 'Ver',
+    verDaRodada: (quando: string) => `Ver a conferência de ${quando}`,
+    fechar: 'Fechar',
+    semDiferenca: 'Tudo certo.',
+    carregando: 'Carregando a conferência...',
+    detalhe: (quando: string) => `Conferência de ${quando}`,
+    naoRodouNestaConferencia: 'Esta parte não rodou nesta conferência.',
+  },
+  titulosDaConferencia: {
+    ESTOQUE: 'Estoque: saldo de cada peça e peças nas maletas',
+    DEVOLUCAO_E_TROCA: 'Devoluções, trocas e créditos',
+  } as Record<string, string>,
 } as const;

@@ -63,3 +63,25 @@ Issue #177, PR 190. Plano aprovado no 1º comentário do PR. Só leitura, sem mi
 **O que a execução mostrou (diferença do plano, sem mudar regra).** No plano, a devolução D1 voltava à maleta. A devolução registrada **pela dona** manda a peça para a loja (linha "peças para a loja" do acerto), então o saldo de M1 A é 3 e não 4; a conta à mão foi refeita no comentário da massa. Isso também exercita o termo "recebido na loja" da C11. Outra diferença: apagar um lançamento da dona junto com o atalho da peça nenhuma conferência vê (o lançamento da dona é o próprio documento de origem); por isso o estrago da compra altera a quantidade do movimento, não o apaga.
 
 **Não fiz.** A rodada diária e o aviso (8.4). Nenhum botão de corrigir. Nenhum valor em Real (só peças).
+
+## Tarefa 8.4: conferência diária
+
+Issue #178, PR 195. Plano aprovado no 1º comentário do PR, ajustes no 2º. Migração **V047** (a próxima livre na `main`).
+
+**O que entrou**
+
+- **Banco (V047).** `rodadas_conferencia` e `diferencas_conferencia`, só do servidor, imutáveis (as convenções do servidor recusam `UPDATE`, `DELETE` e `TRUNCATE`, até para o dono das tabelas), fora do sync (registradas como tabelas do servidor). `CHECK`s: `PEDIDA` exige quem pediu e `AUTOMATICA` não tem; `FALHOU` se e só se há chave com falha; `SEM_DIFERENCA` tem total zero; término depois do início.
+- **Rodada.** `ServicoDaConferenciaDiaria.rodar(id, origem, pedidaPor)`: id já gravado devolve a rodada (200); trava consultiva `pg_try_advisory_xact_lock` (outra rodando: 409); uma transação `REPEATABLE_READ`; cada uma das treze conferências (`CatalogoDasConferencias`: estoque, devolução e troca, C1 a C5, C7 a C12) dentro de um `SAVEPOINT`, para o erro de uma não derrubar as outras; só `INSERT` nas duas tabelas novas. Nenhuma fórmula de conferência mudou: os adaptadores chamam as classes de produção.
+- **Agenda.** `AgendaDaConferenciaDiaria`, `0 0 3 * * *` na zona `America/Sao_Paulo`, ligada por padrão e desligada nos testes (`corona.conferencia-diaria.agendada`). Erro dentro dela só vai para o log.
+- **Rotas (só ADMIN).** `POST /api/dona/conferencias` (201, 200, 409, 400 sem id), `GET /api/dona/conferencias` (histórico, 30 por página, no máximo 100) e `GET /api/dona/conferencias/{id}` (404 em português). Nenhuma rota do vendedor.
+- **Aviso.** `FonteDeAvisosDaConferencia`, calculado na hora sobre a última rodada, com o `Clock`.
+- **Corona Gestão.** Tela **Conferência de hoje** (última rodada, **Conferir agora** com o mesmo id no segundo toque depois de erro de conexão, histórico, detalhe), canais novos na ponte (`conferencias.listar`, `conferencias.ver`, `conferencias.conferirAgora`) e o aviso novo leva à tela. Cliente da dona regerado; `api-client-vendedor` sem diferença.
+
+**Desvios e observações**
+
+- **409 (registrado no ADR-0015).** A segunda rodada pedida enquanto outra roda recebe 409, e não o resultado da que está rodando.
+- **`noRollbackFor`.** Os três métodos de leitura que a rodada chama (`ConciliacoesDaFase7.conferir`, `ConferenciasDeDevolucaoETroca.conferir` e `ServicoDeEstoque.conciliar`) ganharam `noRollbackFor = RuntimeException.class`: sem isso, um erro que passa por eles marca a transação de fora como "só desfazer" (o teste do erro forçado provou). Eles só leem, então não há nada a desfazer.
+- **Nome do corpo.** O corpo do "Conferir agora" chama `PedidoDeConferenciaDiaria` porque `PedidoDeConferencia` já existe no cliente do vendedor (conferência da maleta) e o OpenAPI trocaria o nome dele.
+- **Testes antigos.** Nenhum teste existente esperava a lista de avisos vazia por inteiro (todos filtram por tipo). Os testes novos que gravam rodada deixam uma rodada limpa no fim (`RodadasDeTeste`), para o aviso novo não aparecer nos outros.
+
+**Como conferir:** `npm run api:test`, `npx vitest run --root apps/owner-app`, `npm run lint`, `npm run typecheck`, `npm run format:check`.

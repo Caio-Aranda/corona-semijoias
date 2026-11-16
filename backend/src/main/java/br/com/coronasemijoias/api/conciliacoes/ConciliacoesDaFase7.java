@@ -49,13 +49,13 @@ public class ConciliacoesDaFase7 {
     }
 
     /** As onze, num retrato só do banco. */
-    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ, noRollbackFor = RuntimeException.class)
     public Resultado conferir() {
         return resultado(CHAVES);
     }
 
     /** Uma só (chave desconhecida, inclusive a C6 que está vaga: recusa em português). */
-    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ, noRollbackFor = RuntimeException.class)
     public Resultado conferir(String chave) {
         String limpa = chave == null ? "" : chave.strip().toUpperCase(Locale.ROOT);
         if (!CHAVES.contains(limpa)) {
