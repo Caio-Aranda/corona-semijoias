@@ -183,7 +183,7 @@ PR 200 (issue #183). Três relatórios só de leitura para a dona (§12, grupo C
 
 ## Tarefa 8.11: acerto na Gestão, prévia tipada e quanto falta para a meta
 
-**Situação:** código pronto, em rascunho no PR 201 (backend, clientes e tela feitos; falta a suíte completa e o `gh pr ready`).
+**Situação:** pronto para revisão no PR 201 (suíte completa verde: 1761 testes do backend, 874 da Gestão).
 
 **O que fez:**
 - A prévia do fechamento da dona (`GET /api/dona/acertos/{id}/fechamento` com o acerto em andamento, `POST .../fechamento/previa` e a propriedade `previa` do 409 `FECHAMENTO_DESATUALIZADO`) deixou de ser um mapa sem tipo: agora é o registro `PreviaDoFechamento`, tipado no OpenAPI e no cliente da dona. O JSON é o mesmo de antes (mesmas chaves, mesmos valores), mais `faltaParaMetaGuarani` e `faltaParaMetaReais`. O GET continua devolvendo o fechamento gravado quando o acerto já está fechado (D3: `oneOf` das duas formas, sem rota nova), e esse formato não ganhou nada (D2).
