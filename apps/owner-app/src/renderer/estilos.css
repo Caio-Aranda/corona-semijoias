@@ -66,16 +66,150 @@
   border: 1px solid var(--cor-borda);
   border-radius: var(--raio-2);
   padding: var(--espaco-4) var(--espaco-6);
+  box-shadow: var(--sombra);
 }
 
-.gestao-atencao h2 {
-  margin: 0 0 var(--espaco-2);
+.gestao-secao {
+  margin: 0 0 var(--espaco-3);
   font-size: var(--texto-grande);
+  font-weight: 700;
 }
 
-.gestao-atencao p {
-  margin: 0;
+/* Saudação com a data por extenso e a cotação do dia. */
+.gestao-saudacao {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--espaco-4);
+  flex-wrap: wrap;
+}
+.gestao-data {
+  margin: var(--espaco-2) 0 0;
   color: var(--cor-texto-suave);
+}
+.gestao-data::first-letter {
+  text-transform: uppercase;
+}
+.gestao-cotacao-dia {
+  display: flex;
+  gap: var(--espaco-4);
+  flex-wrap: wrap;
+  padding: var(--espaco-2) var(--espaco-4);
+  background: var(--cor-fundo);
+  border: 1px solid var(--cor-borda);
+  border-radius: 999px;
+}
+
+/* Atalhos: cartão branco, ícone dourado, uma linha dizendo para que serve. */
+.gestao-atalhos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--espaco-4);
+}
+.gestao-atalho {
+  display: grid;
+  grid-template-columns: 3rem 1fr;
+  column-gap: var(--espaco-4);
+  align-items: center;
+  min-height: 5rem;
+  padding: var(--espaco-3) var(--espaco-4);
+  background: var(--cor-fundo);
+  border: 2px solid var(--cor-borda);
+  border-radius: var(--raio-2);
+  box-shadow: var(--sombra);
+  color: var(--cor-texto);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease;
+}
+.gestao-atalho:hover {
+  transform: translateY(-3px);
+  border-color: var(--cor-ouro);
+}
+.gestao-atalho__icone {
+  grid-row: 1 / span 2;
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.9rem;
+  background: #f6ecd8;
+  color: var(--cor-ouro-escuro);
+}
+.gestao-atalho__nome {
+  font: 700 var(--texto-grande) var(--fonte-dados);
+}
+.gestao-atalho__ajuda {
+  color: var(--cor-texto-suave);
+  font-size: var(--texto-base);
+  line-height: 1.3;
+}
+
+/* Resumo da semana: números que o servidor já calculou; clicar abre a tela de onde vieram. */
+.gestao-numeros {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--espaco-4);
+}
+.gestao-numero {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: var(--espaco-3) var(--espaco-4);
+  background: var(--cor-fundo);
+  border: 1px solid var(--cor-borda);
+  border-top: 4px solid var(--cor-ouro);
+  border-radius: var(--raio-2);
+  color: var(--cor-texto);
+  text-align: left;
+  cursor: pointer;
+}
+.gestao-numero:hover {
+  border-color: var(--cor-ouro);
+}
+.gestao-numero__titulo {
+  color: var(--cor-texto-suave);
+  font-weight: 600;
+}
+.gestao-numero__valor {
+  font: 700 2rem / 1.15 var(--fonte-marca);
+  font-variant-numeric: lining-nums;
+}
+.gestao-numero__detalhe {
+  color: var(--cor-texto-suave);
+  font-size: var(--texto-pequeno);
+}
+
+.gestao-tudo-em-dia {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-4);
+}
+.gestao-tudo-em-dia p {
+  margin: 0;
+}
+.gestao-tudo-em-dia__titulo {
+  font-weight: 700;
+  color: var(--cor-sucesso-texto);
+}
+.gestao-tudo-em-dia__icone {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: var(--cor-sucesso-borda);
+  color: #fff;
+  font-weight: 800;
+}
+
+@media (max-width: 1100px) {
+  .gestao-atalhos,
+  .gestao-numeros {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .gestao-corpo {
@@ -527,4 +661,15 @@ dl.gestao-totais {
 .gestao-painel__item dd {
   margin: 0;
   text-align: right;
+}
+
+.gestao-avisos .cs-aviso__texto {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--espaco-3);
+}
+.gestao-avisos .cs-aviso__texto .cs-botao {
+  min-height: var(--alvo-minimo);
+  padding-block: var(--espaco-1);
 }

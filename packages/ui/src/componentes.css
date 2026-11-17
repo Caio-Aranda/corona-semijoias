@@ -431,7 +431,14 @@ body {
   display: flex;
   flex-direction: column;
   gap: var(--espaco-4);
-  min-width: 13rem;
+  flex: none;
+  width: 16rem;
+  /* O menu acompanha a rolagem e rola sozinho quando é maior que a tela. */
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  max-height: 100vh;
+  overflow-y: auto;
   padding: var(--espaco-4);
   background: var(--cor-fundo);
   border-right: 1px solid var(--cor-borda);
