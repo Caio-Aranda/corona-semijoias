@@ -55,15 +55,15 @@ describe('varredura do pacote do Corona Vendas (ADR-0003, camada 2)', () => {
       '/api/dona',
       'preco_custo',
       'precoCusto',
-      'api-client-dona',
-      'owner-app',
-      'Corona Gestão',
       'custoUnitario',
       'custoAtual',
       'custoAnterior',
       'valorACusto',
       'historicoDeCusto',
       'produtos_custos',
+      'api-client-dona',
+      'owner-app',
+      'Corona Gestão',
     ]);
   });
 
