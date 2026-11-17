@@ -277,25 +277,39 @@ body {
   font-size: var(--texto-grande);
 }
 .cs-campo__com-ver {
+  position: relative;
   display: flex;
-  align-items: stretch;
 }
 .cs-campo__com-ver input {
   flex: 1;
   min-width: 0;
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
+  /* O texto da senha nunca passa por baixo do botão "Mostrar". */
+  padding-right: 8.5rem;
 }
+/* "Mostrar" fica dentro do campo, no canto direito, sem borda própria: olho + palavra. */
 .cs-campo__ver {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  bottom: 2px;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  min-width: 7.5rem;
   padding: 0 var(--espaco-4);
-  border: 2px solid var(--cor-borda-campo);
-  border-left: 0;
-  border-radius: 0 var(--raio-1) var(--raio-1) 0;
-  background: var(--cor-fundo);
+  border: 0;
+  border-radius: calc(var(--raio-1) - 2px);
+  background: transparent;
   color: var(--cor-texto);
   font: 600 1rem var(--fonte-dados);
-  text-decoration: underline;
   cursor: pointer;
+}
+.cs-campo__ver:hover {
+  background: var(--cor-fundo-suave);
+}
+.cs-campo__ver:focus-visible {
+  outline: 3px solid var(--cor-foco);
+  outline-offset: -3px;
 }
 
 .cs-valor__real {
