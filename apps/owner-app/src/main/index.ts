@@ -89,7 +89,9 @@ function criarJanela(): void {
     minHeight: 600,
     show: false,
     title: NOME_DO_APP,
-    backgroundColor: '#FBF7F0',
+    backgroundColor: '#FAF7F2',
+    // Instalado, o Windows usa o ícone do .exe; no modo de desenvolvimento, o PNG da pasta build.
+    ...(app.isPackaged ? {} : { icon: join(app.getAppPath(), 'build', 'icon.png') }),
     webPreferences: {
       preload: join(__dirname, '../preload/index.cjs'),
       contextIsolation: true,
