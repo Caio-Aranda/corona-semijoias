@@ -242,7 +242,7 @@ A dona passa a ver a semana inteira numa tela só e a confiar nos números sem r
 - **Testes (8.2, 8.12 e 8.13):** cada classe de teste roda sozinha e em qualquer ordem; cenário Playwright da dona fazendo o acerto; a semana inteira de ponta a ponta.
 - **Segurança:** nada de custo, lucro, resultado, auditoria nem dado de outro vendedor chega ao Corona Vendas; rotas novas só ADMIN, com 401 e 403 testados.
 
-**Números:** __NUMEROS__
+**Números:** API 1769 testes (api:test completo, sem falha); lint, typecheck e format:check limpos; cliente do vendedor sem diferença ao regenerar. O resultado final de cada tarefa está nas seções acima.
 
 ## O que ficou para depois (e sugestões)
 
