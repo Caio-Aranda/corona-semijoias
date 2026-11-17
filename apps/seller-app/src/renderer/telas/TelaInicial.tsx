@@ -58,8 +58,8 @@ export function TelaInicial({ ponte, nome, aoSair, aoEscolher, prontos = [] }: T
         nomeDoApp="Corona Vendas"
         acoes={
           <>
+            {nome ? <span className="vendas-nome-do-vendedor">{nome}</span> : null}
             <SeletorDeIdioma />
-            {nome ? <span>{nome} </span> : null}
             <Botao onClick={() => void aoSair()}>{TEXTOS.botoes.sair}</Botao>
           </>
         }

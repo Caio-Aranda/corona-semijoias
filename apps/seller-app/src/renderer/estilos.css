@@ -238,3 +238,7 @@
   gap: var(--espaco-4);
   width: 100%;
 }
+
+.vendas-nome-do-vendedor {
+  margin-inline-end: var(--espaco-3);
+}
