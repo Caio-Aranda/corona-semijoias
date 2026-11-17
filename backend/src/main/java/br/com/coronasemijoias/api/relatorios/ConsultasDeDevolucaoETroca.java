@@ -35,7 +35,13 @@ public class ConsultasDeDevolucaoETroca {
 
     public record Filtros(String busca, String vendedorId, String produtoId, String categoriaId, String motivo,
             String situacao, String tipo, String forma, LocalDate de, LocalDate ate, String recorte, Integer pagina,
-            Integer tamanho) {
+            Integer tamanho, String pracaId) {
+
+        /** Sem praça (todos os relatórios que já existiam). */
+        public Filtros(String busca, String vendedorId, String produtoId, String categoriaId, String motivo, String situacao,
+                String tipo, String forma, LocalDate de, LocalDate ate, String recorte, Integer pagina, Integer tamanho) {
+            this(busca, vendedorId, produtoId, categoriaId, motivo, situacao, tipo, forma, de, ate, recorte, pagina, tamanho, null);
+        }
     }
 
     public record LinhaDeDevolucao(UUID id, UUID vendaId, UUID vendedorId, String vendedor, UUID clienteId, String cliente,
@@ -362,6 +368,7 @@ public class ConsultasDeDevolucaoETroca {
                 "t.trocada_em DESC, t.id", totais);
         c.onde("t.deleted_at IS NULL");
         uuid(c, f.vendedorId(), "vendedor", "t.vendedor_id = :vendedor");
+        uuid(c, f.pracaId(), "praca", "v.praca_id = :praca");
         periodo(c, "t.trocada_em", f.de(), f.ate());
         c.busca(f.busca(), "v.nome", "cl.nome");
         switch (escolha(f.situacao(), "REGISTRADAS", List.of("REGISTRADAS", "CANCELADAS", "TODAS"), "situacao",
@@ -406,6 +413,7 @@ public class ConsultasDeDevolucaoETroca {
                 "cr.gerado_em DESC, cr.id", totais);
         c.onde("cr.deleted_at IS NULL");
         uuid(c, f.vendedorId(), "vendedor", "cr.vendedor_id = :vendedor");
+        uuid(c, f.pracaId(), "praca", "v.praca_id = :praca");
         periodo(c, "cr.gerado_em", f.de(), f.ate());
         c.busca(f.busca(), "v.nome", "cl.nome");
         if (preenchido(f.tipo())) {

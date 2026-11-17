@@ -84,6 +84,78 @@ export type Baixa = {
     valor?: string;
 };
 
+export type BlocoDaPrevia = {
+    comissaoPrevista?: ValorEmMoedas;
+    linhas?: number;
+    liquidoPrevisto?: ValorEmMoedas;
+    semCotacao?: boolean;
+    vendido?: ValorEmMoedas;
+};
+
+export type BlocoDeAcerto = {
+    comissao?: ValorEmMoedas;
+    descontos?: ValorEmMoedas;
+    devolvidoALoja?: ValorEmMoedas;
+    devolvidoALojaPecas?: number;
+    devolvidoPeloCliente?: ValorEmMoedas;
+    faltasCobradas?: ValorEmMoedas;
+    ficouDevendo?: ValorEmMoedas;
+    origem?: OrigemDoNumero;
+    origemDasPendencias?: OrigemDoNumero;
+    pendenciasEmAberto?: ValorEmMoedas;
+    pendenciasPagas?: ValorEmMoedas;
+    quantidade?: number;
+    recebido?: ValorEmMoedas;
+    valorDoAcerto?: ValorEmMoedas;
+    vendido?: ValorEmMoedas;
+};
+
+export type BlocoDeMaletasDoPainel = {
+    origem?: OrigemDoNumero;
+    pecas?: number;
+    quantidade?: number;
+    valor?: ValorEmMoedas;
+};
+
+export type BlocoDeTrocas = {
+    creditosEmAberto?: ValorEmMoedas;
+    creditosGerados?: ValorEmMoedas;
+    creditosUsados?: ValorEmMoedas;
+    diferencaAPagar?: ValorEmMoedas;
+    ficouDeCredito?: ValorEmMoedas;
+    origemDasTrocas?: OrigemDoNumero;
+    origemDosCreditos?: OrigemDoNumero;
+    trocas?: number;
+    valorDasTrocas?: ValorEmMoedas;
+};
+
+export type BlocoDeVendas = {
+    descontos?: ValorEmMoedas;
+    devolvido?: ValorEmMoedas;
+    liquido?: ValorEmMoedas;
+    origem?: OrigemDoNumero;
+    quantidade?: number;
+    vendido?: ValorEmMoedas;
+};
+
+export type BlocoRecebido = {
+    boleto?: ValorEmMoedas;
+    dinheiro?: ValorEmMoedas;
+    origem?: OrigemDoNumero;
+    total?: ValorEmMoedas;
+    transferencia?: ValorEmMoedas;
+};
+
+export type BlocoTotal = {
+    descontos?: ValorEmMoedas;
+    enviado?: ValorEmMoedas;
+    liquido?: ValorEmMoedas;
+    maletas?: number;
+    pecas?: number;
+    vendas?: number;
+    vendido?: ValorEmMoedas;
+};
+
 export type BoletoDoAcerto = {
     valor?: string;
     vencimento?: string;
@@ -464,6 +536,30 @@ export type ConsultasDoCaixaSaldo = {
     saldo?: string;
 };
 
+export type ConsultasDoPainelSemanalLinhaDoPedido = {
+    acertoId?: string;
+    comissao?: ValorEmMoedas;
+    dataDaCotacao?: string;
+    dataDoAcerto?: string;
+    devolvido?: ValorEmMoedas;
+    devolvidoPecas?: number;
+    emFaltaPecas?: number;
+    enviado?: ValorEmMoedas;
+    enviadoPecas?: number;
+    liquido?: ValorEmMoedas;
+    maletas?: Array<MaletaDaLinha>;
+    percentualComissao?: string;
+    praca?: string;
+    pracaId?: string;
+    previa?: boolean;
+    semCotacao?: boolean;
+    situacao?: string;
+    vendedor?: string;
+    vendedorId?: string;
+    vendidasPecas?: number;
+    vendidoLiquido?: ValorEmMoedas;
+};
+
 export type ConsultasDoResultadoResultado = {
     ate?: string;
     de?: string;
@@ -544,6 +640,10 @@ export type CotacaoDaNota = {
     guarani?: string;
     totalEmDolar?: string;
     totalEmGuarani?: string;
+};
+
+export type CotacaoDaPrevia = {
+    data?: string;
 };
 
 export type CotacaoDeHojeResposta = {
@@ -1739,6 +1839,13 @@ export type MaletaDaDonaControllerRespostaDoMovimento = {
     tipo?: string;
 };
 
+export type MaletaDaLinha = {
+    id?: string;
+    numero?: string;
+    situacao?: string;
+    tipo?: string;
+};
+
 export type MeiDoVendedorDados = {
     atividade?: string;
     cnpj?: string;
@@ -1776,6 +1883,13 @@ export type NotaDeRemessaControllerSemana = {
 export type ObservacaoDoVendedorDados = {
     texto?: string;
     version?: number;
+};
+
+export type OrigemDoNumero = {
+    filtros?: {
+        [key: string]: string;
+    };
+    rota?: string;
 };
 
 export type PagamentoDoAcerto = {
@@ -1921,6 +2035,15 @@ export type PaginaVendedoresDaDonaControllerResposta = {
     pagina?: number;
     tamanho?: number;
     total?: number;
+};
+
+export type PainelDaSemana = {
+    avisoDaPrevia?: string;
+    cotacaoDaPrevia?: CotacaoDaPrevia;
+    pedidos?: Array<ConsultasDoPainelSemanalLinhaDoPedido>;
+    previaIncluiSemanasAnteriores?: boolean;
+    semana?: SemanaDoPainel;
+    totais?: TotaisDoPainel;
 };
 
 export type ParcelaDaVenda = {
@@ -3057,6 +3180,14 @@ export type SemProduto = {
     nome?: string;
 };
 
+export type SemanaDoPainel = {
+    fim?: string;
+    id?: string;
+    inicio?: string;
+    numero?: number;
+    situacao?: string;
+};
+
 export type SemanasDaDonaControllerPedido = {
     fim: string;
     id?: string;
@@ -3118,6 +3249,17 @@ export type ServicoDeRecebimentosDoVendedorPedidoDeRecebimento = {
 
 export type Tempo = {
     instante?: string;
+};
+
+export type TotaisDoPainel = {
+    acerto?: BlocoDeAcerto;
+    novasMaletas?: BlocoDeMaletasDoPainel;
+    previa?: BlocoDaPrevia;
+    recebidoNoAcerto?: BlocoRecebido;
+    reposicoes?: BlocoDeMaletasDoPainel;
+    total?: BlocoTotal;
+    trocas?: BlocoDeTrocas;
+    vendas?: BlocoDeVendas;
 };
 
 export type Total = {
@@ -3188,6 +3330,12 @@ export type UsuariosDaDonaControllerResposta = {
 
 export type ValorDeTeste = {
     valor?: string;
+};
+
+export type ValorEmMoedas = {
+    emDolar?: string;
+    emGuarani?: string;
+    emReais?: string;
 };
 
 export type ValorSubstituido = {
@@ -5189,6 +5337,27 @@ export type LerResponses = {
 
 export type LerResponse = LerResponses[keyof LerResponses];
 
+export type PainelSemanalData = {
+    body?: never;
+    path?: never;
+    query?: {
+        semana?: string;
+        vendedor?: string;
+        praca?: string;
+        situacao?: string;
+    };
+    url: '/api/dona/painel-semanal';
+};
+
+export type PainelSemanalResponses = {
+    /**
+     * OK
+     */
+    200: PainelDaSemana;
+};
+
+export type PainelSemanalResponse = PainelSemanalResponses[keyof PainelSemanalResponses];
+
 export type ListarPendenciasDoAcertoData = {
     body?: never;
     path?: never;
@@ -6205,6 +6374,7 @@ export type RelatorioDeCreditosDosClientesData = {
         forma?: string;
         de?: string;
         ate?: string;
+        pracaId?: string;
         recorte?: string;
         pagina?: number;
         tamanho?: number;
@@ -6355,6 +6525,7 @@ export type RelatorioDeTrocasData = {
         forma?: string;
         de?: string;
         ate?: string;
+        pracaId?: string;
         recorte?: string;
         pagina?: number;
         tamanho?: number;
@@ -6565,6 +6736,7 @@ export type RelatorioDeAcertosData = {
         semanaId?: string;
         de?: string;
         ate?: string;
+        pracaId?: string;
         recorte?: string;
         pagina?: number;
         tamanho?: number;
@@ -6800,6 +6972,7 @@ export type RelatorioDePendenciasDoAcertoData = {
         situacao?: string;
         de?: string;
         ate?: string;
+        pracaId?: string;
         recorte?: string;
         pagina?: number;
         tamanho?: number;
@@ -6826,6 +6999,7 @@ export type RelatorioDeRecebimentosPorFormaData = {
         momento?: string;
         de?: string;
         ate?: string;
+        pracaId?: string;
         recorte?: string;
         pagina?: number;
         tamanho?: number;

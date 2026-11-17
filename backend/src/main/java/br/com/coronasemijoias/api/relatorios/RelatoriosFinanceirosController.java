@@ -53,10 +53,11 @@ public class RelatoriosFinanceirosController {
             @RequestParam(required = false) String vendedorId, @RequestParam(required = false) String semanaId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate de,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ate,
+            @RequestParam(required = false) String pracaId,
             @RequestParam(required = false) String recorte, @RequestParam(required = false) Integer pagina,
             @RequestParam(required = false) Integer tamanho) {
         return consultas.acertos(new Filtros(busca, vendedorId, semanaId, null, null, null, null, null, null, null, null,
-                null, null, de, ate, recorte, pagina, tamanho));
+                null, null, de, ate, recorte, pagina, tamanho, pracaId));
     }
 
     @Operation(operationId = "relatorioDePendenciasDoAcerto", summary = "Faltas e pendências",
@@ -69,10 +70,11 @@ public class RelatoriosFinanceirosController {
             @RequestParam(required = false) String situacao,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate de,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ate,
+            @RequestParam(required = false) String pracaId,
             @RequestParam(required = false) String recorte, @RequestParam(required = false) Integer pagina,
             @RequestParam(required = false) Integer tamanho) {
         return consultas.pendencias(new Filtros(busca, vendedorId, semanaId, null, null, null, produtoId, tipo, situacao,
-                null, null, null, null, de, ate, recorte, pagina, tamanho));
+                null, null, null, null, de, ate, recorte, pagina, tamanho, pracaId));
     }
 
     @Operation(operationId = "relatorioDeEsperadoEContado", summary = "Esperado x contado",
@@ -163,10 +165,11 @@ public class RelatoriosFinanceirosController {
             @RequestParam(required = false) String momento,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate de,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ate,
+            @RequestParam(required = false) String pracaId,
             @RequestParam(required = false) String recorte, @RequestParam(required = false) Integer pagina,
             @RequestParam(required = false) Integer tamanho) {
         return consultas.recebimentosPorForma(new Filtros(busca, vendedorId, null, null, null, null, null, null, null, null,
-                forma, null, momento, de, ate, recorte, pagina, tamanho));
+                forma, null, momento, de, ate, recorte, pagina, tamanho, pracaId));
     }
 
     @Operation(operationId = "relatorioDeComissoes", summary = "Comissões por vendedor e semana",
