@@ -405,7 +405,7 @@ class ResultadoDoPeriodoTest extends MassaDoResultado {
     }
 
     private String categoriaDoNome(UUID produto) {
-        return jdbc.queryForObject("SELECT p.nome FROM corona.produtos p WHERE p.id = ?", String.class, produto).replace(" ", "%20");
+        return jdbc.queryForObject("SELECT p.nome FROM corona.produtos p WHERE p.id = ?", String.class, produto).substring(6);
     }
 
     @Test
@@ -469,7 +469,7 @@ class ResultadoDoPeriodoTest extends MassaDoResultado {
         assertThat(dec(total(ra, "faltas").get("valorEmReais"))).isEqualByComparingTo(dec(linha(dre, "COBRADO").get("valorEmReais")));
         // Cada categoria do caixa é o fluxo de caixa só dos lançamentos manuais daquela categoria.
         for (String categoria : List.of("Aluguel 2292", "Material 2292", "Outras entradas 2292")) {
-            JsonNode fluxo = corpoDe(ler(FIN + "/fluxo-de-caixa?" + ABRIL + "&origem=MANUAL&busca=" + categoria.replace(" ", "%20"), dona())
+            JsonNode fluxo = corpoDe(ler(FIN + "/fluxo-de-caixa?" + ABRIL + "&origem=MANUAL&busca=" + categoria.split(" ")[0], dona())
                     .andExpect(status().isOk()));
             assertThat(dec(total(fluxo, "saldo").get("valorEmReais"))).as(categoria)
                     .isEqualByComparingTo(dec(linhaDoCaixa(dre, categoria).get("valorEmReais")));

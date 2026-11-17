@@ -29,6 +29,7 @@ class PermissoesDoResultadoTest extends ApoioDasTrocas {
             "/resultado/detalhamento?" + PERIODO + "&linha=CUSTO", "/lucro-por-produto?" + PERIODO, "/lucro-por-vendedor?" + PERIODO);
 
     @Autowired
+    @org.springframework.beans.factory.annotation.Qualifier("requestMappingHandlerMapping")
     private RequestMappingHandlerMapping mapeamentos;
 
     private UsuarioDeTeste vendedor;

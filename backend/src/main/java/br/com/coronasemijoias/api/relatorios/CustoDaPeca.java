@@ -24,11 +24,11 @@ final class CustoDaPeca {
      */
     static String juntar(String alias, String produto, String dia) {
         return " JOIN LATERAL (SELECT coalesce(h.custo, pc.preco_custo, 0) AS custo, (h.custo IS NULL) AS cadastro "
-                + "FROM (SELECT " + produto + " AS produto_id) x "
-                + "LEFT JOIN corona.produtos_custos pc ON pc.produto_id = x.produto_id "
+                + "FROM (SELECT " + produto + " AS produto_id) px "
+                + "LEFT JOIN corona.produtos_custos pc ON pc.produto_id = px.produto_id "
                 + "LEFT JOIN LATERAL (SELECT hc.custo FROM corona.historico_custo hc "
                 + "JOIN corona.compras cp ON cp.id = hc.compra_id AND cp.situacao = 'REGISTRADA' "
-                + "WHERE hc.produto_id = x.produto_id AND hc.data_compra <= " + dia + " "
+                + "WHERE hc.produto_id = px.produto_id AND hc.data_compra <= " + dia + " "
                 + "ORDER BY hc.data_compra DESC, hc.ordem DESC LIMIT 1) h ON true) " + alias + " ON true ";
     }
 }
