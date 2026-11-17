@@ -180,6 +180,18 @@ import {
   relatorioDeInadimplencia,
   relatorioDePendenciasDoAcerto,
   relatorioDeRecebimentosPorForma,
+  relatorioDeCurvaAbc,
+  relatorioDeRankingDePecas,
+  relatorioDeRankingDeVendedores,
+  relatorioDeTicketMedio,
+  relatorioDeVendas,
+  relatorioDeVendasCanceladas,
+  relatorioDeVendasPorCategoria,
+  relatorioDeVendasPorCliente,
+  relatorioDeVendasPorPeriodo,
+  relatorioDeVendasPorPraca,
+  relatorioDeVendasPorProduto,
+  relatorioDeVendasPorVendedor,
   relatorioDeRemessasPorVendedorESemana,
   relatorioDeReposicoes,
   relatorioDeSaldoPorMaleta,
@@ -1037,6 +1049,30 @@ async function executarRelatorio(
       return executar(() => relatorioDeFluxoDeCaixa({ ...base, query: q }));
     case 'financeiro-recebimentos':
       return executar(() => relatorioDeRecebimentosPorForma({ ...base, query: q }));
+    case 'vendas-lista':
+      return executar(() => relatorioDeVendas({ ...base, query: q }));
+    case 'vendas-canceladas':
+      return executar(() => relatorioDeVendasCanceladas({ ...base, query: q }));
+    case 'vendas-por-vendedor':
+      return executar(() => relatorioDeVendasPorVendedor({ ...base, query: q }));
+    case 'vendas-por-praca':
+      return executar(() => relatorioDeVendasPorPraca({ ...base, query: q }));
+    case 'vendas-por-cliente':
+      return executar(() => relatorioDeVendasPorCliente({ ...base, query: q }));
+    case 'vendas-por-produto':
+      return executar(() => relatorioDeVendasPorProduto({ ...base, query: q }));
+    case 'vendas-por-categoria':
+      return executar(() => relatorioDeVendasPorCategoria({ ...base, query: q }));
+    case 'vendas-por-periodo':
+      return executar(() => relatorioDeVendasPorPeriodo({ ...base, query: q }));
+    case 'vendas-ranking-vendedores':
+      return executar(() => relatorioDeRankingDeVendedores({ ...base, query: q }));
+    case 'vendas-ranking-pecas':
+      return executar(() => relatorioDeRankingDePecas({ ...base, query: q }));
+    case 'vendas-ticket-medio':
+      return executar(() => relatorioDeTicketMedio({ ...base, query: q }));
+    case 'vendas-curva-abc':
+      return executar(() => relatorioDeCurvaAbc({ ...base, query: q }));
     case 'vendedores':
       return executar(() => relatorioDeVendedores({ ...base, query: q }));
     case 'clientes':

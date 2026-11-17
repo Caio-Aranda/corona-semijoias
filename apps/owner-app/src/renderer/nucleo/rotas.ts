@@ -17,6 +17,11 @@ import {
 import { ORDEM_DOS_RELATORIOS_DE_DEVOLUCAO } from './relatorios-devolucao';
 import { ORDEM_DOS_RELATORIOS_DE_MALETA } from './relatorios-maleta';
 import { ORDEM_DOS_RELATORIOS_FINANCEIROS } from './relatorios-financeiros';
+import {
+  ORDEM_DOS_RELATORIOS_DE_VENDAS,
+  RELATORIOS_DE_VENDAS_NO_ESTOQUE,
+} from './relatorios-vendas';
+import { TEXTOS_DE_RELATORIOS_DE_VENDAS } from '../textos-relatorios-vendas';
 import { TEXTOS_DE_RELATORIOS_FINANCEIROS } from '../textos-relatorios-financeiros';
 import { TEXTOS_DE_RELATORIOS_DE_DEVOLUCAO } from '../textos-relatorios-devolucao';
 
@@ -91,6 +96,18 @@ export const ROTAS = [
   'relatorios/financeiro-inadimplencia',
   'relatorios/financeiro-caixa',
   'relatorios/financeiro-recebimentos',
+  'relatorios/vendas-lista',
+  'relatorios/vendas-canceladas',
+  'relatorios/vendas-por-vendedor',
+  'relatorios/vendas-por-praca',
+  'relatorios/vendas-por-cliente',
+  'relatorios/vendas-por-produto',
+  'relatorios/vendas-por-categoria',
+  'relatorios/vendas-por-periodo',
+  'relatorios/vendas-ranking-vendedores',
+  'relatorios/vendas-ranking-pecas',
+  'relatorios/vendas-ticket-medio',
+  'relatorios/vendas-curva-abc',
   'acertos/lista',
   'acertos/pendencias',
   'acertos/comissao',
@@ -190,7 +207,7 @@ export const MENU = [
   },
   {
     titulo: TEXTOS_RELATORIOS.grupoDoEstoque,
-    itens: ORDEM_DOS_RELATORIOS_DE_ESTOQUE.map((nome) => ({
+    itens: [...ORDEM_DOS_RELATORIOS_DE_ESTOQUE, ...RELATORIOS_DE_VENDAS_NO_ESTOQUE].map((nome) => ({
       chave: `relatorios/${nome}`,
       rotulo: RELATORIOS[nome].titulo,
     })),
@@ -221,6 +238,13 @@ export const MENU = [
         rotulo: TEXTOS_DE_RELATORIOS_DE_DEVOLUCAO.conferencia.menu,
       },
     ],
+  },
+  {
+    titulo: TEXTOS_DE_RELATORIOS_DE_VENDAS.grupoDoMenu,
+    itens: ORDEM_DOS_RELATORIOS_DE_VENDAS.map((nome) => ({
+      chave: `relatorios/${nome}`,
+      rotulo: RELATORIOS[nome].titulo,
+    })),
   },
   {
     titulo: TEXTOS_DE_RELATORIOS_FINANCEIROS.grupoDoMenu,
