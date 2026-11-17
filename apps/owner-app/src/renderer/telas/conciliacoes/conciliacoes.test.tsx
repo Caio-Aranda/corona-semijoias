@@ -8,6 +8,7 @@ import type {
   PonteDoCorona,
   ResultadoDeChamada,
 } from '../../../shared/ponte';
+import { abrirRelatorioPeloMenu } from '../../apoio-de-testes';
 import { App } from '../../App';
 import { TEXTOS } from '../../textos';
 import { TEXTOS_DE_CONCILIACOES } from '../../textos-conciliacoes';
@@ -44,7 +45,7 @@ function montar(conferir: Manipulador) {
 async function abrir(m: ReturnType<typeof montar>) {
   const u = userEvent.setup();
   render(<App ponte={m.ponte} />);
-  await u.click(await screen.findByRole('button', { name: TEXTOS_DE_CONCILIACOES.menu }));
+  await abrirRelatorioPeloMenu(u, TEXTOS_DE_CONCILIACOES.menu);
   return u;
 }
 

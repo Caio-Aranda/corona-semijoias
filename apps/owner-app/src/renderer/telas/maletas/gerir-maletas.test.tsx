@@ -210,7 +210,7 @@ async function abrirLista(m: Montagem) {
   const u = userEvent.setup();
   render(<App ponte={m.ponte} />);
   const nav = await screen.findByRole('navigation', { name: 'Menu do Corona Gestão' });
-  await u.click(within(nav).getByRole('button', { name: 'Maletas' }));
+  await u.click(within(nav).getAllByRole('button', { name: 'Maletas' })[0]!);
   await screen.findByRole('heading', { name: 'Maletas', level: 1 });
   return u;
 }

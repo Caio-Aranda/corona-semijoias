@@ -2,30 +2,13 @@ import { useCallback, useEffect, useState } from 'react';
 import { TEXTOS } from '../textos';
 import { TEXTOS_DE_ACERTOS } from '../textos-acertos';
 import { TEXTOS_DE_COMPRAS } from '../textos-compras';
-import { TEXTOS_DE_CONCILIACOES } from '../textos-conciliacoes';
 import { TEXTOS_DE_DEVOLUCOES } from '../textos-devolucoes';
 import { TEXTOS_DE_ESTOQUE } from '../textos-estoque';
 import { TEXTOS_DE_FINANCEIRO } from '../textos-financeiro';
 import { TEXTOS_DE_MALETAS } from '../textos-maletas';
-import { TEXTOS_RELATORIOS } from '../textos-relatorios';
 import { TEXTOS_DE_SINCRONIZACAO } from '../textos-sincronizacao';
-import { ORDEM_DOS_RELATORIOS, RELATORIOS } from './relatorios';
-import {
-  ORDEM_DOS_RELATORIOS_DE_COMPRAS,
-  ORDEM_DOS_RELATORIOS_DE_ESTOQUE,
-} from './relatorios-estoque';
-import { ORDEM_DOS_RELATORIOS_DE_DEVOLUCAO } from './relatorios-devolucao';
-import { ORDEM_DOS_RELATORIOS_DE_MALETA } from './relatorios-maleta';
-import { ORDEM_DOS_RELATORIOS_FINANCEIROS } from './relatorios-financeiros';
-import {
-  ORDEM_DOS_RELATORIOS_DE_VENDAS,
-  RELATORIOS_DE_VENDAS_NO_ESTOQUE,
-} from './relatorios-vendas';
-import { TEXTOS_DE_RELATORIOS_DE_VENDAS } from '../textos-relatorios-vendas';
-import { ORDEM_DOS_RELATORIOS_DE_CONTROLE } from './relatorios-controle';
-import { TEXTOS_DE_RELATORIOS_DE_CONTROLE } from '../textos-relatorios-controle';
-import { TEXTOS_DE_RELATORIOS_FINANCEIROS } from '../textos-relatorios-financeiros';
-import { TEXTOS_DE_RELATORIOS_DE_DEVOLUCAO } from '../textos-relatorios-devolucao';
+import { TEXTOS_DE_AREAS_DE_RELATORIOS } from '../textos-areas-de-relatorios';
+import { CHAVES_DAS_AREAS, rotaDaArea, rotuloDaArea } from './areas-de-relatorios';
 import { TEXTOS_DO_PAINEL } from '../textos-painel';
 
 /** As telas do menu. A chave aparece na barra de endereço (#/pessoas/usuarios), nunca na tela. */
@@ -129,6 +112,15 @@ export const ROTAS = [
   'conciliacoes/dinheiro',
   'conciliacoes/conferencia-diaria',
   'painel/semana',
+  'areas/cadastros',
+  'areas/estoque',
+  'areas/compras',
+  'areas/maletas',
+  'areas/devolucoes',
+  'areas/vendas',
+  'areas/financeiro',
+  'areas/controle',
+  'areas/conferencias',
 ] as const;
 export type Rota = (typeof ROTAS)[number];
 
@@ -215,76 +207,11 @@ export const MENU = [
     ],
   },
   {
-    titulo: TEXTOS_RELATORIOS.grupoDoMenu,
-    itens: ORDEM_DOS_RELATORIOS.map((nome) => ({
-      chave: `relatorios/${nome}`,
-      rotulo: RELATORIOS[nome].titulo,
+    titulo: TEXTOS_DE_AREAS_DE_RELATORIOS.grupoDoMenu,
+    itens: CHAVES_DAS_AREAS.map((chave) => ({
+      chave: rotaDaArea(chave),
+      rotulo: rotuloDaArea(chave),
     })),
-  },
-  {
-    titulo: TEXTOS_RELATORIOS.grupoDoEstoque,
-    itens: [...ORDEM_DOS_RELATORIOS_DE_ESTOQUE, ...RELATORIOS_DE_VENDAS_NO_ESTOQUE].map((nome) => ({
-      chave: `relatorios/${nome}`,
-      rotulo: RELATORIOS[nome].titulo,
-    })),
-  },
-  {
-    titulo: TEXTOS_RELATORIOS.grupoDasCompras,
-    itens: ORDEM_DOS_RELATORIOS_DE_COMPRAS.map((nome) => ({
-      chave: `relatorios/${nome}`,
-      rotulo: RELATORIOS[nome].titulo,
-    })),
-  },
-  {
-    titulo: TEXTOS_DE_MALETAS.relatorios.grupoDoMenu,
-    itens: ORDEM_DOS_RELATORIOS_DE_MALETA.map((nome) => ({
-      chave: `relatorios/${nome}`,
-      rotulo: RELATORIOS[nome].titulo,
-    })),
-  },
-  {
-    titulo: TEXTOS_DE_RELATORIOS_DE_DEVOLUCAO.grupoDoMenu,
-    itens: [
-      ...ORDEM_DOS_RELATORIOS_DE_DEVOLUCAO.map((nome) => ({
-        chave: `relatorios/${nome}`,
-        rotulo: RELATORIOS[nome].titulo,
-      })),
-      {
-        chave: 'relatorios/devolucao-conferencia',
-        rotulo: TEXTOS_DE_RELATORIOS_DE_DEVOLUCAO.conferencia.menu,
-      },
-    ],
-  },
-  {
-    titulo: TEXTOS_DE_RELATORIOS_DE_VENDAS.grupoDoMenu,
-    itens: ORDEM_DOS_RELATORIOS_DE_VENDAS.map((nome) => ({
-      chave: `relatorios/${nome}`,
-      rotulo: RELATORIOS[nome].titulo,
-    })),
-  },
-  {
-    titulo: TEXTOS_DE_RELATORIOS_FINANCEIROS.grupoDoMenu,
-    itens: ORDEM_DOS_RELATORIOS_FINANCEIROS.map((nome) => ({
-      chave: `relatorios/${nome}`,
-      rotulo: RELATORIOS[nome].titulo,
-    })),
-  },
-  {
-    titulo: TEXTOS_DE_RELATORIOS_DE_CONTROLE.grupoDoMenu,
-    itens: ORDEM_DOS_RELATORIOS_DE_CONTROLE.map((nome) => ({
-      chave: `relatorios/${nome}`,
-      rotulo: RELATORIOS[nome].titulo,
-    })),
-  },
-  {
-    titulo: TEXTOS_DE_CONCILIACOES.grupoDoMenu,
-    itens: [
-      { chave: 'conciliacoes/dinheiro', rotulo: TEXTOS_DE_CONCILIACOES.menu },
-      {
-        chave: 'conciliacoes/conferencia-diaria',
-        rotulo: TEXTOS_DE_CONCILIACOES.diaria.menu,
-      },
-    ],
   },
 ];
 

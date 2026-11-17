@@ -8,6 +8,7 @@ import type {
   PonteDoCorona,
   ResultadoDeChamada,
 } from '../../../shared/ponte';
+import { abrirRelatorioPeloMenu } from '../../apoio-de-testes';
 import { App } from '../../App';
 import { TEXTOS_DE_CONCILIACOES } from '../../textos-conciliacoes';
 import { situacaoEmPalavras } from './TelaConferenciaDiaria';
@@ -58,7 +59,7 @@ function montar(respostas: Record<string, Manipulador>, hash = '') {
 async function abrir(m: ReturnType<typeof montar>) {
   const u = userEvent.setup();
   render(<App ponte={m.ponte} />);
-  await u.click(await screen.findByRole('button', { name: D.menu }));
+  await abrirRelatorioPeloMenu(u, D.menu);
   return u;
 }
 

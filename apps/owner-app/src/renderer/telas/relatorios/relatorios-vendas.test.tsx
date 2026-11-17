@@ -9,6 +9,7 @@ import type {
   ResultadoDeChamada,
 } from '../../../shared/ponte';
 import { conferirRelatorio } from '../../../shared/validacao-relatorios';
+import { abrirAreaDoMenu, abrirRelatorioPeloMenu } from '../../apoio-de-testes';
 import { App } from '../../App';
 
 const entregues: { nome: string; tipo: string; bytes: Uint8Array }[] = [];
@@ -123,7 +124,7 @@ const dosRelatorios = (m: ReturnType<typeof montar>) =>
 async function abrir(m: ReturnType<typeof montar>, titulo: string) {
   const u = userEvent.setup();
   render(<App ponte={m.ponte} />);
-  await u.click(await screen.findByRole('button', { name: titulo }));
+  await abrirRelatorioPeloMenu(u, titulo);
   return u;
 }
 
@@ -135,8 +136,9 @@ beforeEach(() => {
 describe('Relatórios de vendas e curva ABC (tarefa 8.5)', () => {
   it('o menu tem o grupo de vendas com os nomes do glossário e a curva ABC no Estoque', async () => {
     const m = montar();
+    const u = userEvent.setup();
     render(<App ponte={m.ponte} />);
-    expect(await screen.findByText('Relatórios de vendas')).toBeInTheDocument();
+    const cartoes = await abrirAreaDoMenu(u, 'vendas');
     for (const t of [
       'Vendas feitas',
       'Vendas por vendedor',
@@ -149,10 +151,11 @@ describe('Relatórios de vendas e curva ABC (tarefa 8.5)', () => {
       'Ranking de produtos',
       'Valor médio por venda',
       'Vendas canceladas',
-      'Curva ABC dos produtos',
     ]) {
-      expect(await screen.findByRole('button', { name: t })).toBeInTheDocument();
+      expect(within(cartoes).getByText(t)).toBeInTheDocument();
     }
+    const estoque = await abrirAreaDoMenu(u, 'estoque');
+    expect(within(estoque).getByText('Curva ABC dos produtos')).toBeInTheDocument();
   });
 
   it('por vendedor mostra Real, Dólar e Guarani que vieram da linha e do rodapé, não os de hoje', async () => {

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type {
@@ -9,6 +9,7 @@ import type {
   ResultadoDeChamada,
 } from '../../../shared/ponte';
 import { conferirRelatorio } from '../../../shared/validacao-relatorios';
+import { abrirAreaDoMenu, abrirRelatorioPeloMenu } from '../../apoio-de-testes';
 import { App } from '../../App';
 
 type Linha = Record<string, unknown>;
@@ -121,14 +122,15 @@ beforeEach(() => {
 describe('Relatórios de controle (tarefa 8.9)', () => {
   it('o menu tem o grupo Controle com os três relatórios, sem termo técnico', async () => {
     const m = montar(AUDITORIA);
+    const u = userEvent.setup();
     render(<App ponte={m.ponte} />);
-    expect(await screen.findByText('Controle')).toBeInTheDocument();
+    const cartoes = await abrirAreaDoMenu(u, 'controle');
     for (const t of [
       'Auditoria: quem fez o quê',
       'Computadores e envios',
       'Acessos: entradas e erros',
     ]) {
-      expect(await screen.findByRole('button', { name: t })).toBeInTheDocument();
+      expect(within(cartoes).getByText(t)).toBeInTheDocument();
     }
   });
 
@@ -136,7 +138,7 @@ describe('Relatórios de controle (tarefa 8.9)', () => {
     const m = montar(AUDITORIA);
     const u = userEvent.setup();
     render(<App ponte={m.ponte} />);
-    await u.click(await screen.findByRole('button', { name: 'Auditoria: quem fez o quê' }));
+    await abrirRelatorioPeloMenu(u, 'Auditoria: quem fez o quê');
     expect(await screen.findByText('Preço de venda alterado')).toBeInTheDocument();
     expect(screen.getByText('Maria Souza')).toBeInTheDocument();
     expect(screen.getByText('Preço de venda: 10.00')).toBeInTheDocument();
@@ -152,7 +154,7 @@ describe('Relatórios de controle (tarefa 8.9)', () => {
     const m = montar(COMPUTADOR);
     const u = userEvent.setup();
     render(<App ponte={m.ponte} />);
-    await u.click(await screen.findByRole('button', { name: 'Computadores e envios' }));
+    await abrirRelatorioPeloMenu(u, 'Computadores e envios');
     expect((await screen.findAllByText('Em uso')).length).toBeGreaterThan(0);
     expect(screen.getByText('2.3.0')).toBeInTheDocument();
     expect(screen.getAllByText('Maria Souza').length).toBeGreaterThan(0);
@@ -162,7 +164,7 @@ describe('Relatórios de controle (tarefa 8.9)', () => {
     const m = montar(ACESSO);
     const u = userEvent.setup();
     render(<App ponte={m.ponte} />);
-    await u.click(await screen.findByRole('button', { name: 'Acessos: entradas e erros' }));
+    await abrirRelatorioPeloMenu(u, 'Acessos: entradas e erros');
     expect(await screen.findByText('Usuário que não existe')).toBeInTheDocument();
     expect(screen.getAllByText('Senha errada').length).toBeGreaterThan(0);
     expect(screen.getByText('203.0.113.7')).toBeInTheDocument();
