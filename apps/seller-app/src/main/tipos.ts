@@ -15,6 +15,8 @@ export type Falha =
       /** A ordem que o servidor manda junto (`APAGAR_DADOS`: computador desligado pela dona; tarefa 5.8). */
       acao?: string;
       mensagem?: string;
+      /** O motivo de cada campo que o servidor recusou (texto em português do servidor). */
+      campos?: { campo: string; mensagem: string }[];
       clienteExistente?: ClienteExistente;
     }
   | { tipo: 'sem-conexao' }

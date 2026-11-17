@@ -64,6 +64,18 @@ interface CorpoDeErro {
   codigo?: unknown;
   acao?: unknown;
   clienteExistente?: unknown;
+  campos?: unknown;
+}
+
+function comoCampos(v: unknown): { campo: string; mensagem: string }[] | undefined {
+  if (!Array.isArray(v)) return undefined;
+  const lista: { campo: string; mensagem: string }[] = [];
+  for (const item of v) {
+    if (typeof item !== 'object' || item === null) continue;
+    const { campo, mensagem } = item as { campo?: unknown; mensagem?: unknown };
+    if (typeof campo === 'string' && typeof mensagem === 'string') lista.push({ campo, mensagem });
+  }
+  return lista.length > 0 ? lista : undefined;
 }
 
 const texto = (v: unknown): string | undefined => (typeof v === 'string' && v ? v : undefined);
@@ -77,6 +89,8 @@ function comoFalha(erro: unknown, resposta: Response | undefined): Falha {
   const codigo = texto(corpo.codigo);
   if (mensagem) falha.mensagem = mensagem;
   if (codigo) falha.codigo = codigo;
+  const campos = comoCampos(corpo.campos);
+  if (campos) falha.campos = campos;
   if (texto(corpo.acao) === 'APAGAR_DADOS') falha.acao = 'APAGAR_DADOS';
   if (codigo === 'CLIENTE_CPF_JA_CADASTRADO') {
     const e = corpo.clienteExistente;

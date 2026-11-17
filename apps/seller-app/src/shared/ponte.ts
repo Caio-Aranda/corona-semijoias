@@ -88,6 +88,8 @@ export type ResultadoDeChamada =
       mensagem?: string;
       /** O código do erro (`CodigoErro` da API ou do computador): a tela escolhe a frase no idioma da pessoa. */
       codigo?: string;
+      /** O motivo de cada campo recusado, como o servidor mandou (português). */
+      campos?: { campo: string; mensagem: string }[];
       /** CPF repetido no cadastro de cliente: o cliente que já existe (diretório da loja). */
       clienteExistente?: { id: string; nome: string; telefone?: string; cidade?: string };
     };

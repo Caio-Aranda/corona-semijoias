@@ -89,6 +89,34 @@ describe('API do Corona Vendas (processo principal)', () => {
     });
   });
 
+  it('recusa com campos: guarda o motivo de cada campo para a tela mostrar', async () => {
+    const { fetch } = falso([
+      {
+        status: 400,
+        corpo: {
+          codigo: 'DADOS_INVALIDOS',
+          detail: 'Alguns dados não estão corretos.',
+          campos: [
+            { campo: 'data', mensagem: 'A data não pode ser no futuro.' },
+            { campo: 'x', mensagem: 3 },
+          ],
+        },
+      },
+    ]);
+    const api = criarApiDoVendas({ ...base, fetch });
+    const r = await api.entrar('maria', 'senha');
+    expect(r).toEqual({
+      ok: false,
+      falha: {
+        tipo: 'recusada',
+        status: 400,
+        codigo: 'DADOS_INVALIDOS',
+        mensagem: 'Alguns dados não estão corretos.',
+        campos: [{ campo: 'data', mensagem: 'A data não pode ser no futuro.' }],
+      },
+    });
+  });
+
   it('aplicativo desatualizado (426) vira uma falha própria com a mensagem da API', async () => {
     const { fetch } = falso([
       {

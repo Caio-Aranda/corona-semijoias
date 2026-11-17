@@ -281,6 +281,7 @@ export class ServicoDeSessao {
           motivo: 'erro',
           ...(f.mensagem ? { mensagem: f.mensagem } : {}),
           ...(f.codigo ? { codigo: f.codigo } : {}),
+          ...(f.campos ? { campos: f.campos } : {}),
           ...(f.clienteExistente ? { clienteExistente: f.clienteExistente } : {}),
         };
       case 'resposta-invalida':
