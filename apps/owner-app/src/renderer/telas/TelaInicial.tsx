@@ -2,9 +2,14 @@ import { Aviso, Botao } from '@corona/ui';
 import { useState } from 'react';
 import type { PonteDoCorona } from '../../shared/ponte';
 import { chamar, useBusca } from '../nucleo/chamadas';
+import { useCotacao } from '../nucleo/cotacao';
+import { dolarNaTela, lerPainel, reaisNaTela } from '../nucleo/painel-semanal';
 import { TEXTOS } from '../textos';
 import { TEXTOS_DE_ESTOQUE } from '../textos-estoque';
 import { TEXTOS_DE_SINCRONIZACAO } from '../textos-sincronizacao';
+import { TEXTOS_DA_INICIAL as I } from '../textos-inicial';
+import { TEXTOS_DO_PAINEL } from '../textos-painel';
+import { IconeDoAtalho } from './IconeDoAtalho';
 
 const BOTOES = [
   'Painel da semana',
@@ -62,62 +67,173 @@ function lerAvisos(bruto: unknown): AvisoDaDona[] {
   });
 }
 
-/** Tela inicial da dona (§19.3): botões grandes e o bloco "O que precisa da sua atenção". */
+/** Aviso que pede ação rápida fica vermelho; o resto é atenção ou informação. */
+function tipoDoAviso(tipo: string): 'erro' | 'atencao' | 'informacao' {
+  if (/PROBLEMA|BLOQUEADO|DIFERENCA|MUITAS/.test(tipo)) return 'erro';
+  if (/NOVO/.test(tipo)) return 'informacao';
+  return 'atencao';
+}
+
+function irPara(rota: string) {
+  window.location.hash = `/${rota}`;
+}
+
+function CartaoDeNumero({
+  titulo,
+  numero,
+  detalhe,
+  rota,
+}: {
+  titulo: string;
+  numero: string;
+  detalhe?: string | undefined;
+  rota: string;
+}) {
+  return (
+    <button type="button" className="gestao-numero" onClick={() => irPara(rota)}>
+      <span className="gestao-numero__titulo">{titulo}</span>
+      <span className="gestao-numero__valor">{numero}</span>
+      {detalhe ? <span className="gestao-numero__detalhe">{detalhe}</span> : null}
+    </button>
+  );
+}
+
+/** Tela inicial da dona (§19.3): saudação, atalhos, resumo da semana e o bloco "O que precisa da sua atenção". */
 export function TelaInicial({ ponte, nome }: TelaInicialProps) {
   const [emBreve, setEmBreve] = useState<string | null>(null);
   const avisos = useBusca(() => chamar(ponte, 'avisos.listar'), 'avisos');
   const lista = avisos.dados ? lerAvisos(avisos.dados) : null;
+  const painelBusca = useBusca(() => chamar(ponte, 'painel.semanal'), 'painel-da-inicial');
+  const painel = painelBusca.dados ? lerPainel(painelBusca.dados) : null;
+  const { taxas } = useCotacao();
+
+  const quantidade = (chave: string, rotulo: string): number => {
+    const cartao = painel?.cartoes.find((c) => c.chave === chave);
+    return cartao?.itens.find((i) => i.rotulo === rotulo)?.quantidade ?? 0;
+  };
+  const maletas =
+    painel === null
+      ? null
+      : quantidade('novasMaletas', TEXTOS_DO_PAINEL.itens.maletas) +
+        quantidade('reposicoes', TEXTOS_DO_PAINEL.itens.maletas);
+  const acertos = painel === null ? null : quantidade('acerto', TEXTOS_DO_PAINEL.itens.acertos);
+  const vendido = painel?.total.vendido ?? null;
+  const traco = '—';
+
+  const hoje = new Date().toLocaleDateString('pt-BR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+  const dinheiro = (v: string) => v.replace('.', ',');
 
   return (
     <div className="gestao-tela">
-      <h1 className="gestao-titulo">{nome ? `Olá, ${nome}.` : 'Olá.'}</h1>
+      <header className="gestao-saudacao">
+        <div>
+          <h1 className="gestao-titulo">{nome ? `Olá, ${nome}.` : 'Olá.'}</h1>
+          <p className="gestao-data">{hoje}</p>
+        </div>
+        <div className="gestao-cotacao-dia" aria-label={I.cotacao.rotulo}>
+          {taxas ? (
+            <>
+              <span>
+                <b>{I.cotacao.dolar}</b> R$ {dinheiro(taxas.dolar)}
+              </span>
+              <span>
+                <b>{I.cotacao.guarani}</b> R$ {dinheiro(taxas.guarani)}
+              </span>
+            </>
+          ) : (
+            <span>{I.cotacao.semCotacao}</span>
+          )}
+        </div>
+      </header>
       {emBreve ? (
         <Aviso tipo="informacao" titulo={TEXTOS.emBreve.titulo}>
           {TEXTOS.emBreve.texto(emBreve)}
         </Aviso>
       ) : null}
-      <nav className="gestao-botoes" aria-label="O que você quer fazer?">
+      <nav className="gestao-atalhos" aria-label="O que você quer fazer?">
         {BOTOES.map((nomeDoBotao) => (
-          <Botao
+          <button
             key={nomeDoBotao}
-            variante="primario"
-            grande
+            type="button"
+            className="gestao-atalho"
+            aria-label={nomeDoBotao}
             onClick={() => {
               const rota = ROTA_DO_BOTAO[nomeDoBotao];
-              if (rota) window.location.hash = `/${rota}`;
+              if (rota) irPara(rota);
               else setEmBreve(nomeDoBotao);
             }}
           >
-            {nomeDoBotao}
-          </Botao>
+            <span className="gestao-atalho__icone">
+              <IconeDoAtalho nome={nomeDoBotao} />
+            </span>
+            <span className="gestao-atalho__nome">{nomeDoBotao}</span>
+            <span className="gestao-atalho__ajuda">{I.atalhos[nomeDoBotao]}</span>
+          </button>
         ))}
       </nav>
+      <section aria-labelledby="titulo-resumo">
+        <h2 id="titulo-resumo" className="gestao-secao">
+          {I.resumo.titulo}
+        </h2>
+        <div className="gestao-numeros">
+          <CartaoDeNumero
+            titulo={I.resumo.vendido}
+            numero={vendido?.real ? reaisNaTela(vendido.real) : traco}
+            detalhe={vendido?.dolar ? dolarNaTela(vendido.dolar) : undefined}
+            rota="painel/semana"
+          />
+          <CartaoDeNumero
+            titulo={I.resumo.maletas}
+            numero={maletas === null ? traco : String(maletas)}
+            rota="maletas/lista"
+          />
+          <CartaoDeNumero
+            titulo={I.resumo.acertos}
+            numero={acertos === null ? traco : String(acertos)}
+            rota="acertos/lista"
+          />
+          <CartaoDeNumero
+            titulo={I.resumo.avisos}
+            numero={lista === null ? traco : String(lista.length)}
+            rota="inicio"
+          />
+        </div>
+      </section>
       <section className="gestao-atencao" aria-labelledby="titulo-atencao">
-        <h2 id="titulo-atencao">{TEXTOS.atencao.titulo}</h2>
+        <h2 id="titulo-atencao" className="gestao-secao">
+          {TEXTOS.atencao.titulo}
+        </h2>
         {avisos.erro && lista === null ? (
           <p>{avisos.erro.tipo === 'sem-conexao' ? avisos.erro.mensagem : TEXTOS.atencao.erro}</p>
         ) : null}
-        {lista !== null && lista.length === 0 ? <p>{TEXTOS.atencao.tudoEmDia}</p> : null}
+        {lista !== null && lista.length === 0 ? (
+          <div className="gestao-tudo-em-dia">
+            <span className="gestao-tudo-em-dia__icone" aria-hidden="true">
+              ✓
+            </span>
+            <div>
+              <p className="gestao-tudo-em-dia__titulo">{TEXTOS.atencao.tudoEmDia}</p>
+              <p>{I.tranquilo}</p>
+            </div>
+          </div>
+        ) : null}
         {lista !== null && lista.length > 0 ? (
           <div className="gestao-avisos">
             {lista.map((a) => (
-              <Aviso key={`${a.titulo}${a.texto}`} tipo="atencao" titulo={a.titulo}>
+              <Aviso key={`${a.titulo}${a.texto}`} tipo={tipoDoAviso(a.tipo)} titulo={a.titulo}>
                 {a.texto}
                 {ROTA_DO_AVISO[a.tipo] ? (
-                  <Botao
-                    onClick={() => {
-                      window.location.hash = `/${ROTA_DO_AVISO[a.tipo]}`;
-                    }}
-                  >
+                  <Botao onClick={() => irPara(ROTA_DO_AVISO[a.tipo] ?? '')}>
                     {TEXTOS_DE_SINCRONIZACAO.abrir}
                   </Botao>
                 ) : null}
                 {/acabando/i.test(a.titulo) ? (
-                  <Botao
-                    onClick={() => {
-                      window.location.hash = '/estoque/acabando';
-                    }}
-                  >
+                  <Botao onClick={() => irPara('estoque/acabando')}>
                     {TEXTOS_DE_ESTOQUE.aviso.verLista}
                   </Botao>
                 ) : null}

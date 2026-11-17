@@ -1,4 +1,4 @@
-import { Aviso, Botao, CabecalhoDeMarca, Campo } from '@corona/ui';
+import { Aviso, Botao, Campo } from '@corona/ui';
 import { useState, type FormEvent } from 'react';
 import type { PonteDoCorona, ResultadoDeEntrada } from '../../shared/ponte';
 import { TEXTOS } from '../textos';
@@ -46,11 +46,12 @@ export function TelaEntrar({
   }
 
   return (
-    <div className="vendas-pagina">
-      <CabecalhoDeMarca nomeDoApp="Corona Vendas" />
-      <main className="vendas-conteudo">
-        <form className="vendas-cartao" onSubmit={(e) => void entrar(e)} noValidate>
-          <h1 className="vendas-titulo">
+    <div className="cs-entrada-pagina">
+      <main>
+        <form className="cs-entrada" onSubmit={(e) => void entrar(e)} noValidate>
+          <span className="cs-entrada__logo" role="img" aria-label="Corona Semijoias" />
+          <p className="cs-entrada__titulo">Corona Vendas</p>
+          <h1 className="cs-entrada__titulo-pagina">
             {semInternet ? TEXTOS.semInternetNaEntrada.titulo : 'Entrar'}
           </h1>
           {semInternet ? <p className="vendas-texto">{TEXTOS.semInternetNaEntrada.texto}</p> : null}

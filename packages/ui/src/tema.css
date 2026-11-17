@@ -5,15 +5,20 @@
  */
 :root {
   /* Marca */
-  --cor-ouro: #c9a24b;
-  --cor-champanhe: #f3e2c7;
+  --cor-ouro: #c08e3b;
+  --cor-ouro-escuro: #9d6d21;
+  --cor-ouro-claro: #deb75e;
+  --cor-vinho: #3b1f2b;
+  --cor-vinho-2: #6b2240;
+  --cor-champanhe: #f6ecd8;
 
   /* Telas de dados: fundo claro, texto escuro */
   --cor-fundo: #ffffff;
-  --cor-fundo-suave: #fbf7f0;
-  --cor-texto: #2b211a;
-  --cor-texto-suave: #5c4a3d;
-  --cor-borda: #e4d5bc;
+  --cor-fundo-suave: #faf7f2;
+  --cor-texto: #2b2118;
+  --cor-texto-suave: #5c4b3a;
+  --cor-borda: #e6dccb;
+  --cor-borda-campo: #8a7a66;
 
   /* Estados do leitor e dos avisos: verde e vermelho de verdade, fora da paleta da marca */
   --cor-sucesso-fundo: #dff3e3;
@@ -35,8 +40,8 @@
   --fonte-marca: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
   --fonte-dados: 'Inter', 'Segoe UI', system-ui, sans-serif;
   --texto-pequeno: 0.875rem;
-  --texto-base: 1rem;
-  --texto-grande: 1.25rem;
+  --texto-base: 1.0625rem; /* 17 px: letra das telas de trabalho (proposta visual, seção 4) */
+  --texto-grande: 1.125rem;
   --texto-titulo: 2rem;
   --texto-titulo-marca: 2.75rem;
 
@@ -47,8 +52,23 @@
   --espaco-4: 1rem;
   --espaco-6: 1.5rem;
   --espaco-8: 2rem;
-  --raio-1: 0.375rem;
-  --raio-2: 0.75rem;
+  --raio-1: 0.75rem;
+  --raio-2: 1.25rem;
+  --sombra: 0 1px 2px rgb(43 33 24 / 6%), 0 8px 24px rgb(43 33 24 / 8%);
   --alvo-minimo: 2.75rem;
   --alvo-grande: 3.5rem;
+}
+
+/* Cor do app: vinho no app da dona, dourado no app do vendedor (o app marca o <html> com data-app). */
+:root {
+  --cor-marca: var(--cor-ouro);
+  --cor-marca-hover: var(--cor-ouro-claro);
+  --cor-marca-texto: var(--cor-texto);
+  --cor-marca-filete: var(--cor-ouro-escuro);
+}
+:root[data-app='gestao'] {
+  --cor-marca: var(--cor-vinho);
+  --cor-marca-hover: var(--cor-vinho-2);
+  --cor-marca-texto: #ffffff;
+  --cor-marca-filete: var(--cor-ouro);
 }

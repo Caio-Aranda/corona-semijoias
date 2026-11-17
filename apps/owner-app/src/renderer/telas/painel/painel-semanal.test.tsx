@@ -136,7 +136,10 @@ function montar(manipuladores: Record<string, Manipulador> = {}) {
 }
 
 const doPainel = (m: ReturnType<typeof montar>) =>
-  m.chamadas.filter((c) => c.operacao === 'painel.semanal').map((c) => c.parametros);
+  // A tela inicial também pede o painel (sem parâmetros, só para o resumo); aqui contam só os pedidos da tela do painel.
+  m.chamadas
+    .filter((c) => c.operacao === 'painel.semanal' && c.parametros !== undefined)
+    .map((c) => c.parametros);
 
 async function abrir(m: ReturnType<typeof montar>) {
   const u = userEvent.setup();

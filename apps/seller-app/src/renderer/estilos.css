@@ -24,15 +24,26 @@
   background: var(--cor-fundo);
   border: 1px solid var(--cor-borda);
   border-radius: var(--raio-2);
+  box-shadow: var(--sombra);
   display: flex;
   flex-direction: column;
   gap: var(--espaco-4);
 }
 
+/* Título grande da tela: letra de marca em dourado escuro, com o filete dourado embaixo (proposta visual, seção 4). */
 .vendas-titulo {
   margin: 0;
-  font-size: var(--texto-titulo);
-  line-height: 1.2;
+  color: var(--cor-ouro-escuro);
+  font: 700 var(--texto-titulo-marca) / 1.15 var(--fonte-marca);
+}
+.vendas-titulo::after {
+  content: '';
+  display: block;
+  width: 4.5rem;
+  height: 4px;
+  margin-top: var(--espaco-3);
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--cor-ouro-escuro), var(--cor-ouro-claro));
 }
 
 .vendas-texto {
@@ -82,6 +93,7 @@
 
 .vendas-leitor .cs-campo {
   flex: 1;
+  margin-bottom: 0;
 }
 
 .vendas-quantidade {
@@ -92,12 +104,26 @@
 
 .vendas-desconto {
   width: 6rem;
-  min-height: 2.5rem;
+  min-height: 2.75rem;
+  padding: 0 var(--espaco-3);
+  border: 2px solid var(--cor-borda-campo);
+  border-radius: var(--raio-1);
+  font: var(--texto-base) var(--fonte-dados);
 }
 
+/* Total a cobrar: o que mais salta aos olhos da venda; Dólar e Guarani ficam logo abaixo. */
 .vendas-total {
   margin: 0;
-  font-size: var(--texto-titulo);
+  padding: var(--espaco-4) var(--espaco-6);
+  background: var(--cor-fundo-suave);
+  border: 1px solid var(--cor-borda);
+  border-top: 3px solid var(--cor-ouro);
+  border-radius: var(--raio-2);
+  font-size: var(--texto-grande);
+  font-weight: 600;
+}
+.vendas-total .cs-valor__real {
+  font: 700 2.6rem / 1.1 var(--fonte-marca);
 }
 
 .vendas-lista {
@@ -123,6 +149,18 @@
   border: 1px solid var(--cor-borda);
   border-radius: var(--raio-2);
   padding: var(--espaco-4);
+  font-size: var(--texto-base);
+}
+.vendas-pagamento label {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  min-height: var(--alvo-minimo);
+}
+.vendas-pagamento input[type='radio'] {
+  width: 1.4rem;
+  height: 1.4rem;
+  accent-color: var(--cor-ouro-escuro);
 }
 
 /* Procurar pelo nome (Vender e Conferir maleta): miniatura, nome, código e quantidade na maleta. */
@@ -133,10 +171,10 @@
 }
 
 .vendas-busca-item__foto {
-  width: 56px;
-  height: 56px;
+  width: 64px;
+  height: 64px;
   flex: none;
-  border-radius: 6px;
+  border-radius: 12px;
   object-fit: cover;
 }
 
