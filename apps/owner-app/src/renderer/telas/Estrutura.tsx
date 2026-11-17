@@ -4,6 +4,7 @@ import type { PonteDoCorona } from '../../shared/ponte';
 import { RodapeDaCotacao } from '../nucleo/cotacao';
 import { temAlteracoesNaoSalvas } from '../nucleo/guarda-de-saida';
 import { MENU, rotuloDaRota, useRota, type Rota } from '../nucleo/rotas';
+import { SeletorDeIdioma } from '../idioma/SeletorDeIdioma';
 import { TEXTOS } from '../textos';
 import { TelaEmBreve } from './TelaEmBreve';
 import { TelaInicial } from './TelaInicial';
@@ -221,6 +222,7 @@ export function Estrutura({ ponte, nome, aoSair }: EstruturaProps) {
         nomeDoApp="Corona Gestão"
         acoes={
           <>
+            <SeletorDeIdioma />
             {nome ? <span>{nome} </span> : null}
             <Botao onClick={() => void aoSair()}>{TEXTOS.botoes.sair}</Botao>
           </>

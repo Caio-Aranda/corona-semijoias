@@ -1,6 +1,7 @@
 import { Aviso, Botao, Campo } from '@corona/ui';
 import { useState, type FormEvent } from 'react';
 import type { PonteDoCorona, ResultadoDeEntrada } from '../../shared/ponte';
+import { SeletorDeIdioma } from '../idioma/SeletorDeIdioma';
 import { TEXTOS } from '../textos';
 import { MensagemDeEntrada } from './MensagemDeEntrada';
 
@@ -39,7 +40,10 @@ export function TelaEntrar({ ponte, sessaoTerminou = false, aoMudar }: TelaEntra
   }
 
   return (
-    <div className="cs-entrada-pagina">
+    <div className="cs-entrada-pagina" style={{ position: 'relative' }}>
+      <div className="gestao-idioma--canto">
+        <SeletorDeIdioma />
+      </div>
       <main>
         <form className="cs-entrada" onSubmit={(e) => void entrar(e)} noValidate>
           <span className="cs-entrada__logo" role="img" aria-label="Corona Semijoias" />
