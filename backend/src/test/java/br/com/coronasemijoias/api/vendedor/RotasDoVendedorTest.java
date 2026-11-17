@@ -362,8 +362,12 @@ class RotasDoVendedorTest extends TesteDeIntegracao {
         UUID id = UUID.randomUUID();
         String cpf = CpfsDeTeste.novo();
         String nome = "Maria da Silva " + UUID.randomUUID().toString().substring(0, 6);
-        Map<String, Object> pedido = mapa("id", id, "nome", nome, "telefone", "(11) 98888-7777", "cpf", CpfsDeTeste.comMascara(cpf),
-                "whatsapp", "(11) 97777-6666", "observacoes", "Só paga em dinheiro", "dataNascimento", "1990-05-20");
+        // Telefone e WhatsApp únicos deste teste: outras classes gravam clientes no mesmo banco, e um número fixo coincidia.
+        String fone = String.valueOf(10000000L + Math.floorMod(UUID.randomUUID().getMostSignificantBits(), 90000000L));
+        String zap = String.valueOf(10000000L + Math.floorMod(UUID.randomUUID().getMostSignificantBits(), 90000000L));
+        String telefone = "(11) 9" + fone.substring(0, 4) + "-" + fone.substring(4);
+        Map<String, Object> pedido = mapa("id", id, "nome", nome, "telefone", telefone, "cpf", CpfsDeTeste.comMascara(cpf),
+                "whatsapp", "(11) 9" + zap.substring(0, 4) + "-" + zap.substring(4), "observacoes", "Só paga em dinheiro", "dataNascimento", "1990-05-20");
 
         JsonNode criado = corpoDe(postar("/api/vendedor/clientes", quemA, pedido).andExpect(status().isCreated()));
         assertThat(criado.get("cpf").asString()).isEqualTo(cpf);
@@ -378,7 +382,7 @@ class RotasDoVendedorTest extends TesteDeIntegracao {
         assertThat(jdbc.queryForObject("SELECT vendedor_responsavel_id FROM corona.clientes WHERE id = ?", UUID.class, id))
                 .isEqualTo(a.vendedorId());
         assertThat(corpoDe(ler("/api/vendedor/clientes?busca=maria da silva", quemA)).size()).isEqualTo(1);
-        assertThat(corpoDe(ler("/api/vendedor/clientes?busca=98888", quemA)).size()).isEqualTo(1);
+        assertThat(corpoDe(ler("/api/vendedor/clientes?busca=9" + fone.substring(0, 4), quemA)).size()).isEqualTo(1);
         assertThat(corpoDe(ler("/api/vendedor/clientes?busca=" + cpf.substring(0, 8), quemA)).size()).isEqualTo(1);
         assertThat(corpoDe(ler("/api/vendedor/clientes?busca=maria_da silva", quemA)).size()).isZero(); // curinga digitado vale ao pé da letra: se "_" fosse curinga, acharia "Maria da Silva". Sem dígito no texto: a busca por telefone usa só os dígitos e "%25" virava "25", que acha qualquer telefone com 25 de outra classe
         ler("/api/vendedor/clientes", dona()).andExpect(status().isForbidden());
@@ -390,13 +394,13 @@ class RotasDoVendedorTest extends TesteDeIntegracao {
         JsonNode c = paraB.get(0);
         assertThat(c.get("nome").asString()).isEqualTo(nome);
         assertThat(c.get("cpf").asString()).isEqualTo(cpf);
-        assertThat(c.get("telefone").asString()).isEqualTo("(11) 98888-7777");
+        assertThat(c.get("telefone").asString()).isEqualTo(telefone);
         assertThat(c.get("meu").asBoolean()).isFalse();
         assertThat(c.get("dataNascimento").isNull()).isTrue();
         assertThat(c.get("whatsapp").isNull()).isTrue();
         assertThat(c.get("observacoes").isNull()).isTrue();
         // A busca de B não acha o cliente pelo WhatsApp (só o responsável acha), mas acha pelo telefone e pelo CPF.
-        assertThat(corpoDe(ler("/api/vendedor/clientes?busca=97777", como(b))).size()).isZero();
+        assertThat(corpoDe(ler("/api/vendedor/clientes?busca=9" + zap.substring(0, 4), como(b))).size()).isZero();
         assertThat(corpoDe(ler("/api/vendedor/clientes?busca=" + cpf.substring(0, 8), como(b))).size()).isEqualTo(1);
         JsonNode verParaB = corpoDe(ler("/api/vendedor/clientes/" + id, como(b)).andExpect(status().isOk()));
         assertThat(verParaB.get("observacoes").isNull()).isTrue();
