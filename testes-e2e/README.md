@@ -26,6 +26,11 @@ quem falhou ficam em `testes-e2e/resultados/` (ignorado pelo Git).
 2. Cadastro de um fornecedor.
 3. Entrada de compra lendo o código (digitar + Enter, como o leitor) e conferência do estoque.
 4. Exportação de um relatório em CSV e leitura do arquivo gerado.
+5. O acerto inteiro da dona (`vendas-e-acerto-da-dona.test.ts`): a massa vem pela API (vendedor, maleta conferida, uma
+   venda de R$ 200,00 e a cotação do dia gravada direto no banco descartável); na tela a dona começa o acerto, lê as
+   peças que voltaram, confere os números do servidor (comissão 30%, falta para a meta, falta cobrada), paga parte em
+   dinheiro, fecha e vê a ficha fechada. As contas à mão estão em `massa-do-acerto.ts`. Roda depois do arquivo
+   `gestao.test.ts` (ordem alfabética) e também sozinho: `npm run e2e -- vendas-e-acerto`.
 
 Os dados são criados pelo próprio teste (conta, categoria, peça) num banco que some no fim. Os testes rodam
 **um depois do outro**, na ordem do arquivo: o 1º define a senha da dona e o 2º cria o fornecedor que o 3º usa.
