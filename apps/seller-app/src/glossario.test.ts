@@ -19,7 +19,7 @@ function bloco(nome: string): string[] {
     glossario,
   );
   expect(achou, `bloco ${nome} do glossário`).not.toBeNull();
-  return (achou as RegExpExecArray)[1]
+  return (achou as RegExpExecArray)[1]!
     .split(/\r?\n/)
     .map((linha) => linha.trim())
     .filter((linha) => linha !== '' && !linha.startsWith('```'));
