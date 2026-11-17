@@ -135,6 +135,13 @@ export type ParametrosConferidos =
         | 'vendedores.escolha';
     }
   | { operacao: 'conferencias.ver' | 'conferencias.conferirAgora'; id: string }
+  | {
+      operacao: 'painel.semanal';
+      semana?: string;
+      vendedor?: string;
+      praca?: string;
+      situacao?: string;
+    }
   | { operacao: 'usuarios.listar'; lista: ParametrosDaLista }
   | { operacao: 'usuarios.criar'; novo: ParametrosDeUsuarioNovo }
   | { operacao: 'usuarios.editar'; editado: ParametrosDeUsuarioEditado }
@@ -402,6 +409,23 @@ export function conferirParametros(
     case 'conferencias.ver':
     case 'conferencias.conferirAgora':
       return ehTexto(p.id) && UUID.test(p.id) ? { operacao, id: p.id } : null;
+    case 'painel.semanal': {
+      const semana = vendedorOpcional(p.semana);
+      const vendedor = vendedorOpcional(p.vendedor);
+      const praca = vendedorOpcional(p.praca);
+      const situacao = textoOpcional(p.situacao);
+      if (semana === null || vendedor === null || praca === null || situacao === null) return null;
+      if (situacao !== undefined && !['EM_ABERTO', 'EM_ACERTO', 'ACERTADO'].includes(situacao)) {
+        return null;
+      }
+      return {
+        operacao,
+        ...(semana ? { semana } : {}),
+        ...(vendedor ? { vendedor } : {}),
+        ...(praca ? { praca } : {}),
+        ...(situacao ? { situacao } : {}),
+      };
+    }
     case 'usuarios.listar': {
       const busca = textoOpcional(p.busca);
       const perfil = textoOpcional(p.perfil);

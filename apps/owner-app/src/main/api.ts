@@ -138,6 +138,7 @@ import {
   listarCategoriasDoCaixa,
   listarContasAPagar,
   listarConferencias,
+  painelSemanal,
   listarContasAReceber,
   listarRecebimentosDoVendedor,
   pagarContaAPagar,
@@ -1428,6 +1429,19 @@ export function criarApiDoGestao(opcoes: OpcoesDaApi): ApiDoGestao {
           return executar(() => verConferencia({ client, headers, path: { id: pedido.id } }));
         case 'conferencias.conferirAgora':
           return executar(() => conferirAgora({ client, headers, body: { id: pedido.id } }), true);
+        case 'painel.semanal':
+          return executar(() =>
+            painelSemanal({
+              client,
+              headers,
+              query: {
+                ...(pedido.semana ? { semana: pedido.semana } : {}),
+                ...(pedido.vendedor ? { vendedor: pedido.vendedor } : {}),
+                ...(pedido.praca ? { praca: pedido.praca } : {}),
+                ...(pedido.situacao ? { situacao: pedido.situacao } : {}),
+              },
+            }),
+          );
         case 'vendedores.escolha':
           return executar(() =>
             listar({ client, headers, query: { situacao: 'ATIVOS', pagina: 0, tamanho: 100 } }),

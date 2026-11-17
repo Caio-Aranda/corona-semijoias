@@ -31,6 +31,7 @@ export const OPERACOES_DA_API = [
   'conferencias.listar',
   'conferencias.ver',
   'conferencias.conferirAgora',
+  'painel.semanal',
   'vendedores.escolha',
   ...OPERACOES_DE_CADASTRO,
   ...OPERACOES_DE_VENDEDORES,
