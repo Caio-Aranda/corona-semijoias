@@ -1,3 +1,5 @@
+import { pathToFileURL } from 'node:url';
+
 /** Política de conteúdo da tela (CSP): só o que o próprio aplicativo empacotou, nada de rede. */
 export const POLITICA_DE_CONTEUDO = [
   "default-src 'none'",
@@ -15,7 +17,11 @@ export const POLITICA_DE_CONTEUDO = [
  * Diz se o endereço pertence à tela do próprio aplicativo: o servidor de desenvolvimento
  * (quando houver) ou o arquivo empacotado. Serve para barrar navegação e conferir quem chama a ponte.
  */
-export function enderecoDoApp(url: string, enderecoDeDesenvolvimento: string | undefined): boolean {
+export function enderecoDoApp(
+  url: string,
+  enderecoDeDesenvolvimento: string | undefined,
+  arquivoDoApp: string | undefined,
+): boolean {
   let alvo: URL;
   try {
     alvo = new URL(url);
@@ -29,5 +35,7 @@ export function enderecoDoApp(url: string, enderecoDeDesenvolvimento: string | u
       return false;
     }
   }
-  return alvo.protocol === 'file:';
+  // Só o index.html empacotado (auditoria B1): outro arquivo local não é a tela do aplicativo.
+  if (alvo.protocol !== 'file:' || arquivoDoApp === undefined) return false;
+  return alvo.pathname === pathToFileURL(arquivoDoApp).pathname;
 }

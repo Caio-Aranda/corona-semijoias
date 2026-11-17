@@ -44,7 +44,7 @@ export function TelaEntrar({ ponte, sessaoTerminou = false, aoMudar }: TelaEntra
         <form className="cs-entrada" onSubmit={(e) => void entrar(e)} noValidate>
           <span className="cs-entrada__logo" role="img" aria-label="Corona Semijoias" />
           <p className="cs-entrada__titulo">Corona Gestão</p>
-          <h1 className="cs-entrada__titulo-pagina">Entrar</h1>
+          <h1 className="cs-entrada__titulo-pagina">{TEXTOS.botoes.entrar}</h1>
           {sessaoTerminou ? (
             <Aviso tipo="atencao" titulo={TEXTOS.sessaoTerminou.titulo}>
               {TEXTOS.sessaoTerminou.texto}
@@ -68,7 +68,7 @@ export function TelaEntrar({ ponte, sessaoTerminou = false, aoMudar }: TelaEntra
             autoComplete="current-password"
           />
           <Botao type="submit" variante="primario" grande disabled={enviando}>
-            Entrar
+            {TEXTOS.botoes.entrar}
           </Botao>
         </form>
       </main>

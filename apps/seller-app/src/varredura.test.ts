@@ -28,6 +28,21 @@ describe('o Corona Vendas não usa nada do Corona Gestão (ADR-0003)', () => {
     expect(doPacote.length).toBeGreaterThan(20);
   });
 
+  it('a lista cobre todos os nomes de custo da API da dona (auditoria M5)', () => {
+    for (const nomeDeCusto of [
+      'preco_custo',
+      'precoCusto',
+      'custoUnitario',
+      'custoAtual',
+      'custoAnterior',
+      'valorACusto',
+      'historicoDeCusto',
+      'produtos_custos',
+    ]) {
+      expect(marcadores).toContain(nomeDeCusto);
+    }
+  });
+
   it.each(marcadores)('nenhum arquivo do app (fora dos testes) contém "%s"', (marcador) => {
     const achados = doPacote.filter((a) => readFileSync(a, 'utf8').includes(marcador)).map(nome);
     expect(achados).toEqual([]);

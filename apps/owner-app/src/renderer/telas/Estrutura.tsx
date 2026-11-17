@@ -222,7 +222,7 @@ export function Estrutura({ ponte, nome, aoSair }: EstruturaProps) {
         acoes={
           <>
             {nome ? <span>{nome} </span> : null}
-            <Botao onClick={() => void aoSair()}>Sair</Botao>
+            <Botao onClick={() => void aoSair()}>{TEXTOS.botoes.sair}</Botao>
           </>
         }
       />

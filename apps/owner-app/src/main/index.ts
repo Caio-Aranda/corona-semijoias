@@ -24,6 +24,8 @@ import type { ArquivoDoToken, Cofre, Relogio } from './tipos';
 
 const NOME_DO_APP = 'Corona Gestão';
 const enderecoDeDesenvolvimento = process.env['ELECTRON_RENDERER_URL'];
+/** A única tela empacotada: a janela só carrega e só aceita chamadas deste arquivo (auditoria B1). */
+const arquivoDoApp = join(__dirname, '../renderer/index.html');
 
 app.setName(NOME_DO_APP);
 
@@ -76,7 +78,7 @@ function avisarAtualizacao(aviso: AvisoDeAtualizacao): void {
 function travarNavegacao(conteudo: WebContents): void {
   conteudo.setWindowOpenHandler(() => ({ action: 'deny' }));
   conteudo.on('will-navigate', (evento, url) => {
-    if (!enderecoDoApp(url, enderecoDeDesenvolvimento)) evento.preventDefault();
+    if (!enderecoDoApp(url, enderecoDeDesenvolvimento, arquivoDoApp)) evento.preventDefault();
   });
   conteudo.on('will-attach-webview', (evento) => evento.preventDefault());
 }
@@ -110,7 +112,7 @@ function criarJanela(): void {
   });
 
   if (enderecoDeDesenvolvimento) void janela.loadURL(enderecoDeDesenvolvimento);
-  else void janela.loadFile(join(__dirname, '../renderer/index.html'));
+  else void janela.loadFile(arquivoDoApp);
 }
 
 function iniciar(): void {
@@ -170,7 +172,7 @@ function iniciar(): void {
       quadro !== null &&
       janela !== null &&
       e.sender === janela.webContents &&
-      enderecoDoApp(quadro.url, enderecoDeDesenvolvimento)
+      enderecoDoApp(quadro.url, enderecoDeDesenvolvimento, arquivoDoApp)
     );
   });
 
@@ -189,7 +191,7 @@ function iniciar(): void {
       quadro !== null &&
       janela !== null &&
       e.sender === janela.webContents &&
-      enderecoDoApp(quadro.url, enderecoDeDesenvolvimento)
+      enderecoDoApp(quadro.url, enderecoDeDesenvolvimento, arquivoDoApp)
     );
   });
   if (app.isPackaged) atualizacao.iniciar();
