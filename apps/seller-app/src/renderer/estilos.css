@@ -93,6 +93,7 @@
 
 .vendas-leitor .cs-campo {
   flex: 1;
+  margin-bottom: 0;
 }
 
 .vendas-quantidade {

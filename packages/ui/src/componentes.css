@@ -312,7 +312,7 @@ body {
 
 .cs-peca {
   display: grid;
-  grid-template-columns: minmax(16rem, 24rem) 1fr;
+  grid-template-columns: minmax(10rem, 16rem) 1fr;
   gap: var(--espaco-6);
   padding: var(--espaco-6);
   border: 3px solid var(--cor-borda);
