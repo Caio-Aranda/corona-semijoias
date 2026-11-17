@@ -206,3 +206,60 @@ PR 200 (issue #183). Três relatórios só de leitura para a dona (§12, grupo C
 - Só entrou em `testes-e2e/` (mais `chamarApi` aceitar `PUT` e o tipo do app). Nenhuma mudança no app, na API, no CI de cada PR nem no workflow E2E (ele já roda `npm run e2e`, que pega o arquivo novo).
 
 **Não fez:** o acerto pedido pelo vendedor (8.10) e o fluxo com defeito, sobra ou pendência antiga ficam fora (já cobertos por testes de integração e de componente).
+
+## Tarefa 8.13: fechamento da Fase 8
+
+**Situação:** pronto para revisão (issue #187). **Só testes e documentos:** nenhuma regra de negócio mudou, nenhuma migração, nenhuma linha de código de produção, nada tocado no Corona Vendas (a barreira não precisou rodar).
+
+**O que entrou**
+
+- **Teste de ponta a ponta da semana** (`backend/src/test/java/br/com/coronasemijoias/api/relatorios/FechamentoDaSemanaTest.java`), pelas rotas HTTP, sobre a massa do painel (`MassaDoPainel`: quatro vendedores, uma semana de julho de 2293 com número 9104, só desta classe; maletas, vendas, desconto, devolução, troca, falta, dois acertos fechados, um em andamento e uma maleta em aberto). Contas à mão no comentário da classe. Oito testes:
+  - o **resultado do período** do mês bate com a conta: Vendas 715,00, Devoluções 100,00, Receita líquida 615,00, Custo 125,00, Lucro bruto 490,00, Comissões 166,00, Perdas 5,00, Cobrado 25,00, Resultado 344,00;
+  - **mesmo vendido líquido em seis lugares:** soma das linhas do painel, bloco Vendas do painel, receita líquida do resultado, soma da curva ABC, rodapé de vendas por produto e rodapé do relatório de vendas, todos 615,00, com 7 vendas no relatório e no painel;
+  - **peça a peça:** a peça A (500,00, custo 100,00, classe A) e a peça B (115,00, custo 25,00, classe B) têm o mesmo líquido na curva, no lucro por produto e nas vendas por produto;
+  - **lucro:** a soma do lucro por produto e o lucro bruto por vendedor são o lucro bruto do resultado; o lucro por vendedor é lucro bruto menos comissões (324,00), com Ana (receita 340,00, comissão 136,00) e Bia (100,00, 30,00);
+  - **por vendedor:** o vendido do painel é o do ranking de vendedores, e o valor médio por venda da Ana é 340,00 / 2 = 170,00;
+  - **comissão:** a soma das comissões das linhas acertadas do painel é a do resultado e a do relatório de comissões;
+  - **permissão:** o vendedor recebe 403 no painel, no resultado, na curva, no ranking e na conferência;
+  - **a rodada da conferência diária** ("Conferir agora", pela rota da dona, com as treze conferências): sobre a semana inteira não acha diferença em nenhum registro desta massa (e a situação é `SEM_DIFERENCA` quando o banco inteiro também está limpo); depois de **estragar um dado de propósito** (uma linha de venda com 1 peça a mais do que saiu do estoque) a rodada fica `COM_DIFERENCA`, aponta registros da massa, o aviso `CONFERENCIA_COM_DIFERENCA` aparece em "O que precisa da sua atenção"; desfeito o estrago, a rodada seguinte volta a ficar limpa e o aviso some.
+- **Roteiro do teste de uso** com as planilhas da dona: [roteiro-teste-fase-8.md](../roteiro-teste-fase-8.md) (painel, resultado do período, vendas e curva ABC, conferência diária, o que o vendedor não pode ver, pedir o acerto no Corona Vendas e como registrar cada diferença, com as causas conhecidas antes de chamar de defeito).
+- **Especificação v1.26** (§2 com Enviado, Devolvido e Vendido no lugar das "premissas a confirmar", §13 item 7, §15 e §22), **ADR-0015** (continua **Proposto**, com a seção da situação da decisão e o que cada resposta R1 a R3 mudaria), este arquivo, o `PROGRESSO.md` e as pendências do responsável.
+
+**Achados:** nenhum defeito. O teste passou de primeira, com os números feitos à mão; só um nome de campo do relatório de vendas por produto (`chave`) precisou ser ajustado no próprio teste.
+
+**Cuidado com a massa compartilhada:** o banco de teste é dividido entre as classes, então a rodada olha o banco inteiro e o teste só olha os registros da massa dele (como o `ConferenciaDiariaTest`). O teste deixa uma rodada limpa no fim para não sujar o aviso das outras classes.
+
+## Resumo final da Fase 8
+
+A dona passa a ver a semana inteira numa tela só e a confiar nos números sem refazer a conta na planilha. Tudo é só leitura sobre o que já estava gravado; a única tabela nova é a do resultado das rodadas.
+
+- **Painel da semana (8.7 e 8.8):** uma linha por vendedor (Enviado, Devolvido, Vendido, Comissão, Valor líquido, situação; a linha sem acerto fechado é prévia, marcada e avisada) e os blocos de Totais da tela de referência, **sem entrada, sem cheque e sem remarcadas**; clique no número abre o registro; três moedas; PDF, Excel e CSV.
+- **Vendas e curva ABC (8.5):** relatórios por vendedor, praça, cliente, produto, categoria e dia, rankings, valor médio por venda, vendas canceladas; curva ABC com foto. Todos leem a mesma consulta do vendido líquido.
+- **Resultado do período e lucro (8.6):** DRE simplificado, lucro por produto e por vendedor, custo da peça pelo último custo de compra até o dia da venda (padrão R1), com o aviso do custo do cadastro; só a dona.
+- **Conferência (8.3 e 8.4):** C11 (estoque completo) e C12 (saldo de toda maleta), treze conferências na rodada das 03:00 de Brasília e no "Conferir agora", resultado guardado em duas tabelas imutáveis (V047), aviso pela última rodada, histórico e detalhe.
+- **Controle (8.9):** auditoria com antes e depois em texto da loja, sincronizações e computadores, acessos; as ações da §11 que faltavam passaram a gravar auditoria.
+- **Acerto (8.10 e 8.11):** o vendedor pede o acerto e conta as sobras no Corona Vendas (só com internet); na Gestão, a prévia do fechamento é tipada no OpenAPI e mostra **Falta para a meta**.
+- **Testes (8.2, 8.12 e 8.13):** cada classe de teste roda sozinha e em qualquer ordem; cenário Playwright da dona fazendo o acerto; a semana inteira de ponta a ponta.
+- **Segurança:** nada de custo, lucro, resultado, auditoria nem dado de outro vendedor chega ao Corona Vendas; rotas novas só ADMIN, com 401 e 403 testados.
+
+**Números:** API 1769 testes (api:test completo, sem falha); lint, typecheck e format:check limpos; cliente do vendedor sem diferença ao regenerar. O resultado final de cada tarefa está nas seções acima.
+
+## O que ficou para depois (e sugestões)
+
+- **Teste de uso com as planilhas da dona** ([roteiro](../roteiro-teste-fase-8.md)): pendência do responsável. Diferença achada vira tarefa.
+- **Decisão do responsável sobre o ADR-0015** (R1, R2 e R3): continua Proposto; valem os padrões seguros. Se escolher o custo congelado na venda (R1), é uma tarefa crítica (venda, sync e migração).
+- **Mais de uma instância da API:** a rodada diária roda dentro da API (uma instância só); com mais de uma, é preciso um ADR (pendência da tarefa 11).
+- **Painel:** a prévia é "de hoje" e inclui semanas anteriores sem acerto (a tela avisa); se a dona quiser a prévia só da semana, é regra nova.
+- **Fase 9:** entrega (instaladores, VPS, backup, homologação do leitor, validação com dados reais, treinamento).
+
+## Dúvidas em aberto
+
+**Para a dona:** nenhuma pergunta nova. As antigas da Fase 7 seguem com o padrão seguro do [plano da Fase 7](fase-7-plano.md#dúvidas-para-a-dona).
+
+**Do responsável:** R1, R2 e R3 do [ADR-0015](../decisoes/ADR-0015-numeros-gerenciais-e-conferencia-diaria.md) (padrões seguros em vigor, nada decidido em nome dele); aplicar o [roteiro do teste de uso](../roteiro-teste-fase-8.md) com a dona e registrar o que travar em `PROBLEMAS-DE-USO.md`.
+
+## Diferenças entre a especificação e o que foi feito (sem mudar regra)
+
+- **§7.4, passos 1 e 2:** agora o vendedor **pede o acerto e conta as sobras** no Corona Vendas (8.10), só com internet; quem fecha e desiste continua sendo só a dona. A nota correspondente da Fase 7 está superada.
+- **ADR-0015, item 2:** a devolução abate o **mês da venda**, não o da devolução (divergência decidida no PR 197 e escrita no ADR).
+- **ADR-0015, item 6:** a segunda rodada pedida enquanto uma roda recebe **409**, não o resultado da que está rodando (escrito no ADR).
