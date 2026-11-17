@@ -75,6 +75,9 @@ export interface PreviaDoFechamento {
   comissoes: LinhaDeComissao[];
   metaGuarani: number;
   vendidoParaMetaGuarani: number;
+  /** Quanto falta para a meta, como a API calculou (Guarani inteiro e o Real equivalente); `null` se a API não mandou. */
+  faltaParaMetaGuarani: number | null;
+  faltaParaMetaReais: string | null;
   percentualComissao: string;
   vendidoBruto: string;
   descontos: string;
@@ -239,6 +242,11 @@ export function lerPrevia(bruto: unknown): PreviaDoFechamento | null {
     if (valor === null) return null;
     eventos.push({ tipo: texto(e.tipo), valor });
   }
+  // O que falta para a meta é só um aviso a mais: se vier faltando ou fora da forma, a prévia abre sem a linha.
+  const falta = numero(o.faltaParaMetaGuarani);
+  const faltaEmReais = dinheiro(o.faltaParaMetaReais);
+  const sabeOQueFalta =
+    falta !== null && Number.isInteger(falta) && falta >= 0 && faltaEmReais !== null;
   return {
     itens,
     sobras: lista(o.sobras).map((b) => {
@@ -261,6 +269,8 @@ export function lerPrevia(bruto: unknown): PreviaDoFechamento | null {
     comissoes,
     metaGuarani: meta,
     vendidoParaMetaGuarani: vendidoMeta,
+    faltaParaMetaGuarani: sabeOQueFalta ? falta : null,
+    faltaParaMetaReais: sabeOQueFalta ? faltaEmReais : null,
     percentualComissao: o.percentualComissao,
     vendidoBruto: valores.vendidoBruto!,
     descontos: valores.descontos!,
