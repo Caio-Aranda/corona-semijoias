@@ -11,6 +11,7 @@ import { RELATORIOS_DE_DEVOLUCAO, prepararLinhaDeDevolucao } from './relatorios-
 import { RELATORIOS_DE_MALETA, prepararLinhaDeMaleta } from './relatorios-maleta';
 import { RELATORIOS_FINANCEIROS, prepararLinhaFinanceira } from './relatorios-financeiros';
 import { RELATORIOS_DE_VENDAS, prepararLinhaDeVendas } from './relatorios-vendas';
+import { RELATORIOS_DE_CONTROLE, prepararLinhaDeControle } from './relatorios-controle';
 
 export type FiltroDoRelatorio =
   | 'busca'
@@ -47,7 +48,9 @@ export type ChaveDeExtra =
   | 'forma'
   | 'devedor'
   | 'momento'
-  | 'linha';
+  | 'linha'
+  | 'comProblema'
+  | 'aplicativo';
 
 export type ExtraDoRelatorio =
   | {
@@ -105,7 +108,7 @@ export interface DefinicaoDeRelatorio {
   /** Abrir uma linha (compra → peças; contagem → diferenças; peça → histórico de custo). */
   acoes?: AcaoDaLinha[];
   /** Grupo do menu: o dos relatórios de cadastro, de estoque ou de compras. */
-  grupo?: 'estoque' | 'compras' | 'maletas' | 'devolucoes' | 'financeiro' | 'vendas';
+  grupo?: 'estoque' | 'compras' | 'maletas' | 'devolucoes' | 'financeiro' | 'vendas' | 'controle';
   /** Devolução e troca: a frase do rodapé dos arquivos sobre a cotação de cada lançamento. */
   notaDaCotacao?: string;
   /** Maletas: o campo da linha com o código da maleta; a linha ganha o botão "Ver a maleta". */
@@ -122,6 +125,7 @@ export const RELATORIOS: Record<NomeDoRelatorio, DefinicaoDeRelatorio> = {
   ...RELATORIOS_DE_DEVOLUCAO,
   ...RELATORIOS_FINANCEIROS,
   ...RELATORIOS_DE_VENDAS,
+  ...RELATORIOS_DE_CONTROLE,
   vendedores: {
     nome: 'vendedores',
     titulo: 'Vendedores: limite e situação',
@@ -539,6 +543,7 @@ export function prepararLinha(
       if (nome.startsWith('devolucao-')) return prepararLinhaDeDevolucao(nome, linha);
       if (nome.startsWith('financeiro-')) return prepararLinhaFinanceira(nome, linha);
       if (nome.startsWith('vendas-')) return prepararLinhaDeVendas(nome, linha);
+      if (nome.startsWith('controle-')) return prepararLinhaDeControle(nome, linha);
       return nome.startsWith('maleta-')
         ? prepararLinhaDeMaleta(nome, linha)
         : prepararLinhaDeEstoque(nome, linha);

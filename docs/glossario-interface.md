@@ -1417,3 +1417,15 @@ Menu do Corona Gestão: no grupo **Relatórios financeiros**. Só a dona vê cus
 | **Lucro por vendedor** | Vendedor, Praça, Receita líquida, Custo das peças, Lucro bruto, Comissão e Lucro |
 
 Termos: **resultado do período** = o que sobrou (ou faltou) no período, depois de tudo. **Lucro bruto** = receita líquida menos o custo das peças vendidas. **Lucro** (por peça ou vendedor) = receita líquida menos o custo (e, por vendedor, menos a comissão). **Custo das peças vendidas** = o custo da compra mais recente até o dia da venda. **Custo do cadastro** = não havia compra registrada até a venda, então vale o custo que está no cadastro hoje: é uma estimativa e muda se o cadastro mudar. **Perdas** = peças que faltaram no acerto (menos as encontradas depois), avarias e peças a menos na contagem do estoque, pelo custo. **Cobrado do vendedor** = o que o acerto cobrou das faltas. Aviso fixo na tela: "A devolução abate o mês em que a venda foi feita; por isso o resultado de um mês pode mudar depois."
+
+## Relatórios de controle (Fase 8, tarefa 8.9; §12)
+
+Menu do Corona Gestão: grupo **Controle**, depois de "Relatórios financeiros". Só a dona vê. Nenhuma senha aparece.
+
+| Tela | O que mostra |
+| --- | --- |
+| **Auditoria: quem fez o quê** | Quando, Quem fez ("Pelo servidor" quando não foi uma pessoa), O que foi, Registro, Antes e Depois; filtros de busca, período e pessoa |
+| **Computadores e envios** | Vendedor, Situação, Versão do programa, Último recebimento, Último envio, Esperando envio, Envios com problema e Guardados à parte; filtros de situação e de envios com problema |
+| **Acessos: entradas e erros** | Quando, Pessoa, Usuário digitado, Programa, Resultado, Endereço de internet e Bloqueado até; filtros de resultado e de programa |
+
+Situações do computador na tela: **Em uso**, **Esperando a sua liberação**, **Trocado por outro** e **Bloqueado**. Resultados de acesso: **Entrou**, **Senha errada**, **Recusada: acesso bloqueado**, **Usuário desativado**, **Programa muito antigo**, **Senha temporária vencida**, **Computador que não combina com o acesso** e **Bloqueio retirado ao redefinir a senha**. Na tela nunca aparecem "quarentena", "sessão", "token" nem "log". Usuário que não existe aparece como **Usuário que não existe**.

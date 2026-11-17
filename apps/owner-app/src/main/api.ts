@@ -186,6 +186,9 @@ import {
   relatorioDePendenciasDoAcerto,
   relatorioDeRecebimentosPorForma,
   relatorioDeCurvaAbc,
+  relatorioDeAuditoria,
+  relatorioDeComputadores,
+  relatorioDeAcessos,
   relatorioDeRankingDePecas,
   relatorioDeRankingDeVendedores,
   relatorioDeTicketMedio,
@@ -1133,6 +1136,12 @@ async function executarRelatorio(
       return executar(() => relatorioDeTicketMedio({ ...base, query: q }));
     case 'vendas-curva-abc':
       return executar(() => relatorioDeCurvaAbc({ ...base, query: q }));
+    case 'controle-auditoria':
+      return executar(() => relatorioDeAuditoria({ ...base, query: q }));
+    case 'controle-computadores':
+      return executar(() => relatorioDeComputadores({ ...base, query: q }));
+    case 'controle-acessos':
+      return executar(() => relatorioDeAcessos({ ...base, query: q }));
     case 'vendedores':
       return executar(() => relatorioDeVendedores({ ...base, query: q }));
     case 'clientes':

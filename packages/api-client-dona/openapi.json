@@ -3712,6 +3712,51 @@
         },
         "type" : "object"
       },
+      "LinhaDaAuditoria" : {
+        "properties" : {
+          "acao" : {
+            "type" : "string"
+          },
+          "antes" : {
+            "type" : "string"
+          },
+          "area" : {
+            "type" : "string"
+          },
+          "depois" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "oQueFoi" : {
+            "type" : "string"
+          },
+          "ocorridaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "origem" : {
+            "type" : "string"
+          },
+          "quem" : {
+            "type" : "string"
+          },
+          "registroId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "tabela" : {
+            "type" : "string"
+          },
+          "usuarioId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "LinhaDaCurva" : {
         "properties" : {
           "categoria" : {
@@ -6171,6 +6216,98 @@
         },
         "type" : "object"
       },
+      "LinhaDoAcesso" : {
+        "properties" : {
+          "aplicativo" : {
+            "type" : "string"
+          },
+          "bloqueadoAte" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "ip" : {
+            "type" : "string"
+          },
+          "ipBloqueadoAte" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "login" : {
+            "type" : "string"
+          },
+          "ocorridaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "pessoa" : {
+            "type" : "string"
+          },
+          "resultado" : {
+            "type" : "string"
+          },
+          "resultadoNaTela" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "LinhaDoComputador" : {
+        "properties" : {
+          "aguardandoEnvio" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "emQuarentena" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "enviosComProblema" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "primeiroContatoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "situacao" : {
+            "type" : "string"
+          },
+          "situacaoNaTela" : {
+            "type" : "string"
+          },
+          "ultimoContatoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "ultimoEnvioEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "ultimoRecebimentoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "vendedor" : {
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "versaoApp" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "LinhaDoResultado" : {
         "properties" : {
           "categoriaId" : {
@@ -8597,6 +8734,38 @@
         },
         "type" : "object"
       },
+      "RelatorioDeCadastroLinhaDaAuditoria" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDaAuditoria"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "RelatorioDeCadastroLinhaDaCurva" : {
         "properties" : {
           "itens" : {
@@ -9690,6 +9859,70 @@
           "itens" : {
             "items" : {
               "$ref" : "#/components/schemas/LinhaDeVendido"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatorioDeCadastroLinhaDoAcesso" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDoAcesso"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatorioDeCadastroLinhaDoComputador" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDoComputador"
             },
             "type" : "array"
           },
@@ -18140,6 +18373,279 @@
         } ],
         "summary" : "Compras por fornecedor e período",
         "tags" : [ "relatorios-de-estoque-e-compras-controller" ]
+      }
+    },
+    "/api/dona/relatorios/controle/acessos" : {
+      "get" : {
+        "description" : "Cada tentativa de entrar, da mais nova para a mais antiga: quem, em qual programa, o resultado em palavras simples, o endereço de internet e, quando a tentativa completou o limite de erros, até quando o acesso ficou bloqueado. Login que não existe aparece sem nome de pessoa. Filtros: busca (login ou nome), resultado (SUCESSO, SENHA_INCORRETA, BLOQUEADO, USUARIO_DESATIVADO, APP_INCOMPATIVEL, SENHA_TEMPORARIA_VENCIDA, PEDIDO_INVALIDO ou BLOQUEIO_LIMPO), aplicativo (gestao ou vendas), de e ate. Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.",
+        "operationId" : "relatorioDeAcessos",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "resultado",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "aplicativo",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDoAcesso"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Acessos: entradas, erros e bloqueios",
+        "tags" : [ "relatorios-de-controle-controller" ]
+      }
+    },
+    "/api/dona/relatorios/controle/auditoria" : {
+      "get" : {
+        "description" : "Cada ação registrada (preço, estoque, desconto, cancelamento, reembolso, autorização de exceção, restrição e as outras), da mais nova para a mais antiga: quem, quando, o quê, em qual registro e o antes e o depois em palavras da loja (nunca senha, hash nem token). Ação do servidor aparece como \"Pelo servidor\". Filtros: busca (pessoa, ação ou registro), usuarioId, acao (código, ex. PRECO_VENDA_ALTERADO), tabela (tipo de registro, ex. produtos), registroId, de e ate. Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.",
+        "operationId" : "relatorioDeAuditoria",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "usuarioId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "acao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tabela",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "registroId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDaAuditoria"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Auditoria: quem fez o quê",
+        "tags" : [ "relatorios-de-controle-controller" ]
+      }
+    },
+    "/api/dona/relatorios/controle/computadores" : {
+      "get" : {
+        "description" : "Um computador por linha: de qual vendedor, em que situação, a versão, o último recebimento e o último envio, quantas operações aguardam envio, quantos envios têm problema sem decisão e quantos estão guardados à parte esperando a dona. Filtros: busca (nome do vendedor), vendedorId, situacao (ATIVO, AGUARDANDO_LIBERACAO, SUBSTITUIDO, BLOQUEADO ou TODAS), comProblema (SIM ou NAO), de e ate (sobre o último contato). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.",
+        "operationId" : "relatorioDeComputadores",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "comProblema",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDoComputador"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Sincronizações e computadores",
+        "tags" : [ "relatorios-de-controle-controller" ]
       }
     },
     "/api/dona/relatorios/devolucoes/autorizacoes" : {

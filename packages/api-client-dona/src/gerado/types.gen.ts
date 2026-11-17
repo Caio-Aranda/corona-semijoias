@@ -1119,6 +1119,21 @@ export type LinhaAbaixoDoMinimo = {
     saldo?: number;
 };
 
+export type LinhaDaAuditoria = {
+    acao?: string;
+    antes?: string;
+    area?: string;
+    depois?: string;
+    id?: string;
+    oQueFoi?: string;
+    ocorridaEm?: string;
+    origem?: string;
+    quem?: string;
+    registroId?: string;
+    tabela?: string;
+    usuarioId?: string;
+};
+
 export type LinhaDaCurva = {
     categoria?: string;
     classe?: string;
@@ -1765,6 +1780,35 @@ export type LinhaDeVendido = {
     vendido?: string;
     vendidoEmDolar?: string;
     vendidoEmGuarani?: string;
+};
+
+export type LinhaDoAcesso = {
+    aplicativo?: string;
+    bloqueadoAte?: string;
+    id?: string;
+    ip?: string;
+    ipBloqueadoAte?: string;
+    login?: string;
+    ocorridaEm?: string;
+    pessoa?: string;
+    resultado?: string;
+    resultadoNaTela?: string;
+};
+
+export type LinhaDoComputador = {
+    aguardandoEnvio?: number;
+    emQuarentena?: number;
+    enviosComProblema?: number;
+    id?: string;
+    primeiroContatoEm?: string;
+    situacao?: string;
+    situacaoNaTela?: string;
+    ultimoContatoEm?: string;
+    ultimoEnvioEm?: string;
+    ultimoRecebimentoEm?: string;
+    vendedor?: string;
+    vendedorId?: string;
+    versaoApp?: string;
 };
 
 export type LinhaDoResultado = {
@@ -2530,6 +2574,15 @@ export type RelatorioDeCadastroLinhaAbaixoDoMinimo = {
     total?: number;
 };
 
+export type RelatorioDeCadastroLinhaDaAuditoria = {
+    itens?: Array<LinhaDaAuditoria>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
 export type RelatorioDeCadastroLinhaDaCurva = {
     itens?: Array<LinhaDaCurva>;
     pagina?: number;
@@ -2838,6 +2891,24 @@ export type RelatorioDeCadastroLinhaDeVenda = {
 
 export type RelatorioDeCadastroLinhaDeVendido = {
     itens?: Array<LinhaDeVendido>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroLinhaDoAcesso = {
+    itens?: Array<LinhaDoAcesso>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroLinhaDoComputador = {
+    itens?: Array<LinhaDoComputador>;
     pagina?: number;
     recorte?: string;
     tamanho?: number;
@@ -6313,6 +6384,84 @@ export type PorFornecedorResponses = {
 };
 
 export type PorFornecedorResponse = PorFornecedorResponses[keyof PorFornecedorResponses];
+
+export type RelatorioDeAcessosData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        resultado?: string;
+        aplicativo?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/controle/acessos';
+};
+
+export type RelatorioDeAcessosResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDoAcesso;
+};
+
+export type RelatorioDeAcessosResponse = RelatorioDeAcessosResponses[keyof RelatorioDeAcessosResponses];
+
+export type RelatorioDeAuditoriaData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        usuarioId?: string;
+        acao?: string;
+        tabela?: string;
+        registroId?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/controle/auditoria';
+};
+
+export type RelatorioDeAuditoriaResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDaAuditoria;
+};
+
+export type RelatorioDeAuditoriaResponse = RelatorioDeAuditoriaResponses[keyof RelatorioDeAuditoriaResponses];
+
+export type RelatorioDeComputadoresData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        situacao?: string;
+        comProblema?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/controle/computadores';
+};
+
+export type RelatorioDeComputadoresResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDoComputador;
+};
+
+export type RelatorioDeComputadoresResponse = RelatorioDeComputadoresResponses[keyof RelatorioDeComputadoresResponses];
 
 export type RelatorioDePedidosDeAutorizacaoData = {
     body?: never;

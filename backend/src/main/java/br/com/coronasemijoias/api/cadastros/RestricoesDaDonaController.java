@@ -69,9 +69,10 @@ public class RestricoesDaDonaController {
 
     @Operation(summary = "Editar restrição", description = "Mande a version que a tela leu; se outra pessoa alterou antes, volta 409.")
     @PutMapping("/{id}")
-    public Resposta editar(@PathVariable UUID id, @Valid @RequestBody Pedido pedido) {
+    public Resposta editar(@PathVariable UUID id, @Valid @RequestBody Pedido pedido,
+            @AuthenticationPrincipal UsuarioAutenticado quem) {
         return Resposta.de(servico.editar(id, pedido.version(), pedido.codigo(), pedido.descricao(),
-                Boolean.TRUE.equals(pedido.bloqueiaRemessa())));
+                Boolean.TRUE.equals(pedido.bloqueiaRemessa()), quem.id()));
     }
 
     @Operation(summary = "Inativar restrição",

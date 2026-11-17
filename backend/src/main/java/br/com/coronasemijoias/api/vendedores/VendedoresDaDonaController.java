@@ -121,8 +121,9 @@ public class VendedoresDaDonaController {
 
     @Operation(summary = "Editar vendedor", description = "Mande a version que a tela leu; se outra pessoa alterou antes, volta 409.")
     @PutMapping("/{id}")
-    public Resposta editar(@PathVariable UUID id, @Valid @RequestBody Pedido pedido) {
-        return Resposta.de(servico.editar(id, pedido.version(), pedido.dados()));
+    public Resposta editar(@PathVariable UUID id, @Valid @RequestBody Pedido pedido,
+            @AuthenticationPrincipal UsuarioAutenticado quem) {
+        return Resposta.de(servico.editar(id, pedido.version(), pedido.dados(), quem.id()));
     }
 
     @Operation(summary = "Inativar vendedor", description = "O vendedor sai das listas de ativos, mas o histórico fica.")

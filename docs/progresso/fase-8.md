@@ -158,3 +158,25 @@ PR 199 (issue #182). Só tela no Corona Gestão e uma operação nova na ponte (
 
 **Não fiz:** cenário Playwright do painel (a 8.12 cuida da dona no Corona Gestão); "voltar ao painel" a partir do relatório aberto (o menu leva de volta).
 
+## Tarefa 8.9: controle (auditoria, computadores e acessos)
+
+PR 200 (issue #183). Três relatórios só de leitura para a dona (§12, grupo Controle) e a conferência das ações da §11 na auditoria. Sem migração; nada vai ao Corona Vendas (o cliente do vendedor não mudou).
+
+**O que entrou**
+
+- **Backend** (`/api/dona/relatorios/controle/...`, só ADMIN, mesmo motor dos relatórios de cadastro: filtros, páginas, rodapé e `recorte`): `auditoria` (quem, quando, o quê, área, registro e **antes e depois em texto da loja**; filtros de busca, `usuarioId`, `acao`, `tabela`, `registroId`, período; ação do servidor vem como "Pelo servidor"), `computadores` (um por computador: vendedor, situação, versão, último recebimento e último envio, quantas operações esperam, envios com problema sem decisão e envios guardados à parte esperando a dona; filtros de busca, vendedor, situação, com problema e período do último contato) e `acessos` (cada tentativa: pessoa, programa, resultado em palavras simples, endereço, até quando bloqueou; login que não existe sem nome de pessoa; filtros de busca, resultado, programa e período).
+- **Texto da loja** (`TextoDaAuditoria`): dicionário de ações, áreas e campos; o que não está nele vira frase legível; **campo com senha, hash, token ou segredo nunca sai**, mesmo que alguém o grave um dia (teste).
+- **Gestão:** grupo **Controle** no menu com os três relatórios, no padrão dos outros (filtros, rodapé, detalhamento, PDF, Excel e CSV). Sem dinheiro, logo sem moedas.
+- **Retenção:** guarda tudo (como o plano); a limpeza técnica de hoje continua só com o que já apagava.
+
+**Conferência da §11 (auditoria das ações).** Já registravam, na mesma transação: preço de venda e de custo (`PRECO_VENDA_ALTERADO`, `PRECO_CUSTO_ALTERADO`), estoque (`ServicoDeEstoque`, contagem, compra e estorno), desconto (o desconto vai no `VENDA_REGISTRADA`; o limite de desconto não tem tela nem rota que o mude), cancelamento (venda, devolução, troca, maleta, compra, acerto, contagem, recebimento, pagamento), reembolso (`DEVOLUCAO_REGISTRADA` com valor e forma do reembolso) e autorização de exceção (pedida, aprovada, negada e vencida). **Faltava e foi acrescentado** (sem mudar regra):
+
+- `VENDEDOR_RESTRICAO_ALTERADA` em `ServicoDeVendedores.editar`: trocar ou tirar a restrição do vendedor (a "liberação de restrição"), com a restrição de antes e a de depois, quem fez e quando.
+- `RESTRICAO_ALTERADA` em `ServicoDeRestricoes.editar`: mudança de código, descrição ou do que a restrição bloqueia.
+- Os dois controladores passam o usuário logado ao serviço (assinatura nova, mesma resposta). Inativar e reativar a restrição já eram auditados.
+
+**Testes (primeiro):** `ControleDeAuditoriaTest` (filtros, texto da loja, sem segredo, "Pelo servidor", recorte, ordem e páginas), `ControleDeComputadoresTest` (massa de dois vendedores à mão: 3 computadores, problemas e quarentena, rodapé), `ControleDeAcessosTest` (entradas, erradas, bloqueios, login que não existe), `PermissoesDoControleTest` (401 sem login e 403 ao vendedor em cada rota; só rotas da dona), `TextoDaAuditoriaTest`, `RestricoesNaAuditoriaTest` (as duas ações novas e que editar sem mudar a restrição não grava) e `relatorios-controle.test.tsx` na Gestão. Cada classe cria as próprias pessoas e filtra por elas, então não colide com as outras.
+
+**Não fiz:** exportar a auditoria com filtro por ação na tela (o filtro existe na API; a tela usa busca, período e pessoa); decidir envios pelo relatório (isso continua em Computadores, no menu).
+
+**Como conferir:** `npm run api:test`, `npm run lint`, `npm run typecheck`, `npm run format:check`.
