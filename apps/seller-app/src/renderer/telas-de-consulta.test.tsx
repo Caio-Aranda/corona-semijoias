@@ -216,6 +216,8 @@ function ponteDeConsulta(
     aoMudarASessao: () => () => undefined,
     aoMudarAAtualizacao: () => () => undefined,
     aoMudarASincronizacao: () => () => undefined,
+    lerIdioma: () => Promise.resolve(null),
+    gravarIdioma: () => Promise.resolve(),
   };
   return { ponte, daOperacao: (op: string) => chamadas.filter((c) => c.operacao === op) };
 }

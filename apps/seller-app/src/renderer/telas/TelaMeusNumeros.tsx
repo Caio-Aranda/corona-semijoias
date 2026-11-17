@@ -1,4 +1,5 @@
-import { Aviso, Botao, Campo, Tabela } from '@corona/ui';
+import { Aviso, Botao } from '@corona/ui';
+import { Campo, Tabela } from '../componentes-do-vendedor';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import type {
   RelatorioAReceber,

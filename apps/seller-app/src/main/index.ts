@@ -18,7 +18,12 @@ import {
   impressoesDoServidor,
   versaoDoApp,
 } from './configuracao';
-import { registrarAtualizacao, registrarPonte, registrarSincronizacao } from './ipc';
+import {
+  registrarAtualizacao,
+  registrarIdioma,
+  registrarPonte,
+  registrarSincronizacao,
+} from './ipc';
 import { montarCoronaVendas } from './montagem';
 import { enderecoDoApp } from './seguranca';
 import { PreparoDaAtualizacao, prepararAntesDeInstalar } from './sync/preparo-da-atualizacao';
@@ -161,6 +166,16 @@ async function iniciar(): Promise<void> {
   });
 
   registrarPonte(servico, (e) => {
+    const quadro = e.senderFrame;
+    return (
+      quadro !== null &&
+      janela !== null &&
+      e.sender === janela.webContents &&
+      enderecoDoApp(quadro.url, enderecoDeDesenvolvimento, arquivoDoApp)
+    );
+  });
+
+  registrarIdioma(app.getPath('userData'), (e) => {
     const quadro = e.senderFrame;
     return (
       quadro !== null &&

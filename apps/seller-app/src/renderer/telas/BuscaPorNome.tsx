@@ -1,4 +1,5 @@
-import { Botao, Campo } from '@corona/ui';
+import { Botao } from '@corona/ui';
+import { Campo } from '../componentes-do-vendedor';
 import { useEffect, useState } from 'react';
 import type { LinhaDaMaleta } from '../../shared/dados';
 import type { PonteDoCorona } from '../../shared/ponte';
@@ -120,7 +121,7 @@ function ItemDaBusca({
         <img className="vendas-busca-item__foto" src={foto} alt={`Foto de ${linha.produto.nome}`} />
       ) : (
         <span className="vendas-busca-item__foto vendas-busca-item__foto--vazia" aria-hidden="true">
-          Sem foto
+          {TEXTOS.comum.semFoto}
         </span>
       )}
       <span className="vendas-busca-item__texto">

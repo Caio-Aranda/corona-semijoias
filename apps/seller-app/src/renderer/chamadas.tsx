@@ -11,6 +11,8 @@ import {
   tresMoedas,
   type CotacaoParaTela,
 } from './moedas';
+import { mensagemDoErro } from './erros-es';
+import { idiomaAtual } from './idioma';
 import { TEXTOS } from './textos';
 
 export type Resposta<T> =
@@ -38,7 +40,7 @@ export async function chamar<T>(
     }
     return {
       ok: false,
-      mensagem: r.mensagem ?? TEXTOS.algoDeuErrado,
+      mensagem: mensagemDoErro(idiomaAtual(), r.codigo, r.mensagem, TEXTOS.algoDeuErrado),
       ...(r.clienteExistente ? { clienteExistente: r.clienteExistente } : {}),
     };
   } catch {

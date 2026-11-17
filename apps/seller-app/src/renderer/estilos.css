@@ -214,3 +214,31 @@
 .vendas-linha {
   display: block;
 }
+
+/* Troca de idioma (Español | Português): dois botões pequenos juntos, no alto das telas. */
+.vendas-idiomas {
+  display: inline-flex;
+  gap: var(--espaco-2);
+  align-items: center;
+}
+
+.cs-entrada-pagina .vendas-idiomas {
+  justify-content: center;
+}
+
+.vendas-idiomas__botao {
+  min-width: 2.5rem;
+  padding-inline: var(--espaco-2);
+}
+
+.cs-entrada-pagina main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espaco-4);
+  width: 100%;
+}
+
+.vendas-nome-do-vendedor {
+  margin-inline-end: var(--espaco-3);
+}

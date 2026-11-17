@@ -117,6 +117,7 @@ describe('abrir sem internet', () => {
     expect(await s.entrar('ana', 'errada')).toEqual({
       tipo: 'recusado',
       mensagem: 'Usuário ou senha incorretos. Confira o que você digitou e tente de novo.',
+      codigo: 'SENHA_ERRADA',
     });
     expect(motor.ligar).not.toHaveBeenCalled();
   });

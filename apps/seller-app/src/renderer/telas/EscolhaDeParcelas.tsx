@@ -1,4 +1,4 @@
-import { Campo } from '@corona/ui';
+import { Campo } from '../componentes-do-vendedor';
 import { maisMeses, MESES_ATE_O_PRIMEIRO_VENCIMENTO } from '../../shared/datas-das-parcelas';
 import { diaEmBrasilia } from '../../shared/garantia';
 import { MAXIMO_DE_PARCELAS, type ParcelamentoParaEnviar } from '../../shared/operacoes';

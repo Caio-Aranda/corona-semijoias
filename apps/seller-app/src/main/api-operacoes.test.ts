@@ -190,7 +190,12 @@ describe('devolução, troca e crédito só existem no banco do computador (tare
     const r = await api.chamar('token-de-acesso', pedido);
     expect(r).toEqual({
       ok: false,
-      falha: { tipo: 'recusada', status: 503, mensagem: MENSAGEM_SEM_BANCO },
+      falha: {
+        tipo: 'recusada',
+        status: 503,
+        mensagem: MENSAGEM_SEM_BANCO,
+        codigo: 'SEM_BANCO_LOCAL',
+      },
     });
     expect(pedidos).toHaveLength(0);
   });

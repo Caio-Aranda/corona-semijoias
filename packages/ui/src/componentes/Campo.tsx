@@ -5,10 +5,21 @@ export interface CampoProps extends InputHTMLAttributes<HTMLInputElement> {
   /** Mensagem em português simples, dizendo o que fazer (glossário, parte 5). */
   erro?: string;
   ajuda?: string;
+  /** Rótulos do botão que mostra ou esconde a senha (padrão em português; o Corona Vendas passa os do idioma). */
+  rotuloMostrar?: string;
+  rotuloOcultar?: string;
 }
 
 /** Campo de formulário com rótulo sempre visível e erro ligado ao campo. */
-export function Campo({ rotulo, erro, ajuda, id, ...resto }: CampoProps) {
+export function Campo({
+  rotulo,
+  erro,
+  ajuda,
+  id,
+  rotuloMostrar = 'Mostrar',
+  rotuloOcultar = 'Ocultar',
+  ...resto
+}: CampoProps) {
   const gerado = useId();
   const idCampo = id ?? gerado;
   const idAjuda = `${idCampo}-ajuda`;
@@ -51,7 +62,7 @@ export function Campo({ rotulo, erro, ajuda, id, ...resto }: CampoProps) {
               <circle cx="12" cy="12" r="3" />
               {visivel ? <path d="M4 4l16 16" /> : null}
             </svg>
-            {visivel ? 'Ocultar' : 'Mostrar'}
+            {visivel ? rotuloOcultar : rotuloMostrar}
           </button>
         </div>
       ) : (
