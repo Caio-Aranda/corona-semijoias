@@ -125,7 +125,7 @@ class PreviaDoFechamentoMesmoJsonTest extends ApoioDoFechamento {
         }
         assertThat(semNovos).as(arquivo).isEqualTo(antes);
         if (ganhaOsCamposNovos) {
-            assertThat(novos).as(arquivo + ": campos novos").isIn(List.of(), CAMPOS_NOVOS);
+            assertThat(novos).as(arquivo + ": campos novos").containsExactlyElementsOf(CAMPOS_NOVOS);
         }
     }
 

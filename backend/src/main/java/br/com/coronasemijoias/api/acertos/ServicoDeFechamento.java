@@ -153,7 +153,7 @@ public class ServicoDeFechamento {
 
     /** A prévia: o mesmo cálculo do fechamento, nada é gravado. Sem decisões, assume cobrar tudo no acerto e não aprovar defeito. */
     @Transactional(readOnly = true)
-    public Map<String, Object> previa(UUID acertoId, PedidoDeFechamento pedido) {
+    public PreviaDoFechamento previa(UUID acertoId, PedidoDeFechamento pedido) {
         UUID vendedorId = vendedorDoAcerto(acertoId);
         String status = jdbc.queryForObject("SELECT status FROM corona.acertos WHERE id = ?", String.class, acertoId);
         if ("ACERTADO".equals(status)) {
@@ -194,7 +194,7 @@ public class ServicoDeFechamento {
                 m.comissao().comissao(), faltas, liquido, m.cotacao().dataCotacao());
     }
 
-    private Map<String, Object> previaDe(UUID acertoId, UUID vendedorId, PedidoDeFechamento pedido) {
+    private PreviaDoFechamento previaDe(UUID acertoId, UUID vendedorId, PedidoDeFechamento pedido) {
         Montagem m = montagem.montar(acertoId, vendedorId);
         Decisoes d = pedido == null ? padrao(m) : decisoesDe(pedido, m, false);
         m = m.comAprovadas(d.aprovadas());
@@ -279,7 +279,7 @@ public class ServicoDeFechamento {
         return new Resultado(acertoId, false);
     }
 
-    private ErroDaApi desatualizado(Map<String, Object> previa) {
+    private ErroDaApi desatualizado(PreviaDoFechamento previa) {
         ProblemDetail corpo = Problemas.de(HttpStatus.CONFLICT, CodigoErro.FECHAMENTO_DESATUALIZADO);
         corpo.setProperty("previa", previa);
         return ErroDaApi.comCorpo(HttpStatus.CONFLICT, CodigoErro.FECHAMENTO_DESATUALIZADO, corpo);
@@ -760,86 +760,52 @@ public class ServicoDeFechamento {
 
     // --- a prévia (JSON) ---
 
-    private Map<String, Object> montarPrevia(Montagem m, Decisoes d, Calculo c, Financeiro f, Pagamento pag) {
-        Map<String, Object> r = new LinkedHashMap<>();
-        r.put("acertoId", m.acertoId());
-        List<Map<String, Object>> itens = new ArrayList<>();
+    private PreviaDoFechamento montarPrevia(Montagem m, Decisoes d, Calculo c, Financeiro f, Pagamento pag) {
+        List<PreviaDoFechamento.PecaDaPreviaDoFechamento> itens = new ArrayList<>();
         for (EsperadoEContado.Item i : m.esperadoEContado().itens()) {
-            Map<String, Object> l = new LinkedHashMap<>();
-            l.put("produto", m.produtos().get(i.produtoId()));
-            l.put("remessaId", i.remessaId());
-            l.put("esperado", i.esperado());
-            l.put("contadoBoa", i.contadoBoa());
-            l.put("contadoDefeito", i.contadoDefeito());
-            l.put("falta", i.falta());
-            l.put("valorDaFalta", i.valorDaFalta());
-            itens.add(l);
+            itens.add(new PreviaDoFechamento.PecaDaPreviaDoFechamento(produtoDaPrevia(m, i.produtoId()), i.remessaId(), i.esperado(),
+                    i.contadoBoa(), i.contadoDefeito(), i.falta(), i.valorDaFalta()));
         }
-        r.put("itens", itens);
-        r.put("sobras", m.esperadoEContado().sobras());
-        r.put("faltas", c.pendencias().stream().filter(p -> p.tipo().equals("FALTA")).map(p -> {
-            Map<String, Object> l = new LinkedHashMap<>();
-            l.put("produto", m.produtos().get(p.produtoId()));
-            l.put("remessaId", p.remessaId());
-            l.put("quantidade", p.quantidade());
-            l.put("valor", p.valor());
-            l.put("status", p.status());
-            return l;
-        }).toList());
-        List<Map<String, Object>> defeitos = new ArrayList<>();
-        m.defeitosContados().forEach((p, q) -> {
-            Map<String, Object> l = new LinkedHashMap<>();
-            l.put("produto", m.produtos().get(p));
-            l.put("contadoDefeito", q);
-            defeitos.add(l);
-        });
-        r.put("defeitos", defeitos);
-        r.put("eventos", m.eventos().stream().map(e -> Map.of("tipo", e.tipo(), "origemId", e.origemId(), "vendaId", e.vendaId(),
-                "valor", e.valor())).toList());
-        r.put("revisoesPendentes", m.revisoes());
-        r.put("naoAceitas", m.naoAceitas());
-        r.put("pendenciasAntigas", m.antigas());
-        r.put("comissoes", m.comissao().linhas());
-        r.put("metaGuarani", m.metaGuarani());
-        r.put("vendidoParaMetaGuarani", m.comissao().vendidoParaMetaGuarani());
-        r.put("percentualComissao", m.comissao().percentual());
-        r.put("vendidoBruto", m.vendidoBruto());
-        r.put("descontos", m.descontos());
-        r.put("devolvido", m.devolvido());
-        r.put("vendidoLiquido", m.vendidoLiquido());
-        r.put("comissao", m.comissao().comissao());
-        r.put("faltasCobradas", c.faltasCobradas());
-        r.put("liquido", c.liquido());
-        r.put("creditoDisponivel", f.creditoDisponivel());
-        r.put("creditoUsado", f.creditoUsado());
-        r.put("aPagarNoAcerto", f.aPagar());
-        r.put("recebidoNoAcerto", f.recebido());
-        r.put("boleto", f.boleto());
-        r.put("ficouDevendo", f.ficouDevendo());
-        r.put("pagoAoVendedor", f.pagoAoVendedor());
-        r.put("restanteSemData", f.restanteSemData());
-        r.put("parcelasDoRestante", parcelasDoRestante(f, pag));
-        r.put("contasAbertasDoVendedor", contasAbertasDoVendedor(m.vendedorId()));
-        r.put("cotacaoId", m.cotacao().id());
-        r.put("cotacaoData", m.cotacao().dataCotacao());
-        r.put("podeFechar", m.revisoes().isEmpty() && m.esperadoEContado().sobras().isEmpty());
-        return r;
+        List<PreviaDoFechamento.FaltaDaPreviaDoFechamento> faltas = c.pendencias().stream().filter(p -> p.tipo().equals("FALTA"))
+                .map(p -> new PreviaDoFechamento.FaltaDaPreviaDoFechamento(produtoDaPrevia(m, p.produtoId()), p.remessaId(),
+                        p.quantidade(), p.valor(), p.status()))
+                .toList();
+        List<PreviaDoFechamento.DefeitoDaPreviaDoFechamento> defeitos = new ArrayList<>();
+        m.defeitosContados().forEach((p, q) -> defeitos.add(new PreviaDoFechamento.DefeitoDaPreviaDoFechamento(produtoDaPrevia(m, p), q)));
+        var eventos = m.eventos().stream()
+                .map(e -> new PreviaDoFechamento.EventoDaPreviaDoFechamento(e.tipo(), e.origemId(), e.vendaId(), e.valor())).toList();
+        var revisoes = m.revisoes().stream().map(x -> new PreviaDoFechamento.RevisaoDaPreviaDoFechamento(x.tipo(), x.id())).toList();
+        var naoAceitas = m.naoAceitas().stream().map(x -> new PreviaDoFechamento.NaoAceitaDaPreviaDoFechamento(x.tipo(), x.origemTipo(),
+                x.origemId(), x.valor())).toList();
+        var antigas = m.antigas().stream().map(x -> new PreviaDoFechamento.AntigaDaPreviaDoFechamento(x.id(), x.tipo(), x.produtoId(),
+                x.quantidade(), x.valor())).toList();
+        long vendidoParaMeta = m.comissao().vendidoParaMetaGuarani();
+        ServicoDaComissao.FaltaParaMeta falta = ServicoDaComissao.faltaParaMeta(m.metaGuarani(), vendidoParaMeta,
+                m.cotacao().taxas().pygVenda());
+        return new PreviaDoFechamento(m.acertoId(), itens, m.esperadoEContado().sobras(), faltas, defeitos, eventos, revisoes, naoAceitas,
+                antigas, m.comissao().linhas(), m.metaGuarani(), vendidoParaMeta, falta.guarani(), falta.reais(), m.comissao().percentual(),
+                m.vendidoBruto(), m.descontos(), m.devolvido(), m.vendidoLiquido(), m.comissao().comissao(), c.faltasCobradas(), c.liquido(),
+                f.creditoDisponivel(), f.creditoUsado(), f.aPagar(), f.recebido(), f.boleto(), f.ficouDevendo(), f.pagoAoVendedor(),
+                f.restanteSemData(), parcelasDoRestante(f, pag), contasAbertasDoVendedor(m.vendedorId()), m.cotacao().id(),
+                m.cotacao().dataCotacao(), m.revisoes().isEmpty() && m.esperadoEContado().sobras().isEmpty());
+    }
+
+    private static PreviaDoFechamento.ProdutoDaPreviaDoFechamento produtoDaPrevia(Montagem m, UUID produtoId) {
+        MontagemDoFechamento.Produto p = m.produtos().get(produtoId);
+        return p == null ? null : new PreviaDoFechamento.ProdutoDaPreviaDoFechamento(p.id(), p.nome(), p.codigo(), p.fotoHash());
     }
 
     /** As parcelas que o restante geraria (só para mostrar na prévia; o valor de cada uma sai de Dinheiro.dividirEmParcelas). */
-    private List<Map<String, Object>> parcelasDoRestante(Financeiro f, Pagamento p) {
-        List<Map<String, Object>> r = new ArrayList<>();
+    private List<PreviaDoFechamento.ParcelaDoRestanteDaPrevia> parcelasDoRestante(Financeiro f, Pagamento p) {
+        List<PreviaDoFechamento.ParcelaDoRestanteDaPrevia> r = new ArrayList<>();
         if (f.restante().signum() <= 0 || p.restante() == null) {
             return r;
         }
         try {
             List<BigDecimal> valores = Dinheiro.dividirEmParcelas(f.restante(), p.restante().parcelas());
             for (int k = 0; k < valores.size(); k++) {
-                Map<String, Object> l = new LinkedHashMap<>();
-                l.put("numero", k + 1 + (f.boleto().signum() > 0 ? 1 : 0));
-                l.put("vencimento", p.restante().primeiroVencimento().plusMonths(k));
-                l.put("valor", valores.get(k));
-                r.add(l);
+                r.add(new PreviaDoFechamento.ParcelaDoRestanteDaPrevia(k + 1 + (f.boleto().signum() > 0 ? 1 : 0),
+                        p.restante().primeiroVencimento().plusMonths(k), valores.get(k)));
             }
         } catch (IllegalArgumentException e) {
             throw Validacoes.recusar("restante", "O valor que ficou devendo é pequeno demais para tantas parcelas. Use menos parcelas.");
@@ -848,23 +814,14 @@ public class ServicoDeFechamento {
     }
 
     /** As contas em aberto que o vendedor já devia à loja (nível 2), da que vence primeiro para a que vence depois. */
-    private List<Map<String, Object>> contasAbertasDoVendedor(UUID vendedorId) {
+    private List<PreviaDoFechamento.ContaAbertaNaPrevia> contasAbertasDoVendedor(UUID vendedorId) {
         return jdbc.query("""
                 SELECT id, origem_tipo, parcela, total_parcelas, vencimento, valor, valor - valor_pago - valor_cancelado AS em_aberto,
                        forma_prevista
                   FROM corona.contas_receber
                  WHERE devedor_tipo = 'VENDEDOR' AND vendedor_id = ? AND deleted_at IS NULL AND status IN ('ABERTA', 'PARCIAL')
-                 ORDER BY vencimento, parcela, id""", (rs, n) -> {
-                    Map<String, Object> l = new LinkedHashMap<>();
-                    l.put("id", rs.getObject("id", UUID.class));
-                    l.put("origem", rs.getString("origem_tipo"));
-                    l.put("numero", rs.getInt("parcela"));
-                    l.put("totalDeParcelas", rs.getInt("total_parcelas"));
-                    l.put("vencimento", rs.getObject("vencimento", LocalDate.class));
-                    l.put("valor", rs.getBigDecimal("valor"));
-                    l.put("emAberto", rs.getBigDecimal("em_aberto"));
-                    l.put("formaPrevista", rs.getString("forma_prevista"));
-                    return l;
-                }, vendedorId);
+                 ORDER BY vencimento, parcela, id""", (rs, n) -> new PreviaDoFechamento.ContaAbertaNaPrevia(rs.getObject("id", UUID.class), rs.getString("origem_tipo"),
+                        rs.getInt("parcela"), rs.getInt("total_parcelas"), rs.getObject("vencimento", LocalDate.class),
+                        rs.getBigDecimal("valor"), rs.getBigDecimal("em_aberto"), rs.getString("forma_prevista")), vendedorId);
     }
 }
