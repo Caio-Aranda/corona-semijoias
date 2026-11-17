@@ -1,8 +1,10 @@
+import { textosVivos } from './idioma/idioma';
+import { ES_TEXTOS_DE_FINANCEIRO } from './idioma/es/financeiro';
 /**
  * Textos das telas do financeiro do Corona Gestão (tarefa 7.10): Caixa, Categorias do caixa, Contas a pagar,
  * Contas a receber, Recebimentos do vendedor e Fechar semana. Termos de docs/glossario-interface.md (parte 17).
  */
-export const TEXTOS_DE_FINANCEIRO = {
+export const PT_TEXTOS_DE_FINANCEIRO = {
   menu: {
     grupo: 'Financeiro',
     caixa: 'Caixa',
@@ -340,3 +342,5 @@ export const TEXTOS_DE_FINANCEIRO = {
     },
   },
 } as const;
+
+export const TEXTOS_DE_FINANCEIRO = textosVivos('financeiro', PT_TEXTOS_DE_FINANCEIRO, ES_TEXTOS_DE_FINANCEIRO);
