@@ -111,3 +111,19 @@ Issue #179, PR 196. Só leitura: nenhuma migração, nenhuma regra nova, nada va
 **Não fiz.** Custo e lucro (8.6). Filtro por cliente e por produto na tela da Gestão (a busca já acha os dois pelo nome; a API aceita os dois). Data de cotação única nas linhas agrupadas.
 
 **Como conferir:** `npm run api:test`, `npx vitest run --root apps/owner-app`, `npm run lint`, `npm run typecheck`, `npm run format:check`.
+
+## Tarefa 8.6: resultado do período e lucro
+
+**O que mudou.** Quatro rotas só da dona (ADMIN), só leitura, em `/api/dona/relatorios/financeiro`: `resultado` (o DRE), `resultado/detalhamento` (os registros de cada linha), `lucro-por-produto` e `lucro-por-vendedor`. Período obrigatório (400 em português). Classes novas `CustoDaPeca` (a fórmula do custo na data, só SQL) e `ConsultasDoResultado`. **Sem migração.**
+
+- **Uma fórmula só.** Receita, devolução e peças saem do `VendidoLiquido` (o mesmo da 8.5); o custo só do `CustoDaPeca`; a comissão do DRE e do lucro por vendedor da mesma subconsulta. Somas no banco, em `NUMERIC`; o único arredondamento é a margem (`Dinheiro`).
+- **Custo da peça (ADR-0015, R1).** Último custo de compra até o dia da venda (o dia da compra vale; duas no mesmo dia, a última; compra desfeita não conta); sem compra, o custo do cadastro (`produtos_custos`), marcado. Calculado na leitura; nada gravado.
+- **Devolução pela data da venda** (diverge do item 2 do ADR, registrado em "Como ficou 8.6"): o DRE bate com os relatórios de vendas e a curva ABC.
+- **Perdas.** Faltas do acerto pelo custo no dia do fechamento, menos as encontradas depois (no dia em que foram encontradas); avarias do estoque; inventário só para menos. **Cobrado do vendedor** = `acertos.faltas_cobradas`. **Caixa** só com lançamentos manuais, por categoria; o caixa automático do acerto e o pagamento a fornecedor ficam fora.
+- **Gestão.** Quatro telas no grupo Relatórios financeiros (Resultado do período, Registros do resultado, Lucro por produto, Lucro por vendedor), com o aviso "A devolução abate o mês em que a venda foi feita...", a marca "Custo do cadastro" e a contagem de peças nessa situação; PDF, Excel e CSV pelo motor existente. Termos novos no glossário.
+
+**Testes.** `CustoDaPecaTest` (antes, no dia e depois da compra; sem compra; compra desfeita; mesmo dia; custo exato 3 x 7,33 = 21,99). `ResultadoDoPeriodoTest` (massa de abril de 2292 com a conta à mão: resultado -168,00; as três moedas linha a linha; sem cotação = coluna vazia; detalhamento de cada linha; lucro por produto 73,00 e 67,50 e por vendedor 63,50 e 63,00; **bate** com vendas, curva ABC, comissões, acertos e fluxo de caixa; devolução que chega no mês seguinte; falta encontrada depois; 400; só leitura). `PermissoesDoResultadoTest` (401, 403 e nenhuma rota do vendedor devolve custo ou lucro). `relatorios-resultado.test.tsx` na Gestão.
+
+**Não fiz / decisões.** As classes de teste do plano `LucroPorProdutoEVendedorTest` e `UmaFormulaSoDoResultadoTest` ficaram dentro de `ResultadoDoPeriodoTest` (a massa de abril é única e o banco é dividido entre as classes). O detalhamento abre pela tela "Registros do resultado" (escolhendo a linha), não ao tocar na linha do resultado. A exclusão do caixa automático foi testada só com o pagamento ao vendedor do acerto a favor (45,00); o pagamento a fornecedor e o recebimento do acerto não têm massa própria.
+
+**Como conferir:** `npm run api:test`, `npx vitest run --root apps/owner-app`, `npm run lint`, `npm run typecheck`, `npm run format:check`.

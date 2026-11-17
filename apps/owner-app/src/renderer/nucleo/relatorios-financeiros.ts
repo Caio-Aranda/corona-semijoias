@@ -82,7 +82,145 @@ const TOTAIS_DA_CONTA = {
   vencido: 'emAbertoEmReais',
 };
 
+const dinheiroDoLucro = (chave: string, titulo: string): ColunaDoRelatorio => ({
+  chave,
+  titulo,
+  tipo: 'dinheiro',
+  convertido: { dolar: `${chave}EmDolar`, guarani: `${chave}EmGuarani`, data: 'dataDaCotacao' },
+});
+
+const CUSTO_DO_CADASTRO: ColunaDoRelatorio = {
+  chave: 'custoDoCadastro',
+  titulo: 'Custo do cadastro',
+  tipo: 'simNao',
+};
+
+const LINHAS_DO_RESULTADO: ExtraDoRelatorio = {
+  chave: 'linha',
+  rotulo: 'Qual linha do resultado',
+  tipo: 'escolha',
+  qualquer: 'Escolha uma linha',
+  opcoes: [
+    { valor: 'VENDAS', rotulo: 'Vendas' },
+    { valor: 'DEVOLUCOES', rotulo: 'Devoluções e trocas' },
+    { valor: 'CUSTO', rotulo: 'Custo das peças vendidas' },
+    { valor: 'COMISSOES', rotulo: 'Comissões' },
+    { valor: 'PERDAS', rotulo: 'Perdas' },
+    { valor: 'COBRADO', rotulo: 'Cobrado do vendedor' },
+    { valor: 'CAIXA', rotulo: 'Outras entradas e despesas da loja' },
+  ],
+};
+
 export const RELATORIOS_FINANCEIROS: Record<NomeDoRelatorioFinanceiro, DefinicaoDeRelatorio> = {
+  'financeiro-resultado': {
+    nome: 'financeiro-resultado',
+    grupo: 'financeiro',
+    titulo: 'Resultado do período',
+    explicacao:
+      'Quanto a loja ganhou ou perdeu no período: vendas, devoluções, custo das peças, comissões, perdas, o que foi cobrado dos vendedores e as despesas da loja. Escolha de que dia até que dia.',
+    filtros: ['periodo'],
+    buscaRotulo: 'Buscar',
+    colunas: [{ chave: 'tituloNaTela', titulo: 'Linha', tipo: 'texto' }, reais('valor', 'Valor')],
+    totaisDeValor: {},
+    notaDaCotacao: T.cotacao,
+    nota: T.resultadoNota,
+    itens: { um: 'linha', varios: 'linhas' },
+    vazio: 'Escolha o período para ver o resultado.',
+  },
+  'financeiro-resultado-registros': {
+    nome: 'financeiro-resultado-registros',
+    grupo: 'financeiro',
+    titulo: 'Registros do resultado',
+    explicacao:
+      'Os registros que formam uma linha do resultado do período: a venda, a devolução, a comissão, a perda, a cobrança ou o lançamento do caixa. Escolha o período e a linha.',
+    filtros: ['periodo'],
+    extras: [LINHAS_DO_RESULTADO],
+    buscaRotulo: 'Buscar',
+    colunas: [
+      { chave: 'data', titulo: 'Dia', tipo: 'data' },
+      { chave: 'descricao', titulo: 'O que é', tipo: 'texto' },
+      { chave: 'vendedor', titulo: 'Vendedor', tipo: 'texto' },
+      { chave: 'produto', titulo: 'Peça', tipo: 'texto' },
+      { chave: 'quantidade', titulo: 'Peças', tipo: 'inteiro' },
+      { chave: 'custoUnitario', titulo: 'Custo de cada peça', tipo: 'dinheiro', soReal: true },
+      CUSTO_DO_CADASTRO,
+      reais('valor', 'Valor'),
+    ],
+    totaisDeValor: { total: 'valorEmReais' },
+    rotulosDosTotais: { total: 'Total da linha' },
+    notaDaCotacao: T.cotacao,
+    nota: T.resultadoNota,
+    itens: { um: 'registro', varios: 'registros' },
+    vazio: 'Nenhum registro com estes filtros.',
+  },
+  'financeiro-lucro-produto': {
+    nome: 'financeiro-lucro-produto',
+    grupo: 'financeiro',
+    titulo: 'Lucro por produto',
+    explicacao:
+      'Quanto cada peça deu de lucro no período: o que entrou, o custo das peças vendidas, o lucro e a margem. Escolha de que dia até que dia.',
+    filtros: ['busca', 'vendedor', 'praca', 'categoria', 'periodo'],
+    buscaRotulo: 'Buscar por peça, código ou vendedor',
+    colunas: [
+      { chave: 'fotoPrincipalHash', titulo: 'Foto', tipo: 'foto' },
+      { chave: 'codigo', titulo: 'Código', tipo: 'texto' },
+      { chave: 'nome', titulo: 'Peça', tipo: 'texto' },
+      { chave: 'categoria', titulo: 'Categoria', tipo: 'texto' },
+      { chave: 'pecas', titulo: 'Peças', tipo: 'inteiro' },
+      dinheiroDoLucro('receita', 'Receita líquida'),
+      dinheiroDoLucro('custo', 'Custo das peças'),
+      dinheiroDoLucro('lucro', 'Lucro'),
+      { chave: 'margem', titulo: 'Margem', tipo: 'percentual' },
+      CUSTO_DO_CADASTRO,
+    ],
+    totaisDeValor: { receita: 'receita', custo: 'custo', lucro: 'lucro' },
+    rotulosDosTotais: {
+      receita: 'Receita líquida',
+      custo: 'Custo das peças vendidas',
+      lucro: 'Lucro',
+    },
+    notaDaCotacao: T.cotacao,
+    nota: T.lucroNota,
+    itens: { um: 'peça', varios: 'peças' },
+    vazio: 'Nenhuma peça vendida neste período.',
+  },
+  'financeiro-lucro-vendedor': {
+    nome: 'financeiro-lucro-vendedor',
+    grupo: 'financeiro',
+    titulo: 'Lucro por vendedor',
+    explicacao:
+      'Quanto cada vendedor deixou de lucro no período: receita líquida menos o custo das peças e menos a comissão do acerto. Escolha de que dia até que dia.',
+    filtros: ['busca', 'vendedor', 'praca', 'periodo'],
+    buscaRotulo: 'Buscar por vendedor',
+    colunas: [
+      { chave: 'vendedor', titulo: 'Vendedor', tipo: 'texto' },
+      { chave: 'praca', titulo: 'Praça', tipo: 'texto' },
+      dinheiroDoLucro('receita', 'Receita líquida'),
+      dinheiroDoLucro('custo', 'Custo das peças'),
+      dinheiroDoLucro('lucroBruto', 'Lucro bruto'),
+      dinheiroDoLucro('comissao', 'Comissão'),
+      dinheiroDoLucro('lucro', 'Lucro'),
+      CUSTO_DO_CADASTRO,
+    ],
+    totaisDeValor: {
+      receita: 'receita',
+      custo: 'custo',
+      lucroBruto: 'lucroBruto',
+      comissao: 'comissao',
+      lucro: 'lucro',
+    },
+    rotulosDosTotais: {
+      receita: 'Receita líquida',
+      custo: 'Custo das peças vendidas',
+      lucroBruto: 'Lucro bruto',
+      comissao: 'Comissão',
+      lucro: 'Lucro',
+    },
+    notaDaCotacao: T.cotacao,
+    nota: T.lucroNota,
+    itens: { um: 'vendedor', varios: 'vendedores' },
+    vazio: 'Nenhum vendedor com venda ou comissão neste período.',
+  },
   'financeiro-acertos': {
     nome: 'financeiro-acertos',
     grupo: 'financeiro',
@@ -433,6 +571,10 @@ export const ORDEM_DOS_RELATORIOS_FINANCEIROS: NomeDoRelatorio[] = [
   'financeiro-inadimplencia',
   'financeiro-caixa',
   'financeiro-recebimentos',
+  'financeiro-resultado',
+  'financeiro-resultado-registros',
+  'financeiro-lucro-produto',
+  'financeiro-lucro-vendedor',
 ];
 
 const texto = (l: Record<string, unknown>, campo: string) =>
@@ -479,6 +621,15 @@ export function prepararLinhaFinanceira(
       };
     case 'financeiro-comissoes':
       return { ...linha, situacaoNaTela: T.comissaoPaga };
+    case 'financeiro-resultado':
+      return {
+        ...linha,
+        tituloNaTela: `${T.sinaisDaLinha[texto(linha, 'operacao')] ?? ''}${texto(linha, 'titulo')}${
+          linha.chave === 'RESULTADO' && texto(linha, 'valorEmReais').startsWith('-')
+            ? ' (prejuízo)'
+            : ''
+        }`,
+      };
     default:
       return linha;
   }

@@ -1,5 +1,9 @@
 package br.com.coronasemijoias.api.relatorios;
 
+import br.com.coronasemijoias.api.relatorios.ConsultasDoResultado.LinhaDeLucroDoProduto;
+import br.com.coronasemijoias.api.relatorios.ConsultasDoResultado.LinhaDeLucroDoVendedor;
+import br.com.coronasemijoias.api.relatorios.ConsultasDoResultado.RegistroDoResultado;
+import br.com.coronasemijoias.api.relatorios.ConsultasDoResultado.Resultado;
 import br.com.coronasemijoias.api.relatorios.ConsultasFinanceiras.Filtros;
 import br.com.coronasemijoias.api.relatorios.ConsultasFinanceiras.LinhaDeAcerto;
 import br.com.coronasemijoias.api.relatorios.ConsultasFinanceiras.LinhaDeCaixa;
@@ -33,9 +37,11 @@ public class RelatoriosFinanceirosController {
             + "Dólar e Guarani pela cotação do dia do lançamento (dataDaCotacao).";
 
     private final ConsultasFinanceiras consultas;
+    private final ConsultasDoResultado resultados;
 
-    public RelatoriosFinanceirosController(ConsultasFinanceiras consultas) {
+    public RelatoriosFinanceirosController(ConsultasFinanceiras consultas, ConsultasDoResultado resultados) {
         this.consultas = consultas;
+        this.resultados = resultados;
     }
 
     @Operation(operationId = "relatorioDeAcertos", summary = "Acerto por vendedor e semana",
@@ -175,5 +181,60 @@ public class RelatoriosFinanceirosController {
             @RequestParam(required = false) Integer tamanho) {
         return consultas.comissoes(new Filtros(busca, vendedorId, semanaId, null, null, null, null, null, null, null, null,
                 null, null, de, ate, recorte, pagina, tamanho));
+    }
+
+    private static final String PERIODO = " O período (de e ate, dias de Brasília, inclusive) é obrigatório. A devolução abate o dia "
+            + "da venda. Só a dona vê custo e lucro: nada daqui vai ao Corona Vendas.";
+
+    @Operation(operationId = "resultadoDoPeriodo", summary = "Resultado do período (DRE simplificado)",
+            description = "Vendas, devoluções e trocas, receita líquida, custo das peças vendidas, lucro bruto, comissões, perdas, "
+                    + "cobrado do vendedor, uma linha por categoria do caixa manual e o resultado. Cada linha em Real, Dólar e "
+                    + "Guarani (pela cotação do dia de cada registro; vazio se faltar cotação). pecasComCustoDoCadastro conta as "
+                    + "peças vendidas com o custo do cadastro (estimativa)." + PERIODO)
+    @GetMapping("/resultado")
+    public Resultado resultado(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate de,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ate) {
+        return resultados.resultado(de, ate);
+    }
+
+    @Operation(operationId = "detalhamentoDoResultado", summary = "Registros de uma linha do resultado",
+            description = "Os registros que formam uma linha: linha = VENDAS, DEVOLUCOES, CUSTO, COMISSOES, PERDAS, COBRADO ou "
+                    + "CAIXA (com categoriaId para uma categoria só). Traz o custo unitário e a marca de custo do cadastro. A "
+                    + "página começa em 0 (até 100 por página)." + PERIODO)
+    @GetMapping("/resultado/detalhamento")
+    public RelatorioDeCadastro<RegistroDoResultado> detalhamentoDoResultado(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate de,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ate,
+            @RequestParam(required = false) String linha, @RequestParam(required = false) String categoriaId,
+            @RequestParam(required = false) Integer pagina, @RequestParam(required = false) Integer tamanho) {
+        return resultados.detalhamento(de, ate, linha, categoriaId, pagina, tamanho);
+    }
+
+    @Operation(operationId = "relatorioDeLucroPorProduto", summary = "Lucro por produto",
+            description = "Receita líquida, custo das peças vendidas, lucro e margem de cada peça, com a foto. Filtros: busca, "
+                    + "produtoId, categoriaId, vendedorId e pracaId. A página começa em 0 (até 100 por página)." + PERIODO)
+    @GetMapping("/lucro-por-produto")
+    public RelatorioDeCadastro<LinhaDeLucroDoProduto> lucroPorProduto(@RequestParam(required = false) String busca,
+            @RequestParam(required = false) String vendedorId, @RequestParam(required = false) String pracaId,
+            @RequestParam(required = false) String produtoId, @RequestParam(required = false) String categoriaId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate de,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ate,
+            @RequestParam(required = false) Integer pagina, @RequestParam(required = false) Integer tamanho) {
+        return resultados.lucroPorProduto(new ConsultasDoResultado.Filtros(busca, vendedorId, pracaId, produtoId, categoriaId, de,
+                ate, pagina, tamanho));
+    }
+
+    @Operation(operationId = "relatorioDeLucroPorVendedor", summary = "Lucro por vendedor",
+            description = "Receita líquida, custo das peças vendidas, lucro bruto, comissão do acerto e lucro de cada vendedor. "
+                    + "Filtros: busca, vendedorId e pracaId. A página começa em 0 (até 100 por página)." + PERIODO)
+    @GetMapping("/lucro-por-vendedor")
+    public RelatorioDeCadastro<LinhaDeLucroDoVendedor> lucroPorVendedor(@RequestParam(required = false) String busca,
+            @RequestParam(required = false) String vendedorId, @RequestParam(required = false) String pracaId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate de,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ate,
+            @RequestParam(required = false) Integer pagina, @RequestParam(required = false) Integer tamanho) {
+        return resultados.lucroPorVendedor(new ConsultasDoResultado.Filtros(busca, vendedorId, pracaId, null, null, de, ate, pagina,
+                tamanho));
     }
 }

@@ -44,6 +44,7 @@ const ESCOLHAS: [
     | 'forma'
     | 'devedor'
     | 'momento'
+    | 'linha'
   ),
   string[],
 ][] = [
@@ -84,6 +85,7 @@ const ESCOLHAS: [
   ['forma', ['DINHEIRO', 'PIX', 'CARTAO', 'CHEQUE', 'BOLETO']],
   ['devedor', ['CLIENTE', 'VENDEDOR']],
   ['momento', ['ACERTO', 'AVULSO']],
+  ['linha', ['VENDAS', 'DEVOLUCOES', 'CUSTO', 'COMISSOES', 'PERDAS', 'COBRADO', 'CAIXA']],
 ];
 
 export interface ParametrosDeRelatorio {
@@ -131,6 +133,7 @@ const CAMPOS = [
   'forma',
   'devedor',
   'momento',
+  'linha',
   'pagina',
   'tamanho',
 ];
