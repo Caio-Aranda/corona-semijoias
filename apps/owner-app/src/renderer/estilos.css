@@ -706,3 +706,52 @@ dl.gestao-totais {
   top: var(--espaco-4);
   right: var(--espaco-4);
 }
+
+/* Páginas de relatórios por área: um cartão por relatório, como os cartões da tela inicial. */
+.gestao-cartoes-de-relatorio {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: var(--espaco-4);
+}
+.gestao-cartao-de-relatorio {
+  display: grid;
+  grid-template-columns: 2.5rem 1fr;
+  column-gap: var(--espaco-3);
+  align-items: start;
+  padding: var(--espaco-3) var(--espaco-4);
+  background: var(--cor-fundo);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-2);
+  box-shadow: var(--sombra);
+  color: var(--cor-texto);
+  text-align: left;
+  cursor: pointer;
+}
+.gestao-cartao-de-relatorio:hover {
+  border-color: var(--cor-ouro);
+}
+.gestao-cartao-de-relatorio__icone {
+  grid-row: 1 / span 2;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.7rem;
+  background: #f6ecd8;
+  color: var(--cor-ouro-escuro);
+}
+.gestao-cartao-de-relatorio__icone svg {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+.gestao-cartao-de-relatorio__titulo {
+  font-weight: 700;
+}
+.gestao-cartao-de-relatorio__texto {
+  color: var(--cor-texto-suave);
+  font-size: var(--texto-pequeno);
+}
+.gestao-voltar-para-relatorios {
+  align-self: flex-start;
+  margin-bottom: var(--espaco-3);
+}

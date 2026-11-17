@@ -6,6 +6,9 @@ import { temAlteracoesNaoSalvas } from '../nucleo/guarda-de-saida';
 import { MENU, rotuloDaRota, useRota, type Rota } from '../nucleo/rotas';
 import { SeletorDeIdioma } from '../idioma/SeletorDeIdioma';
 import { TEXTOS } from '../textos';
+import { areaDaPagina, areaDaRota, rotuloDaArea, rotaDaArea } from '../nucleo/areas-de-relatorios';
+import { TEXTOS_DE_AREAS_DE_RELATORIOS as AREAS } from '../textos-areas-de-relatorios';
+import { TelaDeAreaDeRelatorios } from './TelaDeAreaDeRelatorios';
 import { TelaEmBreve } from './TelaEmBreve';
 import { TelaInicial } from './TelaInicial';
 import { TelaDeCadastro } from './cadastros/TelaDeCadastro';
@@ -176,7 +179,18 @@ function Conteudo({
       return <TelaDeCadastro ponte={ponte} cadastro="restricoes" />;
     case 'pessoas/clientes':
       return <TelaDeCadastro ponte={ponte} cadastro="clientes" />;
-    default:
+    default: {
+      const area = areaDaPagina(rota);
+      if (area) {
+        return (
+          <TelaDeAreaDeRelatorios
+            area={area}
+            aoAbrir={(destino) => {
+              window.location.hash = `/${destino}`;
+            }}
+          />
+        );
+      }
       if (rota.startsWith('relatorios/')) {
         const qual = rota.slice('relatorios/'.length) as NomeDoRelatorio;
         if (
@@ -197,6 +211,7 @@ function Conteudo({
         }
       }
       return <TelaEmBreve nome={rotuloDaRota(rota)} />;
+    }
   }
 }
 
@@ -232,7 +247,7 @@ export function Estrutura({ ponte, nome, aoSair }: EstruturaProps) {
       <div className="gestao-corpo">
         <MenuLateral
           grupos={MENU}
-          atual={rota}
+          atual={areaDaRota(rota) ? rotaDaArea(areaDaRota(rota)!) : rota}
           rotulo={TEXTOS.menu.rotulo}
           aoEscolher={(chave) =>
             temAlteracoesNaoSalvas() ? setDestino(chave as Rota) : irPara(chave as Rota)
@@ -240,6 +255,13 @@ export function Estrutura({ ponte, nome, aoSair }: EstruturaProps) {
         />
         <main className="gestao-conteudo">
           {/* A chave faz a tela começar do zero ao trocar de item: senhas e formulários não vazam. */}
+          {areaDaRota(rota) ? (
+            <div className="gestao-voltar-para-relatorios">
+              <Botao onClick={() => irPara(rotaDaArea(areaDaRota(rota)!))}>
+                {AREAS.voltar(rotuloDaArea(areaDaRota(rota)!))}
+              </Botao>
+            </div>
+          ) : null}
           <Conteudo
             key={rota}
             rota={rota}
