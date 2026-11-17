@@ -30,7 +30,7 @@ final class VendidoLiquido {
                    v.status, v.vendida_em, (v.vendida_em AT TIME ZONE 'America/Sao_Paulo')::date AS dia,
                    v.estornada_em, ue.nome AS estornada_por, v.motivo_estorno,
                    iv.quantidade AS qtd_vendida,
-                   iv.preco_unitario * iv.quantidade - iv.desconto AS bruto,
+                   iv.preco_unitario * iv.quantidade - iv.desconto AS bruto, iv.desconto AS desconto,
                    coalesce(dv.pecas, 0) AS qtd_devolvida, coalesce(dv.valor, 0) AS devolvido,
                    iv.preco_unitario * iv.quantidade - iv.desconto - coalesce(dv.valor, 0) AS liquido,
                    iv.quantidade - coalesce(dv.pecas, 0) AS pecas,

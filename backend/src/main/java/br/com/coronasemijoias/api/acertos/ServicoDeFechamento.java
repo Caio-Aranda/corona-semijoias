@@ -165,6 +165,35 @@ public class ServicoDeFechamento {
         return previaDe(acertoId, vendedorId, pedido);
     }
 
+    /** Os números de uma prévia, tipados (tarefa 8.7): o que o painel da semana mostra, sem o JSON da tela do acerto. */
+    public record ResumoDaPrevia(BigDecimal vendidoBruto, BigDecimal descontos, BigDecimal devolvido, BigDecimal vendidoLiquido,
+            BigDecimal percentualComissao, BigDecimal comissao, BigDecimal faltasCobradas, BigDecimal liquido, LocalDate cotacaoData) {
+    }
+
+    /**
+     * A prévia só dos números, para o painel da semana. Só leitura: nada é gravado. Com o acerto {@code EM_ACERTO} do vendedor, é a
+     * mesma conta da prévia da dona sem decisões (faltas cobradas no acerto); sem acerto, é a mesma montagem da prévia da comissão do
+     * vendedor, com as faltas zeradas (ainda não contou). Sem cotação cadastrada, o erro é o mesmo do acerto (409).
+     */
+    @Transactional(readOnly = true)
+    public ResumoDaPrevia resumoDaPrevia(UUID vendedorId, UUID acertoId) {
+        if (acertoId == null) {
+            Montagem m = montagem.montar(UUID.randomUUID(), vendedorId);
+            return resumoDe(m, BigDecimal.ZERO.setScale(2), liquidoDoAcerto(m.vendidoLiquido(), m.comissao().comissao(),
+                    BigDecimal.ZERO.setScale(2)));
+        }
+        Montagem m = montagem.montar(acertoId, vendedorId);
+        Decisoes d = padrao(m);
+        m = m.comAprovadas(d.aprovadas());
+        Calculo c = calcular(m, d, acertoId);
+        return resumoDe(m, c.faltasCobradas(), c.liquido());
+    }
+
+    private static ResumoDaPrevia resumoDe(Montagem m, BigDecimal faltas, BigDecimal liquido) {
+        return new ResumoDaPrevia(m.vendidoBruto(), m.descontos(), m.devolvido(), m.vendidoLiquido(), m.comissao().percentual(),
+                m.comissao().comissao(), faltas, liquido, m.cotacao().dataCotacao());
+    }
+
     private Map<String, Object> previaDe(UUID acertoId, UUID vendedorId, PedidoDeFechamento pedido) {
         Montagem m = montagem.montar(acertoId, vendedorId);
         Decisoes d = pedido == null ? padrao(m) : decisoesDe(pedido, m, false);
@@ -411,8 +440,16 @@ public class ServicoDeFechamento {
             }
         }
         BigDecimal faltas = Dinheiro.somar(cobradas);
-        BigDecimal liquido = Dinheiro.somar(List.of(Dinheiro.subtrair(m.vendidoLiquido(), m.comissao().comissao()), faltas));
+        BigDecimal liquido = liquidoDoAcerto(m.vendidoLiquido(), m.comissao().comissao(), faltas);
         return new Calculo(pendencias, antigasCobradas, faltas, liquido);
+    }
+
+    /**
+     * A conta do valor do acerto, uma só para o fechamento e para a prévia do painel da semana (tarefa 8.7): vendido líquido, menos a
+     * comissão, mais as faltas cobradas no acerto.
+     */
+    public static BigDecimal liquidoDoAcerto(BigDecimal vendidoLiquido, BigDecimal comissao, BigDecimal faltasCobradas) {
+        return Dinheiro.somar(List.of(Dinheiro.subtrair(vendidoLiquido, comissao), faltasCobradas));
     }
 
     private static String statusDe(String decisao) {

@@ -14,7 +14,6 @@ import br.com.coronasemijoias.api.acertos.ServicoDeFechamento.PedidoDeFechamento
 import br.com.coronasemijoias.api.acertos.ServicoDeFechamento.RecebimentoNoAcerto;
 import br.com.coronasemijoias.api.devolucoes.ServicoDeDevolucoes.ModoDaDevolucao;
 import br.com.coronasemijoias.api.devolucoes.ServicoDeDevolucoes.PecaDoPedido;
-import br.com.coronasemijoias.api.devolucoes.ServicoDeDevolucoes.PedidoDaDevolucaoDoCliente;
 import br.com.coronasemijoias.api.estoque.ServicoDeEstoque.OrigemDoMovimento;
 import br.com.coronasemijoias.api.estoque.ServicoDeEstoque.Pedido;
 import br.com.coronasemijoias.api.estoque.ServicoDeEstoque.TipoDeMovimento;
@@ -118,13 +117,10 @@ abstract class MassaDoPainel extends MassaDoResultado {
         UUID s4 = vender(bia, m2, clienteBia, d(6), "100.00", new LinhaDoPedido(pecaA, 2, null));
         devolverPeca(bia, s4, pecaA, 1, d(7));
 
-        // Cris (maleta em aberto): 4 x B (100,00); troca de 1 x B por 1 x B (diferença zero); 1 x B devolvida em crédito (25,00).
+        // Cris (maleta em aberto): 4 x B (100,00); troca de 2 x B por 1 x B (S6, 25,00): sobram 25,00 de crédito para o cliente.
         UUID s5 = vender(cris, m3, clienteCris, d(7), "100.00", new LinhaDoPedido(pecaB, 4, null));
-        trocarPeloServico(cris, pedidoDoServico(s5, "ARREPENDIMENTO", List.of(new PecaDoPedido(pecaB, 1, "BOA")), null, m3,
+        trocarPeloServico(cris, pedidoDoServico(s5, "ARREPENDIMENTO", List.of(new PecaDoPedido(pecaB, 2, "BOA")), null, m3,
                 List.of(new LinhaDoPedido(pecaB, 1, null)), List.of()), dia(d(8)), ModoDaDevolucao.ONLINE);
-        devolucoes.devolver(cris.vendedorId(), cris.id(), usuarios.aparelhoDe(cris), new PedidoDaDevolucaoDoCliente(UUID.randomUUID(),
-                s5, "ARREPENDIMENTO", null, "CREDITO", List.of(new PecaDoPedido(pecaB, 1, "BOA")), null), dia(d(8)), false,
-                ModoDaDevolucao.ONLINE);
 
         // Dani: 2 x A (100,00); o acerto começa no dia 10 e a contagem acha 1 x A (falta de 1).
         vender(dani, m4, clienteDani, d(7), "100.00", new LinhaDoPedido(pecaA, 2, null));

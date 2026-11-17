@@ -254,4 +254,27 @@ class UmaFormulaSoDoPainelTest extends MassaDoPainel {
         JsonNode v = relatorio("/api/dona/relatorios/vendas/vendas", "de=" + d(4) + "&ate=" + d(10) + "&vendedorId=" + ana.vendedorId());
         igual(p.get("totais").get("vendas").get("liquido"), rodape(v, "liquido"));
     }
+
+    @Test
+    void oResumoDaPreviaSoLeEFicaEmTransacaoSoDeLeitura() throws Exception {
+        List<String> tabelas = List.of("acertos", "comissoes", "pendencias_acerto", "remessas", "movimentos_remessa",
+                "acerto_eventos", "itens_acerto", "leituras_acerto", "lancamentos_caixa", "recebimentos_vendedor", "contas_receber");
+        List<Integer> antes = tabelas.stream().map(t -> contar("SELECT count(*) FROM corona." + t)).toList();
+        var semAcerto = servicoDeFechamento.resumoDaPrevia(cris.vendedorId(), null);
+        var emAcerto = servicoDeFechamento.resumoDaPrevia(dani.vendedorId(), acertoDani);
+        assertThat(semAcerto.liquido()).isEqualByComparingTo("52.50");
+        assertThat(semAcerto.faltasCobradas()).isEqualByComparingTo("0.00");
+        assertThat(emAcerto.liquido()).isEqualByComparingTo("120.00");
+        assertThat(emAcerto.faltasCobradas()).isEqualByComparingTo("50.00");
+        assertThat(tabelas.stream().map(t -> contar("SELECT count(*) FROM corona." + t)).toList()).isEqualTo(antes);
+        var metodo = br.com.coronasemijoias.api.acertos.ServicoDeFechamento.class.getMethod("resumoDaPrevia", UUID.class, UUID.class);
+        assertThat(metodo.getAnnotation(org.springframework.transaction.annotation.Transactional.class).readOnly()).isTrue();
+    }
+
+    @Test
+    void oLiquidoDoAcertoEUmaContaSoParaOFechamentoEParaAPrevia() {
+        var liquido = br.com.coronasemijoias.api.acertos.ServicoDeFechamento.liquidoDoAcerto(new BigDecimal("340.00"),
+                new BigDecimal("136.00"), new BigDecimal("25.00"));
+        assertThat(liquido).isEqualByComparingTo("229.00");
+    }
 }

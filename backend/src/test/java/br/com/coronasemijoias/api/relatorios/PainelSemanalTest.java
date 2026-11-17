@@ -31,8 +31,9 @@ import tools.jackson.databind.JsonNode;
  *   pelo cliente (50,00). Vendido 150,00, devolvido 50,00, líquido 100,00 = 100.000 Gs. = 30%: comissão 15,00 + 30,00 - 15,00 =
  *   30,00. Acerto em 10/06: contou 3 x A (volta 150,00), sem falta. Líquido 100,00 - 30,00 = 70,00, recebido por Transferência
  *   (o boleto do fechamento é conta a receber, não recebimento). Peças: enviado 5 = vendido 2 + devolvido 3 + falta 0.
- * Cris (praça Norte), maleta em aberto (prévia). M3 em 06/06: 6 x B = 150,00. S5 4 x B = 100,00; troca de 1 x B por 1 x B (S6,
- *   25,00, diferença 0); 1 x B devolvida em crédito (25,00). Vendido líquido 100,00 + 25,00 - 25,00 - 25,00 = 75,00, 30%: 22,50.
+ * Cris (praça Norte), maleta em aberto (prévia). M3 em 06/06: 6 x B = 150,00. S5 4 x B = 100,00; troca de 2 x B por 1 x B (S6,
+ *   25,00): o cliente devolve 2 x B (50,00) e leva 1 x B, e sobram 25,00 de crédito. Vendido líquido 100,00 + 25,00 - 50,00 =
+ *   75,00, 30%: 22,50. A troca gera 50,00 de crédito e a venda S6 usa 25,00 dele: sobram 25,00 em aberto.
  *   Líquido previsto 75,00 - 22,50 = 52,50 (sem faltas: ainda não contou).
  * Dani (praça Sul), em acerto (prévia do fechamento). M4 em 05/06: 4 x A = 200,00. S7 2 x A = 100,00. Acerto iniciado em 10/06,
  *   contou 1 x A: falta 1 x A (50,00), cobrada pelo padrão da prévia. Vendido líquido 100,00, 30%: 30,00.
@@ -49,7 +50,7 @@ import tools.jackson.databind.JsonNode;
  *                valor do acerto 299,00; recebido 299,00; devendo 0,00; devolvido à loja 8 peças, 375,00; pendências pagas 25,00
  * Prévia         vendido 175,00; comissão prevista 52,50; líquido previsto 172,50
  * Vendas         7 vendas; vendido 715,00; descontos 10,00; devolvido 100,00; líquido 615,00
- * Trocas         1 troca, 25,00; a pagar 0,00; ficou de crédito 0,00; créditos gerados 25,00, usados 0,00, em aberto 25,00
+ * Trocas         1 troca, 50,00; a pagar 0,00; ficou de crédito 25,00; créditos gerados 50,00, usados 25,00, em aberto 25,00
  * Total          5 maletas, 29 peças, 1.200,00; 7 vendas, 715,00, descontos 10,00, líquido 615,00
  * Recebido       Dinheiro 150,00; Transferência 149,00; Boleto 0,00; Total 299,00
  * </pre>
@@ -204,11 +205,11 @@ class PainelSemanalTest extends MassaDoPainel {
 
         JsonNode trocas = t.get("trocas");
         assertThat(trocas.get("trocas").asInt()).isEqualTo(1);
-        reais(trocas.get("valorDasTrocas"), "25.00");
+        reais(trocas.get("valorDasTrocas"), "50.00");
         reais(trocas.get("diferencaAPagar"), "0.00");
-        reais(trocas.get("ficouDeCredito"), "0.00");
-        reais(trocas.get("creditosGerados"), "25.00");
-        reais(trocas.get("creditosUsados"), "0.00");
+        reais(trocas.get("ficouDeCredito"), "25.00");
+        reais(trocas.get("creditosGerados"), "50.00");
+        reais(trocas.get("creditosUsados"), "25.00");
         reais(trocas.get("creditosEmAberto"), "25.00");
 
         JsonNode total = t.get("total");
@@ -282,7 +283,7 @@ class PainelSemanalTest extends MassaDoPainel {
         reais(t.get("acerto").get("valorDoAcerto"), "229.00");
         reais(t.get("previa").get("liquidoPrevisto"), "52.50");
         reais(t.get("vendas").get("liquido"), "415.00");
-        reais(t.get("trocas").get("creditosGerados"), "25.00");
+        reais(t.get("trocas").get("creditosGerados"), "50.00");
         reais(t.get("recebidoNoAcerto").get("total"), "229.00");
         JsonNode sul = painel("praca", pracaSul.toString());
         assertThat(sul.get("pedidos")).hasSize(2);

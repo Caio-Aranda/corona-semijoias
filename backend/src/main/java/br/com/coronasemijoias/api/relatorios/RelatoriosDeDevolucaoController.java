@@ -90,10 +90,11 @@ public class RelatoriosDeDevolucaoController {
             @RequestParam(required = false) String forma,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate de,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ate,
+            @RequestParam(required = false) String pracaId,
             @RequestParam(required = false) String recorte, @RequestParam(required = false) Integer pagina,
             @RequestParam(required = false) Integer tamanho) {
         return consultas.trocas(new Filtros(busca, vendedorId, produtoId, categoriaId, motivo, situacao, tipo, forma, de, ate,
-                recorte, pagina, tamanho));
+                recorte, pagina, tamanho, pracaId));
     }
 
     @Operation(operationId = "relatorioDeCreditosDosClientes", summary = "Créditos dos clientes, em aberto e usados",
@@ -106,10 +107,11 @@ public class RelatoriosDeDevolucaoController {
             @RequestParam(required = false) String forma,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate de,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ate,
+            @RequestParam(required = false) String pracaId,
             @RequestParam(required = false) String recorte, @RequestParam(required = false) Integer pagina,
             @RequestParam(required = false) Integer tamanho) {
         return consultas.creditos(new Filtros(busca, vendedorId, produtoId, categoriaId, motivo, situacao, tipo, forma, de, ate,
-                recorte, pagina, tamanho));
+                recorte, pagina, tamanho, pracaId));
     }
 
     @Operation(operationId = "relatorioDeDinheiroDevolvido", summary = "Dinheiro devolvido aos clientes",
