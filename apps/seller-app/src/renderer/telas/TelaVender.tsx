@@ -1,4 +1,5 @@
-import { Aviso, Botao, Campo, JanelaDeConfirmacao, PainelDePecaLida, Tabela } from '@corona/ui';
+import { Aviso, Botao } from '@corona/ui';
+import { Campo, JanelaDeConfirmacao, PainelDePecaLida, Tabela } from '../componentes-do-vendedor';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import type { Cliente, CreditosDoCliente, LinhaDaMaleta, Maleta, Venda } from '../../shared/dados';
 import {

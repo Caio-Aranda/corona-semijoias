@@ -1,4 +1,5 @@
-import { Aviso, Botao, Campo } from '@corona/ui';
+import { Aviso, Botao } from '@corona/ui';
+import { Campo } from '../componentes-do-vendedor';
 import { useState, type FormEvent } from 'react';
 import type { PonteDoCorona, ResultadoDeEntrada } from '../../shared/ponte';
 import { SeletorDeIdioma } from '../SeletorDeIdioma';

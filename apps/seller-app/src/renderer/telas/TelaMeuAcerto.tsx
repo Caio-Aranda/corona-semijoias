@@ -1,4 +1,5 @@
-import { Aviso, Botao, JanelaDeConfirmacao, Tabela } from '@corona/ui';
+import { Aviso, Botao } from '@corona/ui';
+import { JanelaDeConfirmacao, Tabela } from '../componentes-do-vendedor';
 import { useEffect, useRef, useState } from 'react';
 import type {
   FichaDoAcerto,

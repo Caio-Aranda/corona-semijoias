@@ -12,7 +12,17 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
     entrar: 'Entrar',
     cancelar: 'Cancelar',
   },
-  comum: { semFoto: 'Sin foto' },
+  comum: {
+    semFoto: 'Sin foto',
+    nadaParaMostrar: 'Nada para mostrar.',
+    mostrar: 'Mostrar',
+    ocultar: 'Ocultar',
+    pecaLida: (nome) => `Pieza leída: ${nome}`,
+    fotoDe: (nome) => `Foto de ${nome}`,
+    codigoDe: (codigo) => `Código ${codigo}`,
+    idioma: 'Idioma',
+    idiomas: { es: 'Español', pt: 'Português' },
+  },
   entrada: { titulo: 'Entrar', usuario: 'Usuario', senha: 'Contraseña' },
   inicio: {
     ola: (nome) => `Hola, ${nome}.`,

@@ -212,3 +212,42 @@ describe('a tela de entrada nos dois idiomas', () => {
     expect(await screen.findByText('Usuário ou senha incorretos.')).toBeInTheDocument();
   });
 });
+
+describe('a tela inicial e a barra do topo nos dois idiomas', () => {
+  beforeEach(() => {
+    reiniciarIdioma();
+  });
+
+  it('em espanhol os botões e o saludo; o ES | PT fica ao lado do Salir e troca na hora', async () => {
+    const usuario = userEvent.setup();
+    const ponte = {
+      ...ponteDeFora(),
+      estouLogado: vi.fn().mockResolvedValue({ estado: 'dentro', usuario: { nome: 'Ana' } }),
+      chamarApi: vi.fn().mockResolvedValue({ ok: true, dados: { avisos: [] } }),
+    } as unknown as PonteDoCorona;
+    render(<App ponte={ponte} />);
+    expect(await screen.findByRole('heading', { name: 'Hola, Ana.' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Mi maleta' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Salir' })).toBeInTheDocument();
+    const es = screen.getByRole('button', { name: 'Español' });
+    expect(es).toHaveTextContent('ES');
+    expect(es).toHaveAttribute('title', 'Español');
+    expect(es).toHaveAttribute('aria-pressed', 'true');
+
+    await usuario.click(screen.getByRole('button', { name: 'Português' }));
+    expect(screen.getByRole('heading', { name: 'Olá, Ana.' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Minha maleta' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Sair' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Português' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+  });
+
+  it('o botão de ver a senha também troca de idioma', async () => {
+    render(<App ponte={ponteDeFora()} />);
+    expect(await screen.findByRole('button', { name: /Mostrar/ })).toBeInTheDocument();
+    act(() => definirIdioma('pt'));
+    expect(screen.getByRole('button', { name: /Mostrar/ })).toBeInTheDocument();
+  });
+});

@@ -11,7 +11,17 @@ export const TEXTOS_PT = {
     cancelar: 'Cancelar',
   },
   /** Entrar e tela inicial (antes soltos nos componentes). */
-  comum: { semFoto: 'Sem foto' },
+  comum: {
+    semFoto: 'Sem foto',
+    nadaParaMostrar: 'Nada para mostrar.',
+    mostrar: 'Mostrar',
+    ocultar: 'Ocultar',
+    pecaLida: (nome: string) => `Peça lida: ${nome}`,
+    fotoDe: (nome: string) => `Foto de ${nome}`,
+    codigoDe: (codigo: string) => `Código ${codigo}`,
+    idioma: 'Idioma',
+    idiomas: { es: 'Español', pt: 'Português' },
+  },
   entrada: { titulo: 'Entrar', usuario: 'Usuário', senha: 'Senha' },
   inicio: {
     ola: (nome: string) => `Olá, ${nome}.`,

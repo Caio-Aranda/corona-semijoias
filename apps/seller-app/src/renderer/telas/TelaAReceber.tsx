@@ -1,4 +1,5 @@
-import { Aviso, Botao, Campo } from '@corona/ui';
+import { Aviso, Botao } from '@corona/ui';
+import { Campo } from '../componentes-do-vendedor';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type {
   ContaDaLoja,

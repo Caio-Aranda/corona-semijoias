@@ -1,4 +1,5 @@
-import { Aviso, Botao, Campo, EstadoDaLista, JanelaDeConfirmacao, Tabela } from '@corona/ui';
+import { Aviso, Botao } from '@corona/ui';
+import { Campo, EstadoDaLista, JanelaDeConfirmacao, Tabela } from '../../componentes-do-vendedor';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { AutorizacoesDoVendedor, DevolucaoOuTroca } from '../../../shared/dados';
 import type { PonteDoCorona } from '../../../shared/ponte';

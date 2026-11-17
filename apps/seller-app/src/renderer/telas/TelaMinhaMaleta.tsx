@@ -1,4 +1,5 @@
-import { Botao, EstadoDaLista, Tabela } from '@corona/ui';
+import { Botao } from '@corona/ui';
+import { EstadoDaLista, Tabela } from '../componentes-do-vendedor';
 import { useCallback, useEffect, useState } from 'react';
 import type { Maleta } from '../../shared/dados';
 import type { PonteDoCorona } from '../../shared/ponte';

@@ -1,4 +1,5 @@
-import { Botao, Campo } from '@corona/ui';
+import { Botao } from '@corona/ui';
+import { Campo } from '../componentes-do-vendedor';
 import { useEffect, useState } from 'react';
 import type { LinhaDaMaleta } from '../../shared/dados';
 import type { PonteDoCorona } from '../../shared/ponte';

@@ -1,4 +1,5 @@
-import { Aviso, Botao, Campo, PainelDePecaLida, Tabela } from '@corona/ui';
+import { Aviso, Botao } from '@corona/ui';
+import { Campo, PainelDePecaLida, Tabela } from '../componentes-do-vendedor';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import type { FichaDoAcertoAgora, LinhaDaMaleta } from '../../shared/dados';
 import type { PonteDoCorona } from '../../shared/ponte';
