@@ -1,8 +1,10 @@
+import { textosVivos } from './idioma/idioma';
+import { ES_TEXTOS_DE_SINCRONIZACAO } from './idioma/es/computadores';
 /**
  * Textos das telas do grupo "Computadores dos vendedores" (tarefa 5.10). Vêm do glossário da interface (parte 12,
  * "Telas da dona para o vendedor"). Na tela é sempre "computador"; nunca "aparelho", "quarentena" ou "sincronização".
  */
-export const TEXTOS_DE_SINCRONIZACAO = {
+export const PT_TEXTOS_DE_SINCRONIZACAO = {
   menu: {
     grupo: 'Computadores dos vendedores',
     computadores: 'Computadores',
@@ -146,3 +148,5 @@ export const TEXTOS_DE_SINCRONIZACAO = {
   },
   abrir: 'Abrir',
 } as const;
+
+export const TEXTOS_DE_SINCRONIZACAO = textosVivos('computadores', PT_TEXTOS_DE_SINCRONIZACAO, ES_TEXTOS_DE_SINCRONIZACAO);

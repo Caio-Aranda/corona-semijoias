@@ -7,14 +7,22 @@ export type Idioma = 'es' | 'pt';
 
 export const IDIOMAS: readonly Idioma[] = ['es', 'pt'];
 export const IDIOMA_PADRAO: Idioma = 'es';
-const CHAVE_GUARDADA = 'corona.gestao.idioma';
 
+/** O idioma guardado neste computador (o processo principal guarda num arquivo); sem escolha, vale o espanhol. */
 function lerGuardado(): Idioma {
   try {
-    const v = globalThis.localStorage?.getItem(CHAVE_GUARDADA);
+    const v = (globalThis as { corona?: { lerIdioma?: () => string } }).corona?.lerIdioma?.();
     return v === 'es' || v === 'pt' ? v : IDIOMA_PADRAO;
   } catch {
     return IDIOMA_PADRAO;
+  }
+}
+
+function guardar(novo: Idioma): void {
+  try {
+    (globalThis as { corona?: { guardarIdioma?: (i: string) => void } }).corona?.guardarIdioma?.(novo);
+  } catch {
+    // Sem como guardar: vale só até fechar o programa.
   }
 }
 
@@ -29,11 +37,7 @@ export function idiomaAtual(): Idioma {
 export function definirIdioma(novo: Idioma): void {
   if (novo === atual) return;
   atual = novo;
-  try {
-    globalThis.localStorage?.setItem(CHAVE_GUARDADA, novo);
-  } catch {
-    // Sem armazenamento: vale só até fechar o programa.
-  }
+  guardar(novo);
   if (typeof document !== 'undefined') document.documentElement.lang = novo;
   for (const o of [...ouvintes]) o();
 }

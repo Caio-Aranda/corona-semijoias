@@ -1,5 +1,7 @@
+import { textosVivos } from './idioma/idioma';
+import { ES_TEXTOS_RELATORIOS } from './idioma/es/relatorios';
 /** Textos dos relatórios de cadastro (glossário, "Corona Gestão: relatórios de cadastro", tarefa 1.12). */
-export const TEXTOS_RELATORIOS = {
+export const PT_TEXTOS_RELATORIOS = {
   loja: 'Corona Semijoias',
   grupoDoMenu: 'Relatórios de cadastros',
   grupoDoEstoque: 'Relatórios de estoque',
@@ -116,3 +118,5 @@ export const TEXTOS_RELATORIOS = {
       'A foto aparece na tela; os arquivos PDF, Excel e CSV levam o nome e o código da peça.',
   },
 };
+
+export const TEXTOS_RELATORIOS = textosVivos('relatorios', PT_TEXTOS_RELATORIOS, ES_TEXTOS_RELATORIOS);

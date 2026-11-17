@@ -57,6 +57,8 @@ export const CANAIS = {
   sessaoMudou: 'corona:sessao-mudou',
   atualizacaoEstado: 'corona:atualizacao-estado',
   atualizacaoMudou: 'corona:atualizacao-mudou',
+  idiomaLer: 'corona:idioma-ler',
+  idiomaGuardar: 'corona:idioma-guardar',
 } as const;
 
 /** A lista fixa de funções que a ponte oferece à tela. Acrescentar uma função exige mexer aqui. */
@@ -68,6 +70,8 @@ export const FUNCOES_DA_PONTE = [
   'chamarApi',
   'aoMudarASessao',
   'aoMudarAAtualizacao',
+  'lerIdioma',
+  'guardarIdioma',
 ] as const;
 
 export interface DadosDeEntrada {
@@ -150,4 +154,8 @@ export interface PonteDoCorona {
    * sempre que mudar. Devolve a função que cancela o aviso.
    */
   aoMudarAAtualizacao(ouvinte: (aviso: AvisoDeAtualizacao) => void): () => void;
+  /** O idioma guardado neste computador ("es" ou "pt"), lido na hora; outro valor quer dizer que não há escolha. */
+  lerIdioma?(): string;
+  /** Guarda o idioma escolhido neste computador. */
+  guardarIdioma?(idioma: string): void;
 }
