@@ -1,6 +1,6 @@
 import { _electron as electron, type ElectronApplication, type Page } from '@playwright/test';
 import { randomUUID } from 'node:crypto';
-import { mkdtempSync } from 'node:fs';
+import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -19,8 +19,10 @@ export interface AppAberto {
  * Abre o Corona Gestão de verdade (Electron) com uma pasta de dados NOVA (sem sessão guardada), e faz o
  * Windows "guardar" os downloads numa pasta de teste, sem a janela de salvar.
  */
-export async function abrirOApp(): Promise<AppAberto> {
+export async function abrirOApp(idioma: 'es' | 'pt' = 'pt'): Promise<AppAberto> {
   const dados = mkdtempSync(join(tmpdir(), 'corona-e2e-'));
+  // O programa abre em espanhol; os testes procuram o texto em português, então o idioma é escolhido antes de abrir.
+  writeFileSync(join(dados, 'idioma.txt'), idioma, 'utf8');
   const pastaDeDownloads = mkdtempSync(join(tmpdir(), 'corona-e2e-baixados-'));
   const app = await electron.launch({
     args: [join(raiz, 'apps', 'owner-app'), `--user-data-dir=${dados}`],
