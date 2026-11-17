@@ -121,33 +121,59 @@ public class ConsultasDeVendas {
                             new ArrayList<>());
                 }, args);
         LocalDate hoje = LocalDate.ofInstant(relogio.instant(), java.time.ZoneId.of("America/Sao_Paulo"));
+        if (cabecas.isEmpty()) {
+            return cabecas;
+        }
+        // Uma consulta por tipo de filho para todas as vendas (e não 2 ou 3 por venda; auditoria M3).
+        java.util.Map<UUID, Venda> porId = new java.util.HashMap<>();
         for (Venda v : cabecas) {
-            v.itens().addAll(jdbc.query("""
-                    SELECT i.produto_id, p.nome, p.foto_principal_hash, i.quantidade, i.preco_unitario, i.desconto
+            porId.put(v.id(), v);
+        }
+        UUID[] ids = porId.keySet().toArray(new UUID[0]);
+        jdbc.query(con -> {
+            var ps = con.prepareStatement("""
+                    SELECT i.venda_id, i.produto_id, p.nome, p.foto_principal_hash, i.quantidade, i.preco_unitario, i.desconto
                       FROM corona.itens_venda i JOIN corona.produtos p ON p.id = i.produto_id
-                     WHERE i.venda_id = ? ORDER BY p.nome, i.produto_id""", (rs, n) -> {
-                        int q = rs.getInt("quantidade");
-                        BigDecimal preco = rs.getBigDecimal("preco_unitario");
-                        BigDecimal desconto = rs.getBigDecimal("desconto");
-                        return new Item(new Peca(rs.getObject("produto_id", UUID.class), rs.getString("nome"),
-                                rs.getString("foto_principal_hash")), q, preco, desconto,
-                                preco.multiply(BigDecimal.valueOf(q)).subtract(desconto));
-                    }, v.id()));
-            v.pagamentos().addAll(jdbc.query("""
-                    SELECT id, tipo, forma, valor, pago_em, credito_id, posterior FROM corona.pagamentos_cliente WHERE venda_id = ?
-                     ORDER BY pago_em, id""", (rs, n) -> new PagamentoLido(rs.getObject("id", UUID.class), rs.getString("tipo"),
-                            rs.getString("forma"), rs.getBigDecimal("valor"), rs.getTimestamp("pago_em").toInstant(),
-                            rs.getObject("credito_id", UUID.class), rs.getBoolean("posterior")), v.id()));
-            v.parcelas().addAll(jdbc.query("""
-                    SELECT id, parcela, total_parcelas, vencimento, valor, valor_pago, valor_cancelado,
+                     WHERE i.venda_id = ANY (?) ORDER BY p.nome, i.produto_id""");
+            ps.setArray(1, con.createArrayOf("uuid", ids));
+            return ps;
+        }, rs -> {
+            int q = rs.getInt("quantidade");
+            BigDecimal preco = rs.getBigDecimal("preco_unitario");
+            BigDecimal desconto = rs.getBigDecimal("desconto");
+            porId.get(rs.getObject("venda_id", UUID.class)).itens()
+                    .add(new Item(new Peca(rs.getObject("produto_id", UUID.class), rs.getString("nome"),
+                            rs.getString("foto_principal_hash")), q, preco, desconto,
+                            preco.multiply(BigDecimal.valueOf(q)).subtract(desconto)));
+        });
+        jdbc.query(con -> {
+            var ps = con.prepareStatement("""
+                    SELECT venda_id, id, tipo, forma, valor, pago_em, credito_id, posterior FROM corona.pagamentos_cliente
+                     WHERE venda_id = ANY (?) ORDER BY pago_em, id""");
+            ps.setArray(1, con.createArrayOf("uuid", ids));
+            return ps;
+        }, rs -> {
+            porId.get(rs.getObject("venda_id", UUID.class)).pagamentos()
+                    .add(new PagamentoLido(rs.getObject("id", UUID.class), rs.getString("tipo"), rs.getString("forma"),
+                            rs.getBigDecimal("valor"), rs.getTimestamp("pago_em").toInstant(),
+                            rs.getObject("credito_id", UUID.class), rs.getBoolean("posterior")));
+        });
+        jdbc.query(con -> {
+            var ps = con.prepareStatement("""
+                    SELECT venda_id, id, parcela, total_parcelas, vencimento, valor, valor_pago, valor_cancelado,
                            valor - valor_pago - valor_cancelado AS em_aberto, status,
                            (status IN ('ABERTA', 'PARCIAL') AND vencimento < ?::date) AS vencida
-                      FROM corona.contas_receber WHERE venda_id = ? AND deleted_at IS NULL ORDER BY parcela""",
-                    (rs, n) -> new ParcelaDaVenda(rs.getObject("id", UUID.class), rs.getInt("parcela"), rs.getInt("total_parcelas"),
+                      FROM corona.contas_receber WHERE venda_id = ANY (?) AND deleted_at IS NULL ORDER BY parcela""");
+            ps.setObject(1, hoje);
+            ps.setArray(2, con.createArrayOf("uuid", ids));
+            return ps;
+        }, rs -> {
+            porId.get(rs.getObject("venda_id", UUID.class)).parcelas()
+                    .add(new ParcelaDaVenda(rs.getObject("id", UUID.class), rs.getInt("parcela"), rs.getInt("total_parcelas"),
                             rs.getObject("vencimento", LocalDate.class), rs.getBigDecimal("valor"), rs.getBigDecimal("valor_pago"),
                             rs.getBigDecimal("valor_cancelado"), rs.getBigDecimal("em_aberto"), rs.getString("status"),
-                            rs.getBoolean("vencida")), hoje, v.id()));
-        }
+                            rs.getBoolean("vencida")));
+        });
         return cabecas;
     }
 }
