@@ -50,16 +50,17 @@ export async function irPara(janela: Page, rota: string): Promise<void> {
 
 /** Cliente mínimo da API, só para o teste preparar dados (a tela é o que se testa). */
 export async function chamarApi<T = unknown>(
-  metodo: 'GET' | 'POST',
+  metodo: 'GET' | 'POST' | 'PUT',
   caminho: string,
   token: string | null,
   corpo?: unknown,
+  tipoDoApp: 'gestao' | 'vendas' = 'gestao',
 ): Promise<T> {
   const r = await fetch(`${URL_DA_API}${caminho}`, {
     method: metodo,
     headers: {
       'Content-Type': 'application/json',
-      'X-App-Tipo': 'gestao',
+      'X-App-Tipo': tipoDoApp,
       'X-App-Versao': '1.0.0',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
