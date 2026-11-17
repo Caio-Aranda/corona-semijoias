@@ -191,6 +191,37 @@ describe('telas no banco local (tarefa 5.7)', () => {
     });
   });
 
+  it('recusa do servidor com campos chega à tela com o motivo de cada campo', async () => {
+    const consultas = {
+      disponivel: true,
+      chamar: vi.fn(() => ({
+        ok: false as const,
+        falha: {
+          tipo: 'recusada' as const,
+          status: 400,
+          codigo: 'DADOS_INVALIDOS',
+          mensagem: 'Alguns dados não estão corretos.',
+          campos: [{ campo: 'data', mensagem: 'A data não pode ser no futuro.' }],
+        },
+      })),
+    };
+    const s = new ServicoDeSessao(
+      guardaComToken,
+      api,
+      Promise.resolve(),
+      undefined,
+      undefined,
+      consultas,
+    );
+    expect(await s.chamarApi({ operacao: 'envios.naoAceitos' })).toEqual({
+      ok: false,
+      motivo: 'erro',
+      mensagem: 'Alguns dados não estão corretos.',
+      codigo: 'DADOS_INVALIDOS',
+      campos: [{ campo: 'data', mensagem: 'A data não pode ser no futuro.' }],
+    });
+  });
+
   it('sem banco aberto, a chamada segue pela internet', async () => {
     const consultas = { disponivel: false, chamar: vi.fn() };
     const s = new ServicoDeSessao(
