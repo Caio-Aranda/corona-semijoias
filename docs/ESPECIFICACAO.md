@@ -1,6 +1,6 @@
 # Especificação completa: Sistema de Semijoias Consignadas
 
-Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.24, 16/11/2026.
+Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.26, 17/11/2026.
 
 ## 1. Objetivo e contexto
 
@@ -23,9 +23,9 @@ O cliente enviou fotos de um sistema existente (parece Delphi, marca MCB) como r
 | Cobrança | **Cobrança** | Recebimentos do cliente pelo vendedor e repasse do vendedor à dona. |
 | Praça | **Praça** | Região/rota atendida pelo vendedor. |
 | Semana nº | **Semana** | Período de controle: remessa, cobrança e acerto são semanais. |
-| DX | Valor consignado (enviado) | Premissa a confirmar com o cliente. |
-| DV | Valor devolvido | Premissa a confirmar. |
-| VD | Valor vendido | Premissa a confirmar. |
+| DX | **Enviado** | O que saiu para o vendedor nas maletas da linha (nova e reposições), pelo preço congelado na maleta (ADR-0015, item 5; tarefa 8.7). |
+| DV | **Devolvido** | O que voltou à loja no acerto (peças boas e com defeito), pelo preço da maleta. Não é a devolução do cliente, que abate o vendido. |
+| VD | **Vendido** | O vendido líquido: vendas menos devolução e troca do cliente. Para a linha acertada é o do acerto gravado; antes do acerto, o das vendas ativas até agora. Em peças, enviado = vendido + devolvido + falta em cada maleta acertada (conferido por teste). |
 
 ### Telas da referência (para inspirar o layout)
 
@@ -499,7 +499,7 @@ Como o app é offline, o relatório sai do banco local com o aviso: **Dados até
 4. **Testes automatizados** para cada relatório, com massa de dados conhecida e resultado calculado à mão, rodando no CI a cada Pull Request (backend com PostgreSQL via Testcontainers).
 5. `NUMERIC(14,2)`, sem float, com arredondamento HALF_UP e escala 2 (regra única, §7.5). A cotação não é dinheiro: fica em `NUMERIC(18,8)`, só nas colunas de cotação (ADR-0006).
 6. Datas em UTC, exibição em horário de Brasília, **semanas fechadas imutáveis**.
-7. **Validação com o cliente:** comparar os relatórios com as planilhas dele numa semana real antes da entrega.
+7. **Validação com o cliente:** comparar os relatórios com as planilhas dele numa semana real antes da entrega. Para a Fase 8 o roteiro está em [roteiro-teste-fase-8.md](roteiro-teste-fase-8.md): o painel da semana, o resultado do período, a curva ABC e as vendas, lado a lado com as planilhas da dona; diferença achada vira tarefa, não pergunta.
 
 Cada fase só é considerada pronta quando seus **relatórios e testes de conferência** estão prontos. Relatório não é etapa final.
 
@@ -551,7 +551,7 @@ Os apps compartilham `packages/` (componentes, clientes da API gerados do OpenAP
 | **5. Offline e sync** | SQLite criptografado, outbox, push e pull (inclusive as cotações), indicador, bloqueio remoto, testes de sync | Vendedor vende sem internet |
 | **6. Devolução e troca** | Garantia, reembolso, crédito, autorização da dona, relatórios | Pós-venda completo |
 | **7. Acerto e financeiro** | Acerto semanal, comissões, contas a receber e a pagar, caixa, relatórios financeiros. **Entregue (código concluído em 15/11/2026, tarefas 7.2 a 7.13):** limite de consignação; parcelas da venda a prazo e recebimento posterior; acerto com contagem, fechamento atômico, comissão por meta (700.000 Gs, 30% ou 40%) e pendências; recebimentos do vendedor (dinheiro, Transferência e boleto) e caixa automático; contas a pagar, caixa manual com categorias e fechar semana; nove conciliações; telas da dona (Acerto e Financeiro) e do vendedor (A receber, Meu acerto e minha comissão); nove relatórios financeiros. Sem entrada e sem cheque. **Falta o teste de uso** ([roteiro](roteiro-teste-fase-7.md)) | Fechamento semanal |
-| **8. Painel, relatórios avançados e conciliações** | Gerenciamento semanal (referência), curva ABC, DRE, conciliações automáticas, auditoria | Visão gerencial e confiança nos números |
+| **8. Painel, relatórios avançados e conciliações** | Gerenciamento semanal (referência), curva ABC, DRE, conciliações automáticas, auditoria. **Entregue (código concluído em 17/11/2026, tarefas 8.2 a 8.13):** arrumação dos testes; conciliações C11 e C12; conferência diária (03:00 de Brasília e "Conferir agora", resultado guardado, aviso e histórico); relatórios de vendas e curva ABC; resultado do período (DRE), lucro por produto e por vendedor; **Painel da semana** (consulta e tela); relatórios de Controle (auditoria, sincronizações e computadores, acessos); no Corona Vendas, pedir o acerto e contar as sobras (só com internet); prévia do fechamento tipada e "Falta para a meta" na Gestão; cenário Playwright da dona; teste de ponta a ponta da semana (`FechamentoDaSemanaTest`). **Falta:** o teste de uso com as planilhas da dona ([roteiro](roteiro-teste-fase-8.md)) e a decisão do responsável sobre o [ADR-0015](decisoes/ADR-0015-numeros-gerenciais-e-conferencia-diaria.md) (Proposto; valem os padrões seguros) | Visão gerencial e confiança nos números |
 | **9. Entrega** | Instaladores, auto-update, assinatura, deploy na VPS, HTTPS, backup e teste de restauração, **homologação do leitor com etiquetas reais**, validação com dados reais, treinamento | Sistema em produção |
 
 As fases 1 a 4 funcionam **online, mas já preparadas para sync** (UUID, `deleted_at`, vendas imutáveis, idempotência). O offline entra por cima na fase 5, com esforço estimado de **20% a 30% a mais** de trabalho, concentrado em testes.
@@ -833,6 +833,12 @@ Importação com nome de arquivo inválido, foto duplicada, arquivo corrompido, 
   - §7.3: a devolução abate primeiro o que o cliente deve, depois crédito, depois dinheiro; cancelar desfaz o abatimento; a troca de A a prazo.
   - §9: `devolucoes.valor_abatido`, `baixas_receber.devolucao_id` e o motivo `DEVOLUCAO`; `PARCIAL` também para parcela abatida.
   - §10: `devolucoes.valor_abatido` e `baixas_receber.devolucao_id` entram no pull; o que o app manda não muda.
+- **v1.26, 17/11/2026:** fechamento da Fase 8 (tarefa 8.13); nenhuma regra de negócio mudou, nenhuma migração.
+  - §2: DX, DV e VD deixam de ser "premissa a confirmar" e passam a ter a definição de **Enviado**, **Devolvido** e **Vendido** que o painel da semana usa (ADR-0015, item 5).
+  - §13, item 7: o roteiro da comparação com as planilhas da dona (`docs/roteiro-teste-fase-8.md`).
+  - §15: a Fase 8 passa a constar como entregue no código (tarefas 8.2 a 8.13), com o que falta (o teste de uso e a decisão do responsável sobre o ADR-0015).
+  - §12 e §13: já descritos nas versões 1.24 e 1.25 e nos parágrafos das tarefas 8.5 a 8.9; o painel, o resultado do período, a curva ABC, as vendas e a conferência diária passaram a ter um teste de ponta a ponta sobre a mesma semana (`FechamentoDaSemanaTest`).
+  - §7.4: pedir o acerto e contar as sobras pelo Corona Vendas passaram a existir na tarefa 8.10 (só com internet, padrão seguro da dúvida R3 do ADR-0015); a nota da v1.23 sobre isso está superada. Quem fecha o acerto continua sendo só a dona.
 - **v1.25, 16/11/2026:** conferência diária: rodada automática e "Conferir agora", resultado guardado, aviso e histórico (tarefa 8.4, ADR-0015 item 6).
 - **v1.24, 16/11/2026:** conciliações C11 e C12 do estoque completo (tarefa 8.3, ADR-0012 item 17, ADR-0008 item 9).
   - §13: a conferência do dinheiro passa de nove para onze (C11 estoque completo por peça, C12 saldo de cada maleta enviada), na mesma rota, só leitura e no mesmo retrato; nenhuma regra de venda, maleta, acerto ou sync mudou.

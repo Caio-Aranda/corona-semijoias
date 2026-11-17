@@ -2,7 +2,8 @@
 
 - **Status:** Proposto (tarefa 8.1, 15/11/2026). Aguarda o responsável. Até a decisão, as tarefas da Fase 8 seguem os padrões seguros abaixo, que **não mudam nenhuma regra de negócio** já aceita.
 - **Data:** 15/11/2026
-- **Tarefas que implementam:** 8.3 a 8.8 (Fase 8; plano em [fase-8-plano.md](../progresso/fase-8-plano.md))
+- **Tarefas que implementam:** 8.3 a 8.8 (Fase 8; plano em [fase-8-plano.md](../progresso/fase-8-plano.md)). A 8.13 (fechamento) confirmou, por teste de ponta a ponta, que o painel, o resultado do período, a curva ABC e as vendas contam a mesma semana com os mesmos números.
+- **Em 17/11/2026 (tarefa 8.13):** o responsável ainda **não decidiu** R1, R2 e R3. Este ADR continua **Proposto** e **os padrões seguros descritos abaixo estão em vigor**: R1, custo pela última compra até o dia da venda, calculado na leitura; R2, rodada às 03:00 de Brasília e aviso depois de 26 horas; R3, pedir o acerto e contar as sobras no Corona Vendas só com internet (tarefa 8.10, feita). Nada foi decidido em nome do responsável.
 
 ## Contexto
 
@@ -67,6 +68,18 @@ Ficam abertos cinco pontos que mudam tabela, fórmula ou número mostrado à don
    - **Comissões** pelo `fechado_em` do acerto `ACERTADO`, somando as linhas `COMISSAO` e `ESTORNO` (a mesma subconsulta serve ao DRE e ao lucro por vendedor).
    - **Caixa** só com lançamentos `MANUAL`, por categoria e pela data do lançamento; o pagamento a fornecedor e o caixa automático do acerto ficam fora (o primeiro já entra pelo custo, o segundo é venda já contada).
    - **Perdas, cobrado e caixa não são rateados** por produto nem por vendedor. Período obrigatório (de e até) nas três consultas.
+
+## Situação da decisão (17/11/2026, fechamento da Fase 8)
+
+Tudo o que o ADR propõe foi construído com o padrão seguro; o que cada resposta do responsável mudaria:
+
+| Resposta | Padrão em vigor (construído) | Se o responsável escolher o outro caminho |
+| --- | --- | --- |
+| **R1** (item 1) | Custo calculado na leitura, pelo último custo de compra até o dia da venda; sem compra, custo do cadastro, marcado. Nada gravado na venda. | Tabela só do servidor com o custo congelado na venda: mexe no caminho da venda e do push (crítico), exige migração e preencher as vendas antigas pela regra atual. O DRE, o lucro e o `CustoDaPeca` passariam a ler a tabela. |
+| **R2** (item 6) | 03:00 de Brasília e aviso depois de 26 horas sem rodada. | Mudar o horário da agenda e o limite do aviso (constantes); nenhuma tabela muda. |
+| **R3** (§7.4) | Pedir o acerto e contar as sobras no Corona Vendas só com internet (8.10). | Texto da §7.4 passa a "a dona conta" e a tela da 8.10 sai do Corona Vendas; ou, se quiser sem internet, um tipo novo na outbox (outro ADR). |
+
+Os demais itens (2 a 5) seguem como escritos e, na leitura do fechamento, batem entre si (`FechamentoDaSemanaTest`). A comparação com as planilhas da dona (§13, item 7) está no [roteiro do teste de uso](../roteiro-teste-fase-8.md); diferença achada vira tarefa, não pergunta.
 
 ## Consequências
 
