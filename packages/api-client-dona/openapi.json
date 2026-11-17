@@ -18,6 +18,32 @@
         },
         "type" : "object"
       },
+      "AntigaDaPreviaDoFechamento" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "AparelhoDoVendedor" : {
         "properties" : {
           "aguardandoEnvio" : {
@@ -488,6 +514,41 @@
           }
         },
         "required" : [ "nome" ],
+        "type" : "object"
+      },
+      "CalculoDaComissaoLinha" : {
+        "properties" : {
+          "base" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "eventoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "percentual" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "tipo" : {
+            "enum" : [ "COMISSAO", "ESTORNO" ],
+            "type" : "string"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
         "type" : "object"
       },
       "Campo" : {
@@ -1840,6 +1901,45 @@
         },
         "type" : "object"
       },
+      "ContaAbertaNaPrevia" : {
+        "properties" : {
+          "emAberto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "formaPrevista" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "numero" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "origem" : {
+            "type" : "string"
+          },
+          "totalDeParcelas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vencimento" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "ContaAntigaPaga" : {
         "properties" : {
           "contaId" : {
@@ -2391,6 +2491,18 @@
         },
         "type" : "object"
       },
+      "DefeitoDaPreviaDoFechamento" : {
+        "properties" : {
+          "contadoDefeito" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "produto" : {
+            "$ref" : "#/components/schemas/ProdutoDaPreviaDoFechamento"
+          }
+        },
+        "type" : "object"
+      },
       "Devolucao" : {
         "properties" : {
           "autorizacaoId" : {
@@ -2859,6 +2971,28 @@
         },
         "type" : "object"
       },
+      "EventoDaPreviaDoFechamento" : {
+        "properties" : {
+          "origemId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "EventoFechado" : {
         "properties" : {
           "origemId" : {
@@ -2916,6 +3050,31 @@
             "type" : "string"
           },
           "saldoFinal" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "FaltaDaPreviaDoFechamento" : {
+        "properties" : {
+          "produto" : {
+            "$ref" : "#/components/schemas/ProdutoDaPreviaDoFechamento"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "remessaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "valor" : {
             "example" : "123.45",
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
@@ -6605,6 +6764,27 @@
         },
         "type" : "object"
       },
+      "NaoAceitaDaPreviaDoFechamento" : {
+        "properties" : {
+          "origemId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "origemTipo" : {
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "NotaDeRemessa" : {
         "properties" : {
           "cancelada" : {
@@ -7260,6 +7440,59 @@
           },
           "vencimento" : {
             "format" : "date",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ParcelaDoRestanteDaPrevia" : {
+        "properties" : {
+          "numero" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vencimento" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "PecaDaPreviaDoFechamento" : {
+        "properties" : {
+          "contadoBoa" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "contadoDefeito" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "esperado" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "falta" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "produto" : {
+            "$ref" : "#/components/schemas/ProdutoDaPreviaDoFechamento"
+          },
+          "remessaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "valorDaFalta" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           }
         },
@@ -8248,6 +8481,221 @@
           "version" : {
             "format" : "int32",
             "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PreviaDoFechamento" : {
+        "properties" : {
+          "aPagarNoAcerto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "acertoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "boleto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "comissao" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "comissoes" : {
+            "items" : {
+              "$ref" : "#/components/schemas/CalculoDaComissaoLinha"
+            },
+            "type" : "array"
+          },
+          "contasAbertasDoVendedor" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ContaAbertaNaPrevia"
+            },
+            "type" : "array"
+          },
+          "cotacaoData" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "cotacaoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "creditoDisponivel" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "creditoUsado" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "defeitos" : {
+            "items" : {
+              "$ref" : "#/components/schemas/DefeitoDaPreviaDoFechamento"
+            },
+            "type" : "array"
+          },
+          "descontos" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "devolvido" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "eventos" : {
+            "items" : {
+              "$ref" : "#/components/schemas/EventoDaPreviaDoFechamento"
+            },
+            "type" : "array"
+          },
+          "faltaParaMetaGuarani" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "faltaParaMetaReais" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "faltas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/FaltaDaPreviaDoFechamento"
+            },
+            "type" : "array"
+          },
+          "faltasCobradas" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "ficouDevendo" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/PecaDaPreviaDoFechamento"
+            },
+            "type" : "array"
+          },
+          "liquido" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "metaGuarani" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "naoAceitas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/NaoAceitaDaPreviaDoFechamento"
+            },
+            "type" : "array"
+          },
+          "pagoAoVendedor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "parcelasDoRestante" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ParcelaDoRestanteDaPrevia"
+            },
+            "type" : "array"
+          },
+          "pendenciasAntigas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/AntigaDaPreviaDoFechamento"
+            },
+            "type" : "array"
+          },
+          "percentualComissao" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "podeFechar" : {
+            "type" : "boolean"
+          },
+          "recebidoNoAcerto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "restanteSemData" : {
+            "type" : "boolean"
+          },
+          "revisoesPendentes" : {
+            "items" : {
+              "$ref" : "#/components/schemas/RevisaoDaPreviaDoFechamento"
+            },
+            "type" : "array"
+          },
+          "sobras" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Sobra"
+            },
+            "type" : "array"
+          },
+          "vendidoBruto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendidoLiquido" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendidoParaMetaGuarani" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "ProdutoDaPreviaDoFechamento" : {
+        "properties" : {
+          "codigo" : {
+            "type" : "string"
+          },
+          "fotoHash" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
           }
         },
         "type" : "object"
@@ -10952,6 +11400,18 @@
         },
         "type" : "object"
       },
+      "RevisaoDaPreviaDoFechamento" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "Rodada" : {
         "properties" : {
           "chavesComFalha" : {
@@ -11213,6 +11673,23 @@
             "type" : "string"
           },
           "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "Sobra" : {
+        "properties" : {
+          "contado" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "esperado" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "produtoId" : {
             "format" : "uuid",
             "type" : "string"
           }
@@ -12190,7 +12667,7 @@
     },
     "/api/dona/acertos/{id}/fechamento" : {
       "get" : {
-        "description" : "Nada é gravado: esperado x contado por peça e maleta, sobras, faltas com valor, defeitos, eventos que vão entrar, devoluções em revisão (impedem), o que não foi aceito, pendências antigas, a comissão por venda, a soma da meta em Guarani, o percentual, os totais e a cotação. Com o acerto já fechado, devolve o que foi gravado. Assume cobrar as faltas no acerto e não aprovar defeito; para outras decisões, use a prévia com decisões.",
+        "description" : "Nada é gravado: esperado x contado por peça e maleta, sobras, faltas com valor, defeitos, eventos que vão entrar, devoluções em revisão (impedem), o que não foi aceito, pendências antigas, a comissão por venda, a soma da meta em Guarani, quanto falta para a meta (em Guarani e em Real, pela cotação mais recente), o percentual, os totais e a cotação. Com o acerto em andamento, devolve a prévia (PreviaDoFechamento); com o acerto já fechado, devolve o que foi gravado (Fechamento), que não traz o que falta para a meta. Assume cobrar as faltas no acerto e não aprovar defeito; para outras decisões, use a prévia com decisões.",
         "operationId" : "previaDoFechamento",
         "parameters" : [ {
           "in" : "path",
@@ -12206,11 +12683,15 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "type" : "object"
+                  "oneOf" : [ {
+                    "$ref" : "#/components/schemas/PreviaDoFechamento"
+                  }, {
+                    "$ref" : "#/components/schemas/Fechamento"
+                  } ]
                 }
               }
             },
-            "description" : "OK"
+            "description" : "A prévia (acerto em andamento) ou o fechamento gravado (acerto fechado)"
           }
         },
         "security" : [ {
@@ -12248,8 +12729,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "additionalProperties" : { },
-                  "type" : "object"
+                  "$ref" : "#/components/schemas/PreviaDoFechamento"
                 }
               }
             },
