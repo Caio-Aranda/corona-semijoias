@@ -4,6 +4,7 @@ import type { PonteDoCorona } from '../../shared/ponte';
 import { chamar, useBusca } from '../nucleo/chamadas';
 import { localeAtual } from '../idioma/idioma';
 import { useCotacao } from '../nucleo/cotacao';
+import { guaranisPorReal, reaisPorDolar } from '../nucleo/cotacao-na-tela';
 import { dolarNaTela, lerPainel, reaisNaTela } from '../nucleo/painel-semanal';
 import { TEXTOS } from '../textos';
 import { TEXTOS_DE_ESTOQUE } from '../textos-estoque';
@@ -120,7 +121,6 @@ export function TelaInicial({ ponte, nome }: TelaInicialProps) {
     month: 'long',
     year: 'numeric',
   });
-  const dinheiro = (v: string) => v.replace('.', ',');
 
   return (
     <div className="gestao-tela">
@@ -133,10 +133,10 @@ export function TelaInicial({ ponte, nome }: TelaInicialProps) {
           {taxas ? (
             <>
               <span>
-                <b>{I.cotacao.dolar}</b> R$ {dinheiro(taxas.dolar)}
+                <b>{I.cotacao.dolar}</b> {reaisPorDolar(taxas.dolar)}
               </span>
               <span>
-                <b>{I.cotacao.guarani}</b> R$ {dinheiro(taxas.guarani)}
+                <b>{I.cotacao.guarani}</b> {guaranisPorReal(taxas.guarani)}
               </span>
             </>
           ) : (

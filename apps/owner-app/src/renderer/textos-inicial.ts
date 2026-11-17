@@ -14,8 +14,8 @@ export const PT_TEXTOS_DA_INICIAL = {
   },
   cotacao: {
     rotulo: 'Cotação do dia',
-    dolar: 'Dólar (1 US$):',
-    guarani: 'Guarani (1 Gs.):',
+    dolar: '1 US$ =',
+    guarani: 'R$ 1 =',
     semCotacao: 'Sem cotação do dia',
   },
   resumo: {

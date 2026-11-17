@@ -14,8 +14,8 @@ export const ES_TEXTOS_DA_INICIAL: NoMesmoFormato<typeof PT_TEXTOS_DA_INICIAL> =
   },
   cotacao: {
     rotulo: 'Cotización del día',
-    dolar: 'Dólar (1 US$):',
-    guarani: 'Guaraní (1 Gs.):',
+    dolar: '1 US$ =',
+    guarani: 'R$ 1 =',
     semCotacao: 'Sin cotización del día',
   },
   resumo: {
