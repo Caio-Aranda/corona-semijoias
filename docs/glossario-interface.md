@@ -1425,7 +1425,7 @@ Menu do Corona Gestão: grupo **Controle**, depois de "Relatórios financeiros".
 | Tela | O que mostra |
 | --- | --- |
 | **Auditoria: quem fez o quê** | Quando, Quem fez ("Pelo servidor" quando não foi uma pessoa), O que foi, Registro, Antes e Depois; filtros de busca, período e pessoa |
-| **Sincronizações e computadores** | Vendedor, Situação, Versão do programa, Último recebimento, Último envio, Esperando envio, Envios com problema e Guardados à parte; filtros de situação e de envios com problema |
+| **Computadores e envios** | Vendedor, Situação, Versão do programa, Último recebimento, Último envio, Esperando envio, Envios com problema e Guardados à parte; filtros de situação e de envios com problema |
 | **Acessos: entradas e erros** | Quando, Pessoa, Usuário digitado, Programa, Resultado, Endereço de internet e Bloqueado até; filtros de resultado e de programa |
 
 Situações do computador na tela: **Em uso**, **Esperando a sua liberação**, **Trocado por outro** e **Bloqueado**. Resultados de acesso: **Entrou**, **Senha errada**, **Recusada: acesso bloqueado**, **Usuário desativado**, **Programa muito antigo**, **Senha temporária vencida**, **Computador que não combina com o acesso** e **Bloqueio retirado ao redefinir a senha**. Na tela nunca aparecem "quarentena", "sessão", "token" nem "log". Usuário que não existe aparece como **Usuário que não existe**.

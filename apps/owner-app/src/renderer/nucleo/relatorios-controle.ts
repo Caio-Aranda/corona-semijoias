@@ -92,8 +92,8 @@ export const RELATORIOS_DE_CONTROLE: Record<NomeDoRelatorioDeControle, Definicao
         tipo: 'escolha',
         qualquer: 'Os dois programas',
         opcoes: [
-          { valor: 'gestao', rotulo: 'Corona Gestão' },
-          { valor: 'vendas', rotulo: 'Corona Vendas' },
+          { valor: 'gestao', rotulo: 'Só o programa da dona' },
+          { valor: 'vendas', rotulo: 'Só o programa do vendedor' },
         ],
       },
     ],

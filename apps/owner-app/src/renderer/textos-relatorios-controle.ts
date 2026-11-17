@@ -11,7 +11,7 @@ export const TEXTOS_DE_RELATORIOS_DE_CONTROLE = {
     nota: 'Senhas nunca aparecem aqui. Quando não há uma pessoa, a mudança foi feita pelo próprio sistema.',
   },
   computadores: {
-    titulo: 'Sincronizações e computadores',
+    titulo: 'Computadores e envios',
     explicacao:
       'Os computadores de cada vendedor: quando receberam dados da loja pela última vez, quando enviaram as vendas, quantas vendas esperam para ser enviadas e quantos envios precisam da sua decisão.',
     nota: 'Para decidir um envio, abra Computadores no menu.',

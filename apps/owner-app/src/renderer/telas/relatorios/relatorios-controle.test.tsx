@@ -125,7 +125,7 @@ describe('Relatórios de controle (tarefa 8.9)', () => {
     expect(await screen.findByText('Controle')).toBeInTheDocument();
     for (const t of [
       'Auditoria: quem fez o quê',
-      'Sincronizações e computadores',
+      'Computadores e envios',
       'Acessos: entradas e erros',
     ]) {
       expect(await screen.findByRole('button', { name: t })).toBeInTheDocument();
@@ -152,7 +152,7 @@ describe('Relatórios de controle (tarefa 8.9)', () => {
     const m = montar(COMPUTADOR);
     const u = userEvent.setup();
     render(<App ponte={m.ponte} />);
-    await u.click(await screen.findByRole('button', { name: 'Sincronizações e computadores' }));
+    await u.click(await screen.findByRole('button', { name: 'Computadores e envios' }));
     expect((await screen.findAllByText('Em uso')).length).toBeGreaterThan(0);
     expect(screen.getByText('2.3.0')).toBeInTheDocument();
     expect(screen.getAllByText('Maria Souza').length).toBeGreaterThan(0);
