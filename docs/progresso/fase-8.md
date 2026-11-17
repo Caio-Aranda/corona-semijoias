@@ -180,3 +180,7 @@ PR 200 (issue #183). Três relatórios só de leitura para a dona (§12, grupo C
 **Não fiz:** exportar a auditoria com filtro por ação na tela (o filtro existe na API; a tela usa busca, período e pessoa); decidir envios pelo relatório (isso continua em Computadores, no menu).
 
 **Como conferir:** `npm run api:test`, `npm run lint`, `npm run typecheck`, `npm run format:check`.
+
+## Tarefa 8.11: acerto na Gestão, prévia tipada e quanto falta para a meta
+
+**Situação:** plano em revisão (comentário no PR). Nenhum código ainda.
