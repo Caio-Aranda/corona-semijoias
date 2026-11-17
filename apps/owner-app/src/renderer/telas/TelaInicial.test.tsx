@@ -47,9 +47,9 @@ describe('tela inicial da dona (visual novo)', () => {
     expect(screen.getByRole('heading', { name: 'Olá, Maria.' })).toBeInTheDocument();
     expect(screen.getByText(/\d{1,2} de \w+ de \d{4}/)).toBeInTheDocument();
     const cotacao = await screen.findByLabelText('Cotação do dia');
-    expect(await within(cotacao).findByText(/Dólar \(1 US\$\):/)).toBeInTheDocument();
+    expect(await within(cotacao).findByText(/1 US\$ =/)).toBeInTheDocument();
     expect(within(cotacao).getByText(/R\$ 5,50/)).toBeInTheDocument();
-    expect(within(cotacao).getByText(/Guarani \(1 Gs\.\):/)).toBeInTheDocument();
+    expect(within(cotacao).getByText(/R\$ 1 =/)).toBeInTheDocument();
   });
 
   it('sem cotação, diz isso em vez de dar erro', async () => {

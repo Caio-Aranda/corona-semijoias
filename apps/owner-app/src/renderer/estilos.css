@@ -673,3 +673,36 @@ dl.gestao-totais {
   min-height: var(--alvo-minimo);
   padding-block: var(--espaco-1);
 }
+
+/* Seletor de idioma (ES / PT): dois botões pequenos, o atual destacado. */
+.gestao-idioma {
+  display: inline-flex;
+  gap: 2px;
+  margin-right: var(--espaco-3);
+  vertical-align: middle;
+}
+.gestao-idioma__botao {
+  min-width: 2.5rem;
+  min-height: 2rem;
+  padding: 0 var(--espaco-2);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-1, 4px);
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
+  font: 600 0.875rem / 1 var(--fonte-texto, inherit);
+  cursor: pointer;
+}
+.gestao-idioma__botao[aria-pressed='true'] {
+  background: var(--cor-ouro-escuro);
+  border-color: var(--cor-ouro-escuro);
+  color: #fff;
+}
+.gestao-idioma__botao:focus-visible {
+  outline: 3px solid var(--cor-foco, currentColor);
+  outline-offset: 2px;
+}
+.gestao-idioma--canto {
+  position: absolute;
+  top: var(--espaco-4);
+  right: var(--espaco-4);
+}

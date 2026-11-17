@@ -1,8 +1,10 @@
+import { textosVivos } from './idioma/idioma';
+import { ES_TEXTOS_DE_RELATORIOS_DE_DEVOLUCAO } from './idioma/es/relatorios-devolucao';
 /**
  * Textos dos relatórios de devolução e troca (tarefa 6.10). Vêm do glossário da interface ("Relatórios de devolução e
  * troca"). A dona é tratada por "você". Na tela nunca aparecem os nomes técnicos das situações.
  */
-export const TEXTOS_DE_RELATORIOS_DE_DEVOLUCAO = {
+export const PT_TEXTOS_DE_RELATORIOS_DE_DEVOLUCAO = {
   grupoDoMenu: 'Relatórios de devoluções',
   cotacao: 'Dólar e Guarani pela cotação do Banco Central do dia de cada devolução.',
   cotacaoDoCredito:
@@ -88,3 +90,9 @@ export const TEXTOS_DE_RELATORIOS_DE_DEVOLUCAO = {
     } as Record<string, string>,
   },
 } as const;
+
+export const TEXTOS_DE_RELATORIOS_DE_DEVOLUCAO = textosVivos(
+  'rel-devolucao',
+  PT_TEXTOS_DE_RELATORIOS_DE_DEVOLUCAO,
+  ES_TEXTOS_DE_RELATORIOS_DE_DEVOLUCAO,
+);

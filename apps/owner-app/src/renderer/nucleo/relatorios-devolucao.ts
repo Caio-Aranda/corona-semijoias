@@ -8,6 +8,8 @@
 import type { NomeDoRelatorio, NomeDoRelatorioDeDevolucao } from '../../shared/relatorios';
 import { TEXTOS_DE_RELATORIOS_DE_DEVOLUCAO } from '../textos-relatorios-devolucao';
 import type { DefinicaoDeRelatorio, ExtraDoRelatorio } from './relatorios';
+import { idiomaAtual } from '../idioma/idioma';
+import { traducirDefinicion } from '../idioma/es/relatorios-mapa';
 
 const T = TEXTOS_DE_RELATORIOS_DE_DEVOLUCAO;
 
@@ -485,3 +487,6 @@ export function prepararLinhaDeDevolucao(
       return linha;
   }
 }
+
+// Em espanhol, os textos de cada definição saem da tabela de tradução (feita uma vez, ao abrir o programa).
+if (idiomaAtual() === 'es') traducirDefinicion(RELATORIOS_DE_DEVOLUCAO);

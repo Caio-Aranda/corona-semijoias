@@ -1,8 +1,10 @@
+import { textosVivos } from './idioma/idioma';
+import { ES_TEXTOS_DE_VENDEDORES } from './idioma/es/vendedores';
 /**
  * Textos das telas de vendedores (Pessoas → Vendedores). Vêm do glossário da interface; erros de
  * campo e de regra vêm sempre do servidor, nunca daqui.
  */
-export const TEXTOS_DE_VENDEDORES = {
+export const PT_TEXTOS_DE_VENDEDORES = {
   titulo: 'Vendedores',
   item: 'vendedor',
   itens: ['vendedor', 'vendedores'] as const,
@@ -199,3 +201,9 @@ export const TEXTOS_DE_VENDEDORES = {
     reativado: (nome: string) => `${nome} foi reativado.`,
   },
 } as const;
+
+export const TEXTOS_DE_VENDEDORES = textosVivos(
+  'vendedores',
+  PT_TEXTOS_DE_VENDEDORES,
+  ES_TEXTOS_DE_VENDEDORES,
+);

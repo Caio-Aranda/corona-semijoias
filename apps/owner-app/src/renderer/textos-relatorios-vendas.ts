@@ -1,8 +1,10 @@
+import { textosVivos } from './idioma/idioma';
+import { ES_TEXTOS_DE_RELATORIOS_DE_VENDAS } from './idioma/es/relatorios-vendas';
 /**
  * Textos dos relatórios de vendas e da curva ABC da dona (tarefa 8.5), do glossário da interface ("Relatórios de vendas").
  * A dona é tratada por "você". Na tela nunca aparecem os nomes técnicos das situações.
  */
-export const TEXTOS_DE_RELATORIOS_DE_VENDAS = {
+export const PT_TEXTOS_DE_RELATORIOS_DE_VENDAS = {
   grupoDoMenu: 'Relatórios de vendas',
   cotacao:
     'Dólar e Guarani pela cotação do Banco Central do dia de cada venda. Tudo é gravado em Real.',
@@ -21,3 +23,9 @@ export const TEXTOS_DE_RELATORIOS_DE_VENDAS = {
   } as Record<string, string>,
   semPraca: 'Sem praça',
 } as const;
+
+export const TEXTOS_DE_RELATORIOS_DE_VENDAS = textosVivos(
+  'rel-vendas',
+  PT_TEXTOS_DE_RELATORIOS_DE_VENDAS,
+  ES_TEXTOS_DE_RELATORIOS_DE_VENDAS,
+);

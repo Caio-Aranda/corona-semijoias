@@ -13,6 +13,7 @@ import {
 } from './configuracao';
 import { GuardaDeTokens } from './guarda-de-tokens';
 import { registrarAtualizacao, registrarPonte } from './ipc';
+import { registrarIdioma } from './idioma';
 import {
   instalarCertificadoFixado,
   PARTICAO_DO_ATUALIZADOR,
@@ -167,6 +168,16 @@ function iniciar(): void {
   servico = new ServicoDeSessao(guarda, api, guarda.restaurar(), () => cacheDeFotos.limpar());
 
   registrarPonte(servico, (e) => {
+    const quadro = e.senderFrame;
+    return (
+      quadro !== null &&
+      janela !== null &&
+      e.sender === janela.webContents &&
+      enderecoDoApp(quadro.url, enderecoDeDesenvolvimento, arquivoDoApp)
+    );
+  });
+
+  registrarIdioma(join(app.getPath('userData'), 'idioma.txt'), (e) => {
     const quadro = e.senderFrame;
     return (
       quadro !== null &&

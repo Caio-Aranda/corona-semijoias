@@ -4,6 +4,7 @@ import type { PonteDoCorona } from '../../shared/ponte';
 import { RodapeDaCotacao } from '../nucleo/cotacao';
 import { temAlteracoesNaoSalvas } from '../nucleo/guarda-de-saida';
 import { MENU, rotuloDaRota, useRota, type Rota } from '../nucleo/rotas';
+import { SeletorDeIdioma } from '../idioma/SeletorDeIdioma';
 import { TEXTOS } from '../textos';
 import { TelaEmBreve } from './TelaEmBreve';
 import { TelaInicial } from './TelaInicial';
@@ -43,6 +44,7 @@ import { RELATORIOS } from '../nucleo/relatorios';
 import { NOMES_DOS_RELATORIOS, type NomeDoRelatorio } from '../../shared/relatorios';
 import { TelaUsuarios } from './usuarios/TelaUsuarios';
 import { TelaVendedores } from './vendedores/TelaVendedores';
+import { TEXTOS_SOLTOS as SOLTOS } from '../textos-soltos';
 
 export interface EstruturaProps {
   ponte: PonteDoCorona;
@@ -218,9 +220,10 @@ export function Estrutura({ ponte, nome, aoSair }: EstruturaProps) {
   return (
     <div className="gestao-pagina">
       <CabecalhoDeMarca
-        nomeDoApp="Corona Gestão"
+        nomeDoApp={SOLTOS.entrada.nomeDoApp}
         acoes={
           <>
+            <SeletorDeIdioma />
             {nome ? <span>{nome} </span> : null}
             <Botao onClick={() => void aoSair()}>{TEXTOS.botoes.sair}</Botao>
           </>

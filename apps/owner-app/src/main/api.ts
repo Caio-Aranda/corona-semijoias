@@ -263,6 +263,7 @@ import type { ParametrosDeRelatorio } from '../shared/validacao-relatorios';
 import type { AbaDoVendedor, ArquivoBaixado } from '../shared/vendedores';
 import { CacheDeFotos, LimiteDeBuscas } from './cache-de-fotos';
 import type { ApiDeAutenticacao, Credenciais, Falha, Resultado } from './tipos';
+import { idiomaDoComputador } from './idioma';
 
 export interface DadosDoUsuario {
   nome?: string;
@@ -978,6 +979,12 @@ async function executarEstoque(
   }
 }
 
+function avisoDoCustoDoCadastro(n: number): string {
+  return idiomaDoComputador() === 'pt'
+    ? `${n} ${n === 1 ? 'peça está com o custo do cadastro' : 'peças estão com o custo do cadastro'}: esse custo muda se o cadastro mudar.`
+    : `${n} ${n === 1 ? 'pieza tiene el costo del registro' : 'piezas tienen el costo del registro'}: ese costo cambia si el registro cambia.`;
+}
+
 /**
  * O resultado do período chega como uma lista de linhas; a tela de relatório o mostra como qualquer outro (linhas e arquivos).
  * Quando há peças vendidas com o custo do cadastro, uma linha de aviso diz quantas (é estimativa).
@@ -996,7 +1003,7 @@ function comoRelatorioDoResultado(dados: unknown): unknown {
       id: 'aviso',
       chave: 'AVISO',
       operacao: 'AVISO',
-      titulo: `${n} ${n === 1 ? 'peça está com o custo do cadastro' : 'peças estão com o custo do cadastro'}: esse custo muda se o cadastro mudar.`,
+      titulo: avisoDoCustoDoCadastro(n),
     });
   }
   return {

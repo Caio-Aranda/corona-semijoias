@@ -1,8 +1,10 @@
+import { textosVivos } from './idioma/idioma';
+import { ES_TEXTOS_DE_PRODUTOS } from './idioma/es/produtos';
 /**
  * Textos das telas de produtos (Cadastros → Produtos). Vêm do glossário da interface; erros de
  * campo e de regra vêm sempre do servidor, nunca daqui.
  */
-export const TEXTOS_DE_PRODUTOS = {
+export const PT_TEXTOS_DE_PRODUTOS = {
   titulo: 'Produtos',
   itens: ['produto', 'produtos'] as const,
   novo: 'Cadastrar produto',
@@ -236,3 +238,9 @@ export const TEXTOS_DE_PRODUTOS = {
     desativado: 'Este produto está inativo.',
   },
 } as const;
+
+export const TEXTOS_DE_PRODUTOS = textosVivos(
+  'produtos',
+  PT_TEXTOS_DE_PRODUTOS,
+  ES_TEXTOS_DE_PRODUTOS,
+);

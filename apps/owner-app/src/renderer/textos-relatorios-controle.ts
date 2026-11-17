@@ -1,8 +1,10 @@
+import { textosVivos } from './idioma/idioma';
+import { ES_TEXTOS_DE_RELATORIOS_DE_CONTROLE } from './idioma/es/relatorios-controle';
 /**
  * Textos dos relatórios de Controle da dona (tarefa 8.9), do glossário da interface ("Relatórios de controle"). A dona é tratada
  * por "você". Na tela nunca aparecem os nomes técnicos de ação, de situação ou de resultado: o servidor já manda o texto da loja.
  */
-export const TEXTOS_DE_RELATORIOS_DE_CONTROLE = {
+export const PT_TEXTOS_DE_RELATORIOS_DE_CONTROLE = {
   grupoDoMenu: 'Controle',
   auditoria: {
     titulo: 'Auditoria: quem fez o quê',
@@ -41,3 +43,9 @@ export const TEXTOS_DE_RELATORIOS_DE_CONTROLE = {
     } as Record<string, string>,
   },
 } as const;
+
+export const TEXTOS_DE_RELATORIOS_DE_CONTROLE = textosVivos(
+  'rel-controle',
+  PT_TEXTOS_DE_RELATORIOS_DE_CONTROLE,
+  ES_TEXTOS_DE_RELATORIOS_DE_CONTROLE,
+);

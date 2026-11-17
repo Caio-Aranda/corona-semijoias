@@ -6,6 +6,8 @@
 import type { NomeDoRelatorio, NomeDoRelatorioDeControle } from '../../shared/relatorios';
 import { TEXTOS_DE_RELATORIOS_DE_CONTROLE } from '../textos-relatorios-controle';
 import type { DefinicaoDeRelatorio } from './relatorios';
+import { idiomaAtual } from '../idioma/idioma';
+import { traducirDefinicion } from '../idioma/es/relatorios-mapa';
 
 const T = TEXTOS_DE_RELATORIOS_DE_CONTROLE;
 
@@ -132,3 +134,6 @@ export function prepararLinhaDeControle(
   }
   return linha;
 }
+
+// Em espanhol, os textos de cada definição saem da tabela de tradução (feita uma vez, ao abrir o programa).
+if (idiomaAtual() === 'es') traducirDefinicion(RELATORIOS_DE_CONTROLE);

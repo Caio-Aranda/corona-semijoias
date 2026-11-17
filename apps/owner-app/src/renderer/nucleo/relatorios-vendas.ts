@@ -8,6 +8,8 @@ import type { NomeDoRelatorio, NomeDoRelatorioDeVendas } from '../../shared/rela
 import { TEXTOS_DE_RELATORIOS_DE_VENDAS } from '../textos-relatorios-vendas';
 import type { ColunaDoRelatorio } from './exportacao/grade';
 import type { DefinicaoDeRelatorio } from './relatorios';
+import { idiomaAtual } from '../idioma/idioma';
+import { traducirDefinicion } from '../idioma/es/relatorios-mapa';
 
 const T = TEXTOS_DE_RELATORIOS_DE_VENDAS;
 
@@ -285,3 +287,6 @@ export function prepararLinhaDeVendas(
       return linha;
   }
 }
+
+// Em espanhol, os textos de cada definição saem da tabela de tradução (feita uma vez, ao abrir o programa).
+if (idiomaAtual() === 'es') traducirDefinicion(RELATORIOS_DE_VENDAS);

@@ -1,3 +1,5 @@
+import { textosVivos } from './idioma/idioma';
+import { ES_TEXTOS } from './idioma/es/textos';
 import { TEXTOS_DE_PRODUTOS } from './textos-produtos';
 import { TEXTOS_DE_VENDEDORES } from './textos-vendedores';
 
@@ -56,7 +58,7 @@ function cadastroBasico(c: {
   };
 }
 
-export const TEXTOS = {
+export const PT_TEXTOS = {
   /** Botões que se repetem em várias telas (auditoria B2). */
   botoes: {
     sair: 'Sair',
@@ -371,3 +373,5 @@ export const TEXTOS = {
   vendedores: TEXTOS_DE_VENDEDORES,
   produtos: TEXTOS_DE_PRODUTOS,
 } as const;
+
+export const TEXTOS = textosVivos('geral', PT_TEXTOS, ES_TEXTOS);

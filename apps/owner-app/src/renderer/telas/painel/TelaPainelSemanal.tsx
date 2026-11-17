@@ -23,6 +23,7 @@ import {
   type RegistrosParaAbrir,
 } from '../../nucleo/painel-semanal';
 import { TEXTOS_DO_PAINEL as T } from '../../textos-painel';
+import { TEXTOS_SOLTOS as SOLTOS } from '../../textos-soltos';
 
 export interface TelaPainelSemanalProps {
   ponte: PonteDoCorona;
@@ -231,7 +232,7 @@ const COLUNAS = [
   { chave: 'vendido', titulo: T.colunas.vendido, numerica: true },
   { chave: 'comissao', titulo: T.colunas.comissao, numerica: true },
   { chave: 'liquido', titulo: T.colunas.liquido, numerica: true },
-  { chave: 'cotacao', titulo: 'Cotação' },
+  { chave: 'cotacao', titulo: SOLTOS.arquivo.cotacao },
 ] as const;
 
 /** Início → Painel da semana (tarefa 8.8, §2 e §19): atalhos, filtros, abas Maletas e Totais. Só mostra o que o servidor calculou. */
@@ -321,7 +322,7 @@ export function TelaPainelSemanal({
         pedidoDeExportacao(painel, {
           filtrosEmPalavras: filtrosEmPalavras(),
           geradoEm: dataEHoraParaTela(agora),
-          geradoPor: usuario ?? 'Dona',
+          geradoPor: usuario ?? SOLTOS.arquivo.dona,
         }),
       );
       const base = `${T.arquivo}-${agora.toISOString().slice(0, 10)}`;

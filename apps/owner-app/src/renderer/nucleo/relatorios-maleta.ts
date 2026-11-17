@@ -7,6 +7,8 @@
 import type { NomeDoRelatorio, NomeDoRelatorioDeMaleta } from '../../shared/relatorios';
 import { TEXTOS_DE_MALETAS } from '../textos-maletas';
 import type { DefinicaoDeRelatorio, ExtraDoRelatorio } from './relatorios';
+import { idiomaAtual } from '../idioma/idioma';
+import { traducirDefinicion } from '../idioma/es/relatorios-mapa';
 
 const TR = TEXTOS_DE_MALETAS.relatorios;
 
@@ -267,3 +269,6 @@ export function prepararLinhaDeMaleta(
       return linha;
   }
 }
+
+// Em espanhol, os textos de cada definição saem da tabela de tradução (feita uma vez, ao abrir o programa).
+if (idiomaAtual() === 'es') traducirDefinicion(RELATORIOS_DE_MALETA);

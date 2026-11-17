@@ -1,9 +1,11 @@
+import { textosVivos } from './idioma/idioma';
+import { ES_TEXTOS_DO_PAINEL } from './idioma/es/painel';
 /**
  * Textos da tela "Painel da semana" (tarefa 8.8). A dona vê, numa tela só, o que foi enviado, devolvido e vendido
  * na semana, vendedor por vendedor, e os totais. Linguagem da loja, sem termo técnico; a dona é tratada por "você".
  * O painel só mostra o que o servidor calculou; nada se corrige por aqui.
  */
-export const TEXTOS_DO_PAINEL = {
+export const PT_TEXTOS_DO_PAINEL = {
   menu: 'Painel da semana',
   botaoInicial: 'Painel da semana',
   titulo: 'Painel da semana',
@@ -138,3 +140,5 @@ export const TEXTOS_DO_PAINEL = {
   arquivo: 'painel-da-semana',
   tituloDoArquivo: 'Painel da semana',
 } as const;
+
+export const TEXTOS_DO_PAINEL = textosVivos('painel', PT_TEXTOS_DO_PAINEL, ES_TEXTOS_DO_PAINEL);

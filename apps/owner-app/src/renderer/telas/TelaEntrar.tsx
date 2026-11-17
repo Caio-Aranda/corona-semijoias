@@ -1,8 +1,10 @@
 import { Aviso, Botao, Campo } from '@corona/ui';
 import { useState, type FormEvent } from 'react';
 import type { PonteDoCorona, ResultadoDeEntrada } from '../../shared/ponte';
+import { SeletorDeIdioma } from '../idioma/SeletorDeIdioma';
 import { TEXTOS } from '../textos';
 import { MensagemDeEntrada } from './MensagemDeEntrada';
+import { TEXTOS_SOLTOS as SOLTOS } from '../textos-soltos';
 
 export interface TelaEntrarProps {
   ponte: PonteDoCorona;
@@ -39,11 +41,14 @@ export function TelaEntrar({ ponte, sessaoTerminou = false, aoMudar }: TelaEntra
   }
 
   return (
-    <div className="cs-entrada-pagina">
+    <div className="cs-entrada-pagina" style={{ position: 'relative' }}>
+      <div className="gestao-idioma--canto">
+        <SeletorDeIdioma />
+      </div>
       <main>
         <form className="cs-entrada" onSubmit={(e) => void entrar(e)} noValidate>
           <span className="cs-entrada__logo" role="img" aria-label="Corona Semijoias" />
-          <p className="cs-entrada__titulo">Corona Gestão</p>
+          <p className="cs-entrada__titulo">{SOLTOS.entrada.nomeDoApp}</p>
           <h1 className="cs-entrada__titulo-pagina">{TEXTOS.botoes.entrar}</h1>
           {sessaoTerminou ? (
             <Aviso tipo="atencao" titulo={TEXTOS.sessaoTerminou.titulo}>
@@ -52,7 +57,7 @@ export function TelaEntrar({ ponte, sessaoTerminou = false, aoMudar }: TelaEntra
           ) : null}
           <MensagemDeEntrada resultado={resultado} />
           <Campo
-            rotulo="Usuário"
+            rotulo={SOLTOS.entrada.usuario}
             value={usuario}
             onChange={(e) => setUsuario(e.target.value)}
             autoComplete="username"
@@ -61,7 +66,7 @@ export function TelaEntrar({ ponte, sessaoTerminou = false, aoMudar }: TelaEntra
             autoFocus
           />
           <Campo
-            rotulo="Senha"
+            rotulo={SOLTOS.entrada.senha}
             type="password"
             value={senha}
             onChange={(e) => setSenha(e.target.value)}

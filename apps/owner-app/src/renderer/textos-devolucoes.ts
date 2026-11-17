@@ -1,9 +1,11 @@
+import { textosVivos } from './idioma/idioma';
+import { ES_TEXTOS_DE_DEVOLUCOES } from './idioma/es/devolucoes';
 /**
  * Textos das telas do grupo "Devoluções e créditos" (tarefa 6.9). Vêm do glossário da interface (parte 6, "Devoluções e
  * créditos no Corona Gestão"). A dona é tratada por "você". Na tela nunca aparecem os nomes técnicos das situações, nem
  * "estorno", "sincronização" ou "fila".
  */
-export const TEXTOS_DE_DEVOLUCOES = {
+export const PT_TEXTOS_DE_DEVOLUCOES = {
   menu: {
     grupo: 'Devoluções e créditos',
     autorizar: 'Devoluções para autorizar',
@@ -314,3 +316,9 @@ export const TEXTOS_DE_DEVOLUCOES = {
   },
   aviso: { abrir: 'Abrir' },
 } as const;
+
+export const TEXTOS_DE_DEVOLUCOES = textosVivos(
+  'devolucoes',
+  PT_TEXTOS_DE_DEVOLUCOES,
+  ES_TEXTOS_DE_DEVOLUCOES,
+);

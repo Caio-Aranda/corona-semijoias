@@ -1,5 +1,6 @@
 import { Aviso, CabecalhoDeMarca } from '@corona/ui';
 import { TEXTOS } from '../textos';
+import { TEXTOS_SOLTOS as SOLTOS } from '../textos-soltos';
 
 /**
  * Sem botão "Atualizar agora": ele só existe com a atualização automática (Fase 9, glossário parte 4).
@@ -8,7 +9,7 @@ import { TEXTOS } from '../textos';
 export function TelaAppDesatualizado({ mensagem }: { mensagem: string }) {
   return (
     <div className="gestao-pagina">
-      <CabecalhoDeMarca nomeDoApp="Corona Gestão" />
+      <CabecalhoDeMarca nomeDoApp={SOLTOS.entrada.nomeDoApp} />
       <main className="gestao-conteudo">
         <div className="gestao-cartao">
           {mensagem ? (

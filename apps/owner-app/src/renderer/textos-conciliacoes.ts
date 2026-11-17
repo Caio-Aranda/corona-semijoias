@@ -1,9 +1,11 @@
+import { textosVivos } from './idioma/idioma';
+import { ES_TEXTOS_DE_CONCILIACOES } from './idioma/es/conciliacoes';
 /**
  * Textos da tela "Conferência do dinheiro" (tarefa 7.8). O sistema confere sozinho se vendas, acertos, comissões, caixa, contas e
  * estoque batem. Linguagem da loja, sem termo técnico; a dona é tratada por "você". O que aparece aqui é erro do sistema, não da
  * loja, e nada se corrige à mão por esta tela.
  */
-export const TEXTOS_DE_CONCILIACOES = {
+export const PT_TEXTOS_DE_CONCILIACOES = {
   grupoDoMenu: 'Conferência',
   menu: 'Conferência do dinheiro',
   titulo: 'Conferência do dinheiro',
@@ -100,3 +102,9 @@ export const TEXTOS_DE_CONCILIACOES = {
     DEVOLUCAO_E_TROCA: 'Devoluções, trocas e créditos',
   } as Record<string, string>,
 } as const;
+
+export const TEXTOS_DE_CONCILIACOES = textosVivos(
+  'conciliacoes',
+  PT_TEXTOS_DE_CONCILIACOES,
+  ES_TEXTOS_DE_CONCILIACOES,
+);

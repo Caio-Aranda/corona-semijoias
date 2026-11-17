@@ -12,6 +12,8 @@ import {
   taxaDeTexto,
   type CotacaoParaTela,
 } from '../moedas';
+import { TEXTOS_SOLTOS as SOLTOS } from '../../textos-soltos';
+import { localeAtual } from '../../idioma/idioma';
 
 export type TipoDeColuna =
   | 'texto'
@@ -98,7 +100,7 @@ function centavosParaDecimal(c: bigint): string {
   return `${negativo ? '-' : ''}${abs / 100n}.${(abs % 100n).toString().padStart(2, '0')}`;
 }
 
-const FORMATO_DE_HORA = new Intl.DateTimeFormat('pt-BR', {
+const FORMATO_DE_HORA = new Intl.DateTimeFormat(localeAtual(), {
   timeZone: 'America/Sao_Paulo',
   day: '2-digit',
   month: '2-digit',
@@ -113,7 +115,7 @@ export function dataEHoraParaTela(instante: Date | string): string {
   const d = typeof instante === 'string' ? new Date(instante) : instante;
   if (Number.isNaN(d.getTime())) return '';
   const p = Object.fromEntries(FORMATO_DE_HORA.formatToParts(d).map((x) => [x.type, x.value]));
-  return `${p.day}/${p.month}/${p.year} às ${p.hour}:${p.minute}`;
+  return `${p.day}/${p.month}/${p.year} ${SOLTOS.arquivo.as} ${p.hour}:${p.minute}`;
 }
 
 interface Taxas {
@@ -180,8 +182,9 @@ function celula(tipo: TipoDeColuna, valor: unknown): Celula[] {
 
 /** "Ativo/Inativo" só serve para a coluna de situação; "Sim/Não" para as outras. */
 function celulaSimNao(c: ColunaDoRelatorio, valor: unknown): Celula {
-  if (c.titulo === 'Situação') return texto(valor === true ? 'Ativo' : 'Inativo');
-  return texto(valor === true ? 'Sim' : 'Não');
+  if (c.titulo === SOLTOS.arquivo.situacao)
+    return texto(valor === true ? SOLTOS.arquivo.ativo : SOLTOS.arquivo.inativo);
+  return texto(valor === true ? SOLTOS.arquivo.sim : SOLTOS.arquivo.nao);
 }
 
 /** Soma, linha a linha, os valores já convertidos (o total em Dólar e em Guarani é essa soma, §12). */
@@ -229,7 +232,7 @@ export function montarGrade(pedido: PedidoDeExportacao): Grade {
     }
   }
   if (temDinheiro) {
-    titulos.push('Data da cotação');
+    titulos.push(SOLTOS.arquivo.dataDaCotacao);
     numericas.push(false);
   }
   const dataDaCotacao = t && p.dataDaCotacao ? dataParaTela(p.dataDaCotacao) : '';
@@ -293,7 +296,7 @@ export function montarGrade(pedido: PedidoDeExportacao): Grade {
       p.loja,
       p.titulo,
       `Filtros: ${p.filtros.length > 0 ? p.filtros.join('; ') : 'nenhum'}`,
-      `Gerado em ${p.geradoEm} por ${p.geradoPor}`,
+      SOLTOS.arquivo.geradoEm(p.geradoEm, p.geradoPor),
       ...(p.linhaDaCotacao ? [p.linhaDaCotacao] : []),
     ],
     titulos,

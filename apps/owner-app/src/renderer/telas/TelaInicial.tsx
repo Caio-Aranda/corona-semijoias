@@ -2,7 +2,9 @@ import { Aviso, Botao } from '@corona/ui';
 import { useState } from 'react';
 import type { PonteDoCorona } from '../../shared/ponte';
 import { chamar, useBusca } from '../nucleo/chamadas';
+import { localeAtual } from '../idioma/idioma';
 import { useCotacao } from '../nucleo/cotacao';
+import { guaranisPorReal, reaisPorDolar } from '../nucleo/cotacao-na-tela';
 import { dolarNaTela, lerPainel, reaisNaTela } from '../nucleo/painel-semanal';
 import { TEXTOS } from '../textos';
 import { TEXTOS_DE_ESTOQUE } from '../textos-estoque';
@@ -11,20 +13,13 @@ import { TEXTOS_DA_INICIAL as I } from '../textos-inicial';
 import { TEXTOS_DO_PAINEL } from '../textos-painel';
 import { IconeDoAtalho } from './IconeDoAtalho';
 
-const BOTOES = [
-  'Painel da semana',
-  'Montar maleta',
-  'Receber compra',
-  'Fazer acerto',
-  'Cadastrar produto',
-  'Relatórios',
-] as const;
+const BOTOES = ['painel', 'montar', 'receber', 'acerto', 'cadastrar', 'relatorios'] as const;
 
 /** Botões que já levam a uma tela; os outros dizem "em breve" até a tarefa deles. */
 const ROTA_DO_BOTAO: Partial<Record<(typeof BOTOES)[number], string>> = {
-  'Painel da semana': 'painel/semana',
-  'Receber compra': 'estoque/receber-compra',
-  'Fazer acerto': 'acertos/lista',
+  painel: 'painel/semana',
+  receber: 'estoque/receber-compra',
+  acerto: 'acertos/lista',
 };
 
 export interface TelaInicialProps {
@@ -120,29 +115,28 @@ export function TelaInicial({ ponte, nome }: TelaInicialProps) {
   const vendido = painel?.total.vendido ?? null;
   const traco = '—';
 
-  const hoje = new Date().toLocaleDateString('pt-BR', {
+  const hoje = new Date().toLocaleDateString(localeAtual(), {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
     year: 'numeric',
   });
-  const dinheiro = (v: string) => v.replace('.', ',');
 
   return (
     <div className="gestao-tela">
       <header className="gestao-saudacao">
         <div>
-          <h1 className="gestao-titulo">{nome ? `Olá, ${nome}.` : 'Olá.'}</h1>
+          <h1 className="gestao-titulo">{I.saudacao(nome)}</h1>
           <p className="gestao-data">{hoje}</p>
         </div>
         <div className="gestao-cotacao-dia" aria-label={I.cotacao.rotulo}>
           {taxas ? (
             <>
               <span>
-                <b>{I.cotacao.dolar}</b> R$ {dinheiro(taxas.dolar)}
+                <b>{I.cotacao.dolar}</b> {reaisPorDolar(taxas.dolar)}
               </span>
               <span>
-                <b>{I.cotacao.guarani}</b> R$ {dinheiro(taxas.guarani)}
+                <b>{I.cotacao.guarani}</b> {guaranisPorReal(taxas.guarani)}
               </span>
             </>
           ) : (
@@ -155,24 +149,24 @@ export function TelaInicial({ ponte, nome }: TelaInicialProps) {
           {TEXTOS.emBreve.texto(emBreve)}
         </Aviso>
       ) : null}
-      <nav className="gestao-atalhos" aria-label="O que você quer fazer?">
+      <nav className="gestao-atalhos" aria-label={I.oQueFazer}>
         {BOTOES.map((nomeDoBotao) => (
           <button
             key={nomeDoBotao}
             type="button"
             className="gestao-atalho"
-            aria-label={nomeDoBotao}
+            aria-label={I.atalhos[nomeDoBotao].nome}
             onClick={() => {
               const rota = ROTA_DO_BOTAO[nomeDoBotao];
               if (rota) irPara(rota);
-              else setEmBreve(nomeDoBotao);
+              else setEmBreve(I.atalhos[nomeDoBotao].nome);
             }}
           >
             <span className="gestao-atalho__icone">
               <IconeDoAtalho nome={nomeDoBotao} />
             </span>
-            <span className="gestao-atalho__nome">{nomeDoBotao}</span>
-            <span className="gestao-atalho__ajuda">{I.atalhos[nomeDoBotao]}</span>
+            <span className="gestao-atalho__nome">{I.atalhos[nomeDoBotao].nome}</span>
+            <span className="gestao-atalho__ajuda">{I.atalhos[nomeDoBotao].ajuda}</span>
           </button>
         ))}
       </nav>
