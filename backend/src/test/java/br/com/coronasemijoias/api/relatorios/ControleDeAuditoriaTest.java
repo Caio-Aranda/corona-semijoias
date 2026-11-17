@@ -104,7 +104,7 @@ class ControleDeAuditoriaTest extends ApoioDoControle {
         assertThat(ler("/auditoria?usuarioId=" + bia.id() + "&acao=DEVOLUCAO_REGISTRADA").get("total").asInt()).isEqualTo(1);
         assertThat(ler("/auditoria?usuarioId=" + bia.id() + "&acao=PRECO_VENDA_ALTERADO").get("total").asInt()).isZero();
         assertThat(ler("/auditoria?usuarioId=" + ana.id() + "&tabela=usuarios").get("total").asInt()).isEqualTo(1);
-        assertThat(ler("/auditoria?busca=" + bia.nome().replace(" ", "%20")).get("total").asInt()).isEqualTo(1);
+        assertThat(ler("/auditoria?busca=" + bia.nome()).get("total").asInt()).isEqualTo(1);
         assertThat(ler("/auditoria?usuarioId=" + ana.id() + "&de=2000-01-01&ate=2000-01-31").get("total").asInt()).isZero();
         String hoje = java.time.LocalDate.now(java.time.ZoneOffset.UTC).toString();
         assertThat(ler("/auditoria?usuarioId=" + ana.id() + "&de=" + hoje + "&ate=" + hoje).get("total").asInt()).isEqualTo(2);

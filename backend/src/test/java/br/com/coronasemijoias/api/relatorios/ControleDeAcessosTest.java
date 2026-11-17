@@ -98,7 +98,7 @@ class ControleDeAcessosTest extends ApoioDoControle {
     void filtraPorAplicativoEBuscaPeloNomeDaPessoa() throws Exception {
         assertThat(ler("/acessos?busca=" + d.login() + "&aplicativo=gestao").get("total").asInt()).isZero();
         assertThat(ler("/acessos?busca=" + d.login() + "&aplicativo=vendas").get("total").asInt()).isEqualTo(3);
-        assertThat(ler("/acessos?busca=" + c.nome().replace(" ", "%20")).get("total").asInt()).isEqualTo(3);
+        assertThat(ler("/acessos?busca=" + c.nome()).get("total").asInt()).isEqualTo(3);
     }
 
     @Test
