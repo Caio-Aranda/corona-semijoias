@@ -382,7 +382,7 @@ class RotasDoVendedorTest extends TesteDeIntegracao {
         assertThat(jdbc.queryForObject("SELECT vendedor_responsavel_id FROM corona.clientes WHERE id = ?", UUID.class, id))
                 .isEqualTo(a.vendedorId());
         assertThat(corpoDe(ler("/api/vendedor/clientes?busca=maria da silva", quemA)).size()).isEqualTo(1);
-        assertThat(corpoDe(ler("/api/vendedor/clientes?busca=9" + fone.substring(0, 4), quemA)).size()).isEqualTo(1);
+        assertThat(corpoDe(ler("/api/vendedor/clientes?busca=9" + fone, quemA)).size()).isEqualTo(1);
         assertThat(corpoDe(ler("/api/vendedor/clientes?busca=" + cpf.substring(0, 8), quemA)).size()).isEqualTo(1);
         assertThat(corpoDe(ler("/api/vendedor/clientes?busca=maria_da silva", quemA)).size()).isZero(); // curinga digitado vale ao pé da letra: se "_" fosse curinga, acharia "Maria da Silva". Sem dígito no texto: a busca por telefone usa só os dígitos e "%25" virava "25", que acha qualquer telefone com 25 de outra classe
         ler("/api/vendedor/clientes", dona()).andExpect(status().isForbidden());
@@ -400,7 +400,7 @@ class RotasDoVendedorTest extends TesteDeIntegracao {
         assertThat(c.get("whatsapp").isNull()).isTrue();
         assertThat(c.get("observacoes").isNull()).isTrue();
         // A busca de B não acha o cliente pelo WhatsApp (só o responsável acha), mas acha pelo telefone e pelo CPF.
-        assertThat(corpoDe(ler("/api/vendedor/clientes?busca=9" + zap.substring(0, 4), como(b))).size()).isZero();
+        assertThat(corpoDe(ler("/api/vendedor/clientes?busca=9" + zap, como(b))).size()).isZero();
         assertThat(corpoDe(ler("/api/vendedor/clientes?busca=" + cpf.substring(0, 8), como(b))).size()).isEqualTo(1);
         JsonNode verParaB = corpoDe(ler("/api/vendedor/clientes/" + id, como(b)).andExpect(status().isOk()));
         assertThat(verParaB.get("observacoes").isNull()).isTrue();

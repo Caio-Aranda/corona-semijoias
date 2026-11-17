@@ -343,9 +343,9 @@ A dona não redefine a própria senha pela tela, para não ficar sem acesso:
 > **Você não pode redefinir a sua própria senha por aqui.**
 > Peça a outra pessoa administradora ou fale com o suporte do sistema.
 
-Desativar o próprio acesso (a dona não se desativa, para não ficar sem acesso):
+Inativar o próprio acesso (a dona não se inativa, para não ficar sem acesso):
 
-> **Você não pode desativar o seu próprio acesso.**
+> **Você não pode inativar o seu próprio acesso.**
 > Peça a outra pessoa administradora para fazer isso.
 
 Mudar o próprio tipo de acesso (a dona não se rebaixa):
@@ -353,7 +353,7 @@ Mudar o próprio tipo de acesso (a dona não se rebaixa):
 > **Você não pode mudar o seu próprio tipo de acesso.**
 > Peça a outra pessoa administradora para fazer isso.
 
-Desativar ou rebaixar a última pessoa administradora ativa:
+Inativar ou rebaixar a última pessoa administradora ativa:
 
 > **Precisa continuar existindo pelo menos uma pessoa administradora com acesso.**
 > Dê o acesso de administradora a outra pessoa antes de fazer esta mudança.
@@ -988,13 +988,13 @@ Avisos junto ao campo:
 
 **Usuários (Pessoas → Usuários).**
 
-- Campos: **Nome**, **Usuário**, **Tipo de acesso** (**Dona** ou **Vendedor**) e, para o vendedor, **Vendedor**. Filtros: **Tipo de acesso** (Todos, Dona, Vendedor) e **Situação** (Todos, Ativos, Desativados).
-- Botões: **Novo usuário**, **Editar**, **Desativar usuário**, **Reativar usuário**, **Nova senha temporária**.
+- Campos: **Nome**, **Usuário**, **Tipo de acesso** (**Dona** ou **Vendedor**) e, para o vendedor, **Vendedor**. Filtros: **Tipo de acesso** (Todos, Dona, Vendedor) e **Situação** (Todos, Ativos, Inativos).
+- Botões: **Novo usuário**, **Editar**, **Inativar usuário**, **Reativar usuário**, **Nova senha temporária**.
 - Senha temporária (aparece uma única vez, com o botão **Copiar senha**): "Anote esta senha agora. Ela não aparece de novo." e "Entregue a senha só para {nome}. No primeiro acesso, ele ou ela cria uma senha nova." A senha vale por 7 dias.
-- Desativar: "{Nome} vai sair do sistema agora e não vai mais conseguir entrar. Você pode reativar depois." Botões: **Voltar** e **Desativar usuário**.
+- Inativar: "{Nome} vai sair do sistema agora e não vai mais conseguir entrar. Você pode reativar depois." Botões: **Voltar** e **Inativar usuário**.
 - Reativar: "{Nome} volta a poder entrar com a senha que já tinha. Quem estava dentro precisa entrar de novo." Botões: **Voltar** e **Reativar usuário**.
 - Nova senha temporária: "A senha atual de {nome} deixa de valer e quem estiver dentro sai do sistema agora. Será criada uma senha temporária nova." Botões: **Voltar** e **Criar senha temporária**.
-- As regras do servidor (não desativar a si mesma, não mudar o próprio acesso, manter uma administradora) aparecem com o texto do servidor, acima.
+- As regras do servidor (não inativar a si mesma, não mudar o próprio acesso, manter uma administradora) aparecem com o texto do servidor, acima.
 
 **Cadastros básicos (Cadastros e Pessoas → Clientes).** Fornecedores, Categorias, Praças, Semanas, Restrições e Clientes usam a mesma tela.
 
@@ -1002,7 +1002,7 @@ Avisos junto ao campo:
 - Campos: Fornecedor (**Nome do fornecedor (razão social)**, **CNPJ**, **Nome do contato**, **Telefone**, **E-mail**, **Endereço**); Categoria e Praça (**Nome**); Semana (**Número da semana**, **Primeiro dia**, **Último dia**, **Situação**: Aberta ou Fechada); Restrição (**Código**, **Descrição**, **Impede montar maleta para o vendedor com esta restrição**; na lista, coluna **Impede montar maleta** com Sim ou Não); Cliente (**Nome do cliente**, **CPF**, **Telefone**, **WhatsApp**, **Vendedor responsável**, **Observações**, **Endereço**).
 - Excluir: "{Nome} some das listas. O que já foi registrado com ele continua guardado. Por aqui não dá para desfazer." (com "ela" nos femininos). Botões: **Voltar** e **Excluir {item}**.
 - Depois de salvar: "{Nome} foi cadastrado." (ou "cadastrada"), "Os dados de {nome} foram salvos.", "{Nome} foi excluído." (ou "excluída").
-- **Ativo e inativo** (tarefa 1.14; fornecedores, categorias, praças, restrições e clientes; as semanas têm só Aberta e Fechada). Palavras: **Ativo**, **Inativo**, **Inativar {item}**, **Reativar {item}**. Filtro **Situação**: **Ativos** (já vem escolhido), **Inativos**, **Todos**. A lista mostra a coluna **Situação** (Ativo ou Inativo). Inativar não é excluir: o cadastro some das listas de escolha e das buscas, mas continua nos relatórios e no histórico.
+- **Ativo e inativo** (tarefa 1.14; fornecedores, categorias, praças, restrições e clientes; as semanas têm só Aberta e Fechada). Palavras: **Ativo**, **Inativo**, **Inativar {item}**, **Reativar {item}**. Filtro **Situação**: **Ativos** (já vem escolhido), **Inativos**, **Todos**. A lista mostra a coluna **Situação** (Ativo ou Inativo). Inativar não é excluir: o cadastro some das listas de escolha e das buscas, mas continua nos relatórios e no histórico. Desde 17/11/2026 usuários e produtos também dizem **Inativar**, **Inativo** e **Inativos** (antes, "Desativar" e "Desativados"); a mensagem do vendedor "Seu acesso foi desativado." não mudou.
 - Inativar (pede confirmação): título "Inativar {nome}?"; texto "{Nome} deixa de aparecer nas listas de escolha e nas buscas, mas continua nos relatórios e no histórico. Pode voltar a qualquer hora, é só reativar." Botões: **Voltar** e **Inativar {item}**. Depois: "{Nome} foi inativado." (ou "inativada") "Pode voltar a qualquer hora." Reativar não pede confirmação: "{Nome} voltou a ficar ativo." (ou "ativa").
 - Lista vazia só com inativos: "Nenhum cliente inativo." (e o mesmo para os outros, no feminino quando for o caso). Nas listas de escolha dos formulários (categoria, fornecedor, praça, restrição) só aparece quem está ativo; o que já estava escolhido continua aparecendo com a marca "(inativo)" ou "(inativa)".
 - Cliente: campo **Data de nascimento** (opcional; dica: "Se não souber, deixe em branco. Serve para avisar dos aniversariantes."). Data no futuro: "A data de nascimento não pode ser no futuro." Data muito antiga: "Confira a data de nascimento: ela parece muito antiga."

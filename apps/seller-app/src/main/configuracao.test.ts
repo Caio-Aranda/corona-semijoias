@@ -1,3 +1,5 @@
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
   enderecoDaApi,
@@ -44,18 +46,27 @@ describe('segurança da janela', () => {
     expect(POLITICA_DE_CONTEUDO).not.toMatch(/unsafe-|http:|https:|\*/);
   });
 
-  it('em produção só o arquivo empacotado é endereço do aplicativo', () => {
-    expect(enderecoDoApp('file:///C:/App/resources/app/out/renderer/index.html', undefined)).toBe(
-      true,
+  it('em produção só o index.html empacotado é endereço do aplicativo', () => {
+    const arquivo = resolve('pacote', 'out', 'renderer', 'index.html');
+    const url = pathToFileURL(arquivo).href;
+    expect(enderecoDoApp(url, undefined, arquivo)).toBe(true);
+    expect(enderecoDoApp(`${url}#/vender`, undefined, arquivo)).toBe(true);
+    expect(
+      enderecoDoApp(pathToFileURL(resolve('pacote', 'out', 'outro.html')).href, undefined, arquivo),
+    ).toBe(false);
+    expect(enderecoDoApp(pathToFileURL(resolve('segredos.txt')).href, undefined, arquivo)).toBe(
+      false,
     );
-    expect(enderecoDoApp('https://outro.site/', undefined)).toBe(false);
-    expect(enderecoDoApp('lixo', undefined)).toBe(false);
+    expect(enderecoDoApp(url, undefined, undefined)).toBe(false);
+    expect(enderecoDoApp('https://outro.site/', undefined, arquivo)).toBe(false);
+    expect(enderecoDoApp('lixo', undefined, arquivo)).toBe(false);
   });
 
   it('em desenvolvimento só o servidor de desenvolvimento é endereço do aplicativo', () => {
     const dev = 'http://localhost:5173';
-    expect(enderecoDoApp('http://localhost:5173/', dev)).toBe(true);
-    expect(enderecoDoApp('http://localhost:5174/', dev)).toBe(false);
-    expect(enderecoDoApp('file:///C:/qualquer.html', dev)).toBe(false);
+    const arquivo = resolve('pacote', 'out', 'renderer', 'index.html');
+    expect(enderecoDoApp('http://localhost:5173/', dev, arquivo)).toBe(true);
+    expect(enderecoDoApp('http://localhost:5174/', dev, arquivo)).toBe(false);
+    expect(enderecoDoApp(pathToFileURL(arquivo).href, dev, arquivo)).toBe(false);
   });
 });

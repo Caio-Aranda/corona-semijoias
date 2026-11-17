@@ -78,7 +78,7 @@ export function TelaEntrar({
             autoComplete="current-password"
           />
           <Botao type="submit" variante="primario" grande disabled={enviando}>
-            Entrar
+            {TEXTOS.botoes.entrar}
           </Botao>
         </form>
       </main>

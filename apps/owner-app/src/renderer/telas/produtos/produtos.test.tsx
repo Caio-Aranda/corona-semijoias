@@ -168,7 +168,7 @@ describe('Produtos: lista', () => {
     await waitFor(() =>
       expect(ultima(m, 'produtos.listar')).toMatchObject({ fornecedorId: ID_FORN }),
     );
-    await u.selectOptions(screen.getByLabelText('Situação'), 'Desativados');
+    await u.selectOptions(screen.getByLabelText('Situação'), 'Inativos');
     await waitFor(() => expect(ultima(m, 'produtos.listar')).toMatchObject({ ativo: false }));
   });
 });
@@ -354,12 +354,12 @@ describe('Produtos: ficha', () => {
       'produtos.inativar': () => ({ ok: true, dados: { ...ANEL, ativo: false } }),
     });
     const u = await abrirFicha(m);
-    await u.click(screen.getByRole('button', { name: 'Desativar' }));
+    await u.click(screen.getByRole('button', { name: 'Inativar' }));
     const janela = await screen.findByRole('dialog');
     expect(within(janela).getByRole('button', { name: 'Voltar' })).toHaveFocus();
     expect(quantas(m, 'produtos.inativar')).toBe(0);
-    await u.click(within(janela).getByRole('button', { name: 'Desativar' }));
-    await screen.findByText('Anel Solitário foi desativado.');
+    await u.click(within(janela).getByRole('button', { name: 'Inativar' }));
+    await screen.findByText('Anel Solitário foi inativado.');
     expect(ultima(m, 'produtos.inativar')).toEqual({ id: ID_P });
     expect(screen.getByRole('button', { name: 'Reativar' })).toBeInTheDocument();
   });

@@ -132,8 +132,8 @@ public enum CodigoErro {
                     + "Peça a outra pessoa administradora ou fale com o suporte do sistema."),
 
     NAO_DESATIVAR_A_SI_MESMA(
-            "Você não pode desativar o seu próprio acesso.",
-            "Você não pode desativar o seu próprio acesso. Peça a outra pessoa administradora para fazer isso."),
+            "Você não pode inativar o seu próprio acesso.",
+            "Você não pode inativar o seu próprio acesso. Peça a outra pessoa administradora para fazer isso."),
 
     NAO_MUDAR_O_PROPRIO_ACESSO(
             "Você não pode mudar o seu próprio tipo de acesso.",

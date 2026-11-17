@@ -168,7 +168,7 @@ export function FormularioDeCliente({
         />
       ) : null}
       <RodapeDeAcoes
-        cancelar={<Botao onClick={aoCancelar}>Cancelar</Botao>}
+        cancelar={<Botao onClick={aoCancelar}>{TEXTOS.botoes.cancelar}</Botao>}
         principal={
           <Botao type="submit" variante="primario" disabled={salvando}>
             {editar ? T.salvarEdicao : T.salvar}
