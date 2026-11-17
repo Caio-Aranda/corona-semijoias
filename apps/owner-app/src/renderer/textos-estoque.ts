@@ -1,3 +1,5 @@
+import { textosVivos } from './idioma/idioma';
+import { ES_TEXTOS_DE_ESTOQUE } from './idioma/es/estoque';
 /**
  * Textos das telas do estoque (menu Estoque → Estoque, Entradas e saídas, Está acabando e Contagem
  * do estoque). Vêm do glossário da interface (parte 12). Erros de regra vêm do servidor, em
@@ -5,7 +7,7 @@
  */
 const pecas = (n: number): string => (n === 1 ? '1 peça' : `${n} peças`);
 
-export const TEXTOS_DE_ESTOQUE = {
+export const PT_TEXTOS_DE_ESTOQUE = {
   menu: {
     estoque: 'Estoque',
     entradasESaidas: 'Entradas e saídas',
@@ -316,3 +318,5 @@ export const TEXTOS_DE_ESTOQUE = {
     verLista: 'Ver a lista',
   },
 } as const;
+
+export const TEXTOS_DE_ESTOQUE = textosVivos('estoque', PT_TEXTOS_DE_ESTOQUE, ES_TEXTOS_DE_ESTOQUE);
