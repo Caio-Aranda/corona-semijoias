@@ -1403,3 +1403,16 @@ Menu do Corona Gestão: grupo **Relatórios de vendas** (depois de "Relatórios 
 | **Curva ABC dos produtos** | Posição, foto, Código, Produto, Categoria, Peças, Vendido líquido, Parte do total, Soma até aqui e **Classe** A, B ou C |
 
 Termos: **Vendido líquido** = o que foi vendido menos o que o cliente devolveu ou trocou. **Classe A**: os produtos que somam até 80% do vendido líquido; **B**: até 95%; **C**: o resto. Produto sem venda no período não aparece na curva. "Sem praça" aparece para o vendedor sem praça cadastrada.
+
+## Resultado do período e lucro (Fase 8, tarefa 8.6; §12)
+
+Menu do Corona Gestão: no grupo **Relatórios financeiros**. Só a dona vê custo e lucro; nada disto existe no Corona Vendas. Dólar e Guarani seguem a cotação do Banco Central do dia de **cada registro**; tudo é gravado em Real.
+
+| Tela | O que mostra |
+| --- | --- |
+| **Resultado do período** | De que dia até que dia (obrigatório). Linhas: Vendas, Devoluções e trocas, Receita líquida, Custo das peças vendidas, Lucro bruto, Comissões, Perdas, Cobrado do vendedor, uma linha por categoria de despesa ou entrada da loja e o Resultado. Resultado negativo vem escrito "(prejuízo)" |
+| **Registros do resultado** | Os registros que formam uma linha escolhida (a venda, a devolução, a comissão, a perda, a cobrança ou o lançamento do caixa), com o custo de cada peça e a marca **Custo do cadastro** |
+| **Lucro por produto** | Foto, Código, Peça, Categoria, Peças, Receita líquida, Custo das peças, Lucro, Margem e Custo do cadastro |
+| **Lucro por vendedor** | Vendedor, Praça, Receita líquida, Custo das peças, Lucro bruto, Comissão e Lucro |
+
+Termos: **resultado do período** = o que sobrou (ou faltou) no período, depois de tudo. **Lucro bruto** = receita líquida menos o custo das peças vendidas. **Lucro** (por peça ou vendedor) = receita líquida menos o custo (e, por vendedor, menos a comissão). **Custo das peças vendidas** = o custo da compra mais recente até o dia da venda. **Custo do cadastro** = não havia compra registrada até a venda, então vale o custo que está no cadastro hoje: é uma estimativa e muda se o cadastro mudar. **Perdas** = peças que faltaram no acerto (menos as encontradas depois), avarias e peças a menos na contagem do estoque, pelo custo. **Cobrado do vendedor** = o que o acerto cobrou das faltas. Aviso fixo na tela: "A devolução abate o mês em que a venda foi feita; por isso o resultado de um mês pode mudar depois."

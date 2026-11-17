@@ -51,6 +51,11 @@ export const NOMES_DOS_RELATORIOS = [
   'financeiro-inadimplencia',
   'financeiro-caixa',
   'financeiro-recebimentos',
+  // Resultado do período, os registros dele e o lucro (tarefa 8.6): só a dona vê custo e lucro.
+  'financeiro-resultado',
+  'financeiro-resultado-registros',
+  'financeiro-lucro-produto',
+  'financeiro-lucro-vendedor',
   // Vendas e curva ABC (tarefa 8.5): os onze relatórios de vendas da dona e a curva ABC (que fica no grupo Estoque).
   'vendas-lista',
   'vendas-canceladas',
@@ -129,6 +134,8 @@ export type SituacaoDoRelatorio = (typeof SITUACOES_DO_RELATORIO)[number];
 
 /** Filtros que a tela pode mandar (cada relatório usa só os seus; o servidor ignora os outros). */
 export interface ConsultaDeRelatorio {
+  /** Qual linha do resultado do período abrir (VENDAS, DEVOLUCOES, CUSTO, COMISSOES, PERDAS, COBRADO ou CAIXA). */
+  linha?: string;
   busca?: string;
   categoriaId?: string;
   fornecedorId?: string;

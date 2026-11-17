@@ -173,6 +173,10 @@ import {
   relatorioDeMercadoriaPorVendedor,
   relatorioDeAcertos,
   relatorioDeComissoes,
+  relatorioDeLucroPorProduto,
+  relatorioDeLucroPorVendedor,
+  resultadoDoPeriodo,
+  detalhamentoDoResultado,
   relatorioDeContasAPagar,
   relatorioDeContasAReceber,
   relatorioDeEsperadoEContado,
@@ -970,6 +974,37 @@ async function executarEstoque(
   }
 }
 
+/**
+ * O resultado do período chega como uma lista de linhas; a tela de relatório o mostra como qualquer outro (linhas e arquivos).
+ * Quando há peças vendidas com o custo do cadastro, uma linha de aviso diz quantas (é estimativa).
+ */
+function comoRelatorioDoResultado(dados: unknown): unknown {
+  const r = dados as
+    { pecasComCustoDoCadastro?: number; linhas?: Record<string, unknown>[] } | undefined;
+  if (!r?.linhas) return dados;
+  const itens: Record<string, unknown>[] = r.linhas.map((l, i) => ({
+    ...l,
+    id: `${String(l.chave)}-${i}`,
+  }));
+  const n = r.pecasComCustoDoCadastro ?? 0;
+  if (n > 0) {
+    itens.push({
+      id: 'aviso',
+      chave: 'AVISO',
+      operacao: 'AVISO',
+      titulo: `${n} ${n === 1 ? 'peça está com o custo do cadastro' : 'peças estão com o custo do cadastro'}: esse custo muda se o cadastro mudar.`,
+    });
+  }
+  return {
+    itens,
+    total: itens.length,
+    pagina: 0,
+    tamanho: Math.max(itens.length, 1),
+    totais: [],
+    recorte: null,
+  };
+}
+
 /** Relatórios de cadastro (só ADMIN; o servidor confere). O de produtos traz o custo, por isso só existe aqui. */
 async function executarRelatorio(
   client: ReturnType<typeof criarClienteDaApi>,
@@ -1039,6 +1074,30 @@ async function executarRelatorio(
       return executar(() => relatorioDeEsperadoEContado({ ...base, query: q }));
     case 'financeiro-comissoes':
       return executar(() => relatorioDeComissoes({ ...base, query: q }));
+    case 'financeiro-resultado': {
+      const r = await executar(() =>
+        resultadoDoPeriodo({ ...base, query: { de: q.de, ate: q.ate } }),
+      );
+      return r.ok ? { ...r, dados: comoRelatorioDoResultado(r.dados) } : r;
+    }
+    case 'financeiro-resultado-registros':
+      return executar(() =>
+        detalhamentoDoResultado({
+          ...base,
+          query: {
+            de: q.de,
+            ate: q.ate,
+            linha: q.linha,
+            pagina: q.pagina,
+            tamanho: q.tamanho,
+            ...(q.categoriaId ? { categoriaId: q.categoriaId } : {}),
+          },
+        }),
+      );
+    case 'financeiro-lucro-produto':
+      return executar(() => relatorioDeLucroPorProduto({ ...base, query: q }));
+    case 'financeiro-lucro-vendedor':
+      return executar(() => relatorioDeLucroPorVendedor({ ...base, query: q }));
     case 'financeiro-a-receber':
       return executar(() => relatorioDeContasAReceber({ ...base, query: q }));
     case 'financeiro-a-pagar':

@@ -46,7 +46,8 @@ export type ChaveDeExtra =
   | 'motivo'
   | 'forma'
   | 'devedor'
-  | 'momento';
+  | 'momento'
+  | 'linha';
 
 export type ExtraDoRelatorio =
   | {

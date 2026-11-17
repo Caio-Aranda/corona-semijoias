@@ -4,6 +4,14 @@
  */
 export const TEXTOS_DE_RELATORIOS_FINANCEIROS = {
   grupoDoMenu: 'Relatórios financeiros',
+  resultadoNota:
+    'A devolução abate o mês em que a venda foi feita; por isso o resultado de um mês pode mudar depois. O custo das peças é o da compra mais recente até o dia da venda; onde não há compra, vale o custo do cadastro (aparece avisado), que muda se o cadastro mudar. Perdas, cobrado e caixa são da loja: não se dividem por peça nem por vendedor.',
+  lucroNota:
+    'Receita líquida (vendas menos devoluções e trocas) menos o custo das peças vendidas. "Custo do cadastro" quer dizer que não havia compra registrada até a venda: é uma estimativa.',
+  sinaisDaLinha: { SOMA: '(+) ', SUBTRAI: '(−) ', TOTAL: '= ', AVISO: '' } as Record<
+    string,
+    string
+  >,
   cotacao:
     'Dólar e Guarani pela cotação do Banco Central do dia de cada lançamento. Tudo é gravado em Real.',
   cotacaoDoAcerto:
