@@ -20,7 +20,7 @@ import tools.jackson.databind.JsonNode;
 /**
  * Sem nenhuma cotação (tarefa 8.7): a montagem do fechamento daria 409, mas o painel não pode cair. As linhas acertadas saem
  * normais (os números gravados) e as de prévia saem sem comissão e sem líquido, marcadas "sem cotação". Mesma massa do
- * {@link PainelSemanalTest}, em agosto de 2292 (semana nº 9103); só a cotação "mais recente" some durante a consulta.
+ * {@link PainelSemanalTest}, em dezembro de 2292 (semana nº 9103); só a cotação "mais recente" some durante a consulta.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class PainelSemCotacaoTest extends MassaDoPainel {
@@ -30,7 +30,7 @@ class PainelSemCotacaoTest extends MassaDoPainel {
 
     @BeforeAll
     void massaConhecida() throws Exception {
-        montarAMassa("2292-08", 9103);
+        montarAMassa("2292-12", 9103);
     }
 
     @AfterAll

@@ -18,7 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import tools.jackson.databind.JsonNode;
 
 /**
- * O painel semanal (tarefa 8.7; ADR-0015, item 5), com a massa da semana nº 9101, de 04/06 a 10/06/2292. Cotação: 1 Real = 1.000
+ * O painel semanal (tarefa 8.7; ADR-0015, item 5), com a massa da semana nº 9101, de 04/10 a 10/10/2292. Cotação: 1 Real = 1.000
  * Guaranis e US$ 1 = R$ 5,00. Meta de 300.000 Gs., 30% abaixo e 40% na meta. Peças: A a 50,00 e B a 25,00.
  *
  * <pre>
@@ -65,7 +65,7 @@ class PainelSemanalTest extends MassaDoPainel {
 
     @BeforeAll
     void massaConhecida() throws Exception {
-        montarAMassa("2292-06", 9101);
+        montarAMassa("2292-10", 9101);
     }
 
     @AfterAll
@@ -312,7 +312,7 @@ class PainelSemanalTest extends MassaDoPainel {
 
     @Test
     void semanaSemNadaVeioVaziaEComOsBlocosZerados() throws Exception {
-        UUID vazia = criarSemana(9150, "2292-09-04", "2292-09-10");
+        UUID vazia = criarSemana(9150, "2293-03-04", "2293-03-10");
         JsonNode p = corpoDe(ler(ROTA + "?semana=" + vazia, dona()).andExpect(status().isOk()));
         assertThat(p.get("pedidos")).isEmpty();
         JsonNode t = p.get("totais");
@@ -345,7 +345,7 @@ class PainelSemanalTest extends MassaDoPainel {
         } finally {
             relogio.reiniciar();
         }
-        relogio.fixar(dia("2292-12-31"));
+        relogio.fixar(dia("2293-01-31"));
         try {
             org.assertj.core.api.Assertions.assertThatThrownBy(
                     () -> consultas.painel(new ConsultasDoPainelSemanal.Filtros(null, null, null, null)))

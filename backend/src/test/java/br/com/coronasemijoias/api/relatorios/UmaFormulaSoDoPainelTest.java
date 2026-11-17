@@ -17,7 +17,7 @@ import tools.jackson.databind.JsonNode;
 
 /**
  * Uma fórmula só (§13, item 2; tarefa 8.7): cada número do painel sai da mesma consulta que o mostra em outro lugar, e aqui se
- * confere que os dois batem, sobre a mesma massa do {@link PainelSemanalTest} (em julho de 2292, semana nº 9102). Dólar e Guarani
+ * confere que os dois batem, sobre a mesma massa do {@link PainelSemanalTest} (em novembro de 2292, semana nº 9102). Dólar e Guarani
  * nunca entram nestas conferências.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -28,7 +28,7 @@ class UmaFormulaSoDoPainelTest extends MassaDoPainel {
 
     @BeforeAll
     void massaConhecida() throws Exception {
-        montarAMassa("2292-07", 9102);
+        montarAMassa("2292-11", 9102);
     }
 
     @AfterAll
