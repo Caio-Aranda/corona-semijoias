@@ -194,3 +194,15 @@ PR 200 (issue #183). Três relatórios só de leitura para a dona (§12, grupo C
 - **Impacto:** `packages/api-client-vendedor` sem nenhuma mudança (diff vazio); nenhum arquivo do Corona Vendas; nenhuma migração; nenhuma regra de negócio mudou.
 
 **Não fez:** a "não aceita" e a "devolução em revisão" não entram na massa do teste de JSON (só existem pela rota de antifraude, com vários passos); os registros dessas duas listas são os mesmos de antes, cópia campo a campo, e as listas saem vazias na massa.
+
+## Tarefa 8.12: Playwright da dona fazendo o acerto
+
+**Situação:** pronto para revisão no PR 202 (e2e completo verde: 5 cenários; lint, typecheck e format:check limpos).
+
+**O que fez:**
+- Cenário novo `testes-e2e/testes/vendas-e-acerto-da-dona.test.ts` (Electron de verdade contra a API e o banco descartáveis do `npm run e2e`): a dona começa o acerto do vendedor, lê as peças que voltaram (3 colares e 3 pulseiras, de uma maleta de 5 e 4), confere a prévia, decide a falta ("Cobrar agora"), paga R$ 150,00 em dinheiro com o resto em 1 parcela, fecha e vê a ficha do acerto fechado e o acerto "Acertado" na lista. No fim confere a conciliação do estoque com as maletas pela API.
+- Massa em `testes-e2e/massa-do-acerto.ts`, toda pela API (como a loja faria): comissão, categoria, duas peças, vendedor e usuário, troca de senha e primeiro computador do vendedor, semana, maleta montada, enviada e conferida pelo vendedor, cliente e venda de 2 colares à vista. A cotação do dia é gravada por SQL no banco descartável (a API só a busca na internet; mesmo recurso que o `testes-sync` já usa).
+- **Contas à mão (valores esperados):** Colar R$ 100,00 e Pulseira R$ 60,00; venda de 2 colares = R$ 200,00; cotação Dólar R$ 5,00 e Guarani R$ 0,001 (1 Real = 1.000 Guarani). Vendido para a meta = 200.000 Gs, meta 700.000, faltam 500.000 Gs = R$ 500,00; abaixo da meta a comissão é 30% de R$ 200,00 = R$ 60,00; falta de 1 pulseira = R$ 60,00 cobrada; valor do acerto = 200,00 - 60,00 + 60,00 = R$ 200,00; pagos 150,00 e 50,00 em 1 parcela. Todos os números batem com o que o servidor calculou; o teste não calcula nada.
+- Só entrou em `testes-e2e/` (mais `chamarApi` aceitar `PUT` e o tipo do app). Nenhuma mudança no app, na API, no CI de cada PR nem no workflow E2E (ele já roda `npm run e2e`, que pega o arquivo novo).
+
+**Não fez:** o acerto pedido pelo vendedor (8.10) e o fluxo com defeito, sobra ou pendência antiga ficam fora (já cobertos por testes de integração e de componente).
