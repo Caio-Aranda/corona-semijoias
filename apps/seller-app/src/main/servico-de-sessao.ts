@@ -145,13 +145,17 @@ export class ServicoDeSessao {
     const aberto = await banco.abrirSemInternet(senha);
     if (!aberto.ok) {
       return aberto.mensagem
-        ? { tipo: 'recusado', mensagem: aberto.mensagem }
+        ? { tipo: 'recusado', mensagem: aberto.mensagem, codigo: aberto.codigo }
         : { tipo: 'erro-inesperado' };
     }
     const guardado = banco.lembrado?.('vendedor_login');
     if (guardado && guardado !== usuario.trim().toLowerCase()) {
       banco.fechar?.();
-      return { tipo: 'recusado', mensagem: MENSAGENS_DA_SENHA.SENHA_ERRADA };
+      return {
+        tipo: 'recusado',
+        mensagem: MENSAGENS_DA_SENHA.SENHA_ERRADA,
+        codigo: 'SENHA_ERRADA',
+      };
     }
     this.modoLocal = true;
     this.nome = banco.lembrado?.('vendedor_nome') ?? null;
@@ -256,7 +260,7 @@ export class ServicoDeSessao {
         return { tipo: 'sem-conexao' };
       case 'recusada':
         return f.mensagem
-          ? { tipo: 'recusado', mensagem: f.mensagem }
+          ? { tipo: 'recusado', mensagem: f.mensagem, ...(f.codigo ? { codigo: f.codigo } : {}) }
           : { tipo: 'erro-inesperado' };
       case 'resposta-invalida':
         return { tipo: 'erro-inesperado' };
@@ -276,6 +280,7 @@ export class ServicoDeSessao {
           ok: false,
           motivo: 'erro',
           ...(f.mensagem ? { mensagem: f.mensagem } : {}),
+          ...(f.codigo ? { codigo: f.codigo } : {}),
           ...(f.clienteExistente ? { clienteExistente: f.clienteExistente } : {}),
         };
       case 'resposta-invalida':

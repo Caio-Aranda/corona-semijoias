@@ -1,4 +1,5 @@
-import { Aviso, Botao, Campo, JanelaDeConfirmacao, PainelDePecaLida, Tabela } from '@corona/ui';
+import { Aviso, Botao } from '@corona/ui';
+import { Campo, JanelaDeConfirmacao, PainelDePecaLida, Tabela } from '../componentes-do-vendedor';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import type { Cliente, CreditosDoCliente, LinhaDaMaleta, Maleta, Venda } from '../../shared/dados';
 import {
@@ -378,7 +379,7 @@ export function TelaVender({ ponte, aoVoltar, aoVerVendas }: TelaVenderProps) {
           >
             {maletas.map((m) => (
               <option key={m.id} value={m.id}>
-                {`${m.numero ?? ''} · ${m.pecasEmAberto} peças`}
+                {T.maletaComPecas(m.numero ?? '', m.pecasEmAberto)}
               </option>
             ))}
           </select>
@@ -395,7 +396,7 @@ export function TelaVender({ ponte, aoVoltar, aoVerVendas }: TelaVenderProps) {
           spellCheck={false}
         />
         <Botao type="submit" variante="primario" disabled={lendo || !codigo.trim()}>
-          Ler o código
+          {TEXTOS.venda.lerAgora}
         </Botao>
       </form>
       {ultima ? (

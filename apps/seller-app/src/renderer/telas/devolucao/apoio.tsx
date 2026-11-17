@@ -31,7 +31,7 @@ export function FotoPequena({ ponte, produto }: { ponte: PonteDoCorona; produto:
     <img className="vendas-busca-item__foto" src={foto} alt={`Foto de ${produto.nome}`} />
   ) : (
     <span className="vendas-busca-item__foto vendas-busca-item__foto--vazia" aria-hidden="true">
-      Sem foto
+      {TEXTOS.comum.semFoto}
     </span>
   );
 }

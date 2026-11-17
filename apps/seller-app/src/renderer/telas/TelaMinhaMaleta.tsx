@@ -1,4 +1,5 @@
-import { Botao, EstadoDaLista, Tabela } from '@corona/ui';
+import { Botao } from '@corona/ui';
+import { EstadoDaLista, Tabela } from '../componentes-do-vendedor';
 import { useCallback, useEffect, useState } from 'react';
 import type { Maleta } from '../../shared/dados';
 import type { PonteDoCorona } from '../../shared/ponte';
@@ -55,10 +56,10 @@ export function TelaMinhaMaleta({ ponte, aoVoltar, aoConferir }: TelaMinhaMaleta
           <section
             key={m.id}
             className="vendas-cartao vendas-cartao--larga"
-            aria-label={`Maleta ${m.numero ?? ''}`}
+            aria-label={T.rotulo(m.numero ?? '')}
           >
             <h2 className="vendas-subtitulo">
-              {T.tipo[m.tipo] ?? 'Maleta'} {m.numero ?? ''} · {T.situacao[m.status] ?? m.status}
+              {T.tipo[m.tipo] ?? T.tipo.NOVA} {m.numero ?? ''} · {T.situacao[m.status] ?? m.status}
             </h2>
             <p className="vendas-texto">
               Enviada em {dataParaTela(m.enviadaEm)} · {m.pecasEmAberto} {T.pecas} ·{' '}

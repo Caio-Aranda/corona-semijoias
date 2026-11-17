@@ -1,6 +1,8 @@
-import { Aviso, Botao, Campo } from '@corona/ui';
+import { Aviso, Botao } from '@corona/ui';
+import { Campo } from '../componentes-do-vendedor';
 import { useState, type FormEvent } from 'react';
 import type { PonteDoCorona, ResultadoDeEntrada } from '../../shared/ponte';
+import { SeletorDeIdioma } from '../SeletorDeIdioma';
 import { TEXTOS } from '../textos';
 import { MensagemDeEntrada } from './MensagemDeEntrada';
 
@@ -48,11 +50,12 @@ export function TelaEntrar({
   return (
     <div className="cs-entrada-pagina">
       <main>
+        <SeletorDeIdioma />
         <form className="cs-entrada" onSubmit={(e) => void entrar(e)} noValidate>
           <span className="cs-entrada__logo" role="img" aria-label="Corona Semijoias" />
           <p className="cs-entrada__titulo">Corona Vendas</p>
           <h1 className="cs-entrada__titulo-pagina">
-            {semInternet ? TEXTOS.semInternetNaEntrada.titulo : 'Entrar'}
+            {semInternet ? TEXTOS.semInternetNaEntrada.titulo : TEXTOS.entrada.titulo}
           </h1>
           {semInternet ? <p className="vendas-texto">{TEXTOS.semInternetNaEntrada.texto}</p> : null}
           {sessaoTerminou ? (
@@ -62,7 +65,7 @@ export function TelaEntrar({
           ) : null}
           <MensagemDeEntrada resultado={resultado} />
           <Campo
-            rotulo="Usuário"
+            rotulo={TEXTOS.entrada.usuario}
             value={usuario}
             onChange={(e) => setUsuario(e.target.value)}
             autoComplete="username"
@@ -71,7 +74,7 @@ export function TelaEntrar({
             autoFocus
           />
           <Campo
-            rotulo="Senha"
+            rotulo={TEXTOS.entrada.senha}
             type="password"
             value={senha}
             onChange={(e) => setSenha(e.target.value)}

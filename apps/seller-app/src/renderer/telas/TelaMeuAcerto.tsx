@@ -1,4 +1,5 @@
-import { Aviso, Botao, JanelaDeConfirmacao, Tabela } from '@corona/ui';
+import { Aviso, Botao } from '@corona/ui';
+import { JanelaDeConfirmacao, Tabela } from '../componentes-do-vendedor';
 import { useEffect, useRef, useState } from 'react';
 import type {
   FichaDoAcerto,
@@ -185,10 +186,7 @@ export function TelaMeuAcerto({ ponte, aoVoltar }: TelaMeuAcertoProps) {
                     <span>{` · ${T.fechadoEm} ${dataParaTela(a.fechadoEm.slice(0, 10))}`}</span>
                   ) : null}
                 </span>
-                <Botao
-                  aria-label={`${T.ver} da semana ${a.semanaNumero}`}
-                  onClick={() => void abrir(a.id)}
-                >
+                <Botao aria-label={T.verDaSemana(a.semanaNumero)} onClick={() => void abrir(a.id)}>
                   {T.ver}
                 </Botao>
               </li>

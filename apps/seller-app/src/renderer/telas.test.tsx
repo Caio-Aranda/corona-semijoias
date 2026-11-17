@@ -28,6 +28,8 @@ function ponteFalsa(parcial: Partial<PonteDoCorona> = {}) {
     },
     aoMudarAAtualizacao: () => () => undefined,
     aoMudarASincronizacao: () => () => undefined,
+    lerIdioma: () => Promise.resolve(null),
+    gravarIdioma: () => Promise.resolve(),
     ...parcial,
   };
   return { ponte, avisar: (a: AvisoDeSessao) => ouvinte?.(a) };

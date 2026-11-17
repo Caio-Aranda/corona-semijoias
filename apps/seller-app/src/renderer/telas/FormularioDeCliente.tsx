@@ -1,4 +1,5 @@
-import { Aviso, Botao, Campo, RodapeDeAcoes } from '@corona/ui';
+import { Aviso, Botao, RodapeDeAcoes } from '@corona/ui';
+import { Campo } from '../componentes-do-vendedor';
 import { useRef, useState, type FormEvent } from 'react';
 import type { Cliente } from '../../shared/dados';
 import {

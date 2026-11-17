@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { AvisoDeSessao, EstadoDaSessao, PonteDoCorona } from '../shared/ponte';
+import { useIdioma } from './idioma';
 import { FaixaDeAtualizacao } from './FaixaDeAtualizacao';
 import { TelaAppDesatualizado } from './telas/TelaAppDesatualizado';
 import { TelaDesligado } from './telas/TelaDesligado';
@@ -41,6 +42,8 @@ export interface AppProps {
 
 /** Decide qual tela mostrar a partir do estado da sessão, que quem sabe é o processo principal. */
 export function App({ ponte }: AppProps) {
+  // Assina o idioma: trocar de idioma desenha todas as telas de novo, sem perder onde a pessoa estava.
+  useIdioma();
   const [tela, setTela] = useState<Tela>({ estado: 'carregando' });
   const [sessaoTerminou, setSessaoTerminou] = useState(false);
   const [rota, setRota] = useState<Rota>({ tela: 'inicio' });
