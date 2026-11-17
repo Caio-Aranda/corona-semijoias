@@ -1,6 +1,6 @@
 # Especificação completa: Sistema de Semijoias Consignadas
 
-Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.26, 17/11/2026.
+Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.27, 17/11/2026.
 
 ## 1. Objetivo e contexto
 
@@ -596,13 +596,25 @@ A loja se chama **Corona Semijoias**. O nome aparece nos dois apps, no instalado
 - Versão **monocromática** (preto e branco) para impressão simples, sem cor e sem brilho.
 - Ícones do Windows em `.ico` (16, 32, 48, 64, 128 e 256 px), um para cada app, com identificação visual diferente entre o app da dona e o do vendedor.
 
-**Paleta (aproximada, extrair os valores exatos do logotipo corrigido):**
+**Arquivos atuais de `docs/marca/` (17/11/2026), todos com fundo transparente:**
+
+| Arquivo | Uso |
+| --- | --- |
+| `corona_semijoias_completa_2000.png` e `corona_semijoias_completa.svg` | Logo redonda completa (login, abertura) |
+| `corona_semijoias_horizontal.png` | Logo horizontal (cabeçalhos, relatórios, nota de remessa) |
+| `corona_semijoias_simbolo_1024.png` e `corona_semijoias_simbolo.svg` | Só o rosto com a tiara (ícones, favicon) |
+| `corona_semijoias_completa_preto.png`, `corona_semijoias_horizontal_preto.png`, `corona_semijoias_simbolo_preto.png` | Versões em preto, para impressão simples e para pintar o símbolo de outra cor |
+| `proposta-visual.html` | Proposta de ícones, entrada e venda, para o responsável escolher |
+
+**Não usar:** `logo-PROVISORIO-erro-semjoias.png` (grafia errada), `logo-correto-semijoias-print.jpg`, `logo-correto-semijoias-transparente.png`, `simbolo-transparente.png` e `simbolo-transparente-256.png` (arquivos antigos, de baixa resolução). O PNG colorido do símbolo tem uma franja clara nas bordas: sobre fundo escuro, usar o SVG ou a versão preta pintada de dourado.
+
+**Paleta (cores medidas na logo corrigida):**
 
 | Uso | Cor |
 | --- | --- |
-| Destaques e detalhes | Dourado (cerca de `#C9A24B`) |
-| Fundo de telas de marca (login, abertura) | Bege champanhe (cerca de `#F3E2C7`) |
-| Fundo das telas de dados | Branco ou bege muito claro |
+| Destaques e detalhes | Dourado médio `#C08E3B` (principal), dourado escuro `#9D6D21` (títulos grandes e linhas) e dourado claro `#DEB75E` (brilhos) |
+| Fundo de telas de marca (login, abertura) | Quase branco `#FAF7F2` (o fundo da logo) |
+| Fundo das telas de dados | Branco ou `#FAF7F2` |
 | Texto principal | Marrom escuro ou grafite (alto contraste) |
 
 **Regras de uso na interface:**
@@ -755,6 +767,7 @@ Importação com nome de arquivo inválido, foto duplicada, arquivo corrompido, 
 
 ## 22. Histórico de mudanças
 
+- **v1.27, 17/11/2026:** proposta visual dos apps (issue 141): página `docs/marca/proposta-visual.html` com ícones em três estilos, tela de entrada em duas variações e tela de venda. §18: lista dos arquivos atuais de `docs/marca/` (os antigos marcados como "não usar") e paleta com as cores medidas no lugar das aproximadas (o bege `#F3E2C7` veio do arquivo antigo errado). Nenhuma regra de negócio mudou, nenhuma migração.
 - **v1.0, 08/11/2026:** versão inicial.
 - **v1.1, 08/11/2026:** decisões da Fase 0.
   - §3: perfis extensíveis sem refatoração; cada app aceita só o seu perfil, e a API recusa o perfil incompatível no login.
