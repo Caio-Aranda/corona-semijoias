@@ -1434,7 +1434,7 @@ Situações do computador na tela: **Em uso**, **Esperando a sua liberação**, 
 
 ## 20. Corona Vendas em dois idiomas (issue #212, 17/11/2026)
 
-O Corona Vendas tem **dois idiomas: espanhol (padrão) e português**. A pessoa troca em "Español | Português", na tela de entrada e no alto de todas as telas; a escolha fica guardada no computador e vale na hora. O Corona Gestão continua em português até a tarefa própria (depois do teste de uso de 18/11). Os textos moram em `apps/seller-app/src/renderer/textos-pt.ts` e `textos-es.ts` (mesmas chaves; um teste falha se faltar uma) e as mensagens de erro em espanhol, por código, em `erros-es.ts`. Datas e números seguem o idioma (dd/mm/aaaa e "1.234,56" nos dois); o dinheiro continua R$, US$ e Gs.
+O Corona Vendas tem **dois idiomas: espanhol (padrão) e português**. A pessoa troca em "Español | Português", na tela de entrada e no alto de todas as telas; a escolha fica guardada no computador e vale na hora. O Corona Gestão também tem os dois idiomas (parte 21). Os textos moram em `apps/seller-app/src/renderer/textos-pt.ts` e `textos-es.ts` (mesmas chaves; um teste falha se faltar uma) e as mensagens de erro em espanhol, por código, em `erros-es.ts`. Datas e números seguem o idioma (dd/mm/aaaa e "1.234,56" nos dois); o dinheiro continua R$, US$ e Gs.
 
 Espanhol simples, de loja, no tom de `docs/perguntas-para-a-dona.md` (tratamento por "vos": "Conectate", "Escribí"). A dona usa "maleta", "acerto" e "cuota".
 
@@ -1497,3 +1497,31 @@ bipear
 PTAX
 ```
 <!-- PROIBIDAS-ES:FIM -->
+
+## 21. Corona Gestão em dois idiomas (issue #213, 17/11/2026)
+
+O Corona Gestão segue a parte 20: **espanhol (padrão) e português**, com os botões **ES | PT** no alto de todas as telas e na tela de entrada; a escolha fica guardada no computador (num arquivo da pasta de dados, gravado pelo programa). A troca recarrega a tela no mesmo endereço (se houver algo por salvar, pergunta antes). Os textos moram em `apps/owner-app/src/renderer/textos-*.ts` (português) e `apps/owner-app/src/renderer/idioma/es/*.ts` (espanhol, mesmas chaves; `idioma.test.ts` falha se faltar uma ou sobrar texto em português). Os títulos dos relatórios estão em `idioma/es/relatorios-mapa.ts`; as mensagens de erro da API em espanhol, por código, em `idioma/erros-es.ts`. Tratamento da dona por **"usted"** (a dona é cliente do sistema, não colega de loja). Termos próprios da dona, além da tabela da parte 20:
+
+| Português | Español (na tela) |
+| --- | --- |
+| Corona Gestão | Corona Gestión |
+| cadastro (registro) | registro |
+| praça | plaza |
+| estoque | stock |
+| montar maleta | armar maleta |
+| contagem (do estoque) | conteo |
+| fornecedor | proveedor |
+| conferência (do sistema) | verificación |
+| caixa | caja |
+| lançamento | movimiento |
+| conta a pagar / a receber | cuenta a pagar / a cobrar |
+| recebimento do vendedor | cobro del vendedor |
+| semana (fechar semana) | semana (cerrar semana) |
+| painel da semana | panel de la semana |
+| relatório | informe |
+| computador do vendedor | computadora del vendedor |
+| envios com problema | envíos con problema |
+| nota de remessa | nota de envío |
+| Inativar / Reativar | Inactivar / Reactivar |
+
+O que o **servidor** monta em português (avisos da tela inicial, textos de campo recusado, algumas linhas de relatório) continua como a API manda; as mensagens de erro por código têm texto em espanhol. As planilhas de produtos e de compra aceitam os títulos de coluna nos dois idiomas.

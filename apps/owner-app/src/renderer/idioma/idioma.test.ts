@@ -178,3 +178,36 @@ describe('informes en español', () => {
     expect(restos).toEqual([]);
   });
 });
+
+describe('palabras prohibidas en español (glosario)', () => {
+  it('ningún texto del español trae una palabra de la lista PROIBIDAS-ES', () => {
+    const glosario = readFileSync(
+      join(__dirname, '..', '..', '..', '..', '..', 'docs', 'glossario-interface.md'),
+      'utf8',
+    );
+    const bloque = /<!-- PROIBIDAS-ES:INICIO -->([\s\S]*?)<!-- PROIBIDAS-ES:FIM -->/.exec(glosario);
+    expect(bloque).not.toBeNull();
+    const palabras = (bloque as RegExpExecArray)[1]!
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter((l) => l !== '' && !l.startsWith('```'));
+    const letra = '\\p{L}\\p{N}_';
+    const antes = idiomaAtual();
+    definirIdioma('es');
+    const malos: string[] = [];
+    for (const d of dicionariosRegistrados()) {
+      const achados: Achado[] = [];
+      coletar(d.es, d.nome, achados);
+      for (const a of achados) {
+        for (const p of palabras) {
+          const esc = p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          if (new RegExp(`(?<![${letra}])${esc}(?![${letra}])`, 'iu').test(a.texto)) {
+            malos.push(`${p} -> ${a.caminho}: ${a.texto}`);
+          }
+        }
+      }
+    }
+    definirIdioma(antes);
+    expect(malos).toEqual([]);
+  });
+});
