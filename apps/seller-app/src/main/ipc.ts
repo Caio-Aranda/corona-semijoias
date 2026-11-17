@@ -2,6 +2,7 @@ import { ipcMain, type IpcMainInvokeEvent } from 'electron';
 import { CANAIS, type EstadoDaSincronizacao } from '../shared/ponte';
 import { validarChamada, validarEntrada, validarNovaSenha } from '../shared/validacao';
 import type { ServicoDeAtualizacao } from '@corona/conexao-segura';
+import { guardarIdioma, lerIdiomaGuardado } from './idioma-guardado';
 import type { ServicoDeSessao } from './servico-de-sessao';
 
 /**
@@ -53,6 +54,22 @@ export function registrarPonte(
       return servico.chamarApi(v);
     }),
   );
+}
+
+/** O idioma escolhido fica num arquivo pequeno na pasta de dados do programa (a tela não guarda nada sozinha). */
+export function registrarIdioma(
+  pastaDeDados: string,
+  remetenteConfiavel: (e: IpcMainInvokeEvent) => boolean,
+): void {
+  ipcMain.handle(CANAIS.idiomaLer, (e: IpcMainInvokeEvent) => {
+    if (!remetenteConfiavel(e)) return Promise.reject(new Error('Chamada recusada.'));
+    return Promise.resolve(lerIdiomaGuardado(pastaDeDados));
+  });
+  ipcMain.handle(CANAIS.idiomaGravar, (e: IpcMainInvokeEvent, idioma: unknown) => {
+    if (!remetenteConfiavel(e)) return Promise.reject(new Error('Chamada recusada.'));
+    guardarIdioma(pastaDeDados, idioma);
+    return Promise.resolve();
+  });
 }
 
 /** Canal que informa a tela sobre a atualização automática (só leitura; a tela não manda nada para o atualizador). */

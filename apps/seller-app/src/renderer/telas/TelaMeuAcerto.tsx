@@ -185,10 +185,7 @@ export function TelaMeuAcerto({ ponte, aoVoltar }: TelaMeuAcertoProps) {
                     <span>{` · ${T.fechadoEm} ${dataParaTela(a.fechadoEm.slice(0, 10))}`}</span>
                   ) : null}
                 </span>
-                <Botao
-                  aria-label={`${T.ver} da semana ${a.semanaNumero}`}
-                  onClick={() => void abrir(a.id)}
-                >
+                <Botao aria-label={T.verDaSemana(a.semanaNumero)} onClick={() => void abrir(a.id)}>
                   {T.ver}
                 </Botao>
               </li>

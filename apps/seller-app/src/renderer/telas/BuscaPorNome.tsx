@@ -120,7 +120,7 @@ function ItemDaBusca({
         <img className="vendas-busca-item__foto" src={foto} alt={`Foto de ${linha.produto.nome}`} />
       ) : (
         <span className="vendas-busca-item__foto vendas-busca-item__foto--vazia" aria-hidden="true">
-          Sem foto
+          {TEXTOS.comum.semFoto}
         </span>
       )}
       <span className="vendas-busca-item__texto">

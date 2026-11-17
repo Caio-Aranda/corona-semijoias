@@ -378,7 +378,7 @@ export function TelaVender({ ponte, aoVoltar, aoVerVendas }: TelaVenderProps) {
           >
             {maletas.map((m) => (
               <option key={m.id} value={m.id}>
-                {`${m.numero ?? ''} · ${m.pecasEmAberto} peças`}
+                {T.maletaComPecas(m.numero ?? '', m.pecasEmAberto)}
               </option>
             ))}
           </select>
@@ -395,7 +395,7 @@ export function TelaVender({ ponte, aoVoltar, aoVerVendas }: TelaVenderProps) {
           spellCheck={false}
         />
         <Botao type="submit" variante="primario" disabled={lendo || !codigo.trim()}>
-          Ler o código
+          {TEXTOS.venda.lerAgora}
         </Botao>
       </form>
       {ultima ? (

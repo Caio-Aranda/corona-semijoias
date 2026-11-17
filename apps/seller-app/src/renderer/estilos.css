@@ -214,3 +214,14 @@
 .vendas-linha {
   display: block;
 }
+
+/* Troca de idioma (Español | Português): dois botões pequenos juntos, no alto das telas. */
+.vendas-idiomas {
+  display: inline-flex;
+  gap: var(--espaco-2);
+  align-items: center;
+}
+
+.cs-entrada-pagina .vendas-idiomas {
+  justify-content: center;
+}

@@ -153,6 +153,37 @@ describe('estado do envio na ponte (tarefa 5.6)', () => {
   });
 });
 
+describe('o idioma pela ponte', () => {
+  it('o processo principal só lê e grava o idioma para a janela do app, e só os dois idiomas', async () => {
+    const { mkdtempSync, rmSync } = await import('node:fs');
+    const { tmpdir } = await import('node:os');
+    const { join } = await import('node:path');
+    const { registrarIdioma } = await import('./ipc');
+    const pasta = mkdtempSync(join(tmpdir(), 'corona-ponte-idioma-'));
+    try {
+      registrarIdioma(pasta, () => false);
+      await expect(manipuladores.get(CANAIS.idiomaLer)!({} as IpcMainInvokeEvent)).rejects.toThrow(
+        'Chamada recusada.',
+      );
+      await expect(
+        manipuladores.get(CANAIS.idiomaGravar)!({} as IpcMainInvokeEvent, 'pt'),
+      ).rejects.toThrow('Chamada recusada.');
+
+      registrarIdioma(pasta, () => true);
+      const ler = () => manipuladores.get(CANAIS.idiomaLer)!({} as IpcMainInvokeEvent);
+      const gravar = (v: unknown) =>
+        manipuladores.get(CANAIS.idiomaGravar)!({} as IpcMainInvokeEvent, v);
+      await expect(ler()).resolves.toBeNull();
+      await gravar('pt');
+      await expect(ler()).resolves.toBe('pt');
+      await gravar('klingon');
+      await expect(ler()).resolves.toBe('pt');
+    } finally {
+      rmSync(pasta, { recursive: true, force: true });
+    }
+  });
+});
+
 describe('ponte (processo principal)', () => {
   const evento = {} as IpcMainInvokeEvent;
 
@@ -179,6 +210,9 @@ describe('ponte (processo principal)', () => {
       CANAIS.atualizacaoEstado,
       CANAIS.sincronizacaoMudou,
       CANAIS.sincronizacaoEstado,
+      // O idioma é registrado à parte (registrarIdioma) e tem teste próprio.
+      CANAIS.idiomaLer,
+      CANAIS.idiomaGravar,
     ];
     const esperados = Object.values(CANAIS).filter((c) => !doProcessoPrincipal.includes(c));
     expect([...manipuladores.keys()].sort()).toEqual([...esperados].sort());

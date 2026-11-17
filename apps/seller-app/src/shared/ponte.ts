@@ -21,6 +21,8 @@ export const CANAIS = {
   atualizacaoMudou: 'corona:atualizacao-mudou',
   sincronizacaoEstado: 'corona:sincronizacao-estado',
   sincronizacaoMudou: 'corona:sincronizacao-mudou',
+  idiomaLer: 'corona:idioma-ler',
+  idiomaGravar: 'corona:idioma-gravar',
 } as const;
 
 /** A lista fixa de funções que a ponte oferece à tela. Acrescentar uma função exige mexer aqui. */
@@ -33,7 +35,12 @@ export const FUNCOES_DA_PONTE = [
   'aoMudarASessao',
   'aoMudarAAtualizacao',
   'aoMudarASincronizacao',
+  'lerIdioma',
+  'gravarIdioma',
 ] as const;
+
+/** Os dois idiomas do Corona Vendas (a tela guarda a escolha pela ponte, nunca em armazenamento do navegador). */
+export type IdiomaDaTela = 'es' | 'pt';
 
 export interface DadosDeEntrada {
   usuario: string;
@@ -55,7 +62,7 @@ export interface UsuarioLogado {
 export type ResultadoDeEntrada =
   | { tipo: 'entrou' }
   | { tipo: 'trocar-senha' }
-  | { tipo: 'recusado'; mensagem: string }
+  | { tipo: 'recusado'; mensagem: string; codigo?: string }
   | { tipo: 'app-desatualizado'; mensagem: string }
   | { tipo: 'sem-conexao' }
   | { tipo: 'erro-inesperado' };
@@ -79,6 +86,8 @@ export type ResultadoDeChamada =
       ok: false;
       motivo: 'sessao-terminou' | 'sem-conexao' | 'app-desatualizado' | 'erro';
       mensagem?: string;
+      /** O código do erro (`CodigoErro` da API ou do computador): a tela escolhe a frase no idioma da pessoa. */
+      codigo?: string;
       /** CPF repetido no cadastro de cliente: o cliente que já existe (diretório da loja). */
       clienteExistente?: { id: string; nome: string; telefone?: string; cidade?: string };
     };
@@ -164,4 +173,8 @@ export interface PonteDoCorona {
   aoMudarAAtualizacao(ouvinte: (aviso: AvisoDeAtualizacao) => void): () => void;
   /** Avisa o estado do envio e do recebimento, já ao assinar e sempre que mudar. Devolve o cancelamento. */
   aoMudarASincronizacao(ouvinte: (estado: EstadoDaSincronizacao) => void): () => void;
+  /** O idioma que a pessoa escolheu neste computador; `null` se nunca escolheu (vale o padrão, espanhol). */
+  lerIdioma(): Promise<IdiomaDaTela | null>;
+  /** Guarda neste computador o idioma escolhido. */
+  gravarIdioma(idioma: IdiomaDaTela): Promise<void>;
 }

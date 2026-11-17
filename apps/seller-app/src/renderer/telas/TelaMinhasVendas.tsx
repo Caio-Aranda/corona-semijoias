@@ -94,7 +94,7 @@ export function TelaMinhasVendas({ ponte, aoVoltar, aoDevolver }: TelaMinhasVend
           {dataParaTela(aberta.vendidaEm)} · {T.situacao[aberta.status] ?? aberta.status}
         </p>
         <Tabela
-          legenda="Peças da venda"
+          legenda={T.legendaPecas}
           colunas={[
             { chave: 'peca', titulo: TEXTOS.venda.peca },
             { chave: 'qtd', titulo: TEXTOS.venda.qtd, numerica: true },

@@ -267,7 +267,12 @@ export function criarApiDoVendas(opcoes: OpcoesDaApi): ApiDoVendas {
         // Só existem no banco do computador. Sem ele, a pessoa precisa entrar de novo com internet.
         return Promise.resolve({
           ok: false,
-          falha: { tipo: 'recusada', status: 503, mensagem: MENSAGEM_SEM_BANCO },
+          falha: {
+            tipo: 'recusada',
+            status: 503,
+            mensagem: MENSAGEM_SEM_BANCO,
+            codigo: 'SEM_BANCO_LOCAL',
+          },
         });
       case 'comissao.previa':
         return executar(() => previaDaMinhaComissao(base));

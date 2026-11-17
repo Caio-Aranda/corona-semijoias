@@ -27,6 +27,7 @@ function bloco(nome: string): string[] {
 
 const blocoA = bloco('PROIBIDAS-A');
 const blocoB = bloco('PROIBIDAS-B');
+const blocoEs = bloco('PROIBIDAS-ES');
 
 const escapar = (t: string) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const FORMAS_EXTRAS: Record<string, string> = {
@@ -48,11 +49,11 @@ function padraoA(palavra: string): RegExp {
 const padraoB = (palavra: string) =>
   new RegExp(`(?<![A-Za-z0-9_])${escapar(palavra)}(?![A-Za-z0-9_])`);
 
-/** Os textos entre aspas dos arquivos `textos*.ts` (fora dos testes). */
-function textosDaTela(): { texto: string; arquivo: string }[] {
+/** Os textos entre aspas dos arquivos de textos, em português e em espanhol (fora dos testes). */
+function textosDaTela(arquivos: string[]): { texto: string; arquivo: string }[] {
   const pasta = join(aqui, 'renderer');
   const achados: { texto: string; arquivo: string }[] = [];
-  for (const arquivo of ['textos.ts']) {
+  for (const arquivo of arquivos) {
     const codigo = readFileSync(join(pasta, arquivo), 'utf8')
       .replace(/\/\*[\s\S]*?\*\//g, '')
       .replace(/^\s*\/\/.*$/gm, '');
@@ -66,7 +67,7 @@ function textosDaTela(): { texto: string; arquivo: string }[] {
 }
 
 describe('os textos do Corona Vendas respeitam as palavras proibidas do glossário (M6)', () => {
-  const textos = textosDaTela();
+  const textos = textosDaTela(['textos-pt.ts']);
 
   it('há textos para conferir', () => {
     expect(textos.length).toBeGreaterThan(100);
@@ -81,6 +82,26 @@ describe('os textos do Corona Vendas respeitam as palavras proibidas do glossár
           if (padraoA(p).test(texto)) problemas.push(`"${p}" → "${texto}" (${arquivo})`);
       }
       // O texto que é SÓ o identificador ('CANCELADA') é valor comparado com a API ou carimbo do PDF, não frase de tela.
+      for (const p of blocoB)
+        if (texto !== p && padraoB(p).test(texto))
+          problemas.push(`"${p}" → "${texto}" (${arquivo})`);
+    }
+    expect(problemas).toEqual([]);
+  });
+});
+
+describe('os textos em espanhol do Corona Vendas respeitam as palavras proibidas (issue #212)', () => {
+  const textos = textosDaTela(['textos-es.ts', 'erros-es.ts']);
+
+  it('há textos para conferir', () => {
+    expect(textos.length).toBeGreaterThan(100);
+  });
+
+  it('nenhum texto traz palavra proibida em espanhol nem identificador do bloco B', () => {
+    const problemas: string[] = [];
+    for (const { texto, arquivo } of textos) {
+      for (const p of blocoEs)
+        if (padraoA(p).test(texto)) problemas.push(`"${p}" → "${texto}" (${arquivo})`);
       for (const p of blocoB)
         if (texto !== p && padraoB(p).test(texto))
           problemas.push(`"${p}" → "${texto}" (${arquivo})`);

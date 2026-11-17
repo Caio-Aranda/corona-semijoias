@@ -459,7 +459,7 @@ Desde a Fase 4 os quatro botões funcionam (o "Em breve." só vale para função
 
 **Telas do vendedor (Corona Vendas, Fase 4)**
 
-Os textos moram em `apps/seller-app/src/renderer/textos.ts`. Termos: **Minha maleta** (peças com saldo, preço e foto), **Conferir maleta** (o vendedor lê o código de cada peça recebida; ação sem volta: **Concluir conferência**), **Vender**, **Concluir venda** (nunca "OK"), **Estornar venda** (o vendedor só estorna no mesmo dia; depois, a dona), **Meus clientes**, **Cadastrar cliente**, **Meus números** (vendas por cliente, peça ou dia; recebimentos por forma; o que os clientes ainda devem). Forma de pagamento do cliente: **Dinheiro**, **Transferência** ou **A prazo (fiado)** (pagamentos antigos ainda mostram Cartão e Cheque). Frases fixas:
+Os textos moram em `apps/seller-app/src/renderer/textos-pt.ts (e textos-es.ts, em espanhol)`. Termos: **Minha maleta** (peças com saldo, preço e foto), **Conferir maleta** (o vendedor lê o código de cada peça recebida; ação sem volta: **Concluir conferência**), **Vender**, **Concluir venda** (nunca "OK"), **Estornar venda** (o vendedor só estorna no mesmo dia; depois, a dona), **Meus clientes**, **Cadastrar cliente**, **Meus números** (vendas por cliente, peça ou dia; recebimentos por forma; o que os clientes ainda devem). Forma de pagamento do cliente: **Dinheiro**, **Transferência** ou **A prazo (fiado)** (pagamentos antigos ainda mostram Cartão e Cheque). Frases fixas:
 
 > Esta peça não consta na sua maleta. (peça de fora, no leitor)
 > Esta peça acabou na sua maleta. Escolha outra peça ou fale com a dona. (saldo zero)
@@ -1431,3 +1431,69 @@ Menu do Corona Gestão: grupo **Controle**, depois de "Relatórios financeiros".
 | **Acessos: entradas e erros** | Quando, Pessoa, Usuário digitado, Programa, Resultado, Endereço de internet e Bloqueado até; filtros de resultado e de programa |
 
 Situações do computador na tela: **Em uso**, **Esperando a sua liberação**, **Trocado por outro** e **Bloqueado**. Resultados de acesso: **Entrou**, **Senha errada**, **Recusada: acesso bloqueado**, **Usuário desativado**, **Programa muito antigo**, **Senha temporária vencida**, **Computador que não combina com o acesso** e **Bloqueio retirado ao redefinir a senha**. Na tela nunca aparecem "quarentena", "sessão", "token" nem "log". Usuário que não existe aparece como **Usuário que não existe**.
+
+## 20. Corona Vendas em dois idiomas (issue #212, 17/11/2026)
+
+O Corona Vendas tem **dois idiomas: espanhol (padrão) e português**. A pessoa troca em "Español | Português", na tela de entrada e no alto de todas as telas; a escolha fica guardada no computador e vale na hora. O Corona Gestão continua em português até a tarefa própria (depois do teste de uso de 18/11). Os textos moram em `apps/seller-app/src/renderer/textos-pt.ts` e `textos-es.ts` (mesmas chaves; um teste falha se faltar uma) e as mensagens de erro em espanhol, por código, em `erros-es.ts`. Datas e números seguem o idioma (dd/mm/aaaa e "1.234,56" nos dois); o dinheiro continua R$, US$ e Gs.
+
+Espanhol simples, de loja, no tom de `docs/perguntas-para-a-dona.md` (tratamento por "vos": "Conectate", "Escribí"). A dona usa "maleta", "acerto" e "cuota".
+
+| Português | Español (na tela) |
+| --- | --- |
+| dona | dueña |
+| vendedor | vendedor |
+| cliente | cliente |
+| maleta | maleta |
+| acerto | acerto |
+| peça | pieza |
+| parcela | cuota |
+| venda / vender | venta / vender |
+| a prazo (fiado) | a plazo (fiado) |
+| a receber | por cobrar |
+| receber (dinheiro do cliente) | cobrar |
+| conferir a maleta | controlar la maleta |
+| ler o código | leer el código |
+| estornar | anular |
+| devolução | devolución |
+| troca | cambio |
+| crédito do cliente | crédito del cliente |
+| cotação | cotización |
+| Dinheiro (forma de pagamento) | Efectivo |
+| Transferência | Transferencia |
+| Boleto | Boleta |
+| CPF | documento |
+| usuário / senha | usuario / contraseña |
+| sem internet / aguardando envio | sin internet / esperando envío |
+| prévia (valor estimado) | estimación |
+| sobras (do acerto) | lo que sobró |
+| pendências | pendientes |
+| garantia | garantía |
+
+### Proibido na tela, em espanhol
+
+Mesma regra da parte 2: nunca aparecem em tela as palavras abaixo (a verificação não diferencia maiúsculas e considera plural), nem os identificadores do bloco B. "error" e "null" valem como palavra comum do espanhol e por isso não estão nesta lista; mensagens em inglês e códigos técnicos continuam proibidos.
+
+<!-- PROIBIDAS-ES:INICIO -->
+```
+outbox
+sync
+sincronización
+cola de sincronización
+payload
+UUID
+token
+refresh
+failed
+invalid
+unauthorized
+forbidden
+timeout
+undefined
+Exception
+stack trace
+movimiento de stock
+remesa
+bipear
+PTAX
+```
+<!-- PROIBIDAS-ES:FIM -->

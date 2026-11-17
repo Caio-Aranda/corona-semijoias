@@ -3,6 +3,7 @@ import { useState, type FormEvent } from 'react';
 import type { PonteDoCorona, ResultadoDeEntrada } from '../../shared/ponte';
 import { TEXTOS } from '../textos';
 import { MensagemDeEntrada } from './MensagemDeEntrada';
+import { SeletorDeIdioma } from '../SeletorDeIdioma';
 
 export interface TelaTrocarSenhaProps {
   ponte: PonteDoCorona;
@@ -50,7 +51,7 @@ export function TelaTrocarSenha({ ponte, aoMudar }: TelaTrocarSenhaProps) {
 
   return (
     <div className="vendas-pagina">
-      <CabecalhoDeMarca nomeDoApp="Corona Vendas" />
+      <CabecalhoDeMarca nomeDoApp="Corona Vendas" acoes={<SeletorDeIdioma />} />
       <main className="vendas-conteudo">
         <form className="vendas-cartao" onSubmit={(e) => void salvar(e)} noValidate>
           <h1 className="vendas-titulo">{TEXTOS.senhaNova.titulo}</h1>
@@ -65,7 +66,7 @@ export function TelaTrocarSenha({ ponte, aoMudar }: TelaTrocarSenhaProps) {
           </div>
           <MensagemDeEntrada resultado={resultado} />
           <Campo
-            rotulo="Senha nova"
+            rotulo={TEXTOS.senhaNova.campoNova}
             type="password"
             value={senhaNova}
             onChange={(e) => setSenhaNova(e.target.value)}
@@ -74,7 +75,7 @@ export function TelaTrocarSenha({ ponte, aoMudar }: TelaTrocarSenhaProps) {
             {...(aviso.senhaNova ? { erro: aviso.senhaNova } : {})}
           />
           <Campo
-            rotulo="Repita a senha nova"
+            rotulo={TEXTOS.senhaNova.campoRepeticao}
             type="password"
             value={repeticao}
             onChange={(e) => setRepeticao(e.target.value)}
@@ -82,7 +83,7 @@ export function TelaTrocarSenha({ ponte, aoMudar }: TelaTrocarSenhaProps) {
             {...(aviso.repeticao ? { erro: aviso.repeticao } : {})}
           />
           <Botao type="submit" variante="primario" grande disabled={enviando}>
-            Salvar senha nova
+            {TEXTOS.senhaNova.salvar}
           </Botao>
         </form>
       </main>
