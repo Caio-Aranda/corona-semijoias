@@ -864,7 +864,6 @@ export function registrarTroca(
   if (limite !== null && desconto * 100n > subtotal * BigInt(limite))
     throw new ErroDaOperacao('DESCONTO_ACIMA_DO_LIMITE');
   const total = subtotal - desconto;
-  const valorA = p.valor;
   // O crédito da troca é só o que passou do que A ainda devia (A a prazo abate as parcelas primeiro); A sem nada pago
   // não gera crédito.
   const creditoDeA = p.emCredito;
