@@ -350,6 +350,8 @@ export interface TelaDeRelatorioProps {
   aoVoltar?: () => void;
   /** Relatórios de maleta: abre a ficha da maleta da linha (na tela Maletas). */
   aoAbrirMaleta?: (id: string) => void;
+  /** Relatório aberto a partir do painel da semana: já começa com estes filtros. */
+  filtrosIniciais?: Partial<Pick<Filtros, 'semanaId' | 'vendedorId' | 'pracaId' | 'de' | 'ate'>>;
 }
 
 /**
@@ -363,6 +365,7 @@ export function TelaDeRelatorio({
   fixo,
   aoVoltar,
   aoAbrirMaleta,
+  filtrosIniciais,
 }: TelaDeRelatorioProps) {
   const def = RELATORIOS[relatorio];
   const cotacao = useCotacao();
@@ -371,8 +374,9 @@ export function TelaDeRelatorio({
   const [aberto, setAberto] = useState<{ relatorio: NomeDoRelatorio; fixo: FiltroFixo } | null>(
     null,
   );
-  const [rascunho, setRascunho] = useState<Filtros>(SEM_FILTROS);
-  const [filtros, setFiltros] = useState<Filtros>(SEM_FILTROS);
+  const [inicio] = useState<Filtros>(() => ({ ...SEM_FILTROS, ...filtrosIniciais }));
+  const [rascunho, setRascunho] = useState<Filtros>(inicio);
+  const [filtros, setFiltros] = useState<Filtros>(inicio);
   const [pagina, setPagina] = useState(0);
   const [recorte, setRecorte] = useState<string | null>(null);
   const [exportando, setExportando] = useState(false);

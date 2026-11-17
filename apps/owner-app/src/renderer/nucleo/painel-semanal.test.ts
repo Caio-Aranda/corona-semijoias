@@ -140,8 +140,16 @@ describe('painel da semana: exportação', () => {
     );
     const i = grade.titulos.indexOf('Enviado (R$)');
     expect(i).toBeGreaterThan(0);
-    expect(grade.titulos.slice(i, i + 3)).toEqual(['Enviado (R$)', 'Enviado (US$)', 'Enviado (Gs.)']);
-    expect(grade.linhas[0]!.slice(i, i + 3).map((c) => c.v)).toEqual(['1000.00', '200.00', '1400000']);
+    expect(grade.titulos.slice(i, i + 3)).toEqual([
+      'Enviado (R$)',
+      'Enviado (US$)',
+      'Enviado (Gs.)',
+    ]);
+    expect(grade.linhas[0]!.slice(i, i + 3).map((c) => c.v)).toEqual([
+      '1000.00',
+      '200.00',
+      '1400000',
+    ]);
     expect(grade.titulos).toContain('Data da cotação');
     const total = grade.rodape.find((r) => r[0]!.v === 'Total enviado')!;
     expect(total.slice(i, i + 3).map((c) => c.v)).toEqual(['1000.00', '200.00', '1400000']);

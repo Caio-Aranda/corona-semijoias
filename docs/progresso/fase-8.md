@@ -143,3 +143,18 @@ Issue #179, PR 196. Só leitura: nenhuma migração, nenhuma regra nova, nada va
 **Não fiz / decisões.** O boleto do plano ("Recebido no acerto: Boleto 70,00") não existe como recebimento do acerto (no fechamento o boleto é conta a receber; só o boleto pago, depois, é recebimento avulso): na massa a Bia pagou 70,00 por Transferência e o bloco mostra Boleto zerado. A "devolução em crédito" do plano virou uma troca que sobra crédito (a devolução pelo cliente só gera crédito quando a venda usou crédito): créditos gerados 50,00, usados 25,00, em aberto 25,00. Não fiz a venda de controle da semana seguinte nem a maleta de semana antiga. Tela, exportação e detalhamento são da 8.8.
 
 **Como conferir:** `npm run api:test`, `npm run lint`, `npm run typecheck`, `npm run format:check`.
+
+## Tarefa 8.8: painel semanal (tela)
+
+PR 199 (issue #182). Só tela no Corona Gestão e uma operação nova na ponte (`painel.semanal`, validada: ids em UUID e situação entre `EM_ABERTO`, `EM_ACERTO` e `ACERTADO`); sem backend, sem migração, sem rota nova, nada vai ao Corona Vendas. Cliente da dona sem mudança (já tinha `painelSemanal` desde a 8.7).
+
+**O que entrou**
+
+- **Tela** `telas/painel/TelaPainelSemanal.tsx`: botão grande **Painel da semana** na tela inicial e item no menu; atalhos (Nova maleta, Acerto, Reposição, Troca, Vendedores, Estoque); filtros Semana (padrão: a de hoje, escolhida pelo servidor), Vendedor, Praça e Situação; abas **Maletas** (uma linha por vendedor: enviado, devolvido, vendido líquido, comissão, valor líquido, peças, "Prévia" e a data da cotação) e **Totais** (blocos com a origem de cada número).
+- **A tela só mostra:** nenhuma conta de dinheiro; Real em destaque e Dólar e Guarani abaixo, exatamente como a API mandou (cotação do dia de cada lançamento). Linha sem cotação: só o Real e "Sem cotação".
+- **Detalhamento:** o vendedor abre o acerto (`TelaAcertos` ganhou `abrirId`) ou a maleta; **Ver os registros** abre o relatório de onde o total saiu (financeiro-acertos, pendências, recebimentos, remessas das maletas, vendas feitas, trocas e créditos) já com semana, vendedor, praça e período do painel (`TelaDeRelatorio` ganhou `filtrosIniciais`). Rota que a tela não conhece não vira botão.
+- **Exportação** PDF, Excel e CSV pelo mesmo motor dos relatórios: três moedas e data da cotação em cada linha, totais da API (Dólar e Guarani dos totais vêm prontos, não são somados na tela).
+- **Testes:** `nucleo/painel-semanal.test.ts` (leitura, origem dos totais, grade de exportação), `telas/painel/painel-semanal.test.tsx` (7 regras de tela) e a validação da ponte. Suíte do Corona Gestão: 865 testes verdes.
+
+**Não fiz:** cenário Playwright do painel (a 8.12 cuida da dona no Corona Gestão); "voltar ao painel" a partir do relatório aberto (o menu leva de volta).
+

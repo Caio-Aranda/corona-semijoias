@@ -14,6 +14,8 @@ import { ListaDeLancamentos } from './estoque/ListaDeLancamentos';
 import { ListaDoEstoque } from './estoque/ListaDoEstoque';
 import { TelaContagem } from './estoque/TelaContagem';
 import { TelaAcertos } from './acertos/TelaAcertos';
+import { TelaPainelSemanal } from './painel/TelaPainelSemanal';
+import type { RegistrosParaAbrir } from '../nucleo/painel-semanal';
 import { TelaComissao } from './acertos/TelaComissao';
 import { TelaPendencias } from './acertos/TelaPendencias';
 import { TelaClientesAlterados } from './sincronizacao/TelaClientesAlterados';
@@ -54,12 +56,20 @@ function Conteudo({
   nome,
   maletaParaAbrir,
   aoAbrirMaleta,
+  acertoParaAbrir,
+  aoAbrirAcerto,
+  registrosParaAbrir,
+  aoAbrirRegistros,
 }: {
   rota: Rota;
   ponte: PonteDoCorona;
   nome: string | null;
   maletaParaAbrir: string | null;
   aoAbrirMaleta: (id: string) => void;
+  acertoParaAbrir: string | null;
+  aoAbrirAcerto: (id: string) => void;
+  registrosParaAbrir: RegistrosParaAbrir | null;
+  aoAbrirRegistros: (pedido: RegistrosParaAbrir) => void;
 }) {
   switch (rota) {
     case 'inicio':
@@ -96,8 +106,18 @@ function Conteudo({
       return <TelaMaletas ponte={ponte} abrirId={maletaParaAbrir} />;
     case 'maletas/montar':
       return <TelaMontarMaleta ponte={ponte} />;
+    case 'painel/semana':
+      return (
+        <TelaPainelSemanal
+          ponte={ponte}
+          usuario={nome}
+          aoAbrirMaleta={aoAbrirMaleta}
+          aoAbrirAcerto={aoAbrirAcerto}
+          aoAbrirRegistros={aoAbrirRegistros}
+        />
+      );
     case 'acertos/lista':
-      return <TelaAcertos ponte={ponte} />;
+      return <TelaAcertos ponte={ponte} abrirId={acertoParaAbrir} />;
     case 'acertos/pendencias':
       return <TelaPendencias ponte={ponte} />;
     case 'acertos/comissao':
@@ -167,6 +187,9 @@ function Conteudo({
               relatorio={qual}
               usuario={nome}
               aoAbrirMaleta={aoAbrirMaleta}
+              {...(registrosParaAbrir && registrosParaAbrir.relatorio === qual
+                ? { filtrosIniciais: registrosParaAbrir.filtros }
+                : {})}
             />
           );
         }
@@ -184,6 +207,13 @@ export function Estrutura({ ponte, nome, aoSair }: EstruturaProps) {
   const [maletaParaAbrir, setMaletaParaAbrir] = useState<string | null>(null);
   useEffect(() => {
     if (rota !== 'maletas/lista') setMaletaParaAbrir(null);
+  }, [rota]);
+  // Acerto e registros pedidos pelo painel da semana: valem só para a tela aberta, ao sair esquece.
+  const [acertoParaAbrir, setAcertoParaAbrir] = useState<string | null>(null);
+  const [registrosParaAbrir, setRegistrosParaAbrir] = useState<RegistrosParaAbrir | null>(null);
+  useEffect(() => {
+    if (rota !== 'acertos/lista') setAcertoParaAbrir(null);
+    if (!rota.startsWith('relatorios/')) setRegistrosParaAbrir(null);
   }, [rota]);
   return (
     <div className="gestao-pagina">
@@ -216,6 +246,16 @@ export function Estrutura({ ponte, nome, aoSair }: EstruturaProps) {
             aoAbrirMaleta={(id) => {
               setMaletaParaAbrir(id);
               irPara('maletas/lista');
+            }}
+            acertoParaAbrir={acertoParaAbrir}
+            aoAbrirAcerto={(id) => {
+              setAcertoParaAbrir(id);
+              irPara('acertos/lista');
+            }}
+            registrosParaAbrir={registrosParaAbrir}
+            aoAbrirRegistros={(pedido) => {
+              setRegistrosParaAbrir(pedido);
+              irPara(`relatorios/${pedido.relatorio}` as Rota);
             }}
           />
           <RodapeDaCotacao />
