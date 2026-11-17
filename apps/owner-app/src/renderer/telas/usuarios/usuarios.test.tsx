@@ -95,12 +95,12 @@ describe('Pessoas → Usuários: lista', () => {
     await abrirUsuarios(montar());
     const linhaJose = screen.getByRole('row', { name: /José Lima/ });
     expect(within(linhaJose).getByText('Vendedor')).toBeInTheDocument();
-    expect(within(linhaJose).getByText('Desativado')).toBeInTheDocument();
+    expect(within(linhaJose).getByText('Inativo')).toBeInTheDocument();
     expect(within(linhaJose).getByRole('button', { name: 'Reativar usuário' })).toBeInTheDocument();
     const linhaMaria = screen.getByRole('row', { name: /Maria Souza/ });
     expect(within(linhaMaria).getByText('Dona')).toBeInTheDocument();
     expect(
-      within(linhaMaria).getByRole('button', { name: 'Desativar usuário' }),
+      within(linhaMaria).getByRole('button', { name: 'Inativar usuário' }),
     ).toBeInTheDocument();
     expect(screen.getByText('2 usuários')).toBeInTheDocument();
   });
@@ -391,13 +391,13 @@ describe('Usuários: desativar, reativar e nova senha', () => {
     const m = montar({ 'usuarios.desativar': () => ({ ok: true, dados: {} }) });
     const u = await abrirUsuarios(m);
     const linha = screen.getByRole('row', { name: /Maria Souza/ });
-    await u.click(within(linha).getByRole('button', { name: 'Desativar usuário' }));
+    await u.click(within(linha).getByRole('button', { name: 'Inativar usuário' }));
     const janela = screen.getByRole('dialog');
     expect(janela).toHaveTextContent('vai sair do sistema agora');
     expect(within(janela).getByRole('button', { name: 'Voltar' })).toHaveFocus();
     expect(m.chamadas.some((c) => c.operacao === 'usuarios.desativar')).toBe(false);
-    await u.click(within(janela).getByRole('button', { name: 'Desativar usuário' }));
-    await screen.findByText('Maria Souza foi desativado e saiu do sistema.');
+    await u.click(within(janela).getByRole('button', { name: 'Inativar usuário' }));
+    await screen.findByText('Maria Souza foi inativado e saiu do sistema.');
     expect(m.chamadas.find((c) => c.operacao === 'usuarios.desativar')?.parametros).toEqual({
       id: ID_MARIA,
     });
@@ -407,7 +407,7 @@ describe('Usuários: desativar, reativar e nova senha', () => {
     const m = montar();
     const u = await abrirUsuarios(m);
     const linha = screen.getByRole('row', { name: /Maria Souza/ });
-    await u.click(within(linha).getByRole('button', { name: 'Desativar usuário' }));
+    await u.click(within(linha).getByRole('button', { name: 'Inativar usuário' }));
     await u.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Voltar' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(m.chamadas.some((c) => c.operacao === 'usuarios.desativar')).toBe(false);
@@ -426,9 +426,9 @@ describe('Usuários: desativar, reativar e nova senha', () => {
     });
     const u = await abrirUsuarios(m);
     const linha = screen.getByRole('row', { name: /Maria Souza/ });
-    await u.click(within(linha).getByRole('button', { name: 'Desativar usuário' }));
+    await u.click(within(linha).getByRole('button', { name: 'Inativar usuário' }));
     await u.click(
-      within(screen.getByRole('dialog')).getByRole('button', { name: 'Desativar usuário' }),
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'Inativar usuário' }),
     );
     const alerta = await screen.findByRole('alert');
     expect(alerta).toHaveTextContent('pelo menos uma pessoa administradora');

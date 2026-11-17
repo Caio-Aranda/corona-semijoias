@@ -308,7 +308,7 @@ export const TEXTOS = {
     filtroSituacao: 'Situação',
     todos: 'Todos',
     ativos: 'Ativos',
-    desativados: 'Desativados',
+    desativados: 'Inativos',
     colunas: {
       nome: 'Nome',
       usuario: 'Usuário',
@@ -317,10 +317,10 @@ export const TEXTOS = {
       acoes: 'O que fazer',
     },
     acesso: { ADMIN: 'Dona', VENDEDOR: 'Vendedor' } as Record<string, string>,
-    situacao: { ativo: 'Ativo', desativado: 'Desativado' },
+    situacao: { ativo: 'Ativo', desativado: 'Inativo' },
     legenda: 'Usuários que podem entrar nos aplicativos',
     editar: 'Editar',
-    desativar: 'Desativar usuário',
+    desativar: 'Inativar usuário',
     reativar: 'Reativar usuário',
     novaSenha: 'Nova senha temporária',
     criarSenha: 'Criar senha temporária',
@@ -350,7 +350,7 @@ export const TEXTOS = {
       fechar: 'Já anotei, fechar',
     },
     confirmar: {
-      desativarTitulo: (nome: string) => `Desativar ${nome}?`,
+      desativarTitulo: (nome: string) => `Inativar ${nome}?`,
       desativarTexto: (nome: string) =>
         `${nome} vai sair do sistema agora e não vai mais conseguir entrar. Você pode reativar depois.`,
       reativarTitulo: (nome: string) => `Reativar ${nome}?`,
@@ -364,7 +364,7 @@ export const TEXTOS = {
     feito: {
       criado: (nome: string) => `${nome} foi cadastrado.`,
       editado: (nome: string) => `Os dados de ${nome} foram salvos.`,
-      desativado: (nome: string) => `${nome} foi desativado e saiu do sistema.`,
+      desativado: (nome: string) => `${nome} foi inativado e saiu do sistema.`,
       reativado: (nome: string) => `${nome} foi reativado.`,
     },
   },

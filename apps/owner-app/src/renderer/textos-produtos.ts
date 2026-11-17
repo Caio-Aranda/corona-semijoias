@@ -14,7 +14,7 @@ export const TEXTOS_DE_PRODUTOS = {
   todas: 'Todas',
   todos: 'Todos',
   ativos: 'Ativos',
-  desativados: 'Desativados',
+  desativados: 'Inativos',
   legenda: 'Lista de produtos',
   colunas: {
     foto: 'Foto',
@@ -25,7 +25,7 @@ export const TEXTOS_DE_PRODUTOS = {
     situacao: 'Situação',
     acoes: 'O que fazer',
   },
-  situacao: { ativo: 'Ativo', desativado: 'Desativado' },
+  situacao: { ativo: 'Ativo', desativado: 'Inativo' },
   abrir: 'Abrir cadastro',
   vazio: 'Ainda não há nenhum produto.',
   semResultado: 'Nenhum produto encontrado. Confira o que você digitou ou limpe a busca.',
@@ -61,14 +61,14 @@ export const TEXTOS_DE_PRODUTOS = {
     saldo: (n: number) => `Saldo no estoque: ${n}`,
     obrigatorio: 'Preencha este campo.',
     valorInvalido: 'Digite um valor em reais, com no máximo 2 números depois da vírgula.',
-    desativar: 'Desativar',
+    desativar: 'Inativar',
     reativar: 'Reativar',
-    situacaoAtual: (ativo: boolean) => (ativo ? 'Produto ativo.' : 'Produto desativado.'),
+    situacaoAtual: (ativo: boolean) => (ativo ? 'Produto ativo.' : 'Produto inativo.'),
     salveAntes: 'Salve ou descarte as alterações antes de mudar a situação.',
     custoNaoMostrado: 'O custo deste produto não pôde ser lido agora.',
     historicoDeCusto: 'O histórico de custos ainda não aparece aqui.',
     desativarConfirma: {
-      titulo: (nome: string) => `Desativar ${nome}?`,
+      titulo: (nome: string) => `Inativar ${nome}?`,
       texto:
         'O produto some das buscas e das vendas. Os registros antigos continuam guardados e você pode reativar depois.',
     },
@@ -80,7 +80,7 @@ export const TEXTOS_DE_PRODUTOS = {
     feito: {
       criado: (nome: string) => `${nome} foi cadastrado.`,
       salvo: (nome: string) => `Os dados de ${nome} foram salvos.`,
-      desativado: (nome: string) => `${nome} foi desativado.`,
+      desativado: (nome: string) => `${nome} foi inativado.`,
       reativado: (nome: string) => `${nome} foi reativado.`,
     },
   },
@@ -233,6 +233,6 @@ export const TEXTOS_DE_PRODUTOS = {
     categoria: 'Categoria',
     codigo: 'Código principal',
     abrir: 'Abrir cadastro',
-    desativado: 'Este produto está desativado.',
+    desativado: 'Este produto está inativo.',
   },
 } as const;
