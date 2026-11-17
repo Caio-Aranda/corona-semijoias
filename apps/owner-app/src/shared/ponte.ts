@@ -102,7 +102,7 @@ export interface UsuarioLogado {
 export type ResultadoDeEntrada =
   | { tipo: 'entrou' }
   | { tipo: 'trocar-senha' }
-  | { tipo: 'recusado'; mensagem: string }
+  | { tipo: 'recusado'; mensagem: string; codigo?: string }
   | { tipo: 'app-desatualizado'; mensagem: string }
   | { tipo: 'sem-conexao' }
   | { tipo: 'erro-inesperado' };
