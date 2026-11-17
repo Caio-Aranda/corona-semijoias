@@ -15,6 +15,16 @@ import { lerOpcoes, lerProduto, type Produto } from './dados';
 
 const T = TEXTOS.produtos.ficha;
 
+/** Os campos recusados que a ficha mostra junto do próprio campo (o aviso não repete o motivo). */
+const CAMPOS_DA_FICHA = [
+  'codigos',
+  'nome',
+  'referencia',
+  'categoriaId',
+  'precoVenda',
+  'precoCusto',
+];
+
 const emReaisDigitados = (v: string | null): string => (v ? v.replace('.', ',') : '');
 
 interface Formulario {
@@ -312,6 +322,7 @@ export function FichaDoProduto({ ponte, produtoId, aoVoltar, aoAbrirOutro }: Fic
       {erro ? (
         <AvisoDeErro
           erro={erro}
+          camposJaMostrados={CAMPOS_DA_FICHA}
           aoAtualizar={() => {
             setErro(null);
             leitura.recarregar();

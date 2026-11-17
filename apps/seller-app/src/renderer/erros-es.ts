@@ -236,6 +236,20 @@ export const ERROS_ES: Readonly<Record<string, string>> = Object.freeze({
 });
 
 /**
+ * Junta à frase geral o motivo de verdade da recusa (o texto de cada campo, como o servidor manda, sem repetir).
+ * Em espanhol, só a frase geral é traduzida; traduzir cada motivo fica para quando o servidor mandar uma chave estável.
+ */
+export function comMotivos(
+  mensagem: string,
+  campos: readonly { campo: string; mensagem: string }[] | undefined,
+): string {
+  const motivos = [
+    ...new Set((campos ?? []).map((c) => c.mensagem.trim()).filter((m) => m && m !== mensagem)),
+  ];
+  return motivos.length > 0 ? `${mensagem} ${motivos.join(' ')}` : mensagem;
+}
+
+/**
  * A mensagem para a pessoa: em espanhol, pelo código (sem código conhecido, a mensagem como veio); em português,
  * a própria mensagem da API ou do computador. Nada de código técnico na tela.
  */

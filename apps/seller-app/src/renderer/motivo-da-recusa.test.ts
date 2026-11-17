@@ -4,17 +4,19 @@ import { chamar } from './chamadas';
 import { definirIdioma } from './idioma';
 
 const GERAL_PT = 'Alguns dados não estão corretos. Revise o que preencheu e tente de novo.';
-const GERAL_ES = 'Algunos datos no están correctos. Revise lo que completó e intente de nuevo.';
+const GERAL_ES = 'Algunos datos no están correctos. Revisá lo que completaste e intentá de nuevo.';
 
 function ponteQueRecusa(campos?: { campo: string; mensagem: string }[]) {
   return {
-    chamarApi: vi.fn(async () => ({
-      ok: false as const,
-      motivo: 'erro' as const,
-      codigo: 'DADOS_INVALIDOS',
-      mensagem: GERAL_PT,
-      ...(campos ? { campos } : {}),
-    })),
+    chamarApi: vi.fn(() =>
+      Promise.resolve({
+        ok: false as const,
+        motivo: 'erro' as const,
+        codigo: 'DADOS_INVALIDOS',
+        mensagem: GERAL_PT,
+        ...(campos ? { campos } : {}),
+      }),
+    ),
   } as unknown as PonteDoCorona;
 }
 

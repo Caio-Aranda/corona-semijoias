@@ -25,7 +25,9 @@ afterEach(() => definirIdioma('pt'));
 describe('AvisoDeErro: o motivo da recusa (A1)', () => {
   it('em português mostra a frase geral e o motivo do campo que a tela não tem', () => {
     render(
-      <AvisoDeErro erro={recusa([{ campo: 'data', mensagem: 'A data não pode ser no futuro.' }])} />,
+      <AvisoDeErro
+        erro={recusa([{ campo: 'data', mensagem: 'A data não pode ser no futuro.' }])}
+      />,
     );
     expect(screen.getByText(GERAL_PT)).toBeInTheDocument();
     expect(screen.getByText('A data não pode ser no futuro.')).toBeInTheDocument();
@@ -34,7 +36,9 @@ describe('AvisoDeErro: o motivo da recusa (A1)', () => {
   it('em espanhol a frase geral sai em espanhol e o motivo como o servidor manda', () => {
     definirIdioma('es');
     render(
-      <AvisoDeErro erro={recusa([{ campo: 'data', mensagem: 'A data não pode ser no futuro.' }])} />,
+      <AvisoDeErro
+        erro={recusa([{ campo: 'data', mensagem: 'A data não pode ser no futuro.' }])}
+      />,
     );
     expect(screen.getByText(GERAL_ES)).toBeInTheDocument();
     expect(screen.getByText('A data não pode ser no futuro.')).toBeInTheDocument();
@@ -97,6 +101,17 @@ describe('AvisoDeErro: o motivo da recusa (A1)', () => {
       />,
     );
     expect(screen.queryByText('Motivo qualquer.')).toBeNull();
+  });
+
+  it('motivo igual à frase do servidor não aparece duas vezes', () => {
+    const erro = traduzirErro({
+      ok: false,
+      motivo: 'erro',
+      mensagem: 'Use um número de dias.',
+      campos: [{ campo: 'dias', mensagem: 'Use um número de dias.' }],
+    });
+    render(<AvisoDeErro erro={erro} />);
+    expect(screen.getAllByText('Use um número de dias.')).toHaveLength(1);
   });
 
   it('erro sem campos continua igual', () => {

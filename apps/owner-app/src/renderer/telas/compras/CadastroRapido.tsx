@@ -12,6 +12,15 @@ import { lerOpcoes, lerProduto, type Produto } from '../produtos/dados';
 
 const T = TEXTOS_DE_COMPRAS.rapido;
 
+/** Os campos recusados que o cadastro rápido mostra junto do próprio campo (o aviso não repete o motivo). */
+const CAMPOS_DO_CADASTRO_RAPIDO = [
+  'codigos[0].codigo',
+  'nome',
+  'categoriaId',
+  'precoVenda',
+  'precoCusto',
+];
+
 export interface CadastroRapidoProps {
   ponte: PonteDoCorona;
   /** O código que foi lido e não existe. */
@@ -199,7 +208,7 @@ export function CadastroRapido({
               ? { erro: campo('precoCusto')! }
               : {})}
         />
-        {erro ? <AvisoDeErro erro={erro} /> : null}
+        {erro ? <AvisoDeErro erro={erro} camposJaMostrados={CAMPOS_DO_CADASTRO_RAPIDO} /> : null}
         <div className="gestao-acoes-da-linha">
           <Botao onClick={aoCancelar} disabled={salvando}>
             {T.cancelar}
