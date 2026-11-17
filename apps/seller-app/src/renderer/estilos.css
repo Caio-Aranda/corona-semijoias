@@ -104,7 +104,11 @@
 
 .vendas-desconto {
   width: 6rem;
-  min-height: 2.5rem;
+  min-height: 2.75rem;
+  padding: 0 var(--espaco-3);
+  border: 2px solid var(--cor-borda-campo);
+  border-radius: var(--raio-1);
+  font: var(--texto-base) var(--fonte-dados);
 }
 
 /* Total a cobrar: o que mais salta aos olhos da venda; Dólar e Guarani ficam logo abaixo. */
