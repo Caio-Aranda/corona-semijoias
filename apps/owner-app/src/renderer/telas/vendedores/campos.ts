@@ -7,6 +7,7 @@ import {
 } from '../../../shared/vendedores';
 import { TEXTOS } from '../../textos';
 import { daApi, type CampoDaFicha } from './dados';
+import { TEXTOS_SOLTOS as SOLTOS } from '../../textos-soltos';
 
 const T = TEXTOS.vendedores;
 
@@ -58,14 +59,8 @@ export const CAMPOS_DO_CADASTRO: CampoDaFicha[] = comAjustes(daApi(CAMPOS_DO_VEN
 
 /** Nomes de campo que se repetem em abas diferentes e precisam de um rótulo próprio. */
 const ROTULOS_DAS_ABAS: Partial<Record<AbaDoVendedor, Record<string, string>>> = {
-  trabalho: { telefone: 'Telefone do trabalho' },
-  conjuge: {
-    nome: 'Nome do cônjuge',
-    telefone: 'Telefone do cônjuge',
-    empresa: 'Empresa do cônjuge',
-    renda: 'Renda do cônjuge',
-    dataNascimento: 'Data de nascimento do cônjuge',
-  },
+  trabalho: { telefone: SOLTOS.vendedores.telefoneDoTrabalho },
+  conjuge: { ...SOLTOS.vendedores.conjuge },
 };
 
 export const CAMPOS_DA_TELA_DAS_ABAS: Record<AbaDoVendedor, CampoDaFicha[]> = Object.fromEntries(
@@ -82,7 +77,7 @@ export const CAMPOS_DA_TELA_DAS_ABAS: Record<AbaDoVendedor, CampoDaFicha[]> = Ob
 
 export const CAMPOS_DA_TELA_DA_REFERENCIA: CampoDaFicha[] = daApi(CAMPOS_DA_REFERENCIA).map((c) =>
   c.nome === 'nome'
-    ? { ...c, obrigatorio: true, rotulo: 'Nome da pessoa' }
+    ? { ...c, obrigatorio: true, rotulo: SOLTOS.vendedores.nomeDaPessoa }
     : c.nome === 'observacao'
       ? { ...c, tipo: 'area' }
       : c,

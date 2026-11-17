@@ -20,7 +20,9 @@ function lerGuardado(): Idioma {
 
 function guardar(novo: Idioma): void {
   try {
-    (globalThis as { corona?: { guardarIdioma?: (i: string) => void } }).corona?.guardarIdioma?.(novo);
+    (globalThis as { corona?: { guardarIdioma?: (i: string) => void } }).corona?.guardarIdioma?.(
+      novo,
+    );
   } catch {
     // Sem como guardar: vale só até fechar o programa.
   }

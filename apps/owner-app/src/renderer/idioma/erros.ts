@@ -5,7 +5,10 @@ import { idiomaAtual } from './idioma';
  * O texto de um erro recusado pela API. Em espanhol vale o texto do código de erro; em português (ou com um
  * código que não conhecemos) vale o que a API mandou.
  */
-export function mensagemDaApi(r: { mensagem?: string | undefined; codigo?: string | undefined }): string | undefined {
+export function mensagemDaApi(r: {
+  mensagem?: string | undefined;
+  codigo?: string | undefined;
+}): string | undefined {
   if (idiomaAtual() === 'es' && r.codigo) {
     if (r.codigo === 'ACESSO_BLOQUEADO') return erroDeBloqueio(r.mensagem);
     const texto = ERROS_EM_ESPANHOL[r.codigo];

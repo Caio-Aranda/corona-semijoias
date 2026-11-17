@@ -8,6 +8,8 @@ import type { NomeDoRelatorio, NomeDoRelatorioFinanceiro } from '../../shared/re
 import { TEXTOS_DE_RELATORIOS_FINANCEIROS } from '../textos-relatorios-financeiros';
 import type { ColunaDoRelatorio } from './exportacao/grade';
 import type { DefinicaoDeRelatorio, ExtraDoRelatorio } from './relatorios';
+import { idiomaAtual } from '../idioma/idioma';
+import { traducirDefinicion } from '../idioma/es/relatorios-mapa';
 
 const T = TEXTOS_DE_RELATORIOS_FINANCEIROS;
 
@@ -634,3 +636,6 @@ export function prepararLinhaFinanceira(
       return linha;
   }
 }
+
+// Em espanhol, os textos de cada definição saem da tabela de tradução (feita uma vez, ao abrir o programa).
+if (idiomaAtual() === 'es') traducirDefinicion(RELATORIOS_FINANCEIROS);

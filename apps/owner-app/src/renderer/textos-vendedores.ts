@@ -202,4 +202,8 @@ export const PT_TEXTOS_DE_VENDEDORES = {
   },
 } as const;
 
-export const TEXTOS_DE_VENDEDORES = textosVivos('vendedores', PT_TEXTOS_DE_VENDEDORES, ES_TEXTOS_DE_VENDEDORES);
+export const TEXTOS_DE_VENDEDORES = textosVivos(
+  'vendedores',
+  PT_TEXTOS_DE_VENDEDORES,
+  ES_TEXTOS_DE_VENDEDORES,
+);

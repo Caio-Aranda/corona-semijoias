@@ -3,6 +3,7 @@ import { useState, type FormEvent } from 'react';
 import type { PonteDoCorona, ResultadoDeEntrada } from '../../shared/ponte';
 import { TEXTOS } from '../textos';
 import { MensagemDeEntrada } from './MensagemDeEntrada';
+import { TEXTOS_SOLTOS as SOLTOS } from '../textos-soltos';
 
 export interface TelaTrocarSenhaProps {
   ponte: PonteDoCorona;
@@ -50,7 +51,7 @@ export function TelaTrocarSenha({ ponte, aoMudar }: TelaTrocarSenhaProps) {
 
   return (
     <div className="gestao-pagina">
-      <CabecalhoDeMarca nomeDoApp="Corona Gestão" />
+      <CabecalhoDeMarca nomeDoApp={SOLTOS.entrada.nomeDoApp} />
       <main className="gestao-conteudo">
         <form className="gestao-cartao" onSubmit={(e) => void salvar(e)} noValidate>
           <h1 className="gestao-titulo">{TEXTOS.senhaNova.titulo}</h1>
@@ -65,7 +66,7 @@ export function TelaTrocarSenha({ ponte, aoMudar }: TelaTrocarSenhaProps) {
           </div>
           <MensagemDeEntrada resultado={resultado} />
           <Campo
-            rotulo="Senha nova"
+            rotulo={SOLTOS.entrada.senhaNova}
             type="password"
             value={senhaNova}
             onChange={(e) => setSenhaNova(e.target.value)}
@@ -74,7 +75,7 @@ export function TelaTrocarSenha({ ponte, aoMudar }: TelaTrocarSenhaProps) {
             {...(aviso.senhaNova ? { erro: aviso.senhaNova } : {})}
           />
           <Campo
-            rotulo="Repita a senha nova"
+            rotulo={SOLTOS.entrada.repitaSenha}
             type="password"
             value={repeticao}
             onChange={(e) => setRepeticao(e.target.value)}
@@ -82,7 +83,7 @@ export function TelaTrocarSenha({ ponte, aoMudar }: TelaTrocarSenhaProps) {
             {...(aviso.repeticao ? { erro: aviso.repeticao } : {})}
           />
           <Botao type="submit" variante="primario" grande disabled={enviando}>
-            Salvar senha nova
+            {SOLTOS.entrada.salvarSenha}
           </Botao>
         </form>
       </main>

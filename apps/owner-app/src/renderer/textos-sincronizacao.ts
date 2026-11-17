@@ -149,4 +149,8 @@ export const PT_TEXTOS_DE_SINCRONIZACAO = {
   abrir: 'Abrir',
 } as const;
 
-export const TEXTOS_DE_SINCRONIZACAO = textosVivos('computadores', PT_TEXTOS_DE_SINCRONIZACAO, ES_TEXTOS_DE_SINCRONIZACAO);
+export const TEXTOS_DE_SINCRONIZACAO = textosVivos(
+  'computadores',
+  PT_TEXTOS_DE_SINCRONIZACAO,
+  ES_TEXTOS_DE_SINCRONIZACAO,
+);

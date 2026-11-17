@@ -30,7 +30,7 @@ export const ES_TEXTOS_DE_CONCILIACOES: NoMesmoFormato<typeof PT_TEXTOS_DE_CONCI
     C10: 'Compras y cuotas a pagar',
     C11: 'Stock completo, pieza por pieza',
     C12: 'Cada maleta enviada, pieza por pieza',
-  } as Record<string, string>,
+  },
   explicacoes: {
     C1: 'Para cada venta: el valor, menos lo que se devolvió, es igual a lo que el cliente ya pagó más lo que todavía falta en las cuotas. Una venta deshecha no tiene cuota abierta.',
     C2: 'Para cada acerto cerrado: vendido, descuentos, devuelto, comisión y faltantes dan el valor neto, y lo que se cobró, lo que quedó debiendo o lo que se pagó al vendedor coincide con los cobros, las cuentas y la caja.',
@@ -43,7 +43,7 @@ export const ES_TEXTOS_DE_CONCILIACOES: NoMesmoFormato<typeof PT_TEXTOS_DE_CONCI
     C10: 'Para cada compra con cuentas a pagar, la suma de las cuotas (incluso las canceladas) es el total de la compra.',
     C11: 'Para cada pieza: lo que está en la tienda más lo que está en las maletas es lo que se compró y registró, menos lo que se vendió, lo que faltó o se dañó en el acerto, más lo que el cliente devolvió a la maleta y lo que llegó a la tienda por el acerto.',
     C12: 'En toda maleta enviada, para cada pieza: lo que hay en la maleta es lo que se envió, menos lo que se vendió, se devolvió a la dueña y se perdió, más lo que el cliente devolvió. Ninguna pieza queda negativa y la maleta cancelada no guarda piezas.',
-  } as Record<string, string>,
+  },
   referencias: {
     VENDA: 'Venta',
     ESTORNO_VENDA: 'Venta deshecha',
@@ -60,7 +60,7 @@ export const ES_TEXTOS_DE_CONCILIACOES: NoMesmoFormato<typeof PT_TEXTOS_DE_CONCI
     MALETA: 'Maleta',
     PENDENCIA: 'Faltante',
     COMPRA: 'Compra',
-  } as Record<string, string>,
+  },
   outraReferencia: 'Registro',
   pecas: (n: string) => `${n} ${n === '1' ? 'pieza' : 'piezas'}`,
   registros: (n: string) => `${n} ${n === '1' ? 'registro' : 'registros'}`,
@@ -95,5 +95,5 @@ export const ES_TEXTOS_DE_CONCILIACOES: NoMesmoFormato<typeof PT_TEXTOS_DE_CONCI
   titulosDaConferencia: {
     ESTOQUE: 'Stock: saldo de cada pieza y piezas en las maletas',
     DEVOLUCAO_E_TROCA: 'Devoluciones, cambios y créditos',
-  } as Record<string, string>,
+  },
 };

@@ -17,7 +17,7 @@ export const ES_TEXTOS_DE_ACERTOS: NoMesmoFormato<typeof PT_TEXTOS_DE_ACERTOS> =
     EM_ACERTO: 'En acerto',
     ACERTADO: 'Acertado',
     DESISTIDO: 'Desistido',
-  } as Record<string, string>,
+  },
   lista: {
     comecar: 'Empezar acerto',
     legenda: 'Acertos de los vendedores',
@@ -165,14 +165,14 @@ export const ES_TEXTOS_DE_ACERTOS: NoMesmoFormato<typeof PT_TEXTOS_DE_ACERTOS> =
         COBRADA: 'Se va a cobrar ahora.',
         ABERTA: 'Queda para después.',
         ASSUMIDA_PELA_LOJA: 'La tienda asume.',
-      } as Record<string, string>,
+      },
       semFalta: 'Con los defectos aprobados, esta pieza ya no tiene faltante.',
     },
     opcoesDeCobranca: {
       COBRAR_NO_ACERTO: 'Cobrar ahora',
       COBRAR_DEPOIS: 'Cobrar después',
       LOJA_ASSUME: 'La tienda asume',
-    } as Record<string, string>,
+    },
     defeitos: {
       titulo: 'Piezas con defecto',
       ajuda: 'Diga cuántas piezas aprueba como defecto. Las otras vuelven como pieza buena.',
@@ -194,10 +194,7 @@ export const ES_TEXTOS_DE_ACERTOS: NoMesmoFormato<typeof PT_TEXTOS_DE_ACERTOS> =
       titulo: 'Pendientes de acertos anteriores',
       ajuda: 'Piezas que ya faltaron antes. Puede cobrar ahora o dejar para otro acerto.',
       decisao: (nome: string) => `Qué hacer con la pendiente antigua de ${nome}`,
-      opcoes: { COBRAR_NO_ACERTO: 'Cobrar ahora', MANTER: 'Dejar para después' } as Record<
-        string,
-        string
-      >,
+      opcoes: { COBRAR_NO_ACERTO: 'Cobrar ahora', MANTER: 'Dejar para después' },
       linha: (nome: string, quantidade: number, valor: string) =>
         `${nome}: ${quantidade === 1 ? '1 pieza' : `${quantidade} piezas`} (${valor})`,
       umaPeca: 'Una pieza',
@@ -309,7 +306,7 @@ export const ES_TEXTOS_DE_ACERTOS: NoMesmoFormato<typeof PT_TEXTOS_DE_ACERTOS> =
         'La semana de este acerto ya está cerrada, por eso el acerto no se puede cerrar. Hable con el soporte.',
       DATA_EM_SEMANA_FECHADA:
         'La semana de este acerto ya está cerrada, por eso el acerto no se puede cerrar. Hable con el soporte.',
-    } as Record<string, string>,
+    },
   },
   fechada: {
     titulo: 'Cierre del acerto',
@@ -332,7 +329,7 @@ export const ES_TEXTOS_DE_ACERTOS: NoMesmoFormato<typeof PT_TEXTOS_DE_ACERTOS> =
         DEFEITO: 'Pieza con defecto',
         DEVOLUCAO_NAO_ACEITA: 'Devolución no aceptada',
         CREDITO_SEM_SALDO_NAO_ACEITO: 'Crédito sin saldo no aceptado',
-      } as Record<string, string>,
+      },
       situacoes: {
         ABERTA: 'Abierta',
         COBRADA: 'Cobrada',
@@ -340,7 +337,7 @@ export const ES_TEXTOS_DE_ACERTOS: NoMesmoFormato<typeof PT_TEXTOS_DE_ACERTOS> =
         ENCONTRADA: 'Pieza encontrada',
         APROVADA: 'Defecto aprobado',
         RECUSADA: 'Defecto rechazado',
-      } as Record<string, string>,
+      },
       semPeca: 'Valor sin pieza',
     },
     totais: {
@@ -352,10 +349,7 @@ export const ES_TEXTOS_DE_ACERTOS: NoMesmoFormato<typeof PT_TEXTOS_DE_ACERTOS> =
       legenda: 'Lo que el vendedor pagó',
       vazia: 'El vendedor no pagó nada en este acerto.',
       colunas: { forma: 'Forma', valor: 'Valor', quando: 'Cuándo', situacao: 'Estado' },
-      formas: { DINHEIRO: 'Efectivo', PIX: 'Transferencia (PIX)', BOLETO: 'Boleto' } as Record<
-        string,
-        string
-      >,
+      formas: { DINHEIRO: 'Efectivo', PIX: 'Transferencia (PIX)', BOLETO: 'Boleto' },
       desfeito: 'Deshecho',
     },
     contas: {
@@ -374,7 +368,7 @@ export const ES_TEXTOS_DE_ACERTOS: NoMesmoFormato<typeof PT_TEXTOS_DE_ACERTOS> =
         PARCIAL: 'Pagada en parte',
         PAGA: 'Pagada',
         CANCELADA: 'Cancelada',
-      } as Record<string, string>,
+      },
     },
     imprimir: 'Imprimir acerto',
     gerando: 'Preparando el acerto...',
@@ -449,9 +443,8 @@ export const ES_TEXTOS_DE_ACERTOS: NoMesmoFormato<typeof PT_TEXTOS_DE_ACERTOS> =
       'Este vendedor ya hizo el acerto de esta semana. Elija otra semana en "Más opciones".',
     SEMANA_FECHADA: 'Esta semana ya está cerrada. Elija una semana abierta.',
     PECA_NAO_ENCONTRADA: 'Esta pieza no es de este acerto. Revise el código.',
-    LEITURA_DEIXA_CONTAGEM_NEGATIVA:
-      'No se puede quitar más de lo que se contó. Revise el conteo.',
+    LEITURA_DEIXA_CONTAGEM_NEGATIVA: 'No se puede quitar más de lo que se contó. Revise el conteo.',
     ACERTO_NAO_ESTA_EM_ANDAMENTO:
       'Este acerto ya terminó o fue deshecho. Vuelva a la lista y ábralo de nuevo.',
-  } as Record<string, string>,
+  },
 };

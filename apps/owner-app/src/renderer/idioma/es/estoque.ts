@@ -191,7 +191,7 @@ export const ES_TEXTOS_DE_ESTOQUE: NoMesmoFormato<typeof PT_TEXTOS_DE_ESTOQUE> =
       EM_ANDAMENTO: 'En curso',
       FECHADO: 'Cerrado',
       CANCELADO: 'Cancelado',
-    } as Record<string, string>,
+    },
     escopoDaLinha: (escopo: string, nome: string) =>
       escopo === 'CATEGORIA'
         ? `Categoría ${nome}`
@@ -221,8 +221,7 @@ export const ES_TEXTOS_DE_ESTOQUE: NoMesmoFormato<typeof PT_TEXTOS_DE_ESTOQUE> =
       contado: 'Contado',
       diferenca: 'Diferencia',
       corrigir: 'Cantidad contada',
-      corrigirAjuda:
-        'Si contó de otra manera, escriba la cantidad correcta. Reemplaza la lectura.',
+      corrigirAjuda: 'Si contó de otra manera, escriba la cantidad correcta. Reemplaza la lectura.',
       definir: 'Definir la cantidad',
       quantidadeInvalida: 'Escriba la cantidad con un número entero. Puede ser cero.',
       jaRegistrada: 'Esta lectura ya estaba registrada. No se sumó nada de nuevo.',
@@ -244,7 +243,7 @@ export const ES_TEXTOS_DE_ESTOQUE: NoMesmoFormato<typeof PT_TEXTOS_DE_ESTOQUE> =
         NAO_LIDOS: 'Las que todavía no leí',
         LIDOS: 'Las que ya leí',
         TODOS: 'Todas las piezas',
-      } as Record<string, string>,
+      },
       busca: 'Buscar en la lista',
       colunas: {
         esperado: 'Esperado',
@@ -260,14 +259,15 @@ export const ES_TEXTOS_DE_ESTOQUE: NoMesmoFormato<typeof PT_TEXTOS_DE_ESTOQUE> =
         NAO_LIDOS: 'Todas las piezas ya fueron leídas.',
         LIDOS: 'Ninguna pieza fue leída todavía.',
         TODOS: 'No hay piezas en este conteo.',
-      } as Record<string, string>,
+      },
       itens: ['pieza', 'piezas'] as const,
     },
     fechar: 'Cerrar el conteo',
     cancelar: 'Cancelar el conteo',
     voltarLista: 'Volver a los conteos',
     carregando: 'Abriendo el conteo...',
-    naoEncontrada: 'No encontramos este conteo del stock. Actualice la pantalla e intente de nuevo.',
+    naoEncontrada:
+      'No encontramos este conteo del stock. Actualice la pantalla e intente de nuevo.',
   },
   fechar: {
     titulo: '¿Cerrar el conteo?',
@@ -306,7 +306,9 @@ export const ES_TEXTOS_DE_ESTOQUE: NoMesmoFormato<typeof PT_TEXTOS_DE_ESTOQUE> =
     cancelada: (quando: string) => `Conteo cancelado el ${quando}.`,
     motivo: (m: string) => `Motivo: ${m}`,
     ajustes: (n: number) =>
-      n === 0 ? 'No se hizo ningún ajuste.' : `${n === 1 ? '1 ajuste' : `${n} ajustes`} en el stock.`,
+      n === 0
+        ? 'No se hizo ningún ajuste.'
+        : `${n === 1 ? '1 ajuste' : `${n} ajustes`} en el stock.`,
     zerou: 'Las piezas que no fueron leídas quedaron con cero.',
     nZerou: 'Las piezas que no fueron leídas quedaron como estaban.',
   },

@@ -1,18 +1,12 @@
 /** Regras da tela de estoque (sinais, rótulos, validações). Texto da pessoa, nunca da API. */
 import { MAXIMO_DA_QUANTIDADE_DO_ESTOQUE } from '../../shared/estoque';
+import { TEXTOS_SOLTOS as SOLTOS } from '../textos-soltos';
 
 /** Nome do tipo na tela (glossário, parte 12): nunca ENTRADA, SAIDA, AVARIA nem AJUSTE. */
-const ROTULOS: Record<string, string> = {
-  ENTRADA: 'Entrada',
-  SAIDA: 'Saída',
-  AVARIA: 'Perda',
-  AJUSTE: 'Ajuste',
-  REMESSA: 'Maleta',
-  DEVOLUCAO: 'Devolução da maleta',
-};
+const ROTULOS = SOLTOS.estoque.rotulos;
 
 export function rotuloDoTipo(tipo: string): string {
-  return ROTULOS[tipo] ?? 'Outro lançamento';
+  return ROTULOS[tipo] ?? SOLTOS.estoque.outro;
 }
 
 /** Quantidade com sinal na tela: +3 entra, -2 sai. Zero não leva sinal. */
@@ -46,18 +40,7 @@ export type Conferido<T> = { ok: true; valor: T } | { ok: false; erro: string };
 
 const falha = (erro: string): { ok: false; erro: string } => ({ ok: false, erro });
 
-export const MENSAGENS = {
-  quantidade: 'Digite quantas peças, com número inteiro maior que zero.',
-  quantidadeGrande: 'Esse número é grande demais. Confira a quantidade.',
-  contei: 'Digite quantas peças você contou. Pode ser zero.',
-  contouIgual: 'Essa é a quantidade que já está no estoque. Digite a que você contou.',
-  diferenca: 'Digite quantas peças a mais (3) ou a menos (-3). Não pode ser zero.',
-  diferencaPassa: (saldo: number) =>
-    `Não dá para tirar tantas peças: há só ${saldo} no estoque. Confira a diferença.`,
-  motivoDoAjuste: 'Diga o motivo do ajuste. Isso ajuda a entender a mudança depois.',
-  motivoDeDesfazer: 'Diga o motivo para desfazer. Ele fica guardado no histórico.',
-  minimo: 'Digite o estoque mínimo com número inteiro. Pode ser zero.',
-};
+export const MENSAGENS = SOLTOS.estoque.mensagens;
 
 /** Entrada, saída ou perda: a quantidade é sempre positiva (o sinal é do tipo). */
 export function conferirQuantidade(texto: string): Conferido<number> {

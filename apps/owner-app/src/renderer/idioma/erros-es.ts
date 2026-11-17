@@ -25,7 +25,8 @@ export const ERROS_EM_ESPANHOL: Record<string, string> = {
   SENHA_LONGA_DEMAIS: 'Esta contraseña es muy larga. Elija una más corta, de máximo 36 caracteres.',
   SENHA_FRACA:
     'La contraseña nueva todavía no sirve. Necesita tener al menos 8 caracteres, con letras y números.',
-  SENHA_IGUAL_A_TEMPORARIA: 'La contraseña nueva tiene que ser distinta de la temporal. Elija otra.',
+  SENHA_IGUAL_A_TEMPORARIA:
+    'La contraseña nueva tiene que ser distinta de la temporal. Elija otra.',
   LOGIN_JA_USADO: 'Este usuario ya existe. Elija otro, por ejemplo agregando el apellido.',
   LOGIN_FORA_DO_FORMATO:
     'Este usuario no se puede usar. Use de 3 a 40 letras sin tilde, números o punto, sin espacios. Por ejemplo: maria.silva.',
@@ -33,7 +34,8 @@ export const ERROS_EM_ESPANHOL: Record<string, string> = {
     'No encontramos a esta persona en el registro. Actualice la pantalla e intente de nuevo.',
   APP_TIPO_INVALIDO: `No se pudo entender el pedido. ${ACTUALIZAR} ${SOPORTE}`,
   APP_DESATUALIZADO: 'Su programa está desactualizado. Actualícelo para seguir usándolo.',
-  APP_INCOMPATIVEL: 'Este no es el programa de su acceso. Abra el otro programa de Corona Semijoias.',
+  APP_INCOMPATIVEL:
+    'Este no es el programa de su acceso. Abra el otro programa de Corona Semijoias.',
   NAO_REDEFINIR_A_PROPRIA_SENHA:
     'Usted no puede cambiar su propia contraseña por aquí. Pídaselo a otra persona administradora o hable con el soporte del sistema.',
   NAO_DESATIVAR_A_SI_MESMA:
@@ -89,7 +91,8 @@ export const ERROS_EM_ESPANHOL: Record<string, string> = {
     'Esta maleta ya fue enviada y no se puede cambiar. Para corregir, haga una maleta nueva.',
   VENDEDOR_NAO_RECEBE_MALETA: 'Este vendedor no puede recibir maleta ahora.',
   LIMITE_DE_CONSIGNACAO_NAO_DEFINIDO: 'Defina el límite de este vendedor antes de armar la maleta.',
-  LIMITE_DE_CONSIGNACAO_EXCEDIDO: 'El valor de la maleta pasa el límite de consignación del vendedor.',
+  LIMITE_DE_CONSIGNACAO_EXCEDIDO:
+    'El valor de la maleta pasa el límite de consignación del vendedor.',
   PECA_FORA_DA_MALETA: 'Esta pieza está desactivada o fue eliminada y no puede ir a la maleta.',
   DEVOLUCAO_MAIOR_QUE_O_SALDO:
     'Hay menos piezas en la maleta de lo que se informó. Revise la cantidad.',
@@ -125,7 +128,8 @@ export const ERROS_EM_ESPANHOL: Record<string, string> = {
   MALETA_EM_OUTRO_APARELHO:
     'Esta maleta ya está en otra computadora. Pídale a la dueña que libere esta computadora.',
   PECA_NAO_ENCONTRADA: 'Esta pieza no consta en su maleta.',
-  MALETA_JA_CONFERIDA: 'Esta maleta ya fue controlada. Actualice la pantalla para ver el resultado.',
+  MALETA_JA_CONFERIDA:
+    'Esta maleta ya fue controlada. Actualice la pantalla para ver el resultado.',
   CLIENTE_CPF_JA_CADASTRADO:
     'Este cliente ya está registrado. Elija el cliente que ya existe, en vez de registrarlo de nuevo.',
   CLIENTE_JA_REGISTRADO_DIFERENTE:
@@ -140,11 +144,13 @@ export const ERROS_EM_ESPANHOL: Record<string, string> = {
     'Esta cantidad pasa lo que el cliente compró en esta venta. Revise la cantidad.',
   GARANTIA_VENCIDA: 'Pasó el plazo de la garantía. Pida autorización a la dueña.',
   VENDA_A_PRAZO_SEM_DEVOLUCAO: 'Esta venta tiene cuotas; la devolución de ella llega pronto.',
-  RECEBIMENTO_ACIMA_DO_EM_ABERTO: 'El valor pasa lo que falta pagar de esta venta. Revise el valor.',
+  RECEBIMENTO_ACIMA_DO_EM_ABERTO:
+    'El valor pasa lo que falta pagar de esta venta. Revise el valor.',
   VENDA_SEM_VALOR_EM_ABERTO: 'Esta venta no tiene nada para cobrar.',
   RECEBIMENTO_JA_REGISTRADO_DIFERENTE:
     'Este cobro ya fue registrado con otros datos. Revise los cobros antes de registrar de nuevo.',
-  RECEBIMENTO_NAO_ENCONTRADO: 'No encontramos este cobro. Actualice la pantalla e intente de nuevo.',
+  RECEBIMENTO_NAO_ENCONTRADO:
+    'No encontramos este cobro. Actualice la pantalla e intente de nuevo.',
   RECEBIMENTO_JA_ESTORNADO: 'Este cobro ya fue anulado y no se puede cambiar.',
   CONTA_DO_VENDEDOR_NAO_ENCONTRADA:
     'No encontramos esta cuenta a cobrar. Actualice la pantalla e intente de nuevo.',
@@ -194,7 +200,8 @@ export const ERROS_EM_ESPANHOL: Record<string, string> = {
   SEM_COTACAO_PARA_O_ACERTO: 'Busque la cotización del día antes de cerrar el acerto.',
   PENDENCIA_NAO_ENCONTRADA: 'No encontramos esta pendiente. Actualice la lista e intente de nuevo.',
   PENDENCIA_JA_RESOLVIDA: 'Esta pendiente ya fue resuelta. Actualice la lista.',
-  PENDENCIA_RESOLUCAO_DIFERENTE: 'Esta pendiente ya fue resuelta de otra manera. Actualice la lista.',
+  PENDENCIA_RESOLUCAO_DIFERENTE:
+    'Esta pendiente ya fue resuelta de otra manera. Actualice la lista.',
   CANCELAR_DEVOLUCAO_SO_DA_DONA:
     'Solo se puede cancelar la devolución el mismo día. Pídale a la dueña que la cancele.',
   DEVOLUCAO_JA_CANCELADA: 'Esta devolución ya fue cancelada y no se puede cambiar.',
@@ -206,15 +213,18 @@ export const ERROS_EM_ESPANHOL: Record<string, string> = {
     'No encontramos este pedido de autorización. Actualice la pantalla e intente de nuevo.',
   AUTORIZACAO_JA_REGISTRADA_DIFERENTE:
     'Este pedido de autorización ya fue hecho con otros datos. Revise los pedidos antes de pedir de nuevo.',
-  AUTORIZACAO_DESNECESSARIA: 'Esta devolución está dentro del plazo. Registre la devolución directo.',
+  AUTORIZACAO_DESNECESSARIA:
+    'Esta devolución está dentro del plazo. Registre la devolución directo.',
   AUTORIZACAO_JA_PEDIDA:
     'Ya hay un pedido de autorización para esta venta. Espere la respuesta de la dueña o use la autorización aprobada.',
-  AUTORIZACAO_JA_DECIDIDA: 'La dueña ya decidió este pedido de autorización y la decisión no cambia.',
+  AUTORIZACAO_JA_DECIDIDA:
+    'La dueña ya decidió este pedido de autorización y la decisión no cambia.',
   AUTORIZACAO_NAO_APROVADA:
     'Este pedido de autorización todavía no fue aprobado o fue negado. Espere la respuesta de la dueña.',
   AUTORIZACAO_JA_USADA:
     'Esta autorización ya se usó en una devolución. Pida otra autorización a la dueña.',
-  AUTORIZACAO_VENCIDA: 'La autorización vale 7 días y ya venció. Pida otra autorización a la dueña.',
+  AUTORIZACAO_VENCIDA:
+    'La autorización vale 7 días y ya venció. Pida otra autorización a la dueña.',
   AUTORIZACAO_NAO_CONFERE:
     'Use la misma venta, el mismo motivo y como máximo las piezas que la dueña autorizó.',
   DEVOLUCAO_PRECISA_DE_AUTORIZACAO:

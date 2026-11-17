@@ -32,7 +32,7 @@ export const ES_TEXTOS_DO_PAINEL: NoMesmoFormato<typeof PT_TEXTOS_DO_PAINEL> = {
     EM_ABERTO: 'Maleta abierta',
     EM_ACERTO: 'Acerto en curso',
     ACERTADO: 'Acertado',
-  } as Record<string, string>,
+  },
   abas: {
     rotulo: 'Partes del panel',
     maletas: 'Maletas',

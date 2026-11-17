@@ -85,7 +85,8 @@ export const ES_TEXTOS: NoMesmoFormato<typeof PT_TEXTOS> = {
     texto: 'Sin conexión a internet. Intente de nuevo.',
     aviso: 'No necesita entrar de nuevo. El programa intenta solo en unos segundos.',
   },
-  algoDeuErrado: 'Algo salió mal. Intente de nuevo. Si sigue así, hable con el soporte del sistema.',
+  algoDeuErrado:
+    'Algo salió mal. Intente de nuevo. Si sigue así, hable con el soporte del sistema.',
   sessaoTerminou: {
     titulo: 'Su sesión terminó.',
     texto: 'Entre de nuevo con su usuario y su contraseña para continuar.',
@@ -102,10 +103,15 @@ export const ES_TEXTOS: NoMesmoFormato<typeof PT_TEXTOS> = {
     texto:
       'La contraseña que recibió es temporal. Para continuar, cree una contraseña nueva que solo usted sepa.',
     regrasTitulo: 'Su contraseña nueva tiene que tener:',
-    regras: ['por lo menos 8 caracteres;', 'letras y números;', 'una contraseña distinta de la temporal.'],
+    regras: [
+      'por lo menos 8 caracteres;',
+      'letras y números;',
+      'una contraseña distinta de la temporal.',
+    ],
     naoEstaBoa:
       'La contraseña nueva todavía no sirve. Necesita tener por lo menos 8 caracteres, con letras y números.',
-    naoSaoIguais: 'Las dos contraseñas no son iguales. Escriba la misma contraseña en los dos campos.',
+    naoSaoIguais:
+      'Las dos contraseñas no son iguales. Escriba la misma contraseña en los dos campos.',
   },
   menu: {
     inicio: 'Inicio',
@@ -154,8 +160,7 @@ export const ES_TEXTOS: NoMesmoFormato<typeof PT_TEXTOS> = {
     cotacaoDoDia: (data: string) => `Cotización del Banco Central del ${data}.`,
     cotacaoDeDiaAnterior: (data: string) =>
       `Cotización del Banco Central del ${data}, la última publicada.`,
-    semCotacao:
-      'Todavía no hay cotización. Los valores en Dólar y Guaraní aparecen cuando llegue.',
+    semCotacao: 'Todavía no hay cotización. Los valores en Dólar y Guaraní aparecen cuando llegue.',
   },
   atencao: {
     titulo: 'Lo que necesita su atención',
@@ -238,7 +243,7 @@ export const ES_TEXTOS: NoMesmoFormato<typeof PT_TEXTOS> = {
         fim: 'Último día',
         situacao: 'Estado',
       },
-      situacao: { ABERTA: 'Abierta', FECHADA: 'Cerrada' } as Record<string, string>,
+      situacao: { ABERTA: 'Abierta', FECHADA: 'Cerrada' },
       nome: (numero: string) => `Semana ${numero}`,
     },
     restricoes: {
@@ -307,7 +312,7 @@ export const ES_TEXTOS: NoMesmoFormato<typeof PT_TEXTOS> = {
       situacao: 'Estado',
       acoes: 'Qué hacer',
     },
-    acesso: { ADMIN: 'Dueña', VENDEDOR: 'Vendedor' } as Record<string, string>,
+    acesso: { ADMIN: 'Dueña', VENDEDOR: 'Vendedor' },
     situacao: { ativo: 'Activo', desativado: 'Inactivo' },
     legenda: 'Usuarios que pueden entrar en los programas',
     editar: 'Editar',

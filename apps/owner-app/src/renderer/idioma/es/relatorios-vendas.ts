@@ -14,11 +14,11 @@ export const ES_TEXTOS_DE_RELATORIOS_DE_VENDAS: NoMesmoFormato<
   situacaoDaVenda: {
     CONCLUIDA: 'Hecha',
     ESTORNADA: 'Cancelada',
-  } as Record<string, string>,
+  },
   classes: {
     A: 'A',
     B: 'B',
     C: 'C',
-  } as Record<string, string>,
+  },
   semPraca: 'Sin plaza',
 };

@@ -3,6 +3,7 @@
  * dígito verificador só para o tipo EAN-13 com 13 dígitos, leitor que age como teclado.
  */
 import { TAMANHO_MAXIMO_DO_CODIGO, type TipoDeCodigo } from '../../shared/produtos';
+import { TEXTOS_SOLTOS as SOLTOS } from '../textos-soltos';
 
 /** Tira só os espaços das pontas; zeros à esquerda e o resto ficam como estão. */
 export const normalizarCodigo = (c: string): string => c.trim();
@@ -33,7 +34,7 @@ export function avaliarCodigo(bruto: string, tipo: TipoDeCodigo): AvisoDeCodigo 
   const codigo = normalizarCodigo(bruto);
   if (codigo === '') return null;
   if (codigo.length > TAMANHO_MAXIMO_DO_CODIGO) {
-    return { nivel: 'erro', mensagem: 'O código é longo demais. Use até 60 letras ou números.' };
+    return { nivel: 'erro', mensagem: SOLTOS.codigos.longo };
   }
   if (tipo !== 'EAN13') return null;
   if (codigo.length === 13 && SO_DIGITOS.test(codigo)) {
@@ -41,13 +42,13 @@ export function avaliarCodigo(bruto: string, tipo: TipoDeCodigo): AvisoDeCodigo 
       ? null
       : {
           nivel: 'erro',
-          mensagem: `O código de barras ${codigo} não confere. Leia o código de novo ou confira os números.`,
+          mensagem: SOLTOS.codigos.naoConfere(codigo),
         };
   }
   if (SO_DIGITOS.test(codigo) && codigo.length < 13) {
     return {
       nivel: 'aviso',
-      mensagem: 'Este código de barras parece incompleto. Leia o código de novo.',
+      mensagem: SOLTOS.codigos.incompleto,
     };
   }
   return null;
@@ -69,17 +70,17 @@ export interface CodigoDaFicha {
 export function conferirListaDeCodigos(lista: readonly CodigoDaFicha[]): string[] {
   const erros: string[] = [];
   const preenchidos = lista.filter((c) => normalizarCodigo(c.codigo) !== '');
-  if (preenchidos.length === 0) return ['Informe pelo menos um código para a peça.'];
+  if (preenchidos.length === 0) return [SOLTOS.codigos.semCodigo];
   const vistos = new Set<string>();
   for (const c of preenchidos) {
     const chave = chaveDoCodigo(c.codigo);
     if (vistos.has(chave)) {
-      erros.push(`O código ${normalizarCodigo(c.codigo)} aparece mais de uma vez nesta peça.`);
+      erros.push(SOLTOS.codigos.repetido(normalizarCodigo(c.codigo)));
     }
     vistos.add(chave);
   }
   if (preenchidos.filter((c) => c.principal).length > 1) {
-    erros.push('Escolha apenas um código principal.');
+    erros.push(SOLTOS.codigos.doisPrincipais);
   }
   return erros;
 }

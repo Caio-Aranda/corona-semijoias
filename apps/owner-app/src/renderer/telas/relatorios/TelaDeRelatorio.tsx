@@ -40,6 +40,8 @@ import {
 } from '../../nucleo/relatorios';
 import { TEXTOS_RELATORIOS as T } from '../../textos-relatorios';
 import { TEXTOS_DE_MALETAS } from '../../textos-maletas';
+import { TEXTOS_SOLTOS as SOLTOS } from '../../textos-soltos';
+import { localeAtual } from '../../idioma/idioma';
 
 const MALETAS = TEXTOS_DE_MALETAS.relatorios;
 
@@ -82,7 +84,7 @@ const SEM_FILTROS: Filtros = {
 };
 
 function mesDeHoje(): string {
-  const partes = new Intl.DateTimeFormat('pt-BR', {
+  const partes = new Intl.DateTimeFormat(localeAtual(), {
     timeZone: 'America/Sao_Paulo',
     month: 'numeric',
   }).format(new Date());
@@ -191,7 +193,10 @@ function filtrosEmPalavras(
   }
   if (tem('periodo') && (f.de || f.ate)) {
     x.push(
-      `Período: ${f.de ? dataParaTela(f.de) : 'o começo'} a ${f.ate ? dataParaTela(f.ate) : 'hoje'}`,
+      SOLTOS.arquivo.periodo(
+        f.de ? dataParaTela(f.de) : SOLTOS.arquivo.comeco,
+        f.ate ? dataParaTela(f.ate) : SOLTOS.arquivo.hoje,
+      ),
     );
   }
   for (const e of def.extras ?? []) {
@@ -332,9 +337,9 @@ function valorNaTela(
     case 'dataHora':
       return dataEHoraParaTela(v);
     case 'simNao':
-      if (coluna.titulo === 'Situação')
+      if (coluna.titulo === SOLTOS.arquivo.situacao)
         return valor === true ? T.situacaoDoProduto.ativo : T.situacaoDoProduto.inativo;
-      return valor === true ? 'Sim' : 'Não';
+      return valor === true ? SOLTOS.arquivo.sim : SOLTOS.arquivo.nao;
     default:
       return v;
   }
@@ -494,7 +499,7 @@ export function TelaDeRelatorio({
         titulo: def.titulo,
         filtros: filtrosEmPalavras(def, filtros, listas, filtroFixo),
         geradoEm: dataEHoraParaTela(agora),
-        geradoPor: usuario ?? 'Dona',
+        geradoPor: usuario ?? SOLTOS.arquivo.dona,
         linhaDaCotacao: jaConvertido
           ? (def.notaDaCotacao ?? MALETAS.cotacaoDoEnvio)
           : cotacao.taxas

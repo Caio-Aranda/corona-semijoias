@@ -45,7 +45,8 @@ export function traduzirErro(r: Extract<ResultadoDeChamada, { ok: false }>): Err
       return {
         ...base,
         tipo: 'outro',
-        mensagem: mensagemDaApi(r) || `${TEXTOS.desatualizado.titulo} ${TEXTOS.desatualizado.texto}`,
+        mensagem:
+          mensagemDaApi(r) || `${TEXTOS.desatualizado.titulo} ${TEXTOS.desatualizado.texto}`,
       };
     case 'erro':
       if (r.codigo === 'CADASTRO_ALTERADO') {

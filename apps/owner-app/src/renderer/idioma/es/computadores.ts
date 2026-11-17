@@ -14,7 +14,7 @@ export const ES_TEXTOS_DE_SINCRONIZACAO: NoMesmoFormato<typeof PT_TEXTOS_DE_SINC
     AGUARDANDO_LIBERACAO: 'Esperando habilitación',
     SUBSTITUIDO: 'Cambiada',
     BLOQUEADO: 'Bloqueada',
-  } as Record<string, string>,
+  },
   computadores: {
     titulo: 'Computadoras',
     ajuda: 'Elija el vendedor para ver sus computadoras.',
@@ -71,7 +71,7 @@ export const ES_TEXTOS_DE_SINCRONIZACAO: NoMesmoFormato<typeof PT_TEXTOS_DE_SINC
       CONFERENCIA: 'Control de la maleta',
       RECEBIMENTO_CLIENTE: 'Cobro de cliente',
       ESTORNO_RECEBIMENTO_CLIENTE: 'Anulación de cobro de cliente',
-    } as Record<string, string>,
+    },
     tentar: 'Intentar de nuevo',
     tentando: 'Intentando...',
     descartar: 'Descartar',
@@ -106,8 +106,7 @@ export const ES_TEXTOS_DE_SINCRONIZACAO: NoMesmoFormato<typeof PT_TEXTOS_DE_SINC
     aprovarDe: (quem: string) => `Aprobar el envío de ${quem}`,
     descartarDe: (quem: string) => `Descartar el envío de ${quem}`,
     aprovado: 'Aprobado.',
-    naoAprovado: (motivo: string) =>
-      `No se pudo aprobar: ${motivo} Fue a Envíos con problema.`,
+    naoAprovado: (motivo: string) => `No se pudo aprobar: ${motivo} Fue a Envíos con problema.`,
     confirmarAprovar: {
       titulo: '¿Aprobar este envío?',
       texto: 'Pasa a valer como si se hubiera enviado normalmente.',
@@ -141,7 +140,7 @@ export const ES_TEXTOS_DE_SINCRONIZACAO: NoMesmoFormato<typeof PT_TEXTOS_DE_SINC
       dataNascimento: 'Fecha de nacimiento',
       email: 'Correo electrónico',
       observacoes: 'Observaciones',
-    } as Record<string, string>,
+    },
   },
   abrir: 'Abrir',
 };

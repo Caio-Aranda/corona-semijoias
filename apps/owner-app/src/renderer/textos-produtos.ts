@@ -239,4 +239,8 @@ export const PT_TEXTOS_DE_PRODUTOS = {
   },
 } as const;
 
-export const TEXTOS_DE_PRODUTOS = textosVivos('produtos', PT_TEXTOS_DE_PRODUTOS, ES_TEXTOS_DE_PRODUTOS);
+export const TEXTOS_DE_PRODUTOS = textosVivos(
+  'produtos',
+  PT_TEXTOS_DE_PRODUTOS,
+  ES_TEXTOS_DE_PRODUTOS,
+);

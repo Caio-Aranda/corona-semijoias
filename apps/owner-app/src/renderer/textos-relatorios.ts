@@ -119,4 +119,8 @@ export const PT_TEXTOS_RELATORIOS = {
   },
 };
 
-export const TEXTOS_RELATORIOS = textosVivos('relatorios', PT_TEXTOS_RELATORIOS, ES_TEXTOS_RELATORIOS);
+export const TEXTOS_RELATORIOS = textosVivos(
+  'relatorios',
+  PT_TEXTOS_RELATORIOS,
+  ES_TEXTOS_RELATORIOS,
+);

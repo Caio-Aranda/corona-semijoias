@@ -5,6 +5,7 @@
  */
 import { paraPdf, montarArquivoPdf } from './pdf';
 import { quebrar } from './pdf-nota';
+import { TEXTOS_SOLTOS as SOLTOS } from '../../textos-soltos';
 
 const LARGURA = 595;
 const ALTURA = 842;
@@ -195,9 +196,9 @@ export function gerarPdfDoAcerto(acerto: AcertoParaPdf): Uint8Array {
       fim.forEach((l, k) => texto(MARGEM, y - k * 11, l, false, 8));
     }
     texto(
-      LARGURA - MARGEM - larguraDe(`Página ${numero + 1} de ${paginas.length}`, 8),
+      LARGURA - MARGEM - larguraDe(SOLTOS.arquivo.pagina(numero + 1, paginas.length), 8),
       MARGEM - 8,
-      `Página ${numero + 1} de ${paginas.length}`,
+      SOLTOS.arquivo.pagina(numero + 1, paginas.length),
       false,
       8,
     );

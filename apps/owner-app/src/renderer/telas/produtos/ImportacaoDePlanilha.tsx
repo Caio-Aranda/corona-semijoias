@@ -17,6 +17,7 @@ import {
 } from '../../nucleo/planilha';
 import { TEXTOS } from '../../textos';
 import { lerOpcoes, lerProduto } from './dados';
+import { TEXTOS_SOLTOS as SOLTOS } from '../../textos-soltos';
 
 const T = TEXTOS.produtos.planilha;
 /** Quantas linhas aparecem na tela de uma vez; as recusadas aparecem sempre. */
@@ -187,7 +188,7 @@ export function ImportacaoDePlanilha({ ponte, aoMudar }: ImportacaoDePlanilhaPro
       'PLANILHA',
       nomeDoArquivo.current,
       resultados.map((r) => ({
-        referencia: `Linha ${r.linha.linha} (${r.linha.codigo || 'sem código'})`,
+        referencia: SOLTOS.planilha.referenciaDaLinha(r.linha.linha, r.linha.codigo),
         resultado:
           r.resultado === 'criado'
             ? 'CRIADO'

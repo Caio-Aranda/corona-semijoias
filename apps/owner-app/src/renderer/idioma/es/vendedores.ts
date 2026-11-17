@@ -122,7 +122,7 @@ export const ES_TEXTOS_DE_VENDEDORES: NoMesmoFormato<typeof PT_TEXTOS_DE_VENDEDO
     texto: 'Observaciones sobre el vendedor',
     parentesco: 'Parentesco',
     observacao: 'Observación',
-  } as Record<string, string>,
+  },
   referencias: {
     titulo: 'Personas que conocen al vendedor',
     nova: 'Nueva referencia',

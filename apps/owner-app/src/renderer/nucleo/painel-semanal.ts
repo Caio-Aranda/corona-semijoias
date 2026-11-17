@@ -7,6 +7,7 @@ import type { NomeDoRelatorio } from '../../shared/relatorios';
 import { TEXTOS_DO_PAINEL as T } from '../textos-painel';
 import type { PedidoDeExportacao } from './exportacao/grade';
 import { centavosDeTexto, formatarDolar, formatarGuarani, formatarReais } from './moedas';
+import { TEXTOS_SOLTOS as SOLTOS } from '../textos-soltos';
 
 export interface Moedas {
   real: string | null;
@@ -353,7 +354,7 @@ export function pedidoDeExportacao(
       vendedor: l.vendedor,
       praca: l.praca,
       situacao: T.situacoes[l.situacao] ?? l.situacao,
-      previa: l.previa ? 'Sim' : 'Não',
+      previa: l.previa ? SOLTOS.arquivo.sim : SOLTOS.arquivo.nao,
       enviadoPecas: l.enviadoPecas,
       devolvidoPecas: l.devolvidoPecas,
       vendidasPecas: l.vendidasPecas,
@@ -375,9 +376,9 @@ export function pedidoDeExportacao(
   });
   const t = painel.total;
   const totais = [
-    { chave: 'enviado', rotulo: 'Total enviado', valor: t.enviado },
-    { chave: 'vendidoLiquido', rotulo: 'Total vendido líquido', valor: t.vendido },
-    { chave: 'liquido', rotulo: 'Total líquido', valor: t.liquido },
+    { chave: 'enviado', rotulo: SOLTOS.painelArquivo.totalEnviado, valor: t.enviado },
+    { chave: 'vendidoLiquido', rotulo: SOLTOS.painelArquivo.totalVendidoLiquido, valor: t.vendido },
+    { chave: 'liquido', rotulo: SOLTOS.painelArquivo.totalLiquido, valor: t.liquido },
   ];
   return {
     loja: T.loja,
@@ -385,7 +386,7 @@ export function pedidoDeExportacao(
     filtros: contexto.filtrosEmPalavras,
     geradoEm: contexto.geradoEm,
     geradoPor: contexto.geradoPor,
-    linhaDaCotacao: 'Dólar e Guarani pela cotação do dia de cada lançamento.',
+    linhaDaCotacao: SOLTOS.painelArquivo.cotacao,
     dataDaCotacao: null,
     cotacao: null,
     colunas: [
@@ -393,15 +394,15 @@ export function pedidoDeExportacao(
       { chave: 'praca', titulo: T.colunas.praca, tipo: 'texto' },
       { chave: 'situacao', titulo: T.colunas.situacao, tipo: 'texto' },
       { chave: 'previa', titulo: T.previa, tipo: 'texto' },
-      { chave: 'enviadoPecas', titulo: 'Peças enviadas', tipo: 'inteiro' },
+      { chave: 'enviadoPecas', titulo: SOLTOS.painelArquivo.pecasEnviadas, tipo: 'inteiro' },
       dinheiro('enviado', T.colunas.enviado),
-      { chave: 'devolvidoPecas', titulo: 'Peças devolvidas', tipo: 'inteiro' },
+      { chave: 'devolvidoPecas', titulo: SOLTOS.painelArquivo.pecasDevolvidas, tipo: 'inteiro' },
       dinheiro('devolvido', T.colunas.devolvido),
-      { chave: 'vendidasPecas', titulo: 'Peças vendidas', tipo: 'inteiro' },
-      dinheiro('vendidoLiquido', 'Vendido líquido'),
+      { chave: 'vendidasPecas', titulo: SOLTOS.painelArquivo.pecasVendidas, tipo: 'inteiro' },
+      dinheiro('vendidoLiquido', SOLTOS.painelArquivo.vendidoLiquido),
       dinheiro('comissao', T.colunas.comissao),
       dinheiro('liquido', T.colunas.liquido),
-      { chave: 'dataDaCotacao', titulo: 'Data da cotação', tipo: 'data' },
+      { chave: 'dataDaCotacao', titulo: SOLTOS.arquivo.dataDaCotacao, tipo: 'data' },
     ],
     linhas,
     totais: totais.map((x) => ({

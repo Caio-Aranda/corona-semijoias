@@ -20,7 +20,7 @@ export const ES_TEXTOS_DE_MALETAS: NoMesmoFormato<typeof PT_TEXTOS_DE_MALETAS> =
     praca: 'Plaza',
     pracaDoVendedor: 'La plaza del vendedor',
     tipo: 'Tipo de maleta',
-    tipos: { NOVA: 'Maleta nueva', REPOSICAO: 'Reposición' } as Record<string, string>,
+    tipos: { NOVA: 'Maleta nueva', REPOSICAO: 'Reposición' },
     comecar: 'Empezar a armar',
     comecando: 'Empezando...',
   },
@@ -152,7 +152,7 @@ export const ES_TEXTOS_DE_MALETAS: NoMesmoFormato<typeof PT_TEXTOS_DE_MALETAS> =
         ACERTADA: 'Acertada',
         CANCELADA: 'Cancelada',
         RASCUNHO: 'En armado',
-      } as Record<string, string>,
+      },
     },
   },
   gerir: {
@@ -344,7 +344,7 @@ export const ES_TEXTOS_DE_MALETAS: NoMesmoFormato<typeof PT_TEXTOS_DE_MALETAS> =
   relatorios: {
     grupoDoMenu: 'Informes de la maleta',
     verAMaleta: 'Ver la maleta',
-    tipos: { NOVA: 'Nueva', REPOSICAO: 'Reposición' } as Record<string, string>,
+    tipos: { NOVA: 'Nueva', REPOSICAO: 'Reposición' },
     enviada: 'Enviada',
     cancelada: 'Cancelada',
     atrasada: 'Atrasada',

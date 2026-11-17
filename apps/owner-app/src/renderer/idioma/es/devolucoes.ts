@@ -23,14 +23,14 @@ export const ES_TEXTOS_DE_DEVOLUCOES: NoMesmoFormato<typeof PT_TEXTOS_DE_DEVOLUC
     DEFEITO: 'Defecto',
     TAMANHO: 'No le quedó',
     OUTRO: 'Otro',
-  } as Record<string, string>,
-  estados: { BOA: 'Buena', DEFEITO: 'Con defecto' } as Record<string, string>,
+  },
+  estados: { BOA: 'Buena', DEFEITO: 'Con defecto' },
   formas: {
     DINHEIRO: 'Efectivo',
     PIX: 'Transferencia',
     CARTAO: 'Tarjeta',
     CHEQUE: 'Cheque',
-  } as Record<string, string>,
+  },
   autorizar: {
     titulo: 'Devoluciones para autorizar',
     ajuda:
@@ -58,7 +58,7 @@ export const ES_TEXTOS_DE_DEVOLUCOES: NoMesmoFormato<typeof PT_TEXTOS_DE_DEVOLUC
     porQue: {
       FORA_DO_PRAZO: 'Pasó el plazo de la garantía',
       ACIMA_DO_VALOR: 'Pasó el valor que usted aprueba antes',
-    } as Record<string, string>,
+    },
     valeAte: (data: string) => `Vale hasta el ${data}`,
     aprovar: 'Aprobar reembolso',
     negar: 'Negar',
@@ -99,7 +99,7 @@ export const ES_TEXTOS_DE_DEVOLUCOES: NoMesmoFormato<typeof PT_TEXTOS_DE_DEVOLUC
       ACIMA_DO_VALOR_SEM_AUTORIZACAO: 'Pasó el valor que usted aprueba antes',
       AUTORIZACAO_INVALIDA: 'Autorización que no vale',
       REEMBOLSO_MAIOR_QUE_O_PAGO: 'Devolvió más de lo que el cliente pagó',
-    } as Record<string, string>,
+    },
     manter: 'Mantener',
     naoAceitar: 'No aceptar',
     manterDe: (quem: string) => `Mantener la devolución de ${quem}`,
@@ -136,7 +136,7 @@ export const ES_TEXTOS_DE_DEVOLUCOES: NoMesmoFormato<typeof PT_TEXTOS_DE_DEVOLUC
       MANTIDA: 'Mantenida',
       NAO_ACEITA: 'No aceptada',
       CANCELADA: 'Cancelada',
-    } as Record<string, string>,
+    },
     colunas: {
       devolvidaEm: 'Devuelta el',
       vendedor: 'Vendedor',
@@ -182,7 +182,8 @@ export const ES_TEXTOS_DE_DEVOLUCOES: NoMesmoFormato<typeof PT_TEXTOS_DE_DEVOLUC
     },
     garantia: (desistencia: string, defeito: string) =>
       `Desistimiento hasta el ${desistencia}, defecto hasta el ${defeito}`,
-    aPrazo: 'Esta venta es a cuotas: la devolución primero descuenta lo que el cliente todavía debe.',
+    aPrazo:
+      'Esta venta es a cuotas: la devolución primero descuenta lo que el cliente todavía debe.',
     escolher: 'Elegir esta venta',
     escolherDe: (cliente: string) => `Elegir la venta de ${cliente}`,
     outraVenda: 'Elegir otra venta',
@@ -223,7 +224,7 @@ export const ES_TEXTOS_DE_DEVOLUCOES: NoMesmoFormato<typeof PT_TEXTOS_DE_DEVOLUC
       { valor: 'CANCELADA', texto: 'Cancelados' },
       { valor: '', texto: 'Todos' },
     ],
-    situacaoDaTroca: { ATIVA: 'Hecho', CANCELADA: 'Cancelado' } as Record<string, string>,
+    situacaoDaTroca: { ATIVA: 'Hecho', CANCELADA: 'Cancelado' },
     colunas: {
       trocadaEm: 'Cambiado el',
       vendedor: 'Vendedor',
@@ -263,12 +264,12 @@ export const ES_TEXTOS_DE_DEVOLUCOES: NoMesmoFormato<typeof PT_TEXTOS_DE_DEVOLUC
       ABERTO: 'Abierto',
       UTILIZADO: 'Usado',
       CANCELADO: 'Cancelado',
-    } as Record<string, string>,
+    },
     origens: {
       TROCA: 'Cambio',
       DEVOLUCAO: 'Devolución',
       TRANSFERENCIA: 'Transferido por la dueña',
-    } as Record<string, string>,
+    },
     colunas: {
       geradoEm: 'Generado el',
       cliente: 'Cliente',

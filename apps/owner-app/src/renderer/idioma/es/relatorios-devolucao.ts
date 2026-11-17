@@ -21,42 +21,42 @@ export const ES_TEXTOS_DE_RELATORIOS_DE_DEVOLUCAO: NoMesmoFormato<
     DEFEITO: 'Defecto',
     TAMANHO: 'No le quedó',
     OUTRO: 'Otro',
-  } as Record<string, string>,
-  tipos: { DEVOLUCAO: 'Devolución', TROCA: 'Cambio' } as Record<string, string>,
+  },
+  tipos: { DEVOLUCAO: 'Devolución', TROCA: 'Cambio' },
   situacoes: {
     ACEITA: 'Hecha',
     EM_REVISAO: 'En revisión',
     MANTIDA: 'Mantenida',
     NAO_ACEITA: 'No aceptada',
     CANCELADA: 'Cancelada',
-  } as Record<string, string>,
+  },
   origens: {
     TROCA: 'Cambio',
     DEVOLUCAO: 'Devolución',
     TRANSFERENCIA: 'Pasado por la dueña',
-  } as Record<string, string>,
+  },
   situacoesDoCredito: {
     ABERTO: 'Abierto',
     UTILIZADO: 'Usado',
     CANCELADO: 'Cancelado',
-  } as Record<string, string>,
+  },
   formas: {
     DINHEIRO: 'Efectivo',
     PIX: 'Transferencia',
     CARTAO: 'Tarjeta',
     CHEQUE: 'Cheque',
-  } as Record<string, string>,
+  },
   porQue: {
     FORA_DO_PRAZO: 'Pasó el plazo de la garantía',
     ACIMA_DO_VALOR: 'Pasó el valor',
-  } as Record<string, string>,
+  },
   situacoesDoPedido: {
     PEDIDA: 'Esperando a usted',
     APROVADA: 'Aprobado',
     USADA: 'Usado',
     NEGADA: 'Negado',
     VENCIDA: 'Vencido',
-  } as Record<string, string>,
+  },
   conferencia: {
     menu: 'Verificación de las devoluciones y cambios',
     titulo: 'Verificación de las devoluciones y cambios',
@@ -77,16 +77,15 @@ export const ES_TEXTOS_DE_RELATORIOS_DE_DEVOLUCAO: NoMesmoFormato<
       creditos: 'Créditos y usos',
       'dinheiro-devolvido': 'Dinero devuelto',
       'contas-da-venda': 'Cuentas de la venta',
-    } as Record<string, string>,
+    },
     explicacoes: {
       maleta:
         'Cada pieza que volvió a la maleta o salió en el cambio está registrada una vez, y el stock de la tienda más el de las maletas cierra.',
-      'devolvido-por-peca':
-        'En cada pieza vendida, lo que volvió nunca pasa de lo que se vendió.',
+      'devolvido-por-peca': 'En cada pieza vendida, lo que volvió nunca pasa de lo que se vendió.',
       creditos: 'Créditos generados menos usos es igual a lo que está abierto.',
       'dinheiro-devolvido': 'El dinero que volvió al cliente nunca pasa de lo que él pagó.',
       'contas-da-venda':
         'Lo que el cliente pagó, ya descontado lo que volvió, nunca pasa del total de la venta menos lo devuelto.',
-    } as Record<string, string>,
+    },
   },
 };

@@ -39,6 +39,6 @@ export const ES_TEXTOS_DE_RELATORIOS_DE_CONTROLE: NoMesmoFormato<
       SENHA_TEMPORARIA_VENCIDA: 'Contraseña temporal vencida',
       PEDIDO_INVALIDO: 'Computadora que no coincide con el acceso',
       BLOQUEIO_LIMPO: 'Bloqueo quitado al cambiar la contraseña',
-    } as Record<string, string>,
+    },
   },
 };

@@ -14,6 +14,7 @@ import {
 import { TEXTOS_DE_MALETAS } from '../../textos-maletas';
 import { dataEHoraParaTela } from './grade';
 import { montarArquivoPdf, paraPdf } from './pdf';
+import { TEXTOS_SOLTOS as SOLTOS } from '../../textos-soltos';
 
 const T = TEXTOS_DE_MALETAS.nota;
 
@@ -210,7 +211,13 @@ export function gerarPdfDaNota(nota: NotaParaPdf): Uint8Array {
       texto(MARGEM, y - 12, T.assinaturaDona);
       texto(MARGEM + 295, y - 12, `${T.assinaturaVendedor}: ${nota.vendedor}`);
     }
-    texto(LARGURA - MARGEM - 60, MARGEM - 8, `Página ${numero + 1} de ${paginas.length}`, false, 8);
+    texto(
+      LARGURA - MARGEM - 60,
+      MARGEM - 8,
+      SOLTOS.arquivo.pagina(numero + 1, paginas.length),
+      false,
+      8,
+    );
     return o.join('\n');
   });
 
@@ -246,7 +253,12 @@ export function lerNota(bruto: unknown): NotaParaPdf | null {
     vendedor: txt(obj(n.vendedor).nome),
     praca: txt(n.praca),
     semana: txt(obj(n.semana).numero),
-    tipo: tipo === 'REPOSICAO' ? 'Reposição' : tipo === 'NOVA' ? 'Nova' : tipo,
+    tipo:
+      tipo === 'REPOSICAO'
+        ? SOLTOS.arquivo.nota.reposicao
+        : tipo === 'NOVA'
+          ? SOLTOS.arquivo.nota.nova
+          : tipo,
     enviadaEm: enviada ? dataEHoraParaTela(enviada) : '',
     cancelada: n.cancelada === true,
     motivoDoCancelamento: txt(n.motivoDoCancelamento),

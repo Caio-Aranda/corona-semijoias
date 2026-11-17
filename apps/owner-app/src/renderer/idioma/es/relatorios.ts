@@ -70,8 +70,8 @@ export const ES_TEXTOS_RELATORIOS: NoMesmoFormato<typeof PT_TEXTOS_RELATORIOS> =
     LOJA: 'Código de la tienda',
     FORNECEDOR: 'Código del proveedor',
     EAN13: 'Código de barras',
-  } as Record<string, string>,
-  tiposDeAniversariante: { VENDEDOR: 'Vendedor', CLIENTE: 'Cliente' } as Record<string, string>,
+  },
+  tiposDeAniversariante: { VENDEDOR: 'Vendedor', CLIENTE: 'Cliente' },
   alteracoesSemImportacao:
     'Muestra lo que se registró y cambió, y quién lo hizo. El resultado de las importaciones en masa está en el informe "Resultado de las importaciones".',
   importacoesNota:
@@ -84,7 +84,7 @@ export const ES_TEXTOS_RELATORIOS: NoMesmoFormato<typeof PT_TEXTOS_RELATORIOS> =
       INVENTARIO: 'Conteo del stock',
       MALETA: 'Maleta',
       ESTORNO: 'Deshacer movimiento',
-    } as Record<string, string>,
+    },
     desfeito: 'Deshecho',
     desfazOutro: 'Deshace otro movimiento',
     compraRegistrada: 'Registrada',
@@ -93,7 +93,7 @@ export const ES_TEXTOS_RELATORIOS: NoMesmoFormato<typeof PT_TEXTOS_RELATORIOS> =
       EM_ANDAMENTO: 'En curso',
       FECHADO: 'Cerrado',
       CANCELADO: 'Cancelado',
-    } as Record<string, string>,
+    },
     escopoDaContagem: (escopo: string, nome: string) =>
       escopo === 'CATEGORIA'
         ? `Categoría ${nome}`

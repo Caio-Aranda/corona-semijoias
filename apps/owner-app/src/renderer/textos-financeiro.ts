@@ -343,4 +343,8 @@ export const PT_TEXTOS_DE_FINANCEIRO = {
   },
 } as const;
 
-export const TEXTOS_DE_FINANCEIRO = textosVivos('financeiro', PT_TEXTOS_DE_FINANCEIRO, ES_TEXTOS_DE_FINANCEIRO);
+export const TEXTOS_DE_FINANCEIRO = textosVivos(
+  'financeiro',
+  PT_TEXTOS_DE_FINANCEIRO,
+  ES_TEXTOS_DE_FINANCEIRO,
+);

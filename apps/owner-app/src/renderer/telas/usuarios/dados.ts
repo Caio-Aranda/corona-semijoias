@@ -1,3 +1,4 @@
+import { localeAtual } from '../../idioma/idioma';
 /** Formatos que a API de usuários devolve, lidos com cuidado: o que não bate vira "sem item". */
 
 export interface Usuario {
@@ -77,7 +78,7 @@ export function lerVendedores(bruto: unknown): VendedorParaEscolha[] {
 export function dataDeBrasilia(instante: string): string | null {
   const d = new Date(instante);
   if (Number.isNaN(d.getTime())) return null;
-  return new Intl.DateTimeFormat('pt-BR', {
+  return new Intl.DateTimeFormat(localeAtual(), {
     timeZone: 'America/Sao_Paulo',
     day: '2-digit',
     month: '2-digit',

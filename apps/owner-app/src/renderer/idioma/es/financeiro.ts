@@ -14,8 +14,8 @@ export const ES_TEXTOS_DE_FINANCEIRO: NoMesmoFormato<typeof PT_TEXTOS_DE_FINANCE
     DINHEIRO: 'Efectivo',
     PIX: 'Transferencia (PIX)',
     BOLETO: 'Boleto',
-  } as Record<string, string>,
-  tipos: { ENTRADA: 'Entrada', SAIDA: 'Salida' } as Record<string, string>,
+  },
+  tipos: { ENTRADA: 'Entrada', SAIDA: 'Salida' },
   de: 'Desde',
   ate: 'Hasta',
   limparFiltros: 'Limpiar filtros',
@@ -23,10 +23,11 @@ export const ES_TEXTOS_DE_FINANCEIRO: NoMesmoFormato<typeof PT_TEXTOS_DE_FINANCE
   naoLeu: 'No se pudo leer la pantalla. Intente de nuevo.',
   erros: {
     DATA_EM_SEMANA_FECHADA: 'Esa semana ya fue cerrada. Use la fecha de hoy.',
-    SEMANA_NAO_TERMINOU: 'Esta semana todavía no terminó. Cierre la semana después de su último día.',
+    SEMANA_NAO_TERMINOU:
+      'Esta semana todavía no terminó. Cierre la semana después de su último día.',
     SEMANA_COM_ACERTO_EM_ANDAMENTO:
       'Hay un acerto en curso en esta semana. Termine o desista del acerto antes de cerrar la semana.',
-  } as Record<string, string>,
+  },
 
   caixa: {
     titulo: 'Caja',
@@ -59,7 +60,7 @@ export const ES_TEXTOS_DE_FINANCEIRO: NoMesmoFormato<typeof PT_TEXTOS_DE_FINANCE
       RECEBIMENTO_VENDEDOR: 'Cobro del vendedor',
       PAGAMENTO_FORNECEDOR: 'Pago al proveedor',
       ACERTO_A_FAVOR_DO_VENDEDOR: 'Pago al vendedor',
-    } as Record<string, string>,
+    },
     origemAutomatica: 'Entró o salió solo',
     estorno: 'Anulación',
     estornar: 'Anular movimiento',
@@ -72,7 +73,8 @@ export const ES_TEXTOS_DE_FINANCEIRO: NoMesmoFormato<typeof PT_TEXTOS_DE_FINANCE
       saiu: 'Salió',
       categoria: 'Categoría',
       semCategoria: 'Elija la categoría',
-      semCategoriasDoTipo: 'Todavía no hay categoría de este tipo. Cree una en Categorías de la caja.',
+      semCategoriasDoTipo:
+        'Todavía no hay categoría de este tipo. Cree una en Categorías de la caja.',
       forma: 'Forma',
       data: 'Fecha',
       descricao: 'Descripción',
@@ -148,7 +150,7 @@ export const ES_TEXTOS_DE_FINANCEIRO: NoMesmoFormato<typeof PT_TEXTOS_DE_FINANCE
       PAGA: 'Pagada',
       CANCELADA: 'Cancelada',
       VENCIDA: 'Vencida',
-    } as Record<string, string>,
+    },
     colunas: {
       fornecedor: 'Proveedor',
       compra: 'Compra',
@@ -225,7 +227,7 @@ export const ES_TEXTOS_DE_FINANCEIRO: NoMesmoFormato<typeof PT_TEXTOS_DE_FINANCE
     niveis: {
       CLIENTE: 'Del cliente al vendedor',
       VENDEDOR: 'Del vendedor a la tienda',
-    } as Record<string, string>,
+    },
     situacoes: {
       ABERTA: 'Abierta',
       PARCIAL: 'Parcial',
@@ -233,7 +235,7 @@ export const ES_TEXTOS_DE_FINANCEIRO: NoMesmoFormato<typeof PT_TEXTOS_DE_FINANCE
       CANCELADA: 'Cancelada',
       EM_ABERTO: 'Abierta',
       VENCIDA: 'Vencida',
-    } as Record<string, string>,
+    },
     colunas: {
       vendedor: 'Vendedor',
       cliente: 'Cliente',
@@ -250,7 +252,7 @@ export const ES_TEXTOS_DE_FINANCEIRO: NoMesmoFormato<typeof PT_TEXTOS_DE_FINANCE
       ACERTO: 'Quedó debiendo en el acerto',
       BOLETO_DO_ACERTO: 'Boleto del acerto',
       ESTORNO_DE_RECEBIMENTO: 'Cobro anulado',
-    } as Record<string, string>,
+    },
     vencida: 'Vencida',
     semCliente: 'El vendedor debe a la tienda',
   },
@@ -279,7 +281,7 @@ export const ES_TEXTOS_DE_FINANCEIRO: NoMesmoFormato<typeof PT_TEXTOS_DE_FINANCE
     momentos: {
       ACERTO: 'Pagado en el acerto',
       AVULSO: 'Cobro suelto',
-    } as Record<string, string>,
+    },
     desfeito: 'Deshecho',
     ehEstorno: 'Anulación',
     valido: 'Vigente',

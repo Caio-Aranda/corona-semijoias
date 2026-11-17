@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { ERROS_EM_ESPANHOL } from './erros-es';
 import { definirIdioma, dicionariosRegistrados, idiomaAtual, textosVivos } from './idioma';
 
@@ -10,7 +10,13 @@ import.meta.glob('../textos*.ts', { eager: true });
 type Achado = { caminho: string; texto: string };
 
 /** Anda pelos dois dicionários juntos e diz o que falta, sobra ou tem outro formato. */
-function comparar(pt: unknown, es: unknown, caminho: string, falhas: string[], vistos: Set<unknown>) {
+function comparar(
+  pt: unknown,
+  es: unknown,
+  caminho: string,
+  falhas: string[],
+  vistos: Set<unknown>,
+) {
   if (pt === es) return; // o mesmo objeto nos dois (um dicionário aninhado)
   if (typeof pt === 'string') {
     if (typeof es !== 'string') falhas.push(`${caminho}: no espanhol deveria ser texto`);
@@ -29,7 +35,8 @@ function comparar(pt: unknown, es: unknown, caminho: string, falhas: string[], v
     return;
   }
   if (Array.isArray(pt)) {
-    if (!Array.isArray(es) || es.length !== pt.length) falhas.push(`${caminho}: lista de tamanho diferente`);
+    if (!Array.isArray(es) || es.length !== pt.length)
+      falhas.push(`${caminho}: lista de tamanho diferente`);
     else pt.forEach((v, i) => comparar(v, es[i], `${caminho}[${i}]`, falhas, vistos));
     return;
   }
@@ -37,9 +44,17 @@ function comparar(pt: unknown, es: unknown, caminho: string, falhas: string[], v
   const chavesEs = Object.keys(es);
   for (const k of chavesPt) {
     if (!chavesEs.includes(k)) falhas.push(`${caminho}.${k}: falta no espanhol`);
-    else comparar((pt as Record<string, unknown>)[k], (es as Record<string, unknown>)[k], `${caminho}.${k}`, falhas, vistos);
+    else
+      comparar(
+        (pt as Record<string, unknown>)[k],
+        (es as Record<string, unknown>)[k],
+        `${caminho}.${k}`,
+        falhas,
+        vistos,
+      );
   }
-  for (const k of chavesEs) if (!chavesPt.includes(k)) falhas.push(`${caminho}.${k}: só existe no espanhol`);
+  for (const k of chavesEs)
+    if (!chavesPt.includes(k)) falhas.push(`${caminho}.${k}: só existe no espanhol`);
 }
 
 /** Todos os textos do dicionário (chama as funções com argumentos de teste). */
@@ -81,7 +96,9 @@ describe('dicionários es e pt', () => {
       coletar(d.es, d.nome, achados);
       definirIdioma(antes);
       // ã, õ e ç só existem em português; ñ, ¿ e ¡ só em espanhol.
-      const ruins = achados.filter((a) => /[ãõç]/i.test(a.texto)).map((a) => `${a.caminho}: ${a.texto}`);
+      const ruins = achados
+        .filter((a) => /[ãõç]/i.test(a.texto))
+        .map((a) => `${a.caminho}: ${a.texto}`);
       expect(ruins).toEqual([]);
     },
   );
@@ -89,7 +106,11 @@ describe('dicionários es e pt', () => {
 
 describe('troca de idioma', () => {
   it('o dicionário vivo devolve o texto do idioma de agora', () => {
-    const t = textosVivos('teste', { a: 'Olá', f: (n: string) => `Oi ${n}` }, { a: 'Hola', f: (n: string) => `Hola ${n}` });
+    const t = textosVivos(
+      'teste',
+      { a: 'Olá', f: (n: string) => `Oi ${n}` },
+      { a: 'Hola', f: (n: string) => `Hola ${n}` },
+    );
     const antes = idiomaAtual();
     definirIdioma('es');
     expect(t.a).toBe('Hola');
@@ -103,7 +124,25 @@ describe('troca de idioma', () => {
 describe('erros da API em espanhol', () => {
   it('há texto em espanhol para todos os códigos de erro do servidor', () => {
     const java = readFileSync(
-      join(__dirname, '..', '..', '..', '..', '..', 'backend', 'src', 'main', 'java', 'br', 'com', 'coronasemijoias', 'api', 'comum', 'erros', 'CodigoErro.java'),
+      join(
+        __dirname,
+        '..',
+        '..',
+        '..',
+        '..',
+        '..',
+        'backend',
+        'src',
+        'main',
+        'java',
+        'br',
+        'com',
+        'coronasemijoias',
+        'api',
+        'comum',
+        'erros',
+        'CodigoErro.java',
+      ),
       'utf8',
     );
     const codigos = [...java.matchAll(/^\s{4}([A-Z][A-Z0-9_]+)\(/gm)].map((m) => m[1] as string);
@@ -111,5 +150,31 @@ describe('erros da API em espanhol', () => {
     // ACESSO_BLOQUEADO traz os minutos no texto e tem função própria.
     const faltam = codigos.filter((c) => c !== 'ACESSO_BLOQUEADO' && !(c in ERROS_EM_ESPANHOL));
     expect(faltam).toEqual([]);
+  });
+});
+
+describe('informes en español', () => {
+  it('ninguna definición de informe queda con texto en portugués', async () => {
+    const antes = idiomaAtual();
+    definirIdioma('es');
+    vi.resetModules();
+    const { RELATORIOS } = await import('../nucleo/relatorios');
+    const restos: string[] = [];
+    const andar = (v: unknown, caminho: string) => {
+      if (typeof v === 'string') {
+        if (/[ãõç]|ção|ções|\b(não|você|peças?|vendedor es)\b/i.test(v))
+          restos.push(`${caminho}: ${v}`);
+      } else if (Array.isArray(v)) v.forEach((x, i) => andar(x, `${caminho}[${i}]`));
+      else if (typeof v === 'object' && v !== null) {
+        for (const [k, x] of Object.entries(v)) {
+          if (['valor', 'chave', 'nome', 'campo', 'tipo', 'filtro', 'abre', 'grupo'].includes(k))
+            continue;
+          andar(x, `${caminho}.${k}`);
+        }
+      }
+    };
+    andar(RELATORIOS, 'RELATORIOS');
+    definirIdioma(antes);
+    expect(restos).toEqual([]);
   });
 });

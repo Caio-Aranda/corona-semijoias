@@ -103,4 +103,8 @@ export const PT_TEXTOS_DE_CONCILIACOES = {
   } as Record<string, string>,
 } as const;
 
-export const TEXTOS_DE_CONCILIACOES = textosVivos('conciliacoes', PT_TEXTOS_DE_CONCILIACOES, ES_TEXTOS_DE_CONCILIACOES);
+export const TEXTOS_DE_CONCILIACOES = textosVivos(
+  'conciliacoes',
+  PT_TEXTOS_DE_CONCILIACOES,
+  ES_TEXTOS_DE_CONCILIACOES,
+);

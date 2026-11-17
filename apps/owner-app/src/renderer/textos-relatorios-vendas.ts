@@ -24,4 +24,8 @@ export const PT_TEXTOS_DE_RELATORIOS_DE_VENDAS = {
   semPraca: 'Sem praça',
 } as const;
 
-export const TEXTOS_DE_RELATORIOS_DE_VENDAS = textosVivos('rel-vendas', PT_TEXTOS_DE_RELATORIOS_DE_VENDAS, ES_TEXTOS_DE_RELATORIOS_DE_VENDAS);
+export const TEXTOS_DE_RELATORIOS_DE_VENDAS = textosVivos(
+  'rel-vendas',
+  PT_TEXTOS_DE_RELATORIOS_DE_VENDAS,
+  ES_TEXTOS_DE_RELATORIOS_DE_VENDAS,
+);

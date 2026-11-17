@@ -4,6 +4,7 @@
  * demais para a coluna é cortado com "..." (o Excel e o CSV trazem o texto inteiro).
  */
 import type { Celula, Grade } from './grade';
+import { TEXTOS_SOLTOS as SOLTOS } from '../../textos-soltos';
 
 const LARGURA = 842;
 const ALTURA = 595;
@@ -118,7 +119,13 @@ export function gerarPdf(grade: Grade): Uint8Array {
         );
       });
     }
-    texto(LARGURA - MARGEM - 60, MARGEM - 6, `Página ${numero + 1} de ${paginas.length}`, false, 8);
+    texto(
+      LARGURA - MARGEM - 60,
+      MARGEM - 6,
+      SOLTOS.arquivo.pagina(numero + 1, paginas.length),
+      false,
+      8,
+    );
     return o.join('\n');
   });
 

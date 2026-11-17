@@ -12,6 +12,8 @@ import { RELATORIOS_DE_MALETA, prepararLinhaDeMaleta } from './relatorios-maleta
 import { RELATORIOS_FINANCEIROS, prepararLinhaFinanceira } from './relatorios-financeiros';
 import { RELATORIOS_DE_VENDAS, prepararLinhaDeVendas } from './relatorios-vendas';
 import { RELATORIOS_DE_CONTROLE, prepararLinhaDeControle } from './relatorios-controle';
+import { idiomaAtual } from '../idioma/idioma';
+import { traducirDefinicion } from '../idioma/es/relatorios-mapa';
 
 export type FiltroDoRelatorio =
   | 'busca'
@@ -549,3 +551,6 @@ export function prepararLinha(
         : prepararLinhaDeEstoque(nome, linha);
   }
 }
+
+// Em espanhol, os textos de cada definição saem da tabela de tradução (feita uma vez, ao abrir o programa).
+if (idiomaAtual() === 'es') traducirDefinicion(RELATORIOS);

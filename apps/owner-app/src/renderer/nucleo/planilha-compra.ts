@@ -9,22 +9,28 @@ import { TEXTOS_DE_COMPRAS } from '../textos-compras';
 import { custoDaPlanilhaEmCentavos, lerQuantidade } from './compra';
 import { chaveDoCodigo, normalizarCodigo } from './codigos';
 import { semAcento, type Tabela } from './planilha';
+import { TEXTOS_SOLTOS as SOLTOS } from '../textos-soltos';
 
 const P = TEXTOS_DE_COMPRAS.planilha.problemas;
 
 export type ColunaDaCompra = 'codigo' | 'quantidade' | 'custo';
 
 const APELIDOS: Record<ColunaDaCompra, string[]> = {
-  codigo: ['codigo', 'cod', 'codigo da loja', 'codigo de barras'],
-  quantidade: ['quantidade', 'qtd', 'qtde', 'quant'],
-  custo: ['custo', 'preco de custo', 'preco custo', 'valor de custo', 'custo unitario'],
+  codigo: ['codigo', 'cod', 'codigo da loja', 'codigo de barras', 'codigo de la tienda'],
+  quantidade: ['quantidade', 'qtd', 'qtde', 'quant', 'cantidad', 'cant'],
+  custo: [
+    'custo',
+    'preco de custo',
+    'preco custo',
+    'valor de custo',
+    'custo unitario',
+    'costo',
+    'precio de costo',
+    'costo unitario',
+  ],
 };
 const OBRIGATORIAS: ColunaDaCompra[] = ['codigo', 'quantidade', 'custo'];
-const NOME_NA_TELA: Record<ColunaDaCompra, string> = {
-  codigo: 'código',
-  quantidade: 'quantidade',
-  custo: 'custo',
-};
+const NOME_NA_TELA = SOLTOS.planilha.colunasDaCompra;
 
 export interface LinhaLidaDaCompra {
   /** Número da linha na planilha (a primeira de dados é a 2). */
@@ -56,7 +62,7 @@ function acharColunas(cabecalho: string[]): Partial<Record<ColunaDaCompra, numbe
 /** Confere a planilha linha a linha, sem falar com o servidor. */
 export function analisarPlanilhaDeCompra(tabela: Tabela): ResultadoDaLeituraDaCompra {
   const [cabecalho, ...dados] = tabela;
-  if (!cabecalho) return { tipo: 'erro', mensagem: 'A planilha está vazia.' };
+  if (!cabecalho) return { tipo: 'erro', mensagem: SOLTOS.planilha.vazia };
   const colunas = acharColunas(cabecalho);
   const faltam = OBRIGATORIAS.filter((c) => colunas[c] === undefined);
   if (faltam.length > 0) {
@@ -68,7 +74,7 @@ export function analisarPlanilhaDeCompra(tabela: Tabela): ResultadoDaLeituraDaCo
     };
   }
   if (dados.length === 0) {
-    return { tipo: 'erro', mensagem: 'A planilha não tem nenhuma linha de peças.' };
+    return { tipo: 'erro', mensagem: SOLTOS.planilha.semLinhasDePecas };
   }
   if (dados.length > MAXIMO_DE_ITENS_DA_COMPRA) {
     return {

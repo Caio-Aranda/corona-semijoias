@@ -317,4 +317,8 @@ export const PT_TEXTOS_DE_DEVOLUCOES = {
   aviso: { abrir: 'Abrir' },
 } as const;
 
-export const TEXTOS_DE_DEVOLUCOES = textosVivos('devolucoes', PT_TEXTOS_DE_DEVOLUCOES, ES_TEXTOS_DE_DEVOLUCOES);
+export const TEXTOS_DE_DEVOLUCOES = textosVivos(
+  'devolucoes',
+  PT_TEXTOS_DE_DEVOLUCOES,
+  ES_TEXTOS_DE_DEVOLUCOES,
+);

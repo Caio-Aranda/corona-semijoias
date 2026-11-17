@@ -3,6 +3,7 @@
  * compressão (o arquivo é pequeno) e o texto vai como texto — nunca como fórmula.
  */
 import type { Celula, Grade } from './grade';
+import { TEXTOS_SOLTOS as SOLTOS } from '../../textos-soltos';
 
 const CODIFICAR = new TextEncoder();
 
@@ -173,7 +174,7 @@ export function gerarXlsx(grade: Grade): Uint8Array {
     },
     {
       nome: 'xl/workbook.xml',
-      texto: `${cabecalhoXml}<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Relatório" sheetId="1" r:id="rId1"/></sheets></workbook>`,
+      texto: `${cabecalhoXml}<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="${SOLTOS.arquivo.planilha}" sheetId="1" r:id="rId1"/></sheets></workbook>`,
     },
     {
       nome: 'xl/_rels/workbook.xml.rels',
