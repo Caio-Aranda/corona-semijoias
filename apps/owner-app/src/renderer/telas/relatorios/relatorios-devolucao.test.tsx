@@ -8,6 +8,7 @@ import type {
   PonteDoCorona,
   ResultadoDeChamada,
 } from '../../../shared/ponte';
+import { abrirAreaDoMenu, abrirRelatorioPeloMenu } from '../../apoio-de-testes';
 import { App } from '../../App';
 
 const entregues: { nome: string; tipo: string; bytes: Uint8Array }[] = [];
@@ -130,7 +131,7 @@ const dosRelatorios = (m: ReturnType<typeof montar>) =>
 async function abrir(m: ReturnType<typeof montar>, titulo: string) {
   const u = userEvent.setup();
   render(<App ponte={m.ponte} />);
-  await u.click(await screen.findByRole('button', { name: titulo }));
+  await abrirRelatorioPeloMenu(u, titulo);
   return u;
 }
 
@@ -142,8 +143,9 @@ beforeEach(() => {
 describe('Relatórios de devolução e troca', () => {
   it('o menu tem o grupo, os sete relatórios e a conferência com os nomes do glossário', async () => {
     const m = montar();
+    const u = userEvent.setup();
     render(<App ponte={m.ponte} />);
-    expect(await screen.findByText('Relatórios de devoluções')).toBeInTheDocument();
+    const cartoes = await abrirAreaDoMenu(u, 'devolucoes');
     for (const t of [
       'Devoluções por vendedor e motivo',
       'Quanto cada vendedor devolveu do que vendeu',
@@ -152,10 +154,13 @@ describe('Relatórios de devolução e troca', () => {
       'Créditos dos clientes: em aberto e usados',
       'Dinheiro devolvido aos clientes',
       'Pedidos de autorização',
-      'Conferência das devoluções e trocas',
     ]) {
-      expect(await screen.findByRole('button', { name: t })).toBeInTheDocument();
+      expect(within(cartoes).getByText(t)).toBeInTheDocument();
     }
+    const conferencias = await abrirAreaDoMenu(u, 'conferencias');
+    expect(
+      within(conferencias).getByText('Conferência das devoluções e trocas'),
+    ).toBeInTheDocument();
   });
 
   it('a devolução cancelada aparece escrita "Cancelada" e o valor sai nas três moedas do dia de cada devolução', async () => {

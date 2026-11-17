@@ -8,6 +8,7 @@ import type {
   PonteDoCorona,
   ResultadoDeChamada,
 } from '../../../shared/ponte';
+import { abrirAreaDoMenu, abrirRelatorioPeloMenu } from '../../apoio-de-testes';
 import { App } from '../../App';
 
 const entregues: { nome: string; tipo: string; bytes: Uint8Array }[] = [];
@@ -130,7 +131,7 @@ const dosRelatorios = (m: ReturnType<typeof montar>) =>
 async function abrir(m: ReturnType<typeof montar>, titulo: string) {
   const u = userEvent.setup();
   render(<App ponte={m.ponte} />);
-  await u.click(await screen.findByRole('button', { name: titulo }));
+  await abrirRelatorioPeloMenu(u, titulo);
   return u;
 }
 
@@ -142,7 +143,9 @@ beforeEach(() => {
 describe('Relatórios de cadastro: menu e tabela', () => {
   it('o menu tem um item para cada relatório, com o nome do glossário', async () => {
     const m = montar();
+    const u = userEvent.setup();
     render(<App ponte={m.ponte} />);
+    const cartoes = await abrirAreaDoMenu(u, 'cadastros');
     for (const nome of [
       'Vendedores: limite e situação',
       'Clientes cadastrados',
@@ -155,7 +158,7 @@ describe('Relatórios de cadastro: menu e tabela', () => {
       'Mudanças nos produtos',
       'Resultado das importações',
     ]) {
-      expect(await screen.findByRole('button', { name: nome })).toBeInTheDocument();
+      expect(within(cartoes).getByText(nome)).toBeInTheDocument();
     }
   });
 
@@ -217,13 +220,13 @@ describe('Relatórios de cadastro: menu e tabela', () => {
     await waitFor(() =>
       expect(dosRelatorios(m).at(-1)).toMatchObject({ limiteDe: '200', comRestricao: 'SIM' }),
     );
-    await u.click(screen.getByRole('button', { name: 'Fornecedores cadastrados' }));
+    await abrirRelatorioPeloMenu(u, 'Fornecedores cadastrados');
     await u.selectOptions(
       await screen.findByLabelText('Produtos ativos'),
       'Só quem não tem produtos',
     );
     await waitFor(() => expect(dosRelatorios(m).at(-1)).toMatchObject({ comProdutos: 'NAO' }));
-    await u.click(screen.getByRole('button', { name: 'Clientes cadastrados' }));
+    await abrirRelatorioPeloMenu(u, 'Clientes cadastrados');
     await u.selectOptions(await screen.findByLabelText('Vendedor responsável'), 'Só sem vendedor');
     await waitFor(() => expect(dosRelatorios(m).at(-1)).toMatchObject({ comVendedor: 'NAO' }));
   });

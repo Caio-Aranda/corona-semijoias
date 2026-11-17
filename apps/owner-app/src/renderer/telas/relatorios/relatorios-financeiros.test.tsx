@@ -9,6 +9,7 @@ import type {
   ResultadoDeChamada,
 } from '../../../shared/ponte';
 import { conferirRelatorio } from '../../../shared/validacao-relatorios';
+import { abrirAreaDoMenu, abrirRelatorioPeloMenu } from '../../apoio-de-testes';
 import { App } from '../../App';
 
 const entregues: { nome: string; tipo: string; bytes: Uint8Array }[] = [];
@@ -117,7 +118,7 @@ const dosRelatorios = (m: ReturnType<typeof montar>) =>
 async function abrir(m: ReturnType<typeof montar>, titulo: string) {
   const u = userEvent.setup();
   render(<App ponte={m.ponte} />);
-  await u.click(await screen.findByRole('button', { name: titulo }));
+  await abrirRelatorioPeloMenu(u, titulo);
   return u;
 }
 
@@ -129,8 +130,9 @@ beforeEach(() => {
 describe('Relatórios financeiros (tarefa 7.12)', () => {
   it('o menu tem o grupo e os nove relatórios com os nomes do glossário', async () => {
     const m = montar();
+    const u = userEvent.setup();
     render(<App ponte={m.ponte} />);
-    expect(await screen.findByText('Relatórios financeiros')).toBeInTheDocument();
+    const cartoes = await abrirAreaDoMenu(u, 'financeiro');
     for (const t of [
       'Acertos por vendedor e semana',
       'Faltas e pendências',
@@ -142,7 +144,7 @@ describe('Relatórios financeiros (tarefa 7.12)', () => {
       'Fluxo do caixa',
       'Recebimentos por forma de pagamento',
     ]) {
-      expect(await screen.findByRole('button', { name: t })).toBeInTheDocument();
+      expect(within(cartoes).getByText(t)).toBeInTheDocument();
     }
   });
 

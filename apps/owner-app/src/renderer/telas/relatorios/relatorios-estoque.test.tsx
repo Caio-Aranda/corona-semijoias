@@ -8,6 +8,7 @@ import type {
   PonteDoCorona,
   ResultadoDeChamada,
 } from '../../../shared/ponte';
+import { abrirAreaDoMenu, abrirRelatorioPeloMenu } from '../../apoio-de-testes';
 import { App } from '../../App';
 
 const entregues: { nome: string; tipo: string; bytes: Uint8Array }[] = [];
@@ -303,7 +304,7 @@ const dosRelatorios = (m: ReturnType<typeof montar>) =>
 async function abrir(m: ReturnType<typeof montar>, titulo: string) {
   const u = userEvent.setup();
   render(<App ponte={m.ponte} />);
-  await u.click(await screen.findByRole('button', { name: titulo }));
+  await abrirRelatorioPeloMenu(u, titulo);
   return u;
 }
 
@@ -358,13 +359,22 @@ const RELATORIOS: [string, string, RegExp, string][] = [
 ];
 
 describe('Relatórios de estoque e de compras: menu', () => {
-  it('há um grupo de estoque e um de compras, com os nomes do glossário', async () => {
+  it('as áreas de estoque, compras e conferências mostram os relatórios com os nomes do glossário', async () => {
     const m = montar();
+    const u = userEvent.setup();
     render(<App ponte={m.ponte} />);
-    expect(await screen.findByText('Relatórios de estoque')).toBeInTheDocument();
-    expect(screen.getByText('Relatórios de compras')).toBeInTheDocument();
     for (const [, titulo] of RELATORIOS) {
-      expect(await screen.findByRole('button', { name: titulo })).toBeInTheDocument();
+      const area = [
+        'Compras por período',
+        'Compras por fornecedor',
+        'Histórico de custo das peças',
+      ].includes(titulo)
+        ? 'compras'
+        : titulo === 'Conferência do estoque'
+          ? 'conferencias'
+          : 'estoque';
+      const cartoes = await abrirAreaDoMenu(u, area);
+      expect(within(cartoes).getByText(titulo)).toBeInTheDocument();
     }
   });
 });
@@ -673,13 +683,13 @@ describe('Relatórios de estoque e de compras: textos', () => {
     render(<App ponte={m.ponte} />);
     const telas: string[] = [];
     for (const [, titulo] of RELATORIOS) {
-      await u.click(await screen.findByRole('button', { name: titulo }));
+      await abrirRelatorioPeloMenu(u, titulo);
       await screen.findByRole('heading', { name: titulo, level: 1 });
       await screen.findByRole('region', { name: 'Totais' });
       await new Promise((r) => setTimeout(r, 20));
       telas.push(document.querySelector('main')?.textContent ?? document.body.textContent ?? '');
     }
-    await u.click(await screen.findByRole('button', { name: 'Compras por período' }));
+    await abrirRelatorioPeloMenu(u, 'Compras por período');
     await u.click((await screen.findAllByRole('button', { name: /^Ver as peças/ }))[0]!);
     await screen.findByRole('heading', { name: 'Peças da compra', level: 1 });
     telas.push(document.body.textContent ?? '');

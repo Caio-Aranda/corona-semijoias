@@ -9,6 +9,7 @@ import type {
   ResultadoDeChamada,
 } from '../../../shared/ponte';
 import { conferirRelatorio } from '../../../shared/validacao-relatorios';
+import { abrirAreaDoMenu, abrirRelatorioPeloMenu } from '../../apoio-de-testes';
 import { App } from '../../App';
 
 const entregues: { nome: string; tipo: string; bytes: Uint8Array }[] = [];
@@ -151,7 +152,7 @@ const dosRelatorios = (m: ReturnType<typeof montar>) =>
 async function abrir(m: ReturnType<typeof montar>, titulo: string) {
   const u = userEvent.setup();
   render(<App ponte={m.ponte} />);
-  await u.click(await screen.findByRole('button', { name: titulo }));
+  await abrirRelatorioPeloMenu(u, titulo);
   return u;
 }
 
@@ -163,14 +164,16 @@ beforeEach(() => {
 describe('Resultado do período e lucro (tarefa 8.6)', () => {
   it('o menu financeiro tem os quatro relatórios novos, com os nomes do glossário', async () => {
     const m = montar();
+    const u = userEvent.setup();
     render(<App ponte={m.ponte} />);
+    const cartoes = await abrirAreaDoMenu(u, 'financeiro');
     for (const t of [
       'Resultado do período',
       'Registros do resultado',
       'Lucro por produto',
       'Lucro por vendedor',
     ]) {
-      expect(await screen.findByRole('button', { name: t })).toBeInTheDocument();
+      expect(within(cartoes).getByText(t)).toBeInTheDocument();
     }
   });
 
