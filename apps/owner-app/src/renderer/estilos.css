@@ -24,15 +24,26 @@
   background: var(--cor-fundo);
   border: 1px solid var(--cor-borda);
   border-radius: var(--raio-2);
+  box-shadow: var(--sombra);
   display: flex;
   flex-direction: column;
   gap: var(--espaco-4);
 }
 
+/* Título grande da tela: letra de marca em dourado escuro, com o filete dourado embaixo (proposta visual, seção 4). */
 .gestao-titulo {
   margin: 0;
-  font-size: var(--texto-titulo);
-  line-height: 1.2;
+  color: var(--cor-ouro-escuro);
+  font: 700 var(--texto-titulo-marca) / 1.15 var(--fonte-marca);
+}
+.gestao-titulo::after {
+  content: '';
+  display: block;
+  width: 4.5rem;
+  height: 4px;
+  margin-top: var(--espaco-3);
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--cor-ouro-escuro), var(--cor-ouro-claro));
 }
 
 .gestao-texto {

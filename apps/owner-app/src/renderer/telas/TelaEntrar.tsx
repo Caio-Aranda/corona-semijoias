@@ -1,4 +1,4 @@
-import { Aviso, Botao, CabecalhoDeMarca, Campo } from '@corona/ui';
+import { Aviso, Botao, Campo } from '@corona/ui';
 import { useState, type FormEvent } from 'react';
 import type { PonteDoCorona, ResultadoDeEntrada } from '../../shared/ponte';
 import { TEXTOS } from '../textos';
@@ -39,11 +39,12 @@ export function TelaEntrar({ ponte, sessaoTerminou = false, aoMudar }: TelaEntra
   }
 
   return (
-    <div className="gestao-pagina">
-      <CabecalhoDeMarca nomeDoApp="Corona Gestão" />
-      <main className="gestao-conteudo">
-        <form className="gestao-cartao" onSubmit={(e) => void entrar(e)} noValidate>
-          <h1 className="gestao-titulo">Entrar</h1>
+    <div className="cs-entrada-pagina">
+      <main>
+        <form className="cs-entrada" onSubmit={(e) => void entrar(e)} noValidate>
+          <span className="cs-entrada__logo" role="img" aria-label="Corona Semijoias" />
+          <p className="cs-entrada__titulo">Corona Gestão</p>
+          <h1 className="cs-entrada__titulo-pagina">Entrar</h1>
           {sessaoTerminou ? (
             <Aviso tipo="atencao" titulo={TEXTOS.sessaoTerminou.titulo}>
               {TEXTOS.sessaoTerminou.texto}

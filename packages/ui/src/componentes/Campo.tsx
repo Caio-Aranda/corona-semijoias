@@ -1,4 +1,4 @@
-import { useId, type InputHTMLAttributes } from 'react';
+import { useId, useState, type InputHTMLAttributes } from 'react';
 
 export interface CampoProps extends InputHTMLAttributes<HTMLInputElement> {
   rotulo: string;
@@ -13,16 +13,38 @@ export function Campo({ rotulo, erro, ajuda, id, ...resto }: CampoProps) {
   const idCampo = id ?? gerado;
   const idAjuda = `${idCampo}-ajuda`;
   const idErro = `${idCampo}-erro`;
+  const [visivel, setVisivel] = useState(false);
+  const ehSenha = resto.type === 'password';
   const descricao = [ajuda ? idAjuda : '', erro ? idErro : ''].filter(Boolean).join(' ');
   return (
     <div className={`cs-campo${erro ? ' cs-campo--erro' : ''}`}>
       <label htmlFor={idCampo}>{rotulo}</label>
-      <input
-        {...resto}
-        id={idCampo}
-        aria-invalid={erro ? true : undefined}
-        aria-describedby={descricao || undefined}
-      />
+      {ehSenha ? (
+        <div className="cs-campo__com-ver">
+          <input
+            {...resto}
+            type={visivel ? 'text' : 'password'}
+            id={idCampo}
+            aria-invalid={erro ? true : undefined}
+            aria-describedby={descricao || undefined}
+          />
+          <button
+            type="button"
+            className="cs-campo__ver"
+            aria-pressed={visivel}
+            onClick={() => setVisivel((v) => !v)}
+          >
+            {visivel ? 'Esconder' : 'Mostrar'}
+          </button>
+        </div>
+      ) : (
+        <input
+          {...resto}
+          id={idCampo}
+          aria-invalid={erro ? true : undefined}
+          aria-describedby={descricao || undefined}
+        />
+      )}
       {ajuda ? (
         <span id={idAjuda} className="cs-campo__ajuda">
           {ajuda}

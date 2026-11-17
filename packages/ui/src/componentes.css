@@ -15,21 +15,34 @@ body {
 .cs-botao {
   min-height: var(--alvo-minimo);
   padding: var(--espaco-2) var(--espaco-6);
-  border: 2px solid var(--cor-ouro);
+  border: 2px solid var(--cor-borda-campo);
   border-radius: var(--raio-1);
   background: var(--cor-fundo);
   color: var(--cor-texto);
-  font: 600 var(--texto-base) var(--fonte-dados);
+  font: 700 var(--texto-base) var(--fonte-dados);
   cursor: pointer;
+}
+.cs-botao:hover:not(:disabled) {
+  border-color: var(--cor-texto);
 }
 .cs-botao--grande {
   min-height: var(--alvo-grande);
   padding: var(--espaco-3) var(--espaco-8);
   font-size: var(--texto-grande);
 }
+/* Ação principal da tela: 56 px, na cor do app (vinho no Gestão, dourado com letra escura no Vendas). */
 .cs-botao--primario {
-  background: var(--cor-ouro);
-  border-color: var(--cor-texto);
+  min-height: var(--alvo-grande);
+  background: var(--cor-marca);
+  border-color: var(--cor-marca);
+  border-bottom: 4px solid var(--cor-marca-filete);
+  color: var(--cor-marca-texto);
+  box-shadow: 0 6px 14px rgb(43 33 24 / 22%);
+}
+.cs-botao--primario:hover:not(:disabled) {
+  background: var(--cor-marca-hover);
+  border-color: var(--cor-marca-hover);
+  border-bottom-color: var(--cor-marca-filete);
 }
 .cs-botao--perigoso {
   background: var(--cor-botao-perigo-fundo);
@@ -71,6 +84,7 @@ body {
 }
 .cs-tabela th {
   background: var(--cor-fundo-suave);
+  border-bottom: 2px solid var(--cor-ouro);
   font-weight: 600;
 }
 .cs-tabela .cs-numero {
@@ -85,13 +99,14 @@ body {
 }
 .cs-campo label {
   font-weight: 600;
+  font-size: 1rem;
 }
 .cs-campo input,
 .cs-campo select,
 .cs-campo textarea {
-  min-height: var(--alvo-minimo);
-  padding: var(--espaco-2) var(--espaco-3);
-  border: 2px solid var(--cor-texto-suave);
+  min-height: 3.25rem;
+  padding: var(--espaco-2) var(--espaco-4);
+  border: 2px solid var(--cor-borda-campo);
   border-radius: var(--raio-1);
   background: var(--cor-fundo);
   color: var(--cor-texto);
@@ -113,13 +128,53 @@ body {
 }
 
 .cs-aviso {
-  padding: var(--espaco-4);
-  border-left: 6px solid;
+  padding: var(--espaco-3) var(--espaco-4);
+  border: 2px solid;
   border-radius: var(--raio-1);
+}
+/* Aviso com ícone e texto (nunca só cor): ✓ certo, ✕ erro, ! atenção, i informação. */
+.cs-aviso {
+  display: grid;
+  grid-template-columns: 1.75rem 1fr;
+  column-gap: var(--espaco-3);
+  align-items: start;
+}
+.cs-aviso::before {
+  grid-row: 1 / span 2;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.95rem;
+  background: currentcolor;
+  content: 'i';
+}
+.cs-aviso--sucesso::before {
+  content: '✓';
+  background: var(--cor-sucesso-borda);
+}
+.cs-aviso--erro::before {
+  content: '✕';
+  background: var(--cor-erro-borda);
+}
+.cs-aviso--atencao::before {
+  content: '!';
+  background: var(--cor-aviso-borda);
+}
+.cs-aviso--informacao::before {
+  content: 'i';
+  background: var(--cor-ouro-escuro);
 }
 .cs-aviso__titulo {
   margin: 0 0 var(--espaco-1);
   font-weight: 700;
+}
+.cs-aviso__titulo,
+.cs-aviso__texto {
+  grid-column: 2;
 }
 .cs-aviso__texto {
   margin: 0;
@@ -149,18 +204,98 @@ body {
   display: flex;
   align-items: center;
   gap: var(--espaco-4);
-  padding: var(--espaco-4) var(--espaco-6);
-  background: var(--cor-champanhe);
-  border-bottom: 3px solid var(--cor-ouro);
+  padding: var(--espaco-3) var(--espaco-6);
+  background: var(--cor-fundo-suave);
+  border-bottom: 4px solid var(--cor-ouro);
+}
+.cs-cabecalho__simbolo {
+  flex: none;
+  width: 3rem;
+  height: 3rem;
+  background: url('./imagens/simbolo.png') center / contain no-repeat;
 }
 .cs-cabecalho__marca {
   margin: 0;
-  color: var(--cor-ouro);
-  font: 600 var(--texto-titulo-marca) / 1.1 var(--fonte-marca);
+  color: var(--cor-ouro-escuro);
+  font: 700 var(--texto-titulo-marca) / 1.1 var(--fonte-marca);
 }
 .cs-cabecalho__app {
+  margin-left: var(--espaco-2);
+  padding: 0.2rem 0.75rem;
+  border-radius: 999px;
+  background: var(--cor-marca);
+  color: var(--cor-marca-texto);
+  font-size: var(--texto-pequeno);
+  font-weight: 700;
+}
+
+/* Cartão da tela de entrada (variação 1 da proposta): logo, nome do app, dois campos e um botão grande. */
+.cs-entrada-pagina {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: var(--espaco-6) var(--espaco-4);
+  background:
+    radial-gradient(40rem 20rem at 50% 0%, #f6e8c9 0%, transparent 70%), var(--cor-fundo-suave);
+}
+.cs-entrada__titulo-pagina {
+  margin: 0 0 var(--espaco-2);
+  text-align: center;
+  font-size: var(--texto-grande);
+  font-weight: 700;
+}
+.cs-entrada {
+  width: min(100%, 26rem);
+  margin: 0 auto;
+  padding: var(--espaco-8) var(--espaco-6) var(--espaco-6);
+  background: var(--cor-fundo);
+  border: 1px solid var(--cor-borda);
+  border-radius: 1.5rem;
+  box-shadow: var(--sombra);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+}
+.cs-entrada__logo {
+  width: 8rem;
+  height: 8rem;
+  margin: 0 auto;
+  background: url('./imagens/logo-redonda.png') center / contain no-repeat;
+}
+.cs-entrada__titulo {
+  margin: 0;
+  text-align: center;
+  color: var(--cor-ouro-escuro);
+  font: 700 var(--texto-titulo-marca) / 1.1 var(--fonte-marca);
+}
+.cs-entrada .cs-campo,
+.cs-entrada .cs-aviso {
+  margin-bottom: var(--espaco-2);
+}
+.cs-entrada .cs-botao--primario {
+  width: 100%;
+  font-size: var(--texto-grande);
+}
+.cs-campo__com-ver {
+  display: flex;
+  align-items: stretch;
+}
+.cs-campo__com-ver input {
+  flex: 1;
+  min-width: 0;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.cs-campo__ver {
+  padding: 0 var(--espaco-4);
+  border: 2px solid var(--cor-borda-campo);
+  border-left: 0;
+  border-radius: 0 var(--raio-1) var(--raio-1) 0;
+  background: var(--cor-fundo);
   color: var(--cor-texto);
-  font-weight: 600;
+  font: 600 1rem var(--fonte-dados);
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 .cs-valor__real {
@@ -200,14 +335,15 @@ body {
   border-radius: var(--raio-1);
 }
 .cs-peca__foto {
-  object-fit: cover;
+  object-fit: contain;
+  background: linear-gradient(135deg, #f6ecd8, #ead6aa);
 }
 .cs-peca__sem-foto {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--cor-fundo-suave);
-  border: 2px dashed var(--cor-ouro);
+  background: #f1ece3;
+  border: 2px dashed #a8987f;
   color: var(--cor-texto-suave);
   text-align: center;
 }
@@ -218,7 +354,7 @@ body {
 
 .cs-peca__nome {
   margin: 0;
-  font-size: var(--texto-titulo);
+  font-size: 1.5rem;
   font-weight: 700;
 }
 .cs-peca__codigo {
