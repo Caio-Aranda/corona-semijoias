@@ -46,9 +46,15 @@ class ControleDeAuditoriaTest extends ApoioDoControle {
         segredos.put("senhaTemporaria", "segredo-123");
         segredos.put("token", "tok-secreto");
         segredos.put("ativo", true);
+        transacao.executeWithoutResult(s -> auditoria.registrar(Ator.usuario(ana.id()), "PRECO_VENDA_ALTERADO", "produtos",
+                produto, Map.of("preco_venda", "10.00"), Map.of("preco_venda", "12.50")));
+        // O teste de ordem precisa de instantes diferentes: no mesmo milissegundo, a ordem do id (UUID v7) é sorteada.
+        try {
+            Thread.sleep(20);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
         transacao.executeWithoutResult(s -> {
-            auditoria.registrar(Ator.usuario(ana.id()), "PRECO_VENDA_ALTERADO", "produtos", produto,
-                    Map.of("preco_venda", "10.00"), Map.of("preco_venda", "12.50"));
             auditoria.registrar(Ator.usuario(ana.id()), "USUARIO_CRIADO", "usuarios", usuarioCriado, null, segredos);
             auditoria.registrar(Ator.usuario(bia.id()), "DEVOLUCAO_REGISTRADA", "devolucoes", devolucao, null,
                     Map.of("valor_reembolsado", "5.00", "dentro_garantia", true, "forma_reembolso", "DINHEIRO"));

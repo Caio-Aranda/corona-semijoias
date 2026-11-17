@@ -324,6 +324,36 @@ describe('consultas da devolução e troca', () => {
     ).toBe('-23.33');
   });
 
+  it('troca com A a prazo: a prévia e a linha provisória dão a mesma diferença (issue 208)', () => {
+    // Nada pago: o crédito de A é zero e o cliente paga todo o B (50,00).
+    const v = vender([{ produtoId: m.produtoA, quantidade: 1 }], []);
+    const previa = consultas.fase6.previaDaTroca({
+      devolucao: { vendaId: v.vendaId, motivo: 'TAMANHO', itens: pecas([m.produtoA, 1]) },
+      itens: [{ produtoId: produtoC, quantidade: 1 }],
+    });
+    expect(previa.diferenca).toBe('50.00');
+    const t = trocar(v.vendaId, pecas([m.produtoA, 1]), produtoC);
+    expect(consultas.fase6.listar({}).find((l) => l.id === t.id)).toMatchObject({
+      diferenca: '50.00',
+      emCredito: '0.00',
+    });
+  });
+
+  it('troca com A paga em parte: a diferença a pagar descontando só o crédito (issue 208)', () => {
+    // Pago 10,00 de 33,33: abate 23,33, crédito 10,00; B vale 50,00 e a diferença é 40,00.
+    const v = vender(
+      [{ produtoId: m.produtoA, quantidade: 1 }],
+      [{ valor: '10.00', forma: 'PIX' }],
+    );
+    const previa = consultas.fase6.previaDaTroca({
+      devolucao: { vendaId: v.vendaId, motivo: 'TAMANHO', itens: pecas([m.produtoA, 1]) },
+      itens: [{ produtoId: produtoC, quantidade: 1 }],
+    });
+    expect(previa.diferenca).toBe('40.00');
+    const t = trocar(v.vendaId, pecas([m.produtoA, 1]), produtoC);
+    expect(consultas.fase6.listar({}).find((l) => l.id === t.id)?.diferenca).toBe('40.00');
+  });
+
   it('minhas devoluções e trocas: aguardando envio, para revisão da dona, cancelada e o cancelar só no mesmo dia', () => {
     const v = vender([{ produtoId: m.produtoA, quantidade: 3 }]);
     const d1 = devolver(v.vendaId, pecas([m.produtoA, 1]));

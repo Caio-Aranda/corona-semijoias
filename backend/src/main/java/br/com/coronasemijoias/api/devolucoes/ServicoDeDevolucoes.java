@@ -433,7 +433,11 @@ public class ServicoDeDevolucoes {
             jdbc.update("UPDATE corona.autorizacoes_excecao SET situacao = 'USADA' WHERE id = ?", autorizacaoUsada);
         }
         // O abatimento das parcelas: a última trava (as parcelas vêm depois dos créditos).
-        contas.abaterNaDevolucao(pedido.vendaId(), id, valorAbatido, quando);
+        BigDecimal abatidoDeFato = contas.abaterNaDevolucao(pedido.vendaId(), id, valorAbatido, quando);
+        if (abatidoDeFato.compareTo(valorAbatido) != 0) {
+            // Rede de segurança (issue 208): as travas já impedem a corrida; se o abatido não fechar, desfaz tudo.
+            throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.DEVOLUCAO_NAO_CONFERE);
+        }
 
         Map<String, Object> depois = new LinkedHashMap<>();
         depois.put("venda_id", pedido.vendaId().toString());

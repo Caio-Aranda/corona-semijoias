@@ -20,6 +20,7 @@ import {
   type PedidoDeAutorizacaoParaEnviar,
   type TrocaParaEnviar,
 } from '../../shared/operacoes';
+import { diferencaDaTroca } from '../../shared/diferenca-da-troca';
 import { valorDaDevolucao } from '../../shared/valor-da-devolucao';
 import { CHAVES, lerEstado } from './estado-sync';
 import type { CodigoDaFase6 } from './mensagens-da-fase-6';
@@ -863,7 +864,6 @@ export function registrarTroca(
   if (limite !== null && desconto * 100n > subtotal * BigInt(limite))
     throw new ErroDaOperacao('DESCONTO_ACIMA_DO_LIMITE');
   const total = subtotal - desconto;
-  const valorA = p.valor;
   // O crédito da troca é só o que passou do que A ainda devia (A a prazo abate as parcelas primeiro); A sem nada pago
   // não gera crédito.
   const creditoDeA = p.emCredito;
@@ -991,7 +991,7 @@ export function registrarTroca(
     venda_nova_id: b.id,
     cliente_id: p.venda.cliente_id,
     vendedor_id: vendedor,
-    diferenca: textoDeCentavos(total - valorA),
+    diferenca: textoDeCentavos(diferencaDaTroca(total, creditoDeA)),
     trocada_em: quando,
     situacao: 'ATIVA',
   });

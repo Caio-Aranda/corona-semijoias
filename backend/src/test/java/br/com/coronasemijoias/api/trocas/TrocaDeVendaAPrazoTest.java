@@ -49,7 +49,7 @@ class TrocaDeVendaAPrazoTest extends ApoioDaVendaAPrazo {
         assertThat(contar("SELECT count(*) FROM corona.creditos_cliente WHERE cliente_id = ?", c.a().cliente())).isZero();
         assertThat(contar("SELECT count(*) FROM corona.usos_credito u JOIN corona.creditos_cliente k ON k.id = u.credito_id WHERE k.cliente_id = ?",
                 c.a().cliente())).isZero();
-        igual((BigDecimal) diferencaDaTroca(troca).get("diferenca"), "20.00");
+        igual((BigDecimal) diferencaDaTroca(troca).get("diferenca"), "120.00");
         Map<String, Object> d = devolucaoGravada((UUID) diferencaDaTroca(troca).get("devolucao_id"));
         igual((BigDecimal) d.get("valor_abatido"), "100.00");
         igual((BigDecimal) d.get("valor_em_credito"), "0.00");
@@ -66,7 +66,7 @@ class TrocaDeVendaAPrazoTest extends ApoioDaVendaAPrazo {
         igual((BigDecimal) d.get("valor_abatido"), "60.00");
         igual((BigDecimal) d.get("valor_em_credito"), "40.00");
         igual((BigDecimal) d.get("valor_reembolsado"), "0.00");
-        igual((BigDecimal) t.get("diferenca"), "-30.00");
+        igual((BigDecimal) t.get("diferenca"), "30.00");
         Map<String, Object> credito = credito(UUID.fromString(troca.get("creditoId").asString()));
         igual((BigDecimal) credito.get("valor"), "40.00");
         igual((BigDecimal) credito.get("valor_utilizado"), "40.00");
@@ -83,6 +83,7 @@ class TrocaDeVendaAPrazoTest extends ApoioDaVendaAPrazo {
         igual((BigDecimal) credito.get("valor"), "40.00");
         igual((BigDecimal) credito.get("valor_utilizado"), "30.00");
         assertThat(credito.get("situacao")).isEqualTo("ABERTO");
+        igual((BigDecimal) t.get("diferenca"), "-10.00");
     }
 
     @Test
@@ -122,5 +123,24 @@ class TrocaDeVendaAPrazoTest extends ApoioDaVendaAPrazo {
         UUID vendaB = (UUID) diferencaDaTroca(troca).get("venda_nova_id");
         vendasDoTeste.add(vendaB);
         igual(emAberto(vendaB), "30.00");
+    }
+
+    @Test
+    void aLeituraDaDonaEDoVendedorMostraAMesmaDiferencaGravada() throws Exception {
+        Cena c = cena("40.00", 2, "70.00");
+        JsonNode troca = trocar(c.a().v(), pedido(c, 3, List.of(pagamento("30.00", "DINHEIRO"))));
+        vendasDoTeste.add((UUID) diferencaDaTroca(troca).get("venda_nova_id"));
+        JsonNode daDona = corpoDe(ler("/api/dona/trocas/" + id(troca), dona()).andExpect(status().isOk()));
+        JsonNode doVendedor = corpoDe(ler(TROCAS + "/" + id(troca), como(c.a().v())).andExpect(status().isOk()));
+        for (JsonNode lida : List.of(daDona, doVendedor)) {
+            assertThat(dec(lida.get("diferenca"))).isEqualByComparingTo("30.00");
+            assertThat(dec(lida.get("totalDaVendaNova"))).isEqualByComparingTo("70.00");
+        }
+    }
+
+    @Test
+    void oBancoConfereADiferencaPeloCreditoDeANaoPeloValorDevolvido() {
+        String funcao = jdbc.queryForObject("SELECT pg_get_functiondef('corona.conferir_troca'::regproc)", String.class);
+        assertThat(funcao).contains("valor_em_credito").doesNotContain("vn.total - d.valor_devolvido");
     }
 }

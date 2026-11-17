@@ -728,6 +728,11 @@ public enum CodigoErro {
             "Os valores desta troca não fecharam.",
             "Os valores desta troca não fecharam e nada foi gravado. Tente de novo; se continuar, fale com a dona."),
 
+    /** O abatido nas parcelas não bateu com o calculado; a devolução inteira foi desfeita (HTTP 409; nunca 500). */
+    DEVOLUCAO_NAO_CONFERE(
+            "Os valores desta devolução não fecharam.",
+            "Os valores desta devolução não fecharam e nada foi gravado. Tente de novo; se continuar, fale com a dona."),
+
     TROCA_JA_CANCELADA(
             "Esta troca já foi cancelada.",
             "Esta troca já foi cancelada e não pode mudar."),
