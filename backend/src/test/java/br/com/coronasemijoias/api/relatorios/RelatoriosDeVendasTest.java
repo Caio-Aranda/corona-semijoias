@@ -523,7 +523,8 @@ class RelatoriosDeVendasTest extends ApoioDasTrocas {
         assertThat(dia5.get("itens")).hasSize(1);
         assertThat(dia5.get("itens").get(0).get("classe").asString()).isEqualTo("A");
         assertThat(dec(dia5.get("itens").get(0).get("percentual"))).isEqualByComparingTo("100.00");
-        JsonNode vazia = curva("de=2292-04-01&ate=2292-04-30");
+        // Mês que nenhuma classe de teste usa (abril de 2292 é da massa da 8.6, no mesmo banco).
+        JsonNode vazia = curva("de=2291-07-01&ate=2291-07-31");
         assertThat(vazia.get("itens")).isEmpty();
         confere(total(vazia, "liquido"), 0, "0.00", "0.00", "0");
     }
