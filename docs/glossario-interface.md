@@ -562,6 +562,7 @@ Sem internet e sem dados neste computador (primeira vez):
 
 - Motivo (obrigatório): **Desistiu** (arrependimento), **Defeito**, **Não serviu** (tamanho) e **Outro**. Com **Outro**, o campo **Observação** é obrigatório. Com **Defeito**, todas as peças são marcadas **Com defeito**.
 - Estado da peça: **Boa** ou **Com defeito** (parte 3).
+- Erro raro (issue 208): "Os valores desta devolução não fecharam e nada foi gravado. Tente de novo; se continuar, fale com a dona."
 - Para onde vai a peça: **Voltou para a maleta** (boa, de maleta ainda com o vendedor) ou **Peça para a loja** (com defeito, ou boa de maleta já acertada: não volta à maleta e o vendedor a entrega à dona no próximo acerto).
 - Situação da devolução: **Aceita**, **Para revisão da dona** (o servidor achou algo que a dona precisa olhar; os motivos estão na parte "Autorização, revisão e antifraude" logo abaixo), **Mantida**, **Não aceita** e **Cancelada**.
 - Ler o código na devolução mostra **as vendas com esta peça** (as do próprio vendedor, da mais nova para a mais antiga), com o cliente, o dia, **Vendidas**, **Já devolvidas**, **Ainda podem voltar** e até que dia vale a garantia ("Desistência até 19/11", "Defeito até 12/12"). Venda a prazo aparece marcada e não pode ser escolhida ainda.
