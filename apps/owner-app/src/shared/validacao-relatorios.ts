@@ -45,6 +45,8 @@ const ESCOLHAS: [
     | 'devedor'
     | 'momento'
     | 'linha'
+    | 'comProblema'
+    | 'aplicativo'
   ),
   string[],
 ][] = [
@@ -64,7 +66,24 @@ const ESCOLHAS: [
       ...TIPOS_DA_PENDENCIA,
     ],
   ],
-  ['resultado', ['CRIADO', 'ATUALIZADO', 'JA_EXISTIA', 'RECUSADO']],
+  [
+    'resultado',
+    [
+      'CRIADO',
+      'ATUALIZADO',
+      'JA_EXISTIA',
+      'RECUSADO',
+      // Acessos (tarefa 8.9)
+      'SUCESSO',
+      'SENHA_INCORRETA',
+      'BLOQUEADO',
+      'USUARIO_DESATIVADO',
+      'APP_INCOMPATIVEL',
+      'SENHA_TEMPORARIA_VENCIDA',
+      'PEDIDO_INVALIDO',
+      'BLOQUEIO_LIMPO',
+    ],
+  ],
   ['quem', ['TODOS', 'VENDEDORES', 'CLIENTES']],
   [
     'origem',
@@ -86,6 +105,8 @@ const ESCOLHAS: [
   ['devedor', ['CLIENTE', 'VENDEDOR']],
   ['momento', ['ACERTO', 'AVULSO']],
   ['linha', ['VENDAS', 'DEVOLUCOES', 'CUSTO', 'COMISSOES', 'PERDAS', 'COBRADO', 'CAIXA']],
+  ['comProblema', SIM_NAO],
+  ['aplicativo', ['gestao', 'vendas']],
 ];
 
 export interface ParametrosDeRelatorio {
@@ -134,6 +155,8 @@ const CAMPOS = [
   'devedor',
   'momento',
   'linha',
+  'comProblema',
+  'aplicativo',
   'pagina',
   'tamanho',
 ];

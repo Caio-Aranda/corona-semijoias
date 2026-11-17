@@ -22,6 +22,8 @@ import {
   RELATORIOS_DE_VENDAS_NO_ESTOQUE,
 } from './relatorios-vendas';
 import { TEXTOS_DE_RELATORIOS_DE_VENDAS } from '../textos-relatorios-vendas';
+import { ORDEM_DOS_RELATORIOS_DE_CONTROLE } from './relatorios-controle';
+import { TEXTOS_DE_RELATORIOS_DE_CONTROLE } from '../textos-relatorios-controle';
 import { TEXTOS_DE_RELATORIOS_FINANCEIROS } from '../textos-relatorios-financeiros';
 import { TEXTOS_DE_RELATORIOS_DE_DEVOLUCAO } from '../textos-relatorios-devolucao';
 import { TEXTOS_DO_PAINEL } from '../textos-painel';
@@ -113,6 +115,9 @@ export const ROTAS = [
   'relatorios/vendas-ranking-pecas',
   'relatorios/vendas-ticket-medio',
   'relatorios/vendas-curva-abc',
+  'relatorios/controle-auditoria',
+  'relatorios/controle-computadores',
+  'relatorios/controle-acessos',
   'acertos/lista',
   'acertos/pendencias',
   'acertos/comissao',
@@ -260,6 +265,13 @@ export const MENU = [
   {
     titulo: TEXTOS_DE_RELATORIOS_FINANCEIROS.grupoDoMenu,
     itens: ORDEM_DOS_RELATORIOS_FINANCEIROS.map((nome) => ({
+      chave: `relatorios/${nome}`,
+      rotulo: RELATORIOS[nome].titulo,
+    })),
+  },
+  {
+    titulo: TEXTOS_DE_RELATORIOS_DE_CONTROLE.grupoDoMenu,
+    itens: ORDEM_DOS_RELATORIOS_DE_CONTROLE.map((nome) => ({
       chave: `relatorios/${nome}`,
       rotulo: RELATORIOS[nome].titulo,
     })),

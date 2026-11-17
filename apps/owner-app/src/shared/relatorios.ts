@@ -69,6 +69,10 @@ export const NOMES_DOS_RELATORIOS = [
   'vendas-ranking-pecas',
   'vendas-ticket-medio',
   'vendas-curva-abc',
+  // Controle (tarefa 8.9): auditoria, sincronizações e computadores, acessos.
+  'controle-auditoria',
+  'controle-computadores',
+  'controle-acessos',
 ] as const;
 export type NomeDoRelatorio = (typeof NOMES_DOS_RELATORIOS)[number];
 export type NomeDoRelatorioDeEstoqueOuCompras = Extract<
@@ -79,6 +83,7 @@ export type NomeDoRelatorioDeMaleta = Extract<NomeDoRelatorio, `maleta-${string}
 export type NomeDoRelatorioDeDevolucao = Extract<NomeDoRelatorio, `devolucao-${string}`>;
 export type NomeDoRelatorioFinanceiro = Extract<NomeDoRelatorio, `financeiro-${string}`>;
 export type NomeDoRelatorioDeVendas = Extract<NomeDoRelatorio, `vendas-${string}`>;
+export type NomeDoRelatorioDeControle = Extract<NomeDoRelatorio, `controle-${string}`>;
 export type NomeDoRelatorioDeCadastro = Exclude<
   NomeDoRelatorio,
   | NomeDoRelatorioDeEstoqueOuCompras
@@ -86,6 +91,7 @@ export type NomeDoRelatorioDeCadastro = Exclude<
   | NomeDoRelatorioDeDevolucao
   | NomeDoRelatorioFinanceiro
   | NomeDoRelatorioDeVendas
+  | NomeDoRelatorioDeControle
 >;
 
 export const SITUACOES_DO_RELATORIO = [
@@ -129,6 +135,11 @@ export const SITUACOES_DO_RELATORIO = [
   'ASSUMIDA_PELA_LOJA',
   'ENCONTRADA',
   'RECUSADA',
+  // Controle (tarefa 8.9): situação do computador.
+  'ATIVO',
+  'AGUARDANDO_LIBERACAO',
+  'SUBSTITUIDO',
+  'BLOQUEADO',
 ] as const;
 export type SituacaoDoRelatorio = (typeof SITUACOES_DO_RELATORIO)[number];
 
@@ -193,6 +204,9 @@ export interface ConsultaDeRelatorio {
   /** Financeiro (tarefa 7.12): quem deve (CLIENTE ou VENDEDOR) e quando foi o recebimento (ACERTO ou AVULSO). */
   devedor?: string;
   momento?: string;
+  /** Controle (tarefa 8.9): SIM ou NAO (computadores com envio com problema) e o programa (gestao ou vendas). */
+  comProblema?: string;
+  aplicativo?: string;
   /** A chave de um total do rodapé: mostra só as linhas que formam esse total. */
   recorte?: string;
   pagina: number;
