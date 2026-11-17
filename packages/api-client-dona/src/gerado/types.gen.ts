@@ -464,6 +464,13 @@ export type ConsultasDoCaixaSaldo = {
     saldo?: string;
 };
 
+export type ConsultasDoResultadoResultado = {
+    ate?: string;
+    de?: string;
+    linhas?: Array<LinhaDoResultado>;
+    pecasComCustoDoCadastro?: number;
+};
+
 export type ContaAntigaPaga = {
     contaId?: string;
     forma?: string;
@@ -1348,6 +1355,50 @@ export type LinhaDeItemDeCompra = {
     total?: string;
 };
 
+export type LinhaDeLucroDoProduto = {
+    categoria?: string;
+    codigo?: string;
+    custo?: string;
+    custoDoCadastro?: boolean;
+    custoEmDolar?: string;
+    custoEmGuarani?: string;
+    fotoPrincipalHash?: string;
+    lucro?: string;
+    lucroEmDolar?: string;
+    lucroEmGuarani?: string;
+    margem?: string;
+    nome?: string;
+    pecas?: number;
+    posicao?: number;
+    produtoId?: string;
+    receita?: string;
+    receitaEmDolar?: string;
+    receitaEmGuarani?: string;
+};
+
+export type LinhaDeLucroDoVendedor = {
+    comissao?: string;
+    comissaoEmDolar?: string;
+    comissaoEmGuarani?: string;
+    custo?: string;
+    custoDoCadastro?: boolean;
+    custoEmDolar?: string;
+    custoEmGuarani?: string;
+    lucro?: string;
+    lucroBruto?: string;
+    lucroBrutoEmDolar?: string;
+    lucroBrutoEmGuarani?: string;
+    lucroEmDolar?: string;
+    lucroEmGuarani?: string;
+    margem?: string;
+    praca?: string;
+    receita?: string;
+    receitaEmDolar?: string;
+    receitaEmGuarani?: string;
+    vendedor?: string;
+    vendedorId?: string;
+};
+
 export type LinhaDeMaletaEmAberto = {
     atrasada?: boolean;
     dataDaCotacao?: string;
@@ -1614,6 +1665,16 @@ export type LinhaDeVendido = {
     vendido?: string;
     vendidoEmDolar?: string;
     vendidoEmGuarani?: string;
+};
+
+export type LinhaDoResultado = {
+    categoriaId?: string;
+    chave?: string;
+    operacao?: string;
+    titulo?: string;
+    valorEmDolar?: string;
+    valorEmGuarani?: string;
+    valorEmReais?: string;
 };
 
 export type LinhaPorVendedor = {
@@ -2287,6 +2348,20 @@ export type ReferenciaDoVendedorResposta = {
     version?: number;
 };
 
+export type RegistroDoResultado = {
+    custoDoCadastro?: boolean;
+    custoUnitario?: string;
+    data?: string;
+    descricao?: string;
+    id?: string;
+    produto?: string;
+    quantidade?: number;
+    valorEmDolar?: string;
+    valorEmGuarani?: string;
+    valorEmReais?: string;
+    vendedor?: string;
+};
+
 export type RelatorioDeCadastroCodigosEmConflitoLinha = {
     itens?: Array<CodigosEmConflitoLinha>;
     pagina?: number;
@@ -2503,6 +2578,24 @@ export type RelatorioDeCadastroLinhaDeItemDeCompra = {
     total?: number;
 };
 
+export type RelatorioDeCadastroLinhaDeLucroDoProduto = {
+    itens?: Array<LinhaDeLucroDoProduto>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroLinhaDeLucroDoVendedor = {
+    itens?: Array<LinhaDeLucroDoVendedor>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
 export type RelatorioDeCadastroLinhaDeMaletaEmAberto = {
     itens?: Array<LinhaDeMaletaEmAberto>;
     pagina?: number;
@@ -2640,6 +2733,15 @@ export type RelatorioDeCadastroLinhaPorVendedor = {
 
 export type RelatorioDeCadastroLinhaSemCodigoDeBarras = {
     itens?: Array<LinhaSemCodigoDeBarras>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroRegistroDoResultado = {
+    itens?: Array<RegistroDoResultado>;
     pagina?: number;
     recorte?: string;
     tamanho?: number;
@@ -6636,6 +6738,56 @@ export type RelatorioDeInadimplenciaResponses = {
 
 export type RelatorioDeInadimplenciaResponse = RelatorioDeInadimplenciaResponses[keyof RelatorioDeInadimplenciaResponses];
 
+export type RelatorioDeLucroPorProdutoData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        pracaId?: string;
+        produtoId?: string;
+        categoriaId?: string;
+        de?: string;
+        ate?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/financeiro/lucro-por-produto';
+};
+
+export type RelatorioDeLucroPorProdutoResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeLucroDoProduto;
+};
+
+export type RelatorioDeLucroPorProdutoResponse = RelatorioDeLucroPorProdutoResponses[keyof RelatorioDeLucroPorProdutoResponses];
+
+export type RelatorioDeLucroPorVendedorData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        pracaId?: string;
+        de?: string;
+        ate?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/financeiro/lucro-por-vendedor';
+};
+
+export type RelatorioDeLucroPorVendedorResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeLucroDoVendedor;
+};
+
+export type RelatorioDeLucroPorVendedorResponse = RelatorioDeLucroPorVendedorResponses[keyof RelatorioDeLucroPorVendedorResponses];
+
 export type RelatorioDePendenciasDoAcertoData = {
     body?: never;
     path?: never;
@@ -6689,6 +6841,48 @@ export type RelatorioDeRecebimentosPorFormaResponses = {
 };
 
 export type RelatorioDeRecebimentosPorFormaResponse = RelatorioDeRecebimentosPorFormaResponses[keyof RelatorioDeRecebimentosPorFormaResponses];
+
+export type ResultadoDoPeriodoData = {
+    body?: never;
+    path?: never;
+    query?: {
+        de?: string;
+        ate?: string;
+    };
+    url: '/api/dona/relatorios/financeiro/resultado';
+};
+
+export type ResultadoDoPeriodoResponses = {
+    /**
+     * OK
+     */
+    200: ConsultasDoResultadoResultado;
+};
+
+export type ResultadoDoPeriodoResponse = ResultadoDoPeriodoResponses[keyof ResultadoDoPeriodoResponses];
+
+export type DetalhamentoDoResultadoData = {
+    body?: never;
+    path?: never;
+    query?: {
+        de?: string;
+        ate?: string;
+        linha?: string;
+        categoriaId?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/financeiro/resultado/detalhamento';
+};
+
+export type DetalhamentoDoResultadoResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroRegistroDoResultado;
+};
+
+export type DetalhamentoDoResultadoResponse = DetalhamentoDoResultadoResponses[keyof DetalhamentoDoResultadoResponses];
 
 export type RelatorioDeMaletasEmAbertoEAtrasadasData = {
     body?: never;
