@@ -24,6 +24,7 @@ import {
 import { TEXTOS_DE_RELATORIOS_DE_VENDAS } from '../textos-relatorios-vendas';
 import { TEXTOS_DE_RELATORIOS_FINANCEIROS } from '../textos-relatorios-financeiros';
 import { TEXTOS_DE_RELATORIOS_DE_DEVOLUCAO } from '../textos-relatorios-devolucao';
+import { TEXTOS_DO_PAINEL } from '../textos-painel';
 
 /** As telas do menu. A chave aparece na barra de endereço (#/pessoas/usuarios), nunca na tela. */
 export const ROTAS = [
@@ -122,11 +123,17 @@ export const ROTAS = [
   'financeiro/recebimentos',
   'conciliacoes/dinheiro',
   'conciliacoes/conferencia-diaria',
+  'painel/semana',
 ] as const;
 export type Rota = (typeof ROTAS)[number];
 
 export const MENU = [
-  { itens: [{ chave: 'inicio', rotulo: TEXTOS.menu.inicio }] },
+  {
+    itens: [
+      { chave: 'inicio', rotulo: TEXTOS.menu.inicio },
+      { chave: 'painel/semana', rotulo: TEXTOS_DO_PAINEL.menu },
+    ],
+  },
   {
     titulo: TEXTOS.menu.cadastros,
     itens: [

@@ -7,6 +7,7 @@ import { TEXTOS_DE_ESTOQUE } from '../textos-estoque';
 import { TEXTOS_DE_SINCRONIZACAO } from '../textos-sincronizacao';
 
 const BOTOES = [
+  'Painel da semana',
   'Montar maleta',
   'Receber compra',
   'Fazer acerto',
@@ -16,6 +17,7 @@ const BOTOES = [
 
 /** Botões que já levam a uma tela; os outros dizem "em breve" até a tarefa deles. */
 const ROTA_DO_BOTAO: Partial<Record<(typeof BOTOES)[number], string>> = {
+  'Painel da semana': 'painel/semana',
   'Receber compra': 'estoque/receber-compra',
   'Fazer acerto': 'acertos/lista',
 };

@@ -465,3 +465,55 @@ dl.gestao-totais {
 .gestao-calculando {
   opacity: 0.6;
 }
+
+/* Painel da semana (tarefa 8.8): texto escuro sobre fundo claro; o Dólar e o Guarani ficam abaixo do Real */
+.gestao-painel__valor {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.gestao-painel__outras-moedas,
+.gestao-painel__pecas {
+  display: block;
+  color: var(--cor-texto);
+  font-size: 0.875rem;
+}
+
+.gestao-painel__previa {
+  font-weight: 700;
+}
+
+.gestao-painel__cartoes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--espaco-4);
+}
+
+.gestao-painel__cartao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+  padding: var(--espaco-4);
+  background: var(--cor-fundo);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-2);
+}
+
+.gestao-painel__itens {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+  margin: 0;
+}
+
+.gestao-painel__item {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--espaco-4);
+}
+
+.gestao-painel__item dd {
+  margin: 0;
+  text-align: right;
+}

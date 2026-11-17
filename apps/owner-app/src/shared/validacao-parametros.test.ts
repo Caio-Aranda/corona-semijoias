@@ -201,4 +201,28 @@ describe('cadastros básicos', () => {
   it('texto grande demais é recusado', () => {
     expect(conferirParametros('categorias.criar', { nome: 'a'.repeat(101) })).toBeNull();
   });
+
+  it('painel da semana: filtros opcionais, ids e situação conferidos', () => {
+    expect(conferirParametros('painel.semanal', undefined)).toEqual({ operacao: 'painel.semanal' });
+    expect(
+      conferirParametros('painel.semanal', {
+        semana: ID,
+        vendedor: ID,
+        praca: ID,
+        situacao: 'EM_ACERTO',
+      }),
+    ).toEqual({
+      operacao: 'painel.semanal',
+      semana: ID,
+      vendedor: ID,
+      praca: ID,
+      situacao: 'EM_ACERTO',
+    });
+    expect(conferirParametros('painel.semanal', { vendedor: '' })).toEqual({
+      operacao: 'painel.semanal',
+    });
+    for (const ruim of [{ semana: 'x' }, { vendedor: 1 }, { praca: 'a' }, { situacao: 'TUDO' }]) {
+      expect(conferirParametros('painel.semanal', ruim)).toBeNull();
+    }
+  });
 });
