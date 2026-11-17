@@ -177,6 +177,7 @@ A cotação **não é dinheiro**: 1 guarani vale frações pequenas de real (0,0
   - se `n < 0`: `-((-2n + d) / (2d))`.
   - Isso afasta do zero no meio exato, como o `RoundingMode.HALF_UP` do Java.
 - Java e TypeScript usam **a mesma tabela de exemplos** (item 14) como teste, para darem o mesmo resultado.
+- **Exceção registrada (auditoria M4, 17/11/2026):** os relatórios somam a conversão por linha dentro do SQL, com o `round(x / taxa, casas)` do PostgreSQL, que também afasta do zero no meio exato (mesmo resultado do HALF_UP). Isso só é permitido nos arquivos `SqlDaMaleta`, `ConsultasDeDevolucaoETroca`, `ConsultasDeEstoqueECompras`, `ConsultasDoResultado` e `VendidoLiquido`. O `ArredondamentoEmSqlTest` compara o SQL com a `ConversaoDeMoeda` em valores de borda e reprova `round(` em SQL de qualquer outro arquivo.
 
 ### 10. Totais convertidos: soma dos lançamentos convertidos
 
