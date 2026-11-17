@@ -62,28 +62,28 @@ public class ConsultasDoPainelSemanal {
     // --- a resposta ---
 
     /** Um valor em Real, Dólar e Guarani (Dólar e Guarani vazios quando falta a cotação do dia). */
-    public record Valor(BigDecimal emReais, BigDecimal emDolar, BigDecimal emGuarani) {
+    public record ValorEmMoedas(BigDecimal emReais, BigDecimal emDolar, BigDecimal emGuarani) {
 
-        static Valor de(BigDecimal reais, Cotacao cotacao) {
+        static ValorEmMoedas de(BigDecimal reais, Cotacao cotacao) {
             if (reais == null) {
                 return null;
             }
-            return new Valor(reais, cotacao == null ? null : ConversaoDeMoeda.paraDolar(reais, cotacao.taxas().usdVenda()),
+            return new ValorEmMoedas(reais, cotacao == null ? null : ConversaoDeMoeda.paraDolar(reais, cotacao.taxas().usdVenda()),
                     cotacao == null ? null : ConversaoDeMoeda.paraGuarani(reais, cotacao.taxas().pygVenda()));
         }
 
-        static Valor de(Total t) {
-            return new Valor(t.valorEmReais(), t.valorEmDolar(), t.valorEmGuarani());
+        static ValorEmMoedas de(Total t) {
+            return new ValorEmMoedas(t.valorEmReais(), t.valorEmDolar(), t.valorEmGuarani());
         }
 
         /** A soma de valores já convertidos linha a linha; vazio em Dólar ou Guarani se alguma parcela estava vazia. */
-        static Valor somar(List<Valor> valores) {
+        static ValorEmMoedas somar(List<ValorEmMoedas> valores) {
             List<BigDecimal> reais = new ArrayList<>();
             List<BigDecimal> dolares = new ArrayList<>();
             List<BigDecimal> guaranis = new ArrayList<>();
             boolean semDolar = false;
             boolean semGuarani = false;
-            for (Valor v : valores) {
+            for (ValorEmMoedas v : valores) {
                 reais.add(v.emReais());
                 semDolar |= v.emDolar() == null;
                 semGuarani |= v.emGuarani() == null;
@@ -94,12 +94,12 @@ public class ConsultasDoPainelSemanal {
                     guaranis.add(v.emGuarani());
                 }
             }
-            return new Valor(Dinheiro.somar(reais), semDolar ? null : Dinheiro.somar(dolares),
+            return new ValorEmMoedas(Dinheiro.somar(reais), semDolar ? null : Dinheiro.somar(dolares),
                     semGuarani ? null : Dinheiro.somar(guaranis).setScale(0));
         }
 
-        static Valor zero() {
-            return new Valor(BigDecimal.ZERO.setScale(2), BigDecimal.ZERO.setScale(2), BigDecimal.ZERO.setScale(0));
+        static ValorEmMoedas zero() {
+            return new ValorEmMoedas(BigDecimal.ZERO.setScale(2), BigDecimal.ZERO.setScale(2), BigDecimal.ZERO.setScale(0));
         }
     }
 
@@ -116,47 +116,47 @@ public class ConsultasDoPainelSemanal {
      */
     public record LinhaDoPedido(UUID acertoId, UUID vendedorId, String vendedor, UUID pracaId, String praca, String situacao,
             boolean previa, boolean semCotacao, Instant dataDoAcerto, LocalDate dataDaCotacao, List<MaletaDaLinha> maletas,
-            long enviadoPecas, Valor enviado, long devolvidoPecas, Valor devolvido, Valor vendidoLiquido,
-            BigDecimal percentualComissao, Valor comissao, Valor liquido, Long vendidasPecas, Long emFaltaPecas) {
+            long enviadoPecas, ValorEmMoedas enviado, long devolvidoPecas, ValorEmMoedas devolvido, ValorEmMoedas vendidoLiquido,
+            BigDecimal percentualComissao, ValorEmMoedas comissao, ValorEmMoedas liquido, Long vendidasPecas, Long emFaltaPecas) {
     }
 
     /** De que relatório o número saiu e com que filtros: a tela abre os registros por lá. */
-    public record Origem(String rota, Map<String, String> filtros) {
+    public record OrigemDoNumero(String rota, Map<String, String> filtros) {
     }
 
-    public record BlocoDeMaletas(long quantidade, long pecas, Valor valor, Origem origem) {
+    public record BlocoDeMaletasDoPainel(long quantidade, long pecas, ValorEmMoedas valor, OrigemDoNumero origem) {
     }
 
-    public record BlocoDeAcerto(long quantidade, Valor vendido, Valor descontos, Valor devolvidoPeloCliente, Valor comissao,
-            Valor faltasCobradas, Valor valorDoAcerto, Valor recebido, Valor ficouDevendo, long devolvidoALojaPecas,
-            Valor devolvidoALoja, Valor pendenciasPagas, Valor pendenciasEmAberto, Origem origem, Origem origemDasPendencias) {
+    public record BlocoDeAcerto(long quantidade, ValorEmMoedas vendido, ValorEmMoedas descontos, ValorEmMoedas devolvidoPeloCliente, ValorEmMoedas comissao,
+            ValorEmMoedas faltasCobradas, ValorEmMoedas valorDoAcerto, ValorEmMoedas recebido, ValorEmMoedas ficouDevendo, long devolvidoALojaPecas,
+            ValorEmMoedas devolvidoALoja, ValorEmMoedas pendenciasPagas, ValorEmMoedas pendenciasEmAberto, OrigemDoNumero origem, OrigemDoNumero origemDasPendencias) {
     }
 
-    public record BlocoDaPrevia(long linhas, boolean semCotacao, Valor vendido, Valor comissaoPrevista, Valor liquidoPrevisto) {
+    public record BlocoDaPrevia(long linhas, boolean semCotacao, ValorEmMoedas vendido, ValorEmMoedas comissaoPrevista, ValorEmMoedas liquidoPrevisto) {
     }
 
-    public record BlocoDeVendas(long quantidade, Valor vendido, Valor descontos, Valor devolvido, Valor liquido, Origem origem) {
+    public record BlocoDeVendas(long quantidade, ValorEmMoedas vendido, ValorEmMoedas descontos, ValorEmMoedas devolvido, ValorEmMoedas liquido, OrigemDoNumero origem) {
     }
 
-    public record BlocoDeTrocas(long trocas, Valor valorDasTrocas, Valor diferencaAPagar, Valor ficouDeCredito, Valor creditosGerados,
-            Valor creditosUsados, Valor creditosEmAberto, Origem origemDasTrocas, Origem origemDosCreditos) {
+    public record BlocoDeTrocas(long trocas, ValorEmMoedas valorDasTrocas, ValorEmMoedas diferencaAPagar, ValorEmMoedas ficouDeCredito, ValorEmMoedas creditosGerados,
+            ValorEmMoedas creditosUsados, ValorEmMoedas creditosEmAberto, OrigemDoNumero origemDasTrocas, OrigemDoNumero origemDosCreditos) {
     }
 
-    public record BlocoTotal(long maletas, long pecas, Valor enviado, long vendas, Valor vendido, Valor descontos, Valor liquido) {
+    public record BlocoTotal(long maletas, long pecas, ValorEmMoedas enviado, long vendas, ValorEmMoedas vendido, ValorEmMoedas descontos, ValorEmMoedas liquido) {
     }
 
-    public record BlocoRecebido(Valor dinheiro, Valor transferencia, Valor boleto, Valor total, Origem origem) {
+    public record BlocoRecebido(ValorEmMoedas dinheiro, ValorEmMoedas transferencia, ValorEmMoedas boleto, ValorEmMoedas total, OrigemDoNumero origem) {
     }
 
-    public record Totais(BlocoDeMaletas novasMaletas, BlocoDeMaletas reposicoes, BlocoDeAcerto acerto, BlocoDaPrevia previa,
+    public record TotaisDoPainel(BlocoDeMaletasDoPainel novasMaletas, BlocoDeMaletasDoPainel reposicoes, BlocoDeAcerto acerto, BlocoDaPrevia previa,
             BlocoDeVendas vendas, BlocoDeTrocas trocas, BlocoTotal total, BlocoRecebido recebidoNoAcerto) {
     }
 
     public record CotacaoDaPrevia(LocalDate data) {
     }
 
-    public record Painel(SemanaDoPainel semana, boolean previaIncluiSemanasAnteriores, String avisoDaPrevia,
-            CotacaoDaPrevia cotacaoDaPrevia, List<LinhaDoPedido> pedidos, Totais totais) {
+    public record PainelDaSemana(SemanaDoPainel semana, boolean previaIncluiSemanasAnteriores, String avisoDaPrevia,
+            CotacaoDaPrevia cotacaoDaPrevia, List<LinhaDoPedido> pedidos, TotaisDoPainel totais) {
     }
 
     /** Os filtros do painel; tudo é opcional (sem semana, a que tem o dia de hoje em Brasília). */
@@ -167,11 +167,11 @@ public class ConsultasDoPainelSemanal {
 
     /** A linha antes de juntar as maletas e a prévia. */
     private record Base(UUID acertoId, UUID vendedorId, String vendedor, UUID pracaId, String praca, String situacao,
-            Instant data, LocalDate dataDaCotacao, BigDecimal percentual, Valor vendidoLiquido, Valor comissao, Valor liquido) {
+            Instant data, LocalDate dataDaCotacao, BigDecimal percentual, ValorEmMoedas vendidoLiquido, ValorEmMoedas comissao, ValorEmMoedas liquido) {
     }
 
     /** O que as maletas da linha somam (peças e valor enviados e devolvidos à loja; vendidas e em falta, em peças). */
-    private record Soma(long maletas, long pecas, Valor valor, long devolvidasPecas, Valor devolvido, long vendidas, long faltas) {
+    private record Soma(long maletas, long pecas, ValorEmMoedas valor, long devolvidasPecas, ValorEmMoedas devolvido, long vendidas, long faltas) {
     }
 
     private static final java.time.ZoneId BRASILIA = CotacaoVigente.BRASILIA;
@@ -219,7 +219,7 @@ public class ConsultasDoPainelSemanal {
     }
 
     @Transactional(readOnly = true)
-    public Painel painel(Filtros f) {
+    public PainelDaSemana painel(Filtros f) {
         UUID vendedor = idOpcional(f.vendedorId(), "vendedor");
         UUID praca = idOpcional(f.pracaId(), "praca");
         String situacao = situacaoPedida(f.situacao());
@@ -228,7 +228,7 @@ public class ConsultasDoPainelSemanal {
 
         List<LinhaDoPedido> todas = linhas(semana, vendedor, praca, situacao, cotacao.orElse(null));
         List<LinhaDoPedido> visiveis = todas.stream().filter(l -> situacao == null || l.situacao().equals(situacao)).toList();
-        return new Painel(semana, true, AVISO_DA_PREVIA, cotacao.map(c -> new CotacaoDaPrevia(c.dataCotacao())).orElse(null),
+        return new PainelDaSemana(semana, true, AVISO_DA_PREVIA, cotacao.map(c -> new CotacaoDaPrevia(c.dataCotacao())).orElse(null),
                 visiveis, totais(semana, vendedor, praca, todas, visiveis, cotacao.isEmpty()));
     }
 
@@ -341,8 +341,8 @@ public class ConsultasDoPainelSemanal {
             ResumoDaPrevia r = fechamento.resumoDaPrevia(b.vendedorId(), b.acertoId());
             linhas.add(new LinhaDoPedido(b.acertoId(), b.vendedorId(), b.vendedor(), b.pracaId(), b.praca(), b.situacao(), true, false,
                     b.data(), r.cotacaoData(), lista, soma.pecas(), soma.valor(), soma.devolvidasPecas(), soma.devolvido(),
-                    Valor.de(r.vendidoLiquido(), cotacaoDaPrevia), r.percentualComissao(), Valor.de(r.comissao(), cotacaoDaPrevia),
-                    Valor.de(r.liquido(), cotacaoDaPrevia), null, null));
+                    ValorEmMoedas.de(r.vendidoLiquido(), cotacaoDaPrevia), r.percentualComissao(), ValorEmMoedas.de(r.comissao(), cotacaoDaPrevia),
+                    ValorEmMoedas.de(r.liquido(), cotacaoDaPrevia), null, null));
         }
         linhas.sort(Comparator.comparing((LinhaDoPedido l) -> l.vendedor().toLowerCase()).thenComparing(l -> ordemDaSituacao(l.situacao()))
                 .thenComparing(LinhaDoPedido::vendedorId));
@@ -354,12 +354,12 @@ public class ConsultasDoPainelSemanal {
     }
 
     private static Soma semMaletas() {
-        return new Soma(0, 0, Valor.zero(), 0, Valor.zero(), 0, 0);
+        return new Soma(0, 0, ValorEmMoedas.zero(), 0, ValorEmMoedas.zero(), 0, 0);
     }
 
-    /** Valor gravado do acerto: Real do banco; Dólar e Guarani pela cotação gravada nele (colunas com sufixo _d e _g). */
-    private static Valor valorGravado(ResultSet rs, String coluna, String apelido) throws SQLException {
-        return new Valor(MotorDeRelatorio.reais(rs, coluna), rs.getBigDecimal(apelido + "_d"), rs.getBigDecimal(apelido + "_g"));
+    /** ValorEmMoedas gravado do acerto: Real do banco; Dólar e Guarani pela cotação gravada nele (colunas com sufixo _d e _g). */
+    private static ValorEmMoedas valorGravado(ResultSet rs, String coluna, String apelido) throws SQLException {
+        return new ValorEmMoedas(MotorDeRelatorio.reais(rs, coluna), rs.getBigDecimal(apelido + "_d"), rs.getBigDecimal(apelido + "_g"));
     }
 
     private static Instant instante(ResultSet rs, String coluna) throws SQLException {
@@ -387,8 +387,8 @@ public class ConsultasDoPainelSemanal {
                 + DEVOLVIDO_POR_MALETA + VENDIDO_E_FALTA_POR_MALETA + "WHERE r.deleted_at IS NULL AND " + onde + " GROUP BY " + chave,
                 new MapSqlParameterSource("chaves", chaves), rs -> {
                     somas.put(rs.getObject("chave", UUID.class), new Soma(rs.getLong("maletas"), rs.getLong("pecas"),
-                            new Valor(MotorDeRelatorio.reais(rs, "valor"), rs.getBigDecimal("dolar"), rs.getBigDecimal("guarani")),
-                            rs.getLong("dv_pecas"), new Valor(MotorDeRelatorio.reais(rs, "dv_valor"), rs.getBigDecimal("dv_dolar"),
+                            new ValorEmMoedas(MotorDeRelatorio.reais(rs, "valor"), rs.getBigDecimal("dolar"), rs.getBigDecimal("guarani")),
+                            rs.getLong("dv_pecas"), new ValorEmMoedas(MotorDeRelatorio.reais(rs, "dv_valor"), rs.getBigDecimal("dv_dolar"),
                                     rs.getBigDecimal("dv_guarani")), rs.getLong("vendidas"), rs.getLong("faltas")));
                 });
         return somas;
@@ -410,7 +410,7 @@ public class ConsultasDoPainelSemanal {
 
     // --- os totais ---
 
-    private Totais totais(SemanaDoPainel semana, UUID vendedor, UUID praca, List<LinhaDoPedido> todas, List<LinhaDoPedido> visiveis,
+    private TotaisDoPainel totais(SemanaDoPainel semana, UUID vendedor, UUID praca, List<LinhaDoPedido> todas, List<LinhaDoPedido> visiveis,
             boolean semCotacao) {
         String semanaId = semana.id().toString();
         String de = semana.inicio().toString();
@@ -421,22 +421,22 @@ public class ConsultasDoPainelSemanal {
         var remessas = maletas.remessas(new ConsultasDeMaleta.Filtros(null, vendedorId, pracaId, semanaId, null, null, null, null,
                 null, null, null, null, null, 0, 1));
         Map<String, String> filtrosDeMaletas = filtros("semanaId", semanaId, "vendedorId", vendedorId, "pracaId", pracaId);
-        BlocoDeMaletas novas = blocoDeMaletas(remessas, "novas", com(filtrosDeMaletas, "tipo", "NOVA"));
-        BlocoDeMaletas reposicoes = blocoDeMaletas(remessas, "reposicoes", com(filtrosDeMaletas, "tipo", "REPOSICAO"));
+        BlocoDeMaletasDoPainel novas = blocoDeMaletas(remessas, "novas", com(filtrosDeMaletas, "tipo", "NOVA"));
+        BlocoDeMaletasDoPainel reposicoes = blocoDeMaletas(remessas, "reposicoes", com(filtrosDeMaletas, "tipo", "REPOSICAO"));
 
         var acertos = financeiras.acertos(new ConsultasFinanceiras.Filtros(null, vendedorId, semanaId, null, null, null, null, null,
                 null, null, null, null, null, null, null, null, 0, 1, pracaId));
         var pendencias = financeiras.pendencias(new ConsultasFinanceiras.Filtros(null, vendedorId, semanaId, null, null, null, null,
                 null, null, null, null, null, null, null, null, null, 0, 1, pracaId));
         List<LinhaDoPedido> acertadas = todas.stream().filter(l -> "ACERTADO".equals(l.situacao())).toList();
-        Valor devolvidoALoja = acertadas.isEmpty() ? Valor.zero() : Valor.somar(acertadas.stream().map(LinhaDoPedido::devolvido).toList());
+        ValorEmMoedas devolvidoALoja = acertadas.isEmpty() ? ValorEmMoedas.zero() : ValorEmMoedas.somar(acertadas.stream().map(LinhaDoPedido::devolvido).toList());
         Map<String, String> filtrosDeAcertos = filtros("semanaId", semanaId, "vendedorId", vendedorId, "pracaId", pracaId);
         BlocoDeAcerto acerto = new BlocoDeAcerto(acertos.total(), valor(acertos, "vendido"), valor(acertos, "descontos"),
                 valor(acertos, "devolvido"), valor(acertos, "comissao"), valor(acertos, "faltas"), valor(acertos, "liquido"),
                 valor(acertos, "recebido"), valor(acertos, "devendo"),
                 acertadas.stream().mapToLong(LinhaDoPedido::devolvidoPecas).sum(), devolvidoALoja, valor(pendencias, "cobradas"),
-                valor(pendencias, "abertas"), new Origem(ROTA_DE_ACERTOS, filtrosDeAcertos),
-                new Origem(ROTA_DE_PENDENCIAS, filtrosDeAcertos));
+                valor(pendencias, "abertas"), new OrigemDoNumero(ROTA_DE_ACERTOS, filtrosDeAcertos),
+                new OrigemDoNumero(ROTA_DE_PENDENCIAS, filtrosDeAcertos));
 
         List<LinhaDoPedido> deHoje = visiveis.stream().filter(LinhaDoPedido::previa).toList();
         BlocoDaPrevia previa = blocoDaPrevia(deHoje, semCotacao);
@@ -450,35 +450,35 @@ public class ConsultasDoPainelSemanal {
         Map<String, String> filtrosDoPeriodo = filtros("de", de, "ate", ate, "vendedorId", vendedorId, "pracaId", pracaId);
         BlocoDeTrocas blocoDeTrocas = new BlocoDeTrocas(quantidade(trocas, "geral"), valor(trocas, "geral"), valor(trocas, "a-pagar"),
                 valor(trocas, "credito"), valor(creditos, "gerados"), valor(creditos, "usados"), valor(creditos, "em-aberto"),
-                new Origem(ROTA_DE_TROCAS, filtrosDoPeriodo), new Origem(ROTA_DE_CREDITOS, filtrosDoPeriodo));
+                new OrigemDoNumero(ROTA_DE_TROCAS, filtrosDoPeriodo), new OrigemDoNumero(ROTA_DE_CREDITOS, filtrosDoPeriodo));
 
         var recebimentos = financeiras.recebimentosPorForma(new ConsultasFinanceiras.Filtros(null, vendedorId, null, null, null, null,
                 null, null, null, null, null, null, "ACERTO", semana.inicio(), semana.fim(), null, 0, 1, pracaId));
         BlocoRecebido recebido = new BlocoRecebido(valor(recebimentos, "DINHEIRO"), valor(recebimentos, "PIX"),
                 valor(recebimentos, "BOLETO"), valor(recebimentos, "total"),
-                new Origem(ROTA_DE_RECEBIMENTOS, com(filtrosDoPeriodo, "momento", "ACERTO")));
+                new OrigemDoNumero(ROTA_DE_RECEBIMENTOS, com(filtrosDoPeriodo, "momento", "ACERTO")));
 
         BlocoTotal total = new BlocoTotal(novas.quantidade() + reposicoes.quantidade(), novas.pecas() + reposicoes.pecas(),
-                Valor.somar(List.of(novas.valor(), reposicoes.valor())), blocoDeVendas.quantidade(), blocoDeVendas.vendido(),
+                ValorEmMoedas.somar(List.of(novas.valor(), reposicoes.valor())), blocoDeVendas.quantidade(), blocoDeVendas.vendido(),
                 blocoDeVendas.descontos(), blocoDeVendas.liquido());
-        return new Totais(novas, reposicoes, acerto, previa, blocoDeVendas, blocoDeTrocas, total, recebido);
+        return new TotaisDoPainel(novas, reposicoes, acerto, previa, blocoDeVendas, blocoDeTrocas, total, recebido);
     }
 
-    private static BlocoDeMaletas blocoDeMaletas(RelatorioDeCadastro<?> r, String chave, Map<String, String> filtros) {
+    private static BlocoDeMaletasDoPainel blocoDeMaletas(RelatorioDeCadastro<?> r, String chave, Map<String, String> filtros) {
         Total t = total(r, chave);
-        return new BlocoDeMaletas(t.quantidade(), t.pecas() == null ? 0 : t.pecas(), Valor.de(t),
-                new Origem(ROTA_DE_MALETAS, filtros));
+        return new BlocoDeMaletasDoPainel(t.quantidade(), t.pecas() == null ? 0 : t.pecas(), ValorEmMoedas.de(t),
+                new OrigemDoNumero(ROTA_DE_MALETAS, filtros));
     }
 
     /** A prévia somada: só as linhas em prévia que a tela mostra (o filtro de situação vale aqui). */
     private static BlocoDaPrevia blocoDaPrevia(List<LinhaDoPedido> linhas, boolean semCotacao) {
         List<LinhaDoPedido> calculadas = linhas.stream().filter(l -> !l.semCotacao() && l.vendidoLiquido() != null).toList();
         if (calculadas.isEmpty()) {
-            return new BlocoDaPrevia(linhas.size(), semCotacao, Valor.zero(), Valor.zero(), Valor.zero());
+            return new BlocoDaPrevia(linhas.size(), semCotacao, ValorEmMoedas.zero(), ValorEmMoedas.zero(), ValorEmMoedas.zero());
         }
-        return new BlocoDaPrevia(linhas.size(), semCotacao, Valor.somar(calculadas.stream().map(LinhaDoPedido::vendidoLiquido).toList()),
-                Valor.somar(calculadas.stream().map(LinhaDoPedido::comissao).toList()),
-                Valor.somar(calculadas.stream().map(LinhaDoPedido::liquido).toList()));
+        return new BlocoDaPrevia(linhas.size(), semCotacao, ValorEmMoedas.somar(calculadas.stream().map(LinhaDoPedido::vendidoLiquido).toList()),
+                ValorEmMoedas.somar(calculadas.stream().map(LinhaDoPedido::comissao).toList()),
+                ValorEmMoedas.somar(calculadas.stream().map(LinhaDoPedido::liquido).toList()));
     }
 
     private BlocoDeVendas blocoDeVendas(String de, String ate, String vendedorId, String pracaId) {
@@ -487,13 +487,13 @@ public class ConsultasDoPainelSemanal {
         var r = vendas.vendas(new ConsultasDeVendasDaDona.Filtros(null, vendedorId, pracaId, null, null, null, null, inicio, fim, null,
                 0, 1));
         Consulta filtros = VendidoLiquido.filtrar(new VendidoLiquido.Recorte(null, vendedorId, pracaId, null, null, null, inicio, fim));
-        Valor descontos = jdbc.queryForObject("SELECT coalesce(sum(l.desconto), 0) AS valor, " + VendidoLiquido.somaEmDolar("l.desconto")
+        ValorEmMoedas descontos = jdbc.queryForObject("SELECT coalesce(sum(l.desconto), 0) AS valor, " + VendidoLiquido.somaEmDolar("l.desconto")
                 + " AS dolar, " + VendidoLiquido.somaEmGuarani("l.desconto") + " AS guarani FROM (" + VendidoLiquido.FONTE + ") l WHERE "
                 + VendidoLiquido.CONCLUIDA + (filtros.condicoes.isEmpty() ? "" : " AND " + String.join(" AND ", filtros.condicoes)),
-                filtros.parametros, (rs, n) -> new Valor(Dinheiro.arredondar(rs.getBigDecimal("valor")), rs.getBigDecimal("dolar"),
+                filtros.parametros, (rs, n) -> new ValorEmMoedas(Dinheiro.arredondar(rs.getBigDecimal("valor")), rs.getBigDecimal("dolar"),
                         rs.getBigDecimal("guarani")));
         return new BlocoDeVendas(quantidade(r, "liquido"), valor(r, "vendido"), descontos, valor(r, "devolvido"), valor(r, "liquido"),
-                new Origem(ROTA_DE_VENDAS, filtros("de", de, "ate", ate, "vendedorId", vendedorId, "pracaId", pracaId)));
+                new OrigemDoNumero(ROTA_DE_VENDAS, filtros("de", de, "ate", ate, "vendedorId", vendedorId, "pracaId", pracaId)));
     }
 
     // --- pequenos apoios ---
@@ -503,8 +503,8 @@ public class ConsultasDoPainelSemanal {
                 .orElseThrow(() -> new IllegalStateException("Sem o total " + chave + " no relatório."));
     }
 
-    private static Valor valor(RelatorioDeCadastro<?> r, String chave) {
-        return Valor.de(total(r, chave));
+    private static ValorEmMoedas valor(RelatorioDeCadastro<?> r, String chave) {
+        return ValorEmMoedas.de(total(r, chave));
     }
 
     private static long quantidade(RelatorioDeCadastro<?> r, String chave) {

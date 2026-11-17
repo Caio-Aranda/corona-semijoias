@@ -267,6 +267,204 @@
         },
         "type" : "object"
       },
+      "BlocoDaPrevia" : {
+        "properties" : {
+          "comissaoPrevista" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "linhas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "liquidoPrevisto" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "semCotacao" : {
+            "type" : "boolean"
+          },
+          "vendido" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          }
+        },
+        "type" : "object"
+      },
+      "BlocoDeAcerto" : {
+        "properties" : {
+          "comissao" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "descontos" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "devolvidoALoja" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "devolvidoALojaPecas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "devolvidoPeloCliente" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "faltasCobradas" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "ficouDevendo" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "origem" : {
+            "$ref" : "#/components/schemas/OrigemDoNumero"
+          },
+          "origemDasPendencias" : {
+            "$ref" : "#/components/schemas/OrigemDoNumero"
+          },
+          "pendenciasEmAberto" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "pendenciasPagas" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "quantidade" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "recebido" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "valorDoAcerto" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "vendido" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          }
+        },
+        "type" : "object"
+      },
+      "BlocoDeMaletasDoPainel" : {
+        "properties" : {
+          "origem" : {
+            "$ref" : "#/components/schemas/OrigemDoNumero"
+          },
+          "pecas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "quantidade" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "valor" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          }
+        },
+        "type" : "object"
+      },
+      "BlocoDeTrocas" : {
+        "properties" : {
+          "creditosEmAberto" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "creditosGerados" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "creditosUsados" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "diferencaAPagar" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "ficouDeCredito" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "origemDasTrocas" : {
+            "$ref" : "#/components/schemas/OrigemDoNumero"
+          },
+          "origemDosCreditos" : {
+            "$ref" : "#/components/schemas/OrigemDoNumero"
+          },
+          "trocas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "valorDasTrocas" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          }
+        },
+        "type" : "object"
+      },
+      "BlocoDeVendas" : {
+        "properties" : {
+          "descontos" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "devolvido" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "liquido" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "origem" : {
+            "$ref" : "#/components/schemas/OrigemDoNumero"
+          },
+          "quantidade" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "vendido" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          }
+        },
+        "type" : "object"
+      },
+      "BlocoRecebido" : {
+        "properties" : {
+          "boleto" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "dinheiro" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "origem" : {
+            "$ref" : "#/components/schemas/OrigemDoNumero"
+          },
+          "total" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "transferencia" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          }
+        },
+        "type" : "object"
+      },
+      "BlocoTotal" : {
+        "properties" : {
+          "descontos" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "enviado" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "liquido" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "maletas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "pecas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "vendas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "vendido" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          }
+        },
+        "type" : "object"
+      },
       "BoletoDoAcerto" : {
         "properties" : {
           "valor" : {
@@ -1536,6 +1734,89 @@
         },
         "type" : "object"
       },
+      "ConsultasDoPainelSemanalLinhaDoPedido" : {
+        "properties" : {
+          "acertoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "comissao" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "dataDaCotacao" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "dataDoAcerto" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "devolvido" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "devolvidoPecas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "emFaltaPecas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "enviado" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "enviadoPecas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "liquido" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "maletas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/MaletaDaLinha"
+            },
+            "type" : "array"
+          },
+          "percentualComissao" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "praca" : {
+            "type" : "string"
+          },
+          "pracaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "previa" : {
+            "type" : "boolean"
+          },
+          "semCotacao" : {
+            "type" : "boolean"
+          },
+          "situacao" : {
+            "type" : "string"
+          },
+          "vendedor" : {
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "vendidasPecas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "vendidoLiquido" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          }
+        },
+        "type" : "object"
+      },
       "ConsultasDoResultadoResultado" : {
         "properties" : {
           "ate" : {
@@ -1815,6 +2096,15 @@
             "example" : "123.45",
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "CotacaoDaPrevia" : {
+        "properties" : {
+          "data" : {
+            "format" : "date",
             "type" : "string"
           }
         },
@@ -6127,6 +6417,24 @@
         },
         "type" : "object"
       },
+      "MaletaDaLinha" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "numero" : {
+            "type" : "string"
+          },
+          "situacao" : {
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "MeiDoVendedorDados" : {
         "properties" : {
           "atividade" : {
@@ -6250,6 +6558,20 @@
           "version" : {
             "format" : "int32",
             "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "OrigemDoNumero" : {
+        "properties" : {
+          "filtros" : {
+            "additionalProperties" : {
+              "type" : "string"
+            },
+            "type" : "object"
+          },
+          "rota" : {
+            "type" : "string"
           }
         },
         "type" : "object"
@@ -6725,6 +7047,32 @@
           "total" : {
             "format" : "int64",
             "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PainelDaSemana" : {
+        "properties" : {
+          "avisoDaPrevia" : {
+            "type" : "string"
+          },
+          "cotacaoDaPrevia" : {
+            "$ref" : "#/components/schemas/CotacaoDaPrevia"
+          },
+          "pedidos" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ConsultasDoPainelSemanalLinhaDoPedido"
+            },
+            "type" : "array"
+          },
+          "previaIncluiSemanasAnteriores" : {
+            "type" : "boolean"
+          },
+          "semana" : {
+            "$ref" : "#/components/schemas/SemanaDoPainel"
+          },
+          "totais" : {
+            "$ref" : "#/components/schemas/TotaisDoPainel"
           }
         },
         "type" : "object"
@@ -10441,6 +10789,30 @@
         },
         "type" : "object"
       },
+      "SemanaDoPainel" : {
+        "properties" : {
+          "fim" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "inicio" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "numero" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "situacao" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "SemanasDaDonaControllerPedido" : {
         "properties" : {
           "fim" : {
@@ -10619,6 +10991,35 @@
           "instante" : {
             "format" : "date-time",
             "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "TotaisDoPainel" : {
+        "properties" : {
+          "acerto" : {
+            "$ref" : "#/components/schemas/BlocoDeAcerto"
+          },
+          "novasMaletas" : {
+            "$ref" : "#/components/schemas/BlocoDeMaletasDoPainel"
+          },
+          "previa" : {
+            "$ref" : "#/components/schemas/BlocoDaPrevia"
+          },
+          "recebidoNoAcerto" : {
+            "$ref" : "#/components/schemas/BlocoRecebido"
+          },
+          "reposicoes" : {
+            "$ref" : "#/components/schemas/BlocoDeMaletasDoPainel"
+          },
+          "total" : {
+            "$ref" : "#/components/schemas/BlocoTotal"
+          },
+          "trocas" : {
+            "$ref" : "#/components/schemas/BlocoDeTrocas"
+          },
+          "vendas" : {
+            "$ref" : "#/components/schemas/BlocoDeVendas"
           }
         },
         "type" : "object"
@@ -10872,6 +11273,29 @@
       "ValorDeTeste" : {
         "properties" : {
           "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ValorEmMoedas" : {
+        "properties" : {
+          "emDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "emGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "emReais" : {
             "example" : "123.45",
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
@@ -15194,6 +15618,58 @@
         "tags" : [ "inventarios-da-dona-controller" ]
       }
     },
+    "/api/dona/painel-semanal" : {
+      "get" : {
+        "description" : "Pedidos: uma linha por vendedor na semana (acerto fechado, acerto em andamento ou maletas em aberto). A linha sem acerto fechado é prévia (a mesma conta do fechamento, nada é gravado) e a prévia inclui o que o vendedor ainda não acertou de semanas anteriores (previaIncluiSemanasAnteriores). Totais: novas maletas, reposições, acerto, prévia, vendas, trocas e créditos, total e total recebido no acerto; cada bloco traz a rota e os filtros do relatório de onde saiu. Filtros: semana (padrão: a de hoje, em Brasília), vendedor, praca e situacao (EM_ABERTO, EM_ACERTO ou ACERTADO; só muda as linhas e o bloco da prévia). Cada valor vem em Real, Dólar e Guarani pela cotação do dia de cada lançamento.",
+        "operationId" : "painelSemanal",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "semana",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendedor",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "praca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PainelDaSemana"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Painel da semana",
+        "tags" : [ "painel-semanal-controller" ]
+      }
+    },
     "/api/dona/pendencias-acerto" : {
       "get" : {
         "description" : "Falta, defeito e o que a dona não aceitou, da mais nova para a mais antiga (no máximo 500). Filtros: vendedor e situação.",
@@ -17886,6 +18362,13 @@
           }
         }, {
           "in" : "query",
+          "name" : "pracaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
           "name" : "recorte",
           "required" : false,
           "schema" : {
@@ -18477,6 +18960,13 @@
           "required" : false,
           "schema" : {
             "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pracaId",
+          "required" : false,
+          "schema" : {
             "type" : "string"
           }
         }, {
@@ -19212,6 +19702,13 @@
           "required" : false,
           "schema" : {
             "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pracaId",
+          "required" : false,
+          "schema" : {
             "type" : "string"
           }
         }, {
@@ -20042,6 +20539,13 @@
           }
         }, {
           "in" : "query",
+          "name" : "pracaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
           "name" : "recorte",
           "required" : false,
           "schema" : {
@@ -20129,6 +20633,13 @@
           "required" : false,
           "schema" : {
             "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pracaId",
+          "required" : false,
+          "schema" : {
             "type" : "string"
           }
         }, {

@@ -1,7 +1,7 @@
 package br.com.coronasemijoias.api.relatorios;
 
 import br.com.coronasemijoias.api.relatorios.ConsultasDoPainelSemanal.Filtros;
-import br.com.coronasemijoias.api.relatorios.ConsultasDoPainelSemanal.Painel;
+import br.com.coronasemijoias.api.relatorios.ConsultasDoPainelSemanal.PainelDaSemana;
 import br.com.coronasemijoias.api.seguranca.ExigePerfil;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,7 +30,7 @@ public class PainelSemanalController {
                     + "praca e situacao (EM_ABERTO, EM_ACERTO ou ACERTADO; só muda as linhas e o bloco da prévia). Cada valor vem "
                     + "em Real, Dólar e Guarani pela cotação do dia de cada lançamento.")
     @GetMapping
-    public Painel painel(@RequestParam(required = false) String semana, @RequestParam(required = false) String vendedor,
+    public PainelDaSemana painel(@RequestParam(required = false) String semana, @RequestParam(required = false) String vendedor,
             @RequestParam(required = false) String praca, @RequestParam(required = false) String situacao) {
         return consultas.painel(new Filtros(semana, vendedor, praca, situacao));
     }
