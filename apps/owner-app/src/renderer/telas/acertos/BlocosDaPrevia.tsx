@@ -5,7 +5,7 @@ import { formatarGuarani } from '../../nucleo/moedas';
 import { TEXTOS_DE_ACERTOS } from '../../textos-acertos';
 import type { ProdutoDoAcerto } from './dados';
 import type { PreviaDoFechamento } from './previa';
-import { ValorDoAcerto, percentualDoAcerto } from './Valor';
+import { ValorDoAcerto, percentualDoAcerto, realDoAcerto } from './Valor';
 
 const T = TEXTOS_DE_ACERTOS.previa;
 
@@ -113,6 +113,9 @@ export function ComissaoDaPrevia({ previa }: { previa: PreviaDoFechamento }) {
   const percentual = percentualDoAcerto(previa.percentualComissao);
   // Só compara os dois números que a API mandou, do mesmo jeito que ela decide (soma >= meta).
   const bateu = previa.vendidoParaMetaGuarani >= previa.metaGuarani;
+  // Quanto falta vem pronto da API (Guarani e Real); a tela só formata e nunca converte.
+  const falta = previa.faltaParaMetaGuarani;
+  const faltaEmReais = previa.faltaParaMetaReais;
   let n = 0;
   return (
     <section className="gestao-grupo" aria-labelledby="previa-comissao">
@@ -125,6 +128,11 @@ export function ComissaoDaPrevia({ previa }: { previa: PreviaDoFechamento }) {
           formatarGuarani(BigInt(previa.metaGuarani)),
         )}
       </p>
+      {falta !== null && faltaEmReais !== null && falta > 0 ? (
+        <p className="gestao-texto">
+          {C.faltaParaMeta(formatarGuarani(BigInt(falta)), realDoAcerto(faltaEmReais))}
+        </p>
+      ) : null}
       <p className="gestao-texto">{bateu ? C.bateu(percentual) : C.naoBateu(percentual)}</p>
       <Tabela
         legenda={C.legenda}

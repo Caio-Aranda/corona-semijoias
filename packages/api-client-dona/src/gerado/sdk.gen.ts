@@ -148,7 +148,7 @@ export const desistirDoAcerto = <ThrowOnError extends boolean = false>(options: 
 /**
  * Prévia do fechamento do acerto
  *
- * Nada é gravado: esperado x contado por peça e maleta, sobras, faltas com valor, defeitos, eventos que vão entrar, devoluções em revisão (impedem), o que não foi aceito, pendências antigas, a comissão por venda, a soma da meta em Guarani, o percentual, os totais e a cotação. Com o acerto já fechado, devolve o que foi gravado. Assume cobrar as faltas no acerto e não aprovar defeito; para outras decisões, use a prévia com decisões.
+ * Nada é gravado: esperado x contado por peça e maleta, sobras, faltas com valor, defeitos, eventos que vão entrar, devoluções em revisão (impedem), o que não foi aceito, pendências antigas, a comissão por venda, a soma da meta em Guarani, quanto falta para a meta (em Guarani e em Real, pela cotação mais recente), o percentual, os totais e a cotação. Com o acerto em andamento, devolve a prévia (PreviaDoFechamento); com o acerto já fechado, devolve o que foi gravado (Fechamento), que não traz o que falta para a meta. Assume cobrar as faltas no acerto e não aprovar defeito; para outras decisões, use a prévia com decisões.
  */
 export const previaDoFechamento = <ThrowOnError extends boolean = false>(options: Options<PreviaDoFechamentoData, ThrowOnError>): RequestResult<PreviaDoFechamentoResponses, unknown, ThrowOnError> => (options.client ?? client).get<PreviaDoFechamentoResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],

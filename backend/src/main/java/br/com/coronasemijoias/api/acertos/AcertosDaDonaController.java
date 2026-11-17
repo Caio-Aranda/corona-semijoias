@@ -11,8 +11,10 @@ import br.com.coronasemijoias.api.acertos.ServicoDeFechamento.PedidoDeFechamento
 import br.com.coronasemijoias.api.seguranca.ExigePerfil;
 import br.com.coronasemijoias.api.seguranca.UsuarioAutenticado;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -104,8 +106,12 @@ public class AcertosDaDonaController {
     @Operation(operationId = "previaDoFechamento", summary = "Prévia do fechamento do acerto",
             description = "Nada é gravado: esperado x contado por peça e maleta, sobras, faltas com valor, defeitos, eventos que vão entrar, "
                     + "devoluções em revisão (impedem), o que não foi aceito, pendências antigas, a comissão por venda, a soma da meta em "
-                    + "Guarani, o percentual, os totais e a cotação. Com o acerto já fechado, devolve o que foi gravado. Assume cobrar as faltas no acerto e não aprovar defeito; para outras "
-                    + "decisões, use a prévia com decisões.")
+                    + "Guarani, quanto falta para a meta (em Guarani e em Real, pela cotação mais recente), o percentual, os totais e a cotação. "
+                    + "Com o acerto em andamento, devolve a prévia (PreviaDoFechamento); com o acerto já fechado, devolve o que foi gravado "
+                    + "(Fechamento), que não traz o que falta para a meta. Assume cobrar as faltas no acerto e não aprovar defeito; para "
+                    + "outras decisões, use a prévia com decisões.")
+    @ApiResponse(responseCode = "200", description = "A prévia (acerto em andamento) ou o fechamento gravado (acerto fechado)",
+            content = @Content(schema = @Schema(oneOf = {PreviaDoFechamento.class, ConsultasDeAcertos.Fechamento.class})))
     @GetMapping("/{id}/fechamento")
     public Object previa(@PathVariable UUID id) {
         ConsultasDeAcertos.Fechamento gravado = consultas.fechamento(id);
@@ -118,7 +124,7 @@ public class AcertosDaDonaController {
                     + "a favor do vendedor, crédito ou pagar na hora). Mostra o crédito disponível, o que há a pagar, o que ficou devendo e as contas "
                     + "abertas do vendedor. Nada é gravado.")
     @PostMapping("/{id}/fechamento/previa")
-    public Map<String, Object> previaComDecisoes(@PathVariable UUID id, @RequestBody PedidoDeFechamento pedido) {
+    public PreviaDoFechamento previaComDecisoes(@PathVariable UUID id, @RequestBody PedidoDeFechamento pedido) {
         return fechamento.previa(id, pedido);
     }
 

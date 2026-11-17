@@ -11,3 +11,5 @@ CLAUDE.md
 .claude/
 packages/api-client-*/src/gerado/
 packages/api-client-*/openapi.json
+# Arquivos de referência do "antes" da prévia do fechamento (tarefa 8.11): nunca regravados nem reformatados.
+backend/src/test/resources/acertos/previa-do-fechamento-antes/

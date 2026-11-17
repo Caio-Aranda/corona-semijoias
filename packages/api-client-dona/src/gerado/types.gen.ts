@@ -10,6 +10,14 @@ export type Ambigua = {
     nomes?: Array<string>;
 };
 
+export type AntigaDaPreviaDoFechamento = {
+    id?: string;
+    produtoId?: string;
+    quantidade?: number;
+    tipo?: string;
+    valor?: string;
+};
+
 export type AparelhoDoVendedor = {
     aguardandoEnvio?: number;
     aguardandoInformadoEm?: string;
@@ -163,6 +171,15 @@ export type BoletoDoAcerto = {
 
 export type CadastroDeTeste = {
     nome: string;
+};
+
+export type CalculoDaComissaoLinha = {
+    base?: string;
+    eventoId?: string;
+    percentual?: string;
+    tipo?: 'COMISSAO' | 'ESTORNO';
+    valor?: string;
+    vendaId?: string;
 };
 
 export type Campo = {
@@ -567,6 +584,17 @@ export type ConsultasDoResultadoResultado = {
     pecasComCustoDoCadastro?: number;
 };
 
+export type ContaAbertaNaPrevia = {
+    emAberto?: string;
+    formaPrevista?: string;
+    id?: string;
+    numero?: number;
+    origem?: string;
+    totalDeParcelas?: number;
+    valor?: string;
+    vencimento?: string;
+};
+
 export type ContaAntigaPaga = {
     contaId?: string;
     forma?: string;
@@ -734,6 +762,11 @@ export type DecisaoDePendenciaAntiga = {
     pendenciaId?: string;
 };
 
+export type DefeitoDaPreviaDoFechamento = {
+    contadoDefeito?: number;
+    produto?: ProdutoDaPreviaDoFechamento;
+};
+
 export type Devolucao = {
     autorizacaoId?: string;
     canceladaEm?: string;
@@ -869,6 +902,13 @@ export type EstoqueDaDonaControllerRespostaDoMovimento = {
     usuarioId?: string;
 };
 
+export type EventoDaPreviaDoFechamento = {
+    origemId?: string;
+    tipo?: string;
+    valor?: string;
+    vendaId?: string;
+};
+
 export type EventoFechado = {
     origemId?: string;
     tipo?: string;
@@ -884,6 +924,14 @@ export type Extrato = {
     saidas?: string;
     saldoAnterior?: string;
     saldoFinal?: string;
+};
+
+export type FaltaDaPreviaDoFechamento = {
+    produto?: ProdutoDaPreviaDoFechamento;
+    quantidade?: number;
+    remessaId?: string;
+    status?: string;
+    valor?: string;
 };
 
 export type Fechamento = {
@@ -1899,6 +1947,13 @@ export type MeiDoVendedorDados = {
     version?: number;
 };
 
+export type NaoAceitaDaPreviaDoFechamento = {
+    origemId?: string;
+    origemTipo?: string;
+    tipo?: string;
+    valor?: string;
+};
+
 export type NotaDeRemessa = {
     cancelada?: boolean;
     cotacao?: CotacaoDaNota;
@@ -2101,6 +2156,22 @@ export type ParcelaDaVenda = {
     valorPago?: string;
     vencida?: boolean;
     vencimento?: string;
+};
+
+export type ParcelaDoRestanteDaPrevia = {
+    numero?: number;
+    valor?: string;
+    vencimento?: string;
+};
+
+export type PecaDaPreviaDoFechamento = {
+    contadoBoa?: number;
+    contadoDefeito?: number;
+    esperado?: number;
+    falta?: number;
+    produto?: ProdutoDaPreviaDoFechamento;
+    remessaId?: string;
+    valorDaFalta?: string;
 };
 
 export type PecaDaTroca = {
@@ -2431,6 +2502,51 @@ export type PracasDaDonaControllerResposta = {
     id?: string;
     nome?: string;
     version?: number;
+};
+
+export type PreviaDoFechamento = {
+    aPagarNoAcerto?: string;
+    acertoId?: string;
+    boleto?: string;
+    comissao?: string;
+    comissoes?: Array<CalculoDaComissaoLinha>;
+    contasAbertasDoVendedor?: Array<ContaAbertaNaPrevia>;
+    cotacaoData?: string;
+    cotacaoId?: string;
+    creditoDisponivel?: string;
+    creditoUsado?: string;
+    defeitos?: Array<DefeitoDaPreviaDoFechamento>;
+    descontos?: string;
+    devolvido?: string;
+    eventos?: Array<EventoDaPreviaDoFechamento>;
+    faltaParaMetaGuarani?: number;
+    faltaParaMetaReais?: string;
+    faltas?: Array<FaltaDaPreviaDoFechamento>;
+    faltasCobradas?: string;
+    ficouDevendo?: string;
+    itens?: Array<PecaDaPreviaDoFechamento>;
+    liquido?: string;
+    metaGuarani?: number;
+    naoAceitas?: Array<NaoAceitaDaPreviaDoFechamento>;
+    pagoAoVendedor?: string;
+    parcelasDoRestante?: Array<ParcelaDoRestanteDaPrevia>;
+    pendenciasAntigas?: Array<AntigaDaPreviaDoFechamento>;
+    percentualComissao?: string;
+    podeFechar?: boolean;
+    recebidoNoAcerto?: string;
+    restanteSemData?: boolean;
+    revisoesPendentes?: Array<RevisaoDaPreviaDoFechamento>;
+    sobras?: Array<Sobra>;
+    vendidoBruto?: string;
+    vendidoLiquido?: string;
+    vendidoParaMetaGuarani?: number;
+};
+
+export type ProdutoDaPreviaDoFechamento = {
+    codigo?: string;
+    fotoHash?: string;
+    id?: string;
+    nome?: string;
 };
 
 export type ProdutoSemFoto = {
@@ -3228,6 +3344,11 @@ export type ResultadoDaOperacao = {
     resultado?: 'ACEITO' | 'JA_RECEBIDO' | 'CONFLITO' | 'RECUSADO' | 'NAO_PROCESSADO';
 };
 
+export type RevisaoDaPreviaDoFechamento = {
+    id?: string;
+    tipo?: string;
+};
+
 export type Rodada = {
     chavesComFalha?: Array<string>;
     chavesConferidas?: Array<string>;
@@ -3316,6 +3437,12 @@ export type ServicoDeRecebimentosDoVendedorPedidoDeRecebimento = {
     id?: string;
     valor?: string;
     vendedorId?: string;
+};
+
+export type Sobra = {
+    contado?: number;
+    esperado?: number;
+    produtoId?: string;
 };
 
 export type Tempo = {
@@ -3687,11 +3814,9 @@ export type PreviaDoFechamentoData = {
 
 export type PreviaDoFechamentoResponses = {
     /**
-     * OK
+     * A prévia (acerto em andamento) ou o fechamento gravado (acerto fechado)
      */
-    200: {
-        [key: string]: unknown;
-    };
+    200: PreviaDoFechamento | Fechamento;
 };
 
 export type PreviaDoFechamentoResponse = PreviaDoFechamentoResponses[keyof PreviaDoFechamentoResponses];
@@ -3709,9 +3834,7 @@ export type PreviaDoFechamentoComDecisoesResponses = {
     /**
      * OK
      */
-    200: {
-        [key: string]: unknown;
-    };
+    200: PreviaDoFechamento;
 };
 
 export type PreviaDoFechamentoComDecisoesResponse = PreviaDoFechamentoComDecisoesResponses[keyof PreviaDoFechamentoComDecisoesResponses];

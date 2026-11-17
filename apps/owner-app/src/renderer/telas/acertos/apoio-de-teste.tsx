@@ -183,6 +183,8 @@ export function previaDoServidor(extra: Record<string, unknown> = {}) {
     ],
     metaGuarani: 700000,
     vendidoParaMetaGuarani: 750000,
+    faltaParaMetaGuarani: 0,
+    faltaParaMetaReais: '0.00',
     percentualComissao: '40.00',
     vendidoBruto: '1000.00',
     descontos: '10.00',

@@ -208,6 +208,7 @@ export const TEXTOS_DE_ACERTOS = {
       titulo: 'Comissão e meta',
       vendidoNaSemana: (vendido: string, meta: string) =>
         `Vendido na semana: ${vendido} de ${meta} (meta)`,
+      faltaParaMeta: (guarani: string, real: string) => `Falta para a meta: ${guarani} (${real}).`,
       bateu: (percentual: string) => `Bateu a meta: comissão de ${percentual}.`,
       naoBateu: (percentual: string) => `Ainda não bateu a meta: comissão de ${percentual}.`,
       legenda: 'Comissão por venda',
