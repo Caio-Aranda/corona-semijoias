@@ -1,3 +1,5 @@
+import { textosVivos } from './idioma/idioma';
+import { ES_TEXTOS_DE_ACERTOS } from './idioma/es/acertos';
 /**
  * Textos das telas do acerto (tarefa 7.9). Linguagem da loja (acerto, maleta, vendedor, peça): sem termo técnico,
  * a dona é tratada por "você". Mensagens de regra vêm do servidor; aqui ficam só os textos das telas e os avisos
@@ -5,7 +7,7 @@
  */
 const pecas = (n: number) => (n === 1 ? '1 peça' : `${n} peças`);
 
-export const TEXTOS_DE_ACERTOS = {
+export const PT_TEXTOS_DE_ACERTOS = {
   menu: {
     grupo: 'Acerto',
     acertos: 'Acertos',
@@ -458,3 +460,5 @@ export const TEXTOS_DE_ACERTOS = {
       'Este acerto já terminou ou foi desfeito. Volte para a lista e abra de novo.',
   } as Record<string, string>,
 } as const;
+
+export const TEXTOS_DE_ACERTOS = textosVivos('acertos', PT_TEXTOS_DE_ACERTOS, ES_TEXTOS_DE_ACERTOS);

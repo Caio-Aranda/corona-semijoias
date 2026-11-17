@@ -1,3 +1,5 @@
+import { textosVivos } from './idioma/idioma';
+import { ES_TEXTOS_DE_MALETAS } from './idioma/es/maletas';
 /**
  * Textos das telas de maletas (menu Maletas → Montar maleta). Vêm do glossário da interface
  * (parte 12). A palavra "remessa" não aparece em tela: é sempre "maleta". Mensagens de regra
@@ -5,7 +7,7 @@
  */
 const pecas = (n: number) => (n === 1 ? '1 peça' : `${n} peças`);
 
-export const TEXTOS_DE_MALETAS = {
+export const PT_TEXTOS_DE_MALETAS = {
   menu: { grupo: 'Maletas', montar: 'Montar maleta', lista: 'Maletas' },
   titulo: 'Montar maleta',
   pecas,
@@ -379,3 +381,5 @@ export const TEXTOS_DE_MALETAS = {
   carregando: 'Carregando...',
   naoAbriu: 'Não foi possível abrir esta maleta. Tente de novo.',
 } as const;
+
+export const TEXTOS_DE_MALETAS = textosVivos('maletas', PT_TEXTOS_DE_MALETAS, ES_TEXTOS_DE_MALETAS);
