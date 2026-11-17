@@ -49,7 +49,7 @@ function montarPacote(arquivos: Record<string, string>): string {
 }
 
 describe('varredura do pacote do Corona Vendas (ADR-0003, camada 2)', () => {
-  it('a lista de marcadores tem os seis do ADR-0003, em um único arquivo', async () => {
+  it('a lista de marcadores tem os seis do ADR-0003 e os nomes de custo (M5), em um único arquivo', async () => {
     const { lerMarcadores } = await carregar<Marcadores>('scripts', 'barreira', 'marcadores.mjs');
     expect(lerMarcadores().marcadores).toEqual([
       '/api/dona',
@@ -58,6 +58,12 @@ describe('varredura do pacote do Corona Vendas (ADR-0003, camada 2)', () => {
       'api-client-dona',
       'owner-app',
       'Corona Gestão',
+      'custoUnitario',
+      'custoAtual',
+      'custoAnterior',
+      'valorACusto',
+      'historicoDeCusto',
+      'produtos_custos',
     ]);
   });
 

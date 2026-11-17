@@ -57,6 +57,12 @@ function cadastroBasico(c: {
 }
 
 export const TEXTOS = {
+  /** Botões que se repetem em várias telas (auditoria B2). */
+  botoes: {
+    sair: 'Sair',
+    entrar: 'Entrar',
+    cancelar: 'Cancelar',
+  },
   /** Estoque da loja x peça em maleta (item 13; glossário: "Acabou", "Está em maleta"). */
   saldoDaLoja: {
     acabou: 'Acabou',
