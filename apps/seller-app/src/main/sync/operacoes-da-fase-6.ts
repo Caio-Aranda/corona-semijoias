@@ -20,6 +20,7 @@ import {
   type PedidoDeAutorizacaoParaEnviar,
   type TrocaParaEnviar,
 } from '../../shared/operacoes';
+import { diferencaDaTroca } from '../../shared/diferenca-da-troca';
 import { valorDaDevolucao } from '../../shared/valor-da-devolucao';
 import { CHAVES, lerEstado } from './estado-sync';
 import type { CodigoDaFase6 } from './mensagens-da-fase-6';
@@ -991,7 +992,7 @@ export function registrarTroca(
     venda_nova_id: b.id,
     cliente_id: p.venda.cliente_id,
     vendedor_id: vendedor,
-    diferenca: textoDeCentavos(total - valorA),
+    diferenca: textoDeCentavos(diferencaDaTroca(total, creditoDeA)),
     trocada_em: quando,
     situacao: 'ATIVA',
   });
