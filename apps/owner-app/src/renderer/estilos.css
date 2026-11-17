@@ -716,7 +716,9 @@ dl.gestao-totais {
 .gestao-cartao-de-relatorio {
   display: grid;
   grid-template-columns: 2.5rem 1fr;
+  grid-template-rows: auto 1fr;
   column-gap: var(--espaco-3);
+  row-gap: var(--espaco-1);
   align-items: start;
   padding: var(--espaco-3) var(--espaco-4);
   background: var(--cor-fundo);
@@ -745,6 +747,7 @@ dl.gestao-totais {
   height: 1.4rem;
 }
 .gestao-cartao-de-relatorio__titulo {
+  font-size: 1.05rem;
   font-weight: 700;
 }
 .gestao-cartao-de-relatorio__texto {
