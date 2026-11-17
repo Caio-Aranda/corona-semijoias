@@ -1,0 +1,1631 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Corona Semijoias · Proposta visual dos apps</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --ouro: #c08e3b;
+        --ouro-escuro: #9d6d21;
+        --ouro-claro: #deb75e;
+        --fundo: #faf7f2;
+        --branco: #ffffff;
+        --tinta: #2b2118;
+        --tinta-2: #5c4b3a;
+        --linha: #e6dccb;
+        --vinho: #3b1f2b;
+        --vinho-2: #6b2240;
+        --grafite: #26211d;
+        --verde: #14663a;
+        --verde-fundo: #e3f4ea;
+        --vermelho: #a11d1d;
+        --vermelho-fundo: #fce9e7;
+        --foco: #1d4ed8;
+        --serifa: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+        --sans: Inter, 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
+        --raio: 20px;
+        --sombra: 0 1px 2px rgba(43, 33, 24, 0.06), 0 8px 24px rgba(43, 33, 24, 0.08);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        background: var(--fundo);
+        color: var(--tinta);
+        font: 400 17px/1.6 var(--sans);
+        -webkit-text-size-adjust: 100%;
+      }
+      img {
+        max-width: 100%;
+        display: block;
+      }
+      a {
+        color: var(--tinta);
+        text-underline-offset: 3px;
+      }
+      :focus-visible {
+        outline: 3px solid var(--foco);
+        outline-offset: 3px;
+        box-shadow: 0 0 0 3px #fff;
+        border-radius: 8px;
+      }
+      .skip {
+        position: absolute;
+        left: 8px;
+        top: -60px;
+        background: #fff;
+        padding: 12px 16px;
+        z-index: 10;
+      }
+      .skip:focus {
+        top: 8px;
+      }
+      .wrap {
+        width: min(1120px, 100% - 32px);
+        margin-inline: auto;
+      }
+      h1,
+      h2,
+      h3 {
+        font-family: var(--serifa);
+        font-weight: 700;
+        line-height: 1.15;
+        margin: 0;
+      }
+      h1 {
+        font-size: clamp(2.2rem, 6vw, 3.4rem);
+      }
+      h2 {
+        font-size: clamp(1.9rem, 4.5vw, 2.6rem);
+      }
+      h3 {
+        font-size: 1.6rem;
+      }
+      h4 {
+        font: 700 1.05rem/1.3 var(--sans);
+        margin: 0 0 6px;
+      }
+      p {
+        margin: 0 0 12px;
+      }
+      .ouro-fio {
+        display: block;
+        width: 72px;
+        height: 4px;
+        border-radius: 4px;
+        background: linear-gradient(90deg, var(--ouro-escuro), var(--ouro-claro));
+        margin: 14px 0 18px;
+      }
+      .miudo {
+        font-size: 16px;
+        color: var(--tinta-2);
+      }
+
+      /* Topo */
+      .topo {
+        background: radial-gradient(900px 300px at 80% -20%, #f1e0bd 0%, transparent 70%), var(--fundo);
+        padding: 28px 0 40px;
+        border-bottom: 1px solid var(--linha);
+      }
+      .topo img.logo-h {
+        height: 64px;
+        width: auto;
+        margin-bottom: 28px;
+      }
+      .topo p.lead {
+        font-size: 1.15rem;
+        max-width: 62ch;
+        color: var(--tinta-2);
+      }
+      .indice {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 22px 0 0;
+        padding: 0;
+        list-style: none;
+      }
+      .indice a {
+        display: inline-flex;
+        align-items: center;
+        min-height: 48px;
+        padding: 0 20px;
+        border-radius: 999px;
+        background: var(--branco);
+        border: 1px solid var(--linha);
+        font-weight: 600;
+        text-decoration: none;
+        box-shadow: var(--sombra);
+      }
+      .indice a:hover {
+        border-color: var(--ouro);
+      }
+      section.bloco {
+        padding: 56px 0 8px;
+      }
+      .intro {
+        max-width: 70ch;
+        color: var(--tinta-2);
+        margin-bottom: 26px;
+      }
+
+      /* Cartões */
+      .cartao {
+        background: var(--branco);
+        border: 1px solid var(--linha);
+        border-radius: var(--raio);
+        box-shadow: var(--sombra);
+        padding: 24px;
+      }
+      .grade-3 {
+        display: grid;
+        gap: 22px;
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .grade-2 {
+        display: grid;
+        gap: 22px;
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .rotulo {
+        display: inline-grid;
+        place-items: center;
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        background: var(--tinta);
+        color: #fff;
+        font: 700 1.35rem var(--sans);
+        margin-right: 12px;
+        vertical-align: middle;
+      }
+      .estilo-tit {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+
+      /* Ícones */
+      svg.ic {
+        display: block;
+      }
+      .par-icones {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+        margin: 16px 0;
+      }
+      .ic-caixa {
+        background: var(--fundo);
+        border: 1px solid var(--linha);
+        border-radius: 16px;
+        padding: 16px 12px 12px;
+        text-align: center;
+      }
+      .ic-grande {
+        margin: 0 auto 10px;
+        width: min(100%, 160px);
+        height: auto;
+        filter: drop-shadow(0 8px 14px rgba(43, 33, 24, 0.25));
+      }
+      .ic-nome {
+        font-weight: 700;
+        font-size: 1rem;
+      }
+      .tamanhos {
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        gap: 14px;
+        margin-top: 12px;
+        font-size: 13px;
+        color: var(--tinta-2);
+      }
+      .tamanhos figure {
+        margin: 0;
+        text-align: center;
+      }
+      .tamanhos figcaption {
+        margin-top: 4px;
+      }
+      .tamanhos svg {
+        margin: 0 auto;
+      }
+
+      /* Windows simulado */
+      .win {
+        margin-top: 8px;
+        border-radius: 14px;
+        overflow: hidden;
+        background: linear-gradient(135deg, #2f5d9b 0%, #6aa5d8 45%, #e8b5a0 100%);
+        position: relative;
+        height: 220px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+      }
+      .win .area {
+        display: flex;
+        gap: 18px;
+        padding: 16px;
+      }
+      .win .atalho {
+        width: 78px;
+        text-align: center;
+        color: #fff;
+        font-size: 12px;
+        line-height: 1.25;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+      }
+      .win .atalho svg {
+        margin: 0 auto 4px;
+      }
+      .barra {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 48px;
+        background: rgba(32, 32, 34, 0.82);
+        backdrop-filter: blur(12px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 6px;
+      }
+      .barra .item {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: grid;
+        place-items: center;
+        position: relative;
+      }
+      .barra .item.ativo {
+        background: rgba(255, 255, 255, 0.12);
+      }
+      .barra .item.ativo::after {
+        content: '';
+        position: absolute;
+        bottom: 2px;
+        width: 14px;
+        height: 3px;
+        border-radius: 3px;
+        background: #9fc5ff;
+      }
+      .barra .gen {
+        width: 22px;
+        height: 22px;
+        border-radius: 5px;
+        background: rgba(255, 255, 255, 0.55);
+      }
+      .barra .gen.b {
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+      }
+      .legenda-win {
+        font-size: 15px;
+        color: var(--tinta-2);
+        margin-top: 8px;
+      }
+      .como {
+        margin: 12px 0 0;
+        padding: 0;
+        list-style: none;
+        font-size: 16px;
+      }
+      .como li {
+        padding: 4px 0;
+      }
+
+      /* Paleta */
+      .paleta {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: 18px;
+      }
+      .cor {
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid var(--linha);
+        background: #fff;
+      }
+      .cor .amostra {
+        height: 78px;
+      }
+      .cor .info {
+        padding: 12px 14px 14px;
+        font-size: 15px;
+        line-height: 1.45;
+      }
+      .cor b {
+        display: block;
+        font-size: 16px;
+      }
+      table.contraste {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 16px;
+        background: #fff;
+        border-radius: var(--raio);
+        overflow: hidden;
+        box-shadow: var(--sombra);
+      }
+      table.contraste th,
+      table.contraste td {
+        text-align: left;
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--linha);
+        vertical-align: middle;
+      }
+      table.contraste th {
+        background: #f4ede0;
+        font-size: 15px;
+      }
+      .par-amostra {
+        display: inline-block;
+        min-width: 150px;
+        padding: 8px 12px;
+        border-radius: 10px;
+        font-weight: 600;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+      }
+      .ct {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--tinta);
+        background: #eef6f0;
+        border: 1px solid #9bc7aa;
+        border-radius: 999px;
+        padding: 2px 10px;
+        white-space: nowrap;
+      }
+      .ct.ruim {
+        background: var(--vermelho-fundo);
+        border-color: #e29a94;
+      }
+      .tabela-rolagem {
+        overflow-x: auto;
+        border-radius: var(--raio);
+      }
+      .tabela-rolagem table {
+        min-width: 640px;
+      }
+
+      /* Molduras de tela */
+      .moldura {
+        container-type: inline-size;
+        border-radius: 22px;
+        overflow: hidden;
+        border: 1px solid var(--linha);
+        box-shadow: var(--sombra);
+        background: #fff;
+      }
+      .moldura-topo {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        height: 34px;
+        padding: 0 14px;
+        background: #efe8da;
+        border-bottom: 1px solid var(--linha);
+        font-size: 13px;
+        color: var(--tinta-2);
+      }
+      .moldura-topo i {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #cdbfa6;
+      }
+      .moldura-topo span {
+        margin-left: 8px;
+      }
+      .legenda {
+        margin: 12px 4px 0;
+        font-size: 15px;
+        color: var(--tinta-2);
+      }
+      .legenda strong {
+        color: var(--tinta);
+      }
+
+      /* Login */
+      .login {
+        font-family: var(--sans);
+      }
+      .login .campo label {
+        display: block;
+        font-weight: 600;
+        font-size: 16px;
+        margin-bottom: 6px;
+      }
+      .login .campo {
+        margin-bottom: 16px;
+      }
+      .entrada {
+        width: 100%;
+        min-height: 52px;
+        padding: 0 14px;
+        border: 2px solid #8a7a66;
+        border-radius: 12px;
+        font: 400 17px var(--sans);
+        background: #fff;
+        color: var(--tinta);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .entrada.foco {
+        border-color: var(--foco);
+        outline: 3px solid var(--foco);
+        outline-offset: 2px;
+        box-shadow: 0 0 0 3px #fff;
+      }
+      .entrada .ver {
+        font-weight: 600;
+        font-size: 16px;
+        text-decoration: underline;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-height: 56px;
+        padding: 0 26px;
+        border-radius: 14px;
+        border: 2px solid transparent;
+        font: 700 18px var(--sans);
+        cursor: pointer;
+        text-decoration: none;
+        width: 100%;
+      }
+      .btn-ouro {
+        background: var(--ouro);
+        color: var(--tinta);
+        box-shadow: 0 6px 14px rgba(157, 109, 33, 0.28);
+      }
+      .btn-ouro:hover {
+        background: var(--ouro-claro);
+      }
+      .btn-vinho {
+        background: var(--vinho);
+        color: #fff;
+        box-shadow: 0 6px 14px rgba(59, 31, 43, 0.3);
+        border-bottom: 4px solid var(--ouro);
+      }
+      .btn-vinho:hover {
+        background: var(--vinho-2);
+      }
+      .btn-contorno {
+        background: #fff;
+        color: var(--tinta);
+        border-color: #8a7a66;
+      }
+      .btn-fraco {
+        background: transparent;
+        color: var(--vermelho);
+        border-color: transparent;
+        text-decoration: underline;
+        min-height: 48px;
+      }
+      .aviso {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        padding: 12px 14px;
+        border-radius: 12px;
+        font-size: 16px;
+        line-height: 1.4;
+        font-weight: 500;
+        border: 2px solid;
+      }
+      .aviso .sel {
+        flex: none;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        font-weight: 800;
+        font-size: 15px;
+      }
+      .aviso.erro {
+        background: var(--vermelho-fundo);
+        border-color: #d98a84;
+        color: #6e1212;
+      }
+      .aviso.erro .sel {
+        background: var(--vermelho);
+      }
+      .aviso.certo {
+        background: var(--verde-fundo);
+        border-color: #86c4a0;
+        color: #0d4a29;
+      }
+      .aviso.certo .sel {
+        background: var(--verde);
+      }
+      .etiqueta {
+        display: inline-block;
+        font-size: 14px;
+        font-weight: 700;
+        padding: 4px 12px;
+        border-radius: 999px;
+        letter-spacing: 0.02em;
+      }
+      .etq-gestao {
+        background: var(--vinho);
+        color: #fff;
+      }
+      .etq-vendas {
+        background: #f3e3c0;
+        color: var(--tinta);
+        border: 1px solid #d9bf88;
+      }
+      .login .esqueci {
+        display: block;
+        text-align: center;
+        margin-top: 14px;
+        font-weight: 600;
+        padding: 10px;
+      }
+
+      /* Variação 1: cartão centrado */
+      .lg1 {
+        padding: 36px 18px;
+        background: radial-gradient(600px 320px at 50% 0%, #f6e8c9 0%, transparent 70%), var(--fundo);
+        display: grid;
+        place-items: center;
+      }
+      .lg1 .caixa {
+        width: min(100%, 420px);
+        background: #fff;
+        border-radius: 24px;
+        box-shadow: var(--sombra);
+        border: 1px solid var(--linha);
+        padding: 30px 26px 26px;
+        text-align: center;
+      }
+      .lg1 .caixa .campo,
+      .lg1 .caixa .aviso {
+        text-align: left;
+      }
+      .lg1 img.redonda {
+        width: 128px;
+        height: 128px;
+        margin: 0 auto 8px;
+      }
+      .lg1 h3 {
+        font-size: 2.1rem;
+        margin: 4px 0 4px;
+      }
+      .lg1 .sub {
+        color: var(--tinta-2);
+        font-size: 16px;
+        margin-bottom: 22px;
+      }
+      .lg1.escuro {
+        background: radial-gradient(600px 320px at 50% 0%, #5a2a42 0%, transparent 70%), var(--vinho);
+      }
+
+      /* Variação 2: painel dividido */
+      .lg2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        min-height: 560px;
+      }
+      .lg2 .lado {
+        padding: 36px 32px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 18px;
+        color: #fff;
+        position: relative;
+      }
+      .lg2 .lado.gestao {
+        background: linear-gradient(160deg, var(--vinho-2) 0%, #2b0f1e 100%);
+      }
+      .lg2 .lado.vendas {
+        background: linear-gradient(160deg, #f6e6c4 0%, #e3c27a 100%);
+        color: var(--tinta);
+      }
+      .lg2 .lado img.simb {
+        width: min(220px, 60%);
+        margin: 0 auto;
+        filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.3));
+      }
+      .lg2 .lado .frase {
+        font: 700 2rem/1.15 var(--serifa);
+      }
+      .lg2 .lado .nota {
+        font-size: 16px;
+        opacity: 1;
+      }
+      .lg2 .lado.gestao .frase span {
+        color: var(--ouro-claro);
+      }
+      .lg2 .form {
+        padding: 36px 32px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        background: #fff;
+      }
+      .lg2 h3 {
+        font-size: 2.1rem;
+        margin: 10px 0 4px;
+      }
+      .lg2 .sub {
+        color: var(--tinta-2);
+        margin-bottom: 20px;
+      }
+      @container (max-width: 640px) {
+        .lg2 {
+          grid-template-columns: 1fr;
+          min-height: 0;
+        }
+        .lg2 .lado {
+          flex-direction: row;
+          align-items: center;
+          padding: 18px 20px;
+        }
+        .lg2 .lado img.simb {
+          width: 84px;
+          margin: 0;
+          flex: none;
+        }
+        .lg2 .lado .frase {
+          font-size: 1.4rem;
+        }
+        .lg2 .lado .nota {
+          display: none;
+        }
+        .lg2 .form {
+          padding: 24px 20px 28px;
+        }
+      }
+
+      /* Venda */
+      .app-topo {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 12px 22px;
+        background: var(--fundo);
+        border-bottom: 4px solid var(--ouro);
+      }
+      .app-topo img {
+        height: 46px;
+        width: auto;
+      }
+      .app-topo .quem {
+        text-align: right;
+        font-size: 16px;
+        line-height: 1.3;
+      }
+      .app-topo .quem b {
+        display: block;
+      }
+      .venda {
+        display: grid;
+        grid-template-columns: 1.6fr 1fr;
+        gap: 22px;
+        padding: 22px;
+        background: #fff;
+      }
+      .venda h3 {
+        font-size: 2.2rem;
+      }
+      .venda .busca {
+        margin: 14px 0;
+        display: flex;
+        gap: 10px;
+      }
+      .venda .busca .entrada {
+        flex: 1;
+      }
+      .venda .busca .btn {
+        width: auto;
+        min-height: 52px;
+        padding: 0 20px;
+        font-size: 17px;
+      }
+      .pecas {
+        list-style: none;
+        margin: 14px 0 0;
+        padding: 0;
+        display: grid;
+        gap: 10px;
+      }
+      .peca {
+        display: grid;
+        grid-template-columns: 64px 1fr auto;
+        gap: 14px;
+        align-items: center;
+        padding: 10px 12px;
+        border: 1px solid var(--linha);
+        border-radius: 16px;
+        background: #fff;
+        min-height: 76px;
+      }
+      .foto {
+        width: 64px;
+        height: 64px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #f6ecd8, #ead6aa);
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+      }
+      .foto img {
+        width: 78%;
+        height: 78%;
+        object-fit: contain;
+      }
+      .foto.sem {
+        background: #f1ece3;
+        border: 2px dashed #a8987f;
+        font-size: 12px;
+        line-height: 1.15;
+        text-align: center;
+        color: var(--tinta-2);
+        font-weight: 600;
+      }
+      .peca .nome {
+        font-weight: 700;
+        font-size: 18px;
+        line-height: 1.25;
+      }
+      .peca .cod {
+        font-size: 16px;
+        color: var(--tinta-2);
+      }
+      .peca .preco {
+        text-align: right;
+        font-weight: 700;
+        font-size: 18px;
+        white-space: nowrap;
+      }
+      .peca .preco small {
+        display: block;
+        font-weight: 500;
+        font-size: 14px;
+        color: var(--tinta-2);
+      }
+      .resumo {
+        background: var(--fundo);
+        border: 1px solid var(--linha);
+        border-radius: 20px;
+        padding: 20px;
+        align-self: start;
+        display: grid;
+        gap: 14px;
+      }
+      .resumo .linha {
+        display: flex;
+        justify-content: space-between;
+        font-size: 17px;
+      }
+      .resumo .total {
+        border-top: 2px solid var(--ouro);
+        padding-top: 14px;
+      }
+      .resumo .total .rot {
+        font-size: 17px;
+        font-weight: 600;
+      }
+      .resumo .total .valor {
+        font: 700 2.6rem/1.1 var(--serifa);
+      }
+      .resumo .total small {
+        display: block;
+        font-size: 15px;
+        color: var(--tinta-2);
+        margin-top: 4px;
+      }
+      .rodape-cot {
+        font-size: 14px;
+        color: var(--tinta-2);
+        padding: 0 22px 18px;
+      }
+      @container (max-width: 700px) {
+        .venda {
+          grid-template-columns: 1fr;
+          padding: 16px;
+        }
+        .app-topo {
+          padding: 10px 14px;
+        }
+        .app-topo img {
+          height: 36px;
+        }
+        .peca {
+          grid-template-columns: 56px 1fr;
+        }
+        .peca .preco {
+          grid-column: 2;
+          text-align: left;
+        }
+        .foto {
+          width: 56px;
+          height: 56px;
+        }
+        .venda h3 {
+          font-size: 1.9rem;
+        }
+        .venda .busca {
+          flex-direction: column;
+        }
+        .venda .busca .btn {
+          width: 100%;
+        }
+      }
+
+      /* Resposta */
+      .escolha {
+        background: var(--tinta);
+        color: #fff;
+        border-radius: 24px;
+        padding: 28px;
+        margin: 56px 0 64px;
+      }
+      .escolha h2 {
+        color: #fff;
+      }
+      .escolha p {
+        color: #f1e7d6;
+      }
+      .escolha code {
+        background: rgba(255, 255, 255, 0.14);
+        padding: 2px 8px;
+        border-radius: 6px;
+        font-size: 0.95em;
+      }
+      .escolha a {
+        color: #fff;
+      }
+      .ok-lista {
+        list-style: none;
+        padding: 0;
+        margin: 10px 0 0;
+        display: grid;
+        gap: 8px;
+      }
+      .ok-lista li::before {
+        content: '✓ ';
+        font-weight: 800;
+        color: #86c4a0;
+      }
+      footer {
+        padding: 0 0 40px;
+      }
+
+      @media (max-width: 900px) {
+        .grade-3,
+        .grade-2 {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (max-width: 520px) {
+        body {
+          font-size: 17px;
+        }
+        .cartao {
+          padding: 18px 14px;
+        }
+        .par-icones {
+          gap: 10px;
+        }
+        .win {
+          height: 240px;
+        }
+        .win .area {
+          gap: 10px;
+          padding: 12px;
+        }
+        .escolha {
+          padding: 22px 18px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip" href="#icones">Ir direto aos ícones</a>
+
+    <!-- Definições dos ícones (SVG desenhados aqui, símbolo PNG por cima) -->
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true" focusable="false">
+      <defs>
+        <filter id="t-ouro" color-interpolation-filters="sRGB">
+          <feFlood flood-color="#9D6D21" /><feComposite in2="SourceAlpha" operator="in" />
+        </filter>
+        <filter id="t-vinho" color-interpolation-filters="sRGB">
+          <feFlood flood-color="#3B1F2B" /><feComposite in2="SourceAlpha" operator="in" />
+        </filter>
+        <linearGradient id="g-vinho" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#7a2a4a" />
+          <stop offset="1" stop-color="#2b0f1e" />
+        </linearGradient>
+        <linearGradient id="g-ouro" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#efd290" />
+          <stop offset="1" stop-color="#c08e3b" />
+        </linearGradient>
+        <linearGradient id="g-brilho" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#fff" stop-opacity="0.28" />
+          <stop offset="0.5" stop-color="#fff" stop-opacity="0" />
+        </linearGradient>
+
+        <!-- Selo "painel" (Gestão): três barras -->
+        <symbol id="gl-painel" viewBox="0 0 64 64">
+          <rect x="12" y="34" width="10" height="18" rx="3" />
+          <rect x="27" y="22" width="10" height="30" rx="3" />
+          <rect x="42" y="12" width="10" height="40" rx="3" />
+        </symbol>
+        <!-- Selo "sacola" (Vendas) -->
+        <symbol id="gl-sacola" viewBox="0 0 64 64">
+          <path d="M14 22h36l-3 32H17z" />
+          <path
+            d="M24 26v-6a8 8 0 0 1 16 0v6"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="5"
+            stroke-linecap="round"
+          />
+        </symbol>
+
+        <!-- A · Gestão: vinho escuro, símbolo dourado -->
+        <symbol id="a-g" viewBox="0 0 256 256">
+          <rect x="8" y="8" width="240" height="240" rx="56" fill="#2b1620" />
+          <rect x="8" y="8" width="240" height="240" rx="56" fill="url(#g-brilho)" />
+          <image
+            href="corona_semijoias_simbolo_1024.png"
+            x="34"
+            y="30"
+            width="190"
+            height="190"
+          />
+        </symbol>
+        <!-- A · Vendas: claro, símbolo dourado escuro -->
+        <symbol id="a-v" viewBox="0 0 256 256">
+          <rect x="8" y="8" width="240" height="240" rx="56" fill="#faf7f2" />
+          <rect
+            x="10"
+            y="10"
+            width="236"
+            height="236"
+            rx="54"
+            fill="none"
+            stroke="#c08e3b"
+            stroke-width="6"
+          />
+          <image
+            href="corona_semijoias_simbolo_preto.png"
+            x="34"
+            y="30"
+            width="190"
+            height="190"
+            filter="url(#t-ouro)"
+          />
+        </symbol>
+
+        <!-- B · mesmo fundo grafite, selo de cor diferente -->
+        <symbol id="b-g" viewBox="0 0 256 256">
+          <rect x="8" y="8" width="240" height="240" rx="56" fill="#26211d" />
+          <rect x="8" y="8" width="240" height="240" rx="56" fill="url(#g-brilho)" />
+          <image href="corona_semijoias_simbolo_1024.png" x="14" y="10" width="190" height="190" />
+          <circle cx="188" cy="188" r="58" fill="#c08e3b" stroke="#26211d" stroke-width="8" />
+          <use href="#gl-painel" x="152" y="152" width="72" height="72" fill="#26211d" />
+        </symbol>
+        <symbol id="b-v" viewBox="0 0 256 256">
+          <rect x="8" y="8" width="240" height="240" rx="56" fill="#26211d" />
+          <rect x="8" y="8" width="240" height="240" rx="56" fill="url(#g-brilho)" />
+          <image href="corona_semijoias_simbolo_1024.png" x="14" y="10" width="190" height="190" />
+          <circle cx="188" cy="188" r="58" fill="#1f7a6b" stroke="#26211d" stroke-width="8" />
+          <use
+            href="#gl-sacola"
+            x="152"
+            y="152"
+            width="72"
+            height="72"
+            fill="#ffffff"
+            color="#ffffff"
+          />
+        </symbol>
+
+        <!-- C · degradê suave, estilo Windows 11 -->
+        <symbol id="c-g" viewBox="0 0 256 256">
+          <rect x="8" y="8" width="240" height="240" rx="60" fill="url(#g-vinho)" />
+          <rect x="8" y="8" width="240" height="240" rx="60" fill="url(#g-brilho)" />
+          <rect
+            x="9"
+            y="9"
+            width="238"
+            height="238"
+            rx="59"
+            fill="none"
+            stroke="#deb75e"
+            stroke-opacity="0.45"
+            stroke-width="2"
+          />
+          <image href="corona_semijoias_simbolo_1024.png" x="34" y="30" width="190" height="190" />
+        </symbol>
+        <symbol id="c-v" viewBox="0 0 256 256">
+          <rect x="8" y="8" width="240" height="240" rx="60" fill="url(#g-ouro)" />
+          <rect x="8" y="8" width="240" height="240" rx="60" fill="url(#g-brilho)" />
+          <rect
+            x="9"
+            y="9"
+            width="238"
+            height="238"
+            rx="59"
+            fill="none"
+            stroke="#fff"
+            stroke-opacity="0.5"
+            stroke-width="2"
+          />
+          <image
+            href="corona_semijoias_simbolo_preto.png"
+            x="34"
+            y="30"
+            width="190"
+            height="190"
+            filter="url(#t-vinho)"
+          />
+        </symbol>
+      </defs>
+    </svg>
+
+    <header class="topo">
+      <div class="wrap">
+        <img class="logo-h" src="corona_semijoias_horizontal_preto.png" alt="Corona Semijoias" />
+        <h1>Proposta visual dos apps</h1>
+        <span class="ouro-fio"></span>
+        <p class="lead">
+          Esta página mostra, lado a lado, como podem ficar os <strong>ícones</strong>, a
+          <strong>tela de entrada</strong> e uma <strong>tela de venda</strong> dos dois apps:
+          <strong>Corona Gestão</strong> (da dona) e <strong>Corona Vendas</strong> (do vendedor).
+          Nada foi mudado nos apps ainda: primeiro você escolhe, depois a gente aplica.
+        </p>
+        <p class="lead">
+          Todas as cores têm o <strong>contraste medido</strong> ao lado (nível AA ou melhor), as
+          letras das telas de trabalho têm 17 px ou mais e os botões têm pelo menos 52 px de altura.
+        </p>
+        <ul class="indice">
+          <li><a href="#icones">1 · Ícones (A, B, C)</a></li>
+          <li><a href="#cores">2 · Cores e contraste</a></li>
+          <li><a href="#entrada">3 · Tela de entrada</a></li>
+          <li><a href="#venda">4 · Tela de venda</a></li>
+          <li><a href="#resposta">5 · Como responder</a></li>
+        </ul>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <!-- 1. ÍCONES -->
+      <section class="bloco" id="icones" aria-labelledby="t-ic">
+        <h2 id="t-ic">1 · Ícones dos apps</h2>
+        <span class="ouro-fio"></span>
+        <p class="intro">
+          Cada estilo tem um ícone para o <strong>Corona Gestão</strong> e outro para o
+          <strong>Corona Vendas</strong>. Eles são da mesma família (mesmo símbolo da coroa), mas
+          você precisa conseguir <strong>separar um do outro de relance</strong>, até no tamanho
+          pequeno da barra de tarefas. Olhe também os tamanhos de 16 px: é o menor que o Windows
+          usa.
+        </p>
+
+        <div class="grade-3">
+          <!-- A -->
+          <article class="cartao" aria-labelledby="est-a">
+            <div class="estilo-tit">
+              <span class="rotulo" aria-hidden="true">A</span>
+              <h3 id="est-a">Escuro e claro</h3>
+            </div>
+            <p>
+              O Gestão é <strong>vinho escuro</strong> com o símbolo dourado. O Vendas é
+              <strong>claro</strong> com borda dourada. A diferença está na cor do fundo.
+            </p>
+            <div class="par-icones">
+              <div class="ic-caixa">
+                <svg class="ic ic-grande" viewBox="0 0 256 256" role="img" aria-label="Ícone A do Corona Gestão">
+                  <use href="#a-g" />
+                </svg>
+                <div class="ic-nome">Corona Gestão</div>
+                <div class="tamanhos">
+                  <figure>
+                    <svg class="ic" width="48" height="48" viewBox="0 0 256 256" aria-hidden="true"><use href="#a-g" /></svg>
+                    <figcaption>48</figcaption>
+                  </figure>
+                  <figure>
+                    <svg class="ic" width="32" height="32" viewBox="0 0 256 256" aria-hidden="true"><use href="#a-g" /></svg>
+                    <figcaption>32</figcaption>
+                  </figure>
+                  <figure>
+                    <svg class="ic" width="16" height="16" viewBox="0 0 256 256" aria-hidden="true"><use href="#a-g" /></svg>
+                    <figcaption>16</figcaption>
+                  </figure>
+                </div>
+              </div>
+              <div class="ic-caixa">
+                <svg class="ic ic-grande" viewBox="0 0 256 256" role="img" aria-label="Ícone A do Corona Vendas">
+                  <use href="#a-v" />
+                </svg>
+                <div class="ic-nome">Corona Vendas</div>
+                <div class="tamanhos">
+                  <figure>
+                    <svg class="ic" width="48" height="48" viewBox="0 0 256 256" aria-hidden="true"><use href="#a-v" /></svg>
+                    <figcaption>48</figcaption>
+                  </figure>
+                  <figure>
+                    <svg class="ic" width="32" height="32" viewBox="0 0 256 256" aria-hidden="true"><use href="#a-v" /></svg>
+                    <figcaption>32</figcaption>
+                  </figure>
+                  <figure>
+                    <svg class="ic" width="16" height="16" viewBox="0 0 256 256" aria-hidden="true"><use href="#a-v" /></svg>
+                    <figcaption>16</figcaption>
+                  </figure>
+                </div>
+              </div>
+            </div>
+            <div class="win" aria-label="Simulação da área de trabalho e da barra de tarefas com o estilo A">
+              <div class="area">
+                <div class="atalho">
+                  <svg class="ic" width="48" height="48" viewBox="0 0 256 256" aria-hidden="true"><use href="#a-g" /></svg>
+                  Corona Gestão
+                </div>
+                <div class="atalho">
+                  <svg class="ic" width="48" height="48" viewBox="0 0 256 256" aria-hidden="true"><use href="#a-v" /></svg>
+                  Corona Vendas
+                </div>
+              </div>
+              <div class="barra">
+                <span class="item"><span class="gen"></span></span>
+                <span class="item"><span class="gen b"></span></span>
+                <span class="item ativo"><svg class="ic" width="32" height="32" viewBox="0 0 256 256" aria-hidden="true"><use href="#a-g" /></svg></span>
+                <span class="item"><svg class="ic" width="32" height="32" viewBox="0 0 256 256" aria-hidden="true"><use href="#a-v" /></svg></span>
+              </div>
+            </div>
+            <p class="legenda-win">Área de trabalho (48 px) e barra de tarefas (32 px).</p>
+            <ul class="como">
+              <li><strong>Bom:</strong> troca de app só pela cor de fundo, fácil de ver de longe.</li>
+              <li><strong>Atenção:</strong> o claro some em barra de tarefas clara; por isso tem borda dourada.</li>
+            </ul>
+          </article>
+
+          <!-- B -->
+          <article class="cartao" aria-labelledby="est-b">
+            <div class="estilo-tit">
+              <span class="rotulo" aria-hidden="true">B</span>
+              <h3 id="est-b">Mesmo fundo, selo de cor</h3>
+            </div>
+            <p>
+              Os dois têm <strong>fundo grafite</strong> com o símbolo dourado. Um
+              <strong>selo</strong> no canto diz quem é: dourado com <em>barras</em> (Gestão) e
+              verde com <em>sacola</em> (Vendas).
+            </p>
+            <div class="par-icones">
+              <div class="ic-caixa">
+                <svg class="ic ic-grande" viewBox="0 0 256 256" role="img" aria-label="Ícone B do Corona Gestão"><use href="#b-g" /></svg>
+                <div class="ic-nome">Corona Gestão</div>
+                <div class="tamanhos">
+                  <figure><svg class="ic" width="48" height="48" viewBox="0 0 256 256" aria-hidden="true"><use href="#b-g" /></svg><figcaption>48</figcaption></figure>
+                  <figure><svg class="ic" width="32" height="32" viewBox="0 0 256 256" aria-hidden="true"><use href="#b-g" /></svg><figcaption>32</figcaption></figure>
+                  <figure><svg class="ic" width="16" height="16" viewBox="0 0 256 256" aria-hidden="true"><use href="#b-g" /></svg><figcaption>16</figcaption></figure>
+                </div>
+              </div>
+              <div class="ic-caixa">
+                <svg class="ic ic-grande" viewBox="0 0 256 256" role="img" aria-label="Ícone B do Corona Vendas"><use href="#b-v" /></svg>
+                <div class="ic-nome">Corona Vendas</div>
+                <div class="tamanhos">
+                  <figure><svg class="ic" width="48" height="48" viewBox="0 0 256 256" aria-hidden="true"><use href="#b-v" /></svg><figcaption>48</figcaption></figure>
+                  <figure><svg class="ic" width="32" height="32" viewBox="0 0 256 256" aria-hidden="true"><use href="#b-v" /></svg><figcaption>32</figcaption></figure>
+                  <figure><svg class="ic" width="16" height="16" viewBox="0 0 256 256" aria-hidden="true"><use href="#b-v" /></svg><figcaption>16</figcaption></figure>
+                </div>
+              </div>
+            </div>
+            <div class="win" aria-label="Simulação da área de trabalho e da barra de tarefas com o estilo B">
+              <div class="area">
+                <div class="atalho"><svg class="ic" width="48" height="48" viewBox="0 0 256 256" aria-hidden="true"><use href="#b-g" /></svg>Corona Gestão</div>
+                <div class="atalho"><svg class="ic" width="48" height="48" viewBox="0 0 256 256" aria-hidden="true"><use href="#b-v" /></svg>Corona Vendas</div>
+              </div>
+              <div class="barra">
+                <span class="item"><span class="gen"></span></span>
+                <span class="item"><span class="gen b"></span></span>
+                <span class="item ativo"><svg class="ic" width="32" height="32" viewBox="0 0 256 256" aria-hidden="true"><use href="#b-g" /></svg></span>
+                <span class="item"><svg class="ic" width="32" height="32" viewBox="0 0 256 256" aria-hidden="true"><use href="#b-v" /></svg></span>
+              </div>
+            </div>
+            <p class="legenda-win">Área de trabalho (48 px) e barra de tarefas (32 px).</p>
+            <ul class="como">
+              <li><strong>Bom:</strong> parecem “irmãos”; o selo diferencia pelo desenho, não só pela cor.</li>
+              <li><strong>Atenção:</strong> em 16 px o selo vira só um ponto de cor.</li>
+            </ul>
+          </article>
+
+          <!-- C -->
+          <article class="cartao" aria-labelledby="est-c">
+            <div class="estilo-tit">
+              <span class="rotulo" aria-hidden="true">C</span>
+              <h3 id="est-c">Degradê moderno</h3>
+            </div>
+            <p>
+              Estilo dos ícones novos do Windows 11: degradê suave, brilho no topo. O Gestão é
+              <strong>vinho</strong> com símbolo dourado; o Vendas é <strong>dourado</strong> com
+              símbolo vinho.
+            </p>
+            <div class="par-icones">
+              <div class="ic-caixa">
+                <svg class="ic ic-grande" viewBox="0 0 256 256" role="img" aria-label="Ícone C do Corona Gestão"><use href="#c-g" /></svg>
+                <div class="ic-nome">Corona Gestão</div>
+                <div class="tamanhos">
+                  <figure><svg class="ic" width="48" height="48" viewBox="0 0 256 256" aria-hidden="true"><use href="#c-g" /></svg><figcaption>48</figcaption></figure>
+                  <figure><svg class="ic" width="32" height="32" viewBox="0 0 256 256" aria-hidden="true"><use href="#c-g" /></svg><figcaption>32</figcaption></figure>
+                  <figure><svg class="ic" width="16" height="16" viewBox="0 0 256 256" aria-hidden="true"><use href="#c-g" /></svg><figcaption>16</figcaption></figure>
+                </div>
+              </div>
+              <div class="ic-caixa">
+                <svg class="ic ic-grande" viewBox="0 0 256 256" role="img" aria-label="Ícone C do Corona Vendas"><use href="#c-v" /></svg>
+                <div class="ic-nome">Corona Vendas</div>
+                <div class="tamanhos">
+                  <figure><svg class="ic" width="48" height="48" viewBox="0 0 256 256" aria-hidden="true"><use href="#c-v" /></svg><figcaption>48</figcaption></figure>
+                  <figure><svg class="ic" width="32" height="32" viewBox="0 0 256 256" aria-hidden="true"><use href="#c-v" /></svg><figcaption>32</figcaption></figure>
+                  <figure><svg class="ic" width="16" height="16" viewBox="0 0 256 256" aria-hidden="true"><use href="#c-v" /></svg><figcaption>16</figcaption></figure>
+                </div>
+              </div>
+            </div>
+            <div class="win" aria-label="Simulação da área de trabalho e da barra de tarefas com o estilo C">
+              <div class="area">
+                <div class="atalho"><svg class="ic" width="48" height="48" viewBox="0 0 256 256" aria-hidden="true"><use href="#c-g" /></svg>Corona Gestão</div>
+                <div class="atalho"><svg class="ic" width="48" height="48" viewBox="0 0 256 256" aria-hidden="true"><use href="#c-v" /></svg>Corona Vendas</div>
+              </div>
+              <div class="barra">
+                <span class="item"><span class="gen"></span></span>
+                <span class="item"><span class="gen b"></span></span>
+                <span class="item ativo"><svg class="ic" width="32" height="32" viewBox="0 0 256 256" aria-hidden="true"><use href="#c-g" /></svg></span>
+                <span class="item"><svg class="ic" width="32" height="32" viewBox="0 0 256 256" aria-hidden="true"><use href="#c-v" /></svg></span>
+              </div>
+            </div>
+            <p class="legenda-win">Área de trabalho (48 px) e barra de tarefas (32 px).</p>
+            <ul class="como">
+              <li><strong>Bom:</strong> o mais atual e o que mais se distingue (vinho x dourado).</li>
+              <li><strong>Atenção:</strong> o dourado forte é mais vistoso; combina menos com a calma da marca.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <!-- 2. CORES -->
+      <section class="bloco" id="cores" aria-labelledby="t-cor">
+        <h2 id="t-cor">2 · Cores e contraste</h2>
+        <span class="ouro-fio"></span>
+        <p class="intro">
+          Contraste é a diferença entre a cor da letra e a do fundo: quanto maior, mais fácil de
+          ler. A regra que usamos (WCAG, nível AA) pede <strong>4,5 : 1</strong> para texto normal
+          e <strong>3 : 1</strong> para título grande e desenhos. Os números abaixo foram
+          <strong>calculados</strong> por esta página, com as cores de verdade.
+        </p>
+        <div class="paleta">
+          <div class="cor"><div class="amostra" style="background: #c08e3b"></div><div class="info"><b>Dourado médio</b>#C08E3B · principal, só em detalhes</div></div>
+          <div class="cor"><div class="amostra" style="background: #9d6d21"></div><div class="info"><b>Dourado escuro</b>#9D6D21 · títulos grandes e linhas</div></div>
+          <div class="cor"><div class="amostra" style="background: #deb75e"></div><div class="info"><b>Dourado claro</b>#DEB75E · brilhos e botão ao passar o mouse</div></div>
+          <div class="cor"><div class="amostra" style="background: #faf7f2"></div><div class="info"><b>Fundo quase branco</b>#FAF7F2 · fundo das telas</div></div>
+          <div class="cor"><div class="amostra" style="background: #2b2118"></div><div class="info"><b>Tinta (marrom escuro)</b>#2B2118 · texto principal</div></div>
+          <div class="cor"><div class="amostra" style="background: #3b1f2b"></div><div class="info"><b>Vinho</b>#3B1F2B · cor do Gestão</div></div>
+        </div>
+        <p class="miudo" style="margin-top: 16px">
+          O dourado <strong>nunca</strong> é usado como letra pequena. Ele aparece em linhas,
+          bordas, ícones, botões (com texto escuro dentro) e em títulos grandes.
+        </p>
+
+        <div class="tabela-rolagem" style="margin-top: 14px">
+          <table class="contraste">
+            <caption class="miudo" style="text-align: left; padding: 0 0 8px">
+              Contraste de cada combinação usada nas telas (✓ passou; ✗ não passou).
+            </caption>
+            <thead>
+              <tr><th>Onde</th><th>Amostra</th><th>Contraste</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Texto principal sobre o fundo das telas</td><td><span class="par-amostra" style="color:#2b2118;background:#faf7f2">Texto normal</span></td><td><span class="ct" data-fg="#2b2118" data-bg="#faf7f2" data-min="4.5"></span></td></tr>
+              <tr><td>Texto principal sobre branco</td><td><span class="par-amostra" style="color:#2b2118;background:#ffffff">Texto normal</span></td><td><span class="ct" data-fg="#2b2118" data-bg="#ffffff" data-min="4.5"></span></td></tr>
+              <tr><td>Texto de apoio (marrom médio) sobre o fundo</td><td><span class="par-amostra" style="color:#5c4b3a;background:#faf7f2">Texto de apoio</span></td><td><span class="ct" data-fg="#5c4b3a" data-bg="#faf7f2" data-min="4.5"></span></td></tr>
+              <tr><td>Botão dourado: texto escuro sobre dourado médio</td><td><span class="par-amostra" style="color:#2b2118;background:#c08e3b">Cobrar</span></td><td><span class="ct" data-fg="#2b2118" data-bg="#c08e3b" data-min="4.5"></span></td></tr>
+              <tr><td>Botão vinho: texto branco sobre vinho</td><td><span class="par-amostra" style="color:#fff;background:#3b1f2b">Entrar</span></td><td><span class="ct" data-fg="#ffffff" data-bg="#3b1f2b" data-min="4.5"></span></td></tr>
+              <tr><td>Etiqueta “Vendas”: texto escuro sobre dourado suave</td><td><span class="par-amostra" style="color:#2b2118;background:#f3e3c0">Para quem vende</span></td><td><span class="ct" data-fg="#2b2118" data-bg="#f3e3c0" data-min="4.5"></span></td></tr>
+              <tr><td>Título grande dourado escuro sobre o fundo (só ≥ 24 px)</td><td><span class="par-amostra" style="color:#9d6d21;background:#faf7f2;font:700 1.7rem var(--serifa)">Título grande</span></td><td><span class="ct" data-fg="#9d6d21" data-bg="#faf7f2" data-min="3"></span> <span class="miudo">(mínimo 3 : 1, título grande)</span></td></tr>
+              <tr><td>Dourado médio como letra pequena sobre o fundo (<strong>não usamos</strong>)</td><td><span class="par-amostra" style="color:#c08e3b;background:#faf7f2">Texto pequeno</span></td><td><span class="ct" data-fg="#c08e3b" data-bg="#faf7f2" data-min="4.5"></span> <span class="miudo">por isso fica só em detalhes</span></td></tr>
+              <tr><td>Acerto: verde escuro sobre verde claro (com ícone ✓ e texto)</td><td><span class="par-amostra" style="color:#0d4a29;background:#e3f4ea">✓ Pieza agregada</span></td><td><span class="ct" data-fg="#0d4a29" data-bg="#e3f4ea" data-min="4.5"></span></td></tr>
+              <tr><td>Erro: vermelho escuro sobre vermelho claro (com ícone ✕ e texto)</td><td><span class="par-amostra" style="color:#6e1212;background:#fce9e7">✕ No está en la maleta</span></td><td><span class="ct" data-fg="#6e1212" data-bg="#fce9e7" data-min="4.5"></span></td></tr>
+              <tr><td>Borda dos campos sobre branco (desenho, mín. 3 : 1)</td><td><span class="par-amostra" style="color:#2b2118;background:#fff;border:2px solid #8a7a66">Campo</span></td><td><span class="ct" data-fg="#8a7a66" data-bg="#ffffff" data-min="3"></span></td></tr>
+              <tr><td>Anel de foco do teclado sobre branco (desenho, mín. 3 : 1)</td><td><span class="par-amostra" style="color:#2b2118;background:#fff;outline:3px solid #1d4ed8;outline-offset:2px">Em foco</span></td><td><span class="ct" data-fg="#1d4ed8" data-bg="#ffffff" data-min="3"></span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="miudo" style="margin-top: 12px">
+          Dica para testar o teclado: aperte <strong>Tab</strong> nesta página. O foco aparece como
+          um anel azul grosso com borda branca, visível sobre qualquer fundo.
+        </p>
+      </section>
+
+      <!-- 3. ENTRADA -->
+      <section class="bloco" id="entrada" aria-labelledby="t-en">
+        <h2 id="t-en">3 · Tela de entrada (login)</h2>
+        <span class="ouro-fio"></span>
+        <p class="intro">
+          Duas ideias para cada app. A <strong>variação 1</strong> é um cartão no meio da tela,
+          calmo e simples. A <strong>variação 2</strong> divide a tela: a marca de um lado e o
+          formulário do outro (no celular, a marca vira uma faixa no topo). As telas estão em
+          espanhol, como a dona pediu.
+        </p>
+
+        <div class="grade-2">
+          <!-- Gestão v1 -->
+          <div>
+            <h3 style="font-size: 1.35rem; margin-bottom: 10px"><span class="rotulo" aria-hidden="true" style="width: 38px; height: 38px; font-size: 1.1rem">1</span>Gestão · cartão centrado</h3>
+            <div class="moldura login">
+              <div class="moldura-topo" aria-hidden="true"><i></i><i></i><i></i><span>Corona Gestión</span></div>
+              <div class="lg1">
+                <div class="caixa">
+                  <img class="redonda" src="corona_semijoias_completa_2000.png" alt="Corona Semijoias" />
+                  <span class="etiqueta etq-gestao">Para la dueña</span>
+                  <h3>Corona Gestión</h3>
+                  <p class="sub">Escriba su usuario y su contraseña.</p>
+                  <div class="campo">
+                    <label for="g1u">Usuario</label>
+                    <div class="entrada foco" id="g1u">dueña</div>
+                  </div>
+                  <div class="campo">
+                    <label for="g1p">Contraseña</label>
+                    <div class="entrada" id="g1p"><span>••••••••</span><span class="ver">Mostrar</span></div>
+                  </div>
+                  <span class="btn btn-vinho">Entrar</span>
+                  <a class="esqueci" href="#entrada">¿Olvidó su contraseña?</a>
+                </div>
+              </div>
+            </div>
+            <p class="legenda"><strong>Foco do teclado:</strong> o campo “Usuario” está em foco, com anel azul. Botão vinho com filete dourado.</p>
+          </div>
+
+          <!-- Vendas v1 -->
+          <div>
+            <h3 style="font-size: 1.35rem; margin-bottom: 10px"><span class="rotulo" aria-hidden="true" style="width: 38px; height: 38px; font-size: 1.1rem">1</span>Vendas · cartão centrado</h3>
+            <div class="moldura login">
+              <div class="moldura-topo" aria-hidden="true"><i></i><i></i><i></i><span>Corona Ventas</span></div>
+              <div class="lg1">
+                <div class="caixa">
+                  <img class="redonda" src="corona_semijoias_completa_2000.png" alt="Corona Semijoias" />
+                  <span class="etiqueta etq-vendas">Para quien vende</span>
+                  <h3>Corona Ventas</h3>
+                  <p class="sub">Escriba su usuario y su contraseña.</p>
+                  <div class="campo">
+                    <label for="v1u">Usuario</label>
+                    <div class="entrada" id="v1u">maria</div>
+                  </div>
+                  <div class="campo">
+                    <label for="v1p">Contraseña</label>
+                    <div class="entrada" id="v1p" style="border-color: var(--vermelho)"><span>••••</span><span class="ver">Mostrar</span></div>
+                  </div>
+                  <div class="aviso erro" role="alert" style="margin-bottom: 16px">
+                    <span class="sel" aria-hidden="true">✕</span>
+                    <span>Usuario o contraseña incorrectos. Revise y vuelva a intentar.</span>
+                  </div>
+                  <span class="btn btn-ouro">Entrar</span>
+                  <a class="esqueci" href="#entrada">¿Olvidó su contraseña?</a>
+                </div>
+              </div>
+            </div>
+            <p class="legenda"><strong>Erro com ícone e texto:</strong> não depende só da cor vermelha. Botão dourado com texto escuro.</p>
+          </div>
+
+          <!-- Gestão v2 -->
+          <div>
+            <h3 style="font-size: 1.35rem; margin-bottom: 10px"><span class="rotulo" aria-hidden="true" style="width: 38px; height: 38px; font-size: 1.1rem">2</span>Gestão · painel dividido</h3>
+            <div class="moldura login">
+              <div class="moldura-topo" aria-hidden="true"><i></i><i></i><i></i><span>Corona Gestión</span></div>
+              <div class="lg2">
+                <div class="lado gestao">
+                  <img class="simb" src="corona_semijoias_simbolo_1024.png" alt="" />
+                  <div>
+                    <div class="frase">Corona <span>Semijoias</span></div>
+                    <div class="nota" style="color: #f4e9d6">Todo su negocio en un solo lugar.</div>
+                  </div>
+                </div>
+                <div class="form">
+                  <span class="etiqueta etq-gestao" style="align-self: flex-start">Para la dueña</span>
+                  <h3>Entrar</h3>
+                  <p class="sub">Corona Gestión</p>
+                  <div class="campo"><label>Usuario</label><div class="entrada">dueña</div></div>
+                  <div class="campo"><label>Contraseña</label><div class="entrada"><span>••••••••</span><span class="ver">Mostrar</span></div></div>
+                  <div class="aviso certo" role="status" style="margin-bottom: 16px">
+                    <span class="sel" aria-hidden="true">✓</span>
+                    <span>Contraseña cambiada. Ya puede entrar.</span>
+                  </div>
+                  <span class="btn btn-vinho">Entrar</span>
+                </div>
+              </div>
+            </div>
+            <p class="legenda"><strong>Acerto com ícone e texto:</strong> verde claro com ✓ e frase. Marca em faixa vinho, letras claras.</p>
+          </div>
+
+          <!-- Vendas v2 -->
+          <div>
+            <h3 style="font-size: 1.35rem; margin-bottom: 10px"><span class="rotulo" aria-hidden="true" style="width: 38px; height: 38px; font-size: 1.1rem">2</span>Vendas · painel dividido</h3>
+            <div class="moldura login">
+              <div class="moldura-topo" aria-hidden="true"><i></i><i></i><i></i><span>Corona Ventas</span></div>
+              <div class="lg2">
+                <div class="lado vendas">
+                  <img class="simb" src="corona_semijoias_simbolo_preto.png" alt="" style="filter: drop-shadow(0 6px 10px rgba(59, 31, 43, 0.25))" />
+                  <div>
+                    <div class="frase">Corona <span style="color: var(--vinho)">Ventas</span></div>
+                    <div class="nota">Su maleta y sus ventas, aunque no haya internet.</div>
+                  </div>
+                </div>
+                <div class="form">
+                  <span class="etiqueta etq-vendas" style="align-self: flex-start">Para quien vende</span>
+                  <h3>Entrar</h3>
+                  <p class="sub">Corona Ventas</p>
+                  <div class="campo"><label>Usuario</label><div class="entrada">maria</div></div>
+                  <div class="campo"><label>Contraseña</label><div class="entrada"><span>••••••••</span><span class="ver">Mostrar</span></div></div>
+                  <span class="btn btn-ouro">Entrar</span>
+                </div>
+              </div>
+            </div>
+            <p class="legenda">Faixa dourada suave com o símbolo escuro; o formulário sempre branco com letra escura.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. VENDA -->
+      <section class="bloco" id="venda" aria-labelledby="t-ve">
+        <h2 id="t-ve">4 · Tela de trabalho: a venda</h2>
+        <span class="ouro-fio"></span>
+        <p class="intro">
+          Aqui a marca aparece no <strong>cabeçalho</strong> (logo e filete dourado) e nos
+          <strong>botões principais</strong>, mas a lista é <strong>texto escuro sobre fundo claro</strong>,
+          em letra de 17 a 18 px. Cada peça mostra a <strong>foto</strong>; quando não tem foto, a
+          venda continua normalmente. O Real vem primeiro, com Dólar e Guarani logo abaixo.
+        </p>
+        <div class="moldura">
+          <div class="moldura-topo" aria-hidden="true"><i></i><i></i><i></i><span>Corona Ventas · Nueva venta</span></div>
+          <div class="app-topo">
+            <img src="corona_semijoias_horizontal_preto.png" alt="Corona Semijoias" />
+            <div class="quem"><b>Corona Ventas</b>Vendedora: María</div>
+          </div>
+          <div class="venda">
+            <div>
+              <h3>Nueva venta</h3>
+              <span class="ouro-fio" style="margin: 10px 0 6px"></span>
+              <div class="busca">
+                <div class="entrada"><span style="color: var(--tinta-2)">Código de la pieza</span></div>
+                <span class="btn btn-contorno" style="min-height: 52px">Agregar pieza</span>
+              </div>
+              <div class="aviso certo" role="status">
+                <span class="sel" aria-hidden="true">✓</span>
+                <span>Pieza agregada: Aros de perla.</span>
+              </div>
+              <ul class="pecas" aria-label="Piezas de la venta">
+                <li class="peca">
+                  <div class="foto" title="Foto de ejemplo"><img src="corona_semijoias_simbolo_1024.png" alt="" /></div>
+                  <div><div class="nome">Anillo de plata 925</div><div class="cod">Código: A-1042</div></div>
+                  <div class="preco">R$ 120,00<small>US$ 21,82 · Gs. 160.800</small></div>
+                </li>
+                <li class="peca">
+                  <div class="foto" title="Foto de ejemplo"><img src="corona_semijoias_simbolo_1024.png" alt="" /></div>
+                  <div><div class="nome">Pulsera con dijes</div><div class="cod">Código: P-0377</div></div>
+                  <div class="preco">R$ 85,00<small>US$ 15,45 · Gs. 113.900</small></div>
+                </li>
+                <li class="peca">
+                  <div class="foto sem">Sin foto</div>
+                  <div><div class="nome">Aros de perla</div><div class="cod">Código: 7891234567895</div></div>
+                  <div class="preco">R$ 64,50<small>US$ 11,73 · Gs. 86.430</small></div>
+                </li>
+              </ul>
+              <div class="aviso erro" role="alert" style="margin-top: 14px">
+                <span class="sel" aria-hidden="true">✕</span>
+                <span>Esa pieza no está en su maleta. Revise el código y vuelva a leer.</span>
+              </div>
+            </div>
+            <aside class="resumo" aria-label="Resumen de la venta">
+              <div class="linha"><span>Piezas</span><strong>3</strong></div>
+              <div class="linha"><span>Descuento</span><strong>R$ 0,00</strong></div>
+              <div class="total">
+                <div class="rot">Total a cobrar</div>
+                <div class="valor">R$ 269,50</div>
+                <small>US$ 49,00 · Gs. 361.130</small>
+              </div>
+              <span class="btn btn-ouro">Cobrar</span>
+              <span class="btn btn-contorno">Guardar para después</span>
+              <span class="btn btn-fraco">Cancelar venta</span>
+            </aside>
+          </div>
+          <div class="rodape-cot">
+            Dólar y Guaraní según la cotización del Banco Central del día de cada venta.
+            <span class="ct" data-fg="#2b2118" data-bg="#ffffff" data-min="4.5"></span>
+            <span class="miudo">texto principal sobre branco</span>
+          </div>
+        </div>
+        <p class="legenda">
+          <strong>O que olhar:</strong> o título grande “Nueva venta” é o único texto em serifa; o
+          total é grande e escuro; os botões têm 56 px de altura e o principal (dourado) tem texto
+          escuro (<span class="ct" data-fg="#2b2118" data-bg="#c08e3b" data-min="4.5"></span>).
+        </p>
+      </section>
+
+      <!-- 5. RESPOSTA -->
+      <section id="resposta" class="escolha" aria-labelledby="t-re">
+        <h2 id="t-re">5 · Como responder</h2>
+        <span class="ouro-fio"></span>
+        <p>Diga na conversa, por exemplo: <code>Ícones: C · Entrada: variação 1 · Venda: assim mesmo</code>.</p>
+        <p>Se quiser misturar (ícone do Gestão em A e do Vendas em C, por exemplo), pode. O que a escolha define:</p>
+        <ul class="ok-lista">
+          <li>os ícones dos dois apps (e do instalador);</li>
+          <li>o desenho da tela de entrada e do cabeçalho de cada app;</li>
+          <li>as cores e o tamanho de letra e de botão de todas as telas.</li>
+        </ul>
+        <p style="margin-top: 14px">
+          Depois da escolha, a aplicação nos apps vira outra tarefa. Esta página é só a proposta.
+        </p>
+        <p class="miudo" style="color: #e9dcc5">
+          Como foi pensada a acessibilidade: contraste AA ou melhor (tabela da parte 2), letra de
+          17 px ou mais, botões de 52 a 56 px, foco do teclado sempre visível, erro e acerto sempre
+          com ícone e frase, e o dourado só em detalhes e títulos grandes.
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap miudo">
+        Corona Semijoias · proposta visual · os arquivos da marca ficam em <code>docs/marca/</code>.
+      </div>
+    </footer>
+
+    <script>
+      (function () {
+        function lin(c) {
+          c = c / 255;
+          return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+        }
+        function lum(hex) {
+          var n = parseInt(hex.slice(1), 16);
+          return 0.2126 * lin((n >> 16) & 255) + 0.7152 * lin((n >> 8) & 255) + 0.0722 * lin(n & 255);
+        }
+        function razao(a, b) {
+          var x = lum(a),
+            y = lum(b);
+          return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+        }
+        document.querySelectorAll('.ct').forEach(function (el) {
+          var r = razao(el.dataset.fg, el.dataset.bg);
+          var min = parseFloat(el.dataset.min);
+          var ok = r >= min;
+          el.textContent =
+            (ok ? '✓ ' : '✗ ') + r.toFixed(1).replace('.', ',') + ' : 1' + (ok ? ' · passa' : ' · não passa');
+          if (!ok) el.classList.add('ruim');
+        });
+      })();
+    </script>
+  </body>
+</html>
