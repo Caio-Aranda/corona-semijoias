@@ -39,7 +39,7 @@ public class ConsultasDeRemessas {
             boolean precoCongelado) {
     }
 
-    public record Resumo(UUID id, int version, UUID vendedorId, String vendedorNome, UUID semanaId, int semanaNumero,
+    public record Resumo(UUID id, String codigo, int version, UUID vendedorId, String vendedorNome, UUID semanaId, int semanaNumero,
             UUID pracaId, String pracaNome, String tipo, String status, int totalPecas, BigDecimal totalValor,
             Instant criadaEm, Instant enviadaEm) {
     }
@@ -120,7 +120,7 @@ public class ConsultasDeRemessas {
     }
 
     private static final String RESUMO = """
-            SELECT r.id, r.version, r.vendedor_id, v.nome AS vendedor_nome, r.semana_id, s.numero AS semana_numero,
+            SELECT r.id, r.codigo, r.version, r.vendedor_id, v.nome AS vendedor_nome, r.semana_id, s.numero AS semana_numero,
                    r.praca_id, pr.nome AS praca_nome, r.tipo, r.status, r.created_at, r.enviada_em,
                    coalesce((SELECT sum(i.qtd_enviada) FROM corona.itens_remessa i
                               WHERE i.remessa_id = r.id AND i.deleted_at IS NULL), 0) AS pecas,
@@ -133,7 +133,7 @@ public class ConsultasDeRemessas {
               LEFT JOIN corona.pracas pr ON pr.id = r.praca_id""";
 
     private static Resumo resumo(ResultSet rs) throws SQLException {
-        return new Resumo(rs.getObject("id", UUID.class), rs.getInt("version"), rs.getObject("vendedor_id", UUID.class),
+        return new Resumo(rs.getObject("id", UUID.class), rs.getString("codigo"), rs.getInt("version"), rs.getObject("vendedor_id", UUID.class),
                 rs.getString("vendedor_nome"), rs.getObject("semana_id", UUID.class), rs.getInt("semana_numero"),
                 rs.getObject("praca_id", UUID.class), rs.getString("praca_nome"), rs.getString("tipo"), rs.getString("status"),
                 rs.getInt("pecas"), Dinheiro.arredondar(rs.getBigDecimal("valor")), instant(rs.getTimestamp("created_at")),

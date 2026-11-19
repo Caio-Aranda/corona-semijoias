@@ -188,6 +188,36 @@ class PullDoVendedorTest extends TesteDeIntegracao {
     }
 
     @Test
+    void codigoEPracaDaMaletaChegamSoNoFormato2ECodigoSegueASequenciaSemRepetir() throws Exception {
+        CenarioDeSync c = cenario();
+        UsuarioDeTeste v = usuarios.criarVendedor();
+        UUID peca = c.peca(new BigDecimal("40.00"), 10);
+        UUID primeira = c.maleta(v, Map.of(peca, 1));
+        UUID segunda = c.maleta(v, Map.of(c.peca(new BigDecimal("5.00"), 3), 1));
+        String codigo1 = jdbc.queryForObject("SELECT codigo FROM corona.remessas WHERE id = ?", String.class, primeira);
+        String codigo2 = jdbc.queryForObject("SELECT codigo FROM corona.remessas WHERE id = ?", String.class, segunda);
+        assertThat(codigo1).matches("\\d{4,}");
+        assertThat(Long.parseLong(codigo2)).isEqualTo(Long.parseLong(codigo1) + 1);
+        // O código não muda e não repete (sem diferenciar maiúsculas).
+        org.assertj.core.api.Assertions.assertThatThrownBy(
+                () -> jdbc.update("UPDATE corona.remessas SET codigo = '9999' WHERE id = ?", primeira)).isNotNull();
+        org.assertj.core.api.Assertions.assertThatThrownBy(
+                () -> jdbc.update("UPDATE corona.remessas SET codigo = ? WHERE id = ?", codigo1, segunda)).isNotNull();
+
+        Copia nova = new Copia();
+        receberTudo(como(v), nova, 200, 2);
+        JsonNode campos = nova.linha("remessas", primeira).get("campos");
+        assertThat(campos.get("codigo").asString()).isEqualTo(codigo1);
+        assertThat(campos.has("praca_nome")).isTrue();
+        // O Corona Vendas 1.0.0 nunca recebe as colunas novas.
+        Copia antiga = new Copia();
+        receberTudo(como(v), antiga, 200);
+        JsonNode antigos = antiga.linha("remessas", primeira).get("campos");
+        assertThat(antigos.has("codigo")).isFalse();
+        assertThat(antigos.has("praca_nome")).isFalse();
+    }
+
+    @Test
     void formato1NuncaRecebeTabelaNemColunaDoConsignadoEOAppAntigoNaoQuebra() throws Exception {
         CenarioDeSync c = cenario();
         UsuarioDeTeste a = usuarios.criarVendedor();
