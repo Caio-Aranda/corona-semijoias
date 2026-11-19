@@ -93,7 +93,7 @@ public class ServicoDoFechamentoDaMaleta {
     @Transactional
     public int registrarLeituras(UUID remessaId, List<Leitura> leituras, UUID usuarioId) {
         if (leituras == null || leituras.isEmpty()) {
-            throw Validacoes.recusar("leituras", "Bipe pelo menos uma peça.");
+            throw Validacoes.recusar("leituras", "Informe pelo menos uma peça lida na volta.");
         }
         trancar(remessaId);
         UUID fechamento = emAndamento(remessaId);
@@ -104,7 +104,7 @@ public class ServicoDoFechamentoDaMaleta {
         Set<UUID> ids = new HashSet<>();
         for (Leitura l : leituras) {
             if (l == null || l.produtoId() == null || l.quantidade() == null || l.quantidade() < 1 || l.quantidade() > 100_000) {
-                throw Validacoes.recusar("leituras", "Confira a peça e a quantidade bipada.");
+                throw Validacoes.recusar("leituras", "Confira a peça e a quantidade lidas na volta.");
             }
             UUID id = Validacoes.idDoPedido(l.id());
             if (!ids.add(id)) {

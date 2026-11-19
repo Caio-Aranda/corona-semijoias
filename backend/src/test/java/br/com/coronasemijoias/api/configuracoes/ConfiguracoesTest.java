@@ -23,7 +23,7 @@ class ConfiguracoesTest extends TesteDeIntegracao {
     @Test
     void asChavesComOsPadroes() {
         assertThat(jdbc.queryForList("SELECT chave FROM corona.configuracoes ORDER BY chave", String.class))
-                .containsExactly("comissao_meta_guarani", "comissao_percentual_abaixo_da_meta", "comissao_percentual_na_meta",
+                .containsExactly("acerto_do_vendedor_visivel", "comissao_meta_guarani", "comissao_percentual_abaixo_da_meta", "comissao_percentual_na_meta",
                         "limite_desconto_percentual", "limite_reembolso_semanal", "percentual_alerta_devolucao",
                         "prazo_arrependimento_dias", "prazo_defeito_dias", "tempo_bloqueio_login_minutos",
                         "tempo_maximo_offline_dias", "tentativas_login_antes_do_bloqueio", "valor_aprovacao_reembolso");

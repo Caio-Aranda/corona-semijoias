@@ -381,13 +381,14 @@ public class ConsultasDeEstoqueECompras {
                                                  FROM corona.movimentos_remessa GROUP BY remessa_id, produto_id) mm
                                            ON mm.remessa_id = i.remessa_id AND mm.produto_id = i.produto_id
                                    WHERE i.produto_id = p.id AND r.deleted_at IS NULL
-                                     AND r.status IN ('ENVIADA', 'CONFERIDA', 'EM_ACERTO')), 0) AS nas_maletas,
+                                     AND r.status IN ('ENVIADA', 'CONFERIDA', 'EM_ACERTO', 'FECHADA')), 0) AS nas_maletas,
                         coalesce((SELECT sum(me.quantidade) FROM corona.movimentacoes_estoque me
                                     LEFT JOIN corona.movimentacoes_estoque original ON original.id = me.estorna_id
                                    WHERE me.produto_id = p.id AND me.origem_tipo <> 'MALETA'
                                      AND coalesce(original.origem_tipo, '') <> 'MALETA'), 0)
                         + coalesce((SELECT sum(mv.quantidade) FROM corona.movimentos_remessa mv
-                                     WHERE mv.produto_id = p.id AND mv.tipo IN ('VENDA', 'ESTORNO_VENDA', 'DEVOLUCAO_CLIENTE', 'TROCA_SAIDA', 'TROCA_ENTRADA', 'PERDA')), 0) AS fora
+                                     WHERE mv.produto_id = p.id AND mv.tipo IN ('VENDA', 'ESTORNO_VENDA', 'DEVOLUCAO_CLIENTE', 'TROCA_SAIDA', 'TROCA_ENTRADA', 'PERDA',
+                                                        'CONSIGNADO_SAIDA', 'CONSIGNADO_RETORNO')), 0) AS fora
                    FROM corona.produtos p) c""", "lower(c.nome), c.produto_id", List.of(
                 contagem(TODOS, "Produtos com diferença", null)));
         c.onde("(c.saldo <> c.soma OR c.saldo + c.nas_maletas <> c.fora)");
