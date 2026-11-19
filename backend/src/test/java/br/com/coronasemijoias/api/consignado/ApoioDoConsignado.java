@@ -1,5 +1,9 @@
 package br.com.coronasemijoias.api.consignado;
 
+import br.com.coronasemijoias.api.consignado.ServicoDeAcertosDaNota.Devolvido;
+import br.com.coronasemijoias.api.consignado.ServicoDeAcertosDaNota.NovoAcerto;
+import br.com.coronasemijoias.api.consignado.ServicoDeAcertosDaNota.ReciboDoAcerto;
+import br.com.coronasemijoias.api.consignado.ServicoDeRecibos.FormaPaga;
 import br.com.coronasemijoias.api.consignado.ServicoDeNotas.ItemDaNota;
 import br.com.coronasemijoias.api.consignado.ServicoDeNotas.NovaNota;
 import br.com.coronasemijoias.api.testes.UsuariosDeTeste.UsuarioDeTeste;
@@ -81,8 +85,9 @@ public abstract class ApoioDoConsignado extends ApoioDasTrocas {
                 nota, maleta, produto);
     }
 
-    protected int alertas(String tipo) {
-        return contar("SELECT count(*) FROM corona.alertas_consignado WHERE tipo = ?", tipo);
+    /** Os alertas do vendedor (o banco é dividido entre os testes: cada um conta só os seus). */
+    protected int alertas(UsuarioDeTeste v, String tipo) {
+        return contar("SELECT count(*) FROM corona.alertas_consignado WHERE tipo = ? AND vendedor_id = ?", tipo, v.vendedorId());
     }
 
     protected String situacaoDaNota(UUID nota) {
@@ -95,5 +100,34 @@ public abstract class ApoioDoConsignado extends ApoioDasTrocas {
 
     protected List<UUID> ids(UUID... ids) {
         return new ArrayList<>(List.of(ids));
+    }
+
+    protected static FormaPaga paga(String forma, String valor) {
+        return new FormaPaga(forma, new BigDecimal(valor));
+    }
+
+    protected static Devolvido volta(UUID produto, UUID maleta, int quantidade) {
+        return new Devolvido(UUID.randomUUID(), produto, maleta, quantidade, UUID.randomUUID());
+    }
+
+    /** Acerta a nota: comissão, o que voltou e, se houver formas, o recibo do acerto com o número dado. Devolve o id do acerto. */
+    protected UUID acertar(UsuarioDeTeste v, UUID nota, UUID semana, String comissao, List<Devolvido> devolvidos, Integer sequenciaDoRecibo,
+            FormaPaga... formas) {
+        UUID id = UUID.randomUUID();
+        ReciboDoAcerto recibo = formas.length == 0 ? null : new ReciboDoAcerto(UUID.randomUUID(), sequenciaDoRecibo, List.of(formas));
+        acertos.acertar(ctx(v), new NovoAcerto(id, nota, semana, new BigDecimal(comissao), devolvidos, recibo, null));
+        return id;
+    }
+
+    protected BigDecimal saldoDoDebito(UUID acerto) {
+        return debitos.saldoDoDebito(acerto);
+    }
+
+    protected BigDecimal aAplicar(UUID recibo) {
+        return debitos.aAplicar(recibo);
+    }
+
+    protected UUID reciboDoAcerto(UUID acerto) {
+        return jdbc.queryForObject("SELECT recibo_id FROM corona.acertos_nota WHERE id = ?", UUID.class, acerto);
     }
 }

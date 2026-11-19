@@ -139,7 +139,7 @@ class ServicoDeNotasTest extends ApoioDoConsignado {
         UUID maleta = maletaEnviada(v, anel, 2);
         UUID nota = criarNota(v, abrirSemana(v), 1, cliente(v), item(anel, maleta, 5, "10.00"));
         assertThat(dx(nota, maleta, anel)).isEqualTo(5);
-        assertThat(alertas("PECA_SEM_SALDO_NA_MALETA")).isEqualTo(1);
+        assertThat(alertas(v, "PECA_SEM_SALDO_NA_MALETA")).isEqualTo(1);
         // Aceita: a peça está com o cliente; o saldo da maleta fica negativo, e o alerta avisa a dona.
         assertThat(disponivel(maleta, anel)).isEqualTo(-3);
     }
@@ -151,7 +151,7 @@ class ServicoDeNotasTest extends ApoioDoConsignado {
         UUID maleta = maletaEnviada(v, anel, 5);
         UUID nota = criarNota(v, abrirSemana(v), 1, cliente(v), item(anel, maleta, 1, "90.00"));
         assertThat(valor("SELECT preco_unitario FROM corona.itens_nota_consignado WHERE nota_id = ?", nota)).isEqualByComparingTo("100.00");
-        assertThat(alertas("PRECO_DIFERENTE_DA_MALETA")).isEqualTo(1);
+        assertThat(alertas(v, "PRECO_DIFERENTE_DA_MALETA")).isEqualTo(1);
     }
 
     @Test
