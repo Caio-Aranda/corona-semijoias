@@ -29,7 +29,8 @@ export type CodigoDoConsignado =
   | 'PECA_NAO_ESTA_NA_NOTA'
   | 'NUMERO_DA_SEMANA_INVALIDO'
   | 'ITEM_DO_PEDIDO_NAO_ENCONTRADO'
-  | 'CLIENTE_DE_OUTRO_REPRESENTANTE';
+  | 'CLIENTE_DE_OUTRO_REPRESENTANTE'
+  | 'NOTA_SEM_ACERTO';
 
 export const MENSAGENS_DO_CONSIGNADO: Readonly<Record<CodigoDoConsignado, string>> = Object.freeze({
   NOTA_NAO_ENCONTRADA: 'Não encontramos esta nota. Atualize a tela e tente de novo.',
@@ -66,4 +67,6 @@ export const MENSAGENS_DO_CONSIGNADO: Readonly<Record<CodigoDoConsignado, string
   NUMERO_DA_SEMANA_INVALIDO: 'Confira o número da semana.',
   ITEM_DO_PEDIDO_NAO_ENCONTRADO: 'Não encontramos esta peça no pedido. Atualize a tela.',
   CLIENTE_DE_OUTRO_REPRESENTANTE: 'Este cliente não é seu.',
+  NOTA_SEM_ACERTO:
+    'Este pedido ainda não foi acertado. Faça a cobrança para gerar o relatório do acerto.',
 });

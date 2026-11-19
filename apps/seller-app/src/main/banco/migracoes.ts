@@ -666,6 +666,32 @@ INSERT INTO estado_sync (chave, valor)
   ON CONFLICT (chave) DO UPDATE SET valor = excluded.valor;
 `;
 
+/** As tabelas que a recarga dirigida da versão 10 traz de novo (tarefa 9.3): só `remessas`, que ganhou o código e a praça. */
+export const TABELAS_DA_RECARGA_DIRIGIDA_V10 = Object.freeze(['remessas']);
+
+/**
+ * Código da maleta e nome da praça (tarefa 9.3; V053 do servidor, ADR-0016, D11 e D12): duas colunas novas em `remessas` e a
+ * recarga dirigida dela, porque o computador que já tinha cursor não receberia o código que o servidor gerou antes.
+ */
+const V10 = `
+ALTER TABLE remessas ADD COLUMN codigo TEXT;
+ALTER TABLE remessas ADD COLUMN praca_nome TEXT;
+
+INSERT INTO estado_sync (chave, valor)
+  SELECT 'recarga_dirigida', lista FROM (
+    SELECT json_group_array(t) AS lista FROM (
+      SELECT t FROM (
+        SELECT key AS k, value AS t FROM json_each(
+          coalesce((SELECT valor FROM estado_sync WHERE chave = 'recarga_dirigida'), '[]'))
+        UNION ALL
+        SELECT 1000 + key AS k, value AS t FROM json_each('${JSON.stringify(TABELAS_DA_RECARGA_DIRIGIDA_V10)}')
+      ) GROUP BY t ORDER BY min(k)
+    )
+  )
+   WHERE EXISTS (SELECT 1 FROM estado_sync WHERE chave = 'cursor' AND valor IS NOT NULL)
+  ON CONFLICT (chave) DO UPDATE SET valor = excluded.valor;
+`;
+
 export const MIGRACOES: readonly MigracaoLocal[] = Object.freeze([
   {
     versao: 1,
@@ -715,6 +741,12 @@ export const MIGRACOES: readonly MigracaoLocal[] = Object.freeze([
     descricao:
       'consignado ao cliente (semanas, notas, acertos, recibos), lista própria de clientes, rascunho, contador e fila de fotos',
     sql: V9,
+  },
+  {
+    versao: 10,
+    descricao:
+      'código da maleta e nome da praça (relatórios do consignado) e a recarga dirigida das maletas',
+    sql: V10,
   },
 ]);
 

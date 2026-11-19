@@ -198,6 +198,8 @@ export const ERROS_ES: Readonly<Record<string, string>> = Object.freeze({
   NUMERO_DA_SEMANA_INVALIDO: 'Revisá el número de la semana.',
   ITEM_DO_PEDIDO_NAO_ENCONTRADO: 'No encontramos esta pieza en el pedido. Actualizá la pantalla.',
   CLIENTE_DE_OUTRO_REPRESENTANTE: 'Este cliente no es tuyo.',
+  NOTA_SEM_ACERTO:
+    'Este pedido todavía no fue cobrado. Haga la cobranza para generar el informe del cobro.',
   PECA_FORA_DA_MALETA: 'Esta pieza no consta en tu maleta.',
   SEM_SALDO: 'Ya no hay piezas de esta en tu maleta. Revisá la cantidad.',
   DESCONTO_MAIOR_QUE_A_PECA: 'El descuento es mayor que el valor de la pieza.',

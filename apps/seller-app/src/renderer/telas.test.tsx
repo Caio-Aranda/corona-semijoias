@@ -30,6 +30,9 @@ function ponteFalsa(parcial: Partial<PonteDoCorona> = {}) {
     aoMudarASincronizacao: () => () => undefined,
     lerIdioma: () => Promise.resolve(null),
     gravarIdioma: () => Promise.resolve(),
+    imprimirRelatorio: () => Promise.resolve({ ok: true as const }),
+    salvarRelatorioEmPdf: () => Promise.resolve({ ok: true as const }),
+    prepararRelatorioNoWhatsapp: () => Promise.resolve({ ok: true as const }),
     ...parcial,
   };
   return { ponte, avisar: (a: AvisoDeSessao) => ouvinte?.(a) };

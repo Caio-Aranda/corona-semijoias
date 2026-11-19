@@ -7,6 +7,7 @@ import { TEXTOS } from '../../textos';
 import { PaginaDoVendedor } from '../PaginaDoVendedor';
 import { FotoDoProduto, useConsulta } from './apoio';
 import { EscolherPedido, LeitorDeCodigo } from './componentes';
+import { BotaoDeRelatorio } from './Relatorio';
 
 type Achada = Extract<ResultadoDaPeca, { tipo: 'ACHADA' }>;
 interface Linha {
@@ -43,6 +44,7 @@ export function TelaReposicao({
     texto: string;
   } | null>(null);
   const [ocupado, setOcupado] = useState(false);
+  const [notaGerada, setNotaGerada] = useState<string | null>(null);
   const { dados: maletas } = useConsulta<MaletaDoConsignado[]>(
     ponte,
     { operacao: 'consignado.maletas' },
@@ -105,18 +107,21 @@ export function TelaReposicao({
   async function registrar(): Promise<void> {
     if (!pedido) return;
     setOcupado(true);
-    const r = await chamar<{ novaNota: boolean; nota: { numero: string } | null }>(ponte, {
-      operacao: 'consignado.reposicao',
-      reposicao: {
-        id: novoId(),
-        notaId: pedido.id,
-        itens: linhas.map((l) => ({
-          produtoId: l.produtoId,
-          remessaId: l.remessaId,
-          quantidade: l.quantidade,
-        })),
+    const r = await chamar<{ novaNota: boolean; nota: { id: string; numero: string } | null }>(
+      ponte,
+      {
+        operacao: 'consignado.reposicao',
+        reposicao: {
+          id: novoId(),
+          notaId: pedido.id,
+          itens: linhas.map((l) => ({
+            produtoId: l.produtoId,
+            remessaId: l.remessaId,
+            quantidade: l.quantidade,
+          })),
+        },
       },
-    });
+    );
     setOcupado(false);
     if (!r.ok) {
       setMensagem({ tipo: 'erro', texto: r.mensagem });
@@ -128,6 +133,7 @@ export function TelaReposicao({
       texto: `${T.registrada} ${r.dados.novaNota ? T.novaNota(numero) : T.mudou(numero)}`,
     });
     setLinhas([]);
+    setNotaGerada(r.dados.nota?.id ?? null);
   }
 
   return (
@@ -141,6 +147,7 @@ export function TelaReposicao({
         aoEscolher={(n) => {
           setPedido({ id: n.notaId, numero: n.numero, cliente: n.cliente });
           setMensagem(null);
+          setNotaGerada(null);
         }}
         aoTrocar={() => setPedido(null)}
       />
@@ -168,6 +175,14 @@ export function TelaReposicao({
             desabilitado={!remessaId}
           />
           {mensagem ? <Aviso tipo={mensagem.tipo}>{mensagem.texto}</Aviso> : null}
+          {notaGerada ? (
+            <BotaoDeRelatorio
+              ponte={ponte}
+              pedido={{ tipo: 'NOTA_DE_SAIDA', notaId: notaGerada }}
+              rotulo={TEXTOS.consignado.relatorios.abrir.notaDeSaida}
+              variante="primario"
+            />
+          ) : null}
           <table className="cs-tabela consignado-tabela">
             <caption>{T.legenda}</caption>
             <thead>

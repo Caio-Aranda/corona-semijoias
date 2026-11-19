@@ -67,6 +67,9 @@ export const COLUNAS_DO_PULL: Readonly<Record<TabelaSincronizavel, readonly stri
       'total_valor',
       'enviada_em',
       'motivo_cancelamento',
+      // Consignado ao cliente (tarefa 9.3; V053 do servidor): o código da maleta e o nome da praça.
+      'codigo',
+      'praca_nome',
     ],
     itens_remessa: ['remessa_id', 'produto_id', 'qtd_enviada', 'preco_remessa'],
     movimentos_remessa: [

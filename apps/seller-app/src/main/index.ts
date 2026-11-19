@@ -3,9 +3,19 @@ import {
   PARTICAO_DO_ATUALIZADOR,
   ServicoDeAtualizacao,
 } from '@corona/conexao-segura';
-import { app, BrowserWindow, net, safeStorage, session, type WebContents } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  dialog,
+  net,
+  safeStorage,
+  session,
+  shell,
+  type WebContents,
+} from 'electron';
 import electronUpdater from 'electron-updater';
-import { join } from 'node:path';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
 import {
   CANAIS,
   type AvisoDeAtualizacao,
@@ -22,9 +32,11 @@ import {
   registrarAtualizacao,
   registrarIdioma,
   registrarPonte,
+  registrarRelatorios,
   registrarSincronizacao,
 } from './ipc';
 import { montarCoronaVendas } from './montagem';
+import { SaidaDosRelatorios } from './saida-dos-relatorios';
 import { enderecoDoApp } from './seguranca';
 import { PreparoDaAtualizacao, prepararAntesDeInstalar } from './sync/preparo-da-atualizacao';
 import type { Cofre, Relogio } from './tipos';
@@ -190,6 +202,47 @@ async function iniciar(): Promise<void> {
       enderecoDoApp(quadro.url, enderecoDeDesenvolvimento, arquivoDoApp)
     );
   });
+
+  // Relatórios do consignado (tarefa 9.3): imprimir, PDF e WhatsApp, sempre da janela que pediu.
+  registrarRelatorios(
+    (e) =>
+      new SaidaDosRelatorios({
+        imprimirPagina: () =>
+          new Promise<boolean>((resolve) => {
+            e.sender.print({ silent: false, printBackground: true }, (feito) => resolve(feito));
+          }),
+        paginaEmPdf: async () =>
+          new Uint8Array(await e.sender.printToPDF({ pageSize: 'A4', printBackground: true })),
+        escolherOndeSalvar: async (nome) => {
+          const opcoes = {
+            defaultPath: join(app.getPath('documents'), nome),
+            filters: [{ name: 'PDF', extensions: ['pdf'] }],
+          };
+          const r =
+            janela && !janela.isDestroyed()
+              ? await dialog.showSaveDialog(janela, opcoes)
+              : await dialog.showSaveDialog(opcoes);
+          return r.canceled ? null : (r.filePath ?? null);
+        },
+        pastaDosRelatorios: () => join(app.getPath('documents'), NOME_DO_APP, 'Relatórios'),
+        gravar: async (caminho, bytes) => {
+          await mkdir(dirname(caminho), { recursive: true });
+          await writeFile(caminho, bytes);
+        },
+        mostrarNaPasta: (caminho) => shell.showItemInFolder(caminho),
+        abrirNoNavegador: (endereco) => shell.openExternal(endereco),
+        comInternet: () => net.isOnline(),
+      }),
+    (e) => {
+      const quadro = e.senderFrame;
+      return (
+        quadro !== null &&
+        janela !== null &&
+        e.sender === janela.webContents &&
+        enderecoDoApp(quadro.url, enderecoDeDesenvolvimento, arquivoDoApp)
+      );
+    },
+  );
 
   registrarSincronizacao(motorDoApp, (e) => {
     const quadro = e.senderFrame;

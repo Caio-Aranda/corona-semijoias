@@ -24,6 +24,7 @@ import {
   situacaoNaTela,
   useConsulta,
 } from './apoio';
+import { RelatoriosDoCliente } from './Relatorio';
 import { CapturaDeFoto } from './CapturaDeFoto';
 
 export interface TelaClientesProps {
@@ -249,6 +250,8 @@ function FichaDoCliente({
             ) : null}
             <Botao onClick={aoEditar}>{T.editar}</Botao>
           </section>
+
+          <RelatoriosDoCliente ponte={ponte} clienteId={c.id} />
 
           <section aria-label={T.pendenciaTitulo}>
             <h2 className="vendas-subtitulo">{T.pendenciaTitulo}</h2>

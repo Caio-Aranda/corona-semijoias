@@ -19,6 +19,9 @@ const ponte: PonteDoCorona = {
   chamarApi: (pedido) => ipcRenderer.invoke(CANAIS.chamarApi, pedido),
   lerIdioma: () => ipcRenderer.invoke(CANAIS.idiomaLer),
   gravarIdioma: (idioma) => ipcRenderer.invoke(CANAIS.idiomaGravar, idioma),
+  imprimirRelatorio: () => ipcRenderer.invoke(CANAIS.relatorioImprimir),
+  salvarRelatorioEmPdf: (dados) => ipcRenderer.invoke(CANAIS.relatorioSalvarPdf, dados),
+  prepararRelatorioNoWhatsapp: (dados) => ipcRenderer.invoke(CANAIS.relatorioWhatsapp, dados),
   aoMudarASessao: (ouvinte) => {
     const escuta = (_evento: unknown, aviso: AvisoDeSessao): void => {
       ouvinte({

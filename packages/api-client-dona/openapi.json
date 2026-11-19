@@ -4037,6 +4037,9 @@
       },
       "LeituraDoFechamento" : {
         "properties" : {
+          "codigoDaMaleta" : {
+            "type" : "string"
+          },
           "concluidoEm" : {
             "format" : "date-time",
             "type" : "string"
@@ -7143,6 +7146,9 @@
         "properties" : {
           "cancelada" : {
             "type" : "boolean"
+          },
+          "codigo" : {
+            "type" : "string"
           },
           "cotacao" : {
             "$ref" : "#/components/schemas/CotacaoDaNota"
@@ -11163,6 +11169,9 @@
       },
       "RemessasDaDonaControllerRespostaDoResumo" : {
         "properties" : {
+          "codigo" : {
+            "type" : "string"
+          },
           "criadaEm" : {
             "format" : "date-time",
             "type" : "string"
@@ -11641,6 +11650,9 @@
               "type" : "string"
             },
             "type" : "array"
+          },
+          "codigo" : {
+            "type" : "string"
           },
           "criadaEm" : {
             "format" : "date-time",

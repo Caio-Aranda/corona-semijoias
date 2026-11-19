@@ -14,6 +14,7 @@ import {
   type PreviaDoAcertoPedida,
   type TipoDeFotoDoCliente,
 } from './operacoes-do-consignado';
+import type { PedidoDeRelatorio } from './relatorios-do-consignado';
 
 /**
  * Confere na ponte o formato de cada pedido do consignado ao cliente (tarefa 9.2). Só passa o que bate com o formato; o que
@@ -157,6 +158,33 @@ const camposDoCliente = (
 
 const motivo = (v: unknown): string | null =>
   ehTexto(v) && v.trim() !== '' && v.length <= 400 ? v : null;
+
+/** O pedido de relatório: só o tipo e os ids/datas que a pessoa escolheu. */
+const relatorio = (v: unknown): PedidoDeRelatorio | null => {
+  if (!ehObjeto(v)) return null;
+  switch (v['tipo']) {
+    case 'NOTA_DE_SAIDA':
+    case 'ACERTO':
+      return ehUuid(v['notaId']) ? { tipo: v['tipo'], notaId: v['notaId'] } : null;
+    case 'SITUACAO_DO_CLIENTE':
+      return ehUuid(v['clienteId']) ? { tipo: v['tipo'], clienteId: v['clienteId'] } : null;
+    case 'PECAS_VENDIDAS': {
+      const { clienteId, de, ate } = v;
+      if (!ehUuid(clienteId) || !ehTexto(de) || !DIA.test(de) || !ehTexto(ate) || !DIA.test(ate))
+        return null;
+      return de <= ate ? { tipo: v['tipo'], clienteId, de, ate } : null;
+    }
+    case 'TOTAIS_DA_SEMANA': {
+      const id = v['semanaId'];
+      if (id === undefined) return { tipo: v['tipo'] };
+      return ehUuid(id) ? { tipo: v['tipo'], semanaId: id } : null;
+    }
+    case 'SITUACAO_DA_MALETA':
+      return ehUuid(v['remessaId']) ? { tipo: v['tipo'], remessaId: v['remessaId'] } : null;
+    default:
+      return null;
+  }
+};
 
 export function ehOperacaoDoConsignado(operacao: string): boolean {
   return (OPERACOES_DO_CONSIGNADO as readonly string[]).includes(operacao);
@@ -334,7 +362,28 @@ export function validarPedidoDoConsignado(operacao: string, v: Obj): PedidoDoCon
     }
     case 'consignado.pesquisar':
       return textoAte(v['texto'], 100) ? { operacao, texto: v['texto'] } : null;
+    case 'consignado.relatorio': {
+      const r = relatorio(v['relatorio']);
+      return r ? { operacao, relatorio: r } : null;
+    }
     default:
       return null;
   }
+}
+
+/** O nome sugerido para o PDF do relatório (a tela só sugere; o processo principal limpa de novo). */
+export function validarSalvarRelatorio(v: unknown): { nome: string } | null {
+  return ehObjeto(v) && textoAte(v['nome'], 120) ? { nome: v['nome'] } : null;
+}
+
+/** O pedido de preparar o WhatsApp: telefone do cliente (ou vazio), mensagem curta e o nome sugerido do PDF. */
+export function validarPrepararWhatsapp(
+  v: unknown,
+): { telefone: string | null; mensagem: string; nome: string; semNumero: boolean } | null {
+  if (!ehObjeto(v)) return null;
+  const { telefone, mensagem, nome, semNumero } = v;
+  if (semNumero !== undefined && typeof semNumero !== 'boolean') return null;
+  if (telefone !== null && !textoAte(telefone, 40)) return null;
+  if (!textoAte(mensagem, 1000) || !textoAte(nome, 120)) return null;
+  return { telefone: telefone ?? null, mensagem, nome, semNumero: semNumero === true };
 }

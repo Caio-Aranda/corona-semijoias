@@ -14,9 +14,26 @@ export function numeroDaNota(semana: number, sequencia: number): string {
   return `${String(semana).padStart(7, '0')}-${String(sequencia).padStart(2, '0')}`;
 }
 
-/** O código curto da maleta que a tela mostra e a pesquisa aceita (a maleta não tem código próprio no servidor). */
-export function codigoDaMaleta(remessaId: string): string {
-  return `M-${remessaId.replace(/-/g, '').slice(-6).toUpperCase()}`;
+/**
+ * O código da maleta que a tela mostra e a pesquisa aceita: o do servidor (`0001`, `0002`...). Só enquanto a maleta ainda não
+ * trouxe o código (banco que ainda não recebeu a carga nova) vale o provisório `M-` com os 6 últimos dígitos do identificador.
+ */
+export function codigoDaMaleta(db: BancoAberto, remessaId: string): string {
+  const r = db.prepare('SELECT codigo FROM remessas WHERE id = ?').get(remessaId) as
+    { codigo: string | null } | undefined;
+  const codigo = r?.codigo?.trim();
+  return codigo ? codigo : `M-${remessaId.replace(/-/g, '').slice(-6).toUpperCase()}`;
+}
+
+/** O nome da praça do representante: o da maleta mais recente que o computador recebeu (ou `null`). */
+export function pracaDoRepresentante(db: BancoAberto): string | null {
+  const r = db
+    .prepare(
+      `SELECT praca_nome FROM remessas WHERE deleted_at IS NULL AND praca_nome IS NOT NULL AND trim(praca_nome) <> ''
+        ORDER BY enviada_em DESC, id DESC LIMIT 1`,
+    )
+    .get() as { praca_nome: string } | undefined;
+  return r?.praca_nome.trim() ?? null;
 }
 
 export interface SemanaLocal {

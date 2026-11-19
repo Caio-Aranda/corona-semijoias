@@ -28,6 +28,7 @@ import {
   useConsulta,
 } from './apoio';
 import { EscolherPedido, LeitorDeCodigo } from './componentes';
+import { BotaoDeRelatorio } from './Relatorio';
 
 export interface TelaCobrancaProps {
   ponte: PonteDoCorona;
@@ -305,6 +306,18 @@ function AcertoDoPedido({
           {T.saida(dia(nota.saidaEm))} · {situacaoNaTela(nota.situacao)}
         </p>
         <Botao onClick={aoTrocarPedido}>{TEXTOS.consignado.escolherPedido.trocar}</Botao>
+        <BotaoDeRelatorio
+          ponte={ponte}
+          pedido={{ tipo: 'NOTA_DE_SAIDA', notaId: nota.id }}
+          rotulo={TEXTOS.consignado.relatorios.abrir.notaDeSaida}
+        />
+        {nota.acerto ? (
+          <BotaoDeRelatorio
+            ponte={ponte}
+            pedido={{ tipo: 'ACERTO', notaId: nota.id }}
+            rotulo={TEXTOS.consignado.relatorios.abrir.acerto}
+          />
+        ) : null}
       </section>
       {mensagem ? <Aviso tipo={mensagem.tipo}>{mensagem.texto}</Aviso> : null}
 

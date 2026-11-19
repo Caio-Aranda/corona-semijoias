@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { abrirBancoLocal, type BancoAberto, gravar } from '../banco/banco-local';
 import {
   TABELAS_DA_RECARGA_DIRIGIDA_V9,
+  TABELAS_DA_RECARGA_DIRIGIDA_V10,
   MIGRACOES,
   TABELAS_DA_RECARGA_DIRIGIDA_V4,
   TABELAS_DA_RECARGA_DIRIGIDA_V6,
@@ -31,7 +32,7 @@ const V8_NOVAS = ['contas_receber', 'baixas_receber', 'recebimentos_vendedor'] a
 
 /** A migração local 9 acrescenta as suas tabelas ao FIM da marca da recarga (sem repetir as que já estavam nela). */
 const comV9 = (marca: readonly string[]): string[] => [
-  ...new Set([...marca, ...TABELAS_DA_RECARGA_DIRIGIDA_V9]),
+  ...new Set([...marca, ...TABELAS_DA_RECARGA_DIRIGIDA_V9, ...TABELAS_DA_RECARGA_DIRIGIDA_V10]),
 ];
 
 const limpar: (() => void | Promise<void>)[] = [];
@@ -87,7 +88,7 @@ describe('migração local 6', () => {
       db.close();
     });
     expect(Number(db.pragma('user_version', { simple: true }))).toBe(VERSAO_DO_BANCO);
-    expect(VERSAO_DO_BANCO).toBe(9);
+    expect(VERSAO_DO_BANCO).toBe(10);
     // A migração 9 tira as cópias do servidor dos clientes que não são do representante (o diretório da loja, ADR-0016, item 4).
     const { clientes: clientesDepois, ...restoDepois } = contagem(db);
     const { clientes: clientesAntes, ...restoAntes } = contagemAntes;
@@ -442,7 +443,7 @@ describe('migração local 7 (fechamento do acerto)', () => {
     limpar.push(() => {
       db.close();
     });
-    expect(Number(db.pragma('user_version', { simple: true }))).toBe(9);
+    expect(Number(db.pragma('user_version', { simple: true }))).toBe(10);
     expect(db.prepare('SELECT * FROM outbox ORDER BY ordem').all()).toEqual(outboxAntes);
     expect(contar(db, 'SELECT 1 FROM acertos')).toBe(acertosAntes);
     expect(colunasDe(db, 'acertos')).toEqual(

@@ -4,6 +4,7 @@ import { EstadoDaLista } from '../../componentes-do-vendedor';
 import { TEXTOS } from '../../textos';
 import { PaginaDoVendedor } from '../PaginaDoVendedor';
 import { dia, FotoDoProduto, useConsulta } from './apoio';
+import { BotaoDeRelatorio } from './Relatorio';
 
 /**
  * Maletas (§23.6): o saldo por peça, por eventos: disponível = enviada − com clientes − vendida pelos clientes − devolvida à
@@ -34,6 +35,11 @@ export function TelaMaletas({ ponte, aoVoltar }: { ponte: PonteDoCorona; aoVolta
               {T.enviadaEm(dia(m.enviadaEm))} ·{' '}
               {T.resumo(m.totalEnviada, m.totalComClientes, m.totalVendida, m.totalDisponivel)}
             </p>
+            <BotaoDeRelatorio
+              ponte={ponte}
+              pedido={{ tipo: 'SITUACAO_DA_MALETA', remessaId: m.id }}
+              rotulo={TEXTOS.consignado.relatorios.abrir.situacaoDaMaleta}
+            />
             <table className="cs-tabela consignado-tabela">
               <caption>{T.legenda(m.codigo)}</caption>
               <thead>
