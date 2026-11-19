@@ -995,7 +995,93 @@ public enum CodigoErro {
     /** Envio de mais de 90 dias: os dados completos já saíram do servidor e ele não pode ser repetido (HTTP 409). */
     ENVIO_SEM_DADOS(
             "Este envio é antigo demais para ser repetido.",
-            "Este envio é antigo demais para ser repetido. Os detalhes completos ficam guardados por 90 dias. Descarte-o.");
+            "Este envio é antigo demais para ser repetido. Os detalhes completos ficam guardados por 90 dias. Descarte-o."),
+
+    // --- Consignado ao cliente (tarefa 9.1; ADR-0016) ---
+
+    NOTA_NAO_ENCONTRADA(
+            "Não encontramos esta nota.",
+            "Não encontramos esta nota. Atualize o aplicativo e tente de novo."),
+
+    NOTA_JA_ACERTADA(
+            "Esta nota já foi acertada.",
+            "Esta nota já foi acertada. Para mudar, estorne o acerto e faça de novo."),
+
+    SEMANA_DA_NOTA_FECHADA(
+            "Esta semana já foi fechada.",
+            "Esta semana já foi fechada. Abra uma semana nova para fazer outro pedido."),
+
+    NUMERO_REPETIDO(
+            "Este número já foi usado.",
+            "Este número de nota ou de recibo já foi usado por outro registro. Avise a dona da loja: o número já está impresso."),
+
+    DEVOLUCAO_MAIOR_QUE_O_LEVADO(
+            "A devolução passa do que foi levado.",
+            "A devolução passa do que o cliente levou nesta nota. Confira as quantidades devolvidas."),
+
+    COMISSAO_FORA_DO_LIMITE(
+            "A comissão precisa ficar entre 0% e 40%.",
+            "A comissão precisa ficar entre 0% e 40%. Corrija o percentual e tente de novo."),
+
+    CONSIGNADO_JA_REGISTRADO_DIFERENTE(
+            "Este registro já foi feito com outros dados.",
+            "Este registro já foi feito com outros dados. Confira os pedidos e os acertos antes de lançar de novo."),
+
+    ACERTO_JA_ESTORNADO(
+            "Este acerto já foi estornado.",
+            "Este acerto já foi estornado e não pode mudar. Faça um acerto novo, se precisar."),
+
+    RECIBO_NAO_ENCONTRADO(
+            "Não encontramos este recibo.",
+            "Não encontramos este recibo. Atualize o aplicativo e tente de novo."),
+
+    RECIBO_JA_ESTORNADO_DO_CONSIGNADO(
+            "Este recibo já foi estornado.",
+            "Este recibo já foi estornado e não pode mudar. Lance um pagamento novo, se precisar."),
+
+    RECIBO_DO_ACERTO(
+            "Este recibo pertence a um acerto.",
+            "Este recibo é de um acerto. Para desfazer, estorne o acerto."),
+
+    PAGAMENTO_INVALIDO(
+            "Confira o pagamento.",
+            "Confira o pagamento: use dinheiro, Pix, débito ou crédito à vista, com valor maior que zero e no máximo duas casas."),
+
+    MOTIVO_OBRIGATORIO(
+            "Conte o motivo.",
+            "Conte o motivo do estorno para continuar."),
+
+    PEDIDO_SEM_PECAS(
+            "O pedido está sem peças.",
+            "O pedido está sem peças. Acrescente pelo menos uma peça."),
+
+    CLIENTE_AINDA_NAO_CHEGOU(
+            "O cadastro do cliente ainda não chegou.",
+            "O cadastro do cliente ainda não chegou ao servidor. Tente de novo mais tarde."),
+
+    FOTO_DIFERENTE_DO_CADASTRO(
+            "A foto não confere com o cadastro.",
+            "A foto enviada não é a do cadastro do cliente. Tire a foto de novo."),
+
+    FOTO_DO_CLIENTE_NAO_ENCONTRADA(
+            "Não há esta foto.",
+            "Este cliente não tem esta foto."),
+
+    FECHAMENTO_JA_EM_ANDAMENTO(
+            "Já há um fechamento desta maleta.",
+            "Já há um fechamento em andamento para esta maleta. Continue de onde parou."),
+
+    FECHAMENTO_NAO_ENCONTRADO(
+            "Não há fechamento desta maleta.",
+            "Não há fechamento em andamento para esta maleta. Comece um novo."),
+
+    MALETA_JA_FECHADA(
+            "Esta maleta já foi fechada.",
+            "Esta maleta já foi fechada."),
+
+    MALETA_NAO_PODE_FECHAR(
+            "Esta maleta não pode ser fechada agora.",
+            "Só dá para fechar a maleta que está com o representante (enviada ou conferida).");
 
     private final String titulo;
     private final String mensagem;

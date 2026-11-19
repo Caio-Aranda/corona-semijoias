@@ -277,7 +277,7 @@ public class ServicoDeEstoque {
                                LEFT JOIN (SELECT remessa_id, produto_id, sum(quantidade) AS soma
                                             FROM corona.movimentos_remessa GROUP BY remessa_id, produto_id) m
                                       ON m.remessa_id = i.remessa_id AND m.produto_id = i.produto_id
-                              WHERE r.deleted_at IS NULL AND r.status IN ('ENVIADA', 'CONFERIDA', 'EM_ACERTO')
+                              WHERE r.deleted_at IS NULL AND r.status IN ('ENVIADA', 'CONFERIDA', 'EM_ACERTO', 'FECHADA')
                               GROUP BY i.produto_id""";
 
     /**
@@ -298,7 +298,8 @@ public class ServicoDeEstoque {
                 ) maletas ON maletas.produto_id = p.id
                   LEFT JOIN (SELECT mv.produto_id, sum(mv.quantidade) AS soma
                                FROM corona.movimentos_remessa mv
-                              WHERE mv.tipo IN ('VENDA', 'ESTORNO_VENDA', 'DEVOLUCAO_CLIENTE', 'TROCA_SAIDA', 'TROCA_ENTRADA', 'PERDA')
+                              WHERE mv.tipo IN ('VENDA', 'ESTORNO_VENDA', 'DEVOLUCAO_CLIENTE', 'TROCA_SAIDA', 'TROCA_ENTRADA', 'PERDA',
+                                           'CONSIGNADO_SAIDA', 'CONSIGNADO_RETORNO')
                               GROUP BY mv.produto_id) vendidas ON vendidas.produto_id = p.id
                  WHERE p.estoque_atual + coalesce(maletas.saldo, 0) <> coalesce(fora.soma, 0) + coalesce(vendidas.soma, 0)
                  ORDER BY p.nome, p.id""";
