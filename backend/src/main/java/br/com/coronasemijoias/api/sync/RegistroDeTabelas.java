@@ -49,6 +49,10 @@ public final class RegistroDeTabelas {
     /** A linha é de uma venda do vendedor. */
     private static final String DA_VENDA = "EXISTS (SELECT 1 FROM corona.vendas v WHERE v.id = t.venda_id AND v.vendedor_id = ?)";
 
+    /** A linha é de uma nota do consignado do vendedor. */
+    private static final String DA_NOTA = "EXISTS (SELECT 1 FROM corona.notas_consignado n"
+            + " WHERE n.id = %s AND n.vendedor_id = ?)";
+
     /** A linha é de uma devolução do vendedor. */
     private static final String DA_DEVOLUCAO = "EXISTS (SELECT 1 FROM corona.devolucoes d"
             + " WHERE d.id = t.devolucao_id AND d.vendedor_id = ?)";
@@ -73,7 +77,10 @@ public final class RegistroDeTabelas {
                                 "nome", "cpf", "data_nascimento", "telefone", "whatsapp", "ativo",
                                 "endereco_logradouro", "endereco_numero", "endereco_complemento", "endereco_bairro",
                                 "endereco_cidade", "endereco_uf", "endereco_cep",
-                                "observacoes", "vendedor_responsavel_id"), false,
+                                "observacoes", "vendedor_responsavel_id",
+                                // Consignado ao cliente (tarefa 9.1, V049): documento, indicação, comissão e hashes das fotos.
+                                "documento", "documento_tipo", "indicado_por_cliente_id", "indicado_por_nome", "como_conheceu",
+                                "comissao_percentual", "foto_hash", "foto_documento_frente_hash", "foto_documento_verso_hash"), false,
                                 RegraDoVendedor.diretorioDaLoja(Set.of("nome", "cpf", "telefone", "endereco_cidade", "ativo"),
                                         "vendedor_responsavel_id")),
                         // Produtos e códigos (tarefa 1.5). Sem custo e sem fornecedor: o vendedor nunca os recebe. Sem
@@ -106,7 +113,8 @@ public final class RegistroDeTabelas {
                                         new Expansao("produtos_fotos", "produto_id", "produto_id"))),
                         new TabelaSincronizavel("movimentos_remessa", List.of(
                                 "remessa_id", "produto_id", "tipo", "quantidade", "venda_id", "dispositivo_id",
-                                "estorna_id", "devolucao_id"), true, RegraDoVendedor.doVendedor(DA_MALETA.formatted("t.remessa_id"))),
+                                "estorna_id", "devolucao_id", "nota_id", "acerto_nota_id"), true,
+                                RegraDoVendedor.doVendedor(DA_MALETA.formatted("t.remessa_id"))),
                         // Vendas (tarefa 4.2, ADR-0011): só as do próprio vendedor (privadas, mesmo do cliente da loja). Sem custo.
                         new TabelaSincronizavel("vendas", List.of(
                                 "vendedor_id", "cliente_id", "remessa_id", "status", "subtotal", "desconto", "total",
@@ -217,7 +225,46 @@ public final class RegistroDeTabelas {
                         new TabelaSincronizavel("pendencias_acerto", List.of(
                                 "acerto_id", "vendedor_id", "tipo", "produto_id", "remessa_id", "quantidade", "valor", "origem_tipo",
                                 "origem_id", "status", "cobrada_no_acerto_id", "resolvida_em"), false,
-                                RegraDoVendedor.doVendedor("t.vendedor_id = ?"))
+                                RegraDoVendedor.doVendedor("t.vendedor_id = ?")),
+                        // Consignado ao cliente (tarefa 9.1, V050 e V051; ADR-0016, item 13): só do representante dono, pela coluna
+                        // vendedor_id da linha ou da mãe, que nunca muda. Nunca vão alertas, numeros_da_semana nem fechamento.
+                        new TabelaSincronizavel("semanas_vendedor", List.of(
+                                "vendedor_id", "numero", "aberta_em", "fechada_em", "situacao", "dispositivo_id"), false,
+                                RegraDoVendedor.doVendedor("t.vendedor_id = ?")),
+                        new TabelaSincronizavel("notas_consignado", List.of(
+                                "vendedor_id", "semana_id", "sequencia", "cliente_id", "saida_em", "data_cobranca", "nota_origem_id",
+                                "situacao", "cotacao_id", "dispositivo_id", "hora_ajustada"), false,
+                                RegraDoVendedor.doVendedor("t.vendedor_id = ?")),
+                        new TabelaSincronizavel("reposicoes_nota", List.of("nota_id", "feita_em", "dispositivo_id", "hora_ajustada"),
+                                true, RegraDoVendedor.doVendedor(DA_NOTA.formatted("t.nota_id"))),
+                        new TabelaSincronizavel("trocas_nota", List.of("nota_id", "trocada_em", "dispositivo_id", "hora_ajustada"),
+                                true, RegraDoVendedor.doVendedor(DA_NOTA.formatted("t.nota_id"))),
+                        new TabelaSincronizavel("itens_nota_consignado", List.of(
+                                "nota_id", "produto_id", "remessa_id", "origem", "quantidade", "preco_unitario", "reposicao_id",
+                                "troca_id"), true, RegraDoVendedor.doVendedor(DA_NOTA.formatted("t.nota_id"))),
+                        new TabelaSincronizavel("remarcacoes_nota", List.of(
+                                "nota_id", "data_cobranca_anterior", "data_cobranca_nova", "remarcada_em", "dispositivo_id",
+                                "hora_ajustada"), true, RegraDoVendedor.doVendedor(DA_NOTA.formatted("t.nota_id"))),
+                        new TabelaSincronizavel("acertos_nota", List.of(
+                                "nota_id", "vendedor_id", "semana_id", "acertado_em", "comissao_percentual", "itens_dx", "itens_dv",
+                                "itens_vd", "valor_dx", "valor_dv", "valor_vd", "comissao", "bruto", "pendencias_anteriores",
+                                "total_a_receber", "total_pago", "ficou_devendo", "recibo_id", "cotacao_id", "dispositivo_id",
+                                "hora_ajustada", "estornado_em", "estorno_id", "motivo_estorno"), false,
+                                RegraDoVendedor.doVendedor("t.vendedor_id = ?")),
+                        new TabelaSincronizavel("itens_acerto_nota", List.of(
+                                "acerto_id", "produto_id", "remessa_id", "qtd_dx", "qtd_dv", "preco_unitario"), true,
+                                RegraDoVendedor.doVendedor("EXISTS (SELECT 1 FROM corona.acertos_nota a"
+                                        + " WHERE a.id = t.acerto_id AND a.vendedor_id = ?)")),
+                        new TabelaSincronizavel("recibos_consignado", List.of(
+                                "vendedor_id", "cliente_id", "semana_id", "sequencia", "acerto_id", "pago_em", "total", "cotacao_id",
+                                "dispositivo_id", "hora_ajustada", "estornado_em", "estorno_id", "motivo_estorno"), false,
+                                RegraDoVendedor.doVendedor("t.vendedor_id = ?")),
+                        new TabelaSincronizavel("formas_recibo_consignado", List.of("recibo_id", "forma", "valor"), true,
+                                RegraDoVendedor.doVendedor("EXISTS (SELECT 1 FROM corona.recibos_consignado r"
+                                        + " WHERE r.id = t.recibo_id AND r.vendedor_id = ?)")),
+                        new TabelaSincronizavel("aplicacoes_recibo", List.of("recibo_id", "acerto_id", "valor", "estorna_id"), true,
+                                RegraDoVendedor.doVendedor("EXISTS (SELECT 1 FROM corona.recibos_consignado r"
+                                        + " WHERE r.id = t.recibo_id AND r.vendedor_id = ?)"))
                         // Tabela sincronizável nova: declare a regra do vendedor (filtro, expansão, diretório).
                 ),
                 List.of(
@@ -274,7 +321,12 @@ public final class RegistroDeTabelas {
                         new TabelaDoServidor("fechamentos_semana", true),
                         // Rodadas da conferência diária (tarefa 8.4, V047): só do servidor, imutáveis, nunca vão ao aplicativo.
                         new TabelaDoServidor("rodadas_conferencia", true),
-                        new TabelaDoServidor("diferencas_conferencia", true)));
+                        new TabelaDoServidor("diferencas_conferencia", true),
+                        // Consignado ao cliente (tarefa 9.1, V050 a V052): só do servidor, nunca vão ao aplicativo do vendedor.
+                        new TabelaDoServidor("numeros_da_semana", true),
+                        new TabelaDoServidor("alertas_consignado", false),
+                        new TabelaDoServidor("fechamentos_maleta", false),
+                        new TabelaDoServidor("leituras_fechamento_maleta", true)));
     }
 
     /** Este registro somado a outro (usado pelos testes para acrescentar as tabelas de teste). */
