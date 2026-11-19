@@ -9,6 +9,7 @@ import { montarGrade, dataEHoraParaTela } from '../../nucleo/exportacao/grade';
 import { gerarPdf } from '../../nucleo/exportacao/pdf';
 import { gerarXlsx } from '../../nucleo/exportacao/xlsx';
 import { dataParaTela } from '../../nucleo/moedas';
+import { useTelasDoGestao } from '../../nucleo/telas-do-gestao';
 import {
   dolarNaTela,
   guaraniNaTela,
@@ -243,6 +244,9 @@ export function TelaPainelSemanal({
   aoAbrirAcerto,
   aoAbrirRegistros,
 }: TelaPainelSemanalProps) {
+  // O botão "Acerto" é do acerto antigo da §7.4: some enquanto ele está escondido (ADR-0016, item 15).
+  const { acertoDoVendedorVisivel } = useTelasDoGestao();
+  const atalhos = ATALHOS.filter((a) => a.rota !== 'acertos/lista' || acertoDoVendedorVisivel);
   const [filtros, setFiltros] = useState<Filtros>(SEM_FILTROS);
   const [aba, setAba] = useState<'maletas' | 'totais'>('maletas');
   const [exportando, setExportando] = useState(false);
@@ -359,7 +363,7 @@ export function TelaPainelSemanal({
       <p className="gestao-texto">{T.ajuda}</p>
 
       <nav className="gestao-botoes" aria-label={T.atalhos.rotulo}>
-        {ATALHOS.map((a) => (
+        {atalhos.map((a) => (
           <Botao
             key={a.rotulo}
             onClick={() => {

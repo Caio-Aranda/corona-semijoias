@@ -154,6 +154,7 @@ export const PT_TEXTOS_DE_MALETAS = {
         CONFERIDA: 'Conferida',
         EM_ACERTO: 'Em acerto',
         ACERTADA: 'Acertada',
+        FECHADA: 'Fechada',
         CANCELADA: 'Cancelada',
         RASCUNHO: 'Em montagem',
       } as Record<string, string>,

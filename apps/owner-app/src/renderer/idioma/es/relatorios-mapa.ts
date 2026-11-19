@@ -4,6 +4,18 @@
  * textos de la definición al abrir el programa en español.
  */
 export const RELATORIOS_EM_ESPANHOL: Record<string, string> = {
+  'Peça a peça: quantas foram enviadas, devolvidas pelos clientes, vendidas, quantas ainda estão com os clientes (e com quem), quantas você leu na volta e a diferença. No rodapé: o valor vendido, a comissão dos clientes, o que foi recebido e o que ainda falta receber.':
+    'Pieza por pieza: cuántas se enviaron, cuántas devolvieron los clientes, cuántas se vendieron, cuántas siguen con los clientes (y con quién), cuántas usted leyó a la vuelta y la diferencia. Al pie: el valor vendido, la comisión de los clientes, lo que se cobró y lo que todavía falta cobrar.',
+  'Os valores da maleta são divididos pelo vendido de cada maleta dentro da nota do cliente.':
+    'Los valores de la maleta se dividen según lo vendido de cada maleta dentro de la nota del cliente.',
+  'Peças vendidas':
+    'Piezas vendidas',
+  'Diferença (lidas menos esperadas)':
+    'Diferencia (leídas menos esperadas)',
+  'Comissão dos clientes':
+    'Comisión de los clientes',
+  'Esta maleta não tem peças.':
+    'Esta maleta no tiene piezas.',
   ' (prejuízo)': ' (pérdida)',
   'A comissão de cada acerto fechado, com o vendido em Guarani, a meta da comissão e o percentual que ela decidiu (30% ou 40%). A comissão é paga abatendo no acerto.':
     'La comisión de cada acerto cerrado, con lo vendido en Guaraníes, la meta de la comisión y el porcentaje que usted decidió (30% o 40%). La comisión se paga descontándola en el acerto.',

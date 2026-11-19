@@ -223,6 +223,43 @@ export const RELATORIOS_DE_MALETA: Record<NomeDoRelatorioDeMaleta, DefinicaoDeRe
     itens: { um: 'maleta', varios: 'maletas' },
     vazio: 'Nenhuma maleta em aberto com estes filtros.',
   },
+  'maleta-fechamento': {
+    nome: 'maleta-fechamento',
+    grupo: 'maletas',
+    soAbreDeUmaLinha: true,
+    titulo: 'Fechamento da maleta',
+    explicacao:
+      'Peça a peça: quantas foram enviadas, devolvidas pelos clientes, vendidas, quantas ainda estão com os clientes (e com quem), quantas você leu na volta e a diferença. No rodapé: o valor vendido, a comissão dos clientes, o que foi recebido e o que ainda falta receber.',
+    nota: 'Os valores da maleta são divididos pelo vendido de cada maleta dentro da nota do cliente.',
+    filtros: [],
+    buscaRotulo: '',
+    colunas: [
+      { chave: 'nome', titulo: 'Peça', tipo: 'texto' },
+      { chave: 'enviadas', titulo: 'Enviadas', tipo: 'inteiro' },
+      { chave: 'devolvidasPelosClientes', titulo: 'Devolvidas pelos clientes', tipo: 'inteiro' },
+      { chave: 'vendidas', titulo: 'Vendidas', tipo: 'inteiro' },
+      { chave: 'comClientes', titulo: 'Ainda com os clientes', tipo: 'inteiro' },
+      { chave: 'comQuem', titulo: 'Com quem', tipo: 'texto' },
+      { chave: 'esperadoNaMaleta', titulo: 'Esperadas na maleta', tipo: 'inteiro' },
+      { chave: 'bipadas', titulo: 'Lidas na volta', tipo: 'inteiro' },
+      { chave: 'diferenca', titulo: 'Diferença', tipo: 'inteiro' },
+    ],
+    totaisDeValor: {},
+    rotulosDosTotais: {
+      enviadas: 'Peças enviadas',
+      devolvidas: 'Devolvidas pelos clientes',
+      vendidas: 'Peças vendidas',
+      comClientes: 'Ainda com os clientes',
+      bipadas: 'Lidas na volta',
+      diferenca: 'Diferença (lidas menos esperadas)',
+      vd: 'Valor vendido',
+      comissao: 'Comissão dos clientes',
+      recebido: 'Valor recebido',
+      pendencias: 'Pendências a receber',
+    },
+    itens: { um: 'peça', varios: 'peças' },
+    vazio: 'Esta maleta não tem peças.',
+  },
 };
 
 export const ORDEM_DOS_RELATORIOS_DE_MALETA: NomeDoRelatorio[] = [

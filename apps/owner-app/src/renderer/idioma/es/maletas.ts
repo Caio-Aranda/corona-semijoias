@@ -150,6 +150,7 @@ export const ES_TEXTOS_DE_MALETAS: NoMesmoFormato<typeof PT_TEXTOS_DE_MALETAS> =
         CONFERIDA: 'Controlada',
         EM_ACERTO: 'En acerto',
         ACERTADA: 'Acertada',
+        FECHADA: 'Cerrada',
         CANCELADA: 'Cancelada',
         RASCUNHO: 'En armado',
       },

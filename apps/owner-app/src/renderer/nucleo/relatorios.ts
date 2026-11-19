@@ -73,7 +73,7 @@ export interface AcaoDaLinha {
   /** O relatório que abre. */
   abre: NomeDoRelatorio;
   /** O filtro fixo (nome na API) e o campo da linha que o preenche. */
-  filtro: 'compraId' | 'inventarioId' | 'produtoId';
+  filtro: 'compraId' | 'inventarioId' | 'produtoId' | 'remessaId';
   campo: string;
   /** Como a pessoa chama o que foi aberto ("Compra 123 de Ouro Ltda"). */
   titulo: (linha: Record<string, unknown>) => string;

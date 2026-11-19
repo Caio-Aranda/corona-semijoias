@@ -262,5 +262,7 @@ export function conferirRelatorio(p: Record<string, unknown>): ParametrosDeRelat
   }
   // A lista das peças de uma compra só existe para uma compra.
   if (p.relatorio === 'compras-pecas' && !consulta.compraId) return null;
+  // O fechamento da maleta só existe para uma maleta.
+  if (p.relatorio === 'maleta-fechamento' && !consulta.remessaId) return null;
   return { operacao: 'relatorios.cadastros', relatorio: p.relatorio as NomeDoRelatorio, consulta };
 }

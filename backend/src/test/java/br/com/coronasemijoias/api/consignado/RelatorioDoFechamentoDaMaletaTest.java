@@ -55,7 +55,7 @@ class RelatorioDoFechamentoDaMaletaTest extends ApoioDoConsignado {
         UsuarioDeTeste v = usuarios.criarVendedor();
         UUID maleta = maletaComMovimento(v);
         LeituraDoFechamento leitura = fechamento.ler(maleta);
-        RelatorioDeCadastro<LinhaDoFechamento> r = relatorio.montar(maleta, null, null);
+        RelatorioDeCadastro<LinhaDoFechamento> r = relatorio.montar(maleta, null, null, null);
 
         assertThat(r.total()).isEqualTo(leitura.pecas().size()).isEqualTo(2);
         assertThat(r.itens()).hasSize(2);
@@ -90,12 +90,24 @@ class RelatorioDoFechamentoDaMaletaTest extends ApoioDoConsignado {
     void paginaEOTotalContinuaSendoDoRelatorioInteiro() throws Exception {
         UsuarioDeTeste v = usuarios.criarVendedor();
         UUID maleta = maletaComMovimento(v);
-        RelatorioDeCadastro<LinhaDoFechamento> r = relatorio.montar(maleta, 0, 1);
+        RelatorioDeCadastro<LinhaDoFechamento> r = relatorio.montar(maleta, 0, 1, null);
         assertThat(r.itens()).hasSize(1);
         assertThat(r.total()).isEqualTo(2);
         assertThat(total(r, "enviadas").pecas()).isEqualTo(16);
-        assertThat(relatorio.montar(maleta, 1, 1).itens()).hasSize(1);
-        assertThat(relatorio.montar(maleta, 5, 1).itens()).isEmpty();
+        assertThat(relatorio.montar(maleta, 1, 1, null).itens()).hasSize(1);
+        assertThat(relatorio.montar(maleta, 5, 1, null).itens()).isEmpty();
+    }
+
+    @Test
+    void recorteDeUmTotalMostraSoAsLinhasQueOFormamEORodapeContinuaInteiro() throws Exception {
+        UsuarioDeTeste v = usuarios.criarVendedor();
+        UUID maleta = maletaComMovimento(v);
+        // Só os anéis foram devolvidos pelos clientes.
+        RelatorioDeCadastro<LinhaDoFechamento> r = relatorio.montar(maleta, null, null, "devolvidas");
+        assertThat(r.itens()).hasSize(1);
+        assertThat(r.total()).isEqualTo(1);
+        assertThat(r.recorte()).isEqualTo("devolvidas");
+        assertThat(total(r, "enviadas").pecas()).isEqualTo(16);
     }
 
     @Test

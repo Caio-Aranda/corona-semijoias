@@ -758,3 +758,47 @@ dl.gestao-totais {
   align-self: flex-start;
   margin-bottom: var(--espaco-3);
 }
+
+/* Consignado (tarefa 9.4): ficha em pares "rótulo, valor" e as fotos do cliente. Texto escuro sobre fundo claro. */
+.gestao-ficha {
+  display: grid;
+  grid-template-columns: minmax(10rem, max-content) 1fr;
+  gap: var(--espaco-2) var(--espaco-4);
+  margin: 0;
+  color: var(--cor-texto);
+}
+
+.gestao-ficha dt {
+  font-weight: 600;
+}
+
+.gestao-ficha dd {
+  margin: 0;
+}
+
+.gestao-fotos-do-cliente {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-4);
+}
+
+.gestao-foto-do-cliente {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+  margin: 0;
+  min-width: 12rem;
+  color: var(--cor-texto);
+}
+
+.gestao-foto-do-cliente figcaption {
+  font-weight: 600;
+}
+
+.gestao-foto-do-cliente__imagem {
+  max-width: 22rem;
+  max-height: 22rem;
+  border: 1px solid var(--cor-borda, #ddd);
+  border-radius: var(--raio-2);
+  object-fit: contain;
+}

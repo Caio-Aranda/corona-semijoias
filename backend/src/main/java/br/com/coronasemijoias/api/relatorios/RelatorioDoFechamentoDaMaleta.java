@@ -32,14 +32,32 @@ public class RelatorioDoFechamentoDaMaleta {
         this.fechamento = fechamento;
     }
 
-    public RelatorioDeCadastro<LinhaDoFechamento> montar(UUID remessaId, Integer pagina, Integer tamanho) {
+    public RelatorioDeCadastro<LinhaDoFechamento> montar(UUID remessaId, Integer pagina, Integer tamanho, String recorte) {
         LeituraDoFechamento leitura = fechamento.ler(remessaId);
-        List<LinhaDoFechamento> todas = leitura.pecas().stream().map(RelatorioDoFechamentoDaMaleta::linha).toList();
+        List<LinhaDoFechamento> inteiro = leitura.pecas().stream().map(RelatorioDoFechamentoDaMaleta::linha).toList();
+        // "Ver os registros" de um total: só as linhas que o formam (o rodapé continua sendo o do relatório inteiro).
+        List<LinhaDoFechamento> todas = inteiro.stream().filter(l -> formaOTotal(recorte, l)).toList();
         int tam = tamanho == null || tamanho < 1 ? MotorDeRelatorio.TAMANHO_PADRAO : Math.min(tamanho, MotorDeRelatorio.TAMANHO_MAXIMO);
         int pag = pagina == null || pagina < 0 ? 0 : pagina;
         int de = (int) Math.min((long) pag * tam, todas.size());
         List<LinhaDoFechamento> doRecorte = todas.subList(de, Math.min(de + tam, todas.size()));
-        return new RelatorioDeCadastro<>(doRecorte, todas.size(), pag, tam, rodape(leitura, todas), null);
+        return new RelatorioDeCadastro<>(doRecorte, todas.size(), pag, tam, rodape(leitura, inteiro),
+                recorte == null || recorte.isBlank() ? null : recorte);
+    }
+
+    private static boolean formaOTotal(String recorte, LinhaDoFechamento l) {
+        if (recorte == null || recorte.isBlank()) {
+            return true;
+        }
+        return switch (recorte) {
+            case "enviadas" -> l.enviadas() != 0;
+            case "devolvidas" -> l.devolvidasPelosClientes() != 0;
+            case "vendidas" -> l.vendidas() != 0;
+            case "comClientes" -> l.comClientes() != 0;
+            case "bipadas" -> l.bipadas() != 0;
+            case "diferenca" -> l.diferenca() != 0;
+            default -> true;
+        };
     }
 
     private static LinhaDoFechamento linha(LinhaDaPeca p) {
@@ -61,8 +79,8 @@ public class RelatorioDoFechamentoDaMaleta {
         t.add(pecas("devolvidas", "Devolvidas pelos clientes", n, linhas.stream().mapToLong(LinhaDoFechamento::devolvidasPelosClientes).sum()));
         t.add(pecas("vendidas", "Vendidas", n, linhas.stream().mapToLong(LinhaDoFechamento::vendidas).sum()));
         t.add(pecas("comClientes", "Ainda com os clientes", n, linhas.stream().mapToLong(LinhaDoFechamento::comClientes).sum()));
-        t.add(pecas("bipadas", "Bipadas na volta", n, linhas.stream().mapToLong(LinhaDoFechamento::bipadas).sum()));
-        t.add(pecas("diferenca", "Diferença (bipadas menos esperadas)", n, linhas.stream().mapToLong(LinhaDoFechamento::diferenca).sum()));
+        t.add(pecas("bipadas", "Lidas na volta", n, linhas.stream().mapToLong(LinhaDoFechamento::bipadas).sum()));
+        t.add(pecas("diferenca", "Diferença (lidas menos esperadas)", n, linhas.stream().mapToLong(LinhaDoFechamento::diferenca).sum()));
         t.add(new Total("vd", "Valor vendido (VD)", n, l.valores().vd()));
         t.add(new Total("comissao", "Comissão dos clientes", n, l.valores().comissaoDosClientes()));
         t.add(new Total("recebido", "Valor recebido", n, l.valores().recebido()));

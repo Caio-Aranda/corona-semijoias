@@ -286,7 +286,12 @@ export function montarGrade(pedido: PedidoDeExportacao): Grade {
         linha[inicio + 2] = numero(soma.guarani.toString());
       }
     } else if (titulos.length > 1) {
-      linha[1] = texto(String(total.pecas ?? total.quantidade));
+      // Total em dinheiro que não tem coluna de valor (ex.: o Fechamento da maleta): o valor em Real vai na segunda coluna.
+      const real = total.valorEmReais != null ? centavosDeTexto(total.valorEmReais) : null;
+      linha[1] =
+        real !== null
+          ? numero(centavosParaDecimal(real))
+          : texto(String(total.pecas ?? total.quantidade));
     }
     return linha;
   });
