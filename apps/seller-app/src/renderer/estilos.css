@@ -242,3 +242,207 @@
 .vendas-nome-do-vendedor {
   margin-inline-end: var(--espaco-3);
 }
+
+/* --- Consignado ao cliente (tarefa 9.2; §23). Texto escuro sobre fundo claro; dourado só em detalhes. --- */
+.consignado-largo {
+  max-width: 1280px;
+}
+
+.consignado-botoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-3);
+  align-items: flex-end;
+}
+
+.consignado-pesquisa {
+  flex: 1 1 260px;
+  min-width: 220px;
+}
+
+.consignado-cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-4);
+  align-items: center;
+  padding: var(--espaco-3) var(--espaco-4);
+  background: var(--cor-fundo);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-2);
+  color: var(--cor-texto);
+}
+
+.consignado-cabecalho p {
+  margin: 0;
+}
+
+.consignado-seletor {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--espaco-1);
+  color: var(--cor-texto);
+}
+
+.consignado-abas {
+  display: flex;
+  border-bottom: 2px solid var(--cor-borda);
+}
+
+.consignado-aba {
+  min-height: 44px;
+  padding: var(--espaco-2) var(--espaco-6);
+  border: 0;
+  border-bottom: 4px solid transparent;
+  background: none;
+  color: var(--cor-texto);
+  font: inherit;
+  cursor: pointer;
+}
+
+.consignado-aba--ativa {
+  border-bottom-color: var(--cor-ouro-escuro);
+  font-weight: 700;
+}
+
+.consignado-tabela {
+  width: 100%;
+}
+
+/* A cor da linha segue a situação (§23.4); o texto da situação aparece sempre, a cor sozinha nunca basta. */
+.consignado-linha td,
+.consignado-linha th {
+  color: var(--cor-texto);
+}
+.consignado-linha--em-aberto {
+  background: #ffffff;
+}
+.consignado-linha--pendente {
+  background: #fff3b0;
+}
+.consignado-linha--fechado {
+  background: #d4efd8;
+}
+.consignado-linha--remarcado {
+  background: #fbd5e3;
+}
+tr.consignado-linha[tabindex]:focus-visible {
+  outline: 3px solid var(--cor-foco);
+  outline-offset: -3px;
+}
+
+.consignado-foto {
+  width: 140px;
+  height: 140px;
+  object-fit: cover;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-1);
+}
+.consignado-foto--pequena {
+  width: 44px;
+  height: 44px;
+}
+.consignado-foto--vazia {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cor-fundo-suave);
+  color: var(--cor-texto);
+  font-size: var(--texto-pequeno);
+  text-align: center;
+}
+.consignado-fotos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-4);
+}
+.consignado-fotos figure {
+  margin: 0;
+  color: var(--cor-texto);
+}
+
+.consignado-peca {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+}
+
+.consignado-conta,
+.consignado-totais dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--espaco-2) var(--espaco-6);
+  margin: var(--espaco-3) 0;
+  color: var(--cor-texto);
+}
+.consignado-conta dd,
+.consignado-totais dd {
+  margin: 0;
+}
+.consignado-totais__forma {
+  display: contents;
+}
+.consignado-totais__forma dt {
+  padding-inline-start: var(--espaco-4);
+}
+
+.consignado-linha-de-campos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-4);
+  align-items: flex-end;
+}
+
+.consignado-formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+  max-width: 640px;
+}
+.consignado-indicado {
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-2);
+  padding: var(--espaco-3) var(--espaco-4);
+}
+
+.consignado-clientes-lista li {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+}
+
+.consignado-captura {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+  padding: var(--espaco-3);
+  border: 1px dashed var(--cor-borda);
+  border-radius: var(--raio-2);
+}
+.consignado-camera__video {
+  width: 100%;
+  max-width: 480px;
+  border-radius: var(--raio-1);
+  background: #000;
+}
+.consignado-camera__acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-3);
+}
+.consignado-arquivo {
+  position: relative;
+  cursor: pointer;
+}
+.consignado-arquivo input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.consignado-escolha,
+.consignado-escolhido {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-3);
+  align-items: center;
+}
