@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { abrirBancoLocal, type BancoAberto, gravar } from '../banco/banco-local';
 import {
   TABELAS_DA_RECARGA_DIRIGIDA_V9,
+  TABELAS_DA_RECARGA_DIRIGIDA_V10,
   MIGRACOES,
   TABELAS_DA_RECARGA_DIRIGIDA_V8,
   TABELAS_SINCRONIZAVEIS,
@@ -23,7 +24,7 @@ import { contar, criarBancoDeTeste, idDeTeste } from './testes/banco-de-teste';
 
 /** A migração local 9 acrescenta as suas tabelas ao FIM da marca da recarga (sem repetir as que já estavam nela). */
 const comV9 = (marca: readonly string[]): string[] => [
-  ...new Set([...marca, ...TABELAS_DA_RECARGA_DIRIGIDA_V9]),
+  ...new Set([...marca, ...TABELAS_DA_RECARGA_DIRIGIDA_V9, ...TABELAS_DA_RECARGA_DIRIGIDA_V10]),
 ];
 
 const limpar: (() => void | Promise<void>)[] = [];
@@ -62,7 +63,7 @@ describe('migração local 8', () => {
       db.close();
     });
     expect(Number(db.pragma('user_version', { simple: true }))).toBe(VERSAO_DO_BANCO);
-    expect(VERSAO_DO_BANCO).toBe(9);
+    expect(VERSAO_DO_BANCO).toBe(10);
     // A migração 9 tira as cópias do servidor dos clientes que não são do representante (o diretório da loja, ADR-0016, item 4).
     const { clientes: clientesDepois, ...restoDepois } = contagem(db);
     const { clientes: clientesAntes, ...restoAntes } = contagemAntes;

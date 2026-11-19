@@ -24,8 +24,8 @@ export const PT_TEXTOS_DE_CONSIGNADO = {
       'A maleta voltou? Escolha a maleta e leia o código de cada peça que chegou. O sistema compara com o que devia estar na maleta e mostra a diferença. O acerto em dinheiro com o representante não passa por aqui.',
     escolher: 'Maleta que voltou',
     escolha: 'Escolha a maleta',
-    nome: (representante: string, semana: number, enviadaEm: string) =>
-      `Maleta de ${representante}, semana ${semana}${enviadaEm ? `, enviada em ${enviadaEm}` : ''}`,
+    nome: (codigo: string, representante: string, semana: number, enviadaEm: string) =>
+      `Maleta ${codigo}, de ${representante}, semana ${semana}${enviadaEm ? `, enviada em ${enviadaEm}` : ''}`,
     fechadaNaLista: ' (já fechada)',
     abrir: 'Abrir o fechamento',
     nenhuma: 'Não há maleta enviada para fechar.',
@@ -64,7 +64,8 @@ export const PT_TEXTOS_DE_CONSIGNADO = {
       voltar: 'Ainda não',
     },
     concluiu: 'Fechamento concluído. As peças lidas voltaram ao estoque e a maleta está fechada.',
-    maletaDoFechamento: (representante: string) => `Maleta de ${representante}`,
+    maletaDoFechamento: (codigo: string, representante: string) =>
+      `Maleta ${codigo}, de ${representante}`,
   },
   notas: {
     titulo: 'Notas dos clientes',

@@ -98,7 +98,7 @@ function EscolherMaleta({
                 <option value="">{T.escolha}</option>
                 {maletas.map((m) => (
                   <option key={m.id} value={m.id}>
-                    {T.nome(m.vendedorNome, m.semanaNumero, dataCurta(m.enviadaEm))}
+                    {T.nome(m.codigo, m.vendedorNome, m.semanaNumero, dataCurta(m.enviadaEm))}
                     {m.status === 'FECHADA' ? T.fechadaNaLista : ''}
                   </option>
                 ))}
@@ -156,7 +156,7 @@ function FechamentoAberto({
     return r;
   }, `fechamento-${maleta.id}-${versao}`);
 
-  const titulo = T.maletaDoFechamento(maleta.vendedorNome);
+  const titulo = T.maletaDoFechamento(maleta.codigo, maleta.vendedorNome);
   const dados = leitura.dados;
 
   if (!dados) {

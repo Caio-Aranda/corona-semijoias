@@ -50,6 +50,8 @@ export interface SemanaDaLista {
 
 export interface PainelDaSemana {
   representante: string | null;
+  /** A praça do representante (o nome que veio com as maletas), se já chegou. */
+  praca: string | null;
   /** Ainda não existe semana neste computador: a tela pede o número para abrir a primeira. */
   semSemana: boolean;
   semanas: SemanaDaLista[];

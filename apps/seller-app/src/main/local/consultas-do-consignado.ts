@@ -42,6 +42,7 @@ import {
   type NotaLocal,
   numeroDaNota,
   pendenciaDoCliente,
+  pracaDoRepresentante,
   semanaAtual,
   SQL_ACERTO_ATIVO,
   SQL_RECIBO_ATIVO,
@@ -59,6 +60,7 @@ import {
 } from '../sync/operacoes-do-consignado';
 import type { Falha, Resultado } from '../tipos';
 import { pecaDoProduto } from './peca-do-produto';
+import { RelatoriosDoConsignado } from './relatorios-do-consignado';
 
 /** O que as consultas precisam do armazém de fotos do cliente (criptografado, com fila de envio). */
 export interface FotosDoClienteLocais {
@@ -183,7 +185,10 @@ export class ConsultasDoConsignado {
         if (r.resultado === 'ADICIONADA')
           return ok({ resultado: 'ADICIONADA', pedido: this.pedido() });
         if (r.resultado === 'EM_OUTRA_MALETA')
-          return ok({ resultado: 'EM_OUTRA_MALETA', maleta: codigoDaMaleta(r.remessaId) });
+          return ok({
+            resultado: 'EM_OUTRA_MALETA',
+            maleta: codigoDaMaleta(this.db(), r.remessaId),
+          });
         if (r.resultado === 'SEM_SALDO')
           return ok({ resultado: 'SEM_SALDO', disponivel: r.disponivel });
         return ok({ resultado: 'FORA_DA_MALETA' });
@@ -256,6 +261,14 @@ export class ConsultasDoConsignado {
           .get(pedido.reciboId) as { cliente_id: string } | undefined;
         return ok({ ...r, cliente: recibo ? this.cliente(recibo.cliente_id) : null });
       }
+      case 'consignado.relatorio':
+        return ok(
+          new RelatoriosDoConsignado({
+            banco: () => this.db(),
+            agora: () => this.agora(),
+            consultar: (p) => this.chamar(p),
+          }).montar(pedido.relatorio),
+        );
       case 'consignado.pesquisar':
         return ok(this.pesquisar(pedido.texto));
     }
@@ -317,7 +330,7 @@ export class ConsultasDoConsignado {
         tipo: 'ACHADA',
         produtoId: aqui,
         remessaId,
-        maleta: codigoDaMaleta(remessaId),
+        maleta: codigoDaMaleta(this.db(), remessaId),
         nome: p.nome,
         codigo: p.codigo,
         fotoHash: p.fotoHash,
@@ -327,7 +340,7 @@ export class ConsultasDoConsignado {
     }
     for (const outra of maletasEmUso(db)) {
       if (outra !== remessaId && produtos.some((p) => this.precoNaMaleta(outra, p) !== null))
-        return { tipo: 'EM_OUTRA_MALETA', maleta: codigoDaMaleta(outra) };
+        return { tipo: 'EM_OUTRA_MALETA', maleta: codigoDaMaleta(this.db(), outra) };
     }
     return { tipo: 'FORA_DA_MALETA' };
   }
@@ -355,7 +368,7 @@ export class ConsultasDoConsignado {
       return {
         produtoId: l.produtoId,
         remessaId: l.remessaId,
-        maleta: codigoDaMaleta(l.remessaId),
+        maleta: codigoDaMaleta(this.db(), l.remessaId),
         codigo: p.codigo,
         codigos: p.codigos,
         nome: p.nome,
@@ -453,6 +466,7 @@ export class ConsultasDoConsignado {
     const escolhida = (semanaId ? semanas.find((s) => s.id === semanaId) : undefined) ?? atual;
     const base: PainelDaSemana = {
       representante: nome?.valor ?? null,
+      praca: pracaDoRepresentante(db),
       semSemana: semanas.length === 0,
       semanas: semanas.map((s) => ({ id: s.id, numero: s.numero, atual: s.id === atual?.id })),
       semana: null,
@@ -696,7 +710,9 @@ export class ConsultasDoConsignado {
     const saida: LinhaDeNotaNaBusca[] = [];
     for (const n of todas) {
       const numero = numeroDaNota(n.semana_numero, n.sequencia);
-      const maletas = [...new Set(linhasDaNota(db, n.id).map((l) => codigoDaMaleta(l.remessaId)))];
+      const maletas = [
+        ...new Set(linhasDaNota(db, n.id).map((l) => codigoDaMaleta(this.db(), l.remessaId))),
+      ];
       const acerto = acertoAtivoDaNota(db, n.id);
       if (soEmAberto && acerto) continue;
       if (
@@ -731,7 +747,7 @@ export class ConsultasDoConsignado {
         t === ''
           ? []
           : maletasEmUso(this.db())
-              .map((id) => ({ id, codigo: codigoDaMaleta(id) }))
+              .map((id) => ({ id, codigo: codigoDaMaleta(this.db(), id) }))
               .filter((m) => m.codigo.toLowerCase().includes(t)),
     };
   }
@@ -872,7 +888,11 @@ export class ConsultasDoConsignado {
       debitos: debitos.filter((d) => d.saldo > 0n).map((d) => this.debitoDaTela(d)),
       maletasAtuais: [...comCliente.entries()]
         .filter(([, n]) => n > 0)
-        .map(([remessaId, pecas]) => ({ remessaId, maleta: codigoDaMaleta(remessaId), pecas })),
+        .map(([remessaId, pecas]) => ({
+          remessaId,
+          maleta: codigoDaMaleta(this.db(), remessaId),
+          pecas,
+        })),
       pedidos,
       pagamentos,
     };
@@ -932,7 +952,7 @@ export class ConsultasDoConsignado {
         pecas.reduce((s, p) => s + p[campo], 0);
       return {
         id: r.id,
-        codigo: codigoDaMaleta(r.id),
+        codigo: codigoDaMaleta(this.db(), r.id),
         enviadaEm: r.enviada_em,
         status: r.status,
         pecas,
@@ -953,7 +973,7 @@ export class ConsultasDoConsignado {
         id: i.id,
         produtoId: i.produtoId,
         remessaId: i.remessaId,
-        maleta: codigoDaMaleta(i.remessaId),
+        maleta: codigoDaMaleta(this.db(), i.remessaId),
         codigo: p.codigo,
         nome: p.nome,
         fotoHash: p.fotoHash,
@@ -979,12 +999,12 @@ export class ConsultasDoConsignado {
       cliente: cliente?.nome ?? null,
       pendenciaDoCliente: r.clienteId ? dinheiro(pendenciaDoCliente(db, r.clienteId)) : ZERO,
       remessaId: r.remessaId,
-      maletaEscolhida: r.remessaId ? codigoDaMaleta(r.remessaId) : null,
+      maletaEscolhida: r.remessaId ? codigoDaMaleta(this.db(), r.remessaId) : null,
       dataCobranca: r.dataCobranca,
       itens,
       totalDeItens: itens.reduce((s, i) => s + i.quantidade, 0),
       totalDx: dinheiro(itens.reduce((s, i) => s + centavos(i.subTotal), 0n)),
-      maletas: maletasEmUso(db).map((id) => ({ id, codigo: codigoDaMaleta(id) })),
+      maletas: maletasEmUso(db).map((id) => ({ id, codigo: codigoDaMaleta(this.db(), id) })),
     };
   }
 }

@@ -139,6 +139,7 @@ export const ES_TEXTOS_DE_MALETAS: NoMesmoFormato<typeof PT_TEXTOS_DE_MALETAS> =
     imprimir: 'Imprimir nota',
     montarOutra: 'Armar otra maleta',
     ficha: {
+      codigo: 'Código',
       vendedor: 'Representante',
       semana: 'Semana',
       praca: 'Plaza',
@@ -171,6 +172,7 @@ export const ES_TEXTOS_DE_MALETAS: NoMesmoFormato<typeof PT_TEXTOS_DE_MALETAS> =
       legenda: 'Maletas',
       vazia: 'Ninguna maleta con esos filtros.',
       colunas: {
+        codigo: 'Código',
         vendedor: 'Representante',
         semana: 'Semana',
         tipo: 'Tipo',

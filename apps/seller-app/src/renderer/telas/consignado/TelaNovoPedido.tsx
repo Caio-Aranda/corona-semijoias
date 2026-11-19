@@ -12,6 +12,7 @@ import { Campo, JanelaDeConfirmacao } from '../../componentes-do-vendedor';
 import { TEXTOS } from '../../textos';
 import { FotoDoCliente, FotoDoProduto, reais, useConsulta } from './apoio';
 import { LeitorDeCodigo } from './componentes';
+import { BotaoDeRelatorio } from './Relatorio';
 import { PaginaDoVendedor } from '../PaginaDoVendedor';
 
 export interface TelaNovoPedidoProps {
@@ -138,6 +139,12 @@ export function TelaNovoPedido({ ponte, aoVoltar, aoAbrirPedido }: TelaNovoPedid
     return (
       <PaginaDoVendedor ponte={ponte} titulo={T.titulo} aoVoltar={aoVoltar}>
         <Aviso tipo="sucesso">{T.pronto(pronto.numero)}</Aviso>
+        <BotaoDeRelatorio
+          ponte={ponte}
+          pedido={{ tipo: 'NOTA_DE_SAIDA', notaId: pronto.id }}
+          rotulo={TEXTOS.consignado.relatorios.abrir.notaDeSaida}
+          variante="primario"
+        />
         <RodapeDeAcoes
           cancelar={<Botao onClick={() => aoAbrirPedido(pronto.id)}>{T.verNota}</Botao>}
           principal={

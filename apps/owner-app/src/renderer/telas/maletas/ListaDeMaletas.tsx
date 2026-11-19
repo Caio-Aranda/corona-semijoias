@@ -150,6 +150,7 @@ function TodasAsMaletas({
         legenda={L.legenda}
         textoVazio={L.vazia}
         colunas={[
+          { chave: 'codigo', titulo: L.colunas.codigo },
           { chave: 'vendedor', titulo: L.colunas.vendedor },
           { chave: 'semana', titulo: L.colunas.semana },
           { chave: 'tipo', titulo: L.colunas.tipo },
@@ -160,6 +161,7 @@ function TodasAsMaletas({
           { chave: 'acoes', titulo: L.colunas.acoes },
         ]}
         linhas={maletas.map((m) => ({
+          codigo: m.codigo,
           vendedor: m.vendedorNome,
           semana: String(m.semanaNumero),
           tipo: T.nova.tipos[m.tipo] ?? m.tipo,

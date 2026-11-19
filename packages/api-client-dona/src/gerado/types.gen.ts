@@ -1211,6 +1211,7 @@ export type LeituraDaDona = {
 };
 
 export type LeituraDoFechamento = {
+    codigoDaMaleta?: string;
     concluidoEm?: string;
     iniciadoEm?: string;
     pecas?: Array<LinhaDaPeca>;
@@ -2057,6 +2058,7 @@ export type NaoAceitaDaPreviaDoFechamento = {
 
 export type NotaDeRemessa = {
     cancelada?: boolean;
+    codigo?: string;
     cotacao?: CotacaoDaNota;
     enviadaEm?: string;
     itens?: Array<NotaDeRemessaControllerItemDaNota>;
@@ -3256,6 +3258,7 @@ export type RemessasDaDonaControllerRespostaDoItem = {
 };
 
 export type RemessasDaDonaControllerRespostaDoResumo = {
+    codigo?: string;
     criadaEm?: string;
     enviadaEm?: string;
     id?: string;
@@ -3403,6 +3406,7 @@ export type RespostaDaNaoAjustada = {
 
 export type RespostaDaRemessa = {
     avisos?: Array<string>;
+    codigo?: string;
     criadaEm?: string;
     enviadaEm?: string;
     id?: string;

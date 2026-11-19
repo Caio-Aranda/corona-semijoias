@@ -100,7 +100,9 @@ public final class RegistroDeTabelas {
                         // custo. Ao entregar a maleta, vão junto os itens dela (que foram gravados no rascunho).
                         new TabelaSincronizavel("remessas", List.of(
                                 "vendedor_id", "semana_id", "praca_id", "tipo", "status", "dispositivo_id",
-                                "total_pecas", "total_valor", "enviada_em", "motivo_cancelamento"), false,
+                                "total_pecas", "total_valor", "enviada_em", "motivo_cancelamento",
+                                // Consignado ao cliente (tarefa 9.3, V053): código da maleta e nome da praça (só no formato 2).
+                                "codigo", "praca_nome"), false,
                                 RegraDoVendedor.doVendedor("t.vendedor_id = ? AND t.enviada_em IS NOT NULL",
                                         new Expansao("itens_remessa", "remessa_id", "id"))),
                         // Ao entregar o item, vão junto o produto, os códigos e as fotos dele (gravados antes, talvez meses).
@@ -354,6 +356,9 @@ public final class RegistroDeTabelas {
                         "observacoes", "vendedor_responsavel_id"), false,
                         RegraDoVendedor.diretorioDaLoja(Set.of("nome", "cpf", "telefone", "endereco_cidade", "ativo"),
                                 "vendedor_responsavel_id"));
+                case "remessas" -> new TabelaSincronizavel("remessas", List.of(
+                        "vendedor_id", "semana_id", "praca_id", "tipo", "status", "dispositivo_id",
+                        "total_pecas", "total_valor", "enviada_em", "motivo_cancelamento"), false, t.regra());
                 case "movimentos_remessa" -> new TabelaSincronizavel("movimentos_remessa", List.of(
                         "remessa_id", "produto_id", "tipo", "quantidade", "venda_id", "dispositivo_id",
                         "estorna_id", "devolucao_id"), true, t.regra());

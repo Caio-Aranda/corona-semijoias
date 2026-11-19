@@ -40,6 +40,9 @@ function criarPonte(respostas: Record<string, Resposta> = {}) {
     aoMudarASincronizacao: () => () => undefined,
     lerIdioma: () => Promise.resolve(null),
     gravarIdioma: () => Promise.resolve(),
+    imprimirRelatorio: () => Promise.resolve({ ok: true as const }),
+    salvarRelatorioEmPdf: () => Promise.resolve({ ok: true as const }),
+    prepararRelatorioNoWhatsapp: () => Promise.resolve({ ok: true as const }),
   };
   return { ponte, chamadas };
 }
@@ -69,6 +72,7 @@ const linha = (n: number, situacao: SituacaoDoPedido, extra: Record<string, unkn
 
 const painel: PainelDaSemana = {
   representante: 'Rosa',
+  praca: 'PONTA PORÃ - MS',
   semSemana: false,
   semanas: [
     { id: 's65', numero: 65, atual: true },

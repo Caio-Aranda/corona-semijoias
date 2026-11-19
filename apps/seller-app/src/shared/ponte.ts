@@ -5,6 +5,7 @@
 
 import type { PedidoDeChamada } from './operacoes';
 import { limparPrazo, type PrazoOffline } from './prazo';
+import type { ResultadoDeSaidaDoRelatorio } from './relatorios-do-consignado';
 
 export { OPERACOES_DA_API } from './operacoes';
 export type { OperacaoDaApi, PedidoDeChamada } from './operacoes';
@@ -23,6 +24,9 @@ export const CANAIS = {
   sincronizacaoMudou: 'corona:sincronizacao-mudou',
   idiomaLer: 'corona:idioma-ler',
   idiomaGravar: 'corona:idioma-gravar',
+  relatorioImprimir: 'corona:relatorio-imprimir',
+  relatorioSalvarPdf: 'corona:relatorio-salvar-pdf',
+  relatorioWhatsapp: 'corona:relatorio-whatsapp',
 } as const;
 
 /** A lista fixa de funções que a ponte oferece à tela. Acrescentar uma função exige mexer aqui. */
@@ -37,6 +41,9 @@ export const FUNCOES_DA_PONTE = [
   'aoMudarASincronizacao',
   'lerIdioma',
   'gravarIdioma',
+  'imprimirRelatorio',
+  'salvarRelatorioEmPdf',
+  'prepararRelatorioNoWhatsapp',
 ] as const;
 
 /** Os dois idiomas do Corona Vendas (a tela guarda a escolha pela ponte, nunca em armazenamento do navegador). */
@@ -179,4 +186,16 @@ export interface PonteDoCorona {
   lerIdioma(): Promise<IdiomaDaTela | null>;
   /** Guarda neste computador o idioma escolhido. */
   gravarIdioma(idioma: IdiomaDaTela): Promise<void>;
+  /** Imprime o relatório que está na tela (tarefa 9.3). Só a folha do relatório sai no papel. */
+  imprimirRelatorio(): Promise<ResultadoDeSaidaDoRelatorio>;
+  /** Salva em PDF o relatório que está na tela; a pessoa escolhe onde guardar. */
+  salvarRelatorioEmPdf(dados: { nome: string }): Promise<ResultadoDeSaidaDoRelatorio>;
+  /** Guarda o PDF, mostra a pasta e abre a conversa do WhatsApp com o cliente e a mensagem pronta. Nada é enviado sozinho. */
+  prepararRelatorioNoWhatsapp(dados: {
+    telefone: string | null;
+    mensagem: string;
+    nome: string;
+    /** Relatório do próprio representante: abre o WhatsApp sem número e ele escolhe a conversa. */
+    semNumero?: boolean;
+  }): Promise<ResultadoDeSaidaDoRelatorio>;
 }

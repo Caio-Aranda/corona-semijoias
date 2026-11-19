@@ -52,7 +52,7 @@ public class ServicoDoFechamentoDaMaleta {
     public record Valores(BigDecimal vd, BigDecimal comissaoDosClientes, BigDecimal recebido, BigDecimal pendenciasAReceber) {
     }
 
-    public record LeituraDoFechamento(UUID remessaId, String situacaoDoFechamento, Instant iniciadoEm, Instant concluidoEm,
+    public record LeituraDoFechamento(UUID remessaId, String codigoDaMaleta, String situacaoDoFechamento, Instant iniciadoEm, Instant concluidoEm,
             List<LinhaDaPeca> pecas, Valores valores) {
     }
 
@@ -210,8 +210,12 @@ public class ServicoDoFechamentoDaMaleta {
             pecas.add(new LinhaDaPeca(produto, (String) l.get("nome"), enviadas, retornos, vendidas, comClientes, esperado, bipadas,
                     bipadas - esperado, ((Number) l.get("devolvidas")).intValue(), pecasComClientes(remessaId, produto)));
         }
-        return new LeituraDoFechamento(remessaId, (String) f.get(0).get("situacao"), instante(f.get(0).get("iniciado_em")),
+        return new LeituraDoFechamento(remessaId, codigoDaMaleta(remessaId), (String) f.get(0).get("situacao"), instante(f.get(0).get("iniciado_em")),
                 instante(f.get(0).get("concluido_em")), pecas, valores(remessaId));
+    }
+
+    private String codigoDaMaleta(UUID remessaId) {
+        return jdbc.queryForObject("SELECT codigo FROM corona.remessas WHERE id = ?", String.class, remessaId);
     }
 
     private static Instant instante(Object o) {

@@ -318,6 +318,7 @@ export function criarApiDoVendas(opcoes: OpcoesDaApi): ApiDoVendas {
       case 'consignado.estornarAcerto':
       case 'consignado.estornarRecibo':
       case 'consignado.pesquisar':
+      case 'consignado.relatorio':
         // Só existem no banco do computador (tarefa 9.2).
         return Promise.resolve({
           ok: false,

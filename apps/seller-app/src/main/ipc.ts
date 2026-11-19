@@ -1,8 +1,10 @@
 import { ipcMain, type IpcMainInvokeEvent } from 'electron';
 import { CANAIS, type EstadoDaSincronizacao } from '../shared/ponte';
 import { validarChamada, validarEntrada, validarNovaSenha } from '../shared/validacao';
+import { validarPrepararWhatsapp, validarSalvarRelatorio } from '../shared/validacao-do-consignado';
 import type { ServicoDeAtualizacao } from '@corona/conexao-segura';
 import { guardarIdioma, lerIdiomaGuardado } from './idioma-guardado';
+import type { SaidaDosRelatorios } from './saida-dos-relatorios';
 import type { ServicoDeSessao } from './servico-de-sessao';
 
 /**
@@ -91,5 +93,31 @@ export function registrarSincronizacao(
   ipcMain.handle(CANAIS.sincronizacaoEstado, (e: IpcMainInvokeEvent) => {
     if (!remetenteConfiavel(e)) return Promise.reject(new Error('Chamada recusada.'));
     return Promise.resolve(motor.estado());
+  });
+}
+
+/**
+ * Imprimir, salvar em PDF e preparar o WhatsApp do relatório que está na tela (tarefa 9.3). A saída é criada para a janela que
+ * pediu (é dela o PDF e a impressão); a tela só manda o nome sugerido, o telefone do cliente e a mensagem curta.
+ */
+export function registrarRelatorios(
+  criarSaida: (e: IpcMainInvokeEvent) => SaidaDosRelatorios,
+  remetenteConfiavel: (e: IpcMainInvokeEvent) => boolean,
+): void {
+  ipcMain.handle(CANAIS.relatorioImprimir, (e: IpcMainInvokeEvent) => {
+    if (!remetenteConfiavel(e)) return Promise.reject(new Error('Chamada recusada.'));
+    return criarSaida(e).imprimir();
+  });
+  ipcMain.handle(CANAIS.relatorioSalvarPdf, (e: IpcMainInvokeEvent, dados: unknown) => {
+    if (!remetenteConfiavel(e)) return Promise.reject(new Error('Chamada recusada.'));
+    const v = validarSalvarRelatorio(dados);
+    if (!v) return Promise.resolve({ ok: false as const, motivo: 'erro' as const });
+    return criarSaida(e).salvarEmPdf(v.nome);
+  });
+  ipcMain.handle(CANAIS.relatorioWhatsapp, (e: IpcMainInvokeEvent, dados: unknown) => {
+    if (!remetenteConfiavel(e)) return Promise.reject(new Error('Chamada recusada.'));
+    const v = validarPrepararWhatsapp(dados);
+    if (!v) return Promise.resolve({ ok: false as const, motivo: 'erro' as const });
+    return criarSaida(e).prepararWhatsapp(v.telefone, v.mensagem, v.nome, v.semNumero);
   });
 }

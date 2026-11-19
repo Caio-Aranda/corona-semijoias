@@ -3,6 +3,7 @@
  * ids, quantidades, formas e valores que ela digitou. O computador faz a prévia das contas (as mesmas fórmulas do servidor) e o
  * servidor recalcula tudo; a tela nunca manda total, preço nem representante.
  */
+import type { PedidoDeRelatorio } from './relatorios-do-consignado';
 
 /** As quatro formas da §23.8 (sem cheque, sem boleto, sem crédito parcelado). */
 export const FORMAS_DO_CONSIGNADO = ['DINHEIRO', 'PIX', 'DEBITO', 'CREDITO'] as const;
@@ -163,7 +164,9 @@ export type PedidoDoConsignado =
   | { operacao: 'consignado.pagamento'; pagamento: PagamentoDoConsignadoParaEnviar }
   | { operacao: 'consignado.estornarAcerto'; id: string; acertoId: string; motivo: string }
   | { operacao: 'consignado.estornarRecibo'; id: string; reciboId: string; motivo: string }
-  | { operacao: 'consignado.pesquisar'; texto: string };
+  | { operacao: 'consignado.pesquisar'; texto: string }
+  /** Monta um relatório do banco local (tarefa 9.3; §23.11). */
+  | { operacao: 'consignado.relatorio'; relatorio: PedidoDeRelatorio };
 
 export const OPERACOES_DO_CONSIGNADO = [
   'consignado.painel',
@@ -194,4 +197,5 @@ export const OPERACOES_DO_CONSIGNADO = [
   'consignado.estornarAcerto',
   'consignado.estornarRecibo',
   'consignado.pesquisar',
+  'consignado.relatorio',
 ] as const satisfies readonly PedidoDoConsignado['operacao'][];

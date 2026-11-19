@@ -910,7 +910,7 @@ Mudança vinda do teste de uso de 18/11/2026 na praça do representante (Ponta P
 | **Representante** | Quem usa o Corona Vendas. Recebe maletas e atende os clientes da praça. No print: "Promotor". |
 | **Cliente** | Quem pega peças da maleta para revender, em consignado. No print: "Vendedora". O cliente não acessa o sistema. |
 | **Praça** | Cidade ou região do representante (ex.: "PONTA PORÃ - MS"). |
-| **Maleta** | Peças montadas pela Lucia, com **código único**. Um representante pode ter várias. |
+| **Maleta** | Peças montadas pela Lucia, com **código único** gerado pelo servidor em sequência simples (`0001`, `0002`...; texto, único sem diferenciar maiúsculas; as maletas que já existiam recebem pela ordem de criação). Um representante pode ter várias. |
 | **Código do produto** | O **código do fornecedor** (tipo `FORNECEDOR` do ADR-0007): é o que se bipa e o que aparece em todas as telas. Peças iguais têm o mesmo código; bipar de novo soma 1. |
 | **Nota (pedido)** | Tudo o que **um** cliente levou em **uma** saída. Número `semana-sequência`, ex.: `0000065-32`. |
 | **Acerto (cobrança)** | O retorno do cliente: devolve o que não vendeu e paga o vendido menos a comissão. |
@@ -1053,7 +1053,11 @@ Em todo relatório e tela de informação: **DX, DV e VD** (valores) e **Itens D
 | Situação da maleta | Representante | Peças na maleta, com clientes (com quem) e vendidas. |
 | Fechamento da maleta | Lucia | §23.10. |
 
-Valores em Real, com Dólar e Guarani abaixo, pela cotação do dia de cada lançamento (ADR-0006).
+Valores em Real, com Dólar e Guarani abaixo, pela cotação do dia de cada lançamento (ADR-0006). Sem cotação para o lançamento, só o Real e o texto "Sem cotação". Onde um total soma lançamentos de dias diferentes (Situação do cliente, Totais da semana, Situação da maleta), cada lançamento é convertido pela sua cotação e os resultados se somam; faltando a cotação de algum, o total sai só em Real.
+
+**Como saem (Corona Vendas, tarefa 9.3):** cada relatório é montado do banco local (sem internet), com as mesmas fórmulas de `packages/shared/consignado`, e a mesma folha serve para **imprimir**, **salvar em PDF** e **preparar o WhatsApp**. Preparar o WhatsApp = o sistema guarda o PDF numa pasta (Documentos › Corona Vendas › Relatórios), mostra a pasta e abre a conversa do cliente (`https://wa.me/<número>?text=...`, no navegador padrão) com uma mensagem curta pronta; **o representante anexa o PDF e envia, nada é enviado sozinho**. Abrir o WhatsApp precisa de internet; sem ela o PDF fica guardado e a tela avisa. Os relatórios do próprio representante (Totais da semana, Situação da maleta) abrem o WhatsApp sem número, e ele escolhe a conversa. Cabeçalho de todos: Representante e Praça (a praça do cadastro do representante, que chega com as maletas). A Nota de saída é gerada de novo a cada Reposição na semana atual.
+
+**Tam./Ton. fora por enquanto:** o produto não tem esse campo; a coluna sai das telas e dos relatórios (não criar campo novo sem decisão).
 
 ### 23.12 Fora desta versão
 

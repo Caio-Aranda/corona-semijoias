@@ -48,7 +48,7 @@ public class NotaDeRemessaController {
             BigDecimal totalEmGuarani) {
     }
 
-    public record NotaDeRemessa(String loja, UUID remessaId, String numero, String tipo, String status, boolean cancelada,
+    public record NotaDeRemessa(String loja, UUID remessaId, String codigo, String numero, String tipo, String status, boolean cancelada,
             String motivoDoCancelamento, Pessoa vendedor, String praca, Semana semana, Instant enviadaEm,
             List<ItemDaNota> itens, int totalPecas, BigDecimal totalValor, CotacaoDaNota cotacao) {
     }
@@ -68,7 +68,7 @@ public class NotaDeRemessaController {
     @Transactional(readOnly = true)
     public NotaDeRemessa nota(@PathVariable UUID id) {
         var achadas = jdbc.queryForList("""
-                SELECT r.id, r.tipo, r.status, r.motivo_cancelamento, r.enviada_em, r.vendedor_id, v.codigo, v.nome AS vendedor,
+                SELECT r.id, r.codigo AS codigo_da_maleta, r.tipo, r.status, r.motivo_cancelamento, r.enviada_em, r.vendedor_id, v.codigo, v.nome AS vendedor,
                        pr.nome AS praca, s.id AS semana_id, s.numero AS semana, s.inicio, s.fim, """ + SqlDaMaleta.NUMERO + """
                         AS numero
                   FROM corona.remessas r JOIN corona.vendedores v ON v.id = r.vendedor_id
@@ -99,7 +99,7 @@ public class NotaDeRemessaController {
         BigDecimal total = Dinheiro.arredondar(itens.stream().map(ItemDaNota::subtotal).reduce(BigDecimal.ZERO, BigDecimal::add));
         Instant enviadaEm = enviada.toInstant();
         CotacaoDaNota cotacao = cotacoes.paraLancamento(enviadaEm).map(c -> daNota(c, total)).orElse(null);
-        return new NotaDeRemessa(LOJA, id, (String) r.get("numero"), (String) r.get("tipo"), status,
+        return new NotaDeRemessa(LOJA, id, (String) r.get("codigo_da_maleta"), (String) r.get("numero"), (String) r.get("tipo"), status,
                 "CANCELADA".equals(status), (String) r.get("motivo_cancelamento"),
                 new Pessoa((UUID) r.get("vendedor_id"), ((Number) r.get("codigo")).intValue(), (String) r.get("vendedor")),
                 (String) r.get("praca"), new Semana((UUID) r.get("semana_id"), ((Number) r.get("semana")).intValue(),

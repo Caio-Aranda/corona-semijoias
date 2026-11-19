@@ -446,3 +446,175 @@ tr.consignado-linha[tabindex]:focus-visible {
   gap: var(--espaco-3);
   align-items: center;
 }
+
+/* --- Relatórios do consignado ao cliente (tarefa 9.3; §23.11). Folha branca, texto escuro; no papel só a folha sai. --- */
+.relatorio-raiz {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  overflow: auto;
+  background: var(--cor-fundo-suave);
+  padding: var(--espaco-4);
+}
+
+.relatorio-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-3);
+  max-width: 900px;
+  margin: 0 auto var(--espaco-3);
+}
+
+.relatorio-aviso-de-saida {
+  max-width: 900px;
+  margin: 0 auto var(--espaco-3);
+}
+
+.relatorio-folha {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: var(--espaco-8);
+  background: #ffffff;
+  color: #111111;
+  border: 1px solid var(--cor-borda);
+  font: 0.9375rem / 1.45 var(--fonte-dados);
+}
+
+.relatorio-folha table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--espaco-3) 0;
+}
+
+.relatorio-folha th,
+.relatorio-folha td {
+  padding: 0.3rem 0.4rem;
+  border-bottom: 1px solid #cfc6b6;
+  text-align: left;
+  vertical-align: top;
+  font-size: 0.875rem;
+}
+
+.relatorio-folha th {
+  border-bottom: 2px solid #111111;
+  font-weight: 700;
+}
+
+.relatorio-folha .cs-numero {
+  text-align: right;
+}
+
+.relatorio-loja {
+  margin: 0;
+  color: var(--cor-ouro-escuro);
+  font: 700 1.5rem / 1.1 var(--fonte-marca);
+}
+
+.relatorio-titulo {
+  margin: 0.15rem 0 0.4rem;
+  font: 700 1.5rem / 1.2 var(--fonte-dados);
+  color: #111111;
+}
+
+.relatorio-subtitulo,
+.relatorio-linha {
+  margin: 0.2rem 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.5rem;
+}
+
+.relatorio-secao {
+  margin: var(--espaco-4) 0 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111111;
+}
+
+.relatorio-dados,
+.relatorio-conta {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.2rem 1rem;
+  margin: var(--espaco-3) 0;
+}
+
+.relatorio-dados dt,
+.relatorio-conta dt {
+  font-weight: 700;
+}
+
+.relatorio-dados dd,
+.relatorio-conta dd {
+  margin: 0;
+}
+
+.relatorio-conta dd {
+  text-align: right;
+}
+
+.relatorio-folha .cs-valor__outras {
+  display: block;
+  color: #333333;
+  font-size: 0.8125rem;
+}
+
+.relatorio-assinaturas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  margin-top: 3.5rem;
+  text-align: center;
+  font-size: 0.875rem;
+}
+
+.relatorio-assinatura-linha {
+  display: block;
+  height: 2.5rem;
+  border-bottom: 1px solid #111111;
+  margin-bottom: 0.3rem;
+}
+
+.relatorio-aviso {
+  margin-top: var(--espaco-4);
+  color: #333333;
+  font-size: 0.8125rem;
+}
+
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
+@media print {
+  html,
+  body {
+    background: #ffffff;
+  }
+  /* Só a folha sai no papel e no PDF: a tela do aplicativo some. */
+  #raiz {
+    display: none !important;
+  }
+  .relatorio-raiz {
+    position: static;
+    inset: auto;
+    overflow: visible;
+    padding: 0;
+    background: #ffffff;
+  }
+  .relatorio-acoes,
+  .relatorio-aviso-de-saida {
+    display: none !important;
+  }
+  .relatorio-folha {
+    max-width: none;
+    padding: 0;
+    border: 0;
+  }
+  .relatorio-folha tr {
+    break-inside: avoid;
+  }
+  .relatorio-assinaturas {
+    break-inside: avoid;
+  }
+}

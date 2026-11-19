@@ -20,8 +20,8 @@ export const ES_TEXTOS_DE_CONSIGNADO: NoMesmoFormato<typeof PT_TEXTOS_DE_CONSIGN
       '¿Volvió la maleta? Elija la maleta y lea el código de cada pieza que llegó. El sistema compara con lo que debía estar en la maleta y muestra la diferencia. El acerto en dinero con el representante no pasa por aquí.',
     escolher: 'Maleta que volvió',
     escolha: 'Elija la maleta',
-    nome: (representante: string, semana: number, enviadaEm: string) =>
-      `Maleta de ${representante}, semana ${semana}${enviadaEm ? `, enviada el ${enviadaEm}` : ''}`,
+    nome: (codigo: string, representante: string, semana: number, enviadaEm: string) =>
+      `Maleta ${codigo}, de ${representante}, semana ${semana}${enviadaEm ? `, enviada el ${enviadaEm}` : ''}`,
     fechadaNaLista: ' (ya cerrada)',
     abrir: 'Abrir el cierre',
     nenhuma: 'No hay maleta enviada para cerrar.',
@@ -60,7 +60,8 @@ export const ES_TEXTOS_DE_CONSIGNADO: NoMesmoFormato<typeof PT_TEXTOS_DE_CONSIGN
       voltar: 'Todavía no',
     },
     concluiu: 'Cierre concluido. Las piezas leídas volvieron al stock y la maleta está cerrada.',
-    maletaDoFechamento: (representante: string) => `Maleta de ${representante}`,
+    maletaDoFechamento: (codigo: string, representante: string) =>
+      `Maleta ${codigo}, de ${representante}`,
   },
   notas: {
     titulo: 'Notas de los clientes',

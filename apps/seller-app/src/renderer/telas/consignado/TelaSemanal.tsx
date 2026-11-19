@@ -7,6 +7,7 @@ import { Campo, JanelaDeConfirmacao } from '../../componentes-do-vendedor';
 import { IndicadorDeEnvio } from '../../IndicadorDeEnvio';
 import { SeletorDeIdioma } from '../../SeletorDeIdioma';
 import { TEXTOS } from '../../textos';
+import { BotaoDeRelatorio } from './Relatorio';
 import { classeDaSituacao, dia, porCento, reais, situacaoNaTela, useConsulta } from './apoio';
 
 export type DestinoDoConsignado =
@@ -164,6 +165,11 @@ export function TelaSemanal({
               <p>
                 <strong>{T.representante}:</strong> {painel.representante ?? nome ?? ''}
               </p>
+              {painel.praca ? (
+                <p>
+                  <strong>{T.praca}:</strong> {painel.praca}
+                </p>
+              ) : null}
               <p>
                 <strong>{T.situacao}:</strong>{' '}
                 {painel.semana.situacao === 'EM_ANDAMENTO' ? T.emAndamento : T.fechada}
@@ -315,6 +321,11 @@ export function TelaSemanal({
                 {cotacao.aviso ? (
                   <p className="vendas-texto vendas-texto--pequeno">{cotacao.aviso}</p>
                 ) : null}
+                <BotaoDeRelatorio
+                  ponte={ponte}
+                  pedido={{ tipo: 'TOTAIS_DA_SEMANA', semanaId: painel.semana.id }}
+                  rotulo={TEXTOS.consignado.relatorios.abrir.totaisDaSemana}
+                />
               </section>
             )}
           </>

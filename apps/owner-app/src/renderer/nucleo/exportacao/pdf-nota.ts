@@ -37,6 +37,8 @@ const ALTURA_DO_FIM = 190;
 
 export interface NotaParaPdf {
   loja: string;
+  /** O código da maleta (0007), que a Lucia e o representante falam; vazio em nota antiga. */
+  codigo?: string;
   numero: string;
   vendedor: string;
   praca: string;
@@ -49,6 +51,11 @@ export interface NotaParaPdf {
   totalPecas: string;
   totalValor: string;
   cotacao: { data: string; totalEmDolar: string; totalEmGuarani: string } | null;
+}
+
+/** "0007 (S12-V7-2)": o código da maleta e, entre parênteses, o número longo de antes. */
+function rotuloDaMaleta(nota: NotaParaPdf): string {
+  return nota.codigo ? `${nota.codigo} (${nota.numero})` : nota.numero;
 }
 
 function reais(valor: string): string {
@@ -140,7 +147,7 @@ export function gerarPdfDaNota(nota: NotaParaPdf): Uint8Array {
         }
       }
       y -= 22;
-      texto(MARGEM, y, `${T.maleta}: ${nota.numero}`, true, 11);
+      texto(MARGEM, y, `${T.maleta}: ${rotuloDaMaleta(nota)}`, true, 11);
       y -= 16;
       texto(MARGEM, y, `${T.vendedor}: ${nota.vendedor}`);
       texto(MARGEM + 300, y, `${T.praca}: ${nota.praca}`);
@@ -153,7 +160,7 @@ export function gerarPdfDaNota(nota: NotaParaPdf): Uint8Array {
     } else {
       y -= 12;
       texto(MARGEM, y, `${nota.loja} - ${T.titulo}`, true, 10);
-      aDireita(LARGURA - MARGEM, y, `${T.maleta}: ${nota.numero}`, true, 10);
+      aDireita(LARGURA - MARGEM, y, `${T.maleta}: ${rotuloDaMaleta(nota)}`, true, 10);
       if (nota.cancelada) texto(MARGEM + 250, y, T.cancelada, true, 10);
       y -= 24;
     }
@@ -249,6 +256,7 @@ export function lerNota(bruto: unknown): NotaParaPdf | null {
   const tipo = txt(n.tipo);
   return {
     loja: txt(n.loja) || 'Corona Semijoias',
+    codigo: txt(n.codigo),
     numero: txt(n.numero),
     vendedor: txt(obj(n.vendedor).nome),
     praca: txt(n.praca),
