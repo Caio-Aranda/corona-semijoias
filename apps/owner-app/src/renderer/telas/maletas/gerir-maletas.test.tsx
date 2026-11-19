@@ -21,6 +21,7 @@ vi.mock('../../nucleo/arquivos', async (original) => ({
 
 const NOTA = {
   loja: 'Corona Semijoias',
+  codigo: '0007',
   numero: 'S12-V7-1',
   vendedor: { id: '8f14e45f-ceea-4672-a1b9-3a1a0f7c4d11', codigo: 7, nome: 'Joana Representante' },
   praca: 'Centro',
@@ -87,6 +88,7 @@ const PRODUTOS: Record<string, unknown> = {
 
 const maletaEnviada = (status = 'ENVIADA') => ({
   id: ID_MALETA,
+  codigo: '0007',
   version: 3,
   vendedorId: ID_VEND,
   vendedorNome: 'Joana Representante',
@@ -243,6 +245,8 @@ describe('Lista de maletas', () => {
     )!;
     expect(within(linha).getByText('Enviada')).toBeTruthy();
     expect(within(linha).getByText('Maleta nova')).toBeTruthy();
+    // O código da maleta (0007), gerado pelo servidor, aparece na lista.
+    expect(within(linha).getByText('0007')).toBeTruthy();
     await u.selectOptions(screen.getByLabelText('Situação'), 'Cancelada');
     await waitFor(() => expect(ultima(m, 'maletas.listar')).toMatchObject({ status: 'CANCELADA' }));
   });
@@ -598,6 +602,8 @@ describe('Imprimir nota', () => {
     });
     const pdf = new TextDecoder('latin1').decode(entregues[0]!.bytes);
     expect(pdf).toContain('Anel Solitário');
+    // A nota traz o código da maleta, com o número longo entre parênteses.
+    expect(pdf).toContain('0007 \\(S12-V7-1\\)');
     expect(
       await screen.findByText(/A nota nota-da-maleta-S12-V7-1.pdf foi preparada/),
     ).toBeTruthy();

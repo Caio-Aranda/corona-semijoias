@@ -143,6 +143,7 @@ export const PT_TEXTOS_DE_MALETAS = {
     imprimir: 'Imprimir nota',
     montarOutra: 'Montar outra maleta',
     ficha: {
+      codigo: 'Código',
       vendedor: 'Representante',
       semana: 'Semana',
       praca: 'Praça',
@@ -175,6 +176,7 @@ export const PT_TEXTOS_DE_MALETAS = {
       legenda: 'Maletas',
       vazia: 'Nenhuma maleta com esses filtros.',
       colunas: {
+        codigo: 'Código',
         vendedor: 'Representante',
         semana: 'Semana',
         tipo: 'Tipo',

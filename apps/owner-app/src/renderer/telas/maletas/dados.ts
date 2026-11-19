@@ -19,6 +19,8 @@ export interface ItemDaMaleta {
 
 export interface Maleta {
   id: string;
+  /** O código da maleta (0001, 0002...), gerado pelo servidor. */
+  codigo: string;
   version: number;
   vendedorId: string;
   vendedorNome: string;
@@ -57,6 +59,7 @@ export function lerMaleta(bruto: unknown): Maleta | null {
   }
   return {
     id: o.id,
+    codigo: texto(o.codigo),
     version: inteiro(o.version),
     vendedorId: texto(o.vendedorId),
     vendedorNome: texto(o.vendedorNome),

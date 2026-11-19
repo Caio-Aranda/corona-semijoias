@@ -41,6 +41,7 @@ const pagina = (itens: unknown[]) => ({
 
 const maleta = (status: string) => ({
   id: ID_MALETA,
+  codigo: '0007',
   version: 3,
   vendedorId: ID_VEND,
   vendedorNome: 'Joana Representante',
@@ -240,7 +241,10 @@ describe('Fechamento da maleta (§23.10)', () => {
     });
     const u = await abrirPeloMenu(m, T.menu.fechamento);
 
-    // 1. Escolhe a maleta que voltou.
+    // 1. Escolhe a maleta que voltou (a lista mostra o código da maleta).
+    expect(
+      await screen.findByRole('option', { name: /Maleta 0007, de Joana Representante/ }),
+    ).toBeInTheDocument();
     await u.selectOptions(await screen.findByLabelText(T.fechamento.escolher), ID_MALETA);
     await u.click(screen.getByRole('button', { name: T.fechamento.abrir }));
 
