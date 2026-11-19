@@ -59,6 +59,11 @@ import {
   type RascunhoDoPedido,
 } from '../sync/operacoes-do-consignado';
 import type { Falha, Resultado } from '../tipos';
+
+/** Texto em minúsculas e sem acento, para a busca achar "Jose", "José" e "JOSÉ" do mesmo jeito. */
+export function semAcento(texto: string): string {
+  return texto.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+}
 import { pecaDoProduto } from './peca-do-produto';
 import { RelatoriosDoConsignado } from './relatorios-do-consignado';
 
@@ -695,7 +700,7 @@ export class ConsultasDoConsignado {
   /** Notas por nome do cliente, número da nota ou código da maleta (Cobrança e Pesquisar). */
   private notas(texto: string, soEmAberto: boolean): LinhaDeNotaNaBusca[] {
     const db = this.db();
-    const t = texto.trim().toLowerCase();
+    const t = semAcento(texto.trim());
     const todas = db
       .prepare(
         `SELECT n.id, n.semana_id, n.sequencia, n.cliente_id, n.saida_em, n.data_cobranca, n.nota_origem_id,
@@ -717,9 +722,9 @@ export class ConsultasDoConsignado {
       if (soEmAberto && acerto) continue;
       if (
         t !== '' &&
-        !(n.cliente_nome ?? '').toLowerCase().includes(t) &&
+        !semAcento(n.cliente_nome ?? '').includes(t) &&
         !numero.includes(t) &&
-        !maletas.some((m) => m.toLowerCase().includes(t))
+        !maletas.some((m) => semAcento(m).includes(t))
       )
         continue;
       const dx = this.valorDx(n.id);
@@ -739,7 +744,7 @@ export class ConsultasDoConsignado {
   }
 
   private pesquisar(texto: string): ResultadoDaPesquisa {
-    const t = texto.trim().toLowerCase();
+    const t = semAcento(texto.trim());
     return {
       notas: this.notas(texto, false),
       clientes: t === '' ? [] : this.clientes(texto).slice(0, 20),
@@ -748,7 +753,7 @@ export class ConsultasDoConsignado {
           ? []
           : maletasEmUso(this.db())
               .map((id) => ({ id, codigo: codigoDaMaleta(this.db(), id) }))
-              .filter((m) => m.codigo.toLowerCase().includes(t)),
+              .filter((m) => semAcento(m.codigo).includes(t)),
     };
   }
 
@@ -766,26 +771,35 @@ export class ConsultasDoConsignado {
 
   private clientes(busca: string): ClienteDaLista[] {
     const db = this.db();
-    const t = busca.trim().toLowerCase();
+    // Sem diferenciar acento nem maiúscula ("jose" acha "José"): o filtro é feito aqui, não no SQL (o LIKE do SQLite não
+    // conhece acento).
+    const t = semAcento(busca.trim());
     const digitos = t.replace(/\D/g, '');
-    const escapado = t.replace(/[\\%_]/g, (c) => `\\${c}`);
-    const linhas = db
+    const todas = db
       .prepare(
-        `SELECT id, nome, telefone, whatsapp, endereco_cidade, foto_hash FROM clientes
+        `SELECT id, nome, documento, telefone, whatsapp, endereco_cidade, foto_hash FROM clientes
           WHERE deleted_at IS NULL AND ativo IS NOT 0
-            AND (? = '' OR lower(nome) LIKE '%' || ? || '%' ESCAPE '\\'
-                 OR lower(coalesce(documento, '')) LIKE '%' || ? || '%' ESCAPE '\\'
-                 OR (? <> '' AND replace(replace(replace(coalesce(telefone, '') || coalesce(whatsapp, ''), ' ', ''), '-', ''), '(', '') LIKE '%' || ? || '%'))
-          ORDER BY lower(nome), id LIMIT 200`,
+          ORDER BY lower(nome), id`,
       )
-      .all(t, escapado, escapado, digitos, digitos) as {
+      .all() as {
       id: string;
       nome: string;
+      documento: string | null;
       telefone: string | null;
       whatsapp: string | null;
       endereco_cidade: string | null;
       foto_hash: string | null;
     }[];
+    const linhas = todas
+      .filter(
+        (c) =>
+          t === '' ||
+          semAcento(c.nome).includes(t) ||
+          semAcento(c.documento ?? '').includes(t) ||
+          (digitos !== '' &&
+            `${c.telefone ?? ''}${c.whatsapp ?? ''}`.replace(/[ \-(]/g, '').includes(digitos)),
+      )
+      .slice(0, 200);
     return linhas.map((c) => ({
       id: c.id,
       nome: c.nome,

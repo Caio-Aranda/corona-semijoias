@@ -298,12 +298,12 @@ describe('Situação do cliente', () => {
     chamar({ operacao: 'consignado.semanaNova', id: idDeTeste(10), numero: 65 });
     pedido([['A-1', 2]]);
     const r = relatorio<SituacaoDoCliente>({ tipo: 'SITUACAO_DO_CLIENTE', clienteId: cliente });
-    expect(r.jaVendeu.map((n) => n.situacao).sort()).toEqual(['FECHADO', 'PENDENTE']);
-    // Itens DX/DV/VD das duas notas acertadas: 1+26, 0+15, 1+11.
-    expect([r.itensDx, r.itensDv, r.itensVd]).toEqual([27, 15, 12]);
-    expect(r.valorVd.real).toBe('2808.10');
-    expect(r.comissao.real).toBe('693.00');
-    expect(r.pago.real).toBe('1770.00');
+    // "O que já vendeu" lista só as notas Fechadas; a Pendente aparece à parte, com quanto ainda deve (§23.11).
+    expect(r.jaVendeu.map((n) => n.situacao)).toEqual(['FECHADO']);
+    expect(r.pendentes).toHaveLength(1);
+    expect(r.pendentes[0]).toMatchObject({ situacao: 'PENDENTE' });
+    expect(r.pendentes[0]?.ficouDevendo.real).toBe('345.10');
+    expect(r.pago.real).toBe(r.jaVendeu[0]?.pago);
     expect(r.comOCliente).toHaveLength(1);
     expect(r.comOCliente[0]).toMatchObject({ codigo: 'A-1', quantidade: 2, maleta: '0007' });
     expect(r.itensComOCliente).toBe(2);

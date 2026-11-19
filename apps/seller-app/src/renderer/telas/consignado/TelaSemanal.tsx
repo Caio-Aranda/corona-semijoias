@@ -7,7 +7,12 @@ import { Campo, JanelaDeConfirmacao } from '../../componentes-do-vendedor';
 import { IndicadorDeEnvio } from '../../IndicadorDeEnvio';
 import { SeletorDeIdioma } from '../../SeletorDeIdioma';
 import { TEXTOS } from '../../textos';
-import { BotaoDeRelatorio } from './Relatorio';
+import { BotaoDeRelatorio, useRelatorioDaTela, ValorDoRelatorio } from './Relatorio';
+import type {
+  TotaisDaSemanaNoRelatorio,
+  ValorNasTresMoedas,
+} from '../../../shared/relatorios-do-consignado';
+import type { CotacaoParaTela } from '../../moedas';
 import { classeDaSituacao, dia, porCento, reais, situacaoNaTela, useConsulta } from './apoio';
 
 export type DestinoDoConsignado =
@@ -273,60 +278,12 @@ export function TelaSemanal({
                 <p className="vendas-texto vendas-texto--pequeno">{T.dica}</p>
               </>
             ) : (
-              <section className="consignado-totais" aria-label={T.totaisLegenda}>
-                <dl>
-                  <dt>{T.totais.levado}</dt>
-                  <dd>
-                    <Dinheiro reais={painel.totais.valorDx} cotacao={cotacao.cotacao} />
-                  </dd>
-                  <dt>{T.totais.devolvido}</dt>
-                  <dd>
-                    <Dinheiro reais={painel.totais.valorDv} cotacao={cotacao.cotacao} />
-                  </dd>
-                  <dt>{T.totais.vendido}</dt>
-                  <dd>
-                    <Dinheiro reais={painel.totais.valorVd} cotacao={cotacao.cotacao} />
-                  </dd>
-                  <dt>
-                    {T.totais.itens(
-                      painel.totais.itensDx,
-                      painel.totais.itensDv,
-                      painel.totais.itensVd,
-                    )}
-                  </dt>
-                  <dd />
-                  <dt>{T.totais.comissao}</dt>
-                  <dd>
-                    <Dinheiro reais={painel.totais.comissao} cotacao={cotacao.cotacao} />
-                  </dd>
-                  <dt>{T.totais.liquido}</dt>
-                  <dd>
-                    <Dinheiro reais={painel.totais.liquido} cotacao={cotacao.cotacao} />
-                  </dd>
-                  <dt>{T.totais.recebido}</dt>
-                  <dd>
-                    <Dinheiro reais={painel.totais.recebido} cotacao={cotacao.cotacao} />
-                  </dd>
-                  {(['DINHEIRO', 'PIX', 'DEBITO', 'CREDITO'] as const).map((f) => (
-                    <div key={f} className="consignado-totais__forma">
-                      <dt>{TEXTOS.consignado.formas[f]}</dt>
-                      <dd>{reais(painel.totais.recebidoPorForma[f])}</dd>
-                    </div>
-                  ))}
-                  <dt>{T.totais.pendente}</dt>
-                  <dd>
-                    <Dinheiro reais={painel.totais.pendente} cotacao={cotacao.cotacao} />
-                  </dd>
-                </dl>
-                {cotacao.aviso ? (
-                  <p className="vendas-texto vendas-texto--pequeno">{cotacao.aviso}</p>
-                ) : null}
-                <BotaoDeRelatorio
-                  ponte={ponte}
-                  pedido={{ tipo: 'TOTAIS_DA_SEMANA', semanaId: painel.semana.id }}
-                  rotulo={TEXTOS.consignado.relatorios.abrir.totaisDaSemana}
-                />
-              </section>
+              <TotaisDaSemana
+                ponte={ponte}
+                painel={painel}
+                cotacao={cotacao.cotacao}
+                aviso={cotacao.aviso}
+              />
             )}
           </>
         ) : null}
@@ -345,5 +302,64 @@ export function TelaSemanal({
         </JanelaDeConfirmacao>
       ) : null}
     </div>
+  );
+}
+
+/** Os totais da semana: cada lançamento pela cotação do dia dele (ADR-0006); sem isso, a de hoje. */
+function TotaisDaSemana({
+  ponte,
+  painel,
+  cotacao,
+  aviso,
+}: {
+  ponte: PonteDoCorona;
+  painel: PainelDaSemana;
+  cotacao: CotacaoParaTela | null;
+  aviso: string | null;
+}) {
+  const T = TEXTOS.consignado.semanal;
+  const relatorio = useRelatorioDaTela<TotaisDaSemanaNoRelatorio>(
+    ponte,
+    painel.semana ? { tipo: 'TOTAIS_DA_SEMANA', semanaId: painel.semana.id } : null,
+    [painel],
+  );
+  const valor = (reaisDeHoje: string, v: ValorNasTresMoedas | undefined) =>
+    v ? <ValorDoRelatorio v={v} /> : <Dinheiro reais={reaisDeHoje} cotacao={cotacao} />;
+  if (!painel.semana) return null;
+  return (
+    <section className="consignado-totais" aria-label={T.totaisLegenda}>
+      <dl>
+        <dt>{T.totais.levado}</dt>
+        <dd>{valor(painel.totais.valorDx, relatorio?.valorDx)}</dd>
+        <dt>{T.totais.devolvido}</dt>
+        <dd>{valor(painel.totais.valorDv, relatorio?.valorDv)}</dd>
+        <dt>{T.totais.vendido}</dt>
+        <dd>{valor(painel.totais.valorVd, relatorio?.valorVd)}</dd>
+        <dt>
+          {T.totais.itens(painel.totais.itensDx, painel.totais.itensDv, painel.totais.itensVd)}
+        </dt>
+        <dd />
+        <dt>{T.totais.comissao}</dt>
+        <dd>{valor(painel.totais.comissao, relatorio?.comissao)}</dd>
+        <dt>{T.totais.liquido}</dt>
+        <dd>{valor(painel.totais.liquido, relatorio?.valorLiquido)}</dd>
+        <dt>{T.totais.recebido}</dt>
+        <dd>{valor(painel.totais.recebido, relatorio?.recebido)}</dd>
+        {(['DINHEIRO', 'PIX', 'DEBITO', 'CREDITO'] as const).map((f) => (
+          <div key={f} className="consignado-totais__forma">
+            <dt>{TEXTOS.consignado.formas[f]}</dt>
+            <dd>{reais(painel.totais.recebidoPorForma[f])}</dd>
+          </div>
+        ))}
+        <dt>{T.totais.pendente}</dt>
+        <dd>{valor(painel.totais.pendente, relatorio?.pendente)}</dd>
+      </dl>
+      {aviso ? <p className="vendas-texto vendas-texto--pequeno">{aviso}</p> : null}
+      <BotaoDeRelatorio
+        ponte={ponte}
+        pedido={{ tipo: 'TOTAIS_DA_SEMANA', semanaId: painel.semana.id }}
+        rotulo={TEXTOS.consignado.relatorios.abrir.totaisDaSemana}
+      />
+    </section>
   );
 }

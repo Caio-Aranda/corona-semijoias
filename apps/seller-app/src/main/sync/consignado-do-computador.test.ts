@@ -468,6 +468,24 @@ describe('a nota 0000064-21 e a pendência da 0000063-32 (mesmo arquivo de exemp
     ).toThrowError(/motivo/i);
   });
 
+  it('Lançar pagamento com data: um dia que já passou vale; depois de hoje é recusado', () => {
+    const { nova } = cenario();
+    acertar(nova, [], '30', []);
+    const pagar = (data: string) =>
+      chamar<{ cliente: ClienteCompleto }>({
+        operacao: 'consignado.pagamento',
+        pagamento: {
+          id: idDeTeste(13),
+          clienteId: cliente,
+          formas: [{ forma: 'PIX', valor: '10.00' }],
+          data,
+        },
+      });
+    expect(() => pagar('2026-11-20')).toThrowError(/depois de hoje/);
+    const r = pagar('2026-11-05');
+    expect(r.cliente.pagamentos[0]?.pagoEm?.slice(0, 10)).toBe('2026-11-05');
+  });
+
   it('estornar o acerto devolve a nota a Em aberto, desfaz os retornos da maleta e reabre o que o recibo dele quitou', () => {
     const { n, antiga, nova } = cenario();
     const devolvidos = [{ produtoId: produto.A, remessaId: maleta, quantidade: 5 }];
@@ -770,6 +788,10 @@ describe('cliente do representante', () => {
     });
     expect(porNome.notas).toHaveLength(1);
     expect(porNome.clientes).toHaveLength(1);
+    // Sem diferenciar acento nem maiúscula: "ÁNA" acha a mesma cliente.
+    expect(
+      chamar<{ clientes: unknown[] }>({ operacao: 'consignado.pesquisar', texto: 'ÁNA' }).clientes,
+    ).toHaveLength(1);
     expect(
       chamar<{ notas: unknown[] }>({ operacao: 'consignado.pesquisar', texto: '0000007-01' }).notas,
     ).toHaveLength(1);

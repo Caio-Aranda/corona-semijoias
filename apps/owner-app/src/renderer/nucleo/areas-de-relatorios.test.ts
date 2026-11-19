@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { AREAS_DE_RELATORIOS, areaDaRota, cartoesDaArea, rotaDaArea } from './areas-de-relatorios';
-import { MENU, ROTAS, lerRota } from './rotas';
+import { MENU, ROTAS, ehRotaDoAcertoAntigo, lerRota } from './rotas';
 
 const GRUPO = MENU.find((g) => g.titulo === 'Relatórios');
 
@@ -75,5 +75,22 @@ describe('menu de relatórios por área', () => {
     expect(areaDaRota('relatorios/maleta-saldo')).toBe('maletas');
     expect(areaDaRota('cadastros/produtos')).toBeNull();
     expect(areaDaRota('inicio')).toBeNull();
+  });
+
+  it('com o acerto antigo escondido, a área Financeiro não lista os quatro relatórios dele (§7.4)', () => {
+    const escondidos = [
+      'relatorios/financeiro-acertos',
+      'relatorios/financeiro-pendencias',
+      'relatorios/financeiro-esperado-contado',
+      'relatorios/financeiro-comissoes',
+    ];
+    const todos = cartoesDaArea('financeiro').map((c) => c.rota);
+    const visiveis = cartoesDaArea('financeiro', false).map((c) => c.rota);
+    for (const r of escondidos) {
+      expect(todos).toContain(r);
+      expect(visiveis).not.toContain(r);
+      expect(ehRotaDoAcertoAntigo(r as never)).toBe(true);
+    }
+    expect(visiveis).toContain('relatorios/financeiro-caixa');
   });
 });

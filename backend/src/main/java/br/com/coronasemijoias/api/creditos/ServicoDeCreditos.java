@@ -246,7 +246,7 @@ public class ServicoDeCreditos {
     public Resultado transferir(UUID creditoId, UUID vendedorDestino, UUID idDoNovo, UUID usuarioId) {
         UUID id = Validacoes.idDoPedido(idDoNovo);
         if (vendedorDestino == null) {
-            throw Validacoes.recusar("vendedorId", "Escolha o vendedor que vai receber o crédito.");
+            throw Validacoes.recusar("vendedorId", "Escolha o representante que vai receber o crédito.");
         }
         List<Map<String, Object>> achado = jdbc.queryForList("""
                 SELECT cliente_id, vendedor_id, valor, valor_utilizado, situacao FROM corona.creditos_cliente
@@ -266,15 +266,15 @@ public class ServicoDeCreditos {
             throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.CREDITO_JA_TRANSFERIDO_DIFERENTE);
         }
         if (vendedorDestino.equals(c.get("vendedor_id"))) {
-            throw Validacoes.recusar("vendedorId", "O crédito já é deste vendedor. Escolha outro vendedor.");
+            throw Validacoes.recusar("vendedorId", "O crédito já é deste representante. Escolha outro representante.");
         }
         Boolean ativo = jdbc.query("SELECT ativo FROM corona.vendedores WHERE id = ?",
                 rs -> rs.next() ? rs.getBoolean(1) : null, vendedorDestino);
         if (ativo == null) {
-            throw Validacoes.recusar("vendedorId", "Escolha o vendedor que vai receber o crédito.");
+            throw Validacoes.recusar("vendedorId", "Escolha o representante que vai receber o crédito.");
         }
         if (!ativo) {
-            throw Validacoes.recusar("vendedorId", "Este vendedor está desligado. Escolha um vendedor ativo.");
+            throw Validacoes.recusar("vendedorId", "Este representante está desligado. Escolha um representante ativo.");
         }
         BigDecimal saldo = ((BigDecimal) c.get("valor")).subtract((BigDecimal) c.get("valor_utilizado"));
         if (!"ABERTO".equals(c.get("situacao")) || saldo.signum() <= 0) {

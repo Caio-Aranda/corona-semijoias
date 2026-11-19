@@ -18,6 +18,7 @@ import type {
   LinhaDePecaVendida,
   LinhaVendida,
   NotaDeSaida,
+  NotaPendenteDaSituacao,
   PecaComOCliente,
   PecaDaSituacaoDaMaleta,
   PecasVendidasPorCliente,
@@ -339,12 +340,24 @@ export class RelatoriosDoConsignado {
     let itensComOCliente = 0;
     const jaVendeu: SituacaoDoCliente['jaVendeu'] = [];
     const comEle: PecaComOCliente[] = [];
+    const pendentes: NotaPendenteDaSituacao[] = [];
     for (const p of c.pedidos) {
       const n = this.ler<DetalheDaNota>(
         { operacao: 'consignado.nota', id: p.notaId },
         'NOTA_NAO_ENCONTRADA',
       );
-      if (n.acerto) {
+      if (n.acerto && n.situacao !== 'FECHADO') {
+        // Nota acertada que ainda tem saldo: não é "já vendeu" (só as Fechadas, §23.11); entra em "O que falta", com quanto deve.
+        const a = n.acerto;
+        const saldo = c.debitos.find((d) => d.acertoId === a.id)?.saldo ?? '0';
+        pendentes.push({
+          numero: n.numero,
+          situacao: n.situacao,
+          valorDx: a.valorDx,
+          valorVd: a.valorVd,
+          ficouDevendo: um(centavos(saldo), this.taxasDoAcerto(a.id)),
+        });
+      } else if (n.acerto) {
         const a = n.acerto;
         const t = this.taxasDoAcerto(a.id);
         itensDx += a.itensDx;
@@ -398,6 +411,7 @@ export class RelatoriosDoConsignado {
       valorDv: dv.valor(),
       valorVd: vd.valor(),
       jaVendeu,
+      pendentes,
       comissao: comissao.valor(),
       valorLiquido: liquido.valor(),
       pago: pago.valor(),

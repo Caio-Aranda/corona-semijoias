@@ -219,7 +219,7 @@ class ServicoDeAcertosDaNotaTest extends ApoioDoConsignado {
                 volta(k.c(), k.maleta(), 4)), null);
         // Lançar pagamento de 600: 498,10 na 63-32 (mais antiga) e 101,90 na 64-21.
         UUID pagamento = UUID.randomUUID();
-        recibos.lancar(ctx(k.v()), new NovoPagamento(pagamento, k.cliente(), k.s65(), 60, List.of(paga("PIX", "600.00")), null));
+        recibos.lancar(ctx(k.v()), new NovoPagamento(pagamento, k.cliente(), k.s65(), 60, List.of(paga("PIX", "600.00")), null, null));
         assertThat(situacaoDaNota(k.nota63())).isEqualTo("FECHADO");
         assertThat(saldoDoDebito(acerto)).isEqualByComparingTo("1515.10");
 

@@ -259,7 +259,7 @@ Segue o [ADR-0016](decisoes/ADR-0016-consignado-ao-cliente.md) (ajustes da 9.2 n
 - **Telas antigas retiradas** (venda, parcelas, devolução e troca com garantia, crédito, pedir acerto, conferência obrigatória, meus números): fora do menu e das rotas e apagadas do código do app; nada apagado nos bancos.
 - **Servidor:** `GET /api/vendedor/clientes` (e `/{id}`) passa a devolver só os clientes do próprio representante (404 para os de outro), com teste.
 - **Dúvidas novas** (ADR-0016): D11 código da maleta (derivado do identificador, `M-XXXXXX`); D12 praça e Tam./Ton. não chegam ao Corona Vendas.
-- **Não feito:** relatórios imprimíveis e WhatsApp (9.3); data editável no Lançar pagamento; cotação do dia de cada lançamento (a tela usa a de hoje); cenário em `testes-e2e` (não rodado); "a aplicar" na prévia.
+- **Não feito:** relatórios imprimíveis e WhatsApp (9.3); cenário em `testes-e2e` (não rodado); "a aplicar" na prévia.
 
 ## Leva 9: consignado ao cliente, Corona Gestão (tarefa 9.4, issue 225, 19/11/2026)
 
@@ -281,6 +281,18 @@ PR em rascunho até passar tudo localmente (economia de Actions). Branch `feat/c
 - **Acréscimos da orquestradora:** V053 com `remessas.codigo` (`0001`, `0002`...; existentes pela ordem de criação; único sem diferenciar maiúsculas) e `remessas.praca_nome`; pull formato 2 leva as duas colunas (o formato 1 não); migração local 10 (colunas + recarga dirigida de `remessas`, exemplo `banco-v10.sqlite`); código no Corona Vendas no lugar do `M-` provisório (Pesquisar e Cobrança o aceitam), no Corona Gestão (lista, ficha, nota da maleta, Fechamento) e no `GET /api/maletas/{id}/fechamento`; praça no cabeçalho e nos relatórios; coluna Tam./Ton. fora das telas e dos relatórios (D11 e D12 resolvidas).
 - **Testes:** servidor (código em sequência e imutável, pull formato 2 com as colunas novas e formato 1 sem elas); `consignado-relatorios.test.ts` (a nota `0000064-21` número por número nos relatórios, cotação, sem cotação, código e praça); saída (WhatsApp, nome do arquivo, sem internet, sem telefone); folha na tela (pt e es) e o pedido de relatório na ponte.
 - **Não feito / dúvidas:** a tabela de peças mostra preço e sub-total só em Real (os totais saem nas três moedas); relatório da Situação do cliente inclui também as notas Pendentes em "o que já vendeu"; o PDF vem do `printToPDF` do Electron (conferido por teste só até a fronteira; a impressão e o PDF de verdade não foram abertos à mão); o nome da praça é uma cópia no momento em que a maleta nasce.
+
+## Leva 9: consignado ao cliente, ajustes finais (tarefa 9.5, issue 229, 19/11/2026)
+
+PR em rascunho até passar tudo localmente. Branch `fix/consignado-ajustes-finais`, sobre a 9.3 (PR 230, já na `main`).
+
+- **Lançar pagamento com data** (§23.8): o Corona Vendas tem o campo "Data do pagamento" (hoje por padrão, nunca depois de hoje); a operação leva `dataDoPagamento` (opcional; sem ela vale o momento do lançamento, e operações antigas na outbox seguem iguais). O servidor confere de novo, em Brasília, pelo relógio dele: depois de hoje é recusado (`DATA_DO_PAGAMENTO_NO_FUTURO`, 422). Dia que já passou grava `pago_em` ao meio-dia de Brasília desse dia, e a cotação do recibo é a desse dia. Sem migração.
+- **Cotação do lançamento na tela** (ADR-0006): Totais da semana, "quanto deve" da ficha do cliente e o resumo do acerto já salvo usam o relatório do consignado como fonte, com cada lançamento pela cotação do dia dele; enquanto ele não chega, ou se falhar, vale a de hoje. Prévia do acerto e Novo Pedido seguem com a de hoje (o lançamento é agora).
+- **Busca de cliente sem acento** (nome e documento; também em Pesquisar e Cobrança, por nome do cliente e código da maleta): "jose" acha "José".
+- **"Representante"** nas mensagens do servidor (`CodigoErro`, recusas de validação) e nos textos do app (es e pt); códigos intactos.
+- **Corona Gestão:** os quatro relatórios financeiros do acerto antigo (§7.4: Acertos, Pendências, Esperado e contado, Comissões) somem da área Financeiro e as rotas caem no início enquanto `acerto_do_vendedor_visivel` for 0.
+- **Situação do cliente** (item 6): "O que já vendeu" lista só as notas Fechadas e seus totais; as notas acertadas ainda Pendentes aparecem em "O que falta", com quanto cada uma ainda deve.
+- **Não feito:** a data não vale para o pagamento feito dentro do Acerto (continua o momento do acerto); textos de dados antigos (ex.: categorias do caixa "Repasse do vendedor") não mudaram.
 
 ## Corona Gestão: menu Relatórios por área (issue 216, 17/11/2026)
 

@@ -51,6 +51,40 @@ export function ValorDoRelatorio({ v }: { v: ValorNasTresMoedas }) {
   );
 }
 
+/**
+ * O relatório do consignado como fonte dos valores de uma tela: cada lançamento já vem convertido pela cotação do DIA DELE
+ * (ADR-0006), não pela de hoje. Enquanto não chega, ou se não puder ser montado, a tela usa a cotação de hoje.
+ */
+export function useRelatorioDaTela<T extends RelatorioDoConsignado>(
+  ponte: PonteDoCorona,
+  pedido: PedidoDeRelatorio | null,
+  dependencias: readonly unknown[] = [],
+): T | null {
+  const [relatorio, setRelatorio] = useState<T | null>(null);
+  const chave = JSON.stringify(pedido);
+  useEffect(() => {
+    let valida = true;
+    if (!pedido) {
+      setRelatorio(null);
+      return undefined;
+    }
+    void chamar<RelatorioDoConsignado>(ponte, {
+      operacao: 'consignado.relatorio',
+      relatorio: pedido,
+    })
+      .then((r) => {
+        if (valida) setRelatorio(r.ok && r.dados?.tipo === pedido.tipo ? (r.dados as T) : null);
+      })
+      .catch(() => {
+        if (valida) setRelatorio(null);
+      });
+    return () => {
+      valida = false;
+    };
+  }, [ponte, chave, ...dependencias]);
+  return relatorio;
+}
+
 function Linha({ rotulo, children }: { rotulo: string; children: ReactNode }) {
   return (
     <>
@@ -406,6 +440,37 @@ function FolhaDaSituacaoDoCliente({ r }: { r: SituacaoDoCliente }) {
         </Linha>
       </dl>
       <h2 className="relatorio-secao">{T.aFalta}</h2>
+      {r.pendentes.length > 0 ? (
+        <table className="relatorio-tabela">
+          <caption>{T.notasPendentes}</caption>
+          <thead>
+            <tr>
+              <th scope="col">{T.colunas.nota}</th>
+              <th scope="col" className="cs-numero">
+                {T.colunas.dx}
+              </th>
+              <th scope="col" className="cs-numero">
+                {T.colunas.vd}
+              </th>
+              <th scope="col" className="cs-numero">
+                {T.colunas.aindaDeve}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {r.pendentes.map((n) => (
+              <tr key={n.numero}>
+                <td>{n.numero}</td>
+                <td className="cs-numero">{reais(n.valorDx)}</td>
+                <td className="cs-numero">{reais(n.valorVd)}</td>
+                <td className="cs-numero">
+                  <ValorDoRelatorio v={n.ficouDevendo} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : null}
       {r.comOCliente.length === 0 ? (
         <p className="relatorio-linha">{T.nadaComOCliente}</p>
       ) : (

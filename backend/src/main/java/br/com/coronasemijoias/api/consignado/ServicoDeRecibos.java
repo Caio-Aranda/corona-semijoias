@@ -42,7 +42,7 @@ public class ServicoDeRecibos {
     }
 
     public record NovoPagamento(UUID id, UUID clienteId, UUID semanaId, Integer sequencia, List<FormaPaga> formas,
-            BigDecimal pendenciaVista) {
+            BigDecimal pendenciaVista, LocalDate dataDoPagamento) {
     }
 
     public record EstornoDoRecibo(UUID id, UUID reciboId, String motivo) {
@@ -92,6 +92,7 @@ public class ServicoDeRecibos {
         }
         UUID id = Validacoes.idDoPedido(pedido.id());
         BigDecimal total = totalDasFormas(pedido.formas());
+        Instant pagoEm = momentoDoPagamento(ctx, pedido.dataDoPagamento());
         VendedorAtivo.exigir(jdbc, ctx.vendedorId());
         List<UUID> dono = jdbc.queryForList("SELECT vendedor_responsavel_id FROM corona.clientes WHERE id = ? AND deleted_at IS NULL",
                 UUID.class, pedido.clienteId());
@@ -118,7 +119,8 @@ public class ServicoDeRecibos {
         debitos.reaplicarSobras(pedido.clienteId(), tocadas);
         BigDecimal pendencia = debitos.pendenciaDoCliente(pedido.clienteId());
 
-        gravarRecibo(ctx, id, pedido.clienteId(), pedido.semanaId(), pedido.sequencia(), null, total, pedido.formas());
+        gravarRecibo(ctx, id, pedido.clienteId(), pedido.semanaId(), pedido.sequencia(), null, total, pedido.formas(),
+                pagoEm);
         Resultado r = debitos.aplicar(id, pedido.clienteId(), total, tocadas);
         if (r.sobra().signum() > 0) {
             alertas.registrar("PAGAMENTO_ACIMA_DO_DEVIDO", ctx.vendedorId(), "recibos_consignado", id,
@@ -133,13 +135,36 @@ public class ServicoDeRecibos {
     /** Grava o recibo e as formas (usado também pelo acerto). O cliente já está travado. */
     void gravarRecibo(ContextoDoConsignado ctx, UUID id, UUID clienteId, UUID semanaId, int sequencia, UUID acertoId,
             BigDecimal total, List<FormaPaga> formas) {
+        gravarRecibo(ctx, id, clienteId, semanaId, sequencia, acertoId, total, formas, ctx.quando());
+    }
+
+    /**
+     * Data do pagamento escolhida na tela (§23.8: valor, forma e data): vazia = o momento do lançamento; igual ao dia do
+     * lançamento = o próprio momento; outro dia = meio-dia desse dia em Brasília. Nunca depois de hoje (conferido pelo relógio do
+     * servidor, não pelo do computador). A cotação do pagamento é a desse dia (ADR-0006).
+     */
+    Instant momentoDoPagamento(ContextoDoConsignado ctx, LocalDate data) {
+        if (data == null) {
+            return ctx.quando();
+        }
+        if (data.isAfter(LocalDate.now(BRASILIA)) || data.isAfter(LocalDate.ofInstant(ctx.quando(), BRASILIA))) {
+            throw new ErroDaApi(HttpStatus.UNPROCESSABLE_ENTITY, CodigoErro.DATA_DO_PAGAMENTO_NO_FUTURO);
+        }
+        if (data.equals(LocalDate.ofInstant(ctx.quando(), BRASILIA))) {
+            return ctx.quando();
+        }
+        return data.atTime(12, 0).atZone(BRASILIA).toInstant();
+    }
+
+    void gravarRecibo(ContextoDoConsignado ctx, UUID id, UUID clienteId, UUID semanaId, int sequencia, UUID acertoId,
+            BigDecimal total, List<FormaPaga> formas, Instant pagoEm) {
         if (ctx.aparelho() != null) {
             origem.definirNaTransacaoAtual(ctx.aparelho());
         }
         jdbc.update("""
                 INSERT INTO corona.recibos_consignado (id, vendedor_id, cliente_id, semana_id, sequencia, acerto_id, pago_em, total,
                     cotacao_id, dispositivo_id, hora_ajustada) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", id, ctx.vendedorId(),
-                clienteId, semanaId, sequencia, acertoId, Timestamp.from(ctx.quando()), total, cotacaoDoDia(ctx.quando()),
+                clienteId, semanaId, sequencia, acertoId, Timestamp.from(pagoEm), total, cotacaoDoDia(pagoEm),
                 ctx.aparelho(), ctx.horaAjustada());
         for (FormaPaga f : formas) {
             jdbc.update("INSERT INTO corona.formas_recibo_consignado (id, recibo_id, forma, valor) VALUES (?, ?, ?, ?)", UuidV7.gerar(),

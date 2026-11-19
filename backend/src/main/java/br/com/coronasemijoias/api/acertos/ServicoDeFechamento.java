@@ -497,7 +497,7 @@ public class ServicoDeFechamento {
         List<ContaAntigaPaga> antigas = new ArrayList<>();
         for (ContaAntigaPaga a : lista(p.contasAntigas())) {
             if (a == null || a.contaId() == null) {
-                throw Validacoes.recusar("contasAntigas", "Escolha a conta que o vendedor está pagando.");
+                throw Validacoes.recusar("contasAntigas", "Escolha a conta que o representante está pagando.");
             }
             UUID id = Validacoes.idDoPedido(a.id());
             if (!ids.add(id)) {
@@ -511,7 +511,7 @@ public class ServicoDeFechamento {
         }
         String forma = p.formaDoPagamento() == null ? null : ServicoDeRecebimentosDoVendedor.formaDoRepasse(p.formaDoPagamento(), false);
         if ("PAGAR_NA_HORA".equals(p.aFavorDoVendedor()) && forma == null) {
-            throw Validacoes.recusar("formaDoPagamento", "Escolha se o pagamento ao vendedor é em dinheiro ou Transferência (PIX).");
+            throw Validacoes.recusar("formaDoPagamento", "Escolha se o pagamento ao representante é em dinheiro ou Transferência (PIX).");
         }
         if (p.restante() != null && (p.restante().parcelas() == null || p.restante().primeiroVencimento() == null)) {
             throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.DATA_DO_RESTANTE_OBRIGATORIA);

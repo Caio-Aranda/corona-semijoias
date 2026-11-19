@@ -344,8 +344,18 @@ export function validarPedidoDoConsignado(operacao: string, v: Obj): PedidoDoCon
       const p = v['pagamento'];
       if (!ehObjeto(p) || !ehUuid(p['id']) || !ehUuid(p['clienteId'])) return null;
       const f = formas(p['formas']);
+      const data = p['data'];
+      if (data !== undefined && !(ehTexto(data) && DIA.test(data))) return null;
       return f
-        ? { operacao, pagamento: { id: p['id'], clienteId: p['clienteId'], formas: f } }
+        ? {
+            operacao,
+            pagamento: {
+              id: p['id'],
+              clienteId: p['clienteId'],
+              formas: f,
+              ...(data !== undefined ? { data } : {}),
+            },
+          }
         : null;
     }
     case 'consignado.estornarAcerto': {

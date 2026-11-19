@@ -79,7 +79,7 @@ public class ServicoDeRecebimentosDoVendedor {
         }
         UUID id = Validacoes.idDoPedido(pedido.id());
         if (pedido.vendedorId() == null) {
-            throw Validacoes.recusar("vendedorId", "Escolha o vendedor.");
+            throw Validacoes.recusar("vendedorId", "Escolha o representante.");
         }
         String forma = formaDoRepasse(pedido.forma(), true);
         BigDecimal valor = valorEmReais(pedido.valor());

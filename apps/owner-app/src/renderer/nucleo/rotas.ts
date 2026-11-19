@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { TEXTOS } from '../textos';
+import { ehRelatorioDoAcertoAntigo } from './areas-de-relatorios';
 import { TEXTOS_DE_ACERTOS } from '../textos-acertos';
 import { TEXTOS_DE_COMPRAS } from '../textos-compras';
 import { TEXTOS_DE_CONSIGNADO } from '../textos-consignado';
@@ -233,7 +234,7 @@ export const MENU = [
 
 /** As rotas do acerto antigo da §7.4 (ADR-0016, item 15): ficam escondidas enquanto o servidor não mandar mostrar. */
 export function ehRotaDoAcertoAntigo(rota: Rota): boolean {
-  return rota.startsWith('acertos/');
+  return rota.startsWith('acertos/') || ehRelatorioDoAcertoAntigo(rota);
 }
 
 /** O menu sem o acerto antigo, quando ele está escondido (nada é apagado: só deixa de aparecer). */
