@@ -1587,7 +1587,7 @@ Vale a especificação §23 (que manda sobre as partes 18 e 20 onde discordarem)
 | Recibo | Recibo | Registro de um pagamento. |
 | Lançar pagamento | Registrar pago | No cadastro do cliente: abate a pendência mais antiga. |
 | Estornar | Anular | Corrigir é estornar (registro novo, com motivo) e fazer de novo. |
-| Maleta (código `M-XXXXXX`) | Maleta | A maleta não tem código próprio no servidor: a tela mostra um código curto tirado do identificador. |
+| Maleta (código `0001`, `0002`...) | Maleta | O código vem do servidor (tarefa 9.3); só enquanto a maleta ainda não trouxe o código a tela mostra o provisório `M-XXXXXX`. |
 | Em aberto, Pendente, Fechado, Remarcado | Abierto, Pendiente, Cerrado, Reprogramado | Situações do pedido; cores: branca, amarela, verde e rosa (o texto aparece sempre, a cor sozinha não basta). |
 | Dinheiro, Pix, Débito, Crédito à vista | Efectivo, Pix, Débito, Crédito al contado | Sem cheque, sem boleto, sem parcelado, sem entrada, sem desconto. |
 
@@ -1598,3 +1598,20 @@ Mensagens que a tela diz (português simples, dizendo o que fazer; em espanhol, 
 - Pendência no Novo Pedido: "Este cliente deve R$ X. O valor será somado ao próximo acerto."
 - Fotos sem internet: "Algumas fotos ainda vão ser enviadas quando houver internet. Pode continuar trabalhando."
 - Sem semana: "Não há semana aberta. Toque em "Nova semana" para começar."
+
+### Relatórios do consignado (tarefa 9.3, §23.11)
+
+| Português | Español (na tela) | Observação |
+| --- | --- | --- |
+| Nota de saída | Nota de salida | Comprovante da saída, com espaço para assinatura. Sem nota fiscal. |
+| Relatório do acerto | Informe del cobro | O acerto de uma nota. |
+| Situação do cliente | Situación del cliente | O que já vendeu e o que falta. |
+| Peças vendidas por cliente | Piezas vendidas por cliente | Com período (De, Até). |
+| Relatório da semana / Totais da semana | Informe de la semana / Totales de la semana | A aba Totais. |
+| Situação da maleta | Situación de la maleta | Peças na maleta, com clientes (com quem) e vendidas. |
+| Imprimir · Salvar em PDF · Preparar para o WhatsApp | Imprimir · Guardar en PDF · Preparar para WhatsApp | O sistema abre a conversa; quem anexa e envia é o representante. |
+| Sem cotação | Sin cotización | Aparece no lugar do Dólar e do Guarani quando faltou a cotação do dia do lançamento. |
+| Praça | Plaza | No cabeçalho da tela principal e dos relatórios. |
+
+Mensagens: "O PDF foi guardado na pasta ... No WhatsApp que abriu, anexe o PDF e envie. Nada é enviado sozinho." / "Sem internet: o PDF já está guardado na pasta ..., mas o WhatsApp só abre com internet. Quando a internet voltar, toque de novo em "Preparar para o WhatsApp"." / "Este cliente não tem telefone cadastrado. Cadastre o telefone do cliente ou salve o PDF e envie por outro meio."
+
