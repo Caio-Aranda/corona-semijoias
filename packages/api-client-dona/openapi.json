@@ -22994,7 +22994,7 @@
     },
     "/api/dona/relatorios/maleta/fechamento" : {
       "get" : {
-        "description" : "Uma linha por peça da maleta (enviadas, devolvidas pelos clientes, vendidas, ainda com clientes e com quem, esperado na maleta, bipadas na volta e diferença). O rodapé traz as peças e os valores da maleta (vendido, comissão dos clientes, recebido e pendências a receber, divididos pelo vendido de cada maleta dentro da nota). Sai da mesma leitura da tela do Fechamento (GET /api/maletas/{id}/fechamento); 404 se o fechamento ainda não foi começado. Parâmetros: remessaId (obrigatório), pagina (começa em 0) e tamanho (até 100).",
+        "description" : "Uma linha por peça da maleta (enviadas, devolvidas pelos clientes, vendidas, ainda com clientes e com quem, esperado na maleta, bipadas na volta e diferença). O rodapé traz as peças e os valores da maleta (vendido, comissão dos clientes, recebido e pendências a receber, divididos pelo vendido de cada maleta dentro da nota). Sai da mesma leitura da tela do Fechamento (GET /api/maletas/{id}/fechamento); 404 se o fechamento ainda não foi começado. Parâmetros: remessaId (obrigatório), recorte (a chave de um total do rodapé: só as peças que o formam), pagina (começa em 0) e tamanho (até 100).",
         "operationId" : "relatorioDoFechamentoDaMaleta",
         "parameters" : [ {
           "in" : "query",
@@ -23002,6 +23002,13 @@
           "required" : true,
           "schema" : {
             "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
             "type" : "string"
           }
         }, {

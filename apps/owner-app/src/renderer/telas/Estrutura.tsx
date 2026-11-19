@@ -3,7 +3,13 @@ import { useEffect, useState } from 'react';
 import type { PonteDoCorona } from '../../shared/ponte';
 import { RodapeDaCotacao } from '../nucleo/cotacao';
 import { temAlteracoesNaoSalvas } from '../nucleo/guarda-de-saida';
-import { ehRotaDoAcertoAntigo, menuDoGestao, rotuloDaRota, useRota, type Rota } from '../nucleo/rotas';
+import {
+  ehRotaDoAcertoAntigo,
+  menuDoGestao,
+  rotuloDaRota,
+  useRota,
+  type Rota,
+} from '../nucleo/rotas';
 import { useTelasDoGestao } from '../nucleo/telas-do-gestao';
 import { SeletorDeIdioma } from '../idioma/SeletorDeIdioma';
 import { TEXTOS } from '../textos';

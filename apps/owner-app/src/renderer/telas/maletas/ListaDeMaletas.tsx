@@ -32,7 +32,7 @@ export interface ListaDeMaletasProps {
 
 type Aba = 'todas' | 'porVendedor';
 
-/** Maletas → Maletas: lista com filtros e a visão "Por vendedor" (quanto tem em aberto e quanto sobra). */
+/** Maletas → Maletas: lista com filtros e a visão "Por representante" (quanto tem em aberto e quanto sobra). */
 export function ListaDeMaletas({ ponte, chave, aoAbrir, aoRepor }: ListaDeMaletasProps) {
   const [aba, setAba] = useState<Aba>('todas');
   return (

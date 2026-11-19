@@ -58,7 +58,7 @@ export const PT_TEXTOS_DE_PRODUTOS = {
     semFornecedor: 'Sem fornecedor',
     precoVenda: 'Preço de venda',
     precoCusto: 'Preço de custo',
-    custoAjuda: 'O custo só aparece neste aplicativo, nunca para o vendedor.',
+    custoAjuda: 'O custo só aparece neste aplicativo, nunca para o representante.',
     estoqueMinimo: 'Estoque mínimo',
     saldo: (n: number) => `Saldo no estoque: ${n}`,
     obrigatorio: 'Preencha este campo.',

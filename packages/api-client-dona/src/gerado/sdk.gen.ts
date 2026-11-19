@@ -2402,7 +2402,7 @@ export const relatorioDeMaletasEmAbertoEAtrasadas = <ThrowOnError extends boolea
 /**
  * Fechamento da maleta
  *
- * Uma linha por peça da maleta (enviadas, devolvidas pelos clientes, vendidas, ainda com clientes e com quem, esperado na maleta, bipadas na volta e diferença). O rodapé traz as peças e os valores da maleta (vendido, comissão dos clientes, recebido e pendências a receber, divididos pelo vendido de cada maleta dentro da nota). Sai da mesma leitura da tela do Fechamento (GET /api/maletas/{id}/fechamento); 404 se o fechamento ainda não foi começado. Parâmetros: remessaId (obrigatório), pagina (começa em 0) e tamanho (até 100).
+ * Uma linha por peça da maleta (enviadas, devolvidas pelos clientes, vendidas, ainda com clientes e com quem, esperado na maleta, bipadas na volta e diferença). O rodapé traz as peças e os valores da maleta (vendido, comissão dos clientes, recebido e pendências a receber, divididos pelo vendido de cada maleta dentro da nota). Sai da mesma leitura da tela do Fechamento (GET /api/maletas/{id}/fechamento); 404 se o fechamento ainda não foi começado. Parâmetros: remessaId (obrigatório), recorte (a chave de um total do rodapé: só as peças que o formam), pagina (começa em 0) e tamanho (até 100).
  */
 export const relatorioDoFechamentoDaMaleta = <ThrowOnError extends boolean = false>(options: Options<RelatorioDoFechamentoDaMaletaData, ThrowOnError>): RequestResult<RelatorioDoFechamentoDaMaletaResponses, unknown, ThrowOnError> => (options.client ?? client).get<RelatorioDoFechamentoDaMaletaResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],

@@ -1,16 +1,16 @@
 import { textosVivos } from './idioma/idioma';
 import { ES_TEXTOS_DE_SINCRONIZACAO } from './idioma/es/computadores';
 /**
- * Textos das telas do grupo "Computadores dos vendedores" (tarefa 5.10). Vêm do glossário da interface (parte 12,
- * "Telas da dona para o vendedor"). Na tela é sempre "computador"; nunca "aparelho", "quarentena" ou "sincronização".
+ * Textos das telas do grupo "Computadores dos representantes" (tarefa 5.10). Vêm do glossário da interface (parte 12,
+ * "Telas da dona para o representante"). Na tela é sempre "computador"; nunca "aparelho", "quarentena" ou "sincronização".
  */
 export const PT_TEXTOS_DE_SINCRONIZACAO = {
   menu: {
-    grupo: 'Computadores dos vendedores',
+    grupo: 'Computadores dos representantes',
     computadores: 'Computadores',
     envios: 'Envios com problema',
     vendas: 'Vendas de computador bloqueado',
-    clientes: 'Clientes alterados pelo vendedor',
+    clientes: 'Clientes alterados pelo representante',
   },
   situacoes: {
     ATIVO: 'Em uso',
@@ -20,11 +20,11 @@ export const PT_TEXTOS_DE_SINCRONIZACAO = {
   } as Record<string, string>,
   computadores: {
     titulo: 'Computadores',
-    ajuda: 'Escolha o vendedor para ver os computadores dele.',
-    vendedor: 'Vendedor',
-    escolhaVendedor: 'Escolha o vendedor',
-    vazio: 'Este vendedor ainda não entrou em nenhum computador.',
-    legenda: 'Computadores do vendedor',
+    ajuda: 'Escolha o representante para ver os computadores dele.',
+    vendedor: 'Representante',
+    escolhaVendedor: 'Escolha o representante',
+    vazio: 'Este representante ainda não entrou em nenhum computador.',
+    legenda: 'Computadores do representante',
     colunas: {
       situacao: 'Situação',
       ultimoContato: 'Último contato',
@@ -56,12 +56,12 @@ export const PT_TEXTOS_DE_SINCRONIZACAO = {
   },
   envios: {
     titulo: 'Envios com problema',
-    ajuda: 'Vendas e cadastros feitos no computador do vendedor que não puderam entrar.',
+    ajuda: 'Vendas e cadastros feitos no computador do representante que não puderam entrar.',
     vazio: 'Nenhum envio com problema. Está tudo em dia.',
     legenda: 'Envios com problema',
     colunas: {
       oQue: 'O que foi',
-      vendedor: 'Vendedor',
+      vendedor: 'Representante',
       quando: 'Quando',
       motivo: 'Motivo',
       acoes: 'O que fazer',
@@ -102,7 +102,12 @@ export const PT_TEXTOS_DE_SINCRONIZACAO = {
     ajuda: 'Vendas que estavam num computador bloqueado e ainda não valem.',
     vazio: 'Nenhuma venda esperando você.',
     legenda: 'Vendas de computador bloqueado',
-    colunas: { oQue: 'O que foi', vendedor: 'Vendedor', quando: 'Feita em', acoes: 'O que fazer' },
+    colunas: {
+      oQue: 'O que foi',
+      vendedor: 'Representante',
+      quando: 'Feita em',
+      acoes: 'O que fazer',
+    },
     aprovar: 'Aprovar',
     aprovando: 'Aprovando...',
     descartar: 'Descartar',
@@ -127,9 +132,9 @@ export const PT_TEXTOS_DE_SINCRONIZACAO = {
     },
   },
   clientes: {
-    titulo: 'Clientes alterados pelo vendedor',
+    titulo: 'Clientes alterados pelo representante',
     ajuda:
-      'Quando o vendedor e você mudam o mesmo dado de um cliente, vale o último que chegou. Aqui está o que foi trocado.',
+      'Quando o representante e você mudam o mesmo dado de um cliente, vale o último que chegou. Aqui está o que foi trocado.',
     vazio: 'Nenhum dado de cliente foi trocado.',
     legenda: 'Dados de cliente trocados',
     colunas: { cliente: 'Cliente', quemMudou: 'Quem mudou', quando: 'Dia', dados: 'Dado' },

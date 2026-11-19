@@ -11,7 +11,7 @@ export const PT_TEXTOS_DE_FINANCEIRO = {
     categorias: 'Categorias do caixa',
     contasAPagar: 'Contas a pagar',
     contasAReceber: 'Contas a receber',
-    recebimentos: 'Recebimentos do vendedor',
+    recebimentos: 'Recebimentos do representante',
   },
   formas: {
     DINHEIRO: 'Dinheiro',
@@ -61,9 +61,9 @@ export const PT_TEXTOS_DE_FINANCEIRO = {
     },
     origens: {
       MANUAL: 'Lançamento da loja',
-      RECEBIMENTO_VENDEDOR: 'Recebimento do vendedor',
+      RECEBIMENTO_VENDEDOR: 'Recebimento do representante',
       PAGAMENTO_FORNECEDOR: 'Pagamento ao fornecedor',
-      ACERTO_A_FAVOR_DO_VENDEDOR: 'Pagamento ao vendedor',
+      ACERTO_A_FAVOR_DO_VENDEDOR: 'Pagamento ao representante',
     } as Record<string, string>,
     origemAutomatica: 'Entrou ou saiu sozinho',
     estorno: 'Estorno',
@@ -216,21 +216,21 @@ export const PT_TEXTOS_DE_FINANCEIRO = {
   contasAReceber: {
     titulo: 'Contas a receber',
     ajuda:
-      'O que os clientes devem aos vendedores e o que os vendedores devem à loja. Aqui você só consulta; para registrar o que o vendedor pagou, use Recebimentos do vendedor.',
+      'O que os clientes devem aos representantes e o que os representantes devem à loja. Aqui você só consulta; para registrar o que o representante pagou, use Recebimentos do representante.',
     legenda: 'Contas a receber',
     naoLeu: 'Não deu para ler as contas a receber. Tente de novo.',
     vazia: 'Nenhuma conta a receber com estes filtros.',
     filtros: {
-      vendedor: 'Vendedor',
-      todosVendedores: 'Todos os vendedores',
+      vendedor: 'Representante',
+      todosVendedores: 'Todos os representantes',
       situacao: 'Situação',
       todasSituacoes: 'Todas as situações',
       nivel: 'De quem é a conta',
       todosNiveis: 'Todas',
     },
     niveis: {
-      CLIENTE: 'Do cliente ao vendedor',
-      VENDEDOR: 'Do vendedor à loja',
+      CLIENTE: 'Do cliente ao representante',
+      VENDEDOR: 'Do representante à loja',
     } as Record<string, string>,
     situacoes: {
       ABERTA: 'Aberta',
@@ -241,7 +241,7 @@ export const PT_TEXTOS_DE_FINANCEIRO = {
       VENCIDA: 'Vencida',
     } as Record<string, string>,
     colunas: {
-      vendedor: 'Vendedor',
+      vendedor: 'Representante',
       cliente: 'Cliente',
       nivel: 'Conta',
       parcela: 'Parcela',
@@ -258,24 +258,24 @@ export const PT_TEXTOS_DE_FINANCEIRO = {
       ESTORNO_DE_RECEBIMENTO: 'Recebimento estornado',
     } as Record<string, string>,
     vencida: 'Vencida',
-    semCliente: 'O vendedor deve à loja',
+    semCliente: 'O representante deve à loja',
   },
 
   recebimentos: {
-    titulo: 'Recebimentos do vendedor',
+    titulo: 'Recebimentos do representante',
     ajuda:
-      'O que o vendedor pagou à loja fora do acerto. O dinheiro entra no caixa e baixa as contas dele, da mais antiga para a mais nova.',
-    legenda: 'Recebimentos do vendedor',
+      'O que o representante pagou à loja fora do acerto. O dinheiro entra no caixa e baixa as contas dele, da mais antiga para a mais nova.',
+    legenda: 'Recebimentos do representante',
     naoLeu: 'Não deu para ler os recebimentos. Tente de novo.',
     vazia: 'Nenhum recebimento com estes filtros.',
     registrar: 'Registrar recebimento',
     filtros: {
-      vendedor: 'Vendedor',
-      todosVendedores: 'Todos os vendedores',
+      vendedor: 'Representante',
+      todosVendedores: 'Todos os representantes',
     },
     colunas: {
       data: 'Data',
-      vendedor: 'Vendedor',
+      vendedor: 'Representante',
       forma: 'Forma',
       valor: 'Valor',
       de: 'De onde veio',
@@ -295,9 +295,9 @@ export const PT_TEXTOS_DE_FINANCEIRO = {
     novo: {
       titulo: 'Registrar recebimento',
       ajuda:
-        'Deixe a conta em branco para o valor baixar as contas em aberto do vendedor, da mais antiga para a mais nova.',
-      vendedor: 'Vendedor',
-      escolhaVendedor: 'Escolha o vendedor',
+        'Deixe a conta em branco para o valor baixar as contas em aberto do representante, da mais antiga para a mais nova.',
+      vendedor: 'Representante',
+      escolhaVendedor: 'Escolha o representante',
       conta: 'Conta a baixar',
       todasAsContas: 'As contas em aberto, da mais antiga para a mais nova',
       contaDe: (vencimento: string, emAberto: string) =>
@@ -308,11 +308,11 @@ export const PT_TEXTOS_DE_FINANCEIRO = {
       cancelar: 'Voltar',
       feito: 'Recebimento registrado.',
       jaFeito: 'Este recebimento já estava registrado.',
-      avisoVendedor: 'Escolha o vendedor.',
+      avisoVendedor: 'Escolha o representante.',
       avisoValor: 'Digite o valor recebido, em reais, maior que zero.',
-      avisoForma: 'Escolha como o vendedor pagou.',
+      avisoForma: 'Escolha como o representante pagou.',
       boleto: 'O boleto pago precisa ser do valor inteiro da conta do boleto.',
-      semConta: 'Este vendedor não tem conta em aberto.',
+      semConta: 'Este representante não tem conta em aberto.',
     },
     estornoDialogo: {
       titulo: 'Estornar recebimento',

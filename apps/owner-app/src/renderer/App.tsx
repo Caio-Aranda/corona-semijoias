@@ -77,17 +77,17 @@ export function App({ ponte }: AppProps) {
         return (
           <ProvedorDaCotacao ponte={ponte}>
             <ProvedorDasTelasDoGestao ponte={ponte}>
-            <Estrutura
-              ponte={ponte}
-              nome={tela.usuario?.nome ?? null}
-              aoSair={async () => {
-                await ponte.sair();
-                esquecerImagens();
-                setSessaoTerminou(false);
-                window.location.hash = '';
-                await conferir();
-              }}
-            />
+              <Estrutura
+                ponte={ponte}
+                nome={tela.usuario?.nome ?? null}
+                aoSair={async () => {
+                  await ponte.sair();
+                  esquecerImagens();
+                  setSessaoTerminou(false);
+                  window.location.hash = '';
+                  await conferir();
+                }}
+              />
             </ProvedorDasTelasDoGestao>
           </ProvedorDaCotacao>
         );

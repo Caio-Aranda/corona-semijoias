@@ -10,7 +10,7 @@ export const PT_TEXTOS_DO_PAINEL = {
   botaoInicial: 'Painel da semana',
   titulo: 'Painel da semana',
   ajuda:
-    'O que foi enviado, devolvido e vendido na semana, vendedor por vendedor. Clique num vendedor ou num total para ver os registros.',
+    'O que foi enviado, devolvido e vendido na semana, representante por representante. Clique num representante ou num total para ver os registros.',
   semana: (numero: number, inicio: string, fim: string) =>
     `Semana ${numero}: de ${inicio} a ${fim}`,
   atalhos: {
@@ -19,14 +19,14 @@ export const PT_TEXTOS_DO_PAINEL = {
     acerto: 'Acerto',
     reposicao: 'Reposição',
     troca: 'Troca',
-    vendedores: 'Vendedores',
+    vendedores: 'Representantes',
     estoque: 'Estoque',
   },
   filtros: {
     rotulo: 'Filtros do painel',
     semana: 'Semana',
     semanaAtual: 'Semana de hoje',
-    vendedor: 'Vendedor',
+    vendedor: 'Representante',
     praca: 'Praça',
     situacao: 'Situação',
     qualquer: 'Todos',
@@ -44,15 +44,16 @@ export const PT_TEXTOS_DO_PAINEL = {
   },
   carregando: 'Carregando o painel...',
   atualizar: 'Atualizar',
-  vazio: 'Nenhum vendedor com movimento nesta semana.',
+  vazio: 'Nenhum representante com movimento nesta semana.',
   previa: 'Prévia',
   previaAjuda: 'Prévia: ainda não é o acerto. Os números podem mudar até o acerto ser fechado.',
-  previaAnteriores: 'A prévia inclui o que o vendedor ainda não acertou de semanas anteriores.',
+  previaAnteriores:
+    'A prévia inclui o que o representante ainda não acertou de semanas anteriores.',
   previaSemCotacao:
     'Sem a cotação do dia, a prévia não mostra Dólar nem Guarani. Cadastre a cotação para ver.',
   semCotacaoLinha: 'Sem cotação',
   colunas: {
-    vendedor: 'Vendedor',
+    vendedor: 'Representante',
     praca: 'Praça',
     situacao: 'Situação',
     enviado: 'Enviado',
@@ -98,7 +99,7 @@ export const PT_TEXTOS_DO_PAINEL = {
     ficouDevendo: 'Ficou devendo',
     pendenciasEmAberto: 'Pendências em aberto',
     pendenciasPagas: 'Pendências pagas',
-    vendedores: 'Vendedores',
+    vendedores: 'Representantes',
     liquidoPrevisto: 'Valor líquido previsto',
     comissaoPrevista: 'Comissão prevista',
     vendas: 'Vendas',
@@ -131,7 +132,7 @@ export const PT_TEXTOS_DO_PAINEL = {
     pdf: 'PDF',
     excel: 'Excel',
     csv: 'CSV',
-    semLinhas: 'Não há vendedores para guardar com estes filtros.',
+    semLinhas: 'Não há representantes para guardar com estes filtros.',
     pronto: (nome: string) => `Arquivo pronto: ${nome}.`,
     erro: 'Não foi possível preparar o arquivo. Tente de novo.',
   },

@@ -55,7 +55,7 @@ export const ES_TEXTOS_DE_PRODUTOS: NoMesmoFormato<typeof PT_TEXTOS_DE_PRODUTOS>
     semFornecedor: 'Sin proveedor',
     precoVenda: 'Precio de venta',
     precoCusto: 'Precio de costo',
-    custoAjuda: 'El costo solo aparece en este programa, nunca para el vendedor.',
+    custoAjuda: 'El costo solo aparece en este programa, nunca para el representante.',
     estoqueMinimo: 'Stock mínimo',
     saldo: (n: number) => `Saldo en el stock: ${n}`,
     obrigatorio: 'Complete este campo.',

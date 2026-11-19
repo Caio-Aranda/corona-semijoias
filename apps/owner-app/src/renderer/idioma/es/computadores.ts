@@ -3,11 +3,11 @@ import type { PT_TEXTOS_DE_SINCRONIZACAO } from '../../textos-sincronizacao';
 
 export const ES_TEXTOS_DE_SINCRONIZACAO: NoMesmoFormato<typeof PT_TEXTOS_DE_SINCRONIZACAO> = {
   menu: {
-    grupo: 'Computadoras de los vendedores',
+    grupo: 'Computadoras de los representantes',
     computadores: 'Computadoras',
     envios: 'Envíos con problema',
     vendas: 'Ventas de computadora bloqueada',
-    clientes: 'Clientes cambiados por el vendedor',
+    clientes: 'Clientes cambiados por el representante',
   },
   situacoes: {
     ATIVO: 'En uso',
@@ -17,11 +17,11 @@ export const ES_TEXTOS_DE_SINCRONIZACAO: NoMesmoFormato<typeof PT_TEXTOS_DE_SINC
   },
   computadores: {
     titulo: 'Computadoras',
-    ajuda: 'Elija el vendedor para ver sus computadoras.',
-    vendedor: 'Vendedor',
-    escolhaVendedor: 'Elija el vendedor',
-    vazio: 'Este vendedor todavía no entró en ninguna computadora.',
-    legenda: 'Computadoras del vendedor',
+    ajuda: 'Elija el representante para ver sus computadoras.',
+    vendedor: 'Representante',
+    escolhaVendedor: 'Elija el representante',
+    vazio: 'Este representante todavía no entró en ninguna computadora.',
+    legenda: 'Computadoras del representante',
     colunas: {
       situacao: 'Estado',
       ultimoContato: 'Último contacto',
@@ -53,12 +53,12 @@ export const ES_TEXTOS_DE_SINCRONIZACAO: NoMesmoFormato<typeof PT_TEXTOS_DE_SINC
   },
   envios: {
     titulo: 'Envíos con problema',
-    ajuda: 'Ventas y registros hechos en la computadora del vendedor que no pudieron entrar.',
+    ajuda: 'Ventas y registros hechos en la computadora del representante que no pudieron entrar.',
     vazio: 'Ningún envío con problema. Todo está al día.',
     legenda: 'Envíos con problema',
     colunas: {
       oQue: 'Qué fue',
-      vendedor: 'Vendedor',
+      vendedor: 'Representante',
       quando: 'Cuándo',
       motivo: 'Motivo',
       acoes: 'Qué hacer',
@@ -99,7 +99,7 @@ export const ES_TEXTOS_DE_SINCRONIZACAO: NoMesmoFormato<typeof PT_TEXTOS_DE_SINC
     ajuda: 'Ventas que estaban en una computadora bloqueada y todavía no valen.',
     vazio: 'Ninguna venta esperando a usted.',
     legenda: 'Ventas de computadora bloqueada',
-    colunas: { oQue: 'Qué fue', vendedor: 'Vendedor', quando: 'Hecha el', acoes: 'Qué hacer' },
+    colunas: { oQue: 'Qué fue', vendedor: 'Representante', quando: 'Hecha el', acoes: 'Qué hacer' },
     aprovar: 'Aprobar',
     aprovando: 'Aprobando...',
     descartar: 'Descartar',
@@ -123,9 +123,9 @@ export const ES_TEXTOS_DE_SINCRONIZACAO: NoMesmoFormato<typeof PT_TEXTOS_DE_SINC
     },
   },
   clientes: {
-    titulo: 'Clientes cambiados por el vendedor',
+    titulo: 'Clientes cambiados por el representante',
     ajuda:
-      'Cuando el vendedor y usted cambian el mismo dato de un cliente, vale el último que llegó. Aquí está lo que se cambió.',
+      'Cuando el representante y usted cambian el mismo dato de un cliente, vale el último que llegó. Aquí está lo que se cambió.',
     vazio: 'Ningún dato de cliente fue cambiado.',
     legenda: 'Datos de cliente cambiados',
     colunas: { cliente: 'Cliente', quemMudou: 'Quién cambió', quando: 'Día', dados: 'Dato' },

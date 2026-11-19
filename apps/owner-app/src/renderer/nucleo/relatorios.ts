@@ -130,9 +130,9 @@ export const RELATORIOS: Record<NomeDoRelatorio, DefinicaoDeRelatorio> = {
   ...RELATORIOS_DE_CONTROLE,
   vendedores: {
     nome: 'vendedores',
-    titulo: 'Vendedores: limite e situação',
+    titulo: 'Representantes: limite e situação',
     explicacao:
-      'O limite de consignação, a restrição, a situação, a praça e a comissão de cada vendedor.',
+      'O limite de consignação, a restrição, a situação, a praça e a comissão de cada representante.',
     filtros: ['busca', 'situacao', 'praca', 'restricao', 'periodo'],
     extras: [
       { chave: 'limiteDe', rotulo: 'Limite a partir de (R$)', tipo: 'valor' },
@@ -151,7 +151,7 @@ export const RELATORIOS: Record<NomeDoRelatorio, DefinicaoDeRelatorio> = {
     buscaRotulo: 'Buscar por nome, número, CPF ou telefone',
     colunas: [
       { chave: 'codigo', titulo: 'Número', tipo: 'inteiro' },
-      { chave: 'nome', titulo: 'Vendedor', tipo: 'texto' },
+      { chave: 'nome', titulo: 'Representante', tipo: 'texto' },
       { chave: 'praca', titulo: 'Praça', tipo: 'texto' },
       { chave: 'restricao', titulo: 'Restrição', tipo: 'texto' },
       { chave: 'bloqueiaRemessa', titulo: 'Impede montar maleta', tipo: 'simNao' },
@@ -159,23 +159,23 @@ export const RELATORIOS: Record<NomeDoRelatorio, DefinicaoDeRelatorio> = {
       { chave: 'ativo', titulo: 'Situação', tipo: 'simNao' },
     ],
     totaisDeValor: { limite: 'limiteConsignacao' },
-    itens: { um: 'vendedor', varios: 'vendedores' },
-    vazio: 'Nenhum vendedor com estes filtros.',
+    itens: { um: 'representante', varios: 'representantes' },
+    vazio: 'Nenhum representante com estes filtros.',
   },
   clientes: {
     nome: 'clientes',
     titulo: 'Clientes cadastrados',
-    explicacao: 'Os clientes, com o vendedor responsável e a praça dele.',
+    explicacao: 'Os clientes, com o representante responsável e a praça dele.',
     filtros: ['busca', 'situacao', 'vendedor', 'praca', 'periodo'],
     extras: [
       {
         chave: 'comVendedor',
-        rotulo: 'Vendedor responsável',
+        rotulo: 'Representante responsável',
         tipo: 'escolha',
         qualquer: 'Tanto faz',
         opcoes: [
-          { valor: 'SIM', rotulo: 'Só com vendedor' },
-          { valor: 'NAO', rotulo: 'Só sem vendedor' },
+          { valor: 'SIM', rotulo: 'Só com representante' },
+          { valor: 'NAO', rotulo: 'Só sem representante' },
         ],
       },
     ],
@@ -186,7 +186,7 @@ export const RELATORIOS: Record<NomeDoRelatorio, DefinicaoDeRelatorio> = {
       { chave: 'whatsapp', titulo: 'WhatsApp', tipo: 'texto' },
       { chave: 'cidade', titulo: 'Cidade', tipo: 'texto' },
       { chave: 'uf', titulo: 'Estado', tipo: 'texto' },
-      { chave: 'vendedor', titulo: 'Vendedor responsável', tipo: 'texto' },
+      { chave: 'vendedor', titulo: 'Representante responsável', tipo: 'texto' },
       { chave: 'praca', titulo: 'Praça', tipo: 'texto' },
       { chave: 'dataNascimento', titulo: 'Nascimento', tipo: 'data' },
       { chave: 'cadastradoEm', titulo: 'Cadastrado em', tipo: 'dataHora' },
@@ -336,16 +336,16 @@ export const RELATORIOS: Record<NomeDoRelatorio, DefinicaoDeRelatorio> = {
   aniversariantes: {
     nome: 'aniversariantes',
     titulo: 'Aniversariantes do mês',
-    explicacao: 'Os vendedores e os clientes que fazem aniversário no mês escolhido.',
+    explicacao: 'Os representantes e os clientes que fazem aniversário no mês escolhido.',
     filtros: ['mes', 'busca', 'situacao', 'praca'],
     extras: [
       {
         chave: 'quem',
         rotulo: 'Quem mostrar',
         tipo: 'escolha',
-        qualquer: 'Vendedores e clientes',
+        qualquer: 'Representantes e clientes',
         opcoes: [
-          { valor: 'VENDEDORES', rotulo: 'Só vendedores' },
+          { valor: 'VENDEDORES', rotulo: 'Só representantes' },
           { valor: 'CLIENTES', rotulo: 'Só clientes' },
         ],
       },

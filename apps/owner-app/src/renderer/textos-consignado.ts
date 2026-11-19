@@ -197,7 +197,8 @@ export const PT_TEXTOS_DE_CONSIGNADO = {
       notas: 'Notas do cliente',
       semNotas: 'Este cliente ainda não tem nota.',
       fotos: 'Fotos',
-      fotosAjuda: 'Fotos do cliente e do documento são dados pessoais: só você e o representante dele veem.',
+      fotosAjuda:
+        'Fotos do cliente e do documento são dados pessoais: só você e o representante dele veem.',
       foto: 'Foto do cliente',
       documentoFrente: 'Documento, frente',
       documentoVerso: 'Documento, verso',

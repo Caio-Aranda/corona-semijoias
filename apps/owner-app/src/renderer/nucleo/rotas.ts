@@ -240,8 +240,7 @@ export function ehRotaDoAcertoAntigo(rota: Rota): boolean {
 export function menuDoGestao(acertoVisivel: boolean): typeof MENU {
   if (acertoVisivel) return MENU;
   return MENU.filter(
-    (grupo) =>
-      !('titulo' in grupo && grupo.titulo === TEXTOS_DE_ACERTOS.menu.grupo),
+    (grupo) => !('titulo' in grupo && grupo.titulo === TEXTOS_DE_ACERTOS.menu.grupo),
   );
 }
 

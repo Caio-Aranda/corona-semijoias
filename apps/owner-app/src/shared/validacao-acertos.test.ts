@@ -6,7 +6,7 @@ const OUTRO = '9a14e45f-ceea-4672-a1b9-3a1a0f7c4d99';
 const TERCEIRO = '1b4e28ba-2fa1-41d3-b9a5-2c3a9a8f6b22';
 
 describe('conferência dos dados dos acertos', () => {
-  it('iniciar leva só o id da tela, o vendedor e (se houver) a semana', () => {
+  it('iniciar leva só o id da tela, o representante e (se houver) a semana', () => {
     expect(conferirParametros('acertos.iniciar', { id: ID, vendedorId: OUTRO })).not.toBeNull();
     expect(
       conferirParametros('acertos.iniciar', { id: ID, vendedorId: OUTRO, semanaId: TERCEIRO }),
@@ -24,7 +24,7 @@ describe('conferência dos dados dos acertos', () => {
     }
   });
 
-  it('a lista aceita só vendedor, semana e as três situações', () => {
+  it('a lista aceita só representante, semana e as três situações', () => {
     expect(conferirParametros('acertos.listar', {})).not.toBeNull();
     expect(
       conferirParametros('acertos.listar', { vendedorId: ID, situacao: 'EM_ACERTO' }),

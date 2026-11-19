@@ -49,11 +49,11 @@ describe('prévia do acerto', () => {
     expect(valorDe('Descontos')).toBe('R$ 10,00');
     expect(valorDe('Devolvido')).toBe('R$ 20,00');
     expect(valorDe('Vendido depois dos descontos')).toBe('R$ 970,00');
-    expect(valorDe('Comissão do vendedor')).toBe('R$ 388,00');
+    expect(valorDe('Comissão do representante')).toBe('R$ 388,00');
     expect(valorDe('Faltas cobradas')).toBe('R$ 70,00');
     // A API devolveu 777,77 de propósito (não bate com a conta): é o que a tela mostra.
     expect(valorDe('Valor do acerto')).toBe('R$ 777,77');
-    expect(valorDe('Crédito do vendedor usado')).toBe('R$ 0,00');
+    expect(valorDe('Crédito do representante usado')).toBe('R$ 0,00');
     expect(valorDe('A pagar agora')).toBe('R$ 555,55');
     expect(chamadasDe(m, 'acertos.previa')).toHaveLength(1);
     expect(Object.keys(ultima(m, 'acertos.previa') as object)).toEqual(['id']);

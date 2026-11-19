@@ -256,7 +256,10 @@ function FotoDoCliente({
   tem: boolean;
 }) {
   const [estado, setEstado] = useState<
-    { passo: 'fechada' } | { passo: 'carregando' } | { passo: 'erro' } | { passo: 'aberta'; url: string }
+    | { passo: 'fechada' }
+    | { passo: 'carregando' }
+    | { passo: 'erro' }
+    | { passo: 'aberta'; url: string }
   >({ passo: 'fechada' });
 
   useEffect(() => {
@@ -267,10 +270,14 @@ function FotoDoCliente({
 
   async function abrir() {
     setEstado({ passo: 'carregando' });
-    const r = await chamar<{ tipo?: string; bytes?: Uint8Array }>(ponte, 'consignado.fotoDoCliente', {
-      id,
-      tipo,
-    });
+    const r = await chamar<{ tipo?: string; bytes?: Uint8Array }>(
+      ponte,
+      'consignado.fotoDoCliente',
+      {
+        id,
+        tipo,
+      },
+    );
     if (r.ok && r.dados.bytes instanceof Uint8Array) {
       setEstado({
         passo: 'aberta',

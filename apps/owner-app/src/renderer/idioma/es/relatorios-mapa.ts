@@ -8,20 +8,16 @@ export const RELATORIOS_EM_ESPANHOL: Record<string, string> = {
     'Pieza por pieza: cuántas se enviaron, cuántas devolvieron los clientes, cuántas se vendieron, cuántas siguen con los clientes (y con quién), cuántas usted leyó a la vuelta y la diferencia. Al pie: el valor vendido, la comisión de los clientes, lo que se cobró y lo que todavía falta cobrar.',
   'Os valores da maleta são divididos pelo vendido de cada maleta dentro da nota do cliente.':
     'Los valores de la maleta se dividen según lo vendido de cada maleta dentro de la nota del cliente.',
-  'Peças vendidas':
-    'Piezas vendidas',
-  'Diferença (lidas menos esperadas)':
-    'Diferencia (leídas menos esperadas)',
-  'Comissão dos clientes':
-    'Comisión de los clientes',
-  'Esta maleta não tem peças.':
-    'Esta maleta no tiene piezas.',
+  'Peças vendidas': 'Piezas vendidas',
+  'Diferença (lidas menos esperadas)': 'Diferencia (leídas menos esperadas)',
+  'Comissão dos clientes': 'Comisión de los clientes',
+  'Esta maleta não tem peças.': 'Esta maleta no tiene piezas.',
   ' (prejuízo)': ' (pérdida)',
   'A comissão de cada acerto fechado, com o vendido em Guarani, a meta da comissão e o percentual que ela decidiu (30% ou 40%). A comissão é paga abatendo no acerto.':
     'La comisión de cada acerto cerrado, con lo vendido en Guaraníes, la meta de la comisión y el porcentaje que usted decidió (30% o 40%). La comisión se paga descontándola en el acerto.',
   'A loja assumiu': 'La tienda asumió',
   'Abaixo do mínimo': 'Debajo del mínimo',
-  'Acertos por vendedor e semana': 'Acertos por vendedor y semana',
+  'Acertos por representante e semana': 'Acertos por representante y semana',
   'Ainda em aberto': 'Todavía abierto',
   'Ainda não lidas': 'Todavía no leídas',
   'Ajuste feito': 'Ajuste hecho',
@@ -31,22 +27,22 @@ export const RELATORIOS_EM_ESPANHOL: Record<string, string> = {
   Aprovados: 'Aprobados',
   'Aprovados (ainda valem)': 'Aprobados (todavía valen)',
   Arquivo: 'Archivo',
-  'As maletas de reposição enviadas, por vendedor e semana.':
-    'Las maletas de reposición enviadas, por vendedor y semana.',
-  'As maletas que ainda têm peças com o vendedor. Ficam como "Atrasada" as enviadas há mais dias do que o prazo escolhido.':
-    'Las maletas que todavía tienen piezas con el vendedor. Quedan como "Atrasada" las enviadas hace más días que el plazo elegido.',
+  'As maletas de reposição enviadas, por representante e semana.':
+    'Las maletas de reposición enviadas, por representante y semana.',
+  'As maletas que ainda têm peças com o representante. Ficam como "Atrasada" as enviadas há mais dias do que o prazo escolhido.':
+    'Las maletas que todavía tienen piezas con el representante. Quedan como "Atrasada" las enviadas hace más días que el plazo elegido.',
   'As parcelas das compras que a loja deve aos fornecedores.':
     'Las cuotas de las compras que la tienda debe a los proveedores.',
-  'As parcelas que os clientes devem aos vendedores e o que os vendedores devem à loja: valor, o que já foi pago e o que falta.':
-    'Las cuotas que los clientes deben a los vendedores y lo que los vendedores deben a la tienda: valor, lo que ya se pagó y lo que falta.',
+  'As parcelas que os clientes devem aos representantes e o que os representantes devem à loja: valor, o que já foi pago e o que falta.':
+    'Las cuotas que los clientes deben a los representantes y lo que los representantes deben a la tienda: valor, lo que ya se pagó y lo que falta.',
   'As peças desta compra, com a quantidade, o custo de cada uma e o total.':
     'Las piezas de esta compra, con la cantidad, el costo de cada una y el total.',
   'As peças que chegaram ao estoque mínimo ou estão com menos, e quantas faltam para voltar ao mínimo.':
     'Las piezas que llegaron al stock mínimo o están con menos, y cuántas faltan para volver al mínimo.',
   'As peças que estão no estoque e não saem há muitos dias.':
     'Las piezas que están en el stock y no salen hace muchos días.',
-  'As peças que faltaram ou vieram com defeito nos acertos e o que aconteceu com cada uma: cobrada do vendedor, a loja assumiu, encontrada ou ainda em aberto.':
-    'Las piezas que faltaron o vinieron con defecto en los acertos y lo que pasó con cada una: cobrada al vendedor, la tienda asumió, encontrada o todavía abierta.',
+  'As peças que faltaram ou vieram com defeito nos acertos e o que aconteceu com cada uma: cobrada do representante, a loja assumiu, encontrada ou ainda em aberto.':
+    'Las piezas que faltaron o vinieron con defecto en los acertos y lo que pasó con cada una: cobrada al representante, la tienda asumió, encontrada o todavía abierta.',
   'As vendas que foram canceladas, com quem cancelou, quando e por quê. Elas ficam fora de todos os totais dos outros relatórios.':
     'Las ventas que fueron canceladas, con quién canceló, cuándo y por qué. Quedan fuera de todos los totales de los otros informes.',
   Atrasadas: 'Atrasadas',
@@ -55,7 +51,7 @@ export const RELATORIOS_EM_ESPANHOL: Record<string, string> = {
   Boleto: 'Boleto',
   Buscar: 'Buscar',
   'Buscar pela descrição ou categoria': 'Buscar por descripción o categoría',
-  'Buscar por cliente ou vendedor': 'Buscar por cliente o vendedor',
+  'Buscar por cliente ou representante': 'Buscar por cliente o representante',
   'Buscar por código ou produto': 'Buscar por código o producto',
   'Buscar por fornecedor': 'Buscar por proveedor',
   'Buscar por fornecedor ou peça': 'Buscar por proveedor o pieza',
@@ -69,23 +65,23 @@ export const RELATORIOS_EM_ESPANHOL: Record<string, string> = {
   'Buscar por número, fornecedor ou peça': 'Buscar por número, proveedor o pieza',
   'Buscar por pessoa ou tipo de registro': 'Buscar por persona o tipo de registro',
   'Buscar por peça ou código': 'Buscar por pieza o código',
-  'Buscar por peça, código ou vendedor': 'Buscar por pieza, código o vendedor',
+  'Buscar por peça, código ou representante': 'Buscar por pieza, código o representante',
   'Buscar por produto ou pessoa': 'Buscar por producto o persona',
   'Buscar por usuário ou nome': 'Buscar por usuario o nombre',
-  'Buscar por vendedor': 'Buscar por vendedor',
-  'Buscar por vendedor ou cliente': 'Buscar por vendedor o cliente',
-  'Buscar por vendedor ou peça': 'Buscar por vendedor o pieza',
-  'Buscar por vendedor, cliente ou produto': 'Buscar por vendedor, cliente o producto',
-  'Buscar por vendedor, peça ou código': 'Buscar por vendedor, pieza o código',
-  'Buscar por vendedor, peça ou referência': 'Buscar por vendedor, pieza o referencia',
+  'Buscar por representante': 'Buscar por representante',
+  'Buscar por representante ou cliente': 'Buscar por representante o cliente',
+  'Buscar por representante ou peça': 'Buscar por representante o pieza',
+  'Buscar por representante, cliente ou produto': 'Buscar por representante, cliente o producto',
+  'Buscar por representante, peça ou código': 'Buscar por representante, pieza o código',
+  'Buscar por representante, peça ou referência': 'Buscar por representante, pieza o referencia',
   'Cada contagem do estoque, peça por peça: o que o sistema esperava, o que foi contado e a diferença.':
     'Cada conteo del stock, pieza por pieza: lo que el sistema esperaba, lo que se contó y la diferencia.',
   'Cada custo que uma compra deu à peça, com o custo de antes e quanto mudou. Para ver uma peça só, escreva o nome ou o código dela em Buscar.':
     'Cada costo que una compra le dio a la pieza, con el costo de antes y cuánto cambió. Para ver una sola pieza, escriba su nombre o su código en Buscar.',
   'Cada linha da planilha e cada foto importadas de uma vez: o que aconteceu, por que foi recusada, quem importou e quando.':
     'Cada línea de la planilla y cada foto importadas de una vez: qué pasó, por qué fue rechazada, quién importó y cuándo.',
-  'Cada peça de cada maleta: quantas foram enviadas, quantas voltaram e quantas ainda estão com o vendedor.':
-    'Cada pieza de cada maleta: cuántas se enviaron, cuántas volvieron y cuántas todavía están con el vendedor.',
+  'Cada peça de cada maleta: quantas foram enviadas, quantas voltaram e quantas ainda estão com o representante.':
+    'Cada pieza de cada maleta: cuántas se enviaron, cuántas volvieron y cuántas todavía están con el representante.',
   'Cadastrado em': 'Registrado el',
   'Cancelada em': 'Cancelada el',
   'Cancelada por': 'Cancelada por',
@@ -102,24 +98,24 @@ export const RELATORIOS_EM_ESPANHOL: Record<string, string> = {
   'Classe C (o resto)': 'Clase C (el resto)',
   Cliente: 'Cliente',
   'Clientes cadastrados': 'Clientes registrados',
-  'Clientes e vendedores': 'Clientes y vendedores',
-  'Cobradas do vendedor': 'Cobradas al vendedor',
-  'Cobrado do vendedor': 'Cobrado al vendedor',
+  'Clientes e representantes': 'Clientes y representantes',
+  'Cobradas do representante': 'Cobradas al representante',
+  'Cobrado do representante': 'Cobrado al representante',
   'Com diferença': 'Con diferencia',
   'Com e sem problema': 'Con y sin problema',
   'Com estoque': 'Con stock',
-  'Com os vendedores (maletas)': 'Con los vendedores (maletas)',
+  'Com os representantes (maletas)': 'Con los representantes (maletas)',
   'Com peças': 'Con piezas',
   'Com peças e sem custo informado': 'Con piezas y sin costo informado',
   'Com peças no estoque': 'Con piezas en el stock',
   'Com restrição': 'Con restricción',
   'Começou em': 'Empezó el',
   Comissão: 'Comisión',
-  'Comissão do vendedor': 'Comisión del vendedor',
+  'Comissão do representante': 'Comisión del representante',
   'Comissão dos acertos que bateram a meta': 'Comisión de los acertos que alcanzaron la meta',
   'Comissão paga': 'Comisión pagada',
   Comissões: 'Comisiones',
-  'Comissões por vendedor e semana': 'Comisiones por vendedor y semana',
+  'Comissões por representante e semana': 'Comisiones por representante y semana',
   Compras: 'Compras',
   'Compras desfeitas': 'Compras deshechas',
   'Compras desfeitas (fora do total)': 'Compras deshechas (fuera del total)',
@@ -181,7 +177,7 @@ export const RELATORIOS_EM_ESPANHOL: Record<string, string> = {
   'Devoluções da maleta': 'Devoluciones de la maleta',
   'Devoluções e trocas': 'Devoluciones y cambios',
   'Devoluções feitas (valem no total)': 'Devoluciones hechas (valen en el total)',
-  'Devoluções por vendedor e motivo': 'Devoluciones por vendedor y motivo',
+  'Devoluções por representante e motivo': 'Devoluciones por representante y motivo',
   Devolvida: 'Devuelta',
   'Devolvida em': 'Devuelta el',
   Devolvido: 'Devuelto',
@@ -262,7 +258,7 @@ export const RELATORIOS_EM_ESPANHOL: Record<string, string> = {
   Lucro: 'Ganancia',
   'Lucro bruto': 'Ganancia bruta',
   'Lucro por produto': 'Ganancia por producto',
-  'Lucro por vendedor': 'Ganancia por vendedor',
+  'Lucro por representante': 'Ganancia por representante',
   'Maletas atrasadas': 'Maletas atrasadas',
   'Maletas canceladas (fora do total)': 'Maletas canceladas (fuera del total)',
   'Maletas em aberto': 'Maletas abiertas',
@@ -270,10 +266,10 @@ export const RELATORIOS_EM_ESPANHOL: Record<string, string> = {
   'Maletas enviadas (valem no total)': 'Maletas enviadas (valen en el total)',
   'Maletas no prazo': 'Maletas en plazo',
   'Maletas novas': 'Maletas nuevas',
-  'Maletas por vendedor e semana': 'Maletas por vendedor y semana',
+  'Maletas por representante e semana': 'Maletas por representante y semana',
   Mantidas: 'Mantenidas',
   Margem: 'Margen',
-  'Mercadoria com cada vendedor': 'Mercadería con cada vendedor',
+  'Mercadoria com cada representante': 'Mercadería con cada representante',
   'Mercadoria em maletas': 'Mercadería en maletas',
   'Meta da comissão (Gs)': 'Meta de la comisión (Gs)',
   Motivo: 'Motivo',
@@ -301,12 +297,13 @@ export const RELATORIOS_EM_ESPANHOL: Record<string, string> = {
   'Nenhum produto vendido com estes filtros.': 'Ningún producto vendido con estos filtros.',
   'Nenhum recebimento com estes filtros.': 'Ningún cobro con estos filtros.',
   'Nenhum registro com estes filtros.': 'Ningún registro con estos filtros.',
-  'Nenhum vendedor com estes filtros.': 'Ningún vendedor con estos filtros.',
-  'Nenhum vendedor com maleta com estes filtros.': 'Ningún vendedor con maleta con estos filtros.',
-  'Nenhum vendedor com venda ou comissão neste período.':
-    'Ningún vendedor con venta o comisión en este período.',
-  'Nenhum vendedor com venda ou devolução neste período.':
-    'Ningún vendedor con venta o devolución en este período.',
+  'Nenhum representante com estes filtros.': 'Ningún representante con estos filtros.',
+  'Nenhum representante com maleta com estes filtros.':
+    'Ningún representante con maleta con estos filtros.',
+  'Nenhum representante com venda ou comissão neste período.':
+    'Ningún representante con venta o comisión en este período.',
+  'Nenhum representante com venda ou devolução neste período.':
+    'Ningún representante con venta o devolución en este período.',
   'Nenhuma compra com estes filtros.': 'Ninguna compra con estos filtros.',
   'Nenhuma contagem com estes filtros.': 'Ningún conteo con estos filtros.',
   'Nenhuma devolução com estes filtros.': 'Ninguna devolución con estos filtros.',
@@ -340,25 +337,25 @@ export const RELATORIOS_EM_ESPANHOL: Record<string, string> = {
   'Não serviu': 'No le quedó',
   Número: 'Número',
   'Número da maleta': 'Número de la maleta',
-  'O limite de consignação, a restrição, a situação, a praça e a comissão de cada vendedor.':
-    'El límite de consignación, la restricción, el estado, la plaza y la comisión de cada vendedor.',
-  'O que ainda está com o vendedor, peça a peça':
-    'Lo que todavía está con el vendedor, pieza por pieza',
+  'O limite de consignação, a restrição, a situação, a praça e a comissão de cada representante.':
+    'El límite de consignación, la restricción, el estado, la plaza y la comisión de cada representante.',
+  'O que ainda está com o representante, peça a peça':
+    'Lo que todavía está con el representante, pieza por pieza',
   'O que chama atenção': 'Lo que llama la atención',
   'O que foi': 'Qué fue',
   'O que foi importado': 'Qué se importó',
   'O que mudou': 'Qué cambió',
-  'O que os vendedores repassaram à loja, separado em dinheiro, transferência e boleto. O estorno vem marcado e aparece negativo.':
-    'Lo que los vendedores pasaron a la tienda, separado en efectivo, transferencia y boleto. La anulación viene marcada y aparece negativa.',
+  'O que os representantes repassaram à loja, separado em dinheiro, transferência e boleto. O estorno vem marcado e aparece negativo.':
+    'Lo que los representantes pasaron a la tienda, separado en efectivo, transferencia y boleto. La anulación viene marcada y aparece negativa.',
   'O que é': 'Qué es',
   Observação: 'Observación',
-  'Os clientes, com o vendedor responsável e a praça dele.':
-    'Los clientes, con el vendedor responsable y su plaza.',
+  'Os clientes, com o representante responsável e a praça dele.':
+    'Los clientes, con el representante responsable y su plaza.',
   'Os dois programas': 'Los dos programas',
   'Os fornecedores e quantos produtos ativos cada um tem.':
     'Los proveedores y cuántos productos activos tiene cada uno.',
-  'Os pedidos que os vendedores fizeram para devolver uma peça fora do prazo ou acima do valor que você aprova antes, e o que aconteceu com cada um.':
-    'Los pedidos que los vendedores hicieron para devolver una pieza fuera de plazo o por encima del valor que usted aprueba antes, y lo que pasó con cada uno.',
+  'Os pedidos que os representantes fizeram para devolver uma peça fora do prazo ou acima do valor que você aprova antes, e o que aconteceu com cada um.':
+    'Los pedidos que los representantes hicieron para devolver una pieza fuera de plazo o por encima del valor que usted aprueba antes, y lo que pasó con cada uno.',
   'Os produtos com preço de venda e preço de custo. O custo aparece só aqui, para a dona.':
     'Los productos con precio de venta y precio de costo. El costo aparece solo aquí, para la dueña.',
   'Os produtos do que mais vendeu para o que menos vendeu, com a parte de cada um no total e a classe: A, B ou C. Clique num total para ver os produtos da classe.':
@@ -369,18 +366,18 @@ export const RELATORIOS_EM_ESPANHOL: Record<string, string> = {
     'Los productos que todavía no tienen ninguna foto. La falta de foto nunca impide la venta.',
   'Os registros que formam uma linha do resultado do período: a venda, a devolução, a comissão, a perda, a cobrança ou o lançamento do caixa. Escolha o período e a linha.':
     'Los registros que forman una línea del resultado del período: la venta, la devolución, la comisión, la pérdida, el cobro o el movimiento de la caja. Elija el período y la línea.',
-  'Os vendedores do maior para o menor valor médio por venda (vendido líquido dividido pelo número de vendas).':
-    'Los vendedores del mayor al menor valor medio por venta (vendido neto dividido por el número de ventas).',
-  'Os vendedores do que mais vendeu para o que menos vendeu, pelo vendido líquido.':
-    'Los vendedores del que más vendió al que menos vendió, por lo vendido neto.',
-  'Os vendedores e os clientes que fazem aniversário no mês escolhido.':
-    'Los vendedores y los clientes que cumplen años en el mes elegido.',
+  'Os representantes do maior para o menor valor médio por venda (vendido líquido dividido pelo número de vendas).':
+    'Los representantes del mayor al menor valor medio por venta (vendido neto dividido por el número de ventas).',
+  'Os representantes do que mais vendeu para o que menos vendeu, pelo vendido líquido.':
+    'Los representantes del que más vendió al que menos vendió, por lo vendido neto.',
+  'Os representantes e os clientes que fazem aniversário no mês escolhido.':
+    'Los representantes y los clientes que cumplen años en el mes elegido.',
   'Outras entradas e despesas da loja': 'Otras entradas y gastos de la tienda',
   Outro: 'Otro',
   Pagas: 'Pagadas',
   'Pagas em parte': 'Pagadas en parte',
   'Pago a fornecedor': 'Pagado a proveedor',
-  'Pago ao vendedor no acerto': 'Pagado al vendedor en el acerto',
+  'Pago ao representante no acerto': 'Pagado al representante en el acerto',
   'Para revisão': 'En revisión',
   Parcela: 'Cuota',
   'Parcelas a pagar': 'Cuotas a pagar',
@@ -402,9 +399,9 @@ export const RELATORIOS_EM_ESPANHOL: Record<string, string> = {
   Peças: 'Piezas',
   'Peças a mais': 'Piezas de más',
   'Peças a menos': 'Piezas de menos',
-  'Peças ainda com o vendedor': 'Piezas todavía con el vendedor',
+  'Peças ainda com o representante': 'Piezas todavía con el representante',
   'Peças com diferença': 'Piezas con diferencia',
-  'Peças com o vendedor': 'Piezas con el vendedor',
+  'Peças com o representante': 'Piezas con el representante',
   'Peças contadas': 'Piezas contadas',
   'Peças da compra': 'Piezas de la compra',
   'Peças devolvidas à dona': 'Piezas devueltas a la dueña',
@@ -433,8 +430,8 @@ export const RELATORIOS_EM_ESPANHOL: Record<string, string> = {
   'Por peça de cada maleta de um acerto: quantas eram esperadas, quantas foram contadas (boas e com defeito) e quantas faltaram, com o valor da falta.':
     'Por pieza de cada maleta de un acerto: cuántas se esperaban, cuántas se contaron (buenas y con defecto) y cuántas faltaron, con el valor del faltante.',
   'Por que pediu': 'Por qué lo pidió',
-  'Por vendedor: quanto vendeu, quanto o cliente devolveu e a porcentagem. Aparece "Acima do limite" quando passa do que você definiu em Garantia e limites. A troca conta como uma devolução e uma venda.':
-    'Por vendedor: cuánto vendió, cuánto devolvió el cliente y el porcentaje. Aparece "Arriba del límite" cuando pasa lo que usted definió en Garantía y límites. El cambio cuenta como una devolución y una venta.',
+  'Por representante: quanto vendeu, quanto o cliente devolveu e a porcentagem. Aparece "Acima do limite" quando passa do que você definiu em Garantia e limites. A troca conta como uma devolução e uma venda.':
+    'Por representante: cuánto vendió, cuánto devolvió el cliente y el porcentaje. Aparece "Arriba del límite" cuando pasa lo que usted definió en Garantía y límites. El cambio cuenta como una devolución y una venta.',
   'Porcentagem devolvida': 'Porcentaje devuelto',
   Posição: 'Posición',
   'Prazo para atrasar (dias)': 'Plazo para atrasarse (días)',
@@ -458,24 +455,25 @@ export const RELATORIOS_EM_ESPANHOL: Record<string, string> = {
   Qualquer: 'Cualquiera',
   'Qualquer lugar': 'Cualquier lugar',
   Quando: 'Cuándo',
-  'Quantas maletas e peças, e quanto em mercadoria, cada vendedor tem agora, o limite dele e quanto ainda sobra.':
-    'Cuántas maletas y piezas, y cuánto en mercadería, tiene cada vendedor ahora, su límite y cuánto todavía sobra.',
+  'Quantas maletas e peças, e quanto em mercadoria, cada representante tem agora, o limite dele e quanto ainda sobra.':
+    'Cuántas maletas y piezas, y cuánto en mercadería, tiene cada representante ahora, su límite y cuánto todavía sobra.',
   'Quantas peças há de cada produto e quanto elas custaram. O custo aparece só aqui, para a dona.':
     'Cuántas piezas hay de cada producto y cuánto costaron. El costo aparece solo aquí, para la dueña.',
   'Quantas voltaram': 'Cuántas volvieron',
   Quantidade: 'Cantidad',
   'Quantidade guardada': 'Cantidad guardada',
-  'Quanto a loja ganhou ou perdeu no período: vendas, devoluções, custo das peças, comissões, perdas, o que foi cobrado dos vendedores e as despesas da loja. Escolha de que dia até que dia.':
-    'Cuánto ganó o perdió la tienda en el período: ventas, devoluciones, costo de las piezas, comisiones, pérdidas, lo que se cobró a los vendedores y los gastos de la tienda. Elija desde qué día hasta qué día.',
+  'Quanto a loja ganhou ou perdeu no período: vendas, devoluções, custo das peças, comissões, perdas, o que foi cobrado dos representantes e as despesas da loja. Escolha de que dia até que dia.':
+    'Cuánto ganó o perdió la tienda en el período: ventas, devoluciones, costo de las piezas, comisiones, pérdidas, lo que se cobró a los representantes y los gastos de la tienda. Elija desde qué día hasta qué día.',
   'Quanto cada cliente comprou, já descontado o que devolveu ou trocou.':
     'Cuánto compró cada cliente, ya descontado lo que devolvió o cambió.',
   'Quanto cada peça deu de lucro no período: o que entrou, o custo das peças vendidas, o lucro e a margem. Escolha de que dia até que dia.':
     'Cuánta ganancia dio cada pieza en el período: lo que entró, el costo de las piezas vendidas, la ganancia y el margen. Elija desde qué día hasta qué día.',
-  'Quanto cada vendedor deixou de lucro no período: receita líquida menos o custo das peças e menos a comissão do acerto. Escolha de que dia até que dia.':
-    'Cuánta ganancia dejó cada vendedor en el período: ingreso neto menos el costo de las piezas y menos la comisión del acerto. Elija desde qué día hasta qué día.',
-  'Quanto cada vendedor devolveu do que vendeu': 'Cuánto devolvió cada vendedor de lo que vendió',
-  'Quanto cada vendedor vendeu: vendas, peças, vendido, devolvido, vendido líquido e valor médio por venda.':
-    'Cuánto vendió cada vendedor: ventas, piezas, vendido, devuelto, vendido neto y valor medio por venta.',
+  'Quanto cada representante deixou de lucro no período: receita líquida menos o custo das peças e menos a comissão do acerto. Escolha de que dia até que dia.':
+    'Cuánta ganancia dejó cada representante en el período: ingreso neto menos el costo de las piezas y menos la comisión del acerto. Elija desde qué día hasta qué día.',
+  'Quanto cada representante devolveu do que vendeu':
+    'Cuánto devolvió cada representante de lo que vendió',
+  'Quanto cada representante vendeu: vendas, peças, vendido, devolvido, vendido líquido e valor médio por venda.':
+    'Cuánto vendió cada representante: ventas, piezas, vendido, devuelto, vendido neto y valor medio por venta.',
   'Quanto falta': 'Cuánto falta',
   'Quanto foi comprado de cada fornecedor no período. As compras desfeitas ficam em colunas à parte, fora do total.':
     'Cuánto se compró a cada proveedor en el período. Las compras deshechas quedan en columnas aparte, fuera del total.',
@@ -483,8 +481,8 @@ export const RELATORIOS_EM_ESPANHOL: Record<string, string> = {
     'Cuánto se vendió en cada día (por la fecha de la venta, en el horario de Brasilia).',
   'Quanto vendeu cada categoria de produto. Uma venda com peças de duas categorias conta nas duas.':
     'Cuánto vendió cada categoría de producto. Una venta con piezas de dos categorías cuenta en las dos.',
-  'Quanto vendeu cada praça (a praça do vendedor).':
-    'Cuánto vendió cada plaza (la plaza del vendedor).',
+  'Quanto vendeu cada praça (a praça do representante).':
+    'Cuánto vendió cada plaza (la plaza del representante).',
   'Quanto vendeu cada produto. É o mesmo vendido líquido da curva ABC.':
     'Cuánto vendió cada producto. Es el mismo vendido neto de la curva ABC.',
   Quem: 'Quién',
@@ -495,8 +493,8 @@ export const RELATORIOS_EM_ESPANHOL: Record<string, string> = {
   'Quem lançou': 'Quién registró',
   'Quem mostrar': 'A quién mostrar',
   'Ranking de produtos': 'Ranking de productos',
-  'Ranking de vendedores': 'Ranking de vendedores',
-  'Recebido do vendedor': 'Cobrado del vendedor',
+  'Ranking de representantes': 'Ranking de representantes',
+  'Recebido do representante': 'Cobrado del representante',
   'Recebido em': 'Cobrado el',
   'Recebido no acerto': 'Cobrado en el acerto',
   'Recebido nos acertos': 'Cobrado en los acertos',
@@ -529,14 +527,14 @@ export const RELATORIOS_EM_ESPANHOL: Record<string, string> = {
   'Soma até aqui': 'Suma hasta aquí',
   'Só as canceladas': 'Solo las canceladas',
   'Só as feitas': 'Solo las hechas',
-  'Só as parcelas que já venceram e ainda não foram pagas, de clientes e de vendedores, com os dias de atraso.':
-    'Solo las cuotas que ya vencieron y todavía no se pagaron, de clientes y de vendedores, con los días de atraso.',
+  'Só as parcelas que já venceram e ainda não foram pagas, de clientes e de representantes, com os dias de atraso.':
+    'Solo las cuotas que ya vencieron y todavía no se pagaron, de clientes y de representantes, con los días de atraso.',
   'Só clientes': 'Solo clientes',
   'Só com diferença': 'Solo con diferencia',
   'Só com foto': 'Solo con foto',
   'Só com problema': 'Solo con problema',
   'Só com restrição': 'Solo con restricción',
-  'Só com vendedor': 'Solo con vendedor',
+  'Só com representante': 'Solo con representante',
   'Só desfeitas': 'Solo deshechas',
   'Só devoluções': 'Solo devoluciones',
   'Só em aberto': 'Solo abiertos',
@@ -544,7 +542,7 @@ export const RELATORIOS_EM_ESPANHOL: Record<string, string> = {
   'Só o dinheiro que voltou ao cliente (dinheiro, transferência, cartão ou cheque); o crédito não entra. A devolução cancelada aparece com o valor negativo, para o total fechar.':
     'Solo el dinero que volvió al cliente (efectivo, transferencia, tarjeta o cheque); el crédito no entra. La devolución cancelada aparece con el valor negativo, para que el total cierre.',
   'Só o programa da dona': 'Solo el programa de la dueña',
-  'Só o programa do vendedor': 'Solo el programa del vendedor',
+  'Só o programa do representante': 'Solo el programa del representante',
   'Só para informar: o código de barras não é obrigatório, a loja pode usar só o código dela.':
     'Solo para informar: el código de barras no es obligatorio, la tienda puede usar solo su propio código.',
   'Só quem não tem produtos': 'Solo quien no tiene productos',
@@ -554,10 +552,10 @@ export const RELATORIOS_EM_ESPANHOL: Record<string, string> = {
   'Só sem foto': 'Solo sin foto',
   'Só sem problema': 'Solo sin problema',
   'Só sem restrição': 'Solo sin restricción',
-  'Só sem vendedor': 'Solo sin vendedor',
+  'Só sem representante': 'Solo sin representante',
   'Só trocas': 'Solo cambios',
   'Só usados': 'Solo usados',
-  'Só vendedores': 'Solo vendedores',
+  'Só representantes': 'Solo representantes',
   'Tanto faz': 'Da igual',
   Telefone: 'Teléfono',
   'Tem código do fornecedor': 'Tiene código del proveedor',
@@ -592,18 +590,18 @@ export const RELATORIOS_EM_ESPANHOL: Record<string, string> = {
     'Todo lo que aumentó o disminuyó el stock: entradas, salidas, ajustes y pérdidas, con quién registró.',
   'Tudo o que entrou e saiu do caixa. Entradas aparecem positivas e saídas negativas; o estorno vem marcado.':
     'Todo lo que entró y salió de la caja. Las entradas aparecen positivas y las salidas negativas; la anulación viene marcada.',
-  'Um acerto fechado por linha: quanto o vendedor vendeu, os descontos, o que voltou, a comissão, as faltas cobradas, o valor do acerto, quanto foi recebido e o que ficou devendo.':
-    'Un acerto cerrado por línea: cuánto vendió el vendedor, los descuentos, lo que volvió, la comisión, los faltantes cobrados, el valor del acerto, cuánto se cobró y lo que quedó debiendo.',
+  'Um acerto fechado por linha: quanto o representante vendeu, os descontos, o que voltou, a comissão, as faltas cobradas, o valor do acerto, quanto foi recebido e o que ficou devendo.':
+    'Un acerto cerrado por línea: cuánto vendió el representante, los descuentos, lo que volvió, la comisión, los faltantes cobrados, el valor del acerto, cuánto se cobró y lo que quedó debiendo.',
   'Uma linha por compra recebida. As compras desfeitas aparecem marcadas e ficam fora do total.':
     'Una línea por compra recibida. Las compras deshechas aparecen marcadas y quedan fuera del total.',
   'Uma linha por crédito: quanto foi gerado, quanto já foi usado e quanto ainda está em aberto. Créditos gerados menos usados é igual ao que está em aberto.':
     'Una línea por crédito: cuánto se generó, cuánto ya se usó y cuánto todavía está abierto. Créditos generados menos usados es igual a lo que está abierto.',
-  'Uma linha por devolução, com o vendedor, o cliente, o motivo e o valor. As canceladas aparecem marcadas e ficam fora do total.':
-    'Una línea por devolución, con el vendedor, el cliente, el motivo y el valor. Las canceladas aparecen marcadas y quedan fuera del total.',
-  'Uma linha por maleta enviada, com o vendedor, a semana, as peças e o preço. As maletas canceladas aparecem marcadas e ficam fora do total.':
-    'Una línea por maleta enviada, con el vendedor, la semana, las piezas y el precio. Las maletas canceladas aparecen marcadas y quedan fuera del total.',
-  'Uma linha por peça que o cliente devolveu com defeito, com quantas vezes, de quantos vendedores e o valor.':
-    'Una línea por pieza que el cliente devolvió con defecto, con cuántas veces, de cuántos vendedores y el valor.',
+  'Uma linha por devolução, com o representante, o cliente, o motivo e o valor. As canceladas aparecem marcadas e ficam fora do total.':
+    'Una línea por devolución, con el representante, el cliente, el motivo y el valor. Las canceladas aparecen marcadas y quedan fuera del total.',
+  'Uma linha por maleta enviada, com o representante, a semana, as peças e o preço. As maletas canceladas aparecem marcadas e ficam fora do total.':
+    'Una línea por maleta enviada, con el representante, la semana, las piezas y el precio. Las maletas canceladas aparecen marcadas y quedan fuera del total.',
+  'Uma linha por peça que o cliente devolveu com defeito, com quantas vezes, de quantos representantes e o valor.':
+    'Una línea por pieza que el cliente devolvió con defecto, con cuántas veces, de cuántos representantes y el valor.',
   'Uma linha por troca: o que voltou, o que saiu, a diferença a pagar e o que ficou de crédito. As canceladas ficam marcadas e fora do total.':
     'Una línea por cambio: lo que volvió, lo que salió, la diferencia a pagar y lo que quedó de crédito. Las canceladas quedan marcadas y fuera del total.',
   'Uma venda por linha: quando, quem vendeu, para quem, quanto saiu, quanto voltou e o vendido líquido. Clique num total para ver as vendas que o formam.':
@@ -613,7 +611,7 @@ export const RELATORIOS_EM_ESPANHOL: Record<string, string> = {
   'Vale até': 'Vale hasta',
   Valor: 'Valor',
   'Valor a custo': 'Valor a costo',
-  'Valor com o vendedor': 'Valor con el vendedor',
+  'Valor com o representante': 'Valor con el representante',
   'Valor das parcelas': 'Valor de las cuotas',
   'Valor devolvido': 'Valor devuelto',
   'Valor do acerto': 'Valor del acerto',
@@ -639,15 +637,15 @@ export const RELATORIOS_EM_ESPANHOL: Record<string, string> = {
   'Vendas por dia': 'Ventas por día',
   'Vendas por praça': 'Ventas por plaza',
   'Vendas por produto': 'Ventas por producto',
-  'Vendas por vendedor': 'Ventas por vendedor',
-  Vendedor: 'Vendedor',
-  'Vendedor responsável': 'Vendedor responsable',
-  Vendedores: 'Vendedores',
-  'Vendedores acima do limite': 'Vendedores arriba del límite',
-  'Vendedores com devolução': 'Vendedores con devolución',
-  'Vendedores com maleta atrasada': 'Vendedores con maleta atrasada',
-  'Vendedores e clientes': 'Vendedores y clientes',
-  'Vendedores: limite e situação': 'Vendedores: límite y estado',
+  'Vendas por representante': 'Ventas por representante',
+  Vendedor: 'Representante',
+  'Representante responsável': 'Representante responsable',
+  Vendedores: 'Representantes',
+  'Representantes acima do limite': 'Representantes arriba del límite',
+  'Representantes com devolução': 'Representantes con devolución',
+  'Representantes com maleta atrasada': 'Representantes con maleta atrasada',
+  'Representantes e clientes': 'Representantes y clientes',
+  'Representantes: limite e situação': 'Representantes: límite y estado',
   'Vendida em': 'Vendida el',
   Vendido: 'Vendido',
   'Vendido líquido': 'Vendido neto',

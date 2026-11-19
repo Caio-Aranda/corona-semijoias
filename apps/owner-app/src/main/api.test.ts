@@ -118,7 +118,7 @@ describe('API do Corona Gestão (processo principal)', () => {
   });
 });
 
-describe('API do Corona Gestão: vendedores (processo principal)', () => {
+describe('API do Corona Gestão: representantes (processo principal)', () => {
   const ID = '8f14e45f-ceea-4672-a1b9-3a1a0f7c4d11';
   const DOC = '1b4e28ba-2fa1-41d3-b9a5-2c3a9a8f6b22';
 
@@ -215,7 +215,7 @@ describe('API do Corona Gestão: vendedores (processo principal)', () => {
     expect(arquivo.size).toBe(3);
   });
 
-  it('editar vendedor manda a versão lida no corpo; abas vão para a rota da aba', async () => {
+  it('editar representante manda a versão lida no corpo; abas vão para a rota da aba', async () => {
     const { pedidos, fetch } = fetchQueGuarda(
       () => new Response('{}', { status: 200, headers: { 'Content-Type': 'application/json' } }),
     );
@@ -571,7 +571,7 @@ describe('API do Corona Gestão: rotas certas no cliente gerado', () => {
         `POST /api/dona/remessas/${ID}/devolucoes/${ID}/estorno`,
       ],
       [
-        { operacao: 'maletas.cancelar', id: ID, motivo: 'Vendedor desistiu' },
+        { operacao: 'maletas.cancelar', id: ID, motivo: 'Representante desistiu' },
         `POST /api/dona/remessas/${ID}/cancelar`,
       ],
       [{ operacao: 'telas.ler' }, 'GET /api/configuracoes/telas'],
@@ -586,17 +586,11 @@ describe('API do Corona Gestão: rotas certas no cliente gerado', () => {
         `POST /api/maletas/${ID}/fechamento/leituras`,
       ],
       [{ operacao: 'fechamento.concluir', id: ID }, `POST /api/maletas/${ID}/fechamento/concluir`],
-      [
-        { operacao: 'consignado.semanas', id: ID },
-        `GET /api/consignado/vendedores/${ID}/semanas`,
-      ],
+      [{ operacao: 'consignado.semanas', id: ID }, `GET /api/consignado/vendedores/${ID}/semanas`],
       [{ operacao: 'consignado.semana', id: ID }, `GET /api/consignado/semanas/${ID}`],
       [{ operacao: 'consignado.notas', filtros: {} }, 'GET /api/consignado/notas'],
       [{ operacao: 'consignado.nota', id: ID }, `GET /api/consignado/notas/${ID}`],
-      [
-        { operacao: 'consignado.cliente', id: ID },
-        `GET /api/consignado/clientes/${ID}/situacao`,
-      ],
+      [{ operacao: 'consignado.cliente', id: ID }, `GET /api/consignado/clientes/${ID}/situacao`],
       [
         { operacao: 'consignado.fotoDoCliente', id: ID, tipo: 'documento-frente' },
         `GET /api/clientes/${ID}/fotos/documento-frente`,
@@ -607,7 +601,11 @@ describe('API do Corona Gestão: rotas certas no cliente gerado', () => {
         `POST /api/dona/consignado/alertas/${ID}/visto`,
       ],
       [
-        { operacao: 'relatorios.cadastros', relatorio: 'maleta-fechamento', consulta: { remessaId: ID } },
+        {
+          operacao: 'relatorios.cadastros',
+          relatorio: 'maleta-fechamento',
+          consulta: { remessaId: ID },
+        },
         'GET /api/dona/relatorios/maleta/fechamento',
       ],
       [

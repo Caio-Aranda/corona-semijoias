@@ -173,7 +173,7 @@ describe('menu lateral', () => {
       'Início',
       'Produtos',
       'Fornecedores',
-      'Vendedores',
+      'Representantes',
       'Clientes',
       'Usuários',
     ]) {

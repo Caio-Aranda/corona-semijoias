@@ -58,9 +58,9 @@ export const RELATORIOS_DE_CONTROLE: Record<NomeDoRelatorioDeControle, Definicao
         ],
       },
     ],
-    buscaRotulo: 'Buscar por vendedor',
+    buscaRotulo: 'Buscar por representante',
     colunas: [
-      { chave: 'vendedor', titulo: 'Vendedor', tipo: 'texto' },
+      { chave: 'vendedor', titulo: 'Representante', tipo: 'texto' },
       { chave: 'situacaoNaTela', titulo: 'Situação', tipo: 'texto' },
       { chave: 'versaoApp', titulo: 'Versão do programa', tipo: 'texto' },
       { chave: 'ultimoRecebimentoEm', titulo: 'Último recebimento', tipo: 'dataHora' },
@@ -95,7 +95,7 @@ export const RELATORIOS_DE_CONTROLE: Record<NomeDoRelatorioDeControle, Definicao
         qualquer: 'Os dois programas',
         opcoes: [
           { valor: 'gestao', rotulo: 'Só o programa da dona' },
-          { valor: 'vendas', rotulo: 'Só o programa do vendedor' },
+          { valor: 'vendas', rotulo: 'Só o programa do representante' },
         ],
       },
     ],

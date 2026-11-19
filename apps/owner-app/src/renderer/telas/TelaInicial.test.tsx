@@ -62,7 +62,7 @@ describe('tela inicial da dona (visual novo)', () => {
     mostrar(ponteCom({}));
     const atalhos = screen.getByRole('navigation', { name: 'O que você quer fazer?' });
     expect(within(atalhos).getAllByRole('button')).toHaveLength(6);
-    expect(within(atalhos).getByText('separar as peças para o vendedor')).toBeInTheDocument();
+    expect(within(atalhos).getByText('separar as peças para o representante')).toBeInTheDocument();
     await u.click(within(atalhos).getByRole('button', { name: 'Fazer acerto' }));
     expect(window.location.hash).toBe('#/acertos/lista');
     await u.click(within(atalhos).getByRole('button', { name: 'Painel da semana' }));

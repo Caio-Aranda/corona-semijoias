@@ -8,7 +8,7 @@ export const ES_TEXTOS_DE_FINANCEIRO: NoMesmoFormato<typeof PT_TEXTOS_DE_FINANCE
     categorias: 'Categorías de la caja',
     contasAPagar: 'Cuentas a pagar',
     contasAReceber: 'Cuentas a cobrar',
-    recebimentos: 'Cobros del vendedor',
+    recebimentos: 'Cobros del representante',
   },
   formas: {
     DINHEIRO: 'Efectivo',
@@ -57,9 +57,9 @@ export const ES_TEXTOS_DE_FINANCEIRO: NoMesmoFormato<typeof PT_TEXTOS_DE_FINANCE
     },
     origens: {
       MANUAL: 'Movimiento de la tienda',
-      RECEBIMENTO_VENDEDOR: 'Cobro del vendedor',
+      RECEBIMENTO_VENDEDOR: 'Cobro del representante',
       PAGAMENTO_FORNECEDOR: 'Pago al proveedor',
-      ACERTO_A_FAVOR_DO_VENDEDOR: 'Pago al vendedor',
+      ACERTO_A_FAVOR_DO_VENDEDOR: 'Pago al representante',
     },
     origemAutomatica: 'Entró o salió solo',
     estorno: 'Anulación',
@@ -212,21 +212,21 @@ export const ES_TEXTOS_DE_FINANCEIRO: NoMesmoFormato<typeof PT_TEXTOS_DE_FINANCE
   contasAReceber: {
     titulo: 'Cuentas a cobrar',
     ajuda:
-      'Lo que los clientes deben a los vendedores y lo que los vendedores deben a la tienda. Aquí usted solo consulta; para registrar lo que el vendedor pagó, use Cobros del vendedor.',
+      'Lo que los clientes deben a los representantes y lo que los representantes deben a la tienda. Aquí usted solo consulta; para registrar lo que el representante pagó, use Cobros del representante.',
     legenda: 'Cuentas a cobrar',
     naoLeu: 'No se pudieron leer las cuentas a cobrar. Intente de nuevo.',
     vazia: 'Ninguna cuenta a cobrar con estos filtros.',
     filtros: {
-      vendedor: 'Vendedor',
-      todosVendedores: 'Todos los vendedores',
+      vendedor: 'Representante',
+      todosVendedores: 'Todos los representantes',
       situacao: 'Estado',
       todasSituacoes: 'Todos los estados',
       nivel: 'De quién es la cuenta',
       todosNiveis: 'Todas',
     },
     niveis: {
-      CLIENTE: 'Del cliente al vendedor',
-      VENDEDOR: 'Del vendedor a la tienda',
+      CLIENTE: 'Del cliente al representante',
+      VENDEDOR: 'Del representante a la tienda',
     },
     situacoes: {
       ABERTA: 'Abierta',
@@ -237,7 +237,7 @@ export const ES_TEXTOS_DE_FINANCEIRO: NoMesmoFormato<typeof PT_TEXTOS_DE_FINANCE
       VENCIDA: 'Vencida',
     },
     colunas: {
-      vendedor: 'Vendedor',
+      vendedor: 'Representante',
       cliente: 'Cliente',
       nivel: 'Cuenta',
       parcela: 'Cuota',
@@ -254,24 +254,24 @@ export const ES_TEXTOS_DE_FINANCEIRO: NoMesmoFormato<typeof PT_TEXTOS_DE_FINANCE
       ESTORNO_DE_RECEBIMENTO: 'Cobro anulado',
     },
     vencida: 'Vencida',
-    semCliente: 'El vendedor debe a la tienda',
+    semCliente: 'El representante debe a la tienda',
   },
 
   recebimentos: {
-    titulo: 'Cobros del vendedor',
+    titulo: 'Cobros del representante',
     ajuda:
-      'Lo que el vendedor pagó a la tienda fuera del acerto. El dinero entra en la caja y da de baja sus cuentas, de la más antigua a la más nueva.',
-    legenda: 'Cobros del vendedor',
+      'Lo que el representante pagó a la tienda fuera del acerto. El dinero entra en la caja y da de baja sus cuentas, de la más antigua a la más nueva.',
+    legenda: 'Cobros del representante',
     naoLeu: 'No se pudieron leer los cobros. Intente de nuevo.',
     vazia: 'Ningún cobro con estos filtros.',
     registrar: 'Registrar cobro',
     filtros: {
-      vendedor: 'Vendedor',
-      todosVendedores: 'Todos los vendedores',
+      vendedor: 'Representante',
+      todosVendedores: 'Todos los representantes',
     },
     colunas: {
       data: 'Fecha',
-      vendedor: 'Vendedor',
+      vendedor: 'Representante',
       forma: 'Forma',
       valor: 'Valor',
       de: 'De dónde vino',
@@ -291,9 +291,9 @@ export const ES_TEXTOS_DE_FINANCEIRO: NoMesmoFormato<typeof PT_TEXTOS_DE_FINANCE
     novo: {
       titulo: 'Registrar cobro',
       ajuda:
-        'Deje la cuenta en blanco para que el valor dé de baja las cuentas abiertas del vendedor, de la más antigua a la más nueva.',
-      vendedor: 'Vendedor',
-      escolhaVendedor: 'Elija el vendedor',
+        'Deje la cuenta en blanco para que el valor dé de baja las cuentas abiertas del representante, de la más antigua a la más nueva.',
+      vendedor: 'Representante',
+      escolhaVendedor: 'Elija el representante',
       conta: 'Cuenta a dar de baja',
       todasAsContas: 'Las cuentas abiertas, de la más antigua a la más nueva',
       contaDe: (vencimento: string, emAberto: string) =>
@@ -304,11 +304,11 @@ export const ES_TEXTOS_DE_FINANCEIRO: NoMesmoFormato<typeof PT_TEXTOS_DE_FINANCE
       cancelar: 'Volver',
       feito: 'Cobro registrado.',
       jaFeito: 'Este cobro ya estaba registrado.',
-      avisoVendedor: 'Elija el vendedor.',
+      avisoVendedor: 'Elija el representante.',
       avisoValor: 'Escriba el valor cobrado, en reales, mayor que cero.',
-      avisoForma: 'Elija cómo pagó el vendedor.',
+      avisoForma: 'Elija cómo pagó el representante.',
       boleto: 'El boleto pagado tiene que ser del valor entero de la cuenta del boleto.',
-      semConta: 'Este vendedor no tiene cuenta abierta.',
+      semConta: 'Este representante no tiene cuenta abierta.',
     },
     estornoDialogo: {
       titulo: 'Anular cobro',

@@ -115,7 +115,12 @@ const leitura = (situacao: string) => ({
       aindaComClientes: [],
     },
   ],
-  valores: { vd: '300.00', comissaoDosClientes: '90.00', recebido: '100.00', pendenciasAReceber: '110.00' },
+  valores: {
+    vd: '300.00',
+    comissaoDosClientes: '90.00',
+    recebido: '100.00',
+    pendenciasAReceber: '110.00',
+  },
 });
 
 function montar(manipuladores: Record<string, Manipulador> = {}) {
@@ -176,14 +181,18 @@ describe('O acerto antigo fica escondido (ADR-0016, item 15)', () => {
     const menu = await screen.findByRole('navigation', { name: TEXTOS.menu.rotulo });
     expect(within(menu).queryByText(TEXTOS_DE_ACERTOS.menu.grupo)).toBeNull();
     expect(within(menu).queryByRole('button', { name: TEXTOS_DE_ACERTOS.menu.acertos })).toBeNull();
-    expect(within(menu).queryByRole('button', { name: TEXTOS_DE_ACERTOS.menu.comissao })).toBeNull();
-    expect(within(menu).queryByRole('button', { name: TEXTOS_DE_ACERTOS.menu.pendencias })).toBeNull();
-    // Em vez disso, o menu tem o Fechamento da maleta e o grupo do consignado.
     expect(
-      within(menu).getByRole('button', { name: T.menu.fechamento }),
-    ).toBeInTheDocument();
+      within(menu).queryByRole('button', { name: TEXTOS_DE_ACERTOS.menu.comissao }),
+    ).toBeNull();
+    expect(
+      within(menu).queryByRole('button', { name: TEXTOS_DE_ACERTOS.menu.pendencias }),
+    ).toBeNull();
+    // Em vez disso, o menu tem o Fechamento da maleta e o grupo do consignado.
+    expect(within(menu).getByRole('button', { name: T.menu.fechamento })).toBeInTheDocument();
     expect(within(menu).getByText(T.menu.grupo)).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: TEXTOS_DA_INICIAL.atalhos.acerto.nome })).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: TEXTOS_DA_INICIAL.atalhos.acerto.nome }),
+    ).toBeNull();
     expect(m.chamadas.some((c) => c.operacao === 'telas.ler')).toBe(true);
   });
 
@@ -196,11 +205,17 @@ describe('O acerto antigo fica escondido (ADR-0016, item 15)', () => {
   });
 
   it('com a configuração em "sim", tudo volta ao menu', async () => {
-    const m = montar({ 'telas.ler': () => ({ ok: true, dados: { acertoDoVendedorVisivel: true } }) });
+    const m = montar({
+      'telas.ler': () => ({ ok: true, dados: { acertoDoVendedorVisivel: true } }),
+    });
     render(<App ponte={m.ponte} />);
     const menu = await screen.findByRole('navigation', { name: TEXTOS.menu.rotulo });
-    expect(within(menu).getByRole('button', { name: TEXTOS_DE_ACERTOS.menu.acertos })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: TEXTOS_DA_INICIAL.atalhos.acerto.nome })).toBeInTheDocument();
+    expect(
+      within(menu).getByRole('button', { name: TEXTOS_DE_ACERTOS.menu.acertos }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: TEXTOS_DA_INICIAL.atalhos.acerto.nome }),
+    ).toBeInTheDocument();
   });
 });
 
@@ -234,7 +249,9 @@ describe('Fechamento da maleta (§23.10)', () => {
 
     // 3. O relatório mostra tudo, com quem estão as peças que faltam.
     expect(await screen.findByText('Maria Cliente (nota 65-21): 2')).toBeInTheDocument();
-    expect(screen.getByRole('columnheader', { name: 'Devolvidas pelos clientes' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('columnheader', { name: 'Devolvidas pelos clientes' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: 'Lidas na volta' })).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: 'Diferença' })).toBeInTheDocument();
     const rodape = screen.getByRole('region', { name: TEXTOS_RELATORIOS.totais.titulo });
@@ -249,8 +266,10 @@ describe('Fechamento da maleta (§23.10)', () => {
     await waitFor(() =>
       expect(m.chamadas.filter((c) => c.operacao === 'fechamento.leituras')).toHaveLength(1),
     );
-    const envio = m.chamadas.find((c) => c.operacao === 'fechamento.leituras')!
-      .parametros as { id: string; leituras: { id: string; produtoId: string; quantidade: number }[] };
+    const envio = m.chamadas.find((c) => c.operacao === 'fechamento.leituras')!.parametros as {
+      id: string;
+      leituras: { id: string; produtoId: string; quantidade: number }[];
+    };
     expect(envio.id).toBe(ID_MALETA);
     expect(envio.leituras).toHaveLength(1);
     expect(envio.leituras[0]).toMatchObject({ produtoId: ID_ANEL, quantidade: 1 });
@@ -447,7 +466,15 @@ describe('Notas, semanas, clientes e avisos do consignado (só leitura)', () => 
     URL.revokeObjectURL = vi.fn();
     const m = montar({
       'clientes.listar': () =>
-        pagina([{ id: ID_CLIENTE, version: 1, nome: 'Maria Cliente', telefone: '67 99999-0000', ativo: true }]),
+        pagina([
+          {
+            id: ID_CLIENTE,
+            version: 1,
+            nome: 'Maria Cliente',
+            telefone: '67 99999-0000',
+            ativo: true,
+          },
+        ]),
       'consignado.cliente': () => ({
         ok: true,
         dados: {
@@ -479,7 +506,9 @@ describe('Notas, semanas, clientes e avisos do consignado (só leitura)', () => 
     });
     const u = await abrirPeloMenu(m, T.menu.clientes);
     await u.click(await screen.findByRole('button', { name: T.clientes.abrirDe('Maria Cliente') }));
-    expect(await screen.findByRole('heading', { name: 'Ficha de Maria Cliente' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Ficha de Maria Cliente' }),
+    ).toBeInTheDocument();
     expect(screen.getByText('Rua A, 10, Centro, Ponta Porã - MS')).toBeInTheDocument();
     expect(screen.getByText('CI: 1234567')).toBeInTheDocument();
     expect(screen.getByText('Ana')).toBeInTheDocument();
@@ -491,7 +520,9 @@ describe('Notas, semanas, clientes e avisos do consignado (só leitura)', () => 
     expect(m.chamadas.some((c) => c.operacao === 'consignado.fotoDoCliente')).toBe(false);
     // O verso ainda não chegou: o aviso é simples e a ficha continua inteira.
     expect(screen.getByText(T.clientes.ficha.semFoto)).toBeInTheDocument();
-    await u.click(screen.getByRole('button', { name: T.clientes.ficha.verFoto(T.clientes.ficha.foto) }));
+    await u.click(
+      screen.getByRole('button', { name: T.clientes.ficha.verFoto(T.clientes.ficha.foto) }),
+    );
     const img = await screen.findByRole('img', { name: T.clientes.ficha.foto });
     expect(img).toHaveAttribute('src', 'blob:foto');
     const pedida = m.chamadas.find((c) => c.operacao === 'consignado.fotoDoCliente')!.parametros;
@@ -520,9 +551,7 @@ describe('Notas, semanas, clientes e avisos do consignado (só leitura)', () => 
       },
     });
     const u = await abrirPeloMenu(m, T.menu.avisos);
-    expect(
-      await screen.findByText(T.avisos.tipos.PRECO_DIFERENTE_DA_MALETA!),
-    ).toBeInTheDocument();
+    expect(await screen.findByText(T.avisos.tipos.PRECO_DIFERENTE_DA_MALETA!)).toBeInTheDocument();
     await u.click(
       screen.getByRole('button', {
         name: T.avisos.marcarDe(T.avisos.tipos.PRECO_DIFERENTE_DA_MALETA!),

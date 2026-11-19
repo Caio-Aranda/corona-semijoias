@@ -6,7 +6,7 @@ export const ES_TEXTOS_DO_PAINEL: NoMesmoFormato<typeof PT_TEXTOS_DO_PAINEL> = {
   botaoInicial: 'Panel de la semana',
   titulo: 'Panel de la semana',
   ajuda:
-    'Lo que se envió, se devolvió y se vendió en la semana, vendedor por vendedor. Haga clic en un vendedor o en un total para ver los registros.',
+    'Lo que se envió, se devolvió y se vendió en la semana, representante por representante. Haga clic en un representante o en un total para ver los registros.',
   semana: (numero: number, inicio: string, fim: string) =>
     `Semana ${numero}: del ${inicio} al ${fim}`,
   atalhos: {
@@ -15,14 +15,14 @@ export const ES_TEXTOS_DO_PAINEL: NoMesmoFormato<typeof PT_TEXTOS_DO_PAINEL> = {
     acerto: 'Acerto',
     reposicao: 'Reposición',
     troca: 'Cambio',
-    vendedores: 'Vendedores',
+    vendedores: 'Representantes',
     estoque: 'Stock',
   },
   filtros: {
     rotulo: 'Filtros del panel',
     semana: 'Semana',
     semanaAtual: 'Semana de hoy',
-    vendedor: 'Vendedor',
+    vendedor: 'Representante',
     praca: 'Plaza',
     situacao: 'Estado',
     qualquer: 'Todos',
@@ -40,17 +40,17 @@ export const ES_TEXTOS_DO_PAINEL: NoMesmoFormato<typeof PT_TEXTOS_DO_PAINEL> = {
   },
   carregando: 'Cargando el panel...',
   atualizar: 'Actualizar',
-  vazio: 'Ningún vendedor con movimiento en esta semana.',
+  vazio: 'Ningún representante con movimiento en esta semana.',
   previa: 'Vista previa',
   previaAjuda:
     'Vista previa: todavía no es el acerto. Los números pueden cambiar hasta que se cierre el acerto.',
   previaAnteriores:
-    'La vista previa incluye lo que el vendedor todavía no acertó de semanas anteriores.',
+    'La vista previa incluye lo que el representante todavía no acertó de semanas anteriores.',
   previaSemCotacao:
     'Sin la cotización del día, la vista previa no muestra Dólar ni Guaraní. Registre la cotización para ver.',
   semCotacaoLinha: 'Sin cotización',
   colunas: {
-    vendedor: 'Vendedor',
+    vendedor: 'Representante',
     praca: 'Plaza',
     situacao: 'Estado',
     enviado: 'Enviado',
@@ -96,7 +96,7 @@ export const ES_TEXTOS_DO_PAINEL: NoMesmoFormato<typeof PT_TEXTOS_DO_PAINEL> = {
     ficouDevendo: 'Quedó debiendo',
     pendenciasEmAberto: 'Pendientes abiertas',
     pendenciasPagas: 'Pendientes pagadas',
-    vendedores: 'Vendedores',
+    vendedores: 'Representantes',
     liquidoPrevisto: 'Valor neto previsto',
     comissaoPrevista: 'Comisión prevista',
     vendas: 'Ventas',
@@ -129,7 +129,7 @@ export const ES_TEXTOS_DO_PAINEL: NoMesmoFormato<typeof PT_TEXTOS_DO_PAINEL> = {
     pdf: 'PDF',
     excel: 'Excel',
     csv: 'CSV',
-    semLinhas: 'No hay vendedores para guardar con estos filtros.',
+    semLinhas: 'No hay representantes para guardar con estos filtros.',
     pronto: (nome: string) => `Archivo listo: ${nome}.`,
     erro: 'No se pudo preparar el archivo. Intente de nuevo.',
   },

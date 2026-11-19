@@ -141,13 +141,13 @@ describe('Relatórios de vendas e curva ABC (tarefa 8.5)', () => {
     const cartoes = await abrirAreaDoMenu(u, 'vendas');
     for (const t of [
       'Vendas feitas',
-      'Vendas por vendedor',
+      'Vendas por representante',
       'Vendas por praça',
       'Vendas por cliente',
       'Vendas por produto',
       'Vendas por categoria',
       'Vendas por dia',
-      'Ranking de vendedores',
+      'Ranking de representantes',
       'Ranking de produtos',
       'Valor médio por venda',
       'Vendas canceladas',
@@ -158,10 +158,10 @@ describe('Relatórios de vendas e curva ABC (tarefa 8.5)', () => {
     expect(within(estoque).getByText('Curva ABC dos produtos')).toBeInTheDocument();
   });
 
-  it('por vendedor mostra Real, Dólar e Guarani que vieram da linha e do rodapé, não os de hoje', async () => {
+  it('por representante mostra Real, Dólar e Guarani que vieram da linha e do rodapé, não os de hoje', async () => {
     const m = montar();
-    await abrir(m, 'Vendas por vendedor');
-    await screen.findByRole('heading', { name: 'Vendas por vendedor', level: 1 });
+    await abrir(m, 'Vendas por representante');
+    await screen.findByRole('heading', { name: 'Vendas por representante', level: 1 });
     expect((await screen.findAllByText('Maria Souza')).length).toBeGreaterThan(0);
     expect(dosRelatorios(m)[0]).toMatchObject({ relatorio: 'vendas-por-vendedor', pagina: 0 });
     expect(screen.getAllByText(/US\$\s*88,50/).length).toBeGreaterThan(0);
@@ -246,7 +246,7 @@ describe('Relatórios de vendas e curva ABC (tarefa 8.5)', () => {
 
   it('o arquivo leva as três moedas e a frase da cotação do dia de cada venda', async () => {
     const m = montar();
-    const u = await abrir(m, 'Vendas por vendedor');
+    const u = await abrir(m, 'Vendas por representante');
     await screen.findAllByText('Maria Souza');
     await u.click(screen.getByRole('button', { name: 'Baixar em CSV' }));
     await waitFor(() => expect(entregues).toHaveLength(1));

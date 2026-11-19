@@ -8,7 +8,7 @@ const noPdf = (s: string) => s.replace(/[()\\]/g, (c) => `\\${c}`);
 function acerto(linhasNaTabela: number, extra: Partial<AcertoParaPdf> = {}): AcertoParaPdf {
   return {
     loja: 'Corona Semijoias',
-    titulo: 'Acerto de Ana Vendedora, semana 45',
+    titulo: 'Acerto de Ana Representante, semana 45',
     cabecalho: ['Fechado em 12/11/2026 às 12:00.'],
     secoes: [
       {
@@ -50,7 +50,7 @@ describe('PDF do acerto', () => {
     expect(paginas(pdf)).toBe(1);
     for (const t of [
       'Corona Semijoias',
-      'Acerto de Ana Vendedora, semana 45',
+      'Acerto de Ana Representante, semana 45',
       'Fechado em 12/11/2026 às 12:00.',
       'Vendido na semana: Gs. 750.000 de Gs. 700.000 (meta)',
       'Bateu a meta: comissão de 40%.',
@@ -70,9 +70,9 @@ describe('PDF do acerto', () => {
     expect(n).toBeGreaterThan(1);
     expect(pdf).toContain(`Página ${n} de ${n}`);
     expect(pdf).toContain('Anel de ouro número 120');
-    expect((pdf.match(/Acerto de Ana Vendedora, semana 45/g) ?? []).length).toBeGreaterThanOrEqual(
-      n,
-    );
+    expect(
+      (pdf.match(/Acerto de Ana Representante, semana 45/g) ?? []).length,
+    ).toBeGreaterThanOrEqual(n);
   });
 
   it('dinheiro nunca passa por conta aqui: o PDF só desenha o texto que recebeu', () => {

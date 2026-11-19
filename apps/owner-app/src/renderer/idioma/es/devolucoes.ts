@@ -13,10 +13,10 @@ export const ES_TEXTOS_DE_DEVOLUCOES: NoMesmoFormato<typeof PT_TEXTOS_DE_DEVOLUC
   },
   rodapeDaCotacao:
     'Dólar y Guaraní por la cotización del Banco Central del día de cada movimiento.',
-  todosOsVendedores: 'Todos los vendedores',
-  vendedor: 'Vendedor',
+  todosOsVendedores: 'Todos los representantes',
+  vendedor: 'Representante',
   situacao: 'Estado',
-  vendedorDesligado: 'Vendedor dado de baja',
+  vendedorDesligado: 'Representante dado de baja',
   voltar: 'Volver',
   motivos: {
     ARREPENDIMENTO: 'Desistimiento',
@@ -34,7 +34,7 @@ export const ES_TEXTOS_DE_DEVOLUCOES: NoMesmoFormato<typeof PT_TEXTOS_DE_DEVOLUC
   autorizar: {
     titulo: 'Devoluciones para autorizar',
     ajuda:
-      'El vendedor pidió autorización para devolver una pieza que pasó el plazo de la garantía o el valor que usted aprueba antes. Si la aprueba, él tiene 7 días para registrar la devolución.',
+      'El representante pidió autorización para devolver una pieza que pasó el plazo de la garantía o el valor que usted aprueba antes. Si la aprueba, él tiene 7 días para registrar la devolución.',
     legenda: 'Pedidos de autorización de devolución',
     vazio: 'Ningún pedido en este estado.',
     situacoes: [
@@ -46,7 +46,7 @@ export const ES_TEXTOS_DE_DEVOLUCOES: NoMesmoFormato<typeof PT_TEXTOS_DE_DEVOLUC
     ],
     colunas: {
       pedidoEm: 'Pedido el',
-      vendedor: 'Vendedor',
+      vendedor: 'Representante',
       cliente: 'Cliente',
       pecas: 'Piezas',
       valor: 'Valor',
@@ -67,16 +67,17 @@ export const ES_TEXTOS_DE_DEVOLUCOES: NoMesmoFormato<typeof PT_TEXTOS_DE_DEVOLUC
     confirmarAprovar: {
       titulo: '¿Aprobar este reembolso?',
       texto:
-        'El vendedor podrá registrar esta devolución dentro de 7 días. La autorización vale para una sola devolución.',
+        'El representante podrá registrar esta devolución dentro de 7 días. La autorización vale para una sola devolución.',
     },
     confirmarNegar: {
       titulo: '¿Negar este pedido?',
-      texto: 'Se avisará al vendedor. La devolución no se podrá hacer sin una nueva autorización.',
+      texto:
+        'Se avisará al representante. La devolución no se podrá hacer sin una nueva autorización.',
       rotuloDoMotivo: 'Motivo',
       avisoDoMotivo: 'Diga el motivo de negar el pedido.',
     },
     aprovado: (ate: string) =>
-      `Reembolso aprobado. El vendedor puede registrar la devolución hasta el ${ate}.`,
+      `Reembolso aprobado. El representante puede registrar la devolución hasta el ${ate}.`,
     negado: 'Pedido negado.',
   },
   revisar: {
@@ -87,7 +88,7 @@ export const ES_TEXTOS_DE_DEVOLUCOES: NoMesmoFormato<typeof PT_TEXTOS_DE_DEVOLUC
     vazio: 'Ninguna devolución para revisar. Todo está al día.',
     colunas: {
       devolvidaEm: 'Devuelta el',
-      vendedor: 'Vendedor',
+      vendedor: 'Representante',
       cliente: 'Cliente',
       valor: 'Valor devuelto',
       porQue: 'Por qué está en revisión',
@@ -111,16 +112,16 @@ export const ES_TEXTOS_DE_DEVOLUCOES: NoMesmoFormato<typeof PT_TEXTOS_DE_DEVOLUC
     confirmarNaoAceitar: {
       titulo: '¿No aceptar esta devolución?',
       texto:
-        'El dinero ya volvió al cliente y la pieza ya está con el vendedor. El valor devuelto queda como pendiente del vendedor y se cobrará en el acerto.',
+        'El dinero ya volvió al cliente y la pieza ya está con el representante. El valor devuelto queda como pendiente del representante y se cobrará en el acerto.',
       rotuloDoMotivo: '¿Por qué no la acepta?',
       avisoDoMotivo: 'Diga por qué no se aceptó la devolución.',
     },
     mantida: 'Devolución mantenida.',
-    naoAceita: 'Devolución no aceptada. El valor quedó como pendiente del vendedor.',
+    naoAceita: 'Devolución no aceptada. El valor quedó como pendiente del representante.',
   },
   lista: {
     titulo: 'Devoluciones',
-    ajuda: 'Devoluciones hechas por los vendedores y por usted.',
+    ajuda: 'Devoluciones hechas por los representantes y por usted.',
     legenda: 'Devoluciones',
     vazio: 'Ninguna devolución en este estado.',
     situacoes: [
@@ -139,7 +140,7 @@ export const ES_TEXTOS_DE_DEVOLUCOES: NoMesmoFormato<typeof PT_TEXTOS_DE_DEVOLUC
     },
     colunas: {
       devolvidaEm: 'Devuelta el',
-      vendedor: 'Vendedor',
+      vendedor: 'Representante',
       cliente: 'Cliente',
       pecas: 'Piezas',
       motivo: 'Motivo',
@@ -205,18 +206,18 @@ export const ES_TEXTOS_DE_DEVOLUCOES: NoMesmoFormato<typeof PT_TEXTOS_DE_DEVOLUC
     forma: 'Cómo se devolvió el dinero',
     escolhaMotivo: 'Elija el motivo de la devolución',
     escolhaForma: 'Elija cómo se devolvió el dinero',
-    avisoDaLoja: 'La pieza devuelta va a la tienda. No vuelve a la maleta del vendedor.',
+    avisoDaLoja: 'La pieza devuelta va a la tienda. No vuelve a la maleta del representante.',
     nenhumaPeca: 'Elija cuántas piezas vuelven.',
     registrarBotao: 'Registrar devolución',
     registrando: 'Registrando...',
     registrada: 'Devolución registrada.',
     jaRegistrada: 'Esta devolución ya estaba registrada.',
     foraDoPrazo:
-      'Pasó el plazo de la garantía de esta venta. El vendedor puede pedir la autorización en su computadora, y usted la aprueba en Devoluciones para autorizar.',
+      'Pasó el plazo de la garantía de esta venta. El representante puede pedir la autorización en su computadora, y usted la aprueba en Devoluciones para autorizar.',
   },
   trocas: {
     titulo: 'Cambios',
-    ajuda: 'Cambios hechos por los vendedores. Para deshacer un cambio, use Cancelar cambio.',
+    ajuda: 'Cambios hechos por los representantes. Para deshacer un cambio, use Cancelar cambio.',
     legenda: 'Cambios',
     vazio: 'Ningún cambio en este estado.',
     situacoes: [
@@ -227,7 +228,7 @@ export const ES_TEXTOS_DE_DEVOLUCOES: NoMesmoFormato<typeof PT_TEXTOS_DE_DEVOLUC
     situacaoDaTroca: { ATIVA: 'Hecho', CANCELADA: 'Cancelado' },
     colunas: {
       trocadaEm: 'Cambiado el',
-      vendedor: 'Vendedor',
+      vendedor: 'Representante',
       cliente: 'Cliente',
       voltaram: 'Piezas que volvieron',
       sairam: 'Piezas que salieron',
@@ -252,7 +253,7 @@ export const ES_TEXTOS_DE_DEVOLUCOES: NoMesmoFormato<typeof PT_TEXTOS_DE_DEVOLUC
   creditos: {
     titulo: 'Créditos de los clientes',
     ajuda:
-      'El crédito es el valor que sobra en un cambio y que el cliente usa en una compra futura con el mismo vendedor.',
+      'El crédito es el valor que sobra en un cambio y que el cliente usa en una compra futura con el mismo representante.',
     legenda: 'Créditos de los clientes',
     vazio: 'Ningún crédito en este estado.',
     situacoes: [
@@ -273,7 +274,7 @@ export const ES_TEXTOS_DE_DEVOLUCOES: NoMesmoFormato<typeof PT_TEXTOS_DE_DEVOLUC
     colunas: {
       geradoEm: 'Generado el',
       cliente: 'Cliente',
-      vendedor: 'Vendedor',
+      vendedor: 'Representante',
       origem: 'De dónde vino',
       valor: 'Valor',
       usado: 'Ya usado',
@@ -286,24 +287,24 @@ export const ES_TEXTOS_DE_DEVOLUCOES: NoMesmoFormato<typeof PT_TEXTOS_DE_DEVOLUC
     confirmarTransferir: {
       titulo: '¿Transferir este crédito?',
       texto: (saldo: string) =>
-        `El saldo entero, ${saldo}, pasa a otro vendedor, que podrá usarlo en la compra de este cliente. El vendedor actual deja de poder usar este crédito.`,
-      campo: 'Pasar al vendedor',
-      escolha: 'Elija el vendedor',
-      aviso: 'Elija el vendedor que va a recibir el crédito.',
+        `El saldo entero, ${saldo}, pasa a otro representante, que podrá usarlo en la compra de este cliente. El representante actual deja de poder usar este crédito.`,
+      campo: 'Pasar al representante',
+      escolha: 'Elija el representante',
+      aviso: 'Elija el representante que va a recibir el crédito.',
     },
     transferido: 'Crédito transferido.',
   },
   garantia: {
     titulo: 'Garantía y límites',
-    ajuda: 'Los plazos y los límites de las devoluciones. Valen para todos los vendedores.',
+    ajuda: 'Los plazos y los límites de las devoluciones. Valen para todos los representantes.',
     diasParaDesistir: 'Días para que el cliente desista',
     diasParaDesistirAjuda: 'Cuenta desde el día de la venta.',
     diasDoDefeito: 'Días para devolver por defecto',
-    limiteSemanal: 'Devolución en efectivo por semana, por vendedor',
+    limiteSemanal: 'Devolución en efectivo por semana, por representante',
     semLimite: 'Sin límite',
     valorDeAprovacao: 'Valor desde el cual usted aprueba antes',
     naoAprovarAntes: 'No aprobar antes',
-    percentual: 'Avisar cuando un vendedor devuelva más del (%) de lo que vendió',
+    percentual: 'Avisar cuando un representante devuelva más del (%) de lo que vendió',
     percentualAjuda: 'Mira las últimas 4 semanas.',
     erroDias: 'Use un número de días entre 1 y 365.',
     erroPorcentagem: 'Use un porcentaje entre 1 y 100.',

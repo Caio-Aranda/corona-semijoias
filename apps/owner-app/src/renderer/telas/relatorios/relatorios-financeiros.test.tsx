@@ -134,10 +134,10 @@ describe('Relatórios financeiros (tarefa 7.12)', () => {
     render(<App ponte={m.ponte} />);
     const cartoes = await abrirAreaDoMenu(u, 'financeiro');
     for (const t of [
-      'Acertos por vendedor e semana',
+      'Acertos por representante e semana',
       'Faltas e pendências',
       'Esperado e contado',
-      'Comissões por vendedor e semana',
+      'Comissões por representante e semana',
       'Parcelas a receber',
       'Parcelas a pagar',
       'Quem está devendo',
@@ -150,8 +150,8 @@ describe('Relatórios financeiros (tarefa 7.12)', () => {
 
   it('o acerto mostra Real, Dólar e Guarani que vieram da linha e do rodapé, não os de hoje', async () => {
     const m = montar();
-    await abrir(m, 'Acertos por vendedor e semana');
-    await screen.findByRole('heading', { name: 'Acertos por vendedor e semana', level: 1 });
+    await abrir(m, 'Acertos por representante e semana');
+    await screen.findByRole('heading', { name: 'Acertos por representante e semana', level: 1 });
     expect((await screen.findAllByText('Maria Souza')).length).toBeGreaterThan(0);
     expect(dosRelatorios(m)[0]).toMatchObject({ relatorio: 'financeiro-acertos', pagina: 0 });
     expect(screen.getAllByText(/US\$\s*22,00/).length).toBeGreaterThan(0);
@@ -209,7 +209,7 @@ describe('Relatórios financeiros (tarefa 7.12)', () => {
 
   it('o arquivo leva as três moedas, a data da cotação e a frase do dia de cada acerto', async () => {
     const m = montar();
-    const u = await abrir(m, 'Acertos por vendedor e semana');
+    const u = await abrir(m, 'Acertos por representante e semana');
     await screen.findAllByText('Maria Souza');
     await u.click(screen.getByRole('button', { name: 'Baixar em CSV' }));
     await waitFor(() => expect(entregues).toHaveLength(1));

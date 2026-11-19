@@ -47,7 +47,10 @@ export function TelaNotasDoConsignado({
   const [textoAplicado, setTextoAplicado] = useState('');
   const semanaId = filtroInicial?.semanaId ?? '';
 
-  const representantes = useBusca(() => chamar(ponte, 'vendedores.escolha'), 'consignado-representantes');
+  const representantes = useBusca(
+    () => chamar(ponte, 'vendedores.escolha'),
+    'consignado-representantes',
+  );
   const busca = useBusca(
     () =>
       chamar(ponte, 'consignado.notas', {
@@ -76,7 +79,12 @@ export function TelaNotasDoConsignado({
         <h1 className="gestao-titulo">{T.titulo}</h1>
       </div>
       <p className="gestao-texto">{T.ajuda}</p>
-      <form className="gestao-filtros" role="search" aria-label={T.filtros.rotulo} onSubmit={buscar}>
+      <form
+        className="gestao-filtros"
+        role="search"
+        aria-label={T.filtros.rotulo}
+        onSubmit={buscar}
+      >
         <div className="cs-campo">
           <label htmlFor="notas-representante">{T.filtros.representante}</label>
           <select
@@ -94,7 +102,11 @@ export function TelaNotasDoConsignado({
         </div>
         <div className="cs-campo">
           <label htmlFor="notas-situacao">{T.filtros.situacao}</label>
-          <select id="notas-situacao" value={situacao} onChange={(e) => setSituacao(e.target.value)}>
+          <select
+            id="notas-situacao"
+            value={situacao}
+            onChange={(e) => setSituacao(e.target.value)}
+          >
             <option value="">{T.filtros.todasAsSituacoes}</option>
             {SITUACOES.map((s) => (
               <option key={s} value={s}>

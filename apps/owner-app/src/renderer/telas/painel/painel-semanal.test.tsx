@@ -161,7 +161,7 @@ describe('Painel da semana (tarefa 8.8)', () => {
     await abrir(m);
     expect(await screen.findByText('Semana 46: de 09/11/2026 a 15/11/2026')).toBeInTheDocument();
     const atalhos = screen.getByRole('navigation', { name: 'Atalhos' });
-    for (const a of ['Nova maleta', 'Acerto', 'Reposição', 'Troca', 'Vendedores', 'Estoque']) {
+    for (const a of ['Nova maleta', 'Acerto', 'Reposição', 'Troca', 'Representantes', 'Estoque']) {
       expect(within(atalhos).getByRole('button', { name: a })).toBeInTheDocument();
     }
     expect(screen.getByRole('tab', { name: 'Maletas' })).toHaveAttribute('aria-selected', 'true');
@@ -188,7 +188,7 @@ describe('Painel da semana (tarefa 8.8)', () => {
     const m = montar();
     const u = await abrir(m);
     await screen.findByText('João Prévia');
-    await u.selectOptions(await screen.findByLabelText('Vendedor'), ID_VEND);
+    await u.selectOptions(await screen.findByLabelText('Representante'), ID_VEND);
     await waitFor(() =>
       expect(doPainel(m).some((p) => (p as Record<string, string>).vendedor === ID_VEND)).toBe(
         true,
@@ -268,7 +268,7 @@ describe('Painel da semana (tarefa 8.8)', () => {
     expect(entregues.map((e) => e.nome.split('.').pop())).toEqual(['csv', 'xlsx', 'pdf']);
   });
 
-  it('sem internet mostra o aviso e deixa tentar de novo; sem vendedores diz isso em palavras da loja', async () => {
+  it('sem internet mostra o aviso e deixa tentar de novo; sem representantes diz isso em palavras da loja', async () => {
     const m = montar({ 'painel.semanal': () => ({ ok: false, motivo: 'sem-conexao' }) });
     await abrir(m);
     expect(await screen.findByRole('button', { name: 'Tentar de novo' })).toBeInTheDocument();
@@ -280,9 +280,9 @@ describe('Painel da semana (tarefa 8.8)', () => {
     });
     const u = await abrir(vazio);
     expect(
-      await screen.findByText('Nenhum vendedor com movimento nesta semana.'),
+      await screen.findByText('Nenhum representante com movimento nesta semana.'),
     ).toBeInTheDocument();
     await u.click(screen.getByRole('button', { name: 'CSV' }));
-    expect(await screen.findByText(/Não há vendedores para guardar/)).toBeInTheDocument();
+    expect(await screen.findByText(/Não há representantes para guardar/)).toBeInTheDocument();
   });
 });

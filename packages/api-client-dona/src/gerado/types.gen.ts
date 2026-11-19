@@ -7764,6 +7764,7 @@ export type RelatorioDoFechamentoDaMaletaData = {
     path?: never;
     query: {
         remessaId: string;
+        recorte?: string;
         pagina?: number;
         tamanho?: number;
     };

@@ -17,7 +17,7 @@ export const ES_TEXTOS_RELATORIOS: NoMesmoFormato<typeof PT_TEXTOS_RELATORIOS> =
     categoria: 'Categoría',
     fornecedor: 'Proveedor',
     praca: 'Plaza',
-    vendedor: 'Vendedor',
+    vendedor: 'Representante',
     restricao: 'Restricción',
     de: 'Desde',
     ate: 'Hasta',
@@ -71,7 +71,7 @@ export const ES_TEXTOS_RELATORIOS: NoMesmoFormato<typeof PT_TEXTOS_RELATORIOS> =
     FORNECEDOR: 'Código del proveedor',
     EAN13: 'Código de barras',
   },
-  tiposDeAniversariante: { VENDEDOR: 'Vendedor', CLIENTE: 'Cliente' },
+  tiposDeAniversariante: { VENDEDOR: 'Representante', CLIENTE: 'Cliente' },
   alteracoesSemImportacao:
     'Muestra lo que se registró y cambió, y quién lo hizo. El resultado de las importaciones en masa está en el informe "Resultado de las importaciones".',
   importacoesNota:

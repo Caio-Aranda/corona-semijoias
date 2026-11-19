@@ -135,7 +135,7 @@ function servidor(
 
 async function abrirFicha(m: ReturnType<typeof servidor>) {
   const u = await abrir(m);
-  await u.click(await screen.findByRole('button', { name: /Abrir acerto de Ana Vendedora/ }));
+  await u.click(await screen.findByRole('button', { name: /Abrir acerto de Ana Representante/ }));
   await screen.findByRole('heading', { name: 'Fechamento do acerto', level: 2 });
   return u;
 }
@@ -150,13 +150,13 @@ describe('ficha do acerto fechado', () => {
     await abrirFicha(servidor());
     expect(valorDe('Vendido')).toContain('R$ 1.000,00');
     expect(valorDe('Vendido depois dos descontos')).toContain('R$ 970,00');
-    expect(valorDe('Comissão do vendedor')).toContain('R$ 388,00');
+    expect(valorDe('Comissão do representante')).toContain('R$ 388,00');
     expect(valorDe('Faltas cobradas')).toContain('R$ 70,00');
     expect(valorDe('Valor do acerto')).toContain('R$ 777,77');
-    expect(valorDe('Crédito do vendedor usado')).toContain('R$ 5,00');
+    expect(valorDe('Crédito do representante usado')).toContain('R$ 5,00');
     expect(valorDe('Recebido no acerto')).toContain('R$ 110,00');
     expect(valorDe('Ficou devendo')).toContain('R$ 17,83');
-    expect(valorDe('Pago ao vendedor')).toContain('R$ 0,00');
+    expect(valorDe('Pago ao representante')).toContain('R$ 0,00');
   });
 
   it('mostra a meta usada, o percentual gravado e a soma em Guarani que decidiu a meta', async () => {
@@ -178,7 +178,7 @@ describe('ficha do acerto fechado', () => {
     const pendencias = screen.getByRole('table', { name: 'Pendências deste acerto' });
     expect(pendencias).toHaveTextContent('Cobrada');
     expect(pendencias).toHaveTextContent('Anel Solitário');
-    const recebimentos = screen.getByRole('table', { name: 'O que o vendedor pagou' });
+    const recebimentos = screen.getByRole('table', { name: 'O que o representante pagou' });
     expect(recebimentos).toHaveTextContent('Dinheiro');
     expect(recebimentos).toHaveTextContent('Transferência (PIX)');
     expect(within(recebimentos).getByText('Desfeito')).toBeInTheDocument();
@@ -231,7 +231,7 @@ describe('ficha do acerto fechado', () => {
   it('fechamento fora da forma: aviso simples, nunca tela quebrada', async () => {
     const m = servidor({ liquido: 'abc' });
     const u = await abrir(m);
-    await u.click(await screen.findByRole('button', { name: /Abrir acerto de Ana Vendedora/ }));
+    await u.click(await screen.findByRole('button', { name: /Abrir acerto de Ana Representante/ }));
     expect(
       await screen.findByText('Não deu para ler o fechamento deste acerto. Tente de novo.'),
     ).toBeInTheDocument();
@@ -247,7 +247,7 @@ describe('ficha do acerto fechado', () => {
     const pdf = textoDoPdf(bytes);
     for (const t of [
       'Corona Semijoias',
-      'Acerto de Ana Vendedora, semana 45',
+      'Acerto de Ana Representante, semana 45',
       'R$ 1.000,00',
       'R$ 970,00',
       'R$ 388,00',

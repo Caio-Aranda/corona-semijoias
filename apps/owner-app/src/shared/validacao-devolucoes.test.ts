@@ -119,7 +119,7 @@ describe('conferência dos dados de devoluções, trocas, créditos e garantia',
     });
   });
 
-  it('transferir crédito pede o crédito, o id novo e o vendedor', () => {
+  it('transferir crédito pede o crédito, o id novo e o representante', () => {
     expect(
       conferirParametros('creditos.transferir', { id: ID, novoId: OUTRO, vendedorId: ID }),
     ).toEqual({ operacao: 'creditos.transferir', id: ID, novoId: OUTRO, vendedorId: ID });

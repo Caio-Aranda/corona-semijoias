@@ -6,9 +6,9 @@ export const PT_TEXTOS_DA_INICIAL = {
   oQueFazer: 'O que você quer fazer?',
   atalhos: {
     painel: { nome: 'Painel da semana', ajuda: 'ver o que foi enviado, devolvido e vendido' },
-    montar: { nome: 'Montar maleta', ajuda: 'separar as peças para o vendedor' },
+    montar: { nome: 'Montar maleta', ajuda: 'separar as peças para o representante' },
     receber: { nome: 'Receber compra', ajuda: 'dar entrada nas peças que chegaram' },
-    acerto: { nome: 'Fazer acerto', ajuda: 'fechar as contas com o vendedor' },
+    acerto: { nome: 'Fazer acerto', ajuda: 'fechar as contas com o representante' },
     cadastrar: { nome: 'Cadastrar produto', ajuda: 'incluir uma peça nova, com foto e código' },
     relatorios: { nome: 'Relatórios', ajuda: 'ver os números da loja' },
   },

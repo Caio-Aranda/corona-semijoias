@@ -25,7 +25,7 @@ function montar(manipuladores: Record<string, Manipulador>) {
   const padrao: Record<string, Manipulador> = {
     'avisos.listar': () => ({ ok: true, dados: { avisos: [] } }),
     'cotacao.hoje': () => ({ ok: true, dados: { disponivel: false } }),
-    'vendedores.escolha': () => pagina([{ id: ID_B, nome: 'Joana Vendedora', codigo: 7 }]),
+    'vendedores.escolha': () => pagina([{ id: ID_B, nome: 'Joana Representante', codigo: 7 }]),
   };
   const todos = { ...padrao, ...manipuladores };
   const ponte: PonteDoCorona = {
@@ -192,7 +192,7 @@ describe('Cadastros: criar e editar', () => {
     });
   });
 
-  it('cliente: escolhe o vendedor responsável pela lista', async () => {
+  it('cliente: escolhe o representante responsável pela lista', async () => {
     const m = montar({
       'clientes.listar': () => pagina([]),
       'clientes.criar': () => ({ ok: true, dados: { id: ID_A, version: 0, nome: 'Ana' } }),
@@ -200,8 +200,8 @@ describe('Cadastros: criar e editar', () => {
     const u = await abrir(m, 'Clientes', 'Ainda não há nenhum cliente.');
     await u.click(screen.getByRole('button', { name: 'Novo cliente' }));
     await u.type(screen.getByLabelText('Nome do cliente'), 'Ana');
-    await screen.findByRole('option', { name: 'Joana Vendedora' });
-    await u.selectOptions(screen.getByLabelText('Vendedor responsável'), ID_B);
+    await screen.findByRole('option', { name: 'Joana Representante' });
+    await u.selectOptions(screen.getByLabelText('Representante responsável'), ID_B);
     await u.click(screen.getByRole('button', { name: 'Salvar' }));
     await screen.findByText('Ana foi cadastrado.');
     expect(m.chamadas.find((c) => c.operacao === 'clientes.criar')?.parametros).toMatchObject({
@@ -310,7 +310,7 @@ describe('Cadastros: excluir', () => {
         status: 409,
         codigo: 'CADASTRO_EM_USO',
         mensagem:
-          'Este cadastro está em uso. Troque a praça ou a restrição dos vendedores que a usam e tente de novo.',
+          'Este cadastro está em uso. Troque a praça ou a restrição dos representantes que a usam e tente de novo.',
       }),
     });
     const u = await abrir(m, 'Praças', 'Centro');

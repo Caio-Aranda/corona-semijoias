@@ -94,7 +94,8 @@ export const ES_TEXTOS_DE_CONSIGNADO: NoMesmoFormato<typeof PT_TEXTOS_DE_CONSIGN
     vazio: 'Ninguna nota con estos filtros.',
     ver: 'Ver la nota',
     verDaNota: (numero: string) => `Ver la nota ${numero}`,
-    limite: 'Aparecen las 200 notas más nuevas. Use los filtros para encontrar una nota más antigua.',
+    limite:
+      'Aparecen las 200 notas más nuevas. Use los filtros para encontrar una nota más antigua.',
     carregando: 'Cargando las notas...',
     detalhe: {
       titulo: (numero: string) => `Nota ${numero}`,
@@ -104,7 +105,12 @@ export const ES_TEXTOS_DE_CONSIGNADO: NoMesmoFormato<typeof PT_TEXTOS_DE_CONSIGN
       cobranca: 'Fecha de cobro',
       situacao: 'Situación',
       pecas: 'Piezas que el cliente llevó',
-      colunasPecas: { peca: 'Pieza', quantidade: 'Cant. DX', preco: 'Precio', subtotal: 'Subtotal' },
+      colunasPecas: {
+        peca: 'Pieza',
+        quantidade: 'Cant. DX',
+        preco: 'Precio',
+        subtotal: 'Subtotal',
+      },
       acertos: 'Acertos de esta nota',
       semAcerto: 'Esta nota todavía no tuvo acerto.',
       acerto: (semana: number) => `Acerto de la semana ${semana}`,
@@ -193,7 +199,8 @@ export const ES_TEXTOS_DE_CONSIGNADO: NoMesmoFormato<typeof PT_TEXTOS_DE_CONSIGN
       notas: 'Notas del cliente',
       semNotas: 'Este cliente todavía no tiene notas.',
       fotos: 'Fotos',
-      fotosAjuda: 'Las fotos del cliente y del documento son datos personales: solo usted y su representante las ven.',
+      fotosAjuda:
+        'Las fotos del cliente y del documento son datos personales: solo usted y su representante las ven.',
       foto: 'Foto del cliente',
       documentoFrente: 'Documento, frente',
       documentoVerso: 'Documento, dorso',
