@@ -38,15 +38,14 @@ public class ClientesDoVendedorController {
     }
 
     @Operation(operationId = "listarMeusClientes", summary = "Meus clientes",
-            description = "Os clientes ativos da LOJA (até 100, por nome), só com nome, CPF, telefone e cidade; nascimento, WhatsApp e "
-                    + "observações vêm só dos que o vendedor logado cadastrou (meu = verdadeiro). A busca procura no nome, telefone, CPF e, "
-                    + "nos clientes dele, no WhatsApp.")
+            description = "Só os clientes ativos do representante logado (até 100, por nome): cada representante vê a sua lista e nunca "
+                    + "a de outro (ADR-0016, item 4). A busca procura no nome, telefone, CPF e WhatsApp.")
     @GetMapping
     public List<Cliente> listar(@RequestParam(required = false) String busca, @AuthenticationPrincipal UsuarioAutenticado quem) {
         return clientes.listar(quem.vendedorId(), busca);
     }
 
-    @Operation(operationId = "verMeuCliente", summary = "Ver um cliente da loja")
+    @Operation(operationId = "verMeuCliente", summary = "Ver um cliente meu", description = "Cliente de outro representante é 404.")
     @GetMapping("/{id}")
     public Cliente ver(@PathVariable UUID id, @AuthenticationPrincipal UsuarioAutenticado quem) {
         return clientes.ver(id, quem.vendedorId());

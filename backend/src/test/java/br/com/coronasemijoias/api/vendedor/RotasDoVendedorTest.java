@@ -355,7 +355,7 @@ class RotasDoVendedorTest extends TesteDeIntegracao {
     // --- clientes ---
 
     @Test
-    void clientesSaoDaLojaDiretorioParaTodosEDadosAMaisSoParaOResponsavel() throws Exception {
+    void cadaRepresentanteVeSoOsSeusClientes() throws Exception {
         UsuarioDeTeste a = usuarios.criarVendedor();
         UsuarioDeTeste b = usuarios.criarVendedor();
         RequestPostProcessor quemA = como(a);
@@ -388,29 +388,20 @@ class RotasDoVendedorTest extends TesteDeIntegracao {
         ler("/api/vendedor/clientes", dona()).andExpect(status().isForbidden());
         postar("/api/vendedor/clientes", dona(), pedido).andExpect(status().isForbidden());
 
-        // O outro vendedor B vê o cliente da loja, mas só o diretório: nome, CPF e telefone, sem nascimento, WhatsApp nem observações.
-        JsonNode paraB = corpoDe(ler("/api/vendedor/clientes?busca=maria da silva", como(b)).andExpect(status().isOk()));
-        assertThat(paraB).hasSize(1);
-        JsonNode c = paraB.get(0);
-        assertThat(c.get("nome").asString()).isEqualTo(nome);
-        assertThat(c.get("cpf").asString()).isEqualTo(cpf);
-        assertThat(c.get("telefone").asString()).isEqualTo(telefone);
-        assertThat(c.get("meu").asBoolean()).isFalse();
-        assertThat(c.get("dataNascimento").isNull()).isTrue();
-        assertThat(c.get("whatsapp").isNull()).isTrue();
-        assertThat(c.get("observacoes").isNull()).isTrue();
-        // A busca de B não acha o cliente pelo WhatsApp (só o responsável acha), mas acha pelo telefone e pelo CPF.
-        assertThat(corpoDe(ler("/api/vendedor/clientes?busca=9" + zap, como(b))).size()).isZero();
-        assertThat(corpoDe(ler("/api/vendedor/clientes?busca=" + cpf.substring(0, 8), como(b))).size()).isEqualTo(1);
-        JsonNode verParaB = corpoDe(ler("/api/vendedor/clientes/" + id, como(b)).andExpect(status().isOk()));
-        assertThat(verParaB.get("observacoes").isNull()).isTrue();
+        // Cada representante vê SÓ a sua lista (ADR-0016, item 4; §23.5): o outro, B, não acha o cliente de A por nome, telefone,
+        // WhatsApp nem CPF, e o cliente de A é 404 para B pelo id (sem dizer que existe).
+        assertThat(corpoDe(ler("/api/vendedor/clientes?busca=maria da silva", como(b)).andExpect(status().isOk()))).isEmpty();
+        assertThat(corpoDe(ler("/api/vendedor/clientes?busca=9" + zap, como(b)))).isEmpty();
+        assertThat(corpoDe(ler("/api/vendedor/clientes?busca=9" + fone, como(b)))).isEmpty();
+        assertThat(corpoDe(ler("/api/vendedor/clientes?busca=" + cpf.substring(0, 8), como(b)))).isEmpty();
+        ler("/api/vendedor/clientes/" + id, como(b)).andExpect(status().isNotFound());
         JsonNode verParaA = corpoDe(ler("/api/vendedor/clientes/" + id, quemA).andExpect(status().isOk()));
         assertThat(verParaA.get("observacoes").asString()).isEqualTo("Só paga em dinheiro");
         assertThat(verParaA.get("dataNascimento").asString()).isEqualTo("1990-05-20");
-        // Cliente excluído ou inativo deixa de aparecer para todos.
+        // Cliente inativo deixa de aparecer na lista, mas ainda se vê pelo id (histórico), só para o dono.
         jdbc.update("UPDATE corona.clientes SET ativo = false WHERE id = ?", id);
-        ler("/api/vendedor/clientes/" + id, como(b)).andExpect(status().isOk()); // inativo ainda se vê pelo id (histórico)
-        assertThat(corpoDe(ler("/api/vendedor/clientes?busca=maria da silva", como(b))).size()).isZero();
+        ler("/api/vendedor/clientes/" + id, quemA).andExpect(status().isOk());
+        assertThat(corpoDe(ler("/api/vendedor/clientes?busca=maria da silva", quemA))).isEmpty();
     }
 
     @Test
