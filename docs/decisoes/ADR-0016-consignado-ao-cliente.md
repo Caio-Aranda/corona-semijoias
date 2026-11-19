@@ -1,6 +1,6 @@
 # ADR-0016: Consignado ao cliente (nota DX/DV/VD, acerto por nota, pendência e Fechamento da maleta)
 
-- **Status:** Proposto (tarefa 9.1, fase PLANO, 18/11/2026). Aguarda a revisão da orquestradora.
+- **Status:** Aceito (18/11/2026; plano aprovado pela orquestradora no PR 226 com os padrões de D1 a D9; fase CÓDIGO da tarefa 9.1 implementada em 19/11/2026).
 - **Data:** 18/11/2026
 - **Tarefas que implementam:** 9.1 (servidor, sync e OpenAPI), 9.2 (Corona Vendas), 9.3 (relatórios), 9.4 (Corona Gestão). Plano: [plano-9-1-consignado-ao-cliente.md](../progresso/plano-9-1-consignado-ao-cliente.md).
 - **Especificação:** §23 inteira (vale sobre §7.2, §7.3 e §7.4 onde discordarem). Prints em `docs/referencia/2026-11-18-corona-vendas/`.
@@ -13,7 +13,7 @@ Já estão decididos e continuam valendo: dinheiro em `NUMERIC(14,2)`, tudo grav
 
 Ficam abertos: como guardar semana, nota, acerto, recibo e pendência sem quebrar a imutabilidade; como numerar `semana-sequência` sem internet; como o saldo da maleta passa a contar "com clientes"; o que o servidor faz com divergência vinda sem internet; quem vê os clientes; e como desligar o fluxo antigo sem apagar dados.
 
-## Decisão (proposta)
+## Decisão
 
 ### 1. Nomes
 
@@ -215,3 +215,12 @@ Só leitura, no padrão das da Fase 7: (a) `situacao` gravada = situação recal
 - **D7.** Documento: campo novo livre (proposto, aceita CI paraguaia) ou continuar no `cpf` com o índice único?
 - **D8.** Fotos do cliente criptografadas no disco do computador (proposto) ou como as de produto?
 - **D9.** O print deixa escolher quanto pagar de cada pendência ("Valor a Pagar", "Pagar Tudo"); a §23.8 manda a ordem fixa do mais antigo. Seguimos a §23.8 (proposto).
+
+### Ajustes da fase CÓDIGO (19/11/2026)
+
+- **D10 (nova).** A tabela de "saídas do vendedor" (regra 2 do ADR-0013, item 5) **nunca foi construída**; o gatilho citado no item 4 não tinha onde gravar. Para a lista própria do representante não deixar cópia velha no computador do antigo responsável, a V049 faz o responsável do cliente **não mudar depois de definido** (como a V032 faz com as outras colunas de pertença); salvar o cadastro sem responsável mantém o que já existe. Transferir cliente entre representantes fica para uma decisão futura (precisa da tabela de saídas e de o pull avisar o apagar). A rota online antiga `GET /api/vendedor/clientes` (diretório da loja) não foi mexida.
+- **Configuração** `acerto_do_vendedor_visivel`: a tabela não tem tipo booleano; vale `INTEIRO` 0 ou 1 (padrão 0).
+- **Fotos:** tabela só do servidor `fotos_de_cliente` (hash, chave e tipo) na V052, porque o armazenamento gera a chave do arquivo.
+- **Pendência não vinda de NAO_PROCESSADO:** operação que depende de registro inexistente é recusada com o código do registro (por exemplo `NOTA_NAO_ENCONTRADA`); a outbox sai na ordem, então o caso só aparece depois de uma recusa anterior, que vira `DEPENDE_DE_ENVIO_RECUSADO`.
+- **Conciliações** `K1` a `K7` ficam à parte (`GET /api/dona/consignado/conciliacoes`), na forma das da Fase 7; ainda não entram na conferência diária.
+- **Relatório "Fechamento da maleta":** a leitura única (`GET /api/maletas/{id}/fechamento`) é a base; o PDF/Excel/CSV no `MotorDeRelatorio` fica para a 9.3/9.4, que montam a exportação a partir dela.

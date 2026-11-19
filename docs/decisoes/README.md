@@ -23,7 +23,7 @@ A especificação (`docs/ESPECIFICACAO.md`) manda. Um ADR detalha a especificaç
 | [0013](ADR-0013-sincronizacao-e-offline.md) | Sincronização e modo sem internet do Corona Vendas | Aceito | 5.2 a 5.15 (Fase 5) |
 | [0014](ADR-0014-devolucao-troca-e-garantia.md) | Devolução, troca e garantia | Aceito (12/11/2026) | 6.2 a 6.12 (Fase 6) |
 | [0015](ADR-0015-numeros-gerenciais-e-conferencia-diaria.md) | Números gerenciais (painel, curva ABC, DRE, lucro) e conferência diária | Proposto | 8.3 a 8.8 (Fase 8) |
-| [0016](ADR-0016-consignado-ao-cliente.md) | Consignado ao cliente (nota, acerto por nota, pendência, Fechamento da maleta) | Proposto | 9.1 a 9.4 (leva do consignado, §23) |
+| [0016](ADR-0016-consignado-ao-cliente.md) | Consignado ao cliente (nota, acerto por nota, pendência, Fechamento da maleta) | Aceito | 9.1 a 9.4 (leva do consignado, §23) |
 
 A numeração das tarefas é a do "Plano da Fase 0" em `docs/PROGRESSO.md`.
 

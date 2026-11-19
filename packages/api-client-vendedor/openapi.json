@@ -3650,6 +3650,86 @@
         "tags" : [ "clientes-do-vendedor-controller" ]
       }
     },
+    "/api/vendedor/clientes/{id}/fotos/{tipo}" : {
+      "get" : {
+        "operationId" : "baixarFotoDoMeuCliente",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "path",
+          "name" : "tipo",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "format" : "byte",
+                  "type" : "string"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Baixar a foto de um cliente do representante",
+        "tags" : [ "fotos-dos-clientes-controller" ]
+      },
+      "put" : {
+        "description" : "O corpo é a imagem (JPG, PNG ou WebP). O servidor confere o SHA-256 contra o hash do cadastro; repetir é inofensivo (200). Cliente que ainda não chegou ao servidor: 409 CLIENTE_AINDA_NAO_CHEGOU (tente de novo). Cliente de outro representante: 404.",
+        "operationId" : "enviarFotoDoMeuCliente",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "path",
+          "name" : "tipo",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "format" : "byte",
+                "type" : "string"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Enviar a foto de um cliente",
+        "tags" : [ "fotos-dos-clientes-controller" ]
+      }
+    },
     "/api/vendedor/comissao/previa" : {
       "get" : {
         "description" : "O vendido da semana em Guarani, o percentual que valeria hoje, quanto falta para a meta (em Guarani e em Real, pela cotação mais recente) e a comissão prevista. Só do vendedor logado; nada é gravado.",
