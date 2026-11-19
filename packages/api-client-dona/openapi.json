@@ -651,6 +651,50 @@
         "required" : [ "nome" ],
         "type" : "object"
       },
+      "CadastroDoCliente" : {
+        "properties" : {
+          "comissaoPercentual" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "comoConheceu" : {
+            "type" : "string"
+          },
+          "documento" : {
+            "type" : "string"
+          },
+          "documentoTipo" : {
+            "type" : "string"
+          },
+          "endereco" : {
+            "type" : "string"
+          },
+          "indicadoPor" : {
+            "type" : "string"
+          },
+          "representante" : {
+            "type" : "string"
+          },
+          "telefone" : {
+            "type" : "string"
+          },
+          "temFoto" : {
+            "type" : "boolean"
+          },
+          "temFotoDoDocumentoFrente" : {
+            "type" : "boolean"
+          },
+          "temFotoDoDocumentoVerso" : {
+            "type" : "boolean"
+          },
+          "whatsapp" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "CalculoDaComissaoLinha" : {
         "properties" : {
           "base" : {
@@ -12314,6 +12358,9 @@
       },
       "SituacaoDoCliente" : {
         "properties" : {
+          "cadastro" : {
+            "$ref" : "#/components/schemas/CadastroDoCliente"
+          },
           "clienteId" : {
             "format" : "uuid",
             "type" : "string"

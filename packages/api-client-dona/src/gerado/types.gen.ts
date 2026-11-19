@@ -206,6 +206,21 @@ export type CadastroDeTeste = {
     nome: string;
 };
 
+export type CadastroDoCliente = {
+    comissaoPercentual?: string;
+    comoConheceu?: string;
+    documento?: string;
+    documentoTipo?: string;
+    endereco?: string;
+    indicadoPor?: string;
+    representante?: string;
+    telefone?: string;
+    temFoto?: boolean;
+    temFotoDoDocumentoFrente?: boolean;
+    temFotoDoDocumentoVerso?: boolean;
+    whatsapp?: string;
+};
+
 export type CalculoDaComissaoLinha = {
     base?: string;
     eventoId?: string;
@@ -3622,6 +3637,7 @@ export type ServicoDoFechamentoDaMaletaLeitura = {
 };
 
 export type SituacaoDoCliente = {
+    cadastro?: CadastroDoCliente;
     clienteId?: string;
     nome?: string;
     notas?: Array<NotaResumo>;
