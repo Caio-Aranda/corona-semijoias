@@ -329,6 +329,40 @@ public final class RegistroDeTabelas {
                         new TabelaDoServidor("fotos_de_cliente", true)));
     }
 
+    /** As tabelas novas do consignado ao cliente (tarefa 9.1): o Corona Vendas que não conhece o formato 2 nunca as recebe. */
+    public static final Set<String> TABELAS_DO_CONSIGNADO = Set.of("semanas_vendedor", "notas_consignado", "reposicoes_nota",
+            "trocas_nota", "itens_nota_consignado", "remarcacoes_nota", "acertos_nota", "itens_acerto_nota", "recibos_consignado",
+            "formas_recibo_consignado", "aplicacoes_recibo");
+
+    /**
+     * A visão do formato 1 do pull, para o Corona Vendas que ainda não conhece o consignado (ADR-0016, item 13): sem as tabelas
+     * novas e com as colunas e a regra dos clientes e dos movimentos da maleta como eram antes. O app antigo recusa o lote todo
+     * se vier tabela ou coluna que ele não conhece, então o servidor NUNCA manda a ele o que é novo. O app que conhece pede
+     * {@code formato=2} (a regra completa, que é a deste registro).
+     */
+    public RegistroDeTabelas paraOFormato1() {
+        List<TabelaSincronizavel> antigas = new ArrayList<>();
+        for (TabelaSincronizavel t : sincronizaveis) {
+            if (TABELAS_DO_CONSIGNADO.contains(t.nome())) {
+                continue;
+            }
+            antigas.add(switch (t.nome()) {
+                case "clientes" -> new TabelaSincronizavel("clientes", List.of(
+                        "nome", "cpf", "data_nascimento", "telefone", "whatsapp", "ativo",
+                        "endereco_logradouro", "endereco_numero", "endereco_complemento", "endereco_bairro",
+                        "endereco_cidade", "endereco_uf", "endereco_cep",
+                        "observacoes", "vendedor_responsavel_id"), false,
+                        RegraDoVendedor.diretorioDaLoja(Set.of("nome", "cpf", "telefone", "endereco_cidade", "ativo"),
+                                "vendedor_responsavel_id"));
+                case "movimentos_remessa" -> new TabelaSincronizavel("movimentos_remessa", List.of(
+                        "remessa_id", "produto_id", "tipo", "quantidade", "venda_id", "dispositivo_id",
+                        "estorna_id", "devolucao_id"), true, t.regra());
+                default -> t;
+            });
+        }
+        return new RegistroDeTabelas(antigas, soDoServidor);
+    }
+
     /** Este registro somado a outro (usado pelos testes para acrescentar as tabelas de teste). */
     public RegistroDeTabelas com(RegistroDeTabelas outro) {
         List<TabelaSincronizavel> todasSincronizaveis = new ArrayList<>(sincronizaveis);

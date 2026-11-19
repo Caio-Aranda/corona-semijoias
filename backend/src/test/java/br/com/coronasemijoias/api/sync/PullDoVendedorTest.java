@@ -97,9 +97,15 @@ class PullDoVendedorTest extends TesteDeIntegracao {
 
     /** Recebe até não haver mais nada, aplicando a regra da version. */
     private void receberTudo(RequestPostProcessor quem, Copia copia, int limite) throws Exception {
+        receberTudo(quem, copia, limite, null);
+    }
+
+    /** Com {@code formato=2} o pull é o do consignado ao cliente (tarefa 9.1); sem ele, o do Corona Vendas 1.0.0. */
+    private void receberTudo(RequestPostProcessor quem, Copia copia, int limite, Integer formato) throws Exception {
         JsonNode r;
         do {
-            r = receber(quem, "?limite=" + limite + (copia.cursor == null ? "" : "&cursor=" + copia.cursor));
+            r = receber(quem, "?limite=" + limite + (formato == null ? "" : "&formato=" + formato)
+                    + (copia.cursor == null ? "" : "&cursor=" + copia.cursor));
             for (JsonNode l : r.get("linhas")) {
                 Map<String, JsonNode> t = copia.tabelas.computeIfAbsent(l.get("tabela").asString(), x -> new HashMap<>());
                 JsonNode atual = t.get(l.get("id").asString());
@@ -182,7 +188,54 @@ class PullDoVendedorTest extends TesteDeIntegracao {
     }
 
     @Test
-    void cadaRepresentanteRecebeSoOsSeusClientesComOCadastroTodo() throws Exception {
+    void formato1NuncaRecebeTabelaNemColunaDoConsignadoEOAppAntigoNaoQuebra() throws Exception {
+        CenarioDeSync c = cenario();
+        UsuarioDeTeste a = usuarios.criarVendedor();
+        UUID cliente = c.cliente(a.vendedorId());
+        UUID semana = UUID.randomUUID();
+        jdbc.update("INSERT INTO corona.semanas_vendedor (id, vendedor_id, numero, aberta_em) VALUES (?, ?, 1, now())", semana,
+                a.vendedorId());
+        Copia antiga = new Copia();
+        receberTudo(como(a), antiga, 200);
+        assertThat(antiga.tabelas).doesNotContainKeys("semanas_vendedor", "notas_consignado", "acertos_nota", "recibos_consignado");
+        // O cliente chega como o app 1.0.0 conhece: sem nenhuma coluna nova.
+        JsonNode campos = antiga.linha("clientes", cliente).get("campos");
+        for (String nova : new String[] {"documento", "documento_tipo", "comissao_percentual", "foto_hash", "foto_documento_frente_hash"}) {
+            assertThat(campos.has(nova)).as(nova).isFalse();
+        }
+        // Pedir uma tabela nova no formato 1 é pedido inválido.
+        mvc.perform(get(PULL + "?tabela=notas_consignado").with(como(a))).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void formato2RecebeSoOsClientesDoRepresentanteEAsTabelasDoConsignado() throws Exception {
+        CenarioDeSync c = cenario();
+        UsuarioDeTeste a = usuarios.criarVendedor();
+        UsuarioDeTeste b = usuarios.criarVendedor();
+        UUID cliente = c.cliente(a.vendedorId());
+        UUID semana = UUID.randomUUID();
+        jdbc.update("INSERT INTO corona.semanas_vendedor (id, vendedor_id, numero, aberta_em) VALUES (?, ?, 1, now())", semana,
+                a.vendedorId());
+        Copia deA = new Copia();
+        Copia deB = new Copia();
+        receberTudo(como(a), deA, 200, 2);
+        receberTudo(como(b), deB, 200, 2);
+
+        JsonNode emA = deA.linha("clientes", cliente).get("campos");
+        assertThat(emA.get("observacoes").asString()).isEqualTo("Só paga em dinheiro");
+        assertThat(emA.has("comissao_percentual")).isTrue();
+        assertThat(deA.tem("semanas_vendedor", semana)).isTrue();
+        // B nunca recebe o cliente nem a semana de A (ADR-0016, itens 4 e 13).
+        assertThat(deB.tem("clientes", cliente)).isFalse();
+        assertThat(deB.tem("semanas_vendedor", semana)).isFalse();
+        // O responsável não muda depois de definido (V049): a cópia de A nunca fica velha.
+        c.transferir(cliente, b.vendedorId());
+        receberTudo(como(b), deB, 200, 2);
+        assertThat(deB.tem("clientes", cliente)).isFalse();
+    }
+
+    @Test
+    void clientesDaLojaDiretorioParaTodosEOCadastroSoParaQuemAtendeNosDoisSentidos() throws Exception {
         CenarioDeSync c = cenario();
         UsuarioDeTeste a = usuarios.criarVendedor();
         UsuarioDeTeste b = usuarios.criarVendedor();
@@ -194,16 +247,16 @@ class PullDoVendedorTest extends TesteDeIntegracao {
 
         JsonNode emA = deA.linha("clientes", cliente).get("campos");
         assertThat(emA.get("observacoes").asString()).isEqualTo("Só paga em dinheiro");
-        assertThat(emA.get("endereco_cidade").asString()).isEqualTo("Campinas");
         assertThat(emA.get("vendedor_responsavel_id").asString()).isEqualTo(a.vendedorId().toString());
-        // B nunca recebe o cliente de A (ADR-0016, item 4: reverte o diretorio da loja).
-        assertThat(deB.tem("clientes", cliente)).isFalse();
-        // O responsavel nao muda depois de definido (V049): a copia de A nunca fica velha.
-        c.transferir(cliente, b.vendedorId());
-        receberTudo(como(a), deA, 200);
-        receberTudo(como(b), deB, 200);
-        assertThat(deB.tem("clientes", cliente)).isFalse();
-        assertThat(deA.tem("clientes", cliente)).isTrue();
+        JsonNode emB = deB.linha("clientes", cliente).get("campos");
+        assertThat(emB.get("nome").asString()).startsWith("Cliente ");
+        assertThat(emB.get("telefone").asString()).isEqualTo("(19) 3000-0001");
+        assertThat(emB.get("endereco_cidade").asString()).isEqualTo("Campinas");
+        assertThat(emB.get("observacoes").isNull()).isTrue();
+        assertThat(emB.get("whatsapp").isNull()).isTrue();
+        assertThat(emB.get("vendedor_responsavel_id").isNull()).isTrue();
+
+        // O responsável não muda mais depois de definido (V049, tarefa 9.1): a transferência entre representantes não existe.
     }
 
     @Test
@@ -304,7 +357,7 @@ class PullDoVendedorTest extends TesteDeIntegracao {
         // 32: as 15 de antes, devolucoes e itens_devolucao (tarefa 6.3), autorizacoes_excecao e itens_autorizacao
         // (tarefa 6.4), trocas, creditos_cliente e usos_credito (tarefa 6.5), creditos_sem_saldo (tarefa 6.7) e
         // contas_receber e baixas_receber (tarefa 7.3) e acertos e leituras_acerto (tarefa 7.4) e itens_acerto, acerto_eventos, comissoes e pendencias_acerto (tarefa 7.5) e recebimentos_vendedor (tarefa 7.6).
-        assertThat(r.get("tabelas").size()).isEqualTo(43); // 32 + as 11 do consignado ao cliente (tarefa 9.1)
+        assertThat(r.get("tabelas").size()).isEqualTo(32);
         for (JsonNode t : r.get("tabelas")) {
             Map<String, JsonNode> guardadas = copia.tabelas.getOrDefault(t.get("tabela").asString(), Map.of());
             TreeMap<String, Integer> ordenadas = new TreeMap<>();

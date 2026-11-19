@@ -540,7 +540,7 @@ export const avisarDiferencaNaConferencia = <ThrowOnError extends boolean = fals
 /**
  * Receber os dados do vendedor (pull)
  *
- * Devolve o que mudou desde o cursor, só do vendedor do token: maletas enviadas e itens, peças delas (com códigos e fotos), vendas, pagamentos, conferências, cotações, categorias, semanas e o diretório de clientes da loja. Cursor vazio é a carga inicial. Aplique cada linha só se a version for maior que a guardada. 409 CURSOR_INVALIDO: refaça a carga inicial sem tocar no que aguarda envio. Limite padrão 500 linhas, máximo 1000 (a expansão de uma maleta pode passar do limite).
+ * Devolve o que mudou desde o cursor, só do vendedor do token: maletas enviadas e itens, peças delas (com códigos e fotos), vendas, pagamentos, conferências, cotações, categorias, semanas e o diretório de clientes da loja. Cursor vazio é a carga inicial. Aplique cada linha só se a version for maior que a guardada. 409 CURSOR_INVALIDO: refaça a carga inicial sem tocar no que aguarda envio. Limite padrão 500 linhas, máximo 1000 (a expansão de uma maleta pode passar do limite). formato: sem ele (ou 1) vale o pull do Corona Vendas 1.0.0, sem as tabelas e colunas do consignado ao cliente e com o diretório de clientes da loja; 2 traz o consignado e só os clientes do representante. O mesmo vale para /conferencia.
  */
 export const receberDados = <ThrowOnError extends boolean = false>(options?: Options<ReceberDadosData, ThrowOnError>): RequestResult<ReceberDadosResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ReceberDadosResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],

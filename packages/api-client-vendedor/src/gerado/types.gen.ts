@@ -1679,7 +1679,9 @@ export type RelatorioDeMinhasVendasResponse = RelatorioDeMinhasVendasResponses[k
 export type ConferirDadosData = {
     body?: never;
     path?: never;
-    query?: never;
+    query?: {
+        formato?: number;
+    };
     url: '/api/vendedor/sync/conferencia';
 };
 
@@ -1713,6 +1715,7 @@ export type ReceberDadosData = {
         cursor?: string;
         limite?: number;
         tabela?: string;
+        formato?: number;
     };
     url: '/api/vendedor/sync/pull';
 };
