@@ -491,6 +491,181 @@ INSERT INTO estado_sync (chave, valor)
   ON CONFLICT (chave) DO UPDATE SET valor = excluded.valor;
 `;
 
+/**
+ * As tabelas que a recarga dirigida da versão 9 traz de novo (tarefa 9.2; ADR-0016, item 13): as onze do consignado ao
+ * cliente e as duas que ganharam coluna ou regra (`clientes`, com a lista só do representante, e `movimentos_remessa`, com os
+ * movimentos do consignado). O computador que já tinha cursor não receberia o que o servidor gravou antes da migração.
+ */
+export const TABELAS_DA_RECARGA_DIRIGIDA_V9 = Object.freeze([
+  'clientes',
+  'movimentos_remessa',
+  'semanas_vendedor',
+  'notas_consignado',
+  'reposicoes_nota',
+  'trocas_nota',
+  'itens_nota_consignado',
+  'remarcacoes_nota',
+  'acertos_nota',
+  'itens_acerto_nota',
+  'recibos_consignado',
+  'formas_recibo_consignado',
+  'aplicacoes_recibo',
+] as const);
+
+/**
+ * Versão 9 (tarefa 9.2; ADR-0016, itens 4, 13 e 9): o consignado ao cliente. Espelho das onze tabelas novas do servidor e das
+ * colunas novas de `clientes` e `movimentos_remessa` (dinheiro em texto com duas casas, datas em texto ISO, booleano 0/1), mais
+ * as tabelas SÓ DO COMPUTADOR: o rascunho do Novo Pedido (nunca vai ao servidor), o contador da semana (o número
+ * semana-sequência nasce aqui) e a fila de envio das fotos do cliente. Cada representante tem a SUA lista de clientes: as
+ * cópias vindas do servidor que não são dele (o diretório da loja) saem agora, e a recarga dirigida traz a lista nova. As
+ * telas antigas de venda saem do app, mas nenhuma tabela antiga é apagada (histórico e envios antigos continuam).
+ */
+const V9 = `
+ALTER TABLE clientes ADD COLUMN documento TEXT;
+ALTER TABLE clientes ADD COLUMN documento_tipo TEXT;
+ALTER TABLE clientes ADD COLUMN indicado_por_cliente_id TEXT;
+ALTER TABLE clientes ADD COLUMN indicado_por_nome TEXT;
+ALTER TABLE clientes ADD COLUMN como_conheceu TEXT;
+ALTER TABLE clientes ADD COLUMN comissao_percentual TEXT;
+ALTER TABLE clientes ADD COLUMN foto_hash TEXT;
+ALTER TABLE clientes ADD COLUMN foto_documento_frente_hash TEXT;
+ALTER TABLE clientes ADD COLUMN foto_documento_verso_hash TEXT;
+CREATE INDEX clientes_por_documento ON clientes (documento);
+
+ALTER TABLE movimentos_remessa ADD COLUMN nota_id TEXT;
+ALTER TABLE movimentos_remessa ADD COLUMN acerto_nota_id TEXT;
+CREATE INDEX movimentos_remessa_da_nota ON movimentos_remessa (nota_id);
+
+-- O diretório da loja não é mais do representante (ADR-0016, item 4): saem as cópias do servidor de cliente que não é dele.
+-- O vendedor é conhecido pelas maletas que recebeu; a recarga dirigida traz de volta a lista própria.
+DELETE FROM clientes
+ WHERE origem_local = 'SERVIDOR'
+   AND (vendedor_responsavel_id IS NULL
+        OR vendedor_responsavel_id NOT IN (SELECT vendedor_id FROM remessas WHERE vendedor_id IS NOT NULL));
+
+CREATE TABLE semanas_vendedor (${CONTROLE},
+  vendedor_id TEXT, numero INTEGER NOT NULL, aberta_em TEXT, fechada_em TEXT, situacao TEXT, dispositivo_id TEXT
+);
+CREATE INDEX semanas_vendedor_por_numero ON semanas_vendedor (numero);
+
+CREATE TABLE notas_consignado (${CONTROLE},
+  vendedor_id TEXT, semana_id TEXT NOT NULL, sequencia INTEGER NOT NULL, cliente_id TEXT NOT NULL, saida_em TEXT,
+  data_cobranca TEXT, nota_origem_id TEXT, situacao TEXT, cotacao_id TEXT, dispositivo_id TEXT, hora_ajustada INTEGER
+);
+CREATE INDEX notas_consignado_da_semana ON notas_consignado (semana_id);
+CREATE INDEX notas_consignado_do_cliente ON notas_consignado (cliente_id);
+
+CREATE TABLE reposicoes_nota (${CONTROLE},
+  nota_id TEXT NOT NULL, feita_em TEXT, dispositivo_id TEXT, hora_ajustada INTEGER
+);
+CREATE INDEX reposicoes_nota_da_nota ON reposicoes_nota (nota_id);
+
+CREATE TABLE trocas_nota (${CONTROLE},
+  nota_id TEXT NOT NULL, trocada_em TEXT, dispositivo_id TEXT, hora_ajustada INTEGER
+);
+CREATE INDEX trocas_nota_da_nota ON trocas_nota (nota_id);
+
+CREATE TABLE itens_nota_consignado (${CONTROLE},
+  nota_id TEXT NOT NULL, produto_id TEXT NOT NULL, remessa_id TEXT NOT NULL, origem TEXT, quantidade INTEGER NOT NULL,
+  preco_unitario TEXT, reposicao_id TEXT, troca_id TEXT
+);
+CREATE INDEX itens_nota_consignado_da_nota ON itens_nota_consignado (nota_id);
+CREATE INDEX itens_nota_consignado_da_maleta ON itens_nota_consignado (remessa_id, produto_id);
+
+CREATE TABLE remarcacoes_nota (${CONTROLE},
+  nota_id TEXT NOT NULL, data_cobranca_anterior TEXT, data_cobranca_nova TEXT, remarcada_em TEXT, dispositivo_id TEXT,
+  hora_ajustada INTEGER
+);
+CREATE INDEX remarcacoes_nota_da_nota ON remarcacoes_nota (nota_id);
+
+CREATE TABLE acertos_nota (${CONTROLE},
+  nota_id TEXT NOT NULL, vendedor_id TEXT, semana_id TEXT, acertado_em TEXT, comissao_percentual TEXT, itens_dx INTEGER,
+  itens_dv INTEGER, itens_vd INTEGER, valor_dx TEXT, valor_dv TEXT, valor_vd TEXT, comissao TEXT, bruto TEXT,
+  pendencias_anteriores TEXT, total_a_receber TEXT, total_pago TEXT, ficou_devendo TEXT, recibo_id TEXT, cotacao_id TEXT,
+  dispositivo_id TEXT, hora_ajustada INTEGER, estornado_em TEXT, estorno_id TEXT, motivo_estorno TEXT
+);
+CREATE INDEX acertos_nota_da_nota ON acertos_nota (nota_id);
+CREATE INDEX acertos_nota_da_semana ON acertos_nota (semana_id);
+
+CREATE TABLE itens_acerto_nota (${CONTROLE},
+  acerto_id TEXT NOT NULL, produto_id TEXT NOT NULL, remessa_id TEXT NOT NULL, qtd_dx INTEGER, qtd_dv INTEGER,
+  preco_unitario TEXT
+);
+CREATE INDEX itens_acerto_nota_do_acerto ON itens_acerto_nota (acerto_id);
+
+CREATE TABLE recibos_consignado (${CONTROLE},
+  vendedor_id TEXT, cliente_id TEXT NOT NULL, semana_id TEXT, sequencia INTEGER NOT NULL, acerto_id TEXT, pago_em TEXT,
+  total TEXT, cotacao_id TEXT, dispositivo_id TEXT, hora_ajustada INTEGER, estornado_em TEXT, estorno_id TEXT,
+  motivo_estorno TEXT
+);
+CREATE INDEX recibos_consignado_do_cliente ON recibos_consignado (cliente_id);
+CREATE INDEX recibos_consignado_da_semana ON recibos_consignado (semana_id);
+
+CREATE TABLE formas_recibo_consignado (${CONTROLE},
+  recibo_id TEXT NOT NULL, forma TEXT, valor TEXT
+);
+CREATE INDEX formas_recibo_consignado_do_recibo ON formas_recibo_consignado (recibo_id);
+
+CREATE TABLE aplicacoes_recibo (${CONTROLE},
+  recibo_id TEXT NOT NULL, acerto_id TEXT NOT NULL, valor TEXT, estorna_id TEXT
+);
+CREATE INDEX aplicacoes_recibo_do_recibo ON aplicacoes_recibo (recibo_id);
+CREATE INDEX aplicacoes_recibo_do_acerto ON aplicacoes_recibo (acerto_id);
+
+-- Só do computador (nunca vão ao servidor): o Novo Pedido em montagem (bipes, diminuir, remover); a nota só nasce no servidor
+-- ao Finalizar (ADR-0016, item 5).
+CREATE TABLE rascunhos_nota (
+  id TEXT PRIMARY KEY NOT NULL,
+  cliente_id TEXT,
+  remessa_id TEXT,
+  data_cobranca TEXT,
+  criado_em TEXT NOT NULL,
+  atualizado_em TEXT NOT NULL
+);
+CREATE TABLE itens_rascunho_nota (
+  id TEXT PRIMARY KEY NOT NULL,
+  rascunho_id TEXT NOT NULL,
+  produto_id TEXT NOT NULL,
+  remessa_id TEXT NOT NULL,
+  quantidade INTEGER NOT NULL CHECK (quantidade >= 1),
+  preco_unitario TEXT NOT NULL,
+  ordem INTEGER NOT NULL
+);
+CREATE INDEX itens_rascunho_nota_do_rascunho ON itens_rascunho_nota (rascunho_id, ordem);
+
+-- O contador semana-sequência, um por semana, compartilhado por notas e recibos (ADR-0016, item 3): só há um computador
+-- ativo por representante.
+CREATE TABLE contadores_da_semana (
+  semana_id TEXT PRIMARY KEY NOT NULL,
+  proxima_sequencia INTEGER NOT NULL CHECK (proxima_sequencia >= 1)
+);
+
+-- Fotos do cliente que ainda não subiram (ou subiram e ficam no computador): arquivo criptografado, uma linha por foto.
+CREATE TABLE fila_fotos_cliente (
+  cliente_id TEXT NOT NULL,
+  tipo TEXT NOT NULL CHECK (tipo IN ('cliente', 'documento-frente', 'documento-verso')),
+  hash TEXT NOT NULL,
+  caminho TEXT NOT NULL,
+  tentativas INTEGER NOT NULL DEFAULT 0,
+  enviada_em TEXT,
+  PRIMARY KEY (cliente_id, tipo)
+);
+
+INSERT INTO estado_sync (chave, valor)
+  SELECT 'recarga_dirigida', lista FROM (
+    SELECT json_group_array(t) AS lista FROM (
+      SELECT t FROM (
+        SELECT key AS k, value AS t FROM json_each(
+          coalesce((SELECT valor FROM estado_sync WHERE chave = 'recarga_dirigida'), '[]'))
+        UNION ALL
+        SELECT 1000 + key AS k, value AS t FROM json_each('${JSON.stringify(TABELAS_DA_RECARGA_DIRIGIDA_V9)}')
+      ) GROUP BY t ORDER BY min(k)
+    )
+  )
+   WHERE EXISTS (SELECT 1 FROM estado_sync WHERE chave = 'cursor' AND valor IS NOT NULL)
+  ON CONFLICT (chave) DO UPDATE SET valor = excluded.valor;
+`;
+
 export const MIGRACOES: readonly MigracaoLocal[] = Object.freeze([
   {
     versao: 1,
@@ -534,6 +709,12 @@ export const MIGRACOES: readonly MigracaoLocal[] = Object.freeze([
     descricao:
       'dinheiro do vendedor (recebimentos, contas do nível 2, pago e crédito do acerto) e a recarga dirigida',
     sql: V8,
+  },
+  {
+    versao: 9,
+    descricao:
+      'consignado ao cliente (semanas, notas, acertos, recibos), lista própria de clientes, rascunho, contador e fila de fotos',
+    sql: V9,
   },
 ]);
 
@@ -579,4 +760,16 @@ export const TABELAS_SINCRONIZAVEIS = Object.freeze([
   'pendencias_acerto',
   // Fase 7 (tarefa 7.6, migração local 8).
   'recebimentos_vendedor',
+  // Consignado ao cliente (tarefa 9.2, migração local 9).
+  'semanas_vendedor',
+  'notas_consignado',
+  'reposicoes_nota',
+  'trocas_nota',
+  'itens_nota_consignado',
+  'remarcacoes_nota',
+  'acertos_nota',
+  'itens_acerto_nota',
+  'recibos_consignado',
+  'formas_recibo_consignado',
+  'aplicacoes_recibo',
 ] as const);

@@ -34,6 +34,11 @@ import {
 import type { Falha, Resultado } from '../tipos';
 import { ConsultasDaFase6 } from './consultas-da-fase-6';
 import { ConsultasDoAcerto } from './consultas-do-acerto';
+import {
+  ConsultasDoConsignado,
+  ehPedidoDoConsignado,
+  type FotosDoClienteLocais,
+} from './consultas-do-consignado';
 import { pecaDoProduto } from './peca-do-produto';
 
 /**
@@ -48,6 +53,8 @@ export interface OpcoesDasConsultas {
   agora?: () => Date;
   /** Avisado quando algo que a tela mostra no indicador mudou sem gravar uma operação (o "Entendi"). */
   aoMudarOEstado?: () => void;
+  /** As fotos dos clientes (criptografadas, com fila de envio; tarefa 9.2). */
+  fotosDosClientes?: FotosDoClienteLocais;
 }
 
 const MENSAGENS_ACERTO_NAO_ENCONTRADO =
@@ -184,8 +191,17 @@ export class ConsultasLocais {
   /** Acerto fechado, parcelas e recebíveis (tarefa 7.11). */
   readonly acerto: ConsultasDoAcerto;
 
+  /** O consignado ao cliente: semana, pedidos, acerto, clientes e maletas (tarefa 9.2). */
+  readonly consignado: ConsultasDoConsignado;
+
   constructor(private readonly o: OpcoesDasConsultas) {
     this.fase6 = new ConsultasDaFase6({ banco: o.banco, ...(o.agora ? { agora: o.agora } : {}) });
+    this.consignado = new ConsultasDoConsignado({
+      banco: o.banco,
+      operacoes: o.operacoes,
+      ...(o.fotosDosClientes ? { fotos: o.fotosDosClientes } : {}),
+      ...(o.agora ? { agora: o.agora } : {}),
+    });
     this.acerto = new ConsultasDoAcerto({
       banco: () => this.db(),
       agora: () => this.agora(),
@@ -235,6 +251,7 @@ export class ConsultasLocais {
   }
 
   private atender(pedido: PedidoDeChamada): Resultado<unknown> {
+    if (ehPedidoDoConsignado(pedido)) return this.consignado.chamar(pedido);
     switch (pedido.operacao) {
       case 'maletas.listar':
         return ok(this.maletas(['ENVIADA', 'CONFERIDA']));

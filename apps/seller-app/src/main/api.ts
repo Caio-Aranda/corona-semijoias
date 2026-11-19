@@ -290,6 +290,44 @@ export function criarApiDoVendas(opcoes: OpcoesDaApi): ApiDoVendas {
         });
       case 'comissao.previa':
         return executar(() => previaDaMinhaComissao(base));
+      case 'consignado.painel':
+      case 'consignado.semanaNova':
+      case 'consignado.clientes':
+      case 'consignado.cliente':
+      case 'consignado.clienteCadastrar':
+      case 'consignado.clienteAlterar':
+      case 'consignado.fotoGuardar':
+      case 'consignado.clienteTrocarFoto':
+      case 'consignado.fotoVer':
+      case 'consignado.pedidoVer':
+      case 'consignado.pedidoDefinir':
+      case 'consignado.pedidoBipar':
+      case 'consignado.pedidoQuantidade':
+      case 'consignado.pedidoFinalizar':
+      case 'consignado.pedidoDescartar':
+      case 'consignado.maletas':
+      case 'consignado.peca':
+      case 'consignado.notas':
+      case 'consignado.nota':
+      case 'consignado.acertoPrevia':
+      case 'consignado.acertoSalvar':
+      case 'consignado.reposicao':
+      case 'consignado.trocaNaNota':
+      case 'consignado.remarcar':
+      case 'consignado.pagamento':
+      case 'consignado.estornarAcerto':
+      case 'consignado.estornarRecibo':
+      case 'consignado.pesquisar':
+        // Só existem no banco do computador (tarefa 9.2).
+        return Promise.resolve({
+          ok: false,
+          falha: {
+            tipo: 'recusada',
+            status: 503,
+            mensagem: MENSAGEM_SEM_BANCO,
+            codigo: 'SEM_BANCO_LOCAL',
+          },
+        });
       // Pedir o acerto e contar as sobras (tarefa 8.10): só com internet, direto na API, sem guardar nem enfileirar.
       case 'acertos.pedir':
         return executar(() => pedirMeuAcerto({ ...base, body: { id: pedido.id } }));
