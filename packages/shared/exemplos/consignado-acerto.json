@@ -1,0 +1,53 @@
+{
+  "_comentario": "Exemplos do consignado ao cliente (especificação §23.8). Lidos pelos testes do servidor (Java) e do Corona Vendas (TypeScript): as duas contas têm de dar sempre o mesmo resultado.",
+  "notaDeExemplo": {
+    "numero": "0000064-21",
+    "comissaoPercentual": "30",
+    "linhas": [
+      { "produto": "A", "dx": 10, "dv": 5, "precoUnitario": "200.00" },
+      { "produto": "B", "dx": 8, "dv": 6, "precoUnitario": "187.50" },
+      { "produto": "C", "dx": 8, "dv": 4, "precoUnitario": "233.75" }
+    ],
+    "pendenciasAnteriores": "498.10",
+    "pago": { "DINHEIRO": "1470.00", "PIX": "300.00" },
+    "esperado": {
+      "itensDx": 26,
+      "itensDv": 15,
+      "itensVd": 11,
+      "valorDx": "5370.00",
+      "valorDv": "3060.00",
+      "valorVd": "2310.00",
+      "vendaPercentual": "43.02",
+      "comissao": "693.00",
+      "bruto": "1617.00",
+      "totalAReceber": "2115.10",
+      "totalPago": "1770.00",
+      "ficouDevendo": "345.10"
+    }
+  },
+  "casosDeComissao": [
+    { "nome": "0 por cento", "valorVd": "100.00", "percentual": "0", "comissao": "0.00", "bruto": "100.00" },
+    { "nome": "40 por cento", "valorVd": "100.00", "percentual": "40", "comissao": "40.00", "bruto": "60.00" },
+    { "nome": "HALF_UP em 0,05 x 30%", "valorVd": "0.05", "percentual": "30", "comissao": "0.02", "bruto": "0.03" },
+    { "nome": "HALF_UP em 33,33 x 7,50%", "valorVd": "33.33", "percentual": "7.50", "comissao": "2.50", "bruto": "30.83" }
+  ],
+  "comissoesRecusadas": ["40.01", "-1", "100"],
+  "tresMomentos": {
+    "semana1": { "bruto": "400.00", "pago": "300.00", "deviaDepois": "100.00" },
+    "semana2": { "bruto": "500.00", "pendenciasAnteriores": "100.00", "totalAReceber": "600.00", "pago": "550.00", "deviaDepois": "50.00", "debito1DepoisDoPagamento": "0.00", "debito2DepoisDoPagamento": "50.00" },
+    "pagamentoLancado": { "valor": "50.00", "deviaDepois": "0.00" }
+  },
+  "tresDebitos": {
+    "saldos": ["100.00", "200.00", "300.00"],
+    "pago": "350.00",
+    "aplicacoes": ["100.00", "200.00", "50.00"],
+    "sobra": "0.00"
+  },
+  "pagamentoAcimaDoDevido": {
+    "saldos": ["100.00", "50.00"],
+    "pago": "180.00",
+    "aplicacoes": ["100.00", "50.00"],
+    "sobra": "30.00"
+  },
+  "vendaPercentualComDxZero": { "valorDx": "0.00", "vendaPercentual": "0.00" }
+}
