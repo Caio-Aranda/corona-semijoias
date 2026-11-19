@@ -1,6 +1,6 @@
 # Especificação completa: Sistema de Semijoias Consignadas
 
-Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.28, 17/11/2026.
+Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.29, 18/11/2026.
 
 ## 1. Objetivo e contexto
 
@@ -135,6 +135,8 @@ O app **nunca acessa o banco direto**, apenas a API. Segurança (ninguém tem a 
 
 ### 7.2 Venda (app do vendedor, offline)
 
+> **Desde 18/11/2026 (v1.29), a §23 vale sobre esta seção no Corona Vendas.**
+
 - O vendedor bipa a peça, escolhe o cliente e a forma de pagamento (à vista ou a prazo/parcelado).
 - Bloqueios locais: produto fora da maleta ("produto não consta na sua remessa"), saldo zerado, desconto acima do limite definido pela dona.
 - Desconto só até o limite configurado, validado também no servidor.
@@ -144,6 +146,8 @@ O app **nunca acessa o banco direto**, apenas a API. Segurança (ninguém tem a 
 - **Venda a prazo (tarefa 7.3).** O que falta pagar (total menos o pago na hora) vira de 1 a 24 parcelas mensais, sem valor mínimo, sem multa e sem juros; o servidor calcula os valores (as primeiras iguais, a última fecha o centavo) e o vencimento de cada uma a partir do primeiro vencimento. Sem parcelamento informado, vira uma parcela com vencimento um mês depois da venda. O recebimento posterior (dinheiro ou transferência) é um registro novo, distribuído pelo servidor nas parcelas abertas da venda por ordem de vencimento, e não passa do que falta. O vendedor estorna o recebimento no mesmo dia; depois, só a dona. O estorno da venda cancela o que está em aberto.
 
 ### 7.3 Devolução e troca (app do vendedor, offline)
+
+> **Desde 18/11/2026 (v1.29), a §23 vale sobre esta seção no Corona Vendas.**
 
 Três casos:
 
@@ -183,6 +187,8 @@ Regras:
 - Nada se edita: pagamento original nunca é apagado; o reembolso é um registro negativo.
 
 ### 7.4 Acerto semanal (online)
+
+> **Desde 18/11/2026 (v1.29), a §23 vale sobre esta seção no Corona Vendas.**
 
 1. O vendedor sincroniza as vendas, devoluções, trocas e pagamentos.
 2. Bipa as peças que sobraram.
@@ -767,6 +773,7 @@ Importação com nome de arquivo inválido, foto duplicada, arquivo corrompido, 
 
 ## 22. Histórico de mudanças
 
+- **v1.29, 18/11/2026:** nova §23, Corona Vendas com consignado ao cliente (teste de uso de 18/11): nota por cliente com DX/DV/VD, comissão do cliente (30%, até 40%), acerto por nota, pendência acumulativa, Lançar pagamento, semanas do representante, Reposição, Troca, Remarcado, cadastro de cliente com fotos e relatórios novos. A venda ao consumidor (§7.2 e §7.3) sai do Corona Vendas; o acerto em dinheiro com a Lucia (§7.4) fica escondido e dá lugar ao Fechamento da maleta. Na tela: Representante e Cliente. Prints em `docs/referencia/2026-11-18-corona-vendas/`.
 - **v1.28, 17/11/2026:** diferença da troca (issue 208): passa a ser total de B − valor em crédito de A (§7.3 e §9; ADR-0014, itens 8, 10 e 12); migração V048 troca só a regra de `conferir_troca()`, sem corrigir dados (não há produção). A devolução desfaz tudo (409 `DEVOLUCAO_NAO_CONFERE`) se o abatido nas parcelas não bater; a leitura repetida do acerto dá 409 em vez de 500. Nenhuma tabela, coluna ou rota nova.
 - **v1.27, 17/11/2026:** proposta visual dos apps (issue 141): página `docs/marca/proposta-visual.html` com ícones em três estilos, tela de entrada em duas variações e tela de venda. §18: lista dos arquivos atuais de `docs/marca/` (os antigos marcados como "não usar") e paleta com as cores medidas no lugar das aproximadas (o bege `#F3E2C7` veio do arquivo antigo errado). Nenhuma regra de negócio mudou, nenhuma migração.
 - **v1.0, 08/11/2026:** versão inicial.
@@ -881,3 +888,173 @@ Importação com nome de arquivo inválido, foto duplicada, arquivo corrompido, 
   - §7.4: como ficou o início do acerto (todas as maletas abertas), as travas, a exceção da venda e do estorno feitos sem internet antes do início, a contagem por leituras e o desistir.
   - §9: `acertos` (só início e desistência), `leituras_acerto`, `remessas.acerto_id` e `remessas.status_antes_do_acerto`.
   - §10: `acertos` e `leituras_acerto` entram no pull; pedir o acerto e bipar são online.
+
+## 23. Corona Vendas: consignado ao cliente (18/11/2026)
+
+Mudança vinda do teste de uso de 18/11/2026 na praça do representante (Ponta Porã). **Esta seção vale sobre as §7.2, §7.3 e §7.4 e sobre o que elas dizem do Corona Vendas** onde as duas discordarem. Prints de referência em `docs/referencia/2026-11-18-corona-vendas/` (`print-gerenciamento-semanal.png`, `print-cobranca-devolucao.png`, `print-novo-pedido.png`). Onde esta seção e os prints discordarem, **o print vale**, exceto no que esta seção muda de propósito (sem cheque, sem boleto, sem desconto, sem entrada, sem NF-e, sem limite de crédito).
+
+### 23.1 Decisões do responsável (18/11/2026)
+
+1. **A venda ao consumidor sai do Corona Vendas.** O fluxo único passa a ser a **nota consignada ao cliente** (esta seção). As telas de venda à vista/a prazo, parcelas, devolução e troca com garantia e crédito do cliente (§7.2 e §7.3) saem do Corona Vendas. Os dados antigos ficam no servidor, nada é apagado; as rotas antigas podem continuar existindo, mas o app não as usa.
+2. **O acerto em dinheiro do representante com a Lucia fica fora do sistema por enquanto.** O acerto da §7.4 (comissão por meta 30%/40% em Guarani, repasse em dinheiro, PIX ou boleto) **fica escondido** no Corona Gestão, sem apagar dados. No lugar, a Lucia bipa a maleta quando ela volta e o sistema gera o relatório **Fechamento da maleta** (§23.10).
+3. **Prazo:** a seção inteira até sexta, 20/11/2026.
+4. **Nomes:** na tela, **Representante** (quem usa o Corona Vendas; antes "vendedor") e **Cliente** (quem pega peças em consignado para revender). Vale nos dois apps e nos dois idiomas; `docs/glossario-interface.md` acompanha. No código e no banco os nomes técnicos atuais (`vendedor`, `cliente`) continuam.
+5. **Continuam valendo** as regras inegociáveis do CLAUDE.md: gravado em Real e mostrado também em Dólar e Guarani pela cotação do dia (ADR-0006); `NUMERIC(14,2)`; UUID gerado no cliente; exclusão lógica; nota finalizada, acerto, pagamento e movimento de maleta são imutáveis (correção = estorno, registro novo); o servidor recalcula totais e comissões; o Corona Vendas nunca recebe custo nem dados de outro representante; o Corona Vendas continua **offline-first** (tudo desta seção funciona sem internet e vai pela outbox).
+6. **GitHub Actions:** o mês já passou do gratuito. PR em rascunho até passar tudo localmente; um único "pronto" por tarefa; nada de rodar de novo às cegas.
+
+### 23.2 Glossário
+
+| Termo | Significado |
+| --- | --- |
+| **Empresa (Lucia)** | A dona. Monta as maletas e envia aos representantes. |
+| **Representante** | Quem usa o Corona Vendas. Recebe maletas e atende os clientes da praça. No print: "Promotor". |
+| **Cliente** | Quem pega peças da maleta para revender, em consignado. No print: "Vendedora". O cliente não acessa o sistema. |
+| **Praça** | Cidade ou região do representante (ex.: "PONTA PORÃ - MS"). |
+| **Maleta** | Peças montadas pela Lucia, com **código único**. Um representante pode ter várias. |
+| **Código do produto** | O **código do fornecedor** (tipo `FORNECEDOR` do ADR-0007): é o que se bipa e o que aparece em todas as telas. Peças iguais têm o mesmo código; bipar de novo soma 1. |
+| **Nota (pedido)** | Tudo o que **um** cliente levou em **uma** saída. Número `semana-sequência`, ex.: `0000065-32`. |
+| **Acerto (cobrança)** | O retorno do cliente: devolve o que não vendeu e paga o vendido menos a comissão. |
+| **Dt. Cobrança** | Data de retorno para o acerto (sugestão: saída + 45 dias, editável). |
+| **Dt. Acerto** | Data em que o acerto foi feito. |
+| **DX / DV / VD** | DX (Deixado): o que o cliente levou, a preço de venda, bruto. DV (Devolvido): o que ele devolveu. VD (Vendido) = DX − DV. Itens DX/DV/VD = quantidades de peças. Nesta seção DX/DV/VD são **da nota do cliente**, não da maleta da §2. |
+| **Comissão** | Parte do vendido que fica com o cliente: padrão 30%, de 0% a 40%. |
+| **Valor Líquido** | VD − Comissão, sempre, em todas as telas. |
+| **Pendência** | O que o cliente ficou devendo; acumula e entra sozinha no próximo acerto. |
+| **Recibo** | Registro de um pagamento, numerado `semana-sequência` (ex.: `0000065-53`). |
+| **Semana** | Ciclo do representante na praça, numerado em sequência **por representante** (ex.: `0000065`). Não é a semana cadastrada pela dona da §7.4. |
+
+### 23.3 Fluxo
+
+1. A Lucia monta a maleta bipando as peças e envia (§7.1, sem mudança). **A maleta chega pronta** no Corona Vendas, com as peças e o código; o representante **não confere peça por peça** (a conferência por bipe da §7.1 deixa de ser obrigatória para usar a maleta).
+2. **Novo Pedido:** o representante bipa o que o cliente leva e finaliza a nota.
+3. O cliente fica de 45 a 60 dias com as peças.
+4. **Acerto:** o representante bipa as devoluções, que voltam à maleta de onde saíram; o que não foi bipado é **vendido**.
+5. **Pagamento:** dinheiro, Pix, cartão de débito ou de crédito à vista (pode misturar).
+6. Pagou tudo → nota **Fechado** (verde) e recibo. Faltou → **pendência**, nota **Pendente** (amarela), somada ao próximo acerto até ser quitada.
+
+O representante bipa só na saída e no acerto.
+
+### 23.4 Tela principal (Gerenciamento Semanal)
+
+Igual ao print: botões no topo, cabeçalho da semana, abas **Pedidos** e **Totais**.
+
+- **Botões, nesta ordem:** **Novo Pedido** (§23.6), **Cobrança** (§23.7), **Reposição**, **Troca**, **Clientes**, **Maletas** e o campo **Pesquisar** (nome do cliente, número da nota ou código da maleta).
+  - **Reposição:** acrescenta peças a um cliente com nota em aberto. Nota da semana atual: as peças entram nela e a nota de saída é gerada de novo para assinar. Nota de semana anterior: nasce uma nota nova na semana atual só com as peças novas, com a mesma Dt. Cobrança.
+  - **Troca:** troca uma peça que está com o cliente por outra, sem acerto: a peça trocada volta à maleta de onde saiu e a nova entra na nota (uma operação só; a nota guarda o histórico).
+- **Cabeçalho:** Semana nº, Representante, Praça e Situação da semana (**Em andamento** ou **Fechada**), com seletor de semanas anteriores.
+- **Nova semana:** botão, com confirmação. Só uma semana aberta por representante; abrir a nova fecha a anterior. Funciona sem internet.
+- **Semanas anteriores** abrem para acertar ou corrigir notas, mesmo **Fechada**; **Novo Pedido só na semana atual** (desabilitado nas outras).
+- **Recibo** fica na semana em que o pagamento foi feito, mesmo de nota de semana anterior (o total recebido da semana bate com o dinheiro na mão).
+- **Colunas de Pedidos:** Nota nº · Cliente · Dt. Cobrança · Valor DX · Valor DV · Valor VD · Comis. % · Comissão · Valor Líq. · Situação. Dois cliques abrem o acerto da nota.
+- **Aba Totais:** soma da semana: DX, DV, VD (valores e itens), comissão, líquido, total recebido (por forma) e total pendente.
+- **Situação e cor da linha:**
+
+| Situação | Quando | Cor |
+| --- | --- | --- |
+| Em aberto | Cliente com as peças, sem acerto. | Branca |
+| Pendente | Acerto feito, cliente ficou devendo, até quitar. | Amarela |
+| Fechado | Acerto feito e nada a pagar; a Pendente vira Fechado sozinha ao quitar. | Verde |
+| Remarcado | Dt. Cobrança mudada sem acerto; DV, VD, comissão e líquido aparecem zerados até o acerto. | Rosa |
+
+### 23.5 Cadastro de cliente
+
+Cada representante tem a sua lista (o Corona Gestão vê todos; o Corona Vendas só os do representante).
+
+| Campo | Obrigatório | Detalhe |
+| --- | --- | --- |
+| Nome completo | Sim | Usado nas buscas. |
+| Endereço | Sim | Rua, número, bairro, cidade, UF. |
+| Foto do cliente | Sim | Câmera na hora ou arquivo. |
+| Foto do documento | Sim | Frente e verso. |
+| Indicado por | Não | Cliente já cadastrado **ou** nome digitado. |
+| Como conheceu | Não | Texto livre. |
+| Telefone / WhatsApp | Sim | Contato e envio de nota e relatórios. |
+| Documento (CPF ou outro) | Não | Avisa cadastro duplicado. |
+| Comissão % | Sim | Padrão 30%, de 0% a 40%. |
+
+- As fotos são **arquivos** (como as de produto, §20; nunca binário no PostgreSQL). Tiradas sem internet ficam no computador e sobem quando houver conexão; a falta de envio da foto **nunca trava** a nota nem o acerto.
+- A maleta **não** é campo do cadastro: o cadastro só **mostra** de quais maletas o cliente está com peças agora, a **pendência atual** e o **histórico de notas**, e tem o botão **Lançar pagamento** (§23.8).
+- Fotos do cliente e do documento são dados pessoais: só o representante dono do cliente e a dona veem.
+
+### 23.6 Saída de peças (Novo Pedido)
+
+1. **Novo Pedido** cria a nota na **semana atual**; o número `semana-sequência` nasce sozinho no computador do representante (um aparelho por representante, §6 item 15; o servidor confere que não repete).
+2. Escolher o **cliente** (busca por nome). Com pendência: aviso "Este cliente deve R$ X. O valor será somado ao próximo acerto."
+3. **Dt. Cobrança:** hoje + 45 dias, editável.
+4. Escolher a **maleta** (o mesmo código pode estar em mais de uma).
+5. **Bipar** cada peça: o sistema procura o código **na maleta escolhida**; linha nova Ref. · Tam./Ton. · Produto · **Maleta** · Qtd. DX · Preço · Sub-total, ou soma 1 se o mesmo código e a mesma maleta já estão na lista; atualiza Total de itens e Total DX.
+6. Trocar a maleta escolhida e continuar bipando põe peças de **outra maleta** na mesma nota.
+7. Antes de finalizar: diminuir quantidade ou remover a linha.
+8. **Finalizar:** a nota não aceita mais peças (só por Reposição) e as peças passam a "com o cliente". É imutável depois disso.
+9. Gera a **nota de saída** (§23.11).
+
+**Não deixa bipar** (mensagem, nada é adicionado): código fora da maleta escolhida (se estiver em outra maleta do representante, a mensagem diz qual); quantidade acima do disponível na maleta.
+
+**Preço:** o da maleta (`preco_remessa`, congelado no envio, §7.1).
+
+**Não existem:** desconto, entrada, limite de crédito, tipo de saída e NF-e, mesmo aparecendo no print.
+
+**Saldo da maleta por eventos** (no Corona Vendas, substitui a fórmula da §7.1): `disponível = enviada − com clientes − vendida pelos clientes − devolvida à loja`. "Com clientes" sobe na saída, na Reposição e na entrada de troca, e desce na devolução do acerto e na peça que volta na troca; a venda pelo cliente só acontece no acerto.
+
+### 23.7 Retorno e acerto (Cobrança)
+
+1. **Encontrar a nota** pelo botão Cobrança (ou dois cliques na linha): por **nome do cliente** (as notas em aberto dele), por **código da maleta** (todos os clientes com peças dela e as notas de cada um) ou por **número da nota**. Um acerto **por nota**; um cliente pode ter várias notas em aberto.
+2. **Aba Itens:** todas as linhas com Qtd. DX e Qtd. DV (começa em zero). Cada bipe soma 1 em DV. Mesmo código vindo de duas maletas na nota → pergunta para qual maleta volta. Código fora da nota ou DV acima de DX → avisa e não aceita. **Concluir devolução** lista as peças não bipadas: "Estas X peças serão consideradas vendidas. Confirmar?". Confirmado: as devolvidas voltam **à maleta de onde saíram** e ficam disponíveis; as vendidas saem do estoque da maleta.
+3. **Aba Forma de Pagamento** (disposição do print): **Acerto** (Venda %, Comissão %, Comissão R$, Total a Receber Bruto); a Comissão % vem do cadastro e pode mudar **só neste acerto**, até 40%. **Pendências anteriores** (nota, data, valor e total do débito): entram sozinhas e não se removem. **Total a Receber** = Bruto + pendências anteriores. **Pagamento**: Dinheiro, Pix, Débito e Crédito à vista (**sem cheque e sem boleto**). **Total Pago** e **Ficou devendo**. Rodapé: Itens e Total DX / DV / VD.
+4. **Salvar:** gera o **recibo** (se houve pagamento) e o **relatório do acerto**. Pagou tudo → **Fechado**; faltou → **Pendente** e o valor vira pendência do cliente.
+5. **Cliente não veio:** mudar a Dt. Cobrança → **Remarcado** (rosa).
+6. **Corrigir** um acerto já salvo (inclusive de semana anterior) é **estornar** o acerto (registro novo, com motivo) e fazer de novo; nada se edita. O estorno desfaz os movimentos de maleta e os pagamentos daquele acerto.
+
+### 23.8 Cálculos, pagamento e pendência
+
+Caso de teste obrigatório (print da nota `0000064-21`):
+
+| Conta | Fórmula | Exemplo |
+| --- | --- | --- |
+| Itens VD | Itens DX − Itens DV | 26 − 15 = **11** |
+| Valor VD | Valor DX − Valor DV | 5.370,00 − 3.060,00 = **2.310,00** |
+| Venda % | VD ÷ DX × 100 (só mostrado, 2 casas) | **43,02%** |
+| Comissão R$ | VD × Comissão % (0% a 40%), HALF_UP 2 casas | 2.310,00 × 30% = **693,00** |
+| Total a Receber Bruto (= Valor Líq.) | VD − Comissão | **1.617,00** |
+| Pendências anteriores | Soma do que o cliente deve de antes | nota `0000063-32`: **498,10** |
+| Total a Receber | Bruto + pendências anteriores | **2.115,10** |
+| Total Pago | Dinheiro + Pix + Débito + Crédito | 1.470,00 + 300,00 = **1.770,00** |
+| Ficou devendo | Total a Receber − Total Pago | **345,10** |
+
+- Comissão **sobre o VD**, nunca sobre o DX; acima de 40% é recusado (na tela e no servidor).
+- "Ficou devendo" sempre positivo. "Valor Líquido" é sempre VD − Comissão (o "T. Líquido" do print, que mostra o VD, **não** é seguido).
+- Pagar mais que o Total a Receber é recusado.
+- **Ordem do pagamento no acerto:** o pago quita primeiro as **pendências anteriores, da mais antiga para a mais nova**, e depois o bruto desta nota; o que sobra sem pagar vira a pendência desta nota. Cada nota de origem quitada passa sozinha a **Fechado**.
+- **Lançar pagamento** (no cadastro do cliente, sem esperar o acerto): valor, forma e data; gera recibo; abate a pendência **mais antiga primeiro**; não passa do total devido.
+- A pendência **nunca** é removida nem editada: só diminui por pagamento. Pagamento errado se corrige por **estorno** (registro novo, com motivo), que reabre a pendência.
+- Exemplo: semana 1 bruto 400, pago 300 → deve 100; semana 2 bruto 500 + 100 = 600, pago 550 → deve 50; pagamento lançado de 50 → deve 0.
+- Formas aceitas: `DINHEIRO`, `PIX`, `DEBITO`, `CREDITO` (crédito à vista). **Não existem** cheque, boleto, crédito parcelado nem entrada. Nada é executado: só registrado (§7.5).
+- O servidor recalcula DX, DV, VD, comissão, pendências e situação de cada nota a partir dos itens e pagamentos; nunca confia no que o app mandou. O que aconteceu no balcão sem internet nunca é recusado em silêncio: divergência vira alerta para a dona.
+
+### 23.9 Sem internet
+
+Nova semana, cadastro de cliente (com fotos), Novo Pedido, Reposição, Troca, Remarcar, acerto, Lançar pagamento e estornos funcionam **sem internet** e vão pela outbox (§10), cada um com UUID do cliente, idempotentes, com o número `semana-sequência` gerado no computador. O que o servidor recusar aparece em português simples dizendo o que fazer. O pull traz clientes, semanas, notas, acertos, pagamentos e pendências **só do representante**.
+
+### 23.10 Fechamento da maleta (Corona Gestão)
+
+Quando a maleta volta, **a Lucia bipa** as peças no Corona Gestão (o representante não bipa). O relatório **Fechamento da maleta** mostra: peças enviadas, devolvidas pelos clientes, vendidas e ainda com clientes (com quem), as bipadas na volta e a diferença; valor vendido (VD), comissão dos clientes, valor recebido e pendências a receber. O acerto em dinheiro com a Lucia fica fora do sistema por enquanto (§23.1, item 2).
+
+### 23.11 Relatórios
+
+Em todo relatório e tela de informação: **DX, DV e VD** (valores) e **Itens DX, DV e VD**. Todos imprimem, salvam em PDF e preparam o envio pelo WhatsApp (o sistema prepara o arquivo e a mensagem; quem envia é o representante).
+
+| Relatório | Para | Conteúdo |
+| --- | --- | --- |
+| Nota de saída | Cliente | Número, data de saída e de retorno, representante, dados do cliente, peças (Ref. · Produto · Tam./Ton. · Maleta · Qtd. · Preço · Sub-total), Itens DX, Total DX, pendência anterior, espaço para assinatura. Comprovante interno, sem NF-e. |
+| Relatório do acerto | Cliente | Nota, cliente, datas de saída e de acerto, peças vendidas, DX/DV/VD, comissão, pendências anteriores, total a receber, pago por forma, ficou devendo. |
+| Situação do cliente | Cliente | Já vendeu (notas fechadas: DX, DV, VD, comissão, líquido, pago) e o que falta (peças com ele, maleta, data de retorno, quanto deve). |
+| Peças vendidas por cliente | Representante | Cliente e período: cada peça vendida (Ref., produto, quantidade, valor) e total. |
+| Totais da semana | Representante | A aba Totais. |
+| Situação da maleta | Representante | Peças na maleta, com clientes (com quem) e vendidas. |
+| Fechamento da maleta | Lucia | §23.10. |
+
+Valores em Real, com Dólar e Guarani abaixo, pela cotação do dia de cada lançamento (ADR-0006).
+
+### 23.12 Fora desta versão
+
+Limite de crédito do cliente; acerto em dinheiro com a Lucia; desconto; entrada; NF-e; acesso do cliente.
