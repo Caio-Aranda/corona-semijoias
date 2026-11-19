@@ -182,6 +182,22 @@ export const ERROS_ES: Readonly<Record<string, string>> = Object.freeze({
   DEPENDE_DE_ENVIO_RECUSADO:
     'Esta venta depende de otro registro que no fue aceptado. La dueña ya fue avisada.',
   // --- Só no computador (recusas locais) ---
+  // --- Consignado al cliente (tarea 9.2): lo que el propio computador no deja guardar ---
+  SEM_SEMANA_ABERTA: 'No hay una semana abierta. Tocá "Nueva semana" para empezar.',
+  PEDIDO_SEM_CLIENTE: 'Elegí el cliente del pedido.',
+  PEDIDO_SEM_MALETA: 'Elegí la maleta antes de leer las piezas.',
+  DATA_DE_COBRANCA_INVALIDA: 'Revisá la fecha de cobro.',
+  PAGO_ACIMA_DO_DEVIDO: 'El valor pagado pasa de lo que el cliente debe. Revisá los valores.',
+  CLIENTE_SEM_PENDENCIA: 'Este cliente no debe nada.',
+  CADASTRO_DO_CLIENTE_INCOMPLETO:
+    'Completá el nombre, la dirección (calle, número, barrio, ciudad y estado) y el teléfono del cliente.',
+  FOTOS_DO_CLIENTE_FALTAM:
+    'Faltan fotos: sacá la foto del cliente y el frente y el dorso del documento.',
+  FOTO_INVALIDA: 'No se pudo usar esta foto. Sacá otra o elegí otro archivo.',
+  PECA_NAO_ESTA_NA_NOTA: 'Esta pieza no está en la nota del cliente.',
+  NUMERO_DA_SEMANA_INVALIDO: 'Revisá el número de la semana.',
+  ITEM_DO_PEDIDO_NAO_ENCONTRADO: 'No encontramos esta pieza en el pedido. Actualizá la pantalla.',
+  CLIENTE_DE_OUTRO_REPRESENTANTE: 'Este cliente no es tuyo.',
   PECA_FORA_DA_MALETA: 'Esta pieza no consta en tu maleta.',
   SEM_SALDO: 'Ya no hay piezas de esta en tu maleta. Revisá la cantidad.',
   DESCONTO_MAIOR_QUE_A_PECA: 'El descuento es mayor que el valor de la pieza.',

@@ -118,11 +118,17 @@ function criarJanela(): void {
 }
 
 async function iniciar(): Promise<void> {
-  // Nenhuma permissão do navegador (câmera, microfone, localização...) é concedida.
-  session.defaultSession.setPermissionRequestHandler((_conteudo, _permissao, responder) => {
-    responder(false);
+  // Nenhuma permissão do navegador é concedida (microfone, localização...), EXCETO a câmera (só imagem, nunca som) para a
+  // foto do cliente e do documento no cadastro (tarefa 9.2; §23.5).
+  session.defaultSession.setPermissionRequestHandler(
+    (_conteudo, permissao, responder, detalhes) => {
+      const tipos = (detalhes as { mediaTypes?: readonly string[] }).mediaTypes ?? [];
+      responder(permissao === 'media' && tipos.length > 0 && tipos.every((t) => t === 'video'));
+    },
+  );
+  session.defaultSession.setPermissionCheckHandler((_conteudo, permissao, _origem, detalhes) => {
+    return permissao === 'media' && (detalhes as { mediaType?: string }).mediaType === 'video';
   });
-  session.defaultSession.setPermissionCheckHandler(() => false);
 
   // Servidor sem domínio: o HTTPS usa um certificado autoassinado e o app só confia na chave dele (ADR-0009).
   // Sem impressão digital, fora deste computador, o app não conecta. A verificação nunca é desligada.

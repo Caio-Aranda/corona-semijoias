@@ -283,11 +283,12 @@ export class Aparelho {
   outbox(): Array<{
     operacao_id: string;
     tipo: string;
+    formato: number;
     situacao: string;
     codigo_do_resultado: string | null;
   }> {
     return this.ler(
-      'SELECT operacao_id, tipo, situacao, codigo_do_resultado FROM outbox ORDER BY ordem',
+      'SELECT operacao_id, tipo, formato, situacao, codigo_do_resultado FROM outbox ORDER BY ordem',
     );
   }
 

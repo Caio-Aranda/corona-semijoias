@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { abrirBancoLocal, type BancoAberto, gravar } from '../banco/banco-local';
 import {
+  TABELAS_DA_RECARGA_DIRIGIDA_V9,
   MIGRACOES,
   TABELAS_DA_RECARGA_DIRIGIDA_V8,
   TABELAS_SINCRONIZAVEIS,
@@ -19,6 +20,11 @@ import { contar, criarBancoDeTeste, idDeTeste } from './testes/banco-de-teste';
  * colunas do pull e recarga dirigida, sem apagar nada. SQLCipher de verdade, arquivo de verdade. Só o motor e o banco: o vendedor
  * não registra recebimento (tudo é da dona) e as telas são da 7.11.
  */
+
+/** A migração local 9 acrescenta as suas tabelas ao FIM da marca da recarga (sem repetir as que já estavam nela). */
+const comV9 = (marca: readonly string[]): string[] => [
+  ...new Set([...marca, ...TABELAS_DA_RECARGA_DIRIGIDA_V9]),
+];
 
 const limpar: (() => void | Promise<void>)[] = [];
 afterEach(async () => {
@@ -56,8 +62,12 @@ describe('migração local 8', () => {
       db.close();
     });
     expect(Number(db.pragma('user_version', { simple: true }))).toBe(VERSAO_DO_BANCO);
-    expect(VERSAO_DO_BANCO).toBe(8);
-    expect(contagem(db)).toEqual(contagemAntes);
+    expect(VERSAO_DO_BANCO).toBe(9);
+    // A migração 9 tira as cópias do servidor dos clientes que não são do representante (o diretório da loja, ADR-0016, item 4).
+    const { clientes: clientesDepois, ...restoDepois } = contagem(db);
+    const { clientes: clientesAntes, ...restoAntes } = contagemAntes;
+    expect(restoDepois).toEqual(restoAntes);
+    expect(clientesDepois ?? 0).toBeLessThanOrEqual(clientesAntes ?? 0);
     expect(db.prepare('SELECT * FROM outbox ORDER BY ordem').all()).toEqual(outboxAntes);
     // As linhas das contas continuam as mesmas (a cópia foi refeita com as mesmas linhas), mais a coluna nova vazia.
     const contasDepois = (
@@ -128,7 +138,7 @@ describe('migração local 8', () => {
     limpar.push(() => {
       m7.close();
     });
-    expect(tabelasDaRecargaDirigida(m7)).toEqual([...TABELAS_DA_RECARGA_DIRIGIDA_V8]);
+    expect(tabelasDaRecargaDirigida(m7)).toEqual(comV9([...TABELAS_DA_RECARGA_DIRIGIDA_V8]));
 
     // Com uma marca antiga ainda de pé: as antigas primeiro, sem repetir.
     const d = criarBancoDeTeste();
@@ -149,19 +159,15 @@ describe('migração local 8', () => {
     limpar.push(() => {
       m7b.close();
     });
-    expect(tabelasDaRecargaDirigida(m7b)).toEqual([
-      'comissoes',
-      'contas_receber',
-      'baixas_receber',
-      'recebimentos_vendedor',
-      'acertos',
-    ]);
+    expect(tabelasDaRecargaDirigida(m7b)).toEqual(
+      comV9(['comissoes', 'contas_receber', 'baixas_receber', 'recebimentos_vendedor', 'acertos']),
+    );
   });
 });
 
 describe('colunas do dinheiro do vendedor no pull', () => {
   it('a tabela nova está na lista, só com as colunas do servidor, e o caixa nunca vem', () => {
-    expect(TABELAS_SINCRONIZAVEIS).toHaveLength(32);
+    expect(TABELAS_SINCRONIZAVEIS).toHaveLength(43);
     expect(TABELAS_SINCRONIZAVEIS).toContain('recebimentos_vendedor');
     expect(COLUNAS_DO_PULL.recebimentos_vendedor).toEqual([
       'vendedor_id',

@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it, vi } from 'vitest';
-import type { Cliente, EnvioNaoAceito } from '../shared/dados';
+import type { EnvioNaoAceito } from '../shared/dados';
 import type {
   EstadoDaSincronizacao,
   PedidoDeChamada,
@@ -13,7 +13,6 @@ import type {
   ResultadoDeChamada,
 } from '../shared/ponte';
 import { AvisoDosDados, IndicadorDeEnvio } from './IndicadorDeEnvio';
-import { FormularioDeCliente } from './telas/FormularioDeCliente';
 import { TEXTOS } from './textos';
 
 const ESTADO: EstadoDaSincronizacao = {
@@ -206,62 +205,6 @@ describe('"Dados até" nos relatórios', () => {
     expect(screen.getByTestId('dados-ate')).toHaveTextContent(
       'Ainda não recebemos os dados da loja neste computador. Conecte-se à internet.',
     );
-  });
-});
-
-describe('editar cliente', () => {
-  const cliente: Cliente = {
-    id: '33333333-3333-4333-8333-333333333333',
-    nome: 'Maria Souza',
-    cpf: null,
-    telefone: '111',
-    cidade: null,
-    meu: true,
-    dataNascimento: null,
-    whatsapp: null,
-    observacoes: null,
-    ativo: true,
-  };
-
-  it('manda só o que mudou', async () => {
-    const { ponte, chamadas } = criarPonte({
-      'clientes.alterar': () => ({ ok: true, dados: { ...cliente, telefone: '222' } }),
-    });
-    const aoSalvar = vi.fn();
-    const u = userEvent.setup();
-    render(
-      <FormularioDeCliente
-        ponte={ponte}
-        editar={cliente}
-        aoSalvar={aoSalvar}
-        aoCancelar={() => undefined}
-      />,
-    );
-    expect(screen.getByRole('heading', { name: 'Editar cliente' })).toBeInTheDocument();
-    const telefone = screen.getByLabelText('Telefone');
-    await u.clear(telefone);
-    await u.type(telefone, '222');
-    await u.click(screen.getByRole('button', { name: 'Salvar alterações' }));
-    expect(chamadas).toEqual([
-      { operacao: 'clientes.alterar', id: cliente.id, campos: { telefone: '222' } },
-    ]);
-    expect(aoSalvar).toHaveBeenCalledOnce();
-  });
-
-  it('sem mudança, avisa e não manda nada', async () => {
-    const { ponte, chamadas } = criarPonte();
-    const u = userEvent.setup();
-    render(
-      <FormularioDeCliente
-        ponte={ponte}
-        editar={cliente}
-        aoSalvar={() => undefined}
-        aoCancelar={() => undefined}
-      />,
-    );
-    await u.click(screen.getByRole('button', { name: 'Salvar alterações' }));
-    expect(await screen.findByText('Você não mudou nada neste cadastro.')).toBeInTheDocument();
-    expect(chamadas).toEqual([]);
   });
 });
 

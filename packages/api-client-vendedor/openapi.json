@@ -3556,7 +3556,7 @@
     },
     "/api/vendedor/clientes" : {
       "get" : {
-        "description" : "Os clientes ativos da LOJA (até 100, por nome), só com nome, CPF, telefone e cidade; nascimento, WhatsApp e observações vêm só dos que o vendedor logado cadastrou (meu = verdadeiro). A busca procura no nome, telefone, CPF e, nos clientes dele, no WhatsApp.",
+        "description" : "Só os clientes ativos do representante logado (até 100, por nome): cada representante vê a sua lista e nunca a de outro (ADR-0016, item 4). A busca procura no nome, telefone, CPF e WhatsApp.",
         "operationId" : "listarMeusClientes",
         "parameters" : [ {
           "in" : "query",
@@ -3621,6 +3621,7 @@
     },
     "/api/vendedor/clientes/{id}" : {
       "get" : {
+        "description" : "Cliente de outro representante é 404.",
         "operationId" : "verMeuCliente",
         "parameters" : [ {
           "in" : "path",
@@ -3646,7 +3647,7 @@
         "security" : [ {
           "bearer" : [ ]
         } ],
-        "summary" : "Ver um cliente da loja",
+        "summary" : "Ver um cliente meu",
         "tags" : [ "clientes-do-vendedor-controller" ]
       }
     },

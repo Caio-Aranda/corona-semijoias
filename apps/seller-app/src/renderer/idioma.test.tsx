@@ -218,7 +218,7 @@ describe('a tela inicial e a barra do topo nos dois idiomas', () => {
     reiniciarIdioma();
   });
 
-  it('em espanhol os botões e o saludo; o ES | PT fica ao lado do Salir e troca na hora', async () => {
+  it('em espanhol os botões da tela principal; o ES | PT fica ao lado do Salir e troca na hora', async () => {
     const usuario = userEvent.setup();
     const ponte = {
       ...ponteDeFora(),
@@ -226,8 +226,9 @@ describe('a tela inicial e a barra do topo nos dois idiomas', () => {
       chamarApi: vi.fn().mockResolvedValue({ ok: true, dados: { avisos: [] } }),
     } as unknown as PonteDoCorona;
     render(<App ponte={ponte} />);
-    expect(await screen.findByRole('heading', { name: 'Hola, Ana.' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Mi maleta' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Gestión Semanal' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Nuevo Pedido' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Cobranza' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Salir' })).toBeInTheDocument();
     const es = screen.getByRole('button', { name: 'Español' });
     expect(es).toHaveTextContent('ES');
@@ -235,8 +236,9 @@ describe('a tela inicial e a barra do topo nos dois idiomas', () => {
     expect(es).toHaveAttribute('aria-pressed', 'true');
 
     await usuario.click(screen.getByRole('button', { name: 'Português' }));
-    expect(screen.getByRole('heading', { name: 'Olá, Ana.' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Minha maleta' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Gerenciamento Semanal' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Novo Pedido' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Cobrança' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Sair' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Português' })).toHaveAttribute(
       'aria-pressed',

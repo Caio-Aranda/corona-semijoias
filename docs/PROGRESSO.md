@@ -246,7 +246,20 @@ Fase CÓDIGO do [ADR-0016](decisoes/ADR-0016-consignado-ao-cliente.md) (plano em
 - **Sync:** nove tipos novos de operação e o formato 2 de `CLIENTE_NOVO`/`CLIENTE_ALTERADO` (formato 1 aceito por 90 dias); pull só do representante (clientes agora só os dele, reverte o diretório da loja); oráculo estendido às tabelas novas.
 - **Rotas:** `PUT/GET /api/vendedor/clientes/{id}/fotos/{tipo}`, `GET /api/clientes/{id}/fotos/{tipo}`, `/api/maletas/{id}/fechamento` (iniciar, leituras, ler, concluir), `/api/consignado/*` (semanas, notas, detalhe, situação do cliente), `/api/dona/consignado/alertas` e `/conciliacoes`, `GET /api/configuracoes/telas`. OpenAPI e clientes regerados.
 - **Testes:** cálculos com o arquivo `packages/shared/exemplos/consignado-acerto.json` (a 9.2 lê o mesmo); notas, acertos (caso `0000064-21` com a pendência da `0000063-32`), recibos, sync (cada tipo, repetição, conflito, concorrência), fotos, Fechamento, conciliações e telas.
-- **Não feito / pendências:** relatório PDF/Excel do Fechamento (9.3/9.4); transferir cliente entre representantes (D10 no ADR); K1–K7 na conferência diária; a rota online antiga de clientes ainda lista o diretório da loja.
+- **Não feito / pendências:** relatório PDF/Excel do Fechamento (9.3/9.4); transferir cliente entre representantes (D10 no ADR); K1–K7 na conferência diária; a rota online antiga de clientes listava o diretório da loja (restringida na 9.2).
+
+## Leva 9: consignado ao cliente, Corona Vendas (tarefa 9.2, issue 223, 19/11/2026)
+
+Segue o [ADR-0016](decisoes/ADR-0016-consignado-ao-cliente.md) (ajustes da 9.2 no fim dele), a especificação §23 e o [plano 9.1](progresso/plano-9-1-consignado-ao-cliente.md), seção 7. Branch `feat/consignado-vendas`; PR em rascunho até passar tudo no computador (economia de Actions).
+
+- **Motor local:** migração 9 do SQLite (espelho das 11 tabelas novas, colunas de `clientes` e `movimentos_remessa`, rascunho do Novo Pedido, contador `semana-sequência`, fila das fotos; apaga o diretório da loja e marca a recarga dirigida); o pull pede `formato=2`; os nove tipos novos da outbox (formato 1) e o cadastro do cliente no formato 2; situação, pendência, semana atual e Dt. Cobrança sempre calculadas (nada de cópia do servidor mudada no lugar: recusar uma operação só tira as linhas provisórias).
+- **Cálculo** em `packages/shared/consignado` (acerto, aplicação do pagamento, situação), testado com `packages/shared/exemplos/consignado-acerto.json`, o mesmo arquivo do servidor; no app, a nota `0000064-21` com a pendência da `0000063-32` dá número por número.
+- **Telas** (§23.4 a §23.8): Gerenciamento Semanal (Pedidos com as quatro cores, Totais, Nova semana, seletor), Novo Pedido, Cobrança (Itens e Forma de Pagamento), Reposição, Troca, Remarcar, estornos, Clientes (cadastro com fotos por câmera ou arquivo, ficha, Lançar pagamento), Maletas e Pesquisar; textos em espanhol (padrão) e português; Representante e Cliente na tela e no glossário (parte 22).
+- **Fotos do cliente:** arquivo criptografado (AES-256-GCM, chave derivada da do banco), fila de envio própria (três por vez; recomeça sozinha), câmera como única permissão liberada.
+- **Telas antigas retiradas** (venda, parcelas, devolução e troca com garantia, crédito, pedir acerto, conferência obrigatória, meus números): fora do menu e das rotas e apagadas do código do app; nada apagado nos bancos.
+- **Servidor:** `GET /api/vendedor/clientes` (e `/{id}`) passa a devolver só os clientes do próprio representante (404 para os de outro), com teste.
+- **Dúvidas novas** (ADR-0016): D11 código da maleta (derivado do identificador, `M-XXXXXX`); D12 praça e Tam./Ton. não chegam ao Corona Vendas.
+- **Não feito:** relatórios imprimíveis e WhatsApp (9.3); data editável no Lançar pagamento; cotação do dia de cada lançamento (a tela usa a de hoje); cenário em `testes-e2e` (não rodado); "a aplicar" na prévia.
 
 ## Leva 9: consignado ao cliente, Corona Gestão (tarefa 9.4, issue 225, 19/11/2026)
 

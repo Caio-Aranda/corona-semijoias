@@ -183,7 +183,7 @@ export const verAutorizacaoDoVendedor = <ThrowOnError extends boolean = false>(o
 /**
  * Meus clientes
  *
- * Os clientes ativos da LOJA (até 100, por nome), só com nome, CPF, telefone e cidade; nascimento, WhatsApp e observações vêm só dos que o vendedor logado cadastrou (meu = verdadeiro). A busca procura no nome, telefone, CPF e, nos clientes dele, no WhatsApp.
+ * Só os clientes ativos do representante logado (até 100, por nome): cada representante vê a sua lista e nunca a de outro (ADR-0016, item 4). A busca procura no nome, telefone, CPF e WhatsApp.
  */
 export const listarMeusClientes = <ThrowOnError extends boolean = false>(options?: Options<ListarMeusClientesData, ThrowOnError>): RequestResult<ListarMeusClientesResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ListarMeusClientesResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -207,7 +207,9 @@ export const cadastrarMeuCliente = <ThrowOnError extends boolean = false>(option
 });
 
 /**
- * Ver um cliente da loja
+ * Ver um cliente meu
+ *
+ * Cliente de outro representante é 404.
  */
 export const verMeuCliente = <ThrowOnError extends boolean = false>(options: Options<VerMeuClienteData, ThrowOnError>): RequestResult<VerMeuClienteResponses, unknown, ThrowOnError> => (options.client ?? client).get<VerMeuClienteResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],

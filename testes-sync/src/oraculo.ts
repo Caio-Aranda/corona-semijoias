@@ -37,10 +37,24 @@ export const TABELAS = [
   'acerto_eventos',
   'comissoes',
   'pendencias_acerto',
+  // Consignado ao cliente (tarefas 9.1 e 9.2; ADR-0016): só do representante dono.
+  'semanas_vendedor',
+  'notas_consignado',
+  'reposicoes_nota',
+  'trocas_nota',
+  'itens_nota_consignado',
+  'remarcacoes_nota',
+  'acertos_nota',
+  'itens_acerto_nota',
+  'recibos_consignado',
+  'formas_recibo_consignado',
+  'aplicacoes_recibo',
 ] as const;
 
 /** Tabelas que são só de um vendedor: nada delas pode aparecer no computador de outro. */
 export const TABELAS_PRIVADAS = [
+  // Cada representante tem a SUA lista de clientes (ADR-0016, item 4): nenhum cliente de outro chega ao computador.
+  'clientes',
   'remessas',
   'itens_remessa',
   'movimentos_remessa',
@@ -67,6 +81,17 @@ export const TABELAS_PRIVADAS = [
   'acerto_eventos',
   'comissoes',
   'pendencias_acerto',
+  'semanas_vendedor',
+  'notas_consignado',
+  'reposicoes_nota',
+  'trocas_nota',
+  'itens_nota_consignado',
+  'remarcacoes_nota',
+  'acertos_nota',
+  'itens_acerto_nota',
+  'recibos_consignado',
+  'formas_recibo_consignado',
+  'aplicacoes_recibo',
 ] as const;
 
 /** Versão e lápide de cada linha, por tabela: o que o oráculo compara. */
@@ -89,11 +114,15 @@ const sqlDoOraculo = (v: string) => `
        meus_creditos AS (SELECT id FROM corona.creditos_cliente WHERE vendedor_id = ${v}),
        minhas_contas AS (SELECT c.id FROM corona.contas_receber c LEFT JOIN corona.vendas ve ON ve.id = c.venda_id
                           WHERE c.vendedor_id = ${v} OR ve.vendedor_id = ${v}),
-       meus_acertos AS (SELECT id FROM corona.acertos WHERE vendedor_id = ${v})
+       meus_acertos AS (SELECT id FROM corona.acertos WHERE vendedor_id = ${v}),
+       minhas_notas AS (SELECT id FROM corona.notas_consignado WHERE vendedor_id = ${v}),
+       meus_acertos_nota AS (SELECT id FROM corona.acertos_nota WHERE vendedor_id = ${v}),
+       meus_recibos AS (SELECT id FROM corona.recibos_consignado WHERE vendedor_id = ${v})
   SELECT 'cotacoes' AS tabela, id::text, version, deleted_at IS NOT NULL AS excluida FROM corona.cotacoes
   UNION ALL SELECT 'categorias', id::text, version, deleted_at IS NOT NULL FROM corona.categorias
   UNION ALL SELECT 'semanas', id::text, version, deleted_at IS NOT NULL FROM corona.semanas
   UNION ALL SELECT 'clientes', id::text, version, deleted_at IS NOT NULL FROM corona.clientes
+             WHERE vendedor_responsavel_id = ${v}
   UNION ALL SELECT 'remessas', id::text, version, deleted_at IS NOT NULL FROM corona.remessas
              WHERE id IN (SELECT id FROM maletas)
   UNION ALL SELECT 'itens_remessa', id::text, version, deleted_at IS NOT NULL FROM corona.itens_remessa
@@ -148,7 +177,29 @@ const sqlDoOraculo = (v: string) => `
   UNION ALL SELECT 'comissoes', id::text, version, deleted_at IS NOT NULL FROM corona.comissoes
              WHERE vendedor_id = ${v}
   UNION ALL SELECT 'pendencias_acerto', id::text, version, deleted_at IS NOT NULL FROM corona.pendencias_acerto
-             WHERE vendedor_id = ${v}`;
+             WHERE vendedor_id = ${v}
+  UNION ALL SELECT 'semanas_vendedor', id::text, version, deleted_at IS NOT NULL FROM corona.semanas_vendedor
+             WHERE vendedor_id = ${v}
+  UNION ALL SELECT 'notas_consignado', id::text, version, deleted_at IS NOT NULL FROM corona.notas_consignado
+             WHERE vendedor_id = ${v}
+  UNION ALL SELECT 'reposicoes_nota', id::text, version, deleted_at IS NOT NULL FROM corona.reposicoes_nota
+             WHERE nota_id IN (SELECT id FROM minhas_notas)
+  UNION ALL SELECT 'trocas_nota', id::text, version, deleted_at IS NOT NULL FROM corona.trocas_nota
+             WHERE nota_id IN (SELECT id FROM minhas_notas)
+  UNION ALL SELECT 'itens_nota_consignado', id::text, version, deleted_at IS NOT NULL FROM corona.itens_nota_consignado
+             WHERE nota_id IN (SELECT id FROM minhas_notas)
+  UNION ALL SELECT 'remarcacoes_nota', id::text, version, deleted_at IS NOT NULL FROM corona.remarcacoes_nota
+             WHERE nota_id IN (SELECT id FROM minhas_notas)
+  UNION ALL SELECT 'acertos_nota', id::text, version, deleted_at IS NOT NULL FROM corona.acertos_nota
+             WHERE vendedor_id = ${v}
+  UNION ALL SELECT 'itens_acerto_nota', id::text, version, deleted_at IS NOT NULL FROM corona.itens_acerto_nota
+             WHERE acerto_id IN (SELECT id FROM meus_acertos_nota)
+  UNION ALL SELECT 'recibos_consignado', id::text, version, deleted_at IS NOT NULL FROM corona.recibos_consignado
+             WHERE vendedor_id = ${v}
+  UNION ALL SELECT 'formas_recibo_consignado', id::text, version, deleted_at IS NOT NULL FROM corona.formas_recibo_consignado
+             WHERE recibo_id IN (SELECT id FROM meus_recibos)
+  UNION ALL SELECT 'aplicacoes_recibo', id::text, version, deleted_at IS NOT NULL FROM corona.aplicacoes_recibo
+             WHERE recibo_id IN (SELECT id FROM meus_recibos)`;
 
 /**
  * O oráculo: o que é do vendedor V, calculado à parte, lendo as tabelas do servidor e aplicando as regras do ADR-0013
@@ -179,8 +230,12 @@ export async function idsDeOutrosVendedores(vendedorId: string): Promise<Set<str
          creditos AS (SELECT id FROM corona.creditos_cliente WHERE vendedor_id <> ${v}),
          contas AS (SELECT c.id FROM corona.contas_receber c LEFT JOIN corona.vendas ve ON ve.id = c.venda_id
                      WHERE c.vendedor_id <> ${v} OR ve.vendedor_id <> ${v}),
-         acertos AS (SELECT id FROM corona.acertos WHERE vendedor_id <> ${v})
-    SELECT id::text FROM maletas
+         acertos AS (SELECT id FROM corona.acertos WHERE vendedor_id <> ${v}),
+         notas AS (SELECT id FROM corona.notas_consignado WHERE vendedor_id <> ${v}),
+         acertos_nota AS (SELECT id FROM corona.acertos_nota WHERE vendedor_id <> ${v}),
+         recibos AS (SELECT id FROM corona.recibos_consignado WHERE vendedor_id <> ${v})
+    SELECT id::text FROM corona.clientes WHERE vendedor_responsavel_id IS DISTINCT FROM ${v}
+    UNION ALL SELECT id::text FROM maletas
     UNION ALL SELECT id::text FROM corona.itens_remessa WHERE remessa_id IN (SELECT id FROM maletas)
     UNION ALL SELECT id::text FROM corona.movimentos_remessa WHERE remessa_id IN (SELECT id FROM maletas)
     UNION ALL SELECT id::text FROM vendas
@@ -204,7 +259,18 @@ export async function idsDeOutrosVendedores(vendedorId: string): Promise<Set<str
     UNION ALL SELECT id::text FROM corona.itens_acerto WHERE acerto_id IN (SELECT id FROM acertos)
     UNION ALL SELECT id::text FROM corona.acerto_eventos WHERE vendedor_id <> ${v}
     UNION ALL SELECT id::text FROM corona.comissoes WHERE vendedor_id <> ${v}
-    UNION ALL SELECT id::text FROM corona.pendencias_acerto WHERE vendedor_id <> ${v}`);
+    UNION ALL SELECT id::text FROM corona.pendencias_acerto WHERE vendedor_id <> ${v}
+    UNION ALL SELECT id::text FROM corona.semanas_vendedor WHERE vendedor_id <> ${v}
+    UNION ALL SELECT id::text FROM notas
+    UNION ALL SELECT id::text FROM corona.reposicoes_nota WHERE nota_id IN (SELECT id FROM notas)
+    UNION ALL SELECT id::text FROM corona.trocas_nota WHERE nota_id IN (SELECT id FROM notas)
+    UNION ALL SELECT id::text FROM corona.itens_nota_consignado WHERE nota_id IN (SELECT id FROM notas)
+    UNION ALL SELECT id::text FROM corona.remarcacoes_nota WHERE nota_id IN (SELECT id FROM notas)
+    UNION ALL SELECT id::text FROM acertos_nota
+    UNION ALL SELECT id::text FROM corona.itens_acerto_nota WHERE acerto_id IN (SELECT id FROM acertos_nota)
+    UNION ALL SELECT id::text FROM recibos
+    UNION ALL SELECT id::text FROM corona.formas_recibo_consignado WHERE recibo_id IN (SELECT id FROM recibos)
+    UNION ALL SELECT id::text FROM corona.aplicacoes_recibo WHERE recibo_id IN (SELECT id FROM recibos)`);
   return new Set(linhas.map((l) => l.id));
 }
 

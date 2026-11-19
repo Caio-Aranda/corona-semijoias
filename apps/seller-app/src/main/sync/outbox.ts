@@ -16,7 +16,17 @@ export type TipoDeOperacao =
   | 'CANCELAR_DEVOLUCAO'
   | 'CANCELAR_TROCA'
   | 'RECEBIMENTO_CLIENTE'
-  | 'ESTORNO_RECEBIMENTO_CLIENTE';
+  | 'ESTORNO_RECEBIMENTO_CLIENTE'
+  // Consignado ao cliente (tarefa 9.2; ADR-0016, item 13): formato 1; o cadastro do cliente vai no formato 2.
+  | 'SEMANA_NOVA'
+  | 'NOTA_CONSIGNADO'
+  | 'REPOSICAO_NOTA'
+  | 'TROCA_NA_NOTA'
+  | 'REMARCAR_NOTA'
+  | 'ACERTO_NOTA'
+  | 'PAGAMENTO_CONSIGNADO'
+  | 'ESTORNO_ACERTO_NOTA'
+  | 'ESTORNO_RECIBO';
 
 export type SituacaoNaOutbox = 'AGUARDANDO' | 'ENVIADO' | 'RECUSADO' | 'CONFLITO';
 
@@ -41,14 +51,15 @@ export const DIAS_NA_OUTBOX = 30;
  */
 export function enfileirar(
   db: BancoAberto,
-  op: { operacaoId: string; tipo: TipoDeOperacao; dados: string; agora: Date },
+  op: { operacaoId: string; tipo: TipoDeOperacao; dados: string; agora: Date; formato?: number },
 ): void {
   db.prepare(
     `INSERT INTO outbox (operacao_id, tipo, formato, dados, criado_em_local, ultimo_contato_servidor)
-     VALUES (?, ?, 1, ?, ?, ?)`,
+     VALUES (?, ?, ?, ?, ?, ?)`,
   ).run(
     op.operacaoId,
     op.tipo,
+    op.formato ?? 1,
     op.dados,
     op.agora.toISOString(),
     lerEstado(db, CHAVES.horaServidor),

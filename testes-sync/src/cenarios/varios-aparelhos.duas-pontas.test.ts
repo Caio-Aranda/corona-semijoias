@@ -115,7 +115,7 @@ describe('duas pontas: vários computadores', () => {
     }
   });
 
-  it('5b. cliente cadastrado sem internet por quem sincroniza por último chega a quem sincronizou antes (issue #130)', async () => {
+  it('5b. cliente cadastrado sem internet por quem sincroniza por último fica só com ela, mesmo com a volta de quem sincronizou antes (issue #130)', async () => {
     // A Ana tem o relógio sem aceleração: a volta automática dela (60 s) não cai por acaso entre o envio da Bia e a
     // comparação, que era o que fazia a falha da issue aparecer só "às vezes".
     const ana = await cenario.vendedor('Ana', { aceleracao: 1 });
@@ -132,7 +132,8 @@ describe('duas pontas: vários computadores', () => {
     expect(
       await contar(`SELECT count(*) FROM corona.clientes WHERE id = ${texto(clienteDaBia)}`),
     ).toBe(1);
-    expect(ana.aparelho.ler('SELECT id FROM clientes WHERE id = ?', clienteDaBia)).toHaveLength(1);
+    // A lista é só de cada representante (ADR-0016, item 4): o cliente da Bia não chega à Ana.
+    expect(ana.aparelho.ler('SELECT id FROM clientes WHERE id = ?', clienteDaBia)).toHaveLength(0);
   });
 
   it('6. segundo computador e troca: o novo espera a dona, o antigo ainda envia o que guardou e depois apaga tudo', async () => {
@@ -353,7 +354,7 @@ describe('duas pontas: vários computadores', () => {
     await cenario.afirmarNoFim([]);
   });
 
-  it('9. CPF repetido sem internet nos dois: o segundo chega em conflito e, depois de receber, o app já barra', async () => {
+  it('9. CPF repetido sem internet nos dois: o segundo chega em conflito e o cliente de um nunca chega ao outro', async () => {
     const lia = await cenario.vendedor('Lia');
     const mel = await cenario.vendedor('Mel');
     await Promise.all([lia.aparelho.sincronizar(), mel.aparelho.sincronizar()]);
@@ -374,14 +375,8 @@ describe('duas pontas: vários computadores', () => {
     expect(daMelNoComputador?.situacao).toBe('CONFLITO');
     expect((await cenario.dona.enviosComProblema()).some((p) => p.id === daMel)).toBe(true);
 
-    // Sem internet de novo, o diretório da loja no computador já tem o CPF: o app barra antes de gravar.
-    mel.aparelho.semInternet();
-    const outra = await mel.aparelho.chamar({
-      operacao: 'clientes.cadastrar',
-      cliente: { id: '0b5c8a8e-0000-4000-8000-000000000009', nome: 'Mais Uma Vez', cpf },
-    });
-    expect(outra.ok).toBe(false);
-    expect(!outra.ok && outra.clienteExistente?.id).toBe(daLia);
+    // Cada representante tem só a SUA lista (ADR-0016, item 4): o cliente da Lia nunca chega ao computador da Mel.
+    expect(mel.aparelho.ler('SELECT id FROM clientes WHERE id = ?', daLia)).toHaveLength(0);
 
     await cenario.afirmarNoFim([lia.aparelho, mel.aparelho]);
   });
