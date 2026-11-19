@@ -96,9 +96,26 @@ function textoDoItem(item: Item): { titulo: string; explicacao: string } {
   return { titulo: def.titulo, explicacao: def.explicacao };
 }
 
-/** Os cartões da página de uma área, um por relatório. */
-export function cartoesDaArea(chave: ChaveDeArea): CartaoDeRelatorio[] {
-  return ITENS_DA_AREA[chave].map((item) => ({ rota: rotaDoItem(item), ...textoDoItem(item) }));
+/** Os quatro relatórios financeiros do acerto antigo da §7.4 (ADR-0016, item 15): saem junto com o resto do acerto antigo. */
+const RELATORIOS_DO_ACERTO_ANTIGO: readonly string[] = [
+  'financeiro-acertos',
+  'financeiro-pendencias',
+  'financeiro-esperado-contado',
+  'financeiro-comissoes',
+];
+
+export function ehRelatorioDoAcertoAntigo(rota: string): boolean {
+  return (
+    rota.startsWith('relatorios/') &&
+    RELATORIOS_DO_ACERTO_ANTIGO.includes(rota.slice('relatorios/'.length))
+  );
+}
+
+/** Os cartões da página de uma área, um por relatório (sem os do acerto antigo quando ele está escondido). */
+export function cartoesDaArea(chave: ChaveDeArea, acertoVisivel = true): CartaoDeRelatorio[] {
+  return ITENS_DA_AREA[chave]
+    .filter((item) => acertoVisivel || !RELATORIOS_DO_ACERTO_ANTIGO.includes(item))
+    .map((item) => ({ rota: rotaDoItem(item), ...textoDoItem(item) }));
 }
 
 /** A área a que a rota pertence (relatório ou conferência), ou nada se não é de relatório. */
