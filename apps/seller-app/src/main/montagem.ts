@@ -8,6 +8,8 @@ import { RegistroDeContato } from './contato-com-servidor';
 import { identificadorDoAparelho } from './dispositivo';
 import { CacheDeFotos } from './fotos/cache-de-fotos';
 import { FilaDeFotos } from './fotos/fila-de-fotos';
+import { FotosDosClientes } from './fotos/fotos-dos-clientes';
+import { criarTransporteDeFotosDoCliente } from './fotos/transporte-de-fotos-do-cliente';
 import { ServicoDeFotos } from './fotos/servico-de-fotos';
 import { criarTransporteDeFotos } from './fotos/transporte-de-fotos';
 import { GuardaDeTokens } from './guarda-de-tokens';
@@ -150,13 +152,26 @@ export async function montarCoronaVendas(d: DependenciasDaMontagem): Promise<Cor
     aoMudar: () => motor?.atualizarEstado(),
     registrar: d.registrar,
   });
+  // Fotos do cliente e do documento (tarefa 9.2; ADR-0016, item 9): criptografadas no disco, com fila de envio própria.
+  const fotosDosClientes = new FotosDosClientes({
+    pasta: join(pastaDeDados, 'fotos-clientes'),
+    chave: () => bancoLocal.chaveDasFotos,
+    banco: () => bancoLocal.banco,
+    transporte: criarTransporteDeFotosDoCliente({
+      baseUrl: enderecoDoServidor,
+      versaoDoApp: d.versaoDoApp,
+      fetch: d.fetch,
+    }),
+    comToken: (chamada) => guarda.comToken(chamada),
+    registrar: d.registrar,
+  });
   // Apagar os dados do computador desligado (tarefa 5.8; ADR-0013, item 14).
   const apagador = new ApagadorDeDados({
     lugares: {
       chave: join(pastaDeDados, 'dados', 'chave.json'),
       banco: join(pastaDeDados, 'dados', 'banco.sqlite'),
       pastaDeDados: join(pastaDeDados, 'dados'),
-      pastasDeFotos: [join(pastaDeDados, 'fotos')],
+      pastasDeFotos: [join(pastaDeDados, 'fotos'), join(pastaDeDados, 'fotos-clientes')],
       token: join(pastaDeDados, 'sessao', 'renovacao.bin'),
       identificador: join(pastaDeDados, 'aparelho', 'identificador.txt'),
       ultimoContato: join(pastaDeDados, 'aparelho', 'ultimo-contato.json'),
@@ -183,7 +198,10 @@ export async function montarCoronaVendas(d: DependenciasDaMontagem): Promise<Cor
     aoMudarEstado: d.avisarSincronizacao,
     prazo: () => prazo.situacao(),
     // Depois de cada ciclo com internet, baixa as fotos que faltam; o ciclo não espera (tarefa 5.9).
-    depoisDoCiclo: () => void filaDeFotos.rodar(),
+    depoisDoCiclo: () => {
+      void filaDeFotos.rodar();
+      void fotosDosClientes.rodar();
+    },
     fotos: () => filaDeFotos.progresso(),
     aoReceberOrdem: (ordem) => {
       motor?.desligar();
@@ -220,6 +238,7 @@ export async function montarCoronaVendas(d: DependenciasDaMontagem): Promise<Cor
     }),
     agora: () => new Date(relogio.agora()),
     aoMudarOEstado: () => motorDoApp.atualizarEstado(),
+    fotosDosClientes,
   });
   // A sessão guardada é retomada antes de a tela perguntar "estou logado?".
   servico = new ServicoDeSessao(

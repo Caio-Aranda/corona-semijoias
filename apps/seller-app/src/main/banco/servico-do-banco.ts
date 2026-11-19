@@ -1,4 +1,5 @@
 import { existsSync, mkdirSync } from 'node:fs';
+import { chaveDasFotosDe } from '../fotos/fotos-dos-clientes';
 import { join } from 'node:path';
 import {
   abrirBancoLocal,
@@ -74,6 +75,7 @@ export interface OpcoesDoServicoDoBanco {
  */
 export class ServicoDoBanco {
   private db: BancoAberto | null = null;
+  private chaveDeFotos: Buffer | null = null;
   private readonly chave: ChaveDoBanco;
   private readonly caminhoDoBanco: string;
   private readonly caminhoDaChave: string;
@@ -87,6 +89,11 @@ export class ServicoDoBanco {
   /** O banco aberto, só para o processo principal (motor de envio e telas no banco local, tarefas 5.6 e 5.7). */
   get banco(): BancoAberto | null {
     return this.db;
+  }
+
+  /** A chave das fotos dos clientes (derivada da do banco), só enquanto o banco está aberto. */
+  get chaveDasFotos(): Buffer | null {
+    return this.db ? this.chaveDeFotos : null;
   }
 
   async prepararComInternet(senha: string): Promise<ResultadoDaAbertura> {
@@ -207,6 +214,9 @@ export class ServicoDoBanco {
   // --- internos ---
 
   private opcoesDoBanco(chave: Uint8Array) {
+    // A chave das fotos dos clientes (criptografadas no disco) sai da do banco e só vive enquanto o banco está aberto.
+    this.chaveDeFotos?.fill(0);
+    this.chaveDeFotos = chaveDasFotosDe(chave);
     return {
       caminho: this.caminhoDoBanco,
       chave,
@@ -219,6 +229,8 @@ export class ServicoDoBanco {
   }
 
   private fecharSeAberto(): void {
+    this.chaveDeFotos?.fill(0);
+    this.chaveDeFotos = null;
     if (this.db) {
       try {
         this.db.close();
