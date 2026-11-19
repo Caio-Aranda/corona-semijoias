@@ -7,6 +7,7 @@ import type {
   DetalheDaNota,
   PainelDaSemana,
   PedidoEmMontagem,
+  SituacaoDoPedido,
   PrevisaoDoAcerto,
 } from '../shared/dados-do-consignado';
 import type {
@@ -39,14 +40,14 @@ function criarPonte(respostas: Record<string, Resposta> = {}) {
     aoMudarASincronizacao: () => () => undefined,
     lerIdioma: () => Promise.resolve(null),
     gravarIdioma: () => Promise.resolve(),
-  } as unknown as PonteDoCorona;
+  };
   return { ponte, chamadas };
 }
 
 const ok = (dados: unknown): ResultadoDeChamada => ({ ok: true, dados });
 
 const NOTA = (n: number) => `${String(n).padStart(8, '0').slice(0, 8)}-aaaa-4aaa-8aaa-aaaaaaaaaaaa`;
-const linha = (n: number, situacao: string, extra: Record<string, unknown> = {}) => ({
+const linha = (n: number, situacao: SituacaoDoPedido, extra: Record<string, unknown> = {}) => ({
   notaId: NOTA(n),
   numero: `0000065-${String(n).padStart(2, '0')}`,
   clienteId: 'c1',
@@ -194,8 +195,8 @@ describe('Gerenciamento Semanal', () => {
   it('nos dois idiomas a tela diz Representante e Cliente', async () => {
     const { ponte } = criarPonte({ 'consignado.painel': () => ok(painel) });
     await irParaPrincipal(ponte);
-    expect(screen.getByText('Representante:')).toBeInTheDocument();
-    expect(screen.getByRole('columnheader', { name: 'Cliente' })).toBeInTheDocument();
+    expect(await screen.findByText('Representante:')).toBeInTheDocument();
+    expect(await screen.findByRole('columnheader', { name: 'Cliente' })).toBeInTheDocument();
     definirIdioma('es');
     expect(await screen.findByText('Representante:')).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: 'Cliente' })).toBeInTheDocument();
