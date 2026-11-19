@@ -84,10 +84,10 @@ class RegrasDoVendedorTest extends TesteDeIntegracao {
         FiltroPorVendedor filtro = new FiltroPorVendedor(java.util.UUID.randomUUID());
         assertThat(filtro.condicaoPara(new TabelaSincronizavel("sem_regra", List.of("x"), false)))
                 .isEqualTo(FiltroDoVendedor.CondicaoSql.NENHUMA_LINHA);
-        // As colunas fora do diretório só saem para o vendedor que atende o cliente.
+        // Clientes (tarefa 9.1): cada representante recebe so os seus, com o cadastro todo (sem diretorio da loja).
         TabelaSincronizavel clientes = registro.sincronizavel("clientes").orElseThrow();
         assertThat(filtro.expressao(clientes, "nome")).isEqualTo("t.\"nome\"");
-        assertThat(filtro.expressao(clientes, "observacoes")).startsWith("CASE WHEN t.\"vendedor_responsavel_id\" = '");
+        assertThat(filtro.expressao(clientes, "observacoes")).isEqualTo("t.\"observacoes\"");
         assertThat(filtro.expressao(clientes, "id")).isEqualTo("t.\"id\"");
     }
 }

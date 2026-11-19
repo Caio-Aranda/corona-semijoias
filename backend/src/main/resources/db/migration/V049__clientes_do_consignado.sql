@@ -41,3 +41,24 @@ CREATE INDEX clientes_por_responsavel ON corona.clientes (vendedor_responsavel_i
 INSERT INTO corona.configuracoes (id, chave, tipo, valor_inteiro) VALUES (uuidv7(), 'acerto_do_vendedor_visivel', 'INTEIRO', 0);
 ALTER TABLE corona.configuracoes ADD CONSTRAINT configuracoes_acerto_visivel_faixa
     CHECK (chave <> 'acerto_do_vendedor_visivel' OR valor_inteiro IN (0, 1));
+
+-- Cada representante recebe so a sua lista de clientes (ADR-0016, item 4). Como a pertenca nao pode mudar depois de entregue
+-- (ADR-0013, item 5, prova 3; o cursor do pull ja passou e o antigo responsavel ficaria com uma copia que nao e mais dele),
+-- o responsavel de um cliente, uma vez definido, nao muda (V032). Atribuir a quem ainda nao tinha responsavel continua valendo.
+CREATE FUNCTION corona.recusar_mudanca_de_responsavel_do_cliente() RETURNS trigger
+    LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Um cadastro salvo sem responsavel (o formulario da dona) nao tira o responsavel que ja existe.
+    IF OLD.vendedor_responsavel_id IS NOT NULL AND NEW.vendedor_responsavel_id IS NULL THEN
+        NEW.vendedor_responsavel_id := OLD.vendedor_responsavel_id;
+    END IF;
+    IF OLD.vendedor_responsavel_id IS NOT NULL AND NEW.vendedor_responsavel_id IS DISTINCT FROM OLD.vendedor_responsavel_id THEN
+        RAISE EXCEPTION 'O representante responsavel pelo cliente % nao muda depois de definido (ADR-0016, item 4).', OLD.id
+            USING ERRCODE = 'restrict_violation';
+    END IF;
+    RETURN NEW;
+END;
+$$;
+CREATE TRIGGER corona_pertenca_nao_muda BEFORE UPDATE ON corona.clientes
+    FOR EACH ROW EXECUTE FUNCTION corona.recusar_mudanca_de_responsavel_do_cliente();

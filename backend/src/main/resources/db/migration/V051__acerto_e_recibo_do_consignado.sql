@@ -72,7 +72,7 @@ BEGIN
     RETURN NEW;
 END;
 $$;
-CREATE TRIGGER acertos_nota_conteudo_imutavel BEFORE UPDATE ON corona.acertos_nota
+CREATE TRIGGER corona_pertenca_nao_muda BEFORE UPDATE ON corona.acertos_nota
     FOR EACH ROW EXECUTE FUNCTION corona.proteger_acerto_nota();
 
 CREATE TABLE corona.itens_acerto_nota (
@@ -140,7 +140,7 @@ BEGIN
     RETURN NEW;
 END;
 $$;
-CREATE TRIGGER recibos_consignado_conteudo_imutavel BEFORE UPDATE ON corona.recibos_consignado
+CREATE TRIGGER corona_pertenca_nao_muda BEFORE UPDATE ON corona.recibos_consignado
     FOR EACH ROW EXECUTE FUNCTION corona.proteger_recibo_consignado();
 
 CREATE TABLE corona.formas_recibo_consignado (

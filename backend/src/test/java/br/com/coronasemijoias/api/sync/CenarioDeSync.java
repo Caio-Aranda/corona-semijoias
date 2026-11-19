@@ -294,8 +294,12 @@ final class CenarioDeSync {
         return id;
     }
 
+    /** Transferir cliente: o banco recusa depois de definido (V049), entao o aleatorio do oraculo so tenta. */
     void transferir(UUID cliente, UUID novoVendedor) {
-        jdbc.update("UPDATE corona.clientes SET vendedor_responsavel_id = ? WHERE id = ?", novoVendedor, cliente);
+        tentar(() -> {
+            jdbc.update("UPDATE corona.clientes SET vendedor_responsavel_id = ? WHERE id = ?", novoVendedor, cliente);
+            return Boolean.TRUE;
+        });
     }
 
     /** Saldo da peça na maleta (enviada + movimentos). */
@@ -371,13 +375,17 @@ final class CenarioDeSync {
                 "produtos_fotos", "remessas", "itens_remessa", "movimentos_remessa", "vendas", "itens_venda",
                 "pagamentos_cliente", "conferencias", "itens_conferencia", "devolucoes", "itens_devolucao",
                 "autorizacoes_excecao", "itens_autorizacao", "trocas", "creditos_cliente", "usos_credito", "creditos_sem_saldo",
-                "contas_receber", "baixas_receber", "recebimentos_vendedor")) {
+                "contas_receber", "baixas_receber", "recebimentos_vendedor", "semanas_vendedor", "notas_consignado",
+                "reposicoes_nota", "trocas_nota", "itens_nota_consignado", "remarcacoes_nota", "acertos_nota", "itens_acerto_nota",
+                "recibos_consignado", "formas_recibo_consignado", "aplicacoes_recibo")) {
             tudo.put(t, jdbc.queryForList("SELECT * FROM corona." + t));
         }
         Map<String, Map<UUID, Linha>> r = new HashMap<>();
-        for (String daLoja : List.of("cotacoes", "categorias", "semanas", "clientes")) {
+        for (String daLoja : List.of("cotacoes", "categorias", "semanas")) {
             r.put(daLoja, linhas(tudo.get(daLoja), l -> true));
         }
+        // Clientes (tarefa 9.1; ADR-0016, item 4): so os do representante.
+        r.put("clientes", linhas(tudo.get("clientes"), l -> v.equals(l.get("vendedor_responsavel_id"))));
         Set<Object> maletas = ids(tudo.get("remessas"), l -> v.equals(l.get("vendedor_id")) && l.get("enviada_em") != null);
         r.put("remessas", linhas(tudo.get("remessas"), l -> maletas.contains(l.get("id"))));
         r.put("itens_remessa", linhas(tudo.get("itens_remessa"), l -> maletas.contains(l.get("remessa_id"))));
@@ -420,6 +428,20 @@ final class CenarioDeSync {
         r.put("recebimentos_vendedor", linhas(tudo.get("recebimentos_vendedor"), l -> v.equals(l.get("vendedor_id"))));
         r.put("contas_receber", linhas(tudo.get("contas_receber"), l -> minhasContas.contains(l.get("id"))));
         r.put("baixas_receber", linhas(tudo.get("baixas_receber"), l -> minhasContas.contains(l.get("conta_id"))));
+        // Consignado ao cliente (tarefa 9.1): as linhas do vendedor, ou da mae dele.
+        Set<Object> minhasNotas = ids(tudo.get("notas_consignado"), l -> v.equals(l.get("vendedor_id")));
+        Set<Object> meusAcertos = ids(tudo.get("acertos_nota"), l -> v.equals(l.get("vendedor_id")));
+        Set<Object> meusRecibos = ids(tudo.get("recibos_consignado"), l -> v.equals(l.get("vendedor_id")));
+        r.put("semanas_vendedor", linhas(tudo.get("semanas_vendedor"), l -> v.equals(l.get("vendedor_id"))));
+        r.put("notas_consignado", linhas(tudo.get("notas_consignado"), l -> minhasNotas.contains(l.get("id"))));
+        for (String t : List.of("reposicoes_nota", "trocas_nota", "itens_nota_consignado", "remarcacoes_nota")) {
+            r.put(t, linhas(tudo.get(t), l -> minhasNotas.contains(l.get("nota_id"))));
+        }
+        r.put("acertos_nota", linhas(tudo.get("acertos_nota"), l -> meusAcertos.contains(l.get("id"))));
+        r.put("itens_acerto_nota", linhas(tudo.get("itens_acerto_nota"), l -> meusAcertos.contains(l.get("acerto_id"))));
+        r.put("recibos_consignado", linhas(tudo.get("recibos_consignado"), l -> meusRecibos.contains(l.get("id"))));
+        r.put("formas_recibo_consignado", linhas(tudo.get("formas_recibo_consignado"), l -> meusRecibos.contains(l.get("recibo_id"))));
+        r.put("aplicacoes_recibo", linhas(tudo.get("aplicacoes_recibo"), l -> meusRecibos.contains(l.get("recibo_id"))));
         r.values().removeIf(Map::isEmpty);
         return r;
     }

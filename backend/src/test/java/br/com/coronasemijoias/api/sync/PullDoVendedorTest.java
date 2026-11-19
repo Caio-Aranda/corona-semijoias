@@ -182,7 +182,7 @@ class PullDoVendedorTest extends TesteDeIntegracao {
     }
 
     @Test
-    void clientesDaLojaDiretorioParaTodosEOCadastroSoParaQuemAtendeNosDoisSentidos() throws Exception {
+    void cadaRepresentanteRecebeSoOsSeusClientesComOCadastroTodo() throws Exception {
         CenarioDeSync c = cenario();
         UsuarioDeTeste a = usuarios.criarVendedor();
         UsuarioDeTeste b = usuarios.criarVendedor();
@@ -194,28 +194,16 @@ class PullDoVendedorTest extends TesteDeIntegracao {
 
         JsonNode emA = deA.linha("clientes", cliente).get("campos");
         assertThat(emA.get("observacoes").asString()).isEqualTo("Só paga em dinheiro");
+        assertThat(emA.get("endereco_cidade").asString()).isEqualTo("Campinas");
         assertThat(emA.get("vendedor_responsavel_id").asString()).isEqualTo(a.vendedorId().toString());
-        JsonNode emB = deB.linha("clientes", cliente).get("campos");
-        assertThat(emB.get("nome").asString()).startsWith("Cliente ");
-        assertThat(emB.get("telefone").asString()).isEqualTo("(19) 3000-0001");
-        assertThat(emB.get("endereco_cidade").asString()).isEqualTo("Campinas");
-        assertThat(emB.get("observacoes").isNull()).isTrue();
-        assertThat(emB.get("whatsapp").isNull()).isTrue();
-        assertThat(emB.get("vendedor_responsavel_id").isNull()).isTrue();
-
-        // A dona passa o cliente para B: B recebe o cadastro; A fica só com o diretório.
+        // B nunca recebe o cliente de A (ADR-0016, item 4: reverte o diretorio da loja).
+        assertThat(deB.tem("clientes", cliente)).isFalse();
+        // O responsavel nao muda depois de definido (V049): a copia de A nunca fica velha.
         c.transferir(cliente, b.vendedorId());
         receberTudo(como(a), deA, 200);
         receberTudo(como(b), deB, 200);
-        assertThat(deA.linha("clientes", cliente).get("campos").get("observacoes").isNull()).isTrue();
-        assertThat(deA.linha("clientes", cliente).get("campos").get("vendedor_responsavel_id").isNull()).isTrue();
-        assertThat(deB.linha("clientes", cliente).get("campos").get("observacoes").asString()).isEqualTo("Só paga em dinheiro");
-        // E volta para A.
-        c.transferir(cliente, a.vendedorId());
-        receberTudo(como(a), deA, 200);
-        receberTudo(como(b), deB, 200);
-        assertThat(deA.linha("clientes", cliente).get("campos").get("whatsapp").asString()).isEqualTo("(19) 3000-0002");
-        assertThat(deB.linha("clientes", cliente).get("campos").get("whatsapp").isNull()).isTrue();
+        assertThat(deB.tem("clientes", cliente)).isFalse();
+        assertThat(deA.tem("clientes", cliente)).isTrue();
     }
 
     @Test
@@ -316,7 +304,7 @@ class PullDoVendedorTest extends TesteDeIntegracao {
         // 32: as 15 de antes, devolucoes e itens_devolucao (tarefa 6.3), autorizacoes_excecao e itens_autorizacao
         // (tarefa 6.4), trocas, creditos_cliente e usos_credito (tarefa 6.5), creditos_sem_saldo (tarefa 6.7) e
         // contas_receber e baixas_receber (tarefa 7.3) e acertos e leituras_acerto (tarefa 7.4) e itens_acerto, acerto_eventos, comissoes e pendencias_acerto (tarefa 7.5) e recebimentos_vendedor (tarefa 7.6).
-        assertThat(r.get("tabelas").size()).isEqualTo(32);
+        assertThat(r.get("tabelas").size()).isEqualTo(43); // 32 + as 11 do consignado ao cliente (tarefa 9.1)
         for (JsonNode t : r.get("tabelas")) {
             Map<String, JsonNode> guardadas = copia.tabelas.getOrDefault(t.get("tabela").asString(), Map.of());
             TreeMap<String, Integer> ordenadas = new TreeMap<>();

@@ -38,7 +38,7 @@ BEGIN
     RETURN NEW;
 END;
 $$;
-CREATE TRIGGER semanas_vendedor_conteudo_imutavel BEFORE UPDATE ON corona.semanas_vendedor
+CREATE TRIGGER corona_pertenca_nao_muda BEFORE UPDATE ON corona.semanas_vendedor
     FOR EACH ROW EXECUTE FUNCTION corona.proteger_semana_do_vendedor();
 
 -- Número semana-sequência de notas e recibos (só do servidor, só inserção).
@@ -95,7 +95,7 @@ BEGIN
     RETURN NEW;
 END;
 $$;
-CREATE TRIGGER notas_consignado_conteudo_imutavel BEFORE UPDATE ON corona.notas_consignado
+CREATE TRIGGER corona_pertenca_nao_muda BEFORE UPDATE ON corona.notas_consignado
     FOR EACH ROW EXECUTE FUNCTION corona.proteger_nota_consignado();
 
 CREATE TABLE corona.reposicoes_nota (

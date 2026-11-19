@@ -111,3 +111,21 @@ COMMENT ON TABLE corona.leituras_fechamento_maleta IS 'Bipes do Fechamento da ma
 CREATE INDEX leituras_fechamento_maleta_por_fechamento ON corona.leituras_fechamento_maleta (fechamento_id);
 
 REVOKE ALL ON corona.fechamentos_maleta, corona.leituras_fechamento_maleta FROM PUBLIC;
+
+-- ---------------------------------------------------------------------------------------------
+-- Fotos do cliente (ADR-0016, item 9): o arquivo fica fora do banco (ArmazenamentoDeArquivos, area clientes); aqui so o
+-- hash, a chave e o tipo. Só do servidor, so insercao; nunca vai no pull.
+-- ---------------------------------------------------------------------------------------------
+CREATE TABLE corona.fotos_de_cliente (
+    id uuid PRIMARY KEY,
+    cliente_id uuid NOT NULL REFERENCES corona.clientes (id),
+    tipo text NOT NULL CONSTRAINT fotos_de_cliente_tipo_conhecido CHECK (tipo IN ('CLIENTE', 'DOCUMENTO_FRENTE', 'DOCUMENTO_VERSO')),
+    hash text NOT NULL CONSTRAINT fotos_de_cliente_hash_valido CHECK (hash ~ '^[0-9a-f]{64}$'),
+    chave text NOT NULL,
+    tipo_de_conteudo text NOT NULL,
+    tamanho_bytes integer NOT NULL CONSTRAINT fotos_de_cliente_tamanho_positivo CHECK (tamanho_bytes > 0)
+);
+SELECT corona.aplicar_convencoes_do_servidor('corona.fotos_de_cliente', editavel => false);
+COMMENT ON TABLE corona.fotos_de_cliente IS 'Arquivos das fotos do cliente (hash e chave; o binario fica fora do banco). Só do servidor.';
+CREATE UNIQUE INDEX fotos_de_cliente_por_hash ON corona.fotos_de_cliente (cliente_id, hash);
+REVOKE ALL ON corona.fotos_de_cliente FROM PUBLIC;

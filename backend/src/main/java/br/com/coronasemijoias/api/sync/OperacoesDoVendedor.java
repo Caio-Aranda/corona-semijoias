@@ -127,10 +127,13 @@ public class OperacoesDoVendedor {
     private final ServicoDeAutorizacoes autorizacoes;
     private final ServicoDeTrocas trocas;
     private final ServicoDeContasAReceber contas;
+    private final OperacoesDoConsignado consignado;
 
     public OperacoesDoVendedor(JsonMapper json, JdbcTemplate jdbc, ServicoDeVendas vendas, ClientesDoVendedor clientes,
             ServicoDeConferencia conferencias, FormatosDeOperacao formatos, ServicoDeDevolucoes devolucoes,
-            ServicoDeAutorizacoes autorizacoes, ServicoDeTrocas trocas, ServicoDeContasAReceber contas) {
+            ServicoDeAutorizacoes autorizacoes, ServicoDeTrocas trocas, ServicoDeContasAReceber contas,
+            OperacoesDoConsignado consignado) {
+        this.consignado = consignado;
         this.contas = contas;
         this.formatos = formatos;
         this.devolucoes = devolucoes;
@@ -160,6 +163,20 @@ public class OperacoesDoVendedor {
             throw new OperacaoIlegivel("sem dados");
         }
         try {
+            if (OperacoesDoConsignado.trata(tipo, formato)) {
+                // Consignado ao cliente (tarefa 9.1): o conteúdo e a forma canônica em OperacoesDoConsignado.
+                Object d = json.treeToValue(dados, OperacoesDoConsignado.classe(tipo, formato));
+                UUID doRegistro = OperacoesDoConsignado.idDoRegistro(d);
+                if (d instanceof OperacoesDoConsignado.DadosDaAlteracaoV2 alt) {
+                    if (alt.clienteId() == null || alt.campos() == null || alt.campos().isEmpty()) {
+                        throw new OperacaoIlegivel("alteração sem cliente ou sem campos");
+                    }
+                } else {
+                    exigirMesmoId(operacaoId, doRegistro);
+                }
+                return new Lida(tipo, formato, d, resumo(OperacoesDoConsignado.canonico(d), tipo, formato),
+                        OperacoesDoConsignado.horaDeclarada(d));
+            }
             if (OperacoesDaFase6.TIPOS.contains(tipo)) {
                 // Fase 6 (tarefa 6.7): o conteúdo e a forma canônica em OperacoesDaFase6.
                 Object d = json.treeToValue(dados, OperacoesDaFase6.classe(tipo));
@@ -215,6 +232,9 @@ public class OperacoesDoVendedor {
 
     /** Aplica pelo serviço da Fase 4 (na transação de quem chama). Erros de regra saem como {@code ErroDaApi}. */
     public Aplicada aplicar(Lida op, Contexto ctx) {
+        if (OperacoesDoConsignado.pertence(op.dados())) {
+            return consignado.aplicar(op.dados(), ctx);
+        }
         return switch (op.dados()) {
             case DadosDaVenda d -> {
                 Instant inferior = maior(ctx.ultimoContatoServidor(), enviadaEm(d.remessaId()));
@@ -315,6 +335,9 @@ public class OperacoesDoVendedor {
     /** Os registros de que a operação depende (para a recusa {@code DEPENDE_DE_ENVIO_RECUSADO}). */
     public List<UUID> dependencias(Lida op) {
         List<UUID> ids = new ArrayList<>();
+        if (OperacoesDoConsignado.pertence(op.dados())) {
+            return OperacoesDoConsignado.dependencias(op.dados());
+        }
         switch (op.dados()) {
             case DadosDaVenda d -> {
                 ids.add(d.clienteId());

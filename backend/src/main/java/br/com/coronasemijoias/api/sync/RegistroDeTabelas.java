@@ -71,8 +71,8 @@ public final class RegistroDeTabelas {
                         new TabelaSincronizavel("categorias", List.of("nome", "ativo"), false, RegraDoVendedor.daLoja()),
                         new TabelaSincronizavel("semanas", List.of("numero", "inicio", "fim", "situacao"), false,
                                 RegraDoVendedor.daLoja()),
-                        // Clientes são da LOJA (11/11/2026): todo vendedor recebe o diretório (nome, CPF, telefone, cidade e
-                        // se está ativo); o resto do cadastro (e quem atende) só vai para o vendedor responsável.
+                        // Clientes (tarefa 9.1; ADR-0016, item 4): cada representante recebe SÓ a sua lista, com o cadastro todo
+                        // (isto reverte, para o Corona Vendas, o diretório da loja de 11/11/2026). Nunca vão clientes de outro.
                         new TabelaSincronizavel("clientes", List.of(
                                 "nome", "cpf", "data_nascimento", "telefone", "whatsapp", "ativo",
                                 "endereco_logradouro", "endereco_numero", "endereco_complemento", "endereco_bairro",
@@ -81,8 +81,7 @@ public final class RegistroDeTabelas {
                                 // Consignado ao cliente (tarefa 9.1, V049): documento, indicação, comissão e hashes das fotos.
                                 "documento", "documento_tipo", "indicado_por_cliente_id", "indicado_por_nome", "como_conheceu",
                                 "comissao_percentual", "foto_hash", "foto_documento_frente_hash", "foto_documento_verso_hash"), false,
-                                RegraDoVendedor.diretorioDaLoja(Set.of("nome", "cpf", "telefone", "endereco_cidade", "ativo"),
-                                        "vendedor_responsavel_id")),
+                                RegraDoVendedor.doVendedor("t.vendedor_responsavel_id = ?")),
                         // Produtos e códigos (tarefa 1.5). Sem custo e sem fornecedor: o vendedor nunca os recebe. Sem
                         // estoque_atual nem estoque_minimo (ADR-0008, item 11). Vão os produtos que já estiveram numa maleta
                         // enviada ao vendedor (o conjunto só cresce; ADR-0013, item 5).
@@ -326,7 +325,8 @@ public final class RegistroDeTabelas {
                         new TabelaDoServidor("numeros_da_semana", true),
                         new TabelaDoServidor("alertas_consignado", false),
                         new TabelaDoServidor("fechamentos_maleta", false),
-                        new TabelaDoServidor("leituras_fechamento_maleta", true)));
+                        new TabelaDoServidor("leituras_fechamento_maleta", true),
+                        new TabelaDoServidor("fotos_de_cliente", true)));
     }
 
     /** Este registro somado a outro (usado pelos testes para acrescentar as tabelas de teste). */
