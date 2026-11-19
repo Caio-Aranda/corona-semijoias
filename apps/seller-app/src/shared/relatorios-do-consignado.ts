@@ -147,11 +147,22 @@ export interface PecaComOCliente {
   dataCobranca: string | null;
 }
 
+/** Nota já acertada que o cliente ainda não quitou: aparece em "O que falta", com quanto ainda deve. */
+export interface NotaPendenteDaSituacao {
+  numero: string;
+  situacao: string;
+  valorDx: string;
+  valorVd: string;
+  ficouDevendo: ValorNasTresMoedas;
+}
+
 export interface SituacaoDoCliente extends ParteDxDvVd {
   tipo: 'SITUACAO_DO_CLIENTE';
   cabecalho: CabecalhoDoRelatorio;
   cliente: ClienteDoRelatorio;
+  /** Só as notas Fechadas (§23.11). */
   jaVendeu: NotaDaSituacaoDoCliente[];
+  pendentes: NotaPendenteDaSituacao[];
   comissao: ValorNasTresMoedas;
   valorLiquido: ValorNasTresMoedas;
   pago: ValorNasTresMoedas;

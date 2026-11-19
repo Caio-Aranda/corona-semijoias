@@ -28,7 +28,11 @@ import {
   useConsulta,
 } from './apoio';
 import { EscolherPedido, LeitorDeCodigo } from './componentes';
-import { BotaoDeRelatorio } from './Relatorio';
+import { BotaoDeRelatorio, useRelatorioDaTela, ValorDoRelatorio } from './Relatorio';
+import type {
+  RelatorioDoAcerto,
+  ValorNasTresMoedas,
+} from '../../../shared/relatorios-do-consignado';
 
 export interface TelaCobrancaProps {
   ponte: PonteDoCorona;
@@ -439,6 +443,7 @@ function AcertoDoPedido({
           {acertada && a ? (
             <ResumoDoAcerto
               ponte={ponte}
+              notaId={nota.id}
               acerto={a}
               aoEstornar={() => setConfirmando('estornar')}
             />
@@ -639,42 +644,53 @@ function AcertoDoPedido({
 /** O acerto já salvo: números, recibo e o botão Estornar (corrigir é estornar e fazer de novo). */
 function ResumoDoAcerto({
   ponte,
+  notaId,
   acerto,
   aoEstornar,
 }: {
   ponte: PonteDoCorona;
+  notaId: string;
   acerto: NonNullable<DetalheDaNota['acerto']>;
   aoEstornar: () => void;
 }) {
   const T = TEXTOS.consignado.cobranca;
   const cotacao = useCotacao(ponte);
-  const d = (v: string) => <Dinheiro reais={v} cotacao={cotacao.cotacao} />;
+  // O acerto já salvo mostra a cotação do dia em que foi feito (ADR-0006), não a de hoje.
+  const relatorio = useRelatorioDaTela<RelatorioDoAcerto>(ponte, { tipo: 'ACERTO', notaId }, [
+    acerto,
+  ]);
+  const d = (v: string, doRelatorio?: ValorNasTresMoedas) =>
+    doRelatorio ? (
+      <ValorDoRelatorio v={doRelatorio} />
+    ) : (
+      <Dinheiro reais={v} cotacao={cotacao.cotacao} />
+    );
   return (
     <>
       <p className="vendas-texto">{T.acertoDe(dia(acerto.acertadoEm))}</p>
       <dl className="consignado-conta">
         <dt>{T.totalDx}</dt>
-        <dd>{d(acerto.valorDx)}</dd>
+        <dd>{d(acerto.valorDx, relatorio?.valorDx)}</dd>
         <dt>{T.totalDv}</dt>
-        <dd>{d(acerto.valorDv)}</dd>
+        <dd>{d(acerto.valorDv, relatorio?.valorDv)}</dd>
         <dt>{T.totalVd}</dt>
-        <dd>{d(acerto.valorVd)}</dd>
+        <dd>{d(acerto.valorVd, relatorio?.valorVd)}</dd>
         <dt>{T.vendaPercentual}</dt>
         <dd>{porCento(acerto.vendaPercentual)}</dd>
         <dt>{T.comissaoPercentual}</dt>
         <dd>{porCento(acerto.comissaoPercentual)}</dd>
         <dt>{T.comissaoRs}</dt>
-        <dd>{d(acerto.comissao)}</dd>
+        <dd>{d(acerto.comissao, relatorio?.comissao)}</dd>
         <dt>{T.bruto}</dt>
-        <dd>{d(acerto.bruto)}</dd>
+        <dd>{d(acerto.bruto, relatorio?.valorLiquido)}</dd>
         <dt>{T.pendenciasTitulo}</dt>
-        <dd>{d(acerto.pendenciasAnteriores)}</dd>
+        <dd>{d(acerto.pendenciasAnteriores, relatorio?.totalPendenciasAnteriores)}</dd>
         <dt>{T.totalAReceber}</dt>
-        <dd>{d(acerto.totalAReceber)}</dd>
+        <dd>{d(acerto.totalAReceber, relatorio?.totalAReceber)}</dd>
         <dt>{T.totalPago}</dt>
-        <dd>{d(acerto.totalPago)}</dd>
+        <dd>{d(acerto.totalPago, relatorio?.totalPago)}</dd>
         <dt>{T.ficouDevendo}</dt>
-        <dd>{d(acerto.ficouDevendo)}</dd>
+        <dd>{d(acerto.ficouDevendo, relatorio?.ficouDevendo)}</dd>
       </dl>
       {acerto.recibo ? (
         <>

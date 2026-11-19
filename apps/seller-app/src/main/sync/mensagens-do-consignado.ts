@@ -21,6 +21,7 @@ export type CodigoDoConsignado =
   | 'PEDIDO_SEM_CLIENTE'
   | 'PEDIDO_SEM_MALETA'
   | 'DATA_DE_COBRANCA_INVALIDA'
+  | 'DATA_DO_PAGAMENTO_INVALIDA'
   | 'PAGO_ACIMA_DO_DEVIDO'
   | 'CLIENTE_SEM_PENDENCIA'
   | 'CADASTRO_DO_CLIENTE_INCOMPLETO'
@@ -56,6 +57,8 @@ export const MENSAGENS_DO_CONSIGNADO: Readonly<Record<CodigoDoConsignado, string
   PEDIDO_SEM_CLIENTE: 'Escolha o cliente do pedido.',
   PEDIDO_SEM_MALETA: 'Escolha a maleta antes de ler as peças.',
   DATA_DE_COBRANCA_INVALIDA: 'Confira a data de cobrança.',
+  DATA_DO_PAGAMENTO_INVALIDA:
+    'A data do pagamento não pode ser depois de hoje. Escolha hoje ou um dia que já passou.',
   PAGO_ACIMA_DO_DEVIDO: 'O valor pago passa do que o cliente deve. Confira os valores.',
   CLIENTE_SEM_PENDENCIA: 'Este cliente não deve nada.',
   CADASTRO_DO_CLIENTE_INCOMPLETO:

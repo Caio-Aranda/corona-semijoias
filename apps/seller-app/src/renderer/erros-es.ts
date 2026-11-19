@@ -41,7 +41,7 @@ export const ERROS_ES: Readonly<Record<string, string>> = Object.freeze({
     'Esta no es la aplicación de tu acceso. Abrí la otra aplicación de Corona Semijoias.',
   // --- Vendas, clientes e maleta (API) ---
   VENDA_NAO_ENCONTRADA: 'No encontramos esta venta. Actualizá la pantalla e intentá de nuevo.',
-  VENDEDOR_DESATIVADO: 'Este vendedor está desactivado. Hablá con la dueña.',
+  VENDEDOR_DESATIVADO: 'Este representante está desactivado. Hablá con la dueña.',
   VENDA_JA_REGISTRADA_DIFERENTE:
     'Esta venta ya fue registrada con otros datos. Revisá tus ventas antes de registrar de nuevo.',
   VENDA_SEM_SALDO: 'No hay piezas suficientes en tu maleta para esta venta.',
@@ -59,7 +59,7 @@ export const ERROS_ES: Readonly<Record<string, string>> = Object.freeze({
   CLIENTE_JA_REGISTRADO_DIFERENTE:
     'Este cliente ya fue registrado con otros datos. Revisá la lista de clientes antes de registrar de nuevo.',
   CLIENTE_DE_OUTRO_VENDEDOR:
-    'Este cliente lo atiende otro vendedor. Solo quien atiende al cliente cambia su registro. Hablá con la dueña.',
+    'Este cliente lo atiende otro representante. Solo quien atiende al cliente cambia su registro. Hablá con la dueña.',
   MALETA_NAO_CONFERIDA:
     'Esta maleta todavía no fue controlada. Controlá todas las piezas de la maleta antes de vender.',
   MALETA_EM_ACERTO: 'Esta maleta está en acerto. Esperá a que la dueña termine el acerto.',
@@ -169,7 +169,7 @@ export const ERROS_ES: Readonly<Record<string, string>> = Object.freeze({
     'La dueña cambió esta computadora por otra. Usá la computadora nueva para vender.',
   APARELHO_BLOQUEADO: 'La dueña desconectó esta computadora de la tienda. Hablá con la dueña.',
   APARELHO_DE_OUTRA_PESSOA:
-    'Esta computadora ya la usa otro vendedor. Cada vendedor usa su propia computadora. Hablá con la dueña.',
+    'Esta computadora ya la usa otro representante. Cada representante usa su propia computadora. Hablá con la dueña.',
   APARELHO_NAO_PODE_SER_LIBERADO:
     'Esta computadora fue bloqueada o cambiada y no puede volver a vender. Entrá en la computadora que te dio la dueña.',
   FORMATO_NAO_ACEITO:
@@ -186,6 +186,8 @@ export const ERROS_ES: Readonly<Record<string, string>> = Object.freeze({
   SEM_SEMANA_ABERTA: 'No hay una semana abierta. Tocá "Nueva semana" para empezar.',
   PEDIDO_SEM_CLIENTE: 'Elegí el cliente del pedido.',
   PEDIDO_SEM_MALETA: 'Elegí la maleta antes de leer las piezas.',
+  DATA_DO_PAGAMENTO_INVALIDA:
+    'La fecha del pago no puede ser posterior a hoy. Elegí hoy o un día que ya pasó.',
   DATA_DE_COBRANCA_INVALIDA: 'Revisá la fecha de cobro.',
   PAGO_ACIMA_DO_DEVIDO: 'El valor pagado pasa de lo que el cliente debe. Revisá los valores.',
   CLIENTE_SEM_PENDENCIA: 'Este cliente no debe nada.',
@@ -262,6 +264,8 @@ export const ERROS_ES: Readonly<Record<string, string>> = Object.freeze({
     'La devolución pasa de lo que el cliente se llevó en esta nota. Revise las cantidades devueltas.',
   COMISSAO_FORA_DO_LIMITE:
     'La comisión debe quedar entre 0% y 40%. Corrija el porcentaje e intente de nuevo.',
+  DATA_DO_PAGAMENTO_NO_FUTURO:
+    'La fecha del pago no puede ser posterior a hoy. Elegí hoy o un día que ya pasó.',
   CONSIGNADO_JA_REGISTRADO_DIFERENTE:
     'Este registro ya fue hecho con otros datos. Revise los pedidos y las liquidaciones antes de registrar de nuevo.',
   ACERTO_JA_ESTORNADO:

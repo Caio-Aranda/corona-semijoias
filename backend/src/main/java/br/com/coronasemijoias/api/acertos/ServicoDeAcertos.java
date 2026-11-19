@@ -104,7 +104,7 @@ public class ServicoDeAcertos {
         boolean pelaDona = quem.pelaDona();
         UUID vendedorId = pelaDona ? pedido.vendedorId() : quem.vendedorId();
         if (vendedorId == null) {
-            throw Validacoes.recusar("vendedorId", "Escolha o vendedor do acerto.");
+            throw Validacoes.recusar("vendedorId", "Escolha o representante do acerto.");
         }
         trancarVendedor(jdbc, vendedorId);
 

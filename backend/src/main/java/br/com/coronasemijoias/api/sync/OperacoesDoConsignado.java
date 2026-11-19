@@ -85,7 +85,7 @@ public class OperacoesDoConsignado {
     }
 
     public record DadosDoPagamento(UUID id, UUID clienteId, UUID semanaId, Integer sequencia, Instant pagoEm, List<FormaPaga> formas,
-            BigDecimal pendenciaVista) {
+            BigDecimal pendenciaVista, LocalDate dataDoPagamento) {
     }
 
     public record DadosDoEstornoDoAcerto(UUID id, UUID acertoId, String motivo, Instant estornadoEm) {
@@ -280,6 +280,9 @@ public class OperacoesDoConsignado {
                 campo(s, "pagoEm", d.pagoEm());
                 formas(s, d.formas());
                 campo(s, "pendenciaVista", dinheiro(d.pendenciaVista()));
+                if (d.dataDoPagamento() != null) {
+                    campo(s, "dataDoPagamento", d.dataDoPagamento());
+                }
             }
             case DadosDoEstornoDoAcerto d -> {
                 campo(s, "id", d.id());
@@ -389,7 +392,7 @@ public class OperacoesDoConsignado {
             case DadosDoAcerto d -> acertos.acertar(c, new NovoAcerto(d.id(), d.notaId(), d.semanaId(), d.comissaoPercentual(),
                     d.devolvidos(), d.recibo(), d.visto()));
             case DadosDoPagamento d -> recibos.lancar(c, new NovoPagamento(d.id(), d.clienteId(), d.semanaId(), d.sequencia(),
-                    d.formas(), d.pendenciaVista()));
+                    d.formas(), d.pendenciaVista(), d.dataDoPagamento()));
             case DadosDoEstornoDoAcerto d -> acertos.estornar(c, new EstornoDoAcerto(d.id(), d.acertoId(), d.motivo()));
             case DadosDoEstornoDoRecibo d -> recibos.estornar(c, new EstornoDoRecibo(d.id(), d.reciboId(), d.motivo()));
             case Novo d -> clientes.criar(ctx.vendedorId(), ctx.usuarioId(), ctx.aparelho(), d);

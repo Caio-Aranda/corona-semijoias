@@ -59,6 +59,8 @@ export interface PagamentoDoConsignadoParaEnviar {
   id: string;
   clienteId: string;
   formas: FormaPaga[];
+  /** Dia do pagamento (AAAA-MM-DD, em Brasília), nunca depois de hoje; sem ele vale hoje. */
+  data?: string;
 }
 
 export const TIPOS_DE_DOCUMENTO = ['CPF', 'RG', 'CI', 'OUTRO'] as const;

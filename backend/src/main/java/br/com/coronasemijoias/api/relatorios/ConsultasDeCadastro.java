@@ -425,7 +425,7 @@ public class ConsultasDeCadastro {
     private static String quem(String pedido) {
         String q = pedido == null || pedido.isBlank() ? "TODOS" : pedido.strip().toUpperCase();
         if (!List.of("TODOS", "VENDEDORES", "CLIENTES").contains(q)) {
-            throw Validacoes.recusar("quem", "Escolha vendedores, clientes ou todos.");
+            throw Validacoes.recusar("quem", "Escolha representantes, clientes ou todos.");
         }
         return q;
     }

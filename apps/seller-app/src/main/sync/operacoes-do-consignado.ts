@@ -1,3 +1,4 @@
+import { diaEmBrasilia } from '../../shared/garantia';
 import {
   aplicarPagamento,
   calcularAcerto,
@@ -745,9 +746,11 @@ function gravarRecibo(
     sequencia: number;
     acertoId: string | null;
     formas: readonly { forma: FormaDoConsignado; valor: bigint }[];
+    /** Quando o pagamento vale (a data escolhida na tela); sem isso, agora. */
+    pagoEm?: string;
   },
 ): void {
-  const pagoEm = agora.toISOString();
+  const pagoEm = r.pagoEm ?? agora.toISOString();
   inserir(db, 'recibos_consignado', r.id, operacaoId, {
     cliente_id: r.clienteId,
     semana_id: r.semanaId,
@@ -898,6 +901,19 @@ export function registrarAcerto(
   return { operacaoId: p.id, reciboId: recibo ? p.reciboId : null, situacao };
 }
 
+/**
+ * O instante que vale para o pagamento: sem data, agora; a data de hoje, agora; um dia que já passou, meio-dia desse dia em
+ * Brasília (a mesma regra do servidor, que confere de novo). Depois de hoje é recusado.
+ */
+function momentoDoPagamento(agora: Date, data: string | undefined): string {
+  if (data === undefined) return agora.toISOString();
+  if (!dataValida(data)) return recusar('DATA_DO_PAGAMENTO_INVALIDA');
+  const hoje = diaEmBrasilia(agora);
+  if (data > hoje) return recusar('DATA_DO_PAGAMENTO_INVALIDA');
+  if (data === hoje) return agora.toISOString();
+  return new Date(`${data}T12:00:00-03:00`).toISOString();
+}
+
 /** Lançar pagamento no cadastro do cliente: abate a pendência mais antiga primeiro; não passa do total devido. */
 export function registrarPagamento(
   db: BancoAberto,
@@ -915,7 +931,7 @@ export function registrarPagamento(
   if (pendencia === 0n) return recusar('CLIENTE_SEM_PENDENCIA');
   if (pago > pendencia) return recusar('PAGO_ACIMA_DO_DEVIDO');
   const sequencia = proximaSequencia(db, semana.id);
-  const pagoEm = agora.toISOString();
+  const pagoEm = momentoDoPagamento(agora, p.data);
   gravarRecibo(db, agora, p.id, {
     id: p.id,
     clienteId: p.clienteId,
@@ -923,6 +939,7 @@ export function registrarPagamento(
     sequencia,
     acertoId: null,
     formas,
+    pagoEm,
   });
   const { aplicacoes } = aplicarPagamento(
     debitos.map((d) => ({ id: d.acertoId, saldo: dinheiro(d.saldo) })),
@@ -942,9 +959,10 @@ export function registrarPagamento(
       clienteId: p.clienteId,
       semanaId: semana.id,
       sequencia,
-      pagoEm,
+      pagoEm: agora.toISOString(),
       formas: formas.map((f) => ({ forma: f.forma, valor: dinheiro(f.valor) })),
       pendenciaVista: dinheiro(pendencia),
+      ...(p.data ? { dataDoPagamento: p.data } : {}),
     }),
     agora,
   });

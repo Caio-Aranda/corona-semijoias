@@ -162,11 +162,11 @@ public enum CodigoErro {
             "Estas datas já fazem parte de outra semana.",
             "Estas datas já fazem parte de outra semana. Escolha dias que não estejam em outra semana."),
 
-    // --- Cadastro do vendedor e arquivos (glossário, parte 6; tarefa 1.3) ---
+    // --- Cadastro do representante e arquivos (glossário, parte 6; tarefa 1.3) ---
 
     CADASTRO_EM_USO(
             "Este cadastro está em uso.",
-            "Este cadastro está em uso. Troque a praça ou a restrição dos vendedores que a usam e tente de novo."),
+            "Este cadastro está em uso. Troque a praça ou a restrição dos representantes que a usam e tente de novo."),
 
     ARQUIVO_TIPO_NAO_ACEITO(
             "Este tipo de arquivo não pode ser enviado.",
@@ -268,18 +268,18 @@ public enum CodigoErro {
 
     /** Vendedor inativo ou com restrição que impede montar maleta (HTTP 409). O servidor monta o texto. */
     VENDEDOR_NAO_RECEBE_MALETA(
-            "Este vendedor não pode receber maleta.",
-            "Este vendedor não pode receber maleta agora."),
+            "Este representante não pode receber maleta.",
+            "Este representante não pode receber maleta agora."),
 
-    /** O vendedor não tem limite de consignação definido nem "Sem limite" marcado (HTTP 409; V026). */
+    /** O representante não tem limite de consignação definido nem "Sem limite" marcado (HTTP 409; V026). */
     LIMITE_DE_CONSIGNACAO_NAO_DEFINIDO(
-            "O limite de consignação do vendedor não está definido.",
-            "Defina o limite deste vendedor antes de montar a maleta."),
+            "O limite de consignação do representante não está definido.",
+            "Defina o limite deste representante antes de montar a maleta."),
 
-    /** O valor da maleta passa o limite de consignação do vendedor (HTTP 409). O servidor monta o texto. */
+    /** O valor da maleta passa o limite de consignação do representante (HTTP 409). O servidor monta o texto. */
     LIMITE_DE_CONSIGNACAO_EXCEDIDO(
-            "O valor da maleta passa o limite do vendedor.",
-            "O valor da maleta passa o limite de consignação do vendedor."),
+            "O valor da maleta passa o limite do representante.",
+            "O valor da maleta passa o limite de consignação do representante."),
 
     /** Peça desativada ou excluída não vai para a maleta (HTTP 409). O servidor monta o texto. */
     PECA_FORA_DA_MALETA(
@@ -298,10 +298,10 @@ public enum CodigoErro {
             "Esta maleta já teve peças devolvidas ou vendidas.",
             "Esta maleta já teve peças devolvidas ou vendidas e não pode ser cancelada. Desfaça as devoluções antes, se foi engano."),
 
-    /** Excluir uma peça que ainda está com um vendedor numa maleta enviada (HTTP 409). */
+    /** Excluir uma peça que ainda está com um representante numa maleta enviada (HTTP 409). */
     PECA_ESTA_EM_MALETA(
             "Esta peça está numa maleta.",
-            "Esta peça ainda está com um vendedor numa maleta e não pode ser excluída. Receba a devolução das peças antes."),
+            "Esta peça ainda está com um representante numa maleta e não pode ser excluída. Receba a devolução das peças antes."),
 
     /** Desfazer a devolução faria faltar peça no estoque da loja (HTTP 409). O servidor monta o texto. */
     DEVOLUCAO_NAO_PODE_SER_DESFEITA(
@@ -344,16 +344,16 @@ public enum CodigoErro {
             "Não é possível fechar esta contagem.",
             "Não é possível fechar esta contagem porque o estoque de uma peça ficaria menor que zero."),
 
-    // --- Venda do vendedor (Fase 4, ADR-0011) ---
+    // --- Venda do representante (Fase 4, ADR-0011) ---
 
     VENDA_NAO_ENCONTRADA(
             "Não encontramos esta venda.",
             "Não encontramos esta venda. Atualize a tela e tente de novo."),
 
-    /** O cadastro do vendedor está inativo: não vende, não confere maleta (HTTP 409; ADR-0011, linha de 11/11/2026). */
+    /** O cadastro do representante está inativo: não vende, não confere maleta (HTTP 409; ADR-0011, linha de 11/11/2026). */
     VENDEDOR_DESATIVADO(
-            "Este vendedor está desativado.",
-            "Este vendedor está desativado. Fale com a dona."),
+            "Este representante está desativado.",
+            "Este representante está desativado. Fale com a dona."),
 
     /** O mesmo identificador voltou com outros dados (HTTP 409). */
     VENDA_JA_REGISTRADA_DIFERENTE(
@@ -374,22 +374,22 @@ public enum CodigoErro {
             "Esta venda já foi estornada.",
             "Esta venda já foi estornada e não pode mudar."),
 
-    /** O vendedor só estorna no dia da venda (HTTP 409). */
+    /** O representante só estorna no dia da venda (HTTP 409). */
     ESTORNO_SO_DA_DONA(
             "Esta venda só pode ser estornada pela dona.",
             "Só dá para estornar a venda no mesmo dia. Peça à dona para estornar."),
 
-    /** A maleta não está com o vendedor para vender (HTTP 409): rascunho, cancelada ou já acertada. */
+    /** A maleta não está com o representante para vender (HTTP 409): rascunho, cancelada ou já acertada. */
     MALETA_NAO_ESTA_COM_VOCE(
             "Esta maleta não está com você.",
             "Esta maleta não está disponível para vender. Atualize a tela."),
 
-    /** A maleta está ligada a outro aparelho do mesmo vendedor (HTTP 409). */
+    /** A maleta está ligada a outro aparelho do mesmo representante (HTTP 409). */
     MALETA_EM_OUTRO_APARELHO(
             "Esta maleta já está em outro aparelho.",
             "Esta maleta já está em outro aparelho. Peça à dona para liberar este aparelho."),
 
-    /** O código lido não é de peça da maleta do vendedor (HTTP 404). */
+    /** O código lido não é de peça da maleta do representante (HTTP 404). */
     PECA_NAO_ENCONTRADA(
             "Não encontramos esta peça.",
             "Esta peça não consta na sua maleta."),
@@ -458,7 +458,7 @@ public enum CodigoErro {
             "Este recebimento já foi registrado com outros dados.",
             "Este recebimento já foi registrado com outros dados. Confira os recebimentos antes de lançar de novo."),
 
-    /** Recebimento inexistente ou de outro vendedor (HTTP 404; tarefa 7.3). */
+    /** Recebimento inexistente ou de outro representante (HTTP 404; tarefa 7.3). */
     RECEBIMENTO_NAO_ENCONTRADO(
             "Não encontramos este recebimento.",
             "Não encontramos este recebimento. Atualize a tela e tente de novo."),
@@ -468,42 +468,42 @@ public enum CodigoErro {
             "Este recebimento já foi estornado.",
             "Este recebimento já foi estornado e não pode mudar."),
 
-    /** Conta a receber do vendedor inexistente ou de outro vendedor (HTTP 404; tarefa 7.6). */
+    /** Conta a receber do representante inexistente ou de outro representante (HTTP 404; tarefa 7.6). */
     CONTA_DO_VENDEDOR_NAO_ENCONTRADA(
             "Não encontramos esta conta a receber.",
             "Não encontramos esta conta a receber. Atualize a tela e tente de novo."),
 
-    /** O vendedor não tem conta em aberto para receber (HTTP 409; tarefa 7.6). */
+    /** O representante não tem conta em aberto para receber (HTTP 409; tarefa 7.6). */
     VENDEDOR_SEM_CONTA_EM_ABERTO(
-            "Este vendedor não tem conta em aberto.",
-            "Este vendedor não tem conta em aberto. Não há o que receber."),
+            "Este representante não tem conta em aberto.",
+            "Este representante não tem conta em aberto. Não há o que receber."),
 
-    /** Recebimento do vendedor acima do que ele deve em aberto (HTTP 409; tarefa 7.6). O servidor monta o texto com o valor. */
+    /** Recebimento do representante acima do que ele deve em aberto (HTTP 409; tarefa 7.6). O servidor monta o texto com o valor. */
     RECEBIMENTO_DO_VENDEDOR_ACIMA_DO_EM_ABERTO(
-            "O valor passa do que o vendedor deve.",
-            "O valor passa do que o vendedor deve. Confira o valor."),
+            "O valor passa do que o representante deve.",
+            "O valor passa do que o representante deve. Confira o valor."),
 
     /** Boleto pago que não é da conta do boleto ou não é do valor inteiro dela (HTTP 409; tarefa 7.6). */
     BOLETO_PAGO_PRECISA_SER_INTEIRO(
             "O boleto pago precisa ser do valor inteiro da conta.",
             "O boleto pago precisa ser do valor inteiro da conta do boleto. Escolha a conta do boleto e o valor todo."),
 
-    /** O pagamento do acerto passa do que o vendedor deve nele (HTTP 409; tarefa 7.6). */
+    /** O pagamento do acerto passa do que o representante deve nele (HTTP 409; tarefa 7.6). */
     PAGAMENTO_DO_ACERTO_PASSA_DO_DEVIDO(
-            "O valor recebido passa do que o vendedor deve neste acerto.",
-            "O valor recebido passa do que o vendedor deve neste acerto. Confira os valores."),
+            "O valor recebido passa do que o representante deve neste acerto.",
+            "O valor recebido passa do que o representante deve neste acerto. Confira os valores."),
 
     /** O que ficou devendo não tem data de pagamento escolhida (HTTP 409; tarefa 7.6). */
     DATA_DO_RESTANTE_OBRIGATORIA(
             "Escolha a data de pagamento do que ficou devendo.",
             "Escolha a data de pagamento do que ficou devendo e em quantas parcelas."),
 
-    /** O acerto a favor do vendedor só se paga na hora pelo valor inteiro, ou fica de crédito (HTTP 409; tarefa 7.6). */
+    /** O acerto a favor do representante só se paga na hora pelo valor inteiro, ou fica de crédito (HTTP 409; tarefa 7.6). */
     PAGAMENTO_AO_VENDEDOR_INVALIDO(
-            "O pagamento ao vendedor não confere com o acerto.",
-            "O pagamento ao vendedor não confere com o acerto. Pague o valor inteiro ou deixe de crédito para o próximo acerto."),
+            "O pagamento ao representante não confere com o acerto.",
+            "O pagamento ao representante não confere com o acerto. Pague o valor inteiro ou deixe de crédito para o próximo acerto."),
 
-    /** O vendedor só estorna o recebimento no dia dele (HTTP 409; tarefa 7.3). */
+    /** O representante só estorna o recebimento no dia dele (HTTP 409; tarefa 7.3). */
     ESTORNO_DE_RECEBIMENTO_SO_DA_DONA(
             "Este recebimento só pode ser estornado pela dona.",
             "Só dá para estornar o recebimento no mesmo dia. Peça à dona para estornar."),
@@ -526,7 +526,7 @@ public enum CodigoErro {
             "Esta maleta está em acerto.",
             "Esta maleta está em acerto. Espere a dona terminar o acerto."),
 
-    /** Acerto que não existe ou é de outro vendedor (HTTP 404; ADR-0012, item 16). */
+    /** Acerto que não existe ou é de outro representante (HTTP 404; ADR-0012, item 16). */
     ACERTO_NAO_ENCONTRADO(
             "Não encontramos este acerto.",
             "Não encontramos este acerto. Atualize a lista e tente de novo."),
@@ -536,20 +536,20 @@ public enum CodigoErro {
             "Este acerto já foi registrado com outros dados.",
             "Este acerto já foi registrado com outros dados. Confira a lista de acertos."),
 
-    /** O vendedor já tem um acerto em andamento (HTTP 409; ADR-0012, item 2). O corpo traz {@code acertoId}. */
+    /** O representante já tem um acerto em andamento (HTTP 409; ADR-0012, item 2). O corpo traz {@code acertoId}. */
     ACERTO_EM_ANDAMENTO(
-            "Este vendedor já tem um acerto em andamento.",
-            "Este vendedor já tem um acerto em andamento. Termine esse acerto antes de começar outro."),
+            "Este representante já tem um acerto em andamento.",
+            "Este representante já tem um acerto em andamento. Termine esse acerto antes de começar outro."),
 
     /** O acerto não está mais em andamento (terminou ou foi desistido; HTTP 409). */
     ACERTO_NAO_ESTA_EM_ANDAMENTO(
             "Este acerto não está em andamento.",
             "Este acerto já terminou ou foi desfeito. Abra a lista de acertos para ver como ficou."),
 
-    /** Já existe um acerto desse vendedor nessa semana (HTTP 409; ADR-0012, item 2). */
+    /** Já existe um acerto desse representante nessa semana (HTTP 409; ADR-0012, item 2). */
     ACERTO_DA_SEMANA_JA_EXISTE(
             "Já existe um acerto desta semana.",
-            "Este vendedor já tem acerto nesta semana. Escolha outra semana."),
+            "Este representante já tem acerto nesta semana. Escolha outra semana."),
 
     /** A semana do acerto já está fechada (HTTP 409). */
     SEMANA_FECHADA(
@@ -561,7 +561,7 @@ public enum CodigoErro {
             "Não encontramos a semana do acerto.",
             "Cadastre a semana antes de iniciar o acerto."),
 
-    /** O vendedor não tem maleta com ele para acertar (HTTP 409). */
+    /** O representante não tem maleta com ele para acertar (HTTP 409). */
     SEM_MALETA_PARA_ACERTO(
             "Você não tem maleta para acertar.",
             "Você não tem maleta para acertar agora. Fale com a dona."),
@@ -571,10 +571,10 @@ public enum CodigoErro {
             "Ainda há vendas para enviar.",
             "Ainda há vendas neste computador esperando para ser enviadas. Conecte à internet, espere o envio terminar e tente de novo."),
 
-    /** Maleta nova não é enviada enquanto o vendedor está em acerto (HTTP 409; ADR-0012, item 4). */
+    /** Maleta nova não é enviada enquanto o representante está em acerto (HTTP 409; ADR-0012, item 4). */
     VENDEDOR_EM_ACERTO(
-            "Este vendedor está em acerto.",
-            "Este vendedor está em acerto. Termine o acerto antes de enviar uma maleta."),
+            "Este representante está em acerto.",
+            "Este representante está em acerto. Termine o acerto antes de enviar uma maleta."),
 
     /** Desfazer mais do que foi contado (HTTP 409; ADR-0012, item 15). */
     LEITURA_DEIXA_CONTAGEM_NEGATIVA(
@@ -631,7 +631,7 @@ public enum CodigoErro {
             "Esta pendência já foi resolvida de outro jeito.",
             "Esta pendência já foi resolvida de outro jeito. Atualize a lista."),
 
-    /** O vendedor só cancela a devolução no dia dela (HTTP 409; ADR-0014, item 11). */
+    /** O representante só cancela a devolução no dia dela (HTTP 409; ADR-0014, item 11). */
     CANCELAR_DEVOLUCAO_SO_DA_DONA(
             "Esta devolução só pode ser cancelada pela dona.",
             "Só dá para cancelar a devolução no mesmo dia. Peça à dona para cancelar."),
@@ -640,7 +640,7 @@ public enum CodigoErro {
             "Esta devolução já foi cancelada.",
             "Esta devolução já foi cancelada e não pode mudar."),
 
-    /** A dona já decidiu (mantida ou não aceita), ou a maleta da peça já não está com o vendedor (HTTP 409). */
+    /** A dona já decidiu (mantida ou não aceita), ou a maleta da peça já não está com o representante (HTTP 409). */
     DEVOLUCAO_NAO_PODE_SER_CANCELADA(
             "Esta devolução não pode ser cancelada.",
             "A dona já decidiu sobre esta devolução e ela não pode mais ser cancelada."),
@@ -652,7 +652,7 @@ public enum CodigoErro {
 
     // --- Autorização, revisão e antifraude (Fase 6, tarefa 6.4; ADR-0014, itens 5, 6, 10 e 12; glossário, parte 6) ---
 
-    /** Pedido inexistente ou de outro vendedor (HTTP 404, sem dizer que existe). */
+    /** Pedido inexistente ou de outro representante (HTTP 404, sem dizer que existe). */
     AUTORIZACAO_NAO_ENCONTRADA(
             "Não encontramos este pedido de autorização.",
             "Não encontramos este pedido de autorização. Atualize a tela e tente de novo."),
@@ -737,12 +737,12 @@ public enum CodigoErro {
             "Esta troca já foi cancelada.",
             "Esta troca já foi cancelada e não pode mudar."),
 
-    /** A dona já decidiu a devolução da troca, uma maleta não está mais com o vendedor ou a peça já saiu (HTTP 409). */
+    /** A dona já decidiu a devolução da troca, uma maleta não está mais com o representante ou a peça já saiu (HTTP 409). */
     TROCA_NAO_PODE_SER_CANCELADA(
             "Esta troca não pode ser cancelada.",
             "A dona já decidiu sobre esta troca e ela não pode mais ser cancelada."),
 
-    /** O vendedor só cancela a troca no dia dela (HTTP 409; ADR-0014, item 11). */
+    /** O representante só cancela a troca no dia dela (HTTP 409; ADR-0014, item 11). */
     CANCELAR_TROCA_SO_DA_DONA(
             "Esta troca só pode ser cancelada pela dona.",
             "Só dá para cancelar a troca no mesmo dia. Peça à dona para cancelar."),
@@ -762,7 +762,7 @@ public enum CodigoErro {
             "Esta devolução é de uma troca.",
             "Esta devolução faz parte de uma troca. Use Cancelar troca."),
 
-    /** Crédito inexistente ou de outro vendedor (HTTP 404, sem dizer que existe). */
+    /** Crédito inexistente ou de outro representante (HTTP 404, sem dizer que existe). */
     CREDITO_NAO_ENCONTRADO(
             "Não encontramos este crédito.",
             "Não encontramos este crédito do cliente. Atualize a tela e tente de novo."),
@@ -803,9 +803,9 @@ public enum CodigoErro {
             "Esta venda com crédito não está para revisão.",
             "A dona já decidiu sobre esta venda com crédito e a decisão não muda."),
 
-    // --- Computadores do vendedor (Fase 5, tarefa 5.3; ADR-0013, itens 13 e 14) ---
+    // --- Computadores do representante (Fase 5, tarefa 5.3; ADR-0013, itens 13 e 14) ---
 
-    /** Segundo computador do vendedor, ainda sem a liberação da dona (HTTP 403). */
+    /** Segundo computador do representante, ainda sem a liberação da dona (HTTP 403). */
     APARELHO_NAO_LIBERADO(
             "Este computador ainda não foi liberado pela dona.",
             "Este computador ainda não foi liberado pela dona. Avise a dona para liberar este computador."),
@@ -822,13 +822,13 @@ public enum CodigoErro {
 
     /** O identificador do computador já é de outra pessoa (HTTP 403). */
     APARELHO_DE_OUTRA_PESSOA(
-            "Este computador já é usado por outro vendedor.",
-            "Este computador já é usado por outro vendedor. Cada vendedor usa o próprio computador. Fale com a dona."),
+            "Este computador já é usado por outro representante.",
+            "Este computador já é usado por outro representante. Cada representante usa o próprio computador. Fale com a dona."),
 
     /** A dona tentou liberar um computador bloqueado ou já trocado (HTTP 409). */
     APARELHO_NAO_PODE_SER_LIBERADO(
             "Este computador não pode ser liberado.",
-            "Este computador foi bloqueado ou trocado e não pode voltar a vender. Peça ao vendedor para entrar no "
+            "Este computador foi bloqueado ou trocado e não pode voltar a vender. Peça ao representante para entrar no "
                     + "computador que ele vai usar e libere esse."),
 
     APARELHO_NAO_ENCONTRADO(
@@ -978,10 +978,10 @@ public enum CodigoErro {
             "Esta venda depende de outro registro que não foi aceito.",
             "Esta venda depende de outro registro que não foi aceito. A dona já foi avisada."),
 
-    /** O vendedor alterou um cliente que não atende (HTTP 409). */
+    /** O representante alterou um cliente que não atende (HTTP 409). */
     CLIENTE_DE_OUTRO_VENDEDOR(
-            "Este cliente é atendido por outro vendedor.",
-            "Este cliente é atendido por outro vendedor. Só quem atende o cliente muda o cadastro dele. Fale com a dona."),
+            "Este cliente é atendido por outro representante.",
+            "Este cliente é atendido por outro representante. Só quem atende o cliente muda o cadastro dele. Fale com a dona."),
 
     ENVIO_NAO_ENCONTRADO(
             "Não encontramos este envio.",
@@ -1022,6 +1022,10 @@ public enum CodigoErro {
     COMISSAO_FORA_DO_LIMITE(
             "A comissão precisa ficar entre 0% e 40%.",
             "A comissão precisa ficar entre 0% e 40%. Corrija o percentual e tente de novo."),
+
+    DATA_DO_PAGAMENTO_NO_FUTURO(
+            "A data do pagamento não pode ser depois de hoje.",
+            "A data do pagamento não pode ser depois de hoje. Escolha hoje ou um dia que já passou."),
 
     CONSIGNADO_JA_REGISTRADO_DIFERENTE(
             "Este registro já foi feito com outros dados.",

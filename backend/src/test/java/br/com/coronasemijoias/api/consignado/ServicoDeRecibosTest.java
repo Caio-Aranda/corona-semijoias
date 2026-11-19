@@ -39,7 +39,7 @@ class ServicoDeRecibosTest extends ApoioDoConsignado {
         Tres t = tres();
         assertThat(pendencia(t.cliente())).isEqualByComparingTo("600.00");
         UUID recibo = UUID.randomUUID();
-        NovoPagamento pedido = new NovoPagamento(recibo, t.cliente(), t.semana(), 4, List.of(paga("DINHEIRO", "350.00")), null);
+        NovoPagamento pedido = new NovoPagamento(recibo, t.cliente(), t.semana(), 4, List.of(paga("DINHEIRO", "350.00")), null, null);
         assertThat(recibos.lancar(ctx(t.v()), pedido)).isFalse();
         assertThat(recibos.lancar(ctx(t.v()), pedido)).isTrue();
 
@@ -58,7 +58,7 @@ class ServicoDeRecibosTest extends ApoioDoConsignado {
     void pagamentoAcimaDoDevidoEAceitoComAlertaESobraAAplicar() throws Exception {
         Tres t = tres();
         UUID recibo = UUID.randomUUID();
-        recibos.lancar(ctx(t.v()), new NovoPagamento(recibo, t.cliente(), t.semana(), 4, List.of(paga("PIX", "700.00")), null));
+        recibos.lancar(ctx(t.v()), new NovoPagamento(recibo, t.cliente(), t.semana(), 4, List.of(paga("PIX", "700.00")), null, null));
         assertThat(pendencia(t.cliente())).isEqualByComparingTo("0.00");
         assertThat(aAplicar(recibo)).isEqualByComparingTo("100.00");
         assertThat(alertas(t.v(), "PAGAMENTO_ACIMA_DO_DEVIDO")).isEqualTo(1);
@@ -69,7 +69,7 @@ class ServicoDeRecibosTest extends ApoioDoConsignado {
     void estornoDoReciboReabreAPendenciaEVoltaANotaAPendente() throws Exception {
         Tres t = tres();
         UUID recibo = UUID.randomUUID();
-        recibos.lancar(ctx(t.v()), new NovoPagamento(recibo, t.cliente(), t.semana(), 4, List.of(paga("DINHEIRO", "350.00")), null));
+        recibos.lancar(ctx(t.v()), new NovoPagamento(recibo, t.cliente(), t.semana(), 4, List.of(paga("DINHEIRO", "350.00")), null, null));
         UUID estorno = UUID.randomUUID();
         EstornoDoRecibo pedido = new EstornoDoRecibo(estorno, recibo, "Lancei o valor errado");
         assertThat(recibos.estornar(ctx(t.v()), pedido)).isFalse();
@@ -104,7 +104,7 @@ class ServicoDeRecibosTest extends ApoioDoConsignado {
                 List.of(paga("PIX", "-5.00")), List.of(paga("PIX", "1.005")), List.of(paga("PIX", "5.00"), paga("PIX", "5.00")),
                 List.<FormaPaga>of())) {
             Throwable erro = catchThrowable(() -> recibos.lancar(ctx(t.v()),
-                    new NovoPagamento(UUID.randomUUID(), t.cliente(), t.semana(), 4, formas, null)));
+                    new NovoPagamento(UUID.randomUUID(), t.cliente(), t.semana(), 4, formas, null, null)));
             assertThat(codigoDoErro(erro)).isEqualTo("PAGAMENTO_INVALIDO");
         }
         assertThat(pendencia(t.cliente())).isEqualByComparingTo("600.00");
@@ -117,11 +117,28 @@ class ServicoDeRecibosTest extends ApoioDoConsignado {
         UsuarioDeTeste outro = usuarios.criarVendedor();
         UUID semanaDoOutro = abrirSemana(outro);
         Throwable alheio = catchThrowable(() -> recibos.lancar(ctx(outro),
-                new NovoPagamento(UUID.randomUUID(), t.cliente(), semanaDoOutro, 1, List.of(paga("PIX", "10.00")), null)));
+                new NovoPagamento(UUID.randomUUID(), t.cliente(), semanaDoOutro, 1, List.of(paga("PIX", "10.00")), null, null)));
         assertThat(codigoDoErro(alheio)).isEqualTo("CLIENTE_DE_OUTRO_VENDEDOR");
         // O número 3 já é da nota 3 desta semana.
         Throwable repetido = catchThrowable(() -> recibos.lancar(ctx(t.v()),
-                new NovoPagamento(UUID.randomUUID(), t.cliente(), t.semana(), 3, List.of(paga("PIX", "10.00")), null)));
+                new NovoPagamento(UUID.randomUUID(), t.cliente(), t.semana(), 3, List.of(paga("PIX", "10.00")), null, null)));
         assertThat(codigoDoErro(repetido)).isEqualTo("NUMERO_REPETIDO");
+    }
+
+    @Test
+    void dataDoPagamentoNoPassadoGravaODiaEscolhidoENuncaOFuturo() throws Exception {
+        Tres t = tres();
+        java.time.LocalDate ontem = java.time.LocalDate.now(java.time.ZoneId.of("America/Sao_Paulo")).minusDays(1);
+        UUID recibo = UUID.randomUUID();
+        recibos.lancar(ctx(t.v()),
+                new NovoPagamento(recibo, t.cliente(), t.semana(), 4, List.of(paga("PIX", "50.00")), null, ontem));
+        java.sql.Timestamp pagoEm = jdbc.queryForObject("SELECT pago_em FROM corona.recibos_consignado WHERE id = ?",
+                java.sql.Timestamp.class, recibo);
+        assertThat(java.time.LocalDate.ofInstant(pagoEm.toInstant(), java.time.ZoneId.of("America/Sao_Paulo"))).isEqualTo(ontem);
+
+        java.time.LocalDate amanha = ontem.plusDays(2);
+        Throwable erro = catchThrowable(() -> recibos.lancar(ctx(t.v()),
+                new NovoPagamento(UUID.randomUUID(), t.cliente(), t.semana(), 5, List.of(paga("PIX", "10.00")), null, amanha)));
+        assertThat(codigoDoErro(erro)).isEqualTo("DATA_DO_PAGAMENTO_NO_FUTURO");
     }
 }

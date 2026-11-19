@@ -24,7 +24,9 @@ import {
   situacaoNaTela,
   useConsulta,
 } from './apoio';
-import { RelatoriosDoCliente } from './Relatorio';
+import { diaEmBrasilia } from '../../../shared/garantia';
+import { RelatoriosDoCliente, useRelatorioDaTela, ValorDoRelatorio } from './Relatorio';
+import type { SituacaoDoCliente } from '../../../shared/relatorios-do-consignado';
 import { CapturaDeFoto } from './CapturaDeFoto';
 
 export interface TelaClientesProps {
@@ -196,6 +198,11 @@ function FichaDoCliente({
     erro,
     recarregar,
   } = useConsulta<ClienteCompleto>(ponte, { operacao: 'consignado.cliente', id }, [id]);
+  const situacao = useRelatorioDaTela<SituacaoDoCliente>(
+    ponte,
+    { tipo: 'SITUACAO_DO_CLIENTE', clienteId: id },
+    [c],
+  );
   const [lancando, setLancando] = useState(false);
   const [estornando, setEstornando] = useState<string | null>(null);
   const [mensagem, setMensagem] = useState<{ tipo: 'sucesso' | 'erro'; texto: string } | null>(
@@ -258,7 +265,12 @@ function FichaDoCliente({
             <p className="vendas-total">
               {/[1-9]/.test(c.pendencia) ? (
                 <>
-                  {T.deve}: <Dinheiro reais={c.pendencia} cotacao={cotacao.cotacao} />
+                  {T.deve}:{' '}
+                  {situacao?.deve ? (
+                    <ValorDoRelatorio v={situacao.deve} />
+                  ) : (
+                    <Dinheiro reais={c.pendencia} cotacao={cotacao.cotacao} />
+                  )}
                 </>
               ) : (
                 T.naoDeve
@@ -451,8 +463,11 @@ function LancarPagamento({
     DEBITO: '',
     CREDITO: '',
   });
+  const hoje = diaEmBrasilia(new Date());
+  const [dataDoPagamento, setDataDoPagamento] = useState(hoje);
   const [erro, setErro] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
+  const dataInvalida = !/^\d{4}-\d{2}-\d{2}$/.test(dataDoPagamento) || dataDoPagamento > hoje;
   const formas: FormaPaga[] = [];
   let invalido = false;
   for (const f of FORMAS_DO_CONSIGNADO) {
@@ -469,7 +484,7 @@ function LancarPagamento({
     setOcupado(true);
     const r = await chamar<{ cliente: ClienteCompleto | null; sequencia: number }>(ponte, {
       operacao: 'consignado.pagamento',
-      pagamento: { id: novoId(), clienteId: cliente.id, formas },
+      pagamento: { id: novoId(), clienteId: cliente.id, formas, data: dataDoPagamento },
     });
     setOcupado(false);
     if (!r.ok) {
@@ -484,7 +499,7 @@ function LancarPagamento({
     <JanelaDeConfirmacao
       titulo={T.lancarTitulo}
       rotuloConfirmar={T.lancarBotao}
-      ocupado={ocupado || invalido || formas.length === 0 || total > devido}
+      ocupado={ocupado || invalido || dataInvalida || formas.length === 0 || total > devido}
       aoConfirmar={() => void lancar()}
       aoCancelar={aoFechar}
     >
@@ -494,6 +509,15 @@ function LancarPagamento({
           {T.deve}: {reais(cliente.pendencia)}
         </strong>
       </p>
+      <Campo
+        rotulo={T.lancarData}
+        ajuda={T.lancarDataAjuda}
+        type="date"
+        max={hoje}
+        value={dataDoPagamento}
+        onChange={(e) => setDataDoPagamento(e.target.value)}
+        {...(dataInvalida ? { erro: T.lancarDataAjuda } : {})}
+      />
       {FORMAS_DO_CONSIGNADO.map((f) => (
         <Campo
           key={f}
