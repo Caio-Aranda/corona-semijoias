@@ -3650,6 +3650,86 @@
         "tags" : [ "clientes-do-vendedor-controller" ]
       }
     },
+    "/api/vendedor/clientes/{id}/fotos/{tipo}" : {
+      "get" : {
+        "operationId" : "baixarFotoDoMeuCliente",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "path",
+          "name" : "tipo",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "format" : "byte",
+                  "type" : "string"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Baixar a foto de um cliente do representante",
+        "tags" : [ "fotos-dos-clientes-controller" ]
+      },
+      "put" : {
+        "description" : "O corpo é a imagem (JPG, PNG ou WebP). O servidor confere o SHA-256 contra o hash do cadastro; repetir é inofensivo (200). Cliente que ainda não chegou ao servidor: 409 CLIENTE_AINDA_NAO_CHEGOU (tente de novo). Cliente de outro representante: 404.",
+        "operationId" : "enviarFotoDoMeuCliente",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "path",
+          "name" : "tipo",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "format" : "byte",
+                "type" : "string"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Enviar a foto de um cliente",
+        "tags" : [ "fotos-dos-clientes-controller" ]
+      }
+    },
     "/api/vendedor/comissao/previa" : {
       "get" : {
         "description" : "O vendido da semana em Guarani, o percentual que valeria hoje, quanto falta para a meta (em Guarani e em Real, pela cotação mais recente) e a comissão prevista. Só do vendedor logado; nada é gravado.",
@@ -4520,6 +4600,15 @@
       "get" : {
         "description" : "Por tabela, quantas linhas são do vendedor (lápides incluídas) e o SHA-256 da lista ordenada \"id:version\" (uma por linha, com quebra de linha). O app compara com o que guardou depois de receber tudo; havendo diferença, recarrega a tabela e avisa em /conferencia/diferencas.",
         "operationId" : "conferirDados",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "formato",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
         "responses" : {
           "200" : {
             "content" : {
@@ -4567,7 +4656,7 @@
     },
     "/api/vendedor/sync/pull" : {
       "get" : {
-        "description" : "Devolve o que mudou desde o cursor, só do vendedor do token: maletas enviadas e itens, peças delas (com códigos e fotos), vendas, pagamentos, conferências, cotações, categorias, semanas e o diretório de clientes da loja. Cursor vazio é a carga inicial. Aplique cada linha só se a version for maior que a guardada. 409 CURSOR_INVALIDO: refaça a carga inicial sem tocar no que aguarda envio. Limite padrão 500 linhas, máximo 1000 (a expansão de uma maleta pode passar do limite).",
+        "description" : "Devolve o que mudou desde o cursor, só do vendedor do token: maletas enviadas e itens, peças delas (com códigos e fotos), vendas, pagamentos, conferências, cotações, categorias, semanas e o diretório de clientes da loja. Cursor vazio é a carga inicial. Aplique cada linha só se a version for maior que a guardada. 409 CURSOR_INVALIDO: refaça a carga inicial sem tocar no que aguarda envio. Limite padrão 500 linhas, máximo 1000 (a expansão de uma maleta pode passar do limite). formato: sem ele (ou 1) vale o pull do Corona Vendas 1.0.0, sem as tabelas e colunas do consignado ao cliente e com o diretório de clientes da loja; 2 traz o consignado e só os clientes do representante. O mesmo vale para /conferencia.",
         "operationId" : "receberDados",
         "parameters" : [ {
           "in" : "query",
@@ -4590,6 +4679,14 @@
           "required" : false,
           "schema" : {
             "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "formato",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
           }
         } ],
         "responses" : {

@@ -35,11 +35,14 @@ public class FormatosDeOperacao {
     /** Dia em que o formato 1 dos tipos da Fase 7 (recebimento do cliente) foi publicado (tarefa 7.3). */
     static final Instant FORMATO_1_DA_FASE_7 = Instant.parse("2026-11-14T00:00:00Z");
 
+    /** Dia em que o formato 1 dos tipos do consignado ao cliente e o formato 2 do cadastro do cliente foram publicados (tarefa 9.1). */
+    static final Instant FORMATO_1_DO_CONSIGNADO = Instant.parse("2026-11-19T00:00:00Z");
+
     private static final Map<String, Map<Integer, Instant>> PRODUCAO = Map.ofEntries(
             Map.entry("VENDA", Map.of(1, FORMATO_1)),
             Map.entry("ESTORNO_VENDA", Map.of(1, FORMATO_1)),
-            Map.entry("CLIENTE_NOVO", Map.of(1, FORMATO_1)),
-            Map.entry("CLIENTE_ALTERADO", Map.of(1, FORMATO_1)),
+            Map.entry("CLIENTE_NOVO", Map.of(1, FORMATO_1, 2, FORMATO_1_DO_CONSIGNADO)),
+            Map.entry("CLIENTE_ALTERADO", Map.of(1, FORMATO_1, 2, FORMATO_1_DO_CONSIGNADO)),
             Map.entry("CONFERENCIA", Map.of(1, FORMATO_1)),
             Map.entry("DEVOLUCAO", Map.of(1, FORMATO_1_DA_FASE_6)),
             Map.entry("PEDIDO_AUTORIZACAO", Map.of(1, FORMATO_1_DA_FASE_6)),
@@ -47,7 +50,16 @@ public class FormatosDeOperacao {
             Map.entry("CANCELAR_DEVOLUCAO", Map.of(1, FORMATO_1_DA_FASE_6)),
             Map.entry("CANCELAR_TROCA", Map.of(1, FORMATO_1_DA_FASE_6)),
             Map.entry("RECEBIMENTO_CLIENTE", Map.of(1, FORMATO_1_DA_FASE_7)),
-            Map.entry("ESTORNO_RECEBIMENTO_CLIENTE", Map.of(1, FORMATO_1_DA_FASE_7)));
+            Map.entry("ESTORNO_RECEBIMENTO_CLIENTE", Map.of(1, FORMATO_1_DA_FASE_7)),
+            Map.entry("SEMANA_NOVA", Map.of(1, FORMATO_1_DO_CONSIGNADO)),
+            Map.entry("NOTA_CONSIGNADO", Map.of(1, FORMATO_1_DO_CONSIGNADO)),
+            Map.entry("REPOSICAO_NOTA", Map.of(1, FORMATO_1_DO_CONSIGNADO)),
+            Map.entry("TROCA_NA_NOTA", Map.of(1, FORMATO_1_DO_CONSIGNADO)),
+            Map.entry("REMARCAR_NOTA", Map.of(1, FORMATO_1_DO_CONSIGNADO)),
+            Map.entry("ACERTO_NOTA", Map.of(1, FORMATO_1_DO_CONSIGNADO)),
+            Map.entry("PAGAMENTO_CONSIGNADO", Map.of(1, FORMATO_1_DO_CONSIGNADO)),
+            Map.entry("ESTORNO_ACERTO_NOTA", Map.of(1, FORMATO_1_DO_CONSIGNADO)),
+            Map.entry("ESTORNO_RECIBO", Map.of(1, FORMATO_1_DO_CONSIGNADO)));
 
     private final Clock relogio;
     private final Duration prazo;

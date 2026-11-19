@@ -325,6 +325,40 @@ export const ERROS_EM_ESPANHOL: Record<string, string> = {
   ENVIO_JA_RESOLVIDO: 'Este envío ya fue resuelto. Actualice la pantalla para ver cómo quedó.',
   ENVIO_SEM_DADOS:
     'Este envío es muy antiguo para repetirse. Los detalles completos se guardan por 90 días. Descártelo.',
+  NOTA_NAO_ENCONTRADA: 'No encontramos esta nota. Actualice la pantalla e intente de nuevo.',
+  NOTA_JA_ACERTADA:
+    'Esta nota ya fue liquidada. Para cambiar, anule la liquidación y hágala de nuevo.',
+  SEMANA_DA_NOTA_FECHADA:
+    'Esta semana ya fue cerrada. Abra una semana nueva para hacer otro pedido.',
+  NUMERO_REPETIDO:
+    'Este número de nota o de recibo ya fue usado por otro registro. Avise a la dueña de la tienda: el número ya está impreso.',
+  DEVOLUCAO_MAIOR_QUE_O_LEVADO:
+    'La devolución pasa de lo que el cliente se llevó en esta nota. Revise las cantidades devueltas.',
+  COMISSAO_FORA_DO_LIMITE:
+    'La comisión debe quedar entre 0% y 40%. Corrija el porcentaje e intente de nuevo.',
+  CONSIGNADO_JA_REGISTRADO_DIFERENTE:
+    'Este registro ya fue hecho con otros datos. Revise los pedidos y las liquidaciones antes de registrar de nuevo.',
+  ACERTO_JA_ESTORNADO:
+    'Esta liquidación ya fue anulada y no se puede cambiar. Haga una nueva, si lo necesita.',
+  RECIBO_NAO_ENCONTRADO: 'No encontramos este recibo. Actualice la pantalla e intente de nuevo.',
+  RECIBO_JA_ESTORNADO_DO_CONSIGNADO:
+    'Este recibo ya fue anulado y no se puede cambiar. Registre un pago nuevo, si lo necesita.',
+  RECIBO_DO_ACERTO: 'Este recibo es de una liquidación. Para deshacerlo, anule la liquidación.',
+  PAGAMENTO_INVALIDO:
+    'Revise el pago: use efectivo, Pix, débito o crédito al contado, con valor mayor que cero y como máximo dos decimales.',
+  MOTIVO_OBRIGATORIO: 'Cuente el motivo de la anulación para continuar.',
+  PEDIDO_SEM_PECAS: 'El pedido no tiene piezas. Agregue al menos una pieza.',
+  CLIENTE_AINDA_NAO_CHEGOU:
+    'El registro del cliente aún no llegó al servidor. Intente de nuevo más tarde.',
+  FOTO_DIFERENTE_DO_CADASTRO:
+    'La foto enviada no es la del registro del cliente. Saque la foto de nuevo.',
+  FOTO_DO_CLIENTE_NAO_ENCONTRADA: 'Este cliente no tiene esta foto.',
+  FECHAMENTO_JA_EM_ANDAMENTO:
+    'Ya hay un cierre en curso para esta maleta. Continúe desde donde quedó.',
+  FECHAMENTO_NAO_ENCONTRADO: 'No hay un cierre en curso para esta maleta. Comience uno nuevo.',
+  MALETA_JA_FECHADA: 'Esta maleta ya fue cerrada.',
+  MALETA_NAO_PODE_FECHAR:
+    'Solo se puede cerrar la maleta que está con el representante (enviada o conferida).',
 };
 
 /** Texto de ACESSO_BLOQUEADO: el servidor trae los minutos en su mensaje. */

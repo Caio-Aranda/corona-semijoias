@@ -97,9 +97,15 @@ class PullDoVendedorTest extends TesteDeIntegracao {
 
     /** Recebe até não haver mais nada, aplicando a regra da version. */
     private void receberTudo(RequestPostProcessor quem, Copia copia, int limite) throws Exception {
+        receberTudo(quem, copia, limite, null);
+    }
+
+    /** Com {@code formato=2} o pull é o do consignado ao cliente (tarefa 9.1); sem ele, o do Corona Vendas 1.0.0. */
+    private void receberTudo(RequestPostProcessor quem, Copia copia, int limite, Integer formato) throws Exception {
         JsonNode r;
         do {
-            r = receber(quem, "?limite=" + limite + (copia.cursor == null ? "" : "&cursor=" + copia.cursor));
+            r = receber(quem, "?limite=" + limite + (formato == null ? "" : "&formato=" + formato)
+                    + (copia.cursor == null ? "" : "&cursor=" + copia.cursor));
             for (JsonNode l : r.get("linhas")) {
                 Map<String, JsonNode> t = copia.tabelas.computeIfAbsent(l.get("tabela").asString(), x -> new HashMap<>());
                 JsonNode atual = t.get(l.get("id").asString());
@@ -182,6 +188,53 @@ class PullDoVendedorTest extends TesteDeIntegracao {
     }
 
     @Test
+    void formato1NuncaRecebeTabelaNemColunaDoConsignadoEOAppAntigoNaoQuebra() throws Exception {
+        CenarioDeSync c = cenario();
+        UsuarioDeTeste a = usuarios.criarVendedor();
+        UUID cliente = c.cliente(a.vendedorId());
+        UUID semana = UUID.randomUUID();
+        jdbc.update("INSERT INTO corona.semanas_vendedor (id, vendedor_id, numero, aberta_em) VALUES (?, ?, 1, now())", semana,
+                a.vendedorId());
+        Copia antiga = new Copia();
+        receberTudo(como(a), antiga, 200);
+        assertThat(antiga.tabelas).doesNotContainKeys("semanas_vendedor", "notas_consignado", "acertos_nota", "recibos_consignado");
+        // O cliente chega como o app 1.0.0 conhece: sem nenhuma coluna nova.
+        JsonNode campos = antiga.linha("clientes", cliente).get("campos");
+        for (String nova : new String[] {"documento", "documento_tipo", "comissao_percentual", "foto_hash", "foto_documento_frente_hash"}) {
+            assertThat(campos.has(nova)).as(nova).isFalse();
+        }
+        // Pedir uma tabela nova no formato 1 é pedido inválido.
+        mvc.perform(get(PULL + "?tabela=notas_consignado").with(como(a))).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void formato2RecebeSoOsClientesDoRepresentanteEAsTabelasDoConsignado() throws Exception {
+        CenarioDeSync c = cenario();
+        UsuarioDeTeste a = usuarios.criarVendedor();
+        UsuarioDeTeste b = usuarios.criarVendedor();
+        UUID cliente = c.cliente(a.vendedorId());
+        UUID semana = UUID.randomUUID();
+        jdbc.update("INSERT INTO corona.semanas_vendedor (id, vendedor_id, numero, aberta_em) VALUES (?, ?, 1, now())", semana,
+                a.vendedorId());
+        Copia deA = new Copia();
+        Copia deB = new Copia();
+        receberTudo(como(a), deA, 200, 2);
+        receberTudo(como(b), deB, 200, 2);
+
+        JsonNode emA = deA.linha("clientes", cliente).get("campos");
+        assertThat(emA.get("observacoes").asString()).isEqualTo("Só paga em dinheiro");
+        assertThat(emA.has("comissao_percentual")).isTrue();
+        assertThat(deA.tem("semanas_vendedor", semana)).isTrue();
+        // B nunca recebe o cliente nem a semana de A (ADR-0016, itens 4 e 13).
+        assertThat(deB.tem("clientes", cliente)).isFalse();
+        assertThat(deB.tem("semanas_vendedor", semana)).isFalse();
+        // O responsável não muda depois de definido (V049): a cópia de A nunca fica velha.
+        c.transferir(cliente, b.vendedorId());
+        receberTudo(como(b), deB, 200, 2);
+        assertThat(deB.tem("clientes", cliente)).isFalse();
+    }
+
+    @Test
     void clientesDaLojaDiretorioParaTodosEOCadastroSoParaQuemAtendeNosDoisSentidos() throws Exception {
         CenarioDeSync c = cenario();
         UsuarioDeTeste a = usuarios.criarVendedor();
@@ -203,19 +256,7 @@ class PullDoVendedorTest extends TesteDeIntegracao {
         assertThat(emB.get("whatsapp").isNull()).isTrue();
         assertThat(emB.get("vendedor_responsavel_id").isNull()).isTrue();
 
-        // A dona passa o cliente para B: B recebe o cadastro; A fica só com o diretório.
-        c.transferir(cliente, b.vendedorId());
-        receberTudo(como(a), deA, 200);
-        receberTudo(como(b), deB, 200);
-        assertThat(deA.linha("clientes", cliente).get("campos").get("observacoes").isNull()).isTrue();
-        assertThat(deA.linha("clientes", cliente).get("campos").get("vendedor_responsavel_id").isNull()).isTrue();
-        assertThat(deB.linha("clientes", cliente).get("campos").get("observacoes").asString()).isEqualTo("Só paga em dinheiro");
-        // E volta para A.
-        c.transferir(cliente, a.vendedorId());
-        receberTudo(como(a), deA, 200);
-        receberTudo(como(b), deB, 200);
-        assertThat(deA.linha("clientes", cliente).get("campos").get("whatsapp").asString()).isEqualTo("(19) 3000-0002");
-        assertThat(deB.linha("clientes", cliente).get("campos").get("whatsapp").isNull()).isTrue();
+        // O responsável não muda mais depois de definido (V049, tarefa 9.1): a transferência entre representantes não existe.
     }
 
     @Test

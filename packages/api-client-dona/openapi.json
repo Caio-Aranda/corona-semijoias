@@ -1,6 +1,40 @@
 {
   "components" : {
     "schemas" : {
+      "AlertaLido" : {
+        "properties" : {
+          "criadoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "detalhe" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "registroId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "registroTabela" : {
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "vistoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "Ambigua" : {
         "properties" : {
           "codigo" : {
@@ -937,6 +971,24 @@
         "type" : "object"
       },
       "ConciliacoesDaFase7Resultado" : {
+        "properties" : {
+          "conferencias" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ConciliacoesDaFase7Conferencia"
+            },
+            "type" : "array"
+          },
+          "geradaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "tudoCerto" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ConciliacoesDoConsignadoResultado" : {
         "properties" : {
           "conferencias" : {
             "items" : {
@@ -3639,37 +3691,6 @@
             "type" : "integer"
           },
           "valor" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          }
-        },
-        "type" : "object"
-      },
-      "ItemDaNota" : {
-        "properties" : {
-          "codigo" : {
-            "type" : "string"
-          },
-          "nome" : {
-            "type" : "string"
-          },
-          "precoRemessa" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          },
-          "produtoId" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "quantidade" : {
-            "format" : "int32",
-            "type" : "integer"
-          },
-          "subtotal" : {
             "example" : "123.45",
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
@@ -6799,7 +6820,7 @@
           },
           "itens" : {
             "items" : {
-              "$ref" : "#/components/schemas/ItemDaNota"
+              "$ref" : "#/components/schemas/NotaDeRemessaControllerItemDaNota"
             },
             "type" : "array"
           },
@@ -6840,6 +6861,37 @@
           },
           "vendedor" : {
             "$ref" : "#/components/schemas/Pessoa"
+          }
+        },
+        "type" : "object"
+      },
+      "NotaDeRemessaControllerItemDaNota" : {
+        "properties" : {
+          "codigo" : {
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "precoRemessa" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "subtotal" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
           }
         },
         "type" : "object"
@@ -14464,6 +14516,88 @@
         } ],
         "summary" : "Mudar a garantia e os limites de devolução",
         "tags" : [ "garantia-da-dona-controller" ]
+      }
+    },
+    "/api/dona/consignado/alertas" : {
+      "get" : {
+        "description" : "Divergências aceitas do balcão (peça sem saldo, preço diferente, total recalculado, pagamento acima do devido, documento repetido). soNaoVistos=true mostra só os que ainda não foram vistos.",
+        "operationId" : "listarAlertasDoConsignado",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "soNaoVistos",
+          "required" : false,
+          "schema" : {
+            "default" : false,
+            "type" : "boolean"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/AlertaLido"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Alertas do consignado para a dona",
+        "tags" : [ "consignado-da-dona-controller" ]
+      }
+    },
+    "/api/dona/consignado/alertas/{id}/visto" : {
+      "post" : {
+        "operationId" : "marcarAlertaDoConsignadoComoVisto",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Marcar um alerta como visto",
+        "tags" : [ "consignado-da-dona-controller" ]
+      }
+    },
+    "/api/dona/consignado/conciliacoes" : {
+      "get" : {
+        "description" : "Sete conferências (K1 a K7) sobre o banco; cada uma lista o que não bate. Vazio = tudo certo.",
+        "operationId" : "conferirConsignado",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConciliacoesDoConsignadoResultado"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Conciliações do consignado (só leitura)",
+        "tags" : [ "consignado-da-dona-controller" ]
       }
     },
     "/api/dona/contas-a-pagar" : {

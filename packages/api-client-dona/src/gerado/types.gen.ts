@@ -4,6 +4,17 @@ export type ClientOptions = {
     baseUrl: `${string}://${string}` | (string & {});
 };
 
+export type AlertaLido = {
+    criadoEm?: string;
+    detalhe?: string;
+    id?: string;
+    registroId?: string;
+    registroTabela?: string;
+    tipo?: string;
+    vendedorId?: string;
+    vistoEm?: string;
+};
+
 export type Ambigua = {
     codigo?: string;
     mensagem?: string;
@@ -307,6 +318,12 @@ export type ConciliacoesDaFase7Diferenca = {
 };
 
 export type ConciliacoesDaFase7Resultado = {
+    conferencias?: Array<ConciliacoesDaFase7Conferencia>;
+    geradaEm?: string;
+    tudoCerto?: boolean;
+};
+
+export type ConciliacoesDoConsignadoResultado = {
     conferencias?: Array<ConciliacoesDaFase7Conferencia>;
     geradaEm?: string;
     tudoCerto?: boolean;
@@ -1090,15 +1107,6 @@ export type ItemDaDevolucao = {
     produto?: ConsultasDeVendasPeca;
     quantidade?: number;
     valor?: string;
-};
-
-export type ItemDaNota = {
-    codigo?: string;
-    nome?: string;
-    precoRemessa?: string;
-    produtoId?: string;
-    quantidade?: number;
-    subtotal?: string;
 };
 
 export type ItemFechado = {
@@ -1958,7 +1966,7 @@ export type NotaDeRemessa = {
     cancelada?: boolean;
     cotacao?: CotacaoDaNota;
     enviadaEm?: string;
-    itens?: Array<ItemDaNota>;
+    itens?: Array<NotaDeRemessaControllerItemDaNota>;
     loja?: string;
     motivoDoCancelamento?: string;
     numero?: string;
@@ -1970,6 +1978,15 @@ export type NotaDeRemessa = {
     totalPecas?: number;
     totalValor?: string;
     vendedor?: Pessoa;
+};
+
+export type NotaDeRemessaControllerItemDaNota = {
+    codigo?: string;
+    nome?: string;
+    precoRemessa?: string;
+    produtoId?: string;
+    quantidade?: number;
+    subtotal?: string;
 };
 
 export type NotaDeRemessaControllerSemana = {
@@ -4688,6 +4705,58 @@ export type AlterarGarantiaResponses = {
 };
 
 export type AlterarGarantiaResponse = AlterarGarantiaResponses[keyof AlterarGarantiaResponses];
+
+export type ListarAlertasDoConsignadoData = {
+    body?: never;
+    path?: never;
+    query?: {
+        soNaoVistos?: boolean;
+    };
+    url: '/api/dona/consignado/alertas';
+};
+
+export type ListarAlertasDoConsignadoResponses = {
+    /**
+     * OK
+     */
+    200: Array<AlertaLido>;
+};
+
+export type ListarAlertasDoConsignadoResponse = ListarAlertasDoConsignadoResponses[keyof ListarAlertasDoConsignadoResponses];
+
+export type MarcarAlertaDoConsignadoComoVistoData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/consignado/alertas/{id}/visto';
+};
+
+export type MarcarAlertaDoConsignadoComoVistoResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type MarcarAlertaDoConsignadoComoVistoResponse = MarcarAlertaDoConsignadoComoVistoResponses[keyof MarcarAlertaDoConsignadoComoVistoResponses];
+
+export type ConferirConsignadoData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/dona/consignado/conciliacoes';
+};
+
+export type ConferirConsignadoResponses = {
+    /**
+     * OK
+     */
+    200: ConciliacoesDoConsignadoResultado;
+};
+
+export type ConferirConsignadoResponse = ConferirConsignadoResponses[keyof ConferirConsignadoResponses];
 
 export type ListarContasAPagarData = {
     body?: never;

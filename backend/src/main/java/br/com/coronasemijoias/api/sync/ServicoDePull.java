@@ -50,10 +50,12 @@ public class ServicoDePull {
     private final JdbcTemplate jdbc;
     private final TransactionTemplate transacao;
     private final RegistroDeTabelas registro;
+    private final RegistroDeTabelas registroDoFormato1;
 
     public ServicoDePull(DataSource dataSource, RegistroDeTabelas registro) {
         this.jdbc = new JdbcTemplate(dataSource);
         this.registro = Objects.requireNonNull(registro, "registro");
+        this.registroDoFormato1 = registro.paraOFormato1();
         this.transacao = new TransactionTemplate(new DataSourceTransactionManager(dataSource));
         this.transacao.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         this.transacao.setIsolationLevel(TransactionDefinition.ISOLATION_REPEATABLE_READ);
@@ -75,6 +77,25 @@ public class ServicoDePull {
      *                 nulo para todas
      */
     public LoteDoPull puxar(String cursor, int tamanhoDoLote, FiltroDoVendedor filtro, String soTabela) {
+        return puxar(cursor, tamanhoDoLote, filtro, soTabela, FORMATO_COMPLETO);
+    }
+
+    /** O pull como o Corona Vendas 1.0.0 (sem o consignado) o conhece. */
+    public static final int FORMATO_ANTIGO = 1;
+
+    /** O pull completo: as tabelas e colunas do consignado ao cliente (tarefa 9.1). */
+    public static final int FORMATO_COMPLETO = 2;
+
+    private RegistroDeTabelas registroDo(int formato) {
+        return formato >= FORMATO_COMPLETO ? registro : registroDoFormato1;
+    }
+
+    /**
+     * @param formato {@link #FORMATO_ANTIGO} (padrão do pedido, para o app que não conhece o consignado) ou
+     *                {@link #FORMATO_COMPLETO}
+     */
+    public LoteDoPull puxar(String cursor, int tamanhoDoLote, FiltroDoVendedor filtro, String soTabela, int formato) {
+        RegistroDeTabelas registro = registroDo(formato);
         if (tamanhoDoLote < 1 || tamanhoDoLote > LOTE_MAXIMO) {
             throw new IllegalArgumentException("O lote do pull vai de 1 a " + LOTE_MAXIMO + ", veio " + tamanhoDoLote + ".");
         }
@@ -82,7 +103,7 @@ public class ServicoDePull {
         List<TabelaSincronizavel> tabelas = soTabela == null ? registro.sincronizaveis()
                 : List.of(registro.sincronizavel(soTabela).orElseThrow(
                         () -> new IllegalArgumentException("Tabela desconhecida no pull: " + soTabela)));
-        return transacao.execute(estado -> puxarNaTransacao(cursor, tamanhoDoLote, filtro, tabelas));
+        return transacao.execute(estado -> puxarNaTransacao(cursor, tamanhoDoLote, filtro, tabelas, registro));
     }
 
     /**
@@ -90,7 +111,12 @@ public class ServicoDePull {
      * ordenada {@code id:version} (lápides incluídas), numa fotografia só do banco.
      */
     public java.util.Map<String, ResumoDaTabela> conferir(FiltroDoVendedor filtro) {
+        return conferir(filtro, FORMATO_COMPLETO);
+    }
+
+    public java.util.Map<String, ResumoDaTabela> conferir(FiltroDoVendedor filtro, int formato) {
         Objects.requireNonNull(filtro, "filtro");
+        RegistroDeTabelas registro = registroDo(formato);
         return transacao.execute(estado -> {
             java.util.Map<String, ResumoDaTabela> resumos = new LinkedHashMap<>();
             for (TabelaSincronizavel tabela : registro.sincronizaveis()) {
@@ -122,7 +148,7 @@ public class ServicoDePull {
     }
 
     private LoteDoPull puxarNaTransacao(String textoDoCursor, int tamanhoDoLote, FiltroDoVendedor filtro,
-            List<TabelaSincronizavel> tabelas) {
+            List<TabelaSincronizavel> tabelas, RegistroDeTabelas registro) {
         long epoca = jdbc.queryForObject("SELECT epoca FROM corona.sync_estado", Long.class);
         CursorDeSync cursor = textoDoCursor == null || textoDoCursor.isBlank()
                 ? CursorDeSync.inicio(epoca)
@@ -156,7 +182,7 @@ public class ServicoDePull {
             LinhaDoPull ultima = lote.get(lote.size() - 1);
             proximo = new CursorDeSync(epoca, ultima.syncXid(), ultima.syncSeq());
         }
-        List<LinhaDoPull> entregues = filtro.expande() ? expandir(lote, filtro) : lote;
+        List<LinhaDoPull> entregues = filtro.expande() ? expandir(lote, filtro, registro) : lote;
         return new LoteDoPull(entregues, proximo.texto(), haMais);
     }
 
@@ -166,7 +192,7 @@ public class ServicoDePull {
      * normal é ignorada pelo app (a {@code version} não é maior). O lote pode passar do limite pelo tamanho da expansão,
      * que nunca é cortada no meio. Cada expandida passa também pela condição do filtro (segunda barreira).
      */
-    private List<LinhaDoPull> expandir(List<LinhaDoPull> lote, FiltroDoVendedor filtro) {
+    private List<LinhaDoPull> expandir(List<LinhaDoPull> lote, FiltroDoVendedor filtro, RegistroDeTabelas registro) {
         List<LinhaDoPull> entregues = new ArrayList<>(lote);
         java.util.Set<String> vistas = new java.util.HashSet<>();
         lote.forEach(l -> vistas.add(l.tabela() + ':' + l.id()));

@@ -112,13 +112,24 @@ public class SyncDoVendedorController {
                     + "(com códigos e fotos), vendas, pagamentos, conferências, cotações, categorias, semanas e o diretório "
                     + "de clientes da loja. Cursor vazio é a carga inicial. Aplique cada linha só se a version for maior "
                     + "que a guardada. 409 CURSOR_INVALIDO: refaça a carga inicial sem tocar no que aguarda envio. "
-                    + "Limite padrão 500 linhas, máximo 1000 (a expansão de uma maleta pode passar do limite).")
+                    + "Limite padrão 500 linhas, máximo 1000 (a expansão de uma maleta pode passar do limite). "
+                    + "formato: sem ele (ou 1) vale o pull do Corona Vendas 1.0.0, sem as tabelas e colunas do consignado ao cliente "
+                    + "e com o diretório de clientes da loja; 2 traz o consignado e só os clientes do representante. O mesmo vale "
+                    + "para /conferencia.")
     @GetMapping("/pull")
     public RespostaDoPull receber(@AuthenticationPrincipal UsuarioAutenticado quem,
             @RequestParam(required = false) String cursor, @RequestParam(required = false) Integer limite,
-            @RequestParam(required = false) String tabela) {
+            @RequestParam(required = false) String tabela, @RequestParam(required = false) Integer formato) {
+        int formatoDoPull = formato == null ? ServicoDePull.FORMATO_ANTIGO : formato;
         int tamanho = limite == null ? LIMITE_PADRAO : limite;
         if (tamanho < 1 || tamanho > ServicoDePull.LOTE_MAXIMO) {
+            throw new ErroDaApi(HttpStatus.BAD_REQUEST, CodigoErro.PEDIDO_INVALIDO);
+        }
+        if (formatoDoPull < ServicoDePull.FORMATO_ANTIGO || formatoDoPull > ServicoDePull.FORMATO_COMPLETO) {
+            throw new ErroDaApi(HttpStatus.BAD_REQUEST, CodigoErro.PEDIDO_INVALIDO);
+        }
+        if (tabela != null && (formatoDoPull < ServicoDePull.FORMATO_COMPLETO
+                && RegistroDeTabelas.TABELAS_DO_CONSIGNADO.contains(tabela))) {
             throw new ErroDaApi(HttpStatus.BAD_REQUEST, CodigoErro.PEDIDO_INVALIDO);
         }
         if (tabela != null && registro.sincronizavel(tabela).filter(t -> t.regra().declarada()).isEmpty()) {
@@ -127,7 +138,7 @@ public class SyncDoVendedorController {
         Instant agora = relogio.instant().truncatedTo(ChronoUnit.MILLIS);
         LoteDoPull lote;
         try {
-            lote = metricas.medirPull(() -> pull.puxar(cursor, tamanho, new FiltroPorVendedor(quem.vendedorId()), tabela));
+            lote = metricas.medirPull(() -> pull.puxar(cursor, tamanho, new FiltroPorVendedor(quem.vendedorId()), tabela, formatoDoPull));
         } catch (CursorInvalidoException e) {
             throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.CURSOR_INVALIDO);
         }
@@ -170,10 +181,13 @@ public class SyncDoVendedorController {
                     + "\"id:version\" (uma por linha, com quebra de linha). O app compara com o que guardou depois de "
                     + "receber tudo; havendo diferença, recarrega a tabela e avisa em /conferencia/diferencas.")
     @GetMapping("/conferencia")
-    public RespostaDaConferencia conferir(@AuthenticationPrincipal UsuarioAutenticado quem) {
+    public RespostaDaConferencia conferir(@AuthenticationPrincipal UsuarioAutenticado quem,
+            @RequestParam(required = false) Integer formato) {
+        int formatoDoPull = formato == null || formato < ServicoDePull.FORMATO_ANTIGO ? ServicoDePull.FORMATO_ANTIGO
+                : Math.min(formato, ServicoDePull.FORMATO_COMPLETO);
         Instant agora = relogio.instant().truncatedTo(ChronoUnit.MILLIS);
         List<TabelaConferida> tabelas = new ArrayList<>();
-        for (Map.Entry<String, ResumoDaTabela> e : pull.conferir(new FiltroPorVendedor(quem.vendedorId())).entrySet()) {
+        for (Map.Entry<String, ResumoDaTabela> e : pull.conferir(new FiltroPorVendedor(quem.vendedorId()), formatoDoPull).entrySet()) {
             if (registro.sincronizavel(e.getKey()).map(t -> t.regra().declarada()).orElse(false)) {
                 tabelas.add(new TabelaConferida(e.getKey(), e.getValue().quantidade(), e.getValue().resumo()));
             }
