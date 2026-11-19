@@ -47,10 +47,10 @@ const QUEM_DEVE: ExtraDoRelatorio = {
   chave: 'devedor',
   rotulo: 'Quem deve',
   tipo: 'escolha',
-  qualquer: 'Clientes e vendedores',
+  qualquer: 'Clientes e representantes',
   opcoes: [
     { valor: 'CLIENTE', rotulo: 'Só clientes' },
-    { valor: 'VENDEDOR', rotulo: 'Só vendedores' },
+    { valor: 'VENDEDOR', rotulo: 'Só representantes' },
   ],
 };
 
@@ -108,7 +108,7 @@ const LINHAS_DO_RESULTADO: ExtraDoRelatorio = {
     { valor: 'CUSTO', rotulo: 'Custo das peças vendidas' },
     { valor: 'COMISSOES', rotulo: 'Comissões' },
     { valor: 'PERDAS', rotulo: 'Perdas' },
-    { valor: 'COBRADO', rotulo: 'Cobrado do vendedor' },
+    { valor: 'COBRADO', rotulo: 'Cobrado do representante' },
     { valor: 'CAIXA', rotulo: 'Outras entradas e despesas da loja' },
   ],
 };
@@ -119,7 +119,7 @@ export const RELATORIOS_FINANCEIROS: Record<NomeDoRelatorioFinanceiro, Definicao
     grupo: 'financeiro',
     titulo: 'Resultado do período',
     explicacao:
-      'Quanto a loja ganhou ou perdeu no período: vendas, devoluções, custo das peças, comissões, perdas, o que foi cobrado dos vendedores e as despesas da loja. Escolha de que dia até que dia.',
+      'Quanto a loja ganhou ou perdeu no período: vendas, devoluções, custo das peças, comissões, perdas, o que foi cobrado dos representantes e as despesas da loja. Escolha de que dia até que dia.',
     filtros: ['periodo'],
     buscaRotulo: 'Buscar',
     colunas: [{ chave: 'tituloNaTela', titulo: 'Linha', tipo: 'texto' }, reais('valor', 'Valor')],
@@ -141,7 +141,7 @@ export const RELATORIOS_FINANCEIROS: Record<NomeDoRelatorioFinanceiro, Definicao
     colunas: [
       { chave: 'data', titulo: 'Dia', tipo: 'data' },
       { chave: 'descricao', titulo: 'O que é', tipo: 'texto' },
-      { chave: 'vendedor', titulo: 'Vendedor', tipo: 'texto' },
+      { chave: 'vendedor', titulo: 'Representante', tipo: 'texto' },
       { chave: 'produto', titulo: 'Peça', tipo: 'texto' },
       { chave: 'quantidade', titulo: 'Peças', tipo: 'inteiro' },
       { chave: 'custoUnitario', titulo: 'Custo de cada peça', tipo: 'dinheiro', soReal: true },
@@ -162,7 +162,7 @@ export const RELATORIOS_FINANCEIROS: Record<NomeDoRelatorioFinanceiro, Definicao
     explicacao:
       'Quanto cada peça deu de lucro no período: o que entrou, o custo das peças vendidas, o lucro e a margem. Escolha de que dia até que dia.',
     filtros: ['busca', 'vendedor', 'praca', 'categoria', 'periodo'],
-    buscaRotulo: 'Buscar por peça, código ou vendedor',
+    buscaRotulo: 'Buscar por peça, código ou representante',
     colunas: [
       { chave: 'fotoPrincipalHash', titulo: 'Foto', tipo: 'foto' },
       { chave: 'codigo', titulo: 'Código', tipo: 'texto' },
@@ -189,13 +189,13 @@ export const RELATORIOS_FINANCEIROS: Record<NomeDoRelatorioFinanceiro, Definicao
   'financeiro-lucro-vendedor': {
     nome: 'financeiro-lucro-vendedor',
     grupo: 'financeiro',
-    titulo: 'Lucro por vendedor',
+    titulo: 'Lucro por representante',
     explicacao:
-      'Quanto cada vendedor deixou de lucro no período: receita líquida menos o custo das peças e menos a comissão do acerto. Escolha de que dia até que dia.',
+      'Quanto cada representante deixou de lucro no período: receita líquida menos o custo das peças e menos a comissão do acerto. Escolha de que dia até que dia.',
     filtros: ['busca', 'vendedor', 'praca', 'periodo'],
-    buscaRotulo: 'Buscar por vendedor',
+    buscaRotulo: 'Buscar por representante',
     colunas: [
-      { chave: 'vendedor', titulo: 'Vendedor', tipo: 'texto' },
+      { chave: 'vendedor', titulo: 'Representante', tipo: 'texto' },
       { chave: 'praca', titulo: 'Praça', tipo: 'texto' },
       dinheiroDoLucro('receita', 'Receita líquida'),
       dinheiroDoLucro('custo', 'Custo das peças'),
@@ -220,20 +220,20 @@ export const RELATORIOS_FINANCEIROS: Record<NomeDoRelatorioFinanceiro, Definicao
     },
     notaDaCotacao: T.cotacao,
     nota: T.lucroNota,
-    itens: { um: 'vendedor', varios: 'vendedores' },
-    vazio: 'Nenhum vendedor com venda ou comissão neste período.',
+    itens: { um: 'representante', varios: 'representantes' },
+    vazio: 'Nenhum representante com venda ou comissão neste período.',
   },
   'financeiro-acertos': {
     nome: 'financeiro-acertos',
     grupo: 'financeiro',
-    titulo: 'Acertos por vendedor e semana',
+    titulo: 'Acertos por representante e semana',
     explicacao:
-      'Um acerto fechado por linha: quanto o vendedor vendeu, os descontos, o que voltou, a comissão, as faltas cobradas, o valor do acerto, quanto foi recebido e o que ficou devendo.',
+      'Um acerto fechado por linha: quanto o representante vendeu, os descontos, o que voltou, a comissão, as faltas cobradas, o valor do acerto, quanto foi recebido e o que ficou devendo.',
     filtros: ['busca', 'semana', 'vendedor', 'periodo'],
-    buscaRotulo: 'Buscar por vendedor',
+    buscaRotulo: 'Buscar por representante',
     colunas: [
       { chave: 'fechadoEm', titulo: 'Fechado em', tipo: 'dataHora' },
-      { chave: 'vendedor', titulo: 'Vendedor', tipo: 'texto' },
+      { chave: 'vendedor', titulo: 'Representante', tipo: 'texto' },
       { chave: 'semana', titulo: 'Semana', tipo: 'inteiro' },
       dinheiro('vendidoBruto', 'Vendido'),
       dinheiro('descontos', 'Descontos'),
@@ -260,7 +260,7 @@ export const RELATORIOS_FINANCEIROS: Record<NomeDoRelatorioFinanceiro, Definicao
       vendido: 'Vendido',
       descontos: 'Descontos concedidos',
       devolvido: 'Devolvido',
-      comissao: 'Comissão do vendedor',
+      comissao: 'Comissão do representante',
       faltas: 'Faltas cobradas',
       liquido: 'Valor dos acertos',
       recebido: 'Recebido nos acertos',
@@ -275,7 +275,7 @@ export const RELATORIOS_FINANCEIROS: Record<NomeDoRelatorioFinanceiro, Definicao
     grupo: 'financeiro',
     titulo: 'Faltas e pendências',
     explicacao:
-      'As peças que faltaram ou vieram com defeito nos acertos e o que aconteceu com cada uma: cobrada do vendedor, a loja assumiu, encontrada ou ainda em aberto.',
+      'As peças que faltaram ou vieram com defeito nos acertos e o que aconteceu com cada uma: cobrada do representante, a loja assumiu, encontrada ou ainda em aberto.',
     filtros: ['busca', 'semana', 'vendedor', 'periodo', 'situacao'],
     extras: [
       {
@@ -294,16 +294,16 @@ export const RELATORIOS_FINANCEIROS: Record<NomeDoRelatorioFinanceiro, Definicao
     situacoes: [
       { valor: '', rotulo: 'Todas' },
       { valor: 'ABERTA', rotulo: 'Em aberto' },
-      { valor: 'COBRADA', rotulo: 'Cobradas do vendedor' },
+      { valor: 'COBRADA', rotulo: 'Cobradas do representante' },
       { valor: 'ASSUMIDA_PELA_LOJA', rotulo: 'A loja assumiu' },
       { valor: 'ENCONTRADA', rotulo: 'Peças encontradas' },
       { valor: 'APROVADA', rotulo: 'Defeitos aprovados' },
       { valor: 'RECUSADA', rotulo: 'Defeitos recusados' },
     ],
-    buscaRotulo: 'Buscar por vendedor ou peça',
+    buscaRotulo: 'Buscar por representante ou peça',
     colunas: [
       { chave: 'semana', titulo: 'Semana', tipo: 'inteiro' },
-      { chave: 'vendedor', titulo: 'Vendedor', tipo: 'texto' },
+      { chave: 'vendedor', titulo: 'Representante', tipo: 'texto' },
       { chave: 'tipoNaTela', titulo: 'O que foi', tipo: 'texto' },
       { chave: 'produto', titulo: 'Peça', tipo: 'texto' },
       { chave: 'quantidade', titulo: 'Peças', tipo: 'inteiro' },
@@ -321,7 +321,7 @@ export const RELATORIOS_FINANCEIROS: Record<NomeDoRelatorioFinanceiro, Definicao
     rotulosDosTotais: {
       geral: 'Todas as pendências',
       abertas: 'Ainda em aberto',
-      cobradas: 'Cobradas do vendedor',
+      cobradas: 'Cobradas do representante',
       assumidas: 'A loja assumiu',
       encontradas: 'Peças encontradas',
     },
@@ -336,10 +336,10 @@ export const RELATORIOS_FINANCEIROS: Record<NomeDoRelatorioFinanceiro, Definicao
     explicacao:
       'Por peça de cada maleta de um acerto: quantas eram esperadas, quantas foram contadas (boas e com defeito) e quantas faltaram, com o valor da falta.',
     filtros: ['busca', 'semana', 'vendedor', 'periodo'],
-    buscaRotulo: 'Buscar por vendedor, peça ou referência',
+    buscaRotulo: 'Buscar por representante, peça ou referência',
     colunas: [
       { chave: 'semana', titulo: 'Semana', tipo: 'inteiro' },
-      { chave: 'vendedor', titulo: 'Vendedor', tipo: 'texto' },
+      { chave: 'vendedor', titulo: 'Representante', tipo: 'texto' },
       { chave: 'produto', titulo: 'Peça', tipo: 'texto' },
       { chave: 'esperado', titulo: 'Esperadas', tipo: 'inteiro' },
       { chave: 'contadoBoa', titulo: 'Contadas boas', tipo: 'inteiro' },
@@ -363,11 +363,11 @@ export const RELATORIOS_FINANCEIROS: Record<NomeDoRelatorioFinanceiro, Definicao
     grupo: 'financeiro',
     titulo: 'Parcelas a receber',
     explicacao:
-      'As parcelas que os clientes devem aos vendedores e o que os vendedores devem à loja: valor, o que já foi pago e o que falta.',
+      'As parcelas que os clientes devem aos representantes e o que os representantes devem à loja: valor, o que já foi pago e o que falta.',
     filtros: ['busca', 'vendedor', 'periodo', 'situacao'],
     extras: [QUEM_DEVE],
     situacoes: SITUACOES_DA_CONTA,
-    buscaRotulo: 'Buscar por cliente ou vendedor',
+    buscaRotulo: 'Buscar por cliente ou representante',
     colunas: COLUNAS_DA_CONTA,
     totaisDeValor: TOTAIS_DA_CONTA,
     rotulosDosTotais: {
@@ -407,16 +407,16 @@ export const RELATORIOS_FINANCEIROS: Record<NomeDoRelatorioFinanceiro, Definicao
     grupo: 'financeiro',
     titulo: 'Quem está devendo',
     explicacao:
-      'Só as parcelas que já venceram e ainda não foram pagas, de clientes e de vendedores, com os dias de atraso.',
+      'Só as parcelas que já venceram e ainda não foram pagas, de clientes e de representantes, com os dias de atraso.',
     filtros: ['busca', 'vendedor', 'periodo'],
     extras: [QUEM_DEVE],
-    buscaRotulo: 'Buscar por cliente ou vendedor',
+    buscaRotulo: 'Buscar por cliente ou representante',
     colunas: [
       { chave: 'vencimento', titulo: 'Venceu em', tipo: 'data' },
       { chave: 'diasDeAtraso', titulo: 'Dias de atraso', tipo: 'inteiro' },
       { chave: 'quemDeve', titulo: 'Quem', tipo: 'texto' },
       { chave: 'parte', titulo: 'Nome', tipo: 'texto' },
-      { chave: 'vendedor', titulo: 'Vendedor', tipo: 'texto' },
+      { chave: 'vendedor', titulo: 'Representante', tipo: 'texto' },
       { chave: 'parcelaNaTela', titulo: 'Parcela', tipo: 'texto' },
       reais('emAberto', 'Falta pagar'),
       COTACAO,
@@ -462,8 +462,8 @@ export const RELATORIOS_FINANCEIROS: Record<NomeDoRelatorioFinanceiro, Definicao
         tipo: 'escolha',
         qualquer: 'Todas',
         opcoes: [
-          { valor: 'RECEBIMENTO_VENDEDOR', rotulo: 'Recebido do vendedor' },
-          { valor: 'ACERTO_A_FAVOR_DO_VENDEDOR', rotulo: 'Pago ao vendedor no acerto' },
+          { valor: 'RECEBIMENTO_VENDEDOR', rotulo: 'Recebido do representante' },
+          { valor: 'ACERTO_A_FAVOR_DO_VENDEDOR', rotulo: 'Pago ao representante no acerto' },
           { valor: 'PAGAMENTO_FORNECEDOR', rotulo: 'Pago a fornecedor' },
           { valor: 'MANUAL', rotulo: 'Lançado por você' },
         ],
@@ -492,7 +492,7 @@ export const RELATORIOS_FINANCEIROS: Record<NomeDoRelatorioFinanceiro, Definicao
     grupo: 'financeiro',
     titulo: 'Recebimentos por forma de pagamento',
     explicacao:
-      'O que os vendedores repassaram à loja, separado em dinheiro, transferência e boleto. O estorno vem marcado e aparece negativo.',
+      'O que os representantes repassaram à loja, separado em dinheiro, transferência e boleto. O estorno vem marcado e aparece negativo.',
     filtros: ['busca', 'vendedor', 'periodo'],
     extras: [
       FORMA,
@@ -507,10 +507,10 @@ export const RELATORIOS_FINANCEIROS: Record<NomeDoRelatorioFinanceiro, Definicao
         ],
       },
     ],
-    buscaRotulo: 'Buscar por vendedor',
+    buscaRotulo: 'Buscar por representante',
     colunas: [
       { chave: 'recebidoEm', titulo: 'Recebido em', tipo: 'dataHora' },
-      { chave: 'vendedor', titulo: 'Vendedor', tipo: 'texto' },
+      { chave: 'vendedor', titulo: 'Representante', tipo: 'texto' },
       { chave: 'formaNaTela', titulo: 'Forma', tipo: 'texto' },
       { chave: 'momentoNaTela', titulo: 'Quando', tipo: 'texto' },
       reais('valor', 'Valor'),
@@ -536,14 +536,14 @@ export const RELATORIOS_FINANCEIROS: Record<NomeDoRelatorioFinanceiro, Definicao
   'financeiro-comissoes': {
     nome: 'financeiro-comissoes',
     grupo: 'financeiro',
-    titulo: 'Comissões por vendedor e semana',
+    titulo: 'Comissões por representante e semana',
     explicacao:
       'A comissão de cada acerto fechado, com o vendido em Guarani, a meta da comissão e o percentual que ela decidiu (30% ou 40%). A comissão é paga abatendo no acerto.',
     filtros: ['busca', 'semana', 'vendedor', 'periodo'],
-    buscaRotulo: 'Buscar por vendedor',
+    buscaRotulo: 'Buscar por representante',
     colunas: [
       { chave: 'fechadoEm', titulo: 'Fechado em', tipo: 'dataHora' },
-      { chave: 'vendedor', titulo: 'Vendedor', tipo: 'texto' },
+      { chave: 'vendedor', titulo: 'Representante', tipo: 'texto' },
       { chave: 'semana', titulo: 'Semana', tipo: 'inteiro' },
       { chave: 'vendidoEmGuarani', titulo: 'Vendido para a meta (Gs)', tipo: 'inteiro' },
       { chave: 'metaEmGuarani', titulo: 'Meta da comissão (Gs)', tipo: 'inteiro' },

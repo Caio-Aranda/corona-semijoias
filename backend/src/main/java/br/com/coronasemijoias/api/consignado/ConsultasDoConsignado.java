@@ -52,8 +52,17 @@ public class ConsultasDoConsignado {
     public record PecaComClienteLida(UUID remessaId, UUID produtoId, String produto, UUID notaId, int quantidade) {
     }
 
+    /**
+     * O cadastro do cliente para a dona (só leitura, §23.5): documento, quem indicou, como conheceu, comissão e se as três fotos
+     * já subiram (o hash fica no servidor; a foto sai pela rota da dona).
+     */
+    public record CadastroDoCliente(String telefone, String whatsapp, String endereco, String documento, String documentoTipo,
+            String indicadoPor, String comoConheceu, BigDecimal comissaoPercentual, String representante, boolean temFoto,
+            boolean temFotoDoDocumentoFrente, boolean temFotoDoDocumentoVerso) {
+    }
+
     public record SituacaoDoCliente(UUID clienteId, String nome, BigDecimal pendencia, List<NotaResumo> notas,
-            List<PecaComClienteLida> pecasComEle) {
+            List<PecaComClienteLida> pecasComEle, CadastroDoCliente cadastro) {
     }
 
     public record AlertaLido(UUID id, String tipo, UUID vendedorId, String registroTabela, UUID registroId, String detalhe,
@@ -203,7 +212,36 @@ public class ConsultasDoConsignado {
                 (rs, i) -> new PecaComClienteLida(rs.getObject(1, UUID.class), rs.getObject(2, UUID.class), rs.getString(3),
                         rs.getObject(4, UUID.class), rs.getInt(5)), clienteId);
         return new SituacaoDoCliente(clienteId, nome.get(0), debitos.pendenciaDoCliente(clienteId),
-                notas(null, null, null, clienteId, null), pecas);
+                notas(null, null, null, clienteId, null), pecas, cadastroDoCliente(clienteId));
+    }
+
+    private CadastroDoCliente cadastroDoCliente(UUID clienteId) {
+        return jdbc.query("""
+                SELECT c.telefone, c.whatsapp, c.endereco_logradouro, c.endereco_numero, c.endereco_bairro, c.endereco_cidade,
+                       c.endereco_uf, c.documento, c.documento_tipo, coalesce(i.nome, c.indicado_por_nome), c.como_conheceu,
+                       c.comissao_percentual, v.nome, c.foto_hash IS NOT NULL, c.foto_documento_frente_hash IS NOT NULL,
+                       c.foto_documento_verso_hash IS NOT NULL
+                  FROM corona.clientes c
+                  LEFT JOIN corona.clientes i ON i.id = c.indicado_por_cliente_id
+                  LEFT JOIN corona.vendedores v ON v.id = c.vendedor_responsavel_id
+                 WHERE c.id = ?""",
+                (rs, k) -> new CadastroDoCliente(rs.getString(1), rs.getString(2), enderecoEmTexto(rs.getString(3), rs.getString(4),
+                        rs.getString(5), rs.getString(6), rs.getString(7)), rs.getString(8), rs.getString(9), rs.getString(10),
+                        rs.getString(11), rs.getBigDecimal(12), rs.getString(13), rs.getBoolean(14), rs.getBoolean(15),
+                        rs.getBoolean(16)), clienteId).stream().findFirst().orElse(null);
+    }
+
+    /** "Rua, número, bairro, cidade - UF", só com o que existe. */
+    private static String enderecoEmTexto(String rua, String numero, String bairro, String cidade, String uf) {
+        String cidadeEUf = cidade == null || cidade.isBlank() ? (uf == null ? "" : uf)
+                : cidade + (uf == null || uf.isBlank() ? "" : " - " + uf);
+        List<String> partes = new ArrayList<>();
+        for (String p : new String[] {rua, numero, bairro, cidadeEUf}) {
+            if (p != null && !p.isBlank()) {
+                partes.add(p.trim());
+            }
+        }
+        return String.join(", ", partes);
     }
 
     // --- alertas ---

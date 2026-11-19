@@ -4,6 +4,28 @@ export type ClientOptions = {
     baseUrl: `${string}://${string}` | (string & {});
 };
 
+export type AcertoLido = {
+    acertadoEm?: string;
+    bruto?: string;
+    comissao?: string;
+    comissaoPercentual?: string;
+    estornado?: boolean;
+    ficouDevendo?: string;
+    id?: string;
+    itensDv?: number;
+    itensDx?: number;
+    itensVd?: number;
+    motivoDoEstorno?: string;
+    pendenciasAnteriores?: string;
+    saldoDoDebito?: string;
+    semana?: number;
+    totalAReceber?: string;
+    totalPago?: string;
+    valorDv?: string;
+    valorDx?: string;
+    valorVd?: string;
+};
+
 export type AlertaLido = {
     criadoEm?: string;
     detalhe?: string;
@@ -182,6 +204,21 @@ export type BoletoDoAcerto = {
 
 export type CadastroDeTeste = {
     nome: string;
+};
+
+export type CadastroDoCliente = {
+    comissaoPercentual?: string;
+    comoConheceu?: string;
+    documento?: string;
+    documentoTipo?: string;
+    endereco?: string;
+    indicadoPor?: string;
+    representante?: string;
+    telefone?: string;
+    temFoto?: boolean;
+    temFotoDoDocumentoFrente?: boolean;
+    temFotoDoDocumentoVerso?: boolean;
+    whatsapp?: string;
 };
 
 export type CalculoDaComissaoLinha = {
@@ -784,6 +821,13 @@ export type DefeitoDaPreviaDoFechamento = {
     produto?: ProdutoDaPreviaDoFechamento;
 };
 
+export type DetalheDaNota = {
+    acertos?: Array<AcertoLido>;
+    linhas?: Array<LinhaDaNotaLida>;
+    nota?: NotaResumo;
+    recibos?: Array<ReciboLido>;
+};
+
 export type Devolucao = {
     autorizacaoId?: string;
     canceladaEm?: string;
@@ -998,6 +1042,11 @@ export type FichaDaDona = {
     vendedorNome?: string;
 };
 
+export type FormaPaga = {
+    forma?: string;
+    valor?: string;
+};
+
 export type FornecedoresDaDonaControllerPedido = {
     cnpj?: string;
     contatoNome?: string;
@@ -1161,6 +1210,15 @@ export type LeituraDaDona = {
     quantidade?: number;
 };
 
+export type LeituraDoFechamento = {
+    concluidoEm?: string;
+    iniciadoEm?: string;
+    pecas?: Array<LinhaDaPeca>;
+    remessaId?: string;
+    situacaoDoFechamento?: string;
+    valores?: Valores;
+};
+
 export type LinhaAbaixoDoMinimo = {
     ativo?: boolean;
     categoria?: string;
@@ -1205,6 +1263,28 @@ export type LinhaDaCurva = {
     posicao?: number;
     produtoId?: string;
     referencia?: string;
+};
+
+export type LinhaDaNotaLida = {
+    dx?: number;
+    precoUnitario?: string;
+    produto?: string;
+    produtoId?: string;
+    remessaId?: string;
+};
+
+export type LinhaDaPeca = {
+    aindaComClientes?: Array<PecaComCliente>;
+    bipadas?: number;
+    comClientes?: number;
+    devolvidasALoja?: number;
+    devolvidasPelosClientes?: number;
+    diferenca?: number;
+    enviadas?: number;
+    esperadoNaMaleta?: number;
+    nome?: string;
+    produtoId?: string;
+    vendidas?: number;
 };
 
 export type LinhaDaVendaComAPeca = {
@@ -1867,6 +1947,19 @@ export type LinhaDoComputador = {
     versaoApp?: string;
 };
 
+export type LinhaDoFechamento = {
+    bipadas?: number;
+    comClientes?: number;
+    comQuem?: string;
+    devolvidasPelosClientes?: number;
+    diferenca?: number;
+    enviadas?: number;
+    esperadoNaMaleta?: number;
+    id?: string;
+    nome?: string;
+    vendidas?: number;
+};
+
 export type LinhaDoResultado = {
     categoriaId?: string;
     chave?: string;
@@ -1994,6 +2087,22 @@ export type NotaDeRemessaControllerSemana = {
     id?: string;
     inicio?: string;
     numero?: number;
+};
+
+export type NotaResumo = {
+    cliente?: string;
+    clienteId?: string;
+    dataCobranca?: string;
+    id?: string;
+    itensDx?: number;
+    numero?: string;
+    saidaEm?: string;
+    semana?: number;
+    semanaId?: string;
+    sequencia?: number;
+    situacao?: string;
+    valorDx?: string;
+    vendedorId?: string;
 };
 
 export type ObservacaoDoVendedorDados = {
@@ -2181,6 +2290,24 @@ export type ParcelaDoRestanteDaPrevia = {
     vencimento?: string;
 };
 
+export type PecaComCliente = {
+    cliente?: string;
+    clienteId?: string;
+    dataCobranca?: string;
+    notaId?: string;
+    quantidade?: number;
+    semana?: number;
+    sequencia?: number;
+};
+
+export type PecaComClienteLida = {
+    notaId?: string;
+    produto?: string;
+    produtoId?: string;
+    quantidade?: number;
+    remessaId?: string;
+};
+
 export type PecaDaPreviaDoFechamento = {
     contadoBoa?: number;
     contadoDefeito?: number;
@@ -2341,6 +2468,10 @@ export type PedidoDeLancamento = {
     id?: string;
     tipo?: string;
     valor?: string;
+};
+
+export type PedidoDeLeituras = {
+    leituras?: Array<ServicoDoFechamentoDaMaletaLeitura>;
 };
 
 export type PedidoDeLinha = {
@@ -2629,6 +2760,18 @@ export type RecebimentoNoAcerto = {
     forma?: string;
     id?: string;
     valor?: string;
+};
+
+export type ReciboLido = {
+    aAplicar?: string;
+    acertoId?: string;
+    estornado?: boolean;
+    formas?: Array<FormaPaga>;
+    id?: string;
+    pagoEm?: string;
+    semana?: number;
+    sequencia?: number;
+    total?: string;
 };
 
 export type ReferenciaDoVendedorPedido = {
@@ -3049,6 +3192,15 @@ export type RelatorioDeCadastroLinhaDoComputador = {
     total?: number;
 };
 
+export type RelatorioDeCadastroLinhaDoFechamento = {
+    itens?: Array<LinhaDoFechamento>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
 export type RelatorioDeCadastroLinhaPorVendedor = {
     itens?: Array<LinhaPorVendedor>;
     pagina?: number;
@@ -3268,6 +3420,10 @@ export type RespostaDaRemessa = {
     version?: number;
 };
 
+export type RespostaDasLeituras = {
+    novas?: number;
+};
+
 export type RespostaDeCodigo = {
     ativo?: boolean;
     codigo?: string;
@@ -3301,6 +3457,10 @@ export type RespostaDoHistoricoDeCusto = {
     custoAtual?: string;
     historico?: PaginaRespostaDaLinhaDeCusto;
     produto?: ComprasDaDonaControllerRespostaDaPeca;
+};
+
+export type RespostaDoInicio = {
+    fechamentoId?: string;
 };
 
 export type RespostaDoLogin = {
@@ -3397,6 +3557,20 @@ export type SemanaDoPainel = {
     situacao?: string;
 };
 
+export type SemanaDoRepresentante = {
+    abertaEm?: string;
+    comissao?: string;
+    fechadaEm?: string;
+    id?: string;
+    notas?: number;
+    numero?: number;
+    recebido?: string;
+    situacao?: string;
+    valorDx?: string;
+    valorVd?: string;
+    vendedorId?: string;
+};
+
 export type SemanasDaDonaControllerPedido = {
     fim: string;
     id?: string;
@@ -3456,10 +3630,29 @@ export type ServicoDeRecebimentosDoVendedorPedidoDeRecebimento = {
     vendedorId?: string;
 };
 
+export type ServicoDoFechamentoDaMaletaLeitura = {
+    id?: string;
+    produtoId?: string;
+    quantidade?: number;
+};
+
+export type SituacaoDoCliente = {
+    cadastro?: CadastroDoCliente;
+    clienteId?: string;
+    nome?: string;
+    notas?: Array<NotaResumo>;
+    pecasComEle?: Array<PecaComClienteLida>;
+    pendencia?: string;
+};
+
 export type Sobra = {
     contado?: number;
     esperado?: number;
     produtoId?: string;
+};
+
+export type TelasDoGestao = {
+    acertoDoVendedorVisivel?: boolean;
 };
 
 export type Tempo = {
@@ -3560,6 +3753,13 @@ export type ValorSubstituido = {
     id?: string;
     quando?: string;
     quemMudou?: string;
+};
+
+export type Valores = {
+    comissaoDosClientes?: string;
+    pendenciasAReceber?: string;
+    recebido?: string;
+    vd?: string;
 };
 
 export type VendaComAPeca = {
@@ -3747,6 +3947,135 @@ export type TrocarSenhaResponses = {
 };
 
 export type TrocarSenhaResponse = TrocarSenhaResponses[keyof TrocarSenhaResponses];
+
+export type BaixarFotoDoClienteData = {
+    body?: never;
+    path: {
+        id: string;
+        tipo: string;
+    };
+    query?: never;
+    url: '/api/clientes/{id}/fotos/{tipo}';
+};
+
+export type BaixarFotoDoClienteResponses = {
+    /**
+     * OK
+     */
+    200: string;
+};
+
+export type BaixarFotoDoClienteResponse = BaixarFotoDoClienteResponses[keyof BaixarFotoDoClienteResponses];
+
+export type LerTelasDoGestaoData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/configuracoes/telas';
+};
+
+export type LerTelasDoGestaoResponses = {
+    /**
+     * OK
+     */
+    200: TelasDoGestao;
+};
+
+export type LerTelasDoGestaoResponse = LerTelasDoGestaoResponses[keyof LerTelasDoGestaoResponses];
+
+export type VerSituacaoDoClienteDoConsignadoData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/consignado/clientes/{id}/situacao';
+};
+
+export type VerSituacaoDoClienteDoConsignadoResponses = {
+    /**
+     * OK
+     */
+    200: SituacaoDoCliente;
+};
+
+export type VerSituacaoDoClienteDoConsignadoResponse = VerSituacaoDoClienteDoConsignadoResponses[keyof VerSituacaoDoClienteDoConsignadoResponses];
+
+export type ListarNotasDoConsignadoData = {
+    body?: never;
+    path?: never;
+    query?: {
+        vendedorId?: string;
+        semanaId?: string;
+        situacao?: string;
+        clienteId?: string;
+        texto?: string;
+    };
+    url: '/api/consignado/notas';
+};
+
+export type ListarNotasDoConsignadoResponses = {
+    /**
+     * OK
+     */
+    200: Array<NotaResumo>;
+};
+
+export type ListarNotasDoConsignadoResponse = ListarNotasDoConsignadoResponses[keyof ListarNotasDoConsignadoResponses];
+
+export type VerNotaDoConsignadoData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/consignado/notas/{id}';
+};
+
+export type VerNotaDoConsignadoResponses = {
+    /**
+     * OK
+     */
+    200: DetalheDaNota;
+};
+
+export type VerNotaDoConsignadoResponse = VerNotaDoConsignadoResponses[keyof VerNotaDoConsignadoResponses];
+
+export type VerSemanaDoRepresentanteData = {
+    body?: never;
+    path: {
+        semanaId: string;
+    };
+    query?: never;
+    url: '/api/consignado/semanas/{semanaId}';
+};
+
+export type VerSemanaDoRepresentanteResponses = {
+    /**
+     * OK
+     */
+    200: SemanaDoRepresentante;
+};
+
+export type VerSemanaDoRepresentanteResponse = VerSemanaDoRepresentanteResponses[keyof VerSemanaDoRepresentanteResponses];
+
+export type ListarSemanasDoRepresentanteData = {
+    body?: never;
+    path: {
+        vendedorId: string;
+    };
+    query?: never;
+    url: '/api/consignado/vendedores/{vendedorId}/semanas';
+};
+
+export type ListarSemanasDoRepresentanteResponses = {
+    /**
+     * OK
+     */
+    200: Array<SemanaDoRepresentante>;
+};
+
+export type ListarSemanasDoRepresentanteResponse = ListarSemanasDoRepresentanteResponses[keyof ListarSemanasDoRepresentanteResponses];
 
 export type ListarAcertosData = {
     body?: never;
@@ -7430,6 +7759,27 @@ export type RelatorioDeMaletasEmAbertoEAtrasadasResponses = {
 
 export type RelatorioDeMaletasEmAbertoEAtrasadasResponse = RelatorioDeMaletasEmAbertoEAtrasadasResponses[keyof RelatorioDeMaletasEmAbertoEAtrasadasResponses];
 
+export type RelatorioDoFechamentoDaMaletaData = {
+    body?: never;
+    path?: never;
+    query: {
+        remessaId: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/maleta/fechamento';
+};
+
+export type RelatorioDoFechamentoDaMaletaResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDoFechamento;
+};
+
+export type RelatorioDoFechamentoDaMaletaResponse = RelatorioDoFechamentoDaMaletaResponses[keyof RelatorioDoFechamentoDaMaletaResponses];
+
 export type RelatorioDeMercadoriaPorVendedorData = {
     body?: never;
     path?: never;
@@ -9156,3 +9506,75 @@ export type ListarAparelhosDoVendedorResponses = {
 };
 
 export type ListarAparelhosDoVendedorResponse = ListarAparelhosDoVendedorResponses[keyof ListarAparelhosDoVendedorResponses];
+
+export type LerFechamentoDaMaletaData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/maletas/{id}/fechamento';
+};
+
+export type LerFechamentoDaMaletaResponses = {
+    /**
+     * OK
+     */
+    200: LeituraDoFechamento;
+};
+
+export type LerFechamentoDaMaletaResponse = LerFechamentoDaMaletaResponses[keyof LerFechamentoDaMaletaResponses];
+
+export type IniciarFechamentoDaMaletaData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/maletas/{id}/fechamento';
+};
+
+export type IniciarFechamentoDaMaletaResponses = {
+    /**
+     * Created
+     */
+    201: RespostaDoInicio;
+};
+
+export type IniciarFechamentoDaMaletaResponse = IniciarFechamentoDaMaletaResponses[keyof IniciarFechamentoDaMaletaResponses];
+
+export type ConcluirFechamentoDaMaletaData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/maletas/{id}/fechamento/concluir';
+};
+
+export type ConcluirFechamentoDaMaletaResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ConcluirFechamentoDaMaletaResponse = ConcluirFechamentoDaMaletaResponses[keyof ConcluirFechamentoDaMaletaResponses];
+
+export type RegistrarLeiturasDoFechamentoDaMaletaData = {
+    body: PedidoDeLeituras;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/maletas/{id}/fechamento/leituras';
+};
+
+export type RegistrarLeiturasDoFechamentoDaMaletaResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDasLeituras;
+};
+
+export type RegistrarLeiturasDoFechamentoDaMaletaResponse = RegistrarLeiturasDoFechamentoDaMaletaResponses[keyof RegistrarLeiturasDoFechamentoDaMaletaResponses];

@@ -47,7 +47,7 @@ describe('PDF da nota de remessa', () => {
       'US$ 36,35',
       'Gs. 224.000',
       'Dona',
-      'Vendedor: Maria Souza',
+      'Representante: Maria Souza',
       'Página 1 de 1',
     ]) {
       expect(pdf).toContain(
@@ -77,10 +77,10 @@ describe('PDF da nota de remessa', () => {
 
   it('maleta cancelada sai com a marca CANCELADA em destaque', () => {
     const pdf = texto(
-      gerarPdfDaNota(nota(2, { cancelada: true, motivoDoCancelamento: 'Erro de vendedor' })),
+      gerarPdfDaNota(nota(2, { cancelada: true, motivoDoCancelamento: 'Erro de representante' })),
     );
     expect(pdf).toContain('(CANCELADA)');
-    expect(pdf).toContain('Erro de vendedor');
+    expect(pdf).toContain('Erro de representante');
   });
 
   it('sem cotação do dia do envio não escreve Dólar nem Guarani', () => {

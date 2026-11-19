@@ -55,9 +55,9 @@ export const RELATORIOS_DE_DEVOLUCAO: Record<NomeDoRelatorioDeDevolucao, Definic
   'devolucao-por-motivo': {
     nome: 'devolucao-por-motivo',
     grupo: 'devolucoes',
-    titulo: 'Devoluções por vendedor e motivo',
+    titulo: 'Devoluções por representante e motivo',
     explicacao:
-      'Uma linha por devolução, com o vendedor, o cliente, o motivo e o valor. As canceladas aparecem marcadas e ficam fora do total.',
+      'Uma linha por devolução, com o representante, o cliente, o motivo e o valor. As canceladas aparecem marcadas e ficam fora do total.',
     filtros: [...FILTROS, 'situacao'],
     extras: [
       MOTIVO,
@@ -73,10 +73,10 @@ export const RELATORIOS_DE_DEVOLUCAO: Record<NomeDoRelatorioDeDevolucao, Definic
       },
     ],
     situacoes: SITUACOES_DAS_DEVOLUCOES,
-    buscaRotulo: 'Buscar por vendedor ou cliente',
+    buscaRotulo: 'Buscar por representante ou cliente',
     colunas: [
       { chave: 'devolvidaEm', titulo: 'Devolvida em', tipo: 'dataHora' },
-      { chave: 'vendedor', titulo: 'Vendedor', tipo: 'texto' },
+      { chave: 'vendedor', titulo: 'Representante', tipo: 'texto' },
       { chave: 'cliente', titulo: 'Cliente', tipo: 'texto' },
       { chave: 'motivoNaTela', titulo: 'Motivo', tipo: 'texto' },
       { chave: 'tipoNaTela', titulo: 'O que foi', tipo: 'texto' },
@@ -135,13 +135,13 @@ export const RELATORIOS_DE_DEVOLUCAO: Record<NomeDoRelatorioDeDevolucao, Definic
   'devolucao-por-vendedor': {
     nome: 'devolucao-por-vendedor',
     grupo: 'devolucoes',
-    titulo: 'Quanto cada vendedor devolveu do que vendeu',
+    titulo: 'Quanto cada representante devolveu do que vendeu',
     explicacao:
-      'Por vendedor: quanto vendeu, quanto o cliente devolveu e a porcentagem. Aparece "Acima do limite" quando passa do que você definiu em Garantia e limites. A troca conta como uma devolução e uma venda.',
+      'Por representante: quanto vendeu, quanto o cliente devolveu e a porcentagem. Aparece "Acima do limite" quando passa do que você definiu em Garantia e limites. A troca conta como uma devolução e uma venda.',
     filtros: [...FILTROS],
-    buscaRotulo: 'Buscar por vendedor',
+    buscaRotulo: 'Buscar por representante',
     colunas: [
-      { chave: 'vendedor', titulo: 'Vendedor', tipo: 'texto' },
+      { chave: 'vendedor', titulo: 'Representante', tipo: 'texto' },
       { chave: 'vendas', titulo: 'Vendas', tipo: 'inteiro' },
       { chave: 'vendido', titulo: 'Vendido', tipo: 'dinheiro', convertido: em('vendido') },
       { chave: 'devolucoes', titulo: 'Devoluções', tipo: 'inteiro' },
@@ -163,19 +163,19 @@ export const RELATORIOS_DE_DEVOLUCAO: Record<NomeDoRelatorioDeDevolucao, Definic
     rotulosDosTotais: {
       vendido: 'Vendido',
       devolvido: 'Devolvido',
-      'com-devolucao': 'Vendedores com devolução',
-      acima: 'Vendedores acima do limite',
+      'com-devolucao': 'Representantes com devolução',
+      acima: 'Representantes acima do limite',
     },
     notaDaCotacao: T.cotacao,
-    itens: { um: 'vendedor', varios: 'vendedores' },
-    vazio: 'Nenhum vendedor com venda ou devolução neste período.',
+    itens: { um: 'representante', varios: 'representantes' },
+    vazio: 'Nenhum representante com venda ou devolução neste período.',
   },
   'devolucao-defeitos': {
     nome: 'devolucao-defeitos',
     grupo: 'devolucoes',
     titulo: 'Peças que voltaram com defeito',
     explicacao:
-      'Uma linha por peça que o cliente devolveu com defeito, com quantas vezes, de quantos vendedores e o valor.',
+      'Uma linha por peça que o cliente devolveu com defeito, com quantas vezes, de quantos representantes e o valor.',
     filtros: [...FILTROS, 'categoria'],
     buscaRotulo: 'Buscar por peça ou código',
     colunas: [
@@ -184,7 +184,7 @@ export const RELATORIOS_DE_DEVOLUCAO: Record<NomeDoRelatorioDeDevolucao, Definic
       { chave: 'codigo', titulo: 'Código', tipo: 'texto' },
       { chave: 'pecas', titulo: 'Quantas voltaram', tipo: 'inteiro' },
       { chave: 'devolucoes', titulo: 'Devoluções', tipo: 'inteiro' },
-      { chave: 'vendedores', titulo: 'Vendedores', tipo: 'inteiro' },
+      { chave: 'vendedores', titulo: 'Representantes', tipo: 'inteiro' },
       { chave: 'valor', titulo: 'Valor', tipo: 'dinheiro', convertido: em('valor') },
       { chave: 'ultimaVez', titulo: 'Última vez', tipo: 'dataHora' },
       COTACAO,
@@ -207,10 +207,10 @@ export const RELATORIOS_DE_DEVOLUCAO: Record<NomeDoRelatorioDeDevolucao, Definic
       { valor: 'CANCELADAS', rotulo: 'Canceladas' },
       { valor: 'TODAS', rotulo: 'Todas' },
     ],
-    buscaRotulo: 'Buscar por vendedor ou cliente',
+    buscaRotulo: 'Buscar por representante ou cliente',
     colunas: [
       { chave: 'trocadaEm', titulo: 'Trocada em', tipo: 'dataHora' },
-      { chave: 'vendedor', titulo: 'Vendedor', tipo: 'texto' },
+      { chave: 'vendedor', titulo: 'Representante', tipo: 'texto' },
       { chave: 'cliente', titulo: 'Cliente', tipo: 'texto' },
       { chave: 'pecasQueVoltaram', titulo: 'Peças que voltaram', tipo: 'inteiro' },
       { chave: 'pecasQueSairam', titulo: 'Peças que saíram', tipo: 'inteiro' },
@@ -278,11 +278,11 @@ export const RELATORIOS_DE_DEVOLUCAO: Record<NomeDoRelatorioDeDevolucao, Definic
       { valor: 'CANCELADOS', rotulo: 'Cancelados' },
       { valor: 'TODOS', rotulo: 'Todos' },
     ],
-    buscaRotulo: 'Buscar por vendedor ou cliente',
+    buscaRotulo: 'Buscar por representante ou cliente',
     colunas: [
       { chave: 'geradoEm', titulo: 'Gerado em', tipo: 'dataHora' },
       { chave: 'cliente', titulo: 'Cliente', tipo: 'texto' },
-      { chave: 'vendedor', titulo: 'Vendedor', tipo: 'texto' },
+      { chave: 'vendedor', titulo: 'Representante', tipo: 'texto' },
       { chave: 'origemNaTela', titulo: 'De onde veio', tipo: 'texto' },
       { chave: 'valor', titulo: 'Crédito gerado', tipo: 'dinheiro', convertido: em('valor') },
       { chave: 'utilizado', titulo: 'Já usado', tipo: 'dinheiro', convertido: em('utilizado') },
@@ -328,10 +328,10 @@ export const RELATORIOS_DE_DEVOLUCAO: Record<NomeDoRelatorioDeDevolucao, Definic
         ],
       },
     ],
-    buscaRotulo: 'Buscar por vendedor ou cliente',
+    buscaRotulo: 'Buscar por representante ou cliente',
     colunas: [
       { chave: 'pagoEm', titulo: 'Quando', tipo: 'dataHora' },
-      { chave: 'vendedor', titulo: 'Vendedor', tipo: 'texto' },
+      { chave: 'vendedor', titulo: 'Representante', tipo: 'texto' },
       { chave: 'cliente', titulo: 'Cliente', tipo: 'texto' },
       { chave: 'motivoNaTela', titulo: 'Motivo', tipo: 'texto' },
       { chave: 'formaNaTela', titulo: 'Forma', tipo: 'texto' },
@@ -364,7 +364,7 @@ export const RELATORIOS_DE_DEVOLUCAO: Record<NomeDoRelatorioDeDevolucao, Definic
     grupo: 'devolucoes',
     titulo: 'Pedidos de autorização',
     explicacao:
-      'Os pedidos que os vendedores fizeram para devolver uma peça fora do prazo ou acima do valor que você aprova antes, e o que aconteceu com cada um.',
+      'Os pedidos que os representantes fizeram para devolver uma peça fora do prazo ou acima do valor que você aprova antes, e o que aconteceu com cada um.',
     filtros: [...FILTROS, 'situacao'],
     extras: [
       MOTIVO,
@@ -387,10 +387,10 @@ export const RELATORIOS_DE_DEVOLUCAO: Record<NomeDoRelatorioDeDevolucao, Definic
       { valor: 'NEGADA', rotulo: 'Negados' },
       { valor: 'VENCIDA', rotulo: 'Vencidos' },
     ],
-    buscaRotulo: 'Buscar por vendedor ou cliente',
+    buscaRotulo: 'Buscar por representante ou cliente',
     colunas: [
       { chave: 'pedidaEm', titulo: 'Pedido em', tipo: 'dataHora' },
-      { chave: 'vendedor', titulo: 'Vendedor', tipo: 'texto' },
+      { chave: 'vendedor', titulo: 'Representante', tipo: 'texto' },
       { chave: 'cliente', titulo: 'Cliente', tipo: 'texto' },
       { chave: 'tipoNaTela', titulo: 'Por que pediu', tipo: 'texto' },
       { chave: 'motivoNaTela', titulo: 'Motivo da devolução', tipo: 'texto' },

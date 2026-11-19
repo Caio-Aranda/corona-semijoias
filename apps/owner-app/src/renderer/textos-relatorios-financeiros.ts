@@ -7,7 +7,7 @@ import { ES_TEXTOS_DE_RELATORIOS_FINANCEIROS } from './idioma/es/relatorios-fina
 export const PT_TEXTOS_DE_RELATORIOS_FINANCEIROS = {
   grupoDoMenu: 'Relatórios financeiros',
   resultadoNota:
-    'A devolução abate o mês em que a venda foi feita; por isso o resultado de um mês pode mudar depois. O custo das peças é o da compra mais recente até o dia da venda; onde não há compra, vale o custo do cadastro (aparece avisado), que muda se o cadastro mudar. Perdas, cobrado e caixa são da loja: não se dividem por peça nem por vendedor.',
+    'A devolução abate o mês em que a venda foi feita; por isso o resultado de um mês pode mudar depois. O custo das peças é o da compra mais recente até o dia da venda; onde não há compra, vale o custo do cadastro (aparece avisado), que muda se o cadastro mudar. Perdas, cobrado e caixa são da loja: não se dividem por peça nem por representante.',
   lucroNota:
     'Receita líquida (vendas menos devoluções e trocas) menos o custo das peças vendidas. "Custo do cadastro" quer dizer que não havia compra registrada até a venda: é uma estimativa.',
   sinaisDaLinha: { SOMA: '(+) ', SUBTRAI: '(−) ', TOTAL: '= ', AVISO: '' } as Record<
@@ -27,7 +27,7 @@ export const PT_TEXTOS_DE_RELATORIOS_FINANCEIROS = {
   } as Record<string, string>,
   quemDeve: {
     CLIENTE: 'Cliente',
-    VENDEDOR: 'Vendedor',
+    VENDEDOR: 'Representante',
     FORNECEDOR: 'Fornecedor',
   } as Record<string, string>,
   tiposDaPendencia: {
@@ -38,7 +38,7 @@ export const PT_TEXTOS_DE_RELATORIOS_FINANCEIROS = {
   } as Record<string, string>,
   situacoesDaPendencia: {
     ABERTA: 'Em aberto',
-    COBRADA: 'Cobrada do vendedor',
+    COBRADA: 'Cobrada do representante',
     ASSUMIDA_PELA_LOJA: 'A loja assumiu',
     ENCONTRADA: 'Peça encontrada',
     APROVADA: 'Defeito aprovado',
@@ -50,8 +50,8 @@ export const PT_TEXTOS_DE_RELATORIOS_FINANCEIROS = {
   >,
   tiposDoCaixa: { ENTRADA: 'Entrada', SAIDA: 'Saída' } as Record<string, string>,
   origensDoCaixa: {
-    RECEBIMENTO_VENDEDOR: 'Recebido do vendedor',
-    ACERTO_A_FAVOR_DO_VENDEDOR: 'Pago ao vendedor no acerto',
+    RECEBIMENTO_VENDEDOR: 'Recebido do representante',
+    ACERTO_A_FAVOR_DO_VENDEDOR: 'Pago ao representante no acerto',
     PAGAMENTO_FORNECEDOR: 'Pago a fornecedor',
     MANUAL: 'Lançado por você',
   } as Record<string, string>,

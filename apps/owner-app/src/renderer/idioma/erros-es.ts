@@ -52,7 +52,7 @@ export const ERROS_EM_ESPANHOL: Record<string, string> = {
   SEMANA_SOBREPOSTA:
     'Estas fechas ya forman parte de otra semana. Elija días que no estén en otra semana.',
   CADASTRO_EM_USO:
-    'Este registro está en uso. Cambie la plaza o la restricción de los vendedores que la usan e intente de nuevo.',
+    'Este registro está en uso. Cambie la plaza o la restricción de los representantes que la usan e intente de nuevo.',
   ARQUIVO_TIPO_NAO_ACEITO:
     'Este tipo de archivo no se puede enviar. Envíe una foto (JPG, PNG o WebP) o un archivo PDF.',
   CODIGO_JA_USADO:
@@ -89,17 +89,18 @@ export const ERROS_EM_ESPANHOL: Record<string, string> = {
     'Esta maleta ya fue registrada con otros datos. Revise la lista de maletas antes de armar de nuevo.',
   REMESSA_NAO_EDITAVEL:
     'Esta maleta ya fue enviada y no se puede cambiar. Para corregir, haga una maleta nueva.',
-  VENDEDOR_NAO_RECEBE_MALETA: 'Este vendedor no puede recibir maleta ahora.',
-  LIMITE_DE_CONSIGNACAO_NAO_DEFINIDO: 'Defina el límite de este vendedor antes de armar la maleta.',
+  VENDEDOR_NAO_RECEBE_MALETA: 'Este representante no puede recibir maleta ahora.',
+  LIMITE_DE_CONSIGNACAO_NAO_DEFINIDO:
+    'Defina el límite de este representante antes de armar la maleta.',
   LIMITE_DE_CONSIGNACAO_EXCEDIDO:
-    'El valor de la maleta pasa el límite de consignación del vendedor.',
+    'El valor de la maleta pasa el límite de consignación del representante.',
   PECA_FORA_DA_MALETA: 'Esta pieza está desactivada o fue eliminada y no puede ir a la maleta.',
   DEVOLUCAO_MAIOR_QUE_O_SALDO:
     'Hay menos piezas en la maleta de lo que se informó. Revise la cantidad.',
   MALETA_JA_MOVIMENTADA:
     'Esta maleta ya tuvo piezas devueltas o vendidas y no se puede cancelar. Deshaga las devoluciones antes, si fue un error.',
   PECA_ESTA_EM_MALETA:
-    'Esta pieza todavía está con un vendedor en una maleta y no se puede eliminar. Reciba la devolución de las piezas antes.',
+    'Esta pieza todavía está con un representante en una maleta y no se puede eliminar. Reciba la devolución de las piezas antes.',
   DEVOLUCAO_NAO_PODE_SER_DESFEITA:
     'No se puede deshacer esta devolución porque las piezas ya salieron del stock de la tienda.',
   NOTA_SO_DEPOIS_DO_ENVIO:
@@ -117,7 +118,7 @@ export const ERROS_EM_ESPANHOL: Record<string, string> = {
   CONTAGEM_NAO_PODE_FECHAR:
     'No se puede cerrar este conteo porque el stock de una pieza quedaría menor que cero.',
   VENDA_NAO_ENCONTRADA: 'No encontramos esta venta. Actualice la pantalla e intente de nuevo.',
-  VENDEDOR_DESATIVADO: 'Este vendedor está desactivado. Hable con la dueña.',
+  VENDEDOR_DESATIVADO: 'Este representante está desactivado. Hable con la dueña.',
   VENDA_JA_REGISTRADA_DIFERENTE:
     'Esta venta ya fue registrada con otros datos. Revise sus ventas antes de registrar de nuevo.',
   VENDA_SEM_SALDO: 'No hay piezas suficientes en su maleta para esta venta.',
@@ -154,17 +155,18 @@ export const ERROS_EM_ESPANHOL: Record<string, string> = {
   RECEBIMENTO_JA_ESTORNADO: 'Este cobro ya fue anulado y no se puede cambiar.',
   CONTA_DO_VENDEDOR_NAO_ENCONTRADA:
     'No encontramos esta cuenta a cobrar. Actualice la pantalla e intente de nuevo.',
-  VENDEDOR_SEM_CONTA_EM_ABERTO: 'Este vendedor no tiene cuenta abierta. No hay nada para cobrar.',
+  VENDEDOR_SEM_CONTA_EM_ABERTO:
+    'Este representante no tiene cuenta abierta. No hay nada para cobrar.',
   RECEBIMENTO_DO_VENDEDOR_ACIMA_DO_EM_ABERTO:
-    'El valor pasa lo que el vendedor debe. Revise el valor.',
+    'El valor pasa lo que el representante debe. Revise el valor.',
   BOLETO_PAGO_PRECISA_SER_INTEIRO:
     'El boleto pagado tiene que ser del valor entero de la cuenta del boleto. Elija la cuenta del boleto y el valor total.',
   PAGAMENTO_DO_ACERTO_PASSA_DO_DEVIDO:
-    'El valor recibido pasa lo que el vendedor debe en este acerto. Revise los valores.',
+    'El valor recibido pasa lo que el representante debe en este acerto. Revise los valores.',
   DATA_DO_RESTANTE_OBRIGATORIA:
     'Elija la fecha de pago de lo que quedó debiendo y en cuántas cuotas.',
   PAGAMENTO_AO_VENDEDOR_INVALIDO:
-    'El pago al vendedor no coincide con el acerto. Pague el valor entero o déjelo de crédito para el próximo acerto.',
+    'El pago al representante no coincide con el acerto. Pague el valor entero o déjelo de crédito para el próximo acerto.',
   ESTORNO_DE_RECEBIMENTO_SO_DA_DONA:
     'Solo se puede anular el cobro el mismo día. Pídale a la dueña que lo anule.',
   PAGAMENTO_NA_VENDA_SO_PELO_ESTORNO_DA_VENDA:
@@ -175,16 +177,18 @@ export const ERROS_EM_ESPANHOL: Record<string, string> = {
   ACERTO_JA_REGISTRADO_DIFERENTE:
     'Este acerto ya fue registrado con otros datos. Revise la lista de acertos.',
   ACERTO_EM_ANDAMENTO:
-    'Este vendedor ya tiene un acerto en curso. Termine ese acerto antes de empezar otro.',
+    'Este representante ya tiene un acerto en curso. Termine ese acerto antes de empezar otro.',
   ACERTO_NAO_ESTA_EM_ANDAMENTO:
     'Este acerto ya terminó o fue deshecho. Abra la lista de acertos para ver cómo quedó.',
-  ACERTO_DA_SEMANA_JA_EXISTE: 'Este vendedor ya tiene acerto en esta semana. Elija otra semana.',
+  ACERTO_DA_SEMANA_JA_EXISTE:
+    'Este representante ya tiene acerto en esta semana. Elija otra semana.',
   SEMANA_FECHADA: 'Esta semana ya está cerrada. Elija una semana abierta.',
   SEMANA_NAO_ENCONTRADA: 'Registre la semana antes de iniciar el acerto.',
   SEM_MALETA_PARA_ACERTO: 'Usted no tiene maleta para acertar ahora. Hable con la dueña.',
   ENVIOS_AGUARDANDO:
     'Todavía hay ventas en esta computadora esperando ser enviadas. Conéctese a internet, espere que termine el envío e intente de nuevo.',
-  VENDEDOR_EM_ACERTO: 'Este vendedor está en acerto. Termine el acerto antes de enviar una maleta.',
+  VENDEDOR_EM_ACERTO:
+    'Este representante está en acerto. Termine el acerto antes de enviar una maleta.',
   LEITURA_DEIXA_CONTAGEM_NEGATIVA:
     'No se pueden quitar más piezas de las que se contaron. Revise el conteo.',
   DESISTENCIA_JA_REGISTRADA_DIFERENTE:
@@ -269,9 +273,9 @@ export const ERROS_EM_ESPANHOL: Record<string, string> = {
     'La dueña cambió esta computadora por otra. Use la computadora nueva para vender.',
   APARELHO_BLOQUEADO: 'La dueña desconectó esta computadora de la tienda. Hable con la dueña.',
   APARELHO_DE_OUTRA_PESSOA:
-    'Esta computadora ya la usa otro vendedor. Cada vendedor usa su propia computadora. Hable con la dueña.',
+    'Esta computadora ya la usa otro representante. Cada representante usa su propia computadora. Hable con la dueña.',
   APARELHO_NAO_PODE_SER_LIBERADO:
-    'Esta computadora fue bloqueada o cambiada y no puede volver a vender. Pídale al vendedor que entre en la computadora que va a usar y habilite esa.',
+    'Esta computadora fue bloqueada o cambiada y no puede volver a vender. Pídale al representante que entre en la computadora que va a usar y habilite esa.',
   APARELHO_NAO_ENCONTRADO:
     'No encontramos esta computadora. Actualice la pantalla e intente de nuevo.',
   CONTAS_A_PAGAR_JA_GERADAS:
@@ -320,7 +324,7 @@ export const ERROS_EM_ESPANHOL: Record<string, string> = {
   DEPENDE_DE_ENVIO_RECUSADO:
     'Esta venta depende de otro registro que no fue aceptado. La dueña ya fue avisada.',
   CLIENTE_DE_OUTRO_VENDEDOR:
-    'Este cliente lo atiende otro vendedor. Solo quien atiende al cliente cambia su registro. Hable con la dueña.',
+    'Este cliente lo atiende otro representante. Solo quien atiende al cliente cambia su registro. Hable con la dueña.',
   ENVIO_NAO_ENCONTRADO: 'No encontramos este envío. Actualice la pantalla e intente de nuevo.',
   ENVIO_JA_RESOLVIDO: 'Este envío ya fue resuelto. Actualice la pantalla para ver cómo quedó.',
   ENVIO_SEM_DADOS:

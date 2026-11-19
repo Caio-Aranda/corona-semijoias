@@ -307,7 +307,7 @@ describe('Produtos: ficha', () => {
     const u = await abrirFicha(m);
     expect(screen.getByLabelText('Preço de custo')).toHaveValue('10,00');
     expect(
-      screen.getByText('O custo só aparece neste aplicativo, nunca para o vendedor.'),
+      screen.getByText('O custo só aparece neste aplicativo, nunca para o representante.'),
     ).toBeInTheDocument();
     await u.clear(screen.getByLabelText('Nome'));
     await u.type(screen.getByLabelText('Nome'), 'Anel Novo');

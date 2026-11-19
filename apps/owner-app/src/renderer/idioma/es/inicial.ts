@@ -6,9 +6,9 @@ export const ES_TEXTOS_DA_INICIAL: NoMesmoFormato<typeof PT_TEXTOS_DA_INICIAL> =
   oQueFazer: '¿Qué quiere hacer?',
   atalhos: {
     painel: { nome: 'Panel de la semana', ajuda: 'ver lo que se envió, se devolvió y se vendió' },
-    montar: { nome: 'Armar maleta', ajuda: 'separar las piezas para el vendedor' },
+    montar: { nome: 'Armar maleta', ajuda: 'separar las piezas para el representante' },
     receber: { nome: 'Recibir compra', ajuda: 'dar entrada a las piezas que llegaron' },
-    acerto: { nome: 'Hacer acerto', ajuda: 'cerrar las cuentas con el vendedor' },
+    acerto: { nome: 'Hacer acerto', ajuda: 'cerrar las cuentas con el representante' },
     cadastrar: { nome: 'Registrar producto', ajuda: 'agregar una pieza nueva, con foto y código' },
     relatorios: { nome: 'Informes', ajuda: 'ver los números de la tienda' },
   },

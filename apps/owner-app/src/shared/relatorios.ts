@@ -33,6 +33,8 @@ export const NOMES_DOS_RELATORIOS = [
   'maleta-saldo',
   'maleta-mercadoria',
   'maleta-em-aberto',
+  // Fechamento da maleta (tarefa 9.4, §23.10): abre pela tela Fechamento da maleta, com a maleta já escolhida.
+  'maleta-fechamento',
   // Devolução e troca (tarefa 6.10): os sete relatórios da dona (a conferência tem tela própria).
   'devolucao-por-motivo',
   'devolucao-por-vendedor',

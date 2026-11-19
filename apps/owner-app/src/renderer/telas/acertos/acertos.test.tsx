@@ -26,7 +26,7 @@ const resumo = (extra: Record<string, unknown> = {}) => ({
   id: ID_ACERTO,
   status: 'EM_ACERTO',
   vendedorId: ID_VENDEDOR,
-  vendedorNome: 'Ana Vendedora',
+  vendedorNome: 'Ana Representante',
   semanaNumero: 45,
   maletas: 1,
   iniciadoEm: '2026-11-10T12:00:00Z',
@@ -55,7 +55,7 @@ describe('menu e tela inicial', () => {
 });
 
 describe('lista de acertos', () => {
-  it('mostra vendedor, semana e a situação em palavras da loja', async () => {
+  it('mostra representante, semana e a situação em palavras da loja', async () => {
     const m = montar({
       'acertos.listar': () => ({
         ok: true,
@@ -68,7 +68,7 @@ describe('lista de acertos', () => {
     });
     await abrir(m);
     const tabela = within(await screen.findByRole('table'));
-    expect(await tabela.findAllByText('Ana Vendedora')).toHaveLength(3);
+    expect(await tabela.findAllByText('Ana Representante')).toHaveLength(3);
     expect(tabela.getByText('Em acerto')).toBeInTheDocument();
     expect(tabela.getByText('Acertado')).toBeInTheDocument();
     expect(tabela.getByText('Desistido')).toBeInTheDocument();
@@ -90,11 +90,11 @@ describe('começar acerto', () => {
   async function aoComecar(m: ReturnType<typeof montar>) {
     const u = await abrir(m);
     await u.click(await screen.findByRole('button', { name: 'Começar acerto' }));
-    await u.selectOptions(await screen.findByLabelText('Vendedor'), ID_VENDEDOR);
+    await u.selectOptions(await screen.findByLabelText('Representante'), ID_VENDEDOR);
     return u;
   }
 
-  it('manda só o id (UUID da tela), o vendedor e a semana escolhida', async () => {
+  it('manda só o id (UUID da tela), o representante e a semana escolhida', async () => {
     const m = montar({ 'acertos.iniciar': () => ({ ok: true, dados: ficha(), criado: true }) });
     const u = await aoComecar(m);
     await u.click(screen.getByRole('button', { name: 'Mais opções' }));
@@ -135,33 +135,33 @@ describe('começar acerto', () => {
     expect(a).toBe(b);
   });
 
-  it('vendedor que já está em acerto: diz o que fazer', async () => {
+  it('representante que já está em acerto: diz o que fazer', async () => {
     const m = montar({
       'acertos.iniciar': () => ({
         ok: false,
         motivo: 'erro',
         status: 409,
         codigo: 'ACERTO_EM_ANDAMENTO',
-        mensagem: 'Este vendedor já tem um acerto em andamento.',
+        mensagem: 'Este representante já tem um acerto em andamento.',
       }),
     });
     const u = await aoComecar(m);
     await u.click(screen.getByRole('button', { name: 'Começar' }));
     expect(
-      await screen.findByText('Este vendedor já está em acerto. Abra o acerto dele na lista.'),
+      await screen.findByText('Este representante já está em acerto. Abra o acerto dele na lista.'),
     ).toBeInTheDocument();
   });
 
-  it('exige escolher o vendedor antes de começar', async () => {
+  it('exige escolher o representante antes de começar', async () => {
     const m = montar();
     const u = await abrir(m);
     await u.click(await screen.findByRole('button', { name: 'Começar acerto' }));
     await u.click(await screen.findByRole('button', { name: 'Começar' }));
-    expect(await screen.findByText('Escolha o vendedor.')).toBeInTheDocument();
+    expect(await screen.findByText('Escolha o representante.')).toBeInTheDocument();
     expect(chamadasDe(m, 'acertos.iniciar')).toHaveLength(0);
   });
 
-  it('avisa quando o vendedor não tem maleta com ele', async () => {
+  it('avisa quando o representante não tem maleta com ele', async () => {
     const m = montar({
       'maletas.emAberto': () => ({
         ok: true,
@@ -201,7 +201,7 @@ describe('contagem', () => {
       ...manipuladores,
     });
     const u = await abrir(m);
-    await u.click(await screen.findByRole('button', { name: /Abrir acerto de Ana Vendedora/ }));
+    await u.click(await screen.findByRole('button', { name: /Abrir acerto de Ana Representante/ }));
     await screen.findByRole('heading', { name: /Contagem/ });
     return { m, u };
   }
@@ -345,11 +345,11 @@ describe('contagem', () => {
     ).toBeInTheDocument();
   });
 
-  it('avisa de venda nova e de envios que o computador do vendedor ainda tem', async () => {
+  it('avisa de venda nova e de envios que o computador do representante ainda tem', async () => {
     await abrirContagem({ vendasQueChegaramDepoisDoInicio: 2, enviosAguardando: 3 });
     expect(await screen.findByText(/Chegou venda nova: confira a contagem/)).toBeInTheDocument();
     expect(
-      screen.getByText(/O computador do vendedor ainda tem 3 envios para mandar/),
+      screen.getByText(/O computador do representante ainda tem 3 envios para mandar/),
     ).toBeInTheDocument();
   });
 
@@ -376,7 +376,7 @@ describe('contagem', () => {
     });
     expect(screen.getByText('Sem foto')).toBeInTheDocument();
     expect(screen.getByText(/por Maria/)).toBeInTheDocument();
-    expect(screen.getByText(/computador do vendedor/)).toBeInTheDocument();
+    expect(screen.getByText(/computador do representante/)).toBeInTheDocument();
   });
 });
 
@@ -388,7 +388,7 @@ describe('desistir do acerto', () => {
       ...manipuladores,
     });
     const u = await abrir(m);
-    await u.click(await screen.findByRole('button', { name: /Abrir acerto de Ana Vendedora/ }));
+    await u.click(await screen.findByRole('button', { name: /Abrir acerto de Ana Representante/ }));
     await u.click(await screen.findByRole('button', { name: 'Desistir do acerto' }));
     return { m, u };
   }
@@ -398,16 +398,18 @@ describe('desistir do acerto', () => {
       'acertos.desistir': () => ({ ok: true, dados: ficha({ status: 'DESISTIDO' }), criado: true }),
     });
     expect(
-      screen.getByText(/As maletas voltam a ficar com o vendedor e nada de dinheiro é gravado/),
+      screen.getByText(
+        /As maletas voltam a ficar com o representante e nada de dinheiro é gravado/,
+      ),
     ).toBeInTheDocument();
     const janela = screen.getByRole('dialog');
     await u.click(within(janela).getByRole('button', { name: 'Desistir do acerto' }));
     expect(chamadasDe(m, 'acertos.desistir')).toHaveLength(0);
-    await u.type(within(janela).getByLabelText('Motivo'), 'O vendedor não veio');
+    await u.type(within(janela).getByLabelText('Motivo'), 'O representante não veio');
     await u.click(within(janela).getByRole('button', { name: 'Desistir do acerto' }));
     await waitFor(() => expect(chamadasDe(m, 'acertos.desistir')).toHaveLength(1));
     const p = ultima(m, 'acertos.desistir') as Record<string, unknown>;
-    expect(p).toMatchObject({ id: ID_ACERTO, motivo: 'O vendedor não veio' });
+    expect(p).toMatchObject({ id: ID_ACERTO, motivo: 'O representante não veio' });
     expect(ehUuid(p.comandoId)).toBe(true);
   });
 

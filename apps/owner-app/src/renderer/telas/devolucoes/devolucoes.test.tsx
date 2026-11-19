@@ -32,8 +32,8 @@ function montar(extras: Record<string, Manipulador> = {}, avisos: unknown[] = []
       ok: true,
       dados: {
         itens: [
-          { id: ID_VEND, nome: 'Joana Vendedora', ativo: true },
-          { id: ID_OUTRO_VEND, nome: 'Marta Vendedora', ativo: true },
+          { id: ID_VEND, nome: 'Joana Representante', ativo: true },
+          { id: ID_OUTRO_VEND, nome: 'Marta Representante', ativo: true },
         ],
       },
     }),
@@ -44,7 +44,7 @@ function montar(extras: Record<string, Manipulador> = {}, avisos: unknown[] = []
           ? [
               {
                 id: ID_PEDIDO,
-                vendedorNome: 'Joana Vendedora',
+                vendedorNome: 'Joana Representante',
                 clienteNome: 'Dora',
                 motivo: 'DEFEITO',
                 tipo: 'FORA_DO_PRAZO',
@@ -57,7 +57,7 @@ function montar(extras: Record<string, Manipulador> = {}, avisos: unknown[] = []
           : [
               {
                 id: ID_PEDIDO,
-                vendedorNome: 'Joana Vendedora',
+                vendedorNome: 'Joana Representante',
                 clienteNome: 'Dora',
                 motivo: 'ARREPENDIMENTO',
                 tipo: 'FORA_DO_PRAZO',
@@ -255,7 +255,7 @@ describe('menu das devoluções e créditos (tarefa 6.9)', () => {
     const m = montar({}, [
       aviso('DEVOLUCOES_PARA_AUTORIZAR', 'Há 1 pedido de autorização de devolução esperando você.'),
       aviso('DEVOLUCOES_PARA_REVISAR', 'Há 1 devolução para revisar.'),
-      aviso('MUITAS_DEVOLUCOES', 'Muitas devoluções de Joana Vendedora.'),
+      aviso('MUITAS_DEVOLUCOES', 'Muitas devoluções de Joana Representante.'),
     ]);
     const u = userEvent.setup();
     render(<App ponte={m.ponte} />);
@@ -304,7 +304,7 @@ describe('Devoluções para autorizar (tarefa 6.9)', () => {
     );
     expect(
       await screen.findByText(
-        'Reembolso aprovado. O vendedor pode registrar a devolução até 20/11/2026.',
+        'Reembolso aprovado. O representante pode registrar a devolução até 20/11/2026.',
       ),
     ).toBeInTheDocument();
   });
@@ -343,7 +343,7 @@ describe('Devoluções para revisar (tarefa 6.9)', () => {
     expect(
       await screen.findByText('Passou do prazo; Passou do limite da semana'),
     ).toBeInTheDocument();
-    expect(screen.getByText('Joana Vendedora')).toBeInTheDocument();
+    expect(screen.getByText('Joana Representante')).toBeInTheDocument();
     expect(ultima(m, 'devolucoes.listar')).toEqual({ situacao: 'EM_REVISAO', vendedorId: '' });
   });
 
@@ -360,11 +360,11 @@ describe('Devoluções para revisar (tarefa 6.9)', () => {
     expect(await screen.findByText('Devolução mantida.')).toBeInTheDocument();
   });
 
-  it('não aceitar pede o motivo e diz que vira pendência do vendedor', async () => {
+  it('não aceitar pede o motivo e diz que vira pendência do representante', async () => {
     const m = montar({ 'devolucoes.naoAceitar': () => ({ ok: true, dados: {} }) });
     const u = await abrir(m, 'Devoluções para revisar', 'Devoluções para revisar');
     await u.click(await screen.findByRole('button', { name: /Não aceitar a devolução de/ }));
-    expect(screen.getByText(/fica como pendência do vendedor/)).toBeInTheDocument();
+    expect(screen.getByText(/fica como pendência do representante/)).toBeInTheDocument();
     await u.click(screen.getByRole('button', { name: 'Não aceitar' }));
     expect(await screen.findByText('Diga por que a devolução não foi aceita.')).toBeInTheDocument();
     expect(ultima(m, 'devolucoes.naoAceitar')).toBeUndefined();
@@ -377,13 +377,15 @@ describe('Devoluções para revisar (tarefa 6.9)', () => {
       }),
     );
     expect(
-      await screen.findByText('Devolução não aceita. O valor ficou como pendência do vendedor.'),
+      await screen.findByText(
+        'Devolução não aceita. O valor ficou como pendência do representante.',
+      ),
     ).toBeInTheDocument();
   });
 });
 
 describe('Devoluções (tarefa 6.9)', () => {
-  it('mostra o que voltou em dinheiro e em crédito e filtra pela situação e pelo vendedor', async () => {
+  it('mostra o que voltou em dinheiro e em crédito e filtra pela situação e pelo representante', async () => {
     const m = montar();
     const u = await abrir(m, 'Devoluções', 'Devoluções');
     expect(await screen.findByText('Em dinheiro: R$ 50,00')).toBeInTheDocument();
@@ -393,7 +395,7 @@ describe('Devoluções (tarefa 6.9)', () => {
     expect(screen.getByText('Aceita')).toBeInTheDocument();
     expect(screen.getByText(/US\$ 14,55 · Gs\. 111\.732/)).toBeInTheDocument();
     expect(ultima(m, 'devolucoes.listar')).toEqual({ situacao: 'ACEITA', vendedorId: '' });
-    await u.selectOptions(screen.getByLabelText('Vendedor'), ID_OUTRO_VEND);
+    await u.selectOptions(screen.getByLabelText('Representante'), ID_OUTRO_VEND);
     await waitFor(() =>
       expect(ultima(m, 'devolucoes.listar')).toEqual({
         situacao: 'ACEITA',
@@ -452,7 +454,7 @@ describe('Devoluções (tarefa 6.9)', () => {
       await u.click(screen.getByRole('button', { name: /Escolher a venda de Dora/ }));
       expect(
         screen.getByText(
-          'A peça devolvida vai para a loja. Ela não volta para a maleta do vendedor.',
+          'A peça devolvida vai para a loja. Ela não volta para a maleta do representante.',
         ),
       ).toBeInTheDocument();
       await u.click(screen.getByRole('button', { name: 'Registrar devolução' }));
@@ -534,7 +536,7 @@ describe('Devoluções (tarefa 6.9)', () => {
       await u.selectOptions(screen.getByLabelText('Como o dinheiro foi devolvido'), 'PIX');
       await u.click(screen.getByRole('button', { name: 'Registrar devolução' }));
       expect(
-        await screen.findByText(/O vendedor pode pedir a autorização no computador dele/),
+        await screen.findByText(/O representante pode pedir a autorização no computador dele/),
       ).toBeInTheDocument();
       expect(screen.queryByText(/Peça autorização à dona/)).toBeNull();
     });
@@ -620,18 +622,18 @@ describe('Créditos dos clientes (tarefa 6.9)', () => {
     expect(ultima(m, 'creditos.listar')).toEqual({ situacao: 'ABERTO', vendedorId: '' });
   });
 
-  it('transferir exige escolher o vendedor, não oferece o de agora e manda um id novo', async () => {
+  it('transferir exige escolher o representante, não oferece o de agora e manda um id novo', async () => {
     const m = montar({ 'creditos.transferir': () => ({ ok: true, dados: {}, criado: true }) });
     const u = await abrir(m, 'Créditos dos clientes', 'Créditos dos clientes');
     await u.click(await screen.findByRole('button', { name: /Transferir o crédito de Dora/ }));
     expect(
-      screen.getByText(/O saldo inteiro, R\$ 30,00, passa para outro vendedor/),
+      screen.getByText(/O saldo inteiro, R\$ 30,00, passa para outro representante/),
     ).toBeInTheDocument();
-    const escolha = screen.getByLabelText('Passar para o vendedor');
-    expect(within(escolha).queryByRole('option', { name: 'Joana Vendedora' })).toBeNull();
+    const escolha = screen.getByLabelText('Passar para o representante');
+    expect(within(escolha).queryByRole('option', { name: 'Joana Representante' })).toBeNull();
     await u.click(screen.getAllByRole('button', { name: 'Transferir crédito' }).at(-1)!);
     expect(
-      await screen.findByText('Escolha o vendedor que vai receber o crédito.'),
+      await screen.findByText('Escolha o representante que vai receber o crédito.'),
     ).toBeInTheDocument();
     expect(ultima(m, 'creditos.transferir')).toBeUndefined();
     await u.selectOptions(escolha, ID_OUTRO_VEND);
@@ -655,7 +657,7 @@ describe('Garantia e limites (tarefa 6.9)', () => {
     expect(screen.getByLabelText('Não aprovar antes')).not.toBeChecked();
     expect(screen.getByLabelText('Valor a partir do qual você aprova antes')).toHaveValue('500,00');
     expect(
-      screen.getByLabelText('Avisar quando um vendedor devolver mais de (%) do que vendeu'),
+      screen.getByLabelText('Avisar quando um representante devolver mais de (%) do que vendeu'),
     ).toHaveValue('20');
   });
 
@@ -687,7 +689,7 @@ describe('Garantia e limites (tarefa 6.9)', () => {
     await u.type(dias, '10');
     await u.click(screen.getByLabelText('Sem limite'));
     await u.type(
-      screen.getByLabelText('Devolução em dinheiro por semana, por vendedor'),
+      screen.getByLabelText('Devolução em dinheiro por semana, por representante'),
       '1.234,50',
     );
     await u.click(screen.getByLabelText('Não aprovar antes'));

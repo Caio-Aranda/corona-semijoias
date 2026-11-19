@@ -24,16 +24,16 @@ export const PT_TEXTOS_DE_ACERTOS = {
   } as Record<string, string>,
   lista: {
     comecar: 'Começar acerto',
-    legenda: 'Acertos dos vendedores',
+    legenda: 'Acertos dos representantes',
     vazia: 'Nenhum acerto por aqui. Use "Começar acerto" para fazer o primeiro.',
     filtros: {
-      vendedor: 'Vendedor',
-      todosVendedores: 'Todos os vendedores',
+      vendedor: 'Representante',
+      todosVendedores: 'Todos os representantes',
       situacao: 'Situação',
       todasSituacoes: 'Todas as situações',
     },
     colunas: {
-      vendedor: 'Vendedor',
+      vendedor: 'Representante',
       semana: 'Semana',
       maletas: 'Maletas',
       comecou: 'Começou em',
@@ -44,15 +44,15 @@ export const PT_TEXTOS_DE_ACERTOS = {
     abrir: 'Abrir',
     abrirDe: (vendedor: string, semana: number | string) =>
       `Abrir acerto de ${vendedor}, semana ${semana}`,
-    daVendedora: 'Pedido pelo vendedor',
+    daVendedora: 'Pedido pelo representante',
   },
   comecar: {
     titulo: 'Começar acerto',
     ajuda:
-      'Escolha o vendedor. O acerto conta o que voltou na maleta dele e fecha o dinheiro da semana.',
-    vendedor: 'Vendedor',
-    escolhaVendedor: 'Escolha o vendedor',
-    vendedorAviso: 'Escolha o vendedor.',
+      'Escolha o representante. O acerto conta o que voltou na maleta dele e fecha o dinheiro da semana.',
+    vendedor: 'Representante',
+    escolhaVendedor: 'Escolha o representante',
+    vendedorAviso: 'Escolha o representante.',
     maisOpcoes: 'Mais opções',
     menosOpcoes: 'Menos opções',
     semana: 'Semana',
@@ -60,7 +60,7 @@ export const PT_TEXTOS_DE_ACERTOS = {
     semanaAjuda: 'Só escolha uma semana se o acerto for de outra semana.',
     nomeDaSemana: (numero: string) => `Semana ${numero}`,
     semMaleta:
-      'Este vendedor não tem maleta com ele: o acerto vai ter só vendas e devoluções antigas.',
+      'Este representante não tem maleta com ele: o acerto vai ter só vendas e devoluções antigas.',
     comecar: 'Começar',
     comecando: 'Começando...',
     voltar: 'Voltar para a lista',
@@ -70,7 +70,7 @@ export const PT_TEXTOS_DE_ACERTOS = {
     titulo: (vendedor: string, semana: number | string) =>
       `Acerto de ${vendedor}, semana ${semana}`,
     comecouEm: (quando: string) => `Começou em ${quando}.`,
-    pedidoPeloVendedor: 'O vendedor pediu este acerto.',
+    pedidoPeloVendedor: 'O representante pediu este acerto.',
     maletas: 'Maletas deste acerto',
     maleta: (numero: string) => (numero ? `Maleta ${numero}` : 'Maleta'),
     desistido: (motivo: string) => `Este acerto foi desfeito. Motivo: ${motivo}`,
@@ -106,7 +106,7 @@ export const PT_TEXTOS_DE_ACERTOS = {
         ? 'Chegou venda nova: confira a contagem. 1 venda chegou depois de começar o acerto.'
         : `Chegou venda nova: confira a contagem. ${n} vendas chegaram depois de começar o acerto.`,
     envios: (n: number) =>
-      `O computador do vendedor ainda tem ${n === 1 ? '1 envio' : `${n} envios`} para mandar. Peça para ele conectar à internet antes de fechar.`,
+      `O computador do representante ainda tem ${n === 1 ? '1 envio' : `${n} envios`} para mandar. Peça para ele conectar à internet antes de fechar.`,
     leituras: 'Últimas leituras',
     leitura: (
       peca: string,
@@ -117,7 +117,7 @@ export const PT_TEXTOS_DE_ACERTOS = {
       quando: string,
     ) =>
       `${peca}: ${qtd > 0 ? '+' : ''}${qtd} (${estado}), por ${nome || 'alguém'} ${onde}, em ${quando}`,
-    noComputadorDoVendedor: 'no computador do vendedor',
+    noComputadorDoVendedor: 'no computador do representante',
     noComputadorDaLoja: 'no computador da loja',
     semFoto: 'Sem foto',
     conferir: 'Conferir o acerto',
@@ -187,7 +187,7 @@ export const PT_TEXTOS_DE_ACERTOS = {
     naoAceitas: {
       titulo: 'O que não foi aceito',
       ajuda:
-        'Devoluções e créditos que você não aceitou. Escolha se o vendedor paga agora, depois ou se a loja assume.',
+        'Devoluções e créditos que você não aceitou. Escolha se o representante paga agora, depois ou se a loja assume.',
       decisao: (tipo: string, valor: string) =>
         tipo === 'CREDITO_SEM_SALDO_NAO_ACEITO'
           ? `O que fazer com o crédito sem saldo não aceito de ${valor}`
@@ -230,10 +230,10 @@ export const PT_TEXTOS_DE_ACERTOS = {
       descontos: 'Descontos',
       devolvido: 'Devolvido',
       vendidoLiquido: 'Vendido depois dos descontos',
-      comissao: 'Comissão do vendedor',
+      comissao: 'Comissão do representante',
       faltasCobradas: 'Faltas cobradas',
       liquido: 'Valor do acerto',
-      creditoUsado: 'Crédito do vendedor usado',
+      creditoUsado: 'Crédito do representante usado',
       aPagar: 'A pagar agora',
     },
     cotacao: {
@@ -245,8 +245,8 @@ export const PT_TEXTOS_DE_ACERTOS = {
   pagamento: {
     titulo: 'Pagamento do acerto',
     ajuda:
-      'Diga quanto o vendedor pagou agora. O que sobrar vira conta a receber do vendedor, em parcelas. Os números mudam conforme você digita.',
-    pagouAgora: 'Quanto o vendedor pagou agora',
+      'Diga quanto o representante pagou agora. O que sobrar vira conta a receber do representante, em parcelas. Os números mudam conforme você digita.',
+    pagouAgora: 'Quanto o representante pagou agora',
     dinheiro: 'Dinheiro',
     transferencia: 'Transferência (PIX)',
     ajudaDoValor: '',
@@ -255,12 +255,12 @@ export const PT_TEXTOS_DE_ACERTOS = {
       valor: 'Boleto: valor',
       vencimento: 'Boleto: vencimento',
       ajuda:
-        'O boleto vira uma conta do vendedor. Só entra no caixa quando você registrar que ele foi pago.',
+        'O boleto vira uma conta do representante. Só entra no caixa quando você registrar que ele foi pago.',
       semVencimento: 'Escolha o vencimento do boleto.',
     },
     devendo: {
       titulo: 'O que ficou devendo',
-      ajuda: 'O que o vendedor não pagou agora vira conta a receber, em parcelas.',
+      ajuda: 'O que o representante não pagou agora vira conta a receber, em parcelas.',
       parcelas: 'Em quantas parcelas',
       umaParcela: '1 parcela',
       parcelasDe: (n: number) => `${n} parcelas`,
@@ -270,17 +270,17 @@ export const PT_TEXTOS_DE_ACERTOS = {
         `Parcela ${numero}: ${valor}, vence em ${data}`,
     },
     antigas: {
-      titulo: 'Contas antigas do vendedor',
+      titulo: 'Contas antigas do representante',
       ajuda:
-        'Se o vendedor quiser, pague parcelas de acertos anteriores junto. Isto não entra no valor deste acerto.',
+        'Se o representante quiser, pague parcelas de acertos anteriores junto. Isto não entra no valor deste acerto.',
       conta: (numero: number, total: number, vencimento: string, emAberto: string) =>
         `Parcela ${numero} de ${total}, vence em ${vencimento}: falta pagar ${emAberto}`,
       pagar: (numero: number, total: number) => `Pagar agora a parcela ${numero} de ${total}`,
       como: (numero: number) => `Como pagou a parcela ${numero}`,
     },
     aFavor: {
-      titulo: 'Acerto a favor do vendedor',
-      deve: (valor: string) => `A loja deve ${valor} ao vendedor.`,
+      titulo: 'Acerto a favor do representante',
+      deve: (valor: string) => `A loja deve ${valor} ao representante.`,
       credito: 'Guardar como crédito para o próximo acerto',
       pagarAgora: 'Pagar agora',
       como: 'Como a loja paga',
@@ -289,8 +289,8 @@ export const PT_TEXTOS_DE_ACERTOS = {
       recebido: 'Recebido agora',
       boleto: 'Boleto',
       ficouDevendo: 'Ficou devendo',
-      creditoDisponivel: 'Crédito do vendedor disponível',
-      pagoAoVendedor: 'Pago ao vendedor agora',
+      creditoDisponivel: 'Crédito do representante disponível',
+      pagoAoVendedor: 'Pago ao representante agora',
     },
   },
   fechar: {
@@ -307,7 +307,7 @@ export const PT_TEXTOS_DE_ACERTOS = {
       FECHAMENTO_DESATUALIZADO:
         'Os números mudaram desde que você abriu. Confira o acerto de novo.',
       PAGAMENTO_DO_ACERTO_PASSA_DO_DEVIDO:
-        'O valor pago passa do que o vendedor deve. Confira os valores.',
+        'O valor pago passa do que o representante deve. Confira os valores.',
       DATA_DO_RESTANTE_OBRIGATORIA: 'Escolha a data de pagamento do que ficou devendo.',
       SEMANA_FECHADA:
         'A semana deste acerto já está fechada, por isso o acerto não pode ser fechado. Fale com o suporte.',
@@ -350,11 +350,11 @@ export const PT_TEXTOS_DE_ACERTOS = {
     totais: {
       recebido: 'Recebido no acerto',
       ficouDevendo: 'Ficou devendo',
-      pagoAoVendedor: 'Pago ao vendedor',
+      pagoAoVendedor: 'Pago ao representante',
     },
     recebimentos: {
-      legenda: 'O que o vendedor pagou',
-      vazia: 'O vendedor não pagou nada neste acerto.',
+      legenda: 'O que o representante pagou',
+      vazia: 'O representante não pagou nada neste acerto.',
       colunas: { forma: 'Forma', valor: 'Valor', quando: 'Quando', situacao: 'Situação' },
       formas: { DINHEIRO: 'Dinheiro', PIX: 'Transferência (PIX)', BOLETO: 'Boleto' } as Record<
         string,
@@ -388,19 +388,19 @@ export const PT_TEXTOS_DE_ACERTOS = {
   },
   pendencias: {
     titulo: 'Pendências do acerto',
-    ajuda: 'Peças que faltaram e valores que ficaram em aberto nos acertos dos vendedores.',
+    ajuda: 'Peças que faltaram e valores que ficaram em aberto nos acertos dos representantes.',
     cobrar:
-      'A pendência em aberto aparece no próximo acerto do vendedor, e é lá que ela é cobrada. Aqui você só resolve as que não vão ser cobradas.',
-    legenda: 'Pendências dos vendedores',
+      'A pendência em aberto aparece no próximo acerto do representante, e é lá que ela é cobrada. Aqui você só resolve as que não vão ser cobradas.',
+    legenda: 'Pendências dos representantes',
     vazia: 'Nenhuma pendência por aqui.',
     filtros: {
-      vendedor: 'Vendedor',
-      todosVendedores: 'Todos os vendedores',
+      vendedor: 'Representante',
+      todosVendedores: 'Todos os representantes',
       situacao: 'Situação',
       todasSituacoes: 'Todas as situações',
     },
     colunas: {
-      vendedor: 'Vendedor',
+      vendedor: 'Representante',
       peca: 'Peça',
       tipo: 'O que é',
       quantidade: 'Quantidade',
@@ -425,7 +425,7 @@ export const PT_TEXTOS_DE_ACERTOS = {
   comissao: {
     titulo: 'Comissão e meta',
     ajuda:
-      'A comissão do vendedor depende de quanto ele vendeu na semana. Se passar da meta, vale a comissão maior.',
+      'A comissão do representante depende de quanto ele vendeu na semana. Se passar da meta, vale a comissão maior.',
     meta: 'Meta da semana, em Guarani',
     metaAviso: 'Digite a meta em Guarani, só com números.',
     abaixo: 'Comissão abaixo da meta, em %',
@@ -441,7 +441,7 @@ export const PT_TEXTOS_DE_ACERTOS = {
   desistir: {
     titulo: 'Desistir do acerto',
     texto:
-      'As maletas voltam a ficar com o vendedor e nada de dinheiro é gravado. As leituras da contagem ficam guardadas.',
+      'As maletas voltam a ficar com o representante e nada de dinheiro é gravado. As leituras da contagem ficam guardadas.',
     motivo: 'Motivo',
     motivoAviso: 'Diga o motivo de desistir.',
     confirmar: 'Desistir do acerto',
@@ -449,9 +449,9 @@ export const PT_TEXTOS_DE_ACERTOS = {
   },
   /** Erros mais comuns, pelo código do servidor, com o que fazer. */
   erros: {
-    ACERTO_EM_ANDAMENTO: 'Este vendedor já está em acerto. Abra o acerto dele na lista.',
+    ACERTO_EM_ANDAMENTO: 'Este representante já está em acerto. Abra o acerto dele na lista.',
     ACERTO_DA_SEMANA_JA_EXISTE:
-      'Este vendedor já fez o acerto desta semana. Escolha outra semana em "Mais opções".',
+      'Este representante já fez o acerto desta semana. Escolha outra semana em "Mais opções".',
     SEMANA_FECHADA: 'Esta semana já está fechada. Escolha uma semana aberta.',
     PECA_NAO_ENCONTRADA: 'Esta peça não é deste acerto. Confira o código.',
     LEITURA_DEIXA_CONTAGEM_NEGATIVA:

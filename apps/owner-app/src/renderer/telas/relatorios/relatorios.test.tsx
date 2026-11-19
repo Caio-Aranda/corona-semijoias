@@ -147,7 +147,7 @@ describe('Relatórios de cadastro: menu e tabela', () => {
     render(<App ponte={m.ponte} />);
     const cartoes = await abrirAreaDoMenu(u, 'cadastros');
     for (const nome of [
-      'Vendedores: limite e situação',
+      'Representantes: limite e situação',
       'Clientes cadastrados',
       'Fornecedores cadastrados',
       'Produtos e custos',
@@ -207,14 +207,14 @@ describe('Relatórios de cadastro: menu e tabela', () => {
     }
   });
 
-  it('vendedores: faixa do limite e com restrição; fornecedores e clientes: filtros de vínculo', async () => {
+  it('representantes: faixa do limite e com restrição; fornecedores e clientes: filtros de vínculo', async () => {
     const m = montar({
       'relatorios.cadastros': () => ({
         ok: true,
         dados: { itens: [], total: 0, pagina: 0, tamanho: 20, totais: [] },
       }),
     });
-    const u = await abrir(m, 'Vendedores: limite e situação');
+    const u = await abrir(m, 'Representantes: limite e situação');
     await u.type(await screen.findByLabelText('Limite a partir de (R$)'), '200');
     await u.selectOptions(screen.getByLabelText('Com restrição'), 'Só com restrição');
     await waitFor(() =>
@@ -227,7 +227,10 @@ describe('Relatórios de cadastro: menu e tabela', () => {
     );
     await waitFor(() => expect(dosRelatorios(m).at(-1)).toMatchObject({ comProdutos: 'NAO' }));
     await abrirRelatorioPeloMenu(u, 'Clientes cadastrados');
-    await u.selectOptions(await screen.findByLabelText('Vendedor responsável'), 'Só sem vendedor');
+    await u.selectOptions(
+      await screen.findByLabelText('Representante responsável'),
+      'Só sem representante',
+    );
     await waitFor(() => expect(dosRelatorios(m).at(-1)).toMatchObject({ comVendedor: 'NAO' }));
   });
 
@@ -425,7 +428,7 @@ describe('Relatórios de cadastro: os outros relatórios', () => {
     expect(within(rodape).getByText('Produtos sem foto')).toBeInTheDocument();
   });
 
-  it('aniversariantes pede o mês de hoje e avisa que são só vendedores', async () => {
+  it('aniversariantes pede o mês de hoje e avisa que são só representantes', async () => {
     const m = montar({
       'relatorios.cadastros': () => ({
         ok: true,
@@ -456,7 +459,7 @@ describe('Relatórios de cadastro: os outros relatórios', () => {
     const linha = await screen.findByRole('row', { name: /Ana/ });
     // A data de calendário não anda de dia: 31/03/1990, sem deslocar para 30/03.
     expect(within(linha).getByText('31/03/1990')).toBeInTheDocument();
-    expect(screen.getByText(/Só vendedores/)).toBeInTheDocument();
+    expect(screen.getByText(/Só representantes/)).toBeInTheDocument();
     expect(typeof dosRelatorios(m)[0]!.mes).toBe('number');
   });
 

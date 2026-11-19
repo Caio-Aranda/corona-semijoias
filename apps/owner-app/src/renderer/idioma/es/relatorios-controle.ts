@@ -14,7 +14,7 @@ export const ES_TEXTOS_DE_RELATORIOS_DE_CONTROLE: NoMesmoFormato<
   computadores: {
     titulo: 'Computadoras y envíos',
     explicacao:
-      'Las computadoras de cada vendedor: cuándo recibieron datos de la tienda por última vez, cuándo enviaron las ventas, cuántas ventas esperan para ser enviadas y cuántos envíos necesitan su decisión.',
+      'Las computadoras de cada representante: cuándo recibieron datos de la tienda por última vez, cuándo enviaron las ventas, cuántas ventas esperan para ser enviadas y cuántos envíos necesitan su decisión.',
     nota: 'Para decidir un envío, abra Computadoras en el menú.',
     situacoes: {
       TODAS: 'Todas las computadoras',

@@ -3,7 +3,14 @@ import { useEffect, useState } from 'react';
 import type { PonteDoCorona } from '../../shared/ponte';
 import { RodapeDaCotacao } from '../nucleo/cotacao';
 import { temAlteracoesNaoSalvas } from '../nucleo/guarda-de-saida';
-import { MENU, rotuloDaRota, useRota, type Rota } from '../nucleo/rotas';
+import {
+  ehRotaDoAcertoAntigo,
+  menuDoGestao,
+  rotuloDaRota,
+  useRota,
+  type Rota,
+} from '../nucleo/rotas';
+import { useTelasDoGestao } from '../nucleo/telas-do-gestao';
 import { SeletorDeIdioma } from '../idioma/SeletorDeIdioma';
 import { TEXTOS } from '../textos';
 import { areaDaPagina, areaDaRota, rotuloDaArea, rotaDaArea } from '../nucleo/areas-de-relatorios';
@@ -40,6 +47,14 @@ import { TelaConferenciaDiaria } from './conciliacoes/TelaConferenciaDiaria';
 import { TelaConferenciaDoDinheiro } from './conciliacoes/TelaConferenciaDoDinheiro';
 import { TelaConferencia } from './devolucoes/TelaConferencia';
 import { TelaMaletas } from './maletas/TelaMaletas';
+import { TelaAvisosDoConsignado } from './consignado/TelaAvisosDoConsignado';
+import { TelaClientesDoConsignado } from './consignado/TelaClientesDoConsignado';
+import { TelaFechamentoDaMaleta } from './consignado/TelaFechamentoDaMaleta';
+import {
+  TelaNotasDoConsignado,
+  type FiltroInicialDasNotas,
+} from './consignado/TelaNotasDoConsignado';
+import { TelaSemanasDosRepresentantes } from './consignado/TelaSemanasDosRepresentantes';
 import { TelaMontarMaleta } from './maletas/TelaMontarMaleta';
 import { TelaProdutos } from './produtos/TelaProdutos';
 import { TelaDeRelatorio } from './relatorios/TelaDeRelatorio';
@@ -65,6 +80,9 @@ function Conteudo({
   aoAbrirAcerto,
   registrosParaAbrir,
   aoAbrirRegistros,
+  notasParaAbrir,
+  aoVerNotas,
+  aoAbrirNota,
 }: {
   rota: Rota;
   ponte: PonteDoCorona;
@@ -75,6 +93,9 @@ function Conteudo({
   aoAbrirAcerto: (id: string) => void;
   registrosParaAbrir: RegistrosParaAbrir | null;
   aoAbrirRegistros: (pedido: RegistrosParaAbrir) => void;
+  notasParaAbrir: { filtro: FiltroInicialDasNotas | null; nota: string | null };
+  aoVerNotas: (vendedorId: string, semanaId: string) => void;
+  aoAbrirNota: (notaId: string) => void;
 }) {
   switch (rota) {
     case 'inicio':
@@ -111,6 +132,22 @@ function Conteudo({
       return <TelaMaletas ponte={ponte} abrirId={maletaParaAbrir} />;
     case 'maletas/montar':
       return <TelaMontarMaleta ponte={ponte} />;
+    case 'maletas/fechamento':
+      return <TelaFechamentoDaMaleta ponte={ponte} usuario={nome} />;
+    case 'consignado/notas':
+      return (
+        <TelaNotasDoConsignado
+          ponte={ponte}
+          filtroInicial={notasParaAbrir.filtro}
+          notaInicial={notasParaAbrir.nota}
+        />
+      );
+    case 'consignado/semanas':
+      return <TelaSemanasDosRepresentantes ponte={ponte} aoVerNotas={aoVerNotas} />;
+    case 'consignado/clientes':
+      return <TelaClientesDoConsignado ponte={ponte} aoAbrirNota={aoAbrirNota} />;
+    case 'consignado/avisos':
+      return <TelaAvisosDoConsignado ponte={ponte} />;
     case 'painel/semana':
       return (
         <TelaPainelSemanal
@@ -217,7 +254,17 @@ function Conteudo({
 
 /** Cabeçalho, menu lateral, a tela escolhida e a linha da cotação do dia no rodapé. */
 export function Estrutura({ ponte, nome, aoSair }: EstruturaProps) {
-  const [rota, irPara] = useRota();
+  const [rotaPedida, irPara] = useRota();
+  const { acertoDoVendedorVisivel } = useTelasDoGestao();
+  // O acerto antigo da §7.4 está escondido: quem chega nele pelo endereço cai no início.
+  const rota: Rota =
+    !acertoDoVendedorVisivel && ehRotaDoAcertoAntigo(rotaPedida) ? 'inicio' : rotaPedida;
+  const menu = menuDoGestao(acertoDoVendedorVisivel);
+  // Notas do consignado pedidas pelas semanas ou pela ficha do cliente: valem só para a tela aberta.
+  const [notasParaAbrir, setNotasParaAbrir] = useState<{
+    filtro: FiltroInicialDasNotas | null;
+    nota: string | null;
+  }>({ filtro: null, nota: null });
   // Menu escolhido com alterações por salvar: pergunta antes de sair da tela.
   const [destino, setDestino] = useState<Rota | null>(null);
   // Maleta pedida por um relatório: a tela Maletas abre a ficha dela; ao sair da tela, esquece.
@@ -230,6 +277,7 @@ export function Estrutura({ ponte, nome, aoSair }: EstruturaProps) {
   const [registrosParaAbrir, setRegistrosParaAbrir] = useState<RegistrosParaAbrir | null>(null);
   useEffect(() => {
     if (rota !== 'acertos/lista') setAcertoParaAbrir(null);
+    if (rota !== 'consignado/notas') setNotasParaAbrir({ filtro: null, nota: null });
     if (!rota.startsWith('relatorios/')) setRegistrosParaAbrir(null);
   }, [rota]);
   return (
@@ -246,7 +294,7 @@ export function Estrutura({ ponte, nome, aoSair }: EstruturaProps) {
       />
       <div className="gestao-corpo">
         <MenuLateral
-          grupos={MENU}
+          grupos={menu}
           atual={areaDaRota(rota) ? rotaDaArea(areaDaRota(rota)!) : rota}
           rotulo={TEXTOS.menu.rotulo}
           aoEscolher={(chave) =>
@@ -274,8 +322,18 @@ export function Estrutura({ ponte, nome, aoSair }: EstruturaProps) {
             }}
             acertoParaAbrir={acertoParaAbrir}
             aoAbrirAcerto={(id) => {
+              if (!acertoDoVendedorVisivel) return;
               setAcertoParaAbrir(id);
               irPara('acertos/lista');
+            }}
+            notasParaAbrir={notasParaAbrir}
+            aoVerNotas={(vendedorId, semanaId) => {
+              setNotasParaAbrir({ filtro: { vendedorId, semanaId }, nota: null });
+              irPara('consignado/notas');
+            }}
+            aoAbrirNota={(notaId) => {
+              setNotasParaAbrir({ filtro: null, nota: notaId });
+              irPara('consignado/notas');
             }}
             registrosParaAbrir={registrosParaAbrir}
             aoAbrirRegistros={(pedido) => {

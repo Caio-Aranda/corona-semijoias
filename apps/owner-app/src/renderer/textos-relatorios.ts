@@ -17,7 +17,7 @@ export const PT_TEXTOS_RELATORIOS = {
     categoria: 'Categoria',
     fornecedor: 'Fornecedor',
     praca: 'Praça',
-    vendedor: 'Vendedor',
+    vendedor: 'Representante',
     restricao: 'Restrição',
     de: 'De',
     ate: 'Até',
@@ -71,7 +71,10 @@ export const PT_TEXTOS_RELATORIOS = {
     FORNECEDOR: 'Código do fornecedor',
     EAN13: 'Código de barras',
   } as Record<string, string>,
-  tiposDeAniversariante: { VENDEDOR: 'Vendedor', CLIENTE: 'Cliente' } as Record<string, string>,
+  tiposDeAniversariante: { VENDEDOR: 'Representante', CLIENTE: 'Cliente' } as Record<
+    string,
+    string
+  >,
   alteracoesSemImportacao:
     'Mostra o que foi cadastrado e alterado, e quem fez. O resultado das importações em massa está no relatório "Resultado das importações".',
   importacoesNota:

@@ -49,7 +49,7 @@ function colunasDoVendido(dataDaCotacao?: string): ColunaDoRelatorio[] {
 }
 
 const FILTROS_DE_VENDAS = ['busca', 'vendedor', 'praca', 'categoria', 'periodo'] as const;
-const BUSCA = 'Buscar por vendedor, cliente ou produto';
+const BUSCA = 'Buscar por representante, cliente ou produto';
 
 function agrupado(
   nome: NomeDoRelatorioDeVendas,
@@ -78,7 +78,7 @@ function agrupado(
 
 const COLUNAS_DA_VENDA: ColunaDoRelatorio[] = [
   { chave: 'vendidaEm', titulo: 'Vendida em', tipo: 'dataHora' },
-  { chave: 'vendedor', titulo: 'Vendedor', tipo: 'texto' },
+  { chave: 'vendedor', titulo: 'Representante', tipo: 'texto' },
   { chave: 'praca', titulo: 'Praça', tipo: 'texto' },
   { chave: 'cliente', titulo: 'Cliente', tipo: 'texto' },
   { chave: 'pecas', titulo: 'Peças', tipo: 'inteiro' },
@@ -137,18 +137,18 @@ export const RELATORIOS_DE_VENDAS: Record<NomeDoRelatorioDeVendas, DefinicaoDeRe
   },
   'vendas-por-vendedor': agrupado(
     'vendas-por-vendedor',
-    'Vendas por vendedor',
-    'Quanto cada vendedor vendeu: vendas, peças, vendido, devolvido, vendido líquido e valor médio por venda.',
+    'Vendas por representante',
+    'Quanto cada representante vendeu: vendas, peças, vendido, devolvido, vendido líquido e valor médio por venda.',
     [
-      { chave: 'nome', titulo: 'Vendedor', tipo: 'texto' },
+      { chave: 'nome', titulo: 'Representante', tipo: 'texto' },
       { chave: 'detalhe', titulo: 'Praça', tipo: 'texto' },
     ],
-    { um: 'vendedor', varios: 'vendedores' },
+    { um: 'representante', varios: 'representantes' },
   ),
   'vendas-por-praca': agrupado(
     'vendas-por-praca',
     'Vendas por praça',
-    'Quanto vendeu cada praça (a praça do vendedor).',
+    'Quanto vendeu cada praça (a praça do representante).',
     [{ chave: 'nome', titulo: 'Praça', tipo: 'texto' }],
     { um: 'praça', varios: 'praças' },
   ),
@@ -188,10 +188,10 @@ export const RELATORIOS_DE_VENDAS: Record<NomeDoRelatorioDeVendas, DefinicaoDeRe
   ),
   'vendas-ranking-vendedores': agrupado(
     'vendas-ranking-vendedores',
-    'Ranking de vendedores',
-    'Os vendedores do que mais vendeu para o que menos vendeu, pelo vendido líquido.',
-    [POSICAO, { chave: 'nome', titulo: 'Vendedor', tipo: 'texto' }],
-    { um: 'vendedor', varios: 'vendedores' },
+    'Ranking de representantes',
+    'Os representantes do que mais vendeu para o que menos vendeu, pelo vendido líquido.',
+    [POSICAO, { chave: 'nome', titulo: 'Representante', tipo: 'texto' }],
+    { um: 'representante', varios: 'representantes' },
   ),
   'vendas-ranking-pecas': agrupado(
     'vendas-ranking-pecas',
@@ -208,9 +208,9 @@ export const RELATORIOS_DE_VENDAS: Record<NomeDoRelatorioDeVendas, DefinicaoDeRe
   'vendas-ticket-medio': agrupado(
     'vendas-ticket-medio',
     'Valor médio por venda',
-    'Os vendedores do maior para o menor valor médio por venda (vendido líquido dividido pelo número de vendas).',
-    [{ chave: 'nome', titulo: 'Vendedor', tipo: 'texto' }],
-    { um: 'vendedor', varios: 'vendedores' },
+    'Os representantes do maior para o menor valor médio por venda (vendido líquido dividido pelo número de vendas).',
+    [{ chave: 'nome', titulo: 'Representante', tipo: 'texto' }],
+    { um: 'representante', varios: 'representantes' },
   ),
   'vendas-curva-abc': {
     nome: 'vendas-curva-abc',

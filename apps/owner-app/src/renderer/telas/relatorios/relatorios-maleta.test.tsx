@@ -143,9 +143,9 @@ describe('Relatórios da maleta', () => {
     render(<App ponte={m.ponte} />);
     const cartoes = await abrirAreaDoMenu(u, 'maletas');
     for (const t of [
-      'Maletas por vendedor e semana',
-      'O que ainda está com o vendedor, peça a peça',
-      'Mercadoria com cada vendedor',
+      'Maletas por representante e semana',
+      'O que ainda está com o representante, peça a peça',
+      'Mercadoria com cada representante',
       'Maletas em aberto e atrasadas',
       'Reposições',
     ]) {
@@ -203,7 +203,7 @@ describe('Relatórios da maleta', () => {
     expect(csv).toContain('cotação do Banco Central do dia do envio');
   });
 
-  it('mercadoria com cada vendedor mostra o aviso de limite e atraso em palavras', async () => {
+  it('mercadoria com cada representante mostra o aviso de limite e atraso em palavras', async () => {
     const m = montar({
       'relatorios.cadastros': () => ({
         ok: true,
@@ -229,7 +229,7 @@ describe('Relatórios da maleta', () => {
         },
       }),
     });
-    await abrir(m, 'Mercadoria com cada vendedor');
+    await abrir(m, 'Mercadoria com cada representante');
     expect(await screen.findByText('Tem maleta atrasada; Acima do limite')).toBeInTheDocument();
   });
 });

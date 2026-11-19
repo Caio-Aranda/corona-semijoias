@@ -1525,3 +1525,39 @@ O Corona Gestão segue a parte 20: **espanhol (padrão) e português**, com os b
 | Inativar / Reativar | Inactivar / Reactivar |
 
 O que o **servidor** monta em português (avisos da tela inicial, textos de campo recusado, algumas linhas de relatório) continua como a API manda; as mensagens de erro por código têm texto em espanhol. As planilhas de produtos e de compra aceitam os títulos de coluna nos dois idiomas.
+
+## Corona Gestão: Representante e o consignado ao cliente (tarefa 9.4; §23 e ADR-0016)
+
+Estas linhas valem **sobre** as que dizem "na tela, sempre vendedor" (acima) **no Corona Gestão**. No Corona Vendas valem as linhas da tarefa 9.2. No código e no banco os nomes técnicos continuam (`vendedor`, `vendedores`, `VENDEDOR`, `vendedorId`).
+
+| Antes | Agora, na tela do Corona Gestão | Observação |
+| --- | --- | --- |
+| vendedor, vendedora | **Representante** | Quem usa o Corona Vendas e atende os clientes da praça. Vale em todo o menu, nas telas, nos relatórios, nos arquivos (PDF, Excel, CSV) e nas mensagens. Plural: **Representantes**. Em espanhol, **representante** / **representantes**. |
+| Pessoas → Vendedores | **Pessoas → Representantes** | |
+| Vendedor (filtro, coluna) | **Representante** | |
+| cliente (do vendedor) | **Cliente** | Quem pega peças da maleta em consignado para revender. Não acessa o sistema. Cada representante tem a sua lista de clientes. |
+
+**Menu novo (Corona Gestão)**
+
+| Onde | Texto (pt) | Texto (es) | Para que serve |
+| --- | --- | --- | --- |
+| Maletas | **Fechamento da maleta** | Cierre de la maleta | A dona lê o código de cada peça que voltou; o relatório mostra enviadas, devolvidas pelos clientes, vendidas, ainda com clientes (e com quem), **lidas na volta** e **diferença**, com o valor vendido, a comissão dos clientes, o recebido e as pendências a receber. Sai em PDF, Excel e CSV. |
+| Consignado | **Notas dos clientes** | Notas de los clientes | Notas, acertos e recibos dos clientes. Só leitura. |
+| Consignado | **Semanas dos representantes** | Semanas de los representantes | Semanas de cada representante, com notas, valor DX, VD, comissão e recebido. |
+| Consignado | **Clientes dos representantes** | Clientes de los representantes | Ficha do cliente (endereço, documento, indicado por, como conheceu, comissão, quanto deve, peças com ele, notas) e as três fotos. |
+| Consignado | **Avisos do consignado** | Avisos del consignado | O que o balcão fez e o sistema aceitou, mas a dona deve olhar. |
+
+**Palavras e frases do Fechamento da maleta**
+
+- Na tela, "**ler o código**" e "**lidas na volta**", nunca "bipar" (vale a parte 2).
+- Botões: **Começar o fechamento**, **Somar peça**, **Concluir o fechamento** (ação sem volta; pede confirmação), **Escolher outra maleta**.
+- Confirmação: "As peças lidas voltam ao estoque da loja, até o que a maleta devia ter, e a maleta fica fechada. A diferença não é corrigida sozinha: ela fica no relatório. Essa ação não tem volta."
+- Diferença: "Faltam N peças em relação ao que devia estar na maleta. O sistema não corrige sozinho: decida o que fazer com a falta." (ou "Sobram").
+- Maleta com situação **Fechada** (antes: Enviada, Conferida, Em acerto, Acertada, Cancelada, Em montagem).
+- **Valores por maleta:** o relatório diz "Os valores da maleta são divididos pelo vendido de cada maleta dentro da nota do cliente." (ADR-0016, item 14).
+
+**Situação da nota do cliente:** Em aberto, Pendente, Fechado, Remarcado (§23.4). **Formas de pagamento:** Dinheiro, Pix, Débito, Crédito à vista (sem cheque, sem boleto).
+
+**O acerto antigo da §7.4 fica escondido** (ADR-0016, item 15): enquanto o servidor disser que não é para mostrar (`GET /api/configuracoes/telas`), somem o grupo **Acertos** do menu (Acertos, Pendências do acerto, Comissão por meta), o botão **Acerto** da tela inicial e do **Painel da semana** e o cartão de acertos do resumo. Nada é apagado; ligar de volta é mudar a configuração.
+
+**Fotos do cliente:** foto do cliente e do documento (frente e verso) são dados pessoais. A ficha só as busca quando a dona pede ("Ver a foto") e não as guarda no computador. "A foto ainda não chegou." quando o representante ainda não enviou; isso nunca trava nada.

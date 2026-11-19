@@ -11,6 +11,7 @@ import { TEXTOS_DE_ESTOQUE } from '../textos-estoque';
 import { TEXTOS_DE_SINCRONIZACAO } from '../textos-sincronizacao';
 import { TEXTOS_DA_INICIAL as I } from '../textos-inicial';
 import { TEXTOS_DO_PAINEL } from '../textos-painel';
+import { useTelasDoGestao } from '../nucleo/telas-do-gestao';
 import { IconeDoAtalho } from './IconeDoAtalho';
 
 const BOTOES = ['painel', 'montar', 'receber', 'acerto', 'cadastrar', 'relatorios'] as const;
@@ -101,6 +102,9 @@ export function TelaInicial({ ponte, nome }: TelaInicialProps) {
   const painelBusca = useBusca(() => chamar(ponte, 'painel.semanal'), 'painel-da-inicial');
   const painel = painelBusca.dados ? lerPainel(painelBusca.dados) : null;
   const { taxas } = useCotacao();
+  // O acerto antigo da §7.4 fica escondido (ADR-0016, item 15): sem o botão e sem o cartão de acertos.
+  const { acertoDoVendedorVisivel } = useTelasDoGestao();
+  const botoes = BOTOES.filter((b) => b !== 'acerto' || acertoDoVendedorVisivel);
 
   const quantidade = (chave: string, rotulo: string): number => {
     const cartao = painel?.cartoes.find((c) => c.chave === chave);
@@ -150,7 +154,7 @@ export function TelaInicial({ ponte, nome }: TelaInicialProps) {
         </Aviso>
       ) : null}
       <nav className="gestao-atalhos" aria-label={I.oQueFazer}>
-        {BOTOES.map((nomeDoBotao) => (
+        {botoes.map((nomeDoBotao) => (
           <button
             key={nomeDoBotao}
             type="button"
@@ -186,11 +190,13 @@ export function TelaInicial({ ponte, nome }: TelaInicialProps) {
             numero={maletas === null ? traco : String(maletas)}
             rota="maletas/lista"
           />
-          <CartaoDeNumero
-            titulo={I.resumo.acertos}
-            numero={acertos === null ? traco : String(acertos)}
-            rota="acertos/lista"
-          />
+          {acertoDoVendedorVisivel ? (
+            <CartaoDeNumero
+              titulo={I.resumo.acertos}
+              numero={acertos === null ? traco : String(acertos)}
+              rota="acertos/lista"
+            />
+          ) : null}
           <CartaoDeNumero
             titulo={I.resumo.avisos}
             numero={lista === null ? traco : String(lista.length)}

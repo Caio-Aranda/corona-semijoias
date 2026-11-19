@@ -281,7 +281,7 @@ export const RELATORIOS_DE_ESTOQUE: Record<
       { chave: 'saldoGuardado', titulo: 'Quantidade guardada', tipo: 'inteiro' },
       { chave: 'somaDosMovimentos', titulo: 'Entradas menos saídas', tipo: 'inteiro' },
       { chave: 'diferenca', titulo: 'Diferença', tipo: 'sinal' },
-      { chave: 'nasMaletas', titulo: 'Com os vendedores (maletas)', tipo: 'inteiro' },
+      { chave: 'nasMaletas', titulo: 'Com os representantes (maletas)', tipo: 'inteiro' },
       { chave: 'diferencaComMaletas', titulo: 'Diferença contando as maletas', tipo: 'sinal' },
     ],
     totaisDeValor: {},

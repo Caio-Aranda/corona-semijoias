@@ -5,11 +5,11 @@ import { ES_TEXTOS_DE_VENDEDORES } from './idioma/es/vendedores';
  * campo e de regra vêm sempre do servidor, nunca daqui.
  */
 export const PT_TEXTOS_DE_VENDEDORES = {
-  titulo: 'Vendedores',
-  item: 'vendedor',
-  itens: ['vendedor', 'vendedores'] as const,
-  novo: 'Novo vendedor',
-  buscando: 'Buscando os vendedores...',
+  titulo: 'Representantes',
+  item: 'representante',
+  itens: ['representante', 'representantes'] as const,
+  novo: 'Novo representante',
+  buscando: 'Buscando os representantes...',
   buscaRotulo: 'Buscar por nome, CPF, CNPJ, telefone ou código',
   filtroPraca: 'Praça',
   filtroSituacao: 'Situação',
@@ -29,26 +29,26 @@ export const PT_TEXTOS_DE_VENDEDORES = {
   /** O que a coluna do limite mostra quando não há valor em reais. */
   limiteDaLista: { semLimite: 'Sem limite', naoDefinido: 'Limite não definido' },
   situacao: { ativo: 'Ativo', desativado: 'Desativado' },
-  legenda: 'Lista de vendedores',
+  legenda: 'Lista de representantes',
   abrir: 'Abrir cadastro',
-  vazio: 'Ainda não há nenhum vendedor.',
-  semResultado: 'Nenhum vendedor encontrado. Confira o que você digitou ou limpe a busca.',
+  vazio: 'Ainda não há nenhum representante.',
+  semResultado: 'Nenhum representante encontrado. Confira o que você digitou ou limpe a busca.',
   ficha: {
-    tituloNovo: 'Novo vendedor',
+    tituloNovo: 'Novo representante',
     voltar: 'Voltar para a lista',
     salvar: 'Salvar',
     salvando: 'Salvando...',
     codigo: (n: number) => `Código ${n}`,
-    abas: 'Partes do cadastro do vendedor',
-    primeiroSalve: 'Salve o cadastro do vendedor para liberar as outras abas.',
+    abas: 'Partes do cadastro do representante',
+    primeiroSalve: 'Salve o cadastro do representante para liberar as outras abas.',
     carregando: 'Buscando os dados...',
     salveAntes: 'Salve ou descarte as alterações antes de mudar a situação.',
     acesso: {
       titulo: 'Acesso ao sistema',
       com: (usuario: string, ativo: boolean) =>
         `Usuário ${usuario}${ativo ? '' : ' (desativado)'}. O acesso é criado e mudado em Pessoas → Usuários.`,
-      sem: 'Este vendedor ainda não tem acesso. Crie o acesso em Pessoas → Usuários.',
-      erro: 'Não foi possível ver o acesso deste vendedor agora.',
+      sem: 'Este representante ainda não tem acesso. Crie o acesso em Pessoas → Usuários.',
+      erro: 'Não foi possível ver o acesso deste representante agora.',
     },
   },
   abas: {
@@ -72,10 +72,10 @@ export const PT_TEXTOS_DE_VENDEDORES = {
   semRestricao: 'Nenhuma restrição',
   opcaoAntiga: 'Opção já escolhida antes',
   limiteAjuda:
-    'O valor máximo, em reais, das peças que o vendedor pode ter em mãos (pelo preço de venda). Preencha o valor ou marque "Sem limite".',
+    'O valor máximo, em reais, das peças que o representante pode ter em mãos (pelo preço de venda). Preencha o valor ou marque "Sem limite".',
   limiteObrigatorio: 'Informe o limite em reais ou marque "Sem limite".',
   rotulos: {
-    nome: 'Nome do vendedor',
+    nome: 'Nome do representante',
     dataNascimento: 'Data de nascimento',
     sexo: 'Sexo',
     estrangeiro: 'É estrangeiro',
@@ -123,19 +123,19 @@ export const PT_TEXTOS_DE_VENDEDORES = {
     nomeFantasia: 'Nome fantasia',
     dataAbertura: 'Data de abertura',
     atividade: 'Atividade',
-    texto: 'Observações sobre o vendedor',
+    texto: 'Observações sobre o representante',
     parentesco: 'Parentesco',
     observacao: 'Observação',
   } as Record<string, string>,
   referencias: {
-    titulo: 'Pessoas que conhecem o vendedor',
+    titulo: 'Pessoas que conhecem o representante',
     nova: 'Nova referência',
     vazio: 'Ainda não há nenhuma referência.',
     editar: 'Editar',
     excluir: 'Excluir referência',
     salvar: 'Salvar referência',
     cancelar: 'Cancelar',
-    legenda: 'Referências do vendedor',
+    legenda: 'Referências do representante',
     colunas: {
       nome: 'Nome',
       parentesco: 'Parentesco',
@@ -147,7 +147,7 @@ export const PT_TEXTOS_DE_VENDEDORES = {
     feito: { salva: 'A referência foi salva.', excluida: 'A referência foi excluída.' },
   },
   documentos: {
-    titulo: 'Documentos do vendedor',
+    titulo: 'Documentos do representante',
     ajuda: 'Envie uma foto (JPG, PNG ou WebP) ou um arquivo PDF de até 10 MB.',
     arquivo: 'Arquivo',
     descricao: 'O que é este documento',
@@ -171,7 +171,7 @@ export const PT_TEXTOS_DE_VENDEDORES = {
       data: 'Enviado em',
       acoes: 'O que fazer',
     },
-    legenda: 'Documentos do vendedor',
+    legenda: 'Documentos do representante',
     confirmarTitulo: (nome: string) => `Excluir ${nome}?`,
     confirmarTexto:
       'O documento some da lista e não pode mais ser baixado. Por aqui não dá para desfazer.',
@@ -180,11 +180,11 @@ export const PT_TEXTOS_DE_VENDEDORES = {
   confirmar: {
     desativarTitulo: (nome: string) => `Desativar ${nome}?`,
     desativarTexto: (nome: string) =>
-      `${nome} sai das listas de vendedores ativos. O que já foi registrado com ele continua guardado. Você pode reativar depois.`,
+      `${nome} sai das listas de representantes ativos. O que já foi registrado com ele continua guardado. Você pode reativar depois.`,
     reativarTitulo: (nome: string) => `Reativar ${nome}?`,
-    reativarTexto: (nome: string) => `${nome} volta para as listas de vendedores ativos.`,
-    desativar: 'Desativar vendedor',
-    reativar: 'Reativar vendedor',
+    reativarTexto: (nome: string) => `${nome} volta para as listas de representantes ativos.`,
+    desativar: 'Desativar representante',
+    reativar: 'Reativar representante',
     voltar: 'Voltar',
   },
   sair: {

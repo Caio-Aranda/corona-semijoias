@@ -20,16 +20,16 @@ export const ES_TEXTOS_DE_ACERTOS: NoMesmoFormato<typeof PT_TEXTOS_DE_ACERTOS> =
   },
   lista: {
     comecar: 'Empezar acerto',
-    legenda: 'Acertos de los vendedores',
+    legenda: 'Acertos de los representantes',
     vazia: 'Ningún acerto por aquí. Use "Empezar acerto" para hacer el primero.',
     filtros: {
-      vendedor: 'Vendedor',
-      todosVendedores: 'Todos los vendedores',
+      vendedor: 'Representante',
+      todosVendedores: 'Todos los representantes',
       situacao: 'Estado',
       todasSituacoes: 'Todos los estados',
     },
     colunas: {
-      vendedor: 'Vendedor',
+      vendedor: 'Representante',
       semana: 'Semana',
       maletas: 'Maletas',
       comecou: 'Empezó el',
@@ -40,15 +40,15 @@ export const ES_TEXTOS_DE_ACERTOS: NoMesmoFormato<typeof PT_TEXTOS_DE_ACERTOS> =
     abrir: 'Abrir',
     abrirDe: (vendedor: string, semana: number | string) =>
       `Abrir acerto de ${vendedor}, semana ${semana}`,
-    daVendedora: 'Pedido por el vendedor',
+    daVendedora: 'Pedido por el representante',
   },
   comecar: {
     titulo: 'Empezar acerto',
     ajuda:
-      'Elija el vendedor. El acerto cuenta lo que volvió en su maleta y cierra el dinero de la semana.',
-    vendedor: 'Vendedor',
-    escolhaVendedor: 'Elija el vendedor',
-    vendedorAviso: 'Elija el vendedor.',
+      'Elija el representante. El acerto cuenta lo que volvió en su maleta y cierra el dinero de la semana.',
+    vendedor: 'Representante',
+    escolhaVendedor: 'Elija el representante',
+    vendedorAviso: 'Elija el representante.',
     maisOpcoes: 'Más opciones',
     menosOpcoes: 'Menos opciones',
     semana: 'Semana',
@@ -56,7 +56,7 @@ export const ES_TEXTOS_DE_ACERTOS: NoMesmoFormato<typeof PT_TEXTOS_DE_ACERTOS> =
     semanaAjuda: 'Solo elija una semana si el acerto es de otra semana.',
     nomeDaSemana: (numero: string) => `Semana ${numero}`,
     semMaleta:
-      'Este vendedor no tiene maleta con él: el acerto va a tener solo ventas y devoluciones antiguas.',
+      'Este representante no tiene maleta con él: el acerto va a tener solo ventas y devoluciones antiguas.',
     comecar: 'Empezar',
     comecando: 'Empezando...',
     voltar: 'Volver a la lista',
@@ -66,7 +66,7 @@ export const ES_TEXTOS_DE_ACERTOS: NoMesmoFormato<typeof PT_TEXTOS_DE_ACERTOS> =
     titulo: (vendedor: string, semana: number | string) =>
       `Acerto de ${vendedor}, semana ${semana}`,
     comecouEm: (quando: string) => `Empezó el ${quando}.`,
-    pedidoPeloVendedor: 'El vendedor pidió este acerto.',
+    pedidoPeloVendedor: 'El representante pidió este acerto.',
     maletas: 'Maletas de este acerto',
     maleta: (numero: string) => (numero ? `Maleta ${numero}` : 'Maleta'),
     desistido: (motivo: string) => `Este acerto fue deshecho. Motivo: ${motivo}`,
@@ -102,7 +102,7 @@ export const ES_TEXTOS_DE_ACERTOS: NoMesmoFormato<typeof PT_TEXTOS_DE_ACERTOS> =
         ? 'Llegó una venta nueva: revise el conteo. 1 venta llegó después de empezar el acerto.'
         : `Llegaron ventas nuevas: revise el conteo. ${n} ventas llegaron después de empezar el acerto.`,
     envios: (n: number) =>
-      `La computadora del vendedor todavía tiene ${n === 1 ? '1 envío' : `${n} envíos`} para mandar. Pídale que se conecte a internet antes de cerrar.`,
+      `La computadora del representante todavía tiene ${n === 1 ? '1 envío' : `${n} envíos`} para mandar. Pídale que se conecte a internet antes de cerrar.`,
     leituras: 'Últimas lecturas',
     leitura: (
       peca: string,
@@ -113,7 +113,7 @@ export const ES_TEXTOS_DE_ACERTOS: NoMesmoFormato<typeof PT_TEXTOS_DE_ACERTOS> =
       quando: string,
     ) =>
       `${peca}: ${qtd > 0 ? '+' : ''}${qtd} (${estado}), por ${nome || 'alguien'} ${onde}, el ${quando}`,
-    noComputadorDoVendedor: 'en la computadora del vendedor',
+    noComputadorDoVendedor: 'en la computadora del representante',
     noComputadorDaLoja: 'en la computadora de la tienda',
     semFoto: 'Sin foto',
     conferir: 'Revisar el acerto',
@@ -183,7 +183,7 @@ export const ES_TEXTOS_DE_ACERTOS: NoMesmoFormato<typeof PT_TEXTOS_DE_ACERTOS> =
     naoAceitas: {
       titulo: 'Lo que no fue aceptado',
       ajuda:
-        'Devoluciones y créditos que usted no aceptó. Elija si el vendedor paga ahora, después o si la tienda asume.',
+        'Devoluciones y créditos que usted no aceptó. Elija si el representante paga ahora, después o si la tienda asume.',
       decisao: (tipo: string, valor: string) =>
         tipo === 'CREDITO_SEM_SALDO_NAO_ACEITO'
           ? `Qué hacer con el crédito sin saldo no aceptado de ${valor}`
@@ -223,10 +223,10 @@ export const ES_TEXTOS_DE_ACERTOS: NoMesmoFormato<typeof PT_TEXTOS_DE_ACERTOS> =
       descontos: 'Descuentos',
       devolvido: 'Devuelto',
       vendidoLiquido: 'Vendido después de los descuentos',
-      comissao: 'Comisión del vendedor',
+      comissao: 'Comisión del representante',
       faltasCobradas: 'Faltantes cobrados',
       liquido: 'Valor del acerto',
-      creditoUsado: 'Crédito del vendedor usado',
+      creditoUsado: 'Crédito del representante usado',
       aPagar: 'A pagar ahora',
     },
     cotacao: {
@@ -238,8 +238,8 @@ export const ES_TEXTOS_DE_ACERTOS: NoMesmoFormato<typeof PT_TEXTOS_DE_ACERTOS> =
   pagamento: {
     titulo: 'Pago del acerto',
     ajuda:
-      'Diga cuánto pagó el vendedor ahora. Lo que sobre se vuelve cuenta a cobrar del vendedor, en cuotas. Los números cambian a medida que escribe.',
-    pagouAgora: 'Cuánto pagó el vendedor ahora',
+      'Diga cuánto pagó el representante ahora. Lo que sobre se vuelve cuenta a cobrar del representante, en cuotas. Los números cambian a medida que escribe.',
+    pagouAgora: 'Cuánto pagó el representante ahora',
     dinheiro: 'Efectivo',
     transferencia: 'Transferencia (PIX)',
     ajudaDoValor: '',
@@ -248,12 +248,12 @@ export const ES_TEXTOS_DE_ACERTOS: NoMesmoFormato<typeof PT_TEXTOS_DE_ACERTOS> =
       valor: 'Boleto: valor',
       vencimento: 'Boleto: vencimiento',
       ajuda:
-        'El boleto se vuelve una cuenta del vendedor. Solo entra en la caja cuando usted registre que fue pagado.',
+        'El boleto se vuelve una cuenta del representante. Solo entra en la caja cuando usted registre que fue pagado.',
       semVencimento: 'Elija el vencimiento del boleto.',
     },
     devendo: {
       titulo: 'Lo que quedó debiendo',
-      ajuda: 'Lo que el vendedor no pagó ahora se vuelve cuenta a cobrar, en cuotas.',
+      ajuda: 'Lo que el representante no pagó ahora se vuelve cuenta a cobrar, en cuotas.',
       parcelas: 'En cuántas cuotas',
       umaParcela: '1 cuota',
       parcelasDe: (n: number) => `${n} cuotas`,
@@ -263,17 +263,17 @@ export const ES_TEXTOS_DE_ACERTOS: NoMesmoFormato<typeof PT_TEXTOS_DE_ACERTOS> =
         `Cuota ${numero}: ${valor}, vence el ${data}`,
     },
     antigas: {
-      titulo: 'Cuentas antiguas del vendedor',
+      titulo: 'Cuentas antiguas del representante',
       ajuda:
-        'Si el vendedor quiere, pague cuotas de acertos anteriores junto. Esto no entra en el valor de este acerto.',
+        'Si el representante quiere, pague cuotas de acertos anteriores junto. Esto no entra en el valor de este acerto.',
       conta: (numero: number, total: number, vencimento: string, emAberto: string) =>
         `Cuota ${numero} de ${total}, vence el ${vencimento}: falta pagar ${emAberto}`,
       pagar: (numero: number, total: number) => `Pagar ahora la cuota ${numero} de ${total}`,
       como: (numero: number) => `Cómo pagó la cuota ${numero}`,
     },
     aFavor: {
-      titulo: 'Acerto a favor del vendedor',
-      deve: (valor: string) => `La tienda le debe ${valor} al vendedor.`,
+      titulo: 'Acerto a favor del representante',
+      deve: (valor: string) => `La tienda le debe ${valor} al representante.`,
       credito: 'Guardar como crédito para el próximo acerto',
       pagarAgora: 'Pagar ahora',
       como: 'Cómo paga la tienda',
@@ -282,8 +282,8 @@ export const ES_TEXTOS_DE_ACERTOS: NoMesmoFormato<typeof PT_TEXTOS_DE_ACERTOS> =
       recebido: 'Cobrado ahora',
       boleto: 'Boleto',
       ficouDevendo: 'Quedó debiendo',
-      creditoDisponivel: 'Crédito del vendedor disponible',
-      pagoAoVendedor: 'Pagado al vendedor ahora',
+      creditoDisponivel: 'Crédito del representante disponible',
+      pagoAoVendedor: 'Pagado al representante ahora',
     },
   },
   fechar: {
@@ -300,7 +300,7 @@ export const ES_TEXTOS_DE_ACERTOS: NoMesmoFormato<typeof PT_TEXTOS_DE_ACERTOS> =
       FECHAMENTO_DESATUALIZADO:
         'Los números cambiaron desde que lo abrió. Revise el acerto de nuevo.',
       PAGAMENTO_DO_ACERTO_PASSA_DO_DEVIDO:
-        'El valor pagado pasa lo que el vendedor debe. Revise los valores.',
+        'El valor pagado pasa lo que el representante debe. Revise los valores.',
       DATA_DO_RESTANTE_OBRIGATORIA: 'Elija la fecha de pago de lo que quedó debiendo.',
       SEMANA_FECHADA:
         'La semana de este acerto ya está cerrada, por eso el acerto no se puede cerrar. Hable con el soporte.',
@@ -343,11 +343,11 @@ export const ES_TEXTOS_DE_ACERTOS: NoMesmoFormato<typeof PT_TEXTOS_DE_ACERTOS> =
     totais: {
       recebido: 'Cobrado en el acerto',
       ficouDevendo: 'Quedó debiendo',
-      pagoAoVendedor: 'Pagado al vendedor',
+      pagoAoVendedor: 'Pagado al representante',
     },
     recebimentos: {
-      legenda: 'Lo que el vendedor pagó',
-      vazia: 'El vendedor no pagó nada en este acerto.',
+      legenda: 'Lo que el representante pagó',
+      vazia: 'El representante no pagó nada en este acerto.',
       colunas: { forma: 'Forma', valor: 'Valor', quando: 'Cuándo', situacao: 'Estado' },
       formas: { DINHEIRO: 'Efectivo', PIX: 'Transferencia (PIX)', BOLETO: 'Boleto' },
       desfeito: 'Deshecho',
@@ -378,19 +378,20 @@ export const ES_TEXTOS_DE_ACERTOS: NoMesmoFormato<typeof PT_TEXTOS_DE_ACERTOS> =
   },
   pendencias: {
     titulo: 'Pendientes del acerto',
-    ajuda: 'Piezas que faltaron y valores que quedaron abiertos en los acertos de los vendedores.',
+    ajuda:
+      'Piezas que faltaron y valores que quedaron abiertos en los acertos de los representantes.',
     cobrar:
-      'La pendiente abierta aparece en el próximo acerto del vendedor, y es allí donde se cobra. Aquí usted solo resuelve las que no se van a cobrar.',
-    legenda: 'Pendientes de los vendedores',
+      'La pendiente abierta aparece en el próximo acerto del representante, y es allí donde se cobra. Aquí usted solo resuelve las que no se van a cobrar.',
+    legenda: 'Pendientes de los representantes',
     vazia: 'Ninguna pendiente por aquí.',
     filtros: {
-      vendedor: 'Vendedor',
-      todosVendedores: 'Todos los vendedores',
+      vendedor: 'Representante',
+      todosVendedores: 'Todos los representantes',
       situacao: 'Estado',
       todasSituacoes: 'Todos los estados',
     },
     colunas: {
-      vendedor: 'Vendedor',
+      vendedor: 'Representante',
       peca: 'Pieza',
       tipo: 'Qué es',
       quantidade: 'Cantidad',
@@ -415,7 +416,7 @@ export const ES_TEXTOS_DE_ACERTOS: NoMesmoFormato<typeof PT_TEXTOS_DE_ACERTOS> =
   comissao: {
     titulo: 'Comisión y meta',
     ajuda:
-      'La comisión del vendedor depende de cuánto vendió en la semana. Si pasa la meta, vale la comisión mayor.',
+      'La comisión del representante depende de cuánto vendió en la semana. Si pasa la meta, vale la comisión mayor.',
     meta: 'Meta de la semana, en Guaraníes',
     metaAviso: 'Escriba la meta en Guaraníes, solo con números.',
     abaixo: 'Comisión debajo de la meta, en %',
@@ -431,16 +432,16 @@ export const ES_TEXTOS_DE_ACERTOS: NoMesmoFormato<typeof PT_TEXTOS_DE_ACERTOS> =
   desistir: {
     titulo: 'Desistir del acerto',
     texto:
-      'Las maletas vuelven a quedar con el vendedor y no se guarda nada de dinero. Las lecturas del conteo quedan guardadas.',
+      'Las maletas vuelven a quedar con el representante y no se guarda nada de dinero. Las lecturas del conteo quedan guardadas.',
     motivo: 'Motivo',
     motivoAviso: 'Diga el motivo de desistir.',
     confirmar: 'Desistir del acerto',
     voltar: 'Seguir con el acerto',
   },
   erros: {
-    ACERTO_EM_ANDAMENTO: 'Este vendedor ya está en acerto. Abra su acerto en la lista.',
+    ACERTO_EM_ANDAMENTO: 'Este representante ya está en acerto. Abra su acerto en la lista.',
     ACERTO_DA_SEMANA_JA_EXISTE:
-      'Este vendedor ya hizo el acerto de esta semana. Elija otra semana en "Más opciones".',
+      'Este representante ya hizo el acerto de esta semana. Elija otra semana en "Más opciones".',
     SEMANA_FECHADA: 'Esta semana ya está cerrada. Elija una semana abierta.',
     PECA_NAO_ENCONTRADA: 'Esta pieza no es de este acerto. Revise el código.',
     LEITURA_DEIXA_CONTAGEM_NEGATIVA: 'No se puede quitar más de lo que se contó. Revise el conteo.',

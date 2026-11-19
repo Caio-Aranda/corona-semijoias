@@ -38,7 +38,7 @@ function montar(extras: Record<string, Manipulador> = {}) {
     'cotacao.hoje': () => ({ ok: true, dados: { disponivel: false } }),
     'vendedores.escolha': () => ({
       ok: true,
-      dados: { itens: [{ id: ID_VEND, nome: 'Joana Vendedora', ativo: true }] },
+      dados: { itens: [{ id: ID_VEND, nome: 'Joana Representante', ativo: true }] },
     }),
     'sincronizacao.aparelhos': () => ({
       ok: true,
@@ -65,7 +65,7 @@ function montar(extras: Record<string, Manipulador> = {}) {
           resultado: 'RECUSADO',
           mensagem: 'Faltou peça na maleta.',
           recebidoEm: '2026-11-10T15:30:00Z',
-          vendedorNome: 'Joana Vendedora',
+          vendedorNome: 'Joana Representante',
         },
         {
           id: ID_CPF,
@@ -74,7 +74,7 @@ function montar(extras: Record<string, Manipulador> = {}) {
           codigo: 'CLIENTE_CPF_JA_CADASTRADO',
           mensagem: 'Este CPF já existe.',
           recebidoEm: '2026-11-10T16:30:00Z',
-          vendedorNome: 'Joana Vendedora',
+          vendedorNome: 'Joana Representante',
           dados: { nome: 'Ana Maria', cpf: '123.456.789-09' },
         },
       ],
@@ -85,7 +85,7 @@ function montar(extras: Record<string, Manipulador> = {}) {
         {
           id: ID_VENDA,
           tipo: 'VENDA',
-          vendedorNome: 'Joana Vendedora',
+          vendedorNome: 'Joana Representante',
           recebidoEm: '2026-11-11T10:00:00Z',
         },
       ],
@@ -134,11 +134,11 @@ async function abrir(m: ReturnType<typeof montar>, item: string, titulo: string)
   return u;
 }
 
-describe('Computadores dos vendedores (tarefa 5.10)', () => {
+describe('Computadores dos representantes (tarefa 5.10)', () => {
   it('mostra os computadores e só oferece Trocar para o que espera liberação', async () => {
     const m = montar();
     const u = await abrir(m, 'Computadores', 'Computadores');
-    await u.selectOptions(await screen.findByLabelText('Vendedor'), ID_VEND);
+    await u.selectOptions(await screen.findByLabelText('Representante'), ID_VEND);
     expect(await screen.findByText('Em uso')).toBeInTheDocument();
     expect(screen.getByText('Aguardando liberação')).toBeInTheDocument();
     expect(screen.getAllByText('Nunca enviou tudo')).toHaveLength(2);
@@ -149,7 +149,7 @@ describe('Computadores dos vendedores (tarefa 5.10)', () => {
   it('trocar computador pede confirmação clara e só então chama a API', async () => {
     const m = montar({ 'sincronizacao.liberarAparelho': () => ({ ok: true, dados: {} }) });
     const u = await abrir(m, 'Computadores', 'Computadores');
-    await u.selectOptions(await screen.findByLabelText('Vendedor'), ID_VEND);
+    await u.selectOptions(await screen.findByLabelText('Representante'), ID_VEND);
     await u.click(await screen.findByRole('button', { name: /Trocar computador de/ }));
     expect(screen.getByText(/O computador antigo deixa de vender/)).toBeInTheDocument();
     expect(ultima(m, 'sincronizacao.liberarAparelho')).toBeUndefined();
@@ -163,7 +163,7 @@ describe('Computadores dos vendedores (tarefa 5.10)', () => {
   it('bloquear avisa que não tem volta e cancelar não chama a API', async () => {
     const m = montar({ 'sincronizacao.bloquearAparelho': () => ({ ok: true, dados: {} }) });
     const u = await abrir(m, 'Computadores', 'Computadores');
-    await u.selectOptions(await screen.findByLabelText('Vendedor'), ID_VEND);
+    await u.selectOptions(await screen.findByLabelText('Representante'), ID_VEND);
     await u.click((await screen.findAllByRole('button', { name: /Bloquear computador de/ }))[0]!);
     expect(screen.getByText(/Isso não tem volta/)).toBeInTheDocument();
     await u.click(screen.getByRole('button', { name: 'Cancelar' }));
@@ -250,10 +250,14 @@ describe('Vendas de computador bloqueado (tarefa 5.10)', () => {
   });
 });
 
-describe('Clientes alterados pelo vendedor e avisos (tarefa 5.10)', () => {
+describe('Clientes alterados pelo representante e avisos (tarefa 5.10)', () => {
   it('mostra o valor que era e o que passou a ser', async () => {
     const m = montar();
-    await abrir(m, 'Clientes alterados pelo vendedor', 'Clientes alterados pelo vendedor');
+    await abrir(
+      m,
+      'Clientes alterados pelo representante',
+      'Clientes alterados pelo representante',
+    );
     expect(await screen.findByText('Dora')).toBeInTheDocument();
     expect(screen.getByText(/Era 1111; Passou a ser 2222/)).toBeInTheDocument();
   });

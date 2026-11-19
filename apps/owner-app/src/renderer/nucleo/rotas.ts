@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { TEXTOS } from '../textos';
 import { TEXTOS_DE_ACERTOS } from '../textos-acertos';
 import { TEXTOS_DE_COMPRAS } from '../textos-compras';
+import { TEXTOS_DE_CONSIGNADO } from '../textos-consignado';
 import { TEXTOS_DE_DEVOLUCOES } from '../textos-devolucoes';
 import { TEXTOS_DE_ESTOQUE } from '../textos-estoque';
 import { TEXTOS_DE_FINANCEIRO } from '../textos-financeiro';
@@ -28,6 +29,11 @@ export const ROTAS = [
   'estoque/compras',
   'maletas/lista',
   'maletas/montar',
+  'maletas/fechamento',
+  'consignado/notas',
+  'consignado/semanas',
+  'consignado/clientes',
+  'consignado/avisos',
   'pessoas/vendedores',
   'pessoas/clientes',
   'pessoas/usuarios',
@@ -176,6 +182,16 @@ export const MENU = [
     itens: [
       { chave: 'maletas/lista', rotulo: TEXTOS_DE_MALETAS.menu.lista },
       { chave: 'maletas/montar', rotulo: TEXTOS_DE_MALETAS.menu.montar },
+      { chave: 'maletas/fechamento', rotulo: TEXTOS_DE_CONSIGNADO.menu.fechamento },
+    ],
+  },
+  {
+    titulo: TEXTOS_DE_CONSIGNADO.menu.grupo,
+    itens: [
+      { chave: 'consignado/notas', rotulo: TEXTOS_DE_CONSIGNADO.menu.notas },
+      { chave: 'consignado/semanas', rotulo: TEXTOS_DE_CONSIGNADO.menu.semanas },
+      { chave: 'consignado/clientes', rotulo: TEXTOS_DE_CONSIGNADO.menu.clientes },
+      { chave: 'consignado/avisos', rotulo: TEXTOS_DE_CONSIGNADO.menu.avisos },
     ],
   },
   {
@@ -214,6 +230,19 @@ export const MENU = [
     })),
   },
 ];
+
+/** As rotas do acerto antigo da §7.4 (ADR-0016, item 15): ficam escondidas enquanto o servidor não mandar mostrar. */
+export function ehRotaDoAcertoAntigo(rota: Rota): boolean {
+  return rota.startsWith('acertos/');
+}
+
+/** O menu sem o acerto antigo, quando ele está escondido (nada é apagado: só deixa de aparecer). */
+export function menuDoGestao(acertoVisivel: boolean): typeof MENU {
+  if (acertoVisivel) return MENU;
+  return MENU.filter(
+    (grupo) => !('titulo' in grupo && grupo.titulo === TEXTOS_DE_ACERTOS.menu.grupo),
+  );
+}
 
 /** Nome do item na tela, para "Em breve" e títulos. */
 export function rotuloDaRota(rota: Rota): string {

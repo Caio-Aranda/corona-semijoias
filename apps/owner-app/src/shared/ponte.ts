@@ -6,6 +6,7 @@
 import { OPERACOES_DE_ACERTOS } from './acertos';
 import { OPERACOES_DE_CADASTRO } from './cadastros';
 import { OPERACOES_DE_COMPRAS } from './compras';
+import { OPERACOES_DE_CONSIGNADO } from './consignado';
 import { OPERACOES_DE_DEVOLUCOES } from './devolucoes';
 import { OPERACOES_DE_ESTOQUE } from './estoque';
 import { OPERACOES_DE_FINANCEIRO } from './financeiro';
@@ -44,6 +45,7 @@ export const OPERACOES_DA_API = [
   ...OPERACOES_DE_RELATORIOS,
   ...OPERACOES_DE_SINCRONIZACAO,
   ...OPERACOES_DE_DEVOLUCOES,
+  ...OPERACOES_DE_CONSIGNADO,
 ] as const;
 export type OperacaoDaApi = (typeof OPERACOES_DA_API)[number];
 

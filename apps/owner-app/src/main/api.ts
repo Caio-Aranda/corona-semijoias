@@ -249,6 +249,23 @@ import {
   trocarSenha,
   type RespostaDoLogin,
 } from '@corona/api-client-dona';
+import {
+  baixarFotoDoCliente,
+  concluirFechamentoDaMaleta,
+  iniciarFechamentoDaMaleta,
+  lerFechamentoDaMaleta,
+  lerTelasDoGestao,
+  listarAlertasDoConsignado,
+  listarNotasDoConsignado,
+  listarSemanasDoRepresentante,
+  marcarAlertaDoConsignadoComoVisto,
+  registrarLeiturasDoFechamentoDaMaleta,
+  relatorioDoFechamentoDaMaleta,
+  verNotaDoConsignado,
+  verSemanaDoRepresentante,
+  verSituacaoDoClienteDoConsignado,
+} from '@corona/api-client-dona';
+import type { ParametrosDeConsignado } from '../shared/consignado';
 import type { NomeDoCadastro } from '../shared/cadastros';
 import type { ParametrosConferidos, ParametrosDeVendedor } from '../shared/validacao-parametros';
 import type { ParametrosDeCompra } from '../shared/validacao-compras';
@@ -813,6 +830,85 @@ async function executarMaleta(
   }
 }
 
+/**
+ * Consignado ao cliente (§23): o que a tela mostra ou esconde, o Fechamento da maleta e as leituras das notas, semanas,
+ * clientes e alertas. Só ADMIN; nada daqui cria nota nem acerto (isso nasce no aplicativo do representante).
+ */
+async function executarConsignado(
+  client: ReturnType<typeof criarClienteDaApi>,
+  headers: { Authorization: string },
+  pedido: ParametrosDeConsignado,
+): Promise<Resultado<unknown>> {
+  const base = { client, headers };
+  switch (pedido.operacao) {
+    case 'telas.ler':
+      return executar(() => lerTelasDoGestao(base));
+    case 'fechamento.iniciar':
+      return executar(() => iniciarFechamentoDaMaleta({ ...base, path: { id: pedido.id } }), true);
+    case 'fechamento.ler':
+      return executar(() => lerFechamentoDaMaleta({ ...base, path: { id: pedido.id } }));
+    case 'fechamento.leituras':
+      return executar(
+        () =>
+          registrarLeiturasDoFechamentoDaMaleta({
+            ...base,
+            path: { id: pedido.id },
+            body: { leituras: pedido.leituras },
+          }),
+        true,
+      );
+    case 'fechamento.concluir':
+      return executar(() => concluirFechamentoDaMaleta({ ...base, path: { id: pedido.id } }), true);
+    case 'consignado.semanas':
+      return executar(() =>
+        listarSemanasDoRepresentante({ ...base, path: { vendedorId: pedido.id } }),
+      );
+    case 'consignado.semana':
+      return executar(() => verSemanaDoRepresentante({ ...base, path: { semanaId: pedido.id } }));
+    case 'consignado.notas':
+      return executar(() => listarNotasDoConsignado({ ...base, query: pedido.filtros }));
+    case 'consignado.nota':
+      return executar(() => verNotaDoConsignado({ ...base, path: { id: pedido.id } }));
+    case 'consignado.cliente':
+      return executar(() => verSituacaoDoClienteDoConsignado({ ...base, path: { id: pedido.id } }));
+    case 'consignado.alertas':
+      return executar(() =>
+        listarAlertasDoConsignado({ ...base, query: { soNaoVistos: pedido.soNaoVistos } }),
+      );
+    case 'consignado.alertaVisto':
+      return executar(
+        () => marcarAlertaDoConsignadoComoVisto({ ...base, path: { id: pedido.id } }),
+        true,
+      );
+    case 'consignado.fotoDoCliente': {
+      // Foto de documento é dado pessoal: vem só pela rota da dona e não fica guardada em disco.
+      try {
+        const { data, error, response } = (await baixarFotoDoCliente({
+          ...base,
+          path: { id: pedido.id, tipo: pedido.tipo },
+          parseAs: 'arrayBuffer',
+        } as never)) as RetornoDoCliente<ArrayBuffer>;
+        if (error !== undefined && error !== '') {
+          return { ok: false, falha: comoFalha(error, response) };
+        }
+        if (response && !response.ok) return { ok: false, falha: comoFalha(undefined, response) };
+        if (!response || !(data instanceof ArrayBuffer)) {
+          return { ok: false, falha: { tipo: 'resposta-invalida' } };
+        }
+        const arquivo: ArquivoBaixado = {
+          nome: `${pedido.tipo}.jpg`,
+          tipo: response.headers.get('content-type') ?? 'image/jpeg',
+          bytes: new Uint8Array(data),
+        };
+        return { ok: true, dados: arquivo };
+      } catch (e) {
+        if (ehAppDesatualizado(e)) return { ok: false, falha: comoFalha(e, undefined) };
+        return { ok: false, falha: { tipo: 'sem-conexao' } };
+      }
+    }
+  }
+}
+
 /** Acertos, pendências e a comissão (só ADMIN). O servidor calcula tudo; aqui só se repassa o que a tela decidiu. */
 async function executarAcerto(
   client: ReturnType<typeof criarClienteDaApi>,
@@ -1063,6 +1159,13 @@ async function executarRelatorio(
       return executar(() => relatorioDeMercadoriaPorVendedor({ ...base, query: q }));
     case 'maleta-em-aberto':
       return executar(() => relatorioDeMaletasEmAbertoEAtrasadas({ ...base, query: q }));
+    case 'maleta-fechamento':
+      return executar(() =>
+        relatorioDoFechamentoDaMaleta({
+          ...base,
+          query: { remessaId: q.remessaId ?? '', pagina: q.pagina, tamanho: q.tamanho },
+        }),
+      );
     case 'devolucao-por-motivo':
       return executar(() => relatorioDeDevolucoes({ ...base, query: q }));
     case 'devolucao-por-vendedor':
@@ -1398,6 +1501,13 @@ export function criarApiDoGestao(opcoes: OpcoesDaApi): ApiDoGestao {
         pedido.operacao.startsWith('garantia.')
       ) {
         return executarDevolucoes(client, headers, pedido as ParametrosDeDevolucoes);
+      }
+      if (
+        pedido.operacao === 'telas.ler' ||
+        pedido.operacao.startsWith('fechamento.') ||
+        pedido.operacao.startsWith('consignado.')
+      ) {
+        return executarConsignado(client, headers, pedido as ParametrosDeConsignado);
       }
       if (pedido.operacao.startsWith('compras.')) {
         return executarCompra(client, headers, pedido as ParametrosDeCompra);

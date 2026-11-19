@@ -171,7 +171,7 @@ describe('Resultado do período e lucro (tarefa 8.6)', () => {
       'Resultado do período',
       'Registros do resultado',
       'Lucro por produto',
-      'Lucro por vendedor',
+      'Lucro por representante',
     ]) {
       expect(within(cartoes).getByText(t)).toBeInTheDocument();
     }

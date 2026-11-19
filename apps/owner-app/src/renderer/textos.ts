@@ -128,7 +128,7 @@ export const PT_TEXTOS = {
     pracas: 'Praças',
     semanas: 'Semanas',
     restricoes: 'Restrições',
-    vendedores: 'Vendedores',
+    vendedores: 'Representantes',
     clientes: 'Clientes',
     usuarios: 'Usuários',
     rotulo: 'Menu do Corona Gestão',
@@ -176,8 +176,8 @@ export const PT_TEXTOS = {
     enderecoTitulo: 'Endereço',
     sim: 'Sim',
     nao: 'Não',
-    semVendedor: 'Nenhum vendedor',
-    vendedorAtual: 'Vendedor já escolhido antes',
+    semVendedor: 'Nenhum representante',
+    vendedorAtual: 'Representante já escolhido antes',
     numeroInvalido: 'Digite só números, sem vírgula nem ponto.',
     /** Filtro e coluna de situação dos cadastros que podem ser inativados. */
     situacao: {
@@ -264,7 +264,7 @@ export const PT_TEXTOS = {
       campos: {
         codigo: 'Código',
         descricao: 'Descrição',
-        bloqueiaRemessa: 'Impede montar maleta para o vendedor com esta restrição',
+        bloqueiaRemessa: 'Impede montar maleta para o representante com esta restrição',
       },
     },
     clientes: {
@@ -286,7 +286,7 @@ export const PT_TEXTOS = {
         telefone: 'Telefone',
         whatsapp: 'WhatsApp',
         observacoes: 'Observações',
-        vendedorResponsavelId: 'Vendedor responsável',
+        vendedorResponsavelId: 'Representante responsável',
       },
     },
     endereco: {
@@ -318,7 +318,7 @@ export const PT_TEXTOS = {
       situacao: 'Situação',
       acoes: 'O que fazer',
     },
-    acesso: { ADMIN: 'Dona', VENDEDOR: 'Vendedor' } as Record<string, string>,
+    acesso: { ADMIN: 'Dona', VENDEDOR: 'Representante' } as Record<string, string>,
     situacao: { ativo: 'Ativo', desativado: 'Inativo' },
     legenda: 'Usuários que podem entrar nos aplicativos',
     editar: 'Editar',
@@ -333,11 +333,11 @@ export const PT_TEXTOS = {
       usuario: 'Usuário',
       usuarioAjuda: 'De 3 a 40 letras sem acento, números ou ponto. Por exemplo: maria.silva.',
       acesso: 'Tipo de acesso',
-      vendedor: 'Vendedor',
-      escolherVendedor: 'Escolha o vendedor',
-      escolhaOVendedor: 'Escolha o vendedor deste acesso.',
-      vendedorAtual: 'Vendedor já ligado a este acesso',
-      semVendedores: 'Não há vendedor ativo cadastrado. Cadastre o vendedor antes.',
+      vendedor: 'Representante',
+      escolherVendedor: 'Escolha o representante',
+      escolhaOVendedor: 'Escolha o representante deste acesso.',
+      vendedorAtual: 'Representante já ligado a este acesso',
+      semVendedores: 'Não há representante ativo cadastrado. Cadastre o representante antes.',
       salvar: 'Salvar',
     },
     senha: {

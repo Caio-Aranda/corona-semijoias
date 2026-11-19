@@ -159,7 +159,7 @@ describe('conferência dos dados do financeiro', () => {
     expect(conferirParametros('contasAReceber.listar', { situacao: 'x' })).toBeNull();
   });
 
-  it('recebimento do vendedor: id, vendedor, forma e valor; a conta é opcional', () => {
+  it('recebimento do representante: id, representante, forma e valor; a conta é opcional', () => {
     const ok = { id: ID, vendedorId: OUTRO, forma: 'DINHEIRO', valor: '50.00' };
     expect(conferirParametros('recebimentos.receber', ok)).toEqual({
       operacao: 'recebimentos.receber',

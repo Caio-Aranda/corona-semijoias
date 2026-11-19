@@ -4,6 +4,7 @@ import { FaixaDeAtualizacao } from './componentes/FaixaDeAtualizacao';
 import { TelaAppDesatualizado } from './telas/TelaAppDesatualizado';
 import { TelaEntrar } from './telas/TelaEntrar';
 import { ProvedorDaCotacao } from './nucleo/cotacao';
+import { ProvedorDasTelasDoGestao } from './nucleo/telas-do-gestao';
 import { esquecerImagens } from './nucleo/imagens';
 import { Estrutura } from './telas/Estrutura';
 import { TelaSemConexao } from './telas/TelaSemConexao';
@@ -75,17 +76,19 @@ export function App({ ponte }: AppProps) {
       case 'dentro':
         return (
           <ProvedorDaCotacao ponte={ponte}>
-            <Estrutura
-              ponte={ponte}
-              nome={tela.usuario?.nome ?? null}
-              aoSair={async () => {
-                await ponte.sair();
-                esquecerImagens();
-                setSessaoTerminou(false);
-                window.location.hash = '';
-                await conferir();
-              }}
-            />
+            <ProvedorDasTelasDoGestao ponte={ponte}>
+              <Estrutura
+                ponte={ponte}
+                nome={tela.usuario?.nome ?? null}
+                aoSair={async () => {
+                  await ponte.sair();
+                  esquecerImagens();
+                  setSessaoTerminou(false);
+                  window.location.hash = '';
+                  await conferir();
+                }}
+              />
+            </ProvedorDasTelasDoGestao>
           </ProvedorDaCotacao>
         );
     }

@@ -30,7 +30,7 @@ public class ConsultasDeRemessas {
 
     public static final int TAMANHO_PADRAO = 50;
     public static final int TAMANHO_MAXIMO = 200;
-    private static final Set<String> STATUS = Set.of("RASCUNHO", "ENVIADA", "CONFERIDA", "EM_ACERTO", "ACERTADA", "CANCELADA");
+    private static final Set<String> STATUS = Set.of("RASCUNHO", "ENVIADA", "CONFERIDA", "EM_ACERTO", "ACERTADA", "CANCELADA", "FECHADA");
 
     public record Produto(UUID id, String nome, String referencia, String codigo, String fotoPrincipalHash) {
     }

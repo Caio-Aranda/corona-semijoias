@@ -56,7 +56,8 @@ class ConfiguracaoDasTelasETest extends ApoioDoConsignado {
                 .andExpect(jsonPath("$[0].numero").value(65)).andExpect(jsonPath("$[0].notas").value(1));
         ler("/api/consignado/semanas/" + semana, dona()).andExpect(status().isOk()).andExpect(jsonPath("$.recebido").value(100.0));
         ler("/api/consignado/clientes/" + cliente + "/situacao", dona()).andExpect(status().isOk())
-                .andExpect(jsonPath("$.pendencia").value(110.0));
+                .andExpect(jsonPath("$.pendencia").value(110.0)).andExpect(jsonPath("$.cadastro.comissaoPercentual").value(30.0))
+                .andExpect(jsonPath("$.cadastro.temFoto").value(false));
         String alertas = ler("/api/dona/consignado/alertas?soNaoVistos=true", dona()).andExpect(status().isOk()).andReturn().getResponse()
                 .getContentAsString();
         assertThat(alertas).contains("PRECO_DIFERENTE_DA_MALETA").contains(v.vendedorId().toString());

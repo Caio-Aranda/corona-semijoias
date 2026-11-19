@@ -52,7 +52,8 @@ public class ConfiguracaoOpenApi {
     GroupedOpenApi grupoDona(RotasPublicas publicas) {
         return GroupedOpenApi.builder()
                 .group("dona")
-                .pathsToMatch("/api/dona/**", "/api/auth/**")
+                .pathsToMatch("/api/dona/**", "/api/auth/**", "/api/maletas/**", "/api/consignado/**", "/api/configuracoes/telas",
+                        "/api/clientes/**")
                 .addOpenApiCustomizer(tokenDeAcesso(publicas))
                 .build();
     }

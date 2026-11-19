@@ -38,7 +38,7 @@ const PRAZO: ExtraDoRelatorio = {
 };
 
 const FILTROS_DA_MALETA = ['busca', 'semana', 'vendedor', 'praca', 'periodo', 'categoria'] as const;
-const BUSCA = 'Buscar por vendedor, peça ou código';
+const BUSCA = 'Buscar por representante, peça ou código';
 const SITUACOES_DAS_REMESSAS = [
   { valor: '', rotulo: 'Enviadas' },
   { valor: 'CANCELADAS', rotulo: 'Canceladas' },
@@ -50,7 +50,7 @@ const texto = (l: Record<string, unknown>, campo: string) =>
 
 const REMESSAS_COLUNAS: DefinicaoDeRelatorio['colunas'] = [
   { chave: 'numero', titulo: 'Número da maleta', tipo: 'texto' },
-  { chave: 'vendedor', titulo: 'Vendedor', tipo: 'texto' },
+  { chave: 'vendedor', titulo: 'Representante', tipo: 'texto' },
   { chave: 'semana', titulo: 'Semana', tipo: 'inteiro' },
   { chave: 'praca', titulo: 'Praça', tipo: 'texto' },
   { chave: 'tipoNaTela', titulo: 'Tipo', tipo: 'texto' },
@@ -65,9 +65,9 @@ export const RELATORIOS_DE_MALETA: Record<NomeDoRelatorioDeMaleta, DefinicaoDeRe
   'maleta-remessas': {
     nome: 'maleta-remessas',
     grupo: 'maletas',
-    titulo: 'Maletas por vendedor e semana',
+    titulo: 'Maletas por representante e semana',
     explicacao:
-      'Uma linha por maleta enviada, com o vendedor, a semana, as peças e o preço. As maletas canceladas aparecem marcadas e ficam fora do total.',
+      'Uma linha por maleta enviada, com o representante, a semana, as peças e o preço. As maletas canceladas aparecem marcadas e ficam fora do total.',
     filtros: [...FILTROS_DA_MALETA, 'situacao'],
     extras: [TIPO],
     situacoes: SITUACOES_DAS_REMESSAS,
@@ -93,7 +93,7 @@ export const RELATORIOS_DE_MALETA: Record<NomeDoRelatorioDeMaleta, DefinicaoDeRe
     nome: 'maleta-reposicoes',
     grupo: 'maletas',
     titulo: 'Reposições',
-    explicacao: 'As maletas de reposição enviadas, por vendedor e semana.',
+    explicacao: 'As maletas de reposição enviadas, por representante e semana.',
     filtros: [...FILTROS_DA_MALETA, 'situacao'],
     situacoes: SITUACOES_DAS_REMESSAS,
     buscaRotulo: BUSCA,
@@ -110,9 +110,9 @@ export const RELATORIOS_DE_MALETA: Record<NomeDoRelatorioDeMaleta, DefinicaoDeRe
   'maleta-saldo': {
     nome: 'maleta-saldo',
     grupo: 'maletas',
-    titulo: 'O que ainda está com o vendedor, peça a peça',
+    titulo: 'O que ainda está com o representante, peça a peça',
     explicacao:
-      'Cada peça de cada maleta: quantas foram enviadas, quantas voltaram e quantas ainda estão com o vendedor.',
+      'Cada peça de cada maleta: quantas foram enviadas, quantas voltaram e quantas ainda estão com o representante.',
     filtros: [...FILTROS_DA_MALETA, 'situacao'],
     extras: [TIPO],
     situacoes: [
@@ -120,10 +120,10 @@ export const RELATORIOS_DE_MALETA: Record<NomeDoRelatorioDeMaleta, DefinicaoDeRe
       { valor: 'ZERADAS', rotulo: 'Sem peças' },
       { valor: 'TODAS', rotulo: 'Todas' },
     ],
-    buscaRotulo: 'Buscar por peça, código ou vendedor',
+    buscaRotulo: 'Buscar por peça, código ou representante',
     colunas: [
       { chave: 'numero', titulo: 'Número da maleta', tipo: 'texto' },
-      { chave: 'vendedor', titulo: 'Vendedor', tipo: 'texto' },
+      { chave: 'vendedor', titulo: 'Representante', tipo: 'texto' },
       FOTO,
       { chave: 'nome', titulo: 'Peça', tipo: 'texto' },
       { chave: 'codigo', titulo: 'Código', tipo: 'texto' },
@@ -132,7 +132,7 @@ export const RELATORIOS_DE_MALETA: Record<NomeDoRelatorioDeMaleta, DefinicaoDeRe
       { chave: 'saldo', titulo: 'Saldo', tipo: 'inteiro' },
       {
         chave: 'valorEmReais',
-        titulo: 'Valor com o vendedor',
+        titulo: 'Valor com o representante',
         tipo: 'dinheiro',
         convertido: CONVERTIDO,
       },
@@ -142,7 +142,7 @@ export const RELATORIOS_DE_MALETA: Record<NomeDoRelatorioDeMaleta, DefinicaoDeRe
     rotulosDosTotais: {
       enviadas: 'Peças enviadas',
       devolvidas: 'Peças devolvidas à dona',
-      saldo: 'Peças ainda com o vendedor',
+      saldo: 'Peças ainda com o representante',
     },
     fichaDaMaleta: 'remessaId',
     itens: { um: 'linha', varios: 'linhas' },
@@ -151,17 +151,17 @@ export const RELATORIOS_DE_MALETA: Record<NomeDoRelatorioDeMaleta, DefinicaoDeRe
   'maleta-mercadoria': {
     nome: 'maleta-mercadoria',
     grupo: 'maletas',
-    titulo: 'Mercadoria com cada vendedor',
+    titulo: 'Mercadoria com cada representante',
     explicacao:
-      'Quantas maletas e peças, e quanto em mercadoria, cada vendedor tem agora, o limite dele e quanto ainda sobra.',
+      'Quantas maletas e peças, e quanto em mercadoria, cada representante tem agora, o limite dele e quanto ainda sobra.',
     filtros: [...FILTROS_DA_MALETA],
     extras: [TIPO, PRAZO],
-    buscaRotulo: 'Buscar por vendedor ou peça',
+    buscaRotulo: 'Buscar por representante ou peça',
     colunas: [
-      { chave: 'vendedor', titulo: 'Vendedor', tipo: 'texto' },
+      { chave: 'vendedor', titulo: 'Representante', tipo: 'texto' },
       { chave: 'maletasEmAberto', titulo: 'Maletas em aberto', tipo: 'inteiro' },
       { chave: 'maletasAtrasadas', titulo: 'Maletas atrasadas', tipo: 'inteiro' },
-      { chave: 'pecasEmAberto', titulo: 'Peças com o vendedor', tipo: 'inteiro' },
+      { chave: 'pecasEmAberto', titulo: 'Peças com o representante', tipo: 'inteiro' },
       {
         chave: 'valorEmReais',
         titulo: 'Mercadoria em maletas',
@@ -175,18 +175,18 @@ export const RELATORIOS_DE_MALETA: Record<NomeDoRelatorioDeMaleta, DefinicaoDeRe
     totaisDeValor: { emAberto: 'valorEmReais' },
     rotulosDosTotais: {
       emAberto: 'Mercadoria em maletas',
-      comAtraso: 'Vendedores com maleta atrasada',
-      acimaDoLimite: 'Vendedores acima do limite',
+      comAtraso: 'Representantes com maleta atrasada',
+      acimaDoLimite: 'Representantes acima do limite',
     },
-    itens: { um: 'vendedor', varios: 'vendedores' },
-    vazio: 'Nenhum vendedor com maleta com estes filtros.',
+    itens: { um: 'representante', varios: 'representantes' },
+    vazio: 'Nenhum representante com maleta com estes filtros.',
   },
   'maleta-em-aberto': {
     nome: 'maleta-em-aberto',
     grupo: 'maletas',
     titulo: 'Maletas em aberto e atrasadas',
     explicacao:
-      'As maletas que ainda têm peças com o vendedor. Ficam como "Atrasada" as enviadas há mais dias do que o prazo escolhido.',
+      'As maletas que ainda têm peças com o representante. Ficam como "Atrasada" as enviadas há mais dias do que o prazo escolhido.',
     filtros: [...FILTROS_DA_MALETA, 'situacao'],
     extras: [TIPO, PRAZO],
     situacoes: [
@@ -197,16 +197,16 @@ export const RELATORIOS_DE_MALETA: Record<NomeDoRelatorioDeMaleta, DefinicaoDeRe
     buscaRotulo: BUSCA,
     colunas: [
       { chave: 'numero', titulo: 'Número da maleta', tipo: 'texto' },
-      { chave: 'vendedor', titulo: 'Vendedor', tipo: 'texto' },
+      { chave: 'vendedor', titulo: 'Representante', tipo: 'texto' },
       { chave: 'semana', titulo: 'Semana', tipo: 'inteiro' },
       { chave: 'praca', titulo: 'Praça', tipo: 'texto' },
       { chave: 'tipoNaTela', titulo: 'Tipo', tipo: 'texto' },
       { chave: 'enviadaEm', titulo: 'Enviada', tipo: 'dataHora' },
       { chave: 'diasDesdeOEnvio', titulo: 'Dias desde o envio', tipo: 'inteiro' },
-      { chave: 'pecasEmAberto', titulo: 'Peças com o vendedor', tipo: 'inteiro' },
+      { chave: 'pecasEmAberto', titulo: 'Peças com o representante', tipo: 'inteiro' },
       {
         chave: 'valorEmReais',
-        titulo: 'Valor com o vendedor',
+        titulo: 'Valor com o representante',
         tipo: 'dinheiro',
         convertido: CONVERTIDO,
       },
@@ -222,6 +222,43 @@ export const RELATORIOS_DE_MALETA: Record<NomeDoRelatorioDeMaleta, DefinicaoDeRe
     fichaDaMaleta: 'remessaId',
     itens: { um: 'maleta', varios: 'maletas' },
     vazio: 'Nenhuma maleta em aberto com estes filtros.',
+  },
+  'maleta-fechamento': {
+    nome: 'maleta-fechamento',
+    grupo: 'maletas',
+    soAbreDeUmaLinha: true,
+    titulo: 'Fechamento da maleta',
+    explicacao:
+      'Peça a peça: quantas foram enviadas, devolvidas pelos clientes, vendidas, quantas ainda estão com os clientes (e com quem), quantas você leu na volta e a diferença. No rodapé: o valor vendido, a comissão dos clientes, o que foi recebido e o que ainda falta receber.',
+    nota: 'Os valores da maleta são divididos pelo vendido de cada maleta dentro da nota do cliente.',
+    filtros: [],
+    buscaRotulo: '',
+    colunas: [
+      { chave: 'nome', titulo: 'Peça', tipo: 'texto' },
+      { chave: 'enviadas', titulo: 'Enviadas', tipo: 'inteiro' },
+      { chave: 'devolvidasPelosClientes', titulo: 'Devolvidas pelos clientes', tipo: 'inteiro' },
+      { chave: 'vendidas', titulo: 'Vendidas', tipo: 'inteiro' },
+      { chave: 'comClientes', titulo: 'Ainda com os clientes', tipo: 'inteiro' },
+      { chave: 'comQuem', titulo: 'Com quem', tipo: 'texto' },
+      { chave: 'esperadoNaMaleta', titulo: 'Esperadas na maleta', tipo: 'inteiro' },
+      { chave: 'bipadas', titulo: 'Lidas na volta', tipo: 'inteiro' },
+      { chave: 'diferenca', titulo: 'Diferença', tipo: 'inteiro' },
+    ],
+    totaisDeValor: {},
+    rotulosDosTotais: {
+      enviadas: 'Peças enviadas',
+      devolvidas: 'Devolvidas pelos clientes',
+      vendidas: 'Peças vendidas',
+      comClientes: 'Ainda com os clientes',
+      bipadas: 'Lidas na volta',
+      diferenca: 'Diferença (lidas menos esperadas)',
+      vd: 'Valor vendido',
+      comissao: 'Comissão dos clientes',
+      recebido: 'Valor recebido',
+      pendencias: 'Pendências a receber',
+    },
+    itens: { um: 'peça', varios: 'peças' },
+    vazio: 'Esta maleta não tem peças.',
   },
 };
 

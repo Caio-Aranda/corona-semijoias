@@ -17,6 +17,7 @@ import { conferirEstoque, type ParametrosDeEstoque } from './validacao-estoque';
 import { conferirProduto, type ParametrosDeProduto } from './validacao-produtos';
 import { conferirRelatorio, type ParametrosDeRelatorio } from './validacao-relatorios';
 import { conferirDevolucoes, type ParametrosDeDevolucoes } from './devolucoes';
+import { conferirConsignado, type ParametrosDeConsignado } from './consignado';
 import { conferirSincronizacao, type ParametrosDeSincronizacao } from './sincronizacao';
 import {
   ABAS_DO_VENDEDOR,
@@ -125,6 +126,7 @@ export type ParametrosConferidos =
   | ParametrosDeRelatorio
   | ParametrosDeSincronizacao
   | ParametrosDeDevolucoes
+  | ParametrosDeConsignado
   | {
       operacao:
         | 'eu'
@@ -611,6 +613,20 @@ export function conferirParametros(
     case 'garantia.ler':
     case 'garantia.alterar':
       return conferirDevolucoes(operacao, p);
+    case 'telas.ler':
+    case 'fechamento.iniciar':
+    case 'fechamento.ler':
+    case 'fechamento.leituras':
+    case 'fechamento.concluir':
+    case 'consignado.semanas':
+    case 'consignado.semana':
+    case 'consignado.notas':
+    case 'consignado.nota':
+    case 'consignado.cliente':
+    case 'consignado.fotoDoCliente':
+    case 'consignado.alertas':
+    case 'consignado.alertaVisto':
+      return conferirConsignado(operacao, p);
     case 'relatorios.cadastros':
       return conferirRelatorio(p);
     default:

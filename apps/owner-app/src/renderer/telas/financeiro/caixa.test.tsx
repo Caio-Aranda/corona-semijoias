@@ -36,10 +36,10 @@ const automatico = lancamento({
   tipo: 'ENTRADA',
   valor: '200.00',
   forma: 'DINHEIRO',
-  categoria: 'Repasse do vendedor',
+  categoria: 'Repasse do representante',
   origemTipo: 'RECEBIMENTO_VENDEDOR',
   descricao: '',
-  vendedorNome: 'Ana Vendedora',
+  vendedorNome: 'Ana Representante',
   saldoDepois: '1000.00',
 });
 
@@ -64,7 +64,7 @@ function servidor(extra: Record<string, Manipulador> = {}) {
         categoria(),
         categoria({ id: 'c2', nome: 'Venda extra', tipo: 'ENTRADA' }),
         categoria({ id: 'c3', nome: 'Antiga', ativa: false }),
-        categoria({ id: 'c4', nome: 'Repasse do vendedor', tipo: 'ENTRADA', sistema: true }),
+        categoria({ id: 'c4', nome: 'Repasse do representante', tipo: 'ENTRADA', sistema: true }),
       ],
     }),
     'caixa.lancar': () => ({ ok: true, dados: {}, criado: true }),
@@ -96,7 +96,7 @@ describe('Caixa', () => {
     expect(screen.getByText('R$ 800,00')).toBeInTheDocument();
     expect(screen.getAllByText('R$ 200,00').length).toBeGreaterThan(0);
     expect(screen.getAllByText('-R$ 150,50').length).toBeGreaterThan(0);
-    expect(screen.getByText('Recebimento do vendedor')).toBeInTheDocument();
+    expect(screen.getByText('Recebimento do representante')).toBeInTheDocument();
     expect(screen.getByText('Transferência (PIX)')).toBeInTheDocument();
     expect(screen.getAllByText('10/11/2026')).toHaveLength(2);
   });
@@ -284,7 +284,7 @@ describe('Categorias do caixa', () => {
       screen.getByRole('button', { name: 'Renomear a categoria Aluguel' }),
     ).toBeInTheDocument();
     expect(
-      screen.queryByRole('button', { name: 'Renomear a categoria Repasse do vendedor' }),
+      screen.queryByRole('button', { name: 'Renomear a categoria Repasse do representante' }),
     ).toBeNull();
     expect(screen.getByRole('button', { name: 'Reativar a categoria Antiga' })).toBeInTheDocument();
     expect(

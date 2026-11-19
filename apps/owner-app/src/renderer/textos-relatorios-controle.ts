@@ -15,7 +15,7 @@ export const PT_TEXTOS_DE_RELATORIOS_DE_CONTROLE = {
   computadores: {
     titulo: 'Computadores e envios',
     explicacao:
-      'Os computadores de cada vendedor: quando receberam dados da loja pela última vez, quando enviaram as vendas, quantas vendas esperam para ser enviadas e quantos envios precisam da sua decisão.',
+      'Os computadores de cada representante: quando receberam dados da loja pela última vez, quando enviaram as vendas, quantas vendas esperam para ser enviadas e quantos envios precisam da sua decisão.',
     nota: 'Para decidir um envio, abra Computadores no menu.',
     situacoes: {
       TODAS: 'Todos os computadores',

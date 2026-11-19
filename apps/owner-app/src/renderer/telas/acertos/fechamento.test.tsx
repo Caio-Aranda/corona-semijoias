@@ -213,10 +213,10 @@ describe('o pagamento', () => {
     expect(botaoFechar()).toBeEnabled();
   });
 
-  it('acerto a favor do vendedor: o padrão é guardar como crédito; "Pagar agora" pede a forma', async () => {
+  it('acerto a favor do representante: o padrão é guardar como crédito; "Pagar agora" pede a forma', async () => {
     const m = servidor(previaDoServidor({ aPagarNoAcerto: '-80.00', liquido: '-80.00' }));
     const u = await aberta(m);
-    expect(screen.getByText('A loja deve R$ 80,00 ao vendedor.')).toBeInTheDocument();
+    expect(screen.getByText('A loja deve R$ 80,00 ao representante.')).toBeInTheDocument();
     expect(
       screen.getByRole('radio', { name: 'Guardar como crédito para o próximo acerto' }),
     ).toBeChecked();
@@ -229,7 +229,7 @@ describe('o pagamento', () => {
     );
   });
 
-  it('contas antigas do vendedor podem ser pagas junto, sem entrar no valor do acerto', async () => {
+  it('contas antigas do representante podem ser pagas junto, sem entrar no valor do acerto', async () => {
     const m = servidor(
       previaDoServidor({
         contasAbertasDoVendedor: [
@@ -278,7 +278,7 @@ describe('fechar o acerto', () => {
     const janela = await screen.findByRole('dialog');
     expect(
       within(janela).getByText(
-        'Fechar o acerto de Ana Vendedora? Depois de fechado, o acerto não muda mais.',
+        'Fechar o acerto de Ana Representante? Depois de fechado, o acerto não muda mais.',
       ),
     ).toBeInTheDocument();
     expect(chamadasDe(m, 'acertos.fechar')).toHaveLength(0);
@@ -414,7 +414,7 @@ describe('fechar o acerto', () => {
   it.each([
     [
       'PAGAMENTO_DO_ACERTO_PASSA_DO_DEVIDO',
-      'O valor pago passa do que o vendedor deve. Confira os valores.',
+      'O valor pago passa do que o representante deve. Confira os valores.',
     ],
     ['DATA_DO_RESTANTE_OBRIGATORIA', 'Escolha a data de pagamento do que ficou devendo.'],
   ])('erro %s diz o que fazer', async (codigo, texto) => {

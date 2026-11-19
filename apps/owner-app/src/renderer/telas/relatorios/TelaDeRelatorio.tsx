@@ -353,6 +353,8 @@ export interface TelaDeRelatorioProps {
   /** Relatório aberto a partir de uma linha: um filtro fixo e o caminho de volta. */
   fixo?: FiltroFixo;
   aoVoltar?: () => void;
+  /** Conteúdo da tela que abriu o relatório (ex.: o Fechamento da maleta), logo abaixo da explicação. */
+  aposOTitulo?: ReactNode;
   /** Relatórios de maleta: abre a ficha da maleta da linha (na tela Maletas). */
   aoAbrirMaleta?: (id: string) => void;
   /** Relatório aberto a partir do painel da semana: já começa com estes filtros. */
@@ -369,6 +371,7 @@ export function TelaDeRelatorio({
   usuario,
   fixo,
   aoVoltar,
+  aposOTitulo,
   aoAbrirMaleta,
   filtrosIniciais,
 }: TelaDeRelatorioProps) {
@@ -705,6 +708,7 @@ export function TelaDeRelatorio({
         <Aviso tipo="informacao">{T.estoqueECompras.acoes.filtroFixo(filtroFixo.texto)}</Aviso>
       ) : null}
       {def.nota ? <Aviso tipo="informacao">{def.nota}</Aviso> : null}
+      {aposOTitulo}
 
       <form
         className="gestao-filtros"
