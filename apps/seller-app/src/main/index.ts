@@ -120,10 +120,12 @@ function criarJanela(): void {
 async function iniciar(): Promise<void> {
   // Nenhuma permissão do navegador é concedida (microfone, localização...), EXCETO a câmera (só imagem, nunca som) para a
   // foto do cliente e do documento no cadastro (tarefa 9.2; §23.5).
-  session.defaultSession.setPermissionRequestHandler((_conteudo, permissao, responder, detalhes) => {
-    const tipos = (detalhes as { mediaTypes?: readonly string[] }).mediaTypes ?? [];
-    responder(permissao === 'media' && tipos.length > 0 && tipos.every((t) => t === 'video'));
-  });
+  session.defaultSession.setPermissionRequestHandler(
+    (_conteudo, permissao, responder, detalhes) => {
+      const tipos = (detalhes as { mediaTypes?: readonly string[] }).mediaTypes ?? [];
+      responder(permissao === 'media' && tipos.length > 0 && tipos.every((t) => t === 'video'));
+    },
+  );
   session.defaultSession.setPermissionCheckHandler((_conteudo, permissao, _origem, detalhes) => {
     return permissao === 'media' && (detalhes as { mediaType?: string }).mediaType === 'video';
   });

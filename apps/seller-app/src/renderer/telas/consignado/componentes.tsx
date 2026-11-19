@@ -30,7 +30,9 @@ export function LeitorDeCodigo({
         const lido = codigo.trim();
         if (!lido) return;
         setCodigo('');
-        void Promise.resolve(aoLer(lido)).finally(() => forma.current?.querySelector('input')?.focus());
+        void Promise.resolve(aoLer(lido)).finally(() =>
+          forma.current?.querySelector('input')?.focus(),
+        );
       }}
     >
       <Campo
@@ -125,7 +127,9 @@ export function EscolherPedido({
                 <th scope="col">{TEXTOS.consignado.cobranca.colunas.nota}</th>
                 <th scope="col">{TEXTOS.consignado.cobranca.colunas.cliente}</th>
                 <th scope="col">{TEXTOS.consignado.cobranca.colunas.cobranca}</th>
-                <th scope="col" className="cs-numero">{TEXTOS.consignado.cobranca.colunas.dx}</th>
+                <th scope="col" className="cs-numero">
+                  {TEXTOS.consignado.cobranca.colunas.dx}
+                </th>
                 <th scope="col">{TEXTOS.consignado.cobranca.colunas.maletas}</th>
                 <th scope="col">{TEXTOS.consignado.cobranca.colunas.situacao}</th>
                 <th scope="col" />

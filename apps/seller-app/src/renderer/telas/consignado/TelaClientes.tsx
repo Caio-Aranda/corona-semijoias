@@ -14,7 +14,16 @@ import { chamar, Dinheiro, novoId, useCotacao } from '../../chamadas';
 import { Campo, EstadoDaLista, JanelaDeConfirmacao } from '../../componentes-do-vendedor';
 import { TEXTOS } from '../../textos';
 import { PaginaDoVendedor } from '../PaginaDoVendedor';
-import { classeDaSituacao, dia, dinheiroDigitado, FotoDoCliente, porcentagemDigitada, reais, situacaoNaTela, useConsulta } from './apoio';
+import {
+  classeDaSituacao,
+  dia,
+  dinheiroDigitado,
+  FotoDoCliente,
+  porcentagemDigitada,
+  reais,
+  situacaoNaTela,
+  useConsulta,
+} from './apoio';
 import { CapturaDeFoto } from './CapturaDeFoto';
 
 export interface TelaClientesProps {
@@ -25,15 +34,30 @@ export interface TelaClientesProps {
   clienteInicial?: string | null;
 }
 
-type Modo = { tipo: 'lista' } | { tipo: 'novo' } | { tipo: 'ficha'; id: string } | { tipo: 'editar'; id: string };
+type Modo =
+  | { tipo: 'lista' }
+  | { tipo: 'novo' }
+  | { tipo: 'ficha'; id: string }
+  | { tipo: 'editar'; id: string };
 
 /** Clientes (§23.5 e §23.8): a lista, o cadastro com fotos, a ficha com pendência, maletas, histórico e Lançar pagamento. */
-export function TelaClientes({ ponte, aoVoltar, aoAbrirPedido, clienteInicial = null }: TelaClientesProps) {
+export function TelaClientes({
+  ponte,
+  aoVoltar,
+  aoAbrirPedido,
+  clienteInicial = null,
+}: TelaClientesProps) {
   const T = TEXTOS.consignado.clientes;
-  const [modo, setModo] = useState<Modo>(clienteInicial ? { tipo: 'ficha', id: clienteInicial } : { tipo: 'lista' });
+  const [modo, setModo] = useState<Modo>(
+    clienteInicial ? { tipo: 'ficha', id: clienteInicial } : { tipo: 'lista' },
+  );
   const [busca, setBusca] = useState('');
   const [aviso, setAviso] = useState<string | null>(null);
-  const { dados: clientes, erro, recarregar } = useConsulta<ClienteDaLista[]>(
+  const {
+    dados: clientes,
+    erro,
+    recarregar,
+  } = useConsulta<ClienteDaLista[]>(
     ponte,
     { operacao: 'consignado.clientes', ...(busca.trim() ? { busca: busca.trim() } : {}) },
     [],
@@ -43,13 +67,21 @@ export function TelaClientes({ ponte, aoVoltar, aoAbrirPedido, clienteInicial = 
     return (
       <PaginaDoVendedor
         ponte={ponte}
-        titulo={modo.tipo === 'novo' ? TEXTOS.consignado.cadastro.tituloNovo : TEXTOS.consignado.cadastro.tituloEditar}
-        aoVoltar={() => setModo(modo.tipo === 'editar' ? { tipo: 'ficha', id: modo.id } : { tipo: 'lista' })}
+        titulo={
+          modo.tipo === 'novo'
+            ? TEXTOS.consignado.cadastro.tituloNovo
+            : TEXTOS.consignado.cadastro.tituloEditar
+        }
+        aoVoltar={() =>
+          setModo(modo.tipo === 'editar' ? { tipo: 'ficha', id: modo.id } : { tipo: 'lista' })
+        }
       >
         <FormularioDoCliente
           ponte={ponte}
           {...(modo.tipo === 'editar' ? { editarId: modo.id } : {})}
-          aoCancelar={() => setModo(modo.tipo === 'editar' ? { tipo: 'ficha', id: modo.id } : { tipo: 'lista' })}
+          aoCancelar={() =>
+            setModo(modo.tipo === 'editar' ? { tipo: 'ficha', id: modo.id } : { tipo: 'lista' })
+          }
           aoSalvar={(c) => {
             setAviso(modo.tipo === 'novo' ? T.salvo : T.atualizado);
             setModo({ tipo: 'ficha', id: c.id });
@@ -78,7 +110,12 @@ export function TelaClientes({ ponte, aoVoltar, aoAbrirPedido, clienteInicial = 
   return (
     <PaginaDoVendedor ponte={ponte} titulo={T.titulo} aoVoltar={aoVoltar}>
       <div className="consignado-linha-de-campos">
-        <Campo rotulo={T.buscar} value={busca} autoComplete="off" onChange={(e) => setBusca(e.target.value)} />
+        <Campo
+          rotulo={T.buscar}
+          value={busca}
+          autoComplete="off"
+          onChange={(e) => setBusca(e.target.value)}
+        />
         <Botao variante="primario" onClick={() => setModo({ tipo: 'novo' })}>
           {T.novo}
         </Botao>
@@ -96,7 +133,9 @@ export function TelaClientes({ ponte, aoVoltar, aoAbrirPedido, clienteInicial = 
               <th scope="col">{T.colunas.cliente}</th>
               <th scope="col">{T.colunas.telefone}</th>
               <th scope="col">{T.colunas.cidade}</th>
-              <th scope="col" className="cs-numero">{T.colunas.pendencia}</th>
+              <th scope="col" className="cs-numero">
+                {T.colunas.pendencia}
+              </th>
               <th scope="col" />
             </tr>
           </thead>
@@ -116,7 +155,9 @@ export function TelaClientes({ ponte, aoVoltar, aoAbrirPedido, clienteInicial = 
                   </td>
                   <td>{c.telefone ?? ''}</td>
                   <td>{c.cidade ?? ''}</td>
-                  <td className="cs-numero">{/[1-9]/.test(c.pendencia) ? reais(c.pendencia) : T.naoDeve}</td>
+                  <td className="cs-numero">
+                    {/[1-9]/.test(c.pendencia) ? reais(c.pendencia) : T.naoDeve}
+                  </td>
                   <td>
                     <Botao onClick={() => setModo({ tipo: 'ficha', id: c.id })}>{T.abrir}</Botao>
                   </td>
@@ -149,7 +190,11 @@ function FichaDoCliente({
 }) {
   const T = TEXTOS.consignado.clientes;
   const cotacao = useCotacao(ponte);
-  const { dados: c, erro, recarregar } = useConsulta<ClienteCompleto>(ponte, { operacao: 'consignado.cliente', id }, [id]);
+  const {
+    dados: c,
+    erro,
+    recarregar,
+  } = useConsulta<ClienteCompleto>(ponte, { operacao: 'consignado.cliente', id }, [id]);
   const [lancando, setLancando] = useState(false);
   const [estornando, setEstornando] = useState<string | null>(null);
   const [mensagem, setMensagem] = useState<{ tipo: 'sucesso' | 'erro'; texto: string } | null>(
@@ -167,7 +212,13 @@ function FichaDoCliente({
             <p className="vendas-texto">
               {[c.telefone, c.whatsapp].filter(Boolean).join(' · ')}
               <br />
-              {[c.enderecoLogradouro, c.enderecoNumero, c.enderecoBairro, c.enderecoCidade, c.enderecoUf]
+              {[
+                c.enderecoLogradouro,
+                c.enderecoNumero,
+                c.enderecoBairro,
+                c.enderecoCidade,
+                c.enderecoUf,
+              ]
                 .filter(Boolean)
                 .join(', ')}
               <br />
@@ -181,7 +232,11 @@ function FichaDoCliente({
                 <figcaption>{T.fotoCliente}</figcaption>
               </figure>
               <figure>
-                <FotoDoCliente ponte={ponte} hash={c.fotoDocumentoFrenteHash} rotulo={T.fotoFrente} />
+                <FotoDoCliente
+                  ponte={ponte}
+                  hash={c.fotoDocumentoFrenteHash}
+                  rotulo={T.fotoFrente}
+                />
                 <figcaption>{T.fotoFrente}</figcaption>
               </figure>
               <figure>
@@ -189,7 +244,9 @@ function FichaDoCliente({
                 <figcaption>{T.fotoVerso}</figcaption>
               </figure>
             </div>
-            {c.fotosEsperandoEnvio > 0 ? <p className="vendas-texto vendas-texto--pequeno">{T.fotoEsperando}</p> : null}
+            {c.fotosEsperandoEnvio > 0 ? (
+              <p className="vendas-texto vendas-texto--pequeno">{T.fotoEsperando}</p>
+            ) : null}
             <Botao onClick={aoEditar}>{T.editar}</Botao>
           </section>
 
@@ -211,8 +268,12 @@ function FichaDoCliente({
                   <tr>
                     <th scope="col">{T.debitosColunas.nota}</th>
                     <th scope="col">{T.debitosColunas.data}</th>
-                    <th scope="col" className="cs-numero">{T.debitosColunas.valor}</th>
-                    <th scope="col" className="cs-numero">{T.debitosColunas.deve}</th>
+                    <th scope="col" className="cs-numero">
+                      {T.debitosColunas.valor}
+                    </th>
+                    <th scope="col" className="cs-numero">
+                      {T.debitosColunas.deve}
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -227,7 +288,11 @@ function FichaDoCliente({
                 </tbody>
               </table>
             ) : null}
-            <Botao variante="primario" disabled={!/[1-9]/.test(c.pendencia)} onClick={() => setLancando(true)}>
+            <Botao
+              variante="primario"
+              disabled={!/[1-9]/.test(c.pendencia)}
+              onClick={() => setLancando(true)}
+            >
               {T.lancar}
             </Botao>
           </section>
@@ -256,9 +321,15 @@ function FichaDoCliente({
                   <tr>
                     <th scope="col">{T.historicoColunas.nota}</th>
                     <th scope="col">{T.historicoColunas.cobranca}</th>
-                    <th scope="col" className="cs-numero">{T.historicoColunas.dx}</th>
-                    <th scope="col" className="cs-numero">{T.historicoColunas.vd}</th>
-                    <th scope="col" className="cs-numero">{T.historicoColunas.liquido}</th>
+                    <th scope="col" className="cs-numero">
+                      {T.historicoColunas.dx}
+                    </th>
+                    <th scope="col" className="cs-numero">
+                      {T.historicoColunas.vd}
+                    </th>
+                    <th scope="col" className="cs-numero">
+                      {T.historicoColunas.liquido}
+                    </th>
                     <th scope="col">{T.historicoColunas.situacao}</th>
                     <th scope="col" />
                   </tr>
@@ -294,7 +365,9 @@ function FichaDoCliente({
                     <th scope="col">{T.pagamentosColunas.recibo}</th>
                     <th scope="col">{T.pagamentosColunas.data}</th>
                     <th scope="col">{T.pagamentosColunas.forma}</th>
-                    <th scope="col" className="cs-numero">{T.pagamentosColunas.total}</th>
+                    <th scope="col" className="cs-numero">
+                      {T.pagamentosColunas.total}
+                    </th>
                     <th scope="col">{T.pagamentosColunas.acao}</th>
                   </tr>
                 </thead>
@@ -303,7 +376,11 @@ function FichaDoCliente({
                     <tr key={p.reciboId}>
                       <td>{p.numero}</td>
                       <td>{dia(p.pagoEm)}</td>
-                      <td>{p.formas.map((f) => TEXTOS.consignado.formas[f.forma] ?? f.forma).join(', ')}</td>
+                      <td>
+                        {p.formas
+                          .map((f) => TEXTOS.consignado.formas[f.forma] ?? f.forma)
+                          .join(', ')}
+                      </td>
                       <td className="cs-numero">{reais(p.total)}</td>
                       <td>
                         {p.estornado ? (
@@ -365,7 +442,12 @@ function LancarPagamento({
   aoLancar: (numeroDoRecibo: string) => void;
 }) {
   const T = TEXTOS.consignado.clientes;
-  const [valores, setValores] = useState<Record<FormaDoConsignado, string>>({ DINHEIRO: '', PIX: '', DEBITO: '', CREDITO: '' });
+  const [valores, setValores] = useState<Record<FormaDoConsignado, string>>({
+    DINHEIRO: '',
+    PIX: '',
+    DEBITO: '',
+    CREDITO: '',
+  });
   const [erro, setErro] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
   const formas: FormaPaga[] = [];
@@ -454,7 +536,12 @@ function EstornarPagamento({
       ocupado={ocupado || motivo.trim() === ''}
       aoConfirmar={() => {
         setOcupado(true);
-        void chamar(ponte, { operacao: 'consignado.estornarRecibo', id: novoId(), reciboId, motivo: motivo.trim() }).then((r) => {
+        void chamar(ponte, {
+          operacao: 'consignado.estornarRecibo',
+          id: novoId(),
+          reciboId,
+          motivo: motivo.trim(),
+        }).then((r) => {
           setOcupado(false);
           if (r.ok) aoEstornar();
           else setErro(r.mensagem);
@@ -510,9 +597,17 @@ function FormularioDoCliente({
     editarId ? { operacao: 'consignado.cliente', id: editarId } : null,
     [editarId],
   );
-  const { dados: todos } = useConsulta<ClienteDaLista[]>(ponte, { operacao: 'consignado.clientes' }, []);
+  const { dados: todos } = useConsulta<ClienteDaLista[]>(
+    ponte,
+    { operacao: 'consignado.clientes' },
+    [],
+  );
   const [v, setV] = useState<Campos>(VAZIO);
-  const [fotos, setFotos] = useState<{ cliente: string | null; frente: string | null; verso: string | null }>({
+  const [fotos, setFotos] = useState<{
+    cliente: string | null;
+    frente: string | null;
+    verso: string | null;
+  }>({
     cliente: null,
     frente: null,
     verso: null,
@@ -553,11 +648,13 @@ function FormularioDoCliente({
     }
     let ativo = true;
     const espera = setTimeout(() => {
-      void chamar<ClienteDaLista[]>(ponte, { operacao: 'consignado.clientes', busca: doc }).then((r) => {
-        if (!ativo || !r.ok) return;
-        const outro = r.dados.find((c) => c.id !== id);
-        setRepetido(outro ? outro.nome : null);
-      });
+      void chamar<ClienteDaLista[]>(ponte, { operacao: 'consignado.clientes', busca: doc }).then(
+        (r) => {
+          if (!ativo || !r.ok) return;
+          const outro = r.dados.find((c) => c.id !== id);
+          setRepetido(outro ? outro.nome : null);
+        },
+      );
     }, 400);
     return () => {
       ativo = false;
@@ -565,7 +662,8 @@ function FormularioDoCliente({
     };
   }, [ponte, v.documento, id]);
 
-  const set = (campo: keyof Campos) => (e: { target: { value: string } }) => setV((x) => ({ ...x, [campo]: e.target.value }));
+  const set = (campo: keyof Campos) => (e: { target: { value: string } }) =>
+    setV((x) => ({ ...x, [campo]: e.target.value }));
   const comissao = porcentagemDigitada(v.comissao || '30');
   const faltaObrigatorio =
     !v.nome.trim() ||
@@ -609,7 +707,9 @@ function FormularioDoCliente({
           ...(v.enderecoCep.trim() ? { enderecoCep: v.enderecoCep } : {}),
           ...(v.documento.trim() ? { documento: v.documento, documentoTipo: v.documentoTipo } : {}),
           ...(v.indicadoPorClienteId ? { indicadoPorClienteId: v.indicadoPorClienteId } : {}),
-          ...(!v.indicadoPorClienteId && v.indicadoPorNome.trim() ? { indicadoPorNome: v.indicadoPorNome } : {}),
+          ...(!v.indicadoPorClienteId && v.indicadoPorNome.trim()
+            ? { indicadoPorNome: v.indicadoPorNome }
+            : {}),
           ...(v.comoConheceu.trim() ? { comoConheceu: v.comoConheceu } : {}),
           comissaoPercentual: comissao,
           ...(v.observacoes.trim() ? { observacoes: v.observacoes } : {}),
@@ -641,14 +741,24 @@ function FormularioDoCliente({
       comissaoPercentual: comissao,
       observacoes: v.observacoes,
     };
-    const r = await chamar<ClienteCompleto>(ponte, { operacao: 'consignado.clienteAlterar', id: editarId, campos });
+    const r = await chamar<ClienteCompleto>(ponte, {
+      operacao: 'consignado.clienteAlterar',
+      id: editarId,
+      campos,
+    });
     if (r.ok) {
       for (const [tipo, hash] of [
         ['cliente', fotos.cliente],
         ['documento-frente', fotos.frente],
         ['documento-verso', fotos.verso],
       ] as const) {
-        if (hash) await chamar(ponte, { operacao: 'consignado.clienteTrocarFoto', id: editarId, tipo, hash });
+        if (hash)
+          await chamar(ponte, {
+            operacao: 'consignado.clienteTrocarFoto',
+            id: editarId,
+            tipo,
+            hash,
+          });
       }
     }
     setOcupado(false);
@@ -666,13 +776,38 @@ function FormularioDoCliente({
     >
       <p className="vendas-texto vendas-texto--pequeno">{T.obrigatorios}</p>
       <Campo rotulo={`${T.nome} *`} value={v.nome} onChange={set('nome')} />
-      <Campo rotulo={`${T.telefone} *`} value={v.telefone} inputMode="tel" onChange={set('telefone')} />
+      <Campo
+        rotulo={`${T.telefone} *`}
+        value={v.telefone}
+        inputMode="tel"
+        onChange={set('telefone')}
+      />
       <Campo rotulo={T.whatsapp} value={v.whatsapp} inputMode="tel" onChange={set('whatsapp')} />
-      <Campo rotulo={`${T.enderecoLogradouro} *`} value={v.enderecoLogradouro} onChange={set('enderecoLogradouro')} />
-      <Campo rotulo={`${T.enderecoNumero} *`} value={v.enderecoNumero} onChange={set('enderecoNumero')} />
-      <Campo rotulo={T.enderecoComplemento} value={v.enderecoComplemento} onChange={set('enderecoComplemento')} />
-      <Campo rotulo={`${T.enderecoBairro} *`} value={v.enderecoBairro} onChange={set('enderecoBairro')} />
-      <Campo rotulo={`${T.enderecoCidade} *`} value={v.enderecoCidade} onChange={set('enderecoCidade')} />
+      <Campo
+        rotulo={`${T.enderecoLogradouro} *`}
+        value={v.enderecoLogradouro}
+        onChange={set('enderecoLogradouro')}
+      />
+      <Campo
+        rotulo={`${T.enderecoNumero} *`}
+        value={v.enderecoNumero}
+        onChange={set('enderecoNumero')}
+      />
+      <Campo
+        rotulo={T.enderecoComplemento}
+        value={v.enderecoComplemento}
+        onChange={set('enderecoComplemento')}
+      />
+      <Campo
+        rotulo={`${T.enderecoBairro} *`}
+        value={v.enderecoBairro}
+        onChange={set('enderecoBairro')}
+      />
+      <Campo
+        rotulo={`${T.enderecoCidade} *`}
+        value={v.enderecoCidade}
+        onChange={set('enderecoCidade')}
+      />
       <Campo rotulo={`${T.enderecoUf} *`} value={v.enderecoUf} onChange={set('enderecoUf')} />
       <Campo rotulo={T.enderecoCep} value={v.enderecoCep} onChange={set('enderecoCep')} />
       <div className="cs-campo">
@@ -685,20 +820,32 @@ function FormularioDoCliente({
           ))}
         </select>
       </div>
-      <Campo rotulo={T.documento} ajuda={T.documentoAjuda} value={v.documento} onChange={set('documento')} />
+      <Campo
+        rotulo={T.documento}
+        ajuda={T.documentoAjuda}
+        value={v.documento}
+        onChange={set('documento')}
+      />
       {repetido ? <Aviso tipo="atencao">{T.documentoRepetido(repetido)}</Aviso> : null}
       <fieldset className="consignado-indicado">
         <legend>{T.indicadoPor}</legend>
         <p className="vendas-texto vendas-texto--pequeno">{T.indicadoPorAjuda}</p>
         <div className="cs-campo">
           <label htmlFor="cliente-indicado">{T.indicadoPorCliente}</label>
-          <select id="cliente-indicado" value={v.indicadoPorClienteId} onChange={set('indicadoPorClienteId')} disabled={Boolean(editarId)}>
+          <select
+            id="cliente-indicado"
+            value={v.indicadoPorClienteId}
+            onChange={set('indicadoPorClienteId')}
+            disabled={Boolean(editarId)}
+          >
             <option value="">{T.nenhumIndicado}</option>
-            {(todos ?? []).filter((c) => c.id !== id).map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.nome}
-              </option>
-            ))}
+            {(todos ?? [])
+              .filter((c) => c.id !== id)
+              .map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.nome}
+                </option>
+              ))}
           </select>
         </div>
         <Campo
@@ -709,12 +856,33 @@ function FormularioDoCliente({
         />
       </fieldset>
       <Campo rotulo={T.comoConheceu} value={v.comoConheceu} onChange={set('comoConheceu')} />
-      <Campo rotulo={`${T.comissao} *`} ajuda={T.comissaoAjuda} inputMode="decimal" value={v.comissao} onChange={set('comissao')} />
+      <Campo
+        rotulo={`${T.comissao} *`}
+        ajuda={T.comissaoAjuda}
+        inputMode="decimal"
+        value={v.comissao}
+        onChange={set('comissao')}
+      />
       <Campo rotulo={T.observacoes} value={v.observacoes} onChange={set('observacoes')} />
 
-      <CapturaDeFoto ponte={ponte} rotulo={`${T.fotoCliente} *`} hash={fotos.cliente ?? existente?.fotoHash ?? null} aoGuardar={(h) => setFotos((f) => ({ ...f, cliente: h }))} />
-      <CapturaDeFoto ponte={ponte} rotulo={`${T.fotoFrente} *`} hash={fotos.frente ?? existente?.fotoDocumentoFrenteHash ?? null} aoGuardar={(h) => setFotos((f) => ({ ...f, frente: h }))} />
-      <CapturaDeFoto ponte={ponte} rotulo={`${T.fotoVerso} *`} hash={fotos.verso ?? existente?.fotoDocumentoVersoHash ?? null} aoGuardar={(h) => setFotos((f) => ({ ...f, verso: h }))} />
+      <CapturaDeFoto
+        ponte={ponte}
+        rotulo={`${T.fotoCliente} *`}
+        hash={fotos.cliente ?? existente?.fotoHash ?? null}
+        aoGuardar={(h) => setFotos((f) => ({ ...f, cliente: h }))}
+      />
+      <CapturaDeFoto
+        ponte={ponte}
+        rotulo={`${T.fotoFrente} *`}
+        hash={fotos.frente ?? existente?.fotoDocumentoFrenteHash ?? null}
+        aoGuardar={(h) => setFotos((f) => ({ ...f, frente: h }))}
+      />
+      <CapturaDeFoto
+        ponte={ponte}
+        rotulo={`${T.fotoVerso} *`}
+        hash={fotos.verso ?? existente?.fotoDocumentoVersoHash ?? null}
+        aoGuardar={(h) => setFotos((f) => ({ ...f, verso: h }))}
+      />
 
       {erro ? <Aviso tipo="erro">{erro}</Aviso> : null}
       <RodapeDeAcoes

@@ -27,13 +27,16 @@ export interface TelaNovoPedidoProps {
 export function TelaNovoPedido({ ponte, aoVoltar, aoAbrirPedido }: TelaNovoPedidoProps) {
   const T = TEXTOS.consignado.pedido;
   const cotacao = useCotacao(ponte);
-  const { dados: pedido, erro: erroDaConsulta, recarregar } = useConsulta<PedidoEmMontagem>(
-    ponte,
-    { operacao: 'consignado.pedidoVer' },
-    [],
-  );
+  const {
+    dados: pedido,
+    erro: erroDaConsulta,
+    recarregar,
+  } = useConsulta<PedidoEmMontagem>(ponte, { operacao: 'consignado.pedidoVer' }, []);
   const [atual, setAtual] = useState<PedidoEmMontagem | null>(null);
-  const [mensagem, setMensagem] = useState<{ tipo: 'sucesso' | 'atencao' | 'erro'; texto: string } | null>(null);
+  const [mensagem, setMensagem] = useState<{
+    tipo: 'sucesso' | 'atencao' | 'erro';
+    texto: string;
+  } | null>(null);
   const [buscaDoCliente, setBuscaDoCliente] = useState('');
   const [clientes, setClientes] = useState<ClienteDaLista[]>([]);
   const [trocandoCliente, setTrocandoCliente] = useState(false);
@@ -67,7 +70,10 @@ export function TelaNovoPedido({ ponte, aoVoltar, aoAbrirPedido }: TelaNovoPedid
     remessaId?: string | null;
     dataCobranca?: string;
   }): Promise<void> {
-    const r = await chamar<PedidoEmMontagem>(ponte, { operacao: 'consignado.pedidoDefinir', ...parte });
+    const r = await chamar<PedidoEmMontagem>(ponte, {
+      operacao: 'consignado.pedidoDefinir',
+      ...parte,
+    });
     if (r.ok) {
       setAtual(r.dados);
       setMensagem(null);
@@ -75,7 +81,10 @@ export function TelaNovoPedido({ ponte, aoVoltar, aoAbrirPedido }: TelaNovoPedid
   }
 
   async function ler(codigo: string): Promise<void> {
-    const r = await chamar<ResultadoDoBipeNaTela>(ponte, { operacao: 'consignado.pedidoBipar', codigo });
+    const r = await chamar<ResultadoDoBipeNaTela>(ponte, {
+      operacao: 'consignado.pedidoBipar',
+      codigo,
+    });
     if (!r.ok) {
       setMensagem({ tipo: 'erro', texto: r.mensagem });
       return;
@@ -241,9 +250,15 @@ export function TelaNovoPedido({ ponte, aoVoltar, aoAbrirPedido }: TelaNovoPedid
                 <th scope="col">{T.colunas.ref}</th>
                 <th scope="col">{T.colunas.produto}</th>
                 <th scope="col">{T.colunas.maleta}</th>
-                <th scope="col" className="cs-numero">{T.colunas.qtd}</th>
-                <th scope="col" className="cs-numero">{T.colunas.preco}</th>
-                <th scope="col" className="cs-numero">{T.colunas.subTotal}</th>
+                <th scope="col" className="cs-numero">
+                  {T.colunas.qtd}
+                </th>
+                <th scope="col" className="cs-numero">
+                  {T.colunas.preco}
+                </th>
+                <th scope="col" className="cs-numero">
+                  {T.colunas.subTotal}
+                </th>
                 <th scope="col">{T.colunas.acoes}</th>
               </tr>
             </thead>
@@ -299,7 +314,12 @@ export function TelaNovoPedido({ ponte, aoVoltar, aoAbrirPedido }: TelaNovoPedid
               </Botao>
             }
             principal={
-              <Botao variante="primario" grande disabled={!podeFinalizar} onClick={() => setConfirmando(true)}>
+              <Botao
+                variante="primario"
+                grande
+                disabled={!podeFinalizar}
+                onClick={() => setConfirmando(true)}
+              >
                 {T.finalizar}
               </Botao>
             }

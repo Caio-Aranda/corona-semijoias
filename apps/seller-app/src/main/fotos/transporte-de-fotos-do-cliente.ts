@@ -33,7 +33,8 @@ export function criarTransporteDeFotosDoCliente(
         });
         await r.body?.cancel().catch(() => undefined);
         if (r.status === 401) return { ok: false, falha: { tipo: 'recusada', status: 401 } };
-        if (r.status === 426) return { ok: false, falha: { tipo: 'app-desatualizado', mensagem: '' } };
+        if (r.status === 426)
+          return { ok: false, falha: { tipo: 'app-desatualizado', mensagem: '' } };
         return { ok: true, dados: { status: r.status } };
       } catch {
         return { ok: false, falha: { tipo: 'sem-conexao' } };
@@ -46,7 +47,8 @@ export function criarTransporteDeFotosDoCliente(
           signal: AbortSignal.timeout(o.tempoLimiteMs ?? 60_000),
         });
         if (r.status === 401) return { ok: false, falha: { tipo: 'recusada', status: 401 } };
-        if (r.status === 426) return { ok: false, falha: { tipo: 'app-desatualizado', mensagem: '' } };
+        if (r.status === 426)
+          return { ok: false, falha: { tipo: 'app-desatualizado', mensagem: '' } };
         if (r.status !== 200) {
           await r.body?.cancel().catch(() => undefined);
           return { ok: true, dados: { status: r.status } };

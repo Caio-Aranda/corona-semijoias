@@ -10,12 +10,7 @@ import { TEXTOS } from '../../textos';
 import { classeDaSituacao, dia, porCento, reais, situacaoNaTela, useConsulta } from './apoio';
 
 export type DestinoDoConsignado =
-  | 'pedido'
-  | 'cobranca'
-  | 'reposicao'
-  | 'troca'
-  | 'clientes'
-  | 'maletas';
+  'pedido' | 'cobranca' | 'reposicao' | 'troca' | 'clientes' | 'maletas';
 
 export interface TelaSemanalProps {
   ponte: PonteDoCorona;
@@ -43,7 +38,14 @@ const BOTOES: readonly {
  * anteriores, Nova semana e as abas Pedidos (linhas coloridas pela situação) e Totais. Tudo vem do banco do computador, então
  * funciona sem internet.
  */
-export function TelaSemanal({ ponte, nome, aoIr, aoAbrirPedido, aoPesquisar, aoSair }: TelaSemanalProps) {
+export function TelaSemanal({
+  ponte,
+  nome,
+  aoIr,
+  aoAbrirPedido,
+  aoPesquisar,
+  aoSair,
+}: TelaSemanalProps) {
   const T = TEXTOS.consignado.semanal;
   const [semanaId, setSemanaId] = useState<string | undefined>(undefined);
   const [aba, setAba] = useState<'pedidos' | 'totais'>('pedidos');
@@ -52,7 +54,11 @@ export function TelaSemanal({ ponte, nome, aoIr, aoAbrirPedido, aoPesquisar, aoS
   const [numeroInicial, setNumeroInicial] = useState('1');
   const [erro, setErro] = useState<string | null>(null);
   const cotacao = useCotacao(ponte);
-  const { dados: painel, erro: erroDaConsulta, recarregar } = useConsulta<PainelDaSemana>(
+  const {
+    dados: painel,
+    erro: erroDaConsulta,
+    recarregar,
+  } = useConsulta<PainelDaSemana>(
     ponte,
     { operacao: 'consignado.painel', ...(semanaId ? { semanaId } : {}) },
     [],
@@ -86,7 +92,7 @@ export function TelaSemanal({ ponte, nome, aoIr, aoAbrirPedido, aoPesquisar, aoS
       <main className="vendas-conteudo consignado-largo">
         <h1 className="vendas-titulo">{T.titulo}</h1>
         <IndicadorDeEnvio ponte={ponte} />
-        {erro ?? erroDaConsulta ? <Aviso tipo="erro">{erro ?? erroDaConsulta}</Aviso> : null}
+        {(erro ?? erroDaConsulta) ? <Aviso tipo="erro">{erro ?? erroDaConsulta}</Aviso> : null}
 
         <nav className="consignado-botoes" aria-label={T.acoes}>
           {BOTOES.map(({ destino, chave }) => (
@@ -95,7 +101,11 @@ export function TelaSemanal({ ponte, nome, aoIr, aoAbrirPedido, aoPesquisar, aoS
               variante={destino === 'pedido' ? 'primario' : 'secundario'}
               grande
               disabled={destino === 'pedido' && painel !== null && !painel.podeNovoPedido}
-              title={destino === 'pedido' && painel && !painel.podeNovoPedido ? T.novoPedidoSoNaAtual : undefined}
+              title={
+                destino === 'pedido' && painel && !painel.podeNovoPedido
+                  ? T.novoPedidoSoNaAtual
+                  : undefined
+              }
               onClick={() => aoIr(destino)}
             >
               {T.botoes[chave]}
@@ -118,7 +128,11 @@ export function TelaSemanal({ ponte, nome, aoIr, aoAbrirPedido, aoPesquisar, aoS
         </nav>
 
         {painel?.semSemana ? (
-          <div className="vendas-cartao vendas-cartao--larga" role="group" aria-label={T.primeiraTitulo}>
+          <div
+            className="vendas-cartao vendas-cartao--larga"
+            role="group"
+            aria-label={T.primeiraTitulo}
+          >
             <h2 className="vendas-subtitulo">{T.primeiraTitulo}</h2>
             <p className="vendas-texto">{T.primeiraTexto}</p>
             <Campo
@@ -198,12 +212,24 @@ export function TelaSemanal({ ponte, nome, aoIr, aoAbrirPedido, aoPesquisar, aoS
                       <th scope="col">{T.colunas.nota}</th>
                       <th scope="col">{T.colunas.cliente}</th>
                       <th scope="col">{T.colunas.cobranca}</th>
-                      <th scope="col" className="cs-numero">{T.colunas.dx}</th>
-                      <th scope="col" className="cs-numero">{T.colunas.dv}</th>
-                      <th scope="col" className="cs-numero">{T.colunas.vd}</th>
-                      <th scope="col" className="cs-numero">{T.colunas.percentual}</th>
-                      <th scope="col" className="cs-numero">{T.colunas.comissao}</th>
-                      <th scope="col" className="cs-numero">{T.colunas.liquido}</th>
+                      <th scope="col" className="cs-numero">
+                        {T.colunas.dx}
+                      </th>
+                      <th scope="col" className="cs-numero">
+                        {T.colunas.dv}
+                      </th>
+                      <th scope="col" className="cs-numero">
+                        {T.colunas.vd}
+                      </th>
+                      <th scope="col" className="cs-numero">
+                        {T.colunas.percentual}
+                      </th>
+                      <th scope="col" className="cs-numero">
+                        {T.colunas.comissao}
+                      </th>
+                      <th scope="col" className="cs-numero">
+                        {T.colunas.liquido}
+                      </th>
                       <th scope="col">{T.colunas.situacao}</th>
                     </tr>
                   </thead>
@@ -244,19 +270,37 @@ export function TelaSemanal({ ponte, nome, aoIr, aoAbrirPedido, aoPesquisar, aoS
               <section className="consignado-totais" aria-label={T.totaisLegenda}>
                 <dl>
                   <dt>{T.totais.levado}</dt>
-                  <dd><Dinheiro reais={painel.totais.valorDx} cotacao={cotacao.cotacao} /></dd>
+                  <dd>
+                    <Dinheiro reais={painel.totais.valorDx} cotacao={cotacao.cotacao} />
+                  </dd>
                   <dt>{T.totais.devolvido}</dt>
-                  <dd><Dinheiro reais={painel.totais.valorDv} cotacao={cotacao.cotacao} /></dd>
+                  <dd>
+                    <Dinheiro reais={painel.totais.valorDv} cotacao={cotacao.cotacao} />
+                  </dd>
                   <dt>{T.totais.vendido}</dt>
-                  <dd><Dinheiro reais={painel.totais.valorVd} cotacao={cotacao.cotacao} /></dd>
-                  <dt>{T.totais.itens(painel.totais.itensDx, painel.totais.itensDv, painel.totais.itensVd)}</dt>
+                  <dd>
+                    <Dinheiro reais={painel.totais.valorVd} cotacao={cotacao.cotacao} />
+                  </dd>
+                  <dt>
+                    {T.totais.itens(
+                      painel.totais.itensDx,
+                      painel.totais.itensDv,
+                      painel.totais.itensVd,
+                    )}
+                  </dt>
                   <dd />
                   <dt>{T.totais.comissao}</dt>
-                  <dd><Dinheiro reais={painel.totais.comissao} cotacao={cotacao.cotacao} /></dd>
+                  <dd>
+                    <Dinheiro reais={painel.totais.comissao} cotacao={cotacao.cotacao} />
+                  </dd>
                   <dt>{T.totais.liquido}</dt>
-                  <dd><Dinheiro reais={painel.totais.liquido} cotacao={cotacao.cotacao} /></dd>
+                  <dd>
+                    <Dinheiro reais={painel.totais.liquido} cotacao={cotacao.cotacao} />
+                  </dd>
                   <dt>{T.totais.recebido}</dt>
-                  <dd><Dinheiro reais={painel.totais.recebido} cotacao={cotacao.cotacao} /></dd>
+                  <dd>
+                    <Dinheiro reais={painel.totais.recebido} cotacao={cotacao.cotacao} />
+                  </dd>
                   {(['DINHEIRO', 'PIX', 'DEBITO', 'CREDITO'] as const).map((f) => (
                     <div key={f} className="consignado-totais__forma">
                       <dt>{TEXTOS.consignado.formas[f]}</dt>
@@ -264,9 +308,13 @@ export function TelaSemanal({ ponte, nome, aoIr, aoAbrirPedido, aoPesquisar, aoS
                     </div>
                   ))}
                   <dt>{T.totais.pendente}</dt>
-                  <dd><Dinheiro reais={painel.totais.pendente} cotacao={cotacao.cotacao} /></dd>
+                  <dd>
+                    <Dinheiro reais={painel.totais.pendente} cotacao={cotacao.cotacao} />
+                  </dd>
                 </dl>
-                {cotacao.aviso ? <p className="vendas-texto vendas-texto--pequeno">{cotacao.aviso}</p> : null}
+                {cotacao.aviso ? (
+                  <p className="vendas-texto vendas-texto--pequeno">{cotacao.aviso}</p>
+                ) : null}
               </section>
             )}
           </>
@@ -280,7 +328,9 @@ export function TelaSemanal({ ponte, nome, aoIr, aoAbrirPedido, aoPesquisar, aoS
           aoConfirmar={() => void abrirSemana()}
           aoCancelar={() => setConfirmandoNova(false)}
         >
-          {T.novaSemanaTexto(String(painel.semanas[0]?.numero ?? painel.semana.numero).padStart(7, '0'))}
+          {T.novaSemanaTexto(
+            String(painel.semanas[0]?.numero ?? painel.semana.numero).padStart(7, '0'),
+          )}
         </JanelaDeConfirmacao>
       ) : null}
     </div>

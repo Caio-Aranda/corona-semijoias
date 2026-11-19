@@ -1,8 +1,15 @@
 import { Aviso, Botao, RodapeDeAcoes } from '@corona/ui';
 import { useEffect, useMemo, useState } from 'react';
-import type { DetalheDaNota, LinhaDaNota, PrevisaoDoAcerto } from '../../../shared/dados-do-consignado';
+import type {
+  DetalheDaNota,
+  LinhaDaNota,
+  PrevisaoDoAcerto,
+} from '../../../shared/dados-do-consignado';
 import type { FormaPaga, PecaDevolvida } from '../../../shared/operacoes-do-consignado';
-import { FORMAS_DO_CONSIGNADO, type FormaDoConsignado } from '../../../shared/operacoes-do-consignado';
+import {
+  FORMAS_DO_CONSIGNADO,
+  type FormaDoConsignado,
+} from '../../../shared/operacoes-do-consignado';
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { chamar, Dinheiro, novoId, useCotacao } from '../../chamadas';
 import { Campo, JanelaDeConfirmacao } from '../../componentes-do-vendedor';
@@ -29,7 +36,8 @@ export interface TelaCobrancaProps {
   aoVoltar: () => void;
 }
 
-const chaveDaLinha = (l: { produtoId: string; remessaId: string }): string => `${l.produtoId}|${l.remessaId}`;
+const chaveDaLinha = (l: { produtoId: string; remessaId: string }): string =>
+  `${l.produtoId}|${l.remessaId}`;
 
 /**
  * Cobrança (§23.7): acha o pedido (nome, número da nota ou código da maleta) e faz o acerto por nota: aba Itens (as peças
@@ -39,8 +47,16 @@ const chaveDaLinha = (l: { produtoId: string; remessaId: string }): string => `$
 export function TelaCobranca({ ponte, notaId: inicial, aoVoltar }: TelaCobrancaProps) {
   const T = TEXTOS.consignado.cobranca;
   const [notaId, setNotaId] = useState<string | null>(inicial);
-  const [escolhido, setEscolhido] = useState<{ id: string; numero: string; cliente: string } | null>(null);
-  const { dados: nota, erro, recarregar } = useConsulta<DetalheDaNota>(
+  const [escolhido, setEscolhido] = useState<{
+    id: string;
+    numero: string;
+    cliente: string;
+  } | null>(null);
+  const {
+    dados: nota,
+    erro,
+    recarregar,
+  } = useConsulta<DetalheDaNota>(
     ponte,
     notaId ? { operacao: 'consignado.nota', id: notaId } : null,
     [notaId],
@@ -101,16 +117,23 @@ function AcertoDoPedido({
   const [aba, setAba] = useState<'itens' | 'pagamento'>('itens');
   const [devolvidos, setDevolvidos] = useState<Record<string, number>>({});
   const [concluida, setConcluida] = useState(false);
-  const [comissao, setComissao] = useState(() => (nota.comissaoDoCliente || '30').replace(/\.00$/, '').replace('.', ','));
+  const [comissao, setComissao] = useState(() =>
+    (nota.comissaoDoCliente || '30').replace(/\.00$/, '').replace('.', ','),
+  );
   const [valores, setValores] = useState<Record<FormaDoConsignado, string>>({
     DINHEIRO: '',
     PIX: '',
     DEBITO: '',
     CREDITO: '',
   });
-  const [mensagem, setMensagem] = useState<{ tipo: 'sucesso' | 'atencao' | 'erro'; texto: string } | null>(null);
+  const [mensagem, setMensagem] = useState<{
+    tipo: 'sucesso' | 'atencao' | 'erro';
+    texto: string;
+  } | null>(null);
   const [escolhaDeMaleta, setEscolhaDeMaleta] = useState<LinhaDaNota[] | null>(null);
-  const [confirmando, setConfirmando] = useState<'concluir' | 'salvar' | 'estornar' | 'remarcar' | null>(null);
+  const [confirmando, setConfirmando] = useState<
+    'concluir' | 'salvar' | 'estornar' | 'remarcar' | null
+  >(null);
   const [motivo, setMotivo] = useState('');
   const [novaData, setNovaData] = useState(nota.dataCobranca ?? '');
   const [previa, setPrevia] = useState<PrevisaoDoAcerto | null>(null);
@@ -133,7 +156,11 @@ function AcertoDoPedido({
   const devolvidosParaEnviar = useMemo<PecaDevolvida[]>(
     () =>
       nota.linhas
-        .map((l) => ({ produtoId: l.produtoId, remessaId: l.remessaId, quantidade: devolvidos[chaveDaLinha(l)] ?? 0 }))
+        .map((l) => ({
+          produtoId: l.produtoId,
+          remessaId: l.remessaId,
+          quantidade: devolvidos[chaveDaLinha(l)] ?? 0,
+        }))
         .filter((l) => l.quantidade > 0),
     [nota.linhas, devolvidos],
   );
@@ -168,7 +195,8 @@ function AcertoDoPedido({
     previa !== null &&
     (centavosDeTexto(previa.totalPago) ?? 0n) > (centavosDeTexto(previa.totalAReceber) ?? 0n);
   const comissaoErrada = !acertada && comissaoLida === null;
-  const podeSalvar = !acertada && concluida && previa !== null && !pagoAcima && !formasLidas.invalida && !ocupado;
+  const podeSalvar =
+    !acertada && concluida && previa !== null && !pagoAcima && !formasLidas.invalida && !ocupado;
 
   function ler(codigo: string): void {
     const lido = codigo.trim().toLowerCase();
@@ -257,18 +285,24 @@ function AcertoDoPedido({
   }
 
   const naoLidas = nota.linhas.filter((l) => l.dx - (devolvidos[chaveDaLinha(l)] ?? 0) > 0);
-  const totalNaoLidas = naoLidas.reduce((s, l) => s + (l.dx - (devolvidos[chaveDaLinha(l)] ?? 0)), 0);
+  const totalNaoLidas = naoLidas.reduce(
+    (s, l) => s + (l.dx - (devolvidos[chaveDaLinha(l)] ?? 0)),
+    0,
+  );
   const a = nota.acerto;
 
   return (
     <PaginaDoVendedor ponte={ponte} titulo={T.titulo} aoVoltar={aoVoltar}>
-      <section className={`consignado-cabecalho ${classeDaSituacao(nota.situacao)}`} aria-label={T.cabecalho(nota.numero, nota.cliente)}>
+      <section
+        className={`consignado-cabecalho ${classeDaSituacao(nota.situacao)}`}
+        aria-label={T.cabecalho(nota.numero, nota.cliente)}
+      >
         <p>
           <strong>{T.cabecalho(nota.numero, nota.cliente)}</strong>
         </p>
         <p>
-          {TEXTOS.consignado.semanal.colunas.cobranca}: {dia(nota.dataCobranca)} · {T.saida(dia(nota.saidaEm))} ·{' '}
-          {situacaoNaTela(nota.situacao)}
+          {TEXTOS.consignado.semanal.colunas.cobranca}: {dia(nota.dataCobranca)} ·{' '}
+          {T.saida(dia(nota.saidaEm))} · {situacaoNaTela(nota.situacao)}
         </p>
         <Botao onClick={aoTrocarPedido}>{TEXTOS.consignado.escolherPedido.trocar}</Botao>
       </section>
@@ -321,10 +355,18 @@ function AcertoDoPedido({
                 <th scope="col">{T.colunasItens.ref}</th>
                 <th scope="col">{T.colunasItens.produto}</th>
                 <th scope="col">{T.colunasItens.maleta}</th>
-                <th scope="col" className="cs-numero">{T.colunasItens.dx}</th>
-                <th scope="col" className="cs-numero">{T.colunasItens.dv}</th>
-                <th scope="col" className="cs-numero">{T.colunasItens.preco}</th>
-                <th scope="col" className="cs-numero">{T.colunasItens.subTotal}</th>
+                <th scope="col" className="cs-numero">
+                  {T.colunasItens.dx}
+                </th>
+                <th scope="col" className="cs-numero">
+                  {T.colunasItens.dv}
+                </th>
+                <th scope="col" className="cs-numero">
+                  {T.colunasItens.preco}
+                </th>
+                <th scope="col" className="cs-numero">
+                  {T.colunasItens.subTotal}
+                </th>
                 {!acertada ? <th scope="col" /> : null}
               </tr>
             </thead>
@@ -370,9 +412,7 @@ function AcertoDoPedido({
           </p>
           {!acertada ? (
             <RodapeDeAcoes
-              cancelar={
-                <Botao onClick={() => setConfirmando('remarcar')}>{T.remarcar}</Botao>
-              }
+              cancelar={<Botao onClick={() => setConfirmando('remarcar')}>{T.remarcar}</Botao>}
               principal={
                 <Botao variante="primario" grande onClick={() => setConfirmando('concluir')}>
                   {T.concluir}
@@ -384,7 +424,11 @@ function AcertoDoPedido({
       ) : (
         <section aria-label={T.acertoLegenda}>
           {acertada && a ? (
-            <ResumoDoAcerto ponte={ponte} acerto={a} aoEstornar={() => setConfirmando('estornar')} />
+            <ResumoDoAcerto
+              ponte={ponte}
+              acerto={a}
+              aoEstornar={() => setConfirmando('estornar')}
+            />
           ) : (
             <>
               <h2 className="vendas-subtitulo">{T.acertoTitulo}</h2>
@@ -392,7 +436,9 @@ function AcertoDoPedido({
                 <dt>{T.vendaPercentual}</dt>
                 <dd>{previa ? porCento(previa.vendaPercentual) : ''}</dd>
                 <dt>{T.comissaoRs}</dt>
-                <dd>{previa ? <Dinheiro reais={previa.comissao} cotacao={cotacao.cotacao} /> : ''}</dd>
+                <dd>
+                  {previa ? <Dinheiro reais={previa.comissao} cotacao={cotacao.cotacao} /> : ''}
+                </dd>
                 <dt>{T.bruto}</dt>
                 <dd>{previa ? <Dinheiro reais={previa.bruto} cotacao={cotacao.cotacao} /> : ''}</dd>
               </dl>
@@ -416,7 +462,9 @@ function AcertoDoPedido({
                     <tr>
                       <th scope="col">{T.pendenciasColunas.nota}</th>
                       <th scope="col">{T.pendenciasColunas.data}</th>
-                      <th scope="col" className="cs-numero">{T.pendenciasColunas.valor}</th>
+                      <th scope="col" className="cs-numero">
+                        {T.pendenciasColunas.valor}
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -432,9 +480,21 @@ function AcertoDoPedido({
               )}
               <dl className="consignado-conta">
                 <dt>{T.totalDoDebito}</dt>
-                <dd>{previa ? <Dinheiro reais={previa.pendenciasAnteriores} cotacao={cotacao.cotacao} /> : ''}</dd>
+                <dd>
+                  {previa ? (
+                    <Dinheiro reais={previa.pendenciasAnteriores} cotacao={cotacao.cotacao} />
+                  ) : (
+                    ''
+                  )}
+                </dd>
                 <dt>{T.totalAReceber}</dt>
-                <dd>{previa ? <Dinheiro reais={previa.totalAReceber} cotacao={cotacao.cotacao} /> : ''}</dd>
+                <dd>
+                  {previa ? (
+                    <Dinheiro reais={previa.totalAReceber} cotacao={cotacao.cotacao} />
+                  ) : (
+                    ''
+                  )}
+                </dd>
               </dl>
 
               <h2 className="vendas-subtitulo">{T.pagamentoTitulo}</h2>
@@ -453,19 +513,29 @@ function AcertoDoPedido({
               ))}
               <dl className="consignado-conta">
                 <dt>{T.totalPago}</dt>
-                <dd>{previa ? <Dinheiro reais={previa.totalPago} cotacao={cotacao.cotacao} /> : ''}</dd>
+                <dd>
+                  {previa ? <Dinheiro reais={previa.totalPago} cotacao={cotacao.cotacao} /> : ''}
+                </dd>
                 <dt>{T.ficouDevendo}</dt>
-                <dd>{previa ? <Dinheiro reais={previa.ficouDevendo} cotacao={cotacao.cotacao} /> : ''}</dd>
+                <dd>
+                  {previa ? <Dinheiro reais={previa.ficouDevendo} cotacao={cotacao.cotacao} /> : ''}
+                </dd>
               </dl>
               {pagoAcima ? <Aviso tipo="erro">{T.pagoAcima}</Aviso> : null}
               <p className="vendas-total">
-                {T.rodape(previa?.itensDx ?? 0, previa?.itensDv ?? 0, previa?.itensVd ?? 0)} · {T.totalDx}:{' '}
-                {reais(previa?.valorDx)} · {T.totalDv}: {reais(previa?.valorDv)} · {T.totalVd}: {reais(previa?.valorVd)}
+                {T.rodape(previa?.itensDx ?? 0, previa?.itensDv ?? 0, previa?.itensVd ?? 0)} ·{' '}
+                {T.totalDx}: {reais(previa?.valorDx)} · {T.totalDv}: {reais(previa?.valorDv)} ·{' '}
+                {T.totalVd}: {reais(previa?.valorVd)}
               </p>
               {!concluida ? <Aviso tipo="informacao">{T.concluirPrimeiro}</Aviso> : null}
               <RodapeDeAcoes
                 principal={
-                  <Botao variante="primario" grande disabled={!podeSalvar} onClick={() => setConfirmando('salvar')}>
+                  <Botao
+                    variante="primario"
+                    grande
+                    disabled={!podeSalvar}
+                    onClick={() => setConfirmando('salvar')}
+                  >
                     {T.salvar}
                   </Botao>
                 }
@@ -525,7 +595,11 @@ function AcertoDoPedido({
           aoCancelar={() => setConfirmando(null)}
         >
           <p>{T.estornarTexto}</p>
-          <Campo rotulo={T.estornarMotivo} value={motivo} onChange={(e) => setMotivo(e.target.value)} />
+          <Campo
+            rotulo={T.estornarMotivo}
+            value={motivo}
+            onChange={(e) => setMotivo(e.target.value)}
+          />
         </JanelaDeConfirmacao>
       ) : null}
       {confirmando === 'remarcar' ? (
@@ -537,7 +611,12 @@ function AcertoDoPedido({
           aoCancelar={() => setConfirmando(null)}
         >
           <p>{T.remarcarTexto}</p>
-          <Campo rotulo={T.remarcarData} type="date" value={novaData} onChange={(e) => setNovaData(e.target.value)} />
+          <Campo
+            rotulo={T.remarcarData}
+            type="date"
+            value={novaData}
+            onChange={(e) => setNovaData(e.target.value)}
+          />
         </JanelaDeConfirmacao>
       ) : null}
     </PaginaDoVendedor>

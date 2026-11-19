@@ -897,7 +897,8 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
       confirmarBotao: 'Finalizar pedido',
       descartar: 'Descartar el pedido',
       descartarTitulo: '¿Descartar este pedido?',
-      descartarTexto: 'Las piezas leídas de este pedido salen de la lista. Nada fue entregado al cliente.',
+      descartarTexto:
+        'Las piezas leídas de este pedido salen de la lista. Nada fue entregado al cliente.',
       pronto: (numero: string) => `Pedido ${numero} finalizado.`,
       novoOutro: 'Hacer otro pedido',
       verNota: 'Ver el pedido',
@@ -954,15 +955,15 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
           : 'Todas las piezas volvieron. ¿Confirmar?',
       concluirBotao: 'Concluir devolución',
       naoLidas: 'Piezas que se consideran vendidas',
-      rodape: (dx: number, dv: number, vd: number) =>
-        `Ítems DX ${dx} · DV ${dv} · VD ${vd}`,
+      rodape: (dx: number, dv: number, vd: number) => `Ítems DX ${dx} · DV ${dv} · VD ${vd}`,
       totalDx: 'Total DX',
       totalDv: 'Total DV',
       totalVd: 'Total VD',
       acertoTitulo: 'Cobranza',
       vendaPercentual: 'Venta %',
       comissaoPercentual: 'Comisión %',
-      comissaoDoCadastro: 'Viene del registro del cliente. Acá podés cambiarla solo para esta cobranza (hasta 40%).',
+      comissaoDoCadastro:
+        'Viene del registro del cliente. Acá podés cambiarla solo para esta cobranza (hasta 40%).',
       comissaoRs: 'Comisión R$',
       bruto: 'Total a Cobrar Bruto',
       pendenciasTitulo: 'Pendientes anteriores',
@@ -1016,8 +1017,10 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
       colunas: { produto: 'Producto', maleta: 'Maleta', qtd: 'Cant.', acoes: 'Si te equivocaste' },
       registrar: 'Registrar la reposición',
       semPecas: 'Leé el código de las piezas que se van a agregar.',
-      naMesma: 'Las piezas entran en el pedido y la nota de salida se imprime de nuevo para firmar.',
-      emNova: 'El pedido es de una semana anterior: nace un pedido nuevo en la semana de ahora, solo con las piezas nuevas.',
+      naMesma:
+        'Las piezas entran en el pedido y la nota de salida se imprime de nuevo para firmar.',
+      emNova:
+        'El pedido es de una semana anterior: nace un pedido nuevo en la semana de ahora, solo con las piezas nuevas.',
       registrada: 'Reposición registrada.',
       novaNota: (numero: string) => `Pedido nuevo ${numero} creado solo con las piezas nuevas.`,
       mudou: (numero: string) => `Piezas agregadas al pedido ${numero}.`,
@@ -1068,7 +1071,8 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
       fotoFrente: 'Documento (frente)',
       fotoVerso: 'Documento (dorso)',
       semFoto: 'Sin foto',
-      fotoEsperando: 'Algunas fotos todavía se van a enviar cuando haya internet. Podés seguir trabajando.',
+      fotoEsperando:
+        'Algunas fotos todavía se van a enviar cuando haya internet. Podés seguir trabajando.',
       trocarFoto: 'Cambiar la foto',
       pendenciaTitulo: 'Lo que el cliente debe ahora',
       debitosColunas: { nota: 'Nota', data: 'Cobranza el', valor: 'Valor', deve: 'Debe' },
@@ -1088,12 +1092,19 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
       abrirPedido: 'Abrir el pedido',
       lancar: 'Registrar pago',
       lancarTitulo: 'Registrar pago',
-      lancarAjuda: 'El valor descuenta primero la deuda más antigua. No puede pasar de lo que el cliente debe.',
+      lancarAjuda:
+        'El valor descuenta primero la deuda más antigua. No puede pasar de lo que el cliente debe.',
       lancarBotao: 'Registrar pago',
       lancado: (numero: string) => `Pago registrado. Recibo ${numero}.`,
       lancarTotal: 'Total del pago',
       pagamentos: 'Pagos',
-      pagamentosColunas: { recibo: 'Recibo', data: 'Fecha', forma: 'Forma', total: 'Total', acao: 'Si te equivocaste' },
+      pagamentosColunas: {
+        recibo: 'Recibo',
+        data: 'Fecha',
+        forma: 'Forma',
+        total: 'Total',
+        acao: 'Si te equivocaste',
+      },
       semPagamentos: 'Ningún pago todavía.',
       doAcerto: 'De la cobranza',
       estornadoTexto: 'Anulado',
@@ -1125,7 +1136,8 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
       documentoRepetido: (nome: string) =>
         `Atención: ya existe un cliente con este documento (${nome}). Revisá antes de guardar. El registro no se bloquea.`,
       indicadoPor: 'Indicado por',
-      indicadoPorAjuda: 'Elegí un cliente ya registrado o escribí el nombre. Los dos al mismo tiempo, no.',
+      indicadoPorAjuda:
+        'Elegí un cliente ya registrado o escribí el nombre. Los dos al mismo tiempo, no.',
       indicadoPorCliente: 'Cliente ya registrado',
       indicadoPorNome: 'O escribí el nombre',
       nenhumIndicado: 'Nadie',
@@ -1173,7 +1185,13 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
       nada: 'No se encontró nada. Revisá el nombre, el número de la nota o el código de la maleta.',
       abrir: 'Abrir',
       pedidoLegenda: 'Pedidos encontrados',
-      pedidoColunas: { nota: 'Nota nº', cliente: 'Cliente', cobranca: 'Fecha de cobro', dx: 'Valor DX', situacao: 'Estado' },
+      pedidoColunas: {
+        nota: 'Nota nº',
+        cliente: 'Cliente',
+        cobranca: 'Fecha de cobro',
+        dx: 'Valor DX',
+        situacao: 'Estado',
+      },
     },
   },
 };

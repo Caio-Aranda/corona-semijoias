@@ -1,8 +1,4 @@
-import {
-  percentualDe,
-  situacaoDaNota,
-  textoDePorcentagem,
-} from '@corona/shared/consignado';
+import { percentualDe, situacaoDaNota, textoDePorcentagem } from '@corona/shared/consignado';
 import type {
   AcertoDaTela,
   ClienteCompleto,
@@ -50,7 +46,11 @@ import {
   SQL_ACERTO_ATIVO,
   SQL_RECIBO_ATIVO,
 } from '../sync/consignado-comum';
-import { ErroDaOperacao, MENSAGENS_DAS_OPERACOES, type OperacoesLocais } from '../sync/operacoes-locais';
+import {
+  ErroDaOperacao,
+  MENSAGENS_DAS_OPERACOES,
+  type OperacoesLocais,
+} from '../sync/operacoes-locais';
 import {
   maletasEmUso,
   previaDoAcerto,
@@ -123,7 +123,10 @@ export class ConsultasDoConsignado {
         };
       }
       const mensagem = erro instanceof Error ? erro.message : '';
-      return { ok: false, falha: { tipo: 'recusada', status: 500, ...(mensagem ? { mensagem } : {}) } };
+      return {
+        ok: false,
+        falha: { tipo: 'recusada', status: 500, ...(mensagem ? { mensagem } : {}) },
+      };
     }
   }
 
@@ -133,7 +136,10 @@ export class ConsultasDoConsignado {
       case 'consignado.painel':
         return ok(this.painel(pedido.semanaId));
       case 'consignado.semanaNova': {
-        const r = op.abrirSemana({ id: pedido.id, ...(pedido.numero ? { numero: pedido.numero } : {}) });
+        const r = op.abrirSemana({
+          id: pedido.id,
+          ...(pedido.numero ? { numero: pedido.numero } : {}),
+        });
         return ok({ ...r, painel: this.painel() });
       }
       case 'consignado.clientes':
@@ -174,7 +180,8 @@ export class ConsultasDoConsignado {
         return ok(this.pedido());
       case 'consignado.pedidoBipar': {
         const r = op.biparPedido(pedido.codigo);
-        if (r.resultado === 'ADICIONADA') return ok({ resultado: 'ADICIONADA', pedido: this.pedido() });
+        if (r.resultado === 'ADICIONADA')
+          return ok({ resultado: 'ADICIONADA', pedido: this.pedido() });
         if (r.resultado === 'EM_OUTRA_MALETA')
           return ok({ resultado: 'EM_OUTRA_MALETA', maleta: codigoDaMaleta(r.remessaId) });
         if (r.resultado === 'SEM_SALDO')
@@ -228,14 +235,22 @@ export class ConsultasDoConsignado {
         return ok({ ...r, cliente: this.cliente(pedido.pagamento.clienteId) });
       }
       case 'consignado.estornarAcerto': {
-        const r = op.estornarAcerto({ id: pedido.id, acertoId: pedido.acertoId, motivo: pedido.motivo });
+        const r = op.estornarAcerto({
+          id: pedido.id,
+          acertoId: pedido.acertoId,
+          motivo: pedido.motivo,
+        });
         const nota = this.db()
           .prepare('SELECT nota_id FROM acertos_nota WHERE id = ?')
           .get(pedido.acertoId) as { nota_id: string } | undefined;
         return ok({ ...r, nota: nota ? this.nota(nota.nota_id) : null });
       }
       case 'consignado.estornarRecibo': {
-        const r = op.estornarRecibo({ id: pedido.id, reciboId: pedido.reciboId, motivo: pedido.motivo });
+        const r = op.estornarRecibo({
+          id: pedido.id,
+          reciboId: pedido.reciboId,
+          motivo: pedido.motivo,
+        });
         const recibo = this.db()
           .prepare('SELECT cliente_id FROM recibos_consignado WHERE id = ?')
           .get(pedido.reciboId) as { cliente_id: string } | undefined;
@@ -329,7 +344,10 @@ export class ConsultasDoConsignado {
         )
         .all(acerto.id) as { produto_id: string; remessa_id: string; qtd_dv: number | null }[];
       for (const i of it)
-        dv.set(`${i.produto_id}|${i.remessa_id}`, (dv.get(`${i.produto_id}|${i.remessa_id}`) ?? 0) + (i.qtd_dv ?? 0));
+        dv.set(
+          `${i.produto_id}|${i.remessa_id}`,
+          (dv.get(`${i.produto_id}|${i.remessa_id}`) ?? 0) + (i.qtd_dv ?? 0),
+        );
     }
     return linhasDaNota(db, nota.id).map((l) => {
       const p = this.pecaDaTela(l.produtoId);
@@ -417,8 +435,7 @@ export class ConsultasDoConsignado {
       )
       .all() as { id: string; numero: number }[];
     const nome = db.prepare("SELECT valor FROM estado_sync WHERE chave = 'vendedor_nome'").get() as
-      | { valor: string | null }
-      | undefined;
+      { valor: string | null } | undefined;
     const vazio: TotaisDaSemana = {
       itensDx: 0,
       itensDv: 0,
@@ -469,7 +486,11 @@ export class ConsultasDoConsignado {
     };
   }
 
-  private totais(semanaId: string, pedidos: readonly LinhaDoPedido[], cache: Map<string, DebitoLocal[]>): TotaisDaSemana {
+  private totais(
+    semanaId: string,
+    pedidos: readonly LinhaDoPedido[],
+    cache: Map<string, DebitoLocal[]>,
+  ): TotaisDaSemana {
     const db = this.db();
     let itensDx = 0;
     let itensDv = 0;
@@ -494,7 +515,12 @@ export class ConsultasDoConsignado {
         if (d && d.saldo > 0n) pendente += d.saldo;
       }
     }
-    const recebidoPorForma: Record<FormaDoConsignado, bigint> = { DINHEIRO: 0n, PIX: 0n, DEBITO: 0n, CREDITO: 0n };
+    const recebidoPorForma: Record<FormaDoConsignado, bigint> = {
+      DINHEIRO: 0n,
+      PIX: 0n,
+      DEBITO: 0n,
+      CREDITO: 0n,
+    };
     const formas = db
       .prepare(
         `SELECT f.forma, f.valor FROM formas_recibo_consignado f
@@ -535,11 +561,19 @@ export class ConsultasDoConsignado {
           WHERE r.id = ? AND r.deleted_at IS NULL`,
       )
       .get(id) as
-      | { id: string; sequencia: number; pago_em: string | null; total: string | null; semana: number }
+      | {
+          id: string;
+          sequencia: number;
+          pago_em: string | null;
+          total: string | null;
+          semana: number;
+        }
       | undefined;
     if (!r) return null;
     const formas = db
-      .prepare(`SELECT forma, valor FROM formas_recibo_consignado WHERE recibo_id = ? AND deleted_at IS NULL ORDER BY forma`)
+      .prepare(
+        `SELECT forma, valor FROM formas_recibo_consignado WHERE recibo_id = ? AND deleted_at IS NULL ORDER BY forma`,
+      )
       .all(id) as { forma: FormaDoConsignado; valor: string }[];
     return {
       id: r.id,
@@ -589,9 +623,9 @@ export class ConsultasDoConsignado {
     const db = this.db();
     const nota = acharNota(db, id);
     if (!nota) return null;
-    const cliente = db.prepare('SELECT nome, comissao_percentual FROM clientes WHERE id = ?').get(nota.cliente_id) as
-      | { nome: string; comissao_percentual: string | null }
-      | undefined;
+    const cliente = db
+      .prepare('SELECT nome, comissao_percentual FROM clientes WHERE id = ?')
+      .get(nota.cliente_id) as { nome: string; comissao_percentual: string | null } | undefined;
     const acerto = acertoAtivoDaNota(db, id);
     const atual = semanaAtual(db);
     const debitos = debitosDoCliente(db, nota.cliente_id);
@@ -615,7 +649,9 @@ export class ConsultasDoConsignado {
         ? []
         : debitos.filter((d) => d.saldo > 0n).map((d) => this.debitoDaTela(d)),
       acerto: acerto ? this.acertoDaTela(acerto) : null,
-      saldoDaNota: dinheiro(acerto ? (debitos.find((d) => d.acertoId === acerto.id)?.saldo ?? 0n) : 0n),
+      saldoDaNota: dinheiro(
+        acerto ? (debitos.find((d) => d.acertoId === acerto.id)?.saldo ?? 0n) : 0n,
+      ),
     };
   }
 
@@ -705,7 +741,9 @@ export class ConsultasDoConsignado {
   private fotosEsperando(clienteId: string): number {
     return (
       this.db()
-        .prepare('SELECT count(*) AS n FROM fila_fotos_cliente WHERE cliente_id = ? AND enviada_em IS NULL')
+        .prepare(
+          'SELECT count(*) AS n FROM fila_fotos_cliente WHERE cliente_id = ? AND enviada_em IS NULL',
+        )
         .get(clienteId) as { n: number }
     ).n;
   }
@@ -745,8 +783,7 @@ export class ConsultasDoConsignado {
   private cliente(id: string): ClienteCompleto | null {
     const db = this.db();
     const c = db.prepare('SELECT * FROM clientes WHERE id = ? AND deleted_at IS NULL').get(id) as
-      | Record<string, string | number | null>
-      | undefined;
+      Record<string, string | number | null> | undefined;
     if (!c) return null;
     const texto = (k: string): string | null => (c[k] as string | null | undefined) ?? null;
     const debitos = debitosDoCliente(db, id);
@@ -798,11 +835,11 @@ export class ConsultasDoConsignado {
       numero: numeroDaNota(r.semana, r.sequencia),
       pagoEm: r.pago_em,
       total: r.total ?? ZERO,
-      formas: (
-        db
-          .prepare(`SELECT forma, valor FROM formas_recibo_consignado WHERE recibo_id = ? AND deleted_at IS NULL ORDER BY forma`)
-          .all(r.id) as { forma: FormaDoConsignado; valor: string }[]
-      ),
+      formas: db
+        .prepare(
+          `SELECT forma, valor FROM formas_recibo_consignado WHERE recibo_id = ? AND deleted_at IS NULL ORDER BY forma`,
+        )
+        .all(r.id) as { forma: FormaDoConsignado; valor: string }[],
       podeEstornar: r.ativo === 1 && r.acerto_id === null,
       estornado: r.ativo !== 1,
       doAcerto: r.acerto_id !== null,
@@ -932,7 +969,8 @@ export class ConsultasDoConsignado {
     // Ler o rascunho pode criá-lo; só quem grava (a operação) roda na transação do computador, então aqui só lê.
     const r = this.o.operacoes.pedidoEmMontagem();
     const cliente = r.clienteId
-      ? ((db.prepare('SELECT nome FROM clientes WHERE id = ?').get(r.clienteId) as { nome: string } | undefined) ?? null)
+      ? ((db.prepare('SELECT nome FROM clientes WHERE id = ?').get(r.clienteId) as
+          { nome: string } | undefined) ?? null)
       : null;
     const itens = this.itensDoPedido(r);
     return {

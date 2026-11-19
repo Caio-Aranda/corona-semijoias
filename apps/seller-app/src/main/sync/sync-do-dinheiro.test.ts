@@ -159,13 +159,9 @@ describe('migração local 8', () => {
     limpar.push(() => {
       m7b.close();
     });
-    expect(tabelasDaRecargaDirigida(m7b)).toEqual(comV9([
-      'comissoes',
-      'contas_receber',
-      'baixas_receber',
-      'recebimentos_vendedor',
-      'acertos',
-    ]));
+    expect(tabelasDaRecargaDirigida(m7b)).toEqual(
+      comV9(['comissoes', 'contas_receber', 'baixas_receber', 'recebimentos_vendedor', 'acertos']),
+    );
   });
 });
 

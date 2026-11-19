@@ -53,7 +53,12 @@ export interface PainelDaSemana {
   /** Ainda não existe semana neste computador: a tela pede o número para abrir a primeira. */
   semSemana: boolean;
   semanas: SemanaDaLista[];
-  semana: { id: string; numero: number; atual: boolean; situacao: 'EM_ANDAMENTO' | 'FECHADA' } | null;
+  semana: {
+    id: string;
+    numero: number;
+    atual: boolean;
+    situacao: 'EM_ANDAMENTO' | 'FECHADA';
+  } | null;
   pedidos: LinhaDoPedido[];
   totais: TotaisDaSemana;
   /** Novo Pedido só na semana atual. */
@@ -207,7 +212,14 @@ export interface DetalheDaNota {
 }
 
 export interface PrevisaoDoAcerto {
-  linhas: { produtoId: string; remessaId: string; dx: number; dv: number; vd: number; precoUnitario: string }[];
+  linhas: {
+    produtoId: string;
+    remessaId: string;
+    dx: number;
+    dv: number;
+    vd: number;
+    precoUnitario: string;
+  }[];
   itensDx: number;
   itensDv: number;
   itensVd: number;

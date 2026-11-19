@@ -141,11 +141,9 @@ describe('migração local 6', () => {
     limpar.push(() => {
       m5.close();
     });
-    expect(tabelasDaRecargaDirigida(m5)).toEqual(comV9([
-      ...TABELAS_DA_RECARGA_DIRIGIDA_V6,
-      ...V7_NOVAS,
-      ...V8_NOVAS,
-    ]));
+    expect(tabelasDaRecargaDirigida(m5)).toEqual(
+      comV9([...TABELAS_DA_RECARGA_DIRIGIDA_V6, ...V7_NOVAS, ...V8_NOVAS]),
+    );
 
     // Banco na versão 5 com cursor e uma marca antiga ainda de pé: as antigas primeiro, sem repetir.
     const d = criarBancoDeTeste();
@@ -166,14 +164,16 @@ describe('migração local 6', () => {
     limpar.push(() => {
       m5b.close();
     });
-    expect(tabelasDaRecargaDirigida(m5b)).toEqual(comV9([
-      'contas_receber',
-      'acertos',
-      'leituras_acerto',
-      ...V7_NOVAS,
-      'baixas_receber',
-      'recebimentos_vendedor',
-    ]));
+    expect(tabelasDaRecargaDirigida(m5b)).toEqual(
+      comV9([
+        'contas_receber',
+        'acertos',
+        'leituras_acerto',
+        ...V7_NOVAS,
+        'baixas_receber',
+        'recebimentos_vendedor',
+      ]),
+    );
   });
 });
 
@@ -318,11 +318,9 @@ describe('recarga dirigida depois da migração local 6', () => {
       db.close();
     });
     const { s, url } = await servidor();
-    expect(tabelasDaRecargaDirigida(db)).toEqual(comV9([
-      ...TABELAS_DA_RECARGA_DIRIGIDA_V6,
-      ...V7_NOVAS,
-      ...V8_NOVAS,
-    ]));
+    expect(tabelasDaRecargaDirigida(db)).toEqual(
+      comV9([...TABELAS_DA_RECARGA_DIRIGIDA_V6, ...V7_NOVAS, ...V8_NOVAS]),
+    );
     const remessasAntes = contar(db, "SELECT 1 FROM remessas WHERE origem_local = 'SERVIDOR'");
 
     const acerto = idDeTeste(7);
@@ -371,7 +369,9 @@ describe('recarga dirigida depois da migração local 6', () => {
     // Primeiro ciclo: a 2ª tabela da marca cai. A 1ª já saiu da marca; nada foi apagado.
     s.cairNaTabela = { tabela: 'leituras_acerto', vezes: 1 };
     expect(await ciclo(db, url).executar()).toBe('falha');
-    expect(tabelasDaRecargaDirigida(db)).toEqual(comV9(['leituras_acerto', ...V7_NOVAS, ...V8_NOVAS]));
+    expect(tabelasDaRecargaDirigida(db)).toEqual(
+      comV9(['leituras_acerto', ...V7_NOVAS, ...V8_NOVAS]),
+    );
     expect(contar(db, 'SELECT 1 FROM acertos WHERE id = ?', acerto)).toBe(1);
     expect(contar(db, "SELECT 1 FROM remessas WHERE origem_local = 'SERVIDOR'")).toBe(
       remessasAntes,
@@ -456,7 +456,9 @@ describe('migração local 7 (fechamento do acerto)', () => {
       expect(TABELAS_SINCRONIZAVEIS).toContain(t);
     }
     // Já tinha cursor: a marca nasce com as cinco tabelas (o acerto ganhou colunas e as quatro são novas).
-    expect(tabelasDaRecargaDirigida(db)).toEqual(comV9(['acertos', ...NOVAS_DO_FECHAMENTO, ...V8_NOVAS]));
+    expect(tabelasDaRecargaDirigida(db)).toEqual(
+      comV9(['acertos', ...NOVAS_DO_FECHAMENTO, ...V8_NOVAS]),
+    );
   });
 
   it('nenhuma coluna de custo nem de quem fechou, decidiu ou resolveu', () => {

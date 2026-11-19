@@ -11,7 +11,11 @@ import { dia, FotoDoProduto, useConsulta } from './apoio';
  */
 export function TelaMaletas({ ponte, aoVoltar }: { ponte: PonteDoCorona; aoVoltar: () => void }) {
   const T = TEXTOS.consignado.maletas;
-  const { dados: maletas, erro, recarregar } = useConsulta<MaletaDoConsignado[]>(ponte, { operacao: 'consignado.maletas' }, []);
+  const {
+    dados: maletas,
+    erro,
+    recarregar,
+  } = useConsulta<MaletaDoConsignado[]>(ponte, { operacao: 'consignado.maletas' }, []);
   return (
     <PaginaDoVendedor ponte={ponte} titulo={T.titulo} aoVoltar={aoVoltar}>
       <EstadoDaLista
@@ -27,18 +31,29 @@ export function TelaMaletas({ ponte, aoVoltar }: { ponte: PonteDoCorona; aoVolta
               {TEXTOS.consignado.maleta} {m.codigo}
             </h2>
             <p className="vendas-texto">
-              {T.enviadaEm(dia(m.enviadaEm))} · {T.resumo(m.totalEnviada, m.totalComClientes, m.totalVendida, m.totalDisponivel)}
+              {T.enviadaEm(dia(m.enviadaEm))} ·{' '}
+              {T.resumo(m.totalEnviada, m.totalComClientes, m.totalVendida, m.totalDisponivel)}
             </p>
             <table className="cs-tabela consignado-tabela">
               <caption>{T.legenda(m.codigo)}</caption>
               <thead>
                 <tr>
                   <th scope="col">{T.colunas.produto}</th>
-                  <th scope="col" className="cs-numero">{T.colunas.enviada}</th>
-                  <th scope="col" className="cs-numero">{T.colunas.com}</th>
-                  <th scope="col" className="cs-numero">{T.colunas.vendida}</th>
-                  <th scope="col" className="cs-numero">{T.colunas.loja}</th>
-                  <th scope="col" className="cs-numero">{T.colunas.disp}</th>
+                  <th scope="col" className="cs-numero">
+                    {T.colunas.enviada}
+                  </th>
+                  <th scope="col" className="cs-numero">
+                    {T.colunas.com}
+                  </th>
+                  <th scope="col" className="cs-numero">
+                    {T.colunas.vendida}
+                  </th>
+                  <th scope="col" className="cs-numero">
+                    {T.colunas.loja}
+                  </th>
+                  <th scope="col" className="cs-numero">
+                    {T.colunas.disp}
+                  </th>
                 </tr>
               </thead>
               <tbody>

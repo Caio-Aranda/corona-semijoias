@@ -74,7 +74,10 @@ export function CapturaDeFoto({
       setErro(TEXTOS.consignado.cadastro.semCamera);
       return;
     }
-    const r = await chamar<{ hash: string }>(ponte, { operacao: 'consignado.fotoGuardar', dataUrl: endereco });
+    const r = await chamar<{ hash: string }>(ponte, {
+      operacao: 'consignado.fotoGuardar',
+      dataUrl: endereco,
+    });
     if (!r.ok) {
       setErro(r.mensagem);
       return;
@@ -111,7 +114,13 @@ export function CapturaDeFoto({
       </p>
       {camera ? (
         <div className="consignado-camera">
-          <video ref={video} className="consignado-camera__video" muted playsInline aria-label={rotulo} />
+          <video
+            ref={video}
+            className="consignado-camera__video"
+            muted
+            playsInline
+            aria-label={rotulo}
+          />
           <div className="consignado-camera__acoes">
             <Botao variante="primario" onClick={() => void capturar()}>
               {T.capturar}
@@ -142,7 +151,9 @@ export function CapturaDeFoto({
           </div>
         </>
       )}
-      {hash && !camera ? <p className="vendas-texto vendas-texto--pequeno">{T.fotoPronta}</p> : null}
+      {hash && !camera ? (
+        <p className="vendas-texto vendas-texto--pequeno">{T.fotoPronta}</p>
+      ) : null}
       {erro ? <Aviso tipo="erro">{erro}</Aviso> : null}
     </div>
   );

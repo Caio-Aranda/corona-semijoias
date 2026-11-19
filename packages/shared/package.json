@@ -15,6 +15,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./moedas": "./src/moedas.ts",
-    "./consignado": "./src/consignado/index.ts"
+    "./consignado": "./src/consignado/index.ts",
+    "./exemplos-do-consignado": "./src/consignado/exemplos.ts"
   }
 }

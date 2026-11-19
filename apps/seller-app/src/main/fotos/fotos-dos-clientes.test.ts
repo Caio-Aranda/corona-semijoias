@@ -26,11 +26,18 @@ let enviados: { clienteId: string; tipo: string; bytes: Buffer }[];
 let semRede: boolean;
 
 const chave = chaveDasFotosDe(randomBytes(32));
-const jpeg = (n = 200): Buffer => Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), randomBytes(n)]);
-const comoEndereco = (bytes: Buffer): string => `data:image/jpeg;base64,${bytes.toString('base64')}`;
+const jpeg = (n = 200): Buffer =>
+  Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), randomBytes(n)]);
+const comoEndereco = (bytes: Buffer): string =>
+  `data:image/jpeg;base64,${bytes.toString('base64')}`;
 
 const transporte: TransporteDeFotosDoCliente = {
-  enviar(_token, clienteId, tipo: TipoDeFotoDoCliente, bytes): Promise<Resultado<RespostaDeFotoDoCliente>> {
+  enviar(
+    _token,
+    clienteId,
+    tipo: TipoDeFotoDoCliente,
+    bytes,
+  ): Promise<Resultado<RespostaDeFotoDoCliente>> {
     if (semRede) return Promise.resolve({ ok: false, falha: { tipo: 'sem-conexao' } });
     enviados.push({ clienteId, tipo, bytes });
     return Promise.resolve({ ok: true, dados: { status: respostas.shift() ?? 201 } });
@@ -82,11 +89,31 @@ describe('fotos do cliente criptografadas', () => {
     expect(f.guardar('data:image/jpeg;base64,AAAA')).toBeNull();
     expect(f.guardar(`data:image/png;base64,${jpeg().toString('base64')}`)).toBeNull();
     expect(f.guardar('texto qualquer')).toBeNull();
-    expect(f.guardar(comoEndereco(Buffer.concat([Buffer.from([0xff, 0xd8, 0xff]), randomBytes(11 * 1024 * 1024)])))).toBeNull();
+    expect(
+      f.guardar(
+        comoEndereco(
+          Buffer.concat([Buffer.from([0xff, 0xd8, 0xff]), randomBytes(11 * 1024 * 1024)]),
+        ),
+      ),
+    ).toBeNull();
     const hash = f.guardar(comoEndereco(jpeg())) as string;
-    const outra = new FotosDosClientes({ pasta, chave: () => chaveDasFotosDe(randomBytes(32)), banco: () => b.db, transporte, comToken: (g) => g('t') });
+    const outra = new FotosDosClientes({
+      pasta,
+      chave: () => chaveDasFotosDe(randomBytes(32)),
+      banco: () => b.db,
+      transporte,
+      comToken: (g) => g('t'),
+    });
     expect(outra.ver(hash)).toBeNull();
-    expect(new FotosDosClientes({ pasta, chave: () => null, banco: () => b.db, transporte, comToken: (g) => g('t') }).ver(hash)).toBeNull();
+    expect(
+      new FotosDosClientes({
+        pasta,
+        chave: () => null,
+        banco: () => b.db,
+        transporte,
+        comToken: (g) => g('t'),
+      }).ver(hash),
+    ).toBeNull();
   });
 
   it('arquivo estragado não é entregue', () => {
@@ -114,7 +141,9 @@ describe('fila de envio das fotos', () => {
     expect(sha256Hex(enviados[0]?.bytes as Buffer)).toBe(hash);
     await f.rodar();
     expect(enviados).toHaveLength(1);
-    expect(b.db.prepare('SELECT enviada_em FROM fila_fotos_cliente').get()).not.toEqual({ enviada_em: null });
+    expect(b.db.prepare('SELECT enviada_em FROM fila_fotos_cliente').get()).not.toEqual({
+      enviada_em: null,
+    });
   });
 
   it('sem internet fica na fila; 409 (cadastro ainda não chegou) tenta de novo no ciclo seguinte; recomeça depois de fechar o programa', async () => {
@@ -128,11 +157,20 @@ describe('fila de envio das fotos', () => {
     respostas = [409];
     await fotos().rodar();
     expect(enviados).toHaveLength(1);
-    expect(b.db.prepare('SELECT tentativas, enviada_em FROM fila_fotos_cliente').get()).toEqual({ tentativas: 1, enviada_em: null });
+    expect(b.db.prepare('SELECT tentativas, enviada_em FROM fila_fotos_cliente').get()).toEqual({
+      tentativas: 1,
+      enviada_em: null,
+    });
     // "Fechou o programa": outro objeto, o mesmo banco; a foto ainda está na fila e agora sobe.
     await fotos().rodar();
     expect(enviados).toHaveLength(2);
-    expect((b.db.prepare('SELECT enviada_em FROM fila_fotos_cliente').get() as { enviada_em: string | null }).enviada_em).not.toBeNull();
+    expect(
+      (
+        b.db.prepare('SELECT enviada_em FROM fila_fotos_cliente').get() as {
+          enviada_em: string | null;
+        }
+      ).enviada_em,
+    ).not.toBeNull();
   });
 
   it('a fila guarda uma foto por cliente e tipo, e todas sobem', async () => {

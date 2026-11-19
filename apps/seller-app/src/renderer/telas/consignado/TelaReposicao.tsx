@@ -33,12 +33,21 @@ export function TelaReposicao({
   aoAbrirPedido: (notaId: string) => void;
 }) {
   const T = TEXTOS.consignado.reposicao;
-  const [pedido, setPedido] = useState<{ id: string; numero: string; cliente: string } | null>(null);
+  const [pedido, setPedido] = useState<{ id: string; numero: string; cliente: string } | null>(
+    null,
+  );
   const [remessaId, setRemessaId] = useState('');
   const [linhas, setLinhas] = useState<Linha[]>([]);
-  const [mensagem, setMensagem] = useState<{ tipo: 'sucesso' | 'atencao' | 'erro'; texto: string } | null>(null);
+  const [mensagem, setMensagem] = useState<{
+    tipo: 'sucesso' | 'atencao' | 'erro';
+    texto: string;
+  } | null>(null);
   const [ocupado, setOcupado] = useState(false);
-  const { dados: maletas } = useConsulta<MaletaDoConsignado[]>(ponte, { operacao: 'consignado.maletas' }, []);
+  const { dados: maletas } = useConsulta<MaletaDoConsignado[]>(
+    ponte,
+    { operacao: 'consignado.maletas' },
+    [],
+  );
   const emUso = (maletas ?? []).filter((m) => m.status === 'ENVIADA' || m.status === 'CONFERIDA');
 
   async function ler(codigo: string): Promise<void> {
@@ -46,7 +55,11 @@ export function TelaReposicao({
       setMensagem({ tipo: 'atencao', texto: TEXTOS.consignado.pedido.semMaletas });
       return;
     }
-    const r = await chamar<ResultadoDaPeca>(ponte, { operacao: 'consignado.peca', remessaId, codigo });
+    const r = await chamar<ResultadoDaPeca>(ponte, {
+      operacao: 'consignado.peca',
+      remessaId,
+      codigo,
+    });
     if (!r.ok) {
       setMensagem({ tipo: 'erro', texto: r.mensagem });
       return;
@@ -56,11 +69,16 @@ export function TelaReposicao({
       return;
     }
     if (r.dados.tipo === 'EM_OUTRA_MALETA') {
-      setMensagem({ tipo: 'atencao', texto: TEXTOS.consignado.pedido.emOutraMaleta(r.dados.maleta) });
+      setMensagem({
+        tipo: 'atencao',
+        texto: TEXTOS.consignado.pedido.emOutraMaleta(r.dados.maleta),
+      });
       return;
     }
     const peca: Achada = r.dados;
-    const atual = linhas.find((l) => l.produtoId === peca.produtoId && l.remessaId === peca.remessaId);
+    const atual = linhas.find(
+      (l) => l.produtoId === peca.produtoId && l.remessaId === peca.remessaId,
+    );
     if ((atual?.quantidade ?? 0) + 1 > peca.disponivel) {
       setMensagem({ tipo: 'atencao', texto: TEXTOS.consignado.pedido.semSaldo(peca.disponivel) });
       return;
@@ -92,7 +110,11 @@ export function TelaReposicao({
       reposicao: {
         id: novoId(),
         notaId: pedido.id,
-        itens: linhas.map((l) => ({ produtoId: l.produtoId, remessaId: l.remessaId, quantidade: l.quantidade })),
+        itens: linhas.map((l) => ({
+          produtoId: l.produtoId,
+          remessaId: l.remessaId,
+          quantidade: l.quantidade,
+        })),
       },
     });
     setOcupado(false);
@@ -126,7 +148,11 @@ export function TelaReposicao({
         <>
           <div className="cs-campo">
             <label htmlFor="reposicao-maleta">{T.maleta}</label>
-            <select id="reposicao-maleta" value={remessaId} onChange={(e) => setRemessaId(e.target.value)}>
+            <select
+              id="reposicao-maleta"
+              value={remessaId}
+              onChange={(e) => setRemessaId(e.target.value)}
+            >
               <option value="">{TEXTOS.consignado.pedido.escolherMaleta}</option>
               {emUso.map((m) => (
                 <option key={m.id} value={m.id}>
@@ -135,7 +161,12 @@ export function TelaReposicao({
               ))}
             </select>
           </div>
-          <LeitorDeCodigo rotulo={T.lerCodigo} botao={T.lerAgora} aoLer={ler} desabilitado={!remessaId} />
+          <LeitorDeCodigo
+            rotulo={T.lerCodigo}
+            botao={T.lerAgora}
+            aoLer={ler}
+            desabilitado={!remessaId}
+          />
           {mensagem ? <Aviso tipo={mensagem.tipo}>{mensagem.texto}</Aviso> : null}
           <table className="cs-tabela consignado-tabela">
             <caption>{T.legenda}</caption>
@@ -143,7 +174,9 @@ export function TelaReposicao({
               <tr>
                 <th scope="col">{T.colunas.produto}</th>
                 <th scope="col">{T.colunas.maleta}</th>
-                <th scope="col" className="cs-numero">{T.colunas.qtd}</th>
+                <th scope="col" className="cs-numero">
+                  {T.colunas.qtd}
+                </th>
                 <th scope="col">{T.colunas.acoes}</th>
               </tr>
             </thead>
@@ -183,9 +216,18 @@ export function TelaReposicao({
             </tbody>
           </table>
           <RodapeDeAcoes
-            cancelar={<Botao onClick={() => aoAbrirPedido(pedido.id)}>{TEXTOS.consignado.pedido.verNota}</Botao>}
+            cancelar={
+              <Botao onClick={() => aoAbrirPedido(pedido.id)}>
+                {TEXTOS.consignado.pedido.verNota}
+              </Botao>
+            }
             principal={
-              <Botao variante="primario" grande disabled={linhas.length === 0 || ocupado} onClick={() => void registrar()}>
+              <Botao
+                variante="primario"
+                grande
+                disabled={linhas.length === 0 || ocupado}
+                onClick={() => void registrar()}
+              >
                 {T.registrar}
               </Botao>
             }

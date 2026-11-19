@@ -454,7 +454,11 @@ export class OperacoesLocais {
     return this.executar((db, agora) => consignado.rascunhoDoPedido(db, agora));
   }
 
-  definirPedido(p: { clienteId?: string | null; remessaId?: string | null; dataCobranca?: string }) {
+  definirPedido(p: {
+    clienteId?: string | null;
+    remessaId?: string | null;
+    dataCobranca?: string;
+  }) {
     return this.executar((db, agora) => consignado.definirRascunho(db, agora, p));
   }
 
@@ -463,7 +467,9 @@ export class OperacoesLocais {
   }
 
   ajustarItemDoPedido(itemId: string, quantidade: number) {
-    return this.executar((db, agora) => consignado.ajustarItemDoRascunho(db, agora, itemId, quantidade));
+    return this.executar((db, agora) =>
+      consignado.ajustarItemDoRascunho(db, agora, itemId, quantidade),
+    );
   }
 
   descartarPedido(): void {

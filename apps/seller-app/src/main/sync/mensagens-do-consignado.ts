@@ -34,7 +34,8 @@ export type CodigoDoConsignado =
 export const MENSAGENS_DO_CONSIGNADO: Readonly<Record<CodigoDoConsignado, string>> = Object.freeze({
   NOTA_NAO_ENCONTRADA: 'Não encontramos esta nota. Atualize a tela e tente de novo.',
   NOTA_JA_ACERTADA: 'Esta nota já foi acertada. Para mudar, estorne o acerto e faça de novo.',
-  SEMANA_DA_NOTA_FECHADA: 'Esta semana já foi fechada. Abra uma semana nova para fazer outro pedido.',
+  SEMANA_DA_NOTA_FECHADA:
+    'Esta semana já foi fechada. Abra uma semana nova para fazer outro pedido.',
   DEVOLUCAO_MAIOR_QUE_O_LEVADO:
     'A devolução passa do que o cliente levou nesta nota. Confira as quantidades devolvidas.',
   COMISSAO_FORA_DO_LIMITE:
@@ -58,7 +59,8 @@ export const MENSAGENS_DO_CONSIGNADO: Readonly<Record<CodigoDoConsignado, string
   CLIENTE_SEM_PENDENCIA: 'Este cliente não deve nada.',
   CADASTRO_DO_CLIENTE_INCOMPLETO:
     'Preencha o nome, o endereço (rua, número, bairro, cidade e estado) e o telefone do cliente.',
-  FOTOS_DO_CLIENTE_FALTAM: 'Faltam fotos: tire a foto do cliente e a frente e o verso do documento.',
+  FOTOS_DO_CLIENTE_FALTAM:
+    'Faltam fotos: tire a foto do cliente e a frente e o verso do documento.',
   FOTO_INVALIDA: 'Não foi possível usar esta foto. Tire outra ou escolha outro arquivo.',
   PECA_NAO_ESTA_NA_NOTA: 'Esta peça não está na nota do cliente.',
   NUMERO_DA_SEMANA_INVALIDO: 'Confira o número da semana.',

@@ -124,7 +124,13 @@ export function linhasDaNota(db: BancoAberto, notaId: string): LinhaDaNotaLocal[
     const atual = mapa.get(chave);
     const preco = exigirCentavos(i.preco_unitario ?? '0');
     if (atual) atual.dx += i.quantidade;
-    else mapa.set(chave, { produtoId: i.produto_id, remessaId: i.remessa_id, dx: i.quantidade, preco });
+    else
+      mapa.set(chave, {
+        produtoId: i.produto_id,
+        remessaId: i.remessa_id,
+        dx: i.quantidade,
+        preco,
+      });
   }
   return [...mapa.values()].filter((l) => l.dx > 0);
 }
@@ -222,7 +228,11 @@ export function pendenciaDoCliente(db: BancoAberto, clienteId: string): bigint {
 }
 
 /** O saldo do débito de um acerto valendo, ou `null` se o acerto não vale. */
-export function saldoDoAcerto(db: BancoAberto, acerto: AcertoLocal, clienteId: string): bigint | null {
+export function saldoDoAcerto(
+  db: BancoAberto,
+  acerto: AcertoLocal,
+  clienteId: string,
+): bigint | null {
   const d = debitosDoCliente(db, clienteId).find((x) => x.acertoId === acerto.id);
   return d ? d.saldo : null;
 }

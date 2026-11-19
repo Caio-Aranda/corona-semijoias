@@ -26,7 +26,11 @@ export function TelaPesquisa({
     { operacao: 'consignado.pesquisar', texto },
     [texto],
   );
-  const vazio = dados !== null && dados.notas.length === 0 && dados.clientes.length === 0 && dados.maletas.length === 0;
+  const vazio =
+    dados !== null &&
+    dados.notas.length === 0 &&
+    dados.clientes.length === 0 &&
+    dados.maletas.length === 0;
   return (
     <PaginaDoVendedor ponte={ponte} titulo={T.titulo} aoVoltar={aoVoltar}>
       <p className="vendas-texto">{T.resultadoPara(texto)}</p>
@@ -47,7 +51,9 @@ export function TelaPesquisa({
                   <th scope="col">{T.pedidoColunas.nota}</th>
                   <th scope="col">{T.pedidoColunas.cliente}</th>
                   <th scope="col">{T.pedidoColunas.cobranca}</th>
-                  <th scope="col" className="cs-numero">{T.pedidoColunas.dx}</th>
+                  <th scope="col" className="cs-numero">
+                    {T.pedidoColunas.dx}
+                  </th>
                   <th scope="col">{T.pedidoColunas.situacao}</th>
                   <th scope="col" />
                 </tr>

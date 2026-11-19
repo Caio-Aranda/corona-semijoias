@@ -94,7 +94,9 @@ describe('tela de entrar', () => {
     await u.type(await screen.findByLabelText('Usuário'), 'maria');
     await u.type(screen.getByLabelText('Senha'), 'certa1234');
     await u.click(screen.getByRole('button', { name: 'Entrar' }));
-    expect(await screen.findByRole('heading', { name: 'Gerenciamento Semanal' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Gerenciamento Semanal' }),
+    ).toBeInTheDocument();
   });
 
   it('quando a sessão termina sozinha, avisa e volta para Entrar', async () => {

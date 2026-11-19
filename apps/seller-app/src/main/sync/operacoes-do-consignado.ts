@@ -102,12 +102,17 @@ export function abrirSemana(
   p: { id: string; numero?: number },
 ): { operacaoId: string; semanaId: string; numero: number } {
   const maior = (
-    db
-      .prepare('SELECT max(numero) AS m FROM semanas_vendedor WHERE deleted_at IS NULL')
-      .get() as { m: number | null }
+    db.prepare('SELECT max(numero) AS m FROM semanas_vendedor WHERE deleted_at IS NULL').get() as {
+      m: number | null;
+    }
   ).m;
   const numero = p.numero ?? (maior ?? 0) + 1;
-  if (!Number.isInteger(numero) || numero < 1 || numero > 9_999_999 || (maior !== null && numero <= maior))
+  if (
+    !Number.isInteger(numero) ||
+    numero < 1 ||
+    numero > 9_999_999 ||
+    (maior !== null && numero <= maior)
+  )
     recusar('NUMERO_DA_SEMANA_INVALIDO');
   const abertaEm = agora.toISOString();
   inserir(db, 'semanas_vendedor', p.id, p.id, {
@@ -202,8 +207,10 @@ export function definirRascunho(
   p: { clienteId?: string | null; remessaId?: string | null; dataCobranca?: string },
 ): RascunhoDoPedido {
   const r = rascunhoDoPedido(db, agora);
-  if (p.clienteId !== undefined && p.clienteId !== null) exigirClienteDoRepresentante(db, p.clienteId);
-  if (p.dataCobranca !== undefined && !dataValida(p.dataCobranca)) recusar('DATA_DE_COBRANCA_INVALIDA');
+  if (p.clienteId !== undefined && p.clienteId !== null)
+    exigirClienteDoRepresentante(db, p.clienteId);
+  if (p.dataCobranca !== undefined && !dataValida(p.dataCobranca))
+    recusar('DATA_DE_COBRANCA_INVALIDA');
   db.prepare(
     `UPDATE rascunhos_nota SET cliente_id = ?, remessa_id = ?, data_cobranca = ?, atualizado_em = ? WHERE id = ?`,
   ).run(
@@ -284,7 +291,9 @@ export function biparNoRascunho(db: BancoAberto, agora: Date, codigo: string): R
   } else {
     const ordem = (
       db
-        .prepare('SELECT coalesce(max(ordem), 0) + 1 AS o FROM itens_rascunho_nota WHERE rascunho_id = ?')
+        .prepare(
+          'SELECT coalesce(max(ordem), 0) + 1 AS o FROM itens_rascunho_nota WHERE rascunho_id = ?',
+        )
         .get(r.id) as { o: number }
     ).o;
     const preco = precoNaMaleta(db, r.remessaId, naMaleta) ?? 0n;
@@ -293,7 +302,10 @@ export function biparNoRascunho(db: BancoAberto, agora: Date, codigo: string): R
        VALUES (?, ?, ?, ?, 1, ?, ?)`,
     ).run(uuidV7(agora), r.id, naMaleta, r.remessaId, dinheiro(preco), ordem);
   }
-  db.prepare('UPDATE rascunhos_nota SET atualizado_em = ? WHERE id = ?').run(agora.toISOString(), r.id);
+  db.prepare('UPDATE rascunhos_nota SET atualizado_em = ? WHERE id = ?').run(
+    agora.toISOString(),
+    r.id,
+  );
   return { resultado: 'ADICIONADA', produtoId: naMaleta, rascunho: rascunhoDoPedido(db, agora) };
 }
 
@@ -307,10 +319,14 @@ export function ajustarItemDoRascunho(
   const r = rascunhoDoPedido(db, agora);
   const item = r.itens.find((i) => i.id === itemId);
   if (!item) return recusar('ITEM_DO_PEDIDO_NAO_ENCONTRADO');
-  if (!Number.isInteger(quantidade) || quantidade < 0) return recusar('ITEM_DO_PEDIDO_NAO_ENCONTRADO');
+  if (!Number.isInteger(quantidade) || quantidade < 0)
+    return recusar('ITEM_DO_PEDIDO_NAO_ENCONTRADO');
   if (quantidade === 0) db.prepare('DELETE FROM itens_rascunho_nota WHERE id = ?').run(itemId);
   else if (quantidade <= item.quantidade)
-    db.prepare('UPDATE itens_rascunho_nota SET quantidade = ? WHERE id = ?').run(quantidade, itemId);
+    db.prepare('UPDATE itens_rascunho_nota SET quantidade = ? WHERE id = ?').run(
+      quantidade,
+      itemId,
+    );
   return rascunhoDoPedido(db, agora);
 }
 
@@ -336,7 +352,14 @@ function gravarItensDaSaida(
   origem: 'SAIDA' | 'REPOSICAO',
   reposicaoId: string | null,
   linhas: readonly LinhaParaGravar[],
-): { id: string; produtoId: string; remessaId: string; quantidade: number; precoUnitario: string; movimentoId: string }[] {
+): {
+  id: string;
+  produtoId: string;
+  remessaId: string;
+  quantidade: number;
+  precoUnitario: string;
+  movimentoId: string;
+}[] {
   return linhas.map((l) => {
     const id = uuidV7(agora);
     const movimentoId = uuidV7(agora);
@@ -616,7 +639,10 @@ export function conferirFormas(
   formas: readonly { forma: string; valor: string }[],
 ): { forma: FormaDoConsignado; valor: bigint }[] {
   const lista = formas.map((f) => {
-    if (!(FORMAS_DO_CONSIGNADO as readonly string[]).includes(f.forma) || !CASAS.test(f.valor.trim()))
+    if (
+      !(FORMAS_DO_CONSIGNADO as readonly string[]).includes(f.forma) ||
+      !CASAS.test(f.valor.trim())
+    )
       return recusar('PAGAMENTO_INVALIDO');
     const valor = exigirCentavos(f.valor);
     if (valor <= 0n) return recusar('PAGAMENTO_INVALIDO');
@@ -669,7 +695,8 @@ export function previaDoAcerto(
     const chave = `${d.produtoId}|${d.remessaId}`;
     if (!linhas.some((l) => `${l.produtoId}|${l.remessaId}` === chave))
       return recusar('DEVOLUCAO_MAIOR_QUE_O_LEVADO');
-    if (!Number.isInteger(d.quantidade) || d.quantidade < 0) return recusar('DEVOLUCAO_MAIOR_QUE_O_LEVADO');
+    if (!Number.isInteger(d.quantidade) || d.quantidade < 0)
+      return recusar('DEVOLUCAO_MAIOR_QUE_O_LEVADO');
     devolvidoPorLinha.set(chave, (devolvidoPorLinha.get(chave) ?? 0) + d.quantidade);
   }
   const partes = linhas.map((l) => {
@@ -810,7 +837,8 @@ export function registrarAcerto(
       });
     }
   }
-  let recibo: { id: string; sequencia: number; formas: { forma: string; valor: string }[] } | undefined;
+  let recibo:
+    { id: string; sequencia: number; formas: { forma: string; valor: string }[] } | undefined;
   if (pago > 0n) {
     const sequencia = proximaSequencia(db, semana.id);
     gravarRecibo(db, agora, p.id, {
@@ -830,7 +858,10 @@ export function registrarAcerto(
     const debitos = debitosDoCliente(db, nota.cliente_id)
       .filter((d) => d.saldo > 0n)
       .map((d) => ({ id: d.acertoId, saldo: dinheiro(d.saldo) }));
-    const { aplicacoes } = aplicarPagamento([...debitos, { id: p.id, saldo: dinheiro(bruto) }], dinheiro(pago));
+    const { aplicacoes } = aplicarPagamento(
+      [...debitos, { id: p.id, saldo: dinheiro(bruto) }],
+      dinheiro(pago),
+    );
     for (const a of aplicacoes)
       inserir(db, 'aplicacoes_recibo', uuidV7(agora), p.id, {
         recibo_id: p.reciboId,
@@ -970,7 +1001,12 @@ export function estornarAcerto(
         WHERE acerto_nota_id = ? AND estorna_id IS NULL AND deleted_at IS NULL
           AND NOT EXISTS (SELECT 1 FROM movimentos_remessa e WHERE e.estorna_id = movimentos_remessa.id AND e.deleted_at IS NULL)`,
     )
-    .all(p.acertoId) as { id: string; remessa_id: string; produto_id: string; quantidade: number }[];
+    .all(p.acertoId) as {
+    id: string;
+    remessa_id: string;
+    produto_id: string;
+    quantidade: number;
+  }[];
   for (const m of retornos)
     inserir(db, 'movimentos_remessa', uuidV7(agora), p.id, {
       remessa_id: m.remessa_id,
@@ -981,13 +1017,19 @@ export function estornarAcerto(
       acerto_nota_id: p.acertoId,
       estorna_id: m.id,
     });
-  if (acerto.recibo_id) estornarAplicacoes(db, agora, p.id, { coluna: 'recibo_id', id: acerto.recibo_id });
+  if (acerto.recibo_id)
+    estornarAplicacoes(db, agora, p.id, { coluna: 'recibo_id', id: acerto.recibo_id });
   // As aplicações de OUTROS recibos neste débito também voltam (o valor fica "a aplicar", que o servidor reaproveita).
   estornarAplicacoes(db, agora, p.id, { coluna: 'acerto_id', id: p.acertoId });
   enfileirar(db, {
     operacaoId: p.id,
     tipo: 'ESTORNO_ACERTO_NOTA',
-    dados: JSON.stringify({ id: p.id, acertoId: p.acertoId, motivo, estornadoEm: agora.toISOString() }),
+    dados: JSON.stringify({
+      id: p.id,
+      acertoId: p.acertoId,
+      motivo,
+      estornadoEm: agora.toISOString(),
+    }),
     agora,
   });
   return { operacaoId: p.id };
@@ -1013,7 +1055,12 @@ export function estornarRecibo(
   enfileirar(db, {
     operacaoId: p.id,
     tipo: 'ESTORNO_RECIBO',
-    dados: JSON.stringify({ id: p.id, reciboId: p.reciboId, motivo, estornadoEm: agora.toISOString() }),
+    dados: JSON.stringify({
+      id: p.id,
+      reciboId: p.reciboId,
+      motivo,
+      estornadoEm: agora.toISOString(),
+    }),
     agora,
   });
   return { operacaoId: p.id };
@@ -1104,9 +1151,9 @@ export function cadastrarClienteDoConsignado(
     ativo: 1,
   });
   enfileirar(db, { operacaoId: c.id, tipo: 'CLIENTE_NOVO', dados, agora, formato: 2 });
-  colocarFotoNaFila(db, c.id, 'cliente', c.fotoHash as string);
-  colocarFotoNaFila(db, c.id, 'documento-frente', c.fotoDocumentoFrenteHash as string);
-  colocarFotoNaFila(db, c.id, 'documento-verso', c.fotoDocumentoVersoHash as string);
+  colocarFotoNaFila(db, c.id, 'cliente', c.fotoHash);
+  colocarFotoNaFila(db, c.id, 'documento-frente', c.fotoDocumentoFrenteHash);
+  colocarFotoNaFila(db, c.id, 'documento-verso', c.fotoDocumentoVersoHash);
   return { operacaoId: c.id };
 }
 

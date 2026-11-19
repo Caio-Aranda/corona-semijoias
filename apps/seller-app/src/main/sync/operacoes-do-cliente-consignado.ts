@@ -67,8 +67,12 @@ export function alterarClienteDoConsignado(
     campos[campo] = { antes, depois };
   }
   if (Object.keys(campos).length === 0) return null;
-  const telefone = campos['telefone'] ? campos['telefone'].depois : (atual['telefone'] as string | null);
-  const whatsapp = campos['whatsapp'] ? campos['whatsapp'].depois : (atual['whatsapp'] as string | null);
+  const telefone = campos['telefone']
+    ? campos['telefone'].depois
+    : (atual['telefone'] as string | null);
+  const whatsapp = campos['whatsapp']
+    ? campos['whatsapp'].depois
+    : (atual['whatsapp'] as string | null);
   if (!telefone && !whatsapp) throw new ErroDaOperacao('CADASTRO_DO_CLIENTE_INCOMPLETO');
   for (const [campo, a] of Object.entries(campos))
     db.prepare(`UPDATE clientes SET ${CAMPOS_DO_CLIENTE[campo]} = ? WHERE id = ?`).run(

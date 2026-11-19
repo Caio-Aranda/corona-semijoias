@@ -63,7 +63,11 @@ const devolvidos = (v: unknown): PecaDevolvida[] | null => {
   for (const x of v) {
     if (!ehObjeto(x) || !ehUuid(x['produtoId']) || !ehUuid(x['remessaId'])) return null;
     if (!ehInteiro(x['quantidade'], 0, 100_000)) return null;
-    lista.push({ produtoId: x['produtoId'], remessaId: x['remessaId'], quantidade: x['quantidade'] });
+    lista.push({
+      produtoId: x['produtoId'],
+      remessaId: x['remessaId'],
+      quantidade: x['quantidade'],
+    });
   }
   return lista;
 };
@@ -138,7 +142,9 @@ const cliente = (v: unknown): ClienteDoConsignadoParaCadastrar | null => {
   return saida as unknown as ClienteDoConsignadoParaCadastrar;
 };
 
-const camposDoCliente = (v: unknown): Partial<Record<CampoDoClienteDoConsignado, string>> | null => {
+const camposDoCliente = (
+  v: unknown,
+): Partial<Record<CampoDoClienteDoConsignado, string>> | null => {
   if (!ehObjeto(v)) return null;
   const saida: Partial<Record<CampoDoClienteDoConsignado, string>> = {};
   for (const [chave, valor] of Object.entries(v)) {
@@ -186,11 +192,17 @@ export function validarPedidoDoConsignado(operacao: string, v: Obj): PedidoDoCon
     }
     case 'consignado.fotoGuardar': {
       const d = v['dataUrl'];
-      return ehTexto(d) && d.length <= MAXIMO_DA_FOTO && FOTO.test(d) ? { operacao, dataUrl: d } : null;
+      return ehTexto(d) && d.length <= MAXIMO_DA_FOTO && FOTO.test(d)
+        ? { operacao, dataUrl: d }
+        : null;
     }
     case 'consignado.clienteTrocarFoto': {
       const tipo = v['tipo'];
-      if (!ehUuid(v['id']) || !ehTexto(tipo) || !(TIPOS_DE_FOTO_DO_CLIENTE as readonly string[]).includes(tipo))
+      if (
+        !ehUuid(v['id']) ||
+        !ehTexto(tipo) ||
+        !(TIPOS_DE_FOTO_DO_CLIENTE as readonly string[]).includes(tipo)
+      )
         return null;
       return ehTexto(v['hash']) && HASH.test(v['hash'])
         ? { operacao, id: v['id'], tipo: tipo as TipoDeFotoDoCliente, hash: v['hash'] }
@@ -260,13 +272,18 @@ export function validarPedidoDoConsignado(operacao: string, v: Obj): PedidoDoCon
     }
     case 'consignado.reposicao': {
       const r = v['reposicao'];
-      if (!ehObjeto(r) || !ehUuid(r['id']) || !ehUuid(r['notaId']) || !Array.isArray(r['itens'])) return null;
+      if (!ehObjeto(r) || !ehUuid(r['id']) || !ehUuid(r['notaId']) || !Array.isArray(r['itens']))
+        return null;
       if (r['itens'].length === 0 || r['itens'].length > 500) return null;
       const itens: LinhaParaReposicao[] = [];
       for (const i of r['itens'] as unknown[]) {
         if (!ehObjeto(i) || !ehUuid(i['produtoId']) || !ehUuid(i['remessaId'])) return null;
         if (!ehInteiro(i['quantidade'], 1, 100_000)) return null;
-        itens.push({ produtoId: i['produtoId'], remessaId: i['remessaId'], quantidade: i['quantidade'] });
+        itens.push({
+          produtoId: i['produtoId'],
+          remessaId: i['remessaId'],
+          quantidade: i['quantidade'],
+        });
       }
       return { operacao, reposicao: { id: r['id'], notaId: r['notaId'], itens } };
     }
@@ -289,14 +306,19 @@ export function validarPedidoDoConsignado(operacao: string, v: Obj): PedidoDoCon
       };
     }
     case 'consignado.remarcar':
-      return ehUuid(v['id']) && ehUuid(v['notaId']) && ehTexto(v['dataCobranca']) && DIA.test(v['dataCobranca'])
+      return ehUuid(v['id']) &&
+        ehUuid(v['notaId']) &&
+        ehTexto(v['dataCobranca']) &&
+        DIA.test(v['dataCobranca'])
         ? { operacao, id: v['id'], notaId: v['notaId'], dataCobranca: v['dataCobranca'] }
         : null;
     case 'consignado.pagamento': {
       const p = v['pagamento'];
       if (!ehObjeto(p) || !ehUuid(p['id']) || !ehUuid(p['clienteId'])) return null;
       const f = formas(p['formas']);
-      return f ? { operacao, pagamento: { id: p['id'], clienteId: p['clienteId'], formas: f } } : null;
+      return f
+        ? { operacao, pagamento: { id: p['id'], clienteId: p['clienteId'], formas: f } }
+        : null;
     }
     case 'consignado.estornarAcerto': {
       const m = motivo(v['motivo']);

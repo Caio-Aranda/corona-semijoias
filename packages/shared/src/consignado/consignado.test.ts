@@ -69,9 +69,9 @@ describe('aplicação do pagamento (mais antigo primeiro)', () => {
     // Semana 1: bruto 400, pago 300 → deve 100.
     let a = aplicarPagamento([{ id: 'n1', saldo: t.semana1.bruto }], t.semana1.pago);
     expect(a.sobra).toBe('0.00');
-    expect(
-      exigirCentavos(t.semana1.bruto) - exigirCentavos(a.aplicacoes[0]?.valor ?? '0'),
-    ).toBe(exigirCentavos(t.semana1.deviaDepois));
+    expect(exigirCentavos(t.semana1.bruto) - exigirCentavos(a.aplicacoes[0]?.valor ?? '0')).toBe(
+      exigirCentavos(t.semana1.deviaDepois),
+    );
     // Semana 2: o débito 1 (100) e o novo (500); pago 550.
     a = aplicarPagamento(
       [
@@ -81,7 +81,8 @@ describe('aplicação do pagamento (mais antigo primeiro)', () => {
       t.semana2.pago,
     );
     const d1 =
-      exigirCentavos(t.semana2.pendenciasAnteriores) - exigirCentavos(a.aplicacoes[0]?.valor ?? '0');
+      exigirCentavos(t.semana2.pendenciasAnteriores) -
+      exigirCentavos(a.aplicacoes[0]?.valor ?? '0');
     const d2 = exigirCentavos(t.semana2.bruto) - exigirCentavos(a.aplicacoes[1]?.valor ?? '0');
     expect(textoDeCentavos(d1)).toBe(t.semana2.debito1DepoisDoPagamento);
     expect(textoDeCentavos(d2)).toBe(t.semana2.debito2DepoisDoPagamento);

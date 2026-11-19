@@ -333,7 +333,14 @@ export const COLUNAS_DO_PULL: Readonly<Record<TabelaSincronizavel, readonly stri
     ],
     // Consignado ao cliente (tarefa 9.2; ADR-0016, item 13): só do representante dono. Nunca alertas, numeração do
     // servidor, fechamento da maleta nem foto.
-    semanas_vendedor: ['vendedor_id', 'numero', 'aberta_em', 'fechada_em', 'situacao', 'dispositivo_id'],
+    semanas_vendedor: [
+      'vendedor_id',
+      'numero',
+      'aberta_em',
+      'fechada_em',
+      'situacao',
+      'dispositivo_id',
+    ],
     notas_consignado: [
       'vendedor_id',
       'semana_id',
@@ -393,7 +400,14 @@ export const COLUNAS_DO_PULL: Readonly<Record<TabelaSincronizavel, readonly stri
       'estorno_id',
       'motivo_estorno',
     ],
-    itens_acerto_nota: ['acerto_id', 'produto_id', 'remessa_id', 'qtd_dx', 'qtd_dv', 'preco_unitario'],
+    itens_acerto_nota: [
+      'acerto_id',
+      'produto_id',
+      'remessa_id',
+      'qtd_dx',
+      'qtd_dv',
+      'preco_unitario',
+    ],
     recibos_consignado: [
       'vendedor_id',
       'cliente_id',

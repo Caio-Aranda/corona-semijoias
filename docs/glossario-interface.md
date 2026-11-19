@@ -12,7 +12,7 @@ Como usar:
 
 Em 09/11/2026 o responsável resolveu as dúvidas que estavam abertas neste glossário. A da "Entrada" (parte 10) foi resolvida em 13/11/2026: no sistema novo **não existe entrada nem cheque**, e no acerto o vendedor paga em **Dinheiro**, **Transferência** ou **Boleto** (ADR-0012, aceito em 13/11/2026).
 
-- Na tela, sempre "vendedor".
+- Na tela, "vendedor" até 18/11/2026. **Desde 18/11/2026 (§23.1, item 4) o programa fala em "Representante" (quem usa o Corona Vendas) e "Cliente" (quem leva peças em consignado), nos dois aplicativos e nos dois idiomas; ver a parte 22.**
 - Cancelar venda segue a §19.5: "Cancelar venda", com a explicação de que é um novo lançamento. A palavra "anular" não é usada.
 - Na tela, sempre "ler o código" ("Leia o código de novo"). "Bipar" e "bipe" nunca aparecem na tela.
 - Nomes dos aplicativos: **Corona Gestão** (app da dona) e **Corona Vendas** (app do vendedor), com ícones diferentes (§18).
@@ -1561,3 +1561,40 @@ Estas linhas valem **sobre** as que dizem "na tela, sempre vendedor" (acima) **n
 **O acerto antigo da §7.4 fica escondido** (ADR-0016, item 15): enquanto o servidor disser que não é para mostrar (`GET /api/configuracoes/telas`), somem o grupo **Acertos** do menu (Acertos, Pendências do acerto, Comissão por meta), o botão **Acerto** da tela inicial e do **Painel da semana** e o cartão de acertos do resumo. Nada é apagado; ligar de volta é mudar a configuração.
 
 **Fotos do cliente:** foto do cliente e do documento (frente e verso) são dados pessoais. A ficha só as busca quando a dona pede ("Ver a foto") e não as guarda no computador. "A foto ainda não chegou." quando o representante ainda não enviou; isso nunca trava nada.
+
+
+## 22. Corona Vendas: consignado ao cliente (tarefa 9.2, 19/11/2026)
+
+Vale a especificação §23 (que manda sobre as partes 18 e 20 onde discordarem). **Na tela, o programa fala em "Representante" (quem usa o Corona Vendas; antes "vendedor") e "Cliente" (quem leva peças em consignado para revender)**, nos dois idiomas e nos dois aplicativos. No código e no banco continuam `vendedor` e `cliente`. Os textos moram em `apps/seller-app/src/renderer/textos-pt.ts` e `textos-es.ts`, bloco `consignado` (mesmas chaves nos dois).
+
+| Português | Español (na tela) | Observação |
+| --- | --- | --- |
+| Representante | Representante | Quem usa o Corona Vendas. |
+| Cliente | Cliente | Quem pega peças para revender. Não usa o sistema. |
+| Gerenciamento Semanal | Gestión Semanal | A tela principal. Botões: Novo Pedido, Cobrança, Reposição, Troca, Clientes, Maletas e o campo Pesquisar. |
+| Novo Pedido | Nuevo Pedido | A saída de peças para um cliente (a nota). |
+| Pedido / nota | Pedido / nota | O que um cliente levou numa saída. Número `semana-sequência` (ex.: `0000064-21`). |
+| Cobrança | Cobranza | O acerto por nota: o cliente devolve o que não vendeu e paga o vendido menos a comissão. |
+| Reposição | Reposición | Acrescenta peças a um cliente com pedido em aberto. |
+| Troca | Cambio | Troca uma peça que está com o cliente por outra, sem acerto. |
+| Remarcar ("Cliente não veio") | Reprogramar ("El cliente no vino") | Muda a Dt. Cobrança. |
+| Nova semana | Nueva semana | Abre a semana seguinte e fecha a anterior. |
+| Dt. Cobrança | Fecha de cobro | Saída + 45 dias, editável. |
+| Valor DX / DV / VD | Valor DX / DV / VD | Levado (DX), devolvido (DV) e vendido (VD = DX − DV). "Itens DX, DV e VD" são as quantidades de peças. |
+| Comis. % / Comissão | Comis. % / Comisión | Parte do vendido que fica com o cliente (padrão 30%, de 0% a 40%). |
+| Valor Líq. | Valor neto | Sempre VD − comissão. |
+| Pendência | Pendiente / deuda | O que o cliente deve; acumula e entra sozinha no próximo acerto. |
+| Recibo | Recibo | Registro de um pagamento. |
+| Lançar pagamento | Registrar pago | No cadastro do cliente: abate a pendência mais antiga. |
+| Estornar | Anular | Corrigir é estornar (registro novo, com motivo) e fazer de novo. |
+| Maleta (código `M-XXXXXX`) | Maleta | A maleta não tem código próprio no servidor: a tela mostra um código curto tirado do identificador. |
+| Em aberto, Pendente, Fechado, Remarcado | Abierto, Pendiente, Cerrado, Reprogramado | Situações do pedido; cores: branca, amarela, verde e rosa (o texto aparece sempre, a cor sozinha não basta). |
+| Dinheiro, Pix, Débito, Crédito à vista | Efectivo, Pix, Débito, Crédito al contado | Sem cheque, sem boleto, sem parcelado, sem entrada, sem desconto. |
+
+Mensagens que a tela diz (português simples, dizendo o que fazer; em espanhol, as mesmas por código):
+
+- Bipe que não entra: "Esta peça não está na maleta escolhida. Confira o código." / "... Ela está na maleta M-XXXXXX." / "Só há N desta peça na maleta. Nada foi acrescentado."
+- Cobrança: "Estas N peça(s) não foram lidas e serão consideradas vendidas. Confirmar?" / "Esta peça não está neste pedido. Confira o código." / "O valor pago passa do total a receber. Confira os valores."
+- Pendência no Novo Pedido: "Este cliente deve R$ X. O valor será somado ao próximo acerto."
+- Fotos sem internet: "Algumas fotos ainda vão ser enviadas quando houver internet. Pode continuar trabalhando."
+- Sem semana: "Não há semana aberta. Toque em "Nova semana" para começar."

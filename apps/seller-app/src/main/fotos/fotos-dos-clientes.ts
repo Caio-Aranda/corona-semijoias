@@ -1,7 +1,10 @@
 import { createCipheriv, createDecipheriv, createHash, hkdfSync, randomBytes } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { TIPOS_DE_FOTO_DO_CLIENTE, type TipoDeFotoDoCliente } from '../../shared/operacoes-do-consignado';
+import {
+  TIPOS_DE_FOTO_DO_CLIENTE,
+  type TipoDeFotoDoCliente,
+} from '../../shared/operacoes-do-consignado';
 import type { BancoAberto } from '../banco/banco-local';
 import type { ComToken } from '../sync/ciclo';
 import type { Resultado } from '../tipos';
@@ -77,7 +80,8 @@ export class FotosDosClientes implements FotosDoClienteLocais {
     const m = /^data:image\/jpeg;base64,([A-Za-z0-9+/=]+)$/.exec(dataUrl);
     if (!m) return null;
     const bytes = Buffer.from(m[1] as string, 'base64');
-    if (bytes.length < 4 || bytes.length > MAXIMO_DE_BYTES || !bytes.subarray(0, 3).equals(JPEG)) return null;
+    if (bytes.length < 4 || bytes.length > MAXIMO_DE_BYTES || !bytes.subarray(0, 3).equals(JPEG))
+      return null;
     const hash = sha256Hex(bytes);
     return this.gravarArquivo(hash, bytes) ? hash : null;
   }
@@ -107,7 +111,10 @@ export class FotosDosClientes implements FotosDoClienteLocais {
       if (arquivo.length <= IV + ETIQUETA) return null;
       const decifra = createDecipheriv('aes-256-gcm', chave, arquivo.subarray(0, IV));
       decifra.setAuthTag(arquivo.subarray(IV, IV + ETIQUETA));
-      const bytes = Buffer.concat([decifra.update(arquivo.subarray(IV + ETIQUETA)), decifra.final()]);
+      const bytes = Buffer.concat([
+        decifra.update(arquivo.subarray(IV + ETIQUETA)),
+        decifra.final(),
+      ]);
       return sha256Hex(bytes) === hash ? bytes : null;
     } catch {
       return null;
@@ -140,7 +147,7 @@ export class FotosDosClientes implements FotosDoClienteLocais {
     const db = this.o.banco();
     if (!db) return;
     let paraSubir: { cliente_id: string; tipo: TipoDeFotoDoCliente; hash: string }[];
-    let paraBaixar: { id: string; tipo: TipoDeFotoDoCliente; hash: string }[] = [];
+    const paraBaixar: { id: string; tipo: TipoDeFotoDoCliente; hash: string }[] = [];
     try {
       paraSubir = db
         .prepare(
@@ -160,7 +167,8 @@ export class FotosDosClientes implements FotosDoClienteLocais {
                 AND NOT EXISTS (SELECT 1 FROM fila_fotos_cliente f WHERE f.cliente_id = c.id AND f.tipo = ?)`,
           )
           .all(tipo) as { id: string; hash: string }[];
-        for (const l of linhas) if (!existsSync(this.caminho(l.hash))) paraBaixar.push({ ...l, tipo });
+        for (const l of linhas)
+          if (!existsSync(this.caminho(l.hash))) paraBaixar.push({ ...l, tipo });
       }
     } catch {
       return; // banco fechando (sair, apagar): a próxima passada refaz
@@ -193,7 +201,9 @@ export class FotosDosClientes implements FotosDoClienteLocais {
       this.o.registrar?.('Fotos do cliente: um arquivo não está legível neste computador.');
       return 'pulou';
     }
-    const r = await this.o.comToken((token) => this.o.transporte.enviar(token, clienteId, tipo, bytes));
+    const r = await this.o.comToken((token) =>
+      this.o.transporte.enviar(token, clienteId, tipo, bytes),
+    );
     if (!r.ok) return 'sem-internet'; // rede, sessão ou versão: espera o próximo ciclo
     try {
       if (r.dados.status === 200 || r.dados.status === 201) {

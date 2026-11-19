@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import exemplos from '../../../../../packages/shared/exemplos/consignado-acerto.json';
+import { EXEMPLOS_DO_CONSIGNADO as exemplos } from '@corona/shared/exemplos-do-consignado';
 import type {
   ClienteCompleto,
   DetalheDaNota,
@@ -69,8 +69,20 @@ function receber(): void {
   aplicarLote(
     b.db,
     [
-      { tabela: 'remessas', id: maleta, version: 1, deletedAt: null, campos: { status: 'ENVIADA', enviada_em: '2026-11-01T12:00:00.000Z' } },
-      { tabela: 'remessas', id: outraMaleta, version: 1, deletedAt: null, campos: { status: 'ENVIADA', enviada_em: '2026-11-02T12:00:00.000Z' } },
+      {
+        tabela: 'remessas',
+        id: maleta,
+        version: 1,
+        deletedAt: null,
+        campos: { status: 'ENVIADA', enviada_em: '2026-11-01T12:00:00.000Z' },
+      },
+      {
+        tabela: 'remessas',
+        id: outraMaleta,
+        version: 1,
+        deletedAt: null,
+        campos: { status: 'ENVIADA', enviada_em: '2026-11-02T12:00:00.000Z' },
+      },
       prod(produto.A, 'Brinco A'),
       prod(produto.B, 'Colar B'),
       prod(produto.C, 'Anel C'),
@@ -90,7 +102,12 @@ function receber(): void {
         id: cliente,
         version: 1,
         deletedAt: null,
-        campos: { nome: 'Vendedora Ana', telefone: '67999990000', comissao_percentual: '30.00', vendedor_responsavel_id: idDeTeste(9) },
+        campos: {
+          nome: 'Vendedora Ana',
+          telefone: '67999990000',
+          comissao_percentual: '30.00',
+          vendedor_responsavel_id: idDeTeste(9),
+        },
       },
     ],
     { cursor: 'c-1' },
@@ -119,7 +136,12 @@ function pedido(itens: [string, number][], remessa = maleta): string {
   return id;
 }
 
-function acertar(notaId: string, devolvidos: { produtoId: string; quantidade: number; remessaId?: string }[], comissao: string, formas: { forma: 'DINHEIRO' | 'PIX' | 'DEBITO' | 'CREDITO'; valor: string }[]) {
+function acertar(
+  notaId: string,
+  devolvidos: { produtoId: string; quantidade: number; remessaId?: string }[],
+  comissao: string,
+  formas: { forma: 'DINHEIRO' | 'PIX' | 'DEBITO' | 'CREDITO'; valor: string }[],
+) {
   return chamar<{ situacao: string; nota: DetalheDaNota }>({
     operacao: 'consignado.acertoSalvar',
     acerto: {
@@ -145,7 +167,9 @@ describe('semana e Novo Pedido', () => {
     expect(painel().semSemana).toBe(true);
     chamar({ operacao: 'consignado.pedidoDefinir', clienteId: cliente, remessaId: maleta });
     chamar({ operacao: 'consignado.pedidoBipar', codigo: 'A-1' });
-    expect(() => chamar({ operacao: 'consignado.pedidoFinalizar', id: idDeTeste(6) })).toThrowError(/semana/i);
+    expect(() => chamar({ operacao: 'consignado.pedidoFinalizar', id: idDeTeste(6) })).toThrowError(
+      /semana/i,
+    );
 
     chamar({ operacao: 'consignado.semanaNova', id: idDeTeste(10), numero: 64 });
     const id = idDeTeste(6);
@@ -155,7 +179,10 @@ describe('semana e Novo Pedido', () => {
     const p = painel();
     expect(p.semana?.numero).toBe(65);
     expect(p.podeNovoPedido).toBe(true);
-    const antiga = chamar<PainelDaSemana>({ operacao: 'consignado.painel', semanaId: p.semanas[1]?.id as string });
+    const antiga = chamar<PainelDaSemana>({
+      operacao: 'consignado.painel',
+      semanaId: p.semanas[1]?.id as string,
+    });
     expect(antiga.semana?.situacao).toBe('FECHADA');
     expect(antiga.podeNovoPedido).toBe(false);
     expect(antiga.pedidos).toHaveLength(1);
@@ -164,24 +191,42 @@ describe('semana e Novo Pedido', () => {
   it('bipe: código fora da maleta, em outra maleta, sem saldo; mesma linha soma 1; a nota nasce imutável e a peça sai da maleta', () => {
     chamar({ operacao: 'consignado.semanaNova', id: idDeTeste(10), numero: 1 });
     chamar({ operacao: 'consignado.pedidoDefinir', clienteId: cliente, remessaId: maleta });
-    expect(chamar<{ resultado: string }>({ operacao: 'consignado.pedidoBipar', codigo: 'X-9' }).resultado).toBe('FORA_DA_MALETA');
+    expect(
+      chamar<{ resultado: string }>({ operacao: 'consignado.pedidoBipar', codigo: 'X-9' })
+        .resultado,
+    ).toBe('FORA_DA_MALETA');
     // B existe nas duas maletas: lido na maleta escolhida, entra; já o produto que só existe na outra, avisa.
-    expect(chamar<{ resultado: string }>({ operacao: 'consignado.pedidoBipar', codigo: 'b-1 ' }).resultado).toBe('ADICIONADA');
-    const dois = chamar<{ pedido: PedidoEmMontagem }>({ operacao: 'consignado.pedidoBipar', codigo: 'B-1' });
+    expect(
+      chamar<{ resultado: string }>({ operacao: 'consignado.pedidoBipar', codigo: 'b-1 ' })
+        .resultado,
+    ).toBe('ADICIONADA');
+    const dois = chamar<{ pedido: PedidoEmMontagem }>({
+      operacao: 'consignado.pedidoBipar',
+      codigo: 'B-1',
+    });
     expect(dois.pedido.itens).toHaveLength(1);
     expect(dois.pedido.itens[0]?.quantidade).toBe(2);
     expect(dois.pedido.totalDeItens).toBe(2);
     expect(dois.pedido.totalDx).toBe('375.00');
     // Trocar a maleta e continuar bipando põe a peça de OUTRA maleta na mesma nota (outra linha).
     chamar({ operacao: 'consignado.pedidoDefinir', remessaId: outraMaleta });
-    const tres = chamar<{ pedido: PedidoEmMontagem }>({ operacao: 'consignado.pedidoBipar', codigo: 'B-1' });
+    const tres = chamar<{ pedido: PedidoEmMontagem }>({
+      operacao: 'consignado.pedidoBipar',
+      codigo: 'B-1',
+    });
     expect(tres.pedido.itens).toHaveLength(2);
     // Acima do disponível da maleta: nada é adicionado.
     chamar({ operacao: 'consignado.pedidoDefinir', remessaId: maleta });
     // Há 2 peças D na maleta: as duas primeiras entram, a terceira não.
     for (let i = 0; i < 2; i += 1)
-      expect(chamar<{ resultado: string }>({ operacao: 'consignado.pedidoBipar', codigo: 'D-1' }).resultado).toBe('ADICIONADA');
-    const alem = chamar<{ resultado: string; disponivel?: number }>({ operacao: 'consignado.pedidoBipar', codigo: 'D-1' });
+      expect(
+        chamar<{ resultado: string }>({ operacao: 'consignado.pedidoBipar', codigo: 'D-1' })
+          .resultado,
+      ).toBe('ADICIONADA');
+    const alem = chamar<{ resultado: string; disponivel?: number }>({
+      operacao: 'consignado.pedidoBipar',
+      codigo: 'D-1',
+    });
     expect(alem.resultado).toBe('SEM_SALDO');
     expect(alem.disponivel).toBe(2);
   });
@@ -190,13 +235,43 @@ describe('semana e Novo Pedido', () => {
     chamar({ operacao: 'consignado.semanaNova', id: idDeTeste(10), numero: 1 });
     // Só a outra maleta tem este produto novo.
     const p = idDeTeste(2);
-    aplicarLote(b.db, [
-      { tabela: 'produtos', id: p, version: 1, deletedAt: null, campos: { nome: 'Pulseira E', ativo: 1 } },
-      { tabela: 'produto_codigos', id: idDeTeste(5), version: 1, deletedAt: null, campos: { produto_id: p, codigo: 'E-1', tipo: 'FORNECEDOR', principal: 1, ativo: 1 } },
-      { tabela: 'itens_remessa', id: idDeTeste(4), version: 1, deletedAt: null, campos: { remessa_id: outraMaleta, produto_id: p, qtd_enviada: 3, preco_remessa: '50.00' } },
-    ], { cursor: 'c-2' });
+    aplicarLote(
+      b.db,
+      [
+        {
+          tabela: 'produtos',
+          id: p,
+          version: 1,
+          deletedAt: null,
+          campos: { nome: 'Pulseira E', ativo: 1 },
+        },
+        {
+          tabela: 'produto_codigos',
+          id: idDeTeste(5),
+          version: 1,
+          deletedAt: null,
+          campos: { produto_id: p, codigo: 'E-1', tipo: 'FORNECEDOR', principal: 1, ativo: 1 },
+        },
+        {
+          tabela: 'itens_remessa',
+          id: idDeTeste(4),
+          version: 1,
+          deletedAt: null,
+          campos: {
+            remessa_id: outraMaleta,
+            produto_id: p,
+            qtd_enviada: 3,
+            preco_remessa: '50.00',
+          },
+        },
+      ],
+      { cursor: 'c-2' },
+    );
     chamar({ operacao: 'consignado.pedidoDefinir', clienteId: cliente, remessaId: maleta });
-    const r = chamar<{ resultado: string; maleta?: string }>({ operacao: 'consignado.pedidoBipar', codigo: 'E-1' });
+    const r = chamar<{ resultado: string; maleta?: string }>({
+      operacao: 'consignado.pedidoBipar',
+      codigo: 'E-1',
+    });
     expect(r.resultado).toBe('EM_OUTRA_MALETA');
     expect(r.maleta).toMatch(/^M-[0-9A-F]{6}$/);
     expect(chamar<PedidoEmMontagem>({ operacao: 'consignado.pedidoVer' }).itens).toHaveLength(0);
@@ -212,7 +287,11 @@ describe('a nota 0000064-21 e a pendência da 0000063-32 (mesmo arquivo de exemp
     const a63 = acertar(antiga, [], '0', []);
     expect(a63.situacao).toBe('PENDENTE');
     chamar({ operacao: 'consignado.semanaNova', id: idDeTeste(10), numero: 64 });
-    const nova = pedido([['A-1', 10], ['B-1', 8], ['C-1', 8]]);
+    const nova = pedido([
+      ['A-1', 10],
+      ['B-1', 8],
+      ['C-1', 8],
+    ]);
     return { n, antiga, nova };
   }
 
@@ -275,14 +354,37 @@ describe('a nota 0000064-21 e a pendência da 0000063-32 (mesmo arquivo de exemp
     const { n, nova } = cenario();
     acertar(
       nova,
-      [{ produtoId: produto.A, remessaId: maleta, quantidade: 5 }, { produtoId: produto.B, remessaId: maleta, quantidade: 6 }, { produtoId: produto.C, remessaId: maleta, quantidade: 4 }],
+      [
+        { produtoId: produto.A, remessaId: maleta, quantidade: 5 },
+        { produtoId: produto.B, remessaId: maleta, quantidade: 6 },
+        { produtoId: produto.C, remessaId: maleta, quantidade: 4 },
+      ],
       n.comissaoPercentual,
-      [{ forma: 'DINHEIRO', valor: n.pago.DINHEIRO }, { forma: 'PIX', valor: n.pago.PIX }],
+      [
+        { forma: 'DINHEIRO', valor: n.pago.DINHEIRO },
+        { forma: 'PIX', valor: n.pago.PIX },
+      ],
     );
-    const linhas = b.db.prepare('SELECT tipo, formato, dados FROM outbox ORDER BY ordem').all() as { tipo: string; formato: number; dados: string }[];
-    expect(linhas.map((l) => l.tipo)).toEqual(['SEMANA_NOVA', 'NOTA_CONSIGNADO', 'ACERTO_NOTA', 'SEMANA_NOVA', 'NOTA_CONSIGNADO', 'ACERTO_NOTA']);
+    const linhas = b.db.prepare('SELECT tipo, formato, dados FROM outbox ORDER BY ordem').all() as {
+      tipo: string;
+      formato: number;
+      dados: string;
+    }[];
+    expect(linhas.map((l) => l.tipo)).toEqual([
+      'SEMANA_NOVA',
+      'NOTA_CONSIGNADO',
+      'ACERTO_NOTA',
+      'SEMANA_NOVA',
+      'NOTA_CONSIGNADO',
+      'ACERTO_NOTA',
+    ]);
     expect(linhas.every((l) => l.formato === 1)).toBe(true);
-    const acerto = JSON.parse(linhas[5]?.dados ?? '{}') as { visto: Record<string, string>; recibo: { formas: unknown[]; sequencia: number }; devolvidos: unknown[]; comissaoPercentual: string };
+    const acerto = JSON.parse(linhas[5]?.dados ?? '{}') as {
+      visto: Record<string, string>;
+      recibo: { formas: unknown[]; sequencia: number };
+      devolvidos: unknown[];
+      comissaoPercentual: string;
+    };
     expect(acerto.visto['ficouDevendo']).toBe(n.esperado.ficouDevendo);
     expect(acerto.visto['pendenciasAnteriores']).toBe(n.pendenciasAnteriores);
     expect(acerto.comissaoPercentual).toBe('30.00');
@@ -294,10 +396,32 @@ describe('a nota 0000064-21 e a pendência da 0000063-32 (mesmo arquivo de exemp
 
   it('recusas: devolver mais que o levado, comissão fora de 0 a 40, pagar mais que o devido, segundo acerto', () => {
     const { nova } = cenario();
-    const base = { notaId: nova, formas: [] as { forma: 'DINHEIRO'; valor: string }[], comissaoPercentual: '30' };
-    expect(() => chamar({ operacao: 'consignado.acertoPrevia', acerto: { ...base, devolvidos: [{ produtoId: produto.A, remessaId: maleta, quantidade: 11 }] } })).toThrowError(/devolução passa/i);
-    expect(() => chamar({ operacao: 'consignado.acertoPrevia', acerto: { ...base, comissaoPercentual: '40.01', devolvidos: [] } })).toThrowError(/entre 0% e 40%/);
-    expect(() => chamar({ operacao: 'consignado.acertoPrevia', acerto: { ...base, comissaoPercentual: '-1', devolvidos: [] } })).toThrowError(/entre 0% e 40%/);
+    const base = {
+      notaId: nova,
+      formas: [] as { forma: 'DINHEIRO'; valor: string }[],
+      comissaoPercentual: '30',
+    };
+    expect(() =>
+      chamar({
+        operacao: 'consignado.acertoPrevia',
+        acerto: {
+          ...base,
+          devolvidos: [{ produtoId: produto.A, remessaId: maleta, quantidade: 11 }],
+        },
+      }),
+    ).toThrowError(/devolução passa/i);
+    expect(() =>
+      chamar({
+        operacao: 'consignado.acertoPrevia',
+        acerto: { ...base, comissaoPercentual: '40.01', devolvidos: [] },
+      }),
+    ).toThrowError(/entre 0% e 40%/);
+    expect(() =>
+      chamar({
+        operacao: 'consignado.acertoPrevia',
+        acerto: { ...base, comissaoPercentual: '-1', devolvidos: [] },
+      }),
+    ).toThrowError(/entre 0% e 40%/);
     const muito = [{ forma: 'DINHEIRO' as const, valor: '99999.00' }];
     expect(() => acertar(nova, [], '30', muito)).toThrowError(/passa do que o cliente deve/);
     acertar(nova, [], '30', []);
@@ -323,21 +447,42 @@ describe('a nota 0000064-21 e a pendência da 0000063-32 (mesmo arquivo de exemp
     // Estornar o pagamento lançado reabre a pendência.
     const reciboId = r.cliente.pagamentos[0]?.reciboId as string;
     expect(r.cliente.pagamentos[0]?.podeEstornar).toBe(true);
-    const depois = chamar<{ cliente: ClienteCompleto }>({ operacao: 'consignado.estornarRecibo', id: idDeTeste(12), reciboId, motivo: 'Pix lançado errado' });
+    const depois = chamar<{ cliente: ClienteCompleto }>({
+      operacao: 'consignado.estornarRecibo',
+      id: idDeTeste(12),
+      reciboId,
+      motivo: 'Pix lançado errado',
+    });
     expect(Number(depois.cliente.pendencia)).toBeCloseTo(antes, 2);
     expect(nota(antiga).situacao).toBe('PENDENTE');
-    expect(() => chamar({ operacao: 'consignado.estornarRecibo', id: idDeTeste(12), reciboId, motivo: 'de novo' })).toThrowError(/já foi estornado/);
-    expect(() => chamar({ operacao: 'consignado.estornarRecibo', id: idDeTeste(12), reciboId, motivo: ' ' })).toThrowError(/motivo/i);
+    expect(() =>
+      chamar({
+        operacao: 'consignado.estornarRecibo',
+        id: idDeTeste(12),
+        reciboId,
+        motivo: 'de novo',
+      }),
+    ).toThrowError(/já foi estornado/);
+    expect(() =>
+      chamar({ operacao: 'consignado.estornarRecibo', id: idDeTeste(12), reciboId, motivo: ' ' }),
+    ).toThrowError(/motivo/i);
   });
 
   it('estornar o acerto devolve a nota a Em aberto, desfaz os retornos da maleta e reabre o que o recibo dele quitou', () => {
     const { n, antiga, nova } = cenario();
     const devolvidos = [{ produtoId: produto.A, remessaId: maleta, quantidade: 5 }];
-    const feito = acertar(nova, devolvidos, n.comissaoPercentual, [{ forma: 'DINHEIRO', valor: '500.00' }]);
+    const feito = acertar(nova, devolvidos, n.comissaoPercentual, [
+      { forma: 'DINHEIRO', valor: '500.00' },
+    ]);
     expect(feito.nota.acerto).not.toBeNull();
     expect(nota(antiga).situacao).toBe('FECHADO');
     const acertoId = feito.nota.acerto?.id as string;
-    chamar({ operacao: 'consignado.estornarAcerto', id: idDeTeste(13), acertoId, motivo: 'Contei errado' });
+    chamar({
+      operacao: 'consignado.estornarAcerto',
+      id: idDeTeste(13),
+      acertoId,
+      motivo: 'Contei errado',
+    });
     expect(nota(nova).situacao).toBe('EM_ABERTO');
     expect(nota(nova).aceitaMudanca).toBe(true);
     expect(nota(antiga).situacao).toBe('PENDENTE');
@@ -345,14 +490,32 @@ describe('a nota 0000064-21 e a pendência da 0000063-32 (mesmo arquivo de exemp
     const a = saldoDe(maletas(), maleta, produto.A);
     expect(a?.disponivel).toBe(12 - 10);
     expect(a?.comClientes).toBe(10);
-    expect(() => chamar({ operacao: 'consignado.estornarAcerto', id: idDeTeste(13), acertoId, motivo: 'de novo' })).toThrowError(/já foi estornado/);
+    expect(() =>
+      chamar({
+        operacao: 'consignado.estornarAcerto',
+        id: idDeTeste(13),
+        acertoId,
+        motivo: 'de novo',
+      }),
+    ).toThrowError(/já foi estornado/);
   });
 
   it('operação recusada pelo servidor volta o espelho: sem acerto, sem recibo, o saldo da maleta volta', () => {
     const { nova } = cenario();
-    const feito = acertar(nova, [{ produtoId: produto.A, remessaId: maleta, quantidade: 5 }], '30', [{ forma: 'PIX', valor: '100.00' }]);
+    const feito = acertar(
+      nova,
+      [{ produtoId: produto.A, remessaId: maleta, quantidade: 5 }],
+      '30',
+      [{ forma: 'PIX', valor: '100.00' }],
+    );
     expect(feito.nota.acerto).not.toBeNull();
-    const operacaoDoAcerto = (b.db.prepare("SELECT operacao_id FROM outbox WHERE tipo = 'ACERTO_NOTA' ORDER BY ordem DESC LIMIT 1").get() as { operacao_id: string }).operacao_id;
+    const operacaoDoAcerto = (
+      b.db
+        .prepare(
+          "SELECT operacao_id FROM outbox WHERE tipo = 'ACERTO_NOTA' ORDER BY ordem DESC LIMIT 1",
+        )
+        .get() as { operacao_id: string }
+    ).operacao_id;
     desfazerOperacao(b.db, operacaoDoAcerto);
     expect(nota(nova).situacao).toBe('EM_ABERTO');
     expect(nota(nova).acerto).toBeNull();
@@ -367,7 +530,11 @@ describe('Reposição, Troca e Remarcar', () => {
     const n1 = pedido([['A-1', 2]]);
     const r1 = chamar<{ novaNota: boolean; nota: DetalheDaNota }>({
       operacao: 'consignado.reposicao',
-      reposicao: { id: idDeTeste(14), notaId: n1, itens: [{ produtoId: produto.B, remessaId: maleta, quantidade: 1 }] },
+      reposicao: {
+        id: idDeTeste(14),
+        notaId: n1,
+        itens: [{ produtoId: produto.B, remessaId: maleta, quantidade: 1 }],
+      },
     });
     expect(r1.novaNota).toBe(false);
     expect(r1.nota.linhas).toHaveLength(2);
@@ -376,14 +543,26 @@ describe('Reposição, Troca e Remarcar', () => {
     const dataAntes = nota(n1).dataCobranca;
     const r2 = chamar<{ novaNota: boolean; notaId: string; nota: DetalheDaNota }>({
       operacao: 'consignado.reposicao',
-      reposicao: { id: idDeTeste(14), notaId: n1, itens: [{ produtoId: produto.C, remessaId: maleta, quantidade: 1 }] },
+      reposicao: {
+        id: idDeTeste(14),
+        notaId: n1,
+        itens: [{ produtoId: produto.C, remessaId: maleta, quantidade: 1 }],
+      },
     });
     expect(r2.novaNota).toBe(true);
     expect(r2.nota.itensDx).toBe(1);
     expect(r2.nota.dataCobranca).toBe(dataAntes);
     expect(r2.nota.numero).toMatch(/^0000002-/);
-    const tipos = (b.db.prepare('SELECT tipo FROM outbox ORDER BY ordem').all() as { tipo: string }[]).map((x) => x.tipo);
-    expect(tipos).toEqual(['SEMANA_NOVA', 'NOTA_CONSIGNADO', 'REPOSICAO_NOTA', 'SEMANA_NOVA', 'NOTA_CONSIGNADO']);
+    const tipos = (
+      b.db.prepare('SELECT tipo FROM outbox ORDER BY ordem').all() as { tipo: string }[]
+    ).map((x) => x.tipo);
+    expect(tipos).toEqual([
+      'SEMANA_NOVA',
+      'NOTA_CONSIGNADO',
+      'REPOSICAO_NOTA',
+      'SEMANA_NOVA',
+      'NOTA_CONSIGNADO',
+    ]);
   });
 
   it('Troca: a peça volta à maleta de onde saiu e a nova entra, numa operação só; nota acertada não troca', () => {
@@ -391,53 +570,153 @@ describe('Reposição, Troca e Remarcar', () => {
     const n1 = pedido([['A-1', 2]]);
     const r = chamar<{ nota: DetalheDaNota }>({
       operacao: 'consignado.trocaNaNota',
-      troca: { id: idDeTeste(15), notaId: n1, volta: { produtoId: produto.A, remessaId: maleta }, entra: { produtoId: produto.C, remessaId: maleta } },
+      troca: {
+        id: idDeTeste(15),
+        notaId: n1,
+        volta: { produtoId: produto.A, remessaId: maleta },
+        entra: { produtoId: produto.C, remessaId: maleta },
+      },
     });
-    expect(r.nota.linhas.map((l) => [l.produtoId === produto.A ? 'A' : 'C', l.dx])).toEqual([['A', 1], ['C', 1]]);
+    expect(r.nota.linhas.map((l) => [l.produtoId === produto.A ? 'A' : 'C', l.dx])).toEqual([
+      ['A', 1],
+      ['C', 1],
+    ]);
     expect(r.nota.valorDx).toBe('433.75');
     const m = maletas();
     expect(saldoDe(m, maleta, produto.A)?.disponivel).toBe(11);
     expect(saldoDe(m, maleta, produto.C)?.disponivel).toBe(9);
-    expect(() => chamar({ operacao: 'consignado.trocaNaNota', troca: { id: idDeTeste(15), notaId: n1, volta: { produtoId: produto.D, remessaId: maleta }, entra: { produtoId: produto.C, remessaId: maleta } } })).toThrowError(/não está na nota/);
+    expect(() =>
+      chamar({
+        operacao: 'consignado.trocaNaNota',
+        troca: {
+          id: idDeTeste(15),
+          notaId: n1,
+          volta: { produtoId: produto.D, remessaId: maleta },
+          entra: { produtoId: produto.C, remessaId: maleta },
+        },
+      }),
+    ).toThrowError(/não está na nota/);
     acertar(n1, [], '0', []);
-    expect(() => chamar({ operacao: 'consignado.trocaNaNota', troca: { id: idDeTeste(15), notaId: n1, volta: { produtoId: produto.A, remessaId: maleta }, entra: { produtoId: produto.C, remessaId: maleta } } })).toThrowError(/já foi acertada/);
+    expect(() =>
+      chamar({
+        operacao: 'consignado.trocaNaNota',
+        troca: {
+          id: idDeTeste(15),
+          notaId: n1,
+          volta: { produtoId: produto.A, remessaId: maleta },
+          entra: { produtoId: produto.C, remessaId: maleta },
+        },
+      }),
+    ).toThrowError(/já foi acertada/);
   });
 
   it('Remarcar muda a Dt. Cobrança e a nota fica Remarcado; zerada até o acerto', () => {
     chamar({ operacao: 'consignado.semanaNova', id: idDeTeste(10), numero: 1 });
     const n1 = pedido([['A-1', 1]]);
-    const r = chamar<{ nota: DetalheDaNota }>({ operacao: 'consignado.remarcar', id: idDeTeste(16), notaId: n1, dataCobranca: '2027-02-01' });
+    const r = chamar<{ nota: DetalheDaNota }>({
+      operacao: 'consignado.remarcar',
+      id: idDeTeste(16),
+      notaId: n1,
+      dataCobranca: '2027-02-01',
+    });
     expect(r.nota.situacao).toBe('REMARCADO');
     expect(r.nota.dataCobranca).toBe('2027-02-01');
     const linha = painel().pedidos[0];
     expect(linha?.situacao).toBe('REMARCADO');
     expect(linha?.valorVd).toBe('0.00');
     expect(linha?.valorLiquido).toBe('0.00');
-    expect(() => chamar({ operacao: 'consignado.remarcar', id: idDeTeste(16), notaId: n1, dataCobranca: '2027-13-40' })).toThrowError(/data de cobrança/i);
+    expect(() =>
+      chamar({
+        operacao: 'consignado.remarcar',
+        id: idDeTeste(16),
+        notaId: n1,
+        dataCobranca: '2027-13-40',
+      }),
+    ).toThrowError(/data de cobrança/i);
   });
 });
 
 describe('cliente do representante', () => {
-  const fotos = { fotoHash: 'a'.repeat(64), fotoDocumentoFrenteHash: 'b'.repeat(64), fotoDocumentoVersoHash: 'c'.repeat(64) };
+  const fotos = {
+    fotoHash: 'a'.repeat(64),
+    fotoDocumentoFrenteHash: 'b'.repeat(64),
+    fotoDocumentoVersoHash: 'c'.repeat(64),
+  };
 
   it('cadastro com fotos vai no formato 2, as fotos entram na fila e o cadastro incompleto é recusado', () => {
     const id = idDeTeste(3);
     expect(() =>
-      chamar({ operacao: 'consignado.clienteCadastrar', cliente: { id, nome: 'Sem endereço', telefone: '1', ...fotos, enderecoLogradouro: '', enderecoNumero: '', enderecoBairro: '', enderecoCidade: '', enderecoUf: '' } }),
+      chamar({
+        operacao: 'consignado.clienteCadastrar',
+        cliente: {
+          id,
+          nome: 'Sem endereço',
+          telefone: '1',
+          ...fotos,
+          enderecoLogradouro: '',
+          enderecoNumero: '',
+          enderecoBairro: '',
+          enderecoCidade: '',
+          enderecoUf: '',
+        },
+      }),
     ).toThrowError(/Preencha o nome/);
     expect(() =>
-      chamar({ operacao: 'consignado.clienteCadastrar', cliente: { id, nome: 'Sem foto', telefone: '1', enderecoLogradouro: 'Rua A', enderecoNumero: '1', enderecoBairro: 'Centro', enderecoCidade: 'Ponta Porã', enderecoUf: 'MS', fotoHash: '', fotoDocumentoFrenteHash: '', fotoDocumentoVersoHash: '' } }),
+      chamar({
+        operacao: 'consignado.clienteCadastrar',
+        cliente: {
+          id,
+          nome: 'Sem foto',
+          telefone: '1',
+          enderecoLogradouro: 'Rua A',
+          enderecoNumero: '1',
+          enderecoBairro: 'Centro',
+          enderecoCidade: 'Ponta Porã',
+          enderecoUf: 'MS',
+          fotoHash: '',
+          fotoDocumentoFrenteHash: '',
+          fotoDocumentoVersoHash: '',
+        },
+      }),
     ).toThrowError(/Faltam fotos/);
     expect(() =>
-      chamar({ operacao: 'consignado.clienteCadastrar', cliente: { id, nome: 'Comissão alta', telefone: '1', enderecoLogradouro: 'Rua A', enderecoNumero: '1', enderecoBairro: 'Centro', enderecoCidade: 'Ponta Porã', enderecoUf: 'MS', comissaoPercentual: '41', ...fotos } }),
+      chamar({
+        operacao: 'consignado.clienteCadastrar',
+        cliente: {
+          id,
+          nome: 'Comissão alta',
+          telefone: '1',
+          enderecoLogradouro: 'Rua A',
+          enderecoNumero: '1',
+          enderecoBairro: 'Centro',
+          enderecoCidade: 'Ponta Porã',
+          enderecoUf: 'MS',
+          comissaoPercentual: '41',
+          ...fotos,
+        },
+      }),
     ).toThrowError(/entre 0% e 40%/);
     const c = chamar<ClienteCompleto>({
       operacao: 'consignado.clienteCadastrar',
-      cliente: { id, nome: 'Maria', telefone: '67 99999-0000', enderecoLogradouro: 'Rua A', enderecoNumero: '10', enderecoBairro: 'Centro', enderecoCidade: 'Ponta Porã', enderecoUf: 'MS', documento: '123', documentoTipo: 'CI', ...fotos },
+      cliente: {
+        id,
+        nome: 'Maria',
+        telefone: '67 99999-0000',
+        enderecoLogradouro: 'Rua A',
+        enderecoNumero: '10',
+        enderecoBairro: 'Centro',
+        enderecoCidade: 'Ponta Porã',
+        enderecoUf: 'MS',
+        documento: '123',
+        documentoTipo: 'CI',
+        ...fotos,
+      },
     });
     expect(c.comissaoPercentual).toBe('30.00');
     expect(c.fotosEsperandoEnvio).toBe(3);
-    const op = b.db.prepare("SELECT tipo, formato, dados FROM outbox WHERE tipo = 'CLIENTE_NOVO'").get() as { formato: number; dados: string };
+    const op = b.db
+      .prepare("SELECT tipo, formato, dados FROM outbox WHERE tipo = 'CLIENTE_NOVO'")
+      .get() as { formato: number; dados: string };
     expect(op.formato).toBe(2);
     const dados = JSON.parse(op.dados) as Record<string, unknown>;
     expect(dados['fotoHash']).toBe(fotos.fotoHash);
@@ -446,27 +725,63 @@ describe('cliente do representante', () => {
   });
 
   it('alterar o cadastro guarda antes e depois no formato 2; a comissão acima de 40 é recusada; trocar foto recomeça o envio', () => {
-    const r = chamar<ClienteCompleto>({ operacao: 'consignado.clienteAlterar', id: cliente, campos: { enderecoCidade: 'Pedro Juan', comissaoPercentual: '35' } });
+    const r = chamar<ClienteCompleto>({
+      operacao: 'consignado.clienteAlterar',
+      id: cliente,
+      campos: { enderecoCidade: 'Pedro Juan', comissaoPercentual: '35' },
+    });
     expect(r.enderecoCidade).toBe('Pedro Juan');
     expect(r.comissaoPercentual).toBe('35.00');
-    const op = b.db.prepare("SELECT formato, dados FROM outbox WHERE tipo = 'CLIENTE_ALTERADO'").get() as { formato: number; dados: string };
+    const op = b.db
+      .prepare("SELECT formato, dados FROM outbox WHERE tipo = 'CLIENTE_ALTERADO'")
+      .get() as { formato: number; dados: string };
     expect(op.formato).toBe(2);
-    expect(JSON.parse(op.dados).campos.comissaoPercentual).toEqual({ antes: '30.00', depois: '35.00' });
-    expect(() => chamar({ operacao: 'consignado.clienteAlterar', id: cliente, campos: { comissaoPercentual: '60' } })).toThrowError(/entre 0% e 40%/);
-    chamar({ operacao: 'consignado.clienteTrocarFoto', id: cliente, tipo: 'cliente', hash: 'd'.repeat(64) });
-    const fila = b.db.prepare('SELECT tipo, hash, enviada_em FROM fila_fotos_cliente WHERE cliente_id = ?').all(cliente) as { tipo: string; hash: string; enviada_em: string | null }[];
+    expect(
+      (JSON.parse(op.dados) as { campos: Record<string, unknown> }).campos['comissaoPercentual'],
+    ).toEqual({
+      antes: '30.00',
+      depois: '35.00',
+    });
+    expect(() =>
+      chamar({
+        operacao: 'consignado.clienteAlterar',
+        id: cliente,
+        campos: { comissaoPercentual: '60' },
+      }),
+    ).toThrowError(/entre 0% e 40%/);
+    chamar({
+      operacao: 'consignado.clienteTrocarFoto',
+      id: cliente,
+      tipo: 'cliente',
+      hash: 'd'.repeat(64),
+    });
+    const fila = b.db
+      .prepare('SELECT tipo, hash, enviada_em FROM fila_fotos_cliente WHERE cliente_id = ?')
+      .all(cliente) as { tipo: string; hash: string; enviada_em: string | null }[];
     expect(fila).toEqual([{ tipo: 'cliente', hash: 'd'.repeat(64), enviada_em: null }]);
   });
 
   it('a pesquisa acha nota por nome, número e código da maleta, e cliente por nome', () => {
     chamar({ operacao: 'consignado.semanaNova', id: idDeTeste(10), numero: 7 });
     pedido([['A-1', 1]]);
-    const porNome = chamar<{ notas: unknown[]; clientes: unknown[] }>({ operacao: 'consignado.pesquisar', texto: 'ana' });
+    const porNome = chamar<{ notas: unknown[]; clientes: unknown[] }>({
+      operacao: 'consignado.pesquisar',
+      texto: 'ana',
+    });
     expect(porNome.notas).toHaveLength(1);
     expect(porNome.clientes).toHaveLength(1);
-    expect(chamar<{ notas: unknown[] }>({ operacao: 'consignado.pesquisar', texto: '0000007-01' }).notas).toHaveLength(1);
+    expect(
+      chamar<{ notas: unknown[] }>({ operacao: 'consignado.pesquisar', texto: '0000007-01' }).notas,
+    ).toHaveLength(1);
     const codigo = maletas().find((m) => m.id === maleta)?.codigo as string;
-    expect(chamar<{ notas: unknown[]; maletas: unknown[] }>({ operacao: 'consignado.pesquisar', texto: codigo.toLowerCase() }).maletas).toHaveLength(1);
-    expect(chamar<{ notas: unknown[] }>({ operacao: 'consignado.pesquisar', texto: 'ninguém' }).notas).toHaveLength(0);
+    expect(
+      chamar<{ notas: unknown[]; maletas: unknown[] }>({
+        operacao: 'consignado.pesquisar',
+        texto: codigo.toLowerCase(),
+      }).maletas,
+    ).toHaveLength(1);
+    expect(
+      chamar<{ notas: unknown[] }>({ operacao: 'consignado.pesquisar', texto: 'ninguém' }).notas,
+    ).toHaveLength(0);
   });
 });

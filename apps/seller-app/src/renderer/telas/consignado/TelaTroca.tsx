@@ -1,6 +1,10 @@
 import { Aviso, Botao, RodapeDeAcoes } from '@corona/ui';
 import { useState } from 'react';
-import type { DetalheDaNota, MaletaDoConsignado, ResultadoDaPeca } from '../../../shared/dados-do-consignado';
+import type {
+  DetalheDaNota,
+  MaletaDoConsignado,
+  ResultadoDaPeca,
+} from '../../../shared/dados-do-consignado';
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { chamar, novoId } from '../../chamadas';
 import { JanelaDeConfirmacao } from '../../componentes-do-vendedor';
@@ -14,19 +18,28 @@ type Achada = Extract<ResultadoDaPeca, { tipo: 'ACHADA' }>;
 /** Troca (§23.4): troca uma peça que está com o cliente por outra, sem acerto. A nota guarda o histórico. */
 export function TelaTroca({ ponte, aoVoltar }: { ponte: PonteDoCorona; aoVoltar: () => void }) {
   const T = TEXTOS.consignado.troca;
-  const [pedido, setPedido] = useState<{ id: string; numero: string; cliente: string } | null>(null);
+  const [pedido, setPedido] = useState<{ id: string; numero: string; cliente: string } | null>(
+    null,
+  );
   const [volta, setVolta] = useState('');
   const [remessaId, setRemessaId] = useState('');
   const [entra, setEntra] = useState<Achada | null>(null);
-  const [mensagem, setMensagem] = useState<{ tipo: 'sucesso' | 'atencao' | 'erro'; texto: string } | null>(null);
+  const [mensagem, setMensagem] = useState<{
+    tipo: 'sucesso' | 'atencao' | 'erro';
+    texto: string;
+  } | null>(null);
   const [confirmando, setConfirmando] = useState(false);
   const [ocupado, setOcupado] = useState(false);
-  const { dados: nota } = useConsulta<DetalheDaNota>(
+  const { dados: nota, recarregar } = useConsulta<DetalheDaNota>(
     ponte,
     pedido ? { operacao: 'consignado.nota', id: pedido.id } : null,
     [pedido?.id],
   );
-  const { dados: maletas } = useConsulta<MaletaDoConsignado[]>(ponte, { operacao: 'consignado.maletas' }, []);
+  const { dados: maletas } = useConsulta<MaletaDoConsignado[]>(
+    ponte,
+    { operacao: 'consignado.maletas' },
+    [],
+  );
   const emUso = (maletas ?? []).filter((m) => m.status === 'ENVIADA' || m.status === 'CONFERIDA');
   const linhaQueVolta = nota?.linhas.find((l) => `${l.produtoId}|${l.remessaId}` === volta) ?? null;
 
@@ -35,12 +48,19 @@ export function TelaTroca({ ponte, aoVoltar }: { ponte: PonteDoCorona; aoVoltar:
       setMensagem({ tipo: 'atencao', texto: TEXTOS.consignado.pedido.semMaletas });
       return;
     }
-    const r = await chamar<ResultadoDaPeca>(ponte, { operacao: 'consignado.peca', remessaId, codigo });
+    const r = await chamar<ResultadoDaPeca>(ponte, {
+      operacao: 'consignado.peca',
+      remessaId,
+      codigo,
+    });
     if (!r.ok) setMensagem({ tipo: 'erro', texto: r.mensagem });
     else if (r.dados.tipo === 'FORA_DA_MALETA')
       setMensagem({ tipo: 'atencao', texto: TEXTOS.consignado.pedido.foraDaMaleta });
     else if (r.dados.tipo === 'EM_OUTRA_MALETA')
-      setMensagem({ tipo: 'atencao', texto: TEXTOS.consignado.pedido.emOutraMaleta(r.dados.maleta) });
+      setMensagem({
+        tipo: 'atencao',
+        texto: TEXTOS.consignado.pedido.emOutraMaleta(r.dados.maleta),
+      });
     else if (r.dados.disponivel < 1)
       setMensagem({ tipo: 'atencao', texto: TEXTOS.consignado.pedido.semSaldo(0) });
     else {
@@ -67,7 +87,7 @@ export function TelaTroca({ ponte, aoVoltar }: { ponte: PonteDoCorona; aoVoltar:
       setMensagem({ tipo: 'sucesso', texto: T.trocada });
       setEntra(null);
       setVolta('');
-      setPedido({ ...pedido });
+      await recarregar();
     } else setMensagem({ tipo: 'erro', texto: r.mensagem });
   }
 
@@ -94,7 +114,10 @@ export function TelaTroca({ ponte, aoVoltar }: { ponte: PonteDoCorona; aoVoltar:
             <select id="troca-volta" value={volta} onChange={(e) => setVolta(e.target.value)}>
               <option value="">{T.escolherQueVolta}</option>
               {nota.linhas.map((l) => (
-                <option key={`${l.produtoId}|${l.remessaId}`} value={`${l.produtoId}|${l.remessaId}`}>
+                <option
+                  key={`${l.produtoId}|${l.remessaId}`}
+                  value={`${l.produtoId}|${l.remessaId}`}
+                >
                   {l.nome} ({l.maleta}) · {l.dx}
                 </option>
               ))}
@@ -103,7 +126,11 @@ export function TelaTroca({ ponte, aoVoltar }: { ponte: PonteDoCorona; aoVoltar:
           <h2 className="vendas-subtitulo">{T.queEntra}</h2>
           <div className="cs-campo">
             <label htmlFor="troca-maleta">{T.maleta}</label>
-            <select id="troca-maleta" value={remessaId} onChange={(e) => setRemessaId(e.target.value)}>
+            <select
+              id="troca-maleta"
+              value={remessaId}
+              onChange={(e) => setRemessaId(e.target.value)}
+            >
               <option value="">{TEXTOS.consignado.pedido.escolherMaleta}</option>
               {emUso.map((m) => (
                 <option key={m.id} value={m.id}>
@@ -112,7 +139,12 @@ export function TelaTroca({ ponte, aoVoltar }: { ponte: PonteDoCorona; aoVoltar:
               ))}
             </select>
           </div>
-          <LeitorDeCodigo rotulo={T.lerCodigo} botao={T.lerAgora} aoLer={ler} desabilitado={!remessaId} />
+          <LeitorDeCodigo
+            rotulo={T.lerCodigo}
+            botao={T.lerAgora}
+            aoLer={ler}
+            desabilitado={!remessaId}
+          />
           {entra ? (
             <p className="vendas-texto consignado-peca">
               <FotoDoProduto ponte={ponte} hash={entra.fotoHash} nome={entra.nome} />

@@ -128,7 +128,11 @@ export function FotoDoProduto({
 }) {
   const url = useFoto(ponte, hash, 'miniatura');
   return url ? (
-    <img className="consignado-foto consignado-foto--pequena" src={url} alt={TEXTOS.comum.fotoDe(nome)} />
+    <img
+      className="consignado-foto consignado-foto--pequena"
+      src={url}
+      alt={TEXTOS.comum.fotoDe(nome)}
+    />
   ) : (
     <span className="consignado-foto consignado-foto--pequena consignado-foto--vazia">
       {TEXTOS.comum.semFoto}

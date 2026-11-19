@@ -868,8 +868,7 @@ export const TEXTOS_PT = {
       escolherCliente: 'Escolher',
       trocarCliente: 'Trocar o cliente',
       semClientes: 'Nenhum cliente encontrado. Cadastre o cliente em "Clientes".',
-      deve: (valor: string) =>
-        `Este cliente deve ${valor}. O valor será somado ao próximo acerto.`,
+      deve: (valor: string) => `Este cliente deve ${valor}. O valor será somado ao próximo acerto.`,
       cobranca: 'Dt. Cobrança',
       maleta: 'Maleta',
       escolherMaleta: 'Escolha a maleta',
@@ -958,15 +957,15 @@ export const TEXTOS_PT = {
           : 'Todas as peças voltaram. Confirmar?',
       concluirBotao: 'Concluir devolução',
       naoLidas: 'Peças que serão consideradas vendidas',
-      rodape: (dx: number, dv: number, vd: number) =>
-        `Itens DX ${dx} · DV ${dv} · VD ${vd}`,
+      rodape: (dx: number, dv: number, vd: number) => `Itens DX ${dx} · DV ${dv} · VD ${vd}`,
       totalDx: 'Total DX',
       totalDv: 'Total DV',
       totalVd: 'Total VD',
       acertoTitulo: 'Acerto',
       vendaPercentual: 'Venda %',
       comissaoPercentual: 'Comissão %',
-      comissaoDoCadastro: 'Vem do cadastro do cliente. Aqui você pode mudar só para este acerto (até 40%).',
+      comissaoDoCadastro:
+        'Vem do cadastro do cliente. Aqui você pode mudar só para este acerto (até 40%).',
       comissaoRs: 'Comissão R$',
       bruto: 'Total a Receber Bruto',
       pendenciasTitulo: 'Pendências anteriores',
@@ -1021,7 +1020,8 @@ export const TEXTOS_PT = {
       registrar: 'Registrar a reposição',
       semPecas: 'Leia o código das peças que serão acrescentadas.',
       naMesma: 'As peças entram no pedido e a nota de saída sai de novo para assinar.',
-      emNova: 'O pedido é de uma semana anterior: nasce um pedido novo na semana de agora, só com as peças novas.',
+      emNova:
+        'O pedido é de uma semana anterior: nasce um pedido novo na semana de agora, só com as peças novas.',
       registrada: 'Reposição registrada.',
       novaNota: (numero: string) => `Pedido novo ${numero} criado só com as peças novas.`,
       mudou: (numero: string) => `Peças acrescentadas ao pedido ${numero}.`,
@@ -1072,7 +1072,8 @@ export const TEXTOS_PT = {
       fotoFrente: 'Documento (frente)',
       fotoVerso: 'Documento (verso)',
       semFoto: 'Sem foto',
-      fotoEsperando: 'Algumas fotos ainda vão ser enviadas quando houver internet. Pode continuar trabalhando.',
+      fotoEsperando:
+        'Algumas fotos ainda vão ser enviadas quando houver internet. Pode continuar trabalhando.',
       trocarFoto: 'Trocar a foto',
       pendenciaTitulo: 'O que o cliente deve agora',
       debitosColunas: { nota: 'Nota', data: 'Acerto em', valor: 'Valor', deve: 'Deve' },
@@ -1092,12 +1093,19 @@ export const TEXTOS_PT = {
       abrirPedido: 'Abrir o pedido',
       lancar: 'Lançar pagamento',
       lancarTitulo: 'Lançar pagamento',
-      lancarAjuda: 'O valor abate primeiro a pendência mais antiga. Não pode passar do que o cliente deve.',
+      lancarAjuda:
+        'O valor abate primeiro a pendência mais antiga. Não pode passar do que o cliente deve.',
       lancarBotao: 'Lançar pagamento',
       lancado: (numero: string) => `Pagamento lançado. Recibo ${numero}.`,
       lancarTotal: 'Total do pagamento',
       pagamentos: 'Pagamentos',
-      pagamentosColunas: { recibo: 'Recibo', data: 'Data', forma: 'Forma', total: 'Total', acao: 'Se errou' },
+      pagamentosColunas: {
+        recibo: 'Recibo',
+        data: 'Data',
+        forma: 'Forma',
+        total: 'Total',
+        acao: 'Se errou',
+      },
       semPagamentos: 'Nenhum pagamento ainda.',
       doAcerto: 'Do acerto',
       estornadoTexto: 'Estornado',
@@ -1129,7 +1137,8 @@ export const TEXTOS_PT = {
       documentoRepetido: (nome: string) =>
         `Atenção: já existe um cliente com este documento (${nome}). Confira antes de salvar. O cadastro não é bloqueado.`,
       indicadoPor: 'Indicado por',
-      indicadoPorAjuda: 'Escolha um cliente já cadastrado ou escreva o nome. Os dois ao mesmo tempo, não.',
+      indicadoPorAjuda:
+        'Escolha um cliente já cadastrado ou escreva o nome. Os dois ao mesmo tempo, não.',
       indicadoPorCliente: 'Cliente já cadastrado',
       indicadoPorNome: 'Ou escreva o nome',
       nenhumIndicado: 'Ninguém',
@@ -1150,7 +1159,10 @@ export const TEXTOS_PT = {
       cancelar: 'Cancelar',
       faltaFoto: 'Falta tirar a foto do cliente e as duas do documento.',
       obrigatorios: 'Os campos com * são obrigatórios.',
-      tiposDeDocumento: { CPF: 'CPF', RG: 'RG', CI: 'CI (Paraguai)', OUTRO: 'Outro' } as Record<string, string>,
+      tiposDeDocumento: { CPF: 'CPF', RG: 'RG', CI: 'CI (Paraguai)', OUTRO: 'Outro' } as Record<
+        string,
+        string
+      >,
     },
     maletas: {
       titulo: 'Maletas',
@@ -1177,7 +1189,13 @@ export const TEXTOS_PT = {
       nada: 'Nada encontrado. Confira o nome, o número da nota ou o código da maleta.',
       abrir: 'Abrir',
       pedidoLegenda: 'Pedidos encontrados',
-      pedidoColunas: { nota: 'Nota nº', cliente: 'Cliente', cobranca: 'Dt. Cobrança', dx: 'Valor DX', situacao: 'Situação' },
+      pedidoColunas: {
+        nota: 'Nota nº',
+        cliente: 'Cliente',
+        cobranca: 'Dt. Cobrança',
+        dx: 'Valor DX',
+        situacao: 'Situação',
+      },
     },
   },
 } as const;
