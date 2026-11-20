@@ -22,6 +22,8 @@ export type CodigoDoConsignado =
   | 'PEDIDO_SEM_MALETA'
   | 'DATA_DE_COBRANCA_INVALIDA'
   | 'DATA_DO_PAGAMENTO_INVALIDA'
+  | 'DATA_DO_ACERTO_INVALIDA'
+  | 'DATA_DO_ACERTO_ANTES_DA_SAIDA'
   | 'PAGO_ACIMA_DO_DEVIDO'
   | 'CLIENTE_SEM_PENDENCIA'
   | 'CADASTRO_DO_CLIENTE_INCOMPLETO'
@@ -59,6 +61,10 @@ export const MENSAGENS_DO_CONSIGNADO: Readonly<Record<CodigoDoConsignado, string
   DATA_DE_COBRANCA_INVALIDA: 'Confira a data de cobrança.',
   DATA_DO_PAGAMENTO_INVALIDA:
     'A data do pagamento não pode ser depois de hoje. Escolha hoje ou um dia que já passou.',
+  DATA_DO_ACERTO_INVALIDA:
+    'A data do acerto não pode ser depois de hoje. Escolha hoje ou um dia que já passou.',
+  DATA_DO_ACERTO_ANTES_DA_SAIDA:
+    'A data do acerto não pode ser antes do dia em que a nota saiu. Escolha o dia da saída ou um dia depois dele.',
   PAGO_ACIMA_DO_DEVIDO: 'O valor pago passa do que o cliente deve. Confira os valores.',
   CLIENTE_SEM_PENDENCIA: 'Este cliente não deve nada.',
   CADASTRO_DO_CLIENTE_INCOMPLETO:

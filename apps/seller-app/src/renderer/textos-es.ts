@@ -965,6 +965,11 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
       comissaoPercentual: 'Comisión %',
       comissaoDoCadastro:
         'Viene del registro del cliente. Acá podés cambiarla solo para esta cobranza (hasta 40%).',
+      dataDoAcerto: 'Fecha de cobranza',
+      dataDoAcertoAjuda:
+        'Hoy, o un día que ya pasó (no antes del día en que salió la nota). Nunca después de hoy.',
+      dataDoAcertoInvalida: 'Elegí hoy o un día que ya pasó, desde el día en que salió la nota.',
+      semCotacaoDoDia: 'Sin cotización este día: los valores aparecen solo en reales.',
       comissaoRs: 'Comisión R$',
       bruto: 'Total a Cobrar Bruto',
       pendenciasTitulo: 'Pendientes anteriores',

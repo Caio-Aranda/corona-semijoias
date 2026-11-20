@@ -237,6 +237,8 @@ export interface PrevisaoDoAcerto {
   totalPago: string;
   ficouDevendo: string;
   debitos: { acertoId: string; numeroDaNota: string; acertadoEm: string; saldo: string }[];
+  /** A cotação do dia do acerto (a Dt. Acerto escolhida; hoje se vazia); `null` = "Sem cotação" (só o Real). */
+  cotacao?: { data: string; dolar: string; guarani: string } | null;
 }
 
 export interface PecaDaMaletaDoConsignado {

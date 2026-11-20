@@ -967,6 +967,11 @@ export const TEXTOS_PT = {
       comissaoPercentual: 'Comissão %',
       comissaoDoCadastro:
         'Vem do cadastro do cliente. Aqui você pode mudar só para este acerto (até 40%).',
+      dataDoAcerto: 'Dt. Acerto',
+      dataDoAcertoAjuda:
+        'Hoje, ou um dia que já passou (não antes do dia em que a nota saiu). Nunca depois de hoje.',
+      dataDoAcertoInvalida: 'Escolha hoje ou um dia que já passou, a partir do dia em que a nota saiu.',
+      semCotacaoDoDia: 'Sem cotação neste dia: os valores aparecem só em reais.',
       comissaoRs: 'Comissão R$',
       bruto: 'Total a Receber Bruto',
       pendenciasTitulo: 'Pendências anteriores',

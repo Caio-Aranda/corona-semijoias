@@ -696,7 +696,7 @@ export interface PreviaDoAcerto {
 /** A conta do acerto antes de salvar (só leitura): as mesmas fórmulas do servidor. */
 export function previaDoAcerto(
   db: BancoAberto,
-  p: Pick<AcertoParaEnviar, 'notaId' | 'devolvidos' | 'comissaoPercentual' | 'formas'>,
+  p: Pick<AcertoParaEnviar, 'notaId' | 'devolvidos' | 'comissaoPercentual' | 'formas' | 'data'>,
 ): PreviaDoAcerto {
   const nota = acharNota(db, p.notaId);
   if (!nota) return recusar('NOTA_NAO_ENCONTRADA');
@@ -794,13 +794,19 @@ export function registrarAcerto(
   const totalAReceber = exigirCentavos(previa.calculo.totalAReceber);
   if (pago > totalAReceber) return recusar('PAGO_ACIMA_DO_DEVIDO');
 
-  const acertadoEm = agora.toISOString();
+  // A Data do acerto (§23.8): hoje ou um dia que já passou, nunca antes do dia da saída da nota; o momento do lançamento
+  // (`registrado_em`) é a chave da ordem dos débitos.
+  const acertadoEm = momentoDoLancamento(agora, p.data, 'DATA_DO_ACERTO_INVALIDA');
+  if (p.data !== undefined && nota.saida_em && p.data < diaEmBrasilia(nota.saida_em))
+    return recusar('DATA_DO_ACERTO_ANTES_DA_SAIDA');
+  const registradoEm = agora.toISOString();
   const bruto = exigirCentavos(previa.calculo.bruto);
   const c = previa.calculo;
   inserir(db, 'acertos_nota', p.id, p.id, {
     nota_id: nota.id,
     semana_id: semana.id,
     acertado_em: acertadoEm,
+    registrado_em: registradoEm,
     comissao_percentual: previa.comissaoPercentual,
     itens_dx: c.itensDx,
     itens_dv: c.itensDv,
@@ -863,6 +869,7 @@ export function registrarAcerto(
       sequencia,
       acertoId: p.id,
       formas,
+      pagoEm: acertadoEm,
     });
     recibo = {
       id: p.reciboId,
@@ -891,10 +898,11 @@ export function registrarAcerto(
       id: p.id,
       notaId: nota.id,
       semanaId: semana.id,
-      acertadoEm,
+      acertadoEm: registradoEm,
       comissaoPercentual: previa.comissaoPercentual,
       devolvidos,
       ...(recibo ? { recibo } : {}),
+      ...(p.data ? { dataDoAcerto: p.data } : {}),
       visto: {
         valorVd: c.valorVd,
         comissao: c.comissao,
@@ -914,14 +922,18 @@ export function registrarAcerto(
 }
 
 /**
- * O instante que vale para o pagamento: sem data, agora; a data de hoje, agora; um dia que já passou, meio-dia desse dia em
- * Brasília (a mesma regra do servidor, que confere de novo). Depois de hoje é recusado.
+ * O instante que vale para a data escolhida (pagamento ou acerto): sem data, agora; a data de hoje, agora; um dia que já passou,
+ * meio-dia desse dia em Brasília (a mesma regra do servidor, que confere de novo). Depois de hoje é recusado.
  */
-function momentoDoPagamento(agora: Date, data: string | undefined): string {
+function momentoDoLancamento(
+  agora: Date,
+  data: string | undefined,
+  codigoDeRecusa: 'DATA_DO_PAGAMENTO_INVALIDA' | 'DATA_DO_ACERTO_INVALIDA',
+): string {
   if (data === undefined) return agora.toISOString();
-  if (!dataValida(data)) return recusar('DATA_DO_PAGAMENTO_INVALIDA');
+  if (!dataValida(data)) return recusar(codigoDeRecusa);
   const hoje = diaEmBrasilia(agora);
-  if (data > hoje) return recusar('DATA_DO_PAGAMENTO_INVALIDA');
+  if (data > hoje) return recusar(codigoDeRecusa);
   if (data === hoje) return agora.toISOString();
   return new Date(`${data}T12:00:00-03:00`).toISOString();
 }
@@ -943,7 +955,7 @@ export function registrarPagamento(
   if (pendencia === 0n) return recusar('CLIENTE_SEM_PENDENCIA');
   if (pago > pendencia) return recusar('PAGO_ACIMA_DO_DEVIDO');
   const sequencia = proximaSequencia(db, semana.id, 'RECIBO');
-  const pagoEm = momentoDoPagamento(agora, p.data);
+  const pagoEm = momentoDoLancamento(agora, p.data, 'DATA_DO_PAGAMENTO_INVALIDA');
   gravarRecibo(db, agora, p.id, {
     id: p.id,
     clienteId: p.clienteId,

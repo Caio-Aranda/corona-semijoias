@@ -25,6 +25,21 @@
       "ficouDevendo": "345.10"
     }
   },
+  "ordemDosDebitosComDataPassada": {
+    "_comentario": "Acerto A lançado primeiro (100,00 de peças, sem pagar); acerto B lançado depois com Dt. Acerto de um dia ANTES e pagando 150,00 (200,00 de peças, 0% de comissão). A ordem dos débitos é a do lançamento: o pago quita A primeiro.",
+    "precoDaPeca": "100.00",
+    "pecasDaNotaA": 1,
+    "pecasDaNotaB": 2,
+    "pagoNoAcertoB": "150.00",
+    "esperado": {
+      "saldoDeA": "0.00",
+      "saldoDeB": "150.00",
+      "aplicadoEmA": "100.00",
+      "aplicadoEmB": "50.00",
+      "situacaoDeA": "FECHADO",
+      "situacaoDeB": "PENDENTE"
+    }
+  },
   "casosDeComissao": [
     {
       "nome": "0 por cento",

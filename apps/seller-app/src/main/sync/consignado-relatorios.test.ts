@@ -265,7 +265,7 @@ describe('Relatório do acerto', () => {
     ]);
     expect(r.totalPago.real).toBe(e.totalPago);
     expect(r.ficouDevendo).toEqual({ real: '345.10', dolar: '69.02', guarani: '460133' });
-    expect(r.recibo).toBe('0000064-02');
+    expect(r.recibo).toBe('R 0000064-01');
     // Só as peças vendidas (DX − DV) aparecem, com o código da maleta do servidor.
     expect(
       r.vendidas

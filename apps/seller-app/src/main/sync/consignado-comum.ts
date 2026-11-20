@@ -14,6 +14,21 @@ export function numeroDaNota(semana: number, sequencia: number): string {
   return `${String(semana).padStart(7, '0')}-${String(sequencia).padStart(2, '0')}`;
 }
 
+/** A cotação mais nova com data até o dia (a do próprio dia ou a última antes dele); sem nenhuma, `null` ("Sem cotação"). */
+export function cotacaoAteODia(
+  db: BancoAberto,
+  dia: string,
+): { data: string; dolar: string; guarani: string } | null {
+  const r = db
+    .prepare(
+      `SELECT data_cotacao, usd_venda, pyg_venda FROM cotacoes
+        WHERE deleted_at IS NULL AND data_cotacao <= ? AND usd_venda IS NOT NULL AND pyg_venda IS NOT NULL
+        ORDER BY data_cotacao DESC LIMIT 1`,
+    )
+    .get(dia) as { data_cotacao: string; usd_venda: string; pyg_venda: string } | undefined;
+  return r ? { data: r.data_cotacao, dolar: r.usd_venda, guarani: r.pyg_venda } : null;
+}
+
 /** O número do recibo que a tela mostra: o mesmo formato da nota com o prefixo `R ` (`R 0000064-01`); nunca é gravado assim. */
 export function numeroDoRecibo(semana: number, sequencia: number): string {
   return `R ${numeroDaNota(semana, sequencia)}`;
@@ -162,6 +177,7 @@ export interface AcertoLocal {
   nota_id: string;
   semana_id: string | null;
   acertado_em: string | null;
+  registrado_em: string | null;
   comissao_percentual: string | null;
   itens_dx: number | null;
   itens_dv: number | null;
@@ -183,7 +199,7 @@ export function acertoAtivoDaNota(db: BancoAberto, notaId: string): AcertoLocal 
     (db
       .prepare(
         `SELECT a.* FROM acertos_nota a WHERE a.nota_id = ? AND ${SQL_ACERTO_ATIVO('a')}
-          ORDER BY a.acertado_em DESC LIMIT 1`,
+          ORDER BY coalesce(a.registrado_em, a.acertado_em) DESC LIMIT 1`,
       )
       .get(notaId) as AcertoLocal | undefined) ?? null
   );
@@ -211,7 +227,7 @@ export function debitosDoCliente(db: BancoAberto, clienteId: string): DebitoLoca
          JOIN notas_consignado n ON n.id = a.nota_id AND n.deleted_at IS NULL
          LEFT JOIN semanas_vendedor s ON s.id = n.semana_id
         WHERE n.cliente_id = ? AND ${SQL_ACERTO_ATIVO('a')}
-        ORDER BY a.acertado_em, semana_numero, n.sequencia, a.id`,
+        ORDER BY coalesce(a.registrado_em, a.acertado_em), semana_numero, n.sequencia, a.id`,
     )
     .all(clienteId) as {
     id: string;

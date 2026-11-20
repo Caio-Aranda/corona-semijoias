@@ -819,3 +819,169 @@ describe('cliente do representante', () => {
     ).toHaveLength(0);
   });
 });
+
+describe('Dt. Acerto (tarefa 9.8): a data do acerto e a ordem dos débitos', () => {
+  const pecaE = idDeTeste(2);
+
+  /** Uma peça de 100,00 em quantidade, como a do exemplo compartilhado com o servidor. */
+  function receberPecaDeCem(): void {
+    aplicarLote(
+      b.db,
+      [
+        {
+          tabela: 'produtos',
+          id: pecaE,
+          version: 1,
+          deletedAt: null,
+          campos: { nome: 'Pulseira E', ativo: 1 },
+        },
+        {
+          tabela: 'produto_codigos',
+          id: idDeTeste(5),
+          version: 1,
+          deletedAt: null,
+          campos: { produto_id: pecaE, codigo: 'E-1', tipo: 'FORNECEDOR', principal: 1, ativo: 1 },
+        },
+        {
+          tabela: 'itens_remessa',
+          id: idDeTeste(4),
+          version: 1,
+          deletedAt: null,
+          campos: {
+            remessa_id: maleta,
+            produto_id: pecaE,
+            qtd_enviada: 40,
+            preco_remessa: exemplos.ordemDosDebitosComDataPassada.precoDaPeca,
+          },
+        },
+        ...(['2026-11-08', '2026-11-09', '2026-11-10'] as const).map((dia, i) => ({
+          tabela: 'cotacoes' as const,
+          id: idDeTeste(11),
+          version: 1,
+          deletedAt: null,
+          campos: {
+            data_cotacao: dia,
+            usd_venda: `${String(5 + i)}.00000000`,
+            pyg_venda: '0.00075000',
+          },
+        })),
+      ],
+      { cursor: 'c-2' },
+    );
+  }
+
+  /** Duas notas de peças de 100,00 com a saída em 2/11; devolve os ids e deixa o relógio em 10/11 às 10h de Brasília. */
+  function duasNotas(): { notaA: string; notaB: string } {
+    receberPecaDeCem();
+    const ex = exemplos.ordemDosDebitosComDataPassada;
+    agora = new Date('2026-11-02T13:00:00.000Z');
+    chamar({ operacao: 'consignado.semanaNova', id: idDeTeste(10), numero: 64 });
+    const notaA = pedido([['E-1', ex.pecasDaNotaA]]);
+    const notaB = pedido([['E-1', ex.pecasDaNotaB]]);
+    agora = new Date('2026-11-10T13:00:00.000Z');
+    return { notaA, notaB };
+  }
+
+  const salvar = (notaId: string, formas: { forma: 'DINHEIRO'; valor: string }[], data?: string) =>
+    chamar<{ situacao: string; nota: DetalheDaNota }>({
+      operacao: 'consignado.acertoSalvar',
+      acerto: {
+        id: idDeTeste(7),
+        reciboId: idDeTeste(8),
+        notaId,
+        comissaoPercentual: '0',
+        devolvidos: [],
+        formas,
+        ...(data ? { data } : {}),
+      },
+    });
+
+  it('a ordem dos débitos é a do lançamento: o acerto com data de um dia antes não passa na frente (mesmos números do servidor)', () => {
+    const ex = exemplos.ordemDosDebitosComDataPassada;
+    const { notaA, notaB } = duasNotas();
+    salvar(notaA, []);
+    expect(nota(notaA).saldoDaNota).toBe('100.00');
+    agora = new Date('2026-11-10T18:00:00.000Z');
+    salvar(notaB, [{ forma: 'DINHEIRO', valor: ex.pagoNoAcertoB }], '2026-11-09');
+
+    expect(nota(notaA).saldoDaNota).toBe(ex.esperado.saldoDeA);
+    expect(nota(notaB).saldoDaNota).toBe(ex.esperado.saldoDeB);
+    expect(nota(notaA).situacao).toBe(ex.esperado.situacaoDeA);
+    expect(nota(notaB).situacao).toBe(ex.esperado.situacaoDeB);
+    const aplicacoes = b.db
+      .prepare('SELECT acerto_id, valor FROM aplicacoes_recibo ORDER BY CAST(valor AS REAL) DESC')
+      .all() as { acerto_id: string; valor: string }[];
+    expect(aplicacoes.map((a) => a.valor)).toEqual([
+      ex.esperado.aplicadoEmA,
+      ex.esperado.aplicadoEmB,
+    ]);
+    // Um Lançar pagamento de 150 quita B.
+    chamar({
+      operacao: 'consignado.pagamento',
+      pagamento: {
+        id: idDeTeste(13),
+        clienteId: cliente,
+        formas: [{ forma: 'PIX', valor: '150.00' }],
+      },
+    });
+    expect(nota(notaB).situacao).toBe('FECHADO');
+  });
+
+  it('data passada grava meio-dia de Brasília, o lançamento fica em registrado_em e o recibo usa o mesmo dia', () => {
+    const { notaB } = duasNotas();
+    const r = salvar(notaB, [{ forma: 'DINHEIRO', valor: '50.00' }], '2026-11-08');
+    const a = b.db
+      .prepare('SELECT acertado_em, registrado_em, recibo_id FROM acertos_nota')
+      .get() as { acertado_em: string; registrado_em: string; recibo_id: string };
+    expect(a.acertado_em).toBe('2026-11-08T15:00:00.000Z');
+    expect(a.registrado_em.startsWith('2026-11-10T')).toBe(true);
+    const recibo = b.db
+      .prepare('SELECT pago_em FROM recibos_consignado WHERE id = ?')
+      .get(a.recibo_id) as { pago_em: string };
+    expect(recibo.pago_em).toBe('2026-11-08T15:00:00.000Z');
+    expect(r.nota.acerto?.recibo?.numero).toBe('R 0000064-01');
+    // A outbox leva a data só quando ela veio; o momento declarado continua sendo o do lançamento.
+    const op = b.db.prepare("SELECT dados FROM outbox WHERE tipo = 'ACERTO_NOTA'").get() as {
+      dados: string;
+    };
+    const dados = JSON.parse(op.dados) as { acertadoEm: string; dataDoAcerto?: string };
+    expect(dados.dataDoAcerto).toBe('2026-11-08');
+    expect(dados.acertadoEm.startsWith('2026-11-10T')).toBe(true);
+  });
+
+  it('sem data (ou só com hoje) a outbox não leva dataDoAcerto e o resumo é o de antes', () => {
+    const { notaA } = duasNotas();
+    salvar(notaA, []);
+    const op = b.db.prepare("SELECT dados FROM outbox WHERE tipo = 'ACERTO_NOTA'").get() as {
+      dados: string;
+    };
+    expect(JSON.parse(op.dados)).not.toHaveProperty('dataDoAcerto');
+  });
+
+  it('data no futuro e data antes do dia da saída da nota são recusadas sem gravar nada', () => {
+    const { notaA } = duasNotas();
+    expect(() => salvar(notaA, [], '2026-11-11')).toThrowError(/depois de hoje/);
+    expect(() => salvar(notaA, [], '2026-11-01')).toThrowError(/antes do dia em que a nota saiu/);
+    expect(b.db.prepare('SELECT count(*) AS n FROM acertos_nota').get()).toEqual({ n: 0 });
+    // O mesmo dia da saída vale.
+    expect(salvar(notaA, [], '2026-11-02').situacao).toBe('PENDENTE');
+  });
+
+  it('a prévia mostra a cotação do dia escolhido; sem cotação até o dia, "Sem cotação" (cotacao nula)', () => {
+    const { notaA } = duasNotas();
+    const previa = (data?: string) =>
+      chamar<PrevisaoDoAcerto>({
+        operacao: 'consignado.acertoPrevia',
+        acerto: {
+          notaId: notaA,
+          devolvidos: [],
+          comissaoPercentual: '0',
+          formas: [],
+          ...(data ? { data } : {}),
+        },
+      });
+    expect(previa('2026-11-08').cotacao?.dolar).toBe('5.00000000');
+    expect(previa().cotacao?.dolar).toBe('7.00000000');
+    expect(previa('2026-11-03').cotacao).toBeNull();
+  });
+});

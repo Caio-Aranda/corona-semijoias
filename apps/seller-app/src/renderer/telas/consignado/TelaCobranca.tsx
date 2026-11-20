@@ -5,6 +5,7 @@ import type {
   LinhaDaNota,
   PrevisaoDoAcerto,
 } from '../../../shared/dados-do-consignado';
+import { diaEmBrasilia } from '../../../shared/garantia';
 import type { FormaPaga, PecaDevolvida } from '../../../shared/operacoes-do-consignado';
 import {
   FORMAS_DO_CONSIGNADO,
@@ -141,6 +142,15 @@ function AcertoDoPedido({
   >(null);
   const [motivo, setMotivo] = useState('');
   const [novaData, setNovaData] = useState(nota.dataCobranca ?? '');
+  const hoje = diaEmBrasilia(new Date());
+  const [dataDoAcerto, setDataDoAcerto] = useState(hoje);
+  const diaDaSaida = nota.saidaEm ? diaEmBrasilia(new Date(nota.saidaEm)) : null;
+  const dataInvalida =
+    !/^\d{4}-\d{2}-\d{2}$/.test(dataDoAcerto) ||
+    dataDoAcerto > hoje ||
+    (diaDaSaida !== null && dataDoAcerto < diaDaSaida);
+  // Só vai a data quando não é hoje: o acerto de hoje segue como sempre foi.
+  const dataParaEnviar = dataDoAcerto !== hoje && !dataInvalida ? { data: dataDoAcerto } : {};
   const [previa, setPrevia] = useState<PrevisaoDoAcerto | null>(null);
   const [ocupado, setOcupado] = useState(false);
 
@@ -171,7 +181,7 @@ function AcertoDoPedido({
   );
 
   useEffect(() => {
-    if (acertada || comissaoLida === null || formasLidas.invalida) {
+    if (acertada || comissaoLida === null || formasLidas.invalida || dataInvalida) {
       setPrevia(null);
       return;
     }
@@ -183,6 +193,7 @@ function AcertoDoPedido({
         devolvidos: devolvidosParaEnviar,
         comissaoPercentual: comissaoLida,
         formas: formasLidas.lista,
+        ...dataParaEnviar,
       },
     }).then((r) => {
       if (!ativo) return;
@@ -194,14 +205,36 @@ function AcertoDoPedido({
     return () => {
       ativo = false;
     };
-  }, [ponte, nota.id, acertada, comissaoLida, formasLidas, devolvidosParaEnviar]);
+  }, [
+    ponte,
+    nota.id,
+    acertada,
+    comissaoLida,
+    formasLidas,
+    devolvidosParaEnviar,
+    dataInvalida,
+    dataDoAcerto,
+  ]);
 
   const pagoAcima =
     previa !== null &&
     (centavosDeTexto(previa.totalPago) ?? 0n) > (centavosDeTexto(previa.totalAReceber) ?? 0n);
   const comissaoErrada = !acertada && comissaoLida === null;
   const podeSalvar =
-    !acertada && concluida && previa !== null && !pagoAcima && !formasLidas.invalida && !ocupado;
+    !acertada &&
+    concluida &&
+    previa !== null &&
+    !pagoAcima &&
+    !formasLidas.invalida &&
+    !dataInvalida &&
+    !ocupado;
+  // A cotação do dia da Dt. Acerto (a prévia traz); sem ela, só o Real e o aviso "Sem cotação".
+  const cotacaoDoAcerto =
+    previa && previa.cotacao !== undefined
+      ? previa.cotacao
+        ? { dolar: previa.cotacao.dolar, guarani: previa.cotacao.guarani }
+        : null
+      : cotacao.cotacao;
 
   function ler(codigo: string): void {
     const lido = codigo.trim().toLowerCase();
@@ -243,6 +276,7 @@ function AcertoDoPedido({
         devolvidos: devolvidosParaEnviar,
         comissaoPercentual: comissaoLida,
         formas: formasLidas.lista,
+        ...dataParaEnviar,
       },
     });
     setOcupado(false);
@@ -455,10 +489,10 @@ function AcertoDoPedido({
                 <dd>{previa ? porCento(previa.vendaPercentual) : ''}</dd>
                 <dt>{T.comissaoRs}</dt>
                 <dd>
-                  {previa ? <Dinheiro reais={previa.comissao} cotacao={cotacao.cotacao} /> : ''}
+                  {previa ? <Dinheiro reais={previa.comissao} cotacao={cotacaoDoAcerto} /> : ''}
                 </dd>
                 <dt>{T.bruto}</dt>
-                <dd>{previa ? <Dinheiro reais={previa.bruto} cotacao={cotacao.cotacao} /> : ''}</dd>
+                <dd>{previa ? <Dinheiro reais={previa.bruto} cotacao={cotacaoDoAcerto} /> : ''}</dd>
               </dl>
               <Campo
                 rotulo={T.comissaoPercentual}
@@ -468,6 +502,19 @@ function AcertoDoPedido({
                 {...(comissaoErrada ? { erro: TEXTOS.consignado.cobranca.comissaoInvalida } : {})}
                 onChange={(e) => setComissao(e.target.value)}
               />
+              <Campo
+                rotulo={T.dataDoAcerto}
+                ajuda={T.dataDoAcertoAjuda}
+                type="date"
+                max={hoje}
+                {...(diaDaSaida ? { min: diaDaSaida } : {})}
+                value={dataDoAcerto}
+                onChange={(e) => setDataDoAcerto(e.target.value)}
+                {...(dataInvalida ? { erro: T.dataDoAcertoInvalida } : {})}
+              />
+              {previa && previa.cotacao === null ? (
+                <p className="vendas-texto vendas-texto--pequeno">{T.semCotacaoDoDia}</p>
+              ) : null}
 
               <h2 className="vendas-subtitulo">{T.pendenciasTitulo}</h2>
               <p className="vendas-texto vendas-texto--pequeno">{T.pendenciasAjuda}</p>
@@ -500,7 +547,7 @@ function AcertoDoPedido({
                 <dt>{T.totalDoDebito}</dt>
                 <dd>
                   {previa ? (
-                    <Dinheiro reais={previa.pendenciasAnteriores} cotacao={cotacao.cotacao} />
+                    <Dinheiro reais={previa.pendenciasAnteriores} cotacao={cotacaoDoAcerto} />
                   ) : (
                     ''
                   )}
@@ -508,7 +555,7 @@ function AcertoDoPedido({
                 <dt>{T.totalAReceber}</dt>
                 <dd>
                   {previa ? (
-                    <Dinheiro reais={previa.totalAReceber} cotacao={cotacao.cotacao} />
+                    <Dinheiro reais={previa.totalAReceber} cotacao={cotacaoDoAcerto} />
                   ) : (
                     ''
                   )}
@@ -532,11 +579,11 @@ function AcertoDoPedido({
               <dl className="consignado-conta">
                 <dt>{T.totalPago}</dt>
                 <dd>
-                  {previa ? <Dinheiro reais={previa.totalPago} cotacao={cotacao.cotacao} /> : ''}
+                  {previa ? <Dinheiro reais={previa.totalPago} cotacao={cotacaoDoAcerto} /> : ''}
                 </dd>
                 <dt>{T.ficouDevendo}</dt>
                 <dd>
-                  {previa ? <Dinheiro reais={previa.ficouDevendo} cotacao={cotacao.cotacao} /> : ''}
+                  {previa ? <Dinheiro reais={previa.ficouDevendo} cotacao={cotacaoDoAcerto} /> : ''}
                 </dd>
               </dl>
               {pagoAcima ? <Aviso tipo="erro">{T.pagoAcima}</Aviso> : null}

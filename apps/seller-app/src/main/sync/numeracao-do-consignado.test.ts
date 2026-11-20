@@ -110,4 +110,28 @@ describe('migração local 11 (contador do recibo)', () => {
     expect(proximaSequencia(db, semana, 'NOTA')).toBe(34);
     expect(proximaSequencia(db, semana, 'RECIBO')).toBe(33);
   });
+
+  it('os acertos que o computador já tinha ganham registrado_em igual a acertado_em, e a recarga dirigida os traz de novo', () => {
+    const c = copiarExemplo(10);
+    limpar.push(c.apagar);
+    const antes = abrirSemMigrar(c.caminho, 10);
+    antes
+      .prepare(
+        `INSERT INTO acertos_nota (id, version, origem_local, nota_id, acertado_em, bruto)
+         VALUES (?, 1, 'SERVIDOR', ?, '2026-11-09T15:00:00.000Z', '100.00')`,
+      )
+      .run(idDeTeste(6), idDeTeste(2));
+    antes.close();
+    const db = abrirBancoLocal({ caminho: c.caminho, chave: CHAVE_DOS_EXEMPLOS });
+    limpar.push(() => db.close());
+    const a = db.prepare('SELECT acertado_em, registrado_em FROM acertos_nota').get() as {
+      acertado_em: string;
+      registrado_em: string;
+    };
+    expect(a.registrado_em).toBe(a.acertado_em);
+    const recarga = db
+      .prepare("SELECT valor FROM estado_sync WHERE chave = 'recarga_dirigida'")
+      .get() as { valor: string } | undefined;
+    if (recarga) expect(JSON.parse(recarga.valor) as string[]).toContain('acertos_nota');
+  });
 });

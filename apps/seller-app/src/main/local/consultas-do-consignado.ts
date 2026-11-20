@@ -1,4 +1,5 @@
 import { percentualDe, situacaoDaNota, textoDePorcentagem } from '@corona/shared/consignado';
+import { diaEmBrasilia } from '../../shared/garantia';
 import type {
   AcertoDaTela,
   ClienteCompleto,
@@ -34,6 +35,7 @@ import {
   acertoAtivoDaNota,
   acharNota,
   codigoDaMaleta,
+  cotacaoAteODia,
   dataDeCobranca,
   type DebitoLocal,
   debitosDoCliente,
@@ -703,6 +705,7 @@ export class ConsultasDoConsignado {
       totalPago: c.totalPago,
       ficouDevendo: c.ficouDevendo,
       debitos: r.debitos,
+      cotacao: cotacaoAteODia(this.db(), p.data ?? diaEmBrasilia(this.agora())),
     };
   }
 

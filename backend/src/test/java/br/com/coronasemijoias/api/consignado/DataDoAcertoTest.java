@@ -136,26 +136,29 @@ class DataDoAcertoTest extends ApoioDoConsignado {
 
     @Test
     void ordemDosDebitosComDataPassadaContinuaPeloLancamento() throws Exception {
+        // Os números vêm do MESMO arquivo que o Corona Vendas lê (ADR-0016, item 16).
+        var ex = ExemplosDoConsignado.ler().get("ordemDosDebitosComDataPassada");
+        var esperado = ex.get("esperado");
         Cena c = cena();
-        UUID notaA = notaDe(c, 10, 1); // bruto 100
-        UUID notaB = notaDe(c, 12, 2); // bruto 200
+        UUID notaA = notaDe(c, 10, ex.get("pecasDaNotaA").asInt()); // 100,00
+        UUID notaB = notaDe(c, 12, ex.get("pecasDaNotaB").asInt()); // 200,00
         // A lançado às 10h do dia 12, sem pagar: o cliente deve 100.
         UUID a = acertarEm(c, notaA, DIA_12_10H, null, null, null);
         assertThat(saldoDoDebito(a)).isEqualByComparingTo("100.00");
         // B lançado às 15h do dia 12 com data do dia 11 (ANTES de A em acertado_em) e pagando 150: o pago quita A primeiro.
-        UUID b = acertarEm(c, notaB, DIA_12_15H, LocalDate.of(2020, 3, 11), 1, "150.00");
+        UUID b = acertarEm(c, notaB, DIA_12_15H, LocalDate.of(2020, 3, 11), 1, ex.get("pagoNoAcertoB").asString());
 
         assertThat(instante("SELECT acertado_em FROM corona.acertos_nota WHERE id = ?", b)).isBefore(
                 instante("SELECT acertado_em FROM corona.acertos_nota WHERE id = ?", a));
-        assertThat(saldoDoDebito(a)).isEqualByComparingTo("0.00");
-        assertThat(saldoDoDebito(b)).isEqualByComparingTo("150.00");
-        assertThat(situacaoDaNota(notaA)).isEqualTo("FECHADO");
-        assertThat(situacaoDaNota(notaB)).isEqualTo("PENDENTE");
+        assertThat(saldoDoDebito(a)).isEqualByComparingTo(ExemplosDoConsignado.valor(esperado.get("saldoDeA")));
+        assertThat(saldoDoDebito(b)).isEqualByComparingTo(ExemplosDoConsignado.valor(esperado.get("saldoDeB")));
+        assertThat(situacaoDaNota(notaA)).isEqualTo(esperado.get("situacaoDeA").asString());
+        assertThat(situacaoDaNota(notaB)).isEqualTo(esperado.get("situacaoDeB").asString());
         UUID recibo = reciboDoAcerto(b);
         assertThat(jdbc.queryForObject("SELECT valor FROM corona.aplicacoes_recibo WHERE recibo_id = ? AND acerto_id = ?", BigDecimal.class,
-                recibo, a)).isEqualByComparingTo("100.00");
+                recibo, a)).isEqualByComparingTo(ExemplosDoConsignado.valor(esperado.get("aplicadoEmA")));
         assertThat(jdbc.queryForObject("SELECT valor FROM corona.aplicacoes_recibo WHERE recibo_id = ? AND acerto_id = ?", BigDecimal.class,
-                recibo, b)).isEqualByComparingTo("50.00");
+                recibo, b)).isEqualByComparingTo(ExemplosDoConsignado.valor(esperado.get("aplicadoEmB")));
 
         // Um Lançar pagamento de 150 quita B (o único que sobrou).
         recibos.lancar(ctxEm(c.v(), Instant.parse("2020-03-13T13:00:00Z")),

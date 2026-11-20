@@ -382,6 +382,7 @@ export const COLUNAS_DO_PULL: Readonly<Record<TabelaSincronizavel, readonly stri
       'vendedor_id',
       'semana_id',
       'acertado_em',
+      'registrado_em',
       'comissao_percentual',
       'itens_dx',
       'itens_dv',

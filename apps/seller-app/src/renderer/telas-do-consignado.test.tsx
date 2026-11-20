@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import type {
@@ -602,6 +602,35 @@ describe('Cobrança e acerto', () => {
       'notaId',
       'reciboId',
     ]);
+  });
+
+  it('Dt. Acerto: hoje por padrão (nada vai na chamada); um dia que passou vai em data; antes da saída ou depois de hoje é barrado', async () => {
+    const { u, chamadas } = await abrir({
+      'consignado.acertoSalvar': () =>
+        ok({ reciboId: 'r', situacao: 'PENDENTE', nota: { ...nota, acerto: null } }),
+    });
+    await u.click(screen.getByRole('button', { name: 'Concluir devolução' }));
+    await u.click(
+      screen.getAllByRole('button', { name: 'Concluir devolução' }).at(-1) as HTMLElement,
+    );
+    const data = await screen.findByLabelText('Dt. Acerto');
+    expect(data).toHaveAttribute('max');
+    expect(data).toHaveAttribute('min', '2026-11-10');
+    fireEvent.change(data, { target: { value: '2026-11-05' } });
+    expect(
+      await screen.findByText(
+        'Escolha hoje ou um dia que já passou, a partir do dia em que a nota saiu.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Salvar acerto' })).toBeDisabled();
+    fireEvent.change(data, { target: { value: '2026-11-12' } });
+    await u.click(await screen.findByRole('button', { name: 'Salvar acerto' }));
+    await u.click(screen.getAllByRole('button', { name: 'Salvar acerto' }).at(-1) as HTMLElement);
+    const salvar = chamadas.find((c) => c.operacao === 'consignado.acertoSalvar') as Extract<
+      PedidoDeChamada,
+      { operacao: 'consignado.acertoSalvar' }
+    >;
+    expect(salvar.acerto.data).toBe('2026-11-12');
   });
 
   it('pagar mais que o total a receber é barrado na tela, e comissão acima de 40 avisa', async () => {
