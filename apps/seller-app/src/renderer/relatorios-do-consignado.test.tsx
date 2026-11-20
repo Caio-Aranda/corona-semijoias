@@ -57,13 +57,15 @@ const nota: NotaDeSaida = {
       maleta: '0007',
       quantidade: 10,
       preco: '200.00',
-      subTotal: '2000.00',
+      subTotal: v('2000.00', '400.00', '2666667'),
     },
   ],
   itensDx: 10,
   totalDx: v('2000.00', '400.00', '2666667'),
   pendenciaAnterior: v('498.10', '99.62', '664133'),
-  pendencias: [{ numeroDaNota: '0000063-32', data: '2026-11-03', saldo: '498.10' }],
+  pendencias: [
+    { numeroDaNota: '0000063-32', data: '2026-11-03', saldo: v('498.10', '99.62', '664133') },
+  ],
 };
 
 const acerto: RelatorioDoAcerto = {
@@ -80,7 +82,7 @@ const acerto: RelatorioDoAcerto = {
       maleta: '0007',
       quantidade: 5,
       preco: '200.00',
-      valor: '1000.00',
+      valor: v('1000.00', '200.00', '1333333'),
     },
   ],
   itensDx: 26,
@@ -95,7 +97,7 @@ const acerto: RelatorioDoAcerto = {
   valorLiquido: v('1617.00'),
   totalPendenciasAnteriores: v('498.10'),
   totalAReceber: v('2115.10'),
-  recibo: '0000064-02',
+  recibo: 'R 0000064-01',
   pago: [
     { forma: 'DINHEIRO', valor: v('1470.00') },
     { forma: 'PIX', valor: v('300.00') },
@@ -230,7 +232,9 @@ describe('Nota de saída', () => {
     expect(cabecas.join(' ')).not.toMatch(/Tam|Ton/);
     expect(within(folha).getByText('Itens DX: 10')).toBeInTheDocument();
     expect(within(folha).getAllByText('R$ 2.000,00').length).toBeGreaterThan(1);
-    expect(within(folha).getByText('US$ 400,00 · Gs. 2.666.667')).toBeInTheDocument();
+    // O sub-total da linha e o Total DX trazem Dólar e Guarani (cada linha pela cotação do dia dela).
+    expect(within(folha).getAllByText('US$ 400,00 · Gs. 2.666.667').length).toBeGreaterThan(1);
+    expect(within(folha).getAllByText('US$ 99,62 · Gs. 664.133').length).toBeGreaterThan(0);
     expect(within(folha).getByText('R$ 498,10')).toBeInTheDocument();
     expect(within(folha).getByText(/Assinatura do cliente/)).toBeInTheDocument();
     expect(within(folha).getByText(/sem nota fiscal/)).toBeInTheDocument();
@@ -261,7 +265,7 @@ describe('Relatório do acerto', () => {
     expect(within(folha).getByText('43,02%')).toBeInTheDocument();
     expect(within(folha).getByText('Pago: Dinheiro')).toBeInTheDocument();
     expect(within(folha).getByText('Pago: Pix')).toBeInTheDocument();
-    expect(within(folha).getByText('Recibo nº 0000064-02')).toBeInTheDocument();
+    expect(within(folha).getByText('Recibo R 0000064-01')).toBeInTheDocument();
     expect(within(folha).getAllByText('Sem cotação').length).toBeGreaterThan(0);
   });
 });

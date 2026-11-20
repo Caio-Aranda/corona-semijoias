@@ -1293,7 +1293,7 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
       valorLiquido: 'Valor neto (VD − comisión)',
       pendenciasAnteriores: 'Deudas anteriores',
       totalAReceber: 'Total a cobrar',
-      recibo: (n: string) => `Recibo nº ${n}`,
+      recibo: (n: string) => `Recibo ${n}`,
       pagoPorForma: 'Pagado',
       totalPago: 'Total pagado',
       ficouDevendo: 'Quedó debiendo',

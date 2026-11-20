@@ -65,13 +65,15 @@ export interface LinhaDaNotaDeSaida {
   maleta: string;
   quantidade: number;
   preco: string;
-  subTotal: string;
+  /** Quantidade vezes preço, nas três moedas, pela cotação do dia da saída da nota. */
+  subTotal: ValorNasTresMoedas;
 }
 
 export interface PendenciaNoRelatorio {
   numeroDaNota: string;
   data: string;
-  saldo: string;
+  /** Pela cotação do dia do acerto que gerou a pendência. */
+  saldo: ValorNasTresMoedas;
 }
 
 export interface NotaDeSaida {
@@ -96,7 +98,8 @@ export interface LinhaVendida {
   maleta: string;
   quantidade: number;
   preco: string;
-  valor: string;
+  /** Quantidade vendida vezes preço, nas três moedas, pela cotação do dia do acerto. */
+  valor: ValorNasTresMoedas;
 }
 
 export interface FormaNoRelatorio {
@@ -130,12 +133,13 @@ export interface NotaDaSituacaoDoCliente {
   itensDx: number;
   itensDv: number;
   itensVd: number;
-  valorDx: string;
-  valorDv: string;
-  valorVd: string;
-  comissao: string;
-  valorLiquido: string;
-  pago: string;
+  /** Cada valor da nota, nas três moedas, pela cotação do dia do acerto dela. */
+  valorDx: ValorNasTresMoedas;
+  valorDv: ValorNasTresMoedas;
+  valorVd: ValorNasTresMoedas;
+  comissao: ValorNasTresMoedas;
+  valorLiquido: ValorNasTresMoedas;
+  pago: ValorNasTresMoedas;
 }
 
 export interface PecaComOCliente {
@@ -151,8 +155,8 @@ export interface PecaComOCliente {
 export interface NotaPendenteDaSituacao {
   numero: string;
   situacao: string;
-  valorDx: string;
-  valorVd: string;
+  valorDx: ValorNasTresMoedas;
+  valorVd: ValorNasTresMoedas;
   ficouDevendo: ValorNasTresMoedas;
 }
 
@@ -179,7 +183,8 @@ export interface LinhaDePecaVendida {
   produto: string;
   maleta: string;
   quantidade: number;
-  valor: string;
+  /** Nas três moedas, pela cotação do dia do acerto. */
+  valor: ValorNasTresMoedas;
 }
 
 export interface PecasVendidasPorCliente {

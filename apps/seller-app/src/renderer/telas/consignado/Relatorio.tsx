@@ -255,7 +255,9 @@ function FolhaDaNotaDeSaida({ r }: { r: NotaDeSaida }) {
               <td>{l.maleta}</td>
               <td className="cs-numero">{l.quantidade}</td>
               <td className="cs-numero">{reais(l.preco)}</td>
-              <td className="cs-numero">{reais(l.subTotal)}</td>
+              <td className="cs-numero">
+                <ValorDoRelatorio v={l.subTotal} />
+              </td>
             </tr>
           ))}
         </tbody>
@@ -323,7 +325,9 @@ function FolhaDoAcerto({ r }: { r: RelatorioDoAcerto }) {
               <td>{l.maleta}</td>
               <td className="cs-numero">{l.quantidade}</td>
               <td className="cs-numero">{reais(l.preco)}</td>
-              <td className="cs-numero">{reais(l.valor)}</td>
+              <td className="cs-numero">
+                <ValorDoRelatorio v={l.valor} />
+              </td>
             </tr>
           ))}
         </tbody>
@@ -416,12 +420,24 @@ function FolhaDaSituacaoDoCliente({ r }: { r: SituacaoDoCliente }) {
                 <td className="cs-numero">{n.itensDx}</td>
                 <td className="cs-numero">{n.itensDv}</td>
                 <td className="cs-numero">{n.itensVd}</td>
-                <td className="cs-numero">{reais(n.valorDx)}</td>
-                <td className="cs-numero">{reais(n.valorDv)}</td>
-                <td className="cs-numero">{reais(n.valorVd)}</td>
-                <td className="cs-numero">{reais(n.comissao)}</td>
-                <td className="cs-numero">{reais(n.valorLiquido)}</td>
-                <td className="cs-numero">{reais(n.pago)}</td>
+                <td className="cs-numero">
+                  <ValorDoRelatorio v={n.valorDx} />
+                </td>
+                <td className="cs-numero">
+                  <ValorDoRelatorio v={n.valorDv} />
+                </td>
+                <td className="cs-numero">
+                  <ValorDoRelatorio v={n.valorVd} />
+                </td>
+                <td className="cs-numero">
+                  <ValorDoRelatorio v={n.comissao} />
+                </td>
+                <td className="cs-numero">
+                  <ValorDoRelatorio v={n.valorLiquido} />
+                </td>
+                <td className="cs-numero">
+                  <ValorDoRelatorio v={n.pago} />
+                </td>
               </tr>
             ))}
           </tbody>
@@ -461,8 +477,12 @@ function FolhaDaSituacaoDoCliente({ r }: { r: SituacaoDoCliente }) {
             {r.pendentes.map((n) => (
               <tr key={n.numero}>
                 <td>{n.numero}</td>
-                <td className="cs-numero">{reais(n.valorDx)}</td>
-                <td className="cs-numero">{reais(n.valorVd)}</td>
+                <td className="cs-numero">
+                  <ValorDoRelatorio v={n.valorDx} />
+                </td>
+                <td className="cs-numero">
+                  <ValorDoRelatorio v={n.valorVd} />
+                </td>
                 <td className="cs-numero">
                   <ValorDoRelatorio v={n.ficouDevendo} />
                 </td>
@@ -548,7 +568,9 @@ function FolhaDasPecasVendidas({ r }: { r: PecasVendidasPorCliente }) {
                 <td>{l.produto}</td>
                 <td>{l.maleta}</td>
                 <td className="cs-numero">{l.quantidade}</td>
-                <td className="cs-numero">{reais(l.valor)}</td>
+                <td className="cs-numero">
+                  <ValorDoRelatorio v={l.valor} />
+                </td>
               </tr>
             ))}
           </tbody>

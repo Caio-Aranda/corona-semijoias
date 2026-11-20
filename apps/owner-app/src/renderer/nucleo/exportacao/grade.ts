@@ -46,6 +46,9 @@ export interface TotalDoRelatorio {
   rotulo: string;
   quantidade: number;
   valorEmReais?: string | null;
+  /** Quando o servidor já converteu cada lançamento pela cotação do dia dele (Fechamento da maleta). */
+  valorEmDolar?: string | null;
+  valorEmGuarani?: string | null;
   /** Soma de peças, quando o total é de peças. */
   pecas?: number | null;
 }
@@ -316,6 +319,13 @@ export function montarGrade(pedido: PedidoDeExportacao): Grade {
         real !== null
           ? numero(centavosParaDecimal(real))
           : texto(String(total.pecas ?? total.quantidade));
+      // Já convertido pelo servidor, cada lançamento pela cotação do dia dele: Dólar e Guarani ao lado do Real.
+      const d = total.valorEmDolar != null ? centavosDeTexto(total.valorEmDolar) : null;
+      const g = total.valorEmGuarani != null ? centavosDeTexto(total.valorEmGuarani) : null;
+      if (real !== null && d !== null && g !== null && titulos.length > 3) {
+        linha[2] = texto(`US$ ${centavosParaDecimal(d)}`);
+        linha[3] = texto(`Gs. ${(g / 100n).toString()}`);
+      }
     }
     return linha;
   });

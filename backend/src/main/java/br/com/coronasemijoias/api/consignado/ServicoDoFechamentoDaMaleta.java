@@ -3,6 +3,7 @@ package br.com.coronasemijoias.api.consignado;
 import br.com.coronasemijoias.api.auditoria.ServicoDeAuditoria;
 import br.com.coronasemijoias.api.auditoria.ServicoDeAuditoria.Ator;
 import br.com.coronasemijoias.api.cadastros.Validacoes;
+import br.com.coronasemijoias.api.comum.dinheiro.ConversaoDeMoeda;
 import br.com.coronasemijoias.api.comum.dinheiro.Dinheiro;
 import br.com.coronasemijoias.api.comum.erros.CodigoErro;
 import br.com.coronasemijoias.api.comum.erros.ErroDaApi;
@@ -48,8 +49,42 @@ public class ServicoDoFechamentoDaMaleta {
             int esperadoNaMaleta, int bipadas, int diferenca, int devolvidasALoja, List<PecaComCliente> aindaComClientes) {
     }
 
-    /** Os valores da maleta (rateados pelo VD de cada maleta dentro da nota). */
-    public record Valores(BigDecimal vd, BigDecimal comissaoDosClientes, BigDecimal recebido, BigDecimal pendenciasAReceber) {
+    /**
+     * Um valor em Real e, quando todos os lançamentos que o formam tinham cotação, em Dólar e Guarani: cada lançamento (acerto ou
+     * recibo) pela cotação do dia dele, e os resultados somados (ADR-0006, item 10). {@code dolar} e {@code guarani} nulos =
+     * "Sem cotação" (só o Real).
+     */
+    public record Convertido(BigDecimal real, BigDecimal dolar, BigDecimal guarani) {
+    }
+
+    /**
+     * Os valores da maleta (rateados pelo VD de cada maleta dentro da nota), em Real e, em cada {@code ...Convertido}, também em
+     * Dólar e Guarani pela cotação do dia de cada lançamento.
+     */
+    public record Valores(BigDecimal vd, BigDecimal comissaoDosClientes, BigDecimal recebido, BigDecimal pendenciasAReceber,
+            Convertido vdConvertido, Convertido comissaoConvertida, Convertido recebidoConvertido, Convertido pendenciasConvertidas) {
+    }
+
+    /** A soma que vai juntando as partes, cada uma pela sua cotação; sem cotação numa parte com valor, o total fica só em Real. */
+    private static final class SomaConvertida {
+        private BigDecimal real = zero();
+        private BigDecimal dolar = BigDecimal.ZERO;
+        private BigDecimal guarani = BigDecimal.ZERO;
+        private boolean completa = true;
+
+        void somar(BigDecimal parte, BigDecimal usdVenda, BigDecimal pygVenda) {
+            real = real.add(parte);
+            if (usdVenda != null && pygVenda != null) {
+                dolar = dolar.add(ConversaoDeMoeda.paraDolar(parte, usdVenda));
+                guarani = guarani.add(ConversaoDeMoeda.paraGuarani(parte, pygVenda));
+            } else if (parte.signum() != 0) {
+                completa = false;
+            }
+        }
+
+        Convertido valor() {
+            return new Convertido(real, completa ? dolar : null, completa ? guarani : null);
+        }
     }
 
     public record LeituraDoFechamento(UUID remessaId, String codigoDaMaleta, String situacaoDoFechamento, Instant iniciadoEm, Instant concluidoEm,
@@ -259,17 +294,20 @@ public class ServicoDoFechamentoDaMaleta {
      * última maleta (na ordem do id) leva a diferença de arredondamento.
      */
     private Valores valores(UUID remessaId) {
-        BigDecimal vd = zero();
-        BigDecimal comissao = zero();
-        BigDecimal recebido = zero();
-        BigDecimal pendencia = zero();
+        SomaConvertida vd = new SomaConvertida();
+        SomaConvertida comissao = new SomaConvertida();
+        SomaConvertida recebido = new SomaConvertida();
+        SomaConvertida pendencia = new SomaConvertida();
         List<Map<String, Object>> acertos = jdbc.queryForList("""
-                SELECT DISTINCT a.id, a.valor_vd, a.comissao, a.bruto,
+                SELECT DISTINCT a.id, a.valor_vd, a.comissao, a.bruto, ct.usd_venda, ct.pyg_venda,
                        coalesce((SELECT sum(ap.valor) FROM corona.aplicacoes_recibo ap WHERE ap.acerto_id = a.id), 0) AS aplicado
                   FROM corona.acertos_nota a JOIN corona.itens_acerto_nota i ON i.acerto_id = a.id
+                  LEFT JOIN corona.cotacoes ct ON ct.id = a.cotacao_id
                  WHERE i.remessa_id = ? AND a.estornado_em IS NULL""", remessaId);
         for (Map<String, Object> a : acertos) {
             UUID acerto = (UUID) a.get("id");
+            BigDecimal usd = (BigDecimal) a.get("usd_venda");
+            BigDecimal pyg = (BigDecimal) a.get("pyg_venda");
             // O VD de cada maleta dentro do acerto, na ordem do id da maleta.
             Map<UUID, BigDecimal> vdPorMaleta = new LinkedHashMap<>();
             for (Map<String, Object> m : jdbc.queryForList("""
@@ -280,12 +318,45 @@ public class ServicoDoFechamentoDaMaleta {
             BigDecimal vdDoAcerto = (BigDecimal) a.get("valor_vd");
             BigDecimal aplicado = (BigDecimal) a.get("aplicado");
             BigDecimal saldo = Dinheiro.subtrair((BigDecimal) a.get("bruto"), aplicado);
-            vd = vd.add(vdPorMaleta.getOrDefault(remessaId, zero()));
-            comissao = comissao.add(rateio((BigDecimal) a.get("comissao"), vdPorMaleta, vdDoAcerto, remessaId));
-            recebido = recebido.add(rateio(aplicado, vdPorMaleta, vdDoAcerto, remessaId));
-            pendencia = pendencia.add(rateio(saldo, vdPorMaleta, vdDoAcerto, remessaId));
+            vd.somar(vdPorMaleta.getOrDefault(remessaId, zero()), usd, pyg);
+            comissao.somar(rateio((BigDecimal) a.get("comissao"), vdPorMaleta, vdDoAcerto, remessaId), usd, pyg);
+            pendencia.somar(rateio(saldo, vdPorMaleta, vdDoAcerto, remessaId), usd, pyg);
+            somarRecebido(recebido, acerto, vdPorMaleta, vdDoAcerto, remessaId);
         }
-        return new Valores(vd, comissao, recebido, pendencia);
+        Convertido v = vd.valor();
+        Convertido c = comissao.valor();
+        Convertido r = recebido.valor();
+        Convertido p = pendencia.valor();
+        return new Valores(v.real(), c.real(), r.real(), p.real(), v, c, r, p);
+    }
+
+    /**
+     * O recebido de um acerto, recibo por recibo, cada um pela cotação do dia do recibo. O total em Real é o rateio do que foi
+     * aplicado ao acerto (como sempre foi); o último recibo fecha a conta, para a soma das partes não se afastar um centavo.
+     */
+    private void somarRecebido(SomaConvertida recebido, UUID acerto, Map<UUID, BigDecimal> vdPorMaleta, BigDecimal vdDoAcerto,
+            UUID remessaId) {
+        List<Map<String, Object>> porRecibo = jdbc.queryForList("""
+                SELECT ap.recibo_id, sum(ap.valor) AS valor, ct.usd_venda, ct.pyg_venda
+                  FROM corona.aplicacoes_recibo ap
+                  JOIN corona.recibos_consignado r ON r.id = ap.recibo_id
+                  LEFT JOIN corona.cotacoes ct ON ct.id = r.cotacao_id
+                 WHERE ap.acerto_id = ?
+                 GROUP BY ap.recibo_id, r.pago_em, ct.usd_venda, ct.pyg_venda
+                 ORDER BY r.pago_em, ap.recibo_id""", acerto);
+        BigDecimal aplicado = zero();
+        for (Map<String, Object> l : porRecibo) {
+            aplicado = aplicado.add((BigDecimal) l.get("valor"));
+        }
+        BigDecimal total = rateio(aplicado, vdPorMaleta, vdDoAcerto, remessaId);
+        BigDecimal dado = zero();
+        for (int k = 0; k < porRecibo.size(); k++) {
+            Map<String, Object> l = porRecibo.get(k);
+            BigDecimal parte = k == porRecibo.size() - 1 ? Dinheiro.subtrair(total, dado)
+                    : rateio((BigDecimal) l.get("valor"), vdPorMaleta, vdDoAcerto, remessaId);
+            dado = dado.add(parte);
+            recebido.somar(parte, (BigDecimal) l.get("usd_venda"), (BigDecimal) l.get("pyg_venda"));
+        }
     }
 
     /** A parte da maleta no total da nota, proporcional ao VD dela; a última maleta fecha a conta. */

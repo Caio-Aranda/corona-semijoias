@@ -970,7 +970,8 @@ export const TEXTOS_PT = {
       dataDoAcerto: 'Dt. Acerto',
       dataDoAcertoAjuda:
         'Hoje, ou um dia que já passou (não antes do dia em que a nota saiu). Nunca depois de hoje.',
-      dataDoAcertoInvalida: 'Escolha hoje ou um dia que já passou, a partir do dia em que a nota saiu.',
+      dataDoAcertoInvalida:
+        'Escolha hoje ou um dia que já passou, a partir do dia em que a nota saiu.',
       semCotacaoDoDia: 'Sem cotação neste dia: os valores aparecem só em reais.',
       comissaoRs: 'Comissão R$',
       bruto: 'Total a Receber Bruto',
@@ -1297,7 +1298,7 @@ export const TEXTOS_PT = {
       valorLiquido: 'Valor Líq. (VD − comissão)',
       pendenciasAnteriores: 'Pendências anteriores',
       totalAReceber: 'Total a receber',
-      recibo: (n: string) => `Recibo nº ${n}`,
+      recibo: (n: string) => `Recibo ${n}`,
       pagoPorForma: 'Pago',
       totalPago: 'Total pago',
       ficouDevendo: 'Ficou devendo',

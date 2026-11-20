@@ -303,7 +303,10 @@ describe('Situação do cliente', () => {
     expect(r.pendentes).toHaveLength(1);
     expect(r.pendentes[0]).toMatchObject({ situacao: 'PENDENTE' });
     expect(r.pendentes[0]?.ficouDevendo.real).toBe('345.10');
-    expect(r.pago.real).toBe(r.jaVendeu[0]?.pago);
+    expect(r.pago.real).toBe(r.jaVendeu[0]?.pago.real);
+    // Cada nota da lista traz Dólar e Guarani pela cotação do dia do acerto dela.
+    expect(r.jaVendeu[0]?.valorVd.dolar).not.toBeNull();
+    expect(r.pendentes[0]?.valorVd.guarani).not.toBeNull();
     expect(r.comOCliente).toHaveLength(1);
     expect(r.comOCliente[0]).toMatchObject({ codigo: 'A-1', quantidade: 2, maleta: '0007' });
     expect(r.itensComOCliente).toBe(2);
@@ -328,7 +331,7 @@ describe('Peças vendidas por cliente', () => {
     expect(r.valorVd.real).toBe('2808.10');
     expect(r.linhas.find((l) => l.codigo === 'D-1')).toMatchObject({
       quantidade: 1,
-      valor: '498.10',
+      valor: { real: '498.10', dolar: '99.62', guarani: '664133' },
     });
     const fora = relatorio<PecasVendidasPorCliente>({
       tipo: 'PECAS_VENDIDAS',
@@ -456,5 +459,45 @@ describe('código da maleta e praça (V053 do servidor, migração local 10)', (
     const maletas = chamar<{ codigo: string }[]>({ operacao: 'consignado.maletas' });
     expect(maletas[0]?.codigo).toMatch(/^M-[0-9A-F]{6}$/);
     expect(chamar<PainelDaSemana>({ operacao: 'consignado.painel' }).praca).toBeNull();
+  });
+});
+
+describe('Dólar e Guarani em cada linha (tarefa 9.8, §23.11)', () => {
+  it('cada linha usa a cotação do dia do seu lançamento; a linha de outro dia usa a outra cotação', () => {
+    const { nova } = cenario();
+    // Uma cotação de outro dia (US$ 1 = R$ 10,00; Gs. 1 = R$ 0,0005), depois da primeira.
+    aplicarLote(
+      b.db,
+      [
+        {
+          tabela: 'cotacoes',
+          id: idDeTeste(11),
+          version: 1,
+          deletedAt: null,
+          campos: { data_cotacao: '2026-11-12', usd_venda: '10.00000000', pyg_venda: '0.00050000' },
+        },
+      ],
+      { cursor: 'c-9' },
+    );
+    // Acerto no dia 12 (a Dt. Acerto passa a ser a data do acerto e a cotação desse dia).
+    agora = new Date('2026-11-12T15:00:00.000Z');
+    acertar(nova, devolvidos(), exemplos.notaDeExemplo.comissaoPercentual, pagos());
+    const r = relatorio<RelatorioDoAcerto>({ tipo: 'ACERTO', notaId: nova });
+    const linhaA = r.vendidas.find((l) => l.codigo === 'A-1');
+    // 5 peças de 200,00 = 1000,00: Dólar a 10,00 e Guarani a 0,0005.
+    expect(linhaA?.valor).toEqual({ real: '1000.00', dolar: '100.00', guarani: '2000000' });
+    // A nota de saída (saída em 10/11) continua pela cotação do dia 9.
+    const saida = relatorio<NotaDeSaida>({ tipo: 'NOTA_DE_SAIDA', notaId: nova });
+    expect(saida.linhas[0]?.subTotal.dolar).toBe('400.00');
+  });
+
+  it('sem cotação para o dia, a linha sai só em Real (Dólar e Guarani nulos)', () => {
+    const { nova } = cenario();
+    acertar(nova, devolvidos(), exemplos.notaDeExemplo.comissaoPercentual, pagos());
+    b.db.prepare('DELETE FROM cotacoes').run();
+    const r = relatorio<RelatorioDoAcerto>({ tipo: 'ACERTO', notaId: nova });
+    expect(r.vendidas[0]?.valor.dolar).toBeNull();
+    expect(r.vendidas[0]?.valor.guarani).toBeNull();
+    expect(r.vendidas[0]?.valor.real).not.toBe('');
   });
 });

@@ -100,7 +100,14 @@ const RELATORIO = {
     { chave: 'comClientes', rotulo: 'x', quantidade: 1, pecas: 2 },
     { chave: 'bipadas', rotulo: 'x', quantidade: 1, pecas: 3 },
     { chave: 'diferenca', rotulo: 'x', quantidade: 1, pecas: -2 },
-    { chave: 'vd', rotulo: 'x', quantidade: 1, valorEmReais: '300.00' },
+    {
+      chave: 'vd',
+      rotulo: 'x',
+      quantidade: 1,
+      valorEmReais: '300.00',
+      valorEmDolar: '50.00',
+      valorEmGuarani: '250000',
+    },
     { chave: 'comissao', rotulo: 'x', quantidade: 1, valorEmReais: '90.00' },
     { chave: 'recebido', rotulo: 'x', quantidade: 1, valorEmReais: '100.00' },
     { chave: 'pendencias', rotulo: 'x', quantidade: 1, valorEmReais: '110.00' },
@@ -317,6 +324,8 @@ describe('Fechamento da maleta (§23.10)', () => {
     await u.click(screen.getByRole('tab', { name: 'Dinheiro' }));
     const dinheiro = screen.getByRole('tabpanel', { name: 'Dinheiro' });
     expect(within(dinheiro).getByText('Valor vendido')).toBeInTheDocument();
+    // Cada lançamento já vem convertido pela cotação do dia dele (9.8): o total mostra Dólar e Guarani.
+    expect(within(dinheiro).getByText('US$ 50,00 · Gs. 250.000')).toBeInTheDocument();
     expect(within(dinheiro).getByText('Comissão dos clientes')).toBeInTheDocument();
     expect(within(dinheiro).getByText('Valor recebido')).toBeInTheDocument();
     expect(within(dinheiro).getByText('Pendências a receber')).toBeInTheDocument();
