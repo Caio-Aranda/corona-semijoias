@@ -343,7 +343,7 @@ describe('Produtos: ficha', () => {
     await u.type(screen.getByLabelText('Nome'), ' II');
     await u.click(screen.getByRole('button', { name: 'Salvar' }));
     await waitFor(() => expect(quantas(m, 'produtos.editar')).toBe(2));
-    expect(ultima(m, 'produtos.editar')).not.toHaveProperty('tamTon');
+    expect(ultima(m, 'produtos.editar')).toMatchObject({ tamTon: '' });
   });
 
   it('409 de versão: texto do servidor e Atualizar relê o produto', async () => {

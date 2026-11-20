@@ -726,7 +726,7 @@ describe('Clientes e Lançar pagamento', () => {
             pagamentos: [
               {
                 reciboId: 'r1',
-                numero: '0000065-40',
+                numero: 'R 0000065-40',
                 pagoEm: null,
                 total: '300.00',
                 formas: [],
@@ -755,7 +755,7 @@ describe('Clientes e Lançar pagamento', () => {
     >;
     expect(p.pagamento.clienteId).toBe('c1');
     expect(p.pagamento.formas).toEqual([{ forma: 'PIX', valor: '300.00' }]);
-    expect(await screen.findByText('Pagamento lançado. Recibo 0000065-40.')).toBeInTheDocument();
+    expect(await screen.findByText('Pagamento lançado. R 0000065-40.')).toBeInTheDocument();
   });
 
   it('pagamento acima do que o cliente deve não deixa lançar', async () => {

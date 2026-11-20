@@ -190,6 +190,27 @@ class DataDoAcertoTest extends ApoioDoConsignado {
     }
 
     @Test
+    void estornoLiberaASobraEElaVaiParaOProximoDebitoComRecibosPeloPagoEm() throws Exception {
+        Cena c = cena();
+        UUID notaA = notaDe(c, 1, 1); // 100
+        UUID notaB = notaDe(c, 2, 2); // 200
+        UUID a = acertarEm(c, notaA, DIA_12_10H, null, null, null);
+        // P1 quita A (pago_em dia 13).
+        UUID p1 = UUID.randomUUID();
+        recibos.lancar(ctxEm(c.v(), Instant.parse("2020-03-13T13:00:00Z")),
+                new NovoPagamento(p1, c.cliente(), c.semana(), 1, List.of(paga("PIX", "100.00")), null, null));
+        // B lançado depois com Dt. Acerto do dia 11, pagando 50: o recibo dele tem pago_em do dia 11, antes do P1.
+        UUID b = acertarEm(c, notaB, Instant.parse("2020-03-14T13:00:00Z"), LocalDate.of(2020, 3, 11), 2, "50.00");
+        assertThat(saldoDoDebito(b)).isEqualByComparingTo("150.00");
+        // Estornar A libera os 100 do P1: reaplicarSobras percorre os recibos por pago_em e a sobra do P1 cobre B.
+        acertos.estornar(ctxEm(c.v(), Instant.parse("2020-03-15T13:00:00Z")),
+                new ServicoDeAcertosDaNota.EstornoDoAcerto(UUID.randomUUID(), a, "Errei"));
+        assertThat(aAplicar(p1)).isEqualByComparingTo("0.00");
+        assertThat(saldoDoDebito(b)).isEqualByComparingTo("50.00");
+        assertThat(aAplicar(reciboDoAcerto(b))).isEqualByComparingTo("0.00");
+    }
+
+    @Test
     void acertoComDataReenviadoEInofensivoESoGravaUmaVez() throws Exception {
         Cena c = cena();
         UUID nota = notaDe(c, 1, 2);

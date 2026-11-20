@@ -951,7 +951,7 @@ describe('Dt. Acerto (tarefa 9.8): a data do acerto e a ordem dos débitos', () 
 
   it('sem data (ou só com hoje) a outbox não leva dataDoAcerto e o resumo é o de antes', () => {
     const { notaA } = duasNotas();
-    salvar(notaA, []);
+    salvar(notaA, [], '2026-11-10');
     const op = b.db.prepare("SELECT dados FROM outbox WHERE tipo = 'ACERTO_NOTA'").get() as {
       dados: string;
     };
@@ -965,6 +965,21 @@ describe('Dt. Acerto (tarefa 9.8): a data do acerto e a ordem dos débitos', () 
     expect(b.db.prepare('SELECT count(*) AS n FROM acertos_nota').get()).toEqual({ n: 0 });
     // O mesmo dia da saída vale.
     expect(salvar(notaA, [], '2026-11-02').situacao).toBe('PENDENTE');
+  });
+
+  it('relógio do computador atrasado: a data vale pelo dia que ele declara (nunca depois), como no servidor', () => {
+    const { notaA } = duasNotas();
+    // O computador está em 5/11 (a nota saiu em 2/11): depois do dia dele é recusado; o dia dele e os anteriores valem.
+    agora = new Date('2026-11-05T13:00:00.000Z');
+    expect(() => salvar(notaA, [], '2026-11-06')).toThrowError(/depois de hoje/);
+    const r = salvar(notaA, [], '2026-11-03');
+    expect(r.situacao).toBe('PENDENTE');
+    const a = b.db.prepare('SELECT acertado_em, registrado_em FROM acertos_nota').get() as {
+      acertado_em: string;
+      registrado_em: string;
+    };
+    expect(a.acertado_em).toBe('2026-11-03T15:00:00.000Z');
+    expect(a.registrado_em.startsWith('2026-11-05T')).toBe(true);
   });
 
   it('a prévia mostra a cotação do dia escolhido; sem cotação até o dia, "Sem cotação" (cotacao nula)', () => {

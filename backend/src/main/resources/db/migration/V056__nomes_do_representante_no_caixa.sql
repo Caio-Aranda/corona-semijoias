@@ -1,16 +1,25 @@
--- V056: "representante" no lugar de "vendedor" nos textos gravados do caixa (Leva 9, tarefa 9.8, item 4; glossário da interface).
+-- V056: "representante" no lugar de "vendedor" no nome das categorias do sistema do caixa (Leva 9, tarefa 9.8, item 4).
 --
--- Só o nome que aparece na tela muda: as duas categorias do sistema e a descrição dos lançamentos automáticos. Códigos, ids,
--- origens (RECEBIMENTO_VENDEDOR, ACERTO_A_FAVOR_DO_VENDEDOR) e valores não mudam. A categoria do sistema e o lançamento são
--- protegidos por gatilho (nome fixo, lançamento imutável), então os gatilhos de usuário saem só durante este UPDATE de dados.
+-- Só o nome visível das duas categorias do sistema muda; códigos, ids, origens e valores não mudam. Os lançamentos já gravados
+-- (imutáveis) NÃO são reescritos: a descrição deles fica como foi gravada. Nenhum gatilho é desligado: a função que protege a
+-- categoria do sistema passa a aceitar só estas duas trocas de nome (e nenhuma outra), e o UPDATE vem depois.
 
-ALTER TABLE corona.categorias_caixa DISABLE TRIGGER USER;
+CREATE OR REPLACE FUNCTION corona.proteger_categoria_do_caixa() RETURNS trigger
+    LANGUAGE plpgsql
+AS $$
+BEGIN
+    IF NEW.tipo IS DISTINCT FROM OLD.tipo OR NEW.sistema IS DISTINCT FROM OLD.sistema THEN
+        RAISE EXCEPTION 'O tipo da categoria % não muda.', OLD.id USING ERRCODE = 'restrict_violation';
+    END IF;
+    IF OLD.sistema AND (NEW.ativo IS DISTINCT FROM OLD.ativo OR NEW.deleted_at IS DISTINCT FROM OLD.deleted_at
+            OR (NEW.nome IS DISTINCT FROM OLD.nome AND NOT (
+                (OLD.nome = 'Repasse do vendedor' AND NEW.nome = 'Repasse do representante')
+                OR (OLD.nome = 'Pagamento ao vendedor' AND NEW.nome = 'Pagamento ao representante')))) THEN
+        RAISE EXCEPTION 'A categoria do sistema % não pode ser alterada.', OLD.id USING ERRCODE = 'restrict_violation';
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
 UPDATE corona.categorias_caixa SET nome = 'Repasse do representante' WHERE sistema AND nome = 'Repasse do vendedor';
 UPDATE corona.categorias_caixa SET nome = 'Pagamento ao representante' WHERE sistema AND nome = 'Pagamento ao vendedor';
-ALTER TABLE corona.categorias_caixa ENABLE TRIGGER USER;
-
-ALTER TABLE corona.lancamentos_caixa DISABLE TRIGGER USER;
-UPDATE corona.lancamentos_caixa SET descricao = 'Recebimento do representante' WHERE descricao = 'Recebimento do vendedor';
-UPDATE corona.lancamentos_caixa SET descricao = 'Estorno de recebimento do representante' WHERE descricao = 'Estorno de recebimento do vendedor';
-UPDATE corona.lancamentos_caixa SET descricao = 'Pagamento ao representante no acerto' WHERE descricao = 'Pagamento ao vendedor no acerto';
-ALTER TABLE corona.lancamentos_caixa ENABLE TRIGGER USER;

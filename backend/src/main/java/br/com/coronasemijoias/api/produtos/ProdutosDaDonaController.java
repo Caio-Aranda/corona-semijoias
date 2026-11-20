@@ -71,7 +71,7 @@ public class ProdutosDaDonaController {
             Integer estoqueMinimo,
             Integer version,
             List<@Valid PedidoDeCodigo> codigos,
-            @Size(max = 100, message = Mensagens.LIMITE_CURTO) String tamTon) {
+            @Size(max = 30, message = Mensagens.LIMITE_CURTO) String tamTon) {
 
         Dados dados() {
             return new Dados(nome, referencia, categoriaId, fornecedorId, precoVenda, precoCusto, estoqueMinimo, tamTon);

@@ -181,7 +181,8 @@ export function FichaDoProduto({ ponte, produtoId, aoVoltar, aoAbrirOutro }: Fic
   const corpo = (): Record<string, unknown> => ({
     nome: form.nome.trim(),
     ...(form.referencia.trim() ? { referencia: form.referencia.trim() } : {}),
-    ...(form.tamTon.trim() ? { tamTon: form.tamTon.trim() } : {}),
+    // Sempre vai (vazio limpa o campo ao editar; sem ele o servidor não mexe).
+    tamTon: form.tamTon.trim(),
     categoriaId: form.categoriaId,
     ...(form.fornecedorId ? { fornecedorId: form.fornecedorId } : {}),
     precoVenda: form.precoVenda,

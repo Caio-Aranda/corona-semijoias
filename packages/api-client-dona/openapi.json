@@ -8699,7 +8699,7 @@
             "type" : "string"
           },
           "tamTon" : {
-            "maxLength" : 100,
+            "maxLength" : 30,
             "minLength" : 0,
             "type" : "string"
           },

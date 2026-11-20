@@ -252,6 +252,27 @@ class ServicoDeNotasTest extends ApoioDoConsignado {
     }
 
     @Test
+    void dadosAntigosComNota32ERecibo53ContinuamIguaisENotaCincoETresEReciboTrintaEDoisSaoAceitos() throws Exception {
+        UsuarioDeTeste v = usuarios.criarVendedor();
+        UUID anel = peca("10.00", 9);
+        UUID maleta = maletaEnviada(v, anel, 9);
+        UUID cliente = cliente(v);
+        UUID semana = abrirSemana(v);
+        // Como a base ficava até a V053: uma nota 32 e um recibo 53 já reservados (números que não mudam).
+        jdbc.update("INSERT INTO corona.numeros_da_semana (id, vendedor_id, semana_id, sequencia, tipo, registro_id) VALUES (?, ?, ?, 32, 'NOTA', ?)",
+                UUID.randomUUID(), v.vendedorId(), semana, UUID.randomUUID());
+        jdbc.update("INSERT INTO corona.numeros_da_semana (id, vendedor_id, semana_id, sequencia, tipo, registro_id) VALUES (?, ?, ?, 53, 'RECIBO', ?)",
+                UUID.randomUUID(), v.vendedorId(), semana, UUID.randomUUID());
+        // Agora nota 53 e recibo 32 (antes recusados por disputarem o mesmo contador) entram.
+        UUID n = criarNota(v, semana, 53, cliente, item(anel, maleta, 1, "10.00"));
+        acertar(v, n, semana, "0", List.of(), 32, paga("PIX", "4.00"));
+        assertThat(contar("SELECT count(*) FROM corona.numeros_da_semana WHERE semana_id = ?", semana)).isEqualTo(4);
+        // E o mesmo número do mesmo tipo continua recusado.
+        Throwable repetida = catchThrowable(() -> criarNota(v, semana, 32, cliente, item(anel, maleta, 1, "10.00")));
+        assertThat(codigoDoErro(repetida)).isEqualTo("NUMERO_REPETIDO");
+    }
+
+    @Test
     void migracaoV054MantemNumerosGravadosEAceitaNotaEReciboComAMesmaSequencia() throws Exception {
         UsuarioDeTeste v = usuarios.criarVendedor();
         UUID semana = abrirSemana(v);

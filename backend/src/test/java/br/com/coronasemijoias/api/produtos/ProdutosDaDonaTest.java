@@ -270,9 +270,18 @@ class ProdutosDaDonaTest extends TesteDeIntegracao {
         JsonNode limpo = ler(enviar("PUT", "/api/dona/produtos/" + id, dona(), e).andExpect(status().isOk()));
         assertThat(limpo.get("tamTon") == null || limpo.get("tamTon").isNull()).isTrue();
 
+        // Edição sem tamTon no pedido não zera o que já existe.
+        e.put("tamTon", "Dourado");
+        e.put("version", 3);
+        enviar("PUT", "/api/dona/produtos/" + id, dona(), e).andExpect(status().isOk());
+        e.remove("tamTon");
+        e.put("version", 4);
+        JsonNode mantido = ler(enviar("PUT", "/api/dona/produtos/" + id, dona(), e).andExpect(status().isOk()));
+        assertThat(mantido.get("tamTon").asString()).isEqualTo("Dourado");
+
         // Texto curto: acima de 30 letras é recusado.
         e.put("tamTon", "x".repeat(31));
-        e.put("version", 3);
+        e.put("version", 5);
         enviar("PUT", "/api/dona/produtos/" + id, dona(), e).andExpect(status().isBadRequest());
     }
 

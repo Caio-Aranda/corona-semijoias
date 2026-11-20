@@ -207,4 +207,99 @@ describe('duas pontas: o consignado ao cliente sem internet e a volta com rede r
 
     await cenario.afirmarNoFim([a]);
   });
+
+  it('25. nota e recibo com a mesma sequência no ciclo real, com o relógio do computador atrasado e sem internet; igual dos dois lados depois do pull', async () => {
+    const [peca] = await cenario.pecas(1, { preco: '100.00' });
+    const ana = await cenario.vendedor('Ana', { deslocamentoMs: -86_400_000 });
+    const a = ana.aparelho;
+    const maletaId = await cenario.dona.maleta(ana.vendedorId, { [peca!.id]: 10 });
+    await a.sincronizar();
+    a.semInternet();
+    await a.pedir({ operacao: 'consignado.semanaNova', id: randomUUID(), numero: 70 });
+    const hashes: string[] = [];
+    for (const f of ['c2', 'f2', 'v2'])
+      hashes.push(
+        (await a.pedir<{ hash: string }>({ operacao: 'consignado.fotoGuardar', dataUrl: foto(f) }))
+          .hash,
+      );
+    const clienteId = randomUUID();
+    await a.pedir({
+      operacao: 'consignado.clienteCadastrar',
+      cliente: {
+        id: clienteId,
+        nome: 'Cliente da Ana',
+        telefone: '67 99999-1111',
+        enderecoLogradouro: 'Rua Um',
+        enderecoNumero: '1',
+        enderecoBairro: 'Centro',
+        enderecoCidade: 'Ponta Porã',
+        enderecoUf: 'MS',
+        documento: 'CI-7654321',
+        documentoTipo: 'CI',
+        comissaoPercentual: '30',
+        fotoHash: hashes[0]!,
+        fotoDocumentoFrenteHash: hashes[1]!,
+        fotoDocumentoVersoHash: hashes[2]!,
+      },
+    });
+    // O pedido sai com o relógio do computador 1 dia atrasado (a nota é de ontem).
+    const notas: string[] = [];
+    for (let k = 0; k < 2; k += 1) {
+      await a.pedir({ operacao: 'consignado.pedidoDefinir', clienteId, remessaId: maletaId });
+      await a.pedir({ operacao: 'consignado.pedidoBipar', codigo: peca!.codigo });
+      const id = randomUUID();
+      await a.pedir({ operacao: 'consignado.pedidoFinalizar', id });
+      notas.push(id);
+    }
+    // O relógio volta ao certo; o acerto da 1ª nota paga 40 (recibo R 01 com a mesma sequência da nota 01).
+    a.relogio.deslocamentoMs = 0;
+    const acerto = await a.pedir<{ nota: DetalheDaNota }>({
+      operacao: 'consignado.acertoSalvar',
+      acerto: {
+        id: randomUUID(),
+        reciboId: randomUUID(),
+        notaId: notas[0]!,
+        comissaoPercentual: '30',
+        devolvidos: [],
+        formas: [{ forma: 'DINHEIRO', valor: '40.00' }],
+      },
+    });
+    expect(acerto.nota.acerto?.recibo?.numero).toMatch(/^R \d{7}-01$/);
+    // Lançar pagamento: recibo 02, enquanto a nota 02 continua sendo nota (contadores separados).
+    await a.pedir({
+      operacao: 'consignado.pagamento',
+      pagamento: { id: randomUUID(), clienteId, formas: [{ forma: 'PIX', valor: '10.00' }] },
+    });
+    a.comInternet({
+      sorteio: [],
+      porCaminho: [{ caminho: PUSH, roteiro: ['CORTE_DEPOIS_DE_GRAVAR'] }],
+    });
+    await a.sincronizar();
+    expect(a.outbox().every((o) => o.situacao === 'ENVIADO')).toBe(true);
+
+    const v = texto(ana.vendedorId);
+    for (const tipo of ['NOTA', 'RECIBO'])
+      expect(
+        await contar(
+          `SELECT count(*) FROM corona.numeros_da_semana WHERE vendedor_id = ${v} AND tipo = '${tipo}' AND sequencia IN (1, 2)`,
+        ),
+      ).toBe(2);
+    // Hora do acerto: a Dt. Acerto de hoje é o próprio lançamento (registrado_em = acertado_em), nas duas pontas.
+    const [servidor] = await consultar<Record<string, string>>(
+      `SELECT (registrado_em = acertado_em)::text AS igual FROM corona.acertos_nota WHERE nota_id = ${texto(notas[0]!)}`,
+    );
+    expect(servidor).toMatchObject({ igual: 'true' });
+    const [local] = a.ler<{ acertado_em: string; registrado_em: string }>(
+      'SELECT acertado_em, registrado_em FROM acertos_nota WHERE nota_id = ?',
+      notas[0]!,
+    );
+    expect(local!.registrado_em).toBe(local!.acertado_em);
+    const cliente = await a.pedir<ClienteCompleto>({
+      operacao: 'consignado.cliente',
+      id: clienteId,
+    });
+    // 1ª nota: bruto 70 (100 menos 30%), pagou 40 + 10 = 50 → 20; a 2ª nota ainda não foi acertada.
+    expect(cliente.pendencia).toBe('20.00');
+    await cenario.afirmarNoFim([a]);
+  });
 });

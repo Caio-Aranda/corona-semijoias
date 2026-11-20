@@ -902,7 +902,8 @@ export function registrarAcerto(
       comissaoPercentual: previa.comissaoPercentual,
       devolvidos,
       ...(recibo ? { recibo } : {}),
-      ...(p.data ? { dataDoAcerto: p.data } : {}),
+      // Hoje é o mesmo que sem data: a operação sai como as de antes (mesmo resumo no servidor).
+      ...(p.data && p.data !== diaEmBrasilia(agora) ? { dataDoAcerto: p.data } : {}),
       visto: {
         valorVd: c.valorVd,
         comissao: c.comissao,

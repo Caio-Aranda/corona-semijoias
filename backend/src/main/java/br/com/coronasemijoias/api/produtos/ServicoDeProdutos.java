@@ -124,7 +124,10 @@ public class ServicoDeProdutos extends ServicoDeCadastro<Produto> {
         BigDecimal custoAntes = custos.obter(id).orElse(null);
         Produto editado = editarComVersao(id, versaoLida, p -> {
             p.alterar(c.nome, c.referencia, c.categoriaId, c.fornecedorId, c.precoVenda, c.estoqueMinimo);
-            p.definirTamTon(c.tamTon);
+            // Sem tamTon no pedido o campo fica como está; só o texto vazio explícito o limpa (como na 9.7).
+            if (d.tamTon() != null) {
+                p.definirTamTon(c.tamTon);
+            }
         });
         custos.gravar(id, c.precoCusto);
         if (vendaAntes.compareTo(c.precoVenda) != 0) {

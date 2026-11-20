@@ -275,7 +275,7 @@ describe('Relatório do acerto', () => {
     expect(within(folha).getByText('43,02%')).toBeInTheDocument();
     expect(within(folha).getByText('Pago: Dinheiro')).toBeInTheDocument();
     expect(within(folha).getByText('Pago: Pix')).toBeInTheDocument();
-    expect(within(folha).getByText('Recibo R 0000064-01')).toBeInTheDocument();
+    expect(within(folha).getByText('R 0000064-01')).toBeInTheDocument();
     expect(within(folha).getAllByText('Sem cotação').length).toBeGreaterThan(0);
   });
 });
