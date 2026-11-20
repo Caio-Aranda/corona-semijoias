@@ -418,6 +418,7 @@ describe('Novo Pedido', () => {
           maleta: 'M-ABC123',
           codigo: 'A-1',
           nome: 'Brinco A',
+          tamTon: null,
           fotoHash: null,
           quantidade: 2,
           precoUnitario: '200.00',
@@ -474,6 +475,7 @@ describe('Cobrança e acerto', () => {
         codigo: 'A-1',
         codigos: ['a-1'],
         nome: 'Brinco A',
+        tamTon: '17',
         fotoHash: null,
         dx: 10,
         dv: 0,
@@ -555,6 +557,12 @@ describe('Cobrança e acerto', () => {
         'Já foram devolvidas todas as peças levadas desta. Nada foi acrescentado.',
       ),
     ).toBeInTheDocument();
+  });
+
+  it('a tabela de peças tem a coluna Tam./Ton. e mostra o valor da peça (vazio se não tiver)', async () => {
+    await abrir();
+    expect(screen.getByRole('columnheader', { name: 'Tam./Ton.' })).toBeInTheDocument();
+    expect(screen.getByRole('cell', { name: '17' })).toBeInTheDocument();
   });
 
   it('Concluir devolução lista as peças não lidas; Forma de Pagamento mostra a conta; Salvar manda só os fatos', async () => {

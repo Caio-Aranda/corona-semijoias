@@ -135,3 +135,37 @@ describe('migração local 11 (contador do recibo)', () => {
     if (recarga) expect(JSON.parse(recarga.valor) as string[]).toContain('acertos_nota');
   });
 });
+
+describe('migração local 12 (Tam./Ton.)', () => {
+  it('banco v11 ganha a coluna tam_ton nos produtos, sem perder nada, e a recarga dirigida traz os produtos de novo', () => {
+    const c = copiarExemplo(11);
+    limpar.push(c.apagar);
+    const antes = abrirSemMigrar(c.caminho, 11);
+    antes
+      .prepare(
+        `INSERT INTO produtos (id, version, origem_local, nome, ativo) VALUES (?, 1, 'SERVIDOR', 'Anel', 1)`,
+      )
+      .run(idDeTeste(2));
+    antes
+      .prepare(
+        `INSERT INTO estado_sync (chave, valor) VALUES ('cursor', 'c-1')
+         ON CONFLICT (chave) DO UPDATE SET valor = excluded.valor`,
+      )
+      .run();
+    antes.close();
+    const db = abrirBancoLocal({ caminho: c.caminho, chave: CHAVE_DOS_EXEMPLOS });
+    limpar.push(() => db.close());
+    const colunas = (db.prepare('PRAGMA table_info(produtos)').all() as { name: string }[]).map(
+      (x) => x.name,
+    );
+    expect(colunas).toContain('tam_ton');
+    expect(db.prepare('SELECT nome, tam_ton FROM produtos').get()).toEqual({
+      nome: 'Anel',
+      tam_ton: null,
+    });
+    const recarga = db
+      .prepare("SELECT valor FROM estado_sync WHERE chave = 'recarga_dirigida'")
+      .get() as { valor: string };
+    expect(JSON.parse(recarga.valor) as string[]).toContain('produtos');
+  });
+});

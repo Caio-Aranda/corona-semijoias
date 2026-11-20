@@ -211,8 +211,8 @@ describe('Nota de saída', () => {
       ['B-1', 8, '187.50'],
       ['C-1', 8, '233.75'],
     ]);
-    // A coluna Tam./Ton. não existe (o produto não tem esse campo).
-    expect(JSON.stringify(r)).not.toMatch(/tamanho|tom\b|ton\b/i);
+    // Sem Tam./Ton. no cadastro da peça, a coluna sai vazia (null).
+    expect(r.linhas.every((l) => l.tamTon === null)).toBe(true);
     expect(r.itensDx).toBe(exemplos.notaDeExemplo.esperado.itensDx);
     expect(r.totalDx).toEqual({ real: '5370.00', dolar: '1074.00', guarani: '7160000' });
     // Pendência anterior de 498,10 (nota 0000063), também pela cotação do dia dela.
@@ -488,7 +488,7 @@ describe('Dólar e Guarani em cada linha (tarefa 9.8, §23.11)', () => {
     expect(linhaA?.valor).toEqual({ real: '1000.00', dolar: '100.00', guarani: '2000000' });
     // A nota de saída (saída em 10/11) continua pela cotação do dia 9.
     const saida = relatorio<NotaDeSaida>({ tipo: 'NOTA_DE_SAIDA', notaId: nova });
-    expect(saida.linhas[0]?.subTotal.dolar).toBe('400.00');
+    expect(saida.linhas.find((l) => l.codigo === 'A-1')?.subTotal.dolar).toBe('400.00');
   });
 
   it('sem cotação para o dia, a linha sai só em Real (Dólar e Guarani nulos)', () => {
@@ -499,5 +499,31 @@ describe('Dólar e Guarani em cada linha (tarefa 9.8, §23.11)', () => {
     expect(r.vendidas[0]?.valor.dolar).toBeNull();
     expect(r.vendidas[0]?.valor.guarani).toBeNull();
     expect(r.vendidas[0]?.valor.real).not.toBe('');
+  });
+});
+
+describe('Tam./Ton. nos relatórios (tarefa 9.8)', () => {
+  it('a Nota de saída e o Relatório do acerto trazem o Tam./Ton. de cada peça (vazio quando não tem)', () => {
+    const { nova } = cenario();
+    aplicarLote(
+      b.db,
+      [
+        {
+          tabela: 'produtos',
+          id: produto.A,
+          version: 2,
+          deletedAt: null,
+          campos: { nome: 'Brinco A', ativo: 1, tam_ton: 'Dourado' },
+        },
+      ],
+      { cursor: 'c-9' },
+    );
+    const saida = relatorio<NotaDeSaida>({ tipo: 'NOTA_DE_SAIDA', notaId: nova });
+    expect(saida.linhas.find((l) => l.codigo === 'A-1')?.tamTon).toBe('Dourado');
+    expect(saida.linhas.find((l) => l.codigo === 'B-1')?.tamTon).toBeNull();
+    acertar(nova, devolvidos(), exemplos.notaDeExemplo.comissaoPercentual, pagos());
+    const r = relatorio<RelatorioDoAcerto>({ tipo: 'ACERTO', notaId: nova });
+    expect(r.vendidas.find((l) => l.codigo === 'A-1')?.tamTon).toBe('Dourado');
+    expect(r.vendidas.find((l) => l.codigo === 'C-1')?.tamTon).toBeNull();
   });
 });

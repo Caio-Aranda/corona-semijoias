@@ -53,7 +53,15 @@ export const COLUNAS_DO_PULL: Readonly<Record<TabelaSincronizavel, readonly stri
       'foto_documento_frente_hash',
       'foto_documento_verso_hash',
     ],
-    produtos: ['nome', 'referencia', 'categoria_id', 'preco_venda', 'ativo', 'foto_principal_hash'],
+    produtos: [
+      'nome',
+      'referencia',
+      'categoria_id',
+      'preco_venda',
+      'ativo',
+      'foto_principal_hash',
+      'tam_ton',
+    ],
     produto_codigos: ['produto_id', 'codigo', 'tipo', 'principal', 'ativo'],
     produtos_fotos: ['produto_id', 'arquivo_hash', 'principal', 'ordem'],
     remessas: [

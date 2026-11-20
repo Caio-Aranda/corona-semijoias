@@ -14,6 +14,14 @@ export function numeroDaNota(semana: number, sequencia: number): string {
   return `${String(semana).padStart(7, '0')}-${String(sequencia).padStart(2, '0')}`;
 }
 
+/** O Tam./Ton. da peça (texto curto do cadastro, tarefa 9.8); `null` quando a peça não tem ou o computador ainda não o recebeu. */
+export function tamTonDoProduto(db: BancoAberto, produtoId: string): string | null {
+  const r = db.prepare('SELECT tam_ton FROM produtos WHERE id = ?').get(produtoId) as
+    { tam_ton: string | null } | undefined;
+  const t = r?.tam_ton?.trim();
+  return t ? t : null;
+}
+
 /** A cotação mais nova com data até o dia (a do próprio dia ou a última antes dele); sem nenhuma, `null` ("Sem cotação"). */
 export function cotacaoAteODia(
   db: BancoAberto,

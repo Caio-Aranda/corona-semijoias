@@ -218,6 +218,23 @@ class PullDoVendedorTest extends TesteDeIntegracao {
     }
 
     @Test
+    void tamTonDaPecaChegaSoNoFormato2() throws Exception {
+        CenarioDeSync c = cenario();
+        UsuarioDeTeste v = usuarios.criarVendedor();
+        UUID peca = c.peca(new BigDecimal("40.00"), 10);
+        c.maleta(v, Map.of(peca, 1));
+        jdbc.update("UPDATE corona.produtos SET tam_ton = '17' WHERE id = ?", peca);
+
+        Copia nova = new Copia();
+        receberTudo(como(v), nova, 200, 2);
+        assertThat(nova.linha("produtos", peca).get("campos").get("tam_ton").asString()).isEqualTo("17");
+        // O Corona Vendas 1.0.0 nunca recebe a coluna nova (recusaria o lote todo).
+        Copia antiga = new Copia();
+        receberTudo(como(v), antiga, 200);
+        assertThat(antiga.linha("produtos", peca).get("campos").has("tam_ton")).isFalse();
+    }
+
+    @Test
     void formato1NuncaRecebeTabelaNemColunaDoConsignadoEOAppAntigoNaoQuebra() throws Exception {
         CenarioDeSync c = cenario();
         UsuarioDeTeste a = usuarios.criarVendedor();

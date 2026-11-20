@@ -87,7 +87,7 @@ public final class RegistroDeTabelas {
                         // enviada ao vendedor (o conjunto só cresce; ADR-0013, item 5).
                         new TabelaSincronizavel("produtos", List.of(
                                 "nome", "referencia", "categoria_id", "preco_venda",
-                                "ativo", "foto_principal_hash"), false, RegraDoVendedor.doVendedor(PRODUTO_DE_MALETA.formatted("t.id"))),
+                                "ativo", "foto_principal_hash", "tam_ton"), false, RegraDoVendedor.doVendedor(PRODUTO_DE_MALETA.formatted("t.id"))),
                         new TabelaSincronizavel("produto_codigos", List.of(
                                 "produto_id", "codigo", "tipo", "principal", "ativo"), false,
                                 RegraDoVendedor.doVendedor(PRODUTO_DE_MALETA.formatted("t.produto_id"))),
@@ -356,6 +356,9 @@ public final class RegistroDeTabelas {
                         "observacoes", "vendedor_responsavel_id"), false,
                         RegraDoVendedor.diretorioDaLoja(Set.of("nome", "cpf", "telefone", "endereco_cidade", "ativo"),
                                 "vendedor_responsavel_id"));
+                // O Tam./Ton. (9.8) só vai no formato 2: o app antigo recusaria o lote por causa da coluna que não conhece.
+                case "produtos" -> new TabelaSincronizavel("produtos", List.of(
+                        "nome", "referencia", "categoria_id", "preco_venda", "ativo", "foto_principal_hash"), false, t.regra());
                 case "remessas" -> new TabelaSincronizavel("remessas", List.of(
                         "vendedor_id", "semana_id", "praca_id", "tipo", "status", "dispositivo_id",
                         "total_pecas", "total_valor", "enviada_em", "motivo_cancelamento"), false, t.regra());

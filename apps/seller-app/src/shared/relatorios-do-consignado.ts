@@ -62,6 +62,8 @@ export interface ParteDxDvVd {
 export interface LinhaDaNotaDeSaida {
   codigo: string;
   produto: string;
+  /** Tamanho ou tom da peça; `null` quando a peça não tem (coluna Tam./Ton.). */
+  tamTon: string | null;
   maleta: string;
   quantidade: number;
   preco: string;
@@ -95,6 +97,8 @@ export interface NotaDeSaida {
 export interface LinhaVendida {
   codigo: string;
   produto: string;
+  /** Tamanho ou tom da peça; `null` quando a peça não tem (coluna Tam./Ton.). */
+  tamTon: string | null;
   maleta: string;
   quantidade: number;
   preco: string;

@@ -54,6 +54,7 @@ const nota: NotaDeSaida = {
     {
       codigo: 'A-1',
       produto: 'Brinco A',
+      tamTon: '17',
       maleta: '0007',
       quantidade: 10,
       preco: '200.00',
@@ -79,6 +80,7 @@ const acerto: RelatorioDoAcerto = {
     {
       codigo: 'A-1',
       produto: 'Brinco A',
+      tamTon: null,
       maleta: '0007',
       quantidade: 5,
       preco: '200.00',
@@ -228,8 +230,16 @@ describe('Nota de saída', () => {
     const cabecas = within(folha)
       .getAllByRole('columnheader')
       .map((c) => c.textContent);
-    expect(cabecas).toEqual(['Ref.', 'Produto', 'Maleta', 'Qtd.', 'Preço', 'Sub-total']);
-    expect(cabecas.join(' ')).not.toMatch(/Tam|Ton/);
+    expect(cabecas).toEqual([
+      'Ref.',
+      'Produto',
+      'Tam./Ton.',
+      'Maleta',
+      'Qtd.',
+      'Preço',
+      'Sub-total',
+    ]);
+    expect(within(folha).getByText('17')).toBeInTheDocument();
     expect(within(folha).getByText('Itens DX: 10')).toBeInTheDocument();
     expect(within(folha).getAllByText('R$ 2.000,00').length).toBeGreaterThan(1);
     // O sub-total da linha e o Total DX trazem Dólar e Guarani (cada linha pela cotação do dia dela).

@@ -879,6 +879,7 @@ export const TEXTOS_PT = {
       legenda: 'Peças do pedido',
       colunas: {
         ref: 'Ref.',
+        tamTon: 'Tam./Ton.',
         produto: 'Produto',
         maleta: 'Maleta',
         qtd: 'Qtd. DX',
@@ -936,6 +937,7 @@ export const TEXTOS_PT = {
       itensLegenda: 'Peças do pedido',
       colunasItens: {
         ref: 'Ref.',
+        tamTon: 'Tam./Ton.',
         produto: 'Produto',
         maleta: 'Maleta',
         dx: 'Qtd. DX',
@@ -1254,6 +1256,7 @@ export const TEXTOS_PT = {
       periodo: (de: string, ate: string) => `Período: ${de} a ${ate}`,
       colunas: {
         ref: 'Ref.',
+        tamTon: 'Tam./Ton.',
         produto: 'Produto',
         maleta: 'Maleta',
         qtd: 'Qtd.',

@@ -405,6 +405,7 @@ function AcertoDoPedido({
               <tr>
                 <th scope="col">{T.colunasItens.ref}</th>
                 <th scope="col">{T.colunasItens.produto}</th>
+                <th scope="col">{T.colunasItens.tamTon}</th>
                 <th scope="col">{T.colunasItens.maleta}</th>
                 <th scope="col" className="cs-numero">
                   {T.colunasItens.dx}
@@ -433,6 +434,7 @@ function AcertoDoPedido({
                         {l.nome}
                       </span>
                     </td>
+                    <td>{l.tamTon ?? ''}</td>
                     <td>{l.maleta}</td>
                     <td className="cs-numero">{l.dx}</td>
                     <td className="cs-numero">{dv}</td>

@@ -252,6 +252,7 @@ export class RelatoriosDoConsignado {
       linhas: n.linhas.map((l) => ({
         codigo: l.codigo ?? '',
         produto: l.nome,
+        tamTon: l.tamTon,
         maleta: l.maleta,
         quantidade: l.dx,
         preco: l.precoUnitario,
@@ -283,6 +284,7 @@ export class RelatoriosDoConsignado {
       .map((l) => ({
         codigo: l.codigo ?? '',
         produto: l.nome,
+        tamTon: l.tamTon,
         maleta: l.maleta,
         quantidade: l.vd,
         preco: l.precoUnitario,

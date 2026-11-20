@@ -152,6 +152,8 @@ export interface LinhaDaNota {
   /** Todos os códigos da peça, em minúsculas, para o código lido bater. */
   codigos: string[];
   nome: string;
+  /** Tamanho ou tom da peça (cadastro do produto, tarefa 9.8); `null` quando a peça não tem. */
+  tamTon: string | null;
   fotoHash: string | null;
   dx: number;
   dv: number;
@@ -289,6 +291,8 @@ export interface ItemDoPedido {
   maleta: string;
   codigo: string | null;
   nome: string;
+  /** Tamanho ou tom da peça (tarefa 9.8); `null` quando a peça não tem. */
+  tamTon: string | null;
   fotoHash: string | null;
   quantidade: number;
   precoUnitario: string;

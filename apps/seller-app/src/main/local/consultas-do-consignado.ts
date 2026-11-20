@@ -36,6 +36,7 @@ import {
   acharNota,
   codigoDaMaleta,
   cotacaoAteODia,
+  tamTonDoProduto,
   dataDeCobranca,
   type DebitoLocal,
   debitosDoCliente,
@@ -299,9 +300,11 @@ export class ConsultasDoConsignado {
     codigo: string | null;
     fotoHash: string | null;
     codigos: string[];
+    tamTon: string | null;
   } {
     const p = pecaDoProduto(this.db(), produtoId);
     return {
+      tamTon: tamTonDoProduto(this.db(), produtoId),
       nome: p.nome,
       codigo: p.codigoFornecedor ?? p.codigo,
       fotoHash: p.fotoHash,
@@ -380,6 +383,7 @@ export class ConsultasDoConsignado {
         codigo: p.codigo,
         codigos: p.codigos,
         nome: p.nome,
+        tamTon: p.tamTon,
         fotoHash: p.fotoHash,
         dx: l.dx,
         dv: devolvido,
@@ -1002,6 +1006,7 @@ export class ConsultasDoConsignado {
         maleta: codigoDaMaleta(this.db(), i.remessaId),
         codigo: p.codigo,
         nome: p.nome,
+        tamTon: p.tamTon,
         fotoHash: p.fotoHash,
         quantidade: i.quantidade,
         precoUnitario: i.precoUnitario,

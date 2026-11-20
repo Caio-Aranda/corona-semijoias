@@ -727,6 +727,31 @@ INSERT INTO estado_sync (chave, valor)
   ON CONFLICT (chave) DO UPDATE SET valor = excluded.valor;
 `;
 
+/** As tabelas que a recarga dirigida da versão 12 traz de novo (tarefa 9.8): `produtos`, que ganhou `tam_ton`. */
+export const TABELAS_DA_RECARGA_DIRIGIDA_V12 = Object.freeze(['produtos']);
+
+/**
+ * Tam./Ton. da peça (tarefa 9.8; V057 do servidor, só no pull de formato 2): uma coluna de texto curto em `produtos` e a
+ * recarga dirigida dela, porque o computador que já tinha cursor não receberia o valor que o servidor gravou antes.
+ */
+const V12 = `
+ALTER TABLE produtos ADD COLUMN tam_ton TEXT;
+
+INSERT INTO estado_sync (chave, valor)
+  SELECT 'recarga_dirigida', lista FROM (
+    SELECT json_group_array(t) AS lista FROM (
+      SELECT t FROM (
+        SELECT key AS k, value AS t FROM json_each(
+          coalesce((SELECT valor FROM estado_sync WHERE chave = 'recarga_dirigida'), '[]'))
+        UNION ALL
+        SELECT 1000 + key AS k, value AS t FROM json_each('${JSON.stringify(TABELAS_DA_RECARGA_DIRIGIDA_V12)}')
+      ) GROUP BY t ORDER BY min(k)
+    )
+  )
+   WHERE EXISTS (SELECT 1 FROM estado_sync WHERE chave = 'cursor' AND valor IS NOT NULL)
+  ON CONFLICT (chave) DO UPDATE SET valor = excluded.valor;
+`;
+
 export const MIGRACOES: readonly MigracaoLocal[] = Object.freeze([
   {
     versao: 1,
@@ -788,6 +813,11 @@ export const MIGRACOES: readonly MigracaoLocal[] = Object.freeze([
     descricao:
       'contador próprio do recibo, data do acerto (registrado_em) e a recarga dirigida dos acertos',
     sql: V11,
+  },
+  {
+    versao: 12,
+    descricao: 'Tam./Ton. da peça (coluna em produtos) e a recarga dirigida dos produtos',
+    sql: V12,
   },
 ]);
 

@@ -235,6 +235,7 @@ function FolhaDaNotaDeSaida({ r }: { r: NotaDeSaida }) {
           <tr>
             <th scope="col">{T.colunas.ref}</th>
             <th scope="col">{T.colunas.produto}</th>
+            <th scope="col">{T.colunas.tamTon}</th>
             <th scope="col">{T.colunas.maleta}</th>
             <th scope="col" className="cs-numero">
               {T.colunas.qtd}
@@ -252,6 +253,7 @@ function FolhaDaNotaDeSaida({ r }: { r: NotaDeSaida }) {
             <tr key={`${l.codigo}-${l.maleta}-${String(i)}`}>
               <td>{l.codigo}</td>
               <td>{l.produto}</td>
+              <td>{l.tamTon ?? ''}</td>
               <td>{l.maleta}</td>
               <td className="cs-numero">{l.quantidade}</td>
               <td className="cs-numero">{reais(l.preco)}</td>
@@ -305,6 +307,7 @@ function FolhaDoAcerto({ r }: { r: RelatorioDoAcerto }) {
           <tr>
             <th scope="col">{T.colunas.ref}</th>
             <th scope="col">{T.colunas.produto}</th>
+            <th scope="col">{T.colunas.tamTon}</th>
             <th scope="col">{T.colunas.maleta}</th>
             <th scope="col" className="cs-numero">
               {T.colunas.qtd}
@@ -322,6 +325,7 @@ function FolhaDoAcerto({ r }: { r: RelatorioDoAcerto }) {
             <tr key={`${l.codigo}-${l.maleta}-${String(i)}`}>
               <td>{l.codigo}</td>
               <td>{l.produto}</td>
+              <td>{l.tamTon ?? ''}</td>
               <td>{l.maleta}</td>
               <td className="cs-numero">{l.quantidade}</td>
               <td className="cs-numero">{reais(l.preco)}</td>

@@ -876,6 +876,7 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
       legenda: 'Piezas del pedido',
       colunas: {
         ref: 'Ref.',
+        tamTon: 'Talle/Tono',
         produto: 'Producto',
         maleta: 'Maleta',
         qtd: 'Cant. DX',
@@ -934,6 +935,7 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
       itensLegenda: 'Piezas del pedido',
       colunasItens: {
         ref: 'Ref.',
+        tamTon: 'Talle/Tono',
         produto: 'Producto',
         maleta: 'Maleta',
         dx: 'Cant. DX',
@@ -1249,6 +1251,7 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
       periodo: (de: string, ate: string) => `Período: del ${de} al ${ate}`,
       colunas: {
         ref: 'Ref.',
+        tamTon: 'Talle/Tono',
         produto: 'Producto',
         maleta: 'Maleta',
         qtd: 'Cant.',

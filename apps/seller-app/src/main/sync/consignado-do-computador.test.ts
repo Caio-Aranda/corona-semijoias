@@ -985,3 +985,51 @@ describe('Dt. Acerto (tarefa 9.8): a data do acerto e a ordem dos débitos', () 
     expect(previa('2026-11-03').cotacao).toBeNull();
   });
 });
+
+describe('Tam./Ton. da peça (tarefa 9.8)', () => {
+  it('o pull de formato 2 grava tam_ton; o Novo Pedido e a Cobrança mostram a coluna, vazia quando a peça não tem', () => {
+    // O servidor manda a coluna junto com o produto (formato 2); aqui, a peça A chega com "17".
+    aplicarLote(
+      b.db,
+      [
+        {
+          tabela: 'produtos',
+          id: produto.A,
+          version: 2,
+          deletedAt: null,
+          campos: { nome: 'Brinco A', ativo: 1, tam_ton: '17' },
+        },
+      ],
+      { cursor: 'c-2' },
+    );
+    expect(b.db.prepare('SELECT tam_ton FROM produtos WHERE id = ?').get(produto.A)).toEqual({
+      tam_ton: '17',
+    });
+    chamar({ operacao: 'consignado.semanaNova', id: idDeTeste(10), numero: 1 });
+    chamar({ operacao: 'consignado.pedidoDefinir', clienteId: cliente, remessaId: maleta });
+    chamar({ operacao: 'consignado.pedidoBipar', codigo: 'A-1' });
+    const r = chamar<{ pedido: PedidoEmMontagem }>({
+      operacao: 'consignado.pedidoBipar',
+      codigo: 'B-1',
+    });
+    expect(
+      r.pedido.itens
+        .map((i) => [i.codigo, i.tamTon])
+        .sort((a, b) => String(a[0]).localeCompare(String(b[0]))),
+    ).toEqual([
+      ['A-1', '17'],
+      ['B-1', null],
+    ]);
+    const id = idDeTeste(6);
+    chamar({ operacao: 'consignado.pedidoFinalizar', id });
+    const n = nota(id);
+    expect(
+      n.linhas
+        .map((l) => [l.codigo, l.tamTon])
+        .sort((a, b) => String(a[0]).localeCompare(String(b[0]))),
+    ).toEqual([
+      ['A-1', '17'],
+      ['B-1', null],
+    ]);
+  });
+});
