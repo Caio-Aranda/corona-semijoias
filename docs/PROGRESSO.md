@@ -295,6 +295,9 @@ PR 235 em rascunho. Referência: notebook 1366x768.
 - **Pesquisar:** texto de exemplo curto ("Cliente, nota o maleta").
 - **Testes:** `telas-do-consignado.test.tsx` (bloco 9.6), `indicador-de-envio.test.tsx` (aviso es/pt), `consignado-do-computador.test.ts` (Comis. % da Remarcada).
 - **Prints (es, 1366x768):** `docs/capturas/9-6/` e `C:\Projetos\prints-consignado\9-6\espanhol\` (tirados com a tela real do Corona Vendas e dados de exemplo simulados, não no Electron).
+- **Conferido sem mudar:** "Peças que estão com o cliente agora" é um título (h2) com lista, sem legenda: nada a mudar. "Pedidos da semana" (legenda) fica sob a aba "Pedidos" (texto diferente) e "Pedidos abiertos" (Cobrança) sob o título da tela "Cobranza": não são iguais, ficaram como estão.
+- **Decisões que tomei:** os textos es do prazo ficaram em `shared/prazo.ts` (e não em `textos-es.ts`) porque o arquivo é compartilhado com o processo principal e já tinha os textos em pt; mudar isso é maior que esta tarefa. O ajuste de espaço dos campos vale só para `.vendas-cartao--larga` (entrada e troca de senha não mudam).
+- **Resultados locais (20/11):** eslint completo (`npx eslint . --ignore-pattern ".claude/**"`) sem erros; typecheck 0 erros; format:check ok; seller-app 772 testes passam (1 pulado); packages/ui 48; owner-app 945 de 946 na rodada completa (1 estouro de tempo em `produtos.test.tsx`, "colar e arrastar", que passa sozinho, 34 de 34, também sem as minhas mudanças); barreira limpa (12 marcadores).
 - **Não feito:** o aviso de prazo que a API devolve em texto pronto (recusas) continua como a API manda; a barreira e as verificações foram rodadas localmente (sem CI).
 
 ## Leva 9: consignado ao cliente, ajustes finais (tarefa 9.5, issue 229, 19/11/2026)

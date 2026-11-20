@@ -248,6 +248,8 @@
 /* --- Consignado ao cliente (tarefa 9.2; §23). Texto escuro sobre fundo claro; dourado só em detalhes. --- */
 .consignado-largo {
   max-width: 1280px;
+  padding-top: var(--espaco-4);
+  gap: var(--espaco-4);
 }
 
 .consignado-botoes {
@@ -657,14 +659,10 @@ tr.consignado-linha[tabindex]:focus-visible {
   border: 0;
 }
 
-/* Telas de trabalho mais compactas: o botão principal fica à vista em notebook 1366x768. */
-.consignado-largo {
-  padding-top: var(--espaco-4);
-  gap: var(--espaco-4);
-}
-.vendas-cartao .cs-rodape-acoes {
+/* Telas de trabalho mais compactas: o botão principal fica à vista em notebook 1366x768 (entrada e troca de senha não mudam). */
+.vendas-cartao--larga .cs-rodape-acoes {
   padding: 0;
 }
-.vendas-cartao .cs-campo {
+.vendas-cartao--larga .cs-campo {
   margin-bottom: 0;
 }

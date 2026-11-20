@@ -299,9 +299,52 @@ describe('Correções de tela (9.6)', () => {
     expect(css).toMatch(/\.cs-tabela td\.cs-numero,[^{]*\{\s*white-space: nowrap/);
   });
 
-  it('títulos duplicados: a legenda da tabela fica só para leitor de tela', () => {
-    const css = lerCss('./estilos.css');
-    expect(css).toMatch(/\.consignado-so-leitor \{\s*position: absolute/);
+  it('títulos duplicados: a legenda da tabela fica só para leitor de tela', async () => {
+    const { ponte } = criarPonte({
+      'consignado.painel': () => ok(painel),
+      'consignado.clientes': () =>
+        ok([
+          {
+            id: 'c1',
+            nome: 'Ana',
+            telefone: null,
+            cidade: null,
+            pendencia: '10.00',
+            fotoHash: null,
+          },
+        ]),
+      'consignado.cliente': () =>
+        ok({
+          id: 'c1',
+          nome: 'Ana',
+          pendencia: '10.00',
+          debitos: [
+            {
+              acertoId: 'd1',
+              notaId: 'n1',
+              numeroDaNota: '0000001-01',
+              acertadoEm: '2026-11-10T12:00:00Z',
+              valor: '10.00',
+              saldo: '10.00',
+            },
+          ],
+          maletasAtuais: [],
+          pedidos: [],
+          pagamentos: [],
+          comissaoPercentual: '30.00',
+          fotosEsperandoEnvio: 0,
+        }),
+    });
+    const u = userEvent.setup();
+    await irParaPrincipal(ponte);
+    await u.click(screen.getByRole('button', { name: 'Clientes' }));
+    await u.click(await screen.findByRole('button', { name: 'Abrir' }));
+    const titulo = await screen.findByRole('heading', { name: 'O que o cliente deve agora' });
+    const legenda = within(titulo.closest('section') as HTMLElement)
+      .getByRole('table')
+      .querySelector('caption');
+    expect(legenda).toHaveTextContent('O que o cliente deve agora');
+    expect(legenda).toHaveClass('consignado-so-leitor');
   });
 
   it('Pesquisar: o texto de exemplo é curto e cabe no campo, nos dois idiomas', async () => {
