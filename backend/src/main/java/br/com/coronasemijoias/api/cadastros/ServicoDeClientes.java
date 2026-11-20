@@ -1,9 +1,9 @@
 package br.com.coronasemijoias.api.cadastros;
 
 import br.com.coronasemijoias.api.auditoria.ServicoDeAuditoria;
+import br.com.coronasemijoias.api.comum.dinheiro.Dinheiro;
 import java.time.Clock;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.Set;
@@ -122,7 +122,7 @@ public class ServicoDeClientes extends ServicoDeCadastroAtivavel<Cliente> {
         if (informada.signum() < 0 || informada.compareTo(new BigDecimal("40")) > 0) {
             throw Validacoes.recusar("comissaoPercentual", "A comissão do cliente vai de 0% a 40%.");
         }
-        return informada.setScale(2, RoundingMode.HALF_UP);
+        return Dinheiro.arredondar(informada);
     }
 
     private static String indicadoPorNome(Dados d) {
