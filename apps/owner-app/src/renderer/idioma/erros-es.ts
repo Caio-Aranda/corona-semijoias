@@ -94,6 +94,7 @@ export const ERROS_EM_ESPANHOL: Record<string, string> = {
     'Defina el límite de este representante antes de armar la maleta.',
   LIMITE_DE_CONSIGNACAO_EXCEDIDO:
     'El valor de la maleta pasa el límite de consignación del representante.',
+  PECA_NAO_E_DESTA_MALETA: 'Esta pieza no es de esta maleta. Revise el código de la pieza y el de la maleta.',
   PECA_FORA_DA_MALETA: 'Esta pieza está desactivada o fue eliminada y no puede ir a la maleta.',
   DEVOLUCAO_MAIOR_QUE_O_SALDO:
     'Hay menos piezas en la maleta de lo que se informó. Revise la cantidad.',
@@ -373,4 +374,12 @@ export function erroDeBloqueio(mensagemDaApi: string | undefined): string {
   return minutos
     ? `Acceso bloqueado por unos minutos. Usted se equivocó varias veces con la contraseña. Por seguridad, espere ${minutos} minutos e intente de nuevo.`
     : 'Acceso bloqueado por unos minutos. Por seguridad, espere e intente de nuevo.';
+}
+
+/** Texto de PECA_NAO_E_DESTA_MALETA: o servidor diz, no fim da mensagem, de qual maleta é a peça ("Ela está na maleta 0007."). */
+export function erroDePecaDeOutraMaleta(mensagemDaApi: string | undefined): string {
+  const codigo = /na maleta (.+?)\.?$/.exec(mensagemDaApi ?? '')?.[1];
+  return codigo
+    ? `Esta pieza no es de esta maleta. Está en la maleta ${codigo}.`
+    : ERROS_EM_ESPANHOL.PECA_NAO_E_DESTA_MALETA!;
 }
