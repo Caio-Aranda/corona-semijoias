@@ -1,3 +1,4 @@
+/* eslint-disable no-cond-assign -- cada aviso é reconhecido por um padrão e usa os trechos achados */
 /**
  * Avisos de "Lo que necesita su atención" em espanhol. O servidor manda cada aviso em português (título e texto);
  * aqui cada um é reconhecido pelo tipo e pelo formato do texto e escrito em espanhol, com os mesmos números, nomes e datas.

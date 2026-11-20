@@ -251,7 +251,7 @@ export function menuDoGestao(acertoVisivel: boolean): typeof MENU {
   ).map((grupo) => ({
     ...grupo,
     itens: grupo.itens.filter((i) => i.chave !== 'computadores/vendas'),
-  })) as typeof MENU;
+  }));
 }
 
 /** Nome do item na tela, para "Em breve" e títulos. */

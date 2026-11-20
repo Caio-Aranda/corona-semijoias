@@ -15,7 +15,6 @@ import { TEXTOS_DE_ACERTOS } from '../../textos-acertos';
 import { TEXTOS_DE_CONSIGNADO } from '../../textos-consignado';
 import { TEXTOS_DE_DEVOLUCOES } from '../../textos-devolucoes';
 import { TEXTOS_DE_SINCRONIZACAO } from '../../textos-sincronizacao';
-import { TEXTOS_RELATORIOS } from '../../textos-relatorios';
 
 const entregues: { nome: string; tipo: string; bytes: Uint8Array }[] = [];
 vi.mock('../../nucleo/arquivos', async (original) => ({

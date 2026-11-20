@@ -11,7 +11,7 @@ afterEach(() => {
 
 /** Palavras que só existem em português e nunca devem aparecer numa tela em espanhol. */
 const PORTUGUES =
-  /(você|não|peças?|recebido|pendências|diferença|lidas|devolvidas|com os clientes|dinheiro)|[çãõ]/i;
+  /\b(você|não|peças?|recebido|pendências|diferença|lidas|devolvidas|com os clientes|dinheiro)\b|[çãõ]/i;
 
 /** Abre o programa no idioma pedido: o idioma guardado é lido quando os textos são carregados. */
 function abrirEm(idioma: 'es' | 'pt') {
