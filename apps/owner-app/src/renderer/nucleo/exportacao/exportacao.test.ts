@@ -281,3 +281,41 @@ describe('grade: foto, quantidade com sinal e totais em peças (tarefa 2.8)', ()
     expect(grade.rodape[0]!.map((c) => c.v)).toContain('18.18');
   });
 });
+
+describe('relatório em partes (secoes)', () => {
+  const comPartes = () =>
+    montarGrade(
+      pedido({
+        colunas: [{ chave: 'nome', titulo: 'Peça', tipo: 'texto' }],
+        linhas: [{ nome: 'Anel' }],
+        totais: [
+          { chave: 'enviadas', rotulo: 'Peças enviadas', quantidade: 1, pecas: 10 },
+          { chave: 'vd', rotulo: 'Valor vendido', quantidade: 1, valorEmReais: '300.00' },
+        ],
+        totaisDeValor: {},
+        secoes: [
+          { titulo: 'Peças da maleta', totais: ['enviadas'] },
+          { titulo: 'Dinheiro', totais: ['vd'] },
+        ],
+      }),
+    );
+
+  it('cada parte ganha título, e há uma linha em branco entre elas', () => {
+    const rodape = comPartes().rodape.map((l) => l[0]?.v);
+    expect(rodape).toEqual(['Peças da maleta', 'Peças enviadas', '', 'Dinheiro', 'Valor vendido']);
+  });
+
+  it('o CSV traz as duas seções, a das peças antes da do dinheiro', () => {
+    const csv = gerarCsv(comPartes());
+    expect(csv.indexOf('Peças da maleta')).toBeLessThan(csv.indexOf('Dinheiro'));
+    expect(csv.indexOf('Peças enviadas')).toBeLessThan(csv.indexOf('Dinheiro'));
+    expect(csv.indexOf('Valor vendido')).toBeGreaterThan(csv.indexOf('Dinheiro'));
+  });
+
+  it('sem partes, o rodapé é só a lista de totais, como sempre', () => {
+    expect(montarGrade(pedido()).rodape.map((l) => l[0]?.v)).toEqual([
+      'Produtos',
+      'Soma dos preços de venda',
+    ]);
+  });
+});

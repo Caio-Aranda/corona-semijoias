@@ -1,8 +1,9 @@
 import { Aviso, Botao } from '@corona/ui';
+import { avisoEmEspanhol } from '../idioma/es/avisos-da-dona';
 import { useState } from 'react';
 import type { PonteDoCorona } from '../../shared/ponte';
 import { chamar, useBusca } from '../nucleo/chamadas';
-import { localeAtual } from '../idioma/idioma';
+import { idiomaAtual, localeAtual } from '../idioma/idioma';
 import { useCotacao } from '../nucleo/cotacao';
 import { guaranisPorReal, reaisPorDolar } from '../nucleo/cotacao-na-tela';
 import { dolarNaTela, lerPainel, reaisNaTela } from '../nucleo/painel-semanal';
@@ -98,7 +99,9 @@ function CartaoDeNumero({
 export function TelaInicial({ ponte, nome }: TelaInicialProps) {
   const [emBreve, setEmBreve] = useState<string | null>(null);
   const avisos = useBusca(() => chamar(ponte, 'avisos.listar'), 'avisos');
-  const lista = avisos.dados ? lerAvisos(avisos.dados) : null;
+  const lista = avisos.dados
+    ? lerAvisos(avisos.dados).map((a) => (idiomaAtual() === 'es' ? avisoEmEspanhol(a) : a))
+    : null;
   const painelBusca = useBusca(() => chamar(ponte, 'painel.semanal'), 'painel-da-inicial');
   const painel = painelBusca.dados ? lerPainel(painelBusca.dados) : null;
   const { taxas } = useCotacao();

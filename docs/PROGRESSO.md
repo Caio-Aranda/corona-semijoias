@@ -312,6 +312,18 @@ PR em rascunho até passar tudo localmente. Branch `fix/consignado-ajustes-finai
 - **Situação do cliente** (item 6): "O que já vendeu" lista só as notas Fechadas e seus totais; as notas acertadas ainda Pendentes aparecem em "O que falta", com quanto cada uma ainda deve.
 - **Não feito:** a data não vale para o pagamento feito dentro do Acerto (continua o momento do acerto); textos de dados antigos (ex.: categorias do caixa "Repasse do vendedor") não mudaram.
 
+## Leva 9: correções do Corona Gestão (tarefa 9.7, issue 233, 20/11/2026)
+
+**Situação: PR 236 em rascunho (só testes locais; sem CI).** Branch `fix/correcoes-gestao-9-7`.
+
+- **Fechamento em duas abas** (§23.10): Peças da maleta e Dinheiro; PDF, Excel e CSV com duas seções (`secoes` na grade de exportação). **Em espanhol:** título, colunas, abas, totais e cabeçalho dos arquivos ("Filtros") traduzidos; tela e relatório revistos nos dois idiomas.
+- **Peça de outra maleta:** novo erro `PECA_NAO_E_DESTA_MALETA` (422) com a maleta de onde ela é, se achar; o Corona Gestão mostra o texto em pt e es.
+- **Tela inicial em es:** todos os avisos de "Lo que necesita su atención" traduzidos (`idioma/es/avisos-da-dona.ts`); o que o servidor criar depois aparece como veio.
+- **Menu:** com `acertoDoVendedorVisivel` falso somem também Devoluções e créditos e Vendas de computador bloqueado; rotas intactas.
+- **Cliente (dona):** Comissão % (0 a 40, padrão 30), documento livre com tipo, indicado por, como conheceu; CPF só é conferido no tipo CPF; D10 com mensagem simples no servidor e campo travado na tela. Backend: `ServicoDeClientes`, `ClientesDaDonaController`, `Cliente`; clientes da API regerados.
+- **Testes:** `CadastrosBasicosTest` (2 novos), `FechamentoDaMaletaTest` (1 novo); `consignado.test.tsx`, `cadastros.test.tsx` e `espanhol-9-7.test.ts` no Gestão. Prints (es): `C:/Projetos/prints-consignado/9-7/espanhol/`.
+- **Não feito:** teste próprio do PDF/Excel com duas seções (cobertos pelo CSV, que usa as mesmas linhas); busca de cliente pela dona ainda só por CPF (não por documento livre).
+
 ## Corona Gestão: menu Relatórios por área (issue 216, 17/11/2026)
 
 **Situação: pronto para revisão, PR 217.** O menu lateral tinha um item por relatório (cerca de 60). Agora há um grupo só, **Relatórios** (ES: Informes), com um item por área: Cadastros, Estoque, Compras, Maletas, Devoluções e trocas, Vendas, Financeiro, Controle e Conferências. Cada área abre uma página de cartões (título, uma linha do que mostra, ícone dourado); o clique abre o relatório como antes, com "‹ Voltar para Relatórios de <área>" no alto e a área destacada no menu. Só navegação: nenhum relatório mudou por dentro, nenhuma rota de relatório sumiu (atalhos da tela inicial e "de onde saiu o número" abrem direto), sem mudança de API nem de Corona Vendas. O grupo "Conferência" do menu virou a área Conferências (dinheiro, de hoje, do estoque, das devoluções e trocas). Testes de tela passaram a abrir o relatório pela área (`apoio-de-testes.ts`). Fotos: `C:/Projetos/telas-menu/`.

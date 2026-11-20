@@ -1541,7 +1541,7 @@ Estas linhas valem **sobre** as que dizem "na tela, sempre vendedor" (acima) **n
 
 | Onde | Texto (pt) | Texto (es) | Para que serve |
 | --- | --- | --- | --- |
-| Maletas | **Fechamento da maleta** | Cierre de la maleta | A dona lê o código de cada peça que voltou; o relatório mostra enviadas, devolvidas pelos clientes, vendidas, ainda com clientes (e com quem), **lidas na volta** e **diferença**, com o valor vendido, a comissão dos clientes, o recebido e as pendências a receber. Sai em PDF, Excel e CSV. |
+| Maletas | **Fechamento da maleta** | Cierre de la maleta | A dona lê o código de cada peça que voltou. A tela e os arquivos têm duas partes separadas: **Peças da maleta** (es: Piezas de la maleta) e **Dinheiro** (es: Dinero). O relatório mostra enviadas, devolvidas pelos clientes, vendidas, ainda com clientes (e com quem), **lidas na volta** e **diferença**, com o valor vendido, a comissão dos clientes, o **Valor recebido** (es: **Valor cobrado**, como no resto do sistema em espanhol) e as **Pendências a receber** (es: Pendientes por cobrar). Sai em PDF, Excel e CSV. |
 | Consignado | **Notas dos clientes** | Notas de los clientes | Notas, acertos e recibos dos clientes. Só leitura. |
 | Consignado | **Semanas dos representantes** | Semanas de los representantes | Semanas de cada representante, com notas, valor DX, VD, comissão e recebido. |
 | Consignado | **Clientes dos representantes** | Clientes de los representantes | Ficha do cliente (endereço, documento, indicado por, como conheceu, comissão, quanto deve, peças com ele, notas) e as três fotos. |

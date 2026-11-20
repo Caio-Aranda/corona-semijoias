@@ -4,6 +4,7 @@ import br.com.coronasemijoias.api.comum.persistencia.EntidadeSincronizavel;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -38,6 +39,27 @@ public class Cliente extends EntidadeSincronizavel implements Ativavel {
     @Column(name = "vendedor_responsavel_id")
     private UUID vendedorResponsavelId;
 
+    /** Documento livre do cliente (CPF, RG, CI paraguaia...) e o tipo dele: CPF, RG, CI ou OUTRO (ADR-0016, item 4). */
+    @Column(name = "documento")
+    private String documento;
+
+    @Column(name = "documento_tipo")
+    private String documentoTipo;
+
+    /** Quem indicou: um cliente já cadastrado OU um nome livre, nunca os dois (restrição do banco). */
+    @Column(name = "indicado_por_cliente_id")
+    private UUID indicadoPorClienteId;
+
+    @Column(name = "indicado_por_nome")
+    private String indicadoPorNome;
+
+    @Column(name = "como_conheceu")
+    private String comoConheceu;
+
+    /** Comissão do cliente no acerto, de 0 a 40 (padrão 30). */
+    @Column(name = "comissao_percentual", nullable = false)
+    private BigDecimal comissaoPercentual = new BigDecimal("30.00");
+
     protected Cliente() {
         // Hibernate
     }
@@ -58,6 +80,43 @@ public class Cliente extends EntidadeSincronizavel implements Ativavel {
         this.endereco = endereco;
         this.observacoes = observacoes;
         this.vendedorResponsavelId = vendedorResponsavelId;
+    }
+
+    /** Os campos do consignado (ADR-0016): o que a dona preenche além do cadastro de sempre. Comissão vazia mantém a que já existe. */
+    public void alterarConsignado(String documento, String documentoTipo, UUID indicadoPorClienteId, String indicadoPorNome,
+            String comoConheceu, BigDecimal comissaoPercentual) {
+        this.documento = documento;
+        this.documentoTipo = documentoTipo;
+        this.indicadoPorClienteId = indicadoPorClienteId;
+        this.indicadoPorNome = indicadoPorNome;
+        this.comoConheceu = comoConheceu;
+        if (comissaoPercentual != null) {
+            this.comissaoPercentual = comissaoPercentual;
+        }
+    }
+
+    public String getDocumento() {
+        return documento;
+    }
+
+    public String getDocumentoTipo() {
+        return documentoTipo;
+    }
+
+    public UUID getIndicadoPorClienteId() {
+        return indicadoPorClienteId;
+    }
+
+    public String getIndicadoPorNome() {
+        return indicadoPorNome;
+    }
+
+    public String getComoConheceu() {
+        return comoConheceu;
+    }
+
+    public BigDecimal getComissaoPercentual() {
+        return comissaoPercentual;
     }
 
     public String getNome() {

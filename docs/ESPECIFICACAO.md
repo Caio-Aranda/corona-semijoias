@@ -1039,6 +1039,10 @@ Nova semana, cadastro de cliente (com fotos), Novo Pedido, Reposição, Troca, R
 
 Quando a maleta volta, **a Lucia bipa** as peças no Corona Gestão (o representante não bipa). O relatório **Fechamento da maleta** mostra: peças enviadas, devolvidas pelos clientes, vendidas e ainda com clientes (com quem), as bipadas na volta e a diferença; valor vendido (VD), comissão dos clientes, valor recebido e pendências a receber. O acerto em dinheiro com a Lucia fica fora do sistema por enquanto (§23.1, item 2).
 
+**Duas partes separadas (9.7, pedido da dona de 19/11).** A tela tem duas abas: **Peças da maleta** (enviadas, devolvidas pelos clientes, vendidas, ainda com clientes e com quem, esperadas, lidas na volta e a diferença) e **Dinheiro** (valor vendido, comissão dos clientes, valor recebido e pendências a receber). O PDF, o Excel e o CSV saem com as duas partes como seções distintas, uma depois da outra. Ler uma peça que existe mas é de outra maleta diz "Esta peça não é desta maleta" e, se achar, de qual maleta ela é (erro `PECA_NAO_E_DESTA_MALETA`, 422). A tela e o relatório existem em espanhol (padrão) e português.
+
+O menu esconde, pela mesma configuração `GET /api/configuracoes/telas` do acerto antigo, também o grupo **Devoluções e créditos** e **Vendas de computador bloqueado** (fluxo antigo de venda ao consumidor); nada é apagado e as rotas continuam. O cadastro de cliente pela dona tem **Comissão %** (0 a 40, padrão 30), documento livre com tipo (CPF, RG, CI ou outro; só o tipo CPF exige dígito válido), indicado por e como conheceu; o representante do cliente não muda depois de definido (D10).
+
 ### 23.11 Relatórios
 
 Em todo relatório e tela de informação: **DX, DV e VD** (valores) e **Itens DX, DV e VD**. Todos imprimem, salvam em PDF e preparam o envio pelo WhatsApp (o sistema prepara o arquivo e a mensagem; quem envia é o representante).

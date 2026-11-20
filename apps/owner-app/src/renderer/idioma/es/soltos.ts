@@ -81,6 +81,8 @@ export const ES_TEXTOS_SOLTOS: NoMesmoFormato<typeof PT_TEXTOS_SOLTOS> = {
   arquivo: {
     pagina: (n: number, total: number) => `Página ${n} de ${total}`,
     geradoEm: (quando: string, por: string) => `Generado el ${quando} por ${por}`,
+    filtros: (lista: string) => `Filtros: ${lista}`,
+    nenhum: 'ninguno',
     as: 'a las',
     ativo: 'Activo',
     inativo: 'Inactivo',

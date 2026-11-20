@@ -95,6 +95,13 @@ export const CAMPOS_DOS_CADASTROS: Record<NomeDoCadastro, readonly CampoDaApi[]>
   clientes: [
     { nome: 'nome', tipo: 'texto', max: 200 },
     { nome: 'cpf', tipo: 'texto', max: 20 },
+    // Consignado (ADR-0016): documento livre com tipo, quem indicou, como conheceu e a comissão do cliente (0 a 40).
+    { nome: 'documento', tipo: 'texto', max: 40 },
+    { nome: 'documentoTipo', tipo: 'texto', max: 10 },
+    { nome: 'indicadoPorNome', tipo: 'texto', max: 200 },
+    { nome: 'indicadoPorClienteId', tipo: 'uuid' },
+    { nome: 'comoConheceu', tipo: 'texto', max: 500 },
+    { nome: 'comissaoPercentual', tipo: 'dinheiro' },
     { nome: 'dataNascimento', tipo: 'data' },
     { nome: 'telefone', tipo: 'texto', max: 30 },
     { nome: 'whatsapp', tipo: 'texto', max: 30 },

@@ -72,6 +72,11 @@ export interface PedidoDeExportacao {
   totaisConvertidos?: Record<string, { dolar: string; guarani: string }>;
   /** Linhas que entram na soma de cada total de valor (ex.: compras desfeitas ficam fora do total). */
   linhasDoTotal?: Record<string, (linha: Record<string, unknown>) => boolean>;
+  /**
+   * Relatório em partes (Fechamento da maleta): cada parte vira uma seção do arquivo, com o título e os totais dela, separadas
+   * por uma linha em branco. O que não está em nenhuma parte fica na primeira.
+   */
+  secoes?: { titulo: string; totais: string[] }[];
 }
 
 /** Uma célula: o texto e se é número (decimal com ponto), para o Excel guardar como número. */
@@ -208,6 +213,25 @@ export function somarConvertido(
   return { dolarEmCentavos: dolarEmCentavos_, guarani };
 }
 
+/** Sem partes, o rodapé é a lista de totais; com partes, cada uma ganha um título e uma linha em branco antes (a primeira só o título). */
+function juntarSecoes(p: PedidoDeExportacao, colunas: number, linhas: Celula[][]): Celula[][] {
+  if (!p.secoes || p.secoes.length === 0) return linhas;
+  const vazia = (): Celula[] => Array.from({ length: colunas }, () => texto(''));
+  const chaves = p.secoes.flatMap((s) => s.totais);
+  const resultado: Celula[][] = [];
+  p.secoes.forEach((secao, i) => {
+    if (i > 0) resultado.push(vazia());
+    const titulo = vazia();
+    titulo[0] = texto(secao.titulo);
+    resultado.push(titulo);
+    p.totais.forEach((total, k) => {
+      const nela = secao.totais.includes(total.chave) || (i === 0 && !chaves.includes(total.chave));
+      if (nela) resultado.push(linhas[k]!);
+    });
+  });
+  return resultado;
+}
+
 export function montarGrade(pedido: PedidoDeExportacao): Grade {
   // A data da cotação das maletas já sai na última coluna do arquivo; não repete.
   const dataPropria = pedido.colunas.find((c) => c.convertido)?.convertido?.data;
@@ -259,7 +283,7 @@ export function montarGrade(pedido: PedidoDeExportacao): Grade {
   });
 
   // Rodapé: o rótulo na primeira coluna; a quantidade na segunda; o valor nas três colunas do campo.
-  const rodape = p.totais.map((total) => {
+  const rodapeDe = p.totais.map((total) => {
     const linha: Celula[] = titulos.map(() => texto(''));
     linha[0] = texto(total.rotulo);
     const campo = p.totaisDeValor[total.chave];
@@ -295,12 +319,13 @@ export function montarGrade(pedido: PedidoDeExportacao): Grade {
     }
     return linha;
   });
+  const rodape = juntarSecoes(p, titulos.length, rodapeDe);
 
   return {
     cabecalho: [
       p.loja,
       p.titulo,
-      `Filtros: ${p.filtros.length > 0 ? p.filtros.join('; ') : 'nenhum'}`,
+      SOLTOS.arquivo.filtros(p.filtros.length > 0 ? p.filtros.join('; ') : SOLTOS.arquivo.nenhum),
       SOLTOS.arquivo.geradoEm(p.geradoEm, p.geradoPor),
       ...(p.linhaDaCotacao ? [p.linhaDaCotacao] : []),
     ],

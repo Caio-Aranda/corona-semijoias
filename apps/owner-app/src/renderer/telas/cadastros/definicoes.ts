@@ -12,7 +12,7 @@ export interface CampoDaTela {
   /** Nome do campo na API (no endereço, só a parte final, ex.: `cep`). */
   nome: string;
   rotulo: string;
-  tipo: 'texto' | 'numero' | 'data' | 'selecao' | 'sim-nao' | 'vendedor' | 'area';
+  tipo: 'texto' | 'numero' | 'percentual' | 'data' | 'selecao' | 'sim-nao' | 'vendedor' | 'area';
   obrigatorio?: boolean;
   ajuda?: string;
   max?: number;
@@ -21,6 +21,12 @@ export interface CampoDaTela {
   padrao?: string;
   /** O campo fica dentro do endereço. */
   endereco?: boolean;
+  /** Nome antigo do mesmo dado: lido do cadastro quando o novo está vazio, e aceito nas mensagens do servidor. */
+  alternativa?: string;
+  /** Ao editar, se a dona esvaziar um campo que tinha valor, a tela manda vazio (""), e o servidor apaga; campo que não vem não apaga. */
+  apagavel?: boolean;
+  /** Depois de escolhido, não muda mais (D10, ADR-0016): ao editar, aparece travado se já tem valor. */
+  fixoDepoisDeDefinido?: boolean;
 }
 
 export interface ColunaDaDefinicao {
@@ -92,7 +98,15 @@ export function valorInicial(r: Registro | null, c: CampoDaTela): string {
   if (!r) return c.padrao ?? '';
   const v = c.endereco ? enderecoDe(r)[c.nome] : r[c.nome];
   if (typeof v === 'boolean') return v ? 'sim' : 'nao';
-  if (typeof v === 'string' || typeof v === 'number') return String(v);
+  if (c.tipo === 'percentual' && (typeof v === 'string' || typeof v === 'number')) {
+    // "30.00" → "30"; "32.50" → "32.5".
+    const n = Number(v);
+    return Number.isFinite(n) ? String(n) : '';
+  }
+  if (typeof v === 'string' && v !== '') return v;
+  if (typeof v === 'number') return String(v);
+  const antigo = c.alternativa ? r[c.alternativa] : undefined;
+  if (typeof antigo === 'string' && antigo !== '') return antigo;
   return c.padrao ?? '';
 }
 
@@ -241,7 +255,11 @@ export const DEFINICOES: Record<NomeDoCadastro, Definicao> = {
     nome: (r) => texto(r, 'nome'),
     colunas: [
       { chave: 'nome', titulo: T.clientes.colunas.nome, valor: (r) => texto(r, 'nome') },
-      { chave: 'cpf', titulo: T.clientes.colunas.cpf, valor: (r) => texto(r, 'cpf') },
+      {
+        chave: 'documento',
+        titulo: T.clientes.colunas.documento,
+        valor: (r) => texto(r, 'documento') || texto(r, 'cpf'),
+      },
       {
         chave: 'telefone',
         titulo: T.clientes.colunas.telefone,
@@ -256,11 +274,41 @@ export const DEFINICOES: Record<NomeDoCadastro, Definicao> = {
     campos: [
       { nome: 'nome', rotulo: T.clientes.campos.nome, tipo: 'texto', obrigatorio: true, max: 200 },
       {
-        nome: 'cpf',
-        rotulo: T.clientes.campos.cpf,
+        nome: 'documentoTipo',
+        rotulo: T.clientes.campos.documentoTipo,
+        tipo: 'selecao',
+        padrao: 'CPF',
+        opcoes: T.clientes.tiposDeDocumento,
+      },
+      {
+        nome: 'documento',
+        rotulo: T.clientes.campos.documento,
         tipo: 'texto',
-        max: 20,
-        ajuda: T.clientes.campos.cpfAjuda,
+        max: 40,
+        ajuda: T.clientes.campos.documentoAjuda,
+        alternativa: 'cpf',
+      },
+      {
+        nome: 'comissaoPercentual',
+        rotulo: T.clientes.campos.comissaoPercentual,
+        tipo: 'percentual',
+        padrao: '30',
+        ajuda: T.clientes.campos.comissaoPercentualAjuda,
+      },
+      {
+        nome: 'indicadoPorNome',
+        rotulo: T.clientes.campos.indicadoPorNome,
+        tipo: 'texto',
+        max: 200,
+        apagavel: true,
+        ajuda: T.clientes.campos.indicadoPorNomeAjuda,
+      },
+      {
+        nome: 'comoConheceu',
+        rotulo: T.clientes.campos.comoConheceu,
+        tipo: 'texto',
+        max: 500,
+        apagavel: true,
       },
       {
         nome: 'dataNascimento',
@@ -274,6 +322,8 @@ export const DEFINICOES: Record<NomeDoCadastro, Definicao> = {
         nome: 'vendedorResponsavelId',
         rotulo: T.clientes.campos.vendedorResponsavelId,
         tipo: 'vendedor',
+        fixoDepoisDeDefinido: true,
+        ajuda: T.clientes.campos.vendedorResponsavelIdAjuda,
       },
       { nome: 'observacoes', rotulo: T.clientes.campos.observacoes, tipo: 'area', max: 2000 },
       ...CAMPOS_DE_ENDERECO,

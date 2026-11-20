@@ -286,6 +286,11 @@ public enum CodigoErro {
             "Esta peça não pode ir para a maleta.",
             "Esta peça está desativada ou foi excluída e não pode ir para a maleta."),
 
+    /** Fechamento da maleta: a peça lida existe, mas não faz parte desta maleta (HTTP 422). O servidor diz de qual maleta é, se achar. */
+    PECA_NAO_E_DESTA_MALETA(
+            "Esta peça não é desta maleta.",
+            "Esta peça não é desta maleta. Confira o código da peça e da maleta."),
+
     // --- Devolução e cancelamento da maleta (ADR-0010, itens 4 e 5; tarefa 3.3) ---
 
     /** Devolução de mais peças do que ainda há na maleta (HTTP 409). O servidor monta o texto com o que há. */

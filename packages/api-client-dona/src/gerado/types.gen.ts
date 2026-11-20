@@ -258,10 +258,16 @@ export type CategoriasDoCaixaDaDonaControllerCategoria = {
 };
 
 export type ClientesDaDonaControllerPedido = {
+    comissaoPercentual?: string;
+    comoConheceu?: string;
     cpf?: string;
     dataNascimento?: string;
+    documento?: string;
+    documentoTipo?: string;
     endereco?: Endereco;
     id?: string;
+    indicadoPorClienteId?: string;
+    indicadoPorNome?: string;
     nome: string;
     observacoes?: string;
     telefone?: string;
@@ -272,10 +278,16 @@ export type ClientesDaDonaControllerPedido = {
 
 export type ClientesDaDonaControllerResposta = {
     ativo?: boolean;
+    comissaoPercentual?: string;
+    comoConheceu?: string;
     cpf?: string;
     dataNascimento?: string;
+    documento?: string;
+    documentoTipo?: string;
     endereco?: Endereco;
     id?: string;
+    indicadoPorClienteId?: string;
+    indicadoPorNome?: string;
     nome?: string;
     observacoes?: string;
     telefone?: string;
