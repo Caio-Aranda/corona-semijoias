@@ -824,6 +824,9 @@ export function registrarAcerto(
   agora: Date,
   p: AcertoParaEnviar,
 ): { operacaoId: string; reciboId: string | null; situacao: string } {
+  // Como o servidor, a sobra que já está "a aplicar" entra antes de somar as pendências (ela pode ter chegado pelo pull).
+  const antes = acharNota(db, p.notaId);
+  if (antes) reaplicarSobras(db, agora, p.id, antes.cliente_id);
   const previa = previaDoAcerto(db, p);
   const nota = acharNota(db, p.notaId) as NonNullable<ReturnType<typeof acharNota>>;
   const semana = semanaAtual(db);

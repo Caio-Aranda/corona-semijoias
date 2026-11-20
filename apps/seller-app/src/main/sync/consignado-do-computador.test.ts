@@ -350,6 +350,42 @@ describe('a nota 0000064-21 e a pendência da 0000063-32 (mesmo arquivo de exemp
     expect(t.pendente).toBe(e.ficouDevendo);
   });
 
+  it('uma sobra que já estava "a aplicar" (chegou pelo pull) abate a pendência antes do acerto, como o servidor', () => {
+    const { antiga, nova } = cenario();
+    const semana = chamar<PainelDaSemana>({ operacao: 'consignado.painel' }).semana?.id as string;
+    // Um recibo do cliente de 50,00 sem aplicação nenhuma: o servidor o põe no débito mais antigo no próximo acerto.
+    aplicarLote(
+      b.db,
+      [
+        {
+          tabela: 'recibos_consignado',
+          id: idDeTeste(12),
+          version: 1,
+          deletedAt: null,
+          campos: {
+            cliente_id: cliente,
+            semana_id: semana,
+            sequencia: 90,
+            pago_em: '2026-11-05T12:00:00.000Z',
+            total: '50.00',
+          },
+        },
+      ],
+      { cursor: 'c-3' },
+    );
+    const feito = acertar(nova, [], '30', []);
+    expect(feito.situacao).toBe('PENDENTE');
+    // A pendência antiga (498,10) já saiu 50,00 sem esperar o servidor.
+    expect(nota(antiga).saldoDaNota).toBe('448.10');
+    // E o que o computador "viu" no acerto já soma só as pendências que restavam (como o servidor, que reaplica antes).
+    const op = b.db
+      .prepare("SELECT dados FROM outbox WHERE tipo = 'ACERTO_NOTA' ORDER BY rowid DESC")
+      .get() as {
+      dados: string;
+    };
+    expect(JSON.parse(op.dados).visto.pendenciasAnteriores).toBe('448.10');
+  });
+
   it('a outbox leva os tipos novos no formato 1, com o que o computador viu', () => {
     const { n, nova } = cenario();
     acertar(

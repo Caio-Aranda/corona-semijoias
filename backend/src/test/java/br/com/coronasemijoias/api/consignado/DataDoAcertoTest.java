@@ -211,6 +211,29 @@ class DataDoAcertoTest extends ApoioDoConsignado {
     }
 
     @Test
+    void sobraDepoisDeEstornoChegaAosMesmosNumerosDoComputador() throws Exception {
+        // Os números vêm do MESMO arquivo que o Corona Vendas lê (caso `sobraDepoisDeEstorno`).
+        var ex = ExemplosDoConsignado.ler().get("sobraDepoisDeEstorno");
+        var esperado = ex.get("esperado");
+        Cena c = cena();
+        UUID notaA = notaDe(c, 1, ex.get("pecasDaNotaA").asInt());
+        UUID notaB = notaDe(c, 2, ex.get("pecasDaNotaB").asInt());
+        UUID a = acertarEm(c, notaA, DIA_12_10H, null, null, null);
+        UUID b = acertarEm(c, notaB, DIA_12_15H, null, 1, ex.get("pagoNoAcertoB").asString());
+        assertThat(saldoDoDebito(b)).isEqualByComparingTo(ExemplosDoConsignado.valor(esperado.get("saldoDeBAntesDoEstorno")));
+
+        acertos.estornar(ctxEm(c.v(), Instant.parse("2020-03-15T13:00:00Z")),
+                new ServicoDeAcertosDaNota.EstornoDoAcerto(UUID.randomUUID(), a, "Errei"));
+
+        assertThat(saldoDoDebito(b)).isEqualByComparingTo(ExemplosDoConsignado.valor(esperado.get("saldoDeBDepoisDoEstorno")));
+        assertThat(situacaoDaNota(notaB)).isEqualTo(esperado.get("situacaoDeBDepoisDoEstorno").asString());
+        assertThat(aAplicar(reciboDoAcerto(b)))
+                .isEqualByComparingTo(ExemplosDoConsignado.valor(esperado.get("aAplicarDoReciboDepoisDoEstorno")));
+        assertThat(pendencia(c.cliente()))
+                .isEqualByComparingTo(ExemplosDoConsignado.valor(esperado.get("pendenciaDoClienteDepoisDoEstorno")));
+    }
+
+    @Test
     void acertoComDataReenviadoEInofensivoESoGravaUmaVez() throws Exception {
         Cena c = cena();
         UUID nota = notaDe(c, 1, 2);
