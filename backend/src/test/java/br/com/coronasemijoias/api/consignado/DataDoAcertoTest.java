@@ -25,6 +25,14 @@ import org.junit.jupiter.api.Test;
  */
 class DataDoAcertoTest extends ApoioDoConsignado {
 
+    /** As cotações de 2020 deste teste são gravadas de verdade (a tabela é imutável): saem no fim, para não vazar para outros testes. */
+    @org.junit.jupiter.api.AfterAll
+    static void tirarAsCotacoesDe2020() throws java.sql.SQLException {
+        try (java.sql.Connection con = conectarComoMigracao()) {
+            CotacoesDaMassa.tirarDias(con, java.util.List.of("2020-03-10", "2020-03-12"));
+        }
+    }
+
     private static final ZoneId BRASILIA = ZoneId.of("America/Sao_Paulo");
     private static final Instant ABRE_A_SEMANA = Instant.parse("2020-03-01T13:00:00Z");
     private static final Instant SAIDA = Instant.parse("2020-03-02T13:00:00Z");

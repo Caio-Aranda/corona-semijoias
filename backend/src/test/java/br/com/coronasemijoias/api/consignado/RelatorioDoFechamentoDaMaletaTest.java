@@ -30,6 +30,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 class RelatorioDoFechamentoDaMaletaTest extends ApoioDoConsignado {
 
+    /** As cotações de 2020 deste teste são gravadas de verdade (a tabela é imutável): saem no fim, para não vazar para outros testes. */
+    @org.junit.jupiter.api.AfterAll
+    static void tirarAsCotacoesDe2020() throws java.sql.SQLException {
+        try (java.sql.Connection con = conectarComoMigracao()) {
+            CotacoesDaMassa.tirarDias(con, java.util.List.of("2020-03-10", "2020-03-12"));
+        }
+    }
+
     @Autowired
     ServicoDoFechamentoDaMaleta fechamento;
 
