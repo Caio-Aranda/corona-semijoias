@@ -258,8 +258,13 @@
 }
 
 .consignado-pesquisa {
-  flex: 1 1 260px;
-  min-width: 220px;
+  flex: 1 1 200px;
+  min-width: 200px;
+  max-width: 340px;
+}
+.consignado-pesquisa .cs-campo,
+.consignado-botoes .cs-campo {
+  margin-bottom: 0;
 }
 
 .consignado-cabecalho {
@@ -650,4 +655,16 @@ tr.consignado-linha[tabindex]:focus-visible {
   clip: rect(0 0 0 0);
   white-space: nowrap;
   border: 0;
+}
+
+/* Telas de trabalho mais compactas: o botão principal fica à vista em notebook 1366x768. */
+.consignado-largo {
+  padding-top: var(--espaco-4);
+  gap: var(--espaco-4);
+}
+.vendas-cartao .cs-rodape-acoes {
+  padding: 0;
+}
+.vendas-cartao .cs-campo {
+  margin-bottom: 0;
 }

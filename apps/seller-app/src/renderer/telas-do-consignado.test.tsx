@@ -299,7 +299,7 @@ describe('Correções de tela (9.6)', () => {
     expect(css).toMatch(/\.cs-tabela td\.cs-numero,[^{]*\{\s*white-space: nowrap/);
   });
 
-  it('títulos duplicados: a legenda da tabela fica só para leitor de tela', async () => {
+  it('títulos duplicados: a legenda da tabela fica só para leitor de tela', () => {
     const css = lerCss('./estilos.css');
     expect(css).toMatch(/\.consignado-so-leitor \{\s*position: absolute/);
   });

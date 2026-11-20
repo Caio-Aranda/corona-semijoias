@@ -282,6 +282,21 @@ PR em rascunho até passar tudo localmente (economia de Actions). Branch `feat/c
 - **Testes:** servidor (código em sequência e imutável, pull formato 2 com as colunas novas e formato 1 sem elas); `consignado-relatorios.test.ts` (a nota `0000064-21` número por número nos relatórios, cotação, sem cotação, código e praça); saída (WhatsApp, nome do arquivo, sem internet, sem telefone); folha na tela (pt e es) e o pedido de relatório na ponte.
 - **Não feito / dúvidas:** a tabela de peças mostra preço e sub-total só em Real (os totais saem nas três moedas); relatório da Situação do cliente inclui também as notas Pendentes em "o que já vendeu"; o PDF vem do `printToPDF` do Electron (conferido por teste só até a fronteira; a impressão e o PDF de verdade não foram abertos à mão); o nome da praça é uma cópia no momento em que a maleta nasce.
 
+## Leva 9: correções de tela do Corona Vendas (tarefa 9.6, issue 232, 20/11/2026)
+
+PR 235 em rascunho. Referência: notebook 1366x768.
+
+- **Primeira semana / largura:** `.vendas-conteudo` e `.vendas-cartao` passam a contar o espaço interno dentro da largura (`box-sizing: border-box`); a página não passa mais da janela e o botão "Empezar la semana" aparece. Espaços menores na tela principal.
+- **Lançar pagamento (janela):** `.cs-janela` com altura máxima da tela; o texto rola por dentro e Cancelar e a ação ficam fixos embaixo (vale para todas as janelas de confirmação, também no Corona Gestão).
+- **Tabela principal e outras:** valores e número da nota nunca quebram (`white-space: nowrap`), células mais compactas; o nome do cliente pode quebrar.
+- **Comis. %:** notas Em aberto e Remarcado mostram a comissão do cliente (a §23.4 só zera DV, VD, comissão em R$ e líquido na Remarcada).
+- **Títulos duplicados:** a legenda da tabela fica só para leitor de tela (`consignado-so-leitor`) onde já há título visível (ficha do cliente, Cobrança, Pesquisar).
+- **Idioma:** o aviso do prazo sem internet (`textoDoPrazo`) agora sai em espanhol quando o programa está em espanhol. Conferidos os textos de entrada e avisos nos dois idiomas.
+- **Pesquisar:** texto de exemplo curto ("Cliente, nota o maleta").
+- **Testes:** `telas-do-consignado.test.tsx` (bloco 9.6), `indicador-de-envio.test.tsx` (aviso es/pt), `consignado-do-computador.test.ts` (Comis. % da Remarcada).
+- **Prints (es, 1366x768):** `docs/capturas/9-6/` e `C:\Projetos\prints-consignado\9-6\espanhol\` (tirados com a tela real do Corona Vendas e dados de exemplo simulados, não no Electron).
+- **Não feito:** o aviso de prazo que a API devolve em texto pronto (recusas) continua como a API manda; a barreira e as verificações foram rodadas localmente (sem CI).
+
 ## Leva 9: consignado ao cliente, ajustes finais (tarefa 9.5, issue 229, 19/11/2026)
 
 PR em rascunho até passar tudo localmente. Branch `fix/consignado-ajustes-finais`, sobre a 9.3 (PR 230, já na `main`).
