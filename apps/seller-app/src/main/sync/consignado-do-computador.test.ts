@@ -643,6 +643,9 @@ describe('Reposição, Troca e Remarcar', () => {
     expect(linha?.situacao).toBe('REMARCADO');
     expect(linha?.valorVd).toBe('0.00');
     expect(linha?.valorLiquido).toBe('0.00');
+    // Tarefa 9.6: Comis. % não fica vazia; mostra a comissão do cliente (só o valor em R$ é zerado).
+    expect(linha?.comissaoPercentual).toBe('30.00');
+    expect(linha?.comissao).toBe('0.00');
     expect(() =>
       chamar({
         operacao: 'consignado.remarcar',

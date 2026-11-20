@@ -278,7 +278,7 @@ function FichaDoCliente({
             </p>
             {c.debitos.length > 0 ? (
               <table className="cs-tabela">
-                <caption>{T.pendenciaTitulo}</caption>
+                <caption className="consignado-so-leitor">{T.pendenciaTitulo}</caption>
                 <thead>
                   <tr>
                     <th scope="col">{T.debitosColunas.nota}</th>
@@ -331,7 +331,7 @@ function FichaDoCliente({
               <p className="vendas-texto">{T.semHistorico}</p>
             ) : (
               <table className="cs-tabela consignado-tabela">
-                <caption>{T.historico}</caption>
+                <caption className="consignado-so-leitor">{T.historico}</caption>
                 <thead>
                   <tr>
                     <th scope="col">{T.historicoColunas.nota}</th>
@@ -352,7 +352,7 @@ function FichaDoCliente({
                 <tbody>
                   {c.pedidos.map((p) => (
                     <tr key={p.notaId} className={classeDaSituacao(p.situacao)}>
-                      <td>{p.numero}</td>
+                      <td className="consignado-nota">{p.numero}</td>
                       <td>{dia(p.dataCobranca)}</td>
                       <td className="cs-numero">{reais(p.valorDx)}</td>
                       <td className="cs-numero">{reais(p.valorVd)}</td>
@@ -374,7 +374,7 @@ function FichaDoCliente({
               <p className="vendas-texto">{T.semPagamentos}</p>
             ) : (
               <table className="cs-tabela">
-                <caption>{T.pagamentos}</caption>
+                <caption className="consignado-so-leitor">{T.pagamentos}</caption>
                 <thead>
                   <tr>
                     <th scope="col">{T.pagamentosColunas.recibo}</th>
@@ -389,7 +389,7 @@ function FichaDoCliente({
                 <tbody>
                   {c.pagamentos.map((p) => (
                     <tr key={p.reciboId}>
-                      <td>{p.numero}</td>
+                      <td className="consignado-nota">{p.numero}</td>
                       <td>{dia(p.pagoEm)}</td>
                       <td>
                         {p.formas

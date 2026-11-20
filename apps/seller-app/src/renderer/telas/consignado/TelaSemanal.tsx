@@ -260,7 +260,7 @@ export function TelaSemanal({
                             if (e.key === 'Enter') aoAbrirPedido(p.notaId);
                           }}
                         >
-                          <td>{p.numero}</td>
+                          <td className="consignado-nota">{p.numero}</td>
                           <td>{p.cliente}</td>
                           <td>{dia(p.dataCobranca)}</td>
                           <td className="cs-numero">{reais(p.valorDx)}</td>

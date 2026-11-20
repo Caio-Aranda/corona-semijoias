@@ -475,7 +475,7 @@ function AcertoDoPedido({
                 <p className="vendas-texto">{T.nenhumaPendencia}</p>
               ) : (
                 <table className="cs-tabela">
-                  <caption>{T.pendenciasTitulo}</caption>
+                  <caption className="consignado-so-leitor">{T.pendenciasTitulo}</caption>
                   <thead>
                     <tr>
                       <th scope="col">{T.pendenciasColunas.nota}</th>
@@ -488,7 +488,7 @@ function AcertoDoPedido({
                   <tbody>
                     {nota.pendenciasAnteriores.map((d) => (
                       <tr key={d.acertoId}>
-                        <td>{d.numeroDaNota}</td>
+                        <td className="consignado-nota">{d.numeroDaNota}</td>
                         <td>{dia(d.acertadoEm)}</td>
                         <td className="cs-numero">{reais(d.saldo)}</td>
                       </tr>

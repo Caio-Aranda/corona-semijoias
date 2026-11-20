@@ -45,7 +45,7 @@ export function TelaPesquisa({
           <section aria-label={T.pedidos}>
             <h2 className="vendas-subtitulo">{T.pedidos}</h2>
             <table className="cs-tabela consignado-tabela">
-              <caption>{T.pedidoLegenda}</caption>
+              <caption className="consignado-so-leitor">{T.pedidoLegenda}</caption>
               <thead>
                 <tr>
                   <th scope="col">{T.pedidoColunas.nota}</th>
@@ -61,7 +61,7 @@ export function TelaPesquisa({
               <tbody>
                 {dados.notas.map((n) => (
                   <tr key={n.notaId} className={classeDaSituacao(n.situacao)}>
-                    <td>{n.numero}</td>
+                    <td className="consignado-nota">{n.numero}</td>
                     <td>{n.cliente}</td>
                     <td>{dia(n.dataCobranca)}</td>
                     <td className="cs-numero">{reais(n.valorDx)}</td>

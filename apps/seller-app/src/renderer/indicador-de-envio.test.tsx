@@ -13,6 +13,7 @@ import type {
   ResultadoDeChamada,
 } from '../shared/ponte';
 import { AvisoDosDados, IndicadorDeEnvio } from './IndicadorDeEnvio';
+import { definirIdioma } from './idioma';
 import { TEXTOS } from './textos';
 
 const ESTADO: EstadoDaSincronizacao = {
@@ -304,5 +305,26 @@ describe('palavras proibidas na tela (glossário, parte 2)', () => {
         expect(regra ? regra.test(visivel) : visivel.includes(proibida), proibida).toBe(false);
       }
     }
+  });
+});
+
+describe('o aviso do prazo sem internet nos dois idiomas (tarefa 9.6)', () => {
+  it('com o programa em espanhol o aviso vem em espanhol; em portugues, em portugues', () => {
+    const { ponte, estado } = criarPonte();
+    definirIdioma('es');
+    try {
+      const { unmount } = render(<IndicadorDeEnvio ponte={ponte} />);
+      estado({ prazo: { situacao: 'ESGOTADO', diasRestantes: 0, motivo: 'PRAZO' } });
+      expect(
+        screen.getByText('Esta computadora estuvo muchos días sin internet.'),
+      ).toBeInTheDocument();
+      expect(screen.queryByText(/ficou muitos dias/)).not.toBeInTheDocument();
+      unmount();
+    } finally {
+      definirIdioma('pt');
+    }
+    render(<IndicadorDeEnvio ponte={ponte} />);
+    estado({ prazo: { situacao: 'ESGOTADO', diasRestantes: 0, motivo: 'PRAZO' } });
+    expect(screen.getByText('Este computador ficou muitos dias sem internet.')).toBeInTheDocument();
   });
 });
