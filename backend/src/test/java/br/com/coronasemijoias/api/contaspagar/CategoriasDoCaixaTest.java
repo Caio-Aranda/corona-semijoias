@@ -32,8 +32,8 @@ class CategoriasDoCaixaTest extends ApoioDasContasAPagar {
         assertThat(c.get("ativa").asBoolean()).isTrue();
         assertThat(c.get("sistema").asBoolean()).isFalse();
         JsonNode lista = corpoDe(ler(CATEGORIAS).andExpect(status().isOk()));
-        assertThat(lista.valueStream().map(x -> x.get("nome").asString())).contains(nome, "Pagamento a fornecedor", "Repasse do vendedor",
-                "Pagamento ao vendedor");
+        assertThat(lista.valueStream().map(x -> x.get("nome").asString())).contains(nome, "Pagamento a fornecedor", "Repasse do representante",
+                "Pagamento ao representante");
         assertThat(lista.valueStream().filter(x -> x.get("sistema").asBoolean()).count()).isGreaterThanOrEqualTo(3);
         assertThat(contar("SELECT count(*) FROM corona.auditoria WHERE acao = 'CATEGORIA_DO_CAIXA_CRIADA' AND registro_id = ?",
                 UUID.fromString(c.get("id").asString()))).isEqualTo(1);

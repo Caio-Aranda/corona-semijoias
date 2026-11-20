@@ -5,12 +5,19 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import br.com.coronasemijoias.api.consignado.ServicoDeAcertosDaNota.NovoAcerto;
+import br.com.coronasemijoias.api.consignado.ServicoDeAcertosDaNota.ReciboDoAcerto;
+import br.com.coronasemijoias.api.consignado.ServicoDeNotas.NovaNota;
 import br.com.coronasemijoias.api.consignado.ServicoDoFechamentoDaMaleta.Leitura;
 import br.com.coronasemijoias.api.consignado.ServicoDoFechamentoDaMaleta.LeituraDoFechamento;
 import br.com.coronasemijoias.api.relatorios.RelatorioDeCadastro;
 import br.com.coronasemijoias.api.relatorios.RelatorioDeCadastro.Total;
 import br.com.coronasemijoias.api.relatorios.RelatorioDoFechamentoDaMaleta;
 import br.com.coronasemijoias.api.relatorios.RelatorioDoFechamentoDaMaleta.LinhaDoFechamento;
+import br.com.coronasemijoias.api.testes.CotacoesDaMassa;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
 import br.com.coronasemijoias.api.testes.UsuariosDeTeste.UsuarioDeTeste;
 import java.util.List;
 import java.util.UUID;
@@ -22,6 +29,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  * leitura. É dele que o Corona Gestão tira o PDF, o Excel e o CSV. PostgreSQL de verdade.
  */
 class RelatorioDoFechamentoDaMaletaTest extends ApoioDoConsignado {
+
+    /** As cotações de 2020 deste teste são gravadas de verdade (a tabela é imutável): saem no fim, para não vazar para outros testes. */
+    @org.junit.jupiter.api.AfterAll
+    static void tirarAsCotacoesDe2020() throws java.sql.SQLException {
+        try (java.sql.Connection con = conectarComoMigracao()) {
+            CotacoesDaMassa.tirarDias(con, java.util.List.of("2020-03-10", "2020-03-12"));
+        }
+    }
 
     @Autowired
     ServicoDoFechamentoDaMaleta fechamento;
@@ -84,6 +99,61 @@ class RelatorioDoFechamentoDaMaletaTest extends ApoioDoConsignado {
         // "Com quem" diz o cliente, a nota e a quantidade.
         LinhaDoFechamento aneis = r.itens().stream().filter(l -> l.enviadas() == 10).findFirst().orElseThrow();
         assertThat(aneis.comQuem()).contains("(nota ").contains("): 2");
+    }
+
+    /** Duas notas acertadas em dias diferentes, cada acerto com a cotação do seu dia (a Dt. Acerto, tarefa 9.8). */
+    private UUID maletaComDoisDias(UsuarioDeTeste v, String diaDoPrimeiro, LocalDate dataDoPrimeiro) throws Exception {
+        UUID cliente = cliente(v);
+        UUID anel = peca("100.00", 20);
+        UUID maleta = maletaEnviada(v, anel, 20);
+        UUID semana = abrirSemana(v, 1, Instant.parse(diaDoPrimeiro + "T10:00:00Z"));
+        NovaNota a = nota(semana, 1, cliente, item(anel, maleta, 2, "100.00"));
+        notas.criar(ctxEm(v, Instant.parse(diaDoPrimeiro + "T13:00:00Z")), a);
+        NovaNota b = nota(semana, 2, cliente, item(anel, maleta, 1, "100.00"));
+        notas.criar(ctxEm(v, Instant.parse(diaDoPrimeiro + "T13:00:00Z")), b);
+        // Primeiro acerto: a data escolhida (cotação desse dia), pagando 100 num recibo (cotação do mesmo dia).
+        acertos.acertar(ctxEm(v, Instant.parse("2020-03-12T13:00:00Z")), new NovoAcerto(UUID.randomUUID(), a.id(), semana,
+                BigDecimal.ZERO, List.of(), new ReciboDoAcerto(UUID.randomUUID(), 1, List.of(paga("PIX", "100.00"))), null, dataDoPrimeiro));
+        // Segundo acerto: no dia 12 (hoje do computador), sem pagar.
+        acertos.acertar(ctxEm(v, Instant.parse("2020-03-12T18:00:00Z")),
+                new NovoAcerto(UUID.randomUUID(), b.id(), semana, BigDecimal.ZERO, List.of(), null, null, LocalDate.of(2020, 3, 12)));
+        fechamento.iniciar(maleta, usuarios.dona().id());
+        return maleta;
+    }
+
+    @Test
+    void totaisDeDinheiroTrazemDolarEGuaraniCadaLancamentoPelaCotacaoDoSeuDia() throws Exception {
+        UsuarioDeTeste v = usuarios.criarVendedor();
+        CotacoesDaMassa.gravar(jdbc, "2020-03-10", "5.00000000", "0.00100000");
+        CotacoesDaMassa.gravar(jdbc, "2020-03-12", "10.00000000", "0.00200000");
+        UUID maleta = maletaComDoisDias(v, "2020-03-02", LocalDate.of(2020, 3, 10));
+        RelatorioDeCadastro<LinhaDoFechamento> r = relatorio.montar(maleta, null, null, null);
+
+        // VD 300: 200 pelo dia 10 (US$ 40,00 e Gs. 200.000) e 100 pelo dia 12 (US$ 10,00 e Gs. 50.000).
+        assertThat(total(r, "vd").valorEmReais()).isEqualByComparingTo("300.00");
+        assertThat(total(r, "vd").valorEmDolar()).isEqualByComparingTo("50.00");
+        assertThat(total(r, "vd").valorEmGuarani()).isEqualByComparingTo("250000");
+        // Recebido: o recibo de 100 foi do dia 10.
+        assertThat(total(r, "recebido").valorEmReais()).isEqualByComparingTo("100.00");
+        assertThat(total(r, "recebido").valorEmDolar()).isEqualByComparingTo("20.00");
+        assertThat(total(r, "recebido").valorEmGuarani()).isEqualByComparingTo("100000");
+        // Pendências: 100 do acerto do dia 10 e 100 do acerto do dia 12.
+        assertThat(total(r, "pendencias").valorEmReais()).isEqualByComparingTo("200.00");
+        assertThat(total(r, "pendencias").valorEmDolar()).isEqualByComparingTo("30.00");
+        assertThat(total(r, "pendencias").valorEmGuarani()).isEqualByComparingTo("150000");
+        assertThat(total(r, "comissao").valorEmDolar()).isEqualByComparingTo("0.00");
+    }
+
+    @Test
+    void semCotacaoParaUmDosLancamentosOTotalSaiSoEmReal() throws Exception {
+        UsuarioDeTeste v = usuarios.criarVendedor();
+        CotacoesDaMassa.gravar(jdbc, "2020-03-12", "10.00000000", "0.00200000");
+        // O primeiro acerto é de 2000, antes de qualquer cotação.
+        UUID maleta = maletaComDoisDias(v, "2000-01-05", LocalDate.of(2000, 1, 6));
+        RelatorioDeCadastro<LinhaDoFechamento> r = relatorio.montar(maleta, null, null, null);
+        assertThat(total(r, "vd").valorEmReais()).isEqualByComparingTo("300.00");
+        assertThat(total(r, "vd").valorEmDolar()).isNull();
+        assertThat(total(r, "vd").valorEmGuarani()).isNull();
     }
 
     @Test

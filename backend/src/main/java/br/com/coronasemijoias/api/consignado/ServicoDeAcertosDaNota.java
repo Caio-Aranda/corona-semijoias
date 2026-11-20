@@ -50,7 +50,13 @@ public class ServicoDeAcertosDaNota {
     }
 
     public record NovoAcerto(UUID id, UUID notaId, UUID semanaId, BigDecimal comissaoPercentual, List<Devolvido> devolvidos,
-            ReciboDoAcerto recibo, Visto visto) {
+            ReciboDoAcerto recibo, Visto visto, LocalDate dataDoAcerto) {
+
+        /** Sem Data do acerto: vale o momento do lançamento. */
+        public NovoAcerto(UUID id, UUID notaId, UUID semanaId, BigDecimal comissaoPercentual, List<Devolvido> devolvidos,
+                ReciboDoAcerto recibo, Visto visto) {
+            this(id, notaId, semanaId, comissaoPercentual, devolvidos, recibo, visto, null);
+        }
     }
 
     public record EstornoDoAcerto(UUID id, UUID acertoId, String motivo) {
@@ -104,6 +110,15 @@ public class ServicoDeAcertosDaNota {
                 Boolean.class, pedido.semanaId(), ctx.vendedorId());
         if (!Boolean.TRUE.equals(semanaDele)) {
             throw new ErroDaApi(HttpStatus.UNPROCESSABLE_ENTITY, CodigoErro.SEMANA_NAO_ENCONTRADA);
+        }
+        // A Data do acerto (§23.8): recusada cedo, antes de gravar qualquer coisa.
+        Instant acertadoEm = MomentoDoLancamento.de(ctx, pedido.dataDoAcerto(), CodigoErro.DATA_DO_ACERTO_NO_FUTURO);
+        if (pedido.dataDoAcerto() != null) {
+            Instant saida = jdbc.queryForObject("SELECT saida_em FROM corona.notas_consignado WHERE id = ?", Timestamp.class, nota.id())
+                    .toInstant();
+            if (pedido.dataDoAcerto().isBefore(LocalDate.ofInstant(saida, BRASILIA))) {
+                throw new ErroDaApi(HttpStatus.UNPROCESSABLE_ENTITY, CodigoErro.DATA_DO_ACERTO_ANTES_DA_SAIDA);
+            }
         }
         if (!CalculoDoAcertoDaNota.comissaoValida(pedido.comissaoPercentual())) {
             throw new ErroDaApi(HttpStatus.UNPROCESSABLE_ENTITY, CodigoErro.COMISSAO_FORA_DO_LIMITE);
@@ -161,14 +176,14 @@ public class ServicoDeAcertosDaNota {
             Validacoes.idDoPedido(reciboId);
         }
         jdbc.update("""
-                INSERT INTO corona.acertos_nota (id, nota_id, vendedor_id, semana_id, acertado_em, comissao_percentual, itens_dx, itens_dv,
+                INSERT INTO corona.acertos_nota (id, nota_id, vendedor_id, semana_id, acertado_em, registrado_em, comissao_percentual, itens_dx, itens_dv,
                     itens_vd, valor_dx, valor_dv, valor_vd, comissao, bruto, pendencias_anteriores, total_a_receber, total_pago,
                     ficou_devendo, recibo_id, cotacao_id, dispositivo_id, hora_ajustada)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", id, nota.id(), ctx.vendedorId(),
-                pedido.semanaId(), Timestamp.from(ctx.quando()), pedido.comissaoPercentual(), calculo.itensDx(), calculo.itensDv(),
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", id, nota.id(), ctx.vendedorId(),
+                pedido.semanaId(), Timestamp.from(acertadoEm), Timestamp.from(ctx.quando()), pedido.comissaoPercentual(), calculo.itensDx(), calculo.itensDv(),
                 calculo.itensVd(), calculo.valorDx(), calculo.valorDv(), calculo.valorVd(), calculo.comissao(), calculo.bruto(),
                 calculo.pendenciasAnteriores(), calculo.totalAReceber(), calculo.totalPago(), calculo.ficouDevendo(), reciboId,
-                cotacaoDoDia(ctx.quando()), ctx.aparelho(), ctx.horaAjustada());
+                cotacaoDoDia(acertadoEm), ctx.aparelho(), ctx.horaAjustada());
         for (Map<String, Object> l : linhas) {
             String chave = l.get("remessa_id") + ":" + l.get("produto_id");
             int dx = ((Number) l.get("dx")).intValue();
@@ -190,7 +205,7 @@ public class ServicoDeAcertosDaNota {
         if (pedido.recibo() != null) {
             notas.reservarNumero(ctx, pedido.semanaId(), pedido.recibo().sequencia(), "RECIBO", reciboId);
             recibos.gravarRecibo(ctx, reciboId, cliente, pedido.semanaId(), pedido.recibo().sequencia(), id, pago,
-                    pedido.recibo().formas());
+                    pedido.recibo().formas(), acertadoEm);
             Resultado r = debitos.aplicar(reciboId, cliente, pago, tocadas);
             if (r.sobra().signum() > 0) {
                 alertas.registrar("PAGAMENTO_ACIMA_DO_DEVIDO", ctx.vendedorId(), "recibos_consignado", reciboId,

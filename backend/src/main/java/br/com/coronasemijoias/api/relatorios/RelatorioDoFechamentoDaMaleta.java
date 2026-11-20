@@ -81,11 +81,17 @@ public class RelatorioDoFechamentoDaMaleta {
         t.add(pecas("comClientes", "Ainda com os clientes", n, linhas.stream().mapToLong(LinhaDoFechamento::comClientes).sum()));
         t.add(pecas("bipadas", "Lidas na volta", n, linhas.stream().mapToLong(LinhaDoFechamento::bipadas).sum()));
         t.add(pecas("diferenca", "Diferença (lidas menos esperadas)", n, linhas.stream().mapToLong(LinhaDoFechamento::diferenca).sum()));
-        t.add(new Total("vd", "Valor vendido (VD)", n, l.valores().vd()));
-        t.add(new Total("comissao", "Comissão dos clientes", n, l.valores().comissaoDosClientes()));
-        t.add(new Total("recebido", "Valor recebido", n, l.valores().recebido()));
-        t.add(new Total("pendencias", "Pendências a receber", n, l.valores().pendenciasAReceber()));
+        var v = l.valores();
+        t.add(emTresMoedas("vd", "Valor vendido (VD)", n, v.vdConvertido()));
+        t.add(emTresMoedas("comissao", "Comissão dos clientes", n, v.comissaoConvertida()));
+        t.add(emTresMoedas("recebido", "Valor recebido", n, v.recebidoConvertido()));
+        t.add(emTresMoedas("pendencias", "Pendências a receber", n, v.pendenciasConvertidas()));
         return t;
+    }
+
+    /** Real e, quando todos os lançamentos tinham cotação, Dólar e Guarani (cada um pela cotação do dia dele, ADR-0006). */
+    private static Total emTresMoedas(String chave, String rotulo, long linhas, ServicoDoFechamentoDaMaleta.Convertido c) {
+        return new Total(chave, rotulo, linhas, c.real(), null, c.dolar(), c.guarani());
     }
 
     private static Total pecas(String chave, String rotulo, long linhas, long pecas) {

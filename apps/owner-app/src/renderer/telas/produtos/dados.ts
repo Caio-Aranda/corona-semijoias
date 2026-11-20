@@ -24,6 +24,8 @@ export interface Produto {
   version: number;
   nome: string;
   referencia: string;
+  /** Tamanho ou tom da peça (texto curto, opcional). */
+  tamTon: string;
   categoriaId: string;
   fornecedorId?: string;
   precoVenda: string;
@@ -99,6 +101,7 @@ export function lerProduto(bruto: unknown): Produto | null {
     version: typeof o.version === 'number' ? o.version : 0,
     nome: texto(o.nome),
     referencia: texto(o.referencia),
+    tamTon: texto(o.tamTon),
     categoriaId: texto(o.categoriaId),
     ...(typeof o.fornecedorId === 'string' ? { fornecedorId: o.fornecedorId } : {}),
     precoVenda: dinheiroEmTexto(o.precoVenda) ?? '0.00',

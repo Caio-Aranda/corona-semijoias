@@ -879,6 +879,7 @@ export const TEXTOS_PT = {
       legenda: 'Peças do pedido',
       colunas: {
         ref: 'Ref.',
+        tamTon: 'Tam./Ton.',
         produto: 'Produto',
         maleta: 'Maleta',
         qtd: 'Qtd. DX',
@@ -936,6 +937,7 @@ export const TEXTOS_PT = {
       itensLegenda: 'Peças do pedido',
       colunasItens: {
         ref: 'Ref.',
+        tamTon: 'Tam./Ton.',
         produto: 'Produto',
         maleta: 'Maleta',
         dx: 'Qtd. DX',
@@ -967,6 +969,12 @@ export const TEXTOS_PT = {
       comissaoPercentual: 'Comissão %',
       comissaoDoCadastro:
         'Vem do cadastro do cliente. Aqui você pode mudar só para este acerto (até 40%).',
+      dataDoAcerto: 'Dt. Acerto',
+      dataDoAcertoAjuda:
+        'Hoje, ou um dia que já passou (não antes do dia em que a nota saiu). Nunca depois de hoje.',
+      dataDoAcertoInvalida:
+        'Escolha hoje ou um dia que já passou, a partir do dia em que a nota saiu.',
+      semCotacaoDoDia: 'Sem cotação neste dia: os valores aparecem só em reais.',
       comissaoRs: 'Comissão R$',
       bruto: 'Total a Receber Bruto',
       pendenciasTitulo: 'Pendências anteriores',
@@ -986,7 +994,7 @@ export const TEXTOS_PT = {
           : `O cliente fica devendo ${devendo}. O pedido fica Pendente e o valor é somado ao próximo acerto.`,
       salvarBotao: 'Salvar acerto',
       salvo: 'Acerto salvo.',
-      recibo: (numero: string) => `Recibo ${numero}`,
+      recibo: (numero: string) => numero,
       jaAcertado: 'Este pedido já foi acertado.',
       acertoDe: (d: string) => `Acerto feito em ${d}`,
       estornar: 'Estornar o acerto',
@@ -1097,7 +1105,7 @@ export const TEXTOS_PT = {
       lancarAjuda:
         'O valor abate primeiro a pendência mais antiga. Não pode passar do que o cliente deve.',
       lancarBotao: 'Lançar pagamento',
-      lancado: (numero: string) => `Pagamento lançado. Recibo ${numero}.`,
+      lancado: (numero: string) => `Pagamento lançado. ${numero}.`,
       lancarTotal: 'Total do pagamento',
       lancarData: 'Data do pagamento',
       lancarDataAjuda: 'Hoje, ou um dia que já passou. Nunca depois de hoje.',
@@ -1248,6 +1256,7 @@ export const TEXTOS_PT = {
       periodo: (de: string, ate: string) => `Período: ${de} a ${ate}`,
       colunas: {
         ref: 'Ref.',
+        tamTon: 'Tam./Ton.',
         produto: 'Produto',
         maleta: 'Maleta',
         qtd: 'Qtd.',
@@ -1292,7 +1301,7 @@ export const TEXTOS_PT = {
       valorLiquido: 'Valor Líq. (VD − comissão)',
       pendenciasAnteriores: 'Pendências anteriores',
       totalAReceber: 'Total a receber',
-      recibo: (n: string) => `Recibo nº ${n}`,
+      recibo: (n: string) => n,
       pagoPorForma: 'Pago',
       totalPago: 'Total pago',
       ficouDevendo: 'Ficou devendo',

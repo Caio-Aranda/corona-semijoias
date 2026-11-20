@@ -3,6 +3,7 @@ import { abrirBancoLocal, type BancoAberto, gravar } from '../banco/banco-local'
 import {
   TABELAS_DA_RECARGA_DIRIGIDA_V9,
   TABELAS_DA_RECARGA_DIRIGIDA_V10,
+  TABELAS_DA_RECARGA_DIRIGIDA_V12,
   MIGRACOES,
   TABELAS_DA_RECARGA_DIRIGIDA_V4,
   TABELAS_DA_RECARGA_DIRIGIDA_V6,
@@ -29,7 +30,12 @@ const V7_NOVAS = TABELAS_DA_RECARGA_DIRIGIDA_V7.filter((t) => t !== 'acertos');
 
 /** A migração local 9 acrescenta as suas tabelas ao FIM da marca da recarga (sem repetir as que já estavam nela). */
 const comV9 = (marca: readonly string[]): string[] => [
-  ...new Set([...marca, ...TABELAS_DA_RECARGA_DIRIGIDA_V9, ...TABELAS_DA_RECARGA_DIRIGIDA_V10]),
+  ...new Set([
+    ...marca,
+    ...TABELAS_DA_RECARGA_DIRIGIDA_V9,
+    ...TABELAS_DA_RECARGA_DIRIGIDA_V10,
+    ...TABELAS_DA_RECARGA_DIRIGIDA_V12,
+  ]),
 ];
 
 const limpar: (() => void | Promise<void>)[] = [];
@@ -100,7 +106,7 @@ describe('migração local 4', () => {
       db.close();
     });
     expect(Number(db.pragma('user_version', { simple: true }))).toBe(VERSAO_DO_BANCO);
-    expect(VERSAO_DO_BANCO).toBe(10);
+    expect(VERSAO_DO_BANCO).toBe(12);
     // A migração 9 tira as cópias do servidor dos clientes que não são do representante (o diretório da loja, ADR-0016, item 4).
     const { clientes: clientesDepois, ...restoDepois } = contagem(db);
     const { clientes: clientesAntes, ...restoAntes } = contagemAntes;

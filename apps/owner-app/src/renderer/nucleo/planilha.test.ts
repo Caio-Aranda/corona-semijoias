@@ -188,3 +188,41 @@ describe('prévia da importação', () => {
     expect(analisarPlanilha([], CAT)).toMatchObject({ tipo: 'erro' });
   });
 });
+
+describe('coluna opcional Tam./Ton. (tarefa 9.8)', () => {
+  const comTamTon = [...CABECALHO, 'Tam./Ton.'];
+
+  it('sem a coluna a planilha continua valendo e a linha fica sem Tam./Ton.', () => {
+    const r = analisarPlanilha([CABECALHO, ['001', 'Anel', 'Anéis', '10,00', '30,00']], CAT);
+    expect(r.tipo).toBe('ok');
+    if (r.tipo === 'ok') expect(r.linhas[0]?.tamTon).toBeUndefined();
+  });
+
+  it('com a coluna (nos dois idiomas), lê o texto de cada linha; vazio fica sem valor', () => {
+    for (const titulo of ['Tam./Ton.', 'Tam Ton', 'Tamanho/Tom', 'Talle/Tono']) {
+      const r = analisarPlanilha(
+        [
+          [...CABECALHO, titulo],
+          ['001', 'Anel', 'Anéis', '10,00', '30,00', ' 17 '],
+          ['002', 'Brinco', 'Brincos', '5,00', '12,00', ''],
+        ],
+        CAT,
+      );
+      expect(r.tipo, titulo).toBe('ok');
+      if (r.tipo === 'ok') {
+        expect(r.linhas[0]?.tamTon).toBe('17');
+        expect(r.linhas[1]?.tamTon).toBeUndefined();
+        expect(r.linhas[0]?.motivo).toBeUndefined();
+      }
+    }
+  });
+
+  it('mais de 30 letras recusa só aquela linha', () => {
+    const r = analisarPlanilha(
+      [comTamTon, ['001', 'Anel', 'Anéis', '10,00', '30,00', 'x'.repeat(31)]],
+      CAT,
+    );
+    expect(r.tipo).toBe('ok');
+    if (r.tipo === 'ok') expect(r.linhas[0]?.motivo).toMatch(/Tam\.\/Ton\./);
+  });
+});

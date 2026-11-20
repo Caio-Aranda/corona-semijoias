@@ -70,10 +70,11 @@ public class ProdutosDaDonaController {
             @NotNull(message = Mensagens.OBRIGATORIO) BigDecimal precoCusto,
             Integer estoqueMinimo,
             Integer version,
-            List<@Valid PedidoDeCodigo> codigos) {
+            List<@Valid PedidoDeCodigo> codigos,
+            @Size(max = 30, message = Mensagens.LIMITE_CURTO) String tamTon) {
 
         Dados dados() {
-            return new Dados(nome, referencia, categoriaId, fornecedorId, precoVenda, precoCusto, estoqueMinimo);
+            return new Dados(nome, referencia, categoriaId, fornecedorId, precoVenda, precoCusto, estoqueMinimo, tamTon);
         }
     }
 
@@ -93,7 +94,7 @@ public class ProdutosDaDonaController {
     public record Resposta(UUID id, int version, String nome, String referencia, UUID categoriaId, UUID fornecedorId,
             BigDecimal precoVenda, BigDecimal precoCusto, int estoqueMinimo, int estoqueAtual, boolean ativo,
             List<RespostaDeCodigo> codigos, FotoPrincipal fotoPrincipal, int emMaletas,
-            List<PecasEmMaletas.DoVendedor> vendedoresEmMaletas) {
+            List<PecasEmMaletas.DoVendedor> vendedoresEmMaletas, String tamTon) {
 
         /** {@code emMaletas}: quantas unidades estão nas maletas dos vendedores, e com quem (só da dona; item 13). */
         static Resposta de(Detalhe d, PecasEmMaletas.Situacao maletas) {
@@ -101,7 +102,7 @@ public class ProdutosDaDonaController {
             return new Resposta(p.getId(), p.getVersion(), p.getNome(), p.getReferencia(), p.getCategoriaId(),
                     p.getFornecedorId(), p.getPrecoVenda(), d.precoCusto(), p.getEstoqueMinimo(), p.getEstoqueAtual(),
                     p.isAtivo(), d.codigos().stream().map(RespostaDeCodigo::de).toList(),
-                    FotoPrincipal.de(p.getFotoPrincipalHash()), maletas.total(), maletas.vendedores());
+                    FotoPrincipal.de(p.getFotoPrincipalHash()), maletas.total(), maletas.vendedores(), p.getTamTon());
         }
     }
 

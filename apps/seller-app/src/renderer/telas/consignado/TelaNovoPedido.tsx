@@ -256,6 +256,7 @@ export function TelaNovoPedido({ ponte, aoVoltar, aoAbrirPedido }: TelaNovoPedid
               <tr>
                 <th scope="col">{T.colunas.ref}</th>
                 <th scope="col">{T.colunas.produto}</th>
+                <th scope="col">{T.colunas.tamTon}</th>
                 <th scope="col">{T.colunas.maleta}</th>
                 <th scope="col" className="cs-numero">
                   {T.colunas.qtd}
@@ -272,7 +273,7 @@ export function TelaNovoPedido({ ponte, aoVoltar, aoAbrirPedido }: TelaNovoPedid
             <tbody>
               {atual.itens.length === 0 ? (
                 <tr>
-                  <td colSpan={7}>{T.semPecas}</td>
+                  <td colSpan={8}>{T.semPecas}</td>
                 </tr>
               ) : (
                 atual.itens.map((i) => (
@@ -284,6 +285,7 @@ export function TelaNovoPedido({ ponte, aoVoltar, aoAbrirPedido }: TelaNovoPedid
                         {i.nome}
                       </span>
                     </td>
+                    <td>{i.tamTon ?? ''}</td>
                     <td>{i.maleta}</td>
                     <td className="cs-numero">{i.quantidade}</td>
                     <td className="cs-numero">{reais(i.precoUnitario)}</td>

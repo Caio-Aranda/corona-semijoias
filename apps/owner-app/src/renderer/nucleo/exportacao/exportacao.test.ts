@@ -319,3 +319,36 @@ describe('relatório em partes (secoes)', () => {
     ]);
   });
 });
+
+describe('Fechamento da maleta: Dólar e Guarani nos totais de dinheiro (9.8)', () => {
+  it('o total que já veio convertido do servidor sai em Real, Dólar e Guarani; sem cotação, só o Real', () => {
+    const colunas = ['a', 'b', 'c', 'd'].map((chave) => ({
+      chave,
+      titulo: chave.toUpperCase(),
+      tipo: 'texto' as const,
+    }));
+    const grade = montarGrade(
+      pedido({
+        colunas,
+        linhas: [{ a: 'x', b: 'y', c: 'z', d: 'w' }],
+        totais: [
+          {
+            chave: 'vd',
+            rotulo: 'Valor vendido',
+            quantidade: 1,
+            valorEmReais: '300.00',
+            valorEmDolar: '50.00',
+            valorEmGuarani: '250000',
+          },
+          { chave: 'pend', rotulo: 'Pendências', quantidade: 1, valorEmReais: '200.00' },
+        ],
+        totaisDeValor: {},
+        secoes: [{ titulo: 'Dinheiro', totais: ['vd', 'pend'] }],
+      }),
+    );
+    const vd = grade.rodape.find((l) => l[0]?.v === 'Valor vendido')!;
+    expect(vd.map((c) => c.v).slice(1, 4)).toEqual(['300.00', 'US$ 50.00', 'Gs. 250000']);
+    const pend = grade.rodape.find((l) => l[0]?.v === 'Pendências')!;
+    expect(pend.map((c) => c.v).slice(1, 4)).toEqual(['200.00', '', '']);
+  });
+});

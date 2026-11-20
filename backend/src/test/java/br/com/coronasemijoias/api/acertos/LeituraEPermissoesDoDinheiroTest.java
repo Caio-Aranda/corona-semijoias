@@ -182,7 +182,8 @@ class LeituraEPermissoesDoDinheiroTest extends ApoioDoFechamento {
                 new BigDecimal(extrato.get("saldoAnterior").asString()).add(soma));
         assertThat(new BigDecimal(extrato.get("saldoFinal").asString())).isEqualByComparingTo(
                 jdbc.queryForObject("SELECT coalesce(sum(valor), 0) FROM corona.lancamentos_caixa WHERE data_lancamento <= ?", BigDecimal.class, hoje));
-        assertThat(extrato.get("lancamentos").toString()).contains("Repasse do vendedor");
+        assertThat(extrato.get("lancamentos").toString()).contains("Repasse do representante").contains("Recebimento do representante")
+                .doesNotContain("do vendedor");
     }
 
     // --- a ficha do acerto ---

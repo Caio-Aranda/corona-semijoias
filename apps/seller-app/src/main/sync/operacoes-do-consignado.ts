@@ -72,23 +72,35 @@ function exigirClienteDoRepresentante(db: BancoAberto, clienteId: string): void 
 
 // --- semana e contador ---
 
-/** O próximo número `semana-sequência` da semana: um contador só para notas e recibos (ADR-0016, item 3). */
-export function proximaSequencia(db: BancoAberto, semanaId: string): number {
+/**
+ * O próximo número `semana-sequência` do tipo: nota e recibo têm contador próprio na mesma semana (ADR-0016, item 3 e D2).
+ * Nota: o maior entre o contador das notas e a maior nota do espelho mais um. Recibo: o maior entre o contador dos recibos
+ * e o maior recibo do espelho mais um (na troca de computador o espelho vem do servidor, sem contador).
+ */
+export function proximaSequencia(
+  db: BancoAberto,
+  semanaId: string,
+  tipo: 'NOTA' | 'RECIBO',
+): number {
+  const tabela = tipo === 'NOTA' ? 'notas_consignado' : 'recibos_consignado';
+  const coluna = tipo === 'NOTA' ? 'proxima_sequencia' : 'proxima_sequencia_recibo';
   const noEspelho = db
-    .prepare(
-      `SELECT max(m) AS m FROM (
-         SELECT max(sequencia) AS m FROM notas_consignado WHERE semana_id = ?
-         UNION ALL SELECT max(sequencia) FROM recibos_consignado WHERE semana_id = ?)`,
-    )
-    .get(semanaId, semanaId) as { m: number | null };
+    .prepare(`SELECT max(sequencia) AS m FROM ${tabela} WHERE semana_id = ?`)
+    .get(semanaId) as { m: number | null };
   const contador = db
-    .prepare('SELECT proxima_sequencia AS p FROM contadores_da_semana WHERE semana_id = ?')
-    .get(semanaId) as { p: number } | undefined;
+    .prepare(`SELECT ${coluna} AS p FROM contadores_da_semana WHERE semana_id = ?`)
+    .get(semanaId) as { p: number | null } | undefined;
   const proxima = Math.max(contador?.p ?? 1, (noEspelho.m ?? 0) + 1);
-  db.prepare(
-    `INSERT INTO contadores_da_semana (semana_id, proxima_sequencia) VALUES (?, ?)
-     ON CONFLICT (semana_id) DO UPDATE SET proxima_sequencia = excluded.proxima_sequencia`,
-  ).run(semanaId, proxima + 1);
+  if (tipo === 'NOTA')
+    db.prepare(
+      `INSERT INTO contadores_da_semana (semana_id, proxima_sequencia) VALUES (?, ?)
+       ON CONFLICT (semana_id) DO UPDATE SET proxima_sequencia = excluded.proxima_sequencia`,
+    ).run(semanaId, proxima + 1);
+  else
+    db.prepare(
+      `INSERT INTO contadores_da_semana (semana_id, proxima_sequencia, proxima_sequencia_recibo) VALUES (?, 1, ?)
+       ON CONFLICT (semana_id) DO UPDATE SET proxima_sequencia_recibo = excluded.proxima_sequencia_recibo`,
+    ).run(semanaId, proxima + 1);
   return proxima;
 }
 
@@ -431,7 +443,7 @@ function gravarNovaNota(
 ): { notaId: string; numero: { semana: number; sequencia: number } } {
   const semana = semanaAtual(db);
   if (!semana) return recusar('SEM_SEMANA_ABERTA');
-  const sequencia = proximaSequencia(db, semana.id);
+  const sequencia = proximaSequencia(db, semana.id, 'NOTA');
   const saidaEm = agora.toISOString();
   inserir(db, 'notas_consignado', p.id, p.id, {
     semana_id: semana.id,
@@ -684,7 +696,7 @@ export interface PreviaDoAcerto {
 /** A conta do acerto antes de salvar (só leitura): as mesmas fórmulas do servidor. */
 export function previaDoAcerto(
   db: BancoAberto,
-  p: Pick<AcertoParaEnviar, 'notaId' | 'devolvidos' | 'comissaoPercentual' | 'formas'>,
+  p: Pick<AcertoParaEnviar, 'notaId' | 'devolvidos' | 'comissaoPercentual' | 'formas' | 'data'>,
 ): PreviaDoAcerto {
   const nota = acharNota(db, p.notaId);
   if (!nota) return recusar('NOTA_NAO_ENCONTRADA');
@@ -782,13 +794,19 @@ export function registrarAcerto(
   const totalAReceber = exigirCentavos(previa.calculo.totalAReceber);
   if (pago > totalAReceber) return recusar('PAGO_ACIMA_DO_DEVIDO');
 
-  const acertadoEm = agora.toISOString();
+  // A Data do acerto (§23.8): hoje ou um dia que já passou, nunca antes do dia da saída da nota; o momento do lançamento
+  // (`registrado_em`) é a chave da ordem dos débitos.
+  const acertadoEm = momentoDoLancamento(agora, p.data, 'DATA_DO_ACERTO_INVALIDA');
+  if (p.data !== undefined && nota.saida_em && p.data < diaEmBrasilia(nota.saida_em))
+    return recusar('DATA_DO_ACERTO_ANTES_DA_SAIDA');
+  const registradoEm = agora.toISOString();
   const bruto = exigirCentavos(previa.calculo.bruto);
   const c = previa.calculo;
   inserir(db, 'acertos_nota', p.id, p.id, {
     nota_id: nota.id,
     semana_id: semana.id,
     acertado_em: acertadoEm,
+    registrado_em: registradoEm,
     comissao_percentual: previa.comissaoPercentual,
     itens_dx: c.itensDx,
     itens_dv: c.itensDv,
@@ -843,7 +861,7 @@ export function registrarAcerto(
   let recibo:
     { id: string; sequencia: number; formas: { forma: string; valor: string }[] } | undefined;
   if (pago > 0n) {
-    const sequencia = proximaSequencia(db, semana.id);
+    const sequencia = proximaSequencia(db, semana.id, 'RECIBO');
     gravarRecibo(db, agora, p.id, {
       id: p.reciboId,
       clienteId: nota.cliente_id,
@@ -851,6 +869,7 @@ export function registrarAcerto(
       sequencia,
       acertoId: p.id,
       formas,
+      pagoEm: acertadoEm,
     });
     recibo = {
       id: p.reciboId,
@@ -879,10 +898,12 @@ export function registrarAcerto(
       id: p.id,
       notaId: nota.id,
       semanaId: semana.id,
-      acertadoEm,
+      acertadoEm: registradoEm,
       comissaoPercentual: previa.comissaoPercentual,
       devolvidos,
       ...(recibo ? { recibo } : {}),
+      // Hoje é o mesmo que sem data: a operação sai como as de antes (mesmo resumo no servidor).
+      ...(p.data && p.data !== diaEmBrasilia(agora) ? { dataDoAcerto: p.data } : {}),
       visto: {
         valorVd: c.valorVd,
         comissao: c.comissao,
@@ -902,14 +923,18 @@ export function registrarAcerto(
 }
 
 /**
- * O instante que vale para o pagamento: sem data, agora; a data de hoje, agora; um dia que já passou, meio-dia desse dia em
- * Brasília (a mesma regra do servidor, que confere de novo). Depois de hoje é recusado.
+ * O instante que vale para a data escolhida (pagamento ou acerto): sem data, agora; a data de hoje, agora; um dia que já passou,
+ * meio-dia desse dia em Brasília (a mesma regra do servidor, que confere de novo). Depois de hoje é recusado.
  */
-function momentoDoPagamento(agora: Date, data: string | undefined): string {
+function momentoDoLancamento(
+  agora: Date,
+  data: string | undefined,
+  codigoDeRecusa: 'DATA_DO_PAGAMENTO_INVALIDA' | 'DATA_DO_ACERTO_INVALIDA',
+): string {
   if (data === undefined) return agora.toISOString();
-  if (!dataValida(data)) return recusar('DATA_DO_PAGAMENTO_INVALIDA');
+  if (!dataValida(data)) return recusar(codigoDeRecusa);
   const hoje = diaEmBrasilia(agora);
-  if (data > hoje) return recusar('DATA_DO_PAGAMENTO_INVALIDA');
+  if (data > hoje) return recusar(codigoDeRecusa);
   if (data === hoje) return agora.toISOString();
   return new Date(`${data}T12:00:00-03:00`).toISOString();
 }
@@ -930,8 +955,8 @@ export function registrarPagamento(
   const pendencia = debitos.reduce((s, d) => s + d.saldo, 0n);
   if (pendencia === 0n) return recusar('CLIENTE_SEM_PENDENCIA');
   if (pago > pendencia) return recusar('PAGO_ACIMA_DO_DEVIDO');
-  const sequencia = proximaSequencia(db, semana.id);
-  const pagoEm = momentoDoPagamento(agora, p.data);
+  const sequencia = proximaSequencia(db, semana.id, 'RECIBO');
+  const pagoEm = momentoDoLancamento(agora, p.data, 'DATA_DO_PAGAMENTO_INVALIDA');
   gravarRecibo(db, agora, p.id, {
     id: p.id,
     clienteId: p.clienteId,

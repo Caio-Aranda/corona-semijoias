@@ -81,7 +81,7 @@ public class OperacoesDoConsignado {
     }
 
     public record DadosDoAcerto(UUID id, UUID notaId, UUID semanaId, Instant acertadoEm, BigDecimal comissaoPercentual,
-            List<Devolvido> devolvidos, ReciboDoAcerto recibo, Visto visto) {
+            List<Devolvido> devolvidos, ReciboDoAcerto recibo, Visto visto, LocalDate dataDoAcerto) {
     }
 
     public record DadosDoPagamento(UUID id, UUID clienteId, UUID semanaId, Integer sequencia, Instant pagoEm, List<FormaPaga> formas,
@@ -271,6 +271,9 @@ public class OperacoesDoConsignado {
                     campo(s, "devendo", dinheiro(v.ficouDevendo()));
                 }
                 s.append("}|");
+                if (d.dataDoAcerto() != null) {
+                    campo(s, "dataDoAcerto", d.dataDoAcerto());
+                }
             }
             case DadosDoPagamento d -> {
                 campo(s, "id", d.id());
@@ -390,7 +393,7 @@ public class OperacoesDoConsignado {
             case DadosDaTrocaNaNota d -> notas.trocar(c, new Troca(d.id(), d.notaId(), d.volta(), d.entra()));
             case DadosDaRemarcacao d -> notas.remarcar(c, new Remarcacao(d.id(), d.notaId(), d.dataCobranca()));
             case DadosDoAcerto d -> acertos.acertar(c, new NovoAcerto(d.id(), d.notaId(), d.semanaId(), d.comissaoPercentual(),
-                    d.devolvidos(), d.recibo(), d.visto()));
+                    d.devolvidos(), d.recibo(), d.visto(), d.dataDoAcerto()));
             case DadosDoPagamento d -> recibos.lancar(c, new NovoPagamento(d.id(), d.clienteId(), d.semanaId(), d.sequencia(),
                     d.formas(), d.pendenciaVista(), d.dataDoPagamento()));
             case DadosDoEstornoDoAcerto d -> acertos.estornar(c, new EstornoDoAcerto(d.id(), d.acertoId(), d.motivo()));

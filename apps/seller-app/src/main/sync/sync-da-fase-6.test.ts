@@ -3,6 +3,7 @@ import { abrirBancoLocal, type BancoAberto, gravar } from '../banco/banco-local'
 import {
   TABELAS_DA_RECARGA_DIRIGIDA_V9,
   TABELAS_DA_RECARGA_DIRIGIDA_V10,
+  TABELAS_DA_RECARGA_DIRIGIDA_V12,
   MIGRACOES,
   TABELAS_DA_RECARGA_DIRIGIDA_V3,
   TABELAS_SINCRONIZAVEIS,
@@ -54,7 +55,12 @@ const MARCA_DO_BANCO_V2_COM_CURSOR = [
 
 /** A migração local 9 acrescenta as suas tabelas ao FIM da marca da recarga (sem repetir as que já estavam nela). */
 const comV9 = (marca: readonly string[]): string[] => [
-  ...new Set([...marca, ...TABELAS_DA_RECARGA_DIRIGIDA_V9, ...TABELAS_DA_RECARGA_DIRIGIDA_V10]),
+  ...new Set([
+    ...marca,
+    ...TABELAS_DA_RECARGA_DIRIGIDA_V9,
+    ...TABELAS_DA_RECARGA_DIRIGIDA_V10,
+    ...TABELAS_DA_RECARGA_DIRIGIDA_V12,
+  ]),
 ];
 
 const limpar: (() => void | Promise<void>)[] = [];
@@ -209,7 +215,7 @@ describe('migração local 3', () => {
       db.close();
     });
     expect(Number(db.pragma('user_version', { simple: true }))).toBe(VERSAO_DO_BANCO);
-    expect(VERSAO_DO_BANCO).toBe(10);
+    expect(VERSAO_DO_BANCO).toBe(12);
     // A migração 9 tira as cópias do servidor dos clientes que não são do representante (o diretório da loja, ADR-0016, item 4).
     const { clientes: clientesDepois, ...restoDepois } = contagem(db);
     const { clientes: clientesAntes, ...restoAntes } = contagemAntes;
@@ -250,8 +256,8 @@ describe('migração local 3', () => {
     expect(lerEstado(migrado, CHAVES.recargaDirigida)).toBeNull();
     expect(Number(migrado.pragma('user_version', { simple: true }))).toBe(VERSAO_DO_BANCO);
 
-    // O exemplo da versão 1 tinha cursor: marca (as onze da 3, as duas da 4, as duas da 6, as quatro da 7 e a da 8).
-    expect(tabelasDaRecargaDirigida(abrirExemploMigrado(1).db)).toHaveLength(33);
+    // O exemplo da versão 1 tinha cursor: marca (as onze da 3, as duas da 4, as duas da 6, as quatro da 7, a da 8 e os produtos da 12).
+    expect(tabelasDaRecargaDirigida(abrirExemploMigrado(1).db)).toHaveLength(34);
   });
 });
 

@@ -1032,6 +1032,14 @@ public enum CodigoErro {
             "A data do pagamento não pode ser depois de hoje.",
             "A data do pagamento não pode ser depois de hoje. Escolha hoje ou um dia que já passou."),
 
+    DATA_DO_ACERTO_NO_FUTURO(
+            "A data do acerto não pode ser depois de hoje.",
+            "A data do acerto não pode ser depois de hoje. Escolha hoje ou um dia que já passou."),
+
+    DATA_DO_ACERTO_ANTES_DA_SAIDA(
+            "A data do acerto não pode ser antes do dia em que a nota saiu.",
+            "A data do acerto não pode ser antes do dia em que a nota saiu. Escolha o dia da saída ou um dia depois dele."),
+
     CONSIGNADO_JA_REGISTRADO_DIFERENTE(
             "Este registro já foi feito com outros dados.",
             "Este registro já foi feito com outros dados. Confira os pedidos e os acertos antes de lançar de novo."),

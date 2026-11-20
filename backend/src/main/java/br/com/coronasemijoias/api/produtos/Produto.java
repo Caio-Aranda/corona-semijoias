@@ -22,6 +22,10 @@ public class Produto extends EntidadeSincronizavel {
     @Column(name = "referencia")
     private String referencia;
 
+    /** Tamanho ou tom da peça (texto curto, opcional). Sai nas notas e nos relatórios do consignado. */
+    @Column(name = "tam_ton")
+    private String tamTon;
+
     @Column(name = "categoria_id", nullable = false)
     private UUID categoriaId;
 
@@ -64,6 +68,10 @@ public class Produto extends EntidadeSincronizavel {
         this.estoqueMinimo = estoqueMinimo;
     }
 
+    public void definirTamTon(String tamTon) {
+        this.tamTon = tamTon;
+    }
+
     public void definirEstoqueMinimo(int estoqueMinimo) {
         this.estoqueMinimo = estoqueMinimo;
     }
@@ -78,6 +86,10 @@ public class Produto extends EntidadeSincronizavel {
 
     public String getReferencia() {
         return referencia;
+    }
+
+    public String getTamTon() {
+        return tamTon;
     }
 
     public UUID getCategoriaId() {

@@ -119,9 +119,10 @@ class ServicoDeRecibosTest extends ApoioDoConsignado {
         Throwable alheio = catchThrowable(() -> recibos.lancar(ctx(outro),
                 new NovoPagamento(UUID.randomUUID(), t.cliente(), semanaDoOutro, 1, List.of(paga("PIX", "10.00")), null, null)));
         assertThat(codigoDoErro(alheio)).isEqualTo("CLIENTE_DE_OUTRO_VENDEDOR");
-        // O número 3 já é da nota 3 desta semana.
+        // O recibo 4 já foi usado (a nota 3 e o recibo 3 não disputam o número, 9.8).
+        recibos.lancar(ctx(t.v()), new NovoPagamento(UUID.randomUUID(), t.cliente(), t.semana(), 4, List.of(paga("PIX", "10.00")), null, null));
         Throwable repetido = catchThrowable(() -> recibos.lancar(ctx(t.v()),
-                new NovoPagamento(UUID.randomUUID(), t.cliente(), t.semana(), 3, List.of(paga("PIX", "10.00")), null, null)));
+                new NovoPagamento(UUID.randomUUID(), t.cliente(), t.semana(), 4, List.of(paga("PIX", "10.00")), null, null)));
         assertThat(codigoDoErro(repetido)).isEqualTo("NUMERO_REPETIDO");
     }
 

@@ -245,6 +245,47 @@ class ProdutosDaDonaTest extends TesteDeIntegracao {
     }
 
     @Test
+    void tamTonEOpcionalApareceNaDonaEPodeSerLimpado() throws Exception {
+        UUID cat = categoria();
+        // Sem Tam./Ton.: o produto nasce como sempre (campo vazio).
+        JsonNode sem = criar(corpo(cat, unico("Anel"), unico("AN")));
+        assertThat(sem.get("tamTon") == null || sem.get("tamTon").isNull()).isTrue();
+
+        Map<String, Object> comTam = corpo(cat, unico("Anel de ouro"), unico("AO"));
+        comTam.put("tamTon", "  17  ");
+        JsonNode p = criar(comTam);
+        assertThat(p.get("tamTon").asString()).isEqualTo("17");
+        String id = p.get("id").asString();
+
+        Map<String, Object> e = mapa("nome", "Anel de ouro", "categoriaId", cat, "precoVenda", "70.00", "precoCusto", "10.00",
+                "estoqueMinimo", 2, "tamTon", "Dourado", "version", 1);
+        JsonNode editado = ler(enviar("PUT", "/api/dona/produtos/" + id, dona(), e).andExpect(status().isOk()));
+        assertThat(editado.get("tamTon").asString()).isEqualTo("Dourado");
+        assertThat(jdbc.queryForObject("SELECT tam_ton FROM corona.produtos WHERE id = ?", String.class, UUID.fromString(id)))
+                .isEqualTo("Dourado");
+
+        // Vazio (ou só espaços) limpa o campo.
+        e.put("tamTon", "   ");
+        e.put("version", 2);
+        JsonNode limpo = ler(enviar("PUT", "/api/dona/produtos/" + id, dona(), e).andExpect(status().isOk()));
+        assertThat(limpo.get("tamTon") == null || limpo.get("tamTon").isNull()).isTrue();
+
+        // Edição sem tamTon no pedido não zera o que já existe.
+        e.put("tamTon", "Dourado");
+        e.put("version", 3);
+        enviar("PUT", "/api/dona/produtos/" + id, dona(), e).andExpect(status().isOk());
+        e.remove("tamTon");
+        e.put("version", 4);
+        JsonNode mantido = ler(enviar("PUT", "/api/dona/produtos/" + id, dona(), e).andExpect(status().isOk()));
+        assertThat(mantido.get("tamTon").asString()).isEqualTo("Dourado");
+
+        // Texto curto: acima de 30 letras é recusado.
+        e.put("tamTon", "x".repeat(31));
+        e.put("version", 5);
+        enviar("PUT", "/api/dona/produtos/" + id, dona(), e).andExpect(status().isBadRequest());
+    }
+
+    @Test
     void versaoVelhaDa409() throws Exception {
         UUID cat = categoria();
         JsonNode p = criar(corpo(cat, unico("Pulseira"), unico("PU")));

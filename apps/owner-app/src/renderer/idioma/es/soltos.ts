@@ -63,6 +63,7 @@ export const ES_TEXTOS_SOLTOS: NoMesmoFormato<typeof PT_TEXTOS_SOLTOS> = {
       `El código ${codigo} ya aparece en la línea ${linha}.`,
     faltaNome: 'Falta el nombre.',
     nomeLongo: 'El nombre es demasiado largo (hasta 200 letras).',
+    tamTonLongo: 'El Talle/Tono es demasiado largo (hasta 30 letras).',
     faltaCategoria: 'Falta la categoría.',
     categoriaNaoExiste: (categoria: string) =>
       `La categoría "${categoria}" no existe. Registre la categoría antes.`,

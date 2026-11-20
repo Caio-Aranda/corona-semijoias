@@ -32,7 +32,7 @@ public class ServicoDeProdutos extends ServicoDeCadastro<Produto> {
 
     /** Os campos de um produto como a dona preencheu. */
     public record Dados(String nome, String referencia, UUID categoriaId, UUID fornecedorId, BigDecimal precoVenda,
-            BigDecimal precoCusto, Integer estoqueMinimo) {
+            BigDecimal precoCusto, Integer estoqueMinimo, String tamTon) {
     }
 
     /** Produto com o custo e os códigos, pronto para a resposta da dona. */
@@ -101,8 +101,10 @@ public class ServicoDeProdutos extends ServicoDeCadastro<Produto> {
     public Detalhe criar(UUID id, Dados d, List<Pedido> pedidosDeCodigo, UUID quem) {
         Conferidos c = conferir(d);
         List<Codigo> conferidos = codigos.conferir(pedidosDeCodigo);
-        Produto produto = gravarNovo(new Produto(Validacoes.idDoPedido(id), c.nome, c.referencia, c.categoriaId,
-                c.fornecedorId, c.precoVenda, c.estoqueMinimo));
+        Produto novo = new Produto(Validacoes.idDoPedido(id), c.nome, c.referencia, c.categoriaId,
+                c.fornecedorId, c.precoVenda, c.estoqueMinimo);
+        novo.definirTamTon(c.tamTon);
+        Produto produto = gravarNovo(novo);
         custos.gravar(produto.getId(), c.precoCusto);
         codigos.substituir(produto.getId(), paraPedidos(conferidos));
         Map<String, Object> depois = new LinkedHashMap<>();
@@ -120,8 +122,13 @@ public class ServicoDeProdutos extends ServicoDeCadastro<Produto> {
         Produto atual = obter(id);
         BigDecimal vendaAntes = atual.getPrecoVenda();
         BigDecimal custoAntes = custos.obter(id).orElse(null);
-        Produto editado = editarComVersao(id, versaoLida, p -> p.alterar(c.nome, c.referencia, c.categoriaId,
-                c.fornecedorId, c.precoVenda, c.estoqueMinimo));
+        Produto editado = editarComVersao(id, versaoLida, p -> {
+            p.alterar(c.nome, c.referencia, c.categoriaId, c.fornecedorId, c.precoVenda, c.estoqueMinimo);
+            // Sem tamTon no pedido o campo fica como está; só o texto vazio explícito o limpa (como na 9.7).
+            if (d.tamTon() != null) {
+                p.definirTamTon(c.tamTon);
+            }
+        });
         custos.gravar(id, c.precoCusto);
         if (vendaAntes.compareTo(c.precoVenda) != 0) {
             auditoria.registrar(Ator.usuario(quem), "PRECO_VENDA_ALTERADO", "produtos", id,
@@ -201,7 +208,7 @@ public class ServicoDeProdutos extends ServicoDeCadastro<Produto> {
     // --- conferências ---
 
     private record Conferidos(String nome, String referencia, UUID categoriaId, UUID fornecedorId, BigDecimal precoVenda,
-            BigDecimal precoCusto, int estoqueMinimo) {
+            BigDecimal precoCusto, int estoqueMinimo, String tamTon) {
     }
 
     private Conferidos conferir(Dados d) {
@@ -215,8 +222,12 @@ public class ServicoDeProdutos extends ServicoDeCadastro<Produto> {
         if (minimo < 0) {
             throw Validacoes.recusar("estoqueMinimo", "O estoque mínimo não pode ser menor que zero.");
         }
+        String tamTon = Validacoes.limpar(d.tamTon());
+        if (tamTon != null && tamTon.length() > 30) {
+            throw Validacoes.recusar("tamTon", "Use no máximo 30 letras em Tam./Ton.");
+        }
         return new Conferidos(d.nome().strip(), Validacoes.limpar(d.referencia()), d.categoriaId(), d.fornecedorId(),
-                dinheiro("precoVenda", d.precoVenda()), dinheiro("precoCusto", d.precoCusto()), minimo);
+                dinheiro("precoVenda", d.precoVenda()), dinheiro("precoCusto", d.precoCusto()), minimo, tamTon);
     }
 
     private boolean existe(String tabela, UUID id) {

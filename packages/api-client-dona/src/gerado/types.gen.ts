@@ -2543,6 +2543,7 @@ export type PedidoDeProduto = {
     precoCusto: string;
     precoVenda: string;
     referencia?: string;
+    tamTon?: string;
     version?: number;
 };
 
@@ -2731,6 +2732,7 @@ export type ProdutosDaDonaControllerResposta = {
     precoCusto?: string;
     precoVenda?: string;
     referencia?: string;
+    tamTon?: string;
     vendedoresEmMaletas?: Array<PecasEmMaletasDoVendedor>;
     version?: number;
 };
@@ -3646,6 +3648,12 @@ export type ServicoDeRecebimentosDoVendedorPedidoDeRecebimento = {
     vendedorId?: string;
 };
 
+export type ServicoDoFechamentoDaMaletaConvertido = {
+    dolar?: string;
+    guarani?: string;
+    real?: string;
+};
+
 export type ServicoDoFechamentoDaMaletaLeitura = {
     id?: string;
     produtoId?: string;
@@ -3772,10 +3780,14 @@ export type ValorSubstituido = {
 };
 
 export type Valores = {
+    comissaoConvertida?: ServicoDoFechamentoDaMaletaConvertido;
     comissaoDosClientes?: string;
     pendenciasAReceber?: string;
+    pendenciasConvertidas?: ServicoDoFechamentoDaMaletaConvertido;
     recebido?: string;
+    recebidoConvertido?: ServicoDoFechamentoDaMaletaConvertido;
     vd?: string;
+    vdConvertido?: ServicoDoFechamentoDaMaletaConvertido;
 };
 
 export type VendaComAPeca = {

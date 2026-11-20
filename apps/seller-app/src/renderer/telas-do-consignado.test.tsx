@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import type {
@@ -418,6 +418,7 @@ describe('Novo Pedido', () => {
           maleta: 'M-ABC123',
           codigo: 'A-1',
           nome: 'Brinco A',
+          tamTon: null,
           fotoHash: null,
           quantidade: 2,
           precoUnitario: '200.00',
@@ -474,6 +475,7 @@ describe('Cobrança e acerto', () => {
         codigo: 'A-1',
         codigos: ['a-1'],
         nome: 'Brinco A',
+        tamTon: '17',
         fotoHash: null,
         dx: 10,
         dv: 0,
@@ -557,6 +559,12 @@ describe('Cobrança e acerto', () => {
     ).toBeInTheDocument();
   });
 
+  it('a tabela de peças tem a coluna Tam./Ton. e mostra o valor da peça (vazio se não tiver)', async () => {
+    await abrir();
+    expect(screen.getByRole('columnheader', { name: 'Tam./Ton.' })).toBeInTheDocument();
+    expect(screen.getByRole('cell', { name: '17' })).toBeInTheDocument();
+  });
+
   it('Concluir devolução lista as peças não lidas; Forma de Pagamento mostra a conta; Salvar manda só os fatos', async () => {
     const { u, chamadas } = await abrir({
       'consignado.acertoSalvar': () =>
@@ -602,6 +610,35 @@ describe('Cobrança e acerto', () => {
       'notaId',
       'reciboId',
     ]);
+  });
+
+  it('Dt. Acerto: hoje por padrão (nada vai na chamada); um dia que passou vai em data; antes da saída ou depois de hoje é barrado', async () => {
+    const { u, chamadas } = await abrir({
+      'consignado.acertoSalvar': () =>
+        ok({ reciboId: 'r', situacao: 'PENDENTE', nota: { ...nota, acerto: null } }),
+    });
+    await u.click(screen.getByRole('button', { name: 'Concluir devolução' }));
+    await u.click(
+      screen.getAllByRole('button', { name: 'Concluir devolução' }).at(-1) as HTMLElement,
+    );
+    const data = await screen.findByLabelText('Dt. Acerto');
+    expect(data).toHaveAttribute('max');
+    expect(data).toHaveAttribute('min', '2026-11-10');
+    fireEvent.change(data, { target: { value: '2026-11-05' } });
+    expect(
+      await screen.findByText(
+        'Escolha hoje ou um dia que já passou, a partir do dia em que a nota saiu.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Salvar acerto' })).toBeDisabled();
+    fireEvent.change(data, { target: { value: '2026-11-12' } });
+    await u.click(await screen.findByRole('button', { name: 'Salvar acerto' }));
+    await u.click(screen.getAllByRole('button', { name: 'Salvar acerto' }).at(-1) as HTMLElement);
+    const salvar = chamadas.find((c) => c.operacao === 'consignado.acertoSalvar') as Extract<
+      PedidoDeChamada,
+      { operacao: 'consignado.acertoSalvar' }
+    >;
+    expect(salvar.acerto.data).toBe('2026-11-12');
   });
 
   it('pagar mais que o total a receber é barrado na tela, e comissão acima de 40 avisa', async () => {
@@ -689,7 +726,7 @@ describe('Clientes e Lançar pagamento', () => {
             pagamentos: [
               {
                 reciboId: 'r1',
-                numero: '0000065-40',
+                numero: 'R 0000065-40',
                 pagoEm: null,
                 total: '300.00',
                 formas: [],
@@ -718,7 +755,7 @@ describe('Clientes e Lançar pagamento', () => {
     >;
     expect(p.pagamento.clienteId).toBe('c1');
     expect(p.pagamento.formas).toEqual([{ forma: 'PIX', valor: '300.00' }]);
-    expect(await screen.findByText('Pagamento lançado. Recibo 0000065-40.')).toBeInTheDocument();
+    expect(await screen.findByText('Pagamento lançado. R 0000065-40.')).toBeInTheDocument();
   });
 
   it('pagamento acima do que o cliente deve não deixa lançar', async () => {

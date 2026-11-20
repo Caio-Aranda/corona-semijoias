@@ -392,11 +392,11 @@ public class ServicoDeNotas {
         }
     }
 
-    /** Reserva semana-sequência (única por representante, entre notas e recibos). Outro id com o mesmo número é recusado. */
+    /** Reserva semana-sequência (única por representante e por tipo: nota e recibo têm contador próprio). Outro id com o mesmo número é recusado. */
     void reservarNumero(ContextoDoConsignado ctx, UUID semanaId, int sequencia, String tipo, UUID registroId) {
         Boolean usado = jdbc.queryForObject(
-                "SELECT EXISTS (SELECT 1 FROM corona.numeros_da_semana WHERE vendedor_id = ? AND semana_id = ? AND sequencia = ?)",
-                Boolean.class, ctx.vendedorId(), semanaId, sequencia);
+                "SELECT EXISTS (SELECT 1 FROM corona.numeros_da_semana WHERE vendedor_id = ? AND semana_id = ? AND tipo = ? AND sequencia = ?)",
+                Boolean.class, ctx.vendedorId(), semanaId, tipo, sequencia);
         if (Boolean.TRUE.equals(usado)) {
             throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.NUMERO_REPETIDO);
         }

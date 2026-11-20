@@ -876,6 +876,7 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
       legenda: 'Piezas del pedido',
       colunas: {
         ref: 'Ref.',
+        tamTon: 'Talle/Tono',
         produto: 'Producto',
         maleta: 'Maleta',
         qtd: 'Cant. DX',
@@ -934,6 +935,7 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
       itensLegenda: 'Piezas del pedido',
       colunasItens: {
         ref: 'Ref.',
+        tamTon: 'Talle/Tono',
         produto: 'Producto',
         maleta: 'Maleta',
         dx: 'Cant. DX',
@@ -965,6 +967,11 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
       comissaoPercentual: 'Comisión %',
       comissaoDoCadastro:
         'Viene del registro del cliente. Acá podés cambiarla solo para esta cobranza (hasta 40%).',
+      dataDoAcerto: 'Fecha de cobranza',
+      dataDoAcertoAjuda:
+        'Hoy, o un día que ya pasó (no antes del día en que salió la nota). Nunca después de hoy.',
+      dataDoAcertoInvalida: 'Elegí hoy o un día que ya pasó, desde el día en que salió la nota.',
+      semCotacaoDoDia: 'Sin cotización este día: los valores aparecen solo en reales.',
       comissaoRs: 'Comisión R$',
       bruto: 'Total a Cobrar Bruto',
       pendenciasTitulo: 'Pendientes anteriores',
@@ -984,7 +991,7 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
           : `El cliente queda debiendo ${devendo}. El pedido queda Pendiente y el valor se suma a la próxima cobranza.`,
       salvarBotao: 'Guardar cobranza',
       salvo: 'Cobranza guardada.',
-      recibo: (numero: string) => `Recibo ${numero}`,
+      recibo: (numero: string) => numero,
       jaAcertado: 'Este pedido ya fue cobrado.',
       acertoDe: (d: string) => `Cobranza hecha el ${d}`,
       estornar: 'Anular la cobranza',
@@ -1096,7 +1103,7 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
       lancarAjuda:
         'El valor descuenta primero la deuda más antigua. No puede pasar de lo que el cliente debe.',
       lancarBotao: 'Registrar pago',
-      lancado: (numero: string) => `Pago registrado. Recibo ${numero}.`,
+      lancado: (numero: string) => `Pago registrado. ${numero}.`,
       lancarTotal: 'Total del pago',
       lancarData: 'Fecha del pago',
       lancarDataAjuda: 'Hoy, o un día que ya pasó. Nunca después de hoy.',
@@ -1244,6 +1251,7 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
       periodo: (de: string, ate: string) => `Período: del ${de} al ${ate}`,
       colunas: {
         ref: 'Ref.',
+        tamTon: 'Talle/Tono',
         produto: 'Producto',
         maleta: 'Maleta',
         qtd: 'Cant.',
@@ -1288,7 +1296,7 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
       valorLiquido: 'Valor neto (VD − comisión)',
       pendenciasAnteriores: 'Deudas anteriores',
       totalAReceber: 'Total a cobrar',
-      recibo: (n: string) => `Recibo nº ${n}`,
+      recibo: (n: string) => n,
       pagoPorForma: 'Pagado',
       totalPago: 'Total pagado',
       ficouDevendo: 'Quedó debiendo',

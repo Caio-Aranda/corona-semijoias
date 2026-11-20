@@ -64,6 +64,7 @@ export const PT_TEXTOS_SOLTOS = {
       `O código ${codigo} já aparece na linha ${linha}.`,
     faltaNome: 'Falta o nome.',
     nomeLongo: 'O nome é longo demais (até 200 letras).',
+    tamTonLongo: 'O Tam./Ton. é longo demais (até 30 letras).',
     faltaCategoria: 'Falta a categoria.',
     categoriaNaoExiste: (categoria: string) =>
       `A categoria "${categoria}" não existe. Cadastre a categoria antes.`,

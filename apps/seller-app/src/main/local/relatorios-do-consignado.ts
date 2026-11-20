@@ -252,10 +252,11 @@ export class RelatoriosDoConsignado {
       linhas: n.linhas.map((l) => ({
         codigo: l.codigo ?? '',
         produto: l.nome,
+        tamTon: l.tamTon,
         maleta: l.maleta,
         quantidade: l.dx,
         preco: l.precoUnitario,
-        subTotal: l.subTotal,
+        subTotal: um(centavos(l.subTotal), taxas),
       })),
       itensDx: n.itensDx,
       totalDx: um(centavos(n.valorDx), taxas),
@@ -263,7 +264,7 @@ export class RelatoriosDoConsignado {
       pendencias: pendencias.map((d) => ({
         numeroDaNota: d.numeroDaNota,
         data: d.acertadoEm,
-        saldo: d.saldo,
+        saldo: um(centavos(d.saldo), this.taxasDoAcerto(d.acertoId)),
       })),
     };
   }
@@ -283,10 +284,11 @@ export class RelatoriosDoConsignado {
       .map((l) => ({
         codigo: l.codigo ?? '',
         produto: l.nome,
+        tamTon: l.tamTon,
         maleta: l.maleta,
         quantidade: l.vd,
         preco: l.precoUnitario,
-        valor: dinheiro(centavos(l.precoUnitario) * BigInt(l.vd)),
+        valor: um(centavos(l.precoUnitario) * BigInt(l.vd), t),
       }));
     const pago: FormaNoRelatorio[] = (a.recibo?.formas ?? []).map((f) => ({
       forma: f.forma,
@@ -353,8 +355,8 @@ export class RelatoriosDoConsignado {
         pendentes.push({
           numero: n.numero,
           situacao: n.situacao,
-          valorDx: a.valorDx,
-          valorVd: a.valorVd,
+          valorDx: um(centavos(a.valorDx), this.taxasDoAcerto(a.id)),
+          valorVd: um(centavos(a.valorVd), this.taxasDoAcerto(a.id)),
           ficouDevendo: um(centavos(saldo), this.taxasDoAcerto(a.id)),
         });
       } else if (n.acerto) {
@@ -375,12 +377,12 @@ export class RelatoriosDoConsignado {
           itensDx: a.itensDx,
           itensDv: a.itensDv,
           itensVd: a.itensVd,
-          valorDx: a.valorDx,
-          valorDv: a.valorDv,
-          valorVd: a.valorVd,
-          comissao: a.comissao,
-          valorLiquido: a.bruto,
-          pago: a.totalPago,
+          valorDx: um(centavos(a.valorDx), t),
+          valorDv: um(centavos(a.valorDv), t),
+          valorVd: um(centavos(a.valorVd), t),
+          comissao: um(centavos(a.comissao), t),
+          valorLiquido: um(centavos(a.bruto), t),
+          pago: um(centavos(a.totalPago), t),
         });
       } else {
         const t = this.taxasDaNota(n.id);
@@ -454,7 +456,7 @@ export class RelatoriosDoConsignado {
           produto: l.nome,
           maleta: l.maleta,
           quantidade: l.vd,
-          valor: dinheiro(valor),
+          valor: um(valor, t),
         });
       }
     }

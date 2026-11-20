@@ -1,4 +1,5 @@
 import { percentualDe, situacaoDaNota, textoDePorcentagem } from '@corona/shared/consignado';
+import { diaEmBrasilia } from '../../shared/garantia';
 import type {
   AcertoDaTela,
   ClienteCompleto,
@@ -34,6 +35,8 @@ import {
   acertoAtivoDaNota,
   acharNota,
   codigoDaMaleta,
+  cotacaoAteODia,
+  tamTonDoProduto,
   dataDeCobranca,
   type DebitoLocal,
   debitosDoCliente,
@@ -41,6 +44,7 @@ import {
   linhasDaNota,
   type NotaLocal,
   numeroDaNota,
+  numeroDoRecibo,
   pendenciaDoCliente,
   pracaDoRepresentante,
   semanaAtual,
@@ -296,9 +300,11 @@ export class ConsultasDoConsignado {
     codigo: string | null;
     fotoHash: string | null;
     codigos: string[];
+    tamTon: string | null;
   } {
     const p = pecaDoProduto(this.db(), produtoId);
     return {
+      tamTon: tamTonDoProduto(this.db(), produtoId),
       nome: p.nome,
       codigo: p.codigoFornecedor ?? p.codigo,
       fotoHash: p.fotoHash,
@@ -377,6 +383,7 @@ export class ConsultasDoConsignado {
         codigo: p.codigo,
         codigos: p.codigos,
         nome: p.nome,
+        tamTon: p.tamTon,
         fotoHash: p.fotoHash,
         dx: l.dx,
         dv: devolvido,
@@ -604,7 +611,7 @@ export class ConsultasDoConsignado {
       .all(id) as { forma: FormaDoConsignado; valor: string }[];
     return {
       id: r.id,
-      numero: numeroDaNota(r.semana, r.sequencia),
+      numero: numeroDoRecibo(r.semana, r.sequencia),
       pagoEm: r.pago_em,
       total: r.total ?? ZERO,
       formas,
@@ -702,6 +709,7 @@ export class ConsultasDoConsignado {
       totalPago: c.totalPago,
       ficouDevendo: c.ficouDevendo,
       debitos: r.debitos,
+      cotacao: cotacaoAteODia(this.db(), p.data ?? diaEmBrasilia(this.agora())),
     };
   }
 
@@ -870,7 +878,7 @@ export class ConsultasDoConsignado {
     }[];
     const pagamentos: PagamentoDoHistorico[] = recibos.map((r) => ({
       reciboId: r.id,
-      numero: numeroDaNota(r.semana, r.sequencia),
+      numero: numeroDoRecibo(r.semana, r.sequencia),
       pagoEm: r.pago_em,
       total: r.total ?? ZERO,
       formas: db
@@ -998,6 +1006,7 @@ export class ConsultasDoConsignado {
         maleta: codigoDaMaleta(this.db(), i.remessaId),
         codigo: p.codigo,
         nome: p.nome,
+        tamTon: p.tamTon,
         fotoHash: p.fotoHash,
         quantidade: i.quantidade,
         precoUnitario: i.precoUnitario,

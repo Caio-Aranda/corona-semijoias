@@ -79,7 +79,15 @@ const previa = (v: unknown): PreviaDoAcertoPedida | null => {
   const f = formas(v['formas']);
   const c = v['comissaoPercentual'];
   if (!d || !f || !ehTexto(c) || !PORCENTAGEM.test(c)) return null;
-  return { notaId: v['notaId'], devolvidos: d, comissaoPercentual: c, formas: f };
+  const data = v['data'];
+  if (data !== undefined && !(ehTexto(data) && DIA.test(data))) return null;
+  return {
+    notaId: v['notaId'],
+    devolvidos: d,
+    comissaoPercentual: c,
+    formas: f,
+    ...(data !== undefined ? { data } : {}),
+  };
 };
 
 const opcionalTexto = (v: Obj, chave: string, max: number): string | undefined | null => {

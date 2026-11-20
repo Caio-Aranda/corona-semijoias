@@ -144,16 +144,7 @@ public class ServicoDeRecibos {
      * servidor, não pelo do computador). A cotação do pagamento é a desse dia (ADR-0006).
      */
     Instant momentoDoPagamento(ContextoDoConsignado ctx, LocalDate data) {
-        if (data == null) {
-            return ctx.quando();
-        }
-        if (data.isAfter(LocalDate.now(BRASILIA)) || data.isAfter(LocalDate.ofInstant(ctx.quando(), BRASILIA))) {
-            throw new ErroDaApi(HttpStatus.UNPROCESSABLE_ENTITY, CodigoErro.DATA_DO_PAGAMENTO_NO_FUTURO);
-        }
-        if (data.equals(LocalDate.ofInstant(ctx.quando(), BRASILIA))) {
-            return ctx.quando();
-        }
-        return data.atTime(12, 0).atZone(BRASILIA).toInstant();
+        return MomentoDoLancamento.de(ctx, data, CodigoErro.DATA_DO_PAGAMENTO_NO_FUTURO);
     }
 
     void gravarRecibo(ContextoDoConsignado ctx, UUID id, UUID clienteId, UUID semanaId, int sequencia, UUID acertoId,
