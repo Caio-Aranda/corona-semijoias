@@ -314,7 +314,7 @@ PR em rascunho até passar tudo localmente. Branch `fix/consignado-ajustes-finai
 
 ## Leva 9: acabamentos do consignado (tarefa 9.8, issue 234, 20/11/2026)
 
-**Situação: plano (itens 1 e 3) no PR em rascunho, esperando aprovação.** Branch `feat/acabamentos-consignado-9-8`. Só documentação até o `[ORQUESTRADORA] APROVADO`: §23.2, §23.7, §23.8 (v1.30) e ADR-0016 (item 3, D2 decidida e "Ajustes da tarefa 9.8"). Itens 2, 4 e 5 entram na fase CÓDIGO sem plano próprio (não são críticos).
+**Situação: plano (itens 1 e 3) no PR 237 (rascunho), esperando aprovação.** Branch `feat/acabamentos-consignado-9-8`. Só documentação até o `[ORQUESTRADORA] APROVADO`: §23.2, §23.7, §23.8 (v1.30) e ADR-0016 (item 3, D2 decidida e "Ajustes da tarefa 9.8"). Itens 2, 4 e 5 entram na fase CÓDIGO sem plano próprio (não são críticos).
 
 ## Leva 9: correções do Corona Gestão (tarefa 9.7, issue 233, 20/11/2026)
 
