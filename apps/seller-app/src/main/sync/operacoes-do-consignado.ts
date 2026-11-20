@@ -779,6 +779,45 @@ function gravarRecibo(
     });
 }
 
+/**
+ * Todo "a aplicar" dos recibos valendo do cliente entra no débito mais antigo com saldo, do recibo mais antigo ao mais novo
+ * (a mesma regra do servidor, `DebitosDoCliente.reaplicarSobras`; ADR-0016, item 10). Roda no fim de cada acerto, pagamento e
+ * estorno, para a pendência na tela já ficar certa sem esperar os dados do servidor (que chegam iguais no próximo pull).
+ */
+function reaplicarSobras(
+  db: BancoAberto,
+  agora: Date,
+  operacaoId: string,
+  clienteId: string,
+): void {
+  const recibos = db
+    .prepare(
+      `SELECT r.id, r.total FROM recibos_consignado r
+        WHERE r.cliente_id = ? AND ${SQL_RECIBO_ATIVO('r')}
+        ORDER BY r.pago_em, r.id`,
+    )
+    .all(clienteId) as { id: string; total: string | null }[];
+  for (const r of recibos) {
+    const aplicado = db
+      .prepare('SELECT valor FROM aplicacoes_recibo WHERE recibo_id = ? AND deleted_at IS NULL')
+      .all(r.id) as { valor: string | null }[];
+    const sobra =
+      exigirCentavos(r.total ?? '0') -
+      aplicado.reduce((s, a) => s + exigirCentavos(a.valor ?? '0'), 0n);
+    if (sobra <= 0n) continue;
+    const debitos = debitosDoCliente(db, clienteId)
+      .filter((d) => d.saldo > 0n)
+      .map((d) => ({ id: d.acertoId, saldo: dinheiro(d.saldo) }));
+    if (debitos.length === 0) continue;
+    for (const a of aplicarPagamento(debitos, dinheiro(sobra)).aplicacoes)
+      inserir(db, 'aplicacoes_recibo', uuidV7(agora), operacaoId, {
+        recibo_id: r.id,
+        acerto_id: a.debitoId,
+        valor: a.valor,
+      });
+  }
+}
+
 /** Salvar o acerto: devolvidas voltam à maleta de onde saíram, o resto é vendido, o pago quita do mais antigo ao mais novo. */
 export function registrarAcerto(
   db: BancoAberto,
@@ -891,6 +930,7 @@ export function registrarAcerto(
         valor: a.valor,
       });
   }
+  reaplicarSobras(db, agora, p.id, nota.cliente_id);
   enfileirar(db, {
     operacaoId: p.id,
     tipo: 'ACERTO_NOTA',
@@ -991,6 +1031,7 @@ export function registrarPagamento(
     }),
     agora,
   });
+  reaplicarSobras(db, agora, p.id, p.clienteId);
   return { operacaoId: p.id, sequencia };
 }
 
@@ -1075,6 +1116,13 @@ export function estornarAcerto(
     }),
     agora,
   });
+  // O valor liberado entra no próximo débito (como o servidor, ao fim do estorno).
+  reaplicarSobras(
+    db,
+    agora,
+    p.id,
+    (acharNota(db, acerto.nota_id) as NonNullable<ReturnType<typeof acharNota>>).cliente_id,
+  );
   return { operacaoId: p.id };
 }
 
@@ -1086,10 +1134,13 @@ export function estornarRecibo(
 ): { operacaoId: string } {
   const motivo = motivoLimpo(p.motivo);
   const recibo = db
-    .prepare('SELECT id, acerto_id FROM recibos_consignado WHERE id = ? AND deleted_at IS NULL')
-    .get(p.reciboId) as { id: string; acerto_id: string | null } | undefined;
+    .prepare(
+      'SELECT id, acerto_id, cliente_id FROM recibos_consignado WHERE id = ? AND deleted_at IS NULL',
+    )
+    .get(p.reciboId) as { id: string; acerto_id: string | null; cliente_id: string } | undefined;
   if (!recibo) return recusar('RECIBO_NAO_ENCONTRADO');
   if (recibo.acerto_id) return recusar('RECIBO_DO_ACERTO');
+  const clienteDoRecibo = recibo.cliente_id;
   const ativo = db
     .prepare(`SELECT 1 FROM recibos_consignado r WHERE r.id = ? AND ${SQL_RECIBO_ATIVO('r')}`)
     .get(p.reciboId);
@@ -1106,6 +1157,7 @@ export function estornarRecibo(
     }),
     agora,
   });
+  reaplicarSobras(db, agora, p.id, clienteDoRecibo);
   return { operacaoId: p.id };
 }
 

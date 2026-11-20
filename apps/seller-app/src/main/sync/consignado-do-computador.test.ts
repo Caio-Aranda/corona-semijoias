@@ -927,6 +927,43 @@ describe('Dt. Acerto (tarefa 9.8): a data do acerto e a ordem dos débitos', () 
     expect(nota(notaB).situacao).toBe('FECHADO');
   });
 
+  it('estornar o acerto A devolve a sobra ao "a aplicar" e ela entra no débito mais antigo (mesmos números do servidor)', () => {
+    const ex = exemplos.sobraDepoisDeEstorno;
+    const { notaA, notaB } = duasNotas();
+    salvar(notaA, []);
+    agora = new Date('2026-11-10T14:00:00.000Z');
+    salvar(notaB, [{ forma: 'DINHEIRO', valor: ex.pagoNoAcertoB }]);
+    expect(nota(notaB).saldoDaNota).toBe(ex.esperado.saldoDeBAntesDoEstorno);
+
+    chamar({
+      operacao: 'consignado.estornarAcerto',
+      id: idDeTeste(14),
+      acertoId: nota(notaA).acerto?.id as string,
+      motivo: 'Contei errado',
+    });
+
+    expect(nota(notaB).saldoDaNota).toBe(ex.esperado.saldoDeBDepoisDoEstorno);
+    expect(nota(notaB).situacao).toBe(ex.esperado.situacaoDeBDepoisDoEstorno);
+    expect(clienteVisto().pendencia).toBe(ex.esperado.pendenciaDoClienteDepoisDoEstorno);
+    // O recibo de B tem 250,00; 200,00 valem em B (50,00 ficam "a aplicar": o cliente pagou a mais).
+    const valendo = b.db
+      .prepare(
+        `SELECT coalesce(sum(CAST(valor AS REAL)), 0) AS soma FROM aplicacoes_recibo WHERE deleted_at IS NULL AND acerto_id = ?`,
+      )
+      .get(nota(notaB).acerto?.id) as { soma: number };
+    expect(valendo.soma.toFixed(2)).toBe('200.00');
+    const total = (
+      b.db
+        .prepare('SELECT total FROM recibos_consignado WHERE acerto_id = ?')
+        .get(nota(notaB).acerto?.id) as {
+        total: string;
+      }
+    ).total;
+    expect((Number(total) - valendo.soma).toFixed(2)).toBe(
+      ex.esperado.aAplicarDoReciboDepoisDoEstorno,
+    );
+  });
+
   it('data passada grava meio-dia de Brasília, o lançamento fica em registrado_em e o recibo usa o mesmo dia', () => {
     const { notaB } = duasNotas();
     const r = salvar(notaB, [{ forma: 'DINHEIRO', valor: '50.00' }], '2026-11-08');
