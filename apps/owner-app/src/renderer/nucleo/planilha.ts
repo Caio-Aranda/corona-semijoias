@@ -177,7 +177,7 @@ export async function lerPlanilha(nome: string, bytes: Uint8Array): Promise<Tabe
 export const semAcento = (s: string): string =>
   s.normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toLowerCase().replace(/\s+/g, ' ');
 
-export type ColunaDaPlanilha = 'codigo' | 'nome' | 'categoria' | 'custo' | 'preco';
+export type ColunaDaPlanilha = 'codigo' | 'nome' | 'categoria' | 'custo' | 'preco' | 'tamTon';
 
 const APELIDOS: Record<ColunaDaPlanilha, string[]> = {
   codigo: ['codigo', 'cod', 'codigo da loja', 'codigo de barras', 'codigo de la tienda'],
@@ -203,6 +203,20 @@ const APELIDOS: Record<ColunaDaPlanilha, string[]> = {
     'precio de venta',
     'precio venta',
     'valor de venta',
+  ],
+  // Opcional (9.8): o tamanho ou o tom da peça.
+  tamTon: [
+    'tam./ton.',
+    'tam/ton',
+    'tam ton',
+    'tam.ton',
+    'tamanho/tom',
+    'tamanho ou tom',
+    'tamanho',
+    'tom',
+    'talle/tono',
+    'talle',
+    'tono',
   ],
 };
 
@@ -258,6 +272,8 @@ export interface LinhaLida {
   categoriaId?: string;
   custo?: string;
   preco?: string;
+  /** Tam./Ton. da peça (coluna opcional da planilha); ausente quando a coluna ou a célula está vazia. */
+  tamTon?: string;
   /** Motivo da recusa, em português; vazio quando a linha está boa. */
   motivo?: string;
 }
@@ -292,7 +308,8 @@ export function analisarPlanilha(
   const porNome = new Map(categorias.map((c) => [semAcento(c.nome), c]));
   const codigosVistos = new Map<string, number>();
   const linhas = dados.map((celulas, i): LinhaLida => {
-    const pegar = (c: ColunaDaPlanilha) => (celulas[colunas[c]!] ?? '').trim();
+    const pegar = (c: ColunaDaPlanilha) =>
+      colunas[c] === undefined ? '' : (celulas[colunas[c]] ?? '').trim();
     const l: LinhaLida = {
       linha: i + 2,
       codigo: normalizarCodigo(pegar('codigo')),
@@ -322,6 +339,9 @@ export function analisarPlanilha(
     const preco = lerDinheiroDaPlanilha(pegar('preco'));
     if (preco === null) recusar(SOLTOS.planilha.precoInvalido);
     else l.preco = preco;
+    const tamTon = pegar('tamTon');
+    if (tamTon.length > 30) recusar(SOLTOS.planilha.tamTonLongo);
+    else if (tamTon !== '') l.tamTon = tamTon;
     return l;
   });
   return { tipo: 'ok', linhas };
@@ -334,6 +354,8 @@ export interface ProdutoExistente {
   referencia?: string;
   fornecedorId?: string;
   estoqueMinimo?: number;
+  /** O Tam./Ton. que o produto já tem: a planilha sem esse valor não o apaga. */
+  tamTon?: string;
 }
 
 export interface LinhaDaPrevia extends LinhaLida {

@@ -48,6 +48,8 @@ export const ES_TEXTOS_DE_PRODUTOS: NoMesmoFormato<typeof PT_TEXTOS_DE_PRODUTOS>
     carregando: 'Buscando los datos...',
     nome: 'Nombre',
     referencia: 'Referencia',
+    tamTon: 'Talle/Tono',
+    tamTonAjuda: 'Talle o tono de la pieza, como "17" o "Dorado". Puede quedar en blanco.',
     categoria: 'Categoría',
     escolhaCategoria: 'Elija la categoría',
     escolhaCategoriaAviso: 'Elija la categoría del producto.',
@@ -145,7 +147,7 @@ export const ES_TEXTOS_DE_PRODUTOS: NoMesmoFormato<typeof PT_TEXTOS_DE_PRODUTOS>
   planilha: {
     titulo: 'Importar productos por planilla',
     ajuda:
-      'Elija una planilla de Excel (.xlsx) o un archivo CSV con las columnas código, nombre, categoría, costo y precio. Antes de guardar, usted ve lo que va a pasar con cada línea.',
+      'Elija una planilla de Excel (.xlsx) o un archivo CSV con las columnas código, nombre, categoría, costo y precio (y, si quiere, Talle/Tono). Antes de guardar, usted ve lo que va a pasar con cada línea.',
     escolher: 'Elegir planilla',
     outra: 'Elegir otra planilla',
     lendo: 'Leyendo la planilla...',

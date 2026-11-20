@@ -51,6 +51,8 @@ export const PT_TEXTOS_DE_PRODUTOS = {
     carregando: 'Buscando os dados...',
     nome: 'Nome',
     referencia: 'Referência',
+    tamTon: 'Tam./Ton.',
+    tamTonAjuda: 'Tamanho ou tom da peça, como "17" ou "Dourado". Pode ficar em branco.',
     categoria: 'Categoria',
     escolhaCategoria: 'Escolha a categoria',
     escolhaCategoriaAviso: 'Escolha a categoria do produto.',
@@ -149,7 +151,7 @@ export const PT_TEXTOS_DE_PRODUTOS = {
   planilha: {
     titulo: 'Importar produtos por planilha',
     ajuda:
-      'Escolha uma planilha do Excel (.xlsx) ou um arquivo CSV com as colunas código, nome, categoria, custo e preço. Antes de gravar, você vê o que vai acontecer com cada linha.',
+      'Escolha uma planilha do Excel (.xlsx) ou um arquivo CSV com as colunas código, nome, categoria, custo e preço (e, se quiser, Tam./Ton.). Antes de gravar, você vê o que vai acontecer com cada linha.',
     escolher: 'Escolher planilha',
     outra: 'Escolher outra planilha',
     lendo: 'Lendo a planilha...',
