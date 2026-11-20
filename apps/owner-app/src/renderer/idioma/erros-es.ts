@@ -377,7 +377,11 @@ export function erroDeBloqueio(mensagemDaApi: string | undefined): string {
     : 'Acceso bloqueado por unos minutos. Por seguridad, espere e intente de nuevo.';
 }
 
-/** Texto de PECA_NAO_E_DESTA_MALETA: o servidor diz, no fim da mensagem, de qual maleta é a peça ("Ela está na maleta 0007."). */
+/**
+ * Texto de PECA_NAO_E_DESTA_MALETA: o servidor diz, no fim da mensagem, de qual maleta é a peça ("Ela está na maleta 0007.").
+ * DEPENDE do texto em português do servidor (`ServicoDoFechamentoDaMaleta.pecaDeOutraMaleta`): se aquela frase mudar, mude
+ * a expressão daqui e o teste `espanhol-9-7.test.ts`. Sem a frase, sai o texto geral, sem a maleta.
+ */
 export function erroDePecaDeOutraMaleta(mensagemDaApi: string | undefined): string {
   const codigo = /na maleta (.+?)\.?$/.exec(mensagemDaApi ?? '')?.[1];
   return codigo

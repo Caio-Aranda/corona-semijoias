@@ -87,8 +87,20 @@ public class ServicoDeClientes extends ServicoDeCadastroAtivavel<Cliente> {
             }
             cliente.alterar(d.nome().strip(), doc.cpf(), nascimento, Validacoes.limpar(d.telefone()), Validacoes.limpar(d.whatsapp()),
                     Endereco.limpo(d.endereco()), Validacoes.limpar(d.observacoes()), atual != null ? atual : d.vendedorResponsavelId());
-            cliente.alterarConsignado(doc.documento(), doc.tipo(), d.indicadoPorClienteId(), indicadoPorNome(d),
-                    Validacoes.limpar(d.comoConheceu()), comissao);
+            // Só sobrescreve o que veio: quem edita sem mandar estes campos (ex.: outra tela) não apaga o que o representante preencheu.
+            boolean semDocumento = doc.documento() == null && doc.tipo() == null;
+            boolean documentoDeCpf = cliente.getDocumentoTipo() == null || "CPF".equals(cliente.getDocumentoTipo());
+            String documento = semDocumento && !documentoDeCpf ? cliente.getDocumento() : doc.documento();
+            String tipo = semDocumento && !documentoDeCpf ? cliente.getDocumentoTipo() : doc.tipo();
+            String indicadoPorNome = indicadoPorNome(d);
+            UUID indicadoPorId = d.indicadoPorClienteId();
+            if (indicadoPorId == null && indicadoPorNome == null) {
+                indicadoPorId = cliente.getIndicadoPorClienteId();
+                indicadoPorNome = cliente.getIndicadoPorNome();
+            }
+            String comoConheceu = Validacoes.limpar(d.comoConheceu());
+            cliente.alterarConsignado(documento, tipo, indicadoPorId, indicadoPorNome,
+                    comoConheceu != null ? comoConheceu : cliente.getComoConheceu(), comissao);
         });
     }
 

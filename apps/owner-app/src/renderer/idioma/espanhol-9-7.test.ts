@@ -60,6 +60,7 @@ describe('Fechamento da maleta em espanhol (tarefa 9.7)', () => {
     ]);
   });
 
+  // A maleta de origem vem do texto em português do servidor ("Ela está na maleta 0009."); ver erroDePecaDeOutraMaleta.
   it('peça de outra maleta: em espanhol diz de qual maleta é; sem a maleta, só que não é desta', () => {
     definirIdioma('es');
     expect(

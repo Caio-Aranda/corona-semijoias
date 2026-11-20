@@ -254,6 +254,8 @@ export const RELATORIOS_DE_MALETA: Record<NomeDoRelatorioDeMaleta, DefinicaoDeRe
       },
       {
         id: 'dinheiro',
+        // O idioma só muda ao reabrir a tela (o seletor recarrega a janela), então ler aqui, ao carregar o módulo, basta.
+        // Não usa o mapa de tradução porque "Dinheiro" lá já significa a forma de pagamento (Efectivo).
         rotulo: porIdioma('Dinero', 'Dinheiro'),
         comTabela: false,
         totais: ['vd', 'comissao', 'recebido', 'pendencias'],

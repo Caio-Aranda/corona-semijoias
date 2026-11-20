@@ -439,6 +439,22 @@ class CadastrosBasicosTest extends TesteDeIntegracao {
     }
 
     @Test
+    void editarSemMandarOsCamposDoConsignadoNaoApagaOQueJaExiste() throws Exception {
+        JsonNode criado = criar("/api/dona/clientes", mapa(
+                "nome", unico("Cliente preenchido"), "documento", "9.876.543", "documentoTipo", "CI",
+                "indicadoPorNome", "Dona Rosa", "comoConheceu", "Feira do bairro", "comissaoPercentual", "25"));
+        enviar("PUT", "/api/dona/clientes/" + criado.get("id").asString(), dona(),
+                mapa("nome", criado.get("nome").asString() + " Editado", "telefone", "67 3333-0000", "version", criado.get("version").asInt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.documento").value("9.876.543"))
+                .andExpect(jsonPath("$.documentoTipo").value("CI"))
+                .andExpect(jsonPath("$.indicadoPorNome").value("Dona Rosa"))
+                .andExpect(jsonPath("$.comoConheceu").value("Feira do bairro"))
+                .andExpect(jsonPath("$.comissaoPercentual").value("25.00"))
+                .andExpect(jsonPath("$.telefone").value("67 3333-0000"));
+    }
+
+    @Test
     void responsavelDoClienteNaoMudaDepoisDeDefinido() throws Exception {
         UUID primeiro = usuarios.criarCadastroDeVendedor();
         UUID outro = usuarios.criarCadastroDeVendedor();
