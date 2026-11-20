@@ -312,6 +312,10 @@ PR em rascunho até passar tudo localmente. Branch `fix/consignado-ajustes-finai
 - **Situação do cliente** (item 6): "O que já vendeu" lista só as notas Fechadas e seus totais; as notas acertadas ainda Pendentes aparecem em "O que falta", com quanto cada uma ainda deve.
 - **Não feito:** a data não vale para o pagamento feito dentro do Acerto (continua o momento do acerto); textos de dados antigos (ex.: categorias do caixa "Repasse do vendedor") não mudaram.
 
+## Leva 9: acabamentos do consignado (tarefa 9.8, issue 234, 20/11/2026)
+
+**Situação: plano (itens 1 e 3) no PR em rascunho, esperando aprovação.** Branch `feat/acabamentos-consignado-9-8`. Só documentação até o `[ORQUESTRADORA] APROVADO`: §23.2, §23.7, §23.8 (v1.30) e ADR-0016 (item 3, D2 decidida e "Ajustes da tarefa 9.8"). Itens 2, 4 e 5 entram na fase CÓDIGO sem plano próprio (não são críticos).
+
 ## Leva 9: correções do Corona Gestão (tarefa 9.7, issue 233, 20/11/2026)
 
 **Situação: PR 236 em rascunho (só testes locais; sem CI).** Branch `fix/correcoes-gestao-9-7`.

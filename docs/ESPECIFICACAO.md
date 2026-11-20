@@ -1,6 +1,6 @@
 # Especificação completa: Sistema de Semijoias Consignadas
 
-Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.29, 18/11/2026.
+Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.30, 20/11/2026.
 
 ## 1. Objetivo e contexto
 
@@ -773,6 +773,7 @@ Importação com nome de arquivo inválido, foto duplicada, arquivo corrompido, 
 
 ## 22. Histórico de mudanças
 
+- **v1.30, 20/11/2026:** tarefa 9.8 (plano esperando aprovação): §23.2, recibo com contador próprio e prefixo `R` (D2 do ADR-0016 decidida: um contador para notas e outro para recibos); §23.7, Dt. Acerto editável (hoje ou dia passado, nunca no futuro); §23.8, a ordem dos débitos é a do lançamento do acerto, não a Dt. Acerto.
 - **v1.29, 18/11/2026:** nova §23, Corona Vendas com consignado ao cliente (teste de uso de 18/11): nota por cliente com DX/DV/VD, comissão do cliente (30%, até 40%), acerto por nota, pendência acumulativa, Lançar pagamento, semanas do representante, Reposição, Troca, Remarcado, cadastro de cliente com fotos e relatórios novos. A venda ao consumidor (§7.2 e §7.3) sai do Corona Vendas; o acerto em dinheiro com a Lucia (§7.4) fica escondido e dá lugar ao Fechamento da maleta. Na tela: Representante e Cliente. Prints em `docs/referencia/2026-11-18-corona-vendas/`.
 - **v1.28, 17/11/2026:** diferença da troca (issue 208): passa a ser total de B − valor em crédito de A (§7.3 e §9; ADR-0014, itens 8, 10 e 12); migração V048 troca só a regra de `conferir_troca()`, sem corrigir dados (não há produção). A devolução desfaz tudo (409 `DEVOLUCAO_NAO_CONFERE`) se o abatido nas parcelas não bater; a leitura repetida do acerto dá 409 em vez de 500. Nenhuma tabela, coluna ou rota nova.
 - **v1.27, 17/11/2026:** proposta visual dos apps (issue 141): página `docs/marca/proposta-visual.html` com ícones em três estilos, tela de entrada em duas variações e tela de venda. §18: lista dos arquivos atuais de `docs/marca/` (os antigos marcados como "não usar") e paleta com as cores medidas no lugar das aproximadas (o bege `#F3E2C7` veio do arquivo antigo errado). Nenhuma regra de negócio mudou, nenhuma migração.
@@ -915,12 +916,12 @@ Mudança vinda do teste de uso de 18/11/2026 na praça do representante (Ponta P
 | **Nota (pedido)** | Tudo o que **um** cliente levou em **uma** saída. Número `semana-sequência`, ex.: `0000065-32`. |
 | **Acerto (cobrança)** | O retorno do cliente: devolve o que não vendeu e paga o vendido menos a comissão. |
 | **Dt. Cobrança** | Data de retorno para o acerto (sugestão: saída + 45 dias, editável). |
-| **Dt. Acerto** | Data em que o acerto foi feito. |
+| **Dt. Acerto** | Data em que o acerto foi feito: hoje por padrão, editável para um dia que já passou, nunca no futuro (§23.7). |
 | **DX / DV / VD** | DX (Deixado): o que o cliente levou, a preço de venda, bruto. DV (Devolvido): o que ele devolveu. VD (Vendido) = DX − DV. Itens DX/DV/VD = quantidades de peças. Nesta seção DX/DV/VD são **da nota do cliente**, não da maleta da §2. |
 | **Comissão** | Parte do vendido que fica com o cliente: padrão 30%, de 0% a 40%. |
 | **Valor Líquido** | VD − Comissão, sempre, em todas as telas. |
 | **Pendência** | O que o cliente ficou devendo; acumula e entra sozinha no próximo acerto. |
-| **Recibo** | Registro de um pagamento, numerado `semana-sequência` (ex.: `0000065-53`). |
+| **Recibo** | Registro de um pagamento, numerado `semana-sequência` com contador próprio, separado do das notas, e mostrado com o prefixo `R` (ex.: `R 0000065-01`; tarefa 9.8, ADR-0016 item 3). Os recibos gravados antes da 9.8 mantêm o número. |
 | **Semana** | Ciclo do representante na praça, numerado em sequência **por representante** (ex.: `0000065`). Não é a semana cadastrada pela dona da §7.4. |
 
 ### 23.3 Fluxo
@@ -1002,6 +1003,7 @@ Cada representante tem a sua lista (o Corona Gestão vê todos; o Corona Vendas 
 2. **Aba Itens:** todas as linhas com Qtd. DX e Qtd. DV (começa em zero). Cada bipe soma 1 em DV. Mesmo código vindo de duas maletas na nota → pergunta para qual maleta volta. Código fora da nota ou DV acima de DX → avisa e não aceita. **Concluir devolução** lista as peças não bipadas: "Estas X peças serão consideradas vendidas. Confirmar?". Confirmado: as devolvidas voltam **à maleta de onde saíram** e ficam disponíveis; as vendidas saem do estoque da maleta.
 3. **Aba Forma de Pagamento** (disposição do print): **Acerto** (Venda %, Comissão %, Comissão R$, Total a Receber Bruto); a Comissão % vem do cadastro e pode mudar **só neste acerto**, até 40%. **Pendências anteriores** (nota, data, valor e total do débito): entram sozinhas e não se removem. **Total a Receber** = Bruto + pendências anteriores. **Pagamento**: Dinheiro, Pix, Débito e Crédito à vista (**sem cheque e sem boleto**). **Total Pago** e **Ficou devendo**. Rodapé: Itens e Total DX / DV / VD.
 4. **Salvar:** gera o **recibo** (se houve pagamento) e o **relatório do acerto**. Pagou tudo → **Fechado**; faltou → **Pendente** e o valor vira pendência do cliente.
+   - **Dt. Acerto** (tarefa 9.8): hoje por padrão; pode ser um dia que já passou, nunca no futuro (a tela não deixa; o servidor confere de novo em Brasília, pelo relógio dele, como no Lançar pagamento). O acerto e o recibo dele usam essa data e a cotação desse dia (ADR-0006). O número do recibo continua sendo da semana aberta no momento do lançamento (§23.4). A ordem dos débitos não muda com a data: vale a ordem em que os acertos foram lançados (§23.8).
 5. **Cliente não veio:** mudar a Dt. Cobrança → **Remarcado** (rosa).
 6. **Corrigir** um acerto já salvo (inclusive de semana anterior) é **estornar** o acerto (registro novo, com motivo) e fazer de novo; nada se edita. O estorno desfaz os movimentos de maleta e os pagamentos daquele acerto.
 
@@ -1024,7 +1026,7 @@ Caso de teste obrigatório (print da nota `0000064-21`):
 - Comissão **sobre o VD**, nunca sobre o DX; acima de 40% é recusado (na tela e no servidor).
 - "Ficou devendo" sempre positivo. "Valor Líquido" é sempre VD − Comissão (o "T. Líquido" do print, que mostra o VD, **não** é seguido).
 - Pagar mais que o Total a Receber é recusado.
-- **Ordem do pagamento no acerto:** o pago quita primeiro as **pendências anteriores, da mais antiga para a mais nova**, e depois o bruto desta nota; o que sobra sem pagar vira a pendência desta nota. Cada nota de origem quitada passa sozinha a **Fechado**.
+- **Ordem do pagamento no acerto:** o pago quita primeiro as **pendências anteriores, da mais antiga para a mais nova**, e depois o bruto desta nota; o que sobra sem pagar vira a pendência desta nota. Cada nota de origem quitada passa sozinha a **Fechado**. "Mais antiga" é a do acerto **lançado** antes (proposta da tarefa 9.8, esperando aprovação): um acerto lançado hoje com Dt. Acerto de um dia que já passou continua sendo o mais novo.
 - **Lançar pagamento** (no cadastro do cliente, sem esperar o acerto): valor, forma e data; gera recibo; abate a pendência **mais antiga primeiro**; não passa do total devido.
 - A pendência **nunca** é removida nem editada: só diminui por pagamento. Pagamento errado se corrige por **estorno** (registro novo, com motivo), que reabre a pendência.
 - Exemplo: semana 1 bruto 400, pago 300 → deve 100; semana 2 bruto 500 + 100 = 600, pago 550 → deve 50; pagamento lançado de 50 → deve 0.
