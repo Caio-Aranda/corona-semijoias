@@ -570,7 +570,7 @@ export const listar12 = <ThrowOnError extends boolean = false>(options?: Options
 /**
  * Criar cliente
  *
- * O CPF é opcional; se vier, o servidor confere os dígitos e guarda só os números. CPF repetido é aceito.
+ * O documento é opcional. Do tipo CPF (ou sem tipo, ou pelo campo cpf), o servidor confere os dígitos e guarda só os números; CPF repetido é barrado. RG, CI ou outro é texto livre e não exige CPF válido. A comissão vai de 0 a 40 (padrão 30). O representante, depois de definido, não muda.
  */
 export const criar7 = <ThrowOnError extends boolean = false>(options: Options<Criar7Data, ThrowOnError>): RequestResult<Criar7Responses, unknown, ThrowOnError> => (options.client ?? client).post<Criar7Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],

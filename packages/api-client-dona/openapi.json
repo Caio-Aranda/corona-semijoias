@@ -805,6 +805,17 @@
       },
       "ClientesDaDonaControllerPedido" : {
         "properties" : {
+          "comissaoPercentual" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "comoConheceu" : {
+            "maxLength" : 500,
+            "minLength" : 0,
+            "type" : "string"
+          },
           "cpf" : {
             "maxLength" : 20,
             "minLength" : 0,
@@ -814,11 +825,30 @@
             "format" : "date",
             "type" : "string"
           },
+          "documento" : {
+            "maxLength" : 40,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "documentoTipo" : {
+            "maxLength" : 10,
+            "minLength" : 0,
+            "type" : "string"
+          },
           "endereco" : {
             "$ref" : "#/components/schemas/Endereco"
           },
           "id" : {
             "format" : "uuid",
+            "type" : "string"
+          },
+          "indicadoPorClienteId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "indicadoPorNome" : {
+            "maxLength" : 200,
+            "minLength" : 0,
             "type" : "string"
           },
           "nome" : {
@@ -858,6 +888,15 @@
           "ativo" : {
             "type" : "boolean"
           },
+          "comissaoPercentual" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "comoConheceu" : {
+            "type" : "string"
+          },
           "cpf" : {
             "type" : "string"
           },
@@ -865,11 +904,24 @@
             "format" : "date",
             "type" : "string"
           },
+          "documento" : {
+            "type" : "string"
+          },
+          "documentoTipo" : {
+            "type" : "string"
+          },
           "endereco" : {
             "$ref" : "#/components/schemas/Endereco"
           },
           "id" : {
             "format" : "uuid",
+            "type" : "string"
+          },
+          "indicadoPorClienteId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "indicadoPorNome" : {
             "type" : "string"
           },
           "nome" : {
@@ -14696,7 +14748,7 @@
         "tags" : [ "clientes-da-dona-controller" ]
       },
       "post" : {
-        "description" : "O CPF é opcional; se vier, o servidor confere os dígitos e guarda só os números. CPF repetido é aceito.",
+        "description" : "O documento é opcional. Do tipo CPF (ou sem tipo, ou pelo campo cpf), o servidor confere os dígitos e guarda só os números; CPF repetido é barrado. RG, CI ou outro é texto livre e não exige CPF válido. A comissão vai de 0 a 40 (padrão 30). O representante, depois de definido, não muda.",
         "operationId" : "criar_7",
         "requestBody" : {
           "content" : {

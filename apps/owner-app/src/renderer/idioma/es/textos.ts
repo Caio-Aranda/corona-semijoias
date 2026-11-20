@@ -173,6 +173,7 @@ export const ES_TEXTOS: NoMesmoFormato<typeof PT_TEXTOS> = {
     nao: 'No',
     semVendedor: 'Ningún representante',
     vendedorAtual: 'Representante elegido antes',
+    comissaoInvalida: 'Escriba la comisión de 0 a 40, por ejemplo 30 o 32,5.',
     numeroInvalido: 'Escriba solo números, sin coma ni punto.',
     situacao: {
       rotulo: 'Estado',
@@ -269,11 +270,24 @@ export const ES_TEXTOS: NoMesmoFormato<typeof PT_TEXTOS> = {
         plural: 'clientes',
         buscaRotulo: 'Buscar por nombre, teléfono o CPF',
       }),
-      colunas: { nome: 'Cliente', cpf: 'CPF', telefone: 'Teléfono', whatsapp: 'WhatsApp' },
+      colunas: {
+        nome: 'Cliente',
+        documento: 'Documento',
+        telefone: 'Teléfono',
+        whatsapp: 'WhatsApp',
+      },
       campos: {
         nome: 'Nombre del cliente',
-        cpf: 'CPF',
-        cpfAjuda: 'Puede escribirlo con o sin puntos. Si no lo sabe, déjelo en blanco.',
+        documentoTipo: 'Tipo de documento',
+        documento: 'Número del documento',
+        documentoAjuda:
+          'Puede ser CPF, RG, cédula paraguaya... Si es CPF, puede escribirlo con o sin puntos. Si no lo sabe, déjelo en blanco.',
+        comissaoPercentual: 'Comisión del cliente (%)',
+        comissaoPercentualAjuda: 'De 0 a 40. Si no la cambia, vale 30.',
+        indicadoPorNome: 'Recomendado por',
+        indicadoPorNomeAjuda:
+          'Nombre de quien lo recomendó. Si el cliente ya fue recomendado por otro cliente registrado, déjelo en blanco para mantenerlo.',
+        comoConheceu: 'Cómo conoció la tienda',
         dataNascimento: 'Fecha de nacimiento',
         dataNascimentoAjuda:
           'Si no lo sabe, déjelo en blanco. Sirve para avisar de los cumpleaños.',
@@ -281,7 +295,14 @@ export const ES_TEXTOS: NoMesmoFormato<typeof PT_TEXTOS> = {
         whatsapp: 'WhatsApp',
         observacoes: 'Observaciones',
         vendedorResponsavelId: 'Representante responsable',
+        vendedorResponsavelIdAjuda: 'Una vez elegido, el representante del cliente no cambia.',
       },
+      tiposDeDocumento: [
+        { valor: 'CPF', rotulo: 'CPF' },
+        { valor: 'RG', rotulo: 'RG' },
+        { valor: 'CI', rotulo: 'CI (cédula paraguaya)' },
+        { valor: 'OUTRO', rotulo: 'Otro documento' },
+      ],
     },
     endereco: {
       logradouro: 'Calle o avenida',

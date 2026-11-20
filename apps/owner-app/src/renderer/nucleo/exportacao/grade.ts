@@ -325,7 +325,7 @@ export function montarGrade(pedido: PedidoDeExportacao): Grade {
     cabecalho: [
       p.loja,
       p.titulo,
-      `Filtros: ${p.filtros.length > 0 ? p.filtros.join('; ') : 'nenhum'}`,
+      SOLTOS.arquivo.filtros(p.filtros.length > 0 ? p.filtros.join('; ') : SOLTOS.arquivo.nenhum),
       SOLTOS.arquivo.geradoEm(p.geradoEm, p.geradoPor),
       ...(p.linhaDaCotacao ? [p.linhaDaCotacao] : []),
     ],

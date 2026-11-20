@@ -51,7 +51,10 @@ export function FormularioDeCadastro({
 
   // O servidor pode dar o nome do campo como `cep` ou `endereco.cep`.
   const doServidor = (c: CampoDaTela): string | undefined =>
-    erro?.campos[chaveDe(c)] || erro?.campos[c.nome] || undefined;
+    erro?.campos[chaveDe(c)] ||
+    erro?.campos[c.nome] ||
+    (c.alternativa ? erro?.campos[c.alternativa] : undefined) ||
+    undefined;
   const mensagem = (c: CampoDaTela): string | undefined => locais[chaveDe(c)] || doServidor(c);
 
   function mudar(c: CampoDaTela, valor: string) {
@@ -74,11 +77,18 @@ export function FormularioDeCadastro({
         endereco[c.nome] = v;
       } else if (c.tipo === 'numero') {
         corpo[c.nome] = Number.parseInt(v, 10);
+      } else if (c.tipo === 'percentual') {
+        corpo[c.nome] = v.replace(',', '.');
       } else {
         corpo[c.nome] = v;
       }
     }
     if (Object.keys(endereco).length > 0) corpo.endereco = endereco;
+    // Quem indicou já era um cliente cadastrado e a dona não escreveu outro nome: mantém o indicador.
+    const indicador = registro?.indicadoPorClienteId;
+    if (typeof indicador === 'string' && indicador && !corpo.indicadoPorNome) {
+      corpo.indicadoPorClienteId = indicador;
+    }
     return corpo;
   }
 
@@ -89,6 +99,12 @@ export function FormularioDeCadastro({
     for (const c of definicao.campos) {
       if (c.obrigatorio && !(valores[chaveDe(c)] ?? '').trim()) {
         faltas[chaveDe(c)] = TEXTOS.formulario.obrigatorio;
+      }
+      if (c.tipo === 'percentual' && (valores[chaveDe(c)] ?? '').trim()) {
+        const n = Number(valores[chaveDe(c)]!.trim().replace(',', '.'));
+        if (!/^\d{1,2}([.,]\d{1,2})?$/.test(valores[chaveDe(c)]!.trim()) || n < 0 || n > 40) {
+          faltas[chaveDe(c)] = TEXTOS.cadastros.comissaoInvalida;
+        }
       }
       if (c.tipo === 'numero' && (valores[chaveDe(c)] ?? '').trim()) {
         if (!/^\d{1,9}$/.test(valores[chaveDe(c)]!.trim())) {
@@ -121,7 +137,13 @@ export function FormularioDeCadastro({
     aoSalvar(nome);
   }
 
-  const camposDaTela = new Set(definicao.campos.flatMap((c) => [chaveDe(c), c.nome]));
+  const camposDaTela = new Set(
+    definicao.campos.flatMap((c) => [
+      chaveDe(c),
+      c.nome,
+      ...(c.alternativa ? [c.alternativa] : []),
+    ]),
+  );
   // Mensagens de campos que esta tela não mostra (o servidor pode recusar outros): aparecem no topo.
   const soltas = Object.entries(erro?.campos ?? {}).filter(([c, m]) => m && !camposDaTela.has(c));
   const campoComum = definicao.campos.filter((c) => !c.endereco);
@@ -152,7 +174,10 @@ export function FormularioDeCadastro({
               id={id}
               value={valor}
               autoFocus={primeiro}
-              disabled={c.tipo === 'vendedor' && vendedores.dados === null}
+              disabled={
+                (c.tipo === 'vendedor' && vendedores.dados === null) ||
+                (c.fixoDepoisDeDefinido === true && !novo && valorInicial(registro, c) !== '')
+              }
               onChange={(e) => mudar(c, e.target.value)}
             >
               {c.tipo === 'vendedor' ? (
@@ -167,6 +192,12 @@ export function FormularioDeCadastro({
                 </option>
               ))}
             </select>
+            {c.ajuda &&
+            c.fixoDepoisDeDefinido === true &&
+            !novo &&
+            valorInicial(registro, c) !== '' ? (
+              <span className="cs-campo__ajuda">{c.ajuda}</span>
+            ) : null}
             {msg ? (
               <span role="alert" className="cs-campo__erro">
                 {msg}
@@ -218,7 +249,9 @@ export function FormularioDeCadastro({
             autoFocus={primeiro}
             autoComplete="off"
             type={c.tipo === 'data' ? 'date' : c.tipo === 'numero' ? 'text' : 'text'}
-            inputMode={c.tipo === 'numero' ? 'numeric' : undefined}
+            inputMode={
+              c.tipo === 'numero' ? 'numeric' : c.tipo === 'percentual' ? 'decimal' : undefined
+            }
             maxLength={c.max}
             onChange={(e) => mudar(c, e.target.value)}
             {...comAjuda}

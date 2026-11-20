@@ -177,17 +177,18 @@ describe('Cadastros: criar e editar', () => {
     const u = await abrir(m, 'Clientes', 'Ainda não há nenhum cliente.');
     await u.click(screen.getByRole('button', { name: 'Novo cliente' }));
     await u.type(screen.getByLabelText('Nome do cliente'), 'Ana');
-    await u.type(screen.getByLabelText('CPF'), '111');
+    await u.type(screen.getByLabelText('Número do documento'), '111');
     await u.type(screen.getByLabelText('Cidade'), 'Foz do Iguaçu');
     await u.click(screen.getByRole('button', { name: 'Salvar' }));
     expect(
       await screen.findByText('Confira o CPF: ele não parece estar certo.'),
     ).toBeInTheDocument();
-    expect(screen.getByLabelText('CPF')).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByLabelText('Número do documento')).toHaveAttribute('aria-invalid', 'true');
     const pedido = m.chamadas.find((c) => c.operacao === 'clientes.criar');
     expect(pedido?.parametros).toMatchObject({
       nome: 'Ana',
-      cpf: '111',
+      documento: '111',
+      documentoTipo: 'CPF',
       endereco: { cidade: 'Foz do Iguaçu' },
     });
   });
@@ -485,5 +486,112 @@ describe('Cadastros: data de nascimento do cliente', () => {
     expect(
       await screen.findByText('A data de nascimento não pode ser no futuro.'),
     ).toBeInTheDocument();
+  });
+});
+
+describe('Cadastros: cliente do consignado (tarefa 9.7)', () => {
+  it('novo cliente: comissão padrão 30, documento de outro tipo (CI), indicado por e como conheceu vão para a API', async () => {
+    const m = montar({
+      'clientes.listar': () => pagina([]),
+      'clientes.criar': () => ({ ok: true, dados: { id: ID_A, version: 0, nome: 'Ana' } }),
+    });
+    const u = await abrir(m, 'Clientes', 'Ainda não há nenhum cliente.');
+    await u.click(screen.getByRole('button', { name: 'Novo cliente' }));
+    expect(screen.getByLabelText('Comissão do cliente (%)')).toHaveValue('30');
+    expect(screen.getByLabelText('Tipo do documento')).toHaveValue('CPF');
+    await u.type(screen.getByLabelText('Nome do cliente'), 'Ana');
+    await u.selectOptions(screen.getByLabelText('Tipo do documento'), 'CI');
+    await u.type(screen.getByLabelText('Número do documento'), '1.234.567');
+    await u.clear(screen.getByLabelText('Comissão do cliente (%)'));
+    await u.type(screen.getByLabelText('Comissão do cliente (%)'), '32,5');
+    await u.type(screen.getByLabelText('Indicado por'), 'Dona Rosa');
+    await u.type(screen.getByLabelText('Como conheceu a loja'), 'Feira do bairro');
+    await u.click(screen.getByRole('button', { name: 'Salvar' }));
+    await screen.findByText('Ana foi cadastrado.');
+    expect(m.chamadas.find((c) => c.operacao === 'clientes.criar')?.parametros).toMatchObject({
+      nome: 'Ana',
+      documentoTipo: 'CI',
+      documento: '1.234.567',
+      comissaoPercentual: '32.5',
+      indicadoPorNome: 'Dona Rosa',
+      comoConheceu: 'Feira do bairro',
+    });
+  });
+
+  it('comissão fora de 0 a 40 não vai para a API e diz o que fazer', async () => {
+    const m = montar({
+      'clientes.listar': () => pagina([]),
+      'clientes.criar': () => ({ ok: true, dados: {} }),
+    });
+    const u = await abrir(m, 'Clientes', 'Ainda não há nenhum cliente.');
+    await u.click(screen.getByRole('button', { name: 'Novo cliente' }));
+    await u.type(screen.getByLabelText('Nome do cliente'), 'Ana');
+    await u.clear(screen.getByLabelText('Comissão do cliente (%)'));
+    await u.type(screen.getByLabelText('Comissão do cliente (%)'), '45');
+    await u.click(screen.getByRole('button', { name: 'Salvar' }));
+    expect(
+      await screen.findByText('Digite a comissão de 0 a 40, por exemplo 30 ou 32,5.'),
+    ).toBeInTheDocument();
+    expect(m.chamadas.some((c) => c.operacao === 'clientes.criar')).toBe(false);
+  });
+
+  it('cliente antigo só com CPF mostra o CPF no campo do documento, e a comissão sem zeros', async () => {
+    const m = montar({
+      'clientes.listar': () =>
+        pagina([
+          {
+            id: ID_A,
+            version: 2,
+            nome: 'Ana',
+            cpf: '52998224725',
+            comissaoPercentual: '30.00',
+            ativo: true,
+          },
+        ]),
+      'clientes.editar': () => ({ ok: true, dados: { id: ID_A, version: 3, nome: 'Ana' } }),
+    });
+    const u = await abrir(m, 'Clientes', 'Ana');
+    await u.click(screen.getByRole('button', { name: 'Editar' }));
+    expect(await screen.findByLabelText('Número do documento')).toHaveValue('52998224725');
+    expect(screen.getByLabelText('Comissão do cliente (%)')).toHaveValue('30');
+  });
+
+  it('D10: com representante já definido ele aparece travado; sem representante dá para escolher', async () => {
+    const m = montar({
+      'clientes.listar': () =>
+        pagina([
+          { id: ID_A, version: 2, nome: 'Ana', vendedorResponsavelId: ID_B, ativo: true },
+          { id: ID_B, version: 1, nome: 'Bia', ativo: true },
+        ]),
+      'clientes.editar': () => ({ ok: true, dados: { id: ID_A, version: 3, nome: 'Ana' } }),
+    });
+    const u = await abrir(m, 'Clientes', 'Ana');
+    const botoes = screen.getAllByRole('button', { name: 'Editar' });
+    await u.click(botoes[0]!);
+    await screen.findByRole('option', { name: 'Joana Representante' });
+    expect(screen.getByLabelText('Representante responsável')).toBeDisabled();
+    expect(
+      screen.getByText('Depois de escolhido, o representante do cliente não muda.'),
+    ).toBeInTheDocument();
+    await u.click(screen.getByRole('button', { name: 'Cancelar' }));
+    await u.click(screen.getAllByRole('button', { name: 'Editar' })[1]!);
+    await screen.findByRole('option', { name: 'Joana Representante' });
+    expect(screen.getByLabelText('Representante responsável')).toBeEnabled();
+  });
+
+  it('cliente indicado por outro cliente cadastrado mantém o indicador ao salvar', async () => {
+    const m = montar({
+      'clientes.listar': () =>
+        pagina([{ id: ID_A, version: 2, nome: 'Ana', indicadoPorClienteId: ID_B, ativo: true }]),
+      'clientes.editar': () => ({ ok: true, dados: { id: ID_A, version: 3, nome: 'Ana' } }),
+    });
+    const u = await abrir(m, 'Clientes', 'Ana');
+    await u.click(screen.getByRole('button', { name: 'Editar' }));
+    await screen.findByLabelText('Indicado por');
+    await u.click(screen.getByRole('button', { name: 'Salvar' }));
+    await screen.findByText('Os dados de Ana foram salvos.');
+    expect(m.chamadas.find((c) => c.operacao === 'clientes.editar')?.parametros).toMatchObject({
+      indicadoPorClienteId: ID_B,
+    });
   });
 });

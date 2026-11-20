@@ -240,7 +240,7 @@ export function ehRotaDoAcertoAntigo(rota: Rota): boolean {
 /**
  * O menu sem o fluxo antigo, quando ele está escondido (nada é apagado: só deixa de aparecer, e as rotas continuam). Mesma
  * configuração do acerto antigo: some também o grupo "Devoluções e créditos" e "Vendas de computador bloqueado", que eram da
- * venda ao consumidor que saiu do Corona Vendas.
+ * venda ao consumidor que saiu do aplicativo do representante.
  */
 export function menuDoGestao(acertoVisivel: boolean): typeof MENU {
   if (acertoVisivel) return MENU;

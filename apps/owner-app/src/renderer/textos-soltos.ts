@@ -83,6 +83,8 @@ export const PT_TEXTOS_SOLTOS = {
     pagina: (n: number, total: number) => `Página ${n} de ${total}`,
     geradoEm: (quando: string, por: string) => `Gerado em ${quando} por ${por}`,
     as: 'às',
+    filtros: (lista: string) => `Filtros: ${lista}`,
+    nenhum: 'nenhum',
     ativo: 'Ativo',
     inativo: 'Inativo',
     sim: 'Sim',

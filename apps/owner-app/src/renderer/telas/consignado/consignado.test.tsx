@@ -13,6 +13,8 @@ import { TEXTOS } from '../../textos';
 import { TEXTOS_DA_INICIAL } from '../../textos-inicial';
 import { TEXTOS_DE_ACERTOS } from '../../textos-acertos';
 import { TEXTOS_DE_CONSIGNADO } from '../../textos-consignado';
+import { TEXTOS_DE_DEVOLUCOES } from '../../textos-devolucoes';
+import { TEXTOS_DE_SINCRONIZACAO } from '../../textos-sincronizacao';
 import { TEXTOS_RELATORIOS } from '../../textos-relatorios';
 
 const entregues: { nome: string; tipo: string; bytes: Uint8Array }[] = [];
@@ -94,6 +96,10 @@ const RELATORIO = {
   tamanho: 20,
   totais: [
     { chave: 'enviadas', rotulo: 'x', quantidade: 1, pecas: 10 },
+    { chave: 'devolvidas', rotulo: 'x', quantidade: 1, pecas: 2 },
+    { chave: 'vendidas', rotulo: 'x', quantidade: 1, pecas: 3 },
+    { chave: 'comClientes', rotulo: 'x', quantidade: 1, pecas: 2 },
+    { chave: 'bipadas', rotulo: 'x', quantidade: 1, pecas: 3 },
     { chave: 'diferenca', rotulo: 'x', quantidade: 1, pecas: -2 },
     { chave: 'vd', rotulo: 'x', quantidade: 1, valorEmReais: '300.00' },
     { chave: 'comissao', rotulo: 'x', quantidade: 1, valorEmReais: '90.00' },
@@ -197,6 +203,41 @@ describe('O acerto antigo fica escondido (ADR-0016, item 15)', () => {
     expect(m.chamadas.some((c) => c.operacao === 'telas.ler')).toBe(true);
   });
 
+  it('também esconde o fluxo antigo de venda ao consumidor: devoluções e créditos e vendas de computador bloqueado', async () => {
+    const m = montar();
+    render(<App ponte={m.ponte} />);
+    const menu = await screen.findByRole('navigation', { name: TEXTOS.menu.rotulo });
+    expect(within(menu).queryByText(TEXTOS_DE_DEVOLUCOES.menu.grupo)).toBeNull();
+    for (const nome of [
+      TEXTOS_DE_DEVOLUCOES.menu.autorizar,
+      TEXTOS_DE_DEVOLUCOES.menu.revisar,
+      TEXTOS_DE_DEVOLUCOES.menu.devolucoes,
+      TEXTOS_DE_DEVOLUCOES.menu.trocas,
+      TEXTOS_DE_DEVOLUCOES.menu.creditos,
+      TEXTOS_DE_DEVOLUCOES.menu.garantia,
+      TEXTOS_DE_SINCRONIZACAO.menu.vendas,
+    ]) {
+      expect(within(menu).queryByRole('button', { name: nome })).toBeNull();
+    }
+    // O resto do grupo dos computadores continua.
+    expect(
+      within(menu).getByRole('button', { name: TEXTOS_DE_SINCRONIZACAO.menu.computadores }),
+    ).toBeInTheDocument();
+    expect(
+      within(menu).getByRole('button', { name: TEXTOS_DE_SINCRONIZACAO.menu.envios }),
+    ).toBeInTheDocument();
+  });
+
+  it('as rotas escondidas do menu continuam abrindo pelo endereço (nada é apagado)', async () => {
+    window.location.hash = '#/devolucoes/trocas';
+    const m = montar({ 'trocas.listar': () => pagina([]) });
+    render(<App ponte={m.ponte} />);
+    await screen.findByRole('navigation', { name: TEXTOS.menu.rotulo });
+    expect(
+      await screen.findByRole('heading', { name: TEXTOS_DE_DEVOLUCOES.trocas.titulo }),
+    ).toBeInTheDocument();
+  });
+
   it('o endereço do acerto cai no início enquanto estiver escondido', async () => {
     window.location.hash = '#/acertos/lista';
     const m = montar();
@@ -211,6 +252,12 @@ describe('O acerto antigo fica escondido (ADR-0016, item 15)', () => {
     });
     render(<App ponte={m.ponte} />);
     const menu = await screen.findByRole('navigation', { name: TEXTOS.menu.rotulo });
+    expect(
+      within(menu).getByRole('button', { name: TEXTOS_DE_DEVOLUCOES.menu.trocas }),
+    ).toBeInTheDocument();
+    expect(
+      within(menu).getByRole('button', { name: TEXTOS_DE_SINCRONIZACAO.menu.vendas }),
+    ).toBeInTheDocument();
     expect(
       within(menu).getByRole('button', { name: TEXTOS_DE_ACERTOS.menu.acertos }),
     ).toBeInTheDocument();
@@ -258,12 +305,27 @@ describe('Fechamento da maleta (§23.10)', () => {
     ).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: 'Lidas na volta' })).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: 'Diferença' })).toBeInTheDocument();
-    const rodape = screen.getByRole('region', { name: TEXTOS_RELATORIOS.totais.titulo });
-    expect(within(rodape).getByText('Valor vendido')).toBeInTheDocument();
-    expect(within(rodape).getByText('Comissão dos clientes')).toBeInTheDocument();
-    expect(within(rodape).getByText('Valor recebido')).toBeInTheDocument();
-    expect(within(rodape).getByText('Pendências a receber')).toBeInTheDocument();
+    // Duas abas: as peças ficam numa e o dinheiro na outra, sem se misturar.
+    expect(screen.getByRole('tab', { name: 'Peças da maleta' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    const pecas = screen.getByRole('tabpanel', { name: 'Peças da maleta' });
+    expect(within(pecas).getByText('Peças enviadas')).toBeInTheDocument();
+    expect(within(pecas).getByText('Lidas na volta')).toBeInTheDocument();
+    expect(within(pecas).queryByText('Valor vendido')).toBeNull();
     expect(screen.getByText(/Faltam 2 peças/)).toBeInTheDocument();
+    await u.click(screen.getByRole('tab', { name: 'Dinheiro' }));
+    const dinheiro = screen.getByRole('tabpanel', { name: 'Dinheiro' });
+    expect(within(dinheiro).getByText('Valor vendido')).toBeInTheDocument();
+    expect(within(dinheiro).getByText('Comissão dos clientes')).toBeInTheDocument();
+    expect(within(dinheiro).getByText('Valor recebido')).toBeInTheDocument();
+    expect(within(dinheiro).getByText('Pendências a receber')).toBeInTheDocument();
+    expect(within(dinheiro).queryByText('Peças enviadas')).toBeNull();
+    // Na aba do dinheiro não há tabela de peças.
+    expect(screen.queryByText('Maria Cliente (nota 65-21): 2')).toBeNull();
+    await u.click(screen.getByRole('tab', { name: 'Peças da maleta' }));
+    expect(await screen.findByText('Maria Cliente (nota 65-21): 2')).toBeInTheDocument();
 
     // 4. Lê o código de uma peça: soma 1, com um id novo para o reenvio não duplicar.
     await u.type(screen.getByLabelText(/código/i), 'F-100{Enter}');
@@ -310,6 +372,14 @@ describe('Fechamento da maleta (§23.10)', () => {
     expect(csv).toContain('Valor vendido');
     expect(csv).toContain('300,00');
     expect(csv).toContain('Pendências a receber');
+    // Duas seções, uma depois da outra: peças da maleta e dinheiro.
+    const iPecas = csv.indexOf('Peças da maleta');
+    const iDinheiro = csv.indexOf('Dinheiro');
+    expect(iPecas).toBeGreaterThan(-1);
+    expect(iDinheiro).toBeGreaterThan(iPecas);
+    expect(csv.indexOf('Lidas na volta;')).toBeLessThan(iDinheiro);
+    expect(csv.indexOf('Valor vendido')).toBeGreaterThan(iDinheiro);
+    expect(csv.indexOf('Pendências a receber')).toBeGreaterThan(iDinheiro);
     // O pedido ao servidor é pela maleta escolhida.
     const pedido = m.chamadas.find((c) => c.operacao === 'relatorios.cadastros')!.parametros as {
       relatorio: string;
@@ -337,6 +407,29 @@ describe('Fechamento da maleta (§23.10)', () => {
     await u.type(screen.getByLabelText(/código/i), 'F-100{Enter}');
     expect(await screen.findByText('Esta peça não faz parte desta maleta.')).toBeInTheDocument();
     expect(screen.getByText('Maria Cliente (nota 65-21): 2')).toBeInTheDocument();
+  });
+
+  it('peça que existe mas é de outra maleta diz que não é desta maleta, e de qual', async () => {
+    const m = montar({
+      'fechamento.ler': () => ({ ok: true, dados: leitura('EM_ANDAMENTO') }),
+      'fechamento.leituras': () => ({
+        ok: false,
+        motivo: 'erro',
+        status: 422,
+        codigo: 'PECA_NAO_E_DESTA_MALETA',
+        mensagem: 'Esta peça não é desta maleta. Ela está na maleta 0009.',
+      }),
+      'relatorios.cadastros': () => ({ ok: true, dados: RELATORIO }),
+    });
+    const u = await abrirPeloMenu(m, T.menu.fechamento);
+    await u.selectOptions(await screen.findByLabelText(T.fechamento.escolher), ID_MALETA);
+    await u.click(screen.getByRole('button', { name: T.fechamento.abrir }));
+    await screen.findByText('Maria Cliente (nota 65-21): 2');
+    await u.type(screen.getByLabelText(/código/i), 'F-100{Enter}');
+    expect(
+      await screen.findByText('Esta peça não é desta maleta. Ela está na maleta 0009.'),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/desativada ou foi excluída/)).toBeNull();
   });
 
   it('fechamento concluído só mostra o relatório, sem leitor nem botão de concluir', async () => {
@@ -567,5 +660,49 @@ describe('Notas, semanas, clientes e avisos do consignado (só leitura)', () => 
       }),
     );
     expect(await screen.findByText(T.avisos.vazio)).toBeInTheDocument();
+  });
+});
+
+describe('Tela inicial em espanhol (tarefa 9.7)', () => {
+  it('todos os avisos de "Lo que necesita su atención" saem em espanhol', async () => {
+    const { definirIdioma } = await import('../../idioma/idioma');
+    definirIdioma('es');
+    try {
+      const m = montar({
+        'avisos.listar': () => ({
+          ok: true,
+          dados: {
+            avisos: [
+              {
+                tipo: 'CONFERENCIA_NAO_RODOU',
+                titulo: 'A conferência de hoje não rodou',
+                texto:
+                  'A conferência automática não rodou nas últimas 26 horas. Toque em Conferir agora.',
+                dias: [],
+              },
+              {
+                tipo: 'COTACAO_NAO_CHEGOU',
+                titulo: 'As cotações de 17/11/2026 e 18/11/2026 não chegaram.',
+                texto:
+                  'Os valores aparecem só em reais por enquanto. O sistema tenta de novo sozinho. Se o aviso continuar amanhã, fale com o suporte do sistema.',
+                dias: [],
+              },
+            ],
+          },
+        }),
+      });
+      render(<App ponte={m.ponte} />);
+      expect(await screen.findByText('La verificación de hoy no se ejecutó')).toBeInTheDocument();
+      expect(
+        screen.getByText(/La verificación automática no se ejecutó en las últimas 26 horas/),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('Las cotizaciones de 17/11/2026 y 18/11/2026 no llegaron.'),
+      ).toBeInTheDocument();
+      expect(screen.queryByText(/A conferência/)).toBeNull();
+      expect(screen.queryByText(/As cotações/)).toBeNull();
+    } finally {
+      definirIdioma('pt');
+    }
   });
 });

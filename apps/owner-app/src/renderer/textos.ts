@@ -178,6 +178,7 @@ export const PT_TEXTOS = {
     nao: 'Não',
     semVendedor: 'Nenhum representante',
     vendedorAtual: 'Representante já escolhido antes',
+    comissaoInvalida: 'Digite a comissão de 0 a 40, por exemplo 30 ou 32,5.',
     numeroInvalido: 'Digite só números, sem vírgula nem ponto.',
     /** Filtro e coluna de situação dos cadastros que podem ser inativados. */
     situacao: {
@@ -275,11 +276,24 @@ export const PT_TEXTOS = {
         plural: 'clientes',
         buscaRotulo: 'Buscar por nome, telefone ou CPF',
       }),
-      colunas: { nome: 'Cliente', cpf: 'CPF', telefone: 'Telefone', whatsapp: 'WhatsApp' },
+      colunas: {
+        nome: 'Cliente',
+        documento: 'Documento',
+        telefone: 'Telefone',
+        whatsapp: 'WhatsApp',
+      },
       campos: {
         nome: 'Nome do cliente',
-        cpf: 'CPF',
-        cpfAjuda: 'Pode digitar com ou sem pontos. Se não souber, deixe em branco.',
+        documentoTipo: 'Tipo do documento',
+        documento: 'Número do documento',
+        documentoAjuda:
+          'Pode ser CPF, RG, cédula paraguaia... Se for CPF, pode digitar com ou sem pontos. Se não souber, deixe em branco.',
+        comissaoPercentual: 'Comissão do cliente (%)',
+        comissaoPercentualAjuda: 'De 0 a 40. Se não mudar, vale 30.',
+        indicadoPorNome: 'Indicado por',
+        indicadoPorNomeAjuda:
+          'Nome de quem indicou. Se o cliente já foi indicado por outro cliente cadastrado, deixe em branco para manter.',
+        comoConheceu: 'Como conheceu a loja',
         dataNascimento: 'Data de nascimento',
         dataNascimentoAjuda:
           'Se não souber, deixe em branco. Serve para avisar dos aniversariantes.',
@@ -287,7 +301,14 @@ export const PT_TEXTOS = {
         whatsapp: 'WhatsApp',
         observacoes: 'Observações',
         vendedorResponsavelId: 'Representante responsável',
+        vendedorResponsavelIdAjuda: 'Depois de escolhido, o representante do cliente não muda.',
       },
+      tiposDeDocumento: [
+        { valor: 'CPF', rotulo: 'CPF' },
+        { valor: 'RG', rotulo: 'RG' },
+        { valor: 'CI', rotulo: 'CI (cédula paraguaia)' },
+        { valor: 'OUTRO', rotulo: 'Outro documento' },
+      ],
     },
     endereco: {
       logradouro: 'Rua ou avenida',

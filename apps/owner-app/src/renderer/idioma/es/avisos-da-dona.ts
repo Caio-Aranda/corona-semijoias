@@ -157,8 +157,8 @@ function texto(a: AvisoParaTraduzir): string | null {
     case 'ESTOQUE_BAIXO':
       return 'Esos productos llegaron al stock mínimo. Vea la lista y haga la reposición.';
     case 'COMPUTADOR_SEM_ENVIAR':
-      return (r = m(/^Peça a (.+) para conectar o Corona Vendas à internet\. /))
-        ? `Pídale a ${r[1]} que conecte Corona Vendas a internet. Las ventas hechas sin internet solo llegan cuando la computadora se conecte.`
+      return (r = m(/^Peça a (.+) para conectar o .+ à internet\. /))
+        ? `Pídale a ${r[1]} que conecte su programa a internet. Las ventas hechas sin internet solo llegan cuando la computadora se conecte.`
         : null;
     case 'COMPUTADOR_NOVO':
       return (r = m(
@@ -167,7 +167,7 @@ function texto(a: AvisoParaTraduzir): string | null {
         ? `Para que ${r[1]} venda en esa computadora, abra la ficha del representante y use Cambiar computadora. Si no fue ${r[2]}, use Bloquear computadora.`
         : null;
     case 'ENVIOS_COM_PROBLEMA':
-      return 'Son ventas o registros hechos en Corona Vendas que no pudieron entrar. Abra Envíos con problema y elija Intentar de nuevo o Descartar.';
+      return 'Son ventas o registros hechos en la computadora del representante que no pudieron entrar. Abra Envíos con problema y elija Intentar de nuevo o Descartar.';
     case 'VENDAS_DE_COMPUTADOR_BLOQUEADO':
       return 'Todavía no valen. Abra Ventas de computadora bloqueada y elija Aprobar o Descartar.';
     default:
