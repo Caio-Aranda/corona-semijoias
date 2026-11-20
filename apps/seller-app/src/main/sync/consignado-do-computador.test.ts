@@ -383,7 +383,8 @@ describe('a nota 0000064-21 e a pendência da 0000063-32 (mesmo arquivo de exemp
       .get() as {
       dados: string;
     };
-    expect(JSON.parse(op.dados).visto.pendenciasAnteriores).toBe('448.10');
+    const dados = JSON.parse(op.dados) as { visto: { pendenciasAnteriores: string } };
+    expect(dados.visto.pendenciasAnteriores).toBe('448.10');
   });
 
   it('a outbox leva os tipos novos no formato 1, com o que o computador viu', () => {
