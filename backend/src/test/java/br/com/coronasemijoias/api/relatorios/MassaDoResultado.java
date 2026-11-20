@@ -223,7 +223,7 @@ abstract class MassaDoResultado extends ApoioDoCusto {
                 jdbc.update("""
                         INSERT INTO corona.lancamentos_caixa (id, tipo, valor, forma, categoria_id, origem_tipo, origem_id,
                             data_lancamento, descricao) VALUES (?, 'SAIDA', ?, 'DINHEIRO', (SELECT id FROM corona.categorias_caixa
-                             WHERE nome = 'Pagamento ao vendedor'), 'ACERTO_A_FAVOR_DO_VENDEDOR', ?, ?::date, 'Acerto a favor do vendedor')""",
+                             WHERE nome = 'Pagamento ao representante'), 'ACERTO_A_FAVOR_DO_VENDEDOR', ?, ?::date, 'Acerto a favor do vendedor')""",
                         UUID.randomUUID(), pago.negate(), acerto, diaDoFechamento);
             }
         });

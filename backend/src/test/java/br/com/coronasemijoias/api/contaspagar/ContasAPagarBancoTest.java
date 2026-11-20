@@ -290,7 +290,7 @@ class ContasAPagarBancoTest extends TesteDeIntegracao {
         assertThatThrownBy(() -> lancamentoManual("SAIDA", "-5.00", entrada)).isInstanceOf(DataAccessException.class);
         assertThatThrownBy(() -> lancamentoManual("ENTRADA", "5.00", saida)).isInstanceOf(DataAccessException.class);
         assertThatThrownBy(() -> lancamentoManual("SAIDA", "-5.00", categoria("Pagamento a fornecedor"))).isInstanceOf(DataAccessException.class);
-        assertThatThrownBy(() -> lancamentoManual("ENTRADA", "5.00", categoria("Repasse do vendedor"))).isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> lancamentoManual("ENTRADA", "5.00", categoria("Repasse do representante"))).isInstanceOf(DataAccessException.class);
         // O lançamento manual é a própria origem.
         assertThatThrownBy(() -> jdbc.update("""
                 INSERT INTO corona.lancamentos_caixa (id, tipo, valor, forma, categoria_id, origem_tipo, origem_id, data_lancamento)

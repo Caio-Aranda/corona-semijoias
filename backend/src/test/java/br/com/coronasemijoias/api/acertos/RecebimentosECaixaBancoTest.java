@@ -66,7 +66,7 @@ class RecebimentosECaixaBancoTest extends ApoioDoFechamento {
         jdbc.update("""
                 INSERT INTO corona.lancamentos_caixa (id, tipo, valor, forma, categoria_id, origem_tipo, origem_id, data_lancamento, estorna_id,
                     registrado_por) VALUES (?, ?, ?::numeric, ?, ?, ?, ?, current_date, ?, ?)""", id, tipo, valor, forma,
-                categoria("ENTRADA".equals(tipo) ? "Repasse do vendedor" : "Pagamento ao vendedor"), origemTipo, origem, estorna,
+                categoria("ENTRADA".equals(tipo) ? "Repasse do representante" : "Pagamento ao representante"), origemTipo, origem, estorna,
                 usuarios.dona().id());
         return id;
     }
@@ -219,15 +219,15 @@ class RecebimentosECaixaBancoTest extends ApoioDoFechamento {
                 .isInstanceOf(DataAccessException.class);
         assertThatThrownBy(() -> jdbc.update("DELETE FROM corona.lancamentos_caixa WHERE origem_id = ?", r[0]))
                 .isInstanceOf(DataAccessException.class);
-        assertThatThrownBy(() -> jdbc.update("DELETE FROM corona.categorias_caixa WHERE nome = 'Repasse do vendedor'"))
+        assertThatThrownBy(() -> jdbc.update("DELETE FROM corona.categorias_caixa WHERE nome = 'Repasse do representante'"))
                 .isInstanceOf(DataAccessException.class);
     }
 
     @Test
     void asCategoriasDoSistemaExistemENaoRepetemONome() {
-        assertThat(contar("SELECT count(*) FROM corona.categorias_caixa WHERE sistema AND nome IN ('Repasse do vendedor', 'Pagamento ao vendedor')"))
+        assertThat(contar("SELECT count(*) FROM corona.categorias_caixa WHERE sistema AND nome IN ('Repasse do representante', 'Pagamento ao representante')"))
                 .isEqualTo(2);
-        assertThatThrownBy(() -> jdbc.update("INSERT INTO corona.categorias_caixa (id, nome, tipo) VALUES (?, '  repasse DO vendedor ', 'ENTRADA')",
+        assertThatThrownBy(() -> jdbc.update("INSERT INTO corona.categorias_caixa (id, nome, tipo) VALUES (?, '  repasse DO representante ', 'ENTRADA')",
                 UUID.randomUUID())).isInstanceOf(DataAccessException.class);
     }
 
