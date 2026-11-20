@@ -96,5 +96,19 @@
     "aplicacoes": ["100.00", "50.00"],
     "sobra": "30.00"
   },
+  "sobraDepoisDeEstorno": {
+    "_comentario": "Acerto A (100,00, sem pagar) e depois acerto B (200,00) pagando 250,00: o pago quita A (100,00) e abate 150,00 de B. Estornar o acerto A devolve os 100,00 ao 'a aplicar' do recibo de B, e o servidor (reaplicarSobras) os põe no débito mais antigo com saldo: B. O computador faz o mesmo, sem esperar o pull.",
+    "precoDaPeca": "100.00",
+    "pecasDaNotaA": 1,
+    "pecasDaNotaB": 2,
+    "pagoNoAcertoB": "250.00",
+    "esperado": {
+      "saldoDeBAntesDoEstorno": "50.00",
+      "aAplicarDoReciboDepoisDoEstorno": "50.00",
+      "saldoDeBDepoisDoEstorno": "0.00",
+      "situacaoDeBDepoisDoEstorno": "FECHADO",
+      "pendenciaDoClienteDepoisDoEstorno": "0.00"
+    }
+  },
   "vendaPercentualComDxZero": { "valorDx": "0.00", "vendaPercentual": "0.00" }
 }
