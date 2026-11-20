@@ -312,6 +312,16 @@ PR em rascunho até passar tudo localmente. Branch `fix/consignado-ajustes-finai
 - **Situação do cliente** (item 6): "O que já vendeu" lista só as notas Fechadas e seus totais; as notas acertadas ainda Pendentes aparecem em "O que falta", com quanto cada uma ainda deve.
 - **Não feito:** a data não vale para o pagamento feito dentro do Acerto (continua o momento do acerto); textos de dados antigos (ex.: categorias do caixa "Repasse do vendedor") não mudaram.
 
+## Leva 9: acabamento final do consignado (tarefa 9.9, issue 238, 20/11/2026)
+
+PR 240 em rascunho. Só testes locais (sem CI).
+
+- **Dt. Acerto antes da saída (item 1):** já estava pronto na 9.8 (campo com `min`, mensagem simples, recusa no motor local com `DATA_DO_ACERTO_ANTES_DA_SAIDA` e testes em `telas-do-consignado.test.tsx` e `consignado-do-computador.test.ts`); conferido, sem mudança. Resta só o caso do relógio atrasado do computador (o servidor recusa e aparece em "envios com problema").
+- **Sobra depois de estorno (item 2):** `reaplicarSobras` no Corona Vendas (`operacoes-do-consignado.ts`), como o servidor: depois de acerto, pagamento lançado, estorno de acerto e estorno de pagamento, o "a aplicar" de cada recibo valendo entra no débito mais antigo com saldo (recibos do mais antigo ao mais novo), com `aplicarPagamento` de `packages/shared/consignado`. Teste de paridade com o novo caso `sobraDepoisDeEstorno` de `packages/shared/exemplos/consignado-acerto.json` (a pendência já fica certa sem o pull).
+- **Versão 1.1.0 (item 3):** `package.json` do Corona Gestão e do Corona Vendas (e o lock).
+- **Roteiro (item 4):** `docs/roteiro-teste-consignado.md`.
+- **Prints e guia (item 5):** fora do Git, em `C:\Projetos\prints-consignado\9-9\` (pt e es) e os PDFs `corona-vendas-telas-v2.pdf` e `corona-vendas-telas-v2-es.pdf`. Como o e2e só cobre o Corona Gestão, foram tirados com a tela real do Corona Vendas num servidor Vite temporário (1366x768) ligado ao motor local real (banco descartável, dados inventados); a ficha do produto do Gestão com Tam./Ton. pelo mesmo método, com ponte simulada. Os arquivos temporários foram apagados.
+
 ## Leva 9: acabamentos do consignado (tarefa 9.8, issue 234, 20/11/2026)
 
 **Situação: código feito no PR 237 (rascunho); verificações locais no PR.** Branch `feat/acabamentos-consignado-9-8`. Só testes locais (sem CI). Nunca `gh pr ready`.
