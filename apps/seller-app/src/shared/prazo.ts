@@ -37,10 +37,36 @@ export interface TextoDeAviso {
   texto: string;
 }
 
-/** Os textos do glossário (parte 6, "Abrir sem internet, prazo e computador desligado"). `null` quando está tudo em dia. */
-export function textoDoPrazo(p: PrazoOffline): TextoDeAviso | null {
+const TEXTOS_DO_PRAZO_ES = {
+  hoje: 'Hoy esta computadora necesita internet.',
+  faltam: (d: number) => `Faltan ${d} días para que esta computadora necesite internet.`,
+  avisoTitulo: 'Conectá esta computadora a internet pronto.',
+  avisoTexto: (prazo: string) =>
+    `${prazo} Tus ventas están guardadas y se enviarán apenas te conectes.`,
+  relogioTitulo: 'La fecha de esta computadora parece estar mal.',
+  relogioTexto:
+    'Revisá la fecha y la hora de la computadora y conectate a internet para seguir vendiendo. Tus ventas están guardadas y se enviarán apenas te conectes.',
+  esgotadoTitulo: 'Esta computadora estuvo muchos días sin internet.',
+  esgotadoTexto:
+    'Tus ventas están guardadas y se enviarán apenas te conectes. Para hacer ventas nuevas, conectate a internet.',
+};
+
+/**
+ * Os textos do glossário (parte 6, "Abrir sem internet, prazo e computador desligado"), no idioma da tela (português
+ * por padrão aqui; a tela do Corona Vendas passa o idioma escolhido). `null` quando está tudo em dia.
+ */
+export function textoDoPrazo(p: PrazoOffline, idioma: 'es' | 'pt' = 'pt'): TextoDeAviso | null {
   if (p.situacao === 'EM_DIA') return null;
+  const es = idioma === 'es';
   if (p.situacao === 'AVISO') {
+    if (es) {
+      const prazo =
+        p.diasRestantes <= 1 ? TEXTOS_DO_PRAZO_ES.hoje : TEXTOS_DO_PRAZO_ES.faltam(p.diasRestantes);
+      return {
+        titulo: TEXTOS_DO_PRAZO_ES.avisoTitulo,
+        texto: TEXTOS_DO_PRAZO_ES.avisoTexto(prazo),
+      };
+    }
     const prazo =
       p.diasRestantes <= 1
         ? 'Hoje este computador precisa de internet.'
@@ -51,12 +77,16 @@ export function textoDoPrazo(p: PrazoOffline): TextoDeAviso | null {
     };
   }
   if (p.motivo === 'RELOGIO') {
+    if (es)
+      return { titulo: TEXTOS_DO_PRAZO_ES.relogioTitulo, texto: TEXTOS_DO_PRAZO_ES.relogioTexto };
     return {
       titulo: 'A data deste computador parece errada.',
       texto:
         'Confira a data e a hora do computador e conecte-se à internet para continuar vendendo. Suas vendas estão salvas e serão enviadas assim que você conectar.',
     };
   }
+  if (es)
+    return { titulo: TEXTOS_DO_PRAZO_ES.esgotadoTitulo, texto: TEXTOS_DO_PRAZO_ES.esgotadoTexto };
   return {
     titulo: 'Este computador ficou muitos dias sem internet.',
     texto:

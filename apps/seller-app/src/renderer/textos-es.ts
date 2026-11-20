@@ -807,7 +807,7 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
         pesquisar: 'Buscar',
       },
       acoes: '¿Qué querés hacer?',
-      pesquisarCampo: 'Nombre del cliente, número de la nota o código de la maleta',
+      pesquisarCampo: 'Cliente, nota o maleta',
       semana: 'Semana',
       representante: 'Representante',
       praca: 'Plaza',
@@ -914,7 +914,7 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
     },
     cobranca: {
       titulo: 'Cobranza',
-      buscar: 'Nombre del cliente, número de la nota o código de la maleta',
+      buscar: 'Cliente, nota o maleta',
       buscarBotao: 'Buscar',
       escolher: 'Elegí el pedido para hacer la cobranza.',
       nenhuma: 'No se encontró ningún pedido abierto.',

@@ -138,7 +138,7 @@ export function EscolherPedido({
             <tbody>
               {lista.map((n) => (
                 <tr key={n.notaId} className={classeDaSituacao(n.situacao)}>
-                  <td>{n.numero}</td>
+                  <td className="consignado-nota">{n.numero}</td>
                   <td>{n.cliente}</td>
                   <td>{dia(n.dataCobranca)}</td>
                   <td className="cs-numero">{reais(n.valorDx)}</td>

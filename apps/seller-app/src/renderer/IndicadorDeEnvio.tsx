@@ -86,7 +86,7 @@ export function IndicadorDeEnvio({ ponte }: { ponte: PonteDoCorona }) {
   const principal = textoDoIndicador(estado);
   const aguarda = textoDoQueAguarda(estado);
   const fotos = textoDasFotos(estado);
-  const aviso = textoDoPrazo(estado.prazo);
+  const aviso = textoDoPrazo(estado.prazo, idiomaAtual());
   return (
     <section className="vendas-indicador" aria-label={T.area}>
       {principal ? (

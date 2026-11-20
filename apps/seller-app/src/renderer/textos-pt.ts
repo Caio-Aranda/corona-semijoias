@@ -811,7 +811,7 @@ export const TEXTOS_PT = {
         pesquisar: 'Pesquisar',
       },
       acoes: 'O que você quer fazer?',
-      pesquisarCampo: 'Nome do cliente, número da nota ou código da maleta',
+      pesquisarCampo: 'Cliente, nota ou maleta',
       semana: 'Semana',
       representante: 'Representante',
       praca: 'Praça',
@@ -916,7 +916,7 @@ export const TEXTOS_PT = {
     },
     cobranca: {
       titulo: 'Cobrança',
-      buscar: 'Nome do cliente, número da nota ou código da maleta',
+      buscar: 'Cliente, nota ou maleta',
       buscarBotao: 'Buscar',
       escolher: 'Escolha o pedido para fazer o acerto.',
       nenhuma: 'Nenhum pedido em aberto encontrado.',

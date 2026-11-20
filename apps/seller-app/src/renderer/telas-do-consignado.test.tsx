@@ -18,6 +18,12 @@ import type {
 } from '../shared/ponte';
 import { App } from './App';
 import { definirIdioma } from './idioma';
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const AQUI = dirname(fileURLToPath(import.meta.url));
+const lerCss = (relativo: string) => readFileSync(join(AQUI, relativo), 'utf8');
 
 const DENTRO: EstadoDaSessao = { estado: 'dentro', usuario: { nome: 'Rosa' } };
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -205,6 +211,146 @@ describe('Gerenciamento Semanal', () => {
     expect(await screen.findByText('Representante:')).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: 'Cliente' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Gestión Semanal' })).toBeInTheDocument();
+  });
+});
+
+describe('Correções de tela (9.6)', () => {
+  it('Primeira semana: o cartão e o conteúdo contam o espaço interno dentro da largura (não passam da janela)', async () => {
+    const css = lerCss('./estilos.css');
+    expect(css).toMatch(/\.vendas-conteudo \{\s*box-sizing: border-box;/);
+    expect(css).toMatch(/\.vendas-cartao \{\s*box-sizing: border-box;/);
+    const vazio: PainelDaSemana = {
+      ...painel,
+      semSemana: true,
+      semanas: [],
+      semana: null,
+      pedidos: [],
+      podeNovoPedido: false,
+    };
+    const { ponte } = criarPonte({ 'consignado.painel': () => ok(vazio) });
+    await irParaPrincipal(ponte);
+    const botao = await screen.findByRole('button', { name: 'Começar a semana' });
+    expect(botao.closest('.vendas-cartao')).not.toBeNull();
+  });
+
+  it('Lançar pagamento: o texto rola por dentro e os botões ficam fixos embaixo, dentro da janela', async () => {
+    const { ponte } = criarPonte({
+      'consignado.painel': () => ok(painel),
+      'consignado.clientes': () =>
+        ok([
+          {
+            id: 'c1',
+            nome: 'Ana',
+            telefone: null,
+            cidade: null,
+            pendencia: '10.00',
+            fotoHash: null,
+          },
+        ]),
+      'consignado.cliente': () =>
+        ok({
+          id: 'c1',
+          nome: 'Ana',
+          pendencia: '10.00',
+          debitos: [],
+          maletasAtuais: [],
+          pedidos: [],
+          pagamentos: [],
+          comissaoPercentual: '30.00',
+          fotosEsperandoEnvio: 0,
+        }),
+    });
+    const u = userEvent.setup();
+    await irParaPrincipal(ponte);
+    await u.click(screen.getByRole('button', { name: 'Clientes' }));
+    await u.click(await screen.findByRole('button', { name: 'Abrir' }));
+    await u.click(await screen.findByRole('button', { name: 'Lançar pagamento' }));
+    const janela = await screen.findByRole('dialog');
+    const filhos = Array.from(janela.children).map((f) => f.className);
+    expect(filhos).toContain('cs-janela__texto');
+    expect(janela.querySelector(':scope > .cs-rodape-acoes')).not.toBeNull();
+    const css = lerCss('../../../../packages/ui/src/componentes.css');
+    expect(css).toMatch(/\.cs-janela__texto \{[^}]*overflow-y: auto/);
+    expect(css).toMatch(/\.cs-janela \{[^}]*max-height: 100%/);
+  });
+
+  it('tabela principal: nota e valores ganham a marca de nunca quebrar; Comis. % aparece em Em aberto e Remarcado', async () => {
+    const { ponte } = criarPonte({
+      'consignado.painel': () =>
+        ok({
+          ...painel,
+          pedidos: [
+            linha(1, 'EM_ABERTO', { comissaoPercentual: '30.00' }),
+            linha(4, 'REMARCADO', { comissaoPercentual: '35.00' }),
+          ],
+        }),
+    });
+    await irParaPrincipal(ponte);
+    const tabela = await screen.findByRole('table', { name: 'Pedidos da semana' });
+    const linhas = within(tabela).getAllByRole('row').slice(1);
+    for (const l of linhas) {
+      const celulas = within(l).getAllByRole('cell');
+      expect(celulas[0]).toHaveClass('consignado-nota');
+      for (const i of [3, 4, 5, 6, 7, 8]) expect(celulas[i]).toHaveClass('cs-numero');
+    }
+    expect(within(linhas[0] as HTMLElement).getByText('30,00%')).toBeInTheDocument();
+    expect(within(linhas[1] as HTMLElement).getByText('35,00%')).toBeInTheDocument();
+    const css = lerCss('./estilos.css');
+    expect(css).toMatch(/\.cs-tabela td\.cs-numero,[^{]*\{\s*white-space: nowrap/);
+  });
+
+  it('títulos duplicados: a legenda da tabela fica só para leitor de tela', async () => {
+    const { ponte } = criarPonte({
+      'consignado.painel': () => ok(painel),
+      'consignado.clientes': () =>
+        ok([
+          {
+            id: 'c1',
+            nome: 'Ana',
+            telefone: null,
+            cidade: null,
+            pendencia: '10.00',
+            fotoHash: null,
+          },
+        ]),
+      'consignado.cliente': () =>
+        ok({
+          id: 'c1',
+          nome: 'Ana',
+          pendencia: '10.00',
+          debitos: [
+            {
+              acertoId: 'd1',
+              notaId: 'n1',
+              numeroDaNota: '0000001-01',
+              acertadoEm: '2026-11-10T12:00:00Z',
+              valor: '10.00',
+              saldo: '10.00',
+            },
+          ],
+          maletasAtuais: [],
+          pedidos: [],
+          pagamentos: [],
+          comissaoPercentual: '30.00',
+          fotosEsperandoEnvio: 0,
+        }),
+    });
+    const u = userEvent.setup();
+    await irParaPrincipal(ponte);
+    await u.click(screen.getByRole('button', { name: 'Clientes' }));
+    await u.click(await screen.findByRole('button', { name: 'Abrir' }));
+    const titulo = await screen.findByRole('heading', { name: 'O que o cliente deve agora' });
+    const legenda = within(titulo.closest('section') as HTMLElement)
+      .getByRole('table')
+      .querySelector('caption');
+    expect(legenda).toHaveTextContent('O que o cliente deve agora');
+    expect(legenda).toHaveClass('consignado-so-leitor');
+  });
+
+  it('Pesquisar: o texto de exemplo é curto e cabe no campo, nos dois idiomas', async () => {
+    const { TEXTOS_ES, TEXTOS_PT } = await import('./textos');
+    expect(TEXTOS_ES.consignado.semanal.pesquisarCampo.length).toBeLessThanOrEqual(25);
+    expect(TEXTOS_PT.consignado.semanal.pesquisarCampo.length).toBeLessThanOrEqual(25);
   });
 });
 

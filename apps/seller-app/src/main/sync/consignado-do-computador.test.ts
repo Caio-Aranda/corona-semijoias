@@ -628,6 +628,15 @@ describe('Reposição, Troca e Remarcar', () => {
     ).toThrowError(/já foi acertada/);
   });
 
+  it('nota Em aberto mostra a comissão do cliente em Comis. % (só o valor em R$ fica zerado)', () => {
+    chamar({ operacao: 'consignado.semanaNova', id: idDeTeste(10), numero: 1 });
+    pedido([['A-1', 1]]);
+    const linha = painel().pedidos[0];
+    expect(linha?.situacao).toBe('EM_ABERTO');
+    expect(linha?.comissaoPercentual).toBe('30.00');
+    expect(linha?.comissao).toBe('0.00');
+  });
+
   it('Remarcar muda a Dt. Cobrança e a nota fica Remarcado; zerada até o acerto', () => {
     chamar({ operacao: 'consignado.semanaNova', id: idDeTeste(10), numero: 1 });
     const n1 = pedido([['A-1', 1]]);
@@ -643,6 +652,9 @@ describe('Reposição, Troca e Remarcar', () => {
     expect(linha?.situacao).toBe('REMARCADO');
     expect(linha?.valorVd).toBe('0.00');
     expect(linha?.valorLiquido).toBe('0.00');
+    // Tarefa 9.6: Comis. % não fica vazia; mostra a comissão do cliente (só o valor em R$ é zerado).
+    expect(linha?.comissaoPercentual).toBe('30.00');
+    expect(linha?.comissao).toBe('0.00');
     expect(() =>
       chamar({
         operacao: 'consignado.remarcar',

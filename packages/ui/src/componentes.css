@@ -411,8 +411,13 @@ body {
   z-index: 10;
 }
 .cs-janela {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
   width: 100%;
   max-width: 480px;
+  /* Cabe em notebook 1366x768: o texto rola por dentro e os botões ficam sempre à vista, embaixo. */
+  max-height: 100%;
   padding: var(--espaco-6);
   background: var(--cor-fundo);
   color: var(--cor-texto);
@@ -425,6 +430,13 @@ body {
 }
 .cs-janela__texto {
   margin: 0 0 var(--espaco-2);
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+}
+.cs-janela > .cs-rodape-acoes {
+  flex: none;
+  padding-bottom: 0;
 }
 
 .cs-menu {

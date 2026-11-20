@@ -437,12 +437,20 @@ export class ConsultasDoConsignado {
       valorDx: acerto?.valor_dx ?? dinheiro(dx.valor),
       valorDv: acerto?.valor_dv ?? ZERO,
       valorVd: acerto?.valor_vd ?? ZERO,
-      comissaoPercentual: acerto?.comissao_percentual ?? null,
+      // Em aberto e remarcada ainda não têm acerto: mostra a comissão do cliente (§23.4 só zera o valor em R$).
+      comissaoPercentual: acerto?.comissao_percentual ?? this.comissaoDoCliente(nota.cliente_id),
       comissao: acerto?.comissao ?? ZERO,
       valorLiquido: acerto?.bruto ?? ZERO,
       situacao: this.situacao(nota, acerto, debitos),
       acertoId: acerto?.id ?? null,
     };
+  }
+
+  private comissaoDoCliente(clienteId: string): string {
+    const c = this.db()
+      .prepare('SELECT comissao_percentual FROM clientes WHERE id = ?')
+      .get(clienteId) as { comissao_percentual: string | null } | undefined;
+    return c?.comissao_percentual ?? '30.00';
   }
 
   private painel(semanaId?: string): PainelDaSemana {

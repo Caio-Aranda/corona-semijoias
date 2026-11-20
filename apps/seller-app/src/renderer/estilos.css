@@ -7,6 +7,7 @@
 }
 
 .vendas-conteudo {
+  box-sizing: border-box;
   width: 100%;
   max-width: 960px;
   margin: 0 auto;
@@ -17,6 +18,7 @@
 }
 
 .vendas-cartao {
+  box-sizing: border-box;
   width: 100%;
   max-width: 440px;
   margin: 0 auto;
@@ -246,6 +248,8 @@
 /* --- Consignado ao cliente (tarefa 9.2; §23). Texto escuro sobre fundo claro; dourado só em detalhes. --- */
 .consignado-largo {
   max-width: 1280px;
+  padding-top: var(--espaco-4);
+  gap: var(--espaco-4);
 }
 
 .consignado-botoes {
@@ -256,8 +260,13 @@
 }
 
 .consignado-pesquisa {
-  flex: 1 1 260px;
-  min-width: 220px;
+  flex: 1 1 200px;
+  min-width: 200px;
+  max-width: 340px;
+}
+.consignado-pesquisa .cs-campo,
+.consignado-botoes .cs-campo {
+  margin-bottom: 0;
 }
 
 .consignado-cabecalho {
@@ -617,4 +626,43 @@ tr.consignado-linha[tabindex]:focus-visible {
   .relatorio-assinaturas {
     break-inside: avoid;
   }
+}
+
+/* --- Correções de tela (tarefa 9.6): cabe em 1366x768, valores e número da nota nunca quebram. --- */
+.consignado-tabela th,
+.consignado-tabela td {
+  height: auto;
+  padding: var(--espaco-2) var(--espaco-3);
+}
+.cs-tabela td.cs-numero,
+.cs-tabela td.consignado-nota,
+.cs-tabela th.cs-numero {
+  white-space: nowrap;
+}
+.cs-tabela td.consignado-nota {
+  font-variant-numeric: tabular-nums;
+}
+.cs-valor__real {
+  white-space: nowrap;
+}
+
+/* Só para leitor de tela: quando o título já está visível, a legenda da tabela não repete. */
+.consignado-so-leitor {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Telas de trabalho mais compactas: o botão principal fica à vista em notebook 1366x768 (entrada e troca de senha não mudam). */
+.vendas-cartao--larga .cs-rodape-acoes {
+  padding: 0;
+}
+.vendas-cartao--larga .cs-campo {
+  margin-bottom: 0;
 }
