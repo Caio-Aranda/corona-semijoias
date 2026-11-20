@@ -74,6 +74,10 @@ class CadastrosBasicosTest extends TesteDeIntegracao {
         return mvc.perform(pedido);
     }
 
+    private static java.math.BigDecimal comissao(JsonNode cliente) {
+        return new java.math.BigDecimal(cliente.get("comissaoPercentual").asString());
+    }
+
     private JsonNode criar(String caminho, Map<String, Object> corpo) throws Exception {
         String resposta = enviar("POST", caminho, dona(), corpo).andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
@@ -384,6 +388,69 @@ class CadastrosBasicosTest extends TesteDeIntegracao {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.campos[0].campo").value("cpf"))
                 .andExpect(jsonPath("$.campos[0].mensagem").value("Confira o CPF: ele não parece estar certo."));
+    }
+
+    @Test
+    void clienteDoConsignadoGuardaDocumentoLivreComissaoEIndicacaoSemExigirCpfValido() throws Exception {
+        UUID vendedor = usuarios.criarCadastroDeVendedor();
+        JsonNode padrao = criar("/api/dona/clientes", mapa("nome", unico("Sem comissao")));
+        assertThat(comissao(padrao)).isEqualByComparingTo("30");
+        // CI paraguaia: texto livre, não passa por conferência de CPF e o CPF fica vazio.
+        JsonNode criado = criar("/api/dona/clientes", mapa(
+                "nome", unico("Cliente paraguaia"), "documento", "1.234.567", "documentoTipo", "CI",
+                "indicadoPorNome", "Dona Rosa", "comoConheceu", "Feira do bairro", "comissaoPercentual", "35.00",
+                "vendedorResponsavelId", vendedor.toString()));
+        assertThat(criado.get("documento").asString()).isEqualTo("1.234.567");
+        assertThat(criado.get("documentoTipo").asString()).isEqualTo("CI");
+        assertThat(criado.has("cpf") && !criado.get("cpf").isNull()).isFalse();
+        assertThat(criado.get("indicadoPorNome").asString()).isEqualTo("Dona Rosa");
+        assertThat(criado.get("comoConheceu").asString()).isEqualTo("Feira do bairro");
+        assertThat(comissao(criado)).isEqualByComparingTo("35");
+        // Do tipo CPF o documento continua conferido: dígito errado é recusado.
+        enviar("POST", "/api/dona/clientes", dona(), mapa("nome", unico("CPF ruim"), "documento", "111.111.111-11", "documentoTipo", "CPF"))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.campos[0].campo").value("cpf"));
+        // Tipo desconhecido e tipo sem número são recusados em português simples.
+        enviar("POST", "/api/dona/clientes", dona(), mapa("nome", unico("Tipo ruim"), "documento", "123", "documentoTipo", "XYZ"))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.campos[0].campo").value("documentoTipo"));
+        enviar("POST", "/api/dona/clientes", dona(), mapa("nome", unico("Sem numero"), "documentoTipo", "RG"))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.campos[0].campo").value("documento"));
+        // Comissão fora de 0 a 40 é recusada; 0 e 40 valem.
+        for (String ruim : new String[] {"-1", "41", "40.01"}) {
+            enviar("POST", "/api/dona/clientes", dona(), mapa("nome", unico("Comissao ruim"), "comissaoPercentual", ruim))
+                    .andExpect(status().isBadRequest()).andExpect(jsonPath("$.campos[0].campo").value("comissaoPercentual"));
+        }
+        assertThat(comissao(criar("/api/dona/clientes", mapa("nome", unico("Zero"), "comissaoPercentual", "0")))).isEqualByComparingTo("0");
+        assertThat(comissao(criar("/api/dona/clientes", mapa("nome", unico("Quarenta"), "comissaoPercentual", "40")))).isEqualByComparingTo("40");
+        // Editar muda a comissão e a indicação (por um cliente que existe), sem tocar no responsável.
+        JsonNode editado = json.readTree(enviar("PUT", "/api/dona/clientes/" + criado.get("id").asString(), dona(),
+                mapa("nome", criado.get("nome").asString(), "documento", "A-99", "documentoTipo", "OUTRO", "comissaoPercentual", "20",
+                        "indicadoPorClienteId", padrao.get("id").asString(), "vendedorResponsavelId", vendedor.toString(), "version",
+                        criado.get("version").asInt()))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+        assertThat(comissao(editado)).isEqualByComparingTo("20");
+        assertThat(editado.get("documentoTipo").asString()).isEqualTo("OUTRO");
+        assertThat(editado.get("indicadoPorClienteId").asString()).isEqualTo(padrao.get("id").asString());
+        assertThat(editado.has("indicadoPorNome") && !editado.get("indicadoPorNome").isNull()).isFalse();
+        // Indicado por um cliente que não existe é recusado.
+        enviar("PUT", "/api/dona/clientes/" + criado.get("id").asString(), dona(),
+                mapa("nome", criado.get("nome").asString(), "indicadoPorClienteId", UUID.randomUUID().toString(), "version",
+                        editado.get("version").asInt()))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.campos[0].campo").value("indicadoPorClienteId"));
+    }
+
+    @Test
+    void responsavelDoClienteNaoMudaDepoisDeDefinido() throws Exception {
+        UUID primeiro = usuarios.criarCadastroDeVendedor();
+        UUID outro = usuarios.criarCadastroDeVendedor();
+        JsonNode criado = criar("/api/dona/clientes", mapa("nome", unico("Com responsavel"), "vendedorResponsavelId", primeiro.toString()));
+        String id = criado.get("id").asString();
+        // Trocar o representante é recusado com um texto simples (D10 do ADR-0016).
+        enviar("PUT", "/api/dona/clientes/" + id, dona(),
+                mapa("nome", criado.get("nome").asString(), "vendedorResponsavelId", outro.toString(), "version", criado.get("version").asInt()))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.campos[0].campo").value("vendedorResponsavelId"));
+        // Salvar sem representante mantém o que já existe.
+        enviar("PUT", "/api/dona/clientes/" + id, dona(), mapa("nome", criado.get("nome").asString(), "version", criado.get("version").asInt()))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.vendedorResponsavelId").value(primeiro.toString()));
     }
 
     @Test

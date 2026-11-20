@@ -9,7 +9,8 @@ export interface AvisoParaTraduzir {
   texto: string;
 }
 
-const unico = (n: string, um: string, varios: (n: string) => string) => (n === '1' ? um : varios(n));
+const unico = (n: string, um: string, varios: (n: string) => string) =>
+  n === '1' ? um : varios(n);
 
 /** "1 dia" / "3 dias" → "1 día" / "3 días". */
 const dias = (t: string) => t.replace(/\bdias?\b/, (d) => (d === 'dia' ? 'día' : 'días'));
@@ -71,11 +72,7 @@ function titulo(a: AvisoParaTraduzir): string | null {
       return (r = m(/^Muitas devoluções de (.+)\.$/)) ? `Muchas devoluciones de ${r[1]}.` : null;
     case 'ESTOQUE_BAIXO':
       return (r = m(/^(\d+) produtos? (?:está|estão) acabando\.$/))
-        ? unico(
-            r[1]!,
-            '1 producto se está acabando.',
-            (n) => `${n} productos se están acabando.`,
-          )
+        ? unico(r[1]!, '1 producto se está acabando.', (n) => `${n} productos se están acabando.`)
         : null;
     case 'COMPUTADOR_SEM_ENVIAR':
       return (r = m(/^O computador de (.+) está há (.+) sem enviar\.$/))

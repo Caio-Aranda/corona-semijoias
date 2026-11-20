@@ -237,12 +237,21 @@ export function ehRotaDoAcertoAntigo(rota: Rota): boolean {
   return rota.startsWith('acertos/') || ehRelatorioDoAcertoAntigo(rota);
 }
 
-/** O menu sem o acerto antigo, quando ele está escondido (nada é apagado: só deixa de aparecer). */
+/**
+ * O menu sem o fluxo antigo, quando ele está escondido (nada é apagado: só deixa de aparecer, e as rotas continuam). Mesma
+ * configuração do acerto antigo: some também o grupo "Devoluções e créditos" e "Vendas de computador bloqueado", que eram da
+ * venda ao consumidor que saiu do Corona Vendas.
+ */
 export function menuDoGestao(acertoVisivel: boolean): typeof MENU {
   if (acertoVisivel) return MENU;
   return MENU.filter(
-    (grupo) => !('titulo' in grupo && grupo.titulo === TEXTOS_DE_ACERTOS.menu.grupo),
-  );
+    (grupo) =>
+      !('titulo' in grupo && grupo.titulo === TEXTOS_DE_ACERTOS.menu.grupo) &&
+      !('titulo' in grupo && grupo.titulo === TEXTOS_DE_DEVOLUCOES.menu.grupo),
+  ).map((grupo) => ({
+    ...grupo,
+    itens: grupo.itens.filter((i) => i.chave !== 'computadores/vendas'),
+  })) as typeof MENU;
 }
 
 /** Nome do item na tela, para "Em breve" e títulos. */

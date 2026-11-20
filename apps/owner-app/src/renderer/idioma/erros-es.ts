@@ -94,7 +94,8 @@ export const ERROS_EM_ESPANHOL: Record<string, string> = {
     'Defina el límite de este representante antes de armar la maleta.',
   LIMITE_DE_CONSIGNACAO_EXCEDIDO:
     'El valor de la maleta pasa el límite de consignación del representante.',
-  PECA_NAO_E_DESTA_MALETA: 'Esta pieza no es de esta maleta. Revise el código de la pieza y el de la maleta.',
+  PECA_NAO_E_DESTA_MALETA:
+    'Esta pieza no es de esta maleta. Revise el código de la pieza y el de la maleta.',
   PECA_FORA_DA_MALETA: 'Esta pieza está desactivada o fue eliminada y no puede ir a la maleta.',
   DEVOLUCAO_MAIOR_QUE_O_SALDO:
     'Hay menos piezas en la maleta de lo que se informó. Revise la cantidad.',
