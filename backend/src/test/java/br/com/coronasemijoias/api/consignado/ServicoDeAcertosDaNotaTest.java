@@ -269,10 +269,10 @@ class ServicoDeAcertosDaNotaTest extends ApoioDoConsignado {
         UUID cliente = cliente(v);
         UUID nota = criarNota(v, semana, 1, cliente, item(peca, maleta, 1, "100.00"));
         UUID nota2 = criarNota(v, semana, 2, cliente, item(peca, maleta, 1, "100.00"));
-        // O número 2 já é da nota 2: o recibo não pode usá-lo.
-        Throwable erro = catchThrowable(() -> acertar(v, nota, semana, "0", List.of(), 2, paga("PIX", "100.00")));
+        // Nota e recibo têm contador próprio (9.8): o recibo 2 não esbarra na nota 2, mas outro recibo 2 é recusado.
+        acertar(v, nota, semana, "0", List.of(), 2, paga("PIX", "100.00"));
+        Throwable erro = catchThrowable(() -> acertar(v, nota2, semana, "0", List.of(), 2, paga("PIX", "100.00")));
         assertThat(codigoDoErro(erro)).isEqualTo("NUMERO_REPETIDO");
-        assertThat(contar("SELECT count(*) FROM corona.acertos_nota WHERE nota_id = ?", nota)).isZero();
-        assertThat(nota2).isNotNull();
+        assertThat(contar("SELECT count(*) FROM corona.acertos_nota WHERE nota_id = ?", nota2)).isZero();
     }
 }

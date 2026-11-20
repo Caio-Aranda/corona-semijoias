@@ -46,7 +46,7 @@ public class DebitosDoCliente {
                   JOIN corona.notas_consignado n ON n.id = a.nota_id
                   JOIN corona.semanas_vendedor s ON s.id = n.semana_id
                  WHERE n.cliente_id = ? AND a.estornado_em IS NULL
-                 ORDER BY a.acertado_em, s.numero, n.sequencia, a.id""",
+                 ORDER BY a.registrado_em, s.numero, n.sequencia, a.id""",
                 (rs, i) -> new DebitoDaNota(rs.getObject(1, UUID.class), rs.getObject(2, UUID.class), rs.getBigDecimal(3),
                         rs.getBigDecimal(4)), clienteId).stream().filter(d -> d.saldo().signum() > 0).toList();
     }

@@ -344,6 +344,10 @@ export const ERROS_EM_ESPANHOL: Record<string, string> = {
     'La comisión debe quedar entre 0% y 40%. Corrija el porcentaje e intente de nuevo.',
   DATA_DO_PAGAMENTO_NO_FUTURO:
     'La fecha del pago no puede ser posterior a hoy. Elegí hoy o un día que ya pasó.',
+  DATA_DO_ACERTO_NO_FUTURO:
+    'La fecha de la liquidación no puede ser posterior a hoy. Elegí hoy o un día que ya pasó.',
+  DATA_DO_ACERTO_ANTES_DA_SAIDA:
+    'La fecha de la liquidación no puede ser anterior al día en que salió la nota. Elegí el día de la salida o uno posterior.',
   CONSIGNADO_JA_REGISTRADO_DIFERENTE:
     'Este registro ya fue hecho con otros datos. Revise los pedidos y las liquidaciones antes de registrar de nuevo.',
   ACERTO_JA_ESTORNADO:

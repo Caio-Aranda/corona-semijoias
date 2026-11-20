@@ -169,7 +169,7 @@ public class ConsultasDoConsignado {
                        a.bruto - coalesce((SELECT sum(ap.valor) FROM corona.aplicacoes_recibo ap WHERE ap.acerto_id = a.id), 0) AS saldo,
                        a.acertado_em, a.estornado_em IS NOT NULL, a.motivo_estorno
                   FROM corona.acertos_nota a JOIN corona.semanas_vendedor s ON s.id = a.semana_id
-                 WHERE a.nota_id = ? ORDER BY a.acertado_em, a.id""",
+                 WHERE a.nota_id = ? ORDER BY a.registrado_em, a.id""",
                 (rs, i) -> new AcertoLido(rs.getObject(1, UUID.class), rs.getInt(2), rs.getBigDecimal(3), rs.getInt(4), rs.getInt(5),
                         rs.getInt(6), rs.getBigDecimal(7), rs.getBigDecimal(8), rs.getBigDecimal(9), rs.getBigDecimal(10),
                         rs.getBigDecimal(11), rs.getBigDecimal(12), rs.getBigDecimal(13), rs.getBigDecimal(14), rs.getBigDecimal(15),

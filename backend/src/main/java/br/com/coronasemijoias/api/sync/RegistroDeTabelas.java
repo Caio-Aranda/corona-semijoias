@@ -247,7 +247,7 @@ public final class RegistroDeTabelas {
                                 "nota_id", "data_cobranca_anterior", "data_cobranca_nova", "remarcada_em", "dispositivo_id",
                                 "hora_ajustada"), true, RegraDoVendedor.doVendedor(DA_NOTA.formatted("t.nota_id"))),
                         new TabelaSincronizavel("acertos_nota", List.of(
-                                "nota_id", "vendedor_id", "semana_id", "acertado_em", "comissao_percentual", "itens_dx", "itens_dv",
+                                "nota_id", "vendedor_id", "semana_id", "acertado_em", "registrado_em", "comissao_percentual", "itens_dx", "itens_dv",
                                 "itens_vd", "valor_dx", "valor_dv", "valor_vd", "comissao", "bruto", "pendencias_anteriores",
                                 "total_a_receber", "total_pago", "ficou_devendo", "recibo_id", "cotacao_id", "dispositivo_id",
                                 "hora_ajustada", "estornado_em", "estorno_id", "motivo_estorno"), false,
