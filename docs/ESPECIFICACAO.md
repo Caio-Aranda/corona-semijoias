@@ -1,6 +1,6 @@
 # Especificação completa: Sistema de Semijoias Consignadas
 
-Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.30, 20/11/2026.
+Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.31, 20/11/2026.
 
 ## 1. Objetivo e contexto
 
@@ -1041,7 +1041,7 @@ Nova semana, cadastro de cliente (com fotos), Novo Pedido, Reposição, Troca, R
 
 Quando a maleta volta, **a Lucia bipa** as peças no Corona Gestão (o representante não bipa). O relatório **Fechamento da maleta** mostra: peças enviadas, devolvidas pelos clientes, vendidas e ainda com clientes (com quem), as bipadas na volta e a diferença; valor vendido (VD), comissão dos clientes, valor recebido e pendências a receber. O acerto em dinheiro com a Lucia fica fora do sistema por enquanto (§23.1, item 2).
 
-**Duas partes separadas (9.7, pedido da dona de 19/11).** A tela tem duas abas: **Peças da maleta** (enviadas, devolvidas pelos clientes, vendidas, ainda com clientes e com quem, esperadas, lidas na volta e a diferença) e **Dinheiro** (valor vendido, comissão dos clientes, valor recebido e pendências a receber). O PDF, o Excel e o CSV saem com as duas partes como seções distintas, uma depois da outra. Ler uma peça que existe mas é de outra maleta diz "Esta peça não é desta maleta" e, se achar, de qual maleta ela é (erro `PECA_NAO_E_DESTA_MALETA`, 422). A tela e o relatório existem em espanhol (padrão) e português.
+**Duas partes separadas (9.7, pedido da dona de 19/11).** A tela tem duas abas: **Peças da maleta** (enviadas, devolvidas pelos clientes, vendidas, ainda com clientes e com quem, esperadas, lidas na volta e a diferença) e **Dinheiro** (valor vendido, comissão dos clientes, valor recebido e pendências a receber, cada um em Real, Dólar e Guarani: cada acerto e cada recibo pela cotação do dia dele, e os resultados somados; faltando a cotação de algum, só o Real, 9.8). O PDF, o Excel e o CSV saem com as duas partes como seções distintas, uma depois da outra. Ler uma peça que existe mas é de outra maleta diz "Esta peça não é desta maleta" e, se achar, de qual maleta ela é (erro `PECA_NAO_E_DESTA_MALETA`, 422). A tela e o relatório existem em espanhol (padrão) e português.
 
 O menu esconde, pela mesma configuração `GET /api/configuracoes/telas` do acerto antigo, também o grupo **Devoluções e créditos** e **Vendas de computador bloqueado** (fluxo antigo de venda ao consumidor); nada é apagado e as rotas continuam. O cadastro de cliente pela dona tem **Comissão %** (0 a 40, padrão 30), documento livre com tipo (CPF, RG, CI ou outro; só o tipo CPF exige dígito válido), indicado por e como conheceu; o representante do cliente não muda depois de definido (D10).
 
@@ -1059,11 +1059,11 @@ Em todo relatório e tela de informação: **DX, DV e VD** (valores) e **Itens D
 | Situação da maleta | Representante | Peças na maleta, com clientes (com quem) e vendidas. |
 | Fechamento da maleta | Lucia | §23.10. |
 
-Valores em Real, com Dólar e Guarani abaixo, pela cotação do dia de cada lançamento (ADR-0006). Sem cotação para o lançamento, só o Real e o texto "Sem cotação". Onde um total soma lançamentos de dias diferentes (Situação do cliente, Totais da semana, Situação da maleta), cada lançamento é convertido pela sua cotação e os resultados se somam; faltando a cotação de algum, o total sai só em Real.
+Valores em Real, com Dólar e Guarani abaixo, pela cotação do dia de cada lançamento (ADR-0006). **Em cada linha (9.8):** o sub-total da Nota de saída, o valor de cada peça vendida do Relatório do acerto, cada nota da Situação do cliente (DX, DV, VD, comissão, líquido, pago e quanto ainda deve) e cada peça das Peças vendidas por cliente trazem Dólar e Guarani pela cotação do dia do lançamento da própria linha (a da saída da nota, ou a do acerto, a Dt. Acerto). Sem cotação para o lançamento, só o Real e o texto "Sem cotação". Onde um total soma lançamentos de dias diferentes (Situação do cliente, Totais da semana, Situação da maleta), cada lançamento é convertido pela sua cotação e os resultados se somam; faltando a cotação de algum, o total sai só em Real.
 
 **Como saem (Corona Vendas, tarefa 9.3):** cada relatório é montado do banco local (sem internet), com as mesmas fórmulas de `packages/shared/consignado`, e a mesma folha serve para **imprimir**, **salvar em PDF** e **preparar o WhatsApp**. Preparar o WhatsApp = o sistema guarda o PDF numa pasta (Documentos › Corona Vendas › Relatórios), mostra a pasta e abre a conversa do cliente (`https://wa.me/<número>?text=...`, no navegador padrão) com uma mensagem curta pronta; **o representante anexa o PDF e envia, nada é enviado sozinho**. Abrir o WhatsApp precisa de internet; sem ela o PDF fica guardado e a tela avisa. Os relatórios do próprio representante (Totais da semana, Situação da maleta) abrem o WhatsApp sem número, e ele escolhe a conversa. Cabeçalho de todos: Representante e Praça (a praça do cadastro do representante, que chega com as maletas). A Nota de saída é gerada de novo a cada Reposição na semana atual.
 
-**Tam./Ton. fora por enquanto:** o produto não tem esse campo; a coluna sai das telas e dos relatórios (não criar campo novo sem decisão).
+**Tam./Ton. (9.8).** O produto ganha o campo opcional **Tam./Ton.** (texto curto, até 30 letras, ex.: "17" ou "Dourado"; coluna `produtos.tam_ton`, V057), preenchido no cadastro do produto do Corona Gestão e aceito como coluna opcional na importação por planilha (títulos Tam./Ton., Tamanho/Tom ou Talle/Tono; planilha sem o valor não apaga o que o produto já tem). Vai ao Corona Vendas só no pull de **formato 2** (o formato 1 nunca leva a coluna) e volta como coluna **Tam./Ton.** no Novo Pedido, na Cobrança, na Nota de saída e no Relatório do acerto; vazio quando a peça não tem. Não é dinheiro nem custo.
 
 ### 23.12 Fora desta versão
 

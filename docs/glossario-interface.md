@@ -15,6 +15,7 @@ Em 09/11/2026 o responsável resolveu as dúvidas que estavam abertas neste glos
 - Na tela, "vendedor" até 18/11/2026. **Desde 18/11/2026 (§23.1, item 4) o programa fala em "Representante" (quem usa o Corona Vendas) e "Cliente" (quem leva peças em consignado), nos dois aplicativos e nos dois idiomas; ver a parte 22.**
 - Cancelar venda segue a §19.5: "Cancelar venda", com a explicação de que é um novo lançamento. A palavra "anular" não é usada.
 - Na tela, sempre "ler o código" ("Leia o código de novo"). "Bipar" e "bipe" nunca aparecem na tela.
+- **Tam./Ton.** (es: Talle/Tono): tamanho ou tom da peça, campo opcional do produto (9.8). **Dt. Acerto** (es: Fecha de cobranza): a data do acerto na Cobrança. **R 0000065-01**: o recibo, com o prefixo R (a nota não tem prefixo).
 - Nomes dos aplicativos: **Corona Gestão** (app da dona) e **Corona Vendas** (app do vendedor), com ícones diferentes (§18).
 - "Produto" no cadastro, na consulta e nos relatórios. "Peça" na maleta, na venda, na troca, na devolução e na leitura do código.
 - Senha nova: pelo menos 8 caracteres, com letras e números, diferente da senha temporária.
