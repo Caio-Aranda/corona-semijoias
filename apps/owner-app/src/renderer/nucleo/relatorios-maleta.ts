@@ -7,7 +7,7 @@
 import type { NomeDoRelatorio, NomeDoRelatorioDeMaleta } from '../../shared/relatorios';
 import { TEXTOS_DE_MALETAS } from '../textos-maletas';
 import type { DefinicaoDeRelatorio, ExtraDoRelatorio } from './relatorios';
-import { idiomaAtual } from '../idioma/idioma';
+import { idiomaAtual, porIdioma } from '../idioma/idioma';
 import { traducirDefinicion } from '../idioma/es/relatorios-mapa';
 
 const TR = TEXTOS_DE_MALETAS.relatorios;
@@ -229,7 +229,7 @@ export const RELATORIOS_DE_MALETA: Record<NomeDoRelatorioDeMaleta, DefinicaoDeRe
     soAbreDeUmaLinha: true,
     titulo: 'Fechamento da maleta',
     explicacao:
-      'Peça a peça: quantas foram enviadas, devolvidas pelos clientes, vendidas, quantas ainda estão com os clientes (e com quem), quantas você leu na volta e a diferença. No rodapé: o valor vendido, a comissão dos clientes, o que foi recebido e o que ainda falta receber.',
+      'Duas partes separadas. Em "Peças da maleta": peça a peça, quantas foram enviadas, devolvidas pelos clientes, vendidas, quantas ainda estão com os clientes (e com quem), quantas você leu na volta e a diferença. Em "Dinheiro": o valor vendido, a comissão dos clientes, o que foi recebido e o que ainda falta receber.',
     nota: 'Os valores da maleta são divididos pelo vendido de cada maleta dentro da nota do cliente.',
     filtros: [],
     buscaRotulo: '',
@@ -245,6 +245,20 @@ export const RELATORIOS_DE_MALETA: Record<NomeDoRelatorioDeMaleta, DefinicaoDeRe
       { chave: 'diferenca', titulo: 'Diferença', tipo: 'inteiro' },
     ],
     totaisDeValor: {},
+    abas: [
+      {
+        id: 'pecas',
+        rotulo: 'Peças da maleta',
+        comTabela: true,
+        totais: ['enviadas', 'devolvidas', 'vendidas', 'comClientes', 'bipadas', 'diferenca'],
+      },
+      {
+        id: 'dinheiro',
+        rotulo: porIdioma('Dinero', 'Dinheiro'),
+        comTabela: false,
+        totais: ['vd', 'comissao', 'recebido', 'pendencias'],
+      },
+    ],
     rotulosDosTotais: {
       enviadas: 'Peças enviadas',
       devolvidas: 'Devolvidas pelos clientes',

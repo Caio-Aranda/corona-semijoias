@@ -89,7 +89,7 @@ public class ServicoDoFechamentoDaMaleta {
         return id;
     }
 
-    /** Guarda os bipes (idempotentes pelo id). Peça fora da maleta é recusada. */
+    /** Guarda os bipes (idempotentes pelo id). Peça que não é desta maleta é recusada (e diz de qual é, se achar). */
     @Transactional
     public int registrarLeituras(UUID remessaId, List<Leitura> leituras, UUID usuarioId) {
         if (leituras == null || leituras.isEmpty()) {
@@ -124,13 +124,29 @@ public class ServicoDoFechamentoDaMaleta {
                     "SELECT EXISTS (SELECT 1 FROM corona.itens_remessa WHERE remessa_id = ? AND produto_id = ? AND deleted_at IS NULL)",
                     Boolean.class, remessaId, l.produtoId());
             if (!Boolean.TRUE.equals(daMaleta)) {
-                throw new ErroDaApi(HttpStatus.UNPROCESSABLE_ENTITY, CodigoErro.PECA_FORA_DA_MALETA);
+                throw pecaDeOutraMaleta(remessaId, l.produtoId());
             }
             jdbc.update("INSERT INTO corona.leituras_fechamento_maleta (id, fechamento_id, produto_id, quantidade, lida_em) VALUES (?, ?, ?, ?, ?)",
                     id, fechamento, l.produtoId(), l.quantidade(), Timestamp.from(relogio.instant()));
             novas++;
         }
         return novas;
+    }
+
+    /** A peça lida não é desta maleta: diz de qual maleta (aberta) ela é, se achar; senão, só que não é desta. */
+    private ErroDaApi pecaDeOutraMaleta(UUID remessaId, UUID produtoId) {
+        List<String> outras = jdbc.queryForList(
+                """
+                SELECT r.codigo FROM corona.itens_remessa i JOIN corona.remessas r ON r.id = i.remessa_id
+                WHERE i.produto_id = ? AND i.deleted_at IS NULL AND r.deleted_at IS NULL AND r.id <> ?
+                  AND r.status IN ('ENVIADA', 'CONFERIDA', 'EM_ACERTO') AND r.codigo IS NOT NULL
+                ORDER BY r.enviada_em DESC NULLS LAST LIMIT 1
+                """, String.class, produtoId, remessaId);
+        if (outras.isEmpty()) {
+            return new ErroDaApi(HttpStatus.UNPROCESSABLE_ENTITY, CodigoErro.PECA_NAO_E_DESTA_MALETA);
+        }
+        return ErroDaApi.comDetalhe(HttpStatus.UNPROCESSABLE_ENTITY, CodigoErro.PECA_NAO_E_DESTA_MALETA,
+                "Esta peça não é desta maleta. Ela está na maleta " + outras.get(0) + ".");
     }
 
     /**

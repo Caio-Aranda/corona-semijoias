@@ -4,8 +4,19 @@
  * textos de la definición al abrir el programa en español.
  */
 export const RELATORIOS_EM_ESPANHOL: Record<string, string> = {
-  'Peça a peça: quantas foram enviadas, devolvidas pelos clientes, vendidas, quantas ainda estão com os clientes (e com quem), quantas você leu na volta e a diferença. No rodapé: o valor vendido, a comissão dos clientes, o que foi recebido e o que ainda falta receber.':
-    'Pieza por pieza: cuántas se enviaron, cuántas devolvieron los clientes, cuántas se vendieron, cuántas siguen con los clientes (y con quién), cuántas usted leyó a la vuelta y la diferencia. Al pie: el valor vendido, la comisión de los clientes, lo que se cobró y lo que todavía falta cobrar.',
+  'Duas partes separadas. Em "Peças da maleta": peça a peça, quantas foram enviadas, devolvidas pelos clientes, vendidas, quantas ainda estão com os clientes (e com quem), quantas você leu na volta e a diferença. Em "Dinheiro": o valor vendido, a comissão dos clientes, o que foi recebido e o que ainda falta receber.':
+    'Dos partes separadas. En "Piezas de la maleta": pieza por pieza, cuántas se enviaron, cuántas devolvieron los clientes, cuántas se vendieron, cuántas siguen con los clientes (y con quién), cuántas usted leyó a la vuelta y la diferencia. En "Dinero": el valor vendido, la comisión de los clientes, lo que se cobró y lo que todavía falta cobrar.',
+  'Fechamento da maleta': 'Cierre de la maleta',
+  'Peças da maleta': 'Piezas de la maleta',
+  'Devolvidas pelos clientes': 'Devueltas por los clientes',
+  Vendidas: 'Vendidas',
+  'Ainda com os clientes': 'Todavía con los clientes',
+  'Com quem': 'Con quién',
+  'Esperadas na maleta': 'Esperadas en la maleta',
+  'Lidas na volta': 'Leídas a la vuelta',
+  'Valor vendido': 'Valor vendido',
+  'Valor recebido': 'Valor cobrado',
+  'Pendências a receber': 'Pendientes por cobrar',
   'Os valores da maleta são divididos pelo vendido de cada maleta dentro da nota do cliente.':
     'Los valores de la maleta se dividen según lo vendido de cada maleta dentro de la nota del cliente.',
   'Peças vendidas': 'Piezas vendidas',

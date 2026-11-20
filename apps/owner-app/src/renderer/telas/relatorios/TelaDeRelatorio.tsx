@@ -410,6 +410,11 @@ export function TelaDeRelatorio({
   const opcoes = useBusca(() => carregarOpcoes(ponte, def), `opcoes|${relatorio}`);
   const listas = opcoes.dados ?? OPCOES_VAZIAS;
 
+  // Relatório em partes (Fechamento da maleta): uma aba por parte; a escolha só muda o que aparece na tela, os arquivos levam todas.
+  const [abaEscolhida, setAbaEscolhida] = useState(0);
+  const aba = def.abas ? (def.abas[abaEscolhida] ?? def.abas[0]) : undefined;
+  const mostraATabela = aba ? aba.comTabela : true;
+
   const consulta = useMemo(() => consultaDe(def, filtros, filtroFixo), [def, filtros, filtroFixo]);
   const chaveDosFiltros = `${relatorio}|${JSON.stringify(consulta)}`;
 
@@ -432,6 +437,15 @@ export function TelaDeRelatorio({
     if (dados && !recorte) setRodape({ chave: chaveDosFiltros, totais: dados.totais });
   }, [lista.dados]);
   const totais = rodape?.chave === chaveDosFiltros ? rodape.totais : (dados?.totais ?? []);
+  // Com abas, cada uma mostra só os totais dela (as chaves que não estão em nenhuma ficam na primeira).
+  const chavesDasAbas = (def.abas ?? []).flatMap((a) => a.totais);
+  const totaisDaAba = !aba
+    ? totais
+    : totais.filter(
+        (t) =>
+          aba.totais.includes(t.chave) ||
+          (aba.id === def.abas?.[0]?.id && !chavesDasAbas.includes(t.chave)),
+      );
   const rotuloDoRecorte = totais.find((t) => t.chave === recorte)?.rotulo;
 
   // Todas as linhas do relatório (sem o recorte): servem ao arquivo e ao total em Dólar e Guarani,
@@ -524,6 +538,9 @@ export function TelaDeRelatorio({
             }
           : {}),
         ...(def.linhasDoTotal ? { linhasDoTotal: def.linhasDoTotal } : {}),
+        ...(def.abas
+          ? { secoes: def.abas.map((a) => ({ titulo: a.rotulo, totais: a.totais })) }
+          : {}),
       };
       const grade = montarGrade(pedido);
       const base = `${def.nome}-${agora.toISOString().slice(0, 10)}`;
@@ -709,6 +726,25 @@ export function TelaDeRelatorio({
       ) : null}
       {def.nota ? <Aviso tipo="informacao">{def.nota}</Aviso> : null}
       {aposOTitulo}
+
+      {def.abas ? (
+        <div role="tablist" aria-label={def.titulo} className="gestao-abas">
+          {def.abas.map((a, i) => (
+            <button
+              key={a.id}
+              type="button"
+              role="tab"
+              id={`aba-relatorio-${a.id}`}
+              aria-selected={aba?.id === a.id}
+              aria-controls="painel-relatorio"
+              className={`gestao-aba-botao${aba?.id === a.id ? ' gestao-aba-botao--atual' : ''}`}
+              onClick={() => setAbaEscolhida(i)}
+            >
+              {a.rotulo}
+            </button>
+          ))}
+        </div>
+      ) : null}
 
       <form
         className="gestao-filtros"
@@ -899,43 +935,54 @@ export function TelaDeRelatorio({
         {lista.erro && dados !== null ? (
           <AvisoDeErro erro={lista.erro} aoTentarDeNovo={lista.recarregar} />
         ) : null}
-        {recorte ? (
-          <Aviso tipo="informacao">{T.totais.mostrando(rotuloDoRecorte ?? '')}</Aviso>
-        ) : null}
-        <Tabela
-          legenda={def.titulo}
-          colunas={colunasDaTabela}
-          linhas={linhasDaTabela}
-          textoVazio={def.vazio}
-        />
-        {dados ? (
-          <Paginacao
-            pagina={dados.pagina}
-            tamanho={dados.tamanho}
-            total={dados.total}
-            nomeDoItem={[def.itens.um, def.itens.varios]}
-            aoMudar={setPagina}
-          />
+        {mostraATabela ? (
+          <>
+            {recorte ? (
+              <Aviso tipo="informacao">{T.totais.mostrando(rotuloDoRecorte ?? '')}</Aviso>
+            ) : null}
+            <Tabela
+              legenda={def.titulo}
+              colunas={colunasDaTabela}
+              linhas={linhasDaTabela}
+              textoVazio={def.vazio}
+            />
+            {dados ? (
+              <Paginacao
+                pagina={dados.pagina}
+                tamanho={dados.tamanho}
+                total={dados.total}
+                nomeDoItem={[def.itens.um, def.itens.varios]}
+                aoMudar={setPagina}
+              />
+            ) : null}
+          </>
         ) : null}
       </EstadoDaLista>
 
-      {totais.length > 0 ? (
-        <section className="gestao-totais" aria-label={T.totais.titulo}>
-          <h2 className="gestao-subtitulo">{T.totais.titulo}</h2>
+      {totaisDaAba.length > 0 ? (
+        <section
+          className="gestao-totais"
+          id="painel-relatorio"
+          role={def.abas ? 'tabpanel' : undefined}
+          aria-label={aba ? aba.rotulo : T.totais.titulo}
+        >
+          <h2 className="gestao-subtitulo">{aba ? aba.rotulo : T.totais.titulo}</h2>
           <ul>
-            {totais.map((t) => (
+            {totaisDaAba.map((t) => (
               <li key={t.chave}>
                 <span className="gestao-totais__rotulo">{t.rotulo}</span>
                 <span className="gestao-totais__valor">{totalNaTela(t)}</span>
-                <Botao
-                  onClick={() => {
-                    setRecorte(t.chave === 'todos' ? null : t.chave);
-                    setPagina(0);
-                  }}
-                  aria-label={`${T.totais.verRegistros}: ${t.rotulo}`}
-                >
-                  {T.totais.verRegistros}
-                </Botao>
+                {mostraATabela ? (
+                  <Botao
+                    onClick={() => {
+                      setRecorte(t.chave === 'todos' ? null : t.chave);
+                      setPagina(0);
+                    }}
+                    aria-label={`${T.totais.verRegistros}: ${t.rotulo}`}
+                  >
+                    {T.totais.verRegistros}
+                  </Botao>
+                ) : null}
               </li>
             ))}
           </ul>

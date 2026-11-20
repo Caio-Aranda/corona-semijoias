@@ -3,6 +3,7 @@ package br.com.coronasemijoias.api.consignado;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
+import br.com.coronasemijoias.api.comum.erros.ErroDaApi;
 import br.com.coronasemijoias.api.consignado.ServicoDoFechamentoDaMaleta.LeituraDoFechamento;
 import br.com.coronasemijoias.api.consignado.ServicoDoFechamentoDaMaleta.LinhaDaPeca;
 import br.com.coronasemijoias.api.testes.UsuariosDeTeste.UsuarioDeTeste;
@@ -148,7 +149,7 @@ class FechamentoDaMaletaTest extends ApoioDoConsignado {
         fechamento.iniciar(maleta, donaId());
         assertThat(codigoDoErro(catchThrowable(() -> fechamento.iniciar(maleta, donaId())))).isEqualTo("FECHAMENTO_JA_EM_ANDAMENTO");
         assertThat(codigoDoErro(catchThrowable(() -> fechamento.registrarLeituras(maleta, List.of(bipe(estranha, 1)), donaId()))))
-                .isEqualTo("PECA_FORA_DA_MALETA");
+                .isEqualTo("PECA_NAO_E_DESTA_MALETA");
         // O mesmo bipe reenviado não duplica; com outra quantidade é conflito.
         var b = bipe(anel, 2);
         assertThat(fechamento.registrarLeituras(maleta, List.of(b), donaId())).isEqualTo(1);
@@ -156,5 +157,22 @@ class FechamentoDaMaletaTest extends ApoioDoConsignado {
         var outro = new ServicoDoFechamentoDaMaleta.Leitura(b.id(), anel, 3);
         assertThat(codigoDoErro(catchThrowable(() -> fechamento.registrarLeituras(maleta, List.of(outro), donaId()))))
                 .isEqualTo("LANCAMENTO_JA_REGISTRADO_DIFERENTE");
+    }
+
+    @Test
+    void pecaQueEDeOutraMaletaDizDeQualMaletaEDeSemMexerNaLeitura() throws Exception {
+        UsuarioDeTeste v = usuarios.criarVendedor();
+        UUID anel = peca("100.00", 10);
+        UUID brinco = peca("50.00", 10);
+        UUID maleta = maletaEnviada(v, anel, 5);
+        UUID outra = maletaEnviada(usuarios.criarVendedor(), brinco, 5);
+        String codigoDaOutra = jdbc.queryForObject("SELECT codigo FROM corona.remessas WHERE id = ?", String.class, outra);
+        fechamento.iniciar(maleta, donaId());
+
+        Throwable erro = catchThrowable(() -> fechamento.registrarLeituras(maleta, List.of(bipe(brinco, 1)), donaId()));
+
+        assertThat(codigoDoErro(erro)).isEqualTo("PECA_NAO_E_DESTA_MALETA");
+        assertThat(((ErroDaApi) erro).getBody().getDetail()).contains("não é desta maleta").contains("maleta " + codigoDaOutra);
+        assertThat(contar("SELECT count(*) FROM corona.leituras_fechamento_maleta WHERE produto_id = ?", brinco)).isZero();
     }
 }

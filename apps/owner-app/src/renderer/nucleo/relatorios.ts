@@ -117,6 +117,20 @@ export interface DefinicaoDeRelatorio {
   fichaDaMaleta?: string;
   /** Fora do menu: só abre a partir de outra linha. */
   soAbreDeUmaLinha?: boolean;
+  /**
+   * Relatório em partes (Fechamento da maleta, §23.10): na tela, uma aba por parte; nos arquivos, uma seção por parte.
+   * A primeira parte com `comTabela` leva a tabela; as outras só os totais que lhe pertencem (pela chave).
+   */
+  abas?: AbaDoRelatorio[];
+}
+
+export interface AbaDoRelatorio {
+  id: string;
+  rotulo: string;
+  /** Esta parte mostra a tabela de linhas (e a paginação). */
+  comTabela: boolean;
+  /** Chaves dos totais que pertencem a esta parte. */
+  totais: string[];
 }
 
 const T = TEXTOS_RELATORIOS;
