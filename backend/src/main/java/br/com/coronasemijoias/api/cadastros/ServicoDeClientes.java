@@ -92,15 +92,15 @@ public class ServicoDeClientes extends ServicoDeCadastroAtivavel<Cliente> {
             boolean documentoDeCpf = cliente.getDocumentoTipo() == null || "CPF".equals(cliente.getDocumentoTipo());
             String documento = semDocumento && !documentoDeCpf ? cliente.getDocumento() : doc.documento();
             String tipo = semDocumento && !documentoDeCpf ? cliente.getDocumentoTipo() : doc.tipo();
-            String indicadoPorNome = indicadoPorNome(d);
+            // Campo que não veio (null) mantém; campo que veio vazio ("") apaga.
             UUID indicadoPorId = d.indicadoPorClienteId();
-            if (indicadoPorId == null && indicadoPorNome == null) {
+            String indicadoPorNome = indicadoPorNome(d);
+            if (indicadoPorId == null && d.indicadoPorNome() == null) {
                 indicadoPorId = cliente.getIndicadoPorClienteId();
                 indicadoPorNome = cliente.getIndicadoPorNome();
             }
-            String comoConheceu = Validacoes.limpar(d.comoConheceu());
-            cliente.alterarConsignado(documento, tipo, indicadoPorId, indicadoPorNome,
-                    comoConheceu != null ? comoConheceu : cliente.getComoConheceu(), comissao);
+            String comoConheceu = d.comoConheceu() == null ? cliente.getComoConheceu() : Validacoes.limpar(d.comoConheceu());
+            cliente.alterarConsignado(documento, tipo, indicadoPorId, indicadoPorNome, comoConheceu, comissao);
         });
     }
 

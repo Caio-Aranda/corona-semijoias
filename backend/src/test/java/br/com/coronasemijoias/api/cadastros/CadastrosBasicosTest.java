@@ -455,6 +455,20 @@ class CadastrosBasicosTest extends TesteDeIntegracao {
     }
 
     @Test
+    void campoVazioApagaIndicadoPorEComoConheceuMasCampoAusenteNao() throws Exception {
+        JsonNode criado = criar("/api/dona/clientes", mapa(
+                "nome", unico("Cliente para apagar"), "indicadoPorNome", "Dona Rosa", "comoConheceu", "Feira do bairro"));
+        String id = criado.get("id").asString();
+        // Mandou vazio: apaga os dois.
+        enviar("PUT", "/api/dona/clientes/" + id, dona(),
+                mapa("nome", criado.get("nome").asString(), "indicadoPorNome", "  ", "comoConheceu", "", "version", criado.get("version").asInt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.indicadoPorNome").doesNotExist())
+                .andExpect(jsonPath("$.indicadoPorClienteId").doesNotExist())
+                .andExpect(jsonPath("$.comoConheceu").doesNotExist());
+    }
+
+    @Test
     void responsavelDoClienteNaoMudaDepoisDeDefinido() throws Exception {
         UUID primeiro = usuarios.criarCadastroDeVendedor();
         UUID outro = usuarios.criarCadastroDeVendedor();

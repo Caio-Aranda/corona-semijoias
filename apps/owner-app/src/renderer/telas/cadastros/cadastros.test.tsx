@@ -594,4 +594,49 @@ describe('Cadastros: cliente do consignado (tarefa 9.7)', () => {
       indicadoPorClienteId: ID_B,
     });
   });
+
+  it('apagar "Indicado por" e "Como conheceu" manda os campos vazios; sem mexer, não manda nada deles', async () => {
+    const m = montar({
+      'clientes.listar': () =>
+        pagina([
+          {
+            id: ID_A,
+            version: 2,
+            nome: 'Ana',
+            indicadoPorNome: 'Dona Rosa',
+            comoConheceu: 'Feira',
+            ativo: true,
+          },
+        ]),
+      'clientes.editar': () => ({ ok: true, dados: { id: ID_A, version: 3, nome: 'Ana' } }),
+    });
+    const u = await abrir(m, 'Clientes', 'Ana');
+    await u.click(screen.getByRole('button', { name: 'Editar' }));
+    await u.clear(await screen.findByLabelText('Indicado por'));
+    await u.clear(screen.getByLabelText('Como conheceu a loja'));
+    await u.click(screen.getByRole('button', { name: 'Salvar' }));
+    await screen.findByText('Os dados de Ana foram salvos.');
+    expect(m.chamadas.find((c) => c.operacao === 'clientes.editar')?.parametros).toMatchObject({
+      indicadoPorNome: '',
+      comoConheceu: '',
+    });
+  });
+
+  it('cliente que nunca teve indicação não manda os campos vazios ao salvar', async () => {
+    const m = montar({
+      'clientes.listar': () => pagina([{ id: ID_A, version: 2, nome: 'Ana', ativo: true }]),
+      'clientes.editar': () => ({ ok: true, dados: { id: ID_A, version: 3, nome: 'Ana' } }),
+    });
+    const u = await abrir(m, 'Clientes', 'Ana');
+    await u.click(screen.getByRole('button', { name: 'Editar' }));
+    await screen.findByLabelText('Indicado por');
+    await u.click(screen.getByRole('button', { name: 'Salvar' }));
+    await screen.findByText('Os dados de Ana foram salvos.');
+    const p = m.chamadas.find((c) => c.operacao === 'clientes.editar')?.parametros as Record<
+      string,
+      unknown
+    >;
+    expect('indicadoPorNome' in p).toBe(false);
+    expect('comoConheceu' in p).toBe(false);
+  });
 });

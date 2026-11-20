@@ -72,6 +72,8 @@ export function FormularioDeCadastro({
       if (c.tipo === 'sim-nao') {
         corpo[c.nome] = v === 'sim';
       } else if (v === '') {
+        // Esvaziou um campo que tinha valor: manda vazio para o servidor apagar.
+        if (c.apagavel && !novo && valorInicial(registro, c) !== '') corpo[c.nome] = '';
         continue;
       } else if (c.endereco) {
         endereco[c.nome] = v;

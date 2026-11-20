@@ -23,6 +23,8 @@ export interface CampoDaTela {
   endereco?: boolean;
   /** Nome antigo do mesmo dado: lido do cadastro quando o novo está vazio, e aceito nas mensagens do servidor. */
   alternativa?: string;
+  /** Ao editar, se a dona esvaziar um campo que tinha valor, a tela manda vazio (""), e o servidor apaga; campo que não vem não apaga. */
+  apagavel?: boolean;
   /** Depois de escolhido, não muda mais (D10, ADR-0016): ao editar, aparece travado se já tem valor. */
   fixoDepoisDeDefinido?: boolean;
 }
@@ -298,6 +300,7 @@ export const DEFINICOES: Record<NomeDoCadastro, Definicao> = {
         rotulo: T.clientes.campos.indicadoPorNome,
         tipo: 'texto',
         max: 200,
+        apagavel: true,
         ajuda: T.clientes.campos.indicadoPorNomeAjuda,
       },
       {
@@ -305,6 +308,7 @@ export const DEFINICOES: Record<NomeDoCadastro, Definicao> = {
         rotulo: T.clientes.campos.comoConheceu,
         tipo: 'texto',
         max: 500,
+        apagavel: true,
       },
       {
         nome: 'dataNascimento',
