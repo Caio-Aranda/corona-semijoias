@@ -14,6 +14,11 @@ export function numeroDaNota(semana: number, sequencia: number): string {
   return `${String(semana).padStart(7, '0')}-${String(sequencia).padStart(2, '0')}`;
 }
 
+/** O número do recibo que a tela mostra: o mesmo formato da nota com o prefixo `R ` (`R 0000064-01`); nunca é gravado assim. */
+export function numeroDoRecibo(semana: number, sequencia: number): string {
+  return `R ${numeroDaNota(semana, sequencia)}`;
+}
+
 /**
  * O código da maleta que a tela mostra e a pesquisa aceita: o do servidor (`0001`, `0002`...). Só enquanto a maleta ainda não
  * trouxe o código (banco que ainda não recebeu a carga nova) vale o provisório `M-` com os 6 últimos dígitos do identificador.

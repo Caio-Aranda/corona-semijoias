@@ -72,23 +72,35 @@ function exigirClienteDoRepresentante(db: BancoAberto, clienteId: string): void 
 
 // --- semana e contador ---
 
-/** O próximo número `semana-sequência` da semana: um contador só para notas e recibos (ADR-0016, item 3). */
-export function proximaSequencia(db: BancoAberto, semanaId: string): number {
+/**
+ * O próximo número `semana-sequência` do tipo: nota e recibo têm contador próprio na mesma semana (ADR-0016, item 3 e D2).
+ * Nota: o maior entre o contador das notas e a maior nota do espelho mais um. Recibo: o maior entre o contador dos recibos
+ * e o maior recibo do espelho mais um (na troca de computador o espelho vem do servidor, sem contador).
+ */
+export function proximaSequencia(
+  db: BancoAberto,
+  semanaId: string,
+  tipo: 'NOTA' | 'RECIBO',
+): number {
+  const tabela = tipo === 'NOTA' ? 'notas_consignado' : 'recibos_consignado';
+  const coluna = tipo === 'NOTA' ? 'proxima_sequencia' : 'proxima_sequencia_recibo';
   const noEspelho = db
-    .prepare(
-      `SELECT max(m) AS m FROM (
-         SELECT max(sequencia) AS m FROM notas_consignado WHERE semana_id = ?
-         UNION ALL SELECT max(sequencia) FROM recibos_consignado WHERE semana_id = ?)`,
-    )
-    .get(semanaId, semanaId) as { m: number | null };
+    .prepare(`SELECT max(sequencia) AS m FROM ${tabela} WHERE semana_id = ?`)
+    .get(semanaId) as { m: number | null };
   const contador = db
-    .prepare('SELECT proxima_sequencia AS p FROM contadores_da_semana WHERE semana_id = ?')
-    .get(semanaId) as { p: number } | undefined;
+    .prepare(`SELECT ${coluna} AS p FROM contadores_da_semana WHERE semana_id = ?`)
+    .get(semanaId) as { p: number | null } | undefined;
   const proxima = Math.max(contador?.p ?? 1, (noEspelho.m ?? 0) + 1);
-  db.prepare(
-    `INSERT INTO contadores_da_semana (semana_id, proxima_sequencia) VALUES (?, ?)
-     ON CONFLICT (semana_id) DO UPDATE SET proxima_sequencia = excluded.proxima_sequencia`,
-  ).run(semanaId, proxima + 1);
+  if (tipo === 'NOTA')
+    db.prepare(
+      `INSERT INTO contadores_da_semana (semana_id, proxima_sequencia) VALUES (?, ?)
+       ON CONFLICT (semana_id) DO UPDATE SET proxima_sequencia = excluded.proxima_sequencia`,
+    ).run(semanaId, proxima + 1);
+  else
+    db.prepare(
+      `INSERT INTO contadores_da_semana (semana_id, proxima_sequencia, proxima_sequencia_recibo) VALUES (?, 1, ?)
+       ON CONFLICT (semana_id) DO UPDATE SET proxima_sequencia_recibo = excluded.proxima_sequencia_recibo`,
+    ).run(semanaId, proxima + 1);
   return proxima;
 }
 
@@ -431,7 +443,7 @@ function gravarNovaNota(
 ): { notaId: string; numero: { semana: number; sequencia: number } } {
   const semana = semanaAtual(db);
   if (!semana) return recusar('SEM_SEMANA_ABERTA');
-  const sequencia = proximaSequencia(db, semana.id);
+  const sequencia = proximaSequencia(db, semana.id, 'NOTA');
   const saidaEm = agora.toISOString();
   inserir(db, 'notas_consignado', p.id, p.id, {
     semana_id: semana.id,
@@ -843,7 +855,7 @@ export function registrarAcerto(
   let recibo:
     { id: string; sequencia: number; formas: { forma: string; valor: string }[] } | undefined;
   if (pago > 0n) {
-    const sequencia = proximaSequencia(db, semana.id);
+    const sequencia = proximaSequencia(db, semana.id, 'RECIBO');
     gravarRecibo(db, agora, p.id, {
       id: p.reciboId,
       clienteId: nota.cliente_id,
@@ -930,7 +942,7 @@ export function registrarPagamento(
   const pendencia = debitos.reduce((s, d) => s + d.saldo, 0n);
   if (pendencia === 0n) return recusar('CLIENTE_SEM_PENDENCIA');
   if (pago > pendencia) return recusar('PAGO_ACIMA_DO_DEVIDO');
-  const sequencia = proximaSequencia(db, semana.id);
+  const sequencia = proximaSequencia(db, semana.id, 'RECIBO');
   const pagoEm = momentoDoPagamento(agora, p.data);
   gravarRecibo(db, agora, p.id, {
     id: p.id,

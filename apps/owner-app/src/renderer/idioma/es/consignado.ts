@@ -130,7 +130,7 @@ export const ES_TEXTOS_DE_CONSIGNADO: NoMesmoFormato<typeof PT_TEXTOS_DE_CONSIGN
       recibos: 'Recibos',
       semRecibo: 'Ningún pago registrado.',
       recibo: (semana: number, sequencia: number) =>
-        `Recibo ${String(semana).padStart(7, '0')}-${sequencia}`,
+        `R ${String(semana).padStart(7, '0')}-${String(sequencia).padStart(2, '0')}`,
       aAplicar: (valor: string) => `Sobra por aplicar en la próxima deuda del cliente: ${valor}`,
       reciboEstornado: 'Recibo anulado',
       formas: {

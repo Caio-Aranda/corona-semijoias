@@ -692,6 +692,16 @@ INSERT INTO estado_sync (chave, valor)
   ON CONFLICT (chave) DO UPDATE SET valor = excluded.valor;
 `;
 
+/**
+ * Numeração separada de notas e recibos (tarefa 9.8; V054 do servidor, ADR-0016, D2): o contador de cada semana passa a ter
+ * uma coluna para o recibo. A coluna antiga continua sendo o contador das NOTAS (já está à frente de toda nota); o recibo
+ * continua do maior recibo gravado mais um. Nada vem do servidor, então não há recarga.
+ */
+const V11 = `
+ALTER TABLE contadores_da_semana ADD COLUMN proxima_sequencia_recibo INTEGER
+  CHECK (proxima_sequencia_recibo IS NULL OR proxima_sequencia_recibo >= 1);
+`;
+
 export const MIGRACOES: readonly MigracaoLocal[] = Object.freeze([
   {
     versao: 1,
@@ -747,6 +757,11 @@ export const MIGRACOES: readonly MigracaoLocal[] = Object.freeze([
     descricao:
       'código da maleta e nome da praça (relatórios do consignado) e a recarga dirigida das maletas',
     sql: V10,
+  },
+  {
+    versao: 11,
+    descricao: 'contador próprio do recibo (numeração separada de notas e recibos)',
+    sql: V11,
   },
 ]);
 

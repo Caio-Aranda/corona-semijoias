@@ -195,6 +195,80 @@ class ServicoDeNotasTest extends ApoioDoConsignado {
         assertThat(disponivel(maleta, anel)).isEqualTo(8);
     }
 
+    // --- numeração separada de notas e recibos (9.8, ADR-0016 D2) ---
+
+    @Test
+    void notaEReciboComAMesmaSequenciaNaMesmaSemanaSaoAceitos() throws Exception {
+        UsuarioDeTeste v = usuarios.criarVendedor();
+        UUID anel = peca("100.00", 9);
+        UUID maleta = maletaEnviada(v, anel, 9);
+        UUID cliente = cliente(v);
+        UUID semana = abrirSemana(v);
+        UUID n = criarNota(v, semana, 7, cliente, item(anel, maleta, 2, "100.00"));
+        // Recibo de acerto com a sequência 7 (a mesma da nota).
+        acertar(v, n, semana, "0", List.of(), 7, paga("DINHEIRO", "50.00"));
+        // Recibo de Lançar pagamento também com a 7 e outra com 8: nota e recibo não disputam o número.
+        UUID n2 = criarNota(v, semana, 8, cliente, item(anel, maleta, 1, "100.00"));
+        assertThat(contar("SELECT count(*) FROM corona.numeros_da_semana WHERE semana_id = ? AND sequencia = 7", semana)).isEqualTo(2);
+        assertThat(n2).isNotNull();
+        recibos.lancar(ctx(v), new ServicoDeRecibos.NovoPagamento(UUID.randomUUID(), cliente, semana, 8, List.of(paga("PIX", "10.00")),
+                null, null));
+        assertThat(contar("SELECT count(*) FROM corona.numeros_da_semana WHERE semana_id = ? AND sequencia = 8", semana)).isEqualTo(2);
+    }
+
+    @Test
+    void numeroRepetidoDoMesmoTipoComOutroIdContinuaRecusado() throws Exception {
+        UsuarioDeTeste v = usuarios.criarVendedor();
+        UUID anel = peca("10.00", 9);
+        UUID maleta = maletaEnviada(v, anel, 9);
+        UUID cliente = cliente(v);
+        UUID semana = abrirSemana(v);
+        criarNota(v, semana, 7, cliente, item(anel, maleta, 1, "10.00"));
+        Throwable nota = catchThrowable(() -> criarNota(v, semana, 7, cliente, item(anel, maleta, 1, "10.00")));
+        assertThat(codigoDoErro(nota)).isEqualTo("NUMERO_REPETIDO");
+        recibos.lancar(ctx(v), new ServicoDeRecibos.NovoPagamento(UUID.randomUUID(), cliente, semana, 5, List.of(paga("PIX", "1.00")), null, null));
+        Throwable recibo = catchThrowable(() -> recibos.lancar(ctx(v),
+                new ServicoDeRecibos.NovoPagamento(UUID.randomUUID(), cliente, semana, 5, List.of(paga("PIX", "1.00")), null, null)));
+        assertThat(codigoDoErro(recibo)).isEqualTo("NUMERO_REPETIDO");
+    }
+
+    @Test
+    void reenvioDoMesmoReciboEInofensivoEPagamentoEAcertoAlternamNaMesmaSemana() throws Exception {
+        UsuarioDeTeste v = usuarios.criarVendedor();
+        UUID anel = peca("10.00", 9);
+        UUID maleta = maletaEnviada(v, anel, 9);
+        UUID cliente = cliente(v);
+        UUID semana = abrirSemana(v);
+        UUID n1 = criarNota(v, semana, 1, cliente, item(anel, maleta, 1, "10.00"));
+        UUID n2 = criarNota(v, semana, 2, cliente, item(anel, maleta, 1, "10.00"));
+        acertar(v, n1, semana, "0", List.of(), 1, paga("DINHEIRO", "3.00"));
+        ServicoDeRecibos.NovoPagamento pg = new ServicoDeRecibos.NovoPagamento(UUID.randomUUID(), cliente, semana, 2,
+                List.of(paga("PIX", "2.00")), null, null);
+        assertThat(recibos.lancar(ctx(v), pg)).isFalse();
+        assertThat(recibos.lancar(ctx(v), pg)).isTrue();
+        acertar(v, n2, semana, "0", List.of(), 3, paga("DINHEIRO", "1.00"));
+        assertThat(contar("SELECT count(*) FROM corona.numeros_da_semana WHERE semana_id = ? AND tipo = 'RECIBO'", semana)).isEqualTo(3);
+        assertThat(contar("SELECT count(*) FROM corona.numeros_da_semana WHERE registro_id = ?", pg.id())).isEqualTo(1);
+    }
+
+    @Test
+    void migracaoV054MantemNumerosGravadosEAceitaNotaEReciboComAMesmaSequencia() throws Exception {
+        UsuarioDeTeste v = usuarios.criarVendedor();
+        UUID semana = abrirSemana(v);
+        // O índice antigo (junto) não existe mais; o novo é por tipo.
+        assertThat(contar("SELECT count(*) FROM pg_indexes WHERE schemaname = 'corona' AND indexname = 'numeros_da_semana_unico'")).isEqualTo(0);
+        assertThat(contar("SELECT count(*) FROM pg_indexes WHERE schemaname = 'corona' AND indexname = 'numeros_da_semana_unico_por_tipo'"))
+                .isEqualTo(1);
+        jdbc.update("INSERT INTO corona.numeros_da_semana (id, vendedor_id, semana_id, sequencia, tipo, registro_id) VALUES (?, ?, ?, 53, 'NOTA', ?)",
+                UUID.randomUUID(), v.vendedorId(), semana, UUID.randomUUID());
+        jdbc.update("INSERT INTO corona.numeros_da_semana (id, vendedor_id, semana_id, sequencia, tipo, registro_id) VALUES (?, ?, ?, 53, 'RECIBO', ?)",
+                UUID.randomUUID(), v.vendedorId(), semana, UUID.randomUUID());
+        Throwable repetido = catchThrowable(() -> jdbc.update(
+                "INSERT INTO corona.numeros_da_semana (id, vendedor_id, semana_id, sequencia, tipo, registro_id) VALUES (?, ?, ?, 53, 'NOTA', ?)",
+                UUID.randomUUID(), v.vendedorId(), semana, UUID.randomUUID()));
+        assertThat(repetido).isNotNull();
+    }
+
     // --- reposição, troca, remarcação ---
 
     @Test

@@ -128,7 +128,7 @@ export const PT_TEXTOS_DE_CONSIGNADO = {
       recibos: 'Recibos',
       semRecibo: 'Nenhum pagamento registrado.',
       recibo: (semana: number, sequencia: number) =>
-        `Recibo ${String(semana).padStart(7, '0')}-${sequencia}`,
+        `R ${String(semana).padStart(7, '0')}-${String(sequencia).padStart(2, '0')}`,
       aAplicar: (valor: string) => `Sobra a aplicar no próximo débito do cliente: ${valor}`,
       reciboEstornado: 'Recibo estornado',
       formas: {

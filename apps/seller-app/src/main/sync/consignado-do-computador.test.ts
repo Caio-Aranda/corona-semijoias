@@ -332,8 +332,8 @@ describe('a nota 0000064-21 e a pendência da 0000063-32 (mesmo arquivo de exemp
     expect(nota(nova).situacao).toBe('PENDENTE');
     expect(nota(nova).saldoDaNota).toBe(e.ficouDevendo);
     expect(clienteVisto().pendencia).toBe(e.ficouDevendo);
-    // O recibo é da semana do pagamento; o contador é um só para notas e recibos (nota 01 e recibo 02 na semana 64).
-    expect(nota(nova).acerto?.recibo?.numero).toBe('0000064-02');
+    // O recibo é da semana do pagamento e tem contador próprio (nota 01 e recibo R 01 na semana 64).
+    expect(nota(nova).acerto?.recibo?.numero).toBe('R 0000064-01');
     // Peças que voltaram ficam disponíveis na maleta; as vendidas saem do estoque da maleta.
     const a = saldoDe(maletas(), maleta, produto.A);
     expect(a?.enviada).toBe(12);

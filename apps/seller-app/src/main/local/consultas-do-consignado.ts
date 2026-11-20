@@ -41,6 +41,7 @@ import {
   linhasDaNota,
   type NotaLocal,
   numeroDaNota,
+  numeroDoRecibo,
   pendenciaDoCliente,
   pracaDoRepresentante,
   semanaAtual,
@@ -604,7 +605,7 @@ export class ConsultasDoConsignado {
       .all(id) as { forma: FormaDoConsignado; valor: string }[];
     return {
       id: r.id,
-      numero: numeroDaNota(r.semana, r.sequencia),
+      numero: numeroDoRecibo(r.semana, r.sequencia),
       pagoEm: r.pago_em,
       total: r.total ?? ZERO,
       formas,
@@ -870,7 +871,7 @@ export class ConsultasDoConsignado {
     }[];
     const pagamentos: PagamentoDoHistorico[] = recibos.map((r) => ({
       reciboId: r.id,
-      numero: numeroDaNota(r.semana, r.sequencia),
+      numero: numeroDoRecibo(r.semana, r.sequencia),
       pagoEm: r.pago_em,
       total: r.total ?? ZERO,
       formas: db

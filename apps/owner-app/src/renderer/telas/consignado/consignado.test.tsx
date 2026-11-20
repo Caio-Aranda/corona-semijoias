@@ -520,7 +520,7 @@ describe('Notas, semanas, clientes e avisos do consignado (só leitura)', () => 
     expect(await screen.findByRole('heading', { name: 'Nota 0000065-21' })).toBeInTheDocument();
     expect(screen.getByText('Comissão (30%)')).toBeInTheDocument();
     expect(screen.getByText('Ficou devendo')).toBeInTheDocument();
-    expect(screen.getByText(/Recibo 0000065-53/)).toBeInTheDocument();
+    expect(screen.getByText(/R 0000065-53/)).toBeInTheDocument();
     expect(screen.getByText(/Pix: /)).toBeInTheDocument();
     // Só leitura: nada que crie, edite ou estorne.
     expect(screen.queryByRole('button', { name: /estornar|editar|salvar|excluir/i })).toBeNull();
