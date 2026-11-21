@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type {
   ClienteCompleto,
   DetalheDaNota,
@@ -833,7 +833,24 @@ describe('Clientes e Lançar pagamento', () => {
   });
 });
 
+const PT = {
+  escolher: 'Escolher',
+  queVolta: 'Peça que volta',
+  maleta: 'Maleta da peça nova',
+  lerCodigo: 'Ler o código da peça nova',
+  trocar: 'Trocar a peça',
+};
+const ES = {
+  escolher: 'Elegir',
+  queVolta: 'Pieza que vuelve',
+  maleta: 'Maleta de la pieza nueva',
+  lerCodigo: 'Leer el código de la pieza nueva',
+  trocar: 'Cambiar la pieza',
+};
+
 describe('Troca mostra o valor da diferença (defeito 7 do 9.10)', () => {
+  afterEach(() => definirIdioma('pt'));
+
   const notaDaTroca = {
     id: NOTA(1),
     numero: '0000065-01',
@@ -863,7 +880,9 @@ describe('Troca mostra o valor da diferença (defeito 7 do 9.10)', () => {
     disponivel: 3,
   });
 
-  async function prepararTroca(precoNovo: string) {
+  async function prepararTroca(precoNovo: string, idioma: 'pt' | 'es' = 'pt') {
+    definirIdioma(idioma);
+    const T = idioma === 'pt' ? PT : ES;
     const { ponte } = criarPonte({
       'consignado.notas': () =>
         ok([
@@ -881,14 +900,16 @@ describe('Troca mostra o valor da diferença (defeito 7 do 9.10)', () => {
       'consignado.nota': () => ok(notaDaTroca),
       'consignado.maletas': () => ok([{ id: 'm1', codigo: '0007', status: 'ENVIADA' }]),
       'consignado.peca': () => ok(peca(precoNovo)),
+      'consignado.trocaNaNota': () =>
+        ok({ nota: { ...notaDaTroca, valorDx: String(400 + Number(precoNovo) - 200) + '.00' } }),
     });
     const u = userEvent.setup();
     render(<TelaTroca ponte={ponte} aoVoltar={() => undefined} />);
-    await u.click(await screen.findByRole('button', { name: 'Escolher' }));
-    await u.selectOptions(await screen.findByLabelText('Peça que volta'), 'p1|m1');
-    await u.selectOptions(screen.getByLabelText('Maleta da peça nova'), 'm1');
-    await u.type(screen.getByLabelText('Ler o código da peça nova'), 'B-1{enter}');
-    return u;
+    await u.click(await screen.findByRole('button', { name: T.escolher }));
+    await u.selectOptions(await screen.findByLabelText(T.queVolta), 'p1|m1');
+    await u.selectOptions(screen.getByLabelText(T.maleta), 'm1');
+    await u.type(screen.getByLabelText(T.lerCodigo), 'B-1{enter}');
+    return { u, T };
   }
 
   it('peça nova mais cara: avisa quanto o cliente passa a dever na nota', async () => {
@@ -912,5 +933,38 @@ describe('Troca mostra o valor da diferença (defeito 7 do 9.10)', () => {
     expect(
       await screen.findByText('Sem diferença: a nota continua em R$ 400,00.'),
     ).toBeInTheDocument();
+  });
+
+  it('em espanhol: o valor da diferença sai na língua da loja', async () => {
+    await prepararTroca('260.00', 'es');
+    expect(await screen.findByText('La pieza que vuelve vale R$ 200,00.')).toBeInTheDocument();
+    expect(screen.getByText('La pieza nueva vale R$ 260,00.')).toBeInTheDocument();
+    expect(
+      screen.getByText('El valor de la nota sube R$ 60,00 y pasa a ser R$ 460,00.'),
+    ).toBeInTheDocument();
+  });
+
+  it('em espanhol: peça mais barata e mesmo preço', async () => {
+    await prepararTroca('150.00', 'es');
+    expect(
+      await screen.findByText('El valor de la nota baja R$ 50,00 y pasa a ser R$ 350,00.'),
+    ).toBeInTheDocument();
+  });
+
+  it('depois de registrar, a mensagem traz o valor da nota (pt e es)', async () => {
+    for (const idioma of ['pt', 'es'] as const) {
+      const { u, T } = await prepararTroca('260.00', idioma);
+      await u.click(await screen.findByRole('button', { name: T.trocar }));
+      const janela = await screen.findByRole('dialog');
+      await u.click(within(janela).getByRole('button', { name: T.trocar }));
+      expect(
+        await screen.findByText(
+          idioma === 'pt'
+            ? 'Troca registrada. A nota ficou em R$ 460,00.'
+            : 'Cambio registrado. La nota quedó en R$ 460,00.',
+        ),
+      ).toBeInTheDocument();
+      cleanup();
+    }
   });
 });

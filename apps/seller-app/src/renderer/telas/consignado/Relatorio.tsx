@@ -15,6 +15,7 @@ import type {
 } from '../../../shared/relatorios-do-consignado';
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { chamar } from '../../chamadas';
+import { useEstadoDeEnvio } from '../../IndicadorDeEnvio';
 import { centavosDeTexto, formatarDolar, formatarGuarani, formatarReais } from '../../moedas';
 import { TEXTOS } from '../../textos';
 import { diaEmBrasilia } from '../../../shared/garantia';
@@ -62,6 +63,8 @@ export function useRelatorioDaTela<T extends RelatorioDoConsignado>(
 ): T | null {
   const [relatorio, setRelatorio] = useState<T | null>(null);
   const chave = JSON.stringify(pedido);
+  // Depois de um pull (`dadosAte` muda), o relatório é montado de novo com o que chegou.
+  const dadosAte = useEstadoDeEnvio(ponte)?.dadosAte ?? null;
   useEffect(() => {
     let valida = true;
     if (!pedido) {
@@ -81,7 +84,7 @@ export function useRelatorioDaTela<T extends RelatorioDoConsignado>(
     return () => {
       valida = false;
     };
-  }, [ponte, chave, ...dependencias]);
+  }, [ponte, chave, dadosAte, ...dependencias]);
   return relatorio;
 }
 

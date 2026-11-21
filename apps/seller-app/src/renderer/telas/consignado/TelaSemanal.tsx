@@ -1,10 +1,10 @@
 import { Aviso, Botao, CabecalhoDeMarca, RodapeDeAcoes } from '@corona/ui';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import type { PainelDaSemana } from '../../../shared/dados-do-consignado';
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { chamar, Dinheiro, novoId, useCotacao } from '../../chamadas';
 import { Campo, JanelaDeConfirmacao } from '../../componentes-do-vendedor';
-import { IndicadorDeEnvio, useEstadoDeEnvio } from '../../IndicadorDeEnvio';
+import { IndicadorDeEnvio } from '../../IndicadorDeEnvio';
 import { SeletorDeIdioma } from '../../SeletorDeIdioma';
 import { TEXTOS } from '../../textos';
 import { BotaoDeRelatorio, useRelatorioDaTela, ValorDoRelatorio } from './Relatorio';
@@ -69,15 +69,6 @@ export function TelaSemanal({
     { operacao: 'consignado.painel', ...(semanaId ? { semanaId } : {}) },
     [],
   );
-
-  // O pull do servidor termina depois que a tela abriu (2º computador): ao chegar dado novo, a tela se atualiza sozinha.
-  const dadosAte = useEstadoDeEnvio(ponte)?.dadosAte ?? null;
-  const dadosAteVisto = useRef(dadosAte);
-  useEffect(() => {
-    if (dadosAteVisto.current === dadosAte) return;
-    dadosAteVisto.current = dadosAte;
-    void recarregar();
-  }, [dadosAte, recarregar]);
 
   async function abrirSemana(numero?: number): Promise<void> {
     setErro(null);

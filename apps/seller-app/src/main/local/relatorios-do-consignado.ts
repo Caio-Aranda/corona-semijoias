@@ -323,14 +323,15 @@ export class RelatoriosDoConsignado {
 
   // --- Situação do cliente ---
 
-  /** O que recibos lançados depois (Lançar pagamento) já quitaram deste acerto; o recibo do próprio acerto já está no total pago. */
-  private aplicadoDepoisDoAcerto(acertoId: string, reciboDoAcerto: string | undefined): bigint {
+  /**
+   * Quanto já foi pago desta nota: tudo que os recibos valendo aplicaram ao acerto dela (o do próprio acerto e os de Lançar
+   * pagamento depois). É o bruto menos o saldo; o que o recibo do acerto pagou de pendências de outras notas conta na nota
+   * delas, nunca duas vezes.
+   */
+  private aplicadoAoAcerto(acertoId: string): bigint {
     const linhas = this.db()
-      .prepare(
-        `SELECT valor FROM aplicacoes_recibo
-          WHERE acerto_id = ? AND deleted_at IS NULL AND recibo_id IS NOT ?`,
-      )
-      .all(acertoId, reciboDoAcerto ?? null) as { valor: string | null }[];
+      .prepare('SELECT valor FROM aplicacoes_recibo WHERE acerto_id = ? AND deleted_at IS NULL')
+      .all(acertoId) as { valor: string | null }[];
     return linhas.reduce((s, l) => s + exigirCentavos(l.valor ?? '0'), 0n);
   }
 
@@ -381,8 +382,8 @@ export class RelatoriosDoConsignado {
         vd.somar(centavos(a.valorVd), t);
         comissao.somar(centavos(a.comissao), t);
         liquido.somar(centavos(a.bruto), t);
-        // Pago = o do ato do acerto + o que Lançar pagamento aplicou depois nesta nota (defeito 5 do relatório 9.10).
-        const pagoDaNota = centavos(a.totalPago) + this.aplicadoDepoisDoAcerto(a.id, a.recibo?.id);
+        // Pago = tudo que foi aplicado a esta nota, no acerto ou por Lançar pagamento depois (defeito 5 do relatório 9.10).
+        const pagoDaNota = this.aplicadoAoAcerto(a.id);
         pago.somar(pagoDaNota, t);
         jaVendeu.push({
           numero: n.numero,
