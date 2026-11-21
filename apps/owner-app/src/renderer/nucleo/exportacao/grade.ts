@@ -323,7 +323,7 @@ export function montarGrade(pedido: PedidoDeExportacao): Grade {
       const d = total.valorEmDolar != null ? centavosDeTexto(total.valorEmDolar) : null;
       const g = total.valorEmGuarani != null ? centavosDeTexto(total.valorEmGuarani) : null;
       if (real !== null && d !== null && g !== null && titulos.length > 3) {
-        linha[2] = texto(`US$ ${centavosParaDecimal(d)}`);
+        linha[2] = texto(`US$ ${centavosParaDecimal(d).replace('.', ',')}`);
         linha[3] = texto(`Gs. ${(g / 100n).toString()}`);
       }
     }

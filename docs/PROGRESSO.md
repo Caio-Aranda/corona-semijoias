@@ -312,6 +312,10 @@ PR em rascunho até passar tudo localmente. Branch `fix/consignado-ajustes-finai
 - **Situação do cliente** (item 6): "O que já vendeu" lista só as notas Fechadas e seus totais; as notas acertadas ainda Pendentes aparecem em "O que falta", com quanto cada uma ainda deve.
 - **Não feito:** a data não vale para o pagamento feito dentro do Acerto (continua o momento do acerto); textos de dados antigos (ex.: categorias do caixa "Repasse do vendedor") não mudaram.
 
+## Leva 9: PDF do Fechamento da maleta sem centavos (defeitos 1 e 6 do teste 9.10, 20/11/2026)
+
+Branch `fix/pdf-fechamento-centavos`, PR em rascunho. **Causa raiz (defeito 1):** `formatarNumero` em `apps/owner-app/src/renderer/nucleo/exportacao/pdf.ts` decidia as casas decimais pelo TÍTULO da coluna (`(R$)`, `(US$)`, `%`, "Comiss"). Na seção Dinheiro do Fechamento o Real fica na 2ª coluna, sob o título de peças, e saía inteiro (289,90 virava 289). Agora quem decide é o próprio valor (com casas, mostra as casas; Guarani e contagens são inteiros). **Defeito 6:** o total em Dólar do Fechamento era texto `US$ 57.98` (ponto) ao lado do Real `289,90` no CSV; agora `US$ 57,98` (vírgula, como o glossário e o resto dos relatórios; o Excel guarda o Real como número e o Dólar como texto `US$ 57,98`). Testes novos em `exportacao.test.ts`. **Não feito:** colunas cortadas ("Refer...") no PDF de Produtos e custos (largura das colunas com três moedas; fica para outra tarefa).
+
 ## Leva 9: acabamento final do consignado (tarefa 9.9, issue 238, 20/11/2026)
 
 PR 240 em rascunho. Só testes locais (sem CI).
