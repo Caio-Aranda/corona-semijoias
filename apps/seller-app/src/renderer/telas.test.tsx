@@ -41,10 +41,14 @@ function ponteFalsa(parcial: Partial<PonteDoCorona> = {}) {
 describe('aplicativo reaberto com a sessão guardada', () => {
   it('pede a senha antes da tela principal (defeito 2 do teste 9.10)', async () => {
     const { ponte } = ponteFalsa({
-      estouLogado: vi.fn(() => Promise.resolve<EstadoDaSessao>({ estado: 'reabrir' })),
+      estouLogado: vi.fn(() =>
+        Promise.resolve<EstadoDaSessao>({ estado: 'reabrir', usuario: 'ana' }),
+      ),
     });
     render(<App ponte={ponte} />);
     expect(await screen.findByText('Digite sua senha para continuar')).toBeInTheDocument();
+    expect(screen.getByLabelText('Usuário')).toHaveValue('ana');
+    expect(screen.getByLabelText('Usuário')).toHaveAttribute('readonly');
     expect(screen.getByLabelText('Senha')).toHaveAttribute('type', 'password');
   });
 });

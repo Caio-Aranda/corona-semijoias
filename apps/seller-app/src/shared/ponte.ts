@@ -82,7 +82,7 @@ export type EstadoDaSessao =
   /** Há sessão guardada e dados neste computador, mas sem internet: entra só com a senha (tarefa 5.8). */
   | { estado: 'entrar-sem-internet' }
   /** Aplicativo reaberto com a sessão ainda valida, mas o banco local fechado: pede a senha antes de tudo. */
-  | { estado: 'reabrir' }
+  | { estado: 'reabrir'; usuario: string | null }
   /** A dona desligou este computador: as vendas estão indo para a dona antes de apagar os dados (tarefa 5.8). */
   | { estado: 'desligando' }
   /** Os dados deste computador foram apagados (tarefa 5.8). */

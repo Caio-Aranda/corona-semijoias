@@ -122,7 +122,7 @@ export const TEXTOS_PT = {
   reabrindoNaEntrada: {
     titulo: 'Digite sua senha para continuar',
     texto:
-      'Por segurança, o Corona Vendas pede a senha toda vez que é aberto. Suas vendas continuam salvas.',
+      'Por segurança, o Corona Vendas pede a senha toda vez que é aberto. Este computador é do usuário abaixo e as vendas dele continuam salvas.',
   },
   desligando: {
     titulo: 'Estamos enviando as suas vendas.',

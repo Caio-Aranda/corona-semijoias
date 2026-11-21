@@ -121,7 +121,7 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
   reabrindoNaEntrada: {
     titulo: 'Escribí tu contraseña para continuar',
     texto:
-      'Por seguridad, el Corona Vendas pide la contraseña cada vez que se abre. Tus ventas siguen guardadas.',
+      'Por seguridad, el Corona Vendas pide la contraseña cada vez que se abre. Esta computadora es del usuario de abajo y sus ventas siguen guardadas.',
   },
   desligando: {
     titulo: 'Estamos enviando tus ventas.',

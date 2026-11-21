@@ -14,6 +14,8 @@ export interface TelaEntrarProps {
   semInternet?: boolean;
   /** O aplicativo foi reaberto: pede a senha para abrir o banco do computador. */
   reabrindo?: boolean;
+  /** Quem usa este computador: o campo Usuário vem preenchido e travado (outra pessoa não entra por cima). */
+  usuarioFixo?: string | null;
   /** Chamado quando é preciso ver o novo estado (entrou, senha temporária, aplicativo desatualizado). */
   aoMudar: () => void;
 }
@@ -23,9 +25,10 @@ export function TelaEntrar({
   sessaoTerminou = false,
   semInternet = false,
   reabrindo = false,
+  usuarioFixo = null,
   aoMudar,
 }: TelaEntrarProps) {
-  const [usuario, setUsuario] = useState('');
+  const [usuario, setUsuario] = useState(usuarioFixo ?? '');
   const [senha, setSenha] = useState('');
   const [enviando, setEnviando] = useState(false);
   const [resultado, setResultado] = useState<ResultadoDeEntrada | null>(null);
@@ -76,10 +79,11 @@ export function TelaEntrar({
             rotulo={TEXTOS.entrada.usuario}
             value={usuario}
             onChange={(e) => setUsuario(e.target.value)}
+            readOnly={usuarioFixo !== null}
             autoComplete="username"
             autoCapitalize="none"
             spellCheck={false}
-            autoFocus
+            autoFocus={usuarioFixo === null}
           />
           <Campo
             rotulo={TEXTOS.entrada.senha}
@@ -87,6 +91,7 @@ export function TelaEntrar({
             value={senha}
             onChange={(e) => setSenha(e.target.value)}
             autoComplete="current-password"
+            autoFocus={usuarioFixo !== null}
           />
           <Botao type="submit" variante="primario" grande disabled={enviando}>
             {TEXTOS.botoes.entrar}

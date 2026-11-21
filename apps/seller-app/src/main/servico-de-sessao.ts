@@ -24,6 +24,8 @@ export interface PreparoDoBancoLocal {
   fechar?(): void;
   /** Tarefa 5.8: quem entrou, guardado no próprio banco, para conferir o usuário ao abrir sem internet. */
   lembrar?(chave: 'vendedor_login' | 'vendedor_nome', valor: string): void;
+  /** O login de quem usa este computador, lido sem abrir o banco (não é segredo). */
+  usuarioDoComputador?(): string | null;
   lembrado?(chave: 'vendedor_login' | 'vendedor_nome'): string | null;
 }
 
@@ -122,9 +124,25 @@ export class ServicoDeSessao {
 
   async entrar(usuario: string, senha: string): Promise<ResultadoDeEntrada> {
     this.desatualizado = null;
+    // Este computador guarda as vendas de uma pessoa: outra não entra por cima (o banco antigo seria posto de lado
+    // e as vendas ainda não enviadas ficariam presas). Só vale com o banco fechado; aberto, já é a mesma pessoa.
+    const dono = this.donoDoComputador();
+    if (dono && dono !== usuario.trim().toLowerCase()) {
+      return {
+        tipo: 'recusado',
+        codigo: 'OUTRO_USUARIO',
+        mensagem: MENSAGENS_DA_SENHA.OUTRO_USUARIO,
+      };
+    }
     const r = await this.guarda.entrar(usuario, senha);
     if (r.ok && r.dados === 'entrou') {
-      await this.prepararBancoLocal(senha);
+      if (!(await this.prepararBancoLocal(senha)) && this.bancoLocal?.temDadosLocais) {
+        return {
+          tipo: 'recusado',
+          codigo: 'BANCO_NAO_ABRIU',
+          mensagem: MENSAGENS_DA_SENHA.BANCO_NAO_ABRIU,
+        };
+      }
       this.bancoLocal?.lembrar?.('vendedor_login', usuario.trim().toLowerCase());
     }
     if (!r.ok && r.falha.tipo === 'sem-conexao' && this.bancoLocal?.temDadosLocais) {
@@ -165,6 +183,13 @@ export class ServicoDeSessao {
     return { tipo: 'entrou' };
   }
 
+  /** Quem usa este computador, quando há dados dele guardados e o banco está fechado. */
+  private donoDoComputador(): string | null {
+    const b = this.bancoLocal;
+    if (!b?.temDadosLocais || b.bancoAberto !== false) return null;
+    return b.usuarioDoComputador?.() ?? null;
+  }
+
   async trocarSenha(senhaNova: string): Promise<ResultadoDeEntrada> {
     const r = await this.guarda.trocarSenha(senhaNova);
     if (r.ok && r.dados === 'entrou') await this.prepararBancoLocal(senhaNova);
@@ -176,15 +201,20 @@ export class ServicoDeSessao {
    * a redefiniu). Uma falha aqui não derruba a entrada: as telas ainda usam a internet até a tarefa 5.7. A senha nunca
    * é guardada nem registrada.
    */
-  private async prepararBancoLocal(senha: string): Promise<void> {
-    if (!this.bancoLocal) return;
+  private async prepararBancoLocal(senha: string): Promise<boolean> {
+    if (!this.bancoLocal) return true;
     try {
       const r = await this.bancoLocal.prepararComInternet(senha);
-      if (!r.ok) console.warn(`Banco local não abriu: ${r.codigo ?? 'sem código'}`);
+      if (!r.ok) {
+        console.warn(`Banco local não abriu: ${r.codigo ?? 'sem código'}`);
+        return false;
+      }
       // Banco aberto e sessão válida (acabou de entrar): o motor começa a enviar e receber.
-      else this.motor?.ligar();
+      this.motor?.ligar();
+      return true;
     } catch (erro) {
       console.warn('Banco local não abriu:', erro instanceof Error ? erro.name : 'erro');
+      return false;
     }
   }
 
@@ -225,7 +255,7 @@ export class ServicoDeSessao {
         // Reabriu o aplicativo e a sessão voltou sozinha com internet: o banco local só abre com a senha (a chave não
         // fica guardada em claro), então a tela principal não aparece antes de a senha ser digitada.
         if (this.bancoLocal?.temDadosLocais && this.bancoLocal.bancoAberto === false) {
-          return { estado: 'reabrir' };
+          return { estado: 'reabrir', usuario: this.bancoLocal.usuarioDoComputador?.() ?? null };
         }
         return { estado: 'dentro', usuario: await this.usuario() };
     }

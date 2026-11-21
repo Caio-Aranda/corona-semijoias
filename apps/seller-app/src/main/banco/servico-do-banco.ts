@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { chaveDasFotosDe } from '../fotos/fotos-dos-clientes';
 import { join } from 'node:path';
 import {
@@ -25,6 +25,10 @@ export const MENSAGENS_DA_SENHA = Object.freeze({
   SENHA_ERRADA: 'Usuário ou senha incorretos. Confira o que você digitou e tente de novo.',
   SENHA_BLOQUEADA:
     'A senha foi digitada errada muitas vezes. Conecte-se à internet e entre de novo para continuar.',
+  OUTRO_USUARIO:
+    'Este computador tem as vendas de outra pessoa que ainda precisam ser enviadas. Entre com o usuário dela.',
+  BANCO_NAO_ABRIU:
+    'Não foi possível abrir os dados deste computador. Feche o Corona Vendas e abra de novo. Se continuar assim, fale com a dona da loja.',
   SEM_DADOS:
     'Para entrar no Corona Vendas pela primeira vez é preciso internet. Conecte-se e tente de novo.',
 });
@@ -169,11 +173,30 @@ export class ServicoDoBanco {
   /** Guarda (no banco aberto) quem entrou: o login e o nome, para abrir sem internet. Sem banco aberto, não faz nada. */
   lembrar(chave: 'vendedor_login' | 'vendedor_nome', valor: string): void {
     if (!this.db) return;
+    // O login não é segredo: fica também em arquivo simples, para a tela de senha saber de quem é este computador
+    // antes de o banco abrir.
+    if (chave === 'vendedor_login') {
+      try {
+        writeFileSync(join(this.o.pasta, 'usuario.txt'), valor, 'utf8');
+      } catch {
+        /* sem o arquivo, o login só é lido de dentro do banco */
+      }
+    }
     this.db
       .prepare(
         'INSERT INTO estado_sync (chave, valor) VALUES (?, ?) ON CONFLICT(chave) DO UPDATE SET valor = excluded.valor',
       )
       .run(chave, valor);
+  }
+
+  /** O login de quem usa este computador, lido sem abrir o banco. */
+  usuarioDoComputador(): string | null {
+    try {
+      const v = readFileSync(join(this.o.pasta, 'usuario.txt'), 'utf8').trim();
+      return v || null;
+    } catch {
+      return null;
+    }
   }
 
   lembrado(chave: 'vendedor_login' | 'vendedor_nome'): string | null {
