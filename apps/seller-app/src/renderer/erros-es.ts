@@ -247,7 +247,7 @@ export const ERROS_ES: Readonly<Record<string, string>> = Object.freeze({
   SENHA_BLOQUEADA:
     'La contraseña se escribió mal muchas veces. Conectate a internet y entrá de nuevo para continuar.',
   OUTRO_USUARIO:
-    'Esta computadora tiene ventas de otra persona que todavía hay que enviar. Entrá con el usuario de esa persona.',
+    'Esta computadora ya tiene los datos de otra persona. Entrá con el usuario que se muestra en la pantalla. Si esta computadora ahora es tuya, usá "Esta computadora es de otra persona". Si tenés dudas, hablá con la dueña de la tienda.',
   BANCO_NAO_ABRIU:
     'No se pudieron abrir los datos de esta computadora. Cerrá el Corona Vendas y abrilo de nuevo. Si sigue igual, hablá con la dueña de la tienda.',
   SEM_DADOS:

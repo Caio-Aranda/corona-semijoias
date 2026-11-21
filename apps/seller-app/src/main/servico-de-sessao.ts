@@ -22,6 +22,8 @@ export interface PreparoDoBancoLocal {
   /** Tarefa 5.8: abre o banco só pela senha, sem internet (5 erros seguidos bloqueiam até conectar). */
   abrirSemInternet?(senha: string): Promise<{ ok: boolean; codigo?: string; mensagem?: string }>;
   fechar?(): void;
+  /** Guarda o banco antigo à parte e solta o computador para outra pessoa (nunca apaga). */
+  liberarParaOutraPessoa?(): boolean;
   /** Tarefa 5.8: quem entrou, guardado no próprio banco, para conferir o usuário ao abrir sem internet. */
   lembrar?(chave: 'vendedor_login' | 'vendedor_nome', valor: string): void;
   /** O login de quem usa este computador, lido sem abrir o banco (não é segredo). */
@@ -191,6 +193,17 @@ export class ServicoDeSessao {
     const b = this.bancoLocal;
     if (!b?.temDadosLocais || b.bancoAberto !== false) return null;
     return b.usuarioDoComputador?.() ?? null;
+  }
+
+  /**
+   * "Este computador é de outra pessoa" (confirmado na tela em duas etapas): sai da sessão, guarda o banco antigo à
+   * parte e deixa o computador sem dono. As vendas não enviadas da pessoa anterior ficam no banco guardado e NÃO saem
+   * por este computador. Só vale com o banco fechado.
+   */
+  async liberarComputador(): Promise<void> {
+    if (this.bancoLocal?.bancoAberto === true || this.desligamento !== 'NENHUM') return;
+    this.bancoLocal?.liberarParaOutraPessoa?.();
+    await this.sair();
   }
 
   async trocarSenha(senhaNova: string): Promise<ResultadoDeEntrada> {

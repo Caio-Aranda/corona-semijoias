@@ -31,6 +31,7 @@ export function TelaEntrar({
   const [usuario, setUsuario] = useState(usuarioFixo ?? '');
   const [senha, setSenha] = useState('');
   const [enviando, setEnviando] = useState(false);
+  const [confirmando, setConfirmando] = useState(false);
   const [resultado, setResultado] = useState<ResultadoDeEntrada | null>(null);
 
   async function entrar(evento: FormEvent) {
@@ -50,6 +51,16 @@ export function TelaEntrar({
       setResultado({ tipo: 'erro-inesperado' });
     } finally {
       setEnviando(false);
+    }
+  }
+
+  async function liberar() {
+    setEnviando(true);
+    try {
+      await ponte.liberarComputador();
+    } finally {
+      setEnviando(false);
+      aoMudar();
     }
   }
 
@@ -96,6 +107,27 @@ export function TelaEntrar({
           <Botao type="submit" variante="primario" grande disabled={enviando}>
             {TEXTOS.botoes.entrar}
           </Botao>
+          {reabrindo && !confirmando ? (
+            <Botao type="button" variante="secundario" onClick={() => setConfirmando(true)}>
+              {TEXTOS.reabrindoNaEntrada.outraPessoa}
+            </Botao>
+          ) : null}
+          {reabrindo && confirmando ? (
+            <Aviso tipo="atencao" titulo={TEXTOS.reabrindoNaEntrada.confirmaTitulo}>
+              <p>{TEXTOS.reabrindoNaEntrada.confirmaTexto}</p>
+              <Botao
+                type="button"
+                variante="secundario"
+                disabled={enviando}
+                onClick={() => void liberar()}
+              >
+                {TEXTOS.reabrindoNaEntrada.confirmar}
+              </Botao>
+              <Botao type="button" variante="secundario" onClick={() => setConfirmando(false)}>
+                {TEXTOS.reabrindoNaEntrada.desistir}
+              </Botao>
+            </Aviso>
+          ) : null}
         </form>
       </main>
     </div>

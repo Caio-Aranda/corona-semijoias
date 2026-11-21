@@ -60,13 +60,20 @@ const api = { eu: vi.fn(), chamar: vi.fn() };
 
 function bancoLocal(opcoes: { temDados?: boolean; senhaCerta?: string; login?: string } = {}) {
   let aberto = false;
+  let liberado = false;
   return {
     prepararComInternet: vi.fn(() => {
       aberto = true;
       return Promise.resolve({ ok: true });
     }),
-    temDadosLocais: opcoes.temDados ?? true,
-    usuarioDoComputador: () => opcoes.login ?? 'ana',
+    get temDadosLocais() {
+      return !liberado && (opcoes.temDados ?? true);
+    },
+    usuarioDoComputador: () => (liberado ? null : (opcoes.login ?? 'ana')),
+    liberarParaOutraPessoa: vi.fn(() => {
+      liberado = true;
+      return true;
+    }),
     get bancoAberto() {
       return aberto;
     },
@@ -160,6 +167,20 @@ describe('reabrir o aplicativo com internet (defeito 2 do teste 9.10)', () => {
     expect(await s.entrar(' Ana ', 'Temp-1')).toEqual({ tipo: 'trocar-senha' });
     expect(await s.trocarSenha('Senha-Nova1')).toEqual({ tipo: 'entrou' });
     expect(banco.lembrar).toHaveBeenCalledWith('vendedor_login', 'ana');
+  });
+
+  it('sem confirmar a saída, outro usuário continua recusado; confirmada, o computador fica livre', async () => {
+    const banco = bancoLocal({ login: 'ana' });
+    const entrarNaApi = vi.fn(() => Promise.resolve({ ok: true as const, dados: credenciais() }));
+    const guarda = guardaReal({ entrar: entrarNaApi });
+    const s = new ServicoDeSessao(guarda, api, Promise.resolve(), banco);
+    expect(await s.entrar('maria', 'Senha-1')).toMatchObject({ codigo: 'OUTRO_USUARIO' });
+    expect(banco.liberarParaOutraPessoa).not.toHaveBeenCalled();
+
+    await s.liberarComputador();
+    expect(banco.liberarParaOutraPessoa).toHaveBeenCalledTimes(1);
+    expect(await s.entrar('maria', 'Senha-1')).toEqual({ tipo: 'entrou' });
+    expect(entrarNaApi).toHaveBeenCalledTimes(1);
   });
 
   it('o mesmo usuário (maiúsculas à parte) entra normalmente', async () => {

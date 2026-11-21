@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { chaveDasFotosDe } from '../fotos/fotos-dos-clientes';
 import { join } from 'node:path';
 import {
@@ -26,7 +26,7 @@ export const MENSAGENS_DA_SENHA = Object.freeze({
   SENHA_BLOQUEADA:
     'A senha foi digitada errada muitas vezes. Conecte-se à internet e entre de novo para continuar.',
   OUTRO_USUARIO:
-    'Este computador tem as vendas de outra pessoa que ainda precisam ser enviadas. Entre com o usuário dela.',
+    'Este computador já está com os dados de outra pessoa. Entre com o usuário mostrado na tela. Se este computador agora é seu, use "Este computador é de outra pessoa". Se tiver dúvida, fale com a dona da loja.',
   BANCO_NAO_ABRIU:
     'Não foi possível abrir os dados deste computador. Feche o Corona Vendas e abra de novo. Se continuar assim, fale com a dona da loja.',
   SEM_DADOS:
@@ -236,6 +236,22 @@ export class ServicoDoBanco {
 
   fechar(): void {
     this.fecharSeAberto();
+  }
+
+  /**
+   * "Este computador é de outra pessoa": o banco e a chave antigos vão para o lado (`.ilegivel-...`, nunca apagados, como
+   * na chave perdida) e o usuario.txt sai. Só com o banco fechado. Devolve se mexeu em algo.
+   */
+  liberarParaOutraPessoa(): boolean {
+    if (this.db) return false;
+    if (this.existeBanco()) {
+      const destino = moverParaIlegivel(this.caminhoDoBanco, this.agora());
+      this.chave.moverPara(`${destino}.chave.json`);
+    } else if (this.chave.existe()) {
+      this.chave.moverPara(`${this.caminhoDoBanco}.ilegivel-sem-banco.chave.json`);
+    }
+    rmSync(join(this.o.pasta, 'usuario.txt'), { force: true });
+    return true;
   }
 
   // --- internos ---

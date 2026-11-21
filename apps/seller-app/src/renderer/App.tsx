@@ -95,6 +95,7 @@ export function App({ ponte }: AppProps) {
       case 'reabrir':
         return (
           <TelaEntrar
+            key="reabrir"
             ponte={ponte}
             reabrindo
             usuarioFixo={tela.usuario}

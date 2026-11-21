@@ -36,6 +36,7 @@ function criarPonte(respostas: Record<string, Resposta> = {}) {
     entrar: vi.fn(),
     trocarSenha: vi.fn(),
     sair: vi.fn(() => Promise.resolve()),
+    liberarComputador: vi.fn(() => Promise.resolve()),
     estouLogado: vi.fn(() => Promise.resolve(DENTRO)),
     chamarApi: vi.fn((p: PedidoDeChamada) => {
       chamadas.push(p);

@@ -15,6 +15,7 @@ const ponte: PonteDoCorona = {
   entrar: (dados) => ipcRenderer.invoke(CANAIS.entrar, dados),
   trocarSenha: (dados) => ipcRenderer.invoke(CANAIS.trocarSenha, dados),
   sair: () => ipcRenderer.invoke(CANAIS.sair),
+  liberarComputador: () => ipcRenderer.invoke(CANAIS.liberarComputador),
   estouLogado: () => ipcRenderer.invoke(CANAIS.estouLogado),
   chamarApi: (pedido) => ipcRenderer.invoke(CANAIS.chamarApi, pedido),
   lerIdioma: () => ipcRenderer.invoke(CANAIS.idiomaLer),

@@ -122,6 +122,12 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
     titulo: 'Escribí tu contraseña para continuar',
     texto:
       'Por seguridad, el Corona Vendas pide la contraseña cada vez que se abre. Esta computadora es del usuario de abajo y sus ventas siguen guardadas.',
+    outraPessoa: 'Esta computadora es de otra persona',
+    confirmaTitulo: '¿Estás seguro?',
+    confirmaTexto:
+      'Las ventas que la persona anterior todavía no envió no se enviarán desde esta computadora. Sus datos quedan guardados aparte y no se borra nada. Seguí solo si esta computadora ahora es tuya.',
+    confirmar: 'Sí, es de otra persona',
+    desistir: 'Volver',
   },
   desligando: {
     titulo: 'Estamos enviando tus ventas.',
