@@ -18,6 +18,7 @@ import type {
   ResultadoDeChamada,
 } from '../shared/ponte';
 import { App } from './App';
+import { TelaTroca } from './telas/consignado/TelaTroca';
 import { definirIdioma } from './idioma';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -829,5 +830,87 @@ describe('Clientes e Lançar pagamento', () => {
       await screen.findByText('O valor pago passa do total a receber. Confira os valores.'),
     ).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: 'Lançar pagamento' }).at(-1)).toBeDisabled();
+  });
+});
+
+describe('Troca mostra o valor da diferença (defeito 7 do 9.10)', () => {
+  const notaDaTroca = {
+    id: NOTA(1),
+    numero: '0000065-01',
+    clienteId: 'c1',
+    cliente: 'Cliente 1',
+    valorDx: '400.00',
+    linhas: [
+      {
+        produtoId: 'p1',
+        remessaId: 'm1',
+        maleta: '0007',
+        nome: 'Anel A',
+        dx: 2,
+        precoUnitario: '200.00',
+      },
+    ],
+  };
+  const peca = (preco: string) => ({
+    tipo: 'ACHADA',
+    produtoId: 'p2',
+    remessaId: 'm1',
+    maleta: '0007',
+    nome: 'Colar B',
+    codigo: 'B-1',
+    fotoHash: null,
+    precoUnitario: preco,
+    disponivel: 3,
+  });
+
+  async function prepararTroca(precoNovo: string) {
+    const { ponte } = criarPonte({
+      'consignado.notas': () =>
+        ok([
+          {
+            notaId: NOTA(1),
+            numero: '0000065-01',
+            cliente: 'Cliente 1',
+            clienteId: 'c1',
+            dataCobranca: null,
+            valorDx: '400.00',
+            situacao: 'EM_ABERTO',
+            maletas: ['0007'],
+          },
+        ]),
+      'consignado.nota': () => ok(notaDaTroca),
+      'consignado.maletas': () => ok([{ id: 'm1', codigo: '0007', status: 'ENVIADA' }]),
+      'consignado.peca': () => ok(peca(precoNovo)),
+    });
+    const u = userEvent.setup();
+    render(<TelaTroca ponte={ponte} aoVoltar={() => undefined} />);
+    await u.click(await screen.findByRole('button', { name: 'Escolher' }));
+    await u.selectOptions(await screen.findByLabelText('Peça que volta'), 'p1|m1');
+    await u.selectOptions(screen.getByLabelText('Maleta da peça nova'), 'm1');
+    await u.type(screen.getByLabelText('Ler o código da peça nova'), 'B-1{enter}');
+    return u;
+  }
+
+  it('peça nova mais cara: avisa quanto o cliente passa a dever na nota', async () => {
+    await prepararTroca('260.00');
+    expect(await screen.findByText('A peça que volta vale R$ 200,00.')).toBeInTheDocument();
+    expect(screen.getByText('A peça nova vale R$ 260,00.')).toBeInTheDocument();
+    expect(
+      screen.getByText('O valor da nota sobe R$ 60,00 e passa a ser R$ 460,00.'),
+    ).toBeInTheDocument();
+  });
+
+  it('peça nova mais barata: avisa quanto a nota desce', async () => {
+    await prepararTroca('150.00');
+    expect(
+      await screen.findByText('O valor da nota desce R$ 50,00 e passa a ser R$ 350,00.'),
+    ).toBeInTheDocument();
+  });
+
+  it('mesmo preço: sem diferença', async () => {
+    await prepararTroca('200.00');
+    expect(
+      await screen.findByText('Sem diferença: a nota continua em R$ 400,00.'),
+    ).toBeInTheDocument();
   });
 });
