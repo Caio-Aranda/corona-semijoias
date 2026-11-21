@@ -69,10 +69,8 @@ describe('useConsulta depois do pull', () => {
 });
 
 function TelaRelatorio({ ponte }: { ponte: PonteDoCorona }) {
-  const r = useRelatorioDaTela<{ tipo: 'TOTAIS_DA_SEMANA'; nome: string }>(ponte, {
-    tipo: 'TOTAIS_DA_SEMANA',
-  } as never);
-  return <p>{r ? r.nome : 'carregando'}</p>;
+  const r = useRelatorioDaTela(ponte, { tipo: 'TOTAIS_DA_SEMANA' } as never);
+  return <p>{r ? (r as unknown as { nome: string }).nome : 'carregando'}</p>;
 }
 
 describe('useRelatorioDaTela depois do pull', () => {
