@@ -145,6 +145,23 @@ describe('reabrir o aplicativo com internet (defeito 2 do teste 9.10)', () => {
     expect(banco.prepararComInternet).not.toHaveBeenCalled();
   });
 
+  it('a primeira entrada (senha temporária, depois a nova) também guarda quem usa o computador', async () => {
+    const banco = bancoLocal({ temDados: false });
+    const guarda = guardaReal({
+      entrar: vi.fn(() =>
+        Promise.resolve({
+          ok: true as const,
+          dados: credenciais({ trocaDeSenhaObrigatoria: true }),
+        }),
+      ),
+      trocarSenha: vi.fn(() => Promise.resolve({ ok: true as const, dados: credenciais() })),
+    });
+    const s = new ServicoDeSessao(guarda, api, Promise.resolve(), banco);
+    expect(await s.entrar(' Ana ', 'Temp-1')).toEqual({ tipo: 'trocar-senha' });
+    expect(await s.trocarSenha('Senha-Nova1')).toEqual({ tipo: 'entrou' });
+    expect(banco.lembrar).toHaveBeenCalledWith('vendedor_login', 'ana');
+  });
+
   it('o mesmo usuário (maiúsculas à parte) entra normalmente', async () => {
     const banco = bancoLocal({ login: 'ana' });
     const guarda = renovaBem();

@@ -67,6 +67,8 @@ export class ServicoDeSessao {
   /** Abriu sem internet, só com a senha (tarefa 5.8): vale como "dentro" até a sessão voltar sozinha. */
   private modoLocal = false;
   private desligamento: EstadoDoDesligamento = 'NENHUM';
+  /** Quem acabou de digitar o usuário (a troca da senha temporária vem depois, sem o usuário). */
+  private loginDaEntrada: string | null = null;
 
   constructor(
     private readonly guarda: GuardaDeTokens,
@@ -134,6 +136,7 @@ export class ServicoDeSessao {
         mensagem: MENSAGENS_DA_SENHA.OUTRO_USUARIO,
       };
     }
+    this.loginDaEntrada = usuario.trim().toLowerCase();
     const r = await this.guarda.entrar(usuario, senha);
     if (r.ok && r.dados === 'entrou') {
       if (!(await this.prepararBancoLocal(senha)) && this.bancoLocal?.temDadosLocais) {
@@ -192,7 +195,10 @@ export class ServicoDeSessao {
 
   async trocarSenha(senhaNova: string): Promise<ResultadoDeEntrada> {
     const r = await this.guarda.trocarSenha(senhaNova);
-    if (r.ok && r.dados === 'entrou') await this.prepararBancoLocal(senhaNova);
+    if (r.ok && r.dados === 'entrou') {
+      await this.prepararBancoLocal(senhaNova);
+      if (this.loginDaEntrada) this.bancoLocal?.lembrar?.('vendedor_login', this.loginDaEntrada);
+    }
     return this.paraResultado(r);
   }
 

@@ -320,6 +320,8 @@ Branch `fix/pdf-fechamento-centavos`, PR em rascunho. **Causa raiz (defeito 1):*
 
 - **Causa:** ao reabrir com internet, a sessão guardada era renovada e `estouLogado` devolvia `dentro` sem o banco local aberto (ele só abre com a senha; a chave nunca fica em claro). A tela principal aparecia com banco fechado, sem prazo (aviso falso) e sem poder vender.
 - **Correção:** novo estado `reabrir` quando há dados locais e o banco está fechado; a tela pede a senha ("Digite sua senha para continuar", pt/es), a entrada com internet abre o banco e liga o envio. Sem internet o fluxo "Entrar sem internet" continua igual.
+- Revisão: se o banco não abrir ao entrar e já há dados locais, a entrada dá erro simples (pt/es), sem laço de tela de senha. A tela de reabrir traz o usuário deste computador preenchido e travado (o login fica também em `usuario.txt`, não é segredo, para ser lido com o banco fechado); outro usuário é recusado enquanto houver dados locais, sem mexer na sessão nem no banco. A primeira entrada (senha temporária) também guarda o usuário.
+- Prova no Electron real (Playwright `_electron`, banco Postgres e API descartáveis em portas próprias 5497/8097, script fora do repositório): primeira entrada, cadastro de cliente com a API parada (1 item aguardando envio), fechar, reabrir com internet: pede a senha, usuário travado, sem tela principal nem aviso falso; senha errada continua na tela; senha certa abre o banco e o cadastro pendente chega ao servidor.
 - Testes: `abrir-sem-internet.test.ts` e `telas.test.tsx`.
 
 ## Leva 9: acabamento final do consignado (tarefa 9.9, issue 238, 20/11/2026)
