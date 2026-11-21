@@ -85,9 +85,9 @@ describe('CapturaDeFoto: câmera (defeito 3 do relatório 9.10)', () => {
       <CapturaDeFoto ponte={ponte} rotulo="Foto do cliente" hash={null} aoGuardar={aoGuardar} />,
     );
     await userEvent.click(screen.getByRole('button', { name: T.tirarFoto }));
-    const video = (await screen.findByLabelText('Foto do cliente', {
+    const video = await screen.findByLabelText<HTMLVideoElement>('Foto do cliente', {
       selector: 'video',
-    })) as HTMLVideoElement;
+    });
     Object.defineProperty(video, 'videoWidth', { value: 640 });
     Object.defineProperty(video, 'videoHeight', { value: 480 });
     await userEvent.click(screen.getByRole('button', { name: T.capturar }));
