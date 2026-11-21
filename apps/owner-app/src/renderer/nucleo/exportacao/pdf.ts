@@ -109,7 +109,7 @@ export function gerarPdf(grade: Grade): Uint8Array {
       item.celulas.forEach((celula, i) => {
         if (celula.v === '') return;
         const c = colunas[i]!;
-        const dado = celula.numero ? formatarNumero(celula.v, grade.titulos[i] ?? '') : celula.v;
+        const dado = celula.numero ? formatarNumero(celula.v) : celula.v;
         const s = caber(dado, c.largura - 4);
         texto(
           grade.numericas[i] ? c.x + c.largura - 2 - larguraDoTexto(s) : c.x + 2,
@@ -167,11 +167,14 @@ export function montarArquivoPdf(conteudos: string[], largura: number, altura: n
   return bytes;
 }
 
-/** "1234.56" → "1.234,56" no PDF; o Guarani e as contagens ficam inteiros. */
-function formatarNumero(v: string, titulo: string): string {
+/**
+ * "1234.56" -> "1.234,56" no PDF. Quem decide as casas é o próprio valor (o Real, o Dólar e a
+ * porcentagem trazem centavos; o Guarani e as contagens são inteiros), não o título da coluna:
+ * no Fechamento da maleta os valores em Real ficam sob títulos de peças e perdiam os centavos.
+ */
+function formatarNumero(v: string): string {
   const m = /^(-?)(\d+)(?:\.(\d+))?$/.exec(v);
   if (!m) return v;
   const inteiro = (m[2] ?? '').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-  const casas = /\((R\$|US\$)\)|%/.test(titulo) || /Comiss/.test(titulo);
-  return `${m[1]}${inteiro}${casas && m[3] ? `,${m[3]}` : ''}`;
+  return `${m[1]}${inteiro}${m[3] ? `,${m[3]}` : ''}`;
 }

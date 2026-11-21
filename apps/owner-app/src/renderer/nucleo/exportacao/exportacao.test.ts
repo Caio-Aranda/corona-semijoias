@@ -347,8 +347,44 @@ describe('Fechamento da maleta: Dólar e Guarani nos totais de dinheiro (9.8)', 
       }),
     );
     const vd = grade.rodape.find((l) => l[0]?.v === 'Valor vendido')!;
-    expect(vd.map((c) => c.v).slice(1, 4)).toEqual(['300.00', 'US$ 50.00', 'Gs. 250000']);
+    expect(vd.map((c) => c.v).slice(1, 4)).toEqual(['300.00', 'US$ 50,00', 'Gs. 250000']);
     const pend = grade.rodape.find((l) => l[0]?.v === 'Pendências')!;
     expect(pend.map((c) => c.v).slice(1, 4)).toEqual(['200.00', '', '']);
+  });
+
+  it('PDF: os centavos do Real aparecem na seção Dinheiro, sem truncar (defeito 1 do teste 9.10)', () => {
+    const colunas = ['a', 'b', 'c', 'd'].map((chave) => ({
+      chave,
+      titulo: chave.toUpperCase(),
+      tipo: 'texto' as const,
+    }));
+    const grade = montarGrade(
+      pedido({
+        colunas,
+        linhas: [{ a: 'x', b: 'y', c: 'z', d: 'w' }],
+        totais: [
+          {
+            chave: 'vd',
+            rotulo: 'Valor vendido',
+            quantidade: 1,
+            valorEmReais: '289.90',
+            valorEmDolar: '57.98',
+            valorEmGuarani: '289900',
+          },
+          { chave: 'com', rotulo: 'Comissão', quantidade: 1, valorEmReais: '86.97' },
+          { chave: 'rec', rotulo: 'Valor recebido', quantidade: 1, valorEmReais: '202.93' },
+          { chave: 'pend', rotulo: 'Pendências a receber', quantidade: 1, valorEmReais: '0.00' },
+        ],
+        totaisDeValor: {},
+        secoes: [{ titulo: 'Dinheiro', totais: ['vd', 'com', 'rec', 'pend'] }],
+      }),
+    );
+    const pdf = new TextDecoder('latin1').decode(gerarPdf(grade));
+    for (const t of ['(289,90)', '(86,97)', '(202,93)', '(0,00)', '(US$ 57,98)', '(Gs. 289900)']) {
+      expect(pdf).toContain(t);
+    }
+    // O CSV usa a mesma vírgula decimal para o Real e o Dólar.
+    const csv = gerarCsv(grade);
+    expect(csv).toContain('289,90;US$ 57,98;Gs. 289900');
   });
 });
