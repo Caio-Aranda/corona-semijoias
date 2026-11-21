@@ -637,6 +637,83 @@ describe('Cobrança e acerto', () => {
     expect(screen.queryByText(/a saída vale como/)).not.toBeInTheDocument();
   });
 
+  it('acerto salvo em espanhol: "Debe ahora" e a frase explicando o que mudou depois do acerto', async () => {
+    const acerto = {
+      id: 'a1',
+      acertadoEm: '2026-11-10T15:00:00Z',
+      comissaoPercentual: '30.00',
+      itensDx: 10,
+      itensDv: 5,
+      itensVd: 5,
+      valorDx: '2000.00',
+      valorDv: '1000.00',
+      valorVd: '1000.00',
+      vendaPercentual: '50.00',
+      comissao: '300.00',
+      bruto: '700.00',
+      pendenciasAnteriores: '0.00',
+      totalAReceber: '700.00',
+      totalPago: '351.03',
+      ficouDevendo: '348.97',
+      recibo: null,
+    };
+    const { u } = await abrir({
+      'consignado.nota': () =>
+        ok({ ...nota, aceitaMudanca: false, acerto, saldoDaNota: '294.70', situacao: 'PENDENTE' }),
+    });
+    try {
+      definirIdioma('es');
+      await u.click(await screen.findByRole('tab', { name: 'Forma de Pago' }));
+      expect(await screen.findByText('Debe ahora')).toBeInTheDocument();
+      expect(screen.getByText(/quedó debiendo R\$ 348,97\./)).toBeInTheDocument();
+      expect(screen.getByText(/se aplicaron pagos o sobras/)).toBeInTheDocument();
+    } finally {
+      definirIdioma('pt');
+    }
+  });
+
+  it('acerto salvo cujo saldo é o mesmo valor escrito de outro jeito não mostra "Deve agora"', async () => {
+    const acerto = {
+      id: 'a1',
+      acertadoEm: '2026-11-10T15:00:00Z',
+      comissaoPercentual: '30.00',
+      itensDx: 10,
+      itensDv: 5,
+      itensVd: 5,
+      valorDx: '2000.00',
+      valorDv: '1000.00',
+      valorVd: '1000.00',
+      vendaPercentual: '50.00',
+      comissao: '300.00',
+      bruto: '700.00',
+      pendenciasAnteriores: '0.00',
+      totalAReceber: '700.00',
+      totalPago: '405.30',
+      ficouDevendo: '294.70',
+      recibo: null,
+    };
+    const { u } = await abrir({
+      'consignado.nota': () =>
+        ok({ ...nota, aceitaMudanca: false, acerto, saldoDaNota: '294.7', situacao: 'PENDENTE' }),
+    });
+    await u.click(screen.getByRole('tab', { name: 'Forma de Pagamento' }));
+    expect(await screen.findByText('Ficou devendo')).toBeInTheDocument();
+    expect(screen.queryByText('Deve agora')).not.toBeInTheDocument();
+  });
+
+  it('relógio adiantado: o dia da saída corrigido (anterior ao local) pode ser escolhido no campo de data', async () => {
+    const { u } = await abrir({
+      'consignado.nota': () =>
+        ok({ ...nota, correcaoDoRelogio: { diaDeHoje: '2026-11-08', diaDaSaida: '2026-11-07' } }),
+    });
+    await u.click(screen.getByRole('tab', { name: 'Forma de Pagamento' }));
+    const campo = screen.getByLabelText('Dt. Acerto');
+    // A saída que este computador viu foi 10/11; pelo servidor foi 07/11: o campo deixa chegar nesse dia.
+    expect(campo).toHaveAttribute('min', '2026-11-07');
+    fireEvent.change(campo, { target: { value: '2026-11-08' } });
+    expect(screen.queryByText(/a saída vale como/)).not.toBeInTheDocument();
+  });
+
   it('código fora da pedido avisa; DV acima do DX não passa; ler soma 1 em DV', async () => {
     const { u } = await abrir();
     const campo = screen.getByLabelText('Ler o código da peça devolvida');

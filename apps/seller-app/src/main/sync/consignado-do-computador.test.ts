@@ -1023,6 +1023,18 @@ describe('Dt. Acerto (tarefa 9.8): a data do acerto e a ordem dos débitos', () 
       expect(c).toEqual({ diaDeHoje: '2026-11-05', diaDaSaida: '2026-11-05' });
     });
 
+    it('computador 3 dias adiantado: "hoje" e a saída ainda não enviada voltam 3 dias pela diferença (negativa)', () => {
+      const { notaB } = duasNotas();
+      // Último contato: o servidor dizia 02/11 e este computador dizia 05/11 (adiantado 3 dias).
+      gravarEstado(b.db, CHAVES.horaServidor, '2026-11-02T13:00:00.000Z');
+      gravarEstado(b.db, CHAVES.horaLocalDoContato, '2026-11-05T13:00:00.000Z');
+      agora = new Date('2026-11-05T14:00:00.000Z');
+      const c = nota(notaB).correcaoDoRelogio;
+      expect(c?.diaDeHoje).toBe('2026-11-02');
+      // A nota saiu em 02/11 pela hora deste computador (que já estava adiantada); o servidor a corrige 3 dias para trás.
+      expect(c?.diaDaSaida).toBe('2026-10-30');
+    });
+
     it('a saída que já foi enviada (já vem corrigida pelo servidor) não leva a correção de novo', () => {
       const { notaB } = duasNotas();
       b.db.prepare("UPDATE outbox SET situacao = 'ENVIADO' WHERE operacao_id = ?").run(notaB);

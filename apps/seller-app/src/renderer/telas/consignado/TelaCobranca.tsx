@@ -517,7 +517,7 @@ function AcertoDoPedido({
                 ajuda={T.dataDoAcertoAjuda}
                 type="date"
                 max={hoje}
-                {...(diaDaSaida ? { min: diaDaSaida } : {})}
+                {...(saidaMinima ? { min: saidaMinima } : {})}
                 value={dataDoAcerto}
                 onChange={(e) => setDataDoAcerto(e.target.value)}
                 {...(dataInvalida
@@ -732,6 +732,9 @@ function ResumoDoAcerto({
     ) : (
       <Dinheiro reais={v} cotacao={cotacao.cotacao} />
     );
+  // Compara por centavos: "294.7" e "294.70" são o mesmo valor.
+  const saldoMudou =
+    (centavosDeTexto(saldoAtual) ?? 0n) !== (centavosDeTexto(acerto.ficouDevendo) ?? 0n);
   return (
     <>
       <p className="vendas-texto">{T.acertoDe(dia(acerto.acertadoEm))}</p>
@@ -758,7 +761,7 @@ function ResumoDoAcerto({
         <dd>{d(acerto.totalPago, relatorio?.totalPago)}</dd>
         <dt>{T.ficouDevendo}</dt>
         <dd>{d(acerto.ficouDevendo, relatorio?.ficouDevendo)}</dd>
-        {saldoAtual !== acerto.ficouDevendo ? (
+        {saldoMudou ? (
           <>
             <dt>{T.devendoAgora}</dt>
             <dd>
@@ -767,7 +770,7 @@ function ResumoDoAcerto({
           </>
         ) : null}
       </dl>
-      {saldoAtual !== acerto.ficouDevendo ? (
+      {saldoMudou ? (
         <p className="vendas-texto vendas-texto--pequeno">
           {T.devendoAgoraAjuda(reais(acerto.ficouDevendo))}
         </p>

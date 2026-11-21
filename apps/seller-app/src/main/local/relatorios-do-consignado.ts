@@ -67,31 +67,33 @@ const centavos = (t: string | null | undefined): bigint => exigirCentavos(t ?? '
 const dinheiro = textoDeCentavos;
 
 /** A soma de valores em Real e, se todos os lançamentos tinham cotação, em Dólar e Guarani. */
-class Soma {
+export class Soma {
   private real = 0n;
   private dolar = 0n;
   private guarani = 0n;
   private completa = true;
   private comTaxas = false;
-  private zeroSemTaxas = false;
+  private somouAlgo = false;
+
+  /** `haCotacao`: existe alguma cotação no banco; só então uma soma vazia vale "0,00" em Dólar e Guarani. */
+  constructor(private readonly haCotacao = true) {}
 
   somar(valor: bigint, taxas: Taxas | null): this {
     this.real += valor;
+    this.somouAlgo = true;
     if (taxas) {
       this.dolar += dolarEmCentavos(valor, taxas.usd);
       this.guarani += guaraniInteiro(valor, taxas.pyg);
       this.comTaxas = true;
     } else if (valor !== 0n) {
       this.completa = false;
-    } else {
-      this.zeroSemTaxas = true;
     }
     return this;
   }
 
   valor(): ValorNasTresMoedas {
-    // Só zeros e nenhuma cotação: não há conversão a mostrar (nunca "US$ 0,00" falso).
-    const convertido = this.completa && !(this.zeroSemTaxas && !this.comTaxas);
+    // Soma vazia sem nenhuma cotação, ou só de partes sem cotação do dia (zeros): não há conversão a mostrar (nunca "US$ 0,00" falso).
+    const convertido = this.somouAlgo ? this.completa && this.comTaxas : this.haCotacao;
     return {
       real: dinheiro(this.real),
       dolar: convertido ? dinheiro(this.dolar) : null,
@@ -111,11 +113,11 @@ export class RelatoriosDoConsignado {
   constructor(private readonly o: OpcoesDosRelatorios) {}
 
   /**
-   * Soma que começa "sabendo" se existe alguma cotação: soma vazia ou só de zeros sem nenhuma cotação sai só em Real
+   * Soma que sabe se existe alguma cotação: vazia e sem nenhuma, ou só de partes zeradas sem cotação do dia, sai só em Real
    * (nunca "US$ 0,00 · Gs. 0" falso); havendo cotação, o zero em Dólar e Guarani é verdadeiro.
    */
   private soma(): Soma {
-    return new Soma().somar(0n, this.cotacaoAte('9999-12-31'));
+    return new Soma(this.cotacaoAte('9999-12-31') !== null);
   }
 
   private db(): BancoAberto {

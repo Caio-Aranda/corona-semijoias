@@ -1002,7 +1002,7 @@ export const TEXTOS_PT = {
       ficouDevendo: 'Ficou devendo',
       devendoAgora: 'Deve agora',
       devendoAgoraAjuda: (noAcerto: string) =>
-        `No dia do acerto ficou devendo ${noAcerto}. Depois entraram pagamentos ou sobras de outros recibos, por isso o que falta hoje é menos.`,
+        `No dia do acerto ficou devendo ${noAcerto}. Depois foram aplicados pagamentos ou sobras de outros recibos, por isso o que falta hoje é menos.`,
       salvar: 'Salvar acerto',
       salvarTitulo: 'Salvar o acerto?',
       salvarTexto: (devendo: string, quita: boolean) =>

@@ -998,7 +998,7 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
       ficouDevendo: 'Quedó debiendo',
       devendoAgora: 'Debe ahora',
       devendoAgoraAjuda: (noAcerto: string) =>
-        `El día de la cobranza quedó debiendo ${noAcerto}. Después entraron pagos o sobras de otros recibos, por eso lo que falta hoy es menos.`,
+        `El día de la cobranza quedó debiendo ${noAcerto}. Después se aplicaron pagos o sobras de otros recibos, por eso lo que falta hoy es menos.`,
       salvar: 'Guardar cobranza',
       salvarTitulo: '¿Guardar la cobranza?',
       salvarTexto: (devendo: string, quita: boolean) =>
