@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import type {
@@ -12,6 +12,7 @@ import type {
 } from '../shared/dados-do-consignado';
 import type {
   EstadoDaSessao,
+  EstadoDaSincronizacao,
   PedidoDeChamada,
   PonteDoCorona,
   ResultadoDeChamada,
@@ -25,6 +26,20 @@ import { fileURLToPath } from 'node:url';
 const AQUI = dirname(fileURLToPath(import.meta.url));
 const lerCss = (relativo: string) => readFileSync(join(AQUI, relativo), 'utf8');
 
+const ESTADO_DO_ENVIO: EstadoDaSincronizacao = {
+  comInternet: true,
+  enviando: false,
+  aguardando: 0,
+  vendasAguardando: 0,
+  recusadas: 0,
+  dadosAte: null,
+  naoConseguiuEnviar: false,
+  prazo: { situacao: 'EM_DIA', diasRestantes: 0, motivo: null },
+  fotosBaixadas: 0,
+  fotosTotal: 0,
+  appDesatualizado: false,
+};
+
 const DENTRO: EstadoDaSessao = { estado: 'dentro', usuario: { nome: 'Rosa' } };
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
@@ -32,6 +47,7 @@ type Resposta = (pedido: PedidoDeChamada) => ResultadoDeChamada;
 
 function criarPonte(respostas: Record<string, Resposta> = {}) {
   const chamadas: PedidoDeChamada[] = [];
+  const ouvintesDoEnvio: ((e: EstadoDaSincronizacao) => void)[] = [];
   const ponte: PonteDoCorona = {
     entrar: vi.fn(),
     trocarSenha: vi.fn(),
@@ -44,14 +60,22 @@ function criarPonte(respostas: Record<string, Resposta> = {}) {
     }),
     aoMudarASessao: () => () => undefined,
     aoMudarAAtualizacao: () => () => undefined,
-    aoMudarASincronizacao: () => () => undefined,
+    aoMudarASincronizacao: (o) => {
+      ouvintesDoEnvio.push(o);
+      return () => undefined;
+    },
     lerIdioma: () => Promise.resolve(null),
     gravarIdioma: () => Promise.resolve(),
     imprimirRelatorio: () => Promise.resolve({ ok: true as const }),
     salvarRelatorioEmPdf: () => Promise.resolve({ ok: true as const }),
     prepararRelatorioNoWhatsapp: () => Promise.resolve({ ok: true as const }),
   };
-  return { ponte, chamadas };
+  const avisarEnvio = (e: Partial<EstadoDaSincronizacao>): void => {
+    act(() => {
+      for (const o of ouvintesDoEnvio) o({ ...ESTADO_DO_ENVIO, ...e });
+    });
+  };
+  return { ponte, chamadas, avisarEnvio };
 }
 
 const ok = (dados: unknown): ResultadoDeChamada => ({ ok: true, dados });
@@ -177,6 +201,26 @@ describe('Gerenciamento Semanal', () => {
       numero: 65,
     });
     expect(screen.getByRole('button', { name: 'Novo Pedido' })).toBeDisabled();
+  });
+
+  it('2º computador: depois do pull que traz as semanas, a tela troca o "primeira semana" pelo painel sem sair da tela (defeito 4 do 9.10)', async () => {
+    const vazio: PainelDaSemana = {
+      ...painel,
+      semSemana: true,
+      semanas: [],
+      semana: null,
+      pedidos: [],
+      podeNovoPedido: false,
+    };
+    let atual: PainelDaSemana = vazio;
+    const { ponte, avisarEnvio } = criarPonte({ 'consignado.painel': () => ok(atual) });
+    await irParaPrincipal(ponte);
+    await screen.findByText('Vamos começar a primeira semana');
+    // O pull termina e traz as semanas já abertas no outro computador.
+    atual = painel;
+    avisarEnvio({ dadosAte: '2026-11-10T12:00:00Z' });
+    await screen.findByText('Semana:');
+    expect(screen.queryByText('Vamos começar a primeira semana')).toBeNull();
   });
 
   it('semana anterior: Novo Pedido fica desligado', async () => {
