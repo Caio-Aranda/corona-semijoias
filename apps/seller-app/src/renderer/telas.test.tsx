@@ -18,6 +18,7 @@ function ponteFalsa(parcial: Partial<PonteDoCorona> = {}) {
     entrar: vi.fn(() => Promise.resolve<ResultadoDeEntrada>({ tipo: 'entrou' })),
     trocarSenha: vi.fn(() => Promise.resolve<ResultadoDeEntrada>({ tipo: 'entrou' })),
     sair: vi.fn(() => Promise.resolve()),
+    liberarComputador: vi.fn(() => Promise.resolve()),
     estouLogado: vi.fn(() => Promise.resolve<EstadoDaSessao>({ estado: 'fora' })),
     chamarApi: vi.fn(() => Promise.resolve({ ok: true as const, dados: {} })),
     aoMudarASessao: (f) => {
@@ -37,6 +38,49 @@ function ponteFalsa(parcial: Partial<PonteDoCorona> = {}) {
   };
   return { ponte, avisar: (a: AvisoDeSessao) => ouvinte?.(a) };
 }
+
+describe('aplicativo reaberto com a sessão guardada', () => {
+  it('pede a senha antes da tela principal (defeito 2 do teste 9.10)', async () => {
+    const { ponte } = ponteFalsa({
+      estouLogado: vi.fn(() =>
+        Promise.resolve<EstadoDaSessao>({ estado: 'reabrir', usuario: 'ana' }),
+      ),
+    });
+    render(<App ponte={ponte} />);
+    expect(await screen.findByText('Digite sua senha para continuar')).toBeInTheDocument();
+    expect(screen.getByLabelText('Usuário')).toHaveValue('ana');
+    expect(screen.getByLabelText('Usuário')).toHaveAttribute('readonly');
+    expect(screen.getByLabelText('Senha')).toHaveAttribute('type', 'password');
+  });
+});
+
+describe('reabrir: "Este computador é de outra pessoa"', () => {
+  it('só libera depois da segunda confirmação, avisando que as vendas não enviadas não saem daqui', async () => {
+    let estado: EstadoDaSessao = { estado: 'reabrir', usuario: 'ana' };
+    const liberar = vi.fn(() => {
+      estado = { estado: 'fora' };
+      return Promise.resolve();
+    });
+    const { ponte } = ponteFalsa({
+      estouLogado: vi.fn(() => Promise.resolve(estado)),
+      liberarComputador: liberar,
+    });
+    const u = userEvent.setup();
+    render(<App ponte={ponte} />);
+    await u.click(await screen.findByRole('button', { name: 'Este computador é de outra pessoa' }));
+    expect(await screen.findByText(/não serão enviadas por este computador/i)).toBeInTheDocument();
+    expect(liberar).not.toHaveBeenCalled();
+    // desistir não libera
+    await u.click(screen.getByRole('button', { name: 'Voltar' }));
+    expect(liberar).not.toHaveBeenCalled();
+    await u.click(await screen.findByRole('button', { name: 'Este computador é de outra pessoa' }));
+    await u.click(await screen.findByRole('button', { name: 'Sim, é de outra pessoa' }));
+    expect(liberar).toHaveBeenCalledTimes(1);
+    const campo = await screen.findByLabelText('Usuário');
+    expect(campo).not.toHaveAttribute('readonly');
+    expect(campo).toHaveValue('');
+  });
+});
 
 describe('tela de entrar', () => {
   it('tem os campos Usuário e Senha e o botão Entrar', async () => {

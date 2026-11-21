@@ -15,6 +15,7 @@ export const CANAIS = {
   entrar: 'corona:entrar',
   trocarSenha: 'corona:trocar-senha',
   sair: 'corona:sair',
+  liberarComputador: 'corona:liberar-computador',
   estouLogado: 'corona:estou-logado',
   chamarApi: 'corona:chamar-api',
   sessaoMudou: 'corona:sessao-mudou',
@@ -34,6 +35,7 @@ export const FUNCOES_DA_PONTE = [
   'entrar',
   'trocarSenha',
   'sair',
+  'liberarComputador',
   'estouLogado',
   'chamarApi',
   'aoMudarASessao',
@@ -81,6 +83,8 @@ export type EstadoDaSessao =
   | { estado: 'dentro'; usuario: UsuarioLogado | null }
   /** Há sessão guardada e dados neste computador, mas sem internet: entra só com a senha (tarefa 5.8). */
   | { estado: 'entrar-sem-internet' }
+  /** Aplicativo reaberto com a sessão ainda valida, mas o banco local fechado: pede a senha antes de tudo. */
+  | { estado: 'reabrir'; usuario: string | null }
   /** A dona desligou este computador: as vendas estão indo para a dona antes de apagar os dados (tarefa 5.8). */
   | { estado: 'desligando' }
   /** Os dados deste computador foram apagados (tarefa 5.8). */
@@ -174,6 +178,8 @@ export interface PonteDoCorona {
   entrar(dados: DadosDeEntrada): Promise<ResultadoDeEntrada>;
   trocarSenha(dados: DadosDeNovaSenha): Promise<ResultadoDeEntrada>;
   sair(): Promise<void>;
+  /** "Este computador é de outra pessoa": guarda o banco antigo à parte e deixa o computador livre (nada é apagado). */
+  liberarComputador(): Promise<void>;
   estouLogado(): Promise<EstadoDaSessao>;
   chamarApi(pedido: PedidoDeChamada): Promise<ResultadoDeChamada>;
   /** Avisa quando a sessão terminar sozinha. Devolve a função que cancela o aviso. */

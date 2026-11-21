@@ -45,6 +45,12 @@ export function registrarPonte(
     }),
   );
   ipcMain.handle(
+    CANAIS.liberarComputador,
+    protegido(async () => {
+      await servico.liberarComputador();
+    }),
+  );
+  ipcMain.handle(
     CANAIS.estouLogado,
     protegido(() => servico.estouLogado()),
   );

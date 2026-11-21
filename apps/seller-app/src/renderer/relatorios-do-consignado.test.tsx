@@ -187,6 +187,7 @@ function criarPonte(
     entrar: vi.fn(),
     trocarSenha: vi.fn(),
     sair: vi.fn(() => Promise.resolve()),
+    liberarComputador: vi.fn(() => Promise.resolve()),
     estouLogado: vi.fn(),
     chamarApi: vi.fn((p: PedidoDeChamada): Promise<ResultadoDeChamada> => {
       chamadas.push(p);
