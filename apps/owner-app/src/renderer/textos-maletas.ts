@@ -376,7 +376,7 @@ export const PT_TEXTOS_DE_MALETAS = {
     maleta: 'Maleta',
     pecas: 'Total de peças',
     valor: 'Valor total',
-    colunas: ['Código', 'Peça', 'Qtd.', 'Preço', 'Subtotal'],
+    colunas: ['Código', 'Peça', 'Tam./Ton.', 'Qtd.', 'Preço', 'Subtotal'],
     cotacao: (data: string) => `Cotação do Banco Central do dia do envio (${data}).`,
     assinaturaDona: 'Dona',
     assinaturaVendedor: 'Representante',
