@@ -86,6 +86,8 @@ export interface PedidoDeExportacao {
 export interface Celula {
   v: string;
   numero?: boolean;
+  /** Número que a tela mostra com a moeda na frente (Fechamento da maleta); o Excel formata, o CSV leva só o número. */
+  moeda?: 'US$' | 'Gs.';
 }
 
 export interface Grade {
@@ -323,8 +325,8 @@ export function montarGrade(pedido: PedidoDeExportacao): Grade {
       const d = total.valorEmDolar != null ? centavosDeTexto(total.valorEmDolar) : null;
       const g = total.valorEmGuarani != null ? centavosDeTexto(total.valorEmGuarani) : null;
       if (real !== null && d !== null && g !== null && titulos.length > 3) {
-        linha[2] = texto(`US$ ${centavosParaDecimal(d).replace('.', ',')}`);
-        linha[3] = texto(`Gs. ${(g / 100n).toString()}`);
+        linha[2] = { ...numero(centavosParaDecimal(d)), moeda: 'US$' };
+        linha[3] = { ...numero((g / 100n).toString()), moeda: 'Gs.' };
       }
     }
     return linha;

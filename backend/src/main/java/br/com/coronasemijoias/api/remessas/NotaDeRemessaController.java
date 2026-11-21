@@ -39,8 +39,8 @@ public class NotaDeRemessaController {
     public record Semana(UUID id, int numero, LocalDate inicio, LocalDate fim) {
     }
 
-    public record ItemDaNota(UUID produtoId, String codigo, String nome, int quantidade, BigDecimal precoRemessa,
-            BigDecimal subtotal) {
+    public record ItemDaNota(UUID produtoId, String codigo, String nome, String tamTon, int quantidade,
+            BigDecimal precoRemessa, BigDecimal subtotal) {
     }
 
     /** A cotação do dia do envio; {@code totalEmDolar} e {@code totalEmGuarani} convertem o total da nota. */
@@ -85,14 +85,15 @@ public class NotaDeRemessaController {
             throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.NOTA_SO_DEPOIS_DO_ENVIO);
         }
         List<ItemDaNota> itens = jdbc.query("""
-                SELECT p.id, p.nome, i.qtd_enviada, i.preco_remessa,
+                SELECT p.id, p.nome, p.tam_ton, i.qtd_enviada, i.preco_remessa,
                        (SELECT cd.codigo FROM corona.produto_codigos cd WHERE cd.produto_id = p.id AND cd.deleted_at IS NULL
                          ORDER BY cd.principal DESC, cd.created_at LIMIT 1) AS codigo
                   FROM corona.itens_remessa i JOIN corona.produtos p ON p.id = i.produto_id
                  WHERE i.remessa_id = ? AND i.deleted_at IS NULL ORDER BY lower(p.nome), p.id""", (rs, n) -> {
                     BigDecimal preco = Dinheiro.arredondar(rs.getBigDecimal("preco_remessa"));
                     int qtd = rs.getInt("qtd_enviada");
-                    return new ItemDaNota(rs.getObject("id", UUID.class), rs.getString("codigo"), rs.getString("nome"), qtd,
+                    return new ItemDaNota(rs.getObject("id", UUID.class), rs.getString("codigo"), rs.getString("nome"),
+                            rs.getString("tam_ton"), qtd,
                             preco, Dinheiro.precoDaLinha(preco, qtd));
                 }, id);
         int pecas = itens.stream().mapToInt(ItemDaNota::quantidade).sum();

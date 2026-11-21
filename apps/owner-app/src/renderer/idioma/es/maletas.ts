@@ -373,7 +373,7 @@ export const ES_TEXTOS_DE_MALETAS: NoMesmoFormato<typeof PT_TEXTOS_DE_MALETAS> =
     maleta: 'Maleta',
     pecas: 'Total de piezas',
     valor: 'Valor total',
-    colunas: ['Código', 'Pieza', 'Cant.', 'Precio', 'Subtotal'],
+    colunas: ['Código', 'Pieza', 'Tam./Ton.', 'Cant.', 'Precio', 'Subtotal'],
     cotacao: (data: string) => `Cotización del Banco Central del día del envío (${data}).`,
     assinaturaDona: 'Dueña',
     assinaturaVendedor: 'Representante',

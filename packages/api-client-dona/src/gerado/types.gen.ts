@@ -2094,6 +2094,7 @@ export type NotaDeRemessaControllerItemDaNota = {
     produtoId?: string;
     quantidade?: number;
     subtotal?: string;
+    tamTon?: string;
 };
 
 export type NotaDeRemessaControllerSemana = {

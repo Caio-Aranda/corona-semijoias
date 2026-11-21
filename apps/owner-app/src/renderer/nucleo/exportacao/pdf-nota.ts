@@ -24,11 +24,12 @@ const MARGEM = 40;
 const LINHA = 13;
 const CORPO = 9;
 const LARGURA_DO_CARACTERE = 0.52;
-/** Colunas: código, peça, quantidade, preço, subtotal (x inicial e largura). */
+/** Colunas: código, peça, Tam./Ton., quantidade, preço, subtotal (x inicial e largura). */
 const COLUNAS = [
-  { x: MARGEM, largura: 85 },
-  { x: MARGEM + 85, largura: 215 },
-  { x: MARGEM + 300, largura: 40 },
+  { x: MARGEM, largura: 75 },
+  { x: MARGEM + 75, largura: 160 },
+  { x: MARGEM + 235, largura: 70 },
+  { x: MARGEM + 305, largura: 35 },
   { x: MARGEM + 340, largura: 90 },
   { x: MARGEM + 430, largura: 85 },
 ];
@@ -47,7 +48,15 @@ export interface NotaParaPdf {
   enviadaEm: string;
   cancelada: boolean;
   motivoDoCancelamento: string;
-  itens: { codigo: string; nome: string; quantidade: string; preco: string; subtotal: string }[];
+  itens: {
+    codigo: string;
+    nome: string;
+    /** Tamanho ou tonalidade da peça (V057); vazio quando não tem. */
+    tamTon: string;
+    quantidade: string;
+    preco: string;
+    subtotal: string;
+  }[];
   totalPecas: string;
   totalValor: string;
   cotacao: { data: string; totalEmDolar: string; totalEmGuarani: string } | null;
@@ -96,9 +105,10 @@ export function gerarPdfDaNota(nota: NotaParaPdf): Uint8Array {
   // Linhas da tabela, já quebradas; a altura de cada uma depende do nome.
   const linhas: Linha[] = nota.itens.map((i) => {
     const nome = quebrar(i.nome, COLUNAS[1]!.largura - 6, CORPO);
+    const tamTon = quebrar(i.tamTon, COLUNAS[2]!.largura - 6, CORPO);
     return {
-      celulas: [i.codigo, nome.join('\n'), i.quantidade, i.preco, i.subtotal],
-      altura: nome.length * LINHA,
+      celulas: [i.codigo, nome.join('\n'), tamTon.join('\n'), i.quantidade, i.preco, i.subtotal],
+      altura: Math.max(nome.length, tamTon.length) * LINHA,
     };
   });
 
@@ -169,7 +179,7 @@ export function gerarPdfDaNota(nota: NotaParaPdf): Uint8Array {
     y -= LINHA;
     T.colunas.forEach((titulo, i) => {
       const c = COLUNAS[i]!;
-      if (i >= 2) aDireita(c.x + c.largura - 2, y, titulo, true);
+      if (i >= 3) aDireita(c.x + c.largura - 2, y, titulo, true);
       else texto(c.x + 2, y, titulo, true);
     });
     traco(y - 4);
@@ -184,7 +194,8 @@ export function gerarPdfDaNota(nota: NotaParaPdf): Uint8Array {
         quebrar(l.celulas[0]!, COLUNAS[0]!.largura - 4, CORPO)[0] ?? '',
       );
       nomeLinhas.forEach((nl, k) => texto(COLUNAS[1]!.x + 2, topo - k * LINHA, nl));
-      for (const i of [2, 3, 4]) {
+      l.celulas[2]!.split('\n').forEach((tl, k) => texto(COLUNAS[2]!.x + 2, topo - k * LINHA, tl));
+      for (const i of [3, 4, 5]) {
         const c = COLUNAS[i]!;
         aDireita(c.x + c.largura - 2, topo, l.celulas[i]!);
       }
@@ -246,6 +257,7 @@ export function lerNota(bruto: unknown): NotaParaPdf | null {
     return {
       codigo: txt(x.codigo),
       nome: txt(x.nome),
+      tamTon: txt(x.tamTon),
       quantidade: txt(x.quantidade),
       preco: reais(txt(x.precoRemessa)),
       subtotal: reais(txt(x.subtotal)),

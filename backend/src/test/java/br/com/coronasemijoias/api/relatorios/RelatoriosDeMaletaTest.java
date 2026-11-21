@@ -472,7 +472,7 @@ class RelatoriosDeMaletaTest extends TesteDeIntegracao {
     @Test
     void notaTrazTudoCongeladoParaImprimirSemCusto() throws Exception {
         Cenario c = cenario();
-        jdbc.update("UPDATE corona.produtos SET preco_venda = 999.00 WHERE id = ?", c.p1());
+        jdbc.update("UPDATE corona.produtos SET preco_venda = 999.00, tam_ton = 'Ouro rosé' WHERE id = ?", c.p1());
         ResultActions pedido = mvc.perform(get(REMESSAS + "/" + c.ra1() + "/nota").with(usuarios.comoDona()));
         pedido.andExpect(status().isOk());
         JsonNode n = corpoDe(pedido);
@@ -491,6 +491,15 @@ class RelatoriosDeMaletaTest extends TesteDeIntegracao {
             assertThat(dec(item.get("subtotal"))).isEqualByComparingTo(dec(item.get("precoRemessa")).multiply(BigDecimal.valueOf(item.get("quantidade").asInt())));
             assertThat(dec(item.get("precoRemessa"))).isIn(dec("50.00"), dec("30.00"));
         }
+        // O Tam./Ton. do produto sai na nota (pendência do teste 9.10); peça sem Tam./Ton. vem vazia.
+        long comTamTon = 0;
+        for (JsonNode item : n.get("itens")) {
+            if (!item.get("tamTon").isNull()) {
+                assertThat(item.get("tamTon").asString()).isEqualTo("Ouro rosé");
+                comTamTon++;
+            }
+        }
+        assertThat(comTamTon).isEqualTo(1);
         JsonNode cotacao = n.get("cotacao");
         assertThat(cotacao.get("data").asString()).isEqualTo("2285-03-09");
         assertThat(dec(cotacao.get("totalEmDolar"))).isEqualByComparingTo("52.00");
