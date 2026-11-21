@@ -51,21 +51,28 @@ export function CapturaDeFoto({
     setCamera(false);
   }
 
+  // O <video> só existe depois que a tela se desenha com a câmera aberta: ligar o fluxo aqui (e não num cronômetro)
+  // garante que o elemento já está na tela, qualquer que seja a ordem em que o navegador roda as coisas.
+  useEffect(() => {
+    const quadro = video.current;
+    const f = fluxo.current;
+    if (!camera || !quadro || !f) return;
+    quadro.srcObject = f;
+    void quadro.play().catch(() => undefined);
+  }, [camera]);
+
   async function abrirCamera(): Promise<void> {
     setErro(null);
     try {
       const f = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
       fluxo.current = f;
       setCamera(true);
-      // O quadro de vídeo só existe depois de desenhar a tela com a câmera aberta.
-      setTimeout(() => {
-        if (video.current) {
-          video.current.srcObject = f;
-          void video.current.play().catch(() => undefined);
-        }
-      }, 0);
-    } catch {
-      setErro(T.semCamera);
+    } catch (e) {
+      const nome = e instanceof DOMException ? e.name : '';
+      if (nome === 'NotAllowedError' || nome === 'SecurityError') setErro(T.cameraNegada);
+      else if (nome === 'NotFoundError' || nome === 'OverconstrainedError')
+        setErro(T.cameraAusente);
+      else setErro(T.semCamera);
     }
   }
 
@@ -89,7 +96,11 @@ export function CapturaDeFoto({
 
   async function capturar(): Promise<void> {
     const v = video.current;
-    if (!v || v.videoWidth === 0) return;
+    if (!v) return;
+    if (v.videoWidth === 0) {
+      setErro(T.cameraAbrindo);
+      return;
+    }
     const endereco = paraJpeg(v, v.videoWidth, v.videoHeight);
     pararCamera();
     await guardar(endereco);

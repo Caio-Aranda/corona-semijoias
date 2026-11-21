@@ -8,8 +8,7 @@ import { TEXTOS } from '../../textos';
 import { CapturaDeFoto } from './CapturaDeFoto';
 
 const T = new Proxy({} as typeof TEXTOS.consignado.cadastro, {
-  get: (_a, chave: string) =>
-    (TEXTOS.consignado.cadastro as Record<string, unknown>)[chave],
+  get: (_a, chave: string) => (TEXTOS.consignado.cadastro as Record<string, unknown>)[chave],
 });
 
 function criarFluxo() {
@@ -48,7 +47,9 @@ describe('CapturaDeFoto: câmera (defeito 3 do relatório 9.10)', () => {
     const { fluxo } = criarFluxo();
     usarCamera(() => Promise.resolve(fluxo));
     const { ponte } = criarPonte();
-    render(<CapturaDeFoto ponte={ponte} rotulo="Foto do cliente" hash={null} aoGuardar={vi.fn()} />);
+    render(
+      <CapturaDeFoto ponte={ponte} rotulo="Foto do cliente" hash={null} aoGuardar={vi.fn()} />,
+    );
     await userEvent.click(screen.getByRole('button', { name: T.tirarFoto }));
     const video = await screen.findByLabelText('Foto do cliente', { selector: 'video' });
     await waitFor(() => expect((video as HTMLVideoElement).srcObject).toBe(fluxo));
@@ -58,12 +59,18 @@ describe('CapturaDeFoto: câmera (defeito 3 do relatório 9.10)', () => {
     const { fluxo } = criarFluxo();
     usarCamera(() => Promise.resolve(fluxo));
     const { ponte } = criarPonte();
-    // Pior ordem possível: qualquer setTimeout dispara na hora, antes de o React desenhar o <video>.
-    vi.spyOn(globalThis, 'setTimeout').mockImplementation(((fn: () => void) => {
-      fn();
-      return 0;
+    // Pior ordem possível: o setTimeout que liga o vídeo dispara na hora, antes de o React desenhar o <video>.
+    const original = globalThis.setTimeout;
+    vi.spyOn(globalThis, 'setTimeout').mockImplementation(((fn: () => void, ms?: number) => {
+      if (ms === 0 && String(fn).includes('srcObject')) {
+        fn();
+        return 0;
+      }
+      return original(fn, ms);
     }) as unknown as typeof setTimeout);
-    render(<CapturaDeFoto ponte={ponte} rotulo="Foto do cliente" hash={null} aoGuardar={vi.fn()} />);
+    render(
+      <CapturaDeFoto ponte={ponte} rotulo="Foto do cliente" hash={null} aoGuardar={vi.fn()} />,
+    );
     await userEvent.click(screen.getByRole('button', { name: T.tirarFoto }));
     const video = await screen.findByLabelText('Foto do cliente', { selector: 'video' });
     await waitFor(() => expect((video as HTMLVideoElement).srcObject).toBe(fluxo));
@@ -74,7 +81,9 @@ describe('CapturaDeFoto: câmera (defeito 3 do relatório 9.10)', () => {
     usarCamera(() => Promise.resolve(fluxo));
     const { ponte, chamarApi } = criarPonte();
     const aoGuardar = vi.fn();
-    render(<CapturaDeFoto ponte={ponte} rotulo="Foto do cliente" hash={null} aoGuardar={aoGuardar} />);
+    render(
+      <CapturaDeFoto ponte={ponte} rotulo="Foto do cliente" hash={null} aoGuardar={aoGuardar} />,
+    );
     await userEvent.click(screen.getByRole('button', { name: T.tirarFoto }));
     const video = (await screen.findByLabelText('Foto do cliente', {
       selector: 'video',
@@ -94,7 +103,9 @@ describe('CapturaDeFoto: câmera (defeito 3 do relatório 9.10)', () => {
     const { fluxo } = criarFluxo();
     usarCamera(() => Promise.resolve(fluxo));
     const { ponte, chamarApi } = criarPonte();
-    render(<CapturaDeFoto ponte={ponte} rotulo="Foto do cliente" hash={null} aoGuardar={vi.fn()} />);
+    render(
+      <CapturaDeFoto ponte={ponte} rotulo="Foto do cliente" hash={null} aoGuardar={vi.fn()} />,
+    );
     await userEvent.click(screen.getByRole('button', { name: T.tirarFoto }));
     await userEvent.click(await screen.findByRole('button', { name: T.capturar }));
     expect(await screen.findByText(T.cameraAbrindo)).toBeInTheDocument();
@@ -105,13 +116,18 @@ describe('CapturaDeFoto: câmera (defeito 3 do relatório 9.10)', () => {
     ['NotAllowedError', 'cameraNegada'],
     ['NotFoundError', 'cameraAusente'],
     ['AbortError', 'semCamera'],
-  ] as const)('erro %s mostra a mensagem certa e a venda segue (arquivo continua)', async (nome, chave) => {
-    const texto = T[chave];
-    usarCamera(() => Promise.reject(new DOMException('x', nome)));
-    const { ponte } = criarPonte();
-    render(<CapturaDeFoto ponte={ponte} rotulo="Foto do cliente" hash={null} aoGuardar={vi.fn()} />);
-    await userEvent.click(screen.getByRole('button', { name: T.tirarFoto }));
-    expect(await screen.findByText(texto)).toBeInTheDocument();
-    expect(screen.getByText(T.escolherArquivo)).toBeInTheDocument();
-  });
+  ] as const)(
+    'erro %s mostra a mensagem certa e a venda segue (arquivo continua)',
+    async (nome, chave) => {
+      const texto = T[chave];
+      usarCamera(() => Promise.reject(new DOMException('x', nome)));
+      const { ponte } = criarPonte();
+      render(
+        <CapturaDeFoto ponte={ponte} rotulo="Foto do cliente" hash={null} aoGuardar={vi.fn()} />,
+      );
+      await userEvent.click(screen.getByRole('button', { name: T.tirarFoto }));
+      expect(await screen.findByText(texto)).toBeInTheDocument();
+      expect(screen.getByText(T.escolherArquivo)).toBeInTheDocument();
+    },
+  );
 });
