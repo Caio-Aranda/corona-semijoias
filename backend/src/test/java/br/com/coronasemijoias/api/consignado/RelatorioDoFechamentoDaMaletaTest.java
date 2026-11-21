@@ -145,6 +145,18 @@ class RelatorioDoFechamentoDaMaletaTest extends ApoioDoConsignado {
     }
 
     @Test
+    void existindoCotacaoMaletaSemAcertoMostraZeroVerdadeiroEmDolarEGuarani() throws Exception {
+        UsuarioDeTeste v = usuarios.criarVendedor();
+        CotacoesDaMassa.gravar(jdbc, "2020-03-12", "10.00000000", "0.00200000");
+        UUID anel = peca("100.00", 20);
+        UUID maleta = maletaEnviada(v, anel, 5);
+        fechamento.iniciar(maleta, usuarios.dona().id());
+        RelatorioDeCadastro<LinhaDoFechamento> r = relatorio.montar(maleta, null, null, null);
+        assertThat(total(r, "vd").valorEmDolar()).isEqualByComparingTo("0.00");
+        assertThat(total(r, "vd").valorEmGuarani()).isEqualByComparingTo("0");
+    }
+
+    @Test
     void semCotacaoParaUmDosLancamentosOTotalSaiSoEmReal() throws Exception {
         UsuarioDeTeste v = usuarios.criarVendedor();
         CotacoesDaMassa.gravar(jdbc, "2020-03-12", "10.00000000", "0.00200000");
