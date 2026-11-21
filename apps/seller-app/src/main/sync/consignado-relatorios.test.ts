@@ -315,6 +315,28 @@ describe('Situação do cliente', () => {
   });
 });
 
+describe('Situação do cliente com pagamento lançado depois do acerto (defeito 5 do relatório 9.10)', () => {
+  it('a nota Fechada quitada por Lançar pagamento mostra o pago, não R$ 0,00', () => {
+    chamar({ operacao: 'consignado.semanaNova', id: idDeTeste(10), numero: 64 });
+    const nota = pedido([['A-1', 2]]);
+    // Nada devolvido, nada pago no ato: bruto = 400,00 - 30% = 280,00 fica pendente.
+    acertar(nota, [], '30', []);
+    chamar({
+      operacao: 'consignado.pagamento',
+      pagamento: {
+        id: idDeTeste(11),
+        clienteId: cliente,
+        formas: [{ forma: 'PIX', valor: '280.00' }],
+      },
+    });
+    const r = relatorio<SituacaoDoCliente>({ tipo: 'SITUACAO_DO_CLIENTE', clienteId: cliente });
+    expect(r.jaVendeu).toHaveLength(1);
+    expect(r.jaVendeu[0]?.situacao).toBe('FECHADO');
+    expect(r.jaVendeu[0]?.pago.real).toBe('280.00');
+    expect(r.pago.real).toBe('280.00');
+  });
+});
+
 describe('Peças vendidas por cliente', () => {
   it('lista cada peça vendida do período, com quantidade e valor, e o total', () => {
     const { nova } = cenario();

@@ -323,6 +323,17 @@ export class RelatoriosDoConsignado {
 
   // --- Situação do cliente ---
 
+  /** O que recibos lançados depois (Lançar pagamento) já quitaram deste acerto; o recibo do próprio acerto já está no total pago. */
+  private aplicadoDepoisDoAcerto(acertoId: string, reciboDoAcerto: string | undefined): bigint {
+    const linhas = this.db()
+      .prepare(
+        `SELECT valor FROM aplicacoes_recibo
+          WHERE acerto_id = ? AND deleted_at IS NULL AND recibo_id IS NOT ?`,
+      )
+      .all(acertoId, reciboDoAcerto ?? null) as { valor: string | null }[];
+    return linhas.reduce((s, l) => s + exigirCentavos(l.valor ?? '0'), 0n);
+  }
+
   private situacaoDoCliente(clienteId: string): SituacaoDoCliente {
     const c = this.ler<ClienteCompleto>(
       { operacao: 'consignado.cliente', id: clienteId },
@@ -370,7 +381,9 @@ export class RelatoriosDoConsignado {
         vd.somar(centavos(a.valorVd), t);
         comissao.somar(centavos(a.comissao), t);
         liquido.somar(centavos(a.bruto), t);
-        pago.somar(centavos(a.totalPago), t);
+        // Pago = o do ato do acerto + o que Lançar pagamento aplicou depois nesta nota (defeito 5 do relatório 9.10).
+        const pagoDaNota = centavos(a.totalPago) + this.aplicadoDepoisDoAcerto(a.id, a.recibo?.id);
+        pago.somar(pagoDaNota, t);
         jaVendeu.push({
           numero: n.numero,
           situacao: n.situacao,
@@ -382,7 +395,7 @@ export class RelatoriosDoConsignado {
           valorVd: um(centavos(a.valorVd), t),
           comissao: um(centavos(a.comissao), t),
           valorLiquido: um(centavos(a.bruto), t),
-          pago: um(centavos(a.totalPago), t),
+          pago: um(pagoDaNota, t),
         });
       } else {
         const t = this.taxasDaNota(n.id);
