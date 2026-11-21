@@ -1,5 +1,5 @@
 import { Aviso, Botao, ValorTresMoedas } from '@corona/ui';
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type {
   NotaDeSaida,
@@ -64,7 +64,17 @@ export function useRelatorioDaTela<T extends RelatorioDoConsignado>(
   const [relatorio, setRelatorio] = useState<T | null>(null);
   const chave = JSON.stringify(pedido);
   // Depois de um pull (`dadosAte` muda), o relatório é montado de novo com o que chegou.
-  const dadosAte = useEstadoDeEnvio(ponte)?.dadosAte ?? null;
+  // A primeira entrega do estado (ainda sem pull visto) não monta de novo.
+  const estado = useEstadoDeEnvio(ponte);
+  const dadosAte = estado ? estado.dadosAte : undefined;
+  const dadosAteVisto = useRef<string | null | undefined>(dadosAte);
+  const [recarga, setRecarga] = useState(0);
+  useEffect(() => {
+    const antes = dadosAteVisto.current;
+    if (antes === dadosAte) return;
+    dadosAteVisto.current = dadosAte;
+    if (antes !== undefined) setRecarga((n) => n + 1);
+  }, [dadosAte]);
   useEffect(() => {
     let valida = true;
     if (!pedido) {
@@ -84,7 +94,7 @@ export function useRelatorioDaTela<T extends RelatorioDoConsignado>(
     return () => {
       valida = false;
     };
-  }, [ponte, chave, dadosAte, ...dependencias]);
+  }, [ponte, chave, recarga, ...dependencias]);
   return relatorio;
 }
 

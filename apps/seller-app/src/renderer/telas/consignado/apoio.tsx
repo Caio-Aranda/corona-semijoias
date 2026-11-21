@@ -62,12 +62,15 @@ export function useConsulta<T>(
     void recarregar();
   }, [recarregar, ...dependencias]);
   // Quando um pull termina (`dadosAte` muda), a consulta se atualiza sozinha, sem zerar o que já está na tela.
-  const dadosAte = useEstadoDeEnvio(ponte)?.dadosAte ?? null;
-  const dadosAteVisto = useRef(dadosAte);
+  // A primeira entrega do estado (`undefined` -> valor, ainda sem pull visto) não recarrega: a consulta acabou de rodar.
+  const estado = useEstadoDeEnvio(ponte);
+  const dadosAte = estado ? estado.dadosAte : undefined;
+  const dadosAteVisto = useRef<string | null | undefined>(dadosAte);
   useEffect(() => {
-    if (dadosAteVisto.current === dadosAte) return;
+    const antes = dadosAteVisto.current;
+    if (antes === dadosAte) return;
     dadosAteVisto.current = dadosAte;
-    void recarregar();
+    if (antes !== undefined) void recarregar();
   }, [dadosAte, recarregar]);
   return { dados, erro, recarregar };
 }

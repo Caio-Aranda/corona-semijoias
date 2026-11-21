@@ -217,6 +217,7 @@ describe('Gerenciamento Semanal', () => {
     const { ponte, avisarEnvio } = criarPonte({ 'consignado.painel': () => ok(atual) });
     await irParaPrincipal(ponte);
     await screen.findByText('Vamos começar a primeira semana');
+    avisarEnvio({ dadosAte: null }); // primeira entrega do estado, sem pull ainda
     // O pull termina e traz as semanas já abertas no outro computador.
     atual = painel;
     avisarEnvio({ dadosAte: '2026-11-10T12:00:00Z' });
