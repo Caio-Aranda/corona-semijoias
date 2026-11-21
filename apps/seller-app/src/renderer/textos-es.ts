@@ -118,6 +118,11 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
       'Escribí la contraseña de tu usuario para abrir el Corona Vendas sin internet. Tus ventas siguen guardadas.',
     botao: 'Entrar',
   },
+  reabrindoNaEntrada: {
+    titulo: 'Escribí tu contraseña para continuar',
+    texto:
+      'Por seguridad, el Corona Vendas pide la contraseña cada vez que se abre. Tus ventas siguen guardadas.',
+  },
   desligando: {
     titulo: 'Estamos enviando tus ventas.',
     texto:

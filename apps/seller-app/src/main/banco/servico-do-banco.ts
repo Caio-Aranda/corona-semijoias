@@ -183,6 +183,10 @@ export class ServicoDoBanco {
     return r?.valor ?? null;
   }
 
+  get bancoAberto(): boolean {
+    return this.db !== null;
+  }
+
   /** Há banco e chave neste computador (depois de uma entrada com internet)? Decide se dá para entrar sem internet. */
   get temDadosLocais(): boolean {
     return this.chave.existe() && this.existeBanco();

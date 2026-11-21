@@ -12,6 +12,8 @@ export interface TelaEntrarProps {
   sessaoTerminou?: boolean;
   /** Sem internet e com dados neste computador: entra só com a senha (tarefa 5.8). */
   semInternet?: boolean;
+  /** O aplicativo foi reaberto: pede a senha para abrir o banco do computador. */
+  reabrindo?: boolean;
   /** Chamado quando é preciso ver o novo estado (entrou, senha temporária, aplicativo desatualizado). */
   aoMudar: () => void;
 }
@@ -20,6 +22,7 @@ export function TelaEntrar({
   ponte,
   sessaoTerminou = false,
   semInternet = false,
+  reabrindo = false,
   aoMudar,
 }: TelaEntrarProps) {
   const [usuario, setUsuario] = useState('');
@@ -55,9 +58,14 @@ export function TelaEntrar({
           <span className="cs-entrada__logo" role="img" aria-label="Corona Semijoias" />
           <p className="cs-entrada__titulo">Corona Vendas</p>
           <h1 className="cs-entrada__titulo-pagina">
-            {semInternet ? TEXTOS.semInternetNaEntrada.titulo : TEXTOS.entrada.titulo}
+            {semInternet
+              ? TEXTOS.semInternetNaEntrada.titulo
+              : reabrindo
+                ? TEXTOS.reabrindoNaEntrada.titulo
+                : TEXTOS.entrada.titulo}
           </h1>
           {semInternet ? <p className="vendas-texto">{TEXTOS.semInternetNaEntrada.texto}</p> : null}
+          {reabrindo ? <p className="vendas-texto">{TEXTOS.reabrindoNaEntrada.texto}</p> : null}
           {sessaoTerminou ? (
             <Aviso tipo="atencao" titulo={TEXTOS.sessaoTerminou.titulo}>
               {TEXTOS.sessaoTerminou.texto}

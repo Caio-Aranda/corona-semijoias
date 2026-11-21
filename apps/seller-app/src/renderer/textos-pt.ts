@@ -118,6 +118,12 @@ export const TEXTOS_PT = {
       'Digite a senha do seu usuário para abrir o Corona Vendas sem internet. Suas vendas continuam salvas.',
     botao: 'Entrar',
   },
+  /** Aplicativo reaberto com internet: a senha abre o banco do computador. */
+  reabrindoNaEntrada: {
+    titulo: 'Digite sua senha para continuar',
+    texto:
+      'Por segurança, o Corona Vendas pede a senha toda vez que é aberto. Suas vendas continuam salvas.',
+  },
   desligando: {
     titulo: 'Estamos enviando as suas vendas.',
     texto:

@@ -61,8 +61,14 @@ const api = { eu: vi.fn(), chamar: vi.fn() };
 function bancoLocal(opcoes: { temDados?: boolean; senhaCerta?: string; login?: string } = {}) {
   let aberto = false;
   return {
-    prepararComInternet: vi.fn(() => Promise.resolve({ ok: true })),
+    prepararComInternet: vi.fn(() => {
+      aberto = true;
+      return Promise.resolve({ ok: true });
+    }),
     temDadosLocais: opcoes.temDados ?? true,
+    get bancoAberto() {
+      return aberto;
+    },
     abrirSemInternet: vi.fn((senha: string) => {
       if (senha === (opcoes.senhaCerta ?? 'Senha-1')) {
         aberto = true;
@@ -84,6 +90,54 @@ function bancoLocal(opcoes: { temDados?: boolean; senhaCerta?: string; login?: s
     estaAberto: () => aberto,
   };
 }
+
+describe('reabrir o aplicativo com internet (defeito 2 do teste 9.10)', () => {
+  const renovaBem = () =>
+    guardaReal({
+      renovar: vi.fn(() => Promise.resolve({ ok: true as const, dados: credenciais() })),
+      entrar: vi.fn(() => Promise.resolve({ ok: true as const, dados: credenciais() })),
+    });
+
+  it('sessão renovada com internet, mas banco fechado: pede a senha, nunca mostra a tela principal', async () => {
+    const guarda = renovaBem();
+    await guarda.restaurar();
+    const s = new ServicoDeSessao(guarda, api, Promise.resolve(), bancoLocal());
+    expect(await s.estouLogado()).toEqual({ estado: 'reabrir' });
+  });
+
+  it('com a senha certa o banco abre, o motor liga e entra de verdade', async () => {
+    const banco = bancoLocal();
+    const motor = { ligar: vi.fn(), desligar: vi.fn() };
+    const guarda = renovaBem();
+    await guarda.restaurar();
+    const s = new ServicoDeSessao(
+      guarda,
+      {
+        ...api,
+        eu: vi.fn(() => Promise.resolve({ ok: true as const, dados: { nome: 'Ana Souza' } })),
+      },
+      Promise.resolve(),
+      banco,
+      motor,
+    );
+    expect(await s.entrar('ana', 'Senha-1')).toEqual({ tipo: 'entrou' });
+    expect(banco.prepararComInternet).toHaveBeenCalledWith('Senha-1');
+    expect(motor.ligar).toHaveBeenCalled();
+    expect(await s.estouLogado()).toMatchObject({ estado: 'dentro' });
+  });
+
+  it('sem dados locais (primeira vez), a sessão renovada segue direto', async () => {
+    const guarda = renovaBem();
+    await guarda.restaurar();
+    const s = new ServicoDeSessao(
+      guarda,
+      { ...api, eu: vi.fn(() => Promise.resolve({ ok: true as const, dados: { nome: 'Ana' } })) },
+      Promise.resolve(),
+      bancoLocal({ temDados: false }),
+    );
+    expect(await s.estouLogado()).toMatchObject({ estado: 'dentro' });
+  });
+});
 
 describe('abrir sem internet', () => {
   it('com sessão guardada e dados no computador, a tela pede só a senha (nada de "é preciso internet")', async () => {

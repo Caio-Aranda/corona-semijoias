@@ -17,6 +17,8 @@ export interface PreparoDoBancoLocal {
   prepararComInternet(senha: string): Promise<{ ok: boolean; codigo?: string }>;
   /** Tarefa 5.8: há banco e chave neste computador? (decide se dá para entrar sem internet) */
   readonly temDadosLocais?: boolean;
+  /** O banco está aberto agora? Sem ele (app reaberto, só com a sessão guardada) não há venda nem chave. */
+  readonly bancoAberto?: boolean;
   /** Tarefa 5.8: abre o banco só pela senha, sem internet (5 erros seguidos bloqueiam até conectar). */
   abrirSemInternet?(senha: string): Promise<{ ok: boolean; codigo?: string; mensagem?: string }>;
   fechar?(): void;
@@ -220,6 +222,11 @@ export class ServicoDeSessao {
           ? { estado: 'entrar-sem-internet' }
           : { estado: 'sem-conexao' };
       case 'dentro':
+        // Reabriu o aplicativo e a sessão voltou sozinha com internet: o banco local só abre com a senha (a chave não
+        // fica guardada em claro), então a tela principal não aparece antes de a senha ser digitada.
+        if (this.bancoLocal?.temDadosLocais && this.bancoLocal.bancoAberto === false) {
+          return { estado: 'reabrir' };
+        }
         return { estado: 'dentro', usuario: await this.usuario() };
     }
   }

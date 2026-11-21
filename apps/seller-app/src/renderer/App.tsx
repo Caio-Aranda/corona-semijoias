@@ -92,6 +92,8 @@ export function App({ ponte }: AppProps) {
         );
       case 'entrar-sem-internet':
         return <TelaEntrar ponte={ponte} semInternet aoMudar={() => void conferir()} />;
+      case 'reabrir':
+        return <TelaEntrar ponte={ponte} reabrindo aoMudar={() => void conferir()} />;
       case 'desligando':
         return <TelaDesligado apagado={false} />;
       case 'desligado':
