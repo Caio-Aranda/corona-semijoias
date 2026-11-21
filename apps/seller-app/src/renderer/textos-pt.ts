@@ -986,6 +986,8 @@ export const TEXTOS_PT = {
         'Hoje, ou um dia que já passou (não antes do dia em que a nota saiu). Nunca depois de hoje.',
       dataDoAcertoInvalida:
         'Escolha hoje ou um dia que já passou, a partir do dia em que a nota saiu.',
+      dataDoAcertoAntesDaSaida: (diaDaSaida: string) =>
+        `Esta data é antes do dia em que a nota saiu. O relógio deste computador está diferente do servidor, e a saída vale como ${diaDaSaida}. Escolha ${diaDaSaida} ou depois, até hoje.`,
       semCotacaoDoDia: 'Sem cotação neste dia: os valores aparecem só em reais.',
       comissaoRs: 'Comissão R$',
       bruto: 'Total a Receber Bruto',

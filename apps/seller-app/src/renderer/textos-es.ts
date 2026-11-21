@@ -982,6 +982,8 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
       dataDoAcertoAjuda:
         'Hoy, o un día que ya pasó (no antes del día en que salió la nota). Nunca después de hoy.',
       dataDoAcertoInvalida: 'Elegí hoy o un día que ya pasó, desde el día en que salió la nota.',
+      dataDoAcertoAntesDaSaida: (diaDeLaSalida: string) =>
+        `Esta fecha es anterior al día en que salió la nota. El reloj de esta computadora es distinto del servidor, y la salida vale como ${diaDeLaSalida}. Elegí ${diaDeLaSalida} o después, hasta hoy.`,
       semCotacaoDoDia: 'Sin cotización este día: los valores aparecen solo en reales.',
       comissaoRs: 'Comisión R$',
       bruto: 'Total a Cobrar Bruto',

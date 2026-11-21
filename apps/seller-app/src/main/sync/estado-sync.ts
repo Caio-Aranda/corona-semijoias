@@ -54,6 +54,23 @@ export function registrarContato(db: BancoAberto, horaServidor: string, horaLoca
   gravarEstado(db, CHAVES.maiorHoraLocal, horaLocal.toISOString());
 }
 
+/** A partir de quantos milissegundos de diferença o relógio do computador conta como "errado" (a mesma folga do prazo offline). */
+export const FOLGA_DO_RELOGIO_MS = 5 * 60 * 1000;
+
+/**
+ * A diferença entre o relógio do servidor e o deste computador, guardada no último contato (ADR-0013, item 11):
+ * `hora do servidor - hora local do mesmo instante`. Positiva = computador atrasado. `null` se nunca houve contato ou se a
+ * diferença é menor que a folga (relógio certo para o que importa aqui).
+ */
+export function diferencaDoRelogioMs(db: BancoAberto): number | null {
+  const servidor = lerEstado(db, CHAVES.horaServidor);
+  const local = lerEstado(db, CHAVES.horaLocalDoContato);
+  if (!servidor || !local) return null;
+  const dif = Date.parse(servidor) - Date.parse(local);
+  if (Number.isNaN(dif) || Math.abs(dif) < FOLGA_DO_RELOGIO_MS) return null;
+  return dif;
+}
+
 export function registrarHoraLocal(db: BancoAberto, horaLocal: Date): void {
   const maior = lerEstado(db, CHAVES.maiorHoraLocal);
   if (!maior || Date.parse(maior) < horaLocal.getTime()) {

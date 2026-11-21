@@ -545,6 +545,7 @@ describe('Cobrança e acerto', () => {
       },
     ],
     acerto: null,
+    correcaoDoRelogio: null,
     saldoDaNota: '0.00',
   };
   const previa = (pago: string): PrevisaoDoAcerto => ({
@@ -615,6 +616,25 @@ describe('Cobrança e acerto', () => {
     expect(await screen.findByText('Deve agora')).toBeInTheDocument();
     expect(screen.getByText(/ficou devendo R\$ 348,97\./)).toBeInTheDocument();
     expect(screen.getAllByText('R$ 294,70').length).toBeGreaterThan(0);
+  });
+
+  it('relógio atrasado: Dt. Acerto antes do dia da saída corrigida pelo servidor mostra erro claro e não deixa salvar', async () => {
+    const { u } = await abrir({
+      'consignado.nota': () =>
+        ok({ ...nota, correcaoDoRelogio: { diaDeHoje: '2026-11-18', diaDaSaida: '2026-11-15' } }),
+    });
+    await u.click(screen.getByRole('tab', { name: 'Forma de Pagamento' }));
+    // 12/11 é depois da saída que este computador viu (10/11), mas antes da saída corrigida (15/11).
+    fireEvent.change(screen.getByLabelText('Dt. Acerto'), { target: { value: '2026-11-12' } });
+    expect(await screen.findByText(/a saída vale como 15\/11\/2026/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Salvar acerto' })).toBeDisabled();
+  });
+
+  it('sem diferença de relógio guardada, a mesma data segue aceita como antes', async () => {
+    const { u } = await abrir();
+    await u.click(screen.getByRole('tab', { name: 'Forma de Pagamento' }));
+    fireEvent.change(screen.getByLabelText('Dt. Acerto'), { target: { value: '2026-11-12' } });
+    expect(screen.queryByText(/a saída vale como/)).not.toBeInTheDocument();
   });
 
   it('código fora da pedido avisa; DV acima do DX não passa; ler soma 1 em DV', async () => {
@@ -765,6 +785,7 @@ describe('Clientes e Lançar pagamento', () => {
     fotoDocumentoVersoHash: null,
     fotosEsperandoEnvio: 2,
     pendencia: '345.10',
+    sobraAAplicar: '0.00',
     debitos: [
       {
         acertoId: 'd1',

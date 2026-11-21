@@ -145,10 +145,17 @@ function AcertoDoPedido({
   const hoje = diaEmBrasilia(new Date());
   const [dataDoAcerto, setDataDoAcerto] = useState(hoje);
   const diaDaSaida = nota.saidaEm ? diaEmBrasilia(new Date(nota.saidaEm)) : null;
+  // Com a diferença de relógio guardada do último contato, "hoje" e o dia da saída são os que o servidor vai ver (ADR-0013,
+  // item 11). O acerto "de hoje" (sem data escolhida) nunca é conferido aqui: o servidor usa a própria hora.
+  const correcao = nota.correcaoDoRelogio;
+  const hojeMaximo = correcao && correcao.diaDeHoje < hoje ? correcao.diaDeHoje : hoje;
+  const saidaMinima = correcao?.diaDaSaida ?? diaDaSaida;
+  const formatoCerto = /^\d{4}-\d{2}-\d{2}$/.test(dataDoAcerto);
+  const escolheuOutroDia = dataDoAcerto !== hoje;
+  const antesDaSaida =
+    formatoCerto && escolheuOutroDia && saidaMinima !== null && dataDoAcerto < saidaMinima;
   const dataInvalida =
-    !/^\d{4}-\d{2}-\d{2}$/.test(dataDoAcerto) ||
-    dataDoAcerto > hoje ||
-    (diaDaSaida !== null && dataDoAcerto < diaDaSaida);
+    !formatoCerto || (escolheuOutroDia && dataDoAcerto > hojeMaximo) || antesDaSaida;
   // Só vai a data quando não é hoje: o acerto de hoje segue como sempre foi.
   const dataParaEnviar = dataDoAcerto !== hoje && !dataInvalida ? { data: dataDoAcerto } : {};
   const [previa, setPrevia] = useState<PrevisaoDoAcerto | null>(null);
@@ -513,7 +520,14 @@ function AcertoDoPedido({
                 {...(diaDaSaida ? { min: diaDaSaida } : {})}
                 value={dataDoAcerto}
                 onChange={(e) => setDataDoAcerto(e.target.value)}
-                {...(dataInvalida ? { erro: T.dataDoAcertoInvalida } : {})}
+                {...(dataInvalida
+                  ? {
+                      erro:
+                        antesDaSaida && correcao && saidaMinima
+                          ? T.dataDoAcertoAntesDaSaida(dia(saidaMinima))
+                          : T.dataDoAcertoInvalida,
+                    }
+                  : {})}
               />
               {previa && previa.cotacao === null ? (
                 <p className="vendas-texto vendas-texto--pequeno">{T.semCotacaoDoDia}</p>

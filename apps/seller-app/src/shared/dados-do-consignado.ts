@@ -213,6 +213,11 @@ export interface DetalheDaNota {
   /** Os débitos de antes (entram sozinhos no acerto e não se removem). */
   pendenciasAnteriores: DebitoDoCliente[];
   acerto: AcertoDaTela | null;
+  /**
+   * Só quando o relógio deste computador difere do servidor (guardado no último contato): o dia de "hoje" e o dia da saída
+   * como o servidor vai ver (ADR-0013, item 11). A tela confere a Dt. Acerto por eles. `null` = sem diferença guardada.
+   */
+  correcaoDoRelogio: { diaDeHoje: string; diaDaSaida: string | null } | null;
   /** O que ainda deve desta nota (se acertada). */
   saldoDaNota: string;
 }
