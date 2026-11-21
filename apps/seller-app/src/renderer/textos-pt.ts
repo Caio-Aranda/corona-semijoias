@@ -986,6 +986,8 @@ export const TEXTOS_PT = {
         'Hoje, ou um dia que já passou (não antes do dia em que a nota saiu). Nunca depois de hoje.',
       dataDoAcertoInvalida:
         'Escolha hoje ou um dia que já passou, a partir do dia em que a nota saiu.',
+      dataDoAcertoAntesDaSaida: (diaDaSaida: string) =>
+        `Esta data é antes do dia em que a nota saiu. O relógio deste computador está diferente do servidor, e a saída vale como ${diaDaSaida}. Escolha ${diaDaSaida} ou depois, até hoje.`,
       semCotacaoDoDia: 'Sem cotação neste dia: os valores aparecem só em reais.',
       comissaoRs: 'Comissão R$',
       bruto: 'Total a Receber Bruto',
@@ -998,6 +1000,9 @@ export const TEXTOS_PT = {
       pagamentoTitulo: 'Pagamento',
       totalPago: 'Total Pago',
       ficouDevendo: 'Ficou devendo',
+      devendoAgora: 'Deve agora',
+      devendoAgoraAjuda: (noAcerto: string) =>
+        `No dia do acerto ficou devendo ${noAcerto}. Depois foram aplicados pagamentos ou sobras de outros recibos, por isso o que falta hoje é menos.`,
       salvar: 'Salvar acerto',
       salvarTitulo: 'Salvar o acerto?',
       salvarTexto: (devendo: string, quita: boolean) =>
@@ -1090,6 +1095,8 @@ export const TEXTOS_PT = {
       abrir: 'Abrir',
       deve: 'Deve',
       naoDeve: 'Não deve nada',
+      sobraAAplicar: (valor: string) =>
+        `Sobrou ${valor} de pagamento deste cliente que ainda não foi usado em nenhuma nota. Entra sozinho no próximo acerto.`,
       voltarLista: 'Voltar à lista de clientes',
       cadastro: 'Cadastro',
       editar: 'Mudar o cadastro',

@@ -145,10 +145,17 @@ function AcertoDoPedido({
   const hoje = diaEmBrasilia(new Date());
   const [dataDoAcerto, setDataDoAcerto] = useState(hoje);
   const diaDaSaida = nota.saidaEm ? diaEmBrasilia(new Date(nota.saidaEm)) : null;
+  // Com a diferença de relógio guardada do último contato, "hoje" e o dia da saída são os que o servidor vai ver (ADR-0013,
+  // item 11). O acerto "de hoje" (sem data escolhida) nunca é conferido aqui: o servidor usa a própria hora.
+  const correcao = nota.correcaoDoRelogio;
+  const hojeMaximo = correcao && correcao.diaDeHoje < hoje ? correcao.diaDeHoje : hoje;
+  const saidaMinima = correcao?.diaDaSaida ?? diaDaSaida;
+  const formatoCerto = /^\d{4}-\d{2}-\d{2}$/.test(dataDoAcerto);
+  const escolheuOutroDia = dataDoAcerto !== hoje;
+  const antesDaSaida =
+    formatoCerto && escolheuOutroDia && saidaMinima !== null && dataDoAcerto < saidaMinima;
   const dataInvalida =
-    !/^\d{4}-\d{2}-\d{2}$/.test(dataDoAcerto) ||
-    dataDoAcerto > hoje ||
-    (diaDaSaida !== null && dataDoAcerto < diaDaSaida);
+    !formatoCerto || (escolheuOutroDia && dataDoAcerto > hojeMaximo) || antesDaSaida;
   // Só vai a data quando não é hoje: o acerto de hoje segue como sempre foi.
   const dataParaEnviar = dataDoAcerto !== hoje && !dataInvalida ? { data: dataDoAcerto } : {};
   const [previa, setPrevia] = useState<PrevisaoDoAcerto | null>(null);
@@ -481,6 +488,7 @@ function AcertoDoPedido({
               ponte={ponte}
               notaId={nota.id}
               acerto={a}
+              saldoAtual={nota.saldoDaNota}
               aoEstornar={() => setConfirmando('estornar')}
             />
           ) : (
@@ -509,10 +517,17 @@ function AcertoDoPedido({
                 ajuda={T.dataDoAcertoAjuda}
                 type="date"
                 max={hoje}
-                {...(diaDaSaida ? { min: diaDaSaida } : {})}
+                {...(saidaMinima ? { min: saidaMinima } : {})}
                 value={dataDoAcerto}
                 onChange={(e) => setDataDoAcerto(e.target.value)}
-                {...(dataInvalida ? { erro: T.dataDoAcertoInvalida } : {})}
+                {...(dataInvalida
+                  ? {
+                      erro:
+                        antesDaSaida && correcao && saidaMinima
+                          ? T.dataDoAcertoAntesDaSaida(dia(saidaMinima))
+                          : T.dataDoAcertoInvalida,
+                    }
+                  : {})}
               />
               {previa && previa.cotacao === null ? (
                 <p className="vendas-texto vendas-texto--pequeno">{T.semCotacaoDoDia}</p>
@@ -695,11 +710,14 @@ function ResumoDoAcerto({
   ponte,
   notaId,
   acerto,
+  saldoAtual,
   aoEstornar,
 }: {
   ponte: PonteDoCorona;
   notaId: string;
   acerto: NonNullable<DetalheDaNota['acerto']>;
+  /** O que ainda deve desta nota hoje (já com pagamentos e sobras aplicados depois do acerto). */
+  saldoAtual: string;
   aoEstornar: () => void;
 }) {
   const T = TEXTOS.consignado.cobranca;
@@ -714,6 +732,9 @@ function ResumoDoAcerto({
     ) : (
       <Dinheiro reais={v} cotacao={cotacao.cotacao} />
     );
+  // Compara por centavos: "294.7" e "294.70" são o mesmo valor.
+  const saldoMudou =
+    (centavosDeTexto(saldoAtual) ?? 0n) !== (centavosDeTexto(acerto.ficouDevendo) ?? 0n);
   return (
     <>
       <p className="vendas-texto">{T.acertoDe(dia(acerto.acertadoEm))}</p>
@@ -740,7 +761,20 @@ function ResumoDoAcerto({
         <dd>{d(acerto.totalPago, relatorio?.totalPago)}</dd>
         <dt>{T.ficouDevendo}</dt>
         <dd>{d(acerto.ficouDevendo, relatorio?.ficouDevendo)}</dd>
+        {saldoMudou ? (
+          <>
+            <dt>{T.devendoAgora}</dt>
+            <dd>
+              <Dinheiro reais={saldoAtual} cotacao={cotacao.cotacao} />
+            </dd>
+          </>
+        ) : null}
       </dl>
+      {saldoMudou ? (
+        <p className="vendas-texto vendas-texto--pequeno">
+          {T.devendoAgoraAjuda(reais(acerto.ficouDevendo))}
+        </p>
+      ) : null}
       {acerto.recibo ? (
         <>
           <p className="vendas-texto">

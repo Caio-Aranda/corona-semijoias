@@ -74,6 +74,22 @@ class FechamentoDaMaletaTest extends ApoioDoConsignado {
     }
 
     @Test
+    void semNenhumaCotacaoMaletaSemAcertoNaoMostraDolarNemGuaraniEmZero() throws Exception {
+        UsuarioDeTeste v = usuarios.criarVendedor();
+        UUID anel = peca("100.00", 20);
+        UUID maleta = maletaEnviada(v, anel, 5);
+        fechamento.iniciar(maleta, donaId());
+        ServicoDoFechamentoDaMaleta.Valores valores = fechamento.ler(maleta).valores();
+        assertThat(valores.vd()).isEqualByComparingTo("0.00");
+        for (ServicoDoFechamentoDaMaleta.Convertido c : List.of(valores.vdConvertido(), valores.comissaoConvertida(),
+                valores.recebidoConvertido(), valores.pendenciasConvertidas())) {
+            assertThat(c.real()).isEqualByComparingTo("0.00");
+            assertThat(c.dolar()).isNull();
+            assertThat(c.guarani()).isNull();
+        }
+    }
+
+    @Test
     void valoresDaNotaComDuasMaletasSaoDivididosPeloVDEFechamContaExata() throws Exception {
         UsuarioDeTeste v = usuarios.criarVendedor();
         UUID cliente = cliente(v);

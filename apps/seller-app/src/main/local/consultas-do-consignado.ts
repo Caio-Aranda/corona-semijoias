@@ -50,7 +50,9 @@ import {
   semanaAtual,
   SQL_ACERTO_ATIVO,
   SQL_RECIBO_ATIVO,
+  sobraAAplicarDoCliente,
 } from '../sync/consignado-comum';
+import { diferencaDoRelogioMs } from '../sync/estado-sync';
 import {
   ErroDaOperacao,
   MENSAGENS_DAS_OPERACOES,
@@ -653,6 +655,28 @@ export class ConsultasDoConsignado {
     };
   }
 
+  /**
+   * Com a diferença de relógio guardada no último contato, "hoje" e o dia da saída como o servidor vai ver. A saída que
+   * ainda não foi enviada saiu com a hora deste computador, então leva a mesma correção que o servidor fará; a que já veio
+   * do servidor já está corrigida.
+   */
+  private correcaoDoRelogio(nota: {
+    id: string;
+    saida_em: string | null;
+  }): DetalheDaNota['correcaoDoRelogio'] {
+    const db = this.db();
+    const dif = diferencaDoRelogioMs(db);
+    if (dif === null) return null;
+    const ainda = db
+      .prepare("SELECT 1 AS x FROM outbox WHERE operacao_id = ? AND situacao = 'AGUARDANDO'")
+      .get(nota.id);
+    const saida = nota.saida_em ? new Date(Date.parse(nota.saida_em) + (ainda ? dif : 0)) : null;
+    return {
+      diaDeHoje: diaEmBrasilia(new Date(this.agora().getTime() + dif)),
+      diaDaSaida: saida ? diaEmBrasilia(saida) : null,
+    };
+  }
+
   private nota(id: string): DetalheDaNota | null {
     const db = this.db();
     const nota = acharNota(db, id);
@@ -683,6 +707,7 @@ export class ConsultasDoConsignado {
         ? []
         : debitos.filter((d) => d.saldo > 0n).map((d) => this.debitoDaTela(d)),
       acerto: acerto ? this.acertoDaTela(acerto) : null,
+      correcaoDoRelogio: this.correcaoDoRelogio(nota),
       saldoDaNota: dinheiro(
         acerto ? (debitos.find((d) => d.acertoId === acerto.id)?.saldo ?? 0n) : 0n,
       ),
@@ -916,6 +941,7 @@ export class ConsultasDoConsignado {
       fotosEsperandoEnvio: this.fotosEsperando(id),
       pendencia: dinheiro(debitos.reduce((s, d) => (d.saldo > 0n ? s + d.saldo : s), 0n)),
       debitos: debitos.filter((d) => d.saldo > 0n).map((d) => this.debitoDaTela(d)),
+      sobraAAplicar: dinheiro(sobraAAplicarDoCliente(this.db(), id)),
       maletasAtuais: [...comCliente.entries()]
         .filter(([, n]) => n > 0)
         .map(([remessaId, pecas]) => ({

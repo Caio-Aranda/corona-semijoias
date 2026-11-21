@@ -71,19 +71,31 @@ public class ServicoDoFechamentoDaMaleta {
         private BigDecimal dolar = BigDecimal.ZERO;
         private BigDecimal guarani = BigDecimal.ZERO;
         private boolean completa = true;
+        private boolean comCotacao = false;
+        private boolean somouAlgo = false;
+        /** Existe alguma cotação no sistema: só então uma soma vazia vale "0,00" em Dólar e Guarani. */
+        private final boolean haCotacao;
+
+        SomaConvertida(boolean haCotacao) {
+            this.haCotacao = haCotacao;
+        }
 
         void somar(BigDecimal parte, BigDecimal usdVenda, BigDecimal pygVenda) {
             real = real.add(parte);
+            somouAlgo = true;
             if (usdVenda != null && pygVenda != null) {
                 dolar = dolar.add(ConversaoDeMoeda.paraDolar(parte, usdVenda));
                 guarani = guarani.add(ConversaoDeMoeda.paraGuarani(parte, pygVenda));
+                comCotacao = true;
             } else if (parte.signum() != 0) {
                 completa = false;
             }
         }
 
         Convertido valor() {
-            return new Convertido(real, completa ? dolar : null, completa ? guarani : null);
+            // Soma vazia sem nenhuma cotação, ou só de partes sem cotação (zeros): não há conversão a mostrar (nunca "US$ 0,00" falso).
+            boolean convertido = somouAlgo ? completa && comCotacao : haCotacao;
+            return new Convertido(real, convertido ? dolar : null, convertido ? guarani : null);
         }
     }
 
@@ -294,10 +306,11 @@ public class ServicoDoFechamentoDaMaleta {
      * última maleta (na ordem do id) leva a diferença de arredondamento.
      */
     private Valores valores(UUID remessaId) {
-        SomaConvertida vd = new SomaConvertida();
-        SomaConvertida comissao = new SomaConvertida();
-        SomaConvertida recebido = new SomaConvertida();
-        SomaConvertida pendencia = new SomaConvertida();
+        boolean haCotacao = Boolean.TRUE.equals(jdbc.queryForObject("SELECT EXISTS (SELECT 1 FROM corona.cotacoes)", Boolean.class));
+        SomaConvertida vd = new SomaConvertida(haCotacao);
+        SomaConvertida comissao = new SomaConvertida(haCotacao);
+        SomaConvertida recebido = new SomaConvertida(haCotacao);
+        SomaConvertida pendencia = new SomaConvertida(haCotacao);
         List<Map<String, Object>> acertos = jdbc.queryForList("""
                 SELECT DISTINCT a.id, a.valor_vd, a.comissao, a.bruto, ct.usd_venda, ct.pyg_venda,
                        coalesce((SELECT sum(ap.valor) FROM corona.aplicacoes_recibo ap WHERE ap.acerto_id = a.id), 0) AS aplicado

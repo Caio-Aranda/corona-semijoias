@@ -10,6 +10,7 @@ import {
   type TipoDeDocumento,
 } from '../../../shared/operacoes-do-consignado';
 import type { PonteDoCorona } from '../../../shared/ponte';
+import { centavosDeTexto } from '../../moedas';
 import { chamar, Dinheiro, novoId, useCotacao } from '../../chamadas';
 import { Campo, EstadoDaLista, JanelaDeConfirmacao } from '../../componentes-do-vendedor';
 import { TEXTOS } from '../../textos';
@@ -276,6 +277,11 @@ function FichaDoCliente({
                 T.naoDeve
               )}
             </p>
+            {(centavosDeTexto(c.sobraAAplicar) ?? 0n) > 0n ? (
+              <p className="vendas-texto vendas-texto--pequeno">
+                {T.sobraAAplicar(reais(c.sobraAAplicar))}
+              </p>
+            ) : null}
             {c.debitos.length > 0 ? (
               <table className="cs-tabela">
                 <caption className="consignado-so-leitor">{T.pendenciaTitulo}</caption>

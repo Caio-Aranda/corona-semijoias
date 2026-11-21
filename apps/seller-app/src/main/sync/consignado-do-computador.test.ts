@@ -12,6 +12,7 @@ import type { PedidoDeChamada } from '../../shared/operacoes';
 import { ConsultasLocais } from '../local/consultas-locais';
 import { aplicarLote } from './aplicador-do-pull';
 import { desfazerOperacao } from './outbox';
+import { CHAVES, gravarEstado } from './estado-sync';
 import { ErroDaOperacao, OperacoesLocais } from './operacoes-locais';
 import { type BancoDeTeste, criarBancoDeTeste, idDeTeste } from './testes/banco-de-teste';
 
@@ -999,6 +1000,59 @@ describe('Dt. Acerto (tarefa 9.8): a data do acerto e a ordem dos débitos', () 
     expect((Number(total) - valendo.soma).toFixed(2)).toBe(
       ex.esperado.aAplicarDoReciboDepoisDoEstorno,
     );
+    // A ficha do cliente também mostra essa sobra "a aplicar".
+    expect(clienteVisto().sobraAAplicar).toBe(ex.esperado.aAplicarDoReciboDepoisDoEstorno);
+    // E o acerto de B guarda o que ficou devendo no dia; o saldo de hoje é o da nota (o que a tela mostra como "Deve agora").
+    expect(nota(notaB).acerto?.ficouDevendo).not.toBe(nota(notaB).saldoDaNota);
+  });
+
+  describe('relógio diferente do servidor (ADR-0013, item 11)', () => {
+    it('sem diferença guardada, a nota não traz correção (a tela mantém o comportamento de antes)', () => {
+      const { notaB } = duasNotas();
+      expect(nota(notaB).correcaoDoRelogio).toBeNull();
+    });
+
+    it('computador 3 dias atrasado: a saída que ainda não foi enviada e "hoje" saem corrigidos pela diferença do último contato', () => {
+      const { notaB } = duasNotas();
+      // Último contato: o servidor dizia 05/11 e este computador dizia 02/11 (atrasado 3 dias).
+      gravarEstado(b.db, CHAVES.horaServidor, '2026-11-05T13:00:00.000Z');
+      gravarEstado(b.db, CHAVES.horaLocalDoContato, '2026-11-02T13:00:00.000Z');
+      agora = new Date('2026-11-02T14:00:00.000Z');
+      const c = nota(notaB).correcaoDoRelogio;
+      // A nota saiu pela hora deste computador (02/11) e ainda não subiu: o servidor a corrigirá para 05/11.
+      expect(c).toEqual({ diaDeHoje: '2026-11-05', diaDaSaida: '2026-11-05' });
+    });
+
+    it('computador 3 dias adiantado: "hoje" e a saída ainda não enviada voltam 3 dias pela diferença (negativa)', () => {
+      const { notaB } = duasNotas();
+      // Último contato: o servidor dizia 02/11 e este computador dizia 05/11 (adiantado 3 dias).
+      gravarEstado(b.db, CHAVES.horaServidor, '2026-11-02T13:00:00.000Z');
+      gravarEstado(b.db, CHAVES.horaLocalDoContato, '2026-11-05T13:00:00.000Z');
+      agora = new Date('2026-11-05T14:00:00.000Z');
+      const c = nota(notaB).correcaoDoRelogio;
+      expect(c?.diaDeHoje).toBe('2026-11-02');
+      // A nota saiu em 02/11 pela hora deste computador (que já estava adiantada); o servidor a corrige 3 dias para trás.
+      expect(c?.diaDaSaida).toBe('2026-10-30');
+    });
+
+    it('a saída que já foi enviada (já vem corrigida pelo servidor) não leva a correção de novo', () => {
+      const { notaB } = duasNotas();
+      b.db.prepare("UPDATE outbox SET situacao = 'ENVIADO' WHERE operacao_id = ?").run(notaB);
+      gravarEstado(b.db, CHAVES.horaServidor, '2026-11-05T13:00:00.000Z');
+      gravarEstado(b.db, CHAVES.horaLocalDoContato, '2026-11-02T13:00:00.000Z');
+      agora = new Date('2026-11-02T14:00:00.000Z');
+      expect(nota(notaB).correcaoDoRelogio).toEqual({
+        diaDeHoje: '2026-11-05',
+        diaDaSaida: '2026-11-02',
+      });
+    });
+
+    it('diferença menor que 5 minutos conta como relógio certo', () => {
+      const { notaB } = duasNotas();
+      gravarEstado(b.db, CHAVES.horaServidor, '2026-11-02T13:03:00.000Z');
+      gravarEstado(b.db, CHAVES.horaLocalDoContato, '2026-11-02T13:00:00.000Z');
+      expect(nota(notaB).correcaoDoRelogio).toBeNull();
+    });
   });
 
   it('data passada grava meio-dia de Brasília, o lançamento fica em registrado_em e o recibo usa o mesmo dia', () => {

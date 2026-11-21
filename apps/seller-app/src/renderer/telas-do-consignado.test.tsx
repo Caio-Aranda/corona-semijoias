@@ -545,6 +545,7 @@ describe('Cobrança e acerto', () => {
       },
     ],
     acerto: null,
+    correcaoDoRelogio: null,
     saldoDaNota: '0.00',
   };
   const previa = (pago: string): PrevisaoDoAcerto => ({
@@ -586,6 +587,132 @@ describe('Cobrança e acerto', () => {
     await screen.findByText('Pedido 0000064-21 · Vendedora Ana');
     return { ...c, u };
   }
+
+  it('acerto salvo: mostra o que ficou devendo no dia e o que deve agora, quando uma sobra abateu depois', async () => {
+    const acerto = {
+      id: 'a1',
+      acertadoEm: '2026-11-10T15:00:00Z',
+      comissaoPercentual: '30.00',
+      itensDx: 10,
+      itensDv: 5,
+      itensVd: 5,
+      valorDx: '2000.00',
+      valorDv: '1000.00',
+      valorVd: '1000.00',
+      vendaPercentual: '50.00',
+      comissao: '300.00',
+      bruto: '700.00',
+      pendenciasAnteriores: '0.00',
+      totalAReceber: '700.00',
+      totalPago: '351.03',
+      ficouDevendo: '348.97',
+      recibo: null,
+    };
+    const { u } = await abrir({
+      'consignado.nota': () =>
+        ok({ ...nota, aceitaMudanca: false, acerto, saldoDaNota: '294.70', situacao: 'PENDENTE' }),
+    });
+    await u.click(screen.getByRole('tab', { name: 'Forma de Pagamento' }));
+    expect(await screen.findByText('Deve agora')).toBeInTheDocument();
+    expect(screen.getByText(/ficou devendo R\$ 348,97\./)).toBeInTheDocument();
+    expect(screen.getAllByText('R$ 294,70').length).toBeGreaterThan(0);
+  });
+
+  it('relógio atrasado: Dt. Acerto antes do dia da saída corrigida pelo servidor mostra erro claro e não deixa salvar', async () => {
+    const { u } = await abrir({
+      'consignado.nota': () =>
+        ok({ ...nota, correcaoDoRelogio: { diaDeHoje: '2026-11-18', diaDaSaida: '2026-11-15' } }),
+    });
+    await u.click(screen.getByRole('tab', { name: 'Forma de Pagamento' }));
+    // 12/11 é depois da saída que este computador viu (10/11), mas antes da saída corrigida (15/11).
+    fireEvent.change(screen.getByLabelText('Dt. Acerto'), { target: { value: '2026-11-12' } });
+    expect(await screen.findByText(/a saída vale como 15\/11\/2026/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Salvar acerto' })).toBeDisabled();
+  });
+
+  it('sem diferença de relógio guardada, a mesma data segue aceita como antes', async () => {
+    const { u } = await abrir();
+    await u.click(screen.getByRole('tab', { name: 'Forma de Pagamento' }));
+    fireEvent.change(screen.getByLabelText('Dt. Acerto'), { target: { value: '2026-11-12' } });
+    expect(screen.queryByText(/a saída vale como/)).not.toBeInTheDocument();
+  });
+
+  it('acerto salvo em espanhol: "Debe ahora" e a frase explicando o que mudou depois do acerto', async () => {
+    const acerto = {
+      id: 'a1',
+      acertadoEm: '2026-11-10T15:00:00Z',
+      comissaoPercentual: '30.00',
+      itensDx: 10,
+      itensDv: 5,
+      itensVd: 5,
+      valorDx: '2000.00',
+      valorDv: '1000.00',
+      valorVd: '1000.00',
+      vendaPercentual: '50.00',
+      comissao: '300.00',
+      bruto: '700.00',
+      pendenciasAnteriores: '0.00',
+      totalAReceber: '700.00',
+      totalPago: '351.03',
+      ficouDevendo: '348.97',
+      recibo: null,
+    };
+    const { u } = await abrir({
+      'consignado.nota': () =>
+        ok({ ...nota, aceitaMudanca: false, acerto, saldoDaNota: '294.70', situacao: 'PENDENTE' }),
+    });
+    try {
+      definirIdioma('es');
+      await u.click(await screen.findByRole('tab', { name: 'Forma de Pago' }));
+      expect(await screen.findByText('Debe ahora')).toBeInTheDocument();
+      expect(screen.getByText(/quedó debiendo R\$ 348,97\./)).toBeInTheDocument();
+      expect(screen.getByText(/se aplicaron pagos o sobras/)).toBeInTheDocument();
+    } finally {
+      definirIdioma('pt');
+    }
+  });
+
+  it('acerto salvo cujo saldo é o mesmo valor escrito de outro jeito não mostra "Deve agora"', async () => {
+    const acerto = {
+      id: 'a1',
+      acertadoEm: '2026-11-10T15:00:00Z',
+      comissaoPercentual: '30.00',
+      itensDx: 10,
+      itensDv: 5,
+      itensVd: 5,
+      valorDx: '2000.00',
+      valorDv: '1000.00',
+      valorVd: '1000.00',
+      vendaPercentual: '50.00',
+      comissao: '300.00',
+      bruto: '700.00',
+      pendenciasAnteriores: '0.00',
+      totalAReceber: '700.00',
+      totalPago: '405.30',
+      ficouDevendo: '294.70',
+      recibo: null,
+    };
+    const { u } = await abrir({
+      'consignado.nota': () =>
+        ok({ ...nota, aceitaMudanca: false, acerto, saldoDaNota: '294.7', situacao: 'PENDENTE' }),
+    });
+    await u.click(screen.getByRole('tab', { name: 'Forma de Pagamento' }));
+    expect(await screen.findByText('Ficou devendo')).toBeInTheDocument();
+    expect(screen.queryByText('Deve agora')).not.toBeInTheDocument();
+  });
+
+  it('relógio adiantado: o dia da saída corrigido (anterior ao local) pode ser escolhido no campo de data', async () => {
+    const { u } = await abrir({
+      'consignado.nota': () =>
+        ok({ ...nota, correcaoDoRelogio: { diaDeHoje: '2026-11-08', diaDaSaida: '2026-11-07' } }),
+    });
+    await u.click(screen.getByRole('tab', { name: 'Forma de Pagamento' }));
+    const campo = screen.getByLabelText('Dt. Acerto');
+    // A saída que este computador viu foi 10/11; pelo servidor foi 07/11: o campo deixa chegar nesse dia.
+    expect(campo).toHaveAttribute('min', '2026-11-07');
+    fireEvent.change(campo, { target: { value: '2026-11-08' } });
+    expect(screen.queryByText(/a saída vale como/)).not.toBeInTheDocument();
+  });
 
   it('código fora da pedido avisa; DV acima do DX não passa; ler soma 1 em DV', async () => {
     const { u } = await abrir();
@@ -735,6 +862,7 @@ describe('Clientes e Lançar pagamento', () => {
     fotoDocumentoVersoHash: null,
     fotosEsperandoEnvio: 2,
     pendencia: '345.10',
+    sobraAAplicar: '0.00',
     debitos: [
       {
         acertoId: 'd1',
@@ -803,6 +931,32 @@ describe('Clientes e Lançar pagamento', () => {
     expect(p.pagamento.clienteId).toBe('c1');
     expect(p.pagamento.formas).toEqual([{ forma: 'PIX', valor: '300.00' }]);
     expect(await screen.findByText('Pagamento lançado. R 0000065-40.')).toBeInTheDocument();
+  });
+
+  it('ficha do cliente mostra a sobra "a aplicar" em linguagem simples', async () => {
+    const { ponte } = criarPonte({
+      'consignado.painel': () => ok(painel),
+      'consignado.clientes': () =>
+        ok([
+          {
+            id: 'c1',
+            nome: 'Vendedora Ana',
+            telefone: null,
+            cidade: null,
+            pendencia: '0.00',
+            fotoHash: null,
+          },
+        ]),
+      'consignado.cliente': () =>
+        ok({ ...cliente, pendencia: '0.00', debitos: [], sobraAAplicar: '54.27' }),
+    });
+    const u = userEvent.setup();
+    await irParaPrincipal(ponte);
+    await u.click(screen.getByRole('button', { name: 'Clientes' }));
+    await u.click(await screen.findByRole('button', { name: 'Abrir' }));
+    expect(
+      await screen.findByText(/Sobrou R\$ 54,27 de pagamento deste cliente/),
+    ).toBeInTheDocument();
   });
 
   it('pagamento acima do que o cliente deve não deixa lançar', async () => {

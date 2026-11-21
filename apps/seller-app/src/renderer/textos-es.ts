@@ -982,6 +982,8 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
       dataDoAcertoAjuda:
         'Hoy, o un día que ya pasó (no antes del día en que salió la nota). Nunca después de hoy.',
       dataDoAcertoInvalida: 'Elegí hoy o un día que ya pasó, desde el día en que salió la nota.',
+      dataDoAcertoAntesDaSaida: (diaDeLaSalida: string) =>
+        `Esta fecha es anterior al día en que salió la nota. El reloj de esta computadora es distinto del servidor, y la salida vale como ${diaDeLaSalida}. Elegí ${diaDeLaSalida} o después, hasta hoy.`,
       semCotacaoDoDia: 'Sin cotización este día: los valores aparecen solo en reales.',
       comissaoRs: 'Comisión R$',
       bruto: 'Total a Cobrar Bruto',
@@ -994,6 +996,9 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
       pagamentoTitulo: 'Pago',
       totalPago: 'Total Pagado',
       ficouDevendo: 'Quedó debiendo',
+      devendoAgora: 'Debe ahora',
+      devendoAgoraAjuda: (noAcerto: string) =>
+        `El día de la cobranza quedó debiendo ${noAcerto}. Después se aplicaron pagos o sobras de otros recibos, por eso lo que falta hoy es menos.`,
       salvar: 'Guardar cobranza',
       salvarTitulo: '¿Guardar la cobranza?',
       salvarTexto: (devendo: string, quita: boolean) =>
@@ -1088,6 +1093,8 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
       abrir: 'Abrir',
       deve: 'Debe',
       naoDeve: 'No debe nada',
+      sobraAAplicar: (valor: string) =>
+        `Sobraron ${valor} de pagos de este cliente que todavía no se usaron en ninguna nota. Entra solo en la próxima cobranza.`,
       voltarLista: 'Volver a la lista de clientes',
       cadastro: 'Registro',
       editar: 'Cambiar el registro',

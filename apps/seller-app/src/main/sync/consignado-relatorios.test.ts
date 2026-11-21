@@ -227,6 +227,13 @@ describe('Nota de saída', () => {
     expect(r.totalDx).toEqual({ real: '5370.00', dolar: null, guarani: null });
   });
 
+  it('sem cotação, a linha zerada não mostra Dólar e Guarani em zero (só o Real)', () => {
+    const { antiga } = cenario();
+    b.db.prepare('DELETE FROM cotacoes').run();
+    const r = relatorio<NotaDeSaida>({ tipo: 'NOTA_DE_SAIDA', notaId: antiga });
+    expect(r.pendenciaAnterior).toEqual({ real: '0.00', dolar: null, guarani: null });
+  });
+
   it('é gerada de novo na Reposição, com as peças novas', () => {
     chamar({ operacao: 'consignado.semanaNova', id: idDeTeste(10), numero: 64 });
     const id = pedido([['A-1', 2]]);
