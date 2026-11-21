@@ -587,6 +587,36 @@ describe('Cobrança e acerto', () => {
     return { ...c, u };
   }
 
+  it('acerto salvo: mostra o que ficou devendo no dia e o que deve agora, quando uma sobra abateu depois', async () => {
+    const acerto = {
+      id: 'a1',
+      acertadoEm: '2026-11-10T15:00:00Z',
+      comissaoPercentual: '30.00',
+      itensDx: 10,
+      itensDv: 5,
+      itensVd: 5,
+      valorDx: '2000.00',
+      valorDv: '1000.00',
+      valorVd: '1000.00',
+      vendaPercentual: '50.00',
+      comissao: '300.00',
+      bruto: '700.00',
+      pendenciasAnteriores: '0.00',
+      totalAReceber: '700.00',
+      totalPago: '351.03',
+      ficouDevendo: '348.97',
+      recibo: null,
+    };
+    const { u } = await abrir({
+      'consignado.nota': () =>
+        ok({ ...nota, aceitaMudanca: false, acerto, saldoDaNota: '294.70', situacao: 'PENDENTE' }),
+    });
+    await u.click(screen.getByRole('tab', { name: 'Forma de Pagamento' }));
+    expect(await screen.findByText('Deve agora')).toBeInTheDocument();
+    expect(screen.getByText(/ficou devendo R\$ 348,97\./)).toBeInTheDocument();
+    expect(screen.getAllByText('R$ 294,70').length).toBeGreaterThan(0);
+  });
+
   it('código fora da pedido avisa; DV acima do DX não passa; ler soma 1 em DV', async () => {
     const { u } = await abrir();
     const campo = screen.getByLabelText('Ler o código da peça devolvida');
@@ -803,6 +833,32 @@ describe('Clientes e Lançar pagamento', () => {
     expect(p.pagamento.clienteId).toBe('c1');
     expect(p.pagamento.formas).toEqual([{ forma: 'PIX', valor: '300.00' }]);
     expect(await screen.findByText('Pagamento lançado. R 0000065-40.')).toBeInTheDocument();
+  });
+
+  it('ficha do cliente mostra a sobra "a aplicar" em linguagem simples', async () => {
+    const { ponte } = criarPonte({
+      'consignado.painel': () => ok(painel),
+      'consignado.clientes': () =>
+        ok([
+          {
+            id: 'c1',
+            nome: 'Vendedora Ana',
+            telefone: null,
+            cidade: null,
+            pendencia: '0.00',
+            fotoHash: null,
+          },
+        ]),
+      'consignado.cliente': () =>
+        ok({ ...cliente, pendencia: '0.00', debitos: [], sobraAAplicar: '54.27' }),
+    });
+    const u = userEvent.setup();
+    await irParaPrincipal(ponte);
+    await u.click(screen.getByRole('button', { name: 'Clientes' }));
+    await u.click(await screen.findByRole('button', { name: 'Abrir' }));
+    expect(
+      await screen.findByText(/Sobrou R\$ 54,27 de pagamento deste cliente/),
+    ).toBeInTheDocument();
   });
 
   it('pagamento acima do que o cliente deve não deixa lançar', async () => {

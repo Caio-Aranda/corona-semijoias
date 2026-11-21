@@ -138,6 +138,8 @@ export interface ClienteCompleto {
   fotosEsperandoEnvio: number;
   pendencia: string;
   debitos: DebitoDoCliente[];
+  /** Dinheiro de recibo que ainda não foi usado em nenhuma nota (entra sozinho no próximo acerto). "0.00" se não há. */
+  sobraAAplicar: string;
   maletasAtuais: { remessaId: string; maleta: string; pecas: number }[];
   pedidos: PedidoDoHistorico[];
   pagamentos: PagamentoDoHistorico[];

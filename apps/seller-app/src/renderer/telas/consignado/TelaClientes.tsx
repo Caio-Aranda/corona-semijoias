@@ -276,6 +276,11 @@ function FichaDoCliente({
                 T.naoDeve
               )}
             </p>
+            {c.sobraAAplicar && /[1-9]/.test(c.sobraAAplicar) ? (
+              <p className="vendas-texto vendas-texto--pequeno">
+                {T.sobraAAplicar(reais(c.sobraAAplicar))}
+              </p>
+            ) : null}
             {c.debitos.length > 0 ? (
               <table className="cs-tabela">
                 <caption className="consignado-so-leitor">{T.pendenciaTitulo}</caption>

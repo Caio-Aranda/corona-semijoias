@@ -50,6 +50,7 @@ import {
   semanaAtual,
   SQL_ACERTO_ATIVO,
   SQL_RECIBO_ATIVO,
+  sobraAAplicarDoCliente,
 } from '../sync/consignado-comum';
 import {
   ErroDaOperacao,
@@ -916,6 +917,7 @@ export class ConsultasDoConsignado {
       fotosEsperandoEnvio: this.fotosEsperando(id),
       pendencia: dinheiro(debitos.reduce((s, d) => (d.saldo > 0n ? s + d.saldo : s), 0n)),
       debitos: debitos.filter((d) => d.saldo > 0n).map((d) => this.debitoDaTela(d)),
+      sobraAAplicar: dinheiro(sobraAAplicarDoCliente(this.db(), id)),
       maletasAtuais: [...comCliente.entries()]
         .filter(([, n]) => n > 0)
         .map(([remessaId, pecas]) => ({

@@ -224,6 +224,30 @@ export interface DebitoLocal {
 }
 
 /**
+ * A sobra "a aplicar" do cliente: o que os recibos valendo dele receberam a mais do que já foi aplicado em notas
+ * (pagamento ou estorno que deixou dinheiro sem nota para abater). Entra sozinha no próximo acerto (ADR-0016, item 10).
+ */
+export function sobraAAplicarDoCliente(db: BancoAberto, clienteId: string): bigint {
+  const recibos = db
+    .prepare(
+      `SELECT r.id, r.total FROM recibos_consignado r
+        WHERE r.cliente_id = ? AND ${SQL_RECIBO_ATIVO('r')}`,
+    )
+    .all(clienteId) as { id: string; total: string | null }[];
+  let sobra = 0n;
+  for (const r of recibos) {
+    const aplicado = db
+      .prepare('SELECT valor FROM aplicacoes_recibo WHERE recibo_id = ? AND deleted_at IS NULL')
+      .all(r.id) as { valor: string | null }[];
+    const parte =
+      exigirCentavos(r.total ?? '0') -
+      aplicado.reduce((s, a) => s + exigirCentavos(a.valor ?? '0'), 0n);
+    if (parte > 0n) sobra += parte;
+  }
+  return sobra;
+}
+
+/**
  * Os débitos do cliente (um por acerto valendo), do MAIS ANTIGO para o mais novo, com o saldo de cada um: o bruto do
  * acerto menos o que as aplicações de recibos já quitaram (ADR-0016, item 10). Devolve também os de saldo zero.
  */

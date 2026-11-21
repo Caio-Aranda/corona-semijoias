@@ -999,6 +999,10 @@ describe('Dt. Acerto (tarefa 9.8): a data do acerto e a ordem dos débitos', () 
     expect((Number(total) - valendo.soma).toFixed(2)).toBe(
       ex.esperado.aAplicarDoReciboDepoisDoEstorno,
     );
+    // A ficha do cliente também mostra essa sobra "a aplicar".
+    expect(clienteVisto().sobraAAplicar).toBe(ex.esperado.aAplicarDoReciboDepoisDoEstorno);
+    // E o acerto de B guarda o que ficou devendo no dia; o saldo de hoje é o da nota (o que a tela mostra como "Deve agora").
+    expect(nota(notaB).acerto?.ficouDevendo).not.toBe(nota(notaB).saldoDaNota);
   });
 
   it('data passada grava meio-dia de Brasília, o lançamento fica em registrado_em e o recibo usa o mesmo dia', () => {

@@ -481,6 +481,7 @@ function AcertoDoPedido({
               ponte={ponte}
               notaId={nota.id}
               acerto={a}
+              saldoAtual={nota.saldoDaNota}
               aoEstornar={() => setConfirmando('estornar')}
             />
           ) : (
@@ -695,11 +696,14 @@ function ResumoDoAcerto({
   ponte,
   notaId,
   acerto,
+  saldoAtual,
   aoEstornar,
 }: {
   ponte: PonteDoCorona;
   notaId: string;
   acerto: NonNullable<DetalheDaNota['acerto']>;
+  /** O que ainda deve desta nota hoje (já com pagamentos e sobras aplicados depois do acerto). */
+  saldoAtual: string;
   aoEstornar: () => void;
 }) {
   const T = TEXTOS.consignado.cobranca;
@@ -740,7 +744,20 @@ function ResumoDoAcerto({
         <dd>{d(acerto.totalPago, relatorio?.totalPago)}</dd>
         <dt>{T.ficouDevendo}</dt>
         <dd>{d(acerto.ficouDevendo, relatorio?.ficouDevendo)}</dd>
+        {saldoAtual !== acerto.ficouDevendo ? (
+          <>
+            <dt>{T.devendoAgora}</dt>
+            <dd>
+              <Dinheiro reais={saldoAtual} cotacao={cotacao.cotacao} />
+            </dd>
+          </>
+        ) : null}
       </dl>
+      {saldoAtual !== acerto.ficouDevendo ? (
+        <p className="vendas-texto vendas-texto--pequeno">
+          {T.devendoAgoraAjuda(reais(acerto.ficouDevendo))}
+        </p>
+      ) : null}
       {acerto.recibo ? (
         <>
           <p className="vendas-texto">

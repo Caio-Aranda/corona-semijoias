@@ -998,6 +998,9 @@ export const TEXTOS_PT = {
       pagamentoTitulo: 'Pagamento',
       totalPago: 'Total Pago',
       ficouDevendo: 'Ficou devendo',
+      devendoAgora: 'Deve agora',
+      devendoAgoraAjuda: (noAcerto: string) =>
+        `No dia do acerto ficou devendo ${noAcerto}. Depois entraram pagamentos ou sobras de outros recibos, por isso o que falta hoje é menos.`,
       salvar: 'Salvar acerto',
       salvarTitulo: 'Salvar o acerto?',
       salvarTexto: (devendo: string, quita: boolean) =>
@@ -1090,6 +1093,8 @@ export const TEXTOS_PT = {
       abrir: 'Abrir',
       deve: 'Deve',
       naoDeve: 'Não deve nada',
+      sobraAAplicar: (valor: string) =>
+        `Sobrou ${valor} de pagamento deste cliente que ainda não foi usado em nenhuma nota. Entra sozinho no próximo acerto.`,
       voltarLista: 'Voltar à lista de clientes',
       cadastro: 'Cadastro',
       editar: 'Mudar o cadastro',
