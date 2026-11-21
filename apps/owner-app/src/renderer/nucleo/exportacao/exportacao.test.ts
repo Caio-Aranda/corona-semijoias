@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { lerCsv, lerXlsx } from '../planilha';
 import { gerarCsv } from './csv';
 import { montarGrade, type PedidoDeExportacao } from './grade';
-import { gerarPdf } from './pdf';
+import { gerarPdf, planejarColunas, quebrarTitulo } from './pdf';
 import { gerarXlsx } from './xlsx';
 
 const COTACAO = { dolar: '5.50130000', guarani: '0.00089500' };
@@ -209,7 +209,7 @@ describe('PDF', () => {
     const pdf = texto(gerarPdf(montarGrade(pedido({ linhas: muitas }))));
     const paginas = (pdf.match(/\/Type \/Page\b/g) ?? []).length;
     expect(paginas).toBeGreaterThan(2);
-    expect((pdf.match(/Pre.o de venda \\\(R\$\\\)/g) ?? []).length).toBeGreaterThanOrEqual(paginas);
+    expect((pdf.match(/\(venda \\\(R\$\\\)\)/g) ?? []).length).toBeGreaterThanOrEqual(paginas);
     expect(pdf).toContain(`/Count ${paginas}`);
   });
 
@@ -347,7 +347,9 @@ describe('Fechamento da maleta: Dólar e Guarani nos totais de dinheiro (9.8)', 
       }),
     );
     const vd = grade.rodape.find((l) => l[0]?.v === 'Valor vendido')!;
-    expect(vd.map((c) => c.v).slice(1, 4)).toEqual(['300.00', 'US$ 50,00', 'Gs. 250000']);
+    expect(vd.map((c) => c.v).slice(1, 4)).toEqual(['300.00', '50.00', '250000']);
+    expect(vd[2]).toMatchObject({ numero: true, moeda: 'US$' });
+    expect(vd[3]).toMatchObject({ numero: true, moeda: 'Gs.' });
     const pend = grade.rodape.find((l) => l[0]?.v === 'Pendências')!;
     expect(pend.map((c) => c.v).slice(1, 4)).toEqual(['200.00', '', '']);
   });
@@ -380,11 +382,72 @@ describe('Fechamento da maleta: Dólar e Guarani nos totais de dinheiro (9.8)', 
       }),
     );
     const pdf = new TextDecoder('latin1').decode(gerarPdf(grade));
-    for (const t of ['(289,90)', '(86,97)', '(202,93)', '(0,00)', '(US$ 57,98)', '(Gs. 289900)']) {
+    for (const t of ['(289,90)', '(86,97)', '(202,93)', '(0,00)', '(US$ 57,98)', '(Gs. 289.900)']) {
       expect(pdf).toContain(t);
     }
     // O CSV usa a mesma vírgula decimal para o Real e o Dólar.
     const csv = gerarCsv(grade);
-    expect(csv).toContain('289,90;US$ 57,98;Gs. 289900');
+    expect(csv).toContain('289,90;57,98;289900');
+    // O Excel recebe célula numérica (não texto) com formato de moeda.
+    const xlsx = new TextDecoder().decode(gerarXlsx(grade));
+    expect(xlsx).toMatch(/<c r="C\d+" s="5"><v>57\.98<\/v><\/c>/);
+    expect(xlsx).toMatch(/<c r="D\d+" s="6"><v>289900<\/v><\/c>/);
+    expect(xlsx).not.toContain('US$ 57');
+  });
+
+  it('PDF de Produtos com três moedas: nada é cortado, a fonte encolhe e tudo cabe na página (pendência do 9.10)', () => {
+    const colunas = [
+      { chave: 'nome', titulo: 'Produto', tipo: 'texto' as const },
+      { chave: 'referencia', titulo: 'Referência', tipo: 'texto' as const },
+      { chave: 'codigo', titulo: 'Código', tipo: 'texto' as const },
+      { chave: 'categoria', titulo: 'Categoria', tipo: 'texto' as const },
+      { chave: 'fornecedor', titulo: 'Fornecedor', tipo: 'texto' as const },
+      { chave: 'minimo', titulo: 'Estoque mínimo', tipo: 'inteiro' as const },
+      { chave: 'estoque', titulo: 'Estoque', tipo: 'inteiro' as const },
+      { chave: 'precoVenda', titulo: 'Preço de venda', tipo: 'dinheiro' as const },
+      { chave: 'precoCusto', titulo: 'Preço de custo', tipo: 'dinheiro' as const },
+      { chave: 'ativo', titulo: 'Situação', tipo: 'simNao' as const },
+    ];
+    const grade = montarGrade(
+      pedido({
+        colunas,
+        linhas: [
+          {
+            nome: 'Brinco argola folheado',
+            referencia: 'BR-0001',
+            codigo: '7891234567895',
+            categoria: 'Brincos',
+            fornecedor: 'Fornecedor Exemplo',
+            minimo: 2,
+            estoque: 120,
+            precoVenda: '1234567.89',
+            precoCusto: '987654.32',
+            ativo: true,
+          },
+        ],
+        totais: [],
+        totaisDeValor: {},
+      }),
+    );
+    const plano = planejarColunas(grade);
+    const total = plano.colunas.reduce((s, c) => s + c.largura, 0);
+    expect(total).toBeLessThanOrEqual(842 - 2 * 28 + 0.01);
+    expect(plano.tamanho).toBeGreaterThanOrEqual(5);
+    // Todo texto de célula e todo título (na maior linha) cabe na coluna, sem "...".
+    const cabe = (texto: string, i: number) =>
+      texto.length * plano.tamanho * 0.55 <= plano.colunas[i]!.largura - 4 + 0.001;
+    grade.titulos.forEach((t, i) => {
+      for (const parte of quebrarTitulo(t)) expect(cabe(parte, i)).toBe(true);
+    });
+    grade.linhas[0]!.forEach((c, i) => {
+      const t = c.numero ? c.v.replace('.', ',') : c.v;
+      expect(cabe(t, i)).toBe(true);
+    });
+    const pdf = new TextDecoder('latin1').decode(gerarPdf(grade));
+    expect(pdf).not.toContain('...');
+    for (const t of ['1.234.567,89', '987.654,32', 'Brinco argola folheado', 'Fornecedor Exemplo']) {
+      expect(pdf).toContain(`(${t})`);
+    }
+    expect(pdf).toContain('(venda \\(R$\\))');
   });
 });

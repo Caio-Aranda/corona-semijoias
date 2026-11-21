@@ -103,7 +103,8 @@ function nomeDaColuna(indice: number): string {
   return nome;
 }
 
-// Estilos: 0 normal · 1 negrito · 2 número com 2 casas · 3 número inteiro · 4 negrito com 2 casas.
+// Estilos: 0 normal · 1 negrito · 2 número com 2 casas · 3 número inteiro · 4 negrito com 2 casas
+// · 5 US$ com 2 casas · 6 Gs. inteiro.
 function celulaXml(
   c: Celula,
   coluna: number,
@@ -114,6 +115,8 @@ function celulaXml(
   const ref = `${nomeDaColuna(coluna)}${linha}`;
   if (c.v === '') return '';
   if (c.numero && /^-?\d+(\.\d+)?$/.test(c.v)) {
+    // Dólar e Guarani do Fechamento da maleta: número de verdade, com a moeda só no formato da célula.
+    if (c.moeda) return `<c r="${ref}" s="${c.moeda === 'US$' ? 5 : 6}"><v>${c.v}</v></c>`;
     const estilo = casas === 'inteiro' ? 3 : negrito ? 4 : 2;
     return `<c r="${ref}" s="${estilo}"><v>${c.v}</v></c>`;
   }
@@ -182,7 +185,7 @@ export function gerarXlsx(grade: Grade): Uint8Array {
     },
     {
       nome: 'xl/styles.xml',
-      texto: `${cabecalhoXml}<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="5"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="4" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="3" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="4" fontId="1" fillId="0" borderId="0" xfId="0" applyNumberFormat="1" applyFont="1"/></cellXfs></styleSheet>`,
+      texto: `${cabecalhoXml}<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="2"><numFmt numFmtId="164" formatCode="&quot;US$&quot;\ #,##0.00"/><numFmt numFmtId="165" formatCode="&quot;Gs.&quot;\ #,##0"/></numFmts><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="7"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="4" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="3" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="4" fontId="1" fillId="0" borderId="0" xfId="0" applyNumberFormat="1" applyFont="1"/><xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="165" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs></styleSheet>`,
     },
     {
       nome: 'xl/worksheets/sheet1.xml',
