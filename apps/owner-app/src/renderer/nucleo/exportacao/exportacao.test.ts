@@ -455,4 +455,52 @@ describe('Fechamento da maleta: Dólar e Guarani nos totais de dinheiro (9.8)', 
     }
     expect(pdf).toContain('(venda \\(R$\\))');
   });
+
+  const gradeCrua = (numericas: number, textos: number, tamanhoDoTexto: number, valor: string) => {
+    const n = numericas + textos;
+    const ehNumerica = (i: number) => i < numericas;
+    return {
+      cabecalho: ['Corona Semijoias', 'Teste'],
+      titulos: Array.from({ length: n }, (_, i) => (ehNumerica(i) ? `Valor ${i}` : `Texto ${i}`)),
+      numericas: Array.from({ length: n }, (_, i) => ehNumerica(i)),
+      linhas: [
+        Array.from({ length: n }, (_, i) =>
+          ehNumerica(i) ? { v: valor, numero: true } : { v: 'T'.repeat(tamanhoDoTexto) },
+        ),
+      ],
+      rodape: [],
+      cotacao: '',
+    };
+  };
+
+  it('PDF apertado: muitas colunas e valores longos encolhem a fonte (entre 5 e 7) sem cortar nada', () => {
+    const grade = gradeCrua(10, 3, 18, '123456789.12');
+    const plano = planejarColunas(grade);
+    expect(plano.tamanho).toBeLessThan(7);
+    expect(plano.tamanho).toBeGreaterThanOrEqual(5);
+    const pdf = new TextDecoder('latin1').decode(gerarPdf(grade));
+    expect(pdf).not.toContain('...');
+    expect(pdf).toContain('(123.456.789,12)');
+    expect(pdf).toContain(`(${'T'.repeat(18)})`);
+    expect(plano.colunas.reduce((s, c) => s + c.largura, 0)).toBeLessThanOrEqual(842 - 56 + 0.01);
+  });
+
+  it('PDF sem espaço nem a 5 pt: só o texto livre é cortado com "...", números e títulos ficam inteiros', () => {
+    const grade = gradeCrua(16, 2, 60, '123456789.12');
+    const plano = planejarColunas(grade);
+    expect(plano.tamanho).toBe(5);
+    expect(plano.colunas.reduce((s, c) => s + c.largura, 0)).toBeLessThanOrEqual(842 - 56 + 0.01);
+    const pdf = new TextDecoder('latin1').decode(gerarPdf(grade));
+    expect(pdf).toContain(`(${'T'.repeat(5)}...)`.slice(0, 1)); // há texto cortado
+    expect(pdf).toMatch(/\(T+\.\.\.\)/);
+    expect(pdf).not.toContain(`(${'T'.repeat(60)})`);
+    // Os números continuam inteiros, nas 16 colunas numéricas.
+    expect(pdf.split('(123.456.789,12)').length - 1).toBe(16);
+    // E nenhuma célula numérica nem título leva "...".
+    expect(pdf).not.toMatch(/\(\d[\d.,]*\.\.\.\)/);
+    expect(pdf).not.toMatch(/\((Valor|Texto)[^)]*\.\.\.\)/);
+    plano.colunas.forEach((c, i) => {
+      if (grade.numericas[i]) expect(12 * 5 * 0.55 <= c.largura - 4 + 0.001).toBe(true);
+    });
+  });
 });
