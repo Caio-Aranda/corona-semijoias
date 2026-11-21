@@ -7283,6 +7283,9 @@
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
+          },
+          "tamTon" : {
+            "type" : "string"
           }
         },
         "type" : "object"
