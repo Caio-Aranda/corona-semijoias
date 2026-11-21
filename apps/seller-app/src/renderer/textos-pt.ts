@@ -1181,7 +1181,7 @@ export const TEXTOS_PT = {
         'A câmera está bloqueada. Libere a câmera para o Corona Vendas nas configurações do computador ou escolha um arquivo de imagem.',
       cameraAusente: 'Este computador não tem câmera. Escolha um arquivo de imagem.',
       cameraAbrindo:
-        'A câmera ainda está abrindo. Espere a imagem aparecer e toque em "Usar esta foto" de novo.',
+        'A câmera ainda está abrindo. Espere a imagem aparecer e clique em "Usar esta foto" de novo.',
       fotoPronta: 'Foto pronta.',
       salvar: 'Salvar o cliente',
       cancelar: 'Cancelar',

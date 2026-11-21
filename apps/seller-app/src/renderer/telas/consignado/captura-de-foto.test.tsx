@@ -130,4 +130,72 @@ describe('CapturaDeFoto: câmera (defeito 3 do relatório 9.10)', () => {
       expect(screen.getByText(T.escolherArquivo)).toBeInTheDocument();
     },
   );
+
+  it('cancelar a câmera solta o fluxo e limpa o aviso', async () => {
+    const { fluxo, parar } = criarFluxo();
+    usarCamera(() => Promise.resolve(fluxo));
+    const { ponte } = criarPonte();
+    render(
+      <CapturaDeFoto ponte={ponte} rotulo="Foto do cliente" hash={null} aoGuardar={vi.fn()} />,
+    );
+    await userEvent.click(screen.getByRole('button', { name: T.tirarFoto }));
+    await userEvent.click(await screen.findByRole('button', { name: T.capturar }));
+    expect(await screen.findByText(T.cameraAbrindo)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: T.cancelarCamera }));
+    expect(parar).toHaveBeenCalled();
+    expect(screen.queryByText(T.cameraAbrindo)).not.toBeInTheDocument();
+  });
+
+  it('sair da tela com a câmera aberta solta o fluxo', async () => {
+    const { fluxo, parar } = criarFluxo();
+    usarCamera(() => Promise.resolve(fluxo));
+    const { ponte } = criarPonte();
+    const { unmount } = render(
+      <CapturaDeFoto ponte={ponte} rotulo="Foto do cliente" hash={null} aoGuardar={vi.fn()} />,
+    );
+    await userEvent.click(screen.getByRole('button', { name: T.tirarFoto }));
+    await screen.findByRole('button', { name: T.capturar });
+    unmount();
+    expect(parar).toHaveBeenCalled();
+  });
+
+  it('se a tela fecha enquanto a câmera abre, o fluxo que chegar é solto', async () => {
+    const { fluxo, parar } = criarFluxo();
+    let liberar: (f: MediaStream) => void = () => undefined;
+    usarCamera(() => new Promise<MediaStream>((r) => (liberar = r)));
+    const { ponte } = criarPonte();
+    const { unmount } = render(
+      <CapturaDeFoto ponte={ponte} rotulo="Foto do cliente" hash={null} aoGuardar={vi.fn()} />,
+    );
+    await userEvent.click(screen.getByRole('button', { name: T.tirarFoto }));
+    unmount();
+    liberar(fluxo);
+    await waitFor(() => expect(parar).toHaveBeenCalled());
+  });
+
+  it('enquanto a câmera abre, "Tirar a foto" fica desligado (não abre dois fluxos)', async () => {
+    const getUserMedia = vi.fn(() => new Promise<MediaStream>(() => undefined));
+    usarCamera(getUserMedia);
+    const { ponte } = criarPonte();
+    render(
+      <CapturaDeFoto ponte={ponte} rotulo="Foto do cliente" hash={null} aoGuardar={vi.fn()} />,
+    );
+    const botao = screen.getByRole('button', { name: T.tirarFoto });
+    await userEvent.click(botao);
+    await waitFor(() => expect(botao).toBeDisabled());
+    await userEvent.click(botao);
+    expect(getUserMedia).toHaveBeenCalledTimes(1);
+  });
+
+  it('se play() recusar, a câmera segue aberta sem quebrar', async () => {
+    const { fluxo } = criarFluxo();
+    usarCamera(() => Promise.resolve(fluxo));
+    vi.spyOn(HTMLMediaElement.prototype, 'play').mockRejectedValue(new Error('recusou'));
+    const { ponte } = criarPonte();
+    render(
+      <CapturaDeFoto ponte={ponte} rotulo="Foto do cliente" hash={null} aoGuardar={vi.fn()} />,
+    );
+    await userEvent.click(screen.getByRole('button', { name: T.tirarFoto }));
+    expect(await screen.findByRole('button', { name: T.capturar })).toBeInTheDocument();
+  });
 });

@@ -43,11 +43,21 @@ export function CapturaDeFoto({
   const video = useRef<HTMLVideoElement>(null);
   const fluxo = useRef<MediaStream | null>(null);
 
-  useEffect(() => () => fluxo.current?.getTracks().forEach((t) => t.stop()), []);
+  const [abrindo, setAbrindo] = useState(false);
+  const montado = useRef(true);
+
+  useEffect(() => {
+    montado.current = true;
+    return () => {
+      montado.current = false;
+      fluxo.current?.getTracks().forEach((t) => t.stop());
+    };
+  }, []);
 
   function pararCamera(): void {
     fluxo.current?.getTracks().forEach((t) => t.stop());
     fluxo.current = null;
+    setErro(null);
     setCamera(false);
   }
 
@@ -62,17 +72,27 @@ export function CapturaDeFoto({
   }, [camera]);
 
   async function abrirCamera(): Promise<void> {
+    if (abrindo) return;
     setErro(null);
+    setAbrindo(true);
     try {
       const f = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      if (!montado.current) {
+        // A tela fechou enquanto a câmera abria: solta a câmera em vez de deixá-la ligada.
+        f.getTracks().forEach((t) => t.stop());
+        return;
+      }
       fluxo.current = f;
       setCamera(true);
     } catch (e) {
+      if (!montado.current) return;
       const nome = e instanceof DOMException ? e.name : '';
       if (nome === 'NotAllowedError' || nome === 'SecurityError') setErro(T.cameraNegada);
       else if (nome === 'NotFoundError' || nome === 'OverconstrainedError')
         setErro(T.cameraAusente);
       else setErro(T.semCamera);
+    } finally {
+      if (montado.current) setAbrindo(false);
     }
   }
 
@@ -147,7 +167,9 @@ export function CapturaDeFoto({
             <FotoDoCliente ponte={ponte} hash={hash} rotulo={rotulo} />
           )}
           <div className="consignado-camera__acoes">
-            <Botao onClick={() => void abrirCamera()}>{T.tirarFoto}</Botao>
+            <Botao disabled={abrindo} onClick={() => void abrirCamera()}>
+              {T.tirarFoto}
+            </Botao>
             <label className="cs-botao cs-botao--secundario consignado-arquivo">
               {T.escolherArquivo}
               <input
