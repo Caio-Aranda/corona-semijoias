@@ -445,7 +445,12 @@ describe('Fechamento da maleta: Dólar e Guarani nos totais de dinheiro (9.8)', 
     });
     const pdf = new TextDecoder('latin1').decode(gerarPdf(grade));
     expect(pdf).not.toContain('...');
-    for (const t of ['1.234.567,89', '987.654,32', 'Brinco argola folheado', 'Fornecedor Exemplo']) {
+    for (const t of [
+      '1.234.567,89',
+      '987.654,32',
+      'Brinco argola folheado',
+      'Fornecedor Exemplo',
+    ]) {
       expect(pdf).toContain(`(${t})`);
     }
     expect(pdf).toContain('(venda \\(R$\\))');

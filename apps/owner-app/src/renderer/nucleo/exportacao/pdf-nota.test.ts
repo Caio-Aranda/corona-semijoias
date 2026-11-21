@@ -111,7 +111,14 @@ describe('PDF da nota de remessa', () => {
       semana: { numero: 1 },
       tipo: 'REPOSICAO',
       itens: [
-        { codigo: 'X', nome: 'Brinco', tamTon: 'Aro 16', quantidade: 1, precoRemessa: '5.00', subtotal: '5.00' },
+        {
+          codigo: 'X',
+          nome: 'Brinco',
+          tamTon: 'Aro 16',
+          quantidade: 1,
+          precoRemessa: '5.00',
+          subtotal: '5.00',
+        },
       ],
       totalPecas: 1,
       totalValor: '5.00',

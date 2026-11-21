@@ -74,7 +74,7 @@ export function planejarColunas(grade: Grade): PlanoDeColunas {
   // Quantos caracteres cada coluna precisa; texto livre fica limitado a 24 (24 no primeiro, 20 nos outros).
   const precisa = grade.titulos.map((titulo, i) => {
     const doTitulo = Math.max(...quebrarTitulo(titulo).map((l) => l.length));
-    const dosValores = Math.max(0, ...todas.map((l) => (l[i] ? textoDaCelula(l[i]!).length : 0)));
+    const dosValores = Math.max(0, ...todas.map((l) => (l[i] ? textoDaCelula(l[i]).length : 0)));
     const livre = !grade.numericas[i];
     const valores = livre ? Math.min(dosValores, i === 0 ? 28 : 22) : dosValores;
     return Math.max(doTitulo, valores, 3);
