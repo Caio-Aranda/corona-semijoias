@@ -316,6 +316,12 @@ PR em rascunho até passar tudo localmente. Branch `fix/consignado-ajustes-finai
 
 Branch `fix/pdf-fechamento-centavos`, PR em rascunho. **Causa raiz (defeito 1):** `formatarNumero` em `apps/owner-app/src/renderer/nucleo/exportacao/pdf.ts` decidia as casas decimais pelo TÍTULO da coluna (`(R$)`, `(US$)`, `%`, "Comiss"). Na seção Dinheiro do Fechamento o Real fica na 2ª coluna, sob o título de peças, e saía inteiro (289,90 virava 289). Agora quem decide é o próprio valor (com casas, mostra as casas; Guarani e contagens são inteiros). **Defeito 6:** o total em Dólar do Fechamento era texto `US$ 57.98` (ponto) ao lado do Real `289,90` no CSV; agora `US$ 57,98` (vírgula, como o glossário e o resto dos relatórios; o Excel guarda o Real como número e o Dólar como texto `US$ 57,98`). Testes novos em `exportacao.test.ts`. **Não feito:** colunas cortadas ("Refer...") no PDF de Produtos e custos (largura das colunas com três moedas; fica para outra tarefa).
 
+## Leva 9: reabrir o Corona Vendas sempre pede a senha (defeito 2 do teste 9.10, 20/11/2026)
+
+- **Causa:** ao reabrir com internet, a sessão guardada era renovada e `estouLogado` devolvia `dentro` sem o banco local aberto (ele só abre com a senha; a chave nunca fica em claro). A tela principal aparecia com banco fechado, sem prazo (aviso falso) e sem poder vender.
+- **Correção:** novo estado `reabrir` quando há dados locais e o banco está fechado; a tela pede a senha ("Digite sua senha para continuar", pt/es), a entrada com internet abre o banco e liga o envio. Sem internet o fluxo "Entrar sem internet" continua igual.
+- Testes: `abrir-sem-internet.test.ts` e `telas.test.tsx`.
+
 ## Leva 9: acabamento final do consignado (tarefa 9.9, issue 238, 20/11/2026)
 
 PR 240 em rascunho. Só testes locais (sem CI).
