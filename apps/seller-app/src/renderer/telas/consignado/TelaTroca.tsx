@@ -10,7 +10,9 @@ import { chamar, novoId } from '../../chamadas';
 import { JanelaDeConfirmacao } from '../../componentes-do-vendedor';
 import { TEXTOS } from '../../textos';
 import { PaginaDoVendedor } from '../PaginaDoVendedor';
-import { FotoDoProduto, useConsulta } from './apoio';
+import { textoDeCentavos as textoDe } from '../../../shared/dinheiro';
+import { centavosDeTexto } from '../../moedas';
+import { FotoDoProduto, reais, useConsulta } from './apoio';
 import { EscolherPedido, LeitorDeCodigo } from './componentes';
 
 type Achada = Extract<ResultadoDaPeca, { tipo: 'ACHADA' }>;
@@ -42,6 +44,12 @@ export function TelaTroca({ ponte, aoVoltar }: { ponte: PonteDoCorona; aoVoltar:
   );
   const emUso = (maletas ?? []).filter((m) => m.status === 'ENVIADA' || m.status === 'CONFERIDA');
   const linhaQueVolta = nota?.linhas.find((l) => `${l.produtoId}|${l.remessaId}` === volta) ?? null;
+
+  /** Quanto a nota muda com a troca: peça nova menos peça que volta (centavos, sem float; o servidor recalcula o valor de verdade). */
+  const valorQueVolta = linhaQueVolta ? centavosDeTexto(linhaQueVolta.precoUnitario) : null;
+  const valorNovo = entra ? centavosDeTexto(entra.precoUnitario) : null;
+  const valorDaNota = nota ? centavosDeTexto(nota.valorDx) : null;
+  const diferenca = valorQueVolta !== null && valorNovo !== null ? valorNovo - valorQueVolta : null;
 
   async function ler(codigo: string): Promise<void> {
     if (!remessaId) {
@@ -84,7 +92,11 @@ export function TelaTroca({ ponte, aoVoltar }: { ponte: PonteDoCorona; aoVoltar:
     setOcupado(false);
     setConfirmando(false);
     if (r.ok) {
-      setMensagem({ tipo: 'sucesso', texto: T.trocada });
+      const nova = (r.dados as { nota?: DetalheDaNota } | null)?.nota;
+      setMensagem({
+        tipo: 'sucesso',
+        texto: nova ? T.trocadaComValor(reais(nova.valorDx)) : T.trocada,
+      });
       setEntra(null);
       setVolta('');
       await recarregar();
@@ -153,6 +165,27 @@ export function TelaTroca({ ponte, aoVoltar }: { ponte: PonteDoCorona; aoVoltar:
           ) : (
             <p className="vendas-texto">{T.nenhumaEscolhida}</p>
           )}
+          {diferenca !== null &&
+          valorQueVolta !== null &&
+          valorNovo !== null &&
+          valorDaNota !== null ? (
+            <div className="vendas-texto consignado-troca-valor">
+              <p>{T.valorQueVolta(reais(linhaQueVolta?.precoUnitario))}</p>
+              <p>{T.valorNova(reais(entra?.precoUnitario))}</p>
+              <p>
+                <strong>
+                  {diferenca > 0n
+                    ? T.notaSobe(reais(textoDe(diferenca)), reais(textoDe(valorDaNota + diferenca)))
+                    : diferenca < 0n
+                      ? T.notaDesce(
+                          reais(textoDe(-diferenca)),
+                          reais(textoDe(valorDaNota + diferenca)),
+                        )
+                      : T.notaIgual(reais(textoDe(valorDaNota)))}
+                </strong>
+              </p>
+            </div>
+          ) : null}
           {mensagem ? <Aviso tipo={mensagem.tipo}>{mensagem.texto}</Aviso> : null}
           <RodapeDeAcoes
             principal={

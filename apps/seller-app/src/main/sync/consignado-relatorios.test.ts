@@ -315,6 +315,78 @@ describe('Situação do cliente', () => {
   });
 });
 
+describe('Situação do cliente com pagamento lançado depois do acerto (defeito 5 do relatório 9.10)', () => {
+  it('a nota Fechada quitada por Lançar pagamento mostra o pago, não R$ 0,00', () => {
+    chamar({ operacao: 'consignado.semanaNova', id: idDeTeste(10), numero: 64 });
+    const nota = pedido([['A-1', 2]]);
+    // Nada devolvido, nada pago no ato: bruto = 400,00 - 30% = 280,00 fica pendente.
+    acertar(nota, [], '30', []);
+    chamar({
+      operacao: 'consignado.pagamento',
+      pagamento: {
+        id: idDeTeste(11),
+        clienteId: cliente,
+        formas: [{ forma: 'PIX', valor: '280.00' }],
+      },
+    });
+    const r = relatorio<SituacaoDoCliente>({ tipo: 'SITUACAO_DO_CLIENTE', clienteId: cliente });
+    expect(r.jaVendeu).toHaveLength(1);
+    expect(r.jaVendeu[0]?.situacao).toBe('FECHADO');
+    expect(r.jaVendeu[0]?.pago.real).toBe('280.00');
+    expect(r.pago.real).toBe('280.00');
+  });
+});
+
+describe('Situação do cliente: pago com recibo no acerto e recibo depois (defeito 5)', () => {
+  it('pagamento parcial no ato mais recibo depois: cada nota mostra o seu pago, sem contar duas vezes, com Dólar e Guarani', () => {
+    const { nova } = cenario();
+    // No acerto pagou 1.770,00: quita a nota antiga (498,10) e 1.271,90 da nova (bruto 1.617,00); ficam 345,10.
+    acertar(nova, devolvidos(), exemplos.notaDeExemplo.comissaoPercentual, pagos());
+    chamar({
+      operacao: 'consignado.pagamento',
+      pagamento: {
+        id: idDeTeste(11),
+        clienteId: cliente,
+        formas: [{ forma: 'PIX', valor: '345.10' }],
+      },
+    });
+    const r = relatorio<SituacaoDoCliente>({ tipo: 'SITUACAO_DO_CLIENTE', clienteId: cliente });
+    expect(r.jaVendeu.map((n) => n.situacao)).toEqual(['FECHADO', 'FECHADO']);
+    const antiga = r.jaVendeu.find((n) => n.valorVd.real === '498.10');
+    const nova2 = r.jaVendeu.find((n) => n.valorVd.real === '2310.00');
+    expect(antiga?.pago).toEqual({ real: '498.10', dolar: '99.62', guarani: '664133' });
+    expect(nova2?.pago).toEqual({ real: '1617.00', dolar: '323.40', guarani: '2156000' });
+    // 498,10 + 1.617,00 = 2.115,10 (o total a receber); o recibo do acerto não conta em dobro.
+    expect(r.pago.real).toBe('2115.10');
+    expect(r.pago.dolar).toBe('423.02');
+    expect(r.pendentes).toEqual([]);
+  });
+
+  it('estornar o recibo lançado depois: a nota volta a "O que falta" e o pago some da linha e do total', () => {
+    chamar({ operacao: 'consignado.semanaNova', id: idDeTeste(10), numero: 64 });
+    const nota = pedido([['A-1', 2]]);
+    acertar(nota, [], '30', []);
+    const pago = chamar<{ cliente: { pagamentos: { reciboId: string }[] } }>({
+      operacao: 'consignado.pagamento',
+      pagamento: {
+        id: idDeTeste(11),
+        clienteId: cliente,
+        formas: [{ forma: 'PIX', valor: '280.00' }],
+      },
+    });
+    chamar({
+      operacao: 'consignado.estornarRecibo',
+      id: idDeTeste(12),
+      reciboId: pago.cliente.pagamentos[0]?.reciboId as string,
+      motivo: 'Pix lançado errado',
+    });
+    const r = relatorio<SituacaoDoCliente>({ tipo: 'SITUACAO_DO_CLIENTE', clienteId: cliente });
+    expect(r.jaVendeu).toEqual([]);
+    expect(r.pago.real).toBe('0.00');
+    expect(r.pendentes[0]?.ficouDevendo.real).toBe('280.00');
+  });
+});
+
 describe('Peças vendidas por cliente', () => {
   it('lista cada peça vendida do período, com quantidade e valor, e o total', () => {
     const { nova } = cenario();

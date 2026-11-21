@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type {
   ClienteCompleto,
   DetalheDaNota,
@@ -12,11 +12,13 @@ import type {
 } from '../shared/dados-do-consignado';
 import type {
   EstadoDaSessao,
+  EstadoDaSincronizacao,
   PedidoDeChamada,
   PonteDoCorona,
   ResultadoDeChamada,
 } from '../shared/ponte';
 import { App } from './App';
+import { TelaTroca } from './telas/consignado/TelaTroca';
 import { definirIdioma } from './idioma';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -25,6 +27,20 @@ import { fileURLToPath } from 'node:url';
 const AQUI = dirname(fileURLToPath(import.meta.url));
 const lerCss = (relativo: string) => readFileSync(join(AQUI, relativo), 'utf8');
 
+const ESTADO_DO_ENVIO: EstadoDaSincronizacao = {
+  comInternet: true,
+  enviando: false,
+  aguardando: 0,
+  vendasAguardando: 0,
+  recusadas: 0,
+  dadosAte: null,
+  naoConseguiuEnviar: false,
+  prazo: { situacao: 'EM_DIA', diasRestantes: 0, motivo: null },
+  fotosBaixadas: 0,
+  fotosTotal: 0,
+  appDesatualizado: false,
+};
+
 const DENTRO: EstadoDaSessao = { estado: 'dentro', usuario: { nome: 'Rosa' } };
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
@@ -32,6 +48,7 @@ type Resposta = (pedido: PedidoDeChamada) => ResultadoDeChamada;
 
 function criarPonte(respostas: Record<string, Resposta> = {}) {
   const chamadas: PedidoDeChamada[] = [];
+  const ouvintesDoEnvio: ((e: EstadoDaSincronizacao) => void)[] = [];
   const ponte: PonteDoCorona = {
     entrar: vi.fn(),
     trocarSenha: vi.fn(),
@@ -44,14 +61,22 @@ function criarPonte(respostas: Record<string, Resposta> = {}) {
     }),
     aoMudarASessao: () => () => undefined,
     aoMudarAAtualizacao: () => () => undefined,
-    aoMudarASincronizacao: () => () => undefined,
+    aoMudarASincronizacao: (o) => {
+      ouvintesDoEnvio.push(o);
+      return () => undefined;
+    },
     lerIdioma: () => Promise.resolve(null),
     gravarIdioma: () => Promise.resolve(),
     imprimirRelatorio: () => Promise.resolve({ ok: true as const }),
     salvarRelatorioEmPdf: () => Promise.resolve({ ok: true as const }),
     prepararRelatorioNoWhatsapp: () => Promise.resolve({ ok: true as const }),
   };
-  return { ponte, chamadas };
+  const avisarEnvio = (e: Partial<EstadoDaSincronizacao>): void => {
+    act(() => {
+      for (const o of ouvintesDoEnvio) o({ ...ESTADO_DO_ENVIO, ...e });
+    });
+  };
+  return { ponte, chamadas, avisarEnvio };
 }
 
 const ok = (dados: unknown): ResultadoDeChamada => ({ ok: true, dados });
@@ -177,6 +202,27 @@ describe('Gerenciamento Semanal', () => {
       numero: 65,
     });
     expect(screen.getByRole('button', { name: 'Novo Pedido' })).toBeDisabled();
+  });
+
+  it('2º computador: depois do pull que traz as semanas, a tela troca o "primeira semana" pelo painel sem sair da tela (defeito 4 do 9.10)', async () => {
+    const vazio: PainelDaSemana = {
+      ...painel,
+      semSemana: true,
+      semanas: [],
+      semana: null,
+      pedidos: [],
+      podeNovoPedido: false,
+    };
+    let atual: PainelDaSemana = vazio;
+    const { ponte, avisarEnvio } = criarPonte({ 'consignado.painel': () => ok(atual) });
+    await irParaPrincipal(ponte);
+    await screen.findByText('Vamos começar a primeira semana');
+    avisarEnvio({ dadosAte: null }); // primeira entrega do estado, sem pull ainda
+    // O pull termina e traz as semanas já abertas no outro computador.
+    atual = painel;
+    avisarEnvio({ dadosAte: '2026-11-10T12:00:00Z' });
+    await screen.findByText('Semana:');
+    expect(screen.queryByText('Vamos começar a primeira semana')).toBeNull();
   });
 
   it('semana anterior: Novo Pedido fica desligado', async () => {
@@ -785,5 +831,141 @@ describe('Clientes e Lançar pagamento', () => {
       await screen.findByText('O valor pago passa do total a receber. Confira os valores.'),
     ).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: 'Lançar pagamento' }).at(-1)).toBeDisabled();
+  });
+});
+
+const PT = {
+  escolher: 'Escolher',
+  queVolta: 'Peça que volta',
+  maleta: 'Maleta da peça nova',
+  lerCodigo: 'Ler o código da peça nova',
+  trocar: 'Trocar a peça',
+};
+const ES = {
+  escolher: 'Elegir',
+  queVolta: 'Pieza que vuelve',
+  maleta: 'Maleta de la pieza nueva',
+  lerCodigo: 'Leer el código de la pieza nueva',
+  trocar: 'Cambiar la pieza',
+};
+
+describe('Troca mostra o valor da diferença (defeito 7 do 9.10)', () => {
+  afterEach(() => definirIdioma('pt'));
+
+  const notaDaTroca = {
+    id: NOTA(1),
+    numero: '0000065-01',
+    clienteId: 'c1',
+    cliente: 'Cliente 1',
+    valorDx: '400.00',
+    linhas: [
+      {
+        produtoId: 'p1',
+        remessaId: 'm1',
+        maleta: '0007',
+        nome: 'Anel A',
+        dx: 2,
+        precoUnitario: '200.00',
+      },
+    ],
+  };
+  const peca = (preco: string) => ({
+    tipo: 'ACHADA',
+    produtoId: 'p2',
+    remessaId: 'm1',
+    maleta: '0007',
+    nome: 'Colar B',
+    codigo: 'B-1',
+    fotoHash: null,
+    precoUnitario: preco,
+    disponivel: 3,
+  });
+
+  async function prepararTroca(precoNovo: string, idioma: 'pt' | 'es' = 'pt') {
+    definirIdioma(idioma);
+    const T = idioma === 'pt' ? PT : ES;
+    const { ponte } = criarPonte({
+      'consignado.notas': () =>
+        ok([
+          {
+            notaId: NOTA(1),
+            numero: '0000065-01',
+            cliente: 'Cliente 1',
+            clienteId: 'c1',
+            dataCobranca: null,
+            valorDx: '400.00',
+            situacao: 'EM_ABERTO',
+            maletas: ['0007'],
+          },
+        ]),
+      'consignado.nota': () => ok(notaDaTroca),
+      'consignado.maletas': () => ok([{ id: 'm1', codigo: '0007', status: 'ENVIADA' }]),
+      'consignado.peca': () => ok(peca(precoNovo)),
+      'consignado.trocaNaNota': () =>
+        ok({ nota: { ...notaDaTroca, valorDx: String(400 + Number(precoNovo) - 200) + '.00' } }),
+    });
+    const u = userEvent.setup();
+    render(<TelaTroca ponte={ponte} aoVoltar={() => undefined} />);
+    await u.click(await screen.findByRole('button', { name: T.escolher }));
+    await u.selectOptions(await screen.findByLabelText(T.queVolta), 'p1|m1');
+    await u.selectOptions(screen.getByLabelText(T.maleta), 'm1');
+    await u.type(screen.getByLabelText(T.lerCodigo), 'B-1{enter}');
+    return { u, T };
+  }
+
+  it('peça nova mais cara: avisa quanto o cliente passa a dever na nota', async () => {
+    await prepararTroca('260.00');
+    expect(await screen.findByText('A peça que volta vale R$ 200,00.')).toBeInTheDocument();
+    expect(screen.getByText('A peça nova vale R$ 260,00.')).toBeInTheDocument();
+    expect(
+      screen.getByText('O valor da nota sobe R$ 60,00 e passa a ser R$ 460,00.'),
+    ).toBeInTheDocument();
+  });
+
+  it('peça nova mais barata: avisa quanto a nota desce', async () => {
+    await prepararTroca('150.00');
+    expect(
+      await screen.findByText('O valor da nota desce R$ 50,00 e passa a ser R$ 350,00.'),
+    ).toBeInTheDocument();
+  });
+
+  it('mesmo preço: sem diferença', async () => {
+    await prepararTroca('200.00');
+    expect(
+      await screen.findByText('Sem diferença: a nota continua em R$ 400,00.'),
+    ).toBeInTheDocument();
+  });
+
+  it('em espanhol: o valor da diferença sai na língua da loja', async () => {
+    await prepararTroca('260.00', 'es');
+    expect(await screen.findByText('La pieza que vuelve vale R$ 200,00.')).toBeInTheDocument();
+    expect(screen.getByText('La pieza nueva vale R$ 260,00.')).toBeInTheDocument();
+    expect(
+      screen.getByText('El valor de la nota sube R$ 60,00 y pasa a ser R$ 460,00.'),
+    ).toBeInTheDocument();
+  });
+
+  it('em espanhol: peça mais barata e mesmo preço', async () => {
+    await prepararTroca('150.00', 'es');
+    expect(
+      await screen.findByText('El valor de la nota baja R$ 50,00 y pasa a ser R$ 350,00.'),
+    ).toBeInTheDocument();
+  });
+
+  it('depois de registrar, a mensagem traz o valor da nota (pt e es)', async () => {
+    for (const idioma of ['pt', 'es'] as const) {
+      const { u, T } = await prepararTroca('260.00', idioma);
+      await u.click(await screen.findByRole('button', { name: T.trocar }));
+      const janela = await screen.findByRole('dialog');
+      await u.click(within(janela).getByRole('button', { name: T.trocar }));
+      expect(
+        await screen.findByText(
+          idioma === 'pt'
+            ? 'Troca registrada. A nota ficou em R$ 460,00.'
+            : 'Cambio registrado. La nota quedó en R$ 460,00.',
+        ),
+      ).toBeInTheDocument();
+      cleanup();
+    }
   });
 });

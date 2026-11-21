@@ -942,7 +942,7 @@ Igual ao print: botões no topo, cabeçalho da semana, abas **Pedidos** e **Tota
 
 - **Botões, nesta ordem:** **Novo Pedido** (§23.6), **Cobrança** (§23.7), **Reposição**, **Troca**, **Clientes**, **Maletas** e o campo **Pesquisar** (nome do cliente, número da nota ou código da maleta).
   - **Reposição:** acrescenta peças a um cliente com nota em aberto. Nota da semana atual: as peças entram nela e a nota de saída é gerada de novo para assinar. Nota de semana anterior: nasce uma nota nova na semana atual só com as peças novas, com a mesma Dt. Cobrança.
-  - **Troca:** troca uma peça que está com o cliente por outra, sem acerto: a peça trocada volta à maleta de onde saiu e a nova entra na nota (uma operação só; a nota guarda o histórico).
+  - **Troca:** troca uma peça que está com o cliente por outra, sem acerto: a peça trocada volta à maleta de onde saiu e a nova entra na nota (uma operação só; a nota guarda o histórico). A tela mostra, antes de confirmar, o valor das duas peças e quanto o valor da nota sobe ou desce; não há crédito nem pagamento na Troca, a diferença é paga no acerto.
 - **Cabeçalho:** Semana nº, Representante, Praça e Situação da semana (**Em andamento** ou **Fechada**), com seletor de semanas anteriores.
 - **Nova semana:** botão, com confirmação. Só uma semana aberta por representante; abrir a nova fecha a anterior. Funciona sem internet.
 - **Semanas anteriores** abrem para acertar ou corrigir notas, mesmo **Fechada**; **Novo Pedido só na semana atual** (desabilitado nas outras).

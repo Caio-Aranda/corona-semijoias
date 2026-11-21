@@ -1,5 +1,5 @@
 import { Aviso, Botao, ValorTresMoedas } from '@corona/ui';
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type {
   NotaDeSaida,
@@ -15,6 +15,7 @@ import type {
 } from '../../../shared/relatorios-do-consignado';
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { chamar } from '../../chamadas';
+import { useEstadoDeEnvio } from '../../IndicadorDeEnvio';
 import { centavosDeTexto, formatarDolar, formatarGuarani, formatarReais } from '../../moedas';
 import { TEXTOS } from '../../textos';
 import { diaEmBrasilia } from '../../../shared/garantia';
@@ -62,6 +63,18 @@ export function useRelatorioDaTela<T extends RelatorioDoConsignado>(
 ): T | null {
   const [relatorio, setRelatorio] = useState<T | null>(null);
   const chave = JSON.stringify(pedido);
+  // Depois de um pull (`dadosAte` muda), o relatório é montado de novo com o que chegou.
+  // A primeira entrega do estado (ainda sem pull visto) não monta de novo.
+  const estado = useEstadoDeEnvio(ponte);
+  const dadosAte = estado ? estado.dadosAte : undefined;
+  const dadosAteVisto = useRef<string | null | undefined>(dadosAte);
+  const [recarga, setRecarga] = useState(0);
+  useEffect(() => {
+    const antes = dadosAteVisto.current;
+    if (antes === dadosAte) return;
+    dadosAteVisto.current = dadosAte;
+    if (antes !== undefined) setRecarga((n) => n + 1);
+  }, [dadosAte]);
   useEffect(() => {
     let valida = true;
     if (!pedido) {
@@ -81,7 +94,7 @@ export function useRelatorioDaTela<T extends RelatorioDoConsignado>(
     return () => {
       valida = false;
     };
-  }, [ponte, chave, ...dependencias]);
+  }, [ponte, chave, recarga, ...dependencias]);
   return relatorio;
 }
 

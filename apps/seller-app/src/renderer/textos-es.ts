@@ -1060,6 +1060,14 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
         `${volta} vuelve a la maleta de donde salió y ${entra} entra en el pedido.`,
       confirmarBotao: 'Cambiar la pieza',
       trocada: 'Cambio registrado.',
+      valorQueVolta: (valor: string) => `La pieza que vuelve vale ${valor}.`,
+      valorNova: (valor: string) => `La pieza nueva vale ${valor}.`,
+      notaSobe: (dif: string, novo: string) =>
+        `El valor de la nota sube ${dif} y pasa a ser ${novo}.`,
+      notaDesce: (dif: string, novo: string) =>
+        `El valor de la nota baja ${dif} y pasa a ser ${novo}.`,
+      notaIgual: (valor: string) => `Sin diferencia: la nota sigue en ${valor}.`,
+      trocadaComValor: (valor: string) => `Cambio registrado. La nota quedó en ${valor}.`,
       nenhumaEscolhida: 'Todavía no se leyó la pieza nueva.',
     },
     escolherPedido: {

@@ -1063,6 +1063,13 @@ export const TEXTOS_PT = {
         `${volta} volta para a maleta de onde saiu e ${entra} entra no pedido.`,
       confirmarBotao: 'Trocar a peça',
       trocada: 'Troca registrada.',
+      valorQueVolta: (valor: string) => `A peça que volta vale ${valor}.`,
+      valorNova: (valor: string) => `A peça nova vale ${valor}.`,
+      notaSobe: (dif: string, novo: string) => `O valor da nota sobe ${dif} e passa a ser ${novo}.`,
+      notaDesce: (dif: string, novo: string) =>
+        `O valor da nota desce ${dif} e passa a ser ${novo}.`,
+      notaIgual: (valor: string) => `Sem diferença: a nota continua em ${valor}.`,
+      trocadaComValor: (valor: string) => `Troca registrada. A nota ficou em ${valor}.`,
       nenhumaEscolhida: 'Ainda não há peça nova lida.',
     },
     escolherPedido: {

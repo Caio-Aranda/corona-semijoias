@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PedidoDoConsignado } from '../../../shared/operacoes-do-consignado';
 import type { PonteDoCorona } from '../../../shared/ponte';
 import type { FotoDoClientePronta } from '../../../shared/dados-do-consignado';
 import { chamar, type Resposta, useFoto } from '../../chamadas';
 import { centavosDeTexto, dataParaTela, formatarReais } from '../../moedas';
+import { useEstadoDeEnvio } from '../../IndicadorDeEnvio';
 import { TEXTOS } from '../../textos';
 
 /** Texto da API ("1617.00") → "R$ 1.617,00"; o que não for dinheiro aparece como veio. */
@@ -60,6 +61,17 @@ export function useConsulta<T>(
   useEffect(() => {
     void recarregar();
   }, [recarregar, ...dependencias]);
+  // Quando um pull termina (`dadosAte` muda), a consulta se atualiza sozinha, sem zerar o que já está na tela.
+  // A primeira entrega do estado (`undefined` -> valor, ainda sem pull visto) não recarrega: a consulta acabou de rodar.
+  const estado = useEstadoDeEnvio(ponte);
+  const dadosAte = estado ? estado.dadosAte : undefined;
+  const dadosAteVisto = useRef<string | null | undefined>(dadosAte);
+  useEffect(() => {
+    const antes = dadosAteVisto.current;
+    if (antes === dadosAte) return;
+    dadosAteVisto.current = dadosAte;
+    if (antes !== undefined) void recarregar();
+  }, [dadosAte, recarregar]);
   return { dados, erro, recarregar };
 }
 
