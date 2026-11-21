@@ -1174,6 +1174,11 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
       capturar: 'Usar esta foto',
       cancelarCamera: 'Cancelar la cámara',
       semCamera: 'No se pudo abrir la cámara. Elegí un archivo de imagen.',
+      cameraNegada:
+        'La cámara está bloqueada. Habilitá la cámara para Corona Vendas en la configuración de la computadora o elegí un archivo de imagen.',
+      cameraAusente: 'Esta computadora no tiene cámara. Elegí un archivo de imagen.',
+      cameraAbrindo:
+        'La cámara todavía se está abriendo. Esperá a que aparezca la imagen y hacé clic en "Usar esta foto" de nuevo.',
       fotoPronta: 'Foto lista.',
       salvar: 'Guardar el cliente',
       cancelar: 'Cancelar',

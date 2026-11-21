@@ -43,29 +43,56 @@ export function CapturaDeFoto({
   const video = useRef<HTMLVideoElement>(null);
   const fluxo = useRef<MediaStream | null>(null);
 
-  useEffect(() => () => fluxo.current?.getTracks().forEach((t) => t.stop()), []);
+  const [abrindo, setAbrindo] = useState(false);
+  const montado = useRef(true);
+
+  useEffect(() => {
+    montado.current = true;
+    return () => {
+      montado.current = false;
+      fluxo.current?.getTracks().forEach((t) => t.stop());
+    };
+  }, []);
 
   function pararCamera(): void {
     fluxo.current?.getTracks().forEach((t) => t.stop());
     fluxo.current = null;
+    setErro(null);
     setCamera(false);
   }
 
+  // O <video> só existe depois que a tela se desenha com a câmera aberta: ligar o fluxo aqui (e não num cronômetro)
+  // garante que o elemento já está na tela, qualquer que seja a ordem em que o navegador roda as coisas.
+  useEffect(() => {
+    const quadro = video.current;
+    const f = fluxo.current;
+    if (!camera || !quadro || !f) return;
+    quadro.srcObject = f;
+    void quadro.play().catch(() => undefined);
+  }, [camera]);
+
   async function abrirCamera(): Promise<void> {
+    if (abrindo) return;
     setErro(null);
+    setAbrindo(true);
     try {
       const f = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      if (!montado.current) {
+        // A tela fechou enquanto a câmera abria: solta a câmera em vez de deixá-la ligada.
+        f.getTracks().forEach((t) => t.stop());
+        return;
+      }
       fluxo.current = f;
       setCamera(true);
-      // O quadro de vídeo só existe depois de desenhar a tela com a câmera aberta.
-      setTimeout(() => {
-        if (video.current) {
-          video.current.srcObject = f;
-          void video.current.play().catch(() => undefined);
-        }
-      }, 0);
-    } catch {
-      setErro(T.semCamera);
+    } catch (e) {
+      if (!montado.current) return;
+      const nome = e instanceof DOMException ? e.name : '';
+      if (nome === 'NotAllowedError' || nome === 'SecurityError') setErro(T.cameraNegada);
+      else if (nome === 'NotFoundError' || nome === 'OverconstrainedError')
+        setErro(T.cameraAusente);
+      else setErro(T.semCamera);
+    } finally {
+      if (montado.current) setAbrindo(false);
     }
   }
 
@@ -89,7 +116,11 @@ export function CapturaDeFoto({
 
   async function capturar(): Promise<void> {
     const v = video.current;
-    if (!v || v.videoWidth === 0) return;
+    if (!v) return;
+    if (v.videoWidth === 0) {
+      setErro(T.cameraAbrindo);
+      return;
+    }
     const endereco = paraJpeg(v, v.videoWidth, v.videoHeight);
     pararCamera();
     await guardar(endereco);
@@ -136,7 +167,9 @@ export function CapturaDeFoto({
             <FotoDoCliente ponte={ponte} hash={hash} rotulo={rotulo} />
           )}
           <div className="consignado-camera__acoes">
-            <Botao onClick={() => void abrirCamera()}>{T.tirarFoto}</Botao>
+            <Botao disabled={abrindo} onClick={() => void abrirCamera()}>
+              {T.tirarFoto}
+            </Botao>
             <label className="cs-botao cs-botao--secundario consignado-arquivo">
               {T.escolherArquivo}
               <input
