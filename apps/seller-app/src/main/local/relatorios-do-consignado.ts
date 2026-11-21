@@ -72,23 +72,30 @@ class Soma {
   private dolar = 0n;
   private guarani = 0n;
   private completa = true;
+  private comTaxas = false;
+  private zeroSemTaxas = false;
 
   somar(valor: bigint, taxas: Taxas | null): this {
     this.real += valor;
     if (taxas) {
       this.dolar += dolarEmCentavos(valor, taxas.usd);
       this.guarani += guaraniInteiro(valor, taxas.pyg);
+      this.comTaxas = true;
     } else if (valor !== 0n) {
       this.completa = false;
+    } else {
+      this.zeroSemTaxas = true;
     }
     return this;
   }
 
   valor(): ValorNasTresMoedas {
+    // Só zeros e nenhuma cotação: não há conversão a mostrar (nunca "US$ 0,00" falso).
+    const convertido = this.completa && !(this.zeroSemTaxas && !this.comTaxas);
     return {
       real: dinheiro(this.real),
-      dolar: this.completa ? dinheiro(this.dolar) : null,
-      guarani: this.completa ? this.guarani.toString() : null,
+      dolar: convertido ? dinheiro(this.dolar) : null,
+      guarani: convertido ? this.guarani.toString() : null,
     };
   }
 
@@ -102,6 +109,14 @@ const um = (valor: bigint, taxas: Taxas | null): ValorNasTresMoedas =>
 
 export class RelatoriosDoConsignado {
   constructor(private readonly o: OpcoesDosRelatorios) {}
+
+  /**
+   * Soma que começa "sabendo" se existe alguma cotação: soma vazia ou só de zeros sem nenhuma cotação sai só em Real
+   * (nunca "US$ 0,00 · Gs. 0" falso); havendo cotação, o zero em Dólar e Guarani é verdadeiro.
+   */
+  private soma(): Soma {
+    return new Soma().somar(0n, this.cotacaoAte('9999-12-31'));
+  }
 
   private db(): BancoAberto {
     return this.o.banco();
@@ -238,7 +253,7 @@ export class RelatoriosDoConsignado {
     );
     const taxas = this.taxasDaNota(notaId);
     const pendencias = n.pendenciasAnteriores.filter((d) => centavos(d.saldo) > 0n);
-    const pendente = new Soma();
+    const pendente = this.soma();
     for (const d of pendencias) pendente.somar(centavos(d.saldo), this.taxasDoAcerto(d.acertoId));
     return {
       tipo: 'NOTA_DE_SAIDA',
@@ -340,14 +355,14 @@ export class RelatoriosDoConsignado {
       { operacao: 'consignado.cliente', id: clienteId },
       'CLIENTE_NAO_ENCONTRADO',
     );
-    const dx = new Soma();
-    const dv = new Soma();
-    const vd = new Soma();
-    const comissao = new Soma();
-    const liquido = new Soma();
-    const pago = new Soma();
-    const comOCliente = new Soma();
-    const deve = new Soma();
+    const dx = this.soma();
+    const dv = this.soma();
+    const vd = this.soma();
+    const comissao = this.soma();
+    const liquido = this.soma();
+    const pago = this.soma();
+    const comOCliente = this.soma();
+    const deve = this.soma();
     let itensDx = 0;
     let itensDv = 0;
     let itensVd = 0;
@@ -445,7 +460,7 @@ export class RelatoriosDoConsignado {
       { operacao: 'consignado.cliente', id: clienteId },
       'CLIENTE_NAO_ENCONTRADO',
     );
-    const total = new Soma();
+    const total = this.soma();
     let itens = 0;
     const linhas: LinhaDePecaVendida[] = [];
     for (const p of c.pedidos) {
@@ -496,12 +511,12 @@ export class RelatoriosDoConsignado {
       'NOTA_NAO_ENCONTRADA',
     );
     if (!painel.semana) throw new ErroDaOperacao('SEM_SEMANA_ABERTA');
-    const dx = new Soma();
-    const dv = new Soma();
-    const vd = new Soma();
-    const comissao = new Soma();
-    const liquido = new Soma();
-    const pendente = new Soma();
+    const dx = this.soma();
+    const dv = this.soma();
+    const vd = this.soma();
+    const comissao = this.soma();
+    const liquido = this.soma();
+    const pendente = this.soma();
     const debitos = new Map<string, ReturnType<typeof debitosDoCliente>>();
     for (const p of painel.pedidos) {
       if (p.acertoId) {
@@ -522,8 +537,8 @@ export class RelatoriosDoConsignado {
         dx.somar(centavos(p.valorDx), this.taxasDaNota(p.notaId));
       }
     }
-    const porForma = new Map(FORMAS_DO_CONSIGNADO.map((f) => [f, new Soma()] as const));
-    const recebido = new Soma();
+    const porForma = new Map(FORMAS_DO_CONSIGNADO.map((f) => [f, this.soma()] as const));
+    const recebido = this.soma();
     const recibos = db
       .prepare(
         `SELECT r.id AS recibo_id, f.forma, f.valor FROM formas_recibo_consignado f
@@ -571,11 +586,11 @@ export class RelatoriosDoConsignado {
     );
     const m = maletas.find((x) => x.id === remessaId);
     if (!m) throw new ErroDaOperacao('MALETA_NAO_ENCONTRADA');
-    const dx = new Soma();
-    const dv = new Soma();
-    const vd = new Soma();
-    const comClientes = new Soma();
-    const naMaleta = new Soma();
+    const dx = this.soma();
+    const dv = this.soma();
+    const vd = this.soma();
+    const comClientes = this.soma();
+    const naMaleta = this.soma();
     let itensDx = 0;
     let itensDv = 0;
     let itensVd = 0;

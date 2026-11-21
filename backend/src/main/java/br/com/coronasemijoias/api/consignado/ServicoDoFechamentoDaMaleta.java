@@ -71,19 +71,26 @@ public class ServicoDoFechamentoDaMaleta {
         private BigDecimal dolar = BigDecimal.ZERO;
         private BigDecimal guarani = BigDecimal.ZERO;
         private boolean completa = true;
+        private boolean comCotacao = false;
+        private boolean zeroSemCotacao = false;
 
         void somar(BigDecimal parte, BigDecimal usdVenda, BigDecimal pygVenda) {
             real = real.add(parte);
             if (usdVenda != null && pygVenda != null) {
                 dolar = dolar.add(ConversaoDeMoeda.paraDolar(parte, usdVenda));
                 guarani = guarani.add(ConversaoDeMoeda.paraGuarani(parte, pygVenda));
+                comCotacao = true;
             } else if (parte.signum() != 0) {
                 completa = false;
+            } else {
+                zeroSemCotacao = true;
             }
         }
 
         Convertido valor() {
-            return new Convertido(real, completa ? dolar : null, completa ? guarani : null);
+            // Só zeros e nenhuma cotação: não há conversão a mostrar (nunca "US$ 0,00" falso).
+            boolean convertido = completa && !(zeroSemCotacao && !comCotacao);
+            return new Convertido(real, convertido ? dolar : null, convertido ? guarani : null);
         }
     }
 
