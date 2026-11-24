@@ -109,7 +109,12 @@ export const PT_TEXTOS_DE_CONSIGNADO = {
       cobranca: 'Data de cobrança',
       situacao: 'Situação',
       pecas: 'Peças que o cliente levou',
-      colunasPecas: { peca: 'Peça', quantidade: 'Qtd. DX', preco: 'Preço', subtotal: 'Sub-total' },
+      colunasPecas: {
+        peca: 'Peça',
+        quantidade: 'Qtd. DX',
+        preco: 'Preço unitário',
+        subtotal: 'Sub-total',
+      },
       acertos: 'Acertos desta nota',
       semAcerto: 'Esta nota ainda não teve acerto.',
       acerto: (semana: number) => `Acerto da semana ${semana}`,

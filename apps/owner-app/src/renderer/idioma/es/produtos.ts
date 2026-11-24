@@ -20,7 +20,7 @@ export const ES_TEXTOS_DE_PRODUTOS: NoMesmoFormato<typeof PT_TEXTOS_DE_PRODUTOS>
     nome: 'Nombre',
     codigo: 'Código',
     categoria: 'Categoría',
-    preco: 'Precio',
+    preco: 'Precio unitario',
     situacao: 'Estado',
     acoes: 'Qué hacer',
   },
@@ -228,7 +228,7 @@ export const ES_TEXTOS_DE_PRODUTOS: NoMesmoFormato<typeof PT_TEXTOS_DE_PRODUTOS>
     consultando: 'Buscando el producto...',
     naoAchou: (codigo: string) =>
       `Ningún producto tiene el código ${codigo}. Revise el número o registre el producto.`,
-    preco: 'Precio',
+    preco: 'Precio unitario',
     saldo: 'Saldo en el stock',
     categoria: 'Categoría',
     codigo: 'Código principal',
