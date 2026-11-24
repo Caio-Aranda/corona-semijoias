@@ -34,10 +34,10 @@ Antes de começar: Corona Gestão e Corona Vendas na versão **1.1.0** (o instal
 8. **Estorno.** Estorne o pagamento (e depois, em outra nota, estorne um acerto), informando o motivo.
    Deve aparecer: a pendência volta como era e a nota volta a **Pendente** ou **Em aberto**. Se sobrou dinheiro de um recibo, ele já entra na nota mais antiga que ainda deve, **sem esperar o envio**.
 9. **Reposição.** Na semana de agora, faça uma **Reposição** para um cliente.
-   Deve aparecer: as peças na mesma nota (semana atual) ou uma nota nova com a mesma Dt. Cobrança (semana anterior).
+   Deve aparecer: as peças na mesma nota (semana atual) ou uma nota nova com a mesma Data do retorno (semana anterior).
 10. **Troca.** Em **Troca**, devolva uma peça e leve outra.
     Deve aparecer: a peça devolvida volta à maleta de onde saiu e, antes de confirmar, quanto o valor da nota sobe ou desce (a Troca não gera crédito nem pagamento: a diferença fica no valor da nota, que o cliente paga no acerto). Nota já acertada não troca.
-11. **Remarcar.** Em uma nota em aberto, use **Remarcar** e escolha outra Dt. Cobrança.
+11. **Remarcar.** Em uma nota em aberto, use **Remarcar** e escolha outra Data do retorno.
     Deve aparecer: a nova data e a nota **Remarcado**.
 12. **Relatórios e WhatsApp.** Abra os relatórios do cliente e da semana e use o botão de **WhatsApp** para mandar um deles.
     Deve aparecer: os mesmos valores das telas anteriores; o WhatsApp abre com a mensagem pronta (o programa nunca manda sozinho).

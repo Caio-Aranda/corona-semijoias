@@ -22,7 +22,7 @@ interface Linha {
 
 /**
  * Reposição (§23.4): acrescenta peças a um cliente com pedido em aberto. Pedido da semana de agora: as peças entram nele;
- * pedido de semana anterior: nasce um pedido novo só com as peças novas, com a mesma Dt. Cobrança.
+ * pedido de semana anterior: nasce um pedido novo só com as peças novas, com a mesma Data do retorno.
  */
 export function TelaReposicao({
   ponte,

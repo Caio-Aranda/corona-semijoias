@@ -122,7 +122,7 @@ export function acharNota(db: BancoAberto, id: string): NotaLocal | null {
   );
 }
 
-/** A Dt. Cobrança que vale: a da última remarcação, ou a da nota. */
+/** A Data do retorno que vale: a da última remarcação, ou a da nota. */
 export function dataDeCobranca(db: BancoAberto, nota: NotaLocal): string | null {
   const r = db
     .prepare(
@@ -307,7 +307,7 @@ export function saldoDoAcerto(
   return d ? d.saldo : null;
 }
 
-/** A hora de agora como dia civil em Brasília mais `dias` (Dt. Cobrança sugerida: saída + 45 dias). */
+/** A hora de agora como dia civil em Brasília mais `dias` (Data do retorno sugerida: saída + 45 dias). */
 export function diaMaisDias(agora: Date, dias: number): string {
   return diaEmBrasilia(new Date(agora.getTime() + dias * 86_400_000).toISOString());
 }

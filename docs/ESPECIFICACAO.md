@@ -916,7 +916,7 @@ Mudança vinda do teste de uso de 18/11/2026 na praça do representante (Ponta P
 | **Código do produto** | O **código do fornecedor** (tipo `FORNECEDOR` do ADR-0007): é o que se bipa e o que aparece em todas as telas. Peças iguais têm o mesmo código; bipar de novo soma 1. |
 | **Nota (pedido)** | Tudo o que **um** cliente levou em **uma** saída. Número `semana-sequência`, ex.: `0000065-32`. |
 | **Acerto (cobrança)** | O retorno do cliente: devolve o que não vendeu e paga o vendido menos a comissão. |
-| **Dt. Cobrança** | Data de retorno para o acerto (sugestão: saída + 45 dias, editável). |
+| **Data do retorno** | Dia em que o cliente volta para o acerto (sugestão: saída + 45 dias, editável). |
 | **Dt. Acerto** | Data em que o acerto foi feito: hoje por padrão, editável para um dia que já passou, nunca no futuro (§23.7). |
 | **DX / DV / VD** | DX (Deixado): o que o cliente levou, a preço de venda, bruto. DV (Devolvido): o que ele devolveu. VD (Vendido) = DX − DV. Itens DX/DV/VD = quantidades de peças. Nesta seção DX/DV/VD são **da nota do cliente**, não da maleta da §2. |
 | **Comissão** | Parte do vendido que fica com o cliente: padrão 30%, de 0% a 40%. |
@@ -941,13 +941,13 @@ O representante bipa só na saída e no acerto.
 Igual ao print: botões no topo, cabeçalho da semana, abas **Pedidos** e **Totais**.
 
 - **Botões, nesta ordem:** **Novo Pedido** (§23.6), **Cobrança** (§23.7), **Reposição**, **Troca**, **Clientes**, **Maletas** e o campo **Pesquisar** (nome do cliente, número da nota ou código da maleta).
-  - **Reposição:** acrescenta peças a um cliente com nota em aberto. Nota da semana atual: as peças entram nela e a nota de saída é gerada de novo para assinar. Nota de semana anterior: nasce uma nota nova na semana atual só com as peças novas, com a mesma Dt. Cobrança.
+  - **Reposição:** acrescenta peças a um cliente com nota em aberto. Nota da semana atual: as peças entram nela e a nota de saída é gerada de novo para assinar. Nota de semana anterior: nasce uma nota nova na semana atual só com as peças novas, com a mesma Data do retorno.
   - **Troca:** troca uma peça que está com o cliente por outra, sem acerto: a peça trocada volta à maleta de onde saiu e a nova entra na nota (uma operação só; a nota guarda o histórico). A tela mostra, antes de confirmar, o valor das duas peças e quanto o valor da nota sobe ou desce; não há crédito nem pagamento na Troca, a diferença é paga no acerto.
 - **Cabeçalho:** Semana nº, Representante, Praça e Situação da semana (**Em andamento** ou **Fechada**), com seletor de semanas anteriores.
 - **Nova semana:** botão, com confirmação. Só uma semana aberta por representante; abrir a nova fecha a anterior. Funciona sem internet.
 - **Semanas anteriores** abrem para acertar ou corrigir notas, mesmo **Fechada**; **Novo Pedido só na semana atual** (desabilitado nas outras).
 - **Recibo** fica na semana em que o pagamento foi feito, mesmo de nota de semana anterior (o total recebido da semana bate com o dinheiro na mão).
-- **Colunas de Pedidos:** Nota nº · Cliente · Dt. Cobrança · Valor DX · Valor DV · Valor VD · Comis. % · Comissão · Valor Líq. · Situação. Dois cliques abrem o acerto da nota.
+- **Colunas de Pedidos:** Nota nº · Cliente · Data do retorno · Valor DX · Valor DV · Valor VD · Comis. % · Comissão · Valor Líq. · Situação. Dois cliques abrem o acerto da nota.
 - **Aba Totais:** soma da semana: DX, DV, VD (valores e itens), comissão, líquido, total recebido (por forma) e total pendente.
 - **Situação e cor da linha:**
 
@@ -956,7 +956,7 @@ Igual ao print: botões no topo, cabeçalho da semana, abas **Pedidos** e **Tota
 | Em aberto | Cliente com as peças, sem acerto. | Branca |
 | Pendente | Acerto feito, cliente ficou devendo, até quitar. | Amarela |
 | Fechado | Acerto feito e nada a pagar; a Pendente vira Fechado sozinha ao quitar. | Verde |
-| Remarcado | Dt. Cobrança mudada sem acerto; DV, VD, comissão e líquido aparecem zerados até o acerto. | Rosa |
+| Remarcado | Data do retorno mudada sem acerto; DV, VD, comissão e líquido aparecem zerados até o acerto. | Rosa |
 
 ### 23.5 Cadastro de cliente
 
@@ -982,7 +982,7 @@ Cada representante tem a sua lista (o Corona Gestão vê todos; o Corona Vendas 
 
 1. **Novo Pedido** cria a nota na **semana atual**; o número `semana-sequência` nasce sozinho no computador do representante (um aparelho por representante, §6 item 15; o servidor confere que não repete).
 2. Escolher o **cliente** (busca por nome). Com pendência: aviso "Este cliente deve R$ X. O valor será somado ao próximo acerto."
-3. **Dt. Cobrança:** hoje + 45 dias, editável.
+3. **Data do retorno:** hoje + 45 dias, editável.
 4. Escolher a **maleta** (o mesmo código pode estar em mais de uma).
 5. **Bipar** cada peça: o sistema procura o código **na maleta escolhida**; linha nova Ref. · Tam./Ton. · Produto · **Maleta** · Qtd. DX · Preço unitário · Sub-total, ou soma 1 se o mesmo código e a mesma maleta já estão na lista; atualiza Total de itens e Total DX.
 6. Trocar a maleta escolhida e continuar bipando põe peças de **outra maleta** na mesma nota.
@@ -1005,7 +1005,7 @@ Cada representante tem a sua lista (o Corona Gestão vê todos; o Corona Vendas 
 3. **Aba Forma de Pagamento** (disposição do print): **Acerto** (Venda %, Comissão %, Comissão R$, Total a Receber Bruto); a Comissão % vem do cadastro e pode mudar **só neste acerto**, até 40%. **Pendências anteriores** (nota, data, valor e total do débito): entram sozinhas e não se removem. **Total a Receber** = Bruto + pendências anteriores. **Pagamento**: Dinheiro, Pix, Débito e Crédito à vista (**sem cheque e sem boleto**). **Total Pago** e **Ficou devendo**. Rodapé: Itens e Total DX / DV / VD.
 4. **Salvar:** gera o **recibo** (se houve pagamento) e o **relatório do acerto**. Pagou tudo → **Fechado**; faltou → **Pendente** e o valor vira pendência do cliente.
    - **Dt. Acerto** (tarefa 9.8): hoje por padrão; pode ser um dia que já passou, nunca no futuro (a tela não deixa; o servidor confere de novo em Brasília, pelo relógio dele, como no Lançar pagamento). O acerto e o recibo dele usam essa data e a cotação desse dia (ADR-0006). O número do recibo continua sendo da semana aberta no momento do lançamento (§23.4). A ordem dos débitos não muda com a data: vale a ordem em que os acertos foram lançados (§23.8). **Relógio errado (21/11/2026):** com a diferença de relógio guardada do último contato com o servidor (ADR-0013, item 11), o Vendas confere a data pelo "hoje" e pelo dia da saída como o servidor os verá; data anterior à saída corrigida mostra erro em português e não deixa salvar. O acerto de hoje (sem escolher data) não é barrado. Sem diferença guardada, vale a conferência de antes. Limite conhecido: uma nota já enviada mas ainda não devolvida pelo recebimento (situação ENVIADO na fila, que nunca sai dela) segue com a saída da hora local, sem correção, até o servidor devolvê-la. O acerto salvo mostra "Deve agora" quando o saldo da nota mudou depois do acerto, e a ficha do cliente mostra a sobra "a aplicar".
-5. **Cliente não veio:** mudar a Dt. Cobrança → **Remarcado** (rosa).
+5. **Cliente não veio:** mudar a Data do retorno → **Remarcado** (rosa).
 6. **Corrigir** um acerto já salvo (inclusive de semana anterior) é **estornar** o acerto (registro novo, com motivo) e fazer de novo; nada se edita. O estorno desfaz os movimentos de maleta e os pagamentos daquele acerto.
 
 ### 23.8 Cálculos, pagamento e pendência
