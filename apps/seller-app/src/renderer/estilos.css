@@ -489,23 +489,47 @@ tr.consignado-linha[tabindex]:focus-visible {
   font: 0.9375rem / 1.45 var(--fonte-dados);
 }
 
+/* Tabela de verdade em todo relatório, nota e PDF: bordas finas entre linhas e colunas, cabeçalho destacado,
+   números à direita (.cs-numero), cabeçalho repetido a cada página e linha nunca cortada. */
 .relatorio-folha table {
   width: 100%;
   border-collapse: collapse;
   margin: var(--espaco-3) 0;
+  border: 1px solid #8a8272;
+}
+
+.relatorio-folha thead {
+  display: table-header-group;
+}
+
+.relatorio-folha tfoot {
+  display: table-footer-group;
+}
+
+.relatorio-folha tr {
+  break-inside: avoid;
+  page-break-inside: avoid;
 }
 
 .relatorio-folha th,
 .relatorio-folha td {
-  padding: 0.3rem 0.4rem;
-  border-bottom: 1px solid #cfc6b6;
+  padding: 0.3rem 0.45rem;
+  border: 1px solid #b9b2a3;
   text-align: left;
   vertical-align: top;
   font-size: 0.875rem;
 }
 
 .relatorio-folha th {
+  background: #ece8de;
   border-bottom: 2px solid #111111;
+  color: #111111;
+  font-weight: 700;
+}
+
+.relatorio-folha tfoot td,
+.relatorio-folha tfoot th {
+  background: #f6f3ec;
   font-weight: 700;
 }
 
@@ -622,6 +646,11 @@ tr.consignado-linha[tabindex]:focus-visible {
   }
   .relatorio-folha tr {
     break-inside: avoid;
+  }
+  .relatorio-folha th,
+  .relatorio-folha tfoot td {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
   .relatorio-assinaturas {
     break-inside: avoid;
