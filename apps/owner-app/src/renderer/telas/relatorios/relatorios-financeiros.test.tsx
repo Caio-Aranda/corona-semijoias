@@ -160,6 +160,45 @@ describe('Relatórios financeiros (tarefa 7.12)', () => {
     expect(screen.getByText('40,00%')).toBeInTheDocument();
   });
 
+  it('Recebimentos por forma: mostra "Recebido em Gs. 500.000" só quando não foi em Real, e leva a coluna para a planilha', async () => {
+    const linha = (id: string, moeda: string, valorNaMoeda: string | null): Linha => ({
+      id,
+      vendedorId: ID_VEND,
+      vendedor: 'Maria Souza',
+      forma: 'DINHEIRO',
+      momento: 'AVULSO',
+      aplicadoEm: 'CONTA',
+      recebidoEm: '2026-11-05T15:00:00Z',
+      estorno: false,
+      motivo: null,
+      dataDaCotacao: '2026-11-05',
+      moeda,
+      valorNaMoeda,
+      valorEmReais: '447.50',
+      valorEmDolar: '81.34',
+      valorEmGuarani: '500000',
+    });
+    const m = montar({
+      'relatorios.cadastros': () => ({
+        ok: true,
+        dados: {
+          itens: [
+            linha('aaaaaaaa-2fa1-41d3-b9a5-2c3a9a8f6b01', 'GUARANI', '500000'),
+            linha('aaaaaaaa-2fa1-41d3-b9a5-2c3a9a8f6b02', 'REAL', null),
+          ],
+          total: 2,
+          pagina: 0,
+          tamanho: 20,
+          totais: [],
+        },
+      }),
+    });
+    await abrir(m, 'Recebimentos por forma de pagamento');
+    expect(await screen.findByText('Recebido em Gs. 500.000')).toBeInTheDocument();
+    expect(screen.getAllByText('Recebido em Gs. 500.000')).toHaveLength(1);
+    expect(screen.getByRole('columnheader', { name: 'Moeda recebida' })).toBeInTheDocument();
+  });
+
   it('quem deve vai ao servidor e a conta vencida aparece escrita "Vencida"', async () => {
     const m = montar({
       'relatorios.cadastros': () => ({

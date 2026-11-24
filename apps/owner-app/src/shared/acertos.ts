@@ -66,7 +66,7 @@ export interface PagamentoDaTela {
   recebimentos?: ({ id: string; forma: FormaDoPagamento } & ValorDoRecebimento)[];
   boleto?: { valor: string; vencimento: string };
   restante?: { parcelas: number; primeiroVencimento: string };
-  contasAntigas?: { id: string; contaId: string; forma: FormaDoPagamento; valor: string }[];
+  contasAntigas?: ({ id: string; contaId: string; forma: FormaDoPagamento } & ValorDoRecebimento)[];
   aFavorDoVendedor?: DestinoDoAFavor;
   formaDoPagamento?: FormaDoPagamento;
 }

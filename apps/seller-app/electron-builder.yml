@@ -6,7 +6,7 @@ productName: Corona Vendas
 asar: true
 # Usa o Electron que o npm já baixou: o empacotamento não baixa nada.
 electronDist: ../../node_modules/electron/dist
-electronVersion: 45.2.3
+electronVersion: 45.4.1
 npmRebuild: false
 nodeGypRebuild: false
 # Pasta de instalação do instalador por usuário usa o nome do pacote; sem isto ficaria "@coronaseller-app".

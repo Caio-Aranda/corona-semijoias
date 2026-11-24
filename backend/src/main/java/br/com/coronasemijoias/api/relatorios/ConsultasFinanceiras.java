@@ -88,7 +88,8 @@ public class ConsultasFinanceiras {
 
     public record LinhaDeRecebimento(UUID id, UUID vendedorId, String vendedor, String forma, String momento,
             String aplicadoEm, Instant recebidoEm, boolean estorno, String motivo, BigDecimal valorEmReais,
-            BigDecimal valorEmDolar, BigDecimal valorEmGuarani, LocalDate dataDaCotacao) {
+            BigDecimal valorEmDolar, BigDecimal valorEmGuarani, LocalDate dataDaCotacao, String moeda,
+            BigDecimal valorNaMoeda) {
     }
 
     public record LinhaDeComissao(UUID id, UUID vendedorId, String vendedor, UUID semanaId, int semana, Instant fechadoEm,
@@ -475,7 +476,7 @@ public class ConsultasFinanceiras {
                 soma("total", "Total recebido", TODOS, valor));
         Consulta c = new Consulta("rv.id, rv.vendedor_id, v.nome AS vendedor, rv.forma, rv.momento, rv.aplicado_em, "
                 + "rv.recebido_em, (rv.estorna_id IS NOT NULL) AS estorno, rv.motivo, rv.valor, " + dolar(valor)
-                + " AS dolar, " + guarani(valor) + " AS guarani, ct.data_cotacao",
+                + " AS dolar, " + guarani(valor) + " AS guarani, ct.data_cotacao, rv.moeda, rv.valor_na_moeda",
                 "corona.recebimentos_vendedor rv JOIN corona.vendedores v ON v.id = rv.vendedor_id "
                         + cotacaoNoMomento("rv.recebido_em"),
                 "rv.recebido_em DESC, rv.id", totais);
@@ -497,7 +498,8 @@ public class ConsultasFinanceiras {
                 rs.getObject("vendedor_id", UUID.class), rs.getString("vendedor"), rs.getString("forma"),
                 rs.getString("momento"), rs.getString("aplicado_em"), instante(rs, "recebido_em"), rs.getBoolean("estorno"),
                 rs.getString("motivo"), MotorDeRelatorio.reais(rs, "valor"), rs.getBigDecimal("dolar"),
-                rs.getBigDecimal("guarani"), rs.getObject("data_cotacao", LocalDate.class)));
+                rs.getBigDecimal("guarani"), rs.getObject("data_cotacao", LocalDate.class), rs.getString("moeda"),
+                rs.getBigDecimal("valor_na_moeda")));
     }
 
     // --- 9. comissões ---

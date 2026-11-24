@@ -9,7 +9,7 @@ import { useContext } from 'react';
 import { CampoDeDinheiro } from '../../componentes/CampoDeDinheiro';
 import { TEXTOS_DE_FINANCEIRO } from '../../textos-financeiro';
 import { CampoDeValorRecebido } from '../financeiro/CampoDeValorRecebido';
-import { dataParaTela } from '../../nucleo/moedas';
+import { dataParaTela, type MoedaDoRecebimento } from '../../nucleo/moedas';
 import { TEXTOS_DE_ACERTOS } from '../../textos-acertos';
 import { CampoDeEscolha } from '../devolucoes/Apoio';
 import { CotacaoDoAcerto, ValorDoAcerto, realDoAcerto } from './Valor';
@@ -140,7 +140,10 @@ export function PagamentoDoAcerto({ previa, pagamento, aoMudar }: PagamentoDoAce
               id: crypto.randomUUID(),
               forma: 'DINHEIRO' as FormaDoPagamento,
               digitado: '',
+              moeda: 'REAL' as MoedaDoRecebimento,
             };
+            const moedaDaConta = cotacao ? atual.moeda : 'REAL';
+            const rotuloDaConta = T.antigas.pagar(c.numero, c.totalDeParcelas);
             const trocar = (parcial: Partial<typeof atual>, digitando = false) =>
               aoMudar(
                 {
@@ -159,12 +162,15 @@ export function PagamentoDoAcerto({ previa, pagamento, aoMudar }: PagamentoDoAce
                     realDoAcerto(c.emAberto),
                   )}
                 </p>
-                <CampoDeDinheiro
+                <CampoDeValorRecebido
                   id={`conta-${c.id}`}
-                  rotulo={T.antigas.pagar(c.numero, c.totalDeParcelas)}
-                  ajuda={T.ajudaDoValor}
-                  valor={atual.digitado}
-                  aoMudar={(digitado) => trocar({ digitado }, true)}
+                  rotulo={rotuloDaConta}
+                  rotuloDaMoeda={M.rotuloDe(rotuloDaConta)}
+                  moeda={moedaDaConta}
+                  digitado={atual.digitado}
+                  cotacao={cotacao}
+                  {...(moedaDaConta === 'REAL' ? { ajuda: T.ajudaDoValor } : {})}
+                  aoMudar={(digitado, moeda) => trocar({ digitado, moeda }, true)}
                 />
                 <CampoDeEscolha
                   id={`conta-forma-${c.id}`}

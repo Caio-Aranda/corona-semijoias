@@ -1807,12 +1807,14 @@ export type LinhaDeRecebimento = {
     estorno?: boolean;
     forma?: string;
     id?: string;
+    moeda?: string;
     momento?: string;
     motivo?: string;
     recebidoEm?: string;
     valorEmDolar?: string;
     valorEmGuarani?: string;
     valorEmReais?: string;
+    valorNaMoeda?: string;
     vendedor?: string;
     vendedorId?: string;
 };
