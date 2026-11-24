@@ -11,6 +11,7 @@ import { CampoDeEscolha } from '../devolucoes/Apoio';
 import { lerOpcoes } from '../produtos/dados';
 import { PagamentosDaConta } from './PagamentosDaConta';
 import { PagarConta } from './PagarConta';
+import { ValorDoLancamentoNaTela } from '../devolucoes/Apoio';
 import { ValorDoDia } from './Valor';
 import { lerPaginaDeContas, podePagar, type ContaAPagar } from './contas-a-pagar';
 
@@ -156,8 +157,8 @@ export function TelaContasAPagar({ ponte }: { ponte: PonteDoCorona }) {
               compra: c.numeroDaCompra,
               parcela: nomeDaParcela(c),
               vencimento: dataParaTela(c.vencimento),
-              valor: <ValorDoDia valor={c.valor} />,
-              jaPago: <ValorDoDia valor={c.valorPago} />,
+              valor: <ValorDoLancamentoNaTela valor={c.valorNaTela} />,
+              jaPago: <ValorDoLancamentoNaTela valor={c.pagoNaTela} />,
               falta: <ValorDoDia valor={c.saldo} />,
               situacao: T.situacoes[c.situacao] ?? c.situacao,
               acoes: (

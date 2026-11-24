@@ -5,6 +5,9 @@ import br.com.coronasemijoias.api.cadastros.ServicoDeCadastro;
 import br.com.coronasemijoias.api.cadastros.Validacoes;
 import br.com.coronasemijoias.api.comum.erros.CodigoErro;
 import br.com.coronasemijoias.api.comum.erros.ErroDaApi;
+import br.com.coronasemijoias.api.cotacoes.ContasEmTresMoedas;
+import br.com.coronasemijoias.api.cotacoes.ContasEmTresMoedas.Moedas;
+import br.com.coronasemijoias.api.cotacoes.CotacaoVigente;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
@@ -13,6 +16,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -37,7 +41,14 @@ public class ConsultasDeContasAPagar {
     /** Uma parcela a pagar, com o que falta ({@code saldo}) e, no detalhe, as baixas. */
     public record Conta(UUID id, UUID compraId, String numeroDaCompra, UUID fornecedorId, String fornecedorNome, int parcela,
             int totalParcelas, LocalDate vencimento, BigDecimal valor, BigDecimal valorPago, BigDecimal valorCancelado, BigDecimal saldo,
-            String situacao, List<Baixa> baixas) {
+            String situacao, List<Baixa> baixas, BigDecimal valorEmDolar, BigDecimal valorEmGuarani, BigDecimal valorPagoEmDolar,
+            BigDecimal valorPagoEmGuarani) {
+
+        Conta comMoedas(Moedas doValor, Moedas doPago) {
+            return new Conta(id, compraId, numeroDaCompra, fornecedorId, fornecedorNome, parcela, totalParcelas, vencimento, valor,
+                    valorPago, valorCancelado, saldo, situacao, baixas, doValor.dolar(), doValor.guarani(), doPago.dolar(),
+                    doPago.guarani());
+        }
     }
 
     /** Os filtros da lista: fornecedor, situação (com VENCIDA) e vencimento de/até (dias de Brasília, inclusive). */
@@ -129,6 +140,27 @@ public class ConsultasDeContasAPagar {
     }
 
     private List<Conta> contas(String onde, String ordem, boolean comBaixas, List<Object> args) {
+        List<Conta> contas = contasEmReal(onde, ordem, comBaixas, args);
+        if (contas.isEmpty()) {
+            return contas;
+        }
+        String ids = ContasEmTresMoedas.lista(contas.stream().map(Conta::id).toList());
+        // O valor da parcela pela cotação do dia da compra; cada pagamento pela do dia dele (o estorno, pela do pagamento que
+        // desfaz, para os dois se anularem também em Dólar e Guarani). Onde só há a data, o fim do dia em Brasília.
+        Map<UUID, Moedas> doValor = ContasEmTresMoedas.somar(jdbc, "SELECT c.id, c.valor, ct.usd_venda, ct.pyg_venda"
+                + " FROM corona.contas_pagar c JOIN corona.compras k ON k.id = c.compra_id "
+                + CotacaoVigente.joinDoMomento(CotacaoVigente.fimDoDiaSql("k.data_compra"), "c.usd_venda, c.pyg_venda")
+                + " WHERE c.id = ANY (?::uuid[])", ids);
+        Map<UUID, Moedas> doPago = ContasEmTresMoedas.somar(jdbc, "SELECT b.conta_id, b.valor, ct.usd_venda, ct.pyg_venda"
+                + " FROM corona.baixas_pagar b LEFT JOIN corona.baixas_pagar o ON o.id = b.estorna_id "
+                + CotacaoVigente.joinDoMomento(CotacaoVigente.fimDoDiaSql("coalesce(o.data_pagamento, b.data_pagamento)"),
+                        "c.usd_venda, c.pyg_venda")
+                + " WHERE b.tipo = 'PAGAMENTO' AND b.conta_id = ANY (?::uuid[])", ids);
+        return contas.stream().map(c -> c.comMoedas(doValor.getOrDefault(c.id(), Moedas.SEM_COTACAO),
+                doPago.getOrDefault(c.id(), Moedas.ZERO))).toList();
+    }
+
+    private List<Conta> contasEmReal(String onde, String ordem, boolean comBaixas, List<Object> args) {
         LocalDate hoje = hoje();
         return jdbc.query("""
                 SELECT c.id, c.compra_id, k.numero, c.fornecedor_id, f.razao_social, c.parcela, c.total_parcelas, c.vencimento, c.valor,
@@ -145,7 +177,7 @@ public class ConsultasDeContasAPagar {
                     return new Conta(id, rs.getObject("compra_id", UUID.class), rs.getString("numero"),
                             rs.getObject("fornecedor_id", UUID.class), rs.getString("razao_social"), rs.getInt("parcela"),
                             rs.getInt("total_parcelas"), vencimento, valor, pago, cancelado, valor.subtract(pago).subtract(cancelado),
-                            vencida ? "VENCIDA" : status, comBaixas ? baixas(id) : List.of());
+                            vencida ? "VENCIDA" : status, comBaixas ? baixas(id) : List.of(), null, null, null, null);
                 }, args.toArray());
     }
 

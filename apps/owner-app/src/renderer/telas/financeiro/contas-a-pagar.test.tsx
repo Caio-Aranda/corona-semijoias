@@ -87,6 +87,23 @@ describe('Contas a pagar', () => {
     expect(ultima(m, 'contasAPagar.listar')).toEqual({ pagina: 0, tamanho: 20 });
   });
 
+  it('Valor e Já pago em Dólar e Guarani como o servidor calculou (cotação do dia de cada lançamento)', async () => {
+    const m = servidor({
+      'contasAPagar.listar': () =>
+        pagina([
+          conta({
+            valorEmDolar: '60.00',
+            valorEmGuarani: '300000.00',
+            valorPagoEmDolar: '25.00',
+            valorPagoEmGuarani: '100000.00',
+          }),
+        ]),
+    });
+    await abrirContas(m);
+    expect(screen.getByText('US$ 60,00 · Gs. 300.000')).toBeInTheDocument();
+    expect(screen.getByText('US$ 25,00 · Gs. 100.000')).toBeInTheDocument();
+  });
+
   it('os filtros mandam fornecedor e situação', async () => {
     const m = servidor();
     const u = await abrirContas(m);

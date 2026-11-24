@@ -85,6 +85,11 @@ abstract class ApoioDasContasAPagar extends TesteDeIntegracao {
 
     /** Uma compra de uma peça só, de quantidade 1, no custo dado: o total da compra é o custo. Devolve o id. */
     UUID compra(UUID fornecedor, String total) throws Exception {
+        return compra(fornecedor, total, "2026-11-01");
+    }
+
+    /** Como a de cima, com a data da compra dada. */
+    UUID compra(UUID fornecedor, String total, String dataCompra) throws Exception {
         String sufixo = UUID.randomUUID().toString().substring(0, 8);
         UUID categoria = UUID.fromString(corpoDe(postar("/api/dona/categorias", mapa("nome", "Cat " + sufixo)).andExpect(status().isCreated()))
                 .get("id").asString());
@@ -93,7 +98,7 @@ abstract class ApoioDasContasAPagar extends TesteDeIntegracao {
                 "codigos", List.of(mapa("codigo", "C-" + sufixo, "tipo", "LOJA", "principal", true)))).andExpect(status().isCreated()))
                 .get("id").asString());
         UUID id = UUID.randomUUID();
-        postar(COMPRAS, mapa("id", id, "fornecedorId", fornecedor, "dataCompra", "2026-11-01", "numero", "NF " + sufixo,
+        postar(COMPRAS, mapa("id", id, "fornecedorId", fornecedor, "dataCompra", dataCompra, "numero", "NF " + sufixo,
                 "itens", List.of(mapa("produtoId", peca, "quantidade", 1, "custoUnitario", total)))).andExpect(status().isCreated());
         return id;
     }

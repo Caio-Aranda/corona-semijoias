@@ -10,7 +10,7 @@ import { chamar, useBusca } from '../../nucleo/chamadas';
 import { RodapeDaCotacao } from '../../nucleo/cotacao';
 import { dataParaTela } from '../../nucleo/moedas';
 import { TEXTOS_DE_FINANCEIRO } from '../../textos-financeiro';
-import { CampoDeEscolha, useVendedores } from '../devolucoes/Apoio';
+import { CampoDeEscolha, useVendedores, ValorDoLancamentoNaTela } from '../devolucoes/Apoio';
 import { ValorDoDia } from './Valor';
 import { lerContasAReceber } from './recebimentos';
 
@@ -92,8 +92,8 @@ export function TelaContasAReceber({ ponte }: { ponte: PonteDoCorona }) {
               nivel: T.niveis[c.nivel] ?? c.nivel,
               parcela: T.parcela(c.numero, c.totalDeParcelas),
               vencimento: dataParaTela(c.vencimento),
-              valor: <ValorDoDia valor={c.valor} />,
-              jaPago: <ValorDoDia valor={c.valorPago} />,
+              valor: <ValorDoLancamentoNaTela valor={c.valorNaTela} />,
+              jaPago: <ValorDoLancamentoNaTela valor={c.pagoNaTela} />,
               emAberto: <ValorDoDia valor={c.emAberto} />,
               situacao: c.vencida ? T.vencida : (T.situacoes[c.status] ?? c.status),
             }))}
