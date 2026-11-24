@@ -145,6 +145,10 @@ public class ServicoDeMudancaDeCotacao {
 
     /** |digitado − Banco Central| ÷ Banco Central, em %, 2 casas. */
     private static BigDecimal diferenca(BigDecimal digitado, BigDecimal bcb) {
+        // Sem referência que sirva (uma taxa do Banco Central que dá 0 guaranis por real), não há o que comparar: sem aviso.
+        if (bcb.signum() <= 0) {
+            return BigDecimal.ZERO.setScale(2);
+        }
         return ConversaoDeMoeda.diferencaPorCento(digitado, bcb);
     }
 

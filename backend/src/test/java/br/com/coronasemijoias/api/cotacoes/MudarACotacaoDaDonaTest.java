@@ -243,4 +243,18 @@ class MudarACotacaoDaDonaTest extends TesteDeIntegracao {
         mvc.perform(get("/api/dona/cotacoes").param("data", "2026-11-05").with(usuarios.comoDona()))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.cotacoes", hasSize(0)));
     }
+
+    @Test
+    void umaTaxaDoBancoCentralQueDaZeroGuaranisPorRealNaoQuebraAGravacaoNemAvisa() throws Exception {
+        // Taxa absurda (1 Gs. = R$ 7.000): 1 ÷ 7000 dá 0,00 guarani por real. Sem referência, sem comparação do Guarani.
+        TaxasDoDia taxas = new TaxasDoDia(
+                new java.math.BigDecimal("5.00000000"), new java.math.BigDecimal("5.00000000"), java.math.BigDecimal.ONE.setScale(8),
+                java.math.BigDecimal.ONE.setScale(8), new java.math.BigDecimal("7000.00000000"), new java.math.BigDecimal("7000.00000000"),
+                java.math.BigDecimal.ONE.setScale(8), java.math.BigDecimal.ONE.setScale(8));
+        repositorio.gravar(SEXTA, taxas, Instant.parse("2026-01-01T00:00:00Z"), "teste");
+        agora(SEXTA_10H);
+        enviar("/previa", pedido("5.00", "1350"), true).andExpect(status().isOk())
+                .andExpect(jsonPath("$.avisoDeDiferenca").value(false));
+        enviar("", pedido("5.00", "1350"), true).andExpect(status().isCreated());
+    }
 }
