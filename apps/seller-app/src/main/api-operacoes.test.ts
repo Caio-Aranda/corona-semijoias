@@ -63,6 +63,10 @@ describe('cada operação da tela vira a chamada certa à API do vendedor', () =
       { operacao: 'vendas.listar', de: '2026-11-01', status: 'ESTORNADA' },
       'GET /api/vendedor/vendas?de=2026-11-01&status=ESTORNADA',
     ],
+    [
+      { operacao: 'vendas.listar', pagina: 2, tamanho: 50 },
+      'GET /api/vendedor/vendas?pagina=2&tamanho=50',
+    ],
     [{ operacao: 'vendas.ver', id: ID }, `GET /api/vendedor/vendas/${ID}`],
     [
       { operacao: 'vendas.estornar', id: ID, estornoId: OUTRO, motivo: 'Engano' },

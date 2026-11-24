@@ -1685,6 +1685,29 @@
         },
         "type" : "object"
       },
+      "PaginaConsultasDeVendasVenda" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ConsultasDeVendasVenda"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "ParametrosDoVendedor" : {
         "properties" : {
           "limiteDescontoPercentual" : {
@@ -4988,7 +5011,7 @@
     },
     "/api/vendedor/vendas" : {
       "get" : {
-        "description" : "Só as vendas do vendedor logado, da mais nova para a mais antiga. Filtros opcionais por dia (de e até, no horário de Brasília), cliente e situação (CONCLUIDA ou ESTORNADA).",
+        "description" : "Só as vendas do vendedor logado, da mais nova para a mais antiga, por página (issue 270). Filtros opcionais por dia (de e até, no horário de Brasília), cliente e situação (CONCLUIDA ou ESTORNADA); os filtros valem antes da página e o total conta só o que passou neles. A página começa em 0 (padrão 20, até 100 por página).",
         "operationId" : "listarVendasDoVendedor",
         "parameters" : [ {
           "in" : "query",
@@ -5021,16 +5044,29 @@
           "schema" : {
             "type" : "string"
           }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
         } ],
         "responses" : {
           "200" : {
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "items" : {
-                    "$ref" : "#/components/schemas/ConsultasDeVendasVenda"
-                  },
-                  "type" : "array"
+                  "$ref" : "#/components/schemas/PaginaConsultasDeVendasVenda"
                 }
               }
             },

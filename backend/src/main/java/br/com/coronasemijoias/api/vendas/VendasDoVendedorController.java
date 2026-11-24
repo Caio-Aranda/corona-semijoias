@@ -1,5 +1,7 @@
 package br.com.coronasemijoias.api.vendas;
 
+import br.com.coronasemijoias.api.cadastros.Pagina;
+import br.com.coronasemijoias.api.cadastros.ServicoDeCadastro;
 import br.com.coronasemijoias.api.cadastros.Validacoes;
 import br.com.coronasemijoias.api.seguranca.ExigePerfil;
 import br.com.coronasemijoias.api.seguranca.UsuarioAutenticado;
@@ -98,16 +100,27 @@ public class VendasDoVendedorController {
     }
 
     @Operation(operationId = "listarVendasDoVendedor", summary = "Minhas vendas",
-            description = "Só as vendas do vendedor logado, da mais nova para a mais antiga. Filtros opcionais por dia (de e "
-                    + "até, no horário de Brasília), cliente e situação (CONCLUIDA ou ESTORNADA).")
+            description = "Só as vendas do vendedor logado, da mais nova para a mais antiga, por página (issue 270). Filtros "
+                    + "opcionais por dia (de e até, no horário de Brasília), cliente e situação (CONCLUIDA ou ESTORNADA); "
+                    + "os filtros valem antes da página e o total conta só o que passou neles. A página começa em 0 "
+                    + "(padrão 20, até 100 por página).")
     @GetMapping
-    public List<Venda> listar(@RequestParam(required = false) LocalDate de, @RequestParam(required = false) LocalDate ate,
+    public Pagina<Venda> listar(@RequestParam(required = false) LocalDate de, @RequestParam(required = false) LocalDate ate,
             @RequestParam(required = false) UUID clienteId, @RequestParam(required = false) String status,
+            @RequestParam(required = false) Integer pagina, @RequestParam(required = false) Integer tamanho,
             @AuthenticationPrincipal UsuarioAutenticado quem) {
         if (status != null && !List.of("CONCLUIDA", "ESTORNADA").contains(status)) {
             throw Validacoes.recusar("status", "Escolha concluída ou estornada.");
         }
-        return consultas.listar(quem.vendedorId(), de, ate, clienteId, status);
+        int p = pagina == null ? 0 : pagina;
+        int t = tamanho == null ? ServicoDeCadastro.TAMANHO_PADRAO : tamanho;
+        if (p < 0) {
+            throw Validacoes.recusar("pagina", "A página não pode ser negativa.");
+        }
+        if (t < 1 || t > ServicoDeCadastro.TAMANHO_MAXIMO) {
+            throw Validacoes.recusar("tamanho", "Escolha de 1 a " + ServicoDeCadastro.TAMANHO_MAXIMO + " itens por página.");
+        }
+        return consultas.listar(quem.vendedorId(), de, ate, clienteId, status, p, t);
     }
 
     @Operation(operationId = "verVendaDoVendedor", summary = "Ver uma das minhas vendas")

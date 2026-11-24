@@ -1,5 +1,6 @@
 package br.com.coronasemijoias.api.vendas;
 
+import br.com.coronasemijoias.api.cadastros.Pagina;
 import br.com.coronasemijoias.api.comum.dinheiro.ConversaoDeMoeda;
 import br.com.coronasemijoias.api.comum.erros.CodigoErro;
 import br.com.coronasemijoias.api.comum.erros.ErroDaApi;
@@ -64,8 +65,12 @@ public class ConsultasDeVendas {
         return achadas.get(0);
     }
 
-    /** As vendas do vendedor, da mais nova para a mais antiga, com filtros opcionais. */
-    public List<Venda> listar(UUID vendedorId, LocalDate de, LocalDate ate, UUID clienteId, String status) {
+    /**
+     * Uma página das vendas do vendedor, da mais nova para a mais antiga, com filtros opcionais (issue 270). Os filtros
+     * valem antes da página e o total conta só o que passou neles.
+     */
+    public Pagina<Venda> listar(UUID vendedorId, LocalDate de, LocalDate ate, UUID clienteId, String status, int pagina,
+            int tamanho) {
         StringBuilder onde = new StringBuilder("v.vendedor_id = ?");
         List<Object> args = new ArrayList<>();
         args.add(vendedorId);
@@ -85,10 +90,20 @@ public class ConsultasDeVendas {
             onde.append(" AND v.status = ?");
             args.add(status);
         }
-        return consultar(onde.toString(), args.toArray());
+        Long total = jdbc.queryForObject("SELECT count(*) FROM corona.vendas v WHERE v.deleted_at IS NULL AND " + onde,
+                Long.class, args.toArray());
+        List<Object> comPagina = new ArrayList<>(args);
+        comPagina.add(tamanho);
+        comPagina.add((long) pagina * tamanho);
+        List<Venda> itens = consultar(onde.toString(), " LIMIT ? OFFSET ?", comPagina.toArray());
+        return new Pagina<>(itens, total == null ? 0 : total, pagina, tamanho);
     }
 
     private List<Venda> consultar(String onde, Object[] args) {
+        return consultar(onde, "", args);
+    }
+
+    private List<Venda> consultar(String onde, String limite, Object[] args) {
         List<Venda> cabecas = jdbc.query("""
                 SELECT v.id, v.vendedor_id, v.cliente_id, c.nome, v.remessa_id, v.status, v.subtotal, v.desconto, v.total,
                        v.vendida_em, v.estornada_em, v.motivo_estorno, v.troca_id, ct.data_cotacao, ct.usd_venda, ct.pyg_venda,
@@ -98,7 +113,7 @@ public class ConsultasDeVendas {
                   FROM corona.vendas v JOIN corona.clientes c ON c.id = v.cliente_id
                   LEFT JOIN corona.cotacoes ct ON ct.id = v.cotacao_id
                  WHERE v.deleted_at IS NULL AND
-                       """ + onde + " ORDER BY v.vendida_em DESC, v.id DESC", (rs, n) -> {
+                       """ + onde + " ORDER BY v.vendida_em DESC, v.id DESC" + limite, (rs, n) -> {
                     BigDecimal total = rs.getBigDecimal("total");
                     BigDecimal usd = rs.getBigDecimal("usd_venda");
                     BigDecimal pyg = rs.getBigDecimal("pyg_venda");

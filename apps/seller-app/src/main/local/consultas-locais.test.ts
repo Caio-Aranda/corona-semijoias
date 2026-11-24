@@ -11,6 +11,7 @@ import type {
   Maleta,
   RelatorioAReceber,
   RelatorioDeVendas,
+  PaginaDeVendas,
   Venda,
 } from '../../shared/dados';
 import type { PedidoDeChamada } from '../../shared/operacoes';
@@ -169,7 +170,7 @@ describe('venda e estorno sem internet', () => {
       vendida: 2,
       saldo: 1,
     });
-    expect(pedir<Venda[]>({ operacao: 'vendas.listar' })).toHaveLength(1);
+    expect(pedir<PaginaDeVendas>({ operacao: 'vendas.listar' }).itens).toHaveLength(1);
     expect(b.db.prepare("SELECT situacao FROM outbox WHERE tipo = 'VENDA'").get()).toEqual({
       situacao: 'AGUARDANDO',
     });
@@ -187,7 +188,7 @@ describe('venda e estorno sem internet', () => {
       ok: false,
       falha: { mensagem: 'Não há mais peças desta na sua maleta. Confira a quantidade.' },
     });
-    expect(pedir<Venda[]>({ operacao: 'vendas.listar' })).toHaveLength(0);
+    expect(pedir<PaginaDeVendas>({ operacao: 'vendas.listar' }).itens).toHaveLength(0);
   });
 
   it('o estorno devolve as peças, vira reembolso, zera o a receber e guarda o motivo', () => {
@@ -207,8 +208,12 @@ describe('venda e estorno sem internet', () => {
     expect(estornada.estornadaEm).toBe(agora.toISOString());
     const [maleta] = pedir<Maleta[]>({ operacao: 'maletas.listar' });
     expect(maleta?.itens.find((l) => l.produto.nome === 'Anel de prata')?.saldo).toBe(3);
-    expect(pedir<Venda[]>({ operacao: 'vendas.listar', status: 'CONCLUIDA' })).toHaveLength(0);
-    expect(pedir<Venda[]>({ operacao: 'vendas.listar', status: 'ESTORNADA' })).toHaveLength(1);
+    expect(pedir<PaginaDeVendas>({ operacao: 'vendas.listar', status: 'CONCLUIDA' }).itens).toHaveLength(
+      0,
+    );
+    expect(pedir<PaginaDeVendas>({ operacao: 'vendas.listar', status: 'ESTORNADA' }).itens).toHaveLength(
+      1,
+    );
     // Estornada não entra nas contas.
     expect(pedir<RelatorioDeVendas>({ operacao: 'relatorios.vendas' }).linhas).toEqual([]);
     expect(pedir<RelatorioAReceber>({ operacao: 'relatorios.aReceber' }).clientes).toEqual([]);
@@ -227,11 +232,49 @@ describe('venda e estorno sem internet', () => {
   it('filtra as vendas pelo período (dia de Brasília) e pelo cliente', () => {
     pedir<Venda>(vendaDe(1));
     expect(
-      pedir<Venda[]>({ operacao: 'vendas.listar', de: '2026-11-12', ate: '2026-11-12' }),
+      pedir<PaginaDeVendas>({ operacao: 'vendas.listar', de: '2026-11-12', ate: '2026-11-12' })
+        .itens,
     ).toHaveLength(1);
-    expect(pedir<Venda[]>({ operacao: 'vendas.listar', de: '2026-11-13' })).toHaveLength(0);
-    expect(pedir<Venda[]>({ operacao: 'vendas.listar', clienteId: idDeTeste(1) })).toHaveLength(0);
+    expect(
+      pedir<PaginaDeVendas>({ operacao: 'vendas.listar', de: '2026-11-13' }).itens,
+    ).toHaveLength(0);
+    expect(
+      pedir<PaginaDeVendas>({ operacao: 'vendas.listar', clienteId: idDeTeste(1) }).itens,
+    ).toHaveLength(0);
     expect(diaEmBrasilia('2026-11-12T01:00:00Z')).toBe('2026-11-11');
+  });
+
+  it('Minhas vendas por página: a mais nova primeiro, com o total do filtro (issue 270)', () => {
+    const ids: string[] = [];
+    for (let i = 0; i < 3; i++) {
+      agora = new Date(agora.getTime() + 60_000);
+      const base = vendaDe(1);
+      const feita = pedir<Venda>({
+        ...base,
+        venda: {
+          ...base.venda,
+          id: idDeTeste(40 + i),
+          pagamentos: [{ id: idDeTeste(50 + i), valor: '33.33', forma: 'PIX' as const }],
+        },
+      });
+      ids.unshift(feita.id);
+    }
+    const primeira = pedir<PaginaDeVendas>({ operacao: 'vendas.listar', pagina: 0, tamanho: 2 });
+    expect(primeira).toMatchObject({ total: 3, pagina: 0, tamanho: 2 });
+    expect(primeira.itens.map((v) => v.id)).toEqual(ids.slice(0, 2));
+    const segunda = pedir<PaginaDeVendas>({ operacao: 'vendas.listar', pagina: 1, tamanho: 2 });
+    expect(segunda.itens.map((v) => v.id)).toEqual(ids.slice(2));
+    expect(segunda.total).toBe(3);
+    // Sem pagina nem tamanho: a primeira página com 20, como no servidor.
+    expect(pedir<PaginaDeVendas>({ operacao: 'vendas.listar' })).toMatchObject({
+      total: 3,
+      pagina: 0,
+      tamanho: 20,
+    });
+    // O filtro vale antes da página.
+    expect(
+      pedir<PaginaDeVendas>({ operacao: 'vendas.listar', status: 'ESTORNADA', tamanho: 2 }),
+    ).toMatchObject({ total: 0, itens: [] });
   });
 
   it('recebimentos por forma de pagamento, com o reembolso descontado', () => {

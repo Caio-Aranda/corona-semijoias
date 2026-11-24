@@ -237,6 +237,8 @@ export function criarApiDoVendas(opcoes: OpcoesDaApi): ApiDoVendas {
               ...periodo(pedido),
               ...(pedido.clienteId ? { clienteId: pedido.clienteId } : {}),
               ...(pedido.status ? { status: pedido.status } : {}),
+              ...(pedido.pagina !== undefined ? { pagina: pedido.pagina } : {}),
+              ...(pedido.tamanho !== undefined ? { tamanho: pedido.tamanho } : {}),
             },
           }),
         );
