@@ -109,7 +109,7 @@ export const ES_TEXTOS_DE_CONSIGNADO: NoMesmoFormato<typeof PT_TEXTOS_DE_CONSIGN
       colunasPecas: {
         peca: 'Pieza',
         quantidade: 'Cant. DX',
-        preco: 'Precio',
+        preco: 'Precio unitario',
         subtotal: 'Subtotal',
       },
       acertos: 'Acertos de esta nota',

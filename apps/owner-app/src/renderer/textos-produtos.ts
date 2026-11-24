@@ -23,7 +23,7 @@ export const PT_TEXTOS_DE_PRODUTOS = {
     nome: 'Nome',
     codigo: 'Código',
     categoria: 'Categoria',
-    preco: 'Preço',
+    preco: 'Preço unitário',
     situacao: 'Situação',
     acoes: 'O que fazer',
   },
@@ -232,7 +232,7 @@ export const PT_TEXTOS_DE_PRODUTOS = {
     consultando: 'Procurando o produto...',
     naoAchou: (codigo: string) =>
       `Nenhum produto tem o código ${codigo}. Confira o número ou cadastre o produto.`,
-    preco: 'Preço',
+    preco: 'Preço unitário',
     saldo: 'Saldo no estoque',
     categoria: 'Categoria',
     codigo: 'Código principal',
