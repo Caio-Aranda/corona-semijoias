@@ -175,6 +175,66 @@ class MudarACotacaoDaDonaTest extends TesteDeIntegracao {
         assertThat(linha.get("depois").toString()).contains("6.40", "1350", "banco_central_dolar", "aviso_de_diferenca");
     }
 
+    // --- só uma moeda (pedido da dona, 24/11/2026: ela pode mudar só o Dólar ou só o Guarani) ---
+
+    @Test
+    void soODolar_oGuaraniFicaExatamenteOQueValia() throws Exception {
+        bancoCentralDeSexta();
+        agora(SEXTA_10H);
+        enviar("", pedido("5.80", null), true).andExpect(status().isCreated())
+                .andExpect(jsonPath("$.cotacao.origem").value("DONA"))
+                .andExpect(jsonPath("$.cotacao.dolar").value("5.80000000"))
+                // A taxa do Guarani do Banco Central, sem arredondar para "1 real = Gs. 1.117".
+                .andExpect(jsonPath("$.cotacao.guarani").value("0.00089500"))
+                .andExpect(jsonPath("$.cotacao.guaranisPorReal").value("1117.31843575"));
+    }
+
+    @Test
+    void soOGuarani_oDolarFicaExatamenteOQueValia() throws Exception {
+        bancoCentralDeSexta();
+        agora(SEXTA_10H);
+        enviar("", pedido(null, "1350"), true).andExpect(status().isCreated())
+                .andExpect(jsonPath("$.cotacao.dolar").value("5.50130000"))
+                .andExpect(jsonPath("$.cotacao.guaranisPorReal").value("1350.00000000"));
+    }
+
+    @Test
+    void umaMoedaDeCadaVez_aOutraSegueAUltimaDaDona() throws Exception {
+        bancoCentralDeSexta();
+        agora(SEXTA_10H);
+        enviar("", pedido("5.80", "1350"), true).andExpect(status().isCreated());
+        agora("2026-11-06T14:00:00Z");
+        enviar("", pedido(null, "1400"), true).andExpect(status().isCreated())
+                .andExpect(jsonPath("$.cotacao.dolar").value("5.80000000"))
+                .andExpect(jsonPath("$.cotacao.guaranisPorReal").value("1400.00000000"));
+        agora("2026-11-06T15:00:00Z");
+        enviar("", pedido("5.90", ""), true).andExpect(status().isCreated())
+                .andExpect(jsonPath("$.cotacao.dolar").value("5.90000000"))
+                .andExpect(jsonPath("$.cotacao.guaranisPorReal").value("1400.00000000"));
+        assertThat(repositorio.doDia(SEXTA)).hasSize(4);
+    }
+
+    @Test
+    void nenhumaDasDuas_ouSemCotacaoParaCopiar_400() throws Exception {
+        bancoCentralDeSexta();
+        agora(SEXTA_10H);
+        enviar("", pedido(null, null), true).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.codigo").value("DADOS_INVALIDOS"));
+        enviar("/previa", pedido("", " "), true).andExpect(status().isBadRequest());
+        assertThat(repositorio.doDia(SEXTA)).hasSize(1);
+    }
+
+    @Test
+    void previaComSoUmaMoeda() throws Exception {
+        bancoCentralDeSexta();
+        agora(SEXTA_10H);
+        enviar("/previa", pedido("5.80", null), true).andExpect(status().isOk())
+                .andExpect(jsonPath("$.avisoDeDiferenca").value(false));
+        enviar("/previa", pedido(null, "2000"), true).andExpect(status().isOk())
+                .andExpect(jsonPath("$.avisoDeDiferenca").value(true))
+                .andExpect(jsonPath("$.moedaDoAviso").value("GUARANI"));
+    }
+
     // --- validação ---
 
     @Test

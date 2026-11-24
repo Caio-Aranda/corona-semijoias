@@ -150,8 +150,8 @@ export type ParametrosConferidos =
   | { operacao: 'usuarios.desativar' | 'usuarios.reativar' | 'usuarios.redefinirSenha'; id: string }
   | { operacao: 'cotacao.converter'; valorEmReais: string; data?: string }
   | { operacao: 'cotacao.dia'; data?: string }
-  | { operacao: 'cotacao.previa'; usd: string; guaranisPorReal: string }
-  | { operacao: 'cotacao.gravar'; id?: string; usd: string; guaranisPorReal: string };
+  | { operacao: 'cotacao.previa'; usd?: string; guaranisPorReal?: string }
+  | { operacao: 'cotacao.gravar'; id?: string; usd?: string; guaranisPorReal?: string };
 
 /** O valor que a dona digita na cotação (texto com ponto): a conta e os limites são do servidor. */
 const VALOR_DA_COTACAO = /^\d{1,10}(\.\d{1,8})?$/;
@@ -496,18 +496,23 @@ export function conferirParametros(
     }
     case 'cotacao.previa':
     case 'cotacao.gravar': {
+      // A dona pode mudar só o Dólar ou só o Guarani (24/11/2026): a moeda que falta fica a que valia. As duas vazias, não.
       if (Object.keys(p).some((k) => !['id', 'usd', 'guaranisPorReal'].includes(k))) return null;
-      if (!ehTexto(p.usd) || !VALOR_DA_COTACAO.test(p.usd)) return null;
-      if (!ehTexto(p.guaranisPorReal) || !VALOR_DA_COTACAO.test(p.guaranisPorReal)) return null;
+      const valor = (v: unknown): string | undefined | null =>
+        v === undefined || v === '' ? undefined : ehTexto(v) && VALOR_DA_COTACAO.test(v) ? v : null;
+      const usd = valor(p.usd);
+      const guaranisPorReal = valor(p.guaranisPorReal);
+      if (usd === null || guaranisPorReal === null) return null;
+      if (usd === undefined && guaranisPorReal === undefined) return null;
+      const moedas = {
+        ...(usd === undefined ? {} : { usd }),
+        ...(guaranisPorReal === undefined ? {} : { guaranisPorReal }),
+      };
       if (operacao === 'cotacao.previa') {
-        return p.id === undefined
-          ? { operacao, usd: p.usd, guaranisPorReal: p.guaranisPorReal }
-          : null;
+        return p.id === undefined ? { operacao, ...moedas } : null;
       }
-      if (p.id === undefined) return { operacao, usd: p.usd, guaranisPorReal: p.guaranisPorReal };
-      return ehTexto(p.id) && UUID.test(p.id)
-        ? { operacao, id: p.id, usd: p.usd, guaranisPorReal: p.guaranisPorReal }
-        : null;
+      if (p.id === undefined) return { operacao, ...moedas };
+      return ehTexto(p.id) && UUID.test(p.id) ? { operacao, id: p.id, ...moedas } : null;
     }
     case 'vendedores.listar':
     case 'vendedores.ver':

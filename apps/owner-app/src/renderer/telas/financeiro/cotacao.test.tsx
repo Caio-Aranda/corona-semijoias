@@ -131,14 +131,12 @@ describe('Mudar a cotação', () => {
     expect(
       screen.getByText('Banco Central de 06/11/2026: 1 dólar = R$ 5,50 · 1 real = Gs. 1.117,32'),
     ).toBeInTheDocument();
-    await waitFor(() =>
-      expect(ultima(m, 'cotacao.previa')).toEqual({ usd: '6.40', guaranisPorReal: '1350' }),
-    );
+    await waitFor(() => expect(ultima(m, 'cotacao.previa')).toEqual({ usd: '6.40' }));
     // O botão continua pronto: o aviso não trava.
     expect(screen.getByRole('button', { name: 'Gravar a cotação' })).toBeEnabled();
   });
 
-  it('grava só os dois valores e um id da tela, confirma "Vale desde 10:15" e busca a cotação de novo', async () => {
+  it('mudou só o Dólar: grava só o Dólar e um id da tela (o Guarani fica o que valia), confirma e busca de novo', async () => {
     const m = servidor();
     const u = await abrirACotacao(m);
     const dolar = await screen.findByLabelText('1 dólar = R$');
@@ -148,17 +146,49 @@ describe('Mudar a cotação', () => {
     await u.click(screen.getByRole('button', { name: 'Gravar a cotação' }));
     await waitFor(() => expect(chamadasDe(m, 'cotacao.gravar')).toHaveLength(1));
     const p = ultima(m, 'cotacao.gravar');
-    expect(p).toMatchObject({ usd: '5.85', guaranisPorReal: '1350' });
+    expect(p).toMatchObject({ usd: '5.85' });
     expect(ehUuid(p?.id)).toBe(true);
-    expect(Object.keys(p ?? {}).sort()).toEqual(['guaranisPorReal', 'id', 'usd']);
+    expect(Object.keys(p ?? {}).sort()).toEqual(['id', 'usd']);
     expect(
       await screen.findByText('Cotação da loja gravada. Vale desde 10:15.'),
     ).toBeInTheDocument();
     await waitFor(() => expect(chamadasDe(m, 'cotacao.hoje').length).toBeGreaterThan(antes));
     // Outra cotação é outro lançamento: o id muda.
+    const guarani = screen.getByLabelText('1 real = Gs.');
+    await u.clear(guarani);
+    await u.type(guarani, '1.400');
     await u.click(screen.getByRole('button', { name: 'Gravar a cotação' }));
     await waitFor(() => expect(chamadasDe(m, 'cotacao.gravar')).toHaveLength(2));
-    expect(chamadasDe(m, 'cotacao.gravar')[1]?.parametros?.id).not.toBe(p?.id);
+    const segunda = chamadasDe(m, 'cotacao.gravar')[1]?.parametros;
+    expect(segunda?.id).not.toBe(p?.id);
+    expect(Object.keys(segunda ?? {}).sort()).toEqual(['guaranisPorReal', 'id']);
+    expect(segunda).toMatchObject({ guaranisPorReal: '1400' });
+  });
+
+  it('mudou as duas: grava as duas', async () => {
+    const m = servidor();
+    const u = await abrirACotacao(m);
+    const dolar = await screen.findByLabelText('1 dólar = R$');
+    await u.clear(dolar);
+    await u.type(dolar, '5,85');
+    const guarani = screen.getByLabelText('1 real = Gs.');
+    await u.clear(guarani);
+    await u.type(guarani, '1.360');
+    await u.click(screen.getByRole('button', { name: 'Gravar a cotação' }));
+    await waitFor(() =>
+      expect(ultima(m, 'cotacao.gravar')).toMatchObject({ usd: '5.85', guaranisPorReal: '1360' }),
+    );
+  });
+
+  it('sem mudar nada, não grava e diz o que fazer', async () => {
+    const m = servidor();
+    const u = await abrirACotacao(m);
+    await screen.findByLabelText('1 dólar = R$');
+    await u.click(screen.getByRole('button', { name: 'Gravar a cotação' }));
+    expect(
+      await screen.findByText('Mude o valor do dólar, do guarani ou dos dois.'),
+    ).toBeInTheDocument();
+    expect(chamadasDe(m, 'cotacao.gravar')).toHaveLength(0);
   });
 
   it('valor que não é número não é mandado; a mensagem diz o que fazer', async () => {
@@ -194,7 +224,9 @@ describe('Mudar a cotação', () => {
       }),
     });
     const u = await abrirACotacao(m);
-    await screen.findByLabelText('1 dólar = R$');
+    const dolar = await screen.findByLabelText('1 dólar = R$');
+    await u.clear(dolar);
+    await u.type(dolar, '0,0001');
     await u.click(screen.getByRole('button', { name: 'Gravar a cotação' }));
     expect(
       await screen.findByText('O valor do dólar precisa estar entre R$ 0,01 e R$ 999,99.'),

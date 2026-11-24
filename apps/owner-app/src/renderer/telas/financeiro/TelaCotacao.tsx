@@ -43,8 +43,23 @@ export function TelaCotacao({ ponte }: { ponte: PonteDoCorona }) {
   const [guarani, setGuarani] = useState<string | null>(null);
   const mostradoDolar = dolar ?? vigente.dolar;
   const mostradoGuarani = guarani ?? vigente.guarani;
+  // Ela pode mudar só o Dólar ou só o Guarani (24/11/2026): a moeda que ela não mexeu não é mandada e fica exatamente a que
+  // valia (o campo mostra o valor arredondado, por exemplo "1.117", e mandar isso mudaria a cotação sem ela querer). Sem
+  // cotação nenhuma para seguir, as duas são obrigatórias.
+  const mudouDolar = vigente.dolar === '' || mostradoDolar.trim() !== vigente.dolar;
+  const mudouGuarani = vigente.guarani === '' || mostradoGuarani.trim() !== vigente.guarani;
   const usd = dolarDigitado(mostradoDolar);
   const gs = guaraniDigitado(mostradoGuarani);
+  const dolarRuim = mudouDolar && usd === null;
+  const guaraniRuim = mudouGuarani && gs === null;
+  const nadaMudou = !mudouDolar && !mudouGuarani;
+  const moedas = {
+    ...(mudouDolar && usd !== null ? { usd } : {}),
+    ...(mudouGuarani && gs !== null ? { guaranisPorReal: gs } : {}),
+  };
+  const podeMandar = !nadaMudou && !dolarRuim && !guaraniRuim;
+  const usdMandado = moedas.usd;
+  const gsMandado = moedas.guaranisPorReal;
   const [tentou, setTentou] = useState(false);
   const [previa, setPrevia] = useState<PreviaDaCotacao | null>(null);
   const [gravando, setGravando] = useState(false);
@@ -56,13 +71,17 @@ export function TelaCotacao({ ponte }: { ponte: PonteDoCorona }) {
 
   // A prévia (conversão e comparação com o Banco Central) vem do sistema, sem gravar nada.
   useEffect(() => {
-    if (usd === null || gs === null) {
+    if (!podeMandar) {
       setPrevia(null);
       return;
     }
     let valida = true;
     const espera = setTimeout(() => {
-      void chamar(ponte, 'cotacao.previa', { usd, guaranisPorReal: gs }).then((r) => {
+      const pedido = {
+        ...(usdMandado === undefined ? {} : { usd: usdMandado }),
+        ...(gsMandado === undefined ? {} : { guaranisPorReal: gsMandado }),
+      };
+      void chamar(ponte, 'cotacao.previa', pedido).then((r) => {
         if (valida && r.ok) setPrevia(lerPrevia(r.dados));
       });
     }, 250);
@@ -70,7 +89,7 @@ export function TelaCotacao({ ponte }: { ponte: PonteDoCorona }) {
       valida = false;
       clearTimeout(espera);
     };
-  }, [ponte, usd, gs]);
+  }, [ponte, podeMandar, usdMandado, gsMandado]);
 
   const historico = useBusca(
     () => chamar(ponte, 'cotacao.dia', dia ? { data: dia } : {}),
@@ -80,16 +99,12 @@ export function TelaCotacao({ ponte }: { ponte: PonteDoCorona }) {
 
   async function gravar() {
     setTentou(true);
-    if (trava.current || usd === null || gs === null) return;
+    if (trava.current || !podeMandar) return;
     trava.current = true;
     setGravando(true);
     setErro(null);
     setGravada(null);
-    const r = await chamar(ponte, 'cotacao.gravar', {
-      id: comandoId.current,
-      usd,
-      guaranisPorReal: gs,
-    });
+    const r = await chamar(ponte, 'cotacao.gravar', { id: comandoId.current, ...moedas });
     trava.current = false;
     setGravando(false);
     if (!r.ok) {
@@ -134,7 +149,7 @@ export function TelaCotacao({ ponte }: { ponte: PonteDoCorona }) {
           autoComplete="off"
           value={mostradoDolar}
           onChange={(e) => setDolar(e.target.value)}
-          {...(tentou && usd === null ? { erro: T.invalido } : {})}
+          {...(tentou && dolarRuim ? { erro: T.invalido } : {})}
         />
         <Campo
           id="cotacao-guarani"
@@ -143,7 +158,7 @@ export function TelaCotacao({ ponte }: { ponte: PonteDoCorona }) {
           autoComplete="off"
           value={mostradoGuarani}
           onChange={(e) => setGuarani(e.target.value)}
-          {...(tentou && gs === null ? { erro: T.invalido } : {})}
+          {...(tentou && guaraniRuim ? { erro: T.invalido } : {})}
         />
         {previa?.bancoCentral ? (
           <p className="gestao-texto" aria-live="polite">
@@ -154,6 +169,7 @@ export function TelaCotacao({ ponte }: { ponte: PonteDoCorona }) {
             )}
           </p>
         ) : null}
+        {tentou && nadaMudou && !gravada ? <Aviso tipo="atencao">{T.nadaMudou}</Aviso> : null}
         {aviso ? <Aviso tipo="atencao">{aviso}</Aviso> : null}
         {gravada ? <Aviso tipo="sucesso">{gravada}</Aviso> : null}
         {erro ? <AvisoDeErro erro={erro} /> : null}

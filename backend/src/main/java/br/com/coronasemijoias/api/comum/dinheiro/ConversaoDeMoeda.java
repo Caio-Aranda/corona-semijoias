@@ -111,6 +111,15 @@ public final class ConversaoDeMoeda {
         return BigDecimal.ONE.divide(pygVenda, Dinheiro.ESCALA, ARREDONDAMENTO);
     }
 
+    /**
+     * Guaranis por real com as 8 casas da tabela ({@code 1 ÷ taxa do Guarani}, HALF_UP): o "1 real = Gs. N" exato de uma cotação
+     * do Banco Central, quando a dona muda só o Dólar e o Guarani fica o que valia (24/11/2026).
+     */
+    public static BigDecimal guaranisPorRealComOitoCasas(BigDecimal pygVenda) {
+        Objects.requireNonNull(pygVenda, "pygVenda");
+        return BigDecimal.ONE.divide(pygVenda, ESCALA_DA_TAXA, ARREDONDAMENTO);
+    }
+
     /** Uma taxa digitada com as 8 casas da tabela de cotações (HALF_UP). */
     public static BigDecimal taxaComOitoCasas(BigDecimal taxa) {
         return Objects.requireNonNull(taxa, "taxa").setScale(ESCALA_DA_TAXA, ARREDONDAMENTO);

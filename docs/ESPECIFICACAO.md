@@ -1,6 +1,6 @@
 # Especificação completa: Sistema de Semijoias Consignadas
 
-Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.34, 24/11/2026.
+Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.35, 24/11/2026.
 
 ## 1. Objetivo e contexto
 
@@ -780,6 +780,7 @@ Importação com nome de arquivo inválido, foto duplicada, arquivo corrompido, 
 
 ## 22. Histórico de mudanças
 
+- **v1.35, 24/11/2026:** §7.5: a dona pode mudar só o Dólar ou só o Guarani; a moeda que ela não mexeu fica exatamente a da cotação que valia (ADR-0006, item 15). Respostas da dona às suposições S1 a S8: confirmadas.
 - **v1.34, 24/11/2026:** §13: as conciliações C11 e C12 contam a peça que saiu da maleta em nota de consignado e a que voltou dela (`CONSIGNADO_SAIDA` e `CONSIGNADO_RETORNO`, ADR-0016 item 6), como a C7 já fazia; antes acusavam toda peça com o cliente.
 - **v1.33, 23/11/2026:** §7.5 e §9: a dona pode lançar a cotação do Dólar e do Guarani durante o dia (várias por dia, imutáveis, com origem e momento de início); cada lançamento usa a cotação vigente no momento dele; sem cotação da dona, nada muda (ADR-0006, item 15; plano em `docs/planos/cotacao-da-dona-no-dia.md`).
 - **v1.32, 23/11/2026:** §7.5, Três moedas: o recebimento do representante (avulso e no acerto) pode ser digitado em Dólar ou Guarani; o servidor converte pela cotação e grava em Real; a moeda e o valor digitado ficam só como informação.
