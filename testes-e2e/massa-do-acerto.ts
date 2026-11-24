@@ -32,12 +32,8 @@ export interface MassaDoAcerto {
   pulseira: { id: string; codigo: string };
 }
 
-/** A API só busca cotação na internet; no banco descartável do e2e gravamos uma de hoje (Brasília), com valores fixos. */
-export function gravarCotacaoDeHoje(): void {
-  const sql = `INSERT INTO corona.cotacoes (id, data_cotacao, usd_compra, usd_venda, usd_paridade_compra, usd_paridade_venda,
-    pyg_compra, pyg_venda, pyg_paridade_compra, pyg_paridade_venda, buscada_em, fonte)
-  VALUES (uuidv7(), (now() AT TIME ZONE 'America/Sao_Paulo')::date, 5.00, 5.00, 1, 1, 0.001, 0.001, 1, 1, now(), 'teste')
-  ON CONFLICT ON CONSTRAINT cotacoes_data_unica DO NOTHING;`;
+/** Roda um SQL no banco descartável do e2e (nunca em outro banco). */
+function rodarNoBancoDoTeste(sql: string, oQue: string): void {
   const r = spawnSync(
     'docker',
     [
@@ -58,7 +54,30 @@ export function gravarCotacaoDeHoje(): void {
     ],
     { input: sql, encoding: 'utf8', shell: process.platform === 'win32' },
   );
-  if (r.status !== 0) throw new Error(`Não gravou a cotação do teste: ${r.stderr}`);
+  if (r.status !== 0) throw new Error(`Não gravou ${oQue}: ${r.stderr}`);
+}
+
+/** A API só busca cotação na internet; no banco descartável do e2e gravamos uma de hoje (Brasília), com valores fixos. */
+export function gravarCotacaoDeHoje(): void {
+  rodarNoBancoDoTeste(
+    `INSERT INTO corona.cotacoes (id, data_cotacao, usd_compra, usd_venda, usd_paridade_compra, usd_paridade_venda,
+    pyg_compra, pyg_venda, pyg_paridade_compra, pyg_paridade_venda, buscada_em, fonte)
+  VALUES (uuidv7(), (now() AT TIME ZONE 'America/Sao_Paulo')::date, 5.00, 5.00, 1, 1, 0.001, 0.001, 1, 1, now(), 'teste')
+  ON CONFLICT ON CONSTRAINT cotacoes_data_unica DO NOTHING;`,
+    'a cotação do teste',
+  );
+}
+
+/**
+ * Desde o consignado ao cliente (ADR-0016, item 15; V049) o acerto antigo com a dona fica escondido por padrão e a rota
+ * "acertos/lista" volta ao início. Este cenário testa justamente esse acerto, então o liga no banco descartável, como o
+ * `ConfiguracaoDasTelasETest` da API faz.
+ */
+export function mostrarOAcertoAntigo(): void {
+  rodarNoBancoDoTeste(
+    `UPDATE corona.configuracoes SET valor_inteiro = 1 WHERE chave = 'acerto_do_vendedor_visivel';`,
+    'a configuração do acerto antigo',
+  );
 }
 
 interface Entrada {
@@ -92,6 +111,7 @@ export async function tokenDaDonaPronta(): Promise<string> {
 /** Cria tudo: comissão, vendedor, peças, maleta enviada e conferida, e a venda de 2 colares. */
 export async function criarMassaDoAcerto(token: string): Promise<MassaDoAcerto> {
   gravarCotacaoDeHoje();
+  mostrarOAcertoAntigo();
   await chamarApi('PUT', '/api/dona/configuracoes/comissao', token, {
     metaGuarani: MASSA.metaGuarani,
     percentualAbaixoDaMeta: MASSA.percentualAbaixoDaMeta,
