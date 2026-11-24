@@ -232,6 +232,8 @@ export const ES_TEXTOS_DE_ACERTOS: NoMesmoFormato<typeof PT_TEXTOS_DE_ACERTOS> =
     cotacao: {
       frase: (data: string) =>
         `Valores en Dólar y Guaraní por la cotización del ${data}. Vale el valor en reales.`,
+      fraseDaLoja: (data: string, hora: string) =>
+        `Valores en Dólar y Guaraní por la cotización de la tienda del ${data} a las ${hora}. Vale el valor en reales.`,
       sem: 'Sin cotización: los valores aparecen solo en reales.',
     },
   },

@@ -44,7 +44,7 @@ public class NotaDeRemessaController {
     }
 
     /** A cotação do dia do envio; {@code totalEmDolar} e {@code totalEmGuarani} convertem o total da nota. */
-    public record CotacaoDaNota(LocalDate data, BigDecimal dolar, BigDecimal guarani, BigDecimal totalEmDolar,
+    public record CotacaoDaNota(String data, BigDecimal dolar, BigDecimal guarani, BigDecimal totalEmDolar,
             BigDecimal totalEmGuarani) {
     }
 
@@ -109,7 +109,7 @@ public class NotaDeRemessaController {
     }
 
     private static CotacaoDaNota daNota(Cotacao c, BigDecimal total) {
-        return new CotacaoDaNota(c.dataCotacao(), c.taxas().usdVenda(), c.taxas().pygVenda(), c.emDolar(total),
+        return new CotacaoDaNota(CotacaoVigente.dataParaMostrar(c), c.taxas().usdVenda(), c.taxas().pygVenda(), c.emDolar(total),
                 c.emGuarani(total));
     }
 }

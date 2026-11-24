@@ -125,10 +125,15 @@ export function lerReaisDigitados(digitado: string): string | null {
   return `${inteiro}.${(m[2] ?? '').padEnd(2, '0') || '00'}`;
 }
 
-/** "2026-11-06" → "06/11/2026". */
+/**
+ * "2026-11-06" → "06/11/2026". A data da cotação da dona vem com a hora em que passou a valer (Brasília): "2026-11-23T10:15" →
+ * "23/11/2026 10:15".
+ */
 export function dataParaTela(iso: string): string {
-  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
-  return m ? `${m[3]}/${m[2]}/${m[1]}` : iso;
+  const m = /^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}:\d{2})(?!:))?/.exec(iso);
+  if (!m) return iso;
+  const dia = `${m[3]}/${m[2]}/${m[1]}`;
+  return m[4] ? `${dia} ${m[4]}` : dia;
 }
 
 // --- recebimento do representante digitado em Dólar ou Guarani (23/11/2026; ADR-0006, adendo do item 13) ---

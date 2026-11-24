@@ -239,6 +239,8 @@ export const PT_TEXTOS_DE_ACERTOS = {
     cotacao: {
       frase: (data: string) =>
         `Valores em Dólar e Guarani pela cotação de ${data}. Vale o valor em reais.`,
+      fraseDaLoja: (data: string, hora: string) =>
+        `Valores em Dólar e Guarani pela cotação da loja de ${data} às ${hora}. Vale o valor em reais.`,
       sem: 'Sem cotação: os valores aparecem só em reais.',
     },
   },

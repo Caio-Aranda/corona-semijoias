@@ -30,6 +30,13 @@ public class CotacaoVigente {
      */
     public static final String SQL_ORDEM_DA_VIGENTE = "c.vigente_desde DESC, c.id DESC";
 
+    /**
+     * A coluna "data da cotação" dos relatórios (alias {@code ct}, a tabela de cotações): o dia ("2026-11-23") quando é a do Banco
+     * Central, e o dia com a hora em que passou a valer ("2026-11-23T10:15", Brasília) quando é a da dona (ADR-0006, item 15).
+     */
+    public static final String SQL_DATA_DA_COTACAO = "CASE WHEN ct.origem = 'DONA' THEN to_char(ct.vigente_desde AT TIME ZONE "
+            + "'America/Sao_Paulo', 'YYYY-MM-DD\"T\"HH24:MI') ELSE ct.data_cotacao::text END AS data_cotacao";
+
     private final RepositorioDeCotacoes repositorio;
 
     public CotacaoVigente(RepositorioDeCotacoes repositorio) {
@@ -67,6 +74,14 @@ public class CotacaoVigente {
      */
     public static String fimDoDiaSql(String dataSql) {
         return "((" + dataSql + " + 1)::timestamp AT TIME ZONE 'America/Sao_Paulo' - interval '1 microsecond')";
+    }
+
+    /** "2026-11-06" (Banco Central) ou "2026-11-23T10:15" (da dona: o dia com a hora em que passou a valer, em Brasília). */
+    public static String dataParaMostrar(Cotacao c) {
+        if (!c.daDona()) {
+            return c.dataCotacao().toString();
+        }
+        return c.vigenteDesde().atZone(BRASILIA).toLocalDateTime().withSecond(0).withNano(0).toString();
     }
 
     /** O dia (data de calendário) de um instante em Brasília. */

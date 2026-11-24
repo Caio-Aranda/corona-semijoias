@@ -520,4 +520,54 @@ describe('Fechamento da maleta: Dólar e Guarani nos totais de dinheiro (9.8)', 
       if (grade.numericas[i]) expect(12 * 5 * 0.55 <= c.largura - 4 + 0.001).toBe(true);
     });
   });
+  it('a data da cotação sai com a hora quando a cotação da linha é a da dona (Excel, CSV e PDF usam a mesma grade)', () => {
+    const grade = montarGrade({
+      loja: 'Corona Semijoias',
+      titulo: 'Vendas',
+      filtros: [],
+      geradoEm: '23/11/2026 às 12:00',
+      geradoPor: 'Maria',
+      linhaDaCotacao: null,
+      totaisDeValor: {},
+      cotacao: { dolar: '5.80000000', guarani: '0.00074074' },
+      dataDaCotacao: '2026-11-23',
+      colunas: [
+        { chave: 'nome', titulo: 'Venda', tipo: 'texto' },
+        {
+          chave: 'vendido',
+          titulo: 'Vendido',
+          tipo: 'dinheiro',
+          convertido: {
+            dolar: 'vendidoEmDolar',
+            guarani: 'vendidoEmGuarani',
+            data: 'dataDaCotacao',
+          },
+        },
+        { chave: 'dataDaCotacao', titulo: 'Cotação do dia', tipo: 'data' },
+      ],
+      linhas: [
+        {
+          nome: 'Das 09:30',
+          vendido: '100.00',
+          vendidoEmDolar: '20.00',
+          vendidoEmGuarani: '100000',
+          dataDaCotacao: '2026-11-23',
+        },
+        {
+          nome: 'Das 11:30',
+          vendido: '100.00',
+          vendidoEmDolar: '17.24',
+          vendidoEmGuarani: '135000',
+          dataDaCotacao: '2026-11-23T10:00',
+        },
+      ],
+      totais: [],
+    });
+    expect(grade.titulos.at(-1)).toBe('Data da cotação');
+    expect(grade.linhas.map((l) => l.at(-1)!.v)).toEqual(['23/11/2026', '23/11/2026 10:00']);
+    expect(grade.linhas.map((l) => l.slice(1, 4).map((c) => c.v))).toEqual([
+      ['100.00', '20.00', '100000'],
+      ['100.00', '17.24', '135000'],
+    ]);
+  });
 });

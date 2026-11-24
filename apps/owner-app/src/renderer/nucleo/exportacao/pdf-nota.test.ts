@@ -86,6 +86,19 @@ describe('PDF da nota de remessa', () => {
     expect(pdf).toContain('Erro de representante');
   });
 
+  it('a cotação da dona no envio sai como "Cotação da loja ... às ..." com a hora em que passou a valer', () => {
+    const pdf = texto(
+      gerarPdfDaNota(
+        nota(2, {
+          cotacao: { data: '2026-11-23T10:15', totalEmDolar: '36.35', totalEmGuarani: '224000.00' },
+        }),
+      ),
+    );
+    // No PDF os parênteses saem com barra: "\(...\)".
+    expect(pdf).toContain('Cotação da loja do envio \\(23/11/2026 às 10:15\\).');
+    expect(pdf).not.toContain('Banco Central');
+  });
+
   it('sem cotação do dia do envio não escreve Dólar nem Guarani', () => {
     const pdf = texto(gerarPdfDaNota(nota(2, { cotacao: null })));
     expect(pdf).not.toContain('US$');

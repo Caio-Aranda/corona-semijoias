@@ -80,7 +80,7 @@ public class ConsultasDeAcertos {
      * O que o fechamento gravou (acerto ACERTADO), tudo em Real; a cotação só para mostrar Dólar e Guarani. A soma da meta em
      * Guarani é a única conversão gravada. Não traz quem fechou nem o resumo das decisões.
      */
-    public record Fechamento(Instant fechadoEm, UUID cotacaoId, LocalDate cotacaoData, BigDecimal usdVenda, BigDecimal pygVenda,
+    public record Fechamento(Instant fechadoEm, UUID cotacaoId, String cotacaoData, BigDecimal usdVenda, BigDecimal pygVenda,
             int metaGuarani, BigDecimal percentualComissao, long vendidoParaMetaGuarani, BigDecimal vendidoBruto, BigDecimal descontos,
             BigDecimal devolvido, BigDecimal vendidoLiquido, BigDecimal comissao, BigDecimal faltasCobradas, BigDecimal liquido,
             BigDecimal recebidoNoAcerto, BigDecimal ficouDevendo, BigDecimal pagoAoVendedor, BigDecimal creditoUsado,
@@ -209,14 +209,14 @@ public class ConsultasDeAcertos {
     /** O fechamento gravado, ou nulo se o acerto não está ACERTADO. */
     public Fechamento fechamento(UUID acerto) {
         return jdbc.query("""
-                SELECT a.fechado_em, a.cotacao_id, c.data_cotacao, c.usd_venda, c.pyg_venda, a.meta_guarani, a.percentual_comissao,
+                SELECT a.fechado_em, a.cotacao_id, CASE WHEN c.origem = 'DONA' THEN to_char(c.vigente_desde AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM-DD"T"HH24:MI') ELSE c.data_cotacao::text END, c.usd_venda, c.pyg_venda, a.meta_guarani, a.percentual_comissao,
                        a.vendido_para_meta_guarani, a.vendido_bruto, a.descontos, a.devolvido, a.vendido_liquido, a.comissao,
                        a.faltas_cobradas, a.liquido, a.recebido_no_acerto, a.ficou_devendo, a.pago_ao_vendedor, a.credito_usado
                   FROM corona.acertos a JOIN corona.cotacoes c ON c.id = a.cotacao_id WHERE a.id = ? AND a.status = 'ACERTADO'""", rs -> {
                     if (!rs.next()) {
                         return null;
                     }
-                    return new Fechamento(instante(rs.getTimestamp(1)), rs.getObject(2, UUID.class), rs.getObject(3, LocalDate.class),
+                    return new Fechamento(instante(rs.getTimestamp(1)), rs.getObject(2, UUID.class), rs.getString(3),
                             rs.getBigDecimal(4), rs.getBigDecimal(5), rs.getInt(6), rs.getBigDecimal(7), rs.getLong(8), rs.getBigDecimal(9),
                             rs.getBigDecimal(10), rs.getBigDecimal(11), rs.getBigDecimal(12), rs.getBigDecimal(13), rs.getBigDecimal(14),
                             rs.getBigDecimal(15), rs.getBigDecimal(16), rs.getBigDecimal(17), rs.getBigDecimal(18), rs.getBigDecimal(19),

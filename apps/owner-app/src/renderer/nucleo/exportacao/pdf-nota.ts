@@ -4,14 +4,9 @@
  * da cotação e as linhas de assinatura ficam só na última. Sem foto (decisão da tarefa 3.7). Os valores
  * vêm prontos do servidor: nada de dinheiro é calculado aqui.
  */
-import {
-  dataParaTela,
-  formatarDolar,
-  formatarGuarani,
-  formatarReais,
-  centavosDeTexto,
-} from '../moedas';
+import { formatarDolar, formatarGuarani, formatarReais, centavosDeTexto } from '../moedas';
 import { TEXTOS_DE_MALETAS } from '../../textos-maletas';
+import { dataEHoraDaCotacao } from '../cotacao-da-loja';
 import { dataEHoraParaTela } from './grade';
 import { fundoCinza, linhasDaTabela, montarArquivoPdf, paraPdf } from './pdf';
 import { TEXTOS_SOLTOS as SOLTOS } from '../../textos-soltos';
@@ -228,7 +223,8 @@ export function gerarPdfDaNota(nota: NotaParaPdf): Uint8Array {
         ].filter(Boolean);
         if (partes.length > 0) texto(MARGEM, y, partes.join('   '), false, 10);
         y -= 13;
-        texto(MARGEM, y, T.cotacao(dataParaTela(nota.cotacao.data)), false, 8);
+        const { dia, hora } = dataEHoraDaCotacao(nota.cotacao.data);
+        texto(MARGEM, y, hora ? T.cotacaoDaLoja(dia, hora) : T.cotacao(dia), false, 8);
       }
       // Assinaturas: dona e vendedor.
       y -= 70;

@@ -47,13 +47,13 @@ public class ConsultasDeMaleta {
     public record LinhaDeRemessa(UUID id, String numero, UUID vendedorId, String vendedor, UUID semanaId, int semana,
             UUID pracaId, String praca, String tipo, String status, boolean cancelada, String motivoDoCancelamento,
             Instant enviadaEm, int pecas, BigDecimal valorEmReais, BigDecimal valorEmDolar, BigDecimal valorEmGuarani,
-            LocalDate dataDaCotacao) {
+            String dataDaCotacao) {
     }
 
     public record LinhaDeSaldo(UUID remessaId, String numero, UUID vendedorId, String vendedor, int semana, String praca,
             String tipo, String status, Instant enviadaEm, UUID produtoId, String nome, String referencia, String codigo,
             String fotoPrincipalHash, int enviada, int devolvida, int saldo, BigDecimal precoCongelado,
-            BigDecimal valorEmReais, BigDecimal valorEmDolar, BigDecimal valorEmGuarani, LocalDate dataDaCotacao) {
+            BigDecimal valorEmReais, BigDecimal valorEmDolar, BigDecimal valorEmGuarani, String dataDaCotacao) {
     }
 
     public record LinhaDeVendedor(UUID vendedorId, String vendedor, long maletasEmAberto, long maletasAtrasadas,
@@ -64,7 +64,7 @@ public class ConsultasDeMaleta {
     public record LinhaDeMaletaEmAberto(UUID remessaId, String numero, UUID vendedorId, String vendedor, int semana,
             String praca, String tipo, String status, Instant enviadaEm, int diasDesdeOEnvio, boolean atrasada,
             int pecasEmAberto, BigDecimal valorEmReais, BigDecimal valorEmDolar, BigDecimal valorEmGuarani,
-            LocalDate dataDaCotacao) {
+            String dataDaCotacao) {
     }
 
     private static final String DE_REMESSA = "corona.remessas r JOIN corona.vendedores v ON v.id = r.vendedor_id "
@@ -199,7 +199,7 @@ public class ConsultasDeMaleta {
         Consulta c = new Consulta("r.id, " + NUMERO + " AS numero, r.vendedor_id, v.nome AS vendedor, r.semana_id, "
                 + "s.numero AS semana, r.praca_id, pr.nome AS praca, r.tipo, r.status, r.motivo_cancelamento, "
                 + "r.enviada_em, r.total_pecas AS pecas, r.total_valor AS valor, " + d + " AS dolar, " + g
-                + " AS guarani, ct.data_cotacao", DE_REMESSA,
+                + " AS guarani, " + CotacaoVigente.SQL_DATA_DA_COTACAO + "", DE_REMESSA,
                 "s.numero DESC, lower(v.nome), r.enviada_em DESC NULLS LAST, r.id", totais);
         daRemessa(c, f, true);
         comAPeca(c, f);
@@ -221,7 +221,7 @@ public class ConsultasDeMaleta {
                 rs.getObject("praca_id", UUID.class), rs.getString("praca"), rs.getString("tipo"), rs.getString("status"),
                 "CANCELADA".equals(rs.getString("status")), rs.getString("motivo_cancelamento"), instante(rs, "enviada_em"),
                 rs.getInt("pecas"), MotorDeRelatorio.reais(rs, "valor"), dolarDe(rs, "dolar"), guaraniDe(rs, "guarani"),
-                rs.getObject("data_cotacao", LocalDate.class)));
+                rs.getString("data_cotacao")));
     }
 
     // --- (b) saldo atual por maleta, peça a peça ---
@@ -241,7 +241,7 @@ public class ConsultasDeMaleta {
                 + "s.numero AS semana, pr.nome AS praca, r.tipo, r.status, r.enviada_em, p.id AS produto_id, p.nome, "
                 + "p.referencia, p.foto_principal_hash, " + CODIGO + " AS codigo, i.qtd_enviada AS enviada, "
                 + "coalesce(m.devolvida, 0) AS devolvida, " + SALDO + " AS saldo, i.preco_remessa, " + valor + " AS valor, "
-                + dolar(valor) + " AS dolar, " + guarani(valor) + " AS guarani, ct.data_cotacao",
+                + dolar(valor) + " AS dolar, " + guarani(valor) + " AS guarani, " + CotacaoVigente.SQL_DATA_DA_COTACAO + "",
                 "corona.itens_remessa i JOIN corona.remessas r ON r.id = i.remessa_id JOIN corona.vendedores v "
                         + "ON v.id = r.vendedor_id JOIN corona.semanas s ON s.id = r.semana_id LEFT JOIN corona.pracas pr "
                         + "ON pr.id = r.praca_id JOIN corona.produtos p ON p.id = i.produto_id " + MOVIMENTOS + " "
@@ -269,7 +269,7 @@ public class ConsultasDeMaleta {
                 rs.getString("nome"), rs.getString("referencia"), rs.getString("codigo"),
                 rs.getString("foto_principal_hash"), rs.getInt("enviada"), rs.getInt("devolvida"), rs.getInt("saldo"),
                 MotorDeRelatorio.reais(rs, "preco_remessa"), MotorDeRelatorio.reais(rs, "valor"), dolarDe(rs, "dolar"),
-                guaraniDe(rs, "guarani"), rs.getObject("data_cotacao", LocalDate.class)));
+                guaraniDe(rs, "guarani"), rs.getString("data_cotacao")));
     }
 
     // --- o que está em aberto, por maleta (base de (c) e (d)) ---
@@ -290,12 +290,12 @@ public class ConsultasDeMaleta {
         return "SELECT r.id AS remessa_id, " + NUMERO + " AS numero, r.vendedor_id, v.nome AS vendedor, "
                 + "v.limite_consignacao, s.numero AS semana, pr.nome AS praca, r.tipo, r.status, r.enviada_em, "
                 + dias + " AS dias, " + dias + " > :diasDeAtraso AS atrasada, sum(" + SALDO + ") AS pecas, " + valor
-                + " AS valor, " + dolar(valor) + " AS dolar, " + guarani(valor) + " AS guarani, ct.data_cotacao "
+                + " AS valor, " + dolar(valor) + " AS dolar, " + guarani(valor) + " AS guarani, " + CotacaoVigente.SQL_DATA_DA_COTACAO + " "
                 + "FROM corona.itens_remessa i JOIN corona.remessas r ON r.id = i.remessa_id "
                 + "JOIN corona.vendedores v ON v.id = r.vendedor_id JOIN corona.semanas s ON s.id = r.semana_id "
                 + "LEFT JOIN corona.pracas pr ON pr.id = r.praca_id JOIN corona.produtos p ON p.id = i.produto_id "
                 + MOVIMENTOS + " " + COTACAO_DO_ENVIO + dentro.clausulaWhere() + " GROUP BY r.id, s.numero, v.id, pr.nome, "
-                + "ct.data_cotacao, ct.usd_venda, ct.pyg_venda";
+                + "ct.data_cotacao, ct.origem, ct.vigente_desde, ct.usd_venda, ct.pyg_venda";
     }
 
     private static int diasDeAtraso(Integer pedido) {
@@ -331,7 +331,7 @@ public class ConsultasDeMaleta {
                 rs.getString("vendedor"), rs.getInt("semana"), rs.getString("praca"), rs.getString("tipo"),
                 rs.getString("status"), instante(rs, "enviada_em"), rs.getInt("dias"), rs.getBoolean("atrasada"),
                 rs.getInt("pecas"), MotorDeRelatorio.reais(rs, "valor"), dolarDe(rs, "dolar"), guaraniDe(rs, "guarani"),
-                rs.getObject("data_cotacao", LocalDate.class)));
+                rs.getString("data_cotacao")));
     }
 
     // --- (c) mercadoria em maletas por vendedor ---

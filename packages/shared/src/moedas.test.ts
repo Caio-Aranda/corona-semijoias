@@ -128,6 +128,8 @@ describe('formatos da parte 8 do glossário', () => {
 
   it('data dd/mm/aaaa', () => {
     expect(dataParaTela('2026-11-06')).toBe('06/11/2026');
+    // A cotação da dona vem com a hora em que passou a valer (Brasília).
+    expect(dataParaTela('2026-11-23T10:15')).toBe('23/11/2026 10:15');
   });
 });
 

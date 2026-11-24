@@ -1,4 +1,10 @@
-import { formatarGuarani, formatarReais, taxaDeTexto, dividirArredondando } from './moedas';
+import {
+  dataParaTela,
+  dividirArredondando,
+  formatarGuarani,
+  formatarReais,
+  taxaDeTexto,
+} from './moedas';
 
 /**
  * A dona muda a cotação do Dólar e do Guarani durante o dia (ADR-0006, item 15). A tela só digita e mostra: o servidor valida os
@@ -129,4 +135,10 @@ export function guaranisDaLinha(l: LinhaDoHistorico): string {
 export function reaisDeTaxa(taxa: string): string {
   const t = taxaDeTexto(taxa);
   return t === null ? '' : formatarReais(dividirArredondando(t, 10n ** 6n)).replace('R$ ', '');
+}
+
+/** A data da cotação como o servidor manda: "2026-11-06" (Banco Central) ou "2026-11-23T10:15" (da dona, com a hora em Brasília). */
+export function dataEHoraDaCotacao(iso: string): { dia: string; hora: string | null } {
+  const hora = /T(\d{2}:\d{2})$/.exec(iso)?.[1] ?? null;
+  return { dia: dataParaTela(iso.slice(0, 10)), hora };
 }

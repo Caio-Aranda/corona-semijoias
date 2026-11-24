@@ -446,6 +446,9 @@ class RecebimentoEmOutraMoedaTest extends ApoioDoFechamento {
         soEmReal.put("pagamento", emReal);
         fechar(acerto, soEmReal).andExpect(status().isCreated());
         assertThat(jdbc.queryForObject("SELECT cotacao_id FROM corona.acertos WHERE id = ?", UUID.class, acerto)).isEqualTo(maisNova);
+        // A ficha do acerto fechado mostra a cotação da dona com a hora em que passou a valer (para a linha "Cotação da loja ... às ...").
+        JsonNode fichaFechada = corpoDe(ler(ACERTOS_DA_DONA + "/" + acerto, dona()).andExpect(status().isOk()));
+        assertThat(fichaFechada.get("fechamento").get("cotacaoData").asString()).matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}");
     }
 
     // --- relatório "Recebimentos por forma" ---

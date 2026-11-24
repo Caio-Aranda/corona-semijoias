@@ -52,7 +52,7 @@ public class ConsultasFinanceiras {
     }
 
     public record LinhaDeAcerto(UUID id, UUID vendedorId, String vendedor, UUID semanaId, int semana, Instant fechadoEm,
-            BigDecimal percentual, LocalDate dataDaCotacao, BigDecimal vendidoBruto, BigDecimal vendidoBrutoEmDolar,
+            BigDecimal percentual, String dataDaCotacao, BigDecimal vendidoBruto, BigDecimal vendidoBrutoEmDolar,
             BigDecimal vendidoBrutoEmGuarani, BigDecimal descontos, BigDecimal descontosEmDolar,
             BigDecimal descontosEmGuarani, BigDecimal devolvido, BigDecimal devolvidoEmDolar, BigDecimal devolvidoEmGuarani,
             BigDecimal comissao, BigDecimal comissaoEmDolar, BigDecimal comissaoEmGuarani, BigDecimal faltasCobradas,
@@ -64,17 +64,17 @@ public class ConsultasFinanceiras {
 
     public record LinhaDePendencia(UUID id, UUID acertoId, UUID vendedorId, String vendedor, int semana, String tipo,
             String situacao, String produto, Integer quantidade, BigDecimal valorEmReais, BigDecimal valorEmDolar,
-            BigDecimal valorEmGuarani, LocalDate dataDaCotacao) {
+            BigDecimal valorEmGuarani, String dataDaCotacao) {
     }
 
     public record LinhaDeEsperadoEContado(UUID id, UUID acertoId, UUID vendedorId, String vendedor, int semana,
             UUID produtoId, String produto, String referencia, int esperado, int contadoBoa, int contadoDefeito, int falta,
             int defeitoAprovado, BigDecimal valorDaFaltaEmReais, BigDecimal valorDaFaltaEmDolar,
-            BigDecimal valorDaFaltaEmGuarani, LocalDate dataDaCotacao) {
+            BigDecimal valorDaFaltaEmGuarani, String dataDaCotacao) {
     }
 
     public record LinhaDeConta(UUID id, String devedorTipo, String parte, UUID vendedorId, String vendedor, int parcela,
-            int totalParcelas, LocalDate vencimento, String situacao, int diasDeAtraso, LocalDate dataDaCotacao,
+            int totalParcelas, LocalDate vencimento, String situacao, int diasDeAtraso, String dataDaCotacao,
             BigDecimal valorEmReais, BigDecimal valorEmDolar, BigDecimal valorEmGuarani, BigDecimal pagoEmReais,
             BigDecimal pagoEmDolar, BigDecimal pagoEmGuarani, BigDecimal canceladoEmReais, BigDecimal canceladoEmDolar,
             BigDecimal canceladoEmGuarani, BigDecimal emAbertoEmReais, BigDecimal emAbertoEmDolar,
@@ -83,18 +83,18 @@ public class ConsultasFinanceiras {
 
     public record LinhaDeCaixa(UUID id, LocalDate data, String tipo, String forma, String categoria, String origem,
             String descricao, boolean estorno, BigDecimal valorEmReais, BigDecimal valorEmDolar, BigDecimal valorEmGuarani,
-            LocalDate dataDaCotacao) {
+            String dataDaCotacao) {
     }
 
     public record LinhaDeRecebimento(UUID id, UUID vendedorId, String vendedor, String forma, String momento,
             String aplicadoEm, Instant recebidoEm, boolean estorno, String motivo, BigDecimal valorEmReais,
-            BigDecimal valorEmDolar, BigDecimal valorEmGuarani, LocalDate dataDaCotacao, String moeda,
+            BigDecimal valorEmDolar, BigDecimal valorEmGuarani, String dataDaCotacao, String moeda,
             BigDecimal valorNaMoeda) {
     }
 
     public record LinhaDeComissao(UUID id, UUID vendedorId, String vendedor, UUID semanaId, int semana, Instant fechadoEm,
             Long vendidoEmGuarani, Integer metaEmGuarani, BigDecimal percentual, String situacao, BigDecimal base,
-            BigDecimal comissaoEmReais, BigDecimal comissaoEmDolar, BigDecimal comissaoEmGuarani, LocalDate dataDaCotacao) {
+            BigDecimal comissaoEmReais, BigDecimal comissaoEmDolar, BigDecimal comissaoEmGuarani, String dataDaCotacao) {
     }
 
     // --- pedaços de SQL ---
@@ -103,7 +103,7 @@ public class ConsultasFinanceiras {
 
     /** A cotação vigente no momento (timestamptz) do lançamento (ADR-0006, item 15). */
     private static String cotacaoNoMomento(String momento) {
-        return CotacaoVigente.joinDoMomento(momento, "c.data_cotacao, c.usd_venda, c.pyg_venda");
+        return CotacaoVigente.joinDoMomento(momento, "c.data_cotacao, c.origem, c.vigente_desde, c.usd_venda, c.pyg_venda");
     }
 
     private static final String MOMENTO_DE_CRIACAO = "cr.created_at";
@@ -203,7 +203,7 @@ public class ConsultasFinanceiras {
                 soma("recebido", "Recebido no acerto", TODOS, "a.recebido_no_acerto"),
                 soma("devendo", "Ficou devendo", TODOS, "a.ficou_devendo"));
         Consulta c = new Consulta("a.id, a.vendedor_id, v.nome AS vendedor, a.semana_id, s.numero AS semana, a.fechado_em, "
-                + "a.percentual_comissao, ct.data_cotacao, " + colunasEmMoedas("a.vendido_bruto", "vendido_bruto") + ", "
+                + "a.percentual_comissao, " + CotacaoVigente.SQL_DATA_DA_COTACAO + ", " + colunasEmMoedas("a.vendido_bruto", "vendido_bruto") + ", "
                 + colunasEmMoedas("a.descontos", "descontos") + ", " + colunasEmMoedas("a.devolvido", "devolvido") + ", "
                 + colunasEmMoedas("a.comissao", "comissao") + ", " + colunasEmMoedas("a.faltas_cobradas", "faltas") + ", "
                 + colunasEmMoedas("a.liquido", "liquido") + ", " + colunasEmMoedas("a.recebido_no_acerto", "recebido")
@@ -218,7 +218,7 @@ public class ConsultasFinanceiras {
         return executar(c, f, (rs, n) -> new LinhaDeAcerto(rs.getObject("id", UUID.class),
                 rs.getObject("vendedor_id", UUID.class), rs.getString("vendedor"), rs.getObject("semana_id", UUID.class),
                 rs.getInt("semana"), instante(rs, "fechado_em"), rs.getBigDecimal("percentual_comissao"),
-                rs.getObject("data_cotacao", LocalDate.class), reais(rs, "vendido_bruto"), rs.getBigDecimal("vendido_bruto_d"),
+                rs.getString("data_cotacao"), reais(rs, "vendido_bruto"), rs.getBigDecimal("vendido_bruto_d"),
                 rs.getBigDecimal("vendido_bruto_g"), reais(rs, "descontos"), rs.getBigDecimal("descontos_d"),
                 rs.getBigDecimal("descontos_g"), reais(rs, "devolvido"), rs.getBigDecimal("devolvido_d"),
                 rs.getBigDecimal("devolvido_g"), reais(rs, "comissao"), rs.getBigDecimal("comissao_d"),
@@ -242,7 +242,7 @@ public class ConsultasFinanceiras {
                 soma("encontradas", "Peças encontradas", "p.status = 'ENCONTRADA'", valor));
         Consulta c = new Consulta("p.id, p.acerto_id, p.vendedor_id, v.nome AS vendedor, s.numero AS semana, p.tipo, "
                 + "p.status, pr.nome AS produto, p.quantidade, p.valor, " + dolar(valor) + " AS dolar, " + guarani(valor)
-                + " AS guarani, ct.data_cotacao",
+                + " AS guarani, " + CotacaoVigente.SQL_DATA_DA_COTACAO + "",
                 "corona.pendencias_acerto p JOIN corona.acertos a ON a.id = p.acerto_id "
                         + "JOIN corona.vendedores v ON v.id = p.vendedor_id JOIN corona.semanas s ON s.id = a.semana_id "
                         + "LEFT JOIN corona.produtos pr ON pr.id = p.produto_id " + COTACAO_GRAVADA,
@@ -269,7 +269,7 @@ public class ConsultasFinanceiras {
                 rs.getObject("acerto_id", UUID.class), rs.getObject("vendedor_id", UUID.class), rs.getString("vendedor"),
                 rs.getInt("semana"), rs.getString("tipo"), rs.getString("status"), rs.getString("produto"),
                 (Integer) rs.getObject("quantidade"), MotorDeRelatorio.reais(rs, "valor"), rs.getBigDecimal("dolar"),
-                rs.getBigDecimal("guarani"), rs.getObject("data_cotacao", LocalDate.class)));
+                rs.getBigDecimal("guarani"), rs.getString("data_cotacao")));
     }
 
     // --- 3. esperado x contado ---
@@ -285,7 +285,7 @@ public class ConsultasFinanceiras {
         Consulta c = new Consulta("i.id, i.acerto_id, a.vendedor_id, v.nome AS vendedor, s.numero AS semana, i.produto_id, "
                 + "p.nome AS produto, p.referencia, i.esperado, i.contado_boa, i.contado_defeito, i.falta, "
                 + "i.defeito_aprovado, " + valorFalta + " AS valor_falta, " + dolar(valorFalta) + " AS dolar, "
-                + guarani(valorFalta) + " AS guarani, ct.data_cotacao",
+                + guarani(valorFalta) + " AS guarani, " + CotacaoVigente.SQL_DATA_DA_COTACAO + "",
                 "corona.itens_acerto i JOIN corona.acertos a ON a.id = i.acerto_id "
                         + "JOIN corona.vendedores v ON v.id = a.vendedor_id JOIN corona.semanas s ON s.id = a.semana_id "
                         + "JOIN corona.produtos p ON p.id = i.produto_id " + COTACAO_GRAVADA,
@@ -302,7 +302,7 @@ public class ConsultasFinanceiras {
                 rs.getInt("semana"), rs.getObject("produto_id", UUID.class), rs.getString("produto"),
                 rs.getString("referencia"), rs.getInt("esperado"), rs.getInt("contado_boa"), rs.getInt("contado_defeito"),
                 rs.getInt("falta"), rs.getInt("defeito_aprovado"), MotorDeRelatorio.reais(rs, "valor_falta"),
-                rs.getBigDecimal("dolar"), rs.getBigDecimal("guarani"), rs.getObject("data_cotacao", LocalDate.class)));
+                rs.getBigDecimal("dolar"), rs.getBigDecimal("guarani"), rs.getString("data_cotacao")));
     }
 
     // --- 4 e 5. contas a receber e inadimplência ---
@@ -332,7 +332,7 @@ public class ConsultasFinanceiras {
                         soma("vencido", "Vencido", NAO_PAGA + " AND cr.vencimento < :hoje", EM_ABERTO));
         Consulta c = new Consulta("cr.id, cr.devedor_tipo, coalesce(cl.nome, vm.nome) AS parte, "
                 + "coalesce(cr.vendedor_id, vd.vendedor_id) AS vendedor_id, v.nome AS vendedor, cr.parcela, "
-                + "cr.total_parcelas, cr.vencimento, cr.status, ct.data_cotacao, (:hoje - cr.vencimento) AS atraso, "
+                + "cr.total_parcelas, cr.vencimento, cr.status, " + CotacaoVigente.SQL_DATA_DA_COTACAO + ", (:hoje - cr.vencimento) AS atraso, "
                 + colunasEmMoedas("cr.valor", "valor") + ", " + colunasEmMoedas("cr.valor_pago", "pago") + ", "
                 + colunasEmMoedas("cr.valor_cancelado", "cancelado") + ", " + colunasEmMoedas(EM_ABERTO, "em_aberto"),
                 DE_CONTA_A_RECEBER + " LEFT JOIN corona.vendedores vm ON vm.id = cr.vendedor_id",
@@ -367,7 +367,7 @@ public class ConsultasFinanceiras {
                     rs.getObject("vendedor_id", UUID.class), rs.getString("vendedor"), rs.getInt("parcela"),
                     rs.getInt("total_parcelas"), rs.getObject("vencimento", LocalDate.class),
                     aberta && atraso > 0 ? "VENCIDA" : status, aberta ? Math.max(atraso, 0) : 0,
-                    rs.getObject("data_cotacao", LocalDate.class), reais(rs, "valor"), rs.getBigDecimal("valor_d"),
+                    rs.getString("data_cotacao"), reais(rs, "valor"), rs.getBigDecimal("valor_d"),
                     rs.getBigDecimal("valor_g"), reais(rs, "pago"), rs.getBigDecimal("pago_d"),
                     rs.getBigDecimal("pago_g"), reais(rs, "cancelado"), rs.getBigDecimal("cancelado_d"),
                     rs.getBigDecimal("cancelado_g"), reais(rs, "em_aberto"), rs.getBigDecimal("em_aberto_d"),
@@ -388,7 +388,7 @@ public class ConsultasFinanceiras {
                 soma("aberto", "Falta pagar", naoPaga, emAberto),
                 soma("vencido", "Vencido", naoPaga + " AND cp.vencimento < :hoje", emAberto));
         Consulta c = new Consulta("cp.id, 'FORNECEDOR' AS devedor_tipo, f.razao_social AS parte, cp.parcela, "
-                + "cp.total_parcelas, cp.vencimento, cp.status, ct.data_cotacao, (:hoje - cp.vencimento) AS atraso, "
+                + "cp.total_parcelas, cp.vencimento, cp.status, " + CotacaoVigente.SQL_DATA_DA_COTACAO + ", (:hoje - cp.vencimento) AS atraso, "
                 + colunasEmMoedas("cp.valor", "valor") + ", " + colunasEmMoedas("cp.valor_pago", "pago") + ", "
                 + colunasEmMoedas("cp.valor_cancelado", "cancelado") + ", " + colunasEmMoedas(emAberto, "em_aberto"),
                 "corona.contas_pagar cp JOIN corona.fornecedores f ON f.id = cp.fornecedor_id "
@@ -414,7 +414,7 @@ public class ConsultasFinanceiras {
             return new LinhaDeConta(rs.getObject("id", UUID.class), rs.getString("devedor_tipo"), rs.getString("parte"),
                     null, null, rs.getInt("parcela"), rs.getInt("total_parcelas"),
                     rs.getObject("vencimento", LocalDate.class), aberta && atraso > 0 ? "VENCIDA" : status,
-                    aberta ? Math.max(atraso, 0) : 0, rs.getObject("data_cotacao", LocalDate.class), reais(rs, "valor"),
+                    aberta ? Math.max(atraso, 0) : 0, rs.getString("data_cotacao"), reais(rs, "valor"),
                     rs.getBigDecimal("valor_d"), rs.getBigDecimal("valor_g"), reais(rs, "pago"),
                     rs.getBigDecimal("pago_d"), rs.getBigDecimal("pago_g"), reais(rs, "cancelado"),
                     rs.getBigDecimal("cancelado_d"), rs.getBigDecimal("cancelado_g"), reais(rs, "em_aberto"),
@@ -433,7 +433,7 @@ public class ConsultasFinanceiras {
                 soma("saldo", "Saldo do período", TODOS, valor));
         Consulta c = new Consulta("l.id, l.data_lancamento, l.tipo, l.forma, cat.nome AS categoria, l.origem_tipo, "
                 + "l.descricao, (l.estorna_id IS NOT NULL) AS estorno, l.valor, " + dolar(valor) + " AS dolar, "
-                + guarani(valor) + " AS guarani, ct.data_cotacao",
+                + guarani(valor) + " AS guarani, " + CotacaoVigente.SQL_DATA_DA_COTACAO + "",
                 "corona.lancamentos_caixa l JOIN corona.categorias_caixa cat ON cat.id = l.categoria_id "
                         + cotacaoNoMomento(CotacaoVigente.fimDoDiaSql("l.data_lancamento")),
                 "l.data_lancamento DESC, l.lancado_em DESC, l.id", totais);
@@ -461,7 +461,7 @@ public class ConsultasFinanceiras {
                 rs.getObject("data_lancamento", LocalDate.class), rs.getString("tipo"), rs.getString("forma"),
                 rs.getString("categoria"), rs.getString("origem_tipo"), rs.getString("descricao"),
                 rs.getBoolean("estorno"), MotorDeRelatorio.reais(rs, "valor"), rs.getBigDecimal("dolar"),
-                rs.getBigDecimal("guarani"), rs.getObject("data_cotacao", LocalDate.class)));
+                rs.getBigDecimal("guarani"), rs.getString("data_cotacao")));
     }
 
     // --- 8. recebimentos por forma ---
@@ -476,7 +476,7 @@ public class ConsultasFinanceiras {
                 soma("total", "Total recebido", TODOS, valor));
         Consulta c = new Consulta("rv.id, rv.vendedor_id, v.nome AS vendedor, rv.forma, rv.momento, rv.aplicado_em, "
                 + "rv.recebido_em, (rv.estorna_id IS NOT NULL) AS estorno, rv.motivo, rv.valor, " + dolar(valor)
-                + " AS dolar, " + guarani(valor) + " AS guarani, ct.data_cotacao, rv.moeda, rv.valor_na_moeda",
+                + " AS dolar, " + guarani(valor) + " AS guarani, " + CotacaoVigente.SQL_DATA_DA_COTACAO + ", rv.moeda, rv.valor_na_moeda",
                 "corona.recebimentos_vendedor rv JOIN corona.vendedores v ON v.id = rv.vendedor_id "
                         + cotacaoNoMomento("rv.recebido_em"),
                 "rv.recebido_em DESC, rv.id", totais);
@@ -498,7 +498,7 @@ public class ConsultasFinanceiras {
                 rs.getObject("vendedor_id", UUID.class), rs.getString("vendedor"), rs.getString("forma"),
                 rs.getString("momento"), rs.getString("aplicado_em"), instante(rs, "recebido_em"), rs.getBoolean("estorno"),
                 rs.getString("motivo"), MotorDeRelatorio.reais(rs, "valor"), rs.getBigDecimal("dolar"),
-                rs.getBigDecimal("guarani"), rs.getObject("data_cotacao", LocalDate.class), rs.getString("moeda"),
+                rs.getBigDecimal("guarani"), rs.getString("data_cotacao"), rs.getString("moeda"),
                 rs.getBigDecimal("valor_na_moeda")));
     }
 
@@ -513,7 +513,7 @@ public class ConsultasFinanceiras {
                         "a.vendido_para_meta_guarani >= a.meta_guarani", valor));
         Consulta c = new Consulta("a.id, a.vendedor_id, v.nome AS vendedor, a.semana_id, s.numero AS semana, a.fechado_em, "
                 + "a.vendido_para_meta_guarani, a.meta_guarani, a.percentual_comissao, a.vendido_liquido, a.comissao, "
-                + dolar(valor) + " AS dolar, " + guarani(valor) + " AS guarani, ct.data_cotacao", DE_ACERTO,
+                + dolar(valor) + " AS dolar, " + guarani(valor) + " AS guarani, " + CotacaoVigente.SQL_DATA_DA_COTACAO + "", DE_ACERTO,
                 "a.fechado_em DESC, a.id", totais);
         c.onde("a.status = 'ACERTADO'");
         uuid(c, f.vendedorId(), "vendedor", "a.vendedor_id = :vendedor");
@@ -526,6 +526,6 @@ public class ConsultasFinanceiras {
                 rs.getInt("semana"), instante(rs, "fechado_em"), (Long) rs.getObject("vendido_para_meta_guarani"),
                 (Integer) rs.getObject("meta_guarani"), rs.getBigDecimal("percentual_comissao"), "PAGA",
                 MotorDeRelatorio.reais(rs, "vendido_liquido"), MotorDeRelatorio.reais(rs, "comissao"),
-                rs.getBigDecimal("dolar"), rs.getBigDecimal("guarani"), rs.getObject("data_cotacao", LocalDate.class)));
+                rs.getBigDecimal("dolar"), rs.getBigDecimal("guarani"), rs.getString("data_cotacao")));
     }
 }

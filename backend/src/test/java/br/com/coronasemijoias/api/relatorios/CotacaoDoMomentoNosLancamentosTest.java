@@ -149,4 +149,42 @@ class CotacaoDoMomentoNosLancamentosTest extends ApoioDasTrocas {
         UUID depois = vendaEm(TARDE.plusSeconds(60));
         assertThat(cotacaoDe("vendas", depois)).isEqualTo(maisNova);
     }
+
+    @Test
+    void relatorioComDuasCotacoesNoMesmoDiaMostraCadaLinhaPelaSuaEComHoraSoQuandoEDaDona() throws Exception {
+        UsuarioDeTeste v2 = usuarios.criarVendedor();
+        UUID cliente2 = cliente(v2);
+        UUID peca2 = peca("100.00", 30);
+        UUID maleta2 = maleta(v2, peca2, 10);
+        UUID cedo = UUID.randomUUID();
+        vendas.vender(v2.vendedorId(), v2.id(), usuarios.aparelhoDe(v2), new PedidoDeVenda(cedo, maleta2, cliente2,
+                List.of(new LinhaDoPedido(peca2, 1, null)),
+                List.of(new PagamentoDoPedido(UUID.randomUUID(), new BigDecimal("100.00"), "DINHEIRO")), null), NOVE_E_MEIA, false);
+        UUID tarde = UUID.randomUUID();
+        vendas.vender(v2.vendedorId(), v2.id(), usuarios.aparelhoDe(v2), new PedidoDeVenda(tarde, maleta2, cliente2,
+                List.of(new LinhaDoPedido(peca2, 1, null)),
+                List.of(new PagamentoDoPedido(UUID.randomUUID(), new BigDecimal("100.00"), "DINHEIRO")), null), ONZE_E_MEIA, false);
+
+        var r = corpoDe(ler("/api/dona/relatorios/vendas/vendas?de=" + DIA + "&ate=" + DIA + "&vendedorId=" + v2.vendedorId(), dona())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk()));
+        var linhaCedo = linhaDaVenda(r, cedo);
+        var linhaTarde = linhaDaVenda(r, tarde);
+        // Banco Central (5,00 e 0,001): R$ 100 = US$ 20,00 e Gs. 100.000, e só o dia na coluna da cotação.
+        assertThat(new BigDecimal(linhaCedo.get("vendidoEmDolar").asString())).isEqualByComparingTo("20.00");
+        assertThat(new BigDecimal(linhaCedo.get("vendidoEmGuarani").asString())).isEqualByComparingTo("100000");
+        assertThat(linhaCedo.get("dataDaCotacao").asString()).isEqualTo(DIA);
+        // Cotação da dona (5,80 e 1 real = Gs. 1.350): R$ 100 = US$ 17,24 e Gs. 135.000, com a hora em que passou a valer.
+        assertThat(new BigDecimal(linhaTarde.get("vendidoEmDolar").asString())).isEqualByComparingTo("17.24");
+        assertThat(new BigDecimal(linhaTarde.get("vendidoEmGuarani").asString())).isEqualByComparingTo("135000");
+        assertThat(linhaTarde.get("dataDaCotacao").asString()).isEqualTo(DIA + "T10:00");
+    }
+
+    private static tools.jackson.databind.JsonNode linhaDaVenda(tools.jackson.databind.JsonNode relatorio, UUID vendaId) {
+        for (var item : relatorio.get("itens")) {
+            if (vendaId.toString().equals(item.get("vendaId").asString())) {
+                return item;
+            }
+        }
+        throw new AssertionError("A venda " + vendaId + " não está no relatório");
+    }
 }

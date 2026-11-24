@@ -24,7 +24,7 @@ public final class SqlDaMaleta {
      * A cotação vigente no momento do envio (ADR-0006, itens 7 e 15): a de maior vigente_desde até a hora do envio. Apelido {@code ct}; sem cotação, as colunas vêm vazias. Precisa do apelido {@code r}.
      */
     public static final String COTACAO_DO_ENVIO = """
-            LEFT JOIN LATERAL (SELECT c.data_cotacao, c.usd_venda, c.pyg_venda FROM corona.cotacoes c
+            LEFT JOIN LATERAL (SELECT c.data_cotacao, c.origem, c.vigente_desde, c.usd_venda, c.pyg_venda FROM corona.cotacoes c
                                 WHERE c.vigente_desde <= r.enviada_em
                                 ORDER BY c.vigente_desde DESC, c.id DESC LIMIT 1) ct ON true""";
 

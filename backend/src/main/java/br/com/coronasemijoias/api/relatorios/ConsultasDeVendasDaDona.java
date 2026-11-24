@@ -53,7 +53,7 @@ public class ConsultasDeVendasDaDona {
     public record LinhaDeVenda(UUID vendaId, Instant vendidaEm, UUID vendedorId, String vendedor, String praca, UUID clienteId,
             String cliente, String situacao, boolean cancelada, long pecas, BigDecimal vendido, BigDecimal vendidoEmDolar,
             BigDecimal vendidoEmGuarani, BigDecimal devolvido, BigDecimal devolvidoEmDolar, BigDecimal devolvidoEmGuarani,
-            BigDecimal liquido, BigDecimal liquidoEmDolar, BigDecimal liquidoEmGuarani, LocalDate dataDaCotacao,
+            BigDecimal liquido, BigDecimal liquidoEmDolar, BigDecimal liquidoEmGuarani, String dataDaCotacao,
             Instant estornadaEm, String estornadaPor, String motivoDoEstorno) {
     }
 
@@ -230,7 +230,7 @@ public class ConsultasDeVendasDaDona {
                 MotorDeRelatorio.reais(rs, "vendido"), rs.getBigDecimal("vendido_dolar"), rs.getBigDecimal("vendido_guarani"),
                 MotorDeRelatorio.reais(rs, "devolvido"), rs.getBigDecimal("devolvido_dolar"), rs.getBigDecimal("devolvido_guarani"),
                 MotorDeRelatorio.reais(rs, "liquido"), rs.getBigDecimal("liquido_dolar"), rs.getBigDecimal("liquido_guarani"),
-                rs.getObject("data_cotacao", LocalDate.class), instante(rs, "estornada_em"), rs.getString("estornada_por"),
+                rs.getString("data_cotacao"), instante(rs, "estornada_em"), rs.getString("estornada_por"),
                 rs.getString("motivo_estorno")));
     }
 

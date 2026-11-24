@@ -1,5 +1,6 @@
 package br.com.coronasemijoias.api.relatorios;
 
+import br.com.coronasemijoias.api.cotacoes.CotacaoVigente;
 import static br.com.coronasemijoias.api.relatorios.MotorDeRelatorio.DefinicaoDeTotal.emTresMoedas;
 import static br.com.coronasemijoias.api.relatorios.MotorDeRelatorio.idOpcional;
 
@@ -49,7 +50,7 @@ public class ConsultasDeDevolucaoETroca {
             int pecas, int pecasComDefeito, String formaReembolso, BigDecimal valorDevolvido,
             BigDecimal valorDevolvidoEmDolar, BigDecimal valorDevolvidoEmGuarani, BigDecimal valorReembolsado,
             BigDecimal valorReembolsadoEmDolar, BigDecimal valorReembolsadoEmGuarani, BigDecimal valorEmCredito,
-            BigDecimal valorEmCreditoEmDolar, BigDecimal valorEmCreditoEmGuarani, LocalDate dataDaCotacao) {
+            BigDecimal valorEmCreditoEmDolar, BigDecimal valorEmCreditoEmGuarani, String dataDaCotacao) {
     }
 
     public record LinhaPorVendedor(UUID vendedorId, String vendedor, long vendas, BigDecimal vendido,
@@ -67,23 +68,23 @@ public class ConsultasDeDevolucaoETroca {
             UUID clienteId, String cliente, String situacao, Instant trocadaEm, int pecasQueVoltaram, int pecasQueSairam,
             BigDecimal valorDevolvido, BigDecimal valorDevolvidoEmDolar, BigDecimal valorDevolvidoEmGuarani,
             BigDecimal totalDaVendaNova, BigDecimal totalDaVendaNovaEmDolar, BigDecimal totalDaVendaNovaEmGuarani,
-            BigDecimal diferenca, BigDecimal diferencaEmDolar, BigDecimal diferencaEmGuarani, LocalDate dataDaCotacao) {
+            BigDecimal diferenca, BigDecimal diferencaEmDolar, BigDecimal diferencaEmGuarani, String dataDaCotacao) {
     }
 
     public record LinhaDeCredito(UUID id, UUID clienteId, String cliente, UUID vendedorId, String vendedor, String origem,
             String situacao, Instant geradoEm, BigDecimal valor, BigDecimal valorEmDolar, BigDecimal valorEmGuarani,
             BigDecimal utilizado, BigDecimal utilizadoEmDolar, BigDecimal utilizadoEmGuarani, BigDecimal saldo,
-            BigDecimal saldoEmDolar, BigDecimal saldoEmGuarani, LocalDate dataDaCotacao) {
+            BigDecimal saldoEmDolar, BigDecimal saldoEmGuarani, String dataDaCotacao) {
     }
 
     public record LinhaDeReembolso(UUID id, UUID devolucaoId, UUID vendaId, UUID vendedorId, String vendedor, UUID clienteId,
             String cliente, String forma, String tipo, String motivo, Instant pagoEm, BigDecimal valor, BigDecimal valorEmDolar,
-            BigDecimal valorEmGuarani, LocalDate dataDaCotacao) {
+            BigDecimal valorEmGuarani, String dataDaCotacao) {
     }
 
     public record LinhaDeAutorizacao(UUID id, UUID vendaId, UUID vendedorId, String vendedor, UUID clienteId, String cliente,
             String motivo, String tipo, String situacao, int pecas, Instant pedidaEm, Instant decididaEm, LocalDate validaAte,
-            BigDecimal valorPedido, BigDecimal valorPedidoEmDolar, BigDecimal valorPedidoEmGuarani, LocalDate dataDaCotacao) {
+            BigDecimal valorPedido, BigDecimal valorPedidoEmDolar, BigDecimal valorPedidoEmGuarani, String dataDaCotacao) {
     }
 
     private static final String PECAS_DA_DEVOLUCAO = "(SELECT coalesce(sum(i.quantidade), 0) FROM corona.itens_devolucao i "
@@ -100,7 +101,7 @@ public class ConsultasDeDevolucaoETroca {
 
     /** A cotação vigente no momento em que o dinheiro voltou ao cliente. Apelido {@code ct}; precisa de {@code p}. */
     private static final String COTACAO_DO_PAGAMENTO = """
-            LEFT JOIN LATERAL (SELECT c2.data_cotacao, c2.usd_venda, c2.pyg_venda FROM corona.cotacoes c2
+            LEFT JOIN LATERAL (SELECT c2.data_cotacao, c2.origem, c2.vigente_desde, c2.usd_venda, c2.pyg_venda FROM corona.cotacoes c2
                                 WHERE c2.vigente_desde <= p.pago_em
                                 ORDER BY c2.vigente_desde DESC, c2.id DESC LIMIT 1) ct ON true""";
 
@@ -203,7 +204,7 @@ public class ConsultasDeDevolucaoETroca {
                 + "d.valor_reembolsado, " + dolar("d.valor_reembolsado") + " AS reembolsado_dolar, "
                 + guarani("d.valor_reembolsado") + " AS reembolsado_guarani, d.valor_em_credito, "
                 + dolar("d.valor_em_credito") + " AS credito_dolar, " + guarani("d.valor_em_credito")
-                + " AS credito_guarani, ct.data_cotacao",
+                + " AS credito_guarani, " + CotacaoVigente.SQL_DATA_DA_COTACAO + "",
                 "corona.devolucoes d JOIN corona.vendedores v ON v.id = d.vendedor_id JOIN corona.clientes cl "
                         + "ON cl.id = d.cliente_id LEFT JOIN corona.cotacoes ct ON ct.id = d.cotacao_id",
                 "d.devolvida_em DESC, d.id", totais);
@@ -234,7 +235,7 @@ public class ConsultasDeDevolucaoETroca {
                 rs.getString("forma_reembolso"), valor(rs, "valor_devolvido"), rs.getBigDecimal("devolvido_dolar"),
                 rs.getBigDecimal("devolvido_guarani"), valor(rs, "valor_reembolsado"), rs.getBigDecimal("reembolsado_dolar"),
                 rs.getBigDecimal("reembolsado_guarani"), valor(rs, "valor_em_credito"), rs.getBigDecimal("credito_dolar"),
-                rs.getBigDecimal("credito_guarani"), rs.getObject("data_cotacao", LocalDate.class)));
+                rs.getBigDecimal("credito_guarani"), rs.getString("data_cotacao")));
     }
 
     // --- 2. taxa de devolução por vendedor ---
@@ -361,7 +362,7 @@ public class ConsultasDeDevolucaoETroca {
                 + " AS devolvido_dolar, " + guarani("d.valor_devolvido") + " AS devolvido_guarani, vn.total AS total_nova, "
                 + dolar("vn.total") + " AS nova_dolar, " + guarani("vn.total") + " AS nova_guarani, t.diferenca, "
                 + dolar("t.diferenca") + " AS diferenca_dolar, " + guarani("t.diferenca") + " AS diferenca_guarani, "
-                + "ct.data_cotacao",
+                + "" + CotacaoVigente.SQL_DATA_DA_COTACAO + "",
                 "corona.trocas t JOIN corona.vendedores v ON v.id = t.vendedor_id JOIN corona.clientes cl ON cl.id = t.cliente_id "
                         + "JOIN corona.devolucoes d ON d.id = t.devolucao_id JOIN corona.vendas vn ON vn.id = t.venda_nova_id "
                         + "LEFT JOIN corona.cotacoes ct ON ct.id = t.cotacao_id",
@@ -386,7 +387,7 @@ public class ConsultasDeDevolucaoETroca {
                 rs.getInt("pecas_sairam"), valor(rs, "valor_devolvido"), rs.getBigDecimal("devolvido_dolar"),
                 rs.getBigDecimal("devolvido_guarani"), valor(rs, "total_nova"), rs.getBigDecimal("nova_dolar"),
                 rs.getBigDecimal("nova_guarani"), valor(rs, "diferenca"), rs.getBigDecimal("diferenca_dolar"),
-                rs.getBigDecimal("diferenca_guarani"), rs.getObject("data_cotacao", LocalDate.class)));
+                rs.getBigDecimal("diferenca_guarani"), rs.getString("data_cotacao")));
     }
 
     // --- 5. créditos em aberto e usados ---
@@ -407,7 +408,7 @@ public class ConsultasDeDevolucaoETroca {
                 + " AS valor_guarani, cr.valor_utilizado, " + dolar("cr.valor_utilizado") + " AS utilizado_dolar, "
                 + guarani("cr.valor_utilizado") + " AS utilizado_guarani, " + SALDO_DO_CREDITO + " AS saldo, "
                 + dolar(SALDO_DO_CREDITO) + " AS saldo_dolar, " + guarani(SALDO_DO_CREDITO) + " AS saldo_guarani, "
-                + "ct.data_cotacao",
+                + "" + CotacaoVigente.SQL_DATA_DA_COTACAO + "",
                 "corona.creditos_cliente cr JOIN corona.vendedores v ON v.id = cr.vendedor_id JOIN corona.clientes cl "
                         + "ON cl.id = cr.cliente_id LEFT JOIN corona.cotacoes ct ON ct.id = cr.cotacao_id",
                 "cr.gerado_em DESC, cr.id", totais);
@@ -436,7 +437,7 @@ public class ConsultasDeDevolucaoETroca {
                 rs.getString("situacao"), instante(rs, "gerado_em"), valor(rs, "valor"), rs.getBigDecimal("valor_dolar"),
                 rs.getBigDecimal("valor_guarani"), valor(rs, "valor_utilizado"), rs.getBigDecimal("utilizado_dolar"),
                 rs.getBigDecimal("utilizado_guarani"), valor(rs, "saldo"), rs.getBigDecimal("saldo_dolar"),
-                rs.getBigDecimal("saldo_guarani"), rs.getObject("data_cotacao", LocalDate.class)));
+                rs.getBigDecimal("saldo_guarani"), rs.getString("data_cotacao")));
     }
 
     // --- 6. dinheiro devolvido aos clientes ---
@@ -454,7 +455,7 @@ public class ConsultasDeDevolucaoETroca {
                         "p.tipo = 'ESTORNO_REEMBOLSO'", valor));
         Consulta c = new Consulta("p.id, p.devolucao_id, p.venda_id, vd.vendedor_id, v.nome AS vendedor, vd.cliente_id, "
                 + "cl.nome AS cliente, p.forma, p.tipo, d.motivo, p.pago_em, " + valor + " AS valor, " + dolar(valor)
-                + " AS dolar, " + guarani(valor) + " AS guarani, ct.data_cotacao",
+                + " AS dolar, " + guarani(valor) + " AS guarani, " + CotacaoVigente.SQL_DATA_DA_COTACAO + "",
                 "corona.pagamentos_cliente p JOIN corona.vendas vd ON vd.id = p.venda_id JOIN corona.vendedores v "
                         + "ON v.id = vd.vendedor_id JOIN corona.clientes cl ON cl.id = vd.cliente_id JOIN corona.devolucoes d "
                         + "ON d.id = p.devolucao_id " + COTACAO_DO_PAGAMENTO,
@@ -475,7 +476,7 @@ public class ConsultasDeDevolucaoETroca {
                 rs.getString("cliente"), rs.getString("forma"),
                 "ESTORNO_REEMBOLSO".equals(rs.getString("tipo")) ? "CANCELAMENTO" : "REEMBOLSO", rs.getString("motivo"),
                 instante(rs, "pago_em"), valor(rs, "valor"), rs.getBigDecimal("dolar"), rs.getBigDecimal("guarani"),
-                rs.getObject("data_cotacao", LocalDate.class)));
+                rs.getString("data_cotacao")));
     }
 
     // --- 7. pedidos de autorização ---
@@ -493,7 +494,7 @@ public class ConsultasDeDevolucaoETroca {
         Consulta c = new Consulta("a.id, a.venda_id, a.vendedor_id, v.nome AS vendedor, a.cliente_id, cl.nome AS cliente, "
                 + "a.motivo, a.tipo, a.situacao, (SELECT coalesce(sum(i.quantidade), 0) FROM corona.itens_autorizacao i "
                 + "WHERE i.autorizacao_id = a.id) AS pecas, a.pedida_em, a.decidida_em, a.valida_ate, a.valor_pedido, "
-                + dolar(valor) + " AS dolar, " + guarani(valor) + " AS guarani, ct.data_cotacao",
+                + dolar(valor) + " AS dolar, " + guarani(valor) + " AS guarani, " + CotacaoVigente.SQL_DATA_DA_COTACAO + "",
                 "corona.autorizacoes_excecao a JOIN corona.vendedores v ON v.id = a.vendedor_id JOIN corona.clientes cl "
                         + "ON cl.id = a.cliente_id LEFT JOIN corona.cotacoes ct ON ct.id = a.cotacao_id",
                 "a.pedida_em DESC, a.id", totais);
@@ -518,6 +519,6 @@ public class ConsultasDeDevolucaoETroca {
                 rs.getString("motivo"), rs.getString("tipo"), rs.getString("situacao"), rs.getInt("pecas"),
                 instante(rs, "pedida_em"), instante(rs, "decidida_em"), rs.getObject("valida_ate", LocalDate.class),
                 valor(rs, "valor_pedido"), rs.getBigDecimal("dolar"), rs.getBigDecimal("guarani"),
-                rs.getObject("data_cotacao", LocalDate.class)));
+                rs.getString("data_cotacao")));
     }
 }

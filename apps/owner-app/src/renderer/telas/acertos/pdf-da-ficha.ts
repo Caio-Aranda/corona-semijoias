@@ -1,5 +1,6 @@
 /** Monta o PDF do acerto fechado com os mesmos textos e valores da ficha na tela (o PDF só desenha o que a API devolveu). */
 import type { AcertoParaPdf } from '../../nucleo/exportacao/pdf-acerto';
+import { dataEHoraDaCotacao } from '../../nucleo/cotacao-da-loja';
 import { formatarGuarani, dataParaTela, tresMoedas } from '../../nucleo/moedas';
 import { TEXTOS_DE_ACERTOS } from '../../textos-acertos';
 import { dataEHora } from '../sincronizacao/dados';
@@ -21,7 +22,9 @@ export function valorEmTexto(valor: string, f: FechamentoGravado): string {
 /** A frase da cotação gravada, ou o aviso de que não há. */
 export function fraseDaCotacao(f: FechamentoGravado): string {
   const t = tresMoedas('1.00', f.cotacao);
-  return t?.dolar ? T.previa.cotacao.frase(dataParaTela(f.cotacaoData)) : T.previa.cotacao.sem;
+  if (!t?.dolar) return T.previa.cotacao.sem;
+  const { dia, hora } = dataEHoraDaCotacao(f.cotacaoData);
+  return hora ? T.previa.cotacao.fraseDaLoja(dia, hora) : T.previa.cotacao.frase(dia);
 }
 
 /** As duas frases da meta, com a soma em Guarani que a decidiu e o percentual gravado. */

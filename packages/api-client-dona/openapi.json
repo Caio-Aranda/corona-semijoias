@@ -1654,7 +1654,6 @@
             "type" : "string"
           },
           "dataDaCotacao" : {
-            "format" : "date",
             "type" : "string"
           },
           "dentroDaGarantia" : {
@@ -2447,7 +2446,6 @@
       "CotacaoDaNota" : {
         "properties" : {
           "data" : {
-            "format" : "date",
             "type" : "string"
           },
           "dolar" : {
@@ -3419,7 +3417,6 @@
             "type" : "array"
           },
           "cotacaoData" : {
-            "format" : "date",
             "type" : "string"
           },
           "cotacaoId" : {
@@ -4467,7 +4464,6 @@
             "type" : "string"
           },
           "dataDaCotacao" : {
-            "format" : "date",
             "type" : "string"
           },
           "descontos" : {
@@ -4706,7 +4702,6 @@
             "type" : "string"
           },
           "dataDaCotacao" : {
-            "format" : "date",
             "type" : "string"
           },
           "decididaEm" : {
@@ -4780,7 +4775,6 @@
             "type" : "string"
           },
           "dataDaCotacao" : {
-            "format" : "date",
             "type" : "string"
           },
           "descricao" : {
@@ -4891,7 +4885,6 @@
             "type" : "string"
           },
           "dataDaCotacao" : {
-            "format" : "date",
             "type" : "string"
           },
           "fechadoEm" : {
@@ -5046,7 +5039,6 @@
             "type" : "string"
           },
           "dataDaCotacao" : {
-            "format" : "date",
             "type" : "string"
           },
           "devedorTipo" : {
@@ -5152,7 +5144,6 @@
             "type" : "string"
           },
           "dataDaCotacao" : {
-            "format" : "date",
             "type" : "string"
           },
           "geradoEm" : {
@@ -5248,7 +5239,6 @@
             "type" : "integer"
           },
           "dataDaCotacao" : {
-            "format" : "date",
             "type" : "string"
           },
           "defeitoAprovado" : {
@@ -5820,7 +5810,6 @@
             "type" : "boolean"
           },
           "dataDaCotacao" : {
-            "format" : "date",
             "type" : "string"
           },
           "diasDesdeOEnvio" : {
@@ -6014,7 +6003,6 @@
             "type" : "string"
           },
           "dataDaCotacao" : {
-            "format" : "date",
             "type" : "string"
           },
           "id" : {
@@ -6217,7 +6205,6 @@
             "type" : "string"
           },
           "dataDaCotacao" : {
-            "format" : "date",
             "type" : "string"
           },
           "estorno" : {
@@ -6287,7 +6274,6 @@
             "type" : "string"
           },
           "dataDaCotacao" : {
-            "format" : "date",
             "type" : "string"
           },
           "devolucaoId" : {
@@ -6349,7 +6335,6 @@
             "type" : "boolean"
           },
           "dataDaCotacao" : {
-            "format" : "date",
             "type" : "string"
           },
           "enviadaEm" : {
@@ -6425,7 +6410,6 @@
             "type" : "string"
           },
           "dataDaCotacao" : {
-            "format" : "date",
             "type" : "string"
           },
           "devolvida" : {
@@ -6521,7 +6505,6 @@
             "type" : "string"
           },
           "dataDaCotacao" : {
-            "format" : "date",
             "type" : "string"
           },
           "devolucaoId" : {
@@ -6632,7 +6615,6 @@
             "type" : "string"
           },
           "dataDaCotacao" : {
-            "format" : "date",
             "type" : "string"
           },
           "devolvido" : {
