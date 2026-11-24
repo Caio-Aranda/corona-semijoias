@@ -435,7 +435,12 @@ public class ConciliacoesDaFase7 {
     // --- C12: o saldo de toda maleta enviada ---
 
     private Conferencia c12() {
-        String enviadas = "r.deleted_at IS NULL AND r.status IN ('ENVIADA', 'CONFERIDA', 'EM_ACERTO', 'ACERTADA')";
+        // FECHADA (leva 9): a maleta que a dona bipou na volta continua conferida.
+        String enviadas = "r.deleted_at IS NULL AND r.status IN ('ENVIADA', 'CONFERIDA', 'EM_ACERTO', 'FECHADA', 'ACERTADA')";
+        // A saída da nota acima do saldo é aceita com alerta (ADR-0016, dúvida D4): a peça negativa com alerta não é acusada,
+        // como na K5 do consignado.
+        String semAlerta = " AND NOT EXISTS (SELECT 1 FROM corona.alertas_consignado al WHERE al.tipo = 'PECA_SEM_SALDO_NA_MALETA'"
+                + " AND al.detalhe ->> 'remessa_id' = r.id::text AND al.detalhe ->> 'produto_id' = i.produto_id::text)";
         String peca = "' || p.nome || '";
         String linhas = "corona.remessas r JOIN corona.itens_remessa i ON i.remessa_id = r.id AND i.deleted_at IS NULL"
                 + " JOIN corona.produtos p ON p.id = i.produto_id";
@@ -471,16 +476,17 @@ public class ConciliacoesDaFase7 {
                         + esperado + ", " + saldo + " FROM " + linhas + " WHERE " + enviadas + " AND (" + esperado + ") <> " + saldo
                         + " ORDER BY r.id, p.nome", Unidade.PECAS),
                 achar("SELECT 'MALETA', r.id, 'A peça \"" + peca + "\" ficou com saldo negativo nesta maleta.', 0, " + saldo + " FROM " + linhas
-                        + " WHERE r.deleted_at IS NULL AND r.status IN ('ENVIADA', 'CONFERIDA', 'EM_ACERTO', 'ACERTADA', 'CANCELADA') AND "
-                        + saldo + " < 0 ORDER BY r.id, p.nome", Unidade.PECAS),
+                        + " WHERE r.deleted_at IS NULL AND r.status IN ('ENVIADA', 'CONFERIDA', 'EM_ACERTO', 'FECHADA', 'ACERTADA', 'CANCELADA')"
+                        + " AND " + saldo + " < 0" + semAlerta + " ORDER BY r.id, p.nome", Unidade.PECAS),
                 achar("SELECT 'MALETA', r.id, 'A peça \"" + peca + "\" ainda aparece nesta maleta, que foi cancelada.', 0, abs(" + enviado
                         + ") + " + movimentosDaRemessa + " FROM " + linhas + " WHERE r.deleted_at IS NULL AND r.status = 'CANCELADA' AND (abs("
                         + enviado + ") + " + movimentosDaRemessa + ") <> 0 ORDER BY r.id, p.nome", Unidade.PECAS));
         return new Conferencia("C12", "Cada maleta enviada, peça por peça",
                 "Em toda maleta enviada, para cada peça: o que há na maleta é o que foi enviado, menos o que foi vendido, devolvido à dona, "
-                        + "perdido e o que saiu em nota de consignado, mais o que o cliente devolveu e o que voltou da nota; nenhuma peça fica negativa e a maleta cancelada não guarda peça.",
+                        + "perdido e o que saiu em nota de consignado, mais o que o cliente devolveu e o que voltou da nota; nenhuma peça fica "
+                        + "negativa (salvo com alerta do consignado) e a maleta cancelada não guarda peça.",
                 contar("SELECT count(*) FROM corona.remessas r JOIN corona.itens_remessa i ON i.remessa_id = r.id AND i.deleted_at IS NULL"
-                        + " WHERE r.deleted_at IS NULL AND r.status IN ('ENVIADA', 'CONFERIDA', 'EM_ACERTO', 'ACERTADA', 'CANCELADA')"),
+                        + " WHERE r.deleted_at IS NULL AND r.status IN ('ENVIADA', 'CONFERIDA', 'EM_ACERTO', 'FECHADA', 'ACERTADA', 'CANCELADA')"),
                 d);
     }
 }

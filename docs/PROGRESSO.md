@@ -498,3 +498,7 @@ Branch `fix/contas-pela-cotacao-do-dia`. Achado M3 da revisão de 23/11: as duas
 
 Branch `fix/setup-electron`. Desde o Electron 45.4.1 (PR 250), o pacote `electron` não tem mais script de instalação, e o `npm ci` deixava `node_modules/electron/dist` sem o programa: `owner:empacotar` e `vendas:empacotar` falhavam com "electronDist does not exist". **Feito:** `postinstall` da raiz (`scripts/baixar-electron.mjs`) baixa o Electron quando falta, respeitando `ELECTRON_SKIP_BINARY_DOWNLOAD=1` do CI (e o `--ignore-scripts`). O `package.json` ganhou `allowScripts` para `better-sqlite3-multiple-ciphers` e `electron-winstaller` (sem versão fixa), que o npm 11.20 avisava estar sem aprovação. Verificado: `npm ci` do zero baixa o Electron sem aviso; `setup:test` e `scripts:test` passam.
 
+## C12: maleta fechada e peça negativa com alerta (API, 24/11/2026)
+
+Branch `fix/c12-aviso-e-maleta-fechada`. **Feito:** a C12 passa a conferir a maleta FECHADA (leva 9; antes ficava de fora) e deixa de acusar a peça negativa que tem o alerta `PECA_SEM_SALDO_NA_MALETA` (a saída da nota aceita acima do saldo, dúvida D4 do ADR-0016), como a K5 do consignado já fazia. Testes escritos antes: `ConciliacoesDoConsignadoTest.c12PerdoaAPecaNegativaComAlertaComoAK5` e `c12ConfereAMaletaFechada` (limpa quando certa, acusada com um movimento a mais). Especificação v1.37.
+
