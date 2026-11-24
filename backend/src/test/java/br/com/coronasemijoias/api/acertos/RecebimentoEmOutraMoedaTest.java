@@ -164,8 +164,10 @@ class RecebimentoEmOutraMoedaTest extends ApoioDoFechamento {
     @Test
     void semCotacaoSoAceitaReal() throws Exception {
         contaDe35();
-        assertThat(contar("SELECT count(*) FROM corona.cotacoes WHERE data_cotacao <= ?", hoje()))
-                .as("o teste precisa do banco sem cotação até hoje").isZero();
+        // A cotação do exemplo (2291) vale "desde ontem" para o acerto destes testes; aqui o relógio volta antes de qualquer cotação.
+        relogio.fixar(java.time.Instant.parse("2000-01-03T15:00:00Z"));
+        assertThat(contar("SELECT count(*) FROM corona.cotacoes WHERE vigente_desde <= ?", java.sql.Timestamp.from(relogio.instant())))
+                .as("o teste precisa do banco sem cotação vigente").isZero();
         receber("id", UUID.randomUUID(), "moeda", "GUARANI", "valorNaMoeda", "20000").andExpect(status().isConflict())
                 .andExpect(jsonPath("$.codigo").value("SEM_COTACAO_PARA_O_RECEBIMENTO"));
         receber("id", UUID.randomUUID(), "moeda", "DOLAR", "valorNaMoeda", "5.00").andExpect(status().isConflict());

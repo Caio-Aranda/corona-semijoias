@@ -9421,6 +9421,9 @@
             "format" : "decimal",
             "pattern" : "^\\d{1,10}\\.\\d{8}$",
             "type" : "string"
+          },
+          "moedaDoAviso" : {
+            "type" : "string"
           }
         },
         "type" : "object"

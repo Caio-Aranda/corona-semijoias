@@ -61,7 +61,7 @@ public final class CotacoesDaMassa {
 
     /** Tira as cotações de 2291 em diante e as da dona (só os testes gravam), e os acertos fechados com elas. */
     public static void tirar(Connection comoMigracao) throws SQLException {
-        String minhas = "(SELECT id FROM corona.cotacoes WHERE data_cotacao >= '" + DESDE + "' OR origem = 'DONA')";
+        String minhas = "(SELECT id FROM corona.cotacoes WHERE data_cotacao >= '" + DESDE + "' OR origem = 'DONA' OR fonte = 'teste-em-uso')";
         String meusAcertos = "(SELECT id FROM corona.acertos WHERE cotacao_id IN " + minhas + ")";
         List<String> tabelas = new ArrayList<>();
         try (Statement s = comoMigracao.createStatement()) {
@@ -113,7 +113,7 @@ public final class CotacoesDaMassa {
                         s.execute("UPDATE " + t + " SET cotacao_id = NULL WHERE cotacao_id IN " + minhas);
                     }
                 }
-                s.execute("DELETE FROM corona.cotacoes WHERE data_cotacao >= '" + DESDE + "' OR origem = 'DONA'");
+                s.execute("DELETE FROM corona.cotacoes WHERE data_cotacao >= '" + DESDE + "' OR origem = 'DONA' OR fonte = 'teste-em-uso'");
             } finally {
                 for (String t : todas) {
                     s.execute("ALTER TABLE " + t + " ENABLE TRIGGER USER");

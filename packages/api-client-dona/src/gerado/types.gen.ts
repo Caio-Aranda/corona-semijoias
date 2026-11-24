@@ -2756,6 +2756,7 @@ export type PreviaResposta = {
     dolar?: string;
     guarani?: string;
     guaranisPorReal?: string;
+    moedaDoAviso?: string;
 };
 
 export type ProdutoDaPreviaDoFechamento = {
