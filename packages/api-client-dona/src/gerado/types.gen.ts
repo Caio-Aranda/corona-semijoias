@@ -665,7 +665,9 @@ export type ContaAntigaPaga = {
     contaId?: string;
     forma?: string;
     id?: string;
+    moeda?: string;
     valor?: string;
+    valorNaMoeda?: string;
 };
 
 export type ContaBaixada = {
@@ -2751,14 +2753,19 @@ export type RecebimentoDaDona = {
     acertoId?: string;
     aplicadoEm?: string;
     contas?: Array<ContaBaixada>;
+    dataCotacao?: string;
+    dolar?: string;
     estornaId?: string;
     estornado?: boolean;
     forma?: string;
+    guarani?: string;
     id?: string;
+    moeda?: string;
     momento?: string;
     motivo?: string;
     recebidoEm?: string;
     valor?: string;
+    valorNaMoeda?: string;
     vendedorId?: string;
     vendedorNome?: string;
 };
@@ -2769,14 +2776,18 @@ export type RecebimentoDoAcerto = {
     estornado?: boolean;
     forma?: string;
     id?: string;
+    moeda?: string;
     recebidoEm?: string;
     valor?: string;
+    valorNaMoeda?: string;
 };
 
 export type RecebimentoNoAcerto = {
     forma?: string;
     id?: string;
+    moeda?: string;
     valor?: string;
+    valorNaMoeda?: string;
 };
 
 export type ReciboLido = {
@@ -3643,9 +3654,12 @@ export type ServicoDeRecebimentosDoVendedorPedidoDeEstorno = {
 
 export type ServicoDeRecebimentosDoVendedorPedidoDeRecebimento = {
     contaId?: string;
+    cotacaoData?: string;
     forma?: string;
     id?: string;
+    moeda?: string;
     valor?: string;
+    valorNaMoeda?: string;
     vendedorId?: string;
 };
 
