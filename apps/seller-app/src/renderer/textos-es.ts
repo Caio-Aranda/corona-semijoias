@@ -79,6 +79,7 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
     ultima: (data) =>
       `Cotización del ${data}, la última que recibió esta computadora. Conectate a internet para recibir la más nueva.`,
     doDia: (data) => `Cotización del ${data}.`,
+    daLoja: (data, hora) => `Cotización de la tienda del ${data} a las ${hora}.`,
   },
 
   envio: {

@@ -76,6 +76,8 @@ export const TEXTOS_PT = {
     ultima: (data: string) =>
       `Cotação de ${data}, a última que este computador recebeu. Conecte-se à internet para receber a mais nova.`,
     doDia: (data: string) => `Cotação de ${data}.`,
+    /** A cotação que a dona digitou na loja (ADR-0006, item 15): a hora é a de Brasília. */
+    daLoja: (data: string, hora: string) => `Cotação da loja de ${data} às ${hora}.`,
   },
 
   /** O indicador de envio (glossário, parte 7 e tarefa 5.7): palavras comuns, nunca "fila" nem "pendente". */

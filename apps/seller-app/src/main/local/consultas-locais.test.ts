@@ -268,6 +268,52 @@ describe('cotação do dia ou a última, com a data', () => {
     expect(hoje()).toMatchObject({ dataDaCotacao: '2026-11-12', deDiaAnterior: false });
   });
 
+  it('a cotação da loja (da dona) vale desde a hora em que ela lançou, e a tela sabe de onde veio', () => {
+    // São 10:00 em Brasília (13:00 UTC). O Banco Central do dia vale desde 00:00; a da dona, desde as 09:30.
+    aplicarLote(
+      b.db,
+      [
+        {
+          tabela: 'cotacoes',
+          id: idDeTeste(9),
+          version: 1,
+          deletedAt: null,
+          campos: {
+            data_cotacao: '2026-11-12',
+            usd_venda: '5.50000000',
+            pyg_venda: '0.00075000',
+            origem: 'BANCO_CENTRAL',
+            vigente_desde: '2026-11-12T03:00:00Z',
+          },
+        },
+        {
+          tabela: 'cotacoes',
+          id: idDeTeste(9),
+          version: 1,
+          deletedAt: null,
+          campos: {
+            data_cotacao: '2026-11-12',
+            usd_venda: '5.80000000',
+            pyg_venda: '0.00074074',
+            origem: 'DONA',
+            vigente_desde: '2026-11-12T12:30:00Z',
+            guaranis_por_real: '1350.00000000',
+          },
+        },
+      ],
+      { cursor: 'c-dona' },
+    );
+    expect(hoje()).toMatchObject({
+      dolar: '5.80000000',
+      origem: 'DONA',
+      vigenteDesde: '2026-11-12T12:30:00Z',
+      deDiaAnterior: false,
+    });
+    // Mais cedo, antes de ela lançar a dela, valia a do Banco Central.
+    agora = new Date('2026-11-12T12:00:00.000Z');
+    expect(hoje()).toMatchObject({ dolar: '5.50000000', origem: 'BANCO_CENTRAL' });
+  });
+
   it('sem nenhuma cotação, diz que não há e a venda segue só em Real', () => {
     b.db.prepare('DELETE FROM cotacoes').run();
     expect(hoje()).toMatchObject({ disponivel: false, dataDaCotacao: null });

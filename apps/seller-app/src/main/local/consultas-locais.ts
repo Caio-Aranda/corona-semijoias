@@ -101,6 +101,8 @@ const paraGuarani = (centavos: bigint, taxa: bigint): bigint =>
   dividir(centavos * 10n ** BigInt(CASAS_DA_TAXA - 2), taxa);
 
 interface Taxas {
+  origem: 'BANCO_CENTRAL' | 'DONA';
+  vigenteDesde: string;
   data: string;
   dolar: string;
   guarani: string;
@@ -598,13 +600,21 @@ export class ConsultasLocais {
   /** A cotação vigente no instante (a de maior `vigente_desde` até ele; ADR-0006, item 15). */
   private cotacaoEm(instante: string | Date): Taxas | null {
     const r = cotacaoVigenteEm(this.db(), instante);
-    return r ? this.taxas(r.data, r.dolar, r.guarani) : null;
+    return r ? this.taxas(r.data, r.dolar, r.guarani, r.origem, r.vigenteDesde) : null;
   }
 
-  private taxas(data: string, dolar: string | null, guarani: string | null): Taxas | null {
+  private taxas(
+    data: string,
+    dolar: string | null,
+    guarani: string | null,
+    origem: 'BANCO_CENTRAL' | 'DONA' = 'BANCO_CENTRAL',
+    vigenteDesde = `${data}T03:00:00.000Z`,
+  ): Taxas | null {
     const usd = taxaDe(dolar);
     const pyg = taxaDe(guarani);
-    return usd && pyg && dolar && guarani ? { data, dolar, guarani, usd, pyg } : null;
+    return usd && pyg && dolar && guarani
+      ? { data, dolar, guarani, usd, pyg, origem, vigenteDesde }
+      : null;
   }
 
   /** A cotação da venda: a gravada nela, ou (venda feita sem internet) a vigente na hora dela. */
@@ -640,6 +650,8 @@ export class ConsultasLocais {
       dolar: t.dolar,
       guarani: t.guarani,
       deDiaAnterior: t.data < hoje,
+      origem: t.origem,
+      vigenteDesde: t.vigenteDesde,
     };
   }
 
