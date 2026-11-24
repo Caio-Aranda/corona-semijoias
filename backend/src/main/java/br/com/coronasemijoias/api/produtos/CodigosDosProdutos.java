@@ -88,7 +88,7 @@ public class CodigosDosProdutos {
             if (principal) {
                 marcadosComoPrincipal++;
                 if (!ativo) {
-                    throw Validacoes.recusar(CAMPO, "O código principal não pode estar desativado.");
+                    throw Validacoes.recusar(CAMPO, "O código principal não pode estar inativo.");
                 }
             }
             limpos.add(new Codigo(p.id(), codigo, tipo, p.fornecedorId(), principal, ativo));

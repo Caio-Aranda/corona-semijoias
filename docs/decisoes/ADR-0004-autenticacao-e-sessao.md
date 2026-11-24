@@ -27,7 +27,7 @@ A autenticação precisa funcionar nos dois apps, com uma exigência especial: o
 - **Janela de tolerância de 2 minutos:** se a resposta de uma renovação se perde (queda de conexão), o app volta com o token anterior. **Dentro da janela, o token anterior ainda é aceito uma única vez e devolve o mesmo sucessor**, sem criar outro. Para devolver o mesmo valor sem guardá-lo, o sucessor é **derivado** (HMAC-SHA256 com um segredo próprio do `.env` sobre o identificador do registro filho), e a conferência continua sendo pelo SHA-256 guardado. Alternativa descartada: guardar o sucessor cifrado até o fim da janela, que exige limpeza periódica. A janela é configurável.
 - **Reuso fora da janela, ou segunda reapresentação do token anterior, revoga a família inteira** (todos os tokens daquela sessão, no servidor), e o app precisa entrar de novo (com internet). Também revoga se o token anterior for reapresentado depois que o sucessor já foi usado.
 - **Saída (logout)** revoga a família. **Redefinir a senha, desativar o usuário ou desativar o aparelho** revoga todas as famílias do usuário.
-- **Usuário desativado** perde a sessão no próximo uso (item 1), com a mensagem "Seu acesso foi desativado." do glossário.
+- **Usuário desativado** perde a sessão no próximo uso (item 1), com a mensagem "Seu acesso está inativo." do glossário (até 24/11/2026, "Seu acesso foi desativado.").
 - A sessão guarda quando foi criada, usada e revogada e o motivo. **Nada é apagado** (ADR-0002).
 
 ### 3. Onde os tokens ficam nos aplicativos

@@ -355,17 +355,17 @@ describe('Representantes: ficha, aba Cadastro', () => {
     expect(await screen.findByRole('table')).toBeInTheDocument();
   });
 
-  it('desativar pede confirmação e chama inativar; depois oferece reativar', async () => {
+  it('inativar pede confirmação e chama inativar; depois oferece reativar', async () => {
     const m = montar({
       'vendedores.inativar': () => ({ ok: true, dados: { ...JOANA, ativo: false, version: 4 } }),
     });
     const u = await abrirFicha(m);
-    await u.click(screen.getByRole('button', { name: 'Desativar representante' }));
-    expect(await screen.findByText('Desativar Joana Souza?')).toBeInTheDocument();
+    await u.click(screen.getByRole('button', { name: 'Inativar representante' }));
+    expect(await screen.findByText('Inativar Joana Souza?')).toBeInTheDocument();
     expect(m.chamadas.some((c) => c.operacao === 'vendedores.inativar')).toBe(false);
     const janela = screen.getByRole('dialog');
-    await u.click(within(janela).getByRole('button', { name: 'Desativar representante' }));
-    expect(await screen.findByText('Joana Souza foi desativado.')).toBeInTheDocument();
+    await u.click(within(janela).getByRole('button', { name: 'Inativar representante' }));
+    expect(await screen.findByText('Joana Souza foi inativado.')).toBeInTheDocument();
     expect(ultima(m, 'vendedores.inativar')).toEqual({ id: ID_V });
     expect(screen.getByRole('button', { name: 'Reativar representante' })).toBeInTheDocument();
   });

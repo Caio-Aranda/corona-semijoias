@@ -303,7 +303,7 @@ describe('Montagem pelo leitor', () => {
     const m = montar();
     const u = await comecarMaleta(m);
     await ler(u, 'C-1');
-    expect(await screen.findByText(/Colar Antigo está desativada/)).toBeTruthy();
+    expect(await screen.findByText(/Colar Antigo está inativa/)).toBeTruthy();
     await ler(u, 'P-0');
     expect(await screen.findByText(/Pulseira Fina está sem estoque/)).toBeTruthy();
     await ler(u, 'B-7');

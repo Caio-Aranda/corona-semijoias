@@ -15,7 +15,7 @@ public final class VendedorAtivo {
     private VendedorAtivo() {
     }
 
-    /** Recusa com 409 ("Este vendedor está desativado. Fale com a dona.") se o cadastro do vendedor está inativo. */
+    /** Recusa com 409 ("Este representante está inativo. Fale com a dona.") se o cadastro do vendedor está inativo. */
     public static void exigir(JdbcTemplate jdbc, UUID vendedorId) {
         Boolean ativo = jdbc.query("SELECT ativo FROM corona.vendedores WHERE id = ?",
                 rs -> rs.next() ? rs.getBoolean(1) : null, vendedorId);
