@@ -22,19 +22,68 @@ export function tamTonDoProduto(db: BancoAberto, produtoId: string): string | nu
   return t ? t : null;
 }
 
-/** A cotação mais nova com data até o dia (a do próprio dia ou a última antes dele); sem nenhuma, `null` ("Sem cotação"). */
-export function cotacaoAteODia(
-  db: BancoAberto,
-  dia: string,
-): { data: string; dolar: string; guarani: string } | null {
+/** A cotação vigente num instante: as taxas de venda, de onde veio e, se a dona a digitou, "1 real = Gs. N". */
+export interface CotacaoVigente {
+  id: string;
+  data: string;
+  dolar: string;
+  guarani: string;
+  origem: 'BANCO_CENTRAL' | 'DONA';
+  vigenteDesde: string;
+  guaranisPorReal: string | null;
+}
+
+/**
+ * A cotação que vale num instante (ADR-0006, itens 7 e 15): a de maior `vigente_desde` menor ou igual a ele, empate pelo maior
+ * id (a mesma regra do servidor). A do Banco Central vale desde 00:00 do dia em Brasília; a da dona, desde a hora em que foi
+ * gravada. Compara por `julianday`, então "…:00Z" e "…:00.123Z" se comparam certo (texto puro erraria). Linha de antes da migração
+ * 13, ainda sem `vigente_desde`, vale desde 00:00 do dia dela em Brasília. Sem nenhuma, `null` ("Sem cotação"). É o ÚNICO lugar
+ * do app que escolhe cotação pelo momento (um teste de arquitetura confere): só tela, o valor gravado é sempre Real.
+ */
+export function cotacaoVigenteEm(db: BancoAberto, instante: string | Date): CotacaoVigente | null {
+  const iso = typeof instante === 'string' ? instante : instante.toISOString();
   const r = db
     .prepare(
-      `SELECT data_cotacao, usd_venda, pyg_venda FROM cotacoes
-        WHERE deleted_at IS NULL AND data_cotacao <= ? AND usd_venda IS NOT NULL AND pyg_venda IS NOT NULL
-        ORDER BY data_cotacao DESC LIMIT 1`,
+      `SELECT id, data_cotacao, usd_venda, pyg_venda, origem, vigente_desde, guaranis_por_real FROM cotacoes
+        WHERE deleted_at IS NULL AND usd_venda IS NOT NULL AND pyg_venda IS NOT NULL
+          AND julianday(coalesce(vigente_desde, data_cotacao || 'T03:00:00.000Z')) <= julianday(?)
+        ORDER BY julianday(coalesce(vigente_desde, data_cotacao || 'T03:00:00.000Z')) DESC, id DESC LIMIT 1`,
     )
-    .get(dia) as { data_cotacao: string; usd_venda: string; pyg_venda: string } | undefined;
-  return r ? { data: r.data_cotacao, dolar: r.usd_venda, guarani: r.pyg_venda } : null;
+    .get(iso) as
+    | {
+        id: string;
+        data_cotacao: string;
+        usd_venda: string;
+        pyg_venda: string;
+        origem: string | null;
+        vigente_desde: string | null;
+        guaranis_por_real: string | null;
+      }
+    | undefined;
+  if (!r) return null;
+  return {
+    id: r.id,
+    data: r.data_cotacao,
+    dolar: r.usd_venda,
+    guarani: r.pyg_venda,
+    origem: r.origem === 'DONA' ? 'DONA' : 'BANCO_CENTRAL',
+    vigenteDesde: r.vigente_desde ?? `${r.data_cotacao}T03:00:00.000Z`,
+    guaranisPorReal: r.guaranis_por_real,
+  };
+}
+
+/**
+ * A cotação da tela do consignado: a vigente ao FIM do dia pedido em Brasília (um dia passado), ou a vigente agora se nenhum
+ * dia foi pedido. Mesma forma de antes (`data`, `dolar`, `guarani`).
+ */
+export function cotacaoDaNota(
+  db: BancoAberto,
+  dia: string | undefined,
+  agora: Date,
+): { data: string; dolar: string; guarani: string } | null {
+  const instante = dia ? new Date(`${dia}T23:59:59.999-03:00`) : agora;
+  const c = cotacaoVigenteEm(db, instante);
+  return c ? { data: c.data, dolar: c.dolar, guarani: c.guarani } : null;
 }
 
 /** O número do recibo que a tela mostra: o mesmo formato da nota com o prefixo `R ` (`R 0000064-01`); nunca é gravado assim. */

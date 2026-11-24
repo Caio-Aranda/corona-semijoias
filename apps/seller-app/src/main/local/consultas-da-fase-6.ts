@@ -26,6 +26,7 @@ import type {
   MotivoDeDevolucao,
   PecaQueVolta,
 } from '../../shared/operacoes';
+import { cotacaoVigenteEm } from '../sync/consignado-comum';
 import { CHAVES, lerEstado } from '../sync/estado-sync';
 import {
   autorizacaoUsadaAqui,
@@ -423,7 +424,7 @@ export class ConsultasDaFase6 {
         podeCancelar: !cancelada && devolucaoQueDeixa && mesmoDia(t.trocada_em, agora),
       });
     }
-    for (const l of saida) l.cotacao = l.em ? this.cotacaoAte(diaEmBrasilia(l.em)) : null;
+    for (const l of saida) l.cotacao = l.em ? this.cotacaoAte(l.em) : null;
     return saida
       .filter((l) => {
         const dia = l.em ? diaEmBrasilia(l.em) : '';
@@ -523,15 +524,9 @@ export class ConsultasDaFase6 {
   // --- apoio ---
 
   /** A cotação mais nova até o dia (a do dia do lançamento, ou a última antes dele). */
-  private cotacaoAte(dia: string): { data: string; dolar: string; guarani: string } | null {
-    const r = this.db()
-      .prepare(
-        `SELECT data_cotacao, usd_venda, pyg_venda FROM cotacoes
-          WHERE deleted_at IS NULL AND data_cotacao <= ? AND usd_venda IS NOT NULL AND pyg_venda IS NOT NULL
-          ORDER BY data_cotacao DESC LIMIT 1`,
-      )
-      .get(dia) as { data_cotacao: string; usd_venda: string; pyg_venda: string } | undefined;
-    return r ? { data: r.data_cotacao, dolar: r.usd_venda, guarani: r.pyg_venda } : null;
+  private cotacaoAte(instante: string): { data: string; dolar: string; guarani: string } | null {
+    const c = cotacaoVigenteEm(this.db(), instante);
+    return c ? { data: c.data, dolar: c.dolar, guarani: c.guarani } : null;
   }
 
   private existe(sql: string, ...p: unknown[]): boolean {

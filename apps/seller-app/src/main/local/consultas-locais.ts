@@ -1,3 +1,4 @@
+import { cotacaoVigenteEm } from '../sync/consignado-comum';
 import type { BancoAberto } from '../banco/banco-local';
 import { centavosDe, exigirCentavos, textoDeCentavos } from '../../shared/dinheiro';
 import type {
@@ -594,16 +595,10 @@ export class ConsultasLocais {
 
   // --- cotação ---
 
-  /** A cotação mais nova com data até o dia (a do próprio dia, ou a última antes dele). */
-  private cotacaoAte(dia: string): Taxas | null {
-    const r = this.db()
-      .prepare(
-        `SELECT data_cotacao, usd_venda, pyg_venda FROM cotacoes
-          WHERE deleted_at IS NULL AND data_cotacao <= ? AND usd_venda IS NOT NULL AND pyg_venda IS NOT NULL
-          ORDER BY data_cotacao DESC LIMIT 1`,
-      )
-      .get(dia) as { data_cotacao: string; usd_venda: string; pyg_venda: string } | undefined;
-    return r ? this.taxas(r.data_cotacao, r.usd_venda, r.pyg_venda) : null;
+  /** A cotação vigente no instante (a de maior `vigente_desde` até ele; ADR-0006, item 15). */
+  private cotacaoEm(instante: string | Date): Taxas | null {
+    const r = cotacaoVigenteEm(this.db(), instante);
+    return r ? this.taxas(r.data, r.dolar, r.guarani) : null;
   }
 
   private taxas(data: string, dolar: string | null, guarani: string | null): Taxas | null {
@@ -612,7 +607,7 @@ export class ConsultasLocais {
     return usd && pyg && dolar && guarani ? { data, dolar, guarani, usd, pyg } : null;
   }
 
-  /** A cotação da venda: a gravada nela, ou (venda feita sem internet) a do dia dela ou a última antes. */
+  /** A cotação da venda: a gravada nela, ou (venda feita sem internet) a vigente na hora dela. */
   private cotacaoDaVenda(v: { cotacao_id: string | null; vendida_em: string }): Taxas | null {
     if (v.cotacao_id) {
       const r = this.db()
@@ -622,12 +617,12 @@ export class ConsultasLocais {
       const t = r ? this.taxas(r.data_cotacao, r.usd_venda, r.pyg_venda) : null;
       if (t) return t;
     }
-    return this.cotacaoAte(diaEmBrasilia(v.vendida_em));
+    return this.cotacaoEm(v.vendida_em);
   }
 
   private cotacaoDeHoje(): CotacaoDoDia {
     const hoje = diaEmBrasilia(this.agora());
-    const t = this.cotacaoAte(hoje);
+    const t = this.cotacaoEm(this.agora());
     if (!t) {
       return {
         disponivel: false,
@@ -974,7 +969,7 @@ export class ConsultasLocais {
         l = { nome: forma, quantidade: 0, valor: new Soma(), desconto: new Soma() };
         chaves.set(forma, l);
       }
-      const taxas = this.cotacaoAte(dia);
+      const taxas = this.cotacaoEm(p.pago_em ?? this.agora());
       l.quantidade += p.tipo === 'PAGAMENTO' ? 1 : 0;
       l.valor.somar(centavosDe(p.valor) ?? 0n, taxas);
       l.desconto.somar(0n, taxas);
@@ -1159,7 +1154,7 @@ export class ConsultasLocais {
       const c = p.cliente_id ?? '';
       let s = pago.get(c);
       if (!s) pago.set(c, (s = new Soma()));
-      s.somar(centavosDe(p.valor) ?? 0n, this.cotacaoAte(diaEmBrasilia(p.pago_em ?? this.agora())));
+      s.somar(centavosDe(p.valor) ?? 0n, this.cotacaoEm(p.pago_em ?? this.agora()));
     }
     const clientes = [];
     let total = new Soma();

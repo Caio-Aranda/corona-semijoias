@@ -23,6 +23,10 @@ export const COLUNAS_DO_PULL: Readonly<Record<TabelaSincronizavel, readonly stri
       'pyg_paridade_venda',
       'buscada_em',
       'fonte',
+      // A cotação da dona (ADR-0006, item 15). `lancada_por` (quem lançou) nunca vem: não é dado do vendedor.
+      'origem',
+      'vigente_desde',
+      'guaranis_por_real',
     ],
     categorias: ['nome', 'ativo'],
     semanas: ['numero', 'inicio', 'fim', 'situacao'],

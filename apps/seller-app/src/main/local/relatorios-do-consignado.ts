@@ -1,3 +1,4 @@
+import { cotacaoVigenteEm } from '../sync/consignado-comum';
 import { dolarEmCentavos, guaraniInteiro, taxaDeTexto } from '@corona/shared/moedas';
 import type {
   ClienteCompleto,
@@ -117,7 +118,7 @@ export class RelatoriosDoConsignado {
    * (nunca "US$ 0,00 · Gs. 0" falso); havendo cotação, o zero em Dólar e Guarani é verdadeiro.
    */
   private soma(): Soma {
-    return new Soma(this.cotacaoAte('9999-12-31') !== null);
+    return new Soma(this.cotacaoEm(this.o.agora()) !== null);
   }
 
   private db(): BancoAberto {
@@ -172,19 +173,13 @@ export class RelatoriosDoConsignado {
     return usd && pyg ? { usd, pyg } : null;
   }
 
-  /** A cotação mais nova com data até o dia (a do próprio dia, ou a última antes dele). */
-  private cotacaoAte(dia: string): Taxas | null {
-    const r = this.db()
-      .prepare(
-        `SELECT data_cotacao, usd_venda, pyg_venda FROM cotacoes
-          WHERE deleted_at IS NULL AND data_cotacao <= ? AND usd_venda IS NOT NULL AND pyg_venda IS NOT NULL
-          ORDER BY data_cotacao DESC LIMIT 1`,
-      )
-      .get(dia) as { data_cotacao: string; usd_venda: string; pyg_venda: string } | undefined;
-    return r ? this.taxasDe(r.data_cotacao, r.usd_venda, r.pyg_venda) : null;
+  /** A cotação vigente no instante (a de maior `vigente_desde` até ele; ADR-0006, item 15). */
+  private cotacaoEm(instante: string | Date): Taxas | null {
+    const r = cotacaoVigenteEm(this.db(), instante);
+    return r ? this.taxasDe(r.data, r.dolar, r.guarani) : null;
   }
 
-  /** A cotação do lançamento: a gravada nele; senão (feito sem internet) a do dia dele ou a última antes. */
+  /** A cotação do lançamento: a gravada nele; senão (feito sem internet) a vigente na hora dele. */
   private cotacaoDoLancamento(cotacaoId: string | null, instante: string | null): Taxas | null {
     if (cotacaoId) {
       const r = this.db()
@@ -194,7 +189,7 @@ export class RelatoriosDoConsignado {
       const t = r ? this.taxasDe(r.data_cotacao, r.usd_venda, r.pyg_venda) : null;
       if (t) return t;
     }
-    return instante ? this.cotacaoAte(diaEmBrasilia(instante)) : null;
+    return instante ? this.cotacaoEm(instante) : null;
   }
 
   private taxasDaNota(notaId: string): Taxas | null {
@@ -597,7 +592,7 @@ export class RelatoriosDoConsignado {
     let itensDv = 0;
     let itensVd = 0;
     const quem = new Map<string, string[]>();
-    const hoje = this.cotacaoAte(diaEmBrasilia(this.o.agora()));
+    const hoje = this.cotacaoEm(this.o.agora());
     const notas = db
       .prepare(
         `SELECT DISTINCT i.nota_id FROM itens_nota_consignado i
