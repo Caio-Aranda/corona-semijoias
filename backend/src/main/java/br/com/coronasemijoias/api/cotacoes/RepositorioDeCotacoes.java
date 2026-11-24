@@ -96,6 +96,13 @@ public class RepositorioDeCotacoes {
                 MAPEADOR, momento.atOffset(ZoneOffset.UTC)).stream().findFirst();
     }
 
+    /** A última cotação do Banco Central que já valia no instante (a que a dona vê ao lado da dela). */
+    public Optional<Cotacao> bancoCentralVigenteEm(Instant momento) {
+        return jdbc.query("SELECT " + COLUNAS + " FROM corona.cotacoes c WHERE c.origem = 'BANCO_CENTRAL' AND c.vigente_desde <= ? "
+                        + "ORDER BY " + CotacaoVigente.SQL_ORDEM_DA_VIGENTE + " LIMIT 1",
+                MAPEADOR, momento.atOffset(ZoneOffset.UTC)).stream().findFirst();
+    }
+
     /** Todas as cotações do dia (BCB e da dona), na ordem em que passaram a valer. */
     public List<Cotacao> doDia(LocalDate dia) {
         return jdbc.query("SELECT " + COLUNAS + " FROM corona.cotacoes WHERE data_cotacao = ? ORDER BY vigente_desde, id",

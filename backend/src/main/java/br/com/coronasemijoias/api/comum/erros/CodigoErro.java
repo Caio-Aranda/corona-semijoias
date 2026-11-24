@@ -626,6 +626,11 @@ public enum CodigoErro {
             "A cotação do dia mudou.",
             "A cotação do dia mudou enquanto a tela estava aberta. Volte, abra o recebimento de novo e confira o valor em reais."),
 
+    /** O reenvio da cotação da dona usa um id já gravado com outros valores (HTTP 409; ADR-0006, item 15). */
+    COTACAO_JA_GRAVADA_DIFERENTE(
+            "Esta cotação já foi gravada com outros valores.",
+            "Esta cotação já foi gravada com outros valores. Abra a janela de novo e grave a cotação nova."),
+
     /** Não há cotação nenhuma para o acerto (HTTP 409). */
     SEM_COTACAO_PARA_O_ACERTO(
             "Falta a cotação do dia.",
