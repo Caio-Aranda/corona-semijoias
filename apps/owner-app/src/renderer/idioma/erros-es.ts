@@ -204,6 +204,10 @@ export const ERROS_EM_ESPANHOL: Record<string, string> = {
     'Hay una devolución esperando su decisión. Acéptela o no antes de cerrar el acerto.',
   FECHAMENTO_DESATUALIZADO: 'Llegaron cosas nuevas a este acerto. Revise de nuevo antes de cerrar.',
   SEM_COTACAO_PARA_O_ACERTO: 'Busque la cotización del día antes de cerrar el acerto.',
+  SEM_COTACAO_PARA_O_RECEBIMENTO:
+    'Todavía no hay cotización del día. Por ahora, registre el cobro en reales.',
+  COTACAO_DO_RECEBIMENTO_MUDOU:
+    'La cotización del día cambió mientras la pantalla estaba abierta. Vuelva, abra el cobro de nuevo y revise el valor en reales.',
   PENDENCIA_NAO_ENCONTRADA: 'No encontramos esta pendiente. Actualice la lista e intente de nuevo.',
   PENDENCIA_JA_RESOLVIDA: 'Esta pendiente ya fue resuelta. Actualice la lista.',
   PENDENCIA_RESOLUCAO_DIFERENTE:

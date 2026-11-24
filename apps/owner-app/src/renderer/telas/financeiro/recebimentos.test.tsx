@@ -301,4 +301,119 @@ describe('Recebimentos do representante', () => {
     expect(await screen.findByText(/Sem conexão com a internet/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Tentar de novo' })).toBeInTheDocument();
   });
+
+  // --- em Guarani, Dólar ou Real (23/11/2026) ---
+
+  const comCotacao = {
+    'cotacao.hoje': () => ({
+      ok: true as const,
+      dados: {
+        disponivel: true,
+        cotacao: { dataCotacao: '2026-11-23', dolar: '5.50130000', guarani: '0.00089500' },
+      },
+    }),
+  };
+
+  it('sem cotação do dia: avisa e só deixa registrar em reais', async () => {
+    const m = servidor();
+    const u = await abrirRecebimentos(m);
+    await u.click(screen.getByRole('button', { name: 'Registrar recebimento' }));
+    expect(
+      screen.getByText('Ainda não há cotação do dia. Por enquanto, registre o recebimento em reais.'),
+    ).toBeInTheDocument();
+    expect(screen.queryByLabelText('Moeda')).toBeNull();
+  });
+
+  it('em Guarani: mostra as três moedas antes de confirmar e manda só o valor em Guarani', async () => {
+    const m = servidor(comCotacao);
+    const u = await abrirRecebimentos(m);
+    await u.click(screen.getByRole('button', { name: 'Registrar recebimento' }));
+    const moedas = within(screen.getByLabelText('Moeda')).getAllByRole('option');
+    expect(moedas.map((o) => o.textContent)).toEqual(['Real', 'Dólar', 'Guarani']);
+    await u.selectOptions(screen.getByLabelText('Representante'), ID_VENDEDOR);
+    await u.selectOptions(screen.getByLabelText('Moeda'), 'GUARANI');
+    await u.type(screen.getByLabelText('Valor recebido em Guarani'), '500.000');
+    // Gs. 500.000 x 0,000895 = R$ 447,50; 447,50 / 5,5013 = US$ 81,34.
+    expect(await screen.findByText('R$ 447,50')).toBeInTheDocument();
+    expect(screen.getByText('US$ 81,34 · Gs. 500.000')).toBeInTheDocument();
+    expect(screen.getByText(/Fica assim/)).toBeInTheDocument();
+    await u.click(screen.getByRole('button', { name: 'Registrar recebimento' }));
+    await waitFor(() => expect(chamadasDe(m, 'recebimentos.receber')).toHaveLength(1));
+    const p = ultima(m, 'recebimentos.receber');
+    expect(p).toMatchObject({
+      vendedorId: ID_VENDEDOR,
+      forma: 'DINHEIRO',
+      moeda: 'GUARANI',
+      valorNaMoeda: '500000',
+      cotacaoData: '2026-11-23',
+    });
+    expect(p).not.toHaveProperty('valor');
+  });
+
+  it('em Guarani com vírgula: explica que o Guarani não tem centavos e não manda', async () => {
+    const m = servidor(comCotacao);
+    const u = await abrirRecebimentos(m);
+    await u.click(screen.getByRole('button', { name: 'Registrar recebimento' }));
+    await u.selectOptions(screen.getByLabelText('Representante'), ID_VENDEDOR);
+    await u.selectOptions(screen.getByLabelText('Moeda'), 'GUARANI');
+    await u.type(screen.getByLabelText('Valor recebido em Guarani'), '500,5');
+    expect(
+      screen.getByText('Digite o valor em Guarani, sem vírgula: o Guarani não tem centavos.'),
+    ).toBeInTheDocument();
+    await u.click(screen.getByRole('button', { name: 'Registrar recebimento' }));
+    expect(chamadasDe(m, 'recebimentos.receber')).toHaveLength(0);
+  });
+
+  it('em Dólar: manda a moeda e o valor em Dólar', async () => {
+    const m = servidor(comCotacao);
+    const u = await abrirRecebimentos(m);
+    await u.click(screen.getByRole('button', { name: 'Registrar recebimento' }));
+    await u.selectOptions(screen.getByLabelText('Representante'), ID_VENDEDOR);
+    await u.selectOptions(screen.getByLabelText('Moeda'), 'DOLAR');
+    await u.type(screen.getByLabelText('Valor recebido em Dólar'), '100');
+    expect(await screen.findByText('R$ 550,13')).toBeInTheDocument();
+    await u.click(screen.getByRole('button', { name: 'Registrar recebimento' }));
+    await waitFor(() => expect(chamadasDe(m, 'recebimentos.receber')).toHaveLength(1));
+    expect(ultima(m, 'recebimentos.receber')).toMatchObject({
+      moeda: 'DOLAR',
+      valorNaMoeda: '100.00',
+    });
+  });
+
+  it('em Real com cotação: igual a antes, sem moeda no pedido', async () => {
+    const m = servidor(comCotacao);
+    const u = await abrirRecebimentos(m);
+    await u.click(screen.getByRole('button', { name: 'Registrar recebimento' }));
+    await u.selectOptions(screen.getByLabelText('Representante'), ID_VENDEDOR);
+    await u.type(screen.getByLabelText('Valor recebido'), '10');
+    await u.click(screen.getByRole('button', { name: 'Registrar recebimento' }));
+    await waitFor(() => expect(chamadasDe(m, 'recebimentos.receber')).toHaveLength(1));
+    const p = ultima(m, 'recebimentos.receber');
+    expect(Object.keys(p ?? {}).sort()).toEqual(['forma', 'id', 'valor', 'vendedorId']);
+  });
+
+  it('a lista mostra as três moedas que o sistema mandou e "Recebido em" na moeda digitada', async () => {
+    const m = servidor({
+      'recebimentos.listar': () => ({
+        ok: true,
+        dados: [
+          recebimento({
+            valor: '447.50',
+            moeda: 'GUARANI',
+            valorNaMoeda: '500000',
+            dolar: '81.34',
+            guarani: '500000',
+            dataCotacao: '2026-11-23',
+          }),
+        ],
+      }),
+    });
+    await abrirRecebimentos(m);
+    expect(screen.getByText('R$ 447,50')).toBeInTheDocument();
+    expect(screen.getByText('US$ 81,34 · Gs. 500.000')).toBeInTheDocument();
+    expect(screen.getByText('Recebido em Gs. 500.000')).toBeInTheDocument();
+    expect(
+      screen.getByText('Dólar e Guarani pela cotação do Banco Central do dia de cada recebimento.'),
+    ).toBeInTheDocument();
+  });
 });

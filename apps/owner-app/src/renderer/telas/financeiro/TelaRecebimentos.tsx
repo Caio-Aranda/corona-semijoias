@@ -1,15 +1,15 @@
-import { Aviso, Botao, Campo, Tabela } from '@corona/ui';
+import { Aviso, Botao, Campo, Tabela, ValorTresMoedas } from '@corona/ui';
 import { useState } from 'react';
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { AvisoDeErro } from '../../componentes/AvisoDeErro';
 import { chamar, useBusca } from '../../nucleo/chamadas';
-import { RodapeDaCotacao } from '../../nucleo/cotacao';
+import { centavosDeTexto, formatarNaMoeda } from '../../nucleo/moedas';
 import { TEXTOS_DE_FINANCEIRO } from '../../textos-financeiro';
 import { CampoDeEscolha, useVendedores } from '../devolucoes/Apoio';
 import { dataEHora } from '../sincronizacao/dados';
 import { EstornarComMotivo } from './EstornarComMotivo';
 import { RegistrarRecebimento } from './RegistrarRecebimento';
-import { ValorDoDia } from './Valor';
+import { soReal } from './Valor';
 import {
   lerRecebimentos,
   recebimentoPodeSerEstornado,
@@ -18,6 +18,30 @@ import {
 
 const T = TEXTOS_DE_FINANCEIRO.recebimentos;
 const FORMAS = TEXTOS_DE_FINANCEIRO.formas;
+const M = TEXTOS_DE_FINANCEIRO.moedaDoRecebimento;
+
+/**
+ * O valor do recebimento nas três moedas, como o sistema mandou (cada um pela cotação do dia dele; na moeda em que foi recebido,
+ * o valor digitado). Recebido em Dólar ou Guarani: "Recebido em Gs. 500.000". O estorno mostra só o Real, com o sinal.
+ */
+function ValorRecebido({ r }: { r: RecebimentoDoVendedor }) {
+  const negativo = (centavosDeTexto(r.valor) ?? 0n) < 0n;
+  if (negativo) return <>{soReal(r.valor)}</>;
+  const dolar = r.dolar === null ? null : formatarNaMoeda(r.dolar, 'DOLAR');
+  const guarani = r.guarani === null ? null : formatarNaMoeda(r.guarani, 'GUARANI');
+  const digitado =
+    r.moeda === 'REAL' || r.valorNaMoeda === null ? null : formatarNaMoeda(r.valorNaMoeda, r.moeda);
+  return (
+    <>
+      <ValorTresMoedas
+        real={soReal(r.valor)}
+        {...(dolar ? { dolar } : {})}
+        {...(guarani ? { guarani } : {})}
+      />
+      {digitado ? <span className="cs-valor__outras">{M.recebidoEm(digitado)}</span> : null}
+    </>
+  );
+}
 
 /** A janela de estorno: o novo vencimento só se pergunta quando o recebimento pagou um acerto. */
 function EstornarRecebimento({
@@ -138,7 +162,7 @@ export function TelaRecebimentos({ ponte }: { ponte: PonteDoCorona }) {
               data: dataEHora(r.recebidoEm),
               vendedor: r.vendedorNome,
               forma: FORMAS[r.forma] ?? r.forma,
-              valor: <ValorDoDia valor={r.valor} />,
+              valor: <ValorRecebido r={r} />,
               de: T.momentos[r.momento] ?? r.momento,
               situacao: r.estornaId ? T.ehEstorno : r.estornado ? T.desfeito : T.valido,
               acoes: recebimentoPodeSerEstornado(r) ? (
@@ -156,7 +180,7 @@ export function TelaRecebimentos({ ponte }: { ponte: PonteDoCorona }) {
               ),
             }))}
           />
-          <RodapeDaCotacao />
+          <p className="gestao-cotacao">{M.rodapeDaLista}</p>
         </>
       ) : null}
       {estornando ? (

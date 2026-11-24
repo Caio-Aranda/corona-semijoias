@@ -324,6 +324,23 @@ export const ES_TEXTOS_DE_FINANCEIRO: NoMesmoFormato<typeof PT_TEXTOS_DE_FINANCE
     },
   },
 
+  moedaDoRecebimento: {
+    rotulo: 'Moneda',
+    rotuloDe: (forma: string) => `Moneda (${forma})`,
+    nomes: { REAL: 'Real', DOLAR: 'Dólar', GUARANI: 'Guaraní' },
+    valorEm: { DOLAR: 'en dólares', GUARANI: 'en guaraníes' },
+    ficaAssim: 'Queda así:',
+    ajuda: 'El sistema convierte a reales por la cotización y lo guarda en reales.',
+    invalido: {
+      DOLAR: 'Escriba el valor en dólares, con dos números como máximo después de la coma.',
+      GUARANI: 'Escriba el valor en guaraníes, sin coma: el guaraní no tiene centavos.',
+    },
+    pequeno: 'El valor es demasiado chico para convertirse en reales. Revise el valor.',
+    semCotacao: 'Todavía no hay cotización del día. Por ahora, registre el cobro en reales.',
+    recebidoEm: (valor: string) => `Cobrado en ${valor}`,
+    rodapeDaLista: 'Dólar y guaraní por la cotización del Banco Central del día de cada cobro.',
+  },
+
   semana: {
     fechar: 'Cerrar semana',
     fecharDe: (numero: string) => `Cerrar la semana ${numero}`,

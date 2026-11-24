@@ -328,6 +328,24 @@ export const PT_TEXTOS_DE_FINANCEIRO = {
     },
   },
 
+  /** O recebimento do representante em Real, Dólar ou Guarani (23/11/2026; glossário, parte 11). */
+  moedaDoRecebimento: {
+    rotulo: 'Moeda',
+    rotuloDe: (forma: string) => `Moeda (${forma})`,
+    nomes: { REAL: 'Real', DOLAR: 'Dólar', GUARANI: 'Guarani' } as Record<string, string>,
+    valorEm: { DOLAR: 'em Dólar', GUARANI: 'em Guarani' } as Record<string, string>,
+    ficaAssim: 'Fica assim:',
+    ajuda: 'O sistema converte para reais pela cotação e grava em reais.',
+    invalido: {
+      DOLAR: 'Digite o valor em Dólar, com no máximo dois números depois da vírgula.',
+      GUARANI: 'Digite o valor em Guarani, sem vírgula: o Guarani não tem centavos.',
+    } as Record<string, string>,
+    pequeno: 'O valor é pequeno demais para virar reais. Confira o valor.',
+    semCotacao: 'Ainda não há cotação do dia. Por enquanto, registre o recebimento em reais.',
+    recebidoEm: (valor: string) => `Recebido em ${valor}`,
+    rodapeDaLista: 'Dólar e Guarani pela cotação do Banco Central do dia de cada recebimento.',
+  },
+
   semana: {
     fechar: 'Fechar semana',
     fecharDe: (numero: string) => `Fechar a semana ${numero}`,
