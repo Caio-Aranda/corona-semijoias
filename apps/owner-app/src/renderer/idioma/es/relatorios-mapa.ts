@@ -283,6 +283,7 @@ export const RELATORIOS_EM_ESPANHOL: Record<string, string> = {
   'Mercadoria com cada representante': 'Mercadería con cada representante',
   'Mercadoria em maletas': 'Mercadería en maletas',
   'Meta da comissão (Gs)': 'Meta de la comisión (Gs)',
+  'Moeda recebida': 'Moneda del cobro',
   Motivo: 'Motivo',
   'Motivo da devolução': 'Motivo de la devolución',
   'Motivo de ter sido desfeita': 'Motivo de haber sido deshecha',

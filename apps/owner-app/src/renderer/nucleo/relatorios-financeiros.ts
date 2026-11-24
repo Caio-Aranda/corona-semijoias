@@ -8,10 +8,21 @@ import type { NomeDoRelatorio, NomeDoRelatorioFinanceiro } from '../../shared/re
 import { TEXTOS_DE_RELATORIOS_FINANCEIROS } from '../textos-relatorios-financeiros';
 import type { ColunaDoRelatorio } from './exportacao/grade';
 import type { DefinicaoDeRelatorio, ExtraDoRelatorio } from './relatorios';
+import { formatarNaMoeda } from './moedas';
+import { TEXTOS_DE_FINANCEIRO } from '../textos-financeiro';
 import { idiomaAtual } from '../idioma/idioma';
 import { traducirDefinicion } from '../idioma/es/relatorios-mapa';
 
 const T = TEXTOS_DE_RELATORIOS_FINANCEIROS;
+
+/** "Recebido em Gs. 500.000" quando o representante pagou em Dólar ou Guarani; vazio em Real (o Real é o valor da linha). */
+function moedaRecebida(linha: Record<string, unknown>): string {
+  const moeda = linha.moeda;
+  const digitado = linha.valorNaMoeda;
+  if ((moeda !== 'DOLAR' && moeda !== 'GUARANI') || typeof digitado !== 'string') return '';
+  const v = formatarNaMoeda(digitado, moeda);
+  return v ? TEXTOS_DE_FINANCEIRO.moedaDoRecebimento.recebidoEm(v) : '';
+}
 
 const COTACAO = { chave: 'dataDaCotacao', titulo: 'Cotação do dia', tipo: 'data' } as const;
 
@@ -515,6 +526,7 @@ export const RELATORIOS_FINANCEIROS: Record<NomeDoRelatorioFinanceiro, Definicao
       { chave: 'momentoNaTela', titulo: 'Quando', tipo: 'texto' },
       reais('valor', 'Valor'),
       COTACAO,
+      { chave: 'moedaRecebidaNaTela', titulo: 'Moeda recebida', tipo: 'texto' },
       { chave: 'situacaoNaTela', titulo: 'Situação', tipo: 'texto' },
     ],
     totaisDeValor: {
@@ -619,6 +631,7 @@ export function prepararLinhaFinanceira(
         ...linha,
         formaNaTela: T.formas[texto(linha, 'forma')] ?? '',
         momentoNaTela: T.momentos[texto(linha, 'momento')] ?? '',
+        moedaRecebidaNaTela: moedaRecebida(linha),
         situacaoNaTela: linha.estorno === true ? T.estorno : '',
       };
     case 'financeiro-comissoes':

@@ -297,6 +297,58 @@ describe('o pagamento', () => {
     );
   });
 
+  it('conta antiga paga em Guarani: mostra as três moedas e manda só o valor em Guarani', async () => {
+    const m = servidor(
+      previaDoServidor({
+        contasAbertasDoVendedor: [
+          {
+            id: CONTA,
+            origem: 'ACERTO',
+            numero: 1,
+            totalDeParcelas: 2,
+            vencimento: '2026-11-20',
+            valor: '200.00',
+            emAberto: '150.00',
+            formaPrevista: 'PIX',
+          },
+        ],
+      }),
+      {
+        'cotacao.hoje': () =>
+          resposta({
+            disponivel: true,
+            cotacao: { dataCotacao: '2026-11-12', dolar: '5.00000000', guarani: '0.00090000' },
+          }),
+      },
+    );
+    const u = await aberta(m);
+    await u.selectOptions(screen.getByLabelText('Moeda (Pagar agora a parcela 1 de 2)'), 'GUARANI');
+    await u.type(screen.getByLabelText('Pagar agora a parcela 1 de 2 em Guarani'), '100.000');
+    expect(await screen.findByText('US$ 18,00 · Gs. 100.000')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(
+        (
+          ultima(m, 'acertos.previaComDecisoes') as {
+            pedido: { pagamento: { contasAntigas: Record<string, unknown>[] } };
+          }
+        ).pedido.pagamento.contasAntigas,
+      ).toEqual([
+        expect.objectContaining({
+          contaId: CONTA,
+          forma: 'DINHEIRO',
+          moeda: 'GUARANI',
+          valorNaMoeda: '100000',
+        }),
+      ]),
+    );
+    const [conta] = (
+      ultima(m, 'acertos.previaComDecisoes') as {
+        pedido: { pagamento: { contasAntigas: Record<string, unknown>[] } };
+      }
+    ).pedido.pagamento.contasAntigas;
+    expect(conta).not.toHaveProperty('valor');
+  });
+
   it('mostra o que o sistema calculou do pagamento: recebido, boleto e o que ficou devendo', async () => {
     await aberta(
       servidor(

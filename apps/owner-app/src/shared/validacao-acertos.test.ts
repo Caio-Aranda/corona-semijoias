@@ -187,6 +187,24 @@ describe('conferência dos dados dos acertos', () => {
       expect(com({ recebimentos: [{ id: ID, forma: 'DINHEIRO', moeda: 'GUARANI' }] })).toBeNull();
     });
 
+    it('conta antiga paga em Dólar ou Guarani: só moeda e valor na moeda, nunca os dois valores', () => {
+      const com = (contasAntigas: unknown) =>
+        conferirParametros('acertos.fechar', {
+          id: ID,
+          pedido: { ...pedido, pagamento: { contasAntigas } },
+        });
+      const base = { id: TERCEIRO, contaId: ID, forma: 'DINHEIRO' };
+      expect(com([{ ...base, moeda: 'GUARANI', valorNaMoeda: '500000' }])).not.toBeNull();
+      expect(com([{ ...base, moeda: 'DOLAR', valorNaMoeda: '20.50' }])).not.toBeNull();
+      expect(
+        com([{ ...base, moeda: 'GUARANI', valorNaMoeda: '500000', valor: '4.00' }]),
+      ).toBeNull();
+      expect(com([{ ...base, moeda: 'GUARANI', valorNaMoeda: '1.5' }])).toBeNull();
+      expect(com([{ ...base, moeda: 'GUARANI' }])).toBeNull();
+      expect(com([{ ...base, moeda: 'EURO', valorNaMoeda: '5' }])).toBeNull();
+      expect(com([{ ...base, valor: '5.00' }])).not.toBeNull();
+    });
+
     it('decisão fora da lista é recusada e "a loja assume" exige motivo', () => {
       const com = (parte: object) =>
         conferirParametros('acertos.fechar', { id: ID, pedido: { ...pedido, ...parte } });
