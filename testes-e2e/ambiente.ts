@@ -28,3 +28,15 @@ export const VARIAVEIS_DA_API: Record<string, string> = {
   CORONA_COTACOES_BUSCA_AGENDADA: 'false',
   ARQUIVOS_PASTA: './dados/e2e-arquivos',
 };
+
+/**
+ * O Corona Vendas é compilado apontando para esta porta, onde o próprio teste liga uma "rede" (`rede-do-vendas.ts`) que
+ * repassa tudo para a API de teste e pode ser cortada para simular a falta de internet.
+ */
+export const PORTA_DA_REDE_DO_VENDAS = 8098;
+export const URL_DA_REDE_DO_VENDAS = `http://localhost:${PORTA_DA_REDE_DO_VENDAS}`;
+
+/** A representante dos testes do Corona Vendas (valores falsos, só do banco descartável). */
+export const REPRESENTANTE = {
+  senhaNova: 'Vendedora12345abc',
+};

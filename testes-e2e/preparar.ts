@@ -2,7 +2,7 @@ import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
 import { mkdirSync, readdirSync, rmSync, createWriteStream } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { PORTA_DA_API, URL_DA_API, VARIAVEIS_DA_API } from './ambiente';
+import { PORTA_DA_API, URL_DA_API, URL_DA_REDE_DO_VENDAS, VARIAVEIS_DA_API } from './ambiente';
 
 const aqui = dirname(fileURLToPath(import.meta.url));
 const raiz = resolve(aqui, '..');
@@ -77,6 +77,11 @@ export default async function preparar(): Promise<() => void> {
   // O app é compilado com o endereço da API de teste (o Vite embute MAIN_VITE_*).
   rodar('npm', ['run', 'build', '-w', '@corona/owner-app'], {
     env: { ...process.env, MAIN_VITE_CORONA_API_URL: URL_DA_API },
+  });
+  // O Corona Vendas vai pela "rede" do teste (porta 8098), que o teste pode cortar para simular a falta de internet.
+  // O better-sqlite3 dele já traz o binário pronto para o Electron: nada a recompilar (o vitest segue usando o do Node).
+  rodar('npm', ['run', 'build', '-w', '@corona/seller-app'], {
+    env: { ...process.env, MAIN_VITE_CORONA_API_URL: URL_DA_REDE_DO_VENDAS },
   });
   console.log(
     `\n[e2e] API de teste em ${URL_DA_API} (porta ${PORTA_DA_API}), banco corona_e2e na porta 5499.\n`,
