@@ -1,6 +1,6 @@
 # Especificação completa: Sistema de Semijoias Consignadas
 
-Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.32, 23/11/2026.
+Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.33, 23/11/2026.
 
 ## 1. Objetivo e contexto
 
@@ -241,6 +241,12 @@ Regras:
   - Busca que falhou: vale a do dia anterior, e a dona recebe um aviso em "O que precisa da sua atenção".
   - O **acerto grava a cotação que usou**: a mais recente no momento em que é fechado. Todos os valores do acerto são convertidos por ela, e a tela do acerto mostra a data dessa cotação.
   - Fonte, regras da busca, conversão e arredondamento: ADR-0006.
+- **Cotação da dona durante o dia** (pedido do responsável, 23/11/2026; ADR-0006, item 15; plano em `docs/planos/cotacao-da-dona-no-dia.md`). Na fronteira o câmbio muda durante o dia, e a dona usa a cotação da casa de câmbio. Por isso a dona pode **lançar uma cotação nova a qualquer hora**, no Corona Gestão, digitando como se fala ("1 dólar = R$ 5,80" e "1 real = Gs. 1.350"); o mesmo valor serve para compra e venda.
+  - Pode haver **várias cotações no mesmo dia**. Cada uma tem **origem** (Banco Central ou dona, com quem lançou) e o **momento em que começa a valer**: a da dona vale a partir da hora em que ela grava (nunca antes, nunca para o passado); a do Banco Central de um dia vale desde o começo daquele dia em Brasília, como antes.
+  - Continua imutável: corrigir é lançar outra, nunca alterar nem apagar.
+  - **Cada lançamento usa a cotação que valia no momento dele** (e não mais "a do dia"); o acerto usa a que vale no momento do fechamento. O que já foi gravado nunca muda. Se a dona nunca digitar, tudo fica exatamente como era.
+  - A tela mostra ao lado a cotação do Banco Central do dia para comparar e avisa, sem travar, quando a digitada difere dela mais de 15%.
+  - O Corona Vendas recebe as cotações novas pelo sync e, sem internet, mostra a última que recebeu (só tela). Quem escolhe a cotação gravada no lançamento é sempre o servidor, pela hora do lançamento.
 
 ### 7.6 Estoque central e compras
 
@@ -372,7 +378,7 @@ Modelo no ADR-0014 (tabelas criadas nas tarefas 6.3 a 6.5; todas imutáveis, cor
 
 - `configuracoes` (uma linha por chave, valor numa coluna do tipo certo: `valor_inteiro` ou `valor_dinheiro`; só do servidor: prazo\_arrependimento\_dias (padrão 45), prazo\_defeito\_dias (padrão 45), limite\_desconto, limite\_reembolso\_semanal (Real; vazio = sem limite), valor\_aprovacao\_reembolso (Real; vazio = sem valor), percentual\_alerta\_devolucao (padrão 20), tempo máximo offline (padrão 10 dias, configurável), tentativas de login antes do bloqueio (padrão 5), tempo de bloqueio (padrão 15 minutos); na Fase 7: meta da comissão em Guarani (padrão 700.000), percentual da comissão abaixo da meta (padrão 30) e a partir da meta (padrão 40), iguais para todos os vendedores)
 - `auditoria` (usuário, ação, tabela, registro, antes/depois, data)
-- `cotacoes` (data da cotação; compra, venda e as duas paridades do Dólar e do Guarani; hora da busca; endereço de origem). Uma linha por dia útil. **Nasce só no servidor**, é **imutável** e chega ao app do vendedor só para leitura (ADR-0006)
+- `cotacoes` (data da cotação; compra, venda e as duas paridades do Dólar e do Guarani; hora da busca; endereço de origem; desde 23/11/2026 também `origem` `BANCO_CENTRAL | DONA`, `vigente_desde`, quem lançou e o Guarani digitado). Uma linha por dia útil do Banco Central, mais as que a dona lançar durante o dia (ADR-0006, item 15). **Nasce só no servidor**, é **imutável** e chega ao app do vendedor só para leitura (ADR-0006)
 - `dispositivos` (vendedor, identificação, ativo, bloqueado, último contato)
 - `sync_log` (dispositivo, lote, resultado por item)
 - `importacoes` (arquivo, criados, atualizados, recusados, erros)
@@ -774,6 +780,7 @@ Importação com nome de arquivo inválido, foto duplicada, arquivo corrompido, 
 
 ## 22. Histórico de mudanças
 
+- **v1.33, 23/11/2026:** §7.5 e §9: a dona pode lançar a cotação do Dólar e do Guarani durante o dia (várias por dia, imutáveis, com origem e momento de início); cada lançamento usa a cotação vigente no momento dele; sem cotação da dona, nada muda (ADR-0006, item 15; plano em `docs/planos/cotacao-da-dona-no-dia.md`).
 - **v1.32, 23/11/2026:** §7.5, Três moedas: o recebimento do representante (avulso e no acerto) pode ser digitado em Dólar ou Guarani; o servidor converte pela cotação e grava em Real; a moeda e o valor digitado ficam só como informação.
 - **v1.31, 20/11/2026:** tarefa 9.8, código: §23.10 (aba Dinheiro do Fechamento da maleta em Real, Dólar e Guarani, cada lançamento pela cotação do dia dele), §23.11 (Dólar e Guarani em cada linha dos relatórios; Tam./Ton. do produto volta como campo opcional, coluna nas telas e relatórios) e §7 do caixa (categorias do sistema "Repasse do representante" e "Pagamento ao representante").
 - **v1.30, 20/11/2026:** tarefa 9.8 (plano aprovado): §23.2, recibo com contador próprio e prefixo `R` (D2 do ADR-0016 decidida: um contador para notas e outro para recibos); §23.7, Dt. Acerto editável (hoje ou dia passado, nunca no futuro); §23.8, a ordem dos débitos é a do lançamento do acerto, não a Dt. Acerto.
