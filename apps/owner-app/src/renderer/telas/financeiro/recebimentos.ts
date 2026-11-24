@@ -1,5 +1,7 @@
 /** Contas a receber e recebimentos do vendedor como a API devolve, lidos com cuidado (nada aqui calcula dinheiro). */
 import type { MoedaDoRecebimento } from '../../nucleo/moedas';
+import type { ValorDoLancamento } from '../devolucoes/dados';
+import { emTresMoedas } from './contas-a-pagar';
 import { inteiro, lista, objeto, texto, valorEmReais } from './dados';
 
 export interface ContaAReceber {
@@ -13,6 +15,9 @@ export interface ContaAReceber {
   vencimento: string;
   valor: string;
   valorPago: string;
+  /** O valor e o já pago com Dólar e Guarani pela cotação do dia de cada lançamento (o servidor calcula; ADR-0006). */
+  valorNaTela: ValorDoLancamento;
+  pagoNaTela: ValorDoLancamento;
   emAberto: string;
   status: string;
   vencida: boolean;
@@ -39,6 +44,8 @@ export function lerContasAReceber(bruto: unknown): ContaAReceber[] {
         vencimento: texto(o.vencimento),
         valor,
         valorPago,
+        valorNaTela: emTresMoedas(valor, o.valorEmDolar, o.valorEmGuarani),
+        pagoNaTela: emTresMoedas(valorPago, o.valorPagoEmDolar, o.valorPagoEmGuarani),
         emAberto,
         status: texto(o.status),
         vencida: o.vencida === true,

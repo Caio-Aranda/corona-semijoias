@@ -1,12 +1,16 @@
 package br.com.coronasemijoias.api.contasreceber;
 
 import br.com.coronasemijoias.api.cadastros.Validacoes;
+import br.com.coronasemijoias.api.cotacoes.ContasEmTresMoedas;
+import br.com.coronasemijoias.api.cotacoes.ContasEmTresMoedas.Moedas;
+import br.com.coronasemijoias.api.cotacoes.CotacaoVigente;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -33,7 +37,14 @@ public class ConsultasDeContasAReceber {
     public record ContaDaDona(UUID id, UUID vendaId, UUID vendedorId, String vendedorNome, UUID clienteId, String clienteNome,
             int numero, int totalDeParcelas, LocalDate vencimento, BigDecimal valor, BigDecimal valorPago,
             BigDecimal valorCancelado, BigDecimal emAberto, String status, boolean vencida, String nivel, String origem,
-            String formaPrevista) {
+            String formaPrevista, BigDecimal valorEmDolar, BigDecimal valorEmGuarani, BigDecimal valorPagoEmDolar,
+            BigDecimal valorPagoEmGuarani) {
+
+        ContaDaDona comMoedas(Moedas doValor, Moedas doPago) {
+            return new ContaDaDona(id, vendaId, vendedorId, vendedorNome, clienteId, clienteNome, numero, totalDeParcelas, vencimento,
+                    valor, valorPago, valorCancelado, emAberto, status, vencida, nivel, origem, formaPrevista, doValor.dolar(),
+                    doValor.guarani(), doPago.dolar(), doPago.guarani());
+        }
     }
 
     private final JdbcTemplate jdbc;
@@ -92,7 +103,7 @@ public class ConsultasDeContasAReceber {
                     rs.getObject("cliente_id", UUID.class), rs.getString("cliente_nome"), rs.getInt("parcela"),
                     rs.getInt("total_parcelas"), rs.getObject("vencimento", LocalDate.class), rs.getBigDecimal("valor"),
                     rs.getBigDecimal("valor_pago"), rs.getBigDecimal("valor_cancelado"), rs.getBigDecimal("em_aberto"),
-                    rs.getString("status"), rs.getBoolean("vencida"), "CLIENTE", "VENDA", null), args.toArray()));
+                    rs.getString("status"), rs.getBoolean("vencida"), "CLIENTE", "VENDA", null, null, null, null, null), args.toArray()));
         }
         if (!"CLIENTE".equals(qual) && clienteId == null) {
             List<Object> args = new ArrayList<>();
@@ -102,10 +113,34 @@ public class ConsultasDeContasAReceber {
                     rs.getInt("total_parcelas"), rs.getObject("vencimento", LocalDate.class), rs.getBigDecimal("valor"),
                     rs.getBigDecimal("valor_pago"), rs.getBigDecimal("valor_cancelado"), rs.getBigDecimal("em_aberto"),
                     rs.getString("status"), rs.getBoolean("vencida"), "VENDEDOR", rs.getString("origem_tipo"),
-                    rs.getString("forma_prevista")), args.toArray()));
+                    rs.getString("forma_prevista"), null, null, null, null), args.toArray()));
         }
         todas.sort(java.util.Comparator.comparing(ContaDaDona::vencimento));
-        return todas;
+        return emTresMoedas(todas);
+    }
+
+    /**
+     * Dólar e Guarani de cada conta (achado M3 da revisão de 23/11/2026): o valor pela cotação gravada na venda ou no acerto (sem ela,
+     * pela do momento da venda ou da conta); cada pagamento pela do momento dele (o estorno, pela do pagamento que desfaz).
+     */
+    private List<ContaDaDona> emTresMoedas(List<ContaDaDona> contas) {
+        if (contas.isEmpty()) {
+            return contas;
+        }
+        String ids = ContasEmTresMoedas.lista(contas.stream().map(ContaDaDona::id).toList());
+        Map<UUID, Moedas> doValor = ContasEmTresMoedas.somar(jdbc, "SELECT cr.id, cr.valor, coalesce(cv.usd_venda, ct.usd_venda),"
+                + " coalesce(cv.pyg_venda, ct.pyg_venda) FROM corona.contas_receber cr"
+                + " LEFT JOIN corona.vendas v ON v.id = cr.venda_id"
+                + " LEFT JOIN corona.acertos a ON cr.origem_tipo = 'ACERTO' AND a.id = cr.origem_id"
+                + " LEFT JOIN corona.cotacoes cv ON cv.id = coalesce(v.cotacao_id, a.cotacao_id) "
+                + CotacaoVigente.joinDoMomento("coalesce(v.vendida_em, cr.created_at)", "c.usd_venda, c.pyg_venda")
+                + " WHERE cr.id = ANY (?::uuid[])", ids);
+        Map<UUID, Moedas> doPago = ContasEmTresMoedas.somar(jdbc, "SELECT b.conta_id, b.valor, ct.usd_venda, ct.pyg_venda"
+                + " FROM corona.baixas_receber b LEFT JOIN corona.baixas_receber o ON o.id = b.estorna_id "
+                + CotacaoVigente.joinDoMomento("coalesce(o.baixada_em, b.baixada_em)", "c.usd_venda, c.pyg_venda")
+                + " WHERE b.tipo = 'PAGAMENTO' AND b.deleted_at IS NULL AND b.conta_id = ANY (?::uuid[])", ids);
+        return contas.stream().map(c -> c.comMoedas(doValor.getOrDefault(c.id(), Moedas.SEM_COTACAO),
+                doPago.getOrDefault(c.id(), Moedas.ZERO))).toList();
     }
 
     private static String nivel(String nivel) {

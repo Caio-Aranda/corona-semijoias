@@ -116,6 +116,27 @@ describe('Contas a receber', () => {
     expect(screen.getByText('Parcial', { selector: 'td' })).toBeInTheDocument();
   });
 
+  it('Valor e Já pago em Dólar e Guarani como o servidor calculou (cotação do dia de cada lançamento)', async () => {
+    await abrirContas(
+      servidor({
+        'contasAReceber.listar': () => ({
+          ok: true,
+          dados: [
+            contaDoVendedor({
+              valorEmDolar: '100.00',
+              valorEmGuarani: '500000.00',
+              valorPagoEmDolar: '18.00',
+              valorPagoEmGuarani: '95000.00',
+            }),
+            contaDoCliente,
+          ],
+        }),
+      }),
+    );
+    expect(screen.getByText('US$ 100,00 · Gs. 500.000')).toBeInTheDocument();
+    expect(screen.getByText('US$ 18,00 · Gs. 95.000')).toBeInTheDocument();
+  });
+
   it('os filtros mandam representante, situação e de quem é a conta', async () => {
     const m = servidor();
     const u = await abrirContas(m);

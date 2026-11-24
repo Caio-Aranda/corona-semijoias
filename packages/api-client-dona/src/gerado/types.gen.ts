@@ -512,7 +512,11 @@ export type ConsultasDeContasAPagarConta = {
     totalParcelas?: number;
     valor?: string;
     valorCancelado?: string;
+    valorEmDolar?: string;
+    valorEmGuarani?: string;
     valorPago?: string;
+    valorPagoEmDolar?: string;
+    valorPagoEmGuarani?: string;
     vencimento?: string;
 };
 
@@ -694,7 +698,11 @@ export type ContaDaDona = {
     totalDeParcelas?: number;
     valor?: string;
     valorCancelado?: string;
+    valorEmDolar?: string;
+    valorEmGuarani?: string;
     valorPago?: string;
+    valorPagoEmDolar?: string;
+    valorPagoEmGuarani?: string;
     vencida?: boolean;
     vencimento?: string;
     vendaId?: string;
