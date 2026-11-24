@@ -1,5 +1,6 @@
 package br.com.coronasemijoias.api.creditos;
 
+import br.com.coronasemijoias.api.cotacoes.CotacaoVigente;
 import br.com.coronasemijoias.api.auditoria.ServicoDeAuditoria;
 import br.com.coronasemijoias.api.auditoria.ServicoDeAuditoria.Ator;
 import br.com.coronasemijoias.api.cadastros.Validacoes;
@@ -66,7 +67,7 @@ public class ServicoDeCreditos {
                 INSERT INTO corona.creditos_cliente (id, cliente_id, vendedor_id, origem, troca_id, devolucao_id, valor, cotacao_id,
                     gerado_em, hora_ajustada, registrado_por)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", id, clienteId, vendedorId, origem, trocaId, devolucaoId, valor,
-                cotacaoDoDia(LocalDate.ofInstant(quando, BRASILIA)), Timestamp.from(quando), horaAjustada, usuarioId);
+                cotacaoDoDia(quando), Timestamp.from(quando), horaAjustada, usuarioId);
     }
 
     /**
@@ -286,7 +287,7 @@ public class ServicoDeCreditos {
                 INSERT INTO corona.creditos_cliente (id, cliente_id, vendedor_id, origem, credito_origem_id, valor, cotacao_id,
                     gerado_em, registrado_por)
                 VALUES (?, ?, ?, 'TRANSFERENCIA', ?, ?, ?, ?, ?)""", id, c.get("cliente_id"), vendedorDestino, creditoId, saldo,
-                cotacaoDoDia(LocalDate.ofInstant(agora, BRASILIA)), Timestamp.from(agora), usuarioId);
+                cotacaoDoDia(agora), Timestamp.from(agora), usuarioId);
         jdbc.update("""
                 INSERT INTO corona.usos_credito (id, credito_id, tipo, credito_destino_id, valor, usado_em)
                 VALUES (?, ?, 'TRANSFERENCIA', ?, ?, ?)""", UuidV7.gerar(), creditoId, id, saldo, Timestamp.from(agora));
@@ -312,9 +313,8 @@ public class ServicoDeCreditos {
                  WHERE c.id = ?""", creditoId, creditoId);
     }
 
-    /** A cotação mais recente até o dia (horário de Brasília), ou nenhuma. */
-    private UUID cotacaoDoDia(LocalDate dia) {
-        return jdbc.query("SELECT id FROM corona.cotacoes WHERE data_cotacao <= ? ORDER BY data_cotacao DESC LIMIT 1",
-                (rs, n) -> rs.getObject(1, UUID.class), dia).stream().findFirst().orElse(null);
+    /** A cotação vigente no momento do lançamento (ADR-0006, item 15), ou nenhuma. */
+    private UUID cotacaoDoDia(Instant quando) {
+        return CotacaoVigente.idVigenteEm(jdbc, quando);
     }
 }

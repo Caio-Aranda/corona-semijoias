@@ -1199,7 +1199,6 @@
             "type" : "array"
           },
           "cotacaoData" : {
-            "format" : "date",
             "type" : "string"
           },
           "cotacaoId" : {

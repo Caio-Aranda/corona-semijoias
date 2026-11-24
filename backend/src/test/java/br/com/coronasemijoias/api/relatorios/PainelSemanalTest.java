@@ -159,7 +159,9 @@ class PainelSemanalTest extends MassaDoPainel {
         assertThat(a.get("dataDaCotacao").asString()).isEqualTo(d(4));
         JsonNode c = daLinha(painel(), cris, "EM_ABERTO");
         assertThat(dec(c.get("comissao").get("emGuarani"))).isEqualByComparingTo("22500");
-        assertThat(painel().get("cotacaoDaPrevia").get("data").asString()).isEqualTo(d(4));
+        // A prévia usa a cotação vigente agora (ADR-0006, item 15): a "em uso agora" que a massa grava com a data de hoje.
+        assertThat(painel().get("cotacaoDaPrevia").get("data").asString())
+                .isEqualTo(java.time.LocalDate.now(java.time.ZoneId.of("America/Sao_Paulo")).toString());
     }
 
     // --- os totais, bloco a bloco ---

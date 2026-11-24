@@ -34,7 +34,8 @@ final class VendidoLiquido {
                    coalesce(dv.pecas, 0) AS qtd_devolvida, coalesce(dv.valor, 0) AS devolvido,
                    iv.preco_unitario * iv.quantidade - iv.desconto - coalesce(dv.valor, 0) AS liquido,
                    iv.quantidade - coalesce(dv.pecas, 0) AS pecas,
-                   ct.data_cotacao, ct.usd_venda, ct.pyg_venda
+                   CASE WHEN ct.origem = 'DONA' THEN to_char(ct.vigente_desde AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM-DD"T"HH24:MI')
+                        ELSE ct.data_cotacao::text END AS data_cotacao, ct.usd_venda, ct.pyg_venda
               FROM corona.itens_venda iv
               JOIN corona.vendas v ON v.id = iv.venda_id AND v.deleted_at IS NULL
               JOIN corona.vendedores vd ON vd.id = v.vendedor_id

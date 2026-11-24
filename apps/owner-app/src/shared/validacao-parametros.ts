@@ -148,7 +148,13 @@ export type ParametrosConferidos =
   | { operacao: 'usuarios.criar'; novo: ParametrosDeUsuarioNovo }
   | { operacao: 'usuarios.editar'; editado: ParametrosDeUsuarioEditado }
   | { operacao: 'usuarios.desativar' | 'usuarios.reativar' | 'usuarios.redefinirSenha'; id: string }
-  | { operacao: 'cotacao.converter'; valorEmReais: string; data?: string };
+  | { operacao: 'cotacao.converter'; valorEmReais: string; data?: string }
+  | { operacao: 'cotacao.dia'; data?: string }
+  | { operacao: 'cotacao.previa'; usd: string; guaranisPorReal: string }
+  | { operacao: 'cotacao.gravar'; id?: string; usd: string; guaranisPorReal: string };
+
+/** O valor que a dona digita na cotação (texto com ponto): a conta e os limites são do servidor. */
+const VALOR_DA_COTACAO = /^\d{1,10}(\.\d{1,8})?$/;
 
 function textoOpcional(v: unknown): string | undefined | null {
   if (v === undefined || v === '') return undefined;
@@ -482,6 +488,26 @@ export function conferirParametros(
       return p.data === undefined
         ? { operacao, valorEmReais: p.valorEmReais }
         : { operacao, valorEmReais: p.valorEmReais, data: p.data };
+    }
+    case 'cotacao.dia': {
+      if (Object.keys(p).some((k) => k !== 'data')) return null;
+      if (p.data === undefined) return { operacao };
+      return ehTexto(p.data) && DATA.test(p.data) ? { operacao, data: p.data } : null;
+    }
+    case 'cotacao.previa':
+    case 'cotacao.gravar': {
+      if (Object.keys(p).some((k) => !['id', 'usd', 'guaranisPorReal'].includes(k))) return null;
+      if (!ehTexto(p.usd) || !VALOR_DA_COTACAO.test(p.usd)) return null;
+      if (!ehTexto(p.guaranisPorReal) || !VALOR_DA_COTACAO.test(p.guaranisPorReal)) return null;
+      if (operacao === 'cotacao.previa') {
+        return p.id === undefined
+          ? { operacao, usd: p.usd, guaranisPorReal: p.guaranisPorReal }
+          : null;
+      }
+      if (p.id === undefined) return { operacao, usd: p.usd, guaranisPorReal: p.guaranisPorReal };
+      return ehTexto(p.id) && UUID.test(p.id)
+        ? { operacao, id: p.id, usd: p.usd, guaranisPorReal: p.guaranisPorReal }
+        : null;
     }
     case 'vendedores.listar':
     case 'vendedores.ver':

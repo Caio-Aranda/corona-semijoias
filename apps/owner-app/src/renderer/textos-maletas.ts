@@ -378,6 +378,7 @@ export const PT_TEXTOS_DE_MALETAS = {
     valor: 'Valor total',
     colunas: ['Código', 'Peça', 'Tam./Ton.', 'Qtd.', 'Preço unitário', 'Subtotal'],
     cotacao: (data: string) => `Cotação do Banco Central do dia do envio (${data}).`,
+    cotacaoDaLoja: (data: string, hora: string) => `Cotação da loja do envio (${data} às ${hora}).`,
     assinaturaDona: 'Dona',
     assinaturaVendedor: 'Representante',
   },

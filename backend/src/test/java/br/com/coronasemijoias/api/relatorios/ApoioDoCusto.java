@@ -77,8 +77,22 @@ abstract class ApoioDoCusto extends ApoioDasTrocas {
     protected void cotacao(String dia, String usd, String pyg) {
         jdbc.update("""
                 INSERT INTO corona.cotacoes (id, data_cotacao, usd_compra, usd_venda, usd_paridade_compra,
-                    usd_paridade_venda, pyg_compra, pyg_venda, pyg_paridade_compra, pyg_paridade_venda, buscada_em, fonte)
-                VALUES (uuidv7(), ?::date, ?::numeric, ?::numeric, 1, 1, ?::numeric, ?::numeric, 1, 1, now(), 'teste')
-                ON CONFLICT ON CONSTRAINT cotacoes_data_unica DO NOTHING""", dia, usd, usd, pyg, pyg);
+                    usd_paridade_venda, pyg_compra, pyg_venda, pyg_paridade_compra, pyg_paridade_venda, buscada_em, fonte, vigente_desde)
+                VALUES (uuidv7(), ?::date, ?::numeric, ?::numeric, 1, 1, ?::numeric, ?::numeric, 1, 1, now(), 'teste', ?::date::timestamp AT TIME ZONE 'America/Sao_Paulo')
+                ON CONFLICT (data_cotacao) WHERE origem = 'BANCO_CENTRAL' DO NOTHING""", dia, usd, usd, pyg, pyg, dia);
+    }
+
+    /**
+     * A cotação "em uso agora" (de hoje, em Brasília): o acerto e a prévia do painel usam a cotação vigente AGORA (ADR-0006, item
+     * 15), e a massa destes testes mora em 2285 a 2293. Esta linha faz o papel do que antes era "a mais recente". Sai no fim,
+     * junto com as outras ({@code CotacoesDaMassa.tirar}).
+     */
+    protected void cotacaoEmUsoAgora(String usd, String pyg) {
+        jdbc.update("""
+                INSERT INTO corona.cotacoes (id, data_cotacao, usd_compra, usd_venda, usd_paridade_compra,
+                    usd_paridade_venda, pyg_compra, pyg_venda, pyg_paridade_compra, pyg_paridade_venda, buscada_em, fonte, vigente_desde)
+                VALUES (uuidv7(), (now() AT TIME ZONE 'America/Sao_Paulo')::date, ?::numeric, ?::numeric, 1, 1, ?::numeric, ?::numeric,
+                    1, 1, now(), 'teste-em-uso', ((now() AT TIME ZONE 'America/Sao_Paulo')::date)::timestamp AT TIME ZONE 'America/Sao_Paulo')
+                ON CONFLICT (data_cotacao) WHERE origem = 'BANCO_CENTRAL' DO NOTHING""", usd, usd, pyg, pyg);
     }
 }

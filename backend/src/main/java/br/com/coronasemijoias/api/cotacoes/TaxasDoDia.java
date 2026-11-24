@@ -1,5 +1,6 @@
 package br.com.coronasemijoias.api.cotacoes;
 
+import br.com.coronasemijoias.api.comum.dinheiro.ConversaoDeMoeda;
 import java.math.BigDecimal;
 import java.util.Objects;
 
@@ -23,5 +24,17 @@ public record TaxasDoDia(
         Objects.requireNonNull(pygVenda, "pygVenda");
         Objects.requireNonNull(pygParidadeCompra, "pygParidadeCompra");
         Objects.requireNonNull(pygParidadeVenda, "pygParidadeVenda");
+    }
+
+    /**
+     * As taxas da cotação da dona (ADR-0006, item 15): uma por moeda, a mesma para compra e venda. O Guarani é
+     * 1 ÷ guaranis por real (8 casas, HALF_UP) e a paridade do Guarani é guaranis por dólar, como o BCB publica.
+     */
+    public static TaxasDoDia daDona(BigDecimal usd, BigDecimal guaranisPorReal) {
+        BigDecimal dolar = ConversaoDeMoeda.taxaComOitoCasas(usd);
+        BigDecimal pyg = ConversaoDeMoeda.taxaDoGuarani(guaranisPorReal);
+        BigDecimal um = BigDecimal.ONE.setScale(ESCALA);
+        BigDecimal paridadePyg = ConversaoDeMoeda.taxaComOitoCasas(dolar.multiply(guaranisPorReal));
+        return new TaxasDoDia(dolar, dolar, um, um, pyg, pyg, paridadePyg, paridadePyg);
     }
 }

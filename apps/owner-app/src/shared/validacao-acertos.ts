@@ -190,6 +190,7 @@ function conferirPedidoDeFechamento(bruto: unknown): PedidoDeFechamentoDaTela | 
       'cobrancas',
       'pendenciasAntigas',
       'liquidoMostrado',
+      'cotacaoId',
       'pagamento',
     )
   ) {
@@ -241,6 +242,10 @@ function conferirPedidoDeFechamento(bruto: unknown): PedidoDeFechamentoDaTela | 
     if (typeof bruto.liquidoMostrado !== 'string' || !LIQUIDO.test(bruto.liquidoMostrado))
       return null;
     saida.liquidoMostrado = bruto.liquidoMostrado;
+  }
+  if (bruto.cotacaoId !== undefined) {
+    if (!idValido(bruto.cotacaoId)) return null;
+    saida.cotacaoId = bruto.cotacaoId;
   }
   if (bruto.pagamento !== undefined) {
     const pagamento = conferirPagamento(bruto.pagamento);

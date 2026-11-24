@@ -36,7 +36,7 @@ class CotacaoVigenteTest extends TesteDeCotacoes {
     }
 
     private LocalDate dataDoLancamento(String instanteUtc) {
-        return vigente.paraLancamento(Instant.parse(instanteUtc)).orElseThrow().dataCotacao();
+        return vigente.vigenteEm(Instant.parse(instanteUtc)).orElseThrow().dataCotacao();
     }
 
     @Test
@@ -48,7 +48,7 @@ class CotacaoVigenteTest extends TesteDeCotacoes {
     void sabadoUsaASexta() {
         assertThat(dataDoLancamento("2026-11-07T15:00:00Z")).isEqualTo(SEXTA_06_11);
         assertThat(dataDoLancamento("2026-11-08T15:00:00Z")).as("domingo").isEqualTo(SEXTA_06_11);
-        Cotacao cotacao = vigente.paraLancamentoEm(LocalDate.of(2026, 11, 7)).orElseThrow();
+        Cotacao cotacao = vigente.vigenteEm(Instant.parse("2026-11-07T15:00:00Z")).orElseThrow();
         // R$ 100,00 no sábado 07/11: US$ 18,18 e Gs. 111.732, sem aviso (ADR-0006, item 14).
         assertThat(cotacao.emDolar(new BigDecimal("100.00"))).isEqualTo(new BigDecimal("18.18"));
         assertThat(cotacao.emGuarani(new BigDecimal("100.00"))).isEqualTo(new BigDecimal("111732"));
@@ -66,7 +66,7 @@ class CotacaoVigenteTest extends TesteDeCotacoes {
 
     @Test
     void finadosUsaAUltimaCotacaoAntesDoFeriado() {
-        Cotacao cotacao = vigente.paraLancamentoEm(LocalDate.of(2026, 11, 2)).orElseThrow();
+        Cotacao cotacao = vigente.vigenteEm(Instant.parse("2026-11-02T15:00:00Z")).orElseThrow();
         assertThat(cotacao.dataCotacao()).isEqualTo(QUINTA_30_10);
         // R$ 100,00 em Finados: US$ 18,45 e Gs. 107.573 (ADR-0006, item 14).
         assertThat(cotacao.emDolar(new BigDecimal("100.00"))).isEqualTo(new BigDecimal("18.45"));
@@ -76,30 +76,95 @@ class CotacaoVigenteTest extends TesteDeCotacoes {
     @Test
     void hojeAntesDaBuscaUsaOUltimoDiaUtilEDepoisUsaAPropriaCotacao() {
         LocalDate segunda = LocalDate.of(2026, 11, 9);
-        assertThat(vigente.paraLancamentoEm(segunda).orElseThrow().dataCotacao()).isEqualTo(SEXTA_06_11);
+        Instant segundaDeManha = Instant.parse("2026-11-09T12:00:00Z");
+        assertThat(vigente.vigenteEm(segundaDeManha).orElseThrow().dataCotacao()).isEqualTo(SEXTA_06_11);
 
         gravar(segunda, "5.51000000", "0.00089800");
 
-        assertThat(vigente.paraLancamentoEm(segunda).orElseThrow().dataCotacao()).isEqualTo(segunda);
+        assertThat(vigente.vigenteEm(segundaDeManha).orElseThrow().dataCotacao()).isEqualTo(segunda);
         // O lançamento de sexta continua com a cotação de sexta.
-        assertThat(vigente.paraLancamentoEm(SEXTA_06_11).orElseThrow().dataCotacao()).isEqualTo(SEXTA_06_11);
+        assertThat(vigente.vigenteEm(Instant.parse("2026-11-06T15:00:00Z")).orElseThrow().dataCotacao()).isEqualTo(SEXTA_06_11);
     }
 
     @Test
     void lancamentoAntesDaPrimeiraCotacaoNaoTemCotacao() {
-        assertThat(vigente.paraLancamentoEm(LocalDate.of(2026, 10, 29))).isEmpty();
+        assertThat(vigente.vigenteEm(Instant.parse("2026-10-29T15:00:00Z"))).isEmpty();
     }
 
     @Test
-    void oQueNaoELancamentoEOAcertoUsamAMaisRecente() {
-        assertThat(vigente.maisRecente().orElseThrow().dataCotacao()).isEqualTo(SEXTA_06_11);
+    void oQueNaoELancamentoEOAcertoUsamAVigenteAgora() {
+        Instant agora = Instant.parse("2026-11-09T12:00:00Z");
+        assertThat(vigente.vigenteEm(agora).orElseThrow().dataCotacao()).isEqualTo(SEXTA_06_11);
         gravar(LocalDate.of(2026, 11, 9), "5.51000000", "0.00089800");
-        assertThat(vigente.maisRecente().orElseThrow().dataCotacao()).isEqualTo(LocalDate.of(2026, 11, 9));
+        assertThat(vigente.vigenteEm(agora).orElseThrow().dataCotacao()).isEqualTo(LocalDate.of(2026, 11, 9));
     }
 
     @Test
     void semNenhumaCotacaoNaoHaMaisRecente() {
         // Outro dia, sem os dados do @BeforeEach: consulta uma data anterior a todas as cotações.
-        assertThat(vigente.paraLancamentoEm(LocalDate.of(2000, 1, 1))).isEmpty();
+        assertThat(vigente.vigenteEm(Instant.parse("2000-01-01T15:00:00Z"))).isEmpty();
+    }
+
+    // --- a cotação da dona (ADR-0006, item 15) ---
+
+    private static final LocalDate DIA = LocalDate.of(2026, 11, 23);
+    private static final String DEZ_DA_MANHA = "2026-11-23T13:00:00Z"; // 10:00 em Brasília
+
+    private java.util.UUID vigenteAs(String instanteUtc) {
+        return vigente.vigenteEm(Instant.parse(instanteUtc)).orElseThrow().id();
+    }
+
+    @Test
+    void bcbDoDiaAntesDaDonaDepoisDaDonaEAteODiaSeguinte() {
+        gravar(LocalDate.of(2026, 11, 20), "5.50000000", "0.00089000");
+        Cotacao dona = gravarDaDona(DEZ_DA_MANHA, "5.80", "1350");
+        // O BCB do dia é gravado depois da dona, mas vale desde 00:00 de Brasília: não passa por cima dela.
+        gravar(DIA, "5.51000000", "0.00089100");
+        java.util.UUID bcbDoDia = vigenteAs("2026-11-23T05:00:00Z");
+
+        assertThat(bcbDoDia).isNotEqualTo(dona.id());
+        assertThat(vigente.vigenteEm(Instant.parse("2026-11-23T05:00:00Z")).orElseThrow().dataCotacao()).isEqualTo(DIA);
+        assertThat(vigenteAs("2026-11-23T12:59:00Z")).isEqualTo(bcbDoDia);
+        assertThat(vigenteAs(DEZ_DA_MANHA)).isEqualTo(dona.id());
+        assertThat(vigenteAs("2026-11-23T18:00:00Z")).isEqualTo(dona.id());
+        // No dia seguinte, sem BCB novo, ainda vale a dela; depois da busca, vale a do BCB do dia.
+        assertThat(vigenteAs("2026-11-24T12:00:00Z")).isEqualTo(dona.id());
+        gravar(DIA.plusDays(1), "5.52000000", "0.00089200");
+        assertThat(vigente.vigenteEm(Instant.parse("2026-11-24T12:00:00Z")).orElseThrow().dataCotacao())
+                .isEqualTo(DIA.plusDays(1));
+    }
+
+    @Test
+    void sextaAs2330EmBrasiliaUsaASextaMesmoSendoSabadoEmUtc() {
+        gravar(LocalDate.of(2026, 11, 5), "5.50000000", "0.00089000");
+        Cotacao sexta = gravarDaDona("2026-11-06T12:00:00Z", "5.60", "1300");
+        assertThat(vigenteAs("2026-11-07T02:30:00Z")).isEqualTo(sexta.id());
+    }
+
+    @Test
+    void duasDaDonaComOMesmoVigenteDesdeDesempataPeloMaiorId() {
+        Cotacao a = gravarDaDona(DEZ_DA_MANHA, "5.80", "1350");
+        Cotacao b = gravarDaDona(DEZ_DA_MANHA, "5.90", "1360");
+        java.util.UUID maior = a.id().compareTo(b.id()) > 0 ? a.id() : b.id();
+        assertThat(vigenteAs(DEZ_DA_MANHA)).isEqualTo(maior);
+    }
+
+    @Test
+    void doDiaListaTodasAsDoDiaEmOrdemDeVigencia() {
+        gravar(DIA, "5.51000000", "0.00089100");
+        Cotacao dona1 = gravarDaDona(DEZ_DA_MANHA, "5.80", "1350");
+        Cotacao dona2 = gravarDaDona("2026-11-23T17:00:00Z", "5.85", "1360");
+
+        assertThat(repositorio.doDia(DIA)).extracting(Cotacao::origem)
+                .containsExactly("BANCO_CENTRAL", "DONA", "DONA");
+        assertThat(repositorio.doDia(DIA)).extracting(Cotacao::id).endsWith(dona1.id(), dona2.id());
+    }
+
+    @Test
+    void diasComCotacaoContaSoOBancoCentral() {
+        gravarDaDona(DEZ_DA_MANHA, "5.80", "1350");
+        assertThat(repositorio.diasComCotacao(DIA, DIA)).isEmpty();
+        gravar(DIA, "5.51000000", "0.00089100");
+        assertThat(repositorio.diasComCotacao(DIA, DIA)).containsExactly(DIA);
     }
 }

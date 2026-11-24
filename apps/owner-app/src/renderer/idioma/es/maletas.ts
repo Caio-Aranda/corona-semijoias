@@ -375,6 +375,8 @@ export const ES_TEXTOS_DE_MALETAS: NoMesmoFormato<typeof PT_TEXTOS_DE_MALETAS> =
     valor: 'Valor total',
     colunas: ['Código', 'Pieza', 'Tam./Ton.', 'Cant.', 'Precio unitario', 'Subtotal'],
     cotacao: (data: string) => `Cotización del Banco Central del día del envío (${data}).`,
+    cotacaoDaLoja: (data: string, hora: string) =>
+      `Cotización de la tienda del envío (${data} a las ${hora}).`,
     assinaturaDona: 'Dueña',
     assinaturaVendedor: 'Representante',
   },

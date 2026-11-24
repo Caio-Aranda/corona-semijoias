@@ -347,3 +347,12 @@ Cada passo: testes primeiro, depois o código, `./mvnw verify` / `npm run typech
 - Cotação diferente para compra e venda (S1), cotação por vendedor ou por praça, agendar cotação.
 - Mudar a cotação de um lançamento já gravado (nunca: imutável).
 - Buscar a cotação de uma casa de câmbio pela internet.
+
+## 10. Como ficou (ajustes feitos na implementação)
+
+- **Comparação no Corona Vendas por `julianday`, não por texto.** O servidor pode mandar `vigente_desde` com frações de segundo (`...00Z` e `...00.123Z` se ordenam errado como texto). `cotacaoVigenteEm` compara por `julianday(...)`; linha sem `vigente_desde` (banco anterior à migração 13) vale desde `data_cotacao` + `T03:00:00.000Z` (00:00 de Brasília). A migração 13 já preenche as linhas antigas desse jeito.
+- **A prévia devolve `moedaDoAviso`** (`DOLAR` ou `GUARANI`), para a tela escrever o aviso nos dois idiomas sem refazer a conta dos 15%.
+- **Resposta de gravar:** `{ cotacao, avisoDeDiferenca, aviso }`; reenvio com o mesmo `id` e os mesmos valores, 200; com outros valores, 409 `COTACAO_JA_GRAVADA_DIFERENTE`.
+- **Leituras com só a data** (vencimento, data do caixa manual, resultado do período): usam o **fim do dia em Brasília**, o equivalente exato do antigo "cotação até o dia".
+- **Testes que dependiam de cotações de 2285 a 2291**: o acerto usa a vigente agora; a cotação do exemplo do ADR-0012 (2291-06-01) é gravada nos testes como vigente desde ontem (`CotacoesDaMassa`), e os testes que precisam de "nenhuma cotação" fixam o relógio antes de qualquer uma.
+- **Não feito neste PR:** data e hora da cotação nos relatórios, PDFs e Excel (seção 5.4); `npm run e2e` do recebimento.

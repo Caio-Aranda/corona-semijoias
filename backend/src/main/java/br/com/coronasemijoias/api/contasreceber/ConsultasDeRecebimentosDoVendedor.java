@@ -83,14 +83,14 @@ public class ConsultasDeRecebimentosDoVendedor {
     }
 
     /**
-     * A cotação de cada recebimento: a que converteu o valor digitado ({@code cotacao_id}) ou, em Real, a do dia do lançamento em
-     * Brasília (ADR-0006, item 7). O SQL só escolhe a linha; a conversão é em Java.
+     * A cotação de cada recebimento: a que converteu o valor digitado ({@code cotacao_id}) ou, em Real, a vigente na hora do lançamento
+     * (ADR-0006, itens 7 e 15). O SQL só escolhe a linha; a conversão é em Java.
      */
     static final String COTACAO_DO_RECEBIMENTO = """
             LEFT JOIN LATERAL (SELECT c.data_cotacao, c.usd_venda, c.pyg_venda FROM corona.cotacoes c
                                 WHERE (r.cotacao_id IS NOT NULL AND c.id = r.cotacao_id)
-                                   OR (r.cotacao_id IS NULL AND c.data_cotacao <= (r.recebido_em AT TIME ZONE 'America/Sao_Paulo')::date)
-                                ORDER BY c.data_cotacao DESC LIMIT 1) ct ON true
+                                   OR (r.cotacao_id IS NULL AND c.vigente_desde <= r.recebido_em)
+                                ORDER BY c.vigente_desde DESC, c.id DESC LIMIT 1) ct ON true
             """;
 
     private static final String DA_DONA = """

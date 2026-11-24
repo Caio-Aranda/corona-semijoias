@@ -752,6 +752,38 @@ INSERT INTO estado_sync (chave, valor)
   ON CONFLICT (chave) DO UPDATE SET valor = excluded.valor;
 `;
 
+/** As tabelas que a recarga dirigida da versão 13 traz de novo: `cotacoes`, que ganhou as colunas da cotação da dona. */
+export const TABELAS_DA_RECARGA_DIRIGIDA_V13 = Object.freeze(['cotacoes']);
+
+/**
+ * A cotação da dona (ADR-0006, item 15; V059 do servidor): `origem`, `vigente_desde` e `guaranis_por_real` em `cotacoes`, e a
+ * recarga dirigida delas (o servidor sobe a `version` das linhas ao preencher `vigente_desde`, mas o computador que já tinha
+ * cursor não pode depender disso). As linhas que já estavam aqui são todas do Banco Central e valem desde 00:00 do dia em
+ * Brasília (03:00 UTC): o preenchimento já deixa a consulta certa mesmo antes da recarga chegar.
+ */
+const V13 = `
+ALTER TABLE cotacoes ADD COLUMN origem TEXT;
+ALTER TABLE cotacoes ADD COLUMN vigente_desde TEXT;
+ALTER TABLE cotacoes ADD COLUMN guaranis_por_real TEXT;
+UPDATE cotacoes SET origem = 'BANCO_CENTRAL', vigente_desde = data_cotacao || 'T03:00:00.000Z'
+ WHERE origem_local = 'SERVIDOR';
+CREATE INDEX cotacoes_por_vigencia ON cotacoes (vigente_desde);
+
+INSERT INTO estado_sync (chave, valor)
+  SELECT 'recarga_dirigida', lista FROM (
+    SELECT json_group_array(t) AS lista FROM (
+      SELECT t FROM (
+        SELECT key AS k, value AS t FROM json_each(
+          coalesce((SELECT valor FROM estado_sync WHERE chave = 'recarga_dirigida'), '[]'))
+        UNION ALL
+        SELECT 1000 + key AS k, value AS t FROM json_each('${JSON.stringify(TABELAS_DA_RECARGA_DIRIGIDA_V13)}')
+      ) GROUP BY t ORDER BY min(k)
+    )
+  )
+   WHERE EXISTS (SELECT 1 FROM estado_sync WHERE chave = 'cursor' AND valor IS NOT NULL)
+  ON CONFLICT (chave) DO UPDATE SET valor = excluded.valor;
+`;
+
 export const MIGRACOES: readonly MigracaoLocal[] = Object.freeze([
   {
     versao: 1,
@@ -818,6 +850,11 @@ export const MIGRACOES: readonly MigracaoLocal[] = Object.freeze([
     versao: 12,
     descricao: 'Tam./Ton. da peça (coluna em produtos) e a recarga dirigida dos produtos',
     sql: V12,
+  },
+  {
+    versao: 13,
+    descricao: 'cotação da dona (origem, vigente_desde e guaranis por real) e a recarga dirigida',
+    sql: V13,
   },
 ]);
 

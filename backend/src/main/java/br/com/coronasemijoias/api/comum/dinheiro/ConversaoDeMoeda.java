@@ -57,6 +57,25 @@ public final class ConversaoDeMoeda {
     }
 
     /**
+     * R$ = Gs. ÷ guaranis por real, com 2 casas (HALF_UP): o recebimento digitado em Guarani quando a cotação é a da dona
+     * (ADR-0006, item 15). Ela digita "1 real = Gs. 1.350"; dividir por esse número evita o erro de centavos que a taxa de
+     * 8 casas (0,00074074) daria em valores grandes. Mesmas recusas de {@link #guaraniParaReais}.
+     */
+    public static BigDecimal guaraniParaReaisPorGuaranisPorReal(BigDecimal guarani, BigDecimal guaranisPorReal) {
+        Objects.requireNonNull(guarani, "guarani");
+        Objects.requireNonNull(guaranisPorReal, "guaranisPorReal");
+        if (guarani.stripTrailingZeros().scale() > ESCALA_GUARANI) {
+            throw new IllegalArgumentException("O valor em Guarani " + guarani.toPlainString()
+                    + " precisa ser inteiro (Guarani não tem centavos).");
+        }
+        if (guaranisPorReal.signum() <= 0) {
+            throw new IllegalArgumentException("A taxa de câmbio precisa ser maior que zero, veio "
+                    + guaranisPorReal.toPlainString() + ".");
+        }
+        return guarani.divide(guaranisPorReal, Dinheiro.ESCALA, ARREDONDAMENTO);
+    }
+
+    /**
      * R$ = US$ x taxa de venda do Dólar, com 2 casas (HALF_UP), numa multiplicação só: o recebimento do representante digitado
      * em Dólar (23/11/2026). O resultado é o valor em Real do lançamento. O Dólar tem no máximo 2 casas.
      */
@@ -71,6 +90,45 @@ public final class ConversaoDeMoeda {
                     + usdVenda.toPlainString() + ".");
         }
         return dolar.multiply(usdVenda).setScale(Dinheiro.ESCALA, ARREDONDAMENTO);
+    }
+
+    /** Casas das taxas de cotação (NUMERIC(18,8)). */
+    public static final int ESCALA_DA_TAXA = 8;
+
+    /** A taxa do Guarani (reais por Guarani) da cotação da dona: 1 ÷ guaranis por real, 8 casas (ADR-0006, item 15). */
+    public static BigDecimal taxaDoGuarani(BigDecimal guaranisPorReal) {
+        Objects.requireNonNull(guaranisPorReal, "guaranisPorReal");
+        if (guaranisPorReal.signum() <= 0) {
+            throw new IllegalArgumentException("Os guaranis por real precisam ser maiores que zero, veio "
+                    + guaranisPorReal.toPlainString() + ".");
+        }
+        return BigDecimal.ONE.divide(guaranisPorReal, ESCALA_DA_TAXA, ARREDONDAMENTO);
+    }
+
+    /** Guaranis por real de uma taxa de Guarani publicada (1 ÷ taxa), 2 casas: só para mostrar ao lado do que a dona digitou. */
+    public static BigDecimal guaranisPorReal(BigDecimal pygVenda) {
+        Objects.requireNonNull(pygVenda, "pygVenda");
+        return BigDecimal.ONE.divide(pygVenda, Dinheiro.ESCALA, ARREDONDAMENTO);
+    }
+
+    /** Uma taxa digitada com as 8 casas da tabela de cotações (HALF_UP). */
+    public static BigDecimal taxaComOitoCasas(BigDecimal taxa) {
+        return Objects.requireNonNull(taxa, "taxa").setScale(ESCALA_DA_TAXA, ARREDONDAMENTO);
+    }
+
+    /** Um valor de cotação com as casas pedidas (HALF_UP), só para mostrar. */
+    public static BigDecimal paraCasas(BigDecimal valor, int casas) {
+        return Objects.requireNonNull(valor, "valor").setScale(casas, ARREDONDAMENTO);
+    }
+
+    /** |digitado − referência| ÷ referência, em %, 2 casas (aviso de diferença da cotação da dona; ADR-0006, item 15). */
+    public static BigDecimal diferencaPorCento(BigDecimal digitado, BigDecimal referencia) {
+        Objects.requireNonNull(digitado, "digitado");
+        Objects.requireNonNull(referencia, "referencia");
+        if (referencia.signum() <= 0) {
+            throw new IllegalArgumentException("A referência precisa ser maior que zero, veio " + referencia.toPlainString() + ".");
+        }
+        return digitado.subtract(referencia).abs().multiply(new BigDecimal("100")).divide(referencia, Dinheiro.ESCALA, ARREDONDAMENTO);
     }
 
     private static BigDecimal converter(BigDecimal reais, BigDecimal taxa, int escala) {

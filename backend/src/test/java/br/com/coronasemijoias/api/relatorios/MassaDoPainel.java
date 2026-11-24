@@ -76,6 +76,7 @@ abstract class MassaDoPainel extends MassaDoResultado {
     protected void montarAMassa(String anoMes, int numeroDaSemana) throws Exception {
         this.mes = anoMes;
         cotacao(d(4), "5.00000000", "0.00100000");
+        cotacaoEmUsoAgora("5.00000000", "0.00100000");
         jdbc.update("UPDATE corona.configuracoes SET valor_inteiro = 300000 WHERE chave = 'comissao_meta_guarani'");
         jdbc.update("UPDATE corona.configuracoes SET valor_inteiro = 30 WHERE chave = 'comissao_percentual_abaixo_da_meta'");
         jdbc.update("UPDATE corona.configuracoes SET valor_inteiro = 40 WHERE chave = 'comissao_percentual_na_meta'");
@@ -195,7 +196,7 @@ abstract class MassaDoPainel extends MassaDoResultado {
         try {
             servicoDeFechamento.fechar(usuarios.dona().id(), acerto, new PedidoDeFechamento(UUID.randomUUID(), faltas, List.of(),
                     List.of(), List.of(), new BigDecimal(liquidoMostrado),
-                    new PagamentoDoAcerto(recebimentos, null, null, List.of(), null, null)));
+                    new PagamentoDoAcerto(recebimentos, null, null, List.of(), null, null), null));
         } finally {
             relogio.reiniciar();
         }

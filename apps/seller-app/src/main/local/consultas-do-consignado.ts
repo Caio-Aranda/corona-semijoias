@@ -35,7 +35,7 @@ import {
   acertoAtivoDaNota,
   acharNota,
   codigoDaMaleta,
-  cotacaoAteODia,
+  cotacaoDaNota,
   tamTonDoProduto,
   dataDeCobranca,
   type DebitoLocal,
@@ -734,7 +734,7 @@ export class ConsultasDoConsignado {
       totalPago: c.totalPago,
       ficouDevendo: c.ficouDevendo,
       debitos: r.debitos,
-      cotacao: cotacaoAteODia(this.db(), p.data ?? diaEmBrasilia(this.agora())),
+      cotacao: cotacaoDaNota(this.db(), p.data, this.agora()),
     };
   }
 

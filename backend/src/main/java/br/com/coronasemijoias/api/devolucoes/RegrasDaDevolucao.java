@@ -1,5 +1,6 @@
 package br.com.coronasemijoias.api.devolucoes;
 
+import br.com.coronasemijoias.api.cotacoes.CotacaoVigente;
 import br.com.coronasemijoias.api.cadastros.Validacoes;
 import br.com.coronasemijoias.api.comum.dinheiro.Dinheiro;
 import br.com.coronasemijoias.api.comum.erros.CodigoErro;
@@ -195,9 +196,8 @@ final class RegrasDaDevolucao {
         return LocalDate.ofInstant(instante, BRASILIA);
     }
 
-    /** A cotação mais recente até o dia (horário de Brasília), ou nenhuma. */
-    static UUID cotacaoDoDia(JdbcTemplate jdbc, LocalDate dia) {
-        return jdbc.query("SELECT id FROM corona.cotacoes WHERE data_cotacao <= ? ORDER BY data_cotacao DESC LIMIT 1",
-                (rs, n) -> rs.getObject(1, UUID.class), dia).stream().findFirst().orElse(null);
+    /** A cotação vigente no momento do lançamento (ADR-0006, item 15), ou nenhuma. */
+    static UUID cotacaoDoDia(JdbcTemplate jdbc, Instant quando) {
+        return CotacaoVigente.idVigenteEm(jdbc, quando);
     }
 }

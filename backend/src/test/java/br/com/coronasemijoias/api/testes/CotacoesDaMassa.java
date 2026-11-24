@@ -23,14 +23,35 @@ public final class CotacoesDaMassa {
     private CotacoesDaMassa() {
     }
 
-    /** Grava (ou acha) a cotação do dia, com Dólar e Guarani iguais às taxas de venda dadas. Devolve o id. */
+    /**
+     * Grava (ou acha) a cotação do dia, com Dólar e Guarani iguais às taxas de venda dadas. Devolve o id. A do exemplo do
+     * ADR-0012 (2291-06-01) passa a valer desde ontem: o acerto usa a cotação vigente AGORA (ADR-0006, item 15) e estes testes
+     * tratam a do exemplo como "a cotação em uso". Todo outro dia vale desde 00:00 dele em Brasília, como sempre.
+     */
     public static UUID gravar(JdbcTemplate jdbc, String dia, String usdVenda, String pygVenda) {
         jdbc.update("""
                 INSERT INTO corona.cotacoes (id, data_cotacao, usd_compra, usd_venda, usd_paridade_compra,
-                    usd_paridade_venda, pyg_compra, pyg_venda, pyg_paridade_compra, pyg_paridade_venda, buscada_em, fonte)
-                VALUES (uuidv7(), ?::date, ?::numeric, ?::numeric, 1, 1, ?::numeric, ?::numeric, 1, 1, now(), 'teste')
-                ON CONFLICT ON CONSTRAINT cotacoes_data_unica DO NOTHING""", dia, usdVenda, usdVenda, pygVenda, pygVenda);
+                    usd_paridade_venda, pyg_compra, pyg_venda, pyg_paridade_compra, pyg_paridade_venda, buscada_em, fonte, vigente_desde)
+                VALUES (uuidv7(), ?::date, ?::numeric, ?::numeric, 1, 1, ?::numeric, ?::numeric, 1, 1, now(), 'teste', CASE WHEN ?::date = DATE '2291-06-01' THEN now() - interval '1 day' ELSE ?::date::timestamp AT TIME ZONE 'America/Sao_Paulo' END)
+                ON CONFLICT (data_cotacao) WHERE origem = 'BANCO_CENTRAL' DO NOTHING""", dia, usdVenda, usdVenda, pygVenda, pygVenda, dia, dia);
         return jdbc.queryForObject("SELECT id FROM corona.cotacoes WHERE data_cotacao = ?::date", UUID.class, dia);
+    }
+
+    /**
+     * Grava a cotação que a dona digitou (ADR-0006, item 15), vigente desde o instante dado, e devolve o id. O dia é o de
+     * Brasília do instante.
+     */
+    public static UUID gravarDaDona(JdbcTemplate jdbc, UUID usuarioId, java.time.Instant desde, String usd, String guaranisPorReal) {
+        UUID id = UUID.randomUUID();
+        java.time.OffsetDateTime quando = desde.atOffset(java.time.ZoneOffset.UTC);
+        jdbc.update("""
+                INSERT INTO corona.cotacoes (id, data_cotacao, usd_compra, usd_venda, usd_paridade_compra, usd_paridade_venda,
+                    pyg_compra, pyg_venda, pyg_paridade_compra, pyg_paridade_venda, buscada_em, fonte, origem, vigente_desde,
+                    lancada_por, guaranis_por_real)
+                VALUES (?, (?::timestamptz AT TIME ZONE 'America/Sao_Paulo')::date, ?::numeric, ?::numeric, 1, 1,
+                    round(1 / ?::numeric, 8), round(1 / ?::numeric, 8), 1, 1, ?, 'Digitada pela dona', 'DONA', ?, ?, ?::numeric)""",
+                id, quando, usd, usd, guaranisPorReal, guaranisPorReal, quando, quando, usuarioId, guaranisPorReal);
+        return id;
     }
 
     /** A cotação do exemplo do ADR-0012. */
@@ -38,9 +59,9 @@ public final class CotacoesDaMassa {
         return gravar(jdbc, DIA_DO_EXEMPLO, "5.00000000", "0.00090000");
     }
 
-    /** Tira as cotações de 2291 em diante e os acertos fechados com elas. */
+    /** Tira as cotações de 2291 em diante e as da dona (só os testes gravam), e os acertos fechados com elas. */
     public static void tirar(Connection comoMigracao) throws SQLException {
-        String minhas = "(SELECT id FROM corona.cotacoes WHERE data_cotacao >= '" + DESDE + "')";
+        String minhas = "(SELECT id FROM corona.cotacoes WHERE data_cotacao >= '" + DESDE + "' OR origem = 'DONA' OR fonte = 'teste-em-uso')";
         String meusAcertos = "(SELECT id FROM corona.acertos WHERE cotacao_id IN " + minhas + ")";
         List<String> tabelas = new ArrayList<>();
         try (Statement s = comoMigracao.createStatement()) {
@@ -92,7 +113,7 @@ public final class CotacoesDaMassa {
                         s.execute("UPDATE " + t + " SET cotacao_id = NULL WHERE cotacao_id IN " + minhas);
                     }
                 }
-                s.execute("DELETE FROM corona.cotacoes WHERE data_cotacao >= '" + DESDE + "'");
+                s.execute("DELETE FROM corona.cotacoes WHERE data_cotacao >= '" + DESDE + "' OR origem = 'DONA' OR fonte = 'teste-em-uso'");
             } finally {
                 for (String t : todas) {
                     s.execute("ALTER TABLE " + t + " ENABLE TRIGGER USER");

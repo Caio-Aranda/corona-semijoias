@@ -352,6 +352,74 @@ describe('Recebimentos do representante', () => {
     expect(p).not.toHaveProperty('valor');
   });
 
+  it('com a cotação da loja: manda o id dela; se a dona mudou a cotação, busca a nova e refaz a conta sozinho', async () => {
+    let cotacao: Record<string, unknown> = {
+      id: 'c1000000-ceea-4672-a1b9-3a1a0f7c4d11',
+      dataCotacao: '2026-11-23',
+      dolar: '5.80000000',
+      guarani: '0.00074074',
+      guaranisPorReal: '1350.00000000',
+      origem: 'DONA',
+      vigenteDesde: '2026-11-23T13:15:00Z',
+    };
+    let tentativas = 0;
+    const m = servidor({
+      'cotacao.hoje': () => ({ ok: true, dados: { disponivel: true, cotacao } }),
+      'recebimentos.receber': () => {
+        tentativas += 1;
+        if (tentativas === 1) {
+          // Enquanto a janela estava aberta, a dona lançou outra cotação.
+          cotacao = {
+            ...cotacao,
+            id: 'c2000000-ceea-4672-a1b9-3a1a0f7c4d22',
+            dolar: '6.00000000',
+            guarani: '0.00070000',
+            guaranisPorReal: '1428.57000000',
+            vigenteDesde: '2026-11-23T14:00:00Z',
+          };
+          return {
+            ok: false,
+            motivo: 'erro',
+            status: 409,
+            codigo: 'COTACAO_DO_RECEBIMENTO_MUDOU',
+            mensagem:
+              'A cotação mudou enquanto você digitava. Confira o valor em reais e grave de novo.',
+          };
+        }
+        return { ok: true, dados: {}, criado: true };
+      },
+    });
+    const u = await abrirRecebimentos(m);
+    await u.click(screen.getByRole('button', { name: 'Registrar recebimento' }));
+    await u.selectOptions(screen.getByLabelText('Representante'), ID_VENDEDOR);
+    await u.selectOptions(screen.getByLabelText('Moeda'), 'GUARANI');
+    await u.type(screen.getByLabelText('Valor recebido em Guarani'), '50.000.000');
+    // Gs. 50.000.000 ÷ 1.350 = R$ 37.037,04 (a conta da cotação da loja).
+    expect(await screen.findByText('R$ 37.037,04')).toBeInTheDocument();
+    await u.click(screen.getByRole('button', { name: 'Registrar recebimento' }));
+    await waitFor(() => expect(chamadasDe(m, 'recebimentos.receber')).toHaveLength(1));
+    expect(ultima(m, 'recebimentos.receber')).toMatchObject({
+      moeda: 'GUARANI',
+      valorNaMoeda: '50000000',
+      cotacaoId: 'c1000000-ceea-4672-a1b9-3a1a0f7c4d11',
+    });
+    expect(ultima(m, 'recebimentos.receber')).not.toHaveProperty('cotacaoData');
+    // O sistema recusou: a tela mostra a mensagem, busca a cotação nova e recalcula sozinha, com a janela aberta.
+    expect(
+      await screen.findByText(
+        'A cotação mudou enquanto você digitava. Confira o valor em reais e grave de novo.',
+      ),
+    ).toBeInTheDocument();
+    // Gs. 50.000.000 ÷ 1.428,57 = R$ 35.000,04.
+    expect(await screen.findByText('R$ 35.000,04')).toBeInTheDocument();
+    // A dona só confere e clica de novo: agora vai com o id da cotação nova.
+    await u.click(screen.getByRole('button', { name: 'Registrar recebimento' }));
+    await waitFor(() => expect(chamadasDe(m, 'recebimentos.receber')).toHaveLength(2));
+    expect(ultima(m, 'recebimentos.receber')).toMatchObject({
+      cotacaoId: 'c2000000-ceea-4672-a1b9-3a1a0f7c4d22',
+    });
+  });
+
   it('em Guarani com vírgula: explica que o Guarani não tem centavos e não manda', async () => {
     const m = servidor(comCotacao);
     const u = await abrirRecebimentos(m);

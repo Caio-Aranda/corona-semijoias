@@ -29,6 +29,7 @@ const CODIGOS_PARA_CONFERIR = new Set([
   'FECHAMENTO_DESATUALIZADO',
   'SOBRA_NO_ACERTO',
   'REVISAO_PENDENTE_NO_ACERTO',
+  'COTACAO_DO_ACERTO_MUDOU',
 ]);
 
 /** Pergunta antes de fechar e manda o pedido. O botão desliga ao clicar; o mesmo id vale em toda nova tentativa. */
@@ -54,7 +55,13 @@ export function FecharAcerto({
     const r = await chamar(ponte, 'acertos.fechar', {
       id: acerto.id,
       // O líquido da última prévia vai só para o sistema conferir: a tela não o calcula.
-      pedido: { ...pedido, id: idDoFechamento, liquidoMostrado: previa.liquido },
+      pedido: {
+        ...pedido,
+        id: idDoFechamento,
+        liquidoMostrado: previa.liquido,
+        // A cotação que a prévia mostrou: se a dona lançou outra e há recebimento em Dólar ou Guarani, o sistema recusa.
+        ...(previa.cotacaoId ? { cotacaoId: previa.cotacaoId } : {}),
+      },
     });
     trava.current = false;
     setFechando(false);

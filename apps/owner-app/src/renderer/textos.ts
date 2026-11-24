@@ -165,6 +165,7 @@ export const PT_TEXTOS = {
     cotacaoDoDia: (data: string) => `Cotação do Banco Central de ${data}.`,
     cotacaoDeDiaAnterior: (data: string) =>
       `Cotação do Banco Central de ${data}, a última publicada.`,
+    cotacaoDaLoja: (data: string, hora: string) => `Cotação da loja de ${data} às ${hora}.`,
     semCotacao: 'Ainda não há cotação. Os valores em Dólar e Guarani aparecem quando ela chegar.',
   },
   atencao: {

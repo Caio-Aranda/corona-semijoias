@@ -79,12 +79,16 @@ export function RegistrarRecebimento({
       ...valor,
       ...(contaId ? { contaId } : {}),
       // A data da cotação que a tela mostrou: se o sistema usar outra, ele recusa e nada é gravado.
-      ...('moeda' in valor && cotacao.data ? { cotacaoData: cotacao.data } : {}),
+      ...('moeda' in valor && cotacao.id ? { cotacaoId: cotacao.id } : {}),
+      ...('moeda' in valor && cotacao.data && !cotacao.id ? { cotacaoData: cotacao.data } : {}),
     });
     trava.current = false;
     setOcupado(false);
     if (!r.ok) {
       setErro(erroDoFinanceiro(r.erro));
+      // A dona lançou outra cotação enquanto a janela estava aberta: busca a nova e refaz o "Fica assim" sozinho. A janela
+      // continua aberta, com o botão pronto: ela só confere o valor em reais e grava de novo.
+      if (r.erro.codigo === 'COTACAO_DO_RECEBIMENTO_MUDOU') cotacao.recarregar();
       return;
     }
     aoFeito(r.jaRegistrado === true);

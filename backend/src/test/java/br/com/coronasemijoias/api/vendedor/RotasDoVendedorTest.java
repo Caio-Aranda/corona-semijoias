@@ -600,9 +600,9 @@ class RotasDoVendedorTest extends TesteDeIntegracao {
     private UUID cotacao(String dia, String usd, String pyg) {
         jdbc.update("""
                 INSERT INTO corona.cotacoes (id, data_cotacao, usd_compra, usd_venda, usd_paridade_compra,
-                    usd_paridade_venda, pyg_compra, pyg_venda, pyg_paridade_compra, pyg_paridade_venda, buscada_em, fonte)
-                VALUES (uuidv7(), ?::date, ?::numeric, ?::numeric, 1, 1, ?::numeric, ?::numeric, 1, 1, now(), 'teste')""",
-                dia, usd, usd, pyg, pyg);
+                    usd_paridade_venda, pyg_compra, pyg_venda, pyg_paridade_compra, pyg_paridade_venda, buscada_em, fonte, vigente_desde)
+                VALUES (uuidv7(), ?::date, ?::numeric, ?::numeric, 1, 1, ?::numeric, ?::numeric, 1, 1, now(), 'teste', ?::date::timestamp AT TIME ZONE 'America/Sao_Paulo')""",
+                dia, usd, usd, pyg, pyg, dia);
         return jdbc.queryForObject("SELECT id FROM corona.cotacoes WHERE data_cotacao = ?::date", UUID.class, dia);
     }
 

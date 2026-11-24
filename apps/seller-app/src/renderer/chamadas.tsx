@@ -91,11 +91,17 @@ export function useCotacao(ponte: PonteDoCorona): {
           data,
           carregada: true,
           aviso: naTela
-            ? r.dados.deDiaAnterior
-              ? TEXTOS.cotacao.ultima(naTela)
-              : TEXTOS.cotacao.deHoje(naTela)
+            ? r.dados.origem === 'DONA'
+              ? TEXTOS.cotacao.daLoja(naTela, horaDeBrasilia(r.dados.vigenteDesde))
+              : r.dados.deDiaAnterior
+                ? TEXTOS.cotacao.ultima(naTela)
+                : TEXTOS.cotacao.deHoje(naTela)
             : null,
-          curta: naTela ? TEXTOS.cotacao.doDia(naTela) : null,
+          curta: naTela
+            ? r.dados.origem === 'DONA'
+              ? TEXTOS.cotacao.daLoja(naTela, horaDeBrasilia(r.dados.vigenteDesde))
+              : TEXTOS.cotacao.doDia(naTela)
+            : null,
         });
       } else {
         setEstado({ cotacao: null, data: null, carregada: true, aviso: null, curta: null });
@@ -187,4 +193,16 @@ export function useFoto(
     };
   }, [ponte, hash, tamanho, chave]);
   return url;
+}
+
+/** "10:15": a hora de Brasília de um instante ISO (a cotação da loja mostra desde quando vale). */
+function horaDeBrasilia(instante: string | null | undefined): string {
+  const d = new Date(instante ?? '');
+  if (Number.isNaN(d.getTime())) return '';
+  return new Intl.DateTimeFormat('pt-BR', {
+    timeZone: 'America/Sao_Paulo',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(d);
 }

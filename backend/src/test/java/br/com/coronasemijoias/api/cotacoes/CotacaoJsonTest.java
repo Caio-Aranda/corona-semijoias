@@ -25,7 +25,8 @@ class CotacaoJsonTest {
         TaxasDoDia taxas = LeitorDoArquivoDeFechamento.ler(
                 LocalDate.of(2026, 11, 6), LeitorDoArquivoDeFechamentoTest.arquivo("20261106.csv"));
         return new Cotacao(UUID.fromString("0192f3a0-0000-7000-8000-000000000001"), LocalDate.of(2026, 11, 6), taxas,
-                Instant.parse("2026-11-06T17:00:00Z"), "https://exemplo/20261106.csv");
+                Instant.parse("2026-11-06T17:00:00Z"), "https://exemplo/20261106.csv", Cotacao.BANCO_CENTRAL,
+                Instant.parse("2026-11-06T03:00:00Z"), null, null);
     }
 
     @Test

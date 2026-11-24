@@ -147,6 +147,15 @@ describe('o lote inteiro é recusado quando algo não serve', () => {
   const casos: [string, unknown][] = [
     ['tabela desconhecida', { tabela: 'usuarios', id: idDeTeste(), version: 1, campos: {} }],
     ['coluna fora da lista', { ...produto(idDeTeste(), 1), campos: { nome: 'x', margem: '1.00' } }],
+    [
+      'quem lançou a cotação da loja (dado só do servidor)',
+      {
+        tabela: 'cotacoes',
+        id: idDeTeste(),
+        version: 1,
+        campos: { data_cotacao: '2026-11-23', origem: 'DONA', lancada_por: idDeTeste() },
+      },
+    ],
     ['coluna de custo', { ...produto(idDeTeste(), 1), campos: { nome: 'x', preco_custo: '1.00' } }],
     [
       'custo em outra tabela',

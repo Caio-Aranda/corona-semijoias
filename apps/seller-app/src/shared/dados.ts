@@ -132,6 +132,10 @@ export interface CotacaoDoDia {
   dolar: string | null;
   guarani: string | null;
   deDiaAnterior: boolean;
+  /** De onde veio a cotação em uso: o Banco Central ou a que a dona digitou na loja (ADR-0006, item 15). */
+  origem?: 'BANCO_CENTRAL' | 'DONA';
+  /** Desde quando ela vale (instante ISO, UTC); a tela mostra a hora de Brasília quando é da loja. */
+  vigenteDesde?: string | null;
 }
 
 export interface FotoPronta {

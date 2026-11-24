@@ -67,6 +67,6 @@ public class AvisoDeCotacao {
                 semCotacao.add(dia);
             }
         }
-        return new Aviso(semCotacao, repositorio.maisRecente().map(Cotacao::dataCotacao));
+        return new Aviso(semCotacao, repositorio.vigenteEm(relogio.instant()).map(Cotacao::dataCotacao));
     }
 }

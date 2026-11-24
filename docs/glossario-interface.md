@@ -1157,6 +1157,27 @@ Quando o dia sem cotação não é hoje (por exemplo, ontem):
 
 O aviso some sozinho quando a cotação chega. Fim de semana e feriado não têm aviso: nesses dias o Banco Central não publica cotação, e vale a do último dia útil.
 
+### Cotação da loja: a dona muda a cotação durante o dia (23/11/2026; ADR-0006, item 15)
+
+A dona usa a cotação da casa de câmbio da fronteira, que varia durante o dia. Em **Financeiro → Cotação** (e no botão **Mudar a cotação** da tela inicial) ela digita dois valores: **1 dólar = R$** e **1 real = Gs.**, os mesmos para comprar e vender. A cotação nova **vale a partir de agora**; o que já foi lançado não muda. Para corrigir, grava outra.
+
+| Português | Espanhol | Onde |
+| --- | --- | --- |
+| Cotação da loja | Cotización de la tienda | a que a dona digitou |
+| Cotação do Banco Central | Cotización del Banco Central | a buscada, como sempre |
+| Mudar a cotação | Cambiar la cotización | botão da tela inicial |
+| Gravar a cotação | Guardar la cotización | botão da janela |
+| Cotações de hoje | Cotizaciones de hoy | histórico do dia |
+| Vale desde | Vale desde | hora em que passou a valer |
+| Vale agora | Vale ahora | a que está valendo |
+
+- **Linha da cotação:** da loja, "Cotação da loja de 23/11/2026 às 10:15." (a hora é a de Brasília); do Banco Central, como sempre. Vale nos dois apps, com e sem internet (no Corona Vendas é a última que o computador recebeu).
+- **Janela:** "A cotação nova vale a partir de agora. O que já foi lançado não muda." A tela abre com a cotação que vale agora; ao lado, "Banco Central de 06/11/2026: 1 dólar = R$ 5,50 · 1 real = Gs. 1.117,32". Se estiver 15% ou mais longe do Banco Central, aviso amarelo, sem travar: "Este valor está bem diferente do Banco Central (R$ 5,50). Confira antes de gravar." Depois de gravar: "Cotação da loja gravada. Vale desde 10:15."
+- **Histórico:** Cotações de hoje, com hora, os dois valores e a origem ("Banco Central" ou "Loja (nome de quem gravou)"); "Para corrigir, grave uma cotação nova." Nada se apaga nem se edita.
+- **Quando a cotação muda no meio de um recebimento** (a dona lançou outra com a janela aberta): "A cotação mudou enquanto você digitava. Confira o valor em reais e grave de novo." (ES: "La cotización cambió mientras usted escribía. Revise el valor en reales y guarde de nuevo."). A tela busca a cotação nova e refaz o "Fica assim:" sozinha, com a janela aberta. No fechamento do acerto, só com recebimento em Dólar ou Guarani: "A cotação mudou. Confira os valores do acerto e feche de novo." (ES: "La cotización cambió. Revise los valores del acerto y cierre de nuevo.").
+- **Texto de ajuda para o representante** (sem aviso na tela): a venda feita sem internet vale em reais (o mesmo valor) e o relatório mostra o Dólar e o Guarani pela cotação da hora da venda, que pode ser diferente da que o computador mostrava sem internet.
+- **Recebimento digitado em Guarani com a cotação da loja:** R$ = Gs. ÷ o valor que ela digitou em "1 real = Gs." (Gs. 50.000.000 ÷ 1.350 = R$ 37.037,04), para não perder centavos.
+
 ## 12. Estoque e compras (Fase 2)
 
 Termos de tela do estoque e das compras. Vale a regra da §19.1: nada de termo técnico. Toda correção é um novo lançamento; nada é apagado (§19.5).

@@ -376,7 +376,7 @@ public class ServicoDeDevolucoes {
         if (aparelho != null) {
             origem.definirNaTransacaoAtual(aparelho);
         }
-        UUID cotacao = RegrasDaDevolucao.cotacaoDoDia(jdbc, dia);
+        UUID cotacao = RegrasDaDevolucao.cotacaoDoDia(jdbc, quando);
         UUID clienteId = (UUID) venda.get("cliente_id");
         jdbc.update("""
                 INSERT INTO corona.devolucoes (id, venda_id, cliente_id, vendedor_id, remessa_id, motivo, observacao, destino,

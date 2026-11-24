@@ -12,6 +12,7 @@ export const PT_TEXTOS_DE_FINANCEIRO = {
     contasAPagar: 'Contas a pagar',
     contasAReceber: 'Contas a receber',
     recebimentos: 'Recebimentos do representante',
+    cotacao: 'Cotação',
   },
   formas: {
     DINHEIRO: 'Dinheiro',
@@ -344,6 +345,43 @@ export const PT_TEXTOS_DE_FINANCEIRO = {
     semCotacao: 'Ainda não há cotação do dia. Por enquanto, registre o recebimento em reais.',
     recebidoEm: (valor: string) => `Recebido em ${valor}`,
     rodapeDaLista: 'Dólar e Guarani pela cotação do Banco Central do dia de cada recebimento.',
+  },
+
+  /** A dona muda a cotação do Dólar e do Guarani durante o dia (ADR-0006, item 15; glossário, parte 11). */
+  cotacao: {
+    titulo: 'Cotação do Dólar e do Guarani',
+    botao: 'Mudar a cotação',
+    ajuda: 'A cotação nova vale a partir de agora. O que já foi lançado não muda.',
+    dolar: '1 dólar = R$',
+    guarani: '1 real = Gs.',
+    bancoCentral: (data: string, dolar: string, guarani: string) =>
+      `Banco Central de ${data}: 1 dólar = R$ ${dolar} · 1 real = Gs. ${guarani}`,
+    avisoDoDolar: (valor: string) =>
+      `Este valor está bem diferente do Banco Central (R$ ${valor}). Confira antes de gravar.`,
+    avisoDoGuarani: (valor: string) =>
+      `Este valor está bem diferente do Banco Central (Gs. ${valor}). Confira antes de gravar.`,
+    gravar: 'Gravar a cotação',
+    voltar: 'Voltar',
+    gravando: 'Gravando...',
+    gravada: (hora: string) => `Cotação da loja gravada. Vale desde ${hora}.`,
+    invalido: 'Confira os valores: digite só números, com vírgula nos centavos.',
+    hoje: 'Cotações de hoje',
+    outroDia: 'Ver outro dia',
+    legenda: 'Cotações do dia',
+    colunas: {
+      valeDesde: 'Vale desde',
+      dolar: '1 dólar = R$',
+      guarani: '1 real = Gs.',
+      origem: 'Origem',
+    },
+    origem: {
+      BANCO_CENTRAL: 'Banco Central',
+      loja: (nome: string | null) => (nome ? `Loja (${nome})` : 'Loja'),
+    },
+    valeAgora: 'Vale agora',
+    corrigir: 'Para corrigir, grave uma cotação nova.',
+    vazio: 'Nenhuma cotação neste dia.',
+    semConexao: 'Sem internet. A cotação não foi gravada. Tente de novo.',
   },
 
   semana: {

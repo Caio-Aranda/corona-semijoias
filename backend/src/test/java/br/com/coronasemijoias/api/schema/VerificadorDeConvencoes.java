@@ -46,7 +46,8 @@ public final class VerificadorDeConvencoes {
     /** O único lugar onde numeric(18,8) é aceito: as oito colunas de taxa e paridade (ADR-0006, item 8). */
     private static final Set<String> COLUNAS_DE_COTACAO = Set.of(
             "cotacoes.usd_compra", "cotacoes.usd_venda", "cotacoes.usd_paridade_compra", "cotacoes.usd_paridade_venda",
-            "cotacoes.pyg_compra", "cotacoes.pyg_venda", "cotacoes.pyg_paridade_compra", "cotacoes.pyg_paridade_venda");
+            "cotacoes.pyg_compra", "cotacoes.pyg_venda", "cotacoes.pyg_paridade_compra", "cotacoes.pyg_paridade_venda",
+            "cotacoes.guaranis_por_real");
     private static final Set<String> SO_DAS_SINCRONIZAVEIS = Set.of("sync_seq", "sync_xid", "origem_dispositivo");
 
     private record Coluna(String tipo, boolean naoNulo) {

@@ -8,6 +8,8 @@
 export interface CotacaoParaTela {
   dolar: string;
   guarani: string;
+  /** Só na cotação que a dona digitou ("1 real = Gs. 1.350"): o recebimento em Guarani divide por ela (ADR-0006, item 15). */
+  guaranisPorReal?: string | null;
 }
 
 export interface TresMoedas {
@@ -123,10 +125,15 @@ export function lerReaisDigitados(digitado: string): string | null {
   return `${inteiro}.${(m[2] ?? '').padEnd(2, '0') || '00'}`;
 }
 
-/** "2026-11-06" → "06/11/2026". */
+/**
+ * "2026-11-06" → "06/11/2026". A data da cotação da dona vem com a hora em que passou a valer (Brasília): "2026-11-23T10:15" →
+ * "23/11/2026 10:15".
+ */
 export function dataParaTela(iso: string): string {
-  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
-  return m ? `${m[3]}/${m[2]}/${m[1]}` : iso;
+  const m = /^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}:\d{2})(?!:))?/.exec(iso);
+  if (!m) return iso;
+  const dia = `${m[3]}/${m[2]}/${m[1]}`;
+  return m[4] ? `${dia} ${m[4]}` : dia;
 }
 
 // --- recebimento do representante digitado em Dólar ou Guarani (23/11/2026; ADR-0006, adendo do item 13) ---
@@ -176,6 +183,13 @@ export function reaisDoValorNaMoeda(
     return textoDeCentavos(dividirArredondando(c * t, 10n ** BigInt(CASAS_DA_TAXA)));
   }
   if (!/^-?\d{1,14}$/.test(valorNaMoeda)) return null;
+  const gpr = cotacao.guaranisPorReal ? taxaDeTexto(cotacao.guaranisPorReal) : null;
+  if (gpr !== null) {
+    // R$ = Gs. ÷ guaranis por real, HALF_UP em 2 casas (a mesma conta do servidor).
+    return textoDeCentavos(
+      dividirArredondando(BigInt(valorNaMoeda) * 10n ** BigInt(CASAS_DA_TAXA + 2), gpr),
+    );
+  }
   const t = taxaDeTexto(cotacao.guarani);
   if (t === null) return null;
   return textoDeCentavos(

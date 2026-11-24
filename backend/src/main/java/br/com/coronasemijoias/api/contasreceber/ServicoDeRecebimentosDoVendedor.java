@@ -44,10 +44,12 @@ public class ServicoDeRecebimentosDoVendedor {
     /**
      * O pedido de recebimento avulso (fora do acerto). Sem {@code contaId}, distribui pelas contas em aberto por vencimento.
      * {@code moeda} (padrão REAL): em REAL vem o {@code valor}; em DOLAR ou GUARANI vem só o {@code valorNaMoeda} e o servidor
-     * converte pela cotação do dia (23/11/2026). {@code cotacaoData}, opcional: a data da cotação que a tela mostrou.
+     * converte pela cotação do dia (23/11/2026). {@code cotacaoId}, opcional: o id da cotação que a tela
+     * mostrou (com várias por dia, só o id percebe a troca; ADR-0006, item 15); {@code cotacaoData}, a data dela, só para o Corona
+     * Gestão antigo.
      */
     public record PedidoDeRecebimento(UUID id, UUID vendedorId, String forma, BigDecimal valor, UUID contaId, String moeda,
-            BigDecimal valorNaMoeda, LocalDate cotacaoData) {
+            BigDecimal valorNaMoeda, LocalDate cotacaoData, UUID cotacaoId) {
     }
 
     /**
@@ -121,7 +123,7 @@ public class ServicoDeRecebimentosDoVendedor {
         }
         Instant hora = relogio.instant();
         ValorRecebido recebido = REAL.equals(moeda) ? ValorRecebido.emReais(digitado) : converterPelaCotacaoDe(hora, moeda, digitado,
-                pedido.cotacaoData());
+                pedido.cotacaoData(), pedido.cotacaoId());
         BigDecimal valor = recebido.valor();
         jdbc.update("""
                 INSERT INTO corona.recebimentos_vendedor (id, vendedor_id, momento, aplicado_em, forma, valor, recebido_em, registrado_por,
@@ -146,13 +148,17 @@ public class ServicoDeRecebimentosDoVendedor {
     }
 
     /**
-     * Converte pela cotação do dia do lançamento (ADR-0006, item 7). Sem cotação, 409; se a tela mostrou outra cotação (chegou uma
+     * Converte pela cotação vigente na hora do lançamento (ADR-0006, itens 7 e 15). Sem cotação, 409; se a tela mostrou outra cotação (chegou uma
      * nova com a tela aberta), 409 também: nada é gravado e a dona confere o valor em reais de novo.
      */
-    private ValorRecebido converterPelaCotacaoDe(Instant hora, String moeda, BigDecimal digitado, LocalDate cotacaoDaTela) {
-        Cotacao cotacao = cotacoes.paraLancamento(hora)
+    private ValorRecebido converterPelaCotacaoDe(Instant hora, String moeda, BigDecimal digitado, LocalDate dataDaTela,
+            UUID cotacaoDaTela) {
+        Cotacao cotacao = cotacoes.vigenteEm(hora)
                 .orElseThrow(() -> new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.SEM_COTACAO_PARA_O_RECEBIMENTO));
-        if (cotacaoDaTela != null && !cotacaoDaTela.equals(cotacao.dataCotacao())) {
+        // Com várias cotações no mesmo dia, só o id percebe a troca; a data fica para o Corona Gestão antigo.
+        boolean mudou = cotacaoDaTela != null ? !cotacaoDaTela.equals(cotacao.id())
+                : dataDaTela != null && !dataDaTela.equals(cotacao.dataCotacao());
+        if (mudou) {
             throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.COTACAO_DO_RECEBIMENTO_MUDOU);
         }
         return converter(moeda, digitado, cotacao);
@@ -325,7 +331,9 @@ public class ServicoDeRecebimentosDoVendedor {
     public static ValorRecebido converter(String moeda, BigDecimal valorNaMoeda, Cotacao cotacao) {
         BigDecimal reais = "DOLAR".equals(moeda)
                 ? ConversaoDeMoeda.dolarParaReais(valorNaMoeda, cotacao.taxas().usdVenda())
-                : ConversaoDeMoeda.guaraniParaReais(valorNaMoeda, cotacao.taxas().pygVenda());
+                : cotacao.guaranisPorReal() != null
+                        ? ConversaoDeMoeda.guaraniParaReaisPorGuaranisPorReal(valorNaMoeda, cotacao.guaranisPorReal())
+                        : ConversaoDeMoeda.guaraniParaReais(valorNaMoeda, cotacao.taxas().pygVenda());
         if (reais.signum() <= 0) {
             throw Validacoes.recusar("valorNaMoeda", "O valor é pequeno demais para virar reais. Confira o valor.");
         }

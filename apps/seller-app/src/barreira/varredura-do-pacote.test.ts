@@ -100,9 +100,15 @@ describe('varredura do pacote do Corona Vendas (ADR-0003, camada 2)', () => {
   it('desempacota um app.asar de verdade e falha se houver marcador dentro dele', async () => {
     const { varrer } = await carregar<Varredura>('scripts', 'barreira', 'varrer-pacote.mjs');
     const { lerMarcadores } = await carregar<Marcadores>('scripts', 'barreira', 'marcadores.mjs');
-    const asar = (
-      await carregar<{ default: Asar }>('node_modules', '@electron', 'asar', 'lib', 'asar.js')
-    ).default;
+    // O @electron/asar 4 exporta as funções direto; o 3 as punha em `default`. Vale qualquer um dos dois.
+    const modulo = await carregar<Asar & { default?: Asar }>(
+      'node_modules',
+      '@electron',
+      'asar',
+      'lib',
+      'asar.js',
+    );
+    const asar: Asar = modulo.default ?? modulo;
     const { marcadores } = lerMarcadores();
 
     const limpo = montarPacote({

@@ -1,5 +1,6 @@
 package br.com.coronasemijoias.api.relatorios;
 
+import br.com.coronasemijoias.api.cotacoes.CotacaoVigente;
 import static br.com.coronasemijoias.api.relatorios.MotorDeRelatorio.DefinicaoDeTotal.emTresMoedas;
 import static br.com.coronasemijoias.api.relatorios.MotorDeRelatorio.idOpcional;
 import static br.com.coronasemijoias.api.relatorios.VendidoLiquido.CONCLUIDA;
@@ -60,8 +61,10 @@ public class ConsultasDoResultado {
             + "OR m.estorna_id IN (SELECT o.id FROM corona.movimentacoes_estoque o "
             + "WHERE o.tipo = 'AJUSTE' AND o.origem_tipo = 'INVENTARIO' AND o.quantidade < 0)";
 
-    private static final String COTACAO_DO_DIA = " LEFT JOIN LATERAL (SELECT c.usd_venda, c.pyg_venda FROM corona.cotacoes c "
-            + "WHERE c.data_cotacao <= %s ORDER BY c.data_cotacao DESC LIMIT 1) ct ON true ";
+    /** A cotação vigente ao fim do dia (expressão {@code date}) pedido, em Brasília (ADR-0006, item 15). */
+    private static String cotacaoDoDia(String dataSql) {
+        return " " + CotacaoVigente.joinDoMomento(CotacaoVigente.fimDoDiaSql(dataSql), "c.usd_venda, c.pyg_venda") + " ";
+    }
 
     /** Os filtros de lucro por produto e por vendedor (o resultado usa só o período). */
     public record Filtros(String busca, String vendedorId, String pracaId, String produtoId, String categoriaId, LocalDate de,
@@ -148,10 +151,10 @@ public class ConsultasDoResultado {
                 + "LEFT JOIN corona.cotacoes ct ON ct.id = a.cotacao_id WHERE a.status = 'ACERTADO' AND " + dia("a.fechado_em")
                 + NO_PERIODO;
         String perdas = "SELECT " + trio("perdas", "x.qtd * cu.custo", "ct") + " FROM (" + PERDAS + ") x"
-                + CustoDaPeca.juntar("cu", "x.produto_id", "x.dia_do_custo") + COTACAO_DO_DIA.formatted("x.dia")
+                + CustoDaPeca.juntar("cu", "x.produto_id", "x.dia_do_custo") + cotacaoDoDia("x.dia")
                 + "WHERE x.dia" + NO_PERIODO;
         String caixa = "SELECT " + trio("caixa", "l.valor", "ct") + " FROM corona.lancamentos_caixa l"
-                + COTACAO_DO_DIA.formatted("l.data_lancamento") + "WHERE l.origem_tipo = 'MANUAL' AND l.data_lancamento"
+                + cotacaoDoDia("l.data_lancamento") + "WHERE l.origem_tipo = 'MANUAL' AND l.data_lancamento"
                 + NO_PERIODO;
         String soma = "SELECT v.*, c.*, b.*, p.*, x.*, "
                 + conta("bruto", "v.liq_%s - v.custo_%s") + ", "
@@ -196,7 +199,7 @@ public class ConsultasDoResultado {
 
     private List<LinhaDoResultado> linhasDoCaixa(MapSqlParameterSource p) {
         String sql = "SELECT cat.id AS categoria_id, cat.nome, " + trio("v", "l.valor", "ct") + " FROM corona.lancamentos_caixa l "
-                + "JOIN corona.categorias_caixa cat ON cat.id = l.categoria_id" + COTACAO_DO_DIA.formatted("l.data_lancamento")
+                + "JOIN corona.categorias_caixa cat ON cat.id = l.categoria_id" + cotacaoDoDia("l.data_lancamento")
                 + "WHERE l.origem_tipo = 'MANUAL' AND l.data_lancamento" + NO_PERIODO
                 + " GROUP BY cat.id, cat.nome ORDER BY lower(cat.nome), cat.id";
         return jdbc.query(sql, p, (rs, n) -> new LinhaDoResultado("CAIXA", rs.getString("nome"), "SOMA",
@@ -269,7 +272,7 @@ public class ConsultasDoResultado {
                 + "cu.custo AS custo_unitario, cu.cadastro AS cadastro, x.qtd * cu.custo AS valor, "
                 + colunasDeConversao("x.qtd * cu.custo", "ct") + " FROM (" + PERDAS + ") x JOIN corona.produtos p ON p.id = x.produto_id "
                 + "LEFT JOIN corona.vendedores vd ON vd.id = x.vendedor_id" + CustoDaPeca.juntar("cu", "x.produto_id", "x.dia_do_custo")
-                + COTACAO_DO_DIA.formatted("x.dia") + "WHERE x.dia" + NO_PERIODO;
+                + cotacaoDoDia("x.dia") + "WHERE x.dia" + NO_PERIODO;
     }
 
     private static String registrosDeCobranca() {
@@ -286,7 +289,7 @@ public class ConsultasDoResultado {
                 + "|| coalesce(': ' || l.descricao, '') AS descricao, NULL::text AS vendedor, NULL::text AS produto, "
                 + "NULL::int AS quantidade, NULL::numeric AS custo_unitario, false AS cadastro, l.valor AS valor, "
                 + colunasDeConversao("l.valor", "ct") + " FROM corona.lancamentos_caixa l "
-                + "JOIN corona.categorias_caixa cat ON cat.id = l.categoria_id" + COTACAO_DO_DIA.formatted("l.data_lancamento")
+                + "JOIN corona.categorias_caixa cat ON cat.id = l.categoria_id" + cotacaoDoDia("l.data_lancamento")
                 + "WHERE l.origem_tipo = 'MANUAL' AND l.data_lancamento" + NO_PERIODO
                 + (daCategoria ? " AND l.categoria_id = :categoria" : "");
     }

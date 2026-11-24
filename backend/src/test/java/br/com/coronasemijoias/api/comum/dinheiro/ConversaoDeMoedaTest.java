@@ -3,6 +3,7 @@ package br.com.coronasemijoias.api.comum.dinheiro;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import br.com.coronasemijoias.api.cotacoes.TaxasDoDia;
 import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
 
@@ -213,5 +214,40 @@ class ConversaoDeMoedaTest {
         assertThat(ConversaoDeMoeda.guaraniParaReais(d("5"), PYG_06_11)).isEqualTo(d("0.00"));
         // "500000.00" (o que chega da API com escala 2) é inteiro.
         assertThat(ConversaoDeMoeda.guaraniParaReais(d("500000.00"), PYG_06_11)).isEqualTo(d("447.50"));
+    }
+
+    // --- a cotação da dona: Guaranis por 1 Real (ADR-0006, item 15) ---
+
+    @Test
+    void guaraniParaReaisPelosGuaranisPorRealDaDonaDivideEArredondaEmDuasCasas() {
+        // Gs. 50.000.000 ÷ 1350 = 37.037,037...: 37.037,04 (pela taxa de 8 casas, 0,00074074, daria 37.037,00).
+        assertThat(ConversaoDeMoeda.guaraniParaReaisPorGuaranisPorReal(d("50000000"), d("1350"))).isEqualTo(d("37037.04"));
+        assertThat(ConversaoDeMoeda.guaraniParaReaisPorGuaranisPorReal(d("135000"), d("1350"))).isEqualTo(d("100.00"));
+        assertThat(ConversaoDeMoeda.guaraniParaReaisPorGuaranisPorReal(d("675"), d("1350"))).isEqualTo(d("0.50"));
+        // Gs. 1 ÷ 1350 = 0,00074: dá zero (o recebimento recusa, como hoje).
+        assertThat(ConversaoDeMoeda.guaraniParaReaisPorGuaranisPorReal(d("1"), d("1350"))).isEqualTo(d("0.00"));
+        assertThat(ConversaoDeMoeda.guaraniParaReaisPorGuaranisPorReal(d("500000.00"), d("1350.5"))).isEqualTo(d("370.23"));
+    }
+
+    @Test
+    void guaraniParaReaisPelosGuaranisPorRealRecusaTaxaInvalidaGuaraniComCentavosENulos() {
+        assertThatThrownBy(() -> ConversaoDeMoeda.guaraniParaReaisPorGuaranisPorReal(d("100"), BigDecimal.ZERO))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> ConversaoDeMoeda.guaraniParaReaisPorGuaranisPorReal(d("100.5"), d("1350")))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> ConversaoDeMoeda.guaraniParaReaisPorGuaranisPorReal(null, d("1350")))
+                .isInstanceOf(NullPointerException.class);
+    }
+
+    @Test
+    void aTaxaDoGuaraniDaDonaTemOitoCasasEAParidadeEEmGuaranisPorDolar() {
+        TaxasDoDia t = TaxasDoDia.daDona(d("5.80"), d("1350"));
+        assertThat(t.pygVenda()).isEqualTo(d("0.00074074"));
+        assertThat(t.pygCompra()).isEqualTo(d("0.00074074"));
+        assertThat(t.usdParidadeVenda()).isEqualTo(d("1.00000000"));
+        assertThat(t.pygParidadeVenda()).isEqualTo(d("7830.00000000"));
+        // A conversão de tela continua R$ ÷ taxa: R$ 100 = Gs. 135.000 (a conta dela) e US$ 17,24.
+        assertThat(ConversaoDeMoeda.paraGuarani(d("100.00"), t.pygVenda())).isEqualTo(d("135000"));
+        assertThat(ConversaoDeMoeda.paraDolar(d("100.00"), t.usdVenda())).isEqualTo(d("17.24"));
     }
 }

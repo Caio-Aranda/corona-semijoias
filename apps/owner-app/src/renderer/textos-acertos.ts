@@ -239,6 +239,8 @@ export const PT_TEXTOS_DE_ACERTOS = {
     cotacao: {
       frase: (data: string) =>
         `Valores em Dólar e Guarani pela cotação de ${data}. Vale o valor em reais.`,
+      fraseDaLoja: (data: string, hora: string) =>
+        `Valores em Dólar e Guarani pela cotação da loja de ${data} às ${hora}. Vale o valor em reais.`,
       sem: 'Sem cotação: os valores aparecem só em reais.',
     },
   },
@@ -306,6 +308,7 @@ export const PT_TEXTOS_DE_ACERTOS = {
     erros: {
       FECHAMENTO_DESATUALIZADO:
         'Os números mudaram desde que você abriu. Confira o acerto de novo.',
+      COTACAO_DO_ACERTO_MUDOU: 'A cotação mudou. Confira os valores do acerto e feche de novo.',
       PAGAMENTO_DO_ACERTO_PASSA_DO_DEVIDO:
         'O valor pago passa do que o representante deve. Confira os valores.',
       DATA_DO_RESTANTE_OBRIGATORIA: 'Escolha a data de pagamento do que ficou devendo.',

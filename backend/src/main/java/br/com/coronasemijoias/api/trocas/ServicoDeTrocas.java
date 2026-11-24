@@ -1,5 +1,6 @@
 package br.com.coronasemijoias.api.trocas;
 
+import br.com.coronasemijoias.api.cotacoes.CotacaoVigente;
 import br.com.coronasemijoias.api.auditoria.ServicoDeAuditoria;
 import br.com.coronasemijoias.api.auditoria.ServicoDeAuditoria.Ator;
 import br.com.coronasemijoias.api.cadastros.Validacoes;
@@ -197,7 +198,7 @@ public class ServicoDeTrocas {
                 INSERT INTO corona.trocas (id, venda_origem_id, devolucao_id, venda_nova_id, cliente_id, vendedor_id, diferenca,
                     cotacao_id, trocada_em, hora_ajustada, registrada_por)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", id, devolucao.vendaId(), devolucaoId, vendaNovaId, a.clienteId(),
-                vendedorId, diferenca, cotacaoDoDia(LocalDate.ofInstant(quando, BRASILIA)), Timestamp.from(quando), horaAjustada,
+                vendedorId, diferenca, cotacaoDoDia(quando), Timestamp.from(quando), horaAjustada,
                 usuarioId);
         conferirAgora();
 
@@ -468,9 +469,8 @@ public class ServicoDeTrocas {
         return resto.equals(pagos) && (doCredito.isEmpty() || doCredito.equals(List.of(pagamentoDoCredito)));
     }
 
-    /** A cotação mais recente até o dia (horário de Brasília), ou nenhuma. */
-    private UUID cotacaoDoDia(LocalDate dia) {
-        return jdbc.query("SELECT id FROM corona.cotacoes WHERE data_cotacao <= ? ORDER BY data_cotacao DESC LIMIT 1",
-                (rs, n) -> rs.getObject(1, UUID.class), dia).stream().findFirst().orElse(null);
+    /** A cotação vigente no momento do lançamento (ADR-0006, item 15), ou nenhuma. */
+    private UUID cotacaoDoDia(Instant quando) {
+        return CotacaoVigente.idVigenteEm(jdbc, quando);
     }
 }
