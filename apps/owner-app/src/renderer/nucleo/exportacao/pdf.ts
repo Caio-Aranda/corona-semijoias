@@ -15,12 +15,52 @@ const FOLGA = 4; // pontos de respiro dentro de cada coluna
 const ALTURA_DA_LINHA = 11;
 const LARGURA_DO_CARACTERE = 0.55; // em corpos de fonte; cobre números e maiúsculas sem estourar a coluna
 
+/**
+ * Sinais que o Windows-1252 guarda entre 0x80 e 0x9F (travessão, reticências, aspas curvas, euro...).
+ * Sem esta tabela, "Compra de 05/11 — Ouro" saía como "Compra de 05/11 ? Ouro" no PDF.
+ */
+const WINDOWS_1252: Record<string, number> = {
+  '€': 0x80,
+  '‚': 0x82,
+  ƒ: 0x83,
+  '„': 0x84,
+  '…': 0x85,
+  '†': 0x86,
+  '‡': 0x87,
+  ˆ: 0x88,
+  '‰': 0x89,
+  Š: 0x8a,
+  '‹': 0x8b,
+  Œ: 0x8c,
+  Ž: 0x8e,
+  '‘': 0x91,
+  '’': 0x92,
+  '“': 0x93,
+  '”': 0x94,
+  '•': 0x95,
+  '–': 0x96,
+  '—': 0x97,
+  '˜': 0x98,
+  '™': 0x99,
+  š: 0x9a,
+  '›': 0x9b,
+  œ: 0x9c,
+  ž: 0x9e,
+  Ÿ: 0x9f,
+};
+
 /** Letras do texto em Windows-1252; o que não existe vira "?". Parênteses e barras são protegidos. */
 export function paraPdf(texto: string): string {
   let saida = '';
   for (const c of texto) {
     const codigo = c.codePointAt(0)!;
-    const ch = codigo <= 0xff ? c : '?';
+    const doWindows = WINDOWS_1252[c];
+    const ch =
+      doWindows !== undefined
+        ? String.fromCharCode(doWindows)
+        : codigo <= 0xff && (codigo < 0x80 || codigo > 0x9f)
+          ? c
+          : '?';
     saida += ch === '(' || ch === ')' || ch === '\\' ? `\\${ch}` : ch;
   }
   return saida;
@@ -110,6 +150,29 @@ export function planejarColunas(grade: Grade): PlanoDeColunas {
   };
 }
 
+/** Retângulo cheio em cinza claro (fundo do cabeçalho da tabela). */
+export function fundoCinza(x: number, yBaixo: number, largura: number, altura: number): string {
+  return `q 0.92 g ${x.toFixed(2)} ${yBaixo.toFixed(2)} ${largura.toFixed(2)} ${altura.toFixed(2)} re f Q`;
+}
+
+/** Linhas finas da tabela: horizontais nos `ys` e verticais nos `xs`, entre o topo e a base. */
+export function linhasDaTabela(
+  xs: number[],
+  ys: number[],
+  topo: number,
+  base: number,
+  xEsq: number,
+  xDir: number,
+): string {
+  const o: string[] = ['q 0.45 G 0.4 w'];
+  for (const y of ys)
+    o.push(`${xEsq.toFixed(2)} ${y.toFixed(2)} m ${xDir.toFixed(2)} ${y.toFixed(2)} l S`);
+  for (const x of xs)
+    o.push(`${x.toFixed(2)} ${base.toFixed(2)} m ${x.toFixed(2)} ${topo.toFixed(2)} l S`);
+  o.push('Q');
+  return o.join('\n');
+}
+
 type Item = { celulas: Celula[]; negrito: boolean } | { espaco: true };
 
 export function gerarPdf(grade: Grade): Uint8Array {
@@ -150,6 +213,16 @@ export function gerarPdf(grade: Grade): Uint8Array {
       });
       y -= 8;
     }
+    // Tabela de verdade: cabeçalho com fundo cinza, linhas finas entre linhas e colunas.
+    const bordasX = [
+      ...colunas.map((c) => c.x),
+      colunas[colunas.length - 1]!.x + colunas[colunas.length - 1]!.largura,
+    ];
+    const topoDaTabela = y;
+    const baseDoCabecalho = y - linhasDoTitulo * ALTURA_DA_LINHA - 3;
+    o.push(
+      fundoCinza(MARGEM, baseDoCabecalho, LARGURA - 2 * MARGEM, topoDaTabela - baseDoCabecalho),
+    );
     // Títulos das colunas (em até duas linhas), repetidos em toda página.
     for (let l = 0; l < linhasDoTitulo; l++) {
       y -= ALTURA_DA_LINHA;
@@ -168,25 +241,36 @@ export function gerarPdf(grade: Grade): Uint8Array {
         );
       });
     }
-    o.push(`0.5 w ${MARGEM} ${(y - 3).toFixed(2)} m ${LARGURA - MARGEM} ${(y - 3).toFixed(2)} l S`);
     y -= 3;
+    const horizontais = [topoDaTabela, y];
+    const trechos: { topo: number; base: number }[] = [];
+    let inicioDoTrecho = topoDaTabela;
     for (const item of itensDaPagina) {
       if ('espaco' in item) {
+        trechos.push({ topo: inicioDoTrecho, base: y });
         y -= ALTURA_DA_LINHA / 2;
+        inicioDoTrecho = y;
+        horizontais.push(y);
         continue;
       }
       y -= ALTURA_DA_LINHA;
+      horizontais.push(y);
       item.celulas.forEach((celula, i) => {
         if (celula.v === '') return;
         const c = colunas[i]!;
         const s = caber(textoDaCelula(celula), c.largura - FOLGA, corpo);
         texto(
           grade.numericas[i] ? c.x + c.largura - 2 - larguraDoTexto(s, corpo) : c.x + 2,
-          y,
+          y + 3,
           s,
           item.negrito,
         );
       });
+    }
+    trechos.push({ topo: inicioDoTrecho, base: y });
+    for (const t of trechos) {
+      const ys = horizontais.filter((h) => h <= t.topo && h >= t.base);
+      o.push(linhasDaTabela(bordasX, ys, t.topo, t.base, MARGEM, LARGURA - MARGEM));
     }
     texto(
       LARGURA - MARGEM - 60,

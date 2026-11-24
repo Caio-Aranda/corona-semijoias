@@ -237,7 +237,7 @@ describe('Nota de saída', () => {
       'Tam./Ton.',
       'Maleta',
       'Qtd.',
-      'Preço',
+      'Preço unitário',
       'Sub-total',
     ]);
     expect(within(folha).getByText('17')).toBeInTheDocument();

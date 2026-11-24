@@ -22,7 +22,7 @@ export interface TelaNovoPedidoProps {
 }
 
 /**
- * Novo Pedido (§23.6): o cliente, a maleta, a Dt. Cobrança e a leitura do código de cada peça (soma 1 na mesma linha, ou
+ * Novo Pedido (§23.6): o cliente, a maleta, a Data do retorno e a leitura do código de cada peça (soma 1 na mesma linha, ou
  * linha nova). O pedido em montagem fica guardado neste computador (sobrevive a fechar o programa) e só vira nota ao Finalizar.
  */
 export function TelaNovoPedido({ ponte, aoVoltar, aoAbrirPedido }: TelaNovoPedidoProps) {

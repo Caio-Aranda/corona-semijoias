@@ -14,14 +14,21 @@ import { TEXTOS_DA_INICIAL as I } from '../textos-inicial';
 import { TEXTOS_DO_PAINEL } from '../textos-painel';
 import { useTelasDoGestao } from '../nucleo/telas-do-gestao';
 import { IconeDoAtalho } from './IconeDoAtalho';
+import { rotaDaArea } from '../nucleo/areas-de-relatorios';
 
 const BOTOES = ['painel', 'montar', 'receber', 'acerto', 'cadastrar', 'relatorios'] as const;
 
-/** Botões que já levam a uma tela; os outros dizem "em breve" até a tarefa deles. */
+/**
+ * A tela de cada atalho. Montar maleta, Cadastrar produto e Relatórios ficaram em "em breve" desde a tarefa 2.6, mesmo
+ * depois de as telas existirem (revisão de 23/11/2026). Relatórios abre a área de vendas, a dos números da loja.
+ */
 const ROTA_DO_BOTAO: Partial<Record<(typeof BOTOES)[number], string>> = {
   painel: 'painel/semana',
+  montar: 'maletas/montar',
   receber: 'estoque/receber-compra',
   acerto: 'acertos/lista',
+  cadastrar: 'cadastros/produtos',
+  relatorios: rotaDaArea('vendas'),
 };
 
 export interface TelaInicialProps {

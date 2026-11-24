@@ -128,3 +128,12 @@ describe('PDF da nota de remessa', () => {
     expect(lida?.itens[0]?.tamTon).toBe('Aro 16');
   });
 });
+
+describe('PDF da nota: tabela com linhas', () => {
+  it('desenha o fundo do cabeçalho e as linhas finas da tabela, em cada página', () => {
+    const pdf = texto(gerarPdfDaNota(nota(80)));
+    expect(paginas(pdf)).toBeGreaterThan(1);
+    expect((pdf.match(/0\.92 g/g) ?? []).length).toBe(paginas(pdf));
+    expect((pdf.match(/0\.45 G 0\.4 w/g) ?? []).length).toBeGreaterThanOrEqual(paginas(pdf) - 1);
+  });
+});

@@ -13,7 +13,7 @@ import {
 } from '../moedas';
 import { TEXTOS_DE_MALETAS } from '../../textos-maletas';
 import { dataEHoraParaTela } from './grade';
-import { montarArquivoPdf, paraPdf } from './pdf';
+import { fundoCinza, linhasDaTabela, montarArquivoPdf, paraPdf } from './pdf';
 import { TEXTOS_SOLTOS as SOLTOS } from '../../textos-soltos';
 
 const T = TEXTOS_DE_MALETAS.nota;
@@ -108,7 +108,7 @@ export function gerarPdfDaNota(nota: NotaParaPdf): Uint8Array {
     const tamTon = quebrar(i.tamTon, COLUNAS[2]!.largura - 6, CORPO);
     return {
       celulas: [i.codigo, nome.join('\n'), tamTon.join('\n'), i.quantidade, i.preco, i.subtotal],
-      altura: Math.max(nome.length, tamTon.length) * LINHA,
+      altura: Math.max(nome.length, tamTon.length) * LINHA + 4,
     };
   });
 
@@ -175,15 +175,21 @@ export function gerarPdfDaNota(nota: NotaParaPdf): Uint8Array {
       y -= 24;
     }
 
-    // Títulos da tabela, repetidos em toda página.
+    // Tabela de verdade: cabeçalho com fundo cinza e linhas finas; os títulos se repetem em toda página.
+    const topoDaTabela = y;
+    const bordasX = [
+      ...COLUNAS.map((c) => c.x),
+      COLUNAS[COLUNAS.length - 1]!.x + COLUNAS[COLUNAS.length - 1]!.largura,
+    ];
+    o.push(fundoCinza(MARGEM, y - LINHA - 4, LARGURA - 2 * MARGEM, LINHA + 4));
     y -= LINHA;
     T.colunas.forEach((titulo, i) => {
       const c = COLUNAS[i]!;
       if (i >= 3) aDireita(c.x + c.largura - 2, y, titulo, true);
       else texto(c.x + 2, y, titulo, true);
     });
-    traco(y - 4);
-    y -= 6;
+    y -= 4;
+    const horizontais = [topoDaTabela, y];
 
     for (const l of itens) {
       const nomeLinhas = l.celulas[1]!.split('\n');
@@ -200,7 +206,9 @@ export function gerarPdfDaNota(nota: NotaParaPdf): Uint8Array {
         aDireita(c.x + c.largura - 2, topo, l.celulas[i]!);
       }
       y -= l.altura;
+      horizontais.push(y);
     }
+    o.push(linhasDaTabela(bordasX, horizontais, topoDaTabela, y, MARGEM, LARGURA - MARGEM));
 
     const ultima = numero === paginas.length - 1;
     if (ultima) {

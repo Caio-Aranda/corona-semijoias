@@ -776,7 +776,7 @@ describe('Produtos: consulta', () => {
     await u.click(screen.getByRole('tab', { name: 'Consultar produto' }));
     await u.type(await screen.findByLabelText('Código da peça'), '0012{Enter}');
     expect(await screen.findByRole('heading', { name: 'Anel Solitário' })).toBeInTheDocument();
-    expect(screen.getByText(/Preço:/)).toHaveTextContent('R$ 70,00');
+    expect(screen.getByText(/Preço unitário:/)).toHaveTextContent('R$ 70,00');
     // Zero na loja e nenhuma em maleta: "Acabou".
     expect(screen.getByText(/Saldo no estoque:/)).toHaveTextContent('Acabou');
     await waitFor(() => expect(screen.getByLabelText('Código da peça')).toHaveFocus());
