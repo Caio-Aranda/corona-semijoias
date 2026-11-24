@@ -616,6 +616,16 @@ public enum CodigoErro {
             "O acerto mudou.",
             "Chegou coisa nova neste acerto. Confira de novo antes de fechar."),
 
+    /** Recebimento do representante em Dólar ou Guarani sem cotação do dia (HTTP 409; 23/11/2026). Em Real continua normal. */
+    SEM_COTACAO_PARA_O_RECEBIMENTO(
+            "Ainda não há cotação do dia.",
+            "Ainda não há cotação do dia. Por enquanto, registre o recebimento em reais."),
+
+    /** A cotação do recebimento não é mais a que a tela mostrou (HTTP 409; 23/11/2026). Nada foi gravado. */
+    COTACAO_DO_RECEBIMENTO_MUDOU(
+            "A cotação do dia mudou.",
+            "A cotação do dia mudou enquanto a tela estava aberta. Volte, abra o recebimento de novo e confira o valor em reais."),
+
     /** Não há cotação nenhuma para o acerto (HTTP 409). */
     SEM_COTACAO_PARA_O_ACERTO(
             "Falta a cotação do dia.",

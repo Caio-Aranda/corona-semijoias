@@ -172,4 +172,46 @@ class ConversaoDeMoedaTest {
         assertThatThrownBy(() -> ConversaoDeMoeda.guaraniParaReais(null, d("0.0009"))).isInstanceOf(NullPointerException.class);
         assertThatThrownBy(() -> ConversaoDeMoeda.guaraniParaReais(d("100"), null)).isInstanceOf(NullPointerException.class);
     }
+
+    // --- o recebimento do representante digitado em Dólar ou Guarani (23/11/2026): o servidor converte e grava em Real ---
+
+    @Test
+    void dolarParaReaisMultiplicaPelaTaxaEArredondaEmDuasCasas() {
+        // US$ 100,00 em 06/11: 550,13.
+        assertThat(ConversaoDeMoeda.dolarParaReais(d("100.00"), USD_06_11)).isEqualTo(d("550.13"));
+        // US$ 224,41 em 06/11: 1.234,5467... vira 1.234,55.
+        assertThat(ConversaoDeMoeda.dolarParaReais(d("224.41"), USD_06_11)).isEqualTo(d("1234.55"));
+        // US$ 0,01 em 06/11: 0,055013 vira 0,06.
+        assertThat(ConversaoDeMoeda.dolarParaReais(d("0.01"), USD_06_11)).isEqualTo(d("0.06"));
+        assertThat(ConversaoDeMoeda.dolarParaReais(d("0"), USD_06_11)).isEqualTo(d("0.00"));
+    }
+
+    @Test
+    void dolarParaReaisArredondaMeiaParaCimaNoMeioExato() {
+        // US$ 0,01 x 6,5 = 0,065: HALF_UP dá 0,07 (o HALF_EVEN daria 0,06).
+        assertThat(ConversaoDeMoeda.dolarParaReais(d("0.01"), d("6.50000000"))).isEqualTo(d("0.07"));
+        assertThat(ConversaoDeMoeda.dolarParaReais(d("0.01"), d("6.49999999"))).isEqualTo(d("0.06"));
+    }
+
+    @Test
+    void dolarParaReaisRecusaMaisDeDuasCasasTaxaInvalidaENulos() {
+        assertThatThrownBy(() -> ConversaoDeMoeda.dolarParaReais(d("1.005"), USD_06_11)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> ConversaoDeMoeda.dolarParaReais(d("1.00"), BigDecimal.ZERO)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> ConversaoDeMoeda.dolarParaReais(d("1.00"), d("-5"))).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> ConversaoDeMoeda.dolarParaReais(null, USD_06_11)).isInstanceOf(NullPointerException.class);
+        assertThatThrownBy(() -> ConversaoDeMoeda.dolarParaReais(d("1.00"), null)).isInstanceOf(NullPointerException.class);
+    }
+
+    @Test
+    void guaraniRecebidoVoltaParaReaisComOsExemplosDaTela() {
+        // Gs. 500.000 em 06/11: 447,50. Gs. 1.379.397 (o R$ 1.234,56 do item 14) volta como 1.234,56.
+        assertThat(ConversaoDeMoeda.guaraniParaReais(d("500000"), PYG_06_11)).isEqualTo(d("447.50"));
+        assertThat(ConversaoDeMoeda.guaraniParaReais(d("1379397"), PYG_06_11)).isEqualTo(d("1234.56"));
+        // Gs. 500 em 06/11: 0,4475 vira 0,45; Gs. 11 vira 0,01; Gs. 5 vira 0,00 (o recebimento recusa: pequeno demais).
+        assertThat(ConversaoDeMoeda.guaraniParaReais(d("500"), PYG_06_11)).isEqualTo(d("0.45"));
+        assertThat(ConversaoDeMoeda.guaraniParaReais(d("11"), PYG_06_11)).isEqualTo(d("0.01"));
+        assertThat(ConversaoDeMoeda.guaraniParaReais(d("5"), PYG_06_11)).isEqualTo(d("0.00"));
+        // "500000.00" (o que chega da API com escala 2) é inteiro.
+        assertThat(ConversaoDeMoeda.guaraniParaReais(d("500000.00"), PYG_06_11)).isEqualTo(d("447.50"));
+    }
 }

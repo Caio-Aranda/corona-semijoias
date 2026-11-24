@@ -38,8 +38,9 @@ public final class ConversaoDeMoeda {
     }
 
     /**
-     * R$ = Gs. x taxa de venda do Guarani, com 2 casas (HALF_UP): o caminho inverso, só para mostrar "quanto falta, em Real"
-     * na prévia da comissão (tarefa 7.5). O Guarani é inteiro (sem centavos). Nunca é gravado.
+     * R$ = Gs. x taxa de venda do Guarani, com 2 casas (HALF_UP): o caminho inverso. Mostra "quanto falta, em Real" na prévia
+     * da comissão (tarefa 7.5) e converte o recebimento do representante digitado em Guarani (23/11/2026): aí o resultado é o
+     * valor em Real do lançamento, que é o gravado. O Guarani é inteiro (sem centavos).
      */
     public static BigDecimal guaraniParaReais(BigDecimal guarani, BigDecimal pygVenda) {
         Objects.requireNonNull(guarani, "guarani");
@@ -53,6 +54,23 @@ public final class ConversaoDeMoeda {
                     + pygVenda.toPlainString() + ".");
         }
         return guarani.multiply(pygVenda).setScale(Dinheiro.ESCALA, ARREDONDAMENTO);
+    }
+
+    /**
+     * R$ = US$ x taxa de venda do Dólar, com 2 casas (HALF_UP), numa multiplicação só: o recebimento do representante digitado
+     * em Dólar (23/11/2026). O resultado é o valor em Real do lançamento. O Dólar tem no máximo 2 casas.
+     */
+    public static BigDecimal dolarParaReais(BigDecimal dolar, BigDecimal usdVenda) {
+        Objects.requireNonNull(dolar, "dolar");
+        Objects.requireNonNull(usdVenda, "usdVenda");
+        if (dolar.stripTrailingZeros().scale() > ESCALA_DOLAR) {
+            throw new IllegalArgumentException("O valor em Dólar " + dolar.toPlainString() + " tem mais de duas casas.");
+        }
+        if (usdVenda.signum() <= 0) {
+            throw new IllegalArgumentException("A taxa de câmbio precisa ser maior que zero, veio "
+                    + usdVenda.toPlainString() + ".");
+        }
+        return dolar.multiply(usdVenda).setScale(Dinheiro.ESCALA, ARREDONDAMENTO);
     }
 
     private static BigDecimal converter(BigDecimal reais, BigDecimal taxa, int escala) {

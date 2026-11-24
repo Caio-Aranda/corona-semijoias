@@ -128,3 +128,85 @@ export function dataParaTela(iso: string): string {
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
   return m ? `${m[3]}/${m[2]}/${m[1]}` : iso;
 }
+
+// --- recebimento do representante digitado em Dólar ou Guarani (23/11/2026; ADR-0006, adendo do item 13) ---
+
+/** Em que moeda a dona digitou o recebimento do representante. Tudo continua gravado em Real. */
+export type MoedaDoRecebimento = 'REAL' | 'DOLAR' | 'GUARANI';
+
+export const MOEDAS_DO_RECEBIMENTO: readonly MoedaDoRecebimento[] = ['REAL', 'DOLAR', 'GUARANI'];
+
+/** Centavos → texto da API ("44750" → "447.50"; negativo com o sinal). */
+function textoDeCentavos(centavos: bigint): string {
+  const negativo = centavos < 0n;
+  const abs = negativo ? -centavos : centavos;
+  return `${negativo ? '-' : ''}${abs / 100n}.${(abs % 100n).toString().padStart(2, '0')}`;
+}
+
+/**
+ * Lê o valor digitado na moeda escolhida e devolve o texto que a API entende: Real e Dólar com 2 casas ("1.234,56" → "1234.56"),
+ * Guarani inteiro ("500.000" → "500000"; o Guarani não tem centavos). Vazio, zero, letras ou casas a mais → `null`.
+ */
+export function lerValorNaMoeda(digitado: string, moeda: MoedaDoRecebimento): string | null {
+  if (moeda === 'GUARANI') {
+    const limpo = digitado.trim().replace(/^Gs\.?\s*/i, '');
+    if (!/^(\d{1,3}(?:\.\d{3})+|\d+)$/.test(limpo)) return null;
+    const inteiro = limpo.replace(/\./g, '').replace(/^0+(?=\d)/, '');
+    return inteiro.length <= 12 && /[1-9]/.test(inteiro) ? inteiro : null;
+  }
+  const texto = moeda === 'DOLAR' ? digitado.trim().replace(/^US\$\s*/i, '') : digitado;
+  const v = lerReaisDigitados(texto);
+  return v !== null && /[1-9]/.test(v) ? v : null;
+}
+
+/**
+ * Só para a tela, antes de confirmar: quanto o valor digitado vale em reais, pela mesma conta do servidor
+ * (R$ = valor × taxa de venda, HALF_UP com 2 casas), em `BigInt`. O servidor refaz a conta e é a dele que vale.
+ * Valor ou taxa fora do formato → `null`.
+ */
+export function reaisDoValorNaMoeda(
+  valorNaMoeda: string,
+  moeda: 'DOLAR' | 'GUARANI',
+  cotacao: CotacaoParaTela,
+): string | null {
+  if (moeda === 'DOLAR') {
+    const c = centavosDeTexto(valorNaMoeda);
+    const t = taxaDeTexto(cotacao.dolar);
+    if (c === null || t === null) return null;
+    return textoDeCentavos(dividirArredondando(c * t, 10n ** BigInt(CASAS_DA_TAXA)));
+  }
+  if (!/^-?\d{1,14}$/.test(valorNaMoeda)) return null;
+  const t = taxaDeTexto(cotacao.guarani);
+  if (t === null) return null;
+  return textoDeCentavos(
+    dividirArredondando(BigInt(valorNaMoeda) * t, 10n ** BigInt(CASAS_DA_TAXA - 2)),
+  );
+}
+
+/** "500000" (GUARANI) → "Gs. 500.000"; "100.00" (DOLAR) → "US$ 100,00"; em Real, "R$ ...". Fora do formato → `null`. */
+export function formatarNaMoeda(valor: string, moeda: MoedaDoRecebimento): string | null {
+  if (moeda === 'GUARANI') {
+    const m = /^(-?\d{1,14})(?:\.0{1,2})?$/.exec(valor);
+    return m ? formatarGuarani(BigInt(m[1] ?? '0')) : null;
+  }
+  const c = centavosDeTexto(valor);
+  if (c === null) return null;
+  return moeda === 'DOLAR' ? formatarDolar(c) : formatarReais(c);
+}
+
+/**
+ * As três moedas de um recebimento na tela: a moeda em que foi recebido mostra o valor digitado, exato; as outras saem do Real
+ * pela cotação dada. Em Real (ou sem cotação), igual a {@link tresMoedas}.
+ */
+export function tresMoedasDoRecebimento(
+  valorEmReais: string,
+  moeda: MoedaDoRecebimento,
+  valorNaMoeda: string | null,
+  cotacao: CotacaoParaTela | null,
+): { real: string; dolar?: string; guarani?: string } | null {
+  const t = tresMoedas(valorEmReais, cotacao);
+  if (!t || moeda === 'REAL' || valorNaMoeda === null || !t.dolar) return t;
+  const digitado = formatarNaMoeda(valorNaMoeda, moeda);
+  if (!digitado) return t;
+  return moeda === 'DOLAR' ? { ...t, dolar: digitado } : { ...t, guarani: digitado };
+}
