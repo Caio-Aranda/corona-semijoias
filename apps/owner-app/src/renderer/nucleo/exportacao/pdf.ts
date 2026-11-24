@@ -15,12 +15,52 @@ const FOLGA = 4; // pontos de respiro dentro de cada coluna
 const ALTURA_DA_LINHA = 11;
 const LARGURA_DO_CARACTERE = 0.55; // em corpos de fonte; cobre números e maiúsculas sem estourar a coluna
 
+/**
+ * Sinais que o Windows-1252 guarda entre 0x80 e 0x9F (travessão, reticências, aspas curvas, euro...).
+ * Sem esta tabela, "Compra de 05/11 — Ouro" saía como "Compra de 05/11 ? Ouro" no PDF.
+ */
+const WINDOWS_1252: Record<string, number> = {
+  '€': 0x80,
+  '‚': 0x82,
+  ƒ: 0x83,
+  '„': 0x84,
+  '…': 0x85,
+  '†': 0x86,
+  '‡': 0x87,
+  ˆ: 0x88,
+  '‰': 0x89,
+  Š: 0x8a,
+  '‹': 0x8b,
+  Œ: 0x8c,
+  Ž: 0x8e,
+  '‘': 0x91,
+  '’': 0x92,
+  '“': 0x93,
+  '”': 0x94,
+  '•': 0x95,
+  '–': 0x96,
+  '—': 0x97,
+  '˜': 0x98,
+  '™': 0x99,
+  š: 0x9a,
+  '›': 0x9b,
+  œ: 0x9c,
+  ž: 0x9e,
+  Ÿ: 0x9f,
+};
+
 /** Letras do texto em Windows-1252; o que não existe vira "?". Parênteses e barras são protegidos. */
 export function paraPdf(texto: string): string {
   let saida = '';
   for (const c of texto) {
     const codigo = c.codePointAt(0)!;
-    const ch = codigo <= 0xff ? c : '?';
+    const doWindows = WINDOWS_1252[c];
+    const ch =
+      doWindows !== undefined
+        ? String.fromCharCode(doWindows)
+        : codigo <= 0xff && (codigo < 0x80 || codigo > 0x9f)
+          ? c
+          : '?';
     saida += ch === '(' || ch === ')' || ch === '\\' ? `\\${ch}` : ch;
   }
   return saida;

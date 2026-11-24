@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { lerCsv, lerXlsx } from '../planilha';
 import { gerarCsv } from './csv';
 import { montarGrade, type PedidoDeExportacao } from './grade';
-import { gerarPdf, planejarColunas, quebrarTitulo } from './pdf';
+import { gerarPdf, paraPdf, planejarColunas, quebrarTitulo } from './pdf';
 import { gerarXlsx } from './xlsx';
 
 const COTACAO = { dolar: '5.50130000', guarani: '0.00089500' };
@@ -224,6 +224,23 @@ describe('PDF', () => {
       ),
     );
     expect(pdf).toContain('Anel \\(ouro\\) \\\\ 18k');
+  });
+
+  it('o travessão, as reticências e as aspas curvas saem certos (Windows-1252), não como "?"', () => {
+    const bytes = gerarPdf(
+      montarGrade(
+        pedido({
+          linhas: [
+            { nome: 'Compra de 05/11 — Ouro… “fina”', estoque: 1, precoVenda: '1.00', ativo: true },
+          ],
+        }),
+      ),
+    );
+    const pdf = new TextDecoder('windows-1252').decode(bytes);
+    expect(pdf).toContain('Compra de 05/11 — Ouro… “fina”');
+    expect(paraPdf('a — b')).not.toContain('?');
+    // O que o Windows-1252 não tem continua virando "?".
+    expect(paraPdf('₲')).toBe('?');
   });
 });
 

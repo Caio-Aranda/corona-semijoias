@@ -1,4 +1,5 @@
 import { Campo } from '@corona/ui';
+import { hojeEmBrasilia } from '../../nucleo/datas';
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { chamar, useBusca } from '../../nucleo/chamadas';
 import { TEXTOS_DE_COMPRAS } from '../../textos-compras';
@@ -27,9 +28,9 @@ export interface CabecalhoDaCompraProps {
   idBase?: string;
 }
 
-/** Hoje, em UTC, no formato da data da API. */
+/** Hoje, em Brasília, no formato da data da API (em UTC, depois das 21h já seria amanhã). */
 export function hojeEmTexto(): string {
-  return new Date().toISOString().slice(0, 10);
+  return hojeEmBrasilia();
 }
 
 /** Fornecedor, data, número da nota e observações: iguais na compra pela leitura e pela planilha. */

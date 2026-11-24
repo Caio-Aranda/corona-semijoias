@@ -1277,7 +1277,7 @@ Menu: grupo **Maletas**, item **Montar maleta**. Os textos desta tela são os ú
 
 - Nova maleta: **Vendedor**, **Semana**, **Praça** (já vem "A praça do vendedor"), **Tipo da maleta** (**Maleta nova**, **Reposição**), botão **Começar a montar**.
 - Maletas em montagem: **Continuar montando** e **Excluir** (confirmação: "As peças continuam no estoque, nada foi enviado").
-- Leitura: **Ler uma peça**, campo **Código da peça ou nome**, botão **Colocar na maleta**. Peça lida: **Última peça lida** com **No estoque**, **Nesta maleta** e **Preço**. Recusas: **Peça não encontrada**, "está desativada", "está sem estoque", "Só há N peças ... no estoque".
+- Leitura: **Ler uma peça**, campo **Código da peça ou nome**, botão **Colocar na maleta**. Peça lida: **Última peça lida** com **No estoque**, **Nesta maleta** e **Preço unitário**. Recusas: **Peça não encontrada**, "está desativada", "está sem estoque", "Só há N peças ... no estoque".
 - Lista: **Quantidade**, **Atualizar**, **Tirar**; totais **Peças na maleta** e **Valor da maleta**.
 - Limite: **Limite do vendedor**, **Já está com ele**, **Esta maleta**, **Sobra**; "Sem limite" marcado: **Sem limite**; ainda não definido: **Limite não definido** e "Defina o limite deste vendedor antes de montar a maleta". Frase da montagem: "Limite R$ X — em mãos R$ Y — pode levar mais R$ Z".
 - Envio: botão **Enviar maleta**, confirmação "Enviar esta maleta?" (vendedor, peças e valor), depois **Maleta enviada**; reenvio: **Esta maleta já estava enviada**. O botão **Imprimir nota** só aparece quando a tarefa 3.7 ligar a impressão.
@@ -1616,3 +1616,8 @@ Mensagens que a tela diz (português simples, dizendo o que fazer; em espanhol, 
 
 Mensagens: "O PDF foi guardado na pasta ... No WhatsApp que abriu, anexe o PDF e envie. Nada é enviado sozinho." / "Sem internet: o PDF já está guardado na pasta ..., mas o WhatsApp só abre com internet. Quando a internet voltar, toque de novo em "Preparar para o WhatsApp"." / "Este cliente não tem telefone cadastrado. Cadastre o telefone do cliente ou salve o PDF e envie por outro meio."
 
+
+## Preço unitário (pedido do responsável, 23/11)
+
+- Toda coluna ou rótulo que mostra o preço de uma peça se chama **Preço unitário** (ES: **Precio unitario**): nota da maleta, nota de saída do cliente, peças da maleta, produtos, compras, consulta de código, venda e acerto.
+- Não mudam: **Preço de custo**, **Preço de venda** (cadastro e filtros), totais e subtotais.

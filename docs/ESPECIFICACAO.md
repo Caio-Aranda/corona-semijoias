@@ -984,7 +984,7 @@ Cada representante tem a sua lista (o Corona Gestão vê todos; o Corona Vendas 
 2. Escolher o **cliente** (busca por nome). Com pendência: aviso "Este cliente deve R$ X. O valor será somado ao próximo acerto."
 3. **Data do retorno:** hoje + 45 dias, editável.
 4. Escolher a **maleta** (o mesmo código pode estar em mais de uma).
-5. **Bipar** cada peça: o sistema procura o código **na maleta escolhida**; linha nova Ref. · Tam./Ton. · Produto · **Maleta** · Qtd. DX · Preço · Sub-total, ou soma 1 se o mesmo código e a mesma maleta já estão na lista; atualiza Total de itens e Total DX.
+5. **Bipar** cada peça: o sistema procura o código **na maleta escolhida**; linha nova Ref. · Tam./Ton. · Produto · **Maleta** · Qtd. DX · Preço unitário · Sub-total, ou soma 1 se o mesmo código e a mesma maleta já estão na lista; atualiza Total de itens e Total DX.
 6. Trocar a maleta escolhida e continuar bipando põe peças de **outra maleta** na mesma nota.
 7. Antes de finalizar: diminuir quantidade ou remover a linha.
 8. **Finalizar:** a nota não aceita mais peças (só por Reposição) e as peças passam a "com o cliente". É imutável depois disso.
@@ -1052,7 +1052,7 @@ Em todo relatório e tela de informação: **DX, DV e VD** (valores) e **Itens D
 
 | Relatório | Para | Conteúdo |
 | --- | --- | --- |
-| Nota de saída | Cliente | Número, data de saída e de retorno, representante, dados do cliente, peças (Ref. · Produto · Tam./Ton. · Maleta · Qtd. · Preço · Sub-total), Itens DX, Total DX, pendência anterior, espaço para assinatura. Comprovante interno, sem NF-e. |
+| Nota de saída | Cliente | Número, data de saída e de retorno, representante, dados do cliente, peças (Ref. · Produto · Tam./Ton. · Maleta · Qtd. · Preço unitário · Sub-total), Itens DX, Total DX, pendência anterior, espaço para assinatura. Comprovante interno, sem NF-e. |
 | Relatório do acerto | Cliente | Nota, cliente, datas de saída e de acerto, peças vendidas, DX/DV/VD, comissão, pendências anteriores, total a receber, pago por forma, ficou devendo. |
 | Situação do cliente | Cliente | Já vendeu (notas fechadas: DX, DV, VD, comissão, líquido, pago) e o que falta (peças com ele, maleta, data de retorno, quanto deve). |
 | Peças vendidas por cliente | Representante | Cliente e período: cada peça vendida (Ref., produto, quantidade, valor) e total. |

@@ -71,6 +71,19 @@ describe('tela inicial da dona (visual novo)', () => {
     expect(window.location.hash).toBe('#/estoque/receber-compra');
   });
 
+  it('nenhum atalho fica em "Em breve": montar maleta, cadastrar produto e relatórios abrem as telas que existem', async () => {
+    const u = userEvent.setup();
+    mostrar(ponteCom({}));
+    const atalhos = screen.getByRole('navigation', { name: 'O que você quer fazer?' });
+    await u.click(within(atalhos).getByRole('button', { name: 'Montar maleta' }));
+    expect(window.location.hash).toBe('#/maletas/montar');
+    await u.click(within(atalhos).getByRole('button', { name: 'Cadastrar produto' }));
+    expect(window.location.hash).toBe('#/cadastros/produtos');
+    await u.click(within(atalhos).getByRole('button', { name: 'Relatórios' }));
+    expect(window.location.hash).toBe('#/areas/vendas');
+    expect(screen.queryByText('Em breve.')).not.toBeInTheDocument();
+  });
+
   it('o resumo da semana mostra o que o servidor devolveu e cada número abre a tela de onde veio', async () => {
     const u = userEvent.setup();
     mostrar(

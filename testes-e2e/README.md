@@ -30,7 +30,11 @@ quem falhou ficam em `testes-e2e/resultados/` (ignorado pelo Git).
    venda de R$ 200,00 e a cotação do dia gravada direto no banco descartável); na tela a dona começa o acerto, lê as
    peças que voltaram, confere os números do servidor (comissão 30%, falta para a meta, falta cobrada), paga parte em
    dinheiro, fecha e vê a ficha fechada. As contas à mão estão em `massa-do-acerto.ts`. Roda depois do arquivo
-   `gestao.test.ts` (ordem alfabética) e também sozinho: `npm run e2e -- vendas-e-acerto`.
+   `gestao.test.ts` (ordem alfabética) e também sozinho: `npm run e2e -- vendas-e-acerto`. Desde o consignado o acerto
+   antigo fica escondido por padrão (ADR-0016, item 15); a massa liga `acerto_do_vendedor_visivel` no banco descartável.
+6. Maleta e PDFs (`maleta-e-pdfs.test.ts`, revisão de 23/11/2026): a dona monta a maleta lendo o código, envia, baixa
+   a nota em PDF (Real, Dólar e Guarani pela cotação do teste) e baixa o relatório de produtos em PDF em português e,
+   trocando o idioma na hora, em espanhol.
 
 Os dados são criados pelo próprio teste (conta, categoria, peça) num banco que some no fim. Os testes rodam
 **um depois do outro**, na ordem do arquivo: o 1º define a senha da dona e o 2º cria o fornecedor que o 3º usa.

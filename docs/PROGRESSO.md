@@ -451,3 +451,13 @@ Branch `fix/restos-teste-9-10`. (1) Linha zerada sem cotação não mostra mais 
 ### Data do retorno
 
 Branch `fix/data-do-retorno`. "Dt. Cobrança" / "Data de cobrança" / "Fecha de cobro" viraram "Data do retorno" / "Fecha de retorno" em todo o Corona Vendas (pedido, cobrança, pesquisa, semanal, notas e relatórios) e no Corona Gestão (que já mostrava a data, agora com o mesmo nome). Padrão conferido: hoje + 45 dias, editável, com teste novo. Reposição de nota de semana anterior continua herdando a data da nota de origem (regra da §23.4); dúvida levada ao responsável.
+
+## Ajustes de telas e relatórios (23/11/2026)
+
+### Preço unitário
+
+Branch `fix/preco-unitario`. Toda coluna ou rótulo que mostra o preço de uma peça (maleta, nota de saída, produtos, consulta de código, venda, acerto) passou a se chamar "Preço unitário" (ES: "Precio unitario"), nos dois apps; glossário e §23 da especificação atualizados. "Preço de custo", "Preço de venda", totais e subtotais não mudaram.
+
+## Revisão completa dos dois apps e da API (23/11/2026)
+
+Branch `fix/revisao-23-11`, [relatório](auditoria/2026-11-23-revisao.md). Todas as verificações locais rodadas (lint, tipos, formato, testes de cada app e pacote, API com 1896 testes, e2e e duas pontas). **Corrigido, com teste:** os atalhos "Montar maleta", "Cadastrar produto" e "Relatórios" da tela inicial mostravam "Em breve" (A1); a data da compra e o nome dos arquivos baixados usavam o dia de UTC, que depois das 21h de Brasília já é amanhã (M1); o e2e do acerto da dona quebrou quando o consignado escondeu o acerto antigo (M2); travessão, reticências e aspas curvas viravam "?" nos PDFs (B1); a soma do "Lançar pagamento" do Corona Vendas passou a ser em centavos `BigInt` (B2). O `eslint` passou a ignorar `testes-e2e/resultados/`, `testes-sync/resultados/` e `.claude/` (B5). Resultado: lint, tipos e formato passam; Gestão 998, Vendas 861, API 1896, duas pontas 31 e e2e 9 de 9. Teste e2e novo: montar a maleta, baixar a nota em PDF e um relatório em PDF nos dois idiomas. **Não feito:** Contas a pagar, Contas a receber e Recebimentos mostram Dólar e Guarani pela cotação de hoje, não pela do dia (M3 e M4, decisão pendente; Recebimentos está com outra sessão); listas de escolha cortadas em 100 (B3); e2e do Corona Vendas (B4).
