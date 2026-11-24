@@ -1,6 +1,6 @@
-# Testes de ponta a ponta (Corona Gestão)
+# Testes de ponta a ponta (Corona Gestão e Corona Vendas)
 
-Abrem o **Corona Gestão de verdade** (Electron), digitam e clicam, e conferem o resultado contra uma API de teste.
+Abrem o **Corona Gestão e o Corona Vendas de verdade** (Electron), digitam e clicam, e conferem o resultado contra uma API de teste.
 Pegam o que os testes de componentes não pegam: a ponte do Electron, o login, o leitor como teclado e os
 arquivos exportados.
 
@@ -15,7 +15,9 @@ Precisa do **Docker aberto**, do Java 21 e do `npm ci` feito. O comando sobe tud
 - um PostgreSQL **descartável** (`testes-e2e/docker-compose.yml`, projeto `corona-e2e`, porta **5499**, sem volume), que
   **nunca** é o banco de desenvolvimento nem a produção;
 - a API (porta **8099**, perfil `dev`, sem buscar cotação na internet);
-- o Corona Gestão compilado apontando para essa API.
+- o Corona Gestão compilado apontando para essa API;
+- o Corona Vendas compilado apontando para a "rede" do teste (porta **8098**, `rede-do-vendas.ts`), que repassa tudo à API e
+  pode ser cortada para simular a falta de internet.
 
 Ver o relatório depois: `npx playwright show-report testes-e2e/resultados/relatorio`. O `api.log` e os traços de
 quem falhou ficam em `testes-e2e/resultados/` (ignorado pelo Git).
@@ -36,6 +38,20 @@ quem falhou ficam em `testes-e2e/resultados/` (ignorado pelo Git).
    a nota em PDF (Real, Dólar e Guarani pela cotação do teste) e baixa o relatório de produtos em PDF em português e,
    trocando o idioma na hora, em espanhol.
 
+7. Corona Vendas (`vendedor-*.test.ts`, achado B4 da revisão de 23/11/2026). Cada teste abre o programa com uma pasta de
+   dados nova (um computador novo: banco local cifrado de verdade, sem segredo nenhum no teste) e a massa vem pela API da
+   dona (`massa-do-vendas.ts`):
+   - `vendedor-primeiro-acesso`: senha errada, senha temporária, troca obrigatória (senha fraca recusada), e a maleta e a
+     cliente chegam; e o computador novo de quem já tem um ativo, que espera a dona liberar e só então recebe a maleta.
+   - `vendedor-pedido-e-acerto`: Novo Pedido lendo o código (digitar + Enter) e conferido na API da dona; acerto na
+     Cobrança com uma peça devolvida e pagamento parcial (fica devendo); o recebimento do que ficou devendo em Clientes,
+     que fecha o pedido. As contas à mão estão no começo do arquivo.
+   - `vendedor-sem-internet`: com a rede cortada o pedido é gravado no computador (o indicador avisa, nada chega à API) e
+     sobe sozinho quando a internet volta.
+     O Corona Vendas de hoje é só o do consignado (Novo Pedido, Cobrança, Clientes): não há mais tela de venda à vista ou a
+     prazo, então o "recebimento" é o pagamento do que ficou devendo. Rodar só estes: `npm run e2e -- vendedor`. O
+     `better-sqlite3-multiple-ciphers` já traz o binário que o Electron usa: não precisa recompilar, e o vitest segue igual.
+
 Os dados são criados pelo próprio teste (conta, categoria, peça) num banco que some no fim. Os testes rodam
 **um depois do outro**, na ordem do arquivo: o 1º define a senha da dona e o 2º cria o fornecedor que o 3º usa.
 
@@ -43,4 +59,6 @@ Os dados são criados pelo próprio teste (conta, categoria, peça) num banco qu
 
 - Texto da tela só por nome visível (`getByRole`, `getByLabel`), do jeito que a dona vê.
 - Nunca usar dado real nem apontar para outro banco. Valores falsos ficam em `ambiente.ts`.
-- Corona Vendas: só depois da Fase 4.
+- Os testes do Corona Vendas rodam depois dos do Gestão (ordem alfabética), mas também sozinhos: a massa troca a senha da dona
+  sozinha se ainda for a temporária.
+- Não cobrem ainda: PDF do Corona Vendas, fotos, Troca, Reposição e o idioma espanhol do Vendas.
