@@ -4,7 +4,7 @@
 // Um arquivo .asar é desempacotado numa pasta temporária e varrido; uma pasta é varrida direto.
 // Sai com código 1 se achar qualquer marcador da lista (scripts/marcadores-proibidos.json),
 // seja no conteúdo de um arquivo, seja no nome ou no caminho dele.
-import asar from '@electron/asar';
+import { extractAll } from '@electron/asar';
 import { mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
@@ -49,7 +49,7 @@ export function varrerPasta(caminho, marcadores, opcoes = {}) {
 export function varrerAsar(arquivoAsar, marcadores) {
   const destino = mkdtempSync(join(tmpdir(), 'corona-asar-'));
   try {
-    asar.extractAll(arquivoAsar, destino);
+    extractAll(arquivoAsar, destino);
     return varrerPasta(destino, marcadores);
   } finally {
     rmSync(destino, { recursive: true, force: true });

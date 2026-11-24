@@ -7,7 +7,7 @@ copyright: Corona Semijoias
 asar: true
 # Usa o Electron que o npm já baixou: o empacotamento não baixa o Electron.
 electronDist: ../../node_modules/electron/dist
-electronVersion: 45.2.3
+electronVersion: 45.4.1
 npmRebuild: false
 nodeGypRebuild: false
 # No instalador "dois cliques" (por usuário) a pasta de instalação leva o nome do pacote; sem isto ficaria
