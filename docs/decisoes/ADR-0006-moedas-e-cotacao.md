@@ -217,6 +217,7 @@ O aviso em "O que precisa da sua atenção" é **calculado, não gravado**. Ele 
 - Sem internet, usa a última cotação recebida e **mostra a data dela**.
 - Os relatórios e o acerto que valem são os do servidor, que converte pela mesma regra.
 - Ninguém digita cotação: a tabela só recebe o que a busca leu do BCB. Não existe rota para gravar nem para corrigir cotação.
+- **Adendo de 23/11/2026 (pedido do responsável):** o recebimento do representante (avulso e no acerto) pode ser **digitado em Dólar ou Guarani**. O caminho é o inverso do item 6, feito **só pelo servidor**: `R$ = arredondar(valor × taxa de venda, 2 casas, HALF_UP)`, numa multiplicação só (`ConversaoDeMoeda.dolarParaReais` e `guaraniParaReais`), pela cotação do dia do lançamento (avulso) ou pela do acerto (item 11). O lançamento continua **gravado em Real**; a moeda, o valor digitado e o `cotacao_id` ficam no recebimento só como informação (nunca somam, nunca entram em conciliação). Ninguém digita cotação. Plano: `docs/planos/recebimento-em-tres-moedas.md`.
 
 ### 14. Exemplos numéricos
 
