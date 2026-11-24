@@ -99,5 +99,7 @@ pull lista as colunas; o vendedor continua vendo só o valor em Real).
 ## Fora deste plano
 
 - O app do vendedor: nada muda (ele não registra recebimento do representante).
-- Conta antiga paga no acerto: o servidor aceita moeda; a tela continua em reais (fica de melhoria).
-- Relatório "Recebimentos por forma" com a coluna do valor digitado (depois da tarefa das colunas dos relatórios).
+- ~~Conta antiga paga no acerto~~ e ~~relatório "Recebimentos por forma" com o valor digitado~~: feitos depois (24/11/2026,
+  PR "conta antiga e Recebimentos por forma em três moedas"). A conta antiga usa o mesmo campo de moeda e o "Fica assim:"
+  do "Pagou agora"; o relatório ganhou a coluna **Moeda recebida** ("Recebido em Gs. 500.000", vazia em Real), também no PDF e
+  na planilha, e a linha da API ganhou `moeda` e `valorNaMoeda`.

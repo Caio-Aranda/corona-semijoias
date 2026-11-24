@@ -349,4 +349,54 @@ class RecebimentoEmOutraMoedaTest extends ApoioDoFechamento {
         // O reenvio igual devolve 200 (o resumo inclui a moeda).
         fechar(acerto, pedido).andExpect(status().isOk());
     }
+
+    // --- relatório "Recebimentos por forma" ---
+
+    @Test
+    void relatorioDeRecebimentosMostraAMoedaEOValorDigitadoSoForaDoReal() throws Exception {
+        contaDe35();
+        cotacaoDeHoje();
+        UUID emGuarani = UUID.randomUUID();
+        UUID emDolar = UUID.randomUUID();
+        UUID emReal = UUID.randomUUID();
+        receber("id", emGuarani, "moeda", "GUARANI", "valorNaMoeda", "20000").andExpect(status().isCreated());
+        receber("id", emDolar, "forma", "PIX", "moeda", "DOLAR", "valorNaMoeda", "2.50").andExpect(status().isCreated());
+        receber("id", emReal, "valor", "1.00").andExpect(status().isCreated());
+        postar(RECEBIMENTOS + "/" + emGuarani + "/estorno", dona(), mapa("id", UUID.randomUUID(), "motivo", "Lancei errado"))
+                .andExpect(status().isCreated());
+
+        JsonNode r = corpoDe(ler("/api/dona/relatorios/financeiro/recebimentos-por-forma?tamanho=100&vendedorId="
+                + vendedor.vendedorId(), dona()).andExpect(status().isOk()));
+        Map<String, JsonNode> porId = new java.util.HashMap<>();
+        List<JsonNode> estornos = new java.util.ArrayList<>();
+        for (JsonNode l : r.get("itens")) {
+            if (l.get("estorno").asBoolean()) {
+                estornos.add(l);
+            } else {
+                porId.put(l.get("id").asString(), l);
+            }
+        }
+        JsonNode g = porId.get(emGuarani.toString());
+        assertThat(g.get("moeda").asString()).isEqualTo("GUARANI");
+        assertThat(new BigDecimal(g.get("valorNaMoeda").asString())).isEqualByComparingTo("20000");
+        // O Real (17,90) segue sendo o valor que soma; a moeda digitada é só informação.
+        assertThat(new BigDecimal(g.get("valorEmReais").asString())).isEqualByComparingTo("17.90");
+        JsonNode d = porId.get(emDolar.toString());
+        assertThat(d.get("moeda").asString()).isEqualTo("DOLAR");
+        assertThat(new BigDecimal(d.get("valorNaMoeda").asString())).isEqualByComparingTo("2.50");
+        // Em Real não há valor digitado em outra moeda.
+        JsonNode real = porId.get(emReal.toString());
+        assertThat(real.get("moeda").asString()).isEqualTo("REAL");
+        assertThat(real.get("valorNaMoeda").isNull()).isTrue();
+        // O estorno mostra a mesma moeda, com o valor digitado negativo.
+        assertThat(estornos).hasSize(1);
+        assertThat(estornos.get(0).get("moeda").asString()).isEqualTo("GUARANI");
+        assertThat(new BigDecimal(estornos.get(0).get("valorNaMoeda").asString())).isEqualByComparingTo("-20000");
+        // O total em Real não mudou de regra: 17,90 + 13,75 + 1,00 - 17,90.
+        for (JsonNode t : r.get("totais")) {
+            if ("total".equals(t.get("chave").asString())) {
+                assertThat(new BigDecimal(t.get("valorEmReais").asString())).isEqualByComparingTo("14.75");
+            }
+        }
+    }
 }

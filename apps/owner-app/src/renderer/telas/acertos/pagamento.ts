@@ -18,7 +18,10 @@ export interface PagamentoEmEdicao {
   boleto: { digitado: string; vencimento: string };
   parcelas: number;
   primeiroVencimento: string;
-  contasAntigas: Record<string, { id: string; forma: FormaDoPagamento; digitado: string }>;
+  contasAntigas: Record<
+    string,
+    { id: string; forma: FormaDoPagamento; digitado: string; moeda: MoedaDoRecebimento }
+  >;
   aFavor: DestinoDoAFavor;
   formaDoPagamento: FormaDoPagamento;
 }
@@ -59,7 +62,9 @@ export function pagamentoIncompleto(p: PagamentoEmEdicao): boolean {
     return true;
   if (invalido(p.boleto.digitado)) return true;
   if (valorDigitado(p.boleto.digitado) !== null && !DATA.test(p.boleto.vencimento)) return true;
-  return Object.values(p.contasAntigas).some((c) => invalido(c.digitado));
+  return Object.values(p.contasAntigas).some(
+    (c) => c.digitado.trim() !== '' && valorDoRecebimento(c.digitado, c.moeda) === null,
+  );
 }
 
 /** O que vai para o sistema. `aFavor` só vai quando o sistema disse que o acerto ficou a favor do vendedor. */
@@ -81,8 +86,8 @@ export function pagamentoParaPedido(
     saida.restante = { parcelas: p.parcelas, primeiroVencimento: p.primeiroVencimento };
   }
   const contas = Object.entries(p.contasAntigas).flatMap(([contaId, c]) => {
-    const valor = valorDigitado(c.digitado);
-    return valor ? [{ id: c.id, contaId, forma: c.forma, valor }] : [];
+    const valor = valorDoRecebimento(c.digitado, c.moeda);
+    return valor ? [{ id: c.id, contaId, forma: c.forma, ...valor }] : [];
   });
   if (contas.length > 0) saida.contasAntigas = contas;
   if (previa && ehNegativo(previa.aPagarNoAcerto)) {
