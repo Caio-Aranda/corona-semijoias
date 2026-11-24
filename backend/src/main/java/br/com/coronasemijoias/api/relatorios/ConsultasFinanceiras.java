@@ -1,5 +1,6 @@
 package br.com.coronasemijoias.api.relatorios;
 
+import br.com.coronasemijoias.api.cotacoes.CotacaoVigente;
 import static br.com.coronasemijoias.api.relatorios.MotorDeRelatorio.DefinicaoDeTotal.emTresMoedas;
 import static br.com.coronasemijoias.api.relatorios.MotorDeRelatorio.idOpcional;
 import static br.com.coronasemijoias.api.remessas.SqlDaMaleta.dolar;
@@ -99,12 +100,12 @@ public class ConsultasFinanceiras {
 
     private static final String COTACAO_GRAVADA = "LEFT JOIN corona.cotacoes ct ON ct.id = a.cotacao_id";
 
-    private static String cotacaoDoDia(String data) {
-        return "LEFT JOIN LATERAL (SELECT c.data_cotacao, c.usd_venda, c.pyg_venda FROM corona.cotacoes c "
-                + "WHERE c.data_cotacao <= " + data + " ORDER BY c.data_cotacao DESC LIMIT 1) ct ON true";
+    /** A cotação vigente no momento (timestamptz) do lançamento (ADR-0006, item 15). */
+    private static String cotacaoNoMomento(String momento) {
+        return CotacaoVigente.joinDoMomento(momento, "c.data_cotacao, c.usd_venda, c.pyg_venda");
     }
 
-    private static final String DIA_DE_CRIACAO = "(cr.created_at AT TIME ZONE 'America/Sao_Paulo')::date";
+    private static final String MOMENTO_DE_CRIACAO = "cr.created_at";
 
     /** O acerto com o vendedor, a semana e a cotação gravada (visível no pacote: o painel semanal usa o mesmo texto, tarefa 8.7). */
     static final String DE_ACERTO = "corona.acertos a JOIN corona.vendedores v ON v.id = a.vendedor_id "
@@ -113,7 +114,7 @@ public class ConsultasFinanceiras {
     private static final String DE_CONTA_A_RECEBER = "corona.contas_receber cr LEFT JOIN corona.vendas vd ON vd.id = cr.venda_id "
             + "LEFT JOIN corona.clientes cl ON cl.id = cr.cliente_id "
             + "LEFT JOIN corona.vendedores v ON v.id = coalesce(cr.vendedor_id, vd.vendedor_id) "
-            + cotacaoDoDia(DIA_DE_CRIACAO);
+            + cotacaoNoMomento(MOMENTO_DE_CRIACAO);
 
     private static final String EM_ABERTO = "(cr.valor - cr.valor_pago - cr.valor_cancelado)";
     private static final String NAO_PAGA = "cr.status IN ('ABERTA', 'PARCIAL')";
@@ -390,7 +391,7 @@ public class ConsultasFinanceiras {
                 + colunasEmMoedas("cp.valor", "valor") + ", " + colunasEmMoedas("cp.valor_pago", "pago") + ", "
                 + colunasEmMoedas("cp.valor_cancelado", "cancelado") + ", " + colunasEmMoedas(emAberto, "em_aberto"),
                 "corona.contas_pagar cp JOIN corona.fornecedores f ON f.id = cp.fornecedor_id "
-                        + cotacaoDoDia("(cp.criada_em AT TIME ZONE 'America/Sao_Paulo')::date"),
+                        + cotacaoNoMomento("cp.criada_em"),
                 "cp.vencimento, cp.id", totais);
         c.parametros.addValue("hoje", hoje());
         c.onde("cp.deleted_at IS NULL");
@@ -433,7 +434,7 @@ public class ConsultasFinanceiras {
                 + "l.descricao, (l.estorna_id IS NOT NULL) AS estorno, l.valor, " + dolar(valor) + " AS dolar, "
                 + guarani(valor) + " AS guarani, ct.data_cotacao",
                 "corona.lancamentos_caixa l JOIN corona.categorias_caixa cat ON cat.id = l.categoria_id "
-                        + cotacaoDoDia("l.data_lancamento"),
+                        + cotacaoNoMomento(CotacaoVigente.fimDoDiaSql("l.data_lancamento")),
                 "l.data_lancamento DESC, l.lancado_em DESC, l.id", totais);
         String vendedor = idOpcional(f.vendedorId(), "vendedor") == null ? null : f.vendedorId().strip();
         if (vendedor != null) {
@@ -476,7 +477,7 @@ public class ConsultasFinanceiras {
                 + "rv.recebido_em, (rv.estorna_id IS NOT NULL) AS estorno, rv.motivo, rv.valor, " + dolar(valor)
                 + " AS dolar, " + guarani(valor) + " AS guarani, ct.data_cotacao",
                 "corona.recebimentos_vendedor rv JOIN corona.vendedores v ON v.id = rv.vendedor_id "
-                        + cotacaoDoDia("(rv.recebido_em AT TIME ZONE 'America/Sao_Paulo')::date"),
+                        + cotacaoNoMomento("rv.recebido_em"),
                 "rv.recebido_em DESC, rv.id", totais);
         uuid(c, f.vendedorId(), "vendedor", "rv.vendedor_id = :vendedor");
         uuid(c, f.pracaId(), "praca", "v.praca_id = :praca");

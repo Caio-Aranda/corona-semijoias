@@ -195,7 +195,7 @@ abstract class MassaDoPainel extends MassaDoResultado {
         try {
             servicoDeFechamento.fechar(usuarios.dona().id(), acerto, new PedidoDeFechamento(UUID.randomUUID(), faltas, List.of(),
                     List.of(), List.of(), new BigDecimal(liquidoMostrado),
-                    new PagamentoDoAcerto(recebimentos, null, null, List.of(), null, null)));
+                    new PagamentoDoAcerto(recebimentos, null, null, List.of(), null, null), null));
         } finally {
             relogio.reiniciar();
         }

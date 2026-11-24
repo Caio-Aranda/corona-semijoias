@@ -125,6 +125,12 @@ export type Baixa = {
     valor?: string;
 };
 
+export type BancoCentralDoDia = {
+    dataCotacao?: string;
+    dolar?: string;
+    guaranisPorReal?: string;
+};
+
 export type BlocoDaPrevia = {
     comissaoPrevista?: ValorEmMoedas;
     linhas?: number;
@@ -756,8 +762,11 @@ export type CotacaoDoDia = {
     dolar?: string;
     fonte?: string;
     guarani?: string;
+    guaranisPorReal?: string;
     id?: string;
     linha?: string;
+    origem?: string;
+    vigenteDesde?: string;
 };
 
 export type CreditoDoCliente = {
@@ -1098,6 +1107,17 @@ export type Garantia = {
     valorAprovacaoReembolso?: string;
 };
 
+export type GravadaResposta = {
+    aviso?: string;
+    avisoDeDiferenca?: boolean;
+    cotacao?: CotacaoDoDia;
+};
+
+export type HistoricoDoDia = {
+    cotacoes?: Array<LinhaDoHistorico>;
+    data?: string;
+};
+
 export type ImportacaoDeFotosPrevia = {
     ambiguas?: Array<Ambigua>;
     associadas?: Array<Associada>;
@@ -1231,7 +1251,7 @@ export type LeituraDoFechamento = {
     pecas?: Array<LinhaDaPeca>;
     remessaId?: string;
     situacaoDoFechamento?: string;
-    valores?: Valores;
+    valores?: ServicoDoFechamentoDaMaletaValores;
 };
 
 export type LinhaAbaixoDoMinimo = {
@@ -1975,6 +1995,18 @@ export type LinhaDoFechamento = {
     vendidas?: number;
 };
 
+export type LinhaDoHistorico = {
+    dolar?: string;
+    guarani?: string;
+    guaranisPorReal?: string;
+    id?: string;
+    lancadaPor?: string;
+    linha?: string;
+    origem?: string;
+    valeAgora?: boolean;
+    vigenteDesde?: string;
+};
+
 export type LinhaDoResultado = {
     categoriaId?: string;
     chave?: string;
@@ -2120,6 +2152,12 @@ export type NotaResumo = {
     situacao?: string;
     valorDx?: string;
     vendedorId?: string;
+};
+
+export type NovaCotacaoPedido = {
+    guaranisPorReal?: string;
+    id?: string;
+    usd?: string;
 };
 
 export type ObservacaoDoVendedorDados = {
@@ -2448,6 +2486,7 @@ export type PedidoDeEstornoDeRecebimento = {
 
 export type PedidoDeFechamento = {
     cobrancas?: Array<DecisaoDeCobranca>;
+    cotacaoId?: string;
     defeitos?: Array<DecisaoDeDefeito>;
     faltas?: Array<DecisaoDeFalta>;
     id?: string;
@@ -2706,6 +2745,17 @@ export type PreviaDoFechamento = {
     vendidoBruto?: string;
     vendidoLiquido?: string;
     vendidoParaMetaGuarani?: number;
+};
+
+export type PreviaResposta = {
+    aviso?: string;
+    avisoDeDiferenca?: boolean;
+    bancoCentral?: BancoCentralDoDia;
+    diferencaDolarPorCento?: string;
+    diferencaGuaraniPorCento?: string;
+    dolar?: string;
+    guarani?: string;
+    guaranisPorReal?: string;
 };
 
 export type ProdutoDaPreviaDoFechamento = {
@@ -3655,6 +3705,7 @@ export type ServicoDeRecebimentosDoVendedorPedidoDeEstorno = {
 export type ServicoDeRecebimentosDoVendedorPedidoDeRecebimento = {
     contaId?: string;
     cotacaoData?: string;
+    cotacaoId?: string;
     forma?: string;
     id?: string;
     moeda?: string;
@@ -3673,6 +3724,17 @@ export type ServicoDoFechamentoDaMaletaLeitura = {
     id?: string;
     produtoId?: string;
     quantidade?: number;
+};
+
+export type ServicoDoFechamentoDaMaletaValores = {
+    comissaoConvertida?: ServicoDoFechamentoDaMaletaConvertido;
+    comissaoDosClientes?: string;
+    pendenciasAReceber?: string;
+    pendenciasConvertidas?: ServicoDoFechamentoDaMaletaConvertido;
+    recebido?: string;
+    recebidoConvertido?: ServicoDoFechamentoDaMaletaConvertido;
+    vd?: string;
+    vdConvertido?: ServicoDoFechamentoDaMaletaConvertido;
 };
 
 export type SituacaoDoCliente = {
@@ -3792,17 +3854,6 @@ export type ValorSubstituido = {
     id?: string;
     quando?: string;
     quemMudou?: string;
-};
-
-export type Valores = {
-    comissaoConvertida?: ServicoDoFechamentoDaMaletaConvertido;
-    comissaoDosClientes?: string;
-    pendenciasAReceber?: string;
-    pendenciasConvertidas?: ServicoDoFechamentoDaMaletaConvertido;
-    recebido?: string;
-    recebidoConvertido?: ServicoDoFechamentoDaMaletaConvertido;
-    vd?: string;
-    vdConvertido?: ServicoDoFechamentoDaMaletaConvertido;
 };
 
 export type VendaComAPeca = {
@@ -5228,6 +5279,40 @@ export type ListarContasAReceberResponses = {
 
 export type ListarContasAReceberResponse = ListarContasAReceberResponses[keyof ListarContasAReceberResponses];
 
+export type DoDiaData = {
+    body?: never;
+    path?: never;
+    query?: {
+        data?: string;
+    };
+    url: '/api/dona/cotacoes';
+};
+
+export type DoDiaResponses = {
+    /**
+     * OK
+     */
+    200: HistoricoDoDia;
+};
+
+export type DoDiaResponse = DoDiaResponses[keyof DoDiaResponses];
+
+export type GravarData = {
+    body: NovaCotacaoPedido;
+    path?: never;
+    query?: never;
+    url: '/api/dona/cotacoes';
+};
+
+export type GravarResponses = {
+    /**
+     * OK
+     */
+    200: GravadaResposta;
+};
+
+export type GravarResponse = GravarResponses[keyof GravarResponses];
+
 export type ConverterData = {
     body: ConversaoPedido;
     path?: never;
@@ -5259,6 +5344,22 @@ export type HojeResponses = {
 };
 
 export type HojeResponse = HojeResponses[keyof HojeResponses];
+
+export type Previa1Data = {
+    body: NovaCotacaoPedido;
+    path?: never;
+    query?: never;
+    url: '/api/dona/cotacoes/previa';
+};
+
+export type Previa1Responses = {
+    /**
+     * OK
+     */
+    200: PreviaResposta;
+};
+
+export type Previa1Response = Previa1Responses[keyof Previa1Responses];
 
 export type ListarCreditosData = {
     body?: never;

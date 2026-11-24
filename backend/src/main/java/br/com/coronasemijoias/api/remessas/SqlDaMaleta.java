@@ -21,13 +21,12 @@ public final class SqlDaMaleta {
                      AND (x.enviada_em, x.id) <= (r.enviada_em, r.id)) END""";
 
     /**
-     * A cotação do dia do envio (ADR-0006, item 7): a de maior data menor ou igual à data do envio em horário de
-     * Brasília. Apelido {@code ct}; sem cotação, as colunas vêm vazias. Precisa do apelido {@code r}.
+     * A cotação vigente no momento do envio (ADR-0006, itens 7 e 15): a de maior vigente_desde até a hora do envio. Apelido {@code ct}; sem cotação, as colunas vêm vazias. Precisa do apelido {@code r}.
      */
     public static final String COTACAO_DO_ENVIO = """
             LEFT JOIN LATERAL (SELECT c.data_cotacao, c.usd_venda, c.pyg_venda FROM corona.cotacoes c
-                                WHERE c.data_cotacao <= (r.enviada_em AT TIME ZONE 'America/Sao_Paulo')::date
-                                ORDER BY c.data_cotacao DESC LIMIT 1) ct ON true""";
+                                WHERE c.vigente_desde <= r.enviada_em
+                                ORDER BY c.vigente_desde DESC, c.id DESC LIMIT 1) ct ON true""";
 
     private SqlDaMaleta() {
     }

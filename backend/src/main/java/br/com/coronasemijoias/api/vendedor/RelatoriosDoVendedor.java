@@ -262,11 +262,11 @@ public class RelatoriosDoVendedor {
 
     // --- internos ---
 
-    /** A cotação vigente no dia do pagamento (horário de Brasília): a de maior data até aquele dia. Apelido {@code ct}. */
+    /** A cotação vigente no momento do pagamento (ADR-0006, item 15). Apelido {@code ct}. */
     private static final String COTACAO_DO_PAGAMENTO = """
               LEFT JOIN LATERAL (SELECT c.usd_venda, c.pyg_venda FROM corona.cotacoes c
-                                  WHERE c.data_cotacao <= (p.pago_em AT TIME ZONE 'America/Sao_Paulo')::date
-                                  ORDER BY c.data_cotacao DESC LIMIT 1) ct ON true
+                                  WHERE c.vigente_desde <= p.pago_em
+                                  ORDER BY c.vigente_desde DESC, c.id DESC LIMIT 1) ct ON true
             """;
 
     private static String periodo() {

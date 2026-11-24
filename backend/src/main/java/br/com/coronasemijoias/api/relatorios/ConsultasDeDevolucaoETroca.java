@@ -98,11 +98,11 @@ public class ConsultasDeDevolucaoETroca {
              OR EXISTS (SELECT 1 FROM corona.produto_codigos cb WHERE cb.produto_id = p.id AND cb.deleted_at IS NULL
                         AND lower(cb.codigo) LIKE :texto))""";
 
-    /** A cotação vigente no dia (em Brasília) em que o dinheiro voltou ao cliente. Apelido {@code ct}; precisa de {@code p}. */
+    /** A cotação vigente no momento em que o dinheiro voltou ao cliente. Apelido {@code ct}; precisa de {@code p}. */
     private static final String COTACAO_DO_PAGAMENTO = """
             LEFT JOIN LATERAL (SELECT c2.data_cotacao, c2.usd_venda, c2.pyg_venda FROM corona.cotacoes c2
-                                WHERE c2.data_cotacao <= (p.pago_em AT TIME ZONE 'America/Sao_Paulo')::date
-                                ORDER BY c2.data_cotacao DESC LIMIT 1) ct ON true""";
+                                WHERE c2.vigente_desde <= p.pago_em
+                                ORDER BY c2.vigente_desde DESC, c2.id DESC LIMIT 1) ct ON true""";
 
     private final MotorDeRelatorio motor;
     private final Configuracoes configuracoes;

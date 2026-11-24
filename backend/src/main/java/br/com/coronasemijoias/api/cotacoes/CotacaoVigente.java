@@ -51,6 +51,24 @@ public class CotacaoVigente {
                 (rs, n) -> rs.getObject(1, UUID.class), momento.atOffset(ZoneOffset.UTC)).stream().findFirst().orElse(null);
     }
 
+    /**
+     * O SQL padrão para ligar a cotação vigente num momento: {@code LEFT JOIN LATERAL} com o apelido {@code ct} e as colunas
+     * pedidas (do apelido {@code c}). {@code momentoSql} é uma expressão {@code timestamptz} da consulta (por exemplo
+     * {@code p.pago_em}).
+     */
+    public static String joinDoMomento(String momentoSql, String colunas) {
+        return "LEFT JOIN LATERAL (SELECT " + colunas + " FROM corona.cotacoes c WHERE c.vigente_desde <= " + momentoSql
+                + " ORDER BY " + SQL_ORDEM_DA_VIGENTE + " LIMIT 1) ct ON true";
+    }
+
+    /**
+     * O último instante de um dia (expressão {@code date} da consulta) em Brasília: o equivalente exato do antigo "cotação
+     * até o dia". Para quem só tem a data do lançamento (vencimento, data do caixa manual).
+     */
+    public static String fimDoDiaSql(String dataSql) {
+        return "((" + dataSql + " + 1)::timestamp AT TIME ZONE 'America/Sao_Paulo' - interval '1 microsecond')";
+    }
+
     /** O dia (data de calendário) de um instante em Brasília. */
     public static LocalDate diaEmBrasilia(Instant momento) {
         return momento.atZone(BRASILIA).toLocalDate();

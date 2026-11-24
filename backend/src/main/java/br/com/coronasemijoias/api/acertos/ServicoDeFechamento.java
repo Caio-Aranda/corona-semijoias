@@ -110,7 +110,7 @@ public class ServicoDeFechamento {
     /** O pedido de "fechar". {@code liquidoMostrado} é só conferência: nunca entra no cálculo nem é gravado. */
     public record PedidoDeFechamento(UUID id, List<DecisaoDeFalta> faltas, List<DecisaoDeDefeito> defeitos,
             List<DecisaoDeCobranca> cobrancas, List<DecisaoDePendenciaAntiga> pendenciasAntigas, BigDecimal liquidoMostrado,
-            PagamentoDoAcerto pagamento) {
+            PagamentoDoAcerto pagamento, UUID cotacaoId) {
     }
 
     /** O dinheiro do acerto, calculado pelo servidor. {@code restanteSemData}: sobra valor sem data escolhida (só na prévia). */
@@ -287,9 +287,19 @@ public class ServicoDeFechamento {
         }
 
         Pagamento pagamento = pagamentoDe(pedido.pagamento(), m.cotacao());
+        // A cotação mudou depois da prévia (a dona lançou outra): se há recebimento em Dólar ou Guarani, o valor em reais que ela
+        // conferiu já não vale. Sem recebimento em outra moeda, fecha normal com a vigente (só muda o que se mostra em Dólar e Guarani).
+        if (pedido.cotacaoId() != null && !pedido.cotacaoId().equals(m.cotacao().id()) && temOutraMoeda(pagamento)) {
+            throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.COTACAO_DO_ACERTO_MUDOU);
+        }
         Financeiro f = financeiro(m, c, pagamento, true);
         gravar(usuarioId, acertoId, comando, resumo, m, d, c, f, pagamento);
         return new Resultado(acertoId, false);
+    }
+
+    private static boolean temOutraMoeda(Pagamento p) {
+        return p.recebimentos().stream().anyMatch(r -> r.moeda() != null && !ServicoDeRecebimentosDoVendedor.REAL.equals(r.moeda()))
+                || p.contasAntigas().stream().anyMatch(a -> a.moeda() != null && !ServicoDeRecebimentosDoVendedor.REAL.equals(a.moeda()));
     }
 
     private ErroDaApi desatualizado(PreviaDoFechamento previa) {

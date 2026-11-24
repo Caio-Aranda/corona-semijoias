@@ -623,8 +623,13 @@ public enum CodigoErro {
 
     /** A cotação do recebimento não é mais a que a tela mostrou (HTTP 409; 23/11/2026). Nada foi gravado. */
     COTACAO_DO_RECEBIMENTO_MUDOU(
-            "A cotação do dia mudou.",
-            "A cotação do dia mudou enquanto a tela estava aberta. Volte, abra o recebimento de novo e confira o valor em reais."),
+            "A cotação mudou.",
+            "A cotação mudou enquanto você digitava. Confira o valor em reais e grave de novo."),
+
+    /** A cotação do acerto mudou depois da prévia e há recebimento em Dólar ou Guarani (HTTP 409; ADR-0006, item 15). Nada foi gravado. */
+    COTACAO_DO_ACERTO_MUDOU(
+            "A cotação mudou.",
+            "A cotação mudou. Confira os valores do acerto e feche de novo."),
 
     /** O reenvio da cotação da dona usa um id já gravado com outros valores (HTTP 409; ADR-0006, item 15). */
     COTACAO_JA_GRAVADA_DIFERENTE(

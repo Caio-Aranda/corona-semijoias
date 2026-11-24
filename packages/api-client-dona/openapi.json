@@ -428,6 +428,24 @@
         },
         "type" : "object"
       },
+      "BancoCentralDoDia" : {
+        "properties" : {
+          "dataCotacao" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "dolar" : {
+            "example" : "5.50130000",
+            "format" : "decimal",
+            "pattern" : "^\\d{1,10}\\.\\d{8}$",
+            "type" : "string"
+          },
+          "guaranisPorReal" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "BlocoDaPrevia" : {
         "properties" : {
           "comissaoPrevista" : {
@@ -2514,11 +2532,24 @@
             "pattern" : "^\\d{1,10}\\.\\d{8}$",
             "type" : "string"
           },
+          "guaranisPorReal" : {
+            "example" : "5.50130000",
+            "format" : "decimal",
+            "pattern" : "^\\d{1,10}\\.\\d{8}$",
+            "type" : "string"
+          },
           "id" : {
             "format" : "uuid",
             "type" : "string"
           },
           "linha" : {
+            "type" : "string"
+          },
+          "origem" : {
+            "type" : "string"
+          },
+          "vigenteDesde" : {
+            "format" : "date-time",
             "type" : "string"
           }
         },
@@ -3714,6 +3745,35 @@
         },
         "type" : "object"
       },
+      "GravadaResposta" : {
+        "properties" : {
+          "aviso" : {
+            "type" : "string"
+          },
+          "avisoDeDiferenca" : {
+            "type" : "boolean"
+          },
+          "cotacao" : {
+            "$ref" : "#/components/schemas/CotacaoDoDia"
+          }
+        },
+        "type" : "object"
+      },
+      "HistoricoDoDia" : {
+        "properties" : {
+          "cotacoes" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDoHistorico"
+            },
+            "type" : "array"
+          },
+          "data" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "ImportacaoDeFotosPrevia" : {
         "properties" : {
           "ambiguas" : {
@@ -4123,7 +4183,7 @@
             "type" : "string"
           },
           "valores" : {
-            "$ref" : "#/components/schemas/Valores"
+            "$ref" : "#/components/schemas/ServicoDoFechamentoDaMaletaValores"
           }
         },
         "type" : "object"
@@ -6885,6 +6945,49 @@
         },
         "type" : "object"
       },
+      "LinhaDoHistorico" : {
+        "properties" : {
+          "dolar" : {
+            "example" : "5.50130000",
+            "format" : "decimal",
+            "pattern" : "^\\d{1,10}\\.\\d{8}$",
+            "type" : "string"
+          },
+          "guarani" : {
+            "example" : "5.50130000",
+            "format" : "decimal",
+            "pattern" : "^\\d{1,10}\\.\\d{8}$",
+            "type" : "string"
+          },
+          "guaranisPorReal" : {
+            "example" : "5.50130000",
+            "format" : "decimal",
+            "pattern" : "^\\d{1,10}\\.\\d{8}$",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "lancadaPor" : {
+            "type" : "string"
+          },
+          "linha" : {
+            "type" : "string"
+          },
+          "origem" : {
+            "type" : "string"
+          },
+          "valeAgora" : {
+            "type" : "boolean"
+          },
+          "vigenteDesde" : {
+            "format" : "date-time",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "LinhaDoResultado" : {
         "properties" : {
           "categoriaId" : {
@@ -7371,6 +7474,21 @@
           },
           "vendedorId" : {
             "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "NovaCotacaoPedido" : {
+        "properties" : {
+          "guaranisPorReal" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "usd" : {
             "type" : "string"
           }
         },
@@ -8388,6 +8506,10 @@
             },
             "type" : "array"
           },
+          "cotacaoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
           "defeitos" : {
             "items" : {
               "$ref" : "#/components/schemas/DecisaoDeDefeito"
@@ -9261,6 +9383,44 @@
           "vendidoParaMetaGuarani" : {
             "format" : "int64",
             "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PreviaResposta" : {
+        "properties" : {
+          "aviso" : {
+            "type" : "string"
+          },
+          "avisoDeDiferenca" : {
+            "type" : "boolean"
+          },
+          "bancoCentral" : {
+            "$ref" : "#/components/schemas/BancoCentralDoDia"
+          },
+          "diferencaDolarPorCento" : {
+            "type" : "string"
+          },
+          "diferencaGuaraniPorCento" : {
+            "type" : "string"
+          },
+          "dolar" : {
+            "example" : "5.50130000",
+            "format" : "decimal",
+            "pattern" : "^\\d{1,10}\\.\\d{8}$",
+            "type" : "string"
+          },
+          "guarani" : {
+            "example" : "5.50130000",
+            "format" : "decimal",
+            "pattern" : "^\\d{1,10}\\.\\d{8}$",
+            "type" : "string"
+          },
+          "guaranisPorReal" : {
+            "example" : "5.50130000",
+            "format" : "decimal",
+            "pattern" : "^\\d{1,10}\\.\\d{8}$",
+            "type" : "string"
           }
         },
         "type" : "object"
@@ -12450,6 +12610,10 @@
             "format" : "date",
             "type" : "string"
           },
+          "cotacaoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
           "forma" : {
             "type" : "string"
           },
@@ -12515,6 +12679,47 @@
           "quantidade" : {
             "format" : "int32",
             "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "ServicoDoFechamentoDaMaletaValores" : {
+        "properties" : {
+          "comissaoConvertida" : {
+            "$ref" : "#/components/schemas/ServicoDoFechamentoDaMaletaConvertido"
+          },
+          "comissaoDosClientes" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "pendenciasAReceber" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "pendenciasConvertidas" : {
+            "$ref" : "#/components/schemas/ServicoDoFechamentoDaMaletaConvertido"
+          },
+          "recebido" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "recebidoConvertido" : {
+            "$ref" : "#/components/schemas/ServicoDoFechamentoDaMaletaConvertido"
+          },
+          "vd" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vdConvertido" : {
+            "$ref" : "#/components/schemas/ServicoDoFechamentoDaMaletaConvertido"
           }
         },
         "type" : "object"
@@ -12920,47 +13125,6 @@
           },
           "quemMudou" : {
             "type" : "string"
-          }
-        },
-        "type" : "object"
-      },
-      "Valores" : {
-        "properties" : {
-          "comissaoConvertida" : {
-            "$ref" : "#/components/schemas/ServicoDoFechamentoDaMaletaConvertido"
-          },
-          "comissaoDosClientes" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          },
-          "pendenciasAReceber" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          },
-          "pendenciasConvertidas" : {
-            "$ref" : "#/components/schemas/ServicoDoFechamentoDaMaletaConvertido"
-          },
-          "recebido" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          },
-          "recebidoConvertido" : {
-            "$ref" : "#/components/schemas/ServicoDoFechamentoDaMaletaConvertido"
-          },
-          "vd" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          },
-          "vdConvertido" : {
-            "$ref" : "#/components/schemas/ServicoDoFechamentoDaMaletaConvertido"
           }
         },
         "type" : "object"
@@ -15969,6 +16133,69 @@
         "tags" : [ "contas-a-receber-da-dona-controller" ]
       }
     },
+    "/api/dona/cotacoes" : {
+      "get" : {
+        "description" : "Todas as cotações do dia (Banco Central e da loja), na ordem em que passaram a valer, com a que vale agora marcada. data é AAAA-MM-DD (hoje, se vier vazia). Nada se apaga nem se edita.",
+        "operationId" : "doDia",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "data",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/HistoricoDoDia"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "As cotações de um dia",
+        "tags" : [ "cotacoes-da-dona-controller" ]
+      },
+      "post" : {
+        "description" : "Grava uma cotação nova, que vale a partir de agora (não muda o que já foi lançado). Um valor por moeda, para compra e venda. Dólar de R$ 0,01 a 999,99 (até 4 casas); Guarani por real de 1 a 99.999 (até 2 casas). O aviso de diferença do Banco Central não impede de gravar. Com id (gerado pela tela), o reenvio é idempotente: 201 na primeira vez, 200 depois; mesmo id com outros valores, 409.",
+        "operationId" : "gravar",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/NovaCotacaoPedido"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/GravadaResposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "A dona muda a cotação do Dólar e do Guarani",
+        "tags" : [ "cotacoes-da-dona-controller" ]
+      }
+    },
     "/api/dona/cotacoes/converter" : {
       "post" : {
         "description" : "Só para mostrar, nada é gravado. valorEmReais é texto decimal com ponto e até 2 casas (número JSON é recusado; pode ser negativo, para estorno); data é opcional (hoje, se vier vazia) e usa a cotação em vigor naquela data. Dólar com 2 casas e Guarani sem casas. Sem cotação: 200 com disponivel = false.",
@@ -16022,6 +16249,39 @@
           "bearer" : [ ]
         } ],
         "summary" : "Cotação do dia",
+        "tags" : [ "cotacoes-da-dona-controller" ]
+      }
+    },
+    "/api/dona/cotacoes/previa" : {
+      "post" : {
+        "description" : "Não grava nada. usd e guaranisPorReal são texto com ponto (\"5.80\", \"1350\"). Devolve o Guarani por real, o Banco Central do momento (se houver) e o aviso de diferença (a partir de 15%), que não trava.",
+        "operationId" : "previa_1",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/NovaCotacaoPedido"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PreviaResposta"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Antes de gravar: a conversão e a comparação com o Banco Central",
         "tags" : [ "cotacoes-da-dona-controller" ]
       }
     },
@@ -18878,7 +19138,7 @@
         "tags" : [ "recebimentos-do-vendedor-da-dona-controller" ]
       },
       "post" : {
-        "description" : "O vendedor paga à loja, fora do acerto, em dinheiro, Transferência (PIX) ou boleto pago. Com a conta indicada, baixa só essa conta; sem conta, o servidor distribui pelas contas em aberto, da que vence primeiro para a que vence depois. Não aceita mais do que o vendedor deve. O boleto pago é o valor inteiro da conta do boleto. Entra no caixa na mesma hora. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409. Em Dólar ou Guarani (moeda DOLAR ou GUARANI), mande só valorNaMoeda: o servidor converte pela cotação do dia do lançamento e grava em Real (sem cotação, 409; cotacaoData diferente da que vale, 409).",
+        "description" : "O vendedor paga à loja, fora do acerto, em dinheiro, Transferência (PIX) ou boleto pago. Com a conta indicada, baixa só essa conta; sem conta, o servidor distribui pelas contas em aberto, da que vence primeiro para a que vence depois. Não aceita mais do que o vendedor deve. O boleto pago é o valor inteiro da conta do boleto. Entra no caixa na mesma hora. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409. Em Dólar ou Guarani (moeda DOLAR ou GUARANI), mande só valorNaMoeda: o servidor converte pela cotação do dia do lançamento e grava em Real (sem cotação, 409; cotacaoId (ou cotacaoData) diferente da que vale, 409).",
         "operationId" : "receberDoVendedor",
         "requestBody" : {
           "content" : {

@@ -1,7 +1,7 @@
 package br.com.coronasemijoias.api.cotacoes;
 
+import br.com.coronasemijoias.api.comum.dinheiro.ConversaoDeMoeda;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Objects;
 
 /**
@@ -31,10 +31,10 @@ public record TaxasDoDia(
      * 1 ÷ guaranis por real (8 casas, HALF_UP) e a paridade do Guarani é guaranis por dólar, como o BCB publica.
      */
     public static TaxasDoDia daDona(BigDecimal usd, BigDecimal guaranisPorReal) {
-        BigDecimal dolar = usd.setScale(ESCALA, RoundingMode.HALF_UP);
-        BigDecimal pyg = BigDecimal.ONE.divide(guaranisPorReal, ESCALA, RoundingMode.HALF_UP);
+        BigDecimal dolar = ConversaoDeMoeda.taxaComOitoCasas(usd);
+        BigDecimal pyg = ConversaoDeMoeda.taxaDoGuarani(guaranisPorReal);
         BigDecimal um = BigDecimal.ONE.setScale(ESCALA);
-        BigDecimal paridadePyg = dolar.multiply(guaranisPorReal).setScale(ESCALA, RoundingMode.HALF_UP);
+        BigDecimal paridadePyg = ConversaoDeMoeda.taxaComOitoCasas(dolar.multiply(guaranisPorReal));
         return new TaxasDoDia(dolar, dolar, um, um, pyg, pyg, paridadePyg, paridadePyg);
     }
 }

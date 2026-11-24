@@ -3,10 +3,10 @@ package br.com.coronasemijoias.api.cotacoes;
 import br.com.coronasemijoias.api.auditoria.ServicoDeAuditoria;
 import br.com.coronasemijoias.api.auditoria.ServicoDeAuditoria.Ator;
 import br.com.coronasemijoias.api.cadastros.Validacoes;
+import br.com.coronasemijoias.api.comum.dinheiro.ConversaoDeMoeda;
 import br.com.coronasemijoias.api.comum.erros.CodigoErro;
 import br.com.coronasemijoias.api.comum.erros.ErroDaApi;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.Clock;
@@ -40,7 +40,6 @@ public class ServicoDeMudancaDeCotacao {
     private static final BigDecimal GUARANI_MINIMO = BigDecimal.ONE;
     private static final BigDecimal GUARANI_MAXIMO = new BigDecimal("99999");
     private static final Pattern DECIMAL = Pattern.compile("^\\d{1,10}(\\.\\d+)?$");
-    private static final BigDecimal CEM = new BigDecimal("100");
 
     private final RepositorioDeCotacoes repositorio;
     private final CotacaoVigente vigente;
@@ -121,7 +120,7 @@ public class ServicoDeMudancaDeCotacao {
         TaxasDoDia taxas = TaxasDoDia.daDona(v.usd(), v.guaranisPorReal());
         Optional<DoBancoCentral> bcb = repositorio.bancoCentralVigenteEm(agora).map(c -> new DoBancoCentral(
                 c.dataCotacao(), c.taxas().usdVenda(),
-                BigDecimal.ONE.divide(c.taxas().pygVenda(), 2, RoundingMode.HALF_UP)));
+                ConversaoDeMoeda.guaranisPorReal(c.taxas().pygVenda())));
         if (bcb.isEmpty()) {
             return new Previa(v.usd(), v.guaranisPorReal(), taxas.pygVenda(), bcb, null, null, false, null);
         }
@@ -141,19 +140,19 @@ public class ServicoDeMudancaDeCotacao {
 
     /** |digitado − Banco Central| ÷ Banco Central, em %, 2 casas. */
     private static BigDecimal diferenca(BigDecimal digitado, BigDecimal bcb) {
-        return digitado.subtract(bcb).abs().multiply(CEM).divide(bcb, 2, RoundingMode.HALF_UP);
+        return ConversaoDeMoeda.diferencaPorCento(digitado, bcb);
     }
 
+    /** "5,50": o valor já arredondado pela regra única de conversão, só com a vírgula do português. */
     private static String virgula(BigDecimal valor, int casas) {
-        DecimalFormat f = new DecimalFormat("0." + "0".repeat(casas), DecimalFormatSymbols.getInstance(Locale.forLanguageTag("pt-BR")));
-        f.setRoundingMode(RoundingMode.HALF_UP);
-        return f.format(valor);
+        return new DecimalFormat("0." + "0".repeat(casas), DecimalFormatSymbols.getInstance(Locale.forLanguageTag("pt-BR")))
+                .format(ConversaoDeMoeda.paraCasas(valor, casas));
     }
 
+    /** "1.117": o valor já arredondado pela regra única de conversão, com o ponto de milhar do português. */
     private static String milhares(BigDecimal valor) {
-        DecimalFormat f = new DecimalFormat("#,##0", DecimalFormatSymbols.getInstance(Locale.forLanguageTag("pt-BR")));
-        f.setRoundingMode(RoundingMode.HALF_UP);
-        return f.format(valor);
+        return new DecimalFormat("#,##0", DecimalFormatSymbols.getInstance(Locale.forLanguageTag("pt-BR")))
+                .format(ConversaoDeMoeda.paraCasas(valor, 0));
     }
 
     /**

@@ -57,7 +57,7 @@ public class RecebimentosDoVendedorDaDonaController {
                     + "para a que vence depois. Não aceita mais do que o vendedor deve. O boleto pago é o valor inteiro da conta do "
                     + "boleto. Entra no caixa na mesma hora. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409. "
                     + "Em Dólar ou Guarani (moeda DOLAR ou GUARANI), mande só valorNaMoeda: o servidor converte pela cotação do dia do "
-                    + "lançamento e grava em Real (sem cotação, 409; cotacaoData diferente da que vale, 409).")
+                    + "lançamento e grava em Real (sem cotação, 409; cotacaoId (ou cotacaoData) diferente da que vale, 409).")
     @PostMapping
     public ResponseEntity<RecebimentoDaDona> receber(@RequestBody PedidoDeRecebimento pedido,
             @AuthenticationPrincipal UsuarioAutenticado quem) {

@@ -305,6 +305,67 @@ class RecebimentoEmOutraMoedaTest extends ApoioDoFechamento {
         });
     }
 
+    // --- a cotação da dona no meio do dia (ADR-0006, item 15) ---
+
+    private UUID bcbDeHojeEDonaAgora(String usd, String guaranisPorReal) {
+        cotacaoDeHoje();
+        return CotacoesDaMassa.gravarDaDona(jdbc, usuarios.dona().id(), java.time.Instant.now().minusSeconds(60), usd, guaranisPorReal);
+    }
+
+    @Test
+    void comACotacaoDaDonaOGuaraniDivideEGravaOIdDela() throws Exception {
+        contaDe35();
+        UUID dona = bcbDeHojeEDonaAgora("5.80", "1350");
+        UUID id = UUID.randomUUID();
+        // Gs. 20.000 ÷ 1350 = 14,81 (pela taxa de 8 casas daria o mesmo aqui; o caso dos 37.037,04 está no teste da conversão).
+        receber("id", id, "moeda", "GUARANI", "valorNaMoeda", "20000", "cotacaoId", dona.toString()).andExpect(status().isCreated());
+        Map<String, Object> l = linha(id);
+        assertThat((BigDecimal) l.get("valor")).isEqualByComparingTo("14.81");
+        assertThat(l.get("cotacao_id")).isEqualTo(dona);
+        // Dólar: US$ 5,00 x 5,80 = 29,00? Passa de 35 - 14,81 = 20,19: recusado por passar do que se deve, nada gravado.
+        receber("id", UUID.randomUUID(), "moeda", "DOLAR", "valorNaMoeda", "5.00", "cotacaoId", dona.toString())
+                .andExpect(status().isConflict());
+        receber("id", UUID.randomUUID(), "moeda", "DOLAR", "valorNaMoeda", "3.00", "cotacaoId", dona.toString())
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    void asTelasQueMostraramOBancoCentralMasAGoraEAdaDonaRecebem409PeloId() throws Exception {
+        contaDe35();
+        UUID dona = bcbDeHojeEDonaAgora("5.80", "1350");
+        UUID bcb = jdbc.queryForObject(
+                "SELECT id FROM corona.cotacoes WHERE origem = 'BANCO_CENTRAL' AND data_cotacao = ?", UUID.class, hoje());
+        // Mesma data, outro id: só o id percebe a troca.
+        receber("id", UUID.randomUUID(), "moeda", "GUARANI", "valorNaMoeda", "20000", "cotacaoId", bcb.toString(),
+                "cotacaoData", hoje().toString()).andExpect(status().isConflict())
+                .andExpect(jsonPath("$.codigo").value("COTACAO_DO_RECEBIMENTO_MUDOU"));
+        assertThat(recebimentosDoVendedor()).isZero();
+        receber("id", UUID.randomUUID(), "moeda", "GUARANI", "valorNaMoeda", "20000", "cotacaoId", dona.toString())
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    void semCotacaoIdAindaVale409PelaDataParaOGestaoAntigo() throws Exception {
+        contaDe35();
+        bcbDeHojeEDonaAgora("5.80", "1350");
+        receber("id", UUID.randomUUID(), "moeda", "GUARANI", "valorNaMoeda", "20000", "cotacaoData", hoje().minusDays(1).toString())
+                .andExpect(status().isConflict()).andExpect(jsonPath("$.codigo").value("COTACAO_DO_RECEBIMENTO_MUDOU"));
+        receber("id", UUID.randomUUID(), "moeda", "GUARANI", "valorNaMoeda", "20000", "cotacaoData", hoje().toString())
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    void oRecebimentoEmRealMostraDolarEGuaraniPelaCotacaoVigenteNaHoraDele() throws Exception {
+        contaDe35();
+        bcbDeHojeEDonaAgora("5.80", "1350");
+        UUID id = UUID.randomUUID();
+        JsonNode r = corpoDe(receber("id", id, "valor", "10.00").andExpect(status().isCreated()));
+        assertThat(linha(id).get("cotacao_id")).as("em Real não grava cotação").isNull();
+        // R$ 10,00 pela cotação da dona (e não pela do Banco Central de hoje): US$ 1,72 e Gs. 13.500.
+        assertThat(new BigDecimal(r.get("dolar").asString())).isEqualByComparingTo("1.72");
+        assertThat(new BigDecimal(r.get("guarani").asString())).isEqualByComparingTo("13500");
+    }
+
     // --- no fechamento do acerto: a cotação do acerto ---
 
     @Test
@@ -348,5 +409,40 @@ class RecebimentoEmOutraMoedaTest extends ApoioDoFechamento {
         assertThat(new BigDecimal(recebimento.get("valorNaMoeda").asString())).isEqualByComparingTo("10000");
         // O reenvio igual devolve 200 (o resumo inclui a moeda).
         fechar(acerto, pedido).andExpect(status().isOk());
+    }
+
+    @Test
+    void oAcertoUsaAVigenteAgoraEACotacaoQueMudouDa409SoComRecebimentoEmOutraMoeda() throws Exception {
+        UsuarioDeTeste doAcerto = usuarios.criarVendedor();
+        UUID pecaDoAcerto = peca("50.00", 50);
+        UUID maletaDoAcerto = maletaConferida(doAcerto, semana(), pecaDoAcerto, 5);
+        vender(doAcerto, maletaDoAcerto, cliente(doAcerto), pecaDoAcerto, 1, "50.00");
+        UUID acerto = iniciar(doAcerto, null);
+        bipar(acerto, pecaDoAcerto, 4, "BOA");
+        // O Banco Central do exemplo é de 2291; a dona lança a dela agora: a do acerto é a vigente agora, a dela.
+        UUID dona = CotacoesDaMassa.gravarDaDona(jdbc, usuarios.dona().id(), java.time.Instant.now().minusSeconds(60), "5.80", "1350");
+        Map<String, Object> restante = mapa("parcelas", 1, "primeiroVencimento", hoje().plusDays(30).toString());
+        Map<String, Object> emGuarani = mapa("recebimentos", List.of(mapa("id", UUID.randomUUID(), "forma", "DINHEIRO", "moeda", "GUARANI",
+                "valorNaMoeda", "13500")), "restante", restante);
+        Map<String, Object> emReal = mapa("recebimentos", List.of(mapa("id", UUID.randomUUID(), "forma", "DINHEIRO", "valor", "5.00")),
+                "restante", restante);
+        Map<String, Object> pedido = mapa("id", UUID.randomUUID(), "faltas", List.of(), "defeitos", List.of(), "cobrancas", List.of(),
+                "pendenciasAntigas", List.of(), "liquidoMostrado", "35.00", "pagamento", emGuarani, "cotacaoId", dona);
+        JsonNode previa = corpoDe(postar(ACERTOS_DA_DONA + "/" + acerto + "/fechamento/previa", dona(), pedido).andExpect(status().isOk()));
+        assertThat(previa.get("cotacaoId").asString()).isEqualTo(dona.toString());
+        // Gs. 13.500 ÷ 1350 = R$ 10,00 (e não pelo Banco Central do exemplo).
+        assertThat(new BigDecimal(previa.get("recebidoNoAcerto").asString())).isEqualByComparingTo("10.00");
+
+        // A dona lança outra cotação depois da prévia: o fechamento com recebimento em Guarani é recusado, nada é gravado.
+        UUID maisNova = CotacoesDaMassa.gravarDaDona(jdbc, usuarios.dona().id(), java.time.Instant.now().minusSeconds(30), "5.90", "1400");
+        fechar(acerto, pedido).andExpect(status().isConflict()).andExpect(jsonPath("$.codigo").value("COTACAO_DO_ACERTO_MUDOU"));
+        assertThat(jdbc.queryForObject("SELECT status FROM corona.acertos WHERE id = ?", String.class, acerto)).isEqualTo("EM_ACERTO");
+
+        // Sem recebimento em outra moeda, a mesma cotação velha no pedido fecha normal, com a vigente agora.
+        Map<String, Object> soEmReal = new java.util.LinkedHashMap<>(pedido);
+        soEmReal.put("id", UUID.randomUUID());
+        soEmReal.put("pagamento", emReal);
+        fechar(acerto, soEmReal).andExpect(status().isCreated());
+        assertThat(jdbc.queryForObject("SELECT cotacao_id FROM corona.acertos WHERE id = ?", UUID.class, acerto)).isEqualTo(maisNova);
     }
 }
