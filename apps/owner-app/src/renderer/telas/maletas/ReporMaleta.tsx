@@ -2,7 +2,7 @@ import { Botao } from '@corona/ui';
 import { useRef, useState } from 'react';
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { AvisoDeErro } from '../../componentes/AvisoDeErro';
-import { chamar, useBusca, type ErroDaTela } from '../../nucleo/chamadas';
+import { chamar, chamarTodasAsPaginas, useBusca, type ErroDaTela } from '../../nucleo/chamadas';
 import { TEXTOS_DE_MALETAS } from '../../textos-maletas';
 import { Dinheiro } from './Dinheiro';
 import { lerEmAberto, lerMaleta, lerSemanasParaEscolher, type Maleta } from './dados';
@@ -37,10 +37,7 @@ export function ReporMaleta({
     () => chamar(ponte, 'maletas.emAberto', { vendedorId }),
     `repor-aberto-${vendedorId}`,
   );
-  const semanas = useBusca(
-    () => chamar(ponte, 'semanas.listar', { pagina: 0, tamanho: 100 }),
-    'repor-semanas',
-  );
+  const semanas = useBusca(() => chamarTodasAsPaginas(ponte, 'semanas.listar'), 'repor-semanas');
   const [semanaId, setSemanaId] = useState(semanaInicial ?? '');
   const [tentou, setTentou] = useState(false);
   const [criando, setCriando] = useState(false);

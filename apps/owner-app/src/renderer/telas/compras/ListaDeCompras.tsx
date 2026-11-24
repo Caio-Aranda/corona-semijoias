@@ -3,7 +3,7 @@ import { useState } from 'react';
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { SITUACOES_DA_COMPRA } from '../../../shared/compras';
 import { AvisoDeErro } from '../../componentes/AvisoDeErro';
-import { chamar, useBusca } from '../../nucleo/chamadas';
+import { chamar, chamarTodasAsPaginas, useBusca } from '../../nucleo/chamadas';
 import { dataParaTela, tresMoedas } from '../../nucleo/moedas';
 import { TEXTOS_DE_COMPRAS } from '../../textos-compras';
 import { lerOpcoes } from '../produtos/dados';
@@ -29,7 +29,7 @@ export function ListaDeCompras({ ponte, aoReceber }: ListaDeComprasProps) {
   const [aberta, setAberta] = useState<string | null>(null);
 
   const fornecedores = useBusca(
-    () => chamar(ponte, 'fornecedores.listar', { pagina: 0, tamanho: 100, situacao: 'TODOS' }),
+    () => chamarTodasAsPaginas(ponte, 'fornecedores.listar', { situacao: 'TODOS' }),
     'fornecedores-do-filtro-de-compras',
   );
   const listaDeFornecedores = fornecedores.dados ? lerOpcoes(fornecedores.dados) : [];

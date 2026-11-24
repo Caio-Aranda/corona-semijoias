@@ -4,7 +4,7 @@ import type { PonteDoCorona } from '../../../shared/ponte';
 import { AvisoDeErro } from '../../componentes/AvisoDeErro';
 import { ImagemDoProduto } from '../../componentes/ImagemDoProduto';
 import { SaldoDaLoja } from '../../componentes/SaldoDaLoja';
-import { chamar, useBusca } from '../../nucleo/chamadas';
+import { chamar, chamarTodasAsPaginas, useBusca } from '../../nucleo/chamadas';
 import { estaAcabando } from '../../nucleo/estoque';
 import { TEXTOS_DE_ESTOQUE } from '../../textos-estoque';
 import { codigoPrincipal, lerOpcoes, lerPaginaDeProdutos } from '../produtos/dados';
@@ -42,11 +42,11 @@ export function ListaDoEstoque({ ponte, modo }: ListaDoEstoqueProps) {
   const [aberta, setAberta] = useState<string | null>(null);
 
   const categorias = useBusca(
-    () => chamar(ponte, 'categorias.listar', { pagina: 0, tamanho: 100, situacao: 'TODOS' }),
+    () => chamarTodasAsPaginas(ponte, 'categorias.listar', { situacao: 'TODOS' }),
     'categorias-do-estoque',
   );
   const fornecedores = useBusca(
-    () => chamar(ponte, 'fornecedores.listar', { pagina: 0, tamanho: 100, situacao: 'TODOS' }),
+    () => chamarTodasAsPaginas(ponte, 'fornecedores.listar', { situacao: 'TODOS' }),
     'fornecedores-do-estoque',
   );
   const apenasAcabando = modo === 'acabando' || soAcabando;

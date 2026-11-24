@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { SITUACOES_DA_CONTA_A_PAGAR } from '../../../shared/financeiro';
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { AvisoDeErro } from '../../componentes/AvisoDeErro';
-import { chamar, useBusca } from '../../nucleo/chamadas';
+import { chamar, chamarTodasAsPaginas, useBusca } from '../../nucleo/chamadas';
 import { RodapeDaCotacao } from '../../nucleo/cotacao';
 import { dataParaTela } from '../../nucleo/moedas';
 import { TEXTOS_DE_FINANCEIRO } from '../../textos-financeiro';
@@ -33,7 +33,7 @@ export function TelaContasAPagar({ ponte }: { ponte: PonteDoCorona }) {
   const [aviso, setAviso] = useState<string | null>(null);
 
   const fornecedores = useBusca(
-    () => chamar(ponte, 'fornecedores.listar', { pagina: 0, tamanho: 100, situacao: 'TODOS' }),
+    () => chamarTodasAsPaginas(ponte, 'fornecedores.listar', { situacao: 'TODOS' }),
     'fornecedores-das-contas-a-pagar',
   );
   const busca = useBusca(

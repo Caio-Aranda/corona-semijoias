@@ -2,7 +2,7 @@ import { Botao, Tabela } from '@corona/ui';
 import { useState } from 'react';
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { AvisoDeErro } from '../../componentes/AvisoDeErro';
-import { chamar, useBusca, type Retorno } from '../../nucleo/chamadas';
+import { chamar, chamarTodasAsPaginas, useBusca, type Retorno } from '../../nucleo/chamadas';
 import { formatarReais } from '../../nucleo/moedas';
 import { TEXTOS_DE_MALETAS } from '../../textos-maletas';
 import { dataNaTela } from '../cadastros/definicoes';
@@ -75,18 +75,13 @@ function TodasAsMaletas({
   const [semanaId, setSemanaId] = useState('');
   const [situacao, setSituacao] = useState('');
   const vendedores = useBusca(() => chamar(ponte, 'vendedores.escolha'), 'lista-vendedores');
-  const semanas = useBusca(
-    () => chamar(ponte, 'semanas.listar', { pagina: 0, tamanho: 100 }),
-    'lista-semanas',
-  );
+  const semanas = useBusca(() => chamarTodasAsPaginas(ponte, 'semanas.listar'), 'lista-semanas');
   const busca = useBusca(
     () =>
-      chamar(ponte, 'maletas.listar', {
+      chamarTodasAsPaginas(ponte, 'maletas.listar', {
         ...(vendedorId ? { vendedorId } : {}),
         ...(semanaId ? { semanaId } : {}),
         ...(situacao ? { status: situacao } : {}),
-        pagina: 0,
-        tamanho: 100,
       }),
     `lista-${chave}-${vendedorId}-${semanaId}-${situacao}`,
   );

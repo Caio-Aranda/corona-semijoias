@@ -2,7 +2,13 @@ import { Aviso, Botao, EstadoDaLista, JanelaDeConfirmacao } from '@corona/ui';
 import { useRef, useState } from 'react';
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { AvisoDeErro } from '../../componentes/AvisoDeErro';
-import { chamar, useBusca, type ErroDaTela, type Retorno } from '../../nucleo/chamadas';
+import {
+  chamar,
+  chamarTodasAsPaginas,
+  useBusca,
+  type ErroDaTela,
+  type Retorno,
+} from '../../nucleo/chamadas';
 import { TEXTOS_DE_CONSIGNADO } from '../../textos-consignado';
 import { dataEHora } from '../sincronizacao/dados';
 import { LeitorDaMaleta } from '../maletas/LeitorDaMaleta';
@@ -61,9 +67,7 @@ function EscolherMaleta({
   const [escolhida, setEscolhida] = useState('');
   const busca = useBusca<Maleta[]>(async (): Promise<Retorno<Maleta[]>> => {
     const respostas = await Promise.all(
-      STATUS_DAS_MALETAS.map((status) =>
-        chamar(ponte, 'maletas.listar', { status, pagina: 0, tamanho: 100 }),
-      ),
+      STATUS_DAS_MALETAS.map((status) => chamarTodasAsPaginas(ponte, 'maletas.listar', { status })),
     );
     for (const r of respostas) if (!r.ok) return { ok: false, erro: r.erro };
     const todas = respostas.flatMap((r) => (r.ok ? lerPaginaDeMaletas(r.dados) : []));

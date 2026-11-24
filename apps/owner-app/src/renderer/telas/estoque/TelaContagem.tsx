@@ -3,7 +3,7 @@ import { useRef, useState } from 'react';
 import { ESCOPOS_DA_CONTAGEM, type EscopoDaContagem } from '../../../shared/estoque';
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { AvisoDeErro } from '../../componentes/AvisoDeErro';
-import { chamar, useBusca, type ErroDaTela } from '../../nucleo/chamadas';
+import { chamar, chamarTodasAsPaginas, useBusca, type ErroDaTela } from '../../nucleo/chamadas';
 import { TEXTOS_DE_ESTOQUE } from '../../textos-estoque';
 import { lerOpcoes } from '../produtos/dados';
 import { ContagemAberta } from './ContagemAberta';
@@ -113,11 +113,11 @@ function ComecarContagem({ ponte, aoComecar }: ComecarContagemProps) {
   const trava = useRef(false);
 
   const categorias = useBusca(
-    () => chamar(ponte, 'categorias.listar', { pagina: 0, tamanho: 100, situacao: 'TODOS' }),
+    () => chamarTodasAsPaginas(ponte, 'categorias.listar', { situacao: 'TODOS' }),
     'categorias-da-contagem',
   );
   const fornecedores = useBusca(
-    () => chamar(ponte, 'fornecedores.listar', { pagina: 0, tamanho: 100, situacao: 'TODOS' }),
+    () => chamarTodasAsPaginas(ponte, 'fornecedores.listar', { situacao: 'TODOS' }),
     'fornecedores-da-contagem',
   );
   const opcoes =

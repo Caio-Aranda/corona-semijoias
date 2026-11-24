@@ -7,7 +7,7 @@ import { AvisoDeErro } from '../../componentes/AvisoDeErro';
 import { ImagemDoProduto } from '../../componentes/ImagemDoProduto';
 import { quantidadeComSinal } from '../../nucleo/estoque';
 import { lerPaginaDeUsuarios } from '../usuarios/dados';
-import { chamar, useBusca, type Retorno } from '../../nucleo/chamadas';
+import { chamar, chamarTodasAsPaginas, useBusca, type Retorno } from '../../nucleo/chamadas';
 import { useCotacao } from '../../nucleo/cotacao';
 import { entregarArquivo } from '../../nucleo/arquivos';
 import { gerarCsv } from '../../nucleo/exportacao/csv';
@@ -239,18 +239,14 @@ async function carregarOpcoes(
 ): Promise<Retorno<Opcoes>> {
   const tem = (f: DefinicaoDeRelatorio['filtros'][number]) => def.filtros.includes(f);
   const pedir = (op: Parameters<typeof chamar>[1], ativo: boolean) =>
-    ativo
-      ? chamar(ponte, op, { pagina: 0, tamanho: 100, situacao: 'TODOS' })
-      : Promise.resolve(null);
+    ativo ? chamarTodasAsPaginas(ponte, op, { situacao: 'TODOS' }) : Promise.resolve(null);
   const [cat, forn, praca, restr, vend, usu, sem] = await Promise.all([
     pedir('categorias.listar', tem('categoria') || def.nome === 'sem-foto'),
     pedir('fornecedores.listar', tem('fornecedor') || def.nome === 'sem-foto'),
     pedir('pracas.listar', tem('praca')),
     pedir('restricoes.listar', tem('restricao')),
     tem('vendedor') ? chamar(ponte, 'vendedores.escolha') : Promise.resolve(null),
-    tem('usuario')
-      ? chamar(ponte, 'usuarios.listar', { pagina: 0, tamanho: 100 })
-      : Promise.resolve(null),
+    tem('usuario') ? chamarTodasAsPaginas(ponte, 'usuarios.listar') : Promise.resolve(null),
     pedir('semanas.listar', tem('semana')),
   ]);
   for (const r of [cat, forn, praca, restr, vend, usu, sem]) {

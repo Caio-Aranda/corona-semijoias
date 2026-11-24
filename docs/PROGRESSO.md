@@ -502,3 +502,7 @@ Branch `fix/setup-electron`. Desde o Electron 45.4.1 (PR 250), o pacote `electro
 
 Branch `fix/c12-aviso-e-maleta-fechada`. **Feito:** a C12 passa a conferir a maleta FECHADA (leva 9; antes ficava de fora) e deixa de acusar a peça negativa que tem o alerta `PECA_SEM_SALDO_NA_MALETA` (a saída da nota aceita acima do saldo, dúvida D4 do ADR-0016), como a K5 do consignado já fazia. Testes escritos antes: `ConciliacoesDoConsignadoTest.c12PerdoaAPecaNegativaComAlertaComoAK5` e `c12ConfereAMaletaFechada` (limpa quando certa, acusada com um movimento a mais). Especificação v1.37.
 
+## Listas de escolha com mais de 100 itens (Corona Gestão, 24/11/2026)
+
+Branch `fix/listas-alem-de-100`. Achado B3 da revisão de 23/11: as listas de escolha (fornecedores, categorias, praças, restrições, usuários, semanas) e algumas listas curtas (maletas, divergências da contagem) pediam só a primeira página de 100 itens; o 101º sumia sem aviso. **Feito:** `chamarTodasAsPaginas` faz o mesmo primeiro pedido de antes e só pede as páginas seguintes quando o total passa de 100 (até 50 páginas). Teste: `chamadas-paginas.test.ts`. Corona Gestão 1.2.3.
+

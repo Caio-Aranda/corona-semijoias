@@ -2,7 +2,7 @@ import { Botao, JanelaDeConfirmacao, Tabela } from '@corona/ui';
 import { useState } from 'react';
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { AvisoDeErro } from '../../componentes/AvisoDeErro';
-import { chamar, useBusca, type ErroDaTela } from '../../nucleo/chamadas';
+import { chamar, chamarTodasAsPaginas, useBusca, type ErroDaTela } from '../../nucleo/chamadas';
 import { TEXTOS_DE_MALETAS } from '../../textos-maletas';
 import { dataNaTela } from '../cadastros/definicoes';
 import { Dinheiro } from './Dinheiro';
@@ -20,7 +20,7 @@ export interface ListaDeRascunhosProps {
 /** Maletas em montagem: continuar de onde parou ou excluir (o estoque nunca foi mexido). */
 export function ListaDeRascunhos({ ponte, aoRetomar, chave }: ListaDeRascunhosProps) {
   const busca = useBusca(
-    () => chamar(ponte, 'maletas.listar', { status: 'RASCUNHO', pagina: 0, tamanho: 100 }),
+    () => chamarTodasAsPaginas(ponte, 'maletas.listar', { status: 'RASCUNHO' }),
     `rascunhos-${chave}`,
   );
   const [excluindo, setExcluindo] = useState<Maleta | null>(null);

@@ -90,6 +90,46 @@ export async function chamar<T = unknown>(
   }
 }
 
+/** Itens por pedido nas listas que pedem tudo (o máximo que a API aceita). */
+const TAMANHO_DA_PAGINA = 100;
+/** Trava de segurança: nunca mais que 50 páginas (5.000 itens) numa lista de escolha. */
+const PAGINAS_NO_MAXIMO = 50;
+
+/**
+ * Para listas de escolha e listas curtas que precisam de tudo (fornecedores, categorias, praças, semanas...): pede a página 0
+ * com 100 itens, como antes, e só continua pedindo as próximas quando o total passa de 100 (revisão de 23/11, achado B3: o 101º
+ * fornecedor sumia de Receber compra). Devolve uma página só, com todos os itens.
+ */
+export async function chamarTodasAsPaginas<T = unknown>(
+  ponte: PonteDoCorona,
+  operacao: OperacaoDaApi,
+  parametros: Record<string, unknown> = {},
+): Promise<Retorno<T>> {
+  const primeira = await chamar<unknown>(ponte, operacao, {
+    ...parametros,
+    pagina: 0,
+    tamanho: TAMANHO_DA_PAGINA,
+  });
+  if (!primeira.ok) return primeira;
+  const p = primeira.dados as { itens?: unknown; total?: unknown } | null;
+  if (!p || !Array.isArray(p.itens) || typeof p.total !== 'number') {
+    return primeira as Retorno<T>;
+  }
+  const itens: unknown[] = [...(p.itens as unknown[])];
+  for (let pagina = 1; itens.length < p.total && pagina < PAGINAS_NO_MAXIMO; pagina += 1) {
+    const r = await chamar<unknown>(ponte, operacao, {
+      ...parametros,
+      pagina,
+      tamanho: TAMANHO_DA_PAGINA,
+    });
+    if (!r.ok) return r;
+    const mais = (r.dados as { itens?: unknown } | null)?.itens;
+    if (!Array.isArray(mais) || mais.length === 0) break;
+    itens.push(...(mais as unknown[]));
+  }
+  return { ok: true, dados: { ...p, itens, pagina: 0, tamanho: itens.length } as T };
+}
+
 export interface EstadoDaBusca<T> {
   carregando: boolean;
   dados: T | null;

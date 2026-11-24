@@ -1,7 +1,7 @@
 import { Campo } from '@corona/ui';
 import { hojeEmBrasilia } from '../../nucleo/datas';
 import type { PonteDoCorona } from '../../../shared/ponte';
-import { chamar, useBusca } from '../../nucleo/chamadas';
+import { chamarTodasAsPaginas, useBusca } from '../../nucleo/chamadas';
 import { TEXTOS_DE_COMPRAS } from '../../textos-compras';
 import { lerOpcoes } from '../produtos/dados';
 
@@ -44,7 +44,7 @@ export function CabecalhoDaCompra({
   idBase = 'compra',
 }: CabecalhoDaCompraProps) {
   const fornecedores = useBusca(
-    () => chamar(ponte, 'fornecedores.listar', { pagina: 0, tamanho: 100, situacao: 'ATIVOS' }),
+    () => chamarTodasAsPaginas(ponte, 'fornecedores.listar', { situacao: 'ATIVOS' }),
     'fornecedores-da-compra',
   );
   const lista = fornecedores.dados ? lerOpcoes(fornecedores.dados) : [];

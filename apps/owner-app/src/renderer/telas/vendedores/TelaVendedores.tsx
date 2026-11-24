@@ -2,7 +2,7 @@ import { Aviso, Botao, Campo, EstadoDaLista, Paginacao, Tabela } from '@corona/u
 import { useEffect, useState } from 'react';
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { AvisoDeErro } from '../../componentes/AvisoDeErro';
-import { chamar, useBusca } from '../../nucleo/chamadas';
+import { chamar, chamarTodasAsPaginas, useBusca } from '../../nucleo/chamadas';
 import { TEXTOS } from '../../textos';
 import { lerLista, lerPaginaDeVendedores, limiteDaLista, texto, telefoneDaLista } from './dados';
 import { FichaDoVendedor } from './FichaDoVendedor';
@@ -36,7 +36,7 @@ export function TelaVendedores({ ponte }: TelaVendedoresProps) {
   }, [busca]);
 
   const pracas = useBusca(
-    () => chamar(ponte, 'pracas.listar', { pagina: 0, tamanho: 100, situacao: 'TODOS' }),
+    () => chamarTodasAsPaginas(ponte, 'pracas.listar', { situacao: 'TODOS' }),
     'pracas-do-filtro',
   );
   const listaDePracas = pracas.dados
