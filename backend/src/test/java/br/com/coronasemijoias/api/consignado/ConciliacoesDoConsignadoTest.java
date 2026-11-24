@@ -2,6 +2,7 @@ package br.com.coronasemijoias.api.consignado;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import br.com.coronasemijoias.api.conciliacoes.ConciliacoesDaFase7;
 import br.com.coronasemijoias.api.conciliacoes.ConciliacoesDaFase7.Diferenca;
 import br.com.coronasemijoias.api.testes.UsuariosDeTeste.UsuarioDeTeste;
 import java.sql.Connection;
@@ -62,6 +63,21 @@ class ConciliacoesDoConsignadoTest extends ApoioDoConsignado {
         }
         assertThat(r.tudoCerto()).isTrue();
         assertThat(k.nota()).isNotNull();
+    }
+
+    /**
+     * As conciliações do estoque (C7, C11 e C12) contam a peça que saiu da maleta na nota e está com o cliente (CONSIGNADO_SAIDA) e
+     * a que voltou no acerto da nota (CONSIGNADO_RETORNO), como a C7 já fazia: no servidor de teste de 24/11/2026, a C11 e a C12
+     * acusavam toda peça em nota de consignado.
+     */
+    @Test
+    void estoqueCompletoEMaletaContamAsPecasComOCliente() throws Exception {
+        Caso k = caso();
+        var fase7 = new ConciliacoesDaFase7(jdbc);
+        for (String chave : List.of("C7", "C11", "C12")) {
+            var achadas = fase7.conferir(chave).conferencias().get(0).divergencias();
+            assertThat(tem(achadas, k.peca()) || tem(achadas, k.maleta())).as(chave + ": " + achadas).isFalse();
+        }
     }
 
     @Test

@@ -377,7 +377,8 @@ public class ConciliacoesDaFase7 {
 
     private static final String ESPERADO_DA_C11 = """
             coalesce(comprado.q, 0) + coalesce(dona.q, 0) - coalesce(vendido.q, 0) + coalesce(volta.q, 0)
-                + coalesce(acerto.recebido, 0) - coalesce(acerto.falta, 0) - coalesce(acerto.aprovado, 0) + coalesce(achada.q, 0)""";
+                + coalesce(acerto.recebido, 0) - coalesce(acerto.falta, 0) - coalesce(acerto.aprovado, 0) + coalesce(achada.q, 0)
+                + coalesce(consignado.q, 0)""";
 
     private Conferencia c11() {
         String sql = """
@@ -417,12 +418,17 @@ public class ConciliacoesDaFase7 {
                                FROM corona.pendencias_acerto pa
                               WHERE pa.tipo = 'FALTA' AND pa.status = 'ENCONTRADA' AND pa.deleted_at IS NULL
                               GROUP BY pa.produto_id) achada ON achada.produto_id = p.id
+                  LEFT JOIN (SELECT mr.produto_id, sum(mr.quantidade) AS q
+                               FROM corona.movimentos_remessa mr
+                              WHERE mr.tipo IN ('CONSIGNADO_SAIDA', 'CONSIGNADO_RETORNO')
+                              GROUP BY mr.produto_id) consignado ON consignado.produto_id = p.id
                  WHERE %1$s
                        <> p.estoque_atual + coalesce(maletas.saldo, 0)
                  ORDER BY p.id""".formatted(ESPERADO_DA_C11, ServicoDeEstoque.SQL_SALDO_NAS_MALETAS_ABERTAS, MOVIMENTO_DO_ESTOQUE);
         return new Conferencia("C11", "Estoque completo, peça por peça",
                 "Para cada peça: o que está na loja mais o que está nas maletas é o que foi comprado e lançado, menos o que foi vendido, "
-                        + "o que faltou ou estragou no acerto, mais o que o cliente devolveu à maleta e o que chegou à loja pelo acerto.",
+                        + "o que faltou ou estragou no acerto e o que está com o cliente em nota de consignado, mais o que o cliente devolveu à "
+                        + "maleta e o que chegou à loja pelo acerto.",
                 contar("SELECT count(*) FROM corona.produtos"), achar(sql, Unidade.PECAS));
     }
 
@@ -450,10 +456,16 @@ public class ConciliacoesDaFase7 {
         String falta = """
                 (SELECT coalesce(sum(ia.falta), 0) FROM corona.itens_acerto ia JOIN corona.acertos a ON a.id = ia.acerto_id
                   WHERE ia.remessa_id = r.id AND ia.produto_id = i.produto_id AND a.status = 'ACERTADO' AND ia.deleted_at IS NULL)""";
+        // A peça que saiu na nota de consignado e está com o cliente (CONSIGNADO_SAIDA, negativo) e a que voltou no acerto da nota
+        // ou na troca (CONSIGNADO_RETORNO, positivo), como na C7 (ADR-0016, item 6).
+        String consignado = """
+                (SELECT coalesce(sum(m.quantidade), 0) FROM corona.movimentos_remessa m
+                  WHERE m.remessa_id = r.id AND m.produto_id = i.produto_id AND m.tipo IN ('CONSIGNADO_SAIDA', 'CONSIGNADO_RETORNO'))""";
         String saldo = saldoDaMaleta("r.id", "i.produto_id");
         String movimentosDaRemessa = "(SELECT coalesce(sum(abs(m.quantidade)), 0) FROM corona.movimentos_remessa m"
                 + " WHERE m.remessa_id = r.id AND m.produto_id = i.produto_id)";
-        String esperado = enviado + " - " + vendido + " + " + devolvidoPeloCliente + " - " + devolvidoADona + " - " + falta;
+        String esperado = enviado + " - " + vendido + " + " + devolvidoPeloCliente + " - " + devolvidoADona + " - " + falta + " + "
+                + consignado;
         List<Diferenca> d = juntar(
                 achar("SELECT 'MALETA', r.id, 'A peça \"" + peca + "\" nesta maleta não bate com o que foi enviado, vendido, devolvido e perdido.', "
                         + esperado + ", " + saldo + " FROM " + linhas + " WHERE " + enviadas + " AND (" + esperado + ") <> " + saldo
@@ -465,8 +477,8 @@ public class ConciliacoesDaFase7 {
                         + ") + " + movimentosDaRemessa + " FROM " + linhas + " WHERE r.deleted_at IS NULL AND r.status = 'CANCELADA' AND (abs("
                         + enviado + ") + " + movimentosDaRemessa + ") <> 0 ORDER BY r.id, p.nome", Unidade.PECAS));
         return new Conferencia("C12", "Cada maleta enviada, peça por peça",
-                "Em toda maleta enviada, para cada peça: o que há na maleta é o que foi enviado, menos o que foi vendido, devolvido à dona "
-                        + "e perdido, mais o que o cliente devolveu; nenhuma peça fica negativa e a maleta cancelada não guarda peça.",
+                "Em toda maleta enviada, para cada peça: o que há na maleta é o que foi enviado, menos o que foi vendido, devolvido à dona, "
+                        + "perdido e o que saiu em nota de consignado, mais o que o cliente devolveu e o que voltou da nota; nenhuma peça fica negativa e a maleta cancelada não guarda peça.",
                 contar("SELECT count(*) FROM corona.remessas r JOIN corona.itens_remessa i ON i.remessa_id = r.id AND i.deleted_at IS NULL"
                         + " WHERE r.deleted_at IS NULL AND r.status IN ('ENVIADA', 'CONFERIDA', 'EM_ACERTO', 'ACERTADA', 'CANCELADA')"),
                 d);
