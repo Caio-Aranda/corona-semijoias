@@ -208,12 +208,12 @@ describe('venda e estorno sem internet', () => {
     expect(estornada.estornadaEm).toBe(agora.toISOString());
     const [maleta] = pedir<Maleta[]>({ operacao: 'maletas.listar' });
     expect(maleta?.itens.find((l) => l.produto.nome === 'Anel de prata')?.saldo).toBe(3);
-    expect(pedir<PaginaDeVendas>({ operacao: 'vendas.listar', status: 'CONCLUIDA' }).itens).toHaveLength(
-      0,
-    );
-    expect(pedir<PaginaDeVendas>({ operacao: 'vendas.listar', status: 'ESTORNADA' }).itens).toHaveLength(
-      1,
-    );
+    expect(
+      pedir<PaginaDeVendas>({ operacao: 'vendas.listar', status: 'CONCLUIDA' }).itens,
+    ).toHaveLength(0);
+    expect(
+      pedir<PaginaDeVendas>({ operacao: 'vendas.listar', status: 'ESTORNADA' }).itens,
+    ).toHaveLength(1);
     // Estornada não entra nas contas.
     expect(pedir<RelatorioDeVendas>({ operacao: 'relatorios.vendas' }).linhas).toEqual([]);
     expect(pedir<RelatorioAReceber>({ operacao: 'relatorios.aReceber' }).clientes).toEqual([]);
