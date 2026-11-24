@@ -210,7 +210,7 @@ class ComandoRedefinirSenhaDeAdministradorTest extends TesteDeIntegracao {
         Resultado resultado = executar(admin.login());
 
         assertThat(resultado.saida()).isEqualTo(ComandoRedefinirSenhaDeAdministrador.SAIDA_RECUSADO);
-        assertThat(resultado.terminal()).contains("está desativado").doesNotContain("Senha temporária:");
+        assertThat(resultado.terminal()).contains("está inativo").doesNotContain("Senha temporária:");
         assertThat(usuarios.senhaHash(admin)).isEqualTo(hashAntes);
     }
 

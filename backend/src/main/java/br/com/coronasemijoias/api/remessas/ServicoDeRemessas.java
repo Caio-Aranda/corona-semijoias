@@ -372,7 +372,7 @@ public class ServicoDeRemessas {
 
     private static ErroDaApi foraDaMaleta(String nome) {
         return ErroDaApi.comDetalhe(HttpStatus.CONFLICT, CodigoErro.PECA_FORA_DA_MALETA,
-                "A peça \"" + nome + "\" está desativada ou foi excluída e não pode ir para a maleta. Tire essa peça da maleta.");
+                "A peça \"" + nome + "\" está inativa ou foi excluída e não pode ir para a maleta. Tire essa peça da maleta.");
     }
 
     static String reais(BigDecimal valor) {

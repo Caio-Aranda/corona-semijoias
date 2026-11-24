@@ -27,7 +27,7 @@ A §7.2 define a venda, a §7.1 a conferência e o dispositivo único da maleta,
 15. **Auditoria.** Venda acima de certo desconto, estorno e troca de dispositivo gravam auditoria (§11), sem dado sensível.
 16. **Telas.** Quatro botões grandes: **Vender**, **Minha maleta**, **Meus clientes**, **Meus números**. Leitor com foto grande da peça, falta de foto nunca trava. Textos só em `textos.ts`; termos do glossário; erro em português simples dizendo o que fazer.
 
-14. **Vendedor com cadastro inativo (11/11/2026, decisão provisória do responsável, auditoria D2).** O vendedor com o **cadastro inativo** não vende, mesmo com o usuário ativo: o servidor recusa venda e conferência de maleta (409 `VENDEDOR_DESATIVADO`, "Este vendedor está desativado. Fale com a dona.") e, como já fazia, o envio de maleta. Ao inativar o cadastro, o usuário ligado a ele também é desativado e as sessões, encerradas (mesmo comportamento de desativar usuário, tarefa 1.4), com auditoria. Reativar o cadastro não reativa o usuário. Vale até a dona responder a pergunta 25 de `docs/perguntas-para-a-dona.md`.
+14. **Vendedor com cadastro inativo (11/11/2026, decisão provisória do responsável, auditoria D2).** O vendedor com o **cadastro inativo** não vende, mesmo com o usuário ativo: o servidor recusa venda e conferência de maleta (409 `VENDEDOR_DESATIVADO`, "Este representante está inativo. Fale com a dona.") e, como já fazia, o envio de maleta. Ao inativar o cadastro, o usuário ligado a ele também é desativado e as sessões, encerradas (mesmo comportamento de desativar usuário, tarefa 1.4), com auditoria. Reativar o cadastro não reativa o usuário. Vale até a dona responder a pergunta 25 de `docs/perguntas-para-a-dona.md`.
 
 ## Dúvidas abertas (padrão provisório entre parênteses)
 

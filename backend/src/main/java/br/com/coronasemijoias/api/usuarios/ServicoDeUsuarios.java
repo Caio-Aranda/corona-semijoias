@@ -139,7 +139,7 @@ public class ServicoDeUsuarios {
                 .orElseThrow(() -> new RecusaDoComando("Não existe nenhum administrador com o login \"" + login
                         + "\". Confira o login e rode de novo."));
         if (!usuario.isAtivo()) {
-            throw new RecusaDoComando("O administrador \"" + login + "\" está desativado. "
+            throw new RecusaDoComando("O administrador \"" + login + "\" está inativo. "
                     + "Este comando não reativa ninguém: nada foi alterado.");
         }
         UsuarioComSenhaTemporaria redefinido = redefinir(usuario, MotivoDaRevogacao.SENHA_REDEFINIDA_PELO_SERVIDOR);

@@ -270,7 +270,7 @@ class RenovacaoTest extends TesteDeIntegracao {
 
         renovar(login.renovacao(), aparelho).andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.codigo").value("USUARIO_DESATIVADO"))
-                .andExpect(jsonPath("$.title").value("Seu acesso foi desativado."));
+                .andExpect(jsonPath("$.title").value("Seu acesso está inativo."));
     }
 
     // --- Saída ---

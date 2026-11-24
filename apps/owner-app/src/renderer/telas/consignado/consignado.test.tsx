@@ -437,7 +437,7 @@ describe('Fechamento da maleta (§23.10)', () => {
     expect(
       await screen.findByText('Esta peça não é desta maleta. Ela está na maleta 0009.'),
     ).toBeInTheDocument();
-    expect(screen.queryByText(/desativada ou foi excluída/)).toBeNull();
+    expect(screen.queryByText(/inativa ou foi excluída/)).toBeNull();
   });
 
   it('fechamento concluído só mostra o relatório, sem leitor nem botão de concluir', async () => {

@@ -184,9 +184,9 @@ class LoginTest extends TesteDeIntegracao {
         entrar(vendedor.login(), vendedor.senha())
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.codigo").value("USUARIO_DESATIVADO"))
-                .andExpect(jsonPath("$.title").value("Seu acesso foi desativado."))
+                .andExpect(jsonPath("$.title").value("Seu acesso está inativo."))
                 .andExpect(jsonPath("$.detail").value(
-                        "Seu acesso foi desativado. Fale com a dona da loja para voltar a usar o sistema."));
+                        "Seu acesso está inativo. Fale com a dona da loja para voltar a usar o sistema."));
     }
 
     @Test

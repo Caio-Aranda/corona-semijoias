@@ -19,7 +19,7 @@ export const ERROS_ES: Readonly<Record<string, string>> = Object.freeze({
   LOGIN_INVALIDO:
     'No se pudo entrar. Usuario o contraseña incorrectos. Revisá lo que escribiste e intentá de nuevo.',
   USUARIO_DESATIVADO:
-    'Tu acceso fue desactivado. Hablá con la dueña de la tienda para volver a usar el sistema.',
+    'Tu acceso está inactivo. Hablá con la dueña de la tienda para volver a usar el sistema.',
   SESSAO_TERMINADA:
     'Tu sesión terminó. Entrá de nuevo con tu usuario y tu contraseña para continuar.',
   ACESSO_BLOQUEADO:
@@ -41,7 +41,7 @@ export const ERROS_ES: Readonly<Record<string, string>> = Object.freeze({
     'Esta no es la aplicación de tu acceso. Abrí la otra aplicación de Corona Semijoias.',
   // --- Vendas, clientes e maleta (API) ---
   VENDA_NAO_ENCONTRADA: 'No encontramos esta venta. Actualizá la pantalla e intentá de nuevo.',
-  VENDEDOR_DESATIVADO: 'Este representante está desactivado. Hablá con la dueña.',
+  VENDEDOR_DESATIVADO: 'Este representante está inactivo. Hablá con la dueña.',
   VENDA_JA_REGISTRADA_DIFERENTE:
     'Esta venta ya fue registrada con otros datos. Revisá tus ventas antes de registrar de nuevo.',
   VENDA_SEM_SALDO: 'No hay piezas suficientes en tu maleta para esta venta.',

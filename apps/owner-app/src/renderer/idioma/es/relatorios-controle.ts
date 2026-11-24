@@ -34,7 +34,7 @@ export const ES_TEXTOS_DE_RELATORIOS_DE_CONTROLE: NoMesmoFormato<
       SUCESSO: 'Entró',
       SENHA_INCORRETA: 'Contraseña incorrecta',
       BLOQUEADO: 'Rechazada: acceso bloqueado',
-      USUARIO_DESATIVADO: 'Usuario desactivado',
+      USUARIO_DESATIVADO: 'Usuario inactivo',
       APP_INCOMPATIVEL: 'Programa muy antiguo',
       SENHA_TEMPORARIA_VENCIDA: 'Contraseña temporal vencida',
       PEDIDO_INVALIDO: 'Computadora que no coincide con el acceso',
