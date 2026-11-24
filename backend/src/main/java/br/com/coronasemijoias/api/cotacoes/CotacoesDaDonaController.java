@@ -61,7 +61,8 @@ public class CotacoesDaDonaController {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public record PreviaResposta(
             TaxaDeCotacao dolar, TaxaDeCotacao guaranisPorReal, TaxaDeCotacao guarani, BancoCentralDoDia bancoCentral,
-            String diferencaDolarPorCento, String diferencaGuaraniPorCento, boolean avisoDeDiferenca, String aviso) {
+            String diferencaDolarPorCento, String diferencaGuaraniPorCento, boolean avisoDeDiferenca, String moedaDoAviso,
+            String aviso) {
     }
 
     public record GravadaResposta(CotacaoDoDia cotacao, boolean avisoDeDiferenca, String aviso) {
@@ -174,7 +175,7 @@ public class CotacoesDaDonaController {
                 b.dataCotacao(), new TaxaDeCotacao(b.dolar()), b.guaranisPorReal().toPlainString())).orElse(null);
         return new PreviaResposta(
                 new TaxaDeCotacao(p.dolar()), new TaxaDeCotacao(p.guaranisPorReal()), new TaxaDeCotacao(p.guarani()), bcb,
-                p.diferencaDolarPorCento(), p.diferencaGuaraniPorCento(), p.avisoDeDiferenca(), p.aviso());
+                p.diferencaDolarPorCento(), p.diferencaGuaraniPorCento(), p.avisoDeDiferenca(), p.moedaDoAviso(), p.aviso());
     }
 
     private static CotacaoDoDia de(Cotacao c, LocalDate hoje) {

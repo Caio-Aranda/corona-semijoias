@@ -62,11 +62,13 @@ public class ServicoDeMudancaDeCotacao {
     }
 
     /**
-     * @param aviso o texto pronto, ou {@code null} quando a diferença é menor que 15% (ou não há Banco Central)
+     * @param moedaDoAviso {@code DOLAR} ou {@code GUARANI}: qual moeda passou dos 15% (a tela escreve o aviso nos dois idiomas)
+     * @param aviso        o texto pronto, ou {@code null} quando a diferença é menor que 15% (ou não há Banco Central)
      */
     public record Previa(
             BigDecimal dolar, BigDecimal guaranisPorReal, BigDecimal guarani, Optional<DoBancoCentral> bancoCentral,
-            String diferencaDolarPorCento, String diferencaGuaraniPorCento, boolean avisoDeDiferenca, String aviso) {
+            String diferencaDolarPorCento, String diferencaGuaraniPorCento, boolean avisoDeDiferenca, String moedaDoAviso,
+            String aviso) {
     }
 
     /** O que foi gravado; {@code jaExistia} quando é o reenvio de um pedido já gravado. */
@@ -122,20 +124,23 @@ public class ServicoDeMudancaDeCotacao {
                 c.dataCotacao(), c.taxas().usdVenda(),
                 ConversaoDeMoeda.guaranisPorReal(c.taxas().pygVenda())));
         if (bcb.isEmpty()) {
-            return new Previa(v.usd(), v.guaranisPorReal(), taxas.pygVenda(), bcb, null, null, false, null);
+            return new Previa(v.usd(), v.guaranisPorReal(), taxas.pygVenda(), bcb, null, null, false, null, null);
         }
         BigDecimal difDolar = diferenca(v.usd(), bcb.get().dolar());
         BigDecimal difGuarani = diferenca(v.guaranisPorReal(), bcb.get().guaranisPorReal());
         String aviso = null;
+        String moedaDoAviso = null;
         if (difDolar.compareTo(LIMITE_DO_AVISO) >= 0) {
+            moedaDoAviso = "DOLAR";
             aviso = "Este valor está bem diferente do Banco Central (R$ " + virgula(bcb.get().dolar(), 2)
                     + "). Confira antes de gravar.";
         } else if (difGuarani.compareTo(LIMITE_DO_AVISO) >= 0) {
+            moedaDoAviso = "GUARANI";
             aviso = "Este valor está bem diferente do Banco Central (Gs. " + milhares(bcb.get().guaranisPorReal())
                     + "). Confira antes de gravar.";
         }
         return new Previa(v.usd(), v.guaranisPorReal(), taxas.pygVenda(), bcb, difDolar.toPlainString(),
-                difGuarani.toPlainString(), aviso != null, aviso);
+                difGuarani.toPlainString(), aviso != null, moedaDoAviso, aviso);
     }
 
     /** |digitado − Banco Central| ÷ Banco Central, em %, 2 casas. */

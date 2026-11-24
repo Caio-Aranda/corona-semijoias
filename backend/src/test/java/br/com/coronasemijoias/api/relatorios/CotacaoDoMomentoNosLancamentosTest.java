@@ -112,12 +112,13 @@ class CotacaoDoMomentoNosLancamentosTest extends ApoioDasTrocas {
         assertThat(cotacaoDe("devolucoes", dev1)).as("devolução das 09:30").isEqualTo(bcb);
         assertThat(cotacaoDe("devolucoes", dev2)).as("devolução das 11:30").isEqualTo(dona);
 
-        // Pedido de autorização.
-        UUID vendaDaAutorizacao = vendaEm(NOVE_E_MEIA);
+        // Pedido de autorização (devolução fora do prazo da garantia: a venda é de 40 dias antes).
+        Instant antiga = brasilia("2289-05-31T12:00:00");
+        UUID vendaDaAutorizacao = vendaEm(antiga);
         UUID aut1 = UUID.randomUUID();
         autorizacoes.pedir(v.vendedorId(), v.id(), usuarios.aparelhoDe(v), new PedidoDeAutorizacao(aut1, vendaDaAutorizacao,
                 "ARREPENDIMENTO", null, List.of(new PecaDoPedido(peca, 1, "BOA"))), NOVE_E_MEIA, false, ModoDaDevolucao.ONLINE);
-        UUID vendaDaAutorizacao2 = vendaEm(ONZE_E_MEIA);
+        UUID vendaDaAutorizacao2 = vendaEm(antiga);
         UUID aut2 = UUID.randomUUID();
         autorizacoes.pedir(v.vendedorId(), v.id(), usuarios.aparelhoDe(v), new PedidoDeAutorizacao(aut2, vendaDaAutorizacao2,
                 "ARREPENDIMENTO", null, List.of(new PecaDoPedido(peca, 1, "BOA"))), ONZE_E_MEIA, false, ModoDaDevolucao.ONLINE);

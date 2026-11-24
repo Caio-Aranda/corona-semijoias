@@ -208,6 +208,7 @@ class MudarACotacaoDaDonaTest extends TesteDeIntegracao {
         enviar("/previa", pedido("6.40", "1117"), true).andExpect(status().isOk())
                 .andExpect(jsonPath("$.diferencaDolarPorCento").value("16.34"))
                 .andExpect(jsonPath("$.avisoDeDiferenca").value(true))
+                .andExpect(jsonPath("$.moedaDoAviso").value("DOLAR"))
                 .andExpect(jsonPath("$.aviso").value(
                         "Este valor está bem diferente do Banco Central (R$ 5,50). Confira antes de gravar."));
         assertThat(repositorio.doDia(SEXTA)).hasSize(1); // a prévia nunca grava
@@ -222,6 +223,7 @@ class MudarACotacaoDaDonaTest extends TesteDeIntegracao {
         bancoCentralDeSexta();
         agora(SEXTA_10H);
         enviar("/previa", pedido("5.50", "1400"), true).andExpect(jsonPath("$.avisoDeDiferenca").value(true))
+                .andExpect(jsonPath("$.moedaDoAviso").value("GUARANI"))
                 .andExpect(jsonPath("$.aviso").value(
                         "Este valor está bem diferente do Banco Central (Gs. 1.117). Confira antes de gravar."));
     }
