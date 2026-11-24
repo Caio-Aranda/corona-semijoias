@@ -481,3 +481,7 @@ Branch `feat/restos-recebimento-tres-moedas`. Fecha os dois itens que o PR 255 d
 ## Versão 1.2.0 do Corona Gestão e do Corona Vendas (24/11/2026)
 
 Branch `chore/versao-1-2-0`. Os dois apps passam a 1.2.0 por causa da migração local 13 do Corona Vendas (cotação da dona, PR 260). No servidor, `APP_VERSAO_MINIMA_VENDAS=1.2.0` só depois de publicar os instaladores novos: o Corona Vendas 1.1.0 continua enviando, mas recebe 426 no pull até atualizar.
+
+## Conciliações C11 e C12 com as peças em consignado (API, 24/11/2026)
+
+Branch `fix/conciliacao-estoque-consignado`. Achado ao atualizar o servidor de teste: a conferência do dinheiro dava `tudoCerto: false`, com 16 diferenças na C11 e 16 na C12, uma para cada peça em nota de consignado com o cliente. Os movimentos da maleta estavam certos (a soma de `CONSIGNADO_SAIDA` e `CONSIGNADO_RETORNO` era exatamente a diferença, 22 peças); a C11 e a C12 não contavam esses dois tipos, que a C7 já contava desde a leva 9. **Feito:** C11 e C12 passam a somar os movimentos do consignado (especificação v1.34, §13). Teste escrito antes: `ConciliacoesDoConsignadoTest.estoqueCompletoEMaletaContamAsPecasComOCliente` (C7, C11 e C12 limpas com nota, devolução no acerto e pagamento). **Não mudou:** a C12 continua acusando saldo negativo na maleta mesmo quando a saída da nota foi aceita acima do saldo com alerta (D4); a K5 do consignado já perdoa esse caso.
