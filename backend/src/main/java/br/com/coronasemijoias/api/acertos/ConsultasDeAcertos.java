@@ -63,9 +63,12 @@ public class ConsultasDeAcertos {
             UUID cobradaNoAcertoId) {
     }
 
-    /** Um recebimento que pagou o acerto ou uma conta antiga no fechamento (sem quem registrou e sem o motivo do estorno). */
+    /**
+     * Um recebimento que pagou o acerto ou uma conta antiga no fechamento (sem quem registrou e sem o motivo do estorno). {@code moeda}
+     * e {@code valorNaMoeda}: em que a dona digitou e o que digitou (vazio em Real; o Guarani sem casas), só para mostrar.
+     */
     public record RecebimentoDoAcerto(UUID id, String forma, BigDecimal valor, String aplicadoEm, Instant recebidoEm, UUID estornaId,
-            boolean estornado) {
+            boolean estornado, String moeda, BigDecimal valorNaMoeda) {
     }
 
     /** Uma conta a receber do vendedor que o fechamento gerou (o que ficou devendo, o boleto e as parcelas). */
@@ -263,11 +266,16 @@ public class ConsultasDeAcertos {
     private List<RecebimentoDoAcerto> recebimentosDoAcerto(UUID acerto) {
         return jdbc.query("""
                 SELECT r.id, r.forma, r.valor, r.aplicado_em, r.recebido_em, r.estorna_id,
-                       EXISTS (SELECT 1 FROM corona.recebimentos_vendedor e WHERE e.estorna_id = r.id) AS estornado
+                       EXISTS (SELECT 1 FROM corona.recebimentos_vendedor e WHERE e.estorna_id = r.id) AS estornado, r.moeda, r.valor_na_moeda
                   FROM corona.recebimentos_vendedor r WHERE r.acerto_id = ? AND r.deleted_at IS NULL ORDER BY r.recebido_em, r.id""",
                 (rs, n) -> new RecebimentoDoAcerto(rs.getObject("id", UUID.class), rs.getString("forma"), rs.getBigDecimal("valor"),
                         rs.getString("aplicado_em"), instante(rs.getTimestamp("recebido_em")), rs.getObject("estorna_id", UUID.class),
-                        rs.getBoolean("estornado")), acerto);
+                        rs.getBoolean("estornado"), rs.getString("moeda"), naMoeda(rs.getString("moeda"), rs.getBigDecimal("valor_na_moeda"))), acerto);
+    }
+
+    /** O valor digitado como a tela mostra: o Guarani sem casas. */
+    private static BigDecimal naMoeda(String moeda, BigDecimal valor) {
+        return valor != null && "GUARANI".equals(moeda) ? valor.setScale(0) : valor;
     }
 
     private List<ContaDoAcerto> contasDoAcerto(UUID acerto) {

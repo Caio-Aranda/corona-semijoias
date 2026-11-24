@@ -1,5 +1,10 @@
 /** O fechamento gravado de um acerto fechado, lido com cuidado. Só leitura: nada aqui calcula dinheiro. */
-import type { CotacaoParaTela } from '../../nucleo/moedas';
+import {
+  formatarNaMoeda,
+  type CotacaoParaTela,
+  type MoedaDoRecebimento,
+} from '../../nucleo/moedas';
+import { TEXTOS_DE_FINANCEIRO } from '../../textos-financeiro';
 import { inteiro, lerProdutoDoAcerto, lista, objeto, texto, type ProdutoDoAcerto } from './dados';
 import { dinheiro, type LinhaDeComissao } from './previa';
 
@@ -23,8 +28,18 @@ export interface PendenciaFechada {
 export interface RecebimentoFechado {
   forma: string;
   valor: string;
+  /** Em que moeda a dona digitou e o que digitou (vazio em Real); o que vale é o `valor` em Real. */
+  moeda: MoedaDoRecebimento;
+  valorNaMoeda: string | null;
   estornado: boolean;
   recebidoEm: string;
+}
+
+/** "Recebido em Gs. 500.000" quando a dona recebeu em Dólar ou Guarani; vazio em Real. */
+export function recebidoEm(r: Pick<RecebimentoFechado, 'moeda' | 'valorNaMoeda'>): string {
+  if (r.moeda === 'REAL' || r.valorNaMoeda === null) return '';
+  const v = formatarNaMoeda(r.valorNaMoeda, r.moeda);
+  return v ? TEXTOS_DE_FINANCEIRO.moedaDoRecebimento.recebidoEm(v) : '';
 }
 
 export interface ContaFechada {
@@ -142,6 +157,8 @@ export function lerFechamento(bruto: unknown): FechamentoGravado | null {
     recebimentos.push({
       forma: texto(r.forma),
       valor,
+      moeda: r.moeda === 'DOLAR' || r.moeda === 'GUARANI' ? r.moeda : 'REAL',
+      valorNaMoeda: typeof r.valorNaMoeda === 'string' ? r.valorNaMoeda : null,
       estornado: r.estornado === true,
       recebidoEm: texto(r.recebidoEm),
     });

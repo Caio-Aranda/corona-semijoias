@@ -657,8 +657,10 @@ export type RecebimentoDoAcerto = {
     estornado?: boolean;
     forma?: string;
     id?: string;
+    moeda?: string;
     recebidoEm?: string;
     valor?: string;
+    valorNaMoeda?: string;
 };
 
 export type RecebimentoDoVendedor = {

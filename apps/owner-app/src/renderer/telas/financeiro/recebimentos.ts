@@ -1,4 +1,5 @@
 /** Contas a receber e recebimentos do vendedor como a API devolve, lidos com cuidado (nada aqui calcula dinheiro). */
+import type { MoedaDoRecebimento } from '../../nucleo/moedas';
 import { inteiro, lista, objeto, texto, valorEmReais } from './dados';
 
 export interface ContaAReceber {
@@ -48,6 +49,13 @@ export function lerContasAReceber(bruto: unknown): ContaAReceber[] {
 
 export interface RecebimentoDoVendedor {
   id: string;
+  /** Em que moeda a dona digitou; o que vale é sempre o `valor` em Real. */
+  moeda: MoedaDoRecebimento;
+  /** O que ela digitou em Dólar ou Guarani (vazio em Real). */
+  valorNaMoeda: string | null;
+  /** Dólar e Guarani que o sistema calculou para mostrar (vazios sem cotação). */
+  dolar: string | null;
+  guarani: string | null;
   vendedorId: string;
   vendedorNome: string;
   momento: string;
@@ -68,6 +76,10 @@ export function lerRecebimentos(bruto: unknown): RecebimentoDoVendedor[] {
     return [
       {
         id: o.id,
+        moeda: o.moeda === 'DOLAR' || o.moeda === 'GUARANI' ? o.moeda : 'REAL',
+        valorNaMoeda: typeof o.valorNaMoeda === 'string' ? o.valorNaMoeda : null,
+        dolar: typeof o.dolar === 'string' ? o.dolar : null,
+        guarani: typeof o.guarani === 'string' ? o.guarani : null,
         vendedorId: texto(o.vendedorId),
         vendedorNome: texto(o.vendedorNome),
         momento: texto(o.momento),

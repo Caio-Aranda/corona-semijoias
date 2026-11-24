@@ -1,21 +1,26 @@
-import { Botao } from '@corona/ui';
+import { Aviso, Botao } from '@corona/ui';
 import { useRef, useState } from 'react';
 import { FORMAS_DO_FINANCEIRO } from '../../../shared/financeiro';
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { AvisoDeErro } from '../../componentes/AvisoDeErro';
-import { CampoDeDinheiro } from '../../componentes/CampoDeDinheiro';
 import { chamar, useBusca, type ErroDaTela } from '../../nucleo/chamadas';
-import { dataParaTela } from '../../nucleo/moedas';
+import { RodapeDaCotacao, useCotacao } from '../../nucleo/cotacao';
+import { dataParaTela, type MoedaDoRecebimento } from '../../nucleo/moedas';
 import { TEXTOS_DE_FINANCEIRO } from '../../textos-financeiro';
 import { CampoDeEscolha, useVendedores } from '../devolucoes/Apoio';
+import { CampoDeValorRecebido, valorDoRecebimento } from './CampoDeValorRecebido';
 import { soReal } from './Valor';
 import { erroDoFinanceiro } from './dados';
 import { lerContasAReceber } from './recebimentos';
 
 const T = TEXTOS_DE_FINANCEIRO.recebimentos.novo;
 const FORMAS = TEXTOS_DE_FINANCEIRO.formas;
+const M = TEXTOS_DE_FINANCEIRO.moedaDoRecebimento;
 
-/** Recebimento avulso do vendedor, fora do acerto. O id nasce com o formulário e vale para toda nova tentativa. */
+/**
+ * Recebimento avulso do vendedor, fora do acerto. O id nasce com o formulário e vale para toda nova tentativa. A dona escolhe a
+ * moeda (Real, Dólar ou Guarani; sem cotação, só Real) e vê as três antes de confirmar; o sistema converte e grava em Real.
+ */
 export function RegistrarRecebimento({
   ponte,
   aoFeito,
@@ -30,8 +35,20 @@ export function RegistrarRecebimento({
   const [contaId, setContaId] = useState('');
   const [forma, setForma] = useState<string>('DINHEIRO');
   const [digitado, setDigitado] = useState('');
-  const [valor, setValor] = useState<string | null>(null);
+  const [moeda, setMoeda] = useState<MoedaDoRecebimento>('REAL');
+  const cotacao = useCotacao();
+  const emMoeda: MoedaDoRecebimento = cotacao.taxas ? moeda : 'REAL';
+  const valor = valorDoRecebimento(digitado, emMoeda);
   const [tentou, setTentou] = useState(false);
+  // Em Dólar ou Guarani, o próprio campo explica o que está errado no que foi digitado.
+  const erroDoValor =
+    !tentou || valor !== null
+      ? undefined
+      : emMoeda === 'REAL'
+        ? T.avisoValor
+        : digitado.trim() === ''
+          ? M.invalido[emMoeda]
+          : undefined;
   const [ocupado, setOcupado] = useState(false);
   const [erro, setErro] = useState<ErroDaTela | null>(null);
   const trava = useRef(false);
@@ -59,8 +76,10 @@ export function RegistrarRecebimento({
       id: comandoId.current,
       vendedorId,
       forma,
-      valor,
+      ...valor,
       ...(contaId ? { contaId } : {}),
+      // A data da cotação que a tela mostrou: se o sistema usar outra, ele recusa e nada é gravado.
+      ...('moeda' in valor && cotacao.data ? { cotacaoData: cotacao.data } : {}),
     });
     trava.current = false;
     setOcupado(false);
@@ -113,16 +132,20 @@ export function RegistrarRecebimento({
         aoMudar={setForma}
         opcoes={FORMAS_DO_FINANCEIRO.map((f) => ({ valor: f, texto: FORMAS[f] ?? f }))}
       />
-      <CampoDeDinheiro
+      {!cotacao.taxas && !cotacao.carregando ? <Aviso tipo="atencao">{M.semCotacao}</Aviso> : null}
+      <CampoDeValorRecebido
         id="recebimento-valor"
         rotulo={T.valor}
-        valor={digitado}
-        {...(tentou && valor === null ? { erro: T.avisoValor } : {})}
-        aoMudar={(d, v) => {
+        moeda={emMoeda}
+        digitado={digitado}
+        cotacao={cotacao.taxas}
+        {...(erroDoValor ? { erro: erroDoValor } : {})}
+        aoMudar={(d, m) => {
           setDigitado(d);
-          setValor(v !== null && Number(v) > 0 ? v : null);
+          setMoeda(m);
         }}
       />
+      {cotacao.taxas ? <RodapeDaCotacao /> : null}
       {erro ? <AvisoDeErro erro={erro} /> : null}
       <div className="gestao-acoes-da-linha">
         <Botao type="submit" variante="primario" disabled={ocupado}>

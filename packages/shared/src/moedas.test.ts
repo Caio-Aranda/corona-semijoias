@@ -5,10 +5,14 @@ import {
   dividirArredondando,
   formatarDolar,
   formatarGuarani,
+  formatarNaMoeda,
   formatarReais,
   lerReaisDigitados,
+  lerValorNaMoeda,
+  reaisDoValorNaMoeda,
   taxaDeTexto,
   tresMoedas,
+  tresMoedasDoRecebimento,
 } from './moedas';
 
 // Taxas de venda reais do ADR-0006, item 14 (reais por unidade, 8 casas).
@@ -145,4 +149,90 @@ describe('campo de dinheiro: o que a pessoa digita', () => {
       expect(lerReaisDigitados(digitado)).toBeNull();
     },
   );
+});
+
+// --- recebimento do representante digitado em Dólar ou Guarani (23/11/2026): os mesmos exemplos do ConversaoDeMoedaTest ---
+
+describe('valor digitado na moeda do recebimento', () => {
+  it.each([
+    ['REAL', '1.234,56', '1234.56'],
+    ['DOLAR', '100', '100.00'],
+    ['DOLAR', 'US$ 0,01', '0.01'],
+    ['GUARANI', '500.000', '500000'],
+    ['GUARANI', '500000', '500000'],
+    ['GUARANI', 'Gs. 1.379.397', '1379397'],
+  ] as const)('%s: "%s" vira %s', (moeda, digitado, esperado) => {
+    expect(lerValorNaMoeda(digitado, moeda)).toBe(esperado);
+  });
+
+  it.each([
+    ['GUARANI', '500.000,50'],
+    ['GUARANI', '500,5'],
+    ['GUARANI', '0'],
+    ['GUARANI', '1.234.567.890.123'],
+    ['DOLAR', '1,005'],
+    ['DOLAR', '0,00'],
+    ['DOLAR', ''],
+    ['REAL', 'abc'],
+  ] as const)('%s: "%s" não é um valor', (moeda, digitado) => {
+    expect(lerValorNaMoeda(digitado, moeda)).toBeNull();
+  });
+});
+
+describe('quanto o valor digitado vale em reais (a mesma conta do servidor)', () => {
+  it.each([
+    ['DOLAR', '100.00', D_06_11, '550.13'],
+    ['DOLAR', '224.41', D_06_11, '1234.55'],
+    ['DOLAR', '0.01', D_06_11, '0.06'],
+    // HALF_UP no meio exato: 0,065 vira 0,07.
+    ['DOLAR', '0.01', { dolar: '6.50000000', guarani: '0.00100000' }, '0.07'],
+    ['GUARANI', '500000', D_06_11, '447.50'],
+    ['GUARANI', '1379397', D_06_11, '1234.56'],
+    ['GUARANI', '500', D_06_11, '0.45'],
+    ['GUARANI', '11', D_06_11, '0.01'],
+    ['GUARANI', '5', D_06_11, '0.00'],
+  ] as const)('%s %s → R$ %s', (moeda, valor, cotacao, esperado) => {
+    expect(reaisDoValorNaMoeda(valor, moeda, cotacao)).toBe(esperado);
+  });
+
+  it('valor ou cotação fora do formato não converte', () => {
+    expect(reaisDoValorNaMoeda('1.005', 'DOLAR', D_06_11)).toBeNull();
+    expect(reaisDoValorNaMoeda('10.5', 'GUARANI', D_06_11)).toBeNull();
+    expect(reaisDoValorNaMoeda('10', 'GUARANI', { dolar: '5', guarani: '0' })).toBeNull();
+  });
+
+  it('o valor máximo não perde dígitos (BigInt)', () => {
+    expect(reaisDoValorNaMoeda('999999999999', 'GUARANI', D_06_11)).toBe('895000000.00');
+  });
+});
+
+describe('as três moedas do recebimento', () => {
+  it('a moeda recebida mostra o valor digitado, exato; as outras saem do Real', () => {
+    expect(tresMoedasDoRecebimento('447.50', 'GUARANI', '500000', D_06_11)).toEqual({
+      real: 'R$ 447,50',
+      dolar: 'US$ 81,34',
+      guarani: 'Gs. 500.000',
+    });
+    expect(tresMoedasDoRecebimento('27.51', 'DOLAR', '5.00', D_06_11)).toEqual({
+      real: 'R$ 27,51',
+      dolar: 'US$ 5,00',
+      guarani: 'Gs. 30.737',
+    });
+    expect(tresMoedasDoRecebimento('10.00', 'REAL', null, D_06_11)).toEqual(
+      tresMoedas('10.00', D_06_11),
+    );
+  });
+
+  it('sem cotação, só o Real', () => {
+    expect(tresMoedasDoRecebimento('10.00', 'REAL', null, null)).toEqual({ real: 'R$ 10,00' });
+  });
+
+  it('"Recebido em" na moeda digitada, com o sinal do estorno', () => {
+    expect(formatarNaMoeda('500000', 'GUARANI')).toBe('Gs. 500.000');
+    expect(formatarNaMoeda('-500000', 'GUARANI')).toBe('-Gs. 500.000');
+    expect(formatarNaMoeda('100.00', 'DOLAR')).toBe('US$ 100,00');
+    expect(formatarNaMoeda('100.5', 'DOLAR')).toBe('US$ 100,50');
+    expect(formatarNaMoeda('12.34', 'REAL')).toBe('R$ 12,34');
+    expect(formatarNaMoeda('abc', 'GUARANI')).toBeNull();
+  });
 });

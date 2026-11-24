@@ -10,6 +10,7 @@ import {
   TIPOS_DO_CAIXA,
   type OperacaoDeFinanceiro,
 } from './financeiro';
+import { conferirValorDoRecebimento, type ValorDoRecebimento } from './valor-do-recebimento';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const DATA = /^\d{4}-\d{2}-\d{2}$/;
@@ -59,7 +60,13 @@ export type ParametrosDeFinanceiro =
   | { operacao: 'contasAReceber.listar' | 'recebimentos.listar'; lista: Record<string, string> }
   | {
       operacao: 'recebimentos.receber';
-      corpo: { id: string; vendedorId: string; forma: string; valor: string; contaId?: string };
+      corpo: {
+        id: string;
+        vendedorId: string;
+        forma: string;
+        contaId?: string;
+        cotacaoData?: string;
+      } & ValorDoRecebimento;
     }
   | {
       operacao: 'recebimentos.estornar';
@@ -203,19 +210,38 @@ export function conferirFinanceiro(
       return lista ? { operacao, lista } : null;
     }
     case 'recebimentos.receber': {
-      if (!soCom(p, 'id', 'vendedorId', 'forma', 'valor', 'contaId')) return null;
+      if (
+        !soCom(
+          p,
+          'id',
+          'vendedorId',
+          'forma',
+          'valor',
+          'contaId',
+          'moeda',
+          'valorNaMoeda',
+          'cotacaoData',
+        )
+      )
+        return null;
       if (!idValido(p.id) || !idValido(p.vendedorId)) return null;
-      if (!dentro(FORMAS_DO_FINANCEIRO, p.forma) || !dinheiroValido(p.valor)) return null;
+      if (!dentro(FORMAS_DO_FINANCEIRO, p.forma)) return null;
+      const valor = conferirValorDoRecebimento(p);
+      if (!valor) return null;
       const corpo: {
         id: string;
         vendedorId: string;
         forma: string;
-        valor: string;
         contaId?: string;
-      } = { id: p.id, vendedorId: p.vendedorId, forma: p.forma, valor: p.valor };
+        cotacaoData?: string;
+      } & ValorDoRecebimento = { id: p.id, vendedorId: p.vendedorId, forma: p.forma, ...valor };
       if (p.contaId !== undefined && p.contaId !== '') {
         if (!idValido(p.contaId)) return null;
         corpo.contaId = p.contaId;
+      }
+      if (p.cotacaoData !== undefined) {
+        if (!dataValida(p.cotacaoData)) return null;
+        corpo.cotacaoData = p.cotacaoData;
       }
       return { operacao, corpo };
     }

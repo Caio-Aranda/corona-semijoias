@@ -4,7 +4,7 @@ import { formatarGuarani, dataParaTela, tresMoedas } from '../../nucleo/moedas';
 import { TEXTOS_DE_ACERTOS } from '../../textos-acertos';
 import { dataEHora } from '../sincronizacao/dados';
 import type { FichaDoAcerto } from './dados';
-import type { FechamentoGravado } from './fechada';
+import { recebidoEm, type FechamentoGravado } from './fechada';
 import { percentualDoAcerto, realDoAcerto } from './Valor';
 
 const T = TEXTOS_DE_ACERTOS;
@@ -132,7 +132,7 @@ export function acertoParaPdf(ficha: FichaDoAcerto, f: FechamentoGravado): Acert
           titulos: Object.values(R.recebimentos.colunas),
           linhas: f.recebimentos.map((r) => [
             R.recebimentos.formas[r.forma] ?? r.forma,
-            realDoAcerto(r.valor),
+            [realDoAcerto(r.valor), recebidoEm(r)].filter(Boolean).join(' · '),
             dataEHora(r.recebidoEm),
             r.estornado ? R.recebimentos.desfeito : '',
           ]),

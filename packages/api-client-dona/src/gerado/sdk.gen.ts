@@ -1866,7 +1866,7 @@ export const estornarRecebimentoDeCliente = <ThrowOnError extends boolean = fals
 /**
  * Recebimentos dos vendedores
  *
- * O que os vendedores pagaram à loja, do mais novo para o mais antigo, com as contas que cada um baixou. Filtros opcionais: vendedor e período (de e até, dias de Brasília). Só valores em Real.
+ * O que os vendedores pagaram à loja, do mais novo para o mais antigo, com as contas que cada um baixou. Filtros opcionais: vendedor e período (de e até, dias de Brasília). O valor que vale é o em Real; dolar, guarani e dataCotacao são só para mostrar (na moeda em que foi recebido, o valor digitado). Sem cotação, vazios.
  */
 export const listarRecebimentosDoVendedor = <ThrowOnError extends boolean = false>(options?: Options<ListarRecebimentosDoVendedorData, ThrowOnError>): RequestResult<ListarRecebimentosDoVendedorResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ListarRecebimentosDoVendedorResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -1877,7 +1877,7 @@ export const listarRecebimentosDoVendedor = <ThrowOnError extends boolean = fals
 /**
  * Registrar um recebimento do vendedor
  *
- * O vendedor paga à loja, fora do acerto, em dinheiro, Transferência (PIX) ou boleto pago. Com a conta indicada, baixa só essa conta; sem conta, o servidor distribui pelas contas em aberto, da que vence primeiro para a que vence depois. Não aceita mais do que o vendedor deve. O boleto pago é o valor inteiro da conta do boleto. Entra no caixa na mesma hora. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409.
+ * O vendedor paga à loja, fora do acerto, em dinheiro, Transferência (PIX) ou boleto pago. Com a conta indicada, baixa só essa conta; sem conta, o servidor distribui pelas contas em aberto, da que vence primeiro para a que vence depois. Não aceita mais do que o vendedor deve. O boleto pago é o valor inteiro da conta do boleto. Entra no caixa na mesma hora. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409. Em Dólar ou Guarani (moeda DOLAR ou GUARANI), mande só valorNaMoeda: o servidor converte pela cotação do dia do lançamento e grava em Real (sem cotação, 409; cotacaoData diferente da que vale, 409).
  */
 export const receberDoVendedor = <ThrowOnError extends boolean = false>(options: Options<ReceberDoVendedorData, ThrowOnError>): RequestResult<ReceberDoVendedorResponses, unknown, ThrowOnError> => (options.client ?? client).post<ReceberDoVendedorResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],

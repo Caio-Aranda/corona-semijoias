@@ -165,7 +165,9 @@
     "aplicadoEm" : "ACERTO",
     "recebidoEm" : "<instante>",
     "estornaId" : null,
-    "estornado" : false
+    "estornado" : false,
+    "moeda" : "REAL",
+    "valorNaMoeda" : null
   } ],
   "contas" : [ {
     "id" : "<gerado-1>",

@@ -14,6 +14,7 @@ import {
   type OperacaoDeAcertos,
   type PedidoDeFechamentoDaTela,
 } from './acertos';
+import { conferirValorDoRecebimento } from './valor-do-recebimento';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const DATA = /^\d{4}-\d{2}-\d{2}$/;
@@ -121,13 +122,14 @@ function conferirPagamento(bruto: unknown): PedidoDeFechamentoDaTela['pagamento'
     if (!Array.isArray(bruto.recebimentos) || bruto.recebimentos.length > 20) return null;
     saida.recebimentos = [];
     for (const r of bruto.recebimentos as unknown[]) {
-      if (!objeto(r) || !soCom(r, 'id', 'forma', 'valor')) return null;
-      if (!idValido(r.id) || !dentro(FORMAS_DO_PAGAMENTO, r.forma) || !dinheiroValido(r.valor))
-        return null;
+      if (!objeto(r) || !soCom(r, 'id', 'forma', 'valor', 'moeda', 'valorNaMoeda')) return null;
+      if (!idValido(r.id) || !dentro(FORMAS_DO_PAGAMENTO, r.forma)) return null;
+      const valor = conferirValorDoRecebimento(r);
+      if (!valor) return null;
       saida.recebimentos.push({
         id: r.id,
         forma: r.forma as (typeof FORMAS_DO_PAGAMENTO)[number],
-        valor: r.valor,
+        ...valor,
       });
     }
   }

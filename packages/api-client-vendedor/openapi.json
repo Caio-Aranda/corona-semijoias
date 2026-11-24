@@ -2221,11 +2221,20 @@
             "format" : "uuid",
             "type" : "string"
           },
+          "moeda" : {
+            "type" : "string"
+          },
           "recebidoEm" : {
             "format" : "date-time",
             "type" : "string"
           },
           "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorNaMoeda" : {
             "example" : "123.45",
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",

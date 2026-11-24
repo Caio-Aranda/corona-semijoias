@@ -1,6 +1,6 @@
 # Especificação completa: Sistema de Semijoias Consignadas
 
-Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.31, 20/11/2026.
+Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.32, 23/11/2026.
 
 ## 1. Objetivo e contexto
 
@@ -235,6 +235,7 @@ Regras:
 - **O preço de custo nunca chega ao PC do vendedor.**
 - O financeiro é completo, mas o sistema **não executa pagamentos**. As formas de pagamento são só **registradas**: nenhuma é executada pelo sistema, e não há integração com banco, Pix ou maquininha. O repasse do vendedor à loja aceita `DINHEIRO`, `PIX` (na tela, "Transferência") e `BOLETO`; o pagamento a fornecedor, dinheiro, transferência e boleto. **Não existe entrada nem cheque** no sistema novo; os valores `CHEQUE` e `CARTAO` que já existem no banco para o pagamento do cliente continuam aceitos (tarefa 6.13), mas não aparecem em tela nova.
 - **Três moedas.** A moeda padrão é o **Real**: todo valor é **gravado em Real** (`NUMERIC(14,2)`, regras do ADR-0002). Todo valor mostrado na tela, no app da dona e no do vendedor (acertos, relatórios, telas de valores, preço da peça), aparece **também em Dólar e em Guarani** (o Guarani sem centavos). A conversão é **só para mostrar** e nunca é gravada como valor de lançamento.
+  - **Recebimento do representante em Dólar ou Guarani** (pedido do responsável, 23/11/2026; plano em `docs/planos/recebimento-em-tres-moedas.md`): no recebimento avulso e no "pagou agora" do acerto, a dona escolhe a moeda (**Real**, **Dólar** ou **Guarani**) e digita o valor nela. O **servidor** converte para Real (R$ = valor × taxa de venda, HALF_UP com 2 casas; o Guarani é inteiro) e grava em Real, que é o valor que vale para contas, caixa, totais e conciliações; o app nunca manda o valor convertido. O avulso usa a cotação do dia do lançamento (se a tela mostrou outra, o servidor recusa e pede para conferir de novo); o acerto usa a cotação dele. A moeda, o valor digitado e a cotação usada ficam guardados **só como informação** ("Recebido em Gs. 500.000"), nunca somam nem entram em conferência. Na lista e na ficha do acerto, a moeda recebida mostra o valor digitado, exato. Sem cotação, só Real. É a única tela em que se digita Dólar ou Guarani.
 - **Cotação diária.** Vale a cotação oficial do Banco Central, que o servidor busca online uma vez por dia útil e guarda dia a dia, como histórico: **nunca se apaga nem se corrige por cima**. Cada lançamento é convertido pela cotação do **dia em que aconteceu**, nunca pela de hoje.
   - Fim de semana e feriado sem cotação publicada **não são falha**: vale a do último dia útil.
   - Busca que falhou: vale a do dia anterior, e a dona recebe um aviso em "O que precisa da sua atenção".
@@ -773,6 +774,7 @@ Importação com nome de arquivo inválido, foto duplicada, arquivo corrompido, 
 
 ## 22. Histórico de mudanças
 
+- **v1.32, 23/11/2026:** §7.5, Três moedas: o recebimento do representante (avulso e no acerto) pode ser digitado em Dólar ou Guarani; o servidor converte pela cotação e grava em Real; a moeda e o valor digitado ficam só como informação.
 - **v1.31, 20/11/2026:** tarefa 9.8, código: §23.10 (aba Dinheiro do Fechamento da maleta em Real, Dólar e Guarani, cada lançamento pela cotação do dia dele), §23.11 (Dólar e Guarani em cada linha dos relatórios; Tam./Ton. do produto volta como campo opcional, coluna nas telas e relatórios) e §7 do caixa (categorias do sistema "Repasse do representante" e "Pagamento ao representante").
 - **v1.30, 20/11/2026:** tarefa 9.8 (plano aprovado): §23.2, recibo com contador próprio e prefixo `R` (D2 do ADR-0016 decidida: um contador para notas e outro para recibos); §23.7, Dt. Acerto editável (hoje ou dia passado, nunca no futuro); §23.8, a ordem dos débitos é a do lançamento do acerto, não a Dt. Acerto.
 - **v1.29, 18/11/2026:** nova §23, Corona Vendas com consignado ao cliente (teste de uso de 18/11): nota por cliente com DX/DV/VD, comissão do cliente (30%, até 40%), acerto por nota, pendência acumulativa, Lançar pagamento, semanas do representante, Reposição, Troca, Remarcado, cadastro de cliente com fotos e relatórios novos. A venda ao consumidor (§7.2 e §7.3) sai do Corona Vendas; o acerto em dinheiro com a Lucia (§7.4) fica escondido e dá lugar ao Fechamento da maleta. Na tela: Representante e Cliente. Prints em `docs/referencia/2026-11-18-corona-vendas/`.
