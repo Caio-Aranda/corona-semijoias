@@ -150,6 +150,29 @@ export function planejarColunas(grade: Grade): PlanoDeColunas {
   };
 }
 
+/** Retângulo cheio em cinza claro (fundo do cabeçalho da tabela). */
+export function fundoCinza(x: number, yBaixo: number, largura: number, altura: number): string {
+  return `q 0.92 g ${x.toFixed(2)} ${yBaixo.toFixed(2)} ${largura.toFixed(2)} ${altura.toFixed(2)} re f Q`;
+}
+
+/** Linhas finas da tabela: horizontais nos `ys` e verticais nos `xs`, entre o topo e a base. */
+export function linhasDaTabela(
+  xs: number[],
+  ys: number[],
+  topo: number,
+  base: number,
+  xEsq: number,
+  xDir: number,
+): string {
+  const o: string[] = ['q 0.45 G 0.4 w'];
+  for (const y of ys)
+    o.push(`${xEsq.toFixed(2)} ${y.toFixed(2)} m ${xDir.toFixed(2)} ${y.toFixed(2)} l S`);
+  for (const x of xs)
+    o.push(`${x.toFixed(2)} ${base.toFixed(2)} m ${x.toFixed(2)} ${topo.toFixed(2)} l S`);
+  o.push('Q');
+  return o.join('\n');
+}
+
 type Item = { celulas: Celula[]; negrito: boolean } | { espaco: true };
 
 export function gerarPdf(grade: Grade): Uint8Array {
@@ -190,6 +213,16 @@ export function gerarPdf(grade: Grade): Uint8Array {
       });
       y -= 8;
     }
+    // Tabela de verdade: cabeçalho com fundo cinza, linhas finas entre linhas e colunas.
+    const bordasX = [
+      ...colunas.map((c) => c.x),
+      colunas[colunas.length - 1]!.x + colunas[colunas.length - 1]!.largura,
+    ];
+    const topoDaTabela = y;
+    const baseDoCabecalho = y - linhasDoTitulo * ALTURA_DA_LINHA - 3;
+    o.push(
+      fundoCinza(MARGEM, baseDoCabecalho, LARGURA - 2 * MARGEM, topoDaTabela - baseDoCabecalho),
+    );
     // Títulos das colunas (em até duas linhas), repetidos em toda página.
     for (let l = 0; l < linhasDoTitulo; l++) {
       y -= ALTURA_DA_LINHA;
@@ -208,25 +241,36 @@ export function gerarPdf(grade: Grade): Uint8Array {
         );
       });
     }
-    o.push(`0.5 w ${MARGEM} ${(y - 3).toFixed(2)} m ${LARGURA - MARGEM} ${(y - 3).toFixed(2)} l S`);
     y -= 3;
+    const horizontais = [topoDaTabela, y];
+    const trechos: { topo: number; base: number }[] = [];
+    let inicioDoTrecho = topoDaTabela;
     for (const item of itensDaPagina) {
       if ('espaco' in item) {
+        trechos.push({ topo: inicioDoTrecho, base: y });
         y -= ALTURA_DA_LINHA / 2;
+        inicioDoTrecho = y;
+        horizontais.push(y);
         continue;
       }
       y -= ALTURA_DA_LINHA;
+      horizontais.push(y);
       item.celulas.forEach((celula, i) => {
         if (celula.v === '') return;
         const c = colunas[i]!;
         const s = caber(textoDaCelula(celula), c.largura - FOLGA, corpo);
         texto(
           grade.numericas[i] ? c.x + c.largura - 2 - larguraDoTexto(s, corpo) : c.x + 2,
-          y,
+          y + 3,
           s,
           item.negrito,
         );
       });
+    }
+    trechos.push({ topo: inicioDoTrecho, base: y });
+    for (const t of trechos) {
+      const ys = horizontais.filter((h) => h <= t.topo && h >= t.base);
+      o.push(linhasDaTabela(bordasX, ys, t.topo, t.base, MARGEM, LARGURA - MARGEM));
     }
     texto(
       LARGURA - MARGEM - 60,
