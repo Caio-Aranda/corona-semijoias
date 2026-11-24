@@ -195,6 +195,45 @@ describe('o pagamento', () => {
     expect(rec[0]?.id).not.toBe(rec[1]?.id);
   });
 
+  it('pagou agora em Guarani: mostra as três moedas e manda só o valor em Guarani (o sistema converte)', async () => {
+    const m = servidor(previaDoServidor(), {
+      'cotacao.hoje': () =>
+        resposta({
+          disponivel: true,
+          cotacao: { dataCotacao: '2026-11-12', dolar: '5.00000000', guarani: '0.00090000' },
+        }),
+    });
+    const u = await aberta(m);
+    await u.selectOptions(screen.getByLabelText('Moeda (Dinheiro)'), 'GUARANI');
+    await u.type(screen.getByLabelText('Dinheiro em Guarani'), '100.000');
+    // Gs. 100.000 x 0,0009 = R$ 90,00; 90 / 5 = US$ 18,00.
+    expect(await screen.findByText('US$ 18,00 · Gs. 100.000')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(
+        (
+          ultima(m, 'acertos.previaComDecisoes') as {
+            pedido: { pagamento: { recebimentos: unknown[] } };
+          }
+        ).pedido.pagamento.recebimentos,
+      ).toEqual([
+        expect.objectContaining({ forma: 'DINHEIRO', moeda: 'GUARANI', valorNaMoeda: '100000' }),
+      ]),
+    );
+    const [rec] = (
+      ultima(m, 'acertos.previaComDecisoes') as {
+        pedido: { pagamento: { recebimentos: Record<string, unknown>[] } };
+      }
+    ).pedido.pagamento.recebimentos;
+    expect(rec).not.toHaveProperty('valor');
+    expect(ehUuid(rec?.id)).toBe(true);
+  });
+
+  it('sem cotação, o pagou agora fica só em reais', async () => {
+    await aberta(servidor());
+    expect(screen.queryByLabelText('Moeda (Dinheiro)')).toBeNull();
+    expect(screen.getByLabelText('Dinheiro')).toBeInTheDocument();
+  });
+
   it('boleto pede o vencimento e só então vai ao sistema', async () => {
     const m = servidor();
     const u = await aberta(m);

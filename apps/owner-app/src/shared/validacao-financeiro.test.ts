@@ -174,13 +174,22 @@ describe('conferência dos dados do financeiro', () => {
 
   it('recebimento em Dólar ou Guarani: só o valor na moeda (nunca o Real convertido) e a data da cotação', () => {
     const base = { id: ID, vendedorId: OUTRO, forma: 'DINHEIRO' };
-    const guarani = { ...base, moeda: 'GUARANI', valorNaMoeda: '500000', cotacaoData: '2026-11-23' };
+    const guarani = {
+      ...base,
+      moeda: 'GUARANI',
+      valorNaMoeda: '500000',
+      cotacaoData: '2026-11-23',
+    };
     expect(conferirParametros('recebimentos.receber', guarani)).toEqual({
       operacao: 'recebimentos.receber',
       corpo: guarani,
     });
     expect(
-      conferirParametros('recebimentos.receber', { ...base, moeda: 'DOLAR', valorNaMoeda: '100.50' }),
+      conferirParametros('recebimentos.receber', {
+        ...base,
+        moeda: 'DOLAR',
+        valorNaMoeda: '100.50',
+      }),
     ).not.toBeNull();
     expect(
       conferirParametros('recebimentos.receber', { ...base, moeda: 'REAL', valor: '10.00' }),
@@ -192,7 +201,11 @@ describe('conferência dos dados do financeiro', () => {
       conferirParametros('recebimentos.receber', { ...guarani, valorNaMoeda: '500000.50' }),
     ).toBeNull();
     expect(
-      conferirParametros('recebimentos.receber', { ...base, moeda: 'DOLAR', valorNaMoeda: '1.005' }),
+      conferirParametros('recebimentos.receber', {
+        ...base,
+        moeda: 'DOLAR',
+        valorNaMoeda: '1.005',
+      }),
     ).toBeNull();
     expect(
       conferirParametros('recebimentos.receber', { ...base, moeda: 'EURO', valorNaMoeda: '10.00' }),

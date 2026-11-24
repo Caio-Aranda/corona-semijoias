@@ -6,8 +6,7 @@ export const MOEDAS_DO_RECEBIMENTO = ['REAL', 'DOLAR', 'GUARANI'] as const;
 export type MoedaDoRecebimentoNaApi = (typeof MOEDAS_DO_RECEBIMENTO)[number];
 
 export type ValorDoRecebimento =
-  | { valor: string; moeda?: 'REAL' }
-  | { moeda: 'DOLAR' | 'GUARANI'; valorNaMoeda: string };
+  { valor: string; moeda?: 'REAL' } | { moeda: 'DOLAR' | 'GUARANI'; valorNaMoeda: string };
 
 /** Real e Dólar: texto com ponto e até 2 casas. Guarani: inteiro (sem centavos). Sempre maior que zero. */
 const COM_CENTAVOS = /^\d{1,12}(\.\d{1,2})?$/;
@@ -22,7 +21,8 @@ export function conferirValorDoRecebimento(o: Record<string, unknown>): ValorDoR
   const moeda = o.moeda === undefined ? 'REAL' : o.moeda;
   if (moeda === 'REAL') {
     if (o.valorNaMoeda !== undefined) return null;
-    if (typeof o.valor !== 'string' || !COM_CENTAVOS.test(o.valor) || !positivo(o.valor)) return null;
+    if (typeof o.valor !== 'string' || !COM_CENTAVOS.test(o.valor) || !positivo(o.valor))
+      return null;
     return o.moeda === undefined ? { valor: o.valor } : { valor: o.valor, moeda: 'REAL' };
   }
   if (moeda !== 'DOLAR' && moeda !== 'GUARANI') return null;

@@ -5,15 +5,19 @@ import {
   MAXIMO_DE_PARCELAS,
   type FormaDoPagamento,
 } from '../../../shared/acertos';
+import { useContext } from 'react';
 import { CampoDeDinheiro } from '../../componentes/CampoDeDinheiro';
+import { TEXTOS_DE_FINANCEIRO } from '../../textos-financeiro';
+import { CampoDeValorRecebido } from '../financeiro/CampoDeValorRecebido';
 import { dataParaTela } from '../../nucleo/moedas';
 import { TEXTOS_DE_ACERTOS } from '../../textos-acertos';
 import { CampoDeEscolha } from '../devolucoes/Apoio';
-import { ValorDoAcerto, realDoAcerto } from './Valor';
+import { CotacaoDoAcerto, ValorDoAcerto, realDoAcerto } from './Valor';
 import { ehNegativo, ehPositivo, valorDigitado, type PagamentoEmEdicao } from './pagamento';
 import type { PreviaDoFechamento } from './previa';
 
 const T = TEXTOS_DE_ACERTOS.pagamento;
+const M = TEXTOS_DE_FINANCEIRO.moedaDoRecebimento;
 
 const FORMAS = FORMAS_DO_PAGAMENTO.map((f) => ({
   valor: f,
@@ -29,6 +33,8 @@ export interface PagamentoDoAcertoProps {
 
 /** Quanto o vendedor pagou agora, boleto, o que ficou devendo, contas antigas e o acerto a favor do vendedor. */
 export function PagamentoDoAcerto({ previa, pagamento, aoMudar }: PagamentoDoAcertoProps) {
+  // A prévia de Dólar e Guarani usa a cotação do acerto (a mesma que o sistema usa para converter); sem ela, só Real.
+  const cotacao = useContext(CotacaoDoAcerto);
   const temRestante = ehPositivo(previa.ficouDevendo) || previa.restanteSemData;
   const aFavor = ehNegativo(previa.aPagarNoAcerto);
   const boletoSemData =
@@ -42,26 +48,33 @@ export function PagamentoDoAcerto({ previa, pagamento, aoMudar }: PagamentoDoAce
 
       <div className="gestao-formulario gestao-formulario--larga">
         <h4 className="gestao-subtitulo">{T.pagouAgora}</h4>
-        {pagamento.recebimentos.map((r, indice) => (
-          <CampoDeDinheiro
-            key={r.id}
-            id={`recebimento-${r.forma}`}
-            rotulo={r.forma === 'PIX' ? T.transferencia : T.dinheiro}
-            ajuda={T.ajudaDoValor}
-            valor={r.digitado}
-            aoMudar={(digitado) =>
-              aoMudar(
-                {
-                  ...pagamento,
-                  recebimentos: pagamento.recebimentos.map((x, k) =>
-                    k === indice ? { ...x, digitado } : x,
-                  ),
-                },
-                true,
-              )
-            }
-          />
-        ))}
+        {pagamento.recebimentos.map((r, indice) => {
+          const rotulo = r.forma === 'PIX' ? T.transferencia : T.dinheiro;
+          const moeda = cotacao ? r.moeda : 'REAL';
+          return (
+            <CampoDeValorRecebido
+              key={r.id}
+              id={`recebimento-${r.forma}`}
+              rotulo={rotulo}
+              rotuloDaMoeda={M.rotuloDe(rotulo)}
+              moeda={moeda}
+              digitado={r.digitado}
+              cotacao={cotacao}
+              {...(moeda === 'REAL' ? { ajuda: T.ajudaDoValor } : {})}
+              aoMudar={(digitado, novaMoeda) =>
+                aoMudar(
+                  {
+                    ...pagamento,
+                    recebimentos: pagamento.recebimentos.map((x, k) =>
+                      k === indice ? { ...x, digitado, moeda: novaMoeda } : x,
+                    ),
+                  },
+                  true,
+                )
+              }
+            />
+          );
+        })}
 
         <h4 className="gestao-subtitulo">{T.boleto.titulo}</h4>
         <p className="gestao-texto">{T.boleto.ajuda}</p>

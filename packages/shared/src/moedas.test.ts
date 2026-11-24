@@ -218,7 +218,9 @@ describe('as três moedas do recebimento', () => {
       dolar: 'US$ 5,00',
       guarani: 'Gs. 30.737',
     });
-    expect(tresMoedasDoRecebimento('10.00', 'REAL', null, D_06_11)).toEqual(tresMoedas('10.00', D_06_11));
+    expect(tresMoedasDoRecebimento('10.00', 'REAL', null, D_06_11)).toEqual(
+      tresMoedas('10.00', D_06_11),
+    );
   });
 
   it('sem cotação, só o Real', () => {

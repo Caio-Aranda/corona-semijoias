@@ -95,6 +95,8 @@ function fechamentoGravado(extra: Record<string, unknown> = {}) {
         id: ID_VENDA,
         forma: 'DINHEIRO',
         valor: '60.00',
+        moeda: 'GUARANI',
+        valorNaMoeda: '66667',
         estornado: false,
         recebidoEm: '2026-11-12T15:00:00Z',
       },
@@ -182,6 +184,8 @@ describe('ficha do acerto fechado', () => {
     expect(recebimentos).toHaveTextContent('Dinheiro');
     expect(recebimentos).toHaveTextContent('Transferência (PIX)');
     expect(within(recebimentos).getByText('Desfeito')).toBeInTheDocument();
+    // Recebido em Guarani (23/11/2026): o valor digitado aparece junto do Real.
+    expect(within(recebimentos).getByText('Recebido em Gs. 66.667')).toBeInTheDocument();
     const contas = screen.getByRole('table', { name: 'Contas que o acerto gerou' });
     expect(contas).toHaveTextContent('1 de 2');
     expect(contas).toHaveTextContent('15/12/2026');

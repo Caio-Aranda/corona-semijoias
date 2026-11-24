@@ -319,7 +319,9 @@ describe('Recebimentos do representante', () => {
     const u = await abrirRecebimentos(m);
     await u.click(screen.getByRole('button', { name: 'Registrar recebimento' }));
     expect(
-      screen.getByText('Ainda não há cotação do dia. Por enquanto, registre o recebimento em reais.'),
+      screen.getByText(
+        'Ainda não há cotação do dia. Por enquanto, registre o recebimento em reais.',
+      ),
     ).toBeInTheDocument();
     expect(screen.queryByLabelText('Moeda')).toBeNull();
   });

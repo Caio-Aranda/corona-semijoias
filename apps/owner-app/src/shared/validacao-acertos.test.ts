@@ -159,7 +159,9 @@ describe('conferência dos dados dos acertos', () => {
       expect(com({ recebimentos: [{ id: ID, forma: 'PIX', valor: '0.00' }] })).toBeNull();
       // Em Dólar ou Guarani vai só o valor na moeda (o sistema converte pela cotação do acerto).
       expect(
-        com({ recebimentos: [{ id: ID, forma: 'DINHEIRO', moeda: 'GUARANI', valorNaMoeda: '500000' }] }),
+        com({
+          recebimentos: [{ id: ID, forma: 'DINHEIRO', moeda: 'GUARANI', valorNaMoeda: '500000' }],
+        }),
       ).not.toBeNull();
       expect(
         com({ recebimentos: [{ id: ID, forma: 'PIX', moeda: 'DOLAR', valorNaMoeda: '20.50' }] }),
@@ -167,12 +169,20 @@ describe('conferência dos dados dos acertos', () => {
       expect(
         com({
           recebimentos: [
-            { id: ID, forma: 'DINHEIRO', moeda: 'GUARANI', valorNaMoeda: '500000', valor: '447.50' },
+            {
+              id: ID,
+              forma: 'DINHEIRO',
+              moeda: 'GUARANI',
+              valorNaMoeda: '500000',
+              valor: '447.50',
+            },
           ],
         }),
       ).toBeNull();
       expect(
-        com({ recebimentos: [{ id: ID, forma: 'DINHEIRO', moeda: 'GUARANI', valorNaMoeda: '1.5' }] }),
+        com({
+          recebimentos: [{ id: ID, forma: 'DINHEIRO', moeda: 'GUARANI', valorNaMoeda: '1.5' }],
+        }),
       ).toBeNull();
       expect(com({ recebimentos: [{ id: ID, forma: 'DINHEIRO', moeda: 'GUARANI' }] })).toBeNull();
     });

@@ -60,7 +60,13 @@ export type ParametrosDeFinanceiro =
   | { operacao: 'contasAReceber.listar' | 'recebimentos.listar'; lista: Record<string, string> }
   | {
       operacao: 'recebimentos.receber';
-      corpo: { id: string; vendedorId: string; forma: string; contaId?: string; cotacaoData?: string } & ValorDoRecebimento;
+      corpo: {
+        id: string;
+        vendedorId: string;
+        forma: string;
+        contaId?: string;
+        cotacaoData?: string;
+      } & ValorDoRecebimento;
     }
   | {
       operacao: 'recebimentos.estornar';
@@ -205,7 +211,17 @@ export function conferirFinanceiro(
     }
     case 'recebimentos.receber': {
       if (
-        !soCom(p, 'id', 'vendedorId', 'forma', 'valor', 'contaId', 'moeda', 'valorNaMoeda', 'cotacaoData')
+        !soCom(
+          p,
+          'id',
+          'vendedorId',
+          'forma',
+          'valor',
+          'contaId',
+          'moeda',
+          'valorNaMoeda',
+          'cotacaoData',
+        )
       )
         return null;
       if (!idValido(p.id) || !idValido(p.vendedorId)) return null;
