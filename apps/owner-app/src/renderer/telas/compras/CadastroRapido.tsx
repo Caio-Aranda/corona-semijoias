@@ -4,7 +4,7 @@ import { TIPOS_DE_CODIGO, type TipoDeCodigo } from '../../../shared/produtos';
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { AvisoDeErro } from '../../componentes/AvisoDeErro';
 import { CampoDeDinheiro } from '../../componentes/CampoDeDinheiro';
-import { chamar, useBusca, type ErroDaTela } from '../../nucleo/chamadas';
+import { chamar, chamarTodasAsPaginas, useBusca, type ErroDaTela } from '../../nucleo/chamadas';
 import { avaliarCodigo, normalizarCodigo, tipoSugerido } from '../../nucleo/codigos';
 import { lerReaisDigitados } from '../../nucleo/moedas';
 import { TEXTOS_DE_COMPRAS } from '../../textos-compras';
@@ -56,7 +56,7 @@ export function CadastroRapido({
   const trava = useRef(false);
 
   const categorias = useBusca(
-    () => chamar(ponte, 'categorias.listar', { pagina: 0, tamanho: 100, situacao: 'ATIVOS' }),
+    () => chamarTodasAsPaginas(ponte, 'categorias.listar', { situacao: 'ATIVOS' }),
     'categorias-do-cadastro-rapido',
   );
   const listaDeCategorias = categorias.dados ? lerOpcoes(categorias.dados) : [];

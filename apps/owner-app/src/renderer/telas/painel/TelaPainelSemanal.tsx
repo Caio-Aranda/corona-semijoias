@@ -4,7 +4,7 @@ import { useState, type ReactNode } from 'react';
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { AvisoDeErro } from '../../componentes/AvisoDeErro';
 import { entregarArquivo } from '../../nucleo/arquivos';
-import { chamar, useBusca } from '../../nucleo/chamadas';
+import { chamar, chamarTodasAsPaginas, useBusca } from '../../nucleo/chamadas';
 import { gerarCsv } from '../../nucleo/exportacao/csv';
 import { montarGrade, dataEHoraParaTela } from '../../nucleo/exportacao/grade';
 import { gerarPdf } from '../../nucleo/exportacao/pdf';
@@ -72,11 +72,11 @@ const textoDe = (v: unknown): string =>
   typeof v === 'string' ? v : typeof v === 'number' ? String(v) : '';
 
 async function carregarListas(ponte: PonteDoCorona) {
-  const pagina = { pagina: 0, tamanho: 100, situacao: 'TODOS' };
+  const filtro = { situacao: 'TODOS' };
   const [semanas, vendedores, pracas] = await Promise.all([
-    chamar<unknown>(ponte, 'semanas.listar', pagina),
+    chamarTodasAsPaginas<unknown>(ponte, 'semanas.listar', filtro),
     chamar<unknown>(ponte, 'vendedores.escolha'),
-    chamar<unknown>(ponte, 'pracas.listar', pagina),
+    chamarTodasAsPaginas<unknown>(ponte, 'pracas.listar', filtro),
   ]);
   const dados = (r: { ok: boolean; dados?: unknown }) => (r.ok ? r.dados : null);
   return {

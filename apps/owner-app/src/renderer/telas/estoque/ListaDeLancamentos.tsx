@@ -3,7 +3,7 @@ import { useState, type FormEvent } from 'react';
 import { TIPOS_DO_FILTRO } from '../../../shared/estoque';
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { AvisoDeErro } from '../../componentes/AvisoDeErro';
-import { chamar, useBusca } from '../../nucleo/chamadas';
+import { chamar, chamarTodasAsPaginas, useBusca } from '../../nucleo/chamadas';
 import { rotuloDoTipo } from '../../nucleo/estoque';
 import { TEXTOS_DE_ESTOQUE } from '../../textos-estoque';
 import { lerProduto } from '../produtos/dados';
@@ -33,7 +33,7 @@ export function ListaDeLancamentos({ ponte }: ListaDeLancamentosProps) {
   const [recarga, setRecarga] = useState(0);
 
   const usuarios = useBusca(
-    () => chamar(ponte, 'usuarios.listar', { pagina: 0, tamanho: 100 }),
+    () => chamarTodasAsPaginas(ponte, 'usuarios.listar'),
     'usuarios-do-filtro-de-estoque',
   );
   const periodoInvertido = de !== '' && ate !== '' && ate < de;

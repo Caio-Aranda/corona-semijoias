@@ -3,7 +3,7 @@ import { useRef, useState } from 'react';
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { TIPOS_DE_MALETA, type TipoDeMaleta } from '../../../shared/maletas';
 import { AvisoDeErro } from '../../componentes/AvisoDeErro';
-import { chamar, useBusca, type ErroDaTela } from '../../nucleo/chamadas';
+import { chamar, chamarTodasAsPaginas, useBusca, type ErroDaTela } from '../../nucleo/chamadas';
 import { TEXTOS_DE_MALETAS } from '../../textos-maletas';
 import { lerOpcoes } from '../produtos/dados';
 import { lerMaleta, lerSemanasParaEscolher, lerVendedoresParaEscolher, type Maleta } from './dados';
@@ -19,12 +19,9 @@ export interface NovaMaletaProps {
 /** Vendedor, semana, praça e tipo: cria o rascunho. Os bloqueios (inativo, restrição) vêm do servidor. */
 export function NovaMaleta({ ponte, aoCriar }: NovaMaletaProps) {
   const vendedores = useBusca(() => chamar(ponte, 'vendedores.escolha'), 'maleta-vendedores');
-  const semanas = useBusca(
-    () => chamar(ponte, 'semanas.listar', { pagina: 0, tamanho: 100 }),
-    'maleta-semanas',
-  );
+  const semanas = useBusca(() => chamarTodasAsPaginas(ponte, 'semanas.listar'), 'maleta-semanas');
   const pracas = useBusca(
-    () => chamar(ponte, 'pracas.listar', { pagina: 0, tamanho: 100, situacao: 'ATIVOS' }),
+    () => chamarTodasAsPaginas(ponte, 'pracas.listar', { situacao: 'ATIVOS' }),
     'maleta-pracas',
   );
   const [vendedorId, setVendedorId] = useState('');

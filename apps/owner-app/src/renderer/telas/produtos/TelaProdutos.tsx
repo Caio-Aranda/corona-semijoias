@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { AvisoDeErro } from '../../componentes/AvisoDeErro';
 import { ImagemDoProduto } from '../../componentes/ImagemDoProduto';
-import { chamar, useBusca } from '../../nucleo/chamadas';
+import { chamar, chamarTodasAsPaginas, useBusca } from '../../nucleo/chamadas';
 import { preBuscarImagens } from '../../nucleo/imagens';
 import { tresMoedas } from '../../nucleo/moedas';
 import { TEXTOS } from '../../textos';
@@ -44,11 +44,11 @@ export function TelaProdutos({ ponte }: TelaProdutosProps) {
   }, [busca]);
 
   const categorias = useBusca(
-    () => chamar(ponte, 'categorias.listar', { pagina: 0, tamanho: 100, situacao: 'TODOS' }),
+    () => chamarTodasAsPaginas(ponte, 'categorias.listar', { situacao: 'TODOS' }),
     'categorias-do-filtro',
   );
   const fornecedores = useBusca(
-    () => chamar(ponte, 'fornecedores.listar', { pagina: 0, tamanho: 100, situacao: 'TODOS' }),
+    () => chamarTodasAsPaginas(ponte, 'fornecedores.listar', { situacao: 'TODOS' }),
     'fornecedores-do-filtro',
   );
   const listaDeCategorias = categorias.dados ? lerOpcoes(categorias.dados) : [];

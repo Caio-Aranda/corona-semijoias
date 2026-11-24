@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { AvisoDeErro } from '../../componentes/AvisoDeErro';
 import { CampoDeDinheiro } from '../../componentes/CampoDeDinheiro';
-import { chamar, useBusca, type ErroDaTela } from '../../nucleo/chamadas';
+import { chamar, chamarTodasAsPaginas, useBusca, type ErroDaTela } from '../../nucleo/chamadas';
 import { conferirListaDeCodigos, normalizarCodigo } from '../../nucleo/codigos';
 import { useGuardaDeSaida } from '../../nucleo/guarda-de-saida';
 import { TEXTOS } from '../../textos';
@@ -122,11 +122,11 @@ export function FichaDoProduto({ ponte, produtoId, aoVoltar, aoAbrirOutro }: Fic
   const [tentouSalvar, setTentouSalvar] = useState(false);
 
   const categorias = useBusca(
-    () => chamar(ponte, 'categorias.listar', { pagina: 0, tamanho: 100, situacao: 'TODOS' }),
+    () => chamarTodasAsPaginas(ponte, 'categorias.listar', { situacao: 'TODOS' }),
     'categorias-do-produto',
   );
   const fornecedores = useBusca(
-    () => chamar(ponte, 'fornecedores.listar', { pagina: 0, tamanho: 100, situacao: 'TODOS' }),
+    () => chamarTodasAsPaginas(ponte, 'fornecedores.listar', { situacao: 'TODOS' }),
     'fornecedores-do-produto',
   );
   // Só ativos nas escolhas; o que a peça já tem continua aparecendo, marcado como inativo.

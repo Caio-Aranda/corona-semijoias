@@ -2,7 +2,7 @@ import { Botao } from '@corona/ui';
 import { useEffect, useRef, useState } from 'react';
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { AvisoDeErro } from '../../componentes/AvisoDeErro';
-import { chamar, useBusca, type ErroDaTela } from '../../nucleo/chamadas';
+import { chamar, chamarTodasAsPaginas, useBusca, type ErroDaTela } from '../../nucleo/chamadas';
 import { TEXTOS_DE_ACERTOS } from '../../textos-acertos';
 import { lerEmAberto, lerSemanasParaEscolher, lerVendedoresParaEscolher } from '../maletas/dados';
 import { erroDoAcerto, lerFicha, type FichaDoAcerto } from './dados';
@@ -18,10 +18,7 @@ export interface ComecarAcertoProps {
 /** Escolhe o vendedor (e, se precisar, a semana) e começa o acerto. O id do acerto nasce aqui e vale até gravar. */
 export function ComecarAcerto({ ponte, aoComecar, aoVoltar }: ComecarAcertoProps) {
   const vendedores = useBusca(() => chamar(ponte, 'vendedores.escolha'), 'acerto-vendedores');
-  const semanas = useBusca(
-    () => chamar(ponte, 'semanas.listar', { pagina: 0, tamanho: 100 }),
-    'acerto-semanas',
-  );
+  const semanas = useBusca(() => chamarTodasAsPaginas(ponte, 'semanas.listar'), 'acerto-semanas');
   const [vendedorId, setVendedorId] = useState('');
   const [semanaId, setSemanaId] = useState('');
   const [maisOpcoes, setMaisOpcoes] = useState(false);

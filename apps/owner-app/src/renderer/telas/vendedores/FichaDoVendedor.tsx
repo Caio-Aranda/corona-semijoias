@@ -2,7 +2,7 @@ import { Aviso, Botao, JanelaDeConfirmacao } from '@corona/ui';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { AvisoDeErro } from '../../componentes/AvisoDeErro';
-import { chamar, useBusca, type ErroDaTela } from '../../nucleo/chamadas';
+import { chamar, chamarTodasAsPaginas, useBusca, type ErroDaTela } from '../../nucleo/chamadas';
 import { useGuardaDeSaida } from '../../nucleo/guarda-de-saida';
 import { TEXTOS } from '../../textos';
 import { lerPaginaDeUsuarios } from '../usuarios/dados';
@@ -52,11 +52,11 @@ export function FichaDoVendedor({ ponte, vendedorId, aoVoltar }: FichaDoVendedor
   const novo = vendedorId === null && vendedor === null;
 
   const pracas = useBusca(
-    () => chamar(ponte, 'pracas.listar', { pagina: 0, tamanho: 100, situacao: 'TODOS' }),
+    () => chamarTodasAsPaginas(ponte, 'pracas.listar', { situacao: 'TODOS' }),
     'pracas',
   );
   const restricoes = useBusca(
-    () => chamar(ponte, 'restricoes.listar', { pagina: 0, tamanho: 100, situacao: 'TODOS' }),
+    () => chamarTodasAsPaginas(ponte, 'restricoes.listar', { situacao: 'TODOS' }),
     'restricoes',
   );
   const listas = useMemo<Record<string, readonly OpcaoDaLista[] | null>>(() => {
@@ -103,7 +103,7 @@ export function FichaDoVendedor({ ponte, vendedorId, aoVoltar }: FichaDoVendedor
   const acesso = useBusca(
     () =>
       vendedor
-        ? chamar(ponte, 'usuarios.listar', { perfil: 'VENDEDOR', pagina: 0, tamanho: 100 })
+        ? chamarTodasAsPaginas(ponte, 'usuarios.listar', { perfil: 'VENDEDOR' })
         : Promise.resolve({ ok: true as const, dados: null }),
     `acesso|${vendedor?.id ?? 'nenhum'}`,
   );

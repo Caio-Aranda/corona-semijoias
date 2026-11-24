@@ -2,7 +2,7 @@ import { Aviso, Campo, JanelaDeConfirmacao, Tabela } from '@corona/ui';
 import { useRef, useState } from 'react';
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { AvisoDeErro } from '../../componentes/AvisoDeErro';
-import { chamar, useBusca, type ErroDaTela } from '../../nucleo/chamadas';
+import { chamar, chamarTodasAsPaginas, useBusca, type ErroDaTela } from '../../nucleo/chamadas';
 import { precisaEscolherONaoLido, quantidadeComSinal, quantosAjustes } from '../../nucleo/estoque';
 import { TEXTOS_DE_ESTOQUE } from '../../textos-estoque';
 import { lerContagem, lerItem, lerPagina } from './dados';
@@ -29,11 +29,9 @@ export function FecharContagem({ ponte, contagemId, aoFechar, aoContinuar }: Fec
   );
   const divergentes = useBusca(
     () =>
-      chamar(ponte, 'contagens.itens', {
+      chamarTodasAsPaginas(ponte, 'contagens.itens', {
         id: contagemId,
         filtro: 'DIVERGENTES',
-        pagina: 0,
-        tamanho: 100,
       }),
     `fechar-itens|${contagemId}`,
   );
