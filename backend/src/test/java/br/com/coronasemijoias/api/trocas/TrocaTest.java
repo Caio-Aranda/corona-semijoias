@@ -570,7 +570,7 @@ class TrocaTest extends ApoioDasTrocas {
         assertThat(devolvido).isEqualByComparingTo("100.00");
         // B - A: o que a troca acrescenta à conta do vendedor (a venda A já estava lá).
         assertThat(vendido.subtract(devolvido).subtract(new BigDecimal("100.00"))).isEqualByComparingTo("50.00");
-        assertThat(corpoDe(ler(VENDAS, como(c.v())))).hasSize(2);
+        assertThat(corpoDe(ler(VENDAS, como(c.v()))).get("itens")).hasSize(2);
         assertThat(corpoDe(ler(DEVOLUCOES, como(c.v())))).hasSize(1);
     }
 

@@ -14,9 +14,11 @@ import type {
   RelatorioAReceber,
   RelatorioDeCreditos,
   RelatorioDeDevolucoes,
+  PaginaDeVendas,
   RelatorioDeVendas,
   Venda,
 } from '../../shared/dados';
+import { TAMANHO_PADRAO_DAS_VENDAS } from '../../shared/dados';
 import type { PedidoDeChamada } from '../../shared/operacoes';
 import { diaEmBrasilia } from '../../shared/garantia';
 import {
@@ -672,12 +674,17 @@ export class ConsultasLocais {
     return linha ? this.montarVenda(linha) : null;
   }
 
+  /** Uma página de "Minhas vendas", como o servidor (issue 270): o filtro vale antes da página. */
   private vendas(f: {
     de?: string;
     ate?: string;
     clienteId?: string;
     status?: 'CONCLUIDA' | 'ESTORNADA';
-  }): Venda[] {
+    pagina?: number;
+    tamanho?: number;
+  }): PaginaDeVendas {
+    const pagina = f.pagina ?? 0;
+    const tamanho = f.tamanho ?? TAMANHO_PADRAO_DAS_VENDAS;
     const linhas = this.db()
       .prepare(
         `${ConsultasLocais.SELECT_VENDA} WHERE v.deleted_at IS NULL
@@ -685,14 +692,17 @@ export class ConsultasLocais {
           ORDER BY v.vendida_em DESC, v.id DESC`,
       )
       .all(...(f.clienteId ? [f.clienteId] : [])) as LinhaDaVenda[];
-    return linhas
-      .filter((l) => {
-        const dia = diaEmBrasilia(l.vendida_em);
-        if (f.de && dia < f.de) return false;
-        if (f.ate && dia > f.ate) return false;
-        return !f.status || this.situacao(l) === f.status;
-      })
+    const filtradas = linhas.filter((l) => {
+      const dia = diaEmBrasilia(l.vendida_em);
+      if (f.de && dia < f.de) return false;
+      if (f.ate && dia > f.ate) return false;
+      return !f.status || this.situacao(l) === f.status;
+    });
+    // Só a página é montada (peças e pagamentos de cada venda).
+    const itens = filtradas
+      .slice(pagina * tamanho, (pagina + 1) * tamanho)
       .map((l) => this.montarVenda(l));
+    return { itens, total: filtradas.length, pagina, tamanho };
   }
 
   private situacao(l: LinhaDaVenda): 'CONCLUIDA' | 'ESTORNADA' {

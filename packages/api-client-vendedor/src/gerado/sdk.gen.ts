@@ -648,7 +648,7 @@ export const cancelarTrocaDoVendedor = <ThrowOnError extends boolean = false>(op
 /**
  * Minhas vendas
  *
- * Só as vendas do vendedor logado, da mais nova para a mais antiga. Filtros opcionais por dia (de e até, no horário de Brasília), cliente e situação (CONCLUIDA ou ESTORNADA).
+ * Só as vendas do vendedor logado, da mais nova para a mais antiga, por página (issue 270). Filtros opcionais por dia (de e até, no horário de Brasília), cliente e situação (CONCLUIDA ou ESTORNADA); os filtros valem antes da página e o total conta só o que passou neles. A página começa em 0 (padrão 20, até 100 por página).
  */
 export const listarVendasDoVendedor = <ThrowOnError extends boolean = false>(options?: Options<ListarVendasDoVendedorData, ThrowOnError>): RequestResult<ListarVendasDoVendedorResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ListarVendasDoVendedorResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],

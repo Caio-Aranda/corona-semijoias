@@ -377,7 +377,7 @@ class VendasDoVendedorTest extends TesteDeIntegracao {
         postar(VENDAS, como(b), venda(vendaDeB, maletaDeB, cliente, List.of(linha(anel, 2, null)), List.of()))
                 .andExpect(status().isCreated());
         // A só vê a venda dele (e B só a dele); a venda do outro é 404.
-        JsonNode deA = corpoDe(ler(VENDAS, como(a)).andExpect(status().isOk()));
+        JsonNode deA = corpoDe(ler(VENDAS, como(a)).andExpect(status().isOk())).get("itens");
         assertThat(deA).hasSize(1);
         assertThat(deA.get(0).get("id").asString()).isEqualTo(vendaDeA.toString());
         ler(VENDAS + "/" + vendaDeB, como(a)).andExpect(status().isNotFound());
@@ -587,9 +587,9 @@ class VendasDoVendedorTest extends TesteDeIntegracao {
 
         // B não vê a venda de A (404), não a lista e não a estorna.
         ler(VENDAS + "/" + id, como(b)).andExpect(status().isNotFound());
-        assertThat(corpoDe(ler(VENDAS, como(b)).andExpect(status().isOk())).size()).isZero();
+        assertThat(corpoDe(ler(VENDAS, como(b)).andExpect(status().isOk())).get("itens").size()).isZero();
         postar(VENDAS + "/" + id + "/estorno", como(b), mapa("id", UUID.randomUUID(), "motivo", "x")).andExpect(status().isNotFound());
-        assertThat(corpoDe(ler(VENDAS, como(a)).andExpect(status().isOk())).size()).isEqualTo(1);
+        assertThat(corpoDe(ler(VENDAS, como(a)).andExpect(status().isOk())).get("itens").size()).isEqualTo(1);
 
         // A dona não usa a rota do vendedor e o vendedor não usa a da dona.
         ler(VENDAS, dona()).andExpect(status().isForbidden());
@@ -615,11 +615,114 @@ class VendasDoVendedorTest extends TesteDeIntegracao {
         postar(VENDAS, como(v), venda(b, maleta, c2, List.of(linha(anel, 1, null)), List.of())).andExpect(status().isCreated());
         postar(VENDAS + "/" + b + "/estorno", como(v), mapa("id", UUID.randomUUID(), "motivo", "x")).andExpect(status().isCreated());
 
-        assertThat(corpoDe(ler(VENDAS + "?clienteId=" + c1, como(v))).size()).isEqualTo(1);
-        assertThat(corpoDe(ler(VENDAS + "?status=ESTORNADA", como(v))).get(0).get("id").asString()).isEqualTo(b.toString());
-        assertThat(corpoDe(ler(VENDAS + "?status=CONCLUIDA", como(v))).size()).isEqualTo(1);
+        assertThat(corpoDe(ler(VENDAS + "?clienteId=" + c1, como(v))).get("itens").size()).isEqualTo(1);
+        assertThat(corpoDe(ler(VENDAS + "?status=ESTORNADA", como(v))).get("itens").get(0).get("id").asString()).isEqualTo(b.toString());
+        assertThat(corpoDe(ler(VENDAS + "?status=CONCLUIDA", como(v))).get("itens").size()).isEqualTo(1);
         ler(VENDAS + "?status=QUALQUER", como(v)).andExpect(status().isBadRequest());
-        assertThat(corpoDe(ler(VENDAS + "?de=2999-01-01", como(v))).size()).isZero();
+        assertThat(corpoDe(ler(VENDAS + "?de=2999-01-01", como(v))).get("itens").size()).isZero();
+    }
+
+    // --- paginação (issue 270) ---
+
+    @Test
+    void listaPorPagina_daMaisNovaParaAMaisAntiga_comTotal() throws Exception {
+        UsuarioDeTeste v = novoVendedor();
+        UUID anel = peca("50.00", 10);
+        UUID maleta = maleta(v, anel, 10);
+        UUID cliente = cliente(v);
+        List<UUID> ids = new java.util.ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            UUID id = UUID.randomUUID();
+            postar(VENDAS, como(v), venda(id, maleta, cliente, List.of(linha(anel, 1, null)), List.of())).andExpect(status().isCreated());
+            ids.add(0, id); // a mais nova primeiro
+        }
+
+        JsonNode primeira = corpoDe(ler(VENDAS + "?pagina=0&tamanho=2", como(v)).andExpect(status().isOk()));
+        assertThat(primeira.get("total").asLong()).isEqualTo(5);
+        assertThat(primeira.get("pagina").asInt()).isZero();
+        assertThat(primeira.get("tamanho").asInt()).isEqualTo(2);
+        assertThat(primeira.get("itens")).hasSize(2);
+        JsonNode ultima = corpoDe(ler(VENDAS + "?pagina=2&tamanho=2", como(v)).andExpect(status().isOk()));
+        assertThat(ultima.get("itens")).hasSize(1);
+        assertThat(ultima.get("total").asLong()).isEqualTo(5);
+
+        List<String> lidas = new java.util.ArrayList<>();
+        for (int p = 0; p < 3; p++) {
+            corpoDe(ler(VENDAS + "?pagina=" + p + "&tamanho=2", como(v))).get("itens").forEach(n -> lidas.add(n.get("id").asString()));
+        }
+        assertThat(lidas).containsExactlyElementsOf(ids.stream().map(UUID::toString).toList());
+        // Cada venda vem completa (peças), como antes.
+        assertThat(primeira.get("itens").get(0).get("itens")).hasSize(1);
+
+        // Sem pagina nem tamanho: a primeira página com 20.
+        JsonNode padrao = corpoDe(ler(VENDAS, como(v)));
+        assertThat(padrao.get("pagina").asInt()).isZero();
+        assertThat(padrao.get("tamanho").asInt()).isEqualTo(20);
+        assertThat(padrao.get("itens")).hasSize(5);
+        // Página além do fim: vazia, com o total certo.
+        JsonNode alem = corpoDe(ler(VENDAS + "?pagina=9&tamanho=2", como(v)));
+        assertThat(alem.get("itens")).isEmpty();
+        assertThat(alem.get("total").asLong()).isEqualTo(5);
+    }
+
+    @Test
+    void filtrosValemAntesDaPagina_eOTotalContaSoOFiltrado() throws Exception {
+        UsuarioDeTeste v = novoVendedor();
+        UUID anel = peca("50.00", 10);
+        UUID maleta = maleta(v, anel, 10);
+        UUID c1 = cliente(v);
+        UUID c2 = cliente(v);
+        for (int i = 0; i < 3; i++) {
+            postar(VENDAS, como(v), venda(UUID.randomUUID(), maleta, c1, List.of(linha(anel, 1, null)), List.of()))
+                    .andExpect(status().isCreated());
+        }
+        UUID estornada = UUID.randomUUID();
+        postar(VENDAS, como(v), venda(estornada, maleta, c2, List.of(linha(anel, 1, null)), List.of())).andExpect(status().isCreated());
+        postar(VENDAS + "/" + estornada + "/estorno", como(v), mapa("id", UUID.randomUUID(), "motivo", "x"))
+                .andExpect(status().isCreated());
+
+        JsonNode doC1 = corpoDe(ler(VENDAS + "?clienteId=" + c1 + "&pagina=1&tamanho=2", como(v)));
+        assertThat(doC1.get("total").asLong()).isEqualTo(3);
+        assertThat(doC1.get("itens")).hasSize(1);
+        assertThat(doC1.get("itens").get(0).get("clienteId").asString()).isEqualTo(c1.toString());
+        JsonNode concluidas = corpoDe(ler(VENDAS + "?status=CONCLUIDA&tamanho=2", como(v)));
+        assertThat(concluidas.get("total").asLong()).isEqualTo(3);
+        assertThat(concluidas.get("itens")).hasSize(2);
+        JsonNode estornadas = corpoDe(ler(VENDAS + "?status=ESTORNADA&tamanho=2", como(v)));
+        assertThat(estornadas.get("total").asLong()).isEqualTo(1);
+        assertThat(corpoDe(ler(VENDAS + "?de=2999-01-01&tamanho=2", como(v))).get("total").asLong()).isZero();
+    }
+
+    @Test
+    void tamanhoEPaginaForaDoLimiteSaoRecusados() throws Exception {
+        UsuarioDeTeste v = novoVendedor();
+        ler(VENDAS + "?tamanho=100", como(v)).andExpect(status().isOk());
+        ler(VENDAS + "?tamanho=101", como(v)).andExpect(status().isBadRequest());
+        ler(VENDAS + "?tamanho=0", como(v)).andExpect(status().isBadRequest());
+        ler(VENDAS + "?pagina=-1", como(v)).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void paginaDoVendedorNaoTrazVendaNemTotalDoOutro() throws Exception {
+        UsuarioDeTeste a = novoVendedor();
+        UsuarioDeTeste b = novoVendedor();
+        UUID anel = peca("50.00", 10);
+        UUID maletaDeA = maleta(a, anel, 5);
+        UUID maletaDeB = maleta(b, anel, 5);
+        for (int i = 0; i < 3; i++) {
+            postar(VENDAS, como(b), venda(UUID.randomUUID(), maletaDeB, cliente(b), List.of(linha(anel, 1, null)), List.of()))
+                    .andExpect(status().isCreated());
+        }
+        UUID deA = UUID.randomUUID();
+        postar(VENDAS, como(a), venda(deA, maletaDeA, cliente(a), List.of(linha(anel, 1, null)), List.of())).andExpect(status().isCreated());
+
+        JsonNode pagina = corpoDe(ler(VENDAS + "?tamanho=100", como(a)).andExpect(status().isOk()));
+        assertThat(pagina.get("total").asLong()).isEqualTo(1);
+        assertThat(pagina.get("itens")).hasSize(1);
+        assertThat(pagina.get("itens").get(0).get("id").asString()).isEqualTo(deA.toString());
+        // Nada de custo na resposta do vendedor.
+        assertThat(pagina.toString()).doesNotContainIgnoringCase("custo");
+        ler(VENDAS + "?pagina=0&tamanho=2", dona()).andExpect(status().isForbidden());
     }
 
     // --- concorrência ---

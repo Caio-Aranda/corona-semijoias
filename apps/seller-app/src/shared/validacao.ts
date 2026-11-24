@@ -1,5 +1,6 @@
 import type { DadosDeEntrada, DadosDeNovaSenha } from './ponte';
 import { ehOperacaoDoConsignado, validarPedidoDoConsignado } from './validacao-do-consignado';
+import { TAMANHO_MAXIMO_DAS_VENDAS } from './dados';
 import {
   AGRUPAMENTOS_DE_VENDAS,
   CAMPOS_DO_CLIENTE_EDITAVEIS,
@@ -365,6 +366,10 @@ function periodo(o: Record<string, unknown>): { de?: string; ate?: string } | nu
   return { ...(de.valor ? { de: de.valor } : {}), ...(ate.valor ? { ate: ate.valor } : {}) };
 }
 
+const ehPagina = (x: unknown): x is number =>
+  typeof x === 'number' && Number.isInteger(x) && x >= 0 && x <= 1_000_000;
+const ehTamanhoDaPagina = (x: unknown): x is number =>
+  typeof x === 'number' && Number.isInteger(x) && x >= 1 && x <= TAMANHO_MAXIMO_DAS_VENDAS;
 const ehSituacao = (x: unknown): x is 'CONCLUIDA' | 'ESTORNADA' =>
   (SITUACOES_DA_VENDA as readonly unknown[]).includes(x);
 const ehAgrupamento = (x: unknown): x is (typeof AGRUPAMENTOS_DE_VENDAS)[number] =>
@@ -411,12 +416,16 @@ export function validarChamada(v: unknown): PedidoDeChamada | null {
       const p = periodo(v);
       const cliente = opcional(v, 'clienteId', ehUuid);
       const situacao = opcional(v, 'status', ehSituacao);
-      if (!p || !cliente.ok || !situacao.ok) return null;
+      const pagina = opcional(v, 'pagina', ehPagina);
+      const tamanho = opcional(v, 'tamanho', ehTamanhoDaPagina);
+      if (!p || !cliente.ok || !situacao.ok || !pagina.ok || !tamanho.ok) return null;
       return {
         operacao,
         ...p,
         ...(cliente.valor ? { clienteId: cliente.valor } : {}),
         ...(situacao.valor ? { status: situacao.valor } : {}),
+        ...(pagina.valor !== undefined ? { pagina: pagina.valor } : {}),
+        ...(tamanho.valor !== undefined ? { tamanho: tamanho.valor } : {}),
       };
     }
     case 'vendas.estornar': {

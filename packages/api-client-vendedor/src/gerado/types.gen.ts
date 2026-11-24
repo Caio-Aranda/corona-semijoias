@@ -480,6 +480,13 @@ export type PagamentoLido = {
     valor?: string;
 };
 
+export type PaginaConsultasDeVendasVenda = {
+    itens?: Array<ConsultasDeVendasVenda>;
+    pagina?: number;
+    tamanho?: number;
+    total?: number;
+};
+
 export type ParametrosDoVendedor = {
     limiteDescontoPercentual?: number;
     prazoArrependimentoDias?: number;
@@ -1875,6 +1882,8 @@ export type ListarVendasDoVendedorData = {
         ate?: string;
         clienteId?: string;
         status?: string;
+        pagina?: number;
+        tamanho?: number;
     };
     url: '/api/vendedor/vendas';
 };
@@ -1883,7 +1892,7 @@ export type ListarVendasDoVendedorResponses = {
     /**
      * OK
      */
-    200: Array<ConsultasDeVendasVenda>;
+    200: PaginaConsultasDeVendasVenda;
 };
 
 export type ListarVendasDoVendedorResponse = ListarVendasDoVendedorResponses[keyof ListarVendasDoVendedorResponses];

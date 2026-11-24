@@ -125,6 +125,19 @@ export interface Venda {
   pagamentos: PagamentoDaVenda[];
 }
 
+/** Uma página de "Minhas vendas" (issue 270): a mais nova primeiro; {@link pagina} começa em 0. */
+export interface PaginaDeVendas {
+  itens: Venda[];
+  /** Quantas vendas passaram nos filtros (todas as páginas). */
+  total: number;
+  pagina: number;
+  tamanho: number;
+}
+
+/** Tamanho da página de "Minhas vendas" sem escolher, e o máximo: os mesmos do servidor. */
+export const TAMANHO_PADRAO_DAS_VENDAS = 20;
+export const TAMANHO_MAXIMO_DAS_VENDAS = 100;
+
 export interface CotacaoDoDia {
   disponivel: boolean;
   dataDeHoje: string;

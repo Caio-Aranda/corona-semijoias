@@ -188,6 +188,10 @@ export type PedidoDeChamada =
       ate?: string;
       clienteId?: string;
       status?: 'CONCLUIDA' | 'ESTORNADA';
+      /** Começa em 0 (issue 270). Sem ela, a primeira página. */
+      pagina?: number;
+      /** De 1 a 100; sem ele, 20. */
+      tamanho?: number;
     }
   | { operacao: 'vendas.ver'; id: string }
   | { operacao: 'vendas.estornar'; id: string; estornoId: string; motivo: string }
