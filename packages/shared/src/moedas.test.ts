@@ -236,3 +236,23 @@ describe('as três moedas do recebimento', () => {
     expect(formatarNaMoeda('abc', 'GUARANI')).toBeNull();
   });
 });
+
+describe('a cotação da dona: 1 real = Gs. N (guaranisPorReal)', () => {
+  const DONA = { dolar: '5.80000000', guarani: '0.00074074', guaranisPorReal: '1350.00000000' };
+
+  it('o recebimento em Guarani divide por Gs. por real (Gs. 50.000.000 → R$ 37.037,04)', () => {
+    expect(reaisDoValorNaMoeda('50000000', 'GUARANI', DONA)).toBe('37037.04');
+    expect(reaisDoValorNaMoeda('135000', 'GUARANI', DONA)).toBe('100.00');
+    expect(reaisDoValorNaMoeda('1', 'GUARANI', DONA)).toBe('0.00');
+    expect(reaisDoValorNaMoeda('500000', 'GUARANI', { ...DONA, guaranisPorReal: '1350.5' })).toBe('370.23');
+  });
+
+  it('sem guaranisPorReal (Banco Central), a fórmula antiga continua', () => {
+    expect(reaisDoValorNaMoeda('500000', 'GUARANI', D_06_11)).toBe('447.50');
+    expect(reaisDoValorNaMoeda('500000', 'GUARANI', { ...D_06_11, guaranisPorReal: null })).toBe('447.50');
+  });
+
+  it('a conversão de tela de R$ para Gs. e US$ segue a taxa de 8 casas', () => {
+    expect(tresMoedas('100.00', DONA)).toEqual({ real: 'R$ 100,00', dolar: 'US$ 17,24', guarani: 'Gs. 135.000' });
+  });
+});

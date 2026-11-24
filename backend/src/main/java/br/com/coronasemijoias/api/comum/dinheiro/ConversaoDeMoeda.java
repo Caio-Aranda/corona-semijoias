@@ -57,6 +57,25 @@ public final class ConversaoDeMoeda {
     }
 
     /**
+     * R$ = Gs. ÷ guaranis por real, com 2 casas (HALF_UP): o recebimento digitado em Guarani quando a cotação é a da dona
+     * (ADR-0006, item 15). Ela digita "1 real = Gs. 1.350"; dividir por esse número evita o erro de centavos que a taxa de
+     * 8 casas (0,00074074) daria em valores grandes. Mesmas recusas de {@link #guaraniParaReais}.
+     */
+    public static BigDecimal guaraniParaReaisPorGuaranisPorReal(BigDecimal guarani, BigDecimal guaranisPorReal) {
+        Objects.requireNonNull(guarani, "guarani");
+        Objects.requireNonNull(guaranisPorReal, "guaranisPorReal");
+        if (guarani.stripTrailingZeros().scale() > ESCALA_GUARANI) {
+            throw new IllegalArgumentException("O valor em Guarani " + guarani.toPlainString()
+                    + " precisa ser inteiro (Guarani não tem centavos).");
+        }
+        if (guaranisPorReal.signum() <= 0) {
+            throw new IllegalArgumentException("A taxa de câmbio precisa ser maior que zero, veio "
+                    + guaranisPorReal.toPlainString() + ".");
+        }
+        return guarani.divide(guaranisPorReal, Dinheiro.ESCALA, ARREDONDAMENTO);
+    }
+
+    /**
      * R$ = US$ x taxa de venda do Dólar, com 2 casas (HALF_UP), numa multiplicação só: o recebimento do representante digitado
      * em Dólar (23/11/2026). O resultado é o valor em Real do lançamento. O Dólar tem no máximo 2 casas.
      */

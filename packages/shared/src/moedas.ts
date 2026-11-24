@@ -8,6 +8,8 @@
 export interface CotacaoParaTela {
   dolar: string;
   guarani: string;
+  /** Só na cotação que a dona digitou ("1 real = Gs. 1.350"): o recebimento em Guarani divide por ela (ADR-0006, item 15). */
+  guaranisPorReal?: string | null;
 }
 
 export interface TresMoedas {
@@ -176,6 +178,13 @@ export function reaisDoValorNaMoeda(
     return textoDeCentavos(dividirArredondando(c * t, 10n ** BigInt(CASAS_DA_TAXA)));
   }
   if (!/^-?\d{1,14}$/.test(valorNaMoeda)) return null;
+  const gpr = cotacao.guaranisPorReal ? taxaDeTexto(cotacao.guaranisPorReal) : null;
+  if (gpr !== null) {
+    // R$ = Gs. ÷ guaranis por real, HALF_UP em 2 casas (a mesma conta do servidor).
+    return textoDeCentavos(
+      dividirArredondando(BigInt(valorNaMoeda) * 10n ** BigInt(CASAS_DA_TAXA + 2), gpr),
+    );
+  }
   const t = taxaDeTexto(cotacao.guarani);
   if (t === null) return null;
   return textoDeCentavos(

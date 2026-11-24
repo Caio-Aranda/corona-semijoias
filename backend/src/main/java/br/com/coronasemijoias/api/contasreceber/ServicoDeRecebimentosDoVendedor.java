@@ -325,7 +325,9 @@ public class ServicoDeRecebimentosDoVendedor {
     public static ValorRecebido converter(String moeda, BigDecimal valorNaMoeda, Cotacao cotacao) {
         BigDecimal reais = "DOLAR".equals(moeda)
                 ? ConversaoDeMoeda.dolarParaReais(valorNaMoeda, cotacao.taxas().usdVenda())
-                : ConversaoDeMoeda.guaraniParaReais(valorNaMoeda, cotacao.taxas().pygVenda());
+                : cotacao.guaranisPorReal() != null
+                        ? ConversaoDeMoeda.guaraniParaReaisPorGuaranisPorReal(valorNaMoeda, cotacao.guaranisPorReal())
+                        : ConversaoDeMoeda.guaraniParaReais(valorNaMoeda, cotacao.taxas().pygVenda());
         if (reais.signum() <= 0) {
             throw Validacoes.recusar("valorNaMoeda", "O valor é pequeno demais para virar reais. Confira o valor.");
         }
