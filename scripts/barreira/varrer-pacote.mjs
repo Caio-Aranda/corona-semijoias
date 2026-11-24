@@ -1,17 +1,61 @@
 // Camada 2 (e 3) da barreira do ADR-0003: procura marcadores proibidos num pacote já construído.
 //
-// Uso:  node scripts/barreira/varrer-pacote.mjs <app.asar | pasta> [mais caminhos...]
+// Uso:  npm run barreira:varrer                      (acha o pacote do Corona Vendas sozinho)
+//       node scripts/barreira/varrer-pacote.mjs <app.asar | pasta> [mais caminhos...]
+// Sem argumentos, procura apps/seller-app/release/*-unpacked/resources/app.asar (Windows ou Linux;
+// com os dois, o mais novo) e varre ele mais as pastas compartilhadas, como o CI faz.
 // Um arquivo .asar é desempacotado numa pasta temporária e varrido; uma pasta é varrida direto.
 // Sai com código 1 se achar qualquer marcador da lista (scripts/marcadores-proibidos.json),
 // seja no conteúdo de um arquivo, seja no nome ou no caminho dele.
 import { extractAll } from '@electron/asar';
-import { mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, relative } from 'node:path';
+import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { lerMarcadores } from './marcadores.mjs';
 
 const PASTAS_IGNORADAS = new Set(['node_modules', '.git']);
+
+/** Pastas de código que o Corona Vendas usa e que o CI varre junto com o pacote. */
+export const PASTAS_COMPARTILHADAS = ['packages/shared', 'packages/ui', 'packages/conexao-segura'];
+
+/** Raiz do repositório (a variável só existe para os testes). */
+const RAIZ_DO_REPOSITORIO =
+  process.env.CORONA_RAIZ_DO_REPOSITORIO ??
+  join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+
+/**
+ * Procura o app.asar do Corona Vendas em apps/seller-app/release/*-unpacked/resources.
+ * Com mais de um (Windows e Linux), fica com o mais novo.
+ * @returns {string | null}
+ */
+export function acharPacoteDoVendas(raiz = RAIZ_DO_REPOSITORIO) {
+  const release = join(raiz, 'apps', 'seller-app', 'release');
+  if (!existsSync(release)) return null;
+  const achados = readdirSync(release, { withFileTypes: true })
+    .filter((e) => e.isDirectory() && e.name.endsWith('-unpacked'))
+    .map((e) => join(release, e.name, 'resources', 'app.asar'))
+    .filter((arquivo) => existsSync(arquivo))
+    .sort((a, b) => statSync(b).mtimeMs - statSync(a).mtimeMs);
+  return achados[0] ?? null;
+}
+
+/**
+ * Os caminhos dados ou, sem nenhum, o pacote do Corona Vendas mais as pastas compartilhadas.
+ * @param {string[]} argumentos
+ * @returns {string[]}
+ */
+export function caminhosParaVarrer(argumentos, raiz = RAIZ_DO_REPOSITORIO) {
+  if (argumentos.length > 0) return argumentos;
+  const pacote = acharPacoteDoVendas(raiz);
+  if (!pacote) {
+    throw new Error(
+      'Não achei o pacote do Corona Vendas (apps/seller-app/release/*-unpacked/resources/app.asar). ' +
+        'Rode antes "npm run seller:empacotar" e depois "npm run barreira:varrer" de novo.',
+    );
+  }
+  return [pacote, ...PASTAS_COMPARTILHADAS.map((p) => join(raiz, p))];
+}
 
 function listarArquivos(pasta) {
   return readdirSync(pasta, { withFileTypes: true }).flatMap((entrada) => {
@@ -66,10 +110,12 @@ export function varrer(caminhos, marcadores) {
 }
 
 function principal() {
-  const caminhos = process.argv.slice(2);
-  if (caminhos.length === 0) {
-    console.error('Uso: node scripts/barreira/varrer-pacote.mjs <app.asar | pasta> [...]');
-    process.exit(2);
+  let caminhos;
+  try {
+    caminhos = caminhosParaVarrer(process.argv.slice(2));
+  } catch (erro) {
+    console.error(erro.message);
+    process.exit(1);
   }
   const { marcadores } = lerMarcadores();
   const achados = varrer(caminhos, marcadores);
