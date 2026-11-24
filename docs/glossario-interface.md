@@ -1578,9 +1578,9 @@ Vale a especificação §23 (que manda sobre as partes 18 e 20 onde discordarem)
 | Cobrança | Cobranza | O acerto por nota: o cliente devolve o que não vendeu e paga o vendido menos a comissão. |
 | Reposição | Reposición | Acrescenta peças a um cliente com pedido em aberto. |
 | Troca | Cambio | Troca uma peça que está com o cliente por outra, sem acerto. |
-| Remarcar ("Cliente não veio") | Reprogramar ("El cliente no vino") | Muda a Dt. Cobrança. |
+| Remarcar ("Cliente não veio") | Reprogramar ("El cliente no vino") | Muda a Data do retorno. |
 | Nova semana | Nueva semana | Abre a semana seguinte e fecha a anterior. |
-| Dt. Cobrança | Fecha de cobro | Saída + 45 dias, editável. |
+| Data do retorno | Fecha de retorno | Saída + 45 dias, editável. |
 | Valor DX / DV / VD | Valor DX / DV / VD | Levado (DX), devolvido (DV) e vendido (VD = DX − DV). "Itens DX, DV e VD" são as quantidades de peças. |
 | Comis. % / Comissão | Comis. % / Comisión | Parte do vendido que fica com o cliente (padrão 30%, de 0% a 40%). |
 | Valor Líq. | Valor neto | Sempre VD − comissão. |

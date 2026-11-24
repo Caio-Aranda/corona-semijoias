@@ -581,7 +581,7 @@ describe('a nota 0000064-21 e a pendência da 0000063-32 (mesmo arquivo de exemp
 });
 
 describe('Reposição, Troca e Remarcar', () => {
-  it('Reposição na semana atual entra na mesma nota; em semana anterior nasce nota nova com a mesma Dt. Cobrança', () => {
+  it('Reposição na semana atual entra na mesma nota; em semana anterior nasce nota nova com a mesma Data do retorno', () => {
     chamar({ operacao: 'consignado.semanaNova', id: idDeTeste(10), numero: 1 });
     const n1 = pedido([['A-1', 2]]);
     const r1 = chamar<{ novaNota: boolean; nota: DetalheDaNota }>({
@@ -675,7 +675,14 @@ describe('Reposição, Troca e Remarcar', () => {
     expect(linha?.comissao).toBe('0.00');
   });
 
-  it('Remarcar muda a Dt. Cobrança e a nota fica Remarcado; zerada até o acerto', () => {
+  it('a Data do retorno de uma nota nova é hoje + 45 dias', () => {
+    chamar({ operacao: 'consignado.semanaNova', id: idDeTeste(10), numero: 1 });
+    const n1 = pedido([['A-1', 1]]);
+    // O relógio do teste começa em 10/11/2026: 10/11 + 45 dias = 25/12/2026.
+    expect(nota(n1).dataCobranca).toBe('2026-12-25');
+  });
+
+  it('Remarcar muda a Data do retorno e a nota fica Remarcado; zerada até o acerto', () => {
     chamar({ operacao: 'consignado.semanaNova', id: idDeTeste(10), numero: 1 });
     const n1 = pedido([['A-1', 1]]);
     const r = chamar<{ nota: DetalheDaNota }>({
