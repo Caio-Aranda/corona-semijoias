@@ -1,4 +1,5 @@
 import { Aviso, Botao, Campo, EstadoDaLista, Paginacao, Tabela, ValorTresMoedas } from '@corona/ui';
+import { hojeEmBrasilia } from '../../nucleo/datas';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { ConsultaDeRelatorio, NomeDoRelatorio } from '../../../shared/relatorios';
 import type { PonteDoCorona } from '../../../shared/ponte';
@@ -543,7 +544,7 @@ export function TelaDeRelatorio({
           : {}),
       };
       const grade = montarGrade(pedido);
-      const base = `${def.nome}-${agora.toISOString().slice(0, 10)}`;
+      const base = `${def.nome}-${hojeEmBrasilia(agora)}`;
       if (formato === 'csv') {
         entregarArquivo(
           `${base}.csv`,

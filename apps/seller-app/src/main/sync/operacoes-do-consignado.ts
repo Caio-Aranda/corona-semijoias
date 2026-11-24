@@ -499,7 +499,7 @@ export function finalizarPedido(
 
 /**
  * Reposição (§23.4): nota da semana atual recebe as peças (`REPOSICAO_NOTA`, a nota de saída sai de novo); nota de semana
- * anterior gera uma nota NOVA na semana atual só com as peças novas e a mesma Dt. Cobrança (`NOTA_CONSIGNADO`).
+ * anterior gera uma nota NOVA na semana atual só com as peças novas e a mesma Data do retorno (`NOTA_CONSIGNADO`).
  */
 export function registrarReposicao(
   db: BancoAberto,
@@ -616,7 +616,7 @@ export function registrarTrocaNaNota(
   return { operacaoId: p.id };
 }
 
-/** Cliente não veio: muda a Dt. Cobrança e a nota passa a Remarcado (só nota sem acerto valendo). */
+/** Cliente não veio: muda a Data do retorno e a nota passa a Remarcado (só nota sem acerto valendo). */
 export function remarcarNota(
   db: BancoAberto,
   agora: Date,

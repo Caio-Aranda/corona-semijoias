@@ -15,6 +15,11 @@ export default defineConfig(
       '**/target/',
       'docs/',
       'packages/api-client-*/src/gerado/',
+      // Relatórios do Playwright e logs que o e2e e as duas pontas deixam (ignorados pelo Git).
+      'testes-e2e/resultados/',
+      'testes-sync/resultados/',
+      // Pastas de trabalho das sessões (worktrees com cópias do repositório inteiro).
+      '.claude/',
     ],
   },
   eslint.configs.recommended,

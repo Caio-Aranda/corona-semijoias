@@ -1277,7 +1277,7 @@ Menu: grupo **Maletas**, item **Montar maleta**. Os textos desta tela são os ú
 
 - Nova maleta: **Vendedor**, **Semana**, **Praça** (já vem "A praça do vendedor"), **Tipo da maleta** (**Maleta nova**, **Reposição**), botão **Começar a montar**.
 - Maletas em montagem: **Continuar montando** e **Excluir** (confirmação: "As peças continuam no estoque, nada foi enviado").
-- Leitura: **Ler uma peça**, campo **Código da peça ou nome**, botão **Colocar na maleta**. Peça lida: **Última peça lida** com **No estoque**, **Nesta maleta** e **Preço**. Recusas: **Peça não encontrada**, "está desativada", "está sem estoque", "Só há N peças ... no estoque".
+- Leitura: **Ler uma peça**, campo **Código da peça ou nome**, botão **Colocar na maleta**. Peça lida: **Última peça lida** com **No estoque**, **Nesta maleta** e **Preço unitário**. Recusas: **Peça não encontrada**, "está desativada", "está sem estoque", "Só há N peças ... no estoque".
 - Lista: **Quantidade**, **Atualizar**, **Tirar**; totais **Peças na maleta** e **Valor da maleta**.
 - Limite: **Limite do vendedor**, **Já está com ele**, **Esta maleta**, **Sobra**; "Sem limite" marcado: **Sem limite**; ainda não definido: **Limite não definido** e "Defina o limite deste vendedor antes de montar a maleta". Frase da montagem: "Limite R$ X — em mãos R$ Y — pode levar mais R$ Z".
 - Envio: botão **Enviar maleta**, confirmação "Enviar esta maleta?" (vendedor, peças e valor), depois **Maleta enviada**; reenvio: **Esta maleta já estava enviada**. O botão **Imprimir nota** só aparece quando a tarefa 3.7 ligar a impressão.
@@ -1578,9 +1578,9 @@ Vale a especificação §23 (que manda sobre as partes 18 e 20 onde discordarem)
 | Cobrança | Cobranza | O acerto por nota: o cliente devolve o que não vendeu e paga o vendido menos a comissão. |
 | Reposição | Reposición | Acrescenta peças a um cliente com pedido em aberto. |
 | Troca | Cambio | Troca uma peça que está com o cliente por outra, sem acerto. |
-| Remarcar ("Cliente não veio") | Reprogramar ("El cliente no vino") | Muda a Dt. Cobrança. |
+| Remarcar ("Cliente não veio") | Reprogramar ("El cliente no vino") | Muda a Data do retorno. |
 | Nova semana | Nueva semana | Abre a semana seguinte e fecha a anterior. |
-| Dt. Cobrança | Fecha de cobro | Saída + 45 dias, editável. |
+| Data do retorno | Fecha de retorno | Saída + 45 dias, editável. |
 | Valor DX / DV / VD | Valor DX / DV / VD | Levado (DX), devolvido (DV) e vendido (VD = DX − DV). "Itens DX, DV e VD" são as quantidades de peças. |
 | Comis. % / Comissão | Comis. % / Comisión | Parte do vendido que fica com o cliente (padrão 30%, de 0% a 40%). |
 | Valor Líq. | Valor neto | Sempre VD − comissão. |
@@ -1616,3 +1616,8 @@ Mensagens que a tela diz (português simples, dizendo o que fazer; em espanhol, 
 
 Mensagens: "O PDF foi guardado na pasta ... No WhatsApp que abriu, anexe o PDF e envie. Nada é enviado sozinho." / "Sem internet: o PDF já está guardado na pasta ..., mas o WhatsApp só abre com internet. Quando a internet voltar, toque de novo em "Preparar para o WhatsApp"." / "Este cliente não tem telefone cadastrado. Cadastre o telefone do cliente ou salve o PDF e envie por outro meio."
 
+
+## Preço unitário (pedido do responsável, 23/11)
+
+- Toda coluna ou rótulo que mostra o preço de uma peça se chama **Preço unitário** (ES: **Precio unitario**): nota da maleta, nota de saída do cliente, peças da maleta, produtos, compras, consulta de código, venda e acerto.
+- Não mudam: **Preço de custo**, **Preço de venda** (cadastro e filtros), totais e subtotais.
