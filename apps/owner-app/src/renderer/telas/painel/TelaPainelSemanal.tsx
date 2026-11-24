@@ -1,4 +1,5 @@
 import { Aviso, Botao, Tabela } from '@corona/ui';
+import { hojeEmBrasilia } from '../../nucleo/datas';
 import { useState, type ReactNode } from 'react';
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { AvisoDeErro } from '../../componentes/AvisoDeErro';
@@ -329,7 +330,7 @@ export function TelaPainelSemanal({
           geradoPor: usuario ?? SOLTOS.arquivo.dona,
         }),
       );
-      const base = `${T.arquivo}-${agora.toISOString().slice(0, 10)}`;
+      const base = `${T.arquivo}-${hojeEmBrasilia(agora)}`;
       if (formato === 'csv') {
         entregarArquivo(
           `${base}.csv`,
