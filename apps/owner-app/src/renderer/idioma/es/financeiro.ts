@@ -9,6 +9,7 @@ export const ES_TEXTOS_DE_FINANCEIRO: NoMesmoFormato<typeof PT_TEXTOS_DE_FINANCE
     contasAPagar: 'Cuentas a pagar',
     contasAReceber: 'Cuentas a cobrar',
     recebimentos: 'Cobros del representante',
+    cotacao: 'Cotización',
   },
   formas: {
     DINHEIRO: 'Efectivo',
@@ -339,6 +340,42 @@ export const ES_TEXTOS_DE_FINANCEIRO: NoMesmoFormato<typeof PT_TEXTOS_DE_FINANCE
     semCotacao: 'Todavía no hay cotización del día. Por ahora, registre el cobro en reales.',
     recebidoEm: (valor: string) => `Cobrado en ${valor}`,
     rodapeDaLista: 'Dólar y guaraní por la cotización del Banco Central del día de cada cobro.',
+  },
+
+  cotacao: {
+    titulo: 'Cotización del dólar y del guaraní',
+    botao: 'Cambiar la cotización',
+    ajuda: 'La cotización nueva vale desde ahora. Lo que ya se registró no cambia.',
+    dolar: '1 dólar = R$',
+    guarani: '1 real = Gs.',
+    bancoCentral: (data: string, dolar: string, guarani: string) =>
+      `Banco Central del ${data}: 1 dólar = R$ ${dolar} · 1 real = Gs. ${guarani}`,
+    avisoDoDolar: (valor: string) =>
+      `Este valor es muy diferente al del Banco Central (R$ ${valor}). Revise antes de guardar.`,
+    avisoDoGuarani: (valor: string) =>
+      `Este valor es muy diferente al del Banco Central (Gs. ${valor}). Revise antes de guardar.`,
+    gravar: 'Guardar la cotización',
+    voltar: 'Volver',
+    gravando: 'Guardando...',
+    gravada: (hora: string) => `Cotización de la tienda guardada. Vale desde ${hora}.`,
+    invalido: 'Revise los valores: escriba solo números, con coma en los centavos.',
+    hoje: 'Cotizaciones de hoy',
+    outroDia: 'Ver otro día',
+    legenda: 'Cotizaciones del día',
+    colunas: {
+      valeDesde: 'Vale desde',
+      dolar: '1 dólar = R$',
+      guarani: '1 real = Gs.',
+      origem: 'Origen',
+    },
+    origem: {
+      BANCO_CENTRAL: 'Banco Central',
+      loja: (nome: string | null) => (nome ? `Tienda (${nome})` : 'Tienda'),
+    },
+    valeAgora: 'Vale ahora',
+    corrigir: 'Para corregir, guarde una cotización nueva.',
+    vazio: 'Ninguna cotización en este día.',
+    semConexao: 'Sin internet. La cotización no se guardó. Intente de nuevo.',
   },
 
   semana: {

@@ -66,6 +66,7 @@ export type ParametrosDeFinanceiro =
         forma: string;
         contaId?: string;
         cotacaoData?: string;
+        cotacaoId?: string;
       } & ValorDoRecebimento;
     }
   | {
@@ -221,6 +222,7 @@ export function conferirFinanceiro(
           'moeda',
           'valorNaMoeda',
           'cotacaoData',
+          'cotacaoId',
         )
       )
         return null;
@@ -234,6 +236,7 @@ export function conferirFinanceiro(
         forma: string;
         contaId?: string;
         cotacaoData?: string;
+        cotacaoId?: string;
       } & ValorDoRecebimento = { id: p.id, vendedorId: p.vendedorId, forma: p.forma, ...valor };
       if (p.contaId !== undefined && p.contaId !== '') {
         if (!idValido(p.contaId)) return null;
@@ -242,6 +245,10 @@ export function conferirFinanceiro(
       if (p.cotacaoData !== undefined) {
         if (!dataValida(p.cotacaoData)) return null;
         corpo.cotacaoData = p.cotacaoData;
+      }
+      if (p.cotacaoId !== undefined) {
+        if (!idValido(p.cotacaoId)) return null;
+        corpo.cotacaoId = p.cotacaoId;
       }
       return { operacao, corpo };
     }

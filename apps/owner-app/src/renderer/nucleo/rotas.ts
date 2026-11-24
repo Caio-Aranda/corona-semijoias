@@ -116,6 +116,7 @@ export const ROTAS = [
   'financeiro/contas-a-pagar',
   'financeiro/contas-a-receber',
   'financeiro/recebimentos',
+  'financeiro/cotacao',
   'conciliacoes/dinheiro',
   'conciliacoes/conferencia-diaria',
   'painel/semana',
@@ -176,6 +177,7 @@ export const MENU = [
       { chave: 'financeiro/contas-a-pagar', rotulo: TEXTOS_DE_FINANCEIRO.menu.contasAPagar },
       { chave: 'financeiro/contas-a-receber', rotulo: TEXTOS_DE_FINANCEIRO.menu.contasAReceber },
       { chave: 'financeiro/recebimentos', rotulo: TEXTOS_DE_FINANCEIRO.menu.recebimentos },
+      { chave: 'financeiro/cotacao', rotulo: TEXTOS_DE_FINANCEIRO.menu.cotacao },
     ],
   },
   {

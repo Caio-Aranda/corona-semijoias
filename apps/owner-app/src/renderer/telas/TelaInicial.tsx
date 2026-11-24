@@ -156,6 +156,7 @@ export function TelaInicial({ ponte, nome }: TelaInicialProps) {
           ) : (
             <span>{I.cotacao.semCotacao}</span>
           )}
+          <Botao onClick={() => irPara('financeiro/cotacao')}>{I.cotacao.mudar}</Botao>
         </div>
       </header>
       {emBreve ? (

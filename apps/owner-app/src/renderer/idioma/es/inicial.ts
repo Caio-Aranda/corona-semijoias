@@ -17,6 +17,7 @@ export const ES_TEXTOS_DA_INICIAL: NoMesmoFormato<typeof PT_TEXTOS_DA_INICIAL> =
     dolar: '1 US$ =',
     guarani: 'R$ 1 =',
     semCotacao: 'Sin cotización del día',
+    mudar: 'Cambiar la cotización',
   },
   resumo: {
     titulo: 'Resumen de la semana',

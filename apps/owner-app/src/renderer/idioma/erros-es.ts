@@ -207,7 +207,10 @@ export const ERROS_EM_ESPANHOL: Record<string, string> = {
   SEM_COTACAO_PARA_O_RECEBIMENTO:
     'Todavía no hay cotización del día. Por ahora, registre el cobro en reales.',
   COTACAO_DO_RECEBIMENTO_MUDOU:
-    'La cotización del día cambió mientras la pantalla estaba abierta. Vuelva, abra el cobro de nuevo y revise el valor en reales.',
+    'La cotización cambió mientras usted escribía. Revise el valor en reales y guarde de nuevo.',
+  COTACAO_DO_ACERTO_MUDOU: 'La cotización cambió. Revise los valores del acerto y cierre de nuevo.',
+  COTACAO_JA_GRAVADA_DIFERENTE:
+    'Esta cotización ya fue guardada con otros valores. Abra la ventana de nuevo y guarde la cotización nueva.',
   PENDENCIA_NAO_ENCONTRADA: 'No encontramos esta pendiente. Actualice la lista e intente de nuevo.',
   PENDENCIA_JA_RESOLVIDA: 'Esta pendiente ya fue resuelta. Actualice la lista.',
   PENDENCIA_RESOLUCAO_DIFERENTE:

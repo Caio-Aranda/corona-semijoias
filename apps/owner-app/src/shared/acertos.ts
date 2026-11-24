@@ -56,6 +56,8 @@ export interface PedidoDeFechamentoDaTela {
   pendenciasAntigas: { pendenciaId: string; decisao: 'COBRAR_NO_ACERTO' | 'MANTER' }[];
   /** O líquido da última prévia, só para o servidor conferir. A tela não o calcula. */
   liquidoMostrado?: string;
+  /** A cotação da última prévia: se a dona lançar outra antes de fechar com recebimento em Dólar ou Guarani, o sistema recusa. */
+  cotacaoId?: string;
   pagamento?: PagamentoDaTela;
 }
 

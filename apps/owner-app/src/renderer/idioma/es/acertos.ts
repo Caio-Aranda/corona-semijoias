@@ -299,6 +299,8 @@ export const ES_TEXTOS_DE_ACERTOS: NoMesmoFormato<typeof PT_TEXTOS_DE_ACERTOS> =
     erros: {
       FECHAMENTO_DESATUALIZADO:
         'Los números cambiaron desde que lo abrió. Revise el acerto de nuevo.',
+      COTACAO_DO_ACERTO_MUDOU:
+        'La cotización cambió. Revise los valores del acerto y cierre de nuevo.',
       PAGAMENTO_DO_ACERTO_PASSA_DO_DEVIDO:
         'El valor pagado pasa lo que el representante debe. Revise los valores.',
       DATA_DO_RESTANTE_OBRIGATORIA: 'Elija la fecha de pago de lo que quedó debiendo.',

@@ -64,6 +64,9 @@ import {
   receber as receberCompra,
   ver10 as verCompra,
   converter,
+  doDia as cotacoesDoDia,
+  gravar as gravarCotacao,
+  previa1 as previaDaCotacao,
   colocarItemNaRemessa,
   criarRemessa,
   enviarRemessa,
@@ -1534,6 +1537,30 @@ export function criarApiDoGestao(opcoes: OpcoesDaApi): ApiDoGestao {
           return executar(() => redefinirSenha({ client, headers, path: { id: pedido.id } }));
         case 'cotacao.hoje':
           return executar(() => hoje({ client, headers }));
+        case 'cotacao.dia':
+          return executar(() =>
+            cotacoesDoDia({ client, headers, query: pedido.data ? { data: pedido.data } : {} }),
+          );
+        case 'cotacao.previa':
+          return executar(() =>
+            previaDaCotacao({
+              client,
+              headers,
+              body: { usd: pedido.usd, guaranisPorReal: pedido.guaranisPorReal },
+            }),
+          );
+        case 'cotacao.gravar':
+          return executar(() =>
+            gravarCotacao({
+              client,
+              headers,
+              body: {
+                ...(pedido.id ? { id: pedido.id } : {}),
+                usd: pedido.usd,
+                guaranisPorReal: pedido.guaranisPorReal,
+              },
+            }),
+          );
         case 'cotacao.converter':
           return executar(() =>
             converter({

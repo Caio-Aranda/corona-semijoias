@@ -160,6 +160,8 @@ export const ES_TEXTOS: NoMesmoFormato<typeof PT_TEXTOS> = {
     cotacaoDoDia: (data: string) => `Cotización del Banco Central del ${data}.`,
     cotacaoDeDiaAnterior: (data: string) =>
       `Cotización del Banco Central del ${data}, la última publicada.`,
+    cotacaoDaLoja: (data: string, hora: string) =>
+      `Cotización de la tienda del ${data} a las ${hora}.`,
     semCotacao: 'Todavía no hay cotización. Los valores en Dólar y Guaraní aparecen cuando llegue.',
   },
   atencao: {
