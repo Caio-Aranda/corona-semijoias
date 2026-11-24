@@ -483,8 +483,10 @@ function LancarPagamento({
     if (v === null || Number(v) <= 0) invalido = true;
     else formas.push({ forma: f, valor: v });
   }
-  const total = formas.reduce((s, f) => s + Math.round(Number(f.valor) * 100), 0);
-  const devido = Math.round(Number(cliente.pendencia) * 100);
+  // Em centavos inteiros (BigInt): dinheiro nunca passa por número fracionário.
+  const total = formas.reduce((s, f) => s + (centavosDeTexto(f.valor) ?? 0n), 0n);
+  const devido = centavosDeTexto(cliente.pendencia) ?? 0n;
+  const totalEmTexto = `${total / 100n}.${(total % 100n).toString().padStart(2, '0')}`;
 
   async function lancar(): Promise<void> {
     setOcupado(true);
@@ -538,7 +540,7 @@ function LancarPagamento({
         />
       ))}
       <p>
-        {T.lancarTotal}: <strong>{reais((total / 100).toFixed(2))}</strong>
+        {T.lancarTotal}: <strong>{reais(totalEmTexto)}</strong>
       </p>
       {total > devido ? <Aviso tipo="erro">{TEXTOS.consignado.cobranca.pagoAcima}</Aviso> : null}
       {erro ? <Aviso tipo="erro">{erro}</Aviso> : null}
