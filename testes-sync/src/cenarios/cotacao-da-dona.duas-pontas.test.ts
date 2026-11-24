@@ -60,7 +60,7 @@ describe('duas pontas: a dona muda a cotação durante o dia (ADR-0006, item 15)
     expect(Number(naAna[0]?.guaranis_por_real)).toBe(1350);
     // Quem lançou nunca vai ao computador do vendedor: nem a coluna existe lá.
     const colunas = ana.aparelho
-      .ler<{ name: string }>('PRAGMA table_info(cotacoes)')
+      .ler<{ name: string }>("SELECT name FROM pragma_table_info('cotacoes')")
       .map((c) => c.name);
     expect(colunas).not.toContain('lancada_por');
     const hoje = await ana.aparelho.pedir<{ origem?: string; dolar?: string }>({
