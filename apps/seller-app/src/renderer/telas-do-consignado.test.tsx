@@ -986,6 +986,37 @@ describe('Clientes e Lançar pagamento', () => {
     ).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: 'Lançar pagamento' }).at(-1)).toBeDisabled();
   });
+
+  it('formas que somam exatamente o que o cliente deve: total certo em centavos e deixa lançar', async () => {
+    const { ponte } = criarPonte({
+      'consignado.painel': () => ok(painel),
+      'consignado.clientes': () =>
+        ok([
+          {
+            id: 'c1',
+            nome: 'Vendedora Ana',
+            telefone: null,
+            cidade: null,
+            pendencia: '0.30',
+            fotoHash: null,
+          },
+        ]),
+      'consignado.cliente': () => ok({ ...cliente, pendencia: '0.30' }),
+    });
+    const u = userEvent.setup();
+    await irParaPrincipal(ponte);
+    await u.click(screen.getByRole('button', { name: 'Clientes' }));
+    await u.click(await screen.findByRole('button', { name: 'Abrir' }));
+    await u.click(await screen.findByRole('button', { name: 'Lançar pagamento' }));
+    // 0,10 + 0,20 = 0,30 em centavos (em número fracionário daria 0,30000000000000004).
+    await u.type(screen.getByLabelText('Dinheiro'), '0,10');
+    await u.type(screen.getByLabelText('Pix'), '0,20');
+    expect(await screen.findByText(/Total do pagamento/)).toHaveTextContent('R$ 0,30');
+    expect(
+      screen.queryByText('O valor pago passa do total a receber. Confira os valores.'),
+    ).not.toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Lançar pagamento' }).at(-1)).toBeEnabled();
+  });
 });
 
 const PT = {

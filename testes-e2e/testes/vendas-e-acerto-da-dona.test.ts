@@ -53,7 +53,7 @@ test('a dona começa, conta, confere e fecha o acerto da vendedora', async () =>
   await irPara(janela, 'acertos/lista');
   await janela.getByRole('button', { name: 'Começar acerto' }).click();
   await janela
-    .getByLabel('Vendedor', { exact: true })
+    .getByLabel('Representante', { exact: true })
     .selectOption({ label: MASSA.nomeDoVendedor });
   await janela.getByRole('button', { name: 'Começar', exact: true }).click();
   await expect(
@@ -80,7 +80,7 @@ test('a dona começa, conta, confere e fecha o acerto da vendedora', async () =>
   await expect(janela.getByText(/Falta para a meta: Gs\. 500\.000 \(R\$ 500,00\)\./)).toBeVisible();
   await expect(janela.getByText('Ainda não bateu a meta: comissão de 30%.')).toBeVisible();
   await valorDe(janela, 'Vendido', 'R$ 200,00');
-  await valorDe(janela, 'Comissão do vendedor', 'R$ 60,00');
+  await valorDe(janela, 'Comissão do representante', 'R$ 60,00');
   await valorDe(janela, 'Faltas cobradas', 'R$ 60,00');
   // Valor do acerto = 200,00 - 60,00 + 60,00.
   await valorDe(janela, 'Valor do acerto', 'R$ 200,00');
@@ -108,7 +108,7 @@ test('a dona começa, conta, confere e fecha o acerto da vendedora', async () =>
   await expect(janela.getByText('Acerto fechado.')).toBeVisible();
   await expect(janela.getByRole('heading', { name: 'Fechamento do acerto' })).toBeVisible();
   await valorDe(janela, 'Vendido depois dos descontos', 'R$ 200,00');
-  await valorDe(janela, 'Comissão do vendedor', 'R$ 60,00');
+  await valorDe(janela, 'Comissão do representante', 'R$ 60,00');
   await valorDe(janela, 'Valor do acerto', 'R$ 200,00');
   await valorDe(janela, 'Recebido no acerto', 'R$ 150,00');
   await valorDe(janela, 'Ficou devendo', 'R$ 50,00');
