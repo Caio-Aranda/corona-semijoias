@@ -264,6 +264,7 @@ Pedido do responsável (23/11/2026): na fronteira o câmbio varia durante o dia 
 - **Lançamentos:** quem grava `cotacao_id` (vendas, devoluções, trocas, créditos, pedidos, notas, acertos e recibos do consignado, acertos, recebimentos em outra moeda) continua com a sua para sempre. Os relatórios que hoje acham a cotação pela data passam a achá-la pelo **momento** do lançamento.
 - **Corona Vendas:** recebe as cotações novas pelo pull (`origem` e `vigente_desde` entram na lista de colunas; `lancada_por` não vai). Sem internet, mostra a última que recebeu. O app continua não mandando cotação: o servidor escolhe a vigente no momento do lançamento (a hora que veio, já corrigida pela regra da hora do ADR-0013).
 - **Tela:** a cotação da dona aparece como "Cotação da loja de 23/11/2026 às 10:15"; a do Banco Central, como antes.
+- **Uma moeda só (24/11/2026, resposta da dona):** ela pode mudar só o Dólar ou só o Guarani. A linha nova continua levando as duas moedas (nunca há cotação parcial), mas a que ela não mexeu é **copiada exatamente** da cotação que valia naquele momento, sem passar pelo "1 real = Gs. N" arredondado da tela: o Guarani do BCB copia `pyg_venda` como está e guarda `guaranis_por_real = 1 ÷ pyg_venda` com 8 casas. As duas vazias, ou uma vazia sem cotação nenhuma para copiar, é 400. As respostas da dona às suposições S1 a S8 do plano e à taxa de venda do recebimento (item 13) foram "está bom assim".
 
 ## Consequências
 

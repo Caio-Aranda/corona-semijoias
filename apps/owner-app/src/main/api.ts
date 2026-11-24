@@ -1546,7 +1546,10 @@ export function criarApiDoGestao(opcoes: OpcoesDaApi): ApiDoGestao {
             previaDaCotacao({
               client,
               headers,
-              body: { usd: pedido.usd, guaranisPorReal: pedido.guaranisPorReal },
+              body: {
+                ...(pedido.usd ? { usd: pedido.usd } : {}),
+                ...(pedido.guaranisPorReal ? { guaranisPorReal: pedido.guaranisPorReal } : {}),
+              },
             }),
           );
         case 'cotacao.gravar':
@@ -1556,8 +1559,8 @@ export function criarApiDoGestao(opcoes: OpcoesDaApi): ApiDoGestao {
               headers,
               body: {
                 ...(pedido.id ? { id: pedido.id } : {}),
-                usd: pedido.usd,
-                guaranisPorReal: pedido.guaranisPorReal,
+                ...(pedido.usd ? { usd: pedido.usd } : {}),
+                ...(pedido.guaranisPorReal ? { guaranisPorReal: pedido.guaranisPorReal } : {}),
               },
             }),
           );

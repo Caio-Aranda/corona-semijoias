@@ -150,6 +150,8 @@ formato com `Z`; conferir e, se preciso, normalizar ao gravar no pull). Onde hoj
   dona no PR.
 - **As duas moedas juntas, sempre (S2).** A tela abre com as duas preenchidas pela cotação vigente; ela muda só a que
   quiser. Uma linha nova leva as duas (não existe cotação parcial, ADR-0006 item 4).
+  **24/11/2026:** a moeda que ela não mexer não é mandada; o servidor copia exatamente a da cotação vigente (o campo da
+  tela mostra o Guarani do Banco Central arredondado, "1.117", e mandar esse número mudaria o Guarani sem ela querer).
 - **Validação no servidor (rota da dona):** Dólar entre R$ 0,01 e R$ 999,99, até 4 casas; Guarani inteiro ou com até 2
   casas, entre 1 e 99.999. Fora disso: 400 com mensagem simples.
 - **Comparação com o Banco Central:** a tela mostra ao lado "Banco Central de hoje: 1 dólar = R$ 5,50 · 1 real = Gs.
@@ -341,6 +343,9 @@ Cada passo: testes primeiro, depois o código, `./mvnw verify` / `npm run typech
 - **S6.** A meta da comissão em Guarani usa a cotação da hora de cada venda (inclusive a da loja).
 - **S7.** Os vendedores veem a cotação da loja no Corona Vendas (é a mesma da loja para todos).
 - **S8.** Só a dona muda a cotação (não há outro perfil hoje).
+
+**Respostas da dona (24/11/2026):** S1 a S8 confirmadas como estão; em S2, ela pode mudar só o Dólar ou só o Guarani
+(não precisa mudar as duas).
 
 ## 9. O que fica de fora
 

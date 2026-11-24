@@ -359,6 +359,7 @@ export const ES_TEXTOS_DE_FINANCEIRO: NoMesmoFormato<typeof PT_TEXTOS_DE_FINANCE
     gravando: 'Guardando...',
     gravada: (hora: string) => `Cotización de la tienda guardada. Vale desde ${hora}.`,
     invalido: 'Revise los valores: escriba solo números, con coma en los centavos.',
+    nadaMudou: 'Cambie el valor del dólar, del guaraní o de los dos.',
     hoje: 'Cotizaciones de hoy',
     outroDia: 'Ver otro día',
     legenda: 'Cotizaciones del día',

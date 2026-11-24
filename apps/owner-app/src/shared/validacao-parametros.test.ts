@@ -76,6 +76,18 @@ describe('conferência dos dados de cada operação', () => {
   });
 
   it('conversão: valor em reais como texto decimal com ponto, nunca número', () => {
+    // A dona pode mudar só o Dólar ou só o Guarani (24/11/2026); as duas vazias, não.
+    expect(conferirParametros('cotacao.gravar', { usd: '5.85' })).toEqual({
+      operacao: 'cotacao.gravar',
+      usd: '5.85',
+    });
+    expect(conferirParametros('cotacao.previa', { guaranisPorReal: '1400' })).toEqual({
+      operacao: 'cotacao.previa',
+      guaranisPorReal: '1400',
+    });
+    expect(conferirParametros('cotacao.gravar', {})).toBeNull();
+    expect(conferirParametros('cotacao.previa', { usd: '', guaranisPorReal: '' })).toBeNull();
+    expect(conferirParametros('cotacao.gravar', { usd: 'abc' })).toBeNull();
     expect(conferirParametros('cotacao.converter', { valorEmReais: '1234.56' })).toEqual({
       operacao: 'cotacao.converter',
       valorEmReais: '1234.56',

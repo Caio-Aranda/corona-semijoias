@@ -365,6 +365,7 @@ export const PT_TEXTOS_DE_FINANCEIRO = {
     gravando: 'Gravando...',
     gravada: (hora: string) => `Cotação da loja gravada. Vale desde ${hora}.`,
     invalido: 'Confira os valores: digite só números, com vírgula nos centavos.',
+    nadaMudou: 'Mude o valor do dólar, do guarani ou dos dois.',
     hoje: 'Cotações de hoje',
     outroDia: 'Ver outro dia',
     legenda: 'Cotações do dia',

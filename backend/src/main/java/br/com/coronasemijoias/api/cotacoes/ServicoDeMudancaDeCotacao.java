@@ -79,26 +79,61 @@ public class ServicoDeMudancaDeCotacao {
     public record LinhaDoDia(Cotacao cotacao, String lancadaPor, boolean valeAgora) {
     }
 
-    public record Valores(BigDecimal usd, BigDecimal guaranisPorReal) {
+    /** O que vale na cotação nova: o digitado ou, na moeda que ficou vazia, exatamente o da cotação que valia. */
+    public record Valores(BigDecimal usd, BigDecimal guaranisPorReal, BigDecimal pygVenda) {
     }
 
-    /** Confere os dois valores digitados (texto com ponto) e devolve os números; fora dos limites, 400 com mensagem simples. */
-    public static Valores conferir(String usd, String guaranisPorReal) {
+    /**
+     * Confere o que a dona digitou (texto com ponto). Ela pode mudar só o Dólar ou só o Guarani (24/11/2026): a moeda vazia fica
+     * exatamente como estava na cotação que vale {@code agora}, sem arredondar. As duas vazias, ou uma vazia sem cotação nenhuma
+     * para copiar, é 400 com mensagem simples.
+     */
+    private Valores resolver(String usd, String guaranisPorReal, Instant agora) {
+        boolean semDolar = usd == null || usd.isBlank();
+        boolean semGuarani = guaranisPorReal == null || guaranisPorReal.isBlank();
+        if (semDolar && semGuarani) {
+            throw Validacoes.recusar("usd", "Mude o valor do dólar, do guarani ou dos dois.");
+        }
+        BigDecimal dolar = semDolar ? null : conferirDolar(usd);
+        BigDecimal guaranis = semGuarani ? null : conferirGuarani(guaranisPorReal);
+        if (!semDolar && !semGuarani) {
+            return new Valores(dolar, guaranis, ConversaoDeMoeda.taxaDoGuarani(guaranis));
+        }
+        Optional<Cotacao> valia = vigente.vigenteEm(agora);
+        if (valia.isEmpty()) {
+            throw semDolar ? Validacoes.recusar("usd", "Informe quantos reais vale 1 dólar.")
+                    : Validacoes.recusar("guaranisPorReal", "Informe quantos guaranis vale 1 real.");
+        }
+        Cotacao c = valia.get();
+        if (semDolar) {
+            return new Valores(c.taxas().usdVenda(), guaranis, ConversaoDeMoeda.taxaDoGuarani(guaranis));
+        }
+        BigDecimal pyg = c.taxas().pygVenda();
+        BigDecimal guaranisQueValiam = c.guaranisPorReal() != null ? c.guaranisPorReal()
+                : ConversaoDeMoeda.guaranisPorRealComOitoCasas(pyg);
+        return new Valores(dolar, guaranisQueValiam, pyg);
+    }
+
+    private static BigDecimal conferirDolar(String usd) {
         BigDecimal dolar = decimal("usd", usd, "Informe quantos reais vale 1 dólar.");
-        BigDecimal guaranis = decimal("guaranisPorReal", guaranisPorReal, "Informe quantos guaranis vale 1 real.");
         if (dolar.stripTrailingZeros().scale() > 4) {
             throw Validacoes.recusar("usd", "Use no máximo 4 casas depois da vírgula no valor do dólar.");
         }
         if (dolar.compareTo(DOLAR_MINIMO) < 0 || dolar.compareTo(DOLAR_MAXIMO) > 0) {
             throw Validacoes.recusar("usd", "O valor do dólar precisa estar entre R$ 0,01 e R$ 999,99.");
         }
+        return dolar;
+    }
+
+    private static BigDecimal conferirGuarani(String guaranisPorReal) {
+        BigDecimal guaranis = decimal("guaranisPorReal", guaranisPorReal, "Informe quantos guaranis vale 1 real.");
         if (guaranis.stripTrailingZeros().scale() > 2) {
             throw Validacoes.recusar("guaranisPorReal", "Use no máximo 2 casas depois da vírgula no valor do guarani.");
         }
         if (guaranis.compareTo(GUARANI_MINIMO) < 0 || guaranis.compareTo(GUARANI_MAXIMO) > 0) {
             throw Validacoes.recusar("guaranisPorReal", "O valor do guarani precisa estar entre Gs. 1 e Gs. 99.999 por real.");
         }
-        return new Valores(dolar, guaranis);
+        return guaranis;
     }
 
     private static BigDecimal decimal(String campo, String texto, String semValor) {
@@ -115,11 +150,12 @@ public class ServicoDeMudancaDeCotacao {
     /** O que a tela mostra antes de gravar: a conversão e a comparação com o Banco Central. Nada é gravado. */
     @Transactional(readOnly = true)
     public Previa previa(String usd, String guaranisPorReal) {
-        return calcular(conferir(usd, guaranisPorReal), relogio.instant());
+        Instant agora = relogio.instant();
+        return calcular(resolver(usd, guaranisPorReal, agora), agora);
     }
 
     private Previa calcular(Valores v, Instant agora) {
-        TaxasDoDia taxas = TaxasDoDia.daDona(v.usd(), v.guaranisPorReal());
+        TaxasDoDia taxas = TaxasDoDia.daDona(v.usd(), v.guaranisPorReal(), v.pygVenda());
         Optional<DoBancoCentral> bcb = repositorio.bancoCentralVigenteEm(agora).map(c -> new DoBancoCentral(
                 c.dataCotacao(), c.taxas().usdVenda(),
                 ConversaoDeMoeda.guaranisPorReal(c.taxas().pygVenda())));
@@ -170,8 +206,9 @@ public class ServicoDeMudancaDeCotacao {
      */
     @Transactional
     public Resultado gravar(UUID id, String usd, String guaranisPorReal, UUID usuarioId) {
-        Valores v = conferir(usd, guaranisPorReal);
-        TaxasDoDia taxas = TaxasDoDia.daDona(v.usd(), v.guaranisPorReal());
+        Instant agora = relogio.instant();
+        Valores v = resolver(usd, guaranisPorReal, agora);
+        TaxasDoDia taxas = TaxasDoDia.daDona(v.usd(), v.guaranisPorReal(), v.pygVenda());
         if (id != null) {
             Optional<Cotacao> existente = repositorio.porId(id);
             if (existente.isPresent()) {
@@ -184,7 +221,6 @@ public class ServicoDeMudancaDeCotacao {
                 return new Resultado(c, calcular(v, c.vigenteDesde()), true);
             }
         }
-        Instant agora = relogio.instant();
         Previa previa = calcular(v, agora);
         Cotacao gravada = id == null
                 ? repositorio.gravarDaDona(taxas, v.guaranisPorReal(), usuarioId, agora)

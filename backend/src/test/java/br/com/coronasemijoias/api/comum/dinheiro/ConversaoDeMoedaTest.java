@@ -250,4 +250,11 @@ class ConversaoDeMoedaTest {
         assertThat(ConversaoDeMoeda.paraGuarani(d("100.00"), t.pygVenda())).isEqualTo(d("135000"));
         assertThat(ConversaoDeMoeda.paraDolar(d("100.00"), t.usdVenda())).isEqualTo(d("17.24"));
     }
+
+    @Test
+    void guaranisPorRealComOitoCasasDaTaxaDoBancoCentral() {
+        assertThat(ConversaoDeMoeda.guaranisPorRealComOitoCasas(new BigDecimal("0.00089500")))
+                .isEqualByComparingTo("1117.31843575");
+        assertThat(ConversaoDeMoeda.guaranisPorRealComOitoCasas(new BigDecimal("0.00074074")).scale()).isEqualTo(8);
+    }
 }

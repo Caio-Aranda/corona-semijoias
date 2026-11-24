@@ -31,8 +31,16 @@ public record TaxasDoDia(
      * 1 ÷ guaranis por real (8 casas, HALF_UP) e a paridade do Guarani é guaranis por dólar, como o BCB publica.
      */
     public static TaxasDoDia daDona(BigDecimal usd, BigDecimal guaranisPorReal) {
+        return daDona(usd, guaranisPorReal, ConversaoDeMoeda.taxaDoGuarani(guaranisPorReal));
+    }
+
+    /**
+     * Como a de cima, com a taxa do Guarani já conhecida: quando a dona muda só o Dólar, o Guarani é exatamente o da cotação que
+     * valia (a do Banco Central não é "1 ÷ N" de um N com 2 casas).
+     */
+    public static TaxasDoDia daDona(BigDecimal usd, BigDecimal guaranisPorReal, BigDecimal pygVenda) {
         BigDecimal dolar = ConversaoDeMoeda.taxaComOitoCasas(usd);
-        BigDecimal pyg = ConversaoDeMoeda.taxaDoGuarani(guaranisPorReal);
+        BigDecimal pyg = ConversaoDeMoeda.taxaComOitoCasas(pygVenda);
         BigDecimal um = BigDecimal.ONE.setScale(ESCALA);
         BigDecimal paridadePyg = ConversaoDeMoeda.taxaComOitoCasas(dolar.multiply(guaranisPorReal));
         return new TaxasDoDia(dolar, dolar, um, um, pyg, pyg, paridadePyg, paridadePyg);
