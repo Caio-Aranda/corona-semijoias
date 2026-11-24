@@ -25,12 +25,12 @@ public class ServicoDeCotacoesDaDona {
 
     /** A cotação em vigor para um lançamento de hoje; vazio só antes da primeira busca. */
     public Optional<Cotacao> cotacaoDeHoje() {
-        return vigente.paraLancamentoEm(hoje());
+        return vigente.vigenteEm(relogio.instant());
     }
 
-    /** A cotação em vigor para um lançamento da data pedida (hoje se vier vazia). */
+    /** A cotação em vigor ao fim do dia pedido, em Brasília (agora, se vier vazia). */
     public Optional<Cotacao> cotacaoDe(LocalDate data) {
-        return vigente.paraLancamentoEm(data == null ? hoje() : data);
+        return vigente.vigenteEm(data == null ? relogio.instant() : CotacaoVigente.fimDoDia(data));
     }
 
     public record Convertido(BigDecimal dolar, BigDecimal guarani) {

@@ -224,7 +224,7 @@ public class ConsultasDoPainelSemanal {
         UUID praca = idOpcional(f.pracaId(), "praca");
         String situacao = situacaoPedida(f.situacao());
         SemanaDoPainel semana = semanaDe(f.semanaId());
-        Optional<Cotacao> cotacao = cotacaoVigente.maisRecente();
+        Optional<Cotacao> cotacao = cotacaoVigente.vigenteEm(relogio.instant());
 
         List<LinhaDoPedido> todas = linhas(semana, vendedor, praca, situacao, cotacao.orElse(null));
         List<LinhaDoPedido> visiveis = todas.stream().filter(l -> situacao == null || l.situacao().equals(situacao)).toList();

@@ -2,6 +2,7 @@ package br.com.coronasemijoias.api.cotacoes;
 
 import br.com.coronasemijoias.api.testes.TesteDeIntegracao;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.time.Clock;
 import java.time.Duration;
@@ -30,6 +31,9 @@ abstract class TesteDeCotacoes extends TesteDeIntegracao {
 
     @Autowired
     JdbcTemplate jdbc;
+
+    @Autowired
+    br.com.coronasemijoias.api.testes.UsuariosDeTeste usuarios;
 
     RelogioAjustavel relogio;
     ClienteFalso cliente;
@@ -84,6 +88,17 @@ abstract class TesteDeCotacoes extends TesteDeIntegracao {
                 gravarCotacaoDe(dia);
             }
         }
+    }
+
+    /** Grava a cotação da dona (Dólar e Guaranis por Real) com vigência a partir do instante, por uma dona criada no teste. */
+    Cotacao gravarDaDona(String vigenteDesdeUtc, String usd, String guaranisPorReal) {
+        return gravarDaDona(vigenteDesdeUtc, usd, guaranisPorReal, usuarios.criarDona().id());
+    }
+
+    Cotacao gravarDaDona(String vigenteDesdeUtc, String usd, String guaranisPorReal, java.util.UUID usuario) {
+        BigDecimal gs = new BigDecimal(guaranisPorReal);
+        return repositorio.gravarDaDona(
+                TaxasDoDia.daDona(new BigDecimal(usd), gs), gs, usuario, Instant.parse(vigenteDesdeUtc));
     }
 
     int linhasNoBanco() {

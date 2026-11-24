@@ -33,7 +33,7 @@ class BuscaDeCotacoesTest extends TesteDeCotacoes {
         List<LocalDate> gravados = rodadaAs("2026-11-09T16:30:00Z");
 
         assertThat(gravados).containsExactly(SEGUNDA);
-        Cotacao cotacao = repositorio.maisRecente().orElseThrow();
+        Cotacao cotacao = repositorio.vigenteEm(relogio.instant()).orElseThrow();
         assertThat(cotacao.dataCotacao()).isEqualTo(SEGUNDA);
         assertThat(cotacao.taxas().usdVenda()).isEqualTo(new BigDecimal("5.50130000"));
         assertThat(cotacao.taxas().pygVenda()).isEqualTo(new BigDecimal("0.00089500"));
@@ -84,7 +84,7 @@ class BuscaDeCotacoesTest extends TesteDeCotacoes {
         cliente.arquivo(SEGUNDA, arquivoValidoDe(SEGUNDA));
         assertThat(rodadaAs("2026-11-09T19:00:00Z")).containsExactly(SEGUNDA);
         assertThat(avisoAs("2026-11-09T21:30:00Z").aparece()).isFalse();
-        assertThat(repositorio.maisRecente().orElseThrow().dataCotacao()).isEqualTo(SEGUNDA);
+        assertThat(repositorio.vigenteEm(relogio.instant()).orElseThrow().dataCotacao()).isEqualTo(SEGUNDA);
     }
 
     @Test
@@ -129,7 +129,7 @@ class BuscaDeCotacoesTest extends TesteDeCotacoes {
 
         assertThat(rodadaAs("2026-11-02T17:00:00Z")).containsExactly(FINADOS);
 
-        assertThat(repositorio.maisRecente().orElseThrow().dataCotacao()).isEqualTo(FINADOS);
+        assertThat(repositorio.vigenteEm(relogio.instant()).orElseThrow().dataCotacao()).isEqualTo(FINADOS);
     }
 
     @Test
@@ -205,7 +205,7 @@ class BuscaDeCotacoesTest extends TesteDeCotacoes {
         assertThat(gravados).containsExactly(SEGUNDA);
         assertThat(avisoAs("2026-11-10T16:31:00Z").aparece()).as("o aviso some sozinho").isFalse();
         // Recuperada depois: o lançamento de segunda passa a usar a cotação de segunda.
-        assertThat(vigente.paraLancamentoEm(SEGUNDA).orElseThrow().dataCotacao()).isEqualTo(SEGUNDA);
+        assertThat(vigente.vigenteEm(java.time.Instant.parse("2026-11-09T12:00:00Z")).orElseThrow().dataCotacao()).isEqualTo(SEGUNDA);
     }
 
     @Test
@@ -251,7 +251,7 @@ class BuscaDeCotacoesTest extends TesteDeCotacoes {
     @Test
     void nuncaSobrescreveODiaJaGravado() {
         gravarCotacaoDe(SEGUNDA);
-        BigDecimal antes = repositorio.maisRecente().orElseThrow().taxas().usdVenda();
+        BigDecimal antes = repositorio.vigenteEm(relogio.instant()).orElseThrow().taxas().usdVenda();
         // O BCB "republica" o dia com outro número: o sistema mantém o que leu primeiro.
         cliente.arquivo(SEGUNDA, arquivoValidoDe(SEGUNDA).replace("5,50130000", "9,99990000"));
 
@@ -262,7 +262,7 @@ class BuscaDeCotacoesTest extends TesteDeCotacoes {
         assertThat(outras.usdVenda()).isEqualTo(new BigDecimal("9.99990000"));
         assertThat(repositorio.gravar(SEGUNDA, outras, Instant.parse("2026-11-09T18:00:00Z"), "outra")).isFalse();
 
-        assertThat(repositorio.maisRecente().orElseThrow().taxas().usdVenda()).isEqualTo(antes);
+        assertThat(repositorio.vigenteEm(relogio.instant()).orElseThrow().taxas().usdVenda()).isEqualTo(antes);
         assertThat(linhasNoBanco()).isEqualTo(1);
     }
 

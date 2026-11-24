@@ -1,5 +1,6 @@
 package br.com.coronasemijoias.api.consignado;
 
+import br.com.coronasemijoias.api.cotacoes.CotacaoVigente;
 import br.com.coronasemijoias.api.auditoria.ServicoDeAuditoria;
 import br.com.coronasemijoias.api.auditoria.ServicoDeAuditoria.Ator;
 import br.com.coronasemijoias.api.cadastros.Validacoes;
@@ -295,9 +296,8 @@ public class ServicoDeAcertosDaNota {
         return false;
     }
 
+    /** A cotação vigente no momento do lançamento (ADR-0006, item 15), ou nenhuma. */
     private UUID cotacaoDoDia(Instant quando) {
-        LocalDate dia = LocalDate.ofInstant(quando, BRASILIA);
-        return jdbc.query("SELECT id FROM corona.cotacoes WHERE data_cotacao <= ? ORDER BY data_cotacao DESC LIMIT 1",
-                (rs, n) -> rs.getObject(1, UUID.class), dia).stream().findFirst().orElse(null);
+        return CotacaoVigente.idVigenteEm(jdbc, quando);
     }
 }

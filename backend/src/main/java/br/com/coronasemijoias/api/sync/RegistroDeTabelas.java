@@ -61,12 +61,13 @@ public final class RegistroDeTabelas {
     public static RegistroDeTabelas daAplicacao() {
         return new RegistroDeTabelas(
                 List.of(
-                        // Cotações do Banco Central (ADR-0006): públicas, iguais para todos os vendedores.
+                        // Cotações do Banco Central e da dona (ADR-0006, itens 4 e 15): iguais para todos os vendedores. "lancada_por" nunca vai.
                         new TabelaSincronizavel("cotacoes", List.of(
                                 "data_cotacao",
                                 "usd_compra", "usd_venda", "usd_paridade_compra", "usd_paridade_venda",
                                 "pyg_compra", "pyg_venda", "pyg_paridade_compra", "pyg_paridade_venda",
-                                "buscada_em", "fonte"), true, RegraDoVendedor.daLoja()),
+                                "buscada_em", "fonte", "origem", "vigente_desde", "guaranis_por_real"), true,
+                                RegraDoVendedor.daLoja()),
                         // Cadastros básicos (tarefa 1.2). Categorias e semanas são da loja.
                         new TabelaSincronizavel("categorias", List.of("nome", "ativo"), false, RegraDoVendedor.daLoja()),
                         new TabelaSincronizavel("semanas", List.of("numero", "inicio", "fim", "situacao"), false,

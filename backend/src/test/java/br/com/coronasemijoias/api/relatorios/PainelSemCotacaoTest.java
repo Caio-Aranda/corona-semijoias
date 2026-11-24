@@ -44,7 +44,7 @@ class PainelSemCotacaoTest extends MassaDoPainel {
 
     @Test
     void semCotacaoOPainelNaoCaiAsAcertadasSaemNormaisEAsPreviasSemValor() throws Exception {
-        doReturn(Optional.empty()).when(cotacaoVigente).maisRecente();
+        doReturn(Optional.empty()).when(cotacaoVigente).vigenteEm(org.mockito.ArgumentMatchers.any());
         try {
             JsonNode p = corpoDe(ler("/api/dona/painel-semanal?semana=" + semana, dona()).andExpect(status().isOk()));
             assertThat(p.get("pedidos")).hasSize(4);

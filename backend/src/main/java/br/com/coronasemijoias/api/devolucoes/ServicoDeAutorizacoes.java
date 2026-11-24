@@ -143,7 +143,7 @@ public class ServicoDeAutorizacoes {
                 INSERT INTO corona.autorizacoes_excecao (id, venda_id, vendedor_id, cliente_id, motivo, observacao, tipo, situacao,
                     valor_pedido, cotacao_id, pedida_em, hora_ajustada, pedida_por)
                 VALUES (?, ?, ?, ?, ?, ?, ?, 'PEDIDA', ?, ?, ?, ?, ?)""", id, pedido.vendaId(), vendedorId, venda.get("cliente_id"),
-                motivo, observacao, tipo, valorPedido, RegrasDaDevolucao.cotacaoDoDia(jdbc, dia), Timestamp.from(quando),
+                motivo, observacao, tipo, valorPedido, RegrasDaDevolucao.cotacaoDoDia(jdbc, quando), Timestamp.from(quando),
                 horaAjustada, usuarioId);
         // Uma linha por peça da venda (a quantidade de todos os estados junta).
         Map<UUID, Integer> porLinha = new LinkedHashMap<>();

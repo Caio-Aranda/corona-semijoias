@@ -99,7 +99,7 @@ public class NotaDeRemessaController {
         int pecas = itens.stream().mapToInt(ItemDaNota::quantidade).sum();
         BigDecimal total = Dinheiro.arredondar(itens.stream().map(ItemDaNota::subtotal).reduce(BigDecimal.ZERO, BigDecimal::add));
         Instant enviadaEm = enviada.toInstant();
-        CotacaoDaNota cotacao = cotacoes.paraLancamento(enviadaEm).map(c -> daNota(c, total)).orElse(null);
+        CotacaoDaNota cotacao = cotacoes.vigenteEm(enviadaEm).map(c -> daNota(c, total)).orElse(null);
         return new NotaDeRemessa(LOJA, id, (String) r.get("codigo_da_maleta"), (String) r.get("numero"), (String) r.get("tipo"), status,
                 "CANCELADA".equals(status), (String) r.get("motivo_cancelamento"),
                 new Pessoa((UUID) r.get("vendedor_id"), ((Number) r.get("codigo")).intValue(), (String) r.get("vendedor")),

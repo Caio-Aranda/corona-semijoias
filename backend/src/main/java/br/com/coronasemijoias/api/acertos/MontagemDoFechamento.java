@@ -76,14 +76,17 @@ class MontagemDoFechamento {
     private final Configuracoes configuracoes;
     private final CotacaoVigente cotacaoVigente;
 
-    MontagemDoFechamento(JdbcTemplate jdbc, Configuracoes configuracoes, CotacaoVigente cotacaoVigente) {
+    private final java.time.Clock relogio;
+
+    MontagemDoFechamento(JdbcTemplate jdbc, Configuracoes configuracoes, CotacaoVigente cotacaoVigente, java.time.Clock relogio) {
+        this.relogio = relogio;
         this.jdbc = jdbc;
         this.configuracoes = configuracoes;
         this.cotacaoVigente = cotacaoVigente;
     }
 
     Montagem montar(UUID acertoId, UUID vendedorId) {
-        Cotacao cotacao = cotacaoVigente.maisRecente()
+        Cotacao cotacao = cotacaoVigente.vigenteEm(relogio.instant())
                 .orElseThrow(() -> new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.SEM_COTACAO_PARA_O_ACERTO));
 
         // --- os eventos do vendedor ainda sem acerto ---
@@ -100,10 +103,10 @@ class MontagemDoFechamento {
                     Instant vendidaEm = rs.getTimestamp("vendida_em").toInstant();
                     BigDecimal taxa = rs.getBigDecimal("pyg_venda");
                     if (taxa == null) {
-                        taxa = cotacaoVigente.paraLancamento(vendidaEm).map(c -> c.taxas().pygVenda()).orElseGet(() -> {
+                        taxa = cotacaoVigente.vigenteEm(vendidaEm).map(c -> c.taxas().pygVenda()).orElseGet(() -> {
                             if (taxaDeReserva[0] == null) {
                                 List<BigDecimal> antiga = jdbc.queryForList(
-                                        "SELECT pyg_venda FROM corona.cotacoes ORDER BY data_cotacao LIMIT 1", BigDecimal.class);
+                                        "SELECT pyg_venda FROM corona.cotacoes ORDER BY vigente_desde, id LIMIT 1", BigDecimal.class);
                                 taxaDeReserva[0] = antiga.isEmpty() ? cotacao.taxas().pygVenda() : antiga.get(0);
                             }
                             return taxaDeReserva[0];

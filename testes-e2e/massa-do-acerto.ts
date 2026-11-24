@@ -61,9 +61,9 @@ function rodarNoBancoDoTeste(sql: string, oQue: string): void {
 export function gravarCotacaoDeHoje(): void {
   rodarNoBancoDoTeste(
     `INSERT INTO corona.cotacoes (id, data_cotacao, usd_compra, usd_venda, usd_paridade_compra, usd_paridade_venda,
-    pyg_compra, pyg_venda, pyg_paridade_compra, pyg_paridade_venda, buscada_em, fonte)
-  VALUES (uuidv7(), (now() AT TIME ZONE 'America/Sao_Paulo')::date, 5.00, 5.00, 1, 1, 0.001, 0.001, 1, 1, now(), 'teste')
-  ON CONFLICT ON CONSTRAINT cotacoes_data_unica DO NOTHING;`,
+    pyg_compra, pyg_venda, pyg_paridade_compra, pyg_paridade_venda, buscada_em, fonte, vigente_desde)
+  VALUES (uuidv7(), (now() AT TIME ZONE 'America/Sao_Paulo')::date, 5.00, 5.00, 1, 1, 0.001, 0.001, 1, 1, now(), 'teste', (now() AT TIME ZONE 'America/Sao_Paulo')::date::timestamp AT TIME ZONE 'America/Sao_Paulo')
+  ON CONFLICT (data_cotacao) WHERE origem = 'BANCO_CENTRAL' DO NOTHING;`,
     'a cotação do teste',
   );
 }

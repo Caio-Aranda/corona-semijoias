@@ -110,9 +110,9 @@ class RelatoriosDeMaletaTest extends TesteDeIntegracao {
     private void cotacao(String dia, String usd, String pyg) {
         jdbc.update("""
                 INSERT INTO corona.cotacoes (id, data_cotacao, usd_compra, usd_venda, usd_paridade_compra,
-                    usd_paridade_venda, pyg_compra, pyg_venda, pyg_paridade_compra, pyg_paridade_venda, buscada_em, fonte)
-                VALUES (uuidv7(), ?::date, ?::numeric, ?::numeric, 1, 1, ?::numeric, ?::numeric, 1, 1, now(), 'teste')
-                ON CONFLICT ON CONSTRAINT cotacoes_data_unica DO NOTHING""", dia, usd, usd, pyg, pyg);
+                    usd_paridade_venda, pyg_compra, pyg_venda, pyg_paridade_compra, pyg_paridade_venda, buscada_em, fonte, vigente_desde)
+                VALUES (uuidv7(), ?::date, ?::numeric, ?::numeric, 1, 1, ?::numeric, ?::numeric, 1, 1, now(), 'teste', ?::date::timestamp AT TIME ZONE 'America/Sao_Paulo')
+                ON CONFLICT (data_cotacao) WHERE origem = 'BANCO_CENTRAL' DO NOTHING""", dia, usd, usd, pyg, pyg, dia);
     }
 
     /** Dólar a 5,00 e Guarani a 0,001 real (1 real = 1000 Gs.) até 19/03/2285; depois 6,00 e 0,002. */

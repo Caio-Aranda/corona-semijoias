@@ -150,7 +150,7 @@ public class ServicoDeRecebimentosDoVendedor {
      * nova com a tela aberta), 409 também: nada é gravado e a dona confere o valor em reais de novo.
      */
     private ValorRecebido converterPelaCotacaoDe(Instant hora, String moeda, BigDecimal digitado, LocalDate cotacaoDaTela) {
-        Cotacao cotacao = cotacoes.paraLancamento(hora)
+        Cotacao cotacao = cotacoes.vigenteEm(hora)
                 .orElseThrow(() -> new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.SEM_COTACAO_PARA_O_RECEBIMENTO));
         if (cotacaoDaTela != null && !cotacaoDaTela.equals(cotacao.dataCotacao())) {
             throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.COTACAO_DO_RECEBIMENTO_MUDOU);

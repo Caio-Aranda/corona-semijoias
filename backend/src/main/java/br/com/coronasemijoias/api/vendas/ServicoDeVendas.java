@@ -1,5 +1,6 @@
 package br.com.coronasemijoias.api.vendas;
 
+import br.com.coronasemijoias.api.cotacoes.CotacaoVigente;
 import br.com.coronasemijoias.api.auditoria.ServicoDeAuditoria;
 import br.com.coronasemijoias.api.auditoria.ServicoDeAuditoria.Ator;
 import br.com.coronasemijoias.api.cadastros.Validacoes;
@@ -360,7 +361,7 @@ public class ServicoDeVendas {
             origem.definirNaTransacaoAtual(aparelho);
         }
         Instant quando = vendidaEm == null ? relogio.instant() : vendidaEm;
-        UUID cotacao = cotacaoDoDia(LocalDate.ofInstant(quando, BRASILIA));
+        UUID cotacao = cotacaoDoDia(quando);
         jdbc.update("""
                 INSERT INTO corona.vendas (id, vendedor_id, cliente_id, remessa_id, subtotal, desconto, total, cotacao_id,
                     vendida_em, hora_ajustada, troca_id)
@@ -703,10 +704,9 @@ public class ServicoDeVendas {
                 .stream().findFirst().orElse(null);
     }
 
-    /** A cotação mais recente até hoje (horário de Brasília), ou nenhuma. */
-    private UUID cotacaoDoDia(LocalDate dia) {
-        return jdbc.query("SELECT id FROM corona.cotacoes WHERE data_cotacao <= ? ORDER BY data_cotacao DESC LIMIT 1",
-                (rs, n) -> rs.getObject(1, UUID.class), dia).stream().findFirst().orElse(null);
+    /** A cotação vigente no momento do lançamento (ADR-0006, item 15), ou nenhuma. */
+    private UUID cotacaoDoDia(Instant quando) {
+        return CotacaoVigente.idVigenteEm(jdbc, quando);
     }
 
     /** O parcelamento do pedido bate com as parcelas gravadas (sem parcelamento no pedido, vale o que foi gravado). */
