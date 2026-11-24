@@ -10,6 +10,7 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
@@ -78,6 +79,74 @@ class ConciliacoesDoConsignadoTest extends ApoioDoConsignado {
             var achadas = fase7.conferir(chave).conferencias().get(0).divergencias();
             assertThat(tem(achadas, k.peca()) || tem(achadas, k.maleta())).as(chave + ": " + achadas).isFalse();
         }
+    }
+
+    @Autowired
+    ServicoDoFechamentoDaMaleta fechamento;
+
+    /** Como {@link #estragar}, mas olhando uma conferência da Fase 7 (C11, C12...). */
+    private List<Diferenca> estragarNaFase7(String chave, List<String> tabelas, String... comandos) throws Exception {
+        try (Connection con = conectarComoMigracao(); Statement s = con.createStatement()) {
+            try {
+                for (String t : tabelas) {
+                    s.execute("ALTER TABLE corona." + t + " DISABLE TRIGGER USER");
+                }
+                for (String c : comandos) {
+                    s.execute(c);
+                }
+                var comoDono = new JdbcTemplate(new SingleConnectionDataSource(con, true));
+                return new ConciliacoesDaFase7(comoDono).conferir(chave).conferencias().get(0).divergencias();
+            } finally {
+                con.rollback();
+            }
+        }
+    }
+
+    private String saidaDaNota(Caso k, int quantidade) {
+        return "INSERT INTO corona.movimentos_remessa (id, remessa_id, produto_id, tipo, quantidade, nota_id, sync_seq, sync_xid) VALUES ('"
+                + UUID.randomUUID() + "', '" + k.maleta() + "', '" + k.peca() + "', 'CONSIGNADO_SAIDA', " + quantidade + ", '" + k.nota()
+                + "', nextval('corona.sync_seq_global'), pg_current_xact_id())";
+    }
+
+    private String alertaSemSaldo(Caso k) {
+        return "INSERT INTO corona.alertas_consignado (id, tipo, vendedor_id, registro_tabela, registro_id, detalhe) VALUES ('"
+                + UUID.randomUUID() + "', 'PECA_SEM_SALDO_NA_MALETA', '" + k.v().vendedorId() + "', 'notas_consignado', '" + k.nota()
+                + "', '{\"remessa_id\":\"" + k.maleta() + "\",\"produto_id\":\"" + k.peca() + "\"}')";
+    }
+
+    /**
+     * A saída da nota acima do saldo é aceita com alerta (ADR-0016, dúvida D4): a C12 acusa a peça negativa sem alerta e perdoa
+     * a que tem alerta, como a K5 (antes acusava as duas).
+     */
+    @Test
+    void c12PerdoaAPecaNegativaComAlertaComoAK5() throws Exception {
+        Caso k = caso();
+        assertThat(tem(estragarNaFase7("C12", List.of("movimentos_remessa"), saidaDaNota(k, -50)), k.maleta())).isTrue();
+        assertThat(tem(estragarNaFase7("C12", List.of("movimentos_remessa"), saidaDaNota(k, -50), alertaSemSaldo(k)), k.maleta()))
+                .isFalse();
+    }
+
+    /** A maleta FECHADA (leva 9) entra na C12: limpa quando está certa, acusada quando um movimento sobra. */
+    @Test
+    void c12ConfereAMaletaFechada() throws Exception {
+        Caso k = caso();
+        fechamento.iniciar(k.maleta(), usuarios.dona().id());
+        int naMaleta = jdbc.queryForObject("""
+                SELECT i.qtd_enviada + coalesce((SELECT sum(m.quantidade) FROM corona.movimentos_remessa m
+                                                  WHERE m.remessa_id = i.remessa_id AND m.produto_id = i.produto_id), 0)
+                  FROM corona.itens_remessa i WHERE i.remessa_id = ? AND i.produto_id = ?""", Integer.class, k.maleta(), k.peca());
+        fechamento.registrarLeituras(k.maleta(),
+                List.of(new ServicoDoFechamentoDaMaleta.Leitura(UUID.randomUUID(), k.peca(), naMaleta)), usuarios.dona().id());
+        fechamento.concluir(k.maleta(), usuarios.dona().id());
+        assertThat(jdbc.queryForObject("SELECT status FROM corona.remessas WHERE id = ?", String.class, k.maleta())).isEqualTo("FECHADA");
+
+        var limpa = new ConciliacoesDaFase7(jdbc).conferir("C12").conferencias().get(0).divergencias();
+        assertThat(tem(limpa, k.maleta())).as(limpa.toString()).isFalse();
+        var estragada = estragarNaFase7("C12", List.of("movimentos_remessa"),
+                "INSERT INTO corona.movimentos_remessa (id, remessa_id, produto_id, tipo, quantidade, sync_seq, sync_xid) VALUES ('"
+                        + UUID.randomUUID() + "', '" + k.maleta() + "', '" + k.peca()
+                        + "', 'AJUSTE', 1, nextval('corona.sync_seq_global'), pg_current_xact_id())");
+        assertThat(tem(estragada, k.maleta())).isTrue();
     }
 
     @Test
