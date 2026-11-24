@@ -64,7 +64,7 @@ export const PT_TEXTOS_DE_MALETAS = {
     naoAchouTexto: (codigo: string) =>
       `Não encontramos nenhuma peça com o código ${codigo}. Confira o código ou cadastre a peça em Cadastros → Produtos.`,
     desativada: (nome: string) =>
-      `${nome} está desativada e não pode entrar na maleta. Reative a peça em Cadastros → Produtos.`,
+      `${nome} está inativa e não pode entrar na maleta. Reative a peça em Cadastros → Produtos.`,
     semEstoque: (nome: string) =>
       `${nome} está sem estoque. Receba uma compra ou faça uma entrada no estoque antes de montar a maleta.`,
     passaDoEstoque: (nome: string, saldo: number) =>

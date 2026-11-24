@@ -60,7 +60,7 @@ export const ES_TEXTOS_DE_MALETAS: NoMesmoFormato<typeof PT_TEXTOS_DE_MALETAS> =
     naoAchouTexto: (codigo: string) =>
       `No encontramos ninguna pieza con el código ${codigo}. Revise el código o registre la pieza en Registros → Productos.`,
     desativada: (nome: string) =>
-      `${nome} está desactivada y no puede entrar en la maleta. Reactive la pieza en Registros → Productos.`,
+      `${nome} está inactiva y no puede entrar en la maleta. Reactive la pieza en Registros → Productos.`,
     semEstoque: (nome: string) =>
       `${nome} está sin stock. Reciba una compra o haga una entrada al stock antes de armar la maleta.`,
     passaDoEstoque: (nome: string, saldo: number) =>

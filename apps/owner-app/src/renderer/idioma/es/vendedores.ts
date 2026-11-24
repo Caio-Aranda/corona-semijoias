@@ -13,7 +13,7 @@ export const ES_TEXTOS_DE_VENDEDORES: NoMesmoFormato<typeof PT_TEXTOS_DE_VENDEDO
   todas: 'Todas',
   todos: 'Todos',
   ativos: 'Activos',
-  desativados: 'Desactivados',
+  desativados: 'Inactivos',
   colunas: {
     codigo: 'Código',
     nome: 'Nombre',
@@ -24,7 +24,7 @@ export const ES_TEXTOS_DE_VENDEDORES: NoMesmoFormato<typeof PT_TEXTOS_DE_VENDEDO
     acoes: 'Qué hacer',
   },
   limiteDaLista: { semLimite: 'Sin límite', naoDefinido: 'Límite no definido' },
-  situacao: { ativo: 'Activo', desativado: 'Desactivado' },
+  situacao: { ativo: 'Activo', desativado: 'Inactivo' },
   legenda: 'Lista de representantes',
   abrir: 'Abrir registro',
   vazio: 'Todavía no hay ningún representante.',
@@ -42,7 +42,7 @@ export const ES_TEXTOS_DE_VENDEDORES: NoMesmoFormato<typeof PT_TEXTOS_DE_VENDEDO
     acesso: {
       titulo: 'Acceso al sistema',
       com: (usuario: string, ativo: boolean) =>
-        `Usuario ${usuario}${ativo ? '' : ' (desactivado)'}. El acceso se crea y se cambia en Personas → Usuarios.`,
+        `Usuario ${usuario}${ativo ? '' : ' (inactivo)'}. El acceso se crea y se cambia en Personas → Usuarios.`,
       sem: 'Este representante todavía no tiene acceso. Cree el acceso en Personas → Usuarios.',
       erro: 'No se pudo ver el acceso de este representante ahora.',
     },
@@ -174,12 +174,12 @@ export const ES_TEXTOS_DE_VENDEDORES: NoMesmoFormato<typeof PT_TEXTOS_DE_VENDEDO
     feito: { enviado: 'El documento fue enviado.', excluido: 'El documento fue eliminado.' },
   },
   confirmar: {
-    desativarTitulo: (nome: string) => `¿Desactivar a ${nome}?`,
+    desativarTitulo: (nome: string) => `¿Inactivar a ${nome}?`,
     desativarTexto: (nome: string) =>
       `${nome} sale de las listas de representantes activos. Lo que ya se registró con él sigue guardado. Usted puede reactivar después.`,
     reativarTitulo: (nome: string) => `¿Reactivar a ${nome}?`,
     reativarTexto: (nome: string) => `${nome} vuelve a las listas de representantes activos.`,
-    desativar: 'Desactivar representante',
+    desativar: 'Inactivar representante',
     reativar: 'Reactivar representante',
     voltar: 'Volver',
   },
@@ -193,7 +193,7 @@ export const ES_TEXTOS_DE_VENDEDORES: NoMesmoFormato<typeof PT_TEXTOS_DE_VENDEDO
     criado: (nome: string) => `${nome} fue registrado. Ahora puede completar las otras pestañas.`,
     editado: (nome: string) => `Se guardaron los datos de ${nome}.`,
     abaSalva: 'Se guardaron los datos de esta pestaña.',
-    desativado: (nome: string) => `${nome} fue desactivado.`,
+    desativado: (nome: string) => `${nome} fue inactivado.`,
     reativado: (nome: string) => `${nome} fue reactivado.`,
   },
 };

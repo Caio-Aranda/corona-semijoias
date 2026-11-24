@@ -16,7 +16,7 @@ export const PT_TEXTOS_DE_VENDEDORES = {
   todas: 'Todas',
   todos: 'Todos',
   ativos: 'Ativos',
-  desativados: 'Desativados',
+  desativados: 'Inativos',
   colunas: {
     codigo: 'Código',
     nome: 'Nome',
@@ -28,7 +28,7 @@ export const PT_TEXTOS_DE_VENDEDORES = {
   },
   /** O que a coluna do limite mostra quando não há valor em reais. */
   limiteDaLista: { semLimite: 'Sem limite', naoDefinido: 'Limite não definido' },
-  situacao: { ativo: 'Ativo', desativado: 'Desativado' },
+  situacao: { ativo: 'Ativo', desativado: 'Inativo' },
   legenda: 'Lista de representantes',
   abrir: 'Abrir cadastro',
   vazio: 'Ainda não há nenhum representante.',
@@ -46,7 +46,7 @@ export const PT_TEXTOS_DE_VENDEDORES = {
     acesso: {
       titulo: 'Acesso ao sistema',
       com: (usuario: string, ativo: boolean) =>
-        `Usuário ${usuario}${ativo ? '' : ' (desativado)'}. O acesso é criado e mudado em Pessoas → Usuários.`,
+        `Usuário ${usuario}${ativo ? '' : ' (inativo)'}. O acesso é criado e mudado em Pessoas → Usuários.`,
       sem: 'Este representante ainda não tem acesso. Crie o acesso em Pessoas → Usuários.',
       erro: 'Não foi possível ver o acesso deste representante agora.',
     },
@@ -178,12 +178,12 @@ export const PT_TEXTOS_DE_VENDEDORES = {
     feito: { enviado: 'O documento foi enviado.', excluido: 'O documento foi excluído.' },
   },
   confirmar: {
-    desativarTitulo: (nome: string) => `Desativar ${nome}?`,
+    desativarTitulo: (nome: string) => `Inativar ${nome}?`,
     desativarTexto: (nome: string) =>
       `${nome} sai das listas de representantes ativos. O que já foi registrado com ele continua guardado. Você pode reativar depois.`,
     reativarTitulo: (nome: string) => `Reativar ${nome}?`,
     reativarTexto: (nome: string) => `${nome} volta para as listas de representantes ativos.`,
-    desativar: 'Desativar representante',
+    desativar: 'Inativar representante',
     reativar: 'Reativar representante',
     voltar: 'Voltar',
   },
@@ -197,7 +197,7 @@ export const PT_TEXTOS_DE_VENDEDORES = {
     criado: (nome: string) => `${nome} foi cadastrado. Agora você pode preencher as outras abas.`,
     editado: (nome: string) => `Os dados de ${nome} foram salvos.`,
     abaSalva: 'Os dados desta aba foram salvos.',
-    desativado: (nome: string) => `${nome} foi desativado.`,
+    desativado: (nome: string) => `${nome} foi inativado.`,
     reativado: (nome: string) => `${nome} foi reativado.`,
   },
 } as const;

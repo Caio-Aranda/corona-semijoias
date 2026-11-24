@@ -17,7 +17,7 @@ final class TextoDaAuditoria {
     private static final Map<String, String> CAMPOS = new LinkedHashMap<>();
 
     static {
-        acoes("USUARIO_CRIADO", "Usuário criado", "USUARIO_EDITADO", "Usuário alterado", "USUARIO_DESATIVADO", "Usuário desativado",
+        acoes("USUARIO_CRIADO", "Usuário criado", "USUARIO_EDITADO", "Usuário alterado", "USUARIO_DESATIVADO", "Usuário inativado",
                 "USUARIO_REATIVADO", "Usuário reativado", "SENHA_REDEFINIDA", "Senha redefinida",
                 "REATIVADO", "Cadastro reativado", "INATIVADO", "Cadastro inativado",
                 "PRODUTO_CRIADO", "Produto cadastrado", "PRECO_VENDA_ALTERADO", "Preço de venda alterado",

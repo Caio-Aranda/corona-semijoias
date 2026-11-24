@@ -15,7 +15,7 @@ export const ERROS_EM_ESPANHOL: Record<string, string> = {
   LOGIN_INVALIDO:
     'No se pudo entrar. Usuario o contraseña incorrectos. Revise lo que escribió e intente de nuevo.',
   USUARIO_DESATIVADO:
-    'Su acceso fue desactivado. Hable con la dueña de la tienda para volver a usar el sistema.',
+    'Su acceso está inactivo. Hable con la dueña de la tienda para volver a usar el sistema.',
   SESSAO_TERMINADA:
     'Su sesión terminó. Entre de nuevo con su usuario y su contraseña para continuar.',
   SENHA_TEMPORARIA_VENCIDA:
@@ -96,7 +96,7 @@ export const ERROS_EM_ESPANHOL: Record<string, string> = {
     'El valor de la maleta pasa el límite de consignación del representante.',
   PECA_NAO_E_DESTA_MALETA:
     'Esta pieza no es de esta maleta. Revise el código de la pieza y el de la maleta.',
-  PECA_FORA_DA_MALETA: 'Esta pieza está desactivada o fue eliminada y no puede ir a la maleta.',
+  PECA_FORA_DA_MALETA: 'Esta pieza está inactiva o fue eliminada y no puede ir a la maleta.',
   DEVOLUCAO_MAIOR_QUE_O_SALDO:
     'Hay menos piezas en la maleta de lo que se informó. Revise la cantidad.',
   MALETA_JA_MOVIMENTADA:
@@ -120,7 +120,7 @@ export const ERROS_EM_ESPANHOL: Record<string, string> = {
   CONTAGEM_NAO_PODE_FECHAR:
     'No se puede cerrar este conteo porque el stock de una pieza quedaría menor que cero.',
   VENDA_NAO_ENCONTRADA: 'No encontramos esta venta. Actualice la pantalla e intente de nuevo.',
-  VENDEDOR_DESATIVADO: 'Este representante está desactivado. Hable con la dueña.',
+  VENDEDOR_DESATIVADO: 'Este representante está inactivo. Hable con la dueña.',
   VENDA_JA_REGISTRADA_DIFERENTE:
     'Esta venta ya fue registrada con otros datos. Revise sus ventas antes de registrar de nuevo.',
   VENDA_SEM_SALDO: 'No hay piezas suficientes en su maleta para esta venta.',

@@ -35,7 +35,7 @@ export const PT_TEXTOS_DE_RELATORIOS_DE_CONTROLE = {
       SUCESSO: 'Entrou',
       SENHA_INCORRETA: 'Senha errada',
       BLOQUEADO: 'Recusada: acesso bloqueado',
-      USUARIO_DESATIVADO: 'Usuário desativado',
+      USUARIO_DESATIVADO: 'Usuário inativo',
       APP_INCOMPATIVEL: 'Programa muito antigo',
       SENHA_TEMPORARIA_VENCIDA: 'Senha temporária vencida',
       PEDIDO_INVALIDO: 'Computador que não combina com o acesso',

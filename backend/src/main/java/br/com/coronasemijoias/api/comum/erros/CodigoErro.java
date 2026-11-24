@@ -43,8 +43,8 @@ public enum CodigoErro {
 
     /** Usuário desativado: no login com a senha certa (403) ou no uso de um token ainda válido (401). */
     USUARIO_DESATIVADO(
-            "Seu acesso foi desativado.",
-            "Seu acesso foi desativado. Fale com a dona da loja para voltar a usar o sistema."),
+            "Seu acesso está inativo.",
+            "Seu acesso está inativo. Fale com a dona da loja para voltar a usar o sistema."),
 
     /** Sem token, token vencido ou inválido (HTTP 401). */
     SESSAO_TERMINADA(
@@ -284,7 +284,7 @@ public enum CodigoErro {
     /** Peça desativada ou excluída não vai para a maleta (HTTP 409). O servidor monta o texto. */
     PECA_FORA_DA_MALETA(
             "Esta peça não pode ir para a maleta.",
-            "Esta peça está desativada ou foi excluída e não pode ir para a maleta."),
+            "Esta peça está inativa ou foi excluída e não pode ir para a maleta."),
 
     /** Fechamento da maleta: a peça lida existe, mas não faz parte desta maleta (HTTP 422). O servidor diz de qual maleta é, se achar. */
     PECA_NAO_E_DESTA_MALETA(
@@ -357,8 +357,8 @@ public enum CodigoErro {
 
     /** O cadastro do representante está inativo: não vende, não confere maleta (HTTP 409; ADR-0011, linha de 11/11/2026). */
     VENDEDOR_DESATIVADO(
-            "Este representante está desativado.",
-            "Este representante está desativado. Fale com a dona."),
+            "Este representante está inativo.",
+            "Este representante está inativo. Fale com a dona."),
 
     /** O mesmo identificador voltou com outros dados (HTTP 409). */
     VENDA_JA_REGISTRADA_DIFERENTE(

@@ -61,7 +61,7 @@ public class ConsultasDeControle {
             "SUBSTITUIDO", "Trocado por outro", "BLOQUEADO", "Bloqueado");
 
     private static final Map<String, String> RESULTADOS = Map.of("SUCESSO", "Entrou", "SENHA_INCORRETA", "Senha errada",
-            "BLOQUEADO", "Recusada: acesso bloqueado", "USUARIO_DESATIVADO", "Usuário desativado",
+            "BLOQUEADO", "Recusada: acesso bloqueado", "USUARIO_DESATIVADO", "Usuário inativo",
             "APP_INCOMPATIVEL", "Programa muito antigo", "SENHA_TEMPORARIA_VENCIDA", "Senha temporária vencida",
             "PEDIDO_INVALIDO", "Computador que não combina com o acesso", "BLOQUEIO_LIMPO", "Bloqueio retirado ao redefinir a senha");
 
