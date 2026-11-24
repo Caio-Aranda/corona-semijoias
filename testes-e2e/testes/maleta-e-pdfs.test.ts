@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { readdirSync, readFileSync, unlinkSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { DONA } from '../ambiente';
 import { abrirOApp, chamarApi, entrar, irPara, novoId, type AppAberto } from '../apoio';
@@ -25,11 +25,37 @@ function textoDoPdf(caminho: string): string {
   return new TextDecoder('windows-1252').decode(readFileSync(caminho));
 }
 
+/**
+ * O arquivo aparece na pasta quando o download começa, antes de terminar: só conta o PDF já fechado (termina em %%EOF). Ler
+ * ou apagar um arquivo pela metade fazia o teste dos dois idiomas falhar de vez em quando.
+ */
+function pdfsProntos(pasta: string, ignorar: ReadonlySet<string> = new Set()): string[] {
+  return readdirSync(pasta).filter((f) => {
+    if (!f.endsWith('.pdf') || ignorar.has(f)) return false;
+    try {
+      return readFileSync(join(pasta, f), 'latin1').trimEnd().endsWith('%%EOF');
+    } catch {
+      return false;
+    }
+  });
+}
+
 async function esperarArquivo(pasta: string, final: string): Promise<string> {
   await expect
-    .poll(() => readdirSync(pasta).filter((f) => f.endsWith(final)).length, { timeout: 20_000 })
+    .poll(
+      () =>
+        (final === '.pdf'
+          ? pdfsProntos(pasta)
+          : readdirSync(pasta).filter((f) => f.endsWith(final))
+        ).length,
+      {
+        timeout: 20_000,
+      },
+    )
     .toBe(1);
-  return join(pasta, readdirSync(pasta).find((f) => f.endsWith(final)) ?? '');
+  const nome =
+    final === '.pdf' ? pdfsProntos(pasta)[0] : readdirSync(pasta).find((f) => f.endsWith(final));
+  return join(pasta, nome ?? '');
 }
 
 async function prepararMassa(): Promise<void> {
@@ -125,21 +151,9 @@ test('relatório de produtos em PDF sai em português e, trocando o idioma, em e
     const antes = new Set(readdirSync(pastaDeDownloads));
     await janela.getByRole('button', { name: botao }).click();
     await expect
-      .poll(
-        () =>
-          readdirSync(pastaDeDownloads).filter((f) => !antes.has(f) && f.endsWith('.pdf')).length,
-        {
-          timeout: 20_000,
-        },
-      )
+      .poll(() => pdfsProntos(pastaDeDownloads, antes).length, { timeout: 20_000 })
       .toBe(1);
-    const novo = join(
-      pastaDeDownloads,
-      readdirSync(pastaDeDownloads).find((f) => !antes.has(f) && f.endsWith('.pdf')) ?? '',
-    );
-    const texto = textoDoPdf(novo);
-    // Os dois idiomas dão o mesmo nome de arquivo: apaga para o segundo download aparecer como novo.
-    unlinkSync(novo);
+    const texto = textoDoPdf(join(pastaDeDownloads, pdfsProntos(pastaDeDownloads, antes)[0] ?? ''));
     return texto;
   };
 

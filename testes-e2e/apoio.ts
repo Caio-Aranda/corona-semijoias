@@ -30,7 +30,9 @@ export async function abrirOApp(idioma: 'es' | 'pt' = 'pt'): Promise<AppAberto> 
   });
   await app.evaluate(({ session }, pasta) => {
     session.defaultSession.on('will-download', (_evento, item) => {
-      item.setSavePath(`${pasta}/${item.getFilename()}`);
+      // Nome único por download: dois arquivos com o mesmo nome (o PDF em português e depois em espanhol) nunca disputam o
+      // mesmo caminho enquanto o primeiro ainda está sendo escrito.
+      item.setSavePath(`${pasta}/${Date.now()}-${item.getFilename()}`);
     });
   }, pastaDeDownloads);
   const janela = await app.firstWindow();
