@@ -1,5 +1,7 @@
+import { textosVivos } from './idioma/idioma';
+import { ES_TEXTOS_RELATORIOS } from './idioma/es/relatorios';
 /** Textos dos relatórios de cadastro (glossário, "Corona Gestão: relatórios de cadastro", tarefa 1.12). */
-export const TEXTOS_RELATORIOS = {
+export const PT_TEXTOS_RELATORIOS = {
   loja: 'Corona Semijoias',
   grupoDoMenu: 'Relatórios de cadastros',
   grupoDoEstoque: 'Relatórios de estoque',
@@ -15,7 +17,7 @@ export const TEXTOS_RELATORIOS = {
     categoria: 'Categoria',
     fornecedor: 'Fornecedor',
     praca: 'Praça',
-    vendedor: 'Vendedor',
+    vendedor: 'Representante',
     restricao: 'Restrição',
     de: 'De',
     ate: 'Até',
@@ -69,7 +71,10 @@ export const TEXTOS_RELATORIOS = {
     FORNECEDOR: 'Código do fornecedor',
     EAN13: 'Código de barras',
   } as Record<string, string>,
-  tiposDeAniversariante: { VENDEDOR: 'Vendedor', CLIENTE: 'Cliente' } as Record<string, string>,
+  tiposDeAniversariante: { VENDEDOR: 'Representante', CLIENTE: 'Cliente' } as Record<
+    string,
+    string
+  >,
   alteracoesSemImportacao:
     'Mostra o que foi cadastrado e alterado, e quem fez. O resultado das importações em massa está no relatório "Resultado das importações".',
   importacoesNota:
@@ -116,3 +121,9 @@ export const TEXTOS_RELATORIOS = {
       'A foto aparece na tela; os arquivos PDF, Excel e CSV levam o nome e o código da peça.',
   },
 };
+
+export const TEXTOS_RELATORIOS = textosVivos(
+  'relatorios',
+  PT_TEXTOS_RELATORIOS,
+  ES_TEXTOS_RELATORIOS,
+);

@@ -34,7 +34,7 @@ describe('SaldoDaLoja', () => {
     expect(screen.queryByText('Acabou')).toBeNull();
   });
 
-  it('com muitos vendedores mostra três nomes e "e mais N"', () => {
+  it('com muitos representantes mostra três nomes e "e mais N"', () => {
     const nomes = ['Ana', 'Bia', 'Cris', 'Dani', 'Eva'];
     render(
       <SaldoDaLoja

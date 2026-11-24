@@ -6,6 +6,7 @@
 import { OPERACOES_DE_ACERTOS } from './acertos';
 import { OPERACOES_DE_CADASTRO } from './cadastros';
 import { OPERACOES_DE_COMPRAS } from './compras';
+import { OPERACOES_DE_CONSIGNADO } from './consignado';
 import { OPERACOES_DE_DEVOLUCOES } from './devolucoes';
 import { OPERACOES_DE_ESTOQUE } from './estoque';
 import { OPERACOES_DE_FINANCEIRO } from './financeiro';
@@ -28,6 +29,10 @@ export const OPERACOES_DA_API = [
   'cotacao.converter',
   'avisos.listar',
   'conciliacoes.conferir',
+  'conferencias.listar',
+  'conferencias.ver',
+  'conferencias.conferirAgora',
+  'painel.semanal',
   'vendedores.escolha',
   ...OPERACOES_DE_CADASTRO,
   ...OPERACOES_DE_VENDEDORES,
@@ -40,6 +45,7 @@ export const OPERACOES_DA_API = [
   ...OPERACOES_DE_RELATORIOS,
   ...OPERACOES_DE_SINCRONIZACAO,
   ...OPERACOES_DE_DEVOLUCOES,
+  ...OPERACOES_DE_CONSIGNADO,
 ] as const;
 export type OperacaoDaApi = (typeof OPERACOES_DA_API)[number];
 
@@ -53,6 +59,8 @@ export const CANAIS = {
   sessaoMudou: 'corona:sessao-mudou',
   atualizacaoEstado: 'corona:atualizacao-estado',
   atualizacaoMudou: 'corona:atualizacao-mudou',
+  idiomaLer: 'corona:idioma-ler',
+  idiomaGuardar: 'corona:idioma-guardar',
 } as const;
 
 /** A lista fixa de funções que a ponte oferece à tela. Acrescentar uma função exige mexer aqui. */
@@ -64,6 +72,8 @@ export const FUNCOES_DA_PONTE = [
   'chamarApi',
   'aoMudarASessao',
   'aoMudarAAtualizacao',
+  'lerIdioma',
+  'guardarIdioma',
 ] as const;
 
 export interface DadosDeEntrada {
@@ -98,7 +108,7 @@ export interface UsuarioLogado {
 export type ResultadoDeEntrada =
   | { tipo: 'entrou' }
   | { tipo: 'trocar-senha' }
-  | { tipo: 'recusado'; mensagem: string }
+  | { tipo: 'recusado'; mensagem: string; codigo?: string }
   | { tipo: 'app-desatualizado'; mensagem: string }
   | { tipo: 'sem-conexao' }
   | { tipo: 'erro-inesperado' };
@@ -146,4 +156,8 @@ export interface PonteDoCorona {
    * sempre que mudar. Devolve a função que cancela o aviso.
    */
   aoMudarAAtualizacao(ouvinte: (aviso: AvisoDeAtualizacao) => void): () => void;
+  /** O idioma guardado neste computador ("es" ou "pt"), lido na hora; outro valor quer dizer que não há escolha. */
+  lerIdioma?(): string;
+  /** Guarda o idioma escolhido neste computador. */
+  guardarIdioma?(idioma: string): void;
 }

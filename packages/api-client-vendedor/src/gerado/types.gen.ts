@@ -657,8 +657,10 @@ export type RecebimentoDoAcerto = {
     estornado?: boolean;
     forma?: string;
     id?: string;
+    moeda?: string;
     recebidoEm?: string;
     valor?: string;
+    valorNaMoeda?: string;
 };
 
 export type RecebimentoDoVendedor = {
@@ -1203,6 +1205,42 @@ export type VerMeuClienteResponses = {
 
 export type VerMeuClienteResponse = VerMeuClienteResponses[keyof VerMeuClienteResponses];
 
+export type BaixarFotoDoMeuClienteData = {
+    body?: never;
+    path: {
+        id: string;
+        tipo: string;
+    };
+    query?: never;
+    url: '/api/vendedor/clientes/{id}/fotos/{tipo}';
+};
+
+export type BaixarFotoDoMeuClienteResponses = {
+    /**
+     * OK
+     */
+    200: string;
+};
+
+export type BaixarFotoDoMeuClienteResponse = BaixarFotoDoMeuClienteResponses[keyof BaixarFotoDoMeuClienteResponses];
+
+export type EnviarFotoDoMeuClienteData = {
+    body: string;
+    path: {
+        id: string;
+        tipo: string;
+    };
+    query?: never;
+    url: '/api/vendedor/clientes/{id}/fotos/{tipo}';
+};
+
+export type EnviarFotoDoMeuClienteResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
 export type PreviaDaMinhaComissaoData = {
     body?: never;
     path?: never;
@@ -1643,7 +1681,9 @@ export type RelatorioDeMinhasVendasResponse = RelatorioDeMinhasVendasResponses[k
 export type ConferirDadosData = {
     body?: never;
     path?: never;
-    query?: never;
+    query?: {
+        formato?: number;
+    };
     url: '/api/vendedor/sync/conferencia';
 };
 
@@ -1677,6 +1717,7 @@ export type ReceberDadosData = {
         cursor?: string;
         limite?: number;
         tabela?: string;
+        formato?: number;
     };
     url: '/api/vendedor/sync/pull';
 };

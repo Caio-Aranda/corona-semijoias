@@ -9,6 +9,7 @@ import type {
   ResultadoDeChamada,
 } from '../../../shared/ponte';
 import { conferirRelatorio } from '../../../shared/validacao-relatorios';
+import { abrirAreaDoMenu, abrirRelatorioPeloMenu } from '../../apoio-de-testes';
 import { App } from '../../App';
 
 const entregues: { nome: string; tipo: string; bytes: Uint8Array }[] = [];
@@ -117,7 +118,7 @@ const dosRelatorios = (m: ReturnType<typeof montar>) =>
 async function abrir(m: ReturnType<typeof montar>, titulo: string) {
   const u = userEvent.setup();
   render(<App ponte={m.ponte} />);
-  await u.click(await screen.findByRole('button', { name: titulo }));
+  await abrirRelatorioPeloMenu(u, titulo);
   return u;
 }
 
@@ -129,33 +130,73 @@ beforeEach(() => {
 describe('Relatórios financeiros (tarefa 7.12)', () => {
   it('o menu tem o grupo e os nove relatórios com os nomes do glossário', async () => {
     const m = montar();
+    const u = userEvent.setup();
     render(<App ponte={m.ponte} />);
-    expect(await screen.findByText('Relatórios financeiros')).toBeInTheDocument();
+    const cartoes = await abrirAreaDoMenu(u, 'financeiro');
     for (const t of [
-      'Acertos por vendedor e semana',
+      'Acertos por representante e semana',
       'Faltas e pendências',
       'Esperado e contado',
-      'Comissões por vendedor e semana',
+      'Comissões por representante e semana',
       'Parcelas a receber',
       'Parcelas a pagar',
       'Quem está devendo',
       'Fluxo do caixa',
       'Recebimentos por forma de pagamento',
     ]) {
-      expect(await screen.findByRole('button', { name: t })).toBeInTheDocument();
+      expect(within(cartoes).getByText(t)).toBeInTheDocument();
     }
   });
 
   it('o acerto mostra Real, Dólar e Guarani que vieram da linha e do rodapé, não os de hoje', async () => {
     const m = montar();
-    await abrir(m, 'Acertos por vendedor e semana');
-    await screen.findByRole('heading', { name: 'Acertos por vendedor e semana', level: 1 });
+    await abrir(m, 'Acertos por representante e semana');
+    await screen.findByRole('heading', { name: 'Acertos por representante e semana', level: 1 });
     expect((await screen.findAllByText('Maria Souza')).length).toBeGreaterThan(0);
     expect(dosRelatorios(m)[0]).toMatchObject({ relatorio: 'financeiro-acertos', pagina: 0 });
     expect(screen.getAllByText(/US\$\s*22,00/).length).toBeGreaterThan(0);
     const totais = screen.getByRole('region', { name: 'Totais' });
     expect(within(totais).getAllByText(/US\$\s*22,00/).length).toBeGreaterThan(0);
     expect(screen.getByText('40,00%')).toBeInTheDocument();
+  });
+
+  it('Recebimentos por forma: mostra "Recebido em Gs. 500.000" só quando não foi em Real, e leva a coluna para a planilha', async () => {
+    const linha = (id: string, moeda: string, valorNaMoeda: string | null): Linha => ({
+      id,
+      vendedorId: ID_VEND,
+      vendedor: 'Maria Souza',
+      forma: 'DINHEIRO',
+      momento: 'AVULSO',
+      aplicadoEm: 'CONTA',
+      recebidoEm: '2026-11-05T15:00:00Z',
+      estorno: false,
+      motivo: null,
+      dataDaCotacao: '2026-11-05',
+      moeda,
+      valorNaMoeda,
+      valorEmReais: '447.50',
+      valorEmDolar: '81.34',
+      valorEmGuarani: '500000',
+    });
+    const m = montar({
+      'relatorios.cadastros': () => ({
+        ok: true,
+        dados: {
+          itens: [
+            linha('aaaaaaaa-2fa1-41d3-b9a5-2c3a9a8f6b01', 'GUARANI', '500000'),
+            linha('aaaaaaaa-2fa1-41d3-b9a5-2c3a9a8f6b02', 'REAL', null),
+          ],
+          total: 2,
+          pagina: 0,
+          tamanho: 20,
+          totais: [],
+        },
+      }),
+    });
+    await abrir(m, 'Recebimentos por forma de pagamento');
+    expect(await screen.findByText('Recebido em Gs. 500.000')).toBeInTheDocument();
+    expect(screen.getAllByText('Recebido em Gs. 500.000')).toHaveLength(1);
+    expect(screen.getByRole('columnheader', { name: 'Moeda recebida' })).toBeInTheDocument();
   });
 
   it('quem deve vai ao servidor e a conta vencida aparece escrita "Vencida"', async () => {
@@ -207,7 +248,7 @@ describe('Relatórios financeiros (tarefa 7.12)', () => {
 
   it('o arquivo leva as três moedas, a data da cotação e a frase do dia de cada acerto', async () => {
     const m = montar();
-    const u = await abrir(m, 'Acertos por vendedor e semana');
+    const u = await abrir(m, 'Acertos por representante e semana');
     await screen.findAllByText('Maria Souza');
     await u.click(screen.getByRole('button', { name: 'Baixar em CSV' }));
     await waitFor(() => expect(entregues).toHaveLength(1));

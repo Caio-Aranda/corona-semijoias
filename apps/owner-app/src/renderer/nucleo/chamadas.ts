@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { OperacaoDaApi, PonteDoCorona, ResultadoDeChamada } from '../../shared/ponte';
+import { mensagemDaApi } from '../idioma/erros';
 import { TEXTOS } from '../textos';
 
 /** Quanto esperar antes de tentar de novo sozinho quando a internet cai. */
@@ -44,24 +45,25 @@ export function traduzirErro(r: Extract<ResultadoDeChamada, { ok: false }>): Err
       return {
         ...base,
         tipo: 'outro',
-        mensagem: r.mensagem || `${TEXTOS.desatualizado.titulo} ${TEXTOS.desatualizado.texto}`,
+        mensagem:
+          mensagemDaApi(r) || `${TEXTOS.desatualizado.titulo} ${TEXTOS.desatualizado.texto}`,
       };
     case 'erro':
       if (r.codigo === 'CADASTRO_ALTERADO') {
         return {
           ...base,
           tipo: 'versao',
-          mensagem: r.mensagem || TEXTOS.formulario.alteradoPorOutraPessoa,
+          mensagem: mensagemDaApi(r) || TEXTOS.formulario.alteradoPorOutraPessoa,
         };
       }
       if (Object.keys(campos).length > 0) {
         return {
           ...base,
           tipo: 'campos',
-          mensagem: r.mensagem || TEXTOS.formulario.campoNaoAceito,
+          mensagem: mensagemDaApi(r) || TEXTOS.formulario.campoNaoAceito,
         };
       }
-      return { ...base, tipo: 'outro', mensagem: r.mensagem || TEXTOS.algoDeuErrado };
+      return { ...base, tipo: 'outro', mensagem: mensagemDaApi(r) || TEXTOS.algoDeuErrado };
   }
 }
 

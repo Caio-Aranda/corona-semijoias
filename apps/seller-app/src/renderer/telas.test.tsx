@@ -18,6 +18,7 @@ function ponteFalsa(parcial: Partial<PonteDoCorona> = {}) {
     entrar: vi.fn(() => Promise.resolve<ResultadoDeEntrada>({ tipo: 'entrou' })),
     trocarSenha: vi.fn(() => Promise.resolve<ResultadoDeEntrada>({ tipo: 'entrou' })),
     sair: vi.fn(() => Promise.resolve()),
+    liberarComputador: vi.fn(() => Promise.resolve()),
     estouLogado: vi.fn(() => Promise.resolve<EstadoDaSessao>({ estado: 'fora' })),
     chamarApi: vi.fn(() => Promise.resolve({ ok: true as const, dados: {} })),
     aoMudarASessao: (f) => {
@@ -28,10 +29,58 @@ function ponteFalsa(parcial: Partial<PonteDoCorona> = {}) {
     },
     aoMudarAAtualizacao: () => () => undefined,
     aoMudarASincronizacao: () => () => undefined,
+    lerIdioma: () => Promise.resolve(null),
+    gravarIdioma: () => Promise.resolve(),
+    imprimirRelatorio: () => Promise.resolve({ ok: true as const }),
+    salvarRelatorioEmPdf: () => Promise.resolve({ ok: true as const }),
+    prepararRelatorioNoWhatsapp: () => Promise.resolve({ ok: true as const }),
     ...parcial,
   };
   return { ponte, avisar: (a: AvisoDeSessao) => ouvinte?.(a) };
 }
+
+describe('aplicativo reaberto com a sessão guardada', () => {
+  it('pede a senha antes da tela principal (defeito 2 do teste 9.10)', async () => {
+    const { ponte } = ponteFalsa({
+      estouLogado: vi.fn(() =>
+        Promise.resolve<EstadoDaSessao>({ estado: 'reabrir', usuario: 'ana' }),
+      ),
+    });
+    render(<App ponte={ponte} />);
+    expect(await screen.findByText('Digite sua senha para continuar')).toBeInTheDocument();
+    expect(screen.getByLabelText('Usuário')).toHaveValue('ana');
+    expect(screen.getByLabelText('Usuário')).toHaveAttribute('readonly');
+    expect(screen.getByLabelText('Senha')).toHaveAttribute('type', 'password');
+  });
+});
+
+describe('reabrir: "Este computador é de outra pessoa"', () => {
+  it('só libera depois da segunda confirmação, avisando que as vendas não enviadas não saem daqui', async () => {
+    let estado: EstadoDaSessao = { estado: 'reabrir', usuario: 'ana' };
+    const liberar = vi.fn(() => {
+      estado = { estado: 'fora' };
+      return Promise.resolve();
+    });
+    const { ponte } = ponteFalsa({
+      estouLogado: vi.fn(() => Promise.resolve(estado)),
+      liberarComputador: liberar,
+    });
+    const u = userEvent.setup();
+    render(<App ponte={ponte} />);
+    await u.click(await screen.findByRole('button', { name: 'Este computador é de outra pessoa' }));
+    expect(await screen.findByText(/não serão enviadas por este computador/i)).toBeInTheDocument();
+    expect(liberar).not.toHaveBeenCalled();
+    // desistir não libera
+    await u.click(screen.getByRole('button', { name: 'Voltar' }));
+    expect(liberar).not.toHaveBeenCalled();
+    await u.click(await screen.findByRole('button', { name: 'Este computador é de outra pessoa' }));
+    await u.click(await screen.findByRole('button', { name: 'Sim, é de outra pessoa' }));
+    expect(liberar).toHaveBeenCalledTimes(1);
+    const campo = await screen.findByLabelText('Usuário');
+    expect(campo).not.toHaveAttribute('readonly');
+    expect(campo).toHaveValue('');
+  });
+});
 
 describe('tela de entrar', () => {
   it('tem os campos Usuário e Senha e o botão Entrar', async () => {
@@ -79,7 +128,7 @@ describe('tela de entrar', () => {
     expect(ponte.entrar).not.toHaveBeenCalled();
   });
 
-  it('entrou: passa para a tela inicial', async () => {
+  it('entrou: passa para o Gerenciamento Semanal', async () => {
     const estados: EstadoDaSessao[] = [
       { estado: 'fora' },
       { estado: 'dentro', usuario: { nome: 'Maria' } },
@@ -92,7 +141,9 @@ describe('tela de entrar', () => {
     await u.type(await screen.findByLabelText('Usuário'), 'maria');
     await u.type(screen.getByLabelText('Senha'), 'certa1234');
     await u.click(screen.getByRole('button', { name: 'Entrar' }));
-    expect(await screen.findByRole('heading', { name: 'Olá, Maria.' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Gerenciamento Semanal' }),
+    ).toBeInTheDocument();
   });
 
   it('quando a sessão termina sozinha, avisa e volta para Entrar', async () => {
@@ -102,7 +153,7 @@ describe('tela de entrar', () => {
       ),
     });
     render(<App ponte={ponte} />);
-    await screen.findByRole('heading', { name: 'Olá.' });
+    await screen.findByRole('heading', { name: 'Gerenciamento Semanal' });
     avisar({ estado: 'fora' });
     expect(await screen.findByText('Sua sessão terminou.')).toBeInTheDocument();
     expect(screen.getByLabelText('Usuário')).toBeInTheDocument();
@@ -225,20 +276,27 @@ describe('sem conexão ao abrir', () => {
   });
 });
 
-describe('tela inicial do vendedor', () => {
+describe('tela principal do representante (Gerenciamento Semanal)', () => {
   const dentro: EstadoDaSessao = { estado: 'dentro', usuario: { nome: 'Maria' } };
 
-  it('tem os quatro botões grandes e o botão Sair', async () => {
+  it('tem os botões da §23.4 na ordem, o campo Pesquisar e o botão Sair', async () => {
     const { ponte } = ponteFalsa({ estouLogado: vi.fn(() => Promise.resolve(dentro)) });
     render(<App ponte={ponte} />);
-    for (const nome of ['Vender', 'Minha maleta', 'Clientes', 'Meus números']) {
+    const nomes = ['Novo Pedido', 'Cobrança', 'Reposição', 'Troca', 'Clientes', 'Maletas'];
+    for (const nome of nomes) {
       expect(await screen.findByRole('button', { name: nome })).toBeInTheDocument();
     }
+    const ordem = screen
+      .getAllByRole('button')
+      .map((b) => b.textContent)
+      .filter((t): t is string => nomes.includes(t ?? ''));
+    expect(ordem).toEqual(nomes);
+    expect(screen.getByLabelText('Pesquisar')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Sair' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Olá, Maria.' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Gerenciamento Semanal' })).toBeInTheDocument();
   });
 
-  it('os quatro botões abrem a sua tela (nenhum fica "Em breve")', async () => {
+  it('os botões abrem a sua tela (nenhum fica "Em breve")', async () => {
     const { ponte } = ponteFalsa({
       estouLogado: vi.fn(() => Promise.resolve(dentro)),
       chamarApi: vi.fn(() => Promise.resolve({ ok: true as const, dados: [] })),

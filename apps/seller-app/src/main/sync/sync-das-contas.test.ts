@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { abrirBancoLocal, type BancoAberto, gravar } from '../banco/banco-local';
 import {
+  TABELAS_DA_RECARGA_DIRIGIDA_V9,
+  TABELAS_DA_RECARGA_DIRIGIDA_V10,
+  TABELAS_DA_RECARGA_DIRIGIDA_V12,
   MIGRACOES,
   TABELAS_DA_RECARGA_DIRIGIDA_V4,
   TABELAS_DA_RECARGA_DIRIGIDA_V6,
@@ -24,6 +27,16 @@ import { ServidorFalso } from './testes/servidor-falso';
  */
 
 const V7_NOVAS = TABELAS_DA_RECARGA_DIRIGIDA_V7.filter((t) => t !== 'acertos');
+
+/** A migração local 9 acrescenta as suas tabelas ao FIM da marca da recarga (sem repetir as que já estavam nela). */
+const comV9 = (marca: readonly string[]): string[] => [
+  ...new Set([
+    ...marca,
+    ...TABELAS_DA_RECARGA_DIRIGIDA_V9,
+    ...TABELAS_DA_RECARGA_DIRIGIDA_V10,
+    ...TABELAS_DA_RECARGA_DIRIGIDA_V12,
+  ]),
+];
 
 const limpar: (() => void | Promise<void>)[] = [];
 afterEach(async () => {
@@ -93,8 +106,12 @@ describe('migração local 4', () => {
       db.close();
     });
     expect(Number(db.pragma('user_version', { simple: true }))).toBe(VERSAO_DO_BANCO);
-    expect(VERSAO_DO_BANCO).toBe(8);
-    expect(contagem(db)).toEqual(contagemAntes);
+    expect(VERSAO_DO_BANCO).toBe(12);
+    // A migração 9 tira as cópias do servidor dos clientes que não são do representante (o diretório da loja, ADR-0016, item 4).
+    const { clientes: clientesDepois, ...restoDepois } = contagem(db);
+    const { clientes: clientesAntes, ...restoAntes } = contagemAntes;
+    expect(restoDepois).toEqual(restoAntes);
+    expect(clientesDepois ?? 0).toBeLessThanOrEqual(clientesAntes ?? 0);
     expect(db.prepare('SELECT * FROM outbox ORDER BY ordem').all()).toEqual(outboxAntes);
     for (const t of ['contas_receber', 'baixas_receber'] as const) {
       expect(colunasDe(db, t), t).toEqual(
@@ -116,12 +133,14 @@ describe('migração local 4', () => {
       }),
     ).toEqual(pagamentosAntes);
     // Já tinha cursor: a marca da recarga dirigida nasce com as tabelas da migração 4 e, depois, as da 6.
-    expect(tabelasDaRecargaDirigida(db)).toEqual([
-      ...TABELAS_DA_RECARGA_DIRIGIDA_V4,
-      ...TABELAS_DA_RECARGA_DIRIGIDA_V6,
-      ...V7_NOVAS,
-      'recebimentos_vendedor',
-    ]);
+    expect(tabelasDaRecargaDirigida(db)).toEqual(
+      comV9([
+        ...TABELAS_DA_RECARGA_DIRIGIDA_V4,
+        ...TABELAS_DA_RECARGA_DIRIGIDA_V6,
+        ...V7_NOVAS,
+        'recebimentos_vendedor',
+      ]),
+    );
   });
 
   it('a marca da recarga só nasce em banco que já tinha cursor', () => {
@@ -166,12 +185,14 @@ describe('migração local 4', () => {
     limpar.push(() => {
       migradoComCursor.close();
     });
-    expect(tabelasDaRecargaDirigida(migradoComCursor)).toEqual([
-      ...TABELAS_DA_RECARGA_DIRIGIDA_V4,
-      ...TABELAS_DA_RECARGA_DIRIGIDA_V6,
-      ...V7_NOVAS,
-      'recebimentos_vendedor',
-    ]);
+    expect(tabelasDaRecargaDirigida(migradoComCursor)).toEqual(
+      comV9([
+        ...TABELAS_DA_RECARGA_DIRIGIDA_V4,
+        ...TABELAS_DA_RECARGA_DIRIGIDA_V6,
+        ...V7_NOVAS,
+        'recebimentos_vendedor',
+      ]),
+    );
   });
 
   it('a marca da 3 que ainda não terminou é somada à da 4, sem repetir tabela e na ordem', () => {
@@ -193,22 +214,24 @@ describe('migração local 4', () => {
     limpar.push(() => {
       migrado.close();
     });
-    expect(tabelasDaRecargaDirigida(migrado)).toEqual([
-      'trocas',
-      'pagamentos_cliente',
-      'contas_receber',
-      'baixas_receber',
-      'acertos',
-      'leituras_acerto',
-      ...V7_NOVAS,
-      'recebimentos_vendedor',
-    ]);
+    expect(tabelasDaRecargaDirigida(migrado)).toEqual(
+      comV9([
+        'trocas',
+        'pagamentos_cliente',
+        'contas_receber',
+        'baixas_receber',
+        'acertos',
+        'leituras_acerto',
+        ...V7_NOVAS,
+        'recebimentos_vendedor',
+      ]),
+    );
   });
 });
 
 describe('colunas das contas a receber', () => {
   it('as duas tabelas novas estão na lista, com as colunas do servidor e sem custo nem quem registrou', () => {
-    expect(TABELAS_SINCRONIZAVEIS).toHaveLength(32);
+    expect(TABELAS_SINCRONIZAVEIS).toHaveLength(43);
     expect(TABELAS_SINCRONIZAVEIS).toEqual(
       expect.arrayContaining(['contas_receber', 'baixas_receber']),
     );
@@ -329,12 +352,14 @@ describe('recarga dirigida depois da migração local 4', () => {
   it('banco v3 com cursor traz as três tabelas, retoma depois de cair, não apaga nem duplica', async () => {
     const db = abrirExemploMigrado(3);
     const { s, url } = await servidor();
-    expect(tabelasDaRecargaDirigida(db)).toEqual([
-      ...TABELAS_DA_RECARGA_DIRIGIDA_V4,
-      ...TABELAS_DA_RECARGA_DIRIGIDA_V6,
-      ...V7_NOVAS,
-      'recebimentos_vendedor',
-    ]);
+    expect(tabelasDaRecargaDirigida(db)).toEqual(
+      comV9([
+        ...TABELAS_DA_RECARGA_DIRIGIDA_V4,
+        ...TABELAS_DA_RECARGA_DIRIGIDA_V6,
+        ...V7_NOVAS,
+        'recebimentos_vendedor',
+      ]),
+    );
 
     // O que já estava no banco (mesma versão no servidor): a cópia do pagamento não tem a coluna nova.
     const vendaAntiga = idDeTeste(5);
@@ -431,13 +456,15 @@ describe('recarga dirigida depois da migração local 4', () => {
     // Primeiro ciclo: a 2ª tabela da marca (baixas_receber) cai. A 1ª já saiu da marca; nada foi apagado.
     s.cairNaTabela = { tabela: 'baixas_receber', vezes: 1 };
     expect(await ciclo(db, url).executar()).toBe('falha');
-    expect(tabelasDaRecargaDirigida(db)).toEqual([
-      'baixas_receber',
-      'pagamentos_cliente',
-      ...TABELAS_DA_RECARGA_DIRIGIDA_V6,
-      ...V7_NOVAS,
-      'recebimentos_vendedor',
-    ]);
+    expect(tabelasDaRecargaDirigida(db)).toEqual(
+      comV9([
+        'baixas_receber',
+        'pagamentos_cliente',
+        ...TABELAS_DA_RECARGA_DIRIGIDA_V6,
+        ...V7_NOVAS,
+        'recebimentos_vendedor',
+      ]),
+    );
     expect(contar(db, 'SELECT 1 FROM contas_receber WHERE id = ?', conta)).toBe(1);
     expect(contar(db, 'SELECT 1 FROM vendas WHERE id = ?', vendaAntiga)).toBe(1);
     expect(servidorAntes('remessas')).toBe(remessasAntes);

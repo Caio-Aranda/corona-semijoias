@@ -8,6 +8,7 @@ import type {
   PonteDoCorona,
   ResultadoDeChamada,
 } from '../../../shared/ponte';
+import { abrirAreaDoMenu, abrirRelatorioPeloMenu } from '../../apoio-de-testes';
 import { App } from '../../App';
 
 const entregues: { nome: string; tipo: string; bytes: Uint8Array }[] = [];
@@ -130,7 +131,7 @@ const dosRelatorios = (m: ReturnType<typeof montar>) =>
 async function abrir(m: ReturnType<typeof montar>, titulo: string) {
   const u = userEvent.setup();
   render(<App ponte={m.ponte} />);
-  await u.click(await screen.findByRole('button', { name: titulo }));
+  await abrirRelatorioPeloMenu(u, titulo);
   return u;
 }
 
@@ -142,9 +143,11 @@ beforeEach(() => {
 describe('Relatórios de cadastro: menu e tabela', () => {
   it('o menu tem um item para cada relatório, com o nome do glossário', async () => {
     const m = montar();
+    const u = userEvent.setup();
     render(<App ponte={m.ponte} />);
+    const cartoes = await abrirAreaDoMenu(u, 'cadastros');
     for (const nome of [
-      'Vendedores: limite e situação',
+      'Representantes: limite e situação',
       'Clientes cadastrados',
       'Fornecedores cadastrados',
       'Produtos e custos',
@@ -155,7 +158,7 @@ describe('Relatórios de cadastro: menu e tabela', () => {
       'Mudanças nos produtos',
       'Resultado das importações',
     ]) {
-      expect(await screen.findByRole('button', { name: nome })).toBeInTheDocument();
+      expect(within(cartoes).getByText(nome)).toBeInTheDocument();
     }
   });
 
@@ -204,27 +207,30 @@ describe('Relatórios de cadastro: menu e tabela', () => {
     }
   });
 
-  it('vendedores: faixa do limite e com restrição; fornecedores e clientes: filtros de vínculo', async () => {
+  it('representantes: faixa do limite e com restrição; fornecedores e clientes: filtros de vínculo', async () => {
     const m = montar({
       'relatorios.cadastros': () => ({
         ok: true,
         dados: { itens: [], total: 0, pagina: 0, tamanho: 20, totais: [] },
       }),
     });
-    const u = await abrir(m, 'Vendedores: limite e situação');
+    const u = await abrir(m, 'Representantes: limite e situação');
     await u.type(await screen.findByLabelText('Limite a partir de (R$)'), '200');
     await u.selectOptions(screen.getByLabelText('Com restrição'), 'Só com restrição');
     await waitFor(() =>
       expect(dosRelatorios(m).at(-1)).toMatchObject({ limiteDe: '200', comRestricao: 'SIM' }),
     );
-    await u.click(screen.getByRole('button', { name: 'Fornecedores cadastrados' }));
+    await abrirRelatorioPeloMenu(u, 'Fornecedores cadastrados');
     await u.selectOptions(
       await screen.findByLabelText('Produtos ativos'),
       'Só quem não tem produtos',
     );
     await waitFor(() => expect(dosRelatorios(m).at(-1)).toMatchObject({ comProdutos: 'NAO' }));
-    await u.click(screen.getByRole('button', { name: 'Clientes cadastrados' }));
-    await u.selectOptions(await screen.findByLabelText('Vendedor responsável'), 'Só sem vendedor');
+    await abrirRelatorioPeloMenu(u, 'Clientes cadastrados');
+    await u.selectOptions(
+      await screen.findByLabelText('Representante responsável'),
+      'Só sem representante',
+    );
     await waitFor(() => expect(dosRelatorios(m).at(-1)).toMatchObject({ comVendedor: 'NAO' }));
   });
 
@@ -422,7 +428,7 @@ describe('Relatórios de cadastro: os outros relatórios', () => {
     expect(within(rodape).getByText('Produtos sem foto')).toBeInTheDocument();
   });
 
-  it('aniversariantes pede o mês de hoje e avisa que são só vendedores', async () => {
+  it('aniversariantes pede o mês de hoje e avisa que são só representantes', async () => {
     const m = montar({
       'relatorios.cadastros': () => ({
         ok: true,
@@ -453,7 +459,7 @@ describe('Relatórios de cadastro: os outros relatórios', () => {
     const linha = await screen.findByRole('row', { name: /Ana/ });
     // A data de calendário não anda de dia: 31/03/1990, sem deslocar para 30/03.
     expect(within(linha).getByText('31/03/1990')).toBeInTheDocument();
-    expect(screen.getByText(/Só vendedores/)).toBeInTheDocument();
+    expect(screen.getByText(/Só representantes/)).toBeInTheDocument();
     expect(typeof dosRelatorios(m)[0]!.mes).toBe('number');
   });
 

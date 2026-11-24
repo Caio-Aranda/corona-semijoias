@@ -2,6 +2,7 @@ import { Aviso, Botao, CabecalhoDeMarca } from '@corona/ui';
 import { useEffect, useRef } from 'react';
 import { ESPERA_NOVA_TENTATIVA_MS } from '../nucleo/chamadas';
 import { TEXTOS } from '../textos';
+import { TEXTOS_SOLTOS as SOLTOS } from '../textos-soltos';
 
 export interface TelaSemConexaoProps {
   aoTentarDeNovo: () => void;
@@ -26,7 +27,7 @@ export function TelaSemConexao({
 
   return (
     <div className="gestao-pagina">
-      <CabecalhoDeMarca nomeDoApp="Corona Gestão" />
+      <CabecalhoDeMarca nomeDoApp={SOLTOS.entrada.nomeDoApp} />
       <main className="gestao-conteudo">
         <div className="gestao-cartao">
           <Aviso tipo="atencao">{TEXTOS.semConexao.texto}</Aviso>

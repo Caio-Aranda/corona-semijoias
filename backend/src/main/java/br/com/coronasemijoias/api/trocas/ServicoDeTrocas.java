@@ -188,7 +188,8 @@ public class ServicoDeTrocas {
                         venda.totalConferido(), venda.parcelamento()), quando, horaAjustada,
                 new CreditoDaTroca(id, creditoId, pagamentoDoCredito, a.valorEmCredito()), modo == ModoDaDevolucao.ENVIO);
 
-        BigDecimal diferenca = b.total().subtract(a.valorDevolvido());
+        // Só o crédito de A paga B: o que A abate nas próprias parcelas não chega a B (ADR-0014, item 8; issue 208).
+        BigDecimal diferenca = b.total().subtract(a.valorEmCredito());
         if (aparelho != null) {
             origem.definirNaTransacaoAtual(aparelho);
         }
@@ -205,6 +206,7 @@ public class ServicoDeTrocas {
         depois.put("devolucao_id", devolucaoId.toString());
         depois.put("venda_nova_id", vendaNovaId.toString());
         depois.put("valor_devolvido", a.valorDevolvido().toPlainString());
+        depois.put("valor_em_credito", a.valorEmCredito().toPlainString());
         depois.put("total_da_venda_nova", b.total().toPlainString());
         depois.put("diferenca", diferenca.toPlainString());
         depois.put("valor_abatido", a.valorDevolvido().subtract(a.valorEmCredito()).toPlainString());

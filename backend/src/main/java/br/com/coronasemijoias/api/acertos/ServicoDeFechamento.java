@@ -11,6 +11,8 @@ import br.com.coronasemijoias.api.caixa.ServicoDeCaixa;
 import br.com.coronasemijoias.api.contasreceber.ServicoDeContasAReceber;
 import br.com.coronasemijoias.api.contasreceber.ServicoDeContasAReceber.Parcelamento;
 import br.com.coronasemijoias.api.contasreceber.ServicoDeRecebimentosDoVendedor;
+import br.com.coronasemijoias.api.contasreceber.ServicoDeRecebimentosDoVendedor.ValorRecebido;
+import br.com.coronasemijoias.api.cotacoes.Cotacao;
 import br.com.coronasemijoias.api.comum.dinheiro.Dinheiro;
 import br.com.coronasemijoias.api.comum.erros.CodigoErro;
 import br.com.coronasemijoias.api.comum.erros.ErroDaApi;
@@ -70,8 +72,15 @@ public class ServicoDeFechamento {
     public record DecisaoDePendenciaAntiga(UUID pendenciaId, String decisao) {
     }
 
-    /** Um recebimento do acerto (dinheiro ou Transferência): o id vem do aplicativo (idempotência). */
-    public record RecebimentoNoAcerto(UUID id, String forma, BigDecimal valor) {
+    /**
+     * Um recebimento do acerto (dinheiro ou Transferência): o id vem do aplicativo (idempotência). {@code moeda} (padrão REAL): em
+     * DOLAR ou GUARANI vem só o {@code valorNaMoeda} e o servidor converte pela cotação do acerto (23/11/2026).
+     */
+    public record RecebimentoNoAcerto(UUID id, String forma, BigDecimal valor, String moeda, BigDecimal valorNaMoeda) {
+
+        public RecebimentoNoAcerto(UUID id, String forma, BigDecimal valor) {
+            this(id, forma, valor, null, null);
+        }
     }
 
     /** O boleto do fechamento: vira uma conta a receber do vendedor, no vencimento dele (e não toca o caixa até ser pago). */
@@ -83,7 +92,11 @@ public class ServicoDeFechamento {
     }
 
     /** Uma conta antiga do vendedor paga junto com o acerto (não entra nos totais do acerto). */
-    public record ContaAntigaPaga(UUID id, UUID contaId, String forma, BigDecimal valor) {
+    public record ContaAntigaPaga(UUID id, UUID contaId, String forma, BigDecimal valor, String moeda, BigDecimal valorNaMoeda) {
+
+        public ContaAntigaPaga(UUID id, UUID contaId, String forma, BigDecimal valor) {
+            this(id, contaId, forma, valor, null, null);
+        }
     }
 
     /**
@@ -153,7 +166,7 @@ public class ServicoDeFechamento {
 
     /** A prévia: o mesmo cálculo do fechamento, nada é gravado. Sem decisões, assume cobrar tudo no acerto e não aprovar defeito. */
     @Transactional(readOnly = true)
-    public Map<String, Object> previa(UUID acertoId, PedidoDeFechamento pedido) {
+    public PreviaDoFechamento previa(UUID acertoId, PedidoDeFechamento pedido) {
         UUID vendedorId = vendedorDoAcerto(acertoId);
         String status = jdbc.queryForObject("SELECT status FROM corona.acertos WHERE id = ?", String.class, acertoId);
         if ("ACERTADO".equals(status)) {
@@ -165,12 +178,41 @@ public class ServicoDeFechamento {
         return previaDe(acertoId, vendedorId, pedido);
     }
 
-    private Map<String, Object> previaDe(UUID acertoId, UUID vendedorId, PedidoDeFechamento pedido) {
+    /** Os números de uma prévia, tipados (tarefa 8.7): o que o painel da semana mostra, sem o JSON da tela do acerto. */
+    public record ResumoDaPrevia(BigDecimal vendidoBruto, BigDecimal descontos, BigDecimal devolvido, BigDecimal vendidoLiquido,
+            BigDecimal percentualComissao, BigDecimal comissao, BigDecimal faltasCobradas, BigDecimal liquido, LocalDate cotacaoData) {
+    }
+
+    /**
+     * A prévia só dos números, para o painel da semana. Só leitura: nada é gravado. Com o acerto {@code EM_ACERTO} do vendedor, é a
+     * mesma conta da prévia da dona sem decisões (faltas cobradas no acerto); sem acerto, é a mesma montagem da prévia da comissão do
+     * vendedor, com as faltas zeradas (ainda não contou). Sem cotação cadastrada, o erro é o mesmo do acerto (409).
+     */
+    @Transactional(readOnly = true)
+    public ResumoDaPrevia resumoDaPrevia(UUID vendedorId, UUID acertoId) {
+        if (acertoId == null) {
+            Montagem m = montagem.montar(UUID.randomUUID(), vendedorId);
+            return resumoDe(m, BigDecimal.ZERO.setScale(2), liquidoDoAcerto(m.vendidoLiquido(), m.comissao().comissao(),
+                    BigDecimal.ZERO.setScale(2)));
+        }
+        Montagem m = montagem.montar(acertoId, vendedorId);
+        Decisoes d = padrao(m);
+        m = m.comAprovadas(d.aprovadas());
+        Calculo c = calcular(m, d, acertoId);
+        return resumoDe(m, c.faltasCobradas(), c.liquido());
+    }
+
+    private static ResumoDaPrevia resumoDe(Montagem m, BigDecimal faltas, BigDecimal liquido) {
+        return new ResumoDaPrevia(m.vendidoBruto(), m.descontos(), m.devolvido(), m.vendidoLiquido(), m.comissao().percentual(),
+                m.comissao().comissao(), faltas, liquido, m.cotacao().dataCotacao());
+    }
+
+    private PreviaDoFechamento previaDe(UUID acertoId, UUID vendedorId, PedidoDeFechamento pedido) {
         Montagem m = montagem.montar(acertoId, vendedorId);
         Decisoes d = pedido == null ? padrao(m) : decisoesDe(pedido, m, false);
         m = m.comAprovadas(d.aprovadas());
         Calculo c = calcular(m, d, acertoId);
-        Pagamento p = pagamentoDe(pedido == null ? null : pedido.pagamento());
+        Pagamento p = pagamentoDe(pedido == null ? null : pedido.pagamento(), m.cotacao());
         return montarPrevia(m, d, c, financeiro(m, c, p, false), p);
     }
 
@@ -244,13 +286,13 @@ public class ServicoDeFechamento {
             throw desatualizado(montarPrevia(m, d, c, financeiro(m, c, Pagamento.VAZIO, false), Pagamento.VAZIO));
         }
 
-        Pagamento pagamento = pagamentoDe(pedido.pagamento());
+        Pagamento pagamento = pagamentoDe(pedido.pagamento(), m.cotacao());
         Financeiro f = financeiro(m, c, pagamento, true);
         gravar(usuarioId, acertoId, comando, resumo, m, d, c, f, pagamento);
         return new Resultado(acertoId, false);
     }
 
-    private ErroDaApi desatualizado(Map<String, Object> previa) {
+    private ErroDaApi desatualizado(PreviaDoFechamento previa) {
         ProblemDetail corpo = Problemas.de(HttpStatus.CONFLICT, CodigoErro.FECHAMENTO_DESATUALIZADO);
         corpo.setProperty("previa", previa);
         return ErroDaApi.comCorpo(HttpStatus.CONFLICT, CodigoErro.FECHAMENTO_DESATUALIZADO, corpo);
@@ -411,8 +453,16 @@ public class ServicoDeFechamento {
             }
         }
         BigDecimal faltas = Dinheiro.somar(cobradas);
-        BigDecimal liquido = Dinheiro.somar(List.of(Dinheiro.subtrair(m.vendidoLiquido(), m.comissao().comissao()), faltas));
+        BigDecimal liquido = liquidoDoAcerto(m.vendidoLiquido(), m.comissao().comissao(), faltas);
         return new Calculo(pendencias, antigasCobradas, faltas, liquido);
+    }
+
+    /**
+     * A conta do valor do acerto, uma só para o fechamento e para a prévia do painel da semana (tarefa 8.7): vendido líquido, menos a
+     * comissão, mais as faltas cobradas no acerto.
+     */
+    public static BigDecimal liquidoDoAcerto(BigDecimal vendidoLiquido, BigDecimal comissao, BigDecimal faltasCobradas) {
+        return Dinheiro.somar(List.of(Dinheiro.subtrair(vendidoLiquido, comissao), faltasCobradas));
     }
 
     private static String statusDe(String decisao) {
@@ -425,15 +475,35 @@ public class ServicoDeFechamento {
 
     // --- o pagamento do acerto (tarefa 7.6) ---
 
-    /** O pagamento já conferido na forma. */
+    /**
+     * O pagamento já conferido na forma. Os recebimentos e as contas antigas já vêm com o {@code valor} em Real (convertido pela
+     * cotação do acerto quando a dona digitou em Dólar ou Guarani) e, aí, com a moeda, o valor digitado e {@code cotacaoId}.
+     */
     private record Pagamento(List<RecebimentoNoAcerto> recebimentos, BoletoDoAcerto boleto, RestanteDoAcerto restante,
-            List<ContaAntigaPaga> contasAntigas, String aFavorDoVendedor, String formaDoPagamento) {
+            List<ContaAntigaPaga> contasAntigas, String aFavorDoVendedor, String formaDoPagamento, UUID cotacaoId) {
 
-        static final Pagamento VAZIO = new Pagamento(List.of(), null, null, List.of(), null, null);
+        static final Pagamento VAZIO = new Pagamento(List.of(), null, null, List.of(), null, null, null);
+
+        ValorRecebido valorDe(BigDecimal valor, String moeda, BigDecimal valorNaMoeda) {
+            return ServicoDeRecebimentosDoVendedor.REAL.equals(moeda) ? ValorRecebido.emReais(valor)
+                    : new ValorRecebido(valor, moeda, valorNaMoeda, cotacaoId);
+        }
+    }
+
+    /**
+     * O valor de um recebimento do acerto em Real (400 fora da forma). Em Dólar ou Guarani, convertido pela cotação do acerto, a mesma
+     * que converte todo o resto do acerto (ADR-0006, item 11).
+     */
+    private static ValorRecebido valorDoRecebimento(BigDecimal valor, String moeda, BigDecimal valorNaMoeda, Cotacao cotacao) {
+        String m = ServicoDeRecebimentosDoVendedor.moedaDoRecebimento(moeda, valor, valorNaMoeda);
+        if (ServicoDeRecebimentosDoVendedor.REAL.equals(m)) {
+            return ValorRecebido.emReais(ServicoDeRecebimentosDoVendedor.valorEmReais(valor));
+        }
+        return ServicoDeRecebimentosDoVendedor.converter(m, ServicoDeRecebimentosDoVendedor.valorNaMoeda(m, valorNaMoeda), cotacao);
     }
 
     /** Confere a forma do pagamento (400): só dinheiro e Transferência no acerto; valores em Real; ids do aplicativo. */
-    private Pagamento pagamentoDe(PagamentoDoAcerto p) {
+    private Pagamento pagamentoDe(PagamentoDoAcerto p, Cotacao cotacao) {
         if (p == null) {
             return Pagamento.VAZIO;
         }
@@ -447,8 +517,9 @@ public class ServicoDeFechamento {
             if (!ids.add(id)) {
                 throw Validacoes.recusar("recebimentos", "O mesmo recebimento foi informado duas vezes.");
             }
-            recebimentosConferidos.add(new RecebimentoNoAcerto(id, ServicoDeRecebimentosDoVendedor.formaDoRepasse(r.forma(), false),
-                    ServicoDeRecebimentosDoVendedor.valorEmReais(r.valor())));
+            String forma = ServicoDeRecebimentosDoVendedor.formaDoRepasse(r.forma(), false);
+            ValorRecebido v = valorDoRecebimento(r.valor(), r.moeda(), r.valorNaMoeda(), cotacao);
+            recebimentosConferidos.add(new RecebimentoNoAcerto(id, forma, v.valor(), v.moeda(), v.valorNaMoeda()));
         }
         BoletoDoAcerto boleto = null;
         if (p.boleto() != null) {
@@ -460,30 +531,37 @@ public class ServicoDeFechamento {
         List<ContaAntigaPaga> antigas = new ArrayList<>();
         for (ContaAntigaPaga a : lista(p.contasAntigas())) {
             if (a == null || a.contaId() == null) {
-                throw Validacoes.recusar("contasAntigas", "Escolha a conta que o vendedor está pagando.");
+                throw Validacoes.recusar("contasAntigas", "Escolha a conta que o representante está pagando.");
             }
             UUID id = Validacoes.idDoPedido(a.id());
             if (!ids.add(id)) {
                 throw Validacoes.recusar("contasAntigas", "O mesmo recebimento foi informado duas vezes.");
             }
-            antigas.add(new ContaAntigaPaga(id, a.contaId(), ServicoDeRecebimentosDoVendedor.formaDoRepasse(a.forma(), false),
-                    ServicoDeRecebimentosDoVendedor.valorEmReais(a.valor())));
+            String formaDaConta = ServicoDeRecebimentosDoVendedor.formaDoRepasse(a.forma(), false);
+            ValorRecebido v = valorDoRecebimento(a.valor(), a.moeda(), a.valorNaMoeda(), cotacao);
+            antigas.add(new ContaAntigaPaga(id, a.contaId(), formaDaConta, v.valor(), v.moeda(), v.valorNaMoeda()));
         }
         if (p.aFavorDoVendedor() != null && !Set.of("CREDITO", "PAGAR_NA_HORA").contains(p.aFavorDoVendedor())) {
             throw Validacoes.recusar("aFavorDoVendedor", "Escolha deixar de crédito para o próximo acerto ou pagar na hora.");
         }
         String forma = p.formaDoPagamento() == null ? null : ServicoDeRecebimentosDoVendedor.formaDoRepasse(p.formaDoPagamento(), false);
         if ("PAGAR_NA_HORA".equals(p.aFavorDoVendedor()) && forma == null) {
-            throw Validacoes.recusar("formaDoPagamento", "Escolha se o pagamento ao vendedor é em dinheiro ou Transferência (PIX).");
+            throw Validacoes.recusar("formaDoPagamento", "Escolha se o pagamento ao representante é em dinheiro ou Transferência (PIX).");
         }
         if (p.restante() != null && (p.restante().parcelas() == null || p.restante().primeiroVencimento() == null)) {
             throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.DATA_DO_RESTANTE_OBRIGATORIA);
         }
-        return new Pagamento(recebimentosConferidos, boleto, p.restante(), antigas, p.aFavorDoVendedor(), forma);
+        return new Pagamento(recebimentosConferidos, boleto, p.restante(), antigas, p.aFavorDoVendedor(), forma, cotacao.id());
     }
 
     private static String numero(BigDecimal v) {
         return v == null ? "" : v.stripTrailingZeros().toPlainString();
+    }
+
+    /** No resumo, a moeda só aparece fora do Real: o resumo dos fechamentos em Real continua o mesmo de antes. */
+    private static String moedaNoResumo(String moeda, BigDecimal valorNaMoeda) {
+        return moeda == null || ServicoDeRecebimentosDoVendedor.REAL.equals(moeda) && valorNaMoeda == null ? ""
+                : "|" + moeda + "|" + numero(valorNaMoeda);
     }
 
     /** O resumo do pagamento para o 409 de "mesmo id, outras decisões": canônico, na ordem dos ids. */
@@ -493,7 +571,7 @@ public class ServicoDeFechamento {
         }
         StringBuilder s = new StringBuilder("|PAGAMENTO;");
         new TreeMap<String, String>(porChave(lista(p.recebimentos()), r -> r == null ? "" : r.id() + "",
-                r -> r == null ? "" : r.forma() + "|" + numero(r.valor())))
+                r -> r == null ? "" : r.forma() + "|" + numero(r.valor()) + moedaNoResumo(r.moeda(), r.valorNaMoeda())))
                 .forEach((k, v) -> s.append("R").append(k).append("=").append(v).append(";"));
         if (p.boleto() != null) {
             s.append("B=").append(numero(p.boleto().valor())).append("|").append(p.boleto().vencimento()).append(";");
@@ -502,7 +580,7 @@ public class ServicoDeFechamento {
             s.append("T=").append(p.restante().parcelas()).append("|").append(p.restante().primeiroVencimento()).append(";");
         }
         new TreeMap<String, String>(porChave(lista(p.contasAntigas()), r -> r == null ? "" : r.id() + "",
-                r -> r == null ? "" : r.contaId() + "|" + r.forma() + "|" + numero(r.valor())))
+                r -> r == null ? "" : r.contaId() + "|" + r.forma() + "|" + numero(r.valor()) + moedaNoResumo(r.moeda(), r.valorNaMoeda())))
                 .forEach((k, v) -> s.append("O").append(k).append("=").append(v).append(";"));
         s.append("V=").append(p.aFavorDoVendedor()).append("|").append(p.formaDoPagamento()).append(";");
         return s.toString();
@@ -705,7 +783,8 @@ public class ServicoDeFechamento {
      */
     private void gravarODinheiro(UUID usuarioId, UUID acertoId, UUID vendedorId, Financeiro f, Pagamento pagamento, java.time.Instant hora) {
         for (RecebimentoNoAcerto r : pagamento.recebimentos()) {
-            recebimentos.registrarNoFechamento(usuarioId, acertoId, vendedorId, r.id(), r.forma(), r.valor(), false, null, hora);
+            recebimentos.registrarNoFechamento(usuarioId, acertoId, vendedorId, r.id(), r.forma(), pagamento.valorDe(r.valor(), r.moeda(),
+                    r.valorNaMoeda()), false, null, hora);
         }
         if (f.ficouDevendo().signum() > 0) {
             Parcelamento parcelamento = pagamento.restante() == null ? null
@@ -714,7 +793,8 @@ public class ServicoDeFechamento {
                     pagamento.boleto() == null ? null : pagamento.boleto().vencimento(), f.restante(), parcelamento);
         }
         for (ContaAntigaPaga a : pagamento.contasAntigas().stream().sorted(java.util.Comparator.comparing(ContaAntigaPaga::contaId)).toList()) {
-            recebimentos.registrarNoFechamento(usuarioId, acertoId, vendedorId, a.id(), a.forma(), a.valor(), true, a.contaId(), hora);
+            recebimentos.registrarNoFechamento(usuarioId, acertoId, vendedorId, a.id(), a.forma(), pagamento.valorDe(a.valor(), a.moeda(),
+                    a.valorNaMoeda()), true, a.contaId(), hora);
         }
         if (f.pagoAoVendedor().signum() > 0) {
             caixa.lancarPagamentoAoVendedor(usuarioId, acertoId, pagamento.formaDoPagamento(), f.pagoAoVendedor());
@@ -723,86 +803,52 @@ public class ServicoDeFechamento {
 
     // --- a prévia (JSON) ---
 
-    private Map<String, Object> montarPrevia(Montagem m, Decisoes d, Calculo c, Financeiro f, Pagamento pag) {
-        Map<String, Object> r = new LinkedHashMap<>();
-        r.put("acertoId", m.acertoId());
-        List<Map<String, Object>> itens = new ArrayList<>();
+    private PreviaDoFechamento montarPrevia(Montagem m, Decisoes d, Calculo c, Financeiro f, Pagamento pag) {
+        List<PreviaDoFechamento.PecaDaPreviaDoFechamento> itens = new ArrayList<>();
         for (EsperadoEContado.Item i : m.esperadoEContado().itens()) {
-            Map<String, Object> l = new LinkedHashMap<>();
-            l.put("produto", m.produtos().get(i.produtoId()));
-            l.put("remessaId", i.remessaId());
-            l.put("esperado", i.esperado());
-            l.put("contadoBoa", i.contadoBoa());
-            l.put("contadoDefeito", i.contadoDefeito());
-            l.put("falta", i.falta());
-            l.put("valorDaFalta", i.valorDaFalta());
-            itens.add(l);
+            itens.add(new PreviaDoFechamento.PecaDaPreviaDoFechamento(produtoDaPrevia(m, i.produtoId()), i.remessaId(), i.esperado(),
+                    i.contadoBoa(), i.contadoDefeito(), i.falta(), i.valorDaFalta()));
         }
-        r.put("itens", itens);
-        r.put("sobras", m.esperadoEContado().sobras());
-        r.put("faltas", c.pendencias().stream().filter(p -> p.tipo().equals("FALTA")).map(p -> {
-            Map<String, Object> l = new LinkedHashMap<>();
-            l.put("produto", m.produtos().get(p.produtoId()));
-            l.put("remessaId", p.remessaId());
-            l.put("quantidade", p.quantidade());
-            l.put("valor", p.valor());
-            l.put("status", p.status());
-            return l;
-        }).toList());
-        List<Map<String, Object>> defeitos = new ArrayList<>();
-        m.defeitosContados().forEach((p, q) -> {
-            Map<String, Object> l = new LinkedHashMap<>();
-            l.put("produto", m.produtos().get(p));
-            l.put("contadoDefeito", q);
-            defeitos.add(l);
-        });
-        r.put("defeitos", defeitos);
-        r.put("eventos", m.eventos().stream().map(e -> Map.of("tipo", e.tipo(), "origemId", e.origemId(), "vendaId", e.vendaId(),
-                "valor", e.valor())).toList());
-        r.put("revisoesPendentes", m.revisoes());
-        r.put("naoAceitas", m.naoAceitas());
-        r.put("pendenciasAntigas", m.antigas());
-        r.put("comissoes", m.comissao().linhas());
-        r.put("metaGuarani", m.metaGuarani());
-        r.put("vendidoParaMetaGuarani", m.comissao().vendidoParaMetaGuarani());
-        r.put("percentualComissao", m.comissao().percentual());
-        r.put("vendidoBruto", m.vendidoBruto());
-        r.put("descontos", m.descontos());
-        r.put("devolvido", m.devolvido());
-        r.put("vendidoLiquido", m.vendidoLiquido());
-        r.put("comissao", m.comissao().comissao());
-        r.put("faltasCobradas", c.faltasCobradas());
-        r.put("liquido", c.liquido());
-        r.put("creditoDisponivel", f.creditoDisponivel());
-        r.put("creditoUsado", f.creditoUsado());
-        r.put("aPagarNoAcerto", f.aPagar());
-        r.put("recebidoNoAcerto", f.recebido());
-        r.put("boleto", f.boleto());
-        r.put("ficouDevendo", f.ficouDevendo());
-        r.put("pagoAoVendedor", f.pagoAoVendedor());
-        r.put("restanteSemData", f.restanteSemData());
-        r.put("parcelasDoRestante", parcelasDoRestante(f, pag));
-        r.put("contasAbertasDoVendedor", contasAbertasDoVendedor(m.vendedorId()));
-        r.put("cotacaoId", m.cotacao().id());
-        r.put("cotacaoData", m.cotacao().dataCotacao());
-        r.put("podeFechar", m.revisoes().isEmpty() && m.esperadoEContado().sobras().isEmpty());
-        return r;
+        List<PreviaDoFechamento.FaltaDaPreviaDoFechamento> faltas = c.pendencias().stream().filter(p -> p.tipo().equals("FALTA"))
+                .map(p -> new PreviaDoFechamento.FaltaDaPreviaDoFechamento(produtoDaPrevia(m, p.produtoId()), p.remessaId(),
+                        p.quantidade(), p.valor(), p.status()))
+                .toList();
+        List<PreviaDoFechamento.DefeitoDaPreviaDoFechamento> defeitos = new ArrayList<>();
+        m.defeitosContados().forEach((p, q) -> defeitos.add(new PreviaDoFechamento.DefeitoDaPreviaDoFechamento(produtoDaPrevia(m, p), q)));
+        var eventos = m.eventos().stream()
+                .map(e -> new PreviaDoFechamento.EventoDaPreviaDoFechamento(e.tipo(), e.origemId(), e.vendaId(), e.valor())).toList();
+        var revisoes = m.revisoes().stream().map(x -> new PreviaDoFechamento.RevisaoDaPreviaDoFechamento(x.tipo(), x.id())).toList();
+        var naoAceitas = m.naoAceitas().stream().map(x -> new PreviaDoFechamento.NaoAceitaDaPreviaDoFechamento(x.tipo(), x.origemTipo(),
+                x.origemId(), x.valor())).toList();
+        var antigas = m.antigas().stream().map(x -> new PreviaDoFechamento.AntigaDaPreviaDoFechamento(x.id(), x.tipo(), x.produtoId(),
+                x.quantidade(), x.valor())).toList();
+        long vendidoParaMeta = m.comissao().vendidoParaMetaGuarani();
+        ServicoDaComissao.FaltaParaMeta falta = ServicoDaComissao.faltaParaMeta(m.metaGuarani(), vendidoParaMeta,
+                m.cotacao().taxas().pygVenda());
+        return new PreviaDoFechamento(m.acertoId(), itens, m.esperadoEContado().sobras(), faltas, defeitos, eventos, revisoes, naoAceitas,
+                antigas, m.comissao().linhas(), m.metaGuarani(), vendidoParaMeta, falta.guarani(), falta.reais(), m.comissao().percentual(),
+                m.vendidoBruto(), m.descontos(), m.devolvido(), m.vendidoLiquido(), m.comissao().comissao(), c.faltasCobradas(), c.liquido(),
+                f.creditoDisponivel(), f.creditoUsado(), f.aPagar(), f.recebido(), f.boleto(), f.ficouDevendo(), f.pagoAoVendedor(),
+                f.restanteSemData(), parcelasDoRestante(f, pag), contasAbertasDoVendedor(m.vendedorId()), m.cotacao().id(),
+                m.cotacao().dataCotacao(), m.revisoes().isEmpty() && m.esperadoEContado().sobras().isEmpty());
+    }
+
+    private static PreviaDoFechamento.ProdutoDaPreviaDoFechamento produtoDaPrevia(Montagem m, UUID produtoId) {
+        MontagemDoFechamento.Produto p = m.produtos().get(produtoId);
+        return p == null ? null : new PreviaDoFechamento.ProdutoDaPreviaDoFechamento(p.id(), p.nome(), p.codigo(), p.fotoHash());
     }
 
     /** As parcelas que o restante geraria (só para mostrar na prévia; o valor de cada uma sai de Dinheiro.dividirEmParcelas). */
-    private List<Map<String, Object>> parcelasDoRestante(Financeiro f, Pagamento p) {
-        List<Map<String, Object>> r = new ArrayList<>();
+    private List<PreviaDoFechamento.ParcelaDoRestanteDaPrevia> parcelasDoRestante(Financeiro f, Pagamento p) {
+        List<PreviaDoFechamento.ParcelaDoRestanteDaPrevia> r = new ArrayList<>();
         if (f.restante().signum() <= 0 || p.restante() == null) {
             return r;
         }
         try {
             List<BigDecimal> valores = Dinheiro.dividirEmParcelas(f.restante(), p.restante().parcelas());
             for (int k = 0; k < valores.size(); k++) {
-                Map<String, Object> l = new LinkedHashMap<>();
-                l.put("numero", k + 1 + (f.boleto().signum() > 0 ? 1 : 0));
-                l.put("vencimento", p.restante().primeiroVencimento().plusMonths(k));
-                l.put("valor", valores.get(k));
-                r.add(l);
+                r.add(new PreviaDoFechamento.ParcelaDoRestanteDaPrevia(k + 1 + (f.boleto().signum() > 0 ? 1 : 0),
+                        p.restante().primeiroVencimento().plusMonths(k), valores.get(k)));
             }
         } catch (IllegalArgumentException e) {
             throw Validacoes.recusar("restante", "O valor que ficou devendo é pequeno demais para tantas parcelas. Use menos parcelas.");
@@ -811,23 +857,14 @@ public class ServicoDeFechamento {
     }
 
     /** As contas em aberto que o vendedor já devia à loja (nível 2), da que vence primeiro para a que vence depois. */
-    private List<Map<String, Object>> contasAbertasDoVendedor(UUID vendedorId) {
+    private List<PreviaDoFechamento.ContaAbertaNaPrevia> contasAbertasDoVendedor(UUID vendedorId) {
         return jdbc.query("""
                 SELECT id, origem_tipo, parcela, total_parcelas, vencimento, valor, valor - valor_pago - valor_cancelado AS em_aberto,
                        forma_prevista
                   FROM corona.contas_receber
                  WHERE devedor_tipo = 'VENDEDOR' AND vendedor_id = ? AND deleted_at IS NULL AND status IN ('ABERTA', 'PARCIAL')
-                 ORDER BY vencimento, parcela, id""", (rs, n) -> {
-                    Map<String, Object> l = new LinkedHashMap<>();
-                    l.put("id", rs.getObject("id", UUID.class));
-                    l.put("origem", rs.getString("origem_tipo"));
-                    l.put("numero", rs.getInt("parcela"));
-                    l.put("totalDeParcelas", rs.getInt("total_parcelas"));
-                    l.put("vencimento", rs.getObject("vencimento", LocalDate.class));
-                    l.put("valor", rs.getBigDecimal("valor"));
-                    l.put("emAberto", rs.getBigDecimal("em_aberto"));
-                    l.put("formaPrevista", rs.getString("forma_prevista"));
-                    return l;
-                }, vendedorId);
+                 ORDER BY vencimento, parcela, id""", (rs, n) -> new PreviaDoFechamento.ContaAbertaNaPrevia(rs.getObject("id", UUID.class), rs.getString("origem_tipo"),
+                        rs.getInt("parcela"), rs.getInt("total_parcelas"), rs.getObject("vencimento", LocalDate.class),
+                        rs.getBigDecimal("valor"), rs.getBigDecimal("em_aberto"), rs.getString("forma_prevista")), vendedorId);
     }
 }

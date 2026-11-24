@@ -34,6 +34,11 @@ import {
 import type { Falha, Resultado } from '../tipos';
 import { ConsultasDaFase6 } from './consultas-da-fase-6';
 import { ConsultasDoAcerto } from './consultas-do-acerto';
+import {
+  ConsultasDoConsignado,
+  ehPedidoDoConsignado,
+  type FotosDoClienteLocais,
+} from './consultas-do-consignado';
 import { pecaDoProduto } from './peca-do-produto';
 
 /**
@@ -48,12 +53,23 @@ export interface OpcoesDasConsultas {
   agora?: () => Date;
   /** Avisado quando algo que a tela mostra no indicador mudou sem gravar uma operação (o "Entendi"). */
   aoMudarOEstado?: () => void;
+  /** As fotos dos clientes (criptografadas, com fila de envio; tarefa 9.2). */
+  fotosDosClientes?: FotosDoClienteLocais;
 }
 
 const MENSAGENS_ACERTO_NAO_ENCONTRADO =
   'Não encontramos este acerto neste computador. Atualize a tela e tente de novo.';
 
-const naoEncontrado = (mensagem: string): Falha => ({ tipo: 'recusada', status: 404, mensagem });
+/** O código do texto, para a tela mostrar a frase no idioma escolhido (os textos das operações são únicos). */
+function codigoDoTexto(mensagem: string): string | undefined {
+  if (mensagem === MENSAGENS_ACERTO_NAO_ENCONTRADO) return 'ACERTO_NAO_ENCONTRADO_NO_COMPUTADOR';
+  return Object.entries(MENSAGENS_DAS_OPERACOES).find(([, texto]) => texto === mensagem)?.[0];
+}
+
+const naoEncontrado = (mensagem: string): Falha => {
+  const codigo = codigoDoTexto(mensagem);
+  return { tipo: 'recusada', status: 404, mensagem, ...(codigo ? { codigo } : {}) };
+};
 
 /** Dia civil (AAAA-MM-DD) em Brasília de um instante ISO (o mesmo da garantia, tarefa 6.8). */
 export { diaEmBrasilia };
@@ -175,8 +191,17 @@ export class ConsultasLocais {
   /** Acerto fechado, parcelas e recebíveis (tarefa 7.11). */
   readonly acerto: ConsultasDoAcerto;
 
+  /** O consignado ao cliente: semana, pedidos, acerto, clientes e maletas (tarefa 9.2). */
+  readonly consignado: ConsultasDoConsignado;
+
   constructor(private readonly o: OpcoesDasConsultas) {
     this.fase6 = new ConsultasDaFase6({ banco: o.banco, ...(o.agora ? { agora: o.agora } : {}) });
+    this.consignado = new ConsultasDoConsignado({
+      banco: o.banco,
+      operacoes: o.operacoes,
+      ...(o.fotosDosClientes ? { fotos: o.fotosDosClientes } : {}),
+      ...(o.agora ? { agora: o.agora } : {}),
+    });
     this.acerto = new ConsultasDoAcerto({
       banco: () => this.db(),
       agora: () => this.agora(),
@@ -211,6 +236,7 @@ export class ConsultasLocais {
             tipo: 'recusada',
             status: 409,
             mensagem: erro.message,
+            codigo: erro.codigo,
             ...(erro.clienteExistente ? { clienteExistente: erro.clienteExistente } : {}),
           },
         };
@@ -225,6 +251,7 @@ export class ConsultasLocais {
   }
 
   private atender(pedido: PedidoDeChamada): Resultado<unknown> {
+    if (ehPedidoDoConsignado(pedido)) return this.consignado.chamar(pedido);
     switch (pedido.operacao) {
       case 'maletas.listar':
         return ok(this.maletas(['ENVIADA', 'CONFERIDA']));
@@ -270,7 +297,9 @@ export class ConsultasLocais {
             'SELECT id FROM conferencias WHERE remessa_id = ? AND deleted_at IS NULL ORDER BY conferida_em DESC LIMIT 1',
           )
           .get(pedido.id) as { id: string } | undefined;
-        return c ? ok(this.conferencia(c.id)) : nao('Esta maleta ainda não foi conferida.');
+        return c
+          ? ok(this.conferencia(c.id))
+          : nao('Esta maleta ainda não foi conferida.', 'MALETA_SEM_CONFERENCIA');
       }
       case 'vendas.vender': {
         this.o.operacoes.vender(pedido.venda);
@@ -310,6 +339,7 @@ export class ConsultasLocais {
               tipo: 'recusada',
               status: 403,
               mensagem: 'Só o vendedor que atende o cliente pode mudar o cadastro dele.',
+              codigo: 'CLIENTE_DE_OUTRO_VENDEDOR',
             },
           };
         }
@@ -418,7 +448,7 @@ export class ConsultasLocais {
       case 'acertos.pedir':
       case 'acertos.agora':
       case 'acertos.ler':
-        return nao('Esta consulta não é feita no computador.');
+        return nao('Esta consulta não é feita no computador.', 'CONSULTA_SO_COM_INTERNET');
     }
   }
 
@@ -1286,9 +1316,9 @@ function montarRelatorio(
 }
 
 const ok = (dados: unknown): Resultado<unknown> => ({ ok: true, dados });
-const nao = (mensagem: string): Resultado<unknown> => ({
+const nao = (mensagem: string, codigo?: string): Resultado<unknown> => ({
   ok: false,
-  falha: naoEncontrado(mensagem),
+  falha: { ...naoEncontrado(mensagem), ...(codigo ? { codigo } : {}) },
 });
 
 /** O tipo do lançamento na venda: o desfazer do reembolso (devolução cancelada) é um tipo próprio (tarefa 6.8). */

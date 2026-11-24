@@ -159,7 +159,7 @@ describe('conferência dos dados do financeiro', () => {
     expect(conferirParametros('contasAReceber.listar', { situacao: 'x' })).toBeNull();
   });
 
-  it('recebimento do vendedor: id, vendedor, forma e valor; a conta é opcional', () => {
+  it('recebimento do representante: id, representante, forma e valor; a conta é opcional', () => {
     const ok = { id: ID, vendedorId: OUTRO, forma: 'DINHEIRO', valor: '50.00' };
     expect(conferirParametros('recebimentos.receber', ok)).toEqual({
       operacao: 'recebimentos.receber',
@@ -170,6 +170,57 @@ describe('conferência dos dados do financeiro', () => {
     expect(conferirParametros('recebimentos.receber', { ...ok, forma: 'CARTAO' })).toBeNull();
     expect(conferirParametros('recebimentos.receber', { ...ok, contaId: 'x' })).toBeNull();
     expect(conferirParametros('recebimentos.receber', { ...ok, entrada: '1.00' })).toBeNull();
+  });
+
+  it('recebimento em Dólar ou Guarani: só o valor na moeda (nunca o Real convertido) e a data da cotação', () => {
+    const base = { id: ID, vendedorId: OUTRO, forma: 'DINHEIRO' };
+    const guarani = {
+      ...base,
+      moeda: 'GUARANI',
+      valorNaMoeda: '500000',
+      cotacaoData: '2026-11-23',
+    };
+    expect(conferirParametros('recebimentos.receber', guarani)).toEqual({
+      operacao: 'recebimentos.receber',
+      corpo: guarani,
+    });
+    expect(
+      conferirParametros('recebimentos.receber', {
+        ...base,
+        moeda: 'DOLAR',
+        valorNaMoeda: '100.50',
+      }),
+    ).not.toBeNull();
+    expect(
+      conferirParametros('recebimentos.receber', { ...base, moeda: 'REAL', valor: '10.00' }),
+    ).not.toBeNull();
+    // O app nunca manda o Real junto de outra moeda; Guarani sem centavos; moeda da lista.
+    expect(conferirParametros('recebimentos.receber', { ...guarani, valor: '447.50' })).toBeNull();
+    expect(conferirParametros('recebimentos.receber', { ...base, moeda: 'GUARANI' })).toBeNull();
+    expect(
+      conferirParametros('recebimentos.receber', { ...guarani, valorNaMoeda: '500000.50' }),
+    ).toBeNull();
+    expect(
+      conferirParametros('recebimentos.receber', {
+        ...base,
+        moeda: 'DOLAR',
+        valorNaMoeda: '1.005',
+      }),
+    ).toBeNull();
+    expect(
+      conferirParametros('recebimentos.receber', { ...base, moeda: 'EURO', valorNaMoeda: '10.00' }),
+    ).toBeNull();
+    expect(
+      conferirParametros('recebimentos.receber', {
+        ...base,
+        moeda: 'REAL',
+        valor: '10.00',
+        valorNaMoeda: '10.00',
+      }),
+    ).toBeNull();
+    expect(
+      conferirParametros('recebimentos.receber', { ...guarani, cotacaoData: '23/11/2026' }),
+    ).toBeNull();
     expect(
       conferirParametros('recebimentos.listar', { vendedorId: ID, de: '2026-11-01' }),
     ).not.toBeNull();

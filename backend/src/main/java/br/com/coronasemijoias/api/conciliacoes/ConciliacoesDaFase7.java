@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * As conciliações da Fase 7 (tarefa 7.8; ADR-0012, item 17): C1 a C5 e C7 a C10 (a C6, de cheque, fica vaga e não aparece).
+ * As conciliações da Fase 7 (tarefa 7.8; ADR-0012, item 17): C1 a C5 e C7 a C10 (a C6, de cheque, fica vaga e não aparece), mais a C11 e a C12 do estoque completo (tarefa 8.3): as onze.
  * Cada uma é uma consulta única sobre o banco, em Real, com os valores gravados (Dólar e Guarani nunca entram), e devolve cada
  * linha que não bate com o que era esperado e o que está gravado. Só leitura, num retrato só do banco (uma transação de leitura
  * com isolamento repetível), e nunca corrige nada: quem acha a diferença avisa o suporte. A única conta de dinheiro feita aqui é a
@@ -24,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class ConciliacoesDaFase7 {
 
-    public static final List<String> CHAVES = List.of("C1", "C2", "C3", "C4", "C5", "C7", "C8", "C9", "C10");
+    public static final List<String> CHAVES = List.of("C1", "C2", "C3", "C4", "C5", "C7", "C8", "C9", "C10", "C11", "C12");
 
     public enum Unidade {
         REAIS, PECAS, REGISTROS, PERCENTUAL
@@ -48,18 +48,18 @@ public class ConciliacoesDaFase7 {
         this.jdbc = jdbc;
     }
 
-    /** As nove, num retrato só do banco. */
-    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    /** As onze, num retrato só do banco. */
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ, noRollbackFor = RuntimeException.class)
     public Resultado conferir() {
         return resultado(CHAVES);
     }
 
     /** Uma só (chave desconhecida, inclusive a C6 que está vaga: recusa em português). */
-    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ, noRollbackFor = RuntimeException.class)
     public Resultado conferir(String chave) {
         String limpa = chave == null ? "" : chave.strip().toUpperCase(Locale.ROOT);
         if (!CHAVES.contains(limpa)) {
-            throw Validacoes.recusar("chave", "Escolha uma das conferências da lista: C1, C2, C3, C4, C5, C7, C8, C9 ou C10.");
+            throw Validacoes.recusar("chave", "Escolha uma das conferências da lista: C1, C2, C3, C4, C5, C7, C8, C9, C10, C11 ou C12.");
         }
         return resultado(List.of(limpa));
     }
@@ -76,7 +76,9 @@ public class ConciliacoesDaFase7 {
                 case "C7" -> c7();
                 case "C8" -> c8();
                 case "C9" -> c9();
-                default -> c10();
+                case "C10" -> c10();
+                case "C11" -> c11();
+                default -> c12();
             });
         }
         boolean certo = conferencias.stream().allMatch(c -> c.divergencias().isEmpty());
@@ -102,6 +104,22 @@ public class ConciliacoesDaFase7 {
         return achar("SELECT '" + tipo + "', " + ref + ", '" + descricao + "', " + esperado + ", " + encontrado + " FROM " + de
                 + " WHERE " + onde + " AND (" + esperado + ") <> (" + encontrado + ")", unidade);
     }
+
+    /**
+     * O saldo pelos movimentos (a fórmula do gatilho da V024: enviado mais os movimentos da maleta), em peças. Com {@code produto}
+     * vazio é o da maleta inteira (C8); com uma peça, o daquela linha da maleta (C12). Uma expressão só para as duas.
+     */
+    private static String saldoDaMaleta(String maleta, String produto) {
+        String doItem = produto.isEmpty() ? "" : " AND ix.produto_id = " + produto;
+        String doMovimento = produto.isEmpty() ? "" : " AND m.produto_id = " + produto;
+        return "(SELECT coalesce(sum(t.q), 0) FROM (SELECT ix.qtd_enviada AS q FROM corona.itens_remessa ix WHERE ix.remessa_id = " + maleta
+                + " AND ix.deleted_at IS NULL" + doItem + " UNION ALL SELECT m.quantidade FROM corona.movimentos_remessa m WHERE m.remessa_id = "
+                + maleta + doMovimento + ") t)";
+    }
+
+    /** Um movimento do estoque visto pelo que ele é de verdade: o estorno vale pelo tipo e pela origem do original. */
+    private static final String MOVIMENTO_DO_ESTOQUE =
+            "corona.movimentacoes_estoque me LEFT JOIN corona.movimentacoes_estoque o ON o.id = me.estorna_id";
 
     @SafeVarargs
     private static List<Diferenca> juntar(List<Diferenca>... listas) {
@@ -292,10 +310,8 @@ public class ConciliacoesDaFase7 {
 
     private Conferencia c8() {
         List<Diferenca> d = juntar(
-                regra(Unidade.PECAS, "MALETA", "r.id", "Esta maleta já foi acertada, mas ainda sobra peça nela.", "0", """
-                        (SELECT coalesce(sum(t.q), 0) FROM (
-                            SELECT i.qtd_enviada AS q FROM corona.itens_remessa i WHERE i.remessa_id = r.id AND i.deleted_at IS NULL
-                            UNION ALL SELECT m.quantidade FROM corona.movimentos_remessa m WHERE m.remessa_id = r.id) t)""",
+                regra(Unidade.PECAS, "MALETA", "r.id", "Esta maleta já foi acertada, mas ainda sobra peça nela.", "0",
+                        saldoDaMaleta("r.id", ""),
                         "corona.remessas r", "r.status = 'ACERTADA'"),
                 regra(Unidade.PECAS, "PENDENCIA", "p.id", "Esta falta não tem a perda correspondente na maleta.", "p.quantidade", """
                         coalesce((SELECT -sum(m.quantidade) FROM corona.movimentos_remessa m
@@ -355,5 +371,104 @@ public class ConciliacoesDaFase7 {
         return new Conferencia("C10", "Compras e parcelas a pagar",
                 "Para cada compra com contas a pagar, a soma das parcelas (mesmo as canceladas) é o total da compra.",
                 contar("SELECT count(DISTINCT compra_id) FROM corona.contas_pagar"), d);
+    }
+
+    // --- C11: o estoque completo, peça por peça ---
+
+    private static final String ESPERADO_DA_C11 = """
+            coalesce(comprado.q, 0) + coalesce(dona.q, 0) - coalesce(vendido.q, 0) + coalesce(volta.q, 0)
+                + coalesce(acerto.recebido, 0) - coalesce(acerto.falta, 0) - coalesce(acerto.aprovado, 0) + coalesce(achada.q, 0)""";
+
+    private Conferencia c11() {
+        String sql = """
+                SELECT 'PRODUTO', p.id,
+                       'O estoque da loja mais as maletas não bate com o que foi comprado, vendido e perdido.',
+                       %1$s,
+                       p.estoque_atual + coalesce(maletas.saldo, 0)
+                  FROM corona.produtos p
+                  LEFT JOIN (%2$s) maletas ON maletas.produto_id = p.id
+                  LEFT JOIN (SELECT ic.produto_id, sum(ic.quantidade) AS q
+                               FROM corona.itens_compra ic JOIN corona.compras c ON c.id = ic.compra_id
+                              WHERE c.situacao = 'REGISTRADA'
+                              GROUP BY ic.produto_id) comprado ON comprado.produto_id = p.id
+                  LEFT JOIN (SELECT me.produto_id, sum(me.quantidade) AS q
+                               FROM %3$s
+                              WHERE coalesce(o.origem_tipo, me.origem_tipo) IN ('MANUAL', 'AJUSTE_MANUAL', 'INVENTARIO')
+                              GROUP BY me.produto_id) dona ON dona.produto_id = p.id
+                  LEFT JOIN (SELECT iv.produto_id, sum(iv.quantidade) AS q
+                               FROM corona.itens_venda iv JOIN corona.vendas v ON v.id = iv.venda_id
+                              WHERE v.status = 'CONCLUIDA' AND v.deleted_at IS NULL AND iv.deleted_at IS NULL
+                              GROUP BY iv.produto_id) vendido ON vendido.produto_id = p.id
+                  LEFT JOIN (SELECT iv.produto_id, sum(idv.quantidade) AS q
+                               FROM corona.itens_devolucao idv
+                               JOIN corona.devolucoes d ON d.id = idv.devolucao_id
+                               JOIN corona.itens_venda iv ON iv.id = idv.item_venda_id
+                              WHERE d.situacao <> 'CANCELADA' AND d.deleted_at IS NULL AND idv.deleted_at IS NULL
+                                AND idv.destino_peca = 'MALETA'
+                              GROUP BY iv.produto_id) volta ON volta.produto_id = p.id
+                  LEFT JOIN (SELECT ia.produto_id,
+                                    sum(CASE WHEN ia.remessa_id IS NULL THEN ia.contado_boa + ia.contado_defeito ELSE 0 END) AS recebido,
+                                    sum(CASE WHEN ia.remessa_id IS NULL THEN 0 ELSE ia.falta END) AS falta,
+                                    sum(ia.defeito_aprovado) AS aprovado
+                               FROM corona.itens_acerto ia JOIN corona.acertos a ON a.id = ia.acerto_id
+                              WHERE a.status = 'ACERTADO' AND ia.deleted_at IS NULL
+                              GROUP BY ia.produto_id) acerto ON acerto.produto_id = p.id
+                  LEFT JOIN (SELECT pa.produto_id, sum(pa.quantidade) AS q
+                               FROM corona.pendencias_acerto pa
+                              WHERE pa.tipo = 'FALTA' AND pa.status = 'ENCONTRADA' AND pa.deleted_at IS NULL
+                              GROUP BY pa.produto_id) achada ON achada.produto_id = p.id
+                 WHERE %1$s
+                       <> p.estoque_atual + coalesce(maletas.saldo, 0)
+                 ORDER BY p.id""".formatted(ESPERADO_DA_C11, ServicoDeEstoque.SQL_SALDO_NAS_MALETAS_ABERTAS, MOVIMENTO_DO_ESTOQUE);
+        return new Conferencia("C11", "Estoque completo, peça por peça",
+                "Para cada peça: o que está na loja mais o que está nas maletas é o que foi comprado e lançado, menos o que foi vendido, "
+                        + "o que faltou ou estragou no acerto, mais o que o cliente devolveu à maleta e o que chegou à loja pelo acerto.",
+                contar("SELECT count(*) FROM corona.produtos"), achar(sql, Unidade.PECAS));
+    }
+
+    // --- C12: o saldo de toda maleta enviada ---
+
+    private Conferencia c12() {
+        String enviadas = "r.deleted_at IS NULL AND r.status IN ('ENVIADA', 'CONFERIDA', 'EM_ACERTO', 'ACERTADA')";
+        String peca = "' || p.nome || '";
+        String linhas = "corona.remessas r JOIN corona.itens_remessa i ON i.remessa_id = r.id AND i.deleted_at IS NULL"
+                + " JOIN corona.produtos p ON p.id = i.produto_id";
+        String movimentosDaMaleta = "(SELECT coalesce(sum(me.quantidade), 0) FROM " + MOVIMENTO_DO_ESTOQUE
+                + " WHERE me.produto_id = i.produto_id AND coalesce(o.origem_tipo, me.origem_tipo) = 'MALETA'"
+                + " AND coalesce(o.origem_id, me.origem_id) = r.id AND coalesce(o.tipo, me.tipo) = ";
+        String enviado = "(-" + movimentosDaMaleta + "'REMESSA'))";
+        String devolvidoADona = movimentosDaMaleta + "'DEVOLUCAO')";
+        String vendido = """
+                (SELECT coalesce(sum(iv.quantidade), 0) FROM corona.itens_venda iv JOIN corona.vendas v ON v.id = iv.venda_id
+                  WHERE v.remessa_id = r.id AND iv.produto_id = i.produto_id AND v.status = 'CONCLUIDA'
+                    AND v.deleted_at IS NULL AND iv.deleted_at IS NULL)""";
+        String devolvidoPeloCliente = """
+                (SELECT coalesce(sum(idv.quantidade), 0) FROM corona.itens_devolucao idv
+                   JOIN corona.devolucoes d ON d.id = idv.devolucao_id JOIN corona.itens_venda iv ON iv.id = idv.item_venda_id
+                  WHERE d.remessa_id = r.id AND iv.produto_id = i.produto_id AND idv.destino_peca = 'MALETA'
+                    AND d.situacao <> 'CANCELADA' AND d.deleted_at IS NULL AND idv.deleted_at IS NULL)""";
+        String falta = """
+                (SELECT coalesce(sum(ia.falta), 0) FROM corona.itens_acerto ia JOIN corona.acertos a ON a.id = ia.acerto_id
+                  WHERE ia.remessa_id = r.id AND ia.produto_id = i.produto_id AND a.status = 'ACERTADO' AND ia.deleted_at IS NULL)""";
+        String saldo = saldoDaMaleta("r.id", "i.produto_id");
+        String movimentosDaRemessa = "(SELECT coalesce(sum(abs(m.quantidade)), 0) FROM corona.movimentos_remessa m"
+                + " WHERE m.remessa_id = r.id AND m.produto_id = i.produto_id)";
+        String esperado = enviado + " - " + vendido + " + " + devolvidoPeloCliente + " - " + devolvidoADona + " - " + falta;
+        List<Diferenca> d = juntar(
+                achar("SELECT 'MALETA', r.id, 'A peça \"" + peca + "\" nesta maleta não bate com o que foi enviado, vendido, devolvido e perdido.', "
+                        + esperado + ", " + saldo + " FROM " + linhas + " WHERE " + enviadas + " AND (" + esperado + ") <> " + saldo
+                        + " ORDER BY r.id, p.nome", Unidade.PECAS),
+                achar("SELECT 'MALETA', r.id, 'A peça \"" + peca + "\" ficou com saldo negativo nesta maleta.', 0, " + saldo + " FROM " + linhas
+                        + " WHERE r.deleted_at IS NULL AND r.status IN ('ENVIADA', 'CONFERIDA', 'EM_ACERTO', 'ACERTADA', 'CANCELADA') AND "
+                        + saldo + " < 0 ORDER BY r.id, p.nome", Unidade.PECAS),
+                achar("SELECT 'MALETA', r.id, 'A peça \"" + peca + "\" ainda aparece nesta maleta, que foi cancelada.', 0, abs(" + enviado
+                        + ") + " + movimentosDaRemessa + " FROM " + linhas + " WHERE r.deleted_at IS NULL AND r.status = 'CANCELADA' AND (abs("
+                        + enviado + ") + " + movimentosDaRemessa + ") <> 0 ORDER BY r.id, p.nome", Unidade.PECAS));
+        return new Conferencia("C12", "Cada maleta enviada, peça por peça",
+                "Em toda maleta enviada, para cada peça: o que há na maleta é o que foi enviado, menos o que foi vendido, devolvido à dona "
+                        + "e perdido, mais o que o cliente devolveu; nenhuma peça fica negativa e a maleta cancelada não guarda peça.",
+                contar("SELECT count(*) FROM corona.remessas r JOIN corona.itens_remessa i ON i.remessa_id = r.id AND i.deleted_at IS NULL"
+                        + " WHERE r.deleted_at IS NULL AND r.status IN ('ENVIADA', 'CONFERIDA', 'EM_ACERTO', 'ACERTADA', 'CANCELADA')"),
+                d);
     }
 }

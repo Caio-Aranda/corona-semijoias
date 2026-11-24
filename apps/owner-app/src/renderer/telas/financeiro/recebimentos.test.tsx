@@ -22,7 +22,7 @@ const contaDoVendedor = (extra: Record<string, unknown> = {}) => ({
   nivel: 'VENDEDOR',
   origem: 'ACERTO',
   vendedorId: ID_VENDEDOR,
-  vendedorNome: 'Ana Vendedora',
+  vendedorNome: 'Ana Representante',
   numero: 1,
   totalDeParcelas: 2,
   vencimento: '2026-11-30',
@@ -54,7 +54,7 @@ const contaDoCliente = contaDoVendedor({
 const recebimento = (extra: Record<string, unknown> = {}) => ({
   id: ID_RECEBIMENTO,
   vendedorId: ID_VENDEDOR,
-  vendedorNome: 'Ana Vendedora',
+  vendedorNome: 'Ana Representante',
   momento: 'AVULSO',
   aplicadoEm: 'CONTAS',
   forma: 'PIX',
@@ -106,8 +106,8 @@ describe('Contas a receber', () => {
 
   it('lista as contas dos dois lados como o servidor mandou, sem refazer conta', async () => {
     await abrirContas(servidor());
-    expect(screen.getByText('Do cliente ao vendedor', { selector: 'td' })).toBeInTheDocument();
-    expect(screen.getByText('Do vendedor à loja', { selector: 'td' })).toBeInTheDocument();
+    expect(screen.getByText('Do cliente ao representante', { selector: 'td' })).toBeInTheDocument();
+    expect(screen.getByText('Do representante à loja', { selector: 'td' })).toBeInTheDocument();
     expect(screen.getByText('R$ 400,00')).toBeInTheDocument();
     expect(screen.getByText('1 de 2')).toBeInTheDocument();
     expect(screen.getByText('2 de 3')).toBeInTheDocument();
@@ -116,10 +116,10 @@ describe('Contas a receber', () => {
     expect(screen.getByText('Parcial', { selector: 'td' })).toBeInTheDocument();
   });
 
-  it('os filtros mandam vendedor, situação e de quem é a conta', async () => {
+  it('os filtros mandam representante, situação e de quem é a conta', async () => {
     const m = servidor();
     const u = await abrirContas(m);
-    await u.selectOptions(screen.getByLabelText('Vendedor'), ID_VENDEDOR);
+    await u.selectOptions(screen.getByLabelText('Representante'), ID_VENDEDOR);
     await u.selectOptions(screen.getByLabelText('De quem é a conta'), 'VENDEDOR');
     await u.selectOptions(screen.getByLabelText('Situação'), 'EM_ABERTO');
     await waitFor(() =>
@@ -144,10 +144,10 @@ describe('Contas a receber', () => {
   });
 });
 
-describe('Recebimentos do vendedor', () => {
+describe('Recebimentos do representante', () => {
   async function abrirRecebimentos(m: ReturnType<typeof servidor>) {
-    const u = await abrir(m, 'Recebimentos do vendedor');
-    await screen.findByRole('heading', { name: 'Recebimentos do vendedor', level: 1 });
+    const u = await abrir(m, 'Recebimentos do representante');
+    await screen.findByRole('heading', { name: 'Recebimentos do representante', level: 1 });
     await screen.findAllByText('Recebimento avulso', { selector: 'td' });
     return u;
   }
@@ -165,13 +165,13 @@ describe('Recebimentos do vendedor', () => {
     expect(screen.getAllByRole('button', { name: /^Estornar o recebimento de/ })).toHaveLength(2);
   });
 
-  it('registrar: vendedor, conta em aberto do vendedor, três formas e valor com ponto', async () => {
+  it('registrar: representante, conta em aberto do representante, três formas e valor com ponto', async () => {
     const m = servidor();
     const u = await abrirRecebimentos(m);
     await u.click(screen.getByRole('button', { name: 'Registrar recebimento' }));
     const formas = within(screen.getByLabelText('Forma')).getAllByRole('option');
     expect(formas.map((o) => o.textContent)).toEqual(['Dinheiro', 'Transferência (PIX)', 'Boleto']);
-    await u.selectOptions(screen.getByLabelText('Vendedor'), ID_VENDEDOR);
+    await u.selectOptions(screen.getByLabelText('Representante'), ID_VENDEDOR);
     await waitFor(() =>
       expect(ultima(m, 'contasAReceber.listar')).toEqual({
         vendedorId: ID_VENDEDOR,
@@ -199,7 +199,7 @@ describe('Recebimentos do vendedor', () => {
     const m = servidor();
     const u = await abrirRecebimentos(m);
     await u.click(screen.getByRole('button', { name: 'Registrar recebimento' }));
-    await u.selectOptions(screen.getByLabelText('Vendedor'), ID_VENDEDOR);
+    await u.selectOptions(screen.getByLabelText('Representante'), ID_VENDEDOR);
     await u.selectOptions(await screen.findByLabelText('Conta a baixar'), ID_CONTA);
     await u.type(screen.getByLabelText('Valor recebido'), '10');
     await u.click(screen.getByRole('button', { name: 'Registrar recebimento' }));
@@ -220,7 +220,7 @@ describe('Recebimentos do vendedor', () => {
     const u = await abrirRecebimentos(m);
     const preencher = async () => {
       await u.click(screen.getByRole('button', { name: 'Registrar recebimento' }));
-      await u.selectOptions(screen.getByLabelText('Vendedor'), ID_VENDEDOR);
+      await u.selectOptions(screen.getByLabelText('Representante'), ID_VENDEDOR);
       await u.type(screen.getByLabelText('Valor recebido'), '10');
     };
     await preencher();
@@ -237,27 +237,29 @@ describe('Recebimentos do vendedor', () => {
     expect(ids[2]).not.toBe(ids[0]);
   });
 
-  it('recusa vendedor e valor que faltam antes de mandar; mostra a recusa do servidor', async () => {
+  it('recusa representante e valor que faltam antes de mandar; mostra a recusa do servidor', async () => {
     const m = servidor({
       'recebimentos.receber': () => ({
         ok: false,
         motivo: 'erro',
         status: 409,
-        mensagem: 'Este vendedor não tem conta em aberto.',
+        mensagem: 'Este representante não tem conta em aberto.',
       }),
     });
     const u = await abrirRecebimentos(m);
     await u.click(screen.getByRole('button', { name: 'Registrar recebimento' }));
     await u.click(screen.getByRole('button', { name: 'Registrar recebimento' }));
-    expect(await screen.findByText('Escolha o vendedor.')).toBeInTheDocument();
+    expect(await screen.findByText('Escolha o representante.')).toBeInTheDocument();
     expect(
       screen.getByText('Digite o valor recebido, em reais, maior que zero.'),
     ).toBeInTheDocument();
     expect(chamadasDe(m, 'recebimentos.receber')).toHaveLength(0);
-    await u.selectOptions(screen.getByLabelText('Vendedor'), ID_VENDEDOR);
+    await u.selectOptions(screen.getByLabelText('Representante'), ID_VENDEDOR);
     await u.type(screen.getByLabelText('Valor recebido'), '10');
     await u.click(screen.getByRole('button', { name: 'Registrar recebimento' }));
-    expect(await screen.findByText('Este vendedor não tem conta em aberto.')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Este representante não tem conta em aberto.'),
+    ).toBeInTheDocument();
   });
 
   it('estornar pede o motivo e manda o id do comando; o vencimento só aparece se o recebimento pagou um acerto', async () => {
@@ -295,8 +297,125 @@ describe('Recebimentos do vendedor', () => {
 
   it('sem internet ao abrir: avisa e deixa tentar de novo', async () => {
     const m = servidor({ 'recebimentos.listar': () => ({ ok: false, motivo: 'sem-conexao' }) });
-    await abrir(m, 'Recebimentos do vendedor');
+    await abrir(m, 'Recebimentos do representante');
     expect(await screen.findByText(/Sem conexão com a internet/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Tentar de novo' })).toBeInTheDocument();
+  });
+
+  // --- em Guarani, Dólar ou Real (23/11/2026) ---
+
+  const comCotacao = {
+    'cotacao.hoje': () => ({
+      ok: true as const,
+      dados: {
+        disponivel: true,
+        cotacao: { dataCotacao: '2026-11-23', dolar: '5.50130000', guarani: '0.00089500' },
+      },
+    }),
+  };
+
+  it('sem cotação do dia: avisa e só deixa registrar em reais', async () => {
+    const m = servidor();
+    const u = await abrirRecebimentos(m);
+    await u.click(screen.getByRole('button', { name: 'Registrar recebimento' }));
+    expect(
+      screen.getByText(
+        'Ainda não há cotação do dia. Por enquanto, registre o recebimento em reais.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByLabelText('Moeda')).toBeNull();
+  });
+
+  it('em Guarani: mostra as três moedas antes de confirmar e manda só o valor em Guarani', async () => {
+    const m = servidor(comCotacao);
+    const u = await abrirRecebimentos(m);
+    await u.click(screen.getByRole('button', { name: 'Registrar recebimento' }));
+    const moedas = within(screen.getByLabelText('Moeda')).getAllByRole('option');
+    expect(moedas.map((o) => o.textContent)).toEqual(['Real', 'Dólar', 'Guarani']);
+    await u.selectOptions(screen.getByLabelText('Representante'), ID_VENDEDOR);
+    await u.selectOptions(screen.getByLabelText('Moeda'), 'GUARANI');
+    await u.type(screen.getByLabelText('Valor recebido em Guarani'), '500.000');
+    // Gs. 500.000 x 0,000895 = R$ 447,50; 447,50 / 5,5013 = US$ 81,34.
+    expect(await screen.findByText('R$ 447,50')).toBeInTheDocument();
+    expect(screen.getByText('US$ 81,34 · Gs. 500.000')).toBeInTheDocument();
+    expect(screen.getByText(/Fica assim/)).toBeInTheDocument();
+    await u.click(screen.getByRole('button', { name: 'Registrar recebimento' }));
+    await waitFor(() => expect(chamadasDe(m, 'recebimentos.receber')).toHaveLength(1));
+    const p = ultima(m, 'recebimentos.receber');
+    expect(p).toMatchObject({
+      vendedorId: ID_VENDEDOR,
+      forma: 'DINHEIRO',
+      moeda: 'GUARANI',
+      valorNaMoeda: '500000',
+      cotacaoData: '2026-11-23',
+    });
+    expect(p).not.toHaveProperty('valor');
+  });
+
+  it('em Guarani com vírgula: explica que o Guarani não tem centavos e não manda', async () => {
+    const m = servidor(comCotacao);
+    const u = await abrirRecebimentos(m);
+    await u.click(screen.getByRole('button', { name: 'Registrar recebimento' }));
+    await u.selectOptions(screen.getByLabelText('Representante'), ID_VENDEDOR);
+    await u.selectOptions(screen.getByLabelText('Moeda'), 'GUARANI');
+    await u.type(screen.getByLabelText('Valor recebido em Guarani'), '500,5');
+    expect(
+      screen.getByText('Digite o valor em Guarani, sem vírgula: o Guarani não tem centavos.'),
+    ).toBeInTheDocument();
+    await u.click(screen.getByRole('button', { name: 'Registrar recebimento' }));
+    expect(chamadasDe(m, 'recebimentos.receber')).toHaveLength(0);
+  });
+
+  it('em Dólar: manda a moeda e o valor em Dólar', async () => {
+    const m = servidor(comCotacao);
+    const u = await abrirRecebimentos(m);
+    await u.click(screen.getByRole('button', { name: 'Registrar recebimento' }));
+    await u.selectOptions(screen.getByLabelText('Representante'), ID_VENDEDOR);
+    await u.selectOptions(screen.getByLabelText('Moeda'), 'DOLAR');
+    await u.type(screen.getByLabelText('Valor recebido em Dólar'), '100');
+    expect(await screen.findByText('R$ 550,13')).toBeInTheDocument();
+    await u.click(screen.getByRole('button', { name: 'Registrar recebimento' }));
+    await waitFor(() => expect(chamadasDe(m, 'recebimentos.receber')).toHaveLength(1));
+    expect(ultima(m, 'recebimentos.receber')).toMatchObject({
+      moeda: 'DOLAR',
+      valorNaMoeda: '100.00',
+    });
+  });
+
+  it('em Real com cotação: igual a antes, sem moeda no pedido', async () => {
+    const m = servidor(comCotacao);
+    const u = await abrirRecebimentos(m);
+    await u.click(screen.getByRole('button', { name: 'Registrar recebimento' }));
+    await u.selectOptions(screen.getByLabelText('Representante'), ID_VENDEDOR);
+    await u.type(screen.getByLabelText('Valor recebido'), '10');
+    await u.click(screen.getByRole('button', { name: 'Registrar recebimento' }));
+    await waitFor(() => expect(chamadasDe(m, 'recebimentos.receber')).toHaveLength(1));
+    const p = ultima(m, 'recebimentos.receber');
+    expect(Object.keys(p ?? {}).sort()).toEqual(['forma', 'id', 'valor', 'vendedorId']);
+  });
+
+  it('a lista mostra as três moedas que o sistema mandou e "Recebido em" na moeda digitada', async () => {
+    const m = servidor({
+      'recebimentos.listar': () => ({
+        ok: true,
+        dados: [
+          recebimento({
+            valor: '447.50',
+            moeda: 'GUARANI',
+            valorNaMoeda: '500000',
+            dolar: '81.34',
+            guarani: '500000',
+            dataCotacao: '2026-11-23',
+          }),
+        ],
+      }),
+    });
+    await abrirRecebimentos(m);
+    expect(screen.getByText('R$ 447,50')).toBeInTheDocument();
+    expect(screen.getByText('US$ 81,34 · Gs. 500.000')).toBeInTheDocument();
+    expect(screen.getByText('Recebido em Gs. 500.000')).toBeInTheDocument();
+    expect(
+      screen.getByText('Dólar e Guarani pela cotação do Banco Central do dia de cada recebimento.'),
+    ).toBeInTheDocument();
   });
 });

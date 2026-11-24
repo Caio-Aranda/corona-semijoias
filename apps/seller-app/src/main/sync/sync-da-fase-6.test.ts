@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { abrirBancoLocal, type BancoAberto, gravar } from '../banco/banco-local';
 import {
+  TABELAS_DA_RECARGA_DIRIGIDA_V9,
+  TABELAS_DA_RECARGA_DIRIGIDA_V10,
+  TABELAS_DA_RECARGA_DIRIGIDA_V12,
   MIGRACOES,
   TABELAS_DA_RECARGA_DIRIGIDA_V3,
   TABELAS_SINCRONIZAVEIS,
@@ -49,6 +52,16 @@ const MARCA_DO_BANCO_V2_COM_CURSOR = [
   'pendencias_acerto',
   'recebimentos_vendedor',
 ] as const;
+
+/** A migração local 9 acrescenta as suas tabelas ao FIM da marca da recarga (sem repetir as que já estavam nela). */
+const comV9 = (marca: readonly string[]): string[] => [
+  ...new Set([
+    ...marca,
+    ...TABELAS_DA_RECARGA_DIRIGIDA_V9,
+    ...TABELAS_DA_RECARGA_DIRIGIDA_V10,
+    ...TABELAS_DA_RECARGA_DIRIGIDA_V12,
+  ]),
+];
 
 const limpar: (() => void | Promise<void>)[] = [];
 afterEach(async () => {
@@ -202,8 +215,12 @@ describe('migração local 3', () => {
       db.close();
     });
     expect(Number(db.pragma('user_version', { simple: true }))).toBe(VERSAO_DO_BANCO);
-    expect(VERSAO_DO_BANCO).toBe(8);
-    expect(contagem(db)).toEqual(contagemAntes);
+    expect(VERSAO_DO_BANCO).toBe(12);
+    // A migração 9 tira as cópias do servidor dos clientes que não são do representante (o diretório da loja, ADR-0016, item 4).
+    const { clientes: clientesDepois, ...restoDepois } = contagem(db);
+    const { clientes: clientesAntes, ...restoAntes } = contagemAntes;
+    expect(restoDepois).toEqual(restoAntes);
+    expect(clientesDepois ?? 0).toBeLessThanOrEqual(clientesAntes ?? 0);
     expect(db.prepare('SELECT * FROM outbox ORDER BY ordem').all()).toEqual(outboxAntes);
     for (const t of NOVAS) expect(colunasDe(db, t), t).toContain('origem_local');
     expect(colunasDe(db, 'vendas')).toContain('troca_id');
@@ -212,7 +229,7 @@ describe('migração local 3', () => {
     );
     expect(colunasDe(db, 'movimentos_remessa')).toContain('devolucao_id');
     // Já tinha cursor: a marca da recarga dirigida nasce com as onze tabelas da 3 e as duas da 4.
-    expect(tabelasDaRecargaDirigida(db)).toEqual([...MARCA_DO_BANCO_V2_COM_CURSOR]);
+    expect(tabelasDaRecargaDirigida(db)).toEqual(comV9([...MARCA_DO_BANCO_V2_COM_CURSOR]));
   });
 
   it('a marca da recarga só nasce em banco que já tinha cursor', () => {
@@ -239,8 +256,8 @@ describe('migração local 3', () => {
     expect(lerEstado(migrado, CHAVES.recargaDirigida)).toBeNull();
     expect(Number(migrado.pragma('user_version', { simple: true }))).toBe(VERSAO_DO_BANCO);
 
-    // O exemplo da versão 1 tinha cursor: marca (as onze da 3, as duas da 4, as duas da 6, as quatro da 7 e a da 8).
-    expect(tabelasDaRecargaDirigida(abrirExemploMigrado(1).db)).toHaveLength(20);
+    // O exemplo da versão 1 tinha cursor: marca (as onze da 3, as duas da 4, as duas da 6, as quatro da 7, a da 8 e os produtos da 12).
+    expect(tabelasDaRecargaDirigida(abrirExemploMigrado(1).db)).toHaveLength(34);
   });
 });
 
@@ -248,7 +265,7 @@ describe('migração local 3', () => {
 
 describe('colunas das tabelas da Fase 6', () => {
   it('as 27 tabelas, nenhuma coluna de quem registrou nem que aponte para o crédito do outro vendedor', () => {
-    expect(TABELAS_SINCRONIZAVEIS).toHaveLength(32);
+    expect(TABELAS_SINCRONIZAVEIS).toHaveLength(43);
     for (const t of NOVAS) expect(COLUNAS_DO_PULL[t], t).toBeDefined();
     for (const [t, colunas] of Object.entries(COLUNAS_DO_PULL)) {
       for (const c of colunas) {
@@ -477,7 +494,7 @@ describe('recarga dirigida depois da migração local 3', () => {
     // Primeiro ciclo: a 2ª tabela cai. A 1ª já saiu da marca; nada foi apagado.
     s.cairNaTabela = { tabela: 'itens_devolucao', vezes: 1 };
     expect(await ciclo(db, url).executar()).toBe('falha');
-    expect(tabelasDaRecargaDirigida(db)).toEqual(MARCA_DO_BANCO_V2_COM_CURSOR.slice(1));
+    expect(tabelasDaRecargaDirigida(db)).toEqual(comV9(MARCA_DO_BANCO_V2_COM_CURSOR.slice(1)));
     expect(contar(db, 'SELECT 1 FROM devolucoes WHERE id = ?', ids['devolucoes'])).toBe(1);
     expect(servidorAntes('remessas')).toBe(remessasAntes);
     expect(servidorAntes('itens_remessa')).toBe(itensAntes);

@@ -280,7 +280,7 @@ class VendasDoVendedorTest extends TesteDeIntegracao {
         UUID id = UUID.randomUUID();
         JsonNode erro = corpoDe(postar(VENDAS, como(v), venda(id, maleta, cliente, List.of(linha(anel, 1, null)), List.of()))
                 .andExpect(status().isConflict()));
-        assertThat(erro.get("detail").asString()).isEqualTo("Este vendedor está desativado. Fale com a dona.");
+        assertThat(erro.get("detail").asString()).isEqualTo("Este representante está desativado. Fale com a dona.");
         assertThat(saldo(maleta, anel)).isEqualTo(10);
         postar("/api/vendedor/maletas/" + maleta + "/conferencia", como(v),
                 mapa("id", UUID.randomUUID(), "itens", List.of(mapa("produtoId", anel, "contada", 10))))

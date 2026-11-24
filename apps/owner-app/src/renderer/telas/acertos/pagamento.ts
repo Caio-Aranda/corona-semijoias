@@ -3,15 +3,25 @@
  * Nenhum valor é somado nem conferido aqui: quem calcula (recebido, devendo, parcelas, crédito) é o sistema.
  */
 import type { DestinoDoAFavor, FormaDoPagamento, PagamentoDaTela } from '../../../shared/acertos';
-import { centavosDeTexto, lerReaisDigitados } from '../../nucleo/moedas';
+import { centavosDeTexto, lerReaisDigitados, type MoedaDoRecebimento } from '../../nucleo/moedas';
+import { valorDoRecebimento } from '../financeiro/CampoDeValorRecebido';
 import type { PreviaDoFechamento } from './previa';
 
 export interface PagamentoEmEdicao {
-  recebimentos: { id: string; forma: FormaDoPagamento; digitado: string }[];
+  /** "Pagou agora": em Real, Dólar ou Guarani (o sistema converte pela cotação do acerto e grava em Real). */
+  recebimentos: {
+    id: string;
+    forma: FormaDoPagamento;
+    digitado: string;
+    moeda: MoedaDoRecebimento;
+  }[];
   boleto: { digitado: string; vencimento: string };
   parcelas: number;
   primeiroVencimento: string;
-  contasAntigas: Record<string, { id: string; forma: FormaDoPagamento; digitado: string }>;
+  contasAntigas: Record<
+    string,
+    { id: string; forma: FormaDoPagamento; digitado: string; moeda: MoedaDoRecebimento }
+  >;
   aFavor: DestinoDoAFavor;
   formaDoPagamento: FormaDoPagamento;
 }
@@ -19,8 +29,8 @@ export interface PagamentoEmEdicao {
 export function pagamentoInicial(): PagamentoEmEdicao {
   return {
     recebimentos: [
-      { id: crypto.randomUUID(), forma: 'DINHEIRO', digitado: '' },
-      { id: crypto.randomUUID(), forma: 'PIX', digitado: '' },
+      { id: crypto.randomUUID(), forma: 'DINHEIRO', digitado: '', moeda: 'REAL' },
+      { id: crypto.randomUUID(), forma: 'PIX', digitado: '', moeda: 'REAL' },
     ],
     boleto: { digitado: '', vencimento: '' },
     parcelas: 1,
@@ -44,10 +54,17 @@ const invalido = (digitado: string) => digitado.trim() !== '' && valorDigitado(d
 
 /** Tem algum valor que não dá para mandar ainda (texto estranho ou boleto sem vencimento)? */
 export function pagamentoIncompleto(p: PagamentoEmEdicao): boolean {
-  if (p.recebimentos.some((r) => invalido(r.digitado))) return true;
+  if (
+    p.recebimentos.some(
+      (r) => r.digitado.trim() !== '' && valorDoRecebimento(r.digitado, r.moeda) === null,
+    )
+  )
+    return true;
   if (invalido(p.boleto.digitado)) return true;
   if (valorDigitado(p.boleto.digitado) !== null && !DATA.test(p.boleto.vencimento)) return true;
-  return Object.values(p.contasAntigas).some((c) => invalido(c.digitado));
+  return Object.values(p.contasAntigas).some(
+    (c) => c.digitado.trim() !== '' && valorDoRecebimento(c.digitado, c.moeda) === null,
+  );
 }
 
 /** O que vai para o sistema. `aFavor` só vai quando o sistema disse que o acerto ficou a favor do vendedor. */
@@ -57,8 +74,8 @@ export function pagamentoParaPedido(
 ): PagamentoDaTela {
   const saida: PagamentoDaTela = {};
   const recebimentos = p.recebimentos.flatMap((r) => {
-    const valor = valorDigitado(r.digitado);
-    return valor ? [{ id: r.id, forma: r.forma, valor }] : [];
+    const valor = valorDoRecebimento(r.digitado, r.moeda);
+    return valor ? [{ id: r.id, forma: r.forma, ...valor }] : [];
   });
   if (recebimentos.length > 0) saida.recebimentos = recebimentos;
   const valorDoBoleto = valorDigitado(p.boleto.digitado);
@@ -69,8 +86,8 @@ export function pagamentoParaPedido(
     saida.restante = { parcelas: p.parcelas, primeiroVencimento: p.primeiroVencimento };
   }
   const contas = Object.entries(p.contasAntigas).flatMap(([contaId, c]) => {
-    const valor = valorDigitado(c.digitado);
-    return valor ? [{ id: c.id, contaId, forma: c.forma, valor }] : [];
+    const valor = valorDoRecebimento(c.digitado, c.moeda);
+    return valor ? [{ id: c.id, contaId, forma: c.forma, ...valor }] : [];
   });
   if (contas.length > 0) saida.contasAntigas = contas;
   if (previa && ehNegativo(previa.aPagarNoAcerto)) {

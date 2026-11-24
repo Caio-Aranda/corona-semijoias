@@ -153,6 +153,37 @@ describe('estado do envio na ponte (tarefa 5.6)', () => {
   });
 });
 
+describe('o idioma pela ponte', () => {
+  it('o processo principal só lê e grava o idioma para a janela do app, e só os dois idiomas', async () => {
+    const { mkdtempSync, rmSync } = await import('node:fs');
+    const { tmpdir } = await import('node:os');
+    const { join } = await import('node:path');
+    const { registrarIdioma } = await import('./ipc');
+    const pasta = mkdtempSync(join(tmpdir(), 'corona-ponte-idioma-'));
+    try {
+      registrarIdioma(pasta, () => false);
+      await expect(manipuladores.get(CANAIS.idiomaLer)!({} as IpcMainInvokeEvent)).rejects.toThrow(
+        'Chamada recusada.',
+      );
+      await expect(
+        manipuladores.get(CANAIS.idiomaGravar)!({} as IpcMainInvokeEvent, 'pt'),
+      ).rejects.toThrow('Chamada recusada.');
+
+      registrarIdioma(pasta, () => true);
+      const ler = () => manipuladores.get(CANAIS.idiomaLer)!({} as IpcMainInvokeEvent);
+      const gravar = (v: unknown) =>
+        manipuladores.get(CANAIS.idiomaGravar)!({} as IpcMainInvokeEvent, v);
+      await expect(ler()).resolves.toBeNull();
+      await gravar('pt');
+      await expect(ler()).resolves.toBe('pt');
+      await gravar('klingon');
+      await expect(ler()).resolves.toBe('pt');
+    } finally {
+      rmSync(pasta, { recursive: true, force: true });
+    }
+  });
+});
+
 describe('ponte (processo principal)', () => {
   const evento = {} as IpcMainInvokeEvent;
 
@@ -179,6 +210,13 @@ describe('ponte (processo principal)', () => {
       CANAIS.atualizacaoEstado,
       CANAIS.sincronizacaoMudou,
       CANAIS.sincronizacaoEstado,
+      // O idioma é registrado à parte (registrarIdioma) e tem teste próprio.
+      CANAIS.idiomaLer,
+      CANAIS.idiomaGravar,
+      // Os relatórios (imprimir, PDF e WhatsApp) são registrados à parte (registrarRelatorios) e têm teste próprio.
+      CANAIS.relatorioImprimir,
+      CANAIS.relatorioSalvarPdf,
+      CANAIS.relatorioWhatsapp,
     ];
     const esperados = Object.values(CANAIS).filter((c) => !doProcessoPrincipal.includes(c));
     expect([...manipuladores.keys()].sort()).toEqual([...esperados].sort());
@@ -239,5 +277,44 @@ describe('ponte (processo principal)', () => {
       manipuladores.get(CANAIS.chamarApi)?.(evento, { operacao: 'eu' }),
     ]);
     expect(JSON.stringify(respostas).toLowerCase()).not.toMatch(/token|bearer|authorization/);
+  });
+  it('os relatórios: recusam quem não é a janela, conferem o formato e só chamam a saída com o que passou', async () => {
+    const { registrarRelatorios } = await import('./ipc');
+    const saida = {
+      imprimir: vi.fn(() => Promise.resolve({ ok: true })),
+      salvarEmPdf: vi.fn(() => Promise.resolve({ ok: true })),
+      prepararWhatsapp: vi.fn(() => Promise.resolve({ ok: true })),
+    };
+    registrarRelatorios(
+      () => saida as never,
+      () => false,
+    );
+    await expect(manipuladores.get(CANAIS.relatorioImprimir)!(evento)).rejects.toThrow(
+      'Chamada recusada.',
+    );
+    expect(saida.imprimir).not.toHaveBeenCalled();
+
+    registrarRelatorios(
+      () => saida as never,
+      () => true,
+    );
+    await manipuladores.get(CANAIS.relatorioImprimir)!(evento);
+    expect(saida.imprimir).toHaveBeenCalledTimes(1);
+
+    const pdf = manipuladores.get(CANAIS.relatorioSalvarPdf)!;
+    await expect(pdf(evento, { nome: 42 })).resolves.toEqual({ ok: false, motivo: 'erro' });
+    await pdf(evento, { nome: 'Nota de saida 0000065-32', extra: 'não passa' });
+    expect(saida.salvarEmPdf).toHaveBeenCalledWith('Nota de saida 0000065-32');
+
+    const zap = manipuladores.get(CANAIS.relatorioWhatsapp)!;
+    await expect(zap(evento, { telefone: 5, mensagem: 'oi', nome: 'x' })).resolves.toEqual({
+      ok: false,
+      motivo: 'erro',
+    });
+    await expect(zap(evento, 'qualquer coisa')).resolves.toEqual({ ok: false, motivo: 'erro' });
+    await zap(evento, { telefone: '(67) 99999-1234', mensagem: 'Olá', nome: 'Nota' });
+    expect(saida.prepararWhatsapp).toHaveBeenCalledWith('(67) 99999-1234', 'Olá', 'Nota', false);
+    await zap(evento, { telefone: null, mensagem: 'Olá', nome: 'Totais', semNumero: true });
+    expect(saida.prepararWhatsapp).toHaveBeenLastCalledWith(null, 'Olá', 'Totais', true);
   });
 });

@@ -4,6 +4,9 @@
  * (o servidor calcula e sabe quem é pelo login). Corona Vendas, ADR-0011.
  */
 
+import type { PedidoDoConsignado } from './operacoes-do-consignado';
+import { OPERACOES_DO_CONSIGNADO } from './operacoes-do-consignado';
+
 export interface ContagemDaPeca {
   produtoId: string;
   contada: number;
@@ -257,7 +260,9 @@ export type PedidoDeChamada =
   /** Uma leitura da contagem: `quantidade` 1 para bipar, negativa para desfazer; `id` é da leitura, gerado na tela. */
   | { operacao: 'acertos.ler'; id: string; leitura: LeituraDoAcertoParaEnviar }
   /** Prévia da comissão da semana: pede ao servidor (precisa de internet); nada é gravado. */
-  | { operacao: 'comissao.previa' };
+  | { operacao: 'comissao.previa' }
+  // --- consignado ao cliente (tarefa 9.2; §23): tudo no banco do computador e pela outbox ---
+  | PedidoDoConsignado;
 
 export type OperacaoDaApi = PedidoDeChamada['operacao'];
 
@@ -306,6 +311,7 @@ export const OPERACOES_DA_API: readonly OperacaoDaApi[] = [
   'acertos.pedir',
   'acertos.agora',
   'acertos.ler',
+  ...OPERACOES_DO_CONSIGNADO,
 ];
 
 export interface LeituraDoAcertoParaEnviar {

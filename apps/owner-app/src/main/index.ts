@@ -13,6 +13,7 @@ import {
 } from './configuracao';
 import { GuardaDeTokens } from './guarda-de-tokens';
 import { registrarAtualizacao, registrarPonte } from './ipc';
+import { registrarIdioma } from './idioma';
 import {
   instalarCertificadoFixado,
   PARTICAO_DO_ATUALIZADOR,
@@ -24,6 +25,8 @@ import type { ArquivoDoToken, Cofre, Relogio } from './tipos';
 
 const NOME_DO_APP = 'Corona Gestão';
 const enderecoDeDesenvolvimento = process.env['ELECTRON_RENDERER_URL'];
+/** A única tela empacotada: a janela só carrega e só aceita chamadas deste arquivo (auditoria B1). */
+const arquivoDoApp = join(__dirname, '../renderer/index.html');
 
 app.setName(NOME_DO_APP);
 
@@ -76,7 +79,7 @@ function avisarAtualizacao(aviso: AvisoDeAtualizacao): void {
 function travarNavegacao(conteudo: WebContents): void {
   conteudo.setWindowOpenHandler(() => ({ action: 'deny' }));
   conteudo.on('will-navigate', (evento, url) => {
-    if (!enderecoDoApp(url, enderecoDeDesenvolvimento)) evento.preventDefault();
+    if (!enderecoDoApp(url, enderecoDeDesenvolvimento, arquivoDoApp)) evento.preventDefault();
   });
   conteudo.on('will-attach-webview', (evento) => evento.preventDefault());
 }
@@ -89,7 +92,9 @@ function criarJanela(): void {
     minHeight: 600,
     show: false,
     title: NOME_DO_APP,
-    backgroundColor: '#FBF7F0',
+    backgroundColor: '#FAF7F2',
+    // Instalado, o Windows usa o ícone do .exe; no modo de desenvolvimento, o PNG da pasta build.
+    ...(app.isPackaged ? {} : { icon: join(app.getAppPath(), 'build', 'icon.png') }),
     webPreferences: {
       preload: join(__dirname, '../preload/index.cjs'),
       contextIsolation: true,
@@ -108,7 +113,7 @@ function criarJanela(): void {
   });
 
   if (enderecoDeDesenvolvimento) void janela.loadURL(enderecoDeDesenvolvimento);
-  else void janela.loadFile(join(__dirname, '../renderer/index.html'));
+  else void janela.loadFile(arquivoDoApp);
 }
 
 function iniciar(): void {
@@ -168,7 +173,17 @@ function iniciar(): void {
       quadro !== null &&
       janela !== null &&
       e.sender === janela.webContents &&
-      enderecoDoApp(quadro.url, enderecoDeDesenvolvimento)
+      enderecoDoApp(quadro.url, enderecoDeDesenvolvimento, arquivoDoApp)
+    );
+  });
+
+  registrarIdioma(join(app.getPath('userData'), 'idioma.txt'), (e) => {
+    const quadro = e.senderFrame;
+    return (
+      quadro !== null &&
+      janela !== null &&
+      e.sender === janela.webContents &&
+      enderecoDoApp(quadro.url, enderecoDeDesenvolvimento, arquivoDoApp)
     );
   });
 
@@ -187,7 +202,7 @@ function iniciar(): void {
       quadro !== null &&
       janela !== null &&
       e.sender === janela.webContents &&
-      enderecoDoApp(quadro.url, enderecoDeDesenvolvimento)
+      enderecoDoApp(quadro.url, enderecoDeDesenvolvimento, arquivoDoApp)
     );
   });
   if (app.isPackaged) atualizacao.iniciar();

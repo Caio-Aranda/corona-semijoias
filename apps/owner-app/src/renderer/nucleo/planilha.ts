@@ -4,6 +4,7 @@
  */
 import { TAMANHO_MAXIMO_DO_CODIGO } from '../../shared/produtos';
 import { chaveDoCodigo, normalizarCodigo } from './codigos';
+import { TEXTOS_SOLTOS as SOLTOS } from '../textos-soltos';
 
 export const TAMANHO_MAXIMO_DA_PLANILHA = 20 * 1024 * 1024;
 export const MAXIMO_DE_LINHAS = 5000;
@@ -176,14 +177,47 @@ export async function lerPlanilha(nome: string, bytes: Uint8Array): Promise<Tabe
 export const semAcento = (s: string): string =>
   s.normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toLowerCase().replace(/\s+/g, ' ');
 
-export type ColunaDaPlanilha = 'codigo' | 'nome' | 'categoria' | 'custo' | 'preco';
+export type ColunaDaPlanilha = 'codigo' | 'nome' | 'categoria' | 'custo' | 'preco' | 'tamTon';
 
 const APELIDOS: Record<ColunaDaPlanilha, string[]> = {
-  codigo: ['codigo', 'cod', 'codigo da loja', 'codigo de barras'],
-  nome: ['nome', 'produto', 'descricao'],
+  codigo: ['codigo', 'cod', 'codigo da loja', 'codigo de barras', 'codigo de la tienda'],
+  nome: ['nome', 'produto', 'descricao', 'nombre', 'producto'],
   categoria: ['categoria'],
-  custo: ['custo', 'preco de custo', 'preco custo', 'valor de custo'],
-  preco: ['preco', 'preco de venda', 'preco venda', 'venda', 'valor de venda'],
+  custo: [
+    'custo',
+    'preco de custo',
+    'preco custo',
+    'valor de custo',
+    'costo',
+    'precio de costo',
+    'precio costo',
+    'valor de costo',
+  ],
+  preco: [
+    'preco',
+    'preco de venda',
+    'preco venda',
+    'venda',
+    'valor de venda',
+    'precio',
+    'precio de venta',
+    'precio venta',
+    'valor de venta',
+  ],
+  // Opcional (9.8): o tamanho ou o tom da peça.
+  tamTon: [
+    'tam./ton.',
+    'tam/ton',
+    'tam ton',
+    'tam.ton',
+    'tamanho/tom',
+    'tamanho ou tom',
+    'tamanho',
+    'tom',
+    'talle/tono',
+    'talle',
+    'tono',
+  ],
 };
 
 export const COLUNAS_OBRIGATORIAS: ColunaDaPlanilha[] = [
@@ -238,6 +272,8 @@ export interface LinhaLida {
   categoriaId?: string;
   custo?: string;
   preco?: string;
+  /** Tam./Ton. da peça (coluna opcional da planilha); ausente quando a coluna ou a célula está vazia. */
+  tamTon?: string;
   /** Motivo da recusa, em português; vazio quando a linha está boa. */
   motivo?: string;
 }
@@ -251,27 +287,29 @@ export function analisarPlanilha(
   categorias: readonly CategoriaConhecida[],
 ): ResultadoDaLeitura {
   const [cabecalho, ...dados] = tabela;
-  if (!cabecalho) return { tipo: 'erro', mensagem: 'A planilha está vazia.' };
+  if (!cabecalho) return { tipo: 'erro', mensagem: SOLTOS.planilha.vazia };
   const colunas = achar(cabecalho);
   const faltam = COLUNAS_OBRIGATORIAS.filter((c) => colunas[c] === undefined);
   if (faltam.length > 0) {
     return {
       tipo: 'erro',
-      mensagem: `Faltam colunas na primeira linha da planilha: ${faltam.join(', ')}. Use os títulos código, nome, categoria, custo e preço.`,
+      mensagem: SOLTOS.planilha.faltamColunas(
+        faltam.map((c) => SOLTOS.planilha.colunas[c] ?? c).join(', '),
+      ),
     };
   }
-  if (dados.length === 0)
-    return { tipo: 'erro', mensagem: 'A planilha não tem nenhuma linha de produtos.' };
+  if (dados.length === 0) return { tipo: 'erro', mensagem: SOLTOS.planilha.semLinhasDeProdutos };
   if (dados.length > MAXIMO_DE_LINHAS) {
     return {
       tipo: 'erro',
-      mensagem: `A planilha tem linhas demais. Envie até ${MAXIMO_DE_LINHAS} produtos por vez.`,
+      mensagem: SOLTOS.planilha.linhasDemais(MAXIMO_DE_LINHAS),
     };
   }
   const porNome = new Map(categorias.map((c) => [semAcento(c.nome), c]));
   const codigosVistos = new Map<string, number>();
   const linhas = dados.map((celulas, i): LinhaLida => {
-    const pegar = (c: ColunaDaPlanilha) => (celulas[colunas[c]!] ?? '').trim();
+    const pegar = (c: ColunaDaPlanilha) =>
+      colunas[c] === undefined ? '' : (celulas[colunas[c]] ?? '').trim();
     const l: LinhaLida = {
       linha: i + 2,
       codigo: normalizarCodigo(pegar('codigo')),
@@ -281,30 +319,29 @@ export function analisarPlanilha(
     const recusar = (motivo: string) => {
       l.motivo ??= motivo;
     };
-    if (l.codigo === '') recusar('Falta o código.');
-    else if (l.codigo.length > TAMANHO_MAXIMO_DO_CODIGO)
-      recusar('O código é longo demais (até 60 letras ou números).');
+    if (l.codigo === '') recusar(SOLTOS.planilha.faltaCodigo);
+    else if (l.codigo.length > TAMANHO_MAXIMO_DO_CODIGO) recusar(SOLTOS.planilha.codigoLongo);
     else {
       const chave = chaveDoCodigo(l.codigo);
       const antes = codigosVistos.get(chave);
-      if (antes !== undefined) recusar(`O código ${l.codigo} já aparece na linha ${antes}.`);
+      if (antes !== undefined) recusar(SOLTOS.planilha.codigoRepetido(l.codigo, antes));
       else codigosVistos.set(chave, l.linha);
     }
-    if (l.nome === '') recusar('Falta o nome.');
-    else if (l.nome.length > 200) recusar('O nome é longo demais (até 200 letras).');
+    if (l.nome === '') recusar(SOLTOS.planilha.faltaNome);
+    else if (l.nome.length > 200) recusar(SOLTOS.planilha.nomeLongo);
     const categoria = porNome.get(semAcento(l.categoria));
-    if (l.categoria === '') recusar('Falta a categoria.');
-    else if (!categoria)
-      recusar(`A categoria "${l.categoria}" não existe. Cadastre a categoria antes.`);
+    if (l.categoria === '') recusar(SOLTOS.planilha.faltaCategoria);
+    else if (!categoria) recusar(SOLTOS.planilha.categoriaNaoExiste(l.categoria));
     else l.categoriaId = categoria.id;
     const custo = lerDinheiroDaPlanilha(pegar('custo'));
-    if (custo === null)
-      recusar('O custo não é um valor válido. Use números, com até duas casas depois da vírgula.');
+    if (custo === null) recusar(SOLTOS.planilha.custoInvalido);
     else l.custo = custo;
     const preco = lerDinheiroDaPlanilha(pegar('preco'));
-    if (preco === null)
-      recusar('O preço não é um valor válido. Use números, com até duas casas depois da vírgula.');
+    if (preco === null) recusar(SOLTOS.planilha.precoInvalido);
     else l.preco = preco;
+    const tamTon = pegar('tamTon');
+    if (tamTon.length > 30) recusar(SOLTOS.planilha.tamTonLongo);
+    else if (tamTon !== '') l.tamTon = tamTon;
     return l;
   });
   return { tipo: 'ok', linhas };
@@ -317,6 +354,8 @@ export interface ProdutoExistente {
   referencia?: string;
   fornecedorId?: string;
   estoqueMinimo?: number;
+  /** O Tam./Ton. que o produto já tem: a planilha sem esse valor não o apaga. */
+  tamTon?: string;
 }
 
 export interface LinhaDaPrevia extends LinhaLida {

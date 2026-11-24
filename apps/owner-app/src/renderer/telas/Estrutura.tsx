@@ -3,8 +3,19 @@ import { useEffect, useState } from 'react';
 import type { PonteDoCorona } from '../../shared/ponte';
 import { RodapeDaCotacao } from '../nucleo/cotacao';
 import { temAlteracoesNaoSalvas } from '../nucleo/guarda-de-saida';
-import { MENU, rotuloDaRota, useRota, type Rota } from '../nucleo/rotas';
+import {
+  ehRotaDoAcertoAntigo,
+  menuDoGestao,
+  rotuloDaRota,
+  useRota,
+  type Rota,
+} from '../nucleo/rotas';
+import { useTelasDoGestao } from '../nucleo/telas-do-gestao';
+import { SeletorDeIdioma } from '../idioma/SeletorDeIdioma';
 import { TEXTOS } from '../textos';
+import { areaDaPagina, areaDaRota, rotuloDaArea, rotaDaArea } from '../nucleo/areas-de-relatorios';
+import { TEXTOS_DE_AREAS_DE_RELATORIOS as AREAS } from '../textos-areas-de-relatorios';
+import { TelaDeAreaDeRelatorios } from './TelaDeAreaDeRelatorios';
 import { TelaEmBreve } from './TelaEmBreve';
 import { TelaInicial } from './TelaInicial';
 import { TelaDeCadastro } from './cadastros/TelaDeCadastro';
@@ -14,6 +25,8 @@ import { ListaDeLancamentos } from './estoque/ListaDeLancamentos';
 import { ListaDoEstoque } from './estoque/ListaDoEstoque';
 import { TelaContagem } from './estoque/TelaContagem';
 import { TelaAcertos } from './acertos/TelaAcertos';
+import { TelaPainelSemanal } from './painel/TelaPainelSemanal';
+import type { RegistrosParaAbrir } from '../nucleo/painel-semanal';
 import { TelaComissao } from './acertos/TelaComissao';
 import { TelaPendencias } from './acertos/TelaPendencias';
 import { TelaClientesAlterados } from './sincronizacao/TelaClientesAlterados';
@@ -30,9 +43,18 @@ import { TelaContasAPagar } from './financeiro/TelaContasAPagar';
 import { TelaContasAReceber } from './financeiro/TelaContasAReceber';
 import { TelaRecebimentos } from './financeiro/TelaRecebimentos';
 import { TelaCategoriasDoCaixa } from './financeiro/TelaCategoriasDoCaixa';
+import { TelaConferenciaDiaria } from './conciliacoes/TelaConferenciaDiaria';
 import { TelaConferenciaDoDinheiro } from './conciliacoes/TelaConferenciaDoDinheiro';
 import { TelaConferencia } from './devolucoes/TelaConferencia';
 import { TelaMaletas } from './maletas/TelaMaletas';
+import { TelaAvisosDoConsignado } from './consignado/TelaAvisosDoConsignado';
+import { TelaClientesDoConsignado } from './consignado/TelaClientesDoConsignado';
+import { TelaFechamentoDaMaleta } from './consignado/TelaFechamentoDaMaleta';
+import {
+  TelaNotasDoConsignado,
+  type FiltroInicialDasNotas,
+} from './consignado/TelaNotasDoConsignado';
+import { TelaSemanasDosRepresentantes } from './consignado/TelaSemanasDosRepresentantes';
 import { TelaMontarMaleta } from './maletas/TelaMontarMaleta';
 import { TelaProdutos } from './produtos/TelaProdutos';
 import { TelaDeRelatorio } from './relatorios/TelaDeRelatorio';
@@ -40,6 +62,7 @@ import { RELATORIOS } from '../nucleo/relatorios';
 import { NOMES_DOS_RELATORIOS, type NomeDoRelatorio } from '../../shared/relatorios';
 import { TelaUsuarios } from './usuarios/TelaUsuarios';
 import { TelaVendedores } from './vendedores/TelaVendedores';
+import { TEXTOS_SOLTOS as SOLTOS } from '../textos-soltos';
 
 export interface EstruturaProps {
   ponte: PonteDoCorona;
@@ -53,12 +76,26 @@ function Conteudo({
   nome,
   maletaParaAbrir,
   aoAbrirMaleta,
+  acertoParaAbrir,
+  aoAbrirAcerto,
+  registrosParaAbrir,
+  aoAbrirRegistros,
+  notasParaAbrir,
+  aoVerNotas,
+  aoAbrirNota,
 }: {
   rota: Rota;
   ponte: PonteDoCorona;
   nome: string | null;
   maletaParaAbrir: string | null;
   aoAbrirMaleta: (id: string) => void;
+  acertoParaAbrir: string | null;
+  aoAbrirAcerto: (id: string) => void;
+  registrosParaAbrir: RegistrosParaAbrir | null;
+  aoAbrirRegistros: (pedido: RegistrosParaAbrir) => void;
+  notasParaAbrir: { filtro: FiltroInicialDasNotas | null; nota: string | null };
+  aoVerNotas: (vendedorId: string, semanaId: string) => void;
+  aoAbrirNota: (notaId: string) => void;
 }) {
   switch (rota) {
     case 'inicio':
@@ -95,8 +132,34 @@ function Conteudo({
       return <TelaMaletas ponte={ponte} abrirId={maletaParaAbrir} />;
     case 'maletas/montar':
       return <TelaMontarMaleta ponte={ponte} />;
+    case 'maletas/fechamento':
+      return <TelaFechamentoDaMaleta ponte={ponte} usuario={nome} />;
+    case 'consignado/notas':
+      return (
+        <TelaNotasDoConsignado
+          ponte={ponte}
+          filtroInicial={notasParaAbrir.filtro}
+          notaInicial={notasParaAbrir.nota}
+        />
+      );
+    case 'consignado/semanas':
+      return <TelaSemanasDosRepresentantes ponte={ponte} aoVerNotas={aoVerNotas} />;
+    case 'consignado/clientes':
+      return <TelaClientesDoConsignado ponte={ponte} aoAbrirNota={aoAbrirNota} />;
+    case 'consignado/avisos':
+      return <TelaAvisosDoConsignado ponte={ponte} />;
+    case 'painel/semana':
+      return (
+        <TelaPainelSemanal
+          ponte={ponte}
+          usuario={nome}
+          aoAbrirMaleta={aoAbrirMaleta}
+          aoAbrirAcerto={aoAbrirAcerto}
+          aoAbrirRegistros={aoAbrirRegistros}
+        />
+      );
     case 'acertos/lista':
-      return <TelaAcertos ponte={ponte} />;
+      return <TelaAcertos ponte={ponte} abrirId={acertoParaAbrir} />;
     case 'acertos/pendencias':
       return <TelaPendencias ponte={ponte} />;
     case 'acertos/comissao':
@@ -137,6 +200,8 @@ function Conteudo({
       return <TelaConferencia ponte={ponte} />;
     case 'conciliacoes/dinheiro':
       return <TelaConferenciaDoDinheiro ponte={ponte} />;
+    case 'conciliacoes/conferencia-diaria':
+      return <TelaConferenciaDiaria ponte={ponte} />;
     case 'pessoas/usuarios':
       return <TelaUsuarios ponte={ponte} />;
     case 'cadastros/fornecedores':
@@ -151,7 +216,18 @@ function Conteudo({
       return <TelaDeCadastro ponte={ponte} cadastro="restricoes" />;
     case 'pessoas/clientes':
       return <TelaDeCadastro ponte={ponte} cadastro="clientes" />;
-    default:
+    default: {
+      const area = areaDaPagina(rota);
+      if (area) {
+        return (
+          <TelaDeAreaDeRelatorios
+            area={area}
+            aoAbrir={(destino) => {
+              window.location.hash = `/${destino}`;
+            }}
+          />
+        );
+      }
       if (rota.startsWith('relatorios/')) {
         const qual = rota.slice('relatorios/'.length) as NomeDoRelatorio;
         if (
@@ -164,17 +240,31 @@ function Conteudo({
               relatorio={qual}
               usuario={nome}
               aoAbrirMaleta={aoAbrirMaleta}
+              {...(registrosParaAbrir && registrosParaAbrir.relatorio === qual
+                ? { filtrosIniciais: registrosParaAbrir.filtros }
+                : {})}
             />
           );
         }
       }
       return <TelaEmBreve nome={rotuloDaRota(rota)} />;
+    }
   }
 }
 
 /** Cabeçalho, menu lateral, a tela escolhida e a linha da cotação do dia no rodapé. */
 export function Estrutura({ ponte, nome, aoSair }: EstruturaProps) {
-  const [rota, irPara] = useRota();
+  const [rotaPedida, irPara] = useRota();
+  const { acertoDoVendedorVisivel } = useTelasDoGestao();
+  // O acerto antigo da §7.4 está escondido: quem chega nele pelo endereço cai no início.
+  const rota: Rota =
+    !acertoDoVendedorVisivel && ehRotaDoAcertoAntigo(rotaPedida) ? 'inicio' : rotaPedida;
+  const menu = menuDoGestao(acertoDoVendedorVisivel);
+  // Notas do consignado pedidas pelas semanas ou pela ficha do cliente: valem só para a tela aberta.
+  const [notasParaAbrir, setNotasParaAbrir] = useState<{
+    filtro: FiltroInicialDasNotas | null;
+    nota: string | null;
+  }>({ filtro: null, nota: null });
   // Menu escolhido com alterações por salvar: pergunta antes de sair da tela.
   const [destino, setDestino] = useState<Rota | null>(null);
   // Maleta pedida por um relatório: a tela Maletas abre a ficha dela; ao sair da tela, esquece.
@@ -182,21 +272,30 @@ export function Estrutura({ ponte, nome, aoSair }: EstruturaProps) {
   useEffect(() => {
     if (rota !== 'maletas/lista') setMaletaParaAbrir(null);
   }, [rota]);
+  // Acerto e registros pedidos pelo painel da semana: valem só para a tela aberta, ao sair esquece.
+  const [acertoParaAbrir, setAcertoParaAbrir] = useState<string | null>(null);
+  const [registrosParaAbrir, setRegistrosParaAbrir] = useState<RegistrosParaAbrir | null>(null);
+  useEffect(() => {
+    if (rota !== 'acertos/lista') setAcertoParaAbrir(null);
+    if (rota !== 'consignado/notas') setNotasParaAbrir({ filtro: null, nota: null });
+    if (!rota.startsWith('relatorios/')) setRegistrosParaAbrir(null);
+  }, [rota]);
   return (
     <div className="gestao-pagina">
       <CabecalhoDeMarca
-        nomeDoApp="Corona Gestão"
+        nomeDoApp={SOLTOS.entrada.nomeDoApp}
         acoes={
           <>
+            <SeletorDeIdioma />
             {nome ? <span>{nome} </span> : null}
-            <Botao onClick={() => void aoSair()}>Sair</Botao>
+            <Botao onClick={() => void aoSair()}>{TEXTOS.botoes.sair}</Botao>
           </>
         }
       />
       <div className="gestao-corpo">
         <MenuLateral
-          grupos={MENU}
-          atual={rota}
+          grupos={menu}
+          atual={areaDaRota(rota) ? rotaDaArea(areaDaRota(rota)!) : rota}
           rotulo={TEXTOS.menu.rotulo}
           aoEscolher={(chave) =>
             temAlteracoesNaoSalvas() ? setDestino(chave as Rota) : irPara(chave as Rota)
@@ -204,6 +303,13 @@ export function Estrutura({ ponte, nome, aoSair }: EstruturaProps) {
         />
         <main className="gestao-conteudo">
           {/* A chave faz a tela começar do zero ao trocar de item: senhas e formulários não vazam. */}
+          {areaDaRota(rota) ? (
+            <div className="gestao-voltar-para-relatorios">
+              <Botao onClick={() => irPara(rotaDaArea(areaDaRota(rota)!))}>
+                {AREAS.voltar(rotuloDaArea(areaDaRota(rota)!))}
+              </Botao>
+            </div>
+          ) : null}
           <Conteudo
             key={rota}
             rota={rota}
@@ -213,6 +319,26 @@ export function Estrutura({ ponte, nome, aoSair }: EstruturaProps) {
             aoAbrirMaleta={(id) => {
               setMaletaParaAbrir(id);
               irPara('maletas/lista');
+            }}
+            acertoParaAbrir={acertoParaAbrir}
+            aoAbrirAcerto={(id) => {
+              if (!acertoDoVendedorVisivel) return;
+              setAcertoParaAbrir(id);
+              irPara('acertos/lista');
+            }}
+            notasParaAbrir={notasParaAbrir}
+            aoVerNotas={(vendedorId, semanaId) => {
+              setNotasParaAbrir({ filtro: { vendedorId, semanaId }, nota: null });
+              irPara('consignado/notas');
+            }}
+            aoAbrirNota={(notaId) => {
+              setNotasParaAbrir({ filtro: null, nota: notaId });
+              irPara('consignado/notas');
+            }}
+            registrosParaAbrir={registrosParaAbrir}
+            aoAbrirRegistros={(pedido) => {
+              setRegistrosParaAbrir(pedido);
+              irPara(`relatorios/${pedido.relatorio}` as Rota);
             }}
           />
           <RodapeDaCotacao />

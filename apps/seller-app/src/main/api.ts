@@ -64,6 +64,18 @@ interface CorpoDeErro {
   codigo?: unknown;
   acao?: unknown;
   clienteExistente?: unknown;
+  campos?: unknown;
+}
+
+function comoCampos(v: unknown): { campo: string; mensagem: string }[] | undefined {
+  if (!Array.isArray(v)) return undefined;
+  const lista: { campo: string; mensagem: string }[] = [];
+  for (const item of v) {
+    if (typeof item !== 'object' || item === null) continue;
+    const { campo, mensagem } = item as { campo?: unknown; mensagem?: unknown };
+    if (typeof campo === 'string' && typeof mensagem === 'string') lista.push({ campo, mensagem });
+  }
+  return lista.length > 0 ? lista : undefined;
 }
 
 const texto = (v: unknown): string | undefined => (typeof v === 'string' && v ? v : undefined);
@@ -77,6 +89,8 @@ function comoFalha(erro: unknown, resposta: Response | undefined): Falha {
   const codigo = texto(corpo.codigo);
   if (mensagem) falha.mensagem = mensagem;
   if (codigo) falha.codigo = codigo;
+  const campos = comoCampos(corpo.campos);
+  if (campos) falha.campos = campos;
   if (texto(corpo.acao) === 'APAGAR_DADOS') falha.acao = 'APAGAR_DADOS';
   if (codigo === 'CLIENTE_CPF_JA_CADASTRADO') {
     const e = corpo.clienteExistente;
@@ -267,10 +281,54 @@ export function criarApiDoVendas(opcoes: OpcoesDaApi): ApiDoVendas {
         // Só existem no banco do computador. Sem ele, a pessoa precisa entrar de novo com internet.
         return Promise.resolve({
           ok: false,
-          falha: { tipo: 'recusada', status: 503, mensagem: MENSAGEM_SEM_BANCO },
+          falha: {
+            tipo: 'recusada',
+            status: 503,
+            mensagem: MENSAGEM_SEM_BANCO,
+            codigo: 'SEM_BANCO_LOCAL',
+          },
         });
       case 'comissao.previa':
         return executar(() => previaDaMinhaComissao(base));
+      case 'consignado.painel':
+      case 'consignado.semanaNova':
+      case 'consignado.clientes':
+      case 'consignado.cliente':
+      case 'consignado.clienteCadastrar':
+      case 'consignado.clienteAlterar':
+      case 'consignado.fotoGuardar':
+      case 'consignado.clienteTrocarFoto':
+      case 'consignado.fotoVer':
+      case 'consignado.pedidoVer':
+      case 'consignado.pedidoDefinir':
+      case 'consignado.pedidoBipar':
+      case 'consignado.pedidoQuantidade':
+      case 'consignado.pedidoFinalizar':
+      case 'consignado.pedidoDescartar':
+      case 'consignado.maletas':
+      case 'consignado.peca':
+      case 'consignado.notas':
+      case 'consignado.nota':
+      case 'consignado.acertoPrevia':
+      case 'consignado.acertoSalvar':
+      case 'consignado.reposicao':
+      case 'consignado.trocaNaNota':
+      case 'consignado.remarcar':
+      case 'consignado.pagamento':
+      case 'consignado.estornarAcerto':
+      case 'consignado.estornarRecibo':
+      case 'consignado.pesquisar':
+      case 'consignado.relatorio':
+        // Só existem no banco do computador (tarefa 9.2).
+        return Promise.resolve({
+          ok: false,
+          falha: {
+            tipo: 'recusada',
+            status: 503,
+            mensagem: MENSAGEM_SEM_BANCO,
+            codigo: 'SEM_BANCO_LOCAL',
+          },
+        });
       // Pedir o acerto e contar as sobras (tarefa 8.10): só com internet, direto na API, sem guardar nem enfileirar.
       case 'acertos.pedir':
         return executar(() => pedirMeuAcerto({ ...base, body: { id: pedido.id } }));

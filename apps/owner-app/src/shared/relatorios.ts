@@ -33,6 +33,8 @@ export const NOMES_DOS_RELATORIOS = [
   'maleta-saldo',
   'maleta-mercadoria',
   'maleta-em-aberto',
+  // Fechamento da maleta (tarefa 9.4, §23.10): abre pela tela Fechamento da maleta, com a maleta já escolhida.
+  'maleta-fechamento',
   // Devolução e troca (tarefa 6.10): os sete relatórios da dona (a conferência tem tela própria).
   'devolucao-por-motivo',
   'devolucao-por-vendedor',
@@ -51,6 +53,28 @@ export const NOMES_DOS_RELATORIOS = [
   'financeiro-inadimplencia',
   'financeiro-caixa',
   'financeiro-recebimentos',
+  // Resultado do período, os registros dele e o lucro (tarefa 8.6): só a dona vê custo e lucro.
+  'financeiro-resultado',
+  'financeiro-resultado-registros',
+  'financeiro-lucro-produto',
+  'financeiro-lucro-vendedor',
+  // Vendas e curva ABC (tarefa 8.5): os onze relatórios de vendas da dona e a curva ABC (que fica no grupo Estoque).
+  'vendas-lista',
+  'vendas-canceladas',
+  'vendas-por-vendedor',
+  'vendas-por-praca',
+  'vendas-por-cliente',
+  'vendas-por-produto',
+  'vendas-por-categoria',
+  'vendas-por-periodo',
+  'vendas-ranking-vendedores',
+  'vendas-ranking-pecas',
+  'vendas-ticket-medio',
+  'vendas-curva-abc',
+  // Controle (tarefa 8.9): auditoria, sincronizações e computadores, acessos.
+  'controle-auditoria',
+  'controle-computadores',
+  'controle-acessos',
 ] as const;
 export type NomeDoRelatorio = (typeof NOMES_DOS_RELATORIOS)[number];
 export type NomeDoRelatorioDeEstoqueOuCompras = Extract<
@@ -60,12 +84,16 @@ export type NomeDoRelatorioDeEstoqueOuCompras = Extract<
 export type NomeDoRelatorioDeMaleta = Extract<NomeDoRelatorio, `maleta-${string}`>;
 export type NomeDoRelatorioDeDevolucao = Extract<NomeDoRelatorio, `devolucao-${string}`>;
 export type NomeDoRelatorioFinanceiro = Extract<NomeDoRelatorio, `financeiro-${string}`>;
+export type NomeDoRelatorioDeVendas = Extract<NomeDoRelatorio, `vendas-${string}`>;
+export type NomeDoRelatorioDeControle = Extract<NomeDoRelatorio, `controle-${string}`>;
 export type NomeDoRelatorioDeCadastro = Exclude<
   NomeDoRelatorio,
   | NomeDoRelatorioDeEstoqueOuCompras
   | NomeDoRelatorioDeMaleta
   | NomeDoRelatorioDeDevolucao
   | NomeDoRelatorioFinanceiro
+  | NomeDoRelatorioDeVendas
+  | NomeDoRelatorioDeControle
 >;
 
 export const SITUACOES_DO_RELATORIO = [
@@ -109,11 +137,18 @@ export const SITUACOES_DO_RELATORIO = [
   'ASSUMIDA_PELA_LOJA',
   'ENCONTRADA',
   'RECUSADA',
+  // Controle (tarefa 8.9): situação do computador.
+  'ATIVO',
+  'AGUARDANDO_LIBERACAO',
+  'SUBSTITUIDO',
+  'BLOQUEADO',
 ] as const;
 export type SituacaoDoRelatorio = (typeof SITUACOES_DO_RELATORIO)[number];
 
 /** Filtros que a tela pode mandar (cada relatório usa só os seus; o servidor ignora os outros). */
 export interface ConsultaDeRelatorio {
+  /** Qual linha do resultado do período abrir (VENDAS, DEVOLUCOES, CUSTO, COMISSOES, PERDAS, COBRADO ou CAIXA). */
+  linha?: string;
   busca?: string;
   categoriaId?: string;
   fornecedorId?: string;
@@ -171,6 +206,9 @@ export interface ConsultaDeRelatorio {
   /** Financeiro (tarefa 7.12): quem deve (CLIENTE ou VENDEDOR) e quando foi o recebimento (ACERTO ou AVULSO). */
   devedor?: string;
   momento?: string;
+  /** Controle (tarefa 8.9): SIM ou NAO (computadores com envio com problema) e o programa (gestao ou vendas). */
+  comProblema?: string;
+  aplicativo?: string;
   /** A chave de um total do rodapé: mostra só as linhas que formam esse total. */
   recorte?: string;
   pagina: number;

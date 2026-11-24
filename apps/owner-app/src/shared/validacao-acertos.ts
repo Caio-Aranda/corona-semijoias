@@ -14,6 +14,7 @@ import {
   type OperacaoDeAcertos,
   type PedidoDeFechamentoDaTela,
 } from './acertos';
+import { conferirValorDoRecebimento } from './valor-do-recebimento';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const DATA = /^\d{4}-\d{2}-\d{2}$/;
@@ -121,13 +122,14 @@ function conferirPagamento(bruto: unknown): PedidoDeFechamentoDaTela['pagamento'
     if (!Array.isArray(bruto.recebimentos) || bruto.recebimentos.length > 20) return null;
     saida.recebimentos = [];
     for (const r of bruto.recebimentos as unknown[]) {
-      if (!objeto(r) || !soCom(r, 'id', 'forma', 'valor')) return null;
-      if (!idValido(r.id) || !dentro(FORMAS_DO_PAGAMENTO, r.forma) || !dinheiroValido(r.valor))
-        return null;
+      if (!objeto(r) || !soCom(r, 'id', 'forma', 'valor', 'moeda', 'valorNaMoeda')) return null;
+      if (!idValido(r.id) || !dentro(FORMAS_DO_PAGAMENTO, r.forma)) return null;
+      const valor = conferirValorDoRecebimento(r);
+      if (!valor) return null;
       saida.recebimentos.push({
         id: r.id,
         forma: r.forma as (typeof FORMAS_DO_PAGAMENTO)[number],
-        valor: r.valor,
+        ...valor,
       });
     }
   }
@@ -149,20 +151,18 @@ function conferirPagamento(bruto: unknown): PedidoDeFechamentoDaTela['pagamento'
     if (!Array.isArray(bruto.contasAntigas) || bruto.contasAntigas.length > 50) return null;
     saida.contasAntigas = [];
     for (const c of bruto.contasAntigas as unknown[]) {
-      if (!objeto(c) || !soCom(c, 'id', 'contaId', 'forma', 'valor')) return null;
-      if (
-        !idValido(c.id) ||
-        !idValido(c.contaId) ||
-        !dentro(FORMAS_DO_PAGAMENTO, c.forma) ||
-        !dinheiroValido(c.valor)
-      ) {
+      if (!objeto(c) || !soCom(c, 'id', 'contaId', 'forma', 'valor', 'moeda', 'valorNaMoeda'))
+        return null;
+      if (!idValido(c.id) || !idValido(c.contaId) || !dentro(FORMAS_DO_PAGAMENTO, c.forma)) {
         return null;
       }
+      const valor = conferirValorDoRecebimento(c);
+      if (!valor) return null;
       saida.contasAntigas.push({
         id: c.id,
         contaId: c.contaId,
         forma: c.forma as (typeof FORMAS_DO_PAGAMENTO)[number],
-        valor: c.valor,
+        ...valor,
       });
     }
   }

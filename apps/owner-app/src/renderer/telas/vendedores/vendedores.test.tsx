@@ -82,7 +82,7 @@ const ultima = (m: ReturnType<typeof montar>, op: string) =>
 async function abrirLista(m: ReturnType<typeof montar>) {
   const u = userEvent.setup();
   render(<App ponte={m.ponte} />);
-  await u.click(await screen.findByRole('button', { name: 'Vendedores' }));
+  await u.click(await screen.findByRole('button', { name: 'Representantes' }));
   await screen.findByText('Joana Souza');
   return u;
 }
@@ -90,7 +90,7 @@ async function abrirLista(m: ReturnType<typeof montar>) {
 async function abrirFicha(m: ReturnType<typeof montar>) {
   const u = await abrirLista(m);
   await u.click(screen.getByRole('button', { name: 'Abrir cadastro' }));
-  await screen.findByLabelText('Nome do vendedor');
+  await screen.findByLabelText('Nome do representante');
   return u;
 }
 
@@ -99,7 +99,7 @@ beforeEach(() => {
   entregar.mockClear();
 });
 
-describe('Vendedores: lista', () => {
+describe('Representantes: lista', () => {
   it('mostra código, nome, telefone, praça e situação', async () => {
     const m = montar();
     await abrirLista(m);
@@ -110,7 +110,7 @@ describe('Vendedores: lista', () => {
     expect(within(linha).getByText('Ativo')).toBeInTheDocument();
   });
 
-  it('mostra o limite de cada vendedor: o valor, "Sem limite" ou "Limite não definido"', async () => {
+  it('mostra o limite de cada representante: o valor, "Sem limite" ou "Limite não definido"', async () => {
     const m = montar({
       'vendedores.listar': () =>
         pagina([
@@ -161,19 +161,19 @@ describe('Vendedores: lista', () => {
     const m = montar({ 'vendedores.listar': () => pagina([]) });
     const u = userEvent.setup();
     render(<App ponte={m.ponte} />);
-    await u.click(await screen.findByRole('button', { name: 'Vendedores' }));
-    await screen.findByText('Ainda não há nenhum vendedor.');
+    await u.click(await screen.findByRole('button', { name: 'Representantes' }));
+    await screen.findByText('Ainda não há nenhum representante.');
     await u.type(screen.getByLabelText('Buscar por nome, CPF, CNPJ, telefone ou código'), 'zzz');
     expect(
       await screen.findByText(
-        'Nenhum vendedor encontrado. Confira o que você digitou ou limpe a busca.',
+        'Nenhum representante encontrado. Confira o que você digitou ou limpe a busca.',
       ),
     ).toBeInTheDocument();
   });
 });
 
-describe('Vendedores: ficha, aba Cadastro', () => {
-  it('vendedor novo: só o Cadastro está liberado; salvar manda o limite em reais (sem comissão) e libera as abas', async () => {
+describe('Representantes: ficha, aba Cadastro', () => {
+  it('representante novo: só o Cadastro está liberado; salvar manda o limite em reais (sem comissão) e libera as abas', async () => {
     const m = montar({
       'vendedores.criar': (p) => ({
         ok: true,
@@ -182,14 +182,14 @@ describe('Vendedores: ficha, aba Cadastro', () => {
     });
     const u = userEvent.setup();
     render(<App ponte={m.ponte} />);
-    await u.click(await screen.findByRole('button', { name: 'Vendedores' }));
-    await u.click(await screen.findByRole('button', { name: 'Novo vendedor' }));
-    expect(await screen.findByText(/Salve o cadastro do vendedor/)).toBeInTheDocument();
+    await u.click(await screen.findByRole('button', { name: 'Representantes' }));
+    await u.click(await screen.findByRole('button', { name: 'Novo representante' }));
+    expect(await screen.findByText(/Salve o cadastro do representante/)).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'Endereço' })).toBeDisabled();
     expect(screen.getByRole('tab', { name: 'Documentos' })).toBeDisabled();
-    expect(screen.getByLabelText('Nome do vendedor')).toHaveFocus();
+    expect(screen.getByLabelText('Nome do representante')).toHaveFocus();
 
-    await u.type(screen.getByLabelText('Nome do vendedor'), 'Joana Souza');
+    await u.type(screen.getByLabelText('Nome do representante'), 'Joana Souza');
     await u.type(screen.getByLabelText('Limite de consignação'), '1.500,00');
     await u.click(screen.getByRole('button', { name: 'Salvar' }));
 
@@ -207,13 +207,13 @@ describe('Vendedores: ficha, aba Cadastro', () => {
     expect(screen.getByRole('tab', { name: 'Endereço' })).toBeEnabled();
   });
 
-  it('o limite é obrigatório: sem valor e sem "Sem limite" o vendedor não é salvo', async () => {
+  it('o limite é obrigatório: sem valor e sem "Sem limite" o representante não é salvo', async () => {
     const m = montar();
     const u = userEvent.setup();
     render(<App ponte={m.ponte} />);
-    await u.click(await screen.findByRole('button', { name: 'Vendedores' }));
-    await u.click(await screen.findByRole('button', { name: 'Novo vendedor' }));
-    await u.type(await screen.findByLabelText('Nome do vendedor'), 'Joana Souza');
+    await u.click(await screen.findByRole('button', { name: 'Representantes' }));
+    await u.click(await screen.findByRole('button', { name: 'Novo representante' }));
+    await u.type(await screen.findByLabelText('Nome do representante'), 'Joana Souza');
     await u.click(screen.getByRole('button', { name: 'Salvar' }));
     expect(
       await screen.findByText('Informe o limite em reais ou marque "Sem limite".'),
@@ -230,9 +230,9 @@ describe('Vendedores: ficha, aba Cadastro', () => {
     });
     const u = userEvent.setup();
     render(<App ponte={m.ponte} />);
-    await u.click(await screen.findByRole('button', { name: 'Vendedores' }));
-    await u.click(await screen.findByRole('button', { name: 'Novo vendedor' }));
-    await u.type(await screen.findByLabelText('Nome do vendedor'), 'Joana Souza');
+    await u.click(await screen.findByRole('button', { name: 'Representantes' }));
+    await u.click(await screen.findByRole('button', { name: 'Novo representante' }));
+    await u.type(await screen.findByLabelText('Nome do representante'), 'Joana Souza');
     await u.type(screen.getByLabelText('Limite de consignação'), '300,00');
     await u.click(screen.getByLabelText('Sem limite'));
     expect(screen.getByLabelText('Limite de consignação')).toBeDisabled();
@@ -268,7 +268,7 @@ describe('Vendedores: ficha, aba Cadastro', () => {
     expect(await screen.findByText(/US\$/)).toBeInTheDocument();
   });
 
-  it('a comissão não é mais do vendedor: o cadastro não tem o campo e a tela Comissão e meta cuida dela', async () => {
+  it('a comissão não é mais do representante: o cadastro não tem o campo e a tela Comissão e meta cuida dela', async () => {
     const m = montar();
     await abrirFicha(m);
     expect(screen.queryByLabelText('Comissão (%)')).toBeNull();
@@ -360,17 +360,17 @@ describe('Vendedores: ficha, aba Cadastro', () => {
       'vendedores.inativar': () => ({ ok: true, dados: { ...JOANA, ativo: false, version: 4 } }),
     });
     const u = await abrirFicha(m);
-    await u.click(screen.getByRole('button', { name: 'Desativar vendedor' }));
+    await u.click(screen.getByRole('button', { name: 'Desativar representante' }));
     expect(await screen.findByText('Desativar Joana Souza?')).toBeInTheDocument();
     expect(m.chamadas.some((c) => c.operacao === 'vendedores.inativar')).toBe(false);
     const janela = screen.getByRole('dialog');
-    await u.click(within(janela).getByRole('button', { name: 'Desativar vendedor' }));
+    await u.click(within(janela).getByRole('button', { name: 'Desativar representante' }));
     expect(await screen.findByText('Joana Souza foi desativado.')).toBeInTheDocument();
     expect(ultima(m, 'vendedores.inativar')).toEqual({ id: ID_V });
-    expect(screen.getByRole('button', { name: 'Reativar vendedor' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Reativar representante' })).toBeInTheDocument();
   });
 
-  it('mostra o acesso ligado ao vendedor só como informação', async () => {
+  it('mostra o acesso ligado ao representante só como informação', async () => {
     const m = montar({
       'usuarios.listar': () =>
         pagina([
@@ -396,7 +396,7 @@ describe('Vendedores: ficha, aba Cadastro', () => {
   });
 });
 
-describe('Vendedores: outras abas', () => {
+describe('Representantes: outras abas', () => {
   it('Endereço busca a aba e grava só ela, com a versão lida (aba nova = 0)', async () => {
     const m = montar({
       'vendedores.aba.ver': () => ({
@@ -449,7 +449,7 @@ describe('Vendedores: outras abas', () => {
     });
     const u = await abrirFicha(m);
     await u.click(screen.getByRole('tab', { name: 'Observações' }));
-    expect(await screen.findByLabelText('Observações sobre o vendedor')).toHaveValue(
+    expect(await screen.findByLabelText('Observações sobre o representante')).toHaveValue(
       'Prefere visitas à tarde.',
     );
   });
@@ -505,7 +505,7 @@ describe('Vendedores: outras abas', () => {
   });
 });
 
-describe('Vendedores: documentos', () => {
+describe('Representantes: documentos', () => {
   const doc = {
     id: ID_DOC,
     version: 0,

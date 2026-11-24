@@ -2,6 +2,7 @@ import { Botao, CabecalhoDeMarca } from '@corona/ui';
 import type { ReactNode } from 'react';
 import type { PonteDoCorona } from '../../shared/ponte';
 import { IndicadorDeEnvio } from '../IndicadorDeEnvio';
+import { SeletorDeIdioma } from '../SeletorDeIdioma';
 import { TEXTOS } from '../textos';
 
 export interface PaginaDoVendedorProps {
@@ -17,7 +18,12 @@ export function PaginaDoVendedor({ ponte, titulo, aoVoltar, children }: PaginaDo
     <div className="vendas-pagina">
       <CabecalhoDeMarca
         nomeDoApp="Corona Vendas"
-        acoes={<Botao onClick={aoVoltar}>{TEXTOS.voltar}</Botao>}
+        acoes={
+          <>
+            <SeletorDeIdioma />
+            <Botao onClick={aoVoltar}>{TEXTOS.voltar}</Botao>
+          </>
+        }
       />
       <main className="vendas-conteudo">
         <h1 className="vendas-titulo">{titulo}</h1>

@@ -74,7 +74,8 @@ public class ConsultasDeMaleta {
     private static final String PECAS_DA_REMESSA = "r.total_pecas";
     private static final String VALOR_DA_REMESSA = "r.total_valor";
 
-    private static final String MOVIMENTOS = """
+    /** As peças enviadas e devolvidas por maleta e peça (visível no pacote: o painel semanal usa o mesmo texto, tarefa 8.7). */
+    static final String MOVIMENTOS = """
             LEFT JOIN (SELECT remessa_id, produto_id, sum(quantidade) AS soma,
                               coalesce(-sum(quantidade) FILTER (WHERE tipo = 'DEVOLUCAO_DONA'), 0) AS devolvida
                          FROM corona.movimentos_remessa GROUP BY remessa_id, produto_id) m

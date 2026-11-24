@@ -5,7 +5,7 @@ const ID = '8f14e45f-ceea-4672-a1b9-3a1a0f7c4d11';
 const OUTRO = '9a14e45f-ceea-4672-a1b9-3a1a0f7c4d99';
 
 describe('conferência dos dados das maletas', () => {
-  it('criar aceita só vendedor, semana, praça, tipo e o id da tela', () => {
+  it('criar aceita só representante, semana, praça, tipo e o id da tela', () => {
     expect(
       conferirParametros('maletas.criar', {
         id: ID,

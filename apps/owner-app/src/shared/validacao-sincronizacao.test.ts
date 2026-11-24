@@ -15,7 +15,7 @@ describe('conferência dos dados de computadores e envios', () => {
     }
   });
 
-  it('computadores do vendedor, trocar, tentar de novo e aprovar pedem só um id válido', () => {
+  it('computadores do representante, trocar, tentar de novo e aprovar pedem só um id válido', () => {
     expect(conferirParametros('sincronizacao.aparelhos', { vendedorId: ID })).not.toBeNull();
     expect(conferirParametros('sincronizacao.aparelhos', { vendedorId: 'x' })).toBeNull();
     for (const op of [

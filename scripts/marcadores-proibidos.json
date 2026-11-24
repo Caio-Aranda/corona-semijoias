@@ -4,6 +4,12 @@
     "/api/dona",
     "preco_custo",
     "precoCusto",
+    "custoUnitario",
+    "custoAtual",
+    "custoAnterior",
+    "valorACusto",
+    "historicoDeCusto",
+    "produtos_custos",
     "api-client-dona",
     "owner-app",
     "Corona Gestão"

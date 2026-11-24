@@ -1,5 +1,7 @@
 package br.com.coronasemijoias.api.vendedores;
 
+import br.com.coronasemijoias.api.auditoria.ServicoDeAuditoria;
+import br.com.coronasemijoias.api.auditoria.ServicoDeAuditoria.Ator;
 import br.com.coronasemijoias.api.cadastros.Documentos;
 import br.com.coronasemijoias.api.cadastros.Mensagens;
 import br.com.coronasemijoias.api.cadastros.ServicoDeCadastro;
@@ -9,6 +11,7 @@ import br.com.coronasemijoias.api.vendedores.Vendedor.Dados;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -28,10 +31,12 @@ public class ServicoDeVendedores extends ServicoDeCadastro<Vendedor> {
     private final JdbcTemplate jdbc;
 
     private final GestaoDeUsuarios usuarios;
+    private final ServicoDeAuditoria auditoria;
 
     public ServicoDeVendedores(RepositorioDeVendedores vendedores, Clock relogio, JdbcTemplate jdbc,
-            GestaoDeUsuarios usuarios) {
+            GestaoDeUsuarios usuarios, ServicoDeAuditoria auditoria) {
         super(vendedores, relogio);
+        this.auditoria = auditoria;
         this.vendedores = vendedores;
         this.jdbc = jdbc;
         this.usuarios = usuarios;
@@ -74,10 +79,28 @@ public class ServicoDeVendedores extends ServicoDeCadastro<Vendedor> {
         return gravarNovo(new Vendedor(conferir(d), cadastradoPor));
     }
 
+    /**
+     * Edita o cadastro. Trocar ou tirar a restrição do vendedor (a "liberação de restrição" da §11) fica na auditoria, na mesma
+     * transação, com a restrição de antes e a de depois; a regra não muda.
+     */
     @Transactional
-    public Vendedor editar(UUID id, Integer versao, Dados d) {
+    public Vendedor editar(UUID id, Integer versao, Dados d, UUID quem) {
         Dados conferidos = conferir(d);
-        return editarComVersao(id, Validacoes.versaoDoPedido(versao), vendedor -> vendedor.alterar(conferidos));
+        UUID restricaoAntes = obter(id).getRestricaoId();
+        Vendedor editado = editarComVersao(id, Validacoes.versaoDoPedido(versao), vendedor -> vendedor.alterar(conferidos));
+        if (!java.util.Objects.equals(restricaoAntes, conferidos.restricaoId())) {
+            auditoria.registrar(Ator.usuario(quem), "VENDEDOR_RESTRICAO_ALTERADA", "vendedores", id,
+                    Map.of("restricao", nomeDaRestricao(restricaoAntes)), Map.of("restricao", nomeDaRestricao(conferidos.restricaoId())));
+        }
+        return editado;
+    }
+
+    private String nomeDaRestricao(UUID restricaoId) {
+        if (restricaoId == null) {
+            return "Nenhuma";
+        }
+        return jdbc.query("SELECT codigo || ' - ' || descricao FROM corona.restricoes WHERE id = ?",
+                rs -> rs.next() ? rs.getString(1) : restricaoId.toString(), restricaoId);
     }
 
     /**

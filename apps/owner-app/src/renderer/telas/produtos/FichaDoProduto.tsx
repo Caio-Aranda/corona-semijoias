@@ -15,11 +15,23 @@ import { lerOpcoes, lerProduto, type Produto } from './dados';
 
 const T = TEXTOS.produtos.ficha;
 
+/** Os campos recusados que a ficha mostra junto do próprio campo (o aviso não repete o motivo). */
+const CAMPOS_DA_FICHA = [
+  'codigos',
+  'nome',
+  'referencia',
+  'tamTon',
+  'categoriaId',
+  'precoVenda',
+  'precoCusto',
+];
+
 const emReaisDigitados = (v: string | null): string => (v ? v.replace('.', ',') : '');
 
 interface Formulario {
   nome: string;
   referencia: string;
+  tamTon: string;
   categoriaId: string;
   fornecedorId: string;
   precoVendaDigitado: string;
@@ -34,6 +46,7 @@ function formularioVazio(): Formulario {
   return {
     nome: '',
     referencia: '',
+    tamTon: '',
     categoriaId: '',
     fornecedorId: '',
     precoVendaDigitado: '',
@@ -61,6 +74,7 @@ function formularioDoProduto(p: Produto): Formulario {
   return {
     nome: p.nome,
     referencia: p.referencia,
+    tamTon: p.tamTon,
     categoriaId: p.categoriaId,
     fornecedorId: p.fornecedorId ?? '',
     precoVendaDigitado: emReaisDigitados(p.precoVenda),
@@ -77,6 +91,7 @@ const impressao = (f: Formulario): string =>
   JSON.stringify([
     f.nome,
     f.referencia,
+    f.tamTon,
     f.categoriaId,
     f.fornecedorId,
     f.precoVenda,
@@ -166,6 +181,8 @@ export function FichaDoProduto({ ponte, produtoId, aoVoltar, aoAbrirOutro }: Fic
   const corpo = (): Record<string, unknown> => ({
     nome: form.nome.trim(),
     ...(form.referencia.trim() ? { referencia: form.referencia.trim() } : {}),
+    // Sempre vai (vazio limpa o campo ao editar; sem ele o servidor não mexe).
+    tamTon: form.tamTon.trim(),
     categoriaId: form.categoriaId,
     ...(form.fornecedorId ? { fornecedorId: form.fornecedorId } : {}),
     precoVenda: form.precoVenda,
@@ -312,6 +329,7 @@ export function FichaDoProduto({ ponte, produtoId, aoVoltar, aoAbrirOutro }: Fic
       {erro ? (
         <AvisoDeErro
           erro={erro}
+          camposJaMostrados={CAMPOS_DA_FICHA}
           aoAtualizar={() => {
             setErro(null);
             leitura.recarregar();
@@ -372,6 +390,15 @@ export function FichaDoProduto({ ponte, produtoId, aoVoltar, aoAbrirOutro }: Fic
             maxLength={100}
             onChange={(e) => mudar({ referencia: e.target.value })}
             {...(campoDoServidor('referencia') ? { erro: campoDoServidor('referencia') } : {})}
+          />
+          <Campo
+            rotulo={T.tamTon}
+            ajuda={T.tamTonAjuda}
+            value={form.tamTon}
+            autoComplete="off"
+            maxLength={30}
+            onChange={(e) => mudar({ tamTon: e.target.value })}
+            {...(campoDoServidor('tamTon') ? { erro: campoDoServidor('tamTon') } : {})}
           />
 
           <div className={`cs-campo${tentouSalvar && !form.categoriaId ? ' cs-campo--erro' : ''}`}>

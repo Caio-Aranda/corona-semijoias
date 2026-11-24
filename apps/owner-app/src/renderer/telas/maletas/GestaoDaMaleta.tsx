@@ -107,6 +107,10 @@ export function GestaoDaMaleta({ ponte, id, aoVoltar, aoRepor, aoDevolver }: Ges
         </h2>
         <dl className="gestao-resumo">
           <div>
+            <dt>{E.ficha.codigo}</dt>
+            <dd>{maleta.codigo}</dd>
+          </div>
+          <div>
             <dt>{E.ficha.vendedor}</dt>
             <dd>{maleta.vendedorNome}</dd>
           </div>

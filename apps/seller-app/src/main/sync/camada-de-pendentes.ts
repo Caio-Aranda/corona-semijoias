@@ -11,6 +11,24 @@ export const CAMPOS_DO_CLIENTE: Readonly<Record<string, string>> = Object.freeze
   whatsapp: 'whatsapp',
   observacoes: 'observacoes',
   dataNascimento: 'data_nascimento',
+  // Cadastro do consignado ao cliente, formato 2 (tarefa 9.2; ADR-0016, item 4): a mesma lista do servidor
+  // (`ClientesDoConsignado.CAMPOS`).
+  documento: 'documento',
+  documentoTipo: 'documento_tipo',
+  enderecoLogradouro: 'endereco_logradouro',
+  enderecoNumero: 'endereco_numero',
+  enderecoComplemento: 'endereco_complemento',
+  enderecoBairro: 'endereco_bairro',
+  enderecoCidade: 'endereco_cidade',
+  enderecoUf: 'endereco_uf',
+  enderecoCep: 'endereco_cep',
+  indicadoPorClienteId: 'indicado_por_cliente_id',
+  indicadoPorNome: 'indicado_por_nome',
+  comoConheceu: 'como_conheceu',
+  comissaoPercentual: 'comissao_percentual',
+  fotoHash: 'foto_hash',
+  fotoDocumentoFrenteHash: 'foto_documento_frente_hash',
+  fotoDocumentoVersoHash: 'foto_documento_verso_hash',
 });
 
 export interface Alteracao {

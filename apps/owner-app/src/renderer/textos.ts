@@ -1,3 +1,5 @@
+import { textosVivos } from './idioma/idioma';
+import { ES_TEXTOS } from './idioma/es/textos';
 import { TEXTOS_DE_PRODUTOS } from './textos-produtos';
 import { TEXTOS_DE_VENDEDORES } from './textos-vendedores';
 
@@ -56,7 +58,13 @@ function cadastroBasico(c: {
   };
 }
 
-export const TEXTOS = {
+export const PT_TEXTOS = {
+  /** Botões que se repetem em várias telas (auditoria B2). */
+  botoes: {
+    sair: 'Sair',
+    entrar: 'Entrar',
+    cancelar: 'Cancelar',
+  },
   /** Estoque da loja x peça em maleta (item 13; glossário: "Acabou", "Está em maleta"). */
   saldoDaLoja: {
     acabou: 'Acabou',
@@ -120,7 +128,7 @@ export const TEXTOS = {
     pracas: 'Praças',
     semanas: 'Semanas',
     restricoes: 'Restrições',
-    vendedores: 'Vendedores',
+    vendedores: 'Representantes',
     clientes: 'Clientes',
     usuarios: 'Usuários',
     rotulo: 'Menu do Corona Gestão',
@@ -168,8 +176,9 @@ export const TEXTOS = {
     enderecoTitulo: 'Endereço',
     sim: 'Sim',
     nao: 'Não',
-    semVendedor: 'Nenhum vendedor',
-    vendedorAtual: 'Vendedor já escolhido antes',
+    semVendedor: 'Nenhum representante',
+    vendedorAtual: 'Representante já escolhido antes',
+    comissaoInvalida: 'Digite a comissão de 0 a 40, por exemplo 30 ou 32,5.',
     numeroInvalido: 'Digite só números, sem vírgula nem ponto.',
     /** Filtro e coluna de situação dos cadastros que podem ser inativados. */
     situacao: {
@@ -256,7 +265,7 @@ export const TEXTOS = {
       campos: {
         codigo: 'Código',
         descricao: 'Descrição',
-        bloqueiaRemessa: 'Impede montar maleta para o vendedor com esta restrição',
+        bloqueiaRemessa: 'Impede montar maleta para o representante com esta restrição',
       },
     },
     clientes: {
@@ -267,19 +276,39 @@ export const TEXTOS = {
         plural: 'clientes',
         buscaRotulo: 'Buscar por nome, telefone ou CPF',
       }),
-      colunas: { nome: 'Cliente', cpf: 'CPF', telefone: 'Telefone', whatsapp: 'WhatsApp' },
+      colunas: {
+        nome: 'Cliente',
+        documento: 'Documento',
+        telefone: 'Telefone',
+        whatsapp: 'WhatsApp',
+      },
       campos: {
         nome: 'Nome do cliente',
-        cpf: 'CPF',
-        cpfAjuda: 'Pode digitar com ou sem pontos. Se não souber, deixe em branco.',
+        documentoTipo: 'Tipo do documento',
+        documento: 'Número do documento',
+        documentoAjuda:
+          'Pode ser CPF, RG, cédula paraguaia... Se for CPF, pode digitar com ou sem pontos. Se não souber, deixe em branco.',
+        comissaoPercentual: 'Comissão do cliente (%)',
+        comissaoPercentualAjuda: 'De 0 a 40. Se não mudar, vale 30.',
+        indicadoPorNome: 'Indicado por',
+        indicadoPorNomeAjuda:
+          'Nome de quem indicou. Se o cliente já foi indicado por outro cliente cadastrado, deixe em branco para manter.',
+        comoConheceu: 'Como conheceu a loja',
         dataNascimento: 'Data de nascimento',
         dataNascimentoAjuda:
           'Se não souber, deixe em branco. Serve para avisar dos aniversariantes.',
         telefone: 'Telefone',
         whatsapp: 'WhatsApp',
         observacoes: 'Observações',
-        vendedorResponsavelId: 'Vendedor responsável',
+        vendedorResponsavelId: 'Representante responsável',
+        vendedorResponsavelIdAjuda: 'Depois de escolhido, o representante do cliente não muda.',
       },
+      tiposDeDocumento: [
+        { valor: 'CPF', rotulo: 'CPF' },
+        { valor: 'RG', rotulo: 'RG' },
+        { valor: 'CI', rotulo: 'CI (cédula paraguaia)' },
+        { valor: 'OUTRO', rotulo: 'Outro documento' },
+      ],
     },
     endereco: {
       logradouro: 'Rua ou avenida',
@@ -302,7 +331,7 @@ export const TEXTOS = {
     filtroSituacao: 'Situação',
     todos: 'Todos',
     ativos: 'Ativos',
-    desativados: 'Desativados',
+    desativados: 'Inativos',
     colunas: {
       nome: 'Nome',
       usuario: 'Usuário',
@@ -310,11 +339,11 @@ export const TEXTOS = {
       situacao: 'Situação',
       acoes: 'O que fazer',
     },
-    acesso: { ADMIN: 'Dona', VENDEDOR: 'Vendedor' } as Record<string, string>,
-    situacao: { ativo: 'Ativo', desativado: 'Desativado' },
+    acesso: { ADMIN: 'Dona', VENDEDOR: 'Representante' } as Record<string, string>,
+    situacao: { ativo: 'Ativo', desativado: 'Inativo' },
     legenda: 'Usuários que podem entrar nos aplicativos',
     editar: 'Editar',
-    desativar: 'Desativar usuário',
+    desativar: 'Inativar usuário',
     reativar: 'Reativar usuário',
     novaSenha: 'Nova senha temporária',
     criarSenha: 'Criar senha temporária',
@@ -325,11 +354,11 @@ export const TEXTOS = {
       usuario: 'Usuário',
       usuarioAjuda: 'De 3 a 40 letras sem acento, números ou ponto. Por exemplo: maria.silva.',
       acesso: 'Tipo de acesso',
-      vendedor: 'Vendedor',
-      escolherVendedor: 'Escolha o vendedor',
-      escolhaOVendedor: 'Escolha o vendedor deste acesso.',
-      vendedorAtual: 'Vendedor já ligado a este acesso',
-      semVendedores: 'Não há vendedor ativo cadastrado. Cadastre o vendedor antes.',
+      vendedor: 'Representante',
+      escolherVendedor: 'Escolha o representante',
+      escolhaOVendedor: 'Escolha o representante deste acesso.',
+      vendedorAtual: 'Representante já ligado a este acesso',
+      semVendedores: 'Não há representante ativo cadastrado. Cadastre o representante antes.',
       salvar: 'Salvar',
     },
     senha: {
@@ -344,7 +373,7 @@ export const TEXTOS = {
       fechar: 'Já anotei, fechar',
     },
     confirmar: {
-      desativarTitulo: (nome: string) => `Desativar ${nome}?`,
+      desativarTitulo: (nome: string) => `Inativar ${nome}?`,
       desativarTexto: (nome: string) =>
         `${nome} vai sair do sistema agora e não vai mais conseguir entrar. Você pode reativar depois.`,
       reativarTitulo: (nome: string) => `Reativar ${nome}?`,
@@ -358,10 +387,12 @@ export const TEXTOS = {
     feito: {
       criado: (nome: string) => `${nome} foi cadastrado.`,
       editado: (nome: string) => `Os dados de ${nome} foram salvos.`,
-      desativado: (nome: string) => `${nome} foi desativado e saiu do sistema.`,
+      desativado: (nome: string) => `${nome} foi inativado e saiu do sistema.`,
       reativado: (nome: string) => `${nome} foi reativado.`,
     },
   },
   vendedores: TEXTOS_DE_VENDEDORES,
   produtos: TEXTOS_DE_PRODUTOS,
 } as const;
+
+export const TEXTOS = textosVivos('geral', PT_TEXTOS, ES_TEXTOS);

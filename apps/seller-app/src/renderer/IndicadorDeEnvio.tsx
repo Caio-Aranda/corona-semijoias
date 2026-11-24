@@ -4,6 +4,7 @@ import type { EnvioNaoAceito } from '../shared/dados';
 import type { EstadoDaSincronizacao, PonteDoCorona } from '../shared/ponte';
 import { textoDoPrazo } from '../shared/prazo';
 import { chamar } from './chamadas';
+import { idiomaAtual, LOCAL_DO_IDIOMA } from './idioma';
 import { TEXTOS } from './textos';
 
 /** O estado do envio e do recebimento, já ao assinar e sempre que mudar. Só contadores, sim/não e datas. */
@@ -13,11 +14,11 @@ export function useEstadoDeEnvio(ponte: PonteDoCorona): EstadoDaSincronizacao | 
   return estado;
 }
 
-/** "09/11 às 14:30", no horário de Brasília. */
+/** "09/11 às 14:30" (ou "09/11 a las 14:30"), no horário de Brasília. */
 export function dataEHoraParaTela(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
-  const partes = new Intl.DateTimeFormat('pt-BR', {
+  const partes = new Intl.DateTimeFormat(LOCAL_DO_IDIOMA[idiomaAtual()], {
     timeZone: 'America/Sao_Paulo',
     day: '2-digit',
     month: '2-digit',
@@ -26,7 +27,7 @@ export function dataEHoraParaTela(iso: string): string {
     hour12: false,
   }).formatToParts(d);
   const p = (tipo: string) => partes.find((x) => x.type === tipo)?.value ?? '';
-  return `${p('day')}/${p('month')} às ${p('hour')}:${p('minute')}`;
+  return TEXTOS.envio.diaEHora(`${p('day')}/${p('month')}`, `${p('hour')}:${p('minute')}`);
 }
 
 /** O que está esperando para ser enviado, em palavras comuns; vazio se nada espera. */
@@ -85,7 +86,7 @@ export function IndicadorDeEnvio({ ponte }: { ponte: PonteDoCorona }) {
   const principal = textoDoIndicador(estado);
   const aguarda = textoDoQueAguarda(estado);
   const fotos = textoDasFotos(estado);
-  const aviso = textoDoPrazo(estado.prazo);
+  const aviso = textoDoPrazo(estado.prazo, idiomaAtual());
   return (
     <section className="vendas-indicador" aria-label={T.area}>
       {principal ? (

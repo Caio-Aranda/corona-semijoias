@@ -60,7 +60,7 @@ public class CreditosDaDonaController {
     public ResponseEntity<CreditoDoCliente> transferir(@PathVariable UUID id, @RequestBody PedidoDeTransferencia pedido,
             @AuthenticationPrincipal UsuarioAutenticado quem) {
         if (pedido == null) {
-            throw Validacoes.recusar("vendedorId", "Escolha o vendedor que vai receber o crédito.");
+            throw Validacoes.recusar("vendedorId", "Escolha o representante que vai receber o crédito.");
         }
         Resultado r = servico.transferir(id, pedido.vendedorId(), pedido.id(), quem.id());
         return ResponseEntity.status(r.jaExistia() ? HttpStatus.OK : HttpStatus.CREATED).body(consultas.ver(r.creditoId(), null));

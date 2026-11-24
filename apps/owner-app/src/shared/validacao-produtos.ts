@@ -167,6 +167,9 @@ function conferirCorpoDoProduto(
       case 'referencia':
         if (!ehTexto(v) || v.length > 100) return null;
         break;
+      case 'tamTon':
+        if (!ehTexto(v) || v.length > 30) return null;
+        break;
       case 'categoriaId':
       case 'fornecedorId':
         if (!idValido(v)) return null;

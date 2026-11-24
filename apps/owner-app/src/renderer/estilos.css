@@ -24,15 +24,26 @@
   background: var(--cor-fundo);
   border: 1px solid var(--cor-borda);
   border-radius: var(--raio-2);
+  box-shadow: var(--sombra);
   display: flex;
   flex-direction: column;
   gap: var(--espaco-4);
 }
 
+/* Título grande da tela: letra de marca em dourado escuro, com o filete dourado embaixo (proposta visual, seção 4). */
 .gestao-titulo {
   margin: 0;
-  font-size: var(--texto-titulo);
-  line-height: 1.2;
+  color: var(--cor-ouro-escuro);
+  font: 700 var(--texto-titulo-marca) / 1.15 var(--fonte-marca);
+}
+.gestao-titulo::after {
+  content: '';
+  display: block;
+  width: 4.5rem;
+  height: 4px;
+  margin-top: var(--espaco-3);
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--cor-ouro-escuro), var(--cor-ouro-claro));
 }
 
 .gestao-texto {
@@ -55,16 +66,150 @@
   border: 1px solid var(--cor-borda);
   border-radius: var(--raio-2);
   padding: var(--espaco-4) var(--espaco-6);
+  box-shadow: var(--sombra);
 }
 
-.gestao-atencao h2 {
-  margin: 0 0 var(--espaco-2);
+.gestao-secao {
+  margin: 0 0 var(--espaco-3);
   font-size: var(--texto-grande);
+  font-weight: 700;
 }
 
-.gestao-atencao p {
-  margin: 0;
+/* Saudação com a data por extenso e a cotação do dia. */
+.gestao-saudacao {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--espaco-4);
+  flex-wrap: wrap;
+}
+.gestao-data {
+  margin: var(--espaco-2) 0 0;
   color: var(--cor-texto-suave);
+}
+.gestao-data::first-letter {
+  text-transform: uppercase;
+}
+.gestao-cotacao-dia {
+  display: flex;
+  gap: var(--espaco-4);
+  flex-wrap: wrap;
+  padding: var(--espaco-2) var(--espaco-4);
+  background: var(--cor-fundo);
+  border: 1px solid var(--cor-borda);
+  border-radius: 999px;
+}
+
+/* Atalhos: cartão branco, ícone dourado, uma linha dizendo para que serve. */
+.gestao-atalhos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--espaco-4);
+}
+.gestao-atalho {
+  display: grid;
+  grid-template-columns: 3rem 1fr;
+  column-gap: var(--espaco-4);
+  align-items: center;
+  min-height: 5rem;
+  padding: var(--espaco-3) var(--espaco-4);
+  background: var(--cor-fundo);
+  border: 2px solid var(--cor-borda);
+  border-radius: var(--raio-2);
+  box-shadow: var(--sombra);
+  color: var(--cor-texto);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease;
+}
+.gestao-atalho:hover {
+  transform: translateY(-3px);
+  border-color: var(--cor-ouro);
+}
+.gestao-atalho__icone {
+  grid-row: 1 / span 2;
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.9rem;
+  background: #f6ecd8;
+  color: var(--cor-ouro-escuro);
+}
+.gestao-atalho__nome {
+  font: 700 var(--texto-grande) var(--fonte-dados);
+}
+.gestao-atalho__ajuda {
+  color: var(--cor-texto-suave);
+  font-size: var(--texto-base);
+  line-height: 1.3;
+}
+
+/* Resumo da semana: números que o servidor já calculou; clicar abre a tela de onde vieram. */
+.gestao-numeros {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--espaco-4);
+}
+.gestao-numero {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: var(--espaco-3) var(--espaco-4);
+  background: var(--cor-fundo);
+  border: 1px solid var(--cor-borda);
+  border-top: 4px solid var(--cor-ouro);
+  border-radius: var(--raio-2);
+  color: var(--cor-texto);
+  text-align: left;
+  cursor: pointer;
+}
+.gestao-numero:hover {
+  border-color: var(--cor-ouro);
+}
+.gestao-numero__titulo {
+  color: var(--cor-texto-suave);
+  font-weight: 600;
+}
+.gestao-numero__valor {
+  font: 700 2rem / 1.15 var(--fonte-marca);
+  font-variant-numeric: lining-nums;
+}
+.gestao-numero__detalhe {
+  color: var(--cor-texto-suave);
+  font-size: var(--texto-pequeno);
+}
+
+.gestao-tudo-em-dia {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-4);
+}
+.gestao-tudo-em-dia p {
+  margin: 0;
+}
+.gestao-tudo-em-dia__titulo {
+  font-weight: 700;
+  color: var(--cor-sucesso-texto);
+}
+.gestao-tudo-em-dia__icone {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: var(--cor-sucesso-borda);
+  color: #fff;
+  font-weight: 800;
+}
+
+@media (max-width: 1100px) {
+  .gestao-atalhos,
+  .gestao-numeros {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .gestao-corpo {
@@ -464,4 +609,196 @@ dl.gestao-totais {
 
 .gestao-calculando {
   opacity: 0.6;
+}
+
+/* Painel da semana (tarefa 8.8): texto escuro sobre fundo claro; o Dólar e o Guarani ficam abaixo do Real */
+.gestao-painel__valor {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.gestao-painel__outras-moedas,
+.gestao-painel__pecas {
+  display: block;
+  color: var(--cor-texto);
+  font-size: 0.875rem;
+}
+
+.gestao-painel__previa {
+  font-weight: 700;
+}
+
+.gestao-painel__cartoes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--espaco-4);
+}
+
+.gestao-painel__cartao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+  padding: var(--espaco-4);
+  background: var(--cor-fundo);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-2);
+}
+
+.gestao-painel__itens {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+  margin: 0;
+}
+
+.gestao-painel__item {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--espaco-4);
+}
+
+.gestao-painel__item dd {
+  margin: 0;
+  text-align: right;
+}
+
+.gestao-avisos .cs-aviso__texto {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--espaco-3);
+}
+.gestao-avisos .cs-aviso__texto .cs-botao {
+  min-height: var(--alvo-minimo);
+  padding-block: var(--espaco-1);
+}
+
+/* Seletor de idioma (ES / PT): dois botões pequenos, o atual destacado. */
+.gestao-idioma {
+  display: inline-flex;
+  gap: 2px;
+  margin-right: var(--espaco-3);
+  vertical-align: middle;
+}
+.gestao-idioma__botao {
+  min-width: 2.5rem;
+  min-height: 2rem;
+  padding: 0 var(--espaco-2);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-1, 4px);
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
+  font: 600 0.875rem / 1 var(--fonte-texto, inherit);
+  cursor: pointer;
+}
+.gestao-idioma__botao[aria-pressed='true'] {
+  background: var(--cor-ouro-escuro);
+  border-color: var(--cor-ouro-escuro);
+  color: #fff;
+}
+.gestao-idioma__botao:focus-visible {
+  outline: 3px solid var(--cor-foco, currentColor);
+  outline-offset: 2px;
+}
+.gestao-idioma--canto {
+  position: absolute;
+  top: var(--espaco-4);
+  right: var(--espaco-4);
+}
+
+/* Páginas de relatórios por área: um cartão por relatório, como os cartões da tela inicial. */
+.gestao-cartoes-de-relatorio {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: var(--espaco-4);
+}
+.gestao-cartao-de-relatorio {
+  display: grid;
+  grid-template-columns: 2.5rem 1fr;
+  grid-template-rows: auto 1fr;
+  column-gap: var(--espaco-3);
+  row-gap: var(--espaco-1);
+  align-items: start;
+  padding: var(--espaco-3) var(--espaco-4);
+  background: var(--cor-fundo);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-2);
+  box-shadow: var(--sombra);
+  color: var(--cor-texto);
+  text-align: left;
+  cursor: pointer;
+}
+.gestao-cartao-de-relatorio:hover {
+  border-color: var(--cor-ouro);
+}
+.gestao-cartao-de-relatorio__icone {
+  grid-row: 1 / span 2;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.7rem;
+  background: #f6ecd8;
+  color: var(--cor-ouro-escuro);
+}
+.gestao-cartao-de-relatorio__icone svg {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+.gestao-cartao-de-relatorio__titulo {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+.gestao-cartao-de-relatorio__texto {
+  color: var(--cor-texto-suave);
+  font-size: var(--texto-pequeno);
+}
+.gestao-voltar-para-relatorios {
+  align-self: flex-start;
+  margin-bottom: var(--espaco-3);
+}
+
+/* Consignado (tarefa 9.4): ficha em pares "rótulo, valor" e as fotos do cliente. Texto escuro sobre fundo claro. */
+.gestao-ficha {
+  display: grid;
+  grid-template-columns: minmax(10rem, max-content) 1fr;
+  gap: var(--espaco-2) var(--espaco-4);
+  margin: 0;
+  color: var(--cor-texto);
+}
+
+.gestao-ficha dt {
+  font-weight: 600;
+}
+
+.gestao-ficha dd {
+  margin: 0;
+}
+
+.gestao-fotos-do-cliente {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-4);
+}
+
+.gestao-foto-do-cliente {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+  margin: 0;
+  min-width: 12rem;
+  color: var(--cor-texto);
+}
+
+.gestao-foto-do-cliente figcaption {
+  font-weight: 600;
+}
+
+.gestao-foto-do-cliente__imagem {
+  max-width: 22rem;
+  max-height: 22rem;
+  border: 1px solid var(--cor-borda, #ddd);
+  border-radius: var(--raio-2);
+  object-fit: contain;
 }

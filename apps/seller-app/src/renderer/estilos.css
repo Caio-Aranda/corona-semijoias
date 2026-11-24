@@ -7,6 +7,7 @@
 }
 
 .vendas-conteudo {
+  box-sizing: border-box;
   width: 100%;
   max-width: 960px;
   margin: 0 auto;
@@ -17,6 +18,7 @@
 }
 
 .vendas-cartao {
+  box-sizing: border-box;
   width: 100%;
   max-width: 440px;
   margin: 0 auto;
@@ -24,15 +26,26 @@
   background: var(--cor-fundo);
   border: 1px solid var(--cor-borda);
   border-radius: var(--raio-2);
+  box-shadow: var(--sombra);
   display: flex;
   flex-direction: column;
   gap: var(--espaco-4);
 }
 
+/* Título grande da tela: letra de marca em dourado escuro, com o filete dourado embaixo (proposta visual, seção 4). */
 .vendas-titulo {
   margin: 0;
-  font-size: var(--texto-titulo);
-  line-height: 1.2;
+  color: var(--cor-ouro-escuro);
+  font: 700 var(--texto-titulo-marca) / 1.15 var(--fonte-marca);
+}
+.vendas-titulo::after {
+  content: '';
+  display: block;
+  width: 4.5rem;
+  height: 4px;
+  margin-top: var(--espaco-3);
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--cor-ouro-escuro), var(--cor-ouro-claro));
 }
 
 .vendas-texto {
@@ -82,6 +95,7 @@
 
 .vendas-leitor .cs-campo {
   flex: 1;
+  margin-bottom: 0;
 }
 
 .vendas-quantidade {
@@ -92,12 +106,26 @@
 
 .vendas-desconto {
   width: 6rem;
-  min-height: 2.5rem;
+  min-height: 2.75rem;
+  padding: 0 var(--espaco-3);
+  border: 2px solid var(--cor-borda-campo);
+  border-radius: var(--raio-1);
+  font: var(--texto-base) var(--fonte-dados);
 }
 
+/* Total a cobrar: o que mais salta aos olhos da venda; Dólar e Guarani ficam logo abaixo. */
 .vendas-total {
   margin: 0;
-  font-size: var(--texto-titulo);
+  padding: var(--espaco-4) var(--espaco-6);
+  background: var(--cor-fundo-suave);
+  border: 1px solid var(--cor-borda);
+  border-top: 3px solid var(--cor-ouro);
+  border-radius: var(--raio-2);
+  font-size: var(--texto-grande);
+  font-weight: 600;
+}
+.vendas-total .cs-valor__real {
+  font: 700 2.6rem / 1.1 var(--fonte-marca);
 }
 
 .vendas-lista {
@@ -123,6 +151,18 @@
   border: 1px solid var(--cor-borda);
   border-radius: var(--raio-2);
   padding: var(--espaco-4);
+  font-size: var(--texto-base);
+}
+.vendas-pagamento label {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  min-height: var(--alvo-minimo);
+}
+.vendas-pagamento input[type='radio'] {
+  width: 1.4rem;
+  height: 1.4rem;
+  accent-color: var(--cor-ouro-escuro);
 }
 
 /* Procurar pelo nome (Vender e Conferir maleta): miniatura, nome, código e quantidade na maleta. */
@@ -133,10 +173,10 @@
 }
 
 .vendas-busca-item__foto {
-  width: 56px;
-  height: 56px;
+  width: 64px;
+  height: 64px;
   flex: none;
-  border-radius: 6px;
+  border-radius: 12px;
   object-fit: cover;
 }
 
@@ -175,4 +215,483 @@
 
 .vendas-linha {
   display: block;
+}
+
+/* Troca de idioma (Español | Português): dois botões pequenos juntos, no alto das telas. */
+.vendas-idiomas {
+  display: inline-flex;
+  gap: var(--espaco-2);
+  align-items: center;
+}
+
+.cs-entrada-pagina .vendas-idiomas {
+  justify-content: center;
+}
+
+.vendas-idiomas__botao {
+  min-width: 2.5rem;
+  padding-inline: var(--espaco-2);
+}
+
+.cs-entrada-pagina main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espaco-4);
+  width: 100%;
+}
+
+.vendas-nome-do-vendedor {
+  margin-inline-end: var(--espaco-3);
+}
+
+/* --- Consignado ao cliente (tarefa 9.2; §23). Texto escuro sobre fundo claro; dourado só em detalhes. --- */
+.consignado-largo {
+  max-width: 1280px;
+  padding-top: var(--espaco-4);
+  gap: var(--espaco-4);
+}
+
+.consignado-botoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-3);
+  align-items: flex-end;
+}
+
+.consignado-pesquisa {
+  flex: 1 1 200px;
+  min-width: 200px;
+  max-width: 340px;
+}
+.consignado-pesquisa .cs-campo,
+.consignado-botoes .cs-campo {
+  margin-bottom: 0;
+}
+
+.consignado-cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-4);
+  align-items: center;
+  padding: var(--espaco-3) var(--espaco-4);
+  background: var(--cor-fundo);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-2);
+  color: var(--cor-texto);
+}
+
+.consignado-cabecalho p {
+  margin: 0;
+}
+
+.consignado-seletor {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--espaco-1);
+  color: var(--cor-texto);
+}
+
+.consignado-abas {
+  display: flex;
+  border-bottom: 2px solid var(--cor-borda);
+}
+
+.consignado-aba {
+  min-height: 44px;
+  padding: var(--espaco-2) var(--espaco-6);
+  border: 0;
+  border-bottom: 4px solid transparent;
+  background: none;
+  color: var(--cor-texto);
+  font: inherit;
+  cursor: pointer;
+}
+
+.consignado-aba--ativa {
+  border-bottom-color: var(--cor-ouro-escuro);
+  font-weight: 700;
+}
+
+.consignado-tabela {
+  width: 100%;
+}
+
+/* A cor da linha segue a situação (§23.4); o texto da situação aparece sempre, a cor sozinha nunca basta. */
+.consignado-linha td,
+.consignado-linha th {
+  color: var(--cor-texto);
+}
+.consignado-linha--em-aberto {
+  background: #ffffff;
+}
+.consignado-linha--pendente {
+  background: #fff3b0;
+}
+.consignado-linha--fechado {
+  background: #d4efd8;
+}
+.consignado-linha--remarcado {
+  background: #fbd5e3;
+}
+tr.consignado-linha[tabindex]:focus-visible {
+  outline: 3px solid var(--cor-foco);
+  outline-offset: -3px;
+}
+
+.consignado-foto {
+  width: 140px;
+  height: 140px;
+  object-fit: cover;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-1);
+}
+.consignado-foto--pequena {
+  width: 44px;
+  height: 44px;
+}
+.consignado-foto--vazia {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cor-fundo-suave);
+  color: var(--cor-texto);
+  font-size: var(--texto-pequeno);
+  text-align: center;
+}
+.consignado-fotos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-4);
+}
+.consignado-fotos figure {
+  margin: 0;
+  color: var(--cor-texto);
+}
+
+.consignado-peca {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+}
+
+.consignado-conta,
+.consignado-totais dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--espaco-2) var(--espaco-6);
+  margin: var(--espaco-3) 0;
+  color: var(--cor-texto);
+}
+.consignado-conta dd,
+.consignado-totais dd {
+  margin: 0;
+}
+.consignado-totais__forma {
+  display: contents;
+}
+.consignado-totais__forma dt {
+  padding-inline-start: var(--espaco-4);
+}
+
+.consignado-linha-de-campos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-4);
+  align-items: flex-end;
+}
+
+.consignado-formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+  max-width: 640px;
+}
+.consignado-indicado {
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-2);
+  padding: var(--espaco-3) var(--espaco-4);
+}
+
+.consignado-clientes-lista li {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+}
+
+.consignado-captura {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+  padding: var(--espaco-3);
+  border: 1px dashed var(--cor-borda);
+  border-radius: var(--raio-2);
+}
+.consignado-camera__video {
+  width: 100%;
+  max-width: 480px;
+  border-radius: var(--raio-1);
+  background: #000;
+}
+.consignado-camera__acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-3);
+}
+.consignado-arquivo {
+  position: relative;
+  cursor: pointer;
+}
+.consignado-arquivo input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.consignado-escolha,
+.consignado-escolhido {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-3);
+  align-items: center;
+}
+
+/* --- Relatórios do consignado ao cliente (tarefa 9.3; §23.11). Folha branca, texto escuro; no papel só a folha sai. --- */
+.relatorio-raiz {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  overflow: auto;
+  background: var(--cor-fundo-suave);
+  padding: var(--espaco-4);
+}
+
+.relatorio-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-3);
+  max-width: 900px;
+  margin: 0 auto var(--espaco-3);
+}
+
+.relatorio-aviso-de-saida {
+  max-width: 900px;
+  margin: 0 auto var(--espaco-3);
+}
+
+.relatorio-folha {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: var(--espaco-8);
+  background: #ffffff;
+  color: #111111;
+  border: 1px solid var(--cor-borda);
+  font: 0.9375rem / 1.45 var(--fonte-dados);
+}
+
+/* Tabela de verdade em todo relatório, nota e PDF: bordas finas entre linhas e colunas, cabeçalho destacado,
+   números à direita (.cs-numero), cabeçalho repetido a cada página e linha nunca cortada. */
+.relatorio-folha table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--espaco-3) 0;
+  border: 1px solid #8a8272;
+}
+
+.relatorio-folha thead {
+  display: table-header-group;
+}
+
+.relatorio-folha tfoot {
+  display: table-footer-group;
+}
+
+.relatorio-folha tr {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.relatorio-folha th,
+.relatorio-folha td {
+  padding: 0.3rem 0.45rem;
+  border: 1px solid #b9b2a3;
+  text-align: left;
+  vertical-align: top;
+  font-size: 0.875rem;
+}
+
+.relatorio-folha th {
+  background: #ece8de;
+  border-bottom: 2px solid #111111;
+  color: #111111;
+  font-weight: 700;
+}
+
+.relatorio-folha tfoot td,
+.relatorio-folha tfoot th {
+  background: #f6f3ec;
+  font-weight: 700;
+}
+
+.relatorio-folha .cs-numero {
+  text-align: right;
+}
+
+.relatorio-loja {
+  margin: 0;
+  color: var(--cor-ouro-escuro);
+  font: 700 1.5rem / 1.1 var(--fonte-marca);
+}
+
+.relatorio-titulo {
+  margin: 0.15rem 0 0.4rem;
+  font: 700 1.5rem / 1.2 var(--fonte-dados);
+  color: #111111;
+}
+
+.relatorio-subtitulo,
+.relatorio-linha {
+  margin: 0.2rem 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.5rem;
+}
+
+.relatorio-secao {
+  margin: var(--espaco-4) 0 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111111;
+}
+
+.relatorio-dados,
+.relatorio-conta {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.2rem 1rem;
+  margin: var(--espaco-3) 0;
+}
+
+.relatorio-dados dt,
+.relatorio-conta dt {
+  font-weight: 700;
+}
+
+.relatorio-dados dd,
+.relatorio-conta dd {
+  margin: 0;
+}
+
+.relatorio-conta dd {
+  text-align: right;
+}
+
+.relatorio-folha .cs-valor__outras {
+  display: block;
+  color: #333333;
+  font-size: 0.8125rem;
+}
+
+.relatorio-assinaturas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  margin-top: 3.5rem;
+  text-align: center;
+  font-size: 0.875rem;
+}
+
+.relatorio-assinatura-linha {
+  display: block;
+  height: 2.5rem;
+  border-bottom: 1px solid #111111;
+  margin-bottom: 0.3rem;
+}
+
+.relatorio-aviso {
+  margin-top: var(--espaco-4);
+  color: #333333;
+  font-size: 0.8125rem;
+}
+
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
+@media print {
+  html,
+  body {
+    background: #ffffff;
+  }
+  /* Só a folha sai no papel e no PDF: a tela do aplicativo some. */
+  #raiz {
+    display: none !important;
+  }
+  .relatorio-raiz {
+    position: static;
+    inset: auto;
+    overflow: visible;
+    padding: 0;
+    background: #ffffff;
+  }
+  .relatorio-acoes,
+  .relatorio-aviso-de-saida {
+    display: none !important;
+  }
+  .relatorio-folha {
+    max-width: none;
+    padding: 0;
+    border: 0;
+  }
+  .relatorio-folha tr {
+    break-inside: avoid;
+  }
+  .relatorio-folha th,
+  .relatorio-folha tfoot td {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .relatorio-assinaturas {
+    break-inside: avoid;
+  }
+}
+
+/* --- Correções de tela (tarefa 9.6): cabe em 1366x768, valores e número da nota nunca quebram. --- */
+.consignado-tabela th,
+.consignado-tabela td {
+  height: auto;
+  padding: var(--espaco-2) var(--espaco-3);
+}
+.cs-tabela td.cs-numero,
+.cs-tabela td.consignado-nota,
+.cs-tabela th.cs-numero {
+  white-space: nowrap;
+}
+.cs-tabela td.consignado-nota {
+  font-variant-numeric: tabular-nums;
+}
+.cs-valor__real {
+  white-space: nowrap;
+}
+
+/* Só para leitor de tela: quando o título já está visível, a legenda da tabela não repete. */
+.consignado-so-leitor {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Telas de trabalho mais compactas: o botão principal fica à vista em notebook 1366x768 (entrada e troca de senha não mudam). */
+.vendas-cartao--larga .cs-rodape-acoes {
+  padding: 0;
+}
+.vendas-cartao--larga .cs-campo {
+  margin-bottom: 0;
 }

@@ -113,7 +113,7 @@ export class ServicoDeSessao {
         return { tipo: 'sem-conexao' };
       case 'recusada':
         return f.mensagem
-          ? { tipo: 'recusado', mensagem: f.mensagem }
+          ? { tipo: 'recusado', mensagem: f.mensagem, ...(f.codigo ? { codigo: f.codigo } : {}) }
           : { tipo: 'erro-inesperado' };
       case 'resposta-invalida':
         return { tipo: 'erro-inesperado' };

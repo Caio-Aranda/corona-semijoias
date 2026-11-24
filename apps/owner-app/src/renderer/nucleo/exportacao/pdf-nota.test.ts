@@ -18,6 +18,7 @@ function nota(quantas: number, extra: Partial<NotaParaPdf> = {}): NotaParaPdf {
     itens: Array.from({ length: quantas }, (_, i) => ({
       codigo: `A${i + 1}`,
       nome: `Anel de ouro número ${i + 1}`,
+      tamTon: i === 0 ? 'Ouro rosé' : '',
       quantidade: '2',
       preco: 'R$ 10,00',
       subtotal: 'R$ 20,00',
@@ -41,13 +42,15 @@ describe('PDF da nota de remessa', () => {
       'Maria Souza',
       'Ciudad del Este',
       'Anel de ouro número 1',
+      'Tam./Ton.',
+      'Ouro rosé',
       'Total de peças: 6',
       'Valor total: R$ 60,00',
       'Cotação do Banco Central do dia do envio \\(09/11/2026\\)',
       'US$ 36,35',
       'Gs. 224.000',
       'Dona',
-      'Vendedor: Maria Souza',
+      'Representante: Maria Souza',
       'Página 1 de 1',
     ]) {
       expect(pdf).toContain(
@@ -77,10 +80,10 @@ describe('PDF da nota de remessa', () => {
 
   it('maleta cancelada sai com a marca CANCELADA em destaque', () => {
     const pdf = texto(
-      gerarPdfDaNota(nota(2, { cancelada: true, motivoDoCancelamento: 'Erro de vendedor' })),
+      gerarPdfDaNota(nota(2, { cancelada: true, motivoDoCancelamento: 'Erro de representante' })),
     );
     expect(pdf).toContain('(CANCELADA)');
-    expect(pdf).toContain('Erro de vendedor');
+    expect(pdf).toContain('Erro de representante');
   });
 
   it('sem cotação do dia do envio não escreve Dólar nem Guarani', () => {
@@ -108,12 +111,29 @@ describe('PDF da nota de remessa', () => {
       semana: { numero: 1 },
       tipo: 'REPOSICAO',
       itens: [
-        { codigo: 'X', nome: 'Brinco', quantidade: 1, precoRemessa: '5.00', subtotal: '5.00' },
+        {
+          codigo: 'X',
+          nome: 'Brinco',
+          tamTon: 'Aro 16',
+          quantidade: 1,
+          precoRemessa: '5.00',
+          subtotal: '5.00',
+        },
       ],
       totalPecas: 1,
       totalValor: '5.00',
     });
     expect(lida).toMatchObject({ vendedor: 'Ana', tipo: 'Reposição', semana: '1', cotacao: null });
     expect(lida?.itens[0]?.preco).toBe('R$ 5,00');
+    expect(lida?.itens[0]?.tamTon).toBe('Aro 16');
+  });
+});
+
+describe('PDF da nota: tabela com linhas', () => {
+  it('desenha o fundo do cabeçalho e as linhas finas da tabela, em cada página', () => {
+    const pdf = texto(gerarPdfDaNota(nota(80)));
+    expect(paginas(pdf)).toBeGreaterThan(1);
+    expect((pdf.match(/0\.92 g/g) ?? []).length).toBe(paginas(pdf));
+    expect((pdf.match(/0\.45 G 0\.4 w/g) ?? []).length).toBeGreaterThanOrEqual(paginas(pdf) - 1);
   });
 });

@@ -8,6 +8,7 @@ import type {
   PonteDoCorona,
   ResultadoDeChamada,
 } from '../../../shared/ponte';
+import { abrirAreaDoMenu, abrirRelatorioPeloMenu } from '../../apoio-de-testes';
 import { App } from '../../App';
 
 const entregues: { nome: string; tipo: string; bytes: Uint8Array }[] = [];
@@ -130,7 +131,7 @@ const dosRelatorios = (m: ReturnType<typeof montar>) =>
 async function abrir(m: ReturnType<typeof montar>, titulo: string) {
   const u = userEvent.setup();
   render(<App ponte={m.ponte} />);
-  await u.click(await screen.findByRole('button', { name: titulo }));
+  await abrirRelatorioPeloMenu(u, titulo);
   return u;
 }
 
@@ -142,26 +143,30 @@ beforeEach(() => {
 describe('Relatórios de devolução e troca', () => {
   it('o menu tem o grupo, os sete relatórios e a conferência com os nomes do glossário', async () => {
     const m = montar();
+    const u = userEvent.setup();
     render(<App ponte={m.ponte} />);
-    expect(await screen.findByText('Relatórios de devoluções')).toBeInTheDocument();
+    const cartoes = await abrirAreaDoMenu(u, 'devolucoes');
     for (const t of [
-      'Devoluções por vendedor e motivo',
-      'Quanto cada vendedor devolveu do que vendeu',
+      'Devoluções por representante e motivo',
+      'Quanto cada representante devolveu do que vendeu',
       'Peças que voltaram com defeito',
       'Trocas feitas',
       'Créditos dos clientes: em aberto e usados',
       'Dinheiro devolvido aos clientes',
       'Pedidos de autorização',
-      'Conferência das devoluções e trocas',
     ]) {
-      expect(await screen.findByRole('button', { name: t })).toBeInTheDocument();
+      expect(within(cartoes).getByText(t)).toBeInTheDocument();
     }
+    const conferencias = await abrirAreaDoMenu(u, 'conferencias');
+    expect(
+      within(conferencias).getByText('Conferência das devoluções e trocas'),
+    ).toBeInTheDocument();
   });
 
   it('a devolução cancelada aparece escrita "Cancelada" e o valor sai nas três moedas do dia de cada devolução', async () => {
     const m = montar();
-    await abrir(m, 'Devoluções por vendedor e motivo');
-    await screen.findByRole('heading', { name: 'Devoluções por vendedor e motivo', level: 1 });
+    await abrir(m, 'Devoluções por representante e motivo');
+    await screen.findByRole('heading', { name: 'Devoluções por representante e motivo', level: 1 });
     expect(await screen.findByText('Cancelada')).toBeInTheDocument();
     expect(screen.getAllByText('Desistência').length).toBeGreaterThan(0);
     expect(dosRelatorios(m)[0]).toMatchObject({ relatorio: 'devolucao-por-motivo', pagina: 0 });
@@ -173,7 +178,7 @@ describe('Relatórios de devolução e troca', () => {
 
   it('o motivo escolhido vai ao servidor', async () => {
     const m = montar();
-    const u = await abrir(m, 'Devoluções por vendedor e motivo');
+    const u = await abrir(m, 'Devoluções por representante e motivo');
     await screen.findByText('Cancelada');
     await u.selectOptions(screen.getByLabelText('Motivo da devolução'), 'DEFEITO');
     await waitFor(() => expect(dosRelatorios(m).some((p) => p.motivo === 'DEFEITO')).toBe(true));
@@ -181,7 +186,7 @@ describe('Relatórios de devolução e troca', () => {
 
   it('o arquivo usa o Dólar de cada devolução e a frase da cotação', async () => {
     const m = montar();
-    const u = await abrir(m, 'Devoluções por vendedor e motivo');
+    const u = await abrir(m, 'Devoluções por representante e motivo');
     await screen.findByText('Cancelada');
     await u.click(screen.getByRole('button', { name: 'Baixar em CSV' }));
     await waitFor(() => expect(entregues).toHaveLength(1));
@@ -225,7 +230,7 @@ describe('Relatórios de devolução e troca', () => {
         },
       }),
     });
-    await abrir(m, 'Quanto cada vendedor devolveu do que vendeu');
+    await abrir(m, 'Quanto cada representante devolveu do que vendeu');
     expect(await screen.findByText('Acima do limite')).toBeInTheDocument();
     expect(screen.getByText('48,65%')).toBeInTheDocument();
   });

@@ -95,9 +95,23 @@ public class ServicoDaComissao {
     public Previa previa(UUID vendedorId) {
         var m = montagem.montar(UUID.randomUUID(), vendedorId);
         long soma = m.comissao().vendidoParaMetaGuarani();
-        long falta = Math.max(0, m.metaGuarani() - soma);
-        BigDecimal emReais = ConversaoDeMoeda.guaraniParaReais(BigDecimal.valueOf(falta), m.cotacao().taxas().pygVenda());
-        return new Previa(soma, (int) m.metaGuarani(), m.comissao().percentual(), falta, emReais, m.comissao().comissao(),
-                m.cotacao().dataCotacao());
+        FaltaParaMeta falta = faltaParaMeta(m.metaGuarani(), soma, m.cotacao().taxas().pygVenda());
+        return new Previa(soma, (int) m.metaGuarani(), m.comissao().percentual(), falta.guarani(), falta.reais(),
+                m.comissao().comissao(), m.cotacao().dataCotacao());
+    }
+
+    /** Quanto falta para a meta, em Guarani e em Real (só para mostrar; nunca é gravado). */
+    public record FaltaParaMeta(long guarani, BigDecimal reais) {
+    }
+
+    /**
+     * A conta do que falta para a meta, uma só para a prévia do vendedor e a da dona (§13, item 2; ADR-0012, item 5).
+     * Guarani que falta = máximo entre 0 e (meta menos a soma já vendida, cada venda convertida pela cotação da própria venda).
+     * Em Real, o ADR-0012 manda mostrar pela cotação mais recente: {@code pygVenda} é a taxa de venda do Guarani da cotação da
+     * prévia (a de hoje), e não a de cada venda; é só para mostrar. O arredondamento fica em {@link ConversaoDeMoeda}.
+     */
+    public static FaltaParaMeta faltaParaMeta(long metaGuarani, long vendidoParaMetaGuarani, BigDecimal pygVenda) {
+        long falta = Math.max(0, metaGuarani - vendidoParaMetaGuarani);
+        return new FaltaParaMeta(falta, ConversaoDeMoeda.guaraniParaReais(BigDecimal.valueOf(falta), pygVenda));
     }
 }

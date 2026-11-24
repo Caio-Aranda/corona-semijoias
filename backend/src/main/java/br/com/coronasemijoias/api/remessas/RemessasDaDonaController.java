@@ -61,23 +61,23 @@ public class RemessasDaDonaController {
         }
     }
 
-    public record RespostaDoResumo(UUID id, int version, UUID vendedorId, String vendedorNome, UUID semanaId, int semanaNumero,
+    public record RespostaDoResumo(UUID id, String codigo, int version, UUID vendedorId, String vendedorNome, UUID semanaId, int semanaNumero,
             UUID pracaId, String pracaNome, String tipo, String status, int totalPecas, BigDecimal totalValor,
             Instant criadaEm, Instant enviadaEm) {
 
         static RespostaDoResumo de(Resumo r) {
-            return new RespostaDoResumo(r.id(), r.version(), r.vendedorId(), r.vendedorNome(), r.semanaId(), r.semanaNumero(),
+            return new RespostaDoResumo(r.id(), r.codigo(), r.version(), r.vendedorId(), r.vendedorNome(), r.semanaId(), r.semanaNumero(),
                     r.pracaId(), r.pracaNome(), r.tipo(), r.status(), r.totalPecas(), r.totalValor(), r.criadaEm(), r.enviadaEm());
         }
     }
 
-    public record RespostaDaRemessa(UUID id, int version, UUID vendedorId, String vendedorNome, UUID semanaId,
+    public record RespostaDaRemessa(UUID id, String codigo, int version, UUID vendedorId, String vendedorNome, UUID semanaId,
             int semanaNumero, UUID pracaId, String pracaNome, String tipo, String status, int totalPecas,
             BigDecimal totalValor, Instant criadaEm, Instant enviadaEm, List<RespostaDoItem> itens, List<String> avisos) {
 
         static RespostaDaRemessa de(Detalhe d) {
             Resumo r = d.resumo();
-            return new RespostaDaRemessa(r.id(), r.version(), r.vendedorId(), r.vendedorNome(), r.semanaId(), r.semanaNumero(),
+            return new RespostaDaRemessa(r.id(), r.codigo(), r.version(), r.vendedorId(), r.vendedorNome(), r.semanaId(), r.semanaNumero(),
                     r.pracaId(), r.pracaNome(), r.tipo(), r.status(), r.totalPecas(), r.totalValor(), r.criadaEm(),
                     r.enviadaEm(), d.itens().stream().map(RespostaDoItem::de).toList(), d.avisos());
         }

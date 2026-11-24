@@ -195,6 +195,45 @@ describe('o pagamento', () => {
     expect(rec[0]?.id).not.toBe(rec[1]?.id);
   });
 
+  it('pagou agora em Guarani: mostra as três moedas e manda só o valor em Guarani (o sistema converte)', async () => {
+    const m = servidor(previaDoServidor(), {
+      'cotacao.hoje': () =>
+        resposta({
+          disponivel: true,
+          cotacao: { dataCotacao: '2026-11-12', dolar: '5.00000000', guarani: '0.00090000' },
+        }),
+    });
+    const u = await aberta(m);
+    await u.selectOptions(screen.getByLabelText('Moeda (Dinheiro)'), 'GUARANI');
+    await u.type(screen.getByLabelText('Dinheiro em Guarani'), '100.000');
+    // Gs. 100.000 x 0,0009 = R$ 90,00; 90 / 5 = US$ 18,00.
+    expect(await screen.findByText('US$ 18,00 · Gs. 100.000')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(
+        (
+          ultima(m, 'acertos.previaComDecisoes') as {
+            pedido: { pagamento: { recebimentos: unknown[] } };
+          }
+        ).pedido.pagamento.recebimentos,
+      ).toEqual([
+        expect.objectContaining({ forma: 'DINHEIRO', moeda: 'GUARANI', valorNaMoeda: '100000' }),
+      ]),
+    );
+    const [rec] = (
+      ultima(m, 'acertos.previaComDecisoes') as {
+        pedido: { pagamento: { recebimentos: Record<string, unknown>[] } };
+      }
+    ).pedido.pagamento.recebimentos;
+    expect(rec).not.toHaveProperty('valor');
+    expect(ehUuid(rec?.id)).toBe(true);
+  });
+
+  it('sem cotação, o pagou agora fica só em reais', async () => {
+    await aberta(servidor());
+    expect(screen.queryByLabelText('Moeda (Dinheiro)')).toBeNull();
+    expect(screen.getByLabelText('Dinheiro')).toBeInTheDocument();
+  });
+
   it('boleto pede o vencimento e só então vai ao sistema', async () => {
     const m = servidor();
     const u = await aberta(m);
@@ -213,10 +252,10 @@ describe('o pagamento', () => {
     expect(botaoFechar()).toBeEnabled();
   });
 
-  it('acerto a favor do vendedor: o padrão é guardar como crédito; "Pagar agora" pede a forma', async () => {
+  it('acerto a favor do representante: o padrão é guardar como crédito; "Pagar agora" pede a forma', async () => {
     const m = servidor(previaDoServidor({ aPagarNoAcerto: '-80.00', liquido: '-80.00' }));
     const u = await aberta(m);
-    expect(screen.getByText('A loja deve R$ 80,00 ao vendedor.')).toBeInTheDocument();
+    expect(screen.getByText('A loja deve R$ 80,00 ao representante.')).toBeInTheDocument();
     expect(
       screen.getByRole('radio', { name: 'Guardar como crédito para o próximo acerto' }),
     ).toBeChecked();
@@ -229,7 +268,7 @@ describe('o pagamento', () => {
     );
   });
 
-  it('contas antigas do vendedor podem ser pagas junto, sem entrar no valor do acerto', async () => {
+  it('contas antigas do representante podem ser pagas junto, sem entrar no valor do acerto', async () => {
     const m = servidor(
       previaDoServidor({
         contasAbertasDoVendedor: [
@@ -258,6 +297,58 @@ describe('o pagamento', () => {
     );
   });
 
+  it('conta antiga paga em Guarani: mostra as três moedas e manda só o valor em Guarani', async () => {
+    const m = servidor(
+      previaDoServidor({
+        contasAbertasDoVendedor: [
+          {
+            id: CONTA,
+            origem: 'ACERTO',
+            numero: 1,
+            totalDeParcelas: 2,
+            vencimento: '2026-11-20',
+            valor: '200.00',
+            emAberto: '150.00',
+            formaPrevista: 'PIX',
+          },
+        ],
+      }),
+      {
+        'cotacao.hoje': () =>
+          resposta({
+            disponivel: true,
+            cotacao: { dataCotacao: '2026-11-12', dolar: '5.00000000', guarani: '0.00090000' },
+          }),
+      },
+    );
+    const u = await aberta(m);
+    await u.selectOptions(screen.getByLabelText('Moeda (Pagar agora a parcela 1 de 2)'), 'GUARANI');
+    await u.type(screen.getByLabelText('Pagar agora a parcela 1 de 2 em Guarani'), '100.000');
+    expect(await screen.findByText('US$ 18,00 · Gs. 100.000')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(
+        (
+          ultima(m, 'acertos.previaComDecisoes') as {
+            pedido: { pagamento: { contasAntigas: Record<string, unknown>[] } };
+          }
+        ).pedido.pagamento.contasAntigas,
+      ).toEqual([
+        expect.objectContaining({
+          contaId: CONTA,
+          forma: 'DINHEIRO',
+          moeda: 'GUARANI',
+          valorNaMoeda: '100000',
+        }),
+      ]),
+    );
+    const [conta] = (
+      ultima(m, 'acertos.previaComDecisoes') as {
+        pedido: { pagamento: { contasAntigas: Record<string, unknown>[] } };
+      }
+    ).pedido.pagamento.contasAntigas;
+    expect(conta).not.toHaveProperty('valor');
+  });
+
   it('mostra o que o sistema calculou do pagamento: recebido, boleto e o que ficou devendo', async () => {
     await aberta(
       servidor(
@@ -278,7 +369,7 @@ describe('fechar o acerto', () => {
     const janela = await screen.findByRole('dialog');
     expect(
       within(janela).getByText(
-        'Fechar o acerto de Ana Vendedora? Depois de fechado, o acerto não muda mais.',
+        'Fechar o acerto de Ana Representante? Depois de fechado, o acerto não muda mais.',
       ),
     ).toBeInTheDocument();
     expect(chamadasDe(m, 'acertos.fechar')).toHaveLength(0);
@@ -414,7 +505,7 @@ describe('fechar o acerto', () => {
   it.each([
     [
       'PAGAMENTO_DO_ACERTO_PASSA_DO_DEVIDO',
-      'O valor pago passa do que o vendedor deve. Confira os valores.',
+      'O valor pago passa do que o representante deve. Confira os valores.',
     ],
     ['DATA_DO_RESTANTE_OBRIGATORIA', 'Escolha a data de pagamento do que ficou devendo.'],
   ])('erro %s diz o que fazer', async (codigo, texto) => {

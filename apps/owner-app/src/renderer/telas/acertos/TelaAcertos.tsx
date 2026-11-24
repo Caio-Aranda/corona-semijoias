@@ -12,8 +12,17 @@ type Passo =
   | { passo: 'ficha'; id: string; inicial: FichaDoAcerto | null };
 
 /** Acertos → Acertos: lista, começar e a ficha de cada acerto. */
-export function TelaAcertos({ ponte }: { ponte: PonteDoCorona }) {
-  const [passo, setPasso] = useState<Passo>({ passo: 'lista' });
+export function TelaAcertos({
+  ponte,
+  abrirId = null,
+}: {
+  ponte: PonteDoCorona;
+  /** Acerto pedido por outra tela (o painel da semana): abre a ficha dele. */
+  abrirId?: string | null;
+}) {
+  const [passo, setPasso] = useState<Passo>(
+    abrirId ? { passo: 'ficha', id: abrirId, inicial: null } : { passo: 'lista' },
+  );
   const [volta, setVolta] = useState(0);
   const voltarParaLista = () => {
     setVolta((v) => v + 1);

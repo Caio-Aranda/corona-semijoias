@@ -3,6 +3,7 @@
  * pendências e a configuração da comissão. Só da dona. O servidor calcula tudo (comissão, meta, totais, faltas,
  * parcelas, crédito); a tela manda só o que a pessoa decidiu ou digitou e um UUID por comando.
  */
+import type { ValorDoRecebimento } from './valor-do-recebimento';
 export const OPERACOES_DE_ACERTOS = [
   'acertos.listar',
   'acertos.iniciar',
@@ -59,10 +60,11 @@ export interface PedidoDeFechamentoDaTela {
 }
 
 export interface PagamentoDaTela {
-  recebimentos?: { id: string; forma: FormaDoPagamento; valor: string }[];
+  /** Em Real, `valor`; em Dólar ou Guarani, só `moeda` e `valorNaMoeda` (o sistema converte pela cotação do acerto). */
+  recebimentos?: ({ id: string; forma: FormaDoPagamento } & ValorDoRecebimento)[];
   boleto?: { valor: string; vencimento: string };
   restante?: { parcelas: number; primeiroVencimento: string };
-  contasAntigas?: { id: string; contaId: string; forma: FormaDoPagamento; valor: string }[];
+  contasAntigas?: ({ id: string; contaId: string; forma: FormaDoPagamento } & ValorDoRecebimento)[];
   aFavorDoVendedor?: DestinoDoAFavor;
   formaDoPagamento?: FormaDoPagamento;
 }

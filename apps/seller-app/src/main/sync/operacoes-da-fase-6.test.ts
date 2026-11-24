@@ -1305,6 +1305,10 @@ describe('devolução e troca de venda a prazo (tarefa 6.6)', () => {
       expect(contar(b.db, 'SELECT 1 FROM creditos_cliente')).toBe(0);
       expect(contar(b.db, "SELECT 1 FROM usos_credito WHERE tipo = 'USO'")).toBe(0);
       expect(somaDosPagamentos(t.venda.id)).toBe('50.00');
+      // Só o crédito de A paga B (issue 208): sem crédito, a diferença é o total de B.
+      expect(linha('SELECT diferenca FROM trocas WHERE id = ?', t.id)).toEqual({
+        diferenca: '50.00',
+      });
     });
 
     it('A paga em parte (10,00): o crédito é só o que passou do que faltava', () => {
@@ -1318,6 +1322,9 @@ describe('devolução e troca de venda a prazo (tarefa 6.6)', () => {
         valor_em_credito: '10.00',
       });
       expect(somaDosPagamentos(t.venda.id)).toBe('50.00');
+      expect(linha('SELECT diferenca FROM trocas WHERE id = ?', t.id)).toEqual({
+        diferenca: '40.00',
+      });
     });
   });
 });

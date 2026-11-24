@@ -31,7 +31,7 @@ public class ConsultasDeTrocas {
     }
 
     /**
-     * A troca. {@code diferenca} = total da venda nova menos o valor devolvido (positiva: a diferença a pagar; negativa:
+     * A troca. {@code diferenca} = total da venda nova menos o valor em crédito de A (positiva: a diferença a pagar; negativa:
      * ficou de crédito). {@code creditoEmAberto}: o que ainda sobra hoje no crédito da troca (zero se cancelada ou usada).
      */
     public record TrocaLida(UUID id, UUID vendedorId, UUID clienteId, String clienteNome, String situacao, UUID vendaOrigemId,

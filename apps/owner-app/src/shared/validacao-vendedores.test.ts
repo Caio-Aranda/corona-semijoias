@@ -7,8 +7,8 @@ const ID = '8f14e45f-ceea-4672-a1b9-3a1a0f7c4d11';
 const OUTRO = '1b4e28ba-2fa1-41d3-b9a5-2c3a9a8f6b22';
 const bytes = (n: number) => new Uint8Array(n).fill(1);
 
-describe('conferência dos dados dos vendedores', () => {
-  it('todas as operações de vendedores estão na lista fixa da ponte', () => {
+describe('conferência dos dados dos representantes', () => {
+  it('todas as operações de representantes estão na lista fixa da ponte', () => {
     for (const o of OPERACOES_DE_VENDEDORES) expect(OPERACOES_DA_API).toContain(o);
   });
 
@@ -40,7 +40,7 @@ describe('conferência dos dados dos vendedores', () => {
     }
   });
 
-  it('criar: limite como texto decimal (a comissão não é mais do vendedor), campo desconhecido recusa tudo', () => {
+  it('criar: limite como texto decimal (a comissão não é mais do representante), campo desconhecido recusa tudo', () => {
     expect(
       conferirParametros('vendedores.criar', {
         nome: 'Joana',

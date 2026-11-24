@@ -1,6 +1,141 @@
 {
   "components" : {
     "schemas" : {
+      "AcertoLido" : {
+        "properties" : {
+          "acertadoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "bruto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "comissao" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "comissaoPercentual" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "estornado" : {
+            "type" : "boolean"
+          },
+          "ficouDevendo" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "itensDv" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "itensDx" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "itensVd" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "motivoDoEstorno" : {
+            "type" : "string"
+          },
+          "pendenciasAnteriores" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "saldoDoDebito" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "semana" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totalAReceber" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "totalPago" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorDv" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorDx" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorVd" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "AlertaLido" : {
+        "properties" : {
+          "criadoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "detalhe" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "registroId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "registroTabela" : {
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "vistoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "Ambigua" : {
         "properties" : {
           "codigo" : {
@@ -14,6 +149,32 @@
               "type" : "string"
             },
             "type" : "array"
+          }
+        },
+        "type" : "object"
+      },
+      "AntigaDaPreviaDoFechamento" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
           }
         },
         "type" : "object"
@@ -267,6 +428,204 @@
         },
         "type" : "object"
       },
+      "BlocoDaPrevia" : {
+        "properties" : {
+          "comissaoPrevista" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "linhas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "liquidoPrevisto" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "semCotacao" : {
+            "type" : "boolean"
+          },
+          "vendido" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          }
+        },
+        "type" : "object"
+      },
+      "BlocoDeAcerto" : {
+        "properties" : {
+          "comissao" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "descontos" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "devolvidoALoja" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "devolvidoALojaPecas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "devolvidoPeloCliente" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "faltasCobradas" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "ficouDevendo" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "origem" : {
+            "$ref" : "#/components/schemas/OrigemDoNumero"
+          },
+          "origemDasPendencias" : {
+            "$ref" : "#/components/schemas/OrigemDoNumero"
+          },
+          "pendenciasEmAberto" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "pendenciasPagas" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "quantidade" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "recebido" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "valorDoAcerto" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "vendido" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          }
+        },
+        "type" : "object"
+      },
+      "BlocoDeMaletasDoPainel" : {
+        "properties" : {
+          "origem" : {
+            "$ref" : "#/components/schemas/OrigemDoNumero"
+          },
+          "pecas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "quantidade" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "valor" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          }
+        },
+        "type" : "object"
+      },
+      "BlocoDeTrocas" : {
+        "properties" : {
+          "creditosEmAberto" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "creditosGerados" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "creditosUsados" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "diferencaAPagar" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "ficouDeCredito" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "origemDasTrocas" : {
+            "$ref" : "#/components/schemas/OrigemDoNumero"
+          },
+          "origemDosCreditos" : {
+            "$ref" : "#/components/schemas/OrigemDoNumero"
+          },
+          "trocas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "valorDasTrocas" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          }
+        },
+        "type" : "object"
+      },
+      "BlocoDeVendas" : {
+        "properties" : {
+          "descontos" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "devolvido" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "liquido" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "origem" : {
+            "$ref" : "#/components/schemas/OrigemDoNumero"
+          },
+          "quantidade" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "vendido" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          }
+        },
+        "type" : "object"
+      },
+      "BlocoRecebido" : {
+        "properties" : {
+          "boleto" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "dinheiro" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "origem" : {
+            "$ref" : "#/components/schemas/OrigemDoNumero"
+          },
+          "total" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "transferencia" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          }
+        },
+        "type" : "object"
+      },
+      "BlocoTotal" : {
+        "properties" : {
+          "descontos" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "enviado" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "liquido" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "maletas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "pecas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "vendas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "vendido" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          }
+        },
+        "type" : "object"
+      },
       "BoletoDoAcerto" : {
         "properties" : {
           "valor" : {
@@ -290,6 +649,85 @@
           }
         },
         "required" : [ "nome" ],
+        "type" : "object"
+      },
+      "CadastroDoCliente" : {
+        "properties" : {
+          "comissaoPercentual" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "comoConheceu" : {
+            "type" : "string"
+          },
+          "documento" : {
+            "type" : "string"
+          },
+          "documentoTipo" : {
+            "type" : "string"
+          },
+          "endereco" : {
+            "type" : "string"
+          },
+          "indicadoPor" : {
+            "type" : "string"
+          },
+          "representante" : {
+            "type" : "string"
+          },
+          "telefone" : {
+            "type" : "string"
+          },
+          "temFoto" : {
+            "type" : "boolean"
+          },
+          "temFotoDoDocumentoFrente" : {
+            "type" : "boolean"
+          },
+          "temFotoDoDocumentoVerso" : {
+            "type" : "boolean"
+          },
+          "whatsapp" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "CalculoDaComissaoLinha" : {
+        "properties" : {
+          "base" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "eventoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "percentual" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "tipo" : {
+            "enum" : [ "COMISSAO", "ESTORNO" ],
+            "type" : "string"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
         "type" : "object"
       },
       "Campo" : {
@@ -367,6 +805,17 @@
       },
       "ClientesDaDonaControllerPedido" : {
         "properties" : {
+          "comissaoPercentual" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "comoConheceu" : {
+            "maxLength" : 500,
+            "minLength" : 0,
+            "type" : "string"
+          },
           "cpf" : {
             "maxLength" : 20,
             "minLength" : 0,
@@ -376,11 +825,30 @@
             "format" : "date",
             "type" : "string"
           },
+          "documento" : {
+            "maxLength" : 40,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "documentoTipo" : {
+            "maxLength" : 10,
+            "minLength" : 0,
+            "type" : "string"
+          },
           "endereco" : {
             "$ref" : "#/components/schemas/Endereco"
           },
           "id" : {
             "format" : "uuid",
+            "type" : "string"
+          },
+          "indicadoPorClienteId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "indicadoPorNome" : {
+            "maxLength" : 200,
+            "minLength" : 0,
             "type" : "string"
           },
           "nome" : {
@@ -420,6 +888,15 @@
           "ativo" : {
             "type" : "boolean"
           },
+          "comissaoPercentual" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "comoConheceu" : {
+            "type" : "string"
+          },
           "cpf" : {
             "type" : "string"
           },
@@ -427,11 +904,24 @@
             "format" : "date",
             "type" : "string"
           },
+          "documento" : {
+            "type" : "string"
+          },
+          "documentoTipo" : {
+            "type" : "string"
+          },
           "endereco" : {
             "$ref" : "#/components/schemas/Endereco"
           },
           "id" : {
             "format" : "uuid",
+            "type" : "string"
+          },
+          "indicadoPorClienteId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "indicadoPorNome" : {
             "type" : "string"
           },
           "nome" : {
@@ -633,7 +1123,7 @@
           },
           "divergencias" : {
             "items" : {
-              "$ref" : "#/components/schemas/Diferenca"
+              "$ref" : "#/components/schemas/ConciliacoesDaFase7Diferenca"
             },
             "type" : "array"
           },
@@ -646,7 +1136,56 @@
         },
         "type" : "object"
       },
+      "ConciliacoesDaFase7Diferenca" : {
+        "properties" : {
+          "descricao" : {
+            "type" : "string"
+          },
+          "encontrado" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "esperado" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "referencia" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "unidade" : {
+            "enum" : [ "REAIS", "PECAS", "REGISTROS", "PERCENTUAL" ],
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "ConciliacoesDaFase7Resultado" : {
+        "properties" : {
+          "conferencias" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ConciliacoesDaFase7Conferencia"
+            },
+            "type" : "array"
+          },
+          "geradaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "tudoCerto" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ConciliacoesDoConsignadoResultado" : {
         "properties" : {
           "conferencias" : {
             "items" : {
@@ -789,6 +1328,69 @@
           "remessaId" : {
             "format" : "uuid",
             "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ConsultasDaConferenciaDiariaDiferenca" : {
+        "properties" : {
+          "descricao" : {
+            "type" : "string"
+          },
+          "encontrado" : {
+            "type" : "string"
+          },
+          "esperado" : {
+            "type" : "string"
+          },
+          "item" : {
+            "type" : "string"
+          },
+          "referencia" : {
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "unidade" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ConsultasDaConferenciaDiariaGrupo" : {
+        "properties" : {
+          "chave" : {
+            "type" : "string"
+          },
+          "diferencas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ConsultasDaConferenciaDiariaDiferenca"
+            },
+            "type" : "array"
+          }
+        },
+        "type" : "object"
+      },
+      "ConsultasDaConferenciaDiariaPagina" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Rodada"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
           }
         },
         "type" : "object"
@@ -1442,6 +2044,151 @@
         },
         "type" : "object"
       },
+      "ConsultasDoPainelSemanalLinhaDoPedido" : {
+        "properties" : {
+          "acertoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "comissao" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "dataDaCotacao" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "dataDoAcerto" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "devolvido" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "devolvidoPecas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "emFaltaPecas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "enviado" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "enviadoPecas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "liquido" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          },
+          "maletas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/MaletaDaLinha"
+            },
+            "type" : "array"
+          },
+          "percentualComissao" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "praca" : {
+            "type" : "string"
+          },
+          "pracaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "previa" : {
+            "type" : "boolean"
+          },
+          "semCotacao" : {
+            "type" : "boolean"
+          },
+          "situacao" : {
+            "type" : "string"
+          },
+          "vendedor" : {
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "vendidasPecas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "vendidoLiquido" : {
+            "$ref" : "#/components/schemas/ValorEmMoedas"
+          }
+        },
+        "type" : "object"
+      },
+      "ConsultasDoResultadoResultado" : {
+        "properties" : {
+          "ate" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "de" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "linhas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDoResultado"
+            },
+            "type" : "array"
+          },
+          "pecasComCustoDoCadastro" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "ContaAbertaNaPrevia" : {
+        "properties" : {
+          "emAberto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "formaPrevista" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "numero" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "origem" : {
+            "type" : "string"
+          },
+          "totalDeParcelas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vencimento" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "ContaAntigaPaga" : {
         "properties" : {
           "contaId" : {
@@ -1455,7 +2202,16 @@
             "format" : "uuid",
             "type" : "string"
           },
+          "moeda" : {
+            "type" : "string"
+          },
           "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorNaMoeda" : {
             "example" : "123.45",
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
@@ -1698,6 +2454,15 @@
             "example" : "123.45",
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "CotacaoDaPrevia" : {
+        "properties" : {
+          "data" : {
+            "format" : "date",
             "type" : "string"
           }
         },
@@ -1984,6 +2749,44 @@
         },
         "type" : "object"
       },
+      "DefeitoDaPreviaDoFechamento" : {
+        "properties" : {
+          "contadoDefeito" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "produto" : {
+            "$ref" : "#/components/schemas/ProdutoDaPreviaDoFechamento"
+          }
+        },
+        "type" : "object"
+      },
+      "DetalheDaNota" : {
+        "properties" : {
+          "acertos" : {
+            "items" : {
+              "$ref" : "#/components/schemas/AcertoLido"
+            },
+            "type" : "array"
+          },
+          "linhas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDaNotaLida"
+            },
+            "type" : "array"
+          },
+          "nota" : {
+            "$ref" : "#/components/schemas/NotaResumo"
+          },
+          "recibos" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ReciboLido"
+            },
+            "type" : "array"
+          }
+        },
+        "type" : "object"
+      },
       "Devolucao" : {
         "properties" : {
           "autorizacaoId" : {
@@ -2115,37 +2918,6 @@
       "DevolucoesDaDonaControllerPedidoDeRevisao" : {
         "properties" : {
           "observacao" : {
-            "type" : "string"
-          }
-        },
-        "type" : "object"
-      },
-      "Diferenca" : {
-        "properties" : {
-          "descricao" : {
-            "type" : "string"
-          },
-          "encontrado" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          },
-          "esperado" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          },
-          "referencia" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "tipo" : {
-            "type" : "string"
-          },
-          "unidade" : {
-            "enum" : [ "REAIS", "PECAS", "REGISTROS", "PERCENTUAL" ],
             "type" : "string"
           }
         },
@@ -2483,6 +3255,28 @@
         },
         "type" : "object"
       },
+      "EventoDaPreviaDoFechamento" : {
+        "properties" : {
+          "origemId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "EventoFechado" : {
         "properties" : {
           "origemId" : {
@@ -2540,6 +3334,31 @@
             "type" : "string"
           },
           "saldoFinal" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "FaltaDaPreviaDoFechamento" : {
+        "properties" : {
+          "produto" : {
+            "$ref" : "#/components/schemas/ProdutoDaPreviaDoFechamento"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "remessaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "valor" : {
             "example" : "123.45",
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
@@ -2758,6 +3577,20 @@
             "type" : "string"
           },
           "vendedorNome" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "FormaPaga" : {
+        "properties" : {
+          "forma" : {
+            "type" : "string"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           }
         },
@@ -3112,37 +3945,6 @@
         },
         "type" : "object"
       },
-      "ItemDaNota" : {
-        "properties" : {
-          "codigo" : {
-            "type" : "string"
-          },
-          "nome" : {
-            "type" : "string"
-          },
-          "precoRemessa" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          },
-          "produtoId" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "quantidade" : {
-            "format" : "int32",
-            "type" : "integer"
-          },
-          "subtotal" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          }
-        },
-        "type" : "object"
-      },
       "ItemFechado" : {
         "properties" : {
           "contadoBoa" : {
@@ -3294,6 +4096,38 @@
         },
         "type" : "object"
       },
+      "LeituraDoFechamento" : {
+        "properties" : {
+          "codigoDaMaleta" : {
+            "type" : "string"
+          },
+          "concluidoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "iniciadoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "pecas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDaPeca"
+            },
+            "type" : "array"
+          },
+          "remessaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "situacaoDoFechamento" : {
+            "type" : "string"
+          },
+          "valores" : {
+            "$ref" : "#/components/schemas/Valores"
+          }
+        },
+        "type" : "object"
+      },
       "LinhaAbaixoDoMinimo" : {
         "properties" : {
           "ativo" : {
@@ -3330,6 +4164,192 @@
             "type" : "string"
           },
           "saldo" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "LinhaDaAuditoria" : {
+        "properties" : {
+          "acao" : {
+            "type" : "string"
+          },
+          "antes" : {
+            "type" : "string"
+          },
+          "area" : {
+            "type" : "string"
+          },
+          "depois" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "oQueFoi" : {
+            "type" : "string"
+          },
+          "ocorridaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "origem" : {
+            "type" : "string"
+          },
+          "quem" : {
+            "type" : "string"
+          },
+          "registroId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "tabela" : {
+            "type" : "string"
+          },
+          "usuarioId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "LinhaDaCurva" : {
+        "properties" : {
+          "categoria" : {
+            "type" : "string"
+          },
+          "classe" : {
+            "type" : "string"
+          },
+          "codigo" : {
+            "type" : "string"
+          },
+          "fotoPrincipalHash" : {
+            "type" : "string"
+          },
+          "liquido" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "liquidoEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "liquidoEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "pecas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "percentual" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "percentualAcumulado" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "posicao" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "referencia" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "LinhaDaNotaLida" : {
+        "properties" : {
+          "dx" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "precoUnitario" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "produto" : {
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "remessaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "LinhaDaPeca" : {
+        "properties" : {
+          "aindaComClientes" : {
+            "items" : {
+              "$ref" : "#/components/schemas/PecaComCliente"
+            },
+            "type" : "array"
+          },
+          "bipadas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "comClientes" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "devolvidasALoja" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "devolvidasPelosClientes" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "diferenca" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "enviadas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "esperadoNaMaleta" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "vendidas" : {
             "format" : "int32",
             "type" : "integer"
           }
@@ -4528,6 +5548,212 @@
         },
         "type" : "object"
       },
+      "LinhaDeLucroDoProduto" : {
+        "properties" : {
+          "categoria" : {
+            "type" : "string"
+          },
+          "codigo" : {
+            "type" : "string"
+          },
+          "custo" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "custoDoCadastro" : {
+            "type" : "boolean"
+          },
+          "custoEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "custoEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "fotoPrincipalHash" : {
+            "type" : "string"
+          },
+          "lucro" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "lucroEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "lucroEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "margem" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "pecas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "posicao" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "receita" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "receitaEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "receitaEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "LinhaDeLucroDoVendedor" : {
+        "properties" : {
+          "comissao" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "comissaoEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "comissaoEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "custo" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "custoDoCadastro" : {
+            "type" : "boolean"
+          },
+          "custoEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "custoEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "lucro" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "lucroBruto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "lucroBrutoEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "lucroBrutoEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "lucroEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "lucroEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "margem" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "praca" : {
+            "type" : "string"
+          },
+          "receita" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "receitaEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "receitaEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendedor" : {
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "LinhaDeMaletaEmAberto" : {
         "properties" : {
           "atrasada" : {
@@ -4944,6 +6170,9 @@
             "format" : "uuid",
             "type" : "string"
           },
+          "moeda" : {
+            "type" : "string"
+          },
           "momento" : {
             "type" : "string"
           },
@@ -4967,6 +6196,12 @@
             "type" : "string"
           },
           "valorEmReais" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorNaMoeda" : {
             "example" : "123.45",
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
@@ -5324,6 +6559,377 @@
         },
         "type" : "object"
       },
+      "LinhaDeVenda" : {
+        "properties" : {
+          "cancelada" : {
+            "type" : "boolean"
+          },
+          "cliente" : {
+            "type" : "string"
+          },
+          "clienteId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "dataDaCotacao" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "devolvido" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "devolvidoEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "devolvidoEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "estornadaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "estornadaPor" : {
+            "type" : "string"
+          },
+          "liquido" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "liquidoEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "liquidoEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "motivoDoEstorno" : {
+            "type" : "string"
+          },
+          "pecas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "praca" : {
+            "type" : "string"
+          },
+          "situacao" : {
+            "type" : "string"
+          },
+          "vendaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "vendedor" : {
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "vendidaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "vendido" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendidoEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendidoEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "LinhaDeVendido" : {
+        "properties" : {
+          "chave" : {
+            "type" : "string"
+          },
+          "codigo" : {
+            "type" : "string"
+          },
+          "detalhe" : {
+            "type" : "string"
+          },
+          "devolvido" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "devolvidoEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "devolvidoEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "fotoPrincipalHash" : {
+            "type" : "string"
+          },
+          "liquido" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "liquidoEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "liquidoEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "pecas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "posicao" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "ticketMedio" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "vendido" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendidoEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendidoEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "LinhaDoAcesso" : {
+        "properties" : {
+          "aplicativo" : {
+            "type" : "string"
+          },
+          "bloqueadoAte" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "ip" : {
+            "type" : "string"
+          },
+          "ipBloqueadoAte" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "login" : {
+            "type" : "string"
+          },
+          "ocorridaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "pessoa" : {
+            "type" : "string"
+          },
+          "resultado" : {
+            "type" : "string"
+          },
+          "resultadoNaTela" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "LinhaDoComputador" : {
+        "properties" : {
+          "aguardandoEnvio" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "emQuarentena" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "enviosComProblema" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "primeiroContatoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "situacao" : {
+            "type" : "string"
+          },
+          "situacaoNaTela" : {
+            "type" : "string"
+          },
+          "ultimoContatoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "ultimoEnvioEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "ultimoRecebimentoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "vendedor" : {
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "versaoApp" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "LinhaDoFechamento" : {
+        "properties" : {
+          "bipadas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "comClientes" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "comQuem" : {
+            "type" : "string"
+          },
+          "devolvidasPelosClientes" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "diferenca" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "enviadas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "esperadoNaMaleta" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "vendidas" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "LinhaDoResultado" : {
+        "properties" : {
+          "categoriaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "chave" : {
+            "type" : "string"
+          },
+          "operacao" : {
+            "type" : "string"
+          },
+          "titulo" : {
+            "type" : "string"
+          },
+          "valorEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorEmReais" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "LinhaPorVendedor" : {
         "properties" : {
           "acimaDoLimite" : {
@@ -5534,6 +7140,24 @@
         },
         "type" : "object"
       },
+      "MaletaDaLinha" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "numero" : {
+            "type" : "string"
+          },
+          "situacao" : {
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "MeiDoVendedorDados" : {
         "properties" : {
           "atividade" : {
@@ -5567,10 +7191,34 @@
         },
         "type" : "object"
       },
+      "NaoAceitaDaPreviaDoFechamento" : {
+        "properties" : {
+          "origemId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "origemTipo" : {
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "NotaDeRemessa" : {
         "properties" : {
           "cancelada" : {
             "type" : "boolean"
+          },
+          "codigo" : {
+            "type" : "string"
           },
           "cotacao" : {
             "$ref" : "#/components/schemas/CotacaoDaNota"
@@ -5581,7 +7229,7 @@
           },
           "itens" : {
             "items" : {
-              "$ref" : "#/components/schemas/ItemDaNota"
+              "$ref" : "#/components/schemas/NotaDeRemessaControllerItemDaNota"
             },
             "type" : "array"
           },
@@ -5626,6 +7274,40 @@
         },
         "type" : "object"
       },
+      "NotaDeRemessaControllerItemDaNota" : {
+        "properties" : {
+          "codigo" : {
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "precoRemessa" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "subtotal" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "tamTon" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "NotaDeRemessaControllerSemana" : {
         "properties" : {
           "fim" : {
@@ -5647,6 +7329,62 @@
         },
         "type" : "object"
       },
+      "NotaResumo" : {
+        "properties" : {
+          "cliente" : {
+            "type" : "string"
+          },
+          "clienteId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "dataCobranca" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "itensDx" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "numero" : {
+            "type" : "string"
+          },
+          "saidaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "semana" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "semanaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "sequencia" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "situacao" : {
+            "type" : "string"
+          },
+          "valorDx" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "ObservacaoDoVendedorDados" : {
         "properties" : {
           "texto" : {
@@ -5657,6 +7395,20 @@
           "version" : {
             "format" : "int32",
             "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "OrigemDoNumero" : {
+        "properties" : {
+          "filtros" : {
+            "additionalProperties" : {
+              "type" : "string"
+            },
+            "type" : "object"
+          },
+          "rota" : {
+            "type" : "string"
           }
         },
         "type" : "object"
@@ -6136,6 +7888,32 @@
         },
         "type" : "object"
       },
+      "PainelDaSemana" : {
+        "properties" : {
+          "avisoDaPrevia" : {
+            "type" : "string"
+          },
+          "cotacaoDaPrevia" : {
+            "$ref" : "#/components/schemas/CotacaoDaPrevia"
+          },
+          "pedidos" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ConsultasDoPainelSemanalLinhaDoPedido"
+            },
+            "type" : "array"
+          },
+          "previaIncluiSemanasAnteriores" : {
+            "type" : "boolean"
+          },
+          "semana" : {
+            "$ref" : "#/components/schemas/SemanaDoPainel"
+          },
+          "totais" : {
+            "$ref" : "#/components/schemas/TotaisDoPainel"
+          }
+        },
+        "type" : "object"
+      },
       "ParcelaDaVenda" : {
         "properties" : {
           "emAberto" : {
@@ -6182,6 +7960,115 @@
           },
           "vencimento" : {
             "format" : "date",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ParcelaDoRestanteDaPrevia" : {
+        "properties" : {
+          "numero" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vencimento" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "PecaComCliente" : {
+        "properties" : {
+          "cliente" : {
+            "type" : "string"
+          },
+          "clienteId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "dataCobranca" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "notaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "semana" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "sequencia" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PecaComClienteLida" : {
+        "properties" : {
+          "notaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "produto" : {
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "remessaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "PecaDaPreviaDoFechamento" : {
+        "properties" : {
+          "contadoBoa" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "contadoDefeito" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "esperado" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "falta" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "produto" : {
+            "$ref" : "#/components/schemas/ProdutoDaPreviaDoFechamento"
+          },
+          "remessaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "valorDaFalta" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           }
         },
@@ -6415,6 +8302,15 @@
         "required" : [ "codigo", "tipo" ],
         "type" : "object"
       },
+      "PedidoDeConferenciaDiaria" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "PedidoDeContagem" : {
         "properties" : {
           "codigo" : {
@@ -6642,6 +8538,17 @@
         },
         "type" : "object"
       },
+      "PedidoDeLeituras" : {
+        "properties" : {
+          "leituras" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ServicoDoFechamentoDaMaletaLeitura"
+            },
+            "type" : "array"
+          }
+        },
+        "type" : "object"
+      },
       "PedidoDeLinha" : {
         "properties" : {
           "motivo" : {
@@ -6809,6 +8716,11 @@
           },
           "referencia" : {
             "maxLength" : 100,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "tamTon" : {
+            "maxLength" : 30,
             "minLength" : 0,
             "type" : "string"
           },
@@ -7165,6 +9077,221 @@
         },
         "type" : "object"
       },
+      "PreviaDoFechamento" : {
+        "properties" : {
+          "aPagarNoAcerto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "acertoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "boleto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "comissao" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "comissoes" : {
+            "items" : {
+              "$ref" : "#/components/schemas/CalculoDaComissaoLinha"
+            },
+            "type" : "array"
+          },
+          "contasAbertasDoVendedor" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ContaAbertaNaPrevia"
+            },
+            "type" : "array"
+          },
+          "cotacaoData" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "cotacaoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "creditoDisponivel" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "creditoUsado" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "defeitos" : {
+            "items" : {
+              "$ref" : "#/components/schemas/DefeitoDaPreviaDoFechamento"
+            },
+            "type" : "array"
+          },
+          "descontos" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "devolvido" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "eventos" : {
+            "items" : {
+              "$ref" : "#/components/schemas/EventoDaPreviaDoFechamento"
+            },
+            "type" : "array"
+          },
+          "faltaParaMetaGuarani" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "faltaParaMetaReais" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "faltas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/FaltaDaPreviaDoFechamento"
+            },
+            "type" : "array"
+          },
+          "faltasCobradas" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "ficouDevendo" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/PecaDaPreviaDoFechamento"
+            },
+            "type" : "array"
+          },
+          "liquido" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "metaGuarani" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "naoAceitas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/NaoAceitaDaPreviaDoFechamento"
+            },
+            "type" : "array"
+          },
+          "pagoAoVendedor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "parcelasDoRestante" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ParcelaDoRestanteDaPrevia"
+            },
+            "type" : "array"
+          },
+          "pendenciasAntigas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/AntigaDaPreviaDoFechamento"
+            },
+            "type" : "array"
+          },
+          "percentualComissao" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "podeFechar" : {
+            "type" : "boolean"
+          },
+          "recebidoNoAcerto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "restanteSemData" : {
+            "type" : "boolean"
+          },
+          "revisoesPendentes" : {
+            "items" : {
+              "$ref" : "#/components/schemas/RevisaoDaPreviaDoFechamento"
+            },
+            "type" : "array"
+          },
+          "sobras" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Sobra"
+            },
+            "type" : "array"
+          },
+          "vendidoBruto" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendidoLiquido" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendidoParaMetaGuarani" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "ProdutoDaPreviaDoFechamento" : {
+        "properties" : {
+          "codigo" : {
+            "type" : "string"
+          },
+          "fotoHash" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "ProdutoSemFoto" : {
         "properties" : {
           "codigoPrincipal" : {
@@ -7236,6 +9363,9 @@
           "referencia" : {
             "type" : "string"
           },
+          "tamTon" : {
+            "type" : "string"
+          },
           "vendedoresEmMaletas" : {
             "items" : {
               "$ref" : "#/components/schemas/PecasEmMaletasDoVendedor"
@@ -7289,6 +9419,16 @@
             },
             "type" : "array"
           },
+          "dataCotacao" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "dolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
           "estornaId" : {
             "format" : "uuid",
             "type" : "string"
@@ -7299,8 +9439,17 @@
           "forma" : {
             "type" : "string"
           },
+          "guarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
           "id" : {
             "format" : "uuid",
+            "type" : "string"
+          },
+          "moeda" : {
             "type" : "string"
           },
           "momento" : {
@@ -7314,6 +9463,12 @@
             "type" : "string"
           },
           "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorNaMoeda" : {
             "example" : "123.45",
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
@@ -7348,11 +9503,20 @@
             "format" : "uuid",
             "type" : "string"
           },
+          "moeda" : {
+            "type" : "string"
+          },
           "recebidoEm" : {
             "format" : "date-time",
             "type" : "string"
           },
           "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorNaMoeda" : {
             "example" : "123.45",
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
@@ -7370,7 +9534,62 @@
             "format" : "uuid",
             "type" : "string"
           },
+          "moeda" : {
+            "type" : "string"
+          },
           "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorNaMoeda" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ReciboLido" : {
+        "properties" : {
+          "aAplicar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "acertoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "estornado" : {
+            "type" : "boolean"
+          },
+          "formas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/FormaPaga"
+            },
+            "type" : "array"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "pagoEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "semana" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "sequencia" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "total" : {
             "example" : "123.45",
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
@@ -7430,6 +9649,59 @@
           "version" : {
             "format" : "int32",
             "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RegistroDoResultado" : {
+        "properties" : {
+          "custoDoCadastro" : {
+            "type" : "boolean"
+          },
+          "custoUnitario" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "data" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "descricao" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "produto" : {
+            "type" : "string"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "valorEmDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorEmGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorEmReais" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendedor" : {
+            "type" : "string"
           }
         },
         "type" : "object"
@@ -7567,6 +9839,70 @@
           "itens" : {
             "items" : {
               "$ref" : "#/components/schemas/LinhaAbaixoDoMinimo"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatorioDeCadastroLinhaDaAuditoria" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDaAuditoria"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatorioDeCadastroLinhaDaCurva" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDaCurva"
             },
             "type" : "array"
           },
@@ -8170,6 +10506,70 @@
         },
         "type" : "object"
       },
+      "RelatorioDeCadastroLinhaDeLucroDoProduto" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDeLucroDoProduto"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatorioDeCadastroLinhaDeLucroDoVendedor" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDeLucroDoVendedor"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "RelatorioDeCadastroLinhaDeMaletaEmAberto" : {
         "properties" : {
           "itens" : {
@@ -8554,6 +10954,166 @@
         },
         "type" : "object"
       },
+      "RelatorioDeCadastroLinhaDeVenda" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDeVenda"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatorioDeCadastroLinhaDeVendido" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDeVendido"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatorioDeCadastroLinhaDoAcesso" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDoAcesso"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatorioDeCadastroLinhaDoComputador" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDoComputador"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatorioDeCadastroLinhaDoFechamento" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/LinhaDoFechamento"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "RelatorioDeCadastroLinhaPorVendedor" : {
         "properties" : {
           "itens" : {
@@ -8591,6 +11151,38 @@
           "itens" : {
             "items" : {
               "$ref" : "#/components/schemas/LinhaSemCodigoDeBarras"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recorte" : {
+            "type" : "string"
+          },
+          "tamanho" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totais" : {
+            "items" : {
+              "$ref" : "#/components/schemas/Total"
+            },
+            "type" : "array"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RelatorioDeCadastroRegistroDoResultado" : {
+        "properties" : {
+          "itens" : {
+            "items" : {
+              "$ref" : "#/components/schemas/RegistroDoResultado"
             },
             "type" : "array"
           },
@@ -8701,6 +11293,9 @@
       },
       "RemessasDaDonaControllerRespostaDoResumo" : {
         "properties" : {
+          "codigo" : {
+            "type" : "string"
+          },
           "criadaEm" : {
             "format" : "date-time",
             "type" : "string"
@@ -9180,6 +11775,9 @@
             },
             "type" : "array"
           },
+          "codigo" : {
+            "type" : "string"
+          },
           "criadaEm" : {
             "format" : "date-time",
             "type" : "string"
@@ -9237,6 +11835,15 @@
             "type" : "string"
           },
           "version" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RespostaDasLeituras" : {
+        "properties" : {
+          "novas" : {
             "format" : "int32",
             "type" : "integer"
           }
@@ -9353,6 +11960,15 @@
           },
           "produto" : {
             "$ref" : "#/components/schemas/ComprasDaDonaControllerRespostaDaPeca"
+          }
+        },
+        "type" : "object"
+      },
+      "RespostaDoInicio" : {
+        "properties" : {
+          "fechamentoId" : {
+            "format" : "uuid",
+            "type" : "string"
           }
         },
         "type" : "object"
@@ -9524,6 +12140,74 @@
         },
         "type" : "object"
       },
+      "RevisaoDaPreviaDoFechamento" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "Rodada" : {
+        "properties" : {
+          "chavesComFalha" : {
+            "items" : {
+              "type" : "string"
+            },
+            "type" : "array"
+          },
+          "chavesConferidas" : {
+            "items" : {
+              "type" : "string"
+            },
+            "type" : "array"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "iniciadaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "origem" : {
+            "type" : "string"
+          },
+          "pedidaPor" : {
+            "type" : "string"
+          },
+          "situacao" : {
+            "type" : "string"
+          },
+          "terminadaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "totalDiferencas" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RodadaComDiferencas" : {
+        "properties" : {
+          "grupos" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ConsultasDaConferenciaDiariaGrupo"
+            },
+            "type" : "array"
+          },
+          "rodada" : {
+            "$ref" : "#/components/schemas/Rodada"
+          }
+        },
+        "type" : "object"
+      },
       "SemProduto" : {
         "properties" : {
           "codigo" : {
@@ -9533,6 +12217,86 @@
             "type" : "string"
           },
           "nome" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "SemanaDoPainel" : {
+        "properties" : {
+          "fim" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "inicio" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "numero" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "situacao" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "SemanaDoRepresentante" : {
+        "properties" : {
+          "abertaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "comissao" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "fechadaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "notas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "numero" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "recebido" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "situacao" : {
+            "type" : "string"
+          },
+          "valorDx" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorVd" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
             "type" : "string"
           }
         },
@@ -9691,6 +12455,10 @@
             "format" : "uuid",
             "type" : "string"
           },
+          "cotacaoData" : {
+            "format" : "date",
+            "type" : "string"
+          },
           "forma" : {
             "type" : "string"
           },
@@ -9698,7 +12466,16 @@
             "format" : "uuid",
             "type" : "string"
           },
+          "moeda" : {
+            "type" : "string"
+          },
           "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorNaMoeda" : {
             "example" : "123.45",
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
@@ -9711,11 +12488,138 @@
         },
         "type" : "object"
       },
+      "ServicoDoFechamentoDaMaletaConvertido" : {
+        "properties" : {
+          "dolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "guarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "real" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ServicoDoFechamentoDaMaletaLeitura" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "SituacaoDoCliente" : {
+        "properties" : {
+          "cadastro" : {
+            "$ref" : "#/components/schemas/CadastroDoCliente"
+          },
+          "clienteId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "notas" : {
+            "items" : {
+              "$ref" : "#/components/schemas/NotaResumo"
+            },
+            "type" : "array"
+          },
+          "pecasComEle" : {
+            "items" : {
+              "$ref" : "#/components/schemas/PecaComClienteLida"
+            },
+            "type" : "array"
+          },
+          "pendencia" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "Sobra" : {
+        "properties" : {
+          "contado" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "esperado" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "TelasDoGestao" : {
+        "properties" : {
+          "acertoDoVendedorVisivel" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
       "Tempo" : {
         "properties" : {
           "instante" : {
             "format" : "date-time",
             "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "TotaisDoPainel" : {
+        "properties" : {
+          "acerto" : {
+            "$ref" : "#/components/schemas/BlocoDeAcerto"
+          },
+          "novasMaletas" : {
+            "$ref" : "#/components/schemas/BlocoDeMaletasDoPainel"
+          },
+          "previa" : {
+            "$ref" : "#/components/schemas/BlocoDaPrevia"
+          },
+          "recebidoNoAcerto" : {
+            "$ref" : "#/components/schemas/BlocoRecebido"
+          },
+          "reposicoes" : {
+            "$ref" : "#/components/schemas/BlocoDeMaletasDoPainel"
+          },
+          "total" : {
+            "$ref" : "#/components/schemas/BlocoTotal"
+          },
+          "trocas" : {
+            "$ref" : "#/components/schemas/BlocoDeTrocas"
+          },
+          "vendas" : {
+            "$ref" : "#/components/schemas/BlocoDeVendas"
           }
         },
         "type" : "object"
@@ -9977,6 +12881,29 @@
         },
         "type" : "object"
       },
+      "ValorEmMoedas" : {
+        "properties" : {
+          "emDolar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "emGuarani" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "emReais" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "ValorSubstituido" : {
         "properties" : {
           "campos" : {
@@ -10002,6 +12929,47 @@
           },
           "quemMudou" : {
             "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "Valores" : {
+        "properties" : {
+          "comissaoConvertida" : {
+            "$ref" : "#/components/schemas/ServicoDoFechamentoDaMaletaConvertido"
+          },
+          "comissaoDosClientes" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "pendenciasAReceber" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "pendenciasConvertidas" : {
+            "$ref" : "#/components/schemas/ServicoDoFechamentoDaMaletaConvertido"
+          },
+          "recebido" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "recebidoConvertido" : {
+            "$ref" : "#/components/schemas/ServicoDoFechamentoDaMaletaConvertido"
+          },
+          "vd" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vdConvertido" : {
+            "$ref" : "#/components/schemas/ServicoDoFechamentoDaMaletaConvertido"
           }
         },
         "type" : "object"
@@ -10473,6 +13441,261 @@
         "tags" : [ "autenticacao-controller" ]
       }
     },
+    "/api/clientes/{id}/fotos/{tipo}" : {
+      "get" : {
+        "operationId" : "baixarFotoDoCliente",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "path",
+          "name" : "tipo",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "format" : "byte",
+                  "type" : "string"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Baixar a foto de um cliente (dona)",
+        "tags" : [ "fotos-dos-clientes-controller" ]
+      }
+    },
+    "/api/configuracoes/telas" : {
+      "get" : {
+        "description" : "acertoDoVendedorVisivel = falso (padrão) esconde Acertos, Comissão por meta, Pendências do acerto e a semana da dona (§7.4). As rotas e os dados continuam; nada é apagado.",
+        "operationId" : "lerTelasDoGestao",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TelasDoGestao"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "O que o Corona Gestão mostra",
+        "tags" : [ "consignado-da-dona-controller" ]
+      }
+    },
+    "/api/consignado/clientes/{id}/situacao" : {
+      "get" : {
+        "description" : "Quanto deve, as notas dele e as peças que estão com ele agora.",
+        "operationId" : "verSituacaoDoClienteDoConsignado",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SituacaoDoCliente"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Situação do cliente",
+        "tags" : [ "consignado-da-dona-controller" ]
+      }
+    },
+    "/api/consignado/notas" : {
+      "get" : {
+        "description" : "Filtros opcionais: representante, semana, situação (EM_ABERTO, PENDENTE, FECHADO, REMARCADO), cliente e texto (nome do cliente ou número da nota). Até 200, das mais novas.",
+        "operationId" : "listarNotasDoConsignado",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "semanaId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "clienteId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "texto",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/NotaResumo"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Notas do consignado",
+        "tags" : [ "consignado-da-dona-controller" ]
+      }
+    },
+    "/api/consignado/notas/{id}" : {
+      "get" : {
+        "operationId" : "verNotaDoConsignado",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DetalheDaNota"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Detalhe da nota: linhas, acertos e recibos",
+        "tags" : [ "consignado-da-dona-controller" ]
+      }
+    },
+    "/api/consignado/semanas/{semanaId}" : {
+      "get" : {
+        "operationId" : "verSemanaDoRepresentante",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "semanaId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SemanaDoRepresentante"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Uma semana do representante (totais da semana)",
+        "tags" : [ "consignado-da-dona-controller" ]
+      }
+    },
+    "/api/consignado/vendedores/{vendedorId}/semanas" : {
+      "get" : {
+        "operationId" : "listarSemanasDoRepresentante",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "vendedorId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/SemanaDoRepresentante"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Semanas de um representante, com os totais",
+        "tags" : [ "consignado-da-dona-controller" ]
+      }
+    },
     "/api/dona/acertos" : {
       "get" : {
         "description" : "Do mais novo para o mais antigo. Filtros opcionais: vendedor, semana e situação (EM_ACERTO, ACERTADO ou DESISTIDO).",
@@ -10630,7 +13853,7 @@
     },
     "/api/dona/acertos/{id}/fechamento" : {
       "get" : {
-        "description" : "Nada é gravado: esperado x contado por peça e maleta, sobras, faltas com valor, defeitos, eventos que vão entrar, devoluções em revisão (impedem), o que não foi aceito, pendências antigas, a comissão por venda, a soma da meta em Guarani, o percentual, os totais e a cotação. Com o acerto já fechado, devolve o que foi gravado. Assume cobrar as faltas no acerto e não aprovar defeito; para outras decisões, use a prévia com decisões.",
+        "description" : "Nada é gravado: esperado x contado por peça e maleta, sobras, faltas com valor, defeitos, eventos que vão entrar, devoluções em revisão (impedem), o que não foi aceito, pendências antigas, a comissão por venda, a soma da meta em Guarani, quanto falta para a meta (em Guarani e em Real, pela cotação mais recente), o percentual, os totais e a cotação. Com o acerto em andamento, devolve a prévia (PreviaDoFechamento); com o acerto já fechado, devolve o que foi gravado (Fechamento), que não traz o que falta para a meta. Assume cobrar as faltas no acerto e não aprovar defeito; para outras decisões, use a prévia com decisões.",
         "operationId" : "previaDoFechamento",
         "parameters" : [ {
           "in" : "path",
@@ -10646,11 +13869,15 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "type" : "object"
+                  "oneOf" : [ {
+                    "$ref" : "#/components/schemas/PreviaDoFechamento"
+                  }, {
+                    "$ref" : "#/components/schemas/Fechamento"
+                  } ]
                 }
               }
             },
-            "description" : "OK"
+            "description" : "A prévia (acerto em andamento) ou o fechamento gravado (acerto fechado)"
           }
         },
         "security" : [ {
@@ -10688,8 +13915,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "additionalProperties" : { },
-                  "type" : "object"
+                  "$ref" : "#/components/schemas/PreviaDoFechamento"
                 }
               }
             },
@@ -11642,7 +14868,7 @@
         "tags" : [ "clientes-da-dona-controller" ]
       },
       "post" : {
-        "description" : "O CPF é opcional; se vier, o servidor confere os dígitos e guarda só os números. CPF repetido é aceito.",
+        "description" : "O documento é opcional. Do tipo CPF (ou sem tipo, ou pelo campo cpf), o servidor confere os dígitos e guarda só os números; CPF repetido é barrado. RG, CI ou outro é texto livre e não exige CPF válido. A comissão vai de 0 a 40 (padrão 30). O representante, depois de definido, não muda.",
         "operationId" : "criar_7",
         "requestBody" : {
           "content" : {
@@ -12186,7 +15412,7 @@
     },
     "/api/dona/conciliacoes" : {
       "get" : {
-        "description" : "Confere o banco inteiro num retrato só: C1 vendas e o que falta receber, C2 acerto do vendedor, C3 comissão, C4 caixa, C5 contas a receber e a pagar, C7 estoque e maletas, C8 maletas acertadas e faltas, C9 cada venda, estorno e devolução em um acerto só, C10 compras e parcelas (a C6 está vaga). Cada conferência traz quantos registros olhou e as diferenças (o que não bate, com o esperado e o encontrado); tudoCerto = nenhuma diferença. Com chave (por exemplo C4) devolve só aquela conferência; chave desconhecida dá 400. Só leitura: nada é corrigido.",
+        "description" : "Confere o banco inteiro num retrato só: C1 vendas e o que falta receber, C2 acerto do vendedor, C3 comissão, C4 caixa, C5 contas a receber e a pagar, C7 estoque e maletas, C8 maletas acertadas e faltas, C9 cada venda, estorno e devolução em um acerto só, C10 compras e parcelas, C11 estoque completo peça por peça (loja mais maletas contra compras, vendas, devoluções e acertos) e C12 saldo de cada maleta enviada (a C6 está vaga). Cada conferência traz quantos registros olhou e as diferenças (o que não bate, com o esperado e o encontrado); tudoCerto = nenhuma diferença. Com chave (por exemplo C4) devolve só aquela conferência; chave desconhecida dá 400. Só leitura: nada é corrigido.",
         "operationId" : "conferirODinheiroDaFase7",
         "parameters" : [ {
           "in" : "query",
@@ -12213,6 +15439,109 @@
         } ],
         "summary" : "Conferências do dinheiro (vendas, acertos, comissão, caixa, contas, estoque)",
         "tags" : [ "conciliacoes-da-dona-controller" ]
+      }
+    },
+    "/api/dona/conferencias" : {
+      "get" : {
+        "description" : "As rodadas da conferência, da mais nova para a mais velha: quando, se foi automática ou pedida (e por quem), a situação, quantas diferenças e as conferências que deram erro. pagina começa em zero; tamanho vai de 1 a 100 (padrão 30).",
+        "operationId" : "listarConferencias",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConsultasDaConferenciaDiariaPagina"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Histórico das conferências",
+        "tags" : [ "conferencia-diaria-da-dona-controller" ]
+      },
+      "post" : {
+        "description" : "Roda todas as conferências (estoque, devolução e troca, C1 a C5 e C7 a C12) num retrato só do banco e guarda o resultado. Nada é corrigido. Devolve a rodada com as diferenças: 201 na primeira vez, 200 se o mesmo id já foi gravado, 409 se outra conferência está rodando. Sem id, 400.",
+        "operationId" : "conferirAgora",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeConferenciaDiaria"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RodadaComDiferencas"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Conferir agora",
+        "tags" : [ "conferencia-diaria-da-dona-controller" ]
+      }
+    },
+    "/api/dona/conferencias/{id}" : {
+      "get" : {
+        "description" : "A rodada com as diferenças agrupadas por conferência, na ordem em que foram guardadas. Valores só em Real (a conferência não usa Dólar nem Guarani). 404 se a rodada não existe.",
+        "operationId" : "verConferencia",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RodadaComDiferencas"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ver uma conferência",
+        "tags" : [ "conferencia-diaria-da-dona-controller" ]
       }
     },
     "/api/dona/configuracoes/comissao" : {
@@ -12321,6 +15650,88 @@
         } ],
         "summary" : "Mudar a garantia e os limites de devolução",
         "tags" : [ "garantia-da-dona-controller" ]
+      }
+    },
+    "/api/dona/consignado/alertas" : {
+      "get" : {
+        "description" : "Divergências aceitas do balcão (peça sem saldo, preço diferente, total recalculado, pagamento acima do devido, documento repetido). soNaoVistos=true mostra só os que ainda não foram vistos.",
+        "operationId" : "listarAlertasDoConsignado",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "soNaoVistos",
+          "required" : false,
+          "schema" : {
+            "default" : false,
+            "type" : "boolean"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/AlertaLido"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Alertas do consignado para a dona",
+        "tags" : [ "consignado-da-dona-controller" ]
+      }
+    },
+    "/api/dona/consignado/alertas/{id}/visto" : {
+      "post" : {
+        "operationId" : "marcarAlertaDoConsignadoComoVisto",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Marcar um alerta como visto",
+        "tags" : [ "consignado-da-dona-controller" ]
+      }
+    },
+    "/api/dona/consignado/conciliacoes" : {
+      "get" : {
+        "description" : "Sete conferências (K1 a K7) sobre o banco; cada uma lista o que não bate. Vazio = tudo certo.",
+        "operationId" : "conferirConsignado",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConciliacoesDoConsignadoResultado"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Conciliações do consignado (só leitura)",
+        "tags" : [ "consignado-da-dona-controller" ]
       }
     },
     "/api/dona/contas-a-pagar" : {
@@ -14188,6 +17599,58 @@
         "tags" : [ "inventarios-da-dona-controller" ]
       }
     },
+    "/api/dona/painel-semanal" : {
+      "get" : {
+        "description" : "Pedidos: uma linha por vendedor na semana (acerto fechado, acerto em andamento ou maletas em aberto). A linha sem acerto fechado é prévia (a mesma conta do fechamento, nada é gravado) e a prévia inclui o que o vendedor ainda não acertou de semanas anteriores (previaIncluiSemanasAnteriores). Totais: novas maletas, reposições, acerto, prévia, vendas, trocas e créditos, total e total recebido no acerto; cada bloco traz a rota e os filtros do relatório de onde saiu. Filtros: semana (padrão: a de hoje, em Brasília), vendedor, praca e situacao (EM_ABERTO, EM_ACERTO ou ACERTADO; só muda as linhas e o bloco da prévia). Cada valor vem em Real, Dólar e Guarani pela cotação do dia de cada lançamento.",
+        "operationId" : "painelSemanal",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "semana",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendedor",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "praca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PainelDaSemana"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Painel da semana",
+        "tags" : [ "painel-semanal-controller" ]
+      }
+    },
     "/api/dona/pendencias-acerto" : {
       "get" : {
         "description" : "Falta, defeito e o que a dona não aceitou, da mais nova para a mais antiga (no máximo 500). Filtros: vendedor e situação.",
@@ -15375,7 +18838,7 @@
     },
     "/api/dona/recebimentos-vendedor" : {
       "get" : {
-        "description" : "O que os vendedores pagaram à loja, do mais novo para o mais antigo, com as contas que cada um baixou. Filtros opcionais: vendedor e período (de e até, dias de Brasília). Só valores em Real.",
+        "description" : "O que os vendedores pagaram à loja, do mais novo para o mais antigo, com as contas que cada um baixou. Filtros opcionais: vendedor e período (de e até, dias de Brasília). O valor que vale é o em Real; dolar, guarani e dataCotacao são só para mostrar (na moeda em que foi recebido, o valor digitado). Sem cotação, vazios.",
         "operationId" : "listarRecebimentosDoVendedor",
         "parameters" : [ {
           "in" : "query",
@@ -15424,7 +18887,7 @@
         "tags" : [ "recebimentos-do-vendedor-da-dona-controller" ]
       },
       "post" : {
-        "description" : "O vendedor paga à loja, fora do acerto, em dinheiro, Transferência (PIX) ou boleto pago. Com a conta indicada, baixa só essa conta; sem conta, o servidor distribui pelas contas em aberto, da que vence primeiro para a que vence depois. Não aceita mais do que o vendedor deve. O boleto pago é o valor inteiro da conta do boleto. Entra no caixa na mesma hora. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409.",
+        "description" : "O vendedor paga à loja, fora do acerto, em dinheiro, Transferência (PIX) ou boleto pago. Com a conta indicada, baixa só essa conta; sem conta, o servidor distribui pelas contas em aberto, da que vence primeiro para a que vence depois. Não aceita mais do que o vendedor deve. O boleto pago é o valor inteiro da conta do boleto. Entra no caixa na mesma hora. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409. Em Dólar ou Guarani (moeda DOLAR ou GUARANI), mande só valorNaMoeda: o servidor converte pela cotação do dia do lançamento e grava em Real (sem cotação, 409; cotacaoData diferente da que vale, 409).",
         "operationId" : "receberDoVendedor",
         "requestBody" : {
           "content" : {
@@ -16660,6 +20123,279 @@
         "tags" : [ "relatorios-de-estoque-e-compras-controller" ]
       }
     },
+    "/api/dona/relatorios/controle/acessos" : {
+      "get" : {
+        "description" : "Cada tentativa de entrar, da mais nova para a mais antiga: quem, em qual programa, o resultado em palavras simples, o endereço de internet e, quando a tentativa completou o limite de erros, até quando o acesso ficou bloqueado. Login que não existe aparece sem nome de pessoa. Filtros: busca (login ou nome), resultado (SUCESSO, SENHA_INCORRETA, BLOQUEADO, USUARIO_DESATIVADO, APP_INCOMPATIVEL, SENHA_TEMPORARIA_VENCIDA, PEDIDO_INVALIDO ou BLOQUEIO_LIMPO), aplicativo (gestao ou vendas), de e ate. Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.",
+        "operationId" : "relatorioDeAcessos",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "resultado",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "aplicativo",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDoAcesso"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Acessos: entradas, erros e bloqueios",
+        "tags" : [ "relatorios-de-controle-controller" ]
+      }
+    },
+    "/api/dona/relatorios/controle/auditoria" : {
+      "get" : {
+        "description" : "Cada ação registrada (preço, estoque, desconto, cancelamento, reembolso, autorização de exceção, restrição e as outras), da mais nova para a mais antiga: quem, quando, o quê, em qual registro e o antes e o depois em palavras da loja (nunca senha, hash nem token). Ação do servidor aparece como \"Pelo servidor\". Filtros: busca (pessoa, ação ou registro), usuarioId, acao (código, ex. PRECO_VENDA_ALTERADO), tabela (tipo de registro, ex. produtos), registroId, de e ate. Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.",
+        "operationId" : "relatorioDeAuditoria",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "usuarioId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "acao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tabela",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "registroId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDaAuditoria"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Auditoria: quem fez o quê",
+        "tags" : [ "relatorios-de-controle-controller" ]
+      }
+    },
+    "/api/dona/relatorios/controle/computadores" : {
+      "get" : {
+        "description" : "Um computador por linha: de qual vendedor, em que situação, a versão, o último recebimento e o último envio, quantas operações aguardam envio, quantos envios têm problema sem decisão e quantos estão guardados à parte esperando a dona. Filtros: busca (nome do vendedor), vendedorId, situacao (ATIVO, AGUARDANDO_LIBERACAO, SUBSTITUIDO, BLOQUEADO ou TODAS), comProblema (SIM ou NAO), de e ate (sobre o último contato). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.",
+        "operationId" : "relatorioDeComputadores",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "comProblema",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDoComputador"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Sincronizações e computadores",
+        "tags" : [ "relatorios-de-controle-controller" ]
+      }
+    },
     "/api/dona/relatorios/devolucoes/autorizacoes" : {
       "get" : {
         "description" : "Uma linha por pedido de autorização de devolução. situacao: TODAS (padrão), PEDIDA, APROVADA, USADA, NEGADA ou VENCIDA. tipo: FORA_DO_PRAZO ou ACIMA_DO_VALOR. Datas em horário de Brasília (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas desse total. Cada valor vem em Real, Dólar e Guarani pela cotação do dia do lançamento (dataDaCotacao; vazio se não havia cotação).",
@@ -16876,6 +20612,13 @@
           "required" : false,
           "schema" : {
             "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pracaId",
+          "required" : false,
+          "schema" : {
             "type" : "string"
           }
         }, {
@@ -17475,6 +21218,13 @@
           }
         }, {
           "in" : "query",
+          "name" : "pracaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
           "name" : "recorte",
           "required" : false,
           "schema" : {
@@ -17657,6 +21407,111 @@
         } ],
         "summary" : "Conciliação do estoque",
         "tags" : [ "relatorios-de-estoque-e-compras-controller" ]
+      }
+    },
+    "/api/dona/relatorios/estoque/curva-abc" : {
+      "get" : {
+        "description" : "Por peça, pelo vendido líquido do período (venda menos devolução e troca), da maior para a menor; empate pelo código. Classe A até 80% do acumulado, B até 95%, C o resto; a peça que cruza a fronteira fica na classe de cima. Peça sem venda no período fica fora. Datas de Brasília (de e ate inclusive, sobre a data da venda). Filtros: busca, vendedorId, pracaId, clienteId, produtoId, categoriaId, de e ate. recorte = a chave de um total do rodapé (liquido, classe-a, classe-b ou classe-c). Cada valor vem em Real, Dólar e Guarani pela cotação do dia da venda. A página começa em 0 (até 100 por página).",
+        "operationId" : "relatorioDeCurvaAbc",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pracaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "clienteId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "produtoId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "categoriaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDaCurva"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Curva ABC das peças",
+        "tags" : [ "curva-abc-controller" ]
       }
     },
     "/api/dona/relatorios/estoque/inventarios" : {
@@ -18101,6 +21956,13 @@
           "required" : false,
           "schema" : {
             "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pracaId",
+          "required" : false,
+          "schema" : {
             "type" : "string"
           }
         }, {
@@ -18699,6 +22561,174 @@
         "tags" : [ "relatorios-financeiros-controller" ]
       }
     },
+    "/api/dona/relatorios/financeiro/lucro-por-produto" : {
+      "get" : {
+        "description" : "Receita líquida, custo das peças vendidas, lucro e margem de cada peça, com a foto. Filtros: busca, produtoId, categoriaId, vendedorId e pracaId. A página começa em 0 (até 100 por página). O período (de e ate, dias de Brasília, inclusive) é obrigatório. A devolução abate o dia da venda. Só a dona vê custo e lucro: nada daqui vai ao Corona Vendas.",
+        "operationId" : "relatorioDeLucroPorProduto",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pracaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "produtoId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "categoriaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeLucroDoProduto"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Lucro por produto",
+        "tags" : [ "relatorios-financeiros-controller" ]
+      }
+    },
+    "/api/dona/relatorios/financeiro/lucro-por-vendedor" : {
+      "get" : {
+        "description" : "Receita líquida, custo das peças vendidas, lucro bruto, comissão do acerto e lucro de cada vendedor. Filtros: busca, vendedorId e pracaId. A página começa em 0 (até 100 por página). O período (de e ate, dias de Brasília, inclusive) é obrigatório. A devolução abate o dia da venda. Só a dona vê custo e lucro: nada daqui vai ao Corona Vendas.",
+        "operationId" : "relatorioDeLucroPorVendedor",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pracaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeLucroDoVendedor"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Lucro por vendedor",
+        "tags" : [ "relatorios-financeiros-controller" ]
+      }
+    },
     "/api/dona/relatorios/financeiro/pendencias" : {
       "get" : {
         "description" : "Uma pendência por linha (falta, defeito, devolução ou crédito não aceitos), com a situação. Filtros: vendedorId, semanaId, produtoId, tipo, situacao, busca, de e ate. Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Cada valor vem em Real, Dólar e Guarani pela cotação do dia do lançamento (dataDaCotacao).",
@@ -18759,6 +22789,13 @@
           "required" : false,
           "schema" : {
             "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pracaId",
+          "required" : false,
+          "schema" : {
             "type" : "string"
           }
         }, {
@@ -18854,6 +22891,13 @@
           }
         }, {
           "in" : "query",
+          "name" : "pracaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
           "name" : "recorte",
           "required" : false,
           "schema" : {
@@ -18892,6 +22936,116 @@
           "bearer" : [ ]
         } ],
         "summary" : "Recebimentos por forma de pagamento",
+        "tags" : [ "relatorios-financeiros-controller" ]
+      }
+    },
+    "/api/dona/relatorios/financeiro/resultado" : {
+      "get" : {
+        "description" : "Vendas, devoluções e trocas, receita líquida, custo das peças vendidas, lucro bruto, comissões, perdas, cobrado do vendedor, uma linha por categoria do caixa manual e o resultado. Cada linha em Real, Dólar e Guarani (pela cotação do dia de cada registro; vazio se faltar cotação). pecasComCustoDoCadastro conta as peças vendidas com o custo do cadastro (estimativa). O período (de e ate, dias de Brasília, inclusive) é obrigatório. A devolução abate o dia da venda. Só a dona vê custo e lucro: nada daqui vai ao Corona Vendas.",
+        "operationId" : "resultadoDoPeriodo",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConsultasDoResultadoResultado"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Resultado do período (DRE simplificado)",
+        "tags" : [ "relatorios-financeiros-controller" ]
+      }
+    },
+    "/api/dona/relatorios/financeiro/resultado/detalhamento" : {
+      "get" : {
+        "description" : "Os registros que formam uma linha: linha = VENDAS, DEVOLUCOES, CUSTO, COMISSOES, PERDAS, COBRADO ou CAIXA (com categoriaId para uma categoria só). Traz o custo unitário e a marca de custo do cadastro. A página começa em 0 (até 100 por página). O período (de e ate, dias de Brasília, inclusive) é obrigatório. A devolução abate o dia da venda. Só a dona vê custo e lucro: nada daqui vai ao Corona Vendas.",
+        "operationId" : "detalhamentoDoResultado",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "linha",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "categoriaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroRegistroDoResultado"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Registros de uma linha do resultado",
         "tags" : [ "relatorios-financeiros-controller" ]
       }
     },
@@ -19019,6 +23173,61 @@
           "bearer" : [ ]
         } ],
         "summary" : "Maletas em aberto e atrasadas",
+        "tags" : [ "relatorios-de-maleta-controller" ]
+      }
+    },
+    "/api/dona/relatorios/maleta/fechamento" : {
+      "get" : {
+        "description" : "Uma linha por peça da maleta (enviadas, devolvidas pelos clientes, vendidas, ainda com clientes e com quem, esperado na maleta, bipadas na volta e diferença). O rodapé traz as peças e os valores da maleta (vendido, comissão dos clientes, recebido e pendências a receber, divididos pelo vendido de cada maleta dentro da nota). Sai da mesma leitura da tela do Fechamento (GET /api/maletas/{id}/fechamento); 404 se o fechamento ainda não foi começado. Parâmetros: remessaId (obrigatório), recorte (a chave de um total do rodapé: só as peças que o formam), pagina (começa em 0) e tamanho (até 100).",
+        "operationId" : "relatorioDoFechamentoDaMaleta",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "remessaId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDoFechamento"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Fechamento da maleta",
         "tags" : [ "relatorios-de-maleta-controller" ]
       }
     },
@@ -19497,6 +23706,1168 @@
         } ],
         "summary" : "Saldo atual por maleta (peça a peça)",
         "tags" : [ "relatorios-de-maleta-controller" ]
+      }
+    },
+    "/api/dona/relatorios/vendas/canceladas" : {
+      "get" : {
+        "description" : "As vendas estornadas, com quem estornou, quando e por quê. Ficam fora dos totais dos outros relatórios. Datas de Brasília (de e ate inclusive, sobre a data da venda). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Filtros: busca (vendedor, cliente, peça, referência ou código), vendedorId, pracaId, clienteId, produtoId, categoriaId, de e ate. Vendido líquido = vendido - devolvido (devoluções e trocas não canceladas). Cada valor vem em Real, Dólar e Guarani pela cotação do dia da venda; a venda estornada fica fora dos totais.",
+        "operationId" : "relatorioDeVendasCanceladas",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pracaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "clienteId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "produtoId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "categoriaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeVenda"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Vendas canceladas",
+        "tags" : [ "relatorios-de-vendas-controller" ]
+      }
+    },
+    "/api/dona/relatorios/vendas/por-categoria" : {
+      "get" : {
+        "description" : "Uma linha por categoria de peça. Uma venda com peças de duas categorias conta nas duas. Datas de Brasília (de e ate inclusive, sobre a data da venda). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Filtros: busca (vendedor, cliente, peça, referência ou código), vendedorId, pracaId, clienteId, produtoId, categoriaId, de e ate. Vendido líquido = vendido - devolvido (devoluções e trocas não canceladas). Cada valor vem em Real, Dólar e Guarani pela cotação do dia da venda; a venda estornada fica fora dos totais.",
+        "operationId" : "relatorioDeVendasPorCategoria",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pracaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "clienteId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "produtoId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "categoriaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeVendido"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Vendas por categoria",
+        "tags" : [ "relatorios-de-vendas-controller" ]
+      }
+    },
+    "/api/dona/relatorios/vendas/por-cliente" : {
+      "get" : {
+        "description" : "Uma linha por cliente, com tudo o que ele comprou no período. Datas de Brasília (de e ate inclusive, sobre a data da venda). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Filtros: busca (vendedor, cliente, peça, referência ou código), vendedorId, pracaId, clienteId, produtoId, categoriaId, de e ate. Vendido líquido = vendido - devolvido (devoluções e trocas não canceladas). Cada valor vem em Real, Dólar e Guarani pela cotação do dia da venda; a venda estornada fica fora dos totais.",
+        "operationId" : "relatorioDeVendasPorCliente",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pracaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "clienteId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "produtoId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "categoriaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeVendido"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Vendas por cliente",
+        "tags" : [ "relatorios-de-vendas-controller" ]
+      }
+    },
+    "/api/dona/relatorios/vendas/por-periodo" : {
+      "get" : {
+        "description" : "Uma linha por dia (calendário de Brasília), pela data da venda. A chave é a data AAAA-MM-DD. Datas de Brasília (de e ate inclusive, sobre a data da venda). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Filtros: busca (vendedor, cliente, peça, referência ou código), vendedorId, pracaId, clienteId, produtoId, categoriaId, de e ate. Vendido líquido = vendido - devolvido (devoluções e trocas não canceladas). Cada valor vem em Real, Dólar e Guarani pela cotação do dia da venda; a venda estornada fica fora dos totais.",
+        "operationId" : "relatorioDeVendasPorPeriodo",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pracaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "clienteId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "produtoId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "categoriaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeVendido"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Vendas por dia",
+        "tags" : [ "relatorios-de-vendas-controller" ]
+      }
+    },
+    "/api/dona/relatorios/vendas/por-praca" : {
+      "get" : {
+        "description" : "Uma linha por praça do vendedor (vendedor sem praça aparece como Sem praça). Datas de Brasília (de e ate inclusive, sobre a data da venda). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Filtros: busca (vendedor, cliente, peça, referência ou código), vendedorId, pracaId, clienteId, produtoId, categoriaId, de e ate. Vendido líquido = vendido - devolvido (devoluções e trocas não canceladas). Cada valor vem em Real, Dólar e Guarani pela cotação do dia da venda; a venda estornada fica fora dos totais.",
+        "operationId" : "relatorioDeVendasPorPraca",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pracaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "clienteId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "produtoId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "categoriaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeVendido"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Vendas por praça",
+        "tags" : [ "relatorios-de-vendas-controller" ]
+      }
+    },
+    "/api/dona/relatorios/vendas/por-produto" : {
+      "get" : {
+        "description" : "Uma linha por peça, com código, referência e foto. É o mesmo vendido líquido da curva ABC. Datas de Brasília (de e ate inclusive, sobre a data da venda). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Filtros: busca (vendedor, cliente, peça, referência ou código), vendedorId, pracaId, clienteId, produtoId, categoriaId, de e ate. Vendido líquido = vendido - devolvido (devoluções e trocas não canceladas). Cada valor vem em Real, Dólar e Guarani pela cotação do dia da venda; a venda estornada fica fora dos totais.",
+        "operationId" : "relatorioDeVendasPorProduto",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pracaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "clienteId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "produtoId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "categoriaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeVendido"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Vendas por produto",
+        "tags" : [ "relatorios-de-vendas-controller" ]
+      }
+    },
+    "/api/dona/relatorios/vendas/por-vendedor" : {
+      "get" : {
+        "description" : "Uma linha por vendedor: vendas, peças, vendido, devolvido, vendido líquido e ticket médio (vendido líquido dividido pelo número de vendas). Datas de Brasília (de e ate inclusive, sobre a data da venda). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Filtros: busca (vendedor, cliente, peça, referência ou código), vendedorId, pracaId, clienteId, produtoId, categoriaId, de e ate. Vendido líquido = vendido - devolvido (devoluções e trocas não canceladas). Cada valor vem em Real, Dólar e Guarani pela cotação do dia da venda; a venda estornada fica fora dos totais.",
+        "operationId" : "relatorioDeVendasPorVendedor",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pracaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "clienteId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "produtoId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "categoriaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeVendido"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Vendas por vendedor",
+        "tags" : [ "relatorios-de-vendas-controller" ]
+      }
+    },
+    "/api/dona/relatorios/vendas/ranking-de-pecas" : {
+      "get" : {
+        "description" : "As peças da que mais vendeu para a que menos vendeu (pelo vendido líquido), com a posição e a foto. Datas de Brasília (de e ate inclusive, sobre a data da venda). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Filtros: busca (vendedor, cliente, peça, referência ou código), vendedorId, pracaId, clienteId, produtoId, categoriaId, de e ate. Vendido líquido = vendido - devolvido (devoluções e trocas não canceladas). Cada valor vem em Real, Dólar e Guarani pela cotação do dia da venda; a venda estornada fica fora dos totais.",
+        "operationId" : "relatorioDeRankingDePecas",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pracaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "clienteId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "produtoId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "categoriaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeVendido"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ranking de peças",
+        "tags" : [ "relatorios-de-vendas-controller" ]
+      }
+    },
+    "/api/dona/relatorios/vendas/ranking-de-vendedores" : {
+      "get" : {
+        "description" : "Os vendedores do que mais vendeu para o que menos vendeu (pelo vendido líquido), com a posição. Datas de Brasília (de e ate inclusive, sobre a data da venda). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Filtros: busca (vendedor, cliente, peça, referência ou código), vendedorId, pracaId, clienteId, produtoId, categoriaId, de e ate. Vendido líquido = vendido - devolvido (devoluções e trocas não canceladas). Cada valor vem em Real, Dólar e Guarani pela cotação do dia da venda; a venda estornada fica fora dos totais.",
+        "operationId" : "relatorioDeRankingDeVendedores",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pracaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "clienteId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "produtoId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "categoriaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeVendido"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ranking de vendedores",
+        "tags" : [ "relatorios-de-vendas-controller" ]
+      }
+    },
+    "/api/dona/relatorios/vendas/ticket-medio" : {
+      "get" : {
+        "description" : "Os vendedores do maior para o menor ticket médio (vendido líquido dividido pelo número de vendas). Datas de Brasília (de e ate inclusive, sobre a data da venda). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Filtros: busca (vendedor, cliente, peça, referência ou código), vendedorId, pracaId, clienteId, produtoId, categoriaId, de e ate. Vendido líquido = vendido - devolvido (devoluções e trocas não canceladas). Cada valor vem em Real, Dólar e Guarani pela cotação do dia da venda; a venda estornada fica fora dos totais.",
+        "operationId" : "relatorioDeTicketMedio",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pracaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "clienteId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "produtoId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "categoriaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeVendido"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ticket médio por vendedor",
+        "tags" : [ "relatorios-de-vendas-controller" ]
+      }
+    },
+    "/api/dona/relatorios/vendas/vendas" : {
+      "get" : {
+        "description" : "Cada venda com peças, vendido, devolvido, vendido líquido, cotação e, se foi estornada, quem estornou e o motivo. situacao: REGISTRADAS (padrão), CANCELADAS ou TODAS (as canceladas aparecem marcadas e ficam FORA do total). Datas de Brasília (de e ate inclusive, sobre a data da venda). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Filtros: busca (vendedor, cliente, peça, referência ou código), vendedorId, pracaId, clienteId, produtoId, categoriaId, de e ate. Vendido líquido = vendido - devolvido (devoluções e trocas não canceladas). Cada valor vem em Real, Dólar e Guarani pela cotação do dia da venda; a venda estornada fica fora dos totais.",
+        "operationId" : "relatorioDeVendas",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "busca",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vendedorId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pracaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "clienteId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "produtoId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "categoriaId",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "situacao",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "de",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ate",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "recorte",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pagina",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tamanho",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RelatorioDeCadastroLinhaDeVenda"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Vendas, uma linha por venda",
+        "tags" : [ "relatorios-de-vendas-controller" ]
       }
     },
     "/api/dona/remessas" : {
@@ -22108,6 +27479,135 @@
         } ],
         "summary" : "Computadores do vendedor",
         "tags" : [ "aparelhos-da-dona-controller" ]
+      }
+    },
+    "/api/maletas/{id}/fechamento" : {
+      "get" : {
+        "description" : "Por peça: enviadas, devolvidas pelos clientes, vendidas, ainda com clientes, esperado na maleta, bipadas e diferença; e os valores da maleta (VD, comissão dos clientes, recebido e pendências), divididos pelo vendido (VD) de cada maleta dentro da nota. É a mesma consulta do relatório.",
+        "operationId" : "lerFechamentoDaMaleta",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/LeituraDoFechamento"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "A leitura do fechamento da maleta",
+        "tags" : [ "fechamento-da-maleta-controller" ]
+      },
+      "post" : {
+        "description" : "Só maleta enviada ou conferida; um fechamento em andamento por maleta (409 se já há).",
+        "operationId" : "iniciarFechamentoDaMaleta",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "201" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDoInicio"
+                }
+              }
+            },
+            "description" : "Created"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Começar o fechamento da maleta",
+        "tags" : [ "fechamento-da-maleta-controller" ]
+      }
+    },
+    "/api/maletas/{id}/fechamento/concluir" : {
+      "post" : {
+        "description" : "Devolve ao estoque as peças bipadas (até o que a maleta devia ter) e passa a maleta a FECHADA. A diferença não é corrigida: fica na leitura para a dona decidir.",
+        "operationId" : "concluirFechamentoDaMaleta",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Concluir o fechamento da maleta",
+        "tags" : [ "fechamento-da-maleta-controller" ]
+      }
+    },
+    "/api/maletas/{id}/fechamento/leituras" : {
+      "post" : {
+        "description" : "Em lote; cada leitura tem o id do aplicativo (reenviar não duplica).",
+        "operationId" : "registrarLeiturasDoFechamentoDaMaleta",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeLeituras"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDasLeituras"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Guardar as peças bipadas na volta",
+        "tags" : [ "fechamento-da-maleta-controller" ]
       }
     }
   }

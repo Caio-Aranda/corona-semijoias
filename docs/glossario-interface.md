@@ -12,9 +12,10 @@ Como usar:
 
 Em 09/11/2026 o responsável resolveu as dúvidas que estavam abertas neste glossário. A da "Entrada" (parte 10) foi resolvida em 13/11/2026: no sistema novo **não existe entrada nem cheque**, e no acerto o vendedor paga em **Dinheiro**, **Transferência** ou **Boleto** (ADR-0012, aceito em 13/11/2026).
 
-- Na tela, sempre "vendedor".
+- Na tela, "vendedor" até 18/11/2026. **Desde 18/11/2026 (§23.1, item 4) o programa fala em "Representante" (quem usa o Corona Vendas) e "Cliente" (quem leva peças em consignado), nos dois aplicativos e nos dois idiomas; ver a parte 22.**
 - Cancelar venda segue a §19.5: "Cancelar venda", com a explicação de que é um novo lançamento. A palavra "anular" não é usada.
 - Na tela, sempre "ler o código" ("Leia o código de novo"). "Bipar" e "bipe" nunca aparecem na tela.
+- **Tam./Ton.** (es: Talle/Tono): tamanho ou tom da peça, campo opcional do produto (9.8). **Dt. Acerto** (es: Fecha de cobranza): a data do acerto na Cobrança. **R 0000065-01**: o recibo, com o prefixo R (a nota não tem prefixo).
 - Nomes dos aplicativos: **Corona Gestão** (app da dona) e **Corona Vendas** (app do vendedor), com ícones diferentes (§18).
 - "Produto" no cadastro, na consulta e nos relatórios. "Peça" na maleta, na venda, na troca, na devolução e na leitura do código.
 - Senha nova: pelo menos 8 caracteres, com letras e números, diferente da senha temporária.
@@ -54,6 +55,10 @@ Em 09/11/2026 o responsável resolveu as dúvidas que estavam abertas neste glos
 | peça para a loja | `itens_devolucao.destino_peca = LOJA` | Peça devolvida pelo cliente que não volta à maleta (com defeito, ou boa de maleta já acertada). O vendedor a entrega à dona no próximo acerto (ADR-0014, item 7). |
 | crédito do cliente | `creditos_cliente` | Valor que sobra de uma troca (ou que volta da devolução de uma compra paga com crédito) e que o cliente usa numa compra futura, com o mesmo vendedor. |
 | conferência | `CONFERIDA`, conferência da maleta | O vendedor confere as peças recebidas contra a lista da maleta. |
+| painel da semana | `GET /api/dona/painel-semanal` | A tela da dona com o que foi enviado, devolvido e vendido na semana, vendedor por vendedor (aba **Maletas**), e os totais (aba **Totais**). Abre pelo botão grande **Painel da semana** da tela inicial. Atalhos no topo: **Nova maleta**, **Acerto**, **Reposição**, **Troca**, **Vendedores**, **Estoque**. Filtros: **Semana** (padrão **Semana de hoje**), **Vendedor**, **Praça** e **Situação** (**Maleta em aberto**, **Acerto em andamento**, **Acertado**). Linha sem acerto fechado leva a marca **Prévia** ("Prévia: ainda não é o acerto. Os números podem mudar até o acerto ser fechado."). Clicar no vendedor abre o acerto ou a maleta; **Ver os registros** abre o relatório de onde o total saiu. Guardar em **PDF**, **Excel** ou **CSV**. Em Real, com Dólar e Guarani abaixo, pela cotação do dia de cada lançamento; sem cotação, "Sem cotação" e só o Real. |
+| conferência de hoje | `rodadas_conferencia` | O resultado da conferência que o sistema faz sozinho todo dia de madrugada (e quando a dona pede): se o dinheiro, as contas, o estoque e as devoluções batem. A dona vê na tela **Conferência de hoje** e em **O que precisa da sua atenção**. |
+| Conferir agora | pedir uma rodada | Botão da dona que faz a conferência na hora, sem esperar a da madrugada. |
+| diferença | `diferencas_conferencia` | O que a conferência achou que não bate, mostrado como "Devia ser X; está Y.". Nada é corrigido sozinho. |
 | cobrança | cobrança | Recebimento do cliente pelo vendedor e repasse do vendedor à dona. |
 | repasse | repasse no acerto | Dinheiro que o vendedor entrega à dona no acerto. |
 | comissão | `comissoes` | Parte da venda que fica com o vendedor. |
@@ -339,9 +344,9 @@ A dona não redefine a própria senha pela tela, para não ficar sem acesso:
 > **Você não pode redefinir a sua própria senha por aqui.**
 > Peça a outra pessoa administradora ou fale com o suporte do sistema.
 
-Desativar o próprio acesso (a dona não se desativa, para não ficar sem acesso):
+Inativar o próprio acesso (a dona não se inativa, para não ficar sem acesso):
 
-> **Você não pode desativar o seu próprio acesso.**
+> **Você não pode inativar o seu próprio acesso.**
 > Peça a outra pessoa administradora para fazer isso.
 
 Mudar o próprio tipo de acesso (a dona não se rebaixa):
@@ -349,7 +354,7 @@ Mudar o próprio tipo de acesso (a dona não se rebaixa):
 > **Você não pode mudar o seu próprio tipo de acesso.**
 > Peça a outra pessoa administradora para fazer isso.
 
-Desativar ou rebaixar a última pessoa administradora ativa:
+Inativar ou rebaixar a última pessoa administradora ativa:
 
 > **Precisa continuar existindo pelo menos uma pessoa administradora com acesso.**
 > Dê o acesso de administradora a outra pessoa antes de fazer esta mudança.
@@ -455,7 +460,7 @@ Desde a Fase 4 os quatro botões funcionam (o "Em breve." só vale para função
 
 **Telas do vendedor (Corona Vendas, Fase 4)**
 
-Os textos moram em `apps/seller-app/src/renderer/textos.ts`. Termos: **Minha maleta** (peças com saldo, preço e foto), **Conferir maleta** (o vendedor lê o código de cada peça recebida; ação sem volta: **Concluir conferência**), **Vender**, **Concluir venda** (nunca "OK"), **Estornar venda** (o vendedor só estorna no mesmo dia; depois, a dona), **Meus clientes**, **Cadastrar cliente**, **Meus números** (vendas por cliente, peça ou dia; recebimentos por forma; o que os clientes ainda devem). Forma de pagamento do cliente: **Dinheiro**, **Transferência** ou **A prazo (fiado)** (pagamentos antigos ainda mostram Cartão e Cheque). Frases fixas:
+Os textos moram em `apps/seller-app/src/renderer/textos-pt.ts (e textos-es.ts, em espanhol)`. Termos: **Minha maleta** (peças com saldo, preço e foto), **Conferir maleta** (o vendedor lê o código de cada peça recebida; ação sem volta: **Concluir conferência**), **Vender**, **Concluir venda** (nunca "OK"), **Estornar venda** (o vendedor só estorna no mesmo dia; depois, a dona), **Meus clientes**, **Cadastrar cliente**, **Meus números** (vendas por cliente, peça ou dia; recebimentos por forma; o que os clientes ainda devem). Forma de pagamento do cliente: **Dinheiro**, **Transferência** ou **A prazo (fiado)** (pagamentos antigos ainda mostram Cartão e Cheque). Frases fixas:
 
 > Esta peça não consta na sua maleta. (peça de fora, no leitor)
 > Esta peça acabou na sua maleta. Escolha outra peça ou fale com a dona. (saldo zero)
@@ -558,6 +563,7 @@ Sem internet e sem dados neste computador (primeira vez):
 
 - Motivo (obrigatório): **Desistiu** (arrependimento), **Defeito**, **Não serviu** (tamanho) e **Outro**. Com **Outro**, o campo **Observação** é obrigatório. Com **Defeito**, todas as peças são marcadas **Com defeito**.
 - Estado da peça: **Boa** ou **Com defeito** (parte 3).
+- Erro raro (issue 208): "Os valores desta devolução não fecharam e nada foi gravado. Tente de novo; se continuar, fale com a dona."
 - Para onde vai a peça: **Voltou para a maleta** (boa, de maleta ainda com o vendedor) ou **Peça para a loja** (com defeito, ou boa de maleta já acertada: não volta à maleta e o vendedor a entrega à dona no próximo acerto).
 - Situação da devolução: **Aceita**, **Para revisão da dona** (o servidor achou algo que a dona precisa olhar; os motivos estão na parte "Autorização, revisão e antifraude" logo abaixo), **Mantida**, **Não aceita** e **Cancelada**.
 - Ler o código na devolução mostra **as vendas com esta peça** (as do próprio vendedor, da mais nova para a mais antiga), com o cliente, o dia, **Vendidas**, **Já devolvidas**, **Ainda podem voltar** e até que dia vale a garantia ("Desistência até 19/11", "Defeito até 12/12"). Venda a prazo aparece marcada e não pode ser escolhida ainda.
@@ -766,7 +772,8 @@ Aviso junto ao campo: "Diga por que a venda com crédito não foi aceita.".
 | Reembolsos | **Dinheiro devolvido aos clientes** |
 | Autorizações de exceção | **Pedidos de autorização** |
 | Conciliações de devolução e troca | **Conferência das devoluções e trocas** (deve ficar vazio: "Tudo certo: as devoluções, as trocas e os créditos batem com a maleta e com o dinheiro.") |
-| Conciliações do dinheiro (tarefa 7.8) | **Conferência do dinheiro** (grupo **Conferência** do menu; nove conferências, cada uma com "Conferidos: N" e "Tudo certo" ou o que não bate, com "Devia ser ...; está ...". Texto fixo: "O que aparece aqui é erro do sistema, não da loja. Não corrija nada à mão: avise o suporte." Em Real; peças em número; Dólar e Guarani nunca aparecem) |
+| Conferência de hoje (tarefa 8.4) | **Conferência de hoje** (grupo **Conferência** do menu): **Última conferência** (data e hora de Brasília, "Feita sozinha pelo sistema" ou "Pedida por <nome>", e "Tudo certo", "Achou N diferenças" ou "Não terminou: <conferências>"), o botão **Conferir agora** ("Conferindo..." enquanto roda), **Conferências anteriores** com **Ver** e o detalhe das diferenças ("Devia ser X; está Y."). Avisos na tela inicial: **A conferência de hoje achou N diferenças** ("Abra a conferência para ver o que não bate. Nada foi mudado sozinho.") e **A conferência de hoje não rodou** ("Uma parte da conferência não terminou. Toque em Conferir agora; se continuar, avise o suporte." ou "A conferência automática não rodou nas últimas 26 horas. Toque em Conferir agora."). Erros: "Uma conferência já está rodando. Espere um pouco e atualize a tela." e "Não encontramos esta conferência. Volte à lista e abra uma das que aparecem.". Em Real; Dólar e Guarani nunca aparecem |
+| Conciliações do dinheiro (tarefa 7.8) | **Conferência do dinheiro** (grupo **Conferência** do menu; onze conferências (as duas últimas, de estoque, também mostram "A peça ... nesta maleta não bate" e peças em número), cada uma com "Conferidos: N" e "Tudo certo" ou o que não bate, com "Devia ser ...; está ...". Texto fixo: "O que aparece aqui é erro do sistema, não da loja. Não corrija nada à mão: avise o suporte." Em Real; peças em número; Dólar e Guarani nunca aparecem) |
 
 - Filtros: **De**, **Até** (sobre o dia, em Brasília, em que a devolução, a troca, o crédito, o dinheiro ou o pedido aconteceu), **Vendedor**, **Motivo da devolução** (**Desistência**, **Defeito**, **Não serviu**, **Outro**), **Situação**, **Buscar**, **Limpar filtros**. Situação das devoluções: **Feitas** (já vem escolhida; não mostra as canceladas), **Para revisão**, **Mantidas**, **Não aceitas**, **Canceladas**, **Todas (canceladas marcadas)**. Das trocas: **Feitas** (já vem), **Canceladas**, **Todas**. Dos créditos: **Em aberto e usados** (já vem), **Só em aberto**, **Só usados**, **Cancelados**, **Todos**. Dos pedidos de autorização: **Todos**, **Esperando você**, **Aprovados**, **Usados**, **Negados**, **Vencidos**.
 - Devolução cancelada aparece como **Cancelada** e fica **fora do total** ("Devoluções feitas (valem no total)" e "Devoluções canceladas (fora do total)"); igual nas trocas e nos créditos.
@@ -982,13 +989,13 @@ Avisos junto ao campo:
 
 **Usuários (Pessoas → Usuários).**
 
-- Campos: **Nome**, **Usuário**, **Tipo de acesso** (**Dona** ou **Vendedor**) e, para o vendedor, **Vendedor**. Filtros: **Tipo de acesso** (Todos, Dona, Vendedor) e **Situação** (Todos, Ativos, Desativados).
-- Botões: **Novo usuário**, **Editar**, **Desativar usuário**, **Reativar usuário**, **Nova senha temporária**.
+- Campos: **Nome**, **Usuário**, **Tipo de acesso** (**Dona** ou **Vendedor**) e, para o vendedor, **Vendedor**. Filtros: **Tipo de acesso** (Todos, Dona, Vendedor) e **Situação** (Todos, Ativos, Inativos).
+- Botões: **Novo usuário**, **Editar**, **Inativar usuário**, **Reativar usuário**, **Nova senha temporária**.
 - Senha temporária (aparece uma única vez, com o botão **Copiar senha**): "Anote esta senha agora. Ela não aparece de novo." e "Entregue a senha só para {nome}. No primeiro acesso, ele ou ela cria uma senha nova." A senha vale por 7 dias.
-- Desativar: "{Nome} vai sair do sistema agora e não vai mais conseguir entrar. Você pode reativar depois." Botões: **Voltar** e **Desativar usuário**.
+- Inativar: "{Nome} vai sair do sistema agora e não vai mais conseguir entrar. Você pode reativar depois." Botões: **Voltar** e **Inativar usuário**.
 - Reativar: "{Nome} volta a poder entrar com a senha que já tinha. Quem estava dentro precisa entrar de novo." Botões: **Voltar** e **Reativar usuário**.
 - Nova senha temporária: "A senha atual de {nome} deixa de valer e quem estiver dentro sai do sistema agora. Será criada uma senha temporária nova." Botões: **Voltar** e **Criar senha temporária**.
-- As regras do servidor (não desativar a si mesma, não mudar o próprio acesso, manter uma administradora) aparecem com o texto do servidor, acima.
+- As regras do servidor (não inativar a si mesma, não mudar o próprio acesso, manter uma administradora) aparecem com o texto do servidor, acima.
 
 **Cadastros básicos (Cadastros e Pessoas → Clientes).** Fornecedores, Categorias, Praças, Semanas, Restrições e Clientes usam a mesma tela.
 
@@ -996,7 +1003,7 @@ Avisos junto ao campo:
 - Campos: Fornecedor (**Nome do fornecedor (razão social)**, **CNPJ**, **Nome do contato**, **Telefone**, **E-mail**, **Endereço**); Categoria e Praça (**Nome**); Semana (**Número da semana**, **Primeiro dia**, **Último dia**, **Situação**: Aberta ou Fechada); Restrição (**Código**, **Descrição**, **Impede montar maleta para o vendedor com esta restrição**; na lista, coluna **Impede montar maleta** com Sim ou Não); Cliente (**Nome do cliente**, **CPF**, **Telefone**, **WhatsApp**, **Vendedor responsável**, **Observações**, **Endereço**).
 - Excluir: "{Nome} some das listas. O que já foi registrado com ele continua guardado. Por aqui não dá para desfazer." (com "ela" nos femininos). Botões: **Voltar** e **Excluir {item}**.
 - Depois de salvar: "{Nome} foi cadastrado." (ou "cadastrada"), "Os dados de {nome} foram salvos.", "{Nome} foi excluído." (ou "excluída").
-- **Ativo e inativo** (tarefa 1.14; fornecedores, categorias, praças, restrições e clientes; as semanas têm só Aberta e Fechada). Palavras: **Ativo**, **Inativo**, **Inativar {item}**, **Reativar {item}**. Filtro **Situação**: **Ativos** (já vem escolhido), **Inativos**, **Todos**. A lista mostra a coluna **Situação** (Ativo ou Inativo). Inativar não é excluir: o cadastro some das listas de escolha e das buscas, mas continua nos relatórios e no histórico.
+- **Ativo e inativo** (tarefa 1.14; fornecedores, categorias, praças, restrições e clientes; as semanas têm só Aberta e Fechada). Palavras: **Ativo**, **Inativo**, **Inativar {item}**, **Reativar {item}**. Filtro **Situação**: **Ativos** (já vem escolhido), **Inativos**, **Todos**. A lista mostra a coluna **Situação** (Ativo ou Inativo). Inativar não é excluir: o cadastro some das listas de escolha e das buscas, mas continua nos relatórios e no histórico. Desde 17/11/2026 usuários e produtos também dizem **Inativar**, **Inativo** e **Inativos** (antes, "Desativar" e "Desativados"); a mensagem do vendedor "Seu acesso foi desativado." não mudou.
 - Inativar (pede confirmação): título "Inativar {nome}?"; texto "{Nome} deixa de aparecer nas listas de escolha e nas buscas, mas continua nos relatórios e no histórico. Pode voltar a qualquer hora, é só reativar." Botões: **Voltar** e **Inativar {item}**. Depois: "{Nome} foi inativado." (ou "inativada") "Pode voltar a qualquer hora." Reativar não pede confirmação: "{Nome} voltou a ficar ativo." (ou "ativa").
 - Lista vazia só com inativos: "Nenhum cliente inativo." (e o mesmo para os outros, no feminino quando for o caso). Nas listas de escolha dos formulários (categoria, fornecedor, praça, restrição) só aparece quem está ativo; o que já estava escolhido continua aparecendo com a marca "(inativo)" ou "(inativa)".
 - Cliente: campo **Data de nascimento** (opcional; dica: "Se não souber, deixe em branco. Serve para avisar dos aniversariantes."). Data no futuro: "A data de nascimento não pode ser no futuro." Data muito antiga: "Confira a data de nascimento: ela parece muito antiga."
@@ -1116,7 +1123,7 @@ Tudo é gravado em Real. Dólar e Guarani aparecem ao lado de todo valor, nos do
 - **Grades e relatórios:** uma coluna para cada moeda, na ordem R$, US$ e Gs., e os totais do rodapé nas três. O total em Dólar e em Guarani é a soma das linhas, então o detalhamento sempre fecha.
 - **Linha da cotação**, embaixo de telas de valores e no cabeçalho dos relatórios: "Cotação do Banco Central de 06/11/2026". Nos relatórios de vários dias: "Dólar e Guarani pela cotação do Banco Central do dia de cada lançamento".
 - **Minha maleta (Corona Vendas)**, decisão de 11/11/2026 (D1): preço e valor em aberto em Dólar e Guarani pela cotação de hoje, com a frase "Dólar e Guarani pela cotação de hoje." (é preço para vender agora; a venda grava a cotação do dia dela). Sem cotação: "Sem cotação do Dólar e do Guarani por enquanto: os valores aparecem só em Real."
-- Ninguém digita cotação nem valor em Dólar ou Guarani: os campos de valor são sempre em reais.
+- Ninguém digita cotação. Os campos de valor são em reais, com **uma exceção**: o recebimento do representante (Financeiro → Recebimentos do representante, "Pagou agora" e "Contas antigas do representante" no acerto), em que a dona escolhe a **Moeda** (**Real**, **Dólar** ou **Guarani**) e digita o valor nela. Antes de confirmar, a tela mostra **Fica assim:** com R$, US$ e Gs. e a linha da cotação; depois, a lista, a ficha do acerto e o relatório Recebimentos por forma (coluna **Moeda recebida**) mostram **Recebido em Gs. 500.000** (ou **Recebido em US$ 100,00**) junto das três moedas. Sem cotação: "Ainda não há cotação do dia. Por enquanto, registre o recebimento em reais." e só Real. O que vale e fica gravado é o valor em reais que o sistema calculou.
 
 ### Textos
 
@@ -1270,7 +1277,7 @@ Menu: grupo **Maletas**, item **Montar maleta**. Os textos desta tela são os ú
 
 - Nova maleta: **Vendedor**, **Semana**, **Praça** (já vem "A praça do vendedor"), **Tipo da maleta** (**Maleta nova**, **Reposição**), botão **Começar a montar**.
 - Maletas em montagem: **Continuar montando** e **Excluir** (confirmação: "As peças continuam no estoque, nada foi enviado").
-- Leitura: **Ler uma peça**, campo **Código da peça ou nome**, botão **Colocar na maleta**. Peça lida: **Última peça lida** com **No estoque**, **Nesta maleta** e **Preço**. Recusas: **Peça não encontrada**, "está desativada", "está sem estoque", "Só há N peças ... no estoque".
+- Leitura: **Ler uma peça**, campo **Código da peça ou nome**, botão **Colocar na maleta**. Peça lida: **Última peça lida** com **No estoque**, **Nesta maleta** e **Preço unitário**. Recusas: **Peça não encontrada**, "está desativada", "está sem estoque", "Só há N peças ... no estoque".
 - Lista: **Quantidade**, **Atualizar**, **Tirar**; totais **Peças na maleta** e **Valor da maleta**.
 - Limite: **Limite do vendedor**, **Já está com ele**, **Esta maleta**, **Sobra**; "Sem limite" marcado: **Sem limite**; ainda não definido: **Limite não definido** e "Defina o limite deste vendedor antes de montar a maleta". Frase da montagem: "Limite R$ X — em mãos R$ Y — pode levar mais R$ Z".
 - Envio: botão **Enviar maleta**, confirmação "Enviar esta maleta?" (vendedor, peças e valor), depois **Maleta enviada**; reenvio: **Esta maleta já estava enviada**. O botão **Imprimir nota** só aparece quando a tarefa 3.7 ligar a impressão.
@@ -1310,7 +1317,7 @@ Os textos das telas são das tarefas 7.9, 7.10 e 7.11; estes são os termos que 
 - **Contas que o vendedor deve** (conta a receber do vendedor): **Vencimento**, **Valor**, **Já pago**, **Em aberto**; parcela "2 de 3".
 - **Registrar recebimento** (a dona, fora do acerto); **Estornar recebimento** (com motivo); mensagens: "Escolha a data de pagamento do que ficou devendo.", "O valor recebido passa do que o vendedor deve neste acerto.", "Este vendedor não tem conta em aberto.", "Este recebimento já foi estornado."
 - **Pagar ao vendedor agora** / **Deixar de crédito para o próximo acerto** (acerto a favor do vendedor).
-- **Caixa** (só a dona): **Entradas**, **Saídas**, **Saldo**; categorias "Repasse do vendedor" e "Pagamento ao vendedor".
+- **Caixa** (só a dona): **Entradas**, **Saídas**, **Saldo**; categorias "Repasse do representante" e "Pagamento ao representante" (a 9.8 trocou "vendedor" por "representante" nos textos gravados do caixa).
 
 ## Contas a pagar, caixa manual e fechar semana (tarefa 7.7)
 
@@ -1332,6 +1339,7 @@ Só a dona, no Corona Gestão. Valores em Real, com Dólar e Guarani ao lado pel
 - **Contagem das peças:** **Peça boa** ou **Com defeito**, **Quantidade**, **Contar**, **Desfazer leitura**. Avisos: "Chegou venda nova: confira a contagem." e "O computador do vendedor ainda tem N envios para mandar." Botões **Conferir o acerto** e **Desistir do acerto** (pede o motivo: "As maletas voltam a ficar com o vendedor e nada de dinheiro é gravado.").
 - **Conferência do acerto:** colunas **Saiu na maleta**, **Voltou boa**, **Voltou com defeito**, **Faltou**, **Valor da falta**. "Sobrou peça: confira as vendas ou registre o ajuste." e "Tem devolução esperando sua revisão." (botão **Revisar devoluções**) impedem fechar. Para cada falta e cada devolução não aceita: **Cobrar agora**, **Cobrar depois** ou **A loja assume** (pede o motivo; na parte 15 o primeiro se chamava "Cobrar neste acerto"). Pendência antiga: **Cobrar agora** ou **Deixar para depois**. Defeito: **Aprovar como defeito**.
 - **Comissão e meta (na conferência e na ficha):** "Vendido na semana: Gs. X de Gs. Y (meta)", "Bateu a meta: comissão de 40%." ou "Ainda não bateu a meta: comissão de 30%.", e a comissão de cada venda.
+- **Falta para a meta (só na conferência do acerto em andamento, tarefa 8.11):** logo abaixo de "Vendido na semana", "Falta para a meta: Gs. 600.000 (R$ 540,00)." O Guarani é o que falta para a meta; o Real é o equivalente, pela cotação mais recente, só para mostrar (ADR-0012, item 5). Quando a meta foi batida a linha não aparece, e a ficha do acerto fechado não tem a linha (já diz se bateu a meta). Mesmo termo e mesma conta da prévia do vendedor (**Falta para a meta**, parte 16).
 - **Totais:** **Vendido**, **Descontos**, **Devolvido**, **Vendido depois dos descontos**, **Comissão do vendedor**, **Faltas cobradas**, **Valor do acerto**, **Crédito do vendedor usado**, **A pagar agora**; e, no pagamento, **Recebido agora**, **Boleto**, **Ficou devendo**, **Crédito do vendedor disponível**, **Pago ao vendedor agora** (na ficha fechada: **Recebido no acerto**, **Ficou devendo**, **Pago ao vendedor**).
 - **Pagamento:** **Dinheiro**, **Transferência (PIX)** e **Boleto** (valor e vencimento). O que ficou devendo: **Em quantas parcelas** e **Data da primeira parcela** ("Escolha a data de pagamento do que ficou devendo."). **Contas antigas do vendedor** (pagar junto; "não entra no valor deste acerto"). A favor do vendedor: "A loja deve R$ X ao vendedor." com **Guardar como crédito para o próximo acerto** ou **Pagar agora**. Nunca aparecem cheque, cartão nem entrada.
 - **Fechar acerto** (nomeia a ação): "Fechar o acerto de {vendedor}? Depois de fechado, o acerto não muda mais." com **Fechar acerto** e **Voltar e conferir**; depois, "Acerto fechado." Erros: "Sem internet. O acerto não foi fechado. Tente de novo." · "Os números mudaram desde que você abriu. Confira o acerto de novo." · "O valor pago passa do que o vendedor deve. Confira os valores." · "A semana deste acerto já está fechada, por isso o acerto não pode ser fechado. Fale com o suporte."
@@ -1384,3 +1392,232 @@ Menu do Corona Gestão: grupo **Relatórios financeiros** (depois de "Relatório
 | **Recebimentos por forma de pagamento** | Dinheiro, Transferência e Boleto repassados pelos vendedores; momento: No acerto ou Depois do acerto |
 
 Os nomes "Parcelas a receber" e "Parcelas a pagar" evitam repetir "Contas a receber" e "Contas a pagar", que são as telas de trabalho do Financeiro. DRE e lucro por produto e por vendedor ficam para a Fase 8.
+
+## Relatórios de vendas e curva ABC (Fase 8, tarefa 8.5; §12)
+
+Menu do Corona Gestão: grupo **Relatórios de vendas** (depois de "Relatórios de devoluções") e, no grupo de estoque, **Curva ABC dos produtos**. Dólar e Guarani seguem a cotação do Banco Central do dia de **cada venda**; tudo é gravado em Real. Nenhum custo aparece.
+
+| Tela | O que mostra |
+| --- | --- |
+| **Vendas feitas** | Uma venda por linha: Vendida em, Vendedor, Praça, Cliente, Peças, Vendido, Devolvido, Vendido líquido; filtro de situação: só as feitas, só as canceladas, feitas e canceladas |
+| **Vendas por vendedor**, **por praça**, **por cliente**, **por produto**, **por categoria**, **por dia** | Vendas, Peças, Vendido, Devolvido, Vendido líquido e Valor médio por venda de cada grupo |
+| **Ranking de vendedores**, **Ranking de produtos** | O mesmo, do que mais vendeu para o que menos vendeu, com a Posição (e a foto, no ranking de produtos) |
+| **Valor médio por venda** | Os vendedores do maior para o menor valor médio por venda (o "ticket médio" da especificação não aparece na tela) |
+| **Vendas canceladas** | Cancelada em, Cancelada por e Motivo; ficam fora de todos os totais |
+| **Curva ABC dos produtos** | Posição, foto, Código, Produto, Categoria, Peças, Vendido líquido, Parte do total, Soma até aqui e **Classe** A, B ou C |
+
+Termos: **Vendido líquido** = o que foi vendido menos o que o cliente devolveu ou trocou. **Classe A**: os produtos que somam até 80% do vendido líquido; **B**: até 95%; **C**: o resto. Produto sem venda no período não aparece na curva. "Sem praça" aparece para o vendedor sem praça cadastrada.
+
+## Resultado do período e lucro (Fase 8, tarefa 8.6; §12)
+
+Menu do Corona Gestão: no grupo **Relatórios financeiros**. Só a dona vê custo e lucro; nada disto existe no Corona Vendas. Dólar e Guarani seguem a cotação do Banco Central do dia de **cada registro**; tudo é gravado em Real.
+
+| Tela | O que mostra |
+| --- | --- |
+| **Resultado do período** | De que dia até que dia (obrigatório). Linhas: Vendas, Devoluções e trocas, Receita líquida, Custo das peças vendidas, Lucro bruto, Comissões, Perdas, Cobrado do vendedor, uma linha por categoria de despesa ou entrada da loja e o Resultado. Resultado negativo vem escrito "(prejuízo)" |
+| **Registros do resultado** | Os registros que formam uma linha escolhida (a venda, a devolução, a comissão, a perda, a cobrança ou o lançamento do caixa), com o custo de cada peça e a marca **Custo do cadastro** |
+| **Lucro por produto** | Foto, Código, Peça, Categoria, Peças, Receita líquida, Custo das peças, Lucro, Margem e Custo do cadastro |
+| **Lucro por vendedor** | Vendedor, Praça, Receita líquida, Custo das peças, Lucro bruto, Comissão e Lucro |
+
+Termos: **resultado do período** = o que sobrou (ou faltou) no período, depois de tudo. **Lucro bruto** = receita líquida menos o custo das peças vendidas. **Lucro** (por peça ou vendedor) = receita líquida menos o custo (e, por vendedor, menos a comissão). **Custo das peças vendidas** = o custo da compra mais recente até o dia da venda. **Custo do cadastro** = não havia compra registrada até a venda, então vale o custo que está no cadastro hoje: é uma estimativa e muda se o cadastro mudar. **Perdas** = peças que faltaram no acerto (menos as encontradas depois), avarias e peças a menos na contagem do estoque, pelo custo. **Cobrado do vendedor** = o que o acerto cobrou das faltas. Aviso fixo na tela: "A devolução abate o mês em que a venda foi feita; por isso o resultado de um mês pode mudar depois."
+
+## Relatórios de controle (Fase 8, tarefa 8.9; §12)
+
+Menu do Corona Gestão: grupo **Controle**, depois de "Relatórios financeiros". Só a dona vê. Nenhuma senha aparece.
+
+| Tela | O que mostra |
+| --- | --- |
+| **Auditoria: quem fez o quê** | Quando, Quem fez ("Pelo servidor" quando não foi uma pessoa), O que foi, Registro, Antes e Depois; filtros de busca, período e pessoa |
+| **Computadores e envios** | Vendedor, Situação, Versão do programa, Último recebimento, Último envio, Esperando envio, Envios com problema e Guardados à parte; filtros de situação e de envios com problema |
+| **Acessos: entradas e erros** | Quando, Pessoa, Usuário digitado, Programa, Resultado, Endereço de internet e Bloqueado até; filtros de resultado e de programa |
+
+Situações do computador na tela: **Em uso**, **Esperando a sua liberação**, **Trocado por outro** e **Bloqueado**. Resultados de acesso: **Entrou**, **Senha errada**, **Recusada: acesso bloqueado**, **Usuário desativado**, **Programa muito antigo**, **Senha temporária vencida**, **Computador que não combina com o acesso** e **Bloqueio retirado ao redefinir a senha**. Na tela nunca aparecem "quarentena", "sessão", "token" nem "log". Usuário que não existe aparece como **Usuário que não existe**.
+
+## 20. Corona Vendas em dois idiomas (issue #212, 17/11/2026)
+
+O Corona Vendas tem **dois idiomas: espanhol (padrão) e português**. A pessoa troca em "Español | Português", na tela de entrada e no alto de todas as telas; a escolha fica guardada no computador e vale na hora. O Corona Gestão também tem os dois idiomas (parte 21). Os textos moram em `apps/seller-app/src/renderer/textos-pt.ts` e `textos-es.ts` (mesmas chaves; um teste falha se faltar uma) e as mensagens de erro em espanhol, por código, em `erros-es.ts`. Datas e números seguem o idioma (dd/mm/aaaa e "1.234,56" nos dois); o dinheiro continua R$, US$ e Gs.
+
+Espanhol simples, de loja, no tom de `docs/perguntas-para-a-dona.md` (tratamento por "vos": "Conectate", "Escribí"). A dona usa "maleta", "acerto" e "cuota".
+
+| Português | Español (na tela) |
+| --- | --- |
+| dona | dueña |
+| vendedor | vendedor |
+| cliente | cliente |
+| maleta | maleta |
+| acerto | acerto |
+| peça | pieza |
+| parcela | cuota |
+| venda / vender | venta / vender |
+| a prazo (fiado) | a plazo (fiado) |
+| a receber | por cobrar |
+| receber (dinheiro do cliente) | cobrar |
+| conferir a maleta | controlar la maleta |
+| ler o código | leer el código |
+| estornar | anular |
+| devolução | devolución |
+| troca | cambio |
+| crédito do cliente | crédito del cliente |
+| cotação | cotización |
+| Dinheiro (forma de pagamento) | Efectivo |
+| Transferência | Transferencia |
+| Boleto | Boleta |
+| CPF | documento |
+| usuário / senha | usuario / contraseña |
+| sem internet / aguardando envio | sin internet / esperando envío |
+| prévia (valor estimado) | estimación |
+| sobras (do acerto) | lo que sobró |
+| pendências | pendientes |
+| garantia | garantía |
+
+### Proibido na tela, em espanhol
+
+Mesma regra da parte 2: nunca aparecem em tela as palavras abaixo (a verificação não diferencia maiúsculas e considera plural), nem os identificadores do bloco B. "error" e "null" valem como palavra comum do espanhol e por isso não estão nesta lista; mensagens em inglês e códigos técnicos continuam proibidos.
+
+<!-- PROIBIDAS-ES:INICIO -->
+```
+outbox
+sync
+sincronización
+cola de sincronización
+payload
+UUID
+token
+refresh
+failed
+invalid
+unauthorized
+forbidden
+timeout
+undefined
+Exception
+stack trace
+movimiento de stock
+remesa
+bipear
+PTAX
+```
+<!-- PROIBIDAS-ES:FIM -->
+
+## 21. Corona Gestão em dois idiomas (issue #213, 17/11/2026)
+
+O Corona Gestão segue a parte 20: **espanhol (padrão) e português**, com os botões **ES | PT** no alto de todas as telas e na tela de entrada; a escolha fica guardada no computador (num arquivo da pasta de dados, gravado pelo programa). A troca recarrega a tela no mesmo endereço (se houver algo por salvar, pergunta antes). Os textos moram em `apps/owner-app/src/renderer/textos-*.ts` (português) e `apps/owner-app/src/renderer/idioma/es/*.ts` (espanhol, mesmas chaves; `idioma.test.ts` falha se faltar uma ou sobrar texto em português). Os títulos dos relatórios estão em `idioma/es/relatorios-mapa.ts`; as mensagens de erro da API em espanhol, por código, em `idioma/erros-es.ts`. Tratamento da dona por **"usted"** (a dona é cliente do sistema, não colega de loja). Termos próprios da dona, além da tabela da parte 20:
+
+| Português | Español (na tela) |
+| --- | --- |
+| Corona Gestão | Corona Gestión |
+| cadastro (registro) | registro |
+| praça | plaza |
+| estoque | stock |
+| montar maleta | armar maleta |
+| contagem (do estoque) | conteo |
+| fornecedor | proveedor |
+| conferência (do sistema) | verificación |
+| caixa | caja |
+| lançamento | movimiento |
+| conta a pagar / a receber | cuenta a pagar / a cobrar |
+| recebimento do vendedor | cobro del vendedor |
+| semana (fechar semana) | semana (cerrar semana) |
+| painel da semana | panel de la semana |
+| relatório | informe |
+| computador do vendedor | computadora del vendedor |
+| envios com problema | envíos con problema |
+| nota de remessa | nota de envío |
+| Inativar / Reativar | Inactivar / Reactivar |
+
+O que o **servidor** monta em português (avisos da tela inicial, textos de campo recusado, algumas linhas de relatório) continua como a API manda; as mensagens de erro por código têm texto em espanhol. As planilhas de produtos e de compra aceitam os títulos de coluna nos dois idiomas.
+
+## Corona Gestão: Representante e o consignado ao cliente (tarefa 9.4; §23 e ADR-0016)
+
+Estas linhas valem **sobre** as que dizem "na tela, sempre vendedor" (acima) **no Corona Gestão**. No Corona Vendas valem as linhas da tarefa 9.2. No código e no banco os nomes técnicos continuam (`vendedor`, `vendedores`, `VENDEDOR`, `vendedorId`).
+
+| Antes | Agora, na tela do Corona Gestão | Observação |
+| --- | --- | --- |
+| vendedor, vendedora | **Representante** | Quem usa o Corona Vendas e atende os clientes da praça. Vale em todo o menu, nas telas, nos relatórios, nos arquivos (PDF, Excel, CSV) e nas mensagens. Plural: **Representantes**. Em espanhol, **representante** / **representantes**. |
+| Pessoas → Vendedores | **Pessoas → Representantes** | |
+| Vendedor (filtro, coluna) | **Representante** | |
+| cliente (do vendedor) | **Cliente** | Quem pega peças da maleta em consignado para revender. Não acessa o sistema. Cada representante tem a sua lista de clientes. |
+
+**Menu novo (Corona Gestão)**
+
+| Onde | Texto (pt) | Texto (es) | Para que serve |
+| --- | --- | --- | --- |
+| Maletas | **Fechamento da maleta** | Cierre de la maleta | A dona lê o código de cada peça que voltou. A tela e os arquivos têm duas partes separadas: **Peças da maleta** (es: Piezas de la maleta) e **Dinheiro** (es: Dinero). O relatório mostra enviadas, devolvidas pelos clientes, vendidas, ainda com clientes (e com quem), **lidas na volta** e **diferença**, com o valor vendido, a comissão dos clientes, o **Valor recebido** (es: **Valor cobrado**, como no resto do sistema em espanhol) e as **Pendências a receber** (es: Pendientes por cobrar). Sai em PDF, Excel e CSV. |
+| Consignado | **Notas dos clientes** | Notas de los clientes | Notas, acertos e recibos dos clientes. Só leitura. |
+| Consignado | **Semanas dos representantes** | Semanas de los representantes | Semanas de cada representante, com notas, valor DX, VD, comissão e recebido. |
+| Consignado | **Clientes dos representantes** | Clientes de los representantes | Ficha do cliente (endereço, documento, indicado por, como conheceu, comissão, quanto deve, peças com ele, notas) e as três fotos. |
+| Consignado | **Avisos do consignado** | Avisos del consignado | O que o balcão fez e o sistema aceitou, mas a dona deve olhar. |
+
+**Palavras e frases do Fechamento da maleta**
+
+- Na tela, "**ler o código**" e "**lidas na volta**", nunca "bipar" (vale a parte 2).
+- Botões: **Começar o fechamento**, **Somar peça**, **Concluir o fechamento** (ação sem volta; pede confirmação), **Escolher outra maleta**.
+- Confirmação: "As peças lidas voltam ao estoque da loja, até o que a maleta devia ter, e a maleta fica fechada. A diferença não é corrigida sozinha: ela fica no relatório. Essa ação não tem volta."
+- Diferença: "Faltam N peças em relação ao que devia estar na maleta. O sistema não corrige sozinho: decida o que fazer com a falta." (ou "Sobram").
+- Maleta com situação **Fechada** (antes: Enviada, Conferida, Em acerto, Acertada, Cancelada, Em montagem).
+- **Valores por maleta:** o relatório diz "Os valores da maleta são divididos pelo vendido de cada maleta dentro da nota do cliente." (ADR-0016, item 14).
+
+**Situação da nota do cliente:** Em aberto, Pendente, Fechado, Remarcado (§23.4). **Formas de pagamento:** Dinheiro, Pix, Débito, Crédito à vista (sem cheque, sem boleto).
+
+**O acerto antigo da §7.4 fica escondido** (ADR-0016, item 15): enquanto o servidor disser que não é para mostrar (`GET /api/configuracoes/telas`), somem o grupo **Acertos** do menu (Acertos, Pendências do acerto, Comissão por meta), o botão **Acerto** da tela inicial e do **Painel da semana** e o cartão de acertos do resumo. Nada é apagado; ligar de volta é mudar a configuração.
+
+**Fotos do cliente:** foto do cliente e do documento (frente e verso) são dados pessoais. A ficha só as busca quando a dona pede ("Ver a foto") e não as guarda no computador. "A foto ainda não chegou." quando o representante ainda não enviou; isso nunca trava nada.
+
+
+## 22. Corona Vendas: consignado ao cliente (tarefa 9.2, 19/11/2026)
+
+Vale a especificação §23 (que manda sobre as partes 18 e 20 onde discordarem). **Na tela, o programa fala em "Representante" (quem usa o Corona Vendas; antes "vendedor") e "Cliente" (quem leva peças em consignado para revender)**, nos dois idiomas e nos dois aplicativos. No código e no banco continuam `vendedor` e `cliente`. Os textos moram em `apps/seller-app/src/renderer/textos-pt.ts` e `textos-es.ts`, bloco `consignado` (mesmas chaves nos dois).
+
+| Português | Español (na tela) | Observação |
+| --- | --- | --- |
+| Representante | Representante | Quem usa o Corona Vendas. |
+| Cliente | Cliente | Quem pega peças para revender. Não usa o sistema. |
+| Gerenciamento Semanal | Gestión Semanal | A tela principal. Botões: Novo Pedido, Cobrança, Reposição, Troca, Clientes, Maletas e o campo Pesquisar. |
+| Novo Pedido | Nuevo Pedido | A saída de peças para um cliente (a nota). |
+| Pedido / nota | Pedido / nota | O que um cliente levou numa saída. Número `semana-sequência` (ex.: `0000064-21`). |
+| Cobrança | Cobranza | O acerto por nota: o cliente devolve o que não vendeu e paga o vendido menos a comissão. |
+| Reposição | Reposición | Acrescenta peças a um cliente com pedido em aberto. |
+| Troca | Cambio | Troca uma peça que está com o cliente por outra, sem acerto. |
+| Remarcar ("Cliente não veio") | Reprogramar ("El cliente no vino") | Muda a Data do retorno. |
+| Nova semana | Nueva semana | Abre a semana seguinte e fecha a anterior. |
+| Data do retorno | Fecha de retorno | Saída + 45 dias, editável. |
+| Valor DX / DV / VD | Valor DX / DV / VD | Levado (DX), devolvido (DV) e vendido (VD = DX − DV). "Itens DX, DV e VD" são as quantidades de peças. |
+| Comis. % / Comissão | Comis. % / Comisión | Parte do vendido que fica com o cliente (padrão 30%, de 0% a 40%). |
+| Valor Líq. | Valor neto | Sempre VD − comissão. |
+| Pendência | Pendiente / deuda | O que o cliente deve; acumula e entra sozinha no próximo acerto. |
+| Recibo | Recibo | Registro de um pagamento. |
+| Lançar pagamento | Registrar pago | No cadastro do cliente: abate a pendência mais antiga. |
+| Estornar | Anular | Corrigir é estornar (registro novo, com motivo) e fazer de novo. |
+| Maleta (código `0001`, `0002`...) | Maleta | O código vem do servidor (tarefa 9.3); só enquanto a maleta ainda não trouxe o código a tela mostra o provisório `M-XXXXXX`. |
+| Em aberto, Pendente, Fechado, Remarcado | Abierto, Pendiente, Cerrado, Reprogramado | Situações do pedido; cores: branca, amarela, verde e rosa (o texto aparece sempre, a cor sozinha não basta). |
+| Dinheiro, Pix, Débito, Crédito à vista | Efectivo, Pix, Débito, Crédito al contado | Sem cheque, sem boleto, sem parcelado, sem entrada, sem desconto. |
+
+Mensagens que a tela diz (português simples, dizendo o que fazer; em espanhol, as mesmas por código):
+
+- Bipe que não entra: "Esta peça não está na maleta escolhida. Confira o código." / "... Ela está na maleta M-XXXXXX." / "Só há N desta peça na maleta. Nada foi acrescentado."
+- Cobrança: "Estas N peça(s) não foram lidas e serão consideradas vendidas. Confirmar?" / "Esta peça não está neste pedido. Confira o código." / "O valor pago passa do total a receber. Confira os valores."
+- Pendência no Novo Pedido: "Este cliente deve R$ X. O valor será somado ao próximo acerto."
+- Fotos sem internet: "Algumas fotos ainda vão ser enviadas quando houver internet. Pode continuar trabalhando."
+- Sem semana: "Não há semana aberta. Toque em "Nova semana" para começar."
+
+### Relatórios do consignado (tarefa 9.3, §23.11)
+
+| Português | Español (na tela) | Observação |
+| --- | --- | --- |
+| Nota de saída | Nota de salida | Comprovante da saída, com espaço para assinatura. Sem nota fiscal. |
+| Relatório do acerto | Informe del cobro | O acerto de uma nota. |
+| Situação do cliente | Situación del cliente | O que já vendeu e o que falta. |
+| Peças vendidas por cliente | Piezas vendidas por cliente | Com período (De, Até). |
+| Relatório da semana / Totais da semana | Informe de la semana / Totales de la semana | A aba Totais. |
+| Situação da maleta | Situación de la maleta | Peças na maleta, com clientes (com quem) e vendidas. |
+| Imprimir · Salvar em PDF · Preparar para o WhatsApp | Imprimir · Guardar en PDF · Preparar para WhatsApp | O sistema abre a conversa; quem anexa e envia é o representante. |
+| Sem cotação | Sin cotización | Aparece no lugar do Dólar e do Guarani quando faltou a cotação do dia do lançamento. |
+| Praça | Plaza | No cabeçalho da tela principal e dos relatórios. |
+
+Mensagens: "O PDF foi guardado na pasta ... No WhatsApp que abriu, anexe o PDF e envie. Nada é enviado sozinho." / "Sem internet: o PDF já está guardado na pasta ..., mas o WhatsApp só abre com internet. Quando a internet voltar, toque de novo em "Preparar para o WhatsApp"." / "Este cliente não tem telefone cadastrado. Cadastre o telefone do cliente ou salve o PDF e envie por outro meio."
+
+
+## Preço unitário (pedido do responsável, 23/11)
+
+- Toda coluna ou rótulo que mostra o preço de uma peça se chama **Preço unitário** (ES: **Precio unitario**): nota da maleta, nota de saída do cliente, peças da maleta, produtos, compras, consulta de código, venda e acerto.
+- Não mudam: **Preço de custo**, **Preço de venda** (cadastro e filtros), totais e subtotais.

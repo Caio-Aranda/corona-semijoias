@@ -1,24 +1,17 @@
 import { useCallback, useEffect, useState } from 'react';
 import { TEXTOS } from '../textos';
+import { ehRelatorioDoAcertoAntigo } from './areas-de-relatorios';
 import { TEXTOS_DE_ACERTOS } from '../textos-acertos';
 import { TEXTOS_DE_COMPRAS } from '../textos-compras';
-import { TEXTOS_DE_CONCILIACOES } from '../textos-conciliacoes';
+import { TEXTOS_DE_CONSIGNADO } from '../textos-consignado';
 import { TEXTOS_DE_DEVOLUCOES } from '../textos-devolucoes';
 import { TEXTOS_DE_ESTOQUE } from '../textos-estoque';
 import { TEXTOS_DE_FINANCEIRO } from '../textos-financeiro';
 import { TEXTOS_DE_MALETAS } from '../textos-maletas';
-import { TEXTOS_RELATORIOS } from '../textos-relatorios';
 import { TEXTOS_DE_SINCRONIZACAO } from '../textos-sincronizacao';
-import { ORDEM_DOS_RELATORIOS, RELATORIOS } from './relatorios';
-import {
-  ORDEM_DOS_RELATORIOS_DE_COMPRAS,
-  ORDEM_DOS_RELATORIOS_DE_ESTOQUE,
-} from './relatorios-estoque';
-import { ORDEM_DOS_RELATORIOS_DE_DEVOLUCAO } from './relatorios-devolucao';
-import { ORDEM_DOS_RELATORIOS_DE_MALETA } from './relatorios-maleta';
-import { ORDEM_DOS_RELATORIOS_FINANCEIROS } from './relatorios-financeiros';
-import { TEXTOS_DE_RELATORIOS_FINANCEIROS } from '../textos-relatorios-financeiros';
-import { TEXTOS_DE_RELATORIOS_DE_DEVOLUCAO } from '../textos-relatorios-devolucao';
+import { TEXTOS_DE_AREAS_DE_RELATORIOS } from '../textos-areas-de-relatorios';
+import { CHAVES_DAS_AREAS, rotaDaArea, rotuloDaArea } from './areas-de-relatorios';
+import { TEXTOS_DO_PAINEL } from '../textos-painel';
 
 /** As telas do menu. A chave aparece na barra de endereço (#/pessoas/usuarios), nunca na tela. */
 export const ROTAS = [
@@ -37,6 +30,11 @@ export const ROTAS = [
   'estoque/compras',
   'maletas/lista',
   'maletas/montar',
+  'maletas/fechamento',
+  'consignado/notas',
+  'consignado/semanas',
+  'consignado/clientes',
+  'consignado/avisos',
   'pessoas/vendedores',
   'pessoas/clientes',
   'pessoas/usuarios',
@@ -91,6 +89,25 @@ export const ROTAS = [
   'relatorios/financeiro-inadimplencia',
   'relatorios/financeiro-caixa',
   'relatorios/financeiro-recebimentos',
+  'relatorios/financeiro-resultado',
+  'relatorios/financeiro-resultado-registros',
+  'relatorios/financeiro-lucro-produto',
+  'relatorios/financeiro-lucro-vendedor',
+  'relatorios/vendas-lista',
+  'relatorios/vendas-canceladas',
+  'relatorios/vendas-por-vendedor',
+  'relatorios/vendas-por-praca',
+  'relatorios/vendas-por-cliente',
+  'relatorios/vendas-por-produto',
+  'relatorios/vendas-por-categoria',
+  'relatorios/vendas-por-periodo',
+  'relatorios/vendas-ranking-vendedores',
+  'relatorios/vendas-ranking-pecas',
+  'relatorios/vendas-ticket-medio',
+  'relatorios/vendas-curva-abc',
+  'relatorios/controle-auditoria',
+  'relatorios/controle-computadores',
+  'relatorios/controle-acessos',
   'acertos/lista',
   'acertos/pendencias',
   'acertos/comissao',
@@ -100,11 +117,27 @@ export const ROTAS = [
   'financeiro/contas-a-receber',
   'financeiro/recebimentos',
   'conciliacoes/dinheiro',
+  'conciliacoes/conferencia-diaria',
+  'painel/semana',
+  'areas/cadastros',
+  'areas/estoque',
+  'areas/compras',
+  'areas/maletas',
+  'areas/devolucoes',
+  'areas/vendas',
+  'areas/financeiro',
+  'areas/controle',
+  'areas/conferencias',
 ] as const;
 export type Rota = (typeof ROTAS)[number];
 
 export const MENU = [
-  { itens: [{ chave: 'inicio', rotulo: TEXTOS.menu.inicio }] },
+  {
+    itens: [
+      { chave: 'inicio', rotulo: TEXTOS.menu.inicio },
+      { chave: 'painel/semana', rotulo: TEXTOS_DO_PAINEL.menu },
+    ],
+  },
   {
     titulo: TEXTOS.menu.cadastros,
     itens: [
@@ -150,6 +183,16 @@ export const MENU = [
     itens: [
       { chave: 'maletas/lista', rotulo: TEXTOS_DE_MALETAS.menu.lista },
       { chave: 'maletas/montar', rotulo: TEXTOS_DE_MALETAS.menu.montar },
+      { chave: 'maletas/fechamento', rotulo: TEXTOS_DE_CONSIGNADO.menu.fechamento },
+    ],
+  },
+  {
+    titulo: TEXTOS_DE_CONSIGNADO.menu.grupo,
+    itens: [
+      { chave: 'consignado/notas', rotulo: TEXTOS_DE_CONSIGNADO.menu.notas },
+      { chave: 'consignado/semanas', rotulo: TEXTOS_DE_CONSIGNADO.menu.semanas },
+      { chave: 'consignado/clientes', rotulo: TEXTOS_DE_CONSIGNADO.menu.clientes },
+      { chave: 'consignado/avisos', rotulo: TEXTOS_DE_CONSIGNADO.menu.avisos },
     ],
   },
   {
@@ -181,58 +224,35 @@ export const MENU = [
     ],
   },
   {
-    titulo: TEXTOS_RELATORIOS.grupoDoMenu,
-    itens: ORDEM_DOS_RELATORIOS.map((nome) => ({
-      chave: `relatorios/${nome}`,
-      rotulo: RELATORIOS[nome].titulo,
+    titulo: TEXTOS_DE_AREAS_DE_RELATORIOS.grupoDoMenu,
+    itens: CHAVES_DAS_AREAS.map((chave) => ({
+      chave: rotaDaArea(chave),
+      rotulo: rotuloDaArea(chave),
     })),
-  },
-  {
-    titulo: TEXTOS_RELATORIOS.grupoDoEstoque,
-    itens: ORDEM_DOS_RELATORIOS_DE_ESTOQUE.map((nome) => ({
-      chave: `relatorios/${nome}`,
-      rotulo: RELATORIOS[nome].titulo,
-    })),
-  },
-  {
-    titulo: TEXTOS_RELATORIOS.grupoDasCompras,
-    itens: ORDEM_DOS_RELATORIOS_DE_COMPRAS.map((nome) => ({
-      chave: `relatorios/${nome}`,
-      rotulo: RELATORIOS[nome].titulo,
-    })),
-  },
-  {
-    titulo: TEXTOS_DE_MALETAS.relatorios.grupoDoMenu,
-    itens: ORDEM_DOS_RELATORIOS_DE_MALETA.map((nome) => ({
-      chave: `relatorios/${nome}`,
-      rotulo: RELATORIOS[nome].titulo,
-    })),
-  },
-  {
-    titulo: TEXTOS_DE_RELATORIOS_DE_DEVOLUCAO.grupoDoMenu,
-    itens: [
-      ...ORDEM_DOS_RELATORIOS_DE_DEVOLUCAO.map((nome) => ({
-        chave: `relatorios/${nome}`,
-        rotulo: RELATORIOS[nome].titulo,
-      })),
-      {
-        chave: 'relatorios/devolucao-conferencia',
-        rotulo: TEXTOS_DE_RELATORIOS_DE_DEVOLUCAO.conferencia.menu,
-      },
-    ],
-  },
-  {
-    titulo: TEXTOS_DE_RELATORIOS_FINANCEIROS.grupoDoMenu,
-    itens: ORDEM_DOS_RELATORIOS_FINANCEIROS.map((nome) => ({
-      chave: `relatorios/${nome}`,
-      rotulo: RELATORIOS[nome].titulo,
-    })),
-  },
-  {
-    titulo: TEXTOS_DE_CONCILIACOES.grupoDoMenu,
-    itens: [{ chave: 'conciliacoes/dinheiro', rotulo: TEXTOS_DE_CONCILIACOES.menu }],
   },
 ];
+
+/** As rotas do acerto antigo da §7.4 (ADR-0016, item 15): ficam escondidas enquanto o servidor não mandar mostrar. */
+export function ehRotaDoAcertoAntigo(rota: Rota): boolean {
+  return rota.startsWith('acertos/') || ehRelatorioDoAcertoAntigo(rota);
+}
+
+/**
+ * O menu sem o fluxo antigo, quando ele está escondido (nada é apagado: só deixa de aparecer, e as rotas continuam). Mesma
+ * configuração do acerto antigo: some também o grupo "Devoluções e créditos" e "Vendas de computador bloqueado", que eram da
+ * venda ao consumidor que saiu do aplicativo do representante.
+ */
+export function menuDoGestao(acertoVisivel: boolean): typeof MENU {
+  if (acertoVisivel) return MENU;
+  return MENU.filter(
+    (grupo) =>
+      !('titulo' in grupo && grupo.titulo === TEXTOS_DE_ACERTOS.menu.grupo) &&
+      !('titulo' in grupo && grupo.titulo === TEXTOS_DE_DEVOLUCOES.menu.grupo),
+  ).map((grupo) => ({
+    ...grupo,
+    itens: grupo.itens.filter((i) => i.chave !== 'computadores/vendas'),
+  }));
+}
 
 /** Nome do item na tela, para "Em breve" e títulos. */
 export function rotuloDaRota(rota: Rota): string {

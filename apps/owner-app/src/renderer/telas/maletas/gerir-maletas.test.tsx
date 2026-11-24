@@ -21,8 +21,9 @@ vi.mock('../../nucleo/arquivos', async (original) => ({
 
 const NOTA = {
   loja: 'Corona Semijoias',
+  codigo: '0007',
   numero: 'S12-V7-1',
-  vendedor: { id: '8f14e45f-ceea-4672-a1b9-3a1a0f7c4d11', codigo: 7, nome: 'Joana Vendedora' },
+  vendedor: { id: '8f14e45f-ceea-4672-a1b9-3a1a0f7c4d11', codigo: 7, nome: 'Joana Representante' },
   praca: 'Centro',
   semana: { numero: 12 },
   tipo: 'NOVA',
@@ -87,9 +88,10 @@ const PRODUTOS: Record<string, unknown> = {
 
 const maletaEnviada = (status = 'ENVIADA') => ({
   id: ID_MALETA,
+  codigo: '0007',
   version: 3,
   vendedorId: ID_VEND,
-  vendedorNome: 'Joana Vendedora',
+  vendedorNome: 'Joana Representante',
   semanaId: ID_SEMANA,
   semanaNumero: 12,
   pracaId: ID_PRACA,
@@ -146,7 +148,9 @@ function montar(extras: Record<string, Manipulador> = {}) {
     'avisos.listar': () => ({ ok: true, dados: { avisos: [] } }),
     'cotacao.hoje': () => ({ ok: true, dados: { disponivel: false } }),
     'vendedores.escolha': () =>
-      pagina([{ id: ID_VEND, nome: 'Joana Vendedora', codigo: 7, pracaId: ID_PRACA, ativo: true }]),
+      pagina([
+        { id: ID_VEND, nome: 'Joana Representante', codigo: 7, pracaId: ID_PRACA, ativo: true },
+      ]),
     'semanas.listar': () => pagina([{ id: ID_SEMANA, numero: 12, situacao: 'ABERTA' }]),
     'produtos.listar': () => pagina([]),
     'produtos.porCodigo': (p) => {
@@ -166,7 +170,7 @@ function montar(extras: Record<string, Manipulador> = {}) {
       ok: true,
       dados: {
         vendedorId: ID_VEND,
-        vendedorNome: 'Joana Vendedora',
+        vendedorNome: 'Joana Representante',
         limite: 500,
         valorEmAberto: 210,
         limiteRestante: 290,
@@ -210,7 +214,7 @@ async function abrirLista(m: Montagem) {
   const u = userEvent.setup();
   render(<App ponte={m.ponte} />);
   const nav = await screen.findByRole('navigation', { name: 'Menu do Corona Gestão' });
-  await u.click(within(nav).getByRole('button', { name: 'Maletas' }));
+  await u.click(within(nav).getAllByRole('button', { name: 'Maletas' })[0]!);
   await screen.findByRole('heading', { name: 'Maletas', level: 1 });
   return u;
 }
@@ -218,7 +222,7 @@ async function abrirLista(m: Montagem) {
 async function abrirFicha(m: Montagem) {
   const u = await abrirLista(m);
   await u.click(
-    await screen.findByRole('button', { name: 'Abrir a maleta de Joana Vendedora, semana 12' }),
+    await screen.findByRole('button', { name: 'Abrir a maleta de Joana Representante, semana 12' }),
   );
   await screen.findByRole('heading', { name: 'Maleta enviada' });
   return u;
@@ -236,18 +240,24 @@ describe('Lista de maletas', () => {
   it('mostra as maletas e filtra por situação', async () => {
     const m = montar();
     const u = await abrirLista(m);
-    const linha = (await screen.findByText('Joana Vendedora', { selector: 'td' })).closest('tr')!;
+    const linha = (await screen.findByText('Joana Representante', { selector: 'td' })).closest(
+      'tr',
+    )!;
     expect(within(linha).getByText('Enviada')).toBeTruthy();
     expect(within(linha).getByText('Maleta nova')).toBeTruthy();
+    // O código da maleta (0007), gerado pelo servidor, aparece na lista.
+    expect(within(linha).getByText('0007')).toBeTruthy();
     await u.selectOptions(screen.getByLabelText('Situação'), 'Cancelada');
     await waitFor(() => expect(ultima(m, 'maletas.listar')).toMatchObject({ status: 'CANCELADA' }));
   });
 
-  it('visão por vendedor mostra o que está em aberto e quanto sobra do limite', async () => {
+  it('visão por representante mostra o que está em aberto e quanto sobra do limite', async () => {
     const m = montar();
     const u = await abrirLista(m);
-    await u.click(screen.getByRole('button', { name: 'Por vendedor' }));
-    const linha = (await screen.findByText('Joana Vendedora', { selector: 'td' })).closest('tr')!;
+    await u.click(screen.getByRole('button', { name: 'Por representante' }));
+    const linha = (await screen.findByText('Joana Representante', { selector: 'td' })).closest(
+      'tr',
+    )!;
     expect(within(linha).getByText(/210,00/)).toBeTruthy();
     expect(within(linha).getByText(/290,00/)).toBeTruthy();
     expect(ultima(m, 'maletas.emAberto')).toEqual({ vendedorId: ID_VEND });
@@ -269,7 +279,7 @@ describe('Ficha da maleta', () => {
   });
 });
 
-describe('Maleta já conferida pelo vendedor (Fase 4)', () => {
+describe('Maleta já conferida pelo representante (Fase 4)', () => {
   it('continua com Devolver e Repor, não oferece Cancelar e mostra as vendas nos movimentos', async () => {
     const m = montar({
       'maletas.ver': () => ({ ok: true, dados: maletaEnviada('CONFERIDA') }),
@@ -322,36 +332,38 @@ describe('Maleta já conferida pelo vendedor (Fase 4)', () => {
     });
     const u = await abrirLista(m);
     await u.click(
-      await screen.findByRole('button', { name: 'Abrir a maleta de Joana Vendedora, semana 12' }),
+      await screen.findByRole('button', {
+        name: 'Abrir a maleta de Joana Representante, semana 12',
+      }),
     );
     expect(await screen.findByRole('button', { name: 'Devolver peças à dona' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Repor esta maleta' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Cancelar maleta' })).toBeNull();
-    expect(screen.getByText('Vendida pelo vendedor')).toBeTruthy();
+    expect(screen.getByText('Vendida pelo representante')).toBeTruthy();
     expect(screen.getByText('Venda desfeita (estorno)')).toBeTruthy();
     expect(screen.getByText('Conferida', { selector: 'dd' })).toBeTruthy();
-    expect(screen.getByText('Conferência do vendedor')).toBeTruthy();
+    expect(screen.getByText('Conferência do representante')).toBeTruthy();
     expect(screen.getByText(/Há diferença em 1 peça/)).toBeTruthy();
-    const tabela = screen.getByRole('table', { name: 'O que o vendedor contou' });
+    const tabela = screen.getByRole('table', { name: 'O que o representante contou' });
     expect(within(tabela).getByText('-1')).toBeTruthy();
   });
 });
 
 describe('Maleta com tudo devolvido', () => {
-  it('continua enviada: a ficha avisa que não há peças com o vendedor', async () => {
+  it('continua enviada: a ficha avisa que não há peças com o representante', async () => {
     const m = montar({ 'maletas.saldo': () => ({ ok: true, dados: saldoDaMaleta(3, true) }) });
     await abrirFicha(m);
-    expect(await screen.findByText('Sem peças com o vendedor')).toBeTruthy();
+    expect(await screen.findByText('Sem peças com o representante')).toBeTruthy();
     expect(screen.getByText('Enviada', { selector: 'dd' })).toBeTruthy();
   });
 
-  it('a lista Por vendedor não conta a maleta de saldo zero', async () => {
+  it('a lista Por representante não conta a maleta de saldo zero', async () => {
     const m = montar({
       'maletas.emAberto': () => ({
         ok: true,
         dados: {
           vendedorId: ID_VEND,
-          vendedorNome: 'Joana Vendedora',
+          vendedorNome: 'Joana Representante',
           limite: 500,
           valorEmAberto: 0,
           limiteRestante: 500,
@@ -369,8 +381,10 @@ describe('Maleta com tudo devolvido', () => {
       }),
     });
     const u = await abrirLista(m);
-    await u.click(screen.getByRole('button', { name: 'Por vendedor' }));
-    const linha = (await screen.findByText('Joana Vendedora', { selector: 'td' })).closest('tr')!;
+    await u.click(screen.getByRole('button', { name: 'Por representante' }));
+    const linha = (await screen.findByText('Joana Representante', { selector: 'td' })).closest(
+      'tr',
+    )!;
     const celulas = within(linha)
       .getAllByRole('cell')
       .map((c) => c.textContent);
@@ -489,13 +503,19 @@ describe('Cancelar maleta', () => {
     expect(within(dialogo).getByText(/As peças voltam para o estoque/)).toBeTruthy();
     await u.click(within(dialogo).getByRole('button', { name: 'Cancelar maleta' }));
     expect(await within(dialogo).findByText('Conte o motivo para cancelar a maleta.')).toBeTruthy();
-    await u.type(within(dialogo).getByLabelText('Por que está cancelando?'), 'Vendedora desistiu');
+    await u.type(
+      within(dialogo).getByLabelText('Por que está cancelando?'),
+      'Representante desistiu',
+    );
     await u.click(within(dialogo).getByRole('button', { name: 'Cancelar maleta' }));
     expect(await within(dialogo).findByText(/já foi movimentada/)).toBeTruthy();
     expect(
-      within(dialogo).getByText(/devolva as peças que ainda estão com o vendedor/),
+      within(dialogo).getByText(/devolva as peças que ainda estão com o representante/),
     ).toBeTruthy();
-    expect(ultima(m, 'maletas.cancelar')).toEqual({ id: ID_MALETA, motivo: 'Vendedora desistiu' });
+    expect(ultima(m, 'maletas.cancelar')).toEqual({
+      id: ID_MALETA,
+      motivo: 'Representante desistiu',
+    });
   });
 
   it('cancela e mostra a ficha atualizada', async () => {
@@ -523,7 +543,7 @@ describe('Cancelar maleta', () => {
 });
 
 describe('Reposição', () => {
-  it('cria uma maleta nova do tipo reposição, do mesmo vendedor, semana e praça', async () => {
+  it('cria uma maleta nova do tipo reposição, do mesmo representante, semana e praça', async () => {
     const m = montar({
       'maletas.criar': () => ({
         ok: true,
@@ -554,12 +574,12 @@ describe('Reposição', () => {
     expect(p).not.toHaveProperty('itens');
   });
 
-  it('a partir da visão por vendedor pede a semana', async () => {
+  it('a partir da visão por representante pede a semana', async () => {
     const m = montar();
     const u = await abrirLista(m);
-    await u.click(screen.getByRole('button', { name: 'Por vendedor' }));
+    await u.click(screen.getByRole('button', { name: 'Por representante' }));
     await u.click(
-      await screen.findByRole('button', { name: 'Nova reposição para Joana Vendedora' }),
+      await screen.findByRole('button', { name: 'Nova reposição para Joana Representante' }),
     );
     await u.click(await screen.findByRole('button', { name: 'Começar a repor' }));
     expect(await screen.findByText('Escolha a semana.')).toBeTruthy();
@@ -571,7 +591,9 @@ describe('Imprimir nota', () => {
   it('na lista e na ficha da maleta enviada gera o PDF da nota pela ponte de arquivos', async () => {
     const m = montar({ 'maletas.nota': () => ({ ok: true, dados: NOTA }) });
     const u = await abrirLista(m);
-    await u.click(await screen.findByRole('button', { name: 'Imprimir nota: Joana Vendedora' }));
+    await u.click(
+      await screen.findByRole('button', { name: 'Imprimir nota: Joana Representante' }),
+    );
     await waitFor(() => expect(entregues).toHaveLength(1));
     expect(ultima(m, 'maletas.nota')).toEqual({ id: ID_MALETA });
     expect(entregues[0]).toMatchObject({
@@ -580,15 +602,19 @@ describe('Imprimir nota', () => {
     });
     const pdf = new TextDecoder('latin1').decode(entregues[0]!.bytes);
     expect(pdf).toContain('Anel Solitário');
+    // A nota traz o código da maleta, com o número longo entre parênteses.
+    expect(pdf).toContain('0007 \\(S12-V7-1\\)');
     expect(
       await screen.findByText(/A nota nota-da-maleta-S12-V7-1.pdf foi preparada/),
     ).toBeTruthy();
 
     await u.click(
-      await screen.findByRole('button', { name: 'Abrir a maleta de Joana Vendedora, semana 12' }),
+      await screen.findByRole('button', {
+        name: 'Abrir a maleta de Joana Representante, semana 12',
+      }),
     );
     await screen.findByRole('heading', { name: 'Maleta enviada' });
-    await u.click(screen.getByRole('button', { name: 'Imprimir nota: Joana Vendedora' }));
+    await u.click(screen.getByRole('button', { name: 'Imprimir nota: Joana Representante' }));
     await waitFor(() => expect(entregues).toHaveLength(2));
   });
 
@@ -603,7 +629,9 @@ describe('Imprimir nota', () => {
       }),
     });
     const u = await abrirLista(m);
-    await u.click(await screen.findByRole('button', { name: 'Imprimir nota: Joana Vendedora' }));
+    await u.click(
+      await screen.findByRole('button', { name: 'Imprimir nota: Joana Representante' }),
+    );
     expect(
       await screen.findByText(/A nota só fica pronta depois que a maleta for enviada/),
     ).toBeTruthy();
@@ -624,7 +652,7 @@ describe('Imprimir nota', () => {
         ]),
     });
     await abrirLista(m);
-    await screen.findByText('Joana Vendedora', { selector: 'td' });
+    await screen.findByText('Joana Representante', { selector: 'td' });
     expect(screen.queryByRole('button', { name: /Imprimir nota/ })).toBeNull();
   });
 });

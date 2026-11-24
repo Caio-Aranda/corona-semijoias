@@ -252,12 +252,13 @@ describe('tela inicial da dona', () => {
     expect(screen.getByRole('button', { name: 'Sair' })).toBeInTheDocument();
   });
 
-  it('botão sem função mostra "Em breve" em linguagem da loja', async () => {
+  it('o atalho Cadastrar produto abre a tela de produtos, não "Em breve" (revisão de 23/11/2026)', async () => {
     const { ponte } = ponteFalsa({ estouLogado: vi.fn(() => Promise.resolve(dentro)) });
     const u = userEvent.setup();
     render(<App ponte={ponte} />);
     await u.click(await screen.findByRole('button', { name: 'Cadastrar produto' }));
-    expect(screen.getByText('Em breve.')).toBeInTheDocument();
+    expect(window.location.hash).toBe('#/cadastros/produtos');
+    expect(screen.queryByText('Em breve.')).not.toBeInTheDocument();
   });
 
   it('Sair chama a ponte e volta para Entrar', async () => {

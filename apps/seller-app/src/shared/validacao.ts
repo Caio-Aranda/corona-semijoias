@@ -1,4 +1,5 @@
 import type { DadosDeEntrada, DadosDeNovaSenha } from './ponte';
+import { ehOperacaoDoConsignado, validarPedidoDoConsignado } from './validacao-do-consignado';
 import {
   AGRUPAMENTOS_DE_VENDAS,
   CAMPOS_DO_CLIENTE_EDITAVEIS,
@@ -529,6 +530,7 @@ export function validarChamada(v: unknown): PedidoDeChamada | null {
       return leitura ? { operacao, id: v.id, leitura } : null;
     }
     default:
-      return null;
+      // O consignado ao cliente (tarefa 9.2) tem a validação própria.
+      return ehOperacaoDoConsignado(operacao) ? validarPedidoDoConsignado(operacao, v) : null;
   }
 }

@@ -1,0 +1,176 @@
+{
+  "acertoId" : "<acerto>",
+  "itens" : [ {
+    "produto" : {
+      "id" : "<peca-A>",
+      "nome" : "Anel da previa A",
+      "codigo" : "PDFJ-A",
+      "fotoHash" : null
+    },
+    "remessaId" : "<maleta-1>",
+    "esperado" : 8,
+    "contadoBoa" : 6,
+    "contadoDefeito" : 1,
+    "falta" : 1,
+    "valorDaFalta" : "50.00"
+  }, {
+    "produto" : {
+      "id" : "<peca-B>",
+      "nome" : "Anel da previa B",
+      "codigo" : "PDFJ-B",
+      "fotoHash" : null
+    },
+    "remessaId" : "<maleta-2>",
+    "esperado" : 4,
+    "contadoBoa" : 4,
+    "contadoDefeito" : 0,
+    "falta" : 0,
+    "valorDaFalta" : "0.00"
+  }, {
+    "produto" : {
+      "id" : "<peca-C>",
+      "nome" : "Anel da previa C",
+      "codigo" : "PDFJ-C",
+      "fotoHash" : null
+    },
+    "remessaId" : null,
+    "esperado" : 1,
+    "contadoBoa" : 1,
+    "contadoDefeito" : 0,
+    "falta" : 0,
+    "valorDaFalta" : "0.00"
+  } ],
+  "sobras" : [ ],
+  "faltas" : [ {
+    "produto" : {
+      "id" : "<peca-A>",
+      "nome" : "Anel da previa A",
+      "codigo" : "PDFJ-A",
+      "fotoHash" : null
+    },
+    "remessaId" : "<maleta-1>",
+    "quantidade" : 1,
+    "valor" : "50.00",
+    "status" : "COBRADA"
+  } ],
+  "defeitos" : [ {
+    "produto" : {
+      "id" : "<peca-A>",
+      "nome" : "Anel da previa A",
+      "codigo" : "PDFJ-A",
+      "fotoHash" : null
+    },
+    "contadoDefeito" : 1
+  } ],
+  "eventos" : [ {
+    "valor" : "95.00",
+    "vendaId" : "<venda-1>",
+    "tipo" : "VENDA",
+    "origemId" : "<venda-1>"
+  }, {
+    "valor" : "33.33",
+    "vendaId" : "<venda-2>",
+    "tipo" : "VENDA",
+    "origemId" : "<venda-2>"
+  }, {
+    "valor" : "50.00",
+    "vendaId" : "<venda-3>",
+    "tipo" : "VENDA",
+    "origemId" : "<venda-3>"
+  }, {
+    "valor" : "-50.00",
+    "vendaId" : "<venda-3>",
+    "tipo" : "ESTORNO_VENDA",
+    "origemId" : "<venda-3>"
+  }, {
+    "valor" : "-20.00",
+    "vendaId" : "<venda-0>",
+    "tipo" : "DEVOLUCAO",
+    "origemId" : "<devolucao>"
+  } ],
+  "revisoesPendentes" : [ ],
+  "naoAceitas" : [ ],
+  "pendenciasAntigas" : [ {
+    "id" : "<pendencia-antiga>",
+    "tipo" : "FALTA",
+    "produtoId" : "<peca-C>",
+    "quantidade" : 1,
+    "valor" : "20.00"
+  } ],
+  "comissoes" : [ {
+    "vendaId" : "<venda-1>",
+    "eventoId" : "<gerado-1>",
+    "tipo" : "COMISSAO",
+    "base" : "95.00",
+    "percentual" : "30.00",
+    "valor" : "28.50"
+  }, {
+    "vendaId" : "<venda-2>",
+    "eventoId" : "<gerado-2>",
+    "tipo" : "COMISSAO",
+    "base" : "33.33",
+    "percentual" : "30.00",
+    "valor" : "10.00"
+  }, {
+    "vendaId" : "<venda-3>",
+    "eventoId" : "<gerado-3>",
+    "tipo" : "COMISSAO",
+    "base" : "50.00",
+    "percentual" : "30.00",
+    "valor" : "15.00"
+  }, {
+    "vendaId" : "<venda-0>",
+    "eventoId" : "<gerado-4>",
+    "tipo" : "ESTORNO",
+    "base" : "20.00",
+    "percentual" : "40.00",
+    "valor" : "-8.00"
+  }, {
+    "vendaId" : "<venda-3>",
+    "eventoId" : "<gerado-5>",
+    "tipo" : "ESTORNO",
+    "base" : "50.00",
+    "percentual" : "30.00",
+    "valor" : "-15.00"
+  } ],
+  "metaGuarani" : 700000,
+  "vendidoParaMetaGuarani" : 142589,
+  "percentualComissao" : "30.00",
+  "vendidoBruto" : "183.33",
+  "descontos" : "5.00",
+  "devolvido" : "70.00",
+  "vendidoLiquido" : "108.33",
+  "comissao" : "30.50",
+  "faltasCobradas" : "70.00",
+  "liquido" : "147.83",
+  "creditoDisponivel" : "0.00",
+  "creditoUsado" : "0.00",
+  "aPagarNoAcerto" : "147.83",
+  "recebidoNoAcerto" : "40.00",
+  "boleto" : "30.00",
+  "ficouDevendo" : "107.83",
+  "pagoAoVendedor" : "0.00",
+  "restanteSemData" : false,
+  "parcelasDoRestante" : [ {
+    "numero" : 2,
+    "vencimento" : "<vencimento-da-parcela-1>",
+    "valor" : "38.92"
+  }, {
+    "numero" : 3,
+    "vencimento" : "<vencimento-da-parcela-2>",
+    "valor" : "38.91"
+  } ],
+  "contasAbertasDoVendedor" : [ {
+    "id" : "<gerado-6>",
+    "origem" : "ACERTO",
+    "numero" : 1,
+    "totalDeParcelas" : 1,
+    "vencimento" : "<vencimento-da-conta-antiga>",
+    "valor" : "12.00",
+    "emAberto" : "12.00",
+    "formaPrevista" : null
+  } ],
+  "cotacaoId" : "<cotacao>",
+  "cotacaoData" : "2291-06-01",
+  "podeFechar" : true
+}

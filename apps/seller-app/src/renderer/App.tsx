@@ -1,39 +1,33 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { AvisoDeSessao, EstadoDaSessao, PonteDoCorona } from '../shared/ponte';
+import { useIdioma } from './idioma';
 import { FaixaDeAtualizacao } from './FaixaDeAtualizacao';
 import { TelaAppDesatualizado } from './telas/TelaAppDesatualizado';
 import { TelaDesligado } from './telas/TelaDesligado';
-import { TelaConferirMaleta } from './telas/TelaConferirMaleta';
-import { type InicioDaDevolucao, TelaDevolucaoETroca } from './telas/devolucao/TelaDevolucaoETroca';
 import { TelaEntrar } from './telas/TelaEntrar';
-import { TelaInicial, type Destino } from './telas/TelaInicial';
-import { TelaAReceber } from './telas/TelaAReceber';
-import { TelaMeuAcerto } from './telas/TelaMeuAcerto';
-import { TelaMeusClientes } from './telas/TelaMeusClientes';
-import { TelaMeusNumeros } from './telas/TelaMeusNumeros';
-import { TelaMinhaMaleta } from './telas/TelaMinhaMaleta';
-import { TelaMinhasVendas } from './telas/TelaMinhasVendas';
 import { TelaSemConexao } from './telas/TelaSemConexao';
 import { TelaTrocarSenha } from './telas/TelaTrocarSenha';
-import { TelaVender } from './telas/TelaVender';
-import type { Maleta } from '../shared/dados';
+import { TelaClientes } from './telas/consignado/TelaClientes';
+import { TelaCobranca } from './telas/consignado/TelaCobranca';
+import { TelaMaletas } from './telas/consignado/TelaMaletas';
+import { TelaNovoPedido } from './telas/consignado/TelaNovoPedido';
+import { TelaPesquisa } from './telas/consignado/TelaPesquisa';
+import { TelaReposicao } from './telas/consignado/TelaReposicao';
+import { TelaSemanal } from './telas/consignado/TelaSemanal';
+import { TelaTroca } from './telas/consignado/TelaTroca';
 
 type Tela = EstadoDaSessao | { estado: 'carregando' };
 
-/** Onde a pessoa está depois de entrar. */
+/** Onde a pessoa está depois de entrar: a tela principal é o Gerenciamento Semanal (§23.4). */
 type Rota =
-  | { tela: 'inicio' }
-  | { tela: 'maleta' }
-  | { tela: 'conferir'; maleta: Maleta }
-  | { tela: 'vender' }
-  | { tela: 'vendas'; voltarPara: 'vender' | 'numeros' }
-  | { tela: 'clientes' }
-  | { tela: 'numeros' }
-  | { tela: 'acerto' }
-  | { tela: 'areceber' }
-  | { tela: 'devolucao'; inicio: InicioDaDevolucao; voltarPara: 'inicio' | 'vendas' };
-
-const PRONTOS: readonly Destino[] = ['vender', 'maleta', 'clientes', 'numeros', 'devolucao'];
+  | { tela: 'semanal' }
+  | { tela: 'pedido' }
+  | { tela: 'cobranca'; notaId: string | null }
+  | { tela: 'reposicao' }
+  | { tela: 'troca' }
+  | { tela: 'clientes'; cliente: string | null }
+  | { tela: 'maletas' }
+  | { tela: 'pesquisa'; texto: string };
 
 export interface AppProps {
   ponte: PonteDoCorona;
@@ -41,9 +35,11 @@ export interface AppProps {
 
 /** Decide qual tela mostrar a partir do estado da sessão, que quem sabe é o processo principal. */
 export function App({ ponte }: AppProps) {
+  // Assina o idioma: trocar de idioma desenha todas as telas de novo, sem perder onde a pessoa estava.
+  useIdioma();
   const [tela, setTela] = useState<Tela>({ estado: 'carregando' });
   const [sessaoTerminou, setSessaoTerminou] = useState(false);
-  const [rota, setRota] = useState<Rota>({ tela: 'inicio' });
+  const [rota, setRota] = useState<Rota>({ tela: 'semanal' });
 
   const conferir = useCallback(async () => {
     try {
@@ -96,6 +92,16 @@ export function App({ ponte }: AppProps) {
         );
       case 'entrar-sem-internet':
         return <TelaEntrar ponte={ponte} semInternet aoMudar={() => void conferir()} />;
+      case 'reabrir':
+        return (
+          <TelaEntrar
+            key="reabrir"
+            ponte={ponte}
+            reabrindo
+            usuarioFixo={tela.usuario}
+            aoMudar={() => void conferir()}
+          />
+        );
       case 'desligando':
         return <TelaDesligado apagado={false} />;
       case 'desligado':
@@ -107,89 +113,58 @@ export function App({ ponte }: AppProps) {
       case 'app-desatualizado':
         return <TelaAppDesatualizado mensagem={tela.mensagem} />;
       case 'dentro': {
-        const inicio = () => setRota({ tela: 'inicio' });
+        const inicio = () => setRota({ tela: 'semanal' });
+        const abrirPedido = (notaId: string) => setRota({ tela: 'cobranca', notaId });
         switch (rota.tela) {
-          case 'maleta':
-            return (
-              <TelaMinhaMaleta
-                ponte={ponte}
-                aoVoltar={inicio}
-                aoConferir={(maleta) => setRota({ tela: 'conferir', maleta })}
-              />
-            );
-          case 'conferir':
-            return (
-              <TelaConferirMaleta
-                ponte={ponte}
-                maleta={rota.maleta}
-                aoVoltar={() => setRota({ tela: 'maleta' })}
-              />
-            );
-          case 'vender':
-            return (
-              <TelaVender
-                ponte={ponte}
-                aoVoltar={inicio}
-                aoVerVendas={() => setRota({ tela: 'vendas', voltarPara: 'vender' })}
-              />
-            );
-          case 'vendas':
-            return (
-              <TelaMinhasVendas
-                ponte={ponte}
-                aoVoltar={() => setRota({ tela: rota.voltarPara })}
-                aoDevolver={(vendaId, modo) =>
-                  setRota({ tela: 'devolucao', inicio: { modo, vendaId }, voltarPara: 'vendas' })
-                }
-              />
-            );
-          case 'devolucao':
-            return (
-              <TelaDevolucaoETroca
-                ponte={ponte}
-                inicio={rota.inicio}
-                aoVoltar={() =>
-                  setRota(
-                    rota.voltarPara === 'vendas'
-                      ? { tela: 'vendas', voltarPara: 'numeros' }
-                      : { tela: 'inicio' },
-                  )
-                }
-              />
-            );
+          case 'pedido':
+            return <TelaNovoPedido ponte={ponte} aoVoltar={inicio} aoAbrirPedido={abrirPedido} />;
+          case 'cobranca':
+            return <TelaCobranca ponte={ponte} notaId={rota.notaId} aoVoltar={inicio} />;
+          case 'reposicao':
+            return <TelaReposicao ponte={ponte} aoVoltar={inicio} aoAbrirPedido={abrirPedido} />;
+          case 'troca':
+            return <TelaTroca ponte={ponte} aoVoltar={inicio} />;
           case 'clientes':
-            return <TelaMeusClientes ponte={ponte} aoVoltar={inicio} />;
-          case 'numeros':
             return (
-              <TelaMeusNumeros
+              <TelaClientes
                 ponte={ponte}
+                clienteInicial={rota.cliente}
                 aoVoltar={inicio}
-                aoVerVendas={() => setRota({ tela: 'vendas', voltarPara: 'numeros' })}
-                aoVerAcerto={() => setRota({ tela: 'acerto' })}
-                aoVerAReceber={() => setRota({ tela: 'areceber' })}
+                aoAbrirPedido={abrirPedido}
               />
             );
-          case 'acerto':
-            return <TelaMeuAcerto ponte={ponte} aoVoltar={() => setRota({ tela: 'numeros' })} />;
-          case 'areceber':
-            return <TelaAReceber ponte={ponte} aoVoltar={() => setRota({ tela: 'numeros' })} />;
-          case 'inicio':
+          case 'maletas':
+            return <TelaMaletas ponte={ponte} aoVoltar={inicio} />;
+          case 'pesquisa':
             return (
-              <TelaInicial
+              <TelaPesquisa
+                ponte={ponte}
+                texto={rota.texto}
+                aoVoltar={inicio}
+                aoAbrirPedido={abrirPedido}
+                aoAbrirCliente={(id) => setRota({ tela: 'clientes', cliente: id })}
+              />
+            );
+          case 'semanal':
+            return (
+              <TelaSemanal
                 ponte={ponte}
                 nome={tela.usuario?.nome ?? null}
-                prontos={PRONTOS}
-                aoEscolher={(destino) =>
+                aoIr={(destino) =>
                   setRota(
-                    destino === 'devolucao'
-                      ? { tela: 'devolucao', inicio: { modo: 'buscar' }, voltarPara: 'inicio' }
-                      : { tela: destino },
+                    destino === 'cobranca'
+                      ? { tela: 'cobranca', notaId: null }
+                      : destino === 'clientes'
+                        ? { tela: 'clientes', cliente: null }
+                        : { tela: destino },
                   )
                 }
+                aoAbrirPedido={abrirPedido}
+                aoPesquisar={(texto) => setRota({ tela: 'pesquisa', texto })}
                 aoSair={async () => {
                   await ponte.sair();
                   setSessaoTerminou(false);
-                  setRota({ tela: 'inicio' });
+                  setRota({ tela: 'semanal' });
                   await conferir();
                 }}
               />

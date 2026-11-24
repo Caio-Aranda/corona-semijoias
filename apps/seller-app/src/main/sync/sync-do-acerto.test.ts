@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { abrirBancoLocal, type BancoAberto, gravar } from '../banco/banco-local';
 import {
+  TABELAS_DA_RECARGA_DIRIGIDA_V9,
+  TABELAS_DA_RECARGA_DIRIGIDA_V10,
+  TABELAS_DA_RECARGA_DIRIGIDA_V12,
   MIGRACOES,
   TABELAS_DA_RECARGA_DIRIGIDA_V4,
   TABELAS_DA_RECARGA_DIRIGIDA_V6,
@@ -27,6 +30,16 @@ import { ServidorFalso } from './testes/servidor-falso';
 const V7_NOVAS = TABELAS_DA_RECARGA_DIRIGIDA_V7.filter((t) => t !== 'acertos');
 /** O que a migração 8 soma à marca de quem ainda não tinha as contas (as demais da 8 já estão na marca). */
 const V8_NOVAS = ['contas_receber', 'baixas_receber', 'recebimentos_vendedor'] as const;
+
+/** A migração local 9 acrescenta as suas tabelas ao FIM da marca da recarga (sem repetir as que já estavam nela). */
+const comV9 = (marca: readonly string[]): string[] => [
+  ...new Set([
+    ...marca,
+    ...TABELAS_DA_RECARGA_DIRIGIDA_V9,
+    ...TABELAS_DA_RECARGA_DIRIGIDA_V10,
+    ...TABELAS_DA_RECARGA_DIRIGIDA_V12,
+  ]),
+];
 
 const limpar: (() => void | Promise<void>)[] = [];
 afterEach(async () => {
@@ -81,8 +94,12 @@ describe('migração local 6', () => {
       db.close();
     });
     expect(Number(db.pragma('user_version', { simple: true }))).toBe(VERSAO_DO_BANCO);
-    expect(VERSAO_DO_BANCO).toBe(8);
-    expect(contagem(db)).toEqual(contagemAntes);
+    expect(VERSAO_DO_BANCO).toBe(12);
+    // A migração 9 tira as cópias do servidor dos clientes que não são do representante (o diretório da loja, ADR-0016, item 4).
+    const { clientes: clientesDepois, ...restoDepois } = contagem(db);
+    const { clientes: clientesAntes, ...restoAntes } = contagemAntes;
+    expect(restoDepois).toEqual(restoAntes);
+    expect(clientesDepois ?? 0).toBeLessThanOrEqual(clientesAntes ?? 0);
     expect(db.prepare('SELECT * FROM outbox ORDER BY ordem').all()).toEqual(outboxAntes);
     for (const t of ['acertos', 'leituras_acerto'] as const) {
       expect(colunasDe(db, t), t).toEqual(
@@ -131,11 +148,9 @@ describe('migração local 6', () => {
     limpar.push(() => {
       m5.close();
     });
-    expect(tabelasDaRecargaDirigida(m5)).toEqual([
-      ...TABELAS_DA_RECARGA_DIRIGIDA_V6,
-      ...V7_NOVAS,
-      ...V8_NOVAS,
-    ]);
+    expect(tabelasDaRecargaDirigida(m5)).toEqual(
+      comV9([...TABELAS_DA_RECARGA_DIRIGIDA_V6, ...V7_NOVAS, ...V8_NOVAS]),
+    );
 
     // Banco na versão 5 com cursor e uma marca antiga ainda de pé: as antigas primeiro, sem repetir.
     const d = criarBancoDeTeste();
@@ -156,20 +171,22 @@ describe('migração local 6', () => {
     limpar.push(() => {
       m5b.close();
     });
-    expect(tabelasDaRecargaDirigida(m5b)).toEqual([
-      'contas_receber',
-      'acertos',
-      'leituras_acerto',
-      ...V7_NOVAS,
-      'baixas_receber',
-      'recebimentos_vendedor',
-    ]);
+    expect(tabelasDaRecargaDirigida(m5b)).toEqual(
+      comV9([
+        'contas_receber',
+        'acertos',
+        'leituras_acerto',
+        ...V7_NOVAS,
+        'baixas_receber',
+        'recebimentos_vendedor',
+      ]),
+    );
   });
 });
 
 describe('colunas do acerto no pull', () => {
   it('as duas tabelas novas estão na lista, com as colunas do servidor e sem custo nem quem fez', () => {
-    expect(TABELAS_SINCRONIZAVEIS).toHaveLength(32);
+    expect(TABELAS_SINCRONIZAVEIS).toHaveLength(43);
     expect(TABELAS_SINCRONIZAVEIS).toEqual(expect.arrayContaining(['acertos', 'leituras_acerto']));
     expect(COLUNAS_DO_PULL.acertos).toEqual([
       'vendedor_id',
@@ -308,11 +325,9 @@ describe('recarga dirigida depois da migração local 6', () => {
       db.close();
     });
     const { s, url } = await servidor();
-    expect(tabelasDaRecargaDirigida(db)).toEqual([
-      ...TABELAS_DA_RECARGA_DIRIGIDA_V6,
-      ...V7_NOVAS,
-      ...V8_NOVAS,
-    ]);
+    expect(tabelasDaRecargaDirigida(db)).toEqual(
+      comV9([...TABELAS_DA_RECARGA_DIRIGIDA_V6, ...V7_NOVAS, ...V8_NOVAS]),
+    );
     const remessasAntes = contar(db, "SELECT 1 FROM remessas WHERE origem_local = 'SERVIDOR'");
 
     const acerto = idDeTeste(7);
@@ -361,7 +376,9 @@ describe('recarga dirigida depois da migração local 6', () => {
     // Primeiro ciclo: a 2ª tabela da marca cai. A 1ª já saiu da marca; nada foi apagado.
     s.cairNaTabela = { tabela: 'leituras_acerto', vezes: 1 };
     expect(await ciclo(db, url).executar()).toBe('falha');
-    expect(tabelasDaRecargaDirigida(db)).toEqual(['leituras_acerto', ...V7_NOVAS, ...V8_NOVAS]);
+    expect(tabelasDaRecargaDirigida(db)).toEqual(
+      comV9(['leituras_acerto', ...V7_NOVAS, ...V8_NOVAS]),
+    );
     expect(contar(db, 'SELECT 1 FROM acertos WHERE id = ?', acerto)).toBe(1);
     expect(contar(db, "SELECT 1 FROM remessas WHERE origem_local = 'SERVIDOR'")).toBe(
       remessasAntes,
@@ -432,7 +449,7 @@ describe('migração local 7 (fechamento do acerto)', () => {
     limpar.push(() => {
       db.close();
     });
-    expect(Number(db.pragma('user_version', { simple: true }))).toBe(8);
+    expect(Number(db.pragma('user_version', { simple: true }))).toBe(12);
     expect(db.prepare('SELECT * FROM outbox ORDER BY ordem').all()).toEqual(outboxAntes);
     expect(contar(db, 'SELECT 1 FROM acertos')).toBe(acertosAntes);
     expect(colunasDe(db, 'acertos')).toEqual(
@@ -446,7 +463,9 @@ describe('migração local 7 (fechamento do acerto)', () => {
       expect(TABELAS_SINCRONIZAVEIS).toContain(t);
     }
     // Já tinha cursor: a marca nasce com as cinco tabelas (o acerto ganhou colunas e as quatro são novas).
-    expect(tabelasDaRecargaDirigida(db)).toEqual(['acertos', ...NOVAS_DO_FECHAMENTO, ...V8_NOVAS]);
+    expect(tabelasDaRecargaDirigida(db)).toEqual(
+      comV9(['acertos', ...NOVAS_DO_FECHAMENTO, ...V8_NOVAS]),
+    );
   });
 
   it('nenhuma coluna de custo nem de quem fechou, decidiu ou resolveu', () => {

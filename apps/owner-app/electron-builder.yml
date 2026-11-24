@@ -27,8 +27,8 @@ win:
   target:
     - target: nsis
       arch: [x64]
-  # Logo provisório (docs/marca). Trocar por build/icon.png definitivo (pelo menos 256 x 256) quando houver.
-  icon: build/icon.png
+  # Ícone estilo C da proposta visual (gerado por scripts/gerar-icones.py); cada app tem o seu (§18).
+  icon: build/icon.ico
 # Atualização automática (ADR-0009): só gera o latest.yml (com o SHA-512 do instalador) e o app-update.yml.
 # O endereço vem do npm run owner:empacotar (o mesmo servidor da API, pasta /atualizacoes/). Nunca publica
 # sozinho: quem envia para a VPS é o npm run owner:publicar.

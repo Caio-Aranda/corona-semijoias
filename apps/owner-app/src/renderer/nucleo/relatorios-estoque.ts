@@ -10,6 +10,8 @@ import { TEXTOS_RELATORIOS } from '../textos-relatorios';
 import { rotuloDoTipo } from './estoque';
 import { dataParaTela } from './moedas';
 import type { DefinicaoDeRelatorio } from './relatorios';
+import { idiomaAtual } from '../idioma/idioma';
+import { traducirDefinicion } from '../idioma/es/relatorios-mapa';
 
 const T = TEXTOS_RELATORIOS.estoqueECompras;
 
@@ -279,7 +281,7 @@ export const RELATORIOS_DE_ESTOQUE: Record<
       { chave: 'saldoGuardado', titulo: 'Quantidade guardada', tipo: 'inteiro' },
       { chave: 'somaDosMovimentos', titulo: 'Entradas menos saídas', tipo: 'inteiro' },
       { chave: 'diferenca', titulo: 'Diferença', tipo: 'sinal' },
-      { chave: 'nasMaletas', titulo: 'Com os vendedores (maletas)', tipo: 'inteiro' },
+      { chave: 'nasMaletas', titulo: 'Com os representantes (maletas)', tipo: 'inteiro' },
       { chave: 'diferencaComMaletas', titulo: 'Diferença contando as maletas', tipo: 'sinal' },
     ],
     totaisDeValor: {},
@@ -464,3 +466,6 @@ export function prepararLinhaDeEstoque(
       return linha;
   }
 }
+
+// Em espanhol, os textos de cada definição saem da tabela de tradução (feita uma vez, ao abrir o programa).
+if (idiomaAtual() === 'es') traducirDefinicion(RELATORIOS_DE_ESTOQUE);

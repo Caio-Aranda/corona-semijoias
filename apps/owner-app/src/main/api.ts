@@ -137,12 +137,15 @@ import {
   lancarNoCaixa,
   listarCategoriasDoCaixa,
   listarContasAPagar,
+  listarConferencias,
+  painelSemanal,
   listarContasAReceber,
   listarRecebimentosDoVendedor,
   pagarContaAPagar,
   reativarCategoriaDoCaixa,
   receberDoVendedor,
   renomearCategoriaDoCaixa,
+  verConferencia,
   verContaAPagar,
   verExtratoDoCaixa,
   verSaldoDoCaixa,
@@ -166,10 +169,15 @@ import {
   relatorioDeDinheiroDevolvido,
   relatorioDePedidosDeAutorizacao,
   conferirDevolucoesETrocas,
+  conferirAgora,
   conferirODinheiroDaFase7,
   relatorioDeMercadoriaPorVendedor,
   relatorioDeAcertos,
   relatorioDeComissoes,
+  relatorioDeLucroPorProduto,
+  relatorioDeLucroPorVendedor,
+  resultadoDoPeriodo,
+  detalhamentoDoResultado,
   relatorioDeContasAPagar,
   relatorioDeContasAReceber,
   relatorioDeEsperadoEContado,
@@ -177,6 +185,21 @@ import {
   relatorioDeInadimplencia,
   relatorioDePendenciasDoAcerto,
   relatorioDeRecebimentosPorForma,
+  relatorioDeCurvaAbc,
+  relatorioDeAuditoria,
+  relatorioDeComputadores,
+  relatorioDeAcessos,
+  relatorioDeRankingDePecas,
+  relatorioDeRankingDeVendedores,
+  relatorioDeTicketMedio,
+  relatorioDeVendas,
+  relatorioDeVendasCanceladas,
+  relatorioDeVendasPorCategoria,
+  relatorioDeVendasPorCliente,
+  relatorioDeVendasPorPeriodo,
+  relatorioDeVendasPorPraca,
+  relatorioDeVendasPorProduto,
+  relatorioDeVendasPorVendedor,
   relatorioDeRemessasPorVendedorESemana,
   relatorioDeReposicoes,
   relatorioDeSaldoPorMaleta,
@@ -226,6 +249,23 @@ import {
   trocarSenha,
   type RespostaDoLogin,
 } from '@corona/api-client-dona';
+import {
+  baixarFotoDoCliente,
+  concluirFechamentoDaMaleta,
+  iniciarFechamentoDaMaleta,
+  lerFechamentoDaMaleta,
+  lerTelasDoGestao,
+  listarAlertasDoConsignado,
+  listarNotasDoConsignado,
+  listarSemanasDoRepresentante,
+  marcarAlertaDoConsignadoComoVisto,
+  registrarLeiturasDoFechamentoDaMaleta,
+  relatorioDoFechamentoDaMaleta,
+  verNotaDoConsignado,
+  verSemanaDoRepresentante,
+  verSituacaoDoClienteDoConsignado,
+} from '@corona/api-client-dona';
+import type { ParametrosDeConsignado } from '../shared/consignado';
 import type { NomeDoCadastro } from '../shared/cadastros';
 import type { ParametrosConferidos, ParametrosDeVendedor } from '../shared/validacao-parametros';
 import type { ParametrosDeCompra } from '../shared/validacao-compras';
@@ -240,6 +280,7 @@ import type { ParametrosDeRelatorio } from '../shared/validacao-relatorios';
 import type { AbaDoVendedor, ArquivoBaixado } from '../shared/vendedores';
 import { CacheDeFotos, LimiteDeBuscas } from './cache-de-fotos';
 import type { ApiDeAutenticacao, Credenciais, Falha, Resultado } from './tipos';
+import { idiomaDoComputador } from './idioma';
 
 export interface DadosDoUsuario {
   nome?: string;
@@ -789,6 +830,85 @@ async function executarMaleta(
   }
 }
 
+/**
+ * Consignado ao cliente (§23): o que a tela mostra ou esconde, o Fechamento da maleta e as leituras das notas, semanas,
+ * clientes e alertas. Só ADMIN; nada daqui cria nota nem acerto (isso nasce no aplicativo do representante).
+ */
+async function executarConsignado(
+  client: ReturnType<typeof criarClienteDaApi>,
+  headers: { Authorization: string },
+  pedido: ParametrosDeConsignado,
+): Promise<Resultado<unknown>> {
+  const base = { client, headers };
+  switch (pedido.operacao) {
+    case 'telas.ler':
+      return executar(() => lerTelasDoGestao(base));
+    case 'fechamento.iniciar':
+      return executar(() => iniciarFechamentoDaMaleta({ ...base, path: { id: pedido.id } }), true);
+    case 'fechamento.ler':
+      return executar(() => lerFechamentoDaMaleta({ ...base, path: { id: pedido.id } }));
+    case 'fechamento.leituras':
+      return executar(
+        () =>
+          registrarLeiturasDoFechamentoDaMaleta({
+            ...base,
+            path: { id: pedido.id },
+            body: { leituras: pedido.leituras },
+          }),
+        true,
+      );
+    case 'fechamento.concluir':
+      return executar(() => concluirFechamentoDaMaleta({ ...base, path: { id: pedido.id } }), true);
+    case 'consignado.semanas':
+      return executar(() =>
+        listarSemanasDoRepresentante({ ...base, path: { vendedorId: pedido.id } }),
+      );
+    case 'consignado.semana':
+      return executar(() => verSemanaDoRepresentante({ ...base, path: { semanaId: pedido.id } }));
+    case 'consignado.notas':
+      return executar(() => listarNotasDoConsignado({ ...base, query: pedido.filtros }));
+    case 'consignado.nota':
+      return executar(() => verNotaDoConsignado({ ...base, path: { id: pedido.id } }));
+    case 'consignado.cliente':
+      return executar(() => verSituacaoDoClienteDoConsignado({ ...base, path: { id: pedido.id } }));
+    case 'consignado.alertas':
+      return executar(() =>
+        listarAlertasDoConsignado({ ...base, query: { soNaoVistos: pedido.soNaoVistos } }),
+      );
+    case 'consignado.alertaVisto':
+      return executar(
+        () => marcarAlertaDoConsignadoComoVisto({ ...base, path: { id: pedido.id } }),
+        true,
+      );
+    case 'consignado.fotoDoCliente': {
+      // Foto de documento é dado pessoal: vem só pela rota da dona e não fica guardada em disco.
+      try {
+        const { data, error, response } = (await baixarFotoDoCliente({
+          ...base,
+          path: { id: pedido.id, tipo: pedido.tipo },
+          parseAs: 'arrayBuffer',
+        } as never)) as RetornoDoCliente<ArrayBuffer>;
+        if (error !== undefined && error !== '') {
+          return { ok: false, falha: comoFalha(error, response) };
+        }
+        if (response && !response.ok) return { ok: false, falha: comoFalha(undefined, response) };
+        if (!response || !(data instanceof ArrayBuffer)) {
+          return { ok: false, falha: { tipo: 'resposta-invalida' } };
+        }
+        const arquivo: ArquivoBaixado = {
+          nome: `${pedido.tipo}.jpg`,
+          tipo: response.headers.get('content-type') ?? 'image/jpeg',
+          bytes: new Uint8Array(data),
+        };
+        return { ok: true, dados: arquivo };
+      } catch (e) {
+        if (ehAppDesatualizado(e)) return { ok: false, falha: comoFalha(e, undefined) };
+        return { ok: false, falha: { tipo: 'sem-conexao' } };
+      }
+    }
+  }
+}
+
 /** Acertos, pendências e a comissão (só ADMIN). O servidor calcula tudo; aqui só se repassa o que a tela decidiu. */
 async function executarAcerto(
   client: ReturnType<typeof criarClienteDaApi>,
@@ -955,6 +1075,43 @@ async function executarEstoque(
   }
 }
 
+function avisoDoCustoDoCadastro(n: number): string {
+  return idiomaDoComputador() === 'pt'
+    ? `${n} ${n === 1 ? 'peça está com o custo do cadastro' : 'peças estão com o custo do cadastro'}: esse custo muda se o cadastro mudar.`
+    : `${n} ${n === 1 ? 'pieza tiene el costo del registro' : 'piezas tienen el costo del registro'}: ese costo cambia si el registro cambia.`;
+}
+
+/**
+ * O resultado do período chega como uma lista de linhas; a tela de relatório o mostra como qualquer outro (linhas e arquivos).
+ * Quando há peças vendidas com o custo do cadastro, uma linha de aviso diz quantas (é estimativa).
+ */
+function comoRelatorioDoResultado(dados: unknown): unknown {
+  const r = dados as
+    { pecasComCustoDoCadastro?: number; linhas?: Record<string, unknown>[] } | undefined;
+  if (!r?.linhas) return dados;
+  const itens: Record<string, unknown>[] = r.linhas.map((l, i) => ({
+    ...l,
+    id: `${String(l.chave)}-${i}`,
+  }));
+  const n = r.pecasComCustoDoCadastro ?? 0;
+  if (n > 0) {
+    itens.push({
+      id: 'aviso',
+      chave: 'AVISO',
+      operacao: 'AVISO',
+      titulo: avisoDoCustoDoCadastro(n),
+    });
+  }
+  return {
+    itens,
+    total: itens.length,
+    pagina: 0,
+    tamanho: Math.max(itens.length, 1),
+    totais: [],
+    recorte: null,
+  };
+}
+
 /** Relatórios de cadastro (só ADMIN; o servidor confere). O de produtos traz o custo, por isso só existe aqui. */
 async function executarRelatorio(
   client: ReturnType<typeof criarClienteDaApi>,
@@ -1002,6 +1159,13 @@ async function executarRelatorio(
       return executar(() => relatorioDeMercadoriaPorVendedor({ ...base, query: q }));
     case 'maleta-em-aberto':
       return executar(() => relatorioDeMaletasEmAbertoEAtrasadas({ ...base, query: q }));
+    case 'maleta-fechamento':
+      return executar(() =>
+        relatorioDoFechamentoDaMaleta({
+          ...base,
+          query: { remessaId: q.remessaId ?? '', pagina: q.pagina, tamanho: q.tamanho },
+        }),
+      );
     case 'devolucao-por-motivo':
       return executar(() => relatorioDeDevolucoes({ ...base, query: q }));
     case 'devolucao-por-vendedor':
@@ -1024,6 +1188,30 @@ async function executarRelatorio(
       return executar(() => relatorioDeEsperadoEContado({ ...base, query: q }));
     case 'financeiro-comissoes':
       return executar(() => relatorioDeComissoes({ ...base, query: q }));
+    case 'financeiro-resultado': {
+      const r = await executar(() =>
+        resultadoDoPeriodo({ ...base, query: { de: q.de, ate: q.ate } }),
+      );
+      return r.ok ? { ...r, dados: comoRelatorioDoResultado(r.dados) } : r;
+    }
+    case 'financeiro-resultado-registros':
+      return executar(() =>
+        detalhamentoDoResultado({
+          ...base,
+          query: {
+            de: q.de,
+            ate: q.ate,
+            linha: q.linha,
+            pagina: q.pagina,
+            tamanho: q.tamanho,
+            ...(q.categoriaId ? { categoriaId: q.categoriaId } : {}),
+          },
+        }),
+      );
+    case 'financeiro-lucro-produto':
+      return executar(() => relatorioDeLucroPorProduto({ ...base, query: q }));
+    case 'financeiro-lucro-vendedor':
+      return executar(() => relatorioDeLucroPorVendedor({ ...base, query: q }));
     case 'financeiro-a-receber':
       return executar(() => relatorioDeContasAReceber({ ...base, query: q }));
     case 'financeiro-a-pagar':
@@ -1034,6 +1222,36 @@ async function executarRelatorio(
       return executar(() => relatorioDeFluxoDeCaixa({ ...base, query: q }));
     case 'financeiro-recebimentos':
       return executar(() => relatorioDeRecebimentosPorForma({ ...base, query: q }));
+    case 'vendas-lista':
+      return executar(() => relatorioDeVendas({ ...base, query: q }));
+    case 'vendas-canceladas':
+      return executar(() => relatorioDeVendasCanceladas({ ...base, query: q }));
+    case 'vendas-por-vendedor':
+      return executar(() => relatorioDeVendasPorVendedor({ ...base, query: q }));
+    case 'vendas-por-praca':
+      return executar(() => relatorioDeVendasPorPraca({ ...base, query: q }));
+    case 'vendas-por-cliente':
+      return executar(() => relatorioDeVendasPorCliente({ ...base, query: q }));
+    case 'vendas-por-produto':
+      return executar(() => relatorioDeVendasPorProduto({ ...base, query: q }));
+    case 'vendas-por-categoria':
+      return executar(() => relatorioDeVendasPorCategoria({ ...base, query: q }));
+    case 'vendas-por-periodo':
+      return executar(() => relatorioDeVendasPorPeriodo({ ...base, query: q }));
+    case 'vendas-ranking-vendedores':
+      return executar(() => relatorioDeRankingDeVendedores({ ...base, query: q }));
+    case 'vendas-ranking-pecas':
+      return executar(() => relatorioDeRankingDePecas({ ...base, query: q }));
+    case 'vendas-ticket-medio':
+      return executar(() => relatorioDeTicketMedio({ ...base, query: q }));
+    case 'vendas-curva-abc':
+      return executar(() => relatorioDeCurvaAbc({ ...base, query: q }));
+    case 'controle-auditoria':
+      return executar(() => relatorioDeAuditoria({ ...base, query: q }));
+    case 'controle-computadores':
+      return executar(() => relatorioDeComputadores({ ...base, query: q }));
+    case 'controle-acessos':
+      return executar(() => relatorioDeAcessos({ ...base, query: q }));
     case 'vendedores':
       return executar(() => relatorioDeVendedores({ ...base, query: q }));
     case 'clientes':
@@ -1284,6 +1502,13 @@ export function criarApiDoGestao(opcoes: OpcoesDaApi): ApiDoGestao {
       ) {
         return executarDevolucoes(client, headers, pedido as ParametrosDeDevolucoes);
       }
+      if (
+        pedido.operacao === 'telas.ler' ||
+        pedido.operacao.startsWith('fechamento.') ||
+        pedido.operacao.startsWith('consignado.')
+      ) {
+        return executarConsignado(client, headers, pedido as ParametrosDeConsignado);
+      }
       if (pedido.operacao.startsWith('compras.')) {
         return executarCompra(client, headers, pedido as ParametrosDeCompra);
       }
@@ -1324,6 +1549,25 @@ export function criarApiDoGestao(opcoes: OpcoesDaApi): ApiDoGestao {
           return executar(() => listar14({ client, headers }));
         case 'conciliacoes.conferir':
           return executar(() => conferirODinheiroDaFase7({ client, headers }));
+        case 'conferencias.listar':
+          return executar(() => listarConferencias({ client, headers }));
+        case 'conferencias.ver':
+          return executar(() => verConferencia({ client, headers, path: { id: pedido.id } }));
+        case 'conferencias.conferirAgora':
+          return executar(() => conferirAgora({ client, headers, body: { id: pedido.id } }), true);
+        case 'painel.semanal':
+          return executar(() =>
+            painelSemanal({
+              client,
+              headers,
+              query: {
+                ...(pedido.semana ? { semana: pedido.semana } : {}),
+                ...(pedido.vendedor ? { vendedor: pedido.vendedor } : {}),
+                ...(pedido.praca ? { praca: pedido.praca } : {}),
+                ...(pedido.situacao ? { situacao: pedido.situacao } : {}),
+              },
+            }),
+          );
         case 'vendedores.escolha':
           return executar(() =>
             listar({ client, headers, query: { situacao: 'ATIVOS', pagina: 0, tamanho: 100 } }),

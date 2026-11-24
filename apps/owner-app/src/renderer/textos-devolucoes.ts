@@ -1,9 +1,11 @@
+import { textosVivos } from './idioma/idioma';
+import { ES_TEXTOS_DE_DEVOLUCOES } from './idioma/es/devolucoes';
 /**
  * Textos das telas do grupo "Devoluções e créditos" (tarefa 6.9). Vêm do glossário da interface (parte 6, "Devoluções e
  * créditos no Corona Gestão"). A dona é tratada por "você". Na tela nunca aparecem os nomes técnicos das situações, nem
  * "estorno", "sincronização" ou "fila".
  */
-export const TEXTOS_DE_DEVOLUCOES = {
+export const PT_TEXTOS_DE_DEVOLUCOES = {
   menu: {
     grupo: 'Devoluções e créditos',
     autorizar: 'Devoluções para autorizar',
@@ -14,10 +16,10 @@ export const TEXTOS_DE_DEVOLUCOES = {
     garantia: 'Garantia e limites',
   },
   rodapeDaCotacao: 'Dólar e Guarani pela cotação do Banco Central do dia de cada lançamento.',
-  todosOsVendedores: 'Todos os vendedores',
-  vendedor: 'Vendedor',
+  todosOsVendedores: 'Todos os representantes',
+  vendedor: 'Representante',
   situacao: 'Situação',
-  vendedorDesligado: 'Vendedor desligado',
+  vendedorDesligado: 'Representante desligado',
   voltar: 'Voltar',
   motivos: {
     ARREPENDIMENTO: 'Desistência',
@@ -35,7 +37,7 @@ export const TEXTOS_DE_DEVOLUCOES = {
   autorizar: {
     titulo: 'Devoluções para autorizar',
     ajuda:
-      'O vendedor pediu autorização para devolver uma peça que passou do prazo da garantia ou do valor que você aprova antes. Aprovando, ele tem 7 dias para registrar a devolução.',
+      'O representante pediu autorização para devolver uma peça que passou do prazo da garantia ou do valor que você aprova antes. Aprovando, ele tem 7 dias para registrar a devolução.',
     legenda: 'Pedidos de autorização de devolução',
     vazio: 'Nenhum pedido nesta situação.',
     situacoes: [
@@ -47,7 +49,7 @@ export const TEXTOS_DE_DEVOLUCOES = {
     ],
     colunas: {
       pedidoEm: 'Pedido em',
-      vendedor: 'Vendedor',
+      vendedor: 'Representante',
       cliente: 'Cliente',
       pecas: 'Peças',
       valor: 'Valor',
@@ -68,16 +70,17 @@ export const TEXTOS_DE_DEVOLUCOES = {
     confirmarAprovar: {
       titulo: 'Aprovar este reembolso?',
       texto:
-        'O vendedor poderá registrar esta devolução em até 7 dias. A autorização vale para uma devolução só.',
+        'O representante poderá registrar esta devolução em até 7 dias. A autorização vale para uma devolução só.',
     },
     confirmarNegar: {
       titulo: 'Negar este pedido?',
-      texto: 'O vendedor será avisado. A devolução não poderá ser feita sem uma nova autorização.',
+      texto:
+        'O representante será avisado. A devolução não poderá ser feita sem uma nova autorização.',
       rotuloDoMotivo: 'Motivo',
       avisoDoMotivo: 'Diga o motivo de negar o pedido.',
     },
     aprovado: (ate: string) =>
-      `Reembolso aprovado. O vendedor pode registrar a devolução até ${ate}.`,
+      `Reembolso aprovado. O representante pode registrar a devolução até ${ate}.`,
     negado: 'Pedido negado.',
   },
   revisar: {
@@ -88,7 +91,7 @@ export const TEXTOS_DE_DEVOLUCOES = {
     vazio: 'Nenhuma devolução para revisar. Está tudo em dia.',
     colunas: {
       devolvidaEm: 'Devolvida em',
-      vendedor: 'Vendedor',
+      vendedor: 'Representante',
       cliente: 'Cliente',
       valor: 'Valor devolvido',
       porQue: 'Por que está para revisão',
@@ -112,16 +115,16 @@ export const TEXTOS_DE_DEVOLUCOES = {
     confirmarNaoAceitar: {
       titulo: 'Não aceitar esta devolução?',
       texto:
-        'O dinheiro já voltou para o cliente e a peça já está com o vendedor. O valor devolvido fica como pendência do vendedor e será cobrado no acerto.',
+        'O dinheiro já voltou para o cliente e a peça já está com o representante. O valor devolvido fica como pendência do representante e será cobrado no acerto.',
       rotuloDoMotivo: 'Por que não aceita?',
       avisoDoMotivo: 'Diga por que a devolução não foi aceita.',
     },
     mantida: 'Devolução mantida.',
-    naoAceita: 'Devolução não aceita. O valor ficou como pendência do vendedor.',
+    naoAceita: 'Devolução não aceita. O valor ficou como pendência do representante.',
   },
   lista: {
     titulo: 'Devoluções',
-    ajuda: 'Devoluções feitas pelos vendedores e por você.',
+    ajuda: 'Devoluções feitas pelos representantes e por você.',
     legenda: 'Devoluções',
     vazio: 'Nenhuma devolução nesta situação.',
     situacoes: [
@@ -140,7 +143,7 @@ export const TEXTOS_DE_DEVOLUCOES = {
     } as Record<string, string>,
     colunas: {
       devolvidaEm: 'Devolvida em',
-      vendedor: 'Vendedor',
+      vendedor: 'Representante',
       cliente: 'Cliente',
       pecas: 'Peças',
       motivo: 'Motivo',
@@ -205,18 +208,18 @@ export const TEXTOS_DE_DEVOLUCOES = {
     forma: 'Como o dinheiro foi devolvido',
     escolhaMotivo: 'Escolha o motivo da devolução',
     escolhaForma: 'Escolha como o dinheiro foi devolvido',
-    avisoDaLoja: 'A peça devolvida vai para a loja. Ela não volta para a maleta do vendedor.',
+    avisoDaLoja: 'A peça devolvida vai para a loja. Ela não volta para a maleta do representante.',
     nenhumaPeca: 'Escolha quantas peças voltam.',
     registrarBotao: 'Registrar devolução',
     registrando: 'Registrando...',
     registrada: 'Devolução registrada.',
     jaRegistrada: 'Esta devolução já estava registrada.',
     foraDoPrazo:
-      'Passou do prazo da garantia desta venda. O vendedor pode pedir a autorização no computador dele, e você aprova em Devoluções para autorizar.',
+      'Passou do prazo da garantia desta venda. O representante pode pedir a autorização no computador dele, e você aprova em Devoluções para autorizar.',
   },
   trocas: {
     titulo: 'Trocas',
-    ajuda: 'Trocas feitas pelos vendedores. Para desfazer uma troca, use Cancelar troca.',
+    ajuda: 'Trocas feitas pelos representantes. Para desfazer uma troca, use Cancelar troca.',
     legenda: 'Trocas',
     vazio: 'Nenhuma troca nesta situação.',
     situacoes: [
@@ -227,7 +230,7 @@ export const TEXTOS_DE_DEVOLUCOES = {
     situacaoDaTroca: { ATIVA: 'Feita', CANCELADA: 'Cancelada' } as Record<string, string>,
     colunas: {
       trocadaEm: 'Trocada em',
-      vendedor: 'Vendedor',
+      vendedor: 'Representante',
       cliente: 'Cliente',
       voltaram: 'Peças que voltaram',
       sairam: 'Peças que saíram',
@@ -252,7 +255,7 @@ export const TEXTOS_DE_DEVOLUCOES = {
   creditos: {
     titulo: 'Créditos dos clientes',
     ajuda:
-      'O crédito é o valor que sobra numa troca e que o cliente usa numa compra futura com o mesmo vendedor.',
+      'O crédito é o valor que sobra numa troca e que o cliente usa numa compra futura com o mesmo representante.',
     legenda: 'Créditos dos clientes',
     vazio: 'Nenhum crédito nesta situação.',
     situacoes: [
@@ -273,7 +276,7 @@ export const TEXTOS_DE_DEVOLUCOES = {
     colunas: {
       geradoEm: 'Gerado em',
       cliente: 'Cliente',
-      vendedor: 'Vendedor',
+      vendedor: 'Representante',
       origem: 'De onde veio',
       valor: 'Valor',
       usado: 'Já usado',
@@ -286,24 +289,24 @@ export const TEXTOS_DE_DEVOLUCOES = {
     confirmarTransferir: {
       titulo: 'Transferir este crédito?',
       texto: (saldo: string) =>
-        `O saldo inteiro, ${saldo}, passa para outro vendedor, que poderá usá-lo na compra deste cliente. O vendedor de agora deixa de poder usar este crédito.`,
-      campo: 'Passar para o vendedor',
-      escolha: 'Escolha o vendedor',
-      aviso: 'Escolha o vendedor que vai receber o crédito.',
+        `O saldo inteiro, ${saldo}, passa para outro representante, que poderá usá-lo na compra deste cliente. O representante de agora deixa de poder usar este crédito.`,
+      campo: 'Passar para o representante',
+      escolha: 'Escolha o representante',
+      aviso: 'Escolha o representante que vai receber o crédito.',
     },
     transferido: 'Crédito transferido.',
   },
   garantia: {
     titulo: 'Garantia e limites',
-    ajuda: 'Os prazos e os limites das devoluções. Valem para todos os vendedores.',
+    ajuda: 'Os prazos e os limites das devoluções. Valem para todos os representantes.',
     diasParaDesistir: 'Dias para o cliente desistir',
     diasParaDesistirAjuda: 'Conta a partir do dia da venda.',
     diasDoDefeito: 'Dias para devolver por defeito',
-    limiteSemanal: 'Devolução em dinheiro por semana, por vendedor',
+    limiteSemanal: 'Devolução em dinheiro por semana, por representante',
     semLimite: 'Sem limite',
     valorDeAprovacao: 'Valor a partir do qual você aprova antes',
     naoAprovarAntes: 'Não aprovar antes',
-    percentual: 'Avisar quando um vendedor devolver mais de (%) do que vendeu',
+    percentual: 'Avisar quando um representante devolver mais de (%) do que vendeu',
     percentualAjuda: 'Olha as últimas 4 semanas.',
     erroDias: 'Use um número de dias entre 1 e 365.',
     erroPorcentagem: 'Use uma porcentagem entre 1 e 100.',
@@ -314,3 +317,9 @@ export const TEXTOS_DE_DEVOLUCOES = {
   },
   aviso: { abrir: 'Abrir' },
 } as const;
+
+export const TEXTOS_DE_DEVOLUCOES = textosVivos(
+  'devolucoes',
+  PT_TEXTOS_DE_DEVOLUCOES,
+  ES_TEXTOS_DE_DEVOLUCOES,
+);

@@ -49,11 +49,11 @@ describe('prévia do acerto', () => {
     expect(valorDe('Descontos')).toBe('R$ 10,00');
     expect(valorDe('Devolvido')).toBe('R$ 20,00');
     expect(valorDe('Vendido depois dos descontos')).toBe('R$ 970,00');
-    expect(valorDe('Comissão do vendedor')).toBe('R$ 388,00');
+    expect(valorDe('Comissão do representante')).toBe('R$ 388,00');
     expect(valorDe('Faltas cobradas')).toBe('R$ 70,00');
     // A API devolveu 777,77 de propósito (não bate com a conta): é o que a tela mostra.
     expect(valorDe('Valor do acerto')).toBe('R$ 777,77');
-    expect(valorDe('Crédito do vendedor usado')).toBe('R$ 0,00');
+    expect(valorDe('Crédito do representante usado')).toBe('R$ 0,00');
     expect(valorDe('A pagar agora')).toBe('R$ 555,55');
     expect(chamadasDe(m, 'acertos.previa')).toHaveLength(1);
     expect(Object.keys(ultima(m, 'acertos.previa') as object)).toEqual(['id']);
@@ -82,6 +82,53 @@ describe('prévia do acerto', () => {
     );
     expect(await screen.findByText(/Gs\. 650\.000 de Gs\. 700\.000/)).toBeInTheDocument();
     expect(screen.getByText('Ainda não bateu a meta: comissão de 30%.')).toBeInTheDocument();
+  });
+
+  it('abaixo da meta: mostra quanto falta em Guarani e em Real, como a API mandou', async () => {
+    await abrirPrevia(
+      servidor(
+        previaDoServidor({
+          vendidoParaMetaGuarani: 650000,
+          percentualComissao: '30.00',
+          faltaParaMetaGuarani: 50000,
+          faltaParaMetaReais: '45.00',
+        }),
+      ),
+    );
+    expect(
+      await screen.findByText('Falta para a meta: Gs. 50.000 (R$ 45,00).'),
+    ).toBeInTheDocument();
+  });
+
+  it('na meta ou acima dela não mostra a linha do que falta', async () => {
+    await abrirPrevia(servidor());
+    await screen.findByText('Bateu a meta: comissão de 40%.');
+    expect(screen.queryByText(/Falta para a meta/)).not.toBeInTheDocument();
+  });
+
+  it('prévia sem os campos novos continua abrindo, só sem a linha do que falta', async () => {
+    const velha: Record<string, unknown> = {
+      ...previaDoServidor({ vendidoParaMetaGuarani: 650000 }),
+    };
+    delete velha.faltaParaMetaGuarani;
+    delete velha.faltaParaMetaReais;
+    await abrirPrevia(servidor(velha));
+    expect(await screen.findByText(/Gs\. 650\.000 de Gs\. 700\.000/)).toBeInTheDocument();
+    expect(screen.queryByText(/Falta para a meta/)).not.toBeInTheDocument();
+  });
+
+  it('campos do que falta fora da forma são ignorados, e o resto da prévia aparece', async () => {
+    await abrirPrevia(
+      servidor(
+        previaDoServidor({
+          vendidoParaMetaGuarani: 650000,
+          faltaParaMetaGuarani: 'muito',
+          faltaParaMetaReais: 45,
+        }),
+      ),
+    );
+    expect(await screen.findByText(/Gs\. 650\.000 de Gs\. 700\.000/)).toBeInTheDocument();
+    expect(screen.queryByText(/Falta para a meta/)).not.toBeInTheDocument();
   });
 
   it('lista a comissão de cada venda como a API calculou', async () => {

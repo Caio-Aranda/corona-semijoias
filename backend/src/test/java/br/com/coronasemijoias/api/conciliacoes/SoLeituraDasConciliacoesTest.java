@@ -19,7 +19,8 @@ class SoLeituraDasConciliacoesTest extends ApoioDasConciliacoes {
 
     private static final List<String> TABELAS = List.of("vendas", "pagamentos_cliente", "devolucoes", "contas_receber", "baixas_receber",
             "acertos", "acerto_eventos", "comissoes", "pendencias_acerto", "recebimentos_vendedor", "lancamentos_caixa", "contas_pagar",
-            "baixas_pagar", "compras", "produtos", "movimentacoes_estoque", "remessas", "itens_remessa", "movimentos_remessa",
+            "baixas_pagar", "compras", "itens_compra", "itens_venda", "itens_devolucao", "itens_acerto", "inventarios", "itens_inventario",
+            "produtos", "movimentacoes_estoque", "remessas", "itens_remessa", "movimentos_remessa",
             "auditoria");
 
     private String retrato(String tabela) {

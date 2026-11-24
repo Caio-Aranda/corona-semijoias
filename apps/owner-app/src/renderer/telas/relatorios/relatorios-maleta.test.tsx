@@ -8,6 +8,7 @@ import type {
   PonteDoCorona,
   ResultadoDeChamada,
 } from '../../../shared/ponte';
+import { abrirAreaDoMenu, abrirRelatorioPeloMenu } from '../../apoio-de-testes';
 import { App } from '../../App';
 
 const entregues: { nome: string; tipo: string; bytes: Uint8Array }[] = [];
@@ -126,7 +127,7 @@ const dosRelatorios = (m: ReturnType<typeof montar>) =>
 async function abrir(m: ReturnType<typeof montar>, titulo: string) {
   const u = userEvent.setup();
   render(<App ponte={m.ponte} />);
-  await u.click(await screen.findByRole('button', { name: titulo }));
+  await abrirRelatorioPeloMenu(u, titulo);
   return u;
 }
 
@@ -138,16 +139,17 @@ beforeEach(() => {
 describe('Relatórios da maleta', () => {
   it('o menu tem o grupo e os cinco relatórios com os nomes do glossário', async () => {
     const m = montar();
+    const u = userEvent.setup();
     render(<App ponte={m.ponte} />);
-    expect(await screen.findByText('Relatórios da maleta')).toBeInTheDocument();
+    const cartoes = await abrirAreaDoMenu(u, 'maletas');
     for (const t of [
-      'Maletas por vendedor e semana',
-      'O que ainda está com o vendedor, peça a peça',
-      'Mercadoria com cada vendedor',
+      'Maletas por representante e semana',
+      'O que ainda está com o representante, peça a peça',
+      'Mercadoria com cada representante',
       'Maletas em aberto e atrasadas',
       'Reposições',
     ]) {
-      expect(await screen.findByRole('button', { name: t })).toBeInTheDocument();
+      expect(within(cartoes).getByText(t)).toBeInTheDocument();
     }
   });
 
@@ -201,7 +203,7 @@ describe('Relatórios da maleta', () => {
     expect(csv).toContain('cotação do Banco Central do dia do envio');
   });
 
-  it('mercadoria com cada vendedor mostra o aviso de limite e atraso em palavras', async () => {
+  it('mercadoria com cada representante mostra o aviso de limite e atraso em palavras', async () => {
     const m = montar({
       'relatorios.cadastros': () => ({
         ok: true,
@@ -227,7 +229,7 @@ describe('Relatórios da maleta', () => {
         },
       }),
     });
-    await abrir(m, 'Mercadoria com cada vendedor');
+    await abrir(m, 'Mercadoria com cada representante');
     expect(await screen.findByText('Tem maleta atrasada; Acima do limite')).toBeInTheDocument();
   });
 });

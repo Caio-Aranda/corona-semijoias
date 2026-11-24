@@ -1,5 +1,6 @@
 import type { BancoAberto } from '../banco/banco-local';
 import { exigirCentavos, textoDeCentavos } from '../../shared/dinheiro';
+import { diferencaDaTroca } from '../../shared/diferenca-da-troca';
 import type {
   AutorizacoesDoVendedor,
   AvisoDeAutorizacao,
@@ -295,7 +296,7 @@ export class ConsultasDaFase6 {
       valorQueVolta: texto(valorA),
       valorNovo: texto(valorB),
       abatido: texto(abatidoDeA),
-      diferenca: texto(valorB - creditoDeA),
+      diferenca: texto(diferencaDaTroca(valorB, creditoDeA)),
       problema,
     };
   }

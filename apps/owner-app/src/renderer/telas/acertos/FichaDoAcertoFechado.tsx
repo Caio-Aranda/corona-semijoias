@@ -9,7 +9,7 @@ import { dataEHora } from '../sincronizacao/dados';
 import { PecaComFoto } from './BlocosDaPrevia';
 import { ProvedorDaCotacaoDoAcerto, ValorDoAcerto, percentualDoAcerto } from './Valor';
 import type { FichaDoAcerto } from './dados';
-import { lerFechamento, type FechamentoGravado } from './fechada';
+import { lerFechamento, recebidoEm, type FechamentoGravado } from './fechada';
 import { acertoParaPdf, fraseDaCotacao, frasesDaMeta, nomeDoArquivo } from './pdf-da-ficha';
 
 const T = TEXTOS_DE_ACERTOS;
@@ -188,7 +188,12 @@ export function FichaDoAcertoFechado({
           ]}
           linhas={f.recebimentos.map((r) => ({
             forma: R.recebimentos.formas[r.forma] ?? r.forma,
-            valor: <ValorDoAcerto valor={r.valor} />,
+            valor: (
+              <>
+                <ValorDoAcerto valor={r.valor} />
+                {recebidoEm(r) ? <span className="cs-valor__outras">{recebidoEm(r)}</span> : null}
+              </>
+            ),
             quando: dataEHora(r.recebidoEm),
             situacao: r.estornado ? R.recebimentos.desfeito : '',
           }))}

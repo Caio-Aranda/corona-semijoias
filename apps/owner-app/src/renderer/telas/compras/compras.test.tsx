@@ -154,7 +154,7 @@ const ultima = (m: Montagem, op: string) => chamadasDe(m, op).at(-1)?.parametros
 /** Item do menu lateral (a tela inicial também tem atalhos com o mesmo nome). */
 async function menu(nome: string) {
   const nav = await screen.findByRole('navigation', { name: 'Menu do Corona Gestão' });
-  return within(nav).getByRole('button', { name: nome });
+  return within(nav).getAllByRole('button', { name: nome })[0]!;
 }
 
 /** A linha da prévia da planilha, pelo número que aparece na primeira coluna. */
@@ -839,10 +839,10 @@ describe('Textos das telas de compra', () => {
     await u.click(screen.getByRole('tab', { name: 'Importar planilha' }));
     ver();
     await u.click(
-      within(screen.getByRole('navigation', { name: 'Menu do Corona Gestão' })).getByRole(
+      within(screen.getByRole('navigation', { name: 'Menu do Corona Gestão' })).getAllByRole(
         'button',
         { name: 'Compras' },
-      ),
+      )[0]!,
     );
     await screen.findByRole('row', { name: /Ouro Ltda/ });
     ver();

@@ -187,7 +187,7 @@ export function AbaDocumentos({ ponte, vendedorId }: AbaDocumentosProps) {
       </form>
 
       {feito ? <Aviso tipo="sucesso">{feito}</Aviso> : null}
-      {erro ? <AvisoDeErro erro={erro} /> : null}
+      {erro ? <AvisoDeErro erro={erro} camposJaMostrados={['descricao']} /> : null}
       {lista.erro ? <AvisoDeErro erro={lista.erro} aoTentarDeNovo={lista.recarregar} /> : null}
       {itens === null && !lista.erro ? (
         <p className="gestao-texto">{TEXTOS.vendedores.ficha.carregando}</p>

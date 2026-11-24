@@ -104,7 +104,7 @@ public class ServicoDeAcertos {
         boolean pelaDona = quem.pelaDona();
         UUID vendedorId = pelaDona ? pedido.vendedorId() : quem.vendedorId();
         if (vendedorId == null) {
-            throw Validacoes.recusar("vendedorId", "Escolha o vendedor do acerto.");
+            throw Validacoes.recusar("vendedorId", "Escolha o representante do acerto.");
         }
         trancarVendedor(jdbc, vendedorId);
 
@@ -354,11 +354,16 @@ public class ServicoDeAcertos {
         if (quem.dispositivoId() != null) {
             origem.definirNaTransacaoAtual(quem.dispositivoId());
         }
-        jdbc.update("""
-                INSERT INTO corona.leituras_acerto (id, acerto_id, produto_id, quantidade, estado_peca, lida_em, lida_por,
-                    pelo_vendedor, dispositivo_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""", id, acertoId, pedido.produtoId(),
-                pedido.quantidade(), pedido.estadoPeca(), Timestamp.from(relogio.instant()), quem.usuarioId(), !quem.pelaDona(),
-                quem.pelaDona() ? null : quem.dispositivoId());
+        try {
+            jdbc.update("""
+                    INSERT INTO corona.leituras_acerto (id, acerto_id, produto_id, quantidade, estado_peca, lida_em, lida_por,
+                        pelo_vendedor, dispositivo_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""", id, acertoId, pedido.produtoId(),
+                    pedido.quantidade(), pedido.estadoPeca(), Timestamp.from(relogio.instant()), quem.usuarioId(), !quem.pelaDona(),
+                    quem.pelaDona() ? null : quem.dispositivoId());
+        } catch (DuplicateKeyException e) {
+            // O mesmo id gravado por outro pedido ao mesmo tempo (em outro acerto): é um pedido diferente com o mesmo id.
+            throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.LEITURA_JA_REGISTRADA_DIFERENTE);
+        }
         return new Resultado(id, false);
     }
 }

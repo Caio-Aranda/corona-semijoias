@@ -3,9 +3,19 @@ import {
   PARTICAO_DO_ATUALIZADOR,
   ServicoDeAtualizacao,
 } from '@corona/conexao-segura';
-import { app, BrowserWindow, net, safeStorage, session, type WebContents } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  dialog,
+  net,
+  safeStorage,
+  session,
+  shell,
+  type WebContents,
+} from 'electron';
 import electronUpdater from 'electron-updater';
-import { join } from 'node:path';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
 import {
   CANAIS,
   type AvisoDeAtualizacao,
@@ -18,14 +28,23 @@ import {
   impressoesDoServidor,
   versaoDoApp,
 } from './configuracao';
-import { registrarAtualizacao, registrarPonte, registrarSincronizacao } from './ipc';
+import {
+  registrarAtualizacao,
+  registrarIdioma,
+  registrarPonte,
+  registrarRelatorios,
+  registrarSincronizacao,
+} from './ipc';
 import { montarCoronaVendas } from './montagem';
+import { SaidaDosRelatorios } from './saida-dos-relatorios';
 import { enderecoDoApp } from './seguranca';
 import { PreparoDaAtualizacao, prepararAntesDeInstalar } from './sync/preparo-da-atualizacao';
 import type { Cofre, Relogio } from './tipos';
 
 const NOME_DO_APP = 'Corona Vendas';
 const enderecoDeDesenvolvimento = process.env['ELECTRON_RENDERER_URL'];
+/** A única tela empacotada: a janela só carrega e só aceita chamadas deste arquivo (auditoria B1). */
+const arquivoDoApp = join(__dirname, '../renderer/index.html');
 
 app.setName(NOME_DO_APP);
 
@@ -73,7 +92,7 @@ function avisarAtualizacao(aviso: AvisoDeAtualizacao): void {
 function travarNavegacao(conteudo: WebContents): void {
   conteudo.setWindowOpenHandler(() => ({ action: 'deny' }));
   conteudo.on('will-navigate', (evento, url) => {
-    if (!enderecoDoApp(url, enderecoDeDesenvolvimento)) evento.preventDefault();
+    if (!enderecoDoApp(url, enderecoDeDesenvolvimento, arquivoDoApp)) evento.preventDefault();
   });
   conteudo.on('will-attach-webview', (evento) => evento.preventDefault());
 }
@@ -86,7 +105,9 @@ function criarJanela(): void {
     minHeight: 600,
     show: false,
     title: NOME_DO_APP,
-    backgroundColor: '#FBF7F0',
+    backgroundColor: '#FAF7F2',
+    // Instalado, o Windows usa o ícone do .exe; no modo de desenvolvimento, o PNG da pasta build.
+    ...(app.isPackaged ? {} : { icon: join(app.getAppPath(), 'build', 'icon.png') }),
     webPreferences: {
       preload: join(__dirname, '../preload/index.cjs'),
       contextIsolation: true,
@@ -105,15 +126,21 @@ function criarJanela(): void {
   });
 
   if (enderecoDeDesenvolvimento) void janela.loadURL(enderecoDeDesenvolvimento);
-  else void janela.loadFile(join(__dirname, '../renderer/index.html'));
+  else void janela.loadFile(arquivoDoApp);
 }
 
 async function iniciar(): Promise<void> {
-  // Nenhuma permissão do navegador (câmera, microfone, localização...) é concedida.
-  session.defaultSession.setPermissionRequestHandler((_conteudo, _permissao, responder) => {
-    responder(false);
+  // Nenhuma permissão do navegador é concedida (microfone, localização...), EXCETO a câmera (só imagem, nunca som) para a
+  // foto do cliente e do documento no cadastro (tarefa 9.2; §23.5).
+  session.defaultSession.setPermissionRequestHandler(
+    (_conteudo, permissao, responder, detalhes) => {
+      const tipos = (detalhes as { mediaTypes?: readonly string[] }).mediaTypes ?? [];
+      responder(permissao === 'media' && tipos.length > 0 && tipos.every((t) => t === 'video'));
+    },
+  );
+  session.defaultSession.setPermissionCheckHandler((_conteudo, permissao, _origem, detalhes) => {
+    return permissao === 'media' && (detalhes as { mediaType?: string }).mediaType === 'video';
   });
-  session.defaultSession.setPermissionCheckHandler(() => false);
 
   // Servidor sem domínio: o HTTPS usa um certificado autoassinado e o app só confia na chave dele (ADR-0009).
   // Sem impressão digital, fora deste computador, o app não conecta. A verificação nunca é desligada.
@@ -162,9 +189,60 @@ async function iniciar(): Promise<void> {
       quadro !== null &&
       janela !== null &&
       e.sender === janela.webContents &&
-      enderecoDoApp(quadro.url, enderecoDeDesenvolvimento)
+      enderecoDoApp(quadro.url, enderecoDeDesenvolvimento, arquivoDoApp)
     );
   });
+
+  registrarIdioma(app.getPath('userData'), (e) => {
+    const quadro = e.senderFrame;
+    return (
+      quadro !== null &&
+      janela !== null &&
+      e.sender === janela.webContents &&
+      enderecoDoApp(quadro.url, enderecoDeDesenvolvimento, arquivoDoApp)
+    );
+  });
+
+  // Relatórios do consignado (tarefa 9.3): imprimir, PDF e WhatsApp, sempre da janela que pediu.
+  registrarRelatorios(
+    (e) =>
+      new SaidaDosRelatorios({
+        imprimirPagina: () =>
+          new Promise<boolean>((resolve) => {
+            e.sender.print({ silent: false, printBackground: true }, (feito) => resolve(feito));
+          }),
+        paginaEmPdf: async () =>
+          new Uint8Array(await e.sender.printToPDF({ pageSize: 'A4', printBackground: true })),
+        escolherOndeSalvar: async (nome) => {
+          const opcoes = {
+            defaultPath: join(app.getPath('documents'), nome),
+            filters: [{ name: 'PDF', extensions: ['pdf'] }],
+          };
+          const r =
+            janela && !janela.isDestroyed()
+              ? await dialog.showSaveDialog(janela, opcoes)
+              : await dialog.showSaveDialog(opcoes);
+          return r.canceled ? null : (r.filePath ?? null);
+        },
+        pastaDosRelatorios: () => join(app.getPath('documents'), NOME_DO_APP, 'Relatórios'),
+        gravar: async (caminho, bytes) => {
+          await mkdir(dirname(caminho), { recursive: true });
+          await writeFile(caminho, bytes);
+        },
+        mostrarNaPasta: (caminho) => shell.showItemInFolder(caminho),
+        abrirNoNavegador: (endereco) => shell.openExternal(endereco),
+        comInternet: () => net.isOnline(),
+      }),
+    (e) => {
+      const quadro = e.senderFrame;
+      return (
+        quadro !== null &&
+        janela !== null &&
+        e.sender === janela.webContents &&
+        enderecoDoApp(quadro.url, enderecoDeDesenvolvimento, arquivoDoApp)
+      );
+    },
+  );
 
   registrarSincronizacao(motorDoApp, (e) => {
     const quadro = e.senderFrame;
@@ -172,7 +250,7 @@ async function iniciar(): Promise<void> {
       quadro !== null &&
       janela !== null &&
       e.sender === janela.webContents &&
-      enderecoDoApp(quadro.url, enderecoDeDesenvolvimento)
+      enderecoDoApp(quadro.url, enderecoDeDesenvolvimento, arquivoDoApp)
     );
   });
 
@@ -191,7 +269,7 @@ async function iniciar(): Promise<void> {
       quadro !== null &&
       janela !== null &&
       e.sender === janela.webContents &&
-      enderecoDoApp(quadro.url, enderecoDeDesenvolvimento)
+      enderecoDoApp(quadro.url, enderecoDeDesenvolvimento, arquivoDoApp)
     );
   });
   if (app.isPackaged) atualizacao.iniciar();

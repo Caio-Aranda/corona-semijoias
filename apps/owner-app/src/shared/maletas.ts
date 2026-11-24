@@ -32,6 +32,7 @@ export const SITUACOES_DA_MALETA = [
   'CONFERIDA',
   'EM_ACERTO',
   'ACERTADA',
+  'FECHADA',
   'CANCELADA',
 ] as const;
 

@@ -168,7 +168,7 @@ describe('Produtos: lista', () => {
     await waitFor(() =>
       expect(ultima(m, 'produtos.listar')).toMatchObject({ fornecedorId: ID_FORN }),
     );
-    await u.selectOptions(screen.getByLabelText('Situação'), 'Desativados');
+    await u.selectOptions(screen.getByLabelText('Situação'), 'Inativos');
     await waitFor(() => expect(ultima(m, 'produtos.listar')).toMatchObject({ ativo: false }));
   });
 });
@@ -307,7 +307,7 @@ describe('Produtos: ficha', () => {
     const u = await abrirFicha(m);
     expect(screen.getByLabelText('Preço de custo')).toHaveValue('10,00');
     expect(
-      screen.getByText('O custo só aparece neste aplicativo, nunca para o vendedor.'),
+      screen.getByText('O custo só aparece neste aplicativo, nunca para o representante.'),
     ).toBeInTheDocument();
     await u.clear(screen.getByLabelText('Nome'));
     await u.type(screen.getByLabelText('Nome'), 'Anel Novo');
@@ -326,6 +326,24 @@ describe('Produtos: ficha', () => {
       version: 4,
       codigos: [{ id: ID_FOTO, codigo: '0099', tipo: 'LOJA', principal: true }],
     });
+  });
+
+  it('Tam./Ton. é opcional: vai ao salvar quando preenchido e sai do corpo quando esvaziado', async () => {
+    const m = montar({
+      'produtos.editar': () => ({ ok: true, dados: { ...ANEL, version: 4, tamTon: '17' } }),
+    });
+    const u = await abrirFicha(m);
+    const campo = screen.getByLabelText('Tam./Ton.');
+    expect(campo).toHaveValue('');
+    await u.type(campo, ' 17 ');
+    await u.click(screen.getByRole('button', { name: 'Salvar' }));
+    await waitFor(() => expect(quantas(m, 'produtos.editar')).toBe(1));
+    expect(ultima(m, 'produtos.editar')).toMatchObject({ tamTon: '17' });
+    await u.clear(screen.getByLabelText('Tam./Ton.'));
+    await u.type(screen.getByLabelText('Nome'), ' II');
+    await u.click(screen.getByRole('button', { name: 'Salvar' }));
+    await waitFor(() => expect(quantas(m, 'produtos.editar')).toBe(2));
+    expect(ultima(m, 'produtos.editar')).toMatchObject({ tamTon: '' });
   });
 
   it('409 de versão: texto do servidor e Atualizar relê o produto', async () => {
@@ -354,12 +372,12 @@ describe('Produtos: ficha', () => {
       'produtos.inativar': () => ({ ok: true, dados: { ...ANEL, ativo: false } }),
     });
     const u = await abrirFicha(m);
-    await u.click(screen.getByRole('button', { name: 'Desativar' }));
+    await u.click(screen.getByRole('button', { name: 'Inativar' }));
     const janela = await screen.findByRole('dialog');
     expect(within(janela).getByRole('button', { name: 'Voltar' })).toHaveFocus();
     expect(quantas(m, 'produtos.inativar')).toBe(0);
-    await u.click(within(janela).getByRole('button', { name: 'Desativar' }));
-    await screen.findByText('Anel Solitário foi desativado.');
+    await u.click(within(janela).getByRole('button', { name: 'Inativar' }));
+    await screen.findByText('Anel Solitário foi inativado.');
     expect(ultima(m, 'produtos.inativar')).toEqual({ id: ID_P });
     expect(screen.getByRole('button', { name: 'Reativar' })).toBeInTheDocument();
   });
@@ -499,6 +517,27 @@ describe('Produtos: importação por planilha', () => {
       precoVenda: '80.00',
       precoCusto: '12.00',
     });
+  });
+
+  it('a coluna opcional Tam./Ton. vai ao servidor; planilha sem o valor não apaga o que o produto já tem', async () => {
+    const m = montar({
+      'produtos.porCodigo': (p) =>
+        (p.parametros as { codigo: string }).codigo === '0012'
+          ? { ok: true, dados: { ...ANEL, tamTon: 'Dourado' } }
+          : naoAchou,
+      'produtos.criar': () => ({ ok: true, dados: ANEL }),
+      'produtos.editar': () => ({ ok: true, dados: ANEL }),
+    });
+    const csv =
+      'código;nome;categoria;custo;preço;Tam./Ton.\n' +
+      '0012;Anel Solitário;Anéis;12,00;80,00;\n' +
+      '0200;Anel Novo;Anéis;5;30;17\n';
+    const u = await escolher(m, csv);
+    await screen.findByText('Prévia: nada foi gravado ainda.');
+    await u.click(screen.getByRole('button', { name: 'Importar produtos' }));
+    await screen.findByText('Importação concluída.');
+    expect(ultima(m, 'produtos.criar')).toMatchObject({ nome: 'Anel Novo', tamTon: '17' });
+    expect(ultima(m, 'produtos.editar')).toMatchObject({ id: ID_P, tamTon: 'Dourado' });
   });
 
   it('o resultado de cada linha é guardado no servidor (relatório de importações)', async () => {
@@ -737,7 +776,7 @@ describe('Produtos: consulta', () => {
     await u.click(screen.getByRole('tab', { name: 'Consultar produto' }));
     await u.type(await screen.findByLabelText('Código da peça'), '0012{Enter}');
     expect(await screen.findByRole('heading', { name: 'Anel Solitário' })).toBeInTheDocument();
-    expect(screen.getByText(/Preço:/)).toHaveTextContent('R$ 70,00');
+    expect(screen.getByText(/Preço unitário:/)).toHaveTextContent('R$ 70,00');
     // Zero na loja e nenhuma em maleta: "Acabou".
     expect(screen.getByText(/Saldo no estoque:/)).toHaveTextContent('Acabou');
     await waitFor(() => expect(screen.getByLabelText('Código da peça')).toHaveFocus());

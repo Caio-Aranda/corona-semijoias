@@ -20,7 +20,7 @@ const ID_P3 = 'b3b3b3b3-2fa1-41d3-b9a5-2c3a9a8f6b03';
 const pendencia = (extra: Record<string, unknown> = {}) => ({
   id: ID_P1,
   vendedorId: ID_VENDEDOR,
-  vendedorNome: 'Ana Vendedora',
+  vendedorNome: 'Ana Representante',
   produtoId: ID_ANEL,
   produtoNome: 'Anel Solitário',
   quantidade: 1,
@@ -63,10 +63,10 @@ async function abrirPendencias(m: ReturnType<typeof servidor>) {
 }
 
 describe('pendências do acerto', () => {
-  it('lista vendedor, peça, quantidade, valor e a situação em palavras da loja', async () => {
+  it('lista representante, peça, quantidade, valor e a situação em palavras da loja', async () => {
     await abrirPendencias(servidor());
     const tabela = within(screen.getByRole('table'));
-    expect(tabela.getAllByText('Ana Vendedora')).toHaveLength(3);
+    expect(tabela.getAllByText('Ana Representante')).toHaveLength(3);
     expect(tabela.getByText('Anel Solitário')).toBeInTheDocument();
     expect(tabela.getAllByText('R$ 70,00', { selector: 'strong' })).toHaveLength(2);
     expect(tabela.getAllByText('Em aberto')).toHaveLength(2);
@@ -75,11 +75,11 @@ describe('pendências do acerto', () => {
     expect(screen.queryByText('ABERTA')).toBeNull();
   });
 
-  it('explica que cobrar é no próximo acerto do vendedor', async () => {
+  it('explica que cobrar é no próximo acerto do representante', async () => {
     await abrirPendencias(servidor());
     expect(
       screen.getByText(
-        /A pendência em aberto aparece no próximo acerto do vendedor, e é lá que ela é cobrada/,
+        /A pendência em aberto aparece no próximo acerto do representante, e é lá que ela é cobrada/,
       ),
     ).toBeInTheDocument();
   });
@@ -177,10 +177,10 @@ describe('pendências do acerto', () => {
     expect(a).toBe(b);
   });
 
-  it('filtra por vendedor e por situação', async () => {
+  it('filtra por representante e por situação', async () => {
     const m = servidor();
     const u = await abrirPendencias(m);
-    await u.selectOptions(screen.getByLabelText('Vendedor'), ID_VENDEDOR);
+    await u.selectOptions(screen.getByLabelText('Representante'), ID_VENDEDOR);
     await waitFor(() =>
       expect(ultima(m, 'pendencias.listar')).toMatchObject({ vendedorId: ID_VENDEDOR }),
     );

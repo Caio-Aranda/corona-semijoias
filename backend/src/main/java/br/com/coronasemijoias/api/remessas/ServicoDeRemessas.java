@@ -79,7 +79,7 @@ public class ServicoDeRemessas {
         UUID id = Validacoes.idDoPedido(pedido.id());
         travar("remessa:" + id);
         if (pedido.vendedorId() == null) {
-            throw Validacoes.recusar("vendedorId", "Escolha o vendedor da maleta.");
+            throw Validacoes.recusar("vendedorId", "Escolha o representante da maleta.");
         }
         if (pedido.semanaId() == null) {
             throw Validacoes.recusar("semanaId", "Escolha a semana da maleta.");
@@ -305,7 +305,7 @@ public class ServicoDeRemessas {
                   FROM corona.vendedores v LEFT JOIN corona.restricoes r ON r.id = v.restricao_id AND r.deleted_at IS NULL
                  WHERE v.id = ? AND v.deleted_at IS NULL""", vendedorId);
         if (achados.isEmpty()) {
-            throw Validacoes.recusar("vendedorId", "Este vendedor não existe mais. Atualize a tela e escolha de novo.");
+            throw Validacoes.recusar("vendedorId", "Este representante não existe mais. Atualize a tela e escolha de novo.");
         }
         Map<String, Object> v = achados.get(0);
         if (!Boolean.TRUE.equals(v.get("ativo"))) {

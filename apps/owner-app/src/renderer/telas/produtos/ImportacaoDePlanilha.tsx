@@ -17,6 +17,7 @@ import {
 } from '../../nucleo/planilha';
 import { TEXTOS } from '../../textos';
 import { lerOpcoes, lerProduto } from './dados';
+import { TEXTOS_SOLTOS as SOLTOS } from '../../textos-soltos';
 
 const T = TEXTOS.produtos.planilha;
 /** Quantas linhas aparecem na tela de uma vez; as recusadas aparecem sempre. */
@@ -75,6 +76,7 @@ async function acharExistentes(ponte: PonteDoCorona, codigos: string[]) {
             version: p.version,
             nome: p.nome,
             referencia: p.referencia,
+            ...(p.tamTon ? { tamTon: p.tamTon } : {}),
             ...(p.fornecedorId ? { fornecedorId: p.fornecedorId } : {}),
             estoqueMinimo: p.estoqueMinimo,
           });
@@ -97,6 +99,8 @@ async function gravarLinha(ponte: PonteDoCorona, l: LinhaDaPrevia): Promise<Resu
     categoriaId: l.categoriaId,
     precoVenda: l.preco,
     precoCusto: l.custo,
+    // Opcional: a planilha sem o valor não apaga o Tam./Ton. que o produto já tem.
+    ...(l.tamTon ? { tamTon: l.tamTon } : {}),
   };
   const r =
     l.situacao === 'criar'
@@ -115,6 +119,7 @@ async function gravarLinha(ponte: PonteDoCorona, l: LinhaDaPrevia): Promise<Resu
           id: l.existente!.id,
           ...comum,
           ...(l.existente!.referencia ? { referencia: l.existente!.referencia } : {}),
+          ...(!l.tamTon && l.existente!.tamTon ? { tamTon: l.existente!.tamTon } : {}),
           ...(l.existente!.fornecedorId ? { fornecedorId: l.existente!.fornecedorId } : {}),
           estoqueMinimo: l.existente!.estoqueMinimo ?? 0,
           version: l.existente!.version,
@@ -187,7 +192,7 @@ export function ImportacaoDePlanilha({ ponte, aoMudar }: ImportacaoDePlanilhaPro
       'PLANILHA',
       nomeDoArquivo.current,
       resultados.map((r) => ({
-        referencia: `Linha ${r.linha.linha} (${r.linha.codigo || 'sem código'})`,
+        referencia: SOLTOS.planilha.referenciaDaLinha(r.linha.linha, r.linha.codigo),
         resultado:
           r.resultado === 'criado'
             ? 'CRIADO'

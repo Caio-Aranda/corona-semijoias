@@ -29,8 +29,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class ServicoDeCaixa {
 
-    static final String CATEGORIA_DO_REPASSE = "Repasse do vendedor";
-    static final String CATEGORIA_DO_PAGAMENTO_AO_VENDEDOR = "Pagamento ao vendedor";
+    static final String CATEGORIA_DO_REPASSE = "Repasse do representante";
+    static final String CATEGORIA_DO_PAGAMENTO_AO_VENDEDOR = "Pagamento ao representante";
     static final String CATEGORIA_DO_PAGAMENTO_A_FORNECEDOR = "Pagamento a fornecedor";
     private static final ZoneId BRASILIA = ZoneId.of("America/Sao_Paulo");
 
@@ -47,7 +47,7 @@ public class ServicoDeCaixa {
     public UUID lancarRecebimento(UUID usuarioId, UUID recebimentoId, String forma, BigDecimal valor) {
         exigirPositivo(valor);
         return gravar(UuidV7.gerar(), "ENTRADA", valor, forma, categoria(CATEGORIA_DO_REPASSE), "RECEBIMENTO_VENDEDOR", recebimentoId,
-                hoje(), null, usuarioId, "Recebimento do vendedor", null, null);
+                hoje(), null, usuarioId, "Recebimento do representante", null, null);
     }
 
     /**
@@ -57,7 +57,7 @@ public class ServicoDeCaixa {
     @Transactional(propagation = Propagation.MANDATORY)
     public UUID estornarRecebimento(UUID usuarioId, UUID recebimentoOriginalId, UUID estornoDoRecebimentoId) {
         return estornarPelaOrigem(usuarioId, "RECEBIMENTO_VENDEDOR", recebimentoOriginalId, estornoDoRecebimentoId,
-                "Estorno de recebimento do vendedor", null);
+                "Estorno de recebimento do representante", null);
     }
 
     /** A saída do que o acerto pagou ao vendedor na hora (acerto a favor dele): valor positivo, gravado negativo. */
@@ -65,7 +65,7 @@ public class ServicoDeCaixa {
     public UUID lancarPagamentoAoVendedor(UUID usuarioId, UUID acertoId, String forma, BigDecimal valor) {
         exigirPositivo(valor);
         return gravar(UuidV7.gerar(), "SAIDA", valor.negate(), forma, categoria(CATEGORIA_DO_PAGAMENTO_AO_VENDEDOR),
-                "ACERTO_A_FAVOR_DO_VENDEDOR", acertoId, hoje(), null, usuarioId, "Pagamento ao vendedor no acerto", null, null);
+                "ACERTO_A_FAVOR_DO_VENDEDOR", acertoId, hoje(), null, usuarioId, "Pagamento ao representante no acerto", null, null);
     }
 
     /**

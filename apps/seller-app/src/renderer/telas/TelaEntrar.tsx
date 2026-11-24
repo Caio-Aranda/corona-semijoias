@@ -1,6 +1,8 @@
-import { Aviso, Botao, CabecalhoDeMarca, Campo } from '@corona/ui';
+import { Aviso, Botao } from '@corona/ui';
+import { Campo } from '../componentes-do-vendedor';
 import { useState, type FormEvent } from 'react';
 import type { PonteDoCorona, ResultadoDeEntrada } from '../../shared/ponte';
+import { SeletorDeIdioma } from '../SeletorDeIdioma';
 import { TEXTOS } from '../textos';
 import { MensagemDeEntrada } from './MensagemDeEntrada';
 
@@ -10,6 +12,10 @@ export interface TelaEntrarProps {
   sessaoTerminou?: boolean;
   /** Sem internet e com dados neste computador: entra só com a senha (tarefa 5.8). */
   semInternet?: boolean;
+  /** O aplicativo foi reaberto: pede a senha para abrir o banco do computador. */
+  reabrindo?: boolean;
+  /** Quem usa este computador: o campo Usuário vem preenchido e travado (outra pessoa não entra por cima). */
+  usuarioFixo?: string | null;
   /** Chamado quando é preciso ver o novo estado (entrou, senha temporária, aplicativo desatualizado). */
   aoMudar: () => void;
 }
@@ -18,11 +24,14 @@ export function TelaEntrar({
   ponte,
   sessaoTerminou = false,
   semInternet = false,
+  reabrindo = false,
+  usuarioFixo = null,
   aoMudar,
 }: TelaEntrarProps) {
-  const [usuario, setUsuario] = useState('');
+  const [usuario, setUsuario] = useState(usuarioFixo ?? '');
   const [senha, setSenha] = useState('');
   const [enviando, setEnviando] = useState(false);
+  const [confirmando, setConfirmando] = useState(false);
   const [resultado, setResultado] = useState<ResultadoDeEntrada | null>(null);
 
   async function entrar(evento: FormEvent) {
@@ -45,15 +54,32 @@ export function TelaEntrar({
     }
   }
 
+  async function liberar() {
+    setEnviando(true);
+    try {
+      await ponte.liberarComputador();
+    } finally {
+      setEnviando(false);
+      aoMudar();
+    }
+  }
+
   return (
-    <div className="vendas-pagina">
-      <CabecalhoDeMarca nomeDoApp="Corona Vendas" />
-      <main className="vendas-conteudo">
-        <form className="vendas-cartao" onSubmit={(e) => void entrar(e)} noValidate>
-          <h1 className="vendas-titulo">
-            {semInternet ? TEXTOS.semInternetNaEntrada.titulo : 'Entrar'}
+    <div className="cs-entrada-pagina">
+      <main>
+        <SeletorDeIdioma />
+        <form className="cs-entrada" onSubmit={(e) => void entrar(e)} noValidate>
+          <span className="cs-entrada__logo" role="img" aria-label="Corona Semijoias" />
+          <p className="cs-entrada__titulo">Corona Vendas</p>
+          <h1 className="cs-entrada__titulo-pagina">
+            {semInternet
+              ? TEXTOS.semInternetNaEntrada.titulo
+              : reabrindo
+                ? TEXTOS.reabrindoNaEntrada.titulo
+                : TEXTOS.entrada.titulo}
           </h1>
           {semInternet ? <p className="vendas-texto">{TEXTOS.semInternetNaEntrada.texto}</p> : null}
+          {reabrindo ? <p className="vendas-texto">{TEXTOS.reabrindoNaEntrada.texto}</p> : null}
           {sessaoTerminou ? (
             <Aviso tipo="atencao" titulo={TEXTOS.sessaoTerminou.titulo}>
               {TEXTOS.sessaoTerminou.texto}
@@ -61,24 +87,47 @@ export function TelaEntrar({
           ) : null}
           <MensagemDeEntrada resultado={resultado} />
           <Campo
-            rotulo="Usuário"
+            rotulo={TEXTOS.entrada.usuario}
             value={usuario}
             onChange={(e) => setUsuario(e.target.value)}
+            readOnly={usuarioFixo !== null}
             autoComplete="username"
             autoCapitalize="none"
             spellCheck={false}
-            autoFocus
+            autoFocus={usuarioFixo === null}
           />
           <Campo
-            rotulo="Senha"
+            rotulo={TEXTOS.entrada.senha}
             type="password"
             value={senha}
             onChange={(e) => setSenha(e.target.value)}
             autoComplete="current-password"
+            autoFocus={usuarioFixo !== null}
           />
           <Botao type="submit" variante="primario" grande disabled={enviando}>
-            Entrar
+            {TEXTOS.botoes.entrar}
           </Botao>
+          {reabrindo && !confirmando ? (
+            <Botao type="button" variante="secundario" onClick={() => setConfirmando(true)}>
+              {TEXTOS.reabrindoNaEntrada.outraPessoa}
+            </Botao>
+          ) : null}
+          {reabrindo && confirmando ? (
+            <Aviso tipo="atencao" titulo={TEXTOS.reabrindoNaEntrada.confirmaTitulo}>
+              <p>{TEXTOS.reabrindoNaEntrada.confirmaTexto}</p>
+              <Botao
+                type="button"
+                variante="secundario"
+                disabled={enviando}
+                onClick={() => void liberar()}
+              >
+                {TEXTOS.reabrindoNaEntrada.confirmar}
+              </Botao>
+              <Botao type="button" variante="secundario" onClick={() => setConfirmando(false)}>
+                {TEXTOS.reabrindoNaEntrada.desistir}
+              </Botao>
+            </Aviso>
+          ) : null}
         </form>
       </main>
     </div>

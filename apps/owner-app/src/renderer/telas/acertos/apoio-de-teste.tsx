@@ -55,7 +55,7 @@ export function ficha(extra: Record<string, unknown> = {}) {
     id: ID_ACERTO,
     status: 'EM_ACERTO',
     vendedorId: ID_VENDEDOR,
-    vendedorNome: 'Ana Vendedora',
+    vendedorNome: 'Ana Representante',
     semanaId: ID_SEMANA,
     semanaNumero: 45,
     iniciadoEm: '2026-11-10T12:00:00Z',
@@ -77,7 +77,7 @@ export function montar(manipuladores: Record<string, Manipulador> = {}) {
     'avisos.listar': () => ({ ok: true, dados: { avisos: [] } }),
     'cotacao.hoje': () => ({ ok: true, dados: { disponivel: false } }),
     'vendedores.escolha': () =>
-      pagina([{ id: ID_VENDEDOR, nome: 'Ana Vendedora', codigo: 7, ativo: true }]),
+      pagina([{ id: ID_VENDEDOR, nome: 'Ana Representante', codigo: 7, ativo: true }]),
     'semanas.listar': () => pagina([{ id: ID_SEMANA, numero: 45, situacao: 'ABERTA' }]),
     'acertos.listar': () => ({ ok: true, dados: [] }),
     'produtos.fotos.imagem': () => ({
@@ -122,7 +122,7 @@ export const resumoDeAcerto = (extra: Record<string, unknown> = {}) => ({
   id: ID_ACERTO,
   status: 'EM_ACERTO',
   vendedorId: ID_VENDEDOR,
-  vendedorNome: 'Ana Vendedora',
+  vendedorNome: 'Ana Representante',
   semanaNumero: 45,
   maletas: 1,
   iniciadoEm: '2026-11-10T12:00:00Z',
@@ -183,6 +183,8 @@ export function previaDoServidor(extra: Record<string, unknown> = {}) {
     ],
     metaGuarani: 700000,
     vendidoParaMetaGuarani: 750000,
+    faltaParaMetaGuarani: 0,
+    faltaParaMetaReais: '0.00',
     percentualComissao: '40.00',
     vendidoBruto: '1000.00',
     descontos: '10.00',
@@ -214,7 +216,7 @@ export async function abrirPrevia(
   { rotuloDoBotao = 'Conferir o acerto' }: { rotuloDoBotao?: string } = {},
 ) {
   const u = await abrir(m);
-  await u.click(await screen.findByRole('button', { name: /Abrir acerto de Ana Vendedora/ }));
+  await u.click(await screen.findByRole('button', { name: /Abrir acerto de Ana Representante/ }));
   await u.click(await screen.findByRole('button', { name: rotuloDoBotao }));
   return u;
 }

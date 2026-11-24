@@ -30,8 +30,10 @@ class FormatosDeOperacaoTest {
                 Duration.ofDays(90));
         for (String tipo : new String[] {"VENDA", "ESTORNO_VENDA", "CLIENTE_NOVO", "CLIENTE_ALTERADO", "CONFERENCIA"}) {
             assertThat(f.conhecido(tipo, 1)).as(tipo).isTrue();
-            assertThat(f.aceitoAgora(tipo, 1)).as(tipo).isTrue();
-            assertThat(f.conhecido(tipo, 2)).as(tipo).isFalse();
+            // Em 2040 o formato 1 do cadastro do cliente ja passou dos 90 dias do formato 2 (tarefa 9.1).
+            assertThat(f.aceitoAgora(tipo, 1)).as(tipo).isEqualTo(!tipo.startsWith("CLIENTE_"));
+            // O cadastro do cliente ganhou o formato 2 no consignado (tarefa 9.1); os outros seguem so com o 1.
+            assertThat(f.conhecido(tipo, 2)).as(tipo).isEqualTo(tipo.startsWith("CLIENTE_"));
         }
         assertThat(f.conhecido("DESCONHECIDO", 1)).isFalse();
         assertThat(f.conhecido(null, 1)).isFalse();
@@ -44,7 +46,8 @@ class FormatosDeOperacaoTest {
                 Duration.ofDays(90));
         for (String tipo : new String[] {"DEVOLUCAO", "PEDIDO_AUTORIZACAO", "TROCA", "CANCELAR_DEVOLUCAO", "CANCELAR_TROCA"}) {
             assertThat(f.conhecido(tipo, 1)).as(tipo).isTrue();
-            assertThat(f.aceitoAgora(tipo, 1)).as(tipo).isTrue();
+            // Em 2040 o formato 1 do cadastro do cliente ja passou dos 90 dias do formato 2 (tarefa 9.1).
+            assertThat(f.aceitoAgora(tipo, 1)).as(tipo).isEqualTo(!tipo.startsWith("CLIENTE_"));
             assertThat(f.aceitoAte(tipo, 1)).as(tipo).isEmpty();
             assertThat(f.conhecido(tipo, 2)).as(tipo).isFalse();
         }

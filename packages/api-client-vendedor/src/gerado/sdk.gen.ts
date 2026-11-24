@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AcharPecaDaMinhaMaletaData, AcharPecaDaMinhaMaletaResponses, AvisarDiferencaNaConferenciaData, AvisarDiferencaNaConferenciaResponses, BaixarFotoDaMinhaMaletaData, BaixarFotoDaMinhaMaletaResponses, BuscarPecaDaMinhaMaletaData, BuscarPecaDaMinhaMaletaResponses, CadastrarMeuClienteData, CadastrarMeuClienteResponses, CancelarDevolucaoDoVendedorData, CancelarDevolucaoDoVendedorResponses, CancelarTrocaDoVendedorData, CancelarTrocaDoVendedorResponses, ConferirDadosData, ConferirDadosResponses, ConferirMinhaMaletaData, ConferirMinhaMaletaResponses, DevolverDoClienteData, DevolverDoClienteResponses, EntrarData, EntrarResponses, EnviarOperacoesData, EnviarOperacoesResponses, EstornarRecebimentoDoVendedorData, EstornarRecebimentoDoVendedorResponses, EstornarVendaDoVendedorData, EstornarVendaDoVendedorResponses, EuData, EuResponses, GuardarEmQuarentenaData, GuardarEmQuarentenaResponses, ListarAutorizacoesDoVendedorData, ListarAutorizacoesDoVendedorResponses, ListarCreditosDoVendedorData, ListarCreditosDoVendedorResponses, ListarDevolucoesDoVendedorData, ListarDevolucoesDoVendedorResponses, ListarMeusAcertosData, ListarMeusAcertosResponses, ListarMeusClientesData, ListarMeusClientesResponses, ListarMeusRecebimentosData, ListarMeusRecebimentosResponses, ListarMinhasContasAReceberData, ListarMinhasContasAReceberResponses, ListarMinhasMaletasData, ListarMinhasMaletasResponses, ListarTrocasDoVendedorData, ListarTrocasDoVendedorResponses, ListarVendasDoVendedorData, ListarVendasDoVendedorResponses, PedirAutorizacaoData, PedirAutorizacaoResponses, PedirMeuAcertoData, PedirMeuAcertoResponses, PreviaDaMinhaComissaoData, PreviaDaMinhaComissaoResponses, ReceberDadosData, ReceberDadosResponses, ReceberDoClienteData, ReceberDoClienteResponses, RegistrarMinhaLeituraDoAcertoData, RegistrarMinhaLeituraDoAcertoResponses, RegistrarTrocaData, RegistrarTrocaResponses, RelatorioDeCreditosDosMeusClientesData, RelatorioDeCreditosDosMeusClientesResponses, RelatorioDeMeusRecebimentosData, RelatorioDeMeusRecebimentosResponses, RelatorioDeMinhasDevolucoesETrocasData, RelatorioDeMinhasDevolucoesETrocasResponses, RelatorioDeMinhasVendasData, RelatorioDeMinhasVendasResponses, RelatorioDeValoresAReceberData, RelatorioDeValoresAReceberResponses, RenovarData, RenovarResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SoVendedorData, SoVendedorResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarDoVendedorData, ValidarDoVendedorResponses, ValorDoVendedorData, ValorDoVendedorResponses, VendasComAPecaData, VendasComAPecaResponses, VenderNaMaletaData, VenderNaMaletaResponses, VerAutorizacaoDoVendedorData, VerAutorizacaoDoVendedorResponses, VerConferenciaDaMinhaMaletaData, VerConferenciaDaMinhaMaletaResponses, VerCotacaoDeHojeData, VerCotacaoDeHojeResponses, VerCreditoDoVendedorData, VerCreditoDoVendedorResponses, VerDevolucaoDoVendedorData, VerDevolucaoDoVendedorResponses, VerMeuAcertoData, VerMeuAcertoResponses, VerMeuClienteData, VerMeuClienteResponses, VerMinhaMaletaData, VerMinhaMaletaResponses, VerTrocaDoVendedorData, VerTrocaDoVendedorResponses, VerVendaDoVendedorData, VerVendaDoVendedorResponses } from './types.gen';
+import type { AcharPecaDaMinhaMaletaData, AcharPecaDaMinhaMaletaResponses, AvisarDiferencaNaConferenciaData, AvisarDiferencaNaConferenciaResponses, BaixarFotoDaMinhaMaletaData, BaixarFotoDaMinhaMaletaResponses, BaixarFotoDoMeuClienteData, BaixarFotoDoMeuClienteResponses, BuscarPecaDaMinhaMaletaData, BuscarPecaDaMinhaMaletaResponses, CadastrarMeuClienteData, CadastrarMeuClienteResponses, CancelarDevolucaoDoVendedorData, CancelarDevolucaoDoVendedorResponses, CancelarTrocaDoVendedorData, CancelarTrocaDoVendedorResponses, ConferirDadosData, ConferirDadosResponses, ConferirMinhaMaletaData, ConferirMinhaMaletaResponses, DevolverDoClienteData, DevolverDoClienteResponses, EntrarData, EntrarResponses, EnviarFotoDoMeuClienteData, EnviarFotoDoMeuClienteResponses, EnviarOperacoesData, EnviarOperacoesResponses, EstornarRecebimentoDoVendedorData, EstornarRecebimentoDoVendedorResponses, EstornarVendaDoVendedorData, EstornarVendaDoVendedorResponses, EuData, EuResponses, GuardarEmQuarentenaData, GuardarEmQuarentenaResponses, ListarAutorizacoesDoVendedorData, ListarAutorizacoesDoVendedorResponses, ListarCreditosDoVendedorData, ListarCreditosDoVendedorResponses, ListarDevolucoesDoVendedorData, ListarDevolucoesDoVendedorResponses, ListarMeusAcertosData, ListarMeusAcertosResponses, ListarMeusClientesData, ListarMeusClientesResponses, ListarMeusRecebimentosData, ListarMeusRecebimentosResponses, ListarMinhasContasAReceberData, ListarMinhasContasAReceberResponses, ListarMinhasMaletasData, ListarMinhasMaletasResponses, ListarTrocasDoVendedorData, ListarTrocasDoVendedorResponses, ListarVendasDoVendedorData, ListarVendasDoVendedorResponses, PedirAutorizacaoData, PedirAutorizacaoResponses, PedirMeuAcertoData, PedirMeuAcertoResponses, PreviaDaMinhaComissaoData, PreviaDaMinhaComissaoResponses, ReceberDadosData, ReceberDadosResponses, ReceberDoClienteData, ReceberDoClienteResponses, RegistrarMinhaLeituraDoAcertoData, RegistrarMinhaLeituraDoAcertoResponses, RegistrarTrocaData, RegistrarTrocaResponses, RelatorioDeCreditosDosMeusClientesData, RelatorioDeCreditosDosMeusClientesResponses, RelatorioDeMeusRecebimentosData, RelatorioDeMeusRecebimentosResponses, RelatorioDeMinhasDevolucoesETrocasData, RelatorioDeMinhasDevolucoesETrocasResponses, RelatorioDeMinhasVendasData, RelatorioDeMinhasVendasResponses, RelatorioDeValoresAReceberData, RelatorioDeValoresAReceberResponses, RenovarData, RenovarResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SoVendedorData, SoVendedorResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarDoVendedorData, ValidarDoVendedorResponses, ValorDoVendedorData, ValorDoVendedorResponses, VendasComAPecaData, VendasComAPecaResponses, VenderNaMaletaData, VenderNaMaletaResponses, VerAutorizacaoDoVendedorData, VerAutorizacaoDoVendedorResponses, VerConferenciaDaMinhaMaletaData, VerConferenciaDaMinhaMaletaResponses, VerCotacaoDeHojeData, VerCotacaoDeHojeResponses, VerCreditoDoVendedorData, VerCreditoDoVendedorResponses, VerDevolucaoDoVendedorData, VerDevolucaoDoVendedorResponses, VerMeuAcertoData, VerMeuAcertoResponses, VerMeuClienteData, VerMeuClienteResponses, VerMinhaMaletaData, VerMinhaMaletaResponses, VerTrocaDoVendedorData, VerTrocaDoVendedorResponses, VerVendaDoVendedorData, VerVendaDoVendedorResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -183,7 +183,7 @@ export const verAutorizacaoDoVendedor = <ThrowOnError extends boolean = false>(o
 /**
  * Meus clientes
  *
- * Os clientes ativos da LOJA (até 100, por nome), só com nome, CPF, telefone e cidade; nascimento, WhatsApp e observações vêm só dos que o vendedor logado cadastrou (meu = verdadeiro). A busca procura no nome, telefone, CPF e, nos clientes dele, no WhatsApp.
+ * Só os clientes ativos do representante logado (até 100, por nome): cada representante vê a sua lista e nunca a de outro (ADR-0016, item 4). A busca procura no nome, telefone, CPF e WhatsApp.
  */
 export const listarMeusClientes = <ThrowOnError extends boolean = false>(options?: Options<ListarMeusClientesData, ThrowOnError>): RequestResult<ListarMeusClientesResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ListarMeusClientesResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -207,12 +207,38 @@ export const cadastrarMeuCliente = <ThrowOnError extends boolean = false>(option
 });
 
 /**
- * Ver um cliente da loja
+ * Ver um cliente meu
+ *
+ * Cliente de outro representante é 404.
  */
 export const verMeuCliente = <ThrowOnError extends boolean = false>(options: Options<VerMeuClienteData, ThrowOnError>): RequestResult<VerMeuClienteResponses, unknown, ThrowOnError> => (options.client ?? client).get<VerMeuClienteResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/vendedor/clientes/{id}',
     ...options
+});
+
+/**
+ * Baixar a foto de um cliente do representante
+ */
+export const baixarFotoDoMeuCliente = <ThrowOnError extends boolean = false>(options: Options<BaixarFotoDoMeuClienteData, ThrowOnError>): RequestResult<BaixarFotoDoMeuClienteResponses, unknown, ThrowOnError> => (options.client ?? client).get<BaixarFotoDoMeuClienteResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/clientes/{id}/fotos/{tipo}',
+    ...options
+});
+
+/**
+ * Enviar a foto de um cliente
+ *
+ * O corpo é a imagem (JPG, PNG ou WebP). O servidor confere o SHA-256 contra o hash do cadastro; repetir é inofensivo (200). Cliente que ainda não chegou ao servidor: 409 CLIENTE_AINDA_NAO_CHEGOU (tente de novo). Cliente de outro representante: 404.
+ */
+export const enviarFotoDoMeuCliente = <ThrowOnError extends boolean = false>(options: Options<EnviarFotoDoMeuClienteData, ThrowOnError>): RequestResult<EnviarFotoDoMeuClienteResponses, unknown, ThrowOnError> => (options.client ?? client).put<EnviarFotoDoMeuClienteResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/vendedor/clientes/{id}/fotos/{tipo}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**
@@ -516,7 +542,7 @@ export const avisarDiferencaNaConferencia = <ThrowOnError extends boolean = fals
 /**
  * Receber os dados do vendedor (pull)
  *
- * Devolve o que mudou desde o cursor, só do vendedor do token: maletas enviadas e itens, peças delas (com códigos e fotos), vendas, pagamentos, conferências, cotações, categorias, semanas e o diretório de clientes da loja. Cursor vazio é a carga inicial. Aplique cada linha só se a version for maior que a guardada. 409 CURSOR_INVALIDO: refaça a carga inicial sem tocar no que aguarda envio. Limite padrão 500 linhas, máximo 1000 (a expansão de uma maleta pode passar do limite).
+ * Devolve o que mudou desde o cursor, só do vendedor do token: maletas enviadas e itens, peças delas (com códigos e fotos), vendas, pagamentos, conferências, cotações, categorias, semanas e o diretório de clientes da loja. Cursor vazio é a carga inicial. Aplique cada linha só se a version for maior que a guardada. 409 CURSOR_INVALIDO: refaça a carga inicial sem tocar no que aguarda envio. Limite padrão 500 linhas, máximo 1000 (a expansão de uma maleta pode passar do limite). formato: sem ele (ou 1) vale o pull do Corona Vendas 1.0.0, sem as tabelas e colunas do consignado ao cliente e com o diretório de clientes da loja; 2 traz o consignado e só os clientes do representante. O mesmo vale para /conferencia.
  */
 export const receberDados = <ThrowOnError extends boolean = false>(options?: Options<ReceberDadosData, ThrowOnError>): RequestResult<ReceberDadosResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ReceberDadosResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],

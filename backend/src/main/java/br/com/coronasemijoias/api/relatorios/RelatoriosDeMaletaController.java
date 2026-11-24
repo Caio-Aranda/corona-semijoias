@@ -32,9 +32,24 @@ public class RelatoriosDeMaletaController {
             + "(dataDaCotacao; vazio se ainda não havia cotação).";
 
     private final ConsultasDeMaleta consultas;
+    private final RelatorioDoFechamentoDaMaleta fechamento;
 
-    public RelatoriosDeMaletaController(ConsultasDeMaleta consultas) {
+    public RelatoriosDeMaletaController(ConsultasDeMaleta consultas, RelatorioDoFechamentoDaMaleta fechamento) {
         this.consultas = consultas;
+        this.fechamento = fechamento;
+    }
+
+    @Operation(operationId = "relatorioDoFechamentoDaMaleta", summary = "Fechamento da maleta",
+            description = "Uma linha por peça da maleta (enviadas, devolvidas pelos clientes, vendidas, ainda com clientes e com quem, "
+                    + "esperado na maleta, bipadas na volta e diferença). O rodapé traz as peças e os valores da maleta (vendido, "
+                    + "comissão dos clientes, recebido e pendências a receber, divididos pelo vendido de cada maleta dentro da nota). "
+                    + "Sai da mesma leitura da tela do Fechamento (GET /api/maletas/{id}/fechamento); 404 se o fechamento ainda não "
+                    + "foi começado. Parâmetros: remessaId (obrigatório), recorte (a chave de um total do rodapé: só as peças que o formam), pagina (começa em 0) e tamanho (até 100).")
+    @GetMapping("/fechamento")
+    public RelatorioDeCadastro<RelatorioDoFechamentoDaMaleta.LinhaDoFechamento> fechamentoDaMaleta(
+            @RequestParam java.util.UUID remessaId, @RequestParam(required = false) String recorte,
+            @RequestParam(required = false) Integer pagina, @RequestParam(required = false) Integer tamanho) {
+        return fechamento.montar(remessaId, pagina, tamanho, recorte);
     }
 
     @Operation(operationId = "relatorioDeRemessasPorVendedorESemana", summary = "Maletas por vendedor e semana",

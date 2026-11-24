@@ -161,3 +161,34 @@ describe('banco local no processo principal', () => {
     });
   });
 });
+
+describe('este computador é de outra pessoa (liberar o computador)', () => {
+  it('guarda o banco e a chave antigos (nunca apaga), tira o usuario.txt e deixa o computador livre', async () => {
+    const s = servico();
+    await s.prepararComInternet('Senha-1');
+    s.lembrar('vendedor_login', 'ana');
+    gravarMarca(s, 'vendas-da-ana');
+    s.fechar();
+    expect(s.usuarioDoComputador()).toBe('ana');
+    expect(s.temDadosLocais).toBe(true);
+
+    expect(s.liberarParaOutraPessoa()).toBe(true);
+
+    expect(s.usuarioDoComputador()).toBeNull();
+    expect(s.temDadosLocais).toBe(false);
+    expect(existsSync(join(pasta, 'usuario.txt'))).toBe(false);
+    expect(existsSync(join(pasta, 'banco.sqlite.ilegivel-20261111T120000'))).toBe(true);
+    expect(existsSync(join(pasta, 'banco.sqlite.ilegivel-20261111T120000.chave.json'))).toBe(true);
+    // O banco guardado ainda tem as vendas (nada foi apagado).
+    const novo = servico();
+    expect(await novo.prepararComInternet('Outra-Senha-2')).toMatchObject({ ok: true });
+    expect(marca(novo)).toBeUndefined();
+  });
+
+  it('com o banco aberto não faz nada', async () => {
+    const s = servico();
+    await s.prepararComInternet('Senha-1');
+    expect(s.liberarParaOutraPessoa()).toBe(false);
+    expect(s.temDadosLocais).toBe(true);
+  });
+});

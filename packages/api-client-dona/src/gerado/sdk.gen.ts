@@ -2,7 +2,7 @@
 
 import { type Client, type ClientMeta, formDataBodySerializer, type Options as Options2, type RequestResult, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { AbaixoDoMinimo1Data, AbaixoDoMinimo1Responses, AbaixoDoMinimoData, AbaixoDoMinimoResponses, AjustarData, AjustarResponses, AlteracoesDeProdutosData, AlteracoesDeProdutosResponses, AlterarCodigosData, AlterarCodigosResponses, AlterarComissaoData, AlterarComissaoResponses, AlterarGarantiaData, AlterarGarantiaResponses, AniversariantesData, AniversariantesResponses, AprovarAutorizacaoData, AprovarAutorizacaoResponses, AprovarVendaDeComputadorBloqueadoData, AprovarVendaDeComputadorBloqueadoResponses, BaixarData, BaixarResponses, BloquearAparelhoData, BloquearAparelhoResponses, CancelarData, CancelarDevolucaoData, CancelarDevolucaoResponses, CancelarRemessaData, CancelarRemessaResponses, CancelarResponses, CancelarTrocaData, CancelarTrocaResponses, ClientesData, ClientesResponses, CodigosEmConflitoData, CodigosEmConflitoResponses, ColocarItemNaRemessaData, ColocarItemNaRemessaResponses, ComecarData, ComecarResponses, ComprasData, ComprasResponses, ConciliacaoData, ConciliacaoResponses, ConciliarData, ConciliarResponses, ConferirDevolucoesETrocasData, ConferirDevolucoesETrocasResponses, ConferirODinheiroDaFase7Data, ConferirODinheiroDaFase7Responses, ConfirmarData, ConfirmarResponses, ConverterData, ConverterResponses, CorrigirData, CorrigirResponses, Criar1Data, Criar1Responses, Criar2Data, Criar2Responses, Criar3Data, Criar3Responses, Criar4Data, Criar4Responses, Criar5Data, Criar5Responses, Criar6Data, Criar6Responses, Criar7Data, Criar7Responses, Criar8Data, Criar8Responses, CriarCategoriaDoCaixaData, CriarCategoriaDoCaixaResponses, CriarData, CriarReferenciaData, CriarReferenciaResponses, CriarRemessaData, CriarRemessaResponses, CriarResponses, CustosData, CustosResponses, DesativarData, DesativarResponses, DescartarEnvioData, DescartarEnvioResponses, DescartarVendaDeComputadorBloqueadoData, DescartarVendaDeComputadorBloqueadoResponses, Desfazer1Data, Desfazer1Responses, DesfazerData, DesfazerDevolucaoDaMaletaData, DesfazerDevolucaoDaMaletaResponses, DesfazerResponses, DesistirDoAcertoData, DesistirDoAcertoResponses, DevolverPecasDaMaletaData, DevolverPecasDaMaletaResponses, DevolverPelaDonaData, DevolverPelaDonaResponses, EcoData, EcoResponses, Editar1Data, Editar1Responses, Editar2Data, Editar2Responses, Editar3Data, Editar3Responses, Editar4Data, Editar4Responses, Editar5Data, Editar5Responses, Editar6Data, Editar6Responses, Editar7Data, Editar7Responses, Editar8Data, Editar8Responses, EditarData, EditarReferenciaData, EditarReferenciaResponses, EditarResponses, EntrarData, EntrarResponses, Enviar1Data, Enviar1Responses, EnviarData, EnviarRemessaData, EnviarRemessaResponses, EnviarResponses, EstornarLancamentoDoCaixaData, EstornarLancamentoDoCaixaResponses, EstornarPagamentoAFornecedorData, EstornarPagamentoAFornecedorResponses, EstornarRecebimentoDeClienteData, EstornarRecebimentoDeClienteResponses, EstornarRecebimentoDoVendedorPelaDonaData, EstornarRecebimentoDoVendedorPelaDonaResponses, EstornarVendaData, EstornarVendaResponses, EuData, EuResponses, Excluir1Data, Excluir1Responses, Excluir2Data, Excluir2Responses, Excluir3Data, Excluir3Responses, Excluir4Data, Excluir4Responses, Excluir5Data, Excluir5Responses, Excluir6Data, Excluir6Responses, Excluir7Data, Excluir7Responses, Excluir8Data, Excluir8Responses, Excluir9Data, Excluir9Responses, ExcluirData, ExcluirRascunhoDeRemessaData, ExcluirRascunhoDeRemessaResponses, ExcluirReferenciaData, ExcluirReferenciaResponses, ExcluirResponses, FalhaData, FalhaResponses, FecharAcertoData, FecharAcertoResponses, FecharData, FecharResponses, FecharSemanaData, FecharSemanaResponses, FichaData, FichaResponses, FornecedoresData, FornecedoresResponses, GerarContasAPagarDaCompraData, GerarContasAPagarDaCompraResponses, GravarConjugeData, GravarConjugeResponses, GravarContatoData, GravarContatoResponses, GravarEnderecoData, GravarEnderecoResponses, GravarMeiData, GravarMeiResponses, GravarObservacoesData, GravarObservacoesResponses, GravarTrabalhoData, GravarTrabalhoResponses, HistoricoDeCustoData, HistoricoDeCustoResponses, HojeData, HojeResponses, ImagemData, ImagemResponses, Inativar1Data, Inativar1Responses, Inativar2Data, Inativar2Responses, Inativar3Data, Inativar3Responses, Inativar4Data, Inativar4Responses, Inativar5Data, Inativar5Responses, Inativar6Data, Inativar6Responses, InativarCategoriaDoCaixaData, InativarCategoriaDoCaixaResponses, InativarData, InativarResponses, IniciarAcertoData, IniciarAcertoResponses, InventariosData, InventariosResponses, ItensDaCompraData, ItensDaCompraResponses, ItensData, ItensResponses, LancarData, LancarNoCaixaData, LancarNoCaixaResponses, LancarResponses, LerComissaoData, LerComissaoResponses, LerData, LerGarantiaData, LerGarantiaResponses, LerResponses, LiberarAparelhoData, LiberarAparelhoResponses, Listar10Data, Listar10Responses, Listar11Data, Listar11Responses, Listar12Data, Listar12Responses, Listar13Data, Listar13Responses, Listar14Data, Listar14Responses, Listar1Data, Listar1Responses, Listar2Data, Listar2Responses, Listar3Data, Listar3Responses, Listar4Data, Listar4Responses, Listar5Data, Listar5Responses, Listar6Data, Listar6Responses, Listar7Data, Listar7Responses, Listar8Data, Listar8Responses, Listar9Data, Listar9Responses, ListarAcertosData, ListarAcertosResponses, ListarAparelhosDoVendedorData, ListarAparelhosDoVendedorResponses, ListarAutorizacoesData, ListarAutorizacoesResponses, ListarCategoriasDoCaixaData, ListarCategoriasDoCaixaResponses, ListarContasAPagarDaCompraData, ListarContasAPagarDaCompraResponses, ListarContasAPagarData, ListarContasAPagarResponses, ListarContasAReceberData, ListarContasAReceberResponses, ListarCreditosData, ListarCreditosResponses, ListarCreditosSemSaldoData, ListarCreditosSemSaldoResponses, ListarData, ListarDevolucoesData, ListarDevolucoesResponses, ListarEnviosComProblemaData, ListarEnviosComProblemaResponses, ListarMaletasEmAbertoDoVendedorData, ListarMaletasEmAbertoDoVendedorResponses, ListarPendenciasDoAcertoData, ListarPendenciasDoAcertoResponses, ListarRecebimentosDoVendedorData, ListarRecebimentosDoVendedorResponses, ListarReferenciasData, ListarReferenciasResponses, ListarRemessasData, ListarRemessasResponses, ListarResponses, ListarTrocasData, ListarTrocasResponses, ListarValoresDeClienteSubstituidosData, ListarValoresDeClienteSubstituidosResponses, ListarVendasDeComputadorBloqueadoData, ListarVendasDeComputadorBloqueadoResponses, ManterCreditoSemSaldoData, ManterCreditoSemSaldoResponses, ManterDevolucaoData, ManterDevolucaoResponses, MovimentacoesData, MovimentacoesResponses, MudarEstoqueMinimoData, MudarEstoqueMinimoResponses, NaoAceitarCreditoSemSaldoData, NaoAceitarCreditoSemSaldoResponses, NaoAceitarDevolucaoData, NaoAceitarDevolucaoResponses, NegarAutorizacaoData, NegarAutorizacaoResponses, NotaDaRemessaData, NotaDaRemessaResponses, PagarContaAPagarData, PagarContaAPagarResponses, ParadosData, ParadosResponses, PorCodigoData, PorCodigoResponses, PorFornecedorData, PorFornecedorResponses, PosicaoAtualData, PosicaoAtualResponses, PreviaData, PreviaDoFechamentoComDecisoesData, PreviaDoFechamentoComDecisoesResponses, PreviaDoFechamentoData, PreviaDoFechamentoResponses, PreviaResponses, ProdutosData, ProdutosResponses, ProximoCodigoData, ProximoCodigoResponses, Reativar1Data, Reativar1Responses, Reativar2Data, Reativar2Responses, Reativar3Data, Reativar3Responses, Reativar4Data, Reativar4Responses, Reativar5Data, Reativar5Responses, Reativar6Data, Reativar6Responses, Reativar7Data, Reativar7Responses, ReativarCategoriaDoCaixaData, ReativarCategoriaDoCaixaResponses, ReativarData, ReativarResponses, ReceberData, ReceberDoVendedorData, ReceberDoVendedorResponses, ReceberResponses, RedefinirSenhaData, RedefinirSenhaResponses, RegistrarData, RegistrarLeituraDoAcertoData, RegistrarLeituraDoAcertoResponses, RegistrarResponses, RelatorioDeAcertosData, RelatorioDeAcertosResponses, RelatorioDeComissoesData, RelatorioDeComissoesResponses, RelatorioDeContasAPagarData, RelatorioDeContasAPagarResponses, RelatorioDeContasAReceberData, RelatorioDeContasAReceberResponses, RelatorioDeCreditosDosClientesData, RelatorioDeCreditosDosClientesResponses, RelatorioDeDevolucoesData, RelatorioDeDevolucoesResponses, RelatorioDeDinheiroDevolvidoData, RelatorioDeDinheiroDevolvidoResponses, RelatorioDeEsperadoEContadoData, RelatorioDeEsperadoEContadoResponses, RelatorioDeFluxoDeCaixaData, RelatorioDeFluxoDeCaixaResponses, RelatorioDeInadimplenciaData, RelatorioDeInadimplenciaResponses, RelatorioDeMaletasEmAbertoEAtrasadasData, RelatorioDeMaletasEmAbertoEAtrasadasResponses, RelatorioDeMercadoriaPorVendedorData, RelatorioDeMercadoriaPorVendedorResponses, RelatorioDePecasComDefeitoData, RelatorioDePecasComDefeitoResponses, RelatorioDePedidosDeAutorizacaoData, RelatorioDePedidosDeAutorizacaoResponses, RelatorioDePendenciasDoAcertoData, RelatorioDePendenciasDoAcertoResponses, RelatorioDeRecebimentosPorFormaData, RelatorioDeRecebimentosPorFormaResponses, RelatorioDeRemessasPorVendedorESemanaData, RelatorioDeRemessasPorVendedorESemanaResponses, RelatorioDeReposicoesData, RelatorioDeReposicoesResponses, RelatorioDeSaldoPorMaletaData, RelatorioDeSaldoPorMaletaResponses, RelatorioDeTaxaDeDevolucaoPorVendedorData, RelatorioDeTaxaDeDevolucaoPorVendedorResponses, RelatorioDeTrocasData, RelatorioDeTrocasResponses, RenomearCategoriaDoCaixaData, RenomearCategoriaDoCaixaResponses, RenovarData, RenovarResponses, ResolverPendenciaDoAcertoData, ResolverPendenciaDoAcertoResponses, ResultadoDasImportacoesData, ResultadoDasImportacoesResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SemCodigoDeBarrasData, SemCodigoDeBarrasResponses, SemFotoData, SemFotoResponses, SoVendedorData, SoVendedorResponses, TempoData, TempoResponses, TentarEnvioDeNovoData, TentarEnvioDeNovoResponses, TirarItemDaRemessaData, TirarItemDaRemessaResponses, TransferirCreditoData, TransferirCreditoResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarData, ValidarResponses, ValorDaDonaData, ValorDaDonaResponses, VendasComAPecaDaDonaData, VendasComAPecaDaDonaResponses, VendedoresData, VendedoresResponses, Ver10Data, Ver10Responses, Ver1Data, Ver1Responses, Ver2Data, Ver2Responses, Ver3Data, Ver3Responses, Ver4Data, Ver4Responses, Ver5Data, Ver5Responses, Ver6Data, Ver6Responses, Ver7Data, Ver7Responses, Ver8Data, Ver8Responses, Ver9Data, Ver9Responses, VerAcertoData, VerAcertoResponses, VerAutorizacaoData, VerAutorizacaoResponses, VerConferenciaDaMaletaData, VerConferenciaDaMaletaResponses, VerConjugeData, VerConjugeResponses, VerContaAPagarData, VerContaAPagarResponses, VerContatoData, VerContatoResponses, VerCreditoData, VerCreditoResponses, VerData, VerDevolucaoData, VerDevolucaoResponses, VerEnderecoData, VerEnderecoResponses, VerExtratoDoCaixaData, VerExtratoDoCaixaResponses, VerMaletaDaRemessaData, VerMaletaDaRemessaResponses, VerMeiData, VerMeiResponses, VerObservacoesData, VerObservacoesResponses, VerRemessaData, VerRemessaResponses, VerResponses, VerSaldoDoCaixaData, VerSaldoDoCaixaResponses, VerTrabalhoData, VerTrabalhoResponses, VerTrocaData, VerTrocaResponses, VerVendaData, VerVendaResponses } from './types.gen';
+import type { AbaixoDoMinimo1Data, AbaixoDoMinimo1Responses, AbaixoDoMinimoData, AbaixoDoMinimoResponses, AjustarData, AjustarResponses, AlteracoesDeProdutosData, AlteracoesDeProdutosResponses, AlterarCodigosData, AlterarCodigosResponses, AlterarComissaoData, AlterarComissaoResponses, AlterarGarantiaData, AlterarGarantiaResponses, AniversariantesData, AniversariantesResponses, AprovarAutorizacaoData, AprovarAutorizacaoResponses, AprovarVendaDeComputadorBloqueadoData, AprovarVendaDeComputadorBloqueadoResponses, BaixarData, BaixarFotoDoClienteData, BaixarFotoDoClienteResponses, BaixarResponses, BloquearAparelhoData, BloquearAparelhoResponses, CancelarData, CancelarDevolucaoData, CancelarDevolucaoResponses, CancelarRemessaData, CancelarRemessaResponses, CancelarResponses, CancelarTrocaData, CancelarTrocaResponses, ClientesData, ClientesResponses, CodigosEmConflitoData, CodigosEmConflitoResponses, ColocarItemNaRemessaData, ColocarItemNaRemessaResponses, ComecarData, ComecarResponses, ComprasData, ComprasResponses, ConciliacaoData, ConciliacaoResponses, ConciliarData, ConciliarResponses, ConcluirFechamentoDaMaletaData, ConcluirFechamentoDaMaletaResponses, ConferirAgoraData, ConferirAgoraResponses, ConferirConsignadoData, ConferirConsignadoResponses, ConferirDevolucoesETrocasData, ConferirDevolucoesETrocasResponses, ConferirODinheiroDaFase7Data, ConferirODinheiroDaFase7Responses, ConfirmarData, ConfirmarResponses, ConverterData, ConverterResponses, CorrigirData, CorrigirResponses, Criar1Data, Criar1Responses, Criar2Data, Criar2Responses, Criar3Data, Criar3Responses, Criar4Data, Criar4Responses, Criar5Data, Criar5Responses, Criar6Data, Criar6Responses, Criar7Data, Criar7Responses, Criar8Data, Criar8Responses, CriarCategoriaDoCaixaData, CriarCategoriaDoCaixaResponses, CriarData, CriarReferenciaData, CriarReferenciaResponses, CriarRemessaData, CriarRemessaResponses, CriarResponses, CustosData, CustosResponses, DesativarData, DesativarResponses, DescartarEnvioData, DescartarEnvioResponses, DescartarVendaDeComputadorBloqueadoData, DescartarVendaDeComputadorBloqueadoResponses, Desfazer1Data, Desfazer1Responses, DesfazerData, DesfazerDevolucaoDaMaletaData, DesfazerDevolucaoDaMaletaResponses, DesfazerResponses, DesistirDoAcertoData, DesistirDoAcertoResponses, DetalhamentoDoResultadoData, DetalhamentoDoResultadoResponses, DevolverPecasDaMaletaData, DevolverPecasDaMaletaResponses, DevolverPelaDonaData, DevolverPelaDonaResponses, EcoData, EcoResponses, Editar1Data, Editar1Responses, Editar2Data, Editar2Responses, Editar3Data, Editar3Responses, Editar4Data, Editar4Responses, Editar5Data, Editar5Responses, Editar6Data, Editar6Responses, Editar7Data, Editar7Responses, Editar8Data, Editar8Responses, EditarData, EditarReferenciaData, EditarReferenciaResponses, EditarResponses, EntrarData, EntrarResponses, Enviar1Data, Enviar1Responses, EnviarData, EnviarRemessaData, EnviarRemessaResponses, EnviarResponses, EstornarLancamentoDoCaixaData, EstornarLancamentoDoCaixaResponses, EstornarPagamentoAFornecedorData, EstornarPagamentoAFornecedorResponses, EstornarRecebimentoDeClienteData, EstornarRecebimentoDeClienteResponses, EstornarRecebimentoDoVendedorPelaDonaData, EstornarRecebimentoDoVendedorPelaDonaResponses, EstornarVendaData, EstornarVendaResponses, EuData, EuResponses, Excluir1Data, Excluir1Responses, Excluir2Data, Excluir2Responses, Excluir3Data, Excluir3Responses, Excluir4Data, Excluir4Responses, Excluir5Data, Excluir5Responses, Excluir6Data, Excluir6Responses, Excluir7Data, Excluir7Responses, Excluir8Data, Excluir8Responses, Excluir9Data, Excluir9Responses, ExcluirData, ExcluirRascunhoDeRemessaData, ExcluirRascunhoDeRemessaResponses, ExcluirReferenciaData, ExcluirReferenciaResponses, ExcluirResponses, FalhaData, FalhaResponses, FecharAcertoData, FecharAcertoResponses, FecharData, FecharResponses, FecharSemanaData, FecharSemanaResponses, FichaData, FichaResponses, FornecedoresData, FornecedoresResponses, GerarContasAPagarDaCompraData, GerarContasAPagarDaCompraResponses, GravarConjugeData, GravarConjugeResponses, GravarContatoData, GravarContatoResponses, GravarEnderecoData, GravarEnderecoResponses, GravarMeiData, GravarMeiResponses, GravarObservacoesData, GravarObservacoesResponses, GravarTrabalhoData, GravarTrabalhoResponses, HistoricoDeCustoData, HistoricoDeCustoResponses, HojeData, HojeResponses, ImagemData, ImagemResponses, Inativar1Data, Inativar1Responses, Inativar2Data, Inativar2Responses, Inativar3Data, Inativar3Responses, Inativar4Data, Inativar4Responses, Inativar5Data, Inativar5Responses, Inativar6Data, Inativar6Responses, InativarCategoriaDoCaixaData, InativarCategoriaDoCaixaResponses, InativarData, InativarResponses, IniciarAcertoData, IniciarAcertoResponses, IniciarFechamentoDaMaletaData, IniciarFechamentoDaMaletaResponses, InventariosData, InventariosResponses, ItensDaCompraData, ItensDaCompraResponses, ItensData, ItensResponses, LancarData, LancarNoCaixaData, LancarNoCaixaResponses, LancarResponses, LerComissaoData, LerComissaoResponses, LerData, LerFechamentoDaMaletaData, LerFechamentoDaMaletaResponses, LerGarantiaData, LerGarantiaResponses, LerResponses, LerTelasDoGestaoData, LerTelasDoGestaoResponses, LiberarAparelhoData, LiberarAparelhoResponses, Listar10Data, Listar10Responses, Listar11Data, Listar11Responses, Listar12Data, Listar12Responses, Listar13Data, Listar13Responses, Listar14Data, Listar14Responses, Listar1Data, Listar1Responses, Listar2Data, Listar2Responses, Listar3Data, Listar3Responses, Listar4Data, Listar4Responses, Listar5Data, Listar5Responses, Listar6Data, Listar6Responses, Listar7Data, Listar7Responses, Listar8Data, Listar8Responses, Listar9Data, Listar9Responses, ListarAcertosData, ListarAcertosResponses, ListarAlertasDoConsignadoData, ListarAlertasDoConsignadoResponses, ListarAparelhosDoVendedorData, ListarAparelhosDoVendedorResponses, ListarAutorizacoesData, ListarAutorizacoesResponses, ListarCategoriasDoCaixaData, ListarCategoriasDoCaixaResponses, ListarConferenciasData, ListarConferenciasResponses, ListarContasAPagarDaCompraData, ListarContasAPagarDaCompraResponses, ListarContasAPagarData, ListarContasAPagarResponses, ListarContasAReceberData, ListarContasAReceberResponses, ListarCreditosData, ListarCreditosResponses, ListarCreditosSemSaldoData, ListarCreditosSemSaldoResponses, ListarData, ListarDevolucoesData, ListarDevolucoesResponses, ListarEnviosComProblemaData, ListarEnviosComProblemaResponses, ListarMaletasEmAbertoDoVendedorData, ListarMaletasEmAbertoDoVendedorResponses, ListarNotasDoConsignadoData, ListarNotasDoConsignadoResponses, ListarPendenciasDoAcertoData, ListarPendenciasDoAcertoResponses, ListarRecebimentosDoVendedorData, ListarRecebimentosDoVendedorResponses, ListarReferenciasData, ListarReferenciasResponses, ListarRemessasData, ListarRemessasResponses, ListarResponses, ListarSemanasDoRepresentanteData, ListarSemanasDoRepresentanteResponses, ListarTrocasData, ListarTrocasResponses, ListarValoresDeClienteSubstituidosData, ListarValoresDeClienteSubstituidosResponses, ListarVendasDeComputadorBloqueadoData, ListarVendasDeComputadorBloqueadoResponses, ManterCreditoSemSaldoData, ManterCreditoSemSaldoResponses, ManterDevolucaoData, ManterDevolucaoResponses, MarcarAlertaDoConsignadoComoVistoData, MarcarAlertaDoConsignadoComoVistoResponses, MovimentacoesData, MovimentacoesResponses, MudarEstoqueMinimoData, MudarEstoqueMinimoResponses, NaoAceitarCreditoSemSaldoData, NaoAceitarCreditoSemSaldoResponses, NaoAceitarDevolucaoData, NaoAceitarDevolucaoResponses, NegarAutorizacaoData, NegarAutorizacaoResponses, NotaDaRemessaData, NotaDaRemessaResponses, PagarContaAPagarData, PagarContaAPagarResponses, PainelSemanalData, PainelSemanalResponses, ParadosData, ParadosResponses, PorCodigoData, PorCodigoResponses, PorFornecedorData, PorFornecedorResponses, PosicaoAtualData, PosicaoAtualResponses, PreviaData, PreviaDoFechamentoComDecisoesData, PreviaDoFechamentoComDecisoesResponses, PreviaDoFechamentoData, PreviaDoFechamentoResponses, PreviaResponses, ProdutosData, ProdutosResponses, ProximoCodigoData, ProximoCodigoResponses, Reativar1Data, Reativar1Responses, Reativar2Data, Reativar2Responses, Reativar3Data, Reativar3Responses, Reativar4Data, Reativar4Responses, Reativar5Data, Reativar5Responses, Reativar6Data, Reativar6Responses, Reativar7Data, Reativar7Responses, ReativarCategoriaDoCaixaData, ReativarCategoriaDoCaixaResponses, ReativarData, ReativarResponses, ReceberData, ReceberDoVendedorData, ReceberDoVendedorResponses, ReceberResponses, RedefinirSenhaData, RedefinirSenhaResponses, RegistrarData, RegistrarLeituraDoAcertoData, RegistrarLeituraDoAcertoResponses, RegistrarLeiturasDoFechamentoDaMaletaData, RegistrarLeiturasDoFechamentoDaMaletaResponses, RegistrarResponses, RelatorioDeAcertosData, RelatorioDeAcertosResponses, RelatorioDeAcessosData, RelatorioDeAcessosResponses, RelatorioDeAuditoriaData, RelatorioDeAuditoriaResponses, RelatorioDeComissoesData, RelatorioDeComissoesResponses, RelatorioDeComputadoresData, RelatorioDeComputadoresResponses, RelatorioDeContasAPagarData, RelatorioDeContasAPagarResponses, RelatorioDeContasAReceberData, RelatorioDeContasAReceberResponses, RelatorioDeCreditosDosClientesData, RelatorioDeCreditosDosClientesResponses, RelatorioDeCurvaAbcData, RelatorioDeCurvaAbcResponses, RelatorioDeDevolucoesData, RelatorioDeDevolucoesResponses, RelatorioDeDinheiroDevolvidoData, RelatorioDeDinheiroDevolvidoResponses, RelatorioDeEsperadoEContadoData, RelatorioDeEsperadoEContadoResponses, RelatorioDeFluxoDeCaixaData, RelatorioDeFluxoDeCaixaResponses, RelatorioDeInadimplenciaData, RelatorioDeInadimplenciaResponses, RelatorioDeLucroPorProdutoData, RelatorioDeLucroPorProdutoResponses, RelatorioDeLucroPorVendedorData, RelatorioDeLucroPorVendedorResponses, RelatorioDeMaletasEmAbertoEAtrasadasData, RelatorioDeMaletasEmAbertoEAtrasadasResponses, RelatorioDeMercadoriaPorVendedorData, RelatorioDeMercadoriaPorVendedorResponses, RelatorioDePecasComDefeitoData, RelatorioDePecasComDefeitoResponses, RelatorioDePedidosDeAutorizacaoData, RelatorioDePedidosDeAutorizacaoResponses, RelatorioDePendenciasDoAcertoData, RelatorioDePendenciasDoAcertoResponses, RelatorioDeRankingDePecasData, RelatorioDeRankingDePecasResponses, RelatorioDeRankingDeVendedoresData, RelatorioDeRankingDeVendedoresResponses, RelatorioDeRecebimentosPorFormaData, RelatorioDeRecebimentosPorFormaResponses, RelatorioDeRemessasPorVendedorESemanaData, RelatorioDeRemessasPorVendedorESemanaResponses, RelatorioDeReposicoesData, RelatorioDeReposicoesResponses, RelatorioDeSaldoPorMaletaData, RelatorioDeSaldoPorMaletaResponses, RelatorioDeTaxaDeDevolucaoPorVendedorData, RelatorioDeTaxaDeDevolucaoPorVendedorResponses, RelatorioDeTicketMedioData, RelatorioDeTicketMedioResponses, RelatorioDeTrocasData, RelatorioDeTrocasResponses, RelatorioDeVendasCanceladasData, RelatorioDeVendasCanceladasResponses, RelatorioDeVendasData, RelatorioDeVendasPorCategoriaData, RelatorioDeVendasPorCategoriaResponses, RelatorioDeVendasPorClienteData, RelatorioDeVendasPorClienteResponses, RelatorioDeVendasPorPeriodoData, RelatorioDeVendasPorPeriodoResponses, RelatorioDeVendasPorPracaData, RelatorioDeVendasPorPracaResponses, RelatorioDeVendasPorProdutoData, RelatorioDeVendasPorProdutoResponses, RelatorioDeVendasPorVendedorData, RelatorioDeVendasPorVendedorResponses, RelatorioDeVendasResponses, RelatorioDoFechamentoDaMaletaData, RelatorioDoFechamentoDaMaletaResponses, RenomearCategoriaDoCaixaData, RenomearCategoriaDoCaixaResponses, RenovarData, RenovarResponses, ResolverPendenciaDoAcertoData, ResolverPendenciaDoAcertoResponses, ResultadoDasImportacoesData, ResultadoDasImportacoesResponses, ResultadoDoPeriodoData, ResultadoDoPeriodoResponses, RotaDeLoginData, RotaDeLoginResponses, SairData, SairResponses, SemCodigoDeBarrasData, SemCodigoDeBarrasResponses, SemFotoData, SemFotoResponses, SoVendedorData, SoVendedorResponses, TempoData, TempoResponses, TentarEnvioDeNovoData, TentarEnvioDeNovoResponses, TirarItemDaRemessaData, TirarItemDaRemessaResponses, TransferirCreditoData, TransferirCreditoResponses, TrocarSenhaData, TrocarSenhaResponses, ValidarData, ValidarResponses, ValorDaDonaData, ValorDaDonaResponses, VendasComAPecaDaDonaData, VendasComAPecaDaDonaResponses, VendedoresData, VendedoresResponses, Ver10Data, Ver10Responses, Ver1Data, Ver1Responses, Ver2Data, Ver2Responses, Ver3Data, Ver3Responses, Ver4Data, Ver4Responses, Ver5Data, Ver5Responses, Ver6Data, Ver6Responses, Ver7Data, Ver7Responses, Ver8Data, Ver8Responses, Ver9Data, Ver9Responses, VerAcertoData, VerAcertoResponses, VerAutorizacaoData, VerAutorizacaoResponses, VerConferenciaDaMaletaData, VerConferenciaDaMaletaResponses, VerConferenciaData, VerConferenciaResponses, VerConjugeData, VerConjugeResponses, VerContaAPagarData, VerContaAPagarResponses, VerContatoData, VerContatoResponses, VerCreditoData, VerCreditoResponses, VerData, VerDevolucaoData, VerDevolucaoResponses, VerEnderecoData, VerEnderecoResponses, VerExtratoDoCaixaData, VerExtratoDoCaixaResponses, VerMaletaDaRemessaData, VerMaletaDaRemessaResponses, VerMeiData, VerMeiResponses, VerNotaDoConsignadoData, VerNotaDoConsignadoResponses, VerObservacoesData, VerObservacoesResponses, VerRemessaData, VerRemessaResponses, VerResponses, VerSaldoDoCaixaData, VerSaldoDoCaixaResponses, VerSemanaDoRepresentanteData, VerSemanaDoRepresentanteResponses, VerSituacaoDoClienteDoConsignadoData, VerSituacaoDoClienteDoConsignadoResponses, VerTrabalhoData, VerTrabalhoResponses, VerTrocaData, VerTrocaResponses, VerVendaData, VerVendaResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -94,6 +94,75 @@ export const trocarSenha = <ThrowOnError extends boolean = false>(options: Optio
 });
 
 /**
+ * Baixar a foto de um cliente (dona)
+ */
+export const baixarFotoDoCliente = <ThrowOnError extends boolean = false>(options: Options<BaixarFotoDoClienteData, ThrowOnError>): RequestResult<BaixarFotoDoClienteResponses, unknown, ThrowOnError> => (options.client ?? client).get<BaixarFotoDoClienteResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/clientes/{id}/fotos/{tipo}',
+    ...options
+});
+
+/**
+ * O que o Corona Gestão mostra
+ *
+ * acertoDoVendedorVisivel = falso (padrão) esconde Acertos, Comissão por meta, Pendências do acerto e a semana da dona (§7.4). As rotas e os dados continuam; nada é apagado.
+ */
+export const lerTelasDoGestao = <ThrowOnError extends boolean = false>(options?: Options<LerTelasDoGestaoData, ThrowOnError>): RequestResult<LerTelasDoGestaoResponses, unknown, ThrowOnError> => (options?.client ?? client).get<LerTelasDoGestaoResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/configuracoes/telas',
+    ...options
+});
+
+/**
+ * Situação do cliente
+ *
+ * Quanto deve, as notas dele e as peças que estão com ele agora.
+ */
+export const verSituacaoDoClienteDoConsignado = <ThrowOnError extends boolean = false>(options: Options<VerSituacaoDoClienteDoConsignadoData, ThrowOnError>): RequestResult<VerSituacaoDoClienteDoConsignadoResponses, unknown, ThrowOnError> => (options.client ?? client).get<VerSituacaoDoClienteDoConsignadoResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/consignado/clientes/{id}/situacao',
+    ...options
+});
+
+/**
+ * Notas do consignado
+ *
+ * Filtros opcionais: representante, semana, situação (EM_ABERTO, PENDENTE, FECHADO, REMARCADO), cliente e texto (nome do cliente ou número da nota). Até 200, das mais novas.
+ */
+export const listarNotasDoConsignado = <ThrowOnError extends boolean = false>(options?: Options<ListarNotasDoConsignadoData, ThrowOnError>): RequestResult<ListarNotasDoConsignadoResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ListarNotasDoConsignadoResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/consignado/notas',
+    ...options
+});
+
+/**
+ * Detalhe da nota: linhas, acertos e recibos
+ */
+export const verNotaDoConsignado = <ThrowOnError extends boolean = false>(options: Options<VerNotaDoConsignadoData, ThrowOnError>): RequestResult<VerNotaDoConsignadoResponses, unknown, ThrowOnError> => (options.client ?? client).get<VerNotaDoConsignadoResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/consignado/notas/{id}',
+    ...options
+});
+
+/**
+ * Uma semana do representante (totais da semana)
+ */
+export const verSemanaDoRepresentante = <ThrowOnError extends boolean = false>(options: Options<VerSemanaDoRepresentanteData, ThrowOnError>): RequestResult<VerSemanaDoRepresentanteResponses, unknown, ThrowOnError> => (options.client ?? client).get<VerSemanaDoRepresentanteResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/consignado/semanas/{semanaId}',
+    ...options
+});
+
+/**
+ * Semanas de um representante, com os totais
+ */
+export const listarSemanasDoRepresentante = <ThrowOnError extends boolean = false>(options: Options<ListarSemanasDoRepresentanteData, ThrowOnError>): RequestResult<ListarSemanasDoRepresentanteResponses, unknown, ThrowOnError> => (options.client ?? client).get<ListarSemanasDoRepresentanteResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/consignado/vendedores/{vendedorId}/semanas',
+    ...options
+});
+
+/**
  * Acertos dos vendedores
  *
  * Do mais novo para o mais antigo. Filtros opcionais: vendedor, semana e situação (EM_ACERTO, ACERTADO ou DESISTIDO).
@@ -148,7 +217,7 @@ export const desistirDoAcerto = <ThrowOnError extends boolean = false>(options: 
 /**
  * Prévia do fechamento do acerto
  *
- * Nada é gravado: esperado x contado por peça e maleta, sobras, faltas com valor, defeitos, eventos que vão entrar, devoluções em revisão (impedem), o que não foi aceito, pendências antigas, a comissão por venda, a soma da meta em Guarani, o percentual, os totais e a cotação. Com o acerto já fechado, devolve o que foi gravado. Assume cobrar as faltas no acerto e não aprovar defeito; para outras decisões, use a prévia com decisões.
+ * Nada é gravado: esperado x contado por peça e maleta, sobras, faltas com valor, defeitos, eventos que vão entrar, devoluções em revisão (impedem), o que não foi aceito, pendências antigas, a comissão por venda, a soma da meta em Guarani, quanto falta para a meta (em Guarani e em Real, pela cotação mais recente), o percentual, os totais e a cotação. Com o acerto em andamento, devolve a prévia (PreviaDoFechamento); com o acerto já fechado, devolve o que foi gravado (Fechamento), que não traz o que falta para a meta. Assume cobrar as faltas no acerto e não aprovar defeito; para outras decisões, use a prévia com decisões.
  */
 export const previaDoFechamento = <ThrowOnError extends boolean = false>(options: Options<PreviaDoFechamentoData, ThrowOnError>): RequestResult<PreviaDoFechamentoResponses, unknown, ThrowOnError> => (options.client ?? client).get<PreviaDoFechamentoResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -501,7 +570,7 @@ export const listar12 = <ThrowOnError extends boolean = false>(options?: Options
 /**
  * Criar cliente
  *
- * O CPF é opcional; se vier, o servidor confere os dígitos e guarda só os números. CPF repetido é aceito.
+ * O documento é opcional. Do tipo CPF (ou sem tipo, ou pelo campo cpf), o servidor confere os dígitos e guarda só os números; CPF repetido é barrado. RG, CI ou outro é texto livre e não exige CPF válido. A comissão vai de 0 a 40 (padrão 30). O representante, depois de definido, não muda.
  */
 export const criar7 = <ThrowOnError extends boolean = false>(options: Options<Criar7Data, ThrowOnError>): RequestResult<Criar7Responses, unknown, ThrowOnError> => (options.client ?? client).post<Criar7Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -678,11 +747,48 @@ export const desfazer1 = <ThrowOnError extends boolean = false>(options: Options
 /**
  * Conferências do dinheiro (vendas, acertos, comissão, caixa, contas, estoque)
  *
- * Confere o banco inteiro num retrato só: C1 vendas e o que falta receber, C2 acerto do vendedor, C3 comissão, C4 caixa, C5 contas a receber e a pagar, C7 estoque e maletas, C8 maletas acertadas e faltas, C9 cada venda, estorno e devolução em um acerto só, C10 compras e parcelas (a C6 está vaga). Cada conferência traz quantos registros olhou e as diferenças (o que não bate, com o esperado e o encontrado); tudoCerto = nenhuma diferença. Com chave (por exemplo C4) devolve só aquela conferência; chave desconhecida dá 400. Só leitura: nada é corrigido.
+ * Confere o banco inteiro num retrato só: C1 vendas e o que falta receber, C2 acerto do vendedor, C3 comissão, C4 caixa, C5 contas a receber e a pagar, C7 estoque e maletas, C8 maletas acertadas e faltas, C9 cada venda, estorno e devolução em um acerto só, C10 compras e parcelas, C11 estoque completo peça por peça (loja mais maletas contra compras, vendas, devoluções e acertos) e C12 saldo de cada maleta enviada (a C6 está vaga). Cada conferência traz quantos registros olhou e as diferenças (o que não bate, com o esperado e o encontrado); tudoCerto = nenhuma diferença. Com chave (por exemplo C4) devolve só aquela conferência; chave desconhecida dá 400. Só leitura: nada é corrigido.
  */
 export const conferirODinheiroDaFase7 = <ThrowOnError extends boolean = false>(options?: Options<ConferirODinheiroDaFase7Data, ThrowOnError>): RequestResult<ConferirODinheiroDaFase7Responses, unknown, ThrowOnError> => (options?.client ?? client).get<ConferirODinheiroDaFase7Responses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/conciliacoes',
+    ...options
+});
+
+/**
+ * Histórico das conferências
+ *
+ * As rodadas da conferência, da mais nova para a mais velha: quando, se foi automática ou pedida (e por quem), a situação, quantas diferenças e as conferências que deram erro. pagina começa em zero; tamanho vai de 1 a 100 (padrão 30).
+ */
+export const listarConferencias = <ThrowOnError extends boolean = false>(options?: Options<ListarConferenciasData, ThrowOnError>): RequestResult<ListarConferenciasResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ListarConferenciasResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/conferencias',
+    ...options
+});
+
+/**
+ * Conferir agora
+ *
+ * Roda todas as conferências (estoque, devolução e troca, C1 a C5 e C7 a C12) num retrato só do banco e guarda o resultado. Nada é corrigido. Devolve a rodada com as diferenças: 201 na primeira vez, 200 se o mesmo id já foi gravado, 409 se outra conferência está rodando. Sem id, 400.
+ */
+export const conferirAgora = <ThrowOnError extends boolean = false>(options: Options<ConferirAgoraData, ThrowOnError>): RequestResult<ConferirAgoraResponses, unknown, ThrowOnError> => (options.client ?? client).post<ConferirAgoraResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/conferencias',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Ver uma conferência
+ *
+ * A rodada com as diferenças agrupadas por conferência, na ordem em que foram guardadas. Valores só em Real (a conferência não usa Dólar nem Guarani). 404 se a rodada não existe.
+ */
+export const verConferencia = <ThrowOnError extends boolean = false>(options: Options<VerConferenciaData, ThrowOnError>): RequestResult<VerConferenciaResponses, unknown, ThrowOnError> => (options.client ?? client).get<VerConferenciaResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/conferencias/{id}',
     ...options
 });
 
@@ -736,6 +842,37 @@ export const alterarGarantia = <ThrowOnError extends boolean = false>(options: O
         'Content-Type': 'application/json',
         ...options.headers
     }
+});
+
+/**
+ * Alertas do consignado para a dona
+ *
+ * Divergências aceitas do balcão (peça sem saldo, preço diferente, total recalculado, pagamento acima do devido, documento repetido). soNaoVistos=true mostra só os que ainda não foram vistos.
+ */
+export const listarAlertasDoConsignado = <ThrowOnError extends boolean = false>(options?: Options<ListarAlertasDoConsignadoData, ThrowOnError>): RequestResult<ListarAlertasDoConsignadoResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ListarAlertasDoConsignadoResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/consignado/alertas',
+    ...options
+});
+
+/**
+ * Marcar um alerta como visto
+ */
+export const marcarAlertaDoConsignadoComoVisto = <ThrowOnError extends boolean = false>(options: Options<MarcarAlertaDoConsignadoComoVistoData, ThrowOnError>): RequestResult<MarcarAlertaDoConsignadoComoVistoResponses, unknown, ThrowOnError> => (options.client ?? client).post<MarcarAlertaDoConsignadoComoVistoResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/consignado/alertas/{id}/visto',
+    ...options
+});
+
+/**
+ * Conciliações do consignado (só leitura)
+ *
+ * Sete conferências (K1 a K7) sobre o banco; cada uma lista o que não bate. Vazio = tudo certo.
+ */
+export const conferirConsignado = <ThrowOnError extends boolean = false>(options?: Options<ConferirConsignadoData, ThrowOnError>): RequestResult<ConferirConsignadoResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ConferirConsignadoResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/consignado/conciliacoes',
+    ...options
 });
 
 /**
@@ -1332,6 +1469,17 @@ export const ler = <ThrowOnError extends boolean = false>(options: Options<LerDa
 });
 
 /**
+ * Painel da semana
+ *
+ * Pedidos: uma linha por vendedor na semana (acerto fechado, acerto em andamento ou maletas em aberto). A linha sem acerto fechado é prévia (a mesma conta do fechamento, nada é gravado) e a prévia inclui o que o vendedor ainda não acertou de semanas anteriores (previaIncluiSemanasAnteriores). Totais: novas maletas, reposições, acerto, prévia, vendas, trocas e créditos, total e total recebido no acerto; cada bloco traz a rota e os filtros do relatório de onde saiu. Filtros: semana (padrão: a de hoje, em Brasília), vendedor, praca e situacao (EM_ABERTO, EM_ACERTO ou ACERTADO; só muda as linhas e o bloco da prévia). Cada valor vem em Real, Dólar e Guarani pela cotação do dia de cada lançamento.
+ */
+export const painelSemanal = <ThrowOnError extends boolean = false>(options?: Options<PainelSemanalData, ThrowOnError>): RequestResult<PainelSemanalResponses, unknown, ThrowOnError> => (options?.client ?? client).get<PainelSemanalResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/painel-semanal',
+    ...options
+});
+
+/**
  * Pendências do acerto
  *
  * Falta, defeito e o que a dona não aceitou, da mais nova para a mais antiga (no máximo 500). Filtros: vendedor e situação.
@@ -1718,7 +1866,7 @@ export const estornarRecebimentoDeCliente = <ThrowOnError extends boolean = fals
 /**
  * Recebimentos dos vendedores
  *
- * O que os vendedores pagaram à loja, do mais novo para o mais antigo, com as contas que cada um baixou. Filtros opcionais: vendedor e período (de e até, dias de Brasília). Só valores em Real.
+ * O que os vendedores pagaram à loja, do mais novo para o mais antigo, com as contas que cada um baixou. Filtros opcionais: vendedor e período (de e até, dias de Brasília). O valor que vale é o em Real; dolar, guarani e dataCotacao são só para mostrar (na moeda em que foi recebido, o valor digitado). Sem cotação, vazios.
  */
 export const listarRecebimentosDoVendedor = <ThrowOnError extends boolean = false>(options?: Options<ListarRecebimentosDoVendedorData, ThrowOnError>): RequestResult<ListarRecebimentosDoVendedorResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ListarRecebimentosDoVendedorResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -1729,7 +1877,7 @@ export const listarRecebimentosDoVendedor = <ThrowOnError extends boolean = fals
 /**
  * Registrar um recebimento do vendedor
  *
- * O vendedor paga à loja, fora do acerto, em dinheiro, Transferência (PIX) ou boleto pago. Com a conta indicada, baixa só essa conta; sem conta, o servidor distribui pelas contas em aberto, da que vence primeiro para a que vence depois. Não aceita mais do que o vendedor deve. O boleto pago é o valor inteiro da conta do boleto. Entra no caixa na mesma hora. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409.
+ * O vendedor paga à loja, fora do acerto, em dinheiro, Transferência (PIX) ou boleto pago. Com a conta indicada, baixa só essa conta; sem conta, o servidor distribui pelas contas em aberto, da que vence primeiro para a que vence depois. Não aceita mais do que o vendedor deve. O boleto pago é o valor inteiro da conta do boleto. Entra no caixa na mesma hora. Mesmo id e mesmo conteúdo devolve 200; mesmo id com dados diferentes, 409. Em Dólar ou Guarani (moeda DOLAR ou GUARANI), mande só valorNaMoeda: o servidor converte pela cotação do dia do lançamento e grava em Real (sem cotação, 409; cotacaoData diferente da que vale, 409).
  */
 export const receberDoVendedor = <ThrowOnError extends boolean = false>(options: Options<ReceberDoVendedorData, ThrowOnError>): RequestResult<ReceberDoVendedorResponses, unknown, ThrowOnError> => (options.client ?? client).post<ReceberDoVendedorResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
@@ -1900,6 +2048,39 @@ export const porFornecedor = <ThrowOnError extends boolean = false>(options?: Op
 });
 
 /**
+ * Acessos: entradas, erros e bloqueios
+ *
+ * Cada tentativa de entrar, da mais nova para a mais antiga: quem, em qual programa, o resultado em palavras simples, o endereço de internet e, quando a tentativa completou o limite de erros, até quando o acesso ficou bloqueado. Login que não existe aparece sem nome de pessoa. Filtros: busca (login ou nome), resultado (SUCESSO, SENHA_INCORRETA, BLOQUEADO, USUARIO_DESATIVADO, APP_INCOMPATIVEL, SENHA_TEMPORARIA_VENCIDA, PEDIDO_INVALIDO ou BLOQUEIO_LIMPO), aplicativo (gestao ou vendas), de e ate. Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.
+ */
+export const relatorioDeAcessos = <ThrowOnError extends boolean = false>(options?: Options<RelatorioDeAcessosData, ThrowOnError>): RequestResult<RelatorioDeAcessosResponses, unknown, ThrowOnError> => (options?.client ?? client).get<RelatorioDeAcessosResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/relatorios/controle/acessos',
+    ...options
+});
+
+/**
+ * Auditoria: quem fez o quê
+ *
+ * Cada ação registrada (preço, estoque, desconto, cancelamento, reembolso, autorização de exceção, restrição e as outras), da mais nova para a mais antiga: quem, quando, o quê, em qual registro e o antes e o depois em palavras da loja (nunca senha, hash nem token). Ação do servidor aparece como "Pelo servidor". Filtros: busca (pessoa, ação ou registro), usuarioId, acao (código, ex. PRECO_VENDA_ALTERADO), tabela (tipo de registro, ex. produtos), registroId, de e ate. Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.
+ */
+export const relatorioDeAuditoria = <ThrowOnError extends boolean = false>(options?: Options<RelatorioDeAuditoriaData, ThrowOnError>): RequestResult<RelatorioDeAuditoriaResponses, unknown, ThrowOnError> => (options?.client ?? client).get<RelatorioDeAuditoriaResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/relatorios/controle/auditoria',
+    ...options
+});
+
+/**
+ * Sincronizações e computadores
+ *
+ * Um computador por linha: de qual vendedor, em que situação, a versão, o último recebimento e o último envio, quantas operações aguardam envio, quantos envios têm problema sem decisão e quantos estão guardados à parte esperando a dona. Filtros: busca (nome do vendedor), vendedorId, situacao (ATIVO, AGUARDANDO_LIBERACAO, SUBSTITUIDO, BLOQUEADO ou TODAS), comProblema (SIM ou NAO), de e ate (sobre o último contato). Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total.
+ */
+export const relatorioDeComputadores = <ThrowOnError extends boolean = false>(options?: Options<RelatorioDeComputadoresData, ThrowOnError>): RequestResult<RelatorioDeComputadoresResponses, unknown, ThrowOnError> => (options?.client ?? client).get<RelatorioDeComputadoresResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/relatorios/controle/computadores',
+    ...options
+});
+
+/**
  * Pedidos de autorização
  *
  * Uma linha por pedido de autorização de devolução. situacao: TODAS (padrão), PEDIDA, APROVADA, USADA, NEGADA ou VENCIDA. tipo: FORA_DO_PRAZO ou ACIMA_DO_VALOR. Datas em horário de Brasília (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas desse total. Cada valor vem em Real, Dólar e Guarani pela cotação do dia do lançamento (dataDaCotacao; vazio se não havia cotação).
@@ -2006,6 +2187,17 @@ export const abaixoDoMinimo = <ThrowOnError extends boolean = false>(options?: O
 export const conciliacao = <ThrowOnError extends boolean = false>(options?: Options<ConciliacaoData, ThrowOnError>): RequestResult<ConciliacaoResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ConciliacaoResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/relatorios/estoque/conciliacao',
+    ...options
+});
+
+/**
+ * Curva ABC das peças
+ *
+ * Por peça, pelo vendido líquido do período (venda menos devolução e troca), da maior para a menor; empate pelo código. Classe A até 80% do acumulado, B até 95%, C o resto; a peça que cruza a fronteira fica na classe de cima. Peça sem venda no período fica fora. Datas de Brasília (de e ate inclusive, sobre a data da venda). Filtros: busca, vendedorId, pracaId, clienteId, produtoId, categoriaId, de e ate. recorte = a chave de um total do rodapé (liquido, classe-a, classe-b ou classe-c). Cada valor vem em Real, Dólar e Guarani pela cotação do dia da venda. A página começa em 0 (até 100 por página).
+ */
+export const relatorioDeCurvaAbc = <ThrowOnError extends boolean = false>(options?: Options<RelatorioDeCurvaAbcData, ThrowOnError>): RequestResult<RelatorioDeCurvaAbcResponses, unknown, ThrowOnError> => (options?.client ?? client).get<RelatorioDeCurvaAbcResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/relatorios/estoque/curva-abc',
     ...options
 });
 
@@ -2131,6 +2323,28 @@ export const relatorioDeInadimplencia = <ThrowOnError extends boolean = false>(o
 });
 
 /**
+ * Lucro por produto
+ *
+ * Receita líquida, custo das peças vendidas, lucro e margem de cada peça, com a foto. Filtros: busca, produtoId, categoriaId, vendedorId e pracaId. A página começa em 0 (até 100 por página). O período (de e ate, dias de Brasília, inclusive) é obrigatório. A devolução abate o dia da venda. Só a dona vê custo e lucro: nada daqui vai ao Corona Vendas.
+ */
+export const relatorioDeLucroPorProduto = <ThrowOnError extends boolean = false>(options?: Options<RelatorioDeLucroPorProdutoData, ThrowOnError>): RequestResult<RelatorioDeLucroPorProdutoResponses, unknown, ThrowOnError> => (options?.client ?? client).get<RelatorioDeLucroPorProdutoResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/relatorios/financeiro/lucro-por-produto',
+    ...options
+});
+
+/**
+ * Lucro por vendedor
+ *
+ * Receita líquida, custo das peças vendidas, lucro bruto, comissão do acerto e lucro de cada vendedor. Filtros: busca, vendedorId e pracaId. A página começa em 0 (até 100 por página). O período (de e ate, dias de Brasília, inclusive) é obrigatório. A devolução abate o dia da venda. Só a dona vê custo e lucro: nada daqui vai ao Corona Vendas.
+ */
+export const relatorioDeLucroPorVendedor = <ThrowOnError extends boolean = false>(options?: Options<RelatorioDeLucroPorVendedorData, ThrowOnError>): RequestResult<RelatorioDeLucroPorVendedorResponses, unknown, ThrowOnError> => (options?.client ?? client).get<RelatorioDeLucroPorVendedorResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/relatorios/financeiro/lucro-por-vendedor',
+    ...options
+});
+
+/**
  * Faltas e pendências
  *
  * Uma pendência por linha (falta, defeito, devolução ou crédito não aceitos), com a situação. Filtros: vendedorId, semanaId, produtoId, tipo, situacao, busca, de e ate. Datas em UTC (de e ate inclusive). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Cada valor vem em Real, Dólar e Guarani pela cotação do dia do lançamento (dataDaCotacao).
@@ -2153,6 +2367,28 @@ export const relatorioDeRecebimentosPorForma = <ThrowOnError extends boolean = f
 });
 
 /**
+ * Resultado do período (DRE simplificado)
+ *
+ * Vendas, devoluções e trocas, receita líquida, custo das peças vendidas, lucro bruto, comissões, perdas, cobrado do vendedor, uma linha por categoria do caixa manual e o resultado. Cada linha em Real, Dólar e Guarani (pela cotação do dia de cada registro; vazio se faltar cotação). pecasComCustoDoCadastro conta as peças vendidas com o custo do cadastro (estimativa). O período (de e ate, dias de Brasília, inclusive) é obrigatório. A devolução abate o dia da venda. Só a dona vê custo e lucro: nada daqui vai ao Corona Vendas.
+ */
+export const resultadoDoPeriodo = <ThrowOnError extends boolean = false>(options?: Options<ResultadoDoPeriodoData, ThrowOnError>): RequestResult<ResultadoDoPeriodoResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ResultadoDoPeriodoResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/relatorios/financeiro/resultado',
+    ...options
+});
+
+/**
+ * Registros de uma linha do resultado
+ *
+ * Os registros que formam uma linha: linha = VENDAS, DEVOLUCOES, CUSTO, COMISSOES, PERDAS, COBRADO ou CAIXA (com categoriaId para uma categoria só). Traz o custo unitário e a marca de custo do cadastro. A página começa em 0 (até 100 por página). O período (de e ate, dias de Brasília, inclusive) é obrigatório. A devolução abate o dia da venda. Só a dona vê custo e lucro: nada daqui vai ao Corona Vendas.
+ */
+export const detalhamentoDoResultado = <ThrowOnError extends boolean = false>(options?: Options<DetalhamentoDoResultadoData, ThrowOnError>): RequestResult<DetalhamentoDoResultadoResponses, unknown, ThrowOnError> => (options?.client ?? client).get<DetalhamentoDoResultadoResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/relatorios/financeiro/resultado/detalhamento',
+    ...options
+});
+
+/**
  * Maletas em aberto e atrasadas
  *
  * Uma linha por maleta enviada que ainda tem peça com o vendedor: dias desde o envio (calendário de Brasília), se está atrasada, peças e valor em aberto. Atrasada = mais de diasDeAtraso dias desde o envio (padrão 7; de 0 a 365). situacao: TODAS (padrão), ATRASADAS ou NO_PRAZO. Filtros: vendedorId, pracaId, semanaId, tipo, produtoId, categoriaId, busca, de e ate. Rascunho nunca entra. Datas em UTC (de e ate inclusive, sobre a data do envio). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Cada valor vem em Real, Dólar e Guarani pela cotação do dia do envio (dataDaCotacao; vazio se ainda não havia cotação).
@@ -2160,6 +2396,17 @@ export const relatorioDeRecebimentosPorForma = <ThrowOnError extends boolean = f
 export const relatorioDeMaletasEmAbertoEAtrasadas = <ThrowOnError extends boolean = false>(options?: Options<RelatorioDeMaletasEmAbertoEAtrasadasData, ThrowOnError>): RequestResult<RelatorioDeMaletasEmAbertoEAtrasadasResponses, unknown, ThrowOnError> => (options?.client ?? client).get<RelatorioDeMaletasEmAbertoEAtrasadasResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/relatorios/maleta/em-aberto',
+    ...options
+});
+
+/**
+ * Fechamento da maleta
+ *
+ * Uma linha por peça da maleta (enviadas, devolvidas pelos clientes, vendidas, ainda com clientes e com quem, esperado na maleta, bipadas na volta e diferença). O rodapé traz as peças e os valores da maleta (vendido, comissão dos clientes, recebido e pendências a receber, divididos pelo vendido de cada maleta dentro da nota). Sai da mesma leitura da tela do Fechamento (GET /api/maletas/{id}/fechamento); 404 se o fechamento ainda não foi começado. Parâmetros: remessaId (obrigatório), recorte (a chave de um total do rodapé: só as peças que o formam), pagina (começa em 0) e tamanho (até 100).
+ */
+export const relatorioDoFechamentoDaMaleta = <ThrowOnError extends boolean = false>(options: Options<RelatorioDoFechamentoDaMaletaData, ThrowOnError>): RequestResult<RelatorioDoFechamentoDaMaletaResponses, unknown, ThrowOnError> => (options.client ?? client).get<RelatorioDoFechamentoDaMaletaResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/relatorios/maleta/fechamento',
     ...options
 });
 
@@ -2204,6 +2451,127 @@ export const relatorioDeReposicoes = <ThrowOnError extends boolean = false>(opti
 export const relatorioDeSaldoPorMaleta = <ThrowOnError extends boolean = false>(options?: Options<RelatorioDeSaldoPorMaletaData, ThrowOnError>): RequestResult<RelatorioDeSaldoPorMaletaResponses, unknown, ThrowOnError> => (options?.client ?? client).get<RelatorioDeSaldoPorMaletaResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/relatorios/maleta/saldo',
+    ...options
+});
+
+/**
+ * Vendas canceladas
+ *
+ * As vendas estornadas, com quem estornou, quando e por quê. Ficam fora dos totais dos outros relatórios. Datas de Brasília (de e ate inclusive, sobre a data da venda). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Filtros: busca (vendedor, cliente, peça, referência ou código), vendedorId, pracaId, clienteId, produtoId, categoriaId, de e ate. Vendido líquido = vendido - devolvido (devoluções e trocas não canceladas). Cada valor vem em Real, Dólar e Guarani pela cotação do dia da venda; a venda estornada fica fora dos totais.
+ */
+export const relatorioDeVendasCanceladas = <ThrowOnError extends boolean = false>(options?: Options<RelatorioDeVendasCanceladasData, ThrowOnError>): RequestResult<RelatorioDeVendasCanceladasResponses, unknown, ThrowOnError> => (options?.client ?? client).get<RelatorioDeVendasCanceladasResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/relatorios/vendas/canceladas',
+    ...options
+});
+
+/**
+ * Vendas por categoria
+ *
+ * Uma linha por categoria de peça. Uma venda com peças de duas categorias conta nas duas. Datas de Brasília (de e ate inclusive, sobre a data da venda). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Filtros: busca (vendedor, cliente, peça, referência ou código), vendedorId, pracaId, clienteId, produtoId, categoriaId, de e ate. Vendido líquido = vendido - devolvido (devoluções e trocas não canceladas). Cada valor vem em Real, Dólar e Guarani pela cotação do dia da venda; a venda estornada fica fora dos totais.
+ */
+export const relatorioDeVendasPorCategoria = <ThrowOnError extends boolean = false>(options?: Options<RelatorioDeVendasPorCategoriaData, ThrowOnError>): RequestResult<RelatorioDeVendasPorCategoriaResponses, unknown, ThrowOnError> => (options?.client ?? client).get<RelatorioDeVendasPorCategoriaResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/relatorios/vendas/por-categoria',
+    ...options
+});
+
+/**
+ * Vendas por cliente
+ *
+ * Uma linha por cliente, com tudo o que ele comprou no período. Datas de Brasília (de e ate inclusive, sobre a data da venda). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Filtros: busca (vendedor, cliente, peça, referência ou código), vendedorId, pracaId, clienteId, produtoId, categoriaId, de e ate. Vendido líquido = vendido - devolvido (devoluções e trocas não canceladas). Cada valor vem em Real, Dólar e Guarani pela cotação do dia da venda; a venda estornada fica fora dos totais.
+ */
+export const relatorioDeVendasPorCliente = <ThrowOnError extends boolean = false>(options?: Options<RelatorioDeVendasPorClienteData, ThrowOnError>): RequestResult<RelatorioDeVendasPorClienteResponses, unknown, ThrowOnError> => (options?.client ?? client).get<RelatorioDeVendasPorClienteResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/relatorios/vendas/por-cliente',
+    ...options
+});
+
+/**
+ * Vendas por dia
+ *
+ * Uma linha por dia (calendário de Brasília), pela data da venda. A chave é a data AAAA-MM-DD. Datas de Brasília (de e ate inclusive, sobre a data da venda). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Filtros: busca (vendedor, cliente, peça, referência ou código), vendedorId, pracaId, clienteId, produtoId, categoriaId, de e ate. Vendido líquido = vendido - devolvido (devoluções e trocas não canceladas). Cada valor vem em Real, Dólar e Guarani pela cotação do dia da venda; a venda estornada fica fora dos totais.
+ */
+export const relatorioDeVendasPorPeriodo = <ThrowOnError extends boolean = false>(options?: Options<RelatorioDeVendasPorPeriodoData, ThrowOnError>): RequestResult<RelatorioDeVendasPorPeriodoResponses, unknown, ThrowOnError> => (options?.client ?? client).get<RelatorioDeVendasPorPeriodoResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/relatorios/vendas/por-periodo',
+    ...options
+});
+
+/**
+ * Vendas por praça
+ *
+ * Uma linha por praça do vendedor (vendedor sem praça aparece como Sem praça). Datas de Brasília (de e ate inclusive, sobre a data da venda). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Filtros: busca (vendedor, cliente, peça, referência ou código), vendedorId, pracaId, clienteId, produtoId, categoriaId, de e ate. Vendido líquido = vendido - devolvido (devoluções e trocas não canceladas). Cada valor vem em Real, Dólar e Guarani pela cotação do dia da venda; a venda estornada fica fora dos totais.
+ */
+export const relatorioDeVendasPorPraca = <ThrowOnError extends boolean = false>(options?: Options<RelatorioDeVendasPorPracaData, ThrowOnError>): RequestResult<RelatorioDeVendasPorPracaResponses, unknown, ThrowOnError> => (options?.client ?? client).get<RelatorioDeVendasPorPracaResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/relatorios/vendas/por-praca',
+    ...options
+});
+
+/**
+ * Vendas por produto
+ *
+ * Uma linha por peça, com código, referência e foto. É o mesmo vendido líquido da curva ABC. Datas de Brasília (de e ate inclusive, sobre a data da venda). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Filtros: busca (vendedor, cliente, peça, referência ou código), vendedorId, pracaId, clienteId, produtoId, categoriaId, de e ate. Vendido líquido = vendido - devolvido (devoluções e trocas não canceladas). Cada valor vem em Real, Dólar e Guarani pela cotação do dia da venda; a venda estornada fica fora dos totais.
+ */
+export const relatorioDeVendasPorProduto = <ThrowOnError extends boolean = false>(options?: Options<RelatorioDeVendasPorProdutoData, ThrowOnError>): RequestResult<RelatorioDeVendasPorProdutoResponses, unknown, ThrowOnError> => (options?.client ?? client).get<RelatorioDeVendasPorProdutoResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/relatorios/vendas/por-produto',
+    ...options
+});
+
+/**
+ * Vendas por vendedor
+ *
+ * Uma linha por vendedor: vendas, peças, vendido, devolvido, vendido líquido e ticket médio (vendido líquido dividido pelo número de vendas). Datas de Brasília (de e ate inclusive, sobre a data da venda). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Filtros: busca (vendedor, cliente, peça, referência ou código), vendedorId, pracaId, clienteId, produtoId, categoriaId, de e ate. Vendido líquido = vendido - devolvido (devoluções e trocas não canceladas). Cada valor vem em Real, Dólar e Guarani pela cotação do dia da venda; a venda estornada fica fora dos totais.
+ */
+export const relatorioDeVendasPorVendedor = <ThrowOnError extends boolean = false>(options?: Options<RelatorioDeVendasPorVendedorData, ThrowOnError>): RequestResult<RelatorioDeVendasPorVendedorResponses, unknown, ThrowOnError> => (options?.client ?? client).get<RelatorioDeVendasPorVendedorResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/relatorios/vendas/por-vendedor',
+    ...options
+});
+
+/**
+ * Ranking de peças
+ *
+ * As peças da que mais vendeu para a que menos vendeu (pelo vendido líquido), com a posição e a foto. Datas de Brasília (de e ate inclusive, sobre a data da venda). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Filtros: busca (vendedor, cliente, peça, referência ou código), vendedorId, pracaId, clienteId, produtoId, categoriaId, de e ate. Vendido líquido = vendido - devolvido (devoluções e trocas não canceladas). Cada valor vem em Real, Dólar e Guarani pela cotação do dia da venda; a venda estornada fica fora dos totais.
+ */
+export const relatorioDeRankingDePecas = <ThrowOnError extends boolean = false>(options?: Options<RelatorioDeRankingDePecasData, ThrowOnError>): RequestResult<RelatorioDeRankingDePecasResponses, unknown, ThrowOnError> => (options?.client ?? client).get<RelatorioDeRankingDePecasResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/relatorios/vendas/ranking-de-pecas',
+    ...options
+});
+
+/**
+ * Ranking de vendedores
+ *
+ * Os vendedores do que mais vendeu para o que menos vendeu (pelo vendido líquido), com a posição. Datas de Brasília (de e ate inclusive, sobre a data da venda). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Filtros: busca (vendedor, cliente, peça, referência ou código), vendedorId, pracaId, clienteId, produtoId, categoriaId, de e ate. Vendido líquido = vendido - devolvido (devoluções e trocas não canceladas). Cada valor vem em Real, Dólar e Guarani pela cotação do dia da venda; a venda estornada fica fora dos totais.
+ */
+export const relatorioDeRankingDeVendedores = <ThrowOnError extends boolean = false>(options?: Options<RelatorioDeRankingDeVendedoresData, ThrowOnError>): RequestResult<RelatorioDeRankingDeVendedoresResponses, unknown, ThrowOnError> => (options?.client ?? client).get<RelatorioDeRankingDeVendedoresResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/relatorios/vendas/ranking-de-vendedores',
+    ...options
+});
+
+/**
+ * Ticket médio por vendedor
+ *
+ * Os vendedores do maior para o menor ticket médio (vendido líquido dividido pelo número de vendas). Datas de Brasília (de e ate inclusive, sobre a data da venda). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Filtros: busca (vendedor, cliente, peça, referência ou código), vendedorId, pracaId, clienteId, produtoId, categoriaId, de e ate. Vendido líquido = vendido - devolvido (devoluções e trocas não canceladas). Cada valor vem em Real, Dólar e Guarani pela cotação do dia da venda; a venda estornada fica fora dos totais.
+ */
+export const relatorioDeTicketMedio = <ThrowOnError extends boolean = false>(options?: Options<RelatorioDeTicketMedioData, ThrowOnError>): RequestResult<RelatorioDeTicketMedioResponses, unknown, ThrowOnError> => (options?.client ?? client).get<RelatorioDeTicketMedioResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/relatorios/vendas/ticket-medio',
+    ...options
+});
+
+/**
+ * Vendas, uma linha por venda
+ *
+ * Cada venda com peças, vendido, devolvido, vendido líquido, cotação e, se foi estornada, quem estornou e o motivo. situacao: REGISTRADAS (padrão), CANCELADAS ou TODAS (as canceladas aparecem marcadas e ficam FORA do total). Datas de Brasília (de e ate inclusive, sobre a data da venda). A página começa em 0 (até 100 por página). recorte = a chave de um total do rodapé: devolve só as linhas que formam esse total. Filtros: busca (vendedor, cliente, peça, referência ou código), vendedorId, pracaId, clienteId, produtoId, categoriaId, de e ate. Vendido líquido = vendido - devolvido (devoluções e trocas não canceladas). Cada valor vem em Real, Dólar e Guarani pela cotação do dia da venda; a venda estornada fica fora dos totais.
+ */
+export const relatorioDeVendas = <ThrowOnError extends boolean = false>(options?: Options<RelatorioDeVendasData, ThrowOnError>): RequestResult<RelatorioDeVendasResponses, unknown, ThrowOnError> => (options?.client ?? client).get<RelatorioDeVendasResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/dona/relatorios/vendas/vendas',
     ...options
 });
 
@@ -3039,4 +3407,52 @@ export const listarAparelhosDoVendedor = <ThrowOnError extends boolean = false>(
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/dona/vendedores/{vendedorId}/aparelhos',
     ...options
+});
+
+/**
+ * A leitura do fechamento da maleta
+ *
+ * Por peça: enviadas, devolvidas pelos clientes, vendidas, ainda com clientes, esperado na maleta, bipadas e diferença; e os valores da maleta (VD, comissão dos clientes, recebido e pendências), divididos pelo vendido (VD) de cada maleta dentro da nota. É a mesma consulta do relatório.
+ */
+export const lerFechamentoDaMaleta = <ThrowOnError extends boolean = false>(options: Options<LerFechamentoDaMaletaData, ThrowOnError>): RequestResult<LerFechamentoDaMaletaResponses, unknown, ThrowOnError> => (options.client ?? client).get<LerFechamentoDaMaletaResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/maletas/{id}/fechamento',
+    ...options
+});
+
+/**
+ * Começar o fechamento da maleta
+ *
+ * Só maleta enviada ou conferida; um fechamento em andamento por maleta (409 se já há).
+ */
+export const iniciarFechamentoDaMaleta = <ThrowOnError extends boolean = false>(options: Options<IniciarFechamentoDaMaletaData, ThrowOnError>): RequestResult<IniciarFechamentoDaMaletaResponses, unknown, ThrowOnError> => (options.client ?? client).post<IniciarFechamentoDaMaletaResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/maletas/{id}/fechamento',
+    ...options
+});
+
+/**
+ * Concluir o fechamento da maleta
+ *
+ * Devolve ao estoque as peças bipadas (até o que a maleta devia ter) e passa a maleta a FECHADA. A diferença não é corrigida: fica na leitura para a dona decidir.
+ */
+export const concluirFechamentoDaMaleta = <ThrowOnError extends boolean = false>(options: Options<ConcluirFechamentoDaMaletaData, ThrowOnError>): RequestResult<ConcluirFechamentoDaMaletaResponses, unknown, ThrowOnError> => (options.client ?? client).post<ConcluirFechamentoDaMaletaResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/maletas/{id}/fechamento/concluir',
+    ...options
+});
+
+/**
+ * Guardar as peças bipadas na volta
+ *
+ * Em lote; cada leitura tem o id do aplicativo (reenviar não duplica).
+ */
+export const registrarLeiturasDoFechamentoDaMaleta = <ThrowOnError extends boolean = false>(options: Options<RegistrarLeiturasDoFechamentoDaMaletaData, ThrowOnError>): RequestResult<RegistrarLeiturasDoFechamentoDaMaletaResponses, unknown, ThrowOnError> => (options.client ?? client).post<RegistrarLeiturasDoFechamentoDaMaletaResponses, unknown, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/maletas/{id}/fechamento/leituras',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });

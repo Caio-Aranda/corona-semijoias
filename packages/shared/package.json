@@ -4,6 +4,18 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test": "vitest run",
     "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "vitest": "5.1.1"
+  },
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./moedas": "./src/moedas.ts",
+    "./consignado": "./src/consignado/index.ts",
+    "./exemplos-do-consignado": "./src/consignado/exemplos.ts"
   }
 }

@@ -245,29 +245,32 @@ public class ClientesDoVendedor {
               FROM corona.clientes""";
 
     /**
-     * Os clientes ativos da loja, por nome (os dele primeiro não: só por nome); {@code busca} procura no nome, telefone,
-     * CPF e, só nos clientes dele, no WhatsApp.
+     * Os clientes ativos DO PRÓPRIO REPRESENTANTE, por nome (a lista de cada um é só dele, ADR-0016, item 4); {@code busca}
+     * procura no nome, telefone, CPF e WhatsApp.
      */
     public List<Cliente> listar(UUID vendedorId, String busca) {
         String texto = busca == null ? "" : busca.strip().toLowerCase(java.util.Locale.ROOT);
         String digitos = texto.replaceAll("\\D", "");
         return jdbc.query(COLUNAS + """
 
-                 WHERE deleted_at IS NULL AND ativo
+                 WHERE deleted_at IS NULL AND ativo AND vendedor_responsavel_id = ?
                    AND (? = '' OR lower(nome) LIKE '%' || ? || '%'
                         OR (? <> '' AND (regexp_replace(coalesce(telefone, ''), '\\D', '', 'g') LIKE '%' || ? || '%'
                                          OR (vendedor_responsavel_id = ?
                                              AND regexp_replace(coalesce(whatsapp, ''), '\\D', '', 'g') LIKE '%' || ? || '%')
                                          OR cpf LIKE ? || '%')))
                  ORDER BY lower(nome), id LIMIT\s""" + LIMITE_DA_LISTA, (rs, n) -> de(rs),
-                vendedorId, vendedorId, vendedorId, vendedorId, texto, escapar(texto), digitos, digitos, vendedorId, digitos,
-                digitos);
+                vendedorId, vendedorId, vendedorId, vendedorId, vendedorId, texto, escapar(texto), digitos, digitos, vendedorId,
+                digitos, digitos);
     }
 
-    /** Qualquer cliente ativo da loja (404 se não existe, está excluído ou inativo). */
+    /**
+     * Um cliente do próprio representante (404 se não existe, foi excluído ou é de outro representante: cada um só vê os seus,
+     * ADR-0016, item 4 e §23.5). Inativo ainda se vê pelo id (histórico).
+     */
     public Cliente ver(UUID id, UUID vendedorId) {
-        List<Cliente> achados = jdbc.query(COLUNAS + " WHERE id = ? AND deleted_at IS NULL", (rs, n) -> de(rs),
-                vendedorId, vendedorId, vendedorId, vendedorId, id);
+        List<Cliente> achados = jdbc.query(COLUNAS + " WHERE id = ? AND deleted_at IS NULL AND vendedor_responsavel_id = ?",
+                (rs, n) -> de(rs), vendedorId, vendedorId, vendedorId, vendedorId, id, vendedorId);
         if (achados.isEmpty()) {
             throw new ErroDaApi(HttpStatus.NOT_FOUND, CodigoErro.CADASTRO_NAO_ENCONTRADO);
         }

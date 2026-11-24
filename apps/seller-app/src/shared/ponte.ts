@@ -5,6 +5,7 @@
 
 import type { PedidoDeChamada } from './operacoes';
 import { limparPrazo, type PrazoOffline } from './prazo';
+import type { ResultadoDeSaidaDoRelatorio } from './relatorios-do-consignado';
 
 export { OPERACOES_DA_API } from './operacoes';
 export type { OperacaoDaApi, PedidoDeChamada } from './operacoes';
@@ -14,6 +15,7 @@ export const CANAIS = {
   entrar: 'corona:entrar',
   trocarSenha: 'corona:trocar-senha',
   sair: 'corona:sair',
+  liberarComputador: 'corona:liberar-computador',
   estouLogado: 'corona:estou-logado',
   chamarApi: 'corona:chamar-api',
   sessaoMudou: 'corona:sessao-mudou',
@@ -21,6 +23,11 @@ export const CANAIS = {
   atualizacaoMudou: 'corona:atualizacao-mudou',
   sincronizacaoEstado: 'corona:sincronizacao-estado',
   sincronizacaoMudou: 'corona:sincronizacao-mudou',
+  idiomaLer: 'corona:idioma-ler',
+  idiomaGravar: 'corona:idioma-gravar',
+  relatorioImprimir: 'corona:relatorio-imprimir',
+  relatorioSalvarPdf: 'corona:relatorio-salvar-pdf',
+  relatorioWhatsapp: 'corona:relatorio-whatsapp',
 } as const;
 
 /** A lista fixa de funções que a ponte oferece à tela. Acrescentar uma função exige mexer aqui. */
@@ -28,12 +35,21 @@ export const FUNCOES_DA_PONTE = [
   'entrar',
   'trocarSenha',
   'sair',
+  'liberarComputador',
   'estouLogado',
   'chamarApi',
   'aoMudarASessao',
   'aoMudarAAtualizacao',
   'aoMudarASincronizacao',
+  'lerIdioma',
+  'gravarIdioma',
+  'imprimirRelatorio',
+  'salvarRelatorioEmPdf',
+  'prepararRelatorioNoWhatsapp',
 ] as const;
+
+/** Os dois idiomas do Corona Vendas (a tela guarda a escolha pela ponte, nunca em armazenamento do navegador). */
+export type IdiomaDaTela = 'es' | 'pt';
 
 export interface DadosDeEntrada {
   usuario: string;
@@ -55,7 +71,7 @@ export interface UsuarioLogado {
 export type ResultadoDeEntrada =
   | { tipo: 'entrou' }
   | { tipo: 'trocar-senha' }
-  | { tipo: 'recusado'; mensagem: string }
+  | { tipo: 'recusado'; mensagem: string; codigo?: string }
   | { tipo: 'app-desatualizado'; mensagem: string }
   | { tipo: 'sem-conexao' }
   | { tipo: 'erro-inesperado' };
@@ -67,6 +83,8 @@ export type EstadoDaSessao =
   | { estado: 'dentro'; usuario: UsuarioLogado | null }
   /** Há sessão guardada e dados neste computador, mas sem internet: entra só com a senha (tarefa 5.8). */
   | { estado: 'entrar-sem-internet' }
+  /** Aplicativo reaberto com a sessão ainda valida, mas o banco local fechado: pede a senha antes de tudo. */
+  | { estado: 'reabrir'; usuario: string | null }
   /** A dona desligou este computador: as vendas estão indo para a dona antes de apagar os dados (tarefa 5.8). */
   | { estado: 'desligando' }
   /** Os dados deste computador foram apagados (tarefa 5.8). */
@@ -79,6 +97,10 @@ export type ResultadoDeChamada =
       ok: false;
       motivo: 'sessao-terminou' | 'sem-conexao' | 'app-desatualizado' | 'erro';
       mensagem?: string;
+      /** O código do erro (`CodigoErro` da API ou do computador): a tela escolhe a frase no idioma da pessoa. */
+      codigo?: string;
+      /** O motivo de cada campo recusado, como o servidor mandou (português). */
+      campos?: { campo: string; mensagem: string }[];
       /** CPF repetido no cadastro de cliente: o cliente que já existe (diretório da loja). */
       clienteExistente?: { id: string; nome: string; telefone?: string; cidade?: string };
     };
@@ -156,6 +178,8 @@ export interface PonteDoCorona {
   entrar(dados: DadosDeEntrada): Promise<ResultadoDeEntrada>;
   trocarSenha(dados: DadosDeNovaSenha): Promise<ResultadoDeEntrada>;
   sair(): Promise<void>;
+  /** "Este computador é de outra pessoa": guarda o banco antigo à parte e deixa o computador livre (nada é apagado). */
+  liberarComputador(): Promise<void>;
   estouLogado(): Promise<EstadoDaSessao>;
   chamarApi(pedido: PedidoDeChamada): Promise<ResultadoDeChamada>;
   /** Avisa quando a sessão terminar sozinha. Devolve a função que cancela o aviso. */
@@ -164,4 +188,20 @@ export interface PonteDoCorona {
   aoMudarAAtualizacao(ouvinte: (aviso: AvisoDeAtualizacao) => void): () => void;
   /** Avisa o estado do envio e do recebimento, já ao assinar e sempre que mudar. Devolve o cancelamento. */
   aoMudarASincronizacao(ouvinte: (estado: EstadoDaSincronizacao) => void): () => void;
+  /** O idioma que a pessoa escolheu neste computador; `null` se nunca escolheu (vale o padrão, espanhol). */
+  lerIdioma(): Promise<IdiomaDaTela | null>;
+  /** Guarda neste computador o idioma escolhido. */
+  gravarIdioma(idioma: IdiomaDaTela): Promise<void>;
+  /** Imprime o relatório que está na tela (tarefa 9.3). Só a folha do relatório sai no papel. */
+  imprimirRelatorio(): Promise<ResultadoDeSaidaDoRelatorio>;
+  /** Salva em PDF o relatório que está na tela; a pessoa escolhe onde guardar. */
+  salvarRelatorioEmPdf(dados: { nome: string }): Promise<ResultadoDeSaidaDoRelatorio>;
+  /** Guarda o PDF, mostra a pasta e abre a conversa do WhatsApp com o cliente e a mensagem pronta. Nada é enviado sozinho. */
+  prepararRelatorioNoWhatsapp(dados: {
+    telefone: string | null;
+    mensagem: string;
+    nome: string;
+    /** Relatório do próprio representante: abre o WhatsApp sem número e ele escolhe a conversa. */
+    semNumero?: boolean;
+  }): Promise<ResultadoDeSaidaDoRelatorio>;
 }

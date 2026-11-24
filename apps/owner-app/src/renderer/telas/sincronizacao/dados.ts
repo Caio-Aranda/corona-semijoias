@@ -1,3 +1,5 @@
+import { TEXTOS_SOLTOS as SOLTOS } from '../../textos-soltos';
+import { localeAtual } from '../../idioma/idioma';
 /** Leitura (sem confiar no formato) do que a API devolve para as telas dos computadores dos vendedores. */
 
 const objeto = (v: unknown): Record<string, unknown> =>
@@ -141,7 +143,7 @@ export function dataEHora(instante: string | null): string {
   if (!instante) return '';
   const d = new Date(instante);
   if (Number.isNaN(d.getTime())) return '';
-  const partes = new Intl.DateTimeFormat('pt-BR', {
+  const partes = new Intl.DateTimeFormat(localeAtual(), {
     timeZone: 'America/Sao_Paulo',
     day: '2-digit',
     month: '2-digit',
@@ -150,5 +152,5 @@ export function dataEHora(instante: string | null): string {
     minute: '2-digit',
   }).formatToParts(d);
   const v = (t: string) => partes.find((p) => p.type === t)?.value ?? '';
-  return `${v('day')}/${v('month')}/${v('year')} às ${v('hour')}:${v('minute')}`;
+  return `${v('day')}/${v('month')}/${v('year')} ${SOLTOS.arquivo.as} ${v('hour')}:${v('minute')}`;
 }

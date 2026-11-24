@@ -17,6 +17,18 @@ import { type CodigoDaFase6, MENSAGENS_DA_FASE_6 } from './mensagens-da-fase-6';
 import * as fase6 from './operacoes-da-fase-6';
 import * as fase7 from './operacoes-da-fase-7';
 import { type CodigoDaFase7, MENSAGENS_DA_FASE_7 } from './mensagens-da-fase-7';
+import { type CodigoDoConsignado, MENSAGENS_DO_CONSIGNADO } from './mensagens-do-consignado';
+import * as consignado from './operacoes-do-consignado';
+import * as clienteConsignado from './operacoes-do-cliente-consignado';
+import type {
+  AcertoParaEnviar,
+  CampoDoClienteDoConsignado,
+  ClienteDoConsignadoParaCadastrar,
+  PagamentoDoConsignadoParaEnviar,
+  ReposicaoParaEnviar,
+  TipoDeFotoDoCliente,
+  TrocaNaNotaParaEnviar,
+} from '../../shared/operacoes-do-consignado';
 import { enfileirar, marcarProvisoria, type TipoDeOperacao } from './outbox';
 import { uuidV7 } from './uuid';
 
@@ -37,7 +49,8 @@ export type CodigoDaOperacao =
   | 'RELOGIO_ERRADO'
   | 'COMPUTADOR_DESLIGADO'
   | CodigoDaFase6
-  | CodigoDaFase7;
+  | CodigoDaFase7
+  | CodigoDoConsignado;
 
 /** Textos do glossário (parte "Motor de envio do Corona Vendas", tarefa 5.6). */
 export const MENSAGENS_DAS_OPERACOES: Readonly<Record<CodigoDaOperacao, string>> = Object.freeze({
@@ -64,6 +77,8 @@ export const MENSAGENS_DAS_OPERACOES: Readonly<Record<CodigoDaOperacao, string>>
   ...MENSAGENS_DA_FASE_6,
   // Parcelas e recebimento do cliente (tarefa 7.11).
   ...MENSAGENS_DA_FASE_7,
+  // Consignado ao cliente (tarefa 9.2; ADR-0016): os mesmos códigos e textos do servidor.
+  ...MENSAGENS_DO_CONSIGNADO,
 });
 
 export interface ClienteJaCadastrado {
@@ -426,6 +441,92 @@ export class OperacoesLocais {
 
   cancelarTroca(c: CancelamentoParaEnviar & { trocaId: string }): { operacaoId: string } {
     return this.executar((db, agora) => fase6.cancelarTroca(db, agora, c));
+  }
+
+  // --- consignado ao cliente (tarefa 9.2): as regras moram em `operacoes-do-consignado.ts` ---
+
+  abrirSemana(p: { id: string; numero?: number }) {
+    return this.executar((db, agora) => consignado.abrirSemana(db, agora, p));
+  }
+
+  /** O Novo Pedido em montagem (nasce se ainda não há). */
+  pedidoEmMontagem() {
+    return this.executar((db, agora) => consignado.rascunhoDoPedido(db, agora));
+  }
+
+  definirPedido(p: {
+    clienteId?: string | null;
+    remessaId?: string | null;
+    dataCobranca?: string;
+  }) {
+    return this.executar((db, agora) => consignado.definirRascunho(db, agora, p));
+  }
+
+  biparPedido(codigo: string) {
+    return this.executar((db, agora) => consignado.biparNoRascunho(db, agora, codigo));
+  }
+
+  ajustarItemDoPedido(itemId: string, quantidade: number) {
+    return this.executar((db, agora) =>
+      consignado.ajustarItemDoRascunho(db, agora, itemId, quantidade),
+    );
+  }
+
+  descartarPedido(): void {
+    this.executar((db) => {
+      consignado.descartarRascunho(db);
+    });
+  }
+
+  finalizarPedido(p: { id: string }) {
+    return this.executar((db, agora) => consignado.finalizarPedido(db, agora, p));
+  }
+
+  registrarReposicao(p: ReposicaoParaEnviar) {
+    return this.executar((db, agora) => consignado.registrarReposicao(db, agora, p));
+  }
+
+  registrarTrocaNaNota(p: TrocaNaNotaParaEnviar) {
+    return this.executar((db, agora) => consignado.registrarTrocaNaNota(db, agora, p));
+  }
+
+  remarcarNota(p: { id: string; notaId: string; dataCobranca: string }) {
+    return this.executar((db, agora) => consignado.remarcarNota(db, agora, p));
+  }
+
+  registrarAcerto(p: AcertoParaEnviar) {
+    return this.executar((db, agora) => consignado.registrarAcerto(db, agora, p));
+  }
+
+  registrarPagamento(p: PagamentoDoConsignadoParaEnviar) {
+    return this.executar((db, agora) => consignado.registrarPagamento(db, agora, p));
+  }
+
+  estornarAcerto(p: { id: string; acertoId: string; motivo: string }) {
+    return this.executar((db, agora) => consignado.estornarAcerto(db, agora, p));
+  }
+
+  estornarRecibo(p: { id: string; reciboId: string; motivo: string }) {
+    return this.executar((db, agora) => consignado.estornarRecibo(db, agora, p));
+  }
+
+  cadastrarClienteDoConsignado(c: ClienteDoConsignadoParaCadastrar) {
+    return this.executar((db, agora) => consignado.cadastrarClienteDoConsignado(db, agora, c));
+  }
+
+  alterarClienteDoConsignado(
+    clienteId: string,
+    campos: Partial<Record<CampoDoClienteDoConsignado, string>>,
+  ) {
+    return this.executar((db, agora) =>
+      clienteConsignado.alterarClienteDoConsignado(db, agora, clienteId, campos),
+    );
+  }
+
+  trocarFotoDoCliente(clienteId: string, tipo: TipoDeFotoDoCliente, hash: string) {
+    return this.executar((db, agora) =>
+      clienteConsignado.trocarFotoDoCliente(db, agora, clienteId, tipo, hash),
+    );
   }
 
   /** Conferência da maleta sem internet. O esperado de cada peça é o saldo que o computador conhece (prévia). */

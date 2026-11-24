@@ -46,3 +46,220 @@ PR 189 (issue #184). Implementador (Sonnet, esforço médio). Só no Corona Vend
 - `docs/progresso/fase-8.md` e a linha da 8.10 em `docs/PROGRESSO.md` podem conflitar com os da 8.2 (branch paralela): é só juntar as duas entradas.
 
 **Como conferir:** `npx vitest run --root apps/seller-app`, `npm run test:duas-pontas -w @corona/testes-sync -- src/cenarios/pedir-acerto-e-contar.duas-pontas.test.ts`, `npm run seller:empacotar` e `npm run barreira:varrer -- apps/seller-app/release/win-unpacked/resources/app.asar packages/shared packages/ui packages/conexao-segura`.
+
+## Tarefa 8.3: conciliações C11 e C12
+
+Issue #177, PR 190. Plano aprovado no 1º comentário do PR. Só leitura, sem migração, sem rota nova, nada no Corona Vendas.
+
+**O que mudou.**
+
+- `ConciliacoesDaFase7` ganhou `c11()` e `c12()` (as onze, no mesmo `conferir()` e no mesmo retrato `REPEATABLE_READ`). A C11 confere cada peça: loja mais saldo das maletas abertas contra comprado (compras registradas) mais lançamentos da dona, menos vendido, mais devolvido à maleta, mais recebido na loja pelo acerto, mais peça achada, menos falta e defeito aprovado, cada parcela do documento de origem. A C12 confere cada maleta enviada, por peça: saldo pelos movimentos contra enviado (baixa do estoque), vendido, devolvido pelo cliente, devolvido à dona e falta; mais as regras "nenhuma peça negativa" e "maleta cancelada sem peça".
+- Uma fórmula só: `ServicoDeEstoque.SQL_SALDO_NAS_MALETAS_ABERTAS` (loja + maletas) serve à C7 e à C11 (o texto da consulta da C7 ficou o mesmo); `saldoDaMaleta` serve à C8 e à C12.
+- Corona Gestão: só os títulos e as explicações da C11 e da C12 (a tela já desenha o que a API manda por `chave`); teste de tela com a C12. Cliente da dona regerado (só a descrição); `api-client-vendedor` sem diferença.
+- Documentos: especificação v1.24 (§13), ADR-0012 item 17, ADR-0008 item 9 e glossário.
+
+**Testes** (`ConciliacoesDoEstoqueCompletoTest`, massa `MassaDoEstoqueCompleto` por cima da massa da 7.8, conta à mão no comentário da massa): as onze dão "Tudo certo" antes e depois do acerto; estragos provam cada regra: compra de 10 cujo movimento guarda 9 (a C11 acusa e a C7 não), venda alterada, peça a mais na loja, envio maior que a baixa, movimento de troca apagado, `AJUSTE` de maleta, saldo negativo, movimento em maleta cancelada, falta alterada no acerto (C11 e C12). As permissões (401 e 403 do vendedor), a contagem de onze conferências e a prova de que a rota não grava (`SoLeituraDasConciliacoesTest`, com mais seis tabelas) foram atualizadas.
+
+**O que a execução mostrou (diferença do plano, sem mudar regra).** No plano, a devolução D1 voltava à maleta. A devolução registrada **pela dona** manda a peça para a loja (linha "peças para a loja" do acerto), então o saldo de M1 A é 3 e não 4; a conta à mão foi refeita no comentário da massa. Isso também exercita o termo "recebido na loja" da C11. Outra diferença: apagar um lançamento da dona junto com o atalho da peça nenhuma conferência vê (o lançamento da dona é o próprio documento de origem); por isso o estrago da compra altera a quantidade do movimento, não o apaga.
+
+**Não fiz.** A rodada diária e o aviso (8.4). Nenhum botão de corrigir. Nenhum valor em Real (só peças).
+
+## Tarefa 8.4: conferência diária
+
+Issue #178, PR 195. Plano aprovado no 1º comentário do PR, ajustes no 2º. Migração **V047** (a próxima livre na `main`).
+
+**O que entrou**
+
+- **Banco (V047).** `rodadas_conferencia` e `diferencas_conferencia`, só do servidor, imutáveis (as convenções do servidor recusam `UPDATE`, `DELETE` e `TRUNCATE`, até para o dono das tabelas), fora do sync (registradas como tabelas do servidor). `CHECK`s: `PEDIDA` exige quem pediu e `AUTOMATICA` não tem; `FALHOU` se e só se há chave com falha; `SEM_DIFERENCA` tem total zero; término depois do início.
+- **Rodada.** `ServicoDaConferenciaDiaria.rodar(id, origem, pedidaPor)`: id já gravado devolve a rodada (200); trava consultiva `pg_try_advisory_xact_lock` (outra rodando: 409); uma transação `REPEATABLE_READ`; cada uma das treze conferências (`CatalogoDasConferencias`: estoque, devolução e troca, C1 a C5, C7 a C12) dentro de um `SAVEPOINT`, para o erro de uma não derrubar as outras; só `INSERT` nas duas tabelas novas. Nenhuma fórmula de conferência mudou: os adaptadores chamam as classes de produção.
+- **Agenda.** `AgendaDaConferenciaDiaria`, `0 0 3 * * *` na zona `America/Sao_Paulo`, ligada por padrão e desligada nos testes (`corona.conferencia-diaria.agendada`). Erro dentro dela só vai para o log.
+- **Rotas (só ADMIN).** `POST /api/dona/conferencias` (201, 200, 409, 400 sem id), `GET /api/dona/conferencias` (histórico, 30 por página, no máximo 100) e `GET /api/dona/conferencias/{id}` (404 em português). Nenhuma rota do vendedor.
+- **Aviso.** `FonteDeAvisosDaConferencia`, calculado na hora sobre a última rodada, com o `Clock`.
+- **Corona Gestão.** Tela **Conferência de hoje** (última rodada, **Conferir agora** com o mesmo id no segundo toque depois de erro de conexão, histórico, detalhe), canais novos na ponte (`conferencias.listar`, `conferencias.ver`, `conferencias.conferirAgora`) e o aviso novo leva à tela. Cliente da dona regerado; `api-client-vendedor` sem diferença.
+
+**Desvios e observações**
+
+- **409 (registrado no ADR-0015).** A segunda rodada pedida enquanto outra roda recebe 409, e não o resultado da que está rodando.
+- **`noRollbackFor`.** Os três métodos de leitura que a rodada chama (`ConciliacoesDaFase7.conferir`, `ConferenciasDeDevolucaoETroca.conferir` e `ServicoDeEstoque.conciliar`) ganharam `noRollbackFor = RuntimeException.class`: sem isso, um erro que passa por eles marca a transação de fora como "só desfazer" (o teste do erro forçado provou). Eles só leem, então não há nada a desfazer.
+- **Nome do corpo.** O corpo do "Conferir agora" chama `PedidoDeConferenciaDiaria` porque `PedidoDeConferencia` já existe no cliente do vendedor (conferência da maleta) e o OpenAPI trocaria o nome dele.
+- **Testes antigos.** Nenhum teste existente esperava a lista de avisos vazia por inteiro (todos filtram por tipo). Os testes novos que gravam rodada deixam uma rodada limpa no fim (`RodadasDeTeste`), para o aviso novo não aparecer nos outros.
+
+**Como conferir:** `npm run api:test`, `npx vitest run --root apps/owner-app`, `npm run lint`, `npm run typecheck`, `npm run format:check`.
+
+## Tarefa 8.5: relatórios de vendas e curva ABC
+
+Issue #179, PR 196. Só leitura: nenhuma migração, nenhuma regra nova, nada vai ao Corona Vendas.
+
+**O que entrou**
+
+- **Uma consulta só do vendido líquido** (`VendidoLiquido`): uma linha por peça de cada venda, com vendido (preço x quantidade - desconto da linha), devolvido (devoluções e trocas não canceladas, pelo preço que o cliente pagou) e líquido. Os relatórios de vendas e a curva ABC só agrupam essa consulta; o DRE (8.6) e o painel (8.7) vão usar a mesma. Soma no banco, em `NUMERIC`.
+- **Onze relatórios de vendas** em `/api/dona/relatorios/vendas/...` (só ADMIN): `vendas` (uma linha por venda; padrão só as feitas, `situacao=CANCELADAS` ou `TODAS`), `canceladas` (com quem cancelou, quando e o motivo), `por-vendedor`, `por-praca`, `por-cliente`, `por-produto`, `por-categoria`, `por-periodo` (por dia de Brasília), `ranking-de-vendedores`, `ranking-de-pecas` e `ticket-medio`. Filtros: busca, vendedor, praça, cliente, produto, categoria, período. Rodapé e detalhamento (`recorte`) no motor dos demais relatórios.
+- **Curva ABC** em `/api/dona/relatorios/estoque/curva-abc`: por produto, pelo vendido líquido do período; A até 80%, B até 95%, C o resto; a peça que cruza a fronteira fica na classe de cima (a classe sai do acumulado antes da peça, em números exatos, nunca do percentual arredondado); empate pelo código; peça sem venda líquida fica fora. Mostra a foto (a falta de foto não trava).
+- **`Dinheiro`** ganhou `dividir` (ticket médio: R$ 100,00 em 3 vendas = 33,33) e `percentualDe` (HALF_UP, duas casas); o arredondamento continua só lá.
+- **Corona Gestão.** Grupo de menu **Relatórios de vendas** (onze telas) e **Curva ABC dos produtos** no grupo Estoque, no padrão da 7.12 (filtros, totais no rodapé, PDF, Excel e CSV, três moedas). Cliente da dona regerado; `api-client-vendedor` sem diferença.
+
+**Definições adotadas (padrões seguros do plano, sem mudar regra)**
+
+- O período e o dia de uma linha são os da **data da venda** (dia de Brasília). A devolução ou a troca de uma venda abate a venda de onde ela saiu, qualquer que seja a data da devolução.
+- Dólar e Guarani: cotação do dia da **venda**, por linha de peça (o devolvido e o líquido da linha usam a mesma cotação da venda); o total em Dólar ou Guarani é a soma das linhas já convertidas. Venda sem cotação fica sem Dólar e sem Guarani. Nos relatórios agrupados não há uma data de cotação única por linha (a linha reúne várias vendas); a data aparece na linha de cada venda (`vendas`, `canceladas`) e, no relatório por dia, é o próprio dia.
+- Venda estornada fica fora de todo total e aparece marcada (`Cancelada`). Nos agrupados nunca entra. O rodapé "canceladas" só tem valor quando a lista pede canceladas ou todas (como nas devoluções).
+- Ticket médio = vendido líquido ÷ número de vendas do grupo (venda com tudo devolvido continua contando como venda); em produto e categoria, "vendas" são as vendas que têm aquela peça ou categoria.
+- Peça sem custo em nenhuma resposta: um teste confere que as respostas não têm "custo" nem "lucro".
+
+**Testes** (`RelatoriosDeVendasTest`, massa de março de 2292 com a conta à mão no comentário: vendido 950, devolvido 275, líquido 675, com desconto de linha, troca, devolução cancelada e venda estornada): por vendedor, praça, cliente, categoria, produto e dia com Real, Dólar e Guarani; rankings e valor médio; filtros; venda estornada fora e marcada; detalhamento; curva ABC com as três faixas e com filtro; **a curva e todos os relatórios de vendas batem no vendido líquido** (por produto e no total, e contra uma soma direta no banco); 401 e 403 em todas as rotas; pedidos mal feitos; paginação. Mais `DinheiroTest` (ticket médio e percentual) e `relatorios-vendas.test.tsx` na Gestão.
+
+**Não fiz.** Custo e lucro (8.6). Filtro por cliente e por produto na tela da Gestão (a busca já acha os dois pelo nome; a API aceita os dois). Data de cotação única nas linhas agrupadas.
+
+**Como conferir:** `npm run api:test`, `npx vitest run --root apps/owner-app`, `npm run lint`, `npm run typecheck`, `npm run format:check`.
+
+## Tarefa 8.6: resultado do período e lucro
+
+**O que mudou.** Quatro rotas só da dona (ADMIN), só leitura, em `/api/dona/relatorios/financeiro`: `resultado` (o DRE), `resultado/detalhamento` (os registros de cada linha), `lucro-por-produto` e `lucro-por-vendedor`. Período obrigatório (400 em português). Classes novas `CustoDaPeca` (a fórmula do custo na data, só SQL) e `ConsultasDoResultado`. **Sem migração.**
+
+- **Uma fórmula só.** Receita, devolução e peças saem do `VendidoLiquido` (o mesmo da 8.5); o custo só do `CustoDaPeca`; a comissão do DRE e do lucro por vendedor da mesma subconsulta. Somas no banco, em `NUMERIC`; o único arredondamento é a margem (`Dinheiro`).
+- **Custo da peça (ADR-0015, R1).** Último custo de compra até o dia da venda (o dia da compra vale; duas no mesmo dia, a última; compra desfeita não conta); sem compra, o custo do cadastro (`produtos_custos`), marcado. Calculado na leitura; nada gravado.
+- **Devolução pela data da venda** (diverge do item 2 do ADR, registrado em "Como ficou 8.6"): o DRE bate com os relatórios de vendas e a curva ABC.
+- **Perdas.** Faltas do acerto pelo custo no dia do fechamento, menos as encontradas depois (no dia em que foram encontradas); avarias do estoque; inventário só para menos. **Cobrado do vendedor** = `acertos.faltas_cobradas`. **Caixa** só com lançamentos manuais, por categoria; o caixa automático do acerto e o pagamento a fornecedor ficam fora.
+- **Gestão.** Quatro telas no grupo Relatórios financeiros (Resultado do período, Registros do resultado, Lucro por produto, Lucro por vendedor), com o aviso "A devolução abate o mês em que a venda foi feita...", a marca "Custo do cadastro" e a contagem de peças nessa situação; PDF, Excel e CSV pelo motor existente. Termos novos no glossário.
+
+**Testes.** `CustoDaPecaTest` (antes, no dia e depois da compra; sem compra; compra desfeita; mesmo dia; custo exato 3 x 7,33 = 21,99). `ResultadoDoPeriodoTest` (massa de abril de 2292 com a conta à mão: resultado -168,00; as três moedas linha a linha; sem cotação = coluna vazia; detalhamento de cada linha; lucro por produto 73,00 e 67,50 e por vendedor 63,50 e 63,00; **bate** com vendas, curva ABC, comissões, acertos e fluxo de caixa; devolução que chega no mês seguinte; falta encontrada depois; 400; só leitura). `PermissoesDoResultadoTest` (401, 403 e nenhuma rota do vendedor devolve custo ou lucro). `relatorios-resultado.test.tsx` na Gestão.
+
+**Não fiz / decisões.** As classes de teste do plano `LucroPorProdutoEVendedorTest` e `UmaFormulaSoDoResultadoTest` ficaram dentro de `ResultadoDoPeriodoTest` (a massa de abril é única e o banco é dividido entre as classes). O detalhamento abre pela tela "Registros do resultado" (escolhendo a linha), não ao tocar na linha do resultado. A exclusão do caixa automático foi testada só com o pagamento ao vendedor do acerto a favor (45,00); o pagamento a fornecedor e o recebimento do acerto não têm massa própria.
+
+**Como conferir:** `npm run api:test`, `npx vitest run --root apps/owner-app`, `npm run lint`, `npm run typecheck`, `npm run format:check`.
+
+## Tarefa 8.7: painel semanal (consulta)
+
+**O que mudou.** Uma rota só da dona (ADMIN), só leitura: `GET /api/dona/painel-semanal?semana=&vendedor=&praca=&situacao=`. Classes novas `ConsultasDoPainelSemanal` e `PainelSemanalController`. **Sem migração; nada no Corona Vendas** (o diff de `packages/api-client-vendedor` é vazio).
+
+- **Pedidos.** Uma linha por vendedor na semana: o acerto gravado (`ACERTADO`, os mesmos números do relatório de acertos), o acerto em andamento (`EM_ACERTO`, a prévia do fechamento da dona) ou as maletas ainda em aberto (a prévia da comissão do vendedor, com o líquido previsto sem faltas). Cada linha traz as maletas ("Nota"), enviado, devolvido, vendido, percentual, comissão, líquido, a situação e se é prévia; as acertadas trazem também vendidas e em falta, em peças. Enviado e devolvido saem das maletas somados no banco, pelo preço congelado e a cotação do envio.
+- **A prévia é "de hoje".** Ela junta tudo o que o vendedor ainda não acertou, inclusive de semanas anteriores. A resposta diz isso (`previaIncluiSemanasAnteriores` e `avisoDaPrevia`) para a tela da 8.8 explicar à dona.
+- **Totais.** Cada bloco é o rodapé do relatório que já mostra o número, chamado com os mesmos filtros (o motor soma no banco): Novas maletas e Reposições (relatório de maletas), Acerto e pendências (acertos e pendências), Vendas (relatório de vendas da 8.5; os descontos somam `itens_venda.desconto` na mesma fonte do vendido líquido), Trocas e créditos (relatórios da 6.10), Total recebido no acerto (recebimentos por forma). A Prévia soma as linhas em prévia e o Total soma dois rodapés, só com `Dinheiro`. Cada bloco traz a rota e os filtros do relatório de origem.
+- **Sem cotação**, a rota não cai: as linhas acertadas saem normais e as de prévia saem sem valor, marcadas "sem cotação".
+- **Mexidas em código que já existia, sem mudar resultado:** `ServicoDeFechamento.liquidoDoAcerto` (a conta do líquido, usada pelo `calcular` e pela prévia do painel) e `resumoDaPrevia` (só leitura, tipado); coluna `desconto` no `VendidoLiquido.FONTE`; `pracaId` opcional nos relatórios de acertos, pendências, recebimentos, trocas e créditos (rotas e filtros); fragmentos `MOVIMENTOS`, `DE_ACERTO` e `colunasEmMoedas` visíveis no pacote. Nenhum teste antigo foi editado.
+
+**Testes.** `PainelSemanalTest` (semana nº 9101 de 2292, quatro vendedores, conta à mão: cada linha, cada bloco, três moedas, filtros de vendedor, praça e situação, semana vazia, 400, semana de hoje, sem entrada/cheque/remarcadas, a rota não grava). `UmaFormulaSoDoPainelTest` (as linhas acertadas e o bloco Acerto batem com o relatório de acertos; a comissão prevista com a prévia do vendedor; a linha em acerto com a prévia do fechamento; enviado = vendido + devolvido + falta em peças, por linha e por maleta; Total recebido, maletas, vendas, descontos, trocas e créditos com os rodapés; `resumoDaPrevia` só lê). `PainelSemCotacaoTest` (sem cotação o painel não cai). `PermissoesDoPainelTest` (401, 403 e nada em `/api/vendedor`).
+
+**Não fiz / decisões.** O boleto do plano ("Recebido no acerto: Boleto 70,00") não existe como recebimento do acerto (no fechamento o boleto é conta a receber; só o boleto pago, depois, é recebimento avulso): na massa a Bia pagou 70,00 por Transferência e o bloco mostra Boleto zerado. A "devolução em crédito" do plano virou uma troca que sobra crédito (a devolução pelo cliente só gera crédito quando a venda usou crédito): créditos gerados 50,00, usados 25,00, em aberto 25,00. Não fiz a venda de controle da semana seguinte nem a maleta de semana antiga. Tela, exportação e detalhamento são da 8.8.
+
+**Como conferir:** `npm run api:test`, `npm run lint`, `npm run typecheck`, `npm run format:check`.
+
+## Tarefa 8.8: painel semanal (tela)
+
+PR 199 (issue #182). Só tela no Corona Gestão e uma operação nova na ponte (`painel.semanal`, validada: ids em UUID e situação entre `EM_ABERTO`, `EM_ACERTO` e `ACERTADO`); sem backend, sem migração, sem rota nova, nada vai ao Corona Vendas. Cliente da dona sem mudança (já tinha `painelSemanal` desde a 8.7).
+
+**O que entrou**
+
+- **Tela** `telas/painel/TelaPainelSemanal.tsx`: botão grande **Painel da semana** na tela inicial e item no menu; atalhos (Nova maleta, Acerto, Reposição, Troca, Vendedores, Estoque); filtros Semana (padrão: a de hoje, escolhida pelo servidor), Vendedor, Praça e Situação; abas **Maletas** (uma linha por vendedor: enviado, devolvido, vendido líquido, comissão, valor líquido, peças, "Prévia" e a data da cotação) e **Totais** (blocos com a origem de cada número).
+- **A tela só mostra:** nenhuma conta de dinheiro; Real em destaque e Dólar e Guarani abaixo, exatamente como a API mandou (cotação do dia de cada lançamento). Linha sem cotação: só o Real e "Sem cotação".
+- **Detalhamento:** o vendedor abre o acerto (`TelaAcertos` ganhou `abrirId`) ou a maleta; **Ver os registros** abre o relatório de onde o total saiu (financeiro-acertos, pendências, recebimentos, remessas das maletas, vendas feitas, trocas e créditos) já com semana, vendedor, praça e período do painel (`TelaDeRelatorio` ganhou `filtrosIniciais`). Rota que a tela não conhece não vira botão.
+- **Exportação** PDF, Excel e CSV pelo mesmo motor dos relatórios: três moedas e data da cotação em cada linha, totais da API (Dólar e Guarani dos totais vêm prontos, não são somados na tela).
+- **Testes:** `nucleo/painel-semanal.test.ts` (leitura, origem dos totais, grade de exportação), `telas/painel/painel-semanal.test.tsx` (7 regras de tela) e a validação da ponte. Suíte do Corona Gestão: 865 testes verdes.
+
+**Não fiz:** cenário Playwright do painel (a 8.12 cuida da dona no Corona Gestão); "voltar ao painel" a partir do relatório aberto (o menu leva de volta).
+
+## Tarefa 8.9: controle (auditoria, computadores e acessos)
+
+PR 200 (issue #183). Três relatórios só de leitura para a dona (§12, grupo Controle) e a conferência das ações da §11 na auditoria. Sem migração; nada vai ao Corona Vendas (o cliente do vendedor não mudou).
+
+**O que entrou**
+
+- **Backend** (`/api/dona/relatorios/controle/...`, só ADMIN, mesmo motor dos relatórios de cadastro: filtros, páginas, rodapé e `recorte`): `auditoria` (quem, quando, o quê, área, registro e **antes e depois em texto da loja**; filtros de busca, `usuarioId`, `acao`, `tabela`, `registroId`, período; ação do servidor vem como "Pelo servidor"), `computadores` (um por computador: vendedor, situação, versão, último recebimento e último envio, quantas operações esperam, envios com problema sem decisão e envios guardados à parte esperando a dona; filtros de busca, vendedor, situação, com problema e período do último contato) e `acessos` (cada tentativa: pessoa, programa, resultado em palavras simples, endereço, até quando bloqueou; login que não existe sem nome de pessoa; filtros de busca, resultado, programa e período).
+- **Texto da loja** (`TextoDaAuditoria`): dicionário de ações, áreas e campos; o que não está nele vira frase legível; **campo com senha, hash, token ou segredo nunca sai**, mesmo que alguém o grave um dia (teste).
+- **Gestão:** grupo **Controle** no menu com os três relatórios, no padrão dos outros (filtros, rodapé, detalhamento, PDF, Excel e CSV). Sem dinheiro, logo sem moedas.
+- **Retenção:** guarda tudo (como o plano); a limpeza técnica de hoje continua só com o que já apagava.
+
+**Conferência da §11 (auditoria das ações).** Já registravam, na mesma transação: preço de venda e de custo (`PRECO_VENDA_ALTERADO`, `PRECO_CUSTO_ALTERADO`), estoque (`ServicoDeEstoque`, contagem, compra e estorno), desconto (o desconto vai no `VENDA_REGISTRADA`; o limite de desconto não tem tela nem rota que o mude), cancelamento (venda, devolução, troca, maleta, compra, acerto, contagem, recebimento, pagamento), reembolso (`DEVOLUCAO_REGISTRADA` com valor e forma do reembolso) e autorização de exceção (pedida, aprovada, negada e vencida). **Faltava e foi acrescentado** (sem mudar regra):
+
+- `VENDEDOR_RESTRICAO_ALTERADA` em `ServicoDeVendedores.editar`: trocar ou tirar a restrição do vendedor (a "liberação de restrição"), com a restrição de antes e a de depois, quem fez e quando.
+- `RESTRICAO_ALTERADA` em `ServicoDeRestricoes.editar`: mudança de código, descrição ou do que a restrição bloqueia.
+- Os dois controladores passam o usuário logado ao serviço (assinatura nova, mesma resposta). Inativar e reativar a restrição já eram auditados.
+
+**Testes (primeiro):** `ControleDeAuditoriaTest` (filtros, texto da loja, sem segredo, "Pelo servidor", recorte, ordem e páginas), `ControleDeComputadoresTest` (massa de dois vendedores à mão: 3 computadores, problemas e quarentena, rodapé), `ControleDeAcessosTest` (entradas, erradas, bloqueios, login que não existe), `PermissoesDoControleTest` (401 sem login e 403 ao vendedor em cada rota; só rotas da dona), `TextoDaAuditoriaTest`, `RestricoesNaAuditoriaTest` (as duas ações novas e que editar sem mudar a restrição não grava) e `relatorios-controle.test.tsx` na Gestão. Cada classe cria as próprias pessoas e filtra por elas, então não colide com as outras.
+
+**Não fiz:** exportar a auditoria com filtro por ação na tela (o filtro existe na API; a tela usa busca, período e pessoa); decidir envios pelo relatório (isso continua em Computadores, no menu).
+
+**Como conferir:** `npm run api:test`, `npm run lint`, `npm run typecheck`, `npm run format:check`.
+
+## Tarefa 8.11: acerto na Gestão, prévia tipada e quanto falta para a meta
+
+**Situação:** pronto para revisão no PR 201 (suíte completa verde: 1761 testes do backend, 874 da Gestão).
+
+**O que fez:**
+- A prévia do fechamento da dona (`GET /api/dona/acertos/{id}/fechamento` com o acerto em andamento, `POST .../fechamento/previa` e a propriedade `previa` do 409 `FECHAMENTO_DESATUALIZADO`) deixou de ser um mapa sem tipo: agora é o registro `PreviaDoFechamento`, tipado no OpenAPI e no cliente da dona. O JSON é o mesmo de antes (mesmas chaves, mesmos valores), mais `faltaParaMetaGuarani` e `faltaParaMetaReais`. O GET continua devolvendo o fechamento gravado quando o acerto já está fechado (D3: `oneOf` das duas formas, sem rota nova), e esse formato não ganhou nada (D2).
+- **Prova de que o JSON não mudou:** `PreviaDoFechamentoMesmoJsonTest` monta uma massa fixa (o exemplo do ADR-0012, item 18, mais uma falta antiga, um defeito, uma conta aberta do vendedor, devolução, venda estornada, desconto, recebimento em dinheiro, boleto e restante em 2 parcelas; cotação de 2291-06-01 e vencimentos contados a partir de hoje, ids e vencimentos trocados pelo nome do dado). Os arquivos de antes (`backend/src/test/resources/acertos/previa-do-fechamento-antes/`: `get.json`, `post-com-decisoes.json`, `409-desatualizado.json`, `get-fechado.json` e `previa-do-vendedor.json`) foram gravados no commit `62f92c3`, com o código de produção intocado, e nunca foram regravados. O teste compara por JSON (objetos sem depender da ordem das chaves, listas na ordem): a resposta nova sem os dois campos novos é igual ao arquivo, e a prévia da dona tem exatamente esses dois campos a mais; o fechado e a prévia do vendedor ficam sem nenhuma chave nova. A lista `pendencias` da ficha fechada sai em ordem que muda a cada rodada (ordenada por id gerado), então o teste a ordena por tipo e peça antes de comparar.
+- **De onde vem o que falta (D1):** `ServicoDaComissao.faltaParaMeta(meta, vendidoParaMetaGuarani, pygVenda)`, uma conta só para a prévia do vendedor e a da dona (§13, item 2): Guarani que falta = máximo entre 0 e (meta menos a soma já vendida, cada venda pela cotação da própria venda); em Real = Guarani que falta x taxa de venda do Guarani da **cotação mais recente** (a da prévia), só para mostrar, como manda o ADR-0012, item 5 (e não a de cada venda). Nada é gravado; o arredondamento continua só em `ConversaoDeMoeda`. O mesmo está no javadoc do método.
+- **Tela (Corona Gestão):** na conferência do acerto, bloco "Comissão e meta", logo abaixo de "Vendido na semana": "Falta para a meta: Gs. X (R$ Y)." quando ainda falta; na meta ou acima a linha não aparece. A tela só formata o que a API mandou. Prévia sem os campos novos (ou com tipo errado neles) continua abrindo, só sem a linha.
+- **Testes:** `FaltaParaMetaTest` (unitário, à mão: 700.000 menos 650.000 dá 50.000 Gs = R$ 45,00; na meta e acima dão zero; sem venda falta a meta inteira, R$ 630,00; meta máxima), `FaltaParaMetaDoAcertoTest` (cotação do exemplo: venda de R$ 90,00 = 100.000 Gs; abaixo da meta faltam 600.000 Gs = R$ 540,00; na meta; acima; sem venda; prévia do vendedor e da dona dão o mesmo; o 409 leva os dois campos; o fechado não ganha; 403 e 401 nas duas rotas da prévia) e quatro testes novos da prévia na Gestão.
+- **Impacto:** `packages/api-client-vendedor` sem nenhuma mudança (diff vazio); nenhum arquivo do Corona Vendas; nenhuma migração; nenhuma regra de negócio mudou.
+
+**Não fez:** a "não aceita" e a "devolução em revisão" não entram na massa do teste de JSON (só existem pela rota de antifraude, com vários passos); os registros dessas duas listas são os mesmos de antes, cópia campo a campo, e as listas saem vazias na massa.
+
+## Tarefa 8.12: Playwright da dona fazendo o acerto
+
+**Situação:** pronto para revisão no PR 202 (e2e completo verde: 5 cenários; lint, typecheck e format:check limpos).
+
+**O que fez:**
+- Cenário novo `testes-e2e/testes/vendas-e-acerto-da-dona.test.ts` (Electron de verdade contra a API e o banco descartáveis do `npm run e2e`): a dona começa o acerto do vendedor, lê as peças que voltaram (3 colares e 3 pulseiras, de uma maleta de 5 e 4), confere a prévia, decide a falta ("Cobrar agora"), paga R$ 150,00 em dinheiro com o resto em 1 parcela, fecha e vê a ficha do acerto fechado e o acerto "Acertado" na lista. No fim confere a conciliação do estoque com as maletas pela API.
+- Massa em `testes-e2e/massa-do-acerto.ts`, toda pela API (como a loja faria): comissão, categoria, duas peças, vendedor e usuário, troca de senha e primeiro computador do vendedor, semana, maleta montada, enviada e conferida pelo vendedor, cliente e venda de 2 colares à vista. A cotação do dia é gravada por SQL no banco descartável (a API só a busca na internet; mesmo recurso que o `testes-sync` já usa).
+- **Contas à mão (valores esperados):** Colar R$ 100,00 e Pulseira R$ 60,00; venda de 2 colares = R$ 200,00; cotação Dólar R$ 5,00 e Guarani R$ 0,001 (1 Real = 1.000 Guarani). Vendido para a meta = 200.000 Gs, meta 700.000, faltam 500.000 Gs = R$ 500,00; abaixo da meta a comissão é 30% de R$ 200,00 = R$ 60,00; falta de 1 pulseira = R$ 60,00 cobrada; valor do acerto = 200,00 - 60,00 + 60,00 = R$ 200,00; pagos 150,00 e 50,00 em 1 parcela. Todos os números batem com o que o servidor calculou; o teste não calcula nada.
+- Só entrou em `testes-e2e/` (mais `chamarApi` aceitar `PUT` e o tipo do app). Nenhuma mudança no app, na API, no CI de cada PR nem no workflow E2E (ele já roda `npm run e2e`, que pega o arquivo novo).
+
+**Não fez:** o acerto pedido pelo vendedor (8.10) e o fluxo com defeito, sobra ou pendência antiga ficam fora (já cobertos por testes de integração e de componente).
+
+## Tarefa 8.13: fechamento da Fase 8
+
+**Situação:** pronto para revisão (issue #187). **Só testes e documentos:** nenhuma regra de negócio mudou, nenhuma migração, nenhuma linha de código de produção, nada tocado no Corona Vendas (a barreira não precisou rodar).
+
+**O que entrou**
+
+- **Teste de ponta a ponta da semana** (`backend/src/test/java/br/com/coronasemijoias/api/relatorios/FechamentoDaSemanaTest.java`), pelas rotas HTTP, sobre a massa do painel (`MassaDoPainel`: quatro vendedores, uma semana de julho de 2293 com número 9104, só desta classe; maletas, vendas, desconto, devolução, troca, falta, dois acertos fechados, um em andamento e uma maleta em aberto). Contas à mão no comentário da classe. Oito testes:
+  - o **resultado do período** do mês bate com a conta: Vendas 715,00, Devoluções 100,00, Receita líquida 615,00, Custo 125,00, Lucro bruto 490,00, Comissões 166,00, Perdas 5,00, Cobrado 25,00, Resultado 344,00;
+  - **mesmo vendido líquido em seis lugares:** soma das linhas do painel, bloco Vendas do painel, receita líquida do resultado, soma da curva ABC, rodapé de vendas por produto e rodapé do relatório de vendas, todos 615,00, com 7 vendas no relatório e no painel;
+  - **peça a peça:** a peça A (500,00, custo 100,00, classe A) e a peça B (115,00, custo 25,00, classe B) têm o mesmo líquido na curva, no lucro por produto e nas vendas por produto;
+  - **lucro:** a soma do lucro por produto e o lucro bruto por vendedor são o lucro bruto do resultado; o lucro por vendedor é lucro bruto menos comissões (324,00), com Ana (receita 340,00, comissão 136,00) e Bia (100,00, 30,00);
+  - **por vendedor:** o vendido do painel é o do ranking de vendedores, e o valor médio por venda da Ana é 340,00 / 2 = 170,00;
+  - **comissão:** a soma das comissões das linhas acertadas do painel é a do resultado e a do relatório de comissões;
+  - **permissão:** o vendedor recebe 403 no painel, no resultado, na curva, no ranking e na conferência;
+  - **a rodada da conferência diária** ("Conferir agora", pela rota da dona, com as treze conferências): sobre a semana inteira não acha diferença em nenhum registro desta massa (e a situação é `SEM_DIFERENCA` quando o banco inteiro também está limpo); depois de **estragar um dado de propósito** (uma linha de venda com 1 peça a mais do que saiu do estoque) a rodada fica `COM_DIFERENCA`, aponta registros da massa, o aviso `CONFERENCIA_COM_DIFERENCA` aparece em "O que precisa da sua atenção"; desfeito o estrago, a rodada seguinte volta a ficar limpa e o aviso some.
+- **Roteiro do teste de uso** com as planilhas da dona: [roteiro-teste-fase-8.md](../roteiro-teste-fase-8.md) (painel, resultado do período, vendas e curva ABC, conferência diária, o que o vendedor não pode ver, pedir o acerto no Corona Vendas e como registrar cada diferença, com as causas conhecidas antes de chamar de defeito).
+- **Especificação v1.26** (§2 com Enviado, Devolvido e Vendido no lugar das "premissas a confirmar", §13 item 7, §15 e §22), **ADR-0015** (continua **Proposto**, com a seção da situação da decisão e o que cada resposta R1 a R3 mudaria), este arquivo, o `PROGRESSO.md` e as pendências do responsável.
+
+**Achados:** nenhum defeito. O teste passou de primeira, com os números feitos à mão; só um nome de campo do relatório de vendas por produto (`chave`) precisou ser ajustado no próprio teste.
+
+**Cuidado com a massa compartilhada:** o banco de teste é dividido entre as classes, então a rodada olha o banco inteiro e o teste só olha os registros da massa dele (como o `ConferenciaDiariaTest`). O teste deixa uma rodada limpa no fim para não sujar o aviso das outras classes.
+
+## Resumo final da Fase 8
+
+A dona passa a ver a semana inteira numa tela só e a confiar nos números sem refazer a conta na planilha. Tudo é só leitura sobre o que já estava gravado; a única tabela nova é a do resultado das rodadas.
+
+- **Painel da semana (8.7 e 8.8):** uma linha por vendedor (Enviado, Devolvido, Vendido, Comissão, Valor líquido, situação; a linha sem acerto fechado é prévia, marcada e avisada) e os blocos de Totais da tela de referência, **sem entrada, sem cheque e sem remarcadas**; clique no número abre o registro; três moedas; PDF, Excel e CSV.
+- **Vendas e curva ABC (8.5):** relatórios por vendedor, praça, cliente, produto, categoria e dia, rankings, valor médio por venda, vendas canceladas; curva ABC com foto. Todos leem a mesma consulta do vendido líquido.
+- **Resultado do período e lucro (8.6):** DRE simplificado, lucro por produto e por vendedor, custo da peça pelo último custo de compra até o dia da venda (padrão R1), com o aviso do custo do cadastro; só a dona.
+- **Conferência (8.3 e 8.4):** C11 (estoque completo) e C12 (saldo de toda maleta), treze conferências na rodada das 03:00 de Brasília e no "Conferir agora", resultado guardado em duas tabelas imutáveis (V047), aviso pela última rodada, histórico e detalhe.
+- **Controle (8.9):** auditoria com antes e depois em texto da loja, sincronizações e computadores, acessos; as ações da §11 que faltavam passaram a gravar auditoria.
+- **Acerto (8.10 e 8.11):** o vendedor pede o acerto e conta as sobras no Corona Vendas (só com internet); na Gestão, a prévia do fechamento é tipada no OpenAPI e mostra **Falta para a meta**.
+- **Testes (8.2, 8.12 e 8.13):** cada classe de teste roda sozinha e em qualquer ordem; cenário Playwright da dona fazendo o acerto; a semana inteira de ponta a ponta.
+- **Segurança:** nada de custo, lucro, resultado, auditoria nem dado de outro vendedor chega ao Corona Vendas; rotas novas só ADMIN, com 401 e 403 testados.
+
+**Números:** API 1769 testes (api:test completo, sem falha); lint, typecheck e format:check limpos; cliente do vendedor sem diferença ao regenerar. O resultado final de cada tarefa está nas seções acima.
+
+## O que ficou para depois (e sugestões)
+
+- **Teste de uso com as planilhas da dona** ([roteiro](../roteiro-teste-fase-8.md)): pendência do responsável. Diferença achada vira tarefa.
+- **Decisão do responsável sobre o ADR-0015** (R1, R2 e R3): continua Proposto; valem os padrões seguros. Se escolher o custo congelado na venda (R1), é uma tarefa crítica (venda, sync e migração).
+- **Mais de uma instância da API:** a rodada diária roda dentro da API (uma instância só); com mais de uma, é preciso um ADR (pendência da tarefa 11).
+- **Painel:** a prévia é "de hoje" e inclui semanas anteriores sem acerto (a tela avisa); se a dona quiser a prévia só da semana, é regra nova.
+- **Fase 9:** entrega (instaladores, VPS, backup, homologação do leitor, validação com dados reais, treinamento).
+
+## Dúvidas em aberto
+
+**Para a dona:** nenhuma pergunta nova. As antigas da Fase 7 seguem com o padrão seguro do [plano da Fase 7](fase-7-plano.md#dúvidas-para-a-dona).
+
+**Do responsável:** R1, R2 e R3 do [ADR-0015](../decisoes/ADR-0015-numeros-gerenciais-e-conferencia-diaria.md) (padrões seguros em vigor, nada decidido em nome dele); aplicar o [roteiro do teste de uso](../roteiro-teste-fase-8.md) com a dona e registrar o que travar em `PROBLEMAS-DE-USO.md`.
+
+## Diferenças entre a especificação e o que foi feito (sem mudar regra)
+
+- **§7.4, passos 1 e 2:** agora o vendedor **pede o acerto e conta as sobras** no Corona Vendas (8.10), só com internet; quem fecha e desiste continua sendo só a dona. A nota correspondente da Fase 7 está superada.
+- **ADR-0015, item 2:** a devolução abate o **mês da venda**, não o da devolução (divergência decidida no PR 197 e escrita no ADR).
+- **ADR-0015, item 6:** a segunda rodada pedida enquanto uma roda recebe **409**, não o resultado da que está rodando (escrito no ADR).

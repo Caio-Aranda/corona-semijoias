@@ -1,8 +1,10 @@
+import { textosVivos } from './idioma/idioma';
+import { ES_TEXTOS_DE_PRODUTOS } from './idioma/es/produtos';
 /**
  * Textos das telas de produtos (Cadastros → Produtos). Vêm do glossário da interface; erros de
  * campo e de regra vêm sempre do servidor, nunca daqui.
  */
-export const TEXTOS_DE_PRODUTOS = {
+export const PT_TEXTOS_DE_PRODUTOS = {
   titulo: 'Produtos',
   itens: ['produto', 'produtos'] as const,
   novo: 'Cadastrar produto',
@@ -14,18 +16,18 @@ export const TEXTOS_DE_PRODUTOS = {
   todas: 'Todas',
   todos: 'Todos',
   ativos: 'Ativos',
-  desativados: 'Desativados',
+  desativados: 'Inativos',
   legenda: 'Lista de produtos',
   colunas: {
     foto: 'Foto',
     nome: 'Nome',
     codigo: 'Código',
     categoria: 'Categoria',
-    preco: 'Preço',
+    preco: 'Preço unitário',
     situacao: 'Situação',
     acoes: 'O que fazer',
   },
-  situacao: { ativo: 'Ativo', desativado: 'Desativado' },
+  situacao: { ativo: 'Ativo', desativado: 'Inativo' },
   abrir: 'Abrir cadastro',
   vazio: 'Ainda não há nenhum produto.',
   semResultado: 'Nenhum produto encontrado. Confira o que você digitou ou limpe a busca.',
@@ -49,6 +51,8 @@ export const TEXTOS_DE_PRODUTOS = {
     carregando: 'Buscando os dados...',
     nome: 'Nome',
     referencia: 'Referência',
+    tamTon: 'Tam./Ton.',
+    tamTonAjuda: 'Tamanho ou tom da peça, como "17" ou "Dourado". Pode ficar em branco.',
     categoria: 'Categoria',
     escolhaCategoria: 'Escolha a categoria',
     escolhaCategoriaAviso: 'Escolha a categoria do produto.',
@@ -56,19 +60,19 @@ export const TEXTOS_DE_PRODUTOS = {
     semFornecedor: 'Sem fornecedor',
     precoVenda: 'Preço de venda',
     precoCusto: 'Preço de custo',
-    custoAjuda: 'O custo só aparece neste aplicativo, nunca para o vendedor.',
+    custoAjuda: 'O custo só aparece neste aplicativo, nunca para o representante.',
     estoqueMinimo: 'Estoque mínimo',
     saldo: (n: number) => `Saldo no estoque: ${n}`,
     obrigatorio: 'Preencha este campo.',
     valorInvalido: 'Digite um valor em reais, com no máximo 2 números depois da vírgula.',
-    desativar: 'Desativar',
+    desativar: 'Inativar',
     reativar: 'Reativar',
-    situacaoAtual: (ativo: boolean) => (ativo ? 'Produto ativo.' : 'Produto desativado.'),
+    situacaoAtual: (ativo: boolean) => (ativo ? 'Produto ativo.' : 'Produto inativo.'),
     salveAntes: 'Salve ou descarte as alterações antes de mudar a situação.',
     custoNaoMostrado: 'O custo deste produto não pôde ser lido agora.',
     historicoDeCusto: 'O histórico de custos ainda não aparece aqui.',
     desativarConfirma: {
-      titulo: (nome: string) => `Desativar ${nome}?`,
+      titulo: (nome: string) => `Inativar ${nome}?`,
       texto:
         'O produto some das buscas e das vendas. Os registros antigos continuam guardados e você pode reativar depois.',
     },
@@ -80,7 +84,7 @@ export const TEXTOS_DE_PRODUTOS = {
     feito: {
       criado: (nome: string) => `${nome} foi cadastrado.`,
       salvo: (nome: string) => `Os dados de ${nome} foram salvos.`,
-      desativado: (nome: string) => `${nome} foi desativado.`,
+      desativado: (nome: string) => `${nome} foi inativado.`,
       reativado: (nome: string) => `${nome} foi reativado.`,
     },
   },
@@ -147,7 +151,7 @@ export const TEXTOS_DE_PRODUTOS = {
   planilha: {
     titulo: 'Importar produtos por planilha',
     ajuda:
-      'Escolha uma planilha do Excel (.xlsx) ou um arquivo CSV com as colunas código, nome, categoria, custo e preço. Antes de gravar, você vê o que vai acontecer com cada linha.',
+      'Escolha uma planilha do Excel (.xlsx) ou um arquivo CSV com as colunas código, nome, categoria, custo e preço (e, se quiser, Tam./Ton.). Antes de gravar, você vê o que vai acontecer com cada linha.',
     escolher: 'Escolher planilha',
     outra: 'Escolher outra planilha',
     lendo: 'Lendo a planilha...',
@@ -228,11 +232,17 @@ export const TEXTOS_DE_PRODUTOS = {
     consultando: 'Procurando o produto...',
     naoAchou: (codigo: string) =>
       `Nenhum produto tem o código ${codigo}. Confira o número ou cadastre o produto.`,
-    preco: 'Preço',
+    preco: 'Preço unitário',
     saldo: 'Saldo no estoque',
     categoria: 'Categoria',
     codigo: 'Código principal',
     abrir: 'Abrir cadastro',
-    desativado: 'Este produto está desativado.',
+    desativado: 'Este produto está inativo.',
   },
 } as const;
+
+export const TEXTOS_DE_PRODUTOS = textosVivos(
+  'produtos',
+  PT_TEXTOS_DE_PRODUTOS,
+  ES_TEXTOS_DE_PRODUTOS,
+);

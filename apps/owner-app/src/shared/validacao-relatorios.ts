@@ -44,6 +44,9 @@ const ESCOLHAS: [
     | 'forma'
     | 'devedor'
     | 'momento'
+    | 'linha'
+    | 'comProblema'
+    | 'aplicativo'
   ),
   string[],
 ][] = [
@@ -63,7 +66,24 @@ const ESCOLHAS: [
       ...TIPOS_DA_PENDENCIA,
     ],
   ],
-  ['resultado', ['CRIADO', 'ATUALIZADO', 'JA_EXISTIA', 'RECUSADO']],
+  [
+    'resultado',
+    [
+      'CRIADO',
+      'ATUALIZADO',
+      'JA_EXISTIA',
+      'RECUSADO',
+      // Acessos (tarefa 8.9)
+      'SUCESSO',
+      'SENHA_INCORRETA',
+      'BLOQUEADO',
+      'USUARIO_DESATIVADO',
+      'APP_INCOMPATIVEL',
+      'SENHA_TEMPORARIA_VENCIDA',
+      'PEDIDO_INVALIDO',
+      'BLOQUEIO_LIMPO',
+    ],
+  ],
   ['quem', ['TODOS', 'VENDEDORES', 'CLIENTES']],
   [
     'origem',
@@ -84,6 +104,9 @@ const ESCOLHAS: [
   ['forma', ['DINHEIRO', 'PIX', 'CARTAO', 'CHEQUE', 'BOLETO']],
   ['devedor', ['CLIENTE', 'VENDEDOR']],
   ['momento', ['ACERTO', 'AVULSO']],
+  ['linha', ['VENDAS', 'DEVOLUCOES', 'CUSTO', 'COMISSOES', 'PERDAS', 'COBRADO', 'CAIXA']],
+  ['comProblema', SIM_NAO],
+  ['aplicativo', ['gestao', 'vendas']],
 ];
 
 export interface ParametrosDeRelatorio {
@@ -131,6 +154,9 @@ const CAMPOS = [
   'forma',
   'devedor',
   'momento',
+  'linha',
+  'comProblema',
+  'aplicativo',
   'pagina',
   'tamanho',
 ];
@@ -236,5 +262,7 @@ export function conferirRelatorio(p: Record<string, unknown>): ParametrosDeRelat
   }
   // A lista das peças de uma compra só existe para uma compra.
   if (p.relatorio === 'compras-pecas' && !consulta.compraId) return null;
+  // O fechamento da maleta só existe para uma maleta.
+  if (p.relatorio === 'maleta-fechamento' && !consulta.remessaId) return null;
   return { operacao: 'relatorios.cadastros', relatorio: p.relatorio as NomeDoRelatorio, consulta };
 }

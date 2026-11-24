@@ -120,6 +120,9 @@ describe('ponte (processo principal)', () => {
       CANAIS.sessaoMudou,
       CANAIS.atualizacaoMudou,
       CANAIS.atualizacaoEstado,
+      // O idioma é registrado à parte (registrarIdioma), com ipcMain.on.
+      CANAIS.idiomaLer,
+      CANAIS.idiomaGuardar,
     ];
     const esperados = Object.values(CANAIS).filter((c) => !doProcessoPrincipal.includes(c));
     expect([...manipuladores.keys()].sort()).toEqual([...esperados].sort());

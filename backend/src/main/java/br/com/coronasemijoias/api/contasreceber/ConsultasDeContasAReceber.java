@@ -113,7 +113,7 @@ public class ConsultasDeContasAReceber {
             return null;
         }
         if (!Set.of("CLIENTE", "VENDEDOR").contains(nivel)) {
-            throw Validacoes.recusar("nivel", "Escolha o nível: o que os clientes devem ou o que o vendedor deve à loja.");
+            throw Validacoes.recusar("nivel", "Escolha o nível: o que os clientes devem ou o que o representante deve à loja.");
         }
         return nivel;
     }

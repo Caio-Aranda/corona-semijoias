@@ -1,4 +1,5 @@
-import { existsSync, mkdirSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { chaveDasFotosDe } from '../fotos/fotos-dos-clientes';
 import { join } from 'node:path';
 import {
   abrirBancoLocal,
@@ -24,6 +25,10 @@ export const MENSAGENS_DA_SENHA = Object.freeze({
   SENHA_ERRADA: 'Usuário ou senha incorretos. Confira o que você digitou e tente de novo.',
   SENHA_BLOQUEADA:
     'A senha foi digitada errada muitas vezes. Conecte-se à internet e entre de novo para continuar.',
+  OUTRO_USUARIO:
+    'Este computador já está com os dados de outra pessoa. Entre com o usuário mostrado na tela. Se este computador agora é seu, use "Este computador é de outra pessoa". Se tiver dúvida, fale com a dona da loja.',
+  BANCO_NAO_ABRIU:
+    'Não foi possível abrir os dados deste computador. Feche o Corona Vendas e abra de novo. Se continuar assim, fale com a dona da loja.',
   SEM_DADOS:
     'Para entrar no Corona Vendas pela primeira vez é preciso internet. Conecte-se e tente de novo.',
 });
@@ -74,6 +79,7 @@ export interface OpcoesDoServicoDoBanco {
  */
 export class ServicoDoBanco {
   private db: BancoAberto | null = null;
+  private chaveDeFotos: Buffer | null = null;
   private readonly chave: ChaveDoBanco;
   private readonly caminhoDoBanco: string;
   private readonly caminhoDaChave: string;
@@ -87,6 +93,11 @@ export class ServicoDoBanco {
   /** O banco aberto, só para o processo principal (motor de envio e telas no banco local, tarefas 5.6 e 5.7). */
   get banco(): BancoAberto | null {
     return this.db;
+  }
+
+  /** A chave das fotos dos clientes (derivada da do banco), só enquanto o banco está aberto. */
+  get chaveDasFotos(): Buffer | null {
+    return this.db ? this.chaveDeFotos : null;
   }
 
   async prepararComInternet(senha: string): Promise<ResultadoDaAbertura> {
@@ -162,6 +173,15 @@ export class ServicoDoBanco {
   /** Guarda (no banco aberto) quem entrou: o login e o nome, para abrir sem internet. Sem banco aberto, não faz nada. */
   lembrar(chave: 'vendedor_login' | 'vendedor_nome', valor: string): void {
     if (!this.db) return;
+    // O login não é segredo: fica também em arquivo simples, para a tela de senha saber de quem é este computador
+    // antes de o banco abrir.
+    if (chave === 'vendedor_login') {
+      try {
+        writeFileSync(join(this.o.pasta, 'usuario.txt'), valor, 'utf8');
+      } catch {
+        /* sem o arquivo, o login só é lido de dentro do banco */
+      }
+    }
     this.db
       .prepare(
         'INSERT INTO estado_sync (chave, valor) VALUES (?, ?) ON CONFLICT(chave) DO UPDATE SET valor = excluded.valor',
@@ -169,11 +189,25 @@ export class ServicoDoBanco {
       .run(chave, valor);
   }
 
+  /** O login de quem usa este computador, lido sem abrir o banco. */
+  usuarioDoComputador(): string | null {
+    try {
+      const v = readFileSync(join(this.o.pasta, 'usuario.txt'), 'utf8').trim();
+      return v || null;
+    } catch {
+      return null;
+    }
+  }
+
   lembrado(chave: 'vendedor_login' | 'vendedor_nome'): string | null {
     if (!this.db) return null;
     const r = this.db.prepare('SELECT valor FROM estado_sync WHERE chave = ?').get(chave) as
       { valor: string | null } | undefined;
     return r?.valor ?? null;
+  }
+
+  get bancoAberto(): boolean {
+    return this.db !== null;
   }
 
   /** Há banco e chave neste computador (depois de uma entrada com internet)? Decide se dá para entrar sem internet. */
@@ -204,9 +238,28 @@ export class ServicoDoBanco {
     this.fecharSeAberto();
   }
 
+  /**
+   * "Este computador é de outra pessoa": o banco e a chave antigos vão para o lado (`.ilegivel-...`, nunca apagados, como
+   * na chave perdida) e o usuario.txt sai. Só com o banco fechado. Devolve se mexeu em algo.
+   */
+  liberarParaOutraPessoa(): boolean {
+    if (this.db) return false;
+    if (this.existeBanco()) {
+      const destino = moverParaIlegivel(this.caminhoDoBanco, this.agora());
+      this.chave.moverPara(`${destino}.chave.json`);
+    } else if (this.chave.existe()) {
+      this.chave.moverPara(`${this.caminhoDoBanco}.ilegivel-sem-banco.chave.json`);
+    }
+    rmSync(join(this.o.pasta, 'usuario.txt'), { force: true });
+    return true;
+  }
+
   // --- internos ---
 
   private opcoesDoBanco(chave: Uint8Array) {
+    // A chave das fotos dos clientes (criptografadas no disco) sai da do banco e só vive enquanto o banco está aberto.
+    this.chaveDeFotos?.fill(0);
+    this.chaveDeFotos = chaveDasFotosDe(chave);
     return {
       caminho: this.caminhoDoBanco,
       chave,
@@ -219,6 +272,8 @@ export class ServicoDoBanco {
   }
 
   private fecharSeAberto(): void {
+    this.chaveDeFotos?.fill(0);
+    this.chaveDeFotos = null;
     if (this.db) {
       try {
         this.db.close();

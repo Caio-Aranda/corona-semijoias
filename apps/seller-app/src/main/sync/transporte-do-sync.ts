@@ -1,6 +1,9 @@
 import { TIPO_DE_APP } from '@corona/api-client-vendedor';
 import type { Resultado } from '../tipos';
 
+/** O formato do pull que este Corona Vendas entende (2 = com o consignado ao cliente, ADR-0016). */
+export const FORMATO_DO_PULL = 2;
+
 /** A resposta HTTP do servidor, já sem o token: status, corpo (JSON ou nada) e a espera pedida (`Retry-After`). */
 export interface RespostaDoServidor {
   status: number;
@@ -109,6 +112,8 @@ export function criarTransporteDoSync(o: OpcoesDoTransporte): TransporteDoSync {
       if (pedido.cursor) q.set('cursor', pedido.cursor);
       q.set('limite', String(pedido.limite));
       if (pedido.tabela) q.set('tabela', pedido.tabela);
+      // O consignado ao cliente (tarefa 9.2; ADR-0016, item 13): sem o formato 2, o servidor manda o pull do Corona Vendas 1.0.0.
+      q.set('formato', String(FORMATO_DO_PULL));
       return chamar(`/api/vendedor/sync/pull?${q.toString()}`, { headers: cabecalhos(token) });
     },
     enviar(token, corpo) {
@@ -119,7 +124,9 @@ export function criarTransporteDoSync(o: OpcoesDoTransporte): TransporteDoSync {
       });
     },
     conferir(token) {
-      return chamar('/api/vendedor/sync/conferencia', { headers: cabecalhos(token) });
+      return chamar(`/api/vendedor/sync/conferencia?formato=${String(FORMATO_DO_PULL)}`, {
+        headers: cabecalhos(token),
+      });
     },
     async guardarEmQuarentena(corpo) {
       const r = await chamar('/api/vendedor/sync/quarentena', {

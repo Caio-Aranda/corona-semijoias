@@ -3,8 +3,9 @@
  * O PDF só desenha o texto que recebe: os valores e as frases vêm prontos da ficha do acerto (nada de dinheiro é calculado
  * aqui). O título repete em toda página e o rodapé (a cotação) fica só na última.
  */
-import { paraPdf, montarArquivoPdf } from './pdf';
+import { fundoCinza, linhasDaTabela, paraPdf, montarArquivoPdf } from './pdf';
 import { quebrar } from './pdf-nota';
+import { TEXTOS_SOLTOS as SOLTOS } from '../../textos-soltos';
 
 const LARGURA = 595;
 const ALTURA = 842;
@@ -43,15 +44,44 @@ type Item =
   | { tipo: 'secao'; texto: string; altura: number }
   | { tipo: 'texto'; linhas: string[]; negrito: boolean; altura: number }
   | { tipo: 'par'; rotulo: string[]; valor: string[]; negrito: boolean; altura: number }
-  | { tipo: 'titulos-da-tabela'; tabela: TabelaDoPdf; larguras: number[]; altura: number }
-  | { tipo: 'linha-da-tabela'; celulas: string[][]; larguras: number[]; altura: number };
+  | {
+      tipo: 'titulos-da-tabela';
+      tabela: TabelaDoPdf;
+      larguras: number[];
+      numericas: boolean[];
+      altura: number;
+    }
+  | {
+      tipo: 'linha-da-tabela';
+      celulas: string[][];
+      larguras: number[];
+      numericas: boolean[];
+      altura: number;
+    };
 
 const larguraDe = (s: string, tamanho: number) => s.length * tamanho * LARGURA_DO_CARACTERE;
+
+function divisorias(larg: number[]): number[] {
+  let x = MARGEM;
+  const xs = [x];
+  for (const l of larg) xs.push((x += l));
+  return xs;
+}
 
 function larguras(t: TabelaDoPdf): number[] {
   const pesos = t.titulos.map((_, i) => t.pesos?.[i] ?? 1);
   const soma = pesos.reduce((a, b) => a + b, 0);
   return pesos.map((p) => (p / soma) * UTIL);
+}
+
+const PARECE_NUMERO = /^[-−]?\s*(R\$|US\$|Gs\.?)?\s*[\d.,]+\s*%?$/;
+
+/** Coluna cujas células são todas números ou valores: alinhada à direita. */
+function colunasNumericas(t: TabelaDoPdf): boolean[] {
+  return t.titulos.map((_, i) => {
+    const celulas = t.linhas.map((l) => (l[i] ?? '').trim()).filter((c) => c !== '');
+    return celulas.length > 0 && celulas.every((c) => PARECE_NUMERO.test(c));
+  });
 }
 
 /** Posições do que será desenhado: itens em ordem, cada um com a altura que ocupa. */
@@ -82,11 +112,13 @@ function itensDo(a: AcertoParaPdf): { itens: Item[]; fim: string[] } {
     }
     if (s.tabela) {
       const larg = larguras(s.tabela);
+      const numericas = colunasNumericas(s.tabela);
       itens.push({
         tipo: 'titulos-da-tabela',
         tabela: s.tabela,
         larguras: larg,
-        altura: LINHA + 6,
+        numericas,
+        altura: LINHA + 4,
       });
       for (const linha of s.tabela.linhas) {
         const celulas = linha.map((c, i) => quebrar(c, (larg[i] ?? 60) - 6, CORPO));
@@ -94,7 +126,8 @@ function itensDo(a: AcertoParaPdf): { itens: Item[]; fim: string[] } {
           tipo: 'linha-da-tabela',
           celulas,
           larguras: larg,
-          altura: Math.max(1, ...celulas.map((c) => c.length)) * LINHA,
+          numericas,
+          altura: Math.max(1, ...celulas.map((c) => c.length)) * LINHA + 4,
         });
       }
     }
@@ -171,20 +204,48 @@ export function gerarPdfDoAcerto(acerto: AcertoParaPdf): Uint8Array {
           item.valor.forEach((l, k) => texto(MARGEM + 260, topo - k * LINHA, l, item.negrito));
           break;
         case 'titulos-da-tabela': {
+          // Cabeçalho com fundo cinza, linhas finas em cima e embaixo, uma coluna por divisória.
+          o.push(fundoCinza(MARGEM, y - item.altura, UTIL, item.altura));
           let x = MARGEM;
           item.tabela.titulos.forEach((t, i) => {
-            texto(x + 2, topo, t, true);
-            x += item.larguras[i] ?? 0;
+            const l = item.larguras[i] ?? 0;
+            if (item.numericas[i]) texto(x + l - 2 - larguraDe(t, CORPO), topo, t, true);
+            else texto(x + 2, topo, t, true);
+            x += l;
           });
-          traco(topo - 4);
+          o.push(
+            linhasDaTabela(
+              divisorias(item.larguras),
+              [y, y - item.altura],
+              y,
+              y - item.altura,
+              MARGEM,
+              LARGURA - MARGEM,
+            ),
+          );
           break;
         }
         case 'linha-da-tabela': {
           let x = MARGEM;
           item.celulas.forEach((linhasDaCelula, i) => {
-            linhasDaCelula.forEach((l, k) => texto(x + 2, topo - k * LINHA, l));
-            x += item.larguras[i] ?? 0;
+            const l = item.larguras[i] ?? 0;
+            linhasDaCelula.forEach((t, k) =>
+              item.numericas[i]
+                ? texto(x + l - 2 - larguraDe(t, CORPO), topo - k * LINHA, t)
+                : texto(x + 2, topo - k * LINHA, t),
+            );
+            x += l;
           });
+          o.push(
+            linhasDaTabela(
+              divisorias(item.larguras),
+              [y - item.altura],
+              y,
+              y - item.altura,
+              MARGEM,
+              LARGURA - MARGEM,
+            ),
+          );
           break;
         }
       }
@@ -195,9 +256,9 @@ export function gerarPdfDoAcerto(acerto: AcertoParaPdf): Uint8Array {
       fim.forEach((l, k) => texto(MARGEM, y - k * 11, l, false, 8));
     }
     texto(
-      LARGURA - MARGEM - larguraDe(`Página ${numero + 1} de ${paginas.length}`, 8),
+      LARGURA - MARGEM - larguraDe(SOLTOS.arquivo.pagina(numero + 1, paginas.length), 8),
       MARGEM - 8,
-      `Página ${numero + 1} de ${paginas.length}`,
+      SOLTOS.arquivo.pagina(numero + 1, paginas.length),
       false,
       8,
     );

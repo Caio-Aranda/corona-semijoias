@@ -12,6 +12,8 @@ import {
   taxaDeTexto,
   type CotacaoParaTela,
 } from '../moedas';
+import { TEXTOS_SOLTOS as SOLTOS } from '../../textos-soltos';
+import { localeAtual } from '../../idioma/idioma';
 
 export type TipoDeColuna =
   | 'texto'
@@ -44,6 +46,9 @@ export interface TotalDoRelatorio {
   rotulo: string;
   quantidade: number;
   valorEmReais?: string | null;
+  /** Quando o servidor já converteu cada lançamento pela cotação do dia dele (Fechamento da maleta). */
+  valorEmDolar?: string | null;
+  valorEmGuarani?: string | null;
   /** Soma de peças, quando o total é de peças. */
   pecas?: number | null;
 }
@@ -70,12 +75,19 @@ export interface PedidoDeExportacao {
   totaisConvertidos?: Record<string, { dolar: string; guarani: string }>;
   /** Linhas que entram na soma de cada total de valor (ex.: compras desfeitas ficam fora do total). */
   linhasDoTotal?: Record<string, (linha: Record<string, unknown>) => boolean>;
+  /**
+   * Relatório em partes (Fechamento da maleta): cada parte vira uma seção do arquivo, com o título e os totais dela, separadas
+   * por uma linha em branco. O que não está em nenhuma parte fica na primeira.
+   */
+  secoes?: { titulo: string; totais: string[] }[];
 }
 
 /** Uma célula: o texto e se é número (decimal com ponto), para o Excel guardar como número. */
 export interface Celula {
   v: string;
   numero?: boolean;
+  /** Número que a tela mostra com a moeda na frente (Fechamento da maleta); o Excel formata, o CSV leva só o número. */
+  moeda?: 'US$' | 'Gs.';
 }
 
 export interface Grade {
@@ -98,7 +110,7 @@ function centavosParaDecimal(c: bigint): string {
   return `${negativo ? '-' : ''}${abs / 100n}.${(abs % 100n).toString().padStart(2, '0')}`;
 }
 
-const FORMATO_DE_HORA = new Intl.DateTimeFormat('pt-BR', {
+const FORMATO_DE_HORA = new Intl.DateTimeFormat(localeAtual(), {
   timeZone: 'America/Sao_Paulo',
   day: '2-digit',
   month: '2-digit',
@@ -113,7 +125,7 @@ export function dataEHoraParaTela(instante: Date | string): string {
   const d = typeof instante === 'string' ? new Date(instante) : instante;
   if (Number.isNaN(d.getTime())) return '';
   const p = Object.fromEntries(FORMATO_DE_HORA.formatToParts(d).map((x) => [x.type, x.value]));
-  return `${p.day}/${p.month}/${p.year} às ${p.hour}:${p.minute}`;
+  return `${p.day}/${p.month}/${p.year} ${SOLTOS.arquivo.as} ${p.hour}:${p.minute}`;
 }
 
 interface Taxas {
@@ -180,8 +192,9 @@ function celula(tipo: TipoDeColuna, valor: unknown): Celula[] {
 
 /** "Ativo/Inativo" só serve para a coluna de situação; "Sim/Não" para as outras. */
 function celulaSimNao(c: ColunaDoRelatorio, valor: unknown): Celula {
-  if (c.titulo === 'Situação') return texto(valor === true ? 'Ativo' : 'Inativo');
-  return texto(valor === true ? 'Sim' : 'Não');
+  if (c.titulo === SOLTOS.arquivo.situacao)
+    return texto(valor === true ? SOLTOS.arquivo.ativo : SOLTOS.arquivo.inativo);
+  return texto(valor === true ? SOLTOS.arquivo.sim : SOLTOS.arquivo.nao);
 }
 
 /** Soma, linha a linha, os valores já convertidos (o total em Dólar e em Guarani é essa soma, §12). */
@@ -203,6 +216,25 @@ export function somarConvertido(
     guarani += guaraniInteiro(c, t.guarani);
   }
   return { dolarEmCentavos: dolarEmCentavos_, guarani };
+}
+
+/** Sem partes, o rodapé é a lista de totais; com partes, cada uma ganha um título e uma linha em branco antes (a primeira só o título). */
+function juntarSecoes(p: PedidoDeExportacao, colunas: number, linhas: Celula[][]): Celula[][] {
+  if (!p.secoes || p.secoes.length === 0) return linhas;
+  const vazia = (): Celula[] => Array.from({ length: colunas }, () => texto(''));
+  const chaves = p.secoes.flatMap((s) => s.totais);
+  const resultado: Celula[][] = [];
+  p.secoes.forEach((secao, i) => {
+    if (i > 0) resultado.push(vazia());
+    const titulo = vazia();
+    titulo[0] = texto(secao.titulo);
+    resultado.push(titulo);
+    p.totais.forEach((total, k) => {
+      const nela = secao.totais.includes(total.chave) || (i === 0 && !chaves.includes(total.chave));
+      if (nela) resultado.push(linhas[k]!);
+    });
+  });
+  return resultado;
 }
 
 export function montarGrade(pedido: PedidoDeExportacao): Grade {
@@ -229,7 +261,7 @@ export function montarGrade(pedido: PedidoDeExportacao): Grade {
     }
   }
   if (temDinheiro) {
-    titulos.push('Data da cotação');
+    titulos.push(SOLTOS.arquivo.dataDaCotacao);
     numericas.push(false);
   }
   const dataDaCotacao = t && p.dataDaCotacao ? dataParaTela(p.dataDaCotacao) : '';
@@ -256,7 +288,7 @@ export function montarGrade(pedido: PedidoDeExportacao): Grade {
   });
 
   // Rodapé: o rótulo na primeira coluna; a quantidade na segunda; o valor nas três colunas do campo.
-  const rodape = p.totais.map((total) => {
+  const rodapeDe = p.totais.map((total) => {
     const linha: Celula[] = titulos.map(() => texto(''));
     linha[0] = texto(total.rotulo);
     const campo = p.totaisDeValor[total.chave];
@@ -283,17 +315,30 @@ export function montarGrade(pedido: PedidoDeExportacao): Grade {
         linha[inicio + 2] = numero(soma.guarani.toString());
       }
     } else if (titulos.length > 1) {
-      linha[1] = texto(String(total.pecas ?? total.quantidade));
+      // Total em dinheiro que não tem coluna de valor (ex.: o Fechamento da maleta): o valor em Real vai na segunda coluna.
+      const real = total.valorEmReais != null ? centavosDeTexto(total.valorEmReais) : null;
+      linha[1] =
+        real !== null
+          ? numero(centavosParaDecimal(real))
+          : texto(String(total.pecas ?? total.quantidade));
+      // Já convertido pelo servidor, cada lançamento pela cotação do dia dele: Dólar e Guarani ao lado do Real.
+      const d = total.valorEmDolar != null ? centavosDeTexto(total.valorEmDolar) : null;
+      const g = total.valorEmGuarani != null ? centavosDeTexto(total.valorEmGuarani) : null;
+      if (real !== null && d !== null && g !== null && titulos.length > 3) {
+        linha[2] = { ...numero(centavosParaDecimal(d)), moeda: 'US$' };
+        linha[3] = { ...numero((g / 100n).toString()), moeda: 'Gs.' };
+      }
     }
     return linha;
   });
+  const rodape = juntarSecoes(p, titulos.length, rodapeDe);
 
   return {
     cabecalho: [
       p.loja,
       p.titulo,
-      `Filtros: ${p.filtros.length > 0 ? p.filtros.join('; ') : 'nenhum'}`,
-      `Gerado em ${p.geradoEm} por ${p.geradoPor}`,
+      SOLTOS.arquivo.filtros(p.filtros.length > 0 ? p.filtros.join('; ') : SOLTOS.arquivo.nenhum),
+      SOLTOS.arquivo.geradoEm(p.geradoEm, p.geradoPor),
       ...(p.linhaDaCotacao ? [p.linhaDaCotacao] : []),
     ],
     titulos,

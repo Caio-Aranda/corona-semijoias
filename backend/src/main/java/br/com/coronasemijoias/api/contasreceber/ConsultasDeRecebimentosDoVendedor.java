@@ -1,6 +1,7 @@
 package br.com.coronasemijoias.api.contasreceber;
 
 import br.com.coronasemijoias.api.cadastros.Validacoes;
+import br.com.coronasemijoias.api.comum.dinheiro.ConversaoDeMoeda;
 import br.com.coronasemijoias.api.comum.erros.CodigoErro;
 import br.com.coronasemijoias.api.comum.erros.ErroDaApi;
 import java.math.BigDecimal;
@@ -17,7 +18,11 @@ import org.springframework.stereotype.Component;
 
 /**
  * Leitura dos recebimentos do vendedor (tarefa 7.6). A dona vê tudo (inclusive o motivo do estorno e quais contas cada
- * recebimento baixou); o vendedor vê só os dele, sem quem registrou, sem o motivo e sem caixa. Só valores em Real.
+ * recebimento baixou); o vendedor vê só os dele, sem quem registrou, sem o motivo e sem caixa, só em Real.
+ *
+ * <p>Para a dona, cada recebimento vem também em Dólar e Guarani, calculados aqui (só para mostrar; ADR-0006): pela cotação que
+ * converteu o valor digitado, quando a dona recebeu em Dólar ou Guarani, e senão pela cotação do dia do lançamento. Na moeda em
+ * que foi recebido vai o valor digitado, exato (23/11/2026). Sem cotação, Dólar e Guarani vazios.
  */
 @Component
 public class ConsultasDeRecebimentosDoVendedor {
@@ -29,10 +34,39 @@ public class ConsultasDeRecebimentosDoVendedor {
     public record ContaBaixada(UUID contaId, BigDecimal valor) {
     }
 
-    /** O recebimento como a dona o vê. {@code estornado}: já tem estorno; {@code estornaId}: este é o estorno de outro. */
+    /**
+     * O recebimento como a dona o vê. {@code estornado}: já tem estorno; {@code estornaId}: este é o estorno de outro. {@code moeda}:
+     * em que a dona digitou (REAL, DOLAR ou GUARANI) e {@code valorNaMoeda}, o que ela digitou (vazio em Real). {@code dolar},
+     * {@code guarani} e {@code dataCotacao}: só para mostrar.
+     */
     public record RecebimentoDaDona(UUID id, UUID vendedorId, String vendedorNome, String momento, UUID acertoId, String aplicadoEm,
             String forma, BigDecimal valor, Instant recebidoEm, UUID estornaId, String motivo, boolean estornado,
-            List<ContaBaixada> contas) {
+            List<ContaBaixada> contas, String moeda, BigDecimal valorNaMoeda, BigDecimal dolar, BigDecimal guarani, LocalDate dataCotacao) {
+
+        RecebimentoDaDona comContas(List<ContaBaixada> outras) {
+            return new RecebimentoDaDona(id, vendedorId, vendedorNome, momento, acertoId, aplicadoEm, forma, valor, recebidoEm, estornaId,
+                    motivo, estornado, outras, moeda, valorNaMoeda, dolar, guarani, dataCotacao);
+        }
+    }
+
+    /** O valor em Dólar e em Guarani de um recebimento, com a data da cotação (tudo nulo sem cotação). */
+    record EmTresMoedas(BigDecimal valorNaMoeda, BigDecimal dolar, BigDecimal guarani, LocalDate dataCotacao) {
+    }
+
+    /**
+     * Dólar e Guarani do recebimento: a moeda recebida com o valor digitado (o Guarani sem casas) e a outra convertida do Real pela
+     * mesma cotação ({@link ConversaoDeMoeda}). Sem cotação, só o valor digitado (se houver).
+     */
+    static EmTresMoedas emTresMoedas(BigDecimal valor, String moeda, BigDecimal valorNaMoeda, LocalDate dataCotacao, BigDecimal usdVenda,
+            BigDecimal pygVenda) {
+        BigDecimal digitado = valorNaMoeda == null ? null
+                : "GUARANI".equals(moeda) ? valorNaMoeda.setScale(ConversaoDeMoeda.ESCALA_GUARANI) : valorNaMoeda;
+        if (dataCotacao == null) {
+            return new EmTresMoedas(digitado, null, null, null);
+        }
+        BigDecimal dolar = "DOLAR".equals(moeda) ? digitado : ConversaoDeMoeda.paraDolar(valor, usdVenda);
+        BigDecimal guarani = "GUARANI".equals(moeda) ? digitado : ConversaoDeMoeda.paraGuarani(valor, pygVenda);
+        return new EmTresMoedas(digitado, dolar, guarani, dataCotacao);
     }
 
     /** O recebimento como o vendedor o vê: só o dele, sem quem registrou e sem o motivo do estorno. */
@@ -48,11 +82,23 @@ public class ConsultasDeRecebimentosDoVendedor {
         this.relogio = relogio;
     }
 
+    /**
+     * A cotação de cada recebimento: a que converteu o valor digitado ({@code cotacao_id}) ou, em Real, a do dia do lançamento em
+     * Brasília (ADR-0006, item 7). O SQL só escolhe a linha; a conversão é em Java.
+     */
+    static final String COTACAO_DO_RECEBIMENTO = """
+            LEFT JOIN LATERAL (SELECT c.data_cotacao, c.usd_venda, c.pyg_venda FROM corona.cotacoes c
+                                WHERE (r.cotacao_id IS NOT NULL AND c.id = r.cotacao_id)
+                                   OR (r.cotacao_id IS NULL AND c.data_cotacao <= (r.recebido_em AT TIME ZONE 'America/Sao_Paulo')::date)
+                                ORDER BY c.data_cotacao DESC LIMIT 1) ct ON true
+            """;
+
     private static final String DA_DONA = """
             SELECT r.id, r.vendedor_id, ved.nome AS vendedor_nome, r.momento, r.acerto_id, r.aplicado_em, r.forma, r.valor, r.recebido_em,
-                   r.estorna_id, r.motivo, EXISTS (SELECT 1 FROM corona.recebimentos_vendedor e WHERE e.estorna_id = r.id) AS estornado
+                   r.estorna_id, r.motivo, EXISTS (SELECT 1 FROM corona.recebimentos_vendedor e WHERE e.estorna_id = r.id) AS estornado,
+                   r.moeda, r.valor_na_moeda, ct.data_cotacao, ct.usd_venda, ct.pyg_venda
               FROM corona.recebimentos_vendedor r JOIN corona.vendedores ved ON ved.id = r.vendedor_id
-             WHERE r.deleted_at IS NULL""";
+            """ + COTACAO_DO_RECEBIMENTO + " WHERE r.deleted_at IS NULL";
 
     /** Os recebimentos, do mais novo para o mais antigo. Filtros opcionais: vendedor e período (dias de Brasília, inclusive). */
     public List<RecebimentoDaDona> daDona(UUID vendedorId, LocalDate de, LocalDate ate) {
@@ -90,15 +136,18 @@ public class ConsultasDeRecebimentosDoVendedor {
         List<ContaBaixada> contas = jdbc.query("""
                 SELECT conta_id, sum(valor) AS valor FROM corona.baixas_receber WHERE recebimento_vendedor_id = ? GROUP BY conta_id
                  ORDER BY conta_id""", (rs, n) -> new ContaBaixada(rs.getObject(1, UUID.class), rs.getBigDecimal(2)), r.id());
-        return new RecebimentoDaDona(r.id(), r.vendedorId(), r.vendedorNome(), r.momento(), r.acertoId(), r.aplicadoEm(), r.forma(), r.valor(),
-                r.recebidoEm(), r.estornaId(), r.motivo(), r.estornado(), contas);
+        return r.comContas(contas);
     }
 
     private static RecebimentoDaDona lerDaDona(java.sql.ResultSet rs, List<ContaBaixada> contas) throws java.sql.SQLException {
+        BigDecimal valor = rs.getBigDecimal("valor");
+        String moeda = rs.getString("moeda");
+        EmTresMoedas t = emTresMoedas(valor, moeda, rs.getBigDecimal("valor_na_moeda"), rs.getObject("data_cotacao", LocalDate.class),
+                rs.getBigDecimal("usd_venda"), rs.getBigDecimal("pyg_venda"));
         return new RecebimentoDaDona(rs.getObject("id", UUID.class), rs.getObject("vendedor_id", UUID.class), rs.getString("vendedor_nome"),
                 rs.getString("momento"), rs.getObject("acerto_id", UUID.class), rs.getString("aplicado_em"), rs.getString("forma"),
-                rs.getBigDecimal("valor"), rs.getTimestamp("recebido_em").toInstant(), rs.getObject("estorna_id", UUID.class),
-                rs.getString("motivo"), rs.getBoolean("estornado"), contas);
+                valor, rs.getTimestamp("recebido_em").toInstant(), rs.getObject("estorna_id", UUID.class),
+                rs.getString("motivo"), rs.getBoolean("estornado"), contas, moeda, t.valorNaMoeda(), t.dolar(), t.guarani(), t.dataCotacao());
     }
 
     /** Os recebimentos do vendedor (só os dele), do mais novo para o mais antigo. */

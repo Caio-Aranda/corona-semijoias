@@ -93,7 +93,7 @@ function servidorDeMaletas() {
       id: ID_RASCUNHO,
       version,
       vendedorId: ID_VEND,
-      vendedorNome: 'Joana Vendedora',
+      vendedorNome: 'Joana Representante',
       semanaId: ID_SEMANA,
       semanaNumero: 12,
       pracaId: ID_PRACA,
@@ -143,7 +143,9 @@ function montar(manipuladores: Record<string, Manipulador> = {}) {
     'avisos.listar': () => ({ ok: true, dados: { avisos: [] } }),
     'cotacao.hoje': () => ({ ok: true, dados: { disponivel: false } }),
     'vendedores.escolha': () =>
-      pagina([{ id: ID_VEND, nome: 'Joana Vendedora', codigo: 7, pracaId: ID_PRACA, ativo: true }]),
+      pagina([
+        { id: ID_VEND, nome: 'Joana Representante', codigo: 7, pracaId: ID_PRACA, ativo: true },
+      ]),
     'semanas.listar': () => pagina([{ id: ID_SEMANA, numero: 12, situacao: 'ABERTA' }]),
     'pracas.listar': () => pagina([{ id: ID_PRACA, nome: 'Centro', ativo: true }]),
     'produtos.listar': () => pagina([]),
@@ -198,9 +200,9 @@ async function abrirMontagem(m: Montagem) {
 
 async function comecarMaleta(m: Montagem) {
   const u = await abrirMontagem(m);
-  await screen.findByRole('option', { name: 'Joana Vendedora' });
+  await screen.findByRole('option', { name: 'Joana Representante' });
   await screen.findByRole('option', { name: 'Semana 12' });
-  await u.selectOptions(screen.getByLabelText('Vendedor'), 'Joana Vendedora');
+  await u.selectOptions(screen.getByLabelText('Representante'), 'Joana Representante');
   await u.selectOptions(screen.getByLabelText('Semana'), 'Semana 12');
   await u.click(screen.getByRole('button', { name: 'Começar a montar' }));
   await screen.findByLabelText('Código da peça ou nome');
@@ -219,7 +221,7 @@ beforeEach(() => {
 });
 
 describe('Nova maleta', () => {
-  it('cria o rascunho com vendedor, semana e tipo; o id é gerado na tela', async () => {
+  it('cria o rascunho com representante, semana e tipo; o id é gerado na tela', async () => {
     const m = montar();
     const u = await comecarMaleta(m);
     const p = ultima(m, 'maletas.criar') as Record<string, unknown>;
@@ -230,16 +232,16 @@ describe('Nova maleta', () => {
     expect(u).toBeTruthy();
   });
 
-  it('pede vendedor e semana antes de começar', async () => {
+  it('pede representante e semana antes de começar', async () => {
     const m = montar();
     const u = await abrirMontagem(m);
     await u.click(await screen.findByRole('button', { name: 'Começar a montar' }));
-    expect(await screen.findByText('Escolha o vendedor.')).toBeTruthy();
+    expect(await screen.findByText('Escolha o representante.')).toBeTruthy();
     expect(screen.getByText('Escolha a semana.')).toBeTruthy();
     expect(chamadasDe(m, 'maletas.criar')).toHaveLength(0);
   });
 
-  it('vendedor com restrição: mostra a mensagem do servidor e não segue', async () => {
+  it('representante com restrição: mostra a mensagem do servidor e não segue', async () => {
     const m = montar({
       'maletas.criar': () => ({
         ok: false,
@@ -249,9 +251,9 @@ describe('Nova maleta', () => {
       }),
     });
     const u = await abrirMontagem(m);
-    await screen.findByRole('option', { name: 'Joana Vendedora' });
+    await screen.findByRole('option', { name: 'Joana Representante' });
     await screen.findByRole('option', { name: 'Semana 12' });
-    await u.selectOptions(screen.getByLabelText('Vendedor'), 'Joana Vendedora');
+    await u.selectOptions(screen.getByLabelText('Representante'), 'Joana Representante');
     await u.selectOptions(screen.getByLabelText('Semana'), 'Semana 12');
     await u.click(screen.getByRole('button', { name: 'Começar a montar' }));
     expect(await screen.findByText(/restrição que impede montar a maleta/)).toBeTruthy();
@@ -356,14 +358,14 @@ describe('Montagem pelo leitor', () => {
     const u = await comecarMaleta(m);
     await ler(u, '0012');
     await screen.findByText('Anel Solitário entrou na maleta.');
-    const limite = screen.getByRole('region', { name: 'Limite do vendedor' });
+    const limite = screen.getByRole('region', { name: 'Limite do representante' });
     await within(limite).findByText('R$ 500,00');
     expect(within(limite).getByText('Já está com ele').nextSibling?.textContent).toBe('R$ 200,00');
     expect(within(limite).getByText('Esta maleta').nextSibling?.textContent).toBe('R$ 70,00');
     expect(within(limite).getByText('Sobra').nextSibling?.textContent).toBe('R$ 230,00');
   });
 
-  it('vendedor com "Sem limite" marcado não mostra sobra', async () => {
+  it('representante com "Sem limite" marcado não mostra sobra', async () => {
     const m = montar({
       'maletas.emAberto': () => ({
         ok: true,
@@ -396,7 +398,7 @@ describe('Montagem pelo leitor', () => {
     });
     await comecarMaleta(m);
     expect(
-      (await screen.findAllByText(/Defina o limite deste vendedor antes de montar a maleta/))
+      (await screen.findAllByText(/Defina o limite deste representante antes de montar a maleta/))
         .length,
     ).toBeGreaterThan(0);
     expect(screen.queryByText('Sem limite')).toBeNull();
@@ -422,7 +424,7 @@ describe('Enviar a maleta', () => {
     await u.click(screen.getByRole('button', { name: 'Enviar maleta' }));
     const janela = await screen.findByRole('dialog');
     expect(
-      within(janela).getByText(/1 peça para Joana Vendedora, num valor de R\$ 70,00/),
+      within(janela).getByText(/1 peça para Joana Representante, num valor de R\$ 70,00/),
     ).toBeTruthy();
     expect(chamadasDe(m, 'maletas.enviar')).toHaveLength(0);
     await u.click(within(janela).getByRole('button', { name: 'Enviar maleta' }));
@@ -432,7 +434,7 @@ describe('Enviar a maleta', () => {
     expect(screen.queryByLabelText('Quantidade de Anel Solitário')).toBeNull();
     expect(screen.getByText('Enviada em')).toBeTruthy();
     // Maleta enviada já tem o botão da nota (tarefa 3.7).
-    expect(screen.getByRole('button', { name: 'Imprimir nota: Joana Vendedora' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Imprimir nota: Joana Representante' })).toBeTruthy();
   });
 
   it('maleta vazia não vai para a confirmação', async () => {
@@ -450,7 +452,7 @@ describe('Enviar a maleta', () => {
         motivo: 'erro',
         status: 409,
         mensagem:
-          'Esta maleta passa do limite de R$ 500,00: já estão com o vendedor R$ 200,00 e faltam R$ 20,00. Tire peças da maleta.',
+          'Esta maleta passa do limite de R$ 500,00: já estão com o representante R$ 200,00 e faltam R$ 20,00. Tire peças da maleta.',
       }),
     });
     const u = await comecarMaleta(m);
@@ -512,7 +514,7 @@ describe('Rascunhos', () => {
     id: ID_RASCUNHO,
     version: 4,
     vendedorId: ID_VEND,
-    vendedorNome: 'Joana Vendedora',
+    vendedorNome: 'Joana Representante',
     semanaId: ID_SEMANA,
     semanaNumero: 12,
     pracaNome: 'Centro',
@@ -529,7 +531,9 @@ describe('Rascunhos', () => {
     const u = await abrirMontagem(m);
     expect(ultima(m, 'maletas.listar')).toMatchObject({ status: 'RASCUNHO' });
     await u.click(
-      await screen.findByRole('button', { name: 'Continuar montando a maleta de Joana Vendedora' }),
+      await screen.findByRole('button', {
+        name: 'Continuar montando a maleta de Joana Representante',
+      }),
     );
     expect(await screen.findByLabelText('Código da peça ou nome')).toBeTruthy();
     expect(ultima(m, 'maletas.ver')).toEqual({ id: ID_RASCUNHO });
@@ -546,7 +550,7 @@ describe('Rascunhos', () => {
     });
     const u = await abrirMontagem(m);
     await u.click(
-      await screen.findByRole('button', { name: 'Excluir a maleta de Joana Vendedora' }),
+      await screen.findByRole('button', { name: 'Excluir a maleta de Joana Representante' }),
     );
     const janela = await screen.findByRole('dialog');
     expect(within(janela).getByText(/As peças continuam no estoque/)).toBeTruthy();

@@ -17,6 +17,7 @@ import { conferirEstoque, type ParametrosDeEstoque } from './validacao-estoque';
 import { conferirProduto, type ParametrosDeProduto } from './validacao-produtos';
 import { conferirRelatorio, type ParametrosDeRelatorio } from './validacao-relatorios';
 import { conferirDevolucoes, type ParametrosDeDevolucoes } from './devolucoes';
+import { conferirConsignado, type ParametrosDeConsignado } from './consignado';
 import { conferirSincronizacao, type ParametrosDeSincronizacao } from './sincronizacao';
 import {
   ABAS_DO_VENDEDOR,
@@ -125,9 +126,23 @@ export type ParametrosConferidos =
   | ParametrosDeRelatorio
   | ParametrosDeSincronizacao
   | ParametrosDeDevolucoes
+  | ParametrosDeConsignado
   | {
       operacao:
-        'eu' | 'cotacao.hoje' | 'avisos.listar' | 'conciliacoes.conferir' | 'vendedores.escolha';
+        | 'eu'
+        | 'cotacao.hoje'
+        | 'avisos.listar'
+        | 'conciliacoes.conferir'
+        | 'conferencias.listar'
+        | 'vendedores.escolha';
+    }
+  | { operacao: 'conferencias.ver' | 'conferencias.conferirAgora'; id: string }
+  | {
+      operacao: 'painel.semanal';
+      semana?: string;
+      vendedor?: string;
+      praca?: string;
+      situacao?: string;
     }
   | { operacao: 'usuarios.listar'; lista: ParametrosDaLista }
   | { operacao: 'usuarios.criar'; novo: ParametrosDeUsuarioNovo }
@@ -390,8 +405,29 @@ export function conferirParametros(
     case 'cotacao.hoje':
     case 'avisos.listar':
     case 'conciliacoes.conferir':
+    case 'conferencias.listar':
     case 'vendedores.escolha':
       return { operacao };
+    case 'conferencias.ver':
+    case 'conferencias.conferirAgora':
+      return ehTexto(p.id) && UUID.test(p.id) ? { operacao, id: p.id } : null;
+    case 'painel.semanal': {
+      const semana = vendedorOpcional(p.semana);
+      const vendedor = vendedorOpcional(p.vendedor);
+      const praca = vendedorOpcional(p.praca);
+      const situacao = textoOpcional(p.situacao);
+      if (semana === null || vendedor === null || praca === null || situacao === null) return null;
+      if (situacao !== undefined && !['EM_ABERTO', 'EM_ACERTO', 'ACERTADO'].includes(situacao)) {
+        return null;
+      }
+      return {
+        operacao,
+        ...(semana ? { semana } : {}),
+        ...(vendedor ? { vendedor } : {}),
+        ...(praca ? { praca } : {}),
+        ...(situacao ? { situacao } : {}),
+      };
+    }
     case 'usuarios.listar': {
       const busca = textoOpcional(p.busca);
       const perfil = textoOpcional(p.perfil);
@@ -577,6 +613,20 @@ export function conferirParametros(
     case 'garantia.ler':
     case 'garantia.alterar':
       return conferirDevolucoes(operacao, p);
+    case 'telas.ler':
+    case 'fechamento.iniciar':
+    case 'fechamento.ler':
+    case 'fechamento.leituras':
+    case 'fechamento.concluir':
+    case 'consignado.semanas':
+    case 'consignado.semana':
+    case 'consignado.notas':
+    case 'consignado.nota':
+    case 'consignado.cliente':
+    case 'consignado.fotoDoCliente':
+    case 'consignado.alertas':
+    case 'consignado.alertaVisto':
+      return conferirConsignado(operacao, p);
     case 'relatorios.cadastros':
       return conferirRelatorio(p);
     default:

@@ -36,8 +36,8 @@ win:
   target:
     - target: nsis
       arch: [x64]
-  # Logo provisório (docs/marca), o mesmo do outro aplicativo até haver os ícones definitivos (os dois precisam ser diferentes, §18).
-  icon: build/icon.png
+  # Ícone estilo C da proposta visual (gerado por scripts/gerar-icones.py); cada app tem o seu (§18).
+  icon: build/icon.ico
 nsis:
   oneClick: true
   perMachine: false

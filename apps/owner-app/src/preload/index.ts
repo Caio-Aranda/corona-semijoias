@@ -28,6 +28,10 @@ const ponte: PonteDoCorona = {
       ipcRenderer.removeListener(CANAIS.sessaoMudou, escuta);
     };
   },
+  lerIdioma: () => String(ipcRenderer.sendSync(CANAIS.idiomaLer)),
+  guardarIdioma: (idioma) => {
+    ipcRenderer.send(CANAIS.idiomaGuardar, idioma);
+  },
   aoMudarAAtualizacao: (ouvinte) => {
     // Só entrega o aviso já limpo (estado e versão), nunca o objeto do evento do Electron.
     const entregar = (aviso: AvisoDeAtualizacao): void => {

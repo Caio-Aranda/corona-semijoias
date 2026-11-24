@@ -54,7 +54,9 @@ export function TabelaDeLancamentos({
     const original = l.desfazId ? porId.get(l.desfazId) : undefined;
     const situacao: ReactNode = l.desfazId
       ? T.desfazDe(
-          original ? descreverOriginal(original) : T.desfazUmAnterior.replace('Desfaz ', ''),
+          original
+            ? descreverOriginal(original)
+            : T.desfazUmAnterior.replace(/^(Desfaz|Deshace) /, ''),
         )
       : l.desfeitoPorId
         ? T.desfeito

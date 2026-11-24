@@ -24,11 +24,11 @@ class ConciliacoesDaFase7Test extends MassaDaFase7 {
     // --- a massa está zerada ---
 
     @Test
-    void asNoveConciliacoesVemZeradasNasReferenciasDaMassaECadaUmaConferiuRegistros() throws Exception {
+    void asOnzeConciliacoesVemZeradasNasReferenciasDaMassaECadaUmaConferiuRegistros() throws Exception {
         JsonNode r = corpoDe(ler("/api/dona/conciliacoes", dona()).andExpect(status().isOk()));
         List<String> chaves = new ArrayList<>();
         Set<UUID> meus = idsDaMassa();
-        assertThat(r.get("conferencias").size()).isEqualTo(9);
+        assertThat(r.get("conferencias").size()).isEqualTo(11);
         for (JsonNode c : r.get("conferencias")) {
             chaves.add(c.get("chave").asString());
             assertThat(c.get("conferidos").asLong()).as(c.get("chave").asString() + " conferiu registros").isPositive();
@@ -42,7 +42,7 @@ class ConciliacoesDaFase7Test extends MassaDaFase7 {
             }
             assertThat(daMassa).as(c.get("chave").asString() + " na massa").isEmpty();
         }
-        assertThat(chaves).containsExactly("C1", "C2", "C3", "C4", "C5", "C7", "C8", "C9", "C10");
+        assertThat(chaves).containsExactly("C1", "C2", "C3", "C4", "C5", "C7", "C8", "C9", "C10", "C11", "C12");
     }
 
     @Test

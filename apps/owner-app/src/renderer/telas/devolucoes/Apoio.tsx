@@ -49,7 +49,7 @@ export function CampoDeEscolha({
   valor: string;
   aoMudar: (v: string) => void;
   opcoes: readonly { valor: string; texto: string }[];
-  /** Primeira opção sem valor (ex.: "Todos os vendedores"). */
+  /** Primeira opção sem valor (ex.: "Todos os representantes"). */
   vazio?: string;
 }) {
   return (

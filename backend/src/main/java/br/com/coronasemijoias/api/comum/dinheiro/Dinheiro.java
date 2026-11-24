@@ -124,6 +124,25 @@ public final class Dinheiro {
         return List.copyOf(estornos);
     }
 
+    /** Valor dividido por uma quantidade, arredondado uma vez (ticket médio: R$ 100,00 em 3 vendas = 33,33). */
+    public static BigDecimal dividir(BigDecimal total, long quantidade) {
+        jaArredondado(total, "total");
+        if (quantidade < 1) {
+            throw new IllegalArgumentException("A quantidade precisa ser de pelo menos 1, veio " + quantidade + ".");
+        }
+        return total.divide(BigDecimal.valueOf(quantidade), ESCALA, ARREDONDAMENTO);
+    }
+
+    /** Quanto a parte é do todo, em porcentagem com duas casas, arredondada uma vez (400 de 675 = 59,26). */
+    public static BigDecimal percentualDe(BigDecimal parte, BigDecimal todo) {
+        jaArredondado(parte, "parte");
+        jaArredondado(todo, "todo");
+        if (todo.signum() <= 0) {
+            throw new IllegalArgumentException("O todo precisa ser maior que zero, veio " + todo.toPlainString() + ".");
+        }
+        return parte.multiply(CEM).divide(todo, ESCALA, ARREDONDAMENTO);
+    }
+
     /**
      * A parte {@code parte} de {@code todo} de um total, arredondada uma vez: {@code arredondar(total x parte / todo)}
      * (pelo acumulado, como os estornos proporcionais). Com {@code parte = todo} é o próprio total.

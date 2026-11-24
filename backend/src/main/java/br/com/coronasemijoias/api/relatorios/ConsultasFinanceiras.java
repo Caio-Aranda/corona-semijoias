@@ -39,7 +39,15 @@ public class ConsultasFinanceiras {
     /** Um filtro só para todos os relatórios; cada relatório usa os campos que fazem sentido para ele. */
     public record Filtros(String busca, String vendedorId, String semanaId, String clienteId, String fornecedorId,
             String compraId, String produtoId, String tipo, String situacao, String devedor, String forma, String origem,
-            String momento, LocalDate de, LocalDate ate, String recorte, Integer pagina, Integer tamanho) {
+            String momento, LocalDate de, LocalDate ate, String recorte, Integer pagina, Integer tamanho, String pracaId) {
+
+        /** Sem praça (todos os relatórios que já existiam). */
+        public Filtros(String busca, String vendedorId, String semanaId, String clienteId, String fornecedorId, String compraId,
+                String produtoId, String tipo, String situacao, String devedor, String forma, String origem, String momento,
+                LocalDate de, LocalDate ate, String recorte, Integer pagina, Integer tamanho) {
+            this(busca, vendedorId, semanaId, clienteId, fornecedorId, compraId, produtoId, tipo, situacao, devedor, forma, origem,
+                    momento, de, ate, recorte, pagina, tamanho, null);
+        }
     }
 
     public record LinhaDeAcerto(UUID id, UUID vendedorId, String vendedor, UUID semanaId, int semana, Instant fechadoEm,
@@ -79,7 +87,8 @@ public class ConsultasFinanceiras {
 
     public record LinhaDeRecebimento(UUID id, UUID vendedorId, String vendedor, String forma, String momento,
             String aplicadoEm, Instant recebidoEm, boolean estorno, String motivo, BigDecimal valorEmReais,
-            BigDecimal valorEmDolar, BigDecimal valorEmGuarani, LocalDate dataDaCotacao) {
+            BigDecimal valorEmDolar, BigDecimal valorEmGuarani, LocalDate dataDaCotacao, String moeda,
+            BigDecimal valorNaMoeda) {
     }
 
     public record LinhaDeComissao(UUID id, UUID vendedorId, String vendedor, UUID semanaId, int semana, Instant fechadoEm,
@@ -98,7 +107,8 @@ public class ConsultasFinanceiras {
 
     private static final String DIA_DE_CRIACAO = "(cr.created_at AT TIME ZONE 'America/Sao_Paulo')::date";
 
-    private static final String DE_ACERTO = "corona.acertos a JOIN corona.vendedores v ON v.id = a.vendedor_id "
+    /** O acerto com o vendedor, a semana e a cotação gravada (visível no pacote: o painel semanal usa o mesmo texto, tarefa 8.7). */
+    static final String DE_ACERTO = "corona.acertos a JOIN corona.vendedores v ON v.id = a.vendedor_id "
             + "JOIN corona.semanas s ON s.id = a.semana_id " + COTACAO_GRAVADA;
 
     private static final String DE_CONTA_A_RECEBER = "corona.contas_receber cr LEFT JOIN corona.vendas vd ON vd.id = cr.venda_id "
@@ -152,7 +162,7 @@ public class ConsultasFinanceiras {
     }
 
     /** A coluna em Real (pelo nome dela) e o Dólar e o Guarani dela, pela cotação {@code ct}: sufixos _d e _g. */
-    private static String colunasEmMoedas(String expressao, String apelido) {
+    static String colunasEmMoedas(String expressao, String apelido) {
         return expressao + (expressao.startsWith("a.") ? "" : " AS " + apelido) + ", " + dolar(expressao) + " AS "
                 + apelido + "_d, " + guarani(expressao) + " AS " + apelido + "_g";
     }
@@ -200,6 +210,7 @@ public class ConsultasFinanceiras {
         c.onde("a.status = 'ACERTADO'");
         uuid(c, f.vendedorId(), "vendedor", "a.vendedor_id = :vendedor");
         uuid(c, f.semanaId(), "semana", "a.semana_id = :semana");
+        uuid(c, f.pracaId(), "praca", "v.praca_id = :praca");
         c.periodo("a.fechado_em", f.de(), f.ate());
         MotorDeRelatorio.conferirPeriodo(f.de(), f.ate());
         c.busca(f.busca(), "v.nome");
@@ -238,6 +249,7 @@ public class ConsultasFinanceiras {
         c.onde("a.status = 'ACERTADO'");
         uuid(c, f.vendedorId(), "vendedor", "p.vendedor_id = :vendedor");
         uuid(c, f.semanaId(), "semana", "a.semana_id = :semana");
+        uuid(c, f.pracaId(), "praca", "v.praca_id = :praca");
         uuid(c, f.produtoId(), "produto", "p.produto_id = :produto");
         String tipo = escolha(f.tipo(), List.of("FALTA", "DEFEITO", "DEVOLUCAO_NAO_ACEITA", "CREDITO_SEM_SALDO_NAO_ACEITO"),
                 "tipo", "Escolha falta, defeito, devolução não aceita ou crédito sem saldo.");
@@ -463,11 +475,12 @@ public class ConsultasFinanceiras {
                 soma("total", "Total recebido", TODOS, valor));
         Consulta c = new Consulta("rv.id, rv.vendedor_id, v.nome AS vendedor, rv.forma, rv.momento, rv.aplicado_em, "
                 + "rv.recebido_em, (rv.estorna_id IS NOT NULL) AS estorno, rv.motivo, rv.valor, " + dolar(valor)
-                + " AS dolar, " + guarani(valor) + " AS guarani, ct.data_cotacao",
+                + " AS dolar, " + guarani(valor) + " AS guarani, ct.data_cotacao, rv.moeda, rv.valor_na_moeda",
                 "corona.recebimentos_vendedor rv JOIN corona.vendedores v ON v.id = rv.vendedor_id "
                         + cotacaoDoDia("(rv.recebido_em AT TIME ZONE 'America/Sao_Paulo')::date"),
                 "rv.recebido_em DESC, rv.id", totais);
         uuid(c, f.vendedorId(), "vendedor", "rv.vendedor_id = :vendedor");
+        uuid(c, f.pracaId(), "praca", "v.praca_id = :praca");
         String forma = escolha(f.forma(), List.of("DINHEIRO", "PIX", "BOLETO"), "forma",
                 "Escolha dinheiro, transferência ou boleto.");
         if (forma != null) {
@@ -484,7 +497,8 @@ public class ConsultasFinanceiras {
                 rs.getObject("vendedor_id", UUID.class), rs.getString("vendedor"), rs.getString("forma"),
                 rs.getString("momento"), rs.getString("aplicado_em"), instante(rs, "recebido_em"), rs.getBoolean("estorno"),
                 rs.getString("motivo"), MotorDeRelatorio.reais(rs, "valor"), rs.getBigDecimal("dolar"),
-                rs.getBigDecimal("guarani"), rs.getObject("data_cotacao", LocalDate.class)));
+                rs.getBigDecimal("guarani"), rs.getObject("data_cotacao", LocalDate.class), rs.getString("moeda"),
+                rs.getBigDecimal("valor_na_moeda")));
     }
 
     // --- 9. comissões ---

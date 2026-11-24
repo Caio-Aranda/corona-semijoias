@@ -4,10 +4,51 @@ export type ClientOptions = {
     baseUrl: `${string}://${string}` | (string & {});
 };
 
+export type AcertoLido = {
+    acertadoEm?: string;
+    bruto?: string;
+    comissao?: string;
+    comissaoPercentual?: string;
+    estornado?: boolean;
+    ficouDevendo?: string;
+    id?: string;
+    itensDv?: number;
+    itensDx?: number;
+    itensVd?: number;
+    motivoDoEstorno?: string;
+    pendenciasAnteriores?: string;
+    saldoDoDebito?: string;
+    semana?: number;
+    totalAReceber?: string;
+    totalPago?: string;
+    valorDv?: string;
+    valorDx?: string;
+    valorVd?: string;
+};
+
+export type AlertaLido = {
+    criadoEm?: string;
+    detalhe?: string;
+    id?: string;
+    registroId?: string;
+    registroTabela?: string;
+    tipo?: string;
+    vendedorId?: string;
+    vistoEm?: string;
+};
+
 export type Ambigua = {
     codigo?: string;
     mensagem?: string;
     nomes?: Array<string>;
+};
+
+export type AntigaDaPreviaDoFechamento = {
+    id?: string;
+    produtoId?: string;
+    quantidade?: number;
+    tipo?: string;
+    valor?: string;
 };
 
 export type AparelhoDoVendedor = {
@@ -84,6 +125,78 @@ export type Baixa = {
     valor?: string;
 };
 
+export type BlocoDaPrevia = {
+    comissaoPrevista?: ValorEmMoedas;
+    linhas?: number;
+    liquidoPrevisto?: ValorEmMoedas;
+    semCotacao?: boolean;
+    vendido?: ValorEmMoedas;
+};
+
+export type BlocoDeAcerto = {
+    comissao?: ValorEmMoedas;
+    descontos?: ValorEmMoedas;
+    devolvidoALoja?: ValorEmMoedas;
+    devolvidoALojaPecas?: number;
+    devolvidoPeloCliente?: ValorEmMoedas;
+    faltasCobradas?: ValorEmMoedas;
+    ficouDevendo?: ValorEmMoedas;
+    origem?: OrigemDoNumero;
+    origemDasPendencias?: OrigemDoNumero;
+    pendenciasEmAberto?: ValorEmMoedas;
+    pendenciasPagas?: ValorEmMoedas;
+    quantidade?: number;
+    recebido?: ValorEmMoedas;
+    valorDoAcerto?: ValorEmMoedas;
+    vendido?: ValorEmMoedas;
+};
+
+export type BlocoDeMaletasDoPainel = {
+    origem?: OrigemDoNumero;
+    pecas?: number;
+    quantidade?: number;
+    valor?: ValorEmMoedas;
+};
+
+export type BlocoDeTrocas = {
+    creditosEmAberto?: ValorEmMoedas;
+    creditosGerados?: ValorEmMoedas;
+    creditosUsados?: ValorEmMoedas;
+    diferencaAPagar?: ValorEmMoedas;
+    ficouDeCredito?: ValorEmMoedas;
+    origemDasTrocas?: OrigemDoNumero;
+    origemDosCreditos?: OrigemDoNumero;
+    trocas?: number;
+    valorDasTrocas?: ValorEmMoedas;
+};
+
+export type BlocoDeVendas = {
+    descontos?: ValorEmMoedas;
+    devolvido?: ValorEmMoedas;
+    liquido?: ValorEmMoedas;
+    origem?: OrigemDoNumero;
+    quantidade?: number;
+    vendido?: ValorEmMoedas;
+};
+
+export type BlocoRecebido = {
+    boleto?: ValorEmMoedas;
+    dinheiro?: ValorEmMoedas;
+    origem?: OrigemDoNumero;
+    total?: ValorEmMoedas;
+    transferencia?: ValorEmMoedas;
+};
+
+export type BlocoTotal = {
+    descontos?: ValorEmMoedas;
+    enviado?: ValorEmMoedas;
+    liquido?: ValorEmMoedas;
+    maletas?: number;
+    pecas?: number;
+    vendas?: number;
+    vendido?: ValorEmMoedas;
+};
+
 export type BoletoDoAcerto = {
     valor?: string;
     vencimento?: string;
@@ -91,6 +204,30 @@ export type BoletoDoAcerto = {
 
 export type CadastroDeTeste = {
     nome: string;
+};
+
+export type CadastroDoCliente = {
+    comissaoPercentual?: string;
+    comoConheceu?: string;
+    documento?: string;
+    documentoTipo?: string;
+    endereco?: string;
+    indicadoPor?: string;
+    representante?: string;
+    telefone?: string;
+    temFoto?: boolean;
+    temFotoDoDocumentoFrente?: boolean;
+    temFotoDoDocumentoVerso?: boolean;
+    whatsapp?: string;
+};
+
+export type CalculoDaComissaoLinha = {
+    base?: string;
+    eventoId?: string;
+    percentual?: string;
+    tipo?: 'COMISSAO' | 'ESTORNO';
+    valor?: string;
+    vendaId?: string;
 };
 
 export type Campo = {
@@ -121,10 +258,16 @@ export type CategoriasDoCaixaDaDonaControllerCategoria = {
 };
 
 export type ClientesDaDonaControllerPedido = {
+    comissaoPercentual?: string;
+    comoConheceu?: string;
     cpf?: string;
     dataNascimento?: string;
+    documento?: string;
+    documentoTipo?: string;
     endereco?: Endereco;
     id?: string;
+    indicadoPorClienteId?: string;
+    indicadoPorNome?: string;
     nome: string;
     observacoes?: string;
     telefone?: string;
@@ -135,10 +278,16 @@ export type ClientesDaDonaControllerPedido = {
 
 export type ClientesDaDonaControllerResposta = {
     ativo?: boolean;
+    comissaoPercentual?: string;
+    comoConheceu?: string;
     cpf?: string;
     dataNascimento?: string;
+    documento?: string;
+    documentoTipo?: string;
     endereco?: Endereco;
     id?: string;
+    indicadoPorClienteId?: string;
+    indicadoPorNome?: string;
     nome?: string;
     observacoes?: string;
     telefone?: string;
@@ -203,12 +352,27 @@ export type ComprasDaDonaControllerRespostaDoResumo = {
 export type ConciliacoesDaFase7Conferencia = {
     chave?: string;
     conferidos?: number;
-    divergencias?: Array<Diferenca>;
+    divergencias?: Array<ConciliacoesDaFase7Diferenca>;
     explicacao?: string;
     titulo?: string;
 };
 
+export type ConciliacoesDaFase7Diferenca = {
+    descricao?: string;
+    encontrado?: string;
+    esperado?: string;
+    referencia?: string;
+    tipo?: string;
+    unidade?: 'REAIS' | 'PECAS' | 'REGISTROS' | 'PERCENTUAL';
+};
+
 export type ConciliacoesDaFase7Resultado = {
+    conferencias?: Array<ConciliacoesDaFase7Conferencia>;
+    geradaEm?: string;
+    tudoCerto?: boolean;
+};
+
+export type ConciliacoesDoConsignadoResultado = {
     conferencias?: Array<ConciliacoesDaFase7Conferencia>;
     geradaEm?: string;
     tudoCerto?: boolean;
@@ -251,6 +415,28 @@ export type ConsultasDaConferenciaConferencia = {
     id?: string;
     itens?: Array<ConsultasDaConferenciaLinha>;
     remessaId?: string;
+};
+
+export type ConsultasDaConferenciaDiariaDiferenca = {
+    descricao?: string;
+    encontrado?: string;
+    esperado?: string;
+    item?: string;
+    referencia?: string;
+    tipo?: string;
+    unidade?: string;
+};
+
+export type ConsultasDaConferenciaDiariaGrupo = {
+    chave?: string;
+    diferencas?: Array<ConsultasDaConferenciaDiariaDiferenca>;
+};
+
+export type ConsultasDaConferenciaDiariaPagina = {
+    itens?: Array<Rodada>;
+    pagina?: number;
+    tamanho?: number;
+    total?: number;
 };
 
 export type ConsultasDaConferenciaLinha = {
@@ -433,11 +619,55 @@ export type ConsultasDoCaixaSaldo = {
     saldo?: string;
 };
 
+export type ConsultasDoPainelSemanalLinhaDoPedido = {
+    acertoId?: string;
+    comissao?: ValorEmMoedas;
+    dataDaCotacao?: string;
+    dataDoAcerto?: string;
+    devolvido?: ValorEmMoedas;
+    devolvidoPecas?: number;
+    emFaltaPecas?: number;
+    enviado?: ValorEmMoedas;
+    enviadoPecas?: number;
+    liquido?: ValorEmMoedas;
+    maletas?: Array<MaletaDaLinha>;
+    percentualComissao?: string;
+    praca?: string;
+    pracaId?: string;
+    previa?: boolean;
+    semCotacao?: boolean;
+    situacao?: string;
+    vendedor?: string;
+    vendedorId?: string;
+    vendidasPecas?: number;
+    vendidoLiquido?: ValorEmMoedas;
+};
+
+export type ConsultasDoResultadoResultado = {
+    ate?: string;
+    de?: string;
+    linhas?: Array<LinhaDoResultado>;
+    pecasComCustoDoCadastro?: number;
+};
+
+export type ContaAbertaNaPrevia = {
+    emAberto?: string;
+    formaPrevista?: string;
+    id?: string;
+    numero?: number;
+    origem?: string;
+    totalDeParcelas?: number;
+    valor?: string;
+    vencimento?: string;
+};
+
 export type ContaAntigaPaga = {
     contaId?: string;
     forma?: string;
     id?: string;
+    moeda?: string;
     valor?: string;
+    valorNaMoeda?: string;
 };
 
 export type ContaBaixada = {
@@ -506,6 +736,10 @@ export type CotacaoDaNota = {
     guarani?: string;
     totalEmDolar?: string;
     totalEmGuarani?: string;
+};
+
+export type CotacaoDaPrevia = {
+    data?: string;
 };
 
 export type CotacaoDeHojeResposta = {
@@ -596,6 +830,18 @@ export type DecisaoDePendenciaAntiga = {
     pendenciaId?: string;
 };
 
+export type DefeitoDaPreviaDoFechamento = {
+    contadoDefeito?: number;
+    produto?: ProdutoDaPreviaDoFechamento;
+};
+
+export type DetalheDaNota = {
+    acertos?: Array<AcertoLido>;
+    linhas?: Array<LinhaDaNotaLida>;
+    nota?: NotaResumo;
+    recibos?: Array<ReciboLido>;
+};
+
 export type Devolucao = {
     autorizacaoId?: string;
     canceladaEm?: string;
@@ -630,15 +876,6 @@ export type Devolucao = {
 
 export type DevolucoesDaDonaControllerPedidoDeRevisao = {
     observacao?: string;
-};
-
-export type Diferenca = {
-    descricao?: string;
-    encontrado?: string;
-    esperado?: string;
-    referencia?: string;
-    tipo?: string;
-    unidade?: 'REAIS' | 'PECAS' | 'REGISTROS' | 'PERCENTUAL';
 };
 
 export type DocumentoDoVendedorResposta = {
@@ -740,6 +977,13 @@ export type EstoqueDaDonaControllerRespostaDoMovimento = {
     usuarioId?: string;
 };
 
+export type EventoDaPreviaDoFechamento = {
+    origemId?: string;
+    tipo?: string;
+    valor?: string;
+    vendaId?: string;
+};
+
 export type EventoFechado = {
     origemId?: string;
     tipo?: string;
@@ -755,6 +999,14 @@ export type Extrato = {
     saidas?: string;
     saldoAnterior?: string;
     saldoFinal?: string;
+};
+
+export type FaltaDaPreviaDoFechamento = {
+    produto?: ProdutoDaPreviaDoFechamento;
+    quantidade?: number;
+    remessaId?: string;
+    status?: string;
+    valor?: string;
 };
 
 export type Fechamento = {
@@ -802,6 +1054,11 @@ export type FichaDaDona = {
     vendasQueChegaramDepoisDoInicio?: number;
     vendedorId?: string;
     vendedorNome?: string;
+};
+
+export type FormaPaga = {
+    forma?: string;
+    valor?: string;
 };
 
 export type FornecedoresDaDonaControllerPedido = {
@@ -915,15 +1172,6 @@ export type ItemDaDevolucao = {
     valor?: string;
 };
 
-export type ItemDaNota = {
-    codigo?: string;
-    nome?: string;
-    precoRemessa?: string;
-    produtoId?: string;
-    quantidade?: number;
-    subtotal?: string;
-};
-
 export type ItemFechado = {
     contadoBoa?: number;
     contadoDefeito?: number;
@@ -976,6 +1224,16 @@ export type LeituraDaDona = {
     quantidade?: number;
 };
 
+export type LeituraDoFechamento = {
+    codigoDaMaleta?: string;
+    concluidoEm?: string;
+    iniciadoEm?: string;
+    pecas?: Array<LinhaDaPeca>;
+    remessaId?: string;
+    situacaoDoFechamento?: string;
+    valores?: Valores;
+};
+
 export type LinhaAbaixoDoMinimo = {
     ativo?: boolean;
     categoria?: string;
@@ -988,6 +1246,60 @@ export type LinhaAbaixoDoMinimo = {
     produtoId?: string;
     referencia?: string;
     saldo?: number;
+};
+
+export type LinhaDaAuditoria = {
+    acao?: string;
+    antes?: string;
+    area?: string;
+    depois?: string;
+    id?: string;
+    oQueFoi?: string;
+    ocorridaEm?: string;
+    origem?: string;
+    quem?: string;
+    registroId?: string;
+    tabela?: string;
+    usuarioId?: string;
+};
+
+export type LinhaDaCurva = {
+    categoria?: string;
+    classe?: string;
+    codigo?: string;
+    fotoPrincipalHash?: string;
+    liquido?: string;
+    liquidoEmDolar?: string;
+    liquidoEmGuarani?: string;
+    nome?: string;
+    pecas?: number;
+    percentual?: string;
+    percentualAcumulado?: string;
+    posicao?: number;
+    produtoId?: string;
+    referencia?: string;
+};
+
+export type LinhaDaNotaLida = {
+    dx?: number;
+    precoUnitario?: string;
+    produto?: string;
+    produtoId?: string;
+    remessaId?: string;
+};
+
+export type LinhaDaPeca = {
+    aindaComClientes?: Array<PecaComCliente>;
+    bipadas?: number;
+    comClientes?: number;
+    devolvidasALoja?: number;
+    devolvidasPelosClientes?: number;
+    diferenca?: number;
+    enviadas?: number;
+    esperadoNaMaleta?: number;
+    nome?: string;
+    produtoId?: string;
+    vendidas?: number;
 };
 
 export type LinhaDaVendaComAPeca = {
@@ -1309,6 +1621,50 @@ export type LinhaDeItemDeCompra = {
     total?: string;
 };
 
+export type LinhaDeLucroDoProduto = {
+    categoria?: string;
+    codigo?: string;
+    custo?: string;
+    custoDoCadastro?: boolean;
+    custoEmDolar?: string;
+    custoEmGuarani?: string;
+    fotoPrincipalHash?: string;
+    lucro?: string;
+    lucroEmDolar?: string;
+    lucroEmGuarani?: string;
+    margem?: string;
+    nome?: string;
+    pecas?: number;
+    posicao?: number;
+    produtoId?: string;
+    receita?: string;
+    receitaEmDolar?: string;
+    receitaEmGuarani?: string;
+};
+
+export type LinhaDeLucroDoVendedor = {
+    comissao?: string;
+    comissaoEmDolar?: string;
+    comissaoEmGuarani?: string;
+    custo?: string;
+    custoDoCadastro?: boolean;
+    custoEmDolar?: string;
+    custoEmGuarani?: string;
+    lucro?: string;
+    lucroBruto?: string;
+    lucroBrutoEmDolar?: string;
+    lucroBrutoEmGuarani?: string;
+    lucroEmDolar?: string;
+    lucroEmGuarani?: string;
+    margem?: string;
+    praca?: string;
+    receita?: string;
+    receitaEmDolar?: string;
+    receitaEmGuarani?: string;
+    vendedor?: string;
+    vendedorId?: string;
+};
+
 export type LinhaDeMaletaEmAberto = {
     atrasada?: boolean;
     dataDaCotacao?: string;
@@ -1431,12 +1787,14 @@ export type LinhaDeRecebimento = {
     estorno?: boolean;
     forma?: string;
     id?: string;
+    moeda?: string;
     momento?: string;
     motivo?: string;
     recebidoEm?: string;
     valorEmDolar?: string;
     valorEmGuarani?: string;
     valorEmReais?: string;
+    valorNaMoeda?: string;
     vendedor?: string;
     vendedorId?: string;
 };
@@ -1530,6 +1888,105 @@ export type LinhaDeTroca = {
     vendedorId?: string;
 };
 
+export type LinhaDeVenda = {
+    cancelada?: boolean;
+    cliente?: string;
+    clienteId?: string;
+    dataDaCotacao?: string;
+    devolvido?: string;
+    devolvidoEmDolar?: string;
+    devolvidoEmGuarani?: string;
+    estornadaEm?: string;
+    estornadaPor?: string;
+    liquido?: string;
+    liquidoEmDolar?: string;
+    liquidoEmGuarani?: string;
+    motivoDoEstorno?: string;
+    pecas?: number;
+    praca?: string;
+    situacao?: string;
+    vendaId?: string;
+    vendedor?: string;
+    vendedorId?: string;
+    vendidaEm?: string;
+    vendido?: string;
+    vendidoEmDolar?: string;
+    vendidoEmGuarani?: string;
+};
+
+export type LinhaDeVendido = {
+    chave?: string;
+    codigo?: string;
+    detalhe?: string;
+    devolvido?: string;
+    devolvidoEmDolar?: string;
+    devolvidoEmGuarani?: string;
+    fotoPrincipalHash?: string;
+    liquido?: string;
+    liquidoEmDolar?: string;
+    liquidoEmGuarani?: string;
+    nome?: string;
+    pecas?: number;
+    posicao?: number;
+    ticketMedio?: string;
+    vendas?: number;
+    vendido?: string;
+    vendidoEmDolar?: string;
+    vendidoEmGuarani?: string;
+};
+
+export type LinhaDoAcesso = {
+    aplicativo?: string;
+    bloqueadoAte?: string;
+    id?: string;
+    ip?: string;
+    ipBloqueadoAte?: string;
+    login?: string;
+    ocorridaEm?: string;
+    pessoa?: string;
+    resultado?: string;
+    resultadoNaTela?: string;
+};
+
+export type LinhaDoComputador = {
+    aguardandoEnvio?: number;
+    emQuarentena?: number;
+    enviosComProblema?: number;
+    id?: string;
+    primeiroContatoEm?: string;
+    situacao?: string;
+    situacaoNaTela?: string;
+    ultimoContatoEm?: string;
+    ultimoEnvioEm?: string;
+    ultimoRecebimentoEm?: string;
+    vendedor?: string;
+    vendedorId?: string;
+    versaoApp?: string;
+};
+
+export type LinhaDoFechamento = {
+    bipadas?: number;
+    comClientes?: number;
+    comQuem?: string;
+    devolvidasPelosClientes?: number;
+    diferenca?: number;
+    enviadas?: number;
+    esperadoNaMaleta?: number;
+    id?: string;
+    nome?: string;
+    vendidas?: number;
+};
+
+export type LinhaDoResultado = {
+    categoriaId?: string;
+    chave?: string;
+    operacao?: string;
+    titulo?: string;
+    valorEmDolar?: string;
+    valorEmGuarani?: string;
+    valorEmReais?: string;
+};
+
 export type LinhaPorVendedor = {
     acimaDoLimite?: boolean;
     devolucoes?: number;
@@ -1592,6 +2049,13 @@ export type MaletaDaDonaControllerRespostaDoMovimento = {
     tipo?: string;
 };
 
+export type MaletaDaLinha = {
+    id?: string;
+    numero?: string;
+    situacao?: string;
+    tipo?: string;
+};
+
 export type MeiDoVendedorDados = {
     atividade?: string;
     cnpj?: string;
@@ -1601,11 +2065,19 @@ export type MeiDoVendedorDados = {
     version?: number;
 };
 
+export type NaoAceitaDaPreviaDoFechamento = {
+    origemId?: string;
+    origemTipo?: string;
+    tipo?: string;
+    valor?: string;
+};
+
 export type NotaDeRemessa = {
     cancelada?: boolean;
+    codigo?: string;
     cotacao?: CotacaoDaNota;
     enviadaEm?: string;
-    itens?: Array<ItemDaNota>;
+    itens?: Array<NotaDeRemessaControllerItemDaNota>;
     loja?: string;
     motivoDoCancelamento?: string;
     numero?: string;
@@ -1619,6 +2091,16 @@ export type NotaDeRemessa = {
     vendedor?: Pessoa;
 };
 
+export type NotaDeRemessaControllerItemDaNota = {
+    codigo?: string;
+    nome?: string;
+    precoRemessa?: string;
+    produtoId?: string;
+    quantidade?: number;
+    subtotal?: string;
+    tamTon?: string;
+};
+
 export type NotaDeRemessaControllerSemana = {
     fim?: string;
     id?: string;
@@ -1626,9 +2108,32 @@ export type NotaDeRemessaControllerSemana = {
     numero?: number;
 };
 
+export type NotaResumo = {
+    cliente?: string;
+    clienteId?: string;
+    dataCobranca?: string;
+    id?: string;
+    itensDx?: number;
+    numero?: string;
+    saidaEm?: string;
+    semana?: number;
+    semanaId?: string;
+    sequencia?: number;
+    situacao?: string;
+    valorDx?: string;
+    vendedorId?: string;
+};
+
 export type ObservacaoDoVendedorDados = {
     texto?: string;
     version?: number;
+};
+
+export type OrigemDoNumero = {
+    filtros?: {
+        [key: string]: string;
+    };
+    rota?: string;
 };
 
 export type PagamentoDoAcerto = {
@@ -1776,6 +2281,15 @@ export type PaginaVendedoresDaDonaControllerResposta = {
     total?: number;
 };
 
+export type PainelDaSemana = {
+    avisoDaPrevia?: string;
+    cotacaoDaPrevia?: CotacaoDaPrevia;
+    pedidos?: Array<ConsultasDoPainelSemanalLinhaDoPedido>;
+    previaIncluiSemanasAnteriores?: boolean;
+    semana?: SemanaDoPainel;
+    totais?: TotaisDoPainel;
+};
+
 export type ParcelaDaVenda = {
     emAberto?: string;
     id?: string;
@@ -1787,6 +2301,40 @@ export type ParcelaDaVenda = {
     valorPago?: string;
     vencida?: boolean;
     vencimento?: string;
+};
+
+export type ParcelaDoRestanteDaPrevia = {
+    numero?: number;
+    valor?: string;
+    vencimento?: string;
+};
+
+export type PecaComCliente = {
+    cliente?: string;
+    clienteId?: string;
+    dataCobranca?: string;
+    notaId?: string;
+    quantidade?: number;
+    semana?: number;
+    sequencia?: number;
+};
+
+export type PecaComClienteLida = {
+    notaId?: string;
+    produto?: string;
+    produtoId?: string;
+    quantidade?: number;
+    remessaId?: string;
+};
+
+export type PecaDaPreviaDoFechamento = {
+    contadoBoa?: number;
+    contadoDefeito?: number;
+    esperado?: number;
+    falta?: number;
+    produto?: ProdutoDaPreviaDoFechamento;
+    remessaId?: string;
+    valorDaFalta?: string;
 };
 
 export type PecaDaTroca = {
@@ -1868,6 +2416,10 @@ export type PedidoDeCodigo = {
     tipo: string;
 };
 
+export type PedidoDeConferenciaDiaria = {
+    id?: string;
+};
+
 export type PedidoDeContagem = {
     codigo?: string;
     contado?: number;
@@ -1937,6 +2489,10 @@ export type PedidoDeLancamento = {
     valor?: string;
 };
 
+export type PedidoDeLeituras = {
+    leituras?: Array<ServicoDoFechamentoDaMaletaLeitura>;
+};
+
 export type PedidoDeLinha = {
     motivo?: string;
     referencia?: string;
@@ -1992,6 +2548,7 @@ export type PedidoDeProduto = {
     precoCusto: string;
     precoVenda: string;
     referencia?: string;
+    tamTon?: string;
     version?: number;
 };
 
@@ -2115,6 +2672,51 @@ export type PracasDaDonaControllerResposta = {
     version?: number;
 };
 
+export type PreviaDoFechamento = {
+    aPagarNoAcerto?: string;
+    acertoId?: string;
+    boleto?: string;
+    comissao?: string;
+    comissoes?: Array<CalculoDaComissaoLinha>;
+    contasAbertasDoVendedor?: Array<ContaAbertaNaPrevia>;
+    cotacaoData?: string;
+    cotacaoId?: string;
+    creditoDisponivel?: string;
+    creditoUsado?: string;
+    defeitos?: Array<DefeitoDaPreviaDoFechamento>;
+    descontos?: string;
+    devolvido?: string;
+    eventos?: Array<EventoDaPreviaDoFechamento>;
+    faltaParaMetaGuarani?: number;
+    faltaParaMetaReais?: string;
+    faltas?: Array<FaltaDaPreviaDoFechamento>;
+    faltasCobradas?: string;
+    ficouDevendo?: string;
+    itens?: Array<PecaDaPreviaDoFechamento>;
+    liquido?: string;
+    metaGuarani?: number;
+    naoAceitas?: Array<NaoAceitaDaPreviaDoFechamento>;
+    pagoAoVendedor?: string;
+    parcelasDoRestante?: Array<ParcelaDoRestanteDaPrevia>;
+    pendenciasAntigas?: Array<AntigaDaPreviaDoFechamento>;
+    percentualComissao?: string;
+    podeFechar?: boolean;
+    recebidoNoAcerto?: string;
+    restanteSemData?: boolean;
+    revisoesPendentes?: Array<RevisaoDaPreviaDoFechamento>;
+    sobras?: Array<Sobra>;
+    vendidoBruto?: string;
+    vendidoLiquido?: string;
+    vendidoParaMetaGuarani?: number;
+};
+
+export type ProdutoDaPreviaDoFechamento = {
+    codigo?: string;
+    fotoHash?: string;
+    id?: string;
+    nome?: string;
+};
+
 export type ProdutoSemFoto = {
     codigoPrincipal?: string;
     id?: string;
@@ -2135,6 +2737,7 @@ export type ProdutosDaDonaControllerResposta = {
     precoCusto?: string;
     precoVenda?: string;
     referencia?: string;
+    tamTon?: string;
     vendedoresEmMaletas?: Array<PecasEmMaletasDoVendedor>;
     version?: number;
 };
@@ -2152,14 +2755,19 @@ export type RecebimentoDaDona = {
     acertoId?: string;
     aplicadoEm?: string;
     contas?: Array<ContaBaixada>;
+    dataCotacao?: string;
+    dolar?: string;
     estornaId?: string;
     estornado?: boolean;
     forma?: string;
+    guarani?: string;
     id?: string;
+    moeda?: string;
     momento?: string;
     motivo?: string;
     recebidoEm?: string;
     valor?: string;
+    valorNaMoeda?: string;
     vendedorId?: string;
     vendedorNome?: string;
 };
@@ -2170,14 +2778,30 @@ export type RecebimentoDoAcerto = {
     estornado?: boolean;
     forma?: string;
     id?: string;
+    moeda?: string;
     recebidoEm?: string;
     valor?: string;
+    valorNaMoeda?: string;
 };
 
 export type RecebimentoNoAcerto = {
     forma?: string;
     id?: string;
+    moeda?: string;
     valor?: string;
+    valorNaMoeda?: string;
+};
+
+export type ReciboLido = {
+    aAplicar?: string;
+    acertoId?: string;
+    estornado?: boolean;
+    formas?: Array<FormaPaga>;
+    id?: string;
+    pagoEm?: string;
+    semana?: number;
+    sequencia?: number;
+    total?: string;
 };
 
 export type ReferenciaDoVendedorPedido = {
@@ -2195,6 +2819,20 @@ export type ReferenciaDoVendedorResposta = {
     parentesco?: string;
     telefone?: string;
     version?: number;
+};
+
+export type RegistroDoResultado = {
+    custoDoCadastro?: boolean;
+    custoUnitario?: string;
+    data?: string;
+    descricao?: string;
+    id?: string;
+    produto?: string;
+    quantidade?: number;
+    valorEmDolar?: string;
+    valorEmGuarani?: string;
+    valorEmReais?: string;
+    vendedor?: string;
 };
 
 export type RelatorioDeCadastroCodigosEmConflitoLinha = {
@@ -2235,6 +2873,24 @@ export type RelatorioDeCadastroConsultasDeMaletaLinhaDeVendedor = {
 
 export type RelatorioDeCadastroLinhaAbaixoDoMinimo = {
     itens?: Array<LinhaAbaixoDoMinimo>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroLinhaDaAuditoria = {
+    itens?: Array<LinhaDaAuditoria>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroLinhaDaCurva = {
+    itens?: Array<LinhaDaCurva>;
     pagina?: number;
     recorte?: string;
     tamanho?: number;
@@ -2404,6 +3060,24 @@ export type RelatorioDeCadastroLinhaDeItemDeCompra = {
     total?: number;
 };
 
+export type RelatorioDeCadastroLinhaDeLucroDoProduto = {
+    itens?: Array<LinhaDeLucroDoProduto>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroLinhaDeLucroDoVendedor = {
+    itens?: Array<LinhaDeLucroDoVendedor>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
 export type RelatorioDeCadastroLinhaDeMaletaEmAberto = {
     itens?: Array<LinhaDeMaletaEmAberto>;
     pagina?: number;
@@ -2512,6 +3186,51 @@ export type RelatorioDeCadastroLinhaDeTroca = {
     total?: number;
 };
 
+export type RelatorioDeCadastroLinhaDeVenda = {
+    itens?: Array<LinhaDeVenda>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroLinhaDeVendido = {
+    itens?: Array<LinhaDeVendido>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroLinhaDoAcesso = {
+    itens?: Array<LinhaDoAcesso>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroLinhaDoComputador = {
+    itens?: Array<LinhaDoComputador>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroLinhaDoFechamento = {
+    itens?: Array<LinhaDoFechamento>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
 export type RelatorioDeCadastroLinhaPorVendedor = {
     itens?: Array<LinhaPorVendedor>;
     pagina?: number;
@@ -2523,6 +3242,15 @@ export type RelatorioDeCadastroLinhaPorVendedor = {
 
 export type RelatorioDeCadastroLinhaSemCodigoDeBarras = {
     itens?: Array<LinhaSemCodigoDeBarras>;
+    pagina?: number;
+    recorte?: string;
+    tamanho?: number;
+    totais?: Array<Total>;
+    total?: number;
+};
+
+export type RelatorioDeCadastroRegistroDoResultado = {
+    itens?: Array<RegistroDoResultado>;
     pagina?: number;
     recorte?: string;
     tamanho?: number;
@@ -2558,6 +3286,7 @@ export type RemessasDaDonaControllerRespostaDoItem = {
 };
 
 export type RemessasDaDonaControllerRespostaDoResumo = {
+    codigo?: string;
     criadaEm?: string;
     enviadaEm?: string;
     id?: string;
@@ -2705,6 +3434,7 @@ export type RespostaDaNaoAjustada = {
 
 export type RespostaDaRemessa = {
     avisos?: Array<string>;
+    codigo?: string;
     criadaEm?: string;
     enviadaEm?: string;
     id?: string;
@@ -2720,6 +3450,10 @@ export type RespostaDaRemessa = {
     vendedorId?: string;
     vendedorNome?: string;
     version?: number;
+};
+
+export type RespostaDasLeituras = {
+    novas?: number;
 };
 
 export type RespostaDeCodigo = {
@@ -2755,6 +3489,10 @@ export type RespostaDoHistoricoDeCusto = {
     custoAtual?: string;
     historico?: PaginaRespostaDaLinhaDeCusto;
     produto?: ComprasDaDonaControllerRespostaDaPeca;
+};
+
+export type RespostaDoInicio = {
+    fechamentoId?: string;
 };
 
 export type RespostaDoLogin = {
@@ -2815,10 +3553,54 @@ export type ResultadoDaOperacao = {
     resultado?: 'ACEITO' | 'JA_RECEBIDO' | 'CONFLITO' | 'RECUSADO' | 'NAO_PROCESSADO';
 };
 
+export type RevisaoDaPreviaDoFechamento = {
+    id?: string;
+    tipo?: string;
+};
+
+export type Rodada = {
+    chavesComFalha?: Array<string>;
+    chavesConferidas?: Array<string>;
+    id?: string;
+    iniciadaEm?: string;
+    origem?: string;
+    pedidaPor?: string;
+    situacao?: string;
+    terminadaEm?: string;
+    totalDiferencas?: number;
+};
+
+export type RodadaComDiferencas = {
+    grupos?: Array<ConsultasDaConferenciaDiariaGrupo>;
+    rodada?: Rodada;
+};
+
 export type SemProduto = {
     codigo?: string;
     mensagem?: string;
     nome?: string;
+};
+
+export type SemanaDoPainel = {
+    fim?: string;
+    id?: string;
+    inicio?: string;
+    numero?: number;
+    situacao?: string;
+};
+
+export type SemanaDoRepresentante = {
+    abertaEm?: string;
+    comissao?: string;
+    fechadaEm?: string;
+    id?: string;
+    notas?: number;
+    numero?: number;
+    recebido?: string;
+    situacao?: string;
+    valorDx?: string;
+    valorVd?: string;
+    vendedorId?: string;
 };
 
 export type SemanasDaDonaControllerPedido = {
@@ -2874,14 +3656,59 @@ export type ServicoDeRecebimentosDoVendedorPedidoDeEstorno = {
 
 export type ServicoDeRecebimentosDoVendedorPedidoDeRecebimento = {
     contaId?: string;
+    cotacaoData?: string;
     forma?: string;
     id?: string;
+    moeda?: string;
     valor?: string;
+    valorNaMoeda?: string;
     vendedorId?: string;
+};
+
+export type ServicoDoFechamentoDaMaletaConvertido = {
+    dolar?: string;
+    guarani?: string;
+    real?: string;
+};
+
+export type ServicoDoFechamentoDaMaletaLeitura = {
+    id?: string;
+    produtoId?: string;
+    quantidade?: number;
+};
+
+export type SituacaoDoCliente = {
+    cadastro?: CadastroDoCliente;
+    clienteId?: string;
+    nome?: string;
+    notas?: Array<NotaResumo>;
+    pecasComEle?: Array<PecaComClienteLida>;
+    pendencia?: string;
+};
+
+export type Sobra = {
+    contado?: number;
+    esperado?: number;
+    produtoId?: string;
+};
+
+export type TelasDoGestao = {
+    acertoDoVendedorVisivel?: boolean;
 };
 
 export type Tempo = {
     instante?: string;
+};
+
+export type TotaisDoPainel = {
+    acerto?: BlocoDeAcerto;
+    novasMaletas?: BlocoDeMaletasDoPainel;
+    previa?: BlocoDaPrevia;
+    recebidoNoAcerto?: BlocoRecebido;
+    reposicoes?: BlocoDeMaletasDoPainel;
+    total?: BlocoTotal;
+    trocas?: BlocoDeTrocas;
+    vendas?: BlocoDeVendas;
 };
 
 export type Total = {
@@ -2954,6 +3781,12 @@ export type ValorDeTeste = {
     valor?: string;
 };
 
+export type ValorEmMoedas = {
+    emDolar?: string;
+    emGuarani?: string;
+    emReais?: string;
+};
+
 export type ValorSubstituido = {
     campos?: Array<Campo>;
     clienteId?: string;
@@ -2961,6 +3794,17 @@ export type ValorSubstituido = {
     id?: string;
     quando?: string;
     quemMudou?: string;
+};
+
+export type Valores = {
+    comissaoConvertida?: ServicoDoFechamentoDaMaletaConvertido;
+    comissaoDosClientes?: string;
+    pendenciasAReceber?: string;
+    pendenciasConvertidas?: ServicoDoFechamentoDaMaletaConvertido;
+    recebido?: string;
+    recebidoConvertido?: ServicoDoFechamentoDaMaletaConvertido;
+    vd?: string;
+    vdConvertido?: ServicoDoFechamentoDaMaletaConvertido;
 };
 
 export type VendaComAPeca = {
@@ -3149,6 +3993,135 @@ export type TrocarSenhaResponses = {
 
 export type TrocarSenhaResponse = TrocarSenhaResponses[keyof TrocarSenhaResponses];
 
+export type BaixarFotoDoClienteData = {
+    body?: never;
+    path: {
+        id: string;
+        tipo: string;
+    };
+    query?: never;
+    url: '/api/clientes/{id}/fotos/{tipo}';
+};
+
+export type BaixarFotoDoClienteResponses = {
+    /**
+     * OK
+     */
+    200: string;
+};
+
+export type BaixarFotoDoClienteResponse = BaixarFotoDoClienteResponses[keyof BaixarFotoDoClienteResponses];
+
+export type LerTelasDoGestaoData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/configuracoes/telas';
+};
+
+export type LerTelasDoGestaoResponses = {
+    /**
+     * OK
+     */
+    200: TelasDoGestao;
+};
+
+export type LerTelasDoGestaoResponse = LerTelasDoGestaoResponses[keyof LerTelasDoGestaoResponses];
+
+export type VerSituacaoDoClienteDoConsignadoData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/consignado/clientes/{id}/situacao';
+};
+
+export type VerSituacaoDoClienteDoConsignadoResponses = {
+    /**
+     * OK
+     */
+    200: SituacaoDoCliente;
+};
+
+export type VerSituacaoDoClienteDoConsignadoResponse = VerSituacaoDoClienteDoConsignadoResponses[keyof VerSituacaoDoClienteDoConsignadoResponses];
+
+export type ListarNotasDoConsignadoData = {
+    body?: never;
+    path?: never;
+    query?: {
+        vendedorId?: string;
+        semanaId?: string;
+        situacao?: string;
+        clienteId?: string;
+        texto?: string;
+    };
+    url: '/api/consignado/notas';
+};
+
+export type ListarNotasDoConsignadoResponses = {
+    /**
+     * OK
+     */
+    200: Array<NotaResumo>;
+};
+
+export type ListarNotasDoConsignadoResponse = ListarNotasDoConsignadoResponses[keyof ListarNotasDoConsignadoResponses];
+
+export type VerNotaDoConsignadoData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/consignado/notas/{id}';
+};
+
+export type VerNotaDoConsignadoResponses = {
+    /**
+     * OK
+     */
+    200: DetalheDaNota;
+};
+
+export type VerNotaDoConsignadoResponse = VerNotaDoConsignadoResponses[keyof VerNotaDoConsignadoResponses];
+
+export type VerSemanaDoRepresentanteData = {
+    body?: never;
+    path: {
+        semanaId: string;
+    };
+    query?: never;
+    url: '/api/consignado/semanas/{semanaId}';
+};
+
+export type VerSemanaDoRepresentanteResponses = {
+    /**
+     * OK
+     */
+    200: SemanaDoRepresentante;
+};
+
+export type VerSemanaDoRepresentanteResponse = VerSemanaDoRepresentanteResponses[keyof VerSemanaDoRepresentanteResponses];
+
+export type ListarSemanasDoRepresentanteData = {
+    body?: never;
+    path: {
+        vendedorId: string;
+    };
+    query?: never;
+    url: '/api/consignado/vendedores/{vendedorId}/semanas';
+};
+
+export type ListarSemanasDoRepresentanteResponses = {
+    /**
+     * OK
+     */
+    200: Array<SemanaDoRepresentante>;
+};
+
+export type ListarSemanasDoRepresentanteResponse = ListarSemanasDoRepresentanteResponses[keyof ListarSemanasDoRepresentanteResponses];
+
 export type ListarAcertosData = {
     body?: never;
     path?: never;
@@ -3232,11 +4205,9 @@ export type PreviaDoFechamentoData = {
 
 export type PreviaDoFechamentoResponses = {
     /**
-     * OK
+     * A prévia (acerto em andamento) ou o fechamento gravado (acerto fechado)
      */
-    200: {
-        [key: string]: unknown;
-    };
+    200: PreviaDoFechamento | Fechamento;
 };
 
 export type PreviaDoFechamentoResponse = PreviaDoFechamentoResponses[keyof PreviaDoFechamentoResponses];
@@ -3254,9 +4225,7 @@ export type PreviaDoFechamentoComDecisoesResponses = {
     /**
      * OK
      */
-    200: {
-        [key: string]: unknown;
-    };
+    200: PreviaDoFechamento;
 };
 
 export type PreviaDoFechamentoComDecisoesResponse = PreviaDoFechamentoComDecisoesResponses[keyof PreviaDoFechamentoComDecisoesResponses];
@@ -3994,6 +4963,59 @@ export type ConferirODinheiroDaFase7Responses = {
 
 export type ConferirODinheiroDaFase7Response = ConferirODinheiroDaFase7Responses[keyof ConferirODinheiroDaFase7Responses];
 
+export type ListarConferenciasData = {
+    body?: never;
+    path?: never;
+    query?: {
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/conferencias';
+};
+
+export type ListarConferenciasResponses = {
+    /**
+     * OK
+     */
+    200: ConsultasDaConferenciaDiariaPagina;
+};
+
+export type ListarConferenciasResponse = ListarConferenciasResponses[keyof ListarConferenciasResponses];
+
+export type ConferirAgoraData = {
+    body: PedidoDeConferenciaDiaria;
+    path?: never;
+    query?: never;
+    url: '/api/dona/conferencias';
+};
+
+export type ConferirAgoraResponses = {
+    /**
+     * OK
+     */
+    200: RodadaComDiferencas;
+};
+
+export type ConferirAgoraResponse = ConferirAgoraResponses[keyof ConferirAgoraResponses];
+
+export type VerConferenciaData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/conferencias/{id}';
+};
+
+export type VerConferenciaResponses = {
+    /**
+     * OK
+     */
+    200: RodadaComDiferencas;
+};
+
+export type VerConferenciaResponse = VerConferenciaResponses[keyof VerConferenciaResponses];
+
 export type LerComissaoData = {
     body?: never;
     path?: never;
@@ -4057,6 +5079,58 @@ export type AlterarGarantiaResponses = {
 };
 
 export type AlterarGarantiaResponse = AlterarGarantiaResponses[keyof AlterarGarantiaResponses];
+
+export type ListarAlertasDoConsignadoData = {
+    body?: never;
+    path?: never;
+    query?: {
+        soNaoVistos?: boolean;
+    };
+    url: '/api/dona/consignado/alertas';
+};
+
+export type ListarAlertasDoConsignadoResponses = {
+    /**
+     * OK
+     */
+    200: Array<AlertaLido>;
+};
+
+export type ListarAlertasDoConsignadoResponse = ListarAlertasDoConsignadoResponses[keyof ListarAlertasDoConsignadoResponses];
+
+export type MarcarAlertaDoConsignadoComoVistoData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/dona/consignado/alertas/{id}/visto';
+};
+
+export type MarcarAlertaDoConsignadoComoVistoResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type MarcarAlertaDoConsignadoComoVistoResponse = MarcarAlertaDoConsignadoComoVistoResponses[keyof MarcarAlertaDoConsignadoComoVistoResponses];
+
+export type ConferirConsignadoData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/dona/consignado/conciliacoes';
+};
+
+export type ConferirConsignadoResponses = {
+    /**
+     * OK
+     */
+    200: ConciliacoesDoConsignadoResultado;
+};
+
+export type ConferirConsignadoResponse = ConferirConsignadoResponses[keyof ConferirConsignadoResponses];
 
 export type ListarContasAPagarData = {
     body?: never;
@@ -4899,6 +5973,27 @@ export type LerResponses = {
 };
 
 export type LerResponse = LerResponses[keyof LerResponses];
+
+export type PainelSemanalData = {
+    body?: never;
+    path?: never;
+    query?: {
+        semana?: string;
+        vendedor?: string;
+        praca?: string;
+        situacao?: string;
+    };
+    url: '/api/dona/painel-semanal';
+};
+
+export type PainelSemanalResponses = {
+    /**
+     * OK
+     */
+    200: PainelDaSemana;
+};
+
+export type PainelSemanalResponse = PainelSemanalResponses[keyof PainelSemanalResponses];
 
 export type ListarPendenciasDoAcertoData = {
     body?: never;
@@ -5856,6 +6951,84 @@ export type PorFornecedorResponses = {
 
 export type PorFornecedorResponse = PorFornecedorResponses[keyof PorFornecedorResponses];
 
+export type RelatorioDeAcessosData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        resultado?: string;
+        aplicativo?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/controle/acessos';
+};
+
+export type RelatorioDeAcessosResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDoAcesso;
+};
+
+export type RelatorioDeAcessosResponse = RelatorioDeAcessosResponses[keyof RelatorioDeAcessosResponses];
+
+export type RelatorioDeAuditoriaData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        usuarioId?: string;
+        acao?: string;
+        tabela?: string;
+        registroId?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/controle/auditoria';
+};
+
+export type RelatorioDeAuditoriaResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDaAuditoria;
+};
+
+export type RelatorioDeAuditoriaResponse = RelatorioDeAuditoriaResponses[keyof RelatorioDeAuditoriaResponses];
+
+export type RelatorioDeComputadoresData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        situacao?: string;
+        comProblema?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/controle/computadores';
+};
+
+export type RelatorioDeComputadoresResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDoComputador;
+};
+
+export type RelatorioDeComputadoresResponse = RelatorioDeComputadoresResponses[keyof RelatorioDeComputadoresResponses];
+
 export type RelatorioDePedidosDeAutorizacaoData = {
     body?: never;
     path?: never;
@@ -5916,6 +7089,7 @@ export type RelatorioDeCreditosDosClientesData = {
         forma?: string;
         de?: string;
         ate?: string;
+        pracaId?: string;
         recorte?: string;
         pagina?: number;
         tamanho?: number;
@@ -6066,6 +7240,7 @@ export type RelatorioDeTrocasData = {
         forma?: string;
         de?: string;
         ate?: string;
+        pracaId?: string;
         recorte?: string;
         pagina?: number;
         tamanho?: number;
@@ -6128,6 +7303,34 @@ export type ConciliacaoResponses = {
 };
 
 export type ConciliacaoResponse = ConciliacaoResponses[keyof ConciliacaoResponses];
+
+export type RelatorioDeCurvaAbcData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        pracaId?: string;
+        clienteId?: string;
+        produtoId?: string;
+        categoriaId?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/estoque/curva-abc';
+};
+
+export type RelatorioDeCurvaAbcResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDaCurva;
+};
+
+export type RelatorioDeCurvaAbcResponse = RelatorioDeCurvaAbcResponses[keyof RelatorioDeCurvaAbcResponses];
 
 export type InventariosData = {
     body?: never;
@@ -6248,6 +7451,7 @@ export type RelatorioDeAcertosData = {
         semanaId?: string;
         de?: string;
         ate?: string;
+        pracaId?: string;
         recorte?: string;
         pagina?: number;
         tamanho?: number;
@@ -6421,6 +7625,56 @@ export type RelatorioDeInadimplenciaResponses = {
 
 export type RelatorioDeInadimplenciaResponse = RelatorioDeInadimplenciaResponses[keyof RelatorioDeInadimplenciaResponses];
 
+export type RelatorioDeLucroPorProdutoData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        pracaId?: string;
+        produtoId?: string;
+        categoriaId?: string;
+        de?: string;
+        ate?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/financeiro/lucro-por-produto';
+};
+
+export type RelatorioDeLucroPorProdutoResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeLucroDoProduto;
+};
+
+export type RelatorioDeLucroPorProdutoResponse = RelatorioDeLucroPorProdutoResponses[keyof RelatorioDeLucroPorProdutoResponses];
+
+export type RelatorioDeLucroPorVendedorData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        pracaId?: string;
+        de?: string;
+        ate?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/financeiro/lucro-por-vendedor';
+};
+
+export type RelatorioDeLucroPorVendedorResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeLucroDoVendedor;
+};
+
+export type RelatorioDeLucroPorVendedorResponse = RelatorioDeLucroPorVendedorResponses[keyof RelatorioDeLucroPorVendedorResponses];
+
 export type RelatorioDePendenciasDoAcertoData = {
     body?: never;
     path?: never;
@@ -6433,6 +7687,7 @@ export type RelatorioDePendenciasDoAcertoData = {
         situacao?: string;
         de?: string;
         ate?: string;
+        pracaId?: string;
         recorte?: string;
         pagina?: number;
         tamanho?: number;
@@ -6459,6 +7714,7 @@ export type RelatorioDeRecebimentosPorFormaData = {
         momento?: string;
         de?: string;
         ate?: string;
+        pracaId?: string;
         recorte?: string;
         pagina?: number;
         tamanho?: number;
@@ -6474,6 +7730,48 @@ export type RelatorioDeRecebimentosPorFormaResponses = {
 };
 
 export type RelatorioDeRecebimentosPorFormaResponse = RelatorioDeRecebimentosPorFormaResponses[keyof RelatorioDeRecebimentosPorFormaResponses];
+
+export type ResultadoDoPeriodoData = {
+    body?: never;
+    path?: never;
+    query?: {
+        de?: string;
+        ate?: string;
+    };
+    url: '/api/dona/relatorios/financeiro/resultado';
+};
+
+export type ResultadoDoPeriodoResponses = {
+    /**
+     * OK
+     */
+    200: ConsultasDoResultadoResultado;
+};
+
+export type ResultadoDoPeriodoResponse = ResultadoDoPeriodoResponses[keyof ResultadoDoPeriodoResponses];
+
+export type DetalhamentoDoResultadoData = {
+    body?: never;
+    path?: never;
+    query?: {
+        de?: string;
+        ate?: string;
+        linha?: string;
+        categoriaId?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/financeiro/resultado/detalhamento';
+};
+
+export type DetalhamentoDoResultadoResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroRegistroDoResultado;
+};
+
+export type DetalhamentoDoResultadoResponse = DetalhamentoDoResultadoResponses[keyof DetalhamentoDoResultadoResponses];
 
 export type RelatorioDeMaletasEmAbertoEAtrasadasData = {
     body?: never;
@@ -6505,6 +7803,27 @@ export type RelatorioDeMaletasEmAbertoEAtrasadasResponses = {
 };
 
 export type RelatorioDeMaletasEmAbertoEAtrasadasResponse = RelatorioDeMaletasEmAbertoEAtrasadasResponses[keyof RelatorioDeMaletasEmAbertoEAtrasadasResponses];
+
+export type RelatorioDoFechamentoDaMaletaData = {
+    body?: never;
+    path?: never;
+    query: {
+        remessaId: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/maleta/fechamento';
+};
+
+export type RelatorioDoFechamentoDaMaletaResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDoFechamento;
+};
+
+export type RelatorioDoFechamentoDaMaletaResponse = RelatorioDoFechamentoDaMaletaResponses[keyof RelatorioDoFechamentoDaMaletaResponses];
 
 export type RelatorioDeMercadoriaPorVendedorData = {
     body?: never;
@@ -6625,6 +7944,315 @@ export type RelatorioDeSaldoPorMaletaResponses = {
 };
 
 export type RelatorioDeSaldoPorMaletaResponse = RelatorioDeSaldoPorMaletaResponses[keyof RelatorioDeSaldoPorMaletaResponses];
+
+export type RelatorioDeVendasCanceladasData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        pracaId?: string;
+        clienteId?: string;
+        produtoId?: string;
+        categoriaId?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/vendas/canceladas';
+};
+
+export type RelatorioDeVendasCanceladasResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeVenda;
+};
+
+export type RelatorioDeVendasCanceladasResponse = RelatorioDeVendasCanceladasResponses[keyof RelatorioDeVendasCanceladasResponses];
+
+export type RelatorioDeVendasPorCategoriaData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        pracaId?: string;
+        clienteId?: string;
+        produtoId?: string;
+        categoriaId?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/vendas/por-categoria';
+};
+
+export type RelatorioDeVendasPorCategoriaResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeVendido;
+};
+
+export type RelatorioDeVendasPorCategoriaResponse = RelatorioDeVendasPorCategoriaResponses[keyof RelatorioDeVendasPorCategoriaResponses];
+
+export type RelatorioDeVendasPorClienteData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        pracaId?: string;
+        clienteId?: string;
+        produtoId?: string;
+        categoriaId?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/vendas/por-cliente';
+};
+
+export type RelatorioDeVendasPorClienteResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeVendido;
+};
+
+export type RelatorioDeVendasPorClienteResponse = RelatorioDeVendasPorClienteResponses[keyof RelatorioDeVendasPorClienteResponses];
+
+export type RelatorioDeVendasPorPeriodoData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        pracaId?: string;
+        clienteId?: string;
+        produtoId?: string;
+        categoriaId?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/vendas/por-periodo';
+};
+
+export type RelatorioDeVendasPorPeriodoResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeVendido;
+};
+
+export type RelatorioDeVendasPorPeriodoResponse = RelatorioDeVendasPorPeriodoResponses[keyof RelatorioDeVendasPorPeriodoResponses];
+
+export type RelatorioDeVendasPorPracaData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        pracaId?: string;
+        clienteId?: string;
+        produtoId?: string;
+        categoriaId?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/vendas/por-praca';
+};
+
+export type RelatorioDeVendasPorPracaResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeVendido;
+};
+
+export type RelatorioDeVendasPorPracaResponse = RelatorioDeVendasPorPracaResponses[keyof RelatorioDeVendasPorPracaResponses];
+
+export type RelatorioDeVendasPorProdutoData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        pracaId?: string;
+        clienteId?: string;
+        produtoId?: string;
+        categoriaId?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/vendas/por-produto';
+};
+
+export type RelatorioDeVendasPorProdutoResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeVendido;
+};
+
+export type RelatorioDeVendasPorProdutoResponse = RelatorioDeVendasPorProdutoResponses[keyof RelatorioDeVendasPorProdutoResponses];
+
+export type RelatorioDeVendasPorVendedorData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        pracaId?: string;
+        clienteId?: string;
+        produtoId?: string;
+        categoriaId?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/vendas/por-vendedor';
+};
+
+export type RelatorioDeVendasPorVendedorResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeVendido;
+};
+
+export type RelatorioDeVendasPorVendedorResponse = RelatorioDeVendasPorVendedorResponses[keyof RelatorioDeVendasPorVendedorResponses];
+
+export type RelatorioDeRankingDePecasData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        pracaId?: string;
+        clienteId?: string;
+        produtoId?: string;
+        categoriaId?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/vendas/ranking-de-pecas';
+};
+
+export type RelatorioDeRankingDePecasResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeVendido;
+};
+
+export type RelatorioDeRankingDePecasResponse = RelatorioDeRankingDePecasResponses[keyof RelatorioDeRankingDePecasResponses];
+
+export type RelatorioDeRankingDeVendedoresData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        pracaId?: string;
+        clienteId?: string;
+        produtoId?: string;
+        categoriaId?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/vendas/ranking-de-vendedores';
+};
+
+export type RelatorioDeRankingDeVendedoresResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeVendido;
+};
+
+export type RelatorioDeRankingDeVendedoresResponse = RelatorioDeRankingDeVendedoresResponses[keyof RelatorioDeRankingDeVendedoresResponses];
+
+export type RelatorioDeTicketMedioData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        pracaId?: string;
+        clienteId?: string;
+        produtoId?: string;
+        categoriaId?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/vendas/ticket-medio';
+};
+
+export type RelatorioDeTicketMedioResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeVendido;
+};
+
+export type RelatorioDeTicketMedioResponse = RelatorioDeTicketMedioResponses[keyof RelatorioDeTicketMedioResponses];
+
+export type RelatorioDeVendasData = {
+    body?: never;
+    path?: never;
+    query?: {
+        busca?: string;
+        vendedorId?: string;
+        pracaId?: string;
+        clienteId?: string;
+        produtoId?: string;
+        categoriaId?: string;
+        situacao?: string;
+        de?: string;
+        ate?: string;
+        recorte?: string;
+        pagina?: number;
+        tamanho?: number;
+    };
+    url: '/api/dona/relatorios/vendas/vendas';
+};
+
+export type RelatorioDeVendasResponses = {
+    /**
+     * OK
+     */
+    200: RelatorioDeCadastroLinhaDeVenda;
+};
+
+export type RelatorioDeVendasResponse = RelatorioDeVendasResponses[keyof RelatorioDeVendasResponses];
 
 export type ListarRemessasData = {
     body?: never;
@@ -7923,3 +9551,75 @@ export type ListarAparelhosDoVendedorResponses = {
 };
 
 export type ListarAparelhosDoVendedorResponse = ListarAparelhosDoVendedorResponses[keyof ListarAparelhosDoVendedorResponses];
+
+export type LerFechamentoDaMaletaData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/maletas/{id}/fechamento';
+};
+
+export type LerFechamentoDaMaletaResponses = {
+    /**
+     * OK
+     */
+    200: LeituraDoFechamento;
+};
+
+export type LerFechamentoDaMaletaResponse = LerFechamentoDaMaletaResponses[keyof LerFechamentoDaMaletaResponses];
+
+export type IniciarFechamentoDaMaletaData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/maletas/{id}/fechamento';
+};
+
+export type IniciarFechamentoDaMaletaResponses = {
+    /**
+     * Created
+     */
+    201: RespostaDoInicio;
+};
+
+export type IniciarFechamentoDaMaletaResponse = IniciarFechamentoDaMaletaResponses[keyof IniciarFechamentoDaMaletaResponses];
+
+export type ConcluirFechamentoDaMaletaData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/maletas/{id}/fechamento/concluir';
+};
+
+export type ConcluirFechamentoDaMaletaResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ConcluirFechamentoDaMaletaResponse = ConcluirFechamentoDaMaletaResponses[keyof ConcluirFechamentoDaMaletaResponses];
+
+export type RegistrarLeiturasDoFechamentoDaMaletaData = {
+    body: PedidoDeLeituras;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/maletas/{id}/fechamento/leituras';
+};
+
+export type RegistrarLeiturasDoFechamentoDaMaletaResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDasLeituras;
+};
+
+export type RegistrarLeiturasDoFechamentoDaMaletaResponse = RegistrarLeiturasDoFechamentoDaMaletaResponses[keyof RegistrarLeiturasDoFechamentoDaMaletaResponses];

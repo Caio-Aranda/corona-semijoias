@@ -162,6 +162,7 @@ describe('montagem do Corona Vendas (tarefa 5.12)', () => {
       ok: false,
       motivo: 'erro',
       mensagem: 'Este computador não pode mais registrar vendas. Fale com a dona.',
+      codigo: 'COMPUTADOR_DESLIGADO',
     };
     expect(
       await montado.servico.chamarApi({

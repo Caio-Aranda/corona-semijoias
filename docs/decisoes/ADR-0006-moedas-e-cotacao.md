@@ -144,6 +144,8 @@ Gs. = arredondar(R$ ÷ pyg_venda, 0 casas)
 - **Acerto:** vale a cotação mais recente que existe **no momento em que o acerto é fechado**, gravada nele (item 11).
 - **Hoje, antes da busca:** o lançamento de hoje aparece pela cotação do último dia útil, com a data dela na tela. Depois que a cotação do dia é gravada, passa a aparecer pela de hoje. A conversão é só para a tela, então essa troca não muda nada gravado. O acerto não muda, porque grava a sua (item 11).
 
+**Adendo de 23/11/2026:** "a cotação do dia" passa a ser "a cotação vigente no momento" (item 15). Para quem só tem cotações do Banco Central, as duas regras dão o mesmo resultado.
+
 ### 8. Tipo no banco e o teste de convenções
 
 A cotação **não é dinheiro**: 1 guarani vale frações pequenas de real (0,000895). Por isso o tipo é **`NUMERIC(18,8)`**:
@@ -177,6 +179,7 @@ A cotação **não é dinheiro**: 1 guarani vale frações pequenas de real (0,0
   - se `n < 0`: `-((-2n + d) / (2d))`.
   - Isso afasta do zero no meio exato, como o `RoundingMode.HALF_UP` do Java.
 - Java e TypeScript usam **a mesma tabela de exemplos** (item 14) como teste, para darem o mesmo resultado.
+- **Exceção registrada (auditoria M4, 17/11/2026):** os relatórios somam a conversão por linha dentro do SQL, com o `round(x / taxa, casas)` do PostgreSQL, que também afasta do zero no meio exato (mesmo resultado do HALF_UP). Isso só é permitido nos arquivos `SqlDaMaleta`, `ConsultasDeDevolucaoETroca`, `ConsultasDeEstoqueECompras`, `ConsultasDoResultado` e `VendidoLiquido`. O `ArredondamentoEmSqlTest` compara o SQL com a `ConversaoDeMoeda` em valores de borda e reprova `round(` em SQL de qualquer outro arquivo.
 
 ### 10. Totais convertidos: soma dos lançamentos convertidos
 
@@ -215,7 +218,8 @@ O aviso em "O que precisa da sua atenção" é **calculado, não gravado**. Ele 
 - O app do vendedor **nunca calcula com cotação própria**: não busca cotação na internet, não aceita taxa digitada e não deriva taxa de outros valores. Ele só usa as cotações que o **servidor manda**: pela API na Fase 4 e pelo pull na Fase 5.
 - Sem internet, usa a última cotação recebida e **mostra a data dela**.
 - Os relatórios e o acerto que valem são os do servidor, que converte pela mesma regra.
-- Ninguém digita cotação: a tabela só recebe o que a busca leu do BCB. Não existe rota para gravar nem para corrigir cotação.
+- Ninguém digita cotação: a tabela só recebe o que a busca leu do BCB. Não existe rota para gravar nem para corrigir cotação. **Mudou em 23/11/2026:** a dona pode lançar cotação (item 15); o app do vendedor continua sem digitar nem calcular cotação.
+- **Adendo de 23/11/2026 (pedido do responsável):** o recebimento do representante (avulso e no acerto) pode ser **digitado em Dólar ou Guarani**. O caminho é o inverso do item 6, feito **só pelo servidor**: `R$ = arredondar(valor × taxa de venda, 2 casas, HALF_UP)`, numa multiplicação só (`ConversaoDeMoeda.dolarParaReais` e `guaraniParaReais`), pela cotação do dia do lançamento (avulso) ou pela do acerto (item 11). O lançamento continua **gravado em Real**; a moeda, o valor digitado e o `cotacao_id` ficam no recebimento só como informação (nunca somam, nunca entram em conciliação). Ninguém digita cotação. Plano: `docs/planos/recebimento-em-tres-moedas.md`.
 
 ### 14. Exemplos numéricos
 
@@ -246,6 +250,20 @@ Conferidos à mão e com `decimal` do Python, com as **taxas de venda reais** pu
 | As linhas do acerto em US$ não fecham por 1 centavo | 27,25 − 2,04 = 25,21, mas o líquido convertido é 25,20; no Guarani, 167.486 − 12.559 = 154.927, igual | normal: cada valor é arredondado sozinho; a conta que fecha é a em reais (149,90 − 11,24 = 138,66) |
 | Valor máximo de `NUMERIC(14,2)` no TypeScript: R$ 999.999.999.999,99 em 06/11 | c = 99.999.999.999.999n; c × 10⁸ = 9.999.999.999.999.900.000.000, que passa de 2⁵³ − 1 = 9.007.199.254.740.991; ÷ 550130000 = 18.177.521.676.694,4…; c × 10⁶ ÷ 89500 = 1.117.318.435.754.178,77… | **US$ 181.775.216.766,94**; **Gs. 1.117.318.435.754.179**. Só dá certo com `BigInt`; com `number`, a multiplicação perde dígitos |
 | Por que a coluna publicada do PYG e não a paridade | 5,50130 ÷ 6147 = 0,00089496… | o BCB publica 0,0008950; a conversão usa 0,0008950 |
+
+### 15. Adendo de 23/11/2026: a dona muda a cotação durante o dia
+
+Pedido do responsável (23/11/2026): na fronteira o câmbio varia durante o dia e a dona usa a cotação da casa de câmbio, não só a do Banco Central. Plano: `docs/planos/cotacao-da-dona-no-dia.md`. Muda os itens 3, 4, 7, 11 e 13 assim:
+
+- **Várias cotações por dia.** `cotacoes` ganha `origem` (`BANCO_CENTRAL` ou `DONA`), `vigente_desde` (`timestamptz`, o momento em que passa a valer), `lancada_por` (a dona, só em `DONA`) e `guaranis_por_real` (o Guarani como ela digitou, só em `DONA`). A `UNIQUE` de `data_cotacao` passa a valer **só para o Banco Central** (índice único parcial): continua uma do BCB por dia útil, e a dona pode lançar quantas quiser.
+- **Imutável como antes:** corrigir é lançar outra; nunca `UPDATE` nem `DELETE`.
+- **Momento de início:** a do BCB do dia D vale desde 00:00 de D em Brasília (o que já acontecia, item 7); a da dona vale **a partir do momento em que é gravada**, pela hora do servidor. Não existe cotação para o passado nem para o futuro.
+- **Que cotação vale (substitui o item 7):** a de maior `vigente_desde` menor ou igual ao momento do lançamento (desempate pelo `id`). Com só cotações do BCB, isso é igual à regra antiga ("maior `data_cotacao` ≤ data em Brasília"), por isso nada muda para quem não digita. O valor que não é lançamento e o acerto (item 11) usam a vigente **agora**. A cotação do BCB que chega à tarde não passa por cima da que a dona lançou de manhã, porque a dela começou depois.
+- **Como ela digita:** um valor por moeda, que serve para compra e venda: "1 dólar = R$ 5,80" grava `usd_compra = usd_venda = 5,80`; "1 real = Gs. 1.350" grava `guaranis_por_real = 1350` e `pyg_compra = pyg_venda = 1 ÷ 1350` com 8 casas, HALF_UP (0,00074074). As paridades são calculadas pelo servidor (USD = 1; PYG = 5,80 × 1350). A conversão das telas e dos relatórios continua **a mesma fórmula** (itens 6 e 9), sem exceção pela origem. **Uma exceção, só no recebimento digitado em Guarani** (o único caminho em que a cotação vira valor gravado): com `guaranis_por_real` preenchido, `R$ = arredondar(Gs. ÷ guaranis_por_real, 2 casas, HALF_UP)`, para bater com a conta da dona (Gs. 50.000.000 ÷ 1.350 = R$ 37.037,04; pela taxa de 8 casas daria R$ 37.037,00).
+- **Aviso sem trava:** a tela mostra a do BCB do dia para comparar e avisa quando a digitada difere dela mais de 15%; grava mesmo assim se a dona confirmar.
+- **Lançamentos:** quem grava `cotacao_id` (vendas, devoluções, trocas, créditos, pedidos, notas, acertos e recibos do consignado, acertos, recebimentos em outra moeda) continua com a sua para sempre. Os relatórios que hoje acham a cotação pela data passam a achá-la pelo **momento** do lançamento.
+- **Corona Vendas:** recebe as cotações novas pelo pull (`origem` e `vigente_desde` entram na lista de colunas; `lancada_por` não vai). Sem internet, mostra a última que recebeu. O app continua não mandando cotação: o servidor escolhe a vigente no momento do lançamento (a hora que veio, já corrigida pela regra da hora do ADR-0013).
+- **Tela:** a cotação da dona aparece como "Cotação da loja de 23/11/2026 às 10:15"; a do Banco Central, como antes.
 
 ## Consequências
 

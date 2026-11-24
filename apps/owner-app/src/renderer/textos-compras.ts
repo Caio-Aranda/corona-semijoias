@@ -1,9 +1,11 @@
+import { textosVivos } from './idioma/idioma';
+import { ES_TEXTOS_DE_COMPRAS } from './idioma/es/compras';
 /**
  * Textos das telas de compras (menu Estoque → Receber compra e Compras). Vêm do glossário da
  * interface (parte 12); erros de campo e de regra vêm do servidor, nunca daqui. Nada de termo
  * técnico: a pessoa "lê o código" da peça, nunca "bipa".
  */
-export const TEXTOS_DE_COMPRAS = {
+export const PT_TEXTOS_DE_COMPRAS = {
   menu: { grupo: 'Estoque', receber: 'Receber compra', compras: 'Compras' },
   receber: {
     titulo: 'Receber compra',
@@ -233,3 +235,5 @@ export const TEXTOS_DE_COMPRAS = {
     ] as const,
   },
 } as const;
+
+export const TEXTOS_DE_COMPRAS = textosVivos('compras', PT_TEXTOS_DE_COMPRAS, ES_TEXTOS_DE_COMPRAS);

@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it, vi } from 'vitest';
-import type { Cliente, EnvioNaoAceito } from '../shared/dados';
+import type { EnvioNaoAceito } from '../shared/dados';
 import type {
   EstadoDaSincronizacao,
   PedidoDeChamada,
@@ -13,7 +13,7 @@ import type {
   ResultadoDeChamada,
 } from '../shared/ponte';
 import { AvisoDosDados, IndicadorDeEnvio } from './IndicadorDeEnvio';
-import { FormularioDeCliente } from './telas/FormularioDeCliente';
+import { definirIdioma } from './idioma';
 import { TEXTOS } from './textos';
 
 const ESTADO: EstadoDaSincronizacao = {
@@ -209,62 +209,6 @@ describe('"Dados até" nos relatórios', () => {
   });
 });
 
-describe('editar cliente', () => {
-  const cliente: Cliente = {
-    id: '33333333-3333-4333-8333-333333333333',
-    nome: 'Maria Souza',
-    cpf: null,
-    telefone: '111',
-    cidade: null,
-    meu: true,
-    dataNascimento: null,
-    whatsapp: null,
-    observacoes: null,
-    ativo: true,
-  };
-
-  it('manda só o que mudou', async () => {
-    const { ponte, chamadas } = criarPonte({
-      'clientes.alterar': () => ({ ok: true, dados: { ...cliente, telefone: '222' } }),
-    });
-    const aoSalvar = vi.fn();
-    const u = userEvent.setup();
-    render(
-      <FormularioDeCliente
-        ponte={ponte}
-        editar={cliente}
-        aoSalvar={aoSalvar}
-        aoCancelar={() => undefined}
-      />,
-    );
-    expect(screen.getByRole('heading', { name: 'Editar cliente' })).toBeInTheDocument();
-    const telefone = screen.getByLabelText('Telefone');
-    await u.clear(telefone);
-    await u.type(telefone, '222');
-    await u.click(screen.getByRole('button', { name: 'Salvar alterações' }));
-    expect(chamadas).toEqual([
-      { operacao: 'clientes.alterar', id: cliente.id, campos: { telefone: '222' } },
-    ]);
-    expect(aoSalvar).toHaveBeenCalledOnce();
-  });
-
-  it('sem mudança, avisa e não manda nada', async () => {
-    const { ponte, chamadas } = criarPonte();
-    const u = userEvent.setup();
-    render(
-      <FormularioDeCliente
-        ponte={ponte}
-        editar={cliente}
-        aoSalvar={() => undefined}
-        aoCancelar={() => undefined}
-      />,
-    );
-    await u.click(screen.getByRole('button', { name: 'Salvar alterações' }));
-    expect(await screen.findByText('Você não mudou nada neste cadastro.')).toBeInTheDocument();
-    expect(chamadas).toEqual([]);
-  });
-});
-
 describe('palavras proibidas na tela (glossário, parte 2)', () => {
   const raiz = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', '..');
   const glossario = readFileSync(join(raiz, 'docs', 'glossario-interface.md'), 'utf8');
@@ -361,5 +305,26 @@ describe('palavras proibidas na tela (glossário, parte 2)', () => {
         expect(regra ? regra.test(visivel) : visivel.includes(proibida), proibida).toBe(false);
       }
     }
+  });
+});
+
+describe('o aviso do prazo sem internet nos dois idiomas (tarefa 9.6)', () => {
+  it('com o programa em espanhol o aviso vem em espanhol; em portugues, em portugues', () => {
+    const { ponte, estado } = criarPonte();
+    definirIdioma('es');
+    try {
+      const { unmount } = render(<IndicadorDeEnvio ponte={ponte} />);
+      estado({ prazo: { situacao: 'ESGOTADO', diasRestantes: 0, motivo: 'PRAZO' } });
+      expect(
+        screen.getByText('Esta computadora estuvo muchos días sin internet.'),
+      ).toBeInTheDocument();
+      expect(screen.queryByText(/ficou muitos dias/)).not.toBeInTheDocument();
+      unmount();
+    } finally {
+      definirIdioma('pt');
+    }
+    render(<IndicadorDeEnvio ponte={ponte} />);
+    estado({ prazo: { situacao: 'ESGOTADO', diasRestantes: 0, motivo: 'PRAZO' } });
+    expect(screen.getByText('Este computador ficou muitos dias sem internet.')).toBeInTheDocument();
   });
 });

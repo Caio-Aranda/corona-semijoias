@@ -17,13 +17,15 @@ class PermissoesDasConciliacoesTest extends ApoioDasConciliacoes {
     @Test
     void aDonaLeAsNoveEUmaSo() throws Exception {
         JsonNode todas = corpoDe(ler(ROTA, dona()).andExpect(status().isOk()));
-        assertThat(todas.get("conferencias").size()).isEqualTo(9);
+        assertThat(todas.get("conferencias").size()).isEqualTo(11);
         assertThat(todas.has("tudoCerto")).isTrue();
         assertThat(todas.has("geradaEm")).isTrue();
         JsonNode uma = corpoDe(ler(ROTA + "?chave=C4", dona()).andExpect(status().isOk()));
         assertThat(uma.get("conferencias").size()).isEqualTo(1);
         assertThat(uma.get("conferencias").get(0).get("chave").asString()).isEqualTo("C4");
         ler(ROTA + "?chave=c10", dona()).andExpect(status().isOk());
+        ler(ROTA + "?chave=C11", dona()).andExpect(status().isOk());
+        ler(ROTA + "?chave=c12", dona()).andExpect(status().isOk());
     }
 
     @Test
@@ -31,13 +33,17 @@ class PermissoesDasConciliacoesTest extends ApoioDasConciliacoes {
         UsuarioDeTeste v = usuarios.criarVendedor();
         ler(ROTA, como(v)).andExpect(status().isForbidden());
         ler(ROTA + "?chave=C1", como(v)).andExpect(status().isForbidden());
+        ler(ROTA + "?chave=C11", como(v)).andExpect(status().isForbidden());
+        ler(ROTA + "?chave=C12", como(v)).andExpect(status().isForbidden());
         mvc.perform(get(ROTA)).andExpect(status().isUnauthorized());
         mvc.perform(get(ROTA + "?chave=C1")).andExpect(status().isUnauthorized());
+        mvc.perform(get(ROTA + "?chave=C11")).andExpect(status().isUnauthorized());
+        mvc.perform(get(ROTA + "?chave=C12")).andExpect(status().isUnauthorized());
     }
 
     @Test
     void chaveVagaOuInventadaDa400EmPortugues() throws Exception {
-        for (String chave : new String[] {"C6", "C11", "XYZ"}) {
+        for (String chave : new String[] {"C6", "C13", "XYZ"}) {
             ler(ROTA + "?chave=" + chave, dona()).andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.campos[0].campo").value("chave"))
                     .andExpect(jsonPath("$.campos[0].mensagem").value(org.hamcrest.Matchers.containsString("conferência")));

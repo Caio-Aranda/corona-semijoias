@@ -1,4 +1,5 @@
 import { Aviso, Botao, Campo, EstadoDaLista, Paginacao, Tabela, ValorTresMoedas } from '@corona/ui';
+import { hojeEmBrasilia } from '../../nucleo/datas';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { ConsultaDeRelatorio, NomeDoRelatorio } from '../../../shared/relatorios';
 import type { PonteDoCorona } from '../../../shared/ponte';
@@ -40,6 +41,8 @@ import {
 } from '../../nucleo/relatorios';
 import { TEXTOS_RELATORIOS as T } from '../../textos-relatorios';
 import { TEXTOS_DE_MALETAS } from '../../textos-maletas';
+import { TEXTOS_SOLTOS as SOLTOS } from '../../textos-soltos';
+import { localeAtual } from '../../idioma/idioma';
 
 const MALETAS = TEXTOS_DE_MALETAS.relatorios;
 
@@ -82,7 +85,7 @@ const SEM_FILTROS: Filtros = {
 };
 
 function mesDeHoje(): string {
-  const partes = new Intl.DateTimeFormat('pt-BR', {
+  const partes = new Intl.DateTimeFormat(localeAtual(), {
     timeZone: 'America/Sao_Paulo',
     month: 'numeric',
   }).format(new Date());
@@ -191,7 +194,10 @@ function filtrosEmPalavras(
   }
   if (tem('periodo') && (f.de || f.ate)) {
     x.push(
-      `Período: ${f.de ? dataParaTela(f.de) : 'o começo'} a ${f.ate ? dataParaTela(f.ate) : 'hoje'}`,
+      SOLTOS.arquivo.periodo(
+        f.de ? dataParaTela(f.de) : SOLTOS.arquivo.comeco,
+        f.ate ? dataParaTela(f.ate) : SOLTOS.arquivo.hoje,
+      ),
     );
   }
   for (const e of def.extras ?? []) {
@@ -332,9 +338,9 @@ function valorNaTela(
     case 'dataHora':
       return dataEHoraParaTela(v);
     case 'simNao':
-      if (coluna.titulo === 'Situação')
+      if (coluna.titulo === SOLTOS.arquivo.situacao)
         return valor === true ? T.situacaoDoProduto.ativo : T.situacaoDoProduto.inativo;
-      return valor === true ? 'Sim' : 'Não';
+      return valor === true ? SOLTOS.arquivo.sim : SOLTOS.arquivo.nao;
     default:
       return v;
   }
@@ -348,8 +354,12 @@ export interface TelaDeRelatorioProps {
   /** Relatório aberto a partir de uma linha: um filtro fixo e o caminho de volta. */
   fixo?: FiltroFixo;
   aoVoltar?: () => void;
+  /** Conteúdo da tela que abriu o relatório (ex.: o Fechamento da maleta), logo abaixo da explicação. */
+  aposOTitulo?: ReactNode;
   /** Relatórios de maleta: abre a ficha da maleta da linha (na tela Maletas). */
   aoAbrirMaleta?: (id: string) => void;
+  /** Relatório aberto a partir do painel da semana: já começa com estes filtros. */
+  filtrosIniciais?: Partial<Pick<Filtros, 'semanaId' | 'vendedorId' | 'pracaId' | 'de' | 'ate'>>;
 }
 
 /**
@@ -362,7 +372,9 @@ export function TelaDeRelatorio({
   usuario,
   fixo,
   aoVoltar,
+  aposOTitulo,
   aoAbrirMaleta,
+  filtrosIniciais,
 }: TelaDeRelatorioProps) {
   const def = RELATORIOS[relatorio];
   const cotacao = useCotacao();
@@ -371,8 +383,9 @@ export function TelaDeRelatorio({
   const [aberto, setAberto] = useState<{ relatorio: NomeDoRelatorio; fixo: FiltroFixo } | null>(
     null,
   );
-  const [rascunho, setRascunho] = useState<Filtros>(SEM_FILTROS);
-  const [filtros, setFiltros] = useState<Filtros>(SEM_FILTROS);
+  const [inicio] = useState<Filtros>(() => ({ ...SEM_FILTROS, ...filtrosIniciais }));
+  const [rascunho, setRascunho] = useState<Filtros>(inicio);
+  const [filtros, setFiltros] = useState<Filtros>(inicio);
   const [pagina, setPagina] = useState(0);
   const [recorte, setRecorte] = useState<string | null>(null);
   const [exportando, setExportando] = useState(false);
@@ -398,6 +411,11 @@ export function TelaDeRelatorio({
   const opcoes = useBusca(() => carregarOpcoes(ponte, def), `opcoes|${relatorio}`);
   const listas = opcoes.dados ?? OPCOES_VAZIAS;
 
+  // Relatório em partes (Fechamento da maleta): uma aba por parte; a escolha só muda o que aparece na tela, os arquivos levam todas.
+  const [abaEscolhida, setAbaEscolhida] = useState(0);
+  const aba = def.abas ? (def.abas[abaEscolhida] ?? def.abas[0]) : undefined;
+  const mostraATabela = aba ? aba.comTabela : true;
+
   const consulta = useMemo(() => consultaDe(def, filtros, filtroFixo), [def, filtros, filtroFixo]);
   const chaveDosFiltros = `${relatorio}|${JSON.stringify(consulta)}`;
 
@@ -420,6 +438,15 @@ export function TelaDeRelatorio({
     if (dados && !recorte) setRodape({ chave: chaveDosFiltros, totais: dados.totais });
   }, [lista.dados]);
   const totais = rodape?.chave === chaveDosFiltros ? rodape.totais : (dados?.totais ?? []);
+  // Com abas, cada uma mostra só os totais dela (as chaves que não estão em nenhuma ficam na primeira).
+  const chavesDasAbas = (def.abas ?? []).flatMap((a) => a.totais);
+  const totaisDaAba = !aba
+    ? totais
+    : totais.filter(
+        (t) =>
+          aba.totais.includes(t.chave) ||
+          (aba.id === def.abas?.[0]?.id && !chavesDasAbas.includes(t.chave)),
+      );
   const rotuloDoRecorte = totais.find((t) => t.chave === recorte)?.rotulo;
 
   // Todas as linhas do relatório (sem o recorte): servem ao arquivo e ao total em Dólar e Guarani,
@@ -490,7 +517,7 @@ export function TelaDeRelatorio({
         titulo: def.titulo,
         filtros: filtrosEmPalavras(def, filtros, listas, filtroFixo),
         geradoEm: dataEHoraParaTela(agora),
-        geradoPor: usuario ?? 'Dona',
+        geradoPor: usuario ?? SOLTOS.arquivo.dona,
         linhaDaCotacao: jaConvertido
           ? (def.notaDaCotacao ?? MALETAS.cotacaoDoEnvio)
           : cotacao.taxas
@@ -512,9 +539,12 @@ export function TelaDeRelatorio({
             }
           : {}),
         ...(def.linhasDoTotal ? { linhasDoTotal: def.linhasDoTotal } : {}),
+        ...(def.abas
+          ? { secoes: def.abas.map((a) => ({ titulo: a.rotulo, totais: a.totais })) }
+          : {}),
       };
       const grade = montarGrade(pedido);
-      const base = `${def.nome}-${agora.toISOString().slice(0, 10)}`;
+      const base = `${def.nome}-${hojeEmBrasilia(agora)}`;
       if (formato === 'csv') {
         entregarArquivo(
           `${base}.csv`,
@@ -696,6 +726,26 @@ export function TelaDeRelatorio({
         <Aviso tipo="informacao">{T.estoqueECompras.acoes.filtroFixo(filtroFixo.texto)}</Aviso>
       ) : null}
       {def.nota ? <Aviso tipo="informacao">{def.nota}</Aviso> : null}
+      {aposOTitulo}
+
+      {def.abas ? (
+        <div role="tablist" aria-label={def.titulo} className="gestao-abas">
+          {def.abas.map((a, i) => (
+            <button
+              key={a.id}
+              type="button"
+              role="tab"
+              id={`aba-relatorio-${a.id}`}
+              aria-selected={aba?.id === a.id}
+              aria-controls="painel-relatorio"
+              className={`gestao-aba-botao${aba?.id === a.id ? ' gestao-aba-botao--atual' : ''}`}
+              onClick={() => setAbaEscolhida(i)}
+            >
+              {a.rotulo}
+            </button>
+          ))}
+        </div>
+      ) : null}
 
       <form
         className="gestao-filtros"
@@ -886,43 +936,54 @@ export function TelaDeRelatorio({
         {lista.erro && dados !== null ? (
           <AvisoDeErro erro={lista.erro} aoTentarDeNovo={lista.recarregar} />
         ) : null}
-        {recorte ? (
-          <Aviso tipo="informacao">{T.totais.mostrando(rotuloDoRecorte ?? '')}</Aviso>
-        ) : null}
-        <Tabela
-          legenda={def.titulo}
-          colunas={colunasDaTabela}
-          linhas={linhasDaTabela}
-          textoVazio={def.vazio}
-        />
-        {dados ? (
-          <Paginacao
-            pagina={dados.pagina}
-            tamanho={dados.tamanho}
-            total={dados.total}
-            nomeDoItem={[def.itens.um, def.itens.varios]}
-            aoMudar={setPagina}
-          />
+        {mostraATabela ? (
+          <>
+            {recorte ? (
+              <Aviso tipo="informacao">{T.totais.mostrando(rotuloDoRecorte ?? '')}</Aviso>
+            ) : null}
+            <Tabela
+              legenda={def.titulo}
+              colunas={colunasDaTabela}
+              linhas={linhasDaTabela}
+              textoVazio={def.vazio}
+            />
+            {dados ? (
+              <Paginacao
+                pagina={dados.pagina}
+                tamanho={dados.tamanho}
+                total={dados.total}
+                nomeDoItem={[def.itens.um, def.itens.varios]}
+                aoMudar={setPagina}
+              />
+            ) : null}
+          </>
         ) : null}
       </EstadoDaLista>
 
-      {totais.length > 0 ? (
-        <section className="gestao-totais" aria-label={T.totais.titulo}>
-          <h2 className="gestao-subtitulo">{T.totais.titulo}</h2>
+      {totaisDaAba.length > 0 ? (
+        <section
+          className="gestao-totais"
+          id="painel-relatorio"
+          role={def.abas ? 'tabpanel' : undefined}
+          aria-label={aba ? aba.rotulo : T.totais.titulo}
+        >
+          <h2 className="gestao-subtitulo">{aba ? aba.rotulo : T.totais.titulo}</h2>
           <ul>
-            {totais.map((t) => (
+            {totaisDaAba.map((t) => (
               <li key={t.chave}>
                 <span className="gestao-totais__rotulo">{t.rotulo}</span>
                 <span className="gestao-totais__valor">{totalNaTela(t)}</span>
-                <Botao
-                  onClick={() => {
-                    setRecorte(t.chave === 'todos' ? null : t.chave);
-                    setPagina(0);
-                  }}
-                  aria-label={`${T.totais.verRegistros}: ${t.rotulo}`}
-                >
-                  {T.totais.verRegistros}
-                </Botao>
+                {mostraATabela ? (
+                  <Botao
+                    onClick={() => {
+                      setRecorte(t.chave === 'todos' ? null : t.chave);
+                      setPagina(0);
+                    }}
+                    aria-label={`${T.totais.verRegistros}: ${t.rotulo}`}
+                  >
+                    {T.totais.verRegistros}
+                  </Botao>
+                ) : null}
               </li>
             ))}
           </ul>

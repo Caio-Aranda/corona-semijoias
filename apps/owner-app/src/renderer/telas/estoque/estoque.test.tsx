@@ -207,7 +207,7 @@ const ultima = (m: Montagem, op: string) => chamadasDe(m, op).at(-1)?.parametros
 
 async function menu(nome: string) {
   const nav = await screen.findByRole('navigation', { name: 'Menu do Corona Gestão' });
-  return within(nav).getByRole('button', { name: nome });
+  return within(nav).getAllByRole('button', { name: nome })[0]!;
 }
 
 async function ir(m: Montagem, item: string, titulo: string) {

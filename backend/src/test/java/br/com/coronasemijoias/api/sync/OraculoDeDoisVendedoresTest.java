@@ -50,7 +50,9 @@ class OraculoDeDoisVendedoresTest extends TesteDeIntegracao {
     /** Tabelas privadas de cada vendedor (as da loja e as peças podem ser dos dois). */
     private static final Set<String> PRIVADAS = Set.of("remessas", "itens_remessa", "movimentos_remessa", "vendas",
             "itens_venda", "pagamentos_cliente", "conferencias", "itens_conferencia", "devolucoes", "itens_devolucao",
-            "autorizacoes_excecao", "itens_autorizacao", "trocas", "creditos_cliente", "usos_credito", "creditos_sem_saldo");
+            "autorizacoes_excecao", "itens_autorizacao", "trocas", "creditos_cliente", "usos_credito", "creditos_sem_saldo",
+            "semanas_vendedor", "notas_consignado", "reposicoes_nota", "trocas_nota", "itens_nota_consignado", "remarcacoes_nota",
+            "acertos_nota", "itens_acerto_nota", "recibos_consignado", "formas_recibo_consignado", "aplicacoes_recibo");
 
     @Autowired
     JdbcTemplate jdbc;

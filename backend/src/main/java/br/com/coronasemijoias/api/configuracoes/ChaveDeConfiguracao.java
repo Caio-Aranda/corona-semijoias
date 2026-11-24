@@ -40,7 +40,10 @@ public enum ChaveDeConfiguracao {
     COMISSAO_PERCENTUAL_ABAIXO_DA_META("comissao_percentual_abaixo_da_meta"),
 
     /** Percentual da comissão quando a soma chega à meta (padrão 40). */
-    COMISSAO_PERCENTUAL_NA_META("comissao_percentual_na_meta");
+    COMISSAO_PERCENTUAL_NA_META("comissao_percentual_na_meta"),
+
+    /** 1 mostra no Corona Gestão o acerto antigo com a dona (§7.4); 0 (padrão) esconde. Nada é apagado (ADR-0016, item 15). */
+    ACERTO_DO_VENDEDOR_VISIVEL("acerto_do_vendedor_visivel");
 
     private final String chave;
 

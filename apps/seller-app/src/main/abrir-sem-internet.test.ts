@@ -60,9 +60,23 @@ const api = { eu: vi.fn(), chamar: vi.fn() };
 
 function bancoLocal(opcoes: { temDados?: boolean; senhaCerta?: string; login?: string } = {}) {
   let aberto = false;
+  let liberado = false;
   return {
-    prepararComInternet: vi.fn(() => Promise.resolve({ ok: true })),
-    temDadosLocais: opcoes.temDados ?? true,
+    prepararComInternet: vi.fn(() => {
+      aberto = true;
+      return Promise.resolve({ ok: true });
+    }),
+    get temDadosLocais() {
+      return !liberado && (opcoes.temDados ?? true);
+    },
+    usuarioDoComputador: () => (liberado ? null : (opcoes.login ?? 'ana')),
+    liberarParaOutraPessoa: vi.fn(() => {
+      liberado = true;
+      return true;
+    }),
+    get bancoAberto() {
+      return aberto;
+    },
     abrirSemInternet: vi.fn((senha: string) => {
       if (senha === (opcoes.senhaCerta ?? 'Senha-1')) {
         aberto = true;
@@ -84,6 +98,162 @@ function bancoLocal(opcoes: { temDados?: boolean; senhaCerta?: string; login?: s
     estaAberto: () => aberto,
   };
 }
+
+describe('reabrir o aplicativo com internet (defeito 2 do teste 9.10)', () => {
+  const renovaBem = () =>
+    guardaReal({
+      renovar: vi.fn(() => Promise.resolve({ ok: true as const, dados: credenciais() })),
+      entrar: vi.fn(() => Promise.resolve({ ok: true as const, dados: credenciais() })),
+    });
+
+  it('sessão renovada com internet, mas banco fechado: pede a senha, nunca mostra a tela principal', async () => {
+    const guarda = renovaBem();
+    await guarda.restaurar();
+    const s = new ServicoDeSessao(guarda, api, Promise.resolve(), bancoLocal());
+    expect(await s.estouLogado()).toMatchObject({ estado: 'reabrir' });
+  });
+
+  it('com a senha certa o banco abre, o motor liga e entra de verdade', async () => {
+    const banco = bancoLocal();
+    const motor = { ligar: vi.fn(), desligar: vi.fn() };
+    const guarda = renovaBem();
+    await guarda.restaurar();
+    const s = new ServicoDeSessao(
+      guarda,
+      {
+        ...api,
+        eu: vi.fn(() => Promise.resolve({ ok: true as const, dados: { nome: 'Ana Souza' } })),
+      },
+      Promise.resolve(),
+      banco,
+      motor,
+    );
+    expect(await s.entrar('ana', 'Senha-1')).toEqual({ tipo: 'entrou' });
+    expect(banco.prepararComInternet).toHaveBeenCalledWith('Senha-1');
+    expect(motor.ligar).toHaveBeenCalled();
+    expect(await s.estouLogado()).toMatchObject({ estado: 'dentro' });
+  });
+
+  it('o estado reabrir traz o usuário deste computador, para a tela travar o campo', async () => {
+    const guarda = renovaBem();
+    await guarda.restaurar();
+    const s = new ServicoDeSessao(guarda, api, Promise.resolve(), bancoLocal({ login: 'ana' }));
+    expect(await s.estouLogado()).toEqual({ estado: 'reabrir', usuario: 'ana' });
+  });
+
+  it('usuário diferente não toca no banco com dados de outra pessoa e a sessão não é trocada', async () => {
+    const banco = bancoLocal({ login: 'ana' });
+    const entrarNaApi = vi.fn(() => Promise.resolve({ ok: true as const, dados: credenciais() }));
+    const guarda = guardaReal({ entrar: entrarNaApi });
+    const s = new ServicoDeSessao(guarda, api, Promise.resolve(), banco);
+    const r = await s.entrar('outra', 'Senha-1');
+    expect(r).toMatchObject({ tipo: 'recusado', codigo: 'OUTRO_USUARIO' });
+    expect(entrarNaApi).not.toHaveBeenCalled();
+    expect(banco.prepararComInternet).not.toHaveBeenCalled();
+  });
+
+  it('a primeira entrada (senha temporária, depois a nova) também guarda quem usa o computador', async () => {
+    const banco = bancoLocal({ temDados: false });
+    const guarda = guardaReal({
+      entrar: vi.fn(() =>
+        Promise.resolve({
+          ok: true as const,
+          dados: credenciais({ trocaDeSenhaObrigatoria: true }),
+        }),
+      ),
+      trocarSenha: vi.fn(() => Promise.resolve({ ok: true as const, dados: credenciais() })),
+    });
+    const s = new ServicoDeSessao(guarda, api, Promise.resolve(), banco);
+    expect(await s.entrar(' Ana ', 'Temp-1')).toEqual({ tipo: 'trocar-senha' });
+    expect(await s.trocarSenha('Senha-Nova1')).toEqual({ tipo: 'entrou' });
+    expect(banco.lembrar).toHaveBeenCalledWith('vendedor_login', 'ana');
+  });
+
+  it('sem confirmar a saída, outro usuário continua recusado; confirmada, o computador fica livre', async () => {
+    const banco = bancoLocal({ login: 'ana' });
+    const entrarNaApi = vi.fn(() => Promise.resolve({ ok: true as const, dados: credenciais() }));
+    const guarda = guardaReal({ entrar: entrarNaApi });
+    const s = new ServicoDeSessao(guarda, api, Promise.resolve(), banco);
+    expect(await s.entrar('maria', 'Senha-1')).toMatchObject({ codigo: 'OUTRO_USUARIO' });
+    expect(banco.liberarParaOutraPessoa).not.toHaveBeenCalled();
+
+    await s.liberarComputador();
+    expect(banco.liberarParaOutraPessoa).toHaveBeenCalledTimes(1);
+    expect(await s.entrar('maria', 'Senha-1')).toEqual({ tipo: 'entrou' });
+    expect(entrarNaApi).toHaveBeenCalledTimes(1);
+  });
+
+  it('o mesmo usuário (maiúsculas à parte) entra normalmente', async () => {
+    const banco = bancoLocal({ login: 'ana' });
+    const guarda = renovaBem();
+    const s = new ServicoDeSessao(guarda, api, Promise.resolve(), banco);
+    expect(await s.entrar(' Ana ', 'Senha-1')).toEqual({ tipo: 'entrou' });
+  });
+
+  it('banco que não abre com dados no computador: erro simples, nunca "entrou"', async () => {
+    const banco = bancoLocal();
+    banco.prepararComInternet.mockImplementation(() =>
+      Promise.resolve({ ok: false, codigo: 'BANCO_ILEGIVEL' }),
+    );
+    const motor = { ligar: vi.fn(), desligar: vi.fn() };
+    const s = new ServicoDeSessao(renovaBem(), api, Promise.resolve(), banco, motor);
+    expect(await s.entrar('ana', 'Senha-1')).toMatchObject({
+      tipo: 'recusado',
+      codigo: 'BANCO_NAO_ABRIU',
+    });
+    expect(motor.ligar).not.toHaveBeenCalled();
+  });
+
+  it('exceção ao abrir o banco com dados no computador também vira erro simples', async () => {
+    const banco = bancoLocal();
+    banco.prepararComInternet.mockImplementation(() => Promise.reject(new Error('x')));
+    const s = new ServicoDeSessao(renovaBem(), api, Promise.resolve(), banco);
+    expect(await s.entrar('ana', 'Senha-1')).toMatchObject({ codigo: 'BANCO_NAO_ABRIU' });
+  });
+
+  it('sem dados locais, falha ao preparar o banco não impede a entrada (como antes)', async () => {
+    const banco = bancoLocal({ temDados: false });
+    banco.prepararComInternet.mockImplementation(() => Promise.resolve({ ok: false }));
+    const s = new ServicoDeSessao(renovaBem(), api, Promise.resolve(), banco);
+    expect(await s.entrar('ana', 'Senha-1')).toEqual({ tipo: 'entrou' });
+  });
+
+  it('reabrir com a sessão que acabou ou senha temporária: volta para a tela de entrar (fora)', async () => {
+    const f = guardaReal({
+      renovar: vi.fn(() =>
+        Promise.resolve({ ok: false as const, falha: { tipo: 'recusada' as const, status: 401 } }),
+      ),
+    });
+    await f.restaurar();
+    expect(
+      await new ServicoDeSessao(f, api, Promise.resolve(), bancoLocal()).estouLogado(),
+    ).toEqual({ estado: 'fora' });
+    const r = guardaReal({
+      renovar: vi.fn(() =>
+        Promise.resolve({
+          ok: true as const,
+          dados: credenciais({ trocaDeSenhaObrigatoria: true }),
+        }),
+      ),
+    });
+    await r.restaurar();
+    expect(
+      await new ServicoDeSessao(r, api, Promise.resolve(), bancoLocal()).estouLogado(),
+    ).toEqual({ estado: 'fora' });
+  });
+
+  it('sem dados locais (primeira vez), a sessão renovada segue direto', async () => {
+    const guarda = renovaBem();
+    await guarda.restaurar();
+    const s = new ServicoDeSessao(
+      guarda,
+      { ...api, eu: vi.fn(() => Promise.resolve({ ok: true as const, dados: { nome: 'Ana' } })) },
+      Promise.resolve(),
+      bancoLocal({ temDados: false }),
+    );
+    expect(await s.estouLogado()).toMatchObject({ estado: 'dentro' });
+  });
+});
 
 describe('abrir sem internet', () => {
   it('com sessão guardada e dados no computador, a tela pede só a senha (nada de "é preciso internet")', async () => {
@@ -117,6 +287,7 @@ describe('abrir sem internet', () => {
     expect(await s.entrar('ana', 'errada')).toEqual({
       tipo: 'recusado',
       mensagem: 'Usuário ou senha incorretos. Confira o que você digitou e tente de novo.',
+      codigo: 'SENHA_ERRADA',
     });
     expect(motor.ligar).not.toHaveBeenCalled();
   });
@@ -125,8 +296,8 @@ describe('abrir sem internet', () => {
     const banco = bancoLocal({ login: 'ana' });
     const s = new ServicoDeSessao(guardaReal({}), api, Promise.resolve(), banco);
     const r = await s.entrar('outra', 'Senha-1');
-    expect(r).toMatchObject({ tipo: 'recusado' });
-    expect(banco.fechar).toHaveBeenCalled();
+    expect(r).toMatchObject({ tipo: 'recusado', codigo: 'OUTRO_USUARIO' });
+    expect(banco.abrirSemInternet).not.toHaveBeenCalled();
   });
 
   it('internet voltando, a entrada normal continua valendo e não usa a senha do computador', async () => {
