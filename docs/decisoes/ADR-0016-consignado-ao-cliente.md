@@ -258,3 +258,14 @@ Só leitura, no padrão das da Fase 7: (a) `situacao` gravada = situação recal
 - **Dólar e Guarani por linha (item 2):** nos relatórios do Corona Vendas cada linha de valor traz as três moedas pela cotação do dia do lançamento dela; no Fechamento da maleta (aba Dinheiro) cada acerto e cada recibo entram pela cotação do dia deles, e o total é a soma (sem cotação em algum, só Real). O servidor manda `valorEmDolar` e `valorEmGuarani` nos totais.
 - **Tam./Ton. (item 5):** campo opcional do produto, só no pull formato 2 (ver §23.11). Resolve o que a D12 deixou de fora.
 - **Não feito:** a data não vale para o pagamento feito dentro do Acerto no Corona Gestão (continua o momento do acerto).
+
+### Adendo de 25/11/2026 (proposta): comissão da revendedora pela meta e retorno configurável
+
+**Situação: proposta**, aguardando a orquestradora (plano `docs/planos/acerto-45-dias.md`; especificação §23.13). A dona confirmou em 25/11 que o contrato de 45 dias e 30%/40% é com a **revendedora** (o Cliente do consignado), não com quem usa o Corona Vendas; o acerto da §7.4 continua escondido.
+
+1. **Meta por nota:** VD da nota convertido para Guarani uma vez, pela cotação do acerto da nota; ≥ meta → percentual na meta, senão abaixo. Sem cotação: abaixo, com alerta.
+2. **Configuração própria do consignado** (`consignado_meta_guarani`, `consignado_comissao_abaixo_da_meta`, `consignado_comissao_na_meta`, `consignado_dias_do_retorno`; migração nova), percentuais até 40% (o `CHECK` de `acertos_nota` não muda), indo ao Corona Vendas pelos `parametros` do pull.
+3. **`ACERTO_NOTA` formato 2** sem porcentagem: o servidor decide e grava `regra_da_comissao = META`, `meta_guarani` e `vd_guarani` (colunas novas, migração nova); diferença com o que o computador mostrou vira alerta pelo `visto`. O **formato 1** (Corona Vendas 1.2.0) continua como hoje (`INFORMADA`).
+4. Data do retorno sugerida = saída + os dias da configuração. Nada gravado muda quando a configuração muda.
+5. Corona Vendas 1.3.0 necessário (Cobrança com a comissão só leitura, formato 2, linha da meta no Relatório do acerto).
+

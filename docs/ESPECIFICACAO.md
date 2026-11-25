@@ -203,8 +203,6 @@ Regras:
 6. Peças com defeito são aprovadas pela dona no acerto; as boas voltam ao estoque central.
 7. Estados: `EM_ACERTO → ACERTADA`. Semana fechada **não aceita mais alteração**.
 
-> **Proposta de 25/11/2026 (v1.38, aguardando aprovação; ADR-0012, adendo de 25/11/2026; plano em `docs/planos/acerto-45-dias.md`).** Decisão da dona: o acerto com o representante é a cada **45 dias corridos**, contados desde a entrega da maleta, no dia que a dona marcar ("por el momento": o número fica em `configuracoes`, chave `acerto_dias_do_periodo`, padrão 45, de 1 a 365, mudado pela dona na tela da meta). A comissão continua 40% se o vendido no período chegar a Gs. 700.000 e 30% abaixo, sobre o total; **o período deixa de ser a semana** e passa a ser o **período do acerto** do representante: começa no envio da maleta mais antiga ainda sem acerto ou no dia seguinte ao último acerto registrado, e a data prevista (início + N dias) é só aviso, nunca trava. O vendido para a meta passa a ser o VD dos **acertos de nota** do consignado (§23.7) ainda sem acerto do representante, cada um convertido para Guarani pela cotação do próprio acerto de nota (ADR-0006). O índice "um acerto por vendedor e semana", as semanas da dona e o Fechar semana não mudam. Onde esta proposta e os itens 4 e 7 acima discordarem, vale esta, depois de aprovada.
-
 **Como ficou a semana fechada (tarefa 7.7, 14/11/2026; ADR-0012, item 17).** A semana só fecha pela rota `POST /api/dona/semanas/{id}/fechar` (só a dona, com um UUID do comando): só semana aberta que **já terminou** (o último dia é antes de hoje, em Brasília) e **sem acerto em andamento** nela. O fechamento fica registrado (`fechamentos_semana`, imutável) e a semana **nunca reabre**: não muda número, datas nem situação, não se exclui, e o formulário de semana não aceita mais "Fechada". Depois de fechada, a semana recusa acerto novo, maleta nova (rascunho) e envio de maleta, lançamento de caixa e pagamento a fornecedor com data nela; o dia de hoje nunca cai numa semana fechada, então os lançamentos automáticos nunca são recusados. Fechar e quem grava com data na semana se serializam: quem grava lê a semana com `FOR SHARE` como última trava e o fechar a trava com `FOR UPDATE`; o banco também recusa (segunda trava). O botão **Fechar semana**, com confirmação, é da tarefa 7.10.
 
 **Como ficou na tarefa 7.4 (acerto, parte 1: iniciar, travas, contagem e desistir; ADR-0012, itens 2, 3, 4, 13, 14, 15 e 16).** Sem dinheiro: totais, comissão, pendências e cotação nascem no fechamento (7.5).
@@ -782,7 +780,7 @@ Importação com nome de arquivo inválido, foto duplicada, arquivo corrompido, 
 
 ## 22. Histórico de mudanças
 
-- **v1.38, 25/11/2026 (proposta):** §7.4 e §23.1: o acerto do representante com a loja passa a ser a cada **45 dias corridos** (configurável pela dona, `acerto_dias_do_periodo`), contados desde a entrega da maleta, com a meta da comissão (Gs. 700.000, 30%/40%) contada no **período do acerto**; o vendido vem dos acertos de nota do consignado (§23.7), não de `vendas`. Aguarda a aprovação da orquestradora e as respostas da dona (ADR-0012, adendo de 25/11/2026; plano em `docs/planos/acerto-45-dias.md`).
+- **v1.38, 25/11/2026 (proposta):** §23: o acerto da nota com a revendedora (o Cliente do consignado) passa a ter a comissão decidida pela **meta** (40% se o VD da nota, em Guarani pela cotação do acerto, chegar a Gs. 700.000; 30% abaixo), e a Data do retorno sugerida passa a ser saída + N dias (padrão 45); meta, percentuais e dias configuráveis pela dona. O acerto da §7.4 continua escondido e não muda. Aguarda aprovação (nova §23.13; ADR-0016, adendo de 25/11/2026; plano em `docs/planos/acerto-45-dias.md`).
 - **v1.37, 24/11/2026:** §13: a C12 confere também a maleta FECHADA (leva 9) e não acusa a peça negativa que tem o alerta `PECA_SEM_SALDO_NA_MALETA` (a saída da nota aceita acima do saldo, ADR-0016 dúvida D4), como a K5.
 - **v1.36, 24/11/2026:** §7.5: em Contas a pagar e Contas a receber, o "Valor" mostra Dólar e Guarani pela cotação do dia da compra ou da venda e o "Já pago" pela cotação de cada pagamento, somados (o servidor calcula); o "Falta" continua pela cotação de hoje (ADR-0006, itens 7 e 10; achado M3 da revisão de 23/11).
 - **v1.35, 24/11/2026:** §7.5: a dona pode mudar só o Dólar ou só o Guarani; a moeda que ela não mexeu fica exatamente a da cotação que valia (ADR-0006, item 15). Respostas da dona às suposições S1 a S8: confirmadas.
@@ -914,7 +912,7 @@ Mudança vinda do teste de uso de 18/11/2026 na praça do representante (Ponta P
 ### 23.1 Decisões do responsável (18/11/2026)
 
 1. **A venda ao consumidor sai do Corona Vendas.** O fluxo único passa a ser a **nota consignada ao cliente** (esta seção). As telas de venda à vista/a prazo, parcelas, devolução e troca com garantia e crédito do cliente (§7.2 e §7.3) saem do Corona Vendas. Os dados antigos ficam no servidor, nada é apagado; as rotas antigas podem continuar existindo, mas o app não as usa.
-2. **O acerto em dinheiro do representante com a Lucia fica fora do sistema por enquanto.** O acerto da §7.4 (comissão por meta 30%/40% em Guarani, repasse em dinheiro, PIX ou boleto) **fica escondido** no Corona Gestão, sem apagar dados. No lugar, a Lucia bipa a maleta quando ela volta e o sistema gera o relatório **Fechamento da maleta** (§23.10). **Proposta de 25/11/2026 (v1.38):** o acerto com a Lucia passa a ser a cada 45 dias (configurável) com a meta contada no período; primeiro só a prévia e o registro do acerto do período, sem o dinheiro, que continua fora do sistema até a segunda leva (§7.4, proposta).
+2. **O acerto em dinheiro do representante com a Lucia fica fora do sistema por enquanto.** O acerto da §7.4 (comissão por meta 30%/40% em Guarani, repasse em dinheiro, PIX ou boleto) **fica escondido** no Corona Gestão, sem apagar dados. No lugar, a Lucia bipa a maleta quando ela volta e o sistema gera o relatório **Fechamento da maleta** (§23.10).
 3. **Prazo:** a seção inteira até sexta, 20/11/2026.
 4. **Nomes:** na tela, **Representante** (quem usa o Corona Vendas; antes "vendedor") e **Cliente** (quem pega peças em consignado para revender). Vale nos dois apps e nos dois idiomas; `docs/glossario-interface.md` acompanha. No código e no banco os nomes técnicos atuais (`vendedor`, `cliente`) continuam.
 5. **Continuam valendo** as regras inegociáveis do CLAUDE.md: gravado em Real e mostrado também em Dólar e Guarani pela cotação do dia (ADR-0006); `NUMERIC(14,2)`; UUID gerado no cliente; exclusão lógica; nota finalizada, acerto, pagamento e movimento de maleta são imutáveis (correção = estorno, registro novo); o servidor recalcula totais e comissões; o Corona Vendas nunca recebe custo nem dados de outro representante; o Corona Vendas continua **offline-first** (tudo desta seção funciona sem internet e vai pela outbox).
@@ -932,10 +930,10 @@ Mudança vinda do teste de uso de 18/11/2026 na praça do representante (Ponta P
 | **Código do produto** | O **código do fornecedor** (tipo `FORNECEDOR` do ADR-0007): é o que se bipa e o que aparece em todas as telas. Peças iguais têm o mesmo código; bipar de novo soma 1. |
 | **Nota (pedido)** | Tudo o que **um** cliente levou em **uma** saída. Número `semana-sequência`, ex.: `0000065-32`. |
 | **Acerto (cobrança)** | O retorno do cliente: devolve o que não vendeu e paga o vendido menos a comissão. |
-| **Data do retorno** | Dia em que o cliente volta para o acerto (sugestão: saída + 45 dias, editável). |
+| **Data do retorno** | Dia em que o cliente volta para o acerto (sugestão: saída + 45 dias, editável; proposta da §23.13: saída + N dias, N configurável, padrão 45). |
 | **Dt. Acerto** | Data em que o acerto foi feito: hoje por padrão, editável para um dia que já passou, nunca no futuro (§23.7). |
 | **DX / DV / VD** | DX (Deixado): o que o cliente levou, a preço de venda, bruto. DV (Devolvido): o que ele devolveu. VD (Vendido) = DX − DV. Itens DX/DV/VD = quantidades de peças. Nesta seção DX/DV/VD são **da nota do cliente**, não da maleta da §2. |
-| **Comissão** | Parte do vendido que fica com o cliente: padrão 30%, de 0% a 40%. |
+| **Comissão** | Parte do vendido que fica com o cliente: padrão 30%, de 0% a 40%. Proposta da §23.13: decidida pela meta (40% com o VD da nota a partir de Gs. 700.000, senão 30%). |
 | **Valor Líquido** | VD − Comissão, sempre, em todas as telas. |
 | **Pendência** | O que o cliente ficou devendo; acumula e entra sozinha no próximo acerto. |
 | **Recibo** | Registro de um pagamento, numerado `semana-sequência` com contador próprio, separado do das notas, e mostrado com o prefixo `R` (ex.: `R 0000065-01`; tarefa 9.8, ADR-0016 item 3). Os recibos gravados antes da 9.8 mantêm o número. |
@@ -998,7 +996,7 @@ Cada representante tem a sua lista (o Corona Gestão vê todos; o Corona Vendas 
 
 1. **Novo Pedido** cria a nota na **semana atual**; o número `semana-sequência` nasce sozinho no computador do representante (um aparelho por representante, §6 item 15; o servidor confere que não repete).
 2. Escolher o **cliente** (busca por nome). Com pendência: aviso "Este cliente deve R$ X. O valor será somado ao próximo acerto."
-3. **Data do retorno:** hoje + 45 dias, editável.
+3. **Data do retorno:** hoje + 45 dias, editável (proposta da §23.13: hoje + N dias da configuração).
 4. Escolher a **maleta** (o mesmo código pode estar em mais de uma).
 5. **Bipar** cada peça: o sistema procura o código **na maleta escolhida**; linha nova Ref. · Tam./Ton. · Produto · **Maleta** · Qtd. DX · Preço unitário · Sub-total, ou soma 1 se o mesmo código e a mesma maleta já estão na lista; atualiza Total de itens e Total DX.
 6. Trocar a maleta escolhida e continuar bipando põe peças de **outra maleta** na mesma nota.
@@ -1018,7 +1016,7 @@ Cada representante tem a sua lista (o Corona Gestão vê todos; o Corona Vendas 
 
 1. **Encontrar a nota** pelo botão Cobrança (ou dois cliques na linha): por **nome do cliente** (as notas em aberto dele), por **código da maleta** (todos os clientes com peças dela e as notas de cada um) ou por **número da nota**. Um acerto **por nota**; um cliente pode ter várias notas em aberto.
 2. **Aba Itens:** todas as linhas com Qtd. DX e Qtd. DV (começa em zero). Cada bipe soma 1 em DV. Mesmo código vindo de duas maletas na nota → pergunta para qual maleta volta. Código fora da nota ou DV acima de DX → avisa e não aceita. **Concluir devolução** lista as peças não bipadas: "Estas X peças serão consideradas vendidas. Confirmar?". Confirmado: as devolvidas voltam **à maleta de onde saíram** e ficam disponíveis; as vendidas saem do estoque da maleta.
-3. **Aba Forma de Pagamento** (disposição do print): **Acerto** (Venda %, Comissão %, Comissão R$, Total a Receber Bruto); a Comissão % vem do cadastro e pode mudar **só neste acerto**, até 40%. **Pendências anteriores** (nota, data, valor e total do débito): entram sozinhas e não se removem. **Total a Receber** = Bruto + pendências anteriores. **Pagamento**: Dinheiro, Pix, Débito e Crédito à vista (**sem cheque e sem boleto**). **Total Pago** e **Ficou devendo**. Rodapé: Itens e Total DX / DV / VD.
+3. **Aba Forma de Pagamento** (disposição do print): **Acerto** (Venda %, Comissão %, Comissão R$, Total a Receber Bruto); a Comissão % vem do cadastro e pode mudar **só neste acerto**, até 40% (proposta da §23.13: decidida pela meta, só leitura). **Pendências anteriores** (nota, data, valor e total do débito): entram sozinhas e não se removem. **Total a Receber** = Bruto + pendências anteriores. **Pagamento**: Dinheiro, Pix, Débito e Crédito à vista (**sem cheque e sem boleto**). **Total Pago** e **Ficou devendo**. Rodapé: Itens e Total DX / DV / VD.
 4. **Salvar:** gera o **recibo** (se houve pagamento) e o **relatório do acerto**. Pagou tudo → **Fechado**; faltou → **Pendente** e o valor vira pendência do cliente.
    - **Dt. Acerto** (tarefa 9.8): hoje por padrão; pode ser um dia que já passou, nunca no futuro (a tela não deixa; o servidor confere de novo em Brasília, pelo relógio dele, como no Lançar pagamento). O acerto e o recibo dele usam essa data e a cotação desse dia (ADR-0006). O número do recibo continua sendo da semana aberta no momento do lançamento (§23.4). A ordem dos débitos não muda com a data: vale a ordem em que os acertos foram lançados (§23.8). **Relógio errado (21/11/2026):** com a diferença de relógio guardada do último contato com o servidor (ADR-0013, item 11), o Vendas confere a data pelo "hoje" e pelo dia da saída como o servidor os verá; data anterior à saída corrigida mostra erro em português e não deixa salvar. O acerto de hoje (sem escolher data) não é barrado. Sem diferença guardada, vale a conferência de antes. Limite conhecido: uma nota já enviada mas ainda não devolvida pelo recebimento (situação ENVIADO na fila, que nunca sai dela) segue com a saída da hora local, sem correção, até o servidor devolvê-la. O acerto salvo mostra "Deve agora" quando o saldo da nota mudou depois do acerto, e a ficha do cliente mostra a sobra "a aplicar".
 5. **Cliente não veio:** mudar a Data do retorno → **Remarcado** (rosa).
@@ -1069,7 +1067,7 @@ Em todo relatório e tela de informação: **DX, DV e VD** (valores) e **Itens D
 | Relatório | Para | Conteúdo |
 | --- | --- | --- |
 | Nota de saída | Cliente | Número, data de saída e de retorno, representante, dados do cliente, peças (Ref. · Produto · Tam./Ton. · Maleta · Qtd. · Preço unitário · Sub-total), Itens DX, Total DX, pendência anterior, espaço para assinatura. Comprovante interno, sem NF-e. |
-| Relatório do acerto | Cliente | Nota, cliente, datas de saída e de acerto, peças vendidas, DX/DV/VD, comissão, pendências anteriores, total a receber, pago por forma, ficou devendo. |
+| Relatório do acerto | Cliente | Nota, cliente, datas de saída e de acerto, peças vendidas, DX/DV/VD, comissão, pendências anteriores, total a receber, pago por forma, ficou devendo. Proposta da §23.13: a linha da meta (vendido em Guarani, cotação, meta e percentual). |
 | Situação do cliente | Cliente | Já vendeu (notas fechadas: DX, DV, VD, comissão, líquido, pago) e o que falta (peças com ele, maleta, data de retorno, quanto deve). |
 | Peças vendidas por cliente | Representante | Cliente e período: cada peça vendida (Ref., produto, quantidade, valor) e total. |
 | Totais da semana | Representante | A aba Totais. |
@@ -1085,3 +1083,17 @@ Valores em Real, com Dólar e Guarani abaixo, pela cotação do dia de cada lan�
 ### 23.12 Fora desta versão
 
 Limite de crédito do cliente; acerto em dinheiro com a Lucia; desconto; entrada; NF-e; acesso do cliente.
+
+### 23.13 Comissão da revendedora pela meta (proposta de 25/11/2026)
+
+> **Proposta, aguardando aprovação** (ADR-0016, adendo de 25/11/2026; plano em `docs/planos/acerto-45-dias.md`). Onde esta seção e as §23.2, §23.6, §23.7, §23.8 e §23.11 discordarem, vale esta depois de aprovada.
+
+Decisão da dona (25/11/2026; contrato de consignação): o acerto com a **revendedora** (o Cliente desta seção) é a cada **45 dias corridos** desde a saída, "por el momento"; a comissão é **40%** se o vendido chegar a **Gs. 700.000** e **30%** abaixo, sobre o total vendido.
+
+1. **Configuração da dona** (Corona Gestão, só a dona, com auditoria): meta em Guarani (padrão 700.000), comissão abaixo da meta (30) e na meta (40), de 0% a 40%, com abaixo ≤ na meta, e dias para o retorno (45, de 1 a 365). Chaves próprias do consignado; as da §7.4 não mudam. Vão ao Corona Vendas nos parâmetros do pull.
+2. **Data do retorno sugerida** = saída + os dias da configuração; continua editável. Nota já finalizada não muda.
+3. **Meta por nota:** no acerto, o VD da nota é convertido para Guarani **uma vez**, pela cotação do acerto (a da Dt. Acerto, ADR-0006). VD em Guarani ≥ meta → comissão na meta; senão → abaixo. A base é o VD (a preço da maleta, sem pendências anteriores). Sem cotação: abaixo da meta, com alerta.
+4. **Quem decide é o servidor.** Na operação nova do acerto, o Corona Vendas não manda a porcentagem; ele mostra a mesma conta (só leitura, "Vendido nesta nota: Gs. X de Gs. 700.000") e, se o servidor decidir diferente (cotação que o computador ainda não tinha), vale a do servidor e a dona recebe alerta. O acerto grava a regra (`META`), a meta usada e o VD em Guarani.
+5. **Versão em campo:** o acerto mandado pelo Corona Vendas 1.2.0 continua aceito como hoje (a porcentagem informada, regra `INFORMADA`), até todos os computadores estarem na versão nova.
+6. Mudar a configuração não muda nada gravado; corrigir é estornar o acerto e fazer de novo (§23.7 item 6), já com a configuração do momento.
+7. O **Relatório do acerto** ganha a linha "Vendido em Guarani: Gs. X (cotação de DD/MM/AAAA). Meta: Gs. 700.000. Comissão: 40% (bateu a meta)." quando a regra é `META`.
