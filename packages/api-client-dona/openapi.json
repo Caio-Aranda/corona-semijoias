@@ -1323,6 +1323,27 @@
         },
         "type" : "object"
       },
+      "Consignado" : {
+        "properties" : {
+          "diasDoRetorno" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "metaGuarani" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "percentualAbaixoDaMeta" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "percentualNaMeta" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
       "ConsultasDaConferenciaConferencia" : {
         "properties" : {
           "conferidaEm" : {
@@ -15793,6 +15814,60 @@
         } ],
         "summary" : "Mudar a meta e os percentuais da comissão",
         "tags" : [ "da-dona" ]
+      }
+    },
+    "/api/dona/configuracoes/consignado" : {
+      "get" : {
+        "description" : "Meta em Guarani, percentual abaixo da meta e na meta (de 0 a 40) e dias da saída até o retorno (de 1 a 365).",
+        "operationId" : "lerConfiguracaoDoConsignado",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Consignado"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ver a meta, a comissão e os dias do retorno do consignado",
+        "tags" : [ "configuracao-do-consignado-controller" ]
+      },
+      "put" : {
+        "description" : "Grava os quatro valores. Não muda acerto feito nem Data do retorno já gravada. Cada valor que mudou fica na auditoria (COMISSAO_ALTERADA) com o valor antigo. Fora da faixa, ou abaixo da meta maior que na meta, 400.",
+        "operationId" : "alterarConfiguracaoDoConsignado",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Consignado"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Consignado"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Mudar a meta, a comissão e os dias do retorno do consignado",
+        "tags" : [ "configuracao-do-consignado-controller" ]
       }
     },
     "/api/dona/configuracoes/garantia" : {

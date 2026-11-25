@@ -1710,6 +1710,22 @@
       },
       "ParametrosDoVendedor" : {
         "properties" : {
+          "consignadoComissaoAbaixoDaMeta" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "consignadoComissaoNaMeta" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "consignadoDiasDoRetorno" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "consignadoMetaGuarani" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
           "limiteDescontoPercentual" : {
             "format" : "int32",
             "type" : "integer"

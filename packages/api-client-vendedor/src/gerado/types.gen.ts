@@ -488,6 +488,10 @@ export type PaginaConsultasDeVendasVenda = {
 };
 
 export type ParametrosDoVendedor = {
+    consignadoComissaoAbaixoDaMeta?: number;
+    consignadoComissaoNaMeta?: number;
+    consignadoDiasDoRetorno?: number;
+    consignadoMetaGuarani?: number;
     limiteDescontoPercentual?: number;
     prazoArrependimentoDias?: number;
     prazoDefeitoDias?: number;
