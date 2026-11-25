@@ -114,24 +114,115 @@
     "_comentario": "Comissao da revendedora decidida pela meta (especificacao 23.13, itens 3 e 4; plano acerto-45-dias, D1-D9). O VD da nota vira Guarani UMA vez, pela taxa de venda do Guarani (reais por guarani, 8 casas) da cotacao do acerto, arredondando HALF_UP para inteiro (como ConversaoDeMoeda.paraGuarani); VD em Guarani >= meta usa o percentual na meta; senao, o de baixo. Sem cotacao: de baixo. Meta e percentuais sao parametros.",
     "parametros": { "metaEmGuarani": "700000", "percentualAbaixo": "30", "percentualNaMeta": "40" },
     "casos": [
-      { "nome": "exatamente Gs. 700.000 bate a meta", "valorVd": "700.00", "taxaGuarani": "0.00100000", "vdEmGuarani": "700000", "percentual": "40", "bateuAMeta": true },
-      { "nome": "Gs. 699.999 nao bate", "valorVd": "700.02", "taxaGuarani": "0.00100003", "vdEmGuarani": "699999", "percentual": "30", "bateuAMeta": false },
-      { "nome": "o arredondamento do Guarani decide a meta (699.999,5 vira 700.000)", "valorVd": "1400.02", "taxaGuarani": "0.00200003", "vdEmGuarani": "700000", "percentual": "40", "bateuAMeta": true },
-      { "nome": "um pouco abaixo disso arredonda para 699.995 e nao bate", "valorVd": "1400.01", "taxaGuarani": "0.00200003", "vdEmGuarani": "699995", "percentual": "30", "bateuAMeta": false },
-      { "nome": "sem cotacao do Guarani vale a comissao de baixo", "valorVd": "5000.00", "taxaGuarani": null, "vdEmGuarani": null, "percentual": "30", "bateuAMeta": false },
-      { "nome": "nota sem venda (VD zero) nao bate a meta", "valorVd": "0.00", "taxaGuarani": "0.00100000", "vdEmGuarani": "0", "percentual": "30", "bateuAMeta": false }
+      {
+        "nome": "exatamente Gs. 700.000 bate a meta",
+        "valorVd": "700.00",
+        "taxaGuarani": "0.00100000",
+        "vdEmGuarani": "700000",
+        "percentual": "40",
+        "bateuAMeta": true
+      },
+      {
+        "nome": "Gs. 699.999 nao bate",
+        "valorVd": "700.02",
+        "taxaGuarani": "0.00100003",
+        "vdEmGuarani": "699999",
+        "percentual": "30",
+        "bateuAMeta": false
+      },
+      {
+        "nome": "o arredondamento do Guarani decide a meta (699.999,5 vira 700.000)",
+        "valorVd": "1400.02",
+        "taxaGuarani": "0.00200003",
+        "vdEmGuarani": "700000",
+        "percentual": "40",
+        "bateuAMeta": true
+      },
+      {
+        "nome": "um pouco abaixo disso arredonda para 699.995 e nao bate",
+        "valorVd": "1400.01",
+        "taxaGuarani": "0.00200003",
+        "vdEmGuarani": "699995",
+        "percentual": "30",
+        "bateuAMeta": false
+      },
+      {
+        "nome": "sem cotacao do Guarani vale a comissao de baixo",
+        "valorVd": "5000.00",
+        "taxaGuarani": null,
+        "vdEmGuarani": null,
+        "percentual": "30",
+        "bateuAMeta": false
+      },
+      {
+        "nome": "nota sem venda (VD zero) nao bate a meta",
+        "valorVd": "0.00",
+        "taxaGuarani": "0.00100000",
+        "vdEmGuarani": "0",
+        "percentual": "30",
+        "bateuAMeta": false
+      }
     ],
     "outrosParametros": [
-      { "nome": "meta de Gs. 1.000.000 com 25% e 35%: abaixo", "metaEmGuarani": "1000000", "percentualAbaixo": "25", "percentualNaMeta": "35", "valorVd": "700.00", "taxaGuarani": "0.00100000", "percentual": "25" },
-      { "nome": "meta de Gs. 1.000.000 com 25% e 35%: na meta", "metaEmGuarani": "1000000", "percentualAbaixo": "25", "percentualNaMeta": "35", "valorVd": "1000.00", "taxaGuarani": "0.00100000", "percentual": "35" },
-      { "nome": "os dois percentuais iguais (aceito)", "metaEmGuarani": "700000", "percentualAbaixo": "30", "percentualNaMeta": "30", "valorVd": "5000.00", "taxaGuarani": "0.00100000", "percentual": "30" }
+      {
+        "nome": "meta de Gs. 1.000.000 com 25% e 35%: abaixo",
+        "metaEmGuarani": "1000000",
+        "percentualAbaixo": "25",
+        "percentualNaMeta": "35",
+        "valorVd": "700.00",
+        "taxaGuarani": "0.00100000",
+        "percentual": "25"
+      },
+      {
+        "nome": "meta de Gs. 1.000.000 com 25% e 35%: na meta",
+        "metaEmGuarani": "1000000",
+        "percentualAbaixo": "25",
+        "percentualNaMeta": "35",
+        "valorVd": "1000.00",
+        "taxaGuarani": "0.00100000",
+        "percentual": "35"
+      },
+      {
+        "nome": "os dois percentuais iguais (aceito)",
+        "metaEmGuarani": "700000",
+        "percentualAbaixo": "30",
+        "percentualNaMeta": "30",
+        "valorVd": "5000.00",
+        "taxaGuarani": "0.00100000",
+        "percentual": "30"
+      }
     ],
     "parametrosRecusados": [
-      { "nome": "meta zero", "metaEmGuarani": "0", "percentualAbaixo": "30", "percentualNaMeta": "40" },
-      { "nome": "meta com casas", "metaEmGuarani": "700000.5", "percentualAbaixo": "30", "percentualNaMeta": "40" },
-      { "nome": "percentual na meta acima de 40", "metaEmGuarani": "700000", "percentualAbaixo": "30", "percentualNaMeta": "40.01" },
-      { "nome": "percentual de baixo maior que o da meta", "metaEmGuarani": "700000", "percentualAbaixo": "41", "percentualNaMeta": "40" },
-      { "nome": "percentual de baixo maior que o da meta (valores validos)", "metaEmGuarani": "700000", "percentualAbaixo": "35", "percentualNaMeta": "30" }
+      {
+        "nome": "meta zero",
+        "metaEmGuarani": "0",
+        "percentualAbaixo": "30",
+        "percentualNaMeta": "40"
+      },
+      {
+        "nome": "meta com casas",
+        "metaEmGuarani": "700000.5",
+        "percentualAbaixo": "30",
+        "percentualNaMeta": "40"
+      },
+      {
+        "nome": "percentual na meta acima de 40",
+        "metaEmGuarani": "700000",
+        "percentualAbaixo": "30",
+        "percentualNaMeta": "40.01"
+      },
+      {
+        "nome": "percentual de baixo maior que o da meta",
+        "metaEmGuarani": "700000",
+        "percentualAbaixo": "41",
+        "percentualNaMeta": "40"
+      },
+      {
+        "nome": "percentual de baixo maior que o da meta (valores validos)",
+        "metaEmGuarani": "700000",
+        "percentualAbaixo": "35",
+        "percentualNaMeta": "30"
+      }
     ],
     "notaComAMeta": {
       "_comentario": "A nota 0000064-21 (VD 2310,00) com cotacao fixa. Regra META: com 0,0008 R$ por Gs. (1 real = Gs. 1.250) o VD vale Gs. 2.887.500 e bate a meta (40%); com 0,004 vale Gs. 577.500 e nao bate (30%, igual a regra INFORMADA com 30).",
@@ -141,13 +232,23 @@
         "taxaGuarani": "0.00080000",
         "vdEmGuarani": "2887500",
         "percentual": "40",
-        "esperado": { "comissao": "924.00", "bruto": "1386.00", "totalAReceber": "1884.10", "ficouDevendo": "114.10" }
+        "esperado": {
+          "comissao": "924.00",
+          "bruto": "1386.00",
+          "totalAReceber": "1884.10",
+          "ficouDevendo": "114.10"
+        }
       },
       "naoBateu": {
         "taxaGuarani": "0.00400000",
         "vdEmGuarani": "577500",
         "percentual": "30",
-        "esperado": { "comissao": "693.00", "bruto": "1617.00", "totalAReceber": "2115.10", "ficouDevendo": "345.10" }
+        "esperado": {
+          "comissao": "693.00",
+          "bruto": "1617.00",
+          "totalAReceber": "2115.10",
+          "ficouDevendo": "345.10"
+        }
       }
     }
   },
