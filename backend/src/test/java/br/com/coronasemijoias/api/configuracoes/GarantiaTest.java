@@ -205,7 +205,8 @@ class GarantiaTest extends TesteDeIntegracao {
         assertThat(parametros.get("prazoArrependimentoDias").asInt()).isEqualTo(9);
         assertThat(parametros.get("prazoDefeitoDias").asInt()).isEqualTo(40);
         List<String> nomes = parametros.propertyNames().stream().sorted().toList();
-        assertThat(nomes).containsExactly("limiteDescontoPercentual", "prazoArrependimentoDias", "prazoDefeitoDias",
-                "situacaoDoAparelho", "tempoMaximoOfflineDias");
+        assertThat(nomes).containsExactly("consignadoComissaoAbaixoDaMeta",
+                "consignadoComissaoNaMeta", "consignadoDiasDoRetorno", "consignadoMetaGuarani", "limiteDescontoPercentual",
+                "prazoArrependimentoDias", "prazoDefeitoDias", "situacaoDoAparelho", "tempoMaximoOfflineDias");
     }
 }

@@ -61,7 +61,8 @@ public class SyncDoVendedorController {
 
     /** Valores da loja que o app precisa sem internet (lista explícita; ADR-0013, item 4). */
     public record ParametrosDoVendedor(int limiteDescontoPercentual, int tempoMaximoOfflineDias, String situacaoDoAparelho,
-            int prazoArrependimentoDias, int prazoDefeitoDias) {
+            int prazoArrependimentoDias, int prazoDefeitoDias, int consignadoMetaGuarani, int consignadoComissaoAbaixoDaMeta,
+            int consignadoComissaoNaMeta, int consignadoDiasDoRetorno) {
     }
 
     public record RespostaDoPull(List<LinhaRecebida> linhas, String cursor, boolean temMais, Instant horaServidor,
@@ -214,7 +215,11 @@ public class SyncDoVendedorController {
         return new ParametrosDoVendedor(configuracoes.inteiro(ChaveDeConfiguracao.LIMITE_DESCONTO_PERCENTUAL),
                 configuracoes.inteiro(ChaveDeConfiguracao.TEMPO_MAXIMO_OFFLINE_DIAS), situacao,
                 configuracoes.inteiro(ChaveDeConfiguracao.PRAZO_ARREPENDIMENTO_DIAS),
-                configuracoes.inteiro(ChaveDeConfiguracao.PRAZO_DEFEITO_DIAS));
+                configuracoes.inteiro(ChaveDeConfiguracao.PRAZO_DEFEITO_DIAS),
+                configuracoes.inteiro(ChaveDeConfiguracao.CONSIGNADO_META_GUARANI),
+                configuracoes.inteiro(ChaveDeConfiguracao.CONSIGNADO_COMISSAO_ABAIXO_DA_META),
+                configuracoes.inteiro(ChaveDeConfiguracao.CONSIGNADO_COMISSAO_NA_META),
+                configuracoes.inteiro(ChaveDeConfiguracao.CONSIGNADO_DIAS_DO_RETORNO));
     }
 
     /** As colunas de negócio e as datas de controle, em tipos simples para o JSON (dinheiro e datas como texto). */

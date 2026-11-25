@@ -43,7 +43,19 @@ public enum ChaveDeConfiguracao {
     COMISSAO_PERCENTUAL_NA_META("comissao_percentual_na_meta"),
 
     /** 1 mostra no Corona Gestão o acerto antigo com a dona (§7.4); 0 (padrão) esconde. Nada é apagado (ADR-0016, item 15). */
-    ACERTO_DO_VENDEDOR_VISIVEL("acerto_do_vendedor_visivel");
+    ACERTO_DO_VENDEDOR_VISIVEL("acerto_do_vendedor_visivel"),
+
+    /** Meta do consignado, em Guarani, sobre o VD da nota (padrão 700.000; plano acerto-45-dias, D5). */
+    CONSIGNADO_META_GUARANI("consignado_meta_guarani"),
+
+    /** Percentual da comissão do consignado abaixo da meta (padrão 30; de 0 a 40). */
+    CONSIGNADO_COMISSAO_ABAIXO_DA_META("consignado_comissao_abaixo_da_meta"),
+
+    /** Percentual da comissão do consignado na meta (padrão 40; de 0 a 40). */
+    CONSIGNADO_COMISSAO_NA_META("consignado_comissao_na_meta"),
+
+    /** Dias da saída até a Data do retorno sugerida (padrão 45; de 1 a 365). */
+    CONSIGNADO_DIAS_DO_RETORNO("consignado_dias_do_retorno");
 
     private final String chave;
 
