@@ -1,6 +1,6 @@
 # Especificação completa: Sistema de Semijoias Consignadas
 
-Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.37, 24/11/2026.
+Documento-base para iniciar o desenvolvimento no Claude Code. Consolida todas as decisões do planejamento. Versão 1.38, 25/11/2026.
 
 ## 1. Objetivo e contexto
 
@@ -202,6 +202,8 @@ Regras:
 5. Aceita pagamento do repasse do vendedor à loja em **dinheiro, transferência (gravada como `PIX`) e boleto**. **No sistema novo não existe entrada nem cheque** (ADR-0012, aceito em 13/11/2026); o acerto também não aceita cartão.
 6. Peças com defeito são aprovadas pela dona no acerto; as boas voltam ao estoque central.
 7. Estados: `EM_ACERTO → ACERTADA`. Semana fechada **não aceita mais alteração**.
+
+> **Proposta de 25/11/2026 (v1.38, aguardando aprovação; ADR-0012, adendo de 25/11/2026; plano em `docs/planos/acerto-45-dias.md`).** Decisão da dona: o acerto com o representante é a cada **45 dias corridos**, contados desde a entrega da maleta, no dia que a dona marcar ("por el momento": o número fica em `configuracoes`, chave `acerto_dias_do_periodo`, padrão 45, de 1 a 365, mudado pela dona na tela da meta). A comissão continua 40% se o vendido no período chegar a Gs. 700.000 e 30% abaixo, sobre o total; **o período deixa de ser a semana** e passa a ser o **período do acerto** do representante: começa no envio da maleta mais antiga ainda sem acerto ou no dia seguinte ao último acerto registrado, e a data prevista (início + N dias) é só aviso, nunca trava. O vendido para a meta passa a ser o VD dos **acertos de nota** do consignado (§23.7) ainda sem acerto do representante, cada um convertido para Guarani pela cotação do próprio acerto de nota (ADR-0006). O índice "um acerto por vendedor e semana", as semanas da dona e o Fechar semana não mudam. Onde esta proposta e os itens 4 e 7 acima discordarem, vale esta, depois de aprovada.
 
 **Como ficou a semana fechada (tarefa 7.7, 14/11/2026; ADR-0012, item 17).** A semana só fecha pela rota `POST /api/dona/semanas/{id}/fechar` (só a dona, com um UUID do comando): só semana aberta que **já terminou** (o último dia é antes de hoje, em Brasília) e **sem acerto em andamento** nela. O fechamento fica registrado (`fechamentos_semana`, imutável) e a semana **nunca reabre**: não muda número, datas nem situação, não se exclui, e o formulário de semana não aceita mais "Fechada". Depois de fechada, a semana recusa acerto novo, maleta nova (rascunho) e envio de maleta, lançamento de caixa e pagamento a fornecedor com data nela; o dia de hoje nunca cai numa semana fechada, então os lançamentos automáticos nunca são recusados. Fechar e quem grava com data na semana se serializam: quem grava lê a semana com `FOR SHARE` como última trava e o fechar a trava com `FOR UPDATE`; o banco também recusa (segunda trava). O botão **Fechar semana**, com confirmação, é da tarefa 7.10.
 
@@ -780,6 +782,7 @@ Importação com nome de arquivo inválido, foto duplicada, arquivo corrompido, 
 
 ## 22. Histórico de mudanças
 
+- **v1.38, 25/11/2026 (proposta):** §7.4 e §23.1: o acerto do representante com a loja passa a ser a cada **45 dias corridos** (configurável pela dona, `acerto_dias_do_periodo`), contados desde a entrega da maleta, com a meta da comissão (Gs. 700.000, 30%/40%) contada no **período do acerto**; o vendido vem dos acertos de nota do consignado (§23.7), não de `vendas`. Aguarda a aprovação da orquestradora e as respostas da dona (ADR-0012, adendo de 25/11/2026; plano em `docs/planos/acerto-45-dias.md`).
 - **v1.37, 24/11/2026:** §13: a C12 confere também a maleta FECHADA (leva 9) e não acusa a peça negativa que tem o alerta `PECA_SEM_SALDO_NA_MALETA` (a saída da nota aceita acima do saldo, ADR-0016 dúvida D4), como a K5.
 - **v1.36, 24/11/2026:** §7.5: em Contas a pagar e Contas a receber, o "Valor" mostra Dólar e Guarani pela cotação do dia da compra ou da venda e o "Já pago" pela cotação de cada pagamento, somados (o servidor calcula); o "Falta" continua pela cotação de hoje (ADR-0006, itens 7 e 10; achado M3 da revisão de 23/11).
 - **v1.35, 24/11/2026:** §7.5: a dona pode mudar só o Dólar ou só o Guarani; a moeda que ela não mexeu fica exatamente a da cotação que valia (ADR-0006, item 15). Respostas da dona às suposições S1 a S8: confirmadas.
@@ -911,7 +914,7 @@ Mudança vinda do teste de uso de 18/11/2026 na praça do representante (Ponta P
 ### 23.1 Decisões do responsável (18/11/2026)
 
 1. **A venda ao consumidor sai do Corona Vendas.** O fluxo único passa a ser a **nota consignada ao cliente** (esta seção). As telas de venda à vista/a prazo, parcelas, devolução e troca com garantia e crédito do cliente (§7.2 e §7.3) saem do Corona Vendas. Os dados antigos ficam no servidor, nada é apagado; as rotas antigas podem continuar existindo, mas o app não as usa.
-2. **O acerto em dinheiro do representante com a Lucia fica fora do sistema por enquanto.** O acerto da §7.4 (comissão por meta 30%/40% em Guarani, repasse em dinheiro, PIX ou boleto) **fica escondido** no Corona Gestão, sem apagar dados. No lugar, a Lucia bipa a maleta quando ela volta e o sistema gera o relatório **Fechamento da maleta** (§23.10).
+2. **O acerto em dinheiro do representante com a Lucia fica fora do sistema por enquanto.** O acerto da §7.4 (comissão por meta 30%/40% em Guarani, repasse em dinheiro, PIX ou boleto) **fica escondido** no Corona Gestão, sem apagar dados. No lugar, a Lucia bipa a maleta quando ela volta e o sistema gera o relatório **Fechamento da maleta** (§23.10). **Proposta de 25/11/2026 (v1.38):** o acerto com a Lucia passa a ser a cada 45 dias (configurável) com a meta contada no período; primeiro só a prévia e o registro do acerto do período, sem o dinheiro, que continua fora do sistema até a segunda leva (§7.4, proposta).
 3. **Prazo:** a seção inteira até sexta, 20/11/2026.
 4. **Nomes:** na tela, **Representante** (quem usa o Corona Vendas; antes "vendedor") e **Cliente** (quem pega peças em consignado para revender). Vale nos dois apps e nos dois idiomas; `docs/glossario-interface.md` acompanha. No código e no banco os nomes técnicos atuais (`vendedor`, `cliente`) continuam.
 5. **Continuam valendo** as regras inegociáveis do CLAUDE.md: gravado em Real e mostrado também em Dólar e Guarani pela cotação do dia (ADR-0006); `NUMERIC(14,2)`; UUID gerado no cliente; exclusão lógica; nota finalizada, acerto, pagamento e movimento de maleta são imutáveis (correção = estorno, registro novo); o servidor recalcula totais e comissões; o Corona Vendas nunca recebe custo nem dados de outro representante; o Corona Vendas continua **offline-first** (tudo desta seção funciona sem internet e vai pela outbox).

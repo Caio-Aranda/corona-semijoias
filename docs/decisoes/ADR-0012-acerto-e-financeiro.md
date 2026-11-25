@@ -378,6 +378,19 @@ Configuração: meta de 700.000 Gs, 30% abaixo e 40% a partir dela. Maleta NOVA:
 
 As dúvidas para a dona, cada uma com o padrão seguro adotado, estão em [fase-7-plano.md](../progresso/fase-7-plano.md#dúvidas-para-a-dona). A que ainda muda o modelo e precisa de resposta antes da 7.5 é a 1 (fiado). A 2 e a 4 (comissão), a 7 (entrada), a 11 (cheque), a 14 (cartão) e a 20 (semana) foram respondidas em 13/11/2026.
 
+## Adendo de 25/11/2026 (proposta): acerto do representante a cada 45 dias
+
+**Situação: proposta**, aguardando a orquestradora e as respostas da dona (P1 a P9 do plano `docs/planos/acerto-45-dias.md`).
+
+Decisão da dona (25/11/2026): o acerto com o representante é a cada **45 dias corridos** ("por el momento"), contados desde a entrega da maleta, no dia que a dona marcar; a comissão continua 40% se o vendido **no período** chegar a Gs. 700.000 e 30% abaixo, sobre o total. Muda o item 5 ("é por semana") e o item 3 nos pontos abaixo; o resto do ADR continua.
+
+1. **Período do representante, sem entidade global nova.** Começa no envio da maleta mais antiga ainda sem acerto ou no dia seguinte ao último acerto registrado; a data prevista é o início + `acerto_dias_do_periodo` (configuração nova, inteiro de 1 a 365, padrão 45, na mesma tela e auditoria da meta). A data é aviso, não trava. `semanas`, `fechamentos_semana` e o índice `acertos (vendedor_id, semana_id)` não mudam.
+2. **A meta continua "ainda sem acerto"** (item 4): o vínculo, não uma janela de datas, decide o que entra; o que chega atrasado sem internet cai no próximo período.
+3. **Fonte do vendido: o consignado.** Desde a 9.2 o Corona Vendas não grava `vendas`; o vendido para a meta passa a ser o `valor_vd` de cada `acertos_nota` do representante, convertido para Guarani pela cotação do próprio acerto de nota e arredondado sozinho; a soma é a dos convertidos. Comissão por acerto de nota, percentual gravado na linha; estorno de acerto de nota já registrado vira `ESTORNO` no próximo acerto com o percentual da linha original.
+4. **Tabelas novas e imutáveis** (`acertos_representante`, `acertos_representante_eventos`, `comissoes_representante`; migração nova V060), só do servidor, fora do sync, com as conferências no `COMMIT` como no 7.5. As tabelas `acertos`, `acerto_eventos` e `comissoes` da §7.4 ficam como estão (o `venda_id NOT NULL` delas não é afrouxado). Corrigir = estornar e registrar de novo.
+5. **Primeira leva sem dinheiro.** A dona vê a prévia (próximo acerto, vendido no período, percentual e comissão) e registra o acerto do período (comprovante); o repasse em dinheiro continua fora do sistema (§23.1 item 2) até um plano próprio (segunda leva), que também decide o cartão (o contrato aceita tarjeta; o item 9 recusa).
+6. **Corona Vendas 1.2.0 e sync:** nada muda na primeira leva. A prévia do representante, na segunda leva, é online pela rota que já existe (`GET /api/vendedor/comissao/previa`, só com campos novos).
+
 ## Histórico
 
 - **11/11/2026:** proposto (tarefa 7.1, PR 73).
@@ -385,3 +398,4 @@ As dúvidas para a dona, cada uma com o padrão seguro adotado, estão em [fase-
 - **14/11/2026:** item 7 implementado no nível 1 (tarefa 7.3).
 - **14/11/2026:** itens 2, 3, 4, 13, 14, 15 e 16 implementados na parte 1 do acerto, sem dinheiro (tarefa 7.4; V043).
 - **14/11/2026:** itens 1, 2, 3.6, 7, 8, 9, 11, 13, 14, 15 e 16 implementados no dinheiro do acerto, nos recebimentos do vendedor e no caixa automático (tarefa 7.6; V045).
+- **25/11/2026:** adendo proposto (acerto do representante a cada 45 dias, meta no período, vendido do consignado; plano `docs/planos/acerto-45-dias.md`).
