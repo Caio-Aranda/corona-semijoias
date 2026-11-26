@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import exemplos from '../../exemplos/consignado-acerto.json';
 import { aplicarPagamento } from './aplicacao-de-pagamento';
 import { calcularAcerto, comissaoValida } from './calculo-do-acerto';
+import { decidirComissaoPelaMeta, parametrosDaMetaValidos } from './comissao-pela-meta';
 import { exigirCentavos, textoDeCentavos } from './dinheiro-do-consignado';
 import { situacaoDaNota } from './situacao-da-nota';
 
@@ -132,5 +133,50 @@ describe('situação da nota', () => {
     expect(situacaoDaNota(true, false, '0.00')).toBe('FECHADO');
     // Estorno do acerto: sem acerto ativo volta a Em aberto (ou Remarcado).
     expect(situacaoDaNota(false, false, '10.00')).toBe('EM_ABERTO');
+  });
+});
+
+/** Os mesmos casos que o servidor lê (`ComissaoPelaMetaTest`): o arquivo é um só (§23.13). */
+describe('comissão pela meta (arquivo de exemplos)', () => {
+  const meta = exemplos.comissaoPelaMeta;
+
+  it.each(meta.casos)('$nome', (c) => {
+    const d = decidirComissaoPelaMeta(c.valorVd, c.taxaGuarani, meta.parametros);
+    expect(d.percentual).toBe(c.percentual);
+    expect(d.bateuAMeta).toBe(c.bateuAMeta);
+    expect(d.vdEmGuarani).toBe(c.vdEmGuarani);
+  });
+
+  it.each(meta.outrosParametros)('parâmetros vêm de fora: $nome', (c) => {
+    const d = decidirComissaoPelaMeta(c.valorVd, c.taxaGuarani, c);
+    expect(d.percentual).toBe(c.percentual);
+  });
+
+  it.each(meta.parametrosRecusados)('parâmetros recusados: $nome', (p) => {
+    expect(parametrosDaMetaValidos(p)).toBe(false);
+    expect(() => decidirComissaoPelaMeta('100.00', '0.00100000', p)).toThrow(RangeError);
+  });
+
+  it('parâmetros do exemplo são válidos', () => {
+    expect(parametrosDaMetaValidos(meta.parametros)).toBe(true);
+  });
+
+  it.each(['bateu', 'naoBateu'] as const)('nota 0000064-21 com a regra META: %s', (qual) => {
+    const n = exemplos.notaDeExemplo;
+    const c = meta.notaComAMeta[qual];
+    const vd = calcularAcerto(n.linhas, '0', '0.00', '0.00').valorVd;
+    const d = decidirComissaoPelaMeta(vd, c.taxaGuarani, meta.parametros);
+    expect(d.vdEmGuarani).toBe(c.vdEmGuarani);
+    expect(d.percentual).toBe(c.percentual);
+    const r = calcularAcerto(
+      n.linhas,
+      d.percentual,
+      meta.notaComAMeta.pendenciasAnteriores,
+      meta.notaComAMeta.pago,
+    );
+    expect(r.comissao).toBe(c.esperado.comissao);
+    expect(r.bruto).toBe(c.esperado.bruto);
+    expect(r.totalAReceber).toBe(c.esperado.totalAReceber);
+    expect(r.ficouDevendo).toBe(c.esperado.ficouDevendo);
   });
 });
