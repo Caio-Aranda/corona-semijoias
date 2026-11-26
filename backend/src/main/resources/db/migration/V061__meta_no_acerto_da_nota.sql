@@ -17,7 +17,8 @@ COMMENT ON COLUMN corona.acertos_nota.vd_guarani IS
 -- conferido pela conciliação K9 (o banco não sabe quais eram os percentuais do dia).
 ALTER TABLE corona.acertos_nota ADD CONSTRAINT acertos_nota_meta_coerente CHECK (
     (regra_da_comissao = 'INFORMADA' AND meta_guarani IS NULL AND vd_guarani IS NULL)
-    OR (regra_da_comissao = 'META' AND meta_guarani > 0 AND (vd_guarani >= 0 OR (vd_guarani IS NULL AND cotacao_id IS NULL))));
+    OR (regra_da_comissao = 'META' AND meta_guarani IS NOT NULL AND meta_guarani > 0
+        AND ((vd_guarani IS NOT NULL AND vd_guarani >= 0) OR (vd_guarani IS NULL AND cotacao_id IS NULL))));
 
 -- A imutabilidade protege também as três colunas novas.
 CREATE OR REPLACE FUNCTION corona.proteger_acerto_nota() RETURNS trigger
@@ -26,6 +27,7 @@ AS $$
 BEGIN
     IF NEW.nota_id IS DISTINCT FROM OLD.nota_id OR NEW.vendedor_id IS DISTINCT FROM OLD.vendedor_id
             OR NEW.semana_id IS DISTINCT FROM OLD.semana_id OR NEW.acertado_em IS DISTINCT FROM OLD.acertado_em
+            OR NEW.registrado_em IS DISTINCT FROM OLD.registrado_em
             OR NEW.comissao_percentual IS DISTINCT FROM OLD.comissao_percentual OR NEW.itens_dx IS DISTINCT FROM OLD.itens_dx
             OR NEW.itens_dv IS DISTINCT FROM OLD.itens_dv OR NEW.itens_vd IS DISTINCT FROM OLD.itens_vd
             OR NEW.valor_dx IS DISTINCT FROM OLD.valor_dx OR NEW.valor_dv IS DISTINCT FROM OLD.valor_dv

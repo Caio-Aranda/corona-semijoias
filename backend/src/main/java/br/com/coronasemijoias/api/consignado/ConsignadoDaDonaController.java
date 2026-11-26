@@ -92,7 +92,7 @@ public class ConsignadoDaDonaController {
     }
 
     @Operation(operationId = "conferirConsignado", summary = "Conciliações do consignado (só leitura)",
-            description = "Sete conferências (K1 a K7) sobre o banco; cada uma lista o que não bate. Vazio = tudo certo.")
+            description = "Dez conferências (K1 a K10) sobre o banco; cada uma lista o que não bate. Vazio = tudo certo.")
     @GetMapping("/dona/consignado/conciliacoes")
     public ConciliacoesDoConsignado.Resultado conciliar() {
         return conciliacoes.conferir();

@@ -20,12 +20,14 @@ import org.springframework.transaction.annotation.Transactional;
  * forma das da Fase 7 (a mesma {@link Conferencia} e {@link Diferenca}). Nunca corrige nada. K1 situação gravada da nota = a
  * recalculada; K2 totais do acerto = os recalculados dos itens; K3 aplicações ativas de cada débito dentro de 0 e o bruto; K4
  * recibo: total = formas e aplicações dentro do total; K5 disponível da maleta não negativo (ou alerta já registrado); K6 cada
- * devolução à maleta tem o DV do acerto; K7 uma semana aberta por representante.
+ * devolução à maleta tem o DV do acerto; K7 uma semana aberta por representante. A meta (§23.13): K8 o VD em Guarani do acerto
+ * pela meta é a conversão do VD pela cotação dele; K9 a comissão é o percentual do lado da meta, pela configuração vigente no
+ * lançamento (a auditoria {@code COMISSAO_ALTERADA}); K10 a regra {@code INFORMADA} só existe em operação de formato 1.
  */
 @Service
 public class ConciliacoesDoConsignado {
 
-    public static final List<String> CHAVES = List.of("K1", "K2", "K3", "K4", "K5", "K6", "K7");
+    public static final List<String> CHAVES = List.of("K1", "K2", "K3", "K4", "K5", "K6", "K7", "K8", "K9", "K10");
 
     public record Resultado(Instant geradaEm, boolean tudoCerto, List<Conferencia> conferencias) {
     }
@@ -45,7 +47,7 @@ public class ConciliacoesDoConsignado {
     public Resultado conferir(String chave) {
         String limpa = chave == null ? "" : chave.strip().toUpperCase(Locale.ROOT);
         if (!CHAVES.contains(limpa)) {
-            throw Validacoes.recusar("chave", "Escolha uma das conferências da lista: K1, K2, K3, K4, K5, K6 ou K7.");
+            throw Validacoes.recusar("chave", "Escolha uma das conferências da lista: K1, K2, K3, K4, K5, K6, K7, K8, K9 ou K10.");
         }
         return resultado(List.of(limpa));
     }
@@ -60,7 +62,10 @@ public class ConciliacoesDoConsignado {
                 case "K4" -> k4();
                 case "K5" -> k5();
                 case "K6" -> k6();
-                default -> k7();
+                case "K7" -> k7();
+                case "K8" -> k8();
+                case "K9" -> k9();
+                default -> k10();
             });
         }
         return new Resultado(Instant.now(), lista.stream().allMatch(x -> x.divergencias().isEmpty()), lista);
@@ -180,6 +185,53 @@ public class ConciliacoesDoConsignado {
                         BigDecimal.valueOf(rs.getLong(2)), Unidade.REGISTROS));
         return conferencia("K7", "Semana aberta", "Cada representante tem no máximo uma semana aberta.",
                 contar("corona.semanas_vendedor"), d);
+    }
+
+    private Conferencia k8() {
+        List<Diferenca> d = jdbc.query("""
+                SELECT a.id, a.vd_guarani, round(a.valor_vd / c.pyg_venda)
+                  FROM corona.acertos_nota a JOIN corona.cotacoes c ON c.id = a.cotacao_id
+                 WHERE a.regra_da_comissao = 'META' AND a.vd_guarani IS NOT NULL AND a.vd_guarani <> round(a.valor_vd / c.pyg_venda)""",
+                (rs, i) -> new Diferenca("ACERTO", rs.getObject(1, UUID.class), "VD em Guarani diferente da conversão pela cotação do acerto",
+                        rs.getBigDecimal(3), rs.getBigDecimal(2), Unidade.REGISTROS));
+        return conferencia("K8", "VD em Guarani do acerto", "No acerto pela meta, o VD em Guarani é a conversão do VD pela cotação dele.",
+                contar("corona.acertos_nota"), d);
+    }
+
+    /** O valor da chave vigente no lançamento do acerto {@code a}: a última mudança antes dele, senão o "antes" da primeira depois. */
+    private static String valorDaChaveNoLancamento(String chave) {
+        return """
+                coalesce(
+                  (SELECT (au.depois->>'valor')::int FROM corona.auditoria au WHERE au.acao = 'COMISSAO_ALTERADA'
+                      AND au.depois->>'chave' = '%1$s' AND au.ocorrida_em <= a.registrado_em ORDER BY au.ocorrida_em DESC LIMIT 1),
+                  (SELECT (au.antes->>'valor')::int FROM corona.auditoria au WHERE au.acao = 'COMISSAO_ALTERADA'
+                      AND au.antes->>'chave' = '%1$s' AND au.ocorrida_em > a.registrado_em ORDER BY au.ocorrida_em ASC LIMIT 1),
+                  (SELECT valor_inteiro FROM corona.configuracoes WHERE chave = '%1$s'))""".formatted(chave);
+    }
+
+    private Conferencia k9() {
+        List<Diferenca> d = jdbc.query("""
+                SELECT a.id, a.comissao_percentual, x.esperado
+                  FROM corona.acertos_nota a
+                  CROSS JOIN LATERAL (SELECT CASE WHEN a.vd_guarani >= a.meta_guarani THEN %s ELSE %s END AS esperado) x
+                 WHERE a.regra_da_comissao = 'META' AND a.comissao_percentual <> x.esperado""".formatted(
+                        valorDaChaveNoLancamento("consignado_comissao_na_meta"),
+                        valorDaChaveNoLancamento("consignado_comissao_abaixo_da_meta")),
+                (rs, i) -> new Diferenca("ACERTO", rs.getObject(1, UUID.class),
+                        "Comissão diferente da configuração vigente no lançamento", rs.getBigDecimal(3), rs.getBigDecimal(2),
+                        Unidade.PERCENTUAL));
+        return conferencia("K9", "Comissão pela meta", "A comissão do acerto pela meta é a do lado da meta em que o VD em Guarani caiu.",
+                contar("corona.acertos_nota"), d);
+    }
+
+    private Conferencia k10() {
+        List<Diferenca> d = jdbc.query("""
+                SELECT a.id FROM corona.acertos_nota a JOIN corona.sync_log l ON l.id = a.id
+                 WHERE a.regra_da_comissao = 'INFORMADA' AND l.tipo = 'ACERTO_NOTA' AND l.formato >= 2""",
+                (rs, i) -> new Diferenca("ACERTO", rs.getObject(1, UUID.class), "Porcentagem informada em operação de formato 2",
+                        BigDecimal.ZERO, BigDecimal.ONE, Unidade.REGISTROS));
+        return conferencia("K10", "Porcentagem informada", "A regra INFORMADA só existe em acerto vindo de operação de formato 1.",
+                contar("corona.acertos_nota"), d);
     }
 
     private long contar(String tabela) {

@@ -1,5 +1,7 @@
 package br.com.coronasemijoias.api.sync;
 
+import br.com.coronasemijoias.api.comum.erros.CodigoErro;
+import br.com.coronasemijoias.api.comum.erros.ErroDaApi;
 import br.com.coronasemijoias.api.consignado.ContextoDoConsignado;
 import br.com.coronasemijoias.api.consignado.ServicoDeAcertosDaNota;
 import br.com.coronasemijoias.api.consignado.ServicoDeAcertosDaNota.Devolvido;
@@ -37,6 +39,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 /**
@@ -84,6 +87,14 @@ public class OperacoesDoConsignado {
             List<Devolvido> devolvidos, ReciboDoAcerto recibo, Visto visto, LocalDate dataDoAcerto) {
     }
 
+    /**
+     * O acerto da nota no formato 2 (Corona Vendas 1.3.0; §23.13): sem porcentagem, o servidor decide a comissão pela meta. O que
+     * o computador mostrou vai em {@code visto}, só para a dona saber se a conta dele era outra.
+     */
+    public record DadosDoAcertoV2(UUID id, UUID notaId, UUID semanaId, Instant acertadoEm, List<Devolvido> devolvidos,
+            ReciboDoAcerto recibo, Visto visto, LocalDate dataDoAcerto) {
+    }
+
     public record DadosDoPagamento(UUID id, UUID clienteId, UUID semanaId, Integer sequencia, Instant pagoEm, List<FormaPaga> formas,
             BigDecimal pendenciaVista, LocalDate dataDoPagamento) {
     }
@@ -105,7 +116,7 @@ public class OperacoesDoConsignado {
             case "REPOSICAO_NOTA" -> DadosDaReposicao.class;
             case "TROCA_NA_NOTA" -> DadosDaTrocaNaNota.class;
             case "REMARCAR_NOTA" -> DadosDaRemarcacao.class;
-            case "ACERTO_NOTA" -> DadosDoAcerto.class;
+            case "ACERTO_NOTA" -> formato >= 2 ? DadosDoAcertoV2.class : DadosDoAcerto.class;
             case "PAGAMENTO_CONSIGNADO" -> DadosDoPagamento.class;
             case "ESTORNO_ACERTO_NOTA" -> DadosDoEstornoDoAcerto.class;
             case "ESTORNO_RECIBO" -> DadosDoEstornoDoRecibo.class;
@@ -123,6 +134,7 @@ public class OperacoesDoConsignado {
             case DadosDaTrocaNaNota x -> x.id();
             case DadosDaRemarcacao x -> x.id();
             case DadosDoAcerto x -> x.id();
+            case DadosDoAcertoV2 x -> x.id();
             case DadosDoPagamento x -> x.id();
             case DadosDoEstornoDoAcerto x -> x.id();
             case DadosDoEstornoDoRecibo x -> x.id();
@@ -140,6 +152,7 @@ public class OperacoesDoConsignado {
             case DadosDaTrocaNaNota x -> x.trocadaEm();
             case DadosDaRemarcacao x -> x.remarcadaEm();
             case DadosDoAcerto x -> x.acertadoEm();
+            case DadosDoAcertoV2 x -> x.acertadoEm();
             case DadosDoPagamento x -> x.pagoEm();
             case DadosDoEstornoDoAcerto x -> x.estornadoEm();
             case DadosDoEstornoDoRecibo x -> x.estornadoEm();
@@ -161,6 +174,10 @@ public class OperacoesDoConsignado {
             case DadosDaTrocaNaNota x -> ids.add(x.notaId());
             case DadosDaRemarcacao x -> ids.add(x.notaId());
             case DadosDoAcerto x -> {
+                ids.add(x.notaId());
+                ids.add(x.semanaId());
+            }
+            case DadosDoAcertoV2 x -> {
                 ids.add(x.notaId());
                 ids.add(x.semanaId());
             }
@@ -238,43 +255,9 @@ public class OperacoesDoConsignado {
                 campo(s, "dataCobranca", d.dataCobranca());
                 campo(s, "remarcadaEm", d.remarcadaEm());
             }
-            case DadosDoAcerto d -> {
-                campo(s, "id", d.id());
-                campo(s, "notaId", d.notaId());
-                campo(s, "semanaId", d.semanaId());
-                campo(s, "acertadoEm", d.acertadoEm());
-                campo(s, "comissaoPercentual", pct(d.comissaoPercentual()));
-                List<Devolvido> dev = new ArrayList<>(d.devolvidos() == null ? List.of() : d.devolvidos());
-                dev.removeIf(Objects::isNull);
-                dev.sort(Comparator.comparing(x -> String.valueOf(x.movimentoId())));
-                s.append("devolvidos=[");
-                dev.forEach(x -> s.append(x.itemAcertoId()).append(':').append(x.produtoId()).append(':').append(x.remessaId())
-                        .append(':').append(x.quantidade()).append(':').append(x.movimentoId()).append(';'));
-                s.append("]|");
-                ReciboDoAcerto r = d.recibo();
-                s.append("recibo={");
-                if (r != null) {
-                    campo(s, "id", r.id());
-                    campo(s, "sequencia", r.sequencia());
-                    formas(s, r.formas());
-                }
-                s.append("}|");
-                Visto v = d.visto();
-                s.append("visto={");
-                if (v != null) {
-                    campo(s, "vd", dinheiro(v.valorVd()));
-                    campo(s, "comissao", dinheiro(v.comissao()));
-                    campo(s, "bruto", dinheiro(v.bruto()));
-                    campo(s, "pendencias", dinheiro(v.pendenciasAnteriores()));
-                    campo(s, "total", dinheiro(v.totalAReceber()));
-                    campo(s, "pago", dinheiro(v.totalPago()));
-                    campo(s, "devendo", dinheiro(v.ficouDevendo()));
-                }
-                s.append("}|");
-                if (d.dataDoAcerto() != null) {
-                    campo(s, "dataDoAcerto", d.dataDoAcerto());
-                }
-            }
+            case DadosDoAcerto d -> resumoDoAcerto(s, d, false);
+            case DadosDoAcertoV2 d -> resumoDoAcerto(s, new DadosDoAcerto(d.id(), d.notaId(), d.semanaId(), d.acertadoEm(), null,
+                    d.devolvidos(), d.recibo(), d.visto(), d.dataDoAcerto()), true);
             case DadosDoPagamento d -> {
                 campo(s, "id", d.id());
                 campo(s, "clienteId", d.clienteId());
@@ -331,6 +314,50 @@ public class OperacoesDoConsignado {
             default -> throw new IllegalStateException("tipo do consignado desconhecido");
         }
         return s.toString();
+    }
+
+    /** O resumo do acerto da nota; o formato 2 não tem porcentagem (o servidor decide) e leva a marca do formato. */
+    private static void resumoDoAcerto(StringBuilder s, DadosDoAcerto d, boolean formato2) {
+            campo(s, "id", d.id());
+            campo(s, "notaId", d.notaId());
+            campo(s, "semanaId", d.semanaId());
+            campo(s, "acertadoEm", d.acertadoEm());
+            if (formato2) {
+        campo(s, "formato", "2");
+    } else {
+        campo(s, "comissaoPercentual", pct(d.comissaoPercentual()));
+    }
+            List<Devolvido> dev = new ArrayList<>(d.devolvidos() == null ? List.of() : d.devolvidos());
+            dev.removeIf(Objects::isNull);
+            dev.sort(Comparator.comparing(x -> String.valueOf(x.movimentoId())));
+            s.append("devolvidos=[");
+            dev.forEach(x -> s.append(x.itemAcertoId()).append(':').append(x.produtoId()).append(':').append(x.remessaId())
+                    .append(':').append(x.quantidade()).append(':').append(x.movimentoId()).append(';'));
+            s.append("]|");
+            ReciboDoAcerto r = d.recibo();
+            s.append("recibo={");
+            if (r != null) {
+                campo(s, "id", r.id());
+                campo(s, "sequencia", r.sequencia());
+                formas(s, r.formas());
+            }
+            s.append("}|");
+            Visto v = d.visto();
+            s.append("visto={");
+            if (v != null) {
+                campo(s, "vd", dinheiro(v.valorVd()));
+                campo(s, "comissao", dinheiro(v.comissao()));
+                campo(s, "bruto", dinheiro(v.bruto()));
+                campo(s, "pendencias", dinheiro(v.pendenciasAnteriores()));
+                campo(s, "total", dinheiro(v.totalAReceber()));
+                campo(s, "pago", dinheiro(v.totalPago()));
+                campo(s, "devendo", dinheiro(v.ficouDevendo()));
+            }
+            s.append("}|");
+            if (d.dataDoAcerto() != null) {
+                campo(s, "dataDoAcerto", d.dataDoAcerto());
+            }
+        
     }
 
     private static void itens(StringBuilder s, List<ItemDaNota> itens) {
@@ -392,7 +419,15 @@ public class OperacoesDoConsignado {
             case DadosDaReposicao d -> notas.reporNaNota(c, new Reposicao(d.id(), d.notaId(), d.itens()));
             case DadosDaTrocaNaNota d -> notas.trocar(c, new Troca(d.id(), d.notaId(), d.volta(), d.entra()));
             case DadosDaRemarcacao d -> notas.remarcar(c, new Remarcacao(d.id(), d.notaId(), d.dataCobranca()));
-            case DadosDoAcerto d -> acertos.acertar(c, new NovoAcerto(d.id(), d.notaId(), d.semanaId(), d.comissaoPercentual(),
+            case DadosDoAcerto d -> {
+                // Formato 1: a porcentagem do computador vale (regra INFORMADA); sem ela, a operação é recusada, não decidida.
+                if (d.comissaoPercentual() == null) {
+                    throw new ErroDaApi(HttpStatus.UNPROCESSABLE_ENTITY, CodigoErro.COMISSAO_FORA_DO_LIMITE);
+                }
+                yield acertos.acertar(c, new NovoAcerto(d.id(), d.notaId(), d.semanaId(), d.comissaoPercentual(),
+                        d.devolvidos(), d.recibo(), d.visto(), d.dataDoAcerto()));
+            }
+            case DadosDoAcertoV2 d -> acertos.acertar(c, new NovoAcerto(d.id(), d.notaId(), d.semanaId(), null,
                     d.devolvidos(), d.recibo(), d.visto(), d.dataDoAcerto()));
             case DadosDoPagamento d -> recibos.lancar(c, new NovoPagamento(d.id(), d.clienteId(), d.semanaId(), d.sequencia(),
                     d.formas(), d.pendenciaVista(), d.dataDoPagamento()));
