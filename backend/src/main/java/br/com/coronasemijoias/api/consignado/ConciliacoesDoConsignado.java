@@ -1,6 +1,7 @@
 package br.com.coronasemijoias.api.consignado;
 
 import br.com.coronasemijoias.api.cadastros.Validacoes;
+import br.com.coronasemijoias.api.comum.dinheiro.ConversaoDeMoeda;
 import br.com.coronasemijoias.api.conciliacoes.ConciliacoesDaFase7.Conferencia;
 import br.com.coronasemijoias.api.conciliacoes.ConciliacoesDaFase7.Diferenca;
 import br.com.coronasemijoias.api.conciliacoes.ConciliacoesDaFase7.Unidade;
@@ -21,8 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
  * recalculada; K2 totais do acerto = os recalculados dos itens; K3 aplicações ativas de cada débito dentro de 0 e o bruto; K4
  * recibo: total = formas e aplicações dentro do total; K5 disponível da maleta não negativo (ou alerta já registrado); K6 cada
  * devolução à maleta tem o DV do acerto; K7 uma semana aberta por representante. A meta (§23.13): K8 o VD em Guarani do acerto
- * pela meta é a conversão do VD pela cotação dele; K9 a comissão é o percentual do lado da meta, pela configuração vigente no
- * lançamento (a auditoria {@code COMISSAO_ALTERADA}); K10 a regra {@code INFORMADA} só existe em operação de formato 1.
+ * pela meta é a conversão do VD pela cotação dele; K9 a comissão é o percentual do lado da meta, pela configuração vigente quando o
+ * servidor decidiu (a auditoria {@code COMISSAO_ALTERADA}); K10 a regra {@code INFORMADA} só existe em operação de formato 1.
  */
 @Service
 public class ConciliacoesDoConsignado {
@@ -187,38 +188,49 @@ public class ConciliacoesDoConsignado {
                 contar("corona.semanas_vendedor"), d);
     }
 
+    /** A conversão é a do Java ({@link ConversaoDeMoeda#paraGuarani}), não a do SQL (ADR-0006: arredondamento só no Java). */
     private Conferencia k8() {
-        List<Diferenca> d = jdbc.query("""
-                SELECT a.id, a.vd_guarani, round(a.valor_vd / c.pyg_venda)
+        record Linha(UUID id, long gravado, BigDecimal vd, BigDecimal taxa) {
+        }
+        List<Linha> linhas = jdbc.query("""
+                SELECT a.id, a.vd_guarani, a.valor_vd, c.pyg_venda
                   FROM corona.acertos_nota a JOIN corona.cotacoes c ON c.id = a.cotacao_id
-                 WHERE a.regra_da_comissao = 'META' AND a.vd_guarani IS NOT NULL AND a.vd_guarani <> round(a.valor_vd / c.pyg_venda)""",
-                (rs, i) -> new Diferenca("ACERTO", rs.getObject(1, UUID.class), "VD em Guarani diferente da conversão pela cotação do acerto",
-                        rs.getBigDecimal(3), rs.getBigDecimal(2), Unidade.REGISTROS));
+                 WHERE a.regra_da_comissao = 'META' AND a.vd_guarani IS NOT NULL""",
+                (rs, i) -> new Linha(rs.getObject(1, UUID.class), rs.getLong(2), rs.getBigDecimal(3), rs.getBigDecimal(4)));
+        List<Diferenca> d = new ArrayList<>();
+        for (Linha l : linhas) {
+            BigDecimal esperado = ConversaoDeMoeda.paraGuarani(l.vd(), l.taxa());
+            if (esperado.compareTo(BigDecimal.valueOf(l.gravado())) != 0) {
+                d.add(new Diferenca("ACERTO", l.id(), "VD em Guarani diferente da conversão pela cotação do acerto", esperado,
+                        BigDecimal.valueOf(l.gravado()), Unidade.REGISTROS));
+            }
+        }
         return conferencia("K8", "VD em Guarani do acerto", "No acerto pela meta, o VD em Guarani é a conversão do VD pela cotação dele.",
                 contar("corona.acertos_nota"), d);
     }
 
-    /** O valor da chave vigente no lançamento do acerto {@code a}: a última mudança antes dele, senão o "antes" da primeira depois. */
+    /** O valor da chave vigente quando o servidor decidiu o acerto {@code a} ({@code created_at}: o servidor lê a configuração ao gravar, não na hora do lançamento no computador): a última mudança antes dele, senão o "antes" da primeira depois. */
     private static String valorDaChaveNoLancamento(String chave) {
         return """
                 coalesce(
                   (SELECT (au.depois->>'valor')::int FROM corona.auditoria au WHERE au.acao = 'COMISSAO_ALTERADA'
-                      AND au.depois->>'chave' = '%1$s' AND au.ocorrida_em <= a.registrado_em ORDER BY au.ocorrida_em DESC LIMIT 1),
+                      AND au.depois->>'chave' = '%1$s' AND au.ocorrida_em <= a.created_at ORDER BY au.ocorrida_em DESC LIMIT 1),
                   (SELECT (au.antes->>'valor')::int FROM corona.auditoria au WHERE au.acao = 'COMISSAO_ALTERADA'
-                      AND au.antes->>'chave' = '%1$s' AND au.ocorrida_em > a.registrado_em ORDER BY au.ocorrida_em ASC LIMIT 1),
+                      AND au.antes->>'chave' = '%1$s' AND au.ocorrida_em > a.created_at ORDER BY au.ocorrida_em ASC LIMIT 1),
                   (SELECT valor_inteiro FROM corona.configuracoes WHERE chave = '%1$s'))""".formatted(chave);
     }
 
     private Conferencia k9() {
         List<Diferenca> d = jdbc.query("""
-                SELECT a.id, a.comissao_percentual, x.esperado
+                SELECT a.id, a.comissao_percentual, x.esperado, a.vd_guarani, a.meta_guarani, a.created_at
                   FROM corona.acertos_nota a
                   CROSS JOIN LATERAL (SELECT CASE WHEN a.vd_guarani >= a.meta_guarani THEN %s ELSE %s END AS esperado) x
                  WHERE a.regra_da_comissao = 'META' AND a.comissao_percentual <> x.esperado""".formatted(
                         valorDaChaveNoLancamento("consignado_comissao_na_meta"),
                         valorDaChaveNoLancamento("consignado_comissao_abaixo_da_meta")),
                 (rs, i) -> new Diferenca("ACERTO", rs.getObject(1, UUID.class),
-                        "Comissão diferente da configuração vigente no lançamento", rs.getBigDecimal(3), rs.getBigDecimal(2),
+                        "Comissão diferente da configuração vigente no lançamento (VD em Guarani " + rs.getObject(4) + ", meta "
+                                + rs.getObject(5) + ", decidido em " + rs.getObject(6) + ")", rs.getBigDecimal(3), rs.getBigDecimal(2),
                         Unidade.PERCENTUAL));
         return conferencia("K9", "Comissão pela meta", "A comissão do acerto pela meta é a do lado da meta em que o VD em Guarani caiu.",
                 contar("corona.acertos_nota"), d);
