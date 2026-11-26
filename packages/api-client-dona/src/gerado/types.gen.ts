@@ -415,6 +415,13 @@ export type ConjugeDoVendedorDados = {
     version?: number;
 };
 
+export type Consignado = {
+    diasDoRetorno?: number;
+    metaGuarani?: number;
+    percentualAbaixoDaMeta?: number;
+    percentualNaMeta?: number;
+};
+
 export type ConsultasDaConferenciaConferencia = {
     conferidaEm?: string;
     divergencias?: number;
@@ -5107,6 +5114,38 @@ export type AlterarComissaoResponses = {
 };
 
 export type AlterarComissaoResponse = AlterarComissaoResponses[keyof AlterarComissaoResponses];
+
+export type LerConfiguracaoDoConsignadoData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/dona/configuracoes/consignado';
+};
+
+export type LerConfiguracaoDoConsignadoResponses = {
+    /**
+     * OK
+     */
+    200: Consignado;
+};
+
+export type LerConfiguracaoDoConsignadoResponse = LerConfiguracaoDoConsignadoResponses[keyof LerConfiguracaoDoConsignadoResponses];
+
+export type AlterarConfiguracaoDoConsignadoData = {
+    body: Consignado;
+    path?: never;
+    query?: never;
+    url: '/api/dona/configuracoes/consignado';
+};
+
+export type AlterarConfiguracaoDoConsignadoResponses = {
+    /**
+     * OK
+     */
+    200: Consignado;
+};
+
+export type AlterarConfiguracaoDoConsignadoResponse = AlterarConfiguracaoDoConsignadoResponses[keyof AlterarConfiguracaoDoConsignadoResponses];
 
 export type LerGarantiaData = {
     body?: never;
