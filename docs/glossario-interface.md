@@ -259,6 +259,10 @@ semana fechada ou não encontrada → **Cadastrar semana**; limite do representa
 passado) e representante que não recebe maleta → **Abrir representantes**; falta a cotação do dia
 → **Lançar a cotação do dia**; estoque insuficiente → **Receber compra**.
 
+### Lista vazia diz o que fazer (varredura de 27/11/2026)
+
+Lista vazia nunca fica só em "Ainda não há X.": diz o botão ou a tela para resolver. Cadastros básicos: "Ainda não há nenhuma semana. Use o botão "Nova semana" para cadastrar." (o mesmo para categoria, fornecedor, praça, restrição e cliente). Produtos: "... Use o botão "Cadastrar produto" ...". Representantes: "... Use o botão "Novo representante" ...". Compras: "... Use o botão "Receber compra" ...". Contagens: "... Use o botão "Começar uma nova contagem" ...". Categorias do caixa: "... Use o botão "Nova categoria" ...". Estoque vazio: "Cadastre a primeira em Cadastros → Produtos.". Fechamento sem maleta enviada: "Monte e envie a maleta ao representante; quando ela voltar, feche aqui." com o botão **Montar maleta**. Semanas do representante: "Ele abre a semana no computador dele, ao fazer a primeira nota." No Corona Vendas: semana sem pedido diz "Use o botão "Novo Pedido" ..."; busca de pedido ou cliente sem resultado diz "Confira o nome ..." (e, no cliente, "use o botão "Novo cliente" para cadastrar").
+
 ### Exemplos ruins
 
 | Mensagem ruim | Por que é ruim | Como fica |
@@ -1592,8 +1596,10 @@ Estas linhas valem **sobre** as que dizem "na tela, sempre vendedor" (acima) **n
 
 - Na tela, "**ler o código**" e "**lidas na volta**", nunca "bipar" (vale a parte 2).
 - Botões: **Começar o fechamento**, **Somar peça**, **Concluir o fechamento** (ação sem volta; pede confirmação), **Escolher outra maleta**.
-- Confirmação: "As peças lidas voltam ao estoque da loja, até o que a maleta devia ter, e a maleta fica fechada. A diferença não é corrigida sozinha: ela fica no relatório. Essa ação não tem volta."
-- Diferença: "Faltam N peças em relação ao que devia estar na maleta. O sistema não corrige sozinho: decida o que fazer com a falta." (ou "Sobram").
+- Confirmação: "As peças lidas voltam ao estoque da loja, até o que a maleta devia ter, e a maleta fica fechada. Cada peça que falta fica registrada como você escolheu. Essa ação não tem volta."
+- Falta e sobra em avisos separados, peça por peça (27/11/2026): "Faltam N peças em relação ao que devia estar na maleta:" com a lista "Nome: N peças"; "Sobram N peças em relação ao que devia estar na maleta. A sobra não volta ao estoque: confira se a peça é de outra maleta."
+- **O que fazer com cada peça que falta** (§23.10, item 1): para cada peça, **Cobrar do representante** (es: Cobrar al representante; ele fica devendo a peça, pelo preço da maleta) ou **Perda da loja** (es: Pérdida de la tienda; com **Motivo da perda**). Sem escolha: "Escolha o que fazer com cada peça que falta antes de concluir." Depois de concluir: **Faltas registradas no fechamento**, "Nome: N peças. Cobrar do representante: R$ X." ou "Nome: N peças. Perda da loja (motivo)."; e o total: "A cobrar de Joana nesta maleta: R$ X. Somando todas as maletas dele: R$ Y." No relatório: **A cobrar do representante nesta maleta**, **A cobrar do representante, somando todas as maletas** e **Peças que ficaram como perda da loja**.
+- **Ler as peças que voltaram depois** (§23.10, item 3; es: Leer las piezas que volvieron después), na maleta já fechada: "Peças que voltaram depois: N para ler." e "Ainda com clientes: N."; botão **Devolver ao estoque**. Peça que ainda está com a cliente: "Esta peça ainda está com a cliente. Faça o acerto da nota antes de ler."
 - Maleta com situação **Fechada** (antes: Enviada, Conferida, Em acerto, Acertada, Cancelada, Em montagem).
 - **Valores por maleta:** o relatório diz "Os valores da maleta são divididos pelo vendido de cada maleta dentro da nota do cliente." (ADR-0016, item 14).
 

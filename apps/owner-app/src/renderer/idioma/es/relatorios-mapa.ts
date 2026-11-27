@@ -17,6 +17,10 @@ export const RELATORIOS_EM_ESPANHOL: Record<string, string> = {
   'Valor vendido': 'Valor vendido',
   'Valor recebido': 'Valor cobrado',
   'Pendências a receber': 'Pendientes por cobrar',
+  'Peças que ficaram como perda da loja': 'Piezas que quedaron como pérdida de la tienda',
+  'A cobrar do representante nesta maleta': 'A cobrar al representante en esta maleta',
+  'A cobrar do representante, somando todas as maletas':
+    'A cobrar al representante, sumando todas las maletas',
   'Os valores da maleta são divididos pelo vendido de cada maleta dentro da nota do cliente.':
     'Los valores de la maleta se dividen según lo vendido de cada maleta dentro de la nota del cliente.',
   'Peças vendidas': 'Piezas vendidas',

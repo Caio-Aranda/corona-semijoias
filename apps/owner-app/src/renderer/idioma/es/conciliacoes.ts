@@ -59,6 +59,7 @@ export const ES_TEXTOS_DE_CONCILIACOES: NoMesmoFormato<typeof PT_TEXTOS_DE_CONCI
     PRODUTO: 'Pieza',
     MALETA: 'Maleta',
     PENDENCIA: 'Faltante',
+    PENDENCIA_DA_MALETA: 'Faltante en el cierre de la maleta',
     COMPRA: 'Compra',
   },
   outraReferencia: 'Registro',

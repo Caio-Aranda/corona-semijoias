@@ -29,7 +29,7 @@ export const PT_TEXTOS_DE_PRODUTOS = {
   },
   situacao: { ativo: 'Ativo', desativado: 'Inativo' },
   abrir: 'Abrir cadastro',
-  vazio: 'Ainda não há nenhum produto.',
+  vazio: 'Ainda não há nenhum produto. Use o botão "Cadastrar produto" para cadastrar o primeiro.',
   semResultado: 'Nenhum produto encontrado. Confira o que você digitou ou limpe a busca.',
   abas: {
     rotulo: 'O que fazer com os produtos',

@@ -30,7 +30,7 @@ function registroBasico(c: {
     inativar: `Inactivar ${c.singular}`,
     reativar: `Reactivar ${c.singular}`,
     colunaAcoes: 'Qué hacer',
-    vazio: `Todavía no hay ${c.genero === 'a' ? 'ninguna' : 'ningún'} ${c.singular}.`,
+    vazio: `Todavía no hay ${c.genero === 'a' ? 'ninguna' : 'ningún'} ${c.singular}. Use el botón "${nuevo} ${c.singular}" para registrar.`,
     semResultado: `${ninguno} ${c.singular} ${encontrado}. Revise lo que escribió o limpie la búsqueda.`,
     semInativos: `${ninguno} ${c.singular} ${inactivo}.`,
     marcaInativo: `(${inactivo})`,

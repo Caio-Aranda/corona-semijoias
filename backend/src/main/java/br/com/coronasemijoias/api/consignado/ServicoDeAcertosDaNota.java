@@ -37,10 +37,10 @@ import org.springframework.transaction.annotation.Transactional;
  * ele conhece (nunca confia no app), grava o acerto (o débito do cliente), os itens, as devoluções à maleta, o recibo e as
  * aplicações, e reavalia a situação das notas tocadas. O cliente é travado antes de ler os débitos.
  *
- * <p><b>A comissão (§23.13):</b> com porcentagem no pedido (formato 1), vale a informada (regra {@code INFORMADA}, como sempre).
- * Sem porcentagem (formato 2), o SERVIDOR decide pela meta: o VD da nota em Guarani, pela cotação vigente na Data do acerto,
- * contra a meta da configuração do momento (regra {@code META}; guarda a meta e o VD em Guarani). Sem cotação: abaixo da meta, com
- * alerta.
+ * <p><b>A comissão (§23.13):</b> o SERVIDOR sempre decide pela meta: o VD da nota em Guarani, pela cotação vigente na Data do
+ * acerto, contra a meta da configuração do momento (regra {@code META}; guarda a meta e o VD em Guarani). Sem cotação: abaixo da
+ * meta, com alerta. A porcentagem que o Corona Vendas 1.2.0 ainda manda (formato 1) é só conferida: diferente da decidida, vira
+ * alerta para a dona (item 5, mudado em 27/11/2026). A regra {@code INFORMADA} fica só nos acertos antigos.
  */
 @Service
 public class ServicoDeAcertosDaNota {
@@ -135,8 +135,9 @@ public class ServicoDeAcertosDaNota {
                 throw new ErroDaApi(HttpStatus.UNPROCESSABLE_ENTITY, CodigoErro.DATA_DO_ACERTO_ANTES_DA_SAIDA);
             }
         }
-        boolean pelaMeta = pedido.comissaoPercentual() == null;
-        if (!pelaMeta && !CalculoDoAcertoDaNota.comissaoValida(pedido.comissaoPercentual())) {
+        // A porcentagem do computador (formato 1) não decide nada; só é conferida (e fora de 0 a 40 continua recusada).
+        BigDecimal informada = pedido.comissaoPercentual();
+        if (informada != null && !CalculoDoAcertoDaNota.comissaoValida(informada)) {
             throw new ErroDaApi(HttpStatus.UNPROCESSABLE_ENTITY, CodigoErro.COMISSAO_FORA_DO_LIMITE);
         }
         BigDecimal pago = pedido.recibo() == null ? BigDecimal.ZERO.setScale(2) : ServicoDeRecibos.totalDasFormas(pedido.recibo().formas());
@@ -178,22 +179,20 @@ public class ServicoDeAcertosDaNota {
         BigDecimal pendencias = debitos.pendenciaDoCliente(cliente);
         // A cotação do acerto (a vigente na Data do acerto, ADR-0006) serve à meta e é a que o acerto guarda.
         Optional<Cotacao> cotacao = cotacoes.vigenteEm(acertadoEm);
-        BigDecimal comissaoPercentual = pedido.comissaoPercentual();
-        Long metaGuarani = null;
-        Long vdGuarani = null;
-        if (pelaMeta) {
-            var configuracao = configuracaoDoConsignado.ler();
-            var parametros = new ComissaoPelaMeta.Parametros(BigDecimal.valueOf(configuracao.metaGuarani()),
-                    BigDecimal.valueOf(configuracao.percentualAbaixoDaMeta()), BigDecimal.valueOf(configuracao.percentualNaMeta()));
-            BigDecimal vd = CalculoDoAcertoDaNota.calcular(paraCalculo, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO).valorVd();
-            var decisao = ComissaoPelaMeta.decidir(vd, cotacao.map(c -> c.taxas().pygVenda()).orElse(null), parametros);
-            comissaoPercentual = decisao.percentual();
-            metaGuarani = (long) configuracao.metaGuarani();
-            vdGuarani = decisao.vdEmGuarani() == null ? null : decisao.vdEmGuarani().longValueExact();
-        }
+        var configuracao = configuracaoDoConsignado.ler();
+        var parametros = new ComissaoPelaMeta.Parametros(BigDecimal.valueOf(configuracao.metaGuarani()),
+                BigDecimal.valueOf(configuracao.percentualAbaixoDaMeta()), BigDecimal.valueOf(configuracao.percentualNaMeta()));
+        BigDecimal vd = CalculoDoAcertoDaNota.calcular(paraCalculo, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO).valorVd();
+        var decisao = ComissaoPelaMeta.decidir(vd, cotacao.map(c -> c.taxas().pygVenda()).orElse(null), parametros);
+        BigDecimal comissaoPercentual = decisao.percentual();
+        Long metaGuarani = (long) configuracao.metaGuarani();
+        Long vdGuarani = decisao.vdEmGuarani() == null ? null : decisao.vdEmGuarani().longValueExact();
         var calculo = CalculoDoAcertoDaNota.calcular(paraCalculo, comissaoPercentual, pendencias, pago);
         boolean diferenteDoVisto = pedido.visto() != null && diverge(pedido.visto(), calculo);
-        if (diferenteDoVisto || (pelaMeta && cotacao.isEmpty())) {
+        boolean diferenteDaInformada = informada != null && informada.compareTo(comissaoPercentual) != 0;
+        // Sem cotação só importa quando os dois lados da meta têm porcentagens diferentes (a decisão poderia mudar).
+        boolean semCotacaoQueImporta = cotacao.isEmpty() && configuracao.percentualAbaixoDaMeta() != configuracao.percentualNaMeta();
+        if (diferenteDoVisto || diferenteDaInformada || semCotacaoQueImporta) {
             Map<String, Object> detalhe = new java.util.LinkedHashMap<>();
             if (pedido.visto() != null) {
                 detalhe.put("visto_vd", String.valueOf(pedido.visto().valorVd()));
@@ -203,11 +202,12 @@ public class ServicoDeAcertosDaNota {
             detalhe.put("servidor_vd", calculo.valorVd().toPlainString());
             detalhe.put("servidor_comissao", calculo.comissao().toPlainString());
             detalhe.put("servidor_total_a_receber", calculo.totalAReceber().toPlainString());
-            if (pelaMeta) {
-                detalhe.put("comissao_percentual_servidor", comissaoPercentual.setScale(2).toPlainString());
-                if (cotacao.isEmpty()) {
-                    detalhe.put("motivo", "SEM_COTACAO");
-                }
+            detalhe.put("comissao_percentual_servidor", comissaoPercentual.setScale(2).toPlainString());
+            if (informada != null) {
+                detalhe.put("comissao_percentual_informada", informada.setScale(2).toPlainString());
+            }
+            if (semCotacaoQueImporta) {
+                detalhe.put("motivo", "SEM_COTACAO");
             }
             alertas.registrar("VALOR_DO_ACERTO_RECALCULADO", ctx.vendedorId(), "acertos_nota", id, detalhe);
         }
@@ -227,7 +227,7 @@ public class ServicoDeAcertosDaNota {
                 pedido.semanaId(), Timestamp.from(acertadoEm), Timestamp.from(ctx.quando()), comissaoPercentual, calculo.itensDx(), calculo.itensDv(),
                 calculo.itensVd(), calculo.valorDx(), calculo.valorDv(), calculo.valorVd(), calculo.comissao(), calculo.bruto(),
                 calculo.pendenciasAnteriores(), calculo.totalAReceber(), calculo.totalPago(), calculo.ficouDevendo(), reciboId,
-                cotacao.map(Cotacao::id).orElse(null), ctx.aparelho(), ctx.horaAjustada(), pelaMeta ? "META" : "INFORMADA", metaGuarani,
+                cotacao.map(Cotacao::id).orElse(null), ctx.aparelho(), ctx.horaAjustada(), "META", metaGuarani,
                 vdGuarani);
         for (Map<String, Object> l : linhas) {
             String chave = l.get("remessa_id") + ":" + l.get("produto_id");

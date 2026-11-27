@@ -86,6 +86,11 @@ public class RelatorioDoFechamentoDaMaleta {
         t.add(emTresMoedas("comissao", "Comissão dos clientes", n, v.comissaoConvertida()));
         t.add(emTresMoedas("recebido", "Valor recebido", n, v.recebidoConvertido()));
         t.add(emTresMoedas("pendencias", "Pendências a receber", n, v.pendenciasConvertidas()));
+        // As faltas da conclusão (§23.10, item 1): o que cobrar do representante, nesta maleta e somando as maletas dele.
+        var c = l.cobranca();
+        t.add(new Total("cobrarNestaMaleta", "A cobrar do representante nesta maleta", n, c.nestaMaleta(), null, null, null));
+        t.add(new Total("cobrarNoTotal", "A cobrar do representante, somando todas as maletas", n, c.todasAsMaletas(), null, null, null));
+        t.add(pecas("perdaDaLoja", "Peças que ficaram como perda da loja", n, c.pecasPerdidasPelaLoja()));
         return t;
     }
 

@@ -122,7 +122,7 @@ export const ES_TEXTOS_DE_FINANCEIRO: NoMesmoFormato<typeof PT_TEXTOS_DE_FINANCE
     inativada: 'Categoría inactivada.',
     reativada: 'Categoría reactivada.',
     legenda: 'Categorías de la caja',
-    vazia: 'Todavía no hay categorías.',
+    vazia: 'Todavía no hay categorías. Use el botón "Nueva categoría" para crear la primera.',
     colunas: { nome: 'Nombre', tipo: 'Tipo', situacao: 'Estado', acoes: 'Qué hacer' },
     ativa: 'Activa',
     inativa: 'Inactiva',

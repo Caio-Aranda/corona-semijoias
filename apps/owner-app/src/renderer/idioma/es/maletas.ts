@@ -105,7 +105,7 @@ export const ES_TEXTOS_DE_MALETAS: NoMesmoFormato<typeof PT_TEXTOS_DE_MALETAS> =
   },
   limite: {
     titulo: 'Límite del representante',
-    limite: 'Límite del representante',
+    limite: 'Límite',
     jaComEle: 'Ya está con él',
     estaMaleta: 'Esta maleta',
     sobra: 'Sobra',
@@ -119,6 +119,7 @@ export const ES_TEXTOS_DE_MALETAS: NoMesmoFormato<typeof PT_TEXTOS_DE_MALETAS> =
     carregando: 'Verificando el límite...',
   },
   avisoDeRestricao: 'Atención con el representante:',
+  avisoDeEstoque: 'Falta stock para enviar:',
   voltar: 'Volver a la lista',
   enviar: 'Enviar maleta',
   vazia: 'Ponga por lo menos una pieza en la maleta antes de enviar.',
@@ -143,6 +144,7 @@ export const ES_TEXTOS_DE_MALETAS: NoMesmoFormato<typeof PT_TEXTOS_DE_MALETAS> =
       vendedor: 'Representante',
       semana: 'Semana',
       praca: 'Plaza',
+      semPraca: 'Sin plaza',
       tipo: 'Tipo',
       situacao: 'Estado',
       enviadaEm: 'Enviada el',
@@ -191,7 +193,8 @@ export const ES_TEXTOS_DE_MALETAS: NoMesmoFormato<typeof PT_TEXTOS_DE_MALETAS> =
     },
     porVendedor: {
       legenda: 'Lo que cada representante tiene abierto',
-      vazia: 'Ningún representante registrado.',
+      vazia:
+        'Ningún representante registrado. Registre al representante en Personas → Representantes.',
       colunas: {
         vendedor: 'Representante',
         maletas: 'Maletas con él',

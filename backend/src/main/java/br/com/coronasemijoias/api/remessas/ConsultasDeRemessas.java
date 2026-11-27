@@ -63,15 +63,21 @@ public class ConsultasDeRemessas {
             throw new ErroDaApi(HttpStatus.NOT_FOUND, CodigoErro.REMESSA_NAO_ENCONTRADA);
         }
         Resumo r = achadas.get(0);
+        List<String> semEstoque = new ArrayList<>();
         List<Item> itens = jdbc.query("""
                 SELECT i.id, i.qtd_enviada, i.preco_remessa, p.id AS produto_id, p.nome, p.referencia, p.preco_venda,
-                       p.foto_principal_hash, (SELECT cd.codigo FROM corona.produto_codigos cd
+                       p.foto_principal_hash, p.estoque_atual, (SELECT cd.codigo FROM corona.produto_codigos cd
                          WHERE cd.produto_id = p.id AND cd.principal AND cd.deleted_at IS NULL LIMIT 1) AS codigo
                   FROM corona.itens_remessa i JOIN corona.produtos p ON p.id = i.produto_id
                  WHERE i.remessa_id = ? AND i.deleted_at IS NULL ORDER BY p.nome, i.id""", (rs, n) -> {
                     BigDecimal congelado = rs.getBigDecimal("preco_remessa");
                     BigDecimal preco = congelado != null ? congelado : rs.getBigDecimal("preco_venda");
                     int qtd = rs.getInt("qtd_enviada");
+                    int estoque = rs.getInt("estoque_atual");
+                    if (qtd > estoque) {
+                        semEstoque.add("A maleta tem " + qtd + " peça(s) de \"" + rs.getString("nome") + "\", mas só há "
+                                + Math.max(estoque, 0) + " no estoque. Diminua a quantidade ou receba a compra antes de enviar.");
+                    }
                     return new Item(rs.getObject("id", UUID.class), new Produto(rs.getObject("produto_id", UUID.class),
                             rs.getString("nome"), rs.getString("referencia"), rs.getString("codigo"),
                             rs.getString("foto_principal_hash")), qtd, preco, Dinheiro.precoDaLinha(preco, qtd), congelado != null);
@@ -83,8 +89,10 @@ public class ConsultasDeRemessas {
                     SELECT rs.descricao FROM corona.vendedores v JOIN corona.restricoes rs ON rs.id = v.restricao_id
                      WHERE v.id = ? AND rs.deleted_at IS NULL AND NOT rs.bloqueia_remessa""",
                     x -> {
-                        avisos.add("Atenção: este vendedor tem a restrição \"" + x.getString(1) + "\".");
+                        avisos.add("Atenção: este representante tem a restrição \"" + x.getString(1) + "\".");
                     }, r.vendedorId());
+            // Peça acima do estoque da loja: o envio vai recusar; a dona fica sabendo já na montagem (E2, 27/11/2026).
+            avisos.addAll(semEstoque);
         }
         return new Detalhe(r, itens, avisos);
     }

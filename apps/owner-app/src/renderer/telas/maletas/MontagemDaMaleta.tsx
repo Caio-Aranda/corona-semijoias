@@ -9,6 +9,7 @@ import { ImagemDoProduto } from '../../componentes/ImagemDoProduto';
 import { chamar, useBusca, type ErroDaTela } from '../../nucleo/chamadas';
 import { centavosDeTexto, formatarReais } from '../../nucleo/moedas';
 import { TEXTOS_DE_MALETAS } from '../../textos-maletas';
+import { avisoDaMaleta, ehAvisoDeEstoque } from '../../idioma/erros-es';
 import { codigoPrincipal, type Produto } from '../produtos/dados';
 import { Dinheiro } from './Dinheiro';
 import { LeitorDaMaleta } from './LeitorDaMaleta';
@@ -207,13 +208,23 @@ export function MontagemDaMaleta({ ponte, inicial, aoVoltar, aoEnviar }: Montage
   return (
     <div>
       <p className="gestao-texto">
-        {T.nova.vendedor}: <strong>{maleta.vendedorNome}</strong> ·{' '}
-        {T.nova.nomeDaSemana(String(maleta.semanaNumero))} · {maleta.pracaNome} ·{' '}
-        {T.nova.tipos[maleta.tipo] ?? maleta.tipo}
+        {T.nova.vendedor}: <strong>{maleta.vendedorNome}</strong>
+        {[
+          T.nova.nomeDaSemana(String(maleta.semanaNumero)),
+          maleta.pracaNome,
+          T.nova.tipos[maleta.tipo] ?? maleta.tipo,
+        ]
+          .filter((parte) => parte)
+          .map((parte) => ` · ${parte}`)
+          .join('')}
       </p>
       {maleta.avisos.map((a) => (
-        <Aviso key={a} tipo="atencao" titulo={T.avisoDeRestricao}>
-          {a}
+        <Aviso
+          key={a}
+          tipo="atencao"
+          titulo={ehAvisoDeEstoque(a) ? T.avisoDeEstoque : T.avisoDeRestricao}
+        >
+          {avisoDaMaleta(a)}
         </Aviso>
       ))}
 
@@ -372,20 +383,11 @@ export function MontagemDaMaleta({ ponte, inicial, aoVoltar, aoEnviar }: Montage
             {limite.erro && !situacaoDoLimite ? (
               <AvisoDeErro erro={limite.erro} aoTentarDeNovo={limite.recarregar} />
             ) : null}
-            {situacaoDoLimite && situacaoDoLimite.limite !== null && sobra !== null ? (
-              <p className="gestao-texto">
-                {L.resumo(
-                  formatarReais(situacaoDoLimite.limite),
-                  formatarReais(situacaoDoLimite.jaComEle),
-                  formatarReais(sobra < 0n ? 0n : sobra),
-                )}
-              </p>
-            ) : null}
             {situacaoDoLimite?.semLimite ? <p className="gestao-texto">{L.semLimite}</p> : null}
             {situacaoDoLimite && !situacaoDoLimite.definido ? (
               <Aviso tipo="atencao">{L.naoDefinido}</Aviso>
             ) : null}
-            {situacaoDoLimite ? (
+            {situacaoDoLimite && situacaoDoLimite.limite !== null ? (
               <dl className="gestao-resumo">
                 <div>
                   <dt>{L.limite}</dt>

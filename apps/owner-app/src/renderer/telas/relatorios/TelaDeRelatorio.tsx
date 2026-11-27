@@ -17,6 +17,7 @@ import {
   montarGrade,
   somarConvertido,
   type ColunaDoRelatorio,
+  type Grade,
   type PedidoDeExportacao,
 } from '../../nucleo/exportacao/grade';
 import { gerarPdf } from '../../nucleo/exportacao/pdf';
@@ -350,6 +351,10 @@ export interface TelaDeRelatorioProps {
   /** Relatório aberto a partir de uma linha: um filtro fixo e o caminho de volta. */
   fixo?: FiltroFixo;
   aoVoltar?: () => void;
+  /** O texto do botão de voltar, quando a tela que abriu o relatório tem um nome melhor (ex.: "Escolher outra maleta"). */
+  rotuloDoVoltar?: string;
+  /** Tabelas a mais que vão só no PDF, depois do relatório (ex.: as faltas do Fechamento da maleta). */
+  anexosDoPdf?: readonly Grade[];
   /** Conteúdo da tela que abriu o relatório (ex.: o Fechamento da maleta), logo abaixo da explicação. */
   aposOTitulo?: ReactNode;
   /** Relatórios de maleta: abre a ficha da maleta da linha (na tela Maletas). */
@@ -368,6 +373,8 @@ export function TelaDeRelatorio({
   usuario,
   fixo,
   aoVoltar,
+  rotuloDoVoltar,
+  anexosDoPdf,
   aposOTitulo,
   aoAbrirMaleta,
   filtrosIniciais,
@@ -556,7 +563,7 @@ export function TelaDeRelatorio({
         );
         setAvisoDeArquivo({ tipo: 'sucesso', texto: T.exportar.pronto(`${base}.xlsx`) });
       } else {
-        entregarArquivo(`${base}.pdf`, 'application/pdf', gerarPdf(grade));
+        entregarArquivo(`${base}.pdf`, 'application/pdf', gerarPdf(grade, anexosDoPdf ?? []));
         setAvisoDeArquivo({ tipo: 'sucesso', texto: T.exportar.pronto(`${base}.pdf`) });
       }
     } catch {
@@ -711,7 +718,7 @@ export function TelaDeRelatorio({
     <div className="gestao-tela">
       {aoVoltar ? (
         <div>
-          <Botao onClick={aoVoltar}>{T.estoqueECompras.acoes.voltar}</Botao>
+          <Botao onClick={aoVoltar}>{rotuloDoVoltar ?? T.estoqueECompras.acoes.voltar}</Botao>
         </div>
       ) : null}
       <div className="gestao-tela__topo">

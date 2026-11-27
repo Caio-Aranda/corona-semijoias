@@ -15,7 +15,6 @@ describe('conferência dos dados do consignado (a dona só lê e bipa o fechamen
     for (const op of [
       'fechamento.iniciar',
       'fechamento.ler',
-      'fechamento.concluir',
       'consignado.semanas',
       'consignado.semana',
       'consignado.nota',
@@ -26,6 +25,35 @@ describe('conferência dos dados do consignado (a dona só lê e bipa o fechamen
       expect(conferirParametros(op, { id: 'x' })).toBeNull();
       expect(conferirParametros(op, { id: ID, extra: 1 })).toBeNull();
       expect(conferirParametros(op, {})).toBeNull();
+    }
+  });
+
+  it('concluir o fechamento: id da maleta e as decisões das faltas (C3)', () => {
+    expect(conferirParametros('fechamento.concluir', { id: ID })).toEqual({
+      operacao: 'fechamento.concluir',
+      id: ID,
+      decisoes: [],
+    });
+    const boa = {
+      id: ID,
+      decisoes: [{ id: OUTRO, produtoId: ID, decisao: 'PERDA_DA_LOJA', motivo: 'Quebrou' }],
+    };
+    expect(conferirParametros('fechamento.concluir', boa)).toEqual({
+      operacao: 'fechamento.concluir',
+      ...boa,
+    });
+    for (const ruim of [
+      { id: 'x' },
+      { id: ID, extra: 1 },
+      { id: ID, decisoes: [{ id: OUTRO, produtoId: ID, decisao: 'APAGAR' }] },
+      { id: ID, decisoes: [{ id: 'x', produtoId: ID, decisao: 'PERDA_DA_LOJA' }] },
+      {
+        id: ID,
+        decisoes: [{ id: OUTRO, produtoId: ID, decisao: 'PERDA_DA_LOJA', motivo: 'm'.repeat(501) }],
+      },
+      { id: ID, decisoes: [{ id: OUTRO, produtoId: ID, decisao: 'PERDA_DA_LOJA', x: 1 }] },
+    ]) {
+      expect(conferirParametros('fechamento.concluir', ruim)).toBeNull();
     }
   });
 

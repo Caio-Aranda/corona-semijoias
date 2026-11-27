@@ -282,9 +282,15 @@ class ConciliacoesDoConsignadoTest extends ApoioDoConsignado {
         String sincronizado = "INSERT INTO corona.sync_log (id, dispositivo_id, usuario_id, vendedor_id, tipo, formato, resumo, resultado, "
                 + "recebido_em, dados_esvaziados_em) SELECT '" + k.acerto() + "', d.id, d.usuario_id, '" + k.v().vendedorId() + "', 'ACERTO_NOTA', %d, repeat('a', 64), "
                 + "'ACEITO', now(), now() FROM corona.dispositivos d WHERE d.usuario_id = '" + k.v().id() + "' LIMIT 1";
-        assertThat(tem(estragar("K10", List.of("sync_log"), sincronizado.formatted(2)), k.acerto())).isTrue();
+        // Desde 27/11/2026 (C5) todo acerto novo é META: a linha INFORMADA é a de um acerto antigo, simulada aqui.
+        String antigo = "UPDATE corona.acertos_nota SET regra_da_comissao = 'INFORMADA', meta_guarani = NULL, vd_guarani = NULL"
+                + " WHERE id = '" + k.acerto() + "'";
+        List<String> tabelas = List.of("sync_log", "acertos_nota");
+        assertThat(tem(estragar("K10", tabelas, antigo, sincronizado.formatted(2)), k.acerto())).isTrue();
         // De operação formato 1, e a que não passou pelo sync, a regra INFORMADA continua valendo.
-        assertThat(tem(estragar("K10", List.of("sync_log"), sincronizado.formatted(1)), k.acerto())).isFalse();
-        assertThat(tem(estragar("K10", List.of("sync_log")), k.acerto())).isFalse();
+        assertThat(tem(estragar("K10", tabelas, antigo, sincronizado.formatted(1)), k.acerto())).isFalse();
+        assertThat(tem(estragar("K10", tabelas, antigo), k.acerto())).isFalse();
+        // O acerto META de formato 2 não é acusado.
+        assertThat(tem(estragar("K10", tabelas, sincronizado.formatted(2)), k.acerto())).isFalse();
     }
 }

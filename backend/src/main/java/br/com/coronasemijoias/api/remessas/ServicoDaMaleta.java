@@ -59,6 +59,19 @@ public class ServicoDaMaleta {
 
     @Transactional
     public Resultado devolver(UUID remessaId, List<LinhaDeDevolucao> pedidas, UUID usuarioId) {
+        return devolver(remessaId, pedidas, usuarioId, false);
+    }
+
+    /**
+     * A peça que a cliente devolveu depois de a maleta ser fechada e que a dona leu (§23.10, item 3): a mesma devolução à dona,
+     * aceita também na maleta FECHADA (que continua fechada).
+     */
+    @Transactional
+    public Resultado devolverDaMaletaFechada(UUID remessaId, List<LinhaDeDevolucao> pedidas, UUID usuarioId) {
+        return devolver(remessaId, pedidas, usuarioId, true);
+    }
+
+    private Resultado devolver(UUID remessaId, List<LinhaDeDevolucao> pedidas, UUID usuarioId, boolean aceitaFechada) {
         if (pedidas == null || pedidas.isEmpty()) {
             throw Validacoes.recusar("itens", "Informe pelo menos uma peça para devolver.");
         }
@@ -106,7 +119,7 @@ public class ServicoDaMaleta {
         if (novas.isEmpty()) {
             return new Resultado(remessaId, true);
         }
-        if (!"ENVIADA".equals(status) && !"CONFERIDA".equals(status)) {
+        if (!"ENVIADA".equals(status) && !"CONFERIDA".equals(status) && !(aceitaFechada && "FECHADA".equals(status))) {
             throw naoDevolve(status);
         }
 

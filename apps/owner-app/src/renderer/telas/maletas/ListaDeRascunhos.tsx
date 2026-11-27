@@ -67,6 +67,7 @@ export function ListaDeRascunhos({ ponte, aoRetomar, chave }: ListaDeRascunhosPr
       {erro ? <AvisoDeErro erro={erro} aoAtualizar={busca.recarregar} /> : null}
       <Tabela
         legenda={T.legenda}
+        legendaSoParaLeitor
         textoVazio={T.vazia}
         colunas={[
           { chave: 'vendedor', titulo: T.colunas.vendedor },
