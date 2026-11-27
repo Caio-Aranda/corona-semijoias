@@ -47,7 +47,7 @@ export const ES_TEXTOS_RELATORIOS: NoMesmoFormato<typeof PT_TEXTOS_RELATORIOS> =
     verRegistros: 'Ver los registros',
     voltarAoRelatorio: 'Ver el informe completo',
     mostrando: (rotulo: string) => `Mostrando solo: ${rotulo}.`,
-    pecas: (n: number) => (n === 1 ? '1 pieza' : `${n} piezas`),
+    pecas: (n: number) => (Math.abs(n) === 1 ? `${n} pieza` : `${n} piezas`),
     calculando: 'Calculando...',
   },
   exportar: {

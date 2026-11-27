@@ -566,3 +566,7 @@ Branch `fix/fechamento-da-maleta` (C2, C3 e C4 da revisão geral de 27/11; regra
 ## Mensagens de lista vazia dizem o que fazer, nos dois apps (27/11/2026)
 
 Branch `fix/mensagens-claras-em-todas-as-telas` (item 1 da revisão geral, a varredura pedida depois do #288). **Feito, em português e espanhol:** Corona Gestão — cadastros básicos (categorias, fornecedores, praças, semanas, restrições, clientes), Produtos, Representantes, Compras, Estoque (posição e contagens), Categorias do caixa, Maletas por representante, Semanas dos representantes e Fechamento da maleta (sem maleta enviada: botão **Montar maleta**); Corona Vendas — semana sem pedido, Cobrança e troca sem pedido em aberto, busca de cliente. As mensagens de erro da API já seguiam o modelo (o que aconteceu + o que fazer) e ganharam botão no #288. Glossário, parte 5. **Não feito:** as telas de relatório e de conferência já dizem o que fazer e não mudaram. **Dúvidas:** nenhuma.
+
+## Fechamento da maleta com textos certos (Corona Gestão, 27/11/2026)
+
+Branch `style/fechamento-organizado` (item 7 da revisão geral). **Feito:** "Falta 1 peça" / "Sobra 1 peça" no singular (antes "Faltam 1 peça"); no rodapé dos relatórios, "-1 peça" em vez de "-1 peças"; o botão do topo do fechamento diz "Escolher outra maleta" (antes "Voltar ao relatório", que não é o que ele faz), pela nova propriedade `rotuloDoVoltar` da `TelaDeRelatorio`. Português e espanhol. **Não feito:** a explicação longa do relatório e os dois avisos continuam acima do leitor. **Dúvidas:** nenhuma.

@@ -52,9 +52,10 @@ export const PT_TEXTOS_DE_CONSIGNADO = {
     aindaComClientes: (n: number) =>
       `Ainda há ${pecas(n)} com clientes. Você pode concluir: o acerto dessas notas acontece depois e as peças voltam à maleta fechada.`,
     /** C4: falta e sobra são avisos separados, com a lista das peças (uma não anula a outra). */
-    faltam: (n: number) => `Faltam ${pecas(n)} em relação ao que devia estar na maleta:`,
+    faltam: (n: number) =>
+      `${n === 1 ? 'Falta' : 'Faltam'} ${pecas(n)} em relação ao que devia estar na maleta:`,
     sobram: (n: number) =>
-      `Sobram ${pecas(n)} em relação ao que devia estar na maleta. A sobra não volta ao estoque: confira se a peça é de outra maleta.`,
+      `${n === 1 ? 'Sobra' : 'Sobram'} ${pecas(n)} em relação ao que devia estar na maleta. A sobra não volta ao estoque: confira se a peça é de outra maleta.`,
     linhaDaDiferenca: (nome: string, n: number) => `${nome}: ${pecas(n)}`,
     semDiferenca: 'Tudo o que devia estar na maleta foi lido.',
     /** C3: o que fazer com cada peça que falta (§23.10, item 1). */
