@@ -1116,6 +1116,16 @@ public enum CodigoErro {
             "Esta maleta já foi fechada.",
             "Esta maleta já foi fechada."),
 
+    /** Concluir o fechamento com peça faltando sem a decisão da dona para cada uma (HTTP 409; §23.10, item 1). */
+    FALTA_SEM_DECISAO(
+            "Falta decidir o que fazer com as peças que faltam.",
+            "Faltam peças nesta maleta. Para cada uma, escolha Cobrar do representante ou Perda da loja e conclua de novo."),
+
+    /** Leitura depois do fechamento de peça que, no sistema, ainda está com a cliente (HTTP 409; §23.10, item 3). */
+    PECA_AINDA_COM_A_CLIENTE(
+            "Esta peça ainda está com a cliente.",
+            "Esta peça ainda está com a cliente. Faça o acerto da nota antes de ler."),
+
     MALETA_NAO_PODE_FECHAR(
             "Esta maleta não pode ser fechada agora.",
             "Só dá para fechar a maleta que está com o representante (enviada ou conferida).");

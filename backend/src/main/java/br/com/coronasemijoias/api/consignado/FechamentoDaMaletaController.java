@@ -1,5 +1,6 @@
 package br.com.coronasemijoias.api.consignado;
 
+import br.com.coronasemijoias.api.consignado.ServicoDoFechamentoDaMaleta.DecisaoDaFalta;
 import br.com.coronasemijoias.api.consignado.ServicoDoFechamentoDaMaleta.Leitura;
 import br.com.coronasemijoias.api.consignado.ServicoDoFechamentoDaMaleta.LeituraDoFechamento;
 import br.com.coronasemijoias.api.seguranca.ExigePerfil;
@@ -24,6 +25,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class FechamentoDaMaletaController {
 
     public record PedidoDeLeituras(List<Leitura> leituras) {
+    }
+
+    /** As decisões para as peças que faltam (uma por peça); sem falta, pode vir vazio ou sem corpo. */
+    public record PedidoDeConclusao(List<DecisaoDaFalta> decisoes) {
     }
 
     public record RespostaDoInicio(UUID fechamentoId) {
@@ -64,11 +69,22 @@ public class FechamentoDaMaletaController {
     }
 
     @Operation(operationId = "concluirFechamentoDaMaleta", summary = "Concluir o fechamento da maleta",
-            description = "Devolve ao estoque as peças bipadas (até o que a maleta devia ter) e passa a maleta a FECHADA. A diferença "
-                    + "não é corrigida: fica na leitura para a dona decidir.")
+            description = "Devolve ao estoque as peças bipadas (até o que a maleta devia ter), grava cada peça que falta como perda com "
+                    + "a decisão da dona (COBRAR_DO_REPRESENTANTE, que cria a pendência da maleta, ou PERDA_DA_LOJA, com motivo) e passa "
+                    + "a maleta a FECHADA. Falta sem decisão: 409 FALTA_SEM_DECISAO, nada gravado. A sobra não volta ao estoque.")
     @PostMapping("/concluir")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void concluir(@PathVariable UUID id, @AuthenticationPrincipal UsuarioAutenticado quem) {
-        fechamento.concluir(id, quem.id());
+    public void concluir(@PathVariable UUID id, @RequestBody(required = false) PedidoDeConclusao pedido,
+            @AuthenticationPrincipal UsuarioAutenticado quem) {
+        fechamento.concluir(id, pedido == null || pedido.decisoes() == null ? List.of() : pedido.decisoes(), quem.id());
+    }
+
+    @Operation(operationId = "registrarVoltasDaMaletaFechada", summary = "Ler as peças que voltaram depois do fechamento",
+            description = "Só na maleta FECHADA (continua fechada). Cada leitura devolve a peça ao estoque, no máximo o que as clientes já "
+                    + "devolveram à maleta e ainda não voltou à loja (409 PECA_AINDA_COM_A_CLIENTE). Reenviar o mesmo id não duplica.")
+    @PostMapping("/voltas")
+    public RespostaDasLeituras voltas(@PathVariable UUID id, @RequestBody PedidoDeLeituras pedido,
+            @AuthenticationPrincipal UsuarioAutenticado quem) {
+        return new RespostaDasLeituras(fechamento.registrarVoltas(id, pedido == null ? null : pedido.leituras(), quem.id()));
     }
 }

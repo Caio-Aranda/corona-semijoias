@@ -11,6 +11,7 @@ export const OPERACOES_DE_CONSIGNADO = [
   'fechamento.ler',
   'fechamento.leituras',
   'fechamento.concluir',
+  'fechamento.voltas',
   'consignado.semanas',
   'consignado.semana',
   'consignado.notas',
@@ -39,13 +40,24 @@ export interface LeituraParaEnviar {
   quantidade: number;
 }
 
+/** O que a dona decide para cada peça que falta ao concluir o fechamento (§23.10, item 1). */
+export const DECISOES_DA_FALTA = ['COBRAR_DO_REPRESENTANTE', 'PERDA_DA_LOJA'] as const;
+export type DecisaoDaFalta = (typeof DECISOES_DA_FALTA)[number];
+export const MAXIMO_DO_MOTIVO = 500;
+
+export interface DecisaoParaEnviar {
+  id: string;
+  produtoId: string;
+  decisao: DecisaoDaFalta;
+  motivo?: string;
+}
+
 export type ParametrosDeConsignado =
   | { operacao: 'telas.ler' }
   | {
       operacao:
         | 'fechamento.iniciar'
         | 'fechamento.ler'
-        | 'fechamento.concluir'
         | 'consignado.semanas'
         | 'consignado.semana'
         | 'consignado.nota'
@@ -53,7 +65,12 @@ export type ParametrosDeConsignado =
         | 'consignado.alertaVisto';
       id: string;
     }
-  | { operacao: 'fechamento.leituras'; id: string; leituras: LeituraParaEnviar[] }
+  | {
+      operacao: 'fechamento.leituras' | 'fechamento.voltas';
+      id: string;
+      leituras: LeituraParaEnviar[];
+    }
+  | { operacao: 'fechamento.concluir'; id: string; decisoes: DecisaoParaEnviar[] }
   | {
       operacao: 'consignado.notas';
       filtros: {
@@ -81,13 +98,39 @@ export function conferirConsignado(
       return chaves.length === 0 ? { operacao } : null;
     case 'fechamento.iniciar':
     case 'fechamento.ler':
-    case 'fechamento.concluir':
     case 'consignado.semanas':
     case 'consignado.semana':
     case 'consignado.nota':
     case 'consignado.cliente':
     case 'consignado.alertaVisto':
       return soCom('id') && idValido(p.id) ? { operacao, id: p.id } : null;
+    case 'fechamento.concluir': {
+      if (!soCom('id', 'decisoes') || !idValido(p.id)) return null;
+      const lista = p.decisoes ?? [];
+      if (!Array.isArray(lista) || lista.length > MAXIMO_DE_LEITURAS_NO_LOTE) return null;
+      const decisoes: DecisaoParaEnviar[] = [];
+      for (const d of lista as unknown[]) {
+        if (typeof d !== 'object' || d === null) return null;
+        const { id, produtoId, decisao, motivo, ...resto } = d as Record<string, unknown>;
+        if (Object.keys(resto).length > 0) return null;
+        if (!idValido(id) || !idValido(produtoId)) return null;
+        if (!(DECISOES_DA_FALTA as readonly unknown[]).includes(decisao)) return null;
+        if (
+          motivo !== undefined &&
+          (typeof motivo !== 'string' || motivo.length > MAXIMO_DO_MOTIVO)
+        ) {
+          return null;
+        }
+        decisoes.push({
+          id,
+          produtoId,
+          decisao: decisao as DecisaoDaFalta,
+          ...(typeof motivo === 'string' ? { motivo } : {}),
+        });
+      }
+      return { operacao, id: p.id, decisoes };
+    }
+    case 'fechamento.voltas':
     case 'fechamento.leituras': {
       if (!soCom('id', 'leituras') || !idValido(p.id) || !Array.isArray(p.leituras)) return null;
       if (p.leituras.length < 1 || p.leituras.length > MAXIMO_DE_LEITURAS_NO_LOTE) return null;
