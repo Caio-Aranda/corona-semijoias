@@ -980,7 +980,7 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
       vendaPercentual: 'Venta %',
       comissaoPercentual: 'Comisión %',
       comissaoDoCadastro:
-        'Viene del registro del cliente. Acá podés cambiarla solo para esta cobranza (hasta 40%).',
+        'Viene del registro del cliente. La tienda la confirma por la meta de ventas de la nota; si la cuenta de la tienda da otro porcentaje, vale la de la tienda.',
       dataDoAcerto: 'Fecha de cobranza',
       dataDoAcertoAjuda:
         'Hoy, o un día que ya pasó (no antes del día en que salió la nota). Nunca después de hoy.',

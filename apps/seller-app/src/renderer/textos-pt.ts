@@ -982,7 +982,7 @@ export const TEXTOS_PT = {
       vendaPercentual: 'Venda %',
       comissaoPercentual: 'Comissão %',
       comissaoDoCadastro:
-        'Vem do cadastro do cliente. Aqui você pode mudar só para este acerto (até 40%).',
+        'Vem do cadastro do cliente. A loja confere pela meta de vendas da nota; se a conta da loja der outra porcentagem, vale a da loja.',
       dataDoAcerto: 'Dt. Acerto',
       dataDoAcertoAjuda:
         'Hoje, ou um dia que já passou (não antes do dia em que a nota saiu). Nunca depois de hoje.',

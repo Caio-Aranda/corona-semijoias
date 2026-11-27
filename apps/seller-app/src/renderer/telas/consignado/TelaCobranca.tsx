@@ -350,19 +350,21 @@ function AcertoDoPedido({
           {TEXTOS.consignado.semanal.colunas.cobranca}: {dia(nota.dataCobranca)} ·{' '}
           {T.saida(dia(nota.saidaEm))} · {situacaoNaTela(nota.situacao)}
         </p>
-        <Botao onClick={aoTrocarPedido}>{TEXTOS.consignado.escolherPedido.trocar}</Botao>
-        <BotaoDeRelatorio
-          ponte={ponte}
-          pedido={{ tipo: 'NOTA_DE_SAIDA', notaId: nota.id }}
-          rotulo={TEXTOS.consignado.relatorios.abrir.notaDeSaida}
-        />
-        {nota.acerto ? (
+        <div className="consignado-acoes-do-pedido">
+          <Botao onClick={aoTrocarPedido}>{TEXTOS.consignado.escolherPedido.trocar}</Botao>
           <BotaoDeRelatorio
             ponte={ponte}
-            pedido={{ tipo: 'ACERTO', notaId: nota.id }}
-            rotulo={TEXTOS.consignado.relatorios.abrir.acerto}
+            pedido={{ tipo: 'NOTA_DE_SAIDA', notaId: nota.id }}
+            rotulo={TEXTOS.consignado.relatorios.abrir.notaDeSaida}
           />
-        ) : null}
+          {nota.acerto ? (
+            <BotaoDeRelatorio
+              ponte={ponte}
+              pedido={{ tipo: 'ACERTO', notaId: nota.id }}
+              rotulo={TEXTOS.consignado.relatorios.abrir.acerto}
+            />
+          ) : null}
+        </div>
       </section>
       {mensagem ? <Aviso tipo={mensagem.tipo}>{mensagem.texto}</Aviso> : null}
 
@@ -494,16 +496,6 @@ function AcertoDoPedido({
           ) : (
             <>
               <h2 className="vendas-subtitulo">{T.acertoTitulo}</h2>
-              <dl className="consignado-conta">
-                <dt>{T.vendaPercentual}</dt>
-                <dd>{previa ? porCento(previa.vendaPercentual) : ''}</dd>
-                <dt>{T.comissaoRs}</dt>
-                <dd>
-                  {previa ? <Dinheiro reais={previa.comissao} cotacao={cotacaoDoAcerto} /> : ''}
-                </dd>
-                <dt>{T.bruto}</dt>
-                <dd>{previa ? <Dinheiro reais={previa.bruto} cotacao={cotacaoDoAcerto} /> : ''}</dd>
-              </dl>
               <Campo
                 rotulo={T.comissaoPercentual}
                 ajuda={T.comissaoDoCadastro}
@@ -529,6 +521,16 @@ function AcertoDoPedido({
                     }
                   : {})}
               />
+              <dl className="consignado-conta">
+                <dt>{T.vendaPercentual}</dt>
+                <dd>{previa ? porCento(previa.vendaPercentual) : ''}</dd>
+                <dt>{T.comissaoRs}</dt>
+                <dd>
+                  {previa ? <Dinheiro reais={previa.comissao} cotacao={cotacaoDoAcerto} /> : ''}
+                </dd>
+                <dt>{T.bruto}</dt>
+                <dd>{previa ? <Dinheiro reais={previa.bruto} cotacao={cotacaoDoAcerto} /> : ''}</dd>
+              </dl>
               {previa && previa.cotacao === null ? (
                 <p className="vendas-texto vendas-texto--pequeno">{T.semCotacaoDoDia}</p>
               ) : null}
@@ -580,19 +582,21 @@ function AcertoDoPedido({
               </dl>
 
               <h2 className="vendas-subtitulo">{T.pagamentoTitulo}</h2>
-              {FORMAS_DO_CONSIGNADO.map((f) => (
-                <Campo
-                  key={f}
-                  rotulo={TEXTOS.consignado.formas[f] ?? f}
-                  inputMode="decimal"
-                  placeholder="0,00"
-                  value={valores[f]}
-                  {...(valores[f].trim() !== '' && dinheiroDigitado(valores[f]) === null
-                    ? { erro: T.valorInvalido }
-                    : {})}
-                  onChange={(e) => setValores((v) => ({ ...v, [f]: e.target.value }))}
-                />
-              ))}
+              <div className="consignado-formas">
+                {FORMAS_DO_CONSIGNADO.map((f) => (
+                  <Campo
+                    key={f}
+                    rotulo={TEXTOS.consignado.formas[f] ?? f}
+                    inputMode="decimal"
+                    placeholder="0,00"
+                    value={valores[f]}
+                    {...(valores[f].trim() !== '' && dinheiroDigitado(valores[f]) === null
+                      ? { erro: T.valorInvalido }
+                      : {})}
+                    onChange={(e) => setValores((v) => ({ ...v, [f]: e.target.value }))}
+                  />
+                ))}
+              </div>
               <dl className="consignado-conta">
                 <dt>{T.totalPago}</dt>
                 <dd>

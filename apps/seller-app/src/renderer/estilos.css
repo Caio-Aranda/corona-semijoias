@@ -695,3 +695,16 @@ tr.consignado-linha[tabindex]:focus-visible {
 .vendas-cartao--larga .cs-campo {
   margin-bottom: 0;
 }
+
+/* --- Cobrança organizada (item 7 da revisão de 27/11/2026): sem mudar o tamanho das letras nem dos botões. --- */
+.consignado-acoes-do-pedido {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-3);
+  width: 100%;
+}
+.consignado-formas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  column-gap: var(--espaco-6);
+}
