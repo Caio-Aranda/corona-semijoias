@@ -105,7 +105,7 @@ export const ES_TEXTOS_DE_MALETAS: NoMesmoFormato<typeof PT_TEXTOS_DE_MALETAS> =
   },
   limite: {
     titulo: 'Límite del representante',
-    limite: 'Límite del representante',
+    limite: 'Límite',
     jaComEle: 'Ya está con él',
     estaMaleta: 'Esta maleta',
     sobra: 'Sobra',
@@ -144,6 +144,7 @@ export const ES_TEXTOS_DE_MALETAS: NoMesmoFormato<typeof PT_TEXTOS_DE_MALETAS> =
       vendedor: 'Representante',
       semana: 'Semana',
       praca: 'Plaza',
+      semPraca: 'Sin plaza',
       tipo: 'Tipo',
       situacao: 'Estado',
       enviadaEm: 'Enviada el',
