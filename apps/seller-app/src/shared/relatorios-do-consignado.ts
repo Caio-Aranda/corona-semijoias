@@ -111,6 +111,20 @@ export interface FormaNoRelatorio {
   valor: ValorNasTresMoedas;
 }
 
+/** A linha da meta do relatório do acerto (§23.13, item 6). */
+export interface MetaNoRelatorio {
+  /** O vendido em Guarani, pela cotação do acerto; `null` sem cotação. */
+  vendidoGuarani: string | null;
+  metaGuarani: string;
+  /** A comissão que valeu, "40". */
+  percentual: string;
+  bateu: boolean;
+  /** Quanto faltou para a meta, em Guarani; só quando havia cotação e não bateu. */
+  faltouGuarani: string | null;
+  /** Dia da cotação usada ("2026-11-09"); `null` sem cotação. */
+  cotacaoData: string | null;
+}
+
 export interface RelatorioDoAcerto extends ParteDxDvVd {
   tipo: 'ACERTO';
   cabecalho: CabecalhoDoRelatorio;
@@ -121,6 +135,8 @@ export interface RelatorioDoAcerto extends ParteDxDvVd {
   vendidas: LinhaVendida[];
   vendaPercentual: string;
   comissaoPercentual: string;
+  /** Só quando a comissão veio da meta e confere com a meta de hoje; senão `null` e a linha não aparece. */
+  meta: MetaNoRelatorio | null;
   comissao: ValorNasTresMoedas;
   valorLiquido: ValorNasTresMoedas;
   totalPendenciasAnteriores: ValorNasTresMoedas;
@@ -213,6 +229,9 @@ export interface TotaisDaSemanaNoRelatorio extends ParteDxDvVd {
   recebidoPorForma: FormaNoRelatorio[];
   pendente: ValorNasTresMoedas;
   pedidos: number;
+  /** Notas com acerto valendo na semana, e quantas delas bateram a meta (sem cotação conta como não bateu). */
+  notasAcertadas: number;
+  notasQueBateramAMeta: number;
 }
 
 export interface PecaDaSituacaoDaMaleta {

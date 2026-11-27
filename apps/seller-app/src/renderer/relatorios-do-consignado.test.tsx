@@ -95,6 +95,7 @@ const acerto: RelatorioDoAcerto = {
   valorVd: v('2310.00'),
   vendaPercentual: '43.02',
   comissaoPercentual: '30.00',
+  meta: null,
   comissao: v('693.00'),
   valorLiquido: v('1617.00'),
   totalPendenciasAnteriores: v('498.10'),
@@ -130,6 +131,8 @@ const totais: TotaisDaSemanaNoRelatorio = {
     { forma: 'CREDITO', valor: v('0.00') },
   ],
   pendente: v('345.10'),
+  notasAcertadas: 3,
+  notasQueBateramAMeta: 2,
 };
 
 const maleta: SituacaoDaMaleta = {
@@ -279,6 +282,81 @@ describe('Relatório do acerto', () => {
     expect(within(folha).getByText('R 0000064-01')).toBeInTheDocument();
     expect(within(folha).getAllByText('Sem cotação').length).toBeGreaterThan(0);
   });
+
+  const meta = {
+    vendidoGuarani: '812400',
+    metaGuarani: '700000',
+    percentual: '40',
+    bateu: true,
+    faltouGuarani: null,
+    cotacaoData: '2026-11-09',
+  };
+
+  it('sem linha da meta quando o acerto não traz a meta', async () => {
+    await abrir(acerto, 'Relatório do acerto');
+    expect(within(screen.getByRole('article')).queryByText(/Meta Gs\./)).toBeNull();
+  });
+
+  it('bateu a meta: Meta, Vendido e a comissão de 40%', async () => {
+    await abrir({ ...acerto, comissaoPercentual: '40.00', meta }, 'Relatório do acerto');
+    expect(
+      within(screen.getByRole('article')).getByText(
+        'Meta Gs. 700.000 · Vendido Gs. 812.400 (cotação de 09/11/2026) → comissão 40%, porque bateu a meta',
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('abaixo da meta: diz quanto faltou', async () => {
+    await abrir(
+      {
+        ...acerto,
+        meta: {
+          ...meta,
+          vendidoGuarani: '577500',
+          percentual: '30',
+          bateu: false,
+          faltouGuarani: '122500',
+        },
+      },
+      'Relatório do acerto',
+    );
+    expect(
+      within(screen.getByRole('article')).getByText(
+        'Meta Gs. 700.000 · Vendido Gs. 577.500 (cotação de 09/11/2026) → comissão 30%; faltaram Gs. 122.500 para a meta',
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('sem cotação: diz que valeu a comissão de abaixo da meta', async () => {
+    await abrir(
+      {
+        ...acerto,
+        meta: {
+          ...meta,
+          vendidoGuarani: null,
+          percentual: '30',
+          bateu: false,
+          cotacaoData: null,
+        },
+      },
+      'Relatório do acerto',
+    );
+    expect(
+      within(screen.getByRole('article')).getByText(
+        'Meta Gs. 700.000 · Sem cotação: valeu a comissão de 30% de abaixo da meta',
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('em espanhol a linha da meta também fala espanhol', async () => {
+    definirIdioma('es');
+    await abrir({ ...acerto, comissaoPercentual: '40.00', meta }, 'Informe de la cobranza');
+    expect(
+      within(screen.getByRole('article')).getByText(
+        /Meta Gs\. 700\.000 · Vendido Gs\. 812\.400 \(cotización del 09\/11\/2026\) → comisión del 40%/,
+      ),
+    ).toBeInTheDocument();
+  });
 });
 
 describe('Totais da semana e Situação da maleta', () => {
@@ -289,6 +367,7 @@ describe('Totais da semana e Situação da maleta', () => {
     expect(within(folha).getByText('Itens DX 26 · DV 15 · VD 11')).toBeInTheDocument();
     expect(within(folha).getByText('Pix')).toBeInTheDocument();
     expect(within(folha).getByText('Pedidos da semana: 3')).toBeInTheDocument();
+    expect(within(folha).getByText('Notas que bateram a meta: 2 de 3')).toBeInTheDocument();
   });
 
   it('Situação da maleta: peças na maleta, com clientes (com quem) e vendidas', async () => {

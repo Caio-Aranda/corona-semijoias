@@ -296,6 +296,76 @@ describe('Relatório do acerto', () => {
     ]);
   });
 
+  describe('linha da meta (§23.13, item 6)', () => {
+    /** Depois do acerto, a loja volta a valer a meta de verdade: 700.000, 30% abaixo e 40% na meta. */
+    function metaDeVerdade() {
+      gravarEstado(
+        b.db,
+        CHAVES.parametros,
+        JSON.stringify({
+          consignadoMetaGuarani: 700000,
+          consignadoComissaoAbaixoDaMeta: 30,
+          consignadoComissaoNaMeta: 40,
+          consignadoDiasDoRetorno: 45,
+        }),
+      );
+    }
+
+    it('bateu a meta: vendido em Guarani, meta e a comissão de 40%', () => {
+      const { nova } = cenario();
+      acertar(nova, devolvidos(), '40', pagos());
+      metaDeVerdade();
+      const r = relatorio<RelatorioDoAcerto>({ tipo: 'ACERTO', notaId: nova });
+      expect(r.meta).toEqual({
+        vendidoGuarani: '3080000',
+        metaGuarani: '700000',
+        percentual: '40',
+        bateu: true,
+        faltouGuarani: null,
+        cotacaoData: '2026-11-09',
+      });
+    });
+
+    it('abaixo da meta: diz quanto faltou', () => {
+      const { nova } = cenario();
+      b.db.prepare("UPDATE cotacoes SET pyg_venda = '0.00400000'").run();
+      acertar(nova, devolvidos(), '30', pagos());
+      metaDeVerdade();
+      const r = relatorio<RelatorioDoAcerto>({ tipo: 'ACERTO', notaId: nova });
+      expect(r.meta).toEqual({
+        vendidoGuarani: '577500',
+        metaGuarani: '700000',
+        percentual: '30',
+        bateu: false,
+        faltouGuarani: '122500',
+        cotacaoData: '2026-11-09',
+      });
+    });
+
+    it('sem cotação: vale a porcentagem de abaixo da meta, sem valor em Guarani', () => {
+      const { nova } = cenario();
+      b.db.prepare('DELETE FROM cotacoes').run();
+      acertar(nova, devolvidos(), '30', pagos());
+      metaDeVerdade();
+      const r = relatorio<RelatorioDoAcerto>({ tipo: 'ACERTO', notaId: nova });
+      expect(r.meta).toEqual({
+        vendidoGuarani: null,
+        metaGuarani: '700000',
+        percentual: '30',
+        bateu: false,
+        faltouGuarani: null,
+        cotacaoData: null,
+      });
+    });
+
+    it('sem linha quando a meta mudou e a comissão gravada já não bate com ela', () => {
+      const { nova } = cenario();
+      acertar(nova, devolvidos(), '35', pagos());
+      metaDeVerdade();
+      expect(relatorio<RelatorioDoAcerto>({ tipo: 'ACERTO', notaId: nova }).meta).toBeNull();
+    });
+  });
+
   it('nota ainda sem acerto não tem relatório do acerto, e diz o que fazer', () => {
     const { nova } = cenario();
     const r = consultas.chamar({
@@ -455,6 +525,21 @@ describe('Totais da semana', () => {
       tela.recebidoPorForma.CREDITO,
     ]);
     expect(r.pendente.real).toBe(tela.pendente);
+  });
+
+  it('conta quantas notas bateram a meta, só entre as notas acertadas', () => {
+    const { nova } = cenario();
+    acertar(nova, devolvidos(), '40', pagos());
+    const r = relatorio<TotaisDaSemanaNoRelatorio>({ tipo: 'TOTAIS_DA_SEMANA' });
+    expect([r.notasQueBateramAMeta, r.notasAcertadas]).toEqual([1, 1]);
+  });
+
+  it('sem cotação a nota acertada conta como não bateu', () => {
+    const { nova } = cenario();
+    b.db.prepare('DELETE FROM cotacoes').run();
+    acertar(nova, devolvidos(), '30', pagos());
+    const r = relatorio<TotaisDaSemanaNoRelatorio>({ tipo: 'TOTAIS_DA_SEMANA' });
+    expect([r.notasQueBateramAMeta, r.notasAcertadas]).toEqual([0, 1]);
   });
 });
 

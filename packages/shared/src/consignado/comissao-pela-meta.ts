@@ -59,3 +59,40 @@ export function decidirComissaoPelaMeta(
     bateuAMeta: bateu,
   };
 }
+
+/** O que o comprovante e os relatórios do acerto dizem sobre a meta (ESPECIFICACAO §23.13, item 6). */
+export interface LinhaDaMeta {
+  /** O VD da nota em Guarani inteiro; `null` sem cotação. */
+  vendidoGuarani: string | null;
+  metaGuarani: string;
+  /** A comissão que valeu ("40"). */
+  percentual: string;
+  bateu: boolean;
+  /** Quanto faltou para a meta em Guarani inteiro; só quando havia cotação e não bateu. */
+  faltouGuarani: string | null;
+}
+
+/**
+ * A linha da meta de um acerto já gravado. O servidor decidiu a comissão (`comissaoGravada`); aqui só se conta a história.
+ * Devolve `null` (a linha não aparece) quando os parâmetros são inválidos ou quando a porcentagem gravada não é a que a meta
+ * de hoje daria: a meta pode ter mudado depois do acerto, e a linha não pode contradizer a comissão que valeu.
+ */
+export function linhaDaMeta(
+  vendidoGuarani: string | null,
+  comissaoGravada: string,
+  parametros: ParametrosDaMeta,
+): LinhaDaMeta | null {
+  if (!parametrosDaMetaValidos(parametros)) return null;
+  const meta = BigInt(parametros.metaEmGuarani);
+  const vd = vendidoGuarani === null ? null : BigInt(vendidoGuarani);
+  const bateu = vd !== null && vd >= meta;
+  const percentual = bateu ? parametros.percentualNaMeta : parametros.percentualAbaixo;
+  if (centesimosDePorcentagem(comissaoGravada) !== centesimosDePorcentagem(percentual)) return null;
+  return {
+    vendidoGuarani,
+    metaGuarani: parametros.metaEmGuarani,
+    percentual,
+    bateu,
+    faltouGuarani: vd !== null && !bateu ? (meta - vd).toString() : null,
+  };
+}

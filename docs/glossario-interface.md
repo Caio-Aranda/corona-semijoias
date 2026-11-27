@@ -1670,6 +1670,13 @@ Mensagens: "O PDF foi guardado na pasta ... No WhatsApp que abriu, anexe o PDF e
 - Toda coluna ou rótulo que mostra o preço de uma peça se chama **Preço unitário** (ES: **Precio unitario**): nota da maleta, nota de saída do cliente, peças da maleta, produtos, compras, consulta de código, venda e acerto.
 - Não mudam: **Preço de custo**, **Preço de venda** (cadastro e filtros), totais e subtotais.
 
+## Linha da meta nos relatórios do acerto da nota (Corona Vendas, issue 282)
+
+- **Relatório do acerto**, logo abaixo de **Comis. %**, a linha **Meta** (ES: **Meta**): "Meta Gs. 700.000 · Vendido Gs. 812.400 (cotação de 09/11/2026) → comissão 40%, porque bateu a meta".
+- Abaixo da meta: "... → comissão 30%; faltaram Gs. 122.500 para a meta". Sem cotação: "Meta Gs. 700.000 · Sem cotação: valeu a comissão de 30% de abaixo da meta".
+- ES: "Meta Gs. 700.000 · Vendido Gs. 812.400 (cotización del 09/11/2026) → comisión del 40%, porque alcanzó la meta"; "faltaron Gs. 122.500 para la meta"; "Sin cotización: valió la comisión del 30% de por debajo de la meta".
+- **Totais da semana**: "Notas que bateram a meta: X de Y" (ES: "Notas que alcanzaron la meta: X de Y"); nota sem cotação conta como não bateu.
+
 ## Comissão e meta do consignado (issue 280; §23.13)
 
 - **Menu (grupo Consignado):** **Comissão e meta do consignado** (ES: **Comisión y meta del consignado**). Campos: **Meta em Guarani**, **Comissão abaixo da meta, em %**, **Comissão ao bater a meta, em %**, **Dias da saída até o retorno**; **Salvar**; "Comissão e meta salvas." e "Vale para os próximos acertos e notas. O que já foi feito não muda."

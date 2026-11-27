@@ -1359,6 +1359,14 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
       emAndamento: 'En curso',
       fechada: 'Cerrada',
       comissaoDosClientes: 'Comisión de los clientes',
+      meta: 'Meta',
+      metaBateu: (meta: string, vendido: string, cotacao: string, pct: string) =>
+        `Meta ${meta} · Vendido ${vendido} (cotización del ${cotacao}) → comisión del ${pct}%, porque alcanzó la meta`,
+      metaNaoBateu: (meta: string, vendido: string, cotacao: string, falta: string, pct: string) =>
+        `Meta ${meta} · Vendido ${vendido} (cotización del ${cotacao}) → comisión del ${pct}%; faltaron ${falta} para la meta`,
+      metaSemCotacao: (meta: string, pct: string) =>
+        `Meta ${meta} · Sin cotización: valió la comisión del ${pct}% de por debajo de la meta`,
+      notasQueBateramAMeta: (x: number, y: number) => `Notas que alcanzaron la meta: ${x} de ${y}`,
       recebido: 'Total recibido',
       pendente: 'Total pendiente',
       resumoDaMaleta: (env: number, na: number, com: number, ven: number) =>
