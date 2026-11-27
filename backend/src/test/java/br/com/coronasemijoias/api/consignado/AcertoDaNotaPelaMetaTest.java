@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * O servidor decide a comissão do acerto da nota pela meta (formato 2; ESPECIFICACAO §23.13; plano acerto-45-dias, D1 a D4 e D7).
+ * O servidor decide a comissão do acerto da nota pela meta (formatos 1 e 2; ESPECIFICACAO §23.13; plano acerto-45-dias, D1 a D4 e D7).
  * A cotação "em uso" dos testes é a do exemplo do ADR-0012: 1 Gs = R$ 0,00090000, então R$ 630,00 = Gs. 700.000 exatos.
  * Escritos antes do código. PostgreSQL de verdade.
  */
@@ -124,16 +124,45 @@ class AcertoDaNotaPelaMetaTest extends ApoioDoConsignado {
                 acerto)).isEqualTo(1);
     }
 
+    /**
+     * C5 (revisão de 27/11/2026): o formato 1 (Corona Vendas 1.2.0, com porcentagem) também é decidido pela meta; a porcentagem
+     * do computador vira só conferência, com alerta quando é diferente.
+     */
     @Test
-    void formato1ContinuaComoHojeAPorcentagemInformadaSemMeta() throws Exception {
+    void formato1NaMetaOServidorDecide40MesmoComOutraPorcentagemEAvisaADona() throws Exception {
         CotacoesDaMassa.doExemplo(jdbc);
         Cena c = cena("630.00");
         UUID acerto = acertar(c.v(), notaDe(c, "630.00", 1), c.semana(), "10", List.of(), null);
         var r = linha(acerto);
-        assertThat(r.get("regra_da_comissao")).isEqualTo("INFORMADA");
-        assertThat((BigDecimal) r.get("comissao_percentual")).isEqualByComparingTo("10");
-        assertThat(r.get("meta_guarani")).isNull();
-        assertThat(r.get("vd_guarani")).isNull();
+        assertThat(r.get("regra_da_comissao")).isEqualTo("META");
+        assertThat((BigDecimal) r.get("comissao_percentual")).isEqualByComparingTo("40");
+        assertThat(r.get("vd_guarani")).isEqualTo(700_000L);
+        assertThat((BigDecimal) r.get("comissao")).isEqualByComparingTo("252.00");
+        assertThat(contar("SELECT count(*) FROM corona.alertas_consignado WHERE registro_id = ? AND tipo = 'VALOR_DO_ACERTO_RECALCULADO'"
+                + " AND detalhe->>'comissao_percentual_informada' = '10.00' AND detalhe->>'comissao_percentual_servidor' = '40.00'",
+                acerto)).isEqualTo(1);
+    }
+
+    @Test
+    void formato1AbaixoDaMetaFicaEm30MesmoQueOComputadorMande40() throws Exception {
+        CotacoesDaMassa.doExemplo(jdbc);
+        Cena c = cena("629.99");
+        UUID acerto = acertar(c.v(), notaDe(c, "629.99", 1), c.semana(), "40", List.of(), null);
+        var r = linha(acerto);
+        assertThat(r.get("regra_da_comissao")).isEqualTo("META");
+        assertThat((BigDecimal) r.get("comissao_percentual")).isEqualByComparingTo("30");
+        assertThat((BigDecimal) r.get("comissao")).isEqualByComparingTo("189.00");
+        assertThat(contar("SELECT count(*) FROM corona.alertas_consignado WHERE registro_id = ? AND tipo = 'VALOR_DO_ACERTO_RECALCULADO'",
+                acerto)).isEqualTo(1);
+    }
+
+    @Test
+    void formato1ComAMesmaPorcentagemDoServidorNaoAvisa() throws Exception {
+        CotacoesDaMassa.doExemplo(jdbc);
+        Cena c = cena("630.00");
+        UUID acerto = acertar(c.v(), notaDe(c, "630.00", 1), c.semana(), "40", List.of(), null);
+        assertThat(linha(acerto).get("regra_da_comissao")).isEqualTo("META");
+        assertThat(contar("SELECT count(*) FROM corona.alertas_consignado WHERE registro_id = ?", acerto)).isZero();
     }
 
     @Test

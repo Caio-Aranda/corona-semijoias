@@ -324,6 +324,72 @@ class SyncDoConsignadoTest extends ApoioDoEnvioDaFase6 {
         });
     }
 
+    /** As colunas de uma linha no pull do representante (formato 2, o do Corona Vendas 1.2.0; todas as páginas). */
+    private JsonNode colunasNoPull(UsuarioDeTeste v, String tabela, UUID id) throws Exception {
+        String cursor = null;
+        for (int i = 0; i < 100; i++) {
+            JsonNode r = json.readTree(mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                            .get("/api/vendedor/sync/pull?formato=2&limite=500" + (cursor == null ? "" : "&cursor=" + cursor))
+                            .with(como(v)).header("X-App-Tipo", "vendas")
+                            .header("X-App-Versao", br.com.coronasemijoias.api.testes.TesteDeIntegracao.VERSAO_MINIMA_VENDAS))
+                    .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk()).andReturn()
+                    .getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8));
+            for (JsonNode l : r.get("linhas")) {
+                if (tabela.equals(l.get("tabela").asString()) && id.toString().equals(l.get("id").asString())) {
+                    return l.get("campos");
+                }
+            }
+            cursor = r.get("cursor").asString();
+            if (!r.get("temMais").asBoolean()) {
+                break;
+            }
+        }
+        throw new AssertionError("A linha " + tabela + " " + id + " não veio no pull.");
+    }
+
+    /** Acerto formato 1, como o Corona Vendas 1.2.0 manda (com a porcentagem escolhida no computador). */
+    private Map<String, Object> acertoOpV1(Cena c, UUID id, UUID nota, String porcentagem) {
+        return opF(id, "ACERTO_NOTA", 1, mapa("id", id, "notaId", nota, "semanaId", c.semana(), "acertadoEm", agora().toString(),
+                "comissaoPercentual", porcentagem, "devolvidos", List.of()));
+    }
+
+    /** C5 (27/11/2026): o 1.2.0 manda 30%, a nota bateu a meta: o servidor grava 40% e o pull devolve a linha do servidor. */
+    @Test
+    void acertoFormato1Do120NaMetaOServidorDecide40EOPullLevaAPorcentagemNova() throws Throwable {
+        comACotacaoDoExemplo(() -> {
+            Cena c = cenaComPeca("630.00");
+            UUID nota = UUID.randomUUID();
+            UUID acerto = UUID.randomUUID();
+            JsonNode r = enviar(c.v(), List.of(notaOp(c, nota, 1, List.of(itemJson(c.peca(), c.maleta(), 1, "630.00"))),
+                    acertoOpV1(c, acerto, nota, "30")));
+            assertThat(resultado(r, 1)).isEqualTo("ACEITO");
+            var linha = jdbc.queryForMap("SELECT * FROM corona.acertos_nota WHERE id = ?", acerto);
+            assertThat(linha.get("regra_da_comissao")).isEqualTo("META");
+            assertThat((java.math.BigDecimal) linha.get("comissao_percentual")).isEqualByComparingTo("40");
+            assertThat((java.math.BigDecimal) linha.get("comissao")).isEqualByComparingTo("252.00");
+            // O computador recebe a linha do servidor no pull, com a porcentagem e a comissão decididas.
+            JsonNode doPull = colunasNoPull(c.v(), "acertos_nota", acerto);
+            assertThat(new java.math.BigDecimal(doPull.get("comissao_percentual").asString())).isEqualByComparingTo("40");
+            assertThat(new java.math.BigDecimal(doPull.get("comissao").asString())).isEqualByComparingTo("252.00");
+        });
+    }
+
+    @Test
+    void acertoFormato1Do120AbaixoDaMetaFicaEm30MesmoMandando40() throws Throwable {
+        comACotacaoDoExemplo(() -> {
+            Cena c = cenaComPeca("629.99");
+            UUID nota = UUID.randomUUID();
+            UUID acerto = UUID.randomUUID();
+            JsonNode r = enviar(c.v(), List.of(notaOp(c, nota, 1, List.of(itemJson(c.peca(), c.maleta(), 1, "629.99"))),
+                    acertoOpV1(c, acerto, nota, "40")));
+            assertThat(resultado(r, 1)).isEqualTo("ACEITO");
+            assertThat(jdbc.queryForObject("SELECT comissao_percentual FROM corona.acertos_nota WHERE id = ?", java.math.BigDecimal.class,
+                    acerto)).isEqualByComparingTo("30");
+            assertThat(jdbc.queryForObject("SELECT regra_da_comissao FROM corona.acertos_nota WHERE id = ?", String.class, acerto))
+                    .isEqualTo("META");
+        });
+    }
+
     @Test
     void acertoFormato2AbaixoDaMetaFicaEm30() throws Throwable {
         comACotacaoDoExemplo(() -> {
@@ -367,16 +433,19 @@ class SyncDoConsignadoTest extends ApoioDoEnvioDaFase6 {
     }
 
     @Test
-    void acertoFormato1DaPorcentagemInformadaContinuaComoHoje() throws Exception {
+    void acertoFormato1SemCotacaoTambemEDecididoPelaMetaAbaixoDela() throws Exception {
         Cena c = cena();
         UUID nota = UUID.randomUUID();
         UUID acerto = UUID.randomUUID();
         JsonNode r = enviar(c.v(), List.of(notaOp(c, nota, 1, List.of(itemJson(c.peca(), c.maleta(), 1, "100.00"))),
                 acertoOp(c, acerto, nota, 2, null)));
         assertThat(resultado(r, 1)).isEqualTo("ACEITO");
-        var linha = jdbc.queryForMap("SELECT regra_da_comissao, meta_guarani, vd_guarani FROM corona.acertos_nota WHERE id = ?", acerto);
-        assertThat(linha.get("regra_da_comissao")).isEqualTo("INFORMADA");
-        assertThat(linha.get("meta_guarani")).isNull();
+        var linha = jdbc.queryForMap("SELECT regra_da_comissao, meta_guarani, vd_guarani, comissao_percentual FROM corona.acertos_nota WHERE id = ?",
+                acerto);
+        // C5 (27/11/2026): o formato 1 não grava mais INFORMADA; sem cotação, fica abaixo da meta (30%), com alerta.
+        assertThat(linha.get("regra_da_comissao")).isEqualTo("META");
+        assertThat(linha.get("meta_guarani")).isEqualTo(700_000L);
         assertThat(linha.get("vd_guarani")).isNull();
+        assertThat((java.math.BigDecimal) linha.get("comissao_percentual")).isEqualByComparingTo("30");
     }
 }
