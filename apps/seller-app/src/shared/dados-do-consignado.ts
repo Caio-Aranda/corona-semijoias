@@ -239,6 +239,17 @@ export interface PrevisaoDoAcerto {
   valorVd: string;
   vendaPercentual: string;
   comissaoPercentual: string;
+  /** A meta da nota (§23.13): só a prévia; o servidor decide e o que ele decidir vale. */
+  meta: {
+    metaEmGuarani: string;
+    /** O VD da nota em Guarani inteiro; `null` sem cotação do Guarani no computador. */
+    vdEmGuarani: string | null;
+    bateuAMeta: boolean;
+    /** Quanto falta, em Guarani ("0" se bateu); `null` sem cotação. */
+    faltaEmGuarani: string | null;
+    percentualAbaixo: string;
+    percentualNaMeta: string;
+  };
   comissao: string;
   bruto: string;
   pendenciasAnteriores: string;

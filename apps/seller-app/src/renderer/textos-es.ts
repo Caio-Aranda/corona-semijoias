@@ -979,8 +979,13 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
       acertoTitulo: 'Cobranza',
       vendaPercentual: 'Venta %',
       comissaoPercentual: 'Comisión %',
-      comissaoDoCadastro:
-        'Viene del registro del cliente. La tienda la confirma por la meta de ventas de la nota; si la cuenta de la tienda da otro porcentaje, vale la de la tienda.',
+      comissaoDaMetaAjuda: 'Viene de la meta de la nota. No se puede cambiar aquí.',
+      metaBateu: (vendido, meta, pct) =>
+        `Vendido en esta nota: ${vendido} de ${meta} (meta). Alcanzó la meta: comisión del ${pct}%.`,
+      metaNaoBateu: (vendido, meta, pct, falta) =>
+        `Vendido en esta nota: ${vendido} de ${meta} (meta). Todavía no alcanzó la meta: comisión del ${pct}%. Faltan ${falta}.`,
+      metaSemCotacao: (pct) =>
+        `Sin cotización: la comisión es del ${pct}% hasta que llegue la cotización.`,
       dataDoAcerto: 'Fecha de cobranza',
       dataDoAcertoAjuda:
         'Hoy, o un día que ya pasó (no antes del día en que salió la nota). Nunca después de hoy.',

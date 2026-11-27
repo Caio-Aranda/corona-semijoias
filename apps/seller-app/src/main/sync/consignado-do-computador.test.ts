@@ -137,19 +137,58 @@ function pedido(itens: [string, number][], remessa = maleta): string {
   return id;
 }
 
+/** Os parâmetros do consignado que o pull traz (`parametros`); o que não vier fica no padrão do computador. */
+function parametrosDaLoja(extra: Record<string, unknown> = {}): void {
+  gravarEstado(
+    b.db,
+    CHAVES.parametros,
+    JSON.stringify({
+      consignadoMetaGuarani: 700000,
+      consignadoComissaoAbaixoDaMeta: 30,
+      consignadoComissaoNaMeta: 40,
+      consignadoDiasDoRetorno: 45,
+      ...extra,
+    }),
+  );
+}
+
+function cotacaoDoGuarani(pyg: string): void {
+  aplicarLote(
+    b.db,
+    [
+      {
+        tabela: 'cotacoes',
+        id: idDeTeste(9),
+        version: 1,
+        deletedAt: null,
+        campos: { data_cotacao: '2026-11-10', usd_venda: '7500.00', pyg_venda: pyg },
+      },
+    ],
+    { cursor: 'c-cot' },
+  );
+}
+
+/**
+ * Acerto pelo caminho do 1.3.0: o computador não manda porcentagem. O terceiro argumento é a comissão "abaixo da meta" da loja
+ * neste teste (sem cotação, é ela que vale), para os números do exemplo da nota continuarem os mesmos.
+ */
 function acertar(
   notaId: string,
   devolvidos: { produtoId: string; quantidade: number; remessaId?: string }[],
   comissao: string,
   formas: { forma: 'DINHEIRO' | 'PIX' | 'DEBITO' | 'CREDITO'; valor: string }[],
 ) {
+  // A mesma comissão na meta: a cotação que o teste tenha não muda a conta do exemplo.
+  parametrosDaLoja({
+    consignadoComissaoAbaixoDaMeta: Number(comissao),
+    consignadoComissaoNaMeta: Number(comissao),
+  });
   return chamar<{ situacao: string; nota: DetalheDaNota }>({
     operacao: 'consignado.acertoSalvar',
     acerto: {
       id: idDeTeste(7),
       reciboId: idDeTeste(8),
       notaId,
-      comissaoPercentual: comissao,
       devolvidos: devolvidos.map((d) => ({ remessaId: maleta, ...d })),
       formas,
     },
@@ -308,10 +347,13 @@ describe('a nota 0000064-21 e a pendência da 0000063-32 (mesmo arquivo de exemp
       { forma: 'DINHEIRO' as const, valor: n.pago.DINHEIRO },
       { forma: 'PIX' as const, valor: n.pago.PIX },
     ];
+    // Sem cotação do Guarani no computador, a comissão é a "abaixo da meta": 30%, a do exemplo.
+    parametrosDaLoja();
     const previa = chamar<PrevisaoDoAcerto>({
       operacao: 'consignado.acertoPrevia',
-      acerto: { notaId: nova, devolvidos, comissaoPercentual: n.comissaoPercentual, formas },
+      acerto: { notaId: nova, devolvidos, formas },
     });
+    expect(previa.comissaoPercentual).toBe('30.00');
     const e = n.esperado;
     expect(previa.itensDx).toBe(e.itensDx);
     expect(previa.itensDv).toBe(e.itensDv);
@@ -416,28 +458,27 @@ describe('a nota 0000064-21 e a pendência da 0000063-32 (mesmo arquivo de exemp
       'NOTA_CONSIGNADO',
       'ACERTO_NOTA',
     ]);
-    expect(linhas.every((l) => l.formato === 1)).toBe(true);
+    // Só o acerto da nota vai no formato 2 (sem porcentagem: o servidor decide pela meta).
+    expect(linhas.map((l) => l.formato)).toEqual([1, 1, 2, 1, 1, 2]);
     const acerto = JSON.parse(linhas[5]?.dados ?? '{}') as {
       visto: Record<string, string>;
       recibo: { formas: unknown[]; sequencia: number };
       devolvidos: unknown[];
-      comissaoPercentual: string;
     };
     expect(acerto.visto['ficouDevendo']).toBe(n.esperado.ficouDevendo);
     expect(acerto.visto['pendenciasAnteriores']).toBe(n.pendenciasAnteriores);
-    expect(acerto.comissaoPercentual).toBe('30.00');
+    expect(acerto).not.toHaveProperty('comissaoPercentual');
     expect(acerto.devolvidos).toHaveLength(3);
     expect(acerto.recibo.formas).toHaveLength(2);
     // Dinheiro sempre com duas casas, em texto (nunca ponto flutuante).
     expect(linhas[4]?.dados).toContain('"totalDxVisto":"5370.00"');
   });
 
-  it('recusas: devolver mais que o levado, comissão fora de 0 a 40, pagar mais que o devido, segundo acerto', () => {
+  it('recusas: devolver mais que o levado, pagar mais que o devido, segundo acerto', () => {
     const { nova } = cenario();
     const base = {
       notaId: nova,
       formas: [] as { forma: 'DINHEIRO'; valor: string }[],
-      comissaoPercentual: '30',
     };
     expect(() =>
       chamar({
@@ -448,18 +489,6 @@ describe('a nota 0000064-21 e a pendência da 0000063-32 (mesmo arquivo de exemp
         },
       }),
     ).toThrowError(/devolução passa/i);
-    expect(() =>
-      chamar({
-        operacao: 'consignado.acertoPrevia',
-        acerto: { ...base, comissaoPercentual: '40.01', devolvidos: [] },
-      }),
-    ).toThrowError(/entre 0% e 40%/);
-    expect(() =>
-      chamar({
-        operacao: 'consignado.acertoPrevia',
-        acerto: { ...base, comissaoPercentual: '-1', devolvidos: [] },
-      }),
-    ).toThrowError(/entre 0% e 40%/);
     const muito = [{ forma: 'DINHEIRO' as const, valor: '99999.00' }];
     expect(() => acertar(nova, [], '30', muito)).toThrowError(/passa do que o cliente deve/);
     acertar(nova, [], '30', []);
@@ -927,19 +956,27 @@ describe('Dt. Acerto (tarefa 9.8): a data do acerto e a ordem dos débitos', () 
     return { notaA, notaB };
   }
 
-  const salvar = (notaId: string, formas: { forma: 'DINHEIRO'; valor: string }[], data?: string) =>
-    chamar<{ situacao: string; nota: DetalheDaNota }>({
+  // Sem comissão nenhuma (nem na meta): estes testes são de datas e de dinheiro, não da meta.
+  const semComissao = () =>
+    parametrosDaLoja({ consignadoComissaoAbaixoDaMeta: 0, consignadoComissaoNaMeta: 0 });
+  const salvar = (
+    notaId: string,
+    formas: { forma: 'DINHEIRO'; valor: string }[],
+    data?: string,
+  ) => {
+    semComissao();
+    return chamar<{ situacao: string; nota: DetalheDaNota }>({
       operacao: 'consignado.acertoSalvar',
       acerto: {
         id: idDeTeste(7),
         reciboId: idDeTeste(8),
         notaId,
-        comissaoPercentual: '0',
         devolvidos: [],
         formas,
         ...(data ? { data } : {}),
       },
     });
+  };
 
   it('a ordem dos débitos é a do lançamento: o acerto com data de um dia antes não passa na frente (mesmos números do servidor)', () => {
     const ex = exemplos.ordemDosDebitosComDataPassada;
@@ -1119,17 +1156,18 @@ describe('Dt. Acerto (tarefa 9.8): a data do acerto e a ordem dos débitos', () 
 
   it('a prévia mostra a cotação do dia escolhido; sem cotação até o dia, "Sem cotação" (cotacao nula)', () => {
     const { notaA } = duasNotas();
-    const previa = (data?: string) =>
-      chamar<PrevisaoDoAcerto>({
+    const previa = (data?: string) => {
+      parametrosDaLoja({ consignadoComissaoAbaixoDaMeta: 0, consignadoComissaoNaMeta: 0 });
+      return chamar<PrevisaoDoAcerto>({
         operacao: 'consignado.acertoPrevia',
         acerto: {
           notaId: notaA,
           devolvidos: [],
-          comissaoPercentual: '0',
           formas: [],
           ...(data ? { data } : {}),
         },
       });
+    };
     expect(previa('2026-11-08').cotacao?.dolar).toBe('5.00000000');
     expect(previa().cotacao?.dolar).toBe('7.00000000');
     expect(previa('2026-11-03').cotacao).toBeNull();
@@ -1181,5 +1219,130 @@ describe('Tam./Ton. da peça (tarefa 9.8)', () => {
       ['A-1', '17'],
       ['B-1', null],
     ]);
+  });
+});
+
+describe('a comissão pela meta e os dias do retorno (Corona Vendas 1.3.0; §23.13)', () => {
+  const nota64 = () => {
+    chamar({ operacao: 'consignado.semanaNova', id: idDeTeste(10), numero: 64 });
+    return pedido([
+      ['A-1', 10],
+      ['B-1', 8],
+      ['C-1', 8],
+    ]);
+  };
+  // VD de R$ 2.310,00 (o exemplo da nota 0000064-21).
+  const devolvidos = () => [
+    { produtoId: produto.A, remessaId: maleta, quantidade: 5 },
+    { produtoId: produto.B, remessaId: maleta, quantidade: 6 },
+    { produtoId: produto.C, remessaId: maleta, quantidade: 4 },
+  ];
+  const previa = (id: string) =>
+    chamar<PrevisaoDoAcerto>({
+      operacao: 'consignado.acertoPrevia',
+      acerto: { notaId: id, devolvidos: devolvidos(), formas: [] },
+    });
+
+  it('a Data do retorno usa os dias da configuração e, sem ela, 45', () => {
+    chamar({ operacao: 'consignado.semanaNova', id: idDeTeste(10), numero: 1 });
+    parametrosDaLoja({ consignadoDiasDoRetorno: 30 });
+    const n1 = pedido([['A-1', 1]]);
+    // O relógio do teste começa em 10/11/2026: 10/11 + 30 dias = 10/12/2026.
+    expect(nota(n1).dataCobranca).toBe('2026-12-10');
+  });
+
+  it('parâmetro vazio ou torto cai no padrão: 45 dias, meta de Gs. 700.000, 30% e 40%', () => {
+    gravarEstado(
+      b.db,
+      CHAVES.parametros,
+      JSON.stringify({
+        consignadoMetaGuarani: null,
+        consignadoComissaoAbaixoDaMeta: 50,
+        consignadoComissaoNaMeta: 40,
+        consignadoDiasDoRetorno: 0,
+      }),
+    );
+    chamar({ operacao: 'consignado.semanaNova', id: idDeTeste(10), numero: 1 });
+    expect(nota(pedido([['A-1', 1]])).dataCobranca).toBe('2026-12-25');
+    const n = nota64();
+    cotacaoDoGuarani('0.00100000');
+    // 2.310.000 de Guarani: bateu a meta, e é o 40% do padrão.
+    expect(previa(n).comissaoPercentual).toBe('40.00');
+  });
+
+  it('sem cotação do Guarani no computador: 30% e a prévia diz que falta a cotação', () => {
+    const n = nota64();
+    parametrosDaLoja();
+    const p = previa(n);
+    expect(p.comissaoPercentual).toBe('30.00');
+    expect(p.meta).toMatchObject({
+      metaEmGuarani: '700000',
+      vdEmGuarani: null,
+      bateuAMeta: false,
+      faltaEmGuarani: null,
+    });
+    expect(p.comissao).toBe('693.00');
+  });
+
+  it('bateu a meta: 40% e a comissão muda junto', () => {
+    const n = nota64();
+    parametrosDaLoja();
+    cotacaoDoGuarani('0.00100000');
+    const p = previa(n);
+    expect(p.meta).toMatchObject({ vdEmGuarani: '2310000', bateuAMeta: true, faltaEmGuarani: '0' });
+    expect(p.comissaoPercentual).toBe('40.00');
+    expect(p.comissao).toBe('924.00');
+    expect(p.bruto).toBe('1386.00');
+  });
+
+  it('não bateu: 30% e mostra quanto falta (Gs. 700.000 menos o vendido)', () => {
+    const n = nota64();
+    parametrosDaLoja();
+    cotacaoDoGuarani('0.01000000');
+    const p = previa(n);
+    expect(p.meta).toMatchObject({
+      vdEmGuarani: '231000',
+      bateuAMeta: false,
+      faltaEmGuarani: '469000',
+    });
+    expect(p.comissaoPercentual).toBe('30.00');
+  });
+
+  it('a meta e os percentuais vêm da configuração, não de constantes', () => {
+    const n = nota64();
+    parametrosDaLoja({
+      consignadoMetaGuarani: 3000000,
+      consignadoComissaoAbaixoDaMeta: 25,
+      consignadoComissaoNaMeta: 35,
+    });
+    cotacaoDoGuarani('0.00100000');
+    const p = previa(n);
+    expect(p.meta?.bateuAMeta).toBe(false);
+    expect(p.comissaoPercentual).toBe('25.00');
+    expect(p.meta?.faltaEmGuarani).toBe('690000');
+  });
+
+  it('o acerto sai na outbox em formato 2, sem porcentagem, e grava a comissão decidida no computador', () => {
+    const n = nota64();
+    parametrosDaLoja();
+    cotacaoDoGuarani('0.00100000');
+    chamar({
+      operacao: 'consignado.acertoSalvar',
+      acerto: {
+        id: idDeTeste(7),
+        reciboId: idDeTeste(8),
+        notaId: n,
+        devolvidos: devolvidos(),
+        formas: [],
+      },
+    });
+    const op = b.db
+      .prepare("SELECT formato, dados FROM outbox WHERE tipo = 'ACERTO_NOTA'")
+      .get() as { formato: number; dados: string };
+    expect(op.formato).toBe(2);
+    const dados = JSON.parse(op.dados) as Record<string, unknown>;
+    expect(dados).not.toHaveProperty('comissaoPercentual');
+    expect(dados['visto']).toMatchObject({ valorVd: '2310.00', comissao: '924.00' });
+    expect(nota(n).acerto?.comissaoPercentual).toBe('40.00');
   });
 });

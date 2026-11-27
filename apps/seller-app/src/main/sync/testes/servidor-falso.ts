@@ -64,6 +64,10 @@ export class ServidorFalso {
     situacaoDoAparelho: 'ATIVO',
     prazoArrependimentoDias: 7,
     prazoDefeitoDias: 30,
+    consignadoMetaGuarani: 700000,
+    consignadoComissaoAbaixoDaMeta: 30,
+    consignadoComissaoNaMeta: 40,
+    consignadoDiasDoRetorno: 45,
   };
 
   /**

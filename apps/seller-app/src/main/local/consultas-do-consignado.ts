@@ -715,7 +715,7 @@ export class ConsultasDoConsignado {
   }
 
   private previa(p: Parameters<typeof previaDoAcerto>[1]): PrevisaoDoAcerto {
-    const r = previaDoAcerto(this.db(), p);
+    const r = previaDoAcerto(this.db(), p, this.agora());
     const c = r.calculo;
     return {
       linhas: r.linhas,
@@ -727,6 +727,7 @@ export class ConsultasDoConsignado {
       valorVd: c.valorVd,
       vendaPercentual: c.vendaPercentual,
       comissaoPercentual: r.comissaoPercentual,
+      meta: r.meta,
       comissao: c.comissao,
       bruto: c.bruto,
       pendenciasAnteriores: c.pendenciasAnteriores,

@@ -14,7 +14,7 @@ import {
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { chamar, Dinheiro, novoId, useCotacao } from '../../chamadas';
 import { Campo, JanelaDeConfirmacao } from '../../componentes-do-vendedor';
-import { centavosDeTexto } from '../../moedas';
+import { centavosDeTexto, formatarGuarani } from '../../moedas';
 import { TEXTOS } from '../../textos';
 import { PaginaDoVendedor } from '../PaginaDoVendedor';
 import {
@@ -23,7 +23,6 @@ import {
   dinheiroDigitado,
   FotoDoProduto,
   porCento,
-  porcentagemDigitada,
   reais,
   situacaoNaTela,
   useConsulta,
@@ -105,6 +104,27 @@ export function TelaCobranca({ ponte, notaId: inicial, aoVoltar }: TelaCobrancaP
   );
 }
 
+/** "30.00" → "30"; "7.50" → "7,5" (a comissão na tela, sem zeros que sobram). */
+function porcentagemNaTela(texto: string): string {
+  return texto
+    .replace(/\.00$/, '')
+    .replace(/(\.\d)0$/, '$1')
+    .replace('.', ',');
+}
+
+/** A linha da meta embaixo da Comissão % (textos do plano, seção 2); só a prévia, o servidor decide. */
+function linhaDaMeta(previa: PrevisaoDoAcerto): string {
+  const T = TEXTOS.consignado.cobranca;
+  const { meta } = previa;
+  const pct = porcentagemNaTela(previa.comissaoPercentual);
+  if (meta.vdEmGuarani === null) return T.metaSemCotacao(pct);
+  const vendido = formatarGuarani(BigInt(meta.vdEmGuarani));
+  const alvo = formatarGuarani(BigInt(meta.metaEmGuarani));
+  return meta.bateuAMeta
+    ? T.metaBateu(vendido, alvo, pct)
+    : T.metaNaoBateu(vendido, alvo, pct, formatarGuarani(BigInt(meta.faltaEmGuarani ?? '0')));
+}
+
 function AcertoDoPedido({
   ponte,
   nota,
@@ -123,9 +143,6 @@ function AcertoDoPedido({
   const [aba, setAba] = useState<'itens' | 'pagamento'>('itens');
   const [devolvidos, setDevolvidos] = useState<Record<string, number>>({});
   const [concluida, setConcluida] = useState(false);
-  const [comissao, setComissao] = useState(() =>
-    (nota.comissaoDoCliente || '30').replace(/\.00$/, '').replace('.', ','),
-  );
   const [valores, setValores] = useState<Record<FormaDoConsignado, string>>({
     DINHEIRO: '',
     PIX: '',
@@ -162,7 +179,6 @@ function AcertoDoPedido({
   const [ocupado, setOcupado] = useState(false);
 
   const acertada = nota.acerto !== null;
-  const comissaoLida = porcentagemDigitada(comissao);
   const formasLidas = useMemo(() => {
     const lista: FormaPaga[] = [];
     let invalida = false;
@@ -188,7 +204,7 @@ function AcertoDoPedido({
   );
 
   useEffect(() => {
-    if (acertada || comissaoLida === null || formasLidas.invalida || dataInvalida) {
+    if (acertada || formasLidas.invalida || dataInvalida) {
       setPrevia(null);
       return;
     }
@@ -198,7 +214,6 @@ function AcertoDoPedido({
       acerto: {
         notaId: nota.id,
         devolvidos: devolvidosParaEnviar,
-        comissaoPercentual: comissaoLida,
         formas: formasLidas.lista,
         ...dataParaEnviar,
       },
@@ -212,21 +227,11 @@ function AcertoDoPedido({
     return () => {
       ativo = false;
     };
-  }, [
-    ponte,
-    nota.id,
-    acertada,
-    comissaoLida,
-    formasLidas,
-    devolvidosParaEnviar,
-    dataInvalida,
-    dataDoAcerto,
-  ]);
+  }, [ponte, nota.id, acertada, formasLidas, devolvidosParaEnviar, dataInvalida, dataDoAcerto]);
 
   const pagoAcima =
     previa !== null &&
     (centavosDeTexto(previa.totalPago) ?? 0n) > (centavosDeTexto(previa.totalAReceber) ?? 0n);
-  const comissaoErrada = !acertada && comissaoLida === null;
   const podeSalvar =
     !acertada &&
     concluida &&
@@ -272,7 +277,6 @@ function AcertoDoPedido({
   }
 
   async function salvar(): Promise<void> {
-    if (comissaoLida === null) return;
     setOcupado(true);
     const r = await chamar<{ reciboId: string | null }>(ponte, {
       operacao: 'consignado.acertoSalvar',
@@ -281,7 +285,6 @@ function AcertoDoPedido({
         reciboId: novoId(),
         notaId: nota.id,
         devolvidos: devolvidosParaEnviar,
-        comissaoPercentual: comissaoLida,
         formas: formasLidas.lista,
         ...dataParaEnviar,
       },
@@ -500,12 +503,12 @@ function AcertoDoPedido({
               <h2 className="vendas-subtitulo">{T.acertoTitulo}</h2>
               <Campo
                 rotulo={T.comissaoPercentual}
-                ajuda={T.comissaoDoCadastro}
-                inputMode="decimal"
-                value={comissao}
-                {...(comissaoErrada ? { erro: TEXTOS.consignado.cobranca.comissaoInvalida } : {})}
-                onChange={(e) => setComissao(e.target.value)}
+                ajuda={T.comissaoDaMetaAjuda}
+                readOnly
+                value={previa ? porcentagemNaTela(previa.comissaoPercentual) : ''}
+                onChange={() => undefined}
               />
+              {previa ? <p className="vendas-texto">{linhaDaMeta(previa)}</p> : null}
               <Campo
                 rotulo={T.dataDoAcerto}
                 ajuda={T.dataDoAcertoAjuda}

@@ -981,8 +981,12 @@ export const TEXTOS_PT = {
       acertoTitulo: 'Acerto',
       vendaPercentual: 'Venda %',
       comissaoPercentual: 'Comissão %',
-      comissaoDoCadastro:
-        'Vem do cadastro do cliente. A loja confere pela meta de vendas da nota; se a conta da loja der outra porcentagem, vale a da loja.',
+      comissaoDaMetaAjuda: 'Vem da meta da nota. Não dá para mudar aqui.',
+      metaBateu: (vendido: string, meta: string, pct: string) =>
+        `Vendido nesta nota: ${vendido} de ${meta} (meta). Bateu a meta: comissão de ${pct}%.`,
+      metaNaoBateu: (vendido: string, meta: string, pct: string, falta: string) =>
+        `Vendido nesta nota: ${vendido} de ${meta} (meta). Ainda não bateu a meta: comissão de ${pct}%. Faltam ${falta}.`,
+      metaSemCotacao: (pct: string) => `Sem cotação: a comissão é de ${pct}% até a cotação chegar.`,
       dataDoAcerto: 'Dt. Acerto',
       dataDoAcertoAjuda:
         'Hoje, ou um dia que já passou (não antes do dia em que a nota saiu). Nunca depois de hoje.',

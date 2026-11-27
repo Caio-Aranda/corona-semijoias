@@ -24,8 +24,6 @@ export interface PecaDevolvida {
 export interface PreviaDoAcertoPedida {
   notaId: string;
   devolvidos: PecaDevolvida[];
-  /** De 0 a 40, texto com ponto ("30" ou "7.5"). */
-  comissaoPercentual: string;
   formas: FormaPaga[];
   /** Dt. Acerto (AAAA-MM-DD, em Brasília): hoje ou um dia que já passou, nunca antes da saída da nota; sem ela vale hoje. */
   data?: string;

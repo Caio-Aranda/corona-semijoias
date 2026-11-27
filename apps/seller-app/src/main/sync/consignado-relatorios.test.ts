@@ -13,6 +13,7 @@ import type {
 import { validarPedidoDoConsignado } from '../../shared/validacao-do-consignado';
 import { ConsultasLocais } from '../local/consultas-locais';
 import { aplicarLote } from './aplicador-do-pull';
+import { CHAVES, gravarEstado } from './estado-sync';
 import { OperacoesLocais } from './operacoes-locais';
 import { type BancoDeTeste, criarBancoDeTeste, idDeTeste } from './testes/banco-de-teste';
 
@@ -150,13 +151,23 @@ function acertar(
   comissao: string,
   formas: { forma: 'DINHEIRO' | 'PIX' | 'DEBITO' | 'CREDITO'; valor: string }[],
 ) {
+  // Sem cotação, a comissão é a "abaixo da meta" (o 1.3.0 não manda porcentagem): fixa a da loja neste teste (a mesma na meta, para a cotação não mudar a conta).
+  gravarEstado(
+    b.db,
+    CHAVES.parametros,
+    JSON.stringify({
+      consignadoMetaGuarani: 700000,
+      consignadoComissaoAbaixoDaMeta: Number(comissao),
+      consignadoComissaoNaMeta: Number(comissao),
+      consignadoDiasDoRetorno: 45,
+    }),
+  );
   return chamar({
     operacao: 'consignado.acertoSalvar',
     acerto: {
       id: idDeTeste(7),
       reciboId: idDeTeste(8),
       notaId,
-      comissaoPercentual: comissao,
       devolvidos: devolvidos.map((d) => ({ remessaId: maleta, ...d })),
       formas,
     },

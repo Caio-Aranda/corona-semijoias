@@ -12,7 +12,7 @@ describe('pedidos do consignado ao cliente na ponte', () => {
     for (const o of OPERACOES_DO_CONSIGNADO) expect(OPERACOES_DA_API).toContain(o);
   });
 
-  it('aceita o acerto com os fatos e descarta o que sobra (nunca leva total nem preço)', () => {
+  it('aceita o acerto com os fatos e descarta o que sobra (nunca leva total, preço nem porcentagem de comissão)', () => {
     const v = validarChamada({
       operacao: 'consignado.acertoSalvar',
       acerto: {
@@ -31,7 +31,6 @@ describe('pedidos do consignado ao cliente na ponte', () => {
         id: ID,
         reciboId: OUTRO,
         notaId: ID,
-        comissaoPercentual: '30',
         devolvidos: [{ produtoId: ID, remessaId: OUTRO, quantidade: 5 }],
         formas: [{ forma: 'PIX', valor: '300.00' }],
       },
@@ -53,12 +52,12 @@ describe('pedidos do consignado ao cliente na ponte', () => {
     ).toBeNull();
   });
 
-  it('recusa id que não é UUID, comissão em formato errado e foto que não é JPEG', () => {
+  it('recusa id que não é UUID, formas em formato errado e foto que não é JPEG', () => {
     expect(validarChamada({ operacao: 'consignado.nota', id: 'abc' })).toBeNull();
     expect(
       validarChamada({
         operacao: 'consignado.acertoPrevia',
-        acerto: { notaId: ID, devolvidos: [], comissaoPercentual: '30%', formas: [] },
+        acerto: { notaId: ID, devolvidos: [], formas: 'PIX' },
       }),
     ).toBeNull();
     expect(

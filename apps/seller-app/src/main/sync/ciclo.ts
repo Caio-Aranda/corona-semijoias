@@ -663,6 +663,11 @@ function guardarParametros(db: BancoAberto, corpo: unknown): void {
     // A garantia (ADR-0014, item 4): o app só mostra a prévia do prazo; quem decide é o servidor.
     prazoArrependimentoDias: inteiroOuNulo(p['prazoArrependimentoDias']),
     prazoDefeitoDias: inteiroOuNulo(p['prazoDefeitoDias']),
+    // A meta, as comissões e os dias do retorno do consignado (§23.13): só prévia; quem decide é o servidor.
+    consignadoMetaGuarani: inteiroOuNulo(p['consignadoMetaGuarani']),
+    consignadoComissaoAbaixoDaMeta: inteiroOuNulo(p['consignadoComissaoAbaixoDaMeta']),
+    consignadoComissaoNaMeta: inteiroOuNulo(p['consignadoComissaoNaMeta']),
+    consignadoDiasDoRetorno: inteiroOuNulo(p['consignadoDiasDoRetorno']),
     situacaoDoAparelho:
       typeof p['situacaoDoAparelho'] === 'string' ? p['situacaoDoAparelho'] : null,
   };

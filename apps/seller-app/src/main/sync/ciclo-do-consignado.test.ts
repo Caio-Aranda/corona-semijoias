@@ -222,7 +222,6 @@ describe('o ciclo com os tipos do consignado ao cliente', () => {
         id: idDeTeste(7),
         reciboId: idDeTeste(8),
         notaId,
-        comissaoPercentual: '30',
         devolvidos: [{ produtoId: produto, remessaId: maleta, quantidade: 1 }],
         formas: [{ forma: 'DINHEIRO', valor: '100.00' }],
       },

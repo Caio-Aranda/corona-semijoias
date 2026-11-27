@@ -1,6 +1,8 @@
 import { exigirCentavos, textoDeCentavos } from '../../shared/dinheiro';
 import { diaEmBrasilia } from '../../shared/garantia';
+import { parametrosDaMetaValidos } from '@corona/shared/consignado';
 import type { BancoAberto } from '../banco/banco-local';
+import { CHAVES, lerEstado } from './estado-sync';
 
 /**
  * Leituras que as gravações e as telas do consignado ao cliente dividem (tarefa 9.2; ADR-0016). Tudo sai do espelho local
@@ -354,6 +356,64 @@ export function saldoDoAcerto(
 ): bigint | null {
   const d = debitosDoCliente(db, clienteId).find((x) => x.acertoId === acerto.id);
   return d ? d.saldo : null;
+}
+
+/** A meta, as comissões e os dias do retorno do consignado (§23.13), como a dona os configurou. */
+export interface ParametrosDoConsignado {
+  /** Meta em Guarani, inteiro: "700000". */
+  metaEmGuarani: string;
+  /** Comissão abaixo da meta: "30". */
+  percentualAbaixo: string;
+  /** Comissão na meta: "40". */
+  percentualNaMeta: string;
+  /** Dias da saída até a Data do retorno. */
+  diasDoRetorno: number;
+}
+
+export const PARAMETROS_PADRAO_DO_CONSIGNADO: ParametrosDoConsignado = {
+  metaEmGuarani: '700000',
+  percentualAbaixo: '30',
+  percentualNaMeta: '40',
+  diasDoRetorno: 45,
+};
+
+const inteiroEntre = (v: unknown, min: number, max: number): number | null =>
+  typeof v === 'number' && Number.isInteger(v) && v >= min && v <= max ? v : null;
+
+/**
+ * Os `parametros` do último contato com o servidor. O que faltar (servidor antigo, computador que nunca sincronizou) ou vier
+ * fora dos limites cai no padrão 45 / 30 / 40 / 700.000 (plano D8), sem dar erro: a meta e os percentuais valem juntos ou
+ * nenhum. É só prévia; quem decide a comissão é o servidor.
+ */
+export function parametrosDoConsignado(db: BancoAberto): ParametrosDoConsignado {
+  let lidos: Record<string, unknown> = {};
+  try {
+    const texto = lerEstado(db, CHAVES.parametros);
+    const x: unknown = texto ? JSON.parse(texto) : null;
+    if (typeof x === 'object' && x !== null) lidos = x as Record<string, unknown>;
+  } catch {
+    // Parâmetro ilegível: vale o padrão.
+  }
+  const dias = inteiroEntre(lidos['consignadoDiasDoRetorno'], 1, 365);
+  const meta = inteiroEntre(lidos['consignadoMetaGuarani'], 1, 1_000_000_000);
+  const abaixo = inteiroEntre(lidos['consignadoComissaoAbaixoDaMeta'], 0, 40);
+  const naMeta = inteiroEntre(lidos['consignadoComissaoNaMeta'], 0, 40);
+  const padrao = PARAMETROS_PADRAO_DO_CONSIGNADO;
+  const daMeta =
+    meta !== null && abaixo !== null && naMeta !== null
+      ? {
+          metaEmGuarani: String(meta),
+          percentualAbaixo: String(abaixo),
+          percentualNaMeta: String(naMeta),
+        }
+      : null;
+  const usados = daMeta !== null && parametrosDaMetaValidos(daMeta) ? daMeta : padrao;
+  return {
+    metaEmGuarani: usados.metaEmGuarani,
+    percentualAbaixo: usados.percentualAbaixo,
+    percentualNaMeta: usados.percentualNaMeta,
+    diasDoRetorno: dias ?? padrao.diasDoRetorno,
+  };
 }
 
 /** A hora de agora como dia civil em Brasília mais `dias` (Data do retorno sugerida: saída + 45 dias). */
