@@ -81,7 +81,7 @@ export const ES_TEXTOS_DE_CONSIGNADO: NoMesmoFormato<typeof PT_TEXTOS_DE_CONSIGN
       decisoes: {
         COBRAR_DO_REPRESENTANTE: 'Cobrar al representante',
         PERDA_DA_LOJA: 'Pérdida de la tienda',
-      } as Record<string, string>,
+      },
       totalACobrar: 'Total a cobrar al representante',
       totalDaPerda: 'Total de la pérdida de la tienda',
     },
