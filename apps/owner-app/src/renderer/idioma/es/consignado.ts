@@ -47,9 +47,10 @@ export const ES_TEXTOS_DE_CONSIGNADO: NoMesmoFormato<typeof PT_TEXTOS_DE_CONSIGN
     concluido: (quando: string) => `Cierre concluido${quando ? ` el ${quando}` : ''}.`,
     aindaComClientes: (n: number) =>
       `Todavía hay ${pecas(n)} con clientes. Puede concluir: el acerto de esas notas pasa después y las piezas vuelven a la maleta cerrada.`,
-    faltam: (n: number) => `Faltan ${pecas(n)} respecto de lo que debía estar en la maleta:`,
+    faltam: (n: number) =>
+      `${n === 1 ? 'Falta' : 'Faltan'} ${pecas(n)} respecto de lo que debía estar en la maleta:`,
     sobram: (n: number) =>
-      `Sobran ${pecas(n)} respecto de lo que debía estar en la maleta. Lo que sobra no vuelve al stock: revise si la pieza es de otra maleta.`,
+      `${n === 1 ? 'Sobra' : 'Sobran'} ${pecas(n)} respecto de lo que debía estar en la maleta. Lo que sobra no vuelve al stock: revise si la pieza es de otra maleta.`,
     linhaDaDiferenca: (nome: string, n: number) => `${nome}: ${pecas(n)}`,
     semDiferenca: 'Todo lo que debía estar en la maleta fue leído.',
     decidir: {
