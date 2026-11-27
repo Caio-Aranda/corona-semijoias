@@ -586,6 +586,28 @@ describe('API do Corona Gestão: rotas certas no cliente gerado', () => {
         `POST /api/maletas/${ID}/fechamento/leituras`,
       ],
       [{ operacao: 'fechamento.concluir', id: ID }, `POST /api/maletas/${ID}/fechamento/concluir`],
+      [
+        {
+          operacao: 'fechamento.voltas',
+          id: ID,
+          leituras: [{ id: PEDIDO, produtoId: PROD, quantidade: 1 }],
+        },
+        `POST /api/maletas/${ID}/fechamento/voltas`,
+      ],
+      [
+        {
+          operacao: 'cobranca.pagar',
+          id: ID,
+          pagamentoId: PEDIDO,
+          forma: 'PIX',
+          valor: { valor: '50.00' },
+        },
+        `POST /api/maletas/pendencias/${ID}/pagamentos`,
+      ],
+      [
+        { operacao: 'cobranca.desfazer', id: ID, estornoId: PEDIDO, motivo: 'Errei' },
+        `POST /api/maletas/pagamentos-cobranca/${ID}/estorno`,
+      ],
       [{ operacao: 'consignado.semanas', id: ID }, `GET /api/consignado/vendedores/${ID}/semanas`],
       [{ operacao: 'consignado.semana', id: ID }, `GET /api/consignado/semanas/${ID}`],
       [{ operacao: 'consignado.notas', filtros: {} }, 'GET /api/consignado/notas'],

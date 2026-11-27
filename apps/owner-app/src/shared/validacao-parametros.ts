@@ -650,6 +650,8 @@ export function conferirParametros(
     case 'fechamento.leituras':
     case 'fechamento.concluir':
     case 'fechamento.voltas':
+    case 'cobranca.pagar':
+    case 'cobranca.desfazer':
     case 'consignado.semanas':
     case 'consignado.semana':
     case 'consignado.notas':

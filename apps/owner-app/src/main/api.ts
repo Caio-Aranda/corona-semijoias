@@ -258,6 +258,8 @@ import {
   baixarFotoDoCliente,
   concluirFechamentoDaMaleta,
   registrarVoltasDaMaletaFechada,
+  pagarCobrancaDaMaleta,
+  desfazerPagamentoDaCobrancaDaMaleta,
   iniciarFechamentoDaMaleta,
   lerFechamentoDaMaleta,
   lerTelasDoGestao,
@@ -870,6 +872,31 @@ async function executarConsignado(
             ...base,
             path: { id: pedido.id },
             body: { decisoes: pedido.decisoes },
+          }),
+        true,
+      );
+    case 'cobranca.pagar':
+      return executar(
+        () =>
+          pagarCobrancaDaMaleta({
+            ...base,
+            path: { id: pedido.id },
+            body: {
+              id: pedido.pagamentoId,
+              forma: pedido.forma,
+              ...pedido.valor,
+              ...(pedido.cotacaoId ? { cotacaoId: pedido.cotacaoId } : {}),
+            },
+          }),
+        true,
+      );
+    case 'cobranca.desfazer':
+      return executar(
+        () =>
+          desfazerPagamentoDaCobrancaDaMaleta({
+            ...base,
+            path: { id: pedido.id },
+            body: { id: pedido.estornoId, motivo: pedido.motivo },
           }),
         true,
       );
@@ -1533,6 +1560,7 @@ export function criarApiDoGestao(opcoes: OpcoesDaApi): ApiDoGestao {
       if (
         pedido.operacao === 'telas.ler' ||
         pedido.operacao.startsWith('fechamento.') ||
+        pedido.operacao.startsWith('cobranca.') ||
         pedido.operacao.startsWith('consignado.')
       ) {
         return executarConsignado(client, headers, pedido as ParametrosDeConsignado);

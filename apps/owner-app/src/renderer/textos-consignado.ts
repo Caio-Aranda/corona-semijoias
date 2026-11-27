@@ -82,6 +82,35 @@ export const PT_TEXTOS_DE_CONSIGNADO = {
         `A cobrar de ${representante} nesta maleta: ${valor}.`,
       totalDasMaletas: (valor: string) => `Somando todas as maletas dele: ${valor}.`,
     },
+    /** Receber a cobrança da falta (§23.10, item 1a). */
+    receber: {
+      pagoRotulo: 'Pago:',
+      faltaRotulo: 'Falta pagar:',
+      registrar: 'Registrar pagamento',
+      registrarDe: (nome: string) => `Registrar pagamento de ${nome}`,
+      valor: 'Valor pago',
+      forma: 'Como pagou',
+      formas: { DINHEIRO: 'Dinheiro', PIX: 'Transferência' } as Record<string, string>,
+      confirmar: 'Registrar',
+      registrando: 'Registrando...',
+      cancelar: 'Cancelar',
+      valorInvalido: 'Informe o valor pago, maior que zero.',
+      registrado: 'Pagamento registrado. Ele entrou no caixa.',
+      pagamento: (data: string, forma: string) => `${data} · ${forma} ·`,
+      desfeito: (motivo: string) => `Desfeito${motivo ? `: ${motivo}` : ''}`,
+      desfazer: 'Desfazer pagamento',
+      desfazerTitulo: 'Desfazer este pagamento?',
+      desfazerTexto:
+        'O pagamento sai do caixa e o valor volta a faltar. Diga o motivo: ele fica guardado.',
+      motivo: 'Motivo',
+      motivoFalta: 'Diga o motivo de desfazer o pagamento.',
+      desfazerSim: 'Desfazer',
+      voltar: 'Voltar',
+      desfeitoAgora: 'Pagamento desfeito. Ele saiu do caixa.',
+      totalPago: (pago: string, falta: string) =>
+        `Nesta maleta, pago: ${pago}; falta pagar: ${falta}.`,
+      totalPagoDasMaletas: (falta: string) => `Falta pagar somando todas as maletas: ${falta}.`,
+    },
     /** A tabela das faltas que vai só no PDF do relatório (depois das duas partes). */
     pdfDasFaltas: {
       titulo: 'Faltas registradas no fechamento',
@@ -92,6 +121,8 @@ export const PT_TEXTOS_DE_CONSIGNADO = {
       } as Record<string, string>,
       totalACobrar: 'Total a cobrar do representante',
       totalDaPerda: 'Total da perda da loja',
+      totalPago: 'Pago pelo representante',
+      totalFaltaPagar: 'Falta pagar',
     },
     /** C2: peças que as clientes devolvem depois de a maleta ser fechada (§23.10, item 3). */
     depois: {

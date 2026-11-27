@@ -57,6 +57,42 @@ describe('conferência dos dados do consignado (a dona só lê e bipa o fechamen
     }
   });
 
+  it('pagar a cobrança: forma do caixa e o valor em Real ou na moeda; desfazer pede o motivo', () => {
+    const boa = { id: ID, pagamentoId: OUTRO, forma: 'PIX', valor: '50.00' };
+    expect(conferirParametros('cobranca.pagar', boa)).toEqual({
+      operacao: 'cobranca.pagar',
+      id: ID,
+      pagamentoId: OUTRO,
+      forma: 'PIX',
+      valor: { valor: '50.00' },
+    });
+    expect(
+      conferirParametros('cobranca.pagar', {
+        id: ID,
+        pagamentoId: OUTRO,
+        forma: 'DINHEIRO',
+        moeda: 'GUARANI',
+        valorNaMoeda: '100000',
+        cotacaoId: OUTRO,
+      }),
+    ).toMatchObject({ valor: { moeda: 'GUARANI', valorNaMoeda: '100000' }, cotacaoId: OUTRO });
+    for (const ruim of [
+      { ...boa, forma: 'DEBITO' },
+      { ...boa, valor: '0' },
+      { ...boa, pagamentoId: 'x' },
+      { ...boa, moeda: 'GUARANI', valorNaMoeda: '10' },
+      { ...boa, extra: 1 },
+    ]) {
+      expect(conferirParametros('cobranca.pagar', ruim)).toBeNull();
+    }
+    expect(
+      conferirParametros('cobranca.desfazer', { id: ID, estornoId: OUTRO, motivo: 'Errei' }),
+    ).not.toBeNull();
+    expect(
+      conferirParametros('cobranca.desfazer', { id: ID, estornoId: OUTRO, motivo: '  ' }),
+    ).toBeNull();
+  });
+
   it('as leituras do fechamento: um id novo por leitura, peça em UUID, quantidade inteira de 1 em diante', () => {
     const boa = { id: ID, leituras: [{ id: OUTRO, produtoId: ID, quantidade: 3 }] };
     expect(conferirParametros('fechamento.leituras', boa)).not.toBeNull();

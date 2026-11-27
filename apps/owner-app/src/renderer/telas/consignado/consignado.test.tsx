@@ -466,6 +466,129 @@ describe('Fechamento da maleta (§23.10)', () => {
     expect(await screen.findByText(T.fechamento.depois.lida('Anel Solitário'))).toBeInTheDocument();
   });
 
+  describe('Receber a cobrança da falta (§23.10, item 1a)', () => {
+    const PEND = '7b7e28ba-2fa1-41d3-b9a5-2c3a9a8f6b88';
+    const PAG = '9d7e28ba-2fa1-41d3-b9a5-2c3a9a8f6baa';
+    const comFalta = (pago: string, falta: string, pagamentos: unknown[]) => {
+      const base = leitura('CONCLUIDO');
+      return {
+        ...base,
+        pecas: base.pecas.map((p) => ({ ...p, comClientes: 0 })),
+        pendencias: [
+          {
+            id: PEND,
+            produtoId: ID_ANEL,
+            nome: 'Anel Solitário',
+            quantidade: 2,
+            precoUnitario: '100.00',
+            valor: '200.00',
+            decisao: 'COBRAR_DO_REPRESENTANTE',
+            motivo: null,
+            pago,
+            faltaPagar: falta,
+            pagamentos,
+          },
+        ],
+        cobranca: {
+          representante: 'Joana Representante',
+          nestaMaleta: '200.00',
+          todasAsMaletas: '200.00',
+          pagoNestaMaleta: pago,
+          faltaPagarNestaMaleta: falta,
+          pagoTodasAsMaletas: pago,
+          faltaPagarTodasAsMaletas: falta,
+        },
+      };
+    };
+    const abrirFechada = async (dados: unknown, extra: Record<string, Manipulador> = {}) => {
+      const m = montar({
+        'maletas.listar': (p) =>
+          (p.parametros as { status: string }).status === 'FECHADA'
+            ? pagina([maleta('FECHADA')])
+            : pagina([]),
+        'fechamento.ler': () => ({ ok: true, dados }),
+        'relatorios.cadastros': () => ({ ok: true, dados: RELATORIO }),
+        ...extra,
+      });
+      const u = await abrirPeloMenu(m, T.menu.fechamento);
+      await u.selectOptions(await screen.findByLabelText(T.fechamento.escolher), ID_MALETA);
+      await u.click(screen.getByRole('button', { name: T.fechamento.abrir }));
+      return { m, u };
+    };
+    const R = T.fechamento.receber;
+
+    it('registra o pagamento: o valor já vem com o que falta, a forma escolhida vai para o sistema', async () => {
+      const { m, u } = await abrirFechada(comFalta('0.00', '200.00', []), {
+        'cobranca.pagar': () => ({ ok: true, dados: { id: PAG } }),
+      });
+      expect(await screen.findByText(R.pagoRotulo)).toBeInTheDocument();
+      await u.click(screen.getByRole('button', { name: R.registrarDe('Anel Solitário') }));
+      expect(screen.getByLabelText(R.valor)).toHaveValue('200,00');
+      await u.selectOptions(screen.getByLabelText(R.forma), 'PIX');
+      await u.click(screen.getByRole('button', { name: R.confirmar }));
+      await waitFor(() =>
+        expect(m.chamadas.some((c) => c.operacao === 'cobranca.pagar')).toBe(true),
+      );
+      const envio = m.chamadas.find((c) => c.operacao === 'cobranca.pagar')!.parametros as Record<
+        string,
+        unknown
+      >;
+      expect(envio).toMatchObject({ id: PEND, forma: 'PIX', valor: '200.00' });
+      expect(String(envio.pagamentoId)).toMatch(/^[0-9a-f-]{36}$/);
+      expect(await screen.findByText(R.registrado)).toBeInTheDocument();
+    });
+
+    it('desfazer o pagamento pede confirmação e o motivo antes de mandar', async () => {
+      const pagamento = {
+        id: PAG,
+        valor: '50.00',
+        forma: 'DINHEIRO',
+        moeda: 'REAL',
+        valorNaMoeda: null,
+        data: '2026-11-27',
+        desfeito: false,
+        motivoDoEstorno: null,
+      };
+      const { m, u } = await abrirFechada(comFalta('50.00', '150.00', [pagamento]), {
+        'cobranca.desfazer': () => ({ ok: true, dados: { id: 'x' } }),
+      });
+      await u.click(await screen.findByRole('button', { name: R.desfazer + ': 27/11/2026' }));
+      const dialogo = screen.getByRole('dialog');
+      expect(within(dialogo).getByText(R.desfazerTexto)).toBeInTheDocument();
+      await u.click(within(dialogo).getByRole('button', { name: R.desfazerSim }));
+      expect(within(dialogo).getByText(R.motivoFalta)).toBeInTheDocument();
+      expect(m.chamadas.some((c) => c.operacao === 'cobranca.desfazer')).toBe(false);
+      await u.type(within(dialogo).getByLabelText(R.motivo), 'Lancei errado');
+      await u.click(within(dialogo).getByRole('button', { name: R.desfazerSim }));
+      await waitFor(() =>
+        expect(m.chamadas.some((c) => c.operacao === 'cobranca.desfazer')).toBe(true),
+      );
+      expect(m.chamadas.find((c) => c.operacao === 'cobranca.desfazer')!.parametros).toMatchObject({
+        id: PAG,
+        motivo: 'Lancei errado',
+      });
+      expect(await screen.findByText(R.desfeitoAgora)).toBeInTheDocument();
+    });
+
+    it('pagamento desfeito mostra o motivo e não tem mais o botão; sem falta a pagar, não há Registrar', async () => {
+      const desfeito = {
+        id: PAG,
+        valor: '200.00',
+        forma: 'PIX',
+        moeda: 'REAL',
+        valorNaMoeda: null,
+        data: '2026-11-27',
+        desfeito: true,
+        motivoDoEstorno: 'Lancei errado',
+      };
+      const pago = { ...desfeito, id: '0e7e28ba-2fa1-41d3-b9a5-2c3a9a8f6bbb', desfeito: false };
+      await abrirFechada(comFalta('200.00', '0.00', [desfeito, pago]));
+      expect(await screen.findByText(/Desfeito: Lancei errado/)).toBeInTheDocument();
+      expect(screen.getAllByRole('button', { name: new RegExp(R.desfazer) })).toHaveLength(1);
+      expect(screen.queryByRole('button', { name: R.registrarDe('Anel Solitário') })).toBeNull();
+    });
+  });
+
   it('C4: falta de uma peça e sobra de outra não se anulam; cada uma tem o seu aviso, peça por peça', async () => {
     const base = leitura('EM_ANDAMENTO');
     const m = montar({

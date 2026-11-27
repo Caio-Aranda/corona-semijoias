@@ -306,8 +306,17 @@ export type ClientesDaDonaControllerResposta = {
     whatsapp?: string;
 };
 
+export type CobrancaDaMaletaControllerPedidoDeEstorno = {
+    id?: string;
+    motivo?: string;
+};
+
 export type CobrancaDoRepresentante = {
+    faltaPagarNestaMaleta?: string;
+    faltaPagarTodasAsMaletas?: string;
     nestaMaleta?: string;
+    pagoNestaMaleta?: string;
+    pagoTodasAsMaletas?: string;
     pecasPerdidasPelaLoja?: number;
     representante?: string;
     todasAsMaletas?: string;
@@ -2215,6 +2224,17 @@ export type OrigemDoNumero = {
     rota?: string;
 };
 
+export type PagamentoDaCobranca = {
+    data?: string;
+    desfeito?: boolean;
+    forma?: string;
+    id?: string;
+    moeda?: string;
+    motivoDoEstorno?: string;
+    valor?: string;
+    valorNaMoeda?: string;
+};
+
 export type PagamentoDoAcerto = {
     aFavorDoVendedor?: string;
     boleto?: BoletoDoAcerto;
@@ -2611,13 +2631,6 @@ export type PedidoDeNome = {
     nome?: string;
 };
 
-export type PedidoDePagamento = {
-    data?: string;
-    forma?: string;
-    id?: string;
-    valor?: string;
-};
-
 export type PedidoDePrevia = {
     nomes?: Array<string>;
 };
@@ -2730,9 +2743,12 @@ export type Pendencia = {
 
 export type PendenciaDaMaleta = {
     decisao?: string;
+    faltaPagar?: string;
     id?: string;
     motivo?: string;
     nome?: string;
+    pagamentos?: Array<PagamentoDaCobranca>;
+    pago?: string;
     precoUnitario?: string;
     produtoId?: string;
     quantidade?: number;
@@ -3615,6 +3631,10 @@ export type RespostaDoLogin = {
     validadeEmSegundos?: number;
 };
 
+export type RespostaDoPagamento = {
+    id?: string;
+};
+
 export type RespostaDoProduto = {
     ativo?: boolean;
     codigo?: string;
@@ -3733,6 +3753,15 @@ export type SemanasDaDonaControllerResposta = {
     version?: number;
 };
 
+export type ServicoDaCobrancaDaMaletaPedidoDePagamento = {
+    cotacaoId?: string;
+    forma?: string;
+    id?: string;
+    moeda?: string;
+    valor?: string;
+    valorNaMoeda?: string;
+};
+
 export type ServicoDaComissaoComissao = {
     metaGuarani?: number;
     percentualAbaixoDaMeta?: number;
@@ -3749,6 +3778,13 @@ export type ServicoDeAcertosPedidoDeLeitura = {
 export type ServicoDeContasAPagarPedidoDeEstorno = {
     id?: string;
     motivo?: string;
+};
+
+export type ServicoDeContasAPagarPedidoDePagamento = {
+    data?: string;
+    forma?: string;
+    id?: string;
+    valor?: string;
 };
 
 export type ServicoDeLancamentosManuaisPedidoDeEstorno = {
@@ -5333,7 +5369,7 @@ export type VerContaAPagarResponses = {
 export type VerContaAPagarResponse = VerContaAPagarResponses[keyof VerContaAPagarResponses];
 
 export type PagarContaAPagarData = {
-    body: PedidoDePagamento;
+    body: ServicoDeContasAPagarPedidoDePagamento;
     path: {
         id: string;
     };
@@ -9742,6 +9778,42 @@ export type ListarAparelhosDoVendedorResponses = {
 };
 
 export type ListarAparelhosDoVendedorResponse = ListarAparelhosDoVendedorResponses[keyof ListarAparelhosDoVendedorResponses];
+
+export type DesfazerPagamentoDaCobrancaDaMaletaData = {
+    body: CobrancaDaMaletaControllerPedidoDeEstorno;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/maletas/pagamentos-cobranca/{id}/estorno';
+};
+
+export type DesfazerPagamentoDaCobrancaDaMaletaResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDoPagamento;
+};
+
+export type DesfazerPagamentoDaCobrancaDaMaletaResponse = DesfazerPagamentoDaCobrancaDaMaletaResponses[keyof DesfazerPagamentoDaCobrancaDaMaletaResponses];
+
+export type PagarCobrancaDaMaletaData = {
+    body: ServicoDaCobrancaDaMaletaPedidoDePagamento;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/maletas/pendencias/{id}/pagamentos';
+};
+
+export type PagarCobrancaDaMaletaResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDoPagamento;
+};
+
+export type PagarCobrancaDaMaletaResponse = PagarCobrancaDaMaletaResponses[keyof PagarCobrancaDaMaletaResponses];
 
 export type LerFechamentoDaMaletaData = {
     body?: never;
