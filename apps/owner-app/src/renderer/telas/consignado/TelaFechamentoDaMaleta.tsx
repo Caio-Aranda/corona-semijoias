@@ -453,10 +453,10 @@ function ControlesDoFechamento({
             return (
               <fieldset
                 key={p.produtoId}
-                className={`cs-campo${faltaEscolha || faltaMotivo ? ' cs-campo--erro' : ''}`}
+                className={`gestao-escolha${faltaEscolha || faltaMotivo ? ' gestao-escolha--erro' : ''}`}
               >
                 <legend>{T.decidir.peca(p.nome, -p.diferenca)}</legend>
-                <label>
+                <label className="gestao-escolha__opcao">
                   <input
                     type="radio"
                     name={nomeDoGrupo}
@@ -465,7 +465,7 @@ function ControlesDoFechamento({
                   />{' '}
                   {T.decidir.cobrar}
                 </label>
-                <label>
+                <label className="gestao-escolha__opcao">
                   <input
                     type="radio"
                     name={nomeDoGrupo}
