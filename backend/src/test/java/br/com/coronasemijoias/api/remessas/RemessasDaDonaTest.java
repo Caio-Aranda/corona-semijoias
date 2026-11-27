@@ -332,6 +332,20 @@ class RemessasDaDonaTest extends TesteDeIntegracao {
         enviarRemessa(r).andExpect(status().isCreated());
     }
 
+    /** E2 (revisão de 27/11/2026): o rascunho avisa já na montagem quando a quantidade passa do estoque da loja. */
+    @Test
+    void rascunhoAvisaQuandoAQuantidadePassaDoEstoque() throws Exception {
+        UUID p = peca("10.00", 9);
+        UUID v = vendedor("1000000.00", null);
+        JsonNode r = montada(v, p, 9);
+        assertThat(r.get("avisos")).isEmpty();
+        r = comItem(r, p, 9999);
+        assertThat(r.get("avisos")).singleElement().satisfies(a -> assertThat(a.asString())
+                .contains("9999").contains("9 no estoque").contains("Diminua a quantidade"));
+        enviarRemessa(r).andExpect(status().isConflict());
+        assertThat(saldo(p)).isEqualTo(9);
+    }
+
     // --- envio ---
 
     @Test
