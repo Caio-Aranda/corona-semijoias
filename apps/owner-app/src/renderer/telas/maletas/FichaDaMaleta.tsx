@@ -1,6 +1,7 @@
 import { Aviso, Botao, Tabela } from '@corona/ui';
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { ImagemDoProduto } from '../../componentes/ImagemDoProduto';
+import { centavosDeTexto, formatarReais } from '../../nucleo/moedas';
 import { TEXTOS_DE_MALETAS } from '../../textos-maletas';
 import { dataNaTela } from '../cadastros/definicoes';
 import { BotaoImprimirNota } from './BotaoImprimirNota';
@@ -32,7 +33,11 @@ export function FichaDaMaleta({
     <div>
       {recemEnviada && !jaEstavaEnviada ? (
         <Aviso tipo="sucesso" titulo={E.titulo}>
-          {E.texto(maleta.vendedorNome, T.pecas(maleta.totalPecas), maleta.totalValor)}
+          {E.texto(
+            maleta.vendedorNome,
+            T.pecas(maleta.totalPecas),
+            formatarReais(centavosDeTexto(maleta.totalValor) ?? 0n),
+          )}
         </Aviso>
       ) : null}
       {jaEstavaEnviada ? <Aviso tipo="atencao">{E.jaEstava}</Aviso> : null}
@@ -55,7 +60,7 @@ export function FichaDaMaleta({
           </div>
           <div>
             <dt>{E.ficha.praca}</dt>
-            <dd>{maleta.pracaNome}</dd>
+            <dd>{maleta.pracaNome || E.ficha.semPraca}</dd>
           </div>
           <div>
             <dt>{E.ficha.tipo}</dt>
