@@ -580,3 +580,6 @@ Branch `style/montar-maleta-organizada` (item 7 da revisão geral, sem mudar tam
 ## Cobrança: tabela de peças na largura da tela (Corona Vendas, 27/11/2026)
 
 Branch `fix/cobranca-tabela-na-tela`. **Feito:** a tabela de peças da Cobrança cabe em 1366 px com o botão "Tirar uma devolução" sempre visível: a coluna Tam./Ton. só aparece quando alguma peça do pedido tem tamanho ou tom; a referência quebra em qualquer ponto e o nome entre palavras; a miniatura ("Sem foto") não encolhe; o botão da linha quebra o texto em duas linhas. Conferido nas fotos do e2e `vendedor-pedido-e-acerto`. Teste novo em `telas-do-consignado.test.tsx`. **Não feito:** nada. **Dúvidas:** nenhuma.
+## PDF do fechamento com as faltas peça por peça (Corona Gestão, 27/11/2026)
+
+Branch `feat/pdf-do-fechamento-com-faltas`. **Feito:** o PDF do relatório Fechamento da maleta ganha, depois das duas partes, a tabela **Faltas registradas no fechamento** (peça, quantidade, preço da maleta, valor, decisão e motivo) com o total a cobrar do representante e o total da perda da loja, em português e espanhol. `gerarPdf` passa a aceitar tabelas a mais (`anexos`), cada uma com as suas colunas e começando numa página nova; "Página x de y" conta todas. `TelaDeRelatorio.anexosDoPdf`. Testes em `consignado.test.tsx`. **Não feito:** o Excel e o CSV (combinado: ficam para depois). **Dúvidas:** nenhuma.
