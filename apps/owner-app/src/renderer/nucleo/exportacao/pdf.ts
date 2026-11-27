@@ -175,7 +175,31 @@ export function linhasDaTabela(
 
 type Item = { celulas: Celula[]; negrito: boolean } | { espaco: true };
 
-export function gerarPdf(grade: Grade): Uint8Array {
+/**
+ * O PDF do relatório e, se houver, tabelas a mais depois dele (ex.: as faltas do Fechamento da maleta), cada uma com as suas
+ * colunas e começando numa página nova. "Página x de y" conta todas as páginas do arquivo.
+ */
+export function gerarPdf(grade: Grade, anexos: readonly Grade[] = []): Uint8Array {
+  const planos = [grade, ...anexos].map((g) => ({ grade: g, paginas: planejarPaginas(g) }));
+  const total = planos.reduce((soma, p) => soma + p.paginas.paginas.length, 0);
+  let antes = 0;
+  const conteudos = planos.flatMap((p) => {
+    const desenhadas = desenharPaginas(p.grade, p.paginas, antes, total);
+    antes += p.paginas.paginas.length;
+    return desenhadas;
+  });
+  return montarArquivoPdf(conteudos, LARGURA, ALTURA);
+}
+
+interface PaginasPlanejadas {
+  colunas: PlanoDeColunas['colunas'];
+  corpo: number;
+  titulosEmLinhas: string[][];
+  linhasDoTitulo: number;
+  paginas: Item[][];
+}
+
+function planejarPaginas(grade: Grade): PaginasPlanejadas {
   const { colunas, tamanho: corpo } = planejarColunas(grade);
   const titulosEmLinhas = grade.titulos.map(quebrarTitulo);
   const linhasDoTitulo = Math.max(...titulosEmLinhas.map((t) => t.length));
@@ -198,8 +222,17 @@ export function gerarPdf(grade: Grade): Uint8Array {
     paginas[paginas.length - 1]!.push(item);
     usado += altura;
   }
+  return { colunas, corpo, titulosEmLinhas, linhasDoTitulo, paginas };
+}
 
-  const conteudos = paginas.map((itensDaPagina, numero) => {
+function desenharPaginas(
+  grade: Grade,
+  plano: PaginasPlanejadas,
+  paginasAntes: number,
+  totalDePaginas: number,
+): string[] {
+  const { colunas, corpo, titulosEmLinhas, linhasDoTitulo, paginas } = plano;
+  return paginas.map((itensDaPagina, numero) => {
     const o: string[] = [];
     const texto = (x: number, y: number, s: string, negrito: boolean, tamanho = corpo) =>
       o.push(
@@ -275,14 +308,12 @@ export function gerarPdf(grade: Grade): Uint8Array {
     texto(
       LARGURA - MARGEM - 60,
       MARGEM - 6,
-      SOLTOS.arquivo.pagina(numero + 1, paginas.length),
+      SOLTOS.arquivo.pagina(paginasAntes + numero + 1, totalDePaginas),
       false,
       8,
     );
     return o.join('\n');
   });
-
-  return montarArquivoPdf(conteudos, LARGURA, ALTURA);
 }
 
 /** Monta o arquivo PDF a partir do conteúdo de cada página (Helvetica e Helvetica-Bold como F1 e F2). */

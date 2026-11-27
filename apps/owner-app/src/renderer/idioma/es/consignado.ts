@@ -75,6 +75,16 @@ export const ES_TEXTOS_DE_CONSIGNADO: NoMesmoFormato<typeof PT_TEXTOS_DE_CONSIGN
         `A cobrar a ${representante} en esta maleta: ${valor}.`,
       totalDasMaletas: (valor: string) => `Sumando todas sus maletas: ${valor}.`,
     },
+    pdfDasFaltas: {
+      titulo: 'Faltantes registrados en el cierre',
+      colunas: ['Pieza', 'Cantidad', 'Precio de la maleta', 'Valor', 'Decisión', 'Motivo'],
+      decisoes: {
+        COBRAR_DO_REPRESENTANTE: 'Cobrar al representante',
+        PERDA_DA_LOJA: 'Pérdida de la tienda',
+      } as Record<string, string>,
+      totalACobrar: 'Total a cobrar al representante',
+      totalDaPerda: 'Total de la pérdida de la tienda',
+    },
     depois: {
       titulo: 'Leer las piezas que volvieron después',
       ajuda:
