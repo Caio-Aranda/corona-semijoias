@@ -131,6 +131,8 @@ import {
   listar9,
   listar12,
   alterarComissao,
+  alterarConfiguracaoDoConsignado,
+  lerConfiguracaoDoConsignado,
   criarCategoriaDoCaixa,
   estornarLancamentoDoCaixa,
   estornarPagamentoAFornecedor,
@@ -256,6 +258,8 @@ import {
   baixarFotoDoCliente,
   concluirFechamentoDaMaleta,
   registrarVoltasDaMaletaFechada,
+  pagarCobrancaDaMaleta,
+  desfazerPagamentoDaCobrancaDaMaleta,
   iniciarFechamentoDaMaleta,
   lerFechamentoDaMaleta,
   lerTelasDoGestao,
@@ -871,6 +875,31 @@ async function executarConsignado(
           }),
         true,
       );
+    case 'cobranca.pagar':
+      return executar(
+        () =>
+          pagarCobrancaDaMaleta({
+            ...base,
+            path: { id: pedido.id },
+            body: {
+              id: pedido.pagamentoId,
+              forma: pedido.forma,
+              ...pedido.valor,
+              ...(pedido.cotacaoId ? { cotacaoId: pedido.cotacaoId } : {}),
+            },
+          }),
+        true,
+      );
+    case 'cobranca.desfazer':
+      return executar(
+        () =>
+          desfazerPagamentoDaCobrancaDaMaleta({
+            ...base,
+            path: { id: pedido.id },
+            body: { id: pedido.estornoId, motivo: pedido.motivo },
+          }),
+        true,
+      );
     case 'fechamento.voltas':
       return executar(
         () =>
@@ -902,6 +931,10 @@ async function executarConsignado(
         () => marcarAlertaDoConsignadoComoVisto({ ...base, path: { id: pedido.id } }),
         true,
       );
+    case 'consignado.configuracao':
+      return executar(() => lerConfiguracaoDoConsignado(base));
+    case 'consignado.configuracaoAlterar':
+      return executar(() => alterarConfiguracaoDoConsignado({ ...base, body: pedido.corpo }));
     case 'consignado.fotoDoCliente': {
       // Foto de documento é dado pessoal: vem só pela rota da dona e não fica guardada em disco.
       try {
@@ -1527,6 +1560,7 @@ export function criarApiDoGestao(opcoes: OpcoesDaApi): ApiDoGestao {
       if (
         pedido.operacao === 'telas.ler' ||
         pedido.operacao.startsWith('fechamento.') ||
+        pedido.operacao.startsWith('cobranca.') ||
         pedido.operacao.startsWith('consignado.')
       ) {
         return executarConsignado(client, headers, pedido as ParametrosDeConsignado);

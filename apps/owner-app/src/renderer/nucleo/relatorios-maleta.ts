@@ -266,7 +266,17 @@ export const RELATORIOS_DE_MALETA: Record<NomeDoRelatorioDeMaleta, DefinicaoDeRe
         // Não usa o mapa de tradução porque "Dinheiro" lá já significa a forma de pagamento (Efectivo).
         rotulo: porIdioma('Dinero', 'Dinheiro'),
         comTabela: false,
-        totais: ['vd', 'comissao', 'recebido', 'pendencias', 'cobrarNestaMaleta', 'cobrarNoTotal'],
+        totais: [
+          'vd',
+          'comissao',
+          'recebido',
+          'pendencias',
+          'cobrarNestaMaleta',
+          'pagoNestaMaleta',
+          'faltaPagarNestaMaleta',
+          'cobrarNoTotal',
+          'faltaPagarNoTotal',
+        ],
       },
     ],
     rotulosDosTotais: {
@@ -283,6 +293,9 @@ export const RELATORIOS_DE_MALETA: Record<NomeDoRelatorioDeMaleta, DefinicaoDeRe
       perdaDaLoja: 'Peças que ficaram como perda da loja',
       cobrarNestaMaleta: 'A cobrar do representante nesta maleta',
       cobrarNoTotal: 'A cobrar do representante, somando todas as maletas',
+      pagoNestaMaleta: 'Pago pelo representante nesta maleta',
+      faltaPagarNestaMaleta: 'Falta pagar nesta maleta',
+      faltaPagarNoTotal: 'Falta pagar, somando todas as maletas',
     },
     itens: { um: 'peça', varios: 'peças' },
     vazio: 'Esta maleta não tem peças.',

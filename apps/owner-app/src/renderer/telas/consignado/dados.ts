@@ -39,9 +39,32 @@ export interface LeituraDoFechamentoLida {
     valor: string;
     decisao: 'COBRAR_DO_REPRESENTANTE' | 'PERDA_DA_LOJA';
     motivo: string;
+    /** Só na cobrada: o que o representante já pagou (menos o desfeito) e o que falta. */
+    pago: string;
+    faltaPagar: string;
+    pagamentos: PagamentoDaCobrancaLido[];
   }[];
   /** Quanto cobrar do representante: nesta maleta e somando todas as maletas dele. */
-  cobranca: { representante: string; nestaMaleta: string; todasAsMaletas: string };
+  cobranca: {
+    representante: string;
+    nestaMaleta: string;
+    todasAsMaletas: string;
+    pagoNestaMaleta: string;
+    faltaPagarNestaMaleta: string;
+    pagoTodasAsMaletas: string;
+    faltaPagarTodasAsMaletas: string;
+  };
+}
+
+export interface PagamentoDaCobrancaLido {
+  id: string;
+  valor: string;
+  forma: string;
+  moeda: 'REAL' | 'DOLAR' | 'GUARANI';
+  valorNaMoeda: string | null;
+  data: string;
+  desfeito: boolean;
+  motivoDoEstorno: string;
 }
 
 export function lerLeituraDoFechamento(bruto: unknown): LeituraDoFechamentoLida | null {
@@ -75,12 +98,35 @@ export function lerLeituraDoFechamento(bruto: unknown): LeituraDoFechamentoLida 
             ? ('PERDA_DA_LOJA' as const)
             : ('COBRAR_DO_REPRESENTANTE' as const),
         motivo: texto(l.motivo),
+        pago: dinheiro(l.pago),
+        faltaPagar: dinheiro(l.faltaPagar),
+        pagamentos: lista(l.pagamentos).map((g) => {
+          const x = objeto(g);
+          const moeda = x.moeda === 'DOLAR' || x.moeda === 'GUARANI' ? x.moeda : 'REAL';
+          return {
+            id: texto(x.id),
+            valor: dinheiro(x.valor),
+            forma: texto(x.forma),
+            moeda,
+            valorNaMoeda:
+              typeof x.valorNaMoeda === 'number' || typeof x.valorNaMoeda === 'string'
+                ? String(x.valorNaMoeda)
+                : null,
+            data: texto(x.data),
+            desfeito: x.desfeito === true,
+            motivoDoEstorno: texto(x.motivoDoEstorno),
+          };
+        }),
       };
     }),
     cobranca: {
       representante: texto(objeto(o.cobranca).representante),
       nestaMaleta: dinheiro(objeto(o.cobranca).nestaMaleta),
       todasAsMaletas: dinheiro(objeto(o.cobranca).todasAsMaletas),
+      pagoNestaMaleta: dinheiro(objeto(o.cobranca).pagoNestaMaleta),
+      faltaPagarNestaMaleta: dinheiro(objeto(o.cobranca).faltaPagarNestaMaleta),
+      pagoTodasAsMaletas: dinheiro(objeto(o.cobranca).pagoTodasAsMaletas),
+      faltaPagarTodasAsMaletas: dinheiro(objeto(o.cobranca).faltaPagarTodasAsMaletas),
     },
   };
 }
@@ -101,6 +147,29 @@ export interface NotaLida {
   situacao: string;
   itensDx: number;
   valorDx: string;
+  meta: MetaLida;
+}
+
+/** A meta do acerto da nota: `regra` vazia quando não há acerto; `bateu` só existe na regra META. */
+export interface MetaLida {
+  regra: 'META' | 'INFORMADA' | '';
+  metaGuarani: number | null;
+  vdGuarani: number | null;
+  bateu: boolean | null;
+}
+
+const inteiroOuNulo = (v: unknown): number | null =>
+  typeof v === 'number' && Number.isFinite(v) ? v : null;
+
+function lerMeta(o: Record<string, unknown>): MetaLida {
+  const regra =
+    o.regraDaComissao === 'META' || o.regraDaComissao === 'INFORMADA' ? o.regraDaComissao : '';
+  return {
+    regra,
+    metaGuarani: inteiroOuNulo(o.metaGuarani),
+    vdGuarani: inteiroOuNulo(o.vdGuarani),
+    bateu: regra === 'META' ? o.bateuMeta === true : null,
+  };
 }
 
 export function lerNota(bruto: unknown): NotaLida | null {
@@ -120,6 +189,7 @@ export function lerNota(bruto: unknown): NotaLida | null {
     situacao: texto(o.situacao),
     itensDx: inteiro(o.itensDx),
     valorDx: dinheiro(o.valorDx),
+    meta: lerMeta(o),
   };
 }
 
@@ -150,6 +220,7 @@ export interface AcertoLidoDaNota {
   saldoDoDebito: string;
   estornado: boolean;
   motivoDoEstorno: string;
+  meta: MetaLida;
 }
 
 export interface ReciboLidoDaNota {
@@ -206,6 +277,7 @@ export function lerDetalheDaNota(bruto: unknown): DetalheDaNotaLido | null {
         saldoDoDebito: dinheiro(a.saldoDoDebito),
         estornado: a.estornado === true,
         motivoDoEstorno: texto(a.motivoDoEstorno),
+        meta: lerMeta(a),
       };
     }),
     recibos: lista(o.recibos).map((b) => {
@@ -340,4 +412,23 @@ export function lerRepresentantes(bruto: unknown): { id: string; nome: string }[
     const v = objeto(b);
     return typeof v.id === 'string' ? [{ id: v.id, nome: texto(v.nome) }] : [];
   });
+}
+
+// --- Comissão e meta do consignado ---
+
+export interface ConfiguracaoLida {
+  metaGuarani: number;
+  percentualAbaixoDaMeta: number;
+  percentualNaMeta: number;
+  diasDoRetorno: number;
+}
+
+export function lerConfiguracaoDoConsignado(bruto: unknown): ConfiguracaoLida {
+  const o = objeto(bruto);
+  return {
+    metaGuarani: inteiro(o.metaGuarani),
+    percentualAbaixoDaMeta: inteiro(o.percentualAbaixoDaMeta),
+    percentualNaMeta: inteiro(o.percentualNaMeta),
+    diasDoRetorno: inteiro(o.diasDoRetorno),
+  };
 }

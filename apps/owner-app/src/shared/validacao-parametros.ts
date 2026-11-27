@@ -650,6 +650,8 @@ export function conferirParametros(
     case 'fechamento.leituras':
     case 'fechamento.concluir':
     case 'fechamento.voltas':
+    case 'cobranca.pagar':
+    case 'cobranca.desfazer':
     case 'consignado.semanas':
     case 'consignado.semana':
     case 'consignado.notas':
@@ -658,6 +660,8 @@ export function conferirParametros(
     case 'consignado.fotoDoCliente':
     case 'consignado.alertas':
     case 'consignado.alertaVisto':
+    case 'consignado.configuracao':
+    case 'consignado.configuracaoAlterar':
       return conferirConsignado(operacao, p);
     case 'relatorios.cadastros':
       return conferirRelatorio(p);

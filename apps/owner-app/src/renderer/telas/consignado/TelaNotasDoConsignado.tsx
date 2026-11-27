@@ -5,7 +5,7 @@ import { chamar, useBusca } from '../../nucleo/chamadas';
 import { TEXTOS } from '../../textos';
 import { TEXTOS_DE_CONSIGNADO } from '../../textos-consignado';
 import { dataNaTela } from '../cadastros/definicoes';
-import { centavosDeTexto, formatarReais } from '../../nucleo/moedas';
+import { centavosDeTexto, formatarGuarani, formatarReais } from '../../nucleo/moedas';
 import { reais } from '../devolucoes/Apoio';
 import { dataEHora } from '../sincronizacao/dados';
 import {
@@ -13,6 +13,7 @@ import {
   lerNotas,
   lerRepresentantes,
   type DetalheDaNotaLido,
+  type MetaLida,
   type NotaLida,
 } from './dados';
 
@@ -22,6 +23,13 @@ const SITUACOES = ['EM_ABERTO', 'PENDENTE', 'FECHADO', 'REMARCADO'] as const;
 export interface FiltroInicialDasNotas {
   vendedorId?: string;
   semanaId?: string;
+}
+
+const guarani = (v: number | null): string => (v === null ? '' : formatarGuarani(BigInt(v)));
+
+/** "Bateu" ou "Não bateu"; vazio quando a comissão não foi decidida pela meta (acerto antigo ou nota sem acerto). */
+export function resultadoDaMeta(m: MetaLida): string {
+  return m.bateu === null ? '' : m.bateu ? T.bateu : T.naoBateu;
 }
 
 /** Texto da situação da nota na tela. */
@@ -139,6 +147,8 @@ export function TelaNotasDoConsignado({
             { chave: 'cobranca', titulo: T.colunas.cobranca },
             { chave: 'itens', titulo: T.colunas.itens, numerica: true },
             { chave: 'valor', titulo: T.colunas.valor, numerica: true },
+            { chave: 'vdGuarani', titulo: T.colunas.vdGuarani, numerica: true },
+            { chave: 'meta', titulo: T.colunas.meta },
             { chave: 'situacao', titulo: T.colunas.situacao },
             { chave: 'acoes', titulo: T.colunas.acoes },
           ]}
@@ -149,6 +159,8 @@ export function TelaNotasDoConsignado({
             cobranca: n.dataCobranca ? dataNaTela(n.dataCobranca) : '',
             itens: n.itensDx,
             valor: reais(n.valorDx),
+            vdGuarani: guarani(n.meta.vdGuarani),
+            meta: resultadoDaMeta(n.meta),
             situacao: situacaoDaNota(n.situacao),
             acoes: (
               <Botao aria-label={T.verDaNota(n.numero)} onClick={() => setAberta(n.id)}>
@@ -246,6 +258,16 @@ function ConteudoDaNota({ d }: { d: DetalheDaNotaLido }) {
             <dd>{reais(a.valorDv)}</dd>
             <dt>{D.vd}</dt>
             <dd>{reais(a.valorVd)}</dd>
+            {a.meta.regra === 'META' ? (
+              <>
+                <dt>{D.vdGuarani}</dt>
+                <dd>{guarani(a.meta.vdGuarani)}</dd>
+                <dt>{D.metaDoAcerto}</dt>
+                <dd>{guarani(a.meta.metaGuarani)}</dd>
+                <dt>{D.resultadoDaMeta}</dt>
+                <dd>{resultadoDaMeta(a.meta)}</dd>
+              </>
+            ) : null}
             <dt>{D.comissao(a.comissaoPercentual)}</dt>
             <dd>{reais(a.comissao)}</dd>
             <dt>{D.liquido}</dt>

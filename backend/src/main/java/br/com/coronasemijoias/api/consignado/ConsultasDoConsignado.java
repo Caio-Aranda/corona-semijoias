@@ -30,7 +30,8 @@ public class ConsultasDoConsignado {
     }
 
     public record NotaResumo(UUID id, String numero, UUID vendedorId, UUID semanaId, int semana, int sequencia, UUID clienteId,
-            String cliente, Instant saidaEm, LocalDate dataCobranca, String situacao, int itensDx, BigDecimal valorDx) {
+            String cliente, Instant saidaEm, LocalDate dataCobranca, String situacao, int itensDx, BigDecimal valorDx,
+            String regraDaComissao, Long metaGuarani, Long vdGuarani, Boolean bateuMeta) {
     }
 
     public record LinhaDaNotaLida(UUID produtoId, String produto, UUID remessaId, int dx, BigDecimal precoUnitario) {
@@ -39,7 +40,8 @@ public class ConsultasDoConsignado {
     public record AcertoLido(UUID id, int semana, BigDecimal comissaoPercentual, int itensDx, int itensDv, int itensVd,
             BigDecimal valorDx, BigDecimal valorDv, BigDecimal valorVd, BigDecimal comissao, BigDecimal bruto,
             BigDecimal pendenciasAnteriores, BigDecimal totalAReceber, BigDecimal totalPago, BigDecimal ficouDevendo,
-            BigDecimal saldoDoDebito, Instant acertadoEm, boolean estornado, String motivoDoEstorno) {
+            BigDecimal saldoDoDebito, Instant acertadoEm, boolean estornado, String motivoDoEstorno,
+            String regraDaComissao, Long metaGuarani, Long vdGuarani, Boolean bateuMeta) {
     }
 
     public record ReciboLido(UUID id, int semana, int sequencia, UUID acertoId, Instant pagoEm, BigDecimal total, boolean estornado,
@@ -73,8 +75,13 @@ public class ConsultasDoConsignado {
             SELECT n.id, lpad(s.numero::text, 7, '0') || '-' || lpad(n.sequencia::text, 2, '0') AS numero, n.vendedor_id, n.semana_id,
                    s.numero AS semana, n.sequencia, n.cliente_id, c.nome AS cliente, n.saida_em, n.data_cobranca, n.situacao,
                    coalesce((SELECT sum(i.quantidade) FROM corona.itens_nota_consignado i WHERE i.nota_id = n.id), 0) AS itens_dx,
-                   coalesce((SELECT sum(i.quantidade * i.preco_unitario) FROM corona.itens_nota_consignado i WHERE i.nota_id = n.id), 0) AS valor_dx
+                   coalesce((SELECT sum(i.quantidade * i.preco_unitario) FROM corona.itens_nota_consignado i WHERE i.nota_id = n.id), 0) AS valor_dx,
+                   ua.regra_da_comissao, ua.meta_guarani, ua.vd_guarani,
+                   CASE WHEN ua.regra_da_comissao = 'META' THEN coalesce(ua.vd_guarani >= ua.meta_guarani, false) END AS bateu_meta
               FROM corona.notas_consignado n
+              LEFT JOIN LATERAL (SELECT a.regra_da_comissao, a.meta_guarani, a.vd_guarani FROM corona.acertos_nota a
+                                  WHERE a.nota_id = n.id AND a.estornado_em IS NULL
+                                  ORDER BY a.registrado_em DESC, a.id LIMIT 1) ua ON true
               JOIN corona.semanas_vendedor s ON s.id = n.semana_id
               JOIN corona.clientes c ON c.id = n.cliente_id
              WHERE n.deleted_at IS NULL""";
@@ -95,7 +102,19 @@ public class ConsultasDoConsignado {
         return new NotaResumo(rs.getObject("id", UUID.class), rs.getString("numero"), rs.getObject("vendedor_id", UUID.class),
                 rs.getObject("semana_id", UUID.class), rs.getInt("semana"), rs.getInt("sequencia"), rs.getObject("cliente_id", UUID.class),
                 rs.getString("cliente"), rs.getTimestamp("saida_em").toInstant(), rs.getDate("data_cobranca").toLocalDate(),
-                rs.getString("situacao"), rs.getInt("itens_dx"), rs.getBigDecimal("valor_dx"));
+                rs.getString("situacao"), rs.getInt("itens_dx"), rs.getBigDecimal("valor_dx"),
+                rs.getString("regra_da_comissao"), longOuNulo(rs, "meta_guarani"), longOuNulo(rs, "vd_guarani"),
+                (Boolean) rs.getObject("bateu_meta"));
+    }
+
+    private static Long longOuNulo(java.sql.ResultSet rs, String coluna) throws java.sql.SQLException {
+        long v = rs.getLong(coluna);
+        return rs.wasNull() ? null : v;
+    }
+
+    private static Long longOuNulo(java.sql.ResultSet rs, int coluna) throws java.sql.SQLException {
+        long v = rs.getLong(coluna);
+        return rs.wasNull() ? null : v;
     }
 
     /** As semanas do representante, da mais nova para a mais antiga, com os totais (a aba Totais). */
@@ -167,13 +186,16 @@ public class ConsultasDoConsignado {
                 SELECT a.id, s.numero, a.comissao_percentual, a.itens_dx, a.itens_dv, a.itens_vd, a.valor_dx, a.valor_dv, a.valor_vd,
                        a.comissao, a.bruto, a.pendencias_anteriores, a.total_a_receber, a.total_pago, a.ficou_devendo,
                        a.bruto - coalesce((SELECT sum(ap.valor) FROM corona.aplicacoes_recibo ap WHERE ap.acerto_id = a.id), 0) AS saldo,
-                       a.acertado_em, a.estornado_em IS NOT NULL, a.motivo_estorno
+                       a.acertado_em, a.estornado_em IS NOT NULL, a.motivo_estorno,
+                       a.regra_da_comissao, a.meta_guarani, a.vd_guarani,
+                       CASE WHEN a.regra_da_comissao = 'META' THEN coalesce(a.vd_guarani >= a.meta_guarani, false) END
                   FROM corona.acertos_nota a JOIN corona.semanas_vendedor s ON s.id = a.semana_id
                  WHERE a.nota_id = ? ORDER BY a.registrado_em, a.id""",
                 (rs, i) -> new AcertoLido(rs.getObject(1, UUID.class), rs.getInt(2), rs.getBigDecimal(3), rs.getInt(4), rs.getInt(5),
                         rs.getInt(6), rs.getBigDecimal(7), rs.getBigDecimal(8), rs.getBigDecimal(9), rs.getBigDecimal(10),
                         rs.getBigDecimal(11), rs.getBigDecimal(12), rs.getBigDecimal(13), rs.getBigDecimal(14), rs.getBigDecimal(15),
-                        rs.getBigDecimal(16), rs.getTimestamp(17).toInstant(), rs.getBoolean(18), rs.getString(19)), notaId);
+                        rs.getBigDecimal(16), rs.getTimestamp(17).toInstant(), rs.getBoolean(18), rs.getString(19), rs.getString(20), longOuNulo(rs, 21),
+                        longOuNulo(rs, 22), (Boolean) rs.getObject(23)), notaId);
         // Os recibos que quitaram (ou foram do acerto de) esta nota.
         List<UUID> reciboIds = jdbc.queryForList("""
                 SELECT DISTINCT r.id FROM corona.recibos_consignado r
