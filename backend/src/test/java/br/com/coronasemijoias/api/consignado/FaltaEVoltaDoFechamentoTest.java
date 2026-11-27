@@ -23,6 +23,9 @@ class FaltaEVoltaDoFechamentoTest extends ApoioDoConsignado {
     @Autowired
     ServicoDoFechamentoDaMaleta fechamento;
 
+    @Autowired
+    br.com.coronasemijoias.api.relatorios.RelatorioDoFechamentoDaMaleta relatorio;
+
     private UUID donaId() {
         return usuarios.dona().id();
     }
@@ -112,6 +115,33 @@ class FaltaEVoltaDoFechamentoTest extends ApoioDoConsignado {
         });
         assertThat(linha(l, anel).diferenca()).isZero();
         conferenciasLimpas(maleta, anel, colar);
+    }
+
+    /** A dona vê quanto cobrar de cada representante: nesta maleta e somando todas as maletas dele (tela e relatório). */
+    @Test
+    void cobrancaDoRepresentanteNestaMaletaENoTotalDasMaletasDele() throws Exception {
+        UsuarioDeTeste v = usuarios.criarVendedor();
+        UUID anel = peca("100.00", 20);
+        UUID colar = peca("50.00", 20);
+        UUID m1 = maletaEnviada(v, anel, 2);
+        fechamento.iniciar(m1, donaId());
+        fechamento.concluir(m1, List.of(cobrar(anel)), donaId()); // 2 anéis = 200
+        UUID m2 = maletaEnviada(v, colar, 3);
+        fechamento.iniciar(m2, donaId());
+        fechamento.registrarLeituras(m2, List.of(bipe(colar, 1)), donaId());
+        fechamento.concluir(m2, List.of(cobrar(colar)), donaId()); // 2 colares = 100
+
+        var c = fechamento.ler(m2).cobranca();
+        assertThat(c.vendedorId()).isEqualTo(v.vendedorId());
+        assertThat(c.nestaMaleta()).isEqualByComparingTo("100.00");
+        assertThat(c.todasAsMaletas()).isEqualByComparingTo("300.00");
+        assertThat(c.pecasPerdidasPelaLoja()).isZero();
+
+        var rodape = relatorio.montar(m2, 0, 50, null).totais();
+        assertThat(rodape).filteredOn(x -> x.chave().equals("cobrarNestaMaleta")).singleElement()
+                .satisfies(x -> assertThat(x.valorEmReais()).isEqualByComparingTo("100.00"));
+        assertThat(rodape).filteredOn(x -> x.chave().equals("cobrarNoTotal")).singleElement()
+                .satisfies(x -> assertThat(x.valorEmReais()).isEqualByComparingTo("300.00"));
     }
 
     @Test

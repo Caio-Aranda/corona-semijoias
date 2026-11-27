@@ -302,6 +302,14 @@ export type ClientesDaDonaControllerResposta = {
     whatsapp?: string;
 };
 
+export type CobrancaDoRepresentante = {
+    nestaMaleta?: string;
+    pecasPerdidasPelaLoja?: number;
+    representante?: string;
+    todasAsMaletas?: string;
+    vendedorId?: string;
+};
+
 export type CodigoGerado = {
     codigo?: string;
 };
@@ -1267,6 +1275,7 @@ export type LeituraDaDona = {
 };
 
 export type LeituraDoFechamento = {
+    cobranca?: CobrancaDoRepresentante;
     codigoDaMaleta?: string;
     concluidoEm?: string;
     iniciadoEm?: string;

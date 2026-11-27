@@ -74,6 +74,9 @@ export const PT_TEXTOS_DE_CONSIGNADO = {
         `${nome}: ${pecas(n)}. Cobrar do representante: ${valor}.`,
       perda: (nome: string, n: number, motivo: string) =>
         `${nome}: ${pecas(n)}. Perda da loja${motivo ? ` (${motivo})` : ''}.`,
+      totalNestaMaleta: (representante: string, valor: string) =>
+        `A cobrar de ${representante} nesta maleta: ${valor}.`,
+      totalDasMaletas: (valor: string) => `Somando todas as maletas dele: ${valor}.`,
     },
     /** C2: peças que as clientes devolvem depois de a maleta ser fechada (§23.10, item 3). */
     depois: {

@@ -519,6 +519,19 @@ function ControlesDoFechamento({
               </li>
             ))}
           </ul>
+          {centavosDeTexto(leitura.cobranca.nestaMaleta) ? (
+            <p className="gestao-texto">
+              <strong>
+                {T.registradas.totalNestaMaleta(
+                  leitura.cobranca.representante,
+                  formatarReais(centavosDeTexto(leitura.cobranca.nestaMaleta) ?? 0n),
+                )}
+              </strong>{' '}
+              {T.registradas.totalDasMaletas(
+                formatarReais(centavosDeTexto(leitura.cobranca.todasAsMaletas) ?? 0n),
+              )}
+            </p>
+          ) : null}
         </div>
       ) : null}
       {emAndamento ? (

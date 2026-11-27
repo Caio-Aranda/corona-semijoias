@@ -965,6 +965,34 @@
         },
         "type" : "object"
       },
+      "CobrancaDoRepresentante" : {
+        "properties" : {
+          "nestaMaleta" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "pecasPerdidasPelaLoja" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "representante" : {
+            "type" : "string"
+          },
+          "todasAsMaletas" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "vendedorId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "CodigoGerado" : {
         "properties" : {
           "codigo" : {
@@ -4243,6 +4271,9 @@
       },
       "LeituraDoFechamento" : {
         "properties" : {
+          "cobranca" : {
+            "$ref" : "#/components/schemas/CobrancaDoRepresentante"
+          },
           "codigoDaMaleta" : {
             "type" : "string"
           },

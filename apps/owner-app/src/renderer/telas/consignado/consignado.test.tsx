@@ -430,6 +430,11 @@ describe('Fechamento da maleta (§23.10)', () => {
               motivo: null,
             },
           ],
+          cobranca: {
+            representante: 'Joana Representante',
+            nestaMaleta: '200.00',
+            todasAsMaletas: '350.00',
+          },
         },
       }),
       'fechamento.voltas': () => ({ ok: true, dados: { novas: 1 } }),
@@ -443,6 +448,14 @@ describe('Fechamento da maleta (§23.10)', () => {
     expect(screen.getByText(T.fechamento.depois.aindaComClientes(1))).toBeInTheDocument();
     expect(
       screen.getByText(T.fechamento.registradas.cobrar('Anel Solitário', 2, 'R$ 200,00')),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        T.fechamento.registradas.totalNestaMaleta('Joana Representante', 'R$ 200,00'),
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(T.fechamento.registradas.totalDasMaletas('R$ 350,00')),
     ).toBeInTheDocument();
     // A maleta fechada não mostra a diferença como falta: a peça só está esperando a leitura.
     expect(screen.queryByText(T.fechamento.faltam(1))).toBeNull();

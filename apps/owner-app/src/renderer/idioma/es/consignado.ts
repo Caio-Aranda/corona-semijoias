@@ -68,6 +68,9 @@ export const ES_TEXTOS_DE_CONSIGNADO: NoMesmoFormato<typeof PT_TEXTOS_DE_CONSIGN
         `${nome}: ${pecas(n)}. Cobrar al representante: ${valor}.`,
       perda: (nome: string, n: number, motivo: string) =>
         `${nome}: ${pecas(n)}. Pérdida de la tienda${motivo ? ` (${motivo})` : ''}.`,
+      totalNestaMaleta: (representante: string, valor: string) =>
+        `A cobrar a ${representante} en esta maleta: ${valor}.`,
+      totalDasMaletas: (valor: string) => `Sumando todas sus maletas: ${valor}.`,
     },
     depois: {
       titulo: 'Leer las piezas que volvieron después',

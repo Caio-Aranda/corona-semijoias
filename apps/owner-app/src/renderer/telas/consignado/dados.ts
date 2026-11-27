@@ -39,6 +39,8 @@ export interface LeituraDoFechamentoLida {
     decisao: 'COBRAR_DO_REPRESENTANTE' | 'PERDA_DA_LOJA';
     motivo: string;
   }[];
+  /** Quanto cobrar do representante: nesta maleta e somando todas as maletas dele. */
+  cobranca: { representante: string; nestaMaleta: string; todasAsMaletas: string };
 }
 
 export function lerLeituraDoFechamento(bruto: unknown): LeituraDoFechamentoLida | null {
@@ -73,6 +75,11 @@ export function lerLeituraDoFechamento(bruto: unknown): LeituraDoFechamentoLida 
         motivo: texto(l.motivo),
       };
     }),
+    cobranca: {
+      representante: texto(objeto(o.cobranca).representante),
+      nestaMaleta: dinheiro(objeto(o.cobranca).nestaMaleta),
+      todasAsMaletas: dinheiro(objeto(o.cobranca).todasAsMaletas),
+    },
   };
 }
 

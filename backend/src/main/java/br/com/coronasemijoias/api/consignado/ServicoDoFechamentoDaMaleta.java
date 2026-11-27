@@ -116,8 +116,16 @@ public class ServicoDoFechamentoDaMaleta {
         }
     }
 
+    /**
+     * Quanto cobrar do representante pelas faltas (§23.10, item 1): nesta maleta e somando todas as maletas dele, e quantas peças
+     * ficaram como perda da loja nesta maleta.
+     */
+    public record CobrancaDoRepresentante(UUID vendedorId, String representante, BigDecimal nestaMaleta, BigDecimal todasAsMaletas,
+            int pecasPerdidasPelaLoja) {
+    }
+
     public record LeituraDoFechamento(UUID remessaId, String codigoDaMaleta, String situacaoDoFechamento, Instant iniciadoEm, Instant concluidoEm,
-            List<LinhaDaPeca> pecas, Valores valores, List<PendenciaDaMaleta> pendencias) {
+            List<LinhaDaPeca> pecas, Valores valores, List<PendenciaDaMaleta> pendencias, CobrancaDoRepresentante cobranca) {
     }
 
     private final JdbcTemplate jdbc;
@@ -414,7 +422,21 @@ public class ServicoDoFechamentoDaMaleta {
                     bipadas - esperado, devolvidas, pecasComClientes(remessaId, produto), paraLerDepois));
         }
         return new LeituraDoFechamento(remessaId, codigoDaMaleta(remessaId), (String) f.get(0).get("situacao"), instante(f.get(0).get("iniciado_em")),
-                instante(f.get(0).get("concluido_em")), pecas, valores(remessaId), pendencias(remessaId));
+                instante(f.get(0).get("concluido_em")), pecas, valores(remessaId), pendencias(remessaId), cobranca(remessaId));
+    }
+
+    private CobrancaDoRepresentante cobranca(UUID remessaId) {
+        return jdbc.queryForObject("""
+                SELECT v.id, v.nome,
+                       coalesce((SELECT sum(d.valor) FROM corona.pendencias_da_maleta d
+                                  WHERE d.remessa_id = r.id AND d.decisao = 'COBRAR_DO_REPRESENTANTE'), 0) AS nesta,
+                       coalesce((SELECT sum(d.valor) FROM corona.pendencias_da_maleta d
+                                  WHERE d.vendedor_id = v.id AND d.decisao = 'COBRAR_DO_REPRESENTANTE'), 0) AS todas,
+                       coalesce((SELECT sum(d.quantidade) FROM corona.pendencias_da_maleta d
+                                  WHERE d.remessa_id = r.id AND d.decisao = 'PERDA_DA_LOJA'), 0) AS perdidas
+                  FROM corona.remessas r JOIN corona.vendedores v ON v.id = r.vendedor_id
+                 WHERE r.id = ?""", (rs, n) -> new CobrancaDoRepresentante(rs.getObject(1, UUID.class), rs.getString(2),
+                Dinheiro.arredondar(rs.getBigDecimal(3)), Dinheiro.arredondar(rs.getBigDecimal(4)), rs.getInt(5)), remessaId);
     }
 
     /** As faltas gravadas na conclusão, com a decisão da dona (§23.10, item 1). */
