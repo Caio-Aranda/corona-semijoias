@@ -1,6 +1,8 @@
 import { Aviso, Botao } from '@corona/ui';
 import type { ErroDaTela } from '../nucleo/chamadas';
+import { acaoDoErro } from '../nucleo/resolver-erro';
 import { TEXTOS } from '../textos';
+import { irParaATela } from './FaltaDeCadastro';
 
 export interface AvisoDeErroProps {
   erro: ErroDaTela;
@@ -22,6 +24,8 @@ export function AvisoDeErro({
   aoTentarDeNovo,
   camposJaMostrados = [],
 }: AvisoDeErroProps) {
+  const acao =
+    erro.tipo === 'sem-conexao' || erro.tipo === 'versao' ? null : acaoDoErro(erro.codigo);
   const tipo = erro.tipo === 'sem-conexao' || erro.tipo === 'versao' ? 'atencao' : 'erro';
   // O motivo de verdade da recusa: o texto de cada campo que a tela não mostra (em espanhol, como o servidor manda).
   const motivos =
@@ -54,6 +58,11 @@ export function AvisoDeErro({
       ) : null}
       {erro.tipo === 'versao' && aoAtualizar ? (
         <Botao onClick={aoAtualizar}>{TEXTOS.lista.atualizar}</Botao>
+      ) : null}
+      {acao ? (
+        <Botao variante="primario" onClick={() => irParaATela(acao.rota)}>
+          {acao.rotulo}
+        </Botao>
       ) : null}
       {erro.tipo === 'sem-conexao' && aoTentarDeNovo ? (
         <Botao onClick={aoTentarDeNovo}>{TEXTOS.lista.tentarDeNovo}</Botao>

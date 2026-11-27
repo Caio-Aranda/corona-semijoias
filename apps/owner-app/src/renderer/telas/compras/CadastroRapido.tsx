@@ -4,6 +4,8 @@ import { TIPOS_DE_CODIGO, type TipoDeCodigo } from '../../../shared/produtos';
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { AvisoDeErro } from '../../componentes/AvisoDeErro';
 import { CampoDeDinheiro } from '../../componentes/CampoDeDinheiro';
+import { FaltaDeCadastro } from '../../componentes/FaltaDeCadastro';
+import { TEXTOS } from '../../textos';
 import { chamar, chamarTodasAsPaginas, useBusca, type ErroDaTela } from '../../nucleo/chamadas';
 import { avaliarCodigo, normalizarCodigo, tipoSugerido } from '../../nucleo/codigos';
 import { lerReaisDigitados } from '../../nucleo/moedas';
@@ -159,6 +161,13 @@ export function CadastroRapido({
           onChange={(e) => setNome(e.target.value)}
           {...(erroDoNome ? { erro: erroDoNome } : {})}
         />
+        {categorias.dados !== null && listaDeCategorias.length === 0 ? (
+          <FaltaDeCadastro
+            mensagem={TEXTOS.faltaCadastro.semCategoria}
+            rotuloDoBotao={TEXTOS.faltaCadastro.cadastrarCategoria}
+            rota="cadastros/categorias"
+          />
+        ) : null}
         <div className={`cs-campo${tentou && !categoriaId ? ' cs-campo--erro' : ''}`}>
           <label htmlFor="rapido-categoria">{T.categoria}</label>
           <select
