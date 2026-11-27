@@ -77,14 +77,13 @@ const previa = (v: unknown): PreviaDoAcertoPedida | null => {
   if (!ehObjeto(v) || !ehUuid(v['notaId'])) return null;
   const d = devolvidos(v['devolvidos']);
   const f = formas(v['formas']);
-  const c = v['comissaoPercentual'];
-  if (!d || !f || !ehTexto(c) || !PORCENTAGEM.test(c)) return null;
+  // Sem porcentagem: desde o 1.3.0 o servidor decide a comissão pela meta (§23.13); qualquer campo assim é descartado.
+  if (!d || !f) return null;
   const data = v['data'];
   if (data !== undefined && !(ehTexto(data) && DIA.test(data))) return null;
   return {
     notaId: v['notaId'],
     devolvidos: d,
-    comissaoPercentual: c,
     formas: f,
     ...(data !== undefined ? { data } : {}),
   };

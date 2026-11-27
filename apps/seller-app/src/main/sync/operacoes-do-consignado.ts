@@ -4,6 +4,8 @@ import {
   calcularAcerto,
   centesimosDePorcentagem,
   comissaoValida,
+  decidirComissaoPelaMeta,
+  type DecisaoDaComissao,
 } from '@corona/shared/consignado';
 import { exigirCentavos, textoDeCentavos } from '../../shared/dinheiro';
 import {
@@ -20,10 +22,12 @@ import type { CodigoDoConsignado } from './mensagens-do-consignado';
 import {
   acertoAtivoDaNota,
   acharNota,
+  cotacaoDaNota,
   dataDeCobranca,
   debitosDoCliente,
   diaMaisDias,
   linhasDaNota,
+  parametrosDoConsignado,
   pendenciaDoCliente,
   semanaAtual,
   SQL_ACERTO_ATIVO,
@@ -44,7 +48,6 @@ const recusar = (codigo: CodigoDoConsignado | 'PECA_FORA_DA_MALETA' | 'SEM_SALDO
   throw new ErroDaOperacao(codigo);
 };
 
-const DIAS_PARA_COBRANCA = 45;
 const MAXIMO_DO_MOTIVO = 400;
 
 const dinheiro = textoDeCentavos;
@@ -172,7 +175,7 @@ export function rascunhoDoPedido(db: BancoAberto, agora: Date): RascunhoDoPedido
     | undefined;
   if (!r) {
     const id = uuidV7(agora);
-    const dataCobranca = diaMaisDias(agora, DIAS_PARA_COBRANCA);
+    const dataCobranca = diaMaisDias(agora, parametrosDoConsignado(db).diasDoRetorno);
     db.prepare(
       `INSERT INTO rascunhos_nota (id, cliente_id, remessa_id, data_cobranca, criado_em, atualizado_em)
        VALUES (?, NULL, NULL, ?, ?, ?)`,
@@ -195,7 +198,7 @@ export function rascunhoDoPedido(db: BancoAberto, agora: Date): RascunhoDoPedido
     id: r.id,
     clienteId: r.cliente_id,
     remessaId: r.remessa_id,
-    dataCobranca: r.data_cobranca ?? diaMaisDias(agora, DIAS_PARA_COBRANCA),
+    dataCobranca: r.data_cobranca ?? diaMaisDias(agora, parametrosDoConsignado(db).diasDoRetorno),
     itens: itens.map((i) => ({
       id: i.id,
       produtoId: i.produto_id,
@@ -516,7 +519,7 @@ export function registrarReposicao(
     gravarNovaNota(db, agora, {
       id: p.id,
       clienteId: nota.cliente_id,
-      dataCobranca: dataDeCobranca(db, nota) ?? diaMaisDias(agora, DIAS_PARA_COBRANCA),
+      dataCobranca: dataDeCobranca(db, nota) ?? diaMaisDias(agora, parametrosDoConsignado(db).diasDoRetorno),
       notaOrigemId: nota.id,
       linhas,
     });
@@ -669,6 +672,28 @@ export function conferirFormas(
   return lista;
 }
 
+function metaDaPrevia(
+  d: DecisaoDaComissao,
+  metaEmGuarani: string,
+  parametros: { percentualAbaixo: string; percentualNaMeta: string },
+): MetaDaPrevia {
+  const falta =
+    d.vdEmGuarani === null
+      ? null
+      : (BigInt(metaEmGuarani) > BigInt(d.vdEmGuarani)
+          ? BigInt(metaEmGuarani) - BigInt(d.vdEmGuarani)
+          : 0n
+        ).toString();
+  return {
+    metaEmGuarani,
+    vdEmGuarani: d.vdEmGuarani,
+    bateuAMeta: d.bateuAMeta,
+    faltaEmGuarani: falta,
+    percentualAbaixo: parametros.percentualAbaixo,
+    percentualNaMeta: parametros.percentualNaMeta,
+  };
+}
+
 const somaDas = (formas: readonly { valor: bigint }[]): bigint =>
   formas.reduce((s, f) => s + f.valor, 0n);
 
@@ -677,6 +702,17 @@ export function comissaoComDuasCasas(texto: string): string {
   const c = centesimosDePorcentagem(texto);
   if (c === null || !comissaoValida(texto)) return recusar('COMISSAO_FORA_DO_LIMITE');
   return textoDeCentavos(c);
+}
+
+export interface MetaDaPrevia {
+  metaEmGuarani: string;
+  /** O VD da nota em Guarani inteiro; `null` sem cotação do Guarani no computador. */
+  vdEmGuarani: string | null;
+  bateuAMeta: boolean;
+  /** Quanto falta para a meta, em Guarani ("0" se bateu); `null` sem cotação. */
+  faltaEmGuarani: string | null;
+  percentualAbaixo: string;
+  percentualNaMeta: string;
 }
 
 export interface PreviaDoAcerto {
@@ -690,18 +726,23 @@ export interface PreviaDoAcerto {
   }[];
   calculo: ReturnType<typeof calcularAcerto>;
   comissaoPercentual: string;
+  /** A meta da nota (a conta que decidiu a comissão); o servidor refaz e o que ele decidir vale. */
+  meta: MetaDaPrevia;
   debitos: { acertoId: string; numeroDaNota: string; acertadoEm: string; saldo: string }[];
 }
 
-/** A conta do acerto antes de salvar (só leitura): as mesmas fórmulas do servidor. */
+/**
+ * A conta do acerto antes de salvar (só leitura): as mesmas fórmulas do servidor. A comissão não é digitada: vem da meta
+ * (§23.13), pelo VD da nota em Guarani na cotação do dia da Dt. Acerto; sem cotação, é a de baixo.
+ */
 export function previaDoAcerto(
   db: BancoAberto,
-  p: Pick<AcertoParaEnviar, 'notaId' | 'devolvidos' | 'comissaoPercentual' | 'formas' | 'data'>,
+  p: Pick<AcertoParaEnviar, 'notaId' | 'devolvidos' | 'formas' | 'data'>,
+  agora: Date,
 ): PreviaDoAcerto {
   const nota = acharNota(db, p.notaId);
   if (!nota) return recusar('NOTA_NAO_ENCONTRADA');
   if (acertoAtivoDaNota(db, nota.id)) return recusar('NOTA_JA_ACERTADA');
-  const comissao = comissaoComDuasCasas(p.comissaoPercentual);
   const linhas = linhasDaNota(db, nota.id);
   const devolvidoPorLinha = new Map<string, number>();
   for (const d of p.devolvidos) {
@@ -720,12 +761,14 @@ export function previaDoAcerto(
   const debitos = debitosDoCliente(db, nota.cliente_id).filter((d) => d.saldo > 0n);
   const pendencias = debitos.reduce((s, d) => s + d.saldo, 0n);
   const pago = somaDas(conferirFormas(p.formas));
-  const calculo = calcularAcerto(
-    partes.map(({ l, dv }) => ({ dx: l.dx, dv, precoUnitario: dinheiro(l.preco) })),
-    comissao,
-    dinheiro(pendencias),
-    dinheiro(pago),
-  );
+  const itens = partes.map(({ l, dv }) => ({ dx: l.dx, dv, precoUnitario: dinheiro(l.preco) }));
+  // O VD vem antes da comissão: a meta decide a porcentagem pelo que a nota vendeu.
+  const valorVd = calcularAcerto(itens, '0', '0.00', '0.00').valorVd;
+  const parametros = parametrosDoConsignado(db);
+  const cotacao = cotacaoDaNota(db, p.data, agora);
+  const decisao = decidirComissaoPelaMeta(valorVd, cotacao?.guarani ?? null, parametros);
+  const comissao = comissaoComDuasCasas(decisao.percentual);
+  const calculo = calcularAcerto(itens, comissao, dinheiro(pendencias), dinheiro(pago));
   return {
     linhas: partes.map(({ l, dv }) => ({
       produtoId: l.produtoId,
@@ -737,6 +780,7 @@ export function previaDoAcerto(
     })),
     calculo,
     comissaoPercentual: comissao,
+    meta: metaDaPrevia(decisao, parametros.metaEmGuarani, parametros),
     debitos: debitos.map((d) => ({
       acertoId: d.acertoId,
       numeroDaNota: d.numeroDaNota,
@@ -827,7 +871,7 @@ export function registrarAcerto(
   // Como o servidor, a sobra que já está "a aplicar" entra antes de somar as pendências (ela pode ter chegado pelo pull).
   const antes = acharNota(db, p.notaId);
   if (antes) reaplicarSobras(db, agora, p.id, antes.cliente_id);
-  const previa = previaDoAcerto(db, p);
+  const previa = previaDoAcerto(db, p, agora);
   const nota = acharNota(db, p.notaId) as NonNullable<ReturnType<typeof acharNota>>;
   const semana = semanaAtual(db);
   if (!semana) return recusar('SEM_SEMANA_ABERTA');
@@ -942,7 +986,6 @@ export function registrarAcerto(
       notaId: nota.id,
       semanaId: semana.id,
       acertadoEm: registradoEm,
-      comissaoPercentual: previa.comissaoPercentual,
       devolvidos,
       ...(recibo ? { recibo } : {}),
       // Hoje é o mesmo que sem data: a operação sai como as de antes (mesmo resumo no servidor).
@@ -958,6 +1001,8 @@ export function registrarAcerto(
       },
     }),
     agora,
+    // Formato 2: sem porcentagem, o servidor decide a comissão pela meta (§23.13).
+    formato: 2,
   });
   // A situação da nota é a do débito dela: quitado → Fechado; faltou → Pendente (§23.4).
   const meu = debitosDoCliente(db, nota.cliente_id).find((d) => d.acertoId === p.id);

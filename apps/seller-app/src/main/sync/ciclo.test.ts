@@ -7,6 +7,7 @@ import {
   MAXIMO_DE_BYTES,
   type OrdemDoServidor,
 } from './ciclo';
+import { parametrosDoConsignado } from './consignado-comum';
 import { CHAVES, gravarEstado, lerEstado } from './estado-sync';
 import { OperacoesLocais, saldoDaPeca } from './operacoes-locais';
 import { criarTransporteDoSync } from './transporte-do-sync';
@@ -130,6 +131,23 @@ describe('envio (push)', () => {
       0,
     );
     expect(saldoDaPeca(b.db, m.remessaId, m.produtoA)).toBe(1);
+  });
+
+  it('guarda a meta, as comissões e os dias do retorno do consignado que vêm nos parâmetros', async () => {
+    s.parametros = {
+      ...s.parametros,
+      consignadoMetaGuarani: 900000,
+      consignadoComissaoAbaixoDaMeta: 25,
+      consignadoComissaoNaMeta: 35,
+      consignadoDiasDoRetorno: 30,
+    };
+    expect(await criarCiclo().executar()).toBe('ok');
+    expect(parametrosDoConsignado(b.db)).toEqual({
+      metaEmGuarani: '900000',
+      percentualAbaixo: '25',
+      percentualNaMeta: '35',
+      diasDoRetorno: 30,
+    });
   });
 
   it('o push vem antes do pull, e o pull repete até temMais = false', async () => {
