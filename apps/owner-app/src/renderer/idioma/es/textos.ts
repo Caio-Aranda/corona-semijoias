@@ -81,6 +81,29 @@ export const ES_TEXTOS: NoMesmoFormato<typeof PT_TEXTOS> = {
     titulo: 'Sin internet.',
     texto: 'Corona Gestión solo funciona con internet. Conéctese e intente de nuevo.',
   },
+  /** Pantallas que necesitan un registro hecho antes: lo que falta y el botón que lleva hasta allí. */
+  faltaCadastro: {
+    semSemana: 'Todavía no hay semana abierta. Registre la semana para armar la maleta.',
+    semSemanaParaRepor: 'Todavía no hay semana abierta. Registre la semana para reponer la maleta.',
+    cadastrarSemana: 'Registrar semana',
+    semRepresentante:
+      'Todavía no hay representante activo. Registre al representante (o active el que ya existe) para armar la maleta.',
+    cadastrarRepresentante: 'Registrar representante',
+    semFornecedor:
+      'Todavía no hay proveedor registrado. Registre al proveedor para cargar la compra.',
+    cadastrarFornecedor: 'Registrar proveedor',
+    semCategoria:
+      'Todavía no hay categoría registrada. Registre la categoría para registrar la pieza.',
+    cadastrarCategoria: 'Registrar categoría',
+  },
+  /** Botón que resuelve el error más común de cada código de la API. */
+  resolverErro: {
+    cadastrarSemana: 'Registrar semana',
+    abrirRepresentantes: 'Abrir representantes',
+    lancarCotacao: 'Cargar la cotización del día',
+    verEstoque: 'Ver el stock',
+    receberCompra: 'Recibir compra',
+  },
   semConexao: {
     texto: 'Sin conexión a internet. Intente de nuevo.',
     aviso: 'No necesita entrar de nuevo. El programa intenta solo en unos segundos.',

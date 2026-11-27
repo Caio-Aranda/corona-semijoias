@@ -60,6 +60,24 @@ describe('Fechamento da maleta em espanhol (tarefa 9.7)', () => {
     ]);
   });
 
+  // C1 (27/11/2026): os números do limite vêm do texto em português do servidor; ver erroDoLimite.
+  it('limite do representante: em espanhol mantém os quatro valores', () => {
+    definirIdioma('es');
+    const pt =
+      'O valor desta maleta passa o limite do representante. O limite é R$ 700,00, ele já tem R$ 1.400,00 com ele ' +
+      '(nas maletas e com as clientes) e esta maleta vale R$ 400,00. Faltam R$ 1.100,00 de limite. ' +
+      'Tire peças da maleta ou aumente o limite no cadastro do representante.';
+    expect(mensagemDaApi({ codigo: 'LIMITE_DE_CONSIGNACAO_EXCEDIDO', mensagem: pt })).toBe(
+      'El valor de esta maleta pasa el límite del representante. El límite es R$ 700,00, él ya tiene R$ 1.400,00 ' +
+        'consigo (en las maletas y con las clientes) y esta maleta vale R$ 400,00. Faltan R$ 1.100,00 de límite. ' +
+        'Saque piezas de la maleta o aumente el límite en el registro del representante.',
+    );
+    expect(mensagemDaApi({ codigo: 'LIMITE_DE_CONSIGNACAO_EXCEDIDO', mensagem: 'outro' })).toBe(
+      'El valor de la maleta pasa el límite de consignación del representante.',
+    );
+    definirIdioma('pt');
+  });
+
   // A maleta de origem vem do texto em português do servidor ("Ela está na maleta 0009."); ver erroDePecaDeOutraMaleta.
   it('peça de outra maleta: em espanhol diz de qual maleta é; sem a maleta, só que não é desta', () => {
     definirIdioma('es');
