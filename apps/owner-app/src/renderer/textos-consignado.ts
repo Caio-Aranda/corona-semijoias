@@ -49,10 +49,11 @@ export const PT_TEXTOS_DE_CONSIGNADO = {
     concluido: (quando: string) => `Fechamento concluído${quando ? ` em ${quando}` : ''}.`,
     aindaComClientes: (n: number) =>
       `Ainda há ${pecas(n)} com clientes. Você pode concluir: o acerto dessas notas acontece depois e as peças voltam à maleta fechada.`,
-    diferenca: (n: number) =>
-      n < 0
-        ? `Faltam ${pecas(-n)} em relação ao que devia estar na maleta. O sistema não corrige sozinho: decida o que fazer com a falta.`
-        : `Sobram ${pecas(n)} em relação ao que devia estar na maleta. O sistema não corrige sozinho: decida o que fazer com a sobra.`,
+    /** C4: falta e sobra são avisos separados, com a lista das peças (uma não anula a outra). */
+    faltam: (n: number) => `Faltam ${pecas(n)} em relação ao que devia estar na maleta:`,
+    sobram: (n: number) =>
+      `Sobram ${pecas(n)} em relação ao que devia estar na maleta. A sobra não volta ao estoque: confira se a peça é de outra maleta.`,
+    linhaDaDiferenca: (nome: string, n: number) => `${nome}: ${pecas(n)}`,
     semDiferenca: 'Tudo o que devia estar na maleta foi lido.',
     concluir: 'Concluir o fechamento',
     concluindo: 'Concluindo...',
