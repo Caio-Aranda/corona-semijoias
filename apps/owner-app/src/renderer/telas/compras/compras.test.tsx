@@ -680,7 +680,7 @@ describe('Compras: lista', () => {
     const u = userEvent.setup();
     render(<App ponte={m.ponte} />);
     await u.click(await menu('Compras'));
-    expect(await screen.findByText('Ainda não há compras.')).toBeInTheDocument();
+    expect(await screen.findByText(/Ainda não há compras./)).toBeInTheDocument();
     await u.selectOptions(screen.getByLabelText('Situação'), 'Registrada');
     expect(await screen.findByText(/Nenhuma compra com estes filtros/)).toBeInTheDocument();
   });

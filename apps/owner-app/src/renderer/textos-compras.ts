@@ -106,7 +106,7 @@ export const PT_TEXTOS_DE_COMPRAS = {
     buscando: 'Buscando as compras...',
     legenda: 'Lista de compras',
     itens: ['compra', 'compras'] as const,
-    vazio: 'Ainda não há compras.',
+    vazio: 'Ainda não há compras. Use o botão "Receber compra" para lançar a primeira.',
     semResultado: 'Nenhuma compra com estes filtros. Mude os filtros ou limpe a busca.',
     filtros: {
       de: 'De',

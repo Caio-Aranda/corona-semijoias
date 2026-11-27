@@ -259,6 +259,10 @@ semana fechada ou não encontrada → **Cadastrar semana**; limite do representa
 passado) e representante que não recebe maleta → **Abrir representantes**; falta a cotação do dia
 → **Lançar a cotação do dia**; estoque insuficiente → **Receber compra**.
 
+### Lista vazia diz o que fazer (varredura de 27/11/2026)
+
+Lista vazia nunca fica só em "Ainda não há X.": diz o botão ou a tela para resolver. Cadastros básicos: "Ainda não há nenhuma semana. Use o botão "Nova semana" para cadastrar." (o mesmo para categoria, fornecedor, praça, restrição e cliente). Produtos: "... Use o botão "Cadastrar produto" ...". Representantes: "... Use o botão "Novo representante" ...". Compras: "... Use o botão "Receber compra" ...". Contagens: "... Use o botão "Começar uma nova contagem" ...". Categorias do caixa: "... Use o botão "Nova categoria" ...". Estoque vazio: "Cadastre a primeira em Cadastros → Produtos.". Fechamento sem maleta enviada: "Monte e envie a maleta ao representante; quando ela voltar, feche aqui." com o botão **Montar maleta**. Semanas do representante: "Ele abre a semana no computador dele, ao fazer a primeira nota." No Corona Vendas: semana sem pedido diz "Use o botão "Novo Pedido" ..."; busca de pedido ou cliente sem resultado diz "Confira o nome ..." (e, no cliente, "use o botão "Novo cliente" para cadastrar").
+
 ### Exemplos ruins
 
 | Mensagem ruim | Por que é ruim | Como fica |

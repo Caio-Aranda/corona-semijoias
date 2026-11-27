@@ -196,7 +196,8 @@ export const PT_TEXTOS_DE_MALETAS = {
     },
     porVendedor: {
       legenda: 'O que cada representante tem em aberto',
-      vazia: 'Nenhum representante cadastrado.',
+      vazia:
+        'Nenhum representante cadastrado. Cadastre o representante em Pessoas → Representantes.',
       colunas: {
         vendedor: 'Representante',
         maletas: 'Maletas com ele',

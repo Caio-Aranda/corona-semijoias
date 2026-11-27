@@ -27,7 +27,8 @@ export const ES_TEXTOS_DE_VENDEDORES: NoMesmoFormato<typeof PT_TEXTOS_DE_VENDEDO
   situacao: { ativo: 'Activo', desativado: 'Inactivo' },
   legenda: 'Lista de representantes',
   abrir: 'Abrir registro',
-  vazio: 'Todavía no hay ningún representante.',
+  vazio:
+    'Todavía no hay ningún representante. Use el botón "Nuevo representante" para registrar el primero.',
   semResultado: 'Ningún representante encontrado. Revise lo que escribió o limpie la búsqueda.',
   ficha: {
     tituloNovo: 'Nuevo representante',

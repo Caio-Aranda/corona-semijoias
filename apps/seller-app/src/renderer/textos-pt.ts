@@ -859,7 +859,7 @@ export const TEXTOS_PT = {
         situacao: 'Situação',
       },
       dica: 'Dê dois cliques em um pedido para fazer o acerto dele.',
-      semPedidos: 'Nenhum pedido nesta semana.',
+      semPedidos: 'Nenhum pedido nesta semana. Use o botão "Novo Pedido" para fazer o primeiro.',
       novoPedidoSoNaAtual: 'Pedido novo só na semana de agora.',
       totaisLegenda: 'Totais da semana',
       totais: {
@@ -934,7 +934,7 @@ export const TEXTOS_PT = {
       buscar: 'Cliente, nota ou maleta',
       buscarBotao: 'Buscar',
       escolher: 'Escolha o pedido para fazer o acerto.',
-      nenhuma: 'Nenhum pedido em aberto encontrado.',
+      nenhuma: 'Nenhum pedido em aberto encontrado. Confira o nome do cliente ou o número da nota.',
       legenda: 'Pedidos em aberto',
       colunas: {
         nota: 'Nota nº',
@@ -1082,7 +1082,7 @@ export const TEXTOS_PT = {
     escolherPedido: {
       buscar: 'Buscar o pedido',
       buscarBotao: 'Buscar',
-      nenhum: 'Nenhum pedido em aberto encontrado.',
+      nenhum: 'Nenhum pedido em aberto encontrado. Confira o nome do cliente ou o número da nota.',
       escolher: 'Escolher',
       escolhido: (numero: string, cliente: string) => `Pedido ${numero} · ${cliente}`,
       trocar: 'Escolher outro pedido',
@@ -1093,7 +1093,8 @@ export const TEXTOS_PT = {
       novo: 'Novo cliente',
       legenda: 'Clientes',
       colunas: { cliente: 'Cliente', telefone: 'Telefone', cidade: 'Cidade', pendencia: 'Deve' },
-      nenhum: 'Nenhum cliente encontrado.',
+      nenhum:
+        'Nenhum cliente encontrado. Confira o nome ou use o botão "Novo cliente" para cadastrar.',
       abrir: 'Abrir',
       deve: 'Deve',
       naoDeve: 'Não deve nada',

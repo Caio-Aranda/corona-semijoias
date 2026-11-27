@@ -28,7 +28,9 @@ export const PT_TEXTOS_DE_CONSIGNADO = {
       `Maleta ${codigo}, de ${representante}, semana ${semana}${enviadaEm ? `, enviada em ${enviadaEm}` : ''}`,
     fechadaNaLista: ' (já fechada)',
     abrir: 'Abrir o fechamento',
-    nenhuma: 'Não há maleta enviada para fechar.',
+    nenhuma:
+      'Não há maleta enviada para fechar. Monte e envie a maleta ao representante; quando ela voltar, feche aqui.',
+    montarMaleta: 'Montar maleta',
     carregando: 'Carregando o fechamento...',
     comecarTitulo: 'O fechamento desta maleta ainda não começou',
     comecarTexto:
@@ -196,7 +198,8 @@ export const PT_TEXTOS_DE_CONSIGNADO = {
     },
     situacoes: { ABERTA: 'Em andamento', FECHADA: 'Fechada' } as Record<string, string>,
     legenda: 'Semanas do representante',
-    vazio: 'Este representante ainda não abriu nenhuma semana.',
+    vazio:
+      'Este representante ainda não abriu nenhuma semana. Ele abre a semana no computador dele, ao fazer a primeira nota.',
     verNotas: 'Ver as notas',
     verNotasDa: (semana: number) => `Ver as notas da semana ${semana}`,
     carregando: 'Carregando as semanas...',
