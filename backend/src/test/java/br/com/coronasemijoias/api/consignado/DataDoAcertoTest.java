@@ -61,7 +61,8 @@ class DataDoAcertoTest extends ApoioDoConsignado {
     private UUID acertarEm(Cena c, UUID nota, Instant quando, LocalDate data, Integer sequenciaDoRecibo, String pago) {
         UUID id = UUID.randomUUID();
         ReciboDoAcerto recibo = pago == null ? null : new ReciboDoAcerto(UUID.randomUUID(), sequenciaDoRecibo, List.of(paga("DINHEIRO", pago)));
-        acertos.acertar(ctxEm(c.v(), quando), new NovoAcerto(id, nota, c.semana(), BigDecimal.ZERO, List.of(), recibo, null, data));
+        comComissao(BigDecimal.ZERO,
+                () -> acertos.acertar(ctxEm(c.v(), quando), new NovoAcerto(id, nota, c.semana(), BigDecimal.ZERO, List.of(), recibo, null, data)));
         return id;
     }
 
@@ -239,8 +240,8 @@ class DataDoAcertoTest extends ApoioDoConsignado {
         UUID nota = notaDe(c, 1, 2);
         UUID id = UUID.randomUUID();
         NovoAcerto pedido = new NovoAcerto(id, nota, c.semana(), BigDecimal.ZERO, List.of(), null, null, LocalDate.of(2020, 3, 10));
-        assertThat(acertos.acertar(ctxEm(c.v(), DIA_12_10H), pedido)).isFalse();
-        assertThat(acertos.acertar(ctxEm(c.v(), DIA_12_10H), pedido)).isTrue();
+        assertThat(comComissao(BigDecimal.ZERO, () -> acertos.acertar(ctxEm(c.v(), DIA_12_10H), pedido))).isFalse();
+        assertThat(comComissao(BigDecimal.ZERO, () -> acertos.acertar(ctxEm(c.v(), DIA_12_10H), pedido))).isTrue();
         assertThat(contar("SELECT count(*) FROM corona.acertos_nota WHERE nota_id = ?", nota)).isEqualTo(1);
     }
 

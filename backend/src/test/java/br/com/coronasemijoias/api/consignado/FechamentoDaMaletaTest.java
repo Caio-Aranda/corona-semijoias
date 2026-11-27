@@ -99,8 +99,8 @@ class FechamentoDaMaletaTest extends ApoioDoConsignado {
         UUID m2 = maletaEnviada(v, p2, 9);
         UUID semana = abrirSemana(v);
         UUID nota = criarNota(v, semana, 1, cliente, item(p1, m1, 1, "10.00"), item(p2, m2, 1, "20.00"));
-        // VD 30; comissão 33,33% -> 10,00 (arredondado); bruto 20; pago 10,01 para o rateio não fechar redondo.
-        UUID acerto = acertar(v, nota, semana, "33.33", List.of(), 2, paga("PIX", "10.01"));
+        // VD 30; comissão 33% -> 9,90; bruto 20,10; pago 10,01 para o rateio não fechar redondo.
+        UUID acerto = acertar(v, nota, semana, "33", List.of(), 2, paga("PIX", "10.01"));
         assertThat(acerto).isNotNull();
         fechamento.iniciar(m1, donaId());
         fechamento.iniciar(m2, donaId());
