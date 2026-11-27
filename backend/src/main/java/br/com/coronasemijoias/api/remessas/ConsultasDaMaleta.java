@@ -70,10 +70,10 @@ public class ConsultasDaMaleta {
      * O que está com o representante, por linha da maleta: o saldo da maleta (só enquanto ela está com ele) mais as peças com
      * as clientes (também depois de a maleta ser fechada, até o acerto da nota).
      */
-    private static final String QTD_COM_ELE = "((CASE WHEN r.status IN " + COM_O_VENDEDOR
+    static final String QTD_COM_ELE = "((CASE WHEN r.status IN " + COM_O_VENDEDOR
             + " THEN i.qtd_enviada + coalesce(m.soma, 0) ELSE 0 END) + coalesce(c.qtd, 0))";
 
-    private static final String JUNTA_SALDO_E_CLIENTES = """
+    static final String JUNTA_SALDO_E_CLIENTES = """
               LEFT JOIN (SELECT remessa_id, produto_id, sum(quantidade) AS soma
                            FROM corona.movimentos_remessa GROUP BY remessa_id, produto_id) m
                      ON m.remessa_id = i.remessa_id AND m.produto_id = i.produto_id
@@ -82,7 +82,7 @@ public class ConsultasDaMaleta {
             """;
 
     /** Maletas que ainda podem ter algo com o representante (na maleta ou com as clientes). */
-    private static final String COM_ELE_OU_FECHADA = "('ENVIADA', 'CONFERIDA', 'EM_ACERTO', 'FECHADA')";
+    static final String COM_ELE_OU_FECHADA = "('ENVIADA', 'CONFERIDA', 'EM_ACERTO', 'FECHADA')";
 
     /**
      * Valor, a preço de venda congelado, de tudo o que ainda está com o representante: o saldo das maletas enviadas e as

@@ -69,7 +69,8 @@ export const PT_TEXTOS = {
   saldoDaLoja: {
     acabou: 'Acabou',
     zeroNaLoja: '0 na loja',
-    emMaleta: (total: number, nomes: string) => `Está em maleta: ${total} (${nomes})`,
+    emMaleta: (total: number, nomes: string) =>
+      `Com os representantes (na maleta ou com as clientes): ${total} (${nomes})`,
     /** Até três nomes; com mais gente, "e mais N". */
     nomes: (lista: readonly string[]): string =>
       lista.length <= 3

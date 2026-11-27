@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import br.com.coronasemijoias.api.remessas.ConsultasDaMaleta;
+import br.com.coronasemijoias.api.remessas.PecasEmMaletas;
 import br.com.coronasemijoias.api.testes.UsuariosDeTeste.UsuarioDeTeste;
 import java.util.List;
 import java.util.UUID;
@@ -23,6 +24,9 @@ class LimiteComPecasComClientesTest extends ApoioDoConsignado {
 
     @Autowired
     ConsultasDaMaleta consultas;
+
+    @Autowired
+    PecasEmMaletas emMaletas;
 
     private UUID rascunhoCom(UsuarioDeTeste v, UUID produto, int quantidade) throws Exception {
         JsonNode r = corpoDe(postar(REMESSAS, dona(), mapa("id", UUID.randomUUID(), "vendedorId", v.vendedorId(),
@@ -92,5 +96,24 @@ class LimiteComPecasComClientesTest extends ApoioDoConsignado {
         assertThat(consultas.valorEmAberto(v.vendedorId())).isEqualByComparingTo("200.00");
         assertThat(consultas.emAberto(v.vendedorId()).maletas()).singleElement()
                 .satisfies(m -> assertThat(m.pecasEmAberto()).isEqualTo(2));
+    }
+
+    /** C6: a ficha do produto conta as peças com as clientes junto das que estão na maleta. */
+    @Test
+    void fichaDoProdutoContaAsPecasComAsClientes() throws Exception {
+        UsuarioDeTeste v = usuarios.criarVendedor();
+        UUID anel = peca("100.00", 20);
+        UUID maleta = maletaEnviada(v, anel, 4);
+        UUID semana = abrirSemana(v);
+        criarNota(v, semana, 1, cliente(v), item(anel, maleta, 2, "100.00"));
+        assertThat(emMaletas.de(anel).total()).isEqualTo(4);
+
+        UUID nota = criarNota(v, semana, 2, cliente(v), item(anel, maleta, 2, "100.00"));
+        assertThat(emMaletas.de(anel).total()).isEqualTo(4);
+        assertThat(emMaletas.de(anel).vendedores()).singleElement().satisfies(d -> assertThat(d.quantidade()).isEqualTo(4));
+
+        // Acerto da nota 2: 1 volta à maleta e 1 vendida sai de vez.
+        acertar(v, nota, semana, "30", List.of(volta(anel, maleta, 1)), null);
+        assertThat(emMaletas.de(anel).total()).isEqualTo(3);
     }
 }

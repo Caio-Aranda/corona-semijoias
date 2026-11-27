@@ -268,7 +268,11 @@ describe('Estoque: lista de peças', () => {
     expect(within(acabou).getByText('Acabou')).toBeInTheDocument();
     const emMaleta = screen.getByRole('row', { name: /Brinco de Argola/ });
     expect(within(emMaleta).getByText('0 na loja')).toBeInTheDocument();
-    expect(within(emMaleta).getByText('Está em maleta: 3 (Maria, João)')).toBeInTheDocument();
+    expect(
+      within(emMaleta).getByText(
+        'Com os representantes (na maleta ou com as clientes): 3 (Maria, João)',
+      ),
+    ).toBeInTheDocument();
     expect(within(emMaleta).queryByText('Acabou')).toBeNull();
   });
 

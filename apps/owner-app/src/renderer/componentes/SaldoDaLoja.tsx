@@ -21,7 +21,7 @@ export function nomesDosVendedores(vendedores: readonly VendedorComAPeca[]): str
 
 /**
  * Estoque da loja sem confundir "acabou" com "está em maleta" (item 13): com saldo, só o número; com zero e peças em
- * maleta, "0 na loja" e o aviso "Está em maleta: 2 (Maria, João)"; com zero e nenhuma em maleta, "Acabou" em destaque.
+ * maleta, "0 na loja" e o aviso "Com os representantes (na maleta ou com as clientes): 2 (Maria, João)"; com zero e nenhuma em maleta, "Acabou" em destaque.
  */
 export function SaldoDaLoja({ estoque, emMaletas = 0, vendedores = [] }: SaldoDaLojaProps) {
   const T = TEXTOS.saldoDaLoja;
