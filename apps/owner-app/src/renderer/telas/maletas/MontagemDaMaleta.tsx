@@ -9,6 +9,7 @@ import { ImagemDoProduto } from '../../componentes/ImagemDoProduto';
 import { chamar, useBusca, type ErroDaTela } from '../../nucleo/chamadas';
 import { centavosDeTexto, formatarReais } from '../../nucleo/moedas';
 import { TEXTOS_DE_MALETAS } from '../../textos-maletas';
+import { avisoDaMaleta, ehAvisoDeEstoque } from '../../idioma/erros-es';
 import { codigoPrincipal, type Produto } from '../produtos/dados';
 import { Dinheiro } from './Dinheiro';
 import { LeitorDaMaleta } from './LeitorDaMaleta';
@@ -212,8 +213,12 @@ export function MontagemDaMaleta({ ponte, inicial, aoVoltar, aoEnviar }: Montage
         {T.nova.tipos[maleta.tipo] ?? maleta.tipo}
       </p>
       {maleta.avisos.map((a) => (
-        <Aviso key={a} tipo="atencao" titulo={T.avisoDeRestricao}>
-          {a}
+        <Aviso
+          key={a}
+          tipo="atencao"
+          titulo={ehAvisoDeEstoque(a) ? T.avisoDeEstoque : T.avisoDeRestricao}
+        >
+          {avisoDaMaleta(a)}
         </Aviso>
       ))}
 

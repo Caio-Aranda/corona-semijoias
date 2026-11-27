@@ -119,6 +119,7 @@ export const ES_TEXTOS_DE_MALETAS: NoMesmoFormato<typeof PT_TEXTOS_DE_MALETAS> =
     carregando: 'Verificando el límite...',
   },
   avisoDeRestricao: 'Atención con el representante:',
+  avisoDeEstoque: 'Falta stock para enviar:',
   voltar: 'Volver a la lista',
   enviar: 'Enviar maleta',
   vazia: 'Ponga por lo menos una pieza en la maleta antes de enviar.',
