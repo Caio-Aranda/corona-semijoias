@@ -5,6 +5,8 @@ import { AvisoDeErro } from '../../componentes/AvisoDeErro';
 import { chamar, chamarTodasAsPaginas, useBusca, type ErroDaTela } from '../../nucleo/chamadas';
 import { TEXTOS_DE_MALETAS } from '../../textos-maletas';
 import { Dinheiro } from './Dinheiro';
+import { FaltaDeCadastro } from '../../componentes/FaltaDeCadastro';
+import { TEXTOS as TEXTOS_GERAIS } from '../../textos';
 import { lerEmAberto, lerMaleta, lerSemanasParaEscolher, type Maleta } from './dados';
 
 const T = TEXTOS_DE_MALETAS.reposicao;
@@ -112,6 +114,13 @@ export function ReporMaleta({
             </div>
           ) : null}
         </dl>
+      ) : null}
+      {semanas.dados !== null && abertas.length === 0 ? (
+        <FaltaDeCadastro
+          mensagem={TEXTOS_GERAIS.faltaCadastro.semSemanaParaRepor}
+          rotuloDoBotao={TEXTOS_GERAIS.faltaCadastro.cadastrarSemana}
+          rota="cadastros/semanas"
+        />
       ) : null}
       <div className="gestao-formulario gestao-formulario--larga">
         <div className={`cs-campo${tentou && !semanaId ? ' cs-campo--erro' : ''}`}>
