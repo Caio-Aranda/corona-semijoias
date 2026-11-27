@@ -205,6 +205,7 @@ function FechamentoAberto({
       usuario={usuario}
       fixo={{ filtro: 'remessaId', valor: maleta.id, texto: titulo }}
       aoVoltar={aoVoltar}
+      rotuloDoVoltar={T.voltarParaLista}
       aposOTitulo={
         <ControlesDoFechamento
           ponte={ponte}
