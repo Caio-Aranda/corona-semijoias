@@ -131,6 +131,8 @@ import {
   listar9,
   listar12,
   alterarComissao,
+  alterarConfiguracaoDoConsignado,
+  lerConfiguracaoDoConsignado,
   criarCategoriaDoCaixa,
   estornarLancamentoDoCaixa,
   estornarPagamentoAFornecedor,
@@ -883,6 +885,10 @@ async function executarConsignado(
         () => marcarAlertaDoConsignadoComoVisto({ ...base, path: { id: pedido.id } }),
         true,
       );
+    case 'consignado.configuracao':
+      return executar(() => lerConfiguracaoDoConsignado(base));
+    case 'consignado.configuracaoAlterar':
+      return executar(() => alterarConfiguracaoDoConsignado({ ...base, body: pedido.corpo }));
     case 'consignado.fotoDoCliente': {
       // Foto de documento é dado pessoal: vem só pela rota da dona e não fica guardada em disco.
       try {

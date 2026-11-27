@@ -1661,3 +1661,9 @@ Mensagens: "O PDF foi guardado na pasta ... No WhatsApp que abriu, anexe o PDF e
 
 - Toda coluna ou rótulo que mostra o preço de uma peça se chama **Preço unitário** (ES: **Precio unitario**): nota da maleta, nota de saída do cliente, peças da maleta, produtos, compras, consulta de código, venda e acerto.
 - Não mudam: **Preço de custo**, **Preço de venda** (cadastro e filtros), totais e subtotais.
+
+## Comissão e meta do consignado (issue 280; §23.13)
+
+- **Menu (grupo Consignado):** **Comissão e meta do consignado** (ES: **Comisión y meta del consignado**). Campos: **Meta em Guarani**, **Comissão abaixo da meta, em %**, **Comissão ao bater a meta, em %**, **Dias da saída até o retorno**; **Salvar**; "Comissão e meta salvas." e "Vale para os próximos acertos e notas. O que já foi feito não muda."
+- **Notas dos clientes:** colunas **Vendido em Guarani** e **Meta** com **Bateu** / **Não bateu** (ES: **Alcanzó** / **No alcanzó**); vazio quando a comissão foi informada (acerto antigo) ou a nota ainda não teve acerto. Na ficha do acerto: **Valor VD em Guarani**, **Meta** e **Resultado da meta**.
+

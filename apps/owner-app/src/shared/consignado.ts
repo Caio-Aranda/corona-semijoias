@@ -19,6 +19,8 @@ export const OPERACOES_DE_CONSIGNADO = [
   'consignado.fotoDoCliente',
   'consignado.alertas',
   'consignado.alertaVisto',
+  'consignado.configuracao',
+  'consignado.configuracaoAlterar',
 ] as const;
 export type OperacaoDeConsignado = (typeof OPERACOES_DE_CONSIGNADO)[number];
 
@@ -65,7 +67,20 @@ export type ParametrosDeConsignado =
       };
     }
   | { operacao: 'consignado.fotoDoCliente'; id: string; tipo: TipoDeFotoDoCliente }
-  | { operacao: 'consignado.alertas'; soNaoVistos: boolean };
+  | { operacao: 'consignado.alertas'; soNaoVistos: boolean }
+  | { operacao: 'consignado.configuracao' }
+  | { operacao: 'consignado.configuracaoAlterar'; corpo: ConfiguracaoDoConsignado };
+
+/** A meta, os percentuais e os dias do retorno do consignado (ESPECIFICACAO §23.13). A API confere de novo. */
+export interface ConfiguracaoDoConsignado {
+  metaGuarani: number;
+  percentualAbaixoDaMeta: number;
+  percentualNaMeta: number;
+  diasDoRetorno: number;
+}
+export const PERCENTUAL_MAXIMO_DO_CONSIGNADO = 40;
+export const META_MAXIMA_EM_GUARANI = 1_000_000_000;
+export const DIAS_MAXIMOS_DO_RETORNO = 365;
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const idValido = (v: unknown): v is string => typeof v === 'string' && UUID.test(v);
@@ -139,6 +154,30 @@ export function conferirConsignado(
       if (!soCom('soNaoVistos')) return null;
       if (p.soNaoVistos !== undefined && typeof p.soNaoVistos !== 'boolean') return null;
       return { operacao, soNaoVistos: p.soNaoVistos === true };
+    }
+    case 'consignado.configuracao':
+      return chaves.length === 0 ? { operacao } : null;
+    case 'consignado.configuracaoAlterar': {
+      if (!soCom('metaGuarani', 'percentualAbaixoDaMeta', 'percentualNaMeta', 'diasDoRetorno')) {
+        return null;
+      }
+      const { metaGuarani, percentualAbaixoDaMeta: abaixo, percentualNaMeta: naMeta } = p;
+      const { diasDoRetorno: dias } = p;
+      const inteiro = (v: unknown, de: number, ate: number): v is number =>
+        typeof v === 'number' && Number.isInteger(v) && v >= de && v <= ate;
+      if (!inteiro(metaGuarani, 1, META_MAXIMA_EM_GUARANI)) return null;
+      if (!inteiro(abaixo, 0, PERCENTUAL_MAXIMO_DO_CONSIGNADO)) return null;
+      if (!inteiro(naMeta, 0, PERCENTUAL_MAXIMO_DO_CONSIGNADO) || abaixo > naMeta) return null;
+      if (!inteiro(dias, 1, DIAS_MAXIMOS_DO_RETORNO)) return null;
+      return {
+        operacao,
+        corpo: {
+          metaGuarani,
+          percentualAbaixoDaMeta: abaixo,
+          percentualNaMeta: naMeta,
+          diasDoRetorno: dias,
+        },
+      };
     }
   }
 }
