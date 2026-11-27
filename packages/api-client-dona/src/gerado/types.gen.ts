@@ -6,6 +6,7 @@ export type ClientOptions = {
 
 export type AcertoLido = {
     acertadoEm?: string;
+    bateuMeta?: boolean;
     bruto?: string;
     comissao?: string;
     comissaoPercentual?: string;
@@ -15,8 +16,10 @@ export type AcertoLido = {
     itensDv?: number;
     itensDx?: number;
     itensVd?: number;
+    metaGuarani?: number;
     motivoDoEstorno?: string;
     pendenciasAnteriores?: string;
+    regraDaComissao?: string;
     saldoDoDebito?: string;
     semana?: number;
     totalAReceber?: string;
@@ -24,6 +27,7 @@ export type AcertoLido = {
     valorDv?: string;
     valorDx?: string;
     valorVd?: string;
+    vdGuarani?: number;
 };
 
 export type AlertaLido = {
@@ -2156,18 +2160,22 @@ export type NotaDeRemessaControllerSemana = {
 };
 
 export type NotaResumo = {
+    bateuMeta?: boolean;
     cliente?: string;
     clienteId?: string;
     dataCobranca?: string;
     id?: string;
     itensDx?: number;
+    metaGuarani?: number;
     numero?: string;
+    regraDaComissao?: string;
     saidaEm?: string;
     semana?: number;
     semanaId?: string;
     sequencia?: number;
     situacao?: string;
     valorDx?: string;
+    vdGuarani?: number;
     vendedorId?: string;
 };
 

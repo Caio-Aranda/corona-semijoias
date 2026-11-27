@@ -7,6 +7,9 @@
             "format" : "date-time",
             "type" : "string"
           },
+          "bateuMeta" : {
+            "type" : "boolean"
+          },
           "bruto" : {
             "example" : "123.45",
             "format" : "decimal",
@@ -50,6 +53,10 @@
             "format" : "int32",
             "type" : "integer"
           },
+          "metaGuarani" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
           "motivoDoEstorno" : {
             "type" : "string"
           },
@@ -57,6 +64,9 @@
             "example" : "123.45",
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "regraDaComissao" : {
             "type" : "string"
           },
           "saldoDoDebito" : {
@@ -98,6 +108,10 @@
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
+          },
+          "vdGuarani" : {
+            "format" : "int64",
+            "type" : "integer"
           }
         },
         "type" : "object"
@@ -7485,6 +7499,9 @@
       },
       "NotaResumo" : {
         "properties" : {
+          "bateuMeta" : {
+            "type" : "boolean"
+          },
           "cliente" : {
             "type" : "string"
           },
@@ -7504,7 +7521,14 @@
             "format" : "int32",
             "type" : "integer"
           },
+          "metaGuarani" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
           "numero" : {
+            "type" : "string"
+          },
+          "regraDaComissao" : {
             "type" : "string"
           },
           "saidaEm" : {
@@ -7531,6 +7555,10 @@
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
+          },
+          "vdGuarani" : {
+            "format" : "int64",
+            "type" : "integer"
           },
           "vendedorId" : {
             "format" : "uuid",
