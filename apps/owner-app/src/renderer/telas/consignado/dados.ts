@@ -38,9 +38,32 @@ export interface LeituraDoFechamentoLida {
     valor: string;
     decisao: 'COBRAR_DO_REPRESENTANTE' | 'PERDA_DA_LOJA';
     motivo: string;
+    /** Só na cobrada: o que o representante já pagou (menos o desfeito) e o que falta. */
+    pago: string;
+    faltaPagar: string;
+    pagamentos: PagamentoDaCobrancaLido[];
   }[];
   /** Quanto cobrar do representante: nesta maleta e somando todas as maletas dele. */
-  cobranca: { representante: string; nestaMaleta: string; todasAsMaletas: string };
+  cobranca: {
+    representante: string;
+    nestaMaleta: string;
+    todasAsMaletas: string;
+    pagoNestaMaleta: string;
+    faltaPagarNestaMaleta: string;
+    pagoTodasAsMaletas: string;
+    faltaPagarTodasAsMaletas: string;
+  };
+}
+
+export interface PagamentoDaCobrancaLido {
+  id: string;
+  valor: string;
+  forma: string;
+  moeda: 'REAL' | 'DOLAR' | 'GUARANI';
+  valorNaMoeda: string | null;
+  data: string;
+  desfeito: boolean;
+  motivoDoEstorno: string;
 }
 
 export function lerLeituraDoFechamento(bruto: unknown): LeituraDoFechamentoLida | null {
@@ -73,12 +96,33 @@ export function lerLeituraDoFechamento(bruto: unknown): LeituraDoFechamentoLida 
             ? ('PERDA_DA_LOJA' as const)
             : ('COBRAR_DO_REPRESENTANTE' as const),
         motivo: texto(l.motivo),
+        pago: dinheiro(l.pago),
+        faltaPagar: dinheiro(l.faltaPagar),
+        pagamentos: lista(l.pagamentos).map((g) => {
+          const x = objeto(g);
+          const moeda = x.moeda === 'DOLAR' || x.moeda === 'GUARANI' ? x.moeda : 'REAL';
+          return {
+            id: texto(x.id),
+            valor: dinheiro(x.valor),
+            forma: texto(x.forma),
+            moeda,
+            valorNaMoeda:
+              x.valorNaMoeda === null || x.valorNaMoeda === undefined ? null : String(x.valorNaMoeda),
+            data: texto(x.data),
+            desfeito: x.desfeito === true,
+            motivoDoEstorno: texto(x.motivoDoEstorno),
+          };
+        }),
       };
     }),
     cobranca: {
       representante: texto(objeto(o.cobranca).representante),
       nestaMaleta: dinheiro(objeto(o.cobranca).nestaMaleta),
       todasAsMaletas: dinheiro(objeto(o.cobranca).todasAsMaletas),
+      pagoNestaMaleta: dinheiro(objeto(o.cobranca).pagoNestaMaleta),
+      faltaPagarNestaMaleta: dinheiro(objeto(o.cobranca).faltaPagarNestaMaleta),
+      pagoTodasAsMaletas: dinheiro(objeto(o.cobranca).pagoTodasAsMaletas),
+      faltaPagarTodasAsMaletas: dinheiro(objeto(o.cobranca).faltaPagarTodasAsMaletas),
     },
   };
 }

@@ -32,6 +32,7 @@ public class ServicoDeCaixa {
     static final String CATEGORIA_DO_REPASSE = "Repasse do representante";
     static final String CATEGORIA_DO_PAGAMENTO_AO_VENDEDOR = "Pagamento ao representante";
     static final String CATEGORIA_DO_PAGAMENTO_A_FORNECEDOR = "Pagamento a fornecedor";
+    static final String CATEGORIA_DA_COBRANCA_DA_MALETA = "Cobrança de falta da maleta";
     private static final ZoneId BRASILIA = ZoneId.of("America/Sao_Paulo");
 
     private final JdbcTemplate jdbc;
@@ -58,6 +59,21 @@ public class ServicoDeCaixa {
     public UUID estornarRecebimento(UUID usuarioId, UUID recebimentoOriginalId, UUID estornoDoRecebimentoId) {
         return estornarPelaOrigem(usuarioId, "RECEBIMENTO_VENDEDOR", recebimentoOriginalId, estornoDoRecebimentoId,
                 "Estorno de recebimento do representante", null);
+    }
+
+    /** Entrada do que o representante pagou da falta cobrada no Fechamento da maleta (§23.10, item 1a): mesmo valor e forma. */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public UUID lancarCobrancaDaMaleta(UUID usuarioId, UUID pagamentoId, String forma, BigDecimal valor) {
+        exigirPositivo(valor);
+        return gravar(UuidV7.gerar(), "ENTRADA", valor, forma, categoria(CATEGORIA_DA_COBRANCA_DA_MALETA), "COBRANCA_DA_MALETA",
+                pagamentoId, hoje(), null, usuarioId, "Cobrança de falta da maleta", null, null);
+    }
+
+    /** O estorno da entrada de um pagamento da cobrança: o lançamento oposto, ligado ao original. */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public UUID estornarCobrancaDaMaleta(UUID usuarioId, UUID pagamentoOriginalId, UUID estornoDoPagamentoId) {
+        return estornarPelaOrigem(usuarioId, "COBRANCA_DA_MALETA", pagamentoOriginalId, estornoDoPagamentoId,
+                "Estorno de cobrança de falta da maleta", null);
     }
 
     /** A saída do que o acerto pagou ao vendedor na hora (acerto a favor dele): valor positivo, gravado negativo. */

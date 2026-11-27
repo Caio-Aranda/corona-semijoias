@@ -235,6 +235,11 @@ public class ConciliacoesDaFase7 {
                                 (SELECT count(*) FROM corona.lancamentos_caixa l WHERE l.origem_tipo = 'PAGAMENTO_FORNECEDOR'
                                     AND l.origem_id = b.id AND l.valor = -b.valor AND l.forma = b.forma)""", "corona.baixas_pagar b",
                         "b.tipo = 'PAGAMENTO'"),
+                regra(Unidade.REGISTROS, "COBRANCA_DA_MALETA", "g.id", "Este pagamento da cobrança da maleta não tem exatamente um lançamento no caixa com o mesmo valor e a mesma forma.",
+                        "1", """
+                                (SELECT count(*) FROM corona.lancamentos_caixa l WHERE l.origem_tipo = 'COBRANCA_DA_MALETA'
+                                    AND l.origem_id = g.id AND l.valor = g.valor AND l.forma = g.forma)""", "corona.pagamentos_cobranca_maleta g",
+                        "true"),
                 regra(Unidade.REGISTROS, "ACERTO", "a.id", "O que foi pago ao vendedor neste acerto não tem exatamente uma saída no caixa com o mesmo valor.",
                         "1", """
                                 (SELECT count(*) FROM corona.lancamentos_caixa l WHERE l.origem_tipo = 'ACERTO_A_FAVOR_DO_VENDEDOR'
@@ -244,16 +249,18 @@ public class ConciliacoesDaFase7 {
                                 CASE WHEN l.origem_tipo = 'RECEBIMENTO_VENDEDOR' THEN (SELECT count(*) FROM corona.recebimentos_vendedor x WHERE x.id = l.origem_id)
                                      WHEN l.origem_tipo = 'ACERTO_A_FAVOR_DO_VENDEDOR' THEN (SELECT count(*) FROM corona.acertos x WHERE x.id = l.origem_id)
                                      WHEN l.origem_tipo = 'PAGAMENTO_FORNECEDOR' THEN (SELECT count(*) FROM corona.baixas_pagar x WHERE x.id = l.origem_id)
+                                     WHEN l.origem_tipo = 'COBRANCA_DA_MALETA' THEN (SELECT count(*) FROM corona.pagamentos_cobranca_maleta x WHERE x.id = l.origem_id)
                                      ELSE (SELECT count(*) FROM corona.lancamentos_caixa x WHERE x.id = l.origem_id AND x.id = l.id) END""",
                         "corona.lancamentos_caixa l", "true"),
                 regra(Unidade.REAIS, "LANCAMENTO", "l.id", "O sinal deste lançamento não combina com entrada ou saída (a saída diminui o caixa e a entrada aumenta).",
                         "CASE WHEN (l.tipo = 'ENTRADA') = (l.estorna_id IS NULL) THEN abs(l.valor) ELSE -abs(l.valor) END", "l.valor",
                         "corona.lancamentos_caixa l", "true"));
         return new Conferencia("C4", "Caixa",
-                "Cada recebimento do vendedor, cada pagamento a fornecedor e cada pagamento ao vendedor no acerto tem exatamente um lançamento "
+                "Cada recebimento do vendedor, cada pagamento da cobrança da maleta, cada pagamento a fornecedor e cada pagamento ao vendedor no acerto tem exatamente um lançamento "
                         + "no caixa, do mesmo valor; nenhum lançamento automático existe sem a origem dele; e entrada soma e saída diminui o saldo.",
                 contar("""
                         SELECT (SELECT count(*) FROM corona.lancamentos_caixa) + (SELECT count(*) FROM corona.recebimentos_vendedor)
+                             + (SELECT count(*) FROM corona.pagamentos_cobranca_maleta)
                              + (SELECT count(*) FROM corona.baixas_pagar WHERE tipo = 'PAGAMENTO')"""), d);
     }
 
@@ -322,7 +329,14 @@ public class ConciliacoesDaFase7 {
                         coalesce((SELECT -m.quantidade FROM corona.movimentos_remessa m
                                    WHERE m.id = pm.movimento_id AND m.tipo = 'PERDA' AND m.remessa_id = pm.remessa_id
                                      AND m.produto_id = pm.produto_id), 0)""",
-                        "corona.pendencias_da_maleta pm", "true"));
+                        "corona.pendencias_da_maleta pm", "true"),
+                achar("""
+                        SELECT 'PENDENCIA_DA_MALETA', pm.id, 'O que foi pago desta falta passa do valor dela ou ficou negativo.', pm.valor,
+                               coalesce((SELECT sum(g.valor) FROM corona.pagamentos_cobranca_maleta g WHERE g.pendencia_id = pm.id), 0)
+                          FROM corona.pendencias_da_maleta pm
+                         WHERE coalesce((SELECT sum(g.valor) FROM corona.pagamentos_cobranca_maleta g WHERE g.pendencia_id = pm.id), 0)
+                               NOT BETWEEN 0 AND CASE WHEN pm.decisao = 'COBRAR_DO_REPRESENTANTE' THEN pm.valor ELSE 0 END
+                         ORDER BY pm.id""", Unidade.REAIS));
         return new Conferencia("C8", "Maletas acertadas e faltas",
                 "Toda maleta acertada fica com saldo zero, e cada falta registrada no acerto ou no fechamento da maleta tem a perda da "
                         + "mesma quantidade na maleta.",
