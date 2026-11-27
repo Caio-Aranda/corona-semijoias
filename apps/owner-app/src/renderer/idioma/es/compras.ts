@@ -102,7 +102,7 @@ export const ES_TEXTOS_DE_COMPRAS: NoMesmoFormato<typeof PT_TEXTOS_DE_COMPRAS> =
     buscando: 'Buscando las compras...',
     legenda: 'Lista de compras',
     itens: ['compra', 'compras'] as const,
-    vazio: 'Todavía no hay compras.',
+    vazio: 'Todavía no hay compras. Use el botón "Recibir compra" para cargar la primera.',
     semResultado: 'Ninguna compra con estos filtros. Cambie los filtros o limpie la búsqueda.',
     filtros: {
       de: 'Desde',

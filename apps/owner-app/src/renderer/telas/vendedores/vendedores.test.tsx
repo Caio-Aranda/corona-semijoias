@@ -162,7 +162,7 @@ describe('Representantes: lista', () => {
     const u = userEvent.setup();
     render(<App ponte={m.ponte} />);
     await u.click(await screen.findByRole('button', { name: 'Representantes' }));
-    await screen.findByText('Ainda não há nenhum representante.');
+    await screen.findByText(/Ainda não há nenhum representante\./);
     await u.type(screen.getByLabelText('Buscar por nome, CPF, CNPJ, telefone ou código'), 'zzz');
     expect(
       await screen.findByText(
