@@ -1,5 +1,7 @@
 package br.com.coronasemijoias.api.consignado;
 
+import br.com.coronasemijoias.api.configuracoes.ServicoDoConsignado;
+
 import br.com.coronasemijoias.api.consignado.ServicoDeAcertosDaNota.Devolvido;
 import br.com.coronasemijoias.api.consignado.ServicoDeAcertosDaNota.NovoAcerto;
 import br.com.coronasemijoias.api.consignado.ServicoDeAcertosDaNota.ReciboDoAcerto;
@@ -39,6 +41,9 @@ public abstract class ApoioDoConsignado extends ApoioDasTrocas {
 
     @Autowired
     protected DebitosDoCliente debitos;
+
+    @Autowired
+    protected ServicoDoConsignado configuracaoDoConsignado;
 
     protected ContextoDoConsignado ctx(UsuarioDeTeste v) {
         return new ContextoDoConsignado(v.vendedorId(), v.id(), null, relogio.instant(), false);
@@ -111,12 +116,38 @@ public abstract class ApoioDoConsignado extends ApoioDasTrocas {
     }
 
     /** Acerta a nota: comissão, o que voltou e, se houver formas, o recibo do acerto com o número dado. Devolve o id do acerto. */
+    /**
+     * Um acerto da nota com a comissão {@code comissao}. Desde 27/11/2026 (C5) o servidor sempre decide pela meta: para o
+     * teste valer com a porcentagem pedida, a configuração do consignado fica com essa porcentagem dos dois lados da meta só
+     * durante o acerto, e volta à de antes (os testes da meta chamam o serviço direto).
+     */
     protected UUID acertar(UsuarioDeTeste v, UUID nota, UUID semana, String comissao, List<Devolvido> devolvidos, Integer sequenciaDoRecibo,
             FormaPaga... formas) {
         UUID id = UUID.randomUUID();
         ReciboDoAcerto recibo = formas.length == 0 ? null : new ReciboDoAcerto(UUID.randomUUID(), sequenciaDoRecibo, List.of(formas));
-        acertos.acertar(ctx(v), new NovoAcerto(id, nota, semana, new BigDecimal(comissao), devolvidos, recibo, null));
+        comComissao(new BigDecimal(comissao),
+                () -> acertos.acertar(ctx(v), new NovoAcerto(id, nota, semana, new BigDecimal(comissao), devolvidos, recibo, null)));
         return id;
+    }
+
+    /**
+     * Roda {@code acao} com a configuração da meta valendo {@code comissao} dos dois lados (só porcentagem inteira de 0 a 40, a que
+     * a configuração aceita; outra vai direto, para o servidor recusar ou arredondar como faria) e volta à de antes.
+     */
+    protected <T> T comComissao(BigDecimal comissao, java.util.function.Supplier<T> acao) {
+        boolean inteira = comissao.stripTrailingZeros().scale() <= 0 && comissao.signum() >= 0 && comissao.compareTo(BigDecimal.valueOf(40)) <= 0;
+        if (!inteira) {
+            return acao.get();
+        }
+        var antes = configuracaoDoConsignado.ler();
+        int p = comissao.intValueExact();
+        configuracaoDoConsignado.alterar(new ServicoDoConsignado.Consignado(antes.metaGuarani(), p, p, antes.diasDoRetorno()),
+                usuarios.dona().id());
+        try {
+            return acao.get();
+        } finally {
+            configuracaoDoConsignado.alterar(antes, usuarios.dona().id());
+        }
     }
 
     protected BigDecimal saldoDoDebito(UUID acerto) {

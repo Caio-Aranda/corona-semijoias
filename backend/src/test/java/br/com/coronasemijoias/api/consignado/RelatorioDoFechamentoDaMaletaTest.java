@@ -112,11 +112,12 @@ class RelatorioDoFechamentoDaMaletaTest extends ApoioDoConsignado {
         NovaNota b = nota(semana, 2, cliente, item(anel, maleta, 1, "100.00"));
         notas.criar(ctxEm(v, Instant.parse(diaDoPrimeiro + "T13:00:00Z")), b);
         // Primeiro acerto: a data escolhida (cotação desse dia), pagando 100 num recibo (cotação do mesmo dia).
-        acertos.acertar(ctxEm(v, Instant.parse("2020-03-12T13:00:00Z")), new NovoAcerto(UUID.randomUUID(), a.id(), semana,
-                BigDecimal.ZERO, List.of(), new ReciboDoAcerto(UUID.randomUUID(), 1, List.of(paga("PIX", "100.00"))), null, dataDoPrimeiro));
+        comComissao(BigDecimal.ZERO, () -> acertos.acertar(ctxEm(v, Instant.parse("2020-03-12T13:00:00Z")), new NovoAcerto(UUID.randomUUID(),
+                a.id(), semana, BigDecimal.ZERO, List.of(), new ReciboDoAcerto(UUID.randomUUID(), 1, List.of(paga("PIX", "100.00"))), null,
+                dataDoPrimeiro)));
         // Segundo acerto: no dia 12 (hoje do computador), sem pagar.
-        acertos.acertar(ctxEm(v, Instant.parse("2020-03-12T18:00:00Z")),
-                new NovoAcerto(UUID.randomUUID(), b.id(), semana, BigDecimal.ZERO, List.of(), null, null, LocalDate.of(2020, 3, 12)));
+        comComissao(BigDecimal.ZERO, () -> acertos.acertar(ctxEm(v, Instant.parse("2020-03-12T18:00:00Z")),
+                new NovoAcerto(UUID.randomUUID(), b.id(), semana, BigDecimal.ZERO, List.of(), null, null, LocalDate.of(2020, 3, 12))));
         fechamento.iniciar(maleta, usuarios.dona().id());
         return maleta;
     }

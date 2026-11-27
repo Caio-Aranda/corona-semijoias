@@ -190,7 +190,9 @@ public class ServicoDeAcertosDaNota {
         var calculo = CalculoDoAcertoDaNota.calcular(paraCalculo, comissaoPercentual, pendencias, pago);
         boolean diferenteDoVisto = pedido.visto() != null && diverge(pedido.visto(), calculo);
         boolean diferenteDaInformada = informada != null && informada.compareTo(comissaoPercentual) != 0;
-        if (diferenteDoVisto || diferenteDaInformada || cotacao.isEmpty()) {
+        // Sem cotação só importa quando os dois lados da meta têm porcentagens diferentes (a decisão poderia mudar).
+        boolean semCotacaoQueImporta = cotacao.isEmpty() && configuracao.percentualAbaixoDaMeta() != configuracao.percentualNaMeta();
+        if (diferenteDoVisto || diferenteDaInformada || semCotacaoQueImporta) {
             Map<String, Object> detalhe = new java.util.LinkedHashMap<>();
             if (pedido.visto() != null) {
                 detalhe.put("visto_vd", String.valueOf(pedido.visto().valorVd()));
@@ -204,7 +206,7 @@ public class ServicoDeAcertosDaNota {
             if (informada != null) {
                 detalhe.put("comissao_percentual_informada", informada.setScale(2).toPlainString());
             }
-            if (cotacao.isEmpty()) {
+            if (semCotacaoQueImporta) {
                 detalhe.put("motivo", "SEM_COTACAO");
             }
             alertas.registrar("VALOR_DO_ACERTO_RECALCULADO", ctx.vendedorId(), "acertos_nota", id, detalhe);

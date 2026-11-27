@@ -68,6 +68,13 @@ class AcertoDaNotaPelaMetaTest extends ApoioDoConsignado {
         return id;
     }
 
+    /** Acerto formato 1 (Corona Vendas 1.2.0): manda a porcentagem, mas o servidor decide pela meta (C5, 27/11/2026). */
+    private UUID acertarInformando(Cena c, UUID nota, String porcentagem) {
+        UUID id = UUID.randomUUID();
+        acertos.acertar(ctx(c.v()), new NovoAcerto(id, nota, c.semana(), new BigDecimal(porcentagem), List.of(), null, null));
+        return id;
+    }
+
     private Map<String, Object> linha(UUID acerto) {
         return jdbc.queryForMap("SELECT * FROM corona.acertos_nota WHERE id = ?", acerto);
     }
@@ -132,7 +139,7 @@ class AcertoDaNotaPelaMetaTest extends ApoioDoConsignado {
     void formato1NaMetaOServidorDecide40MesmoComOutraPorcentagemEAvisaADona() throws Exception {
         CotacoesDaMassa.doExemplo(jdbc);
         Cena c = cena("630.00");
-        UUID acerto = acertar(c.v(), notaDe(c, "630.00", 1), c.semana(), "10", List.of(), null);
+        UUID acerto = acertarInformando(c, notaDe(c, "630.00", 1), "10");
         var r = linha(acerto);
         assertThat(r.get("regra_da_comissao")).isEqualTo("META");
         assertThat((BigDecimal) r.get("comissao_percentual")).isEqualByComparingTo("40");
@@ -147,7 +154,7 @@ class AcertoDaNotaPelaMetaTest extends ApoioDoConsignado {
     void formato1AbaixoDaMetaFicaEm30MesmoQueOComputadorMande40() throws Exception {
         CotacoesDaMassa.doExemplo(jdbc);
         Cena c = cena("629.99");
-        UUID acerto = acertar(c.v(), notaDe(c, "629.99", 1), c.semana(), "40", List.of(), null);
+        UUID acerto = acertarInformando(c, notaDe(c, "629.99", 1), "40");
         var r = linha(acerto);
         assertThat(r.get("regra_da_comissao")).isEqualTo("META");
         assertThat((BigDecimal) r.get("comissao_percentual")).isEqualByComparingTo("30");
@@ -160,7 +167,7 @@ class AcertoDaNotaPelaMetaTest extends ApoioDoConsignado {
     void formato1ComAMesmaPorcentagemDoServidorNaoAvisa() throws Exception {
         CotacoesDaMassa.doExemplo(jdbc);
         Cena c = cena("630.00");
-        UUID acerto = acertar(c.v(), notaDe(c, "630.00", 1), c.semana(), "40", List.of(), null);
+        UUID acerto = acertarInformando(c, notaDe(c, "630.00", 1), "40");
         assertThat(linha(acerto).get("regra_da_comissao")).isEqualTo("META");
         assertThat(contar("SELECT count(*) FROM corona.alertas_consignado WHERE registro_id = ?", acerto)).isZero();
     }
