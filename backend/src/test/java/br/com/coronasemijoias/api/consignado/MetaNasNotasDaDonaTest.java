@@ -87,12 +87,13 @@ class MetaNasNotasDaDonaTest extends ApoioDoConsignado {
     }
 
     @Test
-    void acertoDoFormatoAntigoFicaSemMetaNemGuarani() throws Exception {
+    void acertoDoFormatoAntigoTambemEDecididoPelaMeta() throws Exception {
+        CotacoesDaMassa.doExemplo(jdbc);
         NotaResumo n = naLista(notaAcertada("630.00", false));
-        assertThat(n.regraDaComissao()).isEqualTo("INFORMADA");
-        assertThat(n.bateuMeta()).isNull();
-        assertThat(n.metaGuarani()).isNull();
-        assertThat(n.vdGuarani()).isNull();
+        assertThat(n.regraDaComissao()).isEqualTo("META");
+        assertThat(n.bateuMeta()).isTrue();
+        assertThat(n.metaGuarani()).isEqualTo(700_000L);
+        assertThat(n.vdGuarani()).isEqualTo(700_000L);
     }
 
     @Test
