@@ -1,4 +1,6 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+import { mkdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { REPRESENTANTE } from '../ambiente';
 import {
   abrirOVendas,
@@ -25,6 +27,15 @@ import { RedeDoVendas } from '../rede-do-vendas';
 test.describe.configure({ mode: 'serial' });
 
 const SEMANA = 65;
+
+// Com CORONA_FOTOS apontando para uma pasta, tira as fotos do pedido e da Cobrança (revisão das telas, item 7 de 27/11/2026).
+const PASTA = process.env['CORONA_FOTOS'];
+async function foto(janela: Page, nome: string): Promise<void> {
+  if (!PASTA) return;
+  mkdirSync(PASTA, { recursive: true });
+  await janela.waitForTimeout(900);
+  await janela.screenshot({ path: join(PASTA, `vendas-${nome}.png`), fullPage: true });
+}
 let m: MassaDoVendas;
 let sessao: VendasAberto;
 let rede: RedeDoVendas;
@@ -56,6 +67,7 @@ test('venda lendo o código como o leitor: o pedido sai da maleta e chega ao ser
   await expect(janela.getByText(`Peça lida: ${m.nomeDaPulseira}.`)).toBeVisible();
   // A mesma peça lida duas vezes soma na mesma linha: duas linhas no pedido, três peças, R$ 260,00.
   await expect(janela.getByText('Total de itens: 3', { exact: false })).toBeVisible();
+  await foto(janela, '1-novo-pedido');
   await expect(janela.getByText('R$ 260,00').first()).toBeVisible();
 
   await janela.getByRole('button', { name: 'Finalizar pedido' }).click();
@@ -80,6 +92,7 @@ test('acerto do pedido: devolve uma peça, paga uma parte e fica devendo; o serv
   await janela.getByRole('button', { name: 'Cobrança', exact: true }).click();
   await janela.getByRole('button', { name: 'Escolher' }).click();
   await expect(janela.getByText(`Pedido 0000065-01 · ${m.nomeDaCliente}`).first()).toBeVisible();
+  await foto(janela, '2-cobranca-escolhida');
 
   await lerCodigo(janela, 'Ler o código da peça devolvida', m.codigoDoColar);
   await janela.getByRole('button', { name: 'Concluir devolução' }).first().click();
@@ -87,12 +100,14 @@ test('acerto do pedido: devolve uma peça, paga uma parte e fica devendo; o serv
   await expect(
     dialogo.getByText(/Estas 2 peça\(s\) não foram lidas e serão consideradas vendidas/),
   ).toBeVisible();
+  await foto(janela, '3-cobranca-confirmar-devolucao');
   await dialogo.getByRole('button', { name: 'Concluir devolução' }).click();
 
   await janela.getByRole('tab', { name: 'Forma de Pagamento' }).click();
   await janela.getByLabel('Comissão %', { exact: false }).fill('30');
   await janela.getByLabel('Dinheiro', { exact: true }).fill('100,00');
   await expect(janela.getByText('Total VD: R$ 160,00')).toBeVisible();
+  await foto(janela, '4-cobranca-pagamento');
   await janela.getByRole('button', { name: 'Salvar acerto' }).click();
   await janela.getByRole('dialog').getByRole('button', { name: 'Salvar acerto' }).click();
   await expect(janela.getByText('Acerto salvo.')).toBeVisible();
