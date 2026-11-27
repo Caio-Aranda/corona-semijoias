@@ -35,6 +35,7 @@ export interface LeituraDoFechamentoLida {
     id: string;
     nome: string;
     quantidade: number;
+    precoUnitario: string;
     valor: string;
     decisao: 'COBRAR_DO_REPRESENTANTE' | 'PERDA_DA_LOJA';
     motivo: string;
@@ -90,6 +91,7 @@ export function lerLeituraDoFechamento(bruto: unknown): LeituraDoFechamentoLida 
         id: texto(l.id),
         nome: texto(l.nome),
         quantidade: inteiro(l.quantidade),
+        precoUnitario: dinheiro(l.precoUnitario),
         valor: dinheiro(l.valor),
         decisao:
           l.decisao === 'PERDA_DA_LOJA'

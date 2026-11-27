@@ -337,6 +337,8 @@ function AcertoDoPedido({
   );
   const a = nota.acerto;
 
+  // A coluna Tam./Ton. só aparece quando alguma peça do pedido tem tamanho ou tom (a tabela cabe na tela).
+  const comTamTon = nota.linhas.some((l) => (l.tamTon ?? '').trim() !== '');
   return (
     <PaginaDoVendedor ponte={ponte} titulo={T.titulo} aoVoltar={aoVoltar}>
       <section
@@ -408,13 +410,13 @@ function AcertoDoPedido({
               <Botao onClick={() => setEscolhaDeMaleta(null)}>{TEXTOS.consignado.cancelar}</Botao>
             </div>
           ) : null}
-          <table className="cs-tabela consignado-tabela">
+          <table className="cs-tabela consignado-tabela consignado-tabela--cobranca">
             <caption>{T.itensLegenda}</caption>
             <thead>
               <tr>
                 <th scope="col">{T.colunasItens.ref}</th>
                 <th scope="col">{T.colunasItens.produto}</th>
-                <th scope="col">{T.colunasItens.tamTon}</th>
+                {comTamTon ? <th scope="col">{T.colunasItens.tamTon}</th> : null}
                 <th scope="col">{T.colunasItens.maleta}</th>
                 <th scope="col" className="cs-numero">
                   {T.colunasItens.dx}
@@ -436,14 +438,14 @@ function AcertoDoPedido({
                 const dv = acertada ? l.dv : (devolvidos[chaveDaLinha(l)] ?? 0);
                 return (
                   <tr key={chaveDaLinha(l)}>
-                    <td>{l.codigo ?? ''}</td>
+                    <td className="consignado-ref">{l.codigo ?? ''}</td>
                     <td>
                       <span className="consignado-peca">
                         <FotoDoProduto ponte={ponte} hash={l.fotoHash} nome={l.nome} />
                         {l.nome}
                       </span>
                     </td>
-                    <td>{l.tamTon ?? ''}</td>
+                    {comTamTon ? <td>{l.tamTon ?? ''}</td> : null}
                     <td>{l.maleta}</td>
                     <td className="cs-numero">{l.dx}</td>
                     <td className="cs-numero">{dv}</td>

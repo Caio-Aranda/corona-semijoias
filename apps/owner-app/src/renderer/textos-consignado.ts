@@ -81,6 +81,17 @@ export const PT_TEXTOS_DE_CONSIGNADO = {
         `A cobrar de ${representante} nesta maleta: ${valor}.`,
       totalDasMaletas: (valor: string) => `Somando todas as maletas dele: ${valor}.`,
     },
+    /** A tabela das faltas que vai só no PDF do relatório (depois das duas partes). */
+    pdfDasFaltas: {
+      titulo: 'Faltas registradas no fechamento',
+      colunas: ['Peça', 'Quantidade', 'Preço da maleta', 'Valor', 'Decisão', 'Motivo'],
+      decisoes: {
+        COBRAR_DO_REPRESENTANTE: 'Cobrar do representante',
+        PERDA_DA_LOJA: 'Perda da loja',
+      } as Record<string, string>,
+      totalACobrar: 'Total a cobrar do representante',
+      totalDaPerda: 'Total da perda da loja',
+    },
     /** C2: peças que as clientes devolvem depois de a maleta ser fechada (§23.10, item 3). */
     depois: {
       titulo: 'Ler as peças que voltaram depois',

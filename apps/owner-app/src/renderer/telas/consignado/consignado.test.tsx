@@ -505,6 +505,72 @@ describe('Fechamento da maleta (§23.10)', () => {
     expect(screen.queryByText(T.fechamento.semDiferenca)).toBeNull();
   });
 
+  it('o PDF leva, depois das duas partes, a lista das faltas peça por peça com os totais', async () => {
+    const base = leitura('CONCLUIDO');
+    const m = montar({
+      'maletas.listar': (p) =>
+        (p.parametros as { status: string }).status === 'FECHADA'
+          ? pagina([maleta('FECHADA')])
+          : pagina([]),
+      'fechamento.ler': () => ({
+        ok: true,
+        dados: {
+          ...base,
+          pendencias: [
+            {
+              id: '7b7e28ba-2fa1-41d3-b9a5-2c3a9a8f6b88',
+              produtoId: ID_ANEL,
+              nome: 'Anel Solitário',
+              quantidade: 2,
+              precoUnitario: '100.00',
+              valor: '200.00',
+              decisao: 'COBRAR_DO_REPRESENTANTE',
+              motivo: null,
+            },
+            {
+              id: '8c7e28ba-2fa1-41d3-b9a5-2c3a9a8f6b99',
+              produtoId: ID_MALETA,
+              nome: 'Brinco Gota',
+              quantidade: 1,
+              precoUnitario: '50.00',
+              valor: '50.00',
+              decisao: 'PERDA_DA_LOJA',
+              motivo: 'Quebrou',
+            },
+          ],
+          cobranca: {
+            representante: 'Joana Representante',
+            nestaMaleta: '200.00',
+            todasAsMaletas: '200.00',
+          },
+        },
+      }),
+      'relatorios.cadastros': () => ({ ok: true, dados: RELATORIO }),
+    });
+    const u = await abrirPeloMenu(m, T.menu.fechamento);
+    await u.selectOptions(await screen.findByLabelText(T.fechamento.escolher), ID_MALETA);
+    await u.click(screen.getByRole('button', { name: T.fechamento.abrir }));
+    await screen.findByText('Maria Cliente (nota 65-21): 2');
+    await u.click(screen.getByRole('button', { name: 'Baixar em PDF' }));
+    await waitFor(() => expect(entregues).toHaveLength(1));
+    const pdf = new TextDecoder('windows-1252').decode(entregues[0]!.bytes);
+    const F = T.fechamento.pdfDasFaltas;
+    expect(pdf).toContain(F.titulo);
+    expect(pdf.indexOf(F.titulo)).toBeGreaterThan(pdf.indexOf('Valor vendido'));
+    for (const trecho of [
+      'Preço da',
+      'Cobrar do representante',
+      'Perda da loja',
+      'Quebrou',
+      '200,00',
+      '50,00',
+      F.totalACobrar,
+      F.totalDaPerda,
+    ]) {
+      expect(pdf, trecho).toContain(trecho);
+    }
+  });
+
   it('o relatório sai em CSV com as mesmas linhas e os totais da tela', async () => {
     const m = montar({
       'fechamento.ler': () => ({ ok: true, dados: leitura('EM_ANDAMENTO') }),
