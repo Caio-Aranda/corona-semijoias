@@ -61,7 +61,7 @@ class ConfiguracaoDasTelasETest extends ApoioDoConsignado {
         String alertas = ler("/api/dona/consignado/alertas?soNaoVistos=true", dona()).andExpect(status().isOk()).andReturn().getResponse()
                 .getContentAsString();
         assertThat(alertas).contains("PRECO_DIFERENTE_DA_MALETA").contains(v.vendedorId().toString());
-        ler("/api/dona/consignado/conciliacoes", dona()).andExpect(status().isOk()).andExpect(jsonPath("$.conferencias.length()").value(7));
+        ler("/api/dona/consignado/conciliacoes", dona()).andExpect(status().isOk()).andExpect(jsonPath("$.conferencias.length()").value(10));
         assertThat(acerto).isNotNull();
     }
 }

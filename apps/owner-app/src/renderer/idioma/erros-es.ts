@@ -402,6 +402,21 @@ export function erroDePecaDeOutraMaleta(mensagemDaApi: string | undefined): stri
     : ERROS_EM_ESPANHOL.PECA_NAO_E_DESTA_MALETA!;
 }
 
+/**
+ * El límite del representante con los números que mandó el servidor (en portugués: "O limite é R$ 700,00, ele já tem
+ * R$ 400,00 com ele ... esta maleta vale R$ 400,00. Faltam R$ 100,00 de limite."). Sin los cuatro valores, el texto fijo.
+ */
+export function erroDoLimite(mensagemDaApi: string | undefined): string {
+  const valores = (mensagemDaApi ?? '').match(/R\$\s?[\d.]+,\d{2}/g) ?? [];
+  if (valores.length !== 4) return ERROS_EM_ESPANHOL.LIMITE_DE_CONSIGNACAO_EXCEDIDO!;
+  const [limite, conEl, maleta, falta] = valores;
+  return (
+    `El valor de esta maleta pasa el límite del representante. El límite es ${limite}, él ya tiene ${conEl} ` +
+    `consigo (en las maletas y con las clientes) y esta maleta vale ${maleta}. Faltan ${falta} de límite. ` +
+    'Saque piezas de la maleta o aumente el límite en el registro del representante.'
+  );
+}
+
 const AVISO_DE_ESTOQUE = /^A maleta tem (\d+) peça\(s\) de "(.+)", mas só há (\d+) no estoque\./;
 const AVISO_DE_RESTRICAO = /^Atenção: este representante tem a restrição "(.+)"\.$/;
 

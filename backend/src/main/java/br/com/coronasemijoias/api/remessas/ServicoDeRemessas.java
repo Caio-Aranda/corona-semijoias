@@ -250,9 +250,10 @@ public class ServicoDeRemessas {
             if (emAberto.add(total).compareTo(vendedor.limite()) > 0) {
                 BigDecimal falta = emAberto.add(total).subtract(vendedor.limite());
                 throw ErroDaApi.comDetalhe(HttpStatus.CONFLICT, CodigoErro.LIMITE_DE_CONSIGNACAO_EXCEDIDO,
-                        "O valor desta maleta passa o limite do vendedor. O limite é " + reais(vendedor.limite())
-                                + ", ele já tem " + reais(emAberto) + " em maletas e esta maleta vale " + reais(total)
-                                + ". Faltam " + reais(falta) + " de limite. Tire peças da maleta ou aumente o limite no cadastro.");
+                        "O valor desta maleta passa o limite do representante. O limite é " + reais(vendedor.limite())
+                                + ", ele já tem " + reais(emAberto) + " com ele (nas maletas e com as clientes) e esta maleta vale "
+                                + reais(total) + ". Faltam " + reais(falta)
+                                + " de limite. Tire peças da maleta ou aumente o limite no cadastro do representante.");
             }
         }
 

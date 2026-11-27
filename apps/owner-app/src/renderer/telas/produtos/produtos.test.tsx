@@ -803,7 +803,9 @@ describe('Produtos: consulta', () => {
     expect(await screen.findByRole('heading', { name: 'Anel Solitário' })).toBeInTheDocument();
     const saldo = screen.getByText(/Saldo no estoque:/);
     expect(saldo).toHaveTextContent('0 na loja');
-    expect(saldo).toHaveTextContent('Está em maleta: 2 (Maria, João)');
+    expect(saldo).toHaveTextContent(
+      'Com os representantes (na maleta ou com as clientes): 2 (Maria, João)',
+    );
     expect(saldo).not.toHaveTextContent('Acabou');
   });
 

@@ -63,7 +63,8 @@ export const ES_TEXTOS: NoMesmoFormato<typeof PT_TEXTOS> = {
   saldoDaLoja: {
     acabou: 'Se acabó',
     zeroNaLoja: '0 en la tienda',
-    emMaleta: (total: number, nomes: string) => `Está en maleta: ${total} (${nomes})`,
+    emMaleta: (total: number, nomes: string) =>
+      `Con los representantes (en la maleta o con las clientes): ${total} (${nomes})`,
     nomes: (lista: readonly string[]): string =>
       lista.length <= 3
         ? lista.join(', ')

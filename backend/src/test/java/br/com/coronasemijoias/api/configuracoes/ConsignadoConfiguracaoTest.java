@@ -49,12 +49,13 @@ class ConsignadoConfiguracaoTest extends TesteDeIntegracao {
     @Autowired
     Configuracoes configuracoes;
 
+    @Autowired
+    ServicoDoConsignado servicoDoConsignado;
+
+    /** Volta pelo serviço (com auditoria): a conciliação K9 lê o histórico da auditoria, que precisa continuar coerente. */
     @AfterEach
     void voltarAosPadroes() {
-        jdbc.update("UPDATE corona.configuracoes SET valor_inteiro = 700000 WHERE chave = 'consignado_meta_guarani'");
-        jdbc.update("UPDATE corona.configuracoes SET valor_inteiro = 30 WHERE chave = 'consignado_comissao_abaixo_da_meta'");
-        jdbc.update("UPDATE corona.configuracoes SET valor_inteiro = 40 WHERE chave = 'consignado_comissao_na_meta'");
-        jdbc.update("UPDATE corona.configuracoes SET valor_inteiro = 45 WHERE chave = 'consignado_dias_do_retorno'");
+        servicoDoConsignado.alterar(new ServicoDoConsignado.Consignado(700_000, 30, 40, 45), usuarios.dona().id());
     }
 
     private static Map<String, Object> pedido(Object meta, Object abaixo, Object naMeta, Object dias) {

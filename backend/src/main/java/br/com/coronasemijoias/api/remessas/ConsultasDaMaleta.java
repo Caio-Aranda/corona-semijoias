@@ -54,16 +54,49 @@ public class ConsultasDaMaleta {
         this.jdbc = jdbc;
     }
 
-    /** Valor, a preço de venda congelado, do que ainda está com o vendedor (saldo atual das maletas enviadas). */
+    /**
+     * Peças que o representante deixou com as clientes, por maleta e peça: as saídas e voltas das notas que ainda não têm
+     * acerto valendo (C1, 27/11/2026). Com acerto, o vendido sai de vez e o devolvido já voltou à maleta.
+     */
+    static final String COM_AS_CLIENTES = """
+            (SELECT m.remessa_id, m.produto_id, -sum(m.quantidade) AS qtd
+               FROM corona.movimentos_remessa m
+               JOIN corona.notas_consignado n ON n.id = m.nota_id AND n.deleted_at IS NULL
+              WHERE m.tipo IN ('CONSIGNADO_SAIDA', 'CONSIGNADO_RETORNO')
+                AND NOT EXISTS (SELECT 1 FROM corona.acertos_nota a WHERE a.nota_id = n.id AND a.estornado_em IS NULL)
+              GROUP BY m.remessa_id, m.produto_id)""";
+
+    /**
+     * O que está com o representante, por linha da maleta: o saldo da maleta (só enquanto ela está com ele) mais as peças com
+     * as clientes (também depois de a maleta ser fechada, até o acerto da nota).
+     */
+    static final String QTD_COM_ELE = "((CASE WHEN r.status IN " + COM_O_VENDEDOR
+            + " THEN i.qtd_enviada + coalesce(m.soma, 0) ELSE 0 END) + coalesce(c.qtd, 0))";
+
+    static final String JUNTA_SALDO_E_CLIENTES = """
+              LEFT JOIN (SELECT remessa_id, produto_id, sum(quantidade) AS soma
+                           FROM corona.movimentos_remessa GROUP BY remessa_id, produto_id) m
+                     ON m.remessa_id = i.remessa_id AND m.produto_id = i.produto_id
+              LEFT JOIN """ + COM_AS_CLIENTES + """
+             c ON c.remessa_id = i.remessa_id AND c.produto_id = i.produto_id
+            """;
+
+    /** Maletas que ainda podem ter algo com o representante (na maleta ou com as clientes). */
+    static final String COM_ELE_OU_FECHADA = "('ENVIADA', 'CONFERIDA', 'EM_ACERTO', 'FECHADA')";
+
+    /**
+     * Valor, a preço de venda congelado, de tudo o que ainda está com o representante: o saldo das maletas enviadas e as
+     * peças que estão com as clientes dele (notas sem acerto). É o que conta no limite de consignação.
+     */
     public BigDecimal valorEmAberto(UUID vendedorId) {
-        BigDecimal valor = jdbc.queryForObject("""
-                SELECT coalesce(sum((i.qtd_enviada + coalesce(m.soma, 0)) * i.preco_remessa), 0)
+        BigDecimal valor = jdbc.queryForObject("SELECT coalesce(sum(" + QTD_COM_ELE + " * i.preco_remessa), 0)"
+                + """
+
                   FROM corona.remessas r
                   JOIN corona.itens_remessa i ON i.remessa_id = r.id AND i.deleted_at IS NULL
-                  LEFT JOIN (SELECT remessa_id, produto_id, sum(quantidade) AS soma
-                               FROM corona.movimentos_remessa GROUP BY remessa_id, produto_id) m
-                         ON m.remessa_id = i.remessa_id AND m.produto_id = i.produto_id
-                 WHERE r.vendedor_id = ? AND r.deleted_at IS NULL AND r.status IN """ + COM_O_VENDEDOR, BigDecimal.class, vendedorId);
+                """ + JUNTA_SALDO_E_CLIENTES
+                + " WHERE r.vendedor_id = ? AND r.deleted_at IS NULL AND r.status IN " + COM_ELE_OU_FECHADA,
+                BigDecimal.class, vendedorId);
         return valor == null ? BigDecimal.ZERO : Dinheiro.arredondar(valor);
     }
 
@@ -119,17 +152,17 @@ public class ConsultasDaMaleta {
         }
         List<MaletaEmAberto> maletas = jdbc.query("""
                 SELECT r.id, s.numero, r.tipo, r.status, r.enviada_em, r.total_pecas, r.total_valor,
-                       coalesce(sum(i.qtd_enviada + coalesce(m.soma, 0)), 0) AS pecas,
-                       coalesce(sum((i.qtd_enviada + coalesce(m.soma, 0)) * i.preco_remessa), 0) AS valor
+                """ + "coalesce(sum(" + QTD_COM_ELE + "), 0) AS pecas, coalesce(sum(" + QTD_COM_ELE + " * i.preco_remessa), 0) AS valor"
+                + """
+
                   FROM corona.remessas r
                   JOIN corona.semanas s ON s.id = r.semana_id
                   LEFT JOIN corona.itens_remessa i ON i.remessa_id = r.id AND i.deleted_at IS NULL
-                  LEFT JOIN (SELECT remessa_id, produto_id, sum(quantidade) AS soma
-                               FROM corona.movimentos_remessa GROUP BY remessa_id, produto_id) m
-                         ON m.remessa_id = i.remessa_id AND m.produto_id = i.produto_id
-                 WHERE r.vendedor_id = ? AND r.deleted_at IS NULL AND r.status IN """ + COM_O_VENDEDOR + """
+                """ + JUNTA_SALDO_E_CLIENTES
+                + " WHERE r.vendedor_id = ? AND r.deleted_at IS NULL AND r.status IN " + COM_ELE_OU_FECHADA + """
 
                  GROUP BY r.id, s.numero, r.tipo, r.status, r.enviada_em, r.total_pecas, r.total_valor
+                HAVING r.status <> 'FECHADA' OR coalesce(sum(c.qtd), 0) > 0
                  ORDER BY r.enviada_em DESC, r.id DESC""", (rs, n) -> new MaletaEmAberto(rs.getObject("id", UUID.class),
                 rs.getInt("numero"), rs.getString("tipo"), rs.getString("status"), rs.getTimestamp("enviada_em").toInstant(),
                 rs.getInt("total_pecas"), rs.getBigDecimal("total_valor"), rs.getInt("pecas"),
