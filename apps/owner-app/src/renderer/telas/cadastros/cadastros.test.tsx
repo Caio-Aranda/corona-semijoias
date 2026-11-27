@@ -46,7 +46,7 @@ function montar(manipuladores: Record<string, Manipulador>) {
   return { ponte, chamadas };
 }
 
-async function abrir(m: ReturnType<typeof montar>, item: string, esperar: string) {
+async function abrir(m: ReturnType<typeof montar>, item: string, esperar: string | RegExp) {
   const u = userEvent.setup();
   render(<App ponte={m.ponte} />);
   await u.click(await screen.findByRole('button', { name: item }));
