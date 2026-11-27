@@ -297,7 +297,11 @@ function ControlesDoFechamento({
 
   const emAndamento = leitura.situacao === 'EM_ANDAMENTO';
   const comClientes = leitura.pecas.reduce((s, p) => s + p.comClientes, 0);
-  const diferenca = leitura.pecas.reduce((s, p) => s + p.diferenca, 0);
+  // Falta e sobra separadas, peça por peça: −1 de uma peça e +1 de outra não se anulam (C4).
+  const comFalta = leitura.pecas.filter((p) => p.diferenca < 0);
+  const comSobra = leitura.pecas.filter((p) => p.diferenca > 0);
+  const faltam = comFalta.reduce((s, p) => s - p.diferenca, 0);
+  const sobram = comSobra.reduce((s, p) => s + p.diferenca, 0);
 
   async function aoAchar(produto: Produto) {
     aoAvisar(null, null);
@@ -352,9 +356,27 @@ function ControlesDoFechamento({
       {aviso ? <Aviso tipo={aviso.tipo}>{aviso.texto}</Aviso> : null}
       {erro ? <AvisoDeErro erro={erro} /> : null}
       {comClientes > 0 ? <Aviso tipo="informacao">{T.aindaComClientes(comClientes)}</Aviso> : null}
-      {diferenca !== 0 ? (
-        <Aviso tipo="atencao">{T.diferenca(diferenca)}</Aviso>
-      ) : emAndamento ? (
+      {faltam > 0 ? (
+        <Aviso tipo="atencao">
+          <p>{T.faltam(faltam)}</p>
+          <ul>
+            {comFalta.map((p) => (
+              <li key={p.produtoId}>{T.linhaDaDiferenca(p.nome, -p.diferenca)}</li>
+            ))}
+          </ul>
+        </Aviso>
+      ) : null}
+      {sobram > 0 ? (
+        <Aviso tipo="atencao">
+          <p>{T.sobram(sobram)}</p>
+          <ul>
+            {comSobra.map((p) => (
+              <li key={p.produtoId}>{T.linhaDaDiferenca(p.nome, p.diferenca)}</li>
+            ))}
+          </ul>
+        </Aviso>
+      ) : null}
+      {faltam > 0 || sobram > 0 ? null : emAndamento ? (
         <p className="gestao-texto">{T.semDiferenca}</p>
       ) : null}
       {emAndamento ? (

@@ -362,6 +362,45 @@ describe('Fechamento da maleta (§23.10)', () => {
     expect(screen.queryByRole('button', { name: T.fechamento.concluir })).toBeNull();
   });
 
+  it('C4: falta de uma peça e sobra de outra não se anulam; cada uma tem o seu aviso, peça por peça', async () => {
+    const base = leitura('EM_ANDAMENTO');
+    const m = montar({
+      'fechamento.ler': () => ({
+        ok: true,
+        dados: {
+          ...base,
+          pecas: [
+            {
+              produtoId: ID_ANEL,
+              nome: 'Anel Solitário',
+              comClientes: 0,
+              diferenca: -1,
+              aindaComClientes: [],
+            },
+            {
+              produtoId: ID_MALETA,
+              nome: 'Brinco Gota',
+              comClientes: 0,
+              diferenca: 1,
+              aindaComClientes: [],
+            },
+          ],
+        },
+      }),
+      'relatorios.cadastros': () => ({ ok: true, dados: RELATORIO }),
+    });
+    const u = await abrirPeloMenu(m, T.menu.fechamento);
+    await u.selectOptions(await screen.findByLabelText(T.fechamento.escolher), ID_MALETA);
+    await u.click(screen.getByRole('button', { name: T.fechamento.abrir }));
+    expect(await screen.findByText(T.fechamento.faltam(1))).toBeInTheDocument();
+    expect(
+      screen.getByText(T.fechamento.linhaDaDiferenca('Anel Solitário', 1)),
+    ).toBeInTheDocument();
+    expect(screen.getByText(T.fechamento.sobram(1))).toBeInTheDocument();
+    expect(screen.getByText(T.fechamento.linhaDaDiferenca('Brinco Gota', 1))).toBeInTheDocument();
+    expect(screen.queryByText(T.fechamento.semDiferenca)).toBeNull();
+  });
+
   it('o relatório sai em CSV com as mesmas linhas e os totais da tela', async () => {
     const m = montar({
       'fechamento.ler': () => ({ ok: true, dados: leitura('EM_ANDAMENTO') }),
