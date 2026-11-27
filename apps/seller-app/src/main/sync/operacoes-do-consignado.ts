@@ -519,7 +519,8 @@ export function registrarReposicao(
     gravarNovaNota(db, agora, {
       id: p.id,
       clienteId: nota.cliente_id,
-      dataCobranca: dataDeCobranca(db, nota) ?? diaMaisDias(agora, parametrosDoConsignado(db).diasDoRetorno),
+      dataCobranca:
+        dataDeCobranca(db, nota) ?? diaMaisDias(agora, parametrosDoConsignado(db).diasDoRetorno),
       notaOrigemId: nota.id,
       linhas,
     });

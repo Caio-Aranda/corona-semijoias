@@ -959,7 +959,11 @@ describe('Dt. Acerto (tarefa 9.8): a data do acerto e a ordem dos débitos', () 
   // Sem comissão nenhuma (nem na meta): estes testes são de datas e de dinheiro, não da meta.
   const semComissao = () =>
     parametrosDaLoja({ consignadoComissaoAbaixoDaMeta: 0, consignadoComissaoNaMeta: 0 });
-  const salvar = (notaId: string, formas: { forma: 'DINHEIRO'; valor: string }[], data?: string) => {
+  const salvar = (
+    notaId: string,
+    formas: { forma: 'DINHEIRO'; valor: string }[],
+    data?: string,
+  ) => {
     semComissao();
     return chamar<{ situacao: string; nota: DetalheDaNota }>({
       operacao: 'consignado.acertoSalvar',
@@ -1296,7 +1300,11 @@ describe('a comissão pela meta e os dias do retorno (Corona Vendas 1.3.0; §23.
     parametrosDaLoja();
     cotacaoDoGuarani('0.01000000');
     const p = previa(n);
-    expect(p.meta).toMatchObject({ vdEmGuarani: '231000', bateuAMeta: false, faltaEmGuarani: '469000' });
+    expect(p.meta).toMatchObject({
+      vdEmGuarani: '231000',
+      bateuAMeta: false,
+      faltaEmGuarani: '469000',
+    });
     expect(p.comissaoPercentual).toBe('30.00');
   });
 
@@ -1320,7 +1328,13 @@ describe('a comissão pela meta e os dias do retorno (Corona Vendas 1.3.0; §23.
     cotacaoDoGuarani('0.00100000');
     chamar({
       operacao: 'consignado.acertoSalvar',
-      acerto: { id: idDeTeste(7), reciboId: idDeTeste(8), notaId: n, devolvidos: devolvidos(), formas: [] },
+      acerto: {
+        id: idDeTeste(7),
+        reciboId: idDeTeste(8),
+        notaId: n,
+        devolvidos: devolvidos(),
+        formas: [],
+      },
     });
     const op = b.db
       .prepare("SELECT formato, dados FROM outbox WHERE tipo = 'ACERTO_NOTA'")

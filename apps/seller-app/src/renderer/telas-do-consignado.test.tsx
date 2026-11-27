@@ -558,6 +558,14 @@ describe('Cobrança e acerto', () => {
     valorVd: '1000.00',
     vendaPercentual: '50.00',
     comissaoPercentual: '30.00',
+    meta: {
+      metaEmGuarani: '700000',
+      vdEmGuarani: '500000',
+      bateuAMeta: false,
+      faltaEmGuarani: '200000',
+      percentualAbaixo: '30',
+      percentualNaMeta: '40',
+    },
     comissao: '300.00',
     bruto: '700.00',
     pendenciasAnteriores: '498.10',
@@ -773,11 +781,9 @@ describe('Cobrança e acerto', () => {
       { forma: 'DINHEIRO', valor: '1000.00' },
       { forma: 'PIX', valor: '198.10' },
     ]);
-    expect(salvar.acerto.comissaoPercentual).toBe('30');
     expect(salvar.acerto.id).toMatch(UUID);
-    // A tela nunca manda total, comissão em reais nem pendência: só o que a pessoa fez.
+    // A tela nunca manda total, comissão (nem em reais nem em %) nem pendência: só o que a pessoa fez.
     expect(Object.keys(salvar.acerto).sort()).toEqual([
-      'comissaoPercentual',
       'devolvidos',
       'formas',
       'id',
@@ -815,7 +821,7 @@ describe('Cobrança e acerto', () => {
     expect(salvar.acerto.data).toBe('2026-11-12');
   });
 
-  it('pagar mais que o total a receber é barrado na tela, e comissão acima de 40 avisa', async () => {
+  it('pagar mais que o total a receber é barrado na tela', async () => {
     const { u } = await abrir();
     const campo = screen.getByLabelText('Ler o código da peça devolvida');
     await u.type(campo, 'A-1{Enter}');
@@ -828,11 +834,80 @@ describe('Cobrança e acerto', () => {
       await screen.findByText('O valor pago passa do total a receber. Confira os valores.'),
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Salvar acerto' })).toBeDisabled();
-    const comissao = screen.getByLabelText('Comissão %');
-    await u.clear(comissao);
-    await u.type(comissao, '41');
-    // 41 tem o formato certo; quem recusa é o computador (e o servidor): a tela mostra o motivo.
-    expect(comissao).toHaveValue('41');
+  });
+
+  async function irParaPagamento(respostas: Record<string, Resposta>) {
+    const r = await abrir(respostas);
+    await r.u.click(screen.getByRole('button', { name: 'Concluir devolução' }));
+    await r.u.click(
+      screen.getAllByRole('button', { name: 'Concluir devolução' }).at(-1) as HTMLElement,
+    );
+    return r;
+  }
+
+  it('a Comissão % é só leitura e o pedido da prévia não leva porcentagem', async () => {
+    const { chamadas } = await irParaPagamento({});
+    const comissao = await screen.findByLabelText('Comissão %');
+    expect(comissao).toHaveAttribute('readonly');
+    expect(comissao).toHaveValue('30');
+    await screen.findByText(/Ainda não bateu a meta/);
+    const pedido = chamadas
+      .filter((c) => c.operacao === 'consignado.acertoPrevia')
+      .at(-1) as Extract<PedidoDeChamada, { operacao: 'consignado.acertoPrevia' }>;
+    expect(Object.keys(pedido.acerto)).not.toContain('comissaoPercentual');
+  });
+
+  it('não bateu a meta: mostra o vendido, a meta, os 30% e quanto falta', async () => {
+    await irParaPagamento({});
+    expect(
+      await screen.findByText(
+        'Vendido nesta nota: Gs. 500.000 de Gs. 700.000 (meta). Ainda não bateu a meta: comissão de 30%. Faltam Gs. 200.000.',
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('bateu a meta: mostra a comissão de 40%', async () => {
+    await irParaPagamento({
+      'consignado.acertoPrevia': () =>
+        ok({
+          ...previa('0.00'),
+          comissaoPercentual: '40.00',
+          meta: {
+            metaEmGuarani: '700000',
+            vdEmGuarani: '1000000',
+            bateuAMeta: true,
+            faltaEmGuarani: '0',
+            percentualAbaixo: '30',
+            percentualNaMeta: '40',
+          },
+        }),
+    });
+    expect(
+      await screen.findByText(
+        'Vendido nesta nota: Gs. 1.000.000 de Gs. 700.000 (meta). Bateu a meta: comissão de 40%.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText('Comissão %')).toHaveValue('40');
+  });
+
+  it('sem cotação no computador: 30% até a cotação chegar', async () => {
+    await irParaPagamento({
+      'consignado.acertoPrevia': () =>
+        ok({
+          ...previa('0.00'),
+          meta: {
+            metaEmGuarani: '700000',
+            vdEmGuarani: null,
+            bateuAMeta: false,
+            faltaEmGuarani: null,
+            percentualAbaixo: '30',
+            percentualNaMeta: '40',
+          },
+        }),
+    });
+    expect(
+      await screen.findByText('Sem cotação: a comissão é de 30% até a cotação chegar.'),
+    ).toBeInTheDocument();
   });
 });
 
