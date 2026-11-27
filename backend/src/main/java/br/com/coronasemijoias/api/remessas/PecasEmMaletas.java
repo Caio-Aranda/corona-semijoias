@@ -9,9 +9,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 /**
- * Quantas unidades de cada peça estão nas maletas dos vendedores (item 13, 11/11/2026): só para as telas da DONA, para
- * distinguir "estoque da loja 0 e a peça está em maleta" de "acabou". É o saldo das maletas que estão com o vendedor
- * (a mesma fórmula da conciliação "estoque da loja + maletas": quantidade enviada mais os movimentos), por vendedor.
+ * Quantas unidades de cada peça estão com os vendedores (item 13, 11/11/2026): só para as telas da DONA, para
+ * distinguir "estoque da loja 0 e a peça está fora" de "acabou". É o saldo das maletas que estão com o vendedor
+ * (quantidade enviada mais os movimentos) mais as peças que ele deixou com as clientes em notas sem acerto, também de
+ * maleta já fechada (C6, 27/11/2026), por vendedor.
  * Uma consulta só para todas as peças pedidas (nunca uma por linha). O vendedor nunca recebe isto.
  */
 @Service
@@ -41,22 +42,22 @@ public class PecasEmMaletas {
         // Um texto "{id1,id2}" convertido em uuid[] no próprio SQL (sem depender de arrays do driver).
         String ids = produtoIds.stream().map(UUID::toString).collect(java.util.stream.Collectors.joining(",", "{", "}"));
         Map<UUID, java.util.ArrayList<DoVendedor>> porProduto = new HashMap<>();
-        jdbc.query("""
-                SELECT i.produto_id, v.nome, sum(i.qtd_enviada + coalesce(m.soma, 0)) AS quantidade
+        // Com o representante = o saldo das maletas com ele mais as peças que ele deixou com as clientes (C6, 27/11/2026).
+        jdbc.query("SELECT i.produto_id, v.nome, sum(" + ConsultasDaMaleta.QTD_COM_ELE + ") AS quantidade" + """
+
                   FROM corona.remessas r
                   JOIN corona.vendedores v ON v.id = r.vendedor_id
                   JOIN corona.itens_remessa i ON i.remessa_id = r.id AND i.deleted_at IS NULL AND i.produto_id = ANY (?::uuid[])
-                  LEFT JOIN (SELECT remessa_id, produto_id, sum(quantidade) AS soma FROM corona.movimentos_remessa
-                              WHERE produto_id = ANY (?::uuid[]) GROUP BY remessa_id, produto_id) m
-                         ON m.remessa_id = i.remessa_id AND m.produto_id = i.produto_id
-                 WHERE r.deleted_at IS NULL AND r.status IN\s""" + SqlDaMaleta.COM_O_VENDEDOR + """
+                """ + ConsultasDaMaleta.JUNTA_SALDO_E_CLIENTES
+                + " WHERE r.deleted_at IS NULL AND r.status IN " + ConsultasDaMaleta.COM_ELE_OU_FECHADA + """
 
                  GROUP BY i.produto_id, v.id, v.nome
-                HAVING sum(i.qtd_enviada + coalesce(m.soma, 0)) > 0
+                """ + " HAVING sum(" + ConsultasDaMaleta.QTD_COM_ELE + ") > 0" + """
+
                  ORDER BY i.produto_id, quantidade DESC, lower(v.nome)""", rs -> {
                     porProduto.computeIfAbsent(rs.getObject(1, UUID.class), k -> new java.util.ArrayList<>())
                             .add(new DoVendedor(rs.getString(2), rs.getInt(3)));
-                }, ids, ids);
+                }, ids);
         porProduto.forEach((id, lista) -> saida.put(id,
                 new Situacao(lista.stream().mapToInt(DoVendedor::quantidade).sum(), List.copyOf(lista))));
         return saida;

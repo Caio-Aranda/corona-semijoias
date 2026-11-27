@@ -30,7 +30,9 @@ describe('SaldoDaLoja', () => {
       />,
     );
     expect(screen.getByText('0 na loja', { exact: false })).toBeInTheDocument();
-    expect(screen.getByText('Está em maleta: 2 (Maria, João)')).toBeInTheDocument();
+    expect(
+      screen.getByText('Com os representantes (na maleta ou com as clientes): 2 (Maria, João)'),
+    ).toBeInTheDocument();
     expect(screen.queryByText('Acabou')).toBeNull();
   });
 
@@ -43,6 +45,10 @@ describe('SaldoDaLoja', () => {
         vendedores={nomes.map((nome) => ({ nome, quantidade: 1 }))}
       />,
     );
-    expect(screen.getByText('Está em maleta: 5 (Ana, Bia, Cris e mais 2)')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Com os representantes (na maleta ou com as clientes): 5 (Ana, Bia, Cris e mais 2)',
+      ),
+    ).toBeInTheDocument();
   });
 });

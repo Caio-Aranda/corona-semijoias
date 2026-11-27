@@ -538,3 +538,7 @@ Branch `feat/config-meta-consignado` (issue 278; item 2 do plano `docs/planos/ac
 ## Limite do representante conta as peças com as clientes (API, 27/11/2026)
 
 Branch `fix/limite-conta-pecas-com-clientes` (C1 da revisão geral de 27/11). **Feito:** `ConsultasDaMaleta.valorEmAberto` e `emAberto` somam ao saldo das maletas as peças que estão com as clientes (movimentos `CONSIGNADO_*` das notas sem acerto valendo; cobre troca e estorno do acerto), também de maleta já fechada; a lista "em aberto" mostra a maleta fechada enquanto ainda houver peça com cliente. Mensagem do limite diz "representante" (E3) e "com ele (nas maletas e com as clientes)"; em espanhol mantém os quatro valores (`erroDoLimite`). §7.1 da especificação atualizada. Testes primeiro em `LimiteComPecasComClientesTest`. **Não feito:** nada de tela. **Dúvidas:** nenhuma.
+
+## "Em maletas" conta as peças com as clientes (API e Corona Gestão, 27/11/2026)
+
+Branch `fix/em-maletas-conta-pecas-com-clientes`, em cima da do C1 (C6 da revisão geral de 27/11). **Feito:** `PecasEmMaletas` usa a mesma conta do limite (saldo das maletas com o representante mais as peças com as clientes em notas sem acerto, também de maleta fechada), por representante. Na tela, "Está em maleta" virou "Com os representantes (na maleta ou com as clientes): N (nomes)", em português e espanhol; glossário, parte 1. Teste em `LimiteComPecasComClientesTest`. **Não feito:** a montagem da maleta continua dizendo "Sem estoque na loja. Está na maleta de ..." (o texto não muda o sentido). **Dúvidas:** nenhuma.
