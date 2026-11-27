@@ -378,6 +378,10 @@ export const ERROS_EM_ESPANHOL: Record<string, string> = {
     'Ya hay un cierre en curso para esta maleta. Continúe desde donde quedó.',
   FECHAMENTO_NAO_ENCONTRADO: 'No hay un cierre en curso para esta maleta. Comience uno nuevo.',
   MALETA_JA_FECHADA: 'Esta maleta ya fue cerrada.',
+  FALTA_SEM_DECISAO:
+    'Faltan piezas en esta maleta. Para cada una, elija Cobrar al representante o Pérdida de la tienda y concluya de nuevo.',
+  PECA_AINDA_COM_A_CLIENTE:
+    'Esta pieza todavía está con el cliente. Haga el acerto de la nota antes de leer.',
   MALETA_NAO_PODE_FECHAR:
     'Solo se puede cerrar la maleta que está con el representante (enviada o conferida).',
 };

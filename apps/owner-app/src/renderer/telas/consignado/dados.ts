@@ -27,7 +27,20 @@ export interface LeituraDoFechamentoLida {
     nome: string;
     comClientes: number;
     diferenca: number;
+    /** Na maleta fechada: as peças que as clientes devolveram depois e ainda não foram lidas. */
+    paraLerDepois: number;
   }[];
+  /** As faltas gravadas na conclusão, com a decisão da dona. */
+  pendencias: {
+    id: string;
+    nome: string;
+    quantidade: number;
+    valor: string;
+    decisao: 'COBRAR_DO_REPRESENTANTE' | 'PERDA_DA_LOJA';
+    motivo: string;
+  }[];
+  /** Quanto cobrar do representante: nesta maleta e somando todas as maletas dele. */
+  cobranca: { representante: string; nestaMaleta: string; todasAsMaletas: string };
 }
 
 export function lerLeituraDoFechamento(bruto: unknown): LeituraDoFechamentoLida | null {
@@ -45,8 +58,28 @@ export function lerLeituraDoFechamento(bruto: unknown): LeituraDoFechamentoLida 
         nome: texto(l.nome),
         comClientes: inteiro(l.comClientes),
         diferenca: inteiro(l.diferenca),
+        paraLerDepois: inteiro(l.paraLerDepois),
       };
     }),
+    pendencias: lista(o.pendencias).map((p) => {
+      const l = objeto(p);
+      return {
+        id: texto(l.id),
+        nome: texto(l.nome),
+        quantidade: inteiro(l.quantidade),
+        valor: dinheiro(l.valor),
+        decisao:
+          l.decisao === 'PERDA_DA_LOJA'
+            ? ('PERDA_DA_LOJA' as const)
+            : ('COBRAR_DO_REPRESENTANTE' as const),
+        motivo: texto(l.motivo),
+      };
+    }),
+    cobranca: {
+      representante: texto(objeto(o.cobranca).representante),
+      nestaMaleta: dinheiro(objeto(o.cobranca).nestaMaleta),
+      todasAsMaletas: dinheiro(objeto(o.cobranca).todasAsMaletas),
+    },
   };
 }
 

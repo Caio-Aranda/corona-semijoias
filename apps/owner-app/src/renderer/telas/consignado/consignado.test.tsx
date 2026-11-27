@@ -350,7 +350,13 @@ describe('Fechamento da maleta (§23.10)', () => {
     expect(envio.leituras[0]!.id).toMatch(/^[0-9a-f-]{36}$/);
     expect(await screen.findByText(T.fechamento.lida('Anel Solitário'))).toBeInTheDocument();
 
-    // 5. Concluir pede confirmação, e diz o que acontece.
+    // 5. Com peça faltando, concluir pede a decisão de cada peça antes (C3).
+    await u.click(screen.getByRole('button', { name: T.fechamento.concluir }));
+    expect(screen.getByText(T.fechamento.decidir.falta)).toBeInTheDocument();
+    expect(screen.queryByText(T.fechamento.confirmar.texto)).toBeNull();
+    await u.click(screen.getByRole('radio', { name: T.fechamento.decidir.cobrar }));
+
+    // 6. Concluir pede confirmação, e diz o que acontece.
     await u.click(screen.getByRole('button', { name: T.fechamento.concluir }));
     expect(screen.getByText(T.fechamento.confirmar.texto)).toBeInTheDocument();
     expect(m.chamadas.some((c) => c.operacao === 'fechamento.concluir')).toBe(false);
@@ -358,8 +364,145 @@ describe('Fechamento da maleta (§23.10)', () => {
     await waitFor(() =>
       expect(m.chamadas.some((c) => c.operacao === 'fechamento.concluir')).toBe(true),
     );
+    const conclusao = m.chamadas.find((c) => c.operacao === 'fechamento.concluir')!.parametros as {
+      decisoes: { produtoId: string; decisao: string }[];
+    };
+    expect(conclusao.decisoes).toEqual([
+      expect.objectContaining({ produtoId: ID_ANEL, decisao: 'COBRAR_DO_REPRESENTANTE' }),
+    ]);
     expect(await screen.findByText(T.fechamento.concluiu)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: T.fechamento.concluir })).toBeNull();
+  });
+
+  it('C3: perda da loja pede o motivo antes de concluir', async () => {
+    const m = montar({
+      'fechamento.ler': () => ({ ok: true, dados: leitura('EM_ANDAMENTO') }),
+      'fechamento.concluir': () => ({ ok: true, dados: null }),
+      'relatorios.cadastros': () => ({ ok: true, dados: RELATORIO }),
+    });
+    const u = await abrirPeloMenu(m, T.menu.fechamento);
+    await u.selectOptions(await screen.findByLabelText(T.fechamento.escolher), ID_MALETA);
+    await u.click(screen.getByRole('button', { name: T.fechamento.abrir }));
+    await u.click(await screen.findByRole('radio', { name: T.fechamento.decidir.perda }));
+    await u.click(screen.getByRole('button', { name: T.fechamento.concluir }));
+    expect(screen.getByText(T.fechamento.decidir.faltaMotivo)).toBeInTheDocument();
+    await u.type(screen.getByLabelText(T.fechamento.decidir.motivo), 'Quebrou');
+    await u.click(screen.getByRole('button', { name: T.fechamento.concluir }));
+    await u.click(screen.getByRole('button', { name: T.fechamento.confirmar.concluir }));
+    await waitFor(() =>
+      expect(m.chamadas.some((c) => c.operacao === 'fechamento.concluir')).toBe(true),
+    );
+    const conclusao = m.chamadas.find((c) => c.operacao === 'fechamento.concluir')!.parametros as {
+      decisoes: { decisao: string; motivo?: string }[];
+    };
+    expect(conclusao.decisoes[0]).toMatchObject({ decisao: 'PERDA_DA_LOJA', motivo: 'Quebrou' });
+  });
+
+  it('C2: na maleta fechada, lê as peças que voltaram depois e mostra as faltas registradas', async () => {
+    const base = leitura('CONCLUIDO');
+    const m = montar({
+      'maletas.listar': (p) =>
+        (p.parametros as { status: string }).status === 'FECHADA'
+          ? pagina([maleta('FECHADA')])
+          : pagina([]),
+      'fechamento.ler': () => ({
+        ok: true,
+        dados: {
+          ...base,
+          pecas: [
+            {
+              produtoId: ID_ANEL,
+              nome: 'Anel Solitário',
+              comClientes: 1,
+              diferenca: -1,
+              paraLerDepois: 1,
+              aindaComClientes: [],
+            },
+          ],
+          pendencias: [
+            {
+              id: '7b7e28ba-2fa1-41d3-b9a5-2c3a9a8f6b88',
+              produtoId: ID_ANEL,
+              nome: 'Anel Solitário',
+              quantidade: 2,
+              valor: '200.00',
+              decisao: 'COBRAR_DO_REPRESENTANTE',
+              motivo: null,
+            },
+          ],
+          cobranca: {
+            representante: 'Joana Representante',
+            nestaMaleta: '200.00',
+            todasAsMaletas: '350.00',
+          },
+        },
+      }),
+      'fechamento.voltas': () => ({ ok: true, dados: { novas: 1 } }),
+      'relatorios.cadastros': () => ({ ok: true, dados: RELATORIO }),
+    });
+    const u = await abrirPeloMenu(m, T.menu.fechamento);
+    await u.selectOptions(await screen.findByLabelText(T.fechamento.escolher), ID_MALETA);
+    await u.click(screen.getByRole('button', { name: T.fechamento.abrir }));
+    await screen.findByText('Maria Cliente (nota 65-21): 2');
+    expect(await screen.findByText(T.fechamento.depois.paraLer(1))).toBeInTheDocument();
+    expect(screen.getByText(T.fechamento.depois.aindaComClientes(1))).toBeInTheDocument();
+    expect(
+      screen.getByText(T.fechamento.registradas.cobrar('Anel Solitário', 2, 'R$ 200,00')),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        T.fechamento.registradas.totalNestaMaleta('Joana Representante', 'R$ 200,00'),
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(T.fechamento.registradas.totalDasMaletas('R$ 350,00')),
+    ).toBeInTheDocument();
+    // A maleta fechada não mostra a diferença como falta: a peça só está esperando a leitura.
+    expect(screen.queryByText(T.fechamento.faltam(1))).toBeNull();
+    await u.type(screen.getByLabelText(/código/i), 'F-100{Enter}');
+    await waitFor(() =>
+      expect(m.chamadas.filter((c) => c.operacao === 'fechamento.voltas')).toHaveLength(1),
+    );
+    expect(await screen.findByText(T.fechamento.depois.lida('Anel Solitário'))).toBeInTheDocument();
+  });
+
+  it('C4: falta de uma peça e sobra de outra não se anulam; cada uma tem o seu aviso, peça por peça', async () => {
+    const base = leitura('EM_ANDAMENTO');
+    const m = montar({
+      'fechamento.ler': () => ({
+        ok: true,
+        dados: {
+          ...base,
+          pecas: [
+            {
+              produtoId: ID_ANEL,
+              nome: 'Anel Solitário',
+              comClientes: 0,
+              diferenca: -1,
+              aindaComClientes: [],
+            },
+            {
+              produtoId: ID_MALETA,
+              nome: 'Brinco Gota',
+              comClientes: 0,
+              diferenca: 1,
+              aindaComClientes: [],
+            },
+          ],
+        },
+      }),
+      'relatorios.cadastros': () => ({ ok: true, dados: RELATORIO }),
+    });
+    const u = await abrirPeloMenu(m, T.menu.fechamento);
+    await u.selectOptions(await screen.findByLabelText(T.fechamento.escolher), ID_MALETA);
+    await u.click(screen.getByRole('button', { name: T.fechamento.abrir }));
+    expect(await screen.findByText(T.fechamento.faltam(1))).toBeInTheDocument();
+    expect(
+      screen.getByText(T.fechamento.linhaDaDiferenca('Anel Solitário', 1)),
+    ).toBeInTheDocument();
+    expect(screen.getByText(T.fechamento.sobram(1))).toBeInTheDocument();
+    expect(screen.getByText(T.fechamento.linhaDaDiferenca('Brinco Gota', 1))).toBeInTheDocument();
+    expect(screen.queryByText(T.fechamento.semDiferenca)).toBeNull();
   });
 
   it('o relatório sai em CSV com as mesmas linhas e os totais da tela', async () => {
@@ -455,7 +598,9 @@ describe('Fechamento da maleta (§23.10)', () => {
     await screen.findByText('Maria Cliente (nota 65-21): 2');
     expect(screen.getByText(/Fechamento concluído em/)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: T.fechamento.concluir })).toBeNull();
-    expect(screen.queryByLabelText(/código/i)).toBeNull();
+    // Ainda há peças com clientes: só o leitor das peças que voltam depois (C2), nunca o da volta da maleta.
+    expect(screen.queryByText(T.fechamento.leitor.titulo)).toBeNull();
+    expect(screen.getByText(T.fechamento.depois.titulo)).toBeInTheDocument();
   });
 });
 

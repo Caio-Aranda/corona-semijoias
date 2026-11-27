@@ -316,11 +316,19 @@ public class ConciliacoesDaFase7 {
                 regra(Unidade.PECAS, "PENDENCIA", "p.id", "Esta falta não tem a perda correspondente na maleta.", "p.quantidade", """
                         coalesce((SELECT -sum(m.quantidade) FROM corona.movimentos_remessa m
                                    WHERE m.remessa_id = p.remessa_id AND m.produto_id = p.produto_id AND m.tipo = 'PERDA'), 0)""",
-                        "corona.pendencias_acerto p", "p.tipo = 'FALTA' AND p.remessa_id IS NOT NULL"));
+                        "corona.pendencias_acerto p", "p.tipo = 'FALTA' AND p.remessa_id IS NOT NULL"),
+                regra(Unidade.PECAS, "PENDENCIA_DA_MALETA", "pm.id", "Esta falta do fechamento da maleta não tem a perda correspondente.",
+                        "pm.quantidade", """
+                        coalesce((SELECT -m.quantidade FROM corona.movimentos_remessa m
+                                   WHERE m.id = pm.movimento_id AND m.tipo = 'PERDA' AND m.remessa_id = pm.remessa_id
+                                     AND m.produto_id = pm.produto_id), 0)""",
+                        "corona.pendencias_da_maleta pm", "true"));
         return new Conferencia("C8", "Maletas acertadas e faltas",
-                "Toda maleta acertada fica com saldo zero, e cada falta registrada no acerto tem a perda da mesma quantidade na maleta.",
+                "Toda maleta acertada fica com saldo zero, e cada falta registrada no acerto ou no fechamento da maleta tem a perda da "
+                        + "mesma quantidade na maleta.",
                 contar("SELECT (SELECT count(*) FROM corona.remessas WHERE status = 'ACERTADA')"
-                        + " + (SELECT count(*) FROM corona.pendencias_acerto WHERE tipo = 'FALTA')"), d);
+                        + " + (SELECT count(*) FROM corona.pendencias_acerto WHERE tipo = 'FALTA')"
+                        + " + (SELECT count(*) FROM corona.pendencias_da_maleta)"), d);
     }
 
     // --- C9: cada evento em um acerto só e nenhum de fora ---
@@ -378,7 +386,7 @@ public class ConciliacoesDaFase7 {
     private static final String ESPERADO_DA_C11 = """
             coalesce(comprado.q, 0) + coalesce(dona.q, 0) - coalesce(vendido.q, 0) + coalesce(volta.q, 0)
                 + coalesce(acerto.recebido, 0) - coalesce(acerto.falta, 0) - coalesce(acerto.aprovado, 0) + coalesce(achada.q, 0)
-                + coalesce(consignado.q, 0)""";
+                + coalesce(consignado.q, 0) - coalesce(faltou_na_maleta.q, 0)""";
 
     private Conferencia c11() {
         String sql = """
@@ -422,6 +430,9 @@ public class ConciliacoesDaFase7 {
                                FROM corona.movimentos_remessa mr
                               WHERE mr.tipo IN ('CONSIGNADO_SAIDA', 'CONSIGNADO_RETORNO')
                               GROUP BY mr.produto_id) consignado ON consignado.produto_id = p.id
+                  LEFT JOIN (SELECT pm.produto_id, sum(pm.quantidade) AS q
+                               FROM corona.pendencias_da_maleta pm
+                              GROUP BY pm.produto_id) faltou_na_maleta ON faltou_na_maleta.produto_id = p.id
                  WHERE %1$s
                        <> p.estoque_atual + coalesce(maletas.saldo, 0)
                  ORDER BY p.id""".formatted(ESPERADO_DA_C11, ServicoDeEstoque.SQL_SALDO_NAS_MALETAS_ABERTAS, MOVIMENTO_DO_ESTOQUE);
@@ -459,8 +470,10 @@ public class ConciliacoesDaFase7 {
                   WHERE d.remessa_id = r.id AND iv.produto_id = i.produto_id AND idv.destino_peca = 'MALETA'
                     AND d.situacao <> 'CANCELADA' AND d.deleted_at IS NULL AND idv.deleted_at IS NULL)""";
         String falta = """
-                (SELECT coalesce(sum(ia.falta), 0) FROM corona.itens_acerto ia JOIN corona.acertos a ON a.id = ia.acerto_id
-                  WHERE ia.remessa_id = r.id AND ia.produto_id = i.produto_id AND a.status = 'ACERTADO' AND ia.deleted_at IS NULL)""";
+                ((SELECT coalesce(sum(ia.falta), 0) FROM corona.itens_acerto ia JOIN corona.acertos a ON a.id = ia.acerto_id
+                  WHERE ia.remessa_id = r.id AND ia.produto_id = i.produto_id AND a.status = 'ACERTADO' AND ia.deleted_at IS NULL)
+                 + (SELECT coalesce(sum(pm.quantidade), 0) FROM corona.pendencias_da_maleta pm
+                     WHERE pm.remessa_id = r.id AND pm.produto_id = i.produto_id))""";
         // A peça que saiu na nota de consignado e está com o cliente (CONSIGNADO_SAIDA, negativo) e a que voltou no acerto da nota
         // ou na troca (CONSIGNADO_RETORNO, positivo), como na C7 (ADR-0016, item 6).
         String consignado = """

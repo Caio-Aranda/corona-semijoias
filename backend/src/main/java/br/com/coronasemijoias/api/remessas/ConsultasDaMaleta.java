@@ -67,11 +67,11 @@ public class ConsultasDaMaleta {
               GROUP BY m.remessa_id, m.produto_id)""";
 
     /**
-     * O que está com o representante, por linha da maleta: o saldo da maleta (só enquanto ela está com ele) mais as peças com
-     * as clientes (também depois de a maleta ser fechada, até o acerto da nota).
+     * O que está com o representante, por linha da maleta: o saldo da maleta mais as peças com as clientes. Na maleta já
+     * fechada, o saldo é o que as clientes devolveram depois e a dona ainda não leu (§23.10, item 3); a falta da conclusão
+     * já saiu como perda.
      */
-    static final String QTD_COM_ELE = "((CASE WHEN r.status IN " + COM_O_VENDEDOR
-            + " THEN i.qtd_enviada + coalesce(m.soma, 0) ELSE 0 END) + coalesce(c.qtd, 0))";
+    static final String QTD_COM_ELE = "(i.qtd_enviada + coalesce(m.soma, 0) + coalesce(c.qtd, 0))";
 
     static final String JUNTA_SALDO_E_CLIENTES = """
               LEFT JOIN (SELECT remessa_id, produto_id, sum(quantidade) AS soma
@@ -162,7 +162,8 @@ public class ConsultasDaMaleta {
                 + " WHERE r.vendedor_id = ? AND r.deleted_at IS NULL AND r.status IN " + COM_ELE_OU_FECHADA + """
 
                  GROUP BY r.id, s.numero, r.tipo, r.status, r.enviada_em, r.total_pecas, r.total_valor
-                HAVING r.status <> 'FECHADA' OR coalesce(sum(c.qtd), 0) > 0
+                """ + " HAVING r.status <> 'FECHADA' OR coalesce(sum(" + QTD_COM_ELE + "), 0) > 0" + """
+
                  ORDER BY r.enviada_em DESC, r.id DESC""", (rs, n) -> new MaletaEmAberto(rs.getObject("id", UUID.class),
                 rs.getInt("numero"), rs.getString("tipo"), rs.getString("status"), rs.getTimestamp("enviada_em").toInstant(),
                 rs.getInt("total_pecas"), rs.getBigDecimal("total_valor"), rs.getInt("pecas"),

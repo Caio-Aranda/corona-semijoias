@@ -116,4 +116,19 @@ class LimiteComPecasComClientesTest extends ApoioDoConsignado {
         acertar(v, nota, semana, "30", List.of(volta(anel, maleta, 1)), null);
         assertThat(emMaletas.de(anel).total()).isEqualTo(3);
     }
+
+    @Test
+    void pecaQueVoltouDaClienteParaMaletaFechadaContaAteADonaLer() throws Exception {
+        UsuarioDeTeste v = usuarios.criarVendedor();
+        UUID anel = peca("100.00", 20);
+        UUID maleta = maletaEnviada(v, anel, 2);
+        UUID semana = abrirSemana(v);
+        UUID nota = criarNota(v, semana, 1, cliente(v), item(anel, maleta, 2, "100.00"));
+        jdbc.update("UPDATE corona.remessas SET status = 'FECHADA' WHERE id = ?", maleta);
+        // A cliente devolve 1 e fica com 1 (vendida): a devolvida está com o representante até a dona ler.
+        acertar(v, nota, semana, "30", List.of(volta(anel, maleta, 1)), null);
+        assertThat(consultas.valorEmAberto(v.vendedorId())).isEqualByComparingTo("100.00");
+        assertThat(consultas.emAberto(v.vendedorId()).maletas()).singleElement()
+                .satisfies(m -> assertThat(m.pecasEmAberto()).isEqualTo(1));
+    }
 }

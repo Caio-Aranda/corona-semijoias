@@ -51,17 +51,51 @@ export const PT_TEXTOS_DE_CONSIGNADO = {
     concluido: (quando: string) => `Fechamento concluído${quando ? ` em ${quando}` : ''}.`,
     aindaComClientes: (n: number) =>
       `Ainda há ${pecas(n)} com clientes. Você pode concluir: o acerto dessas notas acontece depois e as peças voltam à maleta fechada.`,
-    diferenca: (n: number) =>
-      n < 0
-        ? `Faltam ${pecas(-n)} em relação ao que devia estar na maleta. O sistema não corrige sozinho: decida o que fazer com a falta.`
-        : `Sobram ${pecas(n)} em relação ao que devia estar na maleta. O sistema não corrige sozinho: decida o que fazer com a sobra.`,
+    /** C4: falta e sobra são avisos separados, com a lista das peças (uma não anula a outra). */
+    faltam: (n: number) => `Faltam ${pecas(n)} em relação ao que devia estar na maleta:`,
+    sobram: (n: number) =>
+      `Sobram ${pecas(n)} em relação ao que devia estar na maleta. A sobra não volta ao estoque: confira se a peça é de outra maleta.`,
+    linhaDaDiferenca: (nome: string, n: number) => `${nome}: ${pecas(n)}`,
     semDiferenca: 'Tudo o que devia estar na maleta foi lido.',
+    /** C3: o que fazer com cada peça que falta (§23.10, item 1). */
+    decidir: {
+      titulo: 'O que fazer com cada peça que falta',
+      ajuda:
+        'Escolha uma opção para cada peça. Cobrar do representante: ele fica devendo a peça, pelo preço da maleta. Perda da loja: a loja assume a perda, e você diz o motivo.',
+      peca: (nome: string, n: number) => `${nome}: falta ${pecas(n)}`,
+      cobrar: 'Cobrar do representante',
+      perda: 'Perda da loja',
+      motivo: 'Motivo da perda',
+      motivoAjuda: 'Por exemplo: quebrou, foi roubada, sumiu na viagem.',
+      falta: 'Escolha o que fazer com cada peça que falta antes de concluir.',
+      faltaMotivo: 'Diga o motivo da perda da loja.',
+    },
+    registradas: {
+      titulo: 'Faltas registradas no fechamento',
+      cobrar: (nome: string, n: number, valor: string) =>
+        `${nome}: ${pecas(n)}. Cobrar do representante: ${valor}.`,
+      perda: (nome: string, n: number, motivo: string) =>
+        `${nome}: ${pecas(n)}. Perda da loja${motivo ? ` (${motivo})` : ''}.`,
+      totalNestaMaleta: (representante: string, valor: string) =>
+        `A cobrar de ${representante} nesta maleta: ${valor}.`,
+      totalDasMaletas: (valor: string) => `Somando todas as maletas dele: ${valor}.`,
+    },
+    /** C2: peças que as clientes devolvem depois de a maleta ser fechada (§23.10, item 3). */
+    depois: {
+      titulo: 'Ler as peças que voltaram depois',
+      ajuda:
+        'A maleta já está fechada. Leia aqui as peças que as clientes devolveram depois: cada leitura devolve 1 peça ao estoque da loja.',
+      adicionar: 'Devolver ao estoque',
+      paraLer: (n: number) => `Peças que voltaram depois: ${pecas(n)} para ler.`,
+      aindaComClientes: (n: number) => `Ainda com clientes: ${pecas(n)}.`,
+      lida: (nome: string) => `Lida: ${nome}. Voltou 1 peça ao estoque.`,
+    },
     concluir: 'Concluir o fechamento',
     concluindo: 'Concluindo...',
     confirmar: {
       titulo: 'Concluir o fechamento?',
       texto:
-        'As peças lidas voltam ao estoque da loja, até o que a maleta devia ter, e a maleta fica fechada. A diferença não é corrigida sozinha: ela fica no relatório. Essa ação não tem volta.',
+        'As peças lidas voltam ao estoque da loja, até o que a maleta devia ter, e a maleta fica fechada. Cada peça que falta fica registrada como você escolheu. Essa ação não tem volta.',
       concluir: 'Concluir',
       voltar: 'Ainda não',
     },

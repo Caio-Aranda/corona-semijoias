@@ -1,5 +1,6 @@
 import { Aviso, Botao, EstadoDaLista, JanelaDeConfirmacao } from '@corona/ui';
 import { useRef, useState } from 'react';
+import { MAXIMO_DO_MOTIVO, type DecisaoDaFalta } from '../../../shared/consignado';
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { AvisoDeErro } from '../../componentes/AvisoDeErro';
 import { FaltaDeCadastro } from '../../componentes/FaltaDeCadastro';
@@ -10,6 +11,7 @@ import {
   type ErroDaTela,
   type Retorno,
 } from '../../nucleo/chamadas';
+import { centavosDeTexto, formatarReais } from '../../nucleo/moedas';
 import { TEXTOS_DE_CONSIGNADO } from '../../textos-consignado';
 import { dataEHora } from '../sincronizacao/dados';
 import { LeitorDaMaleta } from '../maletas/LeitorDaMaleta';
@@ -275,6 +277,8 @@ function ComecarOFechamento({
   );
 }
 
+type Escolha = { id: string; decisao: DecisaoDaFalta | ''; motivo: string };
+
 function ControlesDoFechamento({
   ponte,
   maletaId,
@@ -298,24 +302,59 @@ function ControlesDoFechamento({
 }) {
   const [confirmando, setConfirmando] = useState(false);
   const [ocupado, setOcupado] = useState(false);
+  const [escolhas, setEscolhas] = useState<Record<string, Escolha>>({});
+  const [tentou, setTentou] = useState(false);
   const trava = useRef(false);
 
   const emAndamento = leitura.situacao === 'EM_ANDAMENTO';
   const comClientes = leitura.pecas.reduce((s, p) => s + p.comClientes, 0);
-  const diferenca = leitura.pecas.reduce((s, p) => s + p.diferenca, 0);
+  // Falta e sobra separadas, peça por peça: −1 de uma peça e +1 de outra não se anulam (C4).
+  const comFalta = leitura.pecas.filter((p) => p.diferenca < 0);
+  const comSobra = leitura.pecas.filter((p) => p.diferenca > 0);
+  const faltam = comFalta.reduce((s, p) => s - p.diferenca, 0);
+  const sobram = comSobra.reduce((s, p) => s + p.diferenca, 0);
+  // Maleta fechada: as peças que as clientes devolveram depois e ainda não foram lidas (C2).
+  const paraLerDepois = leitura.pecas.reduce((s, p) => s + p.paraLerDepois, 0);
+
+  const escolhaDe = (produtoId: string): Escolha =>
+    escolhas[produtoId] ?? { id: '', decisao: '', motivo: '' };
+  const semEscolha = comFalta.filter((p) => escolhaDe(p.produtoId).decisao === '');
+  const semMotivo = comFalta.filter((p) => {
+    const e = escolhaDe(p.produtoId);
+    return e.decisao === 'PERDA_DA_LOJA' && e.motivo.trim() === '';
+  });
+
+  function escolher(produtoId: string, mudanca: Partial<Escolha>) {
+    setEscolhas((atual) => {
+      const antes = atual[produtoId] ?? { id: novoId(), decisao: '', motivo: '' };
+      return { ...atual, [produtoId]: { ...antes, id: antes.id || novoId(), ...mudanca } };
+    });
+  }
 
   async function aoAchar(produto: Produto) {
     aoAvisar(null, null);
-    const r = await chamar(ponte, 'fechamento.leituras', {
+    const r = await chamar(ponte, emAndamento ? 'fechamento.leituras' : 'fechamento.voltas', {
       id: maletaId,
       leituras: [{ id: novoId(), produtoId: produto.id, quantidade: 1 }],
     });
     if (r.ok) {
-      aoAvisar({ tipo: 'sucesso', texto: T.lida(produto.nome) }, null);
+      aoAvisar(
+        {
+          tipo: 'sucesso',
+          texto: emAndamento ? T.lida(produto.nome) : T.depois.lida(produto.nome),
+        },
+        null,
+      );
       aoMudar();
     } else {
       aoAvisar(null, r.erro);
     }
+  }
+
+  function pedirConclusao() {
+    setTentou(true);
+    if (semEscolha.length > 0 || semMotivo.length > 0) return;
+    setConfirmando(true);
   }
 
   async function concluir() {
@@ -323,7 +362,16 @@ function ControlesDoFechamento({
     trava.current = true;
     setOcupado(true);
     aoAvisar(null, null);
-    const r = await chamar(ponte, 'fechamento.concluir', { id: maletaId });
+    const decisoes = comFalta.map((p) => {
+      const e = escolhaDe(p.produtoId);
+      return {
+        id: e.id,
+        produtoId: p.produtoId,
+        decisao: e.decisao,
+        ...(e.decisao === 'PERDA_DA_LOJA' ? { motivo: e.motivo.trim() } : {}),
+      };
+    });
+    const r = await chamar(ponte, 'fechamento.concluir', { id: maletaId, decisoes });
     trava.current = false;
     setOcupado(false);
     setConfirmando(false);
@@ -354,17 +402,146 @@ function ControlesDoFechamento({
           {T.concluido(dataEHora(leitura.concluidoEm))}
         </Aviso>
       )}
+      {!emAndamento && (paraLerDepois > 0 || comClientes > 0) ? (
+        <>
+          <Aviso tipo={paraLerDepois > 0 ? 'atencao' : 'informacao'}>
+            <p>{T.depois.paraLer(paraLerDepois)}</p>
+            <p>{T.depois.aindaComClientes(comClientes)}</p>
+          </Aviso>
+          <LeitorDaMaleta
+            ponte={ponte}
+            rotulos={T.depois}
+            aoAchar={aoAchar}
+            aoNaoAchar={(codigo) => {
+              aoAvisar({ tipo: 'atencao', texto: T.naoAchou(codigo) }, null);
+            }}
+          />
+        </>
+      ) : null}
       {aviso ? <Aviso tipo={aviso.tipo}>{aviso.texto}</Aviso> : null}
       {erro ? <AvisoDeErro erro={erro} /> : null}
-      {comClientes > 0 ? <Aviso tipo="informacao">{T.aindaComClientes(comClientes)}</Aviso> : null}
-      {diferenca !== 0 ? (
-        <Aviso tipo="atencao">{T.diferenca(diferenca)}</Aviso>
-      ) : emAndamento ? (
+      {emAndamento && comClientes > 0 ? (
+        <Aviso tipo="informacao">{T.aindaComClientes(comClientes)}</Aviso>
+      ) : null}
+      {emAndamento && faltam > 0 ? (
+        <Aviso tipo="atencao">
+          <p>{T.faltam(faltam)}</p>
+          <ul>
+            {comFalta.map((p) => (
+              <li key={p.produtoId}>{T.linhaDaDiferenca(p.nome, -p.diferenca)}</li>
+            ))}
+          </ul>
+        </Aviso>
+      ) : null}
+      {emAndamento && sobram > 0 ? (
+        <Aviso tipo="atencao">
+          <p>{T.sobram(sobram)}</p>
+          <ul>
+            {comSobra.map((p) => (
+              <li key={p.produtoId}>{T.linhaDaDiferenca(p.nome, p.diferenca)}</li>
+            ))}
+          </ul>
+        </Aviso>
+      ) : null}
+      {emAndamento && faltam === 0 && sobram === 0 ? (
         <p className="gestao-texto">{T.semDiferenca}</p>
+      ) : null}
+      {emAndamento && comFalta.length > 0 ? (
+        <div className="gestao-grupo">
+          <h3 className="gestao-subtitulo">{T.decidir.titulo}</h3>
+          <p className="gestao-texto">{T.decidir.ajuda}</p>
+          {comFalta.map((p) => {
+            const e = escolhaDe(p.produtoId);
+            const faltaEscolha = tentou && e.decisao === '';
+            const faltaMotivo = tentou && e.decisao === 'PERDA_DA_LOJA' && e.motivo.trim() === '';
+            const nomeDoGrupo = `falta-${p.produtoId}`;
+            return (
+              <fieldset
+                key={p.produtoId}
+                className={`gestao-escolha${faltaEscolha || faltaMotivo ? ' gestao-escolha--erro' : ''}`}
+              >
+                <legend>{T.decidir.peca(p.nome, -p.diferenca)}</legend>
+                <label className="gestao-escolha__opcao">
+                  <input
+                    type="radio"
+                    name={nomeDoGrupo}
+                    checked={e.decisao === 'COBRAR_DO_REPRESENTANTE'}
+                    onChange={() => escolher(p.produtoId, { decisao: 'COBRAR_DO_REPRESENTANTE' })}
+                  />{' '}
+                  {T.decidir.cobrar}
+                </label>
+                <label className="gestao-escolha__opcao">
+                  <input
+                    type="radio"
+                    name={nomeDoGrupo}
+                    checked={e.decisao === 'PERDA_DA_LOJA'}
+                    onChange={() => escolher(p.produtoId, { decisao: 'PERDA_DA_LOJA' })}
+                  />{' '}
+                  {T.decidir.perda}
+                </label>
+                {e.decisao === 'PERDA_DA_LOJA' ? (
+                  <div className="cs-campo">
+                    <label htmlFor={`motivo-${p.produtoId}`}>{T.decidir.motivo}</label>
+                    <input
+                      id={`motivo-${p.produtoId}`}
+                      type="text"
+                      maxLength={MAXIMO_DO_MOTIVO}
+                      value={e.motivo}
+                      aria-invalid={faltaMotivo ? true : undefined}
+                      onChange={(ev) => escolher(p.produtoId, { motivo: ev.target.value })}
+                    />
+                    <span className="cs-campo__ajuda">{T.decidir.motivoAjuda}</span>
+                  </div>
+                ) : null}
+                {faltaEscolha ? (
+                  <span role="alert" className="cs-campo__erro">
+                    {T.decidir.falta}
+                  </span>
+                ) : null}
+                {faltaMotivo ? (
+                  <span role="alert" className="cs-campo__erro">
+                    {T.decidir.faltaMotivo}
+                  </span>
+                ) : null}
+              </fieldset>
+            );
+          })}
+        </div>
+      ) : null}
+      {leitura.pendencias.length > 0 ? (
+        <div className="gestao-grupo">
+          <h3 className="gestao-subtitulo">{T.registradas.titulo}</h3>
+          <ul>
+            {leitura.pendencias.map((p) => (
+              <li key={p.id}>
+                {p.decisao === 'PERDA_DA_LOJA'
+                  ? T.registradas.perda(p.nome, p.quantidade, p.motivo)
+                  : T.registradas.cobrar(
+                      p.nome,
+                      p.quantidade,
+                      formatarReais(centavosDeTexto(p.valor) ?? 0n),
+                    )}
+              </li>
+            ))}
+          </ul>
+          {centavosDeTexto(leitura.cobranca.nestaMaleta) ? (
+            <p className="gestao-texto">
+              <strong>
+                {T.registradas.totalNestaMaleta(
+                  leitura.cobranca.representante,
+                  formatarReais(centavosDeTexto(leitura.cobranca.nestaMaleta) ?? 0n),
+                )}
+              </strong>{' '}
+              {T.registradas.totalDasMaletas(
+                formatarReais(centavosDeTexto(leitura.cobranca.todasAsMaletas) ?? 0n),
+              )}
+            </p>
+          ) : null}
+        </div>
       ) : null}
       {emAndamento ? (
         <div className="gestao-acoes-da-linha">
-          <Botao variante="primario" disabled={ocupado} onClick={() => setConfirmando(true)}>
+          <Botao variante="primario" disabled={ocupado} onClick={pedirConclusao}>
             {ocupado ? T.concluindo : T.concluir}
           </Botao>
         </div>

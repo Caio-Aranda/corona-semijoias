@@ -802,3 +802,37 @@ dl.gestao-totais {
   border-radius: var(--raio-2);
   object-fit: contain;
 }
+
+/* Escolha por peça no Fechamento da maleta (§23.10, item 1): um grupo de opções por peça que falta.
+   Os botões de opção não herdam o tamanho dos campos de texto; o rótulo inteiro é clicável. */
+.gestao-escolha {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+  margin: 0 0 var(--espaco-3);
+  padding: var(--espaco-3) var(--espaco-4);
+  border: 1px solid var(--cor-borda-campo);
+  border-radius: var(--raio-2);
+}
+.gestao-escolha--erro {
+  border: 2px solid var(--cor-erro-borda);
+}
+.gestao-escolha legend {
+  padding: 0 var(--espaco-2);
+  font-weight: 600;
+}
+.gestao-escolha__opcao {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  min-height: var(--alvo-minimo);
+  cursor: pointer;
+}
+.gestao-escolha__opcao input {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0;
+}
+.gestao-escolha .cs-campo {
+  margin: var(--espaco-2) 0 0;
+}

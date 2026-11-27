@@ -255,6 +255,7 @@ import {
 import {
   baixarFotoDoCliente,
   concluirFechamentoDaMaleta,
+  registrarVoltasDaMaletaFechada,
   iniciarFechamentoDaMaleta,
   lerFechamentoDaMaleta,
   lerTelasDoGestao,
@@ -861,7 +862,25 @@ async function executarConsignado(
         true,
       );
     case 'fechamento.concluir':
-      return executar(() => concluirFechamentoDaMaleta({ ...base, path: { id: pedido.id } }), true);
+      return executar(
+        () =>
+          concluirFechamentoDaMaleta({
+            ...base,
+            path: { id: pedido.id },
+            body: { decisoes: pedido.decisoes },
+          }),
+        true,
+      );
+    case 'fechamento.voltas':
+      return executar(
+        () =>
+          registrarVoltasDaMaletaFechada({
+            ...base,
+            path: { id: pedido.id },
+            body: { leituras: pedido.leituras },
+          }),
+        true,
+      );
     case 'consignado.semanas':
       return executar(() =>
         listarSemanasDoRepresentante({ ...base, path: { vendedorId: pedido.id } }),
