@@ -20,6 +20,7 @@ import type { Produto } from '../produtos/dados';
 import { TelaDeRelatorio } from '../relatorios/TelaDeRelatorio';
 import { lerLeituraDoFechamento, type LeituraDoFechamentoLida } from './dados';
 import { gradeDasFaltas } from './pdf-das-faltas';
+import { CobrancaDaFalta } from './CobrancaDaFalta';
 
 const T = TEXTOS_DE_CONSIGNADO.fechamento;
 interface AvisoDaTela {
@@ -524,6 +525,14 @@ function ControlesDoFechamento({
                       p.quantidade,
                       formatarReais(centavosDeTexto(p.valor) ?? 0n),
                     )}
+                {p.decisao === 'COBRAR_DO_REPRESENTANTE' && !emAndamento ? (
+                  <CobrancaDaFalta
+                    ponte={ponte}
+                    pendencia={p}
+                    aoMudar={aoMudar}
+                    aoAvisar={(texto) => aoAvisar({ tipo: 'sucesso', texto }, null)}
+                  />
+                ) : null}
               </li>
             ))}
           </ul>
@@ -535,9 +544,22 @@ function ControlesDoFechamento({
                   formatarReais(centavosDeTexto(leitura.cobranca.nestaMaleta) ?? 0n),
                 )}
               </strong>{' '}
-              {T.registradas.totalDasMaletas(
-                formatarReais(centavosDeTexto(leitura.cobranca.todasAsMaletas) ?? 0n),
-              )}
+              <span>
+                {T.registradas.totalDasMaletas(
+                  formatarReais(centavosDeTexto(leitura.cobranca.todasAsMaletas) ?? 0n),
+                )}
+              </span>{' '}
+              <span>
+                {T.receber.totalPago(
+                  formatarReais(centavosDeTexto(leitura.cobranca.pagoNestaMaleta) ?? 0n),
+                  formatarReais(centavosDeTexto(leitura.cobranca.faltaPagarNestaMaleta) ?? 0n),
+                )}
+              </span>{' '}
+              <span>
+                {T.receber.totalPagoDasMaletas(
+                  formatarReais(centavosDeTexto(leitura.cobranca.faltaPagarTodasAsMaletas) ?? 0n),
+                )}
+              </span>
             </p>
           ) : null}
         </div>
