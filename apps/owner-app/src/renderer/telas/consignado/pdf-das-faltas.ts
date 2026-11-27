@@ -45,6 +45,22 @@ export function gradeDasFaltas(leitura: LeituraDoFechamentoLida, maleta: string)
         vazio,
         vazio,
       ],
+      [
+        { v: T.totalPago },
+        vazio,
+        vazio,
+        { v: leitura.cobranca.pagoNestaMaleta, numero: true },
+        vazio,
+        vazio,
+      ],
+      [
+        { v: T.totalFaltaPagar },
+        vazio,
+        vazio,
+        { v: leitura.cobranca.faltaPagarNestaMaleta, numero: true },
+        vazio,
+        vazio,
+      ],
     ],
     cotacao: null,
   };

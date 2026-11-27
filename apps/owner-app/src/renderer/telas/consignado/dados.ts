@@ -109,7 +109,9 @@ export function lerLeituraDoFechamento(bruto: unknown): LeituraDoFechamentoLida 
             forma: texto(x.forma),
             moeda,
             valorNaMoeda:
-              x.valorNaMoeda === null || x.valorNaMoeda === undefined ? null : String(x.valorNaMoeda),
+              typeof x.valorNaMoeda === 'number' || typeof x.valorNaMoeda === 'string'
+                ? String(x.valorNaMoeda)
+                : null,
             data: texto(x.data),
             desfeito: x.desfeito === true,
             motivoDoEstorno: texto(x.motivoDoEstorno),
