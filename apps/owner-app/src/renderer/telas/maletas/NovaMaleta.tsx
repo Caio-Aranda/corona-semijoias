@@ -3,7 +3,9 @@ import { useRef, useState } from 'react';
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { TIPOS_DE_MALETA, type TipoDeMaleta } from '../../../shared/maletas';
 import { AvisoDeErro } from '../../componentes/AvisoDeErro';
+import { FaltaDeCadastro } from '../../componentes/FaltaDeCadastro';
 import { chamar, chamarTodasAsPaginas, useBusca, type ErroDaTela } from '../../nucleo/chamadas';
+import { TEXTOS } from '../../textos';
 import { TEXTOS_DE_MALETAS } from '../../textos-maletas';
 import { lerOpcoes } from '../produtos/dados';
 import { lerMaleta, lerSemanasParaEscolher, lerVendedoresParaEscolher, type Maleta } from './dados';
@@ -38,6 +40,10 @@ export function NovaMaleta({ ponte, aoCriar }: NovaMaletaProps) {
   const listaDeVendedores = vendedores.dados ? lerVendedoresParaEscolher(vendedores.dados) : [];
   const listaDeSemanas = semanas.dados ? lerSemanasParaEscolher(semanas.dados) : [];
   const listaDePracas = pracas.dados ? lerOpcoes(pracas.dados) : [];
+  const semanasAbertas = listaDeSemanas.filter((s) => s.aberta);
+  // Só depois de carregar: lista vazia de verdade (não a busca ainda a caminho).
+  const semRepresentante = vendedores.dados !== null && listaDeVendedores.length === 0;
+  const semSemana = semanas.dados !== null && semanasAbertas.length === 0;
   const vendedor = listaDeVendedores.find((v) => v.id === vendedorId);
   const pracaDoVendedor = listaDePracas.find((p) => p.id === vendedor?.pracaId)?.nome;
 
@@ -73,6 +79,20 @@ export function NovaMaleta({ ponte, aoCriar }: NovaMaletaProps) {
         {T.titulo}
       </h2>
       <p className="gestao-texto">{T.ajuda}</p>
+      {semRepresentante ? (
+        <FaltaDeCadastro
+          mensagem={TEXTOS.faltaCadastro.semRepresentante}
+          rotuloDoBotao={TEXTOS.faltaCadastro.cadastrarRepresentante}
+          rota="pessoas/vendedores"
+        />
+      ) : null}
+      {semSemana ? (
+        <FaltaDeCadastro
+          mensagem={TEXTOS.faltaCadastro.semSemana}
+          rotuloDoBotao={TEXTOS.faltaCadastro.cadastrarSemana}
+          rota="cadastros/semanas"
+        />
+      ) : null}
       <div className="gestao-formulario gestao-formulario--larga">
         <div className={`cs-campo${tentou && !vendedorId ? ' cs-campo--erro' : ''}`}>
           <label htmlFor="maleta-vendedor">{T.vendedor}</label>
@@ -108,13 +128,11 @@ export function NovaMaleta({ ponte, aoCriar }: NovaMaletaProps) {
             }}
           >
             <option value="">{T.escolhaSemana}</option>
-            {listaDeSemanas
-              .filter((s) => s.aberta)
-              .map((s) => (
-                <option key={s.id} value={s.id}>
-                  {T.nomeDaSemana(s.numero)}
-                </option>
-              ))}
+            {semanasAbertas.map((s) => (
+              <option key={s.id} value={s.id}>
+                {T.nomeDaSemana(s.numero)}
+              </option>
+            ))}
           </select>
           {tentou && !semanaId ? (
             <span role="alert" className="cs-campo__erro">

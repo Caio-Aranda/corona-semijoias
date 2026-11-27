@@ -1,7 +1,9 @@
 import { Campo } from '@corona/ui';
 import { hojeEmBrasilia } from '../../nucleo/datas';
 import type { PonteDoCorona } from '../../../shared/ponte';
+import { FaltaDeCadastro } from '../../componentes/FaltaDeCadastro';
 import { chamarTodasAsPaginas, useBusca } from '../../nucleo/chamadas';
+import { TEXTOS } from '../../textos';
 import { TEXTOS_DE_COMPRAS } from '../../textos-compras';
 import { lerOpcoes } from '../produtos/dados';
 
@@ -56,6 +58,13 @@ export function CabecalhoDaCompra({
       <h2 id={`titulo-${idBase}`} className="gestao-subtitulo">
         {T.cabecalho}
       </h2>
+      {fornecedores.dados !== null && lista.length === 0 && !desativado ? (
+        <FaltaDeCadastro
+          mensagem={TEXTOS.faltaCadastro.semFornecedor}
+          rotuloDoBotao={TEXTOS.faltaCadastro.cadastrarFornecedor}
+          rota="cadastros/fornecedores"
+        />
+      ) : null}
       <div className="gestao-formulario gestao-formulario--larga">
         <div className={`cs-campo${erroDoFornecedor ? ' cs-campo--erro' : ''}`}>
           <label htmlFor={`${idBase}-fornecedor`}>{T.fornecedor}</label>

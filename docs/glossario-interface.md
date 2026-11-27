@@ -240,6 +240,25 @@ Toda mensagem diz **o que aconteceu** e **o que fazer** (§19.6):
 2. Esta peça acabou na sua maleta. Escolha outra peça ou fale com a dona.
 3. Esta semana já está fechada e não aceita mais alterações. Se precisar corrigir algo, fale com a dona.
 
+### Falta um cadastro feito antes: mensagem com botão (27/11/2026)
+
+Quando a tela depende de um cadastro que ainda não existe, ela não mostra uma lista vazia calada:
+diz o que falta, para que serve e tem um **botão que leva direto à tela do cadastro**
+(Corona Gestão, em português e espanhol).
+
+| Tela | Mensagem | Botão (leva a) |
+| --- | --- | --- |
+| Nova maleta, sem semana aberta | Ainda não há semana aberta. Cadastre a semana para montar a maleta. | **Cadastrar semana** (Cadastros › Semanas) |
+| Repor maleta, sem semana aberta | Ainda não há semana aberta. Cadastre a semana para repor a maleta. | **Cadastrar semana** |
+| Nova maleta, sem representante ativo | Ainda não há representante ativo. Cadastre o representante (ou ative o que já existe) para montar a maleta. | **Cadastrar representante** (Pessoas › Representantes) |
+| Receber compra, sem fornecedor | Ainda não há fornecedor cadastrado. Cadastre o fornecedor para lançar a compra. | **Cadastrar fornecedor** |
+| Cadastro rápido da peça, sem categoria | Ainda não há categoria cadastrada. Cadastre a categoria para cadastrar a peça. | **Cadastrar categoria** |
+
+Erros da API que têm uma tela certa para resolver ganham o botão junto do texto do servidor:
+semana fechada ou não encontrada → **Cadastrar semana**; limite do representante (não definido ou
+passado) e representante que não recebe maleta → **Abrir representantes**; falta a cotação do dia
+→ **Lançar a cotação do dia**; estoque insuficiente → **Receber compra**.
+
 ### Exemplos ruins
 
 | Mensagem ruim | Por que é ruim | Como fica |
