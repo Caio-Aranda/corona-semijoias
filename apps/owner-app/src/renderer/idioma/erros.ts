@@ -1,4 +1,9 @@
-import { ERROS_EM_ESPANHOL, erroDeBloqueio, erroDePecaDeOutraMaleta } from './erros-es';
+import {
+  ERROS_EM_ESPANHOL,
+  erroDeBloqueio,
+  erroDePecaDeOutraMaleta,
+  erroDoLimite,
+} from './erros-es';
 import { idiomaAtual } from './idioma';
 
 /**
@@ -12,6 +17,7 @@ export function mensagemDaApi(r: {
   if (idiomaAtual() === 'es' && r.codigo) {
     if (r.codigo === 'ACESSO_BLOQUEADO') return erroDeBloqueio(r.mensagem);
     if (r.codigo === 'PECA_NAO_E_DESTA_MALETA') return erroDePecaDeOutraMaleta(r.mensagem);
+    if (r.codigo === 'LIMITE_DE_CONSIGNACAO_EXCEDIDO') return erroDoLimite(r.mensagem);
     const texto = ERROS_EM_ESPANHOL[r.codigo];
     if (texto) return texto;
   }
