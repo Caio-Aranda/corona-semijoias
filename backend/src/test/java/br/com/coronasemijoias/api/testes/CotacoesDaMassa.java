@@ -108,6 +108,17 @@ public final class CotacoesDaMassa {
                 }
                 s.execute("UPDATE corona.remessas SET acerto_id = NULL, status_antes_do_acerto = NULL WHERE acerto_id IN " + meusAcertos);
                 s.execute("DELETE FROM corona.acertos WHERE id IN " + meusAcertos);
+                // Pagamentos da cobrança da maleta em Dólar ou Guarani (V063) com estas cotações: saem com os estornos e o caixa deles.
+                List<String> cobrancas = ids(s, "SELECT id FROM corona.pagamentos_cobranca_maleta WHERE cotacao_id IN " + minhas);
+                if (!cobrancas.isEmpty()) {
+                    cobrancas.addAll(ids(s, "SELECT id FROM corona.pagamentos_cobranca_maleta WHERE estorna_id IN " + lista(cobrancas)));
+                    String minhasCobrancas = lista(cobrancas);
+                    s.execute("DELETE FROM corona.lancamentos_caixa WHERE origem_tipo = 'COBRANCA_DA_MALETA' AND estorna_id IS NOT NULL"
+                            + " AND origem_id IN " + minhasCobrancas);
+                    s.execute("DELETE FROM corona.lancamentos_caixa WHERE origem_tipo = 'COBRANCA_DA_MALETA' AND origem_id IN " + minhasCobrancas);
+                    s.execute("DELETE FROM corona.pagamentos_cobranca_maleta WHERE estorna_id IS NOT NULL AND id IN " + minhasCobrancas);
+                    s.execute("DELETE FROM corona.pagamentos_cobranca_maleta WHERE id IN " + minhasCobrancas);
+                }
                 for (String t : tabelas) {
                     if (!t.equals("corona.acertos")) {
                         s.execute("UPDATE " + t + " SET cotacao_id = NULL WHERE cotacao_id IN " + minhas);

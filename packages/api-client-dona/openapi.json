@@ -7,6 +7,9 @@
             "format" : "date-time",
             "type" : "string"
           },
+          "bateuMeta" : {
+            "type" : "boolean"
+          },
           "bruto" : {
             "example" : "123.45",
             "format" : "decimal",
@@ -50,6 +53,10 @@
             "format" : "int32",
             "type" : "integer"
           },
+          "metaGuarani" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
           "motivoDoEstorno" : {
             "type" : "string"
           },
@@ -57,6 +64,9 @@
             "example" : "123.45",
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "regraDaComissao" : {
             "type" : "string"
           },
           "saldoDoDebito" : {
@@ -98,6 +108,10 @@
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
+          },
+          "vdGuarani" : {
+            "format" : "int64",
+            "type" : "integer"
           }
         },
         "type" : "object"
@@ -965,9 +979,45 @@
         },
         "type" : "object"
       },
+      "CobrancaDaMaletaControllerPedidoDeEstorno" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "motivo" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "CobrancaDoRepresentante" : {
         "properties" : {
+          "faltaPagarNestaMaleta" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "faltaPagarTodasAsMaletas" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
           "nestaMaleta" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "pagoNestaMaleta" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "pagoTodasAsMaletas" : {
             "example" : "123.45",
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
@@ -7545,6 +7595,9 @@
       },
       "NotaResumo" : {
         "properties" : {
+          "bateuMeta" : {
+            "type" : "boolean"
+          },
           "cliente" : {
             "type" : "string"
           },
@@ -7564,7 +7617,14 @@
             "format" : "int32",
             "type" : "integer"
           },
+          "metaGuarani" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
           "numero" : {
+            "type" : "string"
+          },
+          "regraDaComissao" : {
             "type" : "string"
           },
           "saidaEm" : {
@@ -7591,6 +7651,10 @@
             "format" : "decimal",
             "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
+          },
+          "vdGuarani" : {
+            "format" : "int64",
+            "type" : "integer"
           },
           "vendedorId" : {
             "format" : "uuid",
@@ -7637,6 +7701,43 @@
             "type" : "object"
           },
           "rota" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "PagamentoDaCobranca" : {
+        "properties" : {
+          "data" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "desfeito" : {
+            "type" : "boolean"
+          },
+          "forma" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "moeda" : {
+            "type" : "string"
+          },
+          "motivoDoEstorno" : {
+            "type" : "string"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorNaMoeda" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           }
         },
@@ -8884,28 +8985,6 @@
         },
         "type" : "object"
       },
-      "PedidoDePagamento" : {
-        "properties" : {
-          "data" : {
-            "format" : "date",
-            "type" : "string"
-          },
-          "forma" : {
-            "type" : "string"
-          },
-          "id" : {
-            "format" : "uuid",
-            "type" : "string"
-          },
-          "valor" : {
-            "example" : "123.45",
-            "format" : "decimal",
-            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
-            "type" : "string"
-          }
-        },
-        "type" : "object"
-      },
       "PedidoDePrevia" : {
         "properties" : {
           "nomes" : {
@@ -9244,6 +9323,12 @@
           "decisao" : {
             "type" : "string"
           },
+          "faltaPagar" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
           "id" : {
             "format" : "uuid",
             "type" : "string"
@@ -9252,6 +9337,18 @@
             "type" : "string"
           },
           "nome" : {
+            "type" : "string"
+          },
+          "pagamentos" : {
+            "items" : {
+              "$ref" : "#/components/schemas/PagamentoDaCobranca"
+            },
+            "type" : "array"
+          },
+          "pago" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           },
           "precoUnitario" : {
@@ -12337,6 +12434,15 @@
         },
         "type" : "object"
       },
+      "RespostaDoPagamento" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "RespostaDoProduto" : {
         "properties" : {
           "ativo" : {
@@ -12699,6 +12805,37 @@
         },
         "type" : "object"
       },
+      "ServicoDaCobrancaDaMaletaPedidoDePagamento" : {
+        "properties" : {
+          "cotacaoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "forma" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "moeda" : {
+            "type" : "string"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "valorNaMoeda" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "ServicoDaComissaoComissao" : {
         "properties" : {
           "metaGuarani" : {
@@ -12743,6 +12880,28 @@
             "type" : "string"
           },
           "motivo" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ServicoDeContasAPagarPedidoDePagamento" : {
+        "properties" : {
+          "data" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "forma" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           }
         },
@@ -16281,7 +16440,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/PedidoDePagamento"
+                "$ref" : "#/components/schemas/ServicoDeContasAPagarPedidoDePagamento"
               }
             }
           },
@@ -27960,6 +28119,90 @@
         } ],
         "summary" : "Computadores do vendedor",
         "tags" : [ "aparelhos-da-dona-controller" ]
+      }
+    },
+    "/api/maletas/pagamentos-cobranca/{id}/estorno" : {
+      "post" : {
+        "description" : "Grava o estorno (valor oposto) e a saída oposta no caixa. Um estorno por pagamento (409 LANCAMENTO_JA_DESFEITO).",
+        "operationId" : "desfazerPagamentoDaCobrancaDaMaleta",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CobrancaDaMaletaControllerPedidoDeEstorno"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDoPagamento"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Desfazer um pagamento da cobrança (estorno com motivo)",
+        "tags" : [ "cobranca-da-maleta-controller" ]
+      }
+    },
+    "/api/maletas/pendencias/{id}/pagamentos" : {
+      "post" : {
+        "description" : "Valor em Real ou, em DOLAR ou GUARANI, só o valorNaMoeda (o servidor converte pela cotação vigente). Forma DINHEIRO ou PIX. Parte do valor é aceita; acima do que falta pagar, 409 PAGAMENTO_ACIMA_DO_SALDO. Entra no caixa. 201 na primeira vez, 200 no reenvio do mesmo id.",
+        "operationId" : "pagarCobrancaDaMaleta",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ServicoDaCobrancaDaMaletaPedidoDePagamento"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDoPagamento"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Registrar o que o representante pagou da falta cobrada",
+        "tags" : [ "cobranca-da-maleta-controller" ]
       }
     },
     "/api/maletas/{id}/fechamento" : {

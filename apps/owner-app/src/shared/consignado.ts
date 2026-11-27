@@ -1,3 +1,4 @@
+import { conferirValorDoRecebimento, type ValorDoRecebimento } from './valor-do-recebimento';
 /**
  * Consignado ao cliente na ponte (tarefa 9.4; ESPECIFICACAO §23; ADR-0016): o que o Corona Gestão mostra ou esconde, o
  * Fechamento da maleta (a dona bipa a maleta que voltou) e a visão das notas, semanas, clientes e alertas do consignado.
@@ -12,6 +13,8 @@ export const OPERACOES_DE_CONSIGNADO = [
   'fechamento.leituras',
   'fechamento.concluir',
   'fechamento.voltas',
+  'cobranca.pagar',
+  'cobranca.desfazer',
   'consignado.semanas',
   'consignado.semana',
   'consignado.notas',
@@ -20,6 +23,8 @@ export const OPERACOES_DE_CONSIGNADO = [
   'consignado.fotoDoCliente',
   'consignado.alertas',
   'consignado.alertaVisto',
+  'consignado.configuracao',
+  'consignado.configuracaoAlterar',
 ] as const;
 export type OperacaoDeConsignado = (typeof OPERACOES_DE_CONSIGNADO)[number];
 
@@ -39,6 +44,10 @@ export interface LeituraParaEnviar {
   produtoId: string;
   quantidade: number;
 }
+
+/** Como o representante pagou a cobrança da falta (as formas do caixa; §23.10, item 1a). */
+export const FORMAS_DA_COBRANCA = ['DINHEIRO', 'PIX'] as const;
+export type FormaDaCobranca = (typeof FORMAS_DA_COBRANCA)[number];
 
 /** O que a dona decide para cada peça que falta ao concluir o fechamento (§23.10, item 1). */
 export const DECISOES_DA_FALTA = ['COBRAR_DO_REPRESENTANTE', 'PERDA_DA_LOJA'] as const;
@@ -72,6 +81,16 @@ export type ParametrosDeConsignado =
     }
   | { operacao: 'fechamento.concluir'; id: string; decisoes: DecisaoParaEnviar[] }
   | {
+      operacao: 'cobranca.pagar';
+      /** A falta cobrada. */
+      id: string;
+      pagamentoId: string;
+      forma: FormaDaCobranca;
+      valor: ValorDoRecebimento;
+      cotacaoId?: string;
+    }
+  | { operacao: 'cobranca.desfazer'; id: string; estornoId: string; motivo: string }
+  | {
       operacao: 'consignado.notas';
       filtros: {
         vendedorId?: string;
@@ -82,7 +101,20 @@ export type ParametrosDeConsignado =
       };
     }
   | { operacao: 'consignado.fotoDoCliente'; id: string; tipo: TipoDeFotoDoCliente }
-  | { operacao: 'consignado.alertas'; soNaoVistos: boolean };
+  | { operacao: 'consignado.alertas'; soNaoVistos: boolean }
+  | { operacao: 'consignado.configuracao' }
+  | { operacao: 'consignado.configuracaoAlterar'; corpo: ConfiguracaoDoConsignado };
+
+/** A meta, os percentuais e os dias do retorno do consignado (ESPECIFICACAO §23.13). A API confere de novo. */
+export interface ConfiguracaoDoConsignado {
+  metaGuarani: number;
+  percentualAbaixoDaMeta: number;
+  percentualNaMeta: number;
+  diasDoRetorno: number;
+}
+export const PERCENTUAL_MAXIMO_DO_CONSIGNADO = 40;
+export const META_MAXIMA_EM_GUARANI = 1_000_000_000;
+export const DIAS_MAXIMOS_DO_RETORNO = 365;
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const idValido = (v: unknown): v is string => typeof v === 'string' && UUID.test(v);
@@ -129,6 +161,39 @@ export function conferirConsignado(
         });
       }
       return { operacao, id: p.id, decisoes };
+    }
+    case 'cobranca.pagar': {
+      if (!soCom('id', 'pagamentoId', 'forma', 'valor', 'moeda', 'valorNaMoeda', 'cotacaoId'))
+        return null;
+      if (!idValido(p.id) || !idValido(p.pagamentoId)) return null;
+      if (!(FORMAS_DA_COBRANCA as readonly unknown[]).includes(p.forma)) return null;
+      if (p.cotacaoId !== undefined && !idValido(p.cotacaoId)) return null;
+      const valor = conferirValorDoRecebimento({
+        ...(p.valor !== undefined ? { valor: p.valor } : {}),
+        ...(p.moeda !== undefined ? { moeda: p.moeda } : {}),
+        ...(p.valorNaMoeda !== undefined ? { valorNaMoeda: p.valorNaMoeda } : {}),
+      });
+      if (!valor) return null;
+      return {
+        operacao,
+        id: p.id,
+        pagamentoId: p.pagamentoId,
+        forma: p.forma as FormaDaCobranca,
+        valor,
+        ...(typeof p.cotacaoId === 'string' ? { cotacaoId: p.cotacaoId } : {}),
+      };
+    }
+    case 'cobranca.desfazer': {
+      if (!soCom('id', 'estornoId', 'motivo') || !idValido(p.id) || !idValido(p.estornoId))
+        return null;
+      if (
+        typeof p.motivo !== 'string' ||
+        p.motivo.trim() === '' ||
+        p.motivo.length > MAXIMO_DO_MOTIVO
+      ) {
+        return null;
+      }
+      return { operacao, id: p.id, estornoId: p.estornoId, motivo: p.motivo };
     }
     case 'fechamento.voltas':
     case 'fechamento.leituras': {
@@ -182,6 +247,30 @@ export function conferirConsignado(
       if (!soCom('soNaoVistos')) return null;
       if (p.soNaoVistos !== undefined && typeof p.soNaoVistos !== 'boolean') return null;
       return { operacao, soNaoVistos: p.soNaoVistos === true };
+    }
+    case 'consignado.configuracao':
+      return chaves.length === 0 ? { operacao } : null;
+    case 'consignado.configuracaoAlterar': {
+      if (!soCom('metaGuarani', 'percentualAbaixoDaMeta', 'percentualNaMeta', 'diasDoRetorno')) {
+        return null;
+      }
+      const { metaGuarani, percentualAbaixoDaMeta: abaixo, percentualNaMeta: naMeta } = p;
+      const { diasDoRetorno: dias } = p;
+      const inteiro = (v: unknown, de: number, ate: number): v is number =>
+        typeof v === 'number' && Number.isInteger(v) && v >= de && v <= ate;
+      if (!inteiro(metaGuarani, 1, META_MAXIMA_EM_GUARANI)) return null;
+      if (!inteiro(abaixo, 0, PERCENTUAL_MAXIMO_DO_CONSIGNADO)) return null;
+      if (!inteiro(naMeta, 0, PERCENTUAL_MAXIMO_DO_CONSIGNADO) || abaixo > naMeta) return null;
+      if (!inteiro(dias, 1, DIAS_MAXIMOS_DO_RETORNO)) return null;
+      return {
+        operacao,
+        corpo: {
+          metaGuarani,
+          percentualAbaixoDaMeta: abaixo,
+          percentualNaMeta: naMeta,
+          diasDoRetorno: dias,
+        },
+      };
     }
   }
 }

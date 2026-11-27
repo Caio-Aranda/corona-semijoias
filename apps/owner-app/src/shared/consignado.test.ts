@@ -57,6 +57,42 @@ describe('conferência dos dados do consignado (a dona só lê e bipa o fechamen
     }
   });
 
+  it('pagar a cobrança: forma do caixa e o valor em Real ou na moeda; desfazer pede o motivo', () => {
+    const boa = { id: ID, pagamentoId: OUTRO, forma: 'PIX', valor: '50.00' };
+    expect(conferirParametros('cobranca.pagar', boa)).toEqual({
+      operacao: 'cobranca.pagar',
+      id: ID,
+      pagamentoId: OUTRO,
+      forma: 'PIX',
+      valor: { valor: '50.00' },
+    });
+    expect(
+      conferirParametros('cobranca.pagar', {
+        id: ID,
+        pagamentoId: OUTRO,
+        forma: 'DINHEIRO',
+        moeda: 'GUARANI',
+        valorNaMoeda: '100000',
+        cotacaoId: OUTRO,
+      }),
+    ).toMatchObject({ valor: { moeda: 'GUARANI', valorNaMoeda: '100000' }, cotacaoId: OUTRO });
+    for (const ruim of [
+      { ...boa, forma: 'DEBITO' },
+      { ...boa, valor: '0' },
+      { ...boa, pagamentoId: 'x' },
+      { ...boa, moeda: 'GUARANI', valorNaMoeda: '10' },
+      { ...boa, extra: 1 },
+    ]) {
+      expect(conferirParametros('cobranca.pagar', ruim)).toBeNull();
+    }
+    expect(
+      conferirParametros('cobranca.desfazer', { id: ID, estornoId: OUTRO, motivo: 'Errei' }),
+    ).not.toBeNull();
+    expect(
+      conferirParametros('cobranca.desfazer', { id: ID, estornoId: OUTRO, motivo: '  ' }),
+    ).toBeNull();
+  });
+
   it('as leituras do fechamento: um id novo por leitura, peça em UUID, quantidade inteira de 1 em diante', () => {
     const boa = { id: ID, leituras: [{ id: OUTRO, produtoId: ID, quantidade: 3 }] };
     expect(conferirParametros('fechamento.leituras', boa)).not.toBeNull();
@@ -134,5 +170,33 @@ describe('conferência dos dados do consignado (a dona só lê e bipa o fechamen
         parametros: { relatorio: 'maleta-fechamento' },
       }),
     ).toBeNull();
+  });
+
+  it('a configuração do consignado: lê sem dados e só grava valores dentro dos limites', () => {
+    expect(conferirParametros('consignado.configuracao', {})).not.toBeNull();
+    expect(conferirParametros('consignado.configuracao', { x: 1 })).toBeNull();
+    const ok = {
+      metaGuarani: 700000,
+      percentualAbaixoDaMeta: 30,
+      percentualNaMeta: 40,
+      diasDoRetorno: 45,
+    };
+    expect(conferirParametros('consignado.configuracaoAlterar', ok)).toEqual({
+      operacao: 'consignado.configuracaoAlterar',
+      corpo: ok,
+    });
+    for (const ruim of [
+      { ...ok, metaGuarani: 0 },
+      { ...ok, metaGuarani: 1_000_000_001 },
+      { ...ok, percentualNaMeta: 41 },
+      { ...ok, percentualAbaixoDaMeta: 41 },
+      { ...ok, percentualAbaixoDaMeta: 35, percentualNaMeta: 30 },
+      { ...ok, diasDoRetorno: 0 },
+      { ...ok, diasDoRetorno: 366 },
+      { ...ok, diasDoRetorno: 1.5 },
+      { ...ok, extra: 1 },
+    ]) {
+      expect(conferirParametros('consignado.configuracaoAlterar', ruim)).toBeNull();
+    }
   });
 });

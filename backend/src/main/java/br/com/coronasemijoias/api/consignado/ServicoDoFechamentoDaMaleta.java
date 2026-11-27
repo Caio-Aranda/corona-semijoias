@@ -59,8 +59,18 @@ public class ServicoDoFechamentoDaMaleta {
     }
 
     /** Uma falta gravada na conclusão, com a decisão: cobrar do representante ou perda da loja. */
+    /**
+     * Uma falta gravada na conclusão, com a decisão. Na cobrada: {@code pago} (soma dos pagamentos menos os desfeitos),
+     * {@code faltaPagar} e os pagamentos (§23.10, item 1a); na perda da loja, zero e lista vazia.
+     */
     public record PendenciaDaMaleta(UUID id, UUID produtoId, String nome, int quantidade, BigDecimal precoUnitario, BigDecimal valor,
-            String decisao, String motivo, Instant registradaEm) {
+            String decisao, String motivo, Instant registradaEm, BigDecimal pago, BigDecimal faltaPagar,
+            List<PagamentoDaCobranca> pagamentos) {
+    }
+
+    /** Um pagamento da cobrança (nunca o estorno: o pagamento desfeito vem com {@code desfeito}). */
+    public record PagamentoDaCobranca(UUID id, BigDecimal valor, String forma, String moeda, BigDecimal valorNaMoeda,
+            java.time.LocalDate data, boolean desfeito, String motivoDoEstorno) {
     }
 
     static final String COBRAR_DO_REPRESENTANTE = "COBRAR_DO_REPRESENTANTE";
@@ -121,7 +131,8 @@ public class ServicoDoFechamentoDaMaleta {
      * ficaram como perda da loja nesta maleta.
      */
     public record CobrancaDoRepresentante(UUID vendedorId, String representante, BigDecimal nestaMaleta, BigDecimal todasAsMaletas,
-            int pecasPerdidasPelaLoja) {
+            int pecasPerdidasPelaLoja, BigDecimal pagoNestaMaleta, BigDecimal faltaPagarNestaMaleta, BigDecimal pagoTodasAsMaletas,
+            BigDecimal faltaPagarTodasAsMaletas) {
     }
 
     public record LeituraDoFechamento(UUID remessaId, String codigoDaMaleta, String situacaoDoFechamento, Instant iniciadoEm, Instant concluidoEm,
@@ -433,21 +444,47 @@ public class ServicoDoFechamentoDaMaleta {
                        coalesce((SELECT sum(d.valor) FROM corona.pendencias_da_maleta d
                                   WHERE d.vendedor_id = v.id AND d.decisao = 'COBRAR_DO_REPRESENTANTE'), 0) AS todas,
                        coalesce((SELECT sum(d.quantidade) FROM corona.pendencias_da_maleta d
-                                  WHERE d.remessa_id = r.id AND d.decisao = 'PERDA_DA_LOJA'), 0) AS perdidas
+                                  WHERE d.remessa_id = r.id AND d.decisao = 'PERDA_DA_LOJA'), 0) AS perdidas,
+                       coalesce((SELECT sum(g.valor) FROM corona.pagamentos_cobranca_maleta g
+                                  JOIN corona.pendencias_da_maleta d ON d.id = g.pendencia_id WHERE d.remessa_id = r.id), 0) AS pago_nesta,
+                       coalesce((SELECT sum(g.valor) FROM corona.pagamentos_cobranca_maleta g WHERE g.vendedor_id = v.id), 0) AS pago_todas
                   FROM corona.remessas r JOIN corona.vendedores v ON v.id = r.vendedor_id
-                 WHERE r.id = ?""", (rs, n) -> new CobrancaDoRepresentante(rs.getObject(1, UUID.class), rs.getString(2),
-                Dinheiro.arredondar(rs.getBigDecimal(3)), Dinheiro.arredondar(rs.getBigDecimal(4)), rs.getInt(5)), remessaId);
+                 WHERE r.id = ?""", (rs, n) -> {
+                    BigDecimal nesta = Dinheiro.arredondar(rs.getBigDecimal(3));
+                    BigDecimal todas = Dinheiro.arredondar(rs.getBigDecimal(4));
+                    BigDecimal pagoNesta = Dinheiro.arredondar(rs.getBigDecimal(6));
+                    BigDecimal pagoTodas = Dinheiro.arredondar(rs.getBigDecimal(7));
+                    return new CobrancaDoRepresentante(rs.getObject(1, UUID.class), rs.getString(2), nesta, todas, rs.getInt(5), pagoNesta,
+                            nesta.subtract(pagoNesta), pagoTodas, todas.subtract(pagoTodas));
+                }, remessaId);
     }
 
     /** As faltas gravadas na conclusão, com a decisão da dona (§23.10, item 1). */
     private List<PendenciaDaMaleta> pendencias(UUID remessaId) {
         return jdbc.query("""
-                SELECT d.id, d.produto_id, p.nome, d.quantidade, d.preco_unitario, d.valor, d.decisao, d.motivo, d.created_at
+                SELECT d.id, d.produto_id, p.nome, d.quantidade, d.preco_unitario, d.valor, d.decisao, d.motivo, d.created_at,
+                       coalesce((SELECT sum(g.valor) FROM corona.pagamentos_cobranca_maleta g WHERE g.pendencia_id = d.id), 0) AS pago
                   FROM corona.pendencias_da_maleta d JOIN corona.produtos p ON p.id = d.produto_id
                  WHERE d.remessa_id = ? ORDER BY p.nome, d.id""",
-                (rs, n) -> new PendenciaDaMaleta(rs.getObject(1, UUID.class), rs.getObject(2, UUID.class), rs.getString(3), rs.getInt(4),
-                        rs.getBigDecimal(5), rs.getBigDecimal(6), rs.getString(7), rs.getString(8), rs.getTimestamp(9).toInstant()),
-                remessaId);
+                (rs, n) -> {
+                    UUID id = rs.getObject(1, UUID.class);
+                    BigDecimal valor = rs.getBigDecimal(6);
+                    BigDecimal pago = Dinheiro.arredondar(rs.getBigDecimal(10));
+                    boolean cobrada = COBRAR_DO_REPRESENTANTE.equals(rs.getString(7));
+                    return new PendenciaDaMaleta(id, rs.getObject(2, UUID.class), rs.getString(3), rs.getInt(4), rs.getBigDecimal(5), valor,
+                            rs.getString(7), rs.getString(8), rs.getTimestamp(9).toInstant(), pago,
+                            cobrada ? valor.subtract(pago) : Dinheiro.arredondar(BigDecimal.ZERO), pagamentos(id));
+                }, remessaId);
+    }
+
+    private List<PagamentoDaCobranca> pagamentos(UUID pendenciaId) {
+        return jdbc.query("""
+                SELECT g.id, g.valor, g.forma, g.moeda, g.valor_na_moeda, g.data_pagamento, e.motivo
+                  FROM corona.pagamentos_cobranca_maleta g
+                  LEFT JOIN corona.pagamentos_cobranca_maleta e ON e.estorna_id = g.id
+                 WHERE g.pendencia_id = ? AND g.estorna_id IS NULL ORDER BY g.created_at, g.id""",
+                (rs, n) -> new PagamentoDaCobranca(rs.getObject(1, UUID.class), rs.getBigDecimal(2), rs.getString(3), rs.getString(4),
+                        rs.getBigDecimal(5), rs.getDate(6).toLocalDate(), rs.getString(7) != null, rs.getString(7)), pendenciaId);
     }
 
     private String codigoDaMaleta(UUID remessaId) {

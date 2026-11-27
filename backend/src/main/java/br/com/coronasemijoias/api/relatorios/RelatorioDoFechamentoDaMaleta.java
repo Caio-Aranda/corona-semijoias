@@ -90,6 +90,9 @@ public class RelatorioDoFechamentoDaMaleta {
         var c = l.cobranca();
         t.add(new Total("cobrarNestaMaleta", "A cobrar do representante nesta maleta", n, c.nestaMaleta(), null, null, null));
         t.add(new Total("cobrarNoTotal", "A cobrar do representante, somando todas as maletas", n, c.todasAsMaletas(), null, null, null));
+        t.add(new Total("pagoNestaMaleta", "Pago pelo representante nesta maleta", n, c.pagoNestaMaleta(), null, null, null));
+        t.add(new Total("faltaPagarNestaMaleta", "Falta pagar nesta maleta", n, c.faltaPagarNestaMaleta(), null, null, null));
+        t.add(new Total("faltaPagarNoTotal", "Falta pagar, somando todas as maletas", n, c.faltaPagarTodasAsMaletas(), null, null, null));
         t.add(pecas("perdaDaLoja", "Peças que ficaram como perda da loja", n, c.pecasPerdidasPelaLoja()));
         return t;
     }

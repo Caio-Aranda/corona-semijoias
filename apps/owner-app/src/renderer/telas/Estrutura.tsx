@@ -49,6 +49,7 @@ import { TelaConferenciaDoDinheiro } from './conciliacoes/TelaConferenciaDoDinhe
 import { TelaConferencia } from './devolucoes/TelaConferencia';
 import { TelaMaletas } from './maletas/TelaMaletas';
 import { TelaAvisosDoConsignado } from './consignado/TelaAvisosDoConsignado';
+import { TelaComissaoDoConsignado } from './consignado/TelaComissaoDoConsignado';
 import { TelaClientesDoConsignado } from './consignado/TelaClientesDoConsignado';
 import { TelaFechamentoDaMaleta } from './consignado/TelaFechamentoDaMaleta';
 import {
@@ -149,6 +150,8 @@ function Conteudo({
       return <TelaClientesDoConsignado ponte={ponte} aoAbrirNota={aoAbrirNota} />;
     case 'consignado/avisos':
       return <TelaAvisosDoConsignado ponte={ponte} />;
+    case 'consignado/comissao':
+      return <TelaComissaoDoConsignado ponte={ponte} />;
     case 'painel/semana':
       return (
         <TelaPainelSemanal
