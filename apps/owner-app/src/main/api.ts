@@ -1554,6 +1554,7 @@ export function criarApiDoGestao(opcoes: OpcoesDaApi): ApiDoGestao {
       if (
         pedido.operacao === 'telas.ler' ||
         pedido.operacao.startsWith('fechamento.') ||
+        pedido.operacao.startsWith('cobranca.') ||
         pedido.operacao.startsWith('consignado.')
       ) {
         return executarConsignado(client, headers, pedido as ParametrosDeConsignado);

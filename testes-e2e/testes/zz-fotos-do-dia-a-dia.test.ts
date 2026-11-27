@@ -107,4 +107,21 @@ test('fotos da montagem da maleta e do fechamento', async () => {
   await foto(janela, '6-fechamento-em-andamento');
   await janela.getByRole('button', { name: 'Concluir o fechamento' }).click();
   await foto(janela, '7-fechamento-decidir-falta');
+
+  // Cobrar do representante, concluir e registrar uma parte do pagamento (§23.10, item 1a).
+  await janela.getByRole('radio', { name: 'Cobrar do representante' }).first().check();
+  await janela.getByRole('button', { name: 'Concluir o fechamento' }).click();
+  await janela.getByRole('dialog').getByRole('button', { name: 'Concluir' }).click();
+  await expect(janela.getByText('Faltas registradas no fechamento')).toBeVisible();
+  await foto(janela, '8-fechamento-com-cobranca');
+  await janela
+    .getByRole('button', { name: /^Registrar pagamento de / })
+    .first()
+    .click();
+  const valor = janela.getByLabel('Valor pago');
+  await valor.fill('50,00');
+  await foto(janela, '9-registrar-pagamento');
+  await janela.getByRole('button', { name: 'Registrar', exact: true }).click();
+  await expect(janela.getByText('Pagamento registrado. Ele entrou no caixa.')).toBeVisible();
+  await foto(janela, '10-pagamento-registrado');
 });
