@@ -2792,6 +2792,25 @@
         },
         "type" : "object"
       },
+      "DecisaoDaFalta" : {
+        "properties" : {
+          "decisao" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "motivo" : {
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "DecisaoDeCobranca" : {
         "properties" : {
           "decisao" : {
@@ -4241,6 +4260,12 @@
             },
             "type" : "array"
           },
+          "pendencias" : {
+            "items" : {
+              "$ref" : "#/components/schemas/PendenciaDaMaleta"
+            },
+            "type" : "array"
+          },
           "remessaId" : {
             "format" : "uuid",
             "type" : "string"
@@ -4470,6 +4495,10 @@
           },
           "nome" : {
             "type" : "string"
+          },
+          "paraLerDepois" : {
+            "format" : "int32",
+            "type" : "integer"
           },
           "produtoId" : {
             "format" : "uuid",
@@ -8471,6 +8500,17 @@
         "required" : [ "codigo", "tipo" ],
         "type" : "object"
       },
+      "PedidoDeConclusao" : {
+        "properties" : {
+          "decisoes" : {
+            "items" : {
+              "$ref" : "#/components/schemas/DecisaoDaFalta"
+            },
+            "type" : "array"
+          }
+        },
+        "type" : "object"
+      },
       "PedidoDeConferenciaDiaria" : {
         "properties" : {
           "id" : {
@@ -9163,6 +9203,48 @@
             "type" : "string"
           },
           "vendedorNome" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "PendenciaDaMaleta" : {
+        "properties" : {
+          "decisao" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "motivo" : {
+            "type" : "string"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "precoUnitario" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
+            "type" : "string"
+          },
+          "produtoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "quantidade" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "registradaEm" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "valor" : {
+            "example" : "123.45",
+            "format" : "decimal",
+            "pattern" : "^-?\\d{1,12}(\\.\\d{1,2})?$",
             "type" : "string"
           }
         },
@@ -27913,7 +27995,7 @@
     },
     "/api/maletas/{id}/fechamento/concluir" : {
       "post" : {
-        "description" : "Devolve ao estoque as peças bipadas (até o que a maleta devia ter) e passa a maleta a FECHADA. A diferença não é corrigida: fica na leitura para a dona decidir.",
+        "description" : "Devolve ao estoque as peças bipadas (até o que a maleta devia ter), grava cada peça que falta como perda com a decisão da dona (COBRAR_DO_REPRESENTANTE, que cria a pendência da maleta, ou PERDA_DA_LOJA, com motivo) e passa a maleta a FECHADA. Falta sem decisão: 409 FALTA_SEM_DECISAO, nada gravado. A sobra não volta ao estoque.",
         "operationId" : "concluirFechamentoDaMaleta",
         "parameters" : [ {
           "in" : "path",
@@ -27924,6 +28006,15 @@
             "type" : "string"
           }
         } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeConclusao"
+              }
+            }
+          }
+        },
         "responses" : {
           "204" : {
             "description" : "No Content"
@@ -27975,6 +28066,48 @@
           "bearer" : [ ]
         } ],
         "summary" : "Guardar as peças bipadas na volta",
+        "tags" : [ "fechamento-da-maleta-controller" ]
+      }
+    },
+    "/api/maletas/{id}/fechamento/voltas" : {
+      "post" : {
+        "description" : "Só na maleta FECHADA (continua fechada). Cada leitura devolve a peça ao estoque, no máximo o que as clientes já devolveram à maleta e ainda não voltou à loja (409 PECA_AINDA_COM_A_CLIENTE). Reenviar o mesmo id não duplica.",
+        "operationId" : "registrarVoltasDaMaletaFechada",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoDeLeituras"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RespostaDasLeituras"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearer" : [ ]
+        } ],
+        "summary" : "Ler as peças que voltaram depois do fechamento",
         "tags" : [ "fechamento-da-maleta-controller" ]
       }
     }

@@ -832,6 +832,13 @@ export type DadosDoUsuario = {
     vendedorId?: string;
 };
 
+export type DecisaoDaFalta = {
+    decisao?: string;
+    id?: string;
+    motivo?: string;
+    produtoId?: string;
+};
+
 export type DecisaoDeCobranca = {
     decisao?: string;
     motivo?: string;
@@ -1264,6 +1271,7 @@ export type LeituraDoFechamento = {
     concluidoEm?: string;
     iniciadoEm?: string;
     pecas?: Array<LinhaDaPeca>;
+    pendencias?: Array<PendenciaDaMaleta>;
     remessaId?: string;
     situacaoDoFechamento?: string;
     valores?: ServicoDoFechamentoDaMaletaValores;
@@ -1333,6 +1341,7 @@ export type LinhaDaPeca = {
     enviadas?: number;
     esperadoNaMaleta?: number;
     nome?: string;
+    paraLerDepois?: number;
     produtoId?: string;
     vendidas?: number;
 };
@@ -2469,6 +2478,10 @@ export type PedidoDeCodigo = {
     tipo: string;
 };
 
+export type PedidoDeConclusao = {
+    decisoes?: Array<DecisaoDaFalta>;
+};
+
 export type PedidoDeConferenciaDiaria = {
     id?: string;
 };
@@ -2696,6 +2709,18 @@ export type Pendencia = {
     valor?: string;
     vendedorId?: string;
     vendedorNome?: string;
+};
+
+export type PendenciaDaMaleta = {
+    decisao?: string;
+    id?: string;
+    motivo?: string;
+    nome?: string;
+    precoUnitario?: string;
+    produtoId?: string;
+    quantidade?: number;
+    registradaEm?: string;
+    valor?: string;
 };
 
 export type PendenciaFechada = {
@@ -9738,7 +9763,7 @@ export type IniciarFechamentoDaMaletaResponses = {
 export type IniciarFechamentoDaMaletaResponse = IniciarFechamentoDaMaletaResponses[keyof IniciarFechamentoDaMaletaResponses];
 
 export type ConcluirFechamentoDaMaletaData = {
-    body?: never;
+    body?: PedidoDeConclusao;
     path: {
         id: string;
     };
@@ -9772,3 +9797,21 @@ export type RegistrarLeiturasDoFechamentoDaMaletaResponses = {
 };
 
 export type RegistrarLeiturasDoFechamentoDaMaletaResponse = RegistrarLeiturasDoFechamentoDaMaletaResponses[keyof RegistrarLeiturasDoFechamentoDaMaletaResponses];
+
+export type RegistrarVoltasDaMaletaFechadaData = {
+    body: PedidoDeLeituras;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/maletas/{id}/fechamento/voltas';
+};
+
+export type RegistrarVoltasDaMaletaFechadaResponses = {
+    /**
+     * OK
+     */
+    200: RespostaDasLeituras;
+};
+
+export type RegistrarVoltasDaMaletaFechadaResponse = RegistrarVoltasDaMaletaFechadaResponses[keyof RegistrarVoltasDaMaletaFechadaResponses];

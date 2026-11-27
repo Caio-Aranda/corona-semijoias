@@ -50,12 +50,40 @@ export const ES_TEXTOS_DE_CONSIGNADO: NoMesmoFormato<typeof PT_TEXTOS_DE_CONSIGN
       `Sobran ${pecas(n)} respecto de lo que debía estar en la maleta. Lo que sobra no vuelve al stock: revise si la pieza es de otra maleta.`,
     linhaDaDiferenca: (nome: string, n: number) => `${nome}: ${pecas(n)}`,
     semDiferenca: 'Todo lo que debía estar en la maleta fue leído.',
+    decidir: {
+      titulo: 'Qué hacer con cada pieza que falta',
+      ajuda:
+        'Elija una opción para cada pieza. Cobrar al representante: él queda debiendo la pieza, al precio de la maleta. Pérdida de la tienda: la tienda asume la pérdida, y usted dice el motivo.',
+      peca: (nome: string, n: number) => `${nome}: falta ${pecas(n)}`,
+      cobrar: 'Cobrar al representante',
+      perda: 'Pérdida de la tienda',
+      motivo: 'Motivo de la pérdida',
+      motivoAjuda: 'Por ejemplo: se rompió, la robaron, se perdió en el viaje.',
+      falta: 'Elija qué hacer con cada pieza que falta antes de concluir.',
+      faltaMotivo: 'Diga el motivo de la pérdida de la tienda.',
+    },
+    registradas: {
+      titulo: 'Faltantes registrados en el cierre',
+      cobrar: (nome: string, n: number, valor: string) =>
+        `${nome}: ${pecas(n)}. Cobrar al representante: ${valor}.`,
+      perda: (nome: string, n: number, motivo: string) =>
+        `${nome}: ${pecas(n)}. Pérdida de la tienda${motivo ? ` (${motivo})` : ''}.`,
+    },
+    depois: {
+      titulo: 'Leer las piezas que volvieron después',
+      ajuda:
+        'La maleta ya está cerrada. Lea aquí las piezas que los clientes devolvieron después: cada lectura devuelve 1 pieza al stock de la tienda.',
+      adicionar: 'Devolver al stock',
+      paraLer: (n: number) => `Piezas que volvieron después: ${pecas(n)} para leer.`,
+      aindaComClientes: (n: number) => `Todavía con clientes: ${pecas(n)}.`,
+      lida: (nome: string) => `Leída: ${nome}. Volvió 1 pieza al stock.`,
+    },
     concluir: 'Concluir el cierre',
     concluindo: 'Concluyendo...',
     confirmar: {
       titulo: '¿Concluir el cierre?',
       texto:
-        'Las piezas leídas vuelven al stock de la tienda, hasta lo que la maleta debía tener, y la maleta queda cerrada. La diferencia no se corrige sola: queda en el informe. Esta acción no tiene vuelta atrás.',
+        'Las piezas leídas vuelven al stock de la tienda, hasta lo que la maleta debía tener, y la maleta queda cerrada. Cada pieza que falta queda registrada como usted eligió. Esta acción no tiene vuelta atrás.',
       concluir: 'Concluir',
       voltar: 'Todavía no',
     },
