@@ -90,6 +90,28 @@ export const PT_TEXTOS = {
     texto: 'O Corona Gestão só funciona com internet. Conecte-se e tente de novo.',
   },
   /** Pessoa já dentro do aplicativo e a internet caiu: a sessão fica guardada e o app tenta de novo. */
+  /** Telas que precisam de um cadastro feito antes: o que falta e o botão que leva até lá. */
+  faltaCadastro: {
+    semSemana: 'Ainda não há semana aberta. Cadastre a semana para montar a maleta.',
+    semSemanaParaRepor: 'Ainda não há semana aberta. Cadastre a semana para repor a maleta.',
+    cadastrarSemana: 'Cadastrar semana',
+    semRepresentante:
+      'Ainda não há representante ativo. Cadastre o representante (ou ative o que já existe) para montar a maleta.',
+    cadastrarRepresentante: 'Cadastrar representante',
+    semFornecedor:
+      'Ainda não há fornecedor cadastrado. Cadastre o fornecedor para lançar a compra.',
+    cadastrarFornecedor: 'Cadastrar fornecedor',
+    semCategoria: 'Ainda não há categoria cadastrada. Cadastre a categoria para cadastrar a peça.',
+    cadastrarCategoria: 'Cadastrar categoria',
+  },
+  /** Botão que resolve o erro mais comum de cada código da API (o texto do erro continua o do servidor). */
+  resolverErro: {
+    cadastrarSemana: 'Cadastrar semana',
+    abrirRepresentantes: 'Abrir representantes',
+    lancarCotacao: 'Lançar a cotação do dia',
+    verEstoque: 'Ver o estoque',
+    receberCompra: 'Receber compra',
+  },
   semConexao: {
     texto: 'Sem conexão com a internet. Tente de novo.',
     aviso: 'Você não precisa entrar de novo. O aplicativo tenta sozinho em alguns segundos.',
