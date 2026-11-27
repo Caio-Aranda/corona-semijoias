@@ -708,3 +708,28 @@ tr.consignado-linha[tabindex]:focus-visible {
   grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
   column-gap: var(--espaco-6);
 }
+
+/* A tabela da Cobrança cabe na largura da tela (revisão de 27/11/2026): a referência quebra em qualquer ponto, o nome da
+   peça quebra entre palavras e o botão "Tirar uma devolução" fica sempre visível. */
+.consignado-tabela--cobranca {
+  table-layout: auto;
+  max-width: 100%;
+}
+.consignado-tabela--cobranca td.consignado-ref {
+  overflow-wrap: anywhere;
+  max-width: 7rem;
+}
+.consignado-tabela--cobranca .consignado-peca {
+  overflow-wrap: break-word;
+}
+/* A miniatura da foto (ou o "Sem foto") nunca encolhe nem quebra letra por letra. */
+.consignado-tabela--cobranca .consignado-peca > :first-child {
+  flex-shrink: 0;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+.consignado-tabela--cobranca td:last-child .cs-botao {
+  padding-left: var(--espaco-3);
+  padding-right: var(--espaco-3);
+  white-space: normal;
+}
