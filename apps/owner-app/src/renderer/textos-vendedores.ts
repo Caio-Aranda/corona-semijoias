@@ -31,7 +31,8 @@ export const PT_TEXTOS_DE_VENDEDORES = {
   situacao: { ativo: 'Ativo', desativado: 'Inativo' },
   legenda: 'Lista de representantes',
   abrir: 'Abrir cadastro',
-  vazio: 'Ainda não há nenhum representante.',
+  vazio:
+    'Ainda não há nenhum representante. Use o botão "Novo representante" para cadastrar o primeiro.',
   semResultado: 'Nenhum representante encontrado. Confira o que você digitou ou limpe a busca.',
   ficha: {
     tituloNovo: 'Novo representante',

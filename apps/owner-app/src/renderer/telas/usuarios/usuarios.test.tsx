@@ -133,7 +133,7 @@ describe('Pessoas → Usuários: lista', () => {
     const u = userEvent.setup();
     render(<App ponte={m.ponte} />);
     await u.click(await screen.findByRole('button', { name: 'Usuários' }));
-    expect(await screen.findByText('Ainda não há nenhum usuário.')).toBeInTheDocument();
+    expect(await screen.findByText(/Ainda não há nenhum usuário\./)).toBeInTheDocument();
     await u.selectOptions(screen.getByLabelText('Situação'), 'ativos');
     expect(
       await screen.findByText(

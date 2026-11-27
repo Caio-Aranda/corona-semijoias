@@ -192,7 +192,8 @@ export const ES_TEXTOS_DE_MALETAS: NoMesmoFormato<typeof PT_TEXTOS_DE_MALETAS> =
     },
     porVendedor: {
       legenda: 'Lo que cada representante tiene abierto',
-      vazia: 'Ningún representante registrado.',
+      vazia:
+        'Ningún representante registrado. Registre al representante en Personas → Representantes.',
       colunas: {
         vendedor: 'Representante',
         maletas: 'Maletas con él',

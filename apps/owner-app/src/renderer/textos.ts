@@ -31,7 +31,7 @@ function cadastroBasico(c: {
     inativar: `Inativar ${c.singular}`,
     reativar: `Reativar ${c.singular}`,
     colunaAcoes: 'O que fazer',
-    vazio: `Ainda não há ${c.genero === 'a' ? 'nenhuma' : 'nenhum'} ${c.singular}.`,
+    vazio: `Ainda não há ${c.genero === 'a' ? 'nenhuma' : 'nenhum'} ${c.singular}. Use o botão "${novo} ${c.singular}" para cadastrar.`,
     semResultado: `${c.genero === 'a' ? 'Nenhuma' : 'Nenhum'} ${c.singular} encontrad${c.genero}. Confira o que você digitou ou limpe a busca.`,
     /** Lista sem ninguém na situação Inativos. */
     semInativos: `${c.genero === 'a' ? 'Nenhuma' : 'Nenhum'} ${c.singular} inativ${c.genero}.`,

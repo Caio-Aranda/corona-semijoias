@@ -853,7 +853,8 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
         situacao: 'Estado',
       },
       dica: 'Hacé doble clic en un pedido para hacer su cobranza.',
-      semPedidos: 'Ningún pedido en esta semana.',
+      semPedidos:
+        'Ningún pedido en esta semana. Use el botón "Nuevo Pedido" para hacer el primero.',
       novoPedidoSoNaAtual: 'Un pedido nuevo solo en la semana de ahora.',
       totaisLegenda: 'Totales de la semana',
       totais: {
@@ -930,7 +931,8 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
       buscar: 'Cliente, nota o maleta',
       buscarBotao: 'Buscar',
       escolher: 'Elegí el pedido para hacer la cobranza.',
-      nenhuma: 'No se encontró ningún pedido abierto.',
+      nenhuma:
+        'No se encontró ningún pedido abierto. Revise el nombre del cliente o el número de la nota.',
       legenda: 'Pedidos abiertos',
       colunas: {
         nota: 'Nota nº',
@@ -1079,7 +1081,8 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
     escolherPedido: {
       buscar: 'Buscar el pedido',
       buscarBotao: 'Buscar',
-      nenhum: 'No se encontró ningún pedido abierto.',
+      nenhum:
+        'No se encontró ningún pedido abierto. Revise el nombre del cliente o el número de la nota.',
       escolher: 'Elegir',
       escolhido: (numero: string, cliente: string) => `Pedido ${numero} · ${cliente}`,
       trocar: 'Elegir otro pedido',
@@ -1090,7 +1093,8 @@ export const TEXTOS_ES: Igual<typeof TEXTOS_PT> = {
       novo: 'Nuevo cliente',
       legenda: 'Clientes',
       colunas: { cliente: 'Cliente', telefone: 'Teléfono', cidade: 'Ciudad', pendencia: 'Debe' },
-      nenhum: 'No se encontró ningún cliente.',
+      nenhum:
+        'No se encontró ningún cliente. Revise el nombre o use el botón "Nuevo cliente" para registrar.',
       abrir: 'Abrir',
       deve: 'Debe',
       naoDeve: 'No debe nada',

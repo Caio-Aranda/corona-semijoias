@@ -24,7 +24,9 @@ export const ES_TEXTOS_DE_CONSIGNADO: NoMesmoFormato<typeof PT_TEXTOS_DE_CONSIGN
       `Maleta ${codigo}, de ${representante}, semana ${semana}${enviadaEm ? `, enviada el ${enviadaEm}` : ''}`,
     fechadaNaLista: ' (ya cerrada)',
     abrir: 'Abrir el cierre',
-    nenhuma: 'No hay maleta enviada para cerrar.',
+    nenhuma:
+      'No hay maleta enviada para cerrar. Arme y envíe la maleta al representante; cuando vuelva, ciérrela aquí.',
+    montarMaleta: 'Armar maleta',
     carregando: 'Cargando el cierre...',
     comecarTitulo: 'El cierre de esta maleta todavía no empezó',
     comecarTexto:
@@ -159,7 +161,8 @@ export const ES_TEXTOS_DE_CONSIGNADO: NoMesmoFormato<typeof PT_TEXTOS_DE_CONSIGN
     },
     situacoes: { ABERTA: 'En curso', FECHADA: 'Cerrada' },
     legenda: 'Semanas del representante',
-    vazio: 'Este representante todavía no abrió ninguna semana.',
+    vazio:
+      'Este representante todavía no abrió ninguna semana. Él abre la semana en su computadora, al hacer la primera nota.',
     verNotas: 'Ver las notas',
     verNotasDa: (semana: number) => `Ver las notas de la semana ${semana}`,
     carregando: 'Cargando las semanas...',

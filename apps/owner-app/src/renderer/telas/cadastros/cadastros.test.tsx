@@ -74,7 +74,7 @@ describe('Cadastros: lista', () => {
 
   it('lista vazia e busca sem resultado têm textos diferentes', async () => {
     const m = montar({ 'pracas.listar': () => pagina([]) });
-    const u = await abrir(m, 'Praças', 'Ainda não há nenhuma praça.');
+    const u = await abrir(m, 'Praças', /Ainda não há nenhuma praça\./);
     await u.type(screen.getByLabelText('Buscar pelo nome'), 'zzz');
     expect(
       await screen.findByText(
@@ -134,7 +134,7 @@ describe('Cadastros: criar e editar', () => {
         return { ok: true, dados: { id: ID_A, version: 0, nome: 'Colares' } };
       },
     });
-    const u = await abrir(m, 'Categorias', 'Ainda não há nenhuma categoria.');
+    const u = await abrir(m, 'Categorias', /Ainda não há nenhuma categoria\./);
     await u.click(screen.getByRole('button', { name: 'Nova categoria' }));
     expect(screen.getByLabelText('Nome da categoria')).toHaveFocus();
     await u.keyboard('Colares{Enter}');
@@ -146,7 +146,7 @@ describe('Cadastros: criar e editar', () => {
 
   it('o formulário de semana não deixa escolher a situação: a semana só fecha por Fechar semana', async () => {
     const m = montar({ 'semanas.listar': () => pagina([]) });
-    const u = await abrir(m, 'Semanas', 'Ainda não há nenhuma semana.');
+    const u = await abrir(m, 'Semanas', /Ainda não há nenhuma semana\./);
     await u.click(screen.getByRole('button', { name: 'Nova semana' }));
     expect(screen.getByLabelText('Número da semana')).toBeInTheDocument();
     expect(screen.queryByLabelText('Situação')).toBeNull();
@@ -155,7 +155,7 @@ describe('Cadastros: criar e editar', () => {
 
   it('campo obrigatório vazio mostra o aviso no campo e não chama a API', async () => {
     const m = montar({ 'pracas.listar': () => pagina([]) });
-    const u = await abrir(m, 'Praças', 'Ainda não há nenhuma praça.');
+    const u = await abrir(m, 'Praças', /Ainda não há nenhuma praça\./);
     await u.click(screen.getByRole('button', { name: 'Nova praça' }));
     await u.click(screen.getByRole('button', { name: 'Salvar' }));
     expect(await screen.findByText('Preencha este campo.')).toBeInTheDocument();
@@ -174,7 +174,7 @@ describe('Cadastros: criar e editar', () => {
         campos: [{ campo: 'cpf', mensagem: 'Confira o CPF: ele não parece estar certo.' }],
       }),
     });
-    const u = await abrir(m, 'Clientes', 'Ainda não há nenhum cliente.');
+    const u = await abrir(m, 'Clientes', /Ainda não há nenhum cliente\./);
     await u.click(screen.getByRole('button', { name: 'Novo cliente' }));
     await u.type(screen.getByLabelText('Nome do cliente'), 'Ana');
     await u.type(screen.getByLabelText('Número do documento'), '111');
@@ -198,7 +198,7 @@ describe('Cadastros: criar e editar', () => {
       'clientes.listar': () => pagina([]),
       'clientes.criar': () => ({ ok: true, dados: { id: ID_A, version: 0, nome: 'Ana' } }),
     });
-    const u = await abrir(m, 'Clientes', 'Ainda não há nenhum cliente.');
+    const u = await abrir(m, 'Clientes', /Ainda não há nenhum cliente\./);
     await u.click(screen.getByRole('button', { name: 'Novo cliente' }));
     await u.type(screen.getByLabelText('Nome do cliente'), 'Ana');
     await screen.findByRole('option', { name: 'Joana Representante' });
@@ -215,7 +215,7 @@ describe('Cadastros: criar e editar', () => {
       'semanas.listar': () => pagina([]),
       'semanas.criar': () => ({ ok: true, dados: {} }),
     });
-    const u = await abrir(m, 'Semanas', 'Ainda não há nenhuma semana.');
+    const u = await abrir(m, 'Semanas', /Ainda não há nenhuma semana\./);
     await u.click(screen.getByRole('button', { name: 'Nova semana' }));
     await u.type(screen.getByLabelText('Número da semana'), '12');
     await u.type(screen.getByLabelText('Primeiro dia'), '2026-11-09');
@@ -296,7 +296,7 @@ describe('Cadastros: excluir', () => {
     const janela = await screen.findByRole('dialog');
     await u.click(within(janela).getByRole('button', { name: 'Excluir praça' }));
     expect(await screen.findByText('Centro foi excluída.')).toBeInTheDocument();
-    expect(await screen.findByText('Ainda não há nenhuma praça.')).toBeInTheDocument();
+    expect(await screen.findByText(/Ainda não há nenhuma praça\./)).toBeInTheDocument();
     expect(m.chamadas.find((c) => c.operacao === 'pracas.excluir')?.parametros).toEqual({
       id: ID_A,
     });
@@ -478,7 +478,7 @@ describe('Cadastros: data de nascimento do cliente', () => {
         ],
       }),
     });
-    const u = await abrir(m, 'Clientes', 'Ainda não há nenhum cliente.');
+    const u = await abrir(m, 'Clientes', /Ainda não há nenhum cliente\./);
     await u.click(screen.getByRole('button', { name: 'Novo cliente' }));
     await u.type(screen.getByLabelText('Nome do cliente'), 'Ana');
     await u.type(screen.getByLabelText('Data de nascimento'), '2999-01-01');
@@ -495,7 +495,7 @@ describe('Cadastros: cliente do consignado (tarefa 9.7)', () => {
       'clientes.listar': () => pagina([]),
       'clientes.criar': () => ({ ok: true, dados: { id: ID_A, version: 0, nome: 'Ana' } }),
     });
-    const u = await abrir(m, 'Clientes', 'Ainda não há nenhum cliente.');
+    const u = await abrir(m, 'Clientes', /Ainda não há nenhum cliente\./);
     await u.click(screen.getByRole('button', { name: 'Novo cliente' }));
     expect(screen.getByLabelText('Comissão do cliente (%)')).toHaveValue('30');
     expect(screen.getByLabelText('Tipo do documento')).toHaveValue('CPF');
@@ -523,7 +523,7 @@ describe('Cadastros: cliente do consignado (tarefa 9.7)', () => {
       'clientes.listar': () => pagina([]),
       'clientes.criar': () => ({ ok: true, dados: {} }),
     });
-    const u = await abrir(m, 'Clientes', 'Ainda não há nenhum cliente.');
+    const u = await abrir(m, 'Clientes', /Ainda não há nenhum cliente\./);
     await u.click(screen.getByRole('button', { name: 'Novo cliente' }));
     await u.type(screen.getByLabelText('Nome do cliente'), 'Ana');
     await u.clear(screen.getByLabelText('Comissão do cliente (%)'));

@@ -125,7 +125,7 @@ export const PT_TEXTOS_DE_FINANCEIRO = {
     inativada: 'Categoria inativada.',
     reativada: 'Categoria reativada.',
     legenda: 'Categorias do caixa',
-    vazia: 'Nenhuma categoria ainda.',
+    vazia: 'Nenhuma categoria ainda. Use o botão "Nova categoria" para criar a primeira.',
     colunas: { nome: 'Nome', tipo: 'Tipo', situacao: 'Situação', acoes: 'O que fazer' },
     ativa: 'Ativa',
     inativa: 'Inativa',

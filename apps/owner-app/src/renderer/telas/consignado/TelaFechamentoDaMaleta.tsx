@@ -2,6 +2,7 @@ import { Aviso, Botao, EstadoDaLista, JanelaDeConfirmacao } from '@corona/ui';
 import { useRef, useState } from 'react';
 import type { PonteDoCorona } from '../../../shared/ponte';
 import { AvisoDeErro } from '../../componentes/AvisoDeErro';
+import { FaltaDeCadastro } from '../../componentes/FaltaDeCadastro';
 import {
   chamar,
   chamarTodasAsPaginas,
@@ -89,7 +90,11 @@ function EscolherMaleta({
         aoTentarDeNovo={busca.recarregar}
       >
         {maletas.length === 0 ? (
-          <Aviso tipo="informacao">{T.nenhuma}</Aviso>
+          <FaltaDeCadastro
+            mensagem={T.nenhuma}
+            rotuloDoBotao={T.montarMaleta}
+            rota="maletas/montar"
+          />
         ) : (
           <div className="gestao-formulario">
             <div className="cs-campo">
