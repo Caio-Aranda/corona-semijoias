@@ -26,7 +26,8 @@ export const ES_TEXTOS_DE_PRODUTOS: NoMesmoFormato<typeof PT_TEXTOS_DE_PRODUTOS>
   },
   situacao: { ativo: 'Activo', desativado: 'Inactivo' },
   abrir: 'Abrir registro',
-  vazio: 'Todavía no hay ningún producto.',
+  vazio:
+    'Todavía no hay ningún producto. Use el botón "Registrar producto" para registrar el primero.',
   semResultado: 'Ningún producto encontrado. Revise lo que escribió o limpie la búsqueda.',
   abas: {
     rotulo: 'Qué hacer con los productos',

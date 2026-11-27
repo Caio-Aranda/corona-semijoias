@@ -63,6 +63,7 @@ export const PT_TEXTOS_DE_CONCILIACOES = {
     PRODUTO: 'Peça',
     MALETA: 'Maleta',
     PENDENCIA: 'Falta',
+    PENDENCIA_DA_MALETA: 'Falta no fechamento da maleta',
     COMPRA: 'Compra',
   } as Record<string, string>,
   outraReferencia: 'Registro',

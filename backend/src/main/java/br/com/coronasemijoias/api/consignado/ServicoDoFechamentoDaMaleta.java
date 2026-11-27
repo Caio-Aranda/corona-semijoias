@@ -45,9 +45,26 @@ public class ServicoDoFechamentoDaMaleta {
             int quantidade) {
     }
 
+    /**
+     * {@code paraLerDepois}: na maleta já fechada, as peças que as clientes devolveram depois e a dona ainda não leu (§23.10,
+     * item 3); na maleta em fechamento, zero.
+     */
     public record LinhaDaPeca(UUID produtoId, String nome, int enviadas, int devolvidasPelosClientes, int vendidas, int comClientes,
-            int esperadoNaMaleta, int bipadas, int diferenca, int devolvidasALoja, List<PecaComCliente> aindaComClientes) {
+            int esperadoNaMaleta, int bipadas, int diferenca, int devolvidasALoja, List<PecaComCliente> aindaComClientes,
+            int paraLerDepois) {
     }
+
+    /** O que a dona decidiu para uma peça que falta na conclusão (§23.10, item 1); o id é do aplicativo. */
+    public record DecisaoDaFalta(UUID id, UUID produtoId, String decisao, String motivo) {
+    }
+
+    /** Uma falta gravada na conclusão, com a decisão: cobrar do representante ou perda da loja. */
+    public record PendenciaDaMaleta(UUID id, UUID produtoId, String nome, int quantidade, BigDecimal precoUnitario, BigDecimal valor,
+            String decisao, String motivo, Instant registradaEm) {
+    }
+
+    static final String COBRAR_DO_REPRESENTANTE = "COBRAR_DO_REPRESENTANTE";
+    static final String PERDA_DA_LOJA = "PERDA_DA_LOJA";
 
     /**
      * Um valor em Real e, quando todos os lançamentos que o formam tinham cotação, em Dólar e Guarani: cada lançamento (acerto ou
@@ -99,8 +116,16 @@ public class ServicoDoFechamentoDaMaleta {
         }
     }
 
+    /**
+     * Quanto cobrar do representante pelas faltas (§23.10, item 1): nesta maleta e somando todas as maletas dele, e quantas peças
+     * ficaram como perda da loja nesta maleta.
+     */
+    public record CobrancaDoRepresentante(UUID vendedorId, String representante, BigDecimal nestaMaleta, BigDecimal todasAsMaletas,
+            int pecasPerdidasPelaLoja) {
+    }
+
     public record LeituraDoFechamento(UUID remessaId, String codigoDaMaleta, String situacaoDoFechamento, Instant iniciadoEm, Instant concluidoEm,
-            List<LinhaDaPeca> pecas, Valores valores) {
+            List<LinhaDaPeca> pecas, Valores valores, List<PendenciaDaMaleta> pendencias, CobrancaDoRepresentante cobranca) {
     }
 
     private final JdbcTemplate jdbc;
@@ -196,38 +221,157 @@ public class ServicoDoFechamentoDaMaleta {
                 "Esta peça não é desta maleta. Ela está na maleta " + outras.get(0) + ".");
     }
 
-    /**
-     * Conclui: devolve ao estoque as peças bipadas (no máximo o que a maleta devia ter) e fecha a maleta. A diferença
-     * (bipadas − esperado) NÃO é corrigida aqui. Concluir de novo uma maleta já fechada recusa.
-     */
+    /** Conclui sem nenhuma falta para decidir (o mesmo que {@link #concluir(UUID, List, UUID)} sem decisões). */
     @Transactional
     public void concluir(UUID remessaId, UUID usuarioId) {
+        concluir(remessaId, List.of(), usuarioId);
+    }
+
+    /**
+     * Conclui: devolve ao estoque as peças bipadas (no máximo o que a maleta devia ter), grava cada falta como PERDA na maleta com
+     * a decisão da dona (§23.10, item 1) e fecha a maleta. A quantidade que falta é do servidor; sem decisão para cada peça que
+     * falta, recusa ({@code FALTA_SEM_DECISAO}) e nada é gravado. A sobra não volta ao estoque. Concluir de novo recusa.
+     */
+    @Transactional
+    public void concluir(UUID remessaId, List<DecisaoDaFalta> decisoes, UUID usuarioId) {
         String status = trancar(remessaId);
         UUID fechamento = emAndamento(remessaId);
         if (fechamento == null) {
             throw new ErroDaApi(HttpStatus.CONFLICT, "FECHADA".equals(status) ? CodigoErro.MALETA_JA_FECHADA
                     : CodigoErro.FECHAMENTO_NAO_ENCONTRADO);
         }
+        Map<UUID, DecisaoDaFalta> decididas = conferirDecisoes(decisoes);
         List<LinhaDeDevolucao> devolver = new ArrayList<>();
-        for (Map<String, Object> b : jdbc.queryForList("""
-                SELECT l.produto_id, sum(l.quantidade) AS bipadas FROM corona.leituras_fechamento_maleta l
-                 WHERE l.fechamento_id = ? GROUP BY l.produto_id ORDER BY l.produto_id""", fechamento)) {
-            UUID produto = (UUID) b.get("produto_id");
-            int bipadas = ((Number) b.get("bipadas")).intValue();
+        Map<UUID, Integer> faltas = new LinkedHashMap<>();
+        for (Map<String, Object> l : jdbc.queryForList("""
+                SELECT i.produto_id, coalesce((SELECT sum(b.quantidade) FROM corona.leituras_fechamento_maleta b
+                                                WHERE b.fechamento_id = ? AND b.produto_id = i.produto_id), 0) AS bipadas
+                  FROM corona.itens_remessa i WHERE i.remessa_id = ? AND i.deleted_at IS NULL ORDER BY i.produto_id""",
+                fechamento, remessaId)) {
+            UUID produto = (UUID) l.get("produto_id");
+            int bipadas = ((Number) l.get("bipadas")).intValue();
             int esperado = esperadoNaMaleta(remessaId, produto);
             int volta = Math.min(bipadas, esperado);
             if (volta > 0) {
                 devolver.add(new LinhaDeDevolucao(UuidV7.gerar(), produto, volta));
             }
+            if (esperado > bipadas) {
+                faltas.put(produto, esperado - bipadas);
+            }
+        }
+        for (UUID produto : decididas.keySet()) {
+            if (!faltas.containsKey(produto)) {
+                throw Validacoes.recusar("decisoes", "Esta peça não falta na maleta. Atualize a tela e confira.");
+            }
+        }
+        if (!decididas.keySet().containsAll(faltas.keySet())) {
+            throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.FALTA_SEM_DECISAO);
         }
         if (!devolver.isEmpty()) {
             maleta.devolver(remessaId, devolver, usuarioId);
+        }
+        UUID vendedor = jdbc.queryForObject("SELECT vendedor_id FROM corona.remessas WHERE id = ?", UUID.class, remessaId);
+        for (Map.Entry<UUID, Integer> f : faltas.entrySet()) {
+            DecisaoDaFalta d = decididas.get(f.getKey());
+            int quantidade = f.getValue();
+            BigDecimal preco = jdbc.queryForObject("""
+                    SELECT coalesce(i.preco_remessa, p.preco_venda) FROM corona.itens_remessa i JOIN corona.produtos p ON p.id = i.produto_id
+                     WHERE i.remessa_id = ? AND i.produto_id = ? AND i.deleted_at IS NULL""", BigDecimal.class, remessaId, f.getKey());
+            UUID movimento = UuidV7.gerar();
+            jdbc.update("INSERT INTO corona.movimentos_remessa (id, remessa_id, produto_id, tipo, quantidade) VALUES (?, ?, ?, 'PERDA', ?)",
+                    movimento, remessaId, f.getKey(), -quantidade);
+            jdbc.update("""
+                    INSERT INTO corona.pendencias_da_maleta (id, fechamento_id, remessa_id, vendedor_id, produto_id, quantidade, preco_unitario,
+                                                             valor, decisao, motivo, movimento_id, registrada_por)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", d.id(), fechamento, remessaId, vendedor, f.getKey(), quantidade,
+                    Dinheiro.arredondar(preco), Dinheiro.precoDaLinha(preco, quantidade), d.decisao(), d.motivo(), movimento, usuarioId);
         }
         jdbc.update("UPDATE corona.remessas SET status = 'FECHADA' WHERE id = ?", remessaId);
         jdbc.update("UPDATE corona.fechamentos_maleta SET situacao = 'CONCLUIDO', concluido_em = ?, concluido_por = ? WHERE id = ?",
                 Timestamp.from(relogio.instant()), usuarioId, fechamento);
         auditoria.registrar(Ator.usuario(usuarioId), "FECHAMENTO_DA_MALETA_CONCLUIDO", "fechamentos_maleta", fechamento, null,
-                Map.of("remessa_id", remessaId.toString(), "pecas_devolvidas", devolver.size()));
+                Map.of("remessa_id", remessaId.toString(), "pecas_devolvidas", devolver.size(), "faltas", faltas.size()));
+    }
+
+    /** Cada decisão completa, uma por peça; perda da loja com motivo. O motivo vai limpo (sem espaços nas pontas). */
+    private static Map<UUID, DecisaoDaFalta> conferirDecisoes(List<DecisaoDaFalta> decisoes) {
+        Map<UUID, DecisaoDaFalta> porPeca = new LinkedHashMap<>();
+        Set<UUID> ids = new HashSet<>();
+        for (DecisaoDaFalta d : decisoes == null ? List.<DecisaoDaFalta>of() : decisoes) {
+            if (d == null || d.produtoId() == null || d.decisao() == null
+                    || !(COBRAR_DO_REPRESENTANTE.equals(d.decisao()) || PERDA_DA_LOJA.equals(d.decisao()))) {
+                throw Validacoes.recusar("decisoes", "Para cada peça que falta, escolha Cobrar do representante ou Perda da loja.");
+            }
+            UUID id = Validacoes.idDoPedido(d.id());
+            String motivo = Validacoes.limpar(d.motivo());
+            if (PERDA_DA_LOJA.equals(d.decisao()) && motivo == null) {
+                throw Validacoes.recusar("motivo", "Diga o motivo da perda da loja. Isso ajuda a entender depois.");
+            }
+            if (motivo != null && motivo.length() > 500) {
+                throw Validacoes.recusar("motivo", "O motivo pode ter no máximo 500 letras.");
+            }
+            if (!ids.add(id) || porPeca.containsKey(d.produtoId())) {
+                throw Validacoes.recusar("decisoes", "A mesma peça aparece duas vezes. Escolha uma decisão só para cada peça.");
+            }
+            porPeca.put(d.produtoId(), new DecisaoDaFalta(id, d.produtoId(), d.decisao(), motivo));
+        }
+        return porPeca;
+    }
+
+    /**
+     * As peças que voltam depois de a maleta ser fechada (§23.10, item 3): cada leitura devolve a peça ao estoque, no máximo o
+     * que as clientes já devolveram àquela maleta e ainda não voltou à loja (o saldo da maleta fechada). A maleta continua
+     * fechada. Idempotente pelo id da leitura.
+     */
+    @Transactional
+    public int registrarVoltas(UUID remessaId, List<Leitura> leituras, UUID usuarioId) {
+        if (leituras == null || leituras.isEmpty()) {
+            throw Validacoes.recusar("leituras", "Informe pelo menos uma peça lida.");
+        }
+        String status = trancar(remessaId);
+        List<UUID> concluido = jdbc.queryForList(
+                "SELECT id FROM corona.fechamentos_maleta WHERE remessa_id = ? AND situacao = 'CONCLUIDO'", UUID.class, remessaId);
+        if (!"FECHADA".equals(status) || concluido.isEmpty()) {
+            throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.FECHAMENTO_NAO_ENCONTRADO);
+        }
+        UUID fechamento = concluido.get(0);
+        int novas = 0;
+        Set<UUID> ids = new HashSet<>();
+        for (Leitura l : leituras) {
+            if (l == null || l.produtoId() == null || l.quantidade() == null || l.quantidade() < 1 || l.quantidade() > 100_000) {
+                throw Validacoes.recusar("leituras", "Confira a peça e a quantidade lidas.");
+            }
+            UUID id = Validacoes.idDoPedido(l.id());
+            if (!ids.add(id)) {
+                throw Validacoes.recusar("leituras", "A mesma leitura aparece duas vezes.");
+            }
+            List<Map<String, Object>> ja = jdbc.queryForList(
+                    "SELECT fechamento_id, produto_id, quantidade, depois_de_fechar FROM corona.leituras_fechamento_maleta WHERE id = ?", id);
+            if (!ja.isEmpty()) {
+                Map<String, Object> g = ja.get(0);
+                if (!fechamento.equals(g.get("fechamento_id")) || !l.produtoId().equals(g.get("produto_id"))
+                        || l.quantidade() != ((Number) g.get("quantidade")).intValue() || !Boolean.TRUE.equals(g.get("depois_de_fechar"))) {
+                    throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.LANCAMENTO_JA_REGISTRADO_DIFERENTE);
+                }
+                continue;
+            }
+            Boolean daMaleta = jdbc.queryForObject(
+                    "SELECT EXISTS (SELECT 1 FROM corona.itens_remessa WHERE remessa_id = ? AND produto_id = ? AND deleted_at IS NULL)",
+                    Boolean.class, remessaId, l.produtoId());
+            if (!Boolean.TRUE.equals(daMaleta)) {
+                throw pecaDeOutraMaleta(remessaId, l.produtoId());
+            }
+            if (l.quantidade() > esperadoNaMaleta(remessaId, l.produtoId())) {
+                throw new ErroDaApi(HttpStatus.CONFLICT, CodigoErro.PECA_AINDA_COM_A_CLIENTE);
+            }
+            jdbc.update("""
+                    INSERT INTO corona.leituras_fechamento_maleta (id, fechamento_id, produto_id, quantidade, lida_em, depois_de_fechar)
+                    VALUES (?, ?, ?, ?, ?, true)""", id, fechamento, l.produtoId(), l.quantidade(), Timestamp.from(relogio.instant()));
+            maleta.devolverDaMaletaFechada(remessaId, List.of(new LinhaDeDevolucao(UuidV7.gerar(), l.produtoId(), l.quantidade())),
+                    usuarioId);
+            novas++;
+        }
+        return novas;
     }
 
     // --- a leitura (a mesma do relatório) ---
@@ -243,6 +387,7 @@ public class ServicoDoFechamentoDaMaleta {
             throw new ErroDaApi(HttpStatus.NOT_FOUND, CodigoErro.FECHAMENTO_NAO_ENCONTRADO);
         }
         UUID fechamento = (UUID) f.get(0).get("id");
+        boolean fechada = "FECHADA".equals(jdbc.queryForObject("SELECT status FROM corona.remessas WHERE id = ?", String.class, remessaId));
         List<LinhaDaPeca> pecas = new ArrayList<>();
         List<Map<String, Object>> linhas = jdbc.queryForList("""
                 SELECT i.produto_id, p.nome, i.qtd_enviada,
@@ -270,11 +415,39 @@ public class ServicoDoFechamentoDaMaleta {
             int comClientes = -(saidas + retornos) - vendidas;
             int esperado = enviadas + ((Number) l.get("sem_devolucao")).intValue();
             int bipadas = ((Number) l.get("bipadas")).intValue();
+            int devolvidas = ((Number) l.get("devolvidas")).intValue();
+            // Na maleta fechada, o saldo positivo é o que as clientes devolveram depois e ainda não foi lido.
+            int paraLerDepois = fechada ? Math.max(0, esperado - devolvidas) : 0;
             pecas.add(new LinhaDaPeca(produto, (String) l.get("nome"), enviadas, retornos, vendidas, comClientes, esperado, bipadas,
-                    bipadas - esperado, ((Number) l.get("devolvidas")).intValue(), pecasComClientes(remessaId, produto)));
+                    bipadas - esperado, devolvidas, pecasComClientes(remessaId, produto), paraLerDepois));
         }
         return new LeituraDoFechamento(remessaId, codigoDaMaleta(remessaId), (String) f.get(0).get("situacao"), instante(f.get(0).get("iniciado_em")),
-                instante(f.get(0).get("concluido_em")), pecas, valores(remessaId));
+                instante(f.get(0).get("concluido_em")), pecas, valores(remessaId), pendencias(remessaId), cobranca(remessaId));
+    }
+
+    private CobrancaDoRepresentante cobranca(UUID remessaId) {
+        return jdbc.queryForObject("""
+                SELECT v.id, v.nome,
+                       coalesce((SELECT sum(d.valor) FROM corona.pendencias_da_maleta d
+                                  WHERE d.remessa_id = r.id AND d.decisao = 'COBRAR_DO_REPRESENTANTE'), 0) AS nesta,
+                       coalesce((SELECT sum(d.valor) FROM corona.pendencias_da_maleta d
+                                  WHERE d.vendedor_id = v.id AND d.decisao = 'COBRAR_DO_REPRESENTANTE'), 0) AS todas,
+                       coalesce((SELECT sum(d.quantidade) FROM corona.pendencias_da_maleta d
+                                  WHERE d.remessa_id = r.id AND d.decisao = 'PERDA_DA_LOJA'), 0) AS perdidas
+                  FROM corona.remessas r JOIN corona.vendedores v ON v.id = r.vendedor_id
+                 WHERE r.id = ?""", (rs, n) -> new CobrancaDoRepresentante(rs.getObject(1, UUID.class), rs.getString(2),
+                Dinheiro.arredondar(rs.getBigDecimal(3)), Dinheiro.arredondar(rs.getBigDecimal(4)), rs.getInt(5)), remessaId);
+    }
+
+    /** As faltas gravadas na conclusão, com a decisão da dona (§23.10, item 1). */
+    private List<PendenciaDaMaleta> pendencias(UUID remessaId) {
+        return jdbc.query("""
+                SELECT d.id, d.produto_id, p.nome, d.quantidade, d.preco_unitario, d.valor, d.decisao, d.motivo, d.created_at
+                  FROM corona.pendencias_da_maleta d JOIN corona.produtos p ON p.id = d.produto_id
+                 WHERE d.remessa_id = ? ORDER BY p.nome, d.id""",
+                (rs, n) -> new PendenciaDaMaleta(rs.getObject(1, UUID.class), rs.getObject(2, UUID.class), rs.getString(3), rs.getInt(4),
+                        rs.getBigDecimal(5), rs.getBigDecimal(6), rs.getString(7), rs.getString(8), rs.getTimestamp(9).toInstant()),
+                remessaId);
     }
 
     private String codigoDaMaleta(UUID remessaId) {

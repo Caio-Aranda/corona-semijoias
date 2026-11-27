@@ -329,7 +329,9 @@ public final class RegistroDeTabelas {
                         new TabelaDoServidor("alertas_consignado", false),
                         new TabelaDoServidor("fechamentos_maleta", false),
                         new TabelaDoServidor("leituras_fechamento_maleta", true),
-                        new TabelaDoServidor("fotos_de_cliente", true)));
+                        new TabelaDoServidor("fotos_de_cliente", true),
+                        // Falta do Fechamento da maleta (V062; §23.10, item 1): só do servidor, imutável.
+                        new TabelaDoServidor("pendencias_da_maleta", true)));
     }
 
     /** As tabelas novas do consignado ao cliente (tarefa 9.1): o Corona Vendas que não conhece o formato 2 nunca as recebe. */

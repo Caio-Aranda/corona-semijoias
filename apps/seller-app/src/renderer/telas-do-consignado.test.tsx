@@ -747,6 +747,15 @@ describe('Cobrança e acerto', () => {
     expect(screen.getByRole('cell', { name: '17' })).toBeInTheDocument();
   });
 
+  it('sem nenhuma peça com tamanho ou tom, a coluna Tam./Ton. não aparece e o botão de devolução continua na linha', async () => {
+    await abrir({
+      'consignado.nota': () =>
+        ok({ ...nota, linhas: nota.linhas.map((l) => ({ ...l, tamTon: null })) }),
+    });
+    expect(screen.queryByRole('columnheader', { name: 'Tam./Ton.' })).toBeNull();
+    expect(screen.getAllByRole('button', { name: /devolução de/i }).length).toBeGreaterThan(0);
+  });
+
   it('Concluir devolução lista as peças não lidas; Forma de Pagamento mostra a conta; Salvar manda só os fatos', async () => {
     const { u, chamadas } = await abrir({
       'consignado.acertoSalvar': () =>

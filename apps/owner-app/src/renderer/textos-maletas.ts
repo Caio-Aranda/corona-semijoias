@@ -109,7 +109,7 @@ export const PT_TEXTOS_DE_MALETAS = {
   },
   limite: {
     titulo: 'Limite do representante',
-    limite: 'Limite do representante',
+    limite: 'Limite',
     jaComEle: 'Já está com ele',
     estaMaleta: 'Esta maleta',
     sobra: 'Sobra',
@@ -123,6 +123,7 @@ export const PT_TEXTOS_DE_MALETAS = {
     carregando: 'Conferindo o limite...',
   },
   avisoDeRestricao: 'Atenção ao representante:',
+  avisoDeEstoque: 'Falta estoque para enviar:',
   voltar: 'Voltar à lista',
   enviar: 'Enviar maleta',
   vazia: 'Coloque pelo menos uma peça na maleta antes de enviar.',
@@ -147,6 +148,7 @@ export const PT_TEXTOS_DE_MALETAS = {
       vendedor: 'Representante',
       semana: 'Semana',
       praca: 'Praça',
+      semPraca: 'Sem praça',
       tipo: 'Tipo',
       situacao: 'Situação',
       enviadaEm: 'Enviada em',
@@ -195,7 +197,8 @@ export const PT_TEXTOS_DE_MALETAS = {
     },
     porVendedor: {
       legenda: 'O que cada representante tem em aberto',
-      vazia: 'Nenhum representante cadastrado.',
+      vazia:
+        'Nenhum representante cadastrado. Cadastre o representante em Pessoas → Representantes.',
       colunas: {
         vendedor: 'Representante',
         maletas: 'Maletas com ele',

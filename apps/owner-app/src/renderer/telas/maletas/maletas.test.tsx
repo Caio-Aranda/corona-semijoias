@@ -404,14 +404,19 @@ describe('Montagem pelo leitor', () => {
     expect(screen.queryByText('Sem limite')).toBeNull();
   });
 
-  it('com limite definido mostra "Limite, em mãos, pode levar mais"', async () => {
+  it('com limite definido mostra o limite, o que já está com ele e a sobra, cada um uma vez', async () => {
     const m = montar();
     const u = await comecarMaleta(m);
     await ler(u, '0012');
     await screen.findByText('Anel Solitário entrou na maleta.');
-    expect(
-      await screen.findByText('Limite R$ 500,00 — em mãos R$ 200,00 — pode levar mais R$ 230,00'),
-    ).toBeTruthy();
+    const limite = within(screen.getByRole('region', { name: 'Limite do representante' }));
+    expect(limite.getByText('Limite')).toBeInTheDocument();
+    expect(limite.getByText('R$ 500,00')).toBeInTheDocument();
+    expect(limite.getByText('Já está com ele')).toBeInTheDocument();
+    expect(limite.getByText('R$ 200,00')).toBeInTheDocument();
+    expect(limite.getByText('Sobra')).toBeInTheDocument();
+    expect(limite.getByText('R$ 230,00')).toBeInTheDocument();
+    expect(limite.queryByText(/pode levar mais/)).toBeNull();
   });
 });
 

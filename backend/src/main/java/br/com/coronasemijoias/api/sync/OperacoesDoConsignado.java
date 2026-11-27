@@ -420,7 +420,8 @@ public class OperacoesDoConsignado {
             case DadosDaTrocaNaNota d -> notas.trocar(c, new Troca(d.id(), d.notaId(), d.volta(), d.entra()));
             case DadosDaRemarcacao d -> notas.remarcar(c, new Remarcacao(d.id(), d.notaId(), d.dataCobranca()));
             case DadosDoAcerto d -> {
-                // Formato 1: a porcentagem do computador vale (regra INFORMADA); sem ela, a operação é recusada, não decidida.
+                // Formato 1 (Corona Vendas 1.2.0): a porcentagem do computador só é conferida, o servidor decide pela meta (§23.13,
+                // item 5); sem ela, a operação é recusada.
                 if (d.comissaoPercentual() == null) {
                     throw new ErroDaApi(HttpStatus.UNPROCESSABLE_ENTITY, CodigoErro.COMISSAO_FORA_DO_LIMITE);
                 }

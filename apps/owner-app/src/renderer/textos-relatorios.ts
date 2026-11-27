@@ -47,7 +47,7 @@ export const PT_TEXTOS_RELATORIOS = {
     verRegistros: 'Ver os registros',
     voltarAoRelatorio: 'Ver o relatório inteiro',
     mostrando: (rotulo: string) => `Mostrando só: ${rotulo}.`,
-    pecas: (n: number) => (n === 1 ? '1 peça' : `${n} peças`),
+    pecas: (n: number) => (Math.abs(n) === 1 ? `${n} peça` : `${n} peças`),
     calculando: 'Calculando...',
   },
   exportar: {
