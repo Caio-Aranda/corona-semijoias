@@ -1073,10 +1073,10 @@ Em todo relatório e tela de informação: **DX, DV e VD** (valores) e **Itens D
 | Relatório | Para | Conteúdo |
 | --- | --- | --- |
 | Nota de saída | Cliente | Número, data de saída e de retorno, representante, dados do cliente, peças (Ref. · Produto · Tam./Ton. · Maleta · Qtd. · Preço unitário · Sub-total), Itens DX, Total DX, pendência anterior, espaço para assinatura. Comprovante interno, sem NF-e. |
-| Relatório do acerto | Cliente | Nota, cliente, datas de saída e de acerto, peças vendidas, DX/DV/VD, comissão, pendências anteriores, total a receber, pago por forma, ficou devendo. Proposta da §23.13: a linha da meta (vendido em Guarani, cotação, meta e percentual). |
+| Relatório do acerto | Cliente | Nota, cliente, datas de saída e de acerto, peças vendidas, DX/DV/VD, comissão, pendências anteriores, total a receber, pago por forma, ficou devendo. Com a §23.13, a linha da meta logo abaixo da Comissão % ("Meta Gs. 700.000 · Vendido Gs. 812.400 (cotação de DD/MM/AAAA) → comissão 40%"; abaixo da meta diz quanto faltou; sem cotação diz que valeu a porcentagem de abaixo da meta), só quando a porcentagem gravada confere com a meta de hoje. |
 | Situação do cliente | Cliente | Já vendeu (notas fechadas: DX, DV, VD, comissão, líquido, pago) e o que falta (peças com ele, maleta, data de retorno, quanto deve). |
 | Peças vendidas por cliente | Representante | Cliente e período: cada peça vendida (Ref., produto, quantidade, valor) e total. |
-| Totais da semana | Representante | A aba Totais. |
+| Totais da semana | Representante | A aba Totais, mais "Notas que bateram a meta: X de Y" (sem cotação conta como não bateu). |
 | Situação da maleta | Representante | Peças na maleta, com clientes (com quem) e vendidas. |
 | Fechamento da maleta | Lucia | §23.10. |
 

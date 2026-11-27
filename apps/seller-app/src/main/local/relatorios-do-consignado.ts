@@ -1,4 +1,5 @@
-import { cotacaoVigenteEm } from '../sync/consignado-comum';
+import { cotacaoVigenteEm, parametrosDoConsignado } from '../sync/consignado-comum';
+import { linhaDaMeta } from '@corona/shared/consignado';
 import { dolarEmCentavos, guaraniInteiro, taxaDeTexto } from '@corona/shared/moedas';
 import type {
   ClienteCompleto,
@@ -18,6 +19,7 @@ import type {
   FormaNoRelatorio,
   LinhaDePecaVendida,
   LinhaVendida,
+  MetaNoRelatorio,
   NotaDeSaida,
   NotaPendenteDaSituacao,
   PecaComOCliente,
@@ -206,6 +208,42 @@ export class RelatoriosDoConsignado {
     return r ? this.cotacaoDoLancamento(r.cotacao_id, r.acertado_em) : null;
   }
 
+  /** O dia da cotação do acerto (a gravada nele; senão a vigente na hora dele). `null` sem cotação. */
+  private dataDaCotacaoDoAcerto(acertoId: string): string | null {
+    const r = this.db()
+      .prepare('SELECT cotacao_id, acertado_em FROM acertos_nota WHERE id = ?')
+      .get(acertoId) as { cotacao_id: string | null; acertado_em: string | null } | undefined;
+    if (!r) return null;
+    if (r.cotacao_id) {
+      const c = this.db()
+        .prepare('SELECT data_cotacao FROM cotacoes WHERE id = ?')
+        .get(r.cotacao_id) as { data_cotacao: string } | undefined;
+      if (c) return c.data_cotacao;
+    }
+    return r.acertado_em ? (cotacaoVigenteEm(this.db(), r.acertado_em)?.data ?? null) : null;
+  }
+
+  /** O VD do acerto em Guarani inteiro, pela cotação dele; `null` sem cotação. */
+  private vendidoEmGuarani(acertoId: string, valorVd: string): string | null {
+    const t = this.taxasDoAcerto(acertoId);
+    return t ? guaraniInteiro(centavos(valorVd), t.pyg).toString() : null;
+  }
+
+  /** A linha da meta do relatório do acerto (§23.13, item 6); `null` quando a meta de hoje não confere com a comissão gravada. */
+  private metaDoAcerto(
+    acertoId: string,
+    valorVd: string,
+    comissao: string,
+  ): MetaNoRelatorio | null {
+    const vendido = this.vendidoEmGuarani(acertoId, valorVd);
+    const linha = linhaDaMeta(vendido, comissao, parametrosDoConsignado(this.db()));
+    if (!linha) return null;
+    return {
+      ...linha,
+      cotacaoData: vendido === null ? null : this.dataDaCotacaoDoAcerto(acertoId),
+    };
+  }
+
   private taxasDoRecibo(reciboId: string): Taxas | null {
     const r = this.db()
       .prepare('SELECT cotacao_id, pago_em FROM recibos_consignado WHERE id = ?')
@@ -322,6 +360,7 @@ export class RelatoriosDoConsignado {
       valorVd: um(centavos(a.valorVd), t),
       vendaPercentual: a.vendaPercentual,
       comissaoPercentual: a.comissaoPercentual,
+      meta: this.metaDoAcerto(a.id, a.valorVd, a.comissaoPercentual),
       comissao: um(centavos(a.comissao), t),
       valorLiquido: um(centavos(a.bruto), t),
       totalPendenciasAnteriores: um(centavos(a.pendenciasAnteriores), t),
@@ -515,8 +554,14 @@ export class RelatoriosDoConsignado {
     const liquido = this.soma();
     const pendente = this.soma();
     const debitos = new Map<string, ReturnType<typeof debitosDoCliente>>();
+    const meta = BigInt(parametrosDoConsignado(db).metaEmGuarani);
+    let notasAcertadas = 0;
+    let notasQueBateramAMeta = 0;
     for (const p of painel.pedidos) {
       if (p.acertoId) {
+        notasAcertadas += 1;
+        const vendido = this.vendidoEmGuarani(p.acertoId, p.valorVd);
+        if (vendido !== null && BigInt(vendido) >= meta) notasQueBateramAMeta += 1;
         const t = this.taxasDoAcerto(p.acertoId);
         dx.somar(centavos(p.valorDx), t);
         dv.somar(centavos(p.valorDv), t);
@@ -570,6 +615,8 @@ export class RelatoriosDoConsignado {
         valor: soma.valor(),
       })),
       pendente: pendente.valor(),
+      notasAcertadas,
+      notasQueBateramAMeta,
     };
   }
 

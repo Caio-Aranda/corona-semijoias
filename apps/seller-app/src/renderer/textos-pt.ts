@@ -1361,6 +1361,14 @@ export const TEXTOS_PT = {
       emAndamento: 'Em andamento',
       fechada: 'Fechada',
       comissaoDosClientes: 'Comissão dos clientes',
+      meta: 'Meta',
+      metaBateu: (meta: string, vendido: string, cotacao: string, pct: string) =>
+        `Meta ${meta} · Vendido ${vendido} (cotação de ${cotacao}) → comissão ${pct}%, porque bateu a meta`,
+      metaNaoBateu: (meta: string, vendido: string, cotacao: string, falta: string, pct: string) =>
+        `Meta ${meta} · Vendido ${vendido} (cotação de ${cotacao}) → comissão ${pct}%; faltaram ${falta} para a meta`,
+      metaSemCotacao: (meta: string, pct: string) =>
+        `Meta ${meta} · Sem cotação: valeu a comissão de ${pct}% de abaixo da meta`,
+      notasQueBateramAMeta: (x: number, y: number) => `Notas que bateram a meta: ${x} de ${y}`,
       recebido: 'Total recebido',
       pendente: 'Total pendente',
       resumoDaMaleta: (env: number, na: number, com: number, ven: number) =>

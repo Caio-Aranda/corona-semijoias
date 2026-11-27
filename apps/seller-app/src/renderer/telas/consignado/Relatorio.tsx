@@ -2,6 +2,7 @@ import { Aviso, Botao, ValorTresMoedas } from '@corona/ui';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type {
+  MetaNoRelatorio,
   NotaDeSaida,
   PecasVendidasPorCliente,
   PedidoDeRelatorio,
@@ -96,6 +97,19 @@ export function useRelatorioDaTela<T extends RelatorioDoConsignado>(
     };
   }, [ponte, chave, recarga, ...dependencias]);
   return relatorio;
+}
+
+/** "Meta Gs. 700.000 · Vendido Gs. 812.400 (cotação de 09/11/2026) → comissão 40%" (§23.13, item 6). */
+function textoDaMeta(m: MetaNoRelatorio): string {
+  const T = TEXTOS.consignado.relatorios;
+  const meta = formatarGuarani(BigInt(m.metaGuarani));
+  const pct = m.percentual.replace('.', ',');
+  if (m.vendidoGuarani === null) return T.metaSemCotacao(meta, pct);
+  const vendido = formatarGuarani(BigInt(m.vendidoGuarani));
+  const cotacao = m.cotacaoData ? dia(m.cotacaoData) : '';
+  return m.bateu
+    ? T.metaBateu(meta, vendido, cotacao, pct)
+    : T.metaNaoBateu(meta, vendido, cotacao, formatarGuarani(BigInt(m.faltouGuarani ?? '0')), pct);
 }
 
 function Linha({ rotulo, children }: { rotulo: string; children: ReactNode }) {
@@ -353,6 +367,7 @@ function FolhaDoAcerto({ r }: { r: RelatorioDoAcerto }) {
       <dl className="relatorio-conta">
         <Linha rotulo={T.vendaPercentual}>{porCento(r.vendaPercentual)}</Linha>
         <Linha rotulo={T.comissaoPercentual}>{porCento(r.comissaoPercentual)}</Linha>
+        {r.meta ? <Linha rotulo={T.meta}>{textoDaMeta(r.meta)}</Linha> : null}
         <Linha rotulo={T.comissaoValor}>
           <ValorDoRelatorio v={r.comissao} />
         </Linha>
@@ -633,6 +648,11 @@ function FolhaDosTotais({ r }: { r: TotaisDaSemanaNoRelatorio }) {
         <Linha rotulo={T.pendente}>
           <ValorDoRelatorio v={r.pendente} />
         </Linha>
+        {r.notasAcertadas > 0 ? (
+          <Linha rotulo={T.notasQueBateramAMeta(r.notasQueBateramAMeta, r.notasAcertadas)}>
+            {''}
+          </Linha>
+        ) : null}
       </dl>
     </>
   );
