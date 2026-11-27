@@ -3,6 +3,8 @@
  * Si el código no está aquí, la pantalla muestra el texto que mandó la API.
  * En portugués se usa siempre el texto de la API.
  */
+import { idiomaAtual } from './idioma';
+
 const SOPORTE = 'Si sigue así, hable con el soporte del sistema.';
 const ACTUALIZAR = 'Actualice el programa e intente de nuevo.';
 
@@ -398,4 +400,23 @@ export function erroDePecaDeOutraMaleta(mensagemDaApi: string | undefined): stri
   return codigo
     ? `Esta pieza no es de esta maleta. Está en la maleta ${codigo}.`
     : ERROS_EM_ESPANHOL.PECA_NAO_E_DESTA_MALETA!;
+}
+
+const AVISO_DE_ESTOQUE = /^A maleta tem (\d+) peça\(s\) de "(.+)", mas só há (\d+) no estoque\./;
+const AVISO_DE_RESTRICAO = /^Atenção: este representante tem a restrição "(.+)"\.$/;
+
+/** O aviso do rascunho que fala do estoque (E2): a peça passa do que há na loja. */
+export function ehAvisoDeEstoque(aviso: string): boolean {
+  return AVISO_DE_ESTOQUE.test(aviso);
+}
+
+/** Os avisos do rascunho da maleta vêm do servidor em português; em espanhol, os dois conhecidos são traduzidos. */
+export function avisoDaMaleta(aviso: string): string {
+  if (idiomaAtual() !== 'es') return aviso;
+  const e = AVISO_DE_ESTOQUE.exec(aviso);
+  if (e)
+    return `La maleta tiene ${e[1]} pieza(s) de "${e[2]}", pero solo hay ${e[3]} en el stock. Baje la cantidad o reciba la compra antes de enviar.`;
+  const r = AVISO_DE_RESTRICAO.exec(aviso);
+  if (r) return `Atención: este representante tiene la restricción "${r[1]}".`;
+  return aviso;
 }

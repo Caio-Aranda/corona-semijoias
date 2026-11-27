@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { avisoEmEspanhol } from './es/avisos-da-dona';
 import { mensagemDaApi } from './erros';
+import { avisoDaMaleta, ehAvisoDeEstoque } from './erros-es';
 import { definirIdioma } from './idioma';
 
 afterEach(() => {
@@ -58,6 +59,21 @@ describe('Fechamento da maleta em espanhol (tarefa 9.7)', () => {
       'Peças da maleta',
       'Dinheiro',
     ]);
+  });
+
+  it('avisos do rascunho da maleta: em espanhol traduz estoque e restrição; em português fica o do servidor', () => {
+    const estoque =
+      'A maleta tem 9999 peça(s) de "Argola banhado a ouro", mas só há 9 no estoque. Diminua a quantidade ou receba a compra antes de enviar.';
+    expect(ehAvisoDeEstoque(estoque)).toBe(true);
+    definirIdioma('es');
+    expect(avisoDaMaleta(estoque)).toBe(
+      'La maleta tiene 9999 pieza(s) de "Argola banhado a ouro", pero solo hay 9 en el stock. Baje la cantidad o reciba la compra antes de enviar.',
+    );
+    expect(avisoDaMaleta('Atenção: este representante tem a restrição "Atraso".')).toBe(
+      'Atención: este representante tiene la restricción "Atraso".',
+    );
+    definirIdioma('pt');
+    expect(avisoDaMaleta(estoque)).toBe(estoque);
   });
 
   // A maleta de origem vem do texto em português do servidor ("Ela está na maleta 0009."); ver erroDePecaDeOutraMaleta.
