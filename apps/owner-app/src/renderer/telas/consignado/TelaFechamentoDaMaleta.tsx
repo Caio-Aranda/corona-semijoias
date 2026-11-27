@@ -19,6 +19,7 @@ import { lerPaginaDeMaletas, type Maleta } from '../maletas/dados';
 import type { Produto } from '../produtos/dados';
 import { TelaDeRelatorio } from '../relatorios/TelaDeRelatorio';
 import { lerLeituraDoFechamento, type LeituraDoFechamentoLida } from './dados';
+import { gradeDasFaltas } from './pdf-das-faltas';
 
 const T = TEXTOS_DE_CONSIGNADO.fechamento;
 interface AvisoDaTela {
@@ -206,6 +207,7 @@ function FechamentoAberto({
       fixo={{ filtro: 'remessaId', valor: maleta.id, texto: titulo }}
       aoVoltar={aoVoltar}
       rotuloDoVoltar={T.voltarParaLista}
+      anexosDoPdf={[gradeDasFaltas(dados, titulo)].filter((g) => g !== null)}
       aposOTitulo={
         <ControlesDoFechamento
           ponte={ponte}
