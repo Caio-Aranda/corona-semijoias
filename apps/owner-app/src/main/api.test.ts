@@ -622,6 +622,17 @@ describe('API do Corona Gestão: rotas certas no cliente gerado', () => {
         { operacao: 'consignado.alertaVisto', id: ID },
         `POST /api/dona/consignado/alertas/${ID}/visto`,
       ],
+      [{ operacao: 'consignado.configuracao' }, 'GET /api/dona/configuracoes/consignado'],
+      [
+        {
+          operacao: 'consignado.configuracaoAlterar',
+          metaGuarani: 700000,
+          percentualAbaixoDaMeta: 30,
+          percentualNaMeta: 40,
+          diasDoRetorno: 45,
+        },
+        'PUT /api/dona/configuracoes/consignado',
+      ],
       [
         {
           operacao: 'relatorios.cadastros',

@@ -171,4 +171,32 @@ describe('conferência dos dados do consignado (a dona só lê e bipa o fechamen
       }),
     ).toBeNull();
   });
+
+  it('a configuração do consignado: lê sem dados e só grava valores dentro dos limites', () => {
+    expect(conferirParametros('consignado.configuracao', {})).not.toBeNull();
+    expect(conferirParametros('consignado.configuracao', { x: 1 })).toBeNull();
+    const ok = {
+      metaGuarani: 700000,
+      percentualAbaixoDaMeta: 30,
+      percentualNaMeta: 40,
+      diasDoRetorno: 45,
+    };
+    expect(conferirParametros('consignado.configuracaoAlterar', ok)).toEqual({
+      operacao: 'consignado.configuracaoAlterar',
+      corpo: ok,
+    });
+    for (const ruim of [
+      { ...ok, metaGuarani: 0 },
+      { ...ok, metaGuarani: 1_000_000_001 },
+      { ...ok, percentualNaMeta: 41 },
+      { ...ok, percentualAbaixoDaMeta: 41 },
+      { ...ok, percentualAbaixoDaMeta: 35, percentualNaMeta: 30 },
+      { ...ok, diasDoRetorno: 0 },
+      { ...ok, diasDoRetorno: 366 },
+      { ...ok, diasDoRetorno: 1.5 },
+      { ...ok, extra: 1 },
+    ]) {
+      expect(conferirParametros('consignado.configuracaoAlterar', ruim)).toBeNull();
+    }
+  });
 });

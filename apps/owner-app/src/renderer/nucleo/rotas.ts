@@ -35,6 +35,7 @@ export const ROTAS = [
   'consignado/semanas',
   'consignado/clientes',
   'consignado/avisos',
+  'consignado/comissao',
   'pessoas/vendedores',
   'pessoas/clientes',
   'pessoas/usuarios',
@@ -195,6 +196,7 @@ export const MENU = [
       { chave: 'consignado/semanas', rotulo: TEXTOS_DE_CONSIGNADO.menu.semanas },
       { chave: 'consignado/clientes', rotulo: TEXTOS_DE_CONSIGNADO.menu.clientes },
       { chave: 'consignado/avisos', rotulo: TEXTOS_DE_CONSIGNADO.menu.avisos },
+      { chave: 'consignado/comissao', rotulo: TEXTOS_DE_CONSIGNADO.menu.comissao },
     ],
   },
   {

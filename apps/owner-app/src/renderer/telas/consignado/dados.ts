@@ -147,6 +147,29 @@ export interface NotaLida {
   situacao: string;
   itensDx: number;
   valorDx: string;
+  meta: MetaLida;
+}
+
+/** A meta do acerto da nota: `regra` vazia quando não há acerto; `bateu` só existe na regra META. */
+export interface MetaLida {
+  regra: 'META' | 'INFORMADA' | '';
+  metaGuarani: number | null;
+  vdGuarani: number | null;
+  bateu: boolean | null;
+}
+
+const inteiroOuNulo = (v: unknown): number | null =>
+  typeof v === 'number' && Number.isFinite(v) ? v : null;
+
+function lerMeta(o: Record<string, unknown>): MetaLida {
+  const regra =
+    o.regraDaComissao === 'META' || o.regraDaComissao === 'INFORMADA' ? o.regraDaComissao : '';
+  return {
+    regra,
+    metaGuarani: inteiroOuNulo(o.metaGuarani),
+    vdGuarani: inteiroOuNulo(o.vdGuarani),
+    bateu: regra === 'META' ? o.bateuMeta === true : null,
+  };
 }
 
 export function lerNota(bruto: unknown): NotaLida | null {
@@ -166,6 +189,7 @@ export function lerNota(bruto: unknown): NotaLida | null {
     situacao: texto(o.situacao),
     itensDx: inteiro(o.itensDx),
     valorDx: dinheiro(o.valorDx),
+    meta: lerMeta(o),
   };
 }
 
@@ -196,6 +220,7 @@ export interface AcertoLidoDaNota {
   saldoDoDebito: string;
   estornado: boolean;
   motivoDoEstorno: string;
+  meta: MetaLida;
 }
 
 export interface ReciboLidoDaNota {
@@ -252,6 +277,7 @@ export function lerDetalheDaNota(bruto: unknown): DetalheDaNotaLido | null {
         saldoDoDebito: dinheiro(a.saldoDoDebito),
         estornado: a.estornado === true,
         motivoDoEstorno: texto(a.motivoDoEstorno),
+        meta: lerMeta(a),
       };
     }),
     recibos: lista(o.recibos).map((b) => {
@@ -386,4 +412,23 @@ export function lerRepresentantes(bruto: unknown): { id: string; nome: string }[
     const v = objeto(b);
     return typeof v.id === 'string' ? [{ id: v.id, nome: texto(v.nome) }] : [];
   });
+}
+
+// --- Comissão e meta do consignado ---
+
+export interface ConfiguracaoLida {
+  metaGuarani: number;
+  percentualAbaixoDaMeta: number;
+  percentualNaMeta: number;
+  diasDoRetorno: number;
+}
+
+export function lerConfiguracaoDoConsignado(bruto: unknown): ConfiguracaoLida {
+  const o = objeto(bruto);
+  return {
+    metaGuarani: inteiro(o.metaGuarani),
+    percentualAbaixoDaMeta: inteiro(o.percentualAbaixoDaMeta),
+    percentualNaMeta: inteiro(o.percentualNaMeta),
+    diasDoRetorno: inteiro(o.diasDoRetorno),
+  };
 }
