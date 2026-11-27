@@ -488,3 +488,16 @@ body {
   background: var(--cor-fundo-suave);
   font-weight: 700;
 }
+
+/* Texto que só o leitor de tela lê (por exemplo, a legenda de uma tabela que já tem título visível acima). */
+.cs-so-para-leitor {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
