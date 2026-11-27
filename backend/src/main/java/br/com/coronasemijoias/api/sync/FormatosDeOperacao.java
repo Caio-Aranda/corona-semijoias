@@ -38,6 +38,13 @@ public class FormatosDeOperacao {
     /** Dia em que o formato 1 dos tipos do consignado ao cliente e o formato 2 do cadastro do cliente foram publicados (tarefa 9.1). */
     static final Instant FORMATO_1_DO_CONSIGNADO = Instant.parse("2026-11-19T00:00:00Z");
 
+    /**
+     * Dia em que o formato 2 do {@code ACERTO_NOTA} (sem porcentagem: o servidor decide a comissão pela meta, §23.13) foi
+     * publicado, com o Corona Vendas 1.3.0. O formato 1 vale até 90 dias depois deste dia. Ajustar para o dia real da publicação
+     * do 1.3.0, enquanto ele não saiu.
+     */
+    static final Instant FORMATO_2_DO_ACERTO_DA_NOTA = Instant.parse("2026-12-01T00:00:00Z");
+
     private static final Map<String, Map<Integer, Instant>> PRODUCAO = Map.ofEntries(
             Map.entry("VENDA", Map.of(1, FORMATO_1)),
             Map.entry("ESTORNO_VENDA", Map.of(1, FORMATO_1)),
@@ -56,7 +63,7 @@ public class FormatosDeOperacao {
             Map.entry("REPOSICAO_NOTA", Map.of(1, FORMATO_1_DO_CONSIGNADO)),
             Map.entry("TROCA_NA_NOTA", Map.of(1, FORMATO_1_DO_CONSIGNADO)),
             Map.entry("REMARCAR_NOTA", Map.of(1, FORMATO_1_DO_CONSIGNADO)),
-            Map.entry("ACERTO_NOTA", Map.of(1, FORMATO_1_DO_CONSIGNADO)),
+            Map.entry("ACERTO_NOTA", Map.of(1, FORMATO_1_DO_CONSIGNADO, 2, FORMATO_2_DO_ACERTO_DA_NOTA)),
             Map.entry("PAGAMENTO_CONSIGNADO", Map.of(1, FORMATO_1_DO_CONSIGNADO)),
             Map.entry("ESTORNO_ACERTO_NOTA", Map.of(1, FORMATO_1_DO_CONSIGNADO)),
             Map.entry("ESTORNO_RECIBO", Map.of(1, FORMATO_1_DO_CONSIGNADO)));

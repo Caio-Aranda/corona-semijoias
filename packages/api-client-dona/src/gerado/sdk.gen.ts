@@ -893,7 +893,7 @@ export const marcarAlertaDoConsignadoComoVisto = <ThrowOnError extends boolean =
 /**
  * Conciliações do consignado (só leitura)
  *
- * Sete conferências (K1 a K7) sobre o banco; cada uma lista o que não bate. Vazio = tudo certo.
+ * Dez conferências (K1 a K10) sobre o banco; cada uma lista o que não bate. Vazio = tudo certo.
  */
 export const conferirConsignado = <ThrowOnError extends boolean = false>(options?: Options<ConferirConsignadoData, ThrowOnError>): RequestResult<ConferirConsignadoResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ConferirConsignadoResponses, unknown, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],

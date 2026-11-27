@@ -1,5 +1,7 @@
 package br.com.coronasemijoias.api.consignado;
 
+import br.com.coronasemijoias.api.configuracoes.ServicoDoConsignado;
+import br.com.coronasemijoias.api.cotacoes.Cotacao;
 import br.com.coronasemijoias.api.cotacoes.CotacaoVigente;
 import br.com.coronasemijoias.api.auditoria.ServicoDeAuditoria;
 import br.com.coronasemijoias.api.auditoria.ServicoDeAuditoria.Ator;
@@ -22,6 +24,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -33,6 +36,11 @@ import org.springframework.transaction.annotation.Transactional;
  * comissão deste acerto e o que o cliente pagou); o SERVIDOR recalcula tudo a partir dos itens da nota e das pendências que
  * ele conhece (nunca confia no app), grava o acerto (o débito do cliente), os itens, as devoluções à maleta, o recibo e as
  * aplicações, e reavalia a situação das notas tocadas. O cliente é travado antes de ler os débitos.
+ *
+ * <p><b>A comissão (§23.13):</b> com porcentagem no pedido (formato 1), vale a informada (regra {@code INFORMADA}, como sempre).
+ * Sem porcentagem (formato 2), o SERVIDOR decide pela meta: o VD da nota em Guarani, pela cotação vigente na Data do acerto,
+ * contra a meta da configuração do momento (regra {@code META}; guarda a meta e o VD em Guarani). Sem cotação: abaixo da meta, com
+ * alerta.
  */
 @Service
 public class ServicoDeAcertosDaNota {
@@ -50,6 +58,7 @@ public class ServicoDeAcertosDaNota {
             BigDecimal totalAReceber, BigDecimal totalPago, BigDecimal ficouDevendo) {
     }
 
+    /** {@code comissaoPercentual} vazia = formato 2: o servidor decide pela meta. */
     public record NovoAcerto(UUID id, UUID notaId, UUID semanaId, BigDecimal comissaoPercentual, List<Devolvido> devolvidos,
             ReciboDoAcerto recibo, Visto visto, LocalDate dataDoAcerto) {
 
@@ -70,9 +79,12 @@ public class ServicoDeAcertosDaNota {
     private final DebitosDoCliente debitos;
     private final ServicoDeNotas notas;
     private final ServicoDeRecibos recibos;
+    private final ServicoDoConsignado configuracaoDoConsignado;
+    private final CotacaoVigente cotacoes;
 
     public ServicoDeAcertosDaNota(JdbcTemplate jdbc, ServicoDeAuditoria auditoria, OrigemDoDispositivo origem,
-            ServicoDeAlertasDoConsignado alertas, DebitosDoCliente debitos, ServicoDeNotas notas, ServicoDeRecibos recibos) {
+            ServicoDeAlertasDoConsignado alertas, DebitosDoCliente debitos, ServicoDeNotas notas, ServicoDeRecibos recibos,
+            ServicoDoConsignado configuracaoDoConsignado, CotacaoVigente cotacoes) {
         this.jdbc = jdbc;
         this.auditoria = auditoria;
         this.origem = origem;
@@ -80,6 +92,8 @@ public class ServicoDeAcertosDaNota {
         this.debitos = debitos;
         this.notas = notas;
         this.recibos = recibos;
+        this.configuracaoDoConsignado = configuracaoDoConsignado;
+        this.cotacoes = cotacoes;
     }
 
     /** @return {@code true} se o acerto já existia com a mesma nota (reenvio inofensivo) */
@@ -121,7 +135,8 @@ public class ServicoDeAcertosDaNota {
                 throw new ErroDaApi(HttpStatus.UNPROCESSABLE_ENTITY, CodigoErro.DATA_DO_ACERTO_ANTES_DA_SAIDA);
             }
         }
-        if (!CalculoDoAcertoDaNota.comissaoValida(pedido.comissaoPercentual())) {
+        boolean pelaMeta = pedido.comissaoPercentual() == null;
+        if (!pelaMeta && !CalculoDoAcertoDaNota.comissaoValida(pedido.comissaoPercentual())) {
             throw new ErroDaApi(HttpStatus.UNPROCESSABLE_ENTITY, CodigoErro.COMISSAO_FORA_DO_LIMITE);
         }
         BigDecimal pago = pedido.recibo() == null ? BigDecimal.ZERO.setScale(2) : ServicoDeRecibos.totalDasFormas(pedido.recibo().formas());
@@ -161,12 +176,40 @@ public class ServicoDeAcertosDaNota {
         List<UUID> tocadas = new ArrayList<>();
         debitos.reaplicarSobras(cliente, tocadas);
         BigDecimal pendencias = debitos.pendenciaDoCliente(cliente);
-        var calculo = CalculoDoAcertoDaNota.calcular(paraCalculo, pedido.comissaoPercentual(), pendencias, pago);
-        if (pedido.visto() != null && diverge(pedido.visto(), calculo)) {
-            alertas.registrar("VALOR_DO_ACERTO_RECALCULADO", ctx.vendedorId(), "acertos_nota", id, Map.of(
-                    "visto_vd", String.valueOf(pedido.visto().valorVd()), "servidor_vd", calculo.valorVd().toPlainString(),
-                    "visto_total_a_receber", String.valueOf(pedido.visto().totalAReceber()),
-                    "servidor_total_a_receber", calculo.totalAReceber().toPlainString()));
+        // A cotação do acerto (a vigente na Data do acerto, ADR-0006) serve à meta e é a que o acerto guarda.
+        Optional<Cotacao> cotacao = cotacoes.vigenteEm(acertadoEm);
+        BigDecimal comissaoPercentual = pedido.comissaoPercentual();
+        Long metaGuarani = null;
+        Long vdGuarani = null;
+        if (pelaMeta) {
+            var configuracao = configuracaoDoConsignado.ler();
+            var parametros = new ComissaoPelaMeta.Parametros(BigDecimal.valueOf(configuracao.metaGuarani()),
+                    BigDecimal.valueOf(configuracao.percentualAbaixoDaMeta()), BigDecimal.valueOf(configuracao.percentualNaMeta()));
+            BigDecimal vd = CalculoDoAcertoDaNota.calcular(paraCalculo, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO).valorVd();
+            var decisao = ComissaoPelaMeta.decidir(vd, cotacao.map(c -> c.taxas().pygVenda()).orElse(null), parametros);
+            comissaoPercentual = decisao.percentual();
+            metaGuarani = (long) configuracao.metaGuarani();
+            vdGuarani = decisao.vdEmGuarani() == null ? null : decisao.vdEmGuarani().longValueExact();
+        }
+        var calculo = CalculoDoAcertoDaNota.calcular(paraCalculo, comissaoPercentual, pendencias, pago);
+        boolean diferenteDoVisto = pedido.visto() != null && diverge(pedido.visto(), calculo);
+        if (diferenteDoVisto || (pelaMeta && cotacao.isEmpty())) {
+            Map<String, Object> detalhe = new java.util.LinkedHashMap<>();
+            if (pedido.visto() != null) {
+                detalhe.put("visto_vd", String.valueOf(pedido.visto().valorVd()));
+                detalhe.put("visto_comissao", String.valueOf(pedido.visto().comissao()));
+                detalhe.put("visto_total_a_receber", String.valueOf(pedido.visto().totalAReceber()));
+            }
+            detalhe.put("servidor_vd", calculo.valorVd().toPlainString());
+            detalhe.put("servidor_comissao", calculo.comissao().toPlainString());
+            detalhe.put("servidor_total_a_receber", calculo.totalAReceber().toPlainString());
+            if (pelaMeta) {
+                detalhe.put("comissao_percentual_servidor", comissaoPercentual.setScale(2).toPlainString());
+                if (cotacao.isEmpty()) {
+                    detalhe.put("motivo", "SEM_COTACAO");
+                }
+            }
+            alertas.registrar("VALOR_DO_ACERTO_RECALCULADO", ctx.vendedorId(), "acertos_nota", id, detalhe);
         }
 
         if (ctx.aparelho() != null) {
@@ -179,12 +222,13 @@ public class ServicoDeAcertosDaNota {
         jdbc.update("""
                 INSERT INTO corona.acertos_nota (id, nota_id, vendedor_id, semana_id, acertado_em, registrado_em, comissao_percentual, itens_dx, itens_dv,
                     itens_vd, valor_dx, valor_dv, valor_vd, comissao, bruto, pendencias_anteriores, total_a_receber, total_pago,
-                    ficou_devendo, recibo_id, cotacao_id, dispositivo_id, hora_ajustada)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", id, nota.id(), ctx.vendedorId(),
-                pedido.semanaId(), Timestamp.from(acertadoEm), Timestamp.from(ctx.quando()), pedido.comissaoPercentual(), calculo.itensDx(), calculo.itensDv(),
+                    ficou_devendo, recibo_id, cotacao_id, dispositivo_id, hora_ajustada, regra_da_comissao, meta_guarani, vd_guarani)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", id, nota.id(), ctx.vendedorId(),
+                pedido.semanaId(), Timestamp.from(acertadoEm), Timestamp.from(ctx.quando()), comissaoPercentual, calculo.itensDx(), calculo.itensDv(),
                 calculo.itensVd(), calculo.valorDx(), calculo.valorDv(), calculo.valorVd(), calculo.comissao(), calculo.bruto(),
                 calculo.pendenciasAnteriores(), calculo.totalAReceber(), calculo.totalPago(), calculo.ficouDevendo(), reciboId,
-                cotacaoDoDia(acertadoEm), ctx.aparelho(), ctx.horaAjustada());
+                cotacao.map(Cotacao::id).orElse(null), ctx.aparelho(), ctx.horaAjustada(), pelaMeta ? "META" : "INFORMADA", metaGuarani,
+                vdGuarani);
         for (Map<String, Object> l : linhas) {
             String chave = l.get("remessa_id") + ":" + l.get("produto_id");
             int dx = ((Number) l.get("dx")).intValue();
@@ -294,10 +338,5 @@ public class ServicoDeAcertosDaNota {
         auditoria.registrar(Ator.usuario(ctx.usuarioId()), "ACERTO_NOTA_ESTORNADO", "acertos_nota", pedido.acertoId(), null,
                 Map.of("estorno_id", id.toString(), "motivo", motivo));
         return false;
-    }
-
-    /** A cotação vigente no momento do lançamento (ADR-0006, item 15), ou nenhuma. */
-    private UUID cotacaoDoDia(Instant quando) {
-        return CotacaoVigente.idVigenteEm(jdbc, quando);
     }
 }

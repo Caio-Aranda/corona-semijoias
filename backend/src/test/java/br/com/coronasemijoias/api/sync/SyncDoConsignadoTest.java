@@ -58,6 +58,20 @@ class SyncDoConsignadoTest extends ApoioDoEnvioDaFase6 {
         return new Cena(v, peca, outra, maleta, cliente, semana);
     }
 
+    /** Como {@link #cena()}, com a peça principal custando o preço dado (o servidor usa o preço da maleta). */
+    private Cena cenaComPeca(String preco) throws Exception {
+        UsuarioDeTeste v = usuarios.criarVendedor();
+        UUID peca = peca(preco, 20);
+        UUID maleta = maletaEnviada(v, peca, 10);
+        UUID cliente = UUID.randomUUID();
+        UUID semana = UUID.randomUUID();
+        JsonNode r = enviar(v, List.of(opF(semana, "SEMANA_NOVA", 1, mapa("id", semana, "numero", 1, "abertaEm", agora().toString())),
+                opF(cliente, "CLIENTE_NOVO", 2, clienteV2(cliente))));
+        assertThat(resultado(r, 0)).isEqualTo("ACEITO");
+        assertThat(resultado(r, 1)).isEqualTo("ACEITO");
+        return new Cena(v, peca, peca, maleta, cliente, semana);
+    }
+
     private static Map<String, Object> itemJson(UUID produto, UUID maleta, int q, String preco) {
         return mapa("id", UUID.randomUUID(), "produtoId", produto, "remessaId", maleta, "quantidade", q, "precoUnitario", preco,
                 "movimentoId", UUID.randomUUID());
@@ -263,5 +277,106 @@ class SyncDoConsignadoTest extends ApoioDoEnvioDaFase6 {
         assertThat(valor("""
                 SELECT coalesce(sum(r.total), 0) - coalesce(sum((SELECT sum(a.valor) FROM corona.aplicacoes_recibo a WHERE a.recibo_id = r.id)), 0)
                   FROM corona.recibos_consignado r WHERE r.cliente_id = ?""", c.cliente())).isEqualByComparingTo("190.00");
+    }
+
+    // --- acerto da nota, formato 2 (a meta decide; §23.13) ---
+
+    /** Acerto formato 2: sem porcentagem. {@code lixo} acrescenta uma porcentagem que o servidor deve ignorar. */
+    private Map<String, Object> acertoOpV2(Cena c, UUID id, UUID nota, String lixo) {
+        Map<String, Object> dados = mapa("id", id, "notaId", nota, "semanaId", c.semana(), "acertadoEm", agora().toString(),
+                "devolvidos", List.of());
+        if (lixo != null) {
+            dados.put("comissaoPercentual", lixo);
+        }
+        return opF(id, "ACERTO_NOTA", 2, dados);
+    }
+
+    private void comACotacaoDoExemplo(org.junit.jupiter.api.function.Executable teste) throws Throwable {
+        br.com.coronasemijoias.api.testes.CotacoesDaMassa.doExemplo(jdbc);
+        try {
+            teste.execute();
+        } finally {
+            try (var con = conectarComoMigracao()) {
+                br.com.coronasemijoias.api.testes.CotacoesDaMassa.tirar(con);
+            }
+        }
+    }
+
+    @Test
+    void acertoFormato2ENaMetaOServidorDecideIgnoraAPorcentagemDoAppERepeticaoDaJaRecebido() throws Throwable {
+        comACotacaoDoExemplo(() -> {
+            Cena c = cenaComPeca("630.00");
+            UUID nota = UUID.randomUUID();
+            UUID acerto = UUID.randomUUID();
+            List<Map<String, Object>> lote = List.of(notaOp(c, nota, 1, List.of(itemJson(c.peca(), c.maleta(), 1, "630.00"))),
+                    acertoOpV2(c, acerto, nota, "10"));
+            JsonNode r = enviar(c.v(), new ArrayList<>(lote));
+            assertThat(resultado(r, 0)).isEqualTo("ACEITO");
+            assertThat(resultado(r, 1)).isEqualTo("ACEITO");
+            var linha = jdbc.queryForMap("SELECT * FROM corona.acertos_nota WHERE id = ?", acerto);
+            assertThat(linha.get("regra_da_comissao")).isEqualTo("META");
+            assertThat((java.math.BigDecimal) linha.get("comissao_percentual")).isEqualByComparingTo("40");
+            assertThat(linha.get("vd_guarani")).isEqualTo(700_000L);
+            // Repetir não grava de novo.
+            JsonNode de = enviar(c.v(), new ArrayList<>(lote));
+            assertThat(resultado(de, 1)).isEqualTo("JA_RECEBIDO");
+            assertThat(contar("SELECT count(*) FROM corona.acertos_nota WHERE nota_id = ?", nota)).isEqualTo(1);
+        });
+    }
+
+    @Test
+    void acertoFormato2AbaixoDaMetaFicaEm30() throws Throwable {
+        comACotacaoDoExemplo(() -> {
+            Cena c = cenaComPeca("629.99");
+            UUID nota = UUID.randomUUID();
+            UUID acerto = UUID.randomUUID();
+            JsonNode r = enviar(c.v(), List.of(notaOp(c, nota, 1, List.of(itemJson(c.peca(), c.maleta(), 1, "629.99"))),
+                    acertoOpV2(c, acerto, nota, null)));
+            assertThat(resultado(r, 1)).isEqualTo("ACEITO");
+            assertThat(jdbc.queryForObject("SELECT comissao_percentual FROM corona.acertos_nota WHERE id = ?", java.math.BigDecimal.class,
+                    acerto)).isEqualByComparingTo("30");
+        });
+    }
+
+    @Test
+    void acertoFormato2DuasVezesEmDuasThreadsUmAceitoEUmJaRecebido() throws Throwable {
+        comACotacaoDoExemplo(() -> {
+            Cena c = cenaComPeca("630.00");
+            UUID nota = UUID.randomUUID();
+            UUID acerto = UUID.randomUUID();
+            assertThat(resultado(enviar(c.v(), List.of(notaOp(c, nota, 1, List.of(itemJson(c.peca(), c.maleta(), 1, "630.00"))))), 0))
+                    .isEqualTo("ACEITO");
+            ServicoDeEnvio.OperacaoEnviada op = enviada(acertoOpV2(c, acerto, nota, null));
+            List<ServicoDeEnvio.ResultadoDaOperacao> rs = emParalelo(List.of(() -> envio.processar(op, contexto(c.v())),
+                    () -> envio.processar(op, contexto(c.v()))));
+            assertThat(rs).extracting(r -> r.resultado().name()).containsExactlyInAnyOrder("ACEITO", "JA_RECEBIDO");
+            assertThat(contar("SELECT count(*) FROM corona.acertos_nota WHERE nota_id = ?", nota)).isEqualTo(1);
+        });
+    }
+
+    @Test
+    void acertoFormato1SemPorcentagemContinuaRecusado() throws Exception {
+        Cena c = cena();
+        UUID nota = UUID.randomUUID();
+        UUID acerto = UUID.randomUUID();
+        JsonNode r = enviar(c.v(), List.of(notaOp(c, nota, 1, List.of(itemJson(c.peca(), c.maleta(), 1, "100.00"))),
+                opF(acerto, "ACERTO_NOTA", 1, mapa("id", acerto, "notaId", nota, "semanaId", c.semana(), "acertadoEm", agora().toString(),
+                        "devolvidos", List.of()))));
+        assertThat(resultado(r, 1)).isEqualTo("RECUSADO");
+        assertThat(codigo(r, 1)).isEqualTo("COMISSAO_FORA_DO_LIMITE");
+    }
+
+    @Test
+    void acertoFormato1DaPorcentagemInformadaContinuaComoHoje() throws Exception {
+        Cena c = cena();
+        UUID nota = UUID.randomUUID();
+        UUID acerto = UUID.randomUUID();
+        JsonNode r = enviar(c.v(), List.of(notaOp(c, nota, 1, List.of(itemJson(c.peca(), c.maleta(), 1, "100.00"))),
+                acertoOp(c, acerto, nota, 2, null)));
+        assertThat(resultado(r, 1)).isEqualTo("ACEITO");
+        var linha = jdbc.queryForMap("SELECT regra_da_comissao, meta_guarani, vd_guarani FROM corona.acertos_nota WHERE id = ?", acerto);
+        assertThat(linha.get("regra_da_comissao")).isEqualTo("INFORMADA");
+        assertThat(linha.get("meta_guarani")).isNull();
+        assertThat(linha.get("vd_guarani")).isNull();
     }
 }

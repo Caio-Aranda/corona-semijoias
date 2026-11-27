@@ -214,4 +214,77 @@ class ConciliacoesDoConsignadoTest extends ApoioDoConsignado {
         assertThat(new ConciliacoesDoConsignado(jdbc).conferir("K7").conferencias().get(0).divergencias()).isEmpty();
         assertThat(k.semana()).isNotNull();
     }
+
+    // --- a meta (§23.13): K8 a K10 ---
+
+    /** Um acerto da regra META (formato 2), com a cotação em uso do exemplo (Gs. 1 = R$ 0,0009): R$ 630,00 = Gs. 700.000. */
+    private Caso casoPelaMeta() throws Exception {
+        br.com.coronasemijoias.api.testes.CotacoesDaMassa.doExemplo(jdbc);
+        UsuarioDeTeste v = usuarios.criarVendedor();
+        UUID cliente = cliente(v);
+        UUID peca = peca("630.00", 20);
+        UUID maleta = maletaEnviada(v, peca, 10);
+        UUID semana = abrirSemana(v);
+        UUID nota = criarNota(v, semana, 1, cliente, item(peca, maleta, 1, "630.00"));
+        UUID acerto = UUID.randomUUID();
+        acertos.acertar(ctx(v), new ServicoDeAcertosDaNota.NovoAcerto(acerto, nota, semana, null, List.of(), null, null));
+        return new Caso(v, cliente, maleta, peca, nota, acerto, null, semana);
+    }
+
+    private void tirarAsCotacoes() throws Exception {
+        try (Connection con = conectarComoMigracao()) {
+            br.com.coronasemijoias.api.testes.CotacoesDaMassa.tirar(con);
+        }
+    }
+
+    @Test
+    void k8k9k10PassamNoAcertoPelaMeta() throws Exception {
+        try {
+            Caso k = casoPelaMeta();
+            for (String chave : List.of("K8", "K9", "K10")) {
+                assertThat(new ConciliacoesDoConsignado(jdbc).conferir(chave).conferencias().get(0).divergencias()).as(chave).isEmpty();
+            }
+            assertThat(k.acerto()).isNotNull();
+        } finally {
+            tirarAsCotacoes();
+        }
+    }
+
+    @Test
+    void k8AcusaVdEmGuaraniDiferenteDaConversaoPelaCotacaoDoAcerto() throws Exception {
+        try {
+            Caso k = casoPelaMeta();
+            var achadas = estragar("K8", List.of("acertos_nota"),
+                    "UPDATE corona.acertos_nota SET vd_guarani = vd_guarani + 1 WHERE id = '" + k.acerto() + "'");
+            assertThat(tem(achadas, k.acerto())).isTrue();
+        } finally {
+            tirarAsCotacoes();
+        }
+    }
+
+    @Test
+    void k9AcusaPercentualQueNaoEODoLadoDaMetaNaConfiguracaoDoMomento() throws Exception {
+        try {
+            Caso k = casoPelaMeta();
+            // Bateu a meta (700.000 de 700.000), então devia ser 40%: 35% não é o de nenhum lado.
+            var achadas = estragar("K9", List.of("acertos_nota"),
+                    "UPDATE corona.acertos_nota SET comissao_percentual = 35 WHERE id = '" + k.acerto() + "'");
+            assertThat(tem(achadas, k.acerto())).isTrue();
+        } finally {
+            tirarAsCotacoes();
+        }
+    }
+
+    @Test
+    void k10AcusaPorcentagemInformadaEmOperacaoDeFormato2() throws Exception {
+        Caso k = caso();
+        usuarios.token(k.v());
+        String sincronizado = "INSERT INTO corona.sync_log (id, dispositivo_id, usuario_id, vendedor_id, tipo, formato, resumo, resultado, "
+                + "recebido_em, dados_esvaziados_em) SELECT '" + k.acerto() + "', d.id, d.usuario_id, '" + k.v().vendedorId() + "', 'ACERTO_NOTA', %d, repeat('a', 64), "
+                + "'ACEITO', now(), now() FROM corona.dispositivos d WHERE d.usuario_id = '" + k.v().id() + "' LIMIT 1";
+        assertThat(tem(estragar("K10", List.of("sync_log"), sincronizado.formatted(2)), k.acerto())).isTrue();
+        // De operação formato 1, e a que não passou pelo sync, a regra INFORMADA continua valendo.
+        assertThat(tem(estragar("K10", List.of("sync_log"), sincronizado.formatted(1)), k.acerto())).isFalse();
+        assertThat(tem(estragar("K10", List.of("sync_log")), k.acerto())).isFalse();
+    }
 }
