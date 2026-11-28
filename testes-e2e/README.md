@@ -61,4 +61,5 @@ Os dados são criados pelo próprio teste (conta, categoria, peça) num banco qu
 - Nunca usar dado real nem apontar para outro banco. Valores falsos ficam em `ambiente.ts`.
 - Os testes do Corona Vendas rodam depois dos do Gestão (ordem alfabética), mas também sozinhos: a massa troca a senha da dona
   sozinha se ainda for a temporária.
+- Manual e vídeo da dona (`zz-manual-da-dona.test.ts`): só rodam com `CORONA_MANUAL`; veja `docs/PROGRESSO.md`.
 - Não cobrem ainda: PDF do Corona Vendas, fotos, Troca, Reposição e o idioma espanhol do Vendas.

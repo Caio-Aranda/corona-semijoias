@@ -2,7 +2,6 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { DONA } from '../ambiente';
 import { abrirOApp, type AppAberto } from '../apoio';
 import { criarMassaDoManual, PECAS_DO_MANUAL, PESSOAS_DO_MANUAL } from '../massa-do-manual';
 
@@ -134,7 +133,8 @@ async function tituloDoCapitulo(janela: Page, texto: string | null): Promise<voi
 }
 
 /** Para a gravação antes do capítulo N (CORONA_MANUAL_ATE=3 grava só os capítulos 1 e 2): útil para acertar um capítulo. */
-const PARAR = Symbol('parar');
+class Parar extends Error {}
+const PARAR = new Parar('parar');
 const ATE = Number(process.env['CORONA_MANUAL_ATE'] ?? '0');
 
 async function capitulo(janela: Page, id: string): Promise<void> {
@@ -307,10 +307,12 @@ test('manual y video de la dueña: todas las pantallas, en español', async () =
 
   sessao = await abrirOApp('es', { gravarVideoEm: join(pasta, 'video') });
   const { janela } = sessao;
-  await janela.setViewportSize({ width: 1366, height: 768 });
   // A janela precisa ter o foco de verdade: sem ele o Chromium deixa o contorno de foco preso nos botões que já foram tocados.
   await sessao.app.evaluate(({ BrowserWindow }) => {
     const w = BrowserWindow.getAllWindows()[0];
+    // O vídeo grava a janela de verdade: ela tem que ter exatamente o tamanho do vídeo (e das capturas).
+    w?.setContentSize(1366, 768);
+    w?.center();
     w?.show();
     w?.focus();
   });
