@@ -19,7 +19,10 @@ export interface AppAberto {
  * Abre o Corona Gestão de verdade (Electron) com uma pasta de dados NOVA (sem sessão guardada), e faz o
  * Windows "guardar" os downloads numa pasta de teste, sem a janela de salvar.
  */
-export async function abrirOApp(idioma: 'es' | 'pt' = 'pt'): Promise<AppAberto> {
+export async function abrirOApp(
+  idioma: 'es' | 'pt' = 'pt',
+  opcoes: { gravarVideoEm?: string; tamanho?: { width: number; height: number } } = {},
+): Promise<AppAberto> {
   const dados = mkdtempSync(join(tmpdir(), 'corona-e2e-'));
   // O programa abre em espanhol; os testes procuram o texto em português, então o idioma é escolhido antes de abrir.
   writeFileSync(join(dados, 'idioma.txt'), idioma, 'utf8');
@@ -27,6 +30,15 @@ export async function abrirOApp(idioma: 'es' | 'pt' = 'pt'): Promise<AppAberto> 
   const app = await electron.launch({
     args: [join(raiz, 'apps', 'owner-app'), `--user-data-dir=${dados}`],
     env: { ...process.env, ELECTRON_ENABLE_LOGGING: '0' },
+    // Só o vídeo do manual da dona grava (zz-manual-da-dona.test.ts); os outros testes não passam esta opção.
+    ...(opcoes.gravarVideoEm
+      ? {
+          recordVideo: {
+            dir: opcoes.gravarVideoEm,
+            size: opcoes.tamanho ?? { width: 1366, height: 768 },
+          },
+        }
+      : {}),
   });
   await app.evaluate(({ session }, pasta) => {
     session.defaultSession.on('will-download', (_evento, item) => {

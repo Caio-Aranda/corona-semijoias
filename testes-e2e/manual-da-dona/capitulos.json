@@ -1,0 +1,475 @@
+{
+  "titulo": "Manual de Corona Gestión",
+  "versao": "1.2.5",
+  "capitulos": [
+    {
+      "id": "01",
+      "titulo": "Primera entrada",
+      "intro": "La primera vez que entra, Caio le da un usuario y una contraseña temporal. Usted crea su contraseña propia y desde entonces entra con ella.",
+      "pasos": [
+        {
+          "id": "01-1",
+          "texto": "Abra Corona Gestión. Aparece la pantalla de entrada."
+        },
+        {
+          "id": "01-2",
+          "texto": "Escriba su usuario y la contraseña temporal que le dio Caio. Después toque Entrar."
+        },
+        {
+          "id": "01-3",
+          "texto": "Aparece \"Cree su contraseña nueva\". La contraseña temporal solo sirve para este paso."
+        },
+        {
+          "id": "01-4",
+          "texto": "Escriba su contraseña nueva dos veces. Debe tener 8 caracteres o más, con letras y números. Toque Guardar contraseña nueva."
+        },
+        {
+          "id": "01-5",
+          "texto": "Listo: está dentro. Esta es la pantalla de Inicio, y desde ahora entra con la contraseña nueva."
+        },
+        {
+          "id": "01-6",
+          "texto": "Para cerrar, toque Salir (arriba a la derecha). Si algún día se olvida la contraseña, hable con Caio: él le da una temporal nueva."
+        }
+      ],
+      "avisos": [
+        "No escriba la contraseña en un papel pegado a la computadora.",
+        "Si la contraseña nueva no sirve, la pantalla dice por qué (por ejemplo, \"Necesita tener por lo menos 8 caracteres, con letras y números\"). Corrija y toque Guardar de nuevo."
+      ]
+    },
+    {
+      "id": "02",
+      "titulo": "El lector de código de barras",
+      "intro": "El lector funciona como un teclado: lee el código de la pieza, lo escribe solo y presiona Enter. No hay que instalar nada.",
+      "pasos": [
+        {
+          "id": "02-1",
+          "texto": "Enchufe el lector en un USB de la computadora. Abra Stock › Recibir compra."
+        },
+        {
+          "id": "02-2",
+          "texto": "Elija el proveedor. Después toque el campo \"Código de la pieza o nombre\": ahí es donde lee el lector."
+        },
+        {
+          "id": "02-3",
+          "texto": "Apunte el lector al código de la pieza y apriete el gatillo. La pieza entra sola en la lista."
+        },
+        {
+          "id": "02-4",
+          "texto": "Leer la misma pieza otra vez suma 1 en su línea."
+        },
+        {
+          "id": "02-5",
+          "texto": "Si el lector no encuentra la pieza, la pantalla avisa \"No encontramos ninguna pieza con el código...\". Revise el código."
+        },
+        {
+          "id": "02-6",
+          "texto": "Si la pieza es nueva, toque \"Registrar esta pieza ahora\". Si el lector no lee, escriba el código con el teclado y presione Enter."
+        }
+      ],
+      "avisos": [
+        "El lector no necesita que usted presione Enter: ya lo hace solo.",
+        "Si el lector no funciona, pruebe otro USB. Si sigue sin funcionar, escriba el código a mano (el sistema acepta letras mayúsculas y minúsculas) y hable con Caio."
+      ]
+    },
+    {
+      "id": "03",
+      "titulo": "Registrar la semana",
+      "intro": "Sin semana no se puede armar ninguna maleta. Registre la semana nueva una vez, al empezar.",
+      "pasos": [
+        {
+          "id": "03-1",
+          "texto": "En el menú de la izquierda, bajo Registros, toque Semanas."
+        },
+        {
+          "id": "03-2",
+          "texto": "Toque Nueva semana."
+        },
+        {
+          "id": "03-3",
+          "texto": "Escriba el número de la semana, el primer día y el último día."
+        },
+        {
+          "id": "03-4",
+          "texto": "Toque Registrar. La semana aparece en la lista y ya se puede usar al armar la maleta."
+        }
+      ],
+      "avisos": [
+        "Si arma una maleta y todavía no hay semana, la pantalla avisa \"Todavía no hay semana abierta\" y trae el botón Registrar semana."
+      ]
+    },
+    {
+      "id": "04",
+      "titulo": "Registrar un representante con límite",
+      "intro": "El límite es el valor máximo, en reales, de las piezas que el representante puede tener en mano (por el precio de venta). Sin límite definido no se arma maleta.",
+      "pasos": [
+        {
+          "id": "04-1",
+          "texto": "Abra Personas › Representantes."
+        },
+        {
+          "id": "04-2",
+          "texto": "Toque Nuevo representante."
+        },
+        {
+          "id": "04-3",
+          "texto": "Escriba el nombre del representante."
+        },
+        {
+          "id": "04-4",
+          "texto": "En \"Límite de consignación\" escriba el valor en reales. Si no quiere límite, marque \"Sin límite\"."
+        },
+        {
+          "id": "04-5",
+          "texto": "Toque Guardar. El representante aparece en la lista, con su límite."
+        }
+      ],
+      "avisos": [
+        "El acceso del representante a Corona Ventas se crea en Personas › Usuarios (hable con Caio la primera vez)."
+      ]
+    },
+    {
+      "id": "05",
+      "titulo": "Armar y enviar una maleta",
+      "intro": "Aquí usted separa las piezas del stock para el representante. Al enviar, las piezas salen del stock de la tienda y quedan con él.",
+      "pasos": [
+        {
+          "id": "05-1",
+          "texto": "Abra Maletas › Armar maleta."
+        },
+        {
+          "id": "05-2",
+          "texto": "Elija el representante y la semana. Después toque Empezar a armar."
+        },
+        {
+          "id": "05-3",
+          "texto": "Lea con el lector el código de cada pieza. Leer la misma pieza otra vez suma 1."
+        },
+        {
+          "id": "05-4",
+          "texto": "Mire el cuadro \"Límite del representante\": muestra el límite, lo que ya tiene en mano y cuánto sobra."
+        },
+        {
+          "id": "05-5",
+          "texto": "Si la pieza no tiene stock, aparece el aviso \"Falta stock para enviar\". Primero hay que recibir la compra (capítulo Recibir una compra)."
+        },
+        {
+          "id": "05-6",
+          "texto": "Si la maleta pasa el límite, la pantalla dice cuánto. Quite piezas o aumente el límite en el registro del representante."
+        },
+        {
+          "id": "05-7",
+          "texto": "Corrija la cantidad con el botón Actualizar, o quite una pieza con Quitar."
+        },
+        {
+          "id": "05-8",
+          "texto": "Cuando esté todo bien, toque Enviar maleta."
+        },
+        {
+          "id": "05-9",
+          "texto": "Confirme con Enviar maleta. Después de enviada, la maleta ya no se puede cambiar."
+        },
+        {
+          "id": "05-10",
+          "texto": "Listo: \"Maleta enviada\". El stock ya se actualizó. Con Imprimir nota guarda la nota de envío en PDF."
+        }
+      ],
+      "avisos": [
+        "Una maleta que todavía no se envió queda guardada en \"Maletas en armado\": puede seguir armándola otro día.",
+        "Si se equivocó antes de enviar, no pasa nada: el stock no cambia hasta que usted envía."
+      ]
+    },
+    {
+      "id": "06",
+      "titulo": "Reponer una maleta",
+      "intro": "La reposición es siempre una maleta nueva para el mismo representante. Las piezas no se copian: usted lee las que va a llevar.",
+      "pasos": [
+        {
+          "id": "06-1",
+          "texto": "Abra Maletas › Maletas y toque la pestaña \"Por representante\"."
+        },
+        {
+          "id": "06-2",
+          "texto": "En la fila del representante, toque Nueva reposición."
+        },
+        {
+          "id": "06-3",
+          "texto": "Elija la semana y toque Empezar a reponer. Vea arriba lo que ya tiene y el límite."
+        },
+        {
+          "id": "06-4",
+          "texto": "Lea las piezas nuevas con el lector y toque Enviar maleta, igual que en una maleta nueva."
+        }
+      ],
+      "avisos": []
+    },
+    {
+      "id": "07",
+      "titulo": "Ver dónde está cada pieza",
+      "intro": "En Stock › Stock ve cuántas piezas hay en la tienda y, cuando la tienda se quedó en cero, cuántas están afuera, con los representantes.",
+      "pasos": [
+        {
+          "id": "07-1",
+          "texto": "Abra Stock › Stock."
+        },
+        {
+          "id": "07-2",
+          "texto": "Escriba el nombre o el código de la pieza en el primer campo y toque Buscar."
+        },
+        {
+          "id": "07-3",
+          "texto": "La columna \"En el stock\" dice cuántas piezas hay en la tienda. Si dice \"0 en la tienda\", debajo ve cuántas están con los representantes (en la maleta o con las clientes) y con quién. \"Se acabó\" quiere decir que no queda ninguna en ningún lado."
+        }
+      ],
+      "avisos": [
+        "Una pieza que no está en la tienda no se perdió: puede estar con un representante. Se descuenta del stock de la tienda cuando se envía la maleta y vuelve cuando se cierra la maleta."
+      ]
+    },
+    {
+      "id": "08",
+      "titulo": "Cierre de la maleta",
+      "intro": "Cuando el representante vuelve, usted lee lo que volvió y el sistema compara con lo que debía estar en la maleta. Lo que falta se cobra al representante o es una pérdida de la tienda.",
+      "pasos": [
+        {
+          "id": "08-1",
+          "texto": "Abra Maletas › Cierre de la maleta."
+        },
+        {
+          "id": "08-2",
+          "texto": "Elija la maleta que volvió y toque Abrir el cierre."
+        },
+        {
+          "id": "08-3",
+          "texto": "Toque Empezar el cierre. Hasta que usted concluya, el stock no cambia."
+        },
+        {
+          "id": "08-4",
+          "texto": "Lea con el lector cada pieza que volvió. Cada lectura suma 1."
+        },
+        {
+          "id": "08-5",
+          "texto": "El sistema muestra lo que falta. Puede salir y volver después: el cierre queda en curso."
+        },
+        {
+          "id": "08-6",
+          "texto": "Toque Concluir el cierre. Para cada pieza que falta, elija: Cobrar al representante o Pérdida de la tienda."
+        },
+        {
+          "id": "08-7",
+          "texto": "Si es pérdida de la tienda, escriba el motivo (por ejemplo: se rompió). Después confirme con Concluir."
+        },
+        {
+          "id": "08-8",
+          "texto": "El cierre está concluido. Abajo ve los faltantes y el total a cobrar al representante."
+        },
+        {
+          "id": "08-9",
+          "texto": "Cuando el representante paga, toque Registrar pago, escriba el valor y toque Registrar. El pago entra en la caja."
+        },
+        {
+          "id": "08-10",
+          "texto": "Una pieza que un cliente devuelve después del cierre se lee en \"Leer las piezas que volvieron después\" y vuelve al stock. Pero primero el representante tiene que hacer el acerto de la nota: si no, el programa avisa \"Esta pieza todavía está con el cliente\"."
+        }
+      ],
+      "avisos": [
+        "El cierre no se puede deshacer una vez concluido: revise lo que leyó antes.",
+        "Una pieza que sobra (que no era de esta maleta) no vuelve al stock: revise de quién es."
+      ]
+    },
+    {
+      "id": "09",
+      "titulo": "Acerto de la nota y comisión por la meta",
+      "intro": "El representante hace la nota y el acerto de cada cliente en su programa (Corona Ventas). Usted lo ve aquí y lo verifica: no se cambia nada en esta pantalla.",
+      "pasos": [
+        {
+          "id": "09-1",
+          "texto": "Abra Consignado › Notas de los clientes. La lista dice si cada nota alcanzó la meta."
+        },
+        {
+          "id": "09-2",
+          "texto": "Toque Ver la nota para abrirla."
+        },
+        {
+          "id": "09-3",
+          "texto": "Mire lo vendido (VD) en Guaraníes y la meta. Si alcanzó la meta, la comisión es 40%; por debajo de la meta es 30%."
+        },
+        {
+          "id": "09-4",
+          "texto": "Verifique la cuenta: valor neto, total a cobrar, total pagado y lo que todavía falta cobrar."
+        },
+        {
+          "id": "09-5",
+          "texto": "La meta y las comisiones se miran en Consignado › Comisión y meta del consignado (Gs 700.000: 30% por debajo y 40% al alcanzarla)."
+        }
+      ],
+      "avisos": [
+        "La comisión depende de la meta: lo vendido en la nota, convertido a Guaraníes, debe llegar a Gs 700.000 para valer 40%.",
+        "Si la cuenta no coincide con lo que usted esperaba, no corrija nada a mano: hable con Caio."
+      ]
+    },
+    {
+      "id": "10",
+      "titulo": "Recibir una compra",
+      "intro": "Cuando llegan piezas nuevas del proveedor, las recibe aquí y entran al stock de la tienda.",
+      "pasos": [
+        {
+          "id": "10-1",
+          "texto": "Abra Stock › Recibir compra y elija el proveedor."
+        },
+        {
+          "id": "10-2",
+          "texto": "Lea el código de cada pieza que llegó. Leer la misma pieza otra vez suma 1."
+        },
+        {
+          "id": "10-3",
+          "texto": "Revise la cantidad y el costo de cada pieza."
+        },
+        {
+          "id": "10-4",
+          "texto": "Toque Confirmar compra y confirme en la ventana."
+        },
+        {
+          "id": "10-5",
+          "texto": "\"Compra guardada\": las piezas ya están en el stock de la tienda."
+        }
+      ],
+      "avisos": [
+        "Si se equivoca en una compra, no se borra: hay que deshacer la compra desde Stock › Compras."
+      ]
+    },
+    {
+      "id": "11",
+      "titulo": "Cotización del día",
+      "intro": "Todo se guarda en Reales. El Dólar y el Guaraní solo se muestran en la pantalla, con la cotización del día.",
+      "pasos": [
+        {
+          "id": "11-1",
+          "texto": "En Inicio, arriba, ve la cotización del día: 1 US$ y R$ 1 en Guaraníes."
+        },
+        {
+          "id": "11-2",
+          "texto": "Si falta o está mal, toque Cambiar la cotización."
+        },
+        {
+          "id": "11-3",
+          "texto": "Escriba cuántos Reales vale 1 dólar y cuántos Guaraníes vale 1 Real. Después toque Guardar la cotización. La cotización nueva vale desde ahora; lo que ya se registró no cambia."
+        }
+      ],
+      "avisos": [
+        "Normalmente la cotización llega sola. Si aparece el aviso \"La cotización de hoy todavía no llegó\", use este botón o espere a mañana."
+      ]
+    },
+    {
+      "id": "12",
+      "titulo": "Informes",
+      "intro": "Los informes muestran los números de la tienda. Puede guardarlos en PDF o en CSV (planilla).",
+      "pasos": [
+        {
+          "id": "12-1",
+          "texto": "En Inicio, toque Informes."
+        },
+        {
+          "id": "12-2",
+          "texto": "Elija el grupo de informes que quiere. Por ejemplo, Registros."
+        },
+        {
+          "id": "12-3",
+          "texto": "Elija el informe. Por ejemplo, el de los productos."
+        },
+        {
+          "id": "12-4",
+          "texto": "Para guardarlo, use los botones \"Descargar en PDF\" o \"Descargar en CSV\" (planilla)."
+        }
+      ],
+      "avisos": []
+    },
+    {
+      "id": "13",
+      "titulo": "Verificación del dinero",
+      "intro": "El sistema verifica solo que las ventas, los acertos, la caja y el stock coincidan. En el programa en portugués esta pantalla se llama Conferência do dinheiro.",
+      "pasos": [
+        {
+          "id": "13-1",
+          "texto": "En el menú, bajo Informes, toque Verificaciones. Después elija \"Verificación del dinero\"."
+        },
+        {
+          "id": "13-2",
+          "texto": "Toque Verificar ahora."
+        },
+        {
+          "id": "13-3",
+          "texto": "Lo normal es ver \"Todo bien\" en cada línea. Si hay una diferencia, no toque nada y avise a Caio."
+        }
+      ],
+      "avisos": [
+        "Lo que aparece aquí es un error del sistema, no de la tienda. No corrija nada a mano."
+      ]
+    },
+    {
+      "id": "14",
+      "titulo": "Avisos y errores comunes",
+      "intro": "Cuando algo falta, el programa lo dice en español simple y casi siempre trae un botón que lleva a la pantalla que lo arregla.",
+      "pasos": [
+        {
+          "id": "14-1",
+          "texto": "En Inicio, el cuadro \"Lo que necesita su atención\" junta los avisos del día. Toque el botón del aviso para ir a resolverlo."
+        }
+      ],
+      "avisos": []
+    }
+  ],
+  "tablaDeAvisos": [
+    {
+      "aviso": "Todavía no hay semana abierta. Registre la semana para armar la maleta.",
+      "queHacer": "Toque Registrar semana (Registros › Semanas)."
+    },
+    {
+      "aviso": "Todavía no hay representante activo. Registre al representante (o active el que ya existe) para armar la maleta.",
+      "queHacer": "Toque Registrar representante (Personas › Representantes)."
+    },
+    {
+      "aviso": "Defina el límite de este representante antes de armar la maleta.",
+      "queHacer": "Toque Abrir representantes, abra su registro y complete el límite o marque \"Sin límite\"."
+    },
+    {
+      "aviso": "Esta maleta pasa el límite en R$ ...",
+      "queHacer": "Quite algunas piezas o aumente el límite en el registro del representante (Abrir representantes)."
+    },
+    {
+      "aviso": "... está sin stock. Reciba una compra o haga una entrada al stock antes de armar la maleta.",
+      "queHacer": "Toque Recibir compra (Stock › Recibir compra) y dé entrada a las piezas."
+    },
+    {
+      "aviso": "Todavía no hay proveedor registrado. Registre al proveedor para cargar la compra.",
+      "queHacer": "Toque Registrar proveedor (Registros › Proveedores)."
+    },
+    {
+      "aviso": "Todavía no hay categoría registrada. Registre la categoría para registrar la pieza.",
+      "queHacer": "Toque Registrar categoría (Registros › Categorías)."
+    },
+    {
+      "aviso": "No encontramos ninguna pieza con el código ...",
+      "queHacer": "Revise el código y lea de nuevo. Si la pieza es nueva, toque Registrar esta pieza ahora."
+    },
+    {
+      "aviso": "Todavía no hay cotización.",
+      "queHacer": "Toque Cargar la cotización del día (Inicio › Cambiar la cotización)."
+    },
+    {
+      "aviso": "Sin internet. Corona Gestión solo funciona con internet. Conéctese e intente de nuevo.",
+      "queHacer": "Revise el internet de la computadora. El programa intenta solo en unos segundos; no necesita entrar de nuevo."
+    },
+    {
+      "aviso": "Su sesión terminó. Entre de nuevo con su usuario y su contraseña.",
+      "queHacer": "Escriba el usuario y la contraseña de nuevo."
+    },
+    {
+      "aviso": "Su programa está desactualizado. Actualice para seguir usándolo.",
+      "queHacer": "Cierre y abra el programa para que se actualice. Si sigue igual, hable con Caio."
+    },
+    {
+      "aviso": "Algo salió mal. Intente de nuevo.",
+      "queHacer": "Intente de nuevo. Si sigue así, hable con Caio."
+    }
+  ]
+}
